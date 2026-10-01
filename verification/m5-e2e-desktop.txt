@@ -1,0 +1,46 @@
+
+> profitlens@0.1.0 test:e2e
+> playwright test tests/e2e/ai.spec.ts --project=desktop
+
+[WebServer] (node:79021) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79022) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79026) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79031) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79030) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79034) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79033) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79035) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:79059) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 13 tests using 1 worker
+
+(node:79060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › tests/e2e/ai.spec.ts:110:1 › 真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用 (1.1s)
+  ✓   2 [desktop] › tests/e2e/ai.spec.ts:138:1 › MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據 (1.0s)
+  ✓   3 [desktop] › tests/e2e/ai.spec.ts:192:3 › MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕 (655ms)
+  ✓   4 [desktop] › tests/e2e/ai.spec.ts:192:3 › MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕 (623ms)
+  ✓   5 [desktop] › tests/e2e/ai.spec.ts:192:3 › MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕 (687ms)
+  ✓   6 [desktop] › tests/e2e/ai.spec.ts:192:3 › MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕 (664ms)
+  ✓   7 [desktop] › tests/e2e/ai.spec.ts:214:1 › MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料 (1.8s)
+  ✓   8 [desktop] › tests/e2e/ai.spec.ts:231:1 › MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST (775ms)
+  ✓   9 [desktop] › tests/e2e/ai.spec.ts:290:3 › MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意 (696ms)
+  ✓  10 [desktop] › tests/e2e/ai.spec.ts:290:3 › MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意 (1.3s)
+  ✓  11 [desktop] › tests/e2e/ai.spec.ts:290:3 › MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意 (1.1s)
+  ✓  12 [desktop] › tests/e2e/ai.spec.ts:327:1 › MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現 (695ms)
+  ✓  13 [desktop] › tests/e2e/ai.spec.ts:346:1 › MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料 (1.1s)
+
+  13 passed (23.0s)

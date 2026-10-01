@@ -1,0 +1,247 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/import.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/import.test.ts (35 tests | 35 failed) 27ms
+     × keeps original filename, physical lines and exactly matched standard columns 5ms
+     × previews only the first ten records without discarding the remaining parsed source 7ms
+     × never guesses revenue or cost column aliases 0ms
+     × rejects unsupported extension sales.xlsx before parsing 0ms
+     × rejects unsupported extension sales.csv.exe before parsing 7ms
+     × rejects unsupported extension sales before parsing 0ms
+     × rejects unsupported extension sales.json before parsing 0ms
+     × checks both declared file size and actual bytes without truncation 0ms
+     × rejects invalid UTF-8 and preserves parser error source line 0ms
+     × rejects over 50,000 records rather than previewing a truncated successful dataset 0ms
+     × prepares golden source values as a local user-provided dataset and retains filename metadata 1ms
+     × requires fresh explicit amount-basis confirmation even when a JSON flag claims consent 0ms
+     × does not rewrite an invalid currency setting 0ms
+     × does not rewrite an invalid timezone setting 0ms
+     × does not rewrite an invalid amount_basis setting 0ms
+     × requires manual mapping confirmation for renamed standard fields 0ms
+     × requires explicit ignore confirmation and excludes ignored header and content from submitted input 0ms
+     × blocks invalid mapping discounts to gross_sales 0ms
+     × blocks invalid mapping gross_sales to not_a_column 0ms
+     × blocks invalid mapping gross_sales to  0ms
+     × blocks invalid mapping unexpected_target to gross_sales 0ms
+     × does not silently substitute an absent file or a malformed file 0ms
+     × keeps errors/duplicate_sales_key classification and does not repair deliberately bad data 0ms
+     × keeps errors/missing_cogs classification and does not repair deliberately bad data 0ms
+     × keeps errors/missing_ad_day classification and does not repair deliberately bad data 0ms
+     × keeps errors/mixed_currency classification and does not repair deliberately bad data 0ms
+     × preserves original physical row lines after dropping quoted multiline columns and mapping 0ms
+     × preserves multiline required text values and error lines instead of flattening records 0ms
+     × reads a valid synthetic manifest for form prefill but never grants amount-basis confirmation 1ms
+     × rejects malformed or incomplete manifest structure null 0ms
+     × rejects malformed or incomplete manifest structure [] 0ms
+     × rejects malformed or incomplete manifest structure "value" 0ms
+     × rejects malformed or incomplete manifest structure {bad-json 0ms
+     × rejects malformed or incomplete manifest structure {"currency":"USD"} 0ms
+     × checks JSON extension, size and UTF-8 before reading structure 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 35 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/import.test.ts > local CSV inspection > keeps original filename, physical lines and exactly matched standard columns
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:26:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/35]⎯
+
+ FAIL  tests/import.test.ts > local CSV inspection > previews only the first ten records without discarding the remaining parsed source
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:38:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/35]⎯
+
+ FAIL  tests/import.test.ts > local CSV inspection > never guesses revenue or cost column aliases
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:44:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/35]⎯
+
+ FAIL  tests/import.test.ts > local CSV inspection > rejects unsupported extension sales.xlsx before parsing
+ FAIL  tests/import.test.ts > local CSV inspection > rejects unsupported extension sales.csv.exe before parsing
+ FAIL  tests/import.test.ts > local CSV inspection > rejects unsupported extension sales before parsing
+ FAIL  tests/import.test.ts > local CSV inspection > rejects unsupported extension sales.json before parsing
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:50:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/35]⎯
+
+ FAIL  tests/import.test.ts > local CSV inspection > checks both declared file size and actual bytes without truncation
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:56:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/35]⎯
+
+ FAIL  tests/import.test.ts > local CSV inspection > rejects invalid UTF-8 and preserves parser error source line
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:64:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/35]⎯
+
+ FAIL  tests/import.test.ts > local CSV inspection > rejects over 50,000 records rather than previewing a truncated successful dataset
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:70:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > prepares golden source values as a local user-provided dataset and retains filename metadata
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:80:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > requires fresh explicit amount-basis confirmation even when a JSON flag claims consent
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:94:42
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > does not rewrite an invalid currency setting
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > does not rewrite an invalid timezone setting
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > does not rewrite an invalid amount_basis setting
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:100:69
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > requires manual mapping confirmation for renamed standard fields
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:106:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > requires explicit ignore confirmation and excludes ignored header and content from submitted input
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:117:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > blocks invalid mapping discounts to gross_sales
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > blocks invalid mapping gross_sales to not_a_column
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > blocks invalid mapping gross_sales to 
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > blocks invalid mapping unexpected_target to gross_sales
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:134:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > does not silently substitute an absent file or a malformed file
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:141:65
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > keeps errors/duplicate_sales_key classification and does not repair deliberately bad data
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > keeps errors/missing_cogs classification and does not repair deliberately bad data
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > keeps errors/missing_ad_day classification and does not repair deliberately bad data
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > keeps errors/mixed_currency classification and does not repair deliberately bad data
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:152:52
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > preserves original physical row lines after dropping quoted multiline columns and mapping
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:161:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/35]⎯
+
+ FAIL  tests/import.test.ts > explicit import preparation and M1 validation > preserves multiline required text values and error lines instead of flattening records
+Error: M3 尚未實作
+ ❯ inspectImportFile src/application/import.ts:6:105
+
+ ❯ tests/import.test.ts:19:54
+ ❯ drafts tests/import.test.ts:19:35
+ ❯ tests/import.test.ts:174:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/35]⎯
+
+ FAIL  tests/import.test.ts > optional manifest JSON prefill > reads a valid synthetic manifest for form prefill but never grants amount-basis confirmation
+Error: M3 尚未實作
+ ❯ inspectManifestFile src/application/import.ts:8:189
+
+ ❯ tests/import.test.ts:186:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/35]⎯
+
+ FAIL  tests/import.test.ts > optional manifest JSON prefill > rejects malformed or incomplete manifest structure null
+ FAIL  tests/import.test.ts > optional manifest JSON prefill > rejects malformed or incomplete manifest structure []
+ FAIL  tests/import.test.ts > optional manifest JSON prefill > rejects malformed or incomplete manifest structure "value"
+ FAIL  tests/import.test.ts > optional manifest JSON prefill > rejects malformed or incomplete manifest structure {bad-json
+ FAIL  tests/import.test.ts > optional manifest JSON prefill > rejects malformed or incomplete manifest structure {"currency":"USD"}
+Error: M3 尚未實作
+ ❯ inspectManifestFile src/application/import.ts:8:189
+
+ ❯ tests/import.test.ts:194:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/35]⎯
+
+ FAIL  tests/import.test.ts > optional manifest JSON prefill > checks JSON extension, size and UTF-8 before reading structure
+Error: M3 尚未實作
+ ❯ inspectManifestFile src/application/import.ts:8:189
+
+ ❯ tests/import.test.ts:199:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/35]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  35 failed (35)
+   Start at  13:30:35
+   Duration  282ms (transform 27ms, setup 0ms, import 37ms, tests 27ms, environment 0ms)
+

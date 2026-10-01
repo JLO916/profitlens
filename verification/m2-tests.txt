@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 test
+> vitest --run
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  9 passed (9)
+      Tests  197 passed (197)
+   Start at  17:45:55
+   Duration  990ms (transform 682ms, setup 0ms, import 1.69s, tests 1.02s, environment 1ms)
+

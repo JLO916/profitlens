@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "replace-with-your-dataset-id",
+  "source_type": "user_provided",
+  "currency": "TWD",
+  "timezone": "Asia/Taipei",
+  "data_as_of": "2026-08-03",
+  "coverage_start": "2026-08-01",
+  "coverage_end": "2026-08-02",
+  "channels": [
+    "DTC",
+    "MARKETPLACE"
+  ],
+  "previous_period": {
+    "start": "2026-08-01",
+    "end": "2026-08-01"
+  },
+  "current_period": {
+    "start": "2026-08-02",
+    "end": "2026-08-02"
+  },
+  "sales_coverage_confirmed": false,
+  "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+  "note": "Fill and confirm dataset settings in the UI."
+}

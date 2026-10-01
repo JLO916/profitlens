@@ -1,0 +1,13 @@
+{
+  "removed_empty_generated_directories": [
+    "node_modules/@types/chai 2",
+    "node_modules/@types/deep-eql 2",
+    "node_modules/@types/estree 2",
+    "node_modules/@types/json-schema 2",
+    "node_modules/@types/json5 2",
+    "node_modules/@types/node 2",
+    "node_modules/@types/react 2",
+    "node_modules/@types/react-dom 2"
+  ],
+  "condition": "rmdir only after confirming empty; no source or package files deleted"
+}

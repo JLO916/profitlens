@@ -1,0 +1,326 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/scenarios.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/scenarios.test.ts (66 tests | 66 failed) 103ms
+     × accepts a complete confirmed current channel and serializes exact amounts without bigint 14ms
+     × does not confuse negative baseline contribution with an ineligible baseline 3ms
+     × requires confirmed coverage 3ms
+     × disables missing gross_sales without filling zero 0ms
+     × disables missing discounts without filling zero 0ms
+     × disables missing refunds without filling zero 0ms
+     × disables missing cogs_net without filling zero 0ms
+     × disables missing platform_fees without filling zero 0ms
+     × disables missing payment_fees without filling zero 0ms
+     × disables missing fulfillment_costs without filling zero 0ms
+     × disables missing other_variable_costs without filling zero 0ms
+     × disables missing ad_spend without filling zero 0ms
+     × disables negative booked cogs_net without changing actual metrics 0ms
+     × disables negative booked platform_fees without changing actual metrics 0ms
+     × disables negative booked payment_fees without changing actual metrics 0ms
+     × disables negative booked fulfillment_costs without changing actual metrics 0ms
+     × disables negative booked other_variable_costs without changing actual metrics 0ms
+     × disables negative booked ad_spend without changing actual metrics 0ms
+     × disables invalid G/N/d/r baseline {"gross_sales":"0.00","discounts":"0.00","refunds":"0.00"} 0ms
+     × disables invalid G/N/d/r baseline {"gross_sales":"-1.00","discounts":"0.00","refunds":"0.00"} 0ms
+     × disables invalid G/N/d/r baseline {"refunds":"900.00"} 0ms
+     × disables invalid G/N/d/r baseline {"refunds":"901.00"} 0ms
+     × disables invalid G/N/d/r baseline {"discounts":"1000.00"} 0ms
+     × disables invalid G/N/d/r baseline {"discounts":"1001.00"} 0ms
+     × disables invalid G/N/d/r baseline {"discounts":"-0.01"} 0ms
+     × disables invalid G/N/d/r baseline {"refunds":"-0.01"} 0ms
+     × pure-refund fixtures remain actual diagnostics, not a scenario baseline 1ms
+     × S01 zero change returns exact DTC baseline 3ms
+     × S01 zero change returns exact MARKETPLACE baseline 2ms
+     × S02 matches immutable golden fulfillment anchors with and without one-time investment 3ms
+     × S03 requires explicit volume even when the user reduces advertising 2ms
+     × requires explicit volume_change_pct, not only volume 2ms
+     × requires explicit discount_change_pp, not only volume 2ms
+     × requires explicit fulfillment_change_pct, not only volume 2ms
+     × requires explicit ad_change_pct, not only volume 3ms
+     × requires explicit one_time_cost, not only volume 2ms
+     × requires explicit acceptance of every fixed model assumption 2ms
+     × S05 adds discount percentage points and recomputes all modeled costs independently 0ms
+     × rounds the independently checked marketplace anchor and exposes its -0.01 reconciliation 2ms
+     × S06 recomputes each scenario from baseline and never stacks earlier improvements 2ms
+     × keeps zero advertising at zero and does not infer sales volume 2ms
+     × retains huge monetary digits and cents under a zero-change scenario without global Decimal changes 0ms
+     × rounds a half-cent with a repeating refund ratio using HALF_UP 1ms
+     × accepts at least six decimal places for all four percentage inputs 2ms
+     × accepts inclusive product guardrail boundary {"volume_change_pct":"-90"} 2ms
+     × accepts inclusive product guardrail boundary {"volume_change_pct":"100"} 2ms
+     × accepts inclusive product guardrail boundary {"fulfillment_change_pct":"-100"} 2ms
+     × accepts inclusive product guardrail boundary {"fulfillment_change_pct":"100"} 2ms
+     × accepts inclusive product guardrail boundary {"ad_change_pct":"-100"} 3ms
+     × accepts inclusive product guardrail boundary {"ad_change_pct":"200"} 2ms
+     × rejects invalid explicit input {"volume_change_pct":"-90.000001"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"volume_change_pct":"100.000001"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"fulfillment_change_pct":"-100.000001"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"fulfillment_change_pct":"100.000001"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"ad_change_pct":"-100.000001"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"ad_change_pct":"200.000001"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"one_time_cost":"-0.01"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"one_time_cost":"0.001"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"one_time_cost":"NaN"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"volume_change_pct":"Infinity"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"volume_change_pct":"1e2"} without usable financial outputs 4ms
+     × rejects invalid explicit input {"discount_change_pp":"10%"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"discount_change_pp":"-100"} without usable financial outputs 2ms
+     × rejects invalid explicit input {"discount_change_pp":"100"} without usable financial outputs 2ms
+     × permits zero discount rate but not exactly 100 percent 0ms
+     × exports transparent assumptions and formulas without causal or forecast labels 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 66 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > accepts a complete confirmed current channel and serializes exact amounts without bigint
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ tests/scenarios.test.ts:35:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/66]⎯
+
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > does not confuse negative baseline contribution with an ineligible baseline
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ tests/scenarios.test.ts:46:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/66]⎯
+
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > requires confirmed coverage
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ tests/scenarios.test.ts:51:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/66]⎯
+
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing gross_sales without filling zero
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing discounts without filling zero
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing refunds without filling zero
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing cogs_net without filling zero
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing platform_fees without filling zero
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing payment_fees without filling zero
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing fulfillment_costs without filling zero
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing other_variable_costs without filling zero
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables missing ad_spend without filling zero
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ tests/scenarios.test.ts:56:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/66]⎯
+
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables negative booked cogs_net without changing actual metrics
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables negative booked platform_fees without changing actual metrics
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables negative booked payment_fees without changing actual metrics
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables negative booked fulfillment_costs without changing actual metrics
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables negative booked other_variable_costs without changing actual metrics
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables negative booked ad_spend without changing actual metrics
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ tests/scenarios.test.ts:64:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/66]⎯
+
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables invalid G/N/d/r baseline {"gross_sales":"0.00","discounts":"0.00","refunds":"0.00"}
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables invalid G/N/d/r baseline {"gross_sales":"-1.00","discounts":"0.00","refunds":"0.00"}
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables invalid G/N/d/r baseline {"refunds":"900.00"}
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables invalid G/N/d/r baseline {"refunds":"901.00"}
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables invalid G/N/d/r baseline {"discounts":"1000.00"}
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables invalid G/N/d/r baseline {"discounts":"1001.00"}
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables invalid G/N/d/r baseline {"discounts":"-0.01"}
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > disables invalid G/N/d/r baseline {"refunds":"-0.01"}
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ tests/scenarios.test.ts:75:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/66]⎯
+
+ FAIL  tests/scenarios.test.ts > scenario-v1 baseline eligibility > pure-refund fixtures remain actual diagnostics, not a scenario baseline
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:81:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > S01 zero change returns exact DTC baseline
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > S01 zero change returns exact MARKETPLACE baseline
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:88:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > S02 matches immutable golden fulfillment anchors with and without one-time investment
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:97:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > S03 requires explicit volume even when the user reduces advertising
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:101:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > requires explicit volume_change_pct, not only volume
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > requires explicit discount_change_pp, not only volume
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > requires explicit fulfillment_change_pct, not only volume
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > requires explicit ad_change_pct, not only volume
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > requires explicit one_time_cost, not only volume
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:108:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > requires explicit acceptance of every fixed model assumption
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:111:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > S05 adds discount percentage points and recomputes all modeled costs independently
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:118:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rounds the independently checked marketplace anchor and exposes its -0.01 reconciliation
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:127:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > S06 recomputes each scenario from baseline and never stacks earlier improvements
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ tests/scenarios.test.ts:137:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > keeps zero advertising at zero and does not infer sales volume
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:147:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > retains huge monetary digits and cents under a zero-change scenario without global Decimal changes
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:155:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rounds a half-cent with a repeating refund ratio using HALF_UP
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:163:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > accepts at least six decimal places for all four percentage inputs
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:168:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > accepts inclusive product guardrail boundary {"volume_change_pct":"-90"}
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > accepts inclusive product guardrail boundary {"volume_change_pct":"100"}
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > accepts inclusive product guardrail boundary {"fulfillment_change_pct":"-100"}
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > accepts inclusive product guardrail boundary {"fulfillment_change_pct":"100"}
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > accepts inclusive product guardrail boundary {"ad_change_pct":"-100"}
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > accepts inclusive product guardrail boundary {"ad_change_pct":"200"}
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:174:73
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"volume_change_pct":"-90.000001"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"volume_change_pct":"100.000001"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"fulfillment_change_pct":"-100.000001"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"fulfillment_change_pct":"100.000001"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"ad_change_pct":"-100.000001"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"ad_change_pct":"200.000001"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"one_time_cost":"-0.01"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"one_time_cost":"0.001"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"one_time_cost":"NaN"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"volume_change_pct":"Infinity"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"volume_change_pct":"1e2"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"discount_change_pp":"10%"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"discount_change_pp":"-100"} without usable financial outputs
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > rejects invalid explicit input {"discount_change_pp":"100"} without usable financial outputs
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:183:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > permits zero discount rate but not exactly 100 percent
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:190:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/66]⎯
+
+ FAIL  tests/scenarios.test.ts > S01–S06 conditional scenario calculations > exports transparent assumptions and formulas without causal or forecast labels
+Error: M4 尚未實作
+ ❯ buildScenarioBaseline src/domain/scenarios.ts:12:113
+
+ ❯ result tests/scenarios.test.ts:28:28
+ ❯ tests/scenarios.test.ts:194:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/66]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  66 failed (66)
+   Start at  14:21:39
+   Duration  451ms (transform 63ms, setup 0ms, import 124ms, tests 103ms, environment 0ms)
+

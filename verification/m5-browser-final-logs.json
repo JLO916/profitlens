@@ -1,0 +1,2020 @@
+[
+  {
+    "source": "verification/m5-browser-meta.jsonl",
+    "last_per_case": [
+      {
+        "recorded_at": "2026-10-01T07:17:05.925Z",
+        "project": "desktop",
+        "test": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+        "mode": "real_local_disabled_endpoint_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:06.979Z",
+        "project": "desktop",
+        "test": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:07.664Z",
+        "project": "desktop",
+        "test": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:08.331Z",
+        "project": "desktop",
+        "test": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:09.095Z",
+        "project": "desktop",
+        "test": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:09.875Z",
+        "project": "desktop",
+        "test": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:11.739Z",
+        "project": "desktop",
+        "test": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:12.523Z",
+        "project": "desktop",
+        "test": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:13.226Z",
+        "project": "desktop",
+        "test": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:14.511Z",
+        "project": "desktop",
+        "test": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:15.667Z",
+        "project": "desktop",
+        "test": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:16.383Z",
+        "project": "desktop",
+        "test": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:17.426Z",
+        "project": "desktop",
+        "test": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:56.605Z",
+        "project": "tablet",
+        "test": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+        "mode": "real_local_disabled_endpoint_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:57.612Z",
+        "project": "tablet",
+        "test": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:58.270Z",
+        "project": "tablet",
+        "test": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:58.901Z",
+        "project": "tablet",
+        "test": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:59.532Z",
+        "project": "tablet",
+        "test": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:00.204Z",
+        "project": "tablet",
+        "test": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:02.008Z",
+        "project": "tablet",
+        "test": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:02.768Z",
+        "project": "tablet",
+        "test": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:03.470Z",
+        "project": "tablet",
+        "test": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:04.692Z",
+        "project": "tablet",
+        "test": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:05.781Z",
+        "project": "tablet",
+        "test": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:06.476Z",
+        "project": "tablet",
+        "test": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:07.495Z",
+        "project": "tablet",
+        "test": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:45.705Z",
+        "project": "mobile",
+        "test": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+        "mode": "real_local_disabled_endpoint_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:46.665Z",
+        "project": "mobile",
+        "test": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:47.280Z",
+        "project": "mobile",
+        "test": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:47.889Z",
+        "project": "mobile",
+        "test": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:48.535Z",
+        "project": "mobile",
+        "test": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:49.164Z",
+        "project": "mobile",
+        "test": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:50.982Z",
+        "project": "mobile",
+        "test": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:51.721Z",
+        "project": "mobile",
+        "test": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:52.371Z",
+        "project": "mobile",
+        "test": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:53.579Z",
+        "project": "mobile",
+        "test": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:54.660Z",
+        "project": "mobile",
+        "test": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:55.326Z",
+        "project": "mobile",
+        "test": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:56.360Z",
+        "project": "mobile",
+        "test": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+        "mode": "browser_mock_no_live_call",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          },
+          {
+            "kind": "insights-request",
+            "method": "POST",
+            "hasBody": true
+          },
+          {
+            "kind": "insights-request",
+            "method": "GET",
+            "hasBody": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "source": "verification/m5-regression-browser-meta.jsonl",
+    "last_per_case": [
+      {
+        "recorded_at": "2026-10-01T07:17:32.306Z",
+        "project": "desktop",
+        "test": "僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:33.444Z",
+        "project": "desktop",
+        "test": "三個方案各自從 270.00 重算為 270／284／264，不串接或相加",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:34.178Z",
+        "project": "desktop",
+        "test": "減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:35.122Z",
+        "project": "desktop",
+        "test": "輸入超界、負投入與過度精度不得默默修正為可用試算",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:35.854Z",
+        "project": "desktop",
+        "test": "百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:36.313Z",
+        "project": "desktop",
+        "test": "missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:36.774Z",
+        "project": "desktop",
+        "test": "missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:37.914Z",
+        "project": "desktop",
+        "test": "通路換回原值仍過期；重建清空全部假設與證據，保留人工名稱文字",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:38.988Z",
+        "project": "desktop",
+        "test": "資料集切換後即使回到相同 golden 與通路，舊方案仍過期",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:40.067Z",
+        "project": "desktop",
+        "test": "有效期間切換再回原期間仍過期，不自動沿用先前假設",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:41.480Z",
+        "project": "desktop",
+        "test": "三項人工行動可編輯、鍵盤排序、引用本期 fact 並返回焦點",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:42.095Z",
+        "project": "desktop",
+        "test": "未填完七欄或未選 fact 的行動只能保持草稿",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:43.026Z",
+        "project": "desktop",
+        "test": "三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:43.958Z",
+        "project": "desktop",
+        "test": "不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:45.050Z",
+        "project": "desktop",
+        "test": "試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:22.434Z",
+        "project": "tablet",
+        "test": "僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:23.493Z",
+        "project": "tablet",
+        "test": "三個方案各自從 270.00 重算為 270／284／264，不串接或相加",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:24.217Z",
+        "project": "tablet",
+        "test": "減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:25.174Z",
+        "project": "tablet",
+        "test": "輸入超界、負投入與過度精度不得默默修正為可用試算",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:25.857Z",
+        "project": "tablet",
+        "test": "百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:26.302Z",
+        "project": "tablet",
+        "test": "missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:26.737Z",
+        "project": "tablet",
+        "test": "missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:27.819Z",
+        "project": "tablet",
+        "test": "通路換回原值仍過期；重建清空全部假設與證據，保留人工名稱文字",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:28.912Z",
+        "project": "tablet",
+        "test": "資料集切換後即使回到相同 golden 與通路，舊方案仍過期",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:29.924Z",
+        "project": "tablet",
+        "test": "有效期間切換再回原期間仍過期，不自動沿用先前假設",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:31.230Z",
+        "project": "tablet",
+        "test": "三項人工行動可編輯、鍵盤排序、引用本期 fact 並返回焦點",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:31.798Z",
+        "project": "tablet",
+        "test": "未填完七欄或未選 fact 的行動只能保持草稿",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:32.655Z",
+        "project": "tablet",
+        "test": "三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:33.555Z",
+        "project": "tablet",
+        "test": "不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:34.641Z",
+        "project": "tablet",
+        "test": "試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:10.770Z",
+        "project": "mobile",
+        "test": "僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:11.735Z",
+        "project": "mobile",
+        "test": "三個方案各自從 270.00 重算為 270／284／264，不串接或相加",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:12.474Z",
+        "project": "mobile",
+        "test": "減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:13.370Z",
+        "project": "mobile",
+        "test": "輸入超界、負投入與過度精度不得默默修正為可用試算",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:14.050Z",
+        "project": "mobile",
+        "test": "百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:14.509Z",
+        "project": "mobile",
+        "test": "missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:14.936Z",
+        "project": "mobile",
+        "test": "missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:16.058Z",
+        "project": "mobile",
+        "test": "通路換回原值仍過期；重建清空全部假設與證據，保留人工名稱文字",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:17.081Z",
+        "project": "mobile",
+        "test": "資料集切換後即使回到相同 golden 與通路，舊方案仍過期",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:18.062Z",
+        "project": "mobile",
+        "test": "有效期間切換再回原期間仍過期，不自動沿用先前假設",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:19.320Z",
+        "project": "mobile",
+        "test": "三項人工行動可編輯、鍵盤排序、引用本期 fact 並返回焦點",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:19.910Z",
+        "project": "mobile",
+        "test": "未填完七欄或未選 fact 的行動只能保持草稿",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:20.812Z",
+        "project": "mobile",
+        "test": "三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:21.711Z",
+        "project": "mobile",
+        "test": "不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:22.774Z",
+        "project": "mobile",
+        "test": "試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用",
+        "status": "passed",
+        "events": []
+      }
+    ]
+  },
+  {
+    "source": "verification/m5-regression-import-regression-meta.jsonl",
+    "last_per_case": [
+      {
+        "recorded_at": "2026-10-01T07:17:18.823Z",
+        "project": "desktop",
+        "test": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:19.544Z",
+        "project": "desktop",
+        "test": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:20.397Z",
+        "project": "desktop",
+        "test": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:21.053Z",
+        "project": "desktop",
+        "test": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:21.970Z",
+        "project": "desktop",
+        "test": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:22.890Z",
+        "project": "desktop",
+        "test": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:23.555Z",
+        "project": "desktop",
+        "test": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:24.174Z",
+        "project": "desktop",
+        "test": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:25.039Z",
+        "project": "desktop",
+        "test": "malformed 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:25.902Z",
+        "project": "desktop",
+        "test": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:27.101Z",
+        "project": "desktop",
+        "test": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:28.151Z",
+        "project": "desktop",
+        "test": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:29.053Z",
+        "project": "desktop",
+        "test": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:29.858Z",
+        "project": "desktop",
+        "test": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:30.800Z",
+        "project": "desktop",
+        "test": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:31.619Z",
+        "project": "desktop",
+        "test": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:08.879Z",
+        "project": "tablet",
+        "test": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:09.623Z",
+        "project": "tablet",
+        "test": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:10.462Z",
+        "project": "tablet",
+        "test": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:11.107Z",
+        "project": "tablet",
+        "test": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:12.029Z",
+        "project": "tablet",
+        "test": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:12.937Z",
+        "project": "tablet",
+        "test": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:13.553Z",
+        "project": "tablet",
+        "test": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:14.183Z",
+        "project": "tablet",
+        "test": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:15.036Z",
+        "project": "tablet",
+        "test": "malformed 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:15.889Z",
+        "project": "tablet",
+        "test": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:17.199Z",
+        "project": "tablet",
+        "test": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:18.301Z",
+        "project": "tablet",
+        "test": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:19.197Z",
+        "project": "tablet",
+        "test": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:19.983Z",
+        "project": "tablet",
+        "test": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:20.884Z",
+        "project": "tablet",
+        "test": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:21.769Z",
+        "project": "tablet",
+        "test": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:57.663Z",
+        "project": "mobile",
+        "test": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:58.383Z",
+        "project": "mobile",
+        "test": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:59.237Z",
+        "project": "mobile",
+        "test": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:59.865Z",
+        "project": "mobile",
+        "test": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:00.749Z",
+        "project": "mobile",
+        "test": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:01.676Z",
+        "project": "mobile",
+        "test": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:02.317Z",
+        "project": "mobile",
+        "test": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:02.927Z",
+        "project": "mobile",
+        "test": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:03.741Z",
+        "project": "mobile",
+        "test": "malformed 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:04.563Z",
+        "project": "mobile",
+        "test": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:05.754Z",
+        "project": "mobile",
+        "test": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:06.730Z",
+        "project": "mobile",
+        "test": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:07.577Z",
+        "project": "mobile",
+        "test": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:08.392Z",
+        "project": "mobile",
+        "test": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:09.320Z",
+        "project": "mobile",
+        "test": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:10.111Z",
+        "project": "mobile",
+        "test": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+        "status": "passed",
+        "events": []
+      }
+    ]
+  },
+  {
+    "source": "verification/m5-regression-workspace-regression-browser-logs.jsonl",
+    "last_per_case": [
+      {
+        "recorded_at": "2026-10-01T07:17:46.086Z",
+        "project": "desktop",
+        "test": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:47.108Z",
+        "project": "desktop",
+        "test": "切換 golden 與 demo 會重算同一組 KPI",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:48.070Z",
+        "project": "desktop",
+        "test": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:48.602Z",
+        "project": "desktop",
+        "test": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:49.377Z",
+        "project": "desktop",
+        "test": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:50.082Z",
+        "project": "desktop",
+        "test": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:50.678Z",
+        "project": "desktop",
+        "test": "無效期間不覆寫已套用的分析範圍",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:51.644Z",
+        "project": "desktop",
+        "test": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:52.263Z",
+        "project": "desktop",
+        "test": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:52.697Z",
+        "project": "desktop",
+        "test": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:53.136Z",
+        "project": "desktop",
+        "test": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:53.719Z",
+        "project": "desktop",
+        "test": "blocking 資料集載入失敗仍保留先前成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:54.040Z",
+        "project": "desktop",
+        "test": "載入中與 HTTP 故障均有明確狀態",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "console:error",
+            "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+            "url": "http://127.0.0.1:3100/api/datasets/demo"
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:54.538Z",
+        "project": "desktop",
+        "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "requestfailed",
+            "message": "net::ERR_ABORTED",
+            "url": "http://127.0.0.1:3100/api/datasets/demo"
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:17:55.293Z",
+        "project": "desktop",
+        "test": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:35.640Z",
+        "project": "tablet",
+        "test": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:36.589Z",
+        "project": "tablet",
+        "test": "切換 golden 與 demo 會重算同一組 KPI",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:37.418Z",
+        "project": "tablet",
+        "test": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:37.936Z",
+        "project": "tablet",
+        "test": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:38.545Z",
+        "project": "tablet",
+        "test": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:39.135Z",
+        "project": "tablet",
+        "test": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:39.698Z",
+        "project": "tablet",
+        "test": "無效期間不覆寫已套用的分析範圍",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:40.695Z",
+        "project": "tablet",
+        "test": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:41.255Z",
+        "project": "tablet",
+        "test": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:41.709Z",
+        "project": "tablet",
+        "test": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:42.147Z",
+        "project": "tablet",
+        "test": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:42.749Z",
+        "project": "tablet",
+        "test": "blocking 資料集載入失敗仍保留先前成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:43.074Z",
+        "project": "tablet",
+        "test": "載入中與 HTTP 故障均有明確狀態",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "console:error",
+            "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+            "url": "http://127.0.0.1:3100/api/datasets/demo"
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:43.545Z",
+        "project": "tablet",
+        "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "requestfailed",
+            "message": "net::ERR_ABORTED",
+            "url": "http://127.0.0.1:3100/api/datasets/demo"
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:18:44.370Z",
+        "project": "tablet",
+        "test": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:23.769Z",
+        "project": "mobile",
+        "test": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:24.750Z",
+        "project": "mobile",
+        "test": "切換 golden 與 demo 會重算同一組 KPI",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:25.575Z",
+        "project": "mobile",
+        "test": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:26.028Z",
+        "project": "mobile",
+        "test": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:26.598Z",
+        "project": "mobile",
+        "test": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:27.156Z",
+        "project": "mobile",
+        "test": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:27.693Z",
+        "project": "mobile",
+        "test": "無效期間不覆寫已套用的分析範圍",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:28.611Z",
+        "project": "mobile",
+        "test": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:29.126Z",
+        "project": "mobile",
+        "test": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:29.570Z",
+        "project": "mobile",
+        "test": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:30.008Z",
+        "project": "mobile",
+        "test": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:30.607Z",
+        "project": "mobile",
+        "test": "blocking 資料集載入失敗仍保留先前成功資料",
+        "status": "passed",
+        "events": []
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:30.905Z",
+        "project": "mobile",
+        "test": "載入中與 HTTP 故障均有明確狀態",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "console:error",
+            "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+            "url": "http://127.0.0.1:3100/api/datasets/demo"
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:31.325Z",
+        "project": "mobile",
+        "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+        "status": "passed",
+        "events": [
+          {
+            "kind": "requestfailed",
+            "message": "net::ERR_ABORTED",
+            "url": "http://127.0.0.1:3100/api/datasets/demo"
+          }
+        ]
+      },
+      {
+        "recorded_at": "2026-10-01T07:19:32.098Z",
+        "project": "mobile",
+        "test": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+        "status": "passed",
+        "events": []
+      }
+    ]
+  }
+]

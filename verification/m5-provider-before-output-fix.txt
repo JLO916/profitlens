@@ -1,0 +1,73 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-provider.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-provider.test.ts (8 tests | 2 failed) 17ms
+     × uses Responses strict JSON Schema, env model, bounded output, no tools and no storage 11ms
+     × returns malformed JSON as invalid raw data for bounded schema retry 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > uses Responses strict JSON Schema, env model, bounded output, no tools and no storage
+AssertionError: expected { status: 'completed', …(2) } to deeply equal { status: 'completed', …(2) }
+
+- Expected
++ Received
+
+@@ -1,9 +1,7 @@
+  {
+-   "output": {
+-     "snapshot_id": "mock",
+-   },
++   "output": null,
+    "status": "completed",
+    "usage": {
+      "input_tokens": 20,
+      "output_tokens": 40,
+      "total_tokens": 60,
+
+ ❯ tests/ai-provider.test.ts:17:20
+     15|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     16|     const result = await createOpenAiProvider(config, transport).gener…
+     17|     expect(result).toEqual({ status: "completed", output: { snapshot_i…
+       |                    ^
+     18|     expect(transport).toHaveBeenCalledTimes(1);
+     19|     const [url, init] = transport.mock.calls[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > returns malformed JSON as invalid raw data for bounded schema retry
+AssertionError: expected { status: 'completed', …(2) } to deeply equal { status: 'completed', …(2) }
+
+- Expected
++ Received
+
+@@ -1,7 +1,7 @@
+  {
+-   "output": "{bad",
++   "output": null,
+    "status": "completed",
+    "usage": {
+      "input_tokens": 20,
+      "output_tokens": 40,
+      "total_tokens": 60,
+
+ ❯ tests/ai-provider.test.ts:49:89
+     47|   it("returns malformed JSON as invalid raw data for bounded schema re…
+     48|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     49|     expect(await createOpenAiProvider(config, transport).generate(snap…
+       |                                                                                         ^
+     50|   });
+     51|   it("429 is sanitized and SDK retries are disabled", async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  14:55:37
+   Duration  523ms (transform 33ms, setup 0ms, import 134ms, tests 17ms, environment 0ms)
+

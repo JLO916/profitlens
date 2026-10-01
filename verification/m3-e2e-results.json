@@ -1,0 +1,3737 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/25.8.2/bin/node",
+      "/Users/j-work/Desktop/profitlens-codex-starter/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "/Users/j-work/Desktop/profitlens-codex-starter/playwright.config.ts",
+    "rootDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "verification/m3-e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+      "url": "http://127.0.0.1:3100",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "import.spec.ts",
+      "file": "import.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1810,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:43.684Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjQ1Ljc2OFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuecn+ato+mBuOWPluWFqeWll+acrOapn+aqlOahiOacg+abtOaWsCBLUEnjgIHlnJbooajooajmoLzjgIHllYblk4HoiIfoqLrmlrciLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-9fd7a38bb38bd74d38b0",
+          "file": "import.spec.ts",
+          "line": 120,
+          "column": 1
+        },
+        {
+          "title": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 767,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:45.823Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjQ2LjU0M1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuS4jeiugCBKU09OIOS5n+iDveaJi+WhqyBtYW5pZmVzdO+8jOmHkemhjeWPo+W+kemgiOaYjueiuueiuuiqjSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-0dabebc2a468b4a0e47d",
+          "file": "import.spec.ts",
+          "line": 152,
+          "column": 1
+        },
+        {
+          "title": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 913,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:46.597Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjQ3LjQ3MVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIui2hemVt+S9huagvOW8j+WQiOazleeahOacn+mWk+aYjueiuuaLkue1le+8jOS4jeaIquaWt+aIluWPluS7o+WFiOWJjeizh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-f6fae1918e061f14f7ee",
+          "file": "import.spec.ts",
+          "line": 172,
+          "column": 1
+        },
+        {
+          "title": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 690,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:47.516Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjQ4LjE3N1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIkpTT04g5pyq56K66KqN6Yq35ZSu5ra16JOL56+E5ZyN5Y+v5Zyo6KGo5Zau56K66KqN5b6M6YeN5paw5qqi5qC45oiQ5YqfIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-026bd74381a5f084973e",
+          "file": "import.spec.ts",
+          "line": 192,
+          "column": 1
+        },
+        {
+          "title": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1034,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:48.210Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjQ5LjE5NFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogImR1cGxpY2F0ZV9zYWxlc19rZXkg5pW05Lu96Zi75pOL5LiU5ZWP6aGM5riF5Zau6L+95rqv5Y6f5qqU77yM6IiK6LOH5paZ5LiN6K6KIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-46a50a4e23886fa1954a",
+          "file": "import.spec.ts",
+          "line": 215,
+          "column": 3
+        },
+        {
+          "title": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 946,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:49.250Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjUwLjE1NVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1peGVkX2N1cnJlbmN5IOaVtOS7vemYu+aTi+S4lOWVj+mhjOa4heWWrui/vea6r+WOn+aqlO+8jOiIiuizh+aWmeS4jeiuiiIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-5026aed860e4e6292709",
+          "file": "import.spec.ts",
+          "line": 215,
+          "column": 3
+        },
+        {
+          "title": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 699,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:50.201Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjUwLjg2M1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1pc3NpbmdfY29ncyDmnKzmqZ/ljK/lhaXkv53nlZnmlLblhaXjgIHmnKrnn6XosqLnjbvoiIfmnKrlj5flvbHpn7/pgJrot68iLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-72666dfdd970f37bdf54",
+          "file": "import.spec.ts",
+          "line": 240,
+          "column": 3
+        },
+        {
+          "title": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 763,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:50.905Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjUxLjYyMVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1pc3NpbmdfYWRfZGF5IOacrOapn+WMr+WFpeS/neeVmeaUtuWFpeOAgeacquefpeiyoueNu+iIh+acquWPl+W9semfv+mAmui3ryIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-52ac5cd7f55c4cecfec8",
+          "file": "import.spec.ts",
+          "line": 240,
+          "column": 3
+        },
+        {
+          "title": "malformed 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 880,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:51.674Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjUyLjUxNFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1hbGZvcm1lZCDlj4vlloTmi5LntZXjgIHkuI3miKrmlrfkuJTkuI3noLTlo57miJDlip/os4fmlpkiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-3fdf813ab00322d5930a",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 878,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:52.559Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjUzLjM5NloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogImludmFsaWQtdXRmOCDlj4vlloTmi5LntZXjgIHkuI3miKrmlrfkuJTkuI3noLTlo57miJDlip/os4fmlpkiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-9799d68c6b1532abf035",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1259,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:53.442Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjU0LjY1MFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogInRvby1tYW55LWJ5dGVzIOWPi+WWhOaLkue1leOAgeS4jeaIquaWt+S4lOS4jeegtOWjnuaIkOWKn+izh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-ac5744b58df506469a59",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1066,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:54.706Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjU1LjcyMloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogInRvby1tYW55LXJvd3Mg5Y+L5ZaE5ouS57WV44CB5LiN5oiq5pa35LiU5LiN56C05aOe5oiQ5Yqf6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-29f8023fed2bb039f197",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 915,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:55.778Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjU2LjY0NVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuaUueWQjeashOS9jeiIh+acquefpeashOmgiOWIhuWIpeeiuuiqje+8jOS4jeiDveeMnOa4rOaIluaKiuW/veeVpeWFp+WuueaUvuWFpeWIhuaekCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-d68d0328f8dbc29a4c43",
+          "file": "import.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 824,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:56.699Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjU3LjQ4NFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuaqlOahiOeVmeWcqOacrOmggeiomOaGtumrlO+8jOWMr+WFpeacn+mWk+mbtue2sui3r+OAgembtuaMgeS5heWMluOAgeaWh+Wtl+S4jeWft+ihjCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-3b3ada826213e68296b0",
+          "file": "import.spec.ts",
+          "line": 301,
+          "column": 1
+        },
+        {
+          "title": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 983,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:57.527Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjU4LjQ3NFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuS4i+i8ieWFseeUqOacn+mWk+mAmui3r+iIh+WVhuWTgeevqemBuO+8jOWFrOW8j+aWh+Wtl+WuieWFqOiAjOiyoOaVuOmHkemhjeS7jeaYr+aVuOWtlyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-a5ddb9c9ce7ec01f74ed",
+          "file": "import.spec.ts",
+          "line": 331,
+          "column": 1
+        },
+        {
+          "title": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1649,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:08.796Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjEwLjUwM1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi55yf5q2j6YG45Y+W5YWp5aWX5pys5qmf5qqU5qGI5pyD5pu05pawIEtQSeOAgeWcluihqOihqOagvOOAgeWVhuWTgeiIh+iouuaWtyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b85b99112a9d7578e452",
+          "file": "import.spec.ts",
+          "line": 120,
+          "column": 1
+        },
+        {
+          "title": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 767,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:10.544Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjExLjI4NVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi5LiN6K6AIEpTT04g5Lmf6IO95omL5aGrIG1hbmlmZXN077yM6YeR6aGN5Y+j5b6R6aCI5piO56K656K66KqNIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-7507ddf1cb7e806b0412",
+          "file": "import.spec.ts",
+          "line": 152,
+          "column": 1
+        },
+        {
+          "title": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 895,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:11.318Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjEyLjE4NVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi6LaF6ZW35L2G5qC85byP5ZCI5rOV55qE5pyf6ZaT5piO56K65ouS57WV77yM5LiN5oiq5pa35oiW5Y+W5Luj5YWI5YmN6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-27ca23e3e911a2e5a1ba",
+          "file": "import.spec.ts",
+          "line": 172,
+          "column": 1
+        },
+        {
+          "title": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 660,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:12.218Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjEyLjg1OVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAiSlNPTiDmnKrnorroqo3pirfllK7mtrXok4vnr4TlnI3lj6/lnKjooajllq7norroqo3lvozph43mlrDmqqLmoLjmiJDlip8iLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-d508f14fade9c2be3687",
+          "file": "import.spec.ts",
+          "line": 192,
+          "column": 1
+        },
+        {
+          "title": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1011,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:12.883Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjEzLjg2MloiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAiZHVwbGljYXRlX3NhbGVzX2tleSDmlbTku73pmLvmk4vkuJTllY/poYzmuIXllq7ov73muq/ljp/mqpTvvIzoiIros4fmlpnkuI3orooiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-cbb113de9d6536517f6b",
+          "file": "import.spec.ts",
+          "line": 215,
+          "column": 3
+        },
+        {
+          "title": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 903,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:13.900Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjE0Ljc3MVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAibWl4ZWRfY3VycmVuY3kg5pW05Lu96Zi75pOL5LiU5ZWP6aGM5riF5Zau6L+95rqv5Y6f5qqU77yM6IiK6LOH5paZ5LiN6K6KIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-0b38884f7a1735626418",
+          "file": "import.spec.ts",
+          "line": 215,
+          "column": 3
+        },
+        {
+          "title": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 655,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:14.807Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjE1LjQyN1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAibWlzc2luZ19jb2dzIOacrOapn+WMr+WFpeS/neeVmeaUtuWFpeOAgeacquefpeiyoueNu+iIh+acquWPl+W9semfv+mAmui3ryIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b7ed1875d6b171e4d92d",
+          "file": "import.spec.ts",
+          "line": 240,
+          "column": 3
+        },
+        {
+          "title": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 666,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:15.468Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjE2LjEwN1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAibWlzc2luZ19hZF9kYXkg5pys5qmf5Yyv5YWl5L+d55WZ5pS25YWl44CB5pyq55+l6LKi54276IiH5pyq5Y+X5b2x6Z+/6YCa6LevIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-f16549a71d6db09102cf",
+          "file": "import.spec.ts",
+          "line": 240,
+          "column": 3
+        },
+        {
+          "title": "malformed 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 879,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:16.139Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjE2Ljk4N1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAibWFsZm9ybWVkIOWPi+WWhOaLkue1leOAgeS4jeaIquaWt+S4lOS4jeegtOWjnuaIkOWKn+izh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-ef8e4e49811566548824",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 859,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:17.023Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjE3Ljg1MVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAiaW52YWxpZC11dGY4IOWPi+WWhOaLkue1leOAgeS4jeaIquaWt+S4lOS4jeegtOWjnuaIkOWKn+izh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-581f229a6ab9244eb6f2",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1466,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:17.887Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjE5LjMxMFoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAidG9vLW1hbnktYnl0ZXMg5Y+L5ZaE5ouS57WV44CB5LiN5oiq5pa35LiU5LiN56C05aOe5oiQ5Yqf6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-deda05adfb5264d36cc4",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1020,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:19.358Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjIwLjMzM1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAidG9vLW1hbnktcm93cyDlj4vlloTmi5LntZXjgIHkuI3miKrmlrfkuJTkuI3noLTlo57miJDlip/os4fmlpkiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-06875b2261e4cf332e44",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1036,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:20.383Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjIxLjM3OVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi5pS55ZCN5qyE5L2N6IiH5pyq55+l5qyE6aCI5YiG5Yil56K66KqN77yM5LiN6IO954yc5ris5oiW5oqK5b+955Wl5YWn5a655pS+5YWl5YiG5p6QIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-36d5981c63a9bd838f80",
+          "file": "import.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 876,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:21.424Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjIyLjI2OVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi5qqU5qGI55WZ5Zyo5pys6aCB6KiY5oa26auU77yM5Yyv5YWl5pyf6ZaT6Zu257ay6Lev44CB6Zu25oyB5LmF5YyW44CB5paH5a2X5LiN5Z+36KGMIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-c07d50f532161727fa54",
+          "file": "import.spec.ts",
+          "line": 301,
+          "column": 1
+        },
+        {
+          "title": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 955,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:22.306Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjIzLjIzM1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi5LiL6LyJ5YWx55So5pyf6ZaT6YCa6Lev6IiH5ZWG5ZOB56+p6YG477yM5YWs5byP5paH5a2X5a6J5YWo6ICM6LKg5pW46YeR6aGN5LuN5piv5pW45a2XIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-0637a2d85101e6a0fded",
+          "file": "import.spec.ts",
+          "line": 331,
+          "column": 1
+        },
+        {
+          "title": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1459,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:33.197Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjM0Ljc1MFoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi55yf5q2j6YG45Y+W5YWp5aWX5pys5qmf5qqU5qGI5pyD5pu05pawIEtQSeOAgeWcluihqOihqOagvOOAgeWVhuWTgeiIh+iouuaWtyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-44628105ccbcf6afe3a0",
+          "file": "import.spec.ts",
+          "line": 120,
+          "column": 1
+        },
+        {
+          "title": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 706,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:34.783Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjM1LjQ3MloiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi5LiN6K6AIEpTT04g5Lmf6IO95omL5aGrIG1hbmlmZXN077yM6YeR6aGN5Y+j5b6R6aCI5piO56K656K66KqNIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-70cd227a5dd1bab60158",
+          "file": "import.spec.ts",
+          "line": 152,
+          "column": 1
+        },
+        {
+          "title": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 907,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:35.495Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjM2LjM4MloiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi6LaF6ZW35L2G5qC85byP5ZCI5rOV55qE5pyf6ZaT5piO56K65ouS57WV77yM5LiN5oiq5pa35oiW5Y+W5Luj5YWI5YmN6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-503a27d10516b4eb426b",
+          "file": "import.spec.ts",
+          "line": 172,
+          "column": 1
+        },
+        {
+          "title": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 647,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:36.408Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjM3LjAzN1oiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAiSlNPTiDmnKrnorroqo3pirfllK7mtrXok4vnr4TlnI3lj6/lnKjooajllq7norroqo3lvozph43mlrDmqqLmoLjmiJDlip8iLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-6fe9f8e29125d4211cae",
+          "file": "import.spec.ts",
+          "line": 192,
+          "column": 1
+        },
+        {
+          "title": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 975,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:37.060Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjM4LjAxM1oiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAiZHVwbGljYXRlX3NhbGVzX2tleSDmlbTku73pmLvmk4vkuJTllY/poYzmuIXllq7ov73muq/ljp/mqpTvvIzoiIros4fmlpnkuI3orooiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b36cb240c645bf4cc98b",
+          "file": "import.spec.ts",
+          "line": 215,
+          "column": 3
+        },
+        {
+          "title": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 996,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:38.040Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjM5LjAxNVoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAibWl4ZWRfY3VycmVuY3kg5pW05Lu96Zi75pOL5LiU5ZWP6aGM5riF5Zau6L+95rqv5Y6f5qqU77yM6IiK6LOH5paZ5LiN6K6KIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-bea9e63676067f8b67e6",
+          "file": "import.spec.ts",
+          "line": 215,
+          "column": 3
+        },
+        {
+          "title": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 644,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:39.041Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjM5LjY2MloiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAibWlzc2luZ19jb2dzIOacrOapn+WMr+WFpeS/neeVmeaUtuWFpeOAgeacquefpeiyoueNu+iIh+acquWPl+W9semfv+mAmui3ryIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-dce601cdbffc467b3435",
+          "file": "import.spec.ts",
+          "line": 240,
+          "column": 3
+        },
+        {
+          "title": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 693,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:39.691Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQwLjM1M1oiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAibWlzc2luZ19hZF9kYXkg5pys5qmf5Yyv5YWl5L+d55WZ5pS25YWl44CB5pyq55+l6LKi54276IiH5pyq5Y+X5b2x6Z+/6YCa6LevIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-4ff2f873d0552b6ed3ad",
+          "file": "import.spec.ts",
+          "line": 240,
+          "column": 3
+        },
+        {
+          "title": "malformed 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 876,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:40.389Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQxLjI0OFoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAibWFsZm9ybWVkIOWPi+WWhOaLkue1leOAgeS4jeaIquaWt+S4lOS4jeegtOWjnuaIkOWKn+izh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-ce63b1db0055eec847dd",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 826,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:41.271Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQyLjA3N1oiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAiaW52YWxpZC11dGY4IOWPi+WWhOaLkue1leOAgeS4jeaIquaWt+S4lOS4jeegtOWjnuaIkOWKn+izh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b130a7deb7d8cc399f09",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1250,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:42.102Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQzLjMxNVoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAidG9vLW1hbnktYnl0ZXMg5Y+L5ZaE5ouS57WV44CB5LiN5oiq5pa35LiU5LiN56C05aOe5oiQ5Yqf6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-961b8a85c7a741177ef8",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 995,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:43.356Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQ0LjMxNVoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAidG9vLW1hbnktcm93cyDlj4vlloTmi5LntZXjgIHkuI3miKrmlrfkuJTkuI3noLTlo57miJDlip/os4fmlpkiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-320da15f292f0f14cb8c",
+          "file": "import.spec.ts",
+          "line": 259,
+          "column": 3
+        },
+        {
+          "title": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 907,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:44.356Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQ1LjIzNVoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi5pS55ZCN5qyE5L2N6IiH5pyq55+l5qyE6aCI5YiG5Yil56K66KqN77yM5LiN6IO954yc5ris5oiW5oqK5b+955Wl5YWn5a655pS+5YWl5YiG5p6QIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-01e2baa18901ef37368e",
+          "file": "import.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 788,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:45.268Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQ2LjAzMloiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi5qqU5qGI55WZ5Zyo5pys6aCB6KiY5oa26auU77yM5Yyv5YWl5pyf6ZaT6Zu257ay6Lev44CB6Zu25oyB5LmF5YyW44CB5paH5a2X5LiN5Z+36KGMIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-aac5d43228024880b510",
+          "file": "import.spec.ts",
+          "line": 301,
+          "column": 1
+        },
+        {
+          "title": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 874,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:46.061Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQ2LjkxMVoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi5LiL6LyJ5YWx55So5pyf6ZaT6YCa6Lev6IiH5ZWG5ZOB56+p6YG477yM5YWs5byP5paH5a2X5a6J5YWo6ICM6LKg5pW46YeR6aGN5LuN5piv5pW45a2XIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-d8d4d26d6618453bbf41",
+          "file": "import.spec.ts",
+          "line": 331,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "workspace.spec.ts",
+      "file": "workspace.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 978,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:58.526Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA1OjU5LjQ0NFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuekuuevhOizh+aWmeeUseepuueLgOaFi+mAsuWFpeWPr+mWseiugOe4veimve+8jOWcluihqOacieihqOagvOabv+S7oyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-712b911dca42b248dff9",
+          "file": "workspace.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "切換 golden 與 demo 會重算同一組 KPI",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 829,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:05:59.509Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjAwLjMwM1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuWIh+aPmyBnb2xkZW4g6IiHIGRlbW8g5pyD6YeN566X5ZCM5LiA57WEIEtQSSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0ecc4e070ddc26396934",
+          "file": "workspace.spec.ts",
+          "line": 104,
+          "column": 1
+        },
+        {
+          "title": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 847,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:00.344Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjAxLjE0M1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIumAmui3r+evqemBuOWFseeUqO+8jOmHkemhjeitieaTmuWPr+eUqOmNteebpOmWi+WVn+iIh+i/lOWbniIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-354f76369c5570afd5ec",
+          "file": "workspace.spec.ts",
+          "line": 116,
+          "column": 1
+        },
+        {
+          "title": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 611,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:01.196Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjAxLjY0NloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuiyoueNu+eOh+W3rumhjeeahOitieaTmuS/neeVmeeZvuWIhum7nuWWruS9je+8jOS4jeWGjeS5mOS7pSAxMDAiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-59944e2a7ae042f5dbab",
+          "file": "workspace.spec.ts",
+          "line": 148,
+          "column": 1
+        },
+        {
+          "title": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 666,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:01.812Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjAyLjM0MloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuiouuaWt+aOkuW6j+mHkemhjeS9v+eUqOWFqeacn+W3suingOWvn+W3rumhje+8jOitieaTmuaWueWQkeiIh+S+hua6kOS4gOiHtCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-01d213ea00008617094d",
+          "file": "workspace.spec.ts",
+          "line": 162,
+          "column": 1
+        },
+        {
+          "title": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 608,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:02.484Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjAzLjA0N1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuWVhuWTgeevqemBuOWPquW9semfv+avm+WIqeaYjue0sO+8jOS4jeW4tuWFpemAmui3r+W7o+WRiuiIh+iyoueNuyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-923dae3c4c938852fb7f",
+          "file": "workspace.spec.ts",
+          "line": 187,
+          "column": 1
+        },
+        {
+          "title": "無效期間不覆寫已套用的分析範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 597,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:03.097Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjAzLjYzMFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIueEoeaViOacn+mWk+S4jeimhuWvq+W3suWll+eUqOeahOWIhuaekOevhOWcjSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-f5231124a3d941d47bb9",
+          "file": "workspace.spec.ts",
+          "line": 206,
+          "column": 1
+        },
+        {
+          "title": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 946,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:03.700Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjA0LjQ5OFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuacieaViOiHquioguacn+mWk+acg+WQjOatpeabtOaWsCBLUEnjgIHpgLHos4fmlpnlj4rkvobmupDmnJ/plpMiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-4e867d9b158bb1a3a111",
+          "file": "workspace.spec.ts",
+          "line": 217,
+          "column": 1
+        },
+        {
+          "title": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 541,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:04.652Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjA1LjEyOFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuizh+aWmeW3peS9nOWNgOWxleekuuS4ieS7veWOn+Wni+aqlOahiOOAgeihjOiZn+OAgeWPo+W+keiIh+acque4rua4m+mgkOimvSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-4f37c68ee5118f87242d",
+          "file": "workspace.spec.ts",
+          "line": 242,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 476,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:05.200Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjA1LjYxNFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1pc3NpbmctY29ncyDpoa/npLrlvoXoo5zos4fmlpnvvIzkv53nlZnmlLblhaXoiIfmnKrlj5flvbHpn7/pgJrot68iLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-485b0aa2857d6c5e0a4a",
+          "file": "workspace.spec.ts",
+          "line": 265,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 483,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:05.682Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjA2LjEwNVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1pc3NpbmctYWQg6aGv56S65b6F6KOc6LOH5paZ77yM5L+d55WZ5pS25YWl6IiH5pyq5Y+X5b2x6Z+/6YCa6LevIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5a9fe7263c7abe5ed9e2",
+          "file": "workspace.spec.ts",
+          "line": 265,
+          "column": 3
+        },
+        {
+          "title": "blocking 資料集載入失敗仍保留先前成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 610,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:06.171Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjA2LjczMloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogImJsb2NraW5nIOizh+aWmembhui8ieWFpeWkseaVl+S7jeS/neeVmeWFiOWJjeaIkOWKn+izh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5f9988a3c71d0190a1d4",
+          "file": "workspace.spec.ts",
+          "line": 276,
+          "column": 1
+        },
+        {
+          "title": "載入中與 HTTP 故障均有明確狀態",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 299,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:06.786Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjA3LjA0NVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIui8ieWFpeS4reiIhyBIVFRQIOaVhemanOWdh+acieaYjueiuueLgOaFiyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6ZXJyb3IiLAogICAgICAibWVzc2FnZSI6ICJGYWlsZWQgdG8gbG9hZCByZXNvdXJjZTogdGhlIHNlcnZlciByZXNwb25kZWQgd2l0aCBhIHN0YXR1cyBvZiA1MDMgKFNlcnZpY2UgVW5hdmFpbGFibGUpIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMxMDAvYXBpL2RhdGFzZXRzL2RlbW8iCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0c6a16e683f08a626fb4",
+          "file": "workspace.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 499,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:07.090Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjA3LjUzOFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIui8g+aFoueahOiIiuizh+aWmeiri+axguS4jeWPr+imhuWvq+i8g+aWsOeahCBnb2xkZW4g6YG45pOHIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAicmVxdWVzdGZhaWxlZCIsCiAgICAgICJtZXNzYWdlIjogIm5ldDo6RVJSX0FCT1JURUQiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzEwMC9hcGkvZGF0YXNldHMvZGVtbyIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-508dfe907c4ffbc78c7a",
+          "file": "workspace.spec.ts",
+          "line": 304,
+          "column": 1
+        },
+        {
+          "title": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 812,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:07.594Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjA4LjM3MloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIua4heepuuiIh+mHjeaWsOaVtOeQhuWbnuWIsOepuueLgOaFi++8jOWPpuS4gOWAi+mggemdouaykuacieWFseeUqOizh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-e310732f2ef831aa238c",
+          "file": "workspace.spec.ts",
+          "line": 342,
+          "column": 1
+        },
+        {
+          "title": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 899,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:23.276Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI0LjE1NFoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi56S656+E6LOH5paZ55Sx56m654uA5oWL6YCy5YWl5Y+v6Zax6K6A57i96Ka977yM5ZyW6KGo5pyJ6KGo5qC85pu/5LujIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-33627f5ec042c60dbb43",
+          "file": "workspace.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "切換 golden 與 demo 會重算同一組 KPI",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 904,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:24.181Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI1LjA1OFoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi5YiH5o+bIGdvbGRlbiDoiIcgZGVtbyDmnIPph43nrpflkIzkuIDntYQgS1BJIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0656828d9a1d2ddc1206",
+          "file": "workspace.spec.ts",
+          "line": 104,
+          "column": 1
+        },
+        {
+          "title": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 790,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:25.091Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI1Ljg2MVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi6YCa6Lev56+p6YG45YWx55So77yM6YeR6aGN6K2J5pOa5Y+v55So6Y2155uk6ZaL5ZWf6IiH6L+U5ZueIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-91fabe931b29ebadce33",
+          "file": "workspace.spec.ts",
+          "line": 116,
+          "column": 1
+        },
+        {
+          "title": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 513,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:25.887Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI2LjMxNVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi6LKi5427546H5beu6aGN55qE6K2J5pOa5L+d55WZ55m+5YiG6bue5Zau5L2N77yM5LiN5YaN5LmY5LulIDEwMCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-9537e8e70ac1cfca4329",
+          "file": "workspace.spec.ts",
+          "line": 148,
+          "column": 1
+        },
+        {
+          "title": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 577,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:26.405Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI2LjkxNloiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi6Ki65pa35o6S5bqP6YeR6aGN5L2/55So5YWp5pyf5bey6KeA5a+f5beu6aGN77yM6K2J5pOa5pa55ZCR6IiH5L6G5rqQ5LiA6Ie0IiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-b8e7234e22f5a2a62be1",
+          "file": "workspace.spec.ts",
+          "line": 162,
+          "column": 1
+        },
+        {
+          "title": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 611,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:26.988Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI3LjU2NloiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi5ZWG5ZOB56+p6YG45Y+q5b2x6Z+/5q+b5Yip5piO57Sw77yM5LiN5bi25YWl6YCa6Lev5buj5ZGK6IiH6LKi5427IiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-362b4eb4818fd7e9c2e7",
+          "file": "workspace.spec.ts",
+          "line": 187,
+          "column": 1
+        },
+        {
+          "title": "無效期間不覆寫已套用的分析範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 598,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:27.604Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI4LjE2MVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi54Sh5pWI5pyf6ZaT5LiN6KaG5a+r5bey5aWX55So55qE5YiG5p6Q56+E5ZyNIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-294f346e000a97f7c551",
+          "file": "workspace.spec.ts",
+          "line": 206,
+          "column": 1
+        },
+        {
+          "title": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 866,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:28.208Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI5LjAwM1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi5pyJ5pWI6Ieq6KiC5pyf6ZaT5pyD5ZCM5q2l5pu05pawIEtQSeOAgemAseizh+aWmeWPiuS+hua6kOacn+mWkyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-7844a1e52e0374d66c89",
+          "file": "workspace.spec.ts",
+          "line": 217,
+          "column": 1
+        },
+        {
+          "title": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 523,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:29.079Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjI5LjU0NVoiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi6LOH5paZ5bel5L2c5Y2A5bGV56S65LiJ5Lu95Y6f5aeL5qqU5qGI44CB6KGM6Jmf44CB5Y+j5b6R6IiH5pyq57iu5rib6aCQ6Ka9IiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-6fa0f08e8c50628d7446",
+          "file": "workspace.spec.ts",
+          "line": 242,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 455,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:29.608Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjMwLjAxN1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAibWlzc2luZy1jb2dzIOmhr+ekuuW+heijnOizh+aWme+8jOS/neeVmeaUtuWFpeiIh+acquWPl+W9semfv+mAmui3ryIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-9e3d25c7b96a70754044",
+          "file": "workspace.spec.ts",
+          "line": 265,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 451,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:30.070Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjMwLjQ3M1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAibWlzc2luZy1hZCDpoa/npLrlvoXoo5zos4fmlpnvvIzkv53nlZnmlLblhaXoiIfmnKrlj5flvbHpn7/pgJrot68iLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-74f6e2dc1db855cc27fe",
+          "file": "workspace.spec.ts",
+          "line": 265,
+          "column": 3
+        },
+        {
+          "title": "blocking 資料集載入失敗仍保留先前成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 622,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:30.526Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjMxLjEwNloiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAiYmxvY2tpbmcg6LOH5paZ6ZuG6LyJ5YWl5aSx5pWX5LuN5L+d55WZ5YWI5YmN5oiQ5Yqf6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-c8005c39d08280c291a2",
+          "file": "workspace.spec.ts",
+          "line": 276,
+          "column": 1
+        },
+        {
+          "title": "載入中與 HTTP 故障均有明確狀態",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 259,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:31.154Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjMxLjM3N1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi6LyJ5YWl5Lit6IiHIEhUVFAg5pWF6Zqc5Z2H5pyJ5piO56K654uA5oWLIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTplcnJvciIsCiAgICAgICJtZXNzYWdlIjogIkZhaWxlZCB0byBsb2FkIHJlc291cmNlOiB0aGUgc2VydmVyIHJlc3BvbmRlZCB3aXRoIGEgc3RhdHVzIG9mIDUwMyAoU2VydmljZSBVbmF2YWlsYWJsZSkiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzEwMC9hcGkvZGF0YXNldHMvZGVtbyIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-7c9a2bbe29295fee8a6a",
+          "file": "workspace.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 465,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:31.419Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjMxLjg0M1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi6LyD5oWi55qE6IiK6LOH5paZ6KuL5rGC5LiN5Y+v6KaG5a+r6LyD5paw55qEIGdvbGRlbiDpgbjmk4ciLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJyZXF1ZXN0ZmFpbGVkIiwKICAgICAgIm1lc3NhZ2UiOiAibmV0OjpFUlJfQUJPUlRFRCIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMTAwL2FwaS9kYXRhc2V0cy9kZW1vIgogICAgfQogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-6aef39c6b5c5c4ece4a1",
+          "file": "workspace.spec.ts",
+          "line": 304,
+          "column": 1
+        },
+        {
+          "title": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 862,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:31.890Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjMyLjcyM1oiLAogICJwcm9qZWN0IjogInRhYmxldCIsCiAgInRlc3QiOiAi5riF56m66IiH6YeN5paw5pW055CG5Zue5Yiw56m654uA5oWL77yM5Y+m5LiA5YCL6aCB6Z2i5rKS5pyJ5YWx55So6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-23d267af40a44510fdce",
+          "file": "workspace.spec.ts",
+          "line": 342,
+          "column": 1
+        },
+        {
+          "title": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 920,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:46.950Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQ3LjgzMVoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi56S656+E6LOH5paZ55Sx56m654uA5oWL6YCy5YWl5Y+v6Zax6K6A57i96Ka977yM5ZyW6KGo5pyJ6KGo5qC85pu/5LujIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-f95841e874c9dc440e3f",
+          "file": "workspace.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "切換 golden 與 demo 會重算同一組 KPI",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 883,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:47.875Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQ4LjcyOFoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi5YiH5o+bIGdvbGRlbiDoiIcgZGVtbyDmnIPph43nrpflkIzkuIDntYQgS1BJIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-b347eb43576936009873",
+          "file": "workspace.spec.ts",
+          "line": 104,
+          "column": 1
+        },
+        {
+          "title": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 793,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:48.764Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQ5LjUyOFoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi6YCa6Lev56+p6YG45YWx55So77yM6YeR6aGN6K2J5pOa5Y+v55So6Y2155uk6ZaL5ZWf6IiH6L+U5ZueIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-416cb025c0a606bf0aee",
+          "file": "workspace.spec.ts",
+          "line": 116,
+          "column": 1
+        },
+        {
+          "title": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 467,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:49.563Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjQ5Ljk5NloiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi6LKi5427546H5beu6aGN55qE6K2J5pOa5L+d55WZ55m+5YiG6bue5Zau5L2N77yM5LiN5YaN5LmY5LulIDEwMCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5d3658a98d019c3c48c8",
+          "file": "workspace.spec.ts",
+          "line": 148,
+          "column": 1
+        },
+        {
+          "title": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 549,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:50.036Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjUwLjU0OFoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi6Ki65pa35o6S5bqP6YeR6aGN5L2/55So5YWp5pyf5bey6KeA5a+f5beu6aGN77yM6K2J5pOa5pa55ZCR6IiH5L6G5rqQ5LiA6Ie0IiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-f1dc3f8be4128617e217",
+          "file": "workspace.spec.ts",
+          "line": 162,
+          "column": 1
+        },
+        {
+          "title": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 579,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:50.590Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjUxLjE0N1oiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi5ZWG5ZOB56+p6YG45Y+q5b2x6Z+/5q+b5Yip5piO57Sw77yM5LiN5bi25YWl6YCa6Lev5buj5ZGK6IiH6LKi5427IiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-85404996f0dd97906bf7",
+          "file": "workspace.spec.ts",
+          "line": 187,
+          "column": 1
+        },
+        {
+          "title": "無效期間不覆寫已套用的分析範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 594,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:51.174Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjUxLjcyNFoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi54Sh5pWI5pyf6ZaT5LiN6KaG5a+r5bey5aWX55So55qE5YiG5p6Q56+E5ZyNIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-bd44ddec7bf1202226cf",
+          "file": "workspace.spec.ts",
+          "line": 206,
+          "column": 1
+        },
+        {
+          "title": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 832,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:51.774Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjUyLjU3MVoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi5pyJ5pWI6Ieq6KiC5pyf6ZaT5pyD5ZCM5q2l5pu05pawIEtQSeOAgemAseizh+aWmeWPiuS+hua6kOacn+mWkyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-a0a4ec898f3c286f9184",
+          "file": "workspace.spec.ts",
+          "line": 217,
+          "column": 1
+        },
+        {
+          "title": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 511,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:52.611Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjUzLjA4M1oiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi6LOH5paZ5bel5L2c5Y2A5bGV56S65LiJ5Lu95Y6f5aeL5qqU5qGI44CB6KGM6Jmf44CB5Y+j5b6R6IiH5pyq57iu5rib6aCQ6Ka9IiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-50b3fe055cf4d09fcaee",
+          "file": "workspace.spec.ts",
+          "line": 242,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 445,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:53.128Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjUzLjUzNVoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAibWlzc2luZy1jb2dzIOmhr+ekuuW+heijnOizh+aWme+8jOS/neeVmeaUtuWFpeiIh+acquWPl+W9semfv+mAmui3ryIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-e6761e5d7e0d8ea633a0",
+          "file": "workspace.spec.ts",
+          "line": 265,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 427,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:53.579Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjUzLjk3MFoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAibWlzc2luZy1hZCDpoa/npLrlvoXoo5zos4fmlpnvvIzkv53nlZnmlLblhaXoiIfmnKrlj5flvbHpn7/pgJrot68iLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-2988873f6c501e6b6c1c",
+          "file": "workspace.spec.ts",
+          "line": 265,
+          "column": 3
+        },
+        {
+          "title": "blocking 資料集載入失敗仍保留先前成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 607,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:54.012Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjU0LjU4OFoiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAiYmxvY2tpbmcg6LOH5paZ6ZuG6LyJ5YWl5aSx5pWX5LuN5L+d55WZ5YWI5YmN5oiQ5Yqf6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-3557262be5a17462315a",
+          "file": "workspace.spec.ts",
+          "line": 276,
+          "column": 1
+        },
+        {
+          "title": "載入中與 HTTP 故障均有明確狀態",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 273,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:54.624Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjU0Ljg4NloiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi6LyJ5YWl5Lit6IiHIEhUVFAg5pWF6Zqc5Z2H5pyJ5piO56K654uA5oWLIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTplcnJvciIsCiAgICAgICJtZXNzYWdlIjogIkZhaWxlZCB0byBsb2FkIHJlc291cmNlOiB0aGUgc2VydmVyIHJlc3BvbmRlZCB3aXRoIGEgc3RhdHVzIG9mIDUwMyAoU2VydmljZSBVbmF2YWlsYWJsZSkiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzEwMC9hcGkvZGF0YXNldHMvZGVtbyIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-e89e185185883e3193d7",
+          "file": "workspace.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 488,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:54.903Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjU1LjM0M1oiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi6LyD5oWi55qE6IiK6LOH5paZ6KuL5rGC5LiN5Y+v6KaG5a+r6LyD5paw55qEIGdvbGRlbiDpgbjmk4ciLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJyZXF1ZXN0ZmFpbGVkIiwKICAgICAgIm1lc3NhZ2UiOiAibmV0OjpFUlJfQUJPUlRFRCIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMTAwL2FwaS9kYXRhc2V0cy9kZW1vIgogICAgfQogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-9f04e99ae6cfcac4d4aa",
+          "file": "workspace.spec.ts",
+          "line": 304,
+          "column": 1
+        },
+        {
+          "title": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 763,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:06:55.396Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjA2OjU2LjEzNloiLAogICJwcm9qZWN0IjogIm1vYmlsZSIsCiAgInRlc3QiOiAi5riF56m66IiH6YeN5paw5pW055CG5Zue5Yiw56m654uA5oWL77yM5Y+m5LiA5YCL6aCB6Z2i5rKS5pyJ5YWx55So6LOH5paZIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-1fde85016f09ad6eccb7",
+          "file": "workspace.spec.ts",
+          "line": 342,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-01T06:05:32.349Z",
+    "duration": 83906.25600000001,
+    "expected": 90,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

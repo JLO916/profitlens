@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-01",
+  "tool": "CUA in-app browser",
+  "url": "http://127.0.0.1:3000/",
+  "dataset": "tests/fixtures/alternative",
+  "steps": [
+    "real three CSV and manifest file choosers",
+    "preview first ten rows and explicit amount basis confirmation",
+    "validation then apply",
+    "all-channel N600 GP260 before200 after10",
+    "SKU HTML shown as text; refund SKU N-40 C60 GP-100",
+    "DTC diagnosis after40 with 8 CSV source rows; Escape closed dialog",
+    "explicit v0 delta0 f-50 a0 K3 produced44 against baseline40",
+    "seven-field action plus current DTC fulfillment14 evidence confirmed using native date keyboard",
+    "clicked Markdown/CSV/JSON download controls; UI reported downloaded",
+    "768px keyboard recalculate; 390px KPI Enter/Escape and table ArrowRight"
+  ],
+  "geometry": [
+    {
+      "page": "action",
+      "scrollWidth": 1425,
+      "width": 1440
+    },
+    {
+      "page": "scenario",
+      "scrollWidth": 753,
+      "width": 768
+    },
+    {
+      "page": "overview",
+      "scrollWidth": 375,
+      "width": 390
+    }
+  ],
+  "tableAfterKeyboard": {
+    "clientWidth": 311,
+    "scrollLeft": 67.5,
+    "scrollWidth": 382,
+    "tabIndex": 0
+  },
+  "logs": [],
+  "manualDownloadFileInspection": "not_run: CUA waitForEvent(download) timed out after Markdown click; UI confirmed export. Actual saved files and all format contents are separately verified by Playwright E2E; do not claim CUA read downloaded bytes."
+}

@@ -1,0 +1,20 @@
+{
+  "command": "npm ci --offline --no-audit --cache /tmp/profitlens-npm-cache; npm run dev -- --port 3210",
+  "isolated_copy": "/tmp/profitlens-m6-clean-d6erequq",
+  "excluded": [
+    "node_modules",
+    ".next",
+    ".env.local",
+    "next-env.d.ts"
+  ],
+  "time": "2026-10-01T07:39:26.143Z",
+  "http_status": 200,
+  "profitlens_present": true,
+  "empty_workspace_present": true,
+  "capability": {
+    "available": false,
+    "reason": "DISABLED",
+    "provider": "openai"
+  },
+  "scope": "Fresh dependency install and HTTP start smoke; browser behavior separately covered by main checkout E2E/CUA. Registry vulnerability audit not_run (offline no-audit)."
+}

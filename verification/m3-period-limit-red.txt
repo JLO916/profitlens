@@ -1,0 +1,276 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/analysis-limits.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/analysis-limits.test.ts (11 tests | 10 failed) 37ms
+     × accepts exactly 1,040 seven-day intervals across the two periods 5ms
+     × counts a final partial interval instead of truncating it 5ms
+     × rejects valid extreme calendar periods without building a weekly range 2ms
+     × allows short periods and lets invalid dates remain errors 1ms
+     × rejects manifest-default oversized periods before calling the domain or allocating weeks 8ms
+     × checks active filter periods before domain analysis, not only manifest defaults 4ms
+     × turns an oversized import into a blocking non-commit result without mutating M1 data 3ms
+     × allows exactly 1,000 selected sales channels and rejects the next one 1ms
+     × blocks oversized manifest channels before calling M1 dataset validation 3ms
+     × rejects too many active filter channels before calling domain analysis 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > accepts exactly 1,040 seven-day intervals across the two periods
+AssertionError: expected [Function] to not throw an error but 'Error: M3 期間技術上限尚未實作' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"Error: M3 期間技術上限尚未實作"
+
+ ❯ tests/analysis-limits.test.ts:52:110
+     50|   });
+     51|   it("accepts exactly 1,040 seven-day intervals across the two periods…
+     52|     expect(() => assertSupportedAnalysisPeriods(period("2000-01-01", 3…
+       |                                                                                                              ^
+     53|   });
+     54|   it("counts a final partial interval instead of truncating it", () =>…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > counts a final partial interval instead of truncating it
+AssertionError: expected error to match asymmetric matcher
+
+- Expected
++ Received
+
+- ObjectContaining {
+-   "reason_code": "ANALYSIS_PERIOD_TOO_LARGE",
++ Error {
++   "message": "M3 期間技術上限尚未實作",
+  }
+
+ ❯ tests/analysis-limits.test.ts:56:8
+     54|   it("counts a final partial interval instead of truncating it", () =>…
+     55|     expect(() => assertSupportedAnalysisPeriods(period("2000-01-01", 3…
+     56|       .toThrow(expect.objectContaining({ reason_code: "ANALYSIS_PERIOD…
+       |        ^
+     57|   });
+     58|   it("rejects valid extreme calendar periods without building a weekly…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > rejects valid extreme calendar periods without building a weekly range
+AssertionError: expected error to match asymmetric matcher
+
+- Expected
++ Received
+
+- ObjectContaining {
+-   "reason_code": "ANALYSIS_PERIOD_TOO_LARGE",
++ Error {
++   "message": "M3 期間技術上限尚未實作",
+  }
+
+ ❯ tests/analysis-limits.test.ts:60:8
+     58|   it("rejects valid extreme calendar periods without building a weekly…
+     59|     expect(() => assertSupportedAnalysisPeriods(hugePrevious, hugeCurr…
+     60|       .toThrow(expect.objectContaining({ reason_code: "ANALYSIS_PERIOD…
+       |        ^
+     61|   });
+     62|   it("allows short periods and lets invalid dates remain errors", () =…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > allows short periods and lets invalid dates remain errors
+AssertionError: expected [Function] to not throw an error but 'Error: M3 期間技術上限尚未實作' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"Error: M3 期間技術上限尚未實作"
+
+ ❯ tests/analysis-limits.test.ts:63:104
+     61|   });
+     62|   it("allows short periods and lets invalid dates remain errors", () =…
+     63|     expect(() => assertSupportedAnalysisPeriods(period("2026-08-01", 1…
+       |                                                                                                        ^
+     64|     expect(() => assertSupportedAnalysisPeriods({ start: "2026-02-30",…
+     65|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > rejects manifest-default oversized periods before calling the domain or allocating weeks
+AssertionError: expected Error: DOMAIN_SHOULD_NOT_RUN_FOR_OVERSIZE… to match object { Object (reason_code) }
+
+- Expected
++ Received
+
+- {
+-   "reason_code": "ANALYSIS_PERIOD_TOO_LARGE",
++ Error {
++   "message": "DOMAIN_SHOULD_NOT_RUN_FOR_OVERSIZED_INPUT",
+  }
+
+ ❯ tests/analysis-limits.test.ts:70:60
+     68|     // immediately, rather than running the original unbounded impleme…
+     69|     mockedAnalyze.mockImplementationOnce(() => { throw new Error("DOMA…
+     70|     await expect(createSnapshot(hugeDataset(), {}, "hash")).rejects.to…
+       |                                                            ^
+     71|     expect(mockedAnalyze).not.toHaveBeenCalled();
+     72|     mockedAnalyze.mockReset();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > checks active filter periods before domain analysis, not only manifest defaults
+AssertionError: expected Error: DOMAIN_SHOULD_NOT_RUN_FOR_OVERSIZE… to match object { Object (reason_code) }
+
+- Expected
++ Received
+
+- {
+-   "reason_code": "ANALYSIS_PERIOD_TOO_LARGE",
++ Error {
++   "message": "DOMAIN_SHOULD_NOT_RUN_FOR_OVERSIZED_INPUT",
+  }
+
+ ❯ tests/analysis-limits.test.ts:79:114
+     77|     dataset.manifest.current_period = { start: "2026-08-02", end: "202…
+     78|     mockedAnalyze.mockImplementationOnce(() => { throw new Error("DOMA…
+     79|     await expect(createSnapshot(dataset, { previous_period: hugePrevio…
+       |                                                                                                                  ^
+     80|       .rejects.toMatchObject({ reason_code: "ANALYSIS_PERIOD_TOO_LARGE…
+     81|     expect(mockedAnalyze).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > turns an oversized import into a blocking non-commit result without mutating M1 data
+AssertionError: expected { Object (manifest, files) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "files": {
+    "ad_spend_daily.csv": "date,channel,ad_spend,currency
+2026-08-01,DTC,200.00,TWD
+2026-08-01,MARKETPLACE,100.00,TWD
+2026-08-02,DTC,270.00,TWD
+2026-08-02,MARKETPLACE,180.00,TWD
+",
+    "channel_costs_daily.csv": "date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency
+2026-08-01,DTC,0.00,40.00,100.00,10.00,TWD
+2026-08-01,MARKETPLACE,90.00,20.00,60.00,10.00,TWD
+2026-08-02,DTC,0.00,44.00,140.00,16.00,TWD
+2026-08-02,MARKETPLACE,120.00,22.00,85.00,13.00,TWD
+",
+    "sales_daily.csv": "date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency
+2026-08-01,DTC,A,HOME,2,1000.00,100.00,0.00,400.00,TWD
+2026-08-01,DTC,B,CARE,1,500.00,0.00,50.00,200.00,TWD
+2026-08-01,MARKETPLACE,A,HOME,2,600.00,60.00,0.00,270.00,TWD
+2026-08-01,MARKETPLACE,B,CARE,1,400.00,40.00,0.00,180.00,TWD
+2026-08-02,DTC,A,HOME,3,1400.00,210.00,70.00,580.00,TWD
+2026-08-02,DTC,B,CARE,1,400.00,20.00,20.00,160.00,TWD
+2026-08-02,MARKETPLACE,A,HOME,3,800.00,120.00,40.00,360.00,TWD
+2026-08-02,MARKETPLACE,B,CARE,1,500.00,100.00,50.00,225.00,TWD
+",
+  },
+  "manifest": {
+    "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+    "channels": [
+      "DTC",
+      "MARKETPLACE",
+    ],
+    "coverage_end": "8000-12-31",
+    "coverage_start": "0001-01-01",
+    "currency": "TWD",
+    "current_period": {
+      "end": "8000-12-31",
+      "start": "4001-01-01",
+    },
+    "data_as_of": "2026-08-03",
+    "dataset_id": "golden-v1",
+    "previous_period": {
+      "end": "4000-12-31",
+      "start": "0001-01-01",
+    },
+    "sales_coverage_confirmed": true,
+    "schema_version": "1.0",
+    "source_type": "user_provided",
+    "timezone": "Asia/Taipei",
+  },
+}
+
+ ❯ tests/analysis-limits.test.ts:88:26
+     86|     const original = structuredClone(source);
+     87|     const result = prepareImport(source, inspectedFiles(), { amountBas…
+     88|     expect(result.input).toBeNull();
+       |                          ^
+     89|     expect(result.validation.classification).toBe("blocking");
+     90|     expect(result.validation.dataset).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application channel count > allows exactly 1,000 selected sales channels and rejects the next one
+AssertionError: expected [Function] to not throw an error but 'Error: M3 通路技術上限尚未實作' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"Error: M3 通路技術上限尚未實作"
+
+ ❯ tests/analysis-limits.test.ts:102:119
+    100|   it("allows exactly 1,000 selected sales channels and rejects the nex…
+    101|     expect(MAX_ANALYSIS_CHANNELS).toBe(1000);
+    102|     expect(() => assertSupportedAnalysisChannels(Array.from({ length: …
+       |                                                                                                                       ^
+    103|     expect(() => assertSupportedAnalysisChannels(Array.from({ length: …
+    104|       .toThrow(expect.objectContaining({ reason_code: "ANALYSIS_CHANNE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application channel count > blocks oversized manifest channels before calling M1 dataset validation
+Error: VALIDATION_SHOULD_NOT_RUN_FOR_OVERSIZED_CHANNELS
+ ❯ tests/analysis-limits.test.ts:110:57
+    108|     const pending = inspectedFiles();
+    109|     const source = { ...(input.manifest as Record<string, unknown>), c…
+    110|     mockedValidate.mockImplementationOnce(() => { throw new Error("VAL…
+       |                                                         ^
+    111|     const result = prepareImport(source, pending, { amountBasisConfirm…
+    112|     expect(result.input).toBeNull();
+ ❯ Module.prepareImport src/application/import.ts:159:22
+ ❯ tests/analysis-limits.test.ts:111:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application channel count > rejects too many active filter channels before calling domain analysis
+AssertionError: expected Error: DOMAIN_SHOULD_NOT_RUN_FOR_OVERSIZE… to match object { Object (reason_code) }
+
+- Expected
++ Received
+
+- {
+-   "reason_code": "ANALYSIS_CHANNEL_LIMIT",
++ Error {
++   "message": "DOMAIN_SHOULD_NOT_RUN_FOR_OVERSIZED_CHANNELS",
+  }
+
+ ❯ tests/analysis-limits.test.ts:121:128
+    119|     const dataset = validateDataset(fixture()).dataset!;
+    120|     mockedAnalyze.mockImplementationOnce(() => { throw new Error("DOMA…
+    121|     await expect(createSnapshot(dataset, { channels: Array.from({ leng…
+       |                                                                                                                                ^
+    122|       .rejects.toMatchObject({ reason_code: "ANALYSIS_CHANNEL_LIMIT" }…
+    123|     expect(mockedAnalyze).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 1 passed (11)
+   Start at  13:41:21
+   Duration  602ms (transform 186ms, setup 0ms, import 335ms, tests 37ms, environment 0ms)
+

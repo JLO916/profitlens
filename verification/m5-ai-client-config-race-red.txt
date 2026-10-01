@@ -1,0 +1,155 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-client.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-client.test.ts (37 tests | 6 failed) 90ms
+     × retains safe config reason PUBLIC_DEMO if server closes access after preview 5ms
+     × retains safe config reason DISABLED if server closes access after preview 1ms
+     × retains safe config reason NO_KEY if server closes access after preview 0ms
+     × retains safe config reason NO_MODEL if server closes access after preview 0ms
+     × retains safe config reason LOCAL_ONLY if server closes access after preview 0ms
+     × retains safe config reason INVALID_CONFIG if server closes access after preview 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > retains safe config reason PUBLIC_DEMO if server closes access after preview
+AssertionError: expected { status: 'fallback', …(1) } to deeply equal { status: 'fallback', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "reason": "PUBLIC_DEMO",
++   "reason": "PROVIDER_ERROR",
+    "status": "fallback",
+  }
+
+ ❯ tests/ai-client.test.ts:88:123
+     86|   it.each(["PUBLIC_DEMO", "DISABLED", "NO_KEY", "NO_MODEL", "LOCAL_ONL…
+     87|     const status = reason === "PUBLIC_DEMO" || reason === "LOCAL_ONLY"…
+     88|     expect(await request(vi.fn().mockResolvedValue(response({ status: …
+       |                                                                                                                           ^
+     89|   });
+     90|   it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > retains safe config reason DISABLED if server closes access after preview
+AssertionError: expected { status: 'fallback', …(1) } to deeply equal { status: 'fallback', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "reason": "DISABLED",
++   "reason": "SNAPSHOT_MISMATCH",
+    "status": "fallback",
+  }
+
+ ❯ tests/ai-client.test.ts:88:123
+     86|   it.each(["PUBLIC_DEMO", "DISABLED", "NO_KEY", "NO_MODEL", "LOCAL_ONL…
+     87|     const status = reason === "PUBLIC_DEMO" || reason === "LOCAL_ONLY"…
+     88|     expect(await request(vi.fn().mockResolvedValue(response({ status: …
+       |                                                                                                                           ^
+     89|   });
+     90|   it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > retains safe config reason NO_KEY if server closes access after preview
+AssertionError: expected { status: 'fallback', …(1) } to deeply equal { Object (status, reason) }
+
+- Expected
++ Received
+
+  {
+-   "reason": "NO_KEY",
++   "reason": "SNAPSHOT_MISMATCH",
+    "status": "fallback",
+  }
+
+ ❯ tests/ai-client.test.ts:88:123
+     86|   it.each(["PUBLIC_DEMO", "DISABLED", "NO_KEY", "NO_MODEL", "LOCAL_ONL…
+     87|     const status = reason === "PUBLIC_DEMO" || reason === "LOCAL_ONLY"…
+     88|     expect(await request(vi.fn().mockResolvedValue(response({ status: …
+       |                                                                                                                           ^
+     89|   });
+     90|   it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > retains safe config reason NO_MODEL if server closes access after preview
+AssertionError: expected { status: 'fallback', …(1) } to deeply equal { status: 'fallback', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "reason": "NO_MODEL",
++   "reason": "SNAPSHOT_MISMATCH",
+    "status": "fallback",
+  }
+
+ ❯ tests/ai-client.test.ts:88:123
+     86|   it.each(["PUBLIC_DEMO", "DISABLED", "NO_KEY", "NO_MODEL", "LOCAL_ONL…
+     87|     const status = reason === "PUBLIC_DEMO" || reason === "LOCAL_ONLY"…
+     88|     expect(await request(vi.fn().mockResolvedValue(response({ status: …
+       |                                                                                                                           ^
+     89|   });
+     90|   it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > retains safe config reason LOCAL_ONLY if server closes access after preview
+AssertionError: expected { status: 'fallback', …(1) } to deeply equal { status: 'fallback', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "reason": "LOCAL_ONLY",
++   "reason": "PROVIDER_ERROR",
+    "status": "fallback",
+  }
+
+ ❯ tests/ai-client.test.ts:88:123
+     86|   it.each(["PUBLIC_DEMO", "DISABLED", "NO_KEY", "NO_MODEL", "LOCAL_ONL…
+     87|     const status = reason === "PUBLIC_DEMO" || reason === "LOCAL_ONLY"…
+     88|     expect(await request(vi.fn().mockResolvedValue(response({ status: …
+       |                                                                                                                           ^
+     89|   });
+     90|   it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > retains safe config reason INVALID_CONFIG if server closes access after preview
+AssertionError: expected { status: 'fallback', …(1) } to deeply equal { status: 'fallback', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "reason": "INVALID_CONFIG",
++   "reason": "SNAPSHOT_MISMATCH",
+    "status": "fallback",
+  }
+
+ ❯ tests/ai-client.test.ts:88:123
+     86|   it.each(["PUBLIC_DEMO", "DISABLED", "NO_KEY", "NO_MODEL", "LOCAL_ONL…
+     87|     const status = reason === "PUBLIC_DEMO" || reason === "LOCAL_ONLY"…
+     88|     expect(await request(vi.fn().mockResolvedValue(response({ status: …
+       |                                                                                                                           ^
+     89|   });
+     90|   it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 31 passed (37)
+   Start at  15:08:30
+   Duration  377ms (transform 88ms, setup 0ms, import 160ms, tests 90ms, environment 0ms)
+

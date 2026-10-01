@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "mixed_currency-v1",
+  "source_type": "synthetic",
+  "currency": "TWD",
+  "timezone": "Asia/Taipei",
+  "data_as_of": "2026-08-03",
+  "coverage_start": "2026-08-01",
+  "coverage_end": "2026-08-02",
+  "channels": [
+    "DTC",
+    "MARKETPLACE"
+  ],
+  "previous_period": {
+    "start": "2026-08-01",
+    "end": "2026-08-01"
+  },
+  "current_period": {
+    "start": "2026-08-02",
+    "end": "2026-08-02"
+  },
+  "sales_coverage_confirmed": true,
+  "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+  "note": "All entities and values are synthetic. Not real business outcomes."
+}

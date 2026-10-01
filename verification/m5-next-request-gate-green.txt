@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-config.test.ts tests/ai-route.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  2 passed (2)
+      Tests  89 passed (89)
+   Start at  15:16:07
+   Duration  1.01s (transform 369ms, setup 0ms, import 700ms, tests 201ms, environment 0ms)
+

@@ -1,0 +1,42 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-client.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-client.test.ts (18 tests | 1 failed) 41ms
+     × accepts the real enabled GET contract with null reason 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > accepts the real enabled GET contract with null reason
+AssertionError: expected { available: false, …(2) } to deeply equal { available: true, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "available": true,
++   "available": false,
+    "provider": "openai",
+-   "reason": "AVAILABLE",
++   "reason": "STATUS_UNAVAILABLE",
+  }
+
+ ❯ tests/ai-client.test.ts:93:127
+     91|   });
+     92|   it("accepts the real enabled GET contract with null reason", async (…
+     93|     expect(await getAiCapability(vi.fn().mockResolvedValue(response({ …
+       |                                                                                                                               ^
+     94|   });
+     95| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+   Start at  14:57:47
+   Duration  212ms (transform 30ms, setup 0ms, import 41ms, tests 41ms, environment 0ms)
+

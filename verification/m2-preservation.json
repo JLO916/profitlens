@@ -1,0 +1,749 @@
+{
+  "checked_at": "2026-09-30T09:48:02.324508+00:00",
+  "baseline_files": 123,
+  "summary": {
+    "unchanged": 115,
+    "changed": 8,
+    "missing": 0
+  },
+  "results": [
+    {
+      "file": ".env.example",
+      "before": "8f701506418e4c967c826dfe39a301a9eacc41f631709dd153e19822f4cff6d9",
+      "after": "8f701506418e4c967c826dfe39a301a9eacc41f631709dd153e19822f4cff6d9",
+      "status": "unchanged"
+    },
+    {
+      "file": ".gitignore",
+      "before": "1677755374782270274a72e8f8a593b997866c5ee79a3ea2c3219f07ddc97329",
+      "after": "1677755374782270274a72e8f8a593b997866c5ee79a3ea2c3219f07ddc97329",
+      "status": "unchanged"
+    },
+    {
+      "file": "AGENTS.md",
+      "before": "23e0889056347dd206a7f3b334274011042c2f335229daf582a054916fcc75ff",
+      "after": "23e0889056347dd206a7f3b334274011042c2f335229daf582a054916fcc75ff",
+      "status": "unchanged"
+    },
+    {
+      "file": "README.md",
+      "before": "0ab40b9f9d8877a8b72a43abbb7a12903605f4492e03e9a28f44ac2f8dced58d",
+      "after": "c050d36a3179d36a9cc44ce7f4f8d24683dc2d7e478f151aa8790a5cba4dfa3a",
+      "status": "changed"
+    },
+    {
+      "file": "SOURCES.md",
+      "before": "7fab670ff92c50eff22364dfc639c77df0aceb2c825c0688952c3b67008a2468",
+      "after": "7fab670ff92c50eff22364dfc639c77df0aceb2c825c0688952c3b67008a2468",
+      "status": "unchanged"
+    },
+    {
+      "file": "START_HERE.md",
+      "before": "8adbba06f859fc2c7e535155c3cfde20c8db4c8730649b70fc5dc959575d6622",
+      "after": "8adbba06f859fc2c7e535155c3cfde20c8db4c8730649b70fc5dc959575d6622",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/ACCEPTANCE.md",
+      "before": "682c16c482155565c5fb4cb95b1cd1b7c3e153b3a38e5d8788bad8bd282e8c9f",
+      "after": "682c16c482155565c5fb4cb95b1cd1b7c3e153b3a38e5d8788bad8bd282e8c9f",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/AI_CONTRACT.md",
+      "before": "38500e5a8720dcb91ca43af0aec4dd7f8e805c47c1dad28c57c4c2dbc60245f6",
+      "after": "38500e5a8720dcb91ca43af0aec4dd7f8e805c47c1dad28c57c4c2dbc60245f6",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/ARCHITECTURE.md",
+      "before": "9d5e66d1250c1aa9f90b0998edee6ea222f1782d31471d54e0b544cf7108505f",
+      "after": "9d5e66d1250c1aa9f90b0998edee6ea222f1782d31471d54e0b544cf7108505f",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/DATA_CONTRACT.md",
+      "before": "9674cb094c5641b93f0d84aa34479ae89e54a3fdd876ed5db157f8941709fcf8",
+      "after": "9674cb094c5641b93f0d84aa34479ae89e54a3fdd876ed5db157f8941709fcf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/DECISIONS.md",
+      "before": "ef741fd998a3594febb5bea544241d0ca3486cf7bab2be48d005f831fe9956a0",
+      "after": "ef741fd998a3594febb5bea544241d0ca3486cf7bab2be48d005f831fe9956a0",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/METRICS.md",
+      "before": "f8d934d5c339b4697eff8df1acdb47bfd8f258c28ccdf58ff50ca9197af6b275",
+      "after": "f8d934d5c339b4697eff8df1acdb47bfd8f258c28ccdf58ff50ca9197af6b275",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/PILOT_PLAN.md",
+      "before": "e787632e228a5acf907158e18b9997f48f44e43af5dd4be4300d2f1f1c77d33d",
+      "after": "e787632e228a5acf907158e18b9997f48f44e43af5dd4be4300d2f1f1c77d33d",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/PRD.md",
+      "before": "c98736b7c376e99153035865a84db912ec84214ce0e87ddba9f3a8b3971e4b1b",
+      "after": "c98736b7c376e99153035865a84db912ec84214ce0e87ddba9f3a8b3971e4b1b",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/SCENARIOS.md",
+      "before": "37367da1f9f60578a5f24f8675fa88ed4bcacde92ee1773a2fd91c325c618aad",
+      "after": "37367da1f9f60578a5f24f8675fa88ed4bcacde92ee1773a2fd91c325c618aad",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/STATUS.md",
+      "before": "89d4b477aac69e074fabba2037e9cae41b5b48809476f848755d3486e65d9c5a",
+      "after": "484a0df5d07669b12ce97f5af54e4b8c679376933bde1bf6055e278a0f71bda8",
+      "status": "changed"
+    },
+    {
+      "file": "docs/TASKS.md",
+      "before": "2202bb9ed12f5e498adb74f7a4b8de96071bf13aa0d80cc7d97c26ac33e3acb2",
+      "after": "2202bb9ed12f5e498adb74f7a4b8de96071bf13aa0d80cc7d97c26ac33e3acb2",
+      "status": "unchanged"
+    },
+    {
+      "file": "eslint.config.mjs",
+      "before": "91af7bd8f990840f3df744e7960ea65bb6ac6f3a37a051c8c4bd85e1c4556b35",
+      "after": "887309d6dcb8fe737d3ec0721f3a4fea7ef95f91330d9842c439529d2d85a0d3",
+      "status": "changed"
+    },
+    {
+      "file": "fixtures/demo/ad_spend_daily.csv",
+      "before": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d",
+      "after": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/channel_costs_daily.csv",
+      "before": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+      "after": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/computed_summary.json",
+      "before": "311e0a3cd69f01a8c3eb26cfd2f1a7cf673553a637308ae92a4610338c0a94f0",
+      "after": "311e0a3cd69f01a8c3eb26cfd2f1a7cf673553a637308ae92a4610338c0a94f0",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/intent.json",
+      "before": "f613e164882cdb218be5c36fcefdeacca3c6b227f832ceca8cd87ccf124912db",
+      "after": "f613e164882cdb218be5c36fcefdeacca3c6b227f832ceca8cd87ccf124912db",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/manifest.json",
+      "before": "decb8aac6a536fbdd5046ba9d2d5162f29db4a7cdcd84a2aba621fde699163a1",
+      "after": "decb8aac6a536fbdd5046ba9d2d5162f29db4a7cdcd84a2aba621fde699163a1",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/sales_daily.csv",
+      "before": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+      "after": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/ad_spend_daily.csv",
+      "before": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "after": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/channel_costs_daily.csv",
+      "before": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "after": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/expected_validation.json",
+      "before": "6a6fb2ff5f2cdc9acdfb7c0a613b4231d010bc030dad144aa6ab40971f3c60b8",
+      "after": "6a6fb2ff5f2cdc9acdfb7c0a613b4231d010bc030dad144aa6ab40971f3c60b8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/manifest.json",
+      "before": "92862ed77448416b0111ce72c2f2564164fa637b95fee2bc5bbdc279fa320cc2",
+      "after": "92862ed77448416b0111ce72c2f2564164fa637b95fee2bc5bbdc279fa320cc2",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/sales_daily.csv",
+      "before": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+      "after": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/ad_spend_daily.csv",
+      "before": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084",
+      "after": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/channel_costs_daily.csv",
+      "before": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "after": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/expected_validation.json",
+      "before": "662121d48a25df5e6f5bac05235d00df36e3b3c3340f321eb0b90c2c414f6f8c",
+      "after": "662121d48a25df5e6f5bac05235d00df36e3b3c3340f321eb0b90c2c414f6f8c",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/manifest.json",
+      "before": "ee16fc7798c993cf95ef7cfcf359a0600c195afef07d18e7b10cb3f8e2724ea8",
+      "after": "ee16fc7798c993cf95ef7cfcf359a0600c195afef07d18e7b10cb3f8e2724ea8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/sales_daily.csv",
+      "before": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "after": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/ad_spend_daily.csv",
+      "before": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "after": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/channel_costs_daily.csv",
+      "before": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "after": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/expected_validation.json",
+      "before": "92b26e35386d1e496eff3251147eb5a8df6e096eed1b53e28c7761d36ed9f431",
+      "after": "92b26e35386d1e496eff3251147eb5a8df6e096eed1b53e28c7761d36ed9f431",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/manifest.json",
+      "before": "0f16ad32bc3d8476a5e2b025db64e7f30764808884731121f1792bde20f013fc",
+      "after": "0f16ad32bc3d8476a5e2b025db64e7f30764808884731121f1792bde20f013fc",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/sales_daily.csv",
+      "before": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+      "after": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/ad_spend_daily.csv",
+      "before": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "after": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/channel_costs_daily.csv",
+      "before": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "after": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/expected_validation.json",
+      "before": "ae1fced7aab37d296b10150cc4bb38932c9634f5f2f48b899102528b78ea7348",
+      "after": "ae1fced7aab37d296b10150cc4bb38932c9634f5f2f48b899102528b78ea7348",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/manifest.json",
+      "before": "9b575fd3c14ae439d877633189408c4dd21243aadfc9f2c66412e58a02e56d84",
+      "after": "9b575fd3c14ae439d877633189408c4dd21243aadfc9f2c66412e58a02e56d84",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/sales_daily.csv",
+      "before": "dcc87813a1ad1dff983966560e22ba1976360027314f18d4b34edd7662c8216b",
+      "after": "dcc87813a1ad1dff983966560e22ba1976360027314f18d4b34edd7662c8216b",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/ad_spend_daily.csv",
+      "before": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "after": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/channel_costs_daily.csv",
+      "before": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "after": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/expected.json",
+      "before": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+      "after": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/manifest.json",
+      "before": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+      "after": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/sales_daily.csv",
+      "before": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "after": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/ad_spend_daily.csv",
+      "before": "bde19c2628c34d4d4aec7d08fc75b841624c8b1ffb91fadc9e97c3e04b554ccc",
+      "after": "bde19c2628c34d4d4aec7d08fc75b841624c8b1ffb91fadc9e97c3e04b554ccc",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/channel_costs_daily.csv",
+      "before": "57750bd3a496d457e20aab82d8caa9572d5ff566908ea49735ac448de4d6b3c5",
+      "after": "57750bd3a496d457e20aab82d8caa9572d5ff566908ea49735ac448de4d6b3c5",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/expected.json",
+      "before": "59820fa87818d9ded64ae5a6e948d7ec8d3b3724e4be8e106df51ef8fbd4a21a",
+      "after": "59820fa87818d9ded64ae5a6e948d7ec8d3b3724e4be8e106df51ef8fbd4a21a",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/manifest.json",
+      "before": "fc26ae44cf9a7ebede170c41e755a13fbc87f6f7974d5722a49f3b1f9d76fdf6",
+      "after": "fc26ae44cf9a7ebede170c41e755a13fbc87f6f7974d5722a49f3b1f9d76fdf6",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/sales_daily.csv",
+      "before": "746e97efde53984ba0db1f0336ddac089ed5809344316e2674dbbb8a54910397",
+      "after": "746e97efde53984ba0db1f0336ddac089ed5809344316e2674dbbb8a54910397",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/ad_spend_daily.csv",
+      "before": "440fa23fe0ff5c7765c1375e0cf61ed28c31254de16708c3dd0e91cf8fd96747",
+      "after": "440fa23fe0ff5c7765c1375e0cf61ed28c31254de16708c3dd0e91cf8fd96747",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/channel_costs_daily.csv",
+      "before": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "after": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/expected.json",
+      "before": "707f84b8c7ecb77860d5b2a9b10b2d3228e6cc6a338f5feb1965a545ce9fe34d",
+      "after": "707f84b8c7ecb77860d5b2a9b10b2d3228e6cc6a338f5feb1965a545ce9fe34d",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/manifest.json",
+      "before": "5b2cadb757072b6bfcb9b3ffb4ecc2a72f9fb6951fcfd8fd2f10ef7dccfbb15c",
+      "after": "5b2cadb757072b6bfcb9b3ffb4ecc2a72f9fb6951fcfd8fd2f10ef7dccfbb15c",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/sales_daily.csv",
+      "before": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "after": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "status": "unchanged"
+    },
+    {
+      "file": "next-env.d.ts",
+      "before": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b",
+      "after": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b",
+      "status": "unchanged"
+    },
+    {
+      "file": "next.config.ts",
+      "before": "1cb6e44cd0f6a3f82f0200990b9b9fe8ad5b68074374d7b290e92bcd86dcbbf7",
+      "after": "1cb6e44cd0f6a3f82f0200990b9b9fe8ad5b68074374d7b290e92bcd86dcbbf7",
+      "status": "unchanged"
+    },
+    {
+      "file": "package-lock.json",
+      "before": "dbaaa6bb6f56de7d9274ce44a7069e9d304d5204b847a9fd387c97e2eca35ad3",
+      "after": "2afd37860ade791acaccd897229cb8616fa873bbb334895a784f3276c29f8bb9",
+      "status": "changed"
+    },
+    {
+      "file": "package.json",
+      "before": "06e89937f404e86951c3063b0f9b07a82c650e446d2187d91f2737c310028821",
+      "after": "2615047bfb4fc4dc2f518ade141b904fc13b9fbd1a81973ae29d6f4f2191d2b5",
+      "status": "changed"
+    },
+    {
+      "file": "postcss.config.mjs",
+      "before": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+      "after": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M0_START.md",
+      "before": "11f003e1e88adb2606f388eefe6b71b9be6decb99f282efb6ae144479d262c6b",
+      "after": "11f003e1e88adb2606f388eefe6b71b9be6decb99f282efb6ae144479d262c6b",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M1_DOMAIN.md",
+      "before": "a15fdc89194396516982847b31b91227036262f10358ccc1e2542c78d90290d2",
+      "after": "a15fdc89194396516982847b31b91227036262f10358ccc1e2542c78d90290d2",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M2_DEMO_UI.md",
+      "before": "a139896e62d0af8b72df2957cdc04cf771a0bb3e0b00ea77a8ff4cb7d8c5d74f",
+      "after": "a139896e62d0af8b72df2957cdc04cf771a0bb3e0b00ea77a8ff4cb7d8c5d74f",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M3_IMPORT.md",
+      "before": "505c006dbb5386605a1e586fcb43c4041d59afa06f8ed473778a0c49084450fd",
+      "after": "505c006dbb5386605a1e586fcb43c4041d59afa06f8ed473778a0c49084450fd",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M4_SCENARIOS.md",
+      "before": "8c9e5b81b3a2fb9eb77d371a5b974dfc5bb9d271929d78f6ccc8eaa2f0695ee5",
+      "after": "8c9e5b81b3a2fb9eb77d371a5b974dfc5bb9d271929d78f6ccc8eaa2f0695ee5",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M5_AI.md",
+      "before": "fd3731e0176c08058c93d2a019f42929a039425c9453611b90a444e187e5bca8",
+      "after": "fd3731e0176c08058c93d2a019f42929a039425c9453611b90a444e187e5bca8",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M6_REVIEW.md",
+      "before": "438eb7c107589a669d89d6243c64fcec905194533a55d58663a70446f45b8a89",
+      "after": "438eb7c107589a669d89d6243c64fcec905194533a55d58663a70446f45b8a89",
+      "status": "unchanged"
+    },
+    {
+      "file": "scripts/generate_fixtures.py",
+      "before": "d2d947a4853baeb407e7cc1a24ea3dafa97108987632e3a5f88b2794dbef4d78",
+      "after": "d2d947a4853baeb407e7cc1a24ea3dafa97108987632e3a5f88b2794dbef4d78",
+      "status": "unchanged"
+    },
+    {
+      "file": "scripts/verify_fixtures.py",
+      "before": "797f45dacfe073f4aafe3706b1904ca09549f1ddf3006def5e4c578cd945857c",
+      "after": "797f45dacfe073f4aafe3706b1904ca09549f1ddf3006def5e4c578cd945857c",
+      "status": "unchanged"
+    },
+    {
+      "file": "spec/insight-output.schema.json",
+      "before": "8228da4717447db33543bd065ea5541f974962790e4abd9cef1ff50863195218",
+      "after": "8228da4717447db33543bd065ea5541f974962790e4abd9cef1ff50863195218",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/ai/.gitkeep",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/app/globals.css",
+      "before": "bd57681baa610cea6415039a9d2537067f1b1315fad332e08a7756766dbcb90b",
+      "after": "e6abadb577364165f78f13103efff102474af180db22205a4c61661c377ebc92",
+      "status": "changed"
+    },
+    {
+      "file": "src/app/layout.tsx",
+      "before": "a0413f6dafe797d32890cfc2da8e6d212cec1ac2229549e87aa04f3f196cf01d",
+      "after": "a0413f6dafe797d32890cfc2da8e6d212cec1ac2229549e87aa04f3f196cf01d",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/app/page.tsx",
+      "before": "949b42d0830ddb7c1505a1ccd084e4483d0643c68f24c65a009c8c82233baa83",
+      "after": "053b727978cb22bf1b4545fe6f96f1d902a926afd1d4dafc10c205b3a207d0e7",
+      "status": "changed"
+    },
+    {
+      "file": "src/application/.gitkeep",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/components/.gitkeep",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/.gitkeep",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/aggregation.ts",
+      "before": "d86b18b14f8c3a72b05956e6ee6ba855e5079ba9c801e5e39fb6b52637598ea9",
+      "after": "d86b18b14f8c3a72b05956e6ee6ba855e5079ba9c801e5e39fb6b52637598ea9",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/analysis.ts",
+      "before": "778e4279d8c419b59a4fe161f02c36d5b2800e33695fc04b7912e0056e38874f",
+      "after": "778e4279d8c419b59a4fe161f02c36d5b2800e33695fc04b7912e0056e38874f",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/bridge.ts",
+      "before": "a02fd4ee6a91a6de40c90bc8d5cc66b9602e183576305e3644e9de038bfdc501",
+      "after": "a02fd4ee6a91a6de40c90bc8d5cc66b9602e183576305e3644e9de038bfdc501",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/date.ts",
+      "before": "d6d95769cdff2dade710e3fe351b07df1622fb4263b2c02a0d51d9fc86a0b1a0",
+      "after": "d6d95769cdff2dade710e3fe351b07df1622fb4263b2c02a0d51d9fc86a0b1a0",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/index.ts",
+      "before": "080520fcfe52c58449fd25f11cb9f084b07f4f1a374c3fdb2223bd2d072831cb",
+      "after": "080520fcfe52c58449fd25f11cb9f084b07f4f1a374c3fdb2223bd2d072831cb",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/metrics.ts",
+      "before": "eeb0ae5143975d9de9e1cea054845d72cc63148527094205e808ff3503760d78",
+      "after": "eeb0ae5143975d9de9e1cea054845d72cc63148527094205e808ff3503760d78",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/money.ts",
+      "before": "6b58c6c65e9827077e5e0785808a1b4afad47146b4bb6273bc22757a05a6e5b5",
+      "after": "6b58c6c65e9827077e5e0785808a1b4afad47146b4bb6273bc22757a05a6e5b5",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/rules.ts",
+      "before": "5f61666d130fd75d8010e76adc5e8e06291c2ef39d21bd91f84005998c562690",
+      "after": "5f61666d130fd75d8010e76adc5e8e06291c2ef39d21bd91f84005998c562690",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/types.ts",
+      "before": "38a88ba097a26bdd520df1d8b0dde5d9061703933894bc4aefa0aa0c9bfe89b9",
+      "after": "38a88ba097a26bdd520df1d8b0dde5d9061703933894bc4aefa0aa0c9bfe89b9",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/domain/validation.ts",
+      "before": "dd280fb4a95c5affaf967ba3755c147ffb598450a7395439dc3b6223e66ec695",
+      "after": "dd280fb4a95c5affaf967ba3755c147ffb598450a7395439dc3b6223e66ec695",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/lib/.gitkeep",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "unchanged"
+    },
+    {
+      "file": "src/lib/csv.ts",
+      "before": "b298a9959fdb346dae3890fcbfba878b9d6579cad73580d68c7c29a2f65f9406",
+      "after": "b298a9959fdb346dae3890fcbfba878b9d6579cad73580d68c7c29a2f65f9406",
+      "status": "unchanged"
+    },
+    {
+      "file": "templates/ad_spend_daily.csv",
+      "before": "6d0756a5dc9c5319bd31c43930507c8b5d5c008210631d46cbed382c835d7c0f",
+      "after": "6d0756a5dc9c5319bd31c43930507c8b5d5c008210631d46cbed382c835d7c0f",
+      "status": "unchanged"
+    },
+    {
+      "file": "templates/channel_costs_daily.csv",
+      "before": "11b5040444acf602bf21cc048c6477261afac61bd6db23df4483ef38c89cb5a9",
+      "after": "11b5040444acf602bf21cc048c6477261afac61bd6db23df4483ef38c89cb5a9",
+      "status": "unchanged"
+    },
+    {
+      "file": "templates/manifest.example.json",
+      "before": "f205d09d0fdb7b922f0bb92f56f34834818a423bdc6d6960b113009a67c34551",
+      "after": "f205d09d0fdb7b922f0bb92f56f34834818a423bdc6d6960b113009a67c34551",
+      "status": "unchanged"
+    },
+    {
+      "file": "templates/sales_daily.csv",
+      "before": "10303d7af860a7946443b6f1c493899f48d0f0e95e4719ef3897b132c8b19a36",
+      "after": "10303d7af860a7946443b6f1c493899f48d0f0e95e4719ef3897b132c8b19a36",
+      "status": "unchanged"
+    },
+    {
+      "file": "tests/aggregation-boundaries.test.ts",
+      "before": "20f3dbecf3069803747b9ce2f33888d683a532a88ccf315eb8416a9fd720a315",
+      "after": "20f3dbecf3069803747b9ce2f33888d683a532a88ccf315eb8416a9fd720a315",
+      "status": "unchanged"
+    },
+    {
+      "file": "tests/app-smoke.test.tsx",
+      "before": "2aae467fcd9fbe25f88875b5c752299376f8cadc6554edd4e62ec0c0d1e6f91c",
+      "after": "f656ca871c7882752367f45537fad73bce69d8e0f8984e76825f91ef96ad9da0",
+      "status": "changed"
+    },
+    {
+      "file": "tests/domain-acceptance.test.ts",
+      "before": "7090a87d91f5ffd4d27f7f6a03eab08e424716e8e6f7dc1b28884a6ff6c7d9bf",
+      "after": "7090a87d91f5ffd4d27f7f6a03eab08e424716e8e6f7dc1b28884a6ff6c7d9bf",
+      "status": "unchanged"
+    },
+    {
+      "file": "tests/helpers/fixtures.ts",
+      "before": "f3db1faf8c567a12ebaa4c7b854f11d2e7d1be783fba8a7119cbef5218aeeb16",
+      "after": "f3db1faf8c567a12ebaa4c7b854f11d2e7d1be783fba8a7119cbef5218aeeb16",
+      "status": "unchanged"
+    },
+    {
+      "file": "tests/metrics.test.ts",
+      "before": "6e514aeb3aaff34c6538eb6d6df043074a3dd3df4fa421a6446fbed37c20a468",
+      "after": "6e514aeb3aaff34c6538eb6d6df043074a3dd3df4fa421a6446fbed37c20a468",
+      "status": "unchanged"
+    },
+    {
+      "file": "tests/money.test.ts",
+      "before": "e1b43d3700fd3305dca5237b7c3cdde54046845a05a8d398d5e3023fea8128db",
+      "after": "e1b43d3700fd3305dca5237b7c3cdde54046845a05a8d398d5e3023fea8128db",
+      "status": "unchanged"
+    },
+    {
+      "file": "tests/rules.test.ts",
+      "before": "8f28c0df851557def50619caa1cb74a50b8d510ca2e5ca0681571b76dc4443ef",
+      "after": "8f28c0df851557def50619caa1cb74a50b8d510ca2e5ca0681571b76dc4443ef",
+      "status": "unchanged"
+    },
+    {
+      "file": "tests/validation.test.ts",
+      "before": "5f96da7472620a4ff3d54f962eff1147f87dce9f5bd00eb0975b79a48e59a5fc",
+      "after": "5f96da7472620a4ff3d54f962eff1147f87dce9f5bd00eb0975b79a48e59a5fc",
+      "status": "unchanged"
+    },
+    {
+      "file": "tsconfig.json",
+      "before": "8617f5b9701bc1dc0f8292c765411f01337fa35a3768f46310096555c54a37d0",
+      "after": "8617f5b9701bc1dc0f8292c765411f01337fa35a3768f46310096555c54a37d0",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/file-checksums.json",
+      "before": "1b07c403fc891a85461e2b603f429f4ff1f1ec8904c57f53d86fe23e71c2c5c9",
+      "after": "1b07c403fc891a85461e2b603f429f4ff1f1ec8904c57f53d86fe23e71c2c5c9",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m0-home.jpg",
+      "before": "cdfc41bbd91bcf81caa7a2bc1a34f63890aa7cb6fda2a1cd6c81e8f055ebaaab",
+      "after": "cdfc41bbd91bcf81caa7a2bc1a34f63890aa7cb6fda2a1cd6c81e8f055ebaaab",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m0-preservation.json",
+      "before": "d0869ef8ae31247cde12deb30ae9411365bc422c848c01d005eb6d3f16341919",
+      "after": "d0869ef8ae31247cde12deb30ae9411365bc422c848c01d005eb6d3f16341919",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-checks.json",
+      "before": "2fb36f17b60912c8123e87a3ecb1f49f5a5de65b77e172f05edcbba96c6cb3c8",
+      "after": "2fb36f17b60912c8123e87a3ecb1f49f5a5de65b77e172f05edcbba96c6cb3c8",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-lint.txt",
+      "before": "74eaf9c2b48224e1962b6e217e5770073e15abd1636259901b2b71b17251d984",
+      "after": "74eaf9c2b48224e1962b6e217e5770073e15abd1636259901b2b71b17251d984",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-preservation.json",
+      "before": "5f16081d057e65422d1f23a591d7fbfeff7b7f75c265bd4c7efe16acca626d80",
+      "after": "5f16081d057e65422d1f23a591d7fbfeff7b7f75c265bd4c7efe16acca626d80",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-red/aggregation.txt",
+      "before": "84c27fa0752d485def08016594a19ad8a9af91c8c840f50db31ee3ba788b58a5",
+      "after": "84c27fa0752d485def08016594a19ad8a9af91c8c840f50db31ee3ba788b58a5",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-red/integration.txt",
+      "before": "78501a5edf971bf7b37a0f0c1f56f44f3cba209f65e2e221cecd0e853bb8c1b7",
+      "after": "78501a5edf971bf7b37a0f0c1f56f44f3cba209f65e2e221cecd0e853bb8c1b7",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-red/metrics.txt",
+      "before": "e3b6b68a74ccb07eb196384dd432c497a5c269e88e43832d9f20d904ce4a4056",
+      "after": "e3b6b68a74ccb07eb196384dd432c497a5c269e88e43832d9f20d904ce4a4056",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-red/money.txt",
+      "before": "1781e6b8183888e0f129ba3129ff1dba891bca8269c2d88fbbf0ec41971ab68d",
+      "after": "1781e6b8183888e0f129ba3129ff1dba891bca8269c2d88fbbf0ec41971ab68d",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-red/root.txt",
+      "before": "1ae57e11b043a4cdfaae14cc4da77bde6a1f8e034d86a6815a862ff9d8439b1e",
+      "after": "1ae57e11b043a4cdfaae14cc4da77bde6a1f8e034d86a6815a862ff9d8439b1e",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-red/rules.txt",
+      "before": "c445738790950e11a0116df9eb51d93017cefc21e76d638bad9e526e4b3752e8",
+      "after": "c445738790950e11a0116df9eb51d93017cefc21e76d638bad9e526e4b3752e8",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-red/validation.txt",
+      "before": "ef81a73a1fb8f78731c845e0a7edf0915a58fb336010f4a223a5d0e7111bd595",
+      "after": "ef81a73a1fb8f78731c845e0a7edf0915a58fb336010f4a223a5d0e7111bd595",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-tests.txt",
+      "before": "7d701f823a943b8a54eceb037f0e90af34ffe2e871fe92f2adb5ae25add57752",
+      "after": "7d701f823a943b8a54eceb037f0e90af34ffe2e871fe92f2adb5ae25add57752",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/m1-typecheck.txt",
+      "before": "193d463cff574ac3535b5f28e3c8db4039a73115f3afbd7b1f67807114d51860",
+      "after": "193d463cff574ac3535b5f28e3c8db4039a73115f3afbd7b1f67807114d51860",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/preparation-report.json",
+      "before": "9f64b9533de1d86e60a0b75c30419f1124519e66b4283476254b90edf599c377",
+      "after": "9f64b9533de1d86e60a0b75c30419f1124519e66b4283476254b90edf599c377",
+      "status": "unchanged"
+    },
+    {
+      "file": "vitest.config.mts",
+      "before": "7620bbcefd6df7daf068403cd68f888562cc43d7c4d6e1c4a83fdf588b28fa84",
+      "after": "7620bbcefd6df7daf068403cd68f888562cc43d7c4d6e1c4a83fdf588b28fa84",
+      "status": "unchanged"
+    }
+  ]
+}

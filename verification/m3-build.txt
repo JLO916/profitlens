@@ -1,0 +1,26 @@
+
+> profitlens@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.3.7 (webpack)
+✓ Running next.config.ts took 751ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1522ms
+  Running TypeScript ...
+  Finished TypeScript in 1338ms ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/3) ...
+✓ Generating static pages using 5 workers (3/3) in 433ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+└ ƒ /api/datasets/[id]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

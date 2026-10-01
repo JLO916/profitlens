@@ -1,0 +1,99 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-config.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-config.test.ts (51 tests | 5 failed) 13ms
+     × permits actual NextRequest for 127.0.0.1:3205 after Next normalizes its URL 4ms
+     × permits actual NextRequest for [::1]:3205 after Next normalizes its URL 1ms
+     × allows status GET without Origin using the real NextRequest Host 0ms
+     × rejects credentials in the URL itself 0ms
+     × treats default ports canonically but does not normalize a supplied Origin 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-config.test.ts > NextRequest normalization keeps the external Host/Origin boundary > permits actual NextRequest for 127.0.0.1:3205 after Next normalizes its URL
+ FAIL  tests/ai-config.test.ts > NextRequest normalization keeps the external Host/Origin boundary > permits actual NextRequest for [::1]:3205 after Next normalizes its URL
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ai-config.test.ts:31:37
+     29|     expect(request.url).toBe("http://localhost:3205/api/insights");
+     30|     expect(request.headers.get("host")).toBe(authority);
+     31|     expect(isLocalRequest(request)).toBe(true);
+       |                                     ^
+     32|     expect(isLocalRequest(request, true)).toBe(true);
+     33|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/ai-config.test.ts > NextRequest normalization keeps the external Host/Origin boundary > allows status GET without Origin using the real NextRequest Host
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ai-config.test.ts:36:37
+     34|   it("allows status GET without Origin using the real NextRequest Host…
+     35|     const request = new NextRequest("http://127.0.0.1:3205/api/insight…
+     36|     expect(isLocalRequest(request)).toBe(true);
+       |                                     ^
+     37|     expect(isLocalRequest(request, true)).toBe(false);
+     38|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/ai-config.test.ts > NextRequest normalization keeps the external Host/Origin boundary > rejects credentials in the URL itself
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/ai-config.test.ts:64:43
+     62|   it("rejects credentials in the URL itself", () => {
+     63|     const request = { url: "http://user:password@localhost:3205/api/in…
+     64|     expect(isLocalRequest(request, true)).toBe(false);
+       |                                           ^
+     65|   });
+     66|   it("treats default ports canonically but does not normalize a suppli…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/ai-config.test.ts > NextRequest normalization keeps the external Host/Origin boundary > treats default ports canonically but does not normalize a supplied Origin
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ai-config.test.ts:68:43
+     66|   it("treats default ports canonically but does not normalize a suppli…
+     67|     const request = new NextRequest("http://127.0.0.1:80/api/insights"…
+     68|     expect(isLocalRequest(request, true)).toBe(true);
+       |                                           ^
+     69|     request.headers.set("origin", "http://127.0.0.1:80");
+     70|     expect(isLocalRequest(request, true)).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 46 passed (51)
+   Start at  15:15:32
+   Duration  243ms (transform 23ms, setup 0ms, import 93ms, tests 13ms, environment 0ms)
+

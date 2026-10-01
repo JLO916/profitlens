@@ -1,0 +1,323 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/metrics.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/metrics.test.ts (27 tests | 27 failed) 7ms
+     × C01 previous matches every golden monetary field 3ms
+     × C02 current matches every golden monetary field 0ms
+     × calculates all rates from summed amounts with 12-place half-up output 0ms
+     × C06 propagates missing cogs through GP and contribution, preserving revenue and independent rates 0ms
+     × C08 missing ad is unknown, while before-marketing contribution remains known 0ms
+     × missing channel cost does not erase product gross profit or masquerade as a complete contribution 0ms
+     × C10 zero ad leaves contribution calculable and MER undefined 0ms
+     × C11 pure refund day uses booked refund once and never invents a cogs reversal 0ms
+     × C12 negative booked cogs reverses cost exactly once 0ms
+     × C14 N = 0 has visible amounts but undefined N-denominator rates and MER 0ms
+     × C17 computes a ratio of totals, not an average of two unequal row ratios 0ms
+     × retains signed credits for all booked channel expenses 0ms
+     × does not mutate caller totals or reason arrays 0ms
+     × uses exact absolute money difference and growth only for positive previous amount 0ms
+     × previous -10.00/current 5.00 preserves difference without invalid growth 0ms
+     × previous 0.00/current 5.00 preserves difference without invalid growth 0ms
+     × previous 0.00/current -5.00 preserves difference without invalid growth 0ms
+     × previous -10.00/current -20.00 preserves difference without invalid growth 0ms
+     × identifies turning negative from a positive previous value 0ms
+     × propagates null period comparison without sign claims 0ms
+     × C13 rejects invalid metric value "" at comparison boundary 0ms
+     × C13 rejects invalid metric value "NaN" at comparison boundary 0ms
+     × C13 rejects invalid metric value "Infinity" at comparison boundary 0ms
+     × reports rate differences in percentage points 0ms
+     × C04 independently matches all nine signed golden components and reconciles to the cent 0ms
+     × preserves known components with no partial bridge total or reconciliation claim 0ms
+     × handles cent-scale changes and negative booked credits exactly 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 27 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C01 previous matches every golden monetary field
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C02 current matches every golden monetary field
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:38:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > calculates all rates from summed amounts with 12-place half-up output
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:46:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C06 propagates missing cogs through GP and contribution, preserving revenue and independent rates
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:59:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C08 missing ad is unknown, while before-marketing contribution remains known
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:69:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > missing channel cost does not erase product gross profit or masquerade as a complete contribution
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:77:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C10 zero ad leaves contribution calculable and MER undefined
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:85:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C11 pure refund day uses booked refund once and never invents a cogs reversal
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:93:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C12 negative booked cogs reverses cost exactly once
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:103:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C14 N = 0 has visible amounts but undefined N-denominator rates and MER
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:110:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > C17 computes a ratio of totals, not an average of two unequal row ratios
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:119:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > retains signed credits for all booked channel expenses
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:123:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 metrics — independent monetary oracles > does not mutate caller totals or reason arrays
+Error: M1 RED: calculateMetrics not implemented
+ ❯ calculateMetrics src/domain/metrics.ts:4:9
+      2|
+      3| export function calculateMetrics(_totals: Totals): Metrics {
+      4|   throw new Error("M1 RED: calculateMetrics not implemented");
+       |         ^
+      5| }
+      6|
+ ❯ tests/metrics.test.ts:130:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/27]⎯
+
+ FAIL  tests/metrics.test.ts > period comparison > uses exact absolute money difference and growth only for positive previous amount
+Error: M1 RED: compareMoney not implemented
+ ❯ compareMoney src/domain/metrics.ts:12:9
+     10|   transition: "turned_positive" | "turned_negative" | "no_sign_change"…
+     11| } {
+     12|   throw new Error("M1 RED: compareMoney not implemented");
+       |         ^
+     13| }
+     14|
+ ❯ tests/metrics.test.ts:137:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/27]⎯
+
+ FAIL  tests/metrics.test.ts > period comparison > previous -10.00/current 5.00 preserves difference without invalid growth
+ FAIL  tests/metrics.test.ts > period comparison > previous 0.00/current 5.00 preserves difference without invalid growth
+ FAIL  tests/metrics.test.ts > period comparison > previous 0.00/current -5.00 preserves difference without invalid growth
+ FAIL  tests/metrics.test.ts > period comparison > previous -10.00/current -20.00 preserves difference without invalid growth
+Error: M1 RED: compareMoney not implemented
+ ❯ compareMoney src/domain/metrics.ts:12:9
+     10|   transition: "turned_positive" | "turned_negative" | "no_sign_change"…
+     11| } {
+     12|   throw new Error("M1 RED: compareMoney not implemented");
+       |         ^
+     13| }
+     14|
+ ❯ tests/metrics.test.ts:148:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/27]⎯
+
+ FAIL  tests/metrics.test.ts > period comparison > identifies turning negative from a positive previous value
+Error: M1 RED: compareMoney not implemented
+ ❯ compareMoney src/domain/metrics.ts:12:9
+     10|   transition: "turned_positive" | "turned_negative" | "no_sign_change"…
+     11| } {
+     12|   throw new Error("M1 RED: compareMoney not implemented");
+       |         ^
+     13| }
+     14|
+ ❯ tests/metrics.test.ts:156:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/27]⎯
+
+ FAIL  tests/metrics.test.ts > period comparison > propagates null period comparison without sign claims
+Error: M1 RED: compareMoney not implemented
+ ❯ compareMoney src/domain/metrics.ts:12:9
+     10|   transition: "turned_positive" | "turned_negative" | "no_sign_change"…
+     11| } {
+     12|   throw new Error("M1 RED: compareMoney not implemented");
+       |         ^
+     13| }
+     14|
+ ❯ tests/metrics.test.ts:162:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/27]⎯
+
+ FAIL  tests/metrics.test.ts > period comparison > C13 rejects invalid metric value "" at comparison boundary
+ FAIL  tests/metrics.test.ts > period comparison > C13 rejects invalid metric value "NaN" at comparison boundary
+ FAIL  tests/metrics.test.ts > period comparison > C13 rejects invalid metric value "Infinity" at comparison boundary
+Error: M1 RED: compareMoney not implemented
+ ❯ compareMoney src/domain/metrics.ts:12:9
+     10|   transition: "turned_positive" | "turned_negative" | "no_sign_change"…
+     11| } {
+     12|   throw new Error("M1 RED: compareMoney not implemented");
+       |         ^
+     13| }
+     14|
+ ❯ tests/metrics.test.ts:169:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/27]⎯
+
+ FAIL  tests/metrics.test.ts > period comparison > reports rate differences in percentage points
+Error: M1 RED: percentagePointChange not implemented
+ ❯ percentagePointChange src/domain/metrics.ts:16:9
+     14|
+     15| export function percentagePointChange(_previous: Metric, _current: Met…
+     16|   throw new Error("M1 RED: percentagePointChange not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/metrics.test.ts:177:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 exact bridge > C04 independently matches all nine signed golden components and reconciles to the cent
+Error: M1 RED: buildBridge not implemented
+ ❯ buildBridge src/domain/bridge.ts:10:9
+      8|   interpretation: "observed_amount_changes_not_causality";
+      9| } {
+     10|   throw new Error("M1 RED: buildBridge not implemented");
+       |         ^
+     11| }
+     12|
+ ❯ tests/metrics.test.ts:186:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 exact bridge > preserves known components with no partial bridge total or reconciliation claim
+Error: M1 RED: buildBridge not implemented
+ ❯ buildBridge src/domain/bridge.ts:10:9
+      8|   interpretation: "observed_amount_changes_not_causality";
+      9| } {
+     10|   throw new Error("M1 RED: buildBridge not implemented");
+       |         ^
+     11| }
+     12|
+ ❯ tests/metrics.test.ts:198:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/27]⎯
+
+ FAIL  tests/metrics.test.ts > M1 exact bridge > handles cent-scale changes and negative booked credits exactly
+Error: M1 RED: buildBridge not implemented
+ ❯ buildBridge src/domain/bridge.ts:10:9
+      8|   interpretation: "observed_amount_changes_not_causality";
+      9| } {
+     10|   throw new Error("M1 RED: buildBridge not implemented");
+       |         ^
+     11| }
+     12|
+ ❯ tests/metrics.test.ts:207:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/27]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  27 failed (27)
+   Start at  16:51:35
+   Duration  210ms (transform 27ms, setup 0ms, import 35ms, tests 7ms, environment 0ms)
+

@@ -1,0 +1,36 @@
+{
+  "previous": {
+    "net_revenue": "464.00",
+    "gross_profit": "244.00",
+    "contribution_before_marketing": "200.00",
+    "contribution_after_marketing": "140.00"
+  },
+  "current": {
+    "net_revenue": "600.00",
+    "gross_profit": "260.00",
+    "contribution_before_marketing": "200.00",
+    "contribution_after_marketing": "10.00"
+  },
+  "current_channels": {
+    "DTC": { "net_revenue": "400.00", "contribution_after_marketing": "40.00" },
+    "MARKETPLACE": { "net_revenue": "200.00", "contribution_after_marketing": "-30.00" }
+  },
+  "bridge": {
+    "gross_sales": "340.00",
+    "discounts": "-4.00",
+    "refunds": "-200.00",
+    "cogs_net": "-120.00",
+    "platform_fees": "0.00",
+    "payment_fees": "-2.00",
+    "fulfillment_costs": "-14.00",
+    "other_variable_costs": "0.00",
+    "ad_spend": "-130.00",
+    "sum": "-130.00"
+  },
+  "negative_product": {
+    "channel": "MARKETPLACE",
+    "sku": "-TEST()",
+    "net_revenue": "-40.00",
+    "gross_profit": "-100.00"
+  }
+}

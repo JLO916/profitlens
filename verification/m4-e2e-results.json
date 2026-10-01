@@ -1,0 +1,14 @@
+{
+  "artifact_status": "original_report_unavailable",
+  "milestone": "M4",
+  "original_sha256": "d83a62f9dbc41919cfa0a23aa6cdaea28cdc791f1f168380a2698ae2023234a4",
+  "incident": "M5 Playwright --list ran while the reporter still targeted m4-e2e-results.json and overwrote the original final JSON. No complete backup was available.",
+  "not_a_test_result": true,
+  "preserved_m4_evidence": [
+    "verification/m4-e2e.txt",
+    "verification/m4-browser-final-logs.json",
+    "verification/m4-browser-meta.jsonl"
+  ],
+  "m5_list_saved_as": "verification/m5-e2e-list.json",
+  "latest_independent_full_regression": "verification/m5-e2e-results.json"
+}

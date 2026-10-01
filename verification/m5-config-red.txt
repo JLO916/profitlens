@@ -1,0 +1,195 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-config.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-config.test.ts (24 tests | 13 failed) 34ms
+     × PUBLIC_DEMO overrides enabled/key/model 4ms
+     × PUBLIC_DEMO=true also blocks the backend 0ms
+     × rejects missing key without asking for one in UI 0ms
+     × has no hardcoded model fallback 0ms
+     × model comes only from server env with bounded output and timeout 0ms
+     × unknown APP_MODE PUBLIC is closed 0ms
+     × unknown APP_MODE production is closed 0ms
+     × unknown APP_MODE unknown is closed 0ms
+     × does not accept a key-shaped model string 0ms
+     × permits explicit same origin http://127.0.0.1:3000 24ms
+     × permits explicit same origin http://localhost:3100 0ms
+     × permits explicit same origin http://[::1]:3000 0ms
+     × status GET does not require Origin 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > PUBLIC_DEMO overrides enabled/key/model
+AssertionError: expected { Object (available, reason) } to deeply equal { available: false, …(1) }
+
+- Expected
++ Received
+
+  {
+    "available": false,
+-   "reason": "PUBLIC_DEMO",
++   "reason": "DISABLED",
+  }
+
+ ❯ tests/ai-config.test.ts:7:117
+      5| describe("M5 opt-in server configuration", () => {
+      6|   it("defaults disabled without reading/returning secrets", () => expe…
+      7|   it("PUBLIC_DEMO overrides enabled/key/model", () => expect(readAiCon…
+       |                                                                                                                     ^
+      8|   it("PUBLIC_DEMO=true also blocks the backend", () => expect(readAiCo…
+      9|   it("rejects missing key without asking for one in UI", () => expect(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > PUBLIC_DEMO=true also blocks the backend
+AssertionError: expected { Object (available, reason) } to deeply equal { available: false, …(1) }
+
+- Expected
++ Received
+
+  {
+    "available": false,
+-   "reason": "PUBLIC_DEMO",
++   "reason": "DISABLED",
+  }
+
+ ❯ tests/ai-config.test.ts:8:114
+      6|   it("defaults disabled without reading/returning secrets", () => expe…
+      7|   it("PUBLIC_DEMO overrides enabled/key/model", () => expect(readAiCon…
+      8|   it("PUBLIC_DEMO=true also blocks the backend", () => expect(readAiCo…
+       |                                                                                                                  ^
+      9|   it("rejects missing key without asking for one in UI", () => expect(…
+     10|   it("has no hardcoded model fallback", () => expect(readAiConfig({ ..…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > rejects missing key without asking for one in UI
+AssertionError: expected { Object (available, reason) } to deeply equal { available: false, reason: 'NO_KEY' }
+
+- Expected
++ Received
+
+  {
+    "available": false,
+-   "reason": "NO_KEY",
++   "reason": "DISABLED",
+  }
+
+ ❯ tests/ai-config.test.ts:9:122
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > has no hardcoded model fallback
+AssertionError: expected { Object (available, reason) } to deeply equal { Object (available, reason) }
+
+- Expected
++ Received
+
+  {
+    "available": false,
+-   "reason": "NO_MODEL",
++   "reason": "DISABLED",
+  }
+
+ ❯ tests/ai-config.test.ts:10:102
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > model comes only from server env with bounded output and timeout
+AssertionError: expected { Object (available, reason) } to deeply equal { available: true, …(4) }
+
+- Expected
++ Received
+
+  {
+-   "apiKey": "test-only-secret",
+-   "available": true,
+-   "maxOutputTokens": 4096,
+-   "model": "configured-structured-model",
+-   "timeoutMs": 15000,
++   "available": false,
++   "reason": "DISABLED",
+  }
+
+ ❯ tests/ai-config.test.ts:11:110
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > unknown APP_MODE PUBLIC is closed
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > unknown APP_MODE production is closed
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > unknown APP_MODE unknown is closed
+AssertionError: expected { Object (available, reason) } to deeply equal { available: false, …(1) }
+
+- Expected
++ Received
+
+  {
+    "available": false,
+-   "reason": "INVALID_CONFIG",
++   "reason": "DISABLED",
+  }
+
+ ❯ tests/ai-config.test.ts:13:140
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  tests/ai-config.test.ts > M5 opt-in server configuration > does not accept a key-shaped model string
+AssertionError: expected { Object (available, reason) } to deeply equal { available: false, …(1) }
+
+- Expected
++ Received
+
+  {
+    "available": false,
+-   "reason": "INVALID_CONFIG",
++   "reason": "DISABLED",
+  }
+
+ ❯ tests/ai-config.test.ts:14:126
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  tests/ai-config.test.ts > M5 localhost and same-origin boundary > permits explicit same origin http://127.0.0.1:3000
+ FAIL  tests/ai-config.test.ts > M5 localhost and same-origin boundary > permits explicit same origin http://localhost:3100
+ FAIL  tests/ai-config.test.ts > M5 localhost and same-origin boundary > permits explicit same origin http://[::1]:3000
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ai-config.test.ts:17:230
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  tests/ai-config.test.ts > M5 localhost and same-origin boundary > status GET does not require Origin
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ai-config.test.ts:18:124
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 11 passed (24)
+   Start at  14:52:14
+   Duration  218ms (transform 24ms, setup 0ms, import 34ms, tests 34ms, environment 0ms)
+

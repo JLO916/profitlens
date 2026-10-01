@@ -1,0 +1,186 @@
+{
+  "milestone": "M1",
+  "recorded_at": "2026-09-30T09:07:22.429Z",
+  "checks": [
+    {
+      "command": "npm test -- --run",
+      "status": "passed",
+      "exit_code": 0,
+      "files": 7,
+      "tests": 165,
+      "skipped": 0,
+      "output": "verification/m1-tests.txt"
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed",
+      "exit_code": 0,
+      "output": "verification/m1-typecheck.txt"
+    },
+    {
+      "command": "npm run lint",
+      "status": "passed",
+      "exit_code": 0,
+      "warnings": 0,
+      "output": "verification/m1-lint.txt"
+    },
+    {
+      "command": "NEXT_TELEMETRY_DISABLED=1 npm run build",
+      "status": "passed",
+      "exit_code": 0,
+      "bundler": "webpack",
+      "routes": [
+        "/",
+        "/_not-found"
+      ],
+      "note": "Observed command result; build preceded final test-only scope-isolation assertions."
+    },
+    {
+      "command": "git status --short --branch",
+      "status": "unavailable",
+      "exit_code": 128,
+      "note": "Existing folder is not a Git repository; no reinitialization performed."
+    },
+    {
+      "command": "npm ci",
+      "status": "not_run_in_M1",
+      "note": "Exact npm install performed; M0 clean install history retained separately."
+    },
+    {
+      "command": "npm run test:e2e",
+      "status": "not_implemented_not_run",
+      "note": "Deferred to UI milestone."
+    },
+    {
+      "command": "browser acceptance / live AI / scenarios / deployment",
+      "status": "not_run",
+      "note": "Outside M1; original UI preserved."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "C01",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C02",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C03",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C04",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C05",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C06",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C07",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C08",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C09",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C10",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C11",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C12",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C13",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C14",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C15",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C16",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C17",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    },
+    {
+      "id": "C18",
+      "status": "passed",
+      "mapping": "docs/STATUS.md"
+    }
+  ],
+  "red": [
+    {
+      "file": "verification/m1-red/root.txt",
+      "tests": "Tests  no tests"
+    },
+    {
+      "file": "verification/m1-red/money.txt",
+      "tests": "Tests  8 failed | 13 passed (21)"
+    },
+    {
+      "file": "verification/m1-red/metrics.txt",
+      "tests": "Tests  27 failed (27)"
+    },
+    {
+      "file": "verification/m1-red/validation.txt",
+      "tests": "Tests  75 failed (75)"
+    },
+    {
+      "file": "verification/m1-red/integration.txt",
+      "tests": "Tests  16 failed | 2 passed (18)"
+    },
+    {
+      "file": "verification/m1-red/rules.txt",
+      "tests": "Tests  14 failed (14)"
+    },
+    {
+      "file": "verification/m1-red/aggregation.txt",
+      "tests": "Tests  2 failed | 1 passed (3)"
+    }
+  ],
+  "preservation": "verification/m1-preservation.json",
+  "golden_expected_sha256": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+  "no_fixture_writes": true,
+  "preservation_passed": true
+}

@@ -1,0 +1,701 @@
+{
+  "recorded_at": "2026-10-01T06:13:15.186037+00:00",
+  "note": "Latest actual result per project/title across the full 90-test run and additional 3-test edge run. Historical failed attempts remain in original logs.",
+  "total": 93,
+  "statuses": {
+    "passed": 93
+  },
+  "events": {
+    "console:error": 3,
+    "requestfailed": 3
+  },
+  "records": [
+    {
+      "recorded_at": "2026-10-01T06:05:45.768Z",
+      "project": "desktop",
+      "test": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:46.543Z",
+      "project": "desktop",
+      "test": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:47.471Z",
+      "project": "desktop",
+      "test": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:48.177Z",
+      "project": "desktop",
+      "test": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:49.194Z",
+      "project": "desktop",
+      "test": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:50.155Z",
+      "project": "desktop",
+      "test": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:50.863Z",
+      "project": "desktop",
+      "test": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:51.621Z",
+      "project": "desktop",
+      "test": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:52.514Z",
+      "project": "desktop",
+      "test": "malformed 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:53.396Z",
+      "project": "desktop",
+      "test": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:54.650Z",
+      "project": "desktop",
+      "test": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:55.722Z",
+      "project": "desktop",
+      "test": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:56.645Z",
+      "project": "desktop",
+      "test": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:57.484Z",
+      "project": "desktop",
+      "test": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:58.474Z",
+      "project": "desktop",
+      "test": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:10.503Z",
+      "project": "tablet",
+      "test": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:11.285Z",
+      "project": "tablet",
+      "test": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:12.185Z",
+      "project": "tablet",
+      "test": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:12.859Z",
+      "project": "tablet",
+      "test": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:13.862Z",
+      "project": "tablet",
+      "test": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:14.771Z",
+      "project": "tablet",
+      "test": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:15.427Z",
+      "project": "tablet",
+      "test": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:16.107Z",
+      "project": "tablet",
+      "test": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:16.987Z",
+      "project": "tablet",
+      "test": "malformed 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:17.851Z",
+      "project": "tablet",
+      "test": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:19.310Z",
+      "project": "tablet",
+      "test": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:20.333Z",
+      "project": "tablet",
+      "test": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:21.379Z",
+      "project": "tablet",
+      "test": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:22.269Z",
+      "project": "tablet",
+      "test": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:23.233Z",
+      "project": "tablet",
+      "test": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:34.750Z",
+      "project": "mobile",
+      "test": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:35.472Z",
+      "project": "mobile",
+      "test": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:36.382Z",
+      "project": "mobile",
+      "test": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:37.037Z",
+      "project": "mobile",
+      "test": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:38.013Z",
+      "project": "mobile",
+      "test": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:39.015Z",
+      "project": "mobile",
+      "test": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:39.662Z",
+      "project": "mobile",
+      "test": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:40.353Z",
+      "project": "mobile",
+      "test": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:41.248Z",
+      "project": "mobile",
+      "test": "malformed 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:42.077Z",
+      "project": "mobile",
+      "test": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:43.315Z",
+      "project": "mobile",
+      "test": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:44.315Z",
+      "project": "mobile",
+      "test": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:45.235Z",
+      "project": "mobile",
+      "test": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:46.032Z",
+      "project": "mobile",
+      "test": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:46.911Z",
+      "project": "mobile",
+      "test": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:10:06.148Z",
+      "project": "desktop",
+      "test": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:10:07.478Z",
+      "project": "tablet",
+      "test": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:10:08.741Z",
+      "project": "mobile",
+      "test": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:05:59.444Z",
+      "project": "desktop",
+      "test": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:00.303Z",
+      "project": "desktop",
+      "test": "切換 golden 與 demo 會重算同一組 KPI",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:01.143Z",
+      "project": "desktop",
+      "test": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:01.646Z",
+      "project": "desktop",
+      "test": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:02.342Z",
+      "project": "desktop",
+      "test": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:03.047Z",
+      "project": "desktop",
+      "test": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:03.630Z",
+      "project": "desktop",
+      "test": "無效期間不覆寫已套用的分析範圍",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:04.498Z",
+      "project": "desktop",
+      "test": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:05.128Z",
+      "project": "desktop",
+      "test": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:05.614Z",
+      "project": "desktop",
+      "test": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:06.105Z",
+      "project": "desktop",
+      "test": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:06.732Z",
+      "project": "desktop",
+      "test": "blocking 資料集載入失敗仍保留先前成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:07.045Z",
+      "project": "desktop",
+      "test": "載入中與 HTTP 故障均有明確狀態",
+      "status": "passed",
+      "events": [
+        {
+          "kind": "console:error",
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:3100/api/datasets/demo"
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:07.538Z",
+      "project": "desktop",
+      "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+      "status": "passed",
+      "events": [
+        {
+          "kind": "requestfailed",
+          "message": "net::ERR_ABORTED",
+          "url": "http://127.0.0.1:3100/api/datasets/demo"
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:08.372Z",
+      "project": "desktop",
+      "test": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:24.154Z",
+      "project": "tablet",
+      "test": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:25.058Z",
+      "project": "tablet",
+      "test": "切換 golden 與 demo 會重算同一組 KPI",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:25.861Z",
+      "project": "tablet",
+      "test": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:26.315Z",
+      "project": "tablet",
+      "test": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:26.916Z",
+      "project": "tablet",
+      "test": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:27.566Z",
+      "project": "tablet",
+      "test": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:28.161Z",
+      "project": "tablet",
+      "test": "無效期間不覆寫已套用的分析範圍",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:29.003Z",
+      "project": "tablet",
+      "test": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:29.545Z",
+      "project": "tablet",
+      "test": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:30.017Z",
+      "project": "tablet",
+      "test": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:30.473Z",
+      "project": "tablet",
+      "test": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:31.106Z",
+      "project": "tablet",
+      "test": "blocking 資料集載入失敗仍保留先前成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:31.377Z",
+      "project": "tablet",
+      "test": "載入中與 HTTP 故障均有明確狀態",
+      "status": "passed",
+      "events": [
+        {
+          "kind": "console:error",
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:3100/api/datasets/demo"
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:31.843Z",
+      "project": "tablet",
+      "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+      "status": "passed",
+      "events": [
+        {
+          "kind": "requestfailed",
+          "message": "net::ERR_ABORTED",
+          "url": "http://127.0.0.1:3100/api/datasets/demo"
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:32.723Z",
+      "project": "tablet",
+      "test": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:47.831Z",
+      "project": "mobile",
+      "test": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:48.728Z",
+      "project": "mobile",
+      "test": "切換 golden 與 demo 會重算同一組 KPI",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:49.528Z",
+      "project": "mobile",
+      "test": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:49.996Z",
+      "project": "mobile",
+      "test": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:50.548Z",
+      "project": "mobile",
+      "test": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:51.147Z",
+      "project": "mobile",
+      "test": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:51.724Z",
+      "project": "mobile",
+      "test": "無效期間不覆寫已套用的分析範圍",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:52.571Z",
+      "project": "mobile",
+      "test": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:53.083Z",
+      "project": "mobile",
+      "test": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:53.535Z",
+      "project": "mobile",
+      "test": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:53.970Z",
+      "project": "mobile",
+      "test": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:54.588Z",
+      "project": "mobile",
+      "test": "blocking 資料集載入失敗仍保留先前成功資料",
+      "status": "passed",
+      "events": []
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:54.886Z",
+      "project": "mobile",
+      "test": "載入中與 HTTP 故障均有明確狀態",
+      "status": "passed",
+      "events": [
+        {
+          "kind": "console:error",
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:3100/api/datasets/demo"
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:55.343Z",
+      "project": "mobile",
+      "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+      "status": "passed",
+      "events": [
+        {
+          "kind": "requestfailed",
+          "message": "net::ERR_ABORTED",
+          "url": "http://127.0.0.1:3100/api/datasets/demo"
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-10-01T06:06:56.136Z",
+      "project": "mobile",
+      "test": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+      "status": "passed",
+      "events": []
+    }
+  ]
+}

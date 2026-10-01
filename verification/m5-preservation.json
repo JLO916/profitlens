@@ -1,0 +1,23 @@
+{
+  "baseline_files": 273,
+  "deleted": [],
+  "modified": [
+    "vitest.config.mts",
+    "README.md",
+    "package-lock.json",
+    "package.json",
+    "playwright.config.ts",
+    ".env.example",
+    "tests/e2e/workspace.spec.ts",
+    "tests/e2e/import.spec.ts",
+    "tests/e2e/scenarios.spec.ts",
+    "docs/STATUS.md",
+    "docs/DECISIONS.md",
+    "verification/m4-e2e-results.json",
+    "src/app/globals.css",
+    "src/components/dashboard.tsx"
+  ],
+  "protected_files": 70,
+  "protected_changed": [],
+  "known_artifact_incident": "M4 final JSON overwritten by M5 --list; original SHA and explicit unavailability notice at original path; all other M4 evidence unchanged."
+}

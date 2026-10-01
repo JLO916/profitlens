@@ -1,0 +1,90 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/money.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/money.test.ts (21 tests | 8 failed) 6ms
+     × 十進位以分精確相加，排列不改合計 2ms
+     × 超過 Number 安全整數的大金額仍精確到分 0ms
+     × null 保留未知 0ms
+     × undefined 保留未知 0ms
+     ×  保留未知 0ms
+     ×    保留未知 0ms
+     × null 連同原因向上傳遞，不能變成有效子集總計 0ms
+     × 驗證閏年、格式，日期枚舉不受時區或DST影響 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/money.test.ts > C13/C15 精確金額與未知 > 十進位以分精確相加，排列不改合計
+Error: M1 尚未實作
+ ❯ parseCents src/domain/money.ts:2:68
+      1| import type { Amount, Metric } from "./types";
+      2| export function parseCents(_value: unknown): bigint | null { throw new…
+       |                                                                    ^
+      3| export function formatCents(_cents: bigint): string { throw new Error(…
+      4| export function sumAmounts(_amounts: readonly Amount[]): Amount { thro…
+ ❯ tests/money.test.ts:7:68
+ ❯ tests/money.test.ts:7:45
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/money.test.ts > C13/C15 精確金額與未知 > 超過 Number 安全整數的大金額仍精確到分
+Error: M1 尚未實作
+ ❯ parseCents src/domain/money.ts:2:68
+      1| import type { Amount, Metric } from "./types";
+      2| export function parseCents(_value: unknown): bigint | null { throw new…
+       |                                                                    ^
+      3| export function formatCents(_cents: bigint): string { throw new Error(…
+      4| export function sumAmounts(_amounts: readonly Amount[]): Amount { thro…
+ ❯ tests/money.test.ts:15:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/money.test.ts > C13/C15 精確金額與未知 > null 保留未知
+ FAIL  tests/money.test.ts > C13/C15 精確金額與未知 > undefined 保留未知
+ FAIL  tests/money.test.ts > C13/C15 精確金額與未知 >  保留未知
+ FAIL  tests/money.test.ts > C13/C15 精確金額與未知 >    保留未知
+Error: M1 尚未實作
+ ❯ parseCents src/domain/money.ts:2:68
+      1| import type { Amount, Metric } from "./types";
+      2| export function parseCents(_value: unknown): bigint | null { throw new…
+       |                                                                    ^
+      3| export function formatCents(_cents: bigint): string { throw new Error(…
+      4| export function sumAmounts(_amounts: readonly Amount[]): Amount { thro…
+ ❯ tests/money.test.ts:19:67
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/money.test.ts > C13/C15 精確金額與未知 > null 連同原因向上傳遞，不能變成有效子集總計
+Error: M1 尚未實作
+ ❯ sumAmounts src/domain/money.ts:4:73
+      2| export function parseCents(_value: unknown): bigint | null { throw new…
+      3| export function formatCents(_cents: bigint): string { throw new Error(…
+      4| export function sumAmounts(_amounts: readonly Amount[]): Amount { thro…
+       |                                                                         ^
+      5| export function subtractAmounts(_first: Amount, ..._rest: Amount[]): A…
+      6| export function moneyMetric(_amount: Amount): Metric { throw new Error…
+ ❯ tests/money.test.ts:24:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  tests/money.test.ts > C16 真實商業日期 > 驗證閏年、格式，日期枚舉不受時區或DST影響
+Error: M1 尚未實作
+ ❯ isBusinessDate src/domain/date.ts:2:75
+      1| import type { Manifest } from "./types";
+      2| export function isBusinessDate(_value: unknown): _value is string { th…
+       |                                                                           ^
+      3| export function dateRange(_start: string, _end: string): string[] { th…
+      4| export function validatePeriods(_manifest: Pick<Manifest, "coverage_st…
+ ❯ tests/money.test.ts:34:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 13 passed (21)
+   Start at  16:50:55
+   Duration  367ms (transform 24ms, setup 0ms, import 33ms, tests 6ms, environment 0ms)
+

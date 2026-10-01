@@ -1,0 +1,165 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/workspace.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/workspace.test.ts (12 tests | 12 failed) 124ms
+     × golden calls M1 and agrees with existing fixed reference JSON 12ms
+     × demo calls M1 and agrees with existing fixed reference JSON 32ms
+     × demo weekly totals reconcile to fixed period totals and never mix the two periods 31ms
+     × short custom periods keep final partial weeks and share active channel scope 20ms
+     × missing advertisement remains a null gap in the weekly contribution 3ms
+     × filter hash uses canonical active scope and changes for channels or periods 20ms
+     × dataset hashing is stable for object-key order and sensitive to input text 0ms
+     × formats money without Number precision loss and preserves two decimal places 0ms
+     × formats rates as percentages, not ratio numbers or monetary calculations 0ms
+     × provides formulas and correct raw-field dependencies including MER gates 0ms
+     × evidence keeps raw booked rows and never substitutes an aggregate 3ms
+     × missing sources and missing booked cost remain null evidence 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/workspace.test.ts > M2 application snapshot > golden calls M1 and agrees with existing fixed reference JSON
+ FAIL  tests/workspace.test.ts > M2 application snapshot > demo calls M1 and agrees with existing fixed reference JSON
+Error: M2 RED: hashInput not implemented
+ ❯ hashInput src/application/workspace.ts:4:9
+      2|
+      3| export async function hashInput(_input: DatasetInput): Promise<string>…
+      4|   throw new Error("M2 RED: hashInput not implemented");
+       |         ^
+      5| }
+      6| export async function createSnapshot(_dataset: Dataset, _filters: Anal…
+ ❯ tests/workspace.test.ts:26:66
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 application snapshot > demo weekly totals reconcile to fixed period totals and never mix the two periods
+Error: M2 RED: hashInput not implemented
+ ❯ hashInput src/application/workspace.ts:4:9
+      2|
+      3| export async function hashInput(_input: DatasetInput): Promise<string>…
+      4|   throw new Error("M2 RED: hashInput not implemented");
+       |         ^
+      5| }
+      6| export async function createSnapshot(_dataset: Dataset, _filters: Anal…
+ ❯ tests/workspace.test.ts:42:66
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 application snapshot > short custom periods keep final partial weeks and share active channel scope
+Error: M2 RED: hashInput not implemented
+ ❯ hashInput src/application/workspace.ts:4:9
+      2|
+      3| export async function hashInput(_input: DatasetInput): Promise<string>…
+      4|   throw new Error("M2 RED: hashInput not implemented");
+       |         ^
+      5| }
+      6| export async function createSnapshot(_dataset: Dataset, _filters: Anal…
+ ❯ tests/workspace.test.ts:59:206
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 application snapshot > missing advertisement remains a null gap in the weekly contribution
+Error: M2 RED: hashInput not implemented
+ ❯ hashInput src/application/workspace.ts:4:9
+      2|
+      3| export async function hashInput(_input: DatasetInput): Promise<string>…
+      4|   throw new Error("M2 RED: hashInput not implemented");
+       |         ^
+      5| }
+      6| export async function createSnapshot(_dataset: Dataset, _filters: Anal…
+ ❯ tests/workspace.test.ts:68:66
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 application snapshot > filter hash uses canonical active scope and changes for channels or periods
+Error: M2 RED: hashInput not implemented
+ ❯ hashInput src/application/workspace.ts:4:9
+      2|
+      3| export async function hashInput(_input: DatasetInput): Promise<string>…
+      4|   throw new Error("M2 RED: hashInput not implemented");
+       |         ^
+      5| }
+      6| export async function createSnapshot(_dataset: Dataset, _filters: Anal…
+ ❯ tests/workspace.test.ts:78:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 application snapshot > dataset hashing is stable for object-key order and sensitive to input text
+Error: M2 RED: hashInput not implemented
+ ❯ hashInput src/application/workspace.ts:4:9
+      2|
+      3| export async function hashInput(_input: DatasetInput): Promise<string>…
+      4|   throw new Error("M2 RED: hashInput not implemented");
+       |         ^
+      5| }
+      6| export async function createSnapshot(_dataset: Dataset, _filters: Anal…
+ ❯ tests/workspace.test.ts:93:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 exact presentation and source evidence > formats money without Number precision loss and preserves two decimal places
+Error: M2 RED: formatMoney
+ ❯ formatMoney src/application/presentation.ts:3:68
+      1| import type { Dataset, MetricName, SourceRef } from "../domain/types";
+      2| export const metricDefinitions = {} as Record<MetricName, { label: str…
+      3| export function formatMoney(_value: string | null): string { throw new…
+       |                                                                    ^
+      4| export function formatSignedMoney(_value: string | null): string { thr…
+      5| export function formatRate(_value: string | null): string { throw new …
+ ❯ tests/workspace.test.ts:103:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 exact presentation and source evidence > formats rates as percentages, not ratio numbers or monetary calculations
+Error: M2 RED: formatRate
+ ❯ formatRate src/application/presentation.ts:5:67
+      3| export function formatMoney(_value: string | null): string { throw new…
+      4| export function formatSignedMoney(_value: string | null): string { thr…
+      5| export function formatRate(_value: string | null): string { throw new …
+       |                                                                   ^
+      6| export function evidenceRows(_dataset: Dataset, _sources: SourceRef[])…
+      7|
+ ❯ tests/workspace.test.ts:113:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 exact presentation and source evidence > provides formulas and correct raw-field dependencies including MER gates
+TypeError: Cannot read properties of undefined (reading 'fields')
+ ❯ tests/workspace.test.ts:121:59
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 exact presentation and source evidence > evidence keeps raw booked rows and never substitutes an aggregate
+Error: M2 RED: evidenceRows
+ ❯ evidenceRows src/application/presentation.ts:6:80
+      4| export function formatSignedMoney(_value: string | null): string { thr…
+      5| export function formatRate(_value: string | null): string { throw new …
+      6| export function evidenceRows(_dataset: Dataset, _sources: SourceRef[])…
+       |                                                                                ^
+      7|
+ ❯ tests/workspace.test.ts:135:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  tests/workspace.test.ts > M2 exact presentation and source evidence > missing sources and missing booked cost remain null evidence
+Error: M2 RED: evidenceRows
+ ❯ evidenceRows src/application/presentation.ts:6:80
+      4| export function formatSignedMoney(_value: string | null): string { thr…
+      5| export function formatRate(_value: string | null): string { throw new …
+      6| export function evidenceRows(_dataset: Dataset, _sources: SourceRef[])…
+       |                                                                                ^
+      7|
+ ❯ tests/workspace.test.ts:146:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  12 failed (12)
+   Start at  17:15:23
+   Duration  529ms (transform 86ms, setup 0ms, import 185ms, tests 124ms, environment 0ms)
+

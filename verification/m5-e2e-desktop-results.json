@@ -1,0 +1,658 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/25.8.2/bin/node",
+      "/Users/j-work/Desktop/profitlens-codex-starter/node_modules/.bin/playwright",
+      "test",
+      "tests/e2e/ai.spec.ts",
+      "--project=desktop"
+    ],
+    "configFile": "/Users/j-work/Desktop/profitlens-codex-starter/playwright.config.ts",
+    "rootDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "verification/m5-e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+      "url": "http://127.0.0.1:3100",
+      "reuseExistingServer": false,
+      "env": {
+        "ENABLE_LIVE_AI": "false",
+        "OPENAI_API_KEY": "",
+        "OPENAI_MODEL": "",
+        "APP_MODE": "LOCAL",
+        "PUBLIC_DEMO": "false"
+      },
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "ai.spec.ts",
+      "file": "ai.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1098,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:20.158Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjIxLjU5N1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuecn+WvpuacrOapn+acquWVn+eUqOerr+m7niBHRVTvvI9QT1NUIOmZjee0mu+8jOacquWQjOaEj+S4jeWCs+mAge+8jOaguOW/g+iIh+ippueul+S7jeWPr+eUqCIsCiAgIm1vZGUiOiAicmVhbF9sb2NhbF9kaXNhYmxlZF9lbmRwb2ludF9ub19saXZlX2NhbGwiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3f38efe0662070145ff2",
+          "file": "ai.spec.ts",
+          "line": 110,
+          "column": 1
+        },
+        {
+          "title": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1028,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:21.655Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjIyLjYyOFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJrlj6rlgrPnsr7norrpoJDopr3oiIflkIzmhI/vvIzlkIjms5UgcGxhY2Vob2xkZXIg55Sx5pys5qmf6Kej5p6Q5Lim5Y+v6L+95rqv6K2J5pOaIiwKICAibW9kZSI6ICJicm93c2VyX21vY2tfbm9fbGl2ZV9jYWxsIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiUE9TVCIsCiAgICAgICJoYXNCb2R5IjogdHJ1ZQogICAgfQogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-4028ac707de65f1d973b",
+          "file": "ai.spec.ts",
+          "line": 138,
+          "column": 1
+        },
+        {
+          "title": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 655,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:22.688Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjIzLjMwOVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJpIVFRQIDIwMCDnmoQgZmFicmljYXRlZC1mYWN0IOS4jeWuieWFqOWFp+WuueS7jeeUseeAj+imveWZqOaLkue1lSIsCiAgIm1vZGUiOiAiYnJvd3Nlcl9tb2NrX25vX2xpdmVfY2FsbCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIkdFVCIsCiAgICAgICJoYXNCb2R5IjogZmFsc2UKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIlBPU1QiLAogICAgICAiaGFzQm9keSI6IHRydWUKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-4068b4204b1d8fad98a6",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 623,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:23.349Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjIzLjkzOFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJpIVFRQIDIwMCDnmoQgbGl0ZXJhbC1tb25leSDkuI3lronlhajlhaflrrnku43nlLHngI/opr3lmajmi5LntZUiLAogICJtb2RlIjogImJyb3dzZXJfbW9ja19ub19saXZlX2NhbGwiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJQT1NUIiwKICAgICAgImhhc0JvZHkiOiB0cnVlCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-2f99915a22a26f1f0092",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 687,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:23.978Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjI0LjYxMloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJpIVFRQIDIwMCDnmoQgY2F1c2FsLWNsYWltIOS4jeWuieWFqOWFp+WuueS7jeeUseeAj+imveWZqOaLkue1lSIsCiAgIm1vZGUiOiAiYnJvd3Nlcl9tb2NrX25vX2xpdmVfY2FsbCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIkdFVCIsCiAgICAgICJoYXNCb2R5IjogZmFsc2UKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIlBPU1QiLAogICAgICAiaGFzQm9keSI6IHRydWUKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-a22109b93c7ad728bfe7",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 664,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:24.670Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjI1LjMwMFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJpIVFRQIDIwMCDnmoQgd3Jvbmctc25hcHNob3Qg5LiN5a6J5YWo5YWn5a655LuN55Sx54CP6Ka95Zmo5ouS57WVIiwKICAibW9kZSI6ICJicm93c2VyX21vY2tfbm9fbGl2ZV9jYWxsIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiUE9TVCIsCiAgICAgICJoYXNCb2R5IjogdHJ1ZQogICAgfQogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-b4500b44b9a0a8fb4b4c",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1791,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:25.340Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjI3LjExMFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJp0aW1lb3V044CBNDI544CB5ouS57WV44CB5oiq5pa35Y+K5qC85byP5aSx5pWX5riF5qWa6ZmN57Sa5LiU5LiN6YeN6YCB5pyq6YeN5paw5ZCM5oSP55qE6LOH5paZIiwKICAibW9kZSI6ICJicm93c2VyX21vY2tfbm9fbGl2ZV9jYWxsIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiUE9TVCIsCiAgICAgICJoYXNCb2R5IjogdHJ1ZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiUE9TVCIsCiAgICAgICJoYXNCb2R5IjogdHJ1ZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiUE9TVCIsCiAgICAgICJoYXNCb2R5IjogdHJ1ZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiUE9TVCIsCiAgICAgICJoYXNCb2R5IjogdHJ1ZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiUE9TVCIsCiAgICAgICJoYXNCb2R5IjogdHJ1ZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiUE9TVCIsCiAgICAgICJoYXNCb2R5IjogdHJ1ZQogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiaW5zaWdodHMtcmVxdWVzdCIsCiAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgImhhc0JvZHkiOiBmYWxzZQogICAgfQogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-c3684c75e372be9364db",
+          "file": "ai.spec.ts",
+          "line": 214,
+          "column": 1
+        },
+        {
+          "title": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 775,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:27.155Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjI3Ljg5MVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJrkuI3lj6/kv6Hljp/mqpToiIfpgJrot6/vvI9TS1XlkI3nqLHlj6rnlZnmnKzmqZ/vvIzkuI3og73pgLLpoJDopr3miJYgUE9TVCIsCiAgIm1vZGUiOiAiYnJvd3Nlcl9tb2NrX25vX2xpdmVfY2FsbCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIkdFVCIsCiAgICAgICJoYXNCb2R5IjogZmFsc2UKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIlBPU1QiLAogICAgICAiaGFzQm9keSI6IHRydWUKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-bc69c539bf3196155323",
+          "file": "ai.spec.ts",
+          "line": 231,
+          "column": 1
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 696,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:27.935Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjI4LjU5NloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJrmhaLlm57mh4nlv73nlaUgYWJvcnQg5pmC77yMY2hhbm5lbCDmlLnororkuKblm57ljp/lgLzkuZ/kuI3lvqnmtLvntZDmnpzmiJblkIzmhI8iLAogICJtb2RlIjogImJyb3dzZXJfbW9ja19ub19saXZlX2NhbGwiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJQT1NUIiwKICAgICAgImhhc0JvZHkiOiB0cnVlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-70803c7e144221f95e86",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1285,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:28.637Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjI5Ljg1NVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJrmhaLlm57mh4nlv73nlaUgYWJvcnQg5pmC77yMZGF0YXNldCDmlLnororkuKblm57ljp/lgLzkuZ/kuI3lvqnmtLvntZDmnpzmiJblkIzmhI8iLAogICJtb2RlIjogImJyb3dzZXJfbW9ja19ub19saXZlX2NhbGwiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJQT1NUIiwKICAgICAgImhhc0JvZHkiOiB0cnVlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f52d83d2996b8d5c32a8",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1134,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:29.927Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjMxLjAxNFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJrmhaLlm57mh4nlv73nlaUgYWJvcnQg5pmC77yMcGVyaW9kIOaUueiuiuS4puWbnuWOn+WAvOS5n+S4jeW+qea0u+e1kOaenOaIluWQjOaEjyIsCiAgIm1vZGUiOiAiYnJvd3Nlcl9tb2NrX25vX2xpdmVfY2FsbCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIkdFVCIsCiAgICAgICJoYXNCb2R5IjogZmFsc2UKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIlBPU1QiLAogICAgICAiaGFzQm9keSI6IHRydWUKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIkdFVCIsCiAgICAgICJoYXNCb2R5IjogZmFsc2UKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImluc2lnaHRzLXJlcXVlc3QiLAogICAgICAibWV0aG9kIjogIkdFVCIsCiAgICAgICJoYXNCb2R5IjogZmFsc2UKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-01fc63dc8e01f340a9dd",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 695,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:31.066Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjMxLjcyMloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJrlj5bmtojmhaLoq4vmsYLmkqTpirflkIzmhI/vvIzlt7Lov5Tlm57nmoToiIrlhaflrrnku43kuI3og73lkYjnj74iLAogICJtb2RlIjogImJyb3dzZXJfbW9ja19ub19saXZlX2NhbGwiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJQT1NUIiwKICAgICAgImhhc0JvZHkiOiB0cnVlCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-ad11925b45504160cdcc",
+          "file": "ai.spec.ts",
+          "line": 327,
+          "column": 1
+        },
+        {
+          "title": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1098,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T07:06:31.766Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata-only",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA3OjA2OjMyLjgzNFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIk1PQ0vvvJrmiJDlip/lm57mh4noiIflkIzmhI/kuI3mjIHkuYXljJbvvIzkuI3ot6jliIbpoIHjgIHph43mlbTmiJbph43mlrDovInlhaXnm7jlkIzos4fmlpkiLAogICJtb2RlIjogImJyb3dzZXJfbW9ja19ub19saXZlX2NhbGwiLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJQT1NUIiwKICAgICAgImhhc0JvZHkiOiB0cnVlCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJpbnNpZ2h0cy1yZXF1ZXN0IiwKICAgICAgIm1ldGhvZCI6ICJHRVQiLAogICAgICAiaGFzQm9keSI6IGZhbHNlCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-05cb32c07a28365d7f51",
+          "file": "ai.spec.ts",
+          "line": 346,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-01T07:06:09.914Z",
+    "duration": 23026.075,
+    "expected": 13,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,472 @@
+{
+  "prepared_on": "2026-09-30",
+  "scope": "Specification-package fixture QA only; NOT application testing",
+  "assertions_passed": 3492,
+  "checks": [
+    {
+      "check": "golden/sales_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "golden/sales_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "golden/sales_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "golden/sales_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "golden/channel_costs_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "golden/channel_costs_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "golden/channel_costs_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "golden/channel_costs_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "golden/channel_costs_daily.csv:full_daily_coverage",
+      "status": "passed"
+    },
+    {
+      "check": "golden/ad_spend_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "golden/ad_spend_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "golden/ad_spend_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "golden/ad_spend_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "golden/ad_spend_daily.csv:full_daily_coverage",
+      "status": "passed"
+    },
+    {
+      "check": "golden:equal_period_length",
+      "status": "passed"
+    },
+    {
+      "check": "golden:periods_disjoint",
+      "status": "passed"
+    },
+    {
+      "check": "demo/sales_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "demo/sales_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "demo/sales_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "demo/sales_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "demo/channel_costs_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "demo/channel_costs_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "demo/channel_costs_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "demo/channel_costs_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "demo/channel_costs_daily.csv:full_daily_coverage",
+      "status": "passed"
+    },
+    {
+      "check": "demo/ad_spend_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "demo/ad_spend_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "demo/ad_spend_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "demo/ad_spend_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "demo/ad_spend_daily.csv:full_daily_coverage",
+      "status": "passed"
+    },
+    {
+      "check": "demo:equal_period_length",
+      "status": "passed"
+    },
+    {
+      "check": "demo:periods_disjoint",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/sales_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/sales_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/sales_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/sales_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/channel_costs_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/channel_costs_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/channel_costs_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/channel_costs_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/channel_costs_daily.csv:full_daily_coverage",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/ad_spend_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/ad_spend_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/ad_spend_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/ad_spend_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad/ad_spend_daily.csv:full_daily_coverage",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad:equal_period_length",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad:periods_disjoint",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/sales_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/sales_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/sales_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/sales_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/channel_costs_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/channel_costs_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/channel_costs_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/channel_costs_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/channel_costs_daily.csv:full_daily_coverage",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/ad_spend_daily.csv:unique_keys",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/ad_spend_daily.csv:currency",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/ad_spend_daily.csv:dates_channels",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/ad_spend_daily.csv:parseable_money",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only/ad_spend_daily.csv:full_daily_coverage",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only:equal_period_length",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only:periods_disjoint",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:gross_sales",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:discounts",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:refunds",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:cogs_net",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:platform_fees",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:payment_fees",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:fulfillment_costs",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:other_variable_costs",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:ad_spend",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:net_revenue",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:gross_profit",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:contribution_before_marketing",
+      "status": "passed"
+    },
+    {
+      "check": "golden:previous:contribution_after_marketing",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:gross_sales",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:discounts",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:refunds",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:cogs_net",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:platform_fees",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:payment_fees",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:fulfillment_costs",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:other_variable_costs",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:ad_spend",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:net_revenue",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:gross_profit",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:contribution_before_marketing",
+      "status": "passed"
+    },
+    {
+      "check": "golden:current:contribution_after_marketing",
+      "status": "passed"
+    },
+    {
+      "check": "golden:channel:DTC:net_revenue",
+      "status": "passed"
+    },
+    {
+      "check": "golden:channel:DTC:contribution_after_marketing",
+      "status": "passed"
+    },
+    {
+      "check": "golden:channel:MARKETPLACE:net_revenue",
+      "status": "passed"
+    },
+    {
+      "check": "golden:channel:MARKETPLACE:contribution_after_marketing",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:gross_sales",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:discounts",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:refunds",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:cogs_net",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:platform_fees",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:payment_fees",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:fulfillment_costs",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:other_variable_costs",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:ad_spend",
+      "status": "passed"
+    },
+    {
+      "check": "golden:bridge:reconciliation",
+      "status": "passed"
+    },
+    {
+      "check": "golden:scenario:fulfillment_reduction",
+      "status": "passed"
+    },
+    {
+      "check": "golden:scenario:investment",
+      "status": "passed"
+    },
+    {
+      "check": "zero_ad:contribution",
+      "status": "passed"
+    },
+    {
+      "check": "refund_only:signed_amounts",
+      "status": "passed"
+    },
+    {
+      "check": "error_fixture:missing_cogs",
+      "status": "passed"
+    },
+    {
+      "check": "error_fixture:duplicate_key",
+      "status": "passed"
+    },
+    {
+      "check": "error_fixture:missing_ad_day",
+      "status": "passed"
+    },
+    {
+      "check": "error_fixture:mixed_currency",
+      "status": "passed"
+    },
+    {
+      "check": "demo:shape",
+      "status": "passed"
+    },
+    {
+      "check": "demo:designed_diagnostic",
+      "status": "passed"
+    },
+    {
+      "check": "individual_sales_row_value_constraints",
+      "status": "passed",
+      "rows_checked": 3378
+    }
+  ],
+  "application_implemented": false,
+  "application_tests_run": false,
+  "live_ai_tested": false,
+  "deployed": false
+}

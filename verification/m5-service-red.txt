@@ -1,0 +1,225 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-service.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+(node:77905) PromiseRejectionHandledWarning: Promise rejection was handled asynchronously (rejection id: 49)
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ tests/ai-service.test.ts (21 tests | 21 failed) 8ms
+     × NO_KEY skips every provider call and returns explicit rules fallback 3ms
+     × NO_MODEL skips every provider call and returns explicit rules fallback 0ms
+     × DISABLED skips every provider call and returns explicit rules fallback 0ms
+     × PUBLIC_DEMO skips every provider call and returns explicit rules fallback 0ms
+     × INVALID_CONFIG skips every provider call and returns explicit rules fallback 0ms
+     × accepts only grounded structured output and records bounded non-content metadata 0ms
+     × refused response falls back without retry or partial rendering 0ms
+     × truncated response falls back without retry or partial rendering 0ms
+     × RATE_LIMIT failure is safe and not retried 0ms
+     × TIMEOUT failure is safe and not retried 0ms
+     × PROVIDER_ERROR failure is safe and not retried 0ms
+     × unknown exception does not leak key, raw rows, prompt or provider details 0ms
+     × schema failure retries once then succeeds with summed actual usage 0ms
+     × second invalid schema stops after two attempts 0ms
+     × causal known invalid output is never rendered and gets at most one repair 0ms
+     × numeric known invalid output is never rendered and gets at most one repair 0ms
+     × wrong-reference known invalid output is never rendered and gets at most one repair 0ms
+     × stale known invalid output is never rendered and gets at most one repair 0ms
+     × deadline aborts even a provider which never resolves 1ms
+     × cancelled request aborts provider and does not retry 0ms
+     × raw CSV/extra input fields never reach provider 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 21 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > NO_KEY skips every provider call and returns explicit rules fallback
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > NO_MODEL skips every provider call and returns explicit rules fallback
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > DISABLED skips every provider call and returns explicit rules fallback
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > PUBLIC_DEMO skips every provider call and returns explicit rules fallback
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > INVALID_CONFIG skips every provider call and returns explicit rules fallback
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:13:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > accepts only grounded structured output and records bounded non-content metadata
+Error: M5 尚未實作
+ ❯ observationCatalog src/ai/grounding.ts:5:103
+      3| export interface GroundingIssue { code: string; path: string; message:…
+      4| export type GroundingResult = { ok: true; output: InsightOutput } | { …
+      5| export function observationCatalog(snapshot: AiSnapshot): AllowedObser…
+       |                                                                                                       ^
+      6| export function validateInsightOutput(raw: unknown, snapshot: AiSnapsh…
+      7| export function renderInsightOutput(output: InsightOutput, snapshot: A…
+ ❯ serverOutput tests/helpers/ai-server.ts:16:23
+ ❯ tests/ai-service.test.ts:17:42
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > refused response falls back without retry or partial rendering
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > truncated response falls back without retry or partial rendering
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:26:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > RATE_LIMIT failure is safe and not retried
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > TIMEOUT failure is safe and not retried
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > PROVIDER_ERROR failure is safe and not retried
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:32:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > unknown exception does not leak key, raw rows, prompt or provider details
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:37:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > schema failure retries once then succeeds with summed actual usage
+Error: M5 尚未實作
+ ❯ observationCatalog src/ai/grounding.ts:5:103
+      3| export interface GroundingIssue { code: string; path: string; message:…
+      4| export type GroundingResult = { ok: true; output: InsightOutput } | { …
+      5| export function observationCatalog(snapshot: AiSnapshot): AllowedObser…
+       |                                                                                                       ^
+      6| export function validateInsightOutput(raw: unknown, snapshot: AiSnapsh…
+      7| export function renderInsightOutput(output: InsightOutput, snapshot: A…
+ ❯ serverOutput tests/helpers/ai-server.ts:16:23
+ ❯ tests/ai-service.test.ts:42:181
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > second invalid schema stops after two attempts
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:50:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > causal known invalid output is never rendered and gets at most one repair
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > numeric known invalid output is never rendered and gets at most one repair
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > wrong-reference known invalid output is never rendered and gets at most one repair
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > stale known invalid output is never rendered and gets at most one repair
+Error: M5 尚未實作
+ ❯ observationCatalog src/ai/grounding.ts:5:103
+      3| export interface GroundingIssue { code: string; path: string; message:…
+      4| export type GroundingResult = { ok: true; output: InsightOutput } | { …
+      5| export function observationCatalog(snapshot: AiSnapshot): AllowedObser…
+       |                                                                                                       ^
+      6| export function validateInsightOutput(raw: unknown, snapshot: AiSnapsh…
+      7| export function renderInsightOutput(output: InsightOutput, snapshot: A…
+ ❯ serverOutput tests/helpers/ai-server.ts:16:23
+ ❯ tests/ai-service.test.ts:54:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > deadline aborts even a provider which never resolves
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:66:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > cancelled request aborts provider and does not retry
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:74:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > raw CSV/extra input fields never reach provider
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:81:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: M5 service not implemented
+ ❯ runInsights src/ai/service.ts:16:9
+     14| export async function runInsights(snapshot: AiSnapshot, config: AiConf…
+     15|   void snapshot; void config; void dependencies;
+     16|   throw new Error("M5 service not implemented");
+       |         ^
+     17| }
+     18|
+ ❯ tests/ai-service.test.ts:66:21
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+ ❯ runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+ ❯ runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10
+
+This error originated in "tests/ai-service.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "deadline aborts even a provider which never resolves". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  21 failed (21)
+     Errors  1 error
+   Start at  14:58:19
+   Duration  205ms (transform 33ms, setup 0ms, import 44ms, tests 8ms, environment 0ms)
+

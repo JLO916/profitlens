@@ -1,0 +1,40 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/money.test.ts tests/domain-acceptance.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/domain-acceptance.test.ts (0 test)
+ ❯ tests/money.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/domain-acceptance.test.ts [ tests/domain-acceptance.test.ts ]
+Error: Cannot find package '@/domain/validation' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/domain-acceptance.test.ts
+ ❯ tests/domain-acceptance.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { validateDataset } from "@/domain/validation";
+       | ^
+      3| import { analyzeDataset, analyzeProducts } from "@/domain/analysis";
+      4| import type { Dataset, DatasetInput } from "@/domain/types";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/money.test.ts [ tests/money.test.ts ]
+Error: Cannot find package '@/domain/money' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/money.test.ts
+ ❯ tests/money.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { parseCents, formatCents, sumAmounts, subtractAmounts, ratioMe…
+       | ^
+      3| import { isBusinessDate, dateRange, validatePeriods } from "@/domain/d…
+      4|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  no tests
+   Start at  16:49:45
+   Duration  188ms (transform 47ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

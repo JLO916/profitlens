@@ -1,0 +1,318 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/decision.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/decision.test.ts (22 tests | 22 failed) 31ms
+     × captures serializable single-channel current baseline with source IDs and versions 3ms
+     × detaches baseline, period, sources and facts from mutable incoming snapshot 0ms
+     × does not allow a multiple-channel baseline 4ms
+     × marks changed dataset_hash stale 0ms
+     × marks changed filter_hash stale 0ms
+     × marks changed data_as_of stale 0ms
+     × detects period or channel changes even if caller passes the old hash 1ms
+     × reload of identical bytes still invalidates and returning old data never revives latched state 0ms
+     × explicit reconfirm captures new baseline and clears input assumptions and fact confirmations 0ms
+     × defaults all inputs blank and never silently assumes no volume effect 0ms
+     × binds fixed golden result to the exact saved input copy 0ms
+     × limits scenarios to three with explicit order and deletion 0ms
+     × allows max three manually ordered actions using existing facts only 0ms
+     × rejects edits and calculations on an expired session 0ms
+     × JSON includes complete captured metadata, model assumptions, inputs, formulas, rounding and facts 0ms
+     × keeps null draft results and unconfirmed manual text labeled 0ms
+     × stale export is allowed but prominently retains old captured data and stale markers 0ms
+     × rejects dirty input/result mismatch and fabricated result values 0ms
+     × rejects unknown action references at export boundary, not just save 0ms
+     × escapes unsafe Markdown HTML, links, headings, and line breaks from manual/source text 0ms
+     × CSV protects every untrusted metadata/manual text cell but retains real negative numeric values 0ms
+     × exports unavailable baselines as null with reason codes rather than zero 5ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > captures serializable single-channel current baseline with source IDs and versions
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:25:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > detaches baseline, period, sources and facts from mutable incoming snapshot
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:38:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > does not allow a multiple-channel baseline
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ tests/decision.test.ts:49:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > marks changed dataset_hash stale
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > marks changed filter_hash stale
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > marks changed data_as_of stale
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:54:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > detects period or channel changes even if caller passes the old hash
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:61:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > reload of identical bytes still invalidates and returning old data never revives latched state
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:67:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > explicit reconfirm captures new baseline and clears input assumptions and fact confirmations
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:75:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/22]⎯
+
+ FAIL  tests/decision.test.ts > manual scenarios and action state > defaults all inputs blank and never silently assumes no volume effect
+Error: M4_NOT_IMPLEMENTED
+ ❯ blankScenarioInputs src/application/decision.ts:39:63
+     37| export const isDecisionStale = isDecisionSessionStale;
+     38| export function refreshDecisionSession(_session: DecisionSession, _sna…
+     39| export function blankScenarioInputs(): ScenarioInputs { throw new Erro…
+       |                                                               ^
+     40| export function saveScenario(_session: DecisionSession, _plans: readon…
+     41| export function saveAction(_session: DecisionSession, _actions: readon…
+ ❯ tests/decision.test.ts:90:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/22]⎯
+
+ FAIL  tests/decision.test.ts > manual scenarios and action state > binds fixed golden result to the exact saved input copy
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:94:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/22]⎯
+
+ FAIL  tests/decision.test.ts > manual scenarios and action state > limits scenarios to three with explicit order and deletion
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:104:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/22]⎯
+
+ FAIL  tests/decision.test.ts > manual scenarios and action state > allows max three manually ordered actions using existing facts only
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:112:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/22]⎯
+
+ FAIL  tests/decision.test.ts > manual scenarios and action state > rejects edits and calculations on an expired session
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:122:38
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > JSON includes complete captured metadata, model assumptions, inputs, formulas, rounding and facts
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:130:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > keeps null draft results and unconfirmed manual text labeled
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:143:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > stale export is allowed but prominently retains old captured data and stale markers
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:152:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > rejects dirty input/result mismatch and fabricated result values
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:162:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > rejects unknown action references at export boundary, not just save
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:171:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > escapes unsafe Markdown HTML, links, headings, and line breaks from manual/source text
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:177:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > CSV protects every untrusted metadata/manual text cell but retains real negative numeric values
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ session tests/decision.test.ts:17:23
+ ❯ tests/decision.test.ts:191:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/22]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > exports unavailable baselines as null with reason codes rather than zero
+Error: M4_NOT_IMPLEMENTED
+ ❯ createDecisionSession src/application/decision.ts:35:158
+     33| export interface DecisionDraft { session: DecisionSession; scenarios: …
+     34|
+     35| export function createDecisionSession(_dataset: Dataset, _snapshot: Wo…
+       |                                                                                                                                                              ^
+     36| export function isDecisionSessionStale(_session: DecisionSession, _sna…
+     37| export const isDecisionStale = isDecisionSessionStale;
+ ❯ tests/decision.test.ts:209:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/22]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  22 failed (22)
+   Start at  14:22:35
+   Duration  317ms (transform 66ms, setup 0ms, import 119ms, tests 31ms, environment 0ms)
+

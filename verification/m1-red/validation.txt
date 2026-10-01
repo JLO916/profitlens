@@ -1,0 +1,543 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/validation.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/validation.test.ts (75 tests | 75 failed) 25ms
+     × reads UTF-8 BOM, commas, escaped quotes, CRLF and quoted multiline with physical source lines 3ms
+     × rejects malformed input "key,note\nA,\"unterminated" 2ms
+     × rejects malformed input "key,note\nA,un\"quoted" 0ms
+     × rejects malformed input "key,note\nA,\"quoted\"tail" 0ms
+     × rejects malformed input "key,note\nA,one,extra" 0ms
+     × rejects malformed input "key,note\nA" 0ms
+     × rejects malformed input "key,key\nA,B" 0ms
+     × rejects malformed input "" 0ms
+     × rejects invalid UTF-8 rather than replacing bytes 0ms
+     × accepts 50,000 data rows and rejects 50,001 instead of truncating 0ms
+     × rejects over 5 MiB measured as UTF-8 bytes 0ms
+     × accepts golden and preserves source precision 2ms
+     × accepts demo and preserves source precision 2ms
+     × accepts zero_ad and preserves source precision 1ms
+     × accepts refund_only and preserves source precision 0ms
+     × matches errors/duplicate_sales_key reference without repairs 1ms
+     × matches errors/mixed_currency reference without repairs 0ms
+     × matches errors/missing_cogs reference without repairs 1ms
+     × matches errors/missing_ad_day reference without repairs 1ms
+     × requires all contract columns even when other columns are explicitly ignored 0ms
+     × does not coerce missing units to zero 0ms
+     × does not mutate or replace a previously loaded dataset on blocking input 0ms
+     × does not invent costs when required files are absent 0ms
+     × quotes are parsed before financial and source validation 0ms
+     × reports parser errors with file and physical line 0ms
+     × lists unknown columns, blocks until explicit confirmation, then drops their values 0ms
+     × blocks invalid sales_daily.csv date= 0ms
+     × blocks invalid sales_daily.csv sku=  0ms
+     × blocks invalid sales_daily.csv date=2026-02-30 0ms
+     × blocks invalid sales_daily.csv date=2026-8-01 0ms
+     × blocks invalid sales_daily.csv date=2026-07-31 0ms
+     × blocks invalid sales_daily.csv channel=Meta 0ms
+     × blocks invalid sales_daily.csv currency=USD 0ms
+     × blocks invalid sales_daily.csv gross_sales=NaN 0ms
+     × blocks invalid sales_daily.csv gross_sales=1e3 0ms
+     × blocks invalid sales_daily.csv gross_sales=0.001 0ms
+     × blocks invalid sales_daily.csv gross_sales=-1 0ms
+     × blocks invalid sales_daily.csv discounts=1001 0ms
+     × blocks invalid sales_daily.csv refunds=-1 0ms
+     × blocks invalid sales_daily.csv units_sold=1.5 0ms
+     × blocks invalid sales_daily.csv units_sold=-1 0ms
+     × blocks invalid ad_spend_daily.csv ad_spend=-0.01 0ms
+     × blocks duplicate channel_costs_daily.csv keys 0ms
+     × blocks duplicate ad_spend_daily.csv keys 0ms
+     × requires a consistent category for the same SKU across channels and dates 0ms
+     × preserves blank sales_daily.csv cogs_net as null with scoped partial issue 0ms
+     × preserves blank sales_daily.csv gross_sales as null with scoped partial issue 0ms
+     × preserves blank channel_costs_daily.csv platform_fees as null with scoped partial issue 0ms
+     × preserves blank ad_spend_daily.csv ad_spend as null with scoped partial issue 0ms
+     × preserves negative booked COGS and cost credits; does not reverse COGS from refunds 0ms
+     × enumerates missing day/channel expenses without synthesizing zero rows 0ms
+     × marks unconfirmed sales coverage as unknown even without missing expense rows 0ms
+     × blocks invalid schema_version 0ms
+     × blocks invalid dataset_id 1ms
+     × blocks invalid source_type 0ms
+     × blocks invalid currency 0ms
+     × blocks invalid timezone 0ms
+     × blocks invalid data_as_of 0ms
+     × blocks invalid coverage_start 0ms
+     × blocks invalid coverage_end 0ms
+     × blocks invalid channels 0ms
+     × blocks invalid channels 0ms
+     × blocks invalid channels 0ms
+     × blocks invalid sales_coverage_confirmed 0ms
+     × blocks invalid amount_basis 0ms
+     × blocks invalid previous_period 0ms
+     × blocks invalid unexpected_setting 0ms
+     × requires amount_basis without guessing defaults 0ms
+     × requires sales_coverage_confirmed without guessing defaults 0ms
+     × requires data_as_of without guessing defaults 0ms
+     × requires channels without guessing defaults 0ms
+     × blocks unequal, overlapping, outside or reversed periods {"previous_period":{"start":"2026-08-01","end":"2026-08-02"}} 0ms
+     × blocks unequal, overlapping, outside or reversed periods {"current_period":{"start":"2026-08-01","end":"2026-08-01"}} 0ms
+     × blocks unequal, overlapping, outside or reversed periods {"current_period":{"start":"2026-08-03","end":"2026-08-03"}} 0ms
+     × blocks unequal, overlapping, outside or reversed periods {"coverage_start":"2026-08-03","coverage_end":"2026-08-02"} 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 75 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/validation.test.ts > CSV records and traceability > reads UTF-8 BOM, commas, escaped quotes, CRLF and quoted multiline with physical source lines
+Error: M1 尚未實作
+ ❯ parseCsv src/lib/csv.ts:2:9
+      1| export function parseCsv(_input: string | Uint8Array): { headers: stri…
+      2|   throw new Error("M1 尚未實作");
+       |         ^
+      3| }
+      4|
+ ❯ tests/validation.test.ts:36:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/75]⎯
+
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects malformed input "key,note\nA,\"unterminated"
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects malformed input "key,note\nA,un\"quoted"
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects malformed input "key,note\nA,\"quoted\"tail"
+AssertionError: expected error to match asymmetric matcher
+
+- Expected
++ Received
+
+- ObjectContaining {
+-   "reason_code": "MALFORMED_CSV",
++ Error {
++   "message": "M1 尚未實作",
+  }
+
+ ❯ tests/validation.test.ts:52:33
+     50|     ['', "EMPTY_CSV"],
+     51|   ])("rejects malformed input %j", (csv, code) => {
+     52|     expect(() => parseCsv(csv)).toThrow(expect.objectContaining({ reas…
+       |                                 ^
+     53|   });
+     54|   it("rejects invalid UTF-8 rather than replacing bytes", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/75]⎯
+
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects malformed input "key,note\nA,one,extra"
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects malformed input "key,note\nA"
+AssertionError: expected error to match asymmetric matcher
+
+- Expected
++ Received
+
+- ObjectContaining {
+-   "reason_code": "COLUMN_COUNT_MISMATCH",
++ Error {
++   "message": "M1 尚未實作",
+  }
+
+ ❯ tests/validation.test.ts:52:33
+     50|     ['', "EMPTY_CSV"],
+     51|   ])("rejects malformed input %j", (csv, code) => {
+     52|     expect(() => parseCsv(csv)).toThrow(expect.objectContaining({ reas…
+       |                                 ^
+     53|   });
+     54|   it("rejects invalid UTF-8 rather than replacing bytes", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/75]⎯
+
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects malformed input "key,key\nA,B"
+AssertionError: expected error to match asymmetric matcher
+
+- Expected
++ Received
+
+- ObjectContaining {
+-   "reason_code": "DUPLICATE_COLUMN",
++ Error {
++   "message": "M1 尚未實作",
+  }
+
+ ❯ tests/validation.test.ts:52:33
+     50|     ['', "EMPTY_CSV"],
+     51|   ])("rejects malformed input %j", (csv, code) => {
+     52|     expect(() => parseCsv(csv)).toThrow(expect.objectContaining({ reas…
+       |                                 ^
+     53|   });
+     54|   it("rejects invalid UTF-8 rather than replacing bytes", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/75]⎯
+
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects malformed input ""
+AssertionError: expected error to match asymmetric matcher
+
+- Expected
++ Received
+
+- ObjectContaining {
+-   "reason_code": "EMPTY_CSV",
++ Error {
++   "message": "M1 尚未實作",
+  }
+
+ ❯ tests/validation.test.ts:52:33
+     50|     ['', "EMPTY_CSV"],
+     51|   ])("rejects malformed input %j", (csv, code) => {
+     52|     expect(() => parseCsv(csv)).toThrow(expect.objectContaining({ reas…
+       |                                 ^
+     53|   });
+     54|   it("rejects invalid UTF-8 rather than replacing bytes", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/75]⎯
+
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects invalid UTF-8 rather than replacing bytes
+AssertionError: expected error to match asymmetric matcher
+
+- Expected
++ Received
+
+- ObjectContaining {
+-   "reason_code": "INVALID_UTF8",
++ Error {
++   "message": "M1 尚未實作",
+  }
+
+ ❯ tests/validation.test.ts:56:8
+     54|   it("rejects invalid UTF-8 rather than replacing bytes", () => {
+     55|     expect(() => parseCsv(new Uint8Array([0x61, 0x0a, 0xc3, 0x28])))
+     56|       .toThrow(expect.objectContaining({ reason_code: "INVALID_UTF8" }…
+       |        ^
+     57|   });
+     58|   it("accepts 50,000 data rows and rejects 50,001 instead of truncatin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/75]⎯
+
+ FAIL  tests/validation.test.ts > CSV records and traceability > accepts 50,000 data rows and rejects 50,001 instead of truncating
+Error: M1 尚未實作
+ ❯ parseCsv src/lib/csv.ts:2:9
+      1| export function parseCsv(_input: string | Uint8Array): { headers: stri…
+      2|   throw new Error("M1 尚未實作");
+       |         ^
+      3| }
+      4|
+ ❯ tests/validation.test.ts:59:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/75]⎯
+
+ FAIL  tests/validation.test.ts > CSV records and traceability > rejects over 5 MiB measured as UTF-8 bytes
+AssertionError: expected error to match asymmetric matcher
+
+- Expected
++ Received
+
+- ObjectContaining {
+-   "reason_code": "FILE_TOO_LARGE",
++ Error {
++   "message": "M1 尚未實作",
+  }
+
+ ❯ tests/validation.test.ts:65:8
+     63|   it("rejects over 5 MiB measured as UTF-8 bytes", () => {
+     64|     expect(() => parseCsv("key\n" + "商".repeat(Math.ceil(5 * 1024 * 10…
+     65|       .toThrow(expect.objectContaining({ reason_code: "FILE_TOO_LARGE"…
+       |        ^
+     66|   });
+     67| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > accepts golden and preserves source precision
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > accepts demo and preserves source precision
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > accepts zero_ad and preserves source precision
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > accepts refund_only and preserves source precision
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:71:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > matches errors/duplicate_sales_key reference without repairs
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > matches errors/mixed_currency reference without repairs
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > matches errors/missing_cogs reference without repairs
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > matches errors/missing_ad_day reference without repairs
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:79:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > requires all contract columns even when other columns are explicitly ignored
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:93:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > does not coerce missing units to zero
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:99:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > does not mutate or replace a previously loaded dataset on blocking input
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:104:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > does not invent costs when required files are absent
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:111:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > quotes are parsed before financial and source validation
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:116:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > reports parser errors with file and physical line
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:123:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > lists unknown columns, blocks until explicit confirmation, then drops their values
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:131:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv date=
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv sku= 
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv date=2026-02-30
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv date=2026-8-01
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv date=2026-07-31
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv channel=Meta
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv currency=USD
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv gross_sales=NaN
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv gross_sales=1e3
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv gross_sales=0.001
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv gross_sales=-1
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv discounts=1001
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv refunds=-1
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv units_sold=1.5
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid sales_daily.csv units_sold=-1
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks invalid ad_spend_daily.csv ad_spend=-0.01
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:159:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks duplicate channel_costs_daily.csv keys
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > blocks duplicate ad_spend_daily.csv keys
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:168:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > requires a consistent category for the same SKU across channels and dates
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:172:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > preserves blank sales_daily.csv cogs_net as null with scoped partial issue
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > preserves blank sales_daily.csv gross_sales as null with scoped partial issue
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > preserves blank channel_costs_daily.csv platform_fees as null with scoped partial issue
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > preserves blank ad_spend_daily.csv ad_spend as null with scoped partial issue
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:181:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > preserves negative booked COGS and cost credits; does not reverse COGS from refunds
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:192:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > enumerates missing day/channel expenses without synthesizing zero rows
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:200:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/75]⎯
+
+ FAIL  tests/validation.test.ts > dataset validation and immutable bad fixtures > marks unconfirmed sales coverage as unknown even without missing expense rows
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:208:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/75]⎯
+
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid schema_version
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid dataset_id
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid source_type
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid currency
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid timezone
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid data_as_of
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid coverage_start
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid coverage_end
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid channels
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid channels
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid channels
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid sales_coverage_confirmed
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid amount_basis
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid previous_period
+ FAIL  tests/validation.test.ts > manifest validation > blocks invalid unexpected_setting
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:226:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/75]⎯
+
+ FAIL  tests/validation.test.ts > manifest validation > requires amount_basis without guessing defaults
+ FAIL  tests/validation.test.ts > manifest validation > requires sales_coverage_confirmed without guessing defaults
+ FAIL  tests/validation.test.ts > manifest validation > requires data_as_of without guessing defaults
+ FAIL  tests/validation.test.ts > manifest validation > requires channels without guessing defaults
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:232:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/75]⎯
+
+ FAIL  tests/validation.test.ts > manifest validation > blocks unequal, overlapping, outside or reversed periods {"previous_period":{"start":"2026-08-01","end":"2026-08-02"}}
+ FAIL  tests/validation.test.ts > manifest validation > blocks unequal, overlapping, outside or reversed periods {"current_period":{"start":"2026-08-01","end":"2026-08-01"}}
+ FAIL  tests/validation.test.ts > manifest validation > blocks unequal, overlapping, outside or reversed periods {"current_period":{"start":"2026-08-03","end":"2026-08-03"}}
+ FAIL  tests/validation.test.ts > manifest validation > blocks unequal, overlapping, outside or reversed periods {"coverage_start":"2026-08-03","coverage_end":"2026-08-02"}
+Error: M1 尚未實作
+ ❯ validateDataset src/domain/validation.ts:3:9
+      1| import type { DatasetInput, ValidationResult } from "./types";
+      2| export function validateDataset(_input: DatasetInput): ValidationResul…
+      3|   throw new Error("M1 尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ tests/validation.test.ts:241:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/75]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  75 failed (75)
+   Start at  16:51:15
+   Duration  324ms (transform 26ms, setup 0ms, import 37ms, tests 25ms, environment 0ms)
+

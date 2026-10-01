@@ -1,0 +1,15 @@
+{
+  "action": "rmdir verified empty duplicate directories only; no tsconfig bypass, original packages preserved",
+  "removed": [
+    "node_modules/@types/d3-array 2",
+    "node_modules/@types/d3-scale 2",
+    "node_modules/@types/d3-interpolate 2",
+    "node_modules/@types/d3-timer 2",
+    "node_modules/@types/d3-time 2",
+    "node_modules/@types/d3-path 2",
+    "node_modules/@types/d3-color 2",
+    "node_modules/@types/d3-ease 2",
+    "node_modules/@types/d3-shape 2",
+    "node_modules/@types/use-sync-external-store 2"
+  ]
+}

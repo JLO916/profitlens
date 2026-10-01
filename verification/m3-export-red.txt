@@ -1,0 +1,190 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/export.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/export.test.ts (33 tests | 33 failed) 59ms
+     × writes UTF-8 BOM, quoted comma-delimited fields, CRLF records and inert embedded delimiters 3ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "=1+1" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "+SUM(A1)" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "-1+2" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "@SUM(A1)" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "\t=1+1" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "\r=1" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "\n=1" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: " \t +1" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "﻿=1" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "\u0000@x" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "​=1" 0ms
+     × neutralizes untrusted text beginning with a formula/control prefix: "-315.00" 0ms
+     × preserves strictly typed negative, very large and long decimal values exactly 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: "1e3" 2ms
+     × rejects a non-decimal numeric payload instead of exporting it: "+1" 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: "NaN" 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: "Infinity" 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: "-1+2" 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: "=1" 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: "1,000" 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: " 1" 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: "" 0ms
+     × rejects a non-decimal numeric payload instead of exporting it: "1." 0ms
+     × rejects runtime Number payloads and leaves null empty rather than zero 0ms
+     × exports fixed golden period totals, channel facts, weeks and all bridge components 17ms
+     × carries the active filter metadata, raw string rates and actual source filenames 10ms
+     × exports null with missing-data reason instead of a usable zero 5ms
+     × treats dataset metadata as untrusted text and never mutates the snapshot 4ms
+     × exports only supplied visible product rows, with category/search scope and no channel contribution 3ms
+     × protects SKU/category/query text and excludes injected non-product metric keys 5ms
+     × an empty product selection exports metadata without inventing product totals 3ms
+     × issue CSV keeps logical/actual files and escapes untrusted error fields 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 33 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > writes UTF-8 BOM, quoted comma-delimited fields, CRLF records and inert embedded delimiters
+Error: M3 RED: encodeCsv
+ ❯ encodeCsv src/application/export.ts:7:83
+
+ ❯ tests/export.test.ts:25:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/33]⎯
+
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "=1+1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "+SUM(A1)"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "-1+2"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "@SUM(A1)"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "\t=1+1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "\r=1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "\n=1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: " \t +1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "﻿=1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "\u0000@x"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "​=1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > neutralizes untrusted text beginning with a formula/control prefix: "-315.00"
+Error: M3 RED: encodeCsv
+ ❯ encodeCsv src/application/export.ts:7:83
+
+ ❯ tests/export.test.ts:31:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/33]⎯
+
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > preserves strictly typed negative, very large and long decimal values exactly
+Error: M3 RED: encodeCsv
+ ❯ encodeCsv src/application/export.ts:7:83
+
+ ❯ tests/export.test.ts:38:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/33]⎯
+
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: "1e3"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: "+1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: "NaN"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: "Infinity"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: "-1+2"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: "=1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: "1,000"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: " 1"
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: ""
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects a non-decimal numeric payload instead of exporting it: "1."
+AssertionError: expected [Function] to throw error including 'INVALID_NUMERIC_CELL' but got 'M3 RED: encodeCsv'
+
+Expected: "INVALID_NUMERIC_CELL"
+Received: "M3 RED: encodeCsv"
+
+ ❯ tests/export.test.ts:44:48
+     42|
+     43|   it.each(["1e3", "+1", "NaN", "Infinity", "-1+2", "=1", "1,000", " 1"…
+     44|     expect(() => encodeCsv([[number(value)]])).toThrow("INVALID_NUMERI…
+       |                                                ^
+     45|   });
+     46|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/33]⎯
+
+ FAIL  tests/export.test.ts > M3 typed safe CSV encoder > rejects runtime Number payloads and leaves null empty rather than zero
+AssertionError: expected [Function] to throw error including 'INVALID_NUMERIC_CELL' but got 'M3 RED: encodeCsv'
+
+Expected: "INVALID_NUMERIC_CELL"
+Received: "M3 RED: encodeCsv"
+
+ ❯ tests/export.test.ts:48:72
+     46|
+     47|   it("rejects runtime Number payloads and leaves null empty rather tha…
+     48|     expect(() => encodeCsv([[{ kind: "number", value: 1 } as never]]))…
+       |                                                                        ^
+     49|     expect(records(encodeCsv([[text("value")], [{ kind: "null" }]]))[0…
+     50|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/33]⎯
+
+ FAIL  tests/export.test.ts > M3 exact snapshot exports > exports fixed golden period totals, channel facts, weeks and all bridge components
+Error: M3 RED: snapshot CSV
+ ❯ exportSnapshotCsv src/application/export.ts:8:128
+
+ ❯ tests/export.test.ts:56:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/33]⎯
+
+ FAIL  tests/export.test.ts > M3 exact snapshot exports > carries the active filter metadata, raw string rates and actual source filenames
+Error: M3 RED: snapshot CSV
+ ❯ exportSnapshotCsv src/application/export.ts:8:128
+
+ ❯ tests/export.test.ts:72:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/33]⎯
+
+ FAIL  tests/export.test.ts > M3 exact snapshot exports > exports null with missing-data reason instead of a usable zero
+Error: M3 RED: snapshot CSV
+ ❯ exportSnapshotCsv src/application/export.ts:8:128
+
+ ❯ tests/export.test.ts:84:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/33]⎯
+
+ FAIL  tests/export.test.ts > M3 exact snapshot exports > treats dataset metadata as untrusted text and never mutates the snapshot
+Error: M3 RED: snapshot CSV
+ ❯ exportSnapshotCsv src/application/export.ts:8:128
+
+ ❯ tests/export.test.ts:97:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/33]⎯
+
+ FAIL  tests/export.test.ts > M3 scoped product and issue exports > exports only supplied visible product rows, with category/search scope and no channel contribution
+Error: M3 RED: product CSV
+ ❯ exportProductsCsv src/application/export.ts:9:193
+
+ ❯ tests/export.test.ts:106:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/33]⎯
+
+ FAIL  tests/export.test.ts > M3 scoped product and issue exports > protects SKU/category/query text and excludes injected non-product metric keys
+Error: M3 RED: product CSV
+ ❯ exportProductsCsv src/application/export.ts:9:193
+
+ ❯ tests/export.test.ts:119:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/33]⎯
+
+ FAIL  tests/export.test.ts > M3 scoped product and issue exports > an empty product selection exports metadata without inventing product totals
+Error: M3 RED: product CSV
+ ❯ exportProductsCsv src/application/export.ts:9:193
+
+ ❯ tests/export.test.ts:126:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/33]⎯
+
+ FAIL  tests/export.test.ts > M3 scoped product and issue exports > issue CSV keeps logical/actual files and escapes untrusted error fields
+Error: M3 RED: issues CSV
+ ❯ exportIssuesCsv src/application/export.ts:10:114
+
+ ❯ tests/export.test.ts:134:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/33]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  33 failed (33)
+   Start at  13:31:04
+   Duration  357ms (transform 66ms, setup 0ms, import 132ms, tests 59ms, environment 0ms)
+

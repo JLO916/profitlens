@@ -1,0 +1,809 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/25.8.2/bin/node",
+      "/Users/j-work/Desktop/profitlens-codex-starter/node_modules/.bin/playwright",
+      "test",
+      "tests/e2e/scenarios.spec.ts",
+      "--project=desktop"
+    ],
+    "configFile": "/Users/j-work/Desktop/profitlens-codex-starter/playwright.config.ts",
+    "rootDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "verification/m4-e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+      "url": "http://127.0.0.1:3100",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "scenarios.spec.ts",
+      "file": "scenarios.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1045,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:37:22.390Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM3OjI0LjAzOVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuWDheWWruS4gOmAmui3r+WPr+ippueul++8jOaYjuWhq+mbtuiuiuWLlemHjeePviAyNzAuMDAg5Lim5Y+v6Y2155uk5p+l55yL5Z+65rqW6K2J5pOaIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-af015272a6211c3ed7df",
+          "file": "scenarios.spec.ts",
+          "line": 151,
+          "column": 1
+        },
+        {
+          "title": "三個方案各自從 270.00 重算為 270／284／264，不串接或相加",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1055,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:37:24.090Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM3OjI1LjExMVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuS4ieWAi+aWueahiOWQhOiHquW+niAyNzAuMDAg6YeN566X54K6IDI3MO+8jzI4NO+8jzI2NO+8jOS4jeS4suaOpeaIluebuOWKoCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-ce2bf78f7f571d36a74f",
+          "file": "scenarios.spec.ts",
+          "line": 184,
+          "column": 1
+        },
+        {
+          "title": "減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 780,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:37:25.152Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM3OjI1Ljg3MFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIua4m+WwkeW7o+WRiuS7jeW/hemgiOaYjuWhq+mKt+mHj++8jOaLkue1leWbuuWumuWBh+ioreS4jeW+l+mhr+ekuueyvueiuuWinuebiiIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-8845d29f67716fe86f35",
+          "file": "scenarios.spec.ts",
+          "line": 210,
+          "column": 1
+        },
+        {
+          "title": "輸入超界、負投入與過度精度不得默默修正為可用試算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 982,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:37:25.937Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM3OjI2Ljg4OFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIui8uOWFpei2heeVjOOAgeiyoOaKleWFpeiIh+mBjuW6pueyvuW6puS4jeW+l+m7mOm7mOS/ruato+eCuuWPr+eUqOippueulyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-23b477cb9be4feb749c9",
+          "file": "scenarios.spec.ts",
+          "line": 232,
+          "column": 1
+        },
+        {
+          "title": "百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 725,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:37:26.925Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM3OjI3LjU5OVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIueZvuWIhum7nuOAgeWQhOaIkOacrOiIh+WPluWIhumWieWQiO+8muiyoOWfuua6liBNQVJLRVRQTEFDRSDlj6/lvpcgMTkuNzAg6IiH5beu6aGNIDM0LjcwIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-ee1d78fa00f207f69e83",
+          "file": "scenarios.spec.ts",
+          "line": 245,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15447,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\nExpected: \u001b[32m\"—\"\u001b[39m\nReceived: \u001b[31m\"資料待補\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('kpi-contribution_after_marketing').locator('.kpi-value') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\u001b[22m\n\u001b[2m    34 × locator resolved to <div class=\"kpi-value\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"資料待補\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\nExpected: \u001b[32m\"—\"\u001b[39m\nReceived: \u001b[31m\"資料待補\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('kpi-contribution_after_marketing').locator('.kpi-value') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\u001b[22m\n\u001b[2m    34 × locator resolved to <div class=\"kpi-value\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"資料待補\"\u001b[22m\n\n    at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts:278:61",
+                    "location": {
+                      "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts",
+                      "column": 61,
+                      "line": 278
+                    },
+                    "snippet": "  276 |     await selectChannel(page, incomplete.channel, \"部分資料待補\");\n  277 |     await expect(kpi(page, \"net_revenue\")).toHaveText(incomplete.revenue);\n> 278 |     await expect(kpi(page, \"contribution_after_marketing\")).toHaveText(\"—\");\n      |                                                             ^\n  279 |     await showScenarios(page);\n  280 |     await expect(page.getByTestId(\"scenario-unavailable\")).toBeVisible();\n  281 |     await expect(page.getByTestId(\"baseline-net_revenue\")).toHaveText(incomplete.revenue);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts",
+                        "column": 61,
+                        "line": 278
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\nExpected: \u001b[32m\"—\"\u001b[39m\nReceived: \u001b[31m\"資料待補\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('kpi-contribution_after_marketing').locator('.kpi-value') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\u001b[22m\n\u001b[2m    34 × locator resolved to <div class=\"kpi-value\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"資料待補\"\u001b[22m\n\n\n  276 |     await selectChannel(page, incomplete.channel, \"部分資料待補\");\n  277 |     await expect(kpi(page, \"net_revenue\")).toHaveText(incomplete.revenue);\n> 278 |     await expect(kpi(page, \"contribution_after_marketing\")).toHaveText(\"—\");\n      |                                                             ^\n  279 |     await showScenarios(page);\n  280 |     await expect(page.getByTestId(\"scenario-unavailable\")).toBeVisible();\n  281 |     await expect(page.getByTestId(\"baseline-net_revenue\")).toHaveText(incomplete.revenue);\n    at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts:278:61"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:37:27.655Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/scenarios-missing-cogs-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/test-failed-1.png"
+                    },
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM3OjQzLjA2NloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1pc3NpbmctY29ncyDnvLrmvI/pgJrot6/kv53nlZnnh5/mlLbvvIznpoHmraLmg4XlooPoo5zpm7bmiJbpoa/npLogTmFOIiwKICAic3RhdHVzIjogImZhaWxlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/scenarios-missing-cogs-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/scenarios-missing-cogs-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts",
+                    "column": 61,
+                    "line": 278
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-e3e05ab3cb8199ab3c0c",
+          "file": "scenarios.spec.ts",
+          "line": 274,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15524,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\nExpected: \u001b[32m\"—\"\u001b[39m\nReceived: \u001b[31m\"資料待補\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('kpi-contribution_after_marketing').locator('.kpi-value') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\u001b[22m\n\u001b[2m    34 × locator resolved to <div class=\"kpi-value\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"資料待補\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\nExpected: \u001b[32m\"—\"\u001b[39m\nReceived: \u001b[31m\"資料待補\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('kpi-contribution_after_marketing').locator('.kpi-value') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\u001b[22m\n\u001b[2m    34 × locator resolved to <div class=\"kpi-value\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"資料待補\"\u001b[22m\n\n    at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts:278:61",
+                    "location": {
+                      "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts",
+                      "column": 61,
+                      "line": 278
+                    },
+                    "snippet": "  276 |     await selectChannel(page, incomplete.channel, \"部分資料待補\");\n  277 |     await expect(kpi(page, \"net_revenue\")).toHaveText(incomplete.revenue);\n> 278 |     await expect(kpi(page, \"contribution_after_marketing\")).toHaveText(\"—\");\n      |                                                             ^\n  279 |     await showScenarios(page);\n  280 |     await expect(page.getByTestId(\"scenario-unavailable\")).toBeVisible();\n  281 |     await expect(page.getByTestId(\"baseline-net_revenue\")).toHaveText(incomplete.revenue);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts",
+                        "column": 61,
+                        "line": 278
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\nExpected: \u001b[32m\"—\"\u001b[39m\nReceived: \u001b[31m\"資料待補\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('kpi-contribution_after_marketing').locator('.kpi-value') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')\u001b[22m\n\u001b[2m    34 × locator resolved to <div class=\"kpi-value\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"資料待補\"\u001b[22m\n\n\n  276 |     await selectChannel(page, incomplete.channel, \"部分資料待補\");\n  277 |     await expect(kpi(page, \"net_revenue\")).toHaveText(incomplete.revenue);\n> 278 |     await expect(kpi(page, \"contribution_after_marketing\")).toHaveText(\"—\");\n      |                                                             ^\n  279 |     await showScenarios(page);\n  280 |     await expect(page.getByTestId(\"scenario-unavailable\")).toBeVisible();\n  281 |     await expect(page.getByTestId(\"baseline-net_revenue\")).toHaveText(incomplete.revenue);\n    at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts:278:61"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:37:43.490Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/scenarios-missing-ad-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/test-failed-1.png"
+                    },
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM3OjU5LjA4OFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1pc3NpbmctYWQg57y65ryP6YCa6Lev5L+d55WZ54ef5pS277yM56aB5q2i5oOF5aKD6KOc6Zu25oiW6aGv56S6IE5hTiIsCiAgInN0YXR1cyI6ICJmYWlsZWQiLAogICJldmVudHMiOiBbXQp9"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/scenarios-missing-ad-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/scenarios-missing-ad-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts",
+                    "column": 61,
+                    "line": 278
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-3761c4acb6055379eb1d",
+          "file": "scenarios.spec.ts",
+          "line": 274,
+          "column": 3
+        },
+        {
+          "title": "通路換回原值仍過期；重建清空全部假設與證據，保留人工名稱文字",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1274,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:37:59.470Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM4OjAwLjgwOVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIumAmui3r+aPm+WbnuWOn+WAvOS7jemBjuacn++8m+mHjeW7uua4heepuuWFqOmDqOWBh+ioreiIh+itieaTmu+8jOS/neeVmeS6uuW3peWQjeeoseaWh+WtlyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-f81d6bce26b7be868ce8",
+          "file": "scenarios.spec.ts",
+          "line": 288,
+          "column": 1
+        },
+        {
+          "title": "資料集切換後即使回到相同 golden 與通路，舊方案仍過期",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1185,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:38:00.873Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM4OjAyLjAwOFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuizh+aWmembhuWIh+aPm+W+jOWNs+S9v+WbnuWIsOebuOWQjCBnb2xkZW4g6IiH6YCa6Lev77yM6IiK5pa55qGI5LuN6YGO5pyfIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-7240504ece0c3a2fb184",
+          "file": "scenarios.spec.ts",
+          "line": 327,
+          "column": 1
+        },
+        {
+          "title": "有效期間切換再回原期間仍過期，不自動沿用先前假設",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1097,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:38:02.064Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM4OjAzLjEwNVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuacieaViOacn+mWk+WIh+aPm+WGjeWbnuWOn+acn+mWk+S7jemBjuacn++8jOS4jeiHquWLleayv+eUqOWFiOWJjeWBh+iorSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-0b34361b55c8dc04ff8c",
+          "file": "scenarios.spec.ts",
+          "line": 343,
+          "column": 1
+        },
+        {
+          "title": "三項人工行動可編輯、鍵盤排序、引用本期 fact 並返回焦點",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1551,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:38:03.166Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM4OjA0LjY4MFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuS4iemgheS6uuW3peihjOWLleWPr+e3qOi8r+OAgemNteebpOaOkuW6j+OAgeW8leeUqOacrOacnyBmYWN0IOS4pui/lOWbnueEpum7niIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-b35fdd32c2c3c0e9d1ab",
+          "file": "scenarios.spec.ts",
+          "line": 364,
+          "column": 1
+        },
+        {
+          "title": "未填完七欄或未選 fact 的行動只能保持草稿",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 647,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:38:04.722Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM4OjA1LjMxOVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuacquWhq+WujOS4g+ashOaIluacqumBuCBmYWN0IOeahOihjOWLleWPquiDveS/neaMgeiNieeovyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-8f2b5a699d54cee16a23",
+          "file": "scenarios.spec.ts",
+          "line": 400,
+          "column": 1
+        },
+        {
+          "title": "三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 918,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:38:05.374Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM4OjA2LjIyMloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuS4ieeoruacrOapn+WMr+WHuuS/neWtmOWbuuWumuWfuua6luOAgeS6lOmghei8uOWFpeOAgeWFrOW8j+OAgeeJiOacrOOAgeevhOWcjeiIh+S+hua6kCIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-b70751c77ddb28550b8c",
+          "file": "scenarios.spec.ts",
+          "line": 412,
+          "column": 1
+        },
+        {
+          "title": "不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 916,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:38:06.297Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM4OjA3LjE2MFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuS4jeWPr+S/oeaWueahiOiIh+ihjOWLleaWh+Wtl+S4jeWft+ihjO+8jENTViDpmLLlhazlvI/ogIwgTWFya2Rvd24g5LiN55Si55Sf5oOh5oSP6YCj57WQIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-31912d0fa7a566395e35",
+          "file": "scenarios.spec.ts",
+          "line": 456,
+          "column": 1
+        },
+        {
+          "title": "試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1080,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T06:38:07.218Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-metadata",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTEwLTAxVDA2OjM4OjA4LjI1N1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuippueul+OAgeS6uuW3peihjOWLleiIh+S4ieeoruS4i+i8iembtiBIVFRQ44CB6Zu25oyB5LmF5YyW77yM6YeN5pW06IiH5paw6aCB5LiN5YWx55SoIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-513fa56dad928e22a3ce",
+          "file": "scenarios.spec.ts",
+          "line": 480,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-01T06:37:09.118Z",
+    "duration": 59244.53,
+    "expected": 13,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

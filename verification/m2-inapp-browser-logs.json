@@ -1,0 +1,80 @@
+{
+  "recorded_at": "2026-09-30T09:39:57.270Z",
+  "browser": "Codex in-app browser",
+  "url": "http://127.0.0.1:3000/",
+  "notes": "Includes resolved development-time missing-module errors and Fast Refresh warnings; retained without clearing.",
+  "events": [
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:8:1\nModule not found: Can't resolve './overview'\n   6 | import type { AnalysisFilters, Dataset, DatasetInput, ValidationIssue ...\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n>  8 | import { Overview } from \"./overview\";\n     | ^\n   9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:9:1\nModule not found: Can't resolve './workspace-panels'\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n   8 | import { Overview } from \"./overview\";\n>  9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n     | ^\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n  12 | type Status = \"empty\" | \"loading\" | \"error\" | \"partial\" | \"ready\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:8:1\nModule not found: Can't resolve './overview'\n   6 | import type { AnalysisFilters, Dataset, DatasetInput, ValidationIssue ...\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n>  8 | import { Overview } from \"./overview\";\n     | ^\n   9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:9:1\nModule not found: Can't resolve './workspace-panels'\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n   8 | import { Overview } from \"./overview\";\n>  9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n     | ^\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n  12 | type Status = \"empty\" | \"loading\" | \"error\" | \"partial\" | \"ready\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:8:1\nModule not found: Can't resolve './overview'\n   6 | import type { AnalysisFilters, Dataset, DatasetInput, ValidationIssue ...\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n>  8 | import { Overview } from \"./overview\";\n     | ^\n   9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:9:1\nModule not found: Can't resolve './workspace-panels'\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n   8 | import { Overview } from \"./overview\";\n>  9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n     | ^\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n  12 | type Status = \"empty\" | \"loading\" | \"error\" | \"partial\" | \"ready\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:8:1\nModule not found: Can't resolve './overview'\n   6 | import type { AnalysisFilters, Dataset, DatasetInput, ValidationIssue ...\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n>  8 | import { Overview } from \"./overview\";\n     | ^\n   9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:9:1\nModule not found: Can't resolve './workspace-panels'\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n   8 | import { Overview } from \"./overview\";\n>  9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n     | ^\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n  12 | type Status = \"empty\" | \"loading\" | \"error\" | \"partial\" | \"ready\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:9:1\nModule not found: Can't resolve './workspace-panels'\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n   8 | import { Overview } from \"./overview\";\n>  9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n     | ^\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n  12 | type Status = \"empty\" | \"loading\" | \"error\" | \"partial\" | \"ready\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:9:1\nModule not found: Can't resolve './workspace-panels'\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n   8 | import { Overview } from \"./overview\";\n>  9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n     | ^\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n  12 | type Status = \"empty\" | \"loading\" | \"error\" | \"partial\" | \"ready\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "error",
+      "message": "./src/components/dashboard.tsx:9:1\nModule not found: Can't resolve './workspace-panels'\n   7 | import { EvidenceDrawer, type EvidenceSelection } from \"./evidence-dra...\n   8 | import { Overview } from \"./overview\";\n>  9 | import { DataWorkspace, Diagnosis, Products } from \"./workspace-panels\";\n     | ^\n  10 |\n  11 | type Panel = \"overview\" | \"diagnosis\" | \"products\" | \"data\";\n  12 | type Status = \"empty\" | \"loading\" | \"error\" | \"partial\" | \"ready\";\n\nhttps://nextjs.org/docs/messages/module-not-found",
+      "timestamp": "2026-09-30T09:27:48.549Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js"
+    },
+    {
+      "level": "warn",
+      "message": "[Fast Refresh] performing full reload\n\nFast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.\nYou might have a file which exports a React component but also exports a value that is imported by a non-React component file.\nConsider migrating the non-React component export to a separate file and importing it into both files.\n\nIt is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.\nFast Refresh requires at least one parent function component in your React tree.",
+      "timestamp": "2026-09-30T09:28:33.220Z",
+      "url": "webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/shared/forward-logs-shared.js"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProfitLens Insight Output",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "snapshot_id": {
+      "type": "string"
+    },
+    "insights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "observation": {
+            "type": "string",
+            "description": "Supported observation; use fact placeholders, not invented numeric claims."
+          },
+          "hypotheses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recommended_action": {
+            "type": "string"
+          },
+          "owner_role": {
+            "type": "string"
+          },
+          "verification_metric": {
+            "type": "string"
+          },
+          "stop_condition": {
+            "type": "string"
+          },
+          "additional_data_needed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "fact_ids",
+          "observation",
+          "hypotheses",
+          "recommended_action",
+          "owner_role",
+          "verification_metric",
+          "stop_condition",
+          "additional_data_needed",
+          "limitations"
+        ]
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "snapshot_id",
+    "insights",
+    "limitations"
+  ]
+}

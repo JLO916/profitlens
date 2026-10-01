@@ -1,0 +1,206 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-provider.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-provider.test.ts (8 tests | 8 failed) 35ms
+     × uses Responses strict JSON Schema, env model, bounded output, no tools and no storage 30ms
+     × never honors arbitrary OPENAI_BASE_URL or SDK debug logging 1ms
+     × classifies refusal without exposing refusal prose 1ms
+     × classifies incomplete/max tokens as truncation even with parseable partial JSON 0ms
+     × returns malformed JSON as invalid raw data for bounded schema retry 0ms
+     × 429 is sanitized and SDK retries are disabled 1ms
+     × provider errors do not expose response body or key 0ms
+     × repair repeats only original facts with fixed repair instruction, no rejected output 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > uses Responses strict JSON Schema, env model, bounded output, no tools and no storage
+AssertionError: expected { status: 'refused', usage: null } to deeply equal { status: 'completed', …(2) }
+
+- Expected
++ Received
+
+  {
+-   "output": {
+-     "snapshot_id": "mock",
+-   },
+-   "status": "completed",
+-   "usage": {
+-     "input_tokens": 20,
+-     "output_tokens": 40,
+-     "total_tokens": 60,
+-   },
++   "status": "refused",
++   "usage": null,
+  }
+
+ ❯ tests/ai-provider.test.ts:17:20
+     15|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     16|     const result = await createOpenAiProvider(config, transport).gener…
+     17|     expect(result).toEqual({ status: "completed", output: { snapshot_i…
+       |                    ^
+     18|     expect(transport).toHaveBeenCalledTimes(1);
+     19|     const [url, init] = transport.mock.calls[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > never honors arbitrary OPENAI_BASE_URL or SDK debug logging
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ tests/ai-provider.test.ts:36:42
+     34|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     35|     await createOpenAiProvider(config, transport).generate(snapshot, o…
+     36|     expect(String(transport.mock.calls[0][0])).toBe("https://api.opena…
+       |                                          ^
+     37|     for (const log of logs) expect(log).not.toHaveBeenCalled();
+     38|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > classifies refusal without exposing refusal prose
+AssertionError: expected { status: 'refused', usage: null } to deeply equal { status: 'refused', usage: { …(3) } }
+
+- Expected
++ Received
+
+  {
+    "status": "refused",
+-   "usage": {
+-     "input_tokens": 20,
+-     "output_tokens": 40,
+-     "total_tokens": 60,
+-   },
++   "usage": null,
+  }
+
+ ❯ tests/ai-provider.test.ts:41:89
+     39|   it("classifies refusal without exposing refusal prose", async () => {
+     40|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     41|     expect(await createOpenAiProvider(config, transport).generate(snap…
+       |                                                                                         ^
+     42|   });
+     43|   it("classifies incomplete/max tokens as truncation even with parseab…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > classifies incomplete/max tokens as truncation even with parseable partial JSON
+AssertionError: expected { status: 'refused', usage: null } to deeply equal { Object (status, usage) }
+
+- Expected
++ Received
+
+  {
+-   "status": "truncated",
+-   "usage": {
+-     "input_tokens": 20,
+-     "output_tokens": 40,
+-     "total_tokens": 60,
+-   },
++   "status": "refused",
++   "usage": null,
+  }
+
+ ❯ tests/ai-provider.test.ts:45:89
+     43|   it("classifies incomplete/max tokens as truncation even with parseab…
+     44|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     45|     expect(await createOpenAiProvider(config, transport).generate(snap…
+       |                                                                                         ^
+     46|   });
+     47|   it("returns malformed JSON as invalid raw data for bounded schema re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > returns malformed JSON as invalid raw data for bounded schema retry
+AssertionError: expected { status: 'refused', usage: null } to deeply equal { status: 'completed', …(2) }
+
+- Expected
++ Received
+
+  {
+-   "output": "{bad",
+-   "status": "completed",
+-   "usage": {
+-     "input_tokens": 20,
+-     "output_tokens": 40,
+-     "total_tokens": 60,
+-   },
++   "status": "refused",
++   "usage": null,
+  }
+
+ ❯ tests/ai-provider.test.ts:49:89
+     47|   it("returns malformed JSON as invalid raw data for bounded schema re…
+     48|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     49|     expect(await createOpenAiProvider(config, transport).generate(snap…
+       |                                                                                         ^
+     50|   });
+     51|   it("429 is sanitized and SDK retries are disabled", async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > 429 is sanitized and SDK retries are disabled
+AssertionError: promise resolved "{ status: 'refused', usage: null }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "status": "refused",
++   "usage": null,
+  }
+
+ ❯ tests/ai-provider.test.ts:53:88
+     51|   it("429 is sanitized and SDK retries are disabled", async () => {
+     52|     const transport = vi.fn<typeof fetch>().mockImplementation(async (…
+     53|     await expect(createOpenAiProvider(config, transport).generate(snap…
+       |                                                                                        ^
+     54|     expect(transport).toHaveBeenCalledTimes(1);
+     55|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > provider errors do not expose response body or key
+AssertionError: promise resolved "{ status: 'refused', usage: null }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "status": "refused",
++   "usage": null,
+  }
+
+ ❯ tests/ai-provider.test.ts:58:88
+     56|   it("provider errors do not expose response body or key", async () =>…
+     57|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     58|     await expect(createOpenAiProvider(config, transport).generate(snap…
+       |                                                                                        ^
+     59|     expect(transport).toHaveBeenCalledTimes(1);
+     60|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  tests/ai-provider.test.ts > official OpenAI SDK transport mocked locally, never live > repair repeats only original facts with fixed repair instruction, no rejected output
+TypeError: Cannot read properties of undefined (reading '1')
+ ❯ tests/ai-provider.test.ts:64:59
+     62|     const transport = vi.fn<typeof fetch>().mockResolvedValue(Response…
+     63|     await createOpenAiProvider(config, transport).generate(snapshot, {…
+     64|     const body = JSON.parse(String(transport.mock.calls[0][1]?.body));
+       |                                                           ^
+     65|     expect(body.instructions).toContain("重新產生一次"); expect(body.input).…
+     66|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed (8)
+   Start at  14:54:57
+   Duration  213ms (transform 29ms, setup 0ms, import 38ms, tests 35ms, environment 0ms)
+

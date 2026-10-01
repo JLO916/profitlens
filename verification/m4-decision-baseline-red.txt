@@ -1,0 +1,4176 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/decision.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/decision.test.ts (33 tests | 2 failed) 116ms
+     × captures serializable single-channel current baseline with source IDs and versions 21ms
+     × detaches baseline, period, sources and facts from mutable incoming snapshot 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > captures serializable single-channel current baseline with source IDs and versions
+AssertionError: expected { Object (schema_version, scenario_version, ...) } to match object { currency: 'TWD', …(2) }
+(30 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+-   "currency": "TWD",
+-   "timezone": "Asia/Taipei",
++   "baseline": {
++     "amounts": {
++       "ad_spend": "270.00",
++       "cogs_net": "740.00",
++       "contribution_after_marketing": "270.00",
++       "contribution_before_marketing": "540.00",
++       "discounts": "230.00",
++       "fulfillment_costs": "140.00",
++       "gross_profit": "740.00",
++       "gross_sales": "1800.00",
++       "net_revenue": "1480.00",
++       "other_variable_costs": "16.00",
++       "payment_fees": "44.00",
++       "platform_fees": "0.00",
++       "refunds": "90.00",
++     },
++     "coverage_confirmed": true,
++     "eligible": true,
++     "rates": {
++       "discount_rate": "0.127777777778",
++       "payment_rate": "0.029729729730",
++       "platform_rate": "0.000000000000",
++       "refund_ratio": "0.057324840764",
++     },
++     "reasons": [],
++     "sources": [
++       {
++         "channel": "DTC",
++         "date": "2026-08-02",
++         "file": "ad_spend_daily.csv",
++         "line": 4,
++       },
++       {
++         "channel": "DTC",
++         "date": "2026-08-02",
++         "file": "channel_costs_daily.csv",
++         "line": 4,
++       },
++       {
++         "channel": "DTC",
++         "date": "2026-08-02",
++         "file": "sales_daily.csv",
++         "line": 6,
++         "sku": "A",
++       },
++       {
++         "channel": "DTC",
++         "date": "2026-08-02",
++         "file": "sales_daily.csv",
++         "line": 7,
++         "sku": "B",
++       },
++     ],
++     "version": "scenario-v1",
++   },
++   "data_as_of": "2026-08-03",
++   "dataset_hash": "92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48",
++   "dataset_id": "golden-v1",
++   "facts": [
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"gross_sales\"]",
++       "metric": "gross_sales",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "1500.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"discounts\"]",
++       "metric": "discounts",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "100.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"refunds\"]",
++       "metric": "refunds",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "50.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"cogs_net\"]",
++       "metric": "cogs_net",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "600.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"platform_fees\"]",
++       "metric": "platform_fees",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"payment_fees\"]",
++       "metric": "payment_fees",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "40.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"fulfillment_costs\"]",
++       "metric": "fulfillment_costs",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "100.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"other_variable_costs\"]",
++       "metric": "other_variable_costs",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "10.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"ad_spend\"]",
++       "metric": "ad_spend",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "200.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"net_revenue\"]",
++       "metric": "net_revenue",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "1350.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"gross_profit\"]",
++       "metric": "gross_profit",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "750.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"contribution_before_marketing\"]",
++       "metric": "contribution_before_marketing",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "600.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"contribution_after_marketing\"]",
++       "metric": "contribution_after_marketing",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "400.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"gross_margin\"]",
++       "metric": "gross_margin",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.555555555556",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"contribution_margin\"]",
++       "metric": "contribution_margin",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.296296296296",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"discount_rate\"]",
++       "metric": "discount_rate",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.066666666667",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"refund_ratio\"]",
++       "metric": "refund_ratio",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.035714285714",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"mer\"]",
++       "metric": "mer",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "6.750000000000",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"fulfillment_burden\"]",
++       "metric": "fulfillment_burden",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.074074074074",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"marketing_burden\"]",
++       "metric": "marketing_burden",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.148148148148",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"gross_sales\"]",
++       "metric": "gross_sales",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "1800.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"discounts\"]",
++       "metric": "discounts",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "230.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"refunds\"]",
++       "metric": "refunds",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "90.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"cogs_net\"]",
++       "metric": "cogs_net",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "740.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"platform_fees\"]",
++       "metric": "platform_fees",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"payment_fees\"]",
++       "metric": "payment_fees",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "44.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"fulfillment_costs\"]",
++       "metric": "fulfillment_costs",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "140.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"other_variable_costs\"]",
++       "metric": "other_variable_costs",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "16.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"ad_spend\"]",
++       "metric": "ad_spend",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "270.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"net_revenue\"]",
++       "metric": "net_revenue",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "1480.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"gross_profit\"]",
++       "metric": "gross_profit",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "740.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"contribution_before_marketing\"]",
++       "metric": "contribution_before_marketing",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "540.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"contribution_after_marketing\"]",
++       "metric": "contribution_after_marketing",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "270.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"gross_margin\"]",
++       "metric": "gross_margin",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.500000000000",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"contribution_margin\"]",
++       "metric": "contribution_margin",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.182432432432",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"discount_rate\"]",
++       "metric": "discount_rate",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.127777777778",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"refund_ratio\"]",
++       "metric": "refund_ratio",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.057324840764",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"mer\"]",
++       "metric": "mer",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "5.481481481481",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"fulfillment_burden\"]",
++       "metric": "fulfillment_burden",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.094594594595",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"marketing_burden\"]",
++       "metric": "marketing_burden",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "all",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.182432432432",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"gross_sales\"]",
++       "metric": "gross_sales",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "1500.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"discounts\"]",
++       "metric": "discounts",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "100.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"refunds\"]",
++       "metric": "refunds",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "50.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"cogs_net\"]",
++       "metric": "cogs_net",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "600.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"platform_fees\"]",
++       "metric": "platform_fees",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"payment_fees\"]",
++       "metric": "payment_fees",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "40.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"fulfillment_costs\"]",
++       "metric": "fulfillment_costs",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "100.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"other_variable_costs\"]",
++       "metric": "other_variable_costs",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "10.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"ad_spend\"]",
++       "metric": "ad_spend",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "200.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"net_revenue\"]",
++       "metric": "net_revenue",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "1350.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"gross_profit\"]",
++       "metric": "gross_profit",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "750.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"contribution_before_marketing\"]",
++       "metric": "contribution_before_marketing",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "600.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"contribution_after_marketing\"]",
++       "metric": "contribution_after_marketing",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "400.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"gross_margin\"]",
++       "metric": "gross_margin",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.555555555556",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"contribution_margin\"]",
++       "metric": "contribution_margin",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.296296296296",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"discount_rate\"]",
++       "metric": "discount_rate",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.066666666667",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"refund_ratio\"]",
++       "metric": "refund_ratio",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.035714285714",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"mer\"]",
++       "metric": "mer",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "6.750000000000",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"fulfillment_burden\"]",
++       "metric": "fulfillment_burden",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.074074074074",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"marketing_burden\"]",
++       "metric": "marketing_burden",
++       "period": {
++         "end": "2026-08-01",
++         "start": "2026-08-01",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "ad_spend_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "channel_costs_daily.csv",
++           "line": 2,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 2,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-01",
++           "file": "sales_daily.csv",
++           "line": 3,
++           "sku": "B",
++         },
++       ],
++       "value": "0.148148148148",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"gross_sales\"]",
++       "metric": "gross_sales",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "1800.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"discounts\"]",
++       "metric": "discounts",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "230.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"refunds\"]",
++       "metric": "refunds",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "90.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"cogs_net\"]",
++       "metric": "cogs_net",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "740.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"platform_fees\"]",
++       "metric": "platform_fees",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"payment_fees\"]",
++       "metric": "payment_fees",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "44.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"fulfillment_costs\"]",
++       "metric": "fulfillment_costs",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "140.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"other_variable_costs\"]",
++       "metric": "other_variable_costs",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "16.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"ad_spend\"]",
++       "metric": "ad_spend",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "270.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"net_revenue\"]",
++       "metric": "net_revenue",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "1480.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"gross_profit\"]",
++       "metric": "gross_profit",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "740.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"contribution_before_marketing\"]",
++       "metric": "contribution_before_marketing",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "540.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"contribution_after_marketing\"]",
++       "metric": "contribution_after_marketing",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "270.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"gross_margin\"]",
++       "metric": "gross_margin",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.500000000000",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"contribution_margin\"]",
++       "metric": "contribution_margin",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.182432432432",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"discount_rate\"]",
++       "metric": "discount_rate",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.127777777778",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"refund_ratio\"]",
++       "metric": "refund_ratio",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.057324840764",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"mer\"]",
++       "metric": "mer",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "5.481481481481",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"fulfillment_burden\"]",
++       "metric": "fulfillment_burden",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.094594594595",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"marketing_burden\"]",
++       "metric": "marketing_burden",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "channels": [
++           "DTC",
++         ],
++         "kind": "channel",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "ad_spend_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "channel_costs_daily.csv",
++           "line": 4,
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.182432432432",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"gross_sales\"]",
++       "metric": "gross_sales",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "1400.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"discounts\"]",
++       "metric": "discounts",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "210.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"refunds\"]",
++       "metric": "refunds",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "70.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"cogs_net\"]",
++       "metric": "cogs_net",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "580.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"net_revenue\"]",
++       "metric": "net_revenue",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "1120.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"gross_profit\"]",
++       "metric": "gross_profit",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "540.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"gross_margin\"]",
++       "metric": "gross_margin",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "0.482142857143",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"discount_rate\"]",
++       "metric": "discount_rate",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "0.150000000000",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"refund_ratio\"]",
++       "metric": "refund_ratio",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "HOME",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "A",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 6,
++           "sku": "A",
++         },
++       ],
++       "value": "0.058823529412",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"gross_sales\"]",
++       "metric": "gross_sales",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "400.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"discounts\"]",
++       "metric": "discounts",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "20.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"refunds\"]",
++       "metric": "refunds",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "20.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"cogs_net\"]",
++       "metric": "cogs_net",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "160.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"net_revenue\"]",
++       "metric": "net_revenue",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "360.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"gross_profit\"]",
++       "metric": "gross_profit",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "200.00",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"gross_margin\"]",
++       "metric": "gross_margin",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.555555555556",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"discount_rate\"]",
++       "metric": "discount_rate",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.050000000000",
++     },
++     {
++       "id": "[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"refund_ratio\"]",
++       "metric": "refund_ratio",
++       "period": {
++         "end": "2026-08-02",
++         "start": "2026-08-02",
++       },
++       "reason_codes": [],
++       "scope": {
++         "category": "CARE",
++         "channels": [
++           "DTC",
++         ],
++         "kind": "sku",
++         "sku": "B",
++       },
++       "sources": [
++         {
++           "channel": "DTC",
++           "date": "2026-08-02",
++           "file": "sales_daily.csv",
++           "line": 7,
++           "sku": "B",
++         },
++       ],
++       "value": "0.052631578947",
++     },
++   ],
++   "filenames": {
++     "sales_daily.csv": "商店訂單.csv",
++   },
++   "filter_hash": "08f6a7986b5d96dd3e2c91358aa2a555ba15048b7868a24b0643e3757823f78e",
++   "metric_version": "contribution-v1",
++   "period": {
++     "end": "2026-08-02",
++     "start": "2026-08-02",
++   },
++   "revision": 1,
++   "scenario_version": "scenario-v1",
++   "schema_version": "decision-v1",
++   "scope": {
++     "channels": [
++       "DTC",
++     ],
++     "current_period": {
++       "end": "2026-08-02",
++       "start": "2026-08-02",
++     },
++     "previous_period": {
++       "end": "2026-08-01",
++       "start": "2026-08-01",
++     },
++   },
++   "snapshot_signature": "{\"data_as_of\":\"2026-08-03\",\"dataset_hash\":\"92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48\",\"dataset_id\":\"golden-v1\",\"filter_hash\":\"08f6a7986b5d96dd3e2c91358aa2a555ba15048b7868a24b0643e3757823f78e\",\"metric_version\":\"contribution-v1\",\"period\":{\"end\":\"2026-08-02\",\"start\":\"2026-08-02\"},\"scope\":{\"channels\":[\"DTC\"],\"current_period\":{\"end\":\"2026-08-02\",\"start\":\"2026-08-02\"},\"previous_period\":{\"end\":\"2026-08-01\",\"start\":\"2026-08-01\"}}}",
++   "sources": [
++     {
++       "channel": "DTC",
++       "date": "2026-08-02",
++       "file": "ad_spend_daily.csv",
++       "line": 4,
++     },
++     {
++       "channel": "DTC",
++       "date": "2026-08-02",
++       "file": "channel_costs_daily.csv",
++       "line": 4,
++     },
++     {
++       "channel": "DTC",
++       "date": "2026-08-02",
++       "file": "sales_daily.csv",
++       "line": 6,
++       "sku": "A",
++     },
++     {
++       "channel": "DTC",
++       "date": "2026-08-02",
++       "file": "sales_daily.csv",
++       "line": 7,
++       "sku": "B",
++     },
++   ],
++   "stale": false,
++   "stale_reasons": [],
+  }
+
+ ❯ tests/decision.test.ts:33:15
+     31|     expect(s.scenario_version).toBe("scenario-v1");
+     32|     expect(s.metric_version).toBe("contribution-v1");
+     33|     expect(s).toMatchObject({ currency: "TWD", timezone: "Asia/Taipei"…
+       |               ^
+     34|     expect(s.filenames["sales_daily.csv"]).toBe("商店訂單.csv");
+     35|     expect(s.facts.length).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/decision.test.ts > M4 immutable binding and S07 freshness > detaches baseline, period, sources and facts from mutable incoming snapshot
+AssertionError: expected [Function] to throw an error
+ ❯ tests/decision.test.ts:43:83
+     41|     s.facts[0].id = "edited-copy";
+     42|     s.period.start = "2000-01-01";
+     43|     expect(() => { s.baseline.amounts.contribution_after_marketing = "…
+       |                                                                                   ^
+     44|     expect(snapshot.report.facts[0].id).toBe(oldId);
+     45|     expect(snapshot.report.current.period.start).toBe("2026-08-02");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 31 passed (33)
+   Start at  14:29:20
+   Duration  460ms (transform 93ms, setup 0ms, import 149ms, tests 116ms, environment 0ms)
+

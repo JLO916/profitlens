@@ -1,0 +1,42 @@
+{
+  "build_source": "npm run test:e2e -> NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+  "e2e_status": "186 passed; skipped/unexpected/flaky = 0",
+  "build_id": "B99RHlJWoUmfcnEBGg2E-",
+  "fake_canary": "sk-PROFITLENS-M6-NONSECRET-BUNDLE-CANARY",
+  "ENABLE_LIVE_AI": "false",
+  "APP_MODE": "LOCAL",
+  "OPENAI_MODEL": "verification-only-never-called",
+  "config_sha256": "dd76e786871857e083ab1c5ca4c243d09c9a872188905bd961aebbbc1abb90b0",
+  "lockfile_sha256": "ab23151e36c2c4a5bc76ad52d0675866eee7465b5d63a52764bbaa3feac7dcfd",
+  "provider_prompt_version": "profitlens-insights-v2",
+  "source_sha256": {
+    "src/ai/grounding.ts": "ee55aae611c08923101dceab4650f14c73d2d727135784b214ebaa0895db0d63",
+    "src/ai/prompt.ts": "6b112e1ca202fe061d5a5116913451a5be2de01dfcf4f476b89a1644ae827b4e",
+    "src/ai/provider.ts": "c2c7a1ebde4eb526ef6cae620159be84d6534053f1826b77ecc5ad7cb4adad51"
+  },
+  "static_sha256": {
+    ".next/static/B99RHlJWoUmfcnEBGg2E-/_buildManifest.js": "f58a9bdc3a87547c12918ac495e84bbd10bf07b22c61b1116226284b36c44a78",
+    ".next/static/B99RHlJWoUmfcnEBGg2E-/_ssgManifest.js": "678f6ce2cb80b1fe72fc67e7412be6e2ab6ada083111b64f7c40d35e3cba5e00",
+    ".next/static/chunks/414-e261bfc6bd27d5cf.js": "6703cb637dd950df6d5a2e5c2f052c022740bf8bffb553df0c6ce2a8e6af4a71",
+    ".next/static/chunks/4bd1b696-92152b0f5947070d.js": "8dc2c1d71557b434c654ec58acb1441bc0fb200c520ff548f606d88e689ee643",
+    ".next/static/chunks/794-952c3dd6bb5cffa5.js": "1ac5f71e825f2e100f9bcd96c4f61525ba9d7dfa2717a1f150b75c5a42481ee2",
+    ".next/static/chunks/app/_global-error/page-5c9826d77a0c2621.js": "75bf773f91ec6a729afdd56688299a83ec1f940c4e01253d6d1b2e26658f18fd",
+    ".next/static/chunks/app/_not-found/page-3880034c088d166e.js": "eb3b8b1fa8cc9fded5b2a531d74006d7ad2674804bf51dfedfe3bb011fea234a",
+    ".next/static/chunks/app/api/datasets/[id]/route-5c9826d77a0c2621.js": "75bf773f91ec6a729afdd56688299a83ec1f940c4e01253d6d1b2e26658f18fd",
+    ".next/static/chunks/app/api/insights/route-5c9826d77a0c2621.js": "75bf773f91ec6a729afdd56688299a83ec1f940c4e01253d6d1b2e26658f18fd",
+    ".next/static/chunks/app/layout-590e15a2f892eb71.js": "ac836eff5da5b272fa7d8cb9825566860f354fd6c9e68100809132b3cc97cc51",
+    ".next/static/chunks/app/page-b8d7606b56b0ea2a.js": "c1c3b1ac18e971b746a757a2f81e4424b41954dd7b1aefe002b5d661a52bcc26",
+    ".next/static/chunks/framework-0f597d6e68ffafed.js": "59f1650bea3e92760936cbe920f3549bf2bed211ef127052998a3d31b17d1601",
+    ".next/static/chunks/main-1d2704c1b81de5ff.js": "bfd5470c8e5989b5e2f91439a6763632d54f1b0395a4a18670b76bc3c9a19d4b",
+    ".next/static/chunks/main-app-6b7c78f6dbaa7a0d.js": "edefe1915736b4d1f24dc2b3639ff578d1cbb189206549930787733e4415f3f5",
+    ".next/static/chunks/next/dist/client/components/builtin/app-error-5c9826d77a0c2621.js": "75bf773f91ec6a729afdd56688299a83ec1f940c4e01253d6d1b2e26658f18fd",
+    ".next/static/chunks/next/dist/client/components/builtin/forbidden-5c9826d77a0c2621.js": "75bf773f91ec6a729afdd56688299a83ec1f940c4e01253d6d1b2e26658f18fd",
+    ".next/static/chunks/next/dist/client/components/builtin/global-error-41bb654e5bc8c261.js": "2e3c516536b315cb300c440ea38c7044a258466d2139b5cc22c164be970fd303",
+    ".next/static/chunks/next/dist/client/components/builtin/not-found-5c9826d77a0c2621.js": "75bf773f91ec6a729afdd56688299a83ec1f940c4e01253d6d1b2e26658f18fd",
+    ".next/static/chunks/next/dist/client/components/builtin/unauthorized-5c9826d77a0c2621.js": "75bf773f91ec6a729afdd56688299a83ec1f940c4e01253d6d1b2e26658f18fd",
+    ".next/static/chunks/polyfills-42372ed130431b0a.js": "0973c1d64c88adc8e3c950410cb58b288f72118d5965b78049438deb8f2f9683",
+    ".next/static/chunks/webpack-589ea4b0a5f0dd2f.js": "b2184591803e5c6df7e7b5b27caca50c164be4c34c4d9bec050448c0563713ab",
+    ".next/static/css/819f7cb97a783398.css": "b4f636a12d434d9b047fe8bf6dce7681da68e1b358469121bf12a7aa8a779ea6"
+  },
+  "limits": "Fake canary isolation check, not live API or deployed production acceptance."
+}

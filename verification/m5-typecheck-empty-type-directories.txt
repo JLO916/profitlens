@@ -1,0 +1,30 @@
+
+> profitlens@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+error TS2688: Cannot find type definition file for 'chai 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'chai 2'
+error TS2688: Cannot find type definition file for 'deep-eql 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'deep-eql 2'
+error TS2688: Cannot find type definition file for 'estree 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'estree 2'
+error TS2688: Cannot find type definition file for 'json-schema 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'json-schema 2'
+error TS2688: Cannot find type definition file for 'json5 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'json5 2'
+error TS2688: Cannot find type definition file for 'node 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'node 2'
+error TS2688: Cannot find type definition file for 'react 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'react 2'
+error TS2688: Cannot find type definition file for 'react-dom 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'react-dom 2'

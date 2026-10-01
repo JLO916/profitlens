@@ -1,0 +1,76 @@
+{
+  "recorded_at": "2026-10-01T07:17:48.339Z",
+  "mode": "production_build_local_http_no_live_call",
+  "static_assets_scanned": 22,
+  "canary_is_fake": true,
+  "build_canary_source": "playwright.config.ts webServer.env (live disabled)",
+  "static_violations": [],
+  "secret_in_server_logs": false,
+  "live_tests": "未執行",
+  "endpoints": [
+    {
+      "mode": "PUBLIC_DEMO",
+      "get_status": 200,
+      "get_body": {
+        "available": false,
+        "reason": "PUBLIC_DEMO",
+        "provider": "openai"
+      },
+      "post_status": 403,
+      "post_body": {
+        "status": "fallback",
+        "snapshot_id": null,
+        "reason": "PUBLIC_DEMO"
+      },
+      "cache_control": "no-store"
+    },
+    {
+      "mode": "NO_KEY",
+      "get_status": 200,
+      "get_body": {
+        "available": false,
+        "reason": "NO_KEY",
+        "provider": "openai"
+      },
+      "post_status": 200,
+      "post_body": {
+        "status": "fallback",
+        "snapshot_id": null,
+        "reason": "NO_KEY"
+      },
+      "cache_control": "no-store"
+    },
+    {
+      "mode": "DISABLED",
+      "get_status": 200,
+      "get_body": {
+        "available": false,
+        "reason": "DISABLED",
+        "provider": "openai"
+      },
+      "post_status": 200,
+      "post_body": {
+        "status": "fallback",
+        "snapshot_id": null,
+        "reason": "DISABLED"
+      },
+      "cache_control": "no-store"
+    },
+    {
+      "mode": "NO_CONSENT",
+      "get_status": 200,
+      "get_body": {
+        "available": true,
+        "reason": null,
+        "provider": "openai"
+      },
+      "post_status": 400,
+      "post_body": {
+        "status": "fallback",
+        "snapshot_id": null,
+        "reason": "CONSENT_REQUIRED"
+      },
+      "cache_control": "no-store"
+    }
+  ]
+}

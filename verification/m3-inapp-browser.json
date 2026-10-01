@@ -1,0 +1,36 @@
+{
+  "recorded_at": "2026-10-01T06:07:12.986Z",
+  "url": "http://127.0.0.1:3000/",
+  "method": "Codex in-app browser file chooser and visible DOM verification",
+  "sizes": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "fixture": "tests/fixtures/alternative (synthetic)",
+  "observed": {
+    "initial_validation": "檢核通過，可套用資料",
+    "net_revenue": "600.00",
+    "contribution_after_marketing": "10.00",
+    "previous_contribution": "140.00",
+    "bridge": "-130.00",
+    "product_negative_gross_profit": "-100.00",
+    "empty_draft": "檢核未通過，未取代目前資料",
+    "after_cancel_contribution": "行銷後貢獻\n10.00\n\n前期 140.00\n\n-130.00\n-92.86%"
+  },
+  "browser_logs": [],
+  "notes": [
+    "檔案選取使用本機合成資料，未選取真實資料",
+    "對不可聚焦的 h1 執行 press Home 失敗，改用導覽按鈕成功",
+    "temporary viewport override reset"
+  ]
+}

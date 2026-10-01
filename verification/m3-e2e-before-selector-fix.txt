@@ -1,0 +1,274 @@
+
+> profitlens@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:68893) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68894) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68940) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68938) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68937) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68939) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68941) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68979) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 90 tests using 1 worker
+
+(node:68984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › tests/e2e/import.spec.ts:120:1 › 真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷 (1.8s)
+  ✓   2 [desktop] › tests/e2e/import.spec.ts:152:1 › 不讀 JSON 也能手填 manifest，金額口徑須明確確認 (733ms)
+  ✓   3 [desktop] › tests/e2e/import.spec.ts:172:1 › 超長但格式合法的期間明確拒絕，不截斷或取代先前資料 (878ms)
+  ✓   4 [desktop] › tests/e2e/import.spec.ts:192:1 › JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功 (638ms)
+  ✓   5 [desktop] › tests/e2e/import.spec.ts:215:3 › duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變 (907ms)
+  ✓   6 [desktop] › tests/e2e/import.spec.ts:215:3 › mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變 (911ms)
+  ✓   7 [desktop] › tests/e2e/import.spec.ts:240:3 › missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路 (648ms)
+  ✓   8 [desktop] › tests/e2e/import.spec.ts:240:3 › missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路 (641ms)
+  ✓   9 [desktop] › tests/e2e/import.spec.ts:259:3 › malformed 友善拒絕、不截斷且不破壞成功資料 (835ms)
+  ✓  10 [desktop] › tests/e2e/import.spec.ts:259:3 › invalid-utf8 友善拒絕、不截斷且不破壞成功資料 (838ms)
+  ✓  11 [desktop] › tests/e2e/import.spec.ts:259:3 › too-many-bytes 友善拒絕、不截斷且不破壞成功資料 (1.2s)
+  ✓  12 [desktop] › tests/e2e/import.spec.ts:259:3 › too-many-rows 友善拒絕、不截斷且不破壞成功資料 (1.0s)
+  ✓  13 [desktop] › tests/e2e/import.spec.ts:277:1 › 改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析 (877ms)
+  ✓  14 [desktop] › tests/e2e/import.spec.ts:301:1 › 檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行 (878ms)
+  ✘  15 [desktop] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 (45.1s)
+(node:69213) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 [desktop] › tests/e2e/workspace.spec.ts:76:1 › 示範資料由空狀態進入可閱讀總覽，圖表有表格替代 (1.0s)
+  ✓  17 [desktop] › tests/e2e/workspace.spec.ts:104:1 › 切換 golden 與 demo 會重算同一組 KPI (891ms)
+  ✓  18 [desktop] › tests/e2e/workspace.spec.ts:116:1 › 通路篩選共用，金額證據可用鍵盤開啟與返回 (846ms)
+  ✓  19 [desktop] › tests/e2e/workspace.spec.ts:148:1 › 貢獻率差額的證據保留百分點單位，不再乘以 100 (555ms)
+  ✓  20 [desktop] › tests/e2e/workspace.spec.ts:162:1 › 診斷排序金額使用兩期已觀察差額，證據方向與來源一致 (666ms)
+  ✓  21 [desktop] › tests/e2e/workspace.spec.ts:187:1 › 商品篩選只影響毛利明細，不帶入通路廣告與貢獻 (589ms)
+  ✓  22 [desktop] › tests/e2e/workspace.spec.ts:206:1 › 無效期間不覆寫已套用的分析範圍 (629ms)
+  ✓  23 [desktop] › tests/e2e/workspace.spec.ts:217:1 › 有效自訂期間會同步更新 KPI、週資料及來源期間 (949ms)
+  ✓  24 [desktop] › tests/e2e/workspace.spec.ts:242:1 › 資料工作區展示三份原始檔案、行號、口徑與未縮減預覽 (534ms)
+  ✓  25 [desktop] › tests/e2e/workspace.spec.ts:265:3 › missing-cogs 顯示待補資料，保留收入與未受影響通路 (437ms)
+  ✓  26 [desktop] › tests/e2e/workspace.spec.ts:265:3 › missing-ad 顯示待補資料，保留收入與未受影響通路 (424ms)
+  ✓  27 [desktop] › tests/e2e/workspace.spec.ts:276:1 › blocking 資料集載入失敗仍保留先前成功資料 (623ms)
+  ✓  28 [desktop] › tests/e2e/workspace.spec.ts:287:1 › 載入中與 HTTP 故障均有明確狀態 (299ms)
+  ✓  29 [desktop] › tests/e2e/workspace.spec.ts:304:1 › 較慢的舊資料請求不可覆寫較新的 golden 選擇 (488ms)
+  ✓  30 [desktop] › tests/e2e/workspace.spec.ts:342:1 › 清空與重新整理回到空狀態，另一個頁面沒有共用資料 (741ms)
+(node:69255) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  31 [tablet] › tests/e2e/import.spec.ts:120:1 › 真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷 (1.4s)
+  ✓  32 [tablet] › tests/e2e/import.spec.ts:152:1 › 不讀 JSON 也能手填 manifest，金額口徑須明確確認 (765ms)
+  ✓  33 [tablet] › tests/e2e/import.spec.ts:172:1 › 超長但格式合法的期間明確拒絕，不截斷或取代先前資料 (983ms)
+  ✓  34 [tablet] › tests/e2e/import.spec.ts:192:1 › JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功 (654ms)
+  ✓  35 [tablet] › tests/e2e/import.spec.ts:215:3 › duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變 (913ms)
+  ✓  36 [tablet] › tests/e2e/import.spec.ts:215:3 › mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變 (900ms)
+  ✓  37 [tablet] › tests/e2e/import.spec.ts:240:3 › missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路 (769ms)
+  ✓  38 [tablet] › tests/e2e/import.spec.ts:240:3 › missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路 (786ms)
+  ✓  39 [tablet] › tests/e2e/import.spec.ts:259:3 › malformed 友善拒絕、不截斷且不破壞成功資料 (884ms)
+  ✓  40 [tablet] › tests/e2e/import.spec.ts:259:3 › invalid-utf8 友善拒絕、不截斷且不破壞成功資料 (856ms)
+  ✓  41 [tablet] › tests/e2e/import.spec.ts:259:3 › too-many-bytes 友善拒絕、不截斷且不破壞成功資料 (1.3s)
+  ✓  42 [tablet] › tests/e2e/import.spec.ts:259:3 › too-many-rows 友善拒絕、不截斷且不破壞成功資料 (1.0s)
+  ✓  43 [tablet] › tests/e2e/import.spec.ts:277:1 › 改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析 (891ms)
+  ✓  44 [tablet] › tests/e2e/import.spec.ts:301:1 › 檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行 (838ms)
+  ✘  45 [tablet] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 (45.2s)
+(node:69462) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  46 [tablet] › tests/e2e/workspace.spec.ts:76:1 › 示範資料由空狀態進入可閱讀總覽，圖表有表格替代 (966ms)
+  ✓  47 [tablet] › tests/e2e/workspace.spec.ts:104:1 › 切換 golden 與 demo 會重算同一組 KPI (918ms)
+  ✓  48 [tablet] › tests/e2e/workspace.spec.ts:116:1 › 通路篩選共用，金額證據可用鍵盤開啟與返回 (905ms)
+  ✓  49 [tablet] › tests/e2e/workspace.spec.ts:148:1 › 貢獻率差額的證據保留百分點單位，不再乘以 100 (513ms)
+  ✓  50 [tablet] › tests/e2e/workspace.spec.ts:162:1 › 診斷排序金額使用兩期已觀察差額，證據方向與來源一致 (552ms)
+  ✓  51 [tablet] › tests/e2e/workspace.spec.ts:187:1 › 商品篩選只影響毛利明細，不帶入通路廣告與貢獻 (631ms)
+  ✓  52 [tablet] › tests/e2e/workspace.spec.ts:206:1 › 無效期間不覆寫已套用的分析範圍 (609ms)
+  ✓  53 [tablet] › tests/e2e/workspace.spec.ts:217:1 › 有效自訂期間會同步更新 KPI、週資料及來源期間 (903ms)
+  ✓  54 [tablet] › tests/e2e/workspace.spec.ts:242:1 › 資料工作區展示三份原始檔案、行號、口徑與未縮減預覽 (542ms)
+  ✓  55 [tablet] › tests/e2e/workspace.spec.ts:265:3 › missing-cogs 顯示待補資料，保留收入與未受影響通路 (453ms)
+  ✓  56 [tablet] › tests/e2e/workspace.spec.ts:265:3 › missing-ad 顯示待補資料，保留收入與未受影響通路 (446ms)
+  ✓  57 [tablet] › tests/e2e/workspace.spec.ts:276:1 › blocking 資料集載入失敗仍保留先前成功資料 (619ms)
+  ✓  58 [tablet] › tests/e2e/workspace.spec.ts:287:1 › 載入中與 HTTP 故障均有明確狀態 (293ms)
+  ✓  59 [tablet] › tests/e2e/workspace.spec.ts:304:1 › 較慢的舊資料請求不可覆寫較新的 golden 選擇 (498ms)
+  ✓  60 [tablet] › tests/e2e/workspace.spec.ts:342:1 › 清空與重新整理回到空狀態，另一個頁面沒有共用資料 (873ms)
+(node:69500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  61 [mobile] › tests/e2e/import.spec.ts:120:1 › 真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷 (1.6s)
+  ✓  62 [mobile] › tests/e2e/import.spec.ts:152:1 › 不讀 JSON 也能手填 manifest，金額口徑須明確確認 (757ms)
+  ✓  63 [mobile] › tests/e2e/import.spec.ts:172:1 › 超長但格式合法的期間明確拒絕，不截斷或取代先前資料 (880ms)
+  ✓  64 [mobile] › tests/e2e/import.spec.ts:192:1 › JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功 (625ms)
+  ✓  65 [mobile] › tests/e2e/import.spec.ts:215:3 › duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變 (888ms)
+  ✓  66 [mobile] › tests/e2e/import.spec.ts:215:3 › mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變 (859ms)
+  ✓  67 [mobile] › tests/e2e/import.spec.ts:240:3 › missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路 (679ms)
+  ✓  68 [mobile] › tests/e2e/import.spec.ts:240:3 › missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路 (626ms)
+  ✓  69 [mobile] › tests/e2e/import.spec.ts:259:3 › malformed 友善拒絕、不截斷且不破壞成功資料 (834ms)
+  ✓  70 [mobile] › tests/e2e/import.spec.ts:259:3 › invalid-utf8 友善拒絕、不截斷且不破壞成功資料 (818ms)
+  ✓  71 [mobile] › tests/e2e/import.spec.ts:259:3 › too-many-bytes 友善拒絕、不截斷且不破壞成功資料 (1.2s)
+  ✓  72 [mobile] › tests/e2e/import.spec.ts:259:3 › too-many-rows 友善拒絕、不截斷且不破壞成功資料 (975ms)
+  ✓  73 [mobile] › tests/e2e/import.spec.ts:277:1 › 改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析 (865ms)
+  ✓  74 [mobile] › tests/e2e/import.spec.ts:301:1 › 檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行 (825ms)
+  ✘  75 [mobile] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 (45.1s)
+(node:69692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  76 [mobile] › tests/e2e/workspace.spec.ts:76:1 › 示範資料由空狀態進入可閱讀總覽，圖表有表格替代 (947ms)
+  ✓  77 [mobile] › tests/e2e/workspace.spec.ts:104:1 › 切換 golden 與 demo 會重算同一組 KPI (789ms)
+  ✓  78 [mobile] › tests/e2e/workspace.spec.ts:116:1 › 通路篩選共用，金額證據可用鍵盤開啟與返回 (806ms)
+  ✓  79 [mobile] › tests/e2e/workspace.spec.ts:148:1 › 貢獻率差額的證據保留百分點單位，不再乘以 100 (462ms)
+  ✓  80 [mobile] › tests/e2e/workspace.spec.ts:162:1 › 診斷排序金額使用兩期已觀察差額，證據方向與來源一致 (525ms)
+  ✓  81 [mobile] › tests/e2e/workspace.spec.ts:187:1 › 商品篩選只影響毛利明細，不帶入通路廣告與貢獻 (570ms)
+  ✓  82 [mobile] › tests/e2e/workspace.spec.ts:206:1 › 無效期間不覆寫已套用的分析範圍 (593ms)
+  ✓  83 [mobile] › tests/e2e/workspace.spec.ts:217:1 › 有效自訂期間會同步更新 KPI、週資料及來源期間 (790ms)
+  ✓  84 [mobile] › tests/e2e/workspace.spec.ts:242:1 › 資料工作區展示三份原始檔案、行號、口徑與未縮減預覽 (491ms)
+  ✓  85 [mobile] › tests/e2e/workspace.spec.ts:265:3 › missing-cogs 顯示待補資料，保留收入與未受影響通路 (404ms)
+  ✓  86 [mobile] › tests/e2e/workspace.spec.ts:265:3 › missing-ad 顯示待補資料，保留收入與未受影響通路 (420ms)
+  ✓  87 [mobile] › tests/e2e/workspace.spec.ts:276:1 › blocking 資料集載入失敗仍保留先前成功資料 (603ms)
+  ✓  88 [mobile] › tests/e2e/workspace.spec.ts:287:1 › 載入中與 HTTP 故障均有明確狀態 (290ms)
+  ✓  89 [mobile] › tests/e2e/workspace.spec.ts:304:1 › 較慢的舊資料請求不可覆寫較新的 golden 選擇 (439ms)
+  ✓  90 [mobile] › tests/e2e/workspace.spec.ts:342:1 › 清空與重新整理回到空狀態，另一個頁面沒有共用資料 (776ms)
+
+
+  1) [desktop] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ────────────────────
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.selectOption: Test timeout of 45000ms exceeded.
+    Call log:
+      - waiting for getByLabel('通路', { exact: true })
+        - locator resolved to <select aria-label="通路">…</select>
+      - attempting select option action
+        2 × waiting for element to be visible and enabled
+          - did not find some options
+        - retrying select option action
+        - waiting 20ms
+        2 × waiting for element to be visible and enabled
+          - did not find some options
+        - retrying select option action
+          - waiting 100ms
+        88 × waiting for element to be visible and enabled
+           - did not find some options
+         - retrying select option action
+           - waiting 500ms
+
+
+      342 |   expect(analysis.filter(row => row.row_type === "channel").every(row => row.channel === "DTC")).toBe(true);
+      343 |   expect(analysis.every(row => row.metric_version === "contribution-v1" && row.as_of === "2026-09-05")).toBe(true);
+    > 344 |   await page.getByLabel("通路", { exact: true }).selectOption("all");
+          |                                                ^
+      345 |   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
+      346 |   await page.getByRole("button", { name: "商品毛利", exact: true }).click();
+      347 |   const downloadProducts = page.getByRole("button", { name: "下載商品明細 CSV", exact: true });
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/import.spec.ts:344:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [tablet] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ─────────────────────
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.selectOption: Test timeout of 45000ms exceeded.
+    Call log:
+      - waiting for getByLabel('通路', { exact: true })
+        - locator resolved to <select aria-label="通路">…</select>
+      - attempting select option action
+        2 × waiting for element to be visible and enabled
+          - did not find some options
+        - retrying select option action
+        - waiting 20ms
+        2 × waiting for element to be visible and enabled
+          - did not find some options
+        - retrying select option action
+          - waiting 100ms
+        88 × waiting for element to be visible and enabled
+           - did not find some options
+         - retrying select option action
+           - waiting 500ms
+
+
+      342 |   expect(analysis.filter(row => row.row_type === "channel").every(row => row.channel === "DTC")).toBe(true);
+      343 |   expect(analysis.every(row => row.metric_version === "contribution-v1" && row.as_of === "2026-09-05")).toBe(true);
+    > 344 |   await page.getByLabel("通路", { exact: true }).selectOption("all");
+          |                                                ^
+      345 |   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
+      346 |   await page.getByRole("button", { name: "商品毛利", exact: true }).click();
+      347 |   const downloadProducts = page.getByRole("button", { name: "下載商品明細 CSV", exact: true });
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/import.spec.ts:344:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-tablet/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-tablet/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-tablet/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-tablet/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [mobile] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ─────────────────────
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.selectOption: Test timeout of 45000ms exceeded.
+    Call log:
+      - waiting for getByLabel('通路', { exact: true })
+        - locator resolved to <select aria-label="通路">…</select>
+      - attempting select option action
+        2 × waiting for element to be visible and enabled
+          - did not find some options
+        - retrying select option action
+        - waiting 20ms
+        2 × waiting for element to be visible and enabled
+          - did not find some options
+        - retrying select option action
+          - waiting 100ms
+        88 × waiting for element to be visible and enabled
+           - did not find some options
+         - retrying select option action
+           - waiting 500ms
+
+
+      342 |   expect(analysis.filter(row => row.row_type === "channel").every(row => row.channel === "DTC")).toBe(true);
+      343 |   expect(analysis.every(row => row.metric_version === "contribution-v1" && row.as_of === "2026-09-05")).toBe(true);
+    > 344 |   await page.getByLabel("通路", { exact: true }).selectOption("all");
+          |                                                ^
+      345 |   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
+      346 |   await page.getByRole("button", { name: "商品毛利", exact: true }).click();
+      347 |   const downloadProducts = page.getByRole("button", { name: "下載商品明細 CSV", exact: true });
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/import.spec.ts:344:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-mobile/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-mobile/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-mobile/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-mobile/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [desktop] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ─────────────────────
+    [tablet] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ──────────────────────
+    [mobile] › tests/e2e/import.spec.ts:331:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ──────────────────────
+  87 passed (3.7m)

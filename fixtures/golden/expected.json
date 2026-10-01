@@ -1,0 +1,72 @@
+{
+  "status": "manually_specified_synthetic_reference",
+  "metric_version": "contribution-v1",
+  "previous": {
+    "gross_sales": "2500.00",
+    "discounts": "200.00",
+    "refunds": "50.00",
+    "cogs_net": "1050.00",
+    "platform_fees": "90.00",
+    "payment_fees": "60.00",
+    "fulfillment_costs": "160.00",
+    "other_variable_costs": "20.00",
+    "ad_spend": "300.00",
+    "net_revenue": "2250.00",
+    "gross_profit": "1200.00",
+    "contribution_before_marketing": "870.00",
+    "contribution_after_marketing": "570.00"
+  },
+  "current": {
+    "gross_sales": "3100.00",
+    "discounts": "450.00",
+    "refunds": "180.00",
+    "cogs_net": "1325.00",
+    "platform_fees": "120.00",
+    "payment_fees": "66.00",
+    "fulfillment_costs": "225.00",
+    "other_variable_costs": "29.00",
+    "ad_spend": "450.00",
+    "net_revenue": "2470.00",
+    "gross_profit": "1145.00",
+    "contribution_before_marketing": "705.00",
+    "contribution_after_marketing": "255.00"
+  },
+  "current_channels": {
+    "DTC": {
+      "net_revenue": "1480.00",
+      "contribution_after_marketing": "270.00"
+    },
+    "MARKETPLACE": {
+      "net_revenue": "990.00",
+      "contribution_after_marketing": "-15.00"
+    }
+  },
+  "bridge": {
+    "gross_sales": "600.00",
+    "discounts": "-250.00",
+    "refunds": "-130.00",
+    "cogs_net": "-275.00",
+    "platform_fees": "-30.00",
+    "payment_fees": "-6.00",
+    "fulfillment_costs": "-65.00",
+    "other_variable_costs": "-9.00",
+    "ad_spend": "-150.00",
+    "sum": "-315.00"
+  },
+  "scenario_dtc_fulfillment_reduction": {
+    "volume_change": "0",
+    "discount_delta_pp": "0",
+    "fulfillment_unit_cost_change": "-0.10",
+    "ad_spend_change": "0",
+    "one_off_cost": "0.00",
+    "expected_contribution": "284.00"
+  },
+  "scenario_dtc_fulfillment_reduction_with_investment": {
+    "volume_change": "0",
+    "discount_delta_pp": "0",
+    "fulfillment_unit_cost_change": "-0.10",
+    "ad_spend_change": "0",
+    "one_off_cost": "20.00",
+    "expected_contribution": "264.00"
+  }
+}

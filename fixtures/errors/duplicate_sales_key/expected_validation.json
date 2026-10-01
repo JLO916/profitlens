@@ -1,0 +1,5 @@
+{
+  "classification": "blocking",
+  "reason_code": "DUPLICATE_SALES_KEY",
+  "affected_csv_line": 10
+}

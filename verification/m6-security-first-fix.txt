@@ -1,0 +1,31 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/m6-security-audit.test.ts tests/ai-grounding.test.ts tests/ai-client.test.ts tests/ai-provider.test.ts tests/ai-service.test.ts tests/ai-route.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-grounding.test.ts (52 tests | 1 failed) 471ms
+     × renders cited placeholders in free text and keeps exact numeric source immutable 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-grounding.test.ts > rendering and grounding defensive boundaries > renders cited placeholders in free text and keeps exact numeric source immutable
+Error: AI_GROUNDING_REJECTED
+ ❯ renderInsightOutput src/ai/grounding.ts:105:28
+    103| export function renderInsightOutput(output: InsightOutput, snapshot: A…
+    104|   const validated = validateInsightOutput(output, snapshot);
+    105|   if (!validated.ok) throw new Error("AI_GROUNDING_REJECTED");
+       |                            ^
+    106|   const facts = new Map(snapshot.facts.map(fact => [fact.id, fact]));
+    107|   const render = (text: string) => text.replace(placeholders, (_match,…
+ ❯ tests/ai-grounding.test.ts:254:50
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 163 passed (164)
+   Start at  15:29:13
+   Duration  1.44s (transform 1.19s, setup 0ms, import 3.29s, tests 1.66s, environment 0ms)
+

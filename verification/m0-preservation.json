@@ -1,0 +1,446 @@
+{
+  "checked_on": "2026-09-30",
+  "scope": "M0 original-file preservation after final development-server start; not financial application acceptance",
+  "original_files": 73,
+  "unexpected_changes": 0,
+  "results": [
+    {
+      "file": ".gitignore",
+      "original_sha256": "c62deaf876b035284ccaf15e43602cb608cfe25e7dd303bd113b1709b87fd430",
+      "current_sha256": "1677755374782270274a72e8f8a593b997866c5ee79a3ea2c3219f07ddc97329",
+      "status": "authorized_documentation_update"
+    },
+    {
+      "file": "AGENTS.md",
+      "original_sha256": "23e0889056347dd206a7f3b334274011042c2f335229daf582a054916fcc75ff",
+      "current_sha256": "23e0889056347dd206a7f3b334274011042c2f335229daf582a054916fcc75ff",
+      "status": "unchanged"
+    },
+    {
+      "file": "README.md",
+      "original_sha256": "6aeb7e1d271d3def615cbda0fd1125b4531f7b93721a597ca9a1c63c67ad329b",
+      "current_sha256": "aa4dacac1c7abc7bd66019050ed12eea7f38840e742c44f166cb4e2fb6131653",
+      "status": "authorized_documentation_update"
+    },
+    {
+      "file": "SOURCES.md",
+      "original_sha256": "7fab670ff92c50eff22364dfc639c77df0aceb2c825c0688952c3b67008a2468",
+      "current_sha256": "7fab670ff92c50eff22364dfc639c77df0aceb2c825c0688952c3b67008a2468",
+      "status": "unchanged"
+    },
+    {
+      "file": "START_HERE.md",
+      "original_sha256": "8adbba06f859fc2c7e535155c3cfde20c8db4c8730649b70fc5dc959575d6622",
+      "current_sha256": "8adbba06f859fc2c7e535155c3cfde20c8db4c8730649b70fc5dc959575d6622",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/ACCEPTANCE.md",
+      "original_sha256": "682c16c482155565c5fb4cb95b1cd1b7c3e153b3a38e5d8788bad8bd282e8c9f",
+      "current_sha256": "682c16c482155565c5fb4cb95b1cd1b7c3e153b3a38e5d8788bad8bd282e8c9f",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/AI_CONTRACT.md",
+      "original_sha256": "38500e5a8720dcb91ca43af0aec4dd7f8e805c47c1dad28c57c4c2dbc60245f6",
+      "current_sha256": "38500e5a8720dcb91ca43af0aec4dd7f8e805c47c1dad28c57c4c2dbc60245f6",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/ARCHITECTURE.md",
+      "original_sha256": "9d5e66d1250c1aa9f90b0998edee6ea222f1782d31471d54e0b544cf7108505f",
+      "current_sha256": "9d5e66d1250c1aa9f90b0998edee6ea222f1782d31471d54e0b544cf7108505f",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/DATA_CONTRACT.md",
+      "original_sha256": "9674cb094c5641b93f0d84aa34479ae89e54a3fdd876ed5db157f8941709fcf8",
+      "current_sha256": "9674cb094c5641b93f0d84aa34479ae89e54a3fdd876ed5db157f8941709fcf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/DECISIONS.md",
+      "original_sha256": "ef741fd998a3594febb5bea544241d0ca3486cf7bab2be48d005f831fe9956a0",
+      "current_sha256": "ef741fd998a3594febb5bea544241d0ca3486cf7bab2be48d005f831fe9956a0",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/METRICS.md",
+      "original_sha256": "f8d934d5c339b4697eff8df1acdb47bfd8f258c28ccdf58ff50ca9197af6b275",
+      "current_sha256": "f8d934d5c339b4697eff8df1acdb47bfd8f258c28ccdf58ff50ca9197af6b275",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/PILOT_PLAN.md",
+      "original_sha256": "e787632e228a5acf907158e18b9997f48f44e43af5dd4be4300d2f1f1c77d33d",
+      "current_sha256": "e787632e228a5acf907158e18b9997f48f44e43af5dd4be4300d2f1f1c77d33d",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/PRD.md",
+      "original_sha256": "c98736b7c376e99153035865a84db912ec84214ce0e87ddba9f3a8b3971e4b1b",
+      "current_sha256": "c98736b7c376e99153035865a84db912ec84214ce0e87ddba9f3a8b3971e4b1b",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/SCENARIOS.md",
+      "original_sha256": "37367da1f9f60578a5f24f8675fa88ed4bcacde92ee1773a2fd91c325c618aad",
+      "current_sha256": "37367da1f9f60578a5f24f8675fa88ed4bcacde92ee1773a2fd91c325c618aad",
+      "status": "unchanged"
+    },
+    {
+      "file": "docs/STATUS.md",
+      "original_sha256": "560a64af4a25d53d73d741278dec9af3cd81ccb45344299ccc00e591e6e5cc13",
+      "current_sha256": "cec8fa8f6d48ada09930adebdb692ede3ceae40dd20db641b5d97e30c05d36c9",
+      "status": "authorized_documentation_update"
+    },
+    {
+      "file": "docs/TASKS.md",
+      "original_sha256": "2202bb9ed12f5e498adb74f7a4b8de96071bf13aa0d80cc7d97c26ac33e3acb2",
+      "current_sha256": "2202bb9ed12f5e498adb74f7a4b8de96071bf13aa0d80cc7d97c26ac33e3acb2",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/ad_spend_daily.csv",
+      "original_sha256": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d",
+      "current_sha256": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/channel_costs_daily.csv",
+      "original_sha256": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+      "current_sha256": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/computed_summary.json",
+      "original_sha256": "311e0a3cd69f01a8c3eb26cfd2f1a7cf673553a637308ae92a4610338c0a94f0",
+      "current_sha256": "311e0a3cd69f01a8c3eb26cfd2f1a7cf673553a637308ae92a4610338c0a94f0",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/intent.json",
+      "original_sha256": "f613e164882cdb218be5c36fcefdeacca3c6b227f832ceca8cd87ccf124912db",
+      "current_sha256": "f613e164882cdb218be5c36fcefdeacca3c6b227f832ceca8cd87ccf124912db",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/manifest.json",
+      "original_sha256": "decb8aac6a536fbdd5046ba9d2d5162f29db4a7cdcd84a2aba621fde699163a1",
+      "current_sha256": "decb8aac6a536fbdd5046ba9d2d5162f29db4a7cdcd84a2aba621fde699163a1",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/demo/sales_daily.csv",
+      "original_sha256": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+      "current_sha256": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/ad_spend_daily.csv",
+      "original_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "current_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/channel_costs_daily.csv",
+      "original_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "current_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/expected_validation.json",
+      "original_sha256": "6a6fb2ff5f2cdc9acdfb7c0a613b4231d010bc030dad144aa6ab40971f3c60b8",
+      "current_sha256": "6a6fb2ff5f2cdc9acdfb7c0a613b4231d010bc030dad144aa6ab40971f3c60b8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/manifest.json",
+      "original_sha256": "92862ed77448416b0111ce72c2f2564164fa637b95fee2bc5bbdc279fa320cc2",
+      "current_sha256": "92862ed77448416b0111ce72c2f2564164fa637b95fee2bc5bbdc279fa320cc2",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/duplicate_sales_key/sales_daily.csv",
+      "original_sha256": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+      "current_sha256": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/ad_spend_daily.csv",
+      "original_sha256": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084",
+      "current_sha256": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/channel_costs_daily.csv",
+      "original_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "current_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/expected_validation.json",
+      "original_sha256": "662121d48a25df5e6f5bac05235d00df36e3b3c3340f321eb0b90c2c414f6f8c",
+      "current_sha256": "662121d48a25df5e6f5bac05235d00df36e3b3c3340f321eb0b90c2c414f6f8c",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/manifest.json",
+      "original_sha256": "ee16fc7798c993cf95ef7cfcf359a0600c195afef07d18e7b10cb3f8e2724ea8",
+      "current_sha256": "ee16fc7798c993cf95ef7cfcf359a0600c195afef07d18e7b10cb3f8e2724ea8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_ad_day/sales_daily.csv",
+      "original_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "current_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/ad_spend_daily.csv",
+      "original_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "current_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/channel_costs_daily.csv",
+      "original_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "current_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/expected_validation.json",
+      "original_sha256": "92b26e35386d1e496eff3251147eb5a8df6e096eed1b53e28c7761d36ed9f431",
+      "current_sha256": "92b26e35386d1e496eff3251147eb5a8df6e096eed1b53e28c7761d36ed9f431",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/manifest.json",
+      "original_sha256": "0f16ad32bc3d8476a5e2b025db64e7f30764808884731121f1792bde20f013fc",
+      "current_sha256": "0f16ad32bc3d8476a5e2b025db64e7f30764808884731121f1792bde20f013fc",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/missing_cogs/sales_daily.csv",
+      "original_sha256": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+      "current_sha256": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/ad_spend_daily.csv",
+      "original_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "current_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/channel_costs_daily.csv",
+      "original_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "current_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/expected_validation.json",
+      "original_sha256": "ae1fced7aab37d296b10150cc4bb38932c9634f5f2f48b899102528b78ea7348",
+      "current_sha256": "ae1fced7aab37d296b10150cc4bb38932c9634f5f2f48b899102528b78ea7348",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/manifest.json",
+      "original_sha256": "9b575fd3c14ae439d877633189408c4dd21243aadfc9f2c66412e58a02e56d84",
+      "current_sha256": "9b575fd3c14ae439d877633189408c4dd21243aadfc9f2c66412e58a02e56d84",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/errors/mixed_currency/sales_daily.csv",
+      "original_sha256": "dcc87813a1ad1dff983966560e22ba1976360027314f18d4b34edd7662c8216b",
+      "current_sha256": "dcc87813a1ad1dff983966560e22ba1976360027314f18d4b34edd7662c8216b",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/ad_spend_daily.csv",
+      "original_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "current_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/channel_costs_daily.csv",
+      "original_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "current_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/expected.json",
+      "original_sha256": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+      "current_sha256": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/manifest.json",
+      "original_sha256": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+      "current_sha256": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/golden/sales_daily.csv",
+      "original_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "current_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/ad_spend_daily.csv",
+      "original_sha256": "bde19c2628c34d4d4aec7d08fc75b841624c8b1ffb91fadc9e97c3e04b554ccc",
+      "current_sha256": "bde19c2628c34d4d4aec7d08fc75b841624c8b1ffb91fadc9e97c3e04b554ccc",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/channel_costs_daily.csv",
+      "original_sha256": "57750bd3a496d457e20aab82d8caa9572d5ff566908ea49735ac448de4d6b3c5",
+      "current_sha256": "57750bd3a496d457e20aab82d8caa9572d5ff566908ea49735ac448de4d6b3c5",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/expected.json",
+      "original_sha256": "59820fa87818d9ded64ae5a6e948d7ec8d3b3724e4be8e106df51ef8fbd4a21a",
+      "current_sha256": "59820fa87818d9ded64ae5a6e948d7ec8d3b3724e4be8e106df51ef8fbd4a21a",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/manifest.json",
+      "original_sha256": "fc26ae44cf9a7ebede170c41e755a13fbc87f6f7974d5722a49f3b1f9d76fdf6",
+      "current_sha256": "fc26ae44cf9a7ebede170c41e755a13fbc87f6f7974d5722a49f3b1f9d76fdf6",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/refund_only/sales_daily.csv",
+      "original_sha256": "746e97efde53984ba0db1f0336ddac089ed5809344316e2674dbbb8a54910397",
+      "current_sha256": "746e97efde53984ba0db1f0336ddac089ed5809344316e2674dbbb8a54910397",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/ad_spend_daily.csv",
+      "original_sha256": "440fa23fe0ff5c7765c1375e0cf61ed28c31254de16708c3dd0e91cf8fd96747",
+      "current_sha256": "440fa23fe0ff5c7765c1375e0cf61ed28c31254de16708c3dd0e91cf8fd96747",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/channel_costs_daily.csv",
+      "original_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "current_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/expected.json",
+      "original_sha256": "707f84b8c7ecb77860d5b2a9b10b2d3228e6cc6a338f5feb1965a545ce9fe34d",
+      "current_sha256": "707f84b8c7ecb77860d5b2a9b10b2d3228e6cc6a338f5feb1965a545ce9fe34d",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/manifest.json",
+      "original_sha256": "5b2cadb757072b6bfcb9b3ffb4ecc2a72f9fb6951fcfd8fd2f10ef7dccfbb15c",
+      "current_sha256": "5b2cadb757072b6bfcb9b3ffb4ecc2a72f9fb6951fcfd8fd2f10ef7dccfbb15c",
+      "status": "unchanged"
+    },
+    {
+      "file": "fixtures/zero_ad/sales_daily.csv",
+      "original_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "current_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M0_START.md",
+      "original_sha256": "11f003e1e88adb2606f388eefe6b71b9be6decb99f282efb6ae144479d262c6b",
+      "current_sha256": "11f003e1e88adb2606f388eefe6b71b9be6decb99f282efb6ae144479d262c6b",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M1_DOMAIN.md",
+      "original_sha256": "a15fdc89194396516982847b31b91227036262f10358ccc1e2542c78d90290d2",
+      "current_sha256": "a15fdc89194396516982847b31b91227036262f10358ccc1e2542c78d90290d2",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M2_DEMO_UI.md",
+      "original_sha256": "a139896e62d0af8b72df2957cdc04cf771a0bb3e0b00ea77a8ff4cb7d8c5d74f",
+      "current_sha256": "a139896e62d0af8b72df2957cdc04cf771a0bb3e0b00ea77a8ff4cb7d8c5d74f",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M3_IMPORT.md",
+      "original_sha256": "505c006dbb5386605a1e586fcb43c4041d59afa06f8ed473778a0c49084450fd",
+      "current_sha256": "505c006dbb5386605a1e586fcb43c4041d59afa06f8ed473778a0c49084450fd",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M4_SCENARIOS.md",
+      "original_sha256": "8c9e5b81b3a2fb9eb77d371a5b974dfc5bb9d271929d78f6ccc8eaa2f0695ee5",
+      "current_sha256": "8c9e5b81b3a2fb9eb77d371a5b974dfc5bb9d271929d78f6ccc8eaa2f0695ee5",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M5_AI.md",
+      "original_sha256": "fd3731e0176c08058c93d2a019f42929a039425c9453611b90a444e187e5bca8",
+      "current_sha256": "fd3731e0176c08058c93d2a019f42929a039425c9453611b90a444e187e5bca8",
+      "status": "unchanged"
+    },
+    {
+      "file": "prompts/M6_REVIEW.md",
+      "original_sha256": "438eb7c107589a669d89d6243c64fcec905194533a55d58663a70446f45b8a89",
+      "current_sha256": "438eb7c107589a669d89d6243c64fcec905194533a55d58663a70446f45b8a89",
+      "status": "unchanged"
+    },
+    {
+      "file": "scripts/generate_fixtures.py",
+      "original_sha256": "d2d947a4853baeb407e7cc1a24ea3dafa97108987632e3a5f88b2794dbef4d78",
+      "current_sha256": "d2d947a4853baeb407e7cc1a24ea3dafa97108987632e3a5f88b2794dbef4d78",
+      "status": "unchanged"
+    },
+    {
+      "file": "scripts/verify_fixtures.py",
+      "original_sha256": "797f45dacfe073f4aafe3706b1904ca09549f1ddf3006def5e4c578cd945857c",
+      "current_sha256": "797f45dacfe073f4aafe3706b1904ca09549f1ddf3006def5e4c578cd945857c",
+      "status": "unchanged"
+    },
+    {
+      "file": "spec/insight-output.schema.json",
+      "original_sha256": "8228da4717447db33543bd065ea5541f974962790e4abd9cef1ff50863195218",
+      "current_sha256": "8228da4717447db33543bd065ea5541f974962790e4abd9cef1ff50863195218",
+      "status": "unchanged"
+    },
+    {
+      "file": "templates/ad_spend_daily.csv",
+      "original_sha256": "6d0756a5dc9c5319bd31c43930507c8b5d5c008210631d46cbed382c835d7c0f",
+      "current_sha256": "6d0756a5dc9c5319bd31c43930507c8b5d5c008210631d46cbed382c835d7c0f",
+      "status": "unchanged"
+    },
+    {
+      "file": "templates/channel_costs_daily.csv",
+      "original_sha256": "11b5040444acf602bf21cc048c6477261afac61bd6db23df4483ef38c89cb5a9",
+      "current_sha256": "11b5040444acf602bf21cc048c6477261afac61bd6db23df4483ef38c89cb5a9",
+      "status": "unchanged"
+    },
+    {
+      "file": "templates/manifest.example.json",
+      "original_sha256": "f205d09d0fdb7b922f0bb92f56f34834818a423bdc6d6960b113009a67c34551",
+      "current_sha256": "f205d09d0fdb7b922f0bb92f56f34834818a423bdc6d6960b113009a67c34551",
+      "status": "unchanged"
+    },
+    {
+      "file": "templates/sales_daily.csv",
+      "original_sha256": "10303d7af860a7946443b6f1c493899f48d0f0e95e4719ef3897b132c8b19a36",
+      "current_sha256": "10303d7af860a7946443b6f1c493899f48d0f0e95e4719ef3897b132c8b19a36",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/file-checksums.json",
+      "original_sha256": "1b07c403fc891a85461e2b603f429f4ff1f1ec8904c57f53d86fe23e71c2c5c9",
+      "current_sha256": "1b07c403fc891a85461e2b603f429f4ff1f1ec8904c57f53d86fe23e71c2c5c9",
+      "status": "unchanged"
+    },
+    {
+      "file": "verification/preparation-report.json",
+      "original_sha256": "9f64b9533de1d86e60a0b75c30419f1124519e66b4283476254b90edf599c377",
+      "current_sha256": "9f64b9533de1d86e60a0b75c30419f1124519e66b4283476254b90edf599c377",
+      "status": "unchanged"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "mode": "real_local_disabled_no_live_call",
+  "dataset": "golden",
+  "observedMetric": "255.00",
+  "actions": [
+    "load golden",
+    "open diagnosis",
+    "preview anonymous facts",
+    "verify disabled consent and send",
+    "open F033 source evidence",
+    "Escape closes and restores F033 focus"
+  ],
+  "logs": []
+}

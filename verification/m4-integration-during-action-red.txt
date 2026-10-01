@@ -1,0 +1,89 @@
+
+> profitlens@0.1.0 test
+> vitest --run
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/decision.test.ts (31 tests | 9 failed) 239ms
+     × confirmed action requires nonempty problem 44ms
+     × confirmed action requires nonempty action 5ms
+     × confirmed action requires nonempty owner_role 8ms
+     × confirmed action requires nonempty validation_metric 1ms
+     × confirmed action requires nonempty deadline 2ms
+     × confirmed action requires nonempty stop_condition 2ms
+     × confirmed action requires nonempty required_data 7ms
+     × confirmed action requires genuine ISO date and bounded typed text 2ms
+     × revalidates confirmed action content at export, while drafts may keep empty fields 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/decision.test.ts > manual scenarios and action state > confirmed action requires nonempty problem
+ FAIL  tests/decision.test.ts > manual scenarios and action state > confirmed action requires nonempty action
+ FAIL  tests/decision.test.ts > manual scenarios and action state > confirmed action requires nonempty owner_role
+ FAIL  tests/decision.test.ts > manual scenarios and action state > confirmed action requires nonempty validation_metric
+ FAIL  tests/decision.test.ts > manual scenarios and action state > confirmed action requires nonempty deadline
+ FAIL  tests/decision.test.ts > manual scenarios and action state > confirmed action requires nonempty stop_condition
+ FAIL  tests/decision.test.ts > manual scenarios and action state > confirmed action requires nonempty required_data
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/decision.test.ts:128:70
+    126|   it.each(["problem", "action", "owner_role", "validation_metric", "de…
+    127|     const s = session();
+    128|     expect(() => saveAction(s, [], { ...action(s), [field]: "  " })).t…
+       |                                                                      ^
+    129|   });
+    130|   it("confirmed action requires genuine ISO date and bounded typed tex…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/decision.test.ts > manual scenarios and action state > confirmed action requires genuine ISO date and bounded typed text
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/decision.test.ts:132:79
+    130|   it("confirmed action requires genuine ISO date and bounded typed tex…
+    131|     const s = session();
+    132|     expect(() => saveAction(s, [], { ...action(s), deadline: "2026-02-…
+       |                                                                               ^
+    133|     expect(() => saveAction(s, [], { ...action(s), deadline: "10/31/20…
+    134|     expect(() => saveAction(s, [], { ...action(s), problem: "x".repeat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/decision.test.ts > M4 decision exports > revalidates confirmed action content at export, while drafts may keep empty fields
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/decision.test.ts:193:54
+    191|     const actions = saveAction(s, [], action(s));
+    192|     actions[0].deadline = "not-a-date";
+    193|     expect(() => exportDecisionJson(s, [], actions)).toThrow("INVALID_…
+       |                                                      ^
+    194|     actions[0].evidence_confirmed = false;
+    195|     actions[0].deadline = "";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+
+ Test Files  1 failed | 13 passed (14)
+      Tests  9 failed | 368 passed (377)
+   Start at  14:27:32
+   Duration  1.42s (transform 1.13s, setup 0ms, import 3.16s, tests 2.51s, environment 2ms)
+

@@ -1,0 +1,132 @@
+
+> profitlens@0.1.0 test:e2e
+> playwright test tests/e2e/scenarios.spec.ts --project=desktop
+
+[WebServer] (node:74943) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74947) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74955) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74957) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74963) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74962) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74965) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74966) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74991) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:74996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › tests/e2e/scenarios.spec.ts:151:1 › 僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據 (1.0s)
+  ✓   2 [desktop] › tests/e2e/scenarios.spec.ts:184:1 › 三個方案各自從 270.00 重算為 270／284／264，不串接或相加 (1.1s)
+  ✓   3 [desktop] › tests/e2e/scenarios.spec.ts:210:1 › 減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益 (780ms)
+  ✓   4 [desktop] › tests/e2e/scenarios.spec.ts:232:1 › 輸入超界、負投入與過度精度不得默默修正為可用試算 (982ms)
+  ✓   5 [desktop] › tests/e2e/scenarios.spec.ts:245:1 › 百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70 (725ms)
+  ✘   6 [desktop] › tests/e2e/scenarios.spec.ts:274:3 › missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN (15.4s)
+(node:75040) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   7 [desktop] › tests/e2e/scenarios.spec.ts:274:3 › missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN (15.5s)
+(node:75075) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 [desktop] › tests/e2e/scenarios.spec.ts:288:1 › 通路換回原值仍過期；重建清空全部假設與證據，保留人工名稱文字 (1.3s)
+  ✓   9 [desktop] › tests/e2e/scenarios.spec.ts:327:1 › 資料集切換後即使回到相同 golden 與通路，舊方案仍過期 (1.2s)
+  ✓  10 [desktop] › tests/e2e/scenarios.spec.ts:343:1 › 有效期間切換再回原期間仍過期，不自動沿用先前假設 (1.1s)
+  ✓  11 [desktop] › tests/e2e/scenarios.spec.ts:364:1 › 三項人工行動可編輯、鍵盤排序、引用本期 fact 並返回焦點 (1.6s)
+  ✓  12 [desktop] › tests/e2e/scenarios.spec.ts:400:1 › 未填完七欄或未選 fact 的行動只能保持草稿 (647ms)
+  ✓  13 [desktop] › tests/e2e/scenarios.spec.ts:412:1 › 三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源 (918ms)
+  ✓  14 [desktop] › tests/e2e/scenarios.spec.ts:456:1 › 不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結 (916ms)
+  ✓  15 [desktop] › tests/e2e/scenarios.spec.ts:480:1 › 試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用 (1.1s)
+
+
+  1) [desktop] › tests/e2e/scenarios.spec.ts:274:3 › missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN ───────────
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')
+    Expected: "—"
+    Received: "資料待補"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" getByTestId('kpi-contribution_after_marketing').locator('.kpi-value') with timeout 15000ms
+      - waiting for getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')
+        34 × locator resolved to <div class="kpi-value">…</div>
+           - unexpected value "資料待補"
+
+
+      276 |     await selectChannel(page, incomplete.channel, "部分資料待補");
+      277 |     await expect(kpi(page, "net_revenue")).toHaveText(incomplete.revenue);
+    > 278 |     await expect(kpi(page, "contribution_after_marketing")).toHaveText("—");
+          |                                                             ^
+      279 |     await showScenarios(page);
+      280 |     await expect(page.getByTestId("scenario-unavailable")).toBeVisible();
+      281 |     await expect(page.getByTestId("baseline-net_revenue")).toHaveText(incomplete.revenue);
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts:278:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/scenarios-missing-cogs-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/scenarios-missing-cogs-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/scenarios-missing-cogs-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/scenarios-missing-cogs-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop] › tests/e2e/scenarios.spec.ts:274:3 › missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN ─────────────
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')
+    Expected: "—"
+    Received: "資料待補"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" getByTestId('kpi-contribution_after_marketing').locator('.kpi-value') with timeout 15000ms
+      - waiting for getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')
+        34 × locator resolved to <div class="kpi-value">…</div>
+           - unexpected value "資料待補"
+
+
+      276 |     await selectChannel(page, incomplete.channel, "部分資料待補");
+      277 |     await expect(kpi(page, "net_revenue")).toHaveText(incomplete.revenue);
+    > 278 |     await expect(kpi(page, "contribution_after_marketing")).toHaveText("—");
+          |                                                             ^
+      279 |     await showScenarios(page);
+      280 |     await expect(page.getByTestId("scenario-unavailable")).toBeVisible();
+      281 |     await expect(page.getByTestId("baseline-net_revenue")).toHaveText(incomplete.revenue);
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/scenarios.spec.ts:278:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/scenarios-missing-ad-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/scenarios-missing-ad-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/scenarios-missing-ad-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/scenarios-missing-ad-缺漏通路保留營收，禁止情境補零或顯示-NaN-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop] › tests/e2e/scenarios.spec.ts:274:3 › missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN ────────────
+    [desktop] › tests/e2e/scenarios.spec.ts:274:3 › missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN ──────────────
+  13 passed (59.2s)

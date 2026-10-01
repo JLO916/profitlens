@@ -1,0 +1,122 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/rules.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/rules.test.ts (14 tests | 14 failed) 8ms
+     × REV_UP_CM_DOWN requires positive revenue difference and negative contribution difference 4ms
+     × NEGATIVE_CHANNEL_CM is only a channel rule with observed negative contribution 0ms
+     × DISCOUNT_BURDEN_UP compares the correct ratio and supplies both period evidence 0ms
+     × REFUND_BURDEN_UP compares the correct ratio and supplies both period evidence 0ms
+     × FULFILLMENT_BURDEN_UP compares the correct ratio and supplies both period evidence 0ms
+     × MARKETING_BURDEN_UP compares the correct ratio and supplies both period evidence 0ms
+     × a ratio that falls does not trigger merely because the amount rises 0ms
+     × identical or non-positive ratio denominators do not generate a burden-up diagnosis 0ms
+     × compares the underlying exact ratios even when formatted ratios round identically 0ms
+     × MISSING_CRITICAL_DATA sorts first and cannot trigger unknown contribution rules 0ms
+     × missing ad forbids marketing-burden facts from becoming a monetary claim 0ms
+     × SKU_NEGATIVE_GP references only product facts, never channel ads or contribution 0ms
+     × stable unique IDs encode dataset, periods, scopes and every reference resolves to a traceable fact 0ms
+     × sorts missing data first, then absolute observed amounts descending with stable ID ties 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > REV_UP_CM_DOWN requires positive revenue difference and negative contribution difference
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:22:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > NEGATIVE_CHANNEL_CM is only a channel rule with observed negative contribution
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:31:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > DISCOUNT_BURDEN_UP compares the correct ratio and supplies both period evidence
+ FAIL  tests/rules.test.ts > M1 deterministic rules > REFUND_BURDEN_UP compares the correct ratio and supplies both period evidence
+ FAIL  tests/rules.test.ts > M1 deterministic rules > FULFILLMENT_BURDEN_UP compares the correct ratio and supplies both period evidence
+ FAIL  tests/rules.test.ts > M1 deterministic rules > MARKETING_BURDEN_UP compares the correct ratio and supplies both period evidence
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:44:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > a ratio that falls does not trigger merely because the amount rises
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:59:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > identical or non-positive ratio denominators do not generate a burden-up diagnosis
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:64:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > compares the underlying exact ratios even when formatted ratios round identically
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:73:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > MISSING_CRITICAL_DATA sorts first and cannot trigger unknown contribution rules
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:80:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > missing ad forbids marketing-burden facts from becoming a monetary claim
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:92:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > SKU_NEGATIVE_GP references only product facts, never channel ads or contribution
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:102:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > stable unique IDs encode dataset, periods, scopes and every reference resolves to a traceable fact
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:114:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  tests/rules.test.ts > M1 deterministic rules > sorts missing data first, then absolute observed amounts descending with stable ID ties
+Error: M1 RED: diagnose not implemented
+ ❯ diagnose src/domain/rules.ts:4:9
+
+ ❯ tests/rules.test.ts:136:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  14 failed (14)
+   Start at  16:56:41
+   Duration  208ms (transform 38ms, setup 0ms, import 50ms, tests 8ms, environment 0ms)
+

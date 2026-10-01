@@ -1,0 +1,33 @@
+{
+  "checked_at": "2026-10-01T06:38:57.712Z",
+  "url": "http://127.0.0.1:3000/",
+  "browser": "Codex in-app browser",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "observed": [
+    "golden DTC 284.00 with v=0,delta=0,f=-10,a=0,K=0",
+    "K=20 changed contribution to 264.00",
+    "action manually filled, native date setValue 2026-10-15, chosen source fact, confirmed",
+    "MARKETPLACE change marked scenario and action stale",
+    "rebuild kept manual problem, cleared all five numeric assumptions and consent",
+    "DTC rebuild and explicit assumptions recalculated 284.00"
+  ],
+  "tool_limitations": [
+    "old tab reload CDP focus emulation timed out; used fresh tab",
+    "DOM evaluate did not expose HTMLSelectElement constructor; used direct element.value read",
+    "locator.fill for native date left it empty; inspected and filled through native date accessibility API"
+  ],
+  "logs": []
+}

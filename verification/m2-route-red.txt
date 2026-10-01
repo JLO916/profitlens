@@ -1,0 +1,122 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/dataset-route.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/dataset-route.test.ts (20 tests | 20 failed) 15ms
+     × serves exact golden CSV bytes and manifest; it does not send golden expected answers 4ms
+     × maps demo to existing synthetic fixture without repairing its data 1ms
+     × maps missing-cogs to existing synthetic fixture without repairing its data 1ms
+     × maps missing-ad to existing synthetic fixture without repairing its data 1ms
+     × maps duplicate to existing synthetic fixture without repairing its data 0ms
+     × rejects non-whitelisted ID "unknown" before filesystem access 0ms
+     × rejects non-whitelisted ID "../golden" before filesystem access 0ms
+     × rejects non-whitelisted ID "../../.env.local" before filesystem access 0ms
+     × rejects non-whitelisted ID "%2e%2e%2fgolden" before filesystem access 0ms
+     × rejects non-whitelisted ID "golden/expected.json" before filesystem access 0ms
+     × rejects non-whitelisted ID "__proto__" before filesystem access 0ms
+     × rejects non-whitelisted ID "constructor" before filesystem access 0ms
+     × rejects non-whitelisted ID "toString" before filesystem access 1ms
+     × rejects non-whitelisted ID "" before filesystem access 0ms
+     × rejects non-whitelisted ID "/etc/passwd" before filesystem access 0ms
+     × sanitizes filesystem failures without exposing local paths or error details 0ms
+     × refuses non-synthetic or malformed manifest {"source_type":"user_provided","private":"must-not-escape"} 0ms
+     × refuses non-synthetic or malformed manifest null 0ms
+     × refuses non-synthetic or malformed manifest [] 0ms
+     × refuses non-synthetic or malformed manifest {broken-json 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > serves exact golden CSV bytes and manifest; it does not send golden expected answers
+Error: M2 示範資料端點尚未實作
+ ❯ Module.GET src/app/api/datasets/[id]/route.ts:3:9
+      1| export const runtime = "nodejs";
+      2| export async function GET(_request: Request, _context: { params: Promi…
+      3|   throw new Error("M2 示範資料端點尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ load tests/dataset-route.test.ts:16:30
+ ❯ tests/dataset-route.test.ts:26:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > maps demo to existing synthetic fixture without repairing its data
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > maps missing-cogs to existing synthetic fixture without repairing its data
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > maps missing-ad to existing synthetic fixture without repairing its data
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > maps duplicate to existing synthetic fixture without repairing its data
+Error: M2 示範資料端點尚未實作
+ ❯ Module.GET src/app/api/datasets/[id]/route.ts:3:9
+      1| export const runtime = "nodejs";
+      2| export async function GET(_request: Request, _context: { params: Promi…
+      3|   throw new Error("M2 示範資料端點尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ load tests/dataset-route.test.ts:16:30
+ ❯ tests/dataset-route.test.ts:52:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "unknown" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "../golden" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "../../.env.local" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "%2e%2e%2fgolden" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "golden/expected.json" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "__proto__" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "constructor" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "toString" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "" before filesystem access
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > rejects non-whitelisted ID "/etc/passwd" before filesystem access
+Error: M2 示範資料端點尚未實作
+ ❯ Module.GET src/app/api/datasets/[id]/route.ts:3:9
+      1| export const runtime = "nodejs";
+      2| export async function GET(_request: Request, _context: { params: Promi…
+      3|   throw new Error("M2 示範資料端點尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ load tests/dataset-route.test.ts:16:30
+ ❯ tests/dataset-route.test.ts:64:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > sanitizes filesystem failures without exposing local paths or error details
+Error: M2 示範資料端點尚未實作
+ ❯ Module.GET src/app/api/datasets/[id]/route.ts:3:9
+      1| export const runtime = "nodejs";
+      2| export async function GET(_request: Request, _context: { params: Promi…
+      3|   throw new Error("M2 示範資料端點尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ load tests/dataset-route.test.ts:16:30
+ ❯ tests/dataset-route.test.ts:73:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > refuses non-synthetic or malformed manifest {"source_type":"user_provided","private":"must-not-escape"}
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > refuses non-synthetic or malformed manifest null
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > refuses non-synthetic or malformed manifest []
+ FAIL  tests/dataset-route.test.ts > read-only synthetic dataset endpoint > refuses non-synthetic or malformed manifest {broken-json
+Error: M2 示範資料端點尚未實作
+ ❯ Module.GET src/app/api/datasets/[id]/route.ts:3:9
+      1| export const runtime = "nodejs";
+      2| export async function GET(_request: Request, _context: { params: Promi…
+      3|   throw new Error("M2 示範資料端點尚未實作");
+       |         ^
+      4| }
+      5|
+ ❯ load tests/dataset-route.test.ts:16:30
+ ❯ tests/dataset-route.test.ts:86:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  20 failed (20)
+   Start at  17:14:33
+   Duration  309ms (transform 47ms, setup 0ms, import 137ms, tests 15ms, environment 0ms)
+

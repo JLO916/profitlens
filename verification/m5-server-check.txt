@@ -1,0 +1,101 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-config.test.ts tests/ai-provider.test.ts tests/ai-service.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-service.test.ts (21 tests | 2 failed) 50ms
+     × accepts only grounded structured output and records bounded non-content metadata 9ms
+     × schema failure retries once then succeeds with summed actual usage 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > accepts only grounded structured output and records bounded non-content metadata
+AssertionError: expected { status: 'fallback', …(3) } to match object { status: 'live', …(3) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "metadata": {
+-     "attempts": 1,
++     "attempts": 2,
+      "model": "unit-test-model",
+      "prompt_version": "profitlens-insights-v1",
+      "provider": "openai",
+      "usage": {
+-       "input_tokens": 30,
+-       "output_tokens": 50,
+-       "total_tokens": 80,
+-     },
+-   },
+-   "output": {
+-     "insights": [
+-       {
+-         "additional_data_needed": [
+-           "商品組合說明",
+-         ],
+-         "fact_ids": [
+-           "F001",
+-         ],
+-         "hypotheses": [
+-           "可能與商品組合變動有關，仍待核對。",
+-         ],
+-         "limitations": [
+-           "僅為待核對的說明。",
+-         ],
+-         "observation": "前期所選通路合計的折扣前商品收入為 {{fact:F001:gross_sales}}。",
+-         "owner_role": "營運主管",
+-         "recommended_action": "請核對商品組合與入帳資料。",
+-         "stop_condition": "若資料口徑不一致，停止比較。",
+-         "verification_metric": "商品淨營收",
++       "input_tokens": 60,
++       "output_tokens": 100,
++       "total_tokens": 160,
+      },
+-     ],
+-     "limitations": [
+-       "行銷後貢獻不等於公司淨利。",
+-     ],
+-     "snapshot_id": "ai-v1:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:6935352028080c34d16eb21c0a207ac5c9397e42eca5c0fe4b200195f84fb2e9:1",
+    },
+    "snapshot_id": "ai-v1:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:6935352028080c34d16eb21c0a207ac5c9397e42eca5c0fe4b200195f84fb2e9:1",
+-   "status": "live",
++   "status": "fallback",
+  }
+
+ ❯ tests/ai-service.test.ts:20:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/ai-service.test.ts > M5 provider orchestration with injected mocks only > schema failure retries once then succeeds with summed actual usage
+AssertionError: expected { status: 'fallback', …(3) } to match object { status: 'live', metadata: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -5,7 +5,7 @@
+        "input_tokens": 60,
+        "output_tokens": 100,
+        "total_tokens": 160,
+      },
+    },
+-   "status": "live",
++   "status": "fallback",
+  }
+
+ ❯ tests/ai-service.test.ts:44:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 51 passed (53)
+   Start at  15:03:04
+   Duration  486ms (transform 172ms, setup 0ms, import 423ms, tests 94ms, environment 0ms)
+

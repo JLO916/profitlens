@@ -1,0 +1,903 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/25.8.2/bin/node",
+      "/Users/j-work/Desktop/profitlens-codex-starter/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/ai.spec.ts",
+      "--list"
+    ],
+    "configFile": "/Users/j-work/Desktop/profitlens-codex-starter/playwright.config.ts",
+    "rootDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "verification/m4-e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+      "url": "http://127.0.0.1:3100",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "ai.spec.ts",
+      "file": "ai.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3f38efe0662070145ff2",
+          "file": "ai.spec.ts",
+          "line": 110,
+          "column": 1
+        },
+        {
+          "title": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-4028ac707de65f1d973b",
+          "file": "ai.spec.ts",
+          "line": 138,
+          "column": 1
+        },
+        {
+          "title": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-4068b4204b1d8fad98a6",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-2f99915a22a26f1f0092",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-a22109b93c7ad728bfe7",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-b4500b44b9a0a8fb4b4c",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-c3684c75e372be9364db",
+          "file": "ai.spec.ts",
+          "line": 214,
+          "column": 1
+        },
+        {
+          "title": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-bc69c539bf3196155323",
+          "file": "ai.spec.ts",
+          "line": 231,
+          "column": 1
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-70803c7e144221f95e86",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f52d83d2996b8d5c32a8",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-01fc63dc8e01f340a9dd",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-ad11925b45504160cdcc",
+          "file": "ai.spec.ts",
+          "line": 327,
+          "column": 1
+        },
+        {
+          "title": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-05cb32c07a28365d7f51",
+          "file": "ai.spec.ts",
+          "line": 346,
+          "column": 1
+        },
+        {
+          "title": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-37c9d1f0334419b9fae2",
+          "file": "ai.spec.ts",
+          "line": 110,
+          "column": 1
+        },
+        {
+          "title": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-c54983024313da67f9db",
+          "file": "ai.spec.ts",
+          "line": 138,
+          "column": 1
+        },
+        {
+          "title": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-831626d879fc96fb1997",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-993399ce43f27ec94d35",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-604b8a96e8d2052e4fec",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f35c76079997148c434b",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3a435f59ef71afe8e310",
+          "file": "ai.spec.ts",
+          "line": 214,
+          "column": 1
+        },
+        {
+          "title": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3b4037dfe3eaeb30d4c4",
+          "file": "ai.spec.ts",
+          "line": 231,
+          "column": 1
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-4e22a214f76a92efa6a0",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-11af3eb4c1d5a7d5c221",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-84f79ffc184c434f2d7b",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-159802b918d802e99fa9",
+          "file": "ai.spec.ts",
+          "line": 327,
+          "column": 1
+        },
+        {
+          "title": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-20123dc9a6b746d43e66",
+          "file": "ai.spec.ts",
+          "line": 346,
+          "column": 1
+        },
+        {
+          "title": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-b1ec976176e09c274351",
+          "file": "ai.spec.ts",
+          "line": 110,
+          "column": 1
+        },
+        {
+          "title": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f52984ecba00d73cfedf",
+          "file": "ai.spec.ts",
+          "line": 138,
+          "column": 1
+        },
+        {
+          "title": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-a546efed4ccaff3ad94c",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-09c7f2504601ff1d0eb1",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-bedc3954f6dbcec024f5",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f61b525d27bd98edd32e",
+          "file": "ai.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-821c5d050cd4c6da985d",
+          "file": "ai.spec.ts",
+          "line": 214,
+          "column": 1
+        },
+        {
+          "title": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-73d49216f74aa735cffe",
+          "file": "ai.spec.ts",
+          "line": 231,
+          "column": 1
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-0dc13e4b8f217963d16d",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-ab30e6f7dd332d708e40",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-8f5dfe0f00259ba58ce8",
+          "file": "ai.spec.ts",
+          "line": 290,
+          "column": 3
+        },
+        {
+          "title": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3c42a08b49783ba8c0e1",
+          "file": "ai.spec.ts",
+          "line": 327,
+          "column": 1
+        },
+        {
+          "title": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-e98bebc6b6ae441106e7",
+          "file": "ai.spec.ts",
+          "line": 346,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-01T07:01:25.095Z",
+    "duration": 203.6500000000001,
+    "expected": 0,
+    "skipped": 39,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

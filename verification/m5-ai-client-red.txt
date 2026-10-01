@@ -1,0 +1,240 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-client.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-client.test.ts (17 tests | 17 failed) 31ms
+     × binds consent to exact payload and revision including identical-data reloads 3ms
+     × only constructs the strict snapshot+consent envelope 0ms
+     × never calls fetch without matching consent null 0ms
+     × never calls fetch without matching consent older-consent 0ms
+     × never sends when request is already stale or cancelled 0ms
+     × sends only the approved envelope via same-origin POST with no-store 24ms
+     × discards a response that finishes after the current binding changes 0ms
+     × cancels even if a fetch implementation ignores its AbortSignal 0ms
+     × handles timeout without a provider retry or exposing raw errors 0ms
+     × maps HTTP 429 to safe reason RATE_LIMIT 0ms
+     × maps HTTP 500 to safe reason PROVIDER_ERROR 0ms
+     × maps HTTP 413 to safe reason INPUT_TOO_LARGE 0ms
+     × maps network and malformed JSON errors to fixed local explanations 0ms
+     × does not trust HTTP200 live flags with unrelated snapshot or absent output 0ms
+     × does not display arbitrary reason text from a server 0ms
+     × reads config through GET without sending snapshot or looking for client keys 0ms
+     × never enables sending on malformed or failed config responses 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-client.test.ts > AI client consent and freshness > binds consent to exact payload and revision including identical-data reloads
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ tests/ai-client.test.ts:14:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client consent and freshness > only constructs the strict snapshot+consent envelope
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiRequestBody src/application/ai-client.ts:17:76
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+       |                                                                            ^
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+     19| export async function sendAiRequest(_options: AiRequestOptions): Promi…
+ ❯ tests/ai-client.test.ts:20:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client consent and freshness > never calls fetch without matching consent null
+ FAIL  tests/ai-client.test.ts > AI client consent and freshness > never calls fetch without matching consent older-consent
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:24:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client consent and freshness > never sends when request is already stale or cancelled
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:29:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client consent and freshness > sends only the approved envelope via same-origin POST with no-store
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:36:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client consent and freshness > discards a response that finishes after the current binding changes
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:47:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client consent and freshness > cancels even if a fetch implementation ignores its AbortSignal
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:54:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > handles timeout without a provider retry or exposing raw errors
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:63:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > maps HTTP 429 to safe reason RATE_LIMIT
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > maps HTTP 500 to safe reason PROVIDER_ERROR
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > maps HTTP 413 to safe reason INPUT_TOO_LARGE
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:67:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > maps network and malformed JSON errors to fixed local explanations
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:70:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > does not trust HTTP200 live flags with unrelated snapshot or absent output
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:75:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > does not display arbitrary reason text from a server
+Error: M5_NOT_IMPLEMENTED
+ ❯ createAiConsentBinding src/application/ai-client.ts:16:97
+     14|   signal?: AbortSignal; isCurrent: () => boolean; fetcher?: typeof fet…
+     15| }
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+       |                                                                                                 ^
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+ ❯ consent tests/ai-client.test.ts:8:23
+ ❯ request tests/ai-client.test.ts:10:111
+ ❯ tests/ai-client.test.ts:79:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > reads config through GET without sending snapshot or looking for client keys
+Error: M5_NOT_IMPLEMENTED
+ ❯ getAiCapability src/application/ai-client.ts:18:118
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+       |                                                                                                                      ^
+     19| export async function sendAiRequest(_options: AiRequestOptions): Promi…
+     20| export function aiReasonMessage(_reason: string): string { throw new E…
+ ❯ tests/ai-client.test.ts:83:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  tests/ai-client.test.ts > AI client safe fallbacks > never enables sending on malformed or failed config responses
+Error: M5_NOT_IMPLEMENTED
+ ❯ getAiCapability src/application/ai-client.ts:18:118
+     16| export function createAiConsentBinding(_payload: AiSnapshot, _revision…
+     17| export function createAiRequestBody(_payload: AiSnapshot): unknown { t…
+     18| export async function getAiCapability(_fetcher?: typeof fetch, _signal…
+       |                                                                                                                      ^
+     19| export async function sendAiRequest(_options: AiRequestOptions): Promi…
+     20| export function aiReasonMessage(_reason: string): string { throw new E…
+ ❯ tests/ai-client.test.ts:89:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  17 failed (17)
+   Start at  14:52:33
+   Duration  206ms (transform 19ms, setup 0ms, import 27ms, tests 31ms, environment 0ms)
+

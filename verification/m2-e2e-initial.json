@@ -1,0 +1,671 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/25.8.2/bin/node",
+      "/Users/j-work/Desktop/profitlens-codex-starter/node_modules/.bin/playwright",
+      "test",
+      "--project=desktop"
+    ],
+    "configFile": "/Users/j-work/Desktop/profitlens-codex-starter/playwright.config.ts",
+    "rootDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "verification/m2-e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://127.0.0.1:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "workspace.spec.ts",
+      "file": "workspace.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2235,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:28:38.673Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjI4OjQ0LjE2NVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuekuuevhOizh+aWmeeUseepuueLgOaFi+mAsuWFpeWPr+mWseiugOe4veimve+8jOWcluihqOacieihqOagvOabv+S7oyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6aW5mbyIsCiAgICAgICJtZXNzYWdlIjogIiVjRG93bmxvYWQgdGhlIFJlYWN0IERldlRvb2xzIGZvciBhIGJldHRlciBkZXZlbG9wbWVudCBleHBlcmllbmNlOiBodHRwczovL3JlYWN0LmRldi9saW5rL3JlYWN0LWRldnRvb2xzIGZvbnQtd2VpZ2h0OmJvbGQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6bG9nIiwKICAgICAgIm1lc3NhZ2UiOiAiW0hNUl0gY29ubmVjdGVkIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-712b911dca42b248dff9",
+          "file": "workspace.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "切換 golden 與 demo 會重算同一組 KPI",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 45092,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts",
+                        "column": 49,
+                        "line": 57
+                      },
+                      "message": "Error: locator.selectOption: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('資料集', { exact: true })\u001b[22m\n\n\n  55 |\n  56 | async function requestDataset(page: Page, id: string) {\n> 57 |   await page.getByLabel(\"資料集\", { exact: true }).selectOption(id);\n     |                                                 ^\n  58 |   await page.getByRole(\"button\", { name: \"載入資料集\", exact: true }).click();\n  59 | }\n  60 | async function loadGolden(page: Page) {\n    at requestDataset (/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts:57:49)\n    at loadGolden (/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts:61:9)\n    at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts:98:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:28:44.228Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-切換-golden-與-demo-會重算同一組-KPI-desktop/test-failed-1.png"
+                    },
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjI5OjI5LjI4OVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuWIh+aPmyBnb2xkZW4g6IiHIGRlbW8g5pyD6YeN566X5ZCM5LiA57WEIEtQSSIsCiAgInN0YXR1cyI6ICJ0aW1lZE91dCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTppbmZvIiwKICAgICAgIm1lc3NhZ2UiOiAiJWNEb3dubG9hZCB0aGUgUmVhY3QgRGV2VG9vbHMgZm9yIGEgYmV0dGVyIGRldmVsb3BtZW50IGV4cGVyaWVuY2U6IGh0dHBzOi8vcmVhY3QuZGV2L2xpbmsvcmVhY3QtZGV2dG9vbHMgZm9udC13ZWlnaHQ6Ym9sZCIsCiAgICAgICJ1cmwiOiAid2VicGFjay1pbnRlcm5hbDovLy8oYXBwLXBhZ2VzLWJyb3dzZXIpLy4vbm9kZV9tb2R1bGVzL25leHQvZGlzdC9uZXh0LWRldnRvb2xzL3NoYXJlZC9mb3J3YXJkLWxvZ3Mtc2hhcmVkLmpzIgogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTpsb2ciLAogICAgICAibWVzc2FnZSI6ICJbSE1SXSBjb25uZWN0ZWQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0KICBdCn0="
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-切換-golden-與-demo-會重算同一組-KPI-desktop/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-切換-golden-與-demo-會重算同一組-KPI-desktop/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0ecc4e070ddc26396934",
+          "file": "workspace.spec.ts",
+          "line": 97,
+          "column": 1
+        },
+        {
+          "title": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 45092,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts",
+                        "column": 49,
+                        "line": 57
+                      },
+                      "message": "Error: locator.selectOption: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('資料集', { exact: true })\u001b[22m\n\n\n  55 |\n  56 | async function requestDataset(page: Page, id: string) {\n> 57 |   await page.getByLabel(\"資料集\", { exact: true }).selectOption(id);\n     |                                                 ^\n  58 |   await page.getByRole(\"button\", { name: \"載入資料集\", exact: true }).click();\n  59 | }\n  60 | async function loadGolden(page: Page) {\n    at requestDataset (/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts:57:49)\n    at loadGolden (/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts:61:9)\n    at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts:110:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:29:29.694Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-通路篩選共用，金額證據可用鍵盤開啟與返回-desktop/test-failed-1.png"
+                    },
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjE0LjkyM1oiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIumAmui3r+evqemBuOWFseeUqO+8jOmHkemhjeitieaTmuWPr+eUqOmNteebpOmWi+WVn+iIh+i/lOWbniIsCiAgInN0YXR1cyI6ICJ0aW1lZE91dCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTppbmZvIiwKICAgICAgIm1lc3NhZ2UiOiAiJWNEb3dubG9hZCB0aGUgUmVhY3QgRGV2VG9vbHMgZm9yIGEgYmV0dGVyIGRldmVsb3BtZW50IGV4cGVyaWVuY2U6IGh0dHBzOi8vcmVhY3QuZGV2L2xpbmsvcmVhY3QtZGV2dG9vbHMgZm9udC13ZWlnaHQ6Ym9sZCIsCiAgICAgICJ1cmwiOiAid2VicGFjay1pbnRlcm5hbDovLy8oYXBwLXBhZ2VzLWJyb3dzZXIpLy4vbm9kZV9tb2R1bGVzL25leHQvZGlzdC9uZXh0LWRldnRvb2xzL3NoYXJlZC9mb3J3YXJkLWxvZ3Mtc2hhcmVkLmpzIgogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTpsb2ciLAogICAgICAibWVzc2FnZSI6ICJbSE1SXSBjb25uZWN0ZWQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0KICBdCn0="
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-通路篩選共用，金額證據可用鍵盤開啟與返回-desktop/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-通路篩選共用，金額證據可用鍵盤開啟與返回-desktop/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-354f76369c5570afd5ec",
+          "file": "workspace.spec.ts",
+          "line": 109,
+          "column": 1
+        },
+        {
+          "title": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9000,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:30:15.302Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjI0LjM5MFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIuWVhuWTgeevqemBuOWPquW9semfv+avm+WIqeaYjue0sO+8jOS4jeW4tuWFpemAmui3r+W7o+WRiuiIh+iyoueNuyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6aW5mbyIsCiAgICAgICJtZXNzYWdlIjogIiVjRG93bmxvYWQgdGhlIFJlYWN0IERldlRvb2xzIGZvciBhIGJldHRlciBkZXZlbG9wbWVudCBleHBlcmllbmNlOiBodHRwczovL3JlYWN0LmRldi9saW5rL3JlYWN0LWRldnRvb2xzIGZvbnQtd2VpZ2h0OmJvbGQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6bG9nIiwKICAgICAgIm1lc3NhZ2UiOiAiW0hNUl0gY29ubmVjdGVkIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJjb25zb2xlOmxvZyIsCiAgICAgICJtZXNzYWdlIjogIltGYXN0IFJlZnJlc2hdIHJlYnVpbGRpbmciLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6bG9nIiwKICAgICAgIm1lc3NhZ2UiOiAiW0Zhc3QgUmVmcmVzaF0gcmVidWlsZGluZyIsCiAgICAgICJ1cmwiOiAid2VicGFjay1pbnRlcm5hbDovLy8oYXBwLXBhZ2VzLWJyb3dzZXIpLy4vbm9kZV9tb2R1bGVzL25leHQvZGlzdC9uZXh0LWRldnRvb2xzL3NoYXJlZC9mb3J3YXJkLWxvZ3Mtc2hhcmVkLmpzIgogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTpsb2ciLAogICAgICAibWVzc2FnZSI6ICJbRmFzdCBSZWZyZXNoXSBkb25lIGluIDIwbXMiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6bG9nIiwKICAgICAgIm1lc3NhZ2UiOiAiW0Zhc3QgUmVmcmVzaF0gZG9uZSBpbiA0MDRtcyIsCiAgICAgICJ1cmwiOiAid2VicGFjay1pbnRlcm5hbDovLy8oYXBwLXBhZ2VzLWJyb3dzZXIpLy4vbm9kZV9tb2R1bGVzL25leHQvZGlzdC9uZXh0LWRldnRvb2xzL3NoYXJlZC9mb3J3YXJkLWxvZ3Mtc2hhcmVkLmpzIgogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTpsb2ciLAogICAgICAibWVzc2FnZSI6ICJbRmFzdCBSZWZyZXNoXSByZWJ1aWxkaW5nIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJyZXF1ZXN0ZmFpbGVkIiwKICAgICAgIm1lc3NhZ2UiOiAibmV0OjpFUlJfQUJPUlRFRCIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMDAwLz9fcnNjPWJGZV9WQzBnOFZwbFdYS1AiCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJjb25zb2xlOmxvZyIsCiAgICAgICJtZXNzYWdlIjogIltGYXN0IFJlZnJlc2hdIGRvbmUgaW4gNjM0bXMiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-923dae3c4c938852fb7f",
+          "file": "workspace.spec.ts",
+          "line": 135,
+          "column": 1
+        },
+        {
+          "title": "無效期間不覆寫已套用的分析範圍",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1950,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('alert')\nExpected pattern: \u001b[32m/等長|重疊|期間/\u001b[39m\nError: strict mode violation: getByRole('alert') resolved to 2 elements:\n    1) <p role=\"alert\" class=\"alert error\">期間未套用：前後期須為有效日期、等長、不重疊，且落在資料涵蓋範圍內。目前仍顯示上次成功的範圍。</p> aka getByText('期間未套用：前後期須為有效日期、等長、不重疊，且落在資料涵蓋範圍內。目前仍顯示上次成功的範圍。')\n    2) <div role=\"alert\" aria-live=\"assertive\" id=\"__next-route-announcer__\"></div> aka locator('[id=\"__next-route-announcer__\"]')\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('alert') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('alert')\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"alert\" aria-live=\"assertive\" id=\"__next-route-announcer__\"></div>\u001b[22m\n\u001b[2m    - unexpected value \"\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('alert')\nExpected pattern: \u001b[32m/等長|重疊|期間/\u001b[39m\nError: strict mode violation: getByRole('alert') resolved to 2 elements:\n    1) <p role=\"alert\" class=\"alert error\">期間未套用：前後期須為有效日期、等長、不重疊，且落在資料涵蓋範圍內。目前仍顯示上次成功的範圍。</p> aka getByText('期間未套用：前後期須為有效日期、等長、不重疊，且落在資料涵蓋範圍內。目前仍顯示上次成功的範圍。')\n    2) <div role=\"alert\" aria-live=\"assertive\" id=\"__next-route-announcer__\"></div> aka locator('[id=\"__next-route-announcer__\"]')\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('alert') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('alert')\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"alert\" aria-live=\"assertive\" id=\"__next-route-announcer__\"></div>\u001b[22m\n\u001b[2m    - unexpected value \"\"\u001b[22m\n\n    at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts:158:41",
+                    "location": {
+                      "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts",
+                      "column": 41,
+                      "line": 158
+                    },
+                    "snippet": "  156 |   await page.getByLabel(\"本期開始\", { exact: true }).fill(\"2026-08-01\");\n  157 |   await page.getByRole(\"button\", { name: \"套用期間\", exact: true }).click();\n> 158 |   await expect(page.getByRole(\"alert\")).toContainText(/等長|重疊|期間/);\n      |                                         ^\n  159 |   await expect(contribution(page)).toContainText(\"255.00\");\n  160 |   await page.getByLabel(\"本期開始\", { exact: true }).fill(\"2026-08-02\");\n  161 |   await page.getByRole(\"button\", { name: \"套用期間\", exact: true }).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts",
+                        "column": 41,
+                        "line": 158
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('alert')\nExpected pattern: \u001b[32m/等長|重疊|期間/\u001b[39m\nError: strict mode violation: getByRole('alert') resolved to 2 elements:\n    1) <p role=\"alert\" class=\"alert error\">期間未套用：前後期須為有效日期、等長、不重疊，且落在資料涵蓋範圍內。目前仍顯示上次成功的範圍。</p> aka getByText('期間未套用：前後期須為有效日期、等長、不重疊，且落在資料涵蓋範圍內。目前仍顯示上次成功的範圍。')\n    2) <div role=\"alert\" aria-live=\"assertive\" id=\"__next-route-announcer__\"></div> aka locator('[id=\"__next-route-announcer__\"]')\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('alert') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('alert')\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"alert\" aria-live=\"assertive\" id=\"__next-route-announcer__\"></div>\u001b[22m\n\u001b[2m    - unexpected value \"\"\u001b[22m\n\n\n  156 |   await page.getByLabel(\"本期開始\", { exact: true }).fill(\"2026-08-01\");\n  157 |   await page.getByRole(\"button\", { name: \"套用期間\", exact: true }).click();\n> 158 |   await expect(page.getByRole(\"alert\")).toContainText(/等長|重疊|期間/);\n      |                                         ^\n  159 |   await expect(contribution(page)).toContainText(\"255.00\");\n  160 |   await page.getByLabel(\"本期開始\", { exact: true }).fill(\"2026-08-02\");\n  161 |   await page.getByRole(\"button\", { name: \"套用期間\", exact: true }).click();\n    at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts:158:41"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:30:24.433Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-無效期間不覆寫已套用的分析範圍-desktop/test-failed-1.png"
+                    },
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjI2LjMyNloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIueEoeaViOacn+mWk+S4jeimhuWvq+W3suWll+eUqOeahOWIhuaekOevhOWcjSIsCiAgInN0YXR1cyI6ICJmYWlsZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6aW5mbyIsCiAgICAgICJtZXNzYWdlIjogIiVjRG93bmxvYWQgdGhlIFJlYWN0IERldlRvb2xzIGZvciBhIGJldHRlciBkZXZlbG9wbWVudCBleHBlcmllbmNlOiBodHRwczovL3JlYWN0LmRldi9saW5rL3JlYWN0LWRldnRvb2xzIGZvbnQtd2VpZ2h0OmJvbGQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6bG9nIiwKICAgICAgIm1lc3NhZ2UiOiAiW0hNUl0gY29ubmVjdGVkIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9CiAgXQp9"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-無效期間不覆寫已套用的分析範圍-desktop/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/j-work/Desktop/profitlens-codex-starter/test-results/workspace-無效期間不覆寫已套用的分析範圍-desktop/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/workspace.spec.ts",
+                    "column": 41,
+                    "line": 158
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-f5231124a3d941d47bb9",
+          "file": "workspace.spec.ts",
+          "line": 154,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1640,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:30:26.748Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjI4LjQxNVoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1pc3NpbmctY29ncyDpoa/npLrlvoXoo5zos4fmlpnvvIzkv53nlZnmlLblhaXoiIfmnKrlj5flvbHpn7/pgJrot68iLAogICJzdGF0dXMiOiAicGFzc2VkIiwKICAiZXZlbnRzIjogWwogICAgewogICAgICAia2luZCI6ICJjb25zb2xlOmluZm8iLAogICAgICAibWVzc2FnZSI6ICIlY0Rvd25sb2FkIHRoZSBSZWFjdCBEZXZUb29scyBmb3IgYSBiZXR0ZXIgZGV2ZWxvcG1lbnQgZXhwZXJpZW5jZTogaHR0cHM6Ly9yZWFjdC5kZXYvbGluay9yZWFjdC1kZXZ0b29scyBmb250LXdlaWdodDpib2xkIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJjb25zb2xlOmxvZyIsCiAgICAgICJtZXNzYWdlIjogIltITVJdIGNvbm5lY3RlZCIsCiAgICAgICJ1cmwiOiAid2VicGFjay1pbnRlcm5hbDovLy8oYXBwLXBhZ2VzLWJyb3dzZXIpLy4vbm9kZV9tb2R1bGVzL25leHQvZGlzdC9uZXh0LWRldnRvb2xzL3NoYXJlZC9mb3J3YXJkLWxvZ3Mtc2hhcmVkLmpzIgogICAgfQogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-485b0aa2857d6c5e0a4a",
+          "file": "workspace.spec.ts",
+          "line": 169,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1534,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:30:28.508Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjI5Ljk2OFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIm1pc3NpbmctYWQg6aGv56S65b6F6KOc6LOH5paZ77yM5L+d55WZ5pS25YWl6IiH5pyq5Y+X5b2x6Z+/6YCa6LevIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTppbmZvIiwKICAgICAgIm1lc3NhZ2UiOiAiJWNEb3dubG9hZCB0aGUgUmVhY3QgRGV2VG9vbHMgZm9yIGEgYmV0dGVyIGRldmVsb3BtZW50IGV4cGVyaWVuY2U6IGh0dHBzOi8vcmVhY3QuZGV2L2xpbmsvcmVhY3QtZGV2dG9vbHMgZm9udC13ZWlnaHQ6Ym9sZCIsCiAgICAgICJ1cmwiOiAid2VicGFjay1pbnRlcm5hbDovLy8oYXBwLXBhZ2VzLWJyb3dzZXIpLy4vbm9kZV9tb2R1bGVzL25leHQvZGlzdC9uZXh0LWRldnRvb2xzL3NoYXJlZC9mb3J3YXJkLWxvZ3Mtc2hhcmVkLmpzIgogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTpsb2ciLAogICAgICAibWVzc2FnZSI6ICJbSE1SXSBjb25uZWN0ZWQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5a9fe7263c7abe5ed9e2",
+          "file": "workspace.spec.ts",
+          "line": 169,
+          "column": 3
+        },
+        {
+          "title": "blocking 資料集載入失敗仍保留先前成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1670,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:30:30.050Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjMxLjY1NloiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogImJsb2NraW5nIOizh+aWmembhui8ieWFpeWkseaVl+S7jeS/neeVmeWFiOWJjeaIkOWKn+izh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6aW5mbyIsCiAgICAgICJtZXNzYWdlIjogIiVjRG93bmxvYWQgdGhlIFJlYWN0IERldlRvb2xzIGZvciBhIGJldHRlciBkZXZlbG9wbWVudCBleHBlcmllbmNlOiBodHRwczovL3JlYWN0LmRldi9saW5rL3JlYWN0LWRldnRvb2xzIGZvbnQtd2VpZ2h0OmJvbGQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6bG9nIiwKICAgICAgIm1lc3NhZ2UiOiAiW0hNUl0gY29ubmVjdGVkIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5f9988a3c71d0190a1d4",
+          "file": "workspace.spec.ts",
+          "line": 180,
+          "column": 1
+        },
+        {
+          "title": "載入中與 HTTP 故障均有明確狀態",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1205,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:30:31.726Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjMyLjg5OFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIui8ieWFpeS4reiIhyBIVFRQIOaVhemanOWdh+acieaYjueiuueLgOaFiyIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6aW5mbyIsCiAgICAgICJtZXNzYWdlIjogIiVjRG93bmxvYWQgdGhlIFJlYWN0IERldlRvb2xzIGZvciBhIGJldHRlciBkZXZlbG9wbWVudCBleHBlcmllbmNlOiBodHRwczovL3JlYWN0LmRldi9saW5rL3JlYWN0LWRldnRvb2xzIGZvbnQtd2VpZ2h0OmJvbGQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6bG9nIiwKICAgICAgIm1lc3NhZ2UiOiAiW0hNUl0gY29ubmVjdGVkIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJjb25zb2xlOmVycm9yIiwKICAgICAgIm1lc3NhZ2UiOiAiRmFpbGVkIHRvIGxvYWQgcmVzb3VyY2U6IHRoZSBzZXJ2ZXIgcmVzcG9uZGVkIHdpdGggYSBzdGF0dXMgb2YgNTAzIChTZXJ2aWNlIFVuYXZhaWxhYmxlKSIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMDAwL2FwaS9kYXRhc2V0cy9kZW1vIgogICAgfQogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0c6a16e683f08a626fb4",
+          "file": "workspace.spec.ts",
+          "line": 191,
+          "column": 1
+        },
+        {
+          "title": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1492,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:30:32.937Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjM0LjM5OFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIui8g+aFoueahOiIiuizh+aWmeiri+axguS4jeWPr+imhuWvq+i8g+aWsOeahCBnb2xkZW4g6YG45pOHIiwKICAic3RhdHVzIjogInBhc3NlZCIsCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTppbmZvIiwKICAgICAgIm1lc3NhZ2UiOiAiJWNEb3dubG9hZCB0aGUgUmVhY3QgRGV2VG9vbHMgZm9yIGEgYmV0dGVyIGRldmVsb3BtZW50IGV4cGVyaWVuY2U6IGh0dHBzOi8vcmVhY3QuZGV2L2xpbmsvcmVhY3QtZGV2dG9vbHMgZm9udC13ZWlnaHQ6Ym9sZCIsCiAgICAgICJ1cmwiOiAid2VicGFjay1pbnRlcm5hbDovLy8oYXBwLXBhZ2VzLWJyb3dzZXIpLy4vbm9kZV9tb2R1bGVzL25leHQvZGlzdC9uZXh0LWRldnRvb2xzL3NoYXJlZC9mb3J3YXJkLWxvZ3Mtc2hhcmVkLmpzIgogICAgfSwKICAgIHsKICAgICAgImtpbmQiOiAiY29uc29sZTpsb2ciLAogICAgICAibWVzc2FnZSI6ICJbSE1SXSBjb25uZWN0ZWQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogInJlcXVlc3RmYWlsZWQiLAogICAgICAibWVzc2FnZSI6ICJuZXQ6OkVSUl9BQk9SVEVEIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMwMDAvYXBpL2RhdGFzZXRzL2RlbW8iCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-508dfe907c4ffbc78c7a",
+          "file": "workspace.spec.ts",
+          "line": 208,
+          "column": 1
+        },
+        {
+          "title": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3638,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T09:30:34.435Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-log",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZWNvcmRlZF9hdCI6ICIyMDI2LTA5LTMwVDA5OjMwOjM4LjAzMFoiLAogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0ZXN0IjogIua4heepuuiIh+mHjeaWsOaVtOeQhuWbnuWIsOepuueLgOaFi++8jOWPpuS4gOWAi+mggemdouaykuacieWFseeUqOizh+aWmSIsCiAgInN0YXR1cyI6ICJwYXNzZWQiLAogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6aW5mbyIsCiAgICAgICJtZXNzYWdlIjogIiVjRG93bmxvYWQgdGhlIFJlYWN0IERldlRvb2xzIGZvciBhIGJldHRlciBkZXZlbG9wbWVudCBleHBlcmllbmNlOiBodHRwczovL3JlYWN0LmRldi9saW5rL3JlYWN0LWRldnRvb2xzIGZvbnQtd2VpZ2h0OmJvbGQiLAogICAgICAidXJsIjogIndlYnBhY2staW50ZXJuYWw6Ly8vKGFwcC1wYWdlcy1icm93c2VyKS8uL25vZGVfbW9kdWxlcy9uZXh0L2Rpc3QvbmV4dC1kZXZ0b29scy9zaGFyZWQvZm9yd2FyZC1sb2dzLXNoYXJlZC5qcyIKICAgIH0sCiAgICB7CiAgICAgICJraW5kIjogImNvbnNvbGU6bG9nIiwKICAgICAgIm1lc3NhZ2UiOiAiW0hNUl0gY29ubmVjdGVkIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJjb25zb2xlOmluZm8iLAogICAgICAibWVzc2FnZSI6ICIlY0Rvd25sb2FkIHRoZSBSZWFjdCBEZXZUb29scyBmb3IgYSBiZXR0ZXIgZGV2ZWxvcG1lbnQgZXhwZXJpZW5jZTogaHR0cHM6Ly9yZWFjdC5kZXYvbGluay9yZWFjdC1kZXZ0b29scyBmb250LXdlaWdodDpib2xkIiwKICAgICAgInVybCI6ICJ3ZWJwYWNrLWludGVybmFsOi8vLyhhcHAtcGFnZXMtYnJvd3NlcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L25leHQtZGV2dG9vbHMvc2hhcmVkL2ZvcndhcmQtbG9ncy1zaGFyZWQuanMiCiAgICB9LAogICAgewogICAgICAia2luZCI6ICJjb25zb2xlOmxvZyIsCiAgICAgICJtZXNzYWdlIjogIltITVJdIGNvbm5lY3RlZCIsCiAgICAgICJ1cmwiOiAid2VicGFjay1pbnRlcm5hbDovLy8oYXBwLXBhZ2VzLWJyb3dzZXIpLy4vbm9kZV9tb2R1bGVzL25leHQvZGlzdC9uZXh0LWRldnRvb2xzL3NoYXJlZC9mb3J3YXJkLWxvZ3Mtc2hhcmVkLmpzIgogICAgfQogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-e310732f2ef831aa238c",
+          "file": "workspace.spec.ts",
+          "line": 246,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T09:28:38.214Z",
+    "duration": 119909.378,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

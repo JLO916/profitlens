@@ -1,0 +1,34 @@
+{
+  "previous": {
+    "gross_sales": "6876430.00",
+    "discounts": "619787.70",
+    "refunds": "115066.58",
+    "cogs_net": "3417444.10",
+    "platform_fees": "302364.50",
+    "payment_fees": "122831.57",
+    "fulfillment_costs": "71783.00",
+    "other_variable_costs": "30707.87",
+    "ad_spend": "327818.00",
+    "net_revenue": "6141575.72",
+    "gross_profit": "2724131.62",
+    "contribution_before_marketing": "2196444.68",
+    "contribution_after_marketing": "1868626.68"
+  },
+  "current": {
+    "gross_sales": "10038400.00",
+    "discounts": "1808152.80",
+    "refunds": "379589.30",
+    "cogs_net": "4992524.65",
+    "platform_fees": "555782.03",
+    "payment_fees": "157013.20",
+    "fulfillment_costs": "147574.00",
+    "other_variable_costs": "39253.29",
+    "ad_spend": "688718.00",
+    "net_revenue": "7850657.90",
+    "gross_profit": "2858133.25",
+    "contribution_before_marketing": "1958510.73",
+    "contribution_after_marketing": "1269792.73"
+  },
+  "status": "computed_synthetic_reference_not_real_results",
+  "revenue_up_contribution_down": true
+}

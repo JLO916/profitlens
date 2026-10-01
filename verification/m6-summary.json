@@ -1,0 +1,32 @@
+{
+  "unit_integration": {
+    "files": 22,
+    "passed": 615,
+    "evidence": "m6-tests.txt"
+  },
+  "e2e": {
+    "startTime": "2026-10-01T07:33:11.323Z",
+    "duration": 195924.163,
+    "expected": 186,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "typecheck": "pass",
+  "lint": "pass",
+  "build": "pass (initial standalone and post-fix E2E build)",
+  "fresh_install": "pass (offline fixed lockfile; not online vulnerability audit)",
+  "security_static_assets": 22,
+  "preserved_protected_files": 276,
+  "protected_violations": [],
+  "existing_files_deleted": [],
+  "manual_viewports": [
+    1440,
+    768,
+    390
+  ],
+  "manual_download_bytes": "not_run; CUA download wait timed out; E2E actual downloads passed",
+  "live_ai": "not_run",
+  "deployment": "not_run",
+  "next_work": "stop at M6"
+}

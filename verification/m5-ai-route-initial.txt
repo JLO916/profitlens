@@ -1,0 +1,37 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-route.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-route.test.ts (38 tests | 1 failed) 107ms
+     × accepts a valid JSON body at the inclusive 65536-byte boundary 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-route.test.ts > strict bounded request body and consent > accepts a valid JSON body at the inclusive 65536-byte boundary
+AssertionError: expected 415 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 415
+
+ ❯ tests/ai-route.test.ts:162:27
+    160|     const exact = original + " ".repeat(65_536 - new TextEncoder().enc…
+    161|     const result = await POST(request(exact, { headers: { "Content-Len…
+    162|     expect(result.status).toBe(200);
+       |                           ^
+    163|     expect(await result.json()).toMatchObject({ status: "live" });
+    164|     expect(generate).toHaveBeenCalledOnce();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 37 passed (38)
+   Start at  15:06:33
+   Duration  459ms (transform 94ms, setup 0ms, import 173ms, tests 107ms, environment 0ms)
+

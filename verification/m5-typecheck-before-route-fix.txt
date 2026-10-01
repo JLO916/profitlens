@@ -1,0 +1,7 @@
+
+> profitlens@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+tests/ai-route.test.ts(201,42): error TS7006: Parameter 'call' implicitly has an 'any' type.

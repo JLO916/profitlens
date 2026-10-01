@@ -1,0 +1,12 @@
+
+> profitlens@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+error TS2688: Cannot find type definition file for 'd3-array 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'd3-array 2'
+error TS2688: Cannot find type definition file for 'd3-scale 2'.
+  The file is in the program because:
+    Entry point for implicit type library 'd3-scale 2'

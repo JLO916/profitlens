@@ -1,0 +1,214 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/domain-acceptance.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/domain-acceptance.test.ts (18 tests | 16 failed) 23ms
+     × C01/C02 previous 每個原始金額與衍生金額均符合 expected.json 8ms
+     × C01/C02 current 每個原始金額與衍生金額均符合 expected.json 1ms
+     × C03/C05 多 SKU 先聚合再 join，通路費用只扣一次 1ms
+     × C04 九項 bridge 精確加回 -315.00 1ms
+     × C06 缺成本保留收入，SKU/通路/全體毛利與貢獻不得補零 4ms
+     × C08 缺廣告日，收入毛利仍可算，貢獻與 MER 未知 1ms
+     × C10 零廣告貢獻 705.00，MER 不是零或Infinity 1ms
+     × C11/C12/C14 純退款、負cogs依來源已入帳淨額，負營收仍保留金額 1ms
+     × C16 未確認銷售 coverage 不把沒有銷售列視為零 0ms
+     × 確認完整coverage而無銷售活動仍列入當日通路費用 0ms
+     × C17 比率依合計分子分母，不平均通路百分比 0ms
+     × C18 SKU/category 僅有商品毛利；通路貢獻入口拒絕商品篩選 0ms
+     × 對不同排序產生相同 totals，不改動輸入或跨次共用 dataset 0ms
+     × golden 找到營收上升貢獻下降及負貢獻通路，引用可解析的facts 0ms
+     × 缺值先產生補資料任務，不產生依賴未知貢獻的異常 1ms
+     × SKU只判商品毛利，不產生假SKU行銷後貢獻 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C01/C02 previous 每個原始金額與衍生金額均符合 expected.json
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C01/C02 current 每個原始金額與衍生金額均符合 expected.json
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:17:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C03/C05 多 SKU 先聚合再 join，通路費用只扣一次
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:24:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C04 九項 bridge 精確加回 -315.00
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:36:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C06 缺成本保留收入，SKU/通路/全體毛利與貢獻不得補零
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:46:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C08 缺廣告日，收入毛利仍可算，貢獻與 MER 未知
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:67:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C10 零廣告貢獻 705.00，MER 不是零或Infinity
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:76:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C11/C12/C14 純退款、負cogs依來源已入帳淨額，負營收仍保留金額
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:81:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C16 未確認銷售 coverage 不把沒有銷售列視為零
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:92:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > 確認完整coverage而無銷售活動仍列入當日通路費用
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:99:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C17 比率依合計分子分母，不平均通路百分比
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:105:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > C18 SKU/category 僅有商品毛利；通路貢獻入口拒絕商品篩選
+Error: M1 尚未實作
+ ❯ analyzeProducts src/domain/analysis.ts:3:93
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+       |                                                                                             ^
+      4|
+ ❯ tests/domain-acceptance.test.ts:111:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > M1 C01–C18 golden 與獨立固定答案 > 對不同排序產生相同 totals，不改動輸入或跨次共用 dataset
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:131:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > Deterministic rules / 事實來源與缺漏 > golden 找到營收上升貢獻下降及負貢獻通路，引用可解析的facts
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:143:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > Deterministic rules / 事實來源與缺漏 > 缺值先產生補資料任務，不產生依賴未知貢獻的異常
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:156:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  tests/domain-acceptance.test.ts > Deterministic rules / 事實來源與缺漏 > SKU只判商品毛利，不產生假SKU行銷後貢獻
+Error: M1 尚未實作
+ ❯ analyzeDataset src/domain/analysis.ts:2:94
+      1| import type { AnalysisFilters, Dataset, ProductFilters } from "./types…
+      2| export function analyzeDataset(_dataset: Dataset, _filters?: AnalysisF…
+       |                                                                                              ^
+      3| export function analyzeProducts(_dataset: Dataset, _filters: ProductFi…
+      4|
+ ❯ tests/domain-acceptance.test.ts:161:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  16 failed | 2 passed (18)
+   Start at  16:55:13
+   Duration  296ms (transform 53ms, setup 0ms, import 112ms, tests 23ms, environment 0ms)
+

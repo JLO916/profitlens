@@ -1,0 +1,145 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/m6-security-audit.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/m6-security-audit.test.ts (8 tests | 8 failed) 61ms
+     × does not let a valid cited value become a false period claim in a free field 20ms
+     × does not let a valid cited value become a false scope claim in a free field 3ms
+     × does not let a valid cited value become a false metric claim in a free field 2ms
+     × does not let a valid cited value become a false unmodelled net profit claim in a free field 2ms
+     × rejects requests for a user's 金鑰 even without the API prefix 3ms
+     × rejects requests for a user's 密鑰 even without the API prefix 1ms
+     × rejects an invented Chinese numeric budget without an explicit currency suffix 1ms
+     × does not show a live response that relabels contribution as company net profit 27ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/m6-security-audit.test.ts > M6 independent AI security regression audit (synthetic data; no network) > does not let a valid cited value become a false period claim in a free field
+ FAIL  tests/m6-security-audit.test.ts > M6 independent AI security regression audit (synthetic data; no network) > does not let a valid cited value become a false scope claim in a free field
+ FAIL  tests/m6-security-audit.test.ts > M6 independent AI security regression audit (synthetic data; no network) > does not let a valid cited value become a false metric claim in a free field
+ FAIL  tests/m6-security-audit.test.ts > M6 independent AI security regression audit (synthetic data; no network) > does not let a valid cited value become a false unmodelled net profit claim in a free field
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/m6-security-audit.test.ts:28:56
+     26|     expect(validateInsightOutput(output, snapshot).ok).toBe(true);
+     27|     output.insights[0].verification_metric = `${label} ${placeholder}。…
+     28|     expect(validateInsightOutput(output, snapshot).ok).toBe(false);
+       |                                                        ^
+     29|     expect(() => renderInsightOutput(output, snapshot)).toThrow("AI_GR…
+     30|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/m6-security-audit.test.ts > M6 independent AI security regression audit (synthetic data; no network) > rejects requests for a user's 金鑰 even without the API prefix
+ FAIL  tests/m6-security-audit.test.ts > M6 independent AI security regression audit (synthetic data; no network) > rejects requests for a user's 密鑰 even without the API prefix
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/m6-security-audit.test.ts:35:56
+     33|     const { snapshot, output } = currentContributionOutput();
+     34|     output.insights[0].recommended_action = `核對來源前，請提供${credential}。`;
+     35|     expect(validateInsightOutput(output, snapshot).ok).toBe(false);
+       |                                                        ^
+     36|     expect(() => renderInsightOutput(output, snapshot)).toThrow("AI_GR…
+     37|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/m6-security-audit.test.ts > M6 independent AI security regression audit (synthetic data; no network) > rejects an invented Chinese numeric budget without an explicit currency suffix
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/m6-security-audit.test.ts:42:56
+     40|     const { snapshot, output } = currentContributionOutput();
+     41|     output.insights[0].recommended_action = "核對後，廣告預算應調至三萬。";
+     42|     expect(validateInsightOutput(output, snapshot).ok).toBe(false);
+       |                                                        ^
+     43|     expect(() => renderInsightOutput(output, snapshot)).toThrow("AI_GR…
+     44|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/m6-security-audit.test.ts > M6 independent AI security regression audit (synthetic data; no network) > does not show a live response that relabels contribution as company net profit
+AssertionError: expected { status: 'live', …(3) } to deeply equal { status: 'fallback', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "reason": "SEMANTIC_ERROR",
+-   "status": "fallback",
++   "metadata": {
++     "attempts": 1,
++     "generated_at": "2026-10-01T00:00:00.000Z",
++     "latency_ms": 0,
++     "model": "m6-audit-mock-only",
++     "prompt_version": "profitlens-insights-v1",
++     "provider": "openai",
++     "usage": null,
++   },
++   "output": {
++     "insights": [
++       {
++         "additional_data_needed": [
++           "商品組合說明",
++         ],
++         "fact_ids": [
++           "F033",
++         ],
++         "hypotheses": [
++           "待驗證假說：可能與商品組合變動有關，仍待核對。",
++         ],
++         "limitations": [
++           "僅為待核對的說明。",
++         ],
++         "observation": "本期所選通路合計的行銷後貢獻為 TWD 255.00。",
++         "owner_role": "營運主管",
++         "recommended_action": "請核對商品組合與入帳資料。",
++         "stop_condition": "若資料口徑不一致，停止比較。",
++         "verification_metric": "本期公司淨利為 TWD 255.00。",
++       },
++     ],
++     "limitations": [
++       "行銷後貢獻不等於公司淨利。",
++     ],
++     "snapshot_id": "ai-v1:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:6935352028080c34d16eb21c0a207ac5c9397e42eca5c0fe4b200195f84fb2e9:1",
++   },
++   "snapshot_id": "ai-v1:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:6935352028080c34d16eb21c0a207ac5c9397e42eca5c0fe4b200195f84fb2e9:1",
++   "status": "live",
+  }
+
+ ❯ tests/m6-security-audit.test.ts:52:20
+     50|     const fetcher = vi.fn(async () => Response.json({ status: "live", …
+     51|     const result = await sendAiRequest({ payload: snapshot, revision: …
+     52|     expect(result).toEqual({ status: "fallback", reason: "SEMANTIC_ERR…
+       |                    ^
+     53|     expect(fetcher).toHaveBeenCalledOnce();
+     54|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed (8)
+   Start at  15:27:19
+   Duration  358ms (transform 82ms, setup 0ms, import 161ms, tests 61ms, environment 0ms)
+

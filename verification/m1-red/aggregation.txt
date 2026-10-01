@@ -1,0 +1,43 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/aggregation-boundaries.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/aggregation-boundaries.test.ts (3 tests | 2 failed) 21ms
+     × 拒絕重複通路，避免總計被加倍而通路小計不變 11ms
+     × 拒絕空通路、未知通路與coverage外的日期 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/aggregation-boundaries.test.ts > 聚合入口的範圍防護 > 拒絕重複通路，避免總計被加倍而通路小計不變
+AssertionError: expected [Function] to throw an error
+ ❯ tests/aggregation-boundaries.test.ts:9:83
+      7|   it("拒絕重複通路，避免總計被加倍而通路小計不變", () => {
+      8|     const ds = validateDataset(fixture()).dataset!;
+      9|     expect(() => aggregatePeriod(ds, ds.manifest.current_period, ["DTC…
+       |                                                                                   ^
+     10|   });
+     11|   it("拒絕空通路、未知通路與coverage外的日期", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/aggregation-boundaries.test.ts > 聚合入口的範圍防護 > 拒絕空通路、未知通路與coverage外的日期
+AssertionError: expected [Function] to throw an error
+ ❯ tests/aggregation-boundaries.test.ts:13:71
+     11|   it("拒絕空通路、未知通路與coverage外的日期", () => {
+     12|     const ds = validateDataset(fixture()).dataset!;
+     13|     expect(() => aggregatePeriod(ds, ds.manifest.current_period, [])).…
+       |                                                                       ^
+     14|     expect(() => aggregatePeriod(ds, ds.manifest.current_period, ["UNK…
+     15|     expect(() => aggregatePeriod(ds, { start: "2026-07-31", end: "2026…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  16:56:51
+   Duration  252ms (transform 47ms, setup 0ms, import 110ms, tests 21ms, environment 0ms)
+

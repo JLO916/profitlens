@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "synthetic-demo-12w-v1",
+  "source_type": "synthetic",
+  "currency": "TWD",
+  "timezone": "Asia/Taipei",
+  "data_as_of": "2026-08-24",
+  "coverage_start": "2026-06-01",
+  "coverage_end": "2026-08-23",
+  "channels": [
+    "DTC",
+    "MARKETPLACE"
+  ],
+  "previous_period": {
+    "start": "2026-06-01",
+    "end": "2026-07-12"
+  },
+  "current_period": {
+    "start": "2026-07-13",
+    "end": "2026-08-23"
+  },
+  "sales_coverage_confirmed": true,
+  "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+  "note": "All entities and values are synthetic. Not real business outcomes.",
+  "seed": 20260930,
+  "expected_shape": {
+    "days": 84,
+    "channels": 2,
+    "skus": 20,
+    "sales_rows": 3360,
+    "channel_cost_rows": 168,
+    "ad_spend_rows": 168
+  }
+}

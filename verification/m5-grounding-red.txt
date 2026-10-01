@@ -1,0 +1,517 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-grounding.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-grounding.test.ts (36 tests | 36 failed) 38ms
+     × emits exactly forty aggregate facts and preserves fixed golden values without recalculating 3ms
+     × keeps every real ID, source row and channel name only in detached local mappings 0ms
+     × binds revision and both hashes so identical data reload cannot reuse consent 0ms
+     × does not transmit imported injection strings in dataset, channel, SKU or sources 1ms
+     × rejects extra raw fields at all nested boundaries and rejects excess facts 0ms
+     × rejects malformed dates, raw channel names, duplicate IDs and numeric non-finite values 0ms
+     × does not allow caller to relabel unknown financial amounts as complete 0ms
+     × output schema follows the original required keys and rejects unknown properties 0ms
+     × E01 correct same-scope period comparison uses fixed exact golden values 0ms
+     × E02 known negative contribution remains negative in supported observation 0ms
+     × E03 missing costs require missing-data priority and do not display profit 0ms
+     × E04 zero-ad MER is N/A and never zero or Infinity 0ms
+     × E05 refund observations retain booked-date limitation without cohort claims 0ms
+     × E06 aggregate discount ratio is the core value, not averaged row ratios 0ms
+     × E07 SKU facts and SKU contribution never enter the minimal payload 0ms
+     × E08 hypotheses require explicit pending-verification labels and concrete checks 0ms
+     × E09 invented IDs fail even if output shape is valid 0ms
+     × E10 existing ID cannot request an unrelated or invented metric 0ms
+     × E11 correct ID with reversed periods is not a supported observation 0ms
+     × E12 correct ID with false channel scope is rejected 0ms
+     × E13 unrelated metrics or inverted direction cannot support a true-looking claim 0ms
+     × E14 observed correlation cannot become certain causation in any free field 0ms
+     × E15 literal money claims are rejected before display 0ms
+     × E16 literal ASCII and fullwidth percentages are rejected 0ms
+     × E17 Chinese-number gains and invented success confidence are rejected 0ms
+     × E18 placeholders may only refer to explicitly cited facts 0ms
+     × E19 nulls cannot be substituted with zero or inferred complete profitability 1ms
+     × E20 booked refund ratio cannot be called final cohort return rate 0ms
+     × E21 cannot invent SKU ad attribution or SKU marketing contribution 0ms
+     × E22 prompt injection and key/raw-file exfiltration instructions are rejected 0ms
+     × E23 guarantees or conditional results claimed as realized profit are rejected 0ms
+     × E24 wrong snapshot prevents old response from replacing fresh scope 0ms
+     × does not accept extra cited facts to launder unrelated evidence 0ms
+     × checks every prose field and top-level limitations, not only observations 0ms
+     × renders cited placeholders in free text and keeps exact numeric source immutable 0ms
+     × rejects malformed placeholders and unknown input snapshot rather than displaying raw tokens 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 36 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-grounding.test.ts > bounded anonymous AI snapshot > emits exactly forty aggregate facts and preserves fixed golden values without recalculating
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ tests/ai-grounding.test.ts:42:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > bounded anonymous AI snapshot > keeps every real ID, source row and channel name only in detached local mappings
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ tests/ai-grounding.test.ts:53:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > bounded anonymous AI snapshot > binds revision and both hashes so identical data reload cannot reuse consent
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:61:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > bounded anonymous AI snapshot > does not transmit imported injection strings in dataset, channel, SKU or sources
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ tests/ai-grounding.test.ts:77:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > bounded anonymous AI snapshot > rejects extra raw fields at all nested boundaries and rejects excess facts
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:82:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > bounded anonymous AI snapshot > rejects malformed dates, raw channel names, duplicate IDs and numeric non-finite values
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:89:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > bounded anonymous AI snapshot > does not allow caller to relabel unknown financial amounts as complete
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:99:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > bounded anonymous AI snapshot > output schema follows the original required keys and rejects unknown properties
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:105:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E01 correct same-scope period comparison uses fixed exact golden values
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:118:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E02 known negative contribution remains negative in supported observation
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:128:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E03 missing costs require missing-data priority and do not display profit
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:134:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E04 zero-ad MER is N/A and never zero or Infinity
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:143:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E05 refund observations retain booked-date limitation without cohort claims
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:152:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E06 aggregate discount ratio is the core value, not averaged row ratios
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:157:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E07 SKU facts and SKU contribution never enter the minimal payload
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ tests/ai-grounding.test.ts:163:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E08 hypotheses require explicit pending-verification labels and concrete checks
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:168:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E09 invented IDs fail even if output shape is valid
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:177:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E10 existing ID cannot request an unrelated or invented metric
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:180:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E11 correct ID with reversed periods is not a supported observation
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:185:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E12 correct ID with false channel scope is rejected
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:188:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E13 unrelated metrics or inverted direction cannot support a true-looking claim
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:191:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E14 observed correlation cannot become certain causation in any free field
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:194:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E15 literal money claims are rejected before display
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:197:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E16 literal ASCII and fullwidth percentages are rejected
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:201:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E17 Chinese-number gains and invented success confidence are rejected
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:206:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E18 placeholders may only refer to explicitly cited facts
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:210:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E19 nulls cannot be substituted with zero or inferred complete profitability
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:214:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E20 booked refund ratio cannot be called final cohort return rate
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:218:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E21 cannot invent SKU ad attribution or SKU marketing contribution
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:222:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E22 prompt injection and key/raw-file exfiltration instructions are rejected
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:226:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E23 guarantees or conditional results claimed as realized profit are rejected
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:231:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > M5 semantic evaluation E01–E24 (mock validation, not live model quality) > E24 wrong snapshot prevents old response from replacing fresh scope
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:235:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > rendering and grounding defensive boundaries > does not accept extra cited facts to launder unrelated evidence
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:241:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > rendering and grounding defensive boundaries > checks every prose field and top-level limitations, not only observations
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:245:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > rendering and grounding defensive boundaries > renders cited placeholders in free text and keeps exact numeric source immutable
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:252:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/36]⎯
+
+ FAIL  tests/ai-grounding.test.ts > rendering and grounding defensive boundaries > rejects malformed placeholders and unknown input snapshot rather than displaying raw tokens
+Error: M5 尚未實作
+ ❯ prepareAiSnapshot src/application/ai-snapshot.ts:5:140
+      3| import type { WorkspaceSnapshot } from "./workspace";
+      4| export interface PreparedAiSnapshot { payload: AiSnapshot; localFacts:…
+      5| export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revisio…
+       |                                                                                                                                            ^
+      6|
+ ❯ payload tests/ai-grounding.test.ts:18:58
+ ❯ tests/ai-grounding.test.ts:260:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/36]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  36 failed (36)
+   Start at  14:55:34
+   Duration  348ms (transform 76ms, setup 0ms, import 128ms, tests 38ms, environment 0ms)
+

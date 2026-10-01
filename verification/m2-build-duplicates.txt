@@ -1,0 +1,15 @@
+
+> profitlens@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.3.7 (webpack)
+✓ Running next.config.ts took 13ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1193ms
+  Running TypeScript ...
+.next/dev/types/cache-life.d 2.ts(3,1): error TS6200: Definitions of the following identifiers conflict with those in another file: unstable_cache, updateTag, revalidateTag, revalidatePath, refresh, unstable_noStore, io, cacheTag, unstable_cacheTag, unstable_cacheLife
+.next/dev/types/routes.d 2.ts(38,5): error TS2717: Subsequent property declarations must have the same type.  Property 'params' must be of type 'Promise<ParamMap[AppRoute]>', but here has type 'Promise<ParamMap[AppRoute]>'.
+.next/dev/types/routes.d 2.ts(51,8): error TS2300: Duplicate identifier 'LayoutProps'.
+Failed to type check.
+
