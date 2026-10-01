@@ -95,12 +95,29 @@ function csvRecords(input: string): Record<string, string>[] {
   });
 }
 
-test.beforeEach(async ({ page }) => { await page.goto("/"); });
+const expectedBeforeUnload = new WeakSet<Page>();
+const dialogEvents = new WeakMap<Page, string[]>();
+test.beforeEach(async ({ page }) => {
+  const events: string[] = [];
+  dialogEvents.set(page, events);
+  page.on("dialog", dialog => {
+    if (dialog.type() === "beforeunload" && expectedBeforeUnload.delete(page)) {
+      events.push("unsaved-changes-warning:beforeunload");
+      void dialog.accept();
+    } else {
+      events.push(`dialog:${dialog.type()}`);
+      void dialog.dismiss();
+    }
+  });
+  await page.goto("/");
+});
+test.afterEach(async ({ page }) => {
+  expect((dialogEvents.get(page) ?? []).filter(event => event !== "unsaved-changes-warning:beforeunload"), "除明確驗證的未保存離頁提醒外，不可執行輸入文字或出現其他 JavaScript 對話").toEqual([]);
+});
 
 test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.name));
-  page.on("dialog", dialog => { errors.push(`dialog:${dialog.type()}`); void dialog.dismiss(); });
   await importDataset(page, alternative);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
@@ -122,7 +139,7 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   const fields = { 問題: "營收上升但行銷後貢獻下降，需核對成本", 具體動作: "核對履約計價條款並設計有限範圍測試", 負責角色: "營運主管", 驗證指標: "同範圍履約費用與行銷後貢獻", 期限: "2026-10-15", 停止條件: "若服務品質下降即停止測試", 所需額外資料: "物流實際報價與服務品質資料" };
   for (const [label, value] of Object.entries(fields)) await action.getByLabel(label, { exact: true }).fill(value);
   const evidence = action.getByLabel("本快照證據（可複選）", { exact: true });
-  const factId = await evidence.locator("option").filter({ hasText: /2026-09-03–2026-09-04 · 行銷後貢獻 · DTC · 40\.00/ }).filter({ hasText: /"channel"/ }).getAttribute("value");
+  const factId = await evidence.locator("option").filter({ hasText: /2026-09-03–2026-09-04 · 行銷後貢獻 · DTC（通路） · 40\.00/ }).getAttribute("value");
   expect(factId).toBeTruthy();
   await evidence.selectOption(factId!);
   await action.getByRole("button", { name: "確認行動與證據", exact: true }).click();
@@ -160,9 +177,9 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   await expect(page.locator("img[src='x']")).toHaveCount(0);
   expect(errors).toEqual([]);
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/m6-${testInfo.project.name}-complete-flow.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-${testInfo.project.name}-complete-flow.png`), fullPage: true });
   await testInfo.attach("m6-synthetic-decision-json", { body: JSON.stringify(document, null, 2), contentType: "application/json" });
-  await appendFile(resolve("verification/m6-ui-flow-meta.jsonl"), `${JSON.stringify({ project: testInfo.project.name, status: "passed", synthetic_only: true, dataset_id: document.session.dataset_id, baseline: "40.00", scenario: "44.00", delta: "4.00", exports: ["JSON", "CSV", "Markdown"], browser_errors: errors })}\n`);
+  await appendFile(resolve("verification/manager-batch3-regression-regression-m6-ui-flow-meta.jsonl"), `${JSON.stringify({ project: testInfo.project.name, status: "passed", synthetic_only: true, dataset_id: document.session.dataset_id, baseline: "40.00", scenario: "44.00", delta: "4.00", exports: ["JSON", "CSV", "Markdown"], browser_errors: errors })}\n`);
 });
 
 test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方", async ({ page, browser }, testInfo) => {
@@ -189,16 +206,19 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
     expect(second.scenarios[0].name).toBe("乙分頁獨立假設");
     expect(await decision(page)).toEqual(first);
     await other.getByRole("button", { name: "清空工作區", exact: true }).click();
+  await other.getByRole("button", { name: "捨棄未保存變更並清空", exact: true }).click();
     await expect(status(other)).toContainText("尚未載入資料");
     expect(await decision(page)).toEqual(first);
     await importDataset(other, golden);
+    expectedBeforeUnload.add(page);
     await page.reload();
+    expect(dialogEvents.get(page)).toEqual(["unsaved-changes-warning:beforeunload"]);
     await expect(status(page)).toContainText("尚未載入資料");
     await expect(page.getByTestId("decision-workbench")).toHaveCount(0);
     await expect(kpi(other, "contribution_after_marketing")).toHaveText("255.00");
     expect(await otherContext.storageState()).toEqual({ cookies: [], origins: [] });
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/m6-context-isolation-meta.jsonl"), `${JSON.stringify({ project: testInfo.project.name, status: "passed", independent_contexts: 2, synthetic_only: true, mutual_update_clear_reload_isolation: true })}\n`);
+    await appendFile(resolve("verification/manager-batch3-regression-regression-m6-context-isolation-meta.jsonl"), `${JSON.stringify({ project: testInfo.project.name, status: "passed", independent_contexts: 2, synthetic_only: true, mutual_update_clear_reload_isolation: true, dialog_events: dialogEvents.get(page) })}\n`);
   } finally { await otherContext.close(); }
 });
 
@@ -224,7 +244,7 @@ test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留�
   expect(await decision(page)).toEqual(before);
   await importDataset(page, alternative);
   await page.getByRole("button", { name: "情境試算", exact: true }).click();
-  await expect(page.getByTestId("decision-freshness")).toContainText("情境與行動已過期");
+  await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
   const historical = await decision(page);
   expect(historical.status).toBe("stale");
   expect(historical.session.dataset_hash).toBe(before.session.dataset_hash);

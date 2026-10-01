@@ -1,0 +1,79 @@
+{
+  "recorded_at": "2026-10-01T11:16:23.002152+00:00",
+  "records": 246,
+  "records_by_project": {
+    "desktop": 82,
+    "tablet": 82,
+    "mobile": 82
+  },
+  "event_kind_counts": {
+    "insights-request": 153,
+    "unsaved-changes-warning": 9,
+    "console:error": 3,
+    "requestfailed": 3
+  },
+  "nonempty_error_arrays": [],
+  "expected_negative_test_events": [
+    {
+      "file": "verification/release-20261001-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+      "project": "desktop",
+      "test": "載入中與 HTTP 故障均有明確狀態",
+      "event": {
+        "kind": "console:error",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "url": "http://127.0.0.1:3100/api/datasets/demo"
+      }
+    },
+    {
+      "file": "verification/release-20261001-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+      "project": "desktop",
+      "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+      "event": {
+        "kind": "requestfailed",
+        "message": "net::ERR_ABORTED",
+        "url": "http://127.0.0.1:3100/api/datasets/demo"
+      }
+    },
+    {
+      "file": "verification/release-20261001-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+      "project": "tablet",
+      "test": "載入中與 HTTP 故障均有明確狀態",
+      "event": {
+        "kind": "console:error",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "url": "http://127.0.0.1:3100/api/datasets/demo"
+      }
+    },
+    {
+      "file": "verification/release-20261001-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+      "project": "tablet",
+      "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+      "event": {
+        "kind": "requestfailed",
+        "message": "net::ERR_ABORTED",
+        "url": "http://127.0.0.1:3100/api/datasets/demo"
+      }
+    },
+    {
+      "file": "verification/release-20261001-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+      "project": "mobile",
+      "test": "載入中與 HTTP 故障均有明確狀態",
+      "event": {
+        "kind": "console:error",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "url": "http://127.0.0.1:3100/api/datasets/demo"
+      }
+    },
+    {
+      "file": "verification/release-20261001-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+      "project": "mobile",
+      "test": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+      "event": {
+        "kind": "requestfailed",
+        "message": "net::ERR_ABORTED",
+        "url": "http://127.0.0.1:3100/api/datasets/demo"
+      }
+    }
+  ],
+  "note": "Console 503 from explicit HTTP failure test; request abort from stale response test. All assertions pass. Recorded events are not claimed to be zero."
+}

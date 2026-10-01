@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/manager-language.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  18:07:26
+   Duration  545ms (transform 137ms, setup 0ms, import 269ms, tests 49ms, environment 0ms)
+

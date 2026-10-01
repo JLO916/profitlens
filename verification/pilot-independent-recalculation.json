@@ -1,0 +1,453 @@
+{
+  "report_type": "independent_synthetic_pilot_recalculation",
+  "classification": "合成測試資料；非真實資料驗收、非商業成效證據",
+  "source_directory": "tests/fixtures/alternative",
+  "method": {
+    "runtime": "python3 standard library csv/json/hashlib/datetime/decimal",
+    "money": "CSV 原始字串轉 Decimal；scenario precision=60；最後 round(2, HALF_UP)，有號零正規化",
+    "production_imports": false,
+    "expected_written": false,
+    "expected_read_after_calculation": true,
+    "aggregation": "先將16 SKU列彙總為8個日通路，再分別只取1列通路費用及1列廣告；不按SKU重複扣費。"
+  },
+  "input_hashes": {
+    "manifest.json": "7be898255bb6dce4eda33c5fcd17f30575c97fc35071c226539ff0b000087a78",
+    "sales_daily.csv": "6c778480071bb2501e5313bb918ab18b1e663ae807b76f15fb1c0cafbe93fba5",
+    "channel_costs_daily.csv": "d9911ad72276430fce5296479a3ffde8f8eb5a761a478f590b2d962e9c05119a",
+    "ad_spend_daily.csv": "7bc34b7f8f71fb5fb9ef1f2578aa5af6592837576dc6b70b06bf7ff291c1cae5",
+    "expected.json": "4abd132547077eea4bef17c5c8172f793d236f57e5cccb9ec5f04a706445a98a"
+  },
+  "row_counts": {
+    "sales_daily.csv": 16,
+    "channel_costs_daily.csv": 8,
+    "ad_spend_daily.csv": 8
+  },
+  "first_attempt": {
+    "status": "fail",
+    "reason": "獨立查核程式字串格式的 -0.00 與固定答案0.00不同；實際金額皆相等。",
+    "resolution": "只正規化 Python Decimal 的有號零顯示，未改 production 或固定答案。"
+  },
+  "rerun": {
+    "status": "pass",
+    "matched_expected_leaf_values": 26,
+    "computed": {
+      "previous": {
+        "net_revenue": "464.00",
+        "gross_profit": "244.00",
+        "contribution_before_marketing": "200.00",
+        "contribution_after_marketing": "140.00"
+      },
+      "current": {
+        "net_revenue": "600.00",
+        "gross_profit": "260.00",
+        "contribution_before_marketing": "200.00",
+        "contribution_after_marketing": "10.00"
+      },
+      "current_channels": {
+        "DTC": {
+          "net_revenue": "400.00",
+          "contribution_after_marketing": "40.00"
+        },
+        "MARKETPLACE": {
+          "net_revenue": "200.00",
+          "contribution_after_marketing": "-30.00"
+        }
+      },
+      "bridge": {
+        "gross_sales": "340.00",
+        "discounts": "-4.00",
+        "refunds": "-200.00",
+        "cogs_net": "-120.00",
+        "platform_fees": "0.00",
+        "payment_fees": "-2.00",
+        "fulfillment_costs": "-14.00",
+        "other_variable_costs": "0.00",
+        "ad_spend": "-130.00",
+        "sum": "-130.00"
+      },
+      "negative_product": {
+        "channel": "MARKETPLACE",
+        "sku": "-TEST()",
+        "net_revenue": "-40.00",
+        "gross_profit": "-100.00"
+      }
+    }
+  },
+  "periods": {
+    "previous": {
+      "dates": {
+        "start": "2026-09-01",
+        "end": "2026-09-02"
+      },
+      "calendar_days": 2,
+      "amounts": {
+        "gross_sales": "500.00",
+        "discounts": "36.00",
+        "refunds": "0.00",
+        "cogs_net": "220.00",
+        "platform_fees": "26.00",
+        "payment_fees": "8.00",
+        "fulfillment_costs": "10.00",
+        "other_variable_costs": "0.00",
+        "ad_spend": "60.00",
+        "net_revenue": "464.00",
+        "gross_profit": "244.00",
+        "contribution_before_marketing": "200.00",
+        "contribution_after_marketing": "140.00"
+      },
+      "channels": {
+        "DTC": {
+          "gross_sales": "300.00",
+          "discounts": "20.00",
+          "refunds": "0.00",
+          "cogs_net": "120.00",
+          "platform_fees": "10.00",
+          "payment_fees": "4.00",
+          "fulfillment_costs": "6.00",
+          "other_variable_costs": "0.00",
+          "ad_spend": "40.00",
+          "net_revenue": "280.00",
+          "gross_profit": "160.00",
+          "contribution_before_marketing": "140.00",
+          "contribution_after_marketing": "100.00"
+        },
+        "MARKETPLACE": {
+          "gross_sales": "200.00",
+          "discounts": "16.00",
+          "refunds": "0.00",
+          "cogs_net": "100.00",
+          "platform_fees": "16.00",
+          "payment_fees": "4.00",
+          "fulfillment_costs": "4.00",
+          "other_variable_costs": "0.00",
+          "ad_spend": "20.00",
+          "net_revenue": "184.00",
+          "gross_profit": "84.00",
+          "contribution_before_marketing": "60.00",
+          "contribution_after_marketing": "40.00"
+        }
+      }
+    },
+    "current": {
+      "dates": {
+        "start": "2026-09-03",
+        "end": "2026-09-04"
+      },
+      "calendar_days": 2,
+      "amounts": {
+        "gross_sales": "840.00",
+        "discounts": "40.00",
+        "refunds": "200.00",
+        "cogs_net": "340.00",
+        "platform_fees": "26.00",
+        "payment_fees": "10.00",
+        "fulfillment_costs": "24.00",
+        "other_variable_costs": "0.00",
+        "ad_spend": "190.00",
+        "net_revenue": "600.00",
+        "gross_profit": "260.00",
+        "contribution_before_marketing": "200.00",
+        "contribution_after_marketing": "10.00"
+      },
+      "channels": {
+        "DTC": {
+          "gross_sales": "440.00",
+          "discounts": "40.00",
+          "refunds": "0.00",
+          "cogs_net": "200.00",
+          "platform_fees": "10.00",
+          "payment_fees": "6.00",
+          "fulfillment_costs": "14.00",
+          "other_variable_costs": "0.00",
+          "ad_spend": "130.00",
+          "net_revenue": "400.00",
+          "gross_profit": "200.00",
+          "contribution_before_marketing": "170.00",
+          "contribution_after_marketing": "40.00"
+        },
+        "MARKETPLACE": {
+          "gross_sales": "400.00",
+          "discounts": "0.00",
+          "refunds": "200.00",
+          "cogs_net": "140.00",
+          "platform_fees": "16.00",
+          "payment_fees": "4.00",
+          "fulfillment_costs": "10.00",
+          "other_variable_costs": "0.00",
+          "ad_spend": "60.00",
+          "net_revenue": "200.00",
+          "gross_profit": "60.00",
+          "contribution_before_marketing": "30.00",
+          "contribution_after_marketing": "-30.00"
+        }
+      }
+    }
+  },
+  "daily_trace": [
+    {
+      "date": "2026-09-01",
+      "channel": "DTC",
+      "gross_sales": "150.00",
+      "discounts": "10.00",
+      "refunds": "0.00",
+      "cogs_net": "60.00",
+      "platform_fees": "5.00",
+      "payment_fees": "2.00",
+      "fulfillment_costs": "3.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "20.00",
+      "net_revenue": "140.00",
+      "gross_profit": "80.00",
+      "contribution_before_marketing": "70.00",
+      "contribution_after_marketing": "50.00"
+    },
+    {
+      "date": "2026-09-01",
+      "channel": "MARKETPLACE",
+      "gross_sales": "100.00",
+      "discounts": "8.00",
+      "refunds": "0.00",
+      "cogs_net": "50.00",
+      "platform_fees": "8.00",
+      "payment_fees": "2.00",
+      "fulfillment_costs": "2.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "10.00",
+      "net_revenue": "92.00",
+      "gross_profit": "42.00",
+      "contribution_before_marketing": "30.00",
+      "contribution_after_marketing": "20.00"
+    },
+    {
+      "date": "2026-09-02",
+      "channel": "DTC",
+      "gross_sales": "150.00",
+      "discounts": "10.00",
+      "refunds": "0.00",
+      "cogs_net": "60.00",
+      "platform_fees": "5.00",
+      "payment_fees": "2.00",
+      "fulfillment_costs": "3.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "20.00",
+      "net_revenue": "140.00",
+      "gross_profit": "80.00",
+      "contribution_before_marketing": "70.00",
+      "contribution_after_marketing": "50.00"
+    },
+    {
+      "date": "2026-09-02",
+      "channel": "MARKETPLACE",
+      "gross_sales": "100.00",
+      "discounts": "8.00",
+      "refunds": "0.00",
+      "cogs_net": "50.00",
+      "platform_fees": "8.00",
+      "payment_fees": "2.00",
+      "fulfillment_costs": "2.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "10.00",
+      "net_revenue": "92.00",
+      "gross_profit": "42.00",
+      "contribution_before_marketing": "30.00",
+      "contribution_after_marketing": "20.00"
+    },
+    {
+      "date": "2026-09-03",
+      "channel": "DTC",
+      "gross_sales": "220.00",
+      "discounts": "20.00",
+      "refunds": "0.00",
+      "cogs_net": "100.00",
+      "platform_fees": "5.00",
+      "payment_fees": "3.00",
+      "fulfillment_costs": "7.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "65.00",
+      "net_revenue": "200.00",
+      "gross_profit": "100.00",
+      "contribution_before_marketing": "85.00",
+      "contribution_after_marketing": "20.00"
+    },
+    {
+      "date": "2026-09-03",
+      "channel": "MARKETPLACE",
+      "gross_sales": "200.00",
+      "discounts": "0.00",
+      "refunds": "100.00",
+      "cogs_net": "70.00",
+      "platform_fees": "8.00",
+      "payment_fees": "2.00",
+      "fulfillment_costs": "5.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "30.00",
+      "net_revenue": "100.00",
+      "gross_profit": "30.00",
+      "contribution_before_marketing": "15.00",
+      "contribution_after_marketing": "-15.00"
+    },
+    {
+      "date": "2026-09-04",
+      "channel": "DTC",
+      "gross_sales": "220.00",
+      "discounts": "20.00",
+      "refunds": "0.00",
+      "cogs_net": "100.00",
+      "platform_fees": "5.00",
+      "payment_fees": "3.00",
+      "fulfillment_costs": "7.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "65.00",
+      "net_revenue": "200.00",
+      "gross_profit": "100.00",
+      "contribution_before_marketing": "85.00",
+      "contribution_after_marketing": "20.00"
+    },
+    {
+      "date": "2026-09-04",
+      "channel": "MARKETPLACE",
+      "gross_sales": "200.00",
+      "discounts": "0.00",
+      "refunds": "100.00",
+      "cogs_net": "70.00",
+      "platform_fees": "8.00",
+      "payment_fees": "2.00",
+      "fulfillment_costs": "5.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "30.00",
+      "net_revenue": "100.00",
+      "gross_profit": "30.00",
+      "contribution_before_marketing": "15.00",
+      "contribution_after_marketing": "-15.00"
+    }
+  ],
+  "scenario": {
+    "scope": "DTC",
+    "period": {
+      "start": "2026-09-03",
+      "end": "2026-09-04"
+    },
+    "baseline_contribution": "40.00",
+    "inputs": {
+      "volume_relative_percent": "0",
+      "discount_percentage_points": "0",
+      "fulfillment_unit_relative_percent": "-50",
+      "ad_spend_relative_percent": "0",
+      "one_time_investment": "3.00"
+    },
+    "calculated_components": {
+      "gross_sales": "440.00",
+      "discounts": "40.00",
+      "refunds": "0.00",
+      "net_revenue": "400.00",
+      "cogs_net": "200.00",
+      "platform_fees": "10.00",
+      "payment_fees": "6.00",
+      "fulfillment_costs": "7.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "130.00",
+      "one_time_investment": "3.00"
+    },
+    "conditional_contribution": "44.00",
+    "conditional_delta": "4.00",
+    "zero_changes_and_zero_investment": "40.00",
+    "fulfillment_minus_50_and_zero_investment": "47.00",
+    "arithmetic": "400.00 - 200.00 - 10.00 - 6.00 - 7.00 - 0.00 - 130.00 - 3.00 = 44.00",
+    "interpretation": "銷量明填0、組合/平均牌價/入帳退款比/每售出量淨成本/有效平台與金流費率固定；其他費隨量。條件試算，不是預測。"
+  },
+  "checks": [
+    {
+      "id": "fixed-expected",
+      "status": "pass",
+      "detail": "26個leaf值全相等（含channel及sku字串）"
+    },
+    {
+      "id": "join",
+      "status": "pass",
+      "detail": "8個日通路的費用各只計一次"
+    },
+    {
+      "id": "refund-cogs",
+      "status": "pass",
+      "detail": "-TEST() 本期退款200、來源淨成本60；N=-40、GP=-100；無額外成本回沖"
+    },
+    {
+      "id": "bridge",
+      "status": "pass",
+      "detail": "340-4-200-120-0-2-14-0-130=-130；10-140=-130"
+    },
+    {
+      "id": "scenario",
+      "status": "pass",
+      "detail": "零变動40；F -50%、v0、其他0、K3為44；相同變化K0為47"
+    },
+    {
+      "id": "real-data",
+      "status": "not_run",
+      "detail": "尚未提供去識別化真實資料；UI的user_provided標記不把合成資料轉為真實商業證據"
+    }
+  ],
+  "real_data_preparation": {
+    "sales": [
+      "date",
+      "channel",
+      "sku",
+      "category",
+      "units_sold",
+      "gross_sales",
+      "discounts",
+      "refunds",
+      "cogs_net",
+      "currency"
+    ],
+    "channel_costs": [
+      "date",
+      "channel",
+      "platform_fees",
+      "payment_fees",
+      "fulfillment_costs",
+      "other_variable_costs",
+      "currency"
+    ],
+    "ad_spend": [
+      "date",
+      "channel",
+      "ad_spend",
+      "currency"
+    ],
+    "manifest": [
+      "schema_version=1.0",
+      "dataset_id",
+      "source_type",
+      "currency=TWD",
+      "timezone=Asia/Taipei",
+      "data_as_of",
+      "coverage_start",
+      "coverage_end",
+      "channels",
+      "previous_period.start/end",
+      "current_period.start/end",
+      "sales_coverage_confirmed",
+      "amount_basis",
+      "comparison_mode 若為calendar_months"
+    ],
+    "requirements": [
+      "UTF-8、標準欄位、YYYY-MM-DD、金額最多兩位且不含千分位；空白不是0。",
+      "依商業入帳日、TWD未稅；排除消費者運費收入、固定費及所得稅。",
+      "銷售日×通路×SKU；費用及廣告日×通路完整覆蓋，無費用明填0，不補未知成本。",
+      "cogs_net取來源已入帳淨額；不得用退款推算成本沖回。",
+      "跨通路廣告須由資料提供者以可揭露可靠依據歸屬，不由產品偷按收入分攤。",
+      "確認前後期、coverage、截至日及完整性；不得只依列中出現的日期推論完整。",
+      "本機資料夾置repo/public以外，先移除客戶姓名、Email、電話、地址及訂單個資；不傳遠端、AI或部署。"
+    ]
+  },
+  "do_not_infer": [
+    "合成結果不是實際商業成效或公司淨利。",
+    "橋接只是金額拆解，不代表廣告或其他費用與收入的因果效應。",
+    "退款金額比不是件數退貨率或同批訂單最終退款率。",
+    "無客戶、流量與唯一訂單鍵，不推導CAC/CVR/AOV/LTV。",
+    "SKU只呈商品毛利，不分攤通路費用或廣告來產生SKU貢獻。",
+    "資料提供者完整性勾選不是對平台或總帳的獨立查核。",
+    "條件貢獻44.00不是收入預測、成功機率或效益保證。"
+  ]
+}

@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/period-comparison.test.ts tests/domain-acceptance.test.ts tests/validation.test.ts tests/workspace.test.ts tests/export.test.ts tests/decision.test.ts tests/ai-grounding.test.ts tests/ai-client.test.ts tests/ai-service.test.ts tests/ai-route.test.ts tests/ai-provider.test.ts tests/m6-security-audit.test.ts tests/analysis-limits.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  13 passed (13)
+      Tests  373 passed (373)
+   Start at  16:47:23
+   Duration  3.93s (transform 2.59s, setup 0ms, import 7.02s, tests 10.59s, environment 1ms)
+

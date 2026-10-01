@@ -1,0 +1,99 @@
+{
+  "at": "2026-10-01T09:56:44.916802+00:00",
+  "url": "http://127.0.0.1:3200/",
+  "browser": "Codex in-app browser",
+  "build_id": "LSy2XrLTPaOxDuUpKF9iP",
+  "data": "Only synthetic Golden and demo fixtures; temporary agent-created QA drafts were cleared at end.",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "document_scroll_width": 1425
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "document_scroll_width": 753
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "document_scroll_width": 375
+    }
+  ],
+  "checks": [
+    {
+      "status": "pass",
+      "case": "Golden summary",
+      "observed": "Revenue delta +220.00; CM delta -315.00; MARKETPLACE 170.00 to -15.00"
+    },
+    {
+      "status": "pass",
+      "case": "Summary to action",
+      "observed": "REV_UP_CM_DOWN draft with four matching evidence facts; filled seven fields and manually confirmed; confirmation not execution"
+    },
+    {
+      "status": "pass",
+      "case": "Pin ordering",
+      "observed": "Second blank synthetic draft pinned and moved to position one; prior diagnostic card remains position two"
+    },
+    {
+      "status": "pass",
+      "case": "Scope change and historical evidence",
+      "observed": "Changed all channels to DTC. Old actions stale. Historical CM255 dialog retains DTC and MARKETPLACE original 8 source rows, not DTC current270"
+    },
+    {
+      "status": "pass",
+      "case": "Scenario and sensitivity",
+      "observed": "DTC baseline270, fulfillment -10%, volume0 and other0 gives284/+14. Explicit -3,-2.5,0 volume assumptions give267.38,270.15,284.00; maintain-baseline threshold approximately -2.527075812274%"
+    },
+    {
+      "status": "pass",
+      "case": "Summary selected scenario",
+      "observed": "Selected scenario shows284/+14 and historical action owner, deadline and stop condition. After demo switch old plan is stale and cannot be selected as current"
+    },
+    {
+      "status": "pass",
+      "case": "Mobile keyboard and product difference",
+      "observed": "ArrowRight moves horizontally within product table. Enter opens DTC B GP delta -50 =200-250; only sales rows3,7. Escape closes evidence."
+    },
+    {
+      "status": "pass",
+      "case": "Demo changes summary",
+      "observed": "Revenue +1709082.18; CM -598833.95; current CM1269792.73; values differ from Golden"
+    },
+    {
+      "status": "pass",
+      "case": "Layout and logs",
+      "observed": "Inspected screenshots at1440/768/390; no document horizontal overflow; browser warn/error entries empty"
+    },
+    {
+      "status": "pass",
+      "case": "Print PDF visual",
+      "observed": "Playwright real print-media export one-page Golden PDF rendered with pdftoppm and visually inspected; no clipped text. OS print dialog mocked only."
+    },
+    {
+      "status": "not_run",
+      "case": "Manual download bytes",
+      "observed": "Clicked manager Markdown download; CUA download event timed out after10000ms, no path/readback. Automated E2E actual downloads and content assertions passed separately."
+    },
+    {
+      "status": "not_run",
+      "case": "Manual three-CSV import and backup roundtrip this batch",
+      "observed": "Covered in final three-size E2E; not repeated via CUA in this batch."
+    },
+    {
+      "status": "not_run",
+      "case": "Native OS print / physical devices / Safari / screen reader / live AI",
+      "observed": "Out of this local Chromium and mock validation scope."
+    }
+  ],
+  "console_warn_error": [],
+  "screenshots": [
+    "manager-batch2-manual-desktop-summary.jpg",
+    "manager-batch2-manual-tablet-action.jpg",
+    "manager-batch2-manual-tablet-sensitivity.jpg",
+    "manager-batch2-manual-mobile-evidence.jpg",
+    "manager-batch2-manual-mobile-product.jpg"
+  ]
+}

@@ -1,0 +1,2004 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/ai-presentation.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/ai-presentation.test.ts (11 tests | 2 failed) 107ms
+     × STATUS_UNAVAILABLE explains the unavailable mode without rendering upload controls 8ms
+     × available mode preserves all exact facts in readable preview and places JSON in closed advanced disclosure 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ai-presentation.test.ts > PL-10 AI capability must be confirmed before presenting a request > STATUS_UNAVAILABLE explains the unavailable mode without rendering upload controls
+AssertionError: expected '<section class="panel ai-panel" data-…' to contain '即時 AI 狀態未確認'
+
+Expected: "即時 AI 狀態未確認"
+Received: "<section class="panel ai-panel" data-testid="ai-panel" aria-labelledby="ai-panel-heading"><div class="section-heading"><div><h2 id="ai-panel-heading">選配的 AI 解釋</h2><p class="note">模型只整理說明、待驗證假說與候選行動；金額、比較及可用性由程式計算。</p></div><span class="tag " data-testid="ai-mode">規則診斷</span></div><p class="ai-status" role="status" aria-live="polite" data-testid="ai-status">無法確認即時 AI 是否可用，暫停傳送；規則診斷仍可使用。</p><p class="note"><strong>規則診斷可用</strong>：計算、診斷、試算與行動整理都不需要 AI。即時 AI 未啟用。頁面不接收金鑰，也不會自動呼叫模型或執行建議。</p></section>"
+
+ ❯ tests/ai-presentation.test.ts:35:18
+     33|     const html = renderToStaticMarkup(createElement(AiPanel, { snapsho…
+     34|     expect(html).toContain("規則診斷可用");
+     35|     expect(html).toContain(reason === "STATUS_UNAVAILABLE" ? "即時 AI 狀態…
+       |                  ^
+     36|     expect(html).not.toContain('data-testid="ai-payload-preview"');
+     37|     expect(html).not.toContain('type="checkbox"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/ai-presentation.test.ts > PL-10 AI capability must be confirmed before presenting a request > available mode preserves all exact facts in readable preview and places JSON in closed advanced disclosure
+AssertionError: expected '<section class="panel ai-panel" data-…' not to contain '尚未傳送資料'
+
+- Expected
++ Received
+
+- 尚未傳送資料
++ <section class="panel ai-panel" data-testid="ai-panel" aria-labelledby="ai-panel-heading"><div class="section-heading"><div><h2 id="ai-panel-heading">選配的 AI 解釋</h2><p class="note">模型只整理說明、待驗證假說與候選行動；金額、比較及可用性由程式計算。</p></div><span class="tag " data-testid="ai-mode">規則診斷</span></div><p class="ai-status" role="status" aria-live="polite" data-testid="ai-status">即時 AI 可用，但尚未傳送資料。請先閱讀下方傳送內容，再明確同意。</p><p class="note"><strong>規則診斷可用</strong>：計算、診斷、試算與行動整理都不需要 AI。即時 AI 僅在你同意後協助整理說明。頁面不接收金鑰，也不會自動呼叫模型或執行建議。</p><div class="ai-privacy"><h3>傳送前確認</h3><p>接收端：<strong>OpenAI API</strong>，由本機伺服器轉送。只傳送下方彙總快照與程式產生的觀察候選；另附固定的用途與輸出規則，不加入其他使用者資料。</p><p>資料可能受到供應商保留政策影響，不能承諾絕不儲存。原始 CSV、SKU、資料集名稱、實際檔名與通路名稱不會加入模型請求；以下對照只留在目前分頁記憶體。</p></div><div class="ai-readable-preview" data-testid="ai-readable-preview"><h3>將傳送的彙總內容</h3><p>範圍：所選通路合計；共 1 個匿名通路。本次不傳個別通路拆解，因此模型無法指出個別通路的驅動因素；請以本頁通路規則診斷核對。</p><p>資料截至 2026-08-03。前期 2026-08-01 至 2026-08-01（1 天）；本期 2026-08-02 至 2026-08-02（1 天）。比較方式：相同天數。</p><p>下表為實際傳送值，不是日均金額。金額以新臺幣未稅表示；比率保留小數原值（1 代表 100%），未知值不補零。另傳送來源種類／列數／缺列數、缺漏原因與程式觀察候選；完整格式可在進階資料核對。</p><div class="table-wrap" tabindex="0" role="region" aria-label="將傳送的前後期彙總指標"><table data-testid="ai-facts-preview"><caption>傳送內容：所選通路合計的前後期指標</caption><thead><tr><th scope="col">期間</th><th scope="col">指標</th><th scope="col">實際傳送值</th><th scope="col">來源</th></tr></thead><tbody><tr><th scope="row">前期</th><td>折扣前商品收入</td><td class="number">1500.00 元</td><td><button class="text-button" aria-label="查看前期折扣前商品收入來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>商品折扣</td><td class="number">100.00 元</td><td><button class="text-button" aria-label="查看前期商品折扣來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>已入帳退款</td><td class="number">50.00 元</td><td><button class="text-button" aria-label="查看前期已入帳退款來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>銷貨成本淨額</td><td class="number">600.00 元</td><td><button class="text-button" aria-label="查看前期銷貨成本淨額來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>平台費用</td><td class="number">0.00 元</td><td><button class="text-button" aria-label="查看前期平台費用來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>金流費用</td><td class="number">40.00 元</td><td><button class="text-button" aria-label="查看前期金流費用來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>履約費用</td><td class="number">100.00 元</td><td><button class="text-button" aria-label="查看前期履約費用來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>其他變動成本</td><td class="number">10.00 元</td><td><button class="text-button" aria-label="查看前期其他變動成本來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>廣告費</td><td class="number">200.00 元</td><td><button class="text-button" aria-label="查看前期廣告費來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>商品淨營收</td><td class="number">1350.00 元</td><td><button class="text-button" aria-label="查看前期商品淨營收來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>商品毛利</td><td class="number">750.00 元</td><td><button class="text-button" aria-label="查看前期商品毛利來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>行銷前貢獻</td><td class="number">600.00 元</td><td><button class="text-button" aria-label="查看前期行銷前貢獻來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>行銷後貢獻</td><td class="number">400.00 元</td><td><button class="text-button" aria-label="查看前期行銷後貢獻來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>商品毛利率</td><td class="number">0.555555555556 （比率）</td><td><button class="text-button" aria-label="查看前期商品毛利率來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>行銷後貢獻率</td><td class="number">0.296296296296 （比率）</td><td><button class="text-button" aria-label="查看前期行銷後貢獻率來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>折扣率</td><td class="number">0.066666666667 （比率）</td><td><button class="text-button" aria-label="查看前期折扣率來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>退款金額比</td><td class="number">0.035714285714 （比率）</td><td><button class="text-button" aria-label="查看前期退款金額比來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>混合行銷效率 MER</td><td class="number">6.750000000000 倍</td><td><button class="text-button" aria-label="查看前期混合行銷效率 MER來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>履約費用占淨營收比</td><td class="number">0.074074074074 （比率）</td><td><button class="text-button" aria-label="查看前期履約費用占淨營收比來源">核對來源</button></td></tr><tr><th scope="row">前期</th><td>廣告費占淨營收比</td><td class="number">0.148148148148 （比率）</td><td><button class="text-button" aria-label="查看前期廣告費占淨營收比來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>折扣前商品收入</td><td class="number">1800.00 元</td><td><button class="text-button" aria-label="查看本期折扣前商品收入來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>商品折扣</td><td class="number">230.00 元</td><td><button class="text-button" aria-label="查看本期商品折扣來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>已入帳退款</td><td class="number">90.00 元</td><td><button class="text-button" aria-label="查看本期已入帳退款來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>銷貨成本淨額</td><td class="number">740.00 元</td><td><button class="text-button" aria-label="查看本期銷貨成本淨額來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>平台費用</td><td class="number">0.00 元</td><td><button class="text-button" aria-label="查看本期平台費用來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>金流費用</td><td class="number">44.00 元</td><td><button class="text-button" aria-label="查看本期金流費用來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>履約費用</td><td class="number">140.00 元</td><td><button class="text-button" aria-label="查看本期履約費用來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>其他變動成本</td><td class="number">16.00 元</td><td><button class="text-button" aria-label="查看本期其他變動成本來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>廣告費</td><td class="number">270.00 元</td><td><button class="text-button" aria-label="查看本期廣告費來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>商品淨營收</td><td class="number">1480.00 元</td><td><button class="text-button" aria-label="查看本期商品淨營收來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>商品毛利</td><td class="number">740.00 元</td><td><button class="text-button" aria-label="查看本期商品毛利來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>行銷前貢獻</td><td class="number">540.00 元</td><td><button class="text-button" aria-label="查看本期行銷前貢獻來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>行銷後貢獻</td><td class="number">270.00 元</td><td><button class="text-button" aria-label="查看本期行銷後貢獻來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>商品毛利率</td><td class="number">0.500000000000 （比率）</td><td><button class="text-button" aria-label="查看本期商品毛利率來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>行銷後貢獻率</td><td class="number">0.182432432432 （比率）</td><td><button class="text-button" aria-label="查看本期行銷後貢獻率來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>折扣率</td><td class="number">0.127777777778 （比率）</td><td><button class="text-button" aria-label="查看本期折扣率來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>退款金額比</td><td class="number">0.057324840764 （比率）</td><td><button class="text-button" aria-label="查看本期退款金額比來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>混合行銷效率 MER</td><td class="number">5.481481481481 倍</td><td><button class="text-button" aria-label="查看本期混合行銷效率 MER來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>履約費用占淨營收比</td><td class="number">0.094594594595 （比率）</td><td><button class="text-button" aria-label="查看本期履約費用占淨營收比來源">核對來源</button></td></tr><tr><th scope="row">本期</th><td>廣告費占淨營收比</td><td class="number">0.182432432432 （比率）</td><td><button class="text-button" aria-label="查看本期廣告費占淨營收比來源">核對來源</button></td></tr></tbody></table></div></div><details class="ai-preview" data-testid="ai-advanced"><summary>進階資料：完整傳送格式、版本與本機來源對照</summary><details class="ai-preview"><summary>實際傳送給 OpenAI 的完整資料 JSON</summary><pre tabindex="0" role="region" aria-label="傳送給 OpenAI 的彙總 JSON 預覽" data-testid="ai-payload-preview">{
++   &quot;snapshot&quot;: {
++     &quot;schema_version&quot;: &quot;ai-snapshot-v2&quot;,
++     &quot;snapshot_id&quot;: &quot;ai-v2:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:a66eb645b3a68190cd4387b7ed67e8508523c229953adaacb37b50bb3f606e69:1&quot;,
++     &quot;currency&quot;: &quot;TWD&quot;,
++     &quot;metric_version&quot;: &quot;contribution-v1&quot;,
++     &quot;data_as_of&quot;: &quot;2026-08-03&quot;,
++     &quot;periods&quot;: {
++       &quot;previous&quot;: {
++         &quot;start&quot;: &quot;2026-08-01&quot;,
++         &quot;end&quot;: &quot;2026-08-01&quot;
++       },
++       &quot;current&quot;: {
++         &quot;start&quot;: &quot;2026-08-02&quot;,
++         &quot;end&quot;: &quot;2026-08-02&quot;
++       }
++     },
++     &quot;comparison&quot;: {
++       &quot;mode&quot;: &quot;same_days&quot;,
++       &quot;previous_days&quot;: 1,
++       &quot;current_days&quot;: 1
++     },
++     &quot;filters&quot;: {
++       &quot;channels&quot;: [
++         &quot;C01&quot;
++       ]
++     },
++     &quot;data_quality&quot;: {
++       &quot;status&quot;: &quot;complete&quot;,
++       &quot;missing_fact_ids&quot;: []
++     },
++     &quot;facts&quot;: [
++       {
++         &quot;id&quot;: &quot;F001&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_sales&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;1500.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F002&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;discounts&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;100.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F003&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;refunds&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;50.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F004&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;cogs_net&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;600.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F005&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;platform_fees&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F006&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;payment_fees&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;40.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F007&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;fulfillment_costs&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;100.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F008&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;other_variable_costs&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;10.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F009&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;ad_spend&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;200.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F010&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;net_revenue&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;1350.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F011&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_profit&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;750.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F012&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_before_marketing&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;600.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F013&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_after_marketing&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;400.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F014&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_margin&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.555555555556&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F015&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_margin&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.296296296296&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F016&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;discount_rate&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.066666666667&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F017&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;refund_ratio&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.035714285714&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F018&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;mer&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;6.750000000000&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F019&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;fulfillment_burden&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.074074074074&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F020&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;marketing_burden&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.148148148148&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F021&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_sales&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;1800.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F022&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;discounts&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;230.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F023&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;refunds&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;90.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F024&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;cogs_net&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;740.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F025&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;platform_fees&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F026&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;payment_fees&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;44.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F027&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;fulfillment_costs&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;140.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F028&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;other_variable_costs&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;16.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F029&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;ad_spend&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;270.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F030&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;net_revenue&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;1480.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F031&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_profit&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;740.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F032&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_before_marketing&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;540.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F033&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_after_marketing&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;270.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F034&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_margin&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.500000000000&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F035&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_margin&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.182432432432&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F036&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;discount_rate&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.127777777778&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F037&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;refund_ratio&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.057324840764&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F038&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;mer&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;5.481481481481&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F039&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;fulfillment_burden&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.094594594595&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F040&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;marketing_burden&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.182432432432&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       }
++     ]
++   },
++   &quot;observation_catalog&quot;: [
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F001&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的折扣前商品收入為 {{fact:F001:gross_sales}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F002&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的商品折扣為 {{fact:F002:discounts}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F003&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的已入帳退款為 {{fact:F003:refunds}}。退款按入帳日觀察，不等於 cohort 最終退貨率。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F004&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的銷貨成本淨額為 {{fact:F004:cogs_net}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F005&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的平台費用為 {{fact:F005:platform_fees}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F006&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的金流費用為 {{fact:F006:payment_fees}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F007&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的履約費用為 {{fact:F007:fulfillment_costs}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F008&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的其他變動成本為 {{fact:F008:other_variable_costs}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F009&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的廣告費為 {{fact:F009:ad_spend}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F010&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的商品淨營收為 {{fact:F010:net_revenue}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F011&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的商品毛利為 {{fact:F011:gross_profit}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F012&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的行銷前貢獻為 {{fact:F012:contribution_before_marketing}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F013&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的行銷後貢獻為 {{fact:F013:contribution_after_marketing}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F014&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的商品毛利率為 {{fact:F014:gross_margin}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F015&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的行銷後貢獻率為 {{fact:F015:contribution_margin}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F016&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的折扣率為 {{fact:F016:discount_rate}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F017&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的退款金額比為 {{fact:F017:refund_ratio}}。退款按入帳日觀察，不等於 cohort 最終退貨率。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F018&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的混合行銷效率 MER為 {{fact:F018:mer}}。MER 不是 ROAS，不提供媒體歸因。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F019&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的履約費用占淨營收比為 {{fact:F019:fulfillment_burden}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F020&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;前期所選通路合計的廣告費占淨營收比為 {{fact:F020:marketing_burden}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F021&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的折扣前商品收入為 {{fact:F021:gross_sales}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F022&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的商品折扣為 {{fact:F022:discounts}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F023&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的已入帳退款為 {{fact:F023:refunds}}。退款按入帳日觀察，不等於 cohort 最終退貨率。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F024&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的銷貨成本淨額為 {{fact:F024:cogs_net}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F025&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的平台費用為 {{fact:F025:platform_fees}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F026&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的金流費用為 {{fact:F026:payment_fees}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F027&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的履約費用為 {{fact:F027:fulfillment_costs}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F028&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的其他變動成本為 {{fact:F028:other_variable_costs}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F029&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的廣告費為 {{fact:F029:ad_spend}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F030&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的商品淨營收為 {{fact:F030:net_revenue}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F031&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的商品毛利為 {{fact:F031:gross_profit}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F032&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的行銷前貢獻為 {{fact:F032:contribution_before_marketing}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F033&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的行銷後貢獻為 {{fact:F033:contribution_after_marketing}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F034&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的商品毛利率為 {{fact:F034:gross_margin}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F035&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的行銷後貢獻率為 {{fact:F035:contribution_margin}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F036&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的折扣率為 {{fact:F036:discount_rate}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F037&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的退款金額比為 {{fact:F037:refund_ratio}}。退款按入帳日觀察，不等於 cohort 最終退貨率。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F038&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的混合行銷效率 MER為 {{fact:F038:mer}}。MER 不是 ROAS，不提供媒體歸因。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F039&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的履約費用占淨營收比為 {{fact:F039:fulfillment_burden}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F040&quot;
++       ],
++       &quot;kind&quot;: &quot;value&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的廣告費占淨營收比為 {{fact:F040:marketing_burden}}。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F001&quot;,
++         &quot;F021&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的折扣前商品收入較前期上升（前期 {{fact:F001:gross_sales}}；本期 {{fact:F021:gross_sales}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F002&quot;,
++         &quot;F022&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的商品折扣較前期上升（前期 {{fact:F002:discounts}}；本期 {{fact:F022:discounts}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F003&quot;,
++         &quot;F023&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的已入帳退款較前期上升（前期 {{fact:F003:refunds}}；本期 {{fact:F023:refunds}}）。退款按入帳日觀察，不等於 cohort 最終退貨率。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F004&quot;,
++         &quot;F024&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的銷貨成本淨額較前期上升（前期 {{fact:F004:cogs_net}}；本期 {{fact:F024:cogs_net}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F005&quot;,
++         &quot;F025&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的平台費用較前期持平（前期 {{fact:F005:platform_fees}}；本期 {{fact:F025:platform_fees}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F006&quot;,
++         &quot;F026&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的金流費用較前期上升（前期 {{fact:F006:payment_fees}}；本期 {{fact:F026:payment_fees}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F007&quot;,
++         &quot;F027&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的履約費用較前期上升（前期 {{fact:F007:fulfillment_costs}}；本期 {{fact:F027:fulfillment_costs}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F008&quot;,
++         &quot;F028&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的其他變動成本較前期上升（前期 {{fact:F008:other_variable_costs}}；本期 {{fact:F028:other_variable_costs}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F009&quot;,
++         &quot;F029&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的廣告費較前期上升（前期 {{fact:F009:ad_spend}}；本期 {{fact:F029:ad_spend}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F010&quot;,
++         &quot;F030&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的商品淨營收較前期上升（前期 {{fact:F010:net_revenue}}；本期 {{fact:F030:net_revenue}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F011&quot;,
++         &quot;F031&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的商品毛利較前期下降（前期 {{fact:F011:gross_profit}}；本期 {{fact:F031:gross_profit}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F012&quot;,
++         &quot;F032&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的行銷前貢獻較前期下降（前期 {{fact:F012:contribution_before_marketing}}；本期 {{fact:F032:contribution_before_marketing}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F013&quot;,
++         &quot;F033&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的行銷後貢獻較前期下降（前期 {{fact:F013:contribution_after_marketing}}；本期 {{fact:F033:contribution_after_marketing}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F014&quot;,
++         &quot;F034&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的商品毛利率較前期下降（前期 {{fact:F014:gross_margin}}；本期 {{fact:F034:gross_margin}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F015&quot;,
++         &quot;F035&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的行銷後貢獻率較前期下降（前期 {{fact:F015:contribution_margin}}；本期 {{fact:F035:contribution_margin}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F016&quot;,
++         &quot;F036&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的折扣率較前期上升（前期 {{fact:F016:discount_rate}}；本期 {{fact:F036:discount_rate}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F017&quot;,
++         &quot;F037&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的退款金額比較前期上升（前期 {{fact:F017:refund_ratio}}；本期 {{fact:F037:refund_ratio}}）。退款按入帳日觀察，不等於 cohort 最終退貨率。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F018&quot;,
++         &quot;F038&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的混合行銷效率 MER較前期下降（前期 {{fact:F018:mer}}；本期 {{fact:F038:mer}}）。MER 不是 ROAS，不提供媒體歸因。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F019&quot;,
++         &quot;F039&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的履約費用占淨營收比較前期上升（前期 {{fact:F019:fulfillment_burden}}；本期 {{fact:F039:fulfillment_burden}}）。&quot;
++     },
++     {
++       &quot;fact_ids&quot;: [
++         &quot;F020&quot;,
++         &quot;F040&quot;
++       ],
++       &quot;kind&quot;: &quot;change&quot;,
++       &quot;observation&quot;: &quot;本期所選通路合計的廣告費占淨營收比較前期上升（前期 {{fact:F020:marketing_burden}}；本期 {{fact:F040:marketing_burden}}）。&quot;
++     }
++   ]
++ }</pre></details><details class="ai-preview"><summary>本機 API 請求與同意格式</summary><p class="note">只有勾選同意並按下傳送，才會送出這份請求；預覽中的 accepted 不代表已傳送。</p><pre tabindex="0" aria-label="本機 API 請求 JSON 預覽" data-testid="ai-request-preview">{
++   &quot;snapshot&quot;: {
++     &quot;schema_version&quot;: &quot;ai-snapshot-v2&quot;,
++     &quot;snapshot_id&quot;: &quot;ai-v2:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:a66eb645b3a68190cd4387b7ed67e8508523c229953adaacb37b50bb3f606e69:1&quot;,
++     &quot;currency&quot;: &quot;TWD&quot;,
++     &quot;metric_version&quot;: &quot;contribution-v1&quot;,
++     &quot;data_as_of&quot;: &quot;2026-08-03&quot;,
++     &quot;periods&quot;: {
++       &quot;previous&quot;: {
++         &quot;start&quot;: &quot;2026-08-01&quot;,
++         &quot;end&quot;: &quot;2026-08-01&quot;
++       },
++       &quot;current&quot;: {
++         &quot;start&quot;: &quot;2026-08-02&quot;,
++         &quot;end&quot;: &quot;2026-08-02&quot;
++       }
++     },
++     &quot;comparison&quot;: {
++       &quot;mode&quot;: &quot;same_days&quot;,
++       &quot;previous_days&quot;: 1,
++       &quot;current_days&quot;: 1
++     },
++     &quot;filters&quot;: {
++       &quot;channels&quot;: [
++         &quot;C01&quot;
++       ]
++     },
++     &quot;data_quality&quot;: {
++       &quot;status&quot;: &quot;complete&quot;,
++       &quot;missing_fact_ids&quot;: []
++     },
++     &quot;facts&quot;: [
++       {
++         &quot;id&quot;: &quot;F001&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_sales&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;1500.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F002&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;discounts&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;100.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F003&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;refunds&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;50.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F004&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;cogs_net&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;600.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F005&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;platform_fees&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F006&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;payment_fees&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;40.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F007&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;fulfillment_costs&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;100.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F008&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;other_variable_costs&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;10.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F009&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;ad_spend&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;200.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F010&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;net_revenue&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;1350.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F011&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_profit&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;750.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F012&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_before_marketing&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;600.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F013&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_after_marketing&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;400.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F014&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_margin&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.555555555556&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F015&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_margin&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.296296296296&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F016&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;discount_rate&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.066666666667&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F017&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;refund_ratio&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.035714285714&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F018&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;mer&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;6.750000000000&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F019&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;fulfillment_burden&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.074074074074&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F020&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;marketing_burden&quot;,
++         &quot;period&quot;: &quot;previous&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.148148148148&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F021&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_sales&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;1800.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F022&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;discounts&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;230.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F023&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;refunds&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;90.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F024&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;cogs_net&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;740.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F025&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;platform_fees&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F026&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;payment_fees&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;44.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F027&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;fulfillment_costs&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;140.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F028&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;other_variable_costs&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;16.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F029&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;ad_spend&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;270.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F030&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;net_revenue&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;1480.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F031&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_profit&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;740.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F032&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_before_marketing&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;540.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F033&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_after_marketing&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;270.00&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F034&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;gross_margin&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.500000000000&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F035&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;contribution_margin&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.182432432432&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F036&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;discount_rate&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.127777777778&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F037&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;refund_ratio&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.057324840764&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F038&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;mer&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;5.481481481481&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F039&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;fulfillment_burden&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.094594594595&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;channel_costs&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       },
++       {
++         &quot;id&quot;: &quot;F040&quot;,
++         &quot;kind&quot;: &quot;metric&quot;,
++         &quot;metric&quot;: &quot;marketing_burden&quot;,
++         &quot;period&quot;: &quot;current&quot;,
++         &quot;scope&quot;: &quot;selected_channels&quot;,
++         &quot;value&quot;: &quot;0.182432432432&quot;,
++         &quot;reason_codes&quot;: [],
++         &quot;source_refs&quot;: [
++           {
++             &quot;role&quot;: &quot;ad_spend&quot;,
++             &quot;rows&quot;: 1,
++             &quot;missing_rows&quot;: 0
++           },
++           {
++             &quot;role&quot;: &quot;sales&quot;,
++             &quot;rows&quot;: 2,
++             &quot;missing_rows&quot;: 0
++           }
++         ]
++       }
++     ]
++   },
++   &quot;consent&quot;: {
++     &quot;snapshot_id&quot;: &quot;ai-v2:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:a66eb645b3a68190cd4387b7ed67e8508523c229953adaacb37b50bb3f606e69:1&quot;,
++     &quot;accepted&quot;: true,
++     &quot;recipient&quot;: &quot;openai&quot;
++   }
++ }</pre></details><details class="ai-local-mapping" data-testid="ai-local-mapping"><summary>僅本機的別名與來源對照（不傳送）</summary><dl><div><dt>C01</dt><dd>DTC</dd></div></dl><div class="ai-fact-mapping"><button class="text-button">F001 · 折扣前商品收入 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;gross_sales&quot;]</span></button><button class="text-button">F002 · 商品折扣 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;discounts&quot;]</span></button><button class="text-button">F003 · 已入帳退款 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;refunds&quot;]</span></button><button class="text-button">F004 · 銷貨成本淨額 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;cogs_net&quot;]</span></button><button class="text-button">F005 · 平台費用 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;platform_fees&quot;]</span></button><button class="text-button">F006 · 金流費用 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;payment_fees&quot;]</span></button><button class="text-button">F007 · 履約費用 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;fulfillment_costs&quot;]</span></button><button class="text-button">F008 · 其他變動成本 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;other_variable_costs&quot;]</span></button><button class="text-button">F009 · 廣告費 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;ad_spend&quot;]</span></button><button class="text-button">F010 · 商品淨營收 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;net_revenue&quot;]</span></button><button class="text-button">F011 · 商品毛利 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;gross_profit&quot;]</span></button><button class="text-button">F012 · 行銷前貢獻 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;contribution_before_marketing&quot;]</span></button><button class="text-button">F013 · 行銷後貢獻 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;contribution_after_marketing&quot;]</span></button><button class="text-button">F014 · 商品毛利率 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;gross_margin&quot;]</span></button><button class="text-button">F015 · 行銷後貢獻率 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;contribution_margin&quot;]</span></button><button class="text-button">F016 · 折扣率 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;discount_rate&quot;]</span></button><button class="text-button">F017 · 退款金額比 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;refund_ratio&quot;]</span></button><button class="text-button">F018 · 混合行銷效率 MER · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;mer&quot;]</span></button><button class="text-button">F019 · 履約費用占淨營收比 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;fulfillment_burden&quot;]</span></button><button class="text-button">F020 · 廣告費占淨營收比 · 2026-08-01—2026-08-01<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-01&quot;,&quot;2026-08-01&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;marketing_burden&quot;]</span></button><button class="text-button">F021 · 折扣前商品收入 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;gross_sales&quot;]</span></button><button class="text-button">F022 · 商品折扣 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;discounts&quot;]</span></button><button class="text-button">F023 · 已入帳退款 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;refunds&quot;]</span></button><button class="text-button">F024 · 銷貨成本淨額 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;cogs_net&quot;]</span></button><button class="text-button">F025 · 平台費用 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;platform_fees&quot;]</span></button><button class="text-button">F026 · 金流費用 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;payment_fees&quot;]</span></button><button class="text-button">F027 · 履約費用 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;fulfillment_costs&quot;]</span></button><button class="text-button">F028 · 其他變動成本 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;other_variable_costs&quot;]</span></button><button class="text-button">F029 · 廣告費 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;ad_spend&quot;]</span></button><button class="text-button">F030 · 商品淨營收 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;net_revenue&quot;]</span></button><button class="text-button">F031 · 商品毛利 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;gross_profit&quot;]</span></button><button class="text-button">F032 · 行銷前貢獻 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;contribution_before_marketing&quot;]</span></button><button class="text-button">F033 · 行銷後貢獻 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;contribution_after_marketing&quot;]</span></button><button class="text-button">F034 · 商品毛利率 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;gross_margin&quot;]</span></button><button class="text-button">F035 · 行銷後貢獻率 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;contribution_margin&quot;]</span></button><button class="text-button">F036 · 折扣率 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;discount_rate&quot;]</span></button><button class="text-button">F037 · 退款金額比 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;refund_ratio&quot;]</span></button><button class="text-button">F038 · 混合行銷效率 MER · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;mer&quot;]</span></button><button class="text-button">F039 · 履約費用占淨營收比 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;fulfillment_burden&quot;]</span></button><button class="text-button">F040 · 廣告費占淨營收比 · 2026-08-02—2026-08-02<span>[&quot;fact&quot;,&quot;golden-v1&quot;,&quot;2026-08-02&quot;,&quot;2026-08-02&quot;,&quot;all&quot;,[&quot;DTC&quot;],null,&quot;marketing_burden&quot;]</span></button></div></details></details><label class="check-label ai-consent"><input type="checkbox"/>我已檢查預覽，並同意將這份彙總資料傳送至 OpenAI</label><p class="note">同意僅適用於這份快照與此次操作。重新載入、換期間或換通路後會撤銷同意與舊回應；即使資料相同或切回原範圍，也須重新確認。</p><div class="button-row"><button class="button primary" disabled="">傳送已同意的彙總資料</button></div></section>
+
+ ❯ tests/ai-presentation.test.ts:44:22
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 9 passed (11)
+   Start at  18:10:31
+   Duration  506ms (transform 115ms, setup 0ms, import 223ms, tests 107ms, environment 0ms)
+

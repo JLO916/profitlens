@@ -17,7 +17,7 @@ describe("M5 provider orchestration with injected mocks only", () => {
     const s = serverSnapshot(), output = serverOutput(s), mock = provider({ status: "completed", output, usage });
     const records: AuditRecord[] = [];
     const result = await runInsights(s, config, { provider: mock, audit: record => records.push(record) });
-    expect(result).toMatchObject({ status: "live", snapshot_id: s.snapshot_id, output, metadata: { provider: "openai", model: config.model, prompt_version: "profitlens-insights-v2", attempts: 1, usage } });
+    expect(result).toMatchObject({ status: "live", snapshot_id: s.snapshot_id, output, metadata: { provider: "openai", model: config.model, prompt_version: "profitlens-insights-v3", attempts: 1, usage } });
     expect(records).toHaveLength(1); expect(records[0].latency_ms).toBeGreaterThanOrEqual(0);
     expect(JSON.stringify(records)).not.toMatch(/sk-TEST|2250|2470|fact_ids|observation|snapshot_id/);
   });

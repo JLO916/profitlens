@@ -110,7 +110,7 @@ export async function sendAiRequest(options: AiRequestOptions): Promise<AiClient
 export function aiReasonMessage(reason: string): string {
   const messages: Record<string, string> = {
     PUBLIC_DEMO: "公開展示模式已由伺服器關閉即時 AI，仍可使用規則診斷。",
-    DISABLED: "即時 AI 尚未啟用，仍可預覽彙總資料並使用規則診斷。",
+    DISABLED: "即時 AI 尚未啟用；計算、規則診斷、試算與行動整理仍可使用。",
     NO_KEY: "伺服器未設定 API 金鑰，使用規則診斷；請勿將金鑰貼入頁面或對話。",
     NO_MODEL: "伺服器尚未設定模型，使用規則診斷。",
     LOCAL_ONLY: "此端點僅允許本機使用，使用規則診斷。",

@@ -1,0 +1,117 @@
+{
+  "source": "Live GET /api/datasets/golden (Vercel connector, 2026-10-01T08:19:00Z)",
+  "method": "Independent Decimal arithmetic on the eight source sales rows and four cost/ad rows returned by the live API. Does NOT validate rendered browser UI.",
+  "values": {
+    "previous": {
+      "DTC": {
+        "gross_sales": "1500",
+        "discounts": "100",
+        "refunds": "50",
+        "cogs_net": "600",
+        "platform_fees": "0",
+        "payment_fees": "40",
+        "fulfillment_costs": "100",
+        "other_variable_costs": "10",
+        "ad_spend": "200",
+        "net_revenue": "1350",
+        "gross_profit": "750",
+        "contribution_before_marketing": "600",
+        "contribution_after_marketing": "400",
+        "contribution_margin": "0.2962962962962962962962962963"
+      },
+      "MARKETPLACE": {
+        "gross_sales": "1000",
+        "discounts": "100",
+        "refunds": "0",
+        "cogs_net": "450",
+        "platform_fees": "90",
+        "payment_fees": "20",
+        "fulfillment_costs": "60",
+        "other_variable_costs": "10",
+        "ad_spend": "100",
+        "net_revenue": "900",
+        "gross_profit": "450",
+        "contribution_before_marketing": "270",
+        "contribution_after_marketing": "170",
+        "contribution_margin": "0.1888888888888888888888888889"
+      },
+      "ALL": {
+        "gross_sales": "2500",
+        "discounts": "200",
+        "refunds": "50",
+        "cogs_net": "1050",
+        "platform_fees": "90",
+        "payment_fees": "60",
+        "fulfillment_costs": "160",
+        "other_variable_costs": "20",
+        "ad_spend": "300",
+        "net_revenue": "2250",
+        "gross_profit": "1200",
+        "contribution_before_marketing": "870",
+        "contribution_after_marketing": "570",
+        "contribution_margin": "0.2533333333333333333333333333"
+      }
+    },
+    "current": {
+      "DTC": {
+        "gross_sales": "1800",
+        "discounts": "230",
+        "refunds": "90",
+        "cogs_net": "740",
+        "platform_fees": "0",
+        "payment_fees": "44",
+        "fulfillment_costs": "140",
+        "other_variable_costs": "16",
+        "ad_spend": "270",
+        "net_revenue": "1480",
+        "gross_profit": "740",
+        "contribution_before_marketing": "540",
+        "contribution_after_marketing": "270",
+        "contribution_margin": "0.1824324324324324324324324324"
+      },
+      "MARKETPLACE": {
+        "gross_sales": "1300",
+        "discounts": "220",
+        "refunds": "90",
+        "cogs_net": "585",
+        "platform_fees": "120",
+        "payment_fees": "22",
+        "fulfillment_costs": "85",
+        "other_variable_costs": "13",
+        "ad_spend": "180",
+        "net_revenue": "990",
+        "gross_profit": "405",
+        "contribution_before_marketing": "165",
+        "contribution_after_marketing": "-15",
+        "contribution_margin": "-0.01515151515151515151515151515"
+      },
+      "ALL": {
+        "gross_sales": "3100",
+        "discounts": "450",
+        "refunds": "180",
+        "cogs_net": "1325",
+        "platform_fees": "120",
+        "payment_fees": "66",
+        "fulfillment_costs": "225",
+        "other_variable_costs": "29",
+        "ad_spend": "450",
+        "net_revenue": "2470",
+        "gross_profit": "1145",
+        "contribution_before_marketing": "705",
+        "contribution_after_marketing": "255",
+        "contribution_margin": "0.1032388663967611336032388664"
+      }
+    }
+  },
+  "bridge": {
+    "gross_sales": "600",
+    "discounts": "-250",
+    "refunds": "-130",
+    "cogs_net": "-275",
+    "platform_fees": "-30",
+    "payment_fees": "-6",
+    "fulfillment_costs": "-65",
+    "other_variable_costs": "-9",
+    "ad_spend": "-150"
+  }
+}

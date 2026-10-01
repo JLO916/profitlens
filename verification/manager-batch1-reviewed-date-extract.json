@@ -1,0 +1,58 @@
+{
+  "method": "Locally executed deployed validator extract, not live end-to-end UI testing",
+  "tests": [
+    {
+      "id": "full_calendar_months",
+      "input": {
+        "coverage_start": "2026-08-01",
+        "coverage_end": "2026-09-30",
+        "previous_period": {
+          "start": "2026-08-01",
+          "end": "2026-08-31"
+        },
+        "current_period": {
+          "start": "2026-09-01",
+          "end": "2026-09-30"
+        }
+      },
+      "note": "Calendar months have different lengths. Existing validator blocks this business comparison.",
+      "actual_codes": [
+        "UNEQUAL_PERIOD_LENGTH"
+      ]
+    },
+    {
+      "id": "reversed_chronology",
+      "input": {
+        "coverage_start": "2026-08-01",
+        "coverage_end": "2026-08-02",
+        "previous_period": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        },
+        "current_period": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        }
+      },
+      "note": "Labels say previous/current, but this validator permits previous to be later than current.",
+      "actual_codes": []
+    },
+    {
+      "id": "normal_chronology",
+      "input": {
+        "coverage_start": "2026-08-01",
+        "coverage_end": "2026-08-02",
+        "previous_period": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current_period": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "note": "Valid control case.",
+      "actual_codes": []
+    }
+  ]
+}

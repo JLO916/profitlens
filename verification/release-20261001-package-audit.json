@@ -1,0 +1,341 @@
+{
+  "audit_time": "2026-10-01T11:09:43.582763+00:00",
+  "scope": "all_git_tracked_and_unignored_untracked_utf8_text; no secret values emitted; no env/keyring/credentials files read",
+  "git_head": "04e186bf7be18102e2d23b71b9d4d74fe521a2f1",
+  "scanned_text_files": 630,
+  "scanned_text_bytes": 16809049,
+  "binary_files_not_content_scanned": 281,
+  "secret_pattern_hits": [
+    {
+      "file": "docs/STATUS.md",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "playwright.config.ts",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "scripts/verify-ai-security.mjs",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "tests/ai-provider.test.ts",
+      "pattern": "openai_like",
+      "count": 3,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "tests/ai-route.test.ts",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/app-acceptance.md",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/m5-e2e-before-local-gate-fix.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/m5-e2e-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/m6-build-provenance.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/m6-e2e-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch1-acceptance.md",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch1-e2e-initial-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch1-e2e-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch2-check.py",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch2-e2e-browser-initial-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch2-e2e-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch2-e2e-second-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch3-check.py",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch3-e2e-first-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/manager-batch3-e2e-results.json",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    },
+    {
+      "file": "verification/release-20261001-e2e.config.ts",
+      "pattern": "openai_like",
+      "count": 1,
+      "all_explicit_test_canaries": true
+    }
+  ],
+  "unexplained_secret_pattern_hits": [],
+  "review_golden_csv_equality": [
+    {
+      "file": "sales_daily.csv",
+      "parsed_rows_identical": true,
+      "rows": 8
+    },
+    {
+      "file": "channel_costs_daily.csv",
+      "parsed_rows_identical": true,
+      "rows": 4
+    },
+    {
+      "file": "ad_spend_daily.csv",
+      "parsed_rows_identical": true,
+      "rows": 4
+    }
+  ],
+  "review_manifest_identical": true,
+  "offline_live_preview": {
+    "source": "offline_synthetic_preparation",
+    "provider_calls": 0,
+    "evaluation_status": "not_run",
+    "case_count": 20,
+    "all_cases_not_run": true,
+    "files": [
+      {
+        "file": "verification/live-ai-preview/L01.json",
+        "bytes": 30378,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L02.json",
+        "bytes": 30355,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L03.json",
+        "bytes": 30354,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L04.json",
+        "bytes": 30585,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L05.json",
+        "bytes": 30359,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L06.json",
+        "bytes": 30340,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L07.json",
+        "bytes": 30337,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L08.json",
+        "bytes": 29202,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L09.json",
+        "bytes": 29358,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L10.json",
+        "bytes": 28874,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L11.json",
+        "bytes": 30266,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L12.json",
+        "bytes": 29719,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L13.json",
+        "bytes": 29068,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L14.json",
+        "bytes": 29693,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L15.json",
+        "bytes": 30354,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L16.json",
+        "bytes": 30355,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L17.json",
+        "bytes": 30354,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L18.json",
+        "bytes": 30352,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L19.json",
+        "bytes": 34736,
+        "forbidden_named_fields_or_key_pattern": false
+      },
+      {
+        "file": "verification/live-ai-preview/L20.json",
+        "bytes": 30354,
+        "forbidden_named_fields_or_key_pattern": false
+      }
+    ]
+  },
+  "fixture_and_package_diff": [],
+  "preserved_sha256": {
+    "package.json": "b3698b34b2cc982b07626fde2330ecca2d81fbe08dbe978fa6f774ca27e194f9",
+    "package-lock.json": "ab23151e36c2c4a5bc76ad52d0675866eee7465b5d63a52764bbaa3feac7dcfd",
+    "fixtures/golden/expected.json": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7"
+  },
+  "original_review_zip": {
+    "archive_present": true,
+    "files": [
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/CODEX_NEXT_SPRINT.md",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/CODEX_NEXT_SPRINT.md",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/REVIEW_FINDINGS.md",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/REVIEW_FINDINGS.md",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/golden_recalculation.json",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/golden_recalculation.json",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/live_api_receipt.json",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/live_api_receipt.json",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/live_golden_ad_spend_daily.csv",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/live_golden_ad_spend_daily.csv",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/live_golden_channel_costs_daily.csv",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/live_golden_channel_costs_daily.csv",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/live_golden_manifest.json",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/live_golden_manifest.json",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/live_golden_sales_daily.csv",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/live_golden_sales_daily.csv",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/period_validation_extract.cjs",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/period_validation_extract.cjs",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/period_validation_results.json",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/period_validation_results.json",
+        "exists": true,
+        "byte_identical": true
+      },
+      {
+        "archive_member": "ProfitLens_Manager_Review_20261001/recompute_golden.py",
+        "local_path": "reviews/ProfitLens_Manager_Review_20261001/recompute_golden.py",
+        "exists": true,
+        "byte_identical": true
+      }
+    ]
+  }
+}

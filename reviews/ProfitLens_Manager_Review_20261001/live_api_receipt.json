@@ -1,0 +1,40 @@
+{
+  "retrieval_method": "Vercel.web_fetch_vercel_url; live GET requests, no browser interaction",
+  "homepage": {
+    "url": "https://profitlens-tau.vercel.app/",
+    "http_status": 200,
+    "response_date_utc": "2026-10-01T08:18:09Z",
+    "build_id": "sPhE6eZgGQruEBaVxOlkB"
+  },
+  "application_bundle": {
+    "url": "https://profitlens-tau.vercel.app/_next/static/chunks/app/page-12cf65acb947e371.js",
+    "http_status": 200,
+    "response_date_utc": "2026-10-01T08:18:29Z"
+  },
+  "stylesheet": {
+    "url": "https://profitlens-tau.vercel.app/_next/static/css/e5cfd6065dcde9ee.css",
+    "http_status": 200,
+    "response_date_utc": "2026-10-01T08:20:10Z"
+  },
+  "ai_status": {
+    "url": "https://profitlens-tau.vercel.app/api/insights",
+    "http_status": 200,
+    "response_date_utc": "2026-10-01T08:19:33Z",
+    "body": {
+      "available": false,
+      "reason": "PUBLIC_DEMO",
+      "provider": "openai"
+    }
+  },
+  "golden_data": {
+    "url": "https://profitlens-tau.vercel.app/api/datasets/golden",
+    "http_status": 200,
+    "response_date_utc": "2026-10-01T08:19:00Z",
+    "note": "The three CSV files in this folder are manually transcribed from the returned source rows; CRLF normalized to LF. Not a byte-for-byte HTTP archive."
+  },
+  "limitations": [
+    "No live interactive browser session succeeded.",
+    "No live CSV upload/download, visual or mobile pass, browser timing, production build inspection, or actual LLM generation was completed.",
+    "The full minified bundle and stylesheet were read from connector responses but are not archived in this package. Only relevant snippets and observed logic are documented."
+  ]
+}

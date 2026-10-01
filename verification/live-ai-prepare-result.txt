@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  19:04:29
+   Duration  601ms (transform 87ms, setup 0ms, import 155ms, tests 320ms, environment 0ms)
+

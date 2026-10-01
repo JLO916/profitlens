@@ -1,0 +1,90 @@
+{
+  "at": "2026-10-01T10:26:40.117355+00:00",
+  "tool": "Codex in-app browser via cua_repl",
+  "url": "http://127.0.0.1:3200/",
+  "tab": "10",
+  "build_id": "p9LCsepxPsSU3ROkD0TCg",
+  "mode": "PUBLIC_DEMO",
+  "live_ai_called": false,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "document_scroll_width": 1425,
+      "result": "pass",
+      "observed": [
+        "Empty workspace demo/import entry and global rules/AI-unavailable status",
+        "Enter navigated advanced validation; five original dataset choices",
+        "Golden income 2470.00 and contribution 255.00",
+        "AI unavailable: JSON, consent, send all absent",
+        "Final demo income 7850657.90 and contribution 1269792.73"
+      ],
+      "screenshots": [
+        "manager-batch3-manual-desktop-home.jpg",
+        "manager-batch3-manual-desktop-ai-disabled.jpg",
+        "manager-batch3-manual-desktop-overview.jpg"
+      ]
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "document_scroll_width": 753,
+      "result": "pass",
+      "observed": [
+        "Advanced validation retains active Golden and filters",
+        "missing-ad partial income 2470.00; contribution unknown",
+        "DTC filter contribution 270.00",
+        "Duplicate sales blocked with original sales_daily.csv line 10",
+        "Return to prior ready data retains DTC contribution 270.00"
+      ],
+      "screenshots": [
+        "manager-batch3-manual-tablet-validation.jpg"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "document_scroll_width": 375,
+      "result": "pass",
+      "observed": [
+        "Human-readable period metric and scope on Golden diagnosis",
+        "Enter opens and closes fact/rule audit; original REV_UP_CM_DOWN and fact IDs retained",
+        "Enter opens contribution255.00 evidence with exact formula and eight original rows",
+        "Escape closes evidence dialog"
+      ],
+      "screenshots": [
+        "manager-batch3-manual-mobile-diagnosis.jpg",
+        "manager-batch3-manual-mobile-evidence.jpg"
+      ]
+    }
+  ],
+  "console": {
+    "levels": [
+      "warn",
+      "error"
+    ],
+    "limit": 100,
+    "entries": []
+  },
+  "print": {
+    "status": "pass",
+    "generator": "Full E2E Chromium PDF",
+    "file": "manager-batch3-regression-summary-print.pdf",
+    "pages": 1,
+    "text_extraction": "pypdf",
+    "render": "manager-batch3-summary-print-render.png",
+    "visual_review": "No clipping or overlapping text on Golden one-page summary",
+    "native_dialog": "not_run",
+    "physical_print": "not_run"
+  },
+  "not_run": [
+    "Live AI",
+    "Real business data",
+    "Manual CSV selection this round",
+    "Manual backup restore this round",
+    "Manual downloaded bytes verification this round",
+    "Safari, physical devices, screen reader",
+    "Public deployment or live site retest"
+  ],
+  "note": "Full E2E import/restore/download results are separate from manual checks. Viewport reset after inspection; preview tab retained."
+}

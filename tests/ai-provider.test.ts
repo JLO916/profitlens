@@ -3,7 +3,7 @@ import { createOpenAiProvider } from "@/ai/openai-provider";
 import type { AiSnapshot } from "@/ai/contracts";
 
 vi.mock("@/ai/grounding", () => ({ observationCatalog: () => [{ fact_ids: ["F001"], observation: "受限資料觀察", kind: "value" }] }));
-const snapshot = { snapshot_id: `ai-v1:${"a".repeat(64)}:${"b".repeat(64)}:1`, facts: [] } as unknown as AiSnapshot;
+const snapshot = { snapshot_id: `ai-v2:${"a".repeat(64)}:${"b".repeat(64)}:1`, facts: [] } as unknown as AiSnapshot;
 const config = { available: true as const, apiKey: "sk-test-only-never-live", model: "server-configured-model", timeoutMs: 15000, maxOutputTokens: 4096 };
 const usage = { input_tokens: 20, output_tokens: 40, total_tokens: 60 };
 const fixture = (overrides: Record<string, unknown> = {}) => ({ id: "resp_mock", status: "completed", output: [{ type: "message", role: "assistant", status: "completed", content: [{ type: "output_text", text: '{"snapshot_id":"mock"}', annotations: [] }] }], usage, ...overrides });
@@ -24,7 +24,7 @@ describe("official OpenAI SDK transport mocked locally, never live", () => {
     expect(body.input).toHaveLength(1);
     expect(body.input[0].role).toBe("user");
     expect(JSON.parse(body.input[0].content).snapshot).toEqual(snapshot);
-    expect(body.instructions).toContain("profitlens-insights-v2");
+    expect(body.instructions).toContain("profitlens-insights-v3");
     expect(JSON.stringify(body)).not.toContain(config.apiKey);
     expect(new Headers(init?.headers).get("authorization")).toBe(`Bearer ${config.apiKey}`);
   });

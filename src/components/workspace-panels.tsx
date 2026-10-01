@@ -46,11 +46,10 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings }: { data
         <div><dt>目前前期</dt><dd>{snapshot.report.previous.period.start} 至 {snapshot.report.previous.period.end}</dd></div>
         <div><dt>目前本期</dt><dd>{snapshot.report.current.period.start} 至 {snapshot.report.current.period.end}</dd></div>
         <div><dt>目前通路</dt><dd>{snapshot.report.scope.channels.join("、")}</dd></div>
-        <div><dt>資料格式／指標版本</dt><dd>{settings.schema_version} / {snapshot.metric_version}</dd></div>
       </dl>
       <p className="note">金額均為 TWD 未稅商品收入與已入帳費用，不含消費者支付的運費收入、固定月租、所得稅與其他未建模收入。退款按入帳日扣除；成本採來源已入帳淨額，不依退款自行回沖。</p>
       <p className="note">完整性確認來自資料提供者，並非系統已獨立查核原始來源。CSV 空白保持未知，缺少費用列不代表零費用。</p>
-      <details><summary>檢視快照識別與資料口徑</summary><dl className="metadata-grid"><div><dt>資料 SHA-256</dt><dd><code>{snapshot.dataset_hash}</code></dd></div><div><dt>篩選 SHA-256</dt><dd><code>{snapshot.filter_hash}</code></dd></div><div><dt>金額口徑識別</dt><dd><code>{settings.amount_basis}</code></dd></div></dl></details>
+      <details><summary>稽核資訊：資料版本與口徑</summary><dl className="metadata-grid"><div><dt>資料格式／指標版本</dt><dd>{settings.schema_version} / {snapshot.metric_version}</dd></div><div><dt>資料 SHA-256</dt><dd><code>{snapshot.dataset_hash}</code></dd></div><div><dt>篩選 SHA-256</dt><dd><code>{snapshot.filter_hash}</code></dd></div><div><dt>金額口徑識別</dt><dd><code>{settings.amount_basis}</code></dd></div></dl></details>
       {mappings && <details><summary>匯入時確認的標準欄位對照</summary>{Object.entries(mappings).map(([file, mapping]) => <div key={file}><h3>{filenames?.[file as SourceRef["file"]] ?? file}</h3><dl className="metadata-grid">{Object.entries(mapping).map(([standard, original]) => <div key={standard}><dt>{standard}</dt><dd>{original}</dd></div>)}</dl></div>)}</details>}
     </section>
     <section className="panel" aria-labelledby="preview-heading">
@@ -75,7 +74,7 @@ function factSelection(fact: Fact): EvidenceSelection {
   return { title: metricDefinitions[fact.metric].label, name: fact.metric, metric: fact, period: fact.period, channels: fact.scope.channels, sources: fact.sources, scopeLabel: fact.scope.kind === "all" ? "所選通路合計" : fact.scope.channels.join("、") };
 }
 
-export function Diagnosis({ snapshot, onEvidence }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler }) {
+export function Diagnosis({ snapshot, onEvidence, onCreateAction }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler; onCreateAction?: (diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) => void }) {
   const diagnostics = snapshot.report.diagnostics.filter(diagnostic => diagnostic.scope.kind !== "sku");
   const facts = new Map(snapshot.report.facts.map(fact => [fact.id, fact]));
   return <section className="panel" aria-labelledby="diagnosis-heading">
@@ -97,12 +96,14 @@ export function Diagnosis({ snapshot, onEvidence }: { snapshot: WorkspaceSnapsho
         const fact = facts.get(id);
         if (!fact) return <li key={id}>引用事實未找到，無法顯示數值。</li>;
         const period = fact.period.start === snapshot.report.previous.period.start && fact.period.end === snapshot.report.previous.period.end ? "前期" : "本期";
-        return <li key={id}><span>{period} · {metricDefinitions[fact.metric].label}</span><button type="button" className="number-link" onClick={() => onEvidence(factSelection(fact))} aria-label={`查看${period}${metricDefinitions[fact.metric].label}公式與來源，${displayMetric(fact.metric, fact)}`}>{displayMetric(fact.metric, fact)}</button></li>;
+        const scope = fact.scope.kind === "all" ? `所選通路合計（${fact.scope.channels.join("、")}）` : fact.scope.channels.join("、");
+        return <li key={id}><span>{period} · {metricDefinitions[fact.metric].label} · {scope}</span><button type="button" className="number-link" onClick={() => onEvidence(factSelection(fact))} aria-label={`查看${period}${metricDefinitions[fact.metric].label}公式與來源，${displayMetric(fact.metric, fact)}，${scope}`}>{displayMetric(fact.metric, fact)}</button></li>;
       })}</ul>
       <h4>待驗證假說</h4><p>{diagnostic.hypothesis}</p>
       <h4>建議</h4><p>{diagnostic.recommendation}</p>
       <h4>資料限制</h4><ul className="note">{diagnostic.limitations.map(limit => <li key={limit}>{limit}</li>)}</ul>
-      <details><summary>檢視事實識別與規則</summary><p className="note">規則：<code>{diagnostic.code}</code></p><ul>{diagnostic.fact_ids.map(id => <li key={id}><code>{id}</code></li>)}</ul></details>
+      {onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(diagnostic)}>建立行動草稿</button>}
+      <details><summary>稽核資訊：事實識別與規則</summary><p className="note">規則：<code>{diagnostic.code}</code></p><ul>{diagnostic.fact_ids.map(id => <li key={id}><code>{id}</code></li>)}</ul></details>
     </article>)}</div>
   </section>;
 }

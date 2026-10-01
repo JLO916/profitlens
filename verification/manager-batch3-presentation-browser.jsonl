@@ -1,0 +1,16 @@
+{"recorded_at":"2026-10-01T10:13:09.183Z","project":"desktop","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:13:10.096Z","project":"desktop","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:13:10.956Z","project":"desktop","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:13:11.514Z","project":"desktop","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"failed","errors":[]}
+{"recorded_at":"2026-10-01T10:16:43.028Z","project":"desktop","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:16:44.259Z","project":"desktop","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:16:45.301Z","project":"desktop","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:16:46.347Z","project":"desktop","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:18:18.081Z","project":"tablet","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:18:18.944Z","project":"tablet","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:18:19.656Z","project":"tablet","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:18:20.473Z","project":"tablet","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:19:45.210Z","project":"mobile","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:19:46.022Z","project":"mobile","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:19:46.701Z","project":"mobile","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T10:19:47.430Z","project":"mobile","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}

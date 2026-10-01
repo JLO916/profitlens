@@ -1,0 +1,29 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/scenario-sensitivity.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/scenario-sensitivity.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/scenario-sensitivity.test.ts [ tests/scenario-sensitivity.test.ts ]
+Error: Cannot find package '@/domain/scenario-sensitivity' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/scenario-sensitivity.test.ts
+ ❯ tests/scenario-sensitivity.test.ts:6:1
+      4| import { calculateMetrics } from "@/domain/metrics";
+      5| import { buildScenarioBaseline, type ScenarioInputs } from "@/domain/s…
+      6| import { analyzeScenarioSensitivity } from "@/domain/scenario-sensitiv…
+       | ^
+      7| import { AMOUNT_FIELDS, type AmountField, type Summary, type Totals } …
+      8| import { validateDataset } from "@/domain/validation";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  17:21:31
+   Duration  223ms (transform 60ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

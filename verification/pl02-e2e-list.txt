@@ -1,0 +1,14 @@
+Listing tests:
+  [desktop] › period-comparison.spec.ts:81:1 › PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致
+  [desktop] › period-comparison.spec.ts:105:1 › PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍
+  [desktop] › period-comparison.spec.ts:129:50 › PL-02 zero 月合計與日均保留零及未知邊界
+  [desktop] › period-comparison.spec.ts:129:50 › PL-02 missing 月合計與日均保留零及未知邊界
+  [tablet] › period-comparison.spec.ts:81:1 › PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致
+  [tablet] › period-comparison.spec.ts:105:1 › PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍
+  [tablet] › period-comparison.spec.ts:129:50 › PL-02 zero 月合計與日均保留零及未知邊界
+  [tablet] › period-comparison.spec.ts:129:50 › PL-02 missing 月合計與日均保留零及未知邊界
+  [mobile] › period-comparison.spec.ts:81:1 › PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致
+  [mobile] › period-comparison.spec.ts:105:1 › PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍
+  [mobile] › period-comparison.spec.ts:129:50 › PL-02 zero 月合計與日均保留零及未知邊界
+  [mobile] › period-comparison.spec.ts:129:50 › PL-02 missing 月合計與日均保留零及未知邊界
+Total: 12 tests in 1 file

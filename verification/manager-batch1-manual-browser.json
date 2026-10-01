@@ -1,0 +1,83 @@
+{
+  "recorded_at": "2026-10-01T09:08:58.970Z",
+  "url": "http://127.0.0.1:3200/#main-content",
+  "browser": "Codex in-app browser",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 1366,
+      "height": 768
+    },
+    {
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "steps": [
+    {
+      "step": "import_reconciliation",
+      "observed": "4. 來源總額 → 標準欄位 → 本工具指標\n\n對帳涵蓋全部已匯入資料：2026-08-01 ～ 2026-09-30；通路：DTC。這是完整涵蓋範圍的合計，並非只列本期。單位 TWD；精確到分。\n\n來源欄位合計與標準模型合計；差額＝標準總額 − 來源總額\n檔案／來源欄位\t標準欄位\t來源總額\t標準模型總額\t差額／未知原因\nsales_daily.csv／gross_sales\t折扣前、退款前商品收入（gross_sales）\t6100.00\t6100.00\t0.00\nsales_daily.csv／discounts\t商品折扣（discounts）\t0.00\t0.00\t0.00\nsales_daily.csv／refunds\t已入帳商品退款（refunds）\t0.00\t0.00\t0.00\nsales_daily.csv／cogs_net\t銷貨成本淨額（cogs_net）\t2440.00\t2440.00\t0.00\nchannel_costs_daily.csv／platform_fees\t平台費用（platform_fees）\t305.00\t305.00\t0.00\nchannel_costs_daily.csv／payment_fees\t金流費用（payment_fees）\t0.00\t0.00\t0.00\nchannel_costs_daily.csv／fulfillment_costs\t履約費用（fulfillment_costs）\t610.00\t610.00\t0.00\nchannel_costs_daily.csv／other_variable_costs\t其他變動費用（other_variable_costs）\t0.00\t0.00\t0.00\nad_spend_daily.csv／ad_spend\t通路廣告支出（ad_spend）\t1220.00\t1220.00\t0.00\n由標準欄位計算的商品範圍貢獻\n指標與公式\t涵蓋範圍總額\n商品淨營收＝商品收入 − 折扣 − 退款\t6100.00\n商品毛利＝商品淨營收 − 銷貨成本淨額\t3660.00\n行銷前貢獻＝商品毛利 − 平台費 − 金流費 − 履約費 − 其他變動費\t2745.00\n行銷後貢獻＝行銷前貢獻 − 廣告支出\t1525.00\n未涵蓋項目，不得視為零或完整通路損益\n消費者支付的運費收入：未建模，不是零；履約支出仍依已入帳金額扣除。\n營業稅：本模型只接受已整理的未稅商品金額與費用，不自動除以任何稅率。\n平台補助及其他未建模收入：未納入；不可混入商品收入或當成商家折扣。\n固定月租、其他固定費及所得稅：未納入。行銷後貢獻只代表定義範圍內的商品貢獻，不是公司淨利。"
+    },
+    {
+      "step": "mobile_keyboard_table",
+      "observed": {
+        "clientWidth": 311,
+        "scrollLeft": 0.5,
+        "scrollWidth": 425
+      }
+    },
+    {
+      "step": "daily_evidence",
+      "observed": "公式與來源\n\n本期行銷後貢獻日均值｜公式與來源\n關閉\n\n日均值（TWD／日），與期間合計分開呈現；2026-09-01 至 2026-09-30；通路：DTC。\n\nNT$ 25.00\n\n公式：行銷後貢獻期間合計 ÷ 30 個日曆天；Decimal 計算至顯示才取分\n\n公式組成項目（TWD）\n期間合計\nNT$ 750.00\n原始來源列\n\n納入來源共 90 筆；本頁顯示 1–50 筆，每頁最多 50 筆。可翻頁查看全部來源。\n\n金額單位為 TWD，列號是 CSV 的原始實際行號。以下僅展示此指標依賴的欄位；缺列與缺值均不補零。\n\n本期行銷後貢獻日均值的原始來源，第 1 頁，共 2 頁\n檔案／原始行號\t入帳範圍\t來源欄位與值\nad_spend_daily.csv\n第 33 行\t2026-09-01\nDTC\t\n入帳日\n2026-09-01\n通路\nDTC\n幣別\nTWD\n廣告費\n20.00\n\nad_spend_daily.csv\n第 34 "
+    },
+    {
+      "step": "action_confirmed",
+      "observed": false
+    },
+    {
+      "step": "explicit_local_save",
+      "observed": "工作區保存與恢復 此版本已保存\n\n預設只留在此分頁記憶體。您可下載完整工作區備份，或主動保存到這個瀏覽器；均不上傳伺服器。本機副本與下載檔未由本工具加密；共享電腦請避免保存，使用後刪除本機副本。同一瀏覽器的使用者可手動恢復保存檔，不同分頁不會自動載入或同步。\n\n備份包含分析所需資料、欄位對照、已套用範圍、方案、行動、確認狀態與版本；恢復時重新驗證與計算。未套用的日期／匯入草稿、商品搜尋、AI 回應、API key 與傳送同意不保存。校驗碼可偵測損毀，不證明檔案出處；只開啟可信備份。\n\n下載完整工作區備份\n選取工作區備份 JSON\n讀取本機副本預覽\n我同意將工作區資料保存於這個瀏覽器（不自動保存）\n保存本機副本\n刪除本機副本並關閉保存\n\n已保存此版本到這個瀏覽器。本機副本不會自動更新；修改後請再次保存。"
+    },
+    {
+      "step": "reload_empty",
+      "observed": "尚未載入資料\n清空工作區"
+    },
+    {
+      "step": "restored_recalculated_scenario",
+      "observed": "行銷後貢獻\t750.00\t760.00"
+    },
+    {
+      "step": "action_confirmed_native_date",
+      "observed": "原生日期控制項設定2026-10-08後，使用者已確認；先前fill未觸發日期狀態更新，保留草稿。"
+    },
+    {
+      "step": "confirmed_action_restored",
+      "observed": "heading \"優先行動工作稿\" [level=2]\n  - paragraph: 最多三項，可編輯與調整順序；選擇本快照 fact IDs 作為證據。情境結果不等於既有事實。\n  - button \"新增行動\"\n  - article:\n    - heading \"優先 1\" [level=3]\n    - generic: 使用者已確認\n    - group \"編輯優先 1 行動\":\n      - generic: 編輯優先 1 行動\n      - text: 問題\n      - textbox \"問題\": 核對履約費來源與單位成本\n      - text: 具體動作\n      - textbox \"具體動作\": 整理帳單並與通路費用來源逐項對帳\n      - text: 負責角色\n      - textbox \"負責角色\": 營運主管\n      - text: 驗證指標\n      - textbox \"驗證指標\": 履約費用及資料完整性\n      - text: 期限\n      - textbox \"期限\": 2026-10-08\n      - text: 停止條件\n      - textbox \"停止條件\": 費率口徑不一致時停止試算\n      - text: 所需額外資料\n      - textbox \"所需額外資料\": 履約帳單與計費條款\n      - text: 本快照證據（可複選）\n      - listbox \"本快照證據（可複選）\":\n        - option \"2026-08-01–2026-08-31 · 折扣前商品收入 · DTC · 3,100.00 · [\\\"fact\\\",\\\"八九月完整月份｜合成驗收\\\",\\\"2026-08-01\\\",\\\"2026-08-31\\\",\\\"all\\\",[\\\"DTC\\\"],null,\\\"gross_sales\\\"]\"\n        - option \"2026-08-01–2026-08-31 · 商品折扣 · DTC · 0.00 · [\\\"fact\\\",\\\"八九月完整月份｜合成驗收\\\",\\\"2"
+    },
+    {
+      "step": "rules_diagnosis",
+      "observed": "前期 {{fact:F001:gross_sales}}；本期 {{fact:F021:gross_sales}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F002\\\", \\\"F022\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的商品折扣較前期持平（前期 {{fact:F002:discounts}}；本期 {{fact:F022:discounts}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F003\\\", \\\"F023\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的已入帳退款較前期持平（前期 {{fact:F003:refunds}}；本期 {{fact:F023:refunds}}）。退款按入帳日觀察，不等於 cohort 最終退貨率。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F004\\\", \\\"F024\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的銷貨成本淨額較前期下降（前期 {{fact:F004:cogs_net}}；本期 {{fact:F024:cogs_net}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F005\\\", \\\"F025\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的平台費用較前期下降（前期 {{fact:F005:platform_fees}}；本期 {{fact:F025:platform_fees}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F006\\\", \\\"F026\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的金流費用較前期持平（前期 {{fact:F006:payment_fees}}；本期 {{fact:F026:payment_fees}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F007\\\", \\\"F027\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的履約費用較前期下降（前期 {{fact:F007:fulfillment_costs}}；本期 {{fact:F027:fulfillment_costs}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F008\\\", \\\"F028\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的其他變動成本較前期持平（前期 {{fact:F008:other_variable_costs}}；本期 {{fact:F028:other_variable_costs}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F009\\\", \\\"F029\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的廣告費較前期下降（前期 {{fact:F009:ad_spend}}；本期 {{fact:F029:ad_spend}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F010\\\", \\\"F030\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的商品淨營收較前期下降（前期 {{fact:F010:net_revenue}}；本期 {{fact:F030:net_revenue}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F011\\\", \\\"F031\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的商品毛利較前期下降（前期 {{fact:F011:gross_profit}}；本期 {{fact:F031:gross_profit}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F012\\\", \\\"F032\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的行銷前貢獻較前期下降（前期 {{fact:F012:contribution_before_marketing}}；本期 {{fact:F032:contribution_before_marketing}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F013\\\", \\\"F033\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的行銷後貢獻較前期下降（前期 {{fact:F013:contribution_after_marketing}}；本期 {{fact:F033:contribution_after_marketing}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F014\\\", \\\"F034\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的商品毛利率較前期持平（前期 {{fact:F014:gross_margin}}；本期 {{fact:F034:gross_margin}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F015\\\", \\\"F035\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的行銷後貢獻率較前期持平（前期 {{fact:F015:contribution_margin}}；本期 {{fact:F035:contribution_margin}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F016\\\", \\\"F036\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的折扣率較前期持平（前期 {{fact:F016:discount_rate}}；本期 {{fact:F036:discount_rate}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F017\\\", \\\"F037\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的退款金額比較前期持平（前期 {{fact:F017:refund_ratio}}；本期 {{fact:F037:refund_ratio}}）。退款按入帳日觀察，不等於 cohort 最終退貨率。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F018\\\", \\\"F038\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的混合行銷效率 MER較前期持平（前期 {{fact:F018:mer}}；本期 {{fact:F038:mer}}）。MER 不是 ROAS，不提供媒體歸因。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F019\\\", \\\"F039\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的履約費用占淨營收比較前期持平（前期 {{fact:F019:fulfillment_burden}}；本期 {{fact:F039:fulfillment_burden}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" }, { \\\"fact_ids\\\": [ \\\"F020\\\", \\\"F040\\\" ], \\\"kind\\\": \\\"change\\\", \\\"observation\\\": \\\"本期所選通路合計的廣告費占淨營收比較前期持平（前期 {{fact:F020:marketing_burden}}；本期 {{fact:F040:marketing_burden}}）。完整自然月比較；金額為期間合計，不代表日均變化。\\\" } ] }\"\n    - generic \"本機 API 請求與同意格式\"\n    - generic \"僅本機的別名與來源對照（不傳送）\"\n    - checkbox \"我已檢查預覽，並同意將這份彙總資料傳送至 OpenAI\" [disabled]\n    - text: 我已檢查預覽，並同意將這份彙總資料傳送至 OpenAI\n    - paragraph: 同意僅適用於這份快照與此次操作。重新載入、換期間或換通路後會撤銷同意與舊回應；即使資料相同或切回原範圍，也須重新確認。\n    - button \"傳送已同意的彙總資料\" [disabled]\n  - paragraph: 行銷後貢獻不等於公司淨利，不含未輸入的固定費與所得稅。\n  - paragraph: 本機記憶體資料 · 重新整理會清空分頁，已保存的備份須手動恢復 · AI 僅在預覽同意後選配使用\n- alert\n- generic: DTC"
+    },
+    {
+      "step": "clear_warning",
+      "observed": "清空前先保存工作區\n\n目前有未保存的資料、方案、行動或匯入草稿。清空後無法還原未保存變更；已下載的備份及瀏覽器本機副本仍保留。\n\n返回並保存\n捨棄未保存變更並清空"
+    },
+    {
+      "step": "manual_exports",
+      "observed": "已操作決策 Markdown／CSV／JSON 與完整工作區備份按鈕，顯示建立下载提示；未透過人工瀏覽器讀回下載檔位元。E2E另有完整下載/恢復斷言。"
+    }
+  ],
+  "console": [],
+  "limitations": [
+    "人工下載只確認UI提示，檔案內容由Playwright自動化核對",
+    "日期fill未觸發controlled state，改原生date field setValue後確認成功",
+    "未使用真實商業資料或live模型"
+  ]
+}

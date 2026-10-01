@@ -1,0 +1,207 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/period-comparison.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/period-comparison.test.ts (12 tests | 11 failed) 385ms
+     × accepts the review's full August 31 / September 30 case only as calendar months 6ms
+     × blocks the review's reversed chronology in both manifest and analysis 4ms
+     × rejects incomplete or multiple natural months: {"previous_period":{"start":"2026-08-02","end":"2026-08-31"}} 1ms
+     × rejects incomplete or multiple natural months: {"current_period":{"start":"2026-09-01","end":"2026-09-29"}} 0ms
+     × rejects incomplete or multiple natural months: {"previous_period":{"start":"2026-07-01","end":"2026-08-31"}} 0ms
+     × accepts leap-year complete February and rejects invalid modes, coverage and future endpoints 0ms
+     × normalizes old manifest to same_days and preserves golden totals and bridge 1ms
+     × keeps untruncated monthly totals, separate Decimal daily averages, and partial weeks 1ms
+     × zero is zero money; null remains null through daily average and change 1ms
+     × AI snapshot explicitly validates comparison mode, day counts, chronology and as-of 0ms
+     × CSV and all decision formats contain mode, days and distinct daily amounts 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > accepts the review's full August 31 / September 30 case only as calendar months
+AssertionError: expected [ 'UNEQUAL_PERIOD_LENGTH' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "UNEQUAL_PERIOD_LENGTH",
++ ]
+
+ ❯ tests/period-comparison.test.ts:42:44
+     40| describe("PL-02 explicit period comparison contract", () => {
+     41|   it("accepts the review's full August 31 / September 30 case only as …
+     42|     expect(validatePeriods(monthSettings)).toEqual([]);
+       |                                            ^
+     43|     expect(validatePeriods({ ...monthSettings, comparison_mode: "same_…
+     44|     const { comparison_mode: _mode, ...legacy } = monthSettings;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > blocks the review's reversed chronology in both manifest and analysis
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/period-comparison.test.ts:51:103
+     49|     const manifest = input.manifest as Manifest;
+     50|     input.manifest = { ...manifest, previous_period: manifest.current_…
+     51|     expect(validateDataset(input).issues.some(issue => issue.reason_co…
+       |                                                                                                       ^
+     52|     const dataset = validateDataset(fixture()).dataset!;
+     53|     expect(() => analyzeDataset(dataset, { previous_period: manifest.c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > rejects incomplete or multiple natural months: {"previous_period":{"start":"2026-08-02","end":"2026-08-31"}}
+AssertionError: expected [] to include 'INCOMPLETE_CALENDAR_MONTH'
+ ❯ tests/period-comparison.test.ts:60:61
+     58|     { previous_period: { start: "2026-07-01", end: "2026-08-31" } },
+     59|   ])("rejects incomplete or multiple natural months: %j", patch => {
+     60|     expect(validatePeriods({ ...monthSettings, ...patch })).toContain(…
+       |                                                             ^
+     61|   });
+     62|   it("accepts leap-year complete February and rejects invalid modes, c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > rejects incomplete or multiple natural months: {"current_period":{"start":"2026-09-01","end":"2026-09-29"}}
+AssertionError: expected [ 'UNEQUAL_PERIOD_LENGTH' ] to include 'INCOMPLETE_CALENDAR_MONTH'
+ ❯ tests/period-comparison.test.ts:60:61
+     58|     { previous_period: { start: "2026-07-01", end: "2026-08-31" } },
+     59|   ])("rejects incomplete or multiple natural months: %j", patch => {
+     60|     expect(validatePeriods({ ...monthSettings, ...patch })).toContain(…
+       |                                                             ^
+     61|   });
+     62|   it("accepts leap-year complete February and rejects invalid modes, c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > rejects incomplete or multiple natural months: {"previous_period":{"start":"2026-07-01","end":"2026-08-31"}}
+AssertionError: expected [ 'UNEQUAL_PERIOD_LENGTH', …(1) ] to include 'INCOMPLETE_CALENDAR_MONTH'
+ ❯ tests/period-comparison.test.ts:60:61
+     58|     { previous_period: { start: "2026-07-01", end: "2026-08-31" } },
+     59|   ])("rejects incomplete or multiple natural months: %j", patch => {
+     60|     expect(validatePeriods({ ...monthSettings, ...patch })).toContain(…
+       |                                                             ^
+     61|   });
+     62|   it("accepts leap-year complete February and rejects invalid modes, c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > accepts leap-year complete February and rejects invalid modes, coverage and future endpoints
+AssertionError: expected [ 'UNEQUAL_PERIOD_LENGTH' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "UNEQUAL_PERIOD_LENGTH",
++ ]
+
+ ❯ tests/period-comparison.test.ts:63:202
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > normalizes old manifest to same_days and preserves golden totals and bridge
+AssertionError: expected undefined to be 'same_days' // Object.is equality
+
+- Expected:
+"same_days"
+
++ Received:
+undefined
+
+ ❯ tests/period-comparison.test.ts:70:46
+     68|   it("normalizes old manifest to same_days and preserves golden totals…
+     69|     const dataset = validateDataset(fixture()).dataset!;
+     70|     expect(dataset.manifest.comparison_mode).toBe("same_days");
+       |                                              ^
+     71|     const report = analyzeDataset(dataset);
+     72|     expect(report.scope.comparison_mode).toBe("same_days");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > keeps untruncated monthly totals, separate Decimal daily averages, and partial weeks
+AssertionError: expected 'blocking' to be 'valid' // Object.is equality
+
+Expected: "valid"
+Received: "blocking"
+
+ ❯ monthlySnapshot tests/period-comparison.test.ts:35:37
+     33|   const input = monthlyInput(zero, missing);
+     34|   const validation = validateDataset(input);
+     35|   expect(validation.classification).toBe(missing ? "partial" : "valid"…
+       |                                     ^
+     36|   const dataset = validation.dataset!;
+     37|   return { dataset, snapshot: await createSnapshot(dataset, {}, await …
+ ❯ tests/period-comparison.test.ts:78:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > zero is zero money; null remains null through daily average and change
+AssertionError: expected 'blocking' to be 'valid' // Object.is equality
+
+Expected: "valid"
+Received: "blocking"
+
+ ❯ monthlySnapshot tests/period-comparison.test.ts:35:37
+     33|   const input = monthlyInput(zero, missing);
+     34|   const validation = validateDataset(input);
+     35|   expect(validation.classification).toBe(missing ? "partial" : "valid"…
+       |                                     ^
+     36|   const dataset = validation.dataset!;
+     37|   return { dataset, snapshot: await createSnapshot(dataset, {}, await …
+ ❯ tests/period-comparison.test.ts:93:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > AI snapshot explicitly validates comparison mode, day counts, chronology and as-of
+AssertionError: expected 'blocking' to be 'valid' // Object.is equality
+
+Expected: "valid"
+Received: "blocking"
+
+ ❯ monthlySnapshot tests/period-comparison.test.ts:35:37
+     33|   const input = monthlyInput(zero, missing);
+     34|   const validation = validateDataset(input);
+     35|   expect(validation.classification).toBe(missing ? "partial" : "valid"…
+       |                                     ^
+     36|   const dataset = validation.dataset!;
+     37|   return { dataset, snapshot: await createSnapshot(dataset, {}, await …
+ ❯ tests/period-comparison.test.ts:103:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > CSV and all decision formats contain mode, days and distinct daily amounts
+AssertionError: expected 'blocking' to be 'valid' // Object.is equality
+
+Expected: "valid"
+Received: "blocking"
+
+ ❯ monthlySnapshot tests/period-comparison.test.ts:35:37
+     33|   const input = monthlyInput(zero, missing);
+     34|   const validation = validateDataset(input);
+     35|   expect(validation.classification).toBe(missing ? "partial" : "valid"…
+       |                                     ^
+     36|   const dataset = validation.dataset!;
+     37|   return { dataset, snapshot: await createSnapshot(dataset, {}, await …
+ ❯ tests/period-comparison.test.ts:113:41
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 1 passed (12)
+   Start at  16:41:51
+   Duration  662ms (transform 91ms, setup 0ms, import 148ms, tests 385ms, environment 0ms)
+

@@ -3,6 +3,7 @@ import { buildBridge } from "./bridge";
 import { dayCount, validatePeriods } from "./date";
 import { calculateMetrics } from "./metrics";
 import { diagnose } from "./rules";
+import { comparePeriods } from "./comparison";
 import { PRODUCT_METRICS, type AnalysisFilters, type Dataset, type Metrics, type Period, type ProductFilters, type ProductMetrics, type ProductRow, type SalesRow } from "./types";
 
 function selectChannels(dataset: Dataset, selected?: string[]): string[] {
@@ -24,11 +25,12 @@ function productMetrics(metrics: Metrics): ProductMetrics {
 /** 僅限已驗證的完整通路scope；拒絕把SKU/category filters帶進通路貢獻。 */
 export function analyzeDataset(dataset: Dataset, filters: AnalysisFilters = {}) {
   checkDataset(dataset);
-  if (!filters || Object.keys(filters).some(key => !["channels", "previous_period", "current_period"].includes(key))) throw new TypeError("INVALID_CHANNEL_ANALYSIS_FILTER");
+  if (!filters || Object.keys(filters).some(key => !["channels", "previous_period", "current_period", "comparison_mode"].includes(key))) throw new TypeError("INVALID_CHANNEL_ANALYSIS_FILTER");
   const channels = selectChannels(dataset, filters.channels);
   const previousPeriod = filters.previous_period ?? dataset.manifest.previous_period;
   const currentPeriod = filters.current_period ?? dataset.manifest.current_period;
-  const periodErrors = validatePeriods({ ...dataset.manifest, previous_period: previousPeriod, current_period: currentPeriod });
+  const comparisonMode = filters.comparison_mode === undefined ? dataset.manifest.comparison_mode ?? "same_days" : filters.comparison_mode;
+  const periodErrors = validatePeriods({ ...dataset.manifest, comparison_mode: comparisonMode, previous_period: previousPeriod, current_period: currentPeriod });
   if (periodErrors.length) throw new RangeError(periodErrors.join(","));
   const previous = aggregatePeriod(dataset, previousPeriod, channels);
   const current = aggregatePeriod(dataset, currentPeriod, channels);
@@ -38,7 +40,8 @@ export function analyzeDataset(dataset: Dataset, filters: AnalysisFilters = {}) 
     metric_version: "contribution-v1" as const,
     data_as_of: dataset.manifest.data_as_of,
     dataset_id: dataset.manifest.dataset_id,
-    scope: { channels: [...channels], previous_period: { ...previousPeriod }, current_period: { ...currentPeriod } },
+    scope: { comparison_mode: comparisonMode, channels: [...channels], previous_period: { ...previousPeriod }, current_period: { ...currentPeriod } },
+    comparison: comparePeriods(previous, current, comparisonMode),
     previous,
     current,
     bridge: buildBridge(previous.totals, current.totals),

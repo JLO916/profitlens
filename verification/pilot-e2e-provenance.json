@@ -1,0 +1,14 @@
+{
+  "source": "tests/e2e/m6-acceptance.spec.ts",
+  "source_sha256": "3725a94c0beb754fc7a02631ce13b9854440a6e96ca34f22204180586e989659",
+  "change": "Only evidence filename prefix; all three original tests and assertions unchanged",
+  "uses_existing_build": "p9LCsepxPsSU3ROkD0TCg",
+  "server": "http://127.0.0.1:3200",
+  "mode": "PUBLIC_DEMO",
+  "report_path_correction": {
+    "original": "verification/verification/pilot-e2e-results.json",
+    "relocated": "verification/pilot-e2e-results.json",
+    "sha256_unchanged": "274f6811c1fb7667bf51276e0bfa1f7eeb169b232e8b714bf61d378af94a2857",
+    "reason": "Playwright resolves reporter path relative to configDir; corrected outputFile after successful run; no test logic changed"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "git_head": "04e186bf7be18102e2d23b71b9d4d74fe521a2f1",
+  "source_files": [
+    {
+      "path": "src/ai/contracts.ts",
+      "sha256": "218a29ff17ce93a6e52b286d77c51e11cef7ea5da1fe68f4868afa8c0f700cff"
+    },
+    {
+      "path": "src/ai/grounding.ts",
+      "sha256": "a58f9d9a2d5faaea64e1ca70fb2129f056b8fe20cfd6e18376b02ea85eeb114a"
+    },
+    {
+      "path": "src/ai/prompt.ts",
+      "sha256": "68a25baa22ea138db0bd9cb9e27c5aed92272b109d99f8d52e13af2ea8a42e45"
+    },
+    {
+      "path": "src/ai/provider.ts",
+      "sha256": "e4275b2eb65dc6969396b32386e07ca5a28f24d31a7299b8ae1697101bedd7d2"
+    },
+    {
+      "path": "src/ai/service.ts",
+      "sha256": "fa026f169214ed7fa3804e6f6cfb350f25ee18683176561c447b6fa8e5463d44"
+    },
+    {
+      "path": "src/app/globals.css",
+      "sha256": "a9f75886bceec653bdc047777f2ac1c95eb2c05288ff9c14e4c360fbb75f00b2"
+    },
+    {
+      "path": "src/application/ai-snapshot.ts",
+      "sha256": "8b7425756e22e15fe798059e1d5b632f72393e63519132d1b3248f9b59657e1c"
+    },
+    {
+      "path": "src/application/decision-export.ts",
+      "sha256": "2eb3d2bf4d9a0a6bfeb44e24d358679086b67a295f13774c78302ae614fff183"
+    },
+    {
+      "path": "src/application/decision.ts",
+      "sha256": "d4d212ac3e8cec269296111827f87fbf38dad0f82036648e3bd9a2ad4654cc28"
+    },
+    {
+      "path": "src/application/export.ts",
+      "sha256": "61309cb3c358d1cffacc0133415e2b071b1bf758ec49f1894c422cdd003a540d"
+    },
+    {
+      "path": "src/application/import-guidance.ts",
+      "sha256": "d408935bcd287ea1289cf764f574aa2e0b3fb6f05ef0d3d140d9e269a9e0646a"
+    },
+    {
+      "path": "src/application/import.ts",
+      "sha256": "5c3f70dd571158b7de67c3466d14316a60aa7effeeae798fd0a0bdf627fbd1f9"
+    },
+    {
+      "path": "src/application/local-store.ts",
+      "sha256": "9f6a301d948c1f85d49fca8c9d8889870f358793905b07cb8350239348ba3a5b"
+    },
+    {
+      "path": "src/application/workspace-backup.ts",
+      "sha256": "c6ad000cdbdab8278573a5e6614f2607024dba8501d4c7b197dbe1809c8a2cfd"
+    },
+    {
+      "path": "src/components/dashboard.tsx",
+      "sha256": "5943370dadd195d3cef2cc26ea4cb48bda9ebbbb5d21c5285cdca3c27f5bfdae"
+    },
+    {
+      "path": "src/components/decision-workbench.tsx",
+      "sha256": "f0e12e50d0b4a2ebc277a579e177e37061901e98276eb8892910289a93ccdf7f"
+    },
+    {
+      "path": "src/components/import-panel.tsx",
+      "sha256": "eada4c140c40400a3aed8504d7011657bf713fa5121f593677897b24c9ff4c27"
+    },
+    {
+      "path": "src/components/overview.tsx",
+      "sha256": "cce62003ce2761912ad13e24b371b86f76f675934e69f2bec24b2c6d475ae361"
+    },
+    {
+      "path": "src/components/workspace-storage.tsx",
+      "sha256": "555b3cabf135215397782f7d28c5de5ca5ae4a6c4bedd4da40f7e56d704d9e69"
+    },
+    {
+      "path": "src/domain/analysis.ts",
+      "sha256": "5518beb18091770cc8aae356b70dde28a0937be79e9eba8b35d4f802ee8c1c21"
+    },
+    {
+      "path": "src/domain/comparison.ts",
+      "sha256": "2c302147363f1d49daaa7cacef6084c1344037ece830a283fe51b1fccbf877bb"
+    },
+    {
+      "path": "src/domain/date.ts",
+      "sha256": "354c6d10291dacf15444411dd4d86f7103d39e4143b7118123829aa150db87f1"
+    },
+    {
+      "path": "src/domain/types.ts",
+      "sha256": "851647d086aa280b8355dd04aaa8c297f8cbd02cbb970589bd0b7c3e5724c0cc"
+    },
+    {
+      "path": "src/domain/validation.ts",
+      "sha256": "a0742eacb03d122dc45a34ddb0c414cd362c85dd607dc0d9d6b2b03defa9ecf2"
+    }
+  ]
+}

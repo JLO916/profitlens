@@ -1,0 +1,4 @@
+{"project":"desktop","status":"passed","synthetic_only":true,"dataset_id":"alternative-import-synthetic-v1","baseline":"40.00","scenario":"44.00","delta":"4.00","exports":["JSON","CSV","Markdown"],"browser_errors":[]}
+{"project":"desktop","status":"passed","synthetic_only":true,"dataset_id":"alternative-import-synthetic-v1","baseline":"40.00","scenario":"44.00","delta":"4.00","exports":["JSON","CSV","Markdown"],"browser_errors":[]}
+{"project":"tablet","status":"passed","synthetic_only":true,"dataset_id":"alternative-import-synthetic-v1","baseline":"40.00","scenario":"44.00","delta":"4.00","exports":["JSON","CSV","Markdown"],"browser_errors":[]}
+{"project":"mobile","status":"passed","synthetic_only":true,"dataset_id":"alternative-import-synthetic-v1","baseline":"40.00","scenario":"44.00","delta":"4.00","exports":["JSON","CSV","Markdown"],"browser_errors":[]}

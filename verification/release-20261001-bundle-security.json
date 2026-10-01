@@ -1,0 +1,17 @@
+{
+  "recorded_at": "2026-10-01T11:11:50.212391+00:00",
+  "build_id": "lHUOyzPXNUWjxCt_69L8j",
+  "synthetic_canary_only": true,
+  "live_ai_enabled": false,
+  "files_scanned": 23,
+  "patterns": [
+    "sk-PROFITLENS-RELEASE-20261001-NONSECRET-BUNDLE-CANARY",
+    "OPENAI_API_KEY",
+    "OPENAI_MODEL",
+    "dangerouslyAllowBrowser",
+    "api.openai.com/v1"
+  ],
+  "violations": [],
+  "status": "pass",
+  "scope": "Local production build client assets only; not remote deployment or live model test"
+}

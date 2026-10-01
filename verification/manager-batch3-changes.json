@@ -1,0 +1,262 @@
+{
+  "at": "2026-10-01T10:26:40.117355+00:00",
+  "compared_to": "manager-batch3-starting-state.json",
+  "changed_non_verification_files": [
+    {
+      "path": "README.md",
+      "status": "modified",
+      "sha256": "58346b6823ea441b5563250c8f03ed07e0102882e416d98011f36f25baad40df"
+    },
+    {
+      "path": "docs/ACCEPTANCE.md",
+      "status": "modified",
+      "sha256": "fcc5b14436f75355e0f8b58f16c5e85dc35cd1beb75e3c295ae7133e77b3d5cc"
+    },
+    {
+      "path": "docs/AI_CONTRACT.md",
+      "status": "modified",
+      "sha256": "d1a48498b1d681817408cf52a5a9b2110021c60a60ac8f6950f919196a2a07e0"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "status": "modified",
+      "sha256": "f697fae48438c50eced79472deda2c4460178209a416b5b4c04e6fba72bc3e0f"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "status": "modified",
+      "sha256": "58d19d6a1b68135a18189649a88a0f1ea3a44f70f3358a256ca4e0f9420f3dd0"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "status": "modified",
+      "sha256": "d21c9376344bf2b761c7c99aa0149ead373c88e28ac836629a53064675368640"
+    },
+    {
+      "path": "playwright.config.ts",
+      "status": "modified",
+      "sha256": "85af0c2089361b12b5df5e85e07a46125a606e8de68be234cfe64615a53d88cb"
+    },
+    {
+      "path": "src/app/globals.css",
+      "status": "modified",
+      "sha256": "f4774e0554b863d20a9472564e3e583394cb4473abc71f81ff8b465734f5ee30"
+    },
+    {
+      "path": "src/application/ai-client.ts",
+      "status": "modified",
+      "sha256": "90e0bc6f12558d834e9e9f7ab0ef5f9f5004286243a95f367dd6b5dd150bcd1f"
+    },
+    {
+      "path": "src/components/actions-workbench.tsx",
+      "status": "modified",
+      "sha256": "bacd9d2dfaa49993b1761eaf3f141ba0362926e03c46352846dd49d2849b0c9d"
+    },
+    {
+      "path": "src/components/ai-panel.tsx",
+      "status": "modified",
+      "sha256": "5ae81298a8be73e6da0e4174ca390f212824db868d43434f2b24e1735abffff5"
+    },
+    {
+      "path": "src/components/dashboard.tsx",
+      "status": "modified",
+      "sha256": "14f5d429ff08e38018f42db50420c1b9d3cc6d4b420ca6110cbafef6a4cf40b8"
+    },
+    {
+      "path": "src/components/decision-workbench.tsx",
+      "status": "modified",
+      "sha256": "b64026cc8b768088e587786b630bc6f0784bd4149b28b05bda1473cf05bf331b"
+    },
+    {
+      "path": "src/components/issue-list.tsx",
+      "status": "modified",
+      "sha256": "add2e865815cc86a4268c443b61549b988542b5752c22cf2c65cf0c5ba02465b"
+    },
+    {
+      "path": "src/components/workspace-panels.tsx",
+      "status": "modified",
+      "sha256": "37b572b4bb2319e1c37ea0091ed8e8498df266b58561684356bd01106598f121"
+    },
+    {
+      "path": "tests/ai-presentation.test.ts",
+      "status": "new",
+      "sha256": "db1920a0b0a2d6d7a1c7b1f19e418b962f220c84e3a0d1ac6b42f9a3f68b2b4f"
+    },
+    {
+      "path": "tests/e2e/action-workspace.spec.ts",
+      "status": "modified",
+      "sha256": "6510633d61458af170170439e744e5c7afd9a3638909e9c6b64e22dd4866e086"
+    },
+    {
+      "path": "tests/e2e/ai.spec.ts",
+      "status": "modified",
+      "sha256": "073b668d5b7bd63d9ae786b9d6d125fbd7249a77b48c924aebcea7c8352e264f"
+    },
+    {
+      "path": "tests/e2e/import.spec.ts",
+      "status": "modified",
+      "sha256": "4d97b1704a185b507a79b17257cd674a2e3bfccaf54761461240f418150ac205"
+    },
+    {
+      "path": "tests/e2e/m6-acceptance.spec.ts",
+      "status": "modified",
+      "sha256": "3725a94c0beb754fc7a02631ce13b9854440a6e96ca34f22204180586e989659"
+    },
+    {
+      "path": "tests/e2e/manager-presentation.spec.ts",
+      "status": "new",
+      "sha256": "999f20a1335242d81f2fb29ac003b7868ede18b33d6485996f0e1087638eabb5"
+    },
+    {
+      "path": "tests/e2e/manager-summary.spec.ts",
+      "status": "modified",
+      "sha256": "733d8d6a59a6a9683dfbc98a5c729e7a73f49922124143e945477796bdcd53d2"
+    },
+    {
+      "path": "tests/e2e/period-comparison.spec.ts",
+      "status": "modified",
+      "sha256": "01bd9c8852910e264fd91c0ee31b67e22bf7c4a69e05b4b02b4c20a5e3004574"
+    },
+    {
+      "path": "tests/e2e/product-comparison.spec.ts",
+      "status": "modified",
+      "sha256": "441386fe4e47674a0581016552eb81a6d5c614f70e8b30757851e41d7b8d2c48"
+    },
+    {
+      "path": "tests/e2e/scenario-sensitivity.spec.ts",
+      "status": "modified",
+      "sha256": "d66e9df2c2c08c98d19461e9211a075e6701a81f654b484d34d091f6f397c7c9"
+    },
+    {
+      "path": "tests/e2e/scenarios.spec.ts",
+      "status": "modified",
+      "sha256": "20f6069c893a5521e73d691448675133970a5c2aa69b1127573f7a05d546aa1a"
+    },
+    {
+      "path": "tests/e2e/workspace-storage.spec.ts",
+      "status": "modified",
+      "sha256": "d63dc52bec7caaaae27d5cee39713960e570e9447d1b1636856ac73f7c53cef6"
+    },
+    {
+      "path": "tests/e2e/workspace.spec.ts",
+      "status": "modified",
+      "sha256": "f8e08a824e7a50805f89fd297d437005e1f063d739838ed7b28c4c606e9e455f"
+    },
+    {
+      "path": "tests/manager-language.test.ts",
+      "status": "new",
+      "sha256": "0090961760465d58a3b96b1f2d4c9ed38ea7a0a47f1fd46eb4d1abb8330af186"
+    }
+  ],
+  "removed_starting_files": [],
+  "verification_artifacts": [
+    "manager-batch3-acceptance.md",
+    "manager-batch3-advanced-desktop.png",
+    "manager-batch3-advanced-mobile.png",
+    "manager-batch3-advanced-tablet.png",
+    "manager-batch3-ai-green.txt",
+    "manager-batch3-ai-lint.txt",
+    "manager-batch3-ai-red.txt",
+    "manager-batch3-ai-truth-green.txt",
+    "manager-batch3-ai-truth-red.txt",
+    "manager-batch3-baseline.txt",
+    "manager-batch3-browser-meta.jsonl",
+    "manager-batch3-check.py",
+    "manager-batch3-diagnosis-desktop.png",
+    "manager-batch3-diagnosis-mobile.png",
+    "manager-batch3-diagnosis-tablet.png",
+    "manager-batch3-e2e-changes.md",
+    "manager-batch3-e2e-final.txt",
+    "manager-batch3-e2e-first-results.json",
+    "manager-batch3-e2e-first.txt",
+    "manager-batch3-e2e-list.txt",
+    "manager-batch3-e2e-results.json",
+    "manager-batch3-final-source-check.json",
+    "manager-batch3-integrity.json",
+    "manager-batch3-language-green.txt",
+    "manager-batch3-language-lint.txt",
+    "manager-batch3-language-red.txt",
+    "manager-batch3-lint-final.txt",
+    "manager-batch3-lint.txt",
+    "manager-batch3-manual-browser.json",
+    "manager-batch3-manual-desktop-ai-disabled.jpg",
+    "manager-batch3-manual-desktop-home.jpg",
+    "manager-batch3-manual-desktop-overview.jpg",
+    "manager-batch3-manual-mobile-diagnosis.jpg",
+    "manager-batch3-manual-mobile-evidence.jpg",
+    "manager-batch3-manual-tablet-validation.jpg",
+    "manager-batch3-mock-desktop-ai-viewport.png",
+    "manager-batch3-mock-desktop-ai.png",
+    "manager-batch3-mock-mobile-ai-viewport.png",
+    "manager-batch3-mock-mobile-ai.png",
+    "manager-batch3-mock-tablet-ai-viewport.png",
+    "manager-batch3-mock-tablet-ai.png",
+    "manager-batch3-presentation-browser.jsonl",
+    "manager-batch3-preview-server-final.txt",
+    "manager-batch3-preview-server.txt",
+    "manager-batch3-regression-actions-browser.jsonl",
+    "manager-batch3-regression-actions-desktop.png",
+    "manager-batch3-regression-actions-mobile.png",
+    "manager-batch3-regression-actions-tablet.png",
+    "manager-batch3-regression-desktop-restored.png",
+    "manager-batch3-regression-mobile-restored.png",
+    "manager-batch3-regression-period-browser.jsonl",
+    "manager-batch3-regression-period-desktop.png",
+    "manager-batch3-regression-period-mobile.png",
+    "manager-batch3-regression-period-tablet.png",
+    "manager-batch3-regression-products-browser.jsonl",
+    "manager-batch3-regression-products-desktop.png",
+    "manager-batch3-regression-products-mobile.png",
+    "manager-batch3-regression-products-tablet.png",
+    "manager-batch3-regression-regression-m6-context-isolation-meta.jsonl",
+    "manager-batch3-regression-regression-m6-desktop-complete-flow.png",
+    "manager-batch3-regression-regression-m6-mobile-complete-flow.png",
+    "manager-batch3-regression-regression-m6-regression-browser-meta.jsonl",
+    "manager-batch3-regression-regression-m6-regression-desktop-actions.png",
+    "manager-batch3-regression-regression-m6-regression-desktop-scenarios.png",
+    "manager-batch3-regression-regression-m6-regression-import-regression-desktop-import.png",
+    "manager-batch3-regression-regression-m6-regression-import-regression-desktop-overview.png",
+    "manager-batch3-regression-regression-m6-regression-import-regression-meta.jsonl",
+    "manager-batch3-regression-regression-m6-regression-import-regression-mobile-import.png",
+    "manager-batch3-regression-regression-m6-regression-import-regression-mobile-overview.png",
+    "manager-batch3-regression-regression-m6-regression-import-regression-tablet-import.png",
+    "manager-batch3-regression-regression-m6-regression-import-regression-tablet-overview.png",
+    "manager-batch3-regression-regression-m6-regression-mobile-actions.png",
+    "manager-batch3-regression-regression-m6-regression-mobile-scenarios.png",
+    "manager-batch3-regression-regression-m6-regression-tablet-actions.png",
+    "manager-batch3-regression-regression-m6-regression-tablet-scenarios.png",
+    "manager-batch3-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+    "manager-batch3-regression-regression-m6-regression-workspace-regression-desktop-products.png",
+    "manager-batch3-regression-regression-m6-regression-workspace-regression-desktop.png",
+    "manager-batch3-regression-regression-m6-regression-workspace-regression-mobile-products.png",
+    "manager-batch3-regression-regression-m6-regression-workspace-regression-mobile.png",
+    "manager-batch3-regression-regression-m6-regression-workspace-regression-tablet-products.png",
+    "manager-batch3-regression-regression-m6-regression-workspace-regression-tablet.png",
+    "manager-batch3-regression-regression-m6-tablet-complete-flow.png",
+    "manager-batch3-regression-regression-m6-ui-flow-meta.jsonl",
+    "manager-batch3-regression-sensitivity-browser.jsonl",
+    "manager-batch3-regression-sensitivity-desktop.png",
+    "manager-batch3-regression-sensitivity-mobile.png",
+    "manager-batch3-regression-sensitivity-tablet.png",
+    "manager-batch3-regression-storage-browser.jsonl",
+    "manager-batch3-regression-summary-browser.jsonl",
+    "manager-batch3-regression-summary-desktop.png",
+    "manager-batch3-regression-summary-mobile.png",
+    "manager-batch3-regression-summary-print-desktop.png",
+    "manager-batch3-regression-summary-print-mobile.png",
+    "manager-batch3-regression-summary-print-tablet.png",
+    "manager-batch3-regression-summary-print.pdf",
+    "manager-batch3-regression-summary-tablet.png",
+    "manager-batch3-regression-tablet-restored.png",
+    "manager-batch3-security-check.txt",
+    "manager-batch3-security.json",
+    "manager-batch3-shell-lint.txt",
+    "manager-batch3-starting-state.json",
+    "manager-batch3-summary-print-render.png",
+    "manager-batch3-tested-source-first.json",
+    "manager-batch3-tested-source.json",
+    "manager-batch3-typecheck-final.txt",
+    "manager-batch3-typecheck.txt",
+    "manager-batch3-unit.txt"
+  ]
+}

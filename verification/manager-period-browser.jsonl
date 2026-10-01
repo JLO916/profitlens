@@ -1,0 +1,16 @@
+{"project":"desktop","test":"PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致","status":"failed","browser_errors":[]}
+{"project":"desktop","test":"PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-02 zero 月合計與日均保留零及未知邊界","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-02 missing 月合計與日均保留零及未知邊界","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-02 zero 月合計與日均保留零及未知邊界","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-02 missing 月合計與日均保留零及未知邊界","status":"passed","browser_errors":[]}
+{"project":"tablet","test":"PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致","status":"passed","browser_errors":[]}
+{"project":"tablet","test":"PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍","status":"passed","browser_errors":[]}
+{"project":"tablet","test":"PL-02 zero 月合計與日均保留零及未知邊界","status":"passed","browser_errors":[]}
+{"project":"tablet","test":"PL-02 missing 月合計與日均保留零及未知邊界","status":"passed","browser_errors":[]}
+{"project":"mobile","test":"PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致","status":"passed","browser_errors":[]}
+{"project":"mobile","test":"PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍","status":"passed","browser_errors":[]}
+{"project":"mobile","test":"PL-02 zero 月合計與日均保留零及未知邊界","status":"passed","browser_errors":[]}
+{"project":"mobile","test":"PL-02 missing 月合計與日均保留零及未知邊界","status":"passed","browser_errors":[]}

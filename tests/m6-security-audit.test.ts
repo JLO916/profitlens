@@ -65,7 +65,7 @@ describe("M6 independent AI security regression audit (synthetic data; no networ
   it("does not show a live response that relabels contribution as company net profit", async () => {
     const { snapshot, output, placeholder } = currentContributionOutput();
     output.insights[0].verification_metric = `本期公司淨利為 ${placeholder}。`;
-    const metadata = { provider: "openai", model: "m6-audit-mock-only", prompt_version: "profitlens-insights-v2", generated_at: "2026-10-01T00:00:00.000Z", attempts: 1, latency_ms: 0, usage: null };
+    const metadata = { provider: "openai", model: "m6-audit-mock-only", prompt_version: "profitlens-insights-v3", generated_at: "2026-10-01T00:00:00.000Z", attempts: 1, latency_ms: 0, usage: null };
     const fetcher = vi.fn(async () => Response.json({ status: "live", snapshot_id: snapshot.snapshot_id, output, metadata }));
     const result = await sendAiRequest({ payload: snapshot, revision: 1, consentBinding: createAiConsentBinding(snapshot, 1), isCurrent: () => true, fetcher });
     expect(result).toEqual({ status: "fallback", reason: "SEMANTIC_ERROR" });

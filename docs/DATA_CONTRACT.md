@@ -45,7 +45,7 @@ ad_spend 為非負數；廣告退款／跨期更正先在資料提供端依相�
 ## Join and filter rules
 先彙總 sales 到 date × channel，再按唯一鍵合併其他兩檔。不可把一筆日廣告費接到每個 SKU 後重新加總。
 通路貢獻使用完整該通路 SKU 集合；選 SKU／category 僅影響商品毛利區塊，並清楚標示範圍，或在商品頁直接停用行銷後貢獻。
-前後期需相同天數且不重疊、都落在 coverage 內。data_as_of 記錄快照日期；退款按入帳日，因此不是訂單 cohort 的最終獲利，不能宣稱當期退款比代表最終退貨率。
+比較模式欄位 `comparison_mode` 支援 `same_days`（相同天數）與 `calendar_months`（完整自然月）；舊 manifest 未填時明確按 `same_days` 解析。`same_days` 前後期天數必須相同；`calendar_months` 每期必須恰為一個完整自然月，月份天數可以不同，不截掉任何日期。前期迄日必須早於本期起日，兩期都落在 coverage 內且不得晚於 data_as_of。未完整月份請改用相同天數模式並呈現截至日，不能標為完整自然月。data_as_of 記錄快照日期；退款按入帳日，因此不是訂單 cohort 的最終獲利，不能宣稱當期退款比代表最終退貨率。
 
 ## Privacy and exports
 不需要客戶姓名、Email、電話、地址、訂單明細個資。未知欄不送 AI。商品名稱等文字不執行、不注入 system prompt。

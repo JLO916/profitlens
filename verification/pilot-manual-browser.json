@@ -1,0 +1,73 @@
+{
+  "at": "2026-10-01T10:41:03.658834+00:00",
+  "classification": "synthetic rehearsal, not real user pilot",
+  "browser": "Codex in-app browser",
+  "tab": "11",
+  "url": "http://127.0.0.1:3200/",
+  "build_id": "p9LCsepxPsSU3ROkD0TCg",
+  "mode": "PUBLIC_DEMO",
+  "manual_actions": [
+    "Selected all three alternative CSVs and manifest using filechooser",
+    "Blocked unconfirmed amount basis; then explicitly confirmed synthetic basis",
+    "Reconciliation nine source amounts all differences 0.00; coverage N1064.00 and CM150.00",
+    "Applied current N600.00 GP260.00 before200.00 after10.00",
+    "Filtered DTC current N400.00 CM40.00",
+    "Empty volume blocked; v0 delta0 f-50 a0 K3 accepted =>44.00 delta4.00",
+    "Created diagnosis-bound draft with four facts; populated seven fields with synthetic-only descriptions",
+    "Opened CM40.00 evidence with eight original source rows; Escape returned",
+    "Native date keyboard committed 2026-10-15; action confirmed",
+    "Manager summary selected 44.00 plan and showed confirmed synthetic action",
+    "Clicked decision CSV/Markdown/JSON after confirmation; UI displayed download status"
+  ],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1425,
+      "screenshots": [
+        "pilot-manual-import-reconciliation.jpg",
+        "pilot-manual-desktop-action-summary.jpg"
+      ]
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 753,
+      "screenshots": [
+        "pilot-manual-tablet-scenario.jpg"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 375,
+      "screenshots": [
+        "pilot-manual-mobile-evidence.jpg"
+      ]
+    }
+  ],
+  "console_warn_error": [],
+  "manual_download": {
+    "status": "not_verified_bytes",
+    "attempt": "waitForEvent(download) before JSON click",
+    "timeout_ms": 8000,
+    "error": "Timed out after 8000ms waiting for download",
+    "path": null,
+    "note": "UI download status verified only; separate Playwright E2E checked actual downloaded JSON/CSV/Markdown"
+  },
+  "date_tool_input": {
+    "initial": "fill displayed date but confirmation remained draft",
+    "resolution": "ArrowUp and ArrowDown native key events; deadline2026-10-15 retained and confirmed",
+    "production_changed": false
+  },
+  "persistence": "No local-save consent or persistent backup written by this manual rehearsal; current test tab only",
+  "not_run": [
+    "Real business data",
+    "Human unaided usability study or timing",
+    "Live AI",
+    "Full 282-test regression in this round",
+    "New production build",
+    "Deployment"
+  ],
+  "viewport_reset": true
+}

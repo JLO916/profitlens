@@ -39,7 +39,7 @@ export async function runInsights(snapshot: AiSnapshot, config: AiConfig, depend
     // Only explicitly constructed metadata can enter logs; never errors, bodies, facts or keys.
     try { (dependencies.audit ?? (entry => console.info(JSON.stringify(entry))))(record); } catch { /* Logging cannot affect core functionality. */ }
     if (status === "live" && output) return { status, snapshot_id: snapshot.snapshot_id, output, metadata };
-    return { status: "fallback", snapshot_id: typeof snapshot?.snapshot_id === "string" && /^ai-v1:[a-f0-9]{64}:[a-f0-9]{64}:\d+$/.test(snapshot.snapshot_id) ? snapshot.snapshot_id : null, reason: reason ?? "PROVIDER_ERROR", metadata };
+    return { status: "fallback", snapshot_id: typeof snapshot?.snapshot_id === "string" && /^ai-v2:[a-f0-9]{64}:[a-f0-9]{64}:\d+$/.test(snapshot.snapshot_id) ? snapshot.snapshot_id : null, reason: reason ?? "PROVIDER_ERROR", metadata };
   }
   if (!config.available) return finish("fallback", config.reason);
   const parsed = AiSnapshotSchema.safeParse(snapshot);

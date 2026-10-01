@@ -1,0 +1,64 @@
+{"recorded_at":"2026-10-01T10:12:46.845Z","project":"desktop","test":"真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:47.952Z","project":"desktop","test":"不讀 JSON 也能手填 manifest，金額口徑須明確確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:48.923Z","project":"desktop","test":"超長但格式合法的期間明確拒絕，不截斷或取代先前資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:49.654Z","project":"desktop","test":"JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:50.646Z","project":"desktop","test":"duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:51.631Z","project":"desktop","test":"mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:52.732Z","project":"desktop","test":"missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:53.486Z","project":"desktop","test":"missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:54.455Z","project":"desktop","test":"malformed 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:55.458Z","project":"desktop","test":"invalid-utf8 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:56.853Z","project":"desktop","test":"too-many-bytes 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:57.991Z","project":"desktop","test":"too-many-rows 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:12:58.998Z","project":"desktop","test":"改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:13:00.111Z","project":"desktop","test":"檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}
+{"recorded_at":"2026-10-01T10:13:01.287Z","project":"desktop","test":"下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:13:02.310Z","project":"desktop","test":"空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:19.620Z","project":"desktop","test":"真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:20.434Z","project":"desktop","test":"不讀 JSON 也能手填 manifest，金額口徑須明確確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:21.692Z","project":"desktop","test":"超長但格式合法的期間明確拒絕，不截斷或取代先前資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:22.417Z","project":"desktop","test":"JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:23.879Z","project":"desktop","test":"duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:25.329Z","project":"desktop","test":"mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:26.035Z","project":"desktop","test":"missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:26.762Z","project":"desktop","test":"missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:27.806Z","project":"desktop","test":"malformed 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:28.794Z","project":"desktop","test":"invalid-utf8 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:30.125Z","project":"desktop","test":"too-many-bytes 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:31.428Z","project":"desktop","test":"too-many-rows 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:32.604Z","project":"desktop","test":"改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:33.516Z","project":"desktop","test":"檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}
+{"recorded_at":"2026-10-01T10:16:34.562Z","project":"desktop","test":"下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:16:35.950Z","project":"desktop","test":"空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:17:58.050Z","project":"tablet","test":"真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:17:58.832Z","project":"tablet","test":"不讀 JSON 也能手填 manifest，金額口徑須明確確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:17:59.785Z","project":"tablet","test":"超長但格式合法的期間明確拒絕，不截斷或取代先前資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:00.544Z","project":"tablet","test":"JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:01.560Z","project":"tablet","test":"duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:02.531Z","project":"tablet","test":"mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:03.270Z","project":"tablet","test":"missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:04.078Z","project":"tablet","test":"missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:05.025Z","project":"tablet","test":"malformed 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:05.947Z","project":"tablet","test":"invalid-utf8 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:07.237Z","project":"tablet","test":"too-many-bytes 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:08.300Z","project":"tablet","test":"too-many-rows 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:09.287Z","project":"tablet","test":"改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:10.143Z","project":"tablet","test":"檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}
+{"recorded_at":"2026-10-01T10:18:11.119Z","project":"tablet","test":"下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:18:12.011Z","project":"tablet","test":"空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:26.094Z","project":"mobile","test":"真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:26.874Z","project":"mobile","test":"不讀 JSON 也能手填 manifest，金額口徑須明確確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:27.788Z","project":"mobile","test":"超長但格式合法的期間明確拒絕，不截斷或取代先前資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:28.466Z","project":"mobile","test":"JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:29.407Z","project":"mobile","test":"duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:30.351Z","project":"mobile","test":"mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:31.017Z","project":"mobile","test":"missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:31.712Z","project":"mobile","test":"missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:32.602Z","project":"mobile","test":"malformed 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:33.482Z","project":"mobile","test":"invalid-utf8 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:34.723Z","project":"mobile","test":"too-many-bytes 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:35.774Z","project":"mobile","test":"too-many-rows 友善拒絕、不截斷且不破壞成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:36.720Z","project":"mobile","test":"改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:37.561Z","project":"mobile","test":"檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}
+{"recorded_at":"2026-10-01T10:19:38.511Z","project":"mobile","test":"下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T10:19:39.343Z","project":"mobile","test":"空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確","status":"passed","events":[]}

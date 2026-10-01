@@ -45,8 +45,9 @@ export function prepareAiSnapshot(snapshot: WorkspaceSnapshot, revision: number)
   }
   const missing_fact_ids = facts.filter(fact => AI_MONEY_METRICS.includes(fact.metric) && fact.value === null).map(fact => fact.id);
   const payload = AiSnapshotSchema.parse({
-    schema_version: AI_SNAPSHOT_VERSION, snapshot_id: `ai-v1:${snapshot.dataset_hash}:${snapshot.filter_hash}:${revision}`,
+    schema_version: AI_SNAPSHOT_VERSION, snapshot_id: `ai-v2:${snapshot.dataset_hash}:${snapshot.filter_hash}:${revision}`,
     currency: "TWD", metric_version: snapshot.metric_version, data_as_of: snapshot.data_as_of,
+    comparison: { mode: snapshot.report.comparison.mode, previous_days: snapshot.report.comparison.previous_days, current_days: snapshot.report.comparison.current_days },
     periods: { previous: { ...snapshot.report.previous.period }, current: { ...snapshot.report.current.period } },
     filters: { channels: Object.keys(localChannels) }, data_quality: { status: missing_fact_ids.length ? "partial" : "complete", missing_fact_ids }, facts,
   });

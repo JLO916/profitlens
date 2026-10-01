@@ -1,0 +1,113 @@
+{
+  "recorded_at": "2026-10-01T11:09:32.313688+00:00",
+  "purpose": "Preserve historical evidence while rerunning unchanged full suite",
+  "spec_transformation": "Only verification/manager-batch3 -> verification/release-20261001 output prefix",
+  "config_changes": [
+    "testDir",
+    "outputDir",
+    "reporter output locations",
+    "fake nonsecret build canary",
+    "capture build stdout/stderr to release-specific file",
+    "explicit webServer cwd=project root; runtime log originally nested by config folder was relocated unchanged"
+  ],
+  "spec_count": 13,
+  "specs": [
+    {
+      "source": "tests/e2e/action-workspace.spec.ts",
+      "copy": "verification/release-20261001-e2e/action-workspace.spec.ts",
+      "original_sha256": "6510633d61458af170170439e744e5c7afd9a3638909e9c6b64e22dd4866e086",
+      "copy_sha256": "00158d830f07702cf71a3a6fe3dd1278a96ce6e1985207c5fdc280cf349920e3",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/ai.spec.ts",
+      "copy": "verification/release-20261001-e2e/ai.spec.ts",
+      "original_sha256": "073b668d5b7bd63d9ae786b9d6d125fbd7249a77b48c924aebcea7c8352e264f",
+      "copy_sha256": "4a040e3c3ef1b069cb72299aa6c2d14d8bc621d8278069fa41ddaaf4250dc265",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/import-guidance.spec.ts",
+      "copy": "verification/release-20261001-e2e/import-guidance.spec.ts",
+      "original_sha256": "033463694c36cfcb1b897aebbcaffa1c88db94f94ac789c351d2482b7c9fc0a5",
+      "copy_sha256": "033463694c36cfcb1b897aebbcaffa1c88db94f94ac789c351d2482b7c9fc0a5",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/import.spec.ts",
+      "copy": "verification/release-20261001-e2e/import.spec.ts",
+      "original_sha256": "4d97b1704a185b507a79b17257cd674a2e3bfccaf54761461240f418150ac205",
+      "copy_sha256": "480b135fd62b79f6d8af57b7523a8b59eb7bd98978e3a8d8dee1fc80c8741117",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/m6-acceptance.spec.ts",
+      "copy": "verification/release-20261001-e2e/m6-acceptance.spec.ts",
+      "original_sha256": "3725a94c0beb754fc7a02631ce13b9854440a6e96ca34f22204180586e989659",
+      "copy_sha256": "2d4d047c811faef60a16bb14ac9dc8f1ea8444d9be983fc04b97a7b4f897a966",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/manager-presentation.spec.ts",
+      "copy": "verification/release-20261001-e2e/manager-presentation.spec.ts",
+      "original_sha256": "999f20a1335242d81f2fb29ac003b7868ede18b33d6485996f0e1087638eabb5",
+      "copy_sha256": "8b386cbd1ecf2fcdac79b850d09e121b3420488ca50f322aad369cb704d1c812",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/manager-summary.spec.ts",
+      "copy": "verification/release-20261001-e2e/manager-summary.spec.ts",
+      "original_sha256": "733d8d6a59a6a9683dfbc98a5c729e7a73f49922124143e945477796bdcd53d2",
+      "copy_sha256": "b91a82a9aebdab1342e31d25b4d9cd7e8ca7d3534d3d58e8b66bf414147684cd",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/period-comparison.spec.ts",
+      "copy": "verification/release-20261001-e2e/period-comparison.spec.ts",
+      "original_sha256": "01bd9c8852910e264fd91c0ee31b67e22bf7c4a69e05b4b02b4c20a5e3004574",
+      "copy_sha256": "8b7096e70df4d063a808a20663e651cc7eee8de60eb45db43a77bb214324ac49",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/product-comparison.spec.ts",
+      "copy": "verification/release-20261001-e2e/product-comparison.spec.ts",
+      "original_sha256": "441386fe4e47674a0581016552eb81a6d5c614f70e8b30757851e41d7b8d2c48",
+      "copy_sha256": "1df5dfd426046ee3f127ddcc414877e95f998fbefeb2969f9d9093a5291a71fe",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/scenario-sensitivity.spec.ts",
+      "copy": "verification/release-20261001-e2e/scenario-sensitivity.spec.ts",
+      "original_sha256": "d66e9df2c2c08c98d19461e9211a075e6701a81f654b484d34d091f6f397c7c9",
+      "copy_sha256": "578f779ec8114be79ea4ce4d4885531b3a5a413dde133419cafd76f4efabf2de",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/scenarios.spec.ts",
+      "copy": "verification/release-20261001-e2e/scenarios.spec.ts",
+      "original_sha256": "20f6069c893a5521e73d691448675133970a5c2aa69b1127573f7a05d546aa1a",
+      "copy_sha256": "80a578fc6479d2225d421964fed41b426684837409c8d568bfcb7f877927e378",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/workspace-storage.spec.ts",
+      "copy": "verification/release-20261001-e2e/workspace-storage.spec.ts",
+      "original_sha256": "d63dc52bec7caaaae27d5cee39713960e570e9447d1b1636856ac73f7c53cef6",
+      "copy_sha256": "a5c39753d5f91c3fae2972524323c176239500cb7957d5a7b888603c17db8fb4",
+      "normalized_match": true
+    },
+    {
+      "source": "tests/e2e/workspace.spec.ts",
+      "copy": "verification/release-20261001-e2e/workspace.spec.ts",
+      "original_sha256": "f8e08a824e7a50805f89fd297d437005e1f063d739838ed7b28c4c606e9e455f",
+      "copy_sha256": "5a264ed23bc72019f21fa6892de30d10076a7d58512a7f9b1c4d0503a8c1d1c6",
+      "normalized_match": true
+    }
+  ],
+  "first_attempt": {
+    "exit_code": 1,
+    "failure": "sandbox EPERM binding127.0.0.1:3100 after completed build",
+    "build_id": "dXHJlb15fNh-2vTjWF1DV",
+    "e2e_executed": false
+  }
+}

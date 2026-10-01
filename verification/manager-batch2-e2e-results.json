@@ -1,0 +1,5625 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/25.8.2/bin/node",
+      "/Users/j-work/Desktop/profitlens-codex-starter/node_modules/.bin/playwright",
+      "test",
+      "--list"
+    ],
+    "configFile": "/Users/j-work/Desktop/profitlens-codex-starter/playwright.config.ts",
+    "rootDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "/Users/j-work/Desktop/profitlens-codex-starter/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "verification/manager-batch2-e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+      "url": "http://127.0.0.1:3100",
+      "reuseExistingServer": false,
+      "env": {
+        "ENABLE_LIVE_AI": "false",
+        "OPENAI_API_KEY": "sk-PROFITLENS-BATCH2-NONSECRET-BUNDLE-CANARY",
+        "OPENAI_MODEL": "verification-only-never-called",
+        "APP_MODE": "LOCAL",
+        "PUBLIC_DEMO": "false"
+      },
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "action-workspace.spec.ts",
+      "file": "action-workspace.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "1ed5c1c06d604bedb24f-6a0217831b89e9a952bf",
+          "file": "action-workspace.spec.ts",
+          "line": 6,
+          "column": 5
+        },
+        {
+          "title": "PL09 主管摘要實際帶入選定方案、行動與停止條件，改範圍後不沿用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "1ed5c1c06d604bedb24f-388da5d6cc598231c630",
+          "file": "action-workspace.spec.ts",
+          "line": 34,
+          "column": 5
+        },
+        {
+          "title": "PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "1ed5c1c06d604bedb24f-855df27f22afebe27a7b",
+          "file": "action-workspace.spec.ts",
+          "line": 6,
+          "column": 5
+        },
+        {
+          "title": "PL09 主管摘要實際帶入選定方案、行動與停止條件，改範圍後不沿用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "1ed5c1c06d604bedb24f-45631a9a0ef7a2b8ea0f",
+          "file": "action-workspace.spec.ts",
+          "line": 34,
+          "column": 5
+        },
+        {
+          "title": "PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "1ed5c1c06d604bedb24f-5176d75c1cc35648986b",
+          "file": "action-workspace.spec.ts",
+          "line": 6,
+          "column": 5
+        },
+        {
+          "title": "PL09 主管摘要實際帶入選定方案、行動與停止條件，改範圍後不沿用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "1ed5c1c06d604bedb24f-7fa1fe83f836c604769f",
+          "file": "action-workspace.spec.ts",
+          "line": 34,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "ai.spec.ts",
+      "file": "ai.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3f38efe0662070145ff2",
+          "file": "ai.spec.ts",
+          "line": 119,
+          "column": 1
+        },
+        {
+          "title": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-4028ac707de65f1d973b",
+          "file": "ai.spec.ts",
+          "line": 147,
+          "column": 1
+        },
+        {
+          "title": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-4068b4204b1d8fad98a6",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-2f99915a22a26f1f0092",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-a22109b93c7ad728bfe7",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-b4500b44b9a0a8fb4b4c",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-c3684c75e372be9364db",
+          "file": "ai.spec.ts",
+          "line": 224,
+          "column": 1
+        },
+        {
+          "title": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-bc69c539bf3196155323",
+          "file": "ai.spec.ts",
+          "line": 241,
+          "column": 1
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-70803c7e144221f95e86",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f52d83d2996b8d5c32a8",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-01fc63dc8e01f340a9dd",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-ad11925b45504160cdcc",
+          "file": "ai.spec.ts",
+          "line": 337,
+          "column": 1
+        },
+        {
+          "title": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-05cb32c07a28365d7f51",
+          "file": "ai.spec.ts",
+          "line": 356,
+          "column": 1
+        },
+        {
+          "title": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-37c9d1f0334419b9fae2",
+          "file": "ai.spec.ts",
+          "line": 119,
+          "column": 1
+        },
+        {
+          "title": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-c54983024313da67f9db",
+          "file": "ai.spec.ts",
+          "line": 147,
+          "column": 1
+        },
+        {
+          "title": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-831626d879fc96fb1997",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-993399ce43f27ec94d35",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-604b8a96e8d2052e4fec",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f35c76079997148c434b",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3a435f59ef71afe8e310",
+          "file": "ai.spec.ts",
+          "line": 224,
+          "column": 1
+        },
+        {
+          "title": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3b4037dfe3eaeb30d4c4",
+          "file": "ai.spec.ts",
+          "line": 241,
+          "column": 1
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-4e22a214f76a92efa6a0",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-11af3eb4c1d5a7d5c221",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-84f79ffc184c434f2d7b",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-159802b918d802e99fa9",
+          "file": "ai.spec.ts",
+          "line": 337,
+          "column": 1
+        },
+        {
+          "title": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-20123dc9a6b746d43e66",
+          "file": "ai.spec.ts",
+          "line": 356,
+          "column": 1
+        },
+        {
+          "title": "真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-b1ec976176e09c274351",
+          "file": "ai.spec.ts",
+          "line": 119,
+          "column": 1
+        },
+        {
+          "title": "MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f52984ecba00d73cfedf",
+          "file": "ai.spec.ts",
+          "line": 147,
+          "column": 1
+        },
+        {
+          "title": "MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-a546efed4ccaff3ad94c",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-09c7f2504601ff1d0eb1",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-bedc3954f6dbcec024f5",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-f61b525d27bd98edd32e",
+          "file": "ai.spec.ts",
+          "line": 202,
+          "column": 3
+        },
+        {
+          "title": "MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-821c5d050cd4c6da985d",
+          "file": "ai.spec.ts",
+          "line": 224,
+          "column": 1
+        },
+        {
+          "title": "MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-73d49216f74aa735cffe",
+          "file": "ai.spec.ts",
+          "line": 241,
+          "column": 1
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-0dc13e4b8f217963d16d",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-ab30e6f7dd332d708e40",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-8f5dfe0f00259ba58ce8",
+          "file": "ai.spec.ts",
+          "line": 300,
+          "column": 3
+        },
+        {
+          "title": "MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-3c42a08b49783ba8c0e1",
+          "file": "ai.spec.ts",
+          "line": 337,
+          "column": 1
+        },
+        {
+          "title": "MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4c16ad2df3b1859900b-e98bebc6b6ae441106e7",
+          "file": "ai.spec.ts",
+          "line": 356,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "import-guidance.spec.ts",
+      "file": "import-guidance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-5aface9f2b2b51e49dd8",
+          "file": "import-guidance.spec.ts",
+          "line": 21,
+          "column": 5
+        },
+        {
+          "title": "PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-79b049e8a24a86cfe8cd",
+          "file": "import-guidance.spec.ts",
+          "line": 44,
+          "column": 5
+        },
+        {
+          "title": "PL04含稅或淨結算來源不可直接套用，也不自動換算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-bcdd67a5a4671a6d69d4",
+          "file": "import-guidance.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-00d30e172e5185d67128",
+          "file": "import-guidance.spec.ts",
+          "line": 69,
+          "column": 5
+        },
+        {
+          "title": "PL04換檔後需重新確認口徑，不沿用先前勾選",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-da7d1a0b36f71ea559a3",
+          "file": "import-guidance.spec.ts",
+          "line": 79,
+          "column": 5
+        },
+        {
+          "title": "PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-7ad532f090243ffad370",
+          "file": "import-guidance.spec.ts",
+          "line": 21,
+          "column": 5
+        },
+        {
+          "title": "PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-a805256e782f39efef66",
+          "file": "import-guidance.spec.ts",
+          "line": 44,
+          "column": 5
+        },
+        {
+          "title": "PL04含稅或淨結算來源不可直接套用，也不自動換算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-20b2d543c2f66567c4ae",
+          "file": "import-guidance.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-ae1e5ca676d6ad460354",
+          "file": "import-guidance.spec.ts",
+          "line": 69,
+          "column": 5
+        },
+        {
+          "title": "PL04換檔後需重新確認口徑，不沿用先前勾選",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-2fcb5ab4346a07094e54",
+          "file": "import-guidance.spec.ts",
+          "line": 79,
+          "column": 5
+        },
+        {
+          "title": "PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-091cb0e70cb0d68d58db",
+          "file": "import-guidance.spec.ts",
+          "line": 21,
+          "column": 5
+        },
+        {
+          "title": "PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-708b24f48969336ae0cb",
+          "file": "import-guidance.spec.ts",
+          "line": 44,
+          "column": 5
+        },
+        {
+          "title": "PL04含稅或淨結算來源不可直接套用，也不自動換算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-3db01b49b220b70f16d4",
+          "file": "import-guidance.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-4326631db412593919ad",
+          "file": "import-guidance.spec.ts",
+          "line": 69,
+          "column": 5
+        },
+        {
+          "title": "PL04換檔後需重新確認口徑，不沿用先前勾選",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "30a71ac43bbce6578826-6bff8242e05ad17ee9d4",
+          "file": "import-guidance.spec.ts",
+          "line": 79,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "import.spec.ts",
+      "file": "import.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-9fd7a38bb38bd74d38b0",
+          "file": "import.spec.ts",
+          "line": 125,
+          "column": 1
+        },
+        {
+          "title": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-0dabebc2a468b4a0e47d",
+          "file": "import.spec.ts",
+          "line": 157,
+          "column": 1
+        },
+        {
+          "title": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-f6fae1918e061f14f7ee",
+          "file": "import.spec.ts",
+          "line": 177,
+          "column": 1
+        },
+        {
+          "title": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-026bd74381a5f084973e",
+          "file": "import.spec.ts",
+          "line": 197,
+          "column": 1
+        },
+        {
+          "title": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-46a50a4e23886fa1954a",
+          "file": "import.spec.ts",
+          "line": 220,
+          "column": 3
+        },
+        {
+          "title": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-5026aed860e4e6292709",
+          "file": "import.spec.ts",
+          "line": 220,
+          "column": 3
+        },
+        {
+          "title": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-72666dfdd970f37bdf54",
+          "file": "import.spec.ts",
+          "line": 245,
+          "column": 3
+        },
+        {
+          "title": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-52ac5cd7f55c4cecfec8",
+          "file": "import.spec.ts",
+          "line": 245,
+          "column": 3
+        },
+        {
+          "title": "malformed 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-3fdf813ab00322d5930a",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-9799d68c6b1532abf035",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-ac5744b58df506469a59",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-29f8023fed2bb039f197",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-d68d0328f8dbc29a4c43",
+          "file": "import.spec.ts",
+          "line": 282,
+          "column": 1
+        },
+        {
+          "title": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-3b3ada826213e68296b0",
+          "file": "import.spec.ts",
+          "line": 308,
+          "column": 1
+        },
+        {
+          "title": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-a5ddb9c9ce7ec01f74ed",
+          "file": "import.spec.ts",
+          "line": 339,
+          "column": 1
+        },
+        {
+          "title": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-a0a3749f8ff4934e7a32",
+          "file": "import.spec.ts",
+          "line": 377,
+          "column": 1
+        },
+        {
+          "title": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b85b99112a9d7578e452",
+          "file": "import.spec.ts",
+          "line": 125,
+          "column": 1
+        },
+        {
+          "title": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-7507ddf1cb7e806b0412",
+          "file": "import.spec.ts",
+          "line": 157,
+          "column": 1
+        },
+        {
+          "title": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-27ca23e3e911a2e5a1ba",
+          "file": "import.spec.ts",
+          "line": 177,
+          "column": 1
+        },
+        {
+          "title": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-d508f14fade9c2be3687",
+          "file": "import.spec.ts",
+          "line": 197,
+          "column": 1
+        },
+        {
+          "title": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-cbb113de9d6536517f6b",
+          "file": "import.spec.ts",
+          "line": 220,
+          "column": 3
+        },
+        {
+          "title": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-0b38884f7a1735626418",
+          "file": "import.spec.ts",
+          "line": 220,
+          "column": 3
+        },
+        {
+          "title": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b7ed1875d6b171e4d92d",
+          "file": "import.spec.ts",
+          "line": 245,
+          "column": 3
+        },
+        {
+          "title": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-f16549a71d6db09102cf",
+          "file": "import.spec.ts",
+          "line": 245,
+          "column": 3
+        },
+        {
+          "title": "malformed 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-ef8e4e49811566548824",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-581f229a6ab9244eb6f2",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-deda05adfb5264d36cc4",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-06875b2261e4cf332e44",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-36d5981c63a9bd838f80",
+          "file": "import.spec.ts",
+          "line": 282,
+          "column": 1
+        },
+        {
+          "title": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-c07d50f532161727fa54",
+          "file": "import.spec.ts",
+          "line": 308,
+          "column": 1
+        },
+        {
+          "title": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-0637a2d85101e6a0fded",
+          "file": "import.spec.ts",
+          "line": 339,
+          "column": 1
+        },
+        {
+          "title": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b1a6901ef373c9fac752",
+          "file": "import.spec.ts",
+          "line": 377,
+          "column": 1
+        },
+        {
+          "title": "真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-44628105ccbcf6afe3a0",
+          "file": "import.spec.ts",
+          "line": 125,
+          "column": 1
+        },
+        {
+          "title": "不讀 JSON 也能手填 manifest，金額口徑須明確確認",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-70cd227a5dd1bab60158",
+          "file": "import.spec.ts",
+          "line": 157,
+          "column": 1
+        },
+        {
+          "title": "超長但格式合法的期間明確拒絕，不截斷或取代先前資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-503a27d10516b4eb426b",
+          "file": "import.spec.ts",
+          "line": 177,
+          "column": 1
+        },
+        {
+          "title": "JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-6fe9f8e29125d4211cae",
+          "file": "import.spec.ts",
+          "line": 197,
+          "column": 1
+        },
+        {
+          "title": "duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b36cb240c645bf4cc98b",
+          "file": "import.spec.ts",
+          "line": 220,
+          "column": 3
+        },
+        {
+          "title": "mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-bea9e63676067f8b67e6",
+          "file": "import.spec.ts",
+          "line": 220,
+          "column": 3
+        },
+        {
+          "title": "missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-dce601cdbffc467b3435",
+          "file": "import.spec.ts",
+          "line": 245,
+          "column": 3
+        },
+        {
+          "title": "missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-4ff2f873d0552b6ed3ad",
+          "file": "import.spec.ts",
+          "line": 245,
+          "column": 3
+        },
+        {
+          "title": "malformed 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-ce63b1db0055eec847dd",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "invalid-utf8 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-b130a7deb7d8cc399f09",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "too-many-bytes 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-961b8a85c7a741177ef8",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "too-many-rows 友善拒絕、不截斷且不破壞成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-320da15f292f0f14cb8c",
+          "file": "import.spec.ts",
+          "line": 264,
+          "column": 3
+        },
+        {
+          "title": "改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-01e2baa18901ef37368e",
+          "file": "import.spec.ts",
+          "line": 282,
+          "column": 1
+        },
+        {
+          "title": "檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-aac5d43228024880b510",
+          "file": "import.spec.ts",
+          "line": 308,
+          "column": 1
+        },
+        {
+          "title": "下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-d8d4d26d6618453bbf41",
+          "file": "import.spec.ts",
+          "line": 339,
+          "column": 1
+        },
+        {
+          "title": "空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "776bafb40ff21b6b6a7d-db7bc5aa20d9afc4812d",
+          "file": "import.spec.ts",
+          "line": 377,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "m6-acceptance.spec.ts",
+      "file": "m6-acceptance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-d3f2b3026f5bea82abf4",
+          "file": "m6-acceptance.spec.ts",
+          "line": 118,
+          "column": 5
+        },
+        {
+          "title": "M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-0ebc223c7cb27c4ed037",
+          "file": "m6-acceptance.spec.ts",
+          "line": 185,
+          "column": 5
+        },
+        {
+          "title": "M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-077e011ccd10c6e62979",
+          "file": "m6-acceptance.spec.ts",
+          "line": 225,
+          "column": 5
+        },
+        {
+          "title": "M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-ccc191f673a280b59a80",
+          "file": "m6-acceptance.spec.ts",
+          "line": 118,
+          "column": 5
+        },
+        {
+          "title": "M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-c769632f561816a86437",
+          "file": "m6-acceptance.spec.ts",
+          "line": 185,
+          "column": 5
+        },
+        {
+          "title": "M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-ae6c57ddabc1a53c56b2",
+          "file": "m6-acceptance.spec.ts",
+          "line": 225,
+          "column": 5
+        },
+        {
+          "title": "M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-79ba8770eda4b58d64ff",
+          "file": "m6-acceptance.spec.ts",
+          "line": 118,
+          "column": 5
+        },
+        {
+          "title": "M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-d38bbad8c27f616fb8ce",
+          "file": "m6-acceptance.spec.ts",
+          "line": 185,
+          "column": 5
+        },
+        {
+          "title": "M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2f768f97686e4a6ac39a-ba7ab4da38ee447b2fec",
+          "file": "m6-acceptance.spec.ts",
+          "line": 225,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "manager-presentation.spec.ts",
+      "file": "manager-presentation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-fd3ce7ba31490c2bb236",
+          "file": "manager-presentation.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-7d525aa32a81a9e7e8ab",
+          "file": "manager-presentation.spec.ts",
+          "line": 52,
+          "column": 1
+        },
+        {
+          "title": "PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-2b894e74053ae3fbd696",
+          "file": "manager-presentation.spec.ts",
+          "line": 73,
+          "column": 1
+        },
+        {
+          "title": "PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-2650c99121f6a1dbeedd",
+          "file": "manager-presentation.spec.ts",
+          "line": 101,
+          "column": 1
+        },
+        {
+          "title": "PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-80658487ac77293117f8",
+          "file": "manager-presentation.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-942f27948ebad1e85133",
+          "file": "manager-presentation.spec.ts",
+          "line": 52,
+          "column": 1
+        },
+        {
+          "title": "PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-c782245e076e0e1c3cd3",
+          "file": "manager-presentation.spec.ts",
+          "line": 73,
+          "column": 1
+        },
+        {
+          "title": "PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-94d94d90ba4f17ee6344",
+          "file": "manager-presentation.spec.ts",
+          "line": 101,
+          "column": 1
+        },
+        {
+          "title": "PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-b5c378bc72fed61a59ab",
+          "file": "manager-presentation.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-256e4bab51a5b6e90564",
+          "file": "manager-presentation.spec.ts",
+          "line": 52,
+          "column": 1
+        },
+        {
+          "title": "PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-60ed31a1d9e923f21078",
+          "file": "manager-presentation.spec.ts",
+          "line": 73,
+          "column": 1
+        },
+        {
+          "title": "PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5006c2abfe36267fb4e2-2f5efc606f151979285b",
+          "file": "manager-presentation.spec.ts",
+          "line": 101,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "manager-summary.spec.ts",
+      "file": "manager-summary.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PL06 golden management summary, drilldown, threshold, scope and wide export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-dc42c4ad1b6a373eb01e",
+          "file": "manager-summary.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "PL06 unknown priorities survive a high threshold without zero contribution",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-3aa2a6831753f9900054",
+          "file": "manager-summary.spec.ts",
+          "line": 68,
+          "column": 1
+        },
+        {
+          "title": "PL09 print uses a dedicated manager draft and retains technical audit downloads",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-52485e145227d6f36381",
+          "file": "manager-summary.spec.ts",
+          "line": 78,
+          "column": 1
+        },
+        {
+          "title": "PL06 golden management summary, drilldown, threshold, scope and wide export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-1b5a4648bf7219a6086a",
+          "file": "manager-summary.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "PL06 unknown priorities survive a high threshold without zero contribution",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-36a05ecd9ee051c6c209",
+          "file": "manager-summary.spec.ts",
+          "line": 68,
+          "column": 1
+        },
+        {
+          "title": "PL09 print uses a dedicated manager draft and retains technical audit downloads",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-fb233a3f15275ee4b913",
+          "file": "manager-summary.spec.ts",
+          "line": 78,
+          "column": 1
+        },
+        {
+          "title": "PL06 golden management summary, drilldown, threshold, scope and wide export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-252bcec45d2d721f6e6c",
+          "file": "manager-summary.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "PL06 unknown priorities survive a high threshold without zero contribution",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-682622e10f52ef551f9e",
+          "file": "manager-summary.spec.ts",
+          "line": 68,
+          "column": 1
+        },
+        {
+          "title": "PL09 print uses a dedicated manager draft and retains technical audit downloads",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "9954fd6652852f898a79-2dece36bc8c34f2d499f",
+          "file": "manager-summary.spec.ts",
+          "line": 78,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "period-comparison.spec.ts",
+      "file": "period-comparison.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-91b827e6f43d5e89b031",
+          "file": "period-comparison.spec.ts",
+          "line": 81,
+          "column": 1
+        },
+        {
+          "title": "PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-4c57f917e3d4d96ea598",
+          "file": "period-comparison.spec.ts",
+          "line": 108,
+          "column": 1
+        },
+        {
+          "title": "PL-02 zero 月合計與日均保留零及未知邊界",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-0705c1f33ded9816aea7",
+          "file": "period-comparison.spec.ts",
+          "line": 132,
+          "column": 50
+        },
+        {
+          "title": "PL-02 missing 月合計與日均保留零及未知邊界",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-9354e8f17b29b67fa624",
+          "file": "period-comparison.spec.ts",
+          "line": 132,
+          "column": 50
+        },
+        {
+          "title": "PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-f493c35996f3fa5d8a28",
+          "file": "period-comparison.spec.ts",
+          "line": 81,
+          "column": 1
+        },
+        {
+          "title": "PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-210fd5a75ddd879f9dc2",
+          "file": "period-comparison.spec.ts",
+          "line": 108,
+          "column": 1
+        },
+        {
+          "title": "PL-02 zero 月合計與日均保留零及未知邊界",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-960a69d6988112d3c4b0",
+          "file": "period-comparison.spec.ts",
+          "line": 132,
+          "column": 50
+        },
+        {
+          "title": "PL-02 missing 月合計與日均保留零及未知邊界",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-2c83a6401fa62c0a9660",
+          "file": "period-comparison.spec.ts",
+          "line": 132,
+          "column": 50
+        },
+        {
+          "title": "PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-5c614a8a904975153f2e",
+          "file": "period-comparison.spec.ts",
+          "line": 81,
+          "column": 1
+        },
+        {
+          "title": "PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-7c7c7dd615c068aedc82",
+          "file": "period-comparison.spec.ts",
+          "line": 108,
+          "column": 1
+        },
+        {
+          "title": "PL-02 zero 月合計與日均保留零及未知邊界",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-57e209b3068c6448e881",
+          "file": "period-comparison.spec.ts",
+          "line": 132,
+          "column": 50
+        },
+        {
+          "title": "PL-02 missing 月合計與日均保留零及未知邊界",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7a21d871498ea2a639ea-6c4b6dbd6e54066ddf42",
+          "file": "period-comparison.spec.ts",
+          "line": 132,
+          "column": 50
+        }
+      ]
+    },
+    {
+      "title": "product-comparison.spec.ts",
+      "file": "product-comparison.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-6ad1a1537fcd6cc4cd7b",
+          "file": "product-comparison.spec.ts",
+          "line": 55,
+          "column": 1
+        },
+        {
+          "title": "PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-36d6e7450060e0b0d17a",
+          "file": "product-comparison.spec.ts",
+          "line": 93,
+          "column": 1
+        },
+        {
+          "title": "PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-3931f0035cce5d56b9db",
+          "file": "product-comparison.spec.ts",
+          "line": 111,
+          "column": 1
+        },
+        {
+          "title": "PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-805899151546c7e314a3",
+          "file": "product-comparison.spec.ts",
+          "line": 55,
+          "column": 1
+        },
+        {
+          "title": "PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-fcec2d8015fd35d47238",
+          "file": "product-comparison.spec.ts",
+          "line": 93,
+          "column": 1
+        },
+        {
+          "title": "PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-2bd45f9e2bcfa89bbd0e",
+          "file": "product-comparison.spec.ts",
+          "line": 111,
+          "column": 1
+        },
+        {
+          "title": "PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-37c4c0ce168b03c23067",
+          "file": "product-comparison.spec.ts",
+          "line": 55,
+          "column": 1
+        },
+        {
+          "title": "PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-22aae5976776eb39a1c8",
+          "file": "product-comparison.spec.ts",
+          "line": 93,
+          "column": 1
+        },
+        {
+          "title": "PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdc30017630b447c110a-7c5e8410af9fdf9ffe8b",
+          "file": "product-comparison.spec.ts",
+          "line": 111,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "scenario-sensitivity.spec.ts",
+      "file": "scenario-sensitivity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立重算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-bb7a6a6e901af2cded14",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 31,
+          "column": 5
+        },
+        {
+          "title": "PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不外插",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-2979c8f4be4b4ddeb016",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 62,
+          "column": 5
+        },
+        {
+          "title": "PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意仍無衍生分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-7316d331ec2cd6b29e4c",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 77,
+          "column": 5
+        },
+        {
+          "title": "PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立重算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-3827504afb2dc55a40e2",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 31,
+          "column": 5
+        },
+        {
+          "title": "PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不外插",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-2ea979b6e81e42e67cce",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 62,
+          "column": 5
+        },
+        {
+          "title": "PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意仍無衍生分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-e52248d5d31141b4ddc5",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 77,
+          "column": 5
+        },
+        {
+          "title": "PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立重算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-5b5052d6b66a0baa86b2",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 31,
+          "column": 5
+        },
+        {
+          "title": "PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不外插",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-ea0ea14323fca68c655f",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 62,
+          "column": 5
+        },
+        {
+          "title": "PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意仍無衍生分析",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bc4fbbc09cc7e8e6eda7-664403c593895db4d5af",
+          "file": "scenario-sensitivity.spec.ts",
+          "line": 77,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "scenarios.spec.ts",
+      "file": "scenarios.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-af015272a6211c3ed7df",
+          "file": "scenarios.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "三個方案各自從 270.00 重算為 270／284／264，不串接或相加",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-ce2bf78f7f571d36a74f",
+          "file": "scenarios.spec.ts",
+          "line": 196,
+          "column": 1
+        },
+        {
+          "title": "減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-8845d29f67716fe86f35",
+          "file": "scenarios.spec.ts",
+          "line": 222,
+          "column": 1
+        },
+        {
+          "title": "輸入超界、負投入與過度精度不得默默修正為可用試算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-23b477cb9be4feb749c9",
+          "file": "scenarios.spec.ts",
+          "line": 244,
+          "column": 1
+        },
+        {
+          "title": "百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-ee1d78fa00f207f69e83",
+          "file": "scenarios.spec.ts",
+          "line": 257,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-e3e05ab3cb8199ab3c0c",
+          "file": "scenarios.spec.ts",
+          "line": 286,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-3761c4acb6055379eb1d",
+          "file": "scenarios.spec.ts",
+          "line": 286,
+          "column": 3
+        },
+        {
+          "title": "通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-aff60d2b5cf2c4751d50",
+          "file": "scenarios.spec.ts",
+          "line": 300,
+          "column": 1
+        },
+        {
+          "title": "資料集切換後即使回到相同 golden 與通路，舊方案仍過期",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-7240504ece0c3a2fb184",
+          "file": "scenarios.spec.ts",
+          "line": 350,
+          "column": 1
+        },
+        {
+          "title": "有效期間切換再回原期間仍過期，不自動沿用先前假設",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-0b34361b55c8dc04ff8c",
+          "file": "scenarios.spec.ts",
+          "line": 366,
+          "column": 1
+        },
+        {
+          "title": "四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-3249c7b3aa841cf3a13e",
+          "file": "scenarios.spec.ts",
+          "line": 387,
+          "column": 1
+        },
+        {
+          "title": "未填完七欄或未選 fact 的行動只能保持草稿",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-8f2b5a699d54cee16a23",
+          "file": "scenarios.spec.ts",
+          "line": 430,
+          "column": 1
+        },
+        {
+          "title": "三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-b70751c77ddb28550b8c",
+          "file": "scenarios.spec.ts",
+          "line": 442,
+          "column": 1
+        },
+        {
+          "title": "不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-31912d0fa7a566395e35",
+          "file": "scenarios.spec.ts",
+          "line": 486,
+          "column": 1
+        },
+        {
+          "title": "試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-513fa56dad928e22a3ce",
+          "file": "scenarios.spec.ts",
+          "line": 510,
+          "column": 1
+        },
+        {
+          "title": "僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-79d0a7502097c958f1b6",
+          "file": "scenarios.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "三個方案各自從 270.00 重算為 270／284／264，不串接或相加",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-d528385fee35109ce564",
+          "file": "scenarios.spec.ts",
+          "line": 196,
+          "column": 1
+        },
+        {
+          "title": "減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-0b08a36f044c13b6bbde",
+          "file": "scenarios.spec.ts",
+          "line": 222,
+          "column": 1
+        },
+        {
+          "title": "輸入超界、負投入與過度精度不得默默修正為可用試算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-1294c98e462ad3711b03",
+          "file": "scenarios.spec.ts",
+          "line": 244,
+          "column": 1
+        },
+        {
+          "title": "百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-e21f04d9c8ced635e3b4",
+          "file": "scenarios.spec.ts",
+          "line": 257,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-c9a0822cb086292be359",
+          "file": "scenarios.spec.ts",
+          "line": 286,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-228f4e2f7f7d51d7bb84",
+          "file": "scenarios.spec.ts",
+          "line": 286,
+          "column": 3
+        },
+        {
+          "title": "通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-1be5d0574f1a0c99f5e5",
+          "file": "scenarios.spec.ts",
+          "line": 300,
+          "column": 1
+        },
+        {
+          "title": "資料集切換後即使回到相同 golden 與通路，舊方案仍過期",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-01fb8051b225a88ea950",
+          "file": "scenarios.spec.ts",
+          "line": 350,
+          "column": 1
+        },
+        {
+          "title": "有效期間切換再回原期間仍過期，不自動沿用先前假設",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-75058e6ef00116ad87b0",
+          "file": "scenarios.spec.ts",
+          "line": 366,
+          "column": 1
+        },
+        {
+          "title": "四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-9009ee087f766c844a1f",
+          "file": "scenarios.spec.ts",
+          "line": 387,
+          "column": 1
+        },
+        {
+          "title": "未填完七欄或未選 fact 的行動只能保持草稿",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-ca531916ea8513e1180d",
+          "file": "scenarios.spec.ts",
+          "line": 430,
+          "column": 1
+        },
+        {
+          "title": "三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-70e1758c4a2b2178b8da",
+          "file": "scenarios.spec.ts",
+          "line": 442,
+          "column": 1
+        },
+        {
+          "title": "不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-e015d242e6d09e667a94",
+          "file": "scenarios.spec.ts",
+          "line": 486,
+          "column": 1
+        },
+        {
+          "title": "試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-fd0c8dffa63cad57afb1",
+          "file": "scenarios.spec.ts",
+          "line": 510,
+          "column": 1
+        },
+        {
+          "title": "僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-e816a01efa0b01a422bd",
+          "file": "scenarios.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "三個方案各自從 270.00 重算為 270／284／264，不串接或相加",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-aee90b7eb57a535dfd60",
+          "file": "scenarios.spec.ts",
+          "line": 196,
+          "column": 1
+        },
+        {
+          "title": "減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-e5d1423d837125f1a629",
+          "file": "scenarios.spec.ts",
+          "line": 222,
+          "column": 1
+        },
+        {
+          "title": "輸入超界、負投入與過度精度不得默默修正為可用試算",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-5d9ad7ba440c3e2a20e0",
+          "file": "scenarios.spec.ts",
+          "line": 244,
+          "column": 1
+        },
+        {
+          "title": "百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-7fdf214f95e70390b858",
+          "file": "scenarios.spec.ts",
+          "line": 257,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-3b60de45473108be63a3",
+          "file": "scenarios.spec.ts",
+          "line": 286,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-e1db707b80dd68161173",
+          "file": "scenarios.spec.ts",
+          "line": 286,
+          "column": 3
+        },
+        {
+          "title": "通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-5f0154796f80fd0de3ee",
+          "file": "scenarios.spec.ts",
+          "line": 300,
+          "column": 1
+        },
+        {
+          "title": "資料集切換後即使回到相同 golden 與通路，舊方案仍過期",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-0b4104fa295157c08abc",
+          "file": "scenarios.spec.ts",
+          "line": 350,
+          "column": 1
+        },
+        {
+          "title": "有效期間切換再回原期間仍過期，不自動沿用先前假設",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-b837d9d8b721b620f658",
+          "file": "scenarios.spec.ts",
+          "line": 366,
+          "column": 1
+        },
+        {
+          "title": "四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-e8c7ee931c0f1fc66b2f",
+          "file": "scenarios.spec.ts",
+          "line": 387,
+          "column": 1
+        },
+        {
+          "title": "未填完七欄或未選 fact 的行動只能保持草稿",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-d0deb03786c7c3b504d3",
+          "file": "scenarios.spec.ts",
+          "line": 430,
+          "column": 1
+        },
+        {
+          "title": "三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-8b286eccab1d4f9f0d9c",
+          "file": "scenarios.spec.ts",
+          "line": 442,
+          "column": 1
+        },
+        {
+          "title": "不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-bdf394f5b15499c32e62",
+          "file": "scenarios.spec.ts",
+          "line": 486,
+          "column": 1
+        },
+        {
+          "title": "試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "228c869e2a0e583b8177-69ca6fd454700d6ea532",
+          "file": "scenarios.spec.ts",
+          "line": 510,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "workspace-storage.spec.ts",
+      "file": "workspace-storage.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PL01 主動保存兩方案與已確認行動，重整後手動恢復；其他同源分頁不自動共享",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-15c220e65297b1286dcc",
+          "file": "workspace-storage.spec.ts",
+          "line": 63,
+          "column": 5
+        },
+        {
+          "title": "PL01 portable備份驗證後才套用；篡改／舊格式不取代目前資料，恢復撤銷保存同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-5a8f8af6e6a8644443ff",
+          "file": "workspace-storage.spec.ts",
+          "line": 114,
+          "column": 5
+        },
+        {
+          "title": "PL01 清空提醒可取消；過期方案保存恢復仍過期，切回舊範圍不復活",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-234f8371e41609d2a099",
+          "file": "workspace-storage.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "PL01 清空移除備份預覽、下載確認與本機保存同意；已保存副本僅可手動重讀",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-d53635f7f13594a00461",
+          "file": "workspace-storage.spec.ts",
+          "line": 157,
+          "column": 5
+        },
+        {
+          "title": "PL01 主動保存兩方案與已確認行動，重整後手動恢復；其他同源分頁不自動共享",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-e2bccfdabb43d1ba8502",
+          "file": "workspace-storage.spec.ts",
+          "line": 63,
+          "column": 5
+        },
+        {
+          "title": "PL01 portable備份驗證後才套用；篡改／舊格式不取代目前資料，恢復撤銷保存同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-70aa36c84f9048014304",
+          "file": "workspace-storage.spec.ts",
+          "line": 114,
+          "column": 5
+        },
+        {
+          "title": "PL01 清空提醒可取消；過期方案保存恢復仍過期，切回舊範圍不復活",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-d407271247af60ccc03a",
+          "file": "workspace-storage.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "PL01 清空移除備份預覽、下載確認與本機保存同意；已保存副本僅可手動重讀",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-0c3ee9cfffef42aca372",
+          "file": "workspace-storage.spec.ts",
+          "line": 157,
+          "column": 5
+        },
+        {
+          "title": "PL01 主動保存兩方案與已確認行動，重整後手動恢復；其他同源分頁不自動共享",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-d33c8ab7b383840fdbfd",
+          "file": "workspace-storage.spec.ts",
+          "line": 63,
+          "column": 5
+        },
+        {
+          "title": "PL01 portable備份驗證後才套用；篡改／舊格式不取代目前資料，恢復撤銷保存同意",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-1ae72fe299e1eb0fe84e",
+          "file": "workspace-storage.spec.ts",
+          "line": 114,
+          "column": 5
+        },
+        {
+          "title": "PL01 清空提醒可取消；過期方案保存恢復仍過期，切回舊範圍不復活",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-fa1d9ee2ca5dc949af76",
+          "file": "workspace-storage.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "PL01 清空移除備份預覽、下載確認與本機保存同意；已保存副本僅可手動重讀",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6f693d9580f0a0ee74ea-1573c0f031367c72231e",
+          "file": "workspace-storage.spec.ts",
+          "line": 157,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "workspace.spec.ts",
+      "file": "workspace.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-712b911dca42b248dff9",
+          "file": "workspace.spec.ts",
+          "line": 77,
+          "column": 1
+        },
+        {
+          "title": "切換 golden 與 demo 會重算同一組 KPI",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0ecc4e070ddc26396934",
+          "file": "workspace.spec.ts",
+          "line": 105,
+          "column": 1
+        },
+        {
+          "title": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-354f76369c5570afd5ec",
+          "file": "workspace.spec.ts",
+          "line": 117,
+          "column": 1
+        },
+        {
+          "title": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-59944e2a7ae042f5dbab",
+          "file": "workspace.spec.ts",
+          "line": 149,
+          "column": 1
+        },
+        {
+          "title": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-01d213ea00008617094d",
+          "file": "workspace.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-923dae3c4c938852fb7f",
+          "file": "workspace.spec.ts",
+          "line": 188,
+          "column": 1
+        },
+        {
+          "title": "無效期間不覆寫已套用的分析範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-f5231124a3d941d47bb9",
+          "file": "workspace.spec.ts",
+          "line": 207,
+          "column": 1
+        },
+        {
+          "title": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-4e867d9b158bb1a3a111",
+          "file": "workspace.spec.ts",
+          "line": 218,
+          "column": 1
+        },
+        {
+          "title": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-4f37c68ee5118f87242d",
+          "file": "workspace.spec.ts",
+          "line": 243,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-485b0aa2857d6c5e0a4a",
+          "file": "workspace.spec.ts",
+          "line": 266,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5a9fe7263c7abe5ed9e2",
+          "file": "workspace.spec.ts",
+          "line": 266,
+          "column": 3
+        },
+        {
+          "title": "blocking 資料集載入失敗仍保留先前成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5f9988a3c71d0190a1d4",
+          "file": "workspace.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "載入中與 HTTP 故障均有明確狀態",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0c6a16e683f08a626fb4",
+          "file": "workspace.spec.ts",
+          "line": 288,
+          "column": 1
+        },
+        {
+          "title": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-508dfe907c4ffbc78c7a",
+          "file": "workspace.spec.ts",
+          "line": 305,
+          "column": 1
+        },
+        {
+          "title": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-e310732f2ef831aa238c",
+          "file": "workspace.spec.ts",
+          "line": 343,
+          "column": 1
+        },
+        {
+          "title": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-33627f5ec042c60dbb43",
+          "file": "workspace.spec.ts",
+          "line": 77,
+          "column": 1
+        },
+        {
+          "title": "切換 golden 與 demo 會重算同一組 KPI",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0656828d9a1d2ddc1206",
+          "file": "workspace.spec.ts",
+          "line": 105,
+          "column": 1
+        },
+        {
+          "title": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-91fabe931b29ebadce33",
+          "file": "workspace.spec.ts",
+          "line": 117,
+          "column": 1
+        },
+        {
+          "title": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-9537e8e70ac1cfca4329",
+          "file": "workspace.spec.ts",
+          "line": 149,
+          "column": 1
+        },
+        {
+          "title": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-b8e7234e22f5a2a62be1",
+          "file": "workspace.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-362b4eb4818fd7e9c2e7",
+          "file": "workspace.spec.ts",
+          "line": 188,
+          "column": 1
+        },
+        {
+          "title": "無效期間不覆寫已套用的分析範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-294f346e000a97f7c551",
+          "file": "workspace.spec.ts",
+          "line": 207,
+          "column": 1
+        },
+        {
+          "title": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-7844a1e52e0374d66c89",
+          "file": "workspace.spec.ts",
+          "line": 218,
+          "column": 1
+        },
+        {
+          "title": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-6fa0f08e8c50628d7446",
+          "file": "workspace.spec.ts",
+          "line": 243,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-9e3d25c7b96a70754044",
+          "file": "workspace.spec.ts",
+          "line": 266,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-74f6e2dc1db855cc27fe",
+          "file": "workspace.spec.ts",
+          "line": 266,
+          "column": 3
+        },
+        {
+          "title": "blocking 資料集載入失敗仍保留先前成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-c8005c39d08280c291a2",
+          "file": "workspace.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "載入中與 HTTP 故障均有明確狀態",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-7c9a2bbe29295fee8a6a",
+          "file": "workspace.spec.ts",
+          "line": 288,
+          "column": 1
+        },
+        {
+          "title": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-6aef39c6b5c5c4ece4a1",
+          "file": "workspace.spec.ts",
+          "line": 305,
+          "column": 1
+        },
+        {
+          "title": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "tablet",
+              "projectName": "tablet",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-23d267af40a44510fdce",
+          "file": "workspace.spec.ts",
+          "line": 343,
+          "column": 1
+        },
+        {
+          "title": "示範資料由空狀態進入可閱讀總覽，圖表有表格替代",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-f95841e874c9dc440e3f",
+          "file": "workspace.spec.ts",
+          "line": 77,
+          "column": 1
+        },
+        {
+          "title": "切換 golden 與 demo 會重算同一組 KPI",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-b347eb43576936009873",
+          "file": "workspace.spec.ts",
+          "line": 105,
+          "column": 1
+        },
+        {
+          "title": "通路篩選共用，金額證據可用鍵盤開啟與返回",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-416cb025c0a606bf0aee",
+          "file": "workspace.spec.ts",
+          "line": 117,
+          "column": 1
+        },
+        {
+          "title": "貢獻率差額的證據保留百分點單位，不再乘以 100",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5d3658a98d019c3c48c8",
+          "file": "workspace.spec.ts",
+          "line": 149,
+          "column": 1
+        },
+        {
+          "title": "診斷排序金額使用兩期已觀察差額，證據方向與來源一致",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-f1dc3f8be4128617e217",
+          "file": "workspace.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "商品篩選只影響毛利明細，不帶入通路廣告與貢獻",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-85404996f0dd97906bf7",
+          "file": "workspace.spec.ts",
+          "line": 188,
+          "column": 1
+        },
+        {
+          "title": "無效期間不覆寫已套用的分析範圍",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-bd44ddec7bf1202226cf",
+          "file": "workspace.spec.ts",
+          "line": 207,
+          "column": 1
+        },
+        {
+          "title": "有效自訂期間會同步更新 KPI、週資料及來源期間",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-a0a4ec898f3c286f9184",
+          "file": "workspace.spec.ts",
+          "line": 218,
+          "column": 1
+        },
+        {
+          "title": "資料工作區展示三份原始檔案、行號、口徑與未縮減預覽",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-50b3fe055cf4d09fcaee",
+          "file": "workspace.spec.ts",
+          "line": 243,
+          "column": 1
+        },
+        {
+          "title": "missing-cogs 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-e6761e5d7e0d8ea633a0",
+          "file": "workspace.spec.ts",
+          "line": 266,
+          "column": 3
+        },
+        {
+          "title": "missing-ad 顯示待補資料，保留收入與未受影響通路",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-2988873f6c501e6b6c1c",
+          "file": "workspace.spec.ts",
+          "line": 266,
+          "column": 3
+        },
+        {
+          "title": "blocking 資料集載入失敗仍保留先前成功資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-3557262be5a17462315a",
+          "file": "workspace.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "載入中與 HTTP 故障均有明確狀態",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-e89e185185883e3193d7",
+          "file": "workspace.spec.ts",
+          "line": 288,
+          "column": 1
+        },
+        {
+          "title": "較慢的舊資料請求不可覆寫較新的 golden 選擇",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-9f04e99ae6cfcac4d4aa",
+          "file": "workspace.spec.ts",
+          "line": 305,
+          "column": 1
+        },
+        {
+          "title": "清空與重新整理回到空狀態，另一個頁面沒有共用資料",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b163ed09f68681248ada-1fde85016f09ad6eccb7",
+          "file": "workspace.spec.ts",
+          "line": 343,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-01T10:08:06.083Z",
+    "duration": 341.006,
+    "expected": 0,
+    "skipped": 270,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

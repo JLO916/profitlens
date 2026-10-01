@@ -1,0 +1,7 @@
+
+> profitlens@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+src/components/actions-workbench.tsx(37,375): error TS1005: '}' expected.

@@ -1,5 +1,133 @@
 # Status
 
+## 2026-10-01｜系統發布（依最新指示先發布）
+
+使用者最新指示為「先做系統發布」，取代下方上一輪的 Live 先行順序。授權範圍仍是既有私人 GitHub `JLO916/profitlens` 與 Vercel `jlo916s-projects/profitlens`；不建立新雲端專案，不開放公開 Live AI。正在執行本輪發布檢查，最後結果及未驗收範圍記在 [發布紀錄](../verification/release-20261001-acceptance.md)。
+
+本機 typecheck、lint、34 files／766 unit/integration 已重新執行通過。Live AI 仍未實测，模型品質與真人實務成效仍待驗證；這些不再阻止本輪以規則診斷運作的 PUBLIC_DEMO 發布。下方保留各輪當時紀錄，不將它們當作本輪重新執行的結果。
+
+---
+
+## 2026-10-01｜Live AI 驗收與發布：待本機設定
+
+使用者已授權「先 Live AI 驗收，再系統發布」。本輪安全檢查確認目前沒有 `OPENAI_API_KEY` 或 `OPENAI_MODEL`，已請使用者在專案 `.env.local` 私下設定。**Live AI 尚未執行，系統也尚未發布**；不以 mock 或歷史驗收代替真實呼叫，不跳過指定順序。
+
+- `npm run typecheck`、`npm run lint` 均 exit0；`npm test -- --run` 為34 files／766 passed。本輪重新執行的 logs 為 `verification/live-release-{typecheck,lint,unit}.txt`。
+- 離線準備20個合成案例，每案由 domain 計算產生40筆最小彙總 facts、觀察模板與完整傳送預覽；以固定金額／null anchors 和匿名化檢查核對。這是驗收準備，所有 Live、語義品質及真人營運評分仍為 `not_run`，沒有模型呼叫。
+- 核對官方 OpenAI Structured Outputs 文件，現有 SDK `responses.create`／`text.format`／strict JSON Schema 接法有效；模型由 server 環境提供，未擅自指定或更換。尚未驗證帳戶、模型支援或實際品質。
+- 122個原受測來源／測試／設定 hash 與第三批相同，未改產品程式、財務定義、golden 或依賴。
+- 唯讀 GitHub 檢查通過：JLO916 登入、私人 repo、遠端 main 仍為 `04e186bf7be18102e2d23b71b9d4d74fe521a2f1`。本輪 Vercel metadata 確認正式部署 `dpl_9ukTQ2nz21jQnBLEMUyaV3BRhfmX` READY 且同 commit；公開 GET unavailable、POST403／PUBLIC_DEMO。這是舊版唯讀檢查，不是新版本已發布。
+- 本輪 build、E2E、真瀏覽器 Live 流程、20案模型品質評分、commit／push／deploy **未執行**。沒有接到新模型回覆，也沒有營運主管使用時間或成效數據。Vercel 遠端環境值未讀取；發布時仍須維持 PUBLIC_DEMO 後端關閉，不同步本機 key。
+
+變更僅 README／STATUS、離線準備器與驗收文件／合成預覽／logs。詳見 [Live AI 與發布執行紀錄](../verification/live-ai-release-acceptance.md)、[案例計畫](../verification/live-ai-evaluation-plan.md)、[傳送預覽](../verification/live-ai-preview/preview.md)、[唯讀發布預檢](../verification/live-release-preflight.md)。下一步為取得私下設定後完成實際 Live 驗收，再接續已授權的既有 GitHub／Vercel 發布；不再新增產品 milestone。
+
+---
+
+## 2026-10-01｜實務試用準備與合成替代資料演練
+
+使用者接受先做實務資料試用。檢查專案目前只有合成fixtures，已詢問去識別化真實三CSV的本機路徑，本轮尚未取得。**完成的是合成資料演練與待填工作表，不是已完成真實商業pilot。** 沒有更改產品程式、財務口徑、golden、依賴，也沒有push、部署或模型呼叫。
+
+- 開工核對第三批受測來源122/122相符；沿用production BUILD_ID `p9LCsepxPsSU3ROkD0TCg`。三CSV真實選檔只讀 `tests/fixtures/alternative/` 合成資料，未尋找私人營運檔或傳送外部服務。
+- 獨立Python標準庫csv＋Decimal，未import production：26個固定答案相符。本期N600.00／GP260.00／CM10.00；DTC40.00、MARKETPLACE−30.00；bridge−130.00。條件v0／δ0pp／f−50%／a0／K3＝44.00，Δ4.00；只為演練假設。
+- 人工CUA走完三檔＋manifest選取、口徑阻擋、九項來源對帳、套用、診斷、DTC試算、原fact帶入行動、八筆來源查閱、確認及三格式下載按鈕。1440／768／390px截圖、Enter／Escape及console warn/error空記錄保留。人工下載事件逾時，未取得檔案位元；另列E2E真下載證據，不混稱。
+- `npm test -- --run`：pass，34 files／766 tests；`npm run lint`：pass；`npm run typecheck`：初次fail（`.next/types`重複產生檔TS6200/TS2300），4檔記hash後移至 `/private/tmp/profitlens-pilot-generated-types-c_inw4jl/`保留，重跑pass。沒有刪來源或修改tsconfig排除錯誤。
+- `npm run test:e2e -- --config verification/pilot-e2e.config.ts`：pass，9/9，22.18秒，三尺寸各3項、0 skipped／unexpected／flaky、retries0。沿用既有M6完整流程／獨立context／stale候選三項原斷言，僅改本輪輸出位置；對既有3200 PUBLIC_DEMO production執行。真正下載JSON／CSV／Markdown並核對快照、金額、假設及證據。
+- 本輪 `npm run build`、全套282 E2E、live AI、真實資料／使用者任務耗時／實際採納／商業收益皆**未執行**。產品來源未變，build及282全套沿用第三批歷史證據，不能算本輪重跑。
+
+新增 [PILOT_WORKSHEET.md](PILOT_WORKSHEET.md)、[本輪驗收報告](../verification/pilot-rehearsal-acceptance.md)、獨立對帳、手動browser receipt、四張截圖及驗收用E2E副本／設定；README／STATUS更新。工作表所有真實資料與使用者結果保持空白，沒有聯絡試用者或代填成效。下一步需要授權且去識別的標準三CSV、同範圍獨立來源總額及來源口徑確認；若只有平台結算／含稅訂單報表，先釐清轉換，不自行補成本或分攤廣告。
+
+---
+
+## 2026-10-01｜管理者評閱改善第三批 PL-10（僅本機預覽）
+
+依「繼續進行下一輪」完成第三批。開工先核對第二批120檔快照及重跑751項baseline；沒有重建專案。完成每頁AI可用性提示、不可用時收起整段傳送流程、可用時中文精確彙總預覽、獨立進階驗證頁，以及主管語言／字級／稽核資訊收合。**第三批完成即停，三批本機改善尚未push或部署**。Git HEAD仍為 `04e186bf7be18102e2d23b71b9d4d74fe521a2f1`，保留先前未提交工作。
+
+| 檢查 | 本輪實際結果與證據 |
+|---|---|
+| typecheck | pass：`npm run typecheck` exit0；`manager-batch3-typecheck-final.txt` |
+| lint | pass：`npm run lint` exit0；`manager-batch3-lint-final.txt` |
+| 全部unit/integration | pass：`npm test -- --run`，34 files／766 tests；`manager-batch3-unit.txt` |
+| production build | pass：最終E2E webServer實際執行 `NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100`；不是另跑standalone build。BUILD_ID `p9LCsepxPsSU3ROkD0TCg` |
+| 全部E2E | pass：`npm run test:e2e` exit0，282 passed／0 unexpected／0 skipped／0 flaky；retries0；1440×1000、768×1024、390×844各94項，285秒。`manager-batch3-e2e-final.txt`／`manager-batch3-e2e-results.json` |
+| 人工真瀏覽器 | pass（記錄範圍內）：Codex in-app browser、同最終production build、PUBLIC_DEMO3200；三尺寸載入、缺漏／blocking保留、中文診斷、Enter展開／證據、Escape關閉；warn/error空。`manager-batch3-manual-browser.json`及6張手動截圖 |
+| 列印 | pass（Chromium產生PDF）：Golden摘要1頁，已用pypdf抽字並渲染目視；原生列印對話框／實體列印not_run |
+| 後端／bundle | pass：`python3 verification/manager-batch3-check.py` exit0；21個前端JS無指定非秘密canary／server-only變數名稱；PUBLIC_DEMO GET unavailable、POST403，無live呼叫。`manager-batch3-security.json` |
+| 來源完整性 | pass：受測122檔hash相符；本輪domain15／golden5／schema1／package2未變；原fixtures／評閱包等56檔保留。`manager-batch3-final-source-check.json`／`manager-batch3-integrity.json` |
+| 人工匯入／下載／備份恢復 | not_run：本輪人工聚焦PL-10；全套E2E實際選檔、三格式下載內容、隔離與恢復另為pass，不能當人工結果 |
+| live AI／真實營運資料／線上驗收 | not_run：沒有真實key；可用／拒絕／故障等AI路徑僅mock。未push／部署／重新測線上 |
+
+先寫測試取得AI呈現11項失敗、語言4項失敗，再完成實作；補測重掛畫面不得誤稱「尚未傳送」與狀態查詢失敗不得誤稱「已停用」，先2 failed／9 passed再全綠。第一次E2E為102 passed／5 failed／1 interrupted／174未執行（exit130主動停止），失敗為新增heading定位不唯一及全頁status定位受新增提示影響。改為指定層級、工作區testid／稽核區域，未放寬數字或安全斷言；重跑282全過。初始與最終紀錄均保留。詳見 [完整第三批驗收](../verification/manager-batch3-acceptance.md)。
+
+變更：dashboard、ai-panel、workspace-panels、decision-workbench、actions-workbench、issue-list、globals.css與ai-client文案；新增2份unit及1份E2E，既有E2E更新進階驗證入口、精確定位與本批證據檔名；Playwright設定、README／AI_CONTRACT／ARCHITECTURE／ACCEPTANCE／DECISIONS／STATUS。逐檔見 `verification/manager-batch3-changes.json`。未改財務函式、AI provider／server、payload契約、golden答案、套件或lockfile。
+
+本機操作：開 [3200預覽](http://127.0.0.1:3200/)，載入示範或匯入標準CSV；Golden與錯誤樣本在「進階驗證」。切到該頁不換資料，按載入才驗證，成功後回總覽。診斷的中文事實可直接點金額查來源；fact／rule／版本仍留在稽核資訊。公開模式即時AI後端關閉，規則、計算、方案與匯出仍可用。
+
+限制：可用AI預覽仍是前後期共40筆所選通路合計，不含個別匿名通路拆解，不能讓模型據此指定某通路是原因；本批未新增預錄AI示例。能力查詢在本次掛載時取得，環境設定更動需重新載入；真正POST仍由伺服器即時守門。Safari、實體裝置、讀屏、正式資料與極限資料量效能未驗收。三批評閱改善已完成；後續實務試用或發布另行指定，下方為各階段當時紀錄。
+
+---
+
+## 2026-10-01｜管理者評閱改善第二批 PL-05–09（僅本機預覽）
+
+依「繼續進行下一輪」完成評閱第二批，先核對第一批開工hash並重跑663項baseline，不以歷史綠燈代替本輪驗收。新增主管摘要、診斷帶入行動、獨立跨範圍行動／最多三項置頂、商品兩期差異、閉合式門檻與三組敏感度、會議稿與通路寬表。**第二批完成即停，第三批PL-10未開始，未推送或部署。** Git HEAD仍為 `04e186bf7be18102e2d23b71b9d4d74fe521a2f1`；保留第一批未提交工作，沒有新增依賴或更改golden答案。
+
+| 檢查 | 本輪實際結果與證據 |
+|---|---|
+| typecheck | pass：`npm run typecheck` exit0；`manager-batch2-typecheck.txt` |
+| lint | pass：`npm run lint` exit0；`manager-batch2-lint.txt` |
+| 全部unit/integration | pass：`npm test -- --run`，32 files／751 tests；`manager-batch2-unit.txt` |
+| production build | pass：standalone build；最後修改凍結後E2E再次實際build成功才start。最終BUILD_ID `LSy2XrLTPaOxDuUpKF9iP` |
+| 全部E2E | pass：`npm run test:e2e` exit0，258 passed／0 unexpected／0 skipped／0 flaky，retries0；1440×1000、768×1024、390×844各86項，315秒；`manager-batch2-e2e-final.txt`及`manager-batch2-e2e-results.json` |
+| 人工真瀏覽器 | pass（記錄範圍內）：Codex in-app browser、同一最終production build、3200；三尺寸摘要／行動／歷史來源／情境敏感度／商品差額，Enter/Escape／表內方向鍵。`manager-batch2-manual-browser.json`及`manager-batch2-manual-*.jpg` |
+| 列印 | pass（Chromium PDF）：Golden摘要1頁，已渲染目視；OS列印對話框及實體列印not_run |
+| 人工下載位元 | not_run：CUA下載事件逾時，未取得檔案路徑；E2E真正下載及內容核對另為pass。人工三檔匯入／備份恢復本輪未重做，完整E2E已覆蓋 |
+| 本機後端／bundle | pass：`python3 verification/manager-batch2-check.py`；21個前端JS沒有指定非秘密canary／server-only變數標記；GET unavailable、POST403 PUBLIC_DEMO，無模型呼叫。`manager-batch2-security.json` |
+| 來源與原始檔保留 | pass：120個受測程式／測試／設定最後hash一致；評閱包、fixtures、golden、AGENTS、schema、package／lock共56檔未變。`manager-batch2-final-source-check.json`及`manager-batch2-integrity.json` |
+| Live AI／真實資料 | not_run：無真實key，本輪無此驗收；mock不代表已連線或成效 |
+| production／第三批 | not_run：未push、未部署、未重新檢驗線上版本、未開始第三批 |
+
+初始EPERM無法listen3100時未跑瀏覽器；核准本機測試後執行。第一個瀏覽器run41 passed／5 failed／1 interrupted／211未執行；第二個120 passed／4 failed／1 interrupted／133未執行，均發現問題後主動停止（exit130），沒有當作通過。修正select可及名稱、舊行動頁locator、資料就緒等待、multiple-select順序測試及原商品CSV搜尋metadata大小寫回歸，再補置頂實際順序、安全binding與歷史匯出測試，最後258全部通過。整合typecheck／build失敗及環境生成型別競爭也保留，修復後序列執行通過。詳見 [第二批完整驗收](../verification/manager-batch2-acceptance.md)。
+
+變更：新增domain商品比較／敏感度；application獨立action-workspace、manager-summary、商品比較CSV；新增行動、主管摘要、商品比較與敏感度元件；整合dashboard／診斷／情境／保存；備份v2可讀有效v1，各行動保留自己的資料、fact、期間、scope與stale。完整決策輸出帶全部行動及各自證據，不混用目前資料。新增6個unit/integration及4個E2E檔；README／PRD／ARCHITECTURE／SCENARIOS／ACCEPTANCE／DECISIONS／STATUS與驗收證據更新。逐檔見 `verification/manager-batch2-changes.json`。
+
+本機：[預覽3200](http://127.0.0.1:3200/)（服務運行時有效）。Golden摘要收入差+220.00、貢獻差-315.00；DTC履約單位成本-10%、銷量0、其他0仍284.00，K20仍264.00。敏感度是固定假設試算，不是預測；商品不分攤通路廣告；缺值不補零，沒有更改財務定義。
+
+已知限制：摘要門檻／所選方案、商品篩選及三組敏感度是頁內暫存，不存入備份；正式方案／行動需主動保存。跨歷史context備份包含各自標準CSV，總上限64MiB，超限拒絕；最大資料量與大量行動效能未驗收。列印可續頁，不保證任何資料量都一頁。Safari／實體裝置／讀屏／原生列印未驗收；未提供新增雲端同步、平台API、預測或AI成效保證。
+
+下一候選為評閱第三批PL-10：公開版AI未啟用說明、進階驗證入口及主管語言收斂；本輪未開始。下方保留各階段當時紀錄，不代表最新狀態。
+
+---
+
+## 2026-10-01｜管理者評閱改善第一批 PL-01–04（僅本機預覽）
+
+依使用者要求安全解壓 `ProfitLens_Manager_Review_20261001.zip` 至 `reviews/ProfitLens_Manager_Review_20261001/`，閱讀全部 11 檔；按包內建議只執行第一批。評閱內容是改善依據，不視為雲端部署或其他外部操作的授權。本輪未 push main、未部署；原 Git HEAD 仍為 `04e186bf7be18102e2d23b71b9d4d74fe521a2f1`。唯讀核對線上 Vercel READY 版本與此 HEAD 相符。公開站不含本輪未提交變更。
+
+完成：完整自然月／相同天數比較、前期先於本期、合計與 Decimal 日均、AI／決策／分析匯出模式同步；明確同意本機保存、完整工作區 JSON 及重驗恢復、過期保留、未保存提醒與刪除副本；三 CSV 中文欄位說明與空範本、需確認的日期／通路提議、來源至標準欄位與指標對帳、拒絕未整理的含稅／淨結算口徑。
+
+| 檢查 | 實際結果與證據 |
+|---|---|
+| 原核心 baseline | pass：96 tests；`manager-batch1-baseline.txt` |
+| typecheck | pass：`npm run typecheck` exit 0；`manager-batch1-typecheck-final.txt` |
+| lint | pass：`npm run lint` exit 0；`manager-batch1-lint-final.txt` |
+| 全部 unit/integration | pass：`npm test -- --run`，26 files／663 tests；`manager-batch1-tests-final.txt` |
+| production build | pass：完整 E2E 的 webServer 實際執行 `NEXT_TELEMETRY_DISABLED=1 npm run build` 後啟動 production server；同 E2E log |
+| 三尺寸完整 E2E | pass：`npm run test:e2e` exit 0，225 passed／0 failed／0 skipped；1440×1000、768×1024、390×844，無 retry；`manager-batch1-e2e-final.txt`、`manager-batch1-e2e-results.json` |
+| 人工真瀏覽器 | pass：Codex in-app browser、本機 production 3200；三檔真正選取、月比較／對帳、日均公式、診斷、條件方案、行動、保存／重整／預覽確認恢復／刪除／清空取消；1440×900、1366×768、768×1024、390×844 截圖。`manager-batch1-manual-browser.json`、`manager-batch1-manual-*.png` |
+| 本機後端與 bundle | pass：22 個前端 assets 無假 canary／server-only markers；PUBLIC_DEMO POST 403、no-key／disabled／no-consent 正確降級；`manager-batch1-security.json`。未呼叫模型 |
+| 原資料保留 | pass：ZIP 11 檔與解壓位元相同；fixtures、golden、AGENTS、schema、package／lock 共 45 個追蹤檔與 HEAD 相同；`manager-batch1-integrity.json` |
+| Live AI／真實營運資料 | not_run：無真實 key、不在本輪驗收；mock 不代表連線或商業成效 |
+| production 發佈／第二三批 | not_run：本輪先提供本機 preview，完成第一批即停 |
+
+初次 E2E 保留：81 passed、5 failed、1 interrupted、135 未執行，確認失敗原因後主動停止（exit 130），不是通過。修正測試對 beforeunload 的處理、超長日期 fixture 的 as_of 及來源翻頁，再加入真實問題回歸（清空也要清掉備份候選／同意暫存），最終 225 全過。初次 typecheck 發現 `.next/types` 36 個重複產生檔，先記 hash 再移到 `/tmp` 保存，沒有刪除或改動來源；清理後 typecheck 通過。詳見 [本輪驗收報告](../verification/manager-batch1-acceptance.md)。
+
+變更檔案：domain 日期／comparison／types／validation／analysis；application workspace-backup、local-store、import-guidance、import、decision／export／AI snapshot；components dashboard、storage、import、overview、decision-workbench 與 CSS；AI 契約／grounding／prompt 版本；新增 4 個 unit test files、3 個 E2E specs，調整既有回歸；README、規格、DECISIONS、ACCEPTANCE、eslint／Playwright 設定、`.vercelignore` 與本輪 verification。完整清單見驗收報告。沒有新增依賴。
+
+本機操作：[目前預覽](http://127.0.0.1:3200/)（本機服務運行時有效，PUBLIC_DEMO 關閉 live AI）；日後可 `npm run dev`。比較模式需套用，日期／通路提議需確認；保存只存已套用範圍及可恢復工作稿，不存未套用匯入／日期草稿、商品搜尋或 AI 同意。手動保存 IndexedDB 未做應用程式層加密，同瀏覽器使用者可手動恢復；不自動同步，不等同雲端備份。人工操作匯出按鈕與提示已確認，人工未讀回下載位元，E2E 已真下載並核對內容／恢復。
+
+停止點：第一批完成。下一候選為評閱包第二批（診斷帶入行動、商品差異、主管摘要、敏感度），尚未開始；公開 live AI、平台串接、多人／雲端同步、訂單自動彙總與自動稅額換算仍不支援。
+
+---
+
+
 ## 2026-10-01｜使用者授權 GitHub／Vercel 首次部署
 
 本輪依「先將此版本推送部署至 github 及 versel」執行，授權範圍為目前版本的 GitHub 與 Vercel。沒有新增產品功能或開始新 milestone。下方 M6–M0 為各輪當時狀態，當時「未部署」不代表目前狀態。

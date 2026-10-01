@@ -1,0 +1,1197 @@
+{
+  "snapshot": {
+    "schema_version": "ai-snapshot-v2",
+    "snapshot_id": "ai-v2:87ac0429634bba188d1c68d8d68aad46dc86d952f1276bdcdf80a94e178b2b62:8b2b8ec3dab68939076b06e8fe48f9cc7a6f4ee4bf4894ff32c0264ab642bebb:15",
+    "currency": "TWD",
+    "metric_version": "contribution-v1",
+    "data_as_of": "2026-10-01",
+    "periods": {
+      "previous": {
+        "start": "2026-08-01",
+        "end": "2026-08-01"
+      },
+      "current": {
+        "start": "2026-08-02",
+        "end": "2026-08-02"
+      }
+    },
+    "comparison": {
+      "mode": "same_days",
+      "previous_days": 1,
+      "current_days": 1
+    },
+    "filters": {
+      "channels": [
+        "C01"
+      ]
+    },
+    "data_quality": {
+      "status": "complete",
+      "missing_fact_ids": []
+    },
+    "facts": [
+      {
+        "id": "F001",
+        "kind": "metric",
+        "metric": "gross_sales",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "1000.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F002",
+        "kind": "metric",
+        "metric": "discounts",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "100.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F003",
+        "kind": "metric",
+        "metric": "refunds",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "50.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F004",
+        "kind": "metric",
+        "metric": "cogs_net",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "400.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F005",
+        "kind": "metric",
+        "metric": "platform_fees",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "30.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F006",
+        "kind": "metric",
+        "metric": "payment_fees",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "10.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F007",
+        "kind": "metric",
+        "metric": "fulfillment_costs",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "40.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F008",
+        "kind": "metric",
+        "metric": "other_variable_costs",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "20.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F009",
+        "kind": "metric",
+        "metric": "ad_spend",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "100.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F010",
+        "kind": "metric",
+        "metric": "net_revenue",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "850.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F011",
+        "kind": "metric",
+        "metric": "gross_profit",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "450.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F012",
+        "kind": "metric",
+        "metric": "contribution_before_marketing",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "350.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F013",
+        "kind": "metric",
+        "metric": "contribution_after_marketing",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "250.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F014",
+        "kind": "metric",
+        "metric": "gross_margin",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "0.529411764706",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F015",
+        "kind": "metric",
+        "metric": "contribution_margin",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "0.294117647059",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F016",
+        "kind": "metric",
+        "metric": "discount_rate",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "0.100000000000",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F017",
+        "kind": "metric",
+        "metric": "refund_ratio",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "0.055555555556",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F018",
+        "kind": "metric",
+        "metric": "mer",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "8.500000000000",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F019",
+        "kind": "metric",
+        "metric": "fulfillment_burden",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "0.047058823529",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F020",
+        "kind": "metric",
+        "metric": "marketing_burden",
+        "period": "previous",
+        "scope": "selected_channels",
+        "value": "0.117647058824",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F021",
+        "kind": "metric",
+        "metric": "gross_sales",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "1000.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F022",
+        "kind": "metric",
+        "metric": "discounts",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "100.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F023",
+        "kind": "metric",
+        "metric": "refunds",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "50.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F024",
+        "kind": "metric",
+        "metric": "cogs_net",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "400.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F025",
+        "kind": "metric",
+        "metric": "platform_fees",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "30.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F026",
+        "kind": "metric",
+        "metric": "payment_fees",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "10.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F027",
+        "kind": "metric",
+        "metric": "fulfillment_costs",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "40.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F028",
+        "kind": "metric",
+        "metric": "other_variable_costs",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "20.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F029",
+        "kind": "metric",
+        "metric": "ad_spend",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "100.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F030",
+        "kind": "metric",
+        "metric": "net_revenue",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "850.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F031",
+        "kind": "metric",
+        "metric": "gross_profit",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "450.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F032",
+        "kind": "metric",
+        "metric": "contribution_before_marketing",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "350.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F033",
+        "kind": "metric",
+        "metric": "contribution_after_marketing",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "250.00",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F034",
+        "kind": "metric",
+        "metric": "gross_margin",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "0.529411764706",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F035",
+        "kind": "metric",
+        "metric": "contribution_margin",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "0.294117647059",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F036",
+        "kind": "metric",
+        "metric": "discount_rate",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "0.100000000000",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F037",
+        "kind": "metric",
+        "metric": "refund_ratio",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "0.055555555556",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F038",
+        "kind": "metric",
+        "metric": "mer",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "8.500000000000",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F039",
+        "kind": "metric",
+        "metric": "fulfillment_burden",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "0.047058823529",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "channel_costs",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      },
+      {
+        "id": "F040",
+        "kind": "metric",
+        "metric": "marketing_burden",
+        "period": "current",
+        "scope": "selected_channels",
+        "value": "0.117647058824",
+        "reason_codes": [],
+        "source_refs": [
+          {
+            "role": "ad_spend",
+            "rows": 1,
+            "missing_rows": 0
+          },
+          {
+            "role": "sales",
+            "rows": 1,
+            "missing_rows": 0
+          }
+        ]
+      }
+    ]
+  },
+  "observation_catalog": [
+    {
+      "fact_ids": [
+        "F001"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的折扣前商品收入為 {{fact:F001:gross_sales}}。"
+    },
+    {
+      "fact_ids": [
+        "F002"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的商品折扣為 {{fact:F002:discounts}}。"
+    },
+    {
+      "fact_ids": [
+        "F003"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的已入帳退款為 {{fact:F003:refunds}}。退款按入帳日觀察，不等於 cohort 最終退貨率。"
+    },
+    {
+      "fact_ids": [
+        "F004"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的銷貨成本淨額為 {{fact:F004:cogs_net}}。"
+    },
+    {
+      "fact_ids": [
+        "F005"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的平台費用為 {{fact:F005:platform_fees}}。"
+    },
+    {
+      "fact_ids": [
+        "F006"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的金流費用為 {{fact:F006:payment_fees}}。"
+    },
+    {
+      "fact_ids": [
+        "F007"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的履約費用為 {{fact:F007:fulfillment_costs}}。"
+    },
+    {
+      "fact_ids": [
+        "F008"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的其他變動成本為 {{fact:F008:other_variable_costs}}。"
+    },
+    {
+      "fact_ids": [
+        "F009"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的廣告費為 {{fact:F009:ad_spend}}。"
+    },
+    {
+      "fact_ids": [
+        "F010"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的商品淨營收為 {{fact:F010:net_revenue}}。"
+    },
+    {
+      "fact_ids": [
+        "F011"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的商品毛利為 {{fact:F011:gross_profit}}。"
+    },
+    {
+      "fact_ids": [
+        "F012"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的行銷前貢獻為 {{fact:F012:contribution_before_marketing}}。"
+    },
+    {
+      "fact_ids": [
+        "F013"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的行銷後貢獻為 {{fact:F013:contribution_after_marketing}}。"
+    },
+    {
+      "fact_ids": [
+        "F014"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的商品毛利率為 {{fact:F014:gross_margin}}。"
+    },
+    {
+      "fact_ids": [
+        "F015"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的行銷後貢獻率為 {{fact:F015:contribution_margin}}。"
+    },
+    {
+      "fact_ids": [
+        "F016"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的折扣率為 {{fact:F016:discount_rate}}。"
+    },
+    {
+      "fact_ids": [
+        "F017"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的退款金額比為 {{fact:F017:refund_ratio}}。退款按入帳日觀察，不等於 cohort 最終退貨率。"
+    },
+    {
+      "fact_ids": [
+        "F018"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的混合行銷效率 MER為 {{fact:F018:mer}}。MER 不是 ROAS，不提供媒體歸因。"
+    },
+    {
+      "fact_ids": [
+        "F019"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的履約費用占淨營收比為 {{fact:F019:fulfillment_burden}}。"
+    },
+    {
+      "fact_ids": [
+        "F020"
+      ],
+      "kind": "value",
+      "observation": "前期所選通路合計的廣告費占淨營收比為 {{fact:F020:marketing_burden}}。"
+    },
+    {
+      "fact_ids": [
+        "F021"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的折扣前商品收入為 {{fact:F021:gross_sales}}。"
+    },
+    {
+      "fact_ids": [
+        "F022"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的商品折扣為 {{fact:F022:discounts}}。"
+    },
+    {
+      "fact_ids": [
+        "F023"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的已入帳退款為 {{fact:F023:refunds}}。退款按入帳日觀察，不等於 cohort 最終退貨率。"
+    },
+    {
+      "fact_ids": [
+        "F024"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的銷貨成本淨額為 {{fact:F024:cogs_net}}。"
+    },
+    {
+      "fact_ids": [
+        "F025"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的平台費用為 {{fact:F025:platform_fees}}。"
+    },
+    {
+      "fact_ids": [
+        "F026"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的金流費用為 {{fact:F026:payment_fees}}。"
+    },
+    {
+      "fact_ids": [
+        "F027"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的履約費用為 {{fact:F027:fulfillment_costs}}。"
+    },
+    {
+      "fact_ids": [
+        "F028"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的其他變動成本為 {{fact:F028:other_variable_costs}}。"
+    },
+    {
+      "fact_ids": [
+        "F029"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的廣告費為 {{fact:F029:ad_spend}}。"
+    },
+    {
+      "fact_ids": [
+        "F030"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的商品淨營收為 {{fact:F030:net_revenue}}。"
+    },
+    {
+      "fact_ids": [
+        "F031"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的商品毛利為 {{fact:F031:gross_profit}}。"
+    },
+    {
+      "fact_ids": [
+        "F032"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的行銷前貢獻為 {{fact:F032:contribution_before_marketing}}。"
+    },
+    {
+      "fact_ids": [
+        "F033"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的行銷後貢獻為 {{fact:F033:contribution_after_marketing}}。"
+    },
+    {
+      "fact_ids": [
+        "F034"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的商品毛利率為 {{fact:F034:gross_margin}}。"
+    },
+    {
+      "fact_ids": [
+        "F035"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的行銷後貢獻率為 {{fact:F035:contribution_margin}}。"
+    },
+    {
+      "fact_ids": [
+        "F036"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的折扣率為 {{fact:F036:discount_rate}}。"
+    },
+    {
+      "fact_ids": [
+        "F037"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的退款金額比為 {{fact:F037:refund_ratio}}。退款按入帳日觀察，不等於 cohort 最終退貨率。"
+    },
+    {
+      "fact_ids": [
+        "F038"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的混合行銷效率 MER為 {{fact:F038:mer}}。MER 不是 ROAS，不提供媒體歸因。"
+    },
+    {
+      "fact_ids": [
+        "F039"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的履約費用占淨營收比為 {{fact:F039:fulfillment_burden}}。"
+    },
+    {
+      "fact_ids": [
+        "F040"
+      ],
+      "kind": "value",
+      "observation": "本期所選通路合計的廣告費占淨營收比為 {{fact:F040:marketing_burden}}。"
+    },
+    {
+      "fact_ids": [
+        "F001",
+        "F021"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的折扣前商品收入較前期持平（前期 {{fact:F001:gross_sales}}；本期 {{fact:F021:gross_sales}}）。"
+    },
+    {
+      "fact_ids": [
+        "F002",
+        "F022"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的商品折扣較前期持平（前期 {{fact:F002:discounts}}；本期 {{fact:F022:discounts}}）。"
+    },
+    {
+      "fact_ids": [
+        "F003",
+        "F023"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的已入帳退款較前期持平（前期 {{fact:F003:refunds}}；本期 {{fact:F023:refunds}}）。退款按入帳日觀察，不等於 cohort 最終退貨率。"
+    },
+    {
+      "fact_ids": [
+        "F004",
+        "F024"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的銷貨成本淨額較前期持平（前期 {{fact:F004:cogs_net}}；本期 {{fact:F024:cogs_net}}）。"
+    },
+    {
+      "fact_ids": [
+        "F005",
+        "F025"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的平台費用較前期持平（前期 {{fact:F005:platform_fees}}；本期 {{fact:F025:platform_fees}}）。"
+    },
+    {
+      "fact_ids": [
+        "F006",
+        "F026"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的金流費用較前期持平（前期 {{fact:F006:payment_fees}}；本期 {{fact:F026:payment_fees}}）。"
+    },
+    {
+      "fact_ids": [
+        "F007",
+        "F027"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的履約費用較前期持平（前期 {{fact:F007:fulfillment_costs}}；本期 {{fact:F027:fulfillment_costs}}）。"
+    },
+    {
+      "fact_ids": [
+        "F008",
+        "F028"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的其他變動成本較前期持平（前期 {{fact:F008:other_variable_costs}}；本期 {{fact:F028:other_variable_costs}}）。"
+    },
+    {
+      "fact_ids": [
+        "F009",
+        "F029"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的廣告費較前期持平（前期 {{fact:F009:ad_spend}}；本期 {{fact:F029:ad_spend}}）。"
+    },
+    {
+      "fact_ids": [
+        "F010",
+        "F030"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的商品淨營收較前期持平（前期 {{fact:F010:net_revenue}}；本期 {{fact:F030:net_revenue}}）。"
+    },
+    {
+      "fact_ids": [
+        "F011",
+        "F031"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的商品毛利較前期持平（前期 {{fact:F011:gross_profit}}；本期 {{fact:F031:gross_profit}}）。"
+    },
+    {
+      "fact_ids": [
+        "F012",
+        "F032"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的行銷前貢獻較前期持平（前期 {{fact:F012:contribution_before_marketing}}；本期 {{fact:F032:contribution_before_marketing}}）。"
+    },
+    {
+      "fact_ids": [
+        "F013",
+        "F033"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的行銷後貢獻較前期持平（前期 {{fact:F013:contribution_after_marketing}}；本期 {{fact:F033:contribution_after_marketing}}）。"
+    },
+    {
+      "fact_ids": [
+        "F014",
+        "F034"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的商品毛利率較前期持平（前期 {{fact:F014:gross_margin}}；本期 {{fact:F034:gross_margin}}）。"
+    },
+    {
+      "fact_ids": [
+        "F015",
+        "F035"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的行銷後貢獻率較前期持平（前期 {{fact:F015:contribution_margin}}；本期 {{fact:F035:contribution_margin}}）。"
+    },
+    {
+      "fact_ids": [
+        "F016",
+        "F036"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的折扣率較前期持平（前期 {{fact:F016:discount_rate}}；本期 {{fact:F036:discount_rate}}）。"
+    },
+    {
+      "fact_ids": [
+        "F017",
+        "F037"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的退款金額比較前期持平（前期 {{fact:F017:refund_ratio}}；本期 {{fact:F037:refund_ratio}}）。退款按入帳日觀察，不等於 cohort 最終退貨率。"
+    },
+    {
+      "fact_ids": [
+        "F018",
+        "F038"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的混合行銷效率 MER較前期持平（前期 {{fact:F018:mer}}；本期 {{fact:F038:mer}}）。MER 不是 ROAS，不提供媒體歸因。"
+    },
+    {
+      "fact_ids": [
+        "F019",
+        "F039"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的履約費用占淨營收比較前期持平（前期 {{fact:F019:fulfillment_burden}}；本期 {{fact:F039:fulfillment_burden}}）。"
+    },
+    {
+      "fact_ids": [
+        "F020",
+        "F040"
+      ],
+      "kind": "change",
+      "observation": "本期所選通路合計的廣告費占淨營收比較前期持平（前期 {{fact:F020:marketing_burden}}；本期 {{fact:F040:marketing_burden}}）。"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+
+> profitlens@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+error TS6053: File '/Users/j-work/Desktop/profitlens-codex-starter/.next/types/app/api/datasets/[id]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in '/Users/j-work/Desktop/profitlens-codex-starter/tsconfig.json'
+error TS6053: File '/Users/j-work/Desktop/profitlens-codex-starter/.next/types/app/api/insights/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in '/Users/j-work/Desktop/profitlens-codex-starter/tsconfig.json'
+error TS6053: File '/Users/j-work/Desktop/profitlens-codex-starter/.next/types/app/layout.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in '/Users/j-work/Desktop/profitlens-codex-starter/tsconfig.json'
+error TS6053: File '/Users/j-work/Desktop/profitlens-codex-starter/.next/types/app/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in '/Users/j-work/Desktop/profitlens-codex-starter/tsconfig.json'

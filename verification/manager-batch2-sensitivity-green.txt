@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/scenario-sensitivity.test.ts tests/scenarios.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  2 passed (2)
+      Tests  101 passed (101)
+   Start at  17:26:48
+   Duration  459ms (transform 130ms, setup 0ms, import 258ms, tests 218ms, environment 0ms)
+

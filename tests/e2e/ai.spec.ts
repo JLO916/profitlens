@@ -21,6 +21,7 @@ interface MockEnvelope {
   metadata?: { provider: string; model: string; prompt_version: string; generated_at: string; attempts: number; latency_ms: number; usage: null };
 }
 interface AuditEvent { kind: string; type?: string; errorName?: string; method?: string; hasBody?: boolean }
+const expectedBeforeUnload = new WeakSet<Page>();
 const test = base.extend<{ browserAudit: AuditEvent[] }>({
   browserAudit: [async ({ page }, use, testInfo) => {
     const events: AuditEvent[] = [];
@@ -29,12 +30,20 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
     page.on("request", request => {
       if (new URL(request.url()).pathname === "/api/insights") events.push({ kind: "insights-request", method: request.method(), hasBody: request.postDataBuffer() !== null });
     });
-    page.on("dialog", dialog => { events.push({ kind: "javascript-dialog", type: dialog.type() }); void dialog.dismiss(); });
+    page.on("dialog", dialog => {
+      if (dialog.type() === "beforeunload" && expectedBeforeUnload.delete(page)) {
+        events.push({ kind: "unsaved-changes-warning", type: dialog.type() });
+        void dialog.accept();
+      } else {
+        events.push({ kind: "javascript-dialog", type: dialog.type() });
+        void dialog.dismiss();
+      }
+    });
     await use(events);
     const record = { recorded_at: new Date().toISOString(), project: testInfo.project.name, test: testInfo.title,
       mode: testInfo.title.startsWith("MOCK") ? "browser_mock_no_live_call" : "real_local_disabled_endpoint_no_live_call", status: testInfo.status, events };
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/m6-browser-meta.jsonl"), `${JSON.stringify(record)}\n`);
+    await appendFile(resolve("verification/manager-batch3-browser-meta.jsonl"), `${JSON.stringify(record)}\n`);
     await testInfo.attach("browser-metadata-only", { body: JSON.stringify(record, null, 2), contentType: "application/json" });
     expect(events.filter(event => event.kind === "pageerror" || event.kind === "javascript-dialog" || event.type === "error"), "不得執行不可信回應或產生未處理的瀏覽器錯誤").toEqual([]);
   }, { auto: true }],
@@ -51,6 +60,7 @@ async function showAi(page: Page) {
   await expect(panel(page)).toBeVisible();
 }
 async function loadDataset(page: Page, id = "golden", channel = "DTC") {
+  await page.getByRole("button", { name: "進階驗證", exact: true }).click();
   await page.getByLabel("資料集", { exact: true }).selectOption(id);
   await Promise.all([
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.ok()),
@@ -62,6 +72,12 @@ async function loadDataset(page: Page, id = "golden", channel = "DTC") {
   await showAi(page);
 }
 async function preview(page: Page): Promise<ApprovedBody> {
+  const advanced = page.getByTestId("ai-advanced");
+  if (await advanced.getAttribute("open") === null) await advanced.locator("summary").first().click();
+  for (const title of ["實際傳送給 OpenAI 的完整資料 JSON", "本機 API 請求與同意格式"]) {
+    const summary = advanced.getByText(title, { exact: true });
+    if (await summary.locator("..").getAttribute("open") === null) await summary.click();
+  }
   const content = page.getByTestId("ai-request-preview");
   await expect(content).toContainText('"snapshot_id"');
   return JSON.parse(await content.textContent() ?? "") as ApprovedBody;
@@ -79,7 +95,7 @@ function liveMock(body: ApprovedBody): MockEnvelope {
         additional_data_needed: ["同範圍來源彙總"], limitations: ["原因仍待驗證，不代表因果關係。"] }],
       limitations: ["行銷後貢獻不是公司淨利。"],
     },
-    metadata: { provider: "openai", model: "mock-browser-only", prompt_version: "profitlens-insights-v2", generated_at: "2026-10-01T00:00:00.000Z", attempts: 1, latency_ms: 1, usage: null },
+    metadata: { provider: "openai", model: "mock-browser-only", prompt_version: "profitlens-insights-v3", generated_at: "2026-10-01T00:00:00.000Z", attempts: 1, latency_ms: 1, usage: null },
   };
 }
 async function mockApi(page: Page, responder: (body: ApprovedBody) => MockEnvelope | Promise<MockEnvelope> = liveMock) {
@@ -93,6 +109,7 @@ async function mockApi(page: Page, responder: (body: ApprovedBody) => MockEnvelo
     posts.push(body);
     await route.fulfill({ status: 200, contentType: "application/json", json: await responder(body) });
   });
+  await page.reload();
   return posts;
 }
 async function approveAndSend(page: Page) {
@@ -107,13 +124,60 @@ async function assertCore(page: Page) {
 
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
+test("MOCK：設定仍在確認時沒有預覽或停用的送出流程，確認停用後規則診斷保留", async ({ page }) => {
+  const release = deferred<void>();
+  let posts = 0;
+  await page.route("**/api/insights", async route => {
+    if (route.request().method() !== "GET") posts++;
+    await release.promise;
+    await route.fulfill({ status: 200, json: { available: false, reason: "PUBLIC_DEMO", provider: "openai" } });
+  });
+  await page.reload();
+  await loadDataset(page);
+  await expect(page.getByTestId("ai-status")).toContainText("正在確認");
+  await expect(panel(page)).toContainText("規則診斷可用");
+  await expect(send(page)).toHaveCount(0);
+  await expect(consent(page)).toHaveCount(0);
+  await expect(page.getByTestId("ai-payload-preview")).toHaveCount(0);
+  release.resolve();
+  await expect(page.getByTestId("ai-status")).toContainText("公開展示模式");
+  await expect(panel(page)).toContainText("即時 AI 未啟用");
+  expect(posts).toBe(0);
+  await assertCore(page);
+});
+
+for (const reason of ["NO_KEY", "PUBLIC_DEMO", "STATUS_UNAVAILABLE"] as const) {
+  test(`MOCK：${reason} 不展示無法操作的 AI 流程並說明原因`, async ({ page }) => {
+    let posts = 0;
+    await page.route("**/api/insights", async route => {
+      if (route.request().method() === "POST") posts++;
+      await route.fulfill({ status: 200, json: { available: false, reason, provider: "openai" } });
+    });
+    await page.reload();
+    await loadDataset(page);
+    await expect(panel(page)).toContainText("規則診斷可用");
+    await expect(panel(page)).toContainText(reason === "STATUS_UNAVAILABLE" ? "即時 AI 狀態未確認" : "即時 AI 未啟用");
+    await expect(page.getByTestId("ai-status")).toContainText(reason === "NO_KEY" ? "未設定 API 金鑰" : reason === "PUBLIC_DEMO" ? "公開展示模式" : "無法確認");
+    await expect(send(page)).toHaveCount(0);
+    await expect(consent(page)).toHaveCount(0);
+    await expect(page.getByTestId("ai-request-preview")).toHaveCount(0);
+    await expect(page.getByTestId("ai-payload-preview")).toHaveCount(0);
+    await expect(page.getByTestId("ai-live-result")).toHaveCount(0);
+    expect(posts).toBe(0);
+    await assertCore(page);
+  });
+}
+
 test("真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用", async ({ page, request }) => {
   const observedPosts: string[] = [];
   page.on("request", item => { if (new URL(item.url()).pathname === "/api/insights" && item.method() === "POST") observedPosts.push(item.method()); });
   await loadDataset(page);
   await expect(mode(page)).toHaveText("規則診斷");
-  await expect(send(page)).toBeDisabled();
-  const body = await preview(page);
+  await expect(send(page)).toHaveCount(0);
+  await expect(consent(page)).toHaveCount(0);
+  await expect(page.getByTestId("ai-request-preview")).toHaveCount(0);
+  await expect(page.getByTestId("ai-payload-preview")).toHaveCount(0);
+  await expect(page.getByTestId("ai-status")).toContainText("規則診斷");
   expect(observedPosts).toEqual([]);
   const capability = await request.get("/api/insights");
   expect(capability.ok()).toBe(true);
@@ -121,7 +185,7 @@ test("真實本機未啟用端點 GET／POST 降級，未同意不傳送，核�
   expect(config.available).toBe(false);
   expect(["DISABLED", "NO_KEY", "NO_MODEL", "PUBLIC_DEMO", "LOCAL_ONLY", "INVALID_CONFIG"]).toContain(config.reason);
   expect(config.provider).toBe("openai");
-  const result = await request.post("/api/insights", { data: body, headers: { Origin: new URL(page.url()).origin } });
+  const result = await request.post("/api/insights", { data: {}, headers: { Origin: new URL(page.url()).origin } });
   const fallback = await result.json() as { status: string; reason: string };
   expect(fallback).toMatchObject({ status: "fallback", reason: config.reason });
   await expect(page.getByTestId("ai-live-result")).toHaveCount(0);
@@ -140,6 +204,12 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await loadDataset(page);
   await expect(mode(page)).toHaveText("規則診斷");
   await expect(send(page)).toBeDisabled();
+  await expect(page.getByTestId("ai-facts-preview")).toBeVisible();
+  await expect(page.getByTestId("ai-facts-preview").locator("tbody tr")).toHaveCount(40);
+  await expect(page.getByTestId("ai-payload-preview")).toBeHidden();
+  await expect(page.getByTestId("ai-request-preview")).toBeHidden();
+  await expect(page.getByTestId("ai-readable-preview")).toContainText("所選通路合計");
+  await expect(page.getByTestId("ai-readable-preview")).toContainText("無法指出個別通路的驅動因素");
   const approved = await preview(page);
   const serialized = JSON.stringify(approved);
   const modelPreview = JSON.parse(await page.getByTestId("ai-payload-preview").textContent() ?? "") as { snapshot: Snapshot; observation_catalog: unknown[] };
@@ -169,8 +239,9 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await expect(page.getByTestId("ai-live-result")).not.toContainText("{{fact:");
   await expect(page.getByTestId("ai-live-result")).toContainText("待驗證");
   await expect(page.getByTestId("ai-live-result")).toContainText("不是公司淨利");
-  const factId = approved.snapshot.facts.find(item => item.metric === "contribution_after_marketing" && item.period === "current")!.id;
-  const evidence = page.getByTestId("ai-live-result").getByRole("button", { name: `查看證據 ${factId}`, exact: true });
+  await expect(page.getByTestId("ai-response-details")).not.toHaveAttribute("open");
+  await expect(page.getByTestId("ai-live-result").getByRole("button")).not.toContainText(/F\d{3}/);
+  const evidence = page.getByTestId("ai-live-result").getByRole("button", { name: "查看證據：行銷後貢獻 · 2026-08-02—2026-08-02", exact: true });
   await evidence.focus();
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: "AI 引用證據 · 行銷後貢獻｜公式與來源", exact: true });
@@ -181,12 +252,12 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await page.keyboard.press("Escape");
   await expect(evidence).toBeFocused();
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/m6-mock-${testInfo.project.name}-ai.png`), fullPage: true });
-  await page.screenshot({ path: resolve(`verification/m6-mock-${testInfo.project.name}-ai-viewport.png`), fullPage: false });
+  await page.screenshot({ path: resolve(`verification/manager-batch3-mock-${testInfo.project.name}-ai.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/manager-batch3-mock-${testInfo.project.name}-ai-viewport.png`), fullPage: false });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await page.getByRole("button", { name: "行動摘要", exact: true }).click();
   await expect(page.getByTestId("action-1")).toHaveCount(0);
-  await expect(page.getByTestId("decision-workbench")).toContainText("尚無行動");
+  await expect(page.getByTestId("actions-workbench")).toContainText("尚無行動");
 });
 
 for (const unsafe of ["fabricated-fact", "literal-money", "causal-claim", "wrong-snapshot"] as const) {
@@ -344,7 +415,7 @@ test("MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現"
   await assertCore(page);
 });
 
-test("MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料", async ({ page, context }) => {
+test("MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料", async ({ page, context, browserAudit }) => {
   const posts = await mockApi(page);
   await loadDataset(page);
   const before = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
@@ -364,7 +435,9 @@ test("MOCK：成功回應與同意不持久化，不跨分頁、重整或重新�
   await expect(workspaceStatus(other)).toContainText("尚未載入資料");
   await expect(other.getByTestId("ai-live-result")).toHaveCount(0);
   await other.close();
+  expectedBeforeUnload.add(page);
   await page.reload();
+  expect(browserAudit.filter(event => event.kind === "unsaved-changes-warning")).toEqual([{ kind: "unsaved-changes-warning", type: "beforeunload" }]);
   await expect(workspaceStatus(page)).toContainText("尚未載入資料");
   await expect(page.getByTestId("ai-live-result")).toHaveCount(0);
 });

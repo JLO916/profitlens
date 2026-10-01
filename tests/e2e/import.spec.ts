@@ -25,13 +25,18 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
     page.on("console", message => events.push({ kind: "console", type: message.type() }));
     page.on("pageerror", error => events.push({ kind: "pageerror", errorName: error.name }));
     page.on("dialog", dialog => {
+      if (dialog.type() === "beforeunload") {
+        events.push({ kind: "unsaved-changes-warning", type: dialog.type() });
+        void dialog.accept();
+        return;
+      }
       events.push({ kind: "javascript-dialog", type: dialog.type() });
       void dialog.dismiss();
     });
     await use(events);
     const record = { recorded_at: new Date().toISOString(), project: testInfo.project.name, test: testInfo.title, status: testInfo.status, events };
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/m6-regression-import-regression-meta.jsonl"), `${JSON.stringify(record)}\n`);
+    await appendFile(resolve("verification/manager-batch3-regression-regression-m6-regression-import-regression-meta.jsonl"), `${JSON.stringify(record)}\n`);
     await testInfo.attach("browser-metadata", { body: JSON.stringify(record, null, 2), contentType: "application/json" });
     expect(events.filter(event => event.kind === "pageerror" || event.kind === "javascript-dialog" || event.type === "error"), "匯入不得執行文字或產生未處理的瀏覽器錯誤").toEqual([]);
   }, { auto: true }],
@@ -126,7 +131,7 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   await expect(form(page)).toContainText(maliciousCategory);
   await expect(page.locator("img[src='x']")).toHaveCount(0);
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/m6-regression-import-regression-${testInfo.project.name}-import.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-regression-import-regression-${testInfo.project.name}-import.png`), fullPage: true });
   await commit(page);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "gross_profit")).toHaveText("260.00");
@@ -138,7 +143,7 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   await expect(weekly.locator("tbody tr").first()).toContainText("464.00");
   await expect(weekly.locator("tbody tr").last()).toContainText("600.00");
   await expect(page.locator(".bridge-total")).toContainText("-130.00");
-  await page.screenshot({ path: resolve(`verification/m6-regression-import-regression-${testInfo.project.name}-overview.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-regression-import-regression-${testInfo.project.name}-overview.png`), fullPage: true });
   await page.getByRole("button", { name: "通路診斷", exact: true }).click();
   await expect(page.getByRole("heading", { name: "淨營收增加，行銷後貢獻下降", exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "本期通路行銷後貢獻為負", exact: true })).toBeVisible();
@@ -175,7 +180,7 @@ test("超長但格式合法的期間明確拒絕，不截斷或取代先前資�
   await selectCsvs(page, golden);
   const manifest = {
     ...JSON.parse(await readFile(resolve(golden, "manifest.json"), "utf8")) as Record<string, unknown>,
-    dataset_id: "oversized-analysis-span-synthetic",
+    dataset_id: "oversized-analysis-span-synthetic", data_as_of: "8000-12-31",
     coverage_start: "0001-01-01", coverage_end: "8000-12-31",
     previous_period: { start: "0001-01-01", end: "4000-12-31" },
     current_period: { start: "4001-01-01", end: "8000-12-31" },
@@ -285,6 +290,8 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
   await expect(form(page).getByTestId("import-preview-sales_daily.csv")).toContainText("private_note");
   await check(page, "blocking");
   await mapping.selectOption("revenue");
+  await expect(form(page).getByLabel("我已確認未稅商品金額與費用口徑", { exact: true })).not.toBeChecked();
+  await form(page).getByLabel("我已確認未稅商品金額與費用口徑", { exact: true }).check();
   await check(page, "blocking");
   await form(page).getByLabel("確認 sales_daily.csv 欄位對照", { exact: true }).check();
   await check(page, "blocking");
@@ -298,7 +305,7 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
   expect(text).toContain("renamed-sales.csv");
 });
 
-test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行", async ({ page, context }) => {
+test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行", async ({ page, context, browserAudit }) => {
   await openImport(page);
   const beforeStorage = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
@@ -324,6 +331,7 @@ test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文�
   await expect(other.getByTestId("product-table")).toHaveCount(0);
   await other.close();
   await page.reload();
+  expect(browserAudit.filter(event => event.kind === "unsaved-changes-warning")).toEqual([{ kind: "unsaved-changes-warning", type: "beforeunload" }]);
   await expect(status(page)).toContainText("尚未載入資料");
   await expect(page.getByTestId("kpi-net_revenue")).toHaveCount(0);
 });

@@ -11,20 +11,21 @@ const suffix = (fact: AiFact) => fact.metric === "refund_ratio" || fact.metric =
 /** The model chooses supported language; it never invents scope, direction or financial claims. */
 export function observationCatalog(snapshot: AiSnapshot): AllowedObservation[] {
   const parsed = AiSnapshotSchema.parse(snapshot);
+  const periodCaution = parsed.comparison.mode === "calendar_months" ? "完整自然月比較；金額為期間合計，不代表日均變化。" : "";
   const entries: AllowedObservation[] = parsed.facts.map(fact => {
     const subject = `${fact.period === "previous" ? "前期" : "本期"}所選通路合計的${metricDefinitions[fact.metric].label}`;
     if (fact.value === null) {
       const missing = fact.reason_codes.some(code => code.startsWith("MISSING_") || code === "SALES_COVERAGE_UNCONFIRMED" || code === "INVALID_OR_MISSING_METRIC");
-      return { fact_ids: [fact.id], kind: "missing", observation: `${subject}${missing ? `尚未知（${token(fact)}），需先補齊資料。` : `不適用（${token(fact)}）；分母條件不成立時不顯示比率。`}${suffix(fact)}` };
+      return { fact_ids: [fact.id], kind: "missing", observation: `${subject}${missing ? `尚未知（${token(fact)}），需先補齊資料。` : `不適用（${token(fact)}）；分母條件不成立時不顯示比率。`}${suffix(fact)}${periodCaution}` };
     }
-    return { fact_ids: [fact.id], kind: "value", observation: `${subject}為 ${token(fact)}。${suffix(fact)}` };
+    return { fact_ids: [fact.id], kind: "value", observation: `${subject}為 ${token(fact)}。${suffix(fact)}${periodCaution}` };
   });
   for (const current of parsed.facts.filter(fact => fact.period === "current" && fact.value !== null)) {
     const previous = parsed.facts.find(fact => fact.period === "previous" && fact.metric === current.metric && fact.value !== null);
     if (!previous) continue;
     const comparison = new Decimal(current.value!).comparedTo(previous.value!);
     const direction = comparison > 0 ? "上升" : comparison < 0 ? "下降" : "持平";
-    entries.push({ fact_ids: [previous.id, current.id], kind: "change", observation: `本期所選通路合計的${metricDefinitions[current.metric].label}較前期${direction}（前期 ${token(previous)}；本期 ${token(current)}）。${suffix(current)}` });
+    entries.push({ fact_ids: [previous.id, current.id], kind: "change", observation: `本期所選通路合計的${metricDefinitions[current.metric].label}較前期${direction}（前期 ${token(previous)}；本期 ${token(current)}）。${suffix(current)}${periodCaution}` });
   }
   // A missing-data option is always presented first when the current aggregate is incomplete.
   return entries.sort((a, b) => Number(parsed.data_quality.missing_fact_ids.some(id => b.fact_ids.includes(id))) - Number(parsed.data_quality.missing_fact_ids.some(id => a.fact_ids.includes(id))));

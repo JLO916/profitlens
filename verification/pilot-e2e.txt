@@ -1,0 +1,24 @@
+
+> profitlens@0.1.0 test:e2e
+> playwright test --config verification/pilot-e2e.config.ts
+
+
+Running 9 tests using 1 worker
+
+(node:83249) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › verification/pilot-e2e/flow.spec.ts:118:5 › M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈 (2.0s)
+  ✓  2 [desktop] › verification/pilot-e2e/flow.spec.ts:185:5 › M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方 (4.0s)
+  ✓  3 [desktop] › verification/pilot-e2e/flow.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策 (1.9s)
+(node:83298) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [tablet] › verification/pilot-e2e/flow.spec.ts:118:5 › M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈 (1.4s)
+  ✓  5 [tablet] › verification/pilot-e2e/flow.spec.ts:185:5 › M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方 (2.4s)
+  ✓  6 [tablet] › verification/pilot-e2e/flow.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策 (2.3s)
+(node:83329) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  7 [mobile] › verification/pilot-e2e/flow.spec.ts:118:5 › M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈 (1.5s)
+  ✓  8 [mobile] › verification/pilot-e2e/flow.spec.ts:185:5 › M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方 (2.6s)
+  ✓  9 [mobile] › verification/pilot-e2e/flow.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策 (2.1s)
+
+  9 passed (22.2s)

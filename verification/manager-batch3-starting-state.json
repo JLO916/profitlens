@@ -1,0 +1,697 @@
+{
+  "at": "2026-10-01T10:03:51.158608+00:00",
+  "git_head": "04e186bf7be18102e2d23b71b9d4d74fe521a2f1",
+  "starting_hashes": {
+    "reviews/ProfitLens_Manager_Review_20261001/CODEX_NEXT_SPRINT.md": "a611f0d0887c7a6399a14c288d6ea2d3140777428cbb0b4153be423af7b824b7",
+    "reviews/ProfitLens_Manager_Review_20261001/REVIEW_FINDINGS.md": "82e36f879759fcd9b7e8208b55e2544f71d03eb851d686148dac985ca8ff3e18",
+    "reviews/ProfitLens_Manager_Review_20261001/golden_recalculation.json": "617535415c6c5d99bf9c9c5ab5b2681482af214af39242370f678263863101da",
+    "reviews/ProfitLens_Manager_Review_20261001/live_api_receipt.json": "fe8dd6fa92cbba9552e6936466284f118db75968f074434e790ec81d301897c2",
+    "reviews/ProfitLens_Manager_Review_20261001/live_golden_ad_spend_daily.csv": "e611ba3f0f3376cf7b03e95e9362bdc71b416178ebf201495c818e4abebf2a63",
+    "reviews/ProfitLens_Manager_Review_20261001/live_golden_channel_costs_daily.csv": "dda586ba1f4c669caabd4fabc0f6a7ed80cef78812c6b1c183e5e309d09abba5",
+    "reviews/ProfitLens_Manager_Review_20261001/live_golden_manifest.json": "cab8df5394543bca1b8c03b880c2154d86ffb2fd2abe1728c37b2aabcdd38f0f",
+    "reviews/ProfitLens_Manager_Review_20261001/live_golden_sales_daily.csv": "84addf16bc224b2dcdbc4e0a6e03618dd2bb4b4ffa95e67de9275142361b9bd9",
+    "reviews/ProfitLens_Manager_Review_20261001/period_validation_extract.cjs": "f8bf59976220f030f797ee1495f0cbb40db8a1f31538f3f612cf0d152c78ce9d",
+    "reviews/ProfitLens_Manager_Review_20261001/period_validation_results.json": "118092cf82fc3130811a1fe6695989d1518355a9d6ab70ef26bc39fc0e4a41e7",
+    "reviews/ProfitLens_Manager_Review_20261001/recompute_golden.py": "d163218ed2749711c83851fa2f513f35441ce574324f67a3627af2df49fed812",
+    "src/application/action-workspace.ts": "87c00749803c42866d5b30b3bb64367a96692070f4eeb84adfa6be593629035e",
+    "src/application/import-guidance.ts": "d408935bcd287ea1289cf764f574aa2e0b3fb6f05ef0d3d140d9e269a9e0646a",
+    "src/application/local-store.ts": "9f6a301d948c1f85d49fca8c9d8889870f358793905b07cb8350239348ba3a5b",
+    "src/application/manager-summary.ts": "b6a74c53c0d25328ca88a19a6096389923d625ec180cc7f454b68a28dc8f8494",
+    "src/application/product-comparison-export.ts": "96226d7b1805530860c96cd7f80e1382f8c07338cb70e9ebb079b2d28f74990a",
+    "src/application/workspace-backup.ts": "f8ce95fedbf41bf3700976206beb9e6b06dd214ce88a08ef0e6f13d322b3f6a6",
+    "src/components/actions-workbench.tsx": "42107c90d743bf0d18de6aced22f9617ce1761e260ee714f03354a9d915b9676",
+    "src/components/manager-summary.module.css": "80d3e8aaa6b5f941981332cc32d695a33be0cb3e96da6a6076ea39d8154b978c",
+    "src/components/manager-summary.tsx": "b676f2730c544eaa4a2207b151c6270ae48ad8704ad14c2335b9c2e73c377278",
+    "src/components/product-comparison-panel.tsx": "6c95a854c8af5885d966e8b845c2bb4b2852183848f7e587016f3c954a4b421a",
+    "src/components/scenario-sensitivity.tsx": "4171200481c59a6cd0132330f6fad2c7c0d69554853297c1f4be7e63b722bb9c",
+    "src/components/workspace-storage.tsx": "e9dfbbcecaef8b5bd6d3bdeecd9ba55e8fafb3ed7bc283d6c6e4db7e8f780463",
+    "src/domain/comparison.ts": "2c302147363f1d49daaa7cacef6084c1344037ece830a283fe51b1fccbf877bb",
+    "src/domain/product-comparison.ts": "3fffaeda4c32bf60e1841555b798a99819ec26b5d357097f2e4061173af56527",
+    "src/domain/scenario-sensitivity.ts": "3eeaa750d8534836f488f6df58d02b12724327cc68580dc1c8e89a76a25f90b0",
+    "tests/action-backup.test.ts": "f308b41fc7ad69082fd30fe04d0961d829eb86f03d4700abca540b849d6473bc",
+    "tests/action-export.test.ts": "5e9ae538f4b67cc2d3d4e79167a4f3677b47196d3e0eb5d092ba808c0d90ff17",
+    "tests/action-workspace.test.ts": "e1fb407a0d7aab50c3c6ef61ed5bf92b76ee239f2b4da129c83675c9d004abaf",
+    "tests/e2e/action-workspace.spec.ts": "5e51f7558f6ba8f495746c7102ceb9ff2bb79fe286d8f12aa93a207d5358ef76",
+    "tests/e2e/import-guidance.spec.ts": "033463694c36cfcb1b897aebbcaffa1c88db94f94ac789c351d2482b7c9fc0a5",
+    "tests/e2e/manager-summary.spec.ts": "6e5991b2b4408dad98ba521b3905db38e0243fefb3a76417efe549e71fe25cdb",
+    "tests/e2e/period-comparison.spec.ts": "dd17c3e44782e51c01e35b55245cb94913199cea4b32bf589f8cad4b5a0fe64a",
+    "tests/e2e/product-comparison.spec.ts": "67c0a5f3f8deda15eb84ae75b3f628db61b3dda7300e8de06e47c500139e6e64",
+    "tests/e2e/scenario-sensitivity.spec.ts": "b487c9d86f4a1ea4b7255b8521edc8e7c18f28e5f7ecaa196b4a8b123accaf19",
+    "tests/e2e/workspace-storage.spec.ts": "31a5b7d0e8d2fdfd380add89d0dd23a90cbc24ee917b9c979e02d7c4e1e48b82",
+    "tests/import-guidance.test.ts": "699b5a6ce096e478f3455e55c379a014ee3cc86286f02796ff751904bb232aa8",
+    "tests/local-store.test.ts": "a535ca526fe2bab1b202c88e9f1fea735ffbfb2d1149d283d1705563ed6b4e62",
+    "tests/manager-summary.test.ts": "23feaa5b2afedf2c901b6e78e01b6c399258287c89d682a0b06a6c0b8427de75",
+    "tests/period-comparison.test.ts": "67df8787f5a2f97a46eb2f4eba67274ce4eda13c79915912f66f871a01c13a35",
+    "tests/product-comparison.test.ts": "0e4af7741c99c1a06251606e5f48a7e86413a6fbcb79c6640936b00b112b814d",
+    "tests/scenario-sensitivity.test.ts": "e6120595fcaf82d65e2fe311aea10f75722e1e9e316225c2669eec941a892d56",
+    "tests/workspace-backup.test.ts": "aa609fcdd1713b938c2989276daf61c6d3210049f48b4a492b4f35bcf073b5f0",
+    ".env.example": "5c0303919cefc2f28f26f98af11f49accfa887d0554e469bd8146e28421dd8bc",
+    ".gitignore": "ee24e7f00ce2f120562072eddf366702885c3a6bc90bc79bbf85d28dd827c70e",
+    ".vercelignore": "d42ae64b91cb94fd6bf3186e453d20187f28babd67bfa565b40488c21a1d461f",
+    "AGENTS.md": "23e0889056347dd206a7f3b334274011042c2f335229daf582a054916fcc75ff",
+    "README.md": "2ebec014f28e3f64a663fe0dda7e86d8963899ba522df29d6a09bebe5fc7fee2",
+    "SOURCES.md": "7fab670ff92c50eff22364dfc639c77df0aceb2c825c0688952c3b67008a2468",
+    "START_HERE.md": "8adbba06f859fc2c7e535155c3cfde20c8db4c8730649b70fc5dc959575d6622",
+    "docs/ACCEPTANCE.md": "3682265ce066a76d8d344a588427a2694dbb2f5f201b1192d8e548748c931c39",
+    "docs/AI_CONTRACT.md": "2987bbd03552f7e11e6d6a449ce4942350e41629597ef172e8c8f428e388b7a8",
+    "docs/ARCHITECTURE.md": "4848bc121dc10902776612f5639653fc50f0daa3c711474754cd4d14414c292d",
+    "docs/DATA_CONTRACT.md": "4e3f69deb74a4afd1ac447cc96b1f8ca1d1917b83e71f6c783fef19aec5d823d",
+    "docs/DECISIONS.md": "be6ba9371d9dfaf7374aea7fc5a146be428847171ce817492f0179453d78c535",
+    "docs/M5_EVALUATION.md": "6c6c4c74ebfc0e965512a86b9a25fcc41cca5eb67f62c0a4f0628b71d67871b9",
+    "docs/METRICS.md": "5aff2ca81e14407e93c338a6ab2457a1012c83d216e791e928bad13c78ebb12b",
+    "docs/PILOT_PLAN.md": "e787632e228a5acf907158e18b9997f48f44e43af5dd4be4300d2f1f1c77d33d",
+    "docs/PRD.md": "bf03b8ace812445b395f68d0154799d7f08a6232abd120b4118d14c2b1d19914",
+    "docs/SCENARIOS.md": "e7c29a46953f0c630a19d636eff9ba2fc4e9417f90d8312ae54bc20f86244c3f",
+    "docs/STATUS.md": "f35a0b1c66ae4eea16d33891c267ef6de97a777150c5c3857ac406800b26be4e",
+    "docs/TASKS.md": "2202bb9ed12f5e498adb74f7a4b8de96071bf13aa0d80cc7d97c26ac33e3acb2",
+    "eslint.config.mjs": "7f62bb919bb97940de1aa4ed7173d444a6c4f8b1060ffaf455034c9eb0de117f",
+    "fixtures/demo/ad_spend_daily.csv": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d",
+    "fixtures/demo/channel_costs_daily.csv": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+    "fixtures/demo/computed_summary.json": "311e0a3cd69f01a8c3eb26cfd2f1a7cf673553a637308ae92a4610338c0a94f0",
+    "fixtures/demo/intent.json": "f613e164882cdb218be5c36fcefdeacca3c6b227f832ceca8cd87ccf124912db",
+    "fixtures/demo/manifest.json": "decb8aac6a536fbdd5046ba9d2d5162f29db4a7cdcd84a2aba621fde699163a1",
+    "fixtures/demo/sales_daily.csv": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+    "fixtures/errors/duplicate_sales_key/ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+    "fixtures/errors/duplicate_sales_key/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/errors/duplicate_sales_key/expected_validation.json": "6a6fb2ff5f2cdc9acdfb7c0a613b4231d010bc030dad144aa6ab40971f3c60b8",
+    "fixtures/errors/duplicate_sales_key/manifest.json": "92862ed77448416b0111ce72c2f2564164fa637b95fee2bc5bbdc279fa320cc2",
+    "fixtures/errors/duplicate_sales_key/sales_daily.csv": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+    "fixtures/errors/missing_ad_day/ad_spend_daily.csv": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084",
+    "fixtures/errors/missing_ad_day/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/errors/missing_ad_day/expected_validation.json": "662121d48a25df5e6f5bac05235d00df36e3b3c3340f321eb0b90c2c414f6f8c",
+    "fixtures/errors/missing_ad_day/manifest.json": "ee16fc7798c993cf95ef7cfcf359a0600c195afef07d18e7b10cb3f8e2724ea8",
+    "fixtures/errors/missing_ad_day/sales_daily.csv": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+    "fixtures/errors/missing_cogs/ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+    "fixtures/errors/missing_cogs/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/errors/missing_cogs/expected_validation.json": "92b26e35386d1e496eff3251147eb5a8df6e096eed1b53e28c7761d36ed9f431",
+    "fixtures/errors/missing_cogs/manifest.json": "0f16ad32bc3d8476a5e2b025db64e7f30764808884731121f1792bde20f013fc",
+    "fixtures/errors/missing_cogs/sales_daily.csv": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+    "fixtures/errors/mixed_currency/ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+    "fixtures/errors/mixed_currency/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/errors/mixed_currency/expected_validation.json": "ae1fced7aab37d296b10150cc4bb38932c9634f5f2f48b899102528b78ea7348",
+    "fixtures/errors/mixed_currency/manifest.json": "9b575fd3c14ae439d877633189408c4dd21243aadfc9f2c66412e58a02e56d84",
+    "fixtures/errors/mixed_currency/sales_daily.csv": "dcc87813a1ad1dff983966560e22ba1976360027314f18d4b34edd7662c8216b",
+    "fixtures/golden/ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+    "fixtures/golden/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/golden/expected.json": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+    "fixtures/golden/manifest.json": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+    "fixtures/golden/sales_daily.csv": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+    "fixtures/refund_only/ad_spend_daily.csv": "bde19c2628c34d4d4aec7d08fc75b841624c8b1ffb91fadc9e97c3e04b554ccc",
+    "fixtures/refund_only/channel_costs_daily.csv": "57750bd3a496d457e20aab82d8caa9572d5ff566908ea49735ac448de4d6b3c5",
+    "fixtures/refund_only/expected.json": "59820fa87818d9ded64ae5a6e948d7ec8d3b3724e4be8e106df51ef8fbd4a21a",
+    "fixtures/refund_only/manifest.json": "fc26ae44cf9a7ebede170c41e755a13fbc87f6f7974d5722a49f3b1f9d76fdf6",
+    "fixtures/refund_only/sales_daily.csv": "746e97efde53984ba0db1f0336ddac089ed5809344316e2674dbbb8a54910397",
+    "fixtures/zero_ad/ad_spend_daily.csv": "440fa23fe0ff5c7765c1375e0cf61ed28c31254de16708c3dd0e91cf8fd96747",
+    "fixtures/zero_ad/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/zero_ad/expected.json": "707f84b8c7ecb77860d5b2a9b10b2d3228e6cc6a338f5feb1965a545ce9fe34d",
+    "fixtures/zero_ad/manifest.json": "5b2cadb757072b6bfcb9b3ffb4ecc2a72f9fb6951fcfd8fd2f10ef7dccfbb15c",
+    "fixtures/zero_ad/sales_daily.csv": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+    "next.config.ts": "1cb6e44cd0f6a3f82f0200990b9b9fe8ad5b68074374d7b290e92bcd86dcbbf7",
+    "package-lock.json": "ab23151e36c2c4a5bc76ad52d0675866eee7465b5d63a52764bbaa3feac7dcfd",
+    "package.json": "b3698b34b2cc982b07626fde2330ecca2d81fbe08dbe978fa6f774ca27e194f9",
+    "playwright.config.ts": "7555270509493a2c0239f8f35661b96914f78ca73204df749c4fe3227bd8073c",
+    "postcss.config.mjs": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+    "prompts/M0_START.md": "11f003e1e88adb2606f388eefe6b71b9be6decb99f282efb6ae144479d262c6b",
+    "prompts/M1_DOMAIN.md": "a15fdc89194396516982847b31b91227036262f10358ccc1e2542c78d90290d2",
+    "prompts/M2_DEMO_UI.md": "a139896e62d0af8b72df2957cdc04cf771a0bb3e0b00ea77a8ff4cb7d8c5d74f",
+    "prompts/M3_IMPORT.md": "505c006dbb5386605a1e586fcb43c4041d59afa06f8ed473778a0c49084450fd",
+    "prompts/M4_SCENARIOS.md": "8c9e5b81b3a2fb9eb77d371a5b974dfc5bb9d271929d78f6ccc8eaa2f0695ee5",
+    "prompts/M5_AI.md": "fd3731e0176c08058c93d2a019f42929a039425c9453611b90a444e187e5bca8",
+    "prompts/M6_REVIEW.md": "438eb7c107589a669d89d6243c64fcec905194533a55d58663a70446f45b8a89",
+    "scripts/generate_fixtures.py": "d2d947a4853baeb407e7cc1a24ea3dafa97108987632e3a5f88b2794dbef4d78",
+    "scripts/verify-ai-security.mjs": "55806fb8720075b6198810e16420c0862b219316e14ac9d7047a4c2852d6b887",
+    "scripts/verify_fixtures.py": "797f45dacfe073f4aafe3706b1904ca09549f1ddf3006def5e4c578cd945857c",
+    "spec/insight-output.schema.json": "8228da4717447db33543bd065ea5541f974962790e4abd9cef1ff50863195218",
+    "src/ai/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/ai/config.ts": "5acded376681f9b93a6a3fea557549812dadff3a3d9d0b78946db9db01b2ed21",
+    "src/ai/contracts.ts": "218a29ff17ce93a6e52b286d77c51e11cef7ea5da1fe68f4868afa8c0f700cff",
+    "src/ai/grounding.ts": "a58f9d9a2d5faaea64e1ca70fb2129f056b8fe20cfd6e18376b02ea85eeb114a",
+    "src/ai/openai-provider.ts": "3e4b09ef9a1f12e1d49b68c5c27b4a4f7246a2722776c369a874ebda70e649ce",
+    "src/ai/prompt.ts": "68a25baa22ea138db0bd9cb9e27c5aed92272b109d99f8d52e13af2ea8a42e45",
+    "src/ai/provider.ts": "e4275b2eb65dc6969396b32386e07ca5a28f24d31a7299b8ae1697101bedd7d2",
+    "src/ai/service.ts": "fa026f169214ed7fa3804e6f6cfb350f25ee18683176561c447b6fa8e5463d44",
+    "src/app/api/datasets/[id]/route.ts": "581cffdc644ad474885bd3e7037a748393e1ba344d68a919ad3ad57667ac2928",
+    "src/app/api/insights/route.ts": "73d15e27fe20973f94bd728919c5dc50be48b6a1a9661c3dd1a8284706196bd9",
+    "src/app/globals.css": "2db41bbbc360e35ca31d78605d02d155bf595b4d081ff29aaf56fdca64216ea2",
+    "src/app/layout.tsx": "a0413f6dafe797d32890cfc2da8e6d212cec1ac2229549e87aa04f3f196cf01d",
+    "src/app/page.tsx": "053b727978cb22bf1b4545fe6f96f1d902a926afd1d4dafc10c205b3a207d0e7",
+    "src/application/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/application/ai-client.ts": "a2f5d14289f36353dd98690da5f14f8724e5b6518418ee20bb94f6fe4dfd5f1b",
+    "src/application/ai-snapshot.ts": "8b7425756e22e15fe798059e1d5b632f72393e63519132d1b3248f9b59657e1c",
+    "src/application/decision-export.ts": "af8634db8f61548ac4e4e6f74aea5aed0f8ba642aa20a21c6132d0a5b22aa59f",
+    "src/application/decision.ts": "d4d212ac3e8cec269296111827f87fbf38dad0f82036648e3bd9a2ad4654cc28",
+    "src/application/download.ts": "2d6cfaea89cf93883a7a61d0f63fd2a734d311db72d4f8ebcb186293bc6de70a",
+    "src/application/export.ts": "61309cb3c358d1cffacc0133415e2b071b1bf758ec49f1894c422cdd003a540d",
+    "src/application/import.ts": "5c3f70dd571158b7de67c3466d14316a60aa7effeeae798fd0a0bdf627fbd1f9",
+    "src/application/limits.ts": "41a15df6447592310eb5e073f6d561281cf8996cbafbf44435b705f29c84e8ac",
+    "src/application/presentation.ts": "67aa3b1c885e51f28347cd45a5fa1bdfcdb3178101aca8df1825c062611ba3d7",
+    "src/application/workspace.ts": "f300cc04b160c31e2c6a34af443b2397878e0c77f3e655c615436cce44a0c128",
+    "src/components/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/components/ai-panel.tsx": "999faa01a8e7a01a0ddccce58558be5e5f7e5a751a9337250080c5bf9037a159",
+    "src/components/dashboard.tsx": "b40889056c127f38eba97dfc235de4b728d385c9fc514b584ba62dd8ed7d1060",
+    "src/components/decision-workbench.tsx": "583c2663205b2ecd4db4313ff5a3d0b1f845a504700cc8cd14f6c82dde1caee7",
+    "src/components/evidence-drawer.tsx": "f8efa53e224395fbdafee66eed9c5b99a2923a2fb72c1c1a8346beffda854cd4",
+    "src/components/import-panel.tsx": "eada4c140c40400a3aed8504d7011657bf713fa5121f593677897b24c9ff4c27",
+    "src/components/issue-list.tsx": "0b07fdb8b5ad9b30582d769a41b18710a7b1c8025241604eb93ff50503dd7877",
+    "src/components/overview.tsx": "cce62003ce2761912ad13e24b371b86f76f675934e69f2bec24b2c6d475ae361",
+    "src/components/workspace-panels.tsx": "5cc0ebb416ee9e8f373ae09715b433d3a02d32377d7783cd4ef305efaf6a6799",
+    "src/domain/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/domain/aggregation.ts": "d86b18b14f8c3a72b05956e6ee6ba855e5079ba9c801e5e39fb6b52637598ea9",
+    "src/domain/analysis.ts": "5518beb18091770cc8aae356b70dde28a0937be79e9eba8b35d4f802ee8c1c21",
+    "src/domain/bridge.ts": "a02fd4ee6a91a6de40c90bc8d5cc66b9602e183576305e3644e9de038bfdc501",
+    "src/domain/date.ts": "354c6d10291dacf15444411dd4d86f7103d39e4143b7118123829aa150db87f1",
+    "src/domain/index.ts": "080520fcfe52c58449fd25f11cb9f084b07f4f1a374c3fdb2223bd2d072831cb",
+    "src/domain/metrics.ts": "eeb0ae5143975d9de9e1cea054845d72cc63148527094205e808ff3503760d78",
+    "src/domain/money.ts": "6b58c6c65e9827077e5e0785808a1b4afad47146b4bb6273bc22757a05a6e5b5",
+    "src/domain/rules.ts": "5f61666d130fd75d8010e76adc5e8e06291c2ef39d21bd91f84005998c562690",
+    "src/domain/scenarios.ts": "db13b5cdbf88a4be70d5c11ab40c6d4c03a1e3915bc7a23e6356bcc3e74c7efe",
+    "src/domain/types.ts": "851647d086aa280b8355dd04aaa8c297f8cbd02cbb970589bd0b7c3e5724c0cc",
+    "src/domain/validation.ts": "a0742eacb03d122dc45a34ddb0c414cd362c85dd607dc0d9d6b2b03defa9ecf2",
+    "src/lib/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/lib/csv.ts": "b298a9959fdb346dae3890fcbfba878b9d6579cad73580d68c7c29a2f65f9406",
+    "templates/ad_spend_daily.csv": "6d0756a5dc9c5319bd31c43930507c8b5d5c008210631d46cbed382c835d7c0f",
+    "templates/channel_costs_daily.csv": "11b5040444acf602bf21cc048c6477261afac61bd6db23df4483ef38c89cb5a9",
+    "templates/manifest.example.json": "f205d09d0fdb7b922f0bb92f56f34834818a423bdc6d6960b113009a67c34551",
+    "templates/sales_daily.csv": "10303d7af860a7946443b6f1c493899f48d0f0e95e4719ef3897b132c8b19a36",
+    "tests/aggregation-boundaries.test.ts": "20f3dbecf3069803747b9ce2f33888d683a532a88ccf315eb8416a9fd720a315",
+    "tests/ai-client.test.ts": "e08cdaae26a6510552635d52f504001d6135c0d73d0961dd66f95800151f8c19",
+    "tests/ai-config.test.ts": "4a83bfdf810d62b799d210050f8a0de114660f21adaadbb23ff5641892aa26f3",
+    "tests/ai-grounding.test.ts": "075ff7d22be908eec790a9039539584a02fcaee5e14ba8ad79e0c390aaa8314d",
+    "tests/ai-provider.test.ts": "4cde2b235c1edbb48a2e47b5836003d290ca5d2fb32eba8d98d7e53a89b5a1ee",
+    "tests/ai-route.test.ts": "52ffefe5a19e23ae18ef74b34657f60bc28a62cd2c2d3017cbdb67159fc75609",
+    "tests/ai-service.test.ts": "e7bd464b7833c2f5c5c8ad8dfc9450fdc4a38f39567f16768cecf51ff5353bab",
+    "tests/analysis-limits.test.ts": "18ebc681ee944e599934ed945678c5b159186f5f63f0d5ae62590ed1fc0e9c2f",
+    "tests/app-smoke.test.tsx": "b48af9b3903963957e172f6dd4a8b3c402871ed6f407de0cbe260975a61abb1d",
+    "tests/dataset-route.test.ts": "7a09008b41346bd70022bb7ee5936161af5f8b686ce3b497eaa64ac4befbcf4a",
+    "tests/decision.test.ts": "bdb344948180bea8b7b2080da309652a1e0ae11489e54a39fbc17903d4047fed",
+    "tests/domain-acceptance.test.ts": "7090a87d91f5ffd4d27f7f6a03eab08e424716e8e6f7dc1b28884a6ff6c7d9bf",
+    "tests/e2e/ai.spec.ts": "c0f999d24883f5b2b3eafd3be52b866b673982d94ccdf3ea8c4b58a2ae89d4bd",
+    "tests/e2e/import.spec.ts": "9efd58159d51a40c22499e11d5c04f8a93069f265ca38aafb970c264af26603e",
+    "tests/e2e/m6-acceptance.spec.ts": "fcb82e0661b75b93efa1bb158fd8a7e281a62c1d6b2b182ce57d60880f4587e3",
+    "tests/e2e/scenarios.spec.ts": "40ebadbf47600328389b862f3fcd574eb5e0960d2f985fd97295af0c6cbf4bc1",
+    "tests/e2e/workspace.spec.ts": "a3a1592bc8e4b366109262c0fdf3409067f1e104c66fe4eb803aebe6b56b22b9",
+    "tests/export.test.ts": "ca189dd3669c43b89bda6b1c9ade4573cda0f6163a3f1ee59ac8df4bf78b50de",
+    "tests/fixtures/alternative/README.md": "77effa8a3b1c8b056fd5b5a2d7576708389790ab507d807b5d1298ae4048d43b",
+    "tests/fixtures/alternative/ad_spend_daily.csv": "7bc34b7f8f71fb5fb9ef1f2578aa5af6592837576dc6b70b06bf7ff291c1cae5",
+    "tests/fixtures/alternative/channel_costs_daily.csv": "d9911ad72276430fce5296479a3ffde8f8eb5a761a478f590b2d962e9c05119a",
+    "tests/fixtures/alternative/expected.json": "4abd132547077eea4bef17c5c8172f793d236f57e5cccb9ec5f04a706445a98a",
+    "tests/fixtures/alternative/manifest.json": "7be898255bb6dce4eda33c5fcd17f30575c97fc35071c226539ff0b000087a78",
+    "tests/fixtures/alternative/sales_daily.csv": "6c778480071bb2501e5313bb918ab18b1e663ae807b76f15fb1c0cafbe93fba5",
+    "tests/helpers/ai-server.ts": "c451c6cbf047aedf1b3b1b579772298012a034e4a0f3e34bbf2f82bad138df1e",
+    "tests/helpers/fixtures.ts": "f3db1faf8c567a12ebaa4c7b854f11d2e7d1be783fba8a7119cbef5218aeeb16",
+    "tests/import.test.ts": "91b72118df1768e997b9f904cf419cf1771eda1deab4bb50198e9dc608f50787",
+    "tests/m6-financial-audit.test.ts": "b5233c80d9f2cf499fccdc0820baf9cf31e5e1ca430e8b4f39bca4452cceecb6",
+    "tests/m6-security-audit.test.ts": "53db780357a0be09c606ef37ecc9c3ccd0b56b960d4a99c74ab7046ea3c34223",
+    "tests/metrics.test.ts": "6e514aeb3aaff34c6538eb6d6df043074a3dd3df4fa421a6446fbed37c20a468",
+    "tests/money.test.ts": "e1b43d3700fd3305dca5237b7c3cdde54046845a05a8d398d5e3023fea8128db",
+    "tests/rules.test.ts": "8f28c0df851557def50619caa1cb74a50b8d510ca2e5ca0681571b76dc4443ef",
+    "tests/scenarios.test.ts": "23ce81c2c02e16859955c7c0dd144d49b87893e4ff2696aed337fa45d327b4fd",
+    "tests/validation.test.ts": "5f96da7472620a4ff3d54f962eff1147f87dce9f5bd00eb0975b79a48e59a5fc",
+    "tests/workspace.test.ts": "3ad07ac3dc0998dad6225535a23a81f8d9c961a833e044db3c3ba1b1884cd99f",
+    "tsconfig.json": "8617f5b9701bc1dc0f8292c765411f01337fa35a3768f46310096555c54a37d0",
+    "vercel.json": "9fd4ea9e9bbb01391e7e946e1b2d3e2af2dd003b27067dadcdcaf4f20b799fb1",
+    "vitest.config.mts": "a79f97f28889e75266fd5c56aba1e1bb34290b77f4b924727fc3d1f0603952b9"
+  },
+  "batch2_comparison": [
+    {
+      "path": "eslint.config.mjs",
+      "same": true
+    },
+    {
+      "path": "next.config.ts",
+      "same": true
+    },
+    {
+      "path": "package-lock.json",
+      "same": true
+    },
+    {
+      "path": "package.json",
+      "same": true
+    },
+    {
+      "path": "playwright.config.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/ai/config.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/contracts.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/grounding.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/openai-provider.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/prompt.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/provider.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/service.ts",
+      "same": true
+    },
+    {
+      "path": "src/app/api/datasets/[id]/route.ts",
+      "same": true
+    },
+    {
+      "path": "src/app/api/insights/route.ts",
+      "same": true
+    },
+    {
+      "path": "src/app/globals.css",
+      "same": true
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "same": true
+    },
+    {
+      "path": "src/app/page.tsx",
+      "same": true
+    },
+    {
+      "path": "src/application/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/application/action-workspace.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/ai-client.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/ai-snapshot.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/decision-export.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/decision.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/download.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/export.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/import-guidance.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/import.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/limits.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/local-store.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/manager-summary.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/presentation.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/product-comparison-export.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/workspace-backup.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/workspace.ts",
+      "same": true
+    },
+    {
+      "path": "src/components/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/components/actions-workbench.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/ai-panel.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/dashboard.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/decision-workbench.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/evidence-drawer.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/import-panel.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/issue-list.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/manager-summary.module.css",
+      "same": true
+    },
+    {
+      "path": "src/components/manager-summary.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/overview.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/product-comparison-panel.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/scenario-sensitivity.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/workspace-panels.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/workspace-storage.tsx",
+      "same": true
+    },
+    {
+      "path": "src/domain/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/domain/aggregation.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/analysis.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/bridge.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/comparison.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/date.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/index.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/metrics.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/money.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/product-comparison.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/rules.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/scenario-sensitivity.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/scenarios.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/types.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/validation.ts",
+      "same": true
+    },
+    {
+      "path": "src/lib/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/lib/csv.ts",
+      "same": true
+    },
+    {
+      "path": "tests/action-backup.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/action-export.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/action-workspace.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/aggregation-boundaries.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-client.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-config.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-grounding.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-provider.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-route.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-service.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/analysis-limits.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/app-smoke.test.tsx",
+      "same": true
+    },
+    {
+      "path": "tests/dataset-route.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/decision.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/domain-acceptance.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/action-workspace.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/ai.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/import-guidance.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/import.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/m6-acceptance.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/manager-summary.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/period-comparison.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/product-comparison.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/scenario-sensitivity.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/scenarios.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/workspace-storage.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/workspace.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/export.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/README.md",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/expected.json",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/manifest.json",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "tests/helpers/ai-server.ts",
+      "same": true
+    },
+    {
+      "path": "tests/helpers/fixtures.ts",
+      "same": true
+    },
+    {
+      "path": "tests/import-guidance.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/import.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/local-store.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/m6-financial-audit.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/m6-security-audit.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/manager-summary.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/metrics.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/money.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/period-comparison.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/product-comparison.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/rules.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/scenario-sensitivity.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/scenarios.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/validation.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/workspace-backup.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/workspace.test.ts",
+      "same": true
+    },
+    {
+      "path": "tsconfig.json",
+      "same": true
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+.summary { margin-bottom: 1.5rem; }
+.context { font-weight: 600; }
+.headlines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.headlines > div { padding: 1rem; background: #f3f7f5; border-radius: 10px; }
+.headlines h3 { margin: 0; font-size: 1rem; }
+.change { font-size: clamp(1.6rem, 4vw, 2.3rem); margin: .5rem 0; font-weight: 700; }
+.priorityHeader { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; }
+.threshold { display: flex; gap: .6rem; align-items: end; flex-wrap: wrap; }
+.threshold label { display: grid; gap: .3rem; font-size: .8rem; }
+.threshold input { max-width: 12rem; }
+.priorities { padding: 0; list-style-position: inside; counter-reset: priority; }
+.priorities > li { padding: .9rem 0; border-bottom: 1px solid #dce6e1; }
+.priorityTitle { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+.priorityTitle h4 { margin: 0; }
+.priorities p { margin: .5rem 0; }
+.priorities details { margin: .7rem 0; }
+.wideTable { margin-top: 1rem; }
+.wideTable table { min-width: 780px; }
+.transition { display: block; color: #ad5538; font-size: .75rem; }
+.decisions { margin: 1.1rem 0; padding-top: .8rem; border-top: 1px solid #dce6e1; }
+.decisions label { display: grid; gap: .5rem; max-width: 34rem; }
+.decisions li { margin: .8rem 0; overflow-wrap: anywhere; }
+.controls { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+.printSurface { display: none; }
+@media (max-width: 520px) {
+  .headlines { grid-template-columns: 1fr; gap: .6rem; }
+  .headlines > div { padding: .8rem; }
+  .threshold { width: 100%; }
+  .controls button { width: 100%; }
+}
+@media print {
+  @page { size: A4; margin: 14mm; }
+  :global(body):has(> .printSurface) > :not(.printSurface) { display: none !important; }
+  .printSurface { display: block !important; color: #152f29; background: white; font-size: 9pt; line-height: 1.45; }
+  .printSurface h1 { font-size: 19pt; margin: 0 0 3mm; }
+  .printSurface h2 { font-size: 12pt; margin: 4mm 0 2mm; }
+  .printSurface p { margin: 1.5mm 0; }
+  .printSurface li { margin-bottom: 2mm; break-inside: avoid; }
+  .printSurface table { width: 100%; border-collapse: collapse; margin: 3mm 0; }
+  .printSurface td, .printSurface th { border-bottom: 1px solid #bbb; padding: 2mm; text-align: right; }
+  .printSurface td:first-child, .printSurface th:first-child { text-align: left; }
+  .printSurface footer { margin-top: 4mm; border-top: 1px solid #aaa; font-size: 8pt; }
+  .printHeadlines { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+}

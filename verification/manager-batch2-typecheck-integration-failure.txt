@@ -1,0 +1,18 @@
+
+> profitlens@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+src/application/decision-export.ts(142,97): error TS2339: Property 'context_id' does not exist on type '{}'.
+src/application/decision-export.ts(143,32): error TS2339: Property 'filenames' does not exist on type '{}'.
+src/application/decision-export.ts(146,43): error TS2339: Property 'scope' does not exist on type '{}'.
+src/application/decision-export.ts(146,80): error TS2339: Property 'analysis_scope' does not exist on type '{}'.
+src/application/decision-export.ts(146,122): error TS2339: Property 'context_id' does not exist on type '{}'.
+src/components/dashboard.tsx(208,9): error TS2322: Type '{ dataset_hash: string; filter_hash: string; scenarios: { id: string; name: string; status: "stale" | "draft" | "current"; scopeLabel: string; contribution: string | null | undefined; delta: string | ... 1 more ... | undefined; assumptions: string[]; }[]; actions: { ...; }[]; } | undefined' is not assignable to type 'SummaryDecisionContext | undefined'.
+  Type '{ dataset_hash: string; filter_hash: string; scenarios: { id: string; name: string; status: "stale" | "draft" | "current"; scopeLabel: string; contribution: string | null | undefined; delta: string | ... 1 more ... | undefined; assumptions: string[]; }[]; actions: { ...; }[]; }' is not assignable to type 'SummaryDecisionContext'.
+    Types of property 'actions' are incompatible.
+      Type '{ id: string; problem: string; action: string; owner: string; deadline: string; risk: string; status: string; scopeLabel: string; }[]' is not assignable to type 'SummaryAction[]'.
+        Type '{ id: string; problem: string; action: string; owner: string; deadline: string; risk: string; status: string; scopeLabel: string; }' is not assignable to type 'SummaryAction'.
+          Types of property 'status' are incompatible.
+            Type 'string' is not assignable to type '"stale" | "draft" | "current"'.

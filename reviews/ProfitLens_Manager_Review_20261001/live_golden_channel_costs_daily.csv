@@ -1,0 +1,5 @@
+date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency
+2026-08-01,DTC,0.00,40.00,100.00,10.00,TWD
+2026-08-01,MARKETPLACE,90.00,20.00,60.00,10.00,TWD
+2026-08-02,DTC,0.00,44.00,140.00,16.00,TWD
+2026-08-02,MARKETPLACE,120.00,22.00,85.00,13.00,TWD

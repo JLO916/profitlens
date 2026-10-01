@@ -1,0 +1,30 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/period-comparison.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/period-comparison.test.ts (12 tests | 1 failed) 1099ms
+     × zero is zero money; null remains null through daily average and change 41ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/period-comparison.test.ts > PL-02 explicit period comparison contract > zero is zero money; null remains null through daily average and change
+AssertionError: expected [ 'MISSING_COGS' ] to include 'MISSING_COGS_NET'
+ ❯ tests/period-comparison.test.ts:100:96
+     98|     expect(partial.comparison.current_daily_average.contribution_after…
+     99|     expect(partial.comparison.daily_average_changes.contribution_after…
+    100|     expect(partial.comparison.current_daily_average.contribution_after…
+       |                                                                                                ^
+    101|   });
+    102|   it("AI snapshot explicitly validates comparison mode, day counts, ch…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  16:43:40
+   Duration  1.87s (transform 266ms, setup 0ms, import 378ms, tests 1.10s, environment 0ms)
+

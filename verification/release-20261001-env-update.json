@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-01T11:10:38.902195+00:00",
+  "purpose": "Maintain public demo, no live model endpoint",
+  "updates": [
+    {
+      "key": "APP_MODE",
+      "target": "production",
+      "configured_value": "PUBLIC_DEMO",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "Retrieving project…\nUpdating\nUpdated Environment Variable APP_MODE in Project profitlens [253ms]"
+    },
+    {
+      "key": "PUBLIC_DEMO",
+      "target": "production",
+      "configured_value": "true",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "Retrieving project…\nUpdating\nUpdated Environment Variable PUBLIC_DEMO in Project profitlens [255ms]"
+    },
+    {
+      "key": "ENABLE_LIVE_AI",
+      "target": "production",
+      "configured_value": "false",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "Retrieving project…\nUpdating\nUpdated Environment Variable ENABLE_LIVE_AI in Project profitlens [290ms]"
+    }
+  ],
+  "all_passed": true,
+  "openai_key_uploaded": false
+}

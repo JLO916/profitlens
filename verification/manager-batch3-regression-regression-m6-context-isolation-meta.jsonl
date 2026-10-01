@@ -1,0 +1,4 @@
+{"project":"desktop","status":"passed","independent_contexts":2,"synthetic_only":true,"mutual_update_clear_reload_isolation":true,"dialog_events":["unsaved-changes-warning:beforeunload"]}
+{"project":"desktop","status":"passed","independent_contexts":2,"synthetic_only":true,"mutual_update_clear_reload_isolation":true,"dialog_events":["unsaved-changes-warning:beforeunload"]}
+{"project":"tablet","status":"passed","independent_contexts":2,"synthetic_only":true,"mutual_update_clear_reload_isolation":true,"dialog_events":["unsaved-changes-warning:beforeunload"]}
+{"project":"mobile","status":"passed","independent_contexts":2,"synthetic_only":true,"mutual_update_clear_reload_isolation":true,"dialog_events":["unsaved-changes-warning:beforeunload"]}

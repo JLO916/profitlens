@@ -1,0 +1,78 @@
+{
+  "id": "prj_tbTT4CUd5u51SUpc9mqw7UbQQfnY",
+  "name": "profitlens",
+  "framework": "nextjs",
+  "nodeVersion": "24.x",
+  "git": {
+    "type": "github",
+    "repo": "profitlens",
+    "org": "JLO916",
+    "productionBranch": "main"
+  },
+  "environment": [
+    {
+      "key": "APP_MODE",
+      "id": "CAJ5oCTNYI4aE9Qe",
+      "target": [
+        "production"
+      ],
+      "gitBranch": null,
+      "type": "encrypted",
+      "matches_required_value": null
+    },
+    {
+      "key": "PUBLIC_DEMO",
+      "id": "DJWyqngkB5ixbAGB",
+      "target": [
+        "production"
+      ],
+      "gitBranch": null,
+      "type": "encrypted",
+      "matches_required_value": null
+    },
+    {
+      "key": "ENABLE_LIVE_AI",
+      "id": "UAb7UcUrIHzbMSSP",
+      "target": [
+        "production"
+      ],
+      "gitBranch": null,
+      "type": "encrypted",
+      "matches_required_value": null
+    },
+    {
+      "key": "APP_MODE",
+      "id": "71EuVIvTiNtiRcT6",
+      "target": [
+        "preview",
+        "development"
+      ],
+      "gitBranch": null,
+      "type": "plain",
+      "matches_required_value": true
+    },
+    {
+      "key": "PUBLIC_DEMO",
+      "id": "pafMZ7mrWzPYJG76",
+      "target": [
+        "preview",
+        "development"
+      ],
+      "gitBranch": null,
+      "type": "plain",
+      "matches_required_value": true
+    },
+    {
+      "key": "ENABLE_LIVE_AI",
+      "id": "hs22JmUNuQ8xQTHT",
+      "target": [
+        "preview",
+        "development"
+      ],
+      "gitBranch": null,
+      "type": "plain",
+      "matches_required_value": true
+    }
+  ],
+  "openai_key_configured": false
+}

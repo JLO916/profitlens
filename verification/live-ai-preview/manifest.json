@@ -1,0 +1,1467 @@
+{
+  "source": "offline_synthetic_preparation",
+  "provider_calls": 0,
+  "prompt_version": "profitlens-insights-v3",
+  "instructions_sha256": "00f1359f681fc72f543fa80cc3ee8a59059cee2525fe5c380fe2c3930ac7edc6",
+  "repair_instruction_sha256": "87013ff54217b291c60da90f909512e376b037b555a180bbf89d6c1b1ba1454d",
+  "maximum_smoke_service_requests_after_separate_consent": 1,
+  "maximum_smoke_provider_calls_including_repair": 2,
+  "maximum_campaign_service_requests_including_smoke": 20,
+  "maximum_campaign_provider_calls_including_repairs": 40,
+  "maximum_repairs_per_case": 1,
+  "evaluation_status": "not_run",
+  "cases": [
+    {
+      "id": "L01",
+      "title": "Golden 全通路收入升、貢獻降",
+      "request_preview": "L01.json",
+      "request_sha256": "d99c1f6fb17c7d564fd10c37fc969fc162587e804b1f4c83f8eb7f23d5d8d314",
+      "snapshot_id": "ai-v2:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:f9c7f0abe4b1ba3759249887324f30b7d2ac873e7acf82a12c6fa32e19551a3b:1",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01",
+        "C02"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "previous:net_revenue": "2250.00",
+        "current:net_revenue": "2470.00",
+        "previous:contribution_after_marketing": "570.00",
+        "current:contribution_after_marketing": "255.00"
+      },
+      "human_review_focus": "正確比較收入與貢獻，不能把廣告、退款或費用變化寫為已確定原因。",
+      "local_rule_baseline": [
+        {
+          "code": "REV_UP_CM_DOWN",
+          "title": "淨營收增加，行銷後貢獻下降",
+          "hypothesis": "待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。",
+          "recommendation": "核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。",
+          "limitations": [
+            "金額差異不代表獨立因果效果，也不是改善後可取得的收益。"
+          ]
+        },
+        {
+          "code": "DISCOUNT_BURDEN_UP",
+          "title": "折扣率上升",
+          "hypothesis": "待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。",
+          "recommendation": "比對兩期折扣金額與折扣前收入，核對促銷及商品組合。",
+          "limitations": [
+            "降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。"
+          ]
+        },
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        },
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L02",
+      "title": "Golden 單通路正貢獻",
+      "request_preview": "L02.json",
+      "request_sha256": "fb76919de0d7c38cf453419c31469fd847c6e27879967ba4c162e72b579eebe3",
+      "snapshot_id": "ai-v2:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:a66eb645b3a68190cd4387b7ed67e8508523c229953adaacb37b50bb3f606e69:2",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "1480.00",
+        "current:contribution_after_marketing": "270.00"
+      },
+      "human_review_focus": "只談所選範圍，不能引用未傳送的其他通路或 SKU。",
+      "local_rule_baseline": [
+        {
+          "code": "DISCOUNT_BURDEN_UP",
+          "title": "折扣率上升",
+          "hypothesis": "待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。",
+          "recommendation": "比對兩期折扣金額與折扣前收入，核對促銷及商品組合。",
+          "limitations": [
+            "降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。"
+          ]
+        },
+        {
+          "code": "REV_UP_CM_DOWN",
+          "title": "淨營收增加，行銷後貢獻下降",
+          "hypothesis": "待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。",
+          "recommendation": "核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。",
+          "limitations": [
+            "金額差異不代表獨立因果效果，也不是改善後可取得的收益。"
+          ]
+        },
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        },
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L03",
+      "title": "Golden 單通路負貢獻",
+      "request_preview": "L03.json",
+      "request_sha256": "4984d24e96d487e4b7afb5accf61c4ce8ffed766349199b5d60f6d135e5a71ce",
+      "snapshot_id": "ai-v2:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:fe256ff85912806b1365312415467ba5f228a5df63ee33010519d27c69879ca7:3",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "990.00",
+        "current:contribution_after_marketing": "-15.00"
+      },
+      "human_review_focus": "負貢獻不等於公司虧損，不能自動停投或保證改善。",
+      "local_rule_baseline": [
+        {
+          "code": "REV_UP_CM_DOWN",
+          "title": "淨營收增加，行銷後貢獻下降",
+          "hypothesis": "待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。",
+          "recommendation": "核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。",
+          "limitations": [
+            "金額差異不代表獨立因果效果，也不是改善後可取得的收益。"
+          ]
+        },
+        {
+          "code": "DISCOUNT_BURDEN_UP",
+          "title": "折扣率上升",
+          "hypothesis": "待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。",
+          "recommendation": "比對兩期折扣金額與折扣前收入，核對促銷及商品組合。",
+          "limitations": [
+            "降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。"
+          ]
+        },
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        },
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L04",
+      "title": "Demo 大額與多日合計",
+      "request_preview": "L04.json",
+      "request_sha256": "b3963221e7d382569758dd856a0689f1433f2425e1dbe222e4c2c8608fa2af1b",
+      "snapshot_id": "ai-v2:121951cb443e9a6ff0e9655af46174f315d2ac8232735abb04d35430ba243568:85d10c7fbefce3dfa3b21765bff2294f830b7f4698149c4805d57a94a7052657:4",
+      "periods": {
+        "previous": {
+          "start": "2026-06-01",
+          "end": "2026-07-12"
+        },
+        "current": {
+          "start": "2026-07-13",
+          "end": "2026-08-23"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 42,
+        "current_days": 42
+      },
+      "anonymized_channels": [
+        "C01",
+        "C02"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "7850657.90",
+        "current:contribution_after_marketing": "1269792.73"
+      },
+      "human_review_focus": "不自行計算日均、衍生幅度或新增產業基準；仍使用完整精確 facts。",
+      "local_rule_baseline": [
+        {
+          "code": "DISCOUNT_BURDEN_UP",
+          "title": "折扣率上升",
+          "hypothesis": "待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。",
+          "recommendation": "比對兩期折扣金額與折扣前收入，核對促銷及商品組合。",
+          "limitations": [
+            "降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。"
+          ]
+        },
+        {
+          "code": "REV_UP_CM_DOWN",
+          "title": "淨營收增加，行銷後貢獻下降",
+          "hypothesis": "待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。",
+          "recommendation": "核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。",
+          "limitations": [
+            "金額差異不代表獨立因果效果，也不是改善後可取得的收益。"
+          ]
+        },
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        },
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L05",
+      "title": "替代資料全通路",
+      "request_preview": "L05.json",
+      "request_sha256": "7282a62dca027031b798904ebc3f478c66b073b69e50bf8f434bc8eee37eeb51",
+      "snapshot_id": "ai-v2:6a344cc5d43b15215b98b9d0ced80db2d890f8c4ad294bfb16c2da60b48e5a68:bbf5d7ba341d705544c831020f44430b82326846f2eb01d23335bee10468a905:5",
+      "periods": {
+        "previous": {
+          "start": "2026-09-01",
+          "end": "2026-09-02"
+        },
+        "current": {
+          "start": "2026-09-03",
+          "end": "2026-09-04"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 2,
+        "current_days": 2
+      },
+      "anonymized_channels": [
+        "C01",
+        "C02"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "600.00",
+        "current:contribution_after_marketing": "10.00"
+      },
+      "human_review_focus": "不得沿用 Golden 的觀察或金額；本機惡意文字不進模型。",
+      "local_rule_baseline": [
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        },
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        },
+        {
+          "code": "REV_UP_CM_DOWN",
+          "title": "淨營收增加，行銷後貢獻下降",
+          "hypothesis": "待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。",
+          "recommendation": "核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。",
+          "limitations": [
+            "金額差異不代表獨立因果效果，也不是改善後可取得的收益。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L06",
+      "title": "替代資料正貢獻通路",
+      "request_preview": "L06.json",
+      "request_sha256": "f09038fe82b4b2ea0875a14ed9f7dd8ebe2bbd3a5e561c4892483b4dd69ad9b2",
+      "snapshot_id": "ai-v2:6a344cc5d43b15215b98b9d0ced80db2d890f8c4ad294bfb16c2da60b48e5a68:dd8b956b7c9e972685b3b544058748d4c85baa2fee91ca2957e7b9899e321fc9:6",
+      "periods": {
+        "previous": {
+          "start": "2026-09-01",
+          "end": "2026-09-02"
+        },
+        "current": {
+          "start": "2026-09-03",
+          "end": "2026-09-04"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 2,
+        "current_days": 2
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "400.00",
+        "current:contribution_after_marketing": "40.00"
+      },
+      "human_review_focus": "同名匿名 C01 只對本次快照有效，不能沿用其他快照的範圍。",
+      "local_rule_baseline": [
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        },
+        {
+          "code": "REV_UP_CM_DOWN",
+          "title": "淨營收增加，行銷後貢獻下降",
+          "hypothesis": "待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。",
+          "recommendation": "核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。",
+          "limitations": [
+            "金額差異不代表獨立因果效果，也不是改善後可取得的收益。"
+          ]
+        },
+        {
+          "code": "DISCOUNT_BURDEN_UP",
+          "title": "折扣率上升",
+          "hypothesis": "待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。",
+          "recommendation": "比對兩期折扣金額與折扣前收入，核對促銷及商品組合。",
+          "limitations": [
+            "降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L07",
+      "title": "替代資料退款偏高通路",
+      "request_preview": "L07.json",
+      "request_sha256": "d4f8e1ba4cdf682e49bdb48c7905096dddeba1ff602dfc52688f922e1eeb7cc5",
+      "snapshot_id": "ai-v2:6a344cc5d43b15215b98b9d0ced80db2d890f8c4ad294bfb16c2da60b48e5a68:7589fb43807409b5e83564158a73f92a961a9dd0cc45a6b98b44da82ccf24e41:7",
+      "periods": {
+        "previous": {
+          "start": "2026-09-01",
+          "end": "2026-09-02"
+        },
+        "current": {
+          "start": "2026-09-03",
+          "end": "2026-09-04"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 2,
+        "current_days": 2
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "200.00",
+        "current:contribution_after_marketing": "-30.00"
+      },
+      "human_review_focus": "退款為入帳金額比，不是件數或 cohort 最終退貨率；建議需核對退款入帳。",
+      "local_rule_baseline": [
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        },
+        {
+          "code": "REV_UP_CM_DOWN",
+          "title": "淨營收增加，行銷後貢獻下降",
+          "hypothesis": "待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。",
+          "recommendation": "核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。",
+          "limitations": [
+            "金額差異不代表獨立因果效果，也不是改善後可取得的收益。"
+          ]
+        },
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L08",
+      "title": "缺銷貨成本",
+      "request_preview": "L08.json",
+      "request_sha256": "8b8b02faeaab41ceccfaf2a6719cfef4c7d6a534b6aebe334abfe941fca1895a",
+      "snapshot_id": "ai-v2:2b90247465456b6dfa268eded21af9b6d68c6ecc517f0cfa3bdf4338623c0fd7:f9c7f0abe4b1ba3759249887324f30b7d2ac873e7acf82a12c6fa32e19551a3b:8",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01",
+        "C02"
+      ],
+      "data_quality": {
+        "status": "partial",
+        "missing_fact_ids": [
+          "F024",
+          "F031",
+          "F032",
+          "F033"
+        ]
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "2470.00",
+        "current:cogs_net": null,
+        "current:contribution_after_marketing": null
+      },
+      "human_review_focus": "第一則須是缺漏觀察與補資料；不能把未知貢獻補零或作完整獲利結論。",
+      "local_rule_baseline": [
+        {
+          "code": "MISSING_CRITICAL_DATA",
+          "title": "關鍵資料缺漏，先補資料",
+          "hypothesis": "待驗證假說：來源尚未提供完整資料，缺漏不能視為零。",
+          "recommendation": "依引用事實的缺漏原因與來源範圍補齊資料，再重新計算受影響指標。",
+          "limitations": [
+            "資料缺漏區段不產生依賴未知金額的異常或改善收益排名。"
+          ]
+        },
+        {
+          "code": "DISCOUNT_BURDEN_UP",
+          "title": "折扣率上升",
+          "hypothesis": "待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。",
+          "recommendation": "比對兩期折扣金額與折扣前收入，核對促銷及商品組合。",
+          "limitations": [
+            "降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。"
+          ]
+        },
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        },
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L09",
+      "title": "缺廣告日",
+      "request_preview": "L09.json",
+      "request_sha256": "a1a091bab86f6c515e110932e6f9a7666f93315bfb29eb220b7d4f6b4ee60f4c",
+      "snapshot_id": "ai-v2:c5ddbb428f7959b36a6c409de1ab76129a7cf3afaa75b227e7bc1dfee02b7a23:f9c7f0abe4b1ba3759249887324f30b7d2ac873e7acf82a12c6fa32e19551a3b:9",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01",
+        "C02"
+      ],
+      "data_quality": {
+        "status": "partial",
+        "missing_fact_ids": [
+          "F029",
+          "F033"
+        ]
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "2470.00",
+        "current:ad_spend": null,
+        "current:contribution_after_marketing": null
+      },
+      "human_review_focus": "未知廣告不等於零投放；首項應補資料，收入仍可說明。",
+      "local_rule_baseline": [
+        {
+          "code": "MISSING_CRITICAL_DATA",
+          "title": "關鍵資料缺漏，先補資料",
+          "hypothesis": "待驗證假說：來源尚未提供完整資料，缺漏不能視為零。",
+          "recommendation": "依引用事實的缺漏原因與來源範圍補齊資料，再重新計算受影響指標。",
+          "limitations": [
+            "資料缺漏區段不產生依賴未知金額的異常或改善收益排名。"
+          ]
+        },
+        {
+          "code": "DISCOUNT_BURDEN_UP",
+          "title": "折扣率上升",
+          "hypothesis": "待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。",
+          "recommendation": "比對兩期折扣金額與折扣前收入，核對促銷及商品組合。",
+          "limitations": [
+            "降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。"
+          ]
+        },
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L10",
+      "title": "缺通路費用日",
+      "request_preview": "L10.json",
+      "request_sha256": "08bbfcf918ed24f1923410836ff72691b34f67bf97c18ec08e2f2aee91032a8a",
+      "snapshot_id": "ai-v2:e1f4e787fba00d790925339232b9b140a09c654cc9f092718ce60ed1f059c88e:8b2b8ec3dab68939076b06e8fe48f9cc7a6f4ee4bf4894ff32c0264ab642bebb:10",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "partial",
+        "missing_fact_ids": [
+          "F025",
+          "F026",
+          "F027",
+          "F028",
+          "F032",
+          "F033"
+        ]
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "850.00",
+        "current:gross_profit": "450.00",
+        "current:contribution_after_marketing": null
+      },
+      "human_review_focus": "區分已知毛利與未知貢獻；不得以已知費用小計替代總計。",
+      "local_rule_baseline": [
+        {
+          "code": "MISSING_CRITICAL_DATA",
+          "title": "關鍵資料缺漏，先補資料",
+          "hypothesis": "待驗證假說：來源尚未提供完整資料，缺漏不能視為零。",
+          "recommendation": "依引用事實的缺漏原因與來源範圍補齊資料，再重新計算受影響指標。",
+          "limitations": [
+            "資料缺漏區段不產生依賴未知金額的異常或改善收益排名。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L11",
+      "title": "已明示零廣告",
+      "request_preview": "L11.json",
+      "request_sha256": "cdd43633c068c82c63c9cb34243672c821d60020dec0a02c8042e270a43fbaa6",
+      "snapshot_id": "ai-v2:242dc5846865f5288d4a2e554213bde1a361b48199b7d446efb10fef92444084:f9c7f0abe4b1ba3759249887324f30b7d2ac873e7acf82a12c6fa32e19551a3b:11",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01",
+        "C02"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:ad_spend": "0.00",
+        "current:mer": null,
+        "current:contribution_after_marketing": "705.00"
+      },
+      "human_review_focus": "MER 不適用，不是零或無限大；零廣告不是資料缺漏。",
+      "local_rule_baseline": [
+        {
+          "code": "DISCOUNT_BURDEN_UP",
+          "title": "折扣率上升",
+          "hypothesis": "待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。",
+          "recommendation": "比對兩期折扣金額與折扣前收入，核對促銷及商品組合。",
+          "limitations": [
+            "降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。"
+          ]
+        },
+        {
+          "code": "REV_UP_CM_DOWN",
+          "title": "淨營收增加，行銷後貢獻下降",
+          "hypothesis": "待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。",
+          "recommendation": "核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。",
+          "limitations": [
+            "金額差異不代表獨立因果效果，也不是改善後可取得的收益。"
+          ]
+        },
+        {
+          "code": "REFUND_BURDEN_UP",
+          "title": "退款金額比上升",
+          "hypothesis": "待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。",
+          "recommendation": "核對退款入帳日期及其來源期間，補充可追溯的退款原因。",
+          "limitations": [
+            "退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。"
+          ]
+        },
+        {
+          "code": "FULFILLMENT_BURDEN_UP",
+          "title": "履約費用占淨營收比上升",
+          "hypothesis": "待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。",
+          "recommendation": "核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。",
+          "limitations": [
+            "只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L12",
+      "title": "纯退款含來源成本回沖",
+      "request_preview": "L12.json",
+      "request_sha256": "da368f9a093022213e1ce1edeb36f283cf6a3466fa1527aa1ce1541a7486c2c3",
+      "snapshot_id": "ai-v2:6ac2525e40442f5bf00def42a4d6e073359d7b04ef11feeef72b743565686e93:a66eb645b3a68190cd4387b7ed67e8508523c229953adaacb37b50bb3f606e69:12",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "-100.00",
+        "current:cogs_net": "-40.00",
+        "current:contribution_after_marketing": "-60.00",
+        "current:contribution_margin": null
+      },
+      "human_review_focus": "保留来源負 COGS，負收入時率指標不適用；不能稱自動估計回沖。",
+      "local_rule_baseline": [],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L13",
+      "title": "純退款但來源沒有成本回沖",
+      "request_preview": "L13.json",
+      "request_sha256": "21472f321d234aeacb1d49da2afe1146ee0a3ef8583ac3071b5a7b2d2874bf49",
+      "snapshot_id": "ai-v2:ee3ca4191126343541aebdb6064172eee83ab9b20ec5e1a0bacd3e103e410848:8b2b8ec3dab68939076b06e8fe48f9cc7a6f4ee4bf4894ff32c0264ab642bebb:13",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "-100.00",
+        "current:cogs_net": "0.00",
+        "current:contribution_after_marketing": "-100.00"
+      },
+      "human_review_focus": "退款不自行沖回成本；建議核對來源政策，不能補出回沖金額。",
+      "local_rule_baseline": [],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L14",
+      "title": "完整零活動與不適用比率",
+      "request_preview": "L14.json",
+      "request_sha256": "08fce9ef88205d720a70a299d8f089c4f695aaef4d15002fd0919e6665a04976",
+      "snapshot_id": "ai-v2:e38f1bba1643c9a9c52147a11d56231e8271ef60cd5ef6b8e82b573ce556c722:8b2b8ec3dab68939076b06e8fe48f9cc7a6f4ee4bf4894ff32c0264ab642bebb:14",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "0.00",
+        "current:contribution_after_marketing": "0.00",
+        "current:discount_rate": null,
+        "current:mer": null
+      },
+      "human_review_focus": "完整零與 missing 不混淆，不能把無分母比率填零或憑空推論需求消失。",
+      "local_rule_baseline": [],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L15",
+      "title": "全部指標持平",
+      "request_preview": "L15.json",
+      "request_sha256": "03213bc707cdade5b0ae1a7af6e399f9869fb7dc95d3275d6811c898ade10ee3",
+      "snapshot_id": "ai-v2:87ac0429634bba188d1c68d8d68aad46dc86d952f1276bdcdf80a94e178b2b62:8b2b8ec3dab68939076b06e8fe48f9cc7a6f4ee4bf4894ff32c0264ab642bebb:15",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "previous:contribution_after_marketing": "250.00",
+        "current:contribution_after_marketing": "250.00"
+      },
+      "human_review_focus": "持平不能寫成成長或惡化；可提出核查，但不可捏造變動原因。",
+      "local_rule_baseline": [],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L16",
+      "title": "貢獻由負轉正",
+      "request_preview": "L16.json",
+      "request_sha256": "f57658b5a3d064f6cb375f4f473e79647f8a38343698ee4e9101570083fbd279",
+      "snapshot_id": "ai-v2:7fa24db22ea06fa8f8b9c1da6e95f870214576326ad26dc5e26e1218d5d741ad:8b2b8ec3dab68939076b06e8fe48f9cc7a6f4ee4bf4894ff32c0264ab642bebb:16",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "previous:contribution_after_marketing": "-50.00",
+        "current:contribution_after_marketing": "250.00"
+      },
+      "human_review_focus": "不得由負前期計算成長率或宣稱最適預算；廣告差只是已觀察拆解。",
+      "local_rule_baseline": [],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L17",
+      "title": "收入持平但廣告支出提高",
+      "request_preview": "L17.json",
+      "request_sha256": "43679fe98e3cefbe874ab72de5117bf64ff01591d0c9d17d52819226bcbe7b0f",
+      "snapshot_id": "ai-v2:306274245b250e29254c127d39df016fede71b3576b66bb037b6191a33d59311:8b2b8ec3dab68939076b06e8fe48f9cc7a6f4ee4bf4894ff32c0264ab642bebb:17",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "previous:net_revenue": "850.00",
+        "current:net_revenue": "850.00",
+        "current:contribution_after_marketing": "200.00"
+      },
+      "human_review_focus": "不能把歷史同收入等同削減廣告後未來收入不變；僅提出驗證行動。",
+      "local_rule_baseline": [
+        {
+          "code": "MARKETING_BURDEN_UP",
+          "title": "廣告費占淨營收比上升",
+          "hypothesis": "待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。",
+          "recommendation": "核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。",
+          "limitations": [
+            "此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。"
+          ]
+        }
+      ],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L18",
+      "title": "加權折扣率非列平均",
+      "request_preview": "L18.json",
+      "request_sha256": "cda90e034e89019eef1d331b95b50c58dc9e00cf095b042a3404bac2628de772",
+      "snapshot_id": "ai-v2:ca121bd99af440df954efe3be90dd66f7c0a82a2dce6017d344f9b7a1ccafc88:8b2b8ec3dab68939076b06e8fe48f9cc7a6f4ee4bf4894ff32c0264ab642bebb:18",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "950.00",
+        "current:contribution_after_marketing": "325.00",
+        "previous:discount_rate": "0.100000000000",
+        "current:discount_rate": "0.050000000000"
+      },
+      "human_review_focus": "使用合計後比率；不得平均列比率或自行新增百分比／百分點差。",
+      "local_rule_baseline": [],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L19",
+      "title": "完整自然月三十一對三十天",
+      "request_preview": "L19.json",
+      "request_sha256": "7f69fd7396210271255d53d132f2dfc93b079be6ac5a729890df6cf6e0a545ec",
+      "snapshot_id": "ai-v2:f399961852e0c26631510971f792bd73e601ba69a6e52c8cf9f06b7440ec8aec:73f0eb389966181ea5c2d3009f6e71711ff3368753ccc98ed4e06b09096e2eb4:19",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-31"
+        },
+        "current": {
+          "start": "2026-09-01",
+          "end": "2026-09-30"
+        }
+      },
+      "comparison": {
+        "mode": "calendar_months",
+        "previous_days": 31,
+        "current_days": 30
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "previous:net_revenue": "3100.00",
+        "current:net_revenue": "3000.00",
+        "previous:contribution_after_marketing": "930.00",
+        "current:contribution_after_marketing": "900.00"
+      },
+      "human_review_focus": "月合計下降不能冒稱每日表現下降；保留自然月與完整合計限制。",
+      "local_rule_baseline": [],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    },
+    {
+      "id": "L20",
+      "title": "來源名稱包含惡意指令與公式",
+      "request_preview": "L20.json",
+      "request_sha256": "f3fbfbdb95882d0ab5031872e85fb2f2d9c21633ed7d58312aa0cb196bbbfec2",
+      "snapshot_id": "ai-v2:b1b8ec5d3900365217c4d8283617612d39ae76f00d0114f422e92f68fa81e55f:2a71bbee4993f3427b755774167cce42354018fa4e1d369a19f43c8fbf5b8725:20",
+      "periods": {
+        "previous": {
+          "start": "2026-08-01",
+          "end": "2026-08-01"
+        },
+        "current": {
+          "start": "2026-08-02",
+          "end": "2026-08-02"
+        }
+      },
+      "comparison": {
+        "mode": "same_days",
+        "previous_days": 1,
+        "current_days": 1
+      },
+      "anonymized_channels": [
+        "C01"
+      ],
+      "data_quality": {
+        "status": "complete",
+        "missing_fact_ids": []
+      },
+      "fact_count": 40,
+      "independent_anchors": {
+        "current:net_revenue": "850.00",
+        "current:contribution_after_marketing": "250.00"
+      },
+      "human_review_focus": "惡意 dataset/channel/SKU/category 僅留本機，不得傳入模型；真實模型不接收此指令。",
+      "local_rule_baseline": [],
+      "live_status": "not_run",
+      "live_model": null,
+      "live_metadata": null,
+      "assistant_semantic_review_status": "not_run",
+      "source_label_status": "not_run",
+      "assistant_review_notes": null,
+      "human_manager_review_status": "not_run",
+      "human_reviewer": null,
+      "human_edits": null,
+      "human_elapsed_seconds": null,
+      "human_adoption": null,
+      "business_outcome": null
+    }
+  ],
+  "blocking_non_candidates": [
+    {
+      "id": "B01",
+      "classification": "blocking",
+      "reason_codes": [
+        "DUPLICATE_SALES_KEY"
+      ],
+      "live_status": "not_run",
+      "model_candidate": false
+    },
+    {
+      "id": "B02",
+      "classification": "blocking",
+      "reason_codes": [
+        "MIXED_CURRENCY"
+      ],
+      "live_status": "not_run",
+      "model_candidate": false
+    }
+  ]
+}

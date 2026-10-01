@@ -1,0 +1,265 @@
+{
+  "at": "2026-10-01T10:00:37.677908+00:00",
+  "git_head": "04e186bf7be18102e2d23b71b9d4d74fe521a2f1",
+  "baseline": "manager-batch2-starting-state.json",
+  "modified": [
+    {
+      "path": "src/application/workspace-backup.ts",
+      "before": "c6ad000cdbdab8278573a5e6614f2607024dba8501d4c7b197dbe1809c8a2cfd",
+      "after": "f8ce95fedbf41bf3700976206beb9e6b06dd214ce88a08ef0e6f13d322b3f6a6"
+    },
+    {
+      "path": "src/components/workspace-storage.tsx",
+      "before": "555b3cabf135215397782f7d28c5de5ca5ae4a6c4bedd4da40f7e56d704d9e69",
+      "after": "e9dfbbcecaef8b5bd6d3bdeecd9ba55e8fafb3ed7bc283d6c6e4db7e8f780463"
+    },
+    {
+      "path": "tests/e2e/period-comparison.spec.ts",
+      "before": "50b30b15be85c7bef83b0c7192c8e15952508b9e14e2b485b17b52c9a93c7aac",
+      "after": "dd17c3e44782e51c01e35b55245cb94913199cea4b32bf589f8cad4b5a0fe64a"
+    },
+    {
+      "path": "tests/e2e/workspace-storage.spec.ts",
+      "before": "e18e5b4fcf2b2a9dabab4ba9caa40fc7e61733c98ac64e8d6fe12e37d9c1aad6",
+      "after": "31a5b7d0e8d2fdfd380add89d0dd23a90cbc24ee917b9c979e02d7c4e1e48b82"
+    },
+    {
+      "path": "README.md",
+      "before": "175367136d44540cf714e6eff05e69493706b89a5d3e23f9835be906ffbe117a",
+      "after": "2ebec014f28e3f64a663fe0dda7e86d8963899ba522df29d6a09bebe5fc7fee2"
+    },
+    {
+      "path": "docs/ACCEPTANCE.md",
+      "before": "3be628880dd6cd39fe434195bc4bde7b7deffb508bb765ce3bc036b3dc5973a6",
+      "after": "3682265ce066a76d8d344a588427a2694dbb2f5f201b1192d8e548748c931c39"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "before": "7fbb35e8a1d027c4a91fd379f19a245d723efc469c839a7ad251c16cd18f5e7a",
+      "after": "4848bc121dc10902776612f5639653fc50f0daa3c711474754cd4d14414c292d"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "before": "9848f5cf5bc6227de4e3075164a3488d11f95dd5a37347e4dea830296895ae28",
+      "after": "be6ba9371d9dfaf7374aea7fc5a146be428847171ce817492f0179453d78c535"
+    },
+    {
+      "path": "docs/PRD.md",
+      "before": "94dd45b11593347fbafafba672ab9e1cd4926c5189b6d295ca7d9fc744aaea58",
+      "after": "bf03b8ace812445b395f68d0154799d7f08a6232abd120b4118d14c2b1d19914"
+    },
+    {
+      "path": "docs/SCENARIOS.md",
+      "before": "37367da1f9f60578a5f24f8675fa88ed4bcacde92ee1773a2fd91c325c618aad",
+      "after": "e7c29a46953f0c630a19d636eff9ba2fc4e9417f90d8312ae54bc20f86244c3f"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "before": "3886d4ff29368f1d82c847c3f1fdf19ec99ff7ca5badcb53fcad9ef5b870e483",
+      "after": "f35a0b1c66ae4eea16d33891c267ef6de97a777150c5c3857ac406800b26be4e"
+    },
+    {
+      "path": "playwright.config.ts",
+      "before": "df817e7efa4fbb01cb09cd3df7968d0330c5745ca9a171fd6510fba531311d11",
+      "after": "7555270509493a2c0239f8f35661b96914f78ca73204df749c4fe3227bd8073c"
+    },
+    {
+      "path": "src/app/globals.css",
+      "before": "a9f75886bceec653bdc047777f2ac1c95eb2c05288ff9c14e4c360fbb75f00b2",
+      "after": "2db41bbbc360e35ca31d78605d02d155bf595b4d081ff29aaf56fdca64216ea2"
+    },
+    {
+      "path": "src/application/decision-export.ts",
+      "before": "2eb3d2bf4d9a0a6bfeb44e24d358679086b67a295f13774c78302ae614fff183",
+      "after": "af8634db8f61548ac4e4e6f74aea5aed0f8ba642aa20a21c6132d0a5b22aa59f"
+    },
+    {
+      "path": "src/components/dashboard.tsx",
+      "before": "5943370dadd195d3cef2cc26ea4cb48bda9ebbbb5d21c5285cdca3c27f5bfdae",
+      "after": "b40889056c127f38eba97dfc235de4b728d385c9fc514b584ba62dd8ed7d1060"
+    },
+    {
+      "path": "src/components/decision-workbench.tsx",
+      "before": "f0e12e50d0b4a2ebc277a579e177e37061901e98276eb8892910289a93ccdf7f",
+      "after": "583c2663205b2ecd4db4313ff5a3d0b1f845a504700cc8cd14f6c82dde1caee7"
+    },
+    {
+      "path": "src/components/workspace-panels.tsx",
+      "before": "bf41efda54c9715eab601703a3943cfb0e05254b29692b8544a47db8f57dcee9",
+      "after": "5cc0ebb416ee9e8f373ae09715b433d3a02d32377d7783cd4ef305efaf6a6799"
+    },
+    {
+      "path": "tests/e2e/ai.spec.ts",
+      "before": "472a4eba6cd1012646ccc60086bdec34f315c8cf1aa89ed27018d714f9f80791",
+      "after": "c0f999d24883f5b2b3eafd3be52b866b673982d94ccdf3ea8c4b58a2ae89d4bd"
+    },
+    {
+      "path": "tests/e2e/import.spec.ts",
+      "before": "82b149049d99ca151c4db14ad2582d075176776cfb79bf398b425cfa5c986593",
+      "after": "9efd58159d51a40c22499e11d5c04f8a93069f265ca38aafb970c264af26603e"
+    },
+    {
+      "path": "tests/e2e/m6-acceptance.spec.ts",
+      "before": "da7641f9741d10c6c535639d340380eaac9ee5850dc6be34e84cd65157f7c660",
+      "after": "fcb82e0661b75b93efa1bb158fd8a7e281a62c1d6b2b182ce57d60880f4587e3"
+    },
+    {
+      "path": "tests/e2e/scenarios.spec.ts",
+      "before": "3d6248e69b21f258570900bc18c72a99bdfe0d3de4ad84ad90369f0fc701c8c3",
+      "after": "40ebadbf47600328389b862f3fcd574eb5e0960d2f985fd97295af0c6cbf4bc1"
+    },
+    {
+      "path": "tests/e2e/workspace.spec.ts",
+      "before": "92d2d384a6d1e212ebc5899b9c5e36300ca3c67b39349137f3ea78524fb60f59",
+      "after": "a3a1592bc8e4b366109262c0fdf3409067f1e104c66fe4eb803aebe6b56b22b9"
+    }
+  ],
+  "added": [
+    "src/application/action-workspace.ts",
+    "src/application/manager-summary.ts",
+    "src/application/product-comparison-export.ts",
+    "src/components/actions-workbench.tsx",
+    "src/components/manager-summary.module.css",
+    "src/components/manager-summary.tsx",
+    "src/components/product-comparison-panel.tsx",
+    "src/components/scenario-sensitivity.tsx",
+    "src/domain/product-comparison.ts",
+    "src/domain/scenario-sensitivity.ts",
+    "tests/action-backup.test.ts",
+    "tests/action-export.test.ts",
+    "tests/action-workspace.test.ts",
+    "tests/e2e/action-workspace.spec.ts",
+    "tests/e2e/manager-summary.spec.ts",
+    "tests/e2e/product-comparison.spec.ts",
+    "tests/e2e/scenario-sensitivity.spec.ts",
+    "tests/manager-summary.test.ts",
+    "tests/product-comparison.test.ts",
+    "tests/scenario-sensitivity.test.ts"
+  ],
+  "missing": [],
+  "verification_artifacts": [
+    "verification/manager-batch2-acceptance.md",
+    "verification/manager-batch2-action-backup-green.txt",
+    "verification/manager-batch2-action-backup-red.txt",
+    "verification/manager-batch2-action-export-green.txt",
+    "verification/manager-batch2-action-export-lint.txt",
+    "verification/manager-batch2-action-export-red.txt",
+    "verification/manager-batch2-action-export-typecheck.txt",
+    "verification/manager-batch2-action-pin-green.txt",
+    "verification/manager-batch2-action-pin-lint.txt",
+    "verification/manager-batch2-action-pin-red.txt",
+    "verification/manager-batch2-actions-browser.jsonl",
+    "verification/manager-batch2-actions-desktop.png",
+    "verification/manager-batch2-actions-green.txt",
+    "verification/manager-batch2-actions-mobile.png",
+    "verification/manager-batch2-actions-red.txt",
+    "verification/manager-batch2-actions-security-green.txt",
+    "verification/manager-batch2-actions-security-red.txt",
+    "verification/manager-batch2-actions-tablet.png",
+    "verification/manager-batch2-baseline.txt",
+    "verification/manager-batch2-build-integration-failure.txt",
+    "verification/manager-batch2-build.txt",
+    "verification/manager-batch2-changes.json",
+    "verification/manager-batch2-check.py",
+    "verification/manager-batch2-desktop-restored.png",
+    "verification/manager-batch2-diff-check.txt",
+    "verification/manager-batch2-e2e-browser-initial-results.json",
+    "verification/manager-batch2-e2e-browser-initial.txt",
+    "verification/manager-batch2-e2e-final.txt",
+    "verification/manager-batch2-e2e-initial.txt",
+    "verification/manager-batch2-e2e-results.json",
+    "verification/manager-batch2-e2e-second-results.json",
+    "verification/manager-batch2-e2e-second.txt",
+    "verification/manager-batch2-final-source-check.json",
+    "verification/manager-batch2-integrity.json",
+    "verification/manager-batch2-legacy-scenarios-lint.txt",
+    "verification/manager-batch2-lint.txt",
+    "verification/manager-batch2-manual-browser.json",
+    "verification/manager-batch2-manual-desktop-summary.jpg",
+    "verification/manager-batch2-manual-mobile-evidence.jpg",
+    "verification/manager-batch2-manual-mobile-product.jpg",
+    "verification/manager-batch2-manual-tablet-action.jpg",
+    "verification/manager-batch2-manual-tablet-sensitivity.jpg",
+    "verification/manager-batch2-mobile-restored.png",
+    "verification/manager-batch2-pdf-render.txt",
+    "verification/manager-batch2-period-browser.jsonl",
+    "verification/manager-batch2-period-desktop.png",
+    "verification/manager-batch2-period-mobile.png",
+    "verification/manager-batch2-period-tablet.png",
+    "verification/manager-batch2-preview-server.txt",
+    "verification/manager-batch2-print-inspection.json",
+    "verification/manager-batch2-print-page-1.png",
+    "verification/manager-batch2-products-browser.jsonl",
+    "verification/manager-batch2-products-desktop.png",
+    "verification/manager-batch2-products-green.txt",
+    "verification/manager-batch2-products-lint.txt",
+    "verification/manager-batch2-products-mobile.png",
+    "verification/manager-batch2-products-red.txt",
+    "verification/manager-batch2-products-tablet.png",
+    "verification/manager-batch2-regression-m6-browser-meta.jsonl",
+    "verification/manager-batch2-regression-m6-context-isolation-meta.jsonl",
+    "verification/manager-batch2-regression-m6-desktop-complete-flow.png",
+    "verification/manager-batch2-regression-m6-mobile-complete-flow.png",
+    "verification/manager-batch2-regression-m6-mock-desktop-ai-viewport.png",
+    "verification/manager-batch2-regression-m6-mock-desktop-ai.png",
+    "verification/manager-batch2-regression-m6-mock-mobile-ai-viewport.png",
+    "verification/manager-batch2-regression-m6-mock-mobile-ai.png",
+    "verification/manager-batch2-regression-m6-mock-tablet-ai-viewport.png",
+    "verification/manager-batch2-regression-m6-mock-tablet-ai.png",
+    "verification/manager-batch2-regression-m6-regression-browser-meta.jsonl",
+    "verification/manager-batch2-regression-m6-regression-desktop-actions.png",
+    "verification/manager-batch2-regression-m6-regression-desktop-scenarios.png",
+    "verification/manager-batch2-regression-m6-regression-import-regression-desktop-import.png",
+    "verification/manager-batch2-regression-m6-regression-import-regression-desktop-overview.png",
+    "verification/manager-batch2-regression-m6-regression-import-regression-meta.jsonl",
+    "verification/manager-batch2-regression-m6-regression-import-regression-mobile-import.png",
+    "verification/manager-batch2-regression-m6-regression-import-regression-mobile-overview.png",
+    "verification/manager-batch2-regression-m6-regression-import-regression-tablet-import.png",
+    "verification/manager-batch2-regression-m6-regression-import-regression-tablet-overview.png",
+    "verification/manager-batch2-regression-m6-regression-mobile-actions.png",
+    "verification/manager-batch2-regression-m6-regression-mobile-scenarios.png",
+    "verification/manager-batch2-regression-m6-regression-tablet-actions.png",
+    "verification/manager-batch2-regression-m6-regression-tablet-scenarios.png",
+    "verification/manager-batch2-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+    "verification/manager-batch2-regression-m6-regression-workspace-regression-desktop-products.png",
+    "verification/manager-batch2-regression-m6-regression-workspace-regression-desktop.png",
+    "verification/manager-batch2-regression-m6-regression-workspace-regression-mobile-products.png",
+    "verification/manager-batch2-regression-m6-regression-workspace-regression-mobile.png",
+    "verification/manager-batch2-regression-m6-regression-workspace-regression-tablet-products.png",
+    "verification/manager-batch2-regression-m6-regression-workspace-regression-tablet.png",
+    "verification/manager-batch2-regression-m6-tablet-complete-flow.png",
+    "verification/manager-batch2-regression-m6-ui-flow-meta.jsonl",
+    "verification/manager-batch2-security-check.txt",
+    "verification/manager-batch2-security.json",
+    "verification/manager-batch2-sensitivity-browser.jsonl",
+    "verification/manager-batch2-sensitivity-desktop.png",
+    "verification/manager-batch2-sensitivity-green.txt",
+    "verification/manager-batch2-sensitivity-lint.txt",
+    "verification/manager-batch2-sensitivity-mobile.png",
+    "verification/manager-batch2-sensitivity-red.txt",
+    "verification/manager-batch2-sensitivity-tablet.png",
+    "verification/manager-batch2-sensitivity-typecheck.txt",
+    "verification/manager-batch2-starting-state.json",
+    "verification/manager-batch2-storage-browser.jsonl",
+    "verification/manager-batch2-summary-appendix-green.txt",
+    "verification/manager-batch2-summary-appendix-red.txt",
+    "verification/manager-batch2-summary-browser.jsonl",
+    "verification/manager-batch2-summary-desktop.png",
+    "verification/manager-batch2-summary-green.txt",
+    "verification/manager-batch2-summary-lint.txt",
+    "verification/manager-batch2-summary-mobile.png",
+    "verification/manager-batch2-summary-print-desktop.png",
+    "verification/manager-batch2-summary-print-mobile.png",
+    "verification/manager-batch2-summary-print-tablet.png",
+    "verification/manager-batch2-summary-print.pdf",
+    "verification/manager-batch2-summary-red.txt",
+    "verification/manager-batch2-summary-tablet.png",
+    "verification/manager-batch2-summary-typecheck.txt",
+    "verification/manager-batch2-tablet-restored.png",
+    "verification/manager-batch2-tested-source.json",
+    "verification/manager-batch2-typecheck-concurrent-generation.txt",
+    "verification/manager-batch2-typecheck-integration-failure.txt",
+    "verification/manager-batch2-typecheck.txt",
+    "verification/manager-batch2-unit.txt"
+  ]
+}

@@ -1,0 +1,30 @@
+PL-01 initial RED — transcript copied from the actual tool output
+This file was written after the run because the initial stdout was not redirected
+to a file. It is a transcript excerpt, not a rerun or a claim of archived raw output.
+
+Command: npm test -- --run tests/workspace-backup.test.ts
+Actual exit code: 1
+Start time reported by Vitest: 16:41:41, 2026-10-01 Asia/Taipei
+
+> profitlens@0.1.0 test
+> vitest --run tests/workspace-backup.test.ts
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/workspace-backup.test.ts (0 test)
+
+ FAIL  tests/workspace-backup.test.ts [ tests/workspace-backup.test.ts ]
+Error: Cannot find package '@/application/workspace-backup' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/workspace-backup.test.ts
+ ❯ tests/workspace-backup.test.ts:3:1
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  16:41:41
+   Duration  216ms (transform 47ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+Later additional red checks were observed before hardening:
+- Additional run, 17 backup tests: 2 failed; invented mapping field was accepted,
+  and prototype-key input was rejected as checksum mismatch rather than format.
+- Per-file mapping schema was restricted to canonical fields and unique aliases.
+- Reserved object keys and excessive depth/node count were rejected before hashing.
+- Final focused pass is the raw captured output in manager-batch1-pl01-green.txt.

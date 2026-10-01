@@ -18,6 +18,7 @@ const manifestSchema = z.object({
   coverage_end: dateSchema,
   channels: z.array(z.string().refine((value) => value.trim().length > 0)).min(1)
     .refine((channels) => new Set(channels).size === channels.length, "通路不可重複。"),
+  comparison_mode: z.enum(["same_days", "calendar_months"]).default("same_days"),
   previous_period: periodSchema,
   current_period: periodSchema,
   sales_coverage_confirmed: z.boolean(),
@@ -48,7 +49,7 @@ export function validateDataset(input: DatasetInput): ValidationResult {
   const manifest = manifestResult.data;
   const periodErrors = validatePeriods(manifest);
   for (const reason_code of periodErrors) {
-    issues.push({ file: "manifest.json", line: null, field: "periods", severity: "blocking", reason_code, message: "前後期必須等長、不重疊，並完整落在有效 coverage 內。" });
+    issues.push({ file: "manifest.json", line: null, field: "periods", severity: "blocking", reason_code, message: "前期須早於本期，兩期須在 coverage 與資料截至日內；相同天數模式須等長，完整自然月模式每期須恰為一個完整月份。" });
   }
   if (periodErrors.length > 0) return { classification: "blocking", dataset: null, issues, unknownColumns };
   if (!manifest.sales_coverage_confirmed) {

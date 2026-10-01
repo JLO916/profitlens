@@ -1,0 +1,497 @@
+{
+  "at": "2026-10-01T10:41:03.658834+00:00",
+  "checks": [
+    {
+      "path": "src/app/layout.tsx",
+      "same": true
+    },
+    {
+      "path": "src/app/page.tsx",
+      "same": true
+    },
+    {
+      "path": "src/app/globals.css",
+      "same": true
+    },
+    {
+      "path": "src/components/product-comparison-panel.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/manager-summary.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/issue-list.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/dashboard.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/ai-panel.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/decision-workbench.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/workspace-panels.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/components/scenario-sensitivity.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/workspace-storage.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/overview.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/manager-summary.module.css",
+      "same": true
+    },
+    {
+      "path": "src/components/import-panel.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/evidence-drawer.tsx",
+      "same": true
+    },
+    {
+      "path": "src/components/actions-workbench.tsx",
+      "same": true
+    },
+    {
+      "path": "src/ai/grounding.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/prompt.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/contracts.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/ai/openai-provider.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/provider.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/config.ts",
+      "same": true
+    },
+    {
+      "path": "src/ai/service.ts",
+      "same": true
+    },
+    {
+      "path": "src/lib/csv.ts",
+      "same": true
+    },
+    {
+      "path": "src/lib/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/application/product-comparison-export.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/local-store.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/ai-client.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/workspace.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/decision-export.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/application/manager-summary.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/import-guidance.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/action-workspace.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/presentation.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/export.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/decision.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/workspace-backup.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/download.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/limits.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/ai-snapshot.ts",
+      "same": true
+    },
+    {
+      "path": "src/application/import.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/validation.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/date.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/scenario-sensitivity.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/.gitkeep",
+      "same": true
+    },
+    {
+      "path": "src/domain/comparison.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/money.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/types.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/product-comparison.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/rules.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/bridge.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/index.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/analysis.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/aggregation.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/metrics.ts",
+      "same": true
+    },
+    {
+      "path": "src/domain/scenarios.ts",
+      "same": true
+    },
+    {
+      "path": "src/app/api/insights/route.ts",
+      "same": true
+    },
+    {
+      "path": "src/app/api/datasets/[id]/route.ts",
+      "same": true
+    },
+    {
+      "path": "tests/dataset-route.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/manager-language.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/rules.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/action-backup.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-grounding.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-provider.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/local-store.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/m6-security-audit.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/domain-acceptance.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/analysis-limits.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/scenario-sensitivity.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-client.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-config.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/metrics.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/money.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/action-export.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/product-comparison.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/workspace.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/action-workspace.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/scenarios.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/m6-financial-audit.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-route.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/import.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-presentation.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/import-guidance.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/aggregation-boundaries.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/export.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/manager-summary.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/workspace-backup.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/period-comparison.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/validation.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/app-smoke.test.tsx",
+      "same": true
+    },
+    {
+      "path": "tests/decision.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/ai-service.test.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/scenario-sensitivity.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/workspace-storage.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/m6-acceptance.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/action-workspace.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/workspace.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/product-comparison.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/import.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/import-guidance.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/scenarios.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/manager-presentation.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/manager-summary.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/ai.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/e2e/period-comparison.spec.ts",
+      "same": true
+    },
+    {
+      "path": "tests/helpers/fixtures.ts",
+      "same": true
+    },
+    {
+      "path": "tests/helpers/ai-server.ts",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/expected.json",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/README.md",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/alternative/manifest.json",
+      "same": true
+    },
+    {
+      "path": "package.json",
+      "same": true
+    },
+    {
+      "path": "package-lock.json",
+      "same": true
+    },
+    {
+      "path": "playwright.config.ts",
+      "same": true
+    },
+    {
+      "path": "tsconfig.json",
+      "same": true
+    },
+    {
+      "path": "eslint.config.mjs",
+      "same": true
+    }
+  ],
+  "all_same": true,
+  "build_id": "p9LCsepxPsSU3ROkD0TCg",
+  "new_verification_only_test_copy": "verification/pilot-e2e/flow.spec.ts",
+  "no_production_edits": true
+}

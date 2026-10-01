@@ -9,11 +9,13 @@ const inputLabels = [
 const consentLabel = "我接受此方案的全部固定假設";
 const workspaceStatus = (page: Page) => page.getByTestId("workspace-status");
 const workbench = (page: Page) => page.getByTestId("decision-workbench");
+const actionsWorkbench = (page: Page) => page.getByTestId("actions-workbench");
 const scenario = (page: Page, index = 1) => page.getByTestId(`scenario-${index}`);
 const action = (page: Page, index = 1) => page.getByTestId(`action-${index}`);
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 
 interface AuditEvent { kind: string; type?: string; errorName?: string }
+const expectedBeforeUnload = new WeakSet<Page>();
 const test = base.extend<{ browserAudit: AuditEvent[] }>({
   browserAudit: [async ({ page }, use, testInfo) => {
     const events: AuditEvent[] = [];
@@ -21,19 +23,25 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
     page.on("console", message => events.push({ kind: "console", type: message.type() }));
     page.on("pageerror", error => events.push({ kind: "pageerror", errorName: error.name }));
     page.on("dialog", dialog => {
-      events.push({ kind: "javascript-dialog", type: dialog.type() });
-      void dialog.dismiss();
+      if (dialog.type() === "beforeunload" && expectedBeforeUnload.delete(page)) {
+        events.push({ kind: "unsaved-changes-warning", type: dialog.type() });
+        void dialog.accept();
+      } else {
+        events.push({ kind: "javascript-dialog", type: dialog.type() });
+        void dialog.dismiss();
+      }
     });
     await use(events);
     const record = { recorded_at: new Date().toISOString(), project: testInfo.project.name, test: testInfo.title, status: testInfo.status, events };
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/m6-regression-browser-meta.jsonl"), `${JSON.stringify(record)}\n`);
+    await appendFile(resolve("verification/manager-batch3-regression-regression-m6-regression-browser-meta.jsonl"), `${JSON.stringify(record)}\n`);
     await testInfo.attach("browser-metadata", { body: JSON.stringify(record, null, 2), contentType: "application/json" });
     expect(events.filter(event => event.kind === "pageerror" || event.kind === "javascript-dialog" || event.type === "error"), "情境與行動不執行輸入文字，不產生未處理的瀏覽器錯誤").toEqual([]);
   }, { auto: true }],
 });
 
 async function loadDataset(page: Page, id = "golden", classification = "資料已就緒") {
+  await page.getByRole("button", { name: "進階驗證", exact: true }).click();
   await page.getByLabel("資料集", { exact: true }).selectOption(id);
   await Promise.all([
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.status() === 200),
@@ -73,6 +81,8 @@ async function calculate(card: Locator, contribution?: string, delta?: string) {
 }
 async function addConfirmedAction(page: Page, index = 1, problem = `待驗證問題 ${index}`) {
   await page.getByRole("button", { name: "行動摘要", exact: true }).click();
+  await expect(actionsWorkbench(page)).toBeVisible();
+  await expect(actionsWorkbench(page).getByLabel(consentLabel)).toHaveCount(0);
   await page.getByRole("button", { name: "新增行動", exact: true }).click();
   const card = action(page, index);
   const fields: Record<string, string> = {
@@ -82,8 +92,10 @@ async function addConfirmedAction(page: Page, index = 1, problem = `待驗證問
   };
   for (const [label, value] of Object.entries(fields)) await card.getByLabel(label, { exact: true }).fill(value);
   const evidence = card.getByLabel("本快照證據（可複選）", { exact: true });
-  const factId = await evidence.locator("option").filter({ hasText: /2026-08-02.*行銷後貢獻 · DTC · 270\.00/ }).filter({ hasText: /"channel"/ }).getAttribute("value");
+  const factId = await evidence.locator("option").filter({ hasText: /2026-08-02.*行銷後貢獻 · DTC（通路） · 270\.00/ }).getAttribute("value");
   expect(factId, "引用本期 DTC 270.00 的系統事實，而非人工結果").toBeTruthy();
+  expect(JSON.parse(factId!)[4]).toBe("channel");
+  await expect(evidence).not.toContainText('["fact"');
   await evidence.selectOption(factId!);
   await card.getByRole("button", { name: "確認行動與證據", exact: true }).click();
   await expect(card).toContainText("使用者已確認");
@@ -199,7 +211,7 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
   await expect(total.getByRole("cell")).toHaveText(["270.00", "270.00", "284.00", "264.00"]);
   await expect(page.getByTestId("scenario-comparison")).toContainText("不相加");
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/m6-regression-${testInfo.project.name}-scenarios.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-regression-${testInfo.project.name}-scenarios.png`), fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "頁面本身不可橫向溢出；比較表可在自己的區域捲動").toBe(true);
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-5");
   await expect(scenario(page, 2).getByTestId("scenario-contribution")).toHaveCount(0);
@@ -253,7 +265,7 @@ test("百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 
     "折扣前商品收入": "1,560.00", "商品折扣": "295.20", "已入帳退款": "105.40",
     "銷貨成本淨額": "702.00", "平台費用": "140.53", "金流費用": "25.76",
     "履約費用": "91.80", "其他變動成本": "15.60", "廣告費": "144.00",
-    "一次性投入 K": "20.00", "取分調整 rounding_adjustment": "-0.01", "商品淨營收（另列摘要）": "1,159.40",
+    "一次性投入": "20.00", "取分調整": "-0.01", "商品淨營收（另列摘要）": "1,159.40",
   };
   for (const [label, amount] of Object.entries(expected)) {
     const row = page.getByTestId("scenario-comparison").locator("tbody tr").filter({ has: page.locator("th").filter({ hasText: new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`) }) });
@@ -285,17 +297,17 @@ for (const incomplete of [
   });
 }
 
-test("通路換回原值仍過期；重建清空全部假設與證據，保留人工名稱文字", async ({ page }) => {
+test("通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據", async ({ page }) => {
   await openGolden(page);
   const card = await addScenario(page, 1, "保留名稱的履約測試");
   await fillScenario(card, ["0", "0", "-10", "0", "20"]);
   await calculate(card, "264.00", "-6.00");
-  await addConfirmedAction(page, 1, "保留人工問題");
+  const historical = await addConfirmedAction(page, 1, "保留人工問題");
   await showScenarios(page);
   await selectChannel(page, "MARKETPLACE");
-  await expect(page.getByTestId("decision-freshness")).toContainText("情境與行動已過期");
+  await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
   await selectChannel(page, "DTC");
-  await expect(page.getByTestId("decision-freshness")).toContainText("情境與行動已過期");
+  await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
   await expect(card.getByRole("button", { name: "計算方案", exact: true })).toBeDisabled();
   await expect(card.getByTestId("scenario-result")).toContainText("已過期");
   await expect(page.getByTestId("baseline-contribution_after_marketing")).toBeDisabled();
@@ -315,13 +327,24 @@ test("通路換回原值仍過期；重建清空全部假設與證據，保留�
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await page.getByRole("button", { name: "行動摘要", exact: true }).click();
   await expect(action(page).getByLabel("問題", { exact: true })).toHaveValue("保留人工問題");
-  await expect(action(page).getByLabel("本快照證據（可複選）", { exact: true })).toHaveValues([]);
-  await expect(action(page).getByRole("button", { name: /^查看證據 / })).toHaveCount(0);
-  await expect(action(page)).toContainText("草稿／證據待確認");
+  await expect(action(page).getByLabel("本快照證據（可複選）", { exact: true })).toHaveValues([historical.factId]);
+  await expect(action(page).getByRole("button", { name: /^查看證據 ·/ })).toHaveCount(1);
+  await expect(action(page)).toContainText("已過期 · 歷史證據");
+  await expect(action(page).getByRole("button", { name: "確認行動與證據", exact: true })).toBeDisabled();
+  await action(page).getByRole("button", { name: /^查看證據 ·/ }).click();
+  await expect(page.getByRole("dialog")).toContainText("歷史證據 · DTC");
+  await expect(page.getByRole("dialog").locator("p.number")).toHaveText("NT$ 270.00");
+  await page.getByRole("button", { name: "關閉公式與來源", exact: true }).click();
+  await action(page).getByRole("button", { name: "複製文字至目前範圍", exact: true }).click();
+  await expect(action(page, 2).getByLabel("問題", { exact: true })).toHaveValue("保留人工問題");
+  await expect(action(page, 2).getByLabel("本快照證據（可複選）", { exact: true })).toHaveValues([]);
+  await expect(action(page, 2).getByRole("button", { name: /^查看證據 ·/ })).toHaveCount(0);
+  await expect(action(page, 2)).toContainText("草稿／證據待確認");
   const rebuilt = await downloadJson(page);
   expect(rebuilt.status).toBe("current");
   expect(rebuilt.scenarios[0]).toMatchObject({ status: "draft", result: null });
-  expect(rebuilt.actions[0]).toMatchObject({ status: "draft", evidence_confirmed: false, fact_ids: [] });
+  expect(rebuilt.actions[0]).toMatchObject({ status: "stale", evidence_confirmed: true, fact_ids: [historical.factId] });
+  expect(rebuilt.actions[1]).toMatchObject({ status: "draft", evidence_confirmed: false, fact_ids: [] });
 });
 
 test("資料集切換後即使回到相同 golden 與通路，舊方案仍過期", async ({ page }) => {
@@ -331,11 +354,11 @@ test("資料集切換後即使回到相同 golden 與通路，舊方案仍過期
   await calculate(card, "284.00", "+14.00");
   await loadDataset(page, "demo");
   await showScenarios(page);
-  await expect(page.getByTestId("decision-freshness")).toContainText("情境與行動已過期");
+  await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
   await loadDataset(page);
   await selectChannel(page, "DTC");
   await showScenarios(page);
-  await expect(page.getByTestId("decision-freshness")).toContainText("情境與行動已過期");
+  await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
   await expect(card.getByRole("button", { name: "計算方案", exact: true })).toBeDisabled();
   await expect(card.getByTestId("scenario-contribution")).toHaveText("284.00");
 });
@@ -356,18 +379,24 @@ test("有效期間切換再回原期間仍過期，不自動沿用先前假設",
     for (const [index, label] of ["前期開始", "前期結束", "本期開始", "本期結束"].entries()) await page.getByLabel(label, { exact: true }).fill(values[index]);
     await page.getByRole("button", { name: "套用期間", exact: true }).click();
     await expect(workspaceStatus(page)).toContainText("資料已就緒");
-    await expect(page.getByTestId("decision-freshness")).toContainText("情境與行動已過期");
+    await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
   }
   await expect(card.getByRole("button", { name: "計算方案", exact: true })).toBeDisabled();
 });
 
-test("三項人工行動可編輯、鍵盤排序、引用本期 fact 並返回焦點", async ({ page }, testInfo) => {
+test("四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點", async ({ page }, testInfo) => {
   await openGolden(page);
   const first = await addConfirmedAction(page, 1, "第一個人工問題");
   await addConfirmedAction(page, 2, "第二個人工問題");
   await addConfirmedAction(page, 3, "第三個人工問題");
-  await expect(page.getByRole("button", { name: "新增行動", exact: true })).toBeDisabled();
-  await expect(page.getByTestId("action-4")).toHaveCount(0);
+  for (const index of [1, 2, 3]) await action(page, index).getByRole("button", { name: "置頂行動", exact: true }).click();
+  await expect(page.getByRole("button", { name: "新增行動", exact: true })).toBeEnabled();
+  await addConfirmedAction(page, 4, "第四個人工問題");
+  await action(page, 4).getByRole("button", { name: "置頂行動", exact: true }).click();
+  await expect(page.getByTestId("action-notice")).toContainText("最多置頂三項");
+  await expect(action(page, 4).getByRole("button", { name: "置頂行動", exact: true })).toHaveAttribute("aria-pressed", "false");
+  await expect(actionsWorkbench(page).getByRole("button", { name: "取消置頂", exact: true })).toHaveCount(3);
+  await expect(page.getByTestId("action-4")).toBeVisible();
   await expect(action(page, 1).getByRole("button", { name: "提高優先序", exact: true })).toBeDisabled();
   await action(page, 2).getByRole("button", { name: "提高優先序", exact: true }).focus();
   await page.keyboard.press("Enter");
@@ -377,21 +406,22 @@ test("三項人工行動可編輯、鍵盤排序、引用本期 fact 並返回�
   await expect(action(page, 1)).toContainText("草稿／證據待確認");
   await action(page, 1).getByRole("button", { name: "確認行動與證據", exact: true }).click();
   await expect(action(page, 1)).toContainText("使用者已確認");
-  const opener = action(page, 2).getByRole("button", { name: `查看證據 ${first.factId}`, exact: true });
+  const opener = action(page, 2).getByRole("button", { name: /^查看證據 · 2026-08-02.*行銷後貢獻 · DTC（通路） · 270\.00$/ });
+  await expect(opener).not.toContainText(first.factId);
   await opener.focus();
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: "行動證據 · 行銷後貢獻｜公式與來源", exact: true });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator("p.number")).toHaveText("NT$ 270.00");
-  await expect(dialog).toContainText("單一通路完整商品集合；2026-08-02 至 2026-08-02；通路：DTC");
+  await expect(dialog).toContainText("DTC；2026-08-02 至 2026-08-02；通路：DTC");
   await expect(dialog).toContainText("sales_daily.csv");
   await page.keyboard.press("Escape");
   await expect(opener).toBeFocused();
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/m6-regression-${testInfo.project.name}-actions.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-regression-${testInfo.project.name}-actions.png`), fullPage: true });
   expect(await page.evaluate(() => window.document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   const document = await downloadJson(page);
-  expect(document.actions.map(item => [item.priority, item.problem])).toEqual([[1, "第二個人工問題"], [2, "第一個人工問題"], [3, "第三個人工問題"]]);
+  expect(document.actions.map(item => [item.priority, item.problem])).toEqual([[1, "第二個人工問題"], [2, "第一個人工問題"], [3, "第三個人工問題"], [4, "第四個人工問題"]]);
   expect(document.actions[0]).toMatchObject({ action: "修改後先核對單位履約成本", origin: "manual", status: "confirmed" });
   expect(document.actions[1].fact_ids).toEqual([first.factId]);
   expect(document.actions[1].evidence[0]).toMatchObject({ id: first.factId, value: "270.00" });
@@ -403,7 +433,7 @@ test("未填完七欄或未選 fact 的行動只能保持草稿", async ({ page 
   await page.getByRole("button", { name: "新增行動", exact: true }).click();
   await action(page).getByLabel("問題", { exact: true }).fill("尚未確認的問題");
   await action(page).getByRole("button", { name: "確認行動與證據", exact: true }).click();
-  await expect(page.getByTestId("decision-notice")).toContainText("請填完七個欄位並選擇至少一項本快照證據");
+  await expect(page.getByTestId("action-notice")).toContainText("請填完七個欄位並選擇至少一項本快照證據");
   await expect(action(page)).toContainText("草稿／證據待確認");
   const document = await downloadJson(page);
   expect(document.actions[0]).toMatchObject({ status: "draft", evidence_confirmed: false, fact_ids: [], evidence: [] });
@@ -450,7 +480,7 @@ test("三種本機匯出保存固定基準、五項輸入、公式、版本、�
   expect(rows.some(row => row.source_refs.includes('"actual_filename":"sales_daily.csv"'))).toBe(true);
   const markdown = await downloadText(page, "Markdown");
   for (const text of ["# ProfitLens 決策紀錄", "目前快照", "264", "DTC", "HALF", "固定假設", "完整公式與取分", "人工行動", "系統資料事實與來源"]) expect(markdown).toContain(text);
-  await expect(page.getByTestId("decision-notice")).toContainText("已下載本機工作稿");
+  await expect(page.getByTestId("action-notice")).toContainText("已下載本機工作稿");
 });
 
 test("不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結", async ({ page }) => {
@@ -477,7 +507,7 @@ test("不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產
   expect(markdown).toContain("&#10;");
 });
 
-test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用", async ({ page, context }) => {
+test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用", async ({ page, context, browserAudit }) => {
   await openGolden(page);
   const before = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
@@ -500,7 +530,9 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   await expect(workspaceStatus(other)).toContainText("尚未載入資料");
   await expect(workbench(other)).toHaveCount(0);
   await other.close();
+  expectedBeforeUnload.add(page);
   await page.reload();
+  expect(browserAudit.filter(event => event.kind === "unsaved-changes-warning")).toEqual([{ kind: "unsaved-changes-warning", type: "beforeunload" }]);
   await expect(workspaceStatus(page)).toContainText("尚未載入資料");
   await expect(workbench(page)).toHaveCount(0);
 });

@@ -1,0 +1,54 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/action-backup.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/action-backup.test.ts (2 tests | 2 failed) 65ms
+   × keeps independent cross-scope actions and more than three work items through a v2 backup 37ms
+   × migrates first-batch decision actions without losing their original scope or evidence 28ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/action-backup.test.ts > keeps independent cross-scope actions and more than three work items through a v2 backup
+AssertionError: expected 'profitlens-workspace-v1' to be 'profitlens-workspace-v2' // Object.is equality
+
+Expected: "profitlens-workspace-v2"
+Received: "profitlens-workspace-v1"
+
+ ❯ tests/action-backup.test.ts:14:43
+     12|  w=pinAction(w,'1',true);w=refreshActionWorkspace(w,b,2);w=addActionDr…
+     13|  const saved=await exportWorkspaceBackup({input,filters:b.report.scope…
+     14|  expect(JSON.parse(saved).schema_version).toBe('profitlens-workspace-v…
+       |                                           ^
+     15|  const result=await restoreWorkspaceBackup(saved);expect(result.action…
+     16|  expect(result.action_workspace?.contexts[0].session.stale).toBe(true)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/action-backup.test.ts > migrates first-batch decision actions without losing their original scope or evidence
+AssertionError: expected undefined to be '舊稿' // Object.is equality
+
+- Expected:
+"舊稿"
+
++ Received:
+undefined
+
+ ❯ tests/action-backup.test.ts:24:59
+     22|  decision.actions=[{id:'old',problem:'舊稿',action:'',owner_role:'',vali…
+     23|  const restored=await restoreWorkspaceBackup(await exportWorkspaceBack…
+     24|  expect(restored.action_workspace?.items[0].card.problem).toBe('舊稿');e…
+       |                                                           ^
+     25| });
+     26|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  17:23:08
+   Duration  333ms (transform 78ms, setup 0ms, import 137ms, tests 65ms, environment 0ms)
+

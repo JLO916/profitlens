@@ -50,6 +50,21 @@ export function Overview({ snapshot, onEvidence }: Props) {
       })}
     </section>
 
+    <section className="panel period-comparison" aria-labelledby="daily-average-title" data-testid="period-comparison">
+      <div className="section-heading"><div><p className="eyebrow">PERIOD COMPARISON</p><h2 id="daily-average-title">期間合計與日均值</h2></div><span className="tag">{report.comparison.mode === "calendar_months" ? "完整自然月" : "相同天數"}</span></div>
+      <p>前期 {report.comparison.previous_days} 天；本期 {report.comparison.current_days} 天。上方 KPI、診斷與金額橋接使用實際期間合計。日均值另以各期完整日曆天數相除；未截掉月份天數，不是營收預測。</p>
+      <p className="note">資料截至 {snapshot.data_as_of}。完整自然月只接受兩個各自完整且已涵蓋的月份；未滿月請使用相同天數模式，明確選擇已入帳範圍。已確認無活動的日期仍計入天數；缺漏保持未知。</p>
+      <div className="table-scroll" tabIndex={0} role="region" aria-label="期間合計與日均值數據"><table><caption>金額 TWD；日均 TWD／日，顯示至分。日均差使用未取分值計算後再取分。</caption><thead><tr><th>指標</th><th>前期合計</th><th>本期合計</th><th>前期日均</th><th>本期日均</th><th>日均差</th></tr></thead><tbody>{(["net_revenue", "gross_profit", "contribution_before_marketing", "contribution_after_marketing"] as const).map(name => <tr key={name}>
+        <th>{metricDefinitions[name].label}</th><td>{number(name, report.previous.metrics[name], report.previous.period, report.previous.sources)}</td><td>{number(name, report.current.metrics[name], report.current.period, report.current.sources)}</td>
+        {(["previous", "current"] as const).map(period => {
+          const summary = report[period], days = period === "previous" ? report.comparison.previous_days : report.comparison.current_days;
+          const average = period === "previous" ? report.comparison.previous_daily_average[name] : report.comparison.current_daily_average[name];
+          return <td key={period}><button className="number-link" onClick={() => onEvidence({ title: `${period === "previous" ? "前期" : "本期"}${metricDefinitions[name].label}日均值`, name, metric: average, period: summary.period, channels, sources: summary.sources, formula: `${metricDefinitions[name].label}期間合計 ÷ ${days} 個日曆天；Decimal 計算至顯示才取分`, scopeLabel: "日均值（TWD／日），與期間合計分開呈現", components: [{ label: "期間合計", metric: summary.metrics[name] }] })}>{average.value === null ? "資料待補" : formatMoney(average.value)}</button></td>;
+        })}
+        <td><button className="number-link" onClick={() => onEvidence({ title: `${metricDefinitions[name].label}日均差`, name, metric: report.comparison.daily_average_changes[name], period: periodBoth, channels, sources: sourcesBoth, formula: `本期合計 ÷ ${report.comparison.current_days} 天 − 前期合計 ÷ ${report.comparison.previous_days} 天；以未取分日均值相減後取分`, scopeLabel: "兩期日均金額差，非橋接差額或預測", components: [{ label: "前期合計", metric: report.previous.metrics[name] }, { label: "本期合計", metric: report.current.metrics[name] }] })}>{report.comparison.daily_average_changes[name].value === null ? "資料待補" : formatSignedMoney(report.comparison.daily_average_changes[name].value)}</button></td>
+      </tr>)}</tbody></table></div>
+    </section>
+
     <section className="panel trend-panel" aria-labelledby="trend-title">
       <div className="section-heading"><div><p className="eyebrow">TREND</p><h2 id="trend-title">每週營收與貢獻</h2></div><div className="chart-legend"><span><i className="legend-dot teal" />商品淨營收</span><span><i className="legend-dot navy" />行銷後貢獻</span></div></div>
       <p className="note">各期從起日每 7 天彙總，期末不足 7 天單獨列示；缺漏不畫成零值。圖形為近似比例，數據表保留精確金額。</p>

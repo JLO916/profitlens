@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/product-comparison.test.ts tests/domain-acceptance.test.ts tests/export.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  3 passed (3)
+      Tests  64 passed (64)
+   Start at  17:25:13
+   Duration  964ms (transform 374ms, setup 0ms, import 764ms, tests 566ms, environment 1ms)
+

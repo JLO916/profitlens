@@ -123,7 +123,7 @@ describe("HTTP200 output is grounded again locally, with program-rendered number
     const input = fixture();
     snapshot = await createSnapshot(validateDataset(input).dataset!, {}, await hashInput(input));
   });
-  const metadata = { provider: "openai", model: "unit-test-model", prompt_version: "profitlens-insights-v2", generated_at: "2026-10-01T08:00:00.000Z", attempts: 1, latency_ms: 10, usage: { input_tokens: 20, output_tokens: 30, total_tokens: 50 } };
+  const metadata = { provider: "openai", model: "unit-test-model", prompt_version: "profitlens-insights-v3", generated_at: "2026-10-01T08:00:00.000Z", attempts: 1, latency_ms: 10, usage: { input_tokens: 20, output_tokens: 30, total_tokens: 50 } };
   function setup() {
     const prepared = prepareAiSnapshot(snapshot, 1);
     const selected = observationCatalog(prepared.payload).find(entry => entry.kind === "value" && entry.fact_ids.some(id => prepared.payload.facts.find(fact => fact.id === id)?.metric === "contribution_after_marketing" && prepared.payload.facts.find(fact => fact.id === id)?.period === "current"))!;

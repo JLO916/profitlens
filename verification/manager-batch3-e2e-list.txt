@@ -1,0 +1,272 @@
+Listing tests:
+  [desktop] › action-workspace.spec.ts:6:5 › PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份
+  [desktop] › action-workspace.spec.ts:34:5 › PL09 主管摘要實際帶入選定方案、行動與停止條件，改範圍後不沿用
+  [desktop] › ai.spec.ts:119:1 › 真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用
+  [desktop] › ai.spec.ts:147:1 › MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據
+  [desktop] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕
+  [desktop] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕
+  [desktop] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕
+  [desktop] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕
+  [desktop] › ai.spec.ts:224:1 › MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料
+  [desktop] › ai.spec.ts:241:1 › MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST
+  [desktop] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意
+  [desktop] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意
+  [desktop] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意
+  [desktop] › ai.spec.ts:337:1 › MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現
+  [desktop] › ai.spec.ts:356:1 › MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料
+  [desktop] › import-guidance.spec.ts:21:5 › PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用
+  [desktop] › import-guidance.spec.ts:44:5 › PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計
+  [desktop] › import-guidance.spec.ts:55:5 › PL04含稅或淨結算來源不可直接套用，也不自動換算
+  [desktop] › import-guidance.spec.ts:69:5 › PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列
+  [desktop] › import-guidance.spec.ts:79:5 › PL04換檔後需重新確認口徑，不沿用先前勾選
+  [desktop] › import.spec.ts:125:1 › 真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷
+  [desktop] › import.spec.ts:157:1 › 不讀 JSON 也能手填 manifest，金額口徑須明確確認
+  [desktop] › import.spec.ts:177:1 › 超長但格式合法的期間明確拒絕，不截斷或取代先前資料
+  [desktop] › import.spec.ts:197:1 › JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功
+  [desktop] › import.spec.ts:220:3 › duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變
+  [desktop] › import.spec.ts:220:3 › mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變
+  [desktop] › import.spec.ts:245:3 › missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路
+  [desktop] › import.spec.ts:245:3 › missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路
+  [desktop] › import.spec.ts:264:3 › malformed 友善拒絕、不截斷且不破壞成功資料
+  [desktop] › import.spec.ts:264:3 › invalid-utf8 友善拒絕、不截斷且不破壞成功資料
+  [desktop] › import.spec.ts:264:3 › too-many-bytes 友善拒絕、不截斷且不破壞成功資料
+  [desktop] › import.spec.ts:264:3 › too-many-rows 友善拒絕、不截斷且不破壞成功資料
+  [desktop] › import.spec.ts:282:1 › 改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析
+  [desktop] › import.spec.ts:308:1 › 檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行
+  [desktop] › import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字
+  [desktop] › import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確
+  [desktop] › m6-acceptance.spec.ts:118:5 › M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈
+  [desktop] › m6-acceptance.spec.ts:185:5 › M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方
+  [desktop] › m6-acceptance.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策
+  [desktop] › manager-presentation.spec.ts:29:1 › PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁
+  [desktop] › manager-presentation.spec.ts:52:1 › PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料
+  [desktop] › manager-presentation.spec.ts:73:1 › PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿
+  [desktop] › manager-presentation.spec.ts:101:1 › PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看
+  [desktop] › manager-summary.spec.ts:26:1 › PL06 golden management summary, drilldown, threshold, scope and wide export
+  [desktop] › manager-summary.spec.ts:68:1 › PL06 unknown priorities survive a high threshold without zero contribution
+  [desktop] › manager-summary.spec.ts:78:1 › PL09 print uses a dedicated manager draft and retains technical audit downloads
+  [desktop] › period-comparison.spec.ts:81:1 › PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致
+  [desktop] › period-comparison.spec.ts:108:1 › PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍
+  [desktop] › period-comparison.spec.ts:132:50 › PL-02 zero 月合計與日均保留零及未知邊界
+  [desktop] › period-comparison.spec.ts:132:50 › PL-02 missing 月合計與日均保留零及未知邊界
+  [desktop] › product-comparison.spec.ts:55:1 › PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍
+  [desktop] › product-comparison.spec.ts:93:1 › PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源
+  [desktop] › product-comparison.spec.ts:111:1 › PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入
+  [desktop] › scenario-sensitivity.spec.ts:31:5 › PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立重算
+  [desktop] › scenario-sensitivity.spec.ts:62:5 › PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不外插
+  [desktop] › scenario-sensitivity.spec.ts:77:5 › PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意仍無衍生分析
+  [desktop] › scenarios.spec.ts:163:1 › 僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據
+  [desktop] › scenarios.spec.ts:196:1 › 三個方案各自從 270.00 重算為 270／284／264，不串接或相加
+  [desktop] › scenarios.spec.ts:222:1 › 減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益
+  [desktop] › scenarios.spec.ts:244:1 › 輸入超界、負投入與過度精度不得默默修正為可用試算
+  [desktop] › scenarios.spec.ts:257:1 › 百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70
+  [desktop] › scenarios.spec.ts:286:3 › missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN
+  [desktop] › scenarios.spec.ts:286:3 › missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN
+  [desktop] › scenarios.spec.ts:300:1 › 通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據
+  [desktop] › scenarios.spec.ts:350:1 › 資料集切換後即使回到相同 golden 與通路，舊方案仍過期
+  [desktop] › scenarios.spec.ts:366:1 › 有效期間切換再回原期間仍過期，不自動沿用先前假設
+  [desktop] › scenarios.spec.ts:387:1 › 四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點
+  [desktop] › scenarios.spec.ts:430:1 › 未填完七欄或未選 fact 的行動只能保持草稿
+  [desktop] › scenarios.spec.ts:442:1 › 三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源
+  [desktop] › scenarios.spec.ts:486:1 › 不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結
+  [desktop] › scenarios.spec.ts:510:1 › 試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用
+  [desktop] › workspace-storage.spec.ts:63:5 › PL01 主動保存兩方案與已確認行動，重整後手動恢復；其他同源分頁不自動共享
+  [desktop] › workspace-storage.spec.ts:114:5 › PL01 portable備份驗證後才套用；篡改／舊格式不取代目前資料，恢復撤銷保存同意
+  [desktop] › workspace-storage.spec.ts:135:5 › PL01 清空提醒可取消；過期方案保存恢復仍過期，切回舊範圍不復活
+  [desktop] › workspace-storage.spec.ts:157:5 › PL01 清空移除備份預覽、下載確認與本機保存同意；已保存副本僅可手動重讀
+  [desktop] › workspace.spec.ts:77:1 › 示範資料由空狀態進入可閱讀總覽，圖表有表格替代
+  [desktop] › workspace.spec.ts:105:1 › 切換 golden 與 demo 會重算同一組 KPI
+  [desktop] › workspace.spec.ts:117:1 › 通路篩選共用，金額證據可用鍵盤開啟與返回
+  [desktop] › workspace.spec.ts:149:1 › 貢獻率差額的證據保留百分點單位，不再乘以 100
+  [desktop] › workspace.spec.ts:163:1 › 診斷排序金額使用兩期已觀察差額，證據方向與來源一致
+  [desktop] › workspace.spec.ts:188:1 › 商品篩選只影響毛利明細，不帶入通路廣告與貢獻
+  [desktop] › workspace.spec.ts:207:1 › 無效期間不覆寫已套用的分析範圍
+  [desktop] › workspace.spec.ts:218:1 › 有效自訂期間會同步更新 KPI、週資料及來源期間
+  [desktop] › workspace.spec.ts:243:1 › 資料工作區展示三份原始檔案、行號、口徑與未縮減預覽
+  [desktop] › workspace.spec.ts:266:3 › missing-cogs 顯示待補資料，保留收入與未受影響通路
+  [desktop] › workspace.spec.ts:266:3 › missing-ad 顯示待補資料，保留收入與未受影響通路
+  [desktop] › workspace.spec.ts:277:1 › blocking 資料集載入失敗仍保留先前成功資料
+  [desktop] › workspace.spec.ts:288:1 › 載入中與 HTTP 故障均有明確狀態
+  [desktop] › workspace.spec.ts:305:1 › 較慢的舊資料請求不可覆寫較新的 golden 選擇
+  [desktop] › workspace.spec.ts:343:1 › 清空與重新整理回到空狀態，另一個頁面沒有共用資料
+  [tablet] › action-workspace.spec.ts:6:5 › PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份
+  [tablet] › action-workspace.spec.ts:34:5 › PL09 主管摘要實際帶入選定方案、行動與停止條件，改範圍後不沿用
+  [tablet] › ai.spec.ts:119:1 › 真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用
+  [tablet] › ai.spec.ts:147:1 › MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據
+  [tablet] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕
+  [tablet] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕
+  [tablet] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕
+  [tablet] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕
+  [tablet] › ai.spec.ts:224:1 › MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料
+  [tablet] › ai.spec.ts:241:1 › MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST
+  [tablet] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意
+  [tablet] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意
+  [tablet] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意
+  [tablet] › ai.spec.ts:337:1 › MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現
+  [tablet] › ai.spec.ts:356:1 › MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料
+  [tablet] › import-guidance.spec.ts:21:5 › PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用
+  [tablet] › import-guidance.spec.ts:44:5 › PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計
+  [tablet] › import-guidance.spec.ts:55:5 › PL04含稅或淨結算來源不可直接套用，也不自動換算
+  [tablet] › import-guidance.spec.ts:69:5 › PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列
+  [tablet] › import-guidance.spec.ts:79:5 › PL04換檔後需重新確認口徑，不沿用先前勾選
+  [tablet] › import.spec.ts:125:1 › 真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷
+  [tablet] › import.spec.ts:157:1 › 不讀 JSON 也能手填 manifest，金額口徑須明確確認
+  [tablet] › import.spec.ts:177:1 › 超長但格式合法的期間明確拒絕，不截斷或取代先前資料
+  [tablet] › import.spec.ts:197:1 › JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功
+  [tablet] › import.spec.ts:220:3 › duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變
+  [tablet] › import.spec.ts:220:3 › mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變
+  [tablet] › import.spec.ts:245:3 › missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路
+  [tablet] › import.spec.ts:245:3 › missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路
+  [tablet] › import.spec.ts:264:3 › malformed 友善拒絕、不截斷且不破壞成功資料
+  [tablet] › import.spec.ts:264:3 › invalid-utf8 友善拒絕、不截斷且不破壞成功資料
+  [tablet] › import.spec.ts:264:3 › too-many-bytes 友善拒絕、不截斷且不破壞成功資料
+  [tablet] › import.spec.ts:264:3 › too-many-rows 友善拒絕、不截斷且不破壞成功資料
+  [tablet] › import.spec.ts:282:1 › 改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析
+  [tablet] › import.spec.ts:308:1 › 檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行
+  [tablet] › import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字
+  [tablet] › import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確
+  [tablet] › m6-acceptance.spec.ts:118:5 › M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈
+  [tablet] › m6-acceptance.spec.ts:185:5 › M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方
+  [tablet] › m6-acceptance.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策
+  [tablet] › manager-presentation.spec.ts:29:1 › PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁
+  [tablet] › manager-presentation.spec.ts:52:1 › PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料
+  [tablet] › manager-presentation.spec.ts:73:1 › PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿
+  [tablet] › manager-presentation.spec.ts:101:1 › PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看
+  [tablet] › manager-summary.spec.ts:26:1 › PL06 golden management summary, drilldown, threshold, scope and wide export
+  [tablet] › manager-summary.spec.ts:68:1 › PL06 unknown priorities survive a high threshold without zero contribution
+  [tablet] › manager-summary.spec.ts:78:1 › PL09 print uses a dedicated manager draft and retains technical audit downloads
+  [tablet] › period-comparison.spec.ts:81:1 › PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致
+  [tablet] › period-comparison.spec.ts:108:1 › PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍
+  [tablet] › period-comparison.spec.ts:132:50 › PL-02 zero 月合計與日均保留零及未知邊界
+  [tablet] › period-comparison.spec.ts:132:50 › PL-02 missing 月合計與日均保留零及未知邊界
+  [tablet] › product-comparison.spec.ts:55:1 › PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍
+  [tablet] › product-comparison.spec.ts:93:1 › PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源
+  [tablet] › product-comparison.spec.ts:111:1 › PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入
+  [tablet] › scenario-sensitivity.spec.ts:31:5 › PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立重算
+  [tablet] › scenario-sensitivity.spec.ts:62:5 › PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不外插
+  [tablet] › scenario-sensitivity.spec.ts:77:5 › PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意仍無衍生分析
+  [tablet] › scenarios.spec.ts:163:1 › 僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據
+  [tablet] › scenarios.spec.ts:196:1 › 三個方案各自從 270.00 重算為 270／284／264，不串接或相加
+  [tablet] › scenarios.spec.ts:222:1 › 減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益
+  [tablet] › scenarios.spec.ts:244:1 › 輸入超界、負投入與過度精度不得默默修正為可用試算
+  [tablet] › scenarios.spec.ts:257:1 › 百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70
+  [tablet] › scenarios.spec.ts:286:3 › missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN
+  [tablet] › scenarios.spec.ts:286:3 › missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN
+  [tablet] › scenarios.spec.ts:300:1 › 通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據
+  [tablet] › scenarios.spec.ts:350:1 › 資料集切換後即使回到相同 golden 與通路，舊方案仍過期
+  [tablet] › scenarios.spec.ts:366:1 › 有效期間切換再回原期間仍過期，不自動沿用先前假設
+  [tablet] › scenarios.spec.ts:387:1 › 四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點
+  [tablet] › scenarios.spec.ts:430:1 › 未填完七欄或未選 fact 的行動只能保持草稿
+  [tablet] › scenarios.spec.ts:442:1 › 三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源
+  [tablet] › scenarios.spec.ts:486:1 › 不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結
+  [tablet] › scenarios.spec.ts:510:1 › 試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用
+  [tablet] › workspace-storage.spec.ts:63:5 › PL01 主動保存兩方案與已確認行動，重整後手動恢復；其他同源分頁不自動共享
+  [tablet] › workspace-storage.spec.ts:114:5 › PL01 portable備份驗證後才套用；篡改／舊格式不取代目前資料，恢復撤銷保存同意
+  [tablet] › workspace-storage.spec.ts:135:5 › PL01 清空提醒可取消；過期方案保存恢復仍過期，切回舊範圍不復活
+  [tablet] › workspace-storage.spec.ts:157:5 › PL01 清空移除備份預覽、下載確認與本機保存同意；已保存副本僅可手動重讀
+  [tablet] › workspace.spec.ts:77:1 › 示範資料由空狀態進入可閱讀總覽，圖表有表格替代
+  [tablet] › workspace.spec.ts:105:1 › 切換 golden 與 demo 會重算同一組 KPI
+  [tablet] › workspace.spec.ts:117:1 › 通路篩選共用，金額證據可用鍵盤開啟與返回
+  [tablet] › workspace.spec.ts:149:1 › 貢獻率差額的證據保留百分點單位，不再乘以 100
+  [tablet] › workspace.spec.ts:163:1 › 診斷排序金額使用兩期已觀察差額，證據方向與來源一致
+  [tablet] › workspace.spec.ts:188:1 › 商品篩選只影響毛利明細，不帶入通路廣告與貢獻
+  [tablet] › workspace.spec.ts:207:1 › 無效期間不覆寫已套用的分析範圍
+  [tablet] › workspace.spec.ts:218:1 › 有效自訂期間會同步更新 KPI、週資料及來源期間
+  [tablet] › workspace.spec.ts:243:1 › 資料工作區展示三份原始檔案、行號、口徑與未縮減預覽
+  [tablet] › workspace.spec.ts:266:3 › missing-cogs 顯示待補資料，保留收入與未受影響通路
+  [tablet] › workspace.spec.ts:266:3 › missing-ad 顯示待補資料，保留收入與未受影響通路
+  [tablet] › workspace.spec.ts:277:1 › blocking 資料集載入失敗仍保留先前成功資料
+  [tablet] › workspace.spec.ts:288:1 › 載入中與 HTTP 故障均有明確狀態
+  [tablet] › workspace.spec.ts:305:1 › 較慢的舊資料請求不可覆寫較新的 golden 選擇
+  [tablet] › workspace.spec.ts:343:1 › 清空與重新整理回到空狀態，另一個頁面沒有共用資料
+  [mobile] › action-workspace.spec.ts:6:5 › PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份
+  [mobile] › action-workspace.spec.ts:34:5 › PL09 主管摘要實際帶入選定方案、行動與停止條件，改範圍後不沿用
+  [mobile] › ai.spec.ts:119:1 › 真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用
+  [mobile] › ai.spec.ts:147:1 › MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據
+  [mobile] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕
+  [mobile] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕
+  [mobile] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕
+  [mobile] › ai.spec.ts:202:3 › MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕
+  [mobile] › ai.spec.ts:224:1 › MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料
+  [mobile] › ai.spec.ts:241:1 › MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST
+  [mobile] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意
+  [mobile] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意
+  [mobile] › ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意
+  [mobile] › ai.spec.ts:337:1 › MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現
+  [mobile] › ai.spec.ts:356:1 › MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料
+  [mobile] › import-guidance.spec.ts:21:5 › PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用
+  [mobile] › import-guidance.spec.ts:44:5 › PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計
+  [mobile] › import-guidance.spec.ts:55:5 › PL04含稅或淨結算來源不可直接套用，也不自動換算
+  [mobile] › import-guidance.spec.ts:69:5 › PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列
+  [mobile] › import-guidance.spec.ts:79:5 › PL04換檔後需重新確認口徑，不沿用先前勾選
+  [mobile] › import.spec.ts:125:1 › 真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷
+  [mobile] › import.spec.ts:157:1 › 不讀 JSON 也能手填 manifest，金額口徑須明確確認
+  [mobile] › import.spec.ts:177:1 › 超長但格式合法的期間明確拒絕，不截斷或取代先前資料
+  [mobile] › import.spec.ts:197:1 › JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功
+  [mobile] › import.spec.ts:220:3 › duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變
+  [mobile] › import.spec.ts:220:3 › mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變
+  [mobile] › import.spec.ts:245:3 › missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路
+  [mobile] › import.spec.ts:245:3 › missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路
+  [mobile] › import.spec.ts:264:3 › malformed 友善拒絕、不截斷且不破壞成功資料
+  [mobile] › import.spec.ts:264:3 › invalid-utf8 友善拒絕、不截斷且不破壞成功資料
+  [mobile] › import.spec.ts:264:3 › too-many-bytes 友善拒絕、不截斷且不破壞成功資料
+  [mobile] › import.spec.ts:264:3 › too-many-rows 友善拒絕、不截斷且不破壞成功資料
+  [mobile] › import.spec.ts:282:1 › 改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析
+  [mobile] › import.spec.ts:308:1 › 檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行
+  [mobile] › import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字
+  [mobile] › import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確
+  [mobile] › m6-acceptance.spec.ts:118:5 › M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈
+  [mobile] › m6-acceptance.spec.ts:185:5 › M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方
+  [mobile] › m6-acceptance.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策
+  [mobile] › manager-presentation.spec.ts:29:1 › PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁
+  [mobile] › manager-presentation.spec.ts:52:1 › PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料
+  [mobile] › manager-presentation.spec.ts:73:1 › PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿
+  [mobile] › manager-presentation.spec.ts:101:1 › PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看
+  [mobile] › manager-summary.spec.ts:26:1 › PL06 golden management summary, drilldown, threshold, scope and wide export
+  [mobile] › manager-summary.spec.ts:68:1 › PL06 unknown priorities survive a high threshold without zero contribution
+  [mobile] › manager-summary.spec.ts:78:1 › PL09 print uses a dedicated manager draft and retains technical audit downloads
+  [mobile] › period-comparison.spec.ts:81:1 › PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致
+  [mobile] › period-comparison.spec.ts:108:1 › PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍
+  [mobile] › period-comparison.spec.ts:132:50 › PL-02 zero 月合計與日均保留零及未知邊界
+  [mobile] › period-comparison.spec.ts:132:50 › PL-02 missing 月合計與日均保留零及未知邊界
+  [mobile] › product-comparison.spec.ts:55:1 › PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍
+  [mobile] › product-comparison.spec.ts:93:1 › PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源
+  [mobile] › product-comparison.spec.ts:111:1 › PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入
+  [mobile] › scenario-sensitivity.spec.ts:31:5 › PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立重算
+  [mobile] › scenario-sensitivity.spec.ts:62:5 › PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不外插
+  [mobile] › scenario-sensitivity.spec.ts:77:5 › PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意仍無衍生分析
+  [mobile] › scenarios.spec.ts:163:1 › 僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據
+  [mobile] › scenarios.spec.ts:196:1 › 三個方案各自從 270.00 重算為 270／284／264，不串接或相加
+  [mobile] › scenarios.spec.ts:222:1 › 減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益
+  [mobile] › scenarios.spec.ts:244:1 › 輸入超界、負投入與過度精度不得默默修正為可用試算
+  [mobile] › scenarios.spec.ts:257:1 › 百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70
+  [mobile] › scenarios.spec.ts:286:3 › missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN
+  [mobile] › scenarios.spec.ts:286:3 › missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN
+  [mobile] › scenarios.spec.ts:300:1 › 通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據
+  [mobile] › scenarios.spec.ts:350:1 › 資料集切換後即使回到相同 golden 與通路，舊方案仍過期
+  [mobile] › scenarios.spec.ts:366:1 › 有效期間切換再回原期間仍過期，不自動沿用先前假設
+  [mobile] › scenarios.spec.ts:387:1 › 四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點
+  [mobile] › scenarios.spec.ts:430:1 › 未填完七欄或未選 fact 的行動只能保持草稿
+  [mobile] › scenarios.spec.ts:442:1 › 三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源
+  [mobile] › scenarios.spec.ts:486:1 › 不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結
+  [mobile] › scenarios.spec.ts:510:1 › 試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用
+  [mobile] › workspace-storage.spec.ts:63:5 › PL01 主動保存兩方案與已確認行動，重整後手動恢復；其他同源分頁不自動共享
+  [mobile] › workspace-storage.spec.ts:114:5 › PL01 portable備份驗證後才套用；篡改／舊格式不取代目前資料，恢復撤銷保存同意
+  [mobile] › workspace-storage.spec.ts:135:5 › PL01 清空提醒可取消；過期方案保存恢復仍過期，切回舊範圍不復活
+  [mobile] › workspace-storage.spec.ts:157:5 › PL01 清空移除備份預覽、下載確認與本機保存同意；已保存副本僅可手動重讀
+  [mobile] › workspace.spec.ts:77:1 › 示範資料由空狀態進入可閱讀總覽，圖表有表格替代
+  [mobile] › workspace.spec.ts:105:1 › 切換 golden 與 demo 會重算同一組 KPI
+  [mobile] › workspace.spec.ts:117:1 › 通路篩選共用，金額證據可用鍵盤開啟與返回
+  [mobile] › workspace.spec.ts:149:1 › 貢獻率差額的證據保留百分點單位，不再乘以 100
+  [mobile] › workspace.spec.ts:163:1 › 診斷排序金額使用兩期已觀察差額，證據方向與來源一致
+  [mobile] › workspace.spec.ts:188:1 › 商品篩選只影響毛利明細，不帶入通路廣告與貢獻
+  [mobile] › workspace.spec.ts:207:1 › 無效期間不覆寫已套用的分析範圍
+  [mobile] › workspace.spec.ts:218:1 › 有效自訂期間會同步更新 KPI、週資料及來源期間
+  [mobile] › workspace.spec.ts:243:1 › 資料工作區展示三份原始檔案、行號、口徑與未縮減預覽
+  [mobile] › workspace.spec.ts:266:3 › missing-cogs 顯示待補資料，保留收入與未受影響通路
+  [mobile] › workspace.spec.ts:266:3 › missing-ad 顯示待補資料，保留收入與未受影響通路
+  [mobile] › workspace.spec.ts:277:1 › blocking 資料集載入失敗仍保留先前成功資料
+  [mobile] › workspace.spec.ts:288:1 › 載入中與 HTTP 故障均有明確狀態
+  [mobile] › workspace.spec.ts:305:1 › 較慢的舊資料請求不可覆寫較新的 golden 選擇
+  [mobile] › workspace.spec.ts:343:1 › 清空與重新整理回到空狀態，另一個頁面沒有共用資料
+Total: 270 tests in 13 files

@@ -1,0 +1,229 @@
+{
+  "checks": [
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/CODEX_NEXT_SPRINT.md",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/REVIEW_FINDINGS.md",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/golden_recalculation.json",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/live_api_receipt.json",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/live_golden_ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/live_golden_channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/live_golden_manifest.json",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/live_golden_sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/period_validation_extract.cjs",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/period_validation_results.json",
+      "same": true
+    },
+    {
+      "path": "reviews/ProfitLens_Manager_Review_20261001/recompute_golden.py",
+      "same": true
+    },
+    {
+      "path": "AGENTS.md",
+      "same": true
+    },
+    {
+      "path": "fixtures/demo/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/demo/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/demo/computed_summary.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/demo/intent.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/demo/manifest.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/demo/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/duplicate_sales_key/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/duplicate_sales_key/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/duplicate_sales_key/expected_validation.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/duplicate_sales_key/manifest.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/duplicate_sales_key/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_ad_day/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_ad_day/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_ad_day/expected_validation.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_ad_day/manifest.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_ad_day/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_cogs/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_cogs/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_cogs/expected_validation.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_cogs/manifest.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/missing_cogs/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/mixed_currency/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/mixed_currency/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/mixed_currency/expected_validation.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/mixed_currency/manifest.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/errors/mixed_currency/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/golden/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/golden/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/golden/expected.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/golden/manifest.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/golden/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/refund_only/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/refund_only/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/refund_only/expected.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/refund_only/manifest.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/refund_only/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/zero_ad/ad_spend_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/zero_ad/channel_costs_daily.csv",
+      "same": true
+    },
+    {
+      "path": "fixtures/zero_ad/expected.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/zero_ad/manifest.json",
+      "same": true
+    },
+    {
+      "path": "fixtures/zero_ad/sales_daily.csv",
+      "same": true
+    },
+    {
+      "path": "package-lock.json",
+      "same": true
+    },
+    {
+      "path": "package.json",
+      "same": true
+    },
+    {
+      "path": "spec/insight-output.schema.json",
+      "same": true
+    }
+  ],
+  "preserved": true
+}

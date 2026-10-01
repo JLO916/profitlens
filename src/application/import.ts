@@ -5,6 +5,7 @@ import type { DatasetInput, FileName, ValidationIssue, ValidationResult } from "
 import { CsvParseError, MAX_CSV_BYTES, parseCsv } from "@/lib/csv";
 import type { ParsedCsv } from "@/lib/csv";
 
+export type SourceAmountBasis = "standard" | "including_tax" | "net_after_deductions" | "unknown";
 export interface LocalFilePayload { name: string; size: number; bytes: Uint8Array }
 export interface ImportFileDraft {
   file: FileName;
@@ -98,7 +99,7 @@ export function inspectManifestFile(payload: LocalFilePayload): ManifestInspecti
 export function prepareImport(
   manifest: unknown,
   drafts: Partial<Record<FileName, ImportFileDraft>>,
-  options: { amountBasisConfirmed: boolean },
+  options: { amountBasisConfirmed: boolean; sourceAmountBasis?: SourceAmountBasis },
 ): PreparedImport {
   const issues: ValidationIssue[] = [];
   const originalNames: PreparedImport["originalNames"] = {};
@@ -117,6 +118,8 @@ export function prepareImport(
     }
   }
   if (!options.amountBasisConfirmed) issues.push(issue("manifest.json", "AMOUNT_BASIS_UNCONFIRMED", "請在本次匯入明確確認未稅商品收入與費用口徑，JSON 設定不能代替此確認。", "amount_basis"));
+
+  if (options.sourceAmountBasis && options.sourceAmountBasis !== "standard") issues.push(issue("manifest.json", "SOURCE_AMOUNT_BASIS_UNSUPPORTED", "來源為含稅、已扣折扣／退款／費用的淨額，或口徑仍未知；請先在來源端整理並對帳為標準口徑。系統不換算稅率、不反推 gross_sales，也不重複扣款。", "amount_basis"));
 
   for (const file of fileNames) {
     const draft = drafts[file];

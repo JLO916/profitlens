@@ -1,0 +1,12 @@
+{"project":"desktop","test":"PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源","status":"passed","browser_errors":[]}
+{"project":"desktop","test":"PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入","status":"passed","browser_errors":[]}
+{"project":"tablet","test":"PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍","status":"passed","browser_errors":[]}
+{"project":"tablet","test":"PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源","status":"passed","browser_errors":[]}
+{"project":"tablet","test":"PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入","status":"passed","browser_errors":[]}
+{"project":"mobile","test":"PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍","status":"passed","browser_errors":[]}
+{"project":"mobile","test":"PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源","status":"passed","browser_errors":[]}
+{"project":"mobile","test":"PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入","status":"passed","browser_errors":[]}

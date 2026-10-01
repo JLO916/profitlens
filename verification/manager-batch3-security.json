@@ -1,0 +1,108 @@
+{
+  "at": "2026-10-01T10:17:49.089390+00:00",
+  "mode": "PUBLIC_DEMO",
+  "bundle_count": 21,
+  "bundle_checks": [
+    {
+      "path": ".next/static/chunks/4bd1b696-92152b0f5947070d.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/672-4ab4b432c99164c9.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/794-952c3dd6bb5cffa5.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/app/_global-error/page-5c9826d77a0c2621.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/app/_not-found/page-3880034c088d166e.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/app/api/datasets/[id]/route-5c9826d77a0c2621.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/app/api/insights/route-5c9826d77a0c2621.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/app/layout-590e15a2f892eb71.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/app/page-fa4ec6cde4cde837.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/framework-0f597d6e68ffafed.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/main-1d2704c1b81de5ff.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/main-app-6b7c78f6dbaa7a0d.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/next/dist/client/components/builtin/app-error-5c9826d77a0c2621.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/next/dist/client/components/builtin/forbidden-5c9826d77a0c2621.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/next/dist/client/components/builtin/global-error-41bb654e5bc8c261.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/next/dist/client/components/builtin/not-found-5c9826d77a0c2621.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/next/dist/client/components/builtin/unauthorized-5c9826d77a0c2621.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/polyfills-42372ed130431b0a.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/chunks/webpack-a38baeb3fe06d420.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/p9LCsepxPsSU3ROkD0TCg/_buildManifest.js",
+      "matches": []
+    },
+    {
+      "path": ".next/static/p9LCsepxPsSU3ROkD0TCg/_ssgManifest.js",
+      "matches": []
+    }
+  ],
+  "get": {
+    "status": 200,
+    "body": {
+      "available": false,
+      "reason": "PUBLIC_DEMO",
+      "provider": "openai"
+    }
+  },
+  "post": {
+    "status": 403,
+    "body": {
+      "status": "fallback",
+      "snapshot_id": null,
+      "reason": "PUBLIC_DEMO"
+    }
+  },
+  "live_model_called": false
+}

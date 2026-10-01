@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/domain-acceptance.test.ts tests/scenarios.test.ts tests/m6-financial-audit.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  3 passed (3)
+      Tests  96 passed (96)
+   Start at  16:40:07
+   Duration  424ms (transform 225ms, setup 0ms, import 439ms, tests 280ms, environment 0ms)
+

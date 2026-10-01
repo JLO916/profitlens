@@ -1,0 +1,29 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/import-guidance.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/import-guidance.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/import-guidance.test.ts [ tests/import-guidance.test.ts ]
+Error: Cannot find package '@/application/import-guidance' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/import-guidance.test.ts
+ ❯ tests/import-guidance.test.ts:4:1
+      2| import { describe, expect, it } from "vitest";
+      3| import { importColumns, inspectImportFile, prepareImport } from "@/app…
+      4| import { buildImportReconciliation, columnGuidance, proposeImportSetti…
+       | ^
+      5| import type { FileName } from "@/domain/types";
+      6| const roles = Object.keys(importColumns) as FileName[];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  16:41:45
+   Duration  247ms (transform 47ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

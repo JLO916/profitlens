@@ -1,13 +1,14 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { validateDataset } from "@/domain/validation";
-import type { AnalysisFilters, Dataset, DatasetInput, SourceRef, ValidationIssue } from "@/domain/types";
+import type { AnalysisFilters, ComparisonMode, Dataset, DatasetInput, SourceRef, ValidationIssue } from "@/domain/types";
 import { EvidenceDrawer, type EvidenceSelection } from "./evidence-drawer";
 import { Overview } from "./overview";
-import { DataWorkspace, Diagnosis, Products } from "./workspace-panels";
+import { DataWorkspace, Diagnosis } from "./workspace-panels";
 import { AiPanel } from "./ai-panel";
+import { getAiCapability, type AiCapability } from "@/application/ai-client";
 import { IssueList } from "./issue-list";
 import { ImportPanel } from "./import-panel";
 import type { PreparedImport } from "@/application/import";
@@ -15,10 +16,19 @@ import { downloadText } from "@/application/download";
 import { exportSnapshotCsv } from "@/application/export";
 import { AnalysisChannelLimitError, AnalysisPeriodLimitError } from "@/application/limits";
 import { DecisionWorkbench } from "./decision-workbench";
+import { createDecisionSession, refreshDecisionSession, isDecisionStale, emptyDecisionWorkspace, type DecisionWorkspaceState } from "@/application/decision";
+import type { RestoredWorkspace } from "@/application/workspace-backup";
+import { WorkspaceStorage } from "./workspace-storage";
+import { ActionsWorkbench } from "./actions-workbench";
+import { ProductComparisonPanel } from "./product-comparison-panel";
+import { ManagerSummary } from "./manager-summary";
+import type { SummaryDecisionContext } from "@/application/manager-summary";
+import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, actionDocuments, type ActionWorkspace, type ActionContext } from "@/application/action-workspace";
+import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from "@/application/decision-export";
 
-type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions";
+type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "validation";
 type Status = "empty" | "loading" | "error" | "partial" | "ready";
-type Active = { dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>> };
+type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>> };
 const panels: { id: Panel; label: string; description: string }[] = [
   { id: "overview", label: "經營總覽", description: "掌握營收、成本與行銷後貢獻的變化。" },
   { id: "diagnosis", label: "通路診斷", description: "從可核查的事實，找到下一個需要確認的問題。" },
@@ -26,6 +36,7 @@ const panels: { id: Panel; label: string; description: string }[] = [
   { id: "scenarios", label: "情境試算", description: "明示假設，從同一通路基準比較條件結果。" },
   { id: "actions", label: "行動摘要", description: "把證據、驗證方式與停止條件整理成可執行的工作稿。" },
   { id: "data", label: "資料工作區", description: "確認來源、口徑與完整性，再開始營運檢討。" },
+  { id: "validation", label: "進階驗證", description: "用合成案例檢查計算與缺漏處理；載入前先保存需要保留的工作區。" },
 ];
 const datasetLabels: Record<string, string> = {
   demo: "營運示範｜12 週合成資料", golden: "Golden｜小型對帳資料",
@@ -47,6 +58,12 @@ const afterPaint = () => new Promise<void>(resolve => requestAnimationFrame(() =
 
 export function Dashboard() {
   const [panel, setPanel] = useState<Panel>("overview");
+  const [aiCapability, setAiCapability] = useState<AiCapability | null>(null);
+  useEffect(() => {
+    const abort = new AbortController();
+    void getAiCapability(fetch, abort.signal).then(value => { if (!abort.signal.aborted) setAiCapability(value); });
+    return () => abort.abort();
+  }, []);
   const [status, setStatus] = useState<Status>("empty");
   const [selected, setSelected] = useState("demo");
   const [showImport, setShowImport] = useState(false);
@@ -54,7 +71,38 @@ export function Dashboard() {
   const [issues, setIssues] = useState<ValidationIssue[]>([]);
   const [error, setError] = useState("");
   const [filterError, setFilterError] = useState("");
-  const [evidence, setEvidence] = useState<EvidenceSelection | null>(null);
+  const [decision, setDecisionState] = useState<DecisionWorkspaceState>(emptyDecisionWorkspace);
+  const [actionWorkspace, setActionWorkspaceState] = useState<ActionWorkspace>(emptyActionWorkspace);
+  const [version, setVersion] = useState(0);
+  const [savedVersion, setSavedVersion] = useState(0);
+  const versionRef = useRef(0);
+  const [restoreEpoch, setRestoreEpoch] = useState(0);
+  const [storageResetEpoch, setStorageResetEpoch] = useState(0);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [comparisonMode, setComparisonMode] = useState<ComparisonMode>("same_days");
+  const markChanged = useCallback(() => { const next = ++versionRef.current; setVersion(next); }, []);
+  const setDecision: Dispatch<SetStateAction<DecisionWorkspaceState>> = useCallback(next => { setDecisionState(next); markChanged(); }, [markChanged]);
+  const setActionWorkspace = (next: ActionWorkspace) => { setActionWorkspaceState(next); markChanged(); };
+  const dirty = active !== null && version !== savedVersion;
+  useEffect(() => {
+    if (!dirty && !showImport) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, showImport]);
+  const [evidence, setEvidenceState] = useState<EvidenceSelection | null>(null);
+  const [evidenceSource, setEvidenceSource] = useState<Pick<Active, "dataset" | "filenames" | "mappings"> | null>(null);
+  function setEvidence(selection: EvidenceSelection | null) { setEvidenceSource(null); setEvidenceState(selection); }
+  function actionEvidence(selection: EvidenceSelection, context: ActionContext) {
+    const historical = validateDataset(context.source_input).dataset;
+    if (!historical) return;
+    setEvidenceSource({ dataset: historical, filenames: context.session.filenames, mappings: context.source_mappings });
+    setEvidenceState(selection);
+  }
+  function activate(next: Active) {
+    setActive(next);
+    setActionWorkspaceState(previous => refreshActionWorkspace(previous, next.snapshot, next.revision));
+  }
   const requestId = useRef(0);
   const revision = useRef(0);
   const controller = useRef<AbortController | null>(null);
@@ -76,7 +124,8 @@ export function Dashboard() {
       if (!validation.dataset) { setIssues(validation.issues); throw new Error("新資料未通過檢核。請查看問題清單，先前成功的資料仍保留。"); }
       const snapshot = await createSnapshot(validation.dataset, {}, await hashInput(input));
       if (ticket !== requestId.current) return;
-      setActive({ dataset: validation.dataset, snapshot, id, revision: ++revision.current }); setIssues(validation.issues);
+      activate({ input, dataset: validation.dataset, snapshot, id, revision: ++revision.current }); setIssues(validation.issues);
+      setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
       setStatus(validation.classification === "partial" ? "partial" : "ready"); setPanel("overview");
     } catch (caught) {
@@ -102,7 +151,8 @@ export function Dashboard() {
       const dataset = prepared.validation.dataset;
       const snapshot = await createSnapshot(dataset, {}, await hashInput(prepared.input));
       if (ticket !== requestId.current) return;
-      setActive({ dataset, snapshot, id: `import-${snapshot.dataset_hash}`, revision: ++revision.current, mappings: prepared.columnMappings, filenames: { ...prepared.originalNames, ...(manifestName ? { "manifest.json": manifestName } : {}) } });
+      activate({ input: prepared.input, dataset, snapshot, id: `import-${snapshot.dataset_hash}`, revision: ++revision.current, mappings: prepared.columnMappings, filenames: { ...prepared.originalNames, ...(manifestName ? { "manifest.json": manifestName } : {}) } });
+      setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
       setIssues(prepared.validation.issues);
       setStatus(prepared.validation.classification === "partial" ? "partial" : "ready");
@@ -120,22 +170,64 @@ export function Dashboard() {
       await afterPaint();
       const snapshot = await createSnapshot(active.dataset, filters, active.snapshot.dataset_hash);
       if (ticket !== requestId.current) return;
-      setActive({ ...active, snapshot, revision: snapshot.filter_hash === active.snapshot.filter_hash ? active.revision : ++revision.current });
+      activate({ ...active, snapshot, revision: snapshot.filter_hash === active.snapshot.filter_hash ? active.revision : ++revision.current });
+      if (snapshot.filter_hash !== active.snapshot.filter_hash) markChanged();
       setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready");
     } catch (caught) {
       if (ticket !== requestId.current) return;
-      setFilterError(caught instanceof AnalysisPeriodLimitError || caught instanceof AnalysisChannelLimitError ? caught.message : "期間未套用：前後期須為有效日期、等長、不重疊，且落在資料涵蓋範圍內。目前仍顯示上次成功的範圍。");
+      setFilterError(caught instanceof AnalysisPeriodLimitError || caught instanceof AnalysisChannelLimitError ? caught.message : "期間未套用：前期必須早於本期且都在資料涵蓋與截至日內。相同天數模式須等長；完整自然月模式須各為一個完整月份。目前仍顯示上次成功的範圍。");
       setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready");
     }
   }
   function submitDates(event: FormEvent) {
     event.preventDefault();
-    if (active) void applyFilters({ channels: active.snapshot.report.scope.channels, previous_period: { start: dates.previousStart, end: dates.previousEnd }, current_period: { start: dates.currentStart, end: dates.currentEnd } });
+    if (active) void applyFilters({ comparison_mode: comparisonMode, channels: active.snapshot.report.scope.channels, previous_period: { start: dates.previousStart, end: dates.previousEnd }, current_period: { start: dates.currentStart, end: dates.currentEnd } });
   }
   function clear() {
+    if ((dirty || showImport) && !confirmClear) { setConfirmClear(true); return; }
+    setConfirmClear(false); setDecisionState(emptyDecisionWorkspace()); setActionWorkspaceState(emptyActionWorkspace()); setSavedVersion(versionRef.current);
+    setStorageResetEpoch(value => value + 1);
     requestId.current++; controller.current?.abort(); setActive(null); setIssues([]); setEvidence(null);
     setStatus("empty"); setError(""); setFilterError(""); setShowImport(false);
   }
+  function restore(workspace: RestoredWorkspace) {
+    requestId.current++; controller.current?.abort(); setEvidence(null);
+    revision.current = Math.max(revision.current, workspace.revision);
+    setActive({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, id: workspace.id, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings });
+    setDecisionState({ ...workspace.decision, actions: [] }); setActionWorkspaceState(workspace.action_workspace); setIssues(workspace.issues);
+    setComparisonMode(workspace.snapshot.report.scope.comparison_mode);
+    setDates({ previousStart: workspace.snapshot.report.previous.period.start, previousEnd: workspace.snapshot.report.previous.period.end, currentStart: workspace.snapshot.report.current.period.start, currentEnd: workspace.snapshot.report.current.period.end });
+    const next = ++versionRef.current; setVersion(next); setSavedVersion(next);
+    setRestoreEpoch(value => value + 1); setShowImport(false); setError(""); setFilterError(""); setPanel("overview");
+    setStatus(workspace.classification === "partial" ? "partial" : "ready");
+  }
+  function draftFromDiagnostic(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) {
+    if (!active) return;
+    setActionWorkspace(addActionDraft(actionWorkspace, active, crypto.randomUUID(), diagnostic.id));
+    setPanel("actions"); setEvidence(null);
+  }
+  function exportDecision(format: "md" | "csv" | "json") {
+    if (!active) return;
+    const session = refreshDecisionSession(decision.captured ?? createDecisionSession(active.dataset, active.snapshot, active.revision, active.filenames), active.snapshot, active.revision);
+    const bound = refreshActionWorkspace(actionWorkspace, active.snapshot, active.revision);
+    const body = format === "md" ? exportDecisionMarkdown(session, decision.scenarios, [], bound) : format === "csv" ? exportDecisionCsv(session, decision.scenarios, [], bound) : exportDecisionJson(session, decision.scenarios, [], bound);
+    downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");
+  }
+  const summaryContext: SummaryDecisionContext | undefined = active ? {
+    dataset_hash: active.snapshot.dataset_hash, filter_hash: active.snapshot.filter_hash,
+    scenarios: decision.scenarios.map(plan => ({
+      id: plan.id, name: plan.name,
+      status: !decision.captured || isDecisionStale(decision.captured, active.snapshot, active.revision) ? "stale" : plan.result?.status === "valid" ? "current" : "draft",
+      scopeLabel: decision.captured ? `${decision.captured.scope.channels.join("、")} · ${decision.captured.period.start}～${decision.captured.period.end}` : "範圍待確認",
+      contribution: plan.result?.contribution, delta: plan.result?.delta,
+      assumptions: [`售出量相對變化 ${plan.inputs.volume_change_pct || "待填"}%`, `折扣率變化 ${plan.inputs.discount_change_pp || "待填"} 百分點`, `履約單位成本相對變化 ${plan.inputs.fulfillment_change_pct || "待填"}%`, `廣告總額相對變化 ${plan.inputs.ad_change_pct || "待填"}%`, `一次性投入 ${plan.inputs.one_time_cost || "待填"} TWD`, ...(plan.result?.assumptions ?? [])],
+    })),
+    actions: actionDocuments(actionWorkspace).map(action => ({
+      id: action.id, problem: action.problem, action: action.action, owner: action.owner_role, deadline: action.deadline, risk: action.stop_condition,
+      status: action.status === "confirmed" ? "current" : action.status,
+      scopeLabel: `資料截至 ${action.binding.data_as_of} · ${action.binding.scope.channels.join("、")}${action.binding.scope.sku ? `／${action.binding.scope.sku}` : ""} · ${action.binding.period.start}～${action.binding.period.end}`,
+    })),
+  } : undefined;
   const visible = active && (status === "ready" || status === "partial");
   const local = active?.dataset.manifest.source_type === "user_provided";
 
@@ -143,21 +235,34 @@ export function Dashboard() {
     <a className="skip-link" href="#main-content">跳至主要內容</a>
     <aside className="sidebar">
       <a className="brand" href="#main-content"><span className="brand-mark"><Icon name="lens" size={24} /></span><span>ProfitLens<small>營運決策工作台</small></span></a>
-      <div className="workspace-label">我的工作區 <span className="tiny-tag">{local ? "LOCAL" : "DEMO"}</span></div>
+      <div className="workspace-label">我的工作區 <span className="tiny-tag">{local ? "匯入" : "合成"}</span></div>
       <nav aria-label="主要導覽">{panels.map(item => <button key={item.id} className={`nav-item ${panel === item.id ? "active" : ""}`} aria-current={panel === item.id ? "page" : undefined} onClick={() => { setPanel(item.id); setEvidence(null); }}><Icon name={item.id} /><span>{item.label}</span>{panel === item.id && <span className="nav-dot" />}</button>)}</nav>
-      <div className="sidebar-note"><span className="green-dot" /> {local ? "本機匯入資料" : "合成資料示範"}<p>{local ? "檔案只留在此分頁記憶體，不上傳伺服器。" : "資料只用於功能驗證，不代表真實商業成果。"}</p></div>
-      <footer className="sidebar-footer">TWD · Asia/Taipei<small>contribution-v1</small></footer>
+      <div className="sidebar-note"><span className="green-dot" /> {local ? "本機匯入資料" : "合成資料示範"}<p>{local ? "預設只留此分頁；主動保存才存本機，不上傳伺服器。" : "資料只用於功能驗證，不代表真實商業成果。"}</p></div>
+      <footer className="sidebar-footer">新臺幣 · 臺北時間</footer>
     </aside>
     <div className="main-shell">
-      <header className="topbar"><div className="breadcrumb">工作區 <span>/</span> <strong>{currentPanel.label}</strong></div><span className="mode-badge"><span className="green-dot" /> {local ? "本機資料模式" : "本機示範模式"}</span></header>
+      <header className="topbar"><div className="breadcrumb">工作區 <span>/</span> <strong>{currentPanel.label}</strong></div><span className="mode-badge"><span className="green-dot" /> {aiCapability?.reason === "PUBLIC_DEMO" ? "公開示範模式" : local ? "瀏覽器匯入資料" : "合成資料工作區"}</span></header>
       <main id="main-content" tabIndex={-1}>
-        <div className="page-heading"><div><p className="eyebrow">PROFITLENS / OPERATIONS</p><h1>{currentPanel.label}</h1><p className="subtitle">{currentPanel.description}</p></div><div className="load-controls"><label>資料集<select aria-label="資料集" value={selected} onChange={event => setSelected(event.target.value)}>{Object.entries(datasetLabels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label><button className="button primary" onClick={() => void load(selected)}>載入資料集 <Icon name="arrow" size={16} /></button><button className="button quiet" onClick={startImport}>匯入標準 CSV</button></div></div>
+        <div className="page-heading"><div><p className="eyebrow">營運檢討工作台</p><h1>{currentPanel.label}</h1><p className="subtitle">{currentPanel.description}</p></div><div className="load-controls">{(status !== "empty" || showImport) && panel !== "validation" && <button className="button primary" onClick={() => void load("demo")}>載入示範資料 <Icon name="arrow" size={16} /></button>}<button className="button quiet" onClick={startImport}>匯入標準 CSV</button></div></div>
+        <div className="ai-availability" data-testid="ai-availability" role="status" aria-live="polite">
+          <strong>規則診斷可用｜{aiCapability === null ? "正在確認即時 AI 設定" : aiCapability.available ? "即時 AI 需預覽同意" : aiCapability.reason === "STATUS_UNAVAILABLE" ? "即時 AI 狀態未確認" : "即時 AI 未啟用"}</strong>
+          <p>{aiCapability?.reason === "PUBLIC_DEMO" ? "公開版已關閉模型連線。載入資料後，計算、診斷、試算與本機匯出仍可使用。" : aiCapability?.available ? "僅在預覽同意後才會送出彙總資料；請到通路診斷查看本次狀態與來源。" : "載入資料後即可查看可追溯的診斷與試算；目前未傳送分析資料給模型。"}</p>
+        </div>
+        {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
+          <h2 id="validation-heading">合成資料驗證案例</h2>
+          <p>僅供對帳與檢查缺漏處理，不代表真實營運成果。切換此頁不改變目前資料；按下載入才會檢核並取代工作區資料。</p>
+          <div className="validation-controls"><label>資料集<select aria-label="資料集" value={selected} onChange={event => setSelected(event.target.value)}>{Object.entries(datasetLabels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label><button className="button primary" onClick={() => void load(selected)}>載入資料集 <Icon name="arrow" size={16} /></button></div>
+          <ul className="validation-descriptions"><li>營運示範：跨通路的合成資料，可練習完整檢討流程。</li><li>Golden：小型固定對帳資料，供核對公式與來源。</li><li>缺漏案例：收入可算；缺成本或廣告費的相關貢獻保持未知。</li><li>重複鍵案例：故意不良資料，應阻擋載入並保留先前成功資料。</li></ul>
+          <p className="note">成功載入後返回經營總覽。舊方案與行動會依資料版本標記過期，未保存的資料請先備份。</p>
+        </section>}
         <div className="status-line" role="status" aria-live="polite" data-testid="workspace-status"><span className={`status-dot ${status}`} />{({ empty: "尚未載入資料", loading: "正在載入與計算…", error: "資料載入失敗", partial: "部分資料待補", ready: "資料已就緒" })[status]}{active && status !== "empty" && <span className="muted">{datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} · 資料截至 {active.dataset.manifest.data_as_of}</span>}<button className="text-button clear-button" onClick={clear}>清空工作區</button></div>
+        <WorkspaceStorage key={storageResetEpoch} source={active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, action_workspace: actionWorkspace } : null} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { if (active) markChanged(); }} />
         {showImport && <div hidden={panel !== "data"}><ImportPanel onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} /></div>}
         {visible && <>
           <div className="filter-bar">
             <label className="channel-field">通路<select aria-label="通路" value={active.snapshot.report.scope.channels.length > 1 ? "" : active.snapshot.report.scope.channels[0]} onChange={event => void applyFilters({ ...active.snapshot.report.scope, channels: event.target.value === "" ? active.dataset.manifest.channels : [event.target.value] })}><option value="">全部通路</option>{active.dataset.manifest.channels.map(channel => <option key={channel}>{channel}</option>)}</select></label>
             <form className="period-form" onSubmit={submitDates}>
+              <label className="comparison-mode">比較方式<select aria-label="比較方式" value={comparisonMode} onChange={event => setComparisonMode(event.target.value as ComparisonMode)}><option value="same_days">相同天數</option><option value="calendar_months">完整自然月</option></select></label>
               <fieldset><legend>前期</legend><label className="sr-only" htmlFor="previous-start">前期開始</label><input id="previous-start" type="date" required value={dates.previousStart} onChange={e => setDates({ ...dates, previousStart: e.target.value })} /><span>—</span><label className="sr-only" htmlFor="previous-end">前期結束</label><input id="previous-end" type="date" required value={dates.previousEnd} onChange={e => setDates({ ...dates, previousEnd: e.target.value })} /></fieldset>
               <fieldset><legend>本期</legend><label className="sr-only" htmlFor="current-start">本期開始</label><input id="current-start" type="date" required value={dates.currentStart} onChange={e => setDates({ ...dates, currentStart: e.target.value })} /><span>—</span><label className="sr-only" htmlFor="current-end">本期結束</label><input id="current-end" type="date" required value={dates.currentEnd} onChange={e => setDates({ ...dates, currentEnd: e.target.value })} /></fieldset>
               <button className="button quiet" type="submit">套用期間</button>
@@ -165,16 +270,30 @@ export function Dashboard() {
           </div>
           {filterError && <p role="alert" className="alert error">{filterError}</p>}
           {status === "partial" && <div className="alert partial"><strong>部分資料待補</strong><span>受影響指標保留未知；不以零代替缺漏。</span><button className="text-button" onClick={() => setPanel("data")}>查看 {active.dataset.issues.length} 項來源問題 →</button></div>}
-          <p className="scope-note">目前範圍：{active.snapshot.report.scope.channels.join("、")} · 前期 {active.snapshot.report.previous.period.start} — {active.snapshot.report.previous.period.end} · 本期 {active.snapshot.report.current.period.start} — {active.snapshot.report.current.period.end}</p>
+          <p className="scope-note">目前範圍：{active.snapshot.report.scope.channels.join("、")} · {active.snapshot.report.comparison.mode === "calendar_months" ? "完整自然月" : "相同天數"}（前期 {active.snapshot.report.comparison.previous_days} 天／本期 {active.snapshot.report.comparison.current_days} 天） · 資料截至 {active.snapshot.data_as_of} · 前期 {active.snapshot.report.previous.period.start} — {active.snapshot.report.previous.period.end} · 本期 {active.snapshot.report.current.period.start} — {active.snapshot.report.current.period.end}</p>
         </>}
-        {status === "empty" && !showImport && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">從一份完整的資料開始</p><h2>看清營收背後的貢獻</h2><p>載入銷售、通路費用與廣告的合成資料，<br />從整體變化一路追溯到每筆來源。</p><button className="button primary large" onClick={() => void load("demo")}>載入示範資料 <Icon name="arrow" size={18} /></button><div className="empty-steps"><span>01　確認資料</span><span>02　查看貢獻</span><span>03　追溯變化</span></div></section>}
+        {status === "empty" && !showImport && panel !== "validation" && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">從一份完整的資料開始</p><h2>看清營收背後的貢獻</h2><p>載入銷售、通路費用與廣告的合成資料，<br />從整體變化一路追溯到每筆來源。</p><button className="button primary large" onClick={() => void load("demo")}>載入示範資料 <Icon name="arrow" size={18} /></button><div className="empty-steps"><span>01　確認資料</span><span>02　查看貢獻</span><span>03　追溯變化</span></div></section>}
         {status === "loading" && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>正在檢核資料與計算指標</h2><p>銷售先彙總，再合併通路費用與廣告。請稍候。</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
         {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>資料載入失敗</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>重新載入</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>返回前次成功資料</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
-        {visible && <div key={active.id} className="view-content">{!["products", "scenarios", "actions"].includes(panel) && <div className="export-actions"><button className="button quiet" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames), "profitlens-analysis.csv")}>下載目前分析 CSV</button><button className="text-button" onClick={() => downloadText(JSON.stringify(active.dataset.manifest, null, 2), "profitlens-manifest.json", "application/json;charset=utf-8")}>下載資料集設定 JSON</button><span className="note">依目前期間與通路匯出；不含原始 CSV。</span></div>}{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} /><AiPanel snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <Products dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} />}</div>}
-        {active && <div hidden={!visible || !["scenarios", "actions"].includes(panel)}><DecisionWorkbench dataset={active.dataset} snapshot={active.snapshot} revision={active.revision} filenames={active.filenames} view={panel === "actions" ? "actions" : "scenarios"} onEvidence={setEvidence} /></div>}
-        <footer className="main-footer"><p>行銷後貢獻不等於公司淨利，不含未輸入的固定費與所得稅。</p><p>{local ? "本機記憶體資料" : "合成資料"} · 重新整理會清空工作區 · AI 僅在預覽同意後選配使用</p></footer>
+        {visible && <div key={active.id} className="view-content">{!["products", "scenarios", "actions", "validation"].includes(panel) && <div className="export-actions"><button className="button quiet" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames), "profitlens-analysis.csv")}>下載目前分析 CSV</button><button className="text-button" onClick={() => downloadText(JSON.stringify(active.dataset.manifest, null, 2), "profitlens-manifest.json", "application/json;charset=utf-8")}>下載資料集設定 JSON</button><span className="note">依目前期間與通路匯出；不含原始 CSV。</span></div>}{panel === "overview" && <><ManagerSummary snapshot={active.snapshot} onEvidence={setEvidence} decisionContext={summaryContext} onCreateAction={draftFromDiagnostic} /><Overview snapshot={active.snapshot} onEvidence={setEvidence} /></>}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} />}</div>}
+        {active && <div hidden={!visible || panel !== "scenarios"}><DecisionWorkbench state={decision} setState={setDecision} input={active.input} mappings={active.mappings} dataset={active.dataset} snapshot={active.snapshot} revision={active.revision} filenames={active.filenames} onExport={exportDecision} onEvidence={setEvidence} /></div>}
+        {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} />}
+        <footer className="main-footer"><p>行銷後貢獻不等於公司淨利，不含未輸入的固定費與所得稅。</p><p>{local ? "本機記憶體資料" : "合成資料"} · 重新整理會清空分頁，已保存的備份須手動恢復 · 規則診斷不需 AI</p></footer>
       </main>
     </div>
-    {active && <EvidenceDrawer dataset={active.dataset} filenames={active.filenames} mappings={active.mappings} evidence={evidence} onClose={() => setEvidence(null)} />}
+    {confirmClear && <ClearWorkspaceDialog onCancel={() => setConfirmClear(false)} onConfirm={clear} />}
+    {active && <EvidenceDrawer dataset={evidenceSource?.dataset ?? active.dataset} filenames={evidenceSource?.filenames ?? active.filenames} mappings={evidenceSource ? evidenceSource.mappings : active.mappings} evidence={evidence} onClose={() => setEvidence(null)} />}
   </div>;
+}
+
+function ClearWorkspaceDialog({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = ref.current; dialog?.showModal();
+    return () => { dialog?.close(); opener?.focus(); };
+  }, []);
+  return <dialog ref={ref} className="evidence-dialog clear-workspace-dialog" aria-labelledby="clear-workspace-heading" onCancel={event => { event.preventDefault(); onCancel(); }}>
+    <div className="evidence-body"><h2 id="clear-workspace-heading">清空前先保存工作區</h2><p>目前有未保存的資料、方案、行動或匯入草稿。清空後無法還原未保存變更；已下載的備份及瀏覽器本機副本仍保留。</p><div className="button-row"><button className="button primary" autoFocus onClick={onCancel}>返回並保存</button><button className="button quiet" onClick={onConfirm}>捨棄未保存變更並清空</button></div></div>
+  </dialog>;
 }

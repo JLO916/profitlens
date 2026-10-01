@@ -1,0 +1,72 @@
+{
+  "checked_at": "2026-10-01T10:22:13.742248+00:00",
+  "workspace": "/Users/j-work/Desktop/profitlens-codex-starter",
+  "tested_source_receipt": "verification/manager-batch3-tested-source.json",
+  "tested_source_at": "2026-10-01T10:15:37.117513+00:00",
+  "baseline_receipt": "verification/manager-batch3-starting-state.json",
+  "checks": {
+    "tested_source": {
+      "count": 122,
+      "matched": 122,
+      "missing": [],
+      "changed": [],
+      "status": "pass"
+    },
+    "new_src_test_files": {
+      "files": [],
+      "status": "pass"
+    },
+    "domain": {
+      "count": 15,
+      "matched": 15,
+      "missing": [],
+      "changed": [],
+      "status": "pass"
+    },
+    "golden": {
+      "count": 5,
+      "matched": 5,
+      "missing": [],
+      "changed": [],
+      "status": "pass"
+    },
+    "spec": {
+      "count": 1,
+      "matched": 1,
+      "missing": [],
+      "changed": [],
+      "status": "pass"
+    },
+    "package": {
+      "count": 2,
+      "matched": 2,
+      "missing": [],
+      "changed": [],
+      "status": "pass"
+    },
+    "tested_source_groups": {
+      "src": 62,
+      "tests": 55,
+      "config_or_package_files": [
+        "package.json",
+        "package-lock.json",
+        "playwright.config.ts",
+        "tsconfig.json",
+        "eslint.config.mjs"
+      ]
+    },
+    "additional_unchanged_config": {
+      "count": 3,
+      "matched": 3,
+      "files": [
+        "next.config.ts",
+        "postcss.config.mjs",
+        "vitest.config.mts"
+      ],
+      "changed": [],
+      "status": "pass"
+    }
+  },
+  "e2e_log_tail": "  282 passed (4.7m)",
+  "scope_note": "Read-only source check; this process writes only this receipt. Hash matching does not substitute for browser verification."
+}

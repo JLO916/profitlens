@@ -1,6 +1,7 @@
 import { SCENARIO_ASSUMPTIONS, SCENARIO_FORMULAS, calculateScenario } from "../domain/scenarios";
 import { MAX_ACTIONS, MAX_SCENARIOS, decisionSignature, validateActionContent, validateActionEvidence, validateScenarioName, type ActionCard, type DecisionSession, type ScenarioPlan } from "./decision";
 import { encodeCsv, type CsvCell } from "./export";
+import { actionDocuments, type ActionWorkspace } from "./action-workspace";
 
 const LIMITATIONS = [
   "依使用者假設，重算同一期間單一通路；不是已發生的成果。",
@@ -17,10 +18,13 @@ function validateCollection(items: readonly { id: string }[], max: number, error
   if (items.some(item => typeof item.id !== "string" || !item.id.trim()) || new Set(items.map(item => item.id)).size !== items.length) throw new Error("INVALID_ITEM_ID");
 }
 
+type BoundExportAction = ReturnType<typeof actionDocuments>[number];
+type ExportAction = Omit<BoundExportAction, "binding" | "pinned" | "diagnostic_id"> & Partial<Pick<BoundExportAction, "binding" | "pinned" | "diagnostic_id">>;
+
 /** Build one audited document shared by every export, retaining captured historical scope. */
-function decisionDocument(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[]) {
+function decisionDocument(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace) {
   validateCollection(scenarios, MAX_SCENARIOS, "MAX_SCENARIOS");
-  validateCollection(actions, MAX_ACTIONS, "MAX_ACTIONS");
+  if (actionWorkspace === undefined) validateCollection(actions, MAX_ACTIONS, "MAX_ACTIONS");
   const plans = scenarios.map(plan => {
     validateScenarioName(plan.name, plan.result !== null);
     if (plan.result !== null) {
@@ -28,7 +32,7 @@ function decisionDocument(session: DecisionSession, scenarios: readonly Scenario
     }
     return { id: plan.id, name: plan.name, status: plan.result?.status ?? "draft", inputs: plan.inputs, result: plan.result };
   });
-  const cards = actions.map((action, index) => {
+  const cards: ExportAction[] = actionWorkspace === undefined ? actions.map((action, index) => {
     if (typeof action.evidence_confirmed !== "boolean") throw new Error("INVALID_ACTION_CONFIRMATION");
     validateActionContent(action, action.evidence_confirmed);
     validateActionEvidence(session, action, action.evidence_confirmed);
@@ -41,7 +45,7 @@ function decisionDocument(session: DecisionSession, scenarios: readonly Scenario
       required_data: action.required_data,
       evidence: action.fact_ids.map(id => session.facts.find(fact => fact.id === id)!),
     };
-  });
+  }) : actionDocuments(actionWorkspace);
   return structuredClone({
     status: session.stale ? "stale" : "current",
     session, fixed_assumptions: SCENARIO_ASSUMPTIONS, formulas: SCENARIO_FORMULAS,
@@ -49,8 +53,8 @@ function decisionDocument(session: DecisionSession, scenarios: readonly Scenario
   });
 }
 
-export function exportDecisionJson(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[]): string {
-  return `${JSON.stringify(decisionDocument(session, scenarios, actions), null, 2)}\n`;
+export function exportDecisionJson(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace): string {
+  return `${JSON.stringify(decisionDocument(session, scenarios, actions, actionWorkspace), null, 2)}\n`;
 }
 
 /** Render all imported/manual strings as inert text; do not create user-controlled links. */
@@ -63,10 +67,10 @@ function md(value: unknown): string {
 function mdFields(values: Record<string, unknown>): string[] {
   return Object.entries(values).map(([key, value]) => `- ${md(key)}：${md(value === null ? "N/A（未知或不適用）" : value)}`);
 }
-export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[]): string {
-  const document = decisionDocument(session, scenarios, actions);
+export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace): string {
+  const document = decisionDocument(session, scenarios, actions, actionWorkspace);
   const lines = ["# ProfitLens 決策紀錄", "", `狀態：${session.stale ? "過期（stale），不可沿用為目前方案；需重新確認基準與輸入。" : "目前快照（current）"}`, "", "## 快照與來源", "",
-    ...mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_id: session.dataset_id, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, period: session.period, scope: session.scope, filenames: session.filenames, sources: session.sources, stale_reasons: session.stale_reasons }),
+    ...mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_id: session.dataset_id, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, period: session.period, scope: session.scope, comparison: session.comparison, filenames: session.filenames, sources: session.sources, stale_reasons: session.stale_reasons }),
     "", "## 固定基準", "", ...mdFields({ version: session.baseline.version, eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons }),
     "", ...mdFields(session.baseline.amounts), "", ...mdFields({ ...session.baseline.rates }),
     "", "## 固定假設", "", ...document.fixed_assumptions.map(assumption => `- ${md(assumption)}`),
@@ -83,6 +87,7 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
     }
   }
   lines.push("## 人工行動（手動優先順序）", "");
+  if (actionWorkspace !== undefined) lines.push("行動獨立保留各自建立時的期間、範圍、快照、來源與過期狀態；以下 binding 與 evidence 為每項行動的稽核依據，不沿用上方情境的目前範圍。只有 pinned=true 表示置頂優先事項，其餘仍是工作項目。", "");
   for (const action of document.actions) lines.push(`### 優先 ${action.priority}：${md(action.problem)}`, "", ...mdFields(action), "");
   lines.push("## 系統資料事實與來源", "");
   for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: fact.metric, value: fact.value, reason_codes: fact.reason_codes, period: fact.period, scope: fact.scope, sources: fact.sources }), "");
@@ -90,24 +95,26 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   return lines.join("\n");
 }
 
-const HEADERS = ["schema_version", "scenario_version", "metric_version", "dataset_id", "dataset_hash", "filter_hash", "as_of", "currency", "timezone", "amount_basis", "revision", "snapshot_status", "period", "scope", "row_type", "item_id", "item_name", "status", "field", "value", "reason_codes", "fact_ids", "source_refs"] as const;
+const HEADERS = ["schema_version", "scenario_version", "metric_version", "dataset_id", "dataset_hash", "filter_hash", "as_of", "currency", "timezone", "amount_basis", "revision", "snapshot_status", "period", "scope", "comparison_mode", "previous_days", "current_days", "row_type", "item_id", "item_name", "status", "field", "value", "reason_codes", "fact_ids", "source_refs", "analysis_scope", "context_id"] as const;
 const text = (value: unknown): CsvCell => ({ kind: "text", value: typeof value === "string" ? value : JSON.stringify(value) });
 const numeric = (value: string): CsvCell => ({ kind: "number", value });
 const empty: CsvCell = { kind: "null" };
 type CsvRecord = Partial<Record<typeof HEADERS[number], CsvCell>>;
 
-export function exportDecisionCsv(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[]): string {
-  const document = decisionDocument(session, scenarios, actions);
-  const sourceRefs = (sources: DecisionSession["sources"]) => text(sources.map(source => ({ ...source, actual_filename: session.filenames[source.file] ?? source.file })));
-  const metadata: CsvRecord = {
-    schema_version: text(session.schema_version), scenario_version: text(session.scenario_version), metric_version: text(session.metric_version),
-    dataset_id: text(session.dataset_id), dataset_hash: text(session.dataset_hash), filter_hash: text(session.filter_hash), as_of: text(session.data_as_of),
-    currency: text(session.currency), timezone: text(session.timezone), amount_basis: text(session.amount_basis),
-    revision: numeric(String(session.revision)), snapshot_status: text(document.status), period: text(session.period), scope: text(session.scope), source_refs: sourceRefs(session.sources),
-  };
+export function exportDecisionCsv(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace): string {
+  const document = decisionDocument(session, scenarios, actions, actionWorkspace);
+  const sourceRefs = (sources: DecisionSession["sources"], filenames = session.filenames) => text(sources.map(source => ({ ...source, actual_filename: filenames[source.file] ?? source.file })));
+  const sessionMetadata = (captured: DecisionSession): CsvRecord => ({
+    schema_version: text(captured.schema_version), scenario_version: text(captured.scenario_version), metric_version: text(captured.metric_version),
+    dataset_id: text(captured.dataset_id), dataset_hash: text(captured.dataset_hash), filter_hash: text(captured.filter_hash), as_of: text(captured.data_as_of),
+    currency: text(captured.currency), timezone: text(captured.timezone), amount_basis: text(captured.amount_basis),
+    comparison_mode: text(captured.comparison.mode), previous_days: numeric(String(captured.comparison.previous_days)), current_days: numeric(String(captured.comparison.current_days)),
+    revision: numeric(String(captured.revision)), snapshot_status: text(captured.stale ? "stale" : "current"), period: text(captured.period), scope: text(captured.scope), source_refs: sourceRefs(captured.sources, captured.filenames),
+  });
+  const metadata = sessionMetadata(session);
   const records: CsvRecord[] = [];
   const push = (rowType: string, field: string, value: CsvCell, extra: CsvRecord = {}) => records.push({ row_type: text(rowType), field: text(field), value, ...extra });
-  for (const [key, value] of Object.entries({ snapshot_signature: session.snapshot_signature, filenames: session.filenames, sources: session.sources, stale: session.stale, stale_reasons: session.stale_reasons })) push("snapshot", key, text(value));
+  for (const [key, value] of Object.entries({ snapshot_signature: session.snapshot_signature, comparison: session.comparison, filenames: session.filenames, sources: session.sources, stale: session.stale, stale_reasons: session.stale_reasons })) push("snapshot", key, text(value));
   for (const [key, value] of Object.entries({ eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons })) push("baseline", key, text(value));
   const baselineReasons = session.baseline.reasons.map(reason => reason.code);
   for (const [key, value] of Object.entries(session.baseline.amounts)) push("baseline_amount", key, value === null ? empty : numeric(value), { reason_codes: text(value === null ? baselineReasons.length ? baselineReasons : ["MISSING_VALUE"] : []) });
@@ -132,11 +139,24 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
     }
   }
   for (const action of document.actions) {
-    const actionMeta: CsvRecord = { item_id: text(action.id), item_name: text(action.problem), status: text(action.status), fact_ids: text(action.fact_ids), source_refs: sourceRefs(action.evidence.flatMap(fact => fact.sources)) };
+    const binding = action.binding;
+    // Financial and lineage fields come from this action's captured context,
+    // never from the scenario session that happens to be open at export time.
+    const captured = binding ? actionWorkspace!.contexts.find(context => context.id === binding.context_id)!.session : session;
+    const filenames = binding?.filenames ?? session.filenames;
+    const actionMeta: CsvRecord = {
+      ...sessionMetadata(captured), item_id: text(action.id), item_name: text(action.problem), status: text(action.status), fact_ids: text(action.fact_ids),
+      ...(binding ? { scope: text(binding.scope), analysis_scope: text(binding.analysis_scope), context_id: text(binding.context_id) } : {}),
+      source_refs: sourceRefs(action.evidence.flatMap(fact => fact.sources), filenames),
+    };
     for (const [key, value] of Object.entries(action)) {
       if (key === "evidence") continue;
       push("manual_action", key, key === "priority" ? numeric(String(value)) : text(value), actionMeta);
     }
+    if (binding) for (const fact of action.evidence) push("action_fact", fact.metric, fact.value === null ? empty : numeric(fact.value), {
+      ...actionMeta, fact_ids: text([fact.id]), period: text(fact.period), scope: text(fact.scope),
+      reason_codes: text(fact.value === null && !fact.reason_codes.length ? ["MISSING_VALUE"] : fact.reason_codes), source_refs: sourceRefs(fact.sources, filenames),
+    });
   }
   for (const fact of session.facts) push("fact", fact.metric, fact.value === null ? empty : numeric(fact.value), {
     item_id: text(fact.id), fact_ids: text([fact.id]), period: text(fact.period), scope: text(fact.scope), reason_codes: text(fact.value === null && !fact.reason_codes.length ? ["MISSING_VALUE"] : fact.reason_codes), source_refs: sourceRefs(fact.sources),

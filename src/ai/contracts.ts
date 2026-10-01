@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { AMOUNT_FIELDS, type MetricName, type Period } from "../domain/types";
-import { dayCount, isBusinessDate } from "../domain/date";
+import { AMOUNT_FIELDS, type ComparisonMode, type MetricName, type Period } from "../domain/types";
+import { dayCount, isBusinessDate, validatePeriods } from "../domain/date";
 
-export const AI_SNAPSHOT_VERSION = "ai-snapshot-v1" as const;
+export const AI_SNAPSHOT_VERSION = "ai-snapshot-v2" as const;
 export interface AiFact {
   id: string;
   kind: "metric";
@@ -20,6 +20,7 @@ export interface AiSnapshot {
   metric_version: "contribution-v1";
   data_as_of: string;
   periods: { previous: Period; current: Period };
+  comparison: { mode: ComparisonMode; previous_days: number; current_days: number };
   filters: { channels: string[] };
   data_quality: { status: "complete" | "partial"; missing_fact_ids: string[] };
   facts: AiFact[];
@@ -62,12 +63,13 @@ const factSchema = z.object({
 
 /** Only generated aggregate fields are allowed. No user-provided prose enters this boundary. */
 export const AiSnapshotSchema: z.ZodType<AiSnapshot> = z.object({
-  schema_version: z.literal(AI_SNAPSHOT_VERSION), snapshot_id: z.string().regex(/^ai-v1:[a-f0-9]{64}:[a-f0-9]{64}:\d{1,16}$/),
+  schema_version: z.literal(AI_SNAPSHOT_VERSION), snapshot_id: z.string().regex(/^ai-v2:[a-f0-9]{64}:[a-f0-9]{64}:\d{1,16}$/),
   currency: z.literal("TWD"), metric_version: z.literal("contribution-v1"), data_as_of: businessDate,
   periods: z.object({ previous: periodSchema, current: periodSchema }).strict(),
+  comparison: z.object({ mode: z.enum(["same_days", "calendar_months"]), previous_days: z.number().int().positive(), current_days: z.number().int().positive() }).strict(),
   filters: z.object({ channels: z.array(z.string().regex(/^C\d{2,4}$/)).min(1).max(1000) }).strict(),
   data_quality: z.object({ status: z.enum(["complete", "partial"]), missing_fact_ids: z.array(factId).max(40) }).strict(),
-  // v1 deliberately sends the full bounded set, never silently truncates or cherry-picks facts.
+  // The snapshot deliberately sends the full bounded set, never silently truncates or cherry-picks facts.
   facts: z.array(factSchema).length(40),
 }).strict().superRefine((snapshot, context) => {
   if (snapshot.filters.channels.some((alias, index) => alias !== `C${String(index + 1).padStart(2, "0")}`)) context.addIssue({ code: "custom", path: ["filters", "channels"], message: "通路僅能使用連續匿名代號" });
@@ -77,7 +79,9 @@ export const AiSnapshotSchema: z.ZodType<AiSnapshot> = z.object({
   if (snapshot.data_quality.status !== (missing.length ? "partial" : "complete") || JSON.stringify(snapshot.data_quality.missing_fact_ids) !== JSON.stringify(missing)) context.addIssue({ code: "custom", path: ["data_quality"], message: "資料完整性必須對應未知金額" });
   try {
     const { previous, current } = snapshot.periods;
-    if (dayCount(previous) !== dayCount(current) || !(previous.end < current.start || current.end < previous.start)) context.addIssue({ code: "custom", path: ["periods"], message: "前後期須等長且不重疊" });
+    const errors = validatePeriods({ coverage_start: previous.start < current.start ? previous.start : current.start, coverage_end: previous.end > current.end ? previous.end : current.end, previous_period: previous, current_period: current, comparison_mode: snapshot.comparison.mode, data_as_of: snapshot.data_as_of });
+    if (errors.length) context.addIssue({ code: "custom", path: ["periods"], message: errors.join(",") });
+    if (dayCount(previous) !== snapshot.comparison.previous_days || dayCount(current) !== snapshot.comparison.current_days) context.addIssue({ code: "custom", path: ["comparison"], message: "天數必須與完整期間一致" });
   } catch { context.addIssue({ code: "custom", path: ["periods"], message: "期間不合法" }); }
 });
 

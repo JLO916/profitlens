@@ -25,7 +25,7 @@ const hugePrevious = { start: "0001-01-01", end: "4000-12-31" };
 const hugeCurrent = { start: "4001-01-01", end: "8000-12-31" };
 function hugeDataset(): Dataset {
   const input = fixture();
-  input.manifest = { ...(input.manifest as Record<string, unknown>), coverage_start: "0001-01-01", coverage_end: "8000-12-31", previous_period: hugePrevious, current_period: hugeCurrent };
+  input.manifest = { ...(input.manifest as Record<string, unknown>), coverage_start: "0001-01-01", coverage_end: "8000-12-31", data_as_of: "8000-12-31", previous_period: hugePrevious, current_period: hugeCurrent };
   const validation = validateDataset(input);
   expect(validation.classification).toBe("partial");
   return validation.dataset!;

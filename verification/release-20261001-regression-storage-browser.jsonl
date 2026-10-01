@@ -1,0 +1,3 @@
+{"project":"desktop","save_restore":"pass","sources":"synthetic golden","scenarios":["284.00","264.00"],"action_evidence":"confirmed","auto_cross_tab_load":false,"posts":[],"indexeddb_deleted":true}
+{"project":"tablet","save_restore":"pass","sources":"synthetic golden","scenarios":["284.00","264.00"],"action_evidence":"confirmed","auto_cross_tab_load":false,"posts":[],"indexeddb_deleted":true}
+{"project":"mobile","save_restore":"pass","sources":"synthetic golden","scenarios":["284.00","264.00"],"action_evidence":"confirmed","auto_cross_tab_load":false,"posts":[],"indexeddb_deleted":true}

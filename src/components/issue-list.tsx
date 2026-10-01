@@ -20,7 +20,7 @@ export function IssueList({ issues, filenames, mappings }: {
         <td><span className={`tag ${issue.severity}`}>{issue.severity === "blocking" ? "阻擋" : issue.severity === "partial" ? "待補" : "提醒"}</span></td>
         <td>{filenames?.[issue.file] ?? issue.file}{filenames?.[issue.file] && filenames[issue.file] !== issue.file && <small>標準角色：{issue.file}</small>}<small>第 {issue.line ?? "—"} 行 {issue.date} {issue.channel}</small></td>
         <td>{issue.field}{mappings?.[issue.file]?.[issue.field] && mappings[issue.file]![issue.field] !== issue.field && <small>原欄位：{mappings[issue.file]![issue.field]}</small>}</td>
-        <td>{issue.message}<small>{issue.reason_code}</small></td>
+        <td>{issue.message}<details><summary>問題代碼</summary><code>{issue.reason_code}</code></details></td>
       </tr>)}</tbody>
     </table></div>
     {issues.length > 50 && <nav className="issue-pagination" aria-label="問題清單分頁"><button className="button quiet" disabled={current === 0} onClick={() => setPage(current - 1)}>前 50 項問題</button><span>第 {current + 1}／{last + 1} 頁 · 全部問題可下載</span><button className="button quiet" disabled={current === last} onClick={() => setPage(current + 1)}>後 50 項問題</button></nav>}

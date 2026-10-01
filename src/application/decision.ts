@@ -1,6 +1,6 @@
 import { SCENARIO_VERSION, buildScenarioBaseline, calculateScenario, type ScenarioBaseline, type ScenarioInputs, type ScenarioResult } from "../domain/scenarios";
 import { isBusinessDate } from "../domain/date";
-import type { Dataset, Fact, Period, SourceRef } from "../domain/types";
+import type { Dataset, DatasetInput, Fact, Period, SourceRef } from "../domain/types";
 import type { FilenameMap } from "./export";
 import type { WorkspaceSnapshot } from "./workspace";
 
@@ -21,6 +21,7 @@ export interface DecisionSession {
   snapshot_signature: string;
   period: Period;
   scope: WorkspaceSnapshot["report"]["scope"];
+  comparison: WorkspaceSnapshot["report"]["comparison"];
   filenames: FilenameMap;
   baseline: ScenarioBaseline;
   facts: Fact[];
@@ -35,6 +36,18 @@ export interface ActionCardInput {
 }
 export interface ActionCard extends ActionCardInput { origin: "manual"; evidence_confirmed: boolean }
 export interface DecisionDraft { session: DecisionSession; scenarios: ScenarioPlan[]; actions: ActionCard[] }
+export type ColumnMappings = Partial<Record<SourceRef["file"], Record<string, string>>>;
+/** Owned by the current page. No storage or cross-window sharing happens here. */
+export interface DecisionWorkspaceState {
+  captured: DecisionSession | null;
+  scenarios: ScenarioPlan[];
+  actions: ActionCard[];
+  source_input: DatasetInput | null;
+  source_mappings?: ColumnMappings;
+}
+export function emptyDecisionWorkspace(): DecisionWorkspaceState {
+  return { captured: null, scenarios: [], actions: [], source_input: null };
+}
 
 /** Stable serialization for binding and integrity checks, independent of key insertion order. */
 export function decisionSignature(value: unknown): string {
@@ -74,7 +87,7 @@ export function createDecisionSession(dataset: Dataset, snapshot: WorkspaceSnaps
     dataset_id: dataset.manifest.dataset_id, dataset_hash: snapshot.dataset_hash, filter_hash: snapshot.filter_hash,
     data_as_of: snapshot.data_as_of, currency: dataset.manifest.currency, timezone: dataset.manifest.timezone, amount_basis: dataset.manifest.amount_basis,
     revision, snapshot_signature: snapshotSignature(snapshot),
-    period: snapshot.report.current.period, scope: snapshot.report.scope, filenames, baseline,
+    period: snapshot.report.current.period, scope: snapshot.report.scope, comparison: snapshot.report.comparison, filenames, baseline,
     facts: snapshot.report.facts, sources: summary.sources, stale: false, stale_reasons: [],
   });
   freezeBaseline(session.baseline);

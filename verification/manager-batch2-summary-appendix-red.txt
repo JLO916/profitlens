@@ -1,0 +1,58 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/manager-summary.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/manager-summary.test.ts (18 tests | 2 failed) 110ms
+     × headline and channel facts remain traceable in the appendix when no diagnostic fires 10ms
+     × explicitly clearing the page selection overrides a supplied default plan 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/manager-summary.test.ts > PL-06/09 manager summary: fixed references and independent display policy > headline and channel facts remain traceable in the appendix when no diagnostic fires
+AssertionError: expected '\n\n- dataset_id：golden-v1\n- dataset…' to contain '商品淨營收：2250.00'
+
+- Expected
++ Received
+
+- 商品淨營收：2250.00
++
++
++ - dataset_id：golden-v1
++ - dataset_hash：92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48
++ - filter_hash：f9c7f0abe4b1ba3759249887324f30b7d2ac873e7acf82a12c6fa32e19551a3b
++ - metric_version：contribution-v1
++ - 摘要優先序：資料缺漏先列；同一規則分組；門檻取組內最大絕對排序金額，並非加總；最多列三組，不改底層規則。
++
++
+
+ ❯ tests/manager-summary.test.ts:127:22
+    125|     const [body, appendix] = exportManagerSummaryMarkdown(summary).spl…
+    126|     expect(body).not.toContain("fact_id");
+    127|     expect(appendix).toContain("商品淨營收：2250.00");
+       |                      ^
+    128|     expect(appendix).toContain("商品淨營收：2470.00");
+    129|     expect(appendix).toContain("行銷後貢獻：570.00");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/manager-summary.test.ts > PL-06/09 manager summary: fixed references and independent display policy > explicitly clearing the page selection overrides a supplied default plan
+TypeError: withSummaryScenarioSelection is not a function
+ ❯ tests/manager-summary.test.ts:145:42
+    143|       scenarios: [{ id: "plan", name: "假設方案", status: "current", scope…
+    144|     };
+    145|     expect(summaryDecisionState(summary, withSummaryScenarioSelection(…
+       |                                          ^
+    146|     expect(summaryDecisionState(summary, withSummaryScenarioSelection(…
+    147|     expect(summaryDecisionState(summary, withSummaryScenarioSelection(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 16 passed (18)
+   Start at  17:35:03
+   Duration  350ms (transform 77ms, setup 0ms, import 121ms, tests 110ms, environment 0ms)
+

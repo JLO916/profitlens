@@ -1,0 +1,60 @@
+{"recorded_at":"2026-10-01T09:44:09.730Z","project":"desktop","test":"示範資料由空狀態進入可閱讀總覽，圖表有表格替代","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:10.927Z","project":"desktop","test":"切換 golden 與 demo 會重算同一組 KPI","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:12.357Z","project":"desktop","test":"通路篩選共用，金額證據可用鍵盤開啟與返回","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:13.078Z","project":"desktop","test":"貢獻率差額的證據保留百分點單位，不再乘以 100","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:14.040Z","project":"desktop","test":"診斷排序金額使用兩期已觀察差額，證據方向與來源一致","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:15.030Z","project":"desktop","test":"商品篩選只影響毛利明細，不帶入通路廣告與貢獻","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:16.009Z","project":"desktop","test":"無效期間不覆寫已套用的分析範圍","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:17.396Z","project":"desktop","test":"有效自訂期間會同步更新 KPI、週資料及來源期間","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:18.287Z","project":"desktop","test":"資料工作區展示三份原始檔案、行號、口徑與未縮減預覽","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:19.118Z","project":"desktop","test":"missing-cogs 顯示待補資料，保留收入與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:19.865Z","project":"desktop","test":"missing-ad 顯示待補資料，保留收入與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:20.698Z","project":"desktop","test":"blocking 資料集載入失敗仍保留先前成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:44:21.125Z","project":"desktop","test":"載入中與 HTTP 故障均有明確狀態","status":"passed","events":[{"kind":"console:error","message":"Failed to load resource: the server responded with a status of 503 (Service Unavailable)","url":"http://127.0.0.1:3100/api/datasets/demo"}]}
+{"recorded_at":"2026-10-01T09:44:21.913Z","project":"desktop","test":"較慢的舊資料請求不可覆寫較新的 golden 選擇","status":"passed","events":[{"kind":"requestfailed","message":"net::ERR_ABORTED","url":"http://127.0.0.1:3100/api/datasets/demo"}]}
+{"recorded_at":"2026-10-01T09:44:23.076Z","project":"desktop","test":"清空與重新整理回到空狀態，另一個頁面沒有共用資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:26.173Z","project":"desktop","test":"示範資料由空狀態進入可閱讀總覽，圖表有表格替代","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:27.558Z","project":"desktop","test":"切換 golden 與 demo 會重算同一組 KPI","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:28.844Z","project":"desktop","test":"通路篩選共用，金額證據可用鍵盤開啟與返回","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:29.623Z","project":"desktop","test":"貢獻率差額的證據保留百分點單位，不再乘以 100","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:30.393Z","project":"desktop","test":"診斷排序金額使用兩期已觀察差額，證據方向與來源一致","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:31.281Z","project":"desktop","test":"商品篩選只影響毛利明細，不帶入通路廣告與貢獻","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:31.956Z","project":"desktop","test":"無效期間不覆寫已套用的分析範圍","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:33.193Z","project":"desktop","test":"有效自訂期間會同步更新 KPI、週資料及來源期間","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:33.869Z","project":"desktop","test":"資料工作區展示三份原始檔案、行號、口徑與未縮減預覽","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:34.372Z","project":"desktop","test":"missing-cogs 顯示待補資料，保留收入與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:35.110Z","project":"desktop","test":"missing-ad 顯示待補資料，保留收入與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:36.119Z","project":"desktop","test":"blocking 資料集載入失敗仍保留先前成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:48:36.509Z","project":"desktop","test":"載入中與 HTTP 故障均有明確狀態","status":"passed","events":[{"kind":"console:error","message":"Failed to load resource: the server responded with a status of 503 (Service Unavailable)","url":"http://127.0.0.1:3100/api/datasets/demo"}]}
+{"recorded_at":"2026-10-01T09:48:37.249Z","project":"desktop","test":"較慢的舊資料請求不可覆寫較新的 golden 選擇","status":"passed","events":[{"kind":"requestfailed","message":"net::ERR_ABORTED","url":"http://127.0.0.1:3100/api/datasets/demo"}]}
+{"recorded_at":"2026-10-01T09:48:38.390Z","project":"desktop","test":"清空與重新整理回到空狀態，另一個頁面沒有共用資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:01.620Z","project":"tablet","test":"示範資料由空狀態進入可閱讀總覽，圖表有表格替代","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:02.898Z","project":"tablet","test":"切換 golden 與 demo 會重算同一組 KPI","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:04.125Z","project":"tablet","test":"通路篩選共用，金額證據可用鍵盤開啟與返回","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:04.903Z","project":"tablet","test":"貢獻率差額的證據保留百分點單位，不再乘以 100","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:05.876Z","project":"tablet","test":"診斷排序金額使用兩期已觀察差額，證據方向與來源一致","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:06.851Z","project":"tablet","test":"商品篩選只影響毛利明細，不帶入通路廣告與貢獻","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:07.844Z","project":"tablet","test":"無效期間不覆寫已套用的分析範圍","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:09.359Z","project":"tablet","test":"有效自訂期間會同步更新 KPI、週資料及來源期間","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:10.207Z","project":"tablet","test":"資料工作區展示三份原始檔案、行號、口徑與未縮減預覽","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:10.760Z","project":"tablet","test":"missing-cogs 顯示待補資料，保留收入與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:11.527Z","project":"tablet","test":"missing-ad 顯示待補資料，保留收入與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:12.384Z","project":"tablet","test":"blocking 資料集載入失敗仍保留先前成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:50:12.769Z","project":"tablet","test":"載入中與 HTTP 故障均有明確狀態","status":"passed","events":[{"kind":"console:error","message":"Failed to load resource: the server responded with a status of 503 (Service Unavailable)","url":"http://127.0.0.1:3100/api/datasets/demo"}]}
+{"recorded_at":"2026-10-01T09:50:13.711Z","project":"tablet","test":"較慢的舊資料請求不可覆寫較新的 golden 選擇","status":"passed","events":[{"kind":"requestfailed","message":"net::ERR_ABORTED","url":"http://127.0.0.1:3100/api/datasets/demo"}]}
+{"recorded_at":"2026-10-01T09:50:15.041Z","project":"tablet","test":"清空與重新整理回到空狀態，另一個頁面沒有共用資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:42.131Z","project":"mobile","test":"示範資料由空狀態進入可閱讀總覽，圖表有表格替代","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:43.258Z","project":"mobile","test":"切換 golden 與 demo 會重算同一組 KPI","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:44.379Z","project":"mobile","test":"通路篩選共用，金額證據可用鍵盤開啟與返回","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:45.018Z","project":"mobile","test":"貢獻率差額的證據保留百分點單位，不再乘以 100","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:45.798Z","project":"mobile","test":"診斷排序金額使用兩期已觀察差額，證據方向與來源一致","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:46.597Z","project":"mobile","test":"商品篩選只影響毛利明細，不帶入通路廣告與貢獻","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:47.418Z","project":"mobile","test":"無效期間不覆寫已套用的分析範圍","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:48.691Z","project":"mobile","test":"有效自訂期間會同步更新 KPI、週資料及來源期間","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:49.479Z","project":"mobile","test":"資料工作區展示三份原始檔案、行號、口徑與未縮減預覽","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:50.057Z","project":"mobile","test":"missing-cogs 顯示待補資料，保留收入與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:50.620Z","project":"mobile","test":"missing-ad 顯示待補資料，保留收入與未受影響通路","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:51.505Z","project":"mobile","test":"blocking 資料集載入失敗仍保留先前成功資料","status":"passed","events":[]}
+{"recorded_at":"2026-10-01T09:51:51.805Z","project":"mobile","test":"載入中與 HTTP 故障均有明確狀態","status":"passed","events":[{"kind":"console:error","message":"Failed to load resource: the server responded with a status of 503 (Service Unavailable)","url":"http://127.0.0.1:3100/api/datasets/demo"}]}
+{"recorded_at":"2026-10-01T09:51:52.491Z","project":"mobile","test":"較慢的舊資料請求不可覆寫較新的 golden 選擇","status":"passed","events":[{"kind":"requestfailed","message":"net::ERR_ABORTED","url":"http://127.0.0.1:3100/api/datasets/demo"}]}
+{"recorded_at":"2026-10-01T09:51:53.547Z","project":"mobile","test":"清空與重新整理回到空狀態，另一個頁面沒有共用資料","status":"passed","events":[]}

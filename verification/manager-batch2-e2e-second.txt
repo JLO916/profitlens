@@ -1,0 +1,333 @@
+
+> profitlens@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:25640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:25733) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26022) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26036) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26035) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26034) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26033) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26037) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26115) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 258 tests using 1 worker
+
+(node:26233) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    1 [desktop] › tests/e2e/action-workspace.spec.ts:6:5 › PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份 (2.6s)
+  ✓    2 [desktop] › tests/e2e/action-workspace.spec.ts:34:5 › PL09 主管摘要實際帶入選定方案、行動與停止條件，改範圍後不沿用 (1.2s)
+  ✓    3 [desktop] › tests/e2e/ai.spec.ts:119:1 › 真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用 (1.0s)
+  ✓    4 [desktop] › tests/e2e/ai.spec.ts:147:1 › MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據 (1.5s)
+  ✓    5 [desktop] › tests/e2e/ai.spec.ts:202:3 › MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕 (791ms)
+  ✓    6 [desktop] › tests/e2e/ai.spec.ts:202:3 › MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕 (672ms)
+  ✓    7 [desktop] › tests/e2e/ai.spec.ts:202:3 › MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕 (742ms)
+  ✓    8 [desktop] › tests/e2e/ai.spec.ts:202:3 › MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕 (660ms)
+  ✓    9 [desktop] › tests/e2e/ai.spec.ts:224:1 › MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料 (2.0s)
+  ✓   10 [desktop] › tests/e2e/ai.spec.ts:241:1 › MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST (847ms)
+  ✓   11 [desktop] › tests/e2e/ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意 (766ms)
+  ✓   12 [desktop] › tests/e2e/ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意 (1.6s)
+  ✓   13 [desktop] › tests/e2e/ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意 (1.7s)
+  ✓   14 [desktop] › tests/e2e/ai.spec.ts:337:1 › MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現 (1.3s)
+  ✓   15 [desktop] › tests/e2e/ai.spec.ts:356:1 › MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料 (1.4s)
+  ✓   16 [desktop] › tests/e2e/import-guidance.spec.ts:21:5 › PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用 (867ms)
+  ✓   17 [desktop] › tests/e2e/import-guidance.spec.ts:44:5 › PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計 (529ms)
+  ✓   18 [desktop] › tests/e2e/import-guidance.spec.ts:55:5 › PL04含稅或淨結算來源不可直接套用，也不自動換算 (810ms)
+  ✓   19 [desktop] › tests/e2e/import-guidance.spec.ts:69:5 › PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列 (782ms)
+  ✓   20 [desktop] › tests/e2e/import-guidance.spec.ts:79:5 › PL04換檔後需重新確認口徑，不沿用先前勾選 (627ms)
+  ✓   21 [desktop] › tests/e2e/import.spec.ts:125:1 › 真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷 (1.9s)
+  ✓   22 [desktop] › tests/e2e/import.spec.ts:157:1 › 不讀 JSON 也能手填 manifest，金額口徑須明確確認 (826ms)
+  ✓   23 [desktop] › tests/e2e/import.spec.ts:177:1 › 超長但格式合法的期間明確拒絕，不截斷或取代先前資料 (964ms)
+  ✓   24 [desktop] › tests/e2e/import.spec.ts:197:1 › JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功 (721ms)
+  ✓   25 [desktop] › tests/e2e/import.spec.ts:220:3 › duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變 (1.0s)
+  ✓   26 [desktop] › tests/e2e/import.spec.ts:220:3 › mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變 (1.0s)
+  ✓   27 [desktop] › tests/e2e/import.spec.ts:245:3 › missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路 (733ms)
+  ✓   28 [desktop] › tests/e2e/import.spec.ts:245:3 › missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路 (1.1s)
+  ✓   29 [desktop] › tests/e2e/import.spec.ts:264:3 › malformed 友善拒絕、不截斷且不破壞成功資料 (1.6s)
+  ✓   30 [desktop] › tests/e2e/import.spec.ts:264:3 › invalid-utf8 友善拒絕、不截斷且不破壞成功資料 (1.4s)
+  ✓   31 [desktop] › tests/e2e/import.spec.ts:264:3 › too-many-bytes 友善拒絕、不截斷且不破壞成功資料 (1.7s)
+  ✓   32 [desktop] › tests/e2e/import.spec.ts:264:3 › too-many-rows 友善拒絕、不截斷且不破壞成功資料 (1.2s)
+  ✓   33 [desktop] › tests/e2e/import.spec.ts:282:1 › 改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析 (1.1s)
+  ✓   34 [desktop] › tests/e2e/import.spec.ts:308:1 › 檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行 (993ms)
+  ✘   35 [desktop] › tests/e2e/import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 (1.2s)
+(node:28461) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   36 [desktop] › tests/e2e/import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確 (1.0s)
+(node:28471) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   37 [desktop] › tests/e2e/m6-acceptance.spec.ts:118:5 › M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈 (1.9s)
+  ✓   38 [desktop] › tests/e2e/m6-acceptance.spec.ts:185:5 › M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方 (4.4s)
+  ✓   39 [desktop] › tests/e2e/m6-acceptance.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策 (1.9s)
+  ✓   40 [desktop] › tests/e2e/manager-summary.spec.ts:24:1 › PL06 golden management summary, drilldown, threshold, scope and wide export (1.1s)
+  ✓   41 [desktop] › tests/e2e/manager-summary.spec.ts:66:1 › PL06 unknown priorities survive a high threshold without zero contribution (475ms)
+  ✓   42 [desktop] › tests/e2e/manager-summary.spec.ts:76:1 › PL09 print uses a dedicated manager draft and retains technical audit downloads (630ms)
+  ✓   43 [desktop] › tests/e2e/period-comparison.spec.ts:81:1 › PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致 (1.2s)
+  ✓   44 [desktop] › tests/e2e/period-comparison.spec.ts:108:1 › PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍 (1.5s)
+  ✓   45 [desktop] › tests/e2e/period-comparison.spec.ts:132:50 › PL-02 zero 月合計與日均保留零及未知邊界 (781ms)
+  ✓   46 [desktop] › tests/e2e/period-comparison.spec.ts:132:50 › PL-02 missing 月合計與日均保留零及未知邊界 (768ms)
+  ✓   47 [desktop] › tests/e2e/product-comparison.spec.ts:54:1 › PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍 (782ms)
+  ✓   48 [desktop] › tests/e2e/product-comparison.spec.ts:92:1 › PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源 (609ms)
+  ✓   49 [desktop] › tests/e2e/product-comparison.spec.ts:110:1 › PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入 (1.1s)
+  ✓   50 [desktop] › tests/e2e/scenario-sensitivity.spec.ts:30:5 › PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立重算 (1.6s)
+  ✓   51 [desktop] › tests/e2e/scenario-sensitivity.spec.ts:61:5 › PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不外插 (1.3s)
+  ✓   52 [desktop] › tests/e2e/scenario-sensitivity.spec.ts:76:5 › PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意仍無衍生分析 (824ms)
+  ✓   53 [desktop] › tests/e2e/scenarios.spec.ts:162:1 › 僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據 (967ms)
+  ✓   54 [desktop] › tests/e2e/scenarios.spec.ts:195:1 › 三個方案各自從 270.00 重算為 270／284／264，不串接或相加 (1.7s)
+  ✓   55 [desktop] › tests/e2e/scenarios.spec.ts:221:1 › 減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益 (1.2s)
+  ✓   56 [desktop] › tests/e2e/scenarios.spec.ts:243:1 › 輸入超界、負投入與過度精度不得默默修正為可用試算 (1.7s)
+  ✓   57 [desktop] › tests/e2e/scenarios.spec.ts:256:1 › 百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70 (1.3s)
+  ✓   58 [desktop] › tests/e2e/scenarios.spec.ts:285:3 › missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN (829ms)
+  ✓   59 [desktop] › tests/e2e/scenarios.spec.ts:285:3 › missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN (933ms)
+  ✓   60 [desktop] › tests/e2e/scenarios.spec.ts:299:1 › 通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據 (2.4s)
+  ✓   61 [desktop] › tests/e2e/scenarios.spec.ts:349:1 › 資料集切換後即使回到相同 golden 與通路，舊方案仍過期 (1.4s)
+  ✓   62 [desktop] › tests/e2e/scenarios.spec.ts:365:1 › 有效期間切換再回原期間仍過期，不自動沿用先前假設 (1.7s)
+  ✓   63 [desktop] › tests/e2e/scenarios.spec.ts:386:1 › 四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點 (2.6s)
+  ✓   64 [desktop] › tests/e2e/scenarios.spec.ts:429:1 › 未填完七欄或未選 fact 的行動只能保持草稿 (659ms)
+  ✓   65 [desktop] › tests/e2e/scenarios.spec.ts:441:1 › 三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源 (1.4s)
+  ✓   66 [desktop] › tests/e2e/scenarios.spec.ts:485:1 › 不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結 (1.5s)
+  ✓   67 [desktop] › tests/e2e/scenarios.spec.ts:509:1 › 試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用 (1.2s)
+  ✓   68 [desktop] › tests/e2e/workspace-storage.spec.ts:62:5 › PL01 主動保存兩方案與已確認行動，重整後手動恢復；其他同源分頁不自動共享 (2.7s)
+  ✓   69 [desktop] › tests/e2e/workspace-storage.spec.ts:113:5 › PL01 portable備份驗證後才套用；篡改／舊格式不取代目前資料，恢復撤銷保存同意 (1.1s)
+  ✓   70 [desktop] › tests/e2e/workspace-storage.spec.ts:134:5 › PL01 清空提醒可取消；過期方案保存恢復仍過期，切回舊範圍不復活 (1.2s)
+  ✓   71 [desktop] › tests/e2e/workspace-storage.spec.ts:156:5 › PL01 清空移除備份預覽、下載確認與本機保存同意；已保存副本僅可手動重讀 (966ms)
+  ✓   72 [desktop] › tests/e2e/workspace.spec.ts:76:1 › 示範資料由空狀態進入可閱讀總覽，圖表有表格替代 (1.4s)
+  ✓   73 [desktop] › tests/e2e/workspace.spec.ts:104:1 › 切換 golden 與 demo 會重算同一組 KPI (1.2s)
+  ✓   74 [desktop] › tests/e2e/workspace.spec.ts:116:1 › 通路篩選共用，金額證據可用鍵盤開啟與返回 (1.4s)
+  ✓   75 [desktop] › tests/e2e/workspace.spec.ts:148:1 › 貢獻率差額的證據保留百分點單位，不再乘以 100 (778ms)
+  ✓   76 [desktop] › tests/e2e/workspace.spec.ts:162:1 › 診斷排序金額使用兩期已觀察差額，證據方向與來源一致 (917ms)
+  ✓   77 [desktop] › tests/e2e/workspace.spec.ts:187:1 › 商品篩選只影響毛利明細，不帶入通路廣告與貢獻 (917ms)
+  ✓   78 [desktop] › tests/e2e/workspace.spec.ts:206:1 › 無效期間不覆寫已套用的分析範圍 (963ms)
+  ✓   79 [desktop] › tests/e2e/workspace.spec.ts:217:1 › 有效自訂期間會同步更新 KPI、週資料及來源期間 (1.5s)
+  ✓   80 [desktop] › tests/e2e/workspace.spec.ts:242:1 › 資料工作區展示三份原始檔案、行號、口徑與未縮減預覽 (791ms)
+  ✓   81 [desktop] › tests/e2e/workspace.spec.ts:265:3 › missing-cogs 顯示待補資料，保留收入與未受影響通路 (802ms)
+  ✓   82 [desktop] › tests/e2e/workspace.spec.ts:265:3 › missing-ad 顯示待補資料，保留收入與未受影響通路 (749ms)
+  ✓   83 [desktop] › tests/e2e/workspace.spec.ts:276:1 › blocking 資料集載入失敗仍保留先前成功資料 (826ms)
+  ✓   84 [desktop] › tests/e2e/workspace.spec.ts:287:1 › 載入中與 HTTP 故障均有明確狀態 (390ms)
+  ✓   85 [desktop] › tests/e2e/workspace.spec.ts:304:1 › 較慢的舊資料請求不可覆寫較新的 golden 選擇 (780ms)
+  ✓   86 [desktop] › tests/e2e/workspace.spec.ts:342:1 › 清空與重新整理回到空狀態，另一個頁面沒有共用資料 (1.1s)
+(node:34576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   87 [tablet] › tests/e2e/action-workspace.spec.ts:6:5 › PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份 (2.9s)
+  ✓   88 [tablet] › tests/e2e/action-workspace.spec.ts:34:5 › PL09 主管摘要實際帶入選定方案、行動與停止條件，改範圍後不沿用 (1.6s)
+  ✓   89 [tablet] › tests/e2e/ai.spec.ts:119:1 › 真實本機未啟用端點 GET／POST 降級，未同意不傳送，核心與試算仍可用 (900ms)
+  ✓   90 [tablet] › tests/e2e/ai.spec.ts:147:1 › MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據 (1.1s)
+  ✓   91 [tablet] › tests/e2e/ai.spec.ts:202:3 › MOCK：HTTP 200 的 fabricated-fact 不安全內容仍由瀏覽器拒絕 (681ms)
+  ✓   92 [tablet] › tests/e2e/ai.spec.ts:202:3 › MOCK：HTTP 200 的 literal-money 不安全內容仍由瀏覽器拒絕 (771ms)
+  ✓   93 [tablet] › tests/e2e/ai.spec.ts:202:3 › MOCK：HTTP 200 的 causal-claim 不安全內容仍由瀏覽器拒絕 (970ms)
+  ✓   94 [tablet] › tests/e2e/ai.spec.ts:202:3 › MOCK：HTTP 200 的 wrong-snapshot 不安全內容仍由瀏覽器拒絕 (1.1s)
+  ✓   95 [tablet] › tests/e2e/ai.spec.ts:224:1 › MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料 (2.2s)
+  ✓   96 [tablet] › tests/e2e/ai.spec.ts:241:1 › MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST (845ms)
+  ✓   97 [tablet] › tests/e2e/ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，channel 改變並回原值也不復活結果或同意 (690ms)
+  ✓   98 [tablet] › tests/e2e/ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，dataset 改變並回原值也不復活結果或同意 (1.5s)
+  ✓   99 [tablet] › tests/e2e/ai.spec.ts:300:3 › MOCK：慢回應忽略 abort 時，period 改變並回原值也不復活結果或同意 (1.3s)
+  ✓  100 [tablet] › tests/e2e/ai.spec.ts:337:1 › MOCK：取消慢請求撤銷同意，已返回的舊內容仍不能呈現 (703ms)
+  ✓  101 [tablet] › tests/e2e/ai.spec.ts:356:1 › MOCK：成功回應與同意不持久化，不跨分頁、重整或重新載入相同資料 (1.1s)
+  ✓  102 [tablet] › tests/e2e/import-guidance.spec.ts:21:5 › PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用 (693ms)
+  ✓  103 [tablet] › tests/e2e/import-guidance.spec.ts:44:5 › PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計 (525ms)
+  ✓  104 [tablet] › tests/e2e/import-guidance.spec.ts:55:5 › PL04含稅或淨結算來源不可直接套用，也不自動換算 (966ms)
+  ✓  105 [tablet] › tests/e2e/import-guidance.spec.ts:69:5 › PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列 (562ms)
+  ✓  106 [tablet] › tests/e2e/import-guidance.spec.ts:79:5 › PL04換檔後需重新確認口徑，不沿用先前勾選 (613ms)
+  ✓  107 [tablet] › tests/e2e/import.spec.ts:125:1 › 真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷 (1.6s)
+  ✓  108 [tablet] › tests/e2e/import.spec.ts:157:1 › 不讀 JSON 也能手填 manifest，金額口徑須明確確認 (1.0s)
+  ✓  109 [tablet] › tests/e2e/import.spec.ts:177:1 › 超長但格式合法的期間明確拒絕，不截斷或取代先前資料 (1.2s)
+  ✓  110 [tablet] › tests/e2e/import.spec.ts:197:1 › JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功 (718ms)
+  ✓  111 [tablet] › tests/e2e/import.spec.ts:220:3 › duplicate_sales_key 整份阻擋且問題清單追溯原檔，舊資料不變 (977ms)
+  ✓  112 [tablet] › tests/e2e/import.spec.ts:220:3 › mixed_currency 整份阻擋且問題清單追溯原檔，舊資料不變 (1.0s)
+  ✓  113 [tablet] › tests/e2e/import.spec.ts:245:3 › missing_cogs 本機匯入保留收入、未知貢獻與未受影響通路 (689ms)
+  ✓  114 [tablet] › tests/e2e/import.spec.ts:245:3 › missing_ad_day 本機匯入保留收入、未知貢獻與未受影響通路 (689ms)
+  ✓  115 [tablet] › tests/e2e/import.spec.ts:264:3 › malformed 友善拒絕、不截斷且不破壞成功資料 (937ms)
+  ✓  116 [tablet] › tests/e2e/import.spec.ts:264:3 › invalid-utf8 友善拒絕、不截斷且不破壞成功資料 (932ms)
+  ✓  117 [tablet] › tests/e2e/import.spec.ts:264:3 › too-many-bytes 友善拒絕、不截斷且不破壞成功資料 (1.4s)
+  ✓  118 [tablet] › tests/e2e/import.spec.ts:264:3 › too-many-rows 友善拒絕、不截斷且不破壞成功資料 (1.2s)
+  ✓  119 [tablet] › tests/e2e/import.spec.ts:282:1 › 改名欄位與未知欄須分別確認，不能猜測或把忽略內容放入分析 (1.0s)
+  ✓  120 [tablet] › tests/e2e/import.spec.ts:308:1 › 檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行 (942ms)
+  ✘  121 [tablet] › tests/e2e/import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 (1.1s)
+(node:36341) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  122 [tablet] › tests/e2e/import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確 (987ms)
+(node:36358) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  123 [tablet] › tests/e2e/m6-acceptance.spec.ts:118:5 › M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格式快照完整鏈 (1.8s)
+  ✓  124 [tablet] › tests/e2e/m6-acceptance.spec.ts:185:5 › M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方 (2.7s)
+  ✘  125 [tablet] › tests/e2e/m6-acceptance.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策 (1.6s)
+
+
+  1) [desktop] › tests/e2e/import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ────────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      367 |   expect(selectedProducts.length).toBeGreaterThan(0);
+      368 |   expect(selectedProducts.every(row => row.channel === "MARKETPLACE" && row.sku === "'-TEST()" && row.category === "'\t=FORMULA()")).toBe(true);
+    > 369 |   expect(selectedProducts.every(row => row.product_query === "'-test()" && row.product_category === "'\t=FORMULA()")).toBe(true);
+          |                                                                                                                       ^
+      370 |   expect(selectedProducts.find(row => row.metric === "net_revenue")?.value).toBe("-40.00");
+      371 |   expect(selectedProducts.find(row => row.metric === "gross_profit")?.value).toBe("-100.00");
+      372 |   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/import.spec.ts:369:119
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop] › tests/e2e/import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確 ──────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      415 |   expect(exported.length).toBeGreaterThan(0);
+      416 |   expect(exported.every(row => row.channel === "all" && row.sku === "'+TEST()" && row.category === "")).toBe(true);
+    > 417 |   expect(exported.every(row => row.product_query === "'+test()" && row.product_category === "")).toBe(true);
+          |                                                                                                  ^
+      418 |   expect(exported.find(row => row.metric === "net_revenue")?.value).toBe("120.00");
+      419 |   expect(exported.find(row => row.metric === "gross_profit")?.value).toBe("80.00");
+      420 |   expect(exported.every(row => !["ad_spend", "contribution_after_marketing", "contribution_before_marketing"].includes(row.metric))).toBe(true);
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/import.spec.ts:417:98
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/import-空白品類商品仍可搜尋匯出，合法-all-通路與全部通路各自正確-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/import-空白品類商品仍可搜尋匯出，合法-all-通路與全部通路各自正確-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/import-空白品類商品仍可搜尋匯出，合法-all-通路與全部通路各自正確-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/import-空白品類商品仍可搜尋匯出，合法-all-通路與全部通路各自正確-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [tablet] › tests/e2e/import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ─────────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      367 |   expect(selectedProducts.length).toBeGreaterThan(0);
+      368 |   expect(selectedProducts.every(row => row.channel === "MARKETPLACE" && row.sku === "'-TEST()" && row.category === "'\t=FORMULA()")).toBe(true);
+    > 369 |   expect(selectedProducts.every(row => row.product_query === "'-test()" && row.product_category === "'\t=FORMULA()")).toBe(true);
+          |                                                                                                                       ^
+      370 |   expect(selectedProducts.find(row => row.metric === "net_revenue")?.value).toBe("-40.00");
+      371 |   expect(selectedProducts.find(row => row.metric === "gross_profit")?.value).toBe("-100.00");
+      372 |   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/import.spec.ts:369:119
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-tablet/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-tablet/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-tablet/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/import-下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字-tablet/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [tablet] › tests/e2e/import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確 ───────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      415 |   expect(exported.length).toBeGreaterThan(0);
+      416 |   expect(exported.every(row => row.channel === "all" && row.sku === "'+TEST()" && row.category === "")).toBe(true);
+    > 417 |   expect(exported.every(row => row.product_query === "'+test()" && row.product_category === "")).toBe(true);
+          |                                                                                                  ^
+      418 |   expect(exported.find(row => row.metric === "net_revenue")?.value).toBe("120.00");
+      419 |   expect(exported.find(row => row.metric === "gross_profit")?.value).toBe("80.00");
+      420 |   expect(exported.every(row => !["ad_spend", "contribution_after_marketing", "contribution_before_marketing"].includes(row.metric))).toBe(true);
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/import.spec.ts:417:98
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/import-空白品類商品仍可搜尋匯出，合法-all-通路與全部通路各自正確-tablet/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/import-空白品類商品仍可搜尋匯出，合法-all-通路與全部通路各自正確-tablet/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/import-空白品類商品仍可搜尋匯出，合法-all-通路與全部通路各自正確-tablet/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/import-空白品類商品仍可搜尋匯出，合法-all-通路與全部通路各自正確-tablet/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [tablet] › tests/e2e/m6-acceptance.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策 ─────────
+
+    Test was interrupted.
+
+    Error: locator.click: Test ended.
+    Call log:
+      - waiting for getByTestId('import-panel').getByRole('button', { name: '套用匯入資料', exact: true })
+        - locator resolved to <button class="button primary">套用匯入資料</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+
+
+      47 |   await stage(page, directory);
+      48 |   await validate(page);
+    > 49 |   await form(page).getByRole("button", { name: "套用匯入資料", exact: true }).click();
+         |                                                                         ^
+      50 |   await expect(status(page)).toContainText("資料已就緒");
+      51 |   await expect(form(page)).toHaveCount(0);
+      52 | }
+        at importDataset (/Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/m6-acceptance.spec.ts:49:73)
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/m6-acceptance.spec.ts:245:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m6-acceptance-M6-檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策-tablet/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m6-acceptance-M6-檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策-tablet/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m6-acceptance-M6-檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策-tablet/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m6-acceptance-M6-檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策-tablet/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [desktop] › tests/e2e/import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ─────────────────────
+    [desktop] › tests/e2e/import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確 ───────────────────
+    [tablet] › tests/e2e/import.spec.ts:339:1 › 下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字 ──────────────────────
+    [tablet] › tests/e2e/import.spec.ts:377:1 › 空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確 ────────────────────
+  1 interrupted
+    [tablet] › tests/e2e/m6-acceptance.spec.ts:225:5 › M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策 ──────────
+  133 did not run
+  120 passed (2.8m)

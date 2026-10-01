@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.3.7 (webpack)
+✓ Running next.config.ts took 20ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.7s
+  Running TypeScript ...
+tests/manager-summary.test.ts(2,111): error TS2305: Module '"../src/application/manager-summary"' has no exported member 'withSummaryScenarioSelection'.
+Failed to type check.
+

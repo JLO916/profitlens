@@ -1,6 +1,6 @@
 import type { AiSnapshot } from "./contracts";
 
-export const PROMPT_VERSION = "profitlens-insights-v2";
+export const PROMPT_VERSION = "profitlens-insights-v3";
 export interface AiUsage { input_tokens: number; output_tokens: number; total_tokens: number }
 export type ProviderFailure = "TIMEOUT" | "RATE_LIMIT" | "PROVIDER_ERROR" | "ABORTED" | "SCHEMA_ERROR";
 export class AiProviderError extends Error {

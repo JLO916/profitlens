@@ -1,0 +1,106 @@
+
+> profitlens@0.1.0 test
+> vitest --run
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/analysis-limits.test.ts (11 tests | 3 failed) 117ms
+     × rejects manifest-default oversized periods before calling the domain or allocating weeks 15ms
+     × checks active filter periods before domain analysis, not only manifest defaults 6ms
+     × turns an oversized import into a blocking non-commit result without mutating M1 data 6ms
+ ❯ tests/workspace-backup.test.ts (13 tests | 1 failed) 2056ms
+     × rejects checksum changes without mutating the source state 77ms
+ ❯ tests/app-smoke.test.tsx (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/app-smoke.test.tsx [ tests/app-smoke.test.tsx ]
+Error: Cannot find package '@/application/local-store' imported from /Users/j-work/Desktop/profitlens-codex-starter/src/components/workspace-storage.tsx
+ ❯ src/components/workspace-storage.tsx:6:1
+      4| import { downloadText } from "@/application/download";
+      5| import { exportWorkspaceBackup, restoreWorkspaceBackup, type RestoredW…
+      6| import { deleteLocalWorkspace, loadLocalWorkspace, saveLocalWorkspace …
+       | ^
+      7|
+      8| /** Persistence happens only after a deliberate user action, never dur…
+ ❯ src/components/dashboard.tsx:20:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > rejects manifest-default oversized periods before calling the domain or allocating weeks
+AssertionError: expected 'blocking' to be 'partial' // Object.is equality
+
+Expected: "partial"
+Received: "blocking"
+
+ ❯ hugeDataset tests/analysis-limits.test.ts:30:37
+     28|   input.manifest = { ...(input.manifest as Record<string, unknown>), c…
+     29|   const validation = validateDataset(input);
+     30|   expect(validation.classification).toBe("partial");
+       |                                     ^
+     31|   return validation.dataset!;
+     32| }
+ ❯ tests/analysis-limits.test.ts:70:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > checks active filter periods before domain analysis, not only manifest defaults
+AssertionError: expected 'blocking' to be 'partial' // Object.is equality
+
+Expected: "partial"
+Received: "blocking"
+
+ ❯ hugeDataset tests/analysis-limits.test.ts:30:37
+     28|   input.manifest = { ...(input.manifest as Record<string, unknown>), c…
+     29|   const validation = validateDataset(input);
+     30|   expect(validation.classification).toBe("partial");
+       |                                     ^
+     31|   return validation.dataset!;
+     32| }
+ ❯ tests/analysis-limits.test.ts:75:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/analysis-limits.test.ts > bounded application analysis periods > turns an oversized import into a blocking non-commit result without mutating M1 data
+AssertionError: expected 'blocking' to be 'partial' // Object.is equality
+
+Expected: "partial"
+Received: "blocking"
+
+ ❯ hugeDataset tests/analysis-limits.test.ts:30:37
+     28|   input.manifest = { ...(input.manifest as Record<string, unknown>), c…
+     29|   const validation = validateDataset(input);
+     30|   expect(validation.classification).toBe("partial");
+       |                                     ^
+     31|   return validation.dataset!;
+     32| }
+ ❯ tests/analysis-limits.test.ts:85:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  tests/workspace-backup.test.ts > PL-01 complete workspace backup and transactional restoration > rejects checksum changes without mutating the source state
+AssertionError: expected [Function] to throw error including 'WORKSPACE_CHECKSUM_MISMATCH' but got 'INVALID_WORKSPACE_FORMAT'
+
+Expected: "WORKSPACE_CHECKSUM_MISMATCH"
+Received: "INVALID_WORKSPACE_FORMAT"
+
+ ❯ tests/workspace-backup.test.ts:78:63
+     76|     const original = await source(); const before = structuredClone(or…
+     77|     const body = JSON.parse(await exportWorkspaceBackup(original)); bo…
+     78|     await expect(restoreWorkspaceBackup(JSON.stringify(body))).rejects…
+       |                                                               ^
+     79|     expect(original).toEqual(before);
+     80|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  3 failed | 22 passed (25)
+      Tests  4 failed | 646 passed (650)
+   Start at  16:44:29
+   Duration  4.36s (transform 2.00s, setup 0ms, import 6.30s, tests 10.42s, environment 3ms)
+

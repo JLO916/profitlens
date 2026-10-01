@@ -1,0 +1,28 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/manager-summary.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/manager-summary.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/manager-summary.test.ts [ tests/manager-summary.test.ts ]
+Error: Cannot find module '../src/application/manager-summary' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/manager-summary.test.ts
+ ❯ tests/manager-summary.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { buildManagerSummary, exportChannelComparisonCsv, exportManage…
+       | ^
+      3| import { createSnapshot, hashInput } from "../src/application/workspac…
+      4| import { validateDataset } from "../src/domain/validation";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  17:21:00
+   Duration  157ms (transform 18ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

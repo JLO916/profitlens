@@ -2,6 +2,7 @@
 export type FileName = "sales_daily.csv" | "channel_costs_daily.csv" | "ad_spend_daily.csv";
 export type ReasonCode = string;
 export interface Period { start: string; end: string }
+export type ComparisonMode = "same_days" | "calendar_months";
 export interface Manifest {
   schema_version: "1.0";
   dataset_id: string;
@@ -12,6 +13,7 @@ export interface Manifest {
   coverage_start: string;
   coverage_end: string;
   channels: string[];
+  comparison_mode?: ComparisonMode;
   previous_period: Period;
   current_period: Period;
   sales_coverage_confirmed: boolean;
@@ -74,6 +76,16 @@ export interface Metric { value: string | null; reason_codes: ReasonCode[] }
 export type Totals = Record<AmountField, Amount>;
 export type MetricName = AmountField | "net_revenue" | "gross_profit" | "contribution_before_marketing" | "contribution_after_marketing" | "gross_margin" | "contribution_margin" | "discount_rate" | "refund_ratio" | "mer" | "fulfillment_burden" | "marketing_burden";
 export type Metrics = Record<MetricName, Metric>;
+export const MONEY_METRICS = [...AMOUNT_FIELDS, "net_revenue", "gross_profit", "contribution_before_marketing", "contribution_after_marketing"] as const;
+export type MoneyMetrics = Pick<Metrics, typeof MONEY_METRICS[number]>;
+export interface PeriodComparison {
+  mode: ComparisonMode;
+  previous_days: number;
+  current_days: number;
+  previous_daily_average: MoneyMetrics;
+  current_daily_average: MoneyMetrics;
+  daily_average_changes: MoneyMetrics;
+}
 export const PRODUCT_METRICS = [...SALES_FIELDS, "net_revenue", "gross_profit", "gross_margin", "discount_rate", "refund_ratio"] as const;
 export type ProductMetrics = Pick<Metrics, typeof PRODUCT_METRICS[number]>;
 export interface Scope { kind: "all" | "channel" | "sku"; channels: string[]; sku?: string; category?: string }
@@ -100,5 +112,5 @@ export interface Diagnostic {
   limitations: string[];
   ranking_amount: Metric | null;
 }
-export interface AnalysisFilters { channels?: string[]; previous_period?: Period; current_period?: Period }
+export interface AnalysisFilters { channels?: string[]; previous_period?: Period; current_period?: Period; comparison_mode?: ComparisonMode }
 export interface ProductFilters { period: Period; channels?: string[]; sku?: string; category?: string }

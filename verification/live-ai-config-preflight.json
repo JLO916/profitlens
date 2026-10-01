@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-01T11:01:57.325Z",
+  "env_files": [],
+  "openai_key_present": false,
+  "key_looks_like_test_placeholder": false,
+  "model_configured": false,
+  "enable_live_ai": false,
+  "app_mode": null,
+  "public_demo": false,
+  "provider_calls_this_turn": 0,
+  "live_acceptance": "not_run",
+  "release": "not_run"
+}

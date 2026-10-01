@@ -1,0 +1,362 @@
+[
+  {
+    "path": ".next/types/routes.d 6.ts",
+    "bytes": 1993,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "90beaa9119cf2faa70418709f1e2c8398aeda9c348f9c85f769a91a724918eb8",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 6.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 6.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 6.ts"
+  },
+  {
+    "path": ".next/types/validator 9.ts",
+    "bytes": 3774,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "bebbd8e95d4c568d6cce0c83d87a5bd7180a258eed30ba2e398c69f07f3ba2f7",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 9.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 6.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 6.ts"
+  },
+  {
+    "path": ".next/types/routes.d 2.ts",
+    "bytes": 1953,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": false,
+    "sha256": "daaf17948dca6c03399fc8e5e2839b76ed6cc7db684ad54a7ad3383b27ea31fd",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 2.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 2.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 2.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 2.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 2.ts"
+  },
+  {
+    "path": ".next/types/routes.d 3.ts",
+    "bytes": 1993,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "90beaa9119cf2faa70418709f1e2c8398aeda9c348f9c85f769a91a724918eb8",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 3.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 3.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 3.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 3.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 3.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 10.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 10.ts"
+  },
+  {
+    "path": ".next/types/routes.d 7.ts",
+    "bytes": 1993,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "90beaa9119cf2faa70418709f1e2c8398aeda9c348f9c85f769a91a724918eb8",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 7.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 7.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 7.ts"
+  },
+  {
+    "path": ".next/types/validator 8.ts",
+    "bytes": 3774,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "bebbd8e95d4c568d6cce0c83d87a5bd7180a258eed30ba2e398c69f07f3ba2f7",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 8.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 7.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 7.ts"
+  },
+  {
+    "path": ".next/types/validator 3.ts",
+    "bytes": 3774,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "bebbd8e95d4c568d6cce0c83d87a5bd7180a258eed30ba2e398c69f07f3ba2f7",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 3.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 8.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 8.ts"
+  },
+  {
+    "path": ".next/types/routes.d 8.ts",
+    "bytes": 1993,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "90beaa9119cf2faa70418709f1e2c8398aeda9c348f9c85f769a91a724918eb8",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 8.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 8.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 8.ts"
+  },
+  {
+    "path": ".next/types/validator 7.ts",
+    "bytes": 3774,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "bebbd8e95d4c568d6cce0c83d87a5bd7180a258eed30ba2e398c69f07f3ba2f7",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 7.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 9.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 9.ts"
+  },
+  {
+    "path": ".next/types/routes.d 9.ts",
+    "bytes": 1993,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "90beaa9119cf2faa70418709f1e2c8398aeda9c348f9c85f769a91a724918eb8",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 9.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 9.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 9.ts"
+  },
+  {
+    "path": ".next/types/validator 6.ts",
+    "bytes": 3774,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "bebbd8e95d4c568d6cce0c83d87a5bd7180a258eed30ba2e398c69f07f3ba2f7",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 6.ts"
+  },
+  {
+    "path": ".next/types/validator 2.ts",
+    "bytes": 3471,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": false,
+    "sha256": "efb67a95e5306874b2ac55f296b57e48f34fb923c91dfbe4e087c9f3f5de7d71",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 2.ts"
+  },
+  {
+    "path": ".next/types/validator 5.ts",
+    "bytes": 3774,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "bebbd8e95d4c568d6cce0c83d87a5bd7180a258eed30ba2e398c69f07f3ba2f7",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 5.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 10.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 10.ts"
+  },
+  {
+    "path": ".next/types/validator 4.ts",
+    "bytes": 3774,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "bebbd8e95d4c568d6cce0c83d87a5bd7180a258eed30ba2e398c69f07f3ba2f7",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 4.ts"
+  },
+  {
+    "path": ".next/types/routes.d 4.ts",
+    "bytes": 1993,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "90beaa9119cf2faa70418709f1e2c8398aeda9c348f9c85f769a91a724918eb8",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 4.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 4.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 4.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 4.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 4.ts"
+  },
+  {
+    "path": ".next/types/routes.d 5.ts",
+    "bytes": 1993,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "90beaa9119cf2faa70418709f1e2c8398aeda9c348f9c85f769a91a724918eb8",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 5.ts"
+  },
+  {
+    "path": ".next/types/cache-life.d 5.ts",
+    "bytes": 5905,
+    "base": ".next/types/cache-life.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "4f984436b10cfb43ccf7fc3114dcb851cbefa4d58b7d8ae741aaae0f6e330129",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/cache-life.d 5.ts"
+  },
+  {
+    "path": ".next/types/root-params.d 5.ts",
+    "bytes": 101,
+    "base": ".next/types/root-params.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "f3387dd7800eec3c34273f7a8efad13e864598c7e8f788d321e407390989bb59",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/root-params.d 5.ts"
+  },
+  {
+    "path": ".next/types/routes.d 10.ts",
+    "bytes": 1993,
+    "base": ".next/types/routes.d.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "90beaa9119cf2faa70418709f1e2c8398aeda9c348f9c85f769a91a724918eb8",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/routes.d 10.ts"
+  },
+  {
+    "path": ".next/types/validator 10.ts",
+    "bytes": 3774,
+    "base": ".next/types/validator.ts",
+    "base_exists": true,
+    "identical": true,
+    "sha256": "bebbd8e95d4c568d6cce0c83d87a5bd7180a258eed30ba2e398c69f07f3ba2f7",
+    "action": "moved_generated_copy",
+    "backup": "/tmp/profitlens-generated-types-z11s2zgr/validator 10.ts"
+  }
+]

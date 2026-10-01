@@ -1,0 +1,28 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/product-comparison.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/product-comparison.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/product-comparison.test.ts [ tests/product-comparison.test.ts ]
+Error: Cannot find package '@/domain/product-comparison' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/product-comparison.test.ts
+ ❯ tests/product-comparison.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { compareProducts, selectProductComparisonRows } from "@/domain…
+       | ^
+      3| import { exportProductComparisonCsv } from "@/application/product-comp…
+      4| import { validateDataset } from "@/domain/validation";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  17:20:48
+   Duration  158ms (transform 20ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
