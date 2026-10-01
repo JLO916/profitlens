@@ -1,0 +1,68 @@
+{
+  "checked_at": "2026-10-01T11:21:46.394Z",
+  "status": "pass",
+  "url": "https://profitlens-tau.vercel.app",
+  "expected_commit": "2f8e539c22a3afc0260c6db08f9570b80eaebdb6",
+  "deployment": {
+    "id": "dpl_C6WoYoo811nLC1578zNf434ycXrN",
+    "url": "profitlens-dgtltbjkq-jlo916s-projects.vercel.app",
+    "state": "READY",
+    "target": "production",
+    "commit": "2f8e539c22a3afc0260c6db08f9570b80eaebdb6",
+    "branch": "main",
+    "source": "git",
+    "framework": "nextjs",
+    "regions": [
+      "iad1"
+    ],
+    "alias": [
+      "profitlens-tau.vercel.app",
+      "profitlens-jlo916s-projects.vercel.app",
+      "profitlens-git-main-jlo916s-projects.vercel.app"
+    ],
+    "alias_error": null,
+    "build_started_at": "2026-10-01T11:18:49.123Z",
+    "ready_at": "2026-10-01T11:19:55.728Z",
+    "build_to_ready_ms": 66605
+  },
+  "alias_lookup": {
+    "id": "dpl_C6WoYoo811nLC1578zNf434ycXrN",
+    "commit": "2f8e539c22a3afc0260c6db08f9570b80eaebdb6",
+    "state": "READY",
+    "matches_expected": true
+  },
+  "http_smoke": {
+    "status": "pass",
+    "checks": 13,
+    "evidence": "release-20261001-http.json",
+    "initial_sandbox_attempt": "failed: DNS resolution socket.gaierror [Errno 8]",
+    "authorized_network_retry": "pass"
+  },
+  "build": {
+    "status": "pass",
+    "mcp_logs": "unavailable: Tool get_deployment_build_logs not found",
+    "cli_logs": "pass",
+    "command": "vercel inspect profitlens-dgtltbjkq-jlo916s-projects.vercel.app --logs --scope jlo916s-projects",
+    "exit_code": 0,
+    "evidence": "release-20261001-cloud-build.txt",
+    "warnings": [
+      "package.json engines node >=24.0.0 can automatically upgrade Node major",
+      "eslint@9.39.5 reported deprecated/unsupported by npm",
+      "unrs-resolver@1.12.2 postinstall not covered by allowScripts"
+    ]
+  },
+  "runtime": {
+    "status": "pass",
+    "since": "2026-10-01T11:19:55.728Z",
+    "checked_at": "2026-10-01T11:21:46.394Z",
+    "deployment_scoped_5xx_counts": [],
+    "project_scoped_runtime_errors": [],
+    "limitation": "Only the short post-release observation window; telemetry may be delayed. Not a long-running reliability test."
+  },
+  "live_ai": {
+    "status": "not_run",
+    "model_called": false,
+    "public_demo_get": "unavailable: PUBLIC_DEMO",
+    "public_demo_post": 403
+  }
+}

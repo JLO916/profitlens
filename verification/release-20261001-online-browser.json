@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-01T11:26:42.786Z",
+  "url": "https://profitlens-tau.vercel.app/",
+  "commit": "2f8e539c22a3afc0260c6db08f9570b80eaebdb6",
+  "deployment": "dpl_C6WoYoo811nLC1578zNf434ycXrN",
+  "tool": "Codex in-app browser / CUA",
+  "synthetic_only": true,
+  "checks": [
+    {
+      "step": "demo",
+      "viewport": 1440,
+      "net_revenue": "7,850,657.90",
+      "contribution": "1,269,792.73",
+      "layout": {
+        "scrollWidth": 1425,
+        "width": 1440
+      }
+    },
+    {
+      "step": "import_basis_required",
+      "result": "blocked_keeps_demo"
+    },
+    {
+      "step": "alternative_applied",
+      "net_revenue": "600.00",
+      "contribution": "10.00"
+    },
+    {
+      "step": "keyboard_evidence",
+      "viewport": 390,
+      "value": "40.00",
+      "source_rows": 8,
+      "layout": {
+        "scrollWidth": 375,
+        "width": 390
+      }
+    },
+    {
+      "check": "scenario_explicit_assumptions",
+      "viewport": 768,
+      "volume_percent": "0",
+      "discount_pp": "0",
+      "fulfillment_percent": "-50",
+      "ad_percent": "0",
+      "one_time": "3",
+      "result": "44.00",
+      "delta": "+4.00",
+      "status": "pass",
+      "layout": {
+        "scrollWidth": 753,
+        "width": 768
+      }
+    },
+    {
+      "check": "action_from_rule",
+      "status": "pass",
+      "confirmed": true,
+      "evidence_count": 4,
+      "scope": "DTC",
+      "period": "2026-09-03–2026-09-04"
+    },
+    {
+      "check": "manual_export_buttons",
+      "status": "pass",
+      "formats": [
+        "Markdown",
+        "CSV",
+        "JSON"
+      ],
+      "observed": "已下載本機工作稿；各項保留自身範圍、草稿與歷史證據。",
+      "file_bytes": "not_run; downloaded contents separately verified in local full E2E"
+    },
+    {
+      "check": "golden_switch_and_stale",
+      "status": "pass",
+      "net_revenue": "2470.00",
+      "contribution": "255.00",
+      "delta": "-315.00",
+      "old_scenario": "disabled 過期",
+      "old_action": "過期／歷史證據"
+    }
+  ],
+  "console_warn_error": [],
+  "screenshots": [
+    "release-20261001-online-desktop.png",
+    "release-20261001-online-mobile-evidence.png",
+    "release-20261001-online-tablet-scenario.png"
+  ],
+  "not_run": [
+    "manual download bytes",
+    "full 282 cases against remote production",
+    "live AI",
+    "real business data",
+    "Safari and physical devices"
+  ]
+}

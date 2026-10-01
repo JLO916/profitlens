@@ -1,14 +1,14 @@
 # ProfitLens
 電商獲利診斷與決策工作台。
 
-最新進度（2026-10-01）：使用者已改為**先做系統發布**，Live AI 不再是本次公開示範發布的前置條件。目前正執行發布前工程檢查，準備將三批管理者改善推送至既有私人 GitHub／Vercel；最終版本、線上驗收及限制見 [本次發布紀錄](verification/release-20261001-acceptance.md) 與 [STATUS](docs/STATUS.md)。公開版維持 `PUBLIC_DEMO`，Live AI 後端關閉；**Live AI 未實測**，20案僅完成離線準備。下段為既有功能驗收摘要。
+最新進度（2026-10-01）：**三批管理者改善已發布至 [ProfitLens 正式站](https://profitlens-tau.vercel.app)**，程式版本 `2f8e539` 已推送至既有私人 GitHub，Vercel production READY。依最新指示先發布，公開版維持 `PUBLIC_DEMO`，Live AI 後端關閉；**Live AI 未實測**，20案僅完成離線準備。發布前重新通過766項unit/integration、282項三尺寸E2E、typecheck、lint及production build；正式站13項HTTP檢查與1440／768／390px人工操作通過。完整命令、證據及未驗收範圍見 [本次發布紀錄](verification/release-20261001-acceptance.md) 與 [STATUS](docs/STATUS.md)。
 
-狀態：**管理者評閱改善第三批（PL-10）完成，本機預覽版本**。每頁明示規則診斷及即時 AI 可用狀態，測試資料移至「進階驗證」，主管文案與稽核資訊分層；保留前兩批的摘要、商品比較、方案、行動與會議輸出。本輪 typecheck、lint、766 項 unit/integration、production build（由 E2E 啟動流程執行）及 282 項三尺寸 E2E 全部通過；另以實際瀏覽器檢查 1440／768／390px。失敗修復與未執行紀錄見 [第三批驗收報告](verification/manager-batch3-acceptance.md) 與 [STATUS](docs/STATUS.md)。[第二批](verification/manager-batch2-acceptance.md)、[第一批](verification/manager-batch1-acceptance.md) 和 [M6](verification/app-acceptance.md) 保留歷史證據。**Live AI 未實測**，mock 不代表已連線。三批改善尚未推送 GitHub 或更新 production；本輪未重新驗收線上版本。已啟動的 [本機預覽 3200](http://127.0.0.1:3200/) 使用 PUBLIC_DEMO，服務運行時可直接操作。
+已發布功能包含每頁規則診斷及即時 AI 可用狀態、獨立「進階驗證」、主管摘要、商品比較、方案、行動與會議輸出。開發時的失敗修復與未執行項目保留於 [第三批](verification/manager-batch3-acceptance.md)、[第二批](verification/manager-batch2-acceptance.md)、[第一批](verification/manager-batch1-acceptance.md) 和 [M6](verification/app-acceptance.md) 歷史報告；不將歷史通過數當成本次重新執行結果。已啟動的 [本機預覽 3200](http://127.0.0.1:3200/) 在服務運行時仍可操作。
 
 從 `START_HERE.md` 開始。工作流程：匯入 → 檢核 → 診斷 → 試算 → 行動與匯出。
 本產品中的行銷後貢獻為明示成本範圍下的管理指標，不等於淨利；情境試算不是預測或成效承諾。
 
-後續試用進度：已完成合成替代資料的完整操作演練及獨立金額核對，**真實資料與真實使用者試用仍待提供**。請使用 [實務試用工作表](docs/PILOT_WORKSHEET.md) 記錄來源口徑、同範圍對帳、獨立操作及人工回饋；不要把合成答案或自動化時間填作商業成果。本輪命令、人工截圖、下載工具限制及9項針對性E2E見 [試用準備驗收](verification/pilot-rehearsal-acceptance.md)。本輪沒有改產品程式或部署。
+後續試用進度：已完成合成替代資料的完整操作演練及獨立金額核對，**真實資料與真實使用者試用仍待提供**。請使用 [實務試用工作表](docs/PILOT_WORKSHEET.md) 記錄來源口徑、同範圍對帳、獨立操作及人工回饋；不要把合成答案或自動化時間填作商業成果。先前試用準備的命令、截圖、下載工具限制及9項針對性E2E見 [試用準備驗收](verification/pilot-rehearsal-acceptance.md)。
 
 ## 線上示範與原始碼
 

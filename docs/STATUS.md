@@ -2,9 +2,15 @@
 
 ## 2026-10-01｜系統發布（依最新指示先發布）
 
-使用者最新指示為「先做系統發布」，取代下方上一輪的 Live 先行順序。授權範圍仍是既有私人 GitHub `JLO916/profitlens` 與 Vercel `jlo916s-projects/profitlens`；不建立新雲端專案，不開放公開 Live AI。正在執行本輪發布檢查，最後結果及未驗收範圍記在 [發布紀錄](../verification/release-20261001-acceptance.md)。
+**已發布三批管理者改善**：[正式站](https://profitlens-tau.vercel.app)；程式 commit `2f8e539c22a3afc0260c6db08f9570b80eaebdb6` 已推送至既有私人 GitHub `JLO916/profitlens` main，Vercel deployment `dpl_C6WoYoo811nLC1578zNf434ycXrN` 為 production READY，公開 alias 對應同一 SHA。使用者最新指示「先做系統發布」取代下方上一輪 Live 先行順序。沒有建立新專案、公開 repo 或啟用公開 Live AI；此次只發布既有成果並補驗收文件，未改產品程式、財務定義、golden 或依賴。
 
-本機 typecheck、lint、34 files／766 unit/integration 已重新執行通過。Live AI 仍未實测，模型品質與真人實務成效仍待驗證；這些不再阻止本輪以規則診斷運作的 PUBLIC_DEMO 發布。下方保留各輪當時紀錄，不將它們當作本輪重新執行的結果。
+- 本輪 `npm run typecheck`、`npm run lint`、`npm test -- --run` 全部 pass，34 files／766 tests。`npm run test:e2e -- --config verification/release-20261001-e2e.config.ts` 先實際 production build，再跑282項：1440×1000、768×1024、390×844各94；0 skipped／unexpected／flaky。BUILD_ID `lHUOyzPXNUWjxCt_69L8j`。首次sandbox listen3100 EPERM未跑案例，正常核准後重跑通過；完整logs保留。
+- 遠端雲端 `npm ci`／build pass，13/13 HTTP smoke pass；白名單合成資料與本機一致，環境檔／Git／驗收文件等敏感靜態路徑404。公開 AI GET unavailable／PUBLIC_DEMO、POST403；三環境公開旗標確認，production三旗標明確更新，沒有 OpenAI key。
+- 正式站真瀏覽器完成demo、替代三CSV＋manifest選檔、金額口徑阻擋、來源對帳、匯入後N600.00／CM10.00、DTC來源8列、明示假設試算44.00、行動確認及三格式匯出按鈕。再切Golden核對N2470.00／CM255.00與舊方案／行動過期。三尺寸目視截圖及Enter／Escape操作、當次warn/error空記錄在 `release-20261001-online-browser.json`；手動下載位元未取得，內容核對屬本機E2E證據，沒有混稱。
+- 本機23個client資產無指定假canary／server-only標記；122檔受測來源hash一致。發布包文字secret有限掃描無未解釋命中，未對所有binary做OCR。完整staged whitespace檢查對原附件／raw logs有例外，保留原樣，source／自建文件檢查pass。
+- Live AI／20案真人品質／真實營運資料／商業成效／Safari及實體裝置均 **not_run**。282項完整E2E跑在本機production；線上是HTTP＋人工流程，未在遠端重跑全套。runtime error查詢僅發布後短窗口，不能代表長期可用性或負載驗收。雲端Node主版範圍、ESLint支援與allowScripts維護警告另記報告，本輪未改版本。
+
+變更與證據：README、STATUS、發布專用E2E證據副本／設定及 `verification/release-20261001-*`；受測產品版本為上述commit，後續文件提交不改產品來源。詳見 [完整發布紀錄](../verification/release-20261001-acceptance.md)、[本機工程檢查](../verification/release-20261001-checks.md)、[遠端核對](../verification/release-20261001-remote-checks.md)。系統發布完成後停止；Live AI及真實資料試用仍為獨立待辦，沒有自動開啟下一個milestone。下方保留各輪當時紀錄，以本節為最新狀態。
 
 ---
 
