@@ -1,0 +1,11 @@
+{
+  "url": "https://profitlens-tau.vercel.app/",
+  "checks": [
+    "Demo 淨營收 7,850,657.90、貢獻 1,269,792.73",
+    "Golden 淨營收 2,470.00、貢獻 255.00、DTC 270.00、MARKETPLACE -15.00",
+    "Golden 規則診斷 16 項"
+  ],
+  "ai": "選配的 AI 解釋\n\n模型只整理說明、待驗證假說與候選行動；金額、比較及可用性由程式計算。\n\n規則診斷\n\n公開展示模式已由伺服器關閉即時 AI，仍可使用規則診斷。\n\n既有通路規則診斷保留在本頁，不依賴模型。頁面沒有金鑰輸入欄，不會自動呼叫模型或執行建議。\n\n傳送前確認\n\n接收端：OpenAI API，由本機伺服器轉送。只傳送下方彙總快照與程式產生的觀察候選；另附固定的用途與輸出規則，不加入其他使用者資料。\n\n資料可能受到供應商保留政策影響，不能承諾絕不儲存。原始 CSV、SKU、資料集名稱、實際檔名與通路名稱不會加入模型請求；以下對照只留在目前分頁記憶體。\n\n實際傳送給 OpenAI 的完整資料 JSON\n{\n  \"snapshot\": {\n    \"schema_version\": \"ai-snapshot-v1\",\n    \"snapshot_id\": \"ai-v1:92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48:6935352028080c34d16eb21c0a207ac5c9397e42eca5c0fe4b200195f84fb2e9:2\",\n    \"currency\": \"TWD\",\n    \"metric_version\": \"contribution-v1\",\n    \"data_as_of\": \"2026-08-03\",\n    \"periods\": {\n      \"previ",
+  "console": [],
+  "checked_at": "2026-10-01T08:04:12.470Z"
+}

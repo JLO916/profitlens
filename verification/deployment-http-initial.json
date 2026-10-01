@@ -1,0 +1,157 @@
+{
+  "checked_at": "2026-10-01T08:02:07.161074+00:00",
+  "url": "https://profitlens-tau.vercel.app",
+  "checks": [
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "public, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    },
+    {
+      "path": "/api/datasets/demo",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": false,
+        "channel_costs_daily.csv": false,
+        "ad_spend_daily.csv": false
+      },
+      "pass": false
+    },
+    {
+      "path": "/api/datasets/golden",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": false,
+        "channel_costs_daily.csv": false,
+        "ad_spend_daily.csv": false
+      },
+      "pass": false
+    },
+    {
+      "path": "/api/datasets/missing-cogs",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": false,
+        "channel_costs_daily.csv": false,
+        "ad_spend_daily.csv": false
+      },
+      "pass": false
+    },
+    {
+      "path": "/api/datasets/missing-ad",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": false,
+        "channel_costs_daily.csv": false,
+        "ad_spend_daily.csv": false
+      },
+      "pass": false
+    },
+    {
+      "path": "/api/datasets/duplicate",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": false,
+        "channel_costs_daily.csv": false,
+        "ad_spend_daily.csv": false
+      },
+      "pass": false
+    },
+    {
+      "path": "/api/insights",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "body": {
+        "available": false,
+        "reason": "PUBLIC_DEMO",
+        "provider": "openai"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/insights",
+      "method": "POST",
+      "status": 403,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "body": {
+        "status": "fallback",
+        "snapshot_id": null,
+        "reason": "PUBLIC_DEMO"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/datasets/not-allowed",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "pass": true
+    },
+    {
+      "path": "/.env",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "public, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    },
+    {
+      "path": "/.git/config",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "public, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    },
+    {
+      "path": "/verification/app-acceptance.md",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "public, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    },
+    {
+      "path": "/fixtures/golden/sales_daily.csv",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "public, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    }
+  ],
+  "all_passed": false,
+  "live_ai_called": false
+}

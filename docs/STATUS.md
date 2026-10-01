@@ -1,5 +1,26 @@
 # Status
 
+## 2026-10-01｜使用者授權 GitHub／Vercel 首次部署
+
+本輪依「先將此版本推送部署至 github 及 versel」執行，授權範圍為目前版本的 GitHub 與 Vercel。沒有新增產品功能或開始新 milestone。下方 M6–M0 為各輪當時狀態，當時「未部署」不代表目前狀態。
+
+- GitHub：私人 [JLO916/profitlens](https://github.com/JLO916/profitlens)，main；首次程式快照 `b95c92ae112d08edd4930a41b64abb8e32390a00`。保留原規格、fixtures、golden 及驗收證據；沒有 push 環境 key／node_modules／私人資料目錄。
+- Vercel：`jlo916s-projects/profitlens`，Production **READY**；[正式網址](https://profitlens-tau.vercel.app)。首次部署 `dpl_3CxqBVmb1Fh7Bdr95cj8vxGKQL93`，Git main 連接成功。
+- 三環境均設 PUBLIC_DEMO，ENABLE_LIVE_AI=false，沒有 OpenAI key；線上 GET `/api/insights` unavailable、POST **403 / PUBLIC_DEMO**。Live AI **未執行**。
+- 雲端 `npm ci`、Next.js 16.3.7 `npm run build`（含 TypeScript）成功，build output 53 秒；專案 Node 設定 24.x。固定 ESLint deprecated、engine 開放未來 major、unrs-resolver install-script 提示保留於 log，未改依賴或 lockfile。
+- 線上 HTTP：13 checks 通過，包含首頁、五份合成資料 manifest／三 CSV bytes 與本機一致、AI 關閉、非白名單／環境檔／Git／verification／CSV 實體路徑 404。
+- 真瀏覽器：Demo 本期收入 7,850,657.90／貢獻 1,269,792.73；Golden 收入 2,470.00／貢獻 255.00，通路 DTC 270.00、MARKETPLACE −15.00；規則診斷 16 項與公開展示關閉 AI 提示。console warn/error 無；保存 jpg 與 browser JSON。
+- Runtime logs：首次 deployment、30 分鐘範圍、5xx 查詢沒有記錄；這是短時抽查，不是持續監測或無錯誤保證。
+- 本輪沒有修改財務／UI／AI production 程式，**未重跑**本機 615 unit/integration、lint 或 186 E2E；M6 的已執行結果與證據保留。公開環境完整匯入→匯出與三尺寸 E2E未重跑，不能把本次 smoke 當作全套線上驗收。
+
+變更：`.gitignore`（測試產物萬用字元與工具資料夾排除）、`.vercelignore`、`vercel.json`、README、STATUS、`verification/deployment-*`。部署過程兩個環境 CLI/API 操作失敗已解決；初次 HTTP helper 因 Python 自動轉換 CRLF 錯報 CSV 不同，改以原始 bytes 核對後全部通過，初次結果保留。完整命令與限制見 [deployment-acceptance.md](../verification/deployment-acceptance.md)。
+
+停止點：目前版本已部署；仍不支援公開 live AI、持久化、登入、正式平台 API；不繼續增加功能或付費服務。
+
+---
+
+## 歷史紀錄：M6
+
 更新日期：2026-10-01（Asia/Taipei）。本輪只執行 **M6 獨立驗收與已重現問題修復**，完成後停止。未將 M5 綠燈當成本輪證明；已重讀完整 acceptance 與當前狀態。**本機與 mock 驗收通過，live AI 未實測，沒有公開 repo／雲端專案／部署。**
 
 完整 49 項 acceptance 的逐列 pass/fail/not_run、操作說明與公開示範前檢查：[verification/app-acceptance.md](../verification/app-acceptance.md)。下方保留 M5–M0 歷史，不以歷史文字覆蓋本輪結果。

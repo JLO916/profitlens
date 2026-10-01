@@ -1,10 +1,21 @@
 # ProfitLens
 電商獲利診斷與決策工作台。
 
-狀態：**M6 本機獨立驗收完成**。重新執行 615 項單元／整合測試、186 項三尺寸 Chromium E2E、typecheck、lint 與 production build，並修復 AI 自由欄位數值引用偷換口徑、中文數字及憑證索取的已重現漏洞。完整逐項 pass/fail/not_run、人工瀏覽器證據與公開示範前檢查見 [verification/app-acceptance.md](verification/app-acceptance.md)，當輪命令見 [docs/STATUS.md](docs/STATUS.md)。**Live AI 未實測**；沒有真實 key，mock 不代表已連線。沒有登入、資料庫、公開 repo 或部署。
+狀態：**M6 本機獨立驗收完成**。重新執行 615 項單元／整合測試、186 項三尺寸 Chromium E2E、typecheck、lint 與 production build，並修復 AI 自由欄位數值引用偷換口徑、中文數字及憑證索取的已重現漏洞。完整逐項 pass/fail/not_run、人工瀏覽器證據與公開示範前檢查見 [verification/app-acceptance.md](verification/app-acceptance.md)，當輪命令見 [docs/STATUS.md](docs/STATUS.md)。**Live AI 未實測**；沒有真實 key，mock 不代表已連線。2026-10-01 經使用者授權，已推送私人 GitHub 並部署 Vercel 公開合成示範；沒有登入或資料庫。
 
 從 `START_HERE.md` 開始。工作流程：匯入 → 檢核 → 診斷 → 試算 → 行動與匯出。
 本產品中的行銷後貢獻為明示成本範圍下的管理指標，不等於淨利；情境試算不是預測或成效承諾。
+
+## 線上示範與原始碼
+
+- [開啟 ProfitLens 公開合成示範](https://profitlens-tau.vercel.app)
+- [GitHub：JLO916/profitlens（私人，須帳號權限）](https://github.com/JLO916/profitlens)
+- [Vercel 專案與部署記錄](https://vercel.com/jlo916s-projects/profitlens)
+- [首次部署驗證與限制](verification/deployment-acceptance.md)
+
+Vercel 的 Production、Preview、Development 均設定 `APP_MODE=PUBLIC_DEMO`、`PUBLIC_DEMO=true`、`ENABLE_LIVE_AI=false`；沒有 OpenAI key。可載入合成資料或在自己的分頁匯入標準 CSV、查看診斷與試算；匯入原文留在瀏覽器記憶體，重新整理會清空。公開站的 AI 後端關閉，使用規則診斷。
+
+Vercel 已連接私人 GitHub 的 `main` 分支。後續推送 main 會交給 Vercel 建置，更新前應先執行下方工程驗收；本次沒有新增 CI 測試阻擋規則。`vercel.json` 指定 Next.js、`npm ci` 與 `npm run build`；`.vercelignore` 排除 CLI 上傳的環境檔、測試報告、verification 與本機私人目錄。既有規格及驗收證據留在私人 GitHub。
 
 ## 本機啟動
 
@@ -82,7 +93,7 @@ npm test -- --run tests/domain-acceptance.test.ts
 - CSV 使用 UTF-8 BOM、逗號及 CRLF；引號、逗號和換行正確包覆。所有不可信文字欄，包括 SKU、品類、資料集名稱與檔名，若以前導 `= + - @`、空白、控制字元或 BOM 等開頭，會加單引號防止公式解讀。只有通過嚴格十進位驗證的 typed numeric 值可作數值輸出；合法負金額不加文字逃逸，不轉成零。
 - 「下載資料集設定 JSON」只有原始資料集的 manifest 設定，**不是資料備份**，不包含另外套用的期間／通路篩選、三份原始 CSV、完整快照或 UI 草稿；不能單靠它復原工作區。匯出只由瀏覽器產生本機下載，不經伺服器。
 
-上述分析、商品與問題 CSV 為 M3 功能；M4 另有以下決策工作稿三格式匯出。M6 已重跑本機匯出驗收；live 模型品質與正式公開環境仍未驗收。
+上述分析、商品與問題 CSV 為 M3 功能；M4 另有以下決策工作稿三格式匯出。M6 已重跑本機匯出驗收；另已完成公開示範的雲端 build、HTTP 與瀏覽器 smoke checks。Live 模型品質仍未驗收；未把部署 smoke checks 當作全套線上 E2E。
 
 ## 用本機替代資料重現匯入
 
@@ -164,7 +175,7 @@ PUBLIC_DEMO=false
 
 選擇帳戶當時可用、支援 Structured Outputs 的模型填入 `OPENAI_MODEL`；程式沒有預設模型。確定要使用 API 後自行將 `ENABLE_LIVE_AI` 改成 `true`，重新啟動本機伺服器。API 使用可能產生帳戶費用；Codex 使用與這個 App 的 API 使用分開。沒有設定費率時只列實際 token metadata，不捏造台幣成本。本輪未提供真實金鑰，**live 呼叫與帳戶模型相容性未執行**。
 
-金鑰只在標記 `server-only` 的模組讀取，不使用 `NEXT_PUBLIC_`，不出現在頁面、回應或日誌。`APP_MODE=PUBLIC_DEMO` 或 `PUBLIC_DEMO=true` 會在 server 讀取 POST body／建立 provider 之前強制禁止 live，即使另設 `ENABLE_LIVE_AI=true` 也不開放。API 限本機 host；POST 另要求同 origin。這是本機的保守入口檢查，**不是公開服務的認證、rate limit 或使用預算機制**；請勿把設定好的本機服務暴露到網際網路，本輪沒有公開部署。
+金鑰只在標記 `server-only` 的模組讀取，不使用 `NEXT_PUBLIC_`，不出現在頁面、回應或日誌。`APP_MODE=PUBLIC_DEMO` 或 `PUBLIC_DEMO=true` 會在 server 讀取 POST body／建立 provider 之前強制禁止 live，即使另設 `ENABLE_LIVE_AI=true` 也不開放。API 限本機 host；POST 另要求同 origin。這是本機的保守入口檢查，**不是公開服務的認證、rate limit 或使用預算機制**；請勿把啟用 live AI 的本機服務暴露到網際網路。已部署的公開示範在 server 強制關閉 live AI，且未設定 OpenAI key。
 
 ### 預覽、同意與追溯
 
@@ -238,7 +249,7 @@ if (validation.dataset) {
 - 金額差異拆解必須精確對帳，不能宣稱因果；方案比較必須顯示假設，不能冒稱預測。比率與缺漏傳播詳見 `docs/METRICS.md`。
 - 原始匯入資料只留於使用者瀏覽器記憶體；不建立伺服器全域使用者資料或持久化。M5 選配 AI 僅傳經預覽同意的匿名彙總 facts，原始 CSV、SKU、名稱與來源行號不傳送。
 
-M1 計算與驗證、M2／M3 工作台及匯入、M4 情境與人工決策工作稿、M5 選配 AI 解釋均已實作。M5 live 呼叫及實際模型品質尚未驗收；M6 完整 release 未開始，沒有登入、資料庫或部署。
+M1 計算與驗證、M2／M3 工作台及匯入、M4 情境與人工決策工作稿、M5 選配 AI 解釋均已實作。M6 本機獨立驗收已完成，另已部署公開合成示範。M5 live 呼叫及實際模型品質尚未驗收；沒有登入或資料庫。
 
 ## 目錄
 
@@ -250,7 +261,7 @@ M1 計算與驗證、M2／M3 工作台及匯入、M4 情境與人工決策工作
 | `src/application/` | 快照、匯入、精確呈現、決策狀態與安全匯出、AI 匿名快照、同意綁定與取消／過期回應防護 |
 | `src/components/` | 工作台、匯入、診斷、情境與人工行動、AI 預覽／同意／解釋、問題及來源對話框 |
 | `src/ai/`、`src/app/api/insights/` | 嚴格契約、觀察目錄、語意驗證、server-only OpenAI provider、有限重試與安全降級 |
-| `tests/`、`playwright.config.ts` | M1–M5 單元、整合及 3 尺寸 E2E；AI 自動化回應明標 MOCK，沒有產品 mock 模式 |
+| `tests/`、`playwright.config.ts` | M1–M6 單元、整合及 3 尺寸 E2E；AI 自動化回應明標 MOCK，沒有產品 mock 模式 |
 | `docs/`、`prompts/` | 原有產品規格與逐關卡任務 |
 | `fixtures/`、`templates/`、`spec/` | 原有合成資料、範本與 schema，保持原樣 |
 | `verification/` | 各階段實際命令、RED／GREEN、原檔比對、browser logs、截圖；當輪完成範圍見 STATUS |
@@ -267,11 +278,11 @@ M3／M4 沒有新增依賴；M5 固定新增官方 SDK `openai@7.25.0`，`packag
 
 配置參考：[Next.js 安裝](https://nextjs.org/docs/app/getting-started/installation)、[ESLint](https://nextjs.org/docs/app/api-reference/config/eslint)、[Vitest](https://nextjs.org/docs/app/guides/testing/vitest)、[Tailwind CSS](https://tailwindcss.com/docs/installation/framework-guides/nextjs)。
 
-`.gitignore` 已排除 `.env*`（保留 `.env.example`）、`uploads/`、`data/private/`、`reports/private/`、建置產物與測試產物。真實資料不得放入 `public/` 或公開 repo；API key 不使用 `NEXT_PUBLIC_` 前綴。目前沒有 Git repo／遠端、部署、登入或資料庫。
+`.gitignore` 已排除 `.env*`（保留 `.env.example`）、`uploads/`、`data/private/`、`reports/private/`、建置產物與測試產物。真實資料不得放入 `public/` 或公開 repo；API key 不使用 `NEXT_PUBLIC_` 前綴。目前 GitHub 儲存庫為私人；Vercel 只提供公開合成示範與瀏覽器記憶體工作區。沒有登入或資料庫。
 
 `next.config.ts` 設定 `agentRules: false`，避免新版 Next.js 在啟動開發伺服器時自動追加內容到原有 `AGENTS.md`；原專案指示保持不變。
 
-本輪只處理 M5，完成本機與 mock 驗收後停止。下一個 milestone 是 M6 完整 release 驗收，等待下一輪指示；本輪 live 模型呼叫、模型品質、人工修改量與處理時間均未執行／未量測，不宣稱已產生商業成效。
+M0–M6 本機與 mock 驗收已完成，另依使用者指示完成 GitHub／Vercel 首次部署。未開始新功能 milestone；live 模型呼叫、模型品質、人工修改量與處理時間均未執行／未量測，不宣稱商業成效。
 
 ## M6 驗收與公開示範邊界
 
@@ -281,6 +292,6 @@ M3／M4 沒有新增依賴；M5 固定新增官方 SDK `openai@7.25.0`，`packag
 - 全新暫存副本的固定 lockfile 離線 `npm ci`、typecheck、無 key dev 啟動成功。該次使用已存在的 registry cache，沒有做最新漏洞 audit；npm 提示固定 eslint 版本已 deprecated，尚未升級，不宣稱依賴零漏洞。
 - 尚未實測 Safari／Firefox、原生手機、螢幕閱讀器、最大量效能與真實模型品質。自然語言檢核只涵蓋可驗證引用及已知攻防案例，仍須人工核查。
 
-公開合成示範前，確認包內沒有真實 CSV、私人截圖或環境檔；後端設 `APP_MODE=PUBLIC_DEMO`（或 `PUBLIC_DEMO=true`）且 `ENABLE_LIVE_AI=false`，公開環境不提供 API key。重新 build 並檢查前端資源與 logs，在實際示範 host 重測 `/api/insights` POST 403。此次只在本機 production 產物完成這項驗證，沒有建立任何公開環境。Local Host／Origin 限制不是公開服務認證；目前不支援公開 live AI，沒有登入、rate limit 或費用預算控制。部署或公開 repo 仍需另行授權。
+公開合成示範前，確認包內沒有真實 CSV、私人截圖或環境檔；後端設 `APP_MODE=PUBLIC_DEMO`（或 `PUBLIC_DEMO=true`）且 `ENABLE_LIVE_AI=false`，公開環境不提供 API key。重新 build 並檢查前端資源與 logs，在實際示範 host 重測 `/api/insights` POST 403。2026-10-01 已在實際公開示範 host 重測 GET 關閉狀態及 POST 403／PUBLIC_DEMO，並核對所有五個白名單資料集的 manifest 與三 CSV 原始位元。Local Host／Origin 限制不是公開服務認證；目前不支援公開 live AI，沒有登入、rate limit 或費用預算控制。GitHub 仍為私人；改為公開 repo、開啟 live AI 或新增付費服務需另行授權。
 
 匯出是決策工作稿，不能當原始 CSV 備份或重新匯入還原；資料只在此分頁記憶體，重新整理後需重新選檔。正式平台 API、多人共享、跨 session 儲存、SKU 廣告歸因、完整公司淨利與自動預測均不支援。M6 到此停止。

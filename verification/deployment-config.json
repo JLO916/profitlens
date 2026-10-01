@@ -1,0 +1,71 @@
+{
+  "id": "prj_tbTT4CUd5u51SUpc9mqw7UbQQfnY",
+  "name": "profitlens",
+  "framework": "nextjs",
+  "nodeVersion": "24.x",
+  "git": {
+    "type": "github",
+    "repo": "profitlens",
+    "org": "JLO916",
+    "productionBranch": "main"
+  },
+  "environment": [
+    {
+      "key": "APP_MODE",
+      "target": [
+        "production"
+      ],
+      "gitBranch": null,
+      "configured_value": "PUBLIC_DEMO",
+      "readback": "encrypted at rest; set command succeeded; runtime gate checked separately"
+    },
+    {
+      "key": "PUBLIC_DEMO",
+      "target": [
+        "production"
+      ],
+      "gitBranch": null,
+      "configured_value": "true",
+      "readback": "encrypted at rest; set command succeeded; runtime gate checked separately"
+    },
+    {
+      "key": "ENABLE_LIVE_AI",
+      "target": [
+        "production"
+      ],
+      "gitBranch": null,
+      "configured_value": "false",
+      "readback": "encrypted at rest; set command succeeded; runtime gate checked separately"
+    },
+    {
+      "key": "APP_MODE",
+      "target": [
+        "preview",
+        "development"
+      ],
+      "gitBranch": null,
+      "configured_value": "PUBLIC_DEMO",
+      "readback": "plain value matched"
+    },
+    {
+      "key": "PUBLIC_DEMO",
+      "target": [
+        "preview",
+        "development"
+      ],
+      "gitBranch": null,
+      "configured_value": "true",
+      "readback": "plain value matched"
+    },
+    {
+      "key": "ENABLE_LIVE_AI",
+      "target": [
+        "preview",
+        "development"
+      ],
+      "gitBranch": null,
+      "configured_value": "false",
+      "readback": "plain value matched"
+    }
+  ]
+}
