@@ -1,4 +1,4 @@
-import { clickReplacing } from "./replacement-helpers";
+import { clickReplacing, closeDownloads, openDownloads, openPeriodComparison } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -48,6 +48,7 @@ async function importMonthly(page: Page, kind: "complete" | "zero" | "missing" =
   await expect(page.getByTestId("import-status")).toHaveText(kind === "missing" ? "部分資料待補，可套用已知範圍" : "檢核通過，可套用資料");
   await clickReplacing(page, form.getByRole("button", { name: "套用匯入資料", exact: true }));
   await expect(form).toHaveCount(0);
+  await openPeriodComparison(page);
   await expect(comparison(page)).toBeVisible();
   await expect(page.getByLabel("比較方式", { exact: true })).toHaveValue("calendar_months");
 }
@@ -74,7 +75,8 @@ function records(csv: string): Record<string, string>[] {
   });
 }
 async function downloadAnalysis(page: Page) {
-  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "下載目前分析 CSV", exact: true }).click()]);
+  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: "下載目前分析 CSV", exact: true }).click()]);
+  await closeDownloads(page);
   expect(download.suggestedFilename()).toBe("profitlens-analysis.csv");
   return records(await readFile((await download.path())!, "utf8"));
 }

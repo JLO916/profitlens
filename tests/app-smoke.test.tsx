@@ -1,4 +1,5 @@
 import { createElement } from "react";
+import { labels } from "../src/i18n";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import RootLayout, { metadata } from "@/app/layout";
@@ -25,6 +26,6 @@ describe("M4 工作台初始畫面 smoke test", () => {
     expect(html).toContain('<html lang="zh-Hant">');
     expect(html).toContain('id="main-content"');
     expect(html).toContain("ProfitLens");
-    expect(metadata.title).toBe("ProfitLens｜電商獲利診斷工作台");
+    expect(metadata.title).toBe(labels.brand.title);
   });
 });

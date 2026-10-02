@@ -1,6 +1,17 @@
 # Status
 
-## Revamp v2（2026-10-02 起）｜R0 基線與安全網（完成）
+## Revamp v2（2026-10-02 起）｜R1 總覽重排與頁首減負（完成，未合併、未部署）
+
+R1 依 `docs/revamp/06_BATCHES.md` R1-1～R1-9 完成：AI 狀態改為頂欄小標籤＋說明 popover；工作區保存整組搬進頂欄「儲存」展開面板；期間列 sticky 並新增近 7 天／近 4 週／近 12 週／本月 vs 上月快捷（只填日期，仍須套用；`src/application/period-presets.ts`）；總覽順序改為 KPI → 本期三件事（目前檢視）→ 趨勢 → 橋接＋通路比較 → 期間合計與日均（收合）→ 會議稿與主管摘要（頁尾收合）；通路寬表移到通路診斷頁頂；下載鈕集中到頂欄「下載」；切頁捲動歸零並聚焦 `main`；三件事與健檢卡顯示「對貢獻影響」（負＝紅不利、正＝綠有利，`contributionImpact()`，定義見 `docs/DECISIONS.md`）；修 select 高度、徽章「示範資料」、副標與 `<title>`。財務核心、fixtures、依賴零改動；不改任何名詞。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **42 files／828 tests pass**、production build pass 無 warning、E2E **428 passed／0 unexpected／0 flaky／0 skipped**（8.1m，四尺寸各 107；基線 404 ＋ 新增 24）。
+- 新增測試：`tests/e2e/revamp-r1-layout.spec.ts`（首屏 KPI、三件事一次 PageDown、區塊順序、切頁歸零與焦點、AI popover、儲存／下載選單與 testid、快捷填值不套用、sticky）、`tests/period-presets.test.ts`、`tests/contribution-impact.test.ts`（golden 手算）。既有 E2E 只加「先展開會議區／下載選單」的一行調整，不刪斷言、不 `.skip`。
+- 對抗式審查（4 視角 ×3 反駁者）確認 13 項，已修 10 項（Esc 焦點回復、快捷鈕無障礙原因、新字串進 labels、移除重複的問題清單下載鈕、零值中性色、期間表標題結構等），3 項記為限制：期間列兩列 88px（規格 ≤ 64px）、商品頁 CSV 鈕保留頁內、會議固定來源的主管摘要仍在總覽頁尾收合區（R6 搬分頁）。
+- 改版後截圖 40 張存 `verification/revamp-R1/after/`，與 R0 `before/` 同流程可並列比對。E2E 重寫的 A 批歷史證據檔已 `git checkout` 還原。Live AI、真實資料、Safari／Firefox、實體裝置：**未執行**。
+- 完整命令輸出、任務對照、測試調整清單與審查結果見 [R1 驗收](../verification/revamp-R1-acceptance.md)。R1 完成即停止；R2（語言與文案層）待使用者確認後開始，並需先拍板 D1／D11／D12。
+
+---
+## Revamp v2｜R0 基線與安全網（完成）
 
 Revamp v2 依 `CLAUDE.md` 與 `docs/revamp/*`（R0–R7）把產品從稽核員工具改成經理人每週使用的工具；財務核心（`src/domain`、golden／demo／errors 等 fixtures、`contribution-v1`、`docs/METRICS.md` 公式）零改動，使用者可見文字集中於 `src/i18n/labels.zh-TW.ts`。原則記於 `docs/DECISIONS.md`「Revamp v2 原則」。工作分支 `revamp/v2` 自 main `5771104` 建立；**尚未合併 main、尚未部署**，正式站仍是下方 A 批發布版本。
 

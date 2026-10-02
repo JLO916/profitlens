@@ -107,6 +107,7 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await expect(page.getByTestId("action-1").getByLabel("問題", { exact: true })).toHaveValue("核對履約成本");
   await expect(page.getByTestId("action-1").getByLabel("本快照證據（可複選）", { exact: true })).toHaveValues([factId!]);
   await expect(status(other)).toContainText("尚未載入資料");
+  await openStorage(page);
   await storage(page).getByRole("button", { name: "刪除本機副本並關閉保存", exact: true }).click();
   await expect(storage(page).getByTestId("storage-notice")).toContainText("已刪除");
   expect(await page.evaluate(async () => (await indexedDB.databases()).map(item => item.name))).toEqual([]);

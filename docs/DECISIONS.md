@@ -174,3 +174,30 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 **影響文件：** `CLAUDE.md`、`docs/revamp/*`、`docs/STATUS.md`。`09_DECISIONS_PENDING.md` D1–D12 於 R0 時「決定」欄皆空白，後續批次依建議值執行並於回報標註，使用者拍板後再各記一筆。
 
 **需重跑的驗收：** 每批完整 typecheck／lint／unit／build／E2E（四尺寸），並以 `verification/revamp-R0-acceptance.md` 的基線數量對照。
+
+## 2026-10-02｜Revamp v2 R1：三件事與健檢卡的「對貢獻影響」只是呈現層的正負號約定
+
+**問題：** 審查發現「折扣率上升 +1,188,365」壞事顯示正數、「貢獻下降 −598,834」顯示負數，同一頁的紅綠與正負語意不一致。規則的 `ranking_amount` 是「已觀察金額差」（費用類＝本期費用 − 前期費用，貢獻類＝本期貢獻 − 前期貢獻或本期貢獻），用來排序與追溯，不適合直接當成「好壞」給經理人看。
+
+**採用選項：** 新增 `contributionImpact()`（`src/application/manager-summary.ts`，呈現層，不改 `src/domain/rules.ts` 與 golden）：
+- REV_UP_CM_DOWN → 貢獻差額（原值）；NEGATIVE_CHANNEL_CM → 本期貢獻（原值）；SKU_NEGATIVE_GP → 本期商品毛利（原值）。
+- DISCOUNT／REFUND／FULFILLMENT／MARKETING_BURDEN_UP → −（本期費用 − 前期費用）。
+- MISSING_CRITICAL_DATA → 無金額（永遠置頂）。
+- 顯示規則：負＝對貢獻不利＝紅；正＝有利＝綠；未知保留原因碼。三件事與健檢卡顯示「對貢獻影響」；原「排序用已觀察金額差」仍在技術細節可開。排序、門檻與公式抽屜仍用原 `ranking_amount`，R5 清單化時才改以 |影響| 排序（依 `05_FEATURES.md §7`）。
+
+**原因：** 這是同一個數字換正負號與顏色，不是新的財務指標，也不是改善收益估計；維持可追溯（抽屜仍顯示原值與公式）。
+
+**影響文件：** `docs/revamp/05_FEATURES.md §7`、`03_GLOSSARY_COPY.md`。**驗收：** `tests/contribution-impact.test.ts` 以 golden 手算（−315.00、−250.00、−130.00、−65.00、−150.00、−15.00）。
+
+## 2026-10-02｜Revamp v2 R1：殼層重排的三個取捨
+
+**問題：** R1 要把 AI 橫幅、保存面板、下載鈕與會議設定移出各頁首屏，同時 A 批的 400 項 E2E 與既有 testid／aria 結構不能退步；`02_IA_LAYOUT.md` 的版型描述與既有行為有三處需要拍板。
+
+**採用選項：**
+- **總覽的「本期三件事」用目前檢視計算**（`src/components/top-three.tsx`，`data-testid="top-three"`、`overview-priority-*`），與 KPI 卡、期間列同步。會議固定來源的主管摘要（`manager-summary`、`manager-priority-*`、通路寬表、主管摘要 Markdown／列印）整組搬進頁尾收合的「會議稿與主管摘要」區（`data-testid="overview-meeting"`），既有 testid、字串與結構原封不動；R6 再搬到會議紀錄分頁。收合狀態由 Dashboard 保存，換通路／期間或切頁回來不會自動收起。
+- **「儲存 ▾」是在頂欄原位展開的面板，不是浮動選單。** 保存／恢復是多步驟流程（選檔→預覽→確認→替換對話框），浮動面板會遮住頁面內容並在平板寬度造成橫向溢出；展開式面板把內容往下推，鍵盤與既有 `<details data-testid="workspace-storage">` 語意不變。「下載 ▾」與 AI 狀態說明維持浮動（內容短、點外面或 Esc 即關）。
+- **期間快捷只填日期與比較方式，仍須按「套用期間」**；本批四個快捷（近 7 天／近 4 週／近 12 週／本月 vs 上月）以 `min(data_as_of, coverage_end)` 為基準，超出涵蓋或未滿月時停用並顯示原因；「去年同期」留給 R4。排序金額差（`ranking_amount`）移入健檢卡的「稽核資訊」收合區，卡片正文改顯示「對貢獻影響」。
+
+**原因：** 三者都讓首屏只剩結論（KPI → 三件事），又不改任何財務口徑、名詞或既有測試的斷言；需要調整的 E2E 僅是在互動前先展開會議區／下載選單（`tests/e2e/replacement-helpers.ts` 的 `openMeeting`／`openPeriodComparison`／`openDownloads`）。
+
+**影響文件：** `docs/revamp/02_IA_LAYOUT.md §2–§3`（儲存面板形式）、`verification/revamp-R1-acceptance.md`。**需重跑：** 全套 E2E 四尺寸。

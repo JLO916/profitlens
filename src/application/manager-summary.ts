@@ -116,6 +116,18 @@ export function priorityEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, di
   };
 }
 
+/**
+ * R1 呈現用「對貢獻影響」：負＝不利、正＝有利；不是新財務指標，定義見 docs/DECISIONS.md（Revamp v2 R1）。
+ * 費用類規則的排序金額是「本期費用 − 前期費用」，費用增加對貢獻的影響為其負值；缺漏規則沒有金額。
+ */
+export function contributionImpact(diagnostic: Pick<Diagnostic, "code" | "ranking_amount">): Metric | null {
+  if (!diagnostic.ranking_amount || diagnostic.code === "MISSING_CRITICAL_DATA") return null;
+  const cents = parseCents(diagnostic.ranking_amount.value);
+  if (cents === null) return { value: null, reason_codes: [...diagnostic.ranking_amount.reason_codes] };
+  const burden = diagnostic.code === "DISCOUNT_BURDEN_UP" || diagnostic.code === "REFUND_BURDEN_UP" || diagnostic.code === "FULFILLMENT_BURDEN_UP" || diagnostic.code === "MARKETING_BURDEN_UP";
+  return { value: formatCents(burden ? -cents : cents), reason_codes: [...diagnostic.ranking_amount.reason_codes] };
+}
+
 /** Presentation-only prioritization. Rules, totals, facts and financial formulas stay unchanged. */
 export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { importanceThreshold?: string } = {}): ManagerSummary {
   let threshold: bigint | null;

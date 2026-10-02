@@ -1,4 +1,4 @@
-import { clickReplacing } from "./replacement-helpers";
+import { clickReplacing, closeDownloads, openDownloads } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -171,7 +171,8 @@ test("不讀 JSON 也能手填 manifest，金額口徑須明確確認", async ({
   await form(page).getByLabel("我已確認未稅商品金額與費用口徑", { exact: true }).check();
   await commit(page);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
-  const manifest = JSON.parse(await downloadText(page, page.getByRole("button", { name: "下載資料集設定 JSON", exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
+  const manifest = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: "下載資料集設定 JSON", exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
+  await closeDownloads(page);
   expect(manifest).toMatchObject({ dataset_id: "alternative-manual-v1", source_type: "user_provided", currency: "TWD", timezone: "Asia/Taipei", sales_coverage_confirmed: true, amount_basis: "product_amounts_excluding_tax_and_customer_shipping_income" });
 });
 
@@ -251,7 +252,8 @@ for (const incomplete of [
     await expect(status(page)).toContainText("部分資料待補");
     await expect(kpi(page, "net_revenue")).toHaveText("2,470.00");
     await expect(kpi(page, "contribution_after_marketing")).toHaveText("資料待補");
-    const rows = csvRecords(await downloadText(page, page.getByRole("button", { name: "下載目前分析 CSV", exact: true }), "profitlens-analysis.csv"));
+    const rows = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: "下載目前分析 CSV", exact: true }), "profitlens-analysis.csv"));
+    await closeDownloads(page);
     const current = rows.find(row => row.row_type === "period_summary" && row.period === "current" && row.metric === "contribution_after_marketing");
     expect(current).toBeDefined();
     expect(current!.value).toBe("");
@@ -300,7 +302,8 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
   await commit(page);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
-  const text = await downloadText(page, page.getByRole("button", { name: "下載目前分析 CSV", exact: true }), "profitlens-analysis.csv");
+  const text = await downloadText(page, (await openDownloads(page)).getByRole("button", { name: "下載目前分析 CSV", exact: true }), "profitlens-analysis.csv");
+  await closeDownloads(page);
   expect(text).not.toContain("private_note");
   expect(text).not.toContain("SYNTHETIC_UNKNOWN_MARKER");
   expect(text).toContain("renamed-sales.csv");
@@ -341,7 +344,8 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   await importFixture(page);
   await page.getByLabel("通路", { exact: true }).selectOption("DTC");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("40.00");
-  const analysis = csvRecords(await downloadText(page, page.getByRole("button", { name: "下載目前分析 CSV", exact: true }), "profitlens-analysis.csv"));
+  const analysis = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: "下載目前分析 CSV", exact: true }), "profitlens-analysis.csv"));
+  await closeDownloads(page);
   const current = analysis.find(row => row.row_type === "period_summary" && row.period === "current" && row.metric === "contribution_after_marketing");
   expect(current).toBeDefined();
   expect(current!.value).toBe("40.00");

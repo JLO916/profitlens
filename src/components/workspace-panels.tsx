@@ -9,7 +9,11 @@ import { COST_FIELDS, SALES_FIELDS, type Dataset, type Fact, type Metric, type M
 import type { EvidenceSelection } from "./evidence-drawer";
 import { IssueList } from "./issue-list";
 import { downloadText } from "@/application/download";
-import { exportIssuesCsv, exportProductsCsv } from "@/application/export";
+import { exportProductsCsv } from "@/application/export";
+import { buildManagerSummary } from "@/application/manager-summary";
+import { labels } from "@/i18n";
+import { ChannelWideTable } from "./channel-table";
+import { ImpactAmount } from "./top-three";
 
 type EvidenceHandler = (selection: EvidenceSelection) => void;
 const previewLabels: Record<string, string> = {
@@ -66,7 +70,7 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings }: { data
         </article>;
       })}
     </section>
-    <section className="panel" aria-labelledby="quality-heading"><div className="section-heading"><div><h2 id="quality-heading">資料完整性與問題</h2><p className="note">依來源檔案、欄位與原始行號追查。</p></div><span className="tag">{dataset.issues.length} 項</span></div>{dataset.issues.length ? <><button className="button quiet" onClick={() => downloadText(exportIssuesCsv(dataset.issues, filenames), "profitlens-issues.csv")}>下載問題清單 CSV</button><IssueList issues={dataset.issues} filenames={filenames} mappings={mappings} /></> : <p>目前資料集沒有檢出的格式或完整性問題。</p>}</section>
+    <section className="panel" aria-labelledby="quality-heading"><div className="section-heading"><div><h2 id="quality-heading">資料完整性與問題</h2><p className="note">依來源檔案、欄位與原始行號追查。</p></div><span className="tag">{dataset.issues.length} 項</span></div>{dataset.issues.length ? <IssueList issues={dataset.issues} filenames={filenames} mappings={mappings} /> : <p>目前資料集沒有檢出的格式或完整性問題。</p>}</section>
   </>;
 }
 
@@ -77,20 +81,19 @@ function factSelection(fact: Fact): EvidenceSelection {
 export function Diagnosis({ snapshot, onEvidence, onCreateAction }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler; onCreateAction?: (diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) => void }) {
   const diagnostics = snapshot.report.diagnostics.filter(diagnostic => diagnostic.scope.kind !== "sku");
   const facts = new Map(snapshot.report.facts.map(fact => [fact.id, fact]));
-  return <section className="panel" aria-labelledby="diagnosis-heading">
+  const summary = useMemo(() => buildManagerSummary(snapshot), [snapshot]);
+  return <>
+  <section className="panel" aria-labelledby="channel-table-heading">
+    <div className="section-heading"><div><h2 id="channel-table-heading">通路寬表・前期／本期／差額</h2><p className="note">目前範圍通路合計，TWD；未知不補零，通路廣告不分攤至 SKU。</p></div><span className="tag">{summary.scope.channels.join("、")}</span></div>
+    <ChannelWideTable summary={summary} onEvidence={onEvidence} ariaLabel={labels.sections.channelTableAria} caption={labels.sections.channelTableCaption} />
+  </section>
+  <section className="panel" aria-labelledby="diagnosis-heading">
     <div className="section-heading"><div><p className="eyebrow">規則與事實</p><h2 id="diagnosis-heading">可核查的通路診斷</h2><p className="note">規則依目前前後期與通路計算。先列補資料事項，再按已觀察金額排序；不代表預估改善收益。</p></div><span className="tag">{diagnostics.length} 項</span></div>
     {!diagnostics.length && <p>目前範圍沒有觸發已定義的通路規則；這不代表所有營運風險均已排除。</p>}
     <div className="diagnostic-grid">{diagnostics.map(diagnostic => <article className="diagnostic-card" key={diagnostic.id}>
       <div className="section-heading"><span className="tag">{diagnostic.scope.kind === "all" ? "所選通路合計" : diagnostic.scope.channels.join("、")}</span><span className="tag">{diagnostic.code === "MISSING_CRITICAL_DATA" ? "優先補資料" : "規則診斷"}</span></div>
       <h3>{diagnostic.title}</h3>
-      {diagnostic.ranking_amount && <p className="note">{diagnostic.code === "NEGATIVE_CHANNEL_CM" ? "本期已入帳貢獻" : "排序用已觀察金額差"}：TWD <button type="button" className="number-link" onClick={() => {
-        const names: Partial<Record<typeof diagnostic.code, MetricName>> = { REV_UP_CM_DOWN: "contribution_after_marketing", NEGATIVE_CHANNEL_CM: "contribution_after_marketing", DISCOUNT_BURDEN_UP: "discounts", REFUND_BURDEN_UP: "refunds", FULFILLMENT_BURDEN_UP: "fulfillment_costs", MARKETING_BURDEN_UP: "ad_spend" };
-        const name = names[diagnostic.code];
-        if (!name || !diagnostic.ranking_amount) return;
-        const referenced = diagnostic.fact_ids.flatMap(id => { const fact = facts.get(id); return fact?.metric === name ? [fact] : []; });
-        const currentOnly = diagnostic.code === "NEGATIVE_CHANNEL_CM";
-        onEvidence({ title: `${metricDefinitions[name].label}${currentOnly ? "" : "差額"}`, name, metric: diagnostic.ranking_amount, period: currentOnly ? snapshot.report.current.period : { start: [snapshot.report.previous.period.start, snapshot.report.current.period.start].sort()[0], end: [snapshot.report.previous.period.end, snapshot.report.current.period.end].sort()[1] }, channels: diagnostic.scope.channels, sources: referenced.flatMap(fact => fact.sources), scopeLabel: diagnostic.scope.kind === "all" ? "所選通路合計" : diagnostic.scope.channels.join("、"), ...(currentOnly ? {} : { formula: `已觀察差額 = 本期${metricDefinitions[name].label} − 前期${metricDefinitions[name].label}；不是改善收益估計`, components: referenced.map(fact => ({ label: fact.period.start === snapshot.report.previous.period.start ? "前期" : "本期", metric: fact })) }) });
-      }} aria-label={`查看${diagnostic.title}排序金額來源，${formatSignedMoney(diagnostic.ranking_amount.value)}`}>{formatSignedMoney(diagnostic.ranking_amount.value)}</button></p>}
+      <p className="impact-line"><span>{labels.sections.impact}</span><ImpactAmount snapshot={snapshot} diagnostic={diagnostic} onEvidence={onEvidence} /></p>
       <h4>資料事實</h4>
       <ul className="fact-list">{diagnostic.fact_ids.map(id => {
         const fact = facts.get(id);
@@ -103,9 +106,19 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction }: { snapshot: 
       <h4>建議</h4><p>{diagnostic.recommendation}</p>
       <h4>資料限制</h4><ul className="note">{diagnostic.limitations.map(limit => <li key={limit}>{limit}</li>)}</ul>
       {onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(diagnostic)}>建立行動草稿</button>}
-      <details><summary>稽核資訊：事實識別與規則</summary><p className="note">規則：<code>{diagnostic.code}</code></p><ul>{diagnostic.fact_ids.map(id => <li key={id}><code>{id}</code></li>)}</ul></details>
+      <details><summary>稽核資訊：事實識別與規則</summary>
+      {diagnostic.ranking_amount && <p className="note">{diagnostic.code === "NEGATIVE_CHANNEL_CM" ? "本期已入帳貢獻" : "排序用已觀察金額差"}：TWD <button type="button" className="number-link" onClick={() => {
+        const names: Partial<Record<typeof diagnostic.code, MetricName>> = { REV_UP_CM_DOWN: "contribution_after_marketing", NEGATIVE_CHANNEL_CM: "contribution_after_marketing", DISCOUNT_BURDEN_UP: "discounts", REFUND_BURDEN_UP: "refunds", FULFILLMENT_BURDEN_UP: "fulfillment_costs", MARKETING_BURDEN_UP: "ad_spend" };
+        const name = names[diagnostic.code];
+        if (!name || !diagnostic.ranking_amount) return;
+        const referenced = diagnostic.fact_ids.flatMap(id => { const fact = facts.get(id); return fact?.metric === name ? [fact] : []; });
+        const currentOnly = diagnostic.code === "NEGATIVE_CHANNEL_CM";
+        onEvidence({ title: `${metricDefinitions[name].label}${currentOnly ? "" : "差額"}`, name, metric: diagnostic.ranking_amount, period: currentOnly ? snapshot.report.current.period : { start: [snapshot.report.previous.period.start, snapshot.report.current.period.start].sort()[0], end: [snapshot.report.previous.period.end, snapshot.report.current.period.end].sort()[1] }, channels: diagnostic.scope.channels, sources: referenced.flatMap(fact => fact.sources), scopeLabel: diagnostic.scope.kind === "all" ? "所選通路合計" : diagnostic.scope.channels.join("、"), ...(currentOnly ? {} : { formula: `已觀察差額 = 本期${metricDefinitions[name].label} − 前期${metricDefinitions[name].label}；不是改善收益估計`, components: referenced.map(fact => ({ label: fact.period.start === snapshot.report.previous.period.start ? "前期" : "本期", metric: fact })) }) });
+      }} aria-label={`查看${diagnostic.title}排序金額來源，${formatSignedMoney(diagnostic.ranking_amount.value)}`}>{formatSignedMoney(diagnostic.ranking_amount.value)}</button></p>}
+      <p className="note">規則：<code>{diagnostic.code}</code></p><ul>{diagnostic.fact_ids.map(id => <li key={id}><code>{id}</code></li>)}</ul></details>
     </article>)}</div>
-  </section>;
+  </section>
+  </>;
 }
 
 const productColumns: { name: keyof ProductMetrics; label: string }[] = [

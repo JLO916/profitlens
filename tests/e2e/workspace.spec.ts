@@ -170,6 +170,8 @@ test("診斷排序金額使用兩期已觀察差額，證據方向與來源一�
   const ranking = card.getByRole("button", { name: /^查看折扣率上升排序金額來源/ });
   // Golden booked discount delta: 450.00 - 200.00 = +250.00.
   // This is the observed increase, whereas the contribution bridge is -250.00.
+  // R1 keeps the ranking amount under the technical details of the card.
+  await card.locator("summary", { hasText: "稽核資訊" }).click();
   await expect(ranking).toHaveText("+250.00");
   await ranking.click();
   const dialog = page.getByRole("dialog", { name: /公式與來源$/ });

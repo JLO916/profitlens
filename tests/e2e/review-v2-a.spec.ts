@@ -1,3 +1,4 @@
+import { openMeeting } from './replacement-helpers';
 import { appendFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test as base, type Page } from '@playwright/test';
@@ -17,7 +18,7 @@ async function backup(p:Page){const s=await storage(p);const event=p.waitForEven
 async function stageAlternative(p:Page){await p.getByRole('button',{name:'匯入標準 CSV',exact:true}).click();const form=p.getByTestId('import-panel');for(const[label,file]of Object.entries({'商品銷售 CSV':'sales_daily.csv','通路費用 CSV':'channel_costs_daily.csv','廣告支出 CSV':'ad_spend_daily.csv','讀取 manifest JSON':'manifest.json'}))await form.getByLabel(label,{exact:true}).setInputFiles(resolve('tests/fixtures/alternative',file));await form.getByLabel('我已確認未稅商品金額與費用口徑',{exact:true}).check();await form.getByRole('button',{name:'檢核匯入資料',exact:true}).click();await expect(p.getByTestId('import-status')).toContainText('檢核通過');}
 
 test('A3 示範替換可取消，下載尚未確認不能替換，確認後才繼續',async({page},info)=>{
- await golden(page);await page.getByRole('button',{name:'載入示範資料',exact:true}).click();await expect(guard(page)).toBeVisible();
+ await golden(page);await page.getByRole('button',{name:'資料工作區',exact:true}).click();await page.getByRole('button',{name:'載入示範資料',exact:true}).click();await expect(guard(page)).toBeVisible();
  await guard(page).getByRole('button',{name:'取消',exact:true}).click();await expect(status(page)).toContainText('Golden');
  await page.getByRole('button',{name:'載入示範資料',exact:true}).click();await guard(page).getByRole('button',{name:'先儲存',exact:true}).click();
  const event=page.waitForEvent('download');await guard(page).getByRole('button',{name:'下載備份',exact:true}).click();const text=await readFile((await(await event).path())!,'utf8');expect(JSON.parse(text).schema_version).toBe('profitlens-workspace-v3');
@@ -68,7 +69,7 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
   if(i<=3)await card.getByRole('button',{name:'置頂行動',exact:true}).click();
  }
  await page.getByRole('button',{name:'經營總覽',exact:true}).click();
- const summary=page.getByTestId('manager-summary');
+ await openMeeting(page);const summary=page.getByTestId('manager-summary');
  await page.getByLabel('會議名稱',{exact:true}).fill('合成資料月度營運會議');await page.getByLabel('會議備註',{exact:true}).fill('待補物流報價，僅為靜態條件比較。');
  await summary.getByLabel('金額重要性門檻（TWD）',{exact:true}).fill('1000');await summary.getByRole('button',{name:'套用摘要門檻',exact:true}).click();
  for(const channel of ['DTC','MARKETPLACE']) {

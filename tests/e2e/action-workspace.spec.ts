@@ -1,7 +1,8 @@
 import { appendFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-async function load(page:Page){await page.goto('/');await page.getByRole('button',{name:'進階驗證',exact:true}).click();await page.getByLabel('資料集',{exact:true}).selectOption('golden');await page.getByRole('button',{name:'載入資料集',exact:true}).click();await expect(page.getByTestId('manager-summary')).toBeVisible();}
+import { openMeeting } from './replacement-helpers';
+async function load(page:Page){await page.goto('/');await page.getByRole('button',{name:'進階驗證',exact:true}).click();await page.getByLabel('資料集',{exact:true}).selectOption('golden');await page.getByRole('button',{name:'載入資料集',exact:true}).click();await openMeeting(page);await expect(page.getByTestId('manager-summary')).toBeVisible();}
 async function discardReplacement(page:Page){const dialog=page.getByRole('dialog',{name:'替換前先儲存工作區',exact:true});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'不儲存並繼續',exact:true}).click();await expect(dialog).not.toBeVisible();}
 async function download(page:Page,label:string){const event=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
 test('PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作項目備份',async({page},info)=>{
@@ -38,7 +39,7 @@ test('A2 會議選定方案與交辦固定來源，切檢視保留且明確更�
  await page.getByRole('button',{name:'通路診斷',exact:true}).click();await page.locator('.diagnostic-card').first().getByRole('button',{name:'建立行動草稿',exact:true}).click();const action=page.getByTestId('action-1');
  for(const [label,value]of Object.entries({負責角色:'營運主管',驗證指標:'履約費用',期限:'2026-10-15',停止條件:'服務品質下降就停止',所需額外資料:'物流報價'}))await action.getByLabel(label,{exact:true}).fill(value);
  await action.getByRole('button',{name:'確認行動與證據',exact:true}).click();await expect(action).toContainText('使用者已確認');
- await page.getByRole('button',{name:'經營總覽',exact:true}).click();const summary=page.getByTestId('manager-summary');const choice=page.getByLabel('DTC 本次摘要所選方案',{exact:true});const selected=await choice.locator('option').filter({hasText:/主管會議履約方案（版本/}).getAttribute('value');expect(selected).toBeTruthy();await choice.selectOption(selected!);
+ await page.getByRole('button',{name:'經營總覽',exact:true}).click();await openMeeting(page);const summary=page.getByTestId('manager-summary');const choice=page.getByLabel('DTC 本次摘要所選方案',{exact:true});const selected=await choice.locator('option').filter({hasText:/主管會議履約方案（版本/}).getAttribute('value');expect(selected).toBeTruthy();await choice.selectOption(selected!);
  const markdown=await download(page,'下載主管摘要 Markdown');for(const value of ['284.00','14.00','營運主管','服務品質下降就停止','主管會議履約方案'])expect(markdown).toContain(value);
  await page.getByLabel('通路',{exact:true}).selectOption('MARKETPLACE');await expect(summary).toContainText('主管會議履約方案');
  const retained=await download(page,'下載主管摘要 Markdown');expect(retained.split('## 技術稽核附錄')[0]).toContain('條件貢獻 284.00');

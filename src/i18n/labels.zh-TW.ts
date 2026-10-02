@@ -93,6 +93,19 @@ export const sections = {
   evidence: "怎麼算的",
   evidenceSources: "來源資料",
   technicalDetails: "技術細節",
+  impact: "對貢獻影響",
+  impactLegend: "負＝對貢獻不利（紅）、正＝有利（綠）；資料缺漏永遠排最前",
+  adjustThreshold: "調整門檻",
+  rankingAmount: "排序用已觀察金額差",
+  meetingDraft: "會議稿與主管摘要",
+  meetingNotCreated: "尚未建立",
+  downloadCurrentView: "目前檢視",
+  downloadDecision: "決策工作稿",
+  presetGroup: "期間快捷",
+  aiDetail: "AI 狀態說明",
+  relatedScopes: "相關範圍",
+  channelTableAria: "通路寬表",
+  channelTableCaption: "差額＝本期 − 前期；負值對貢獻不利。點數字看公式與來源。",
   aiExplain: "AI 解釋（選配）",
 } as const;
 
@@ -188,7 +201,9 @@ export const status = {
   error: "資料載入失敗",
   demo: "示範資料",
   local: "本機匯入",
-  unsaved: "未保存",
+  unsaved: "● 未保存",
+  savedVersion: "此版本已保存",
+  noWorkspace: "尚無工作區",
   savedAt: "已保存 {time}",
   aiOff: "AI 解釋未啟用（公開版）",
   aiNeedsConsent: "AI 解釋需預覽同意",
@@ -205,6 +220,9 @@ export const periods = {
   calendarMonths: "整月比較",
   presets: { last7: "近 7 天", last4w: "近 4 週", last12w: "近 12 週", monthVsPrev: "本月 vs 上月", yoy: "去年同期" },
   presetUnavailable: "資料只到 {date}，無法取{preset}",
+  presetTooShort: "資料從 {date} 開始，不足{preset}所需天數",
+  monthIncomplete: "資料只到 {date}，本月未滿月；請改用等天數快捷",
+  presetHint: "快捷只填入日期，按「套用」才生效",
 } as const;
 
 export const importWizard = {
@@ -258,6 +276,37 @@ export const basis = {
 export const demoChannelAlias: Record<string, string> = { DTC: "官網 · DTC", MARKETPLACE: "平台 · MARKETPLACE" };
 export const demoCategoryAlias: Record<string, string> = { HOME: "居家", CARE: "保養", ACCESSORIES: "配件", ELECTRONICS: "3C" };
 
+export const downloads = {
+  analysisCsv: "下載目前分析 CSV",
+  analysisCsvHint: "依目前期間與通路匯出；不含原始 CSV。",
+  channelTableCsv: "下載通路寬表 CSV",
+  manifestJson: "下載資料集設定 JSON",
+  issuesCsv: "下載問題清單 CSV",
+  issuesCsvHint: "{n} 項來源問題",
+  decisionMd: "下載決策 Markdown",
+  decisionCsv: "下載決策 CSV",
+  decisionJson: "下載決策 JSON",
+  menuNote: "主管摘要 Markdown 與列印在總覽頁尾的會議稿內；完整工作區備份在「儲存」。",
+  menuEmpty: "載入或匯入資料後才能下載。",
+} as const;
+
+export const notes = {
+  noPriorities: "沒有達到此門檻的規則訊號；不代表沒有營運風險，仍可檢閱完整通路診斷。",
+  omittedGroups: "另有 {n} 組未列出；通路診斷頁有全部規則。",
+  scopesNotAdditive: "各層範圍不可相加。",
+  thresholdHelp: "缺漏一律優先；同一規則的合計與子通路合為一組，以組內最大絕對金額比較門檻（不相加）。已套用 {amount} TWD；只影響此清單順序，不存入備份。",
+  thresholdInvalid: "重要性門檻須為大於或等於零、最多兩位小數的 TWD 金額。",
+  impactFormulaBurden: "{impact} = −（本期{metric} − 前期{metric}）；費用增加會減少貢獻，這是已觀察差額，不是可回收收益",
+  impactFormulaDefault: "{impact}＝{metric}；負值表示對貢獻不利",
+} as const;
+
+export const brand = {
+  name: "ProfitLens",
+  tagline: "營運決策工作台",
+  title: "ProfitLens｜電商獲利診斷與決策工作台",
+  description: "從銷售、通路費用與廣告資料，看清扣廣告後貢獻的變化，每個數字都能追到來源。",
+} as const;
+
 export const emptyState = {
   eyebrow: "先用示範資料看看",
   title: "營收漲了，到底多賺還是少賺？",
@@ -265,5 +314,5 @@ export const emptyState = {
   steps: ["匯入資料", "看哪裡賺、哪裡賠", "決定要做什麼"],
 } as const;
 
-export const labels = { metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState };
+export const labels = { brand, downloads, notes, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState };
 export type Labels = typeof labels;

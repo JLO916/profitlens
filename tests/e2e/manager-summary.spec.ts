@@ -1,4 +1,4 @@
-import { clickReplacing } from "./replacement-helpers";
+import { clickReplacing, openDownloads, openMeeting } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -21,6 +21,7 @@ async function load(page: Page, name = "golden") {
   await clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(/資料已就緒|部分資料待補/);
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+  await openMeeting(page);
   await expect(page.getByTestId("manager-summary")).toBeVisible();
 }
 
@@ -96,5 +97,6 @@ test("PL09 print uses a dedicated manager draft and retains technical audit down
   await page.emulateMedia({ media: "screen" });
   await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
   await expect(page.getByTestId("manager-summary-print")).toHaveCount(0);
+  await openDownloads(page);
   await expect(page.getByRole("button", { name: "下載目前分析 CSV", exact: true })).toBeVisible();
 });

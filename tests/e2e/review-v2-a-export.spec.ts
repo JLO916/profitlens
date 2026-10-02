@@ -1,3 +1,4 @@
+import { openMeeting } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page, type TestInfo } from "@playwright/test";
@@ -99,6 +100,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
     if (index <= 3) await card.getByRole("button", { name: "置頂行動", exact: true }).click();
   }
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+  await openMeeting(page);
   const updates = page.getByRole("button", { name: /^更新會議行動引用：/ });
   while (await updates.count()) await updates.first().click();
   const summary = page.getByTestId("manager-summary");
@@ -152,6 +154,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   for (let index = 0; index < 3; index++) await page.getByRole("button", { name: "取消置頂", exact: true }).first().click();
   await expect(page.getByRole("button", { name: "取消置頂", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+  await openMeeting(page);
   await expect(main).toHaveCount(0);
   await expect(summary).toContainText(notice);
   await expect(summary).not.toContainText("行動尚未建立");

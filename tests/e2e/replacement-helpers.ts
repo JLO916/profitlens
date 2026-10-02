@@ -11,3 +11,16 @@ export async function startChannelContext(page: Page) {
   await Promise.race([start.waitFor({state:'visible'}), page.getByTestId('decision-workbench').waitFor({state:'visible'})]);
   if (await start.isVisible()) await start.click();
 }
+
+/** R1 folded the meeting draft and the period table into <details>, and moved downloads into a top-bar menu. */
+export async function openDetails(root: Locator) {
+  if (await root.getAttribute('open') === null) await root.locator(':scope > summary').click();
+  return root;
+}
+export async function closeDetails(root: Locator) {
+  if (await root.getAttribute('open') !== null) await root.locator(':scope > summary').click();
+}
+export const openMeeting = (page: Page) => openDetails(page.getByTestId('overview-meeting'));
+export const openPeriodComparison = (page: Page) => openDetails(page.getByTestId('period-comparison'));
+export const openDownloads = (page: Page) => openDetails(page.getByTestId('download-menu'));
+export const closeDownloads = (page: Page) => closeDetails(page.getByTestId('download-menu'));
