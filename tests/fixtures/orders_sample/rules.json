@@ -1,0 +1,23 @@
+{
+  "description": "測試用：Shopline 風格訂單明細（含稅），官網與蝦皮兩個通路",
+  "columns": {
+    "order_id": "訂單號碼",
+    "date": "訂單日期",
+    "status": "訂單狀態",
+    "channel": "銷售通路",
+    "sku": "商品貨號",
+    "category": "分類",
+    "units": "數量",
+    "line_amount": "商品小計",
+    "order_discount": "訂單折扣",
+    "refund_amount": "退款金額",
+    "refund_date": "退款日期",
+    "unit_cost": "單位成本"
+  },
+  "channel_map": { "官網": "DTC", "蝦皮": "MARKETPLACE" },
+  "exclude_status": ["已取消"],
+  "inclusive_tax": true,
+  "tax_rate": "0.05",
+  "cogs_inclusive_tax": false,
+  "currency": "TWD"
+}

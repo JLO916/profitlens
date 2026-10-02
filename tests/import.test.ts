@@ -230,3 +230,15 @@ describe("optional manifest JSON prefill", () => {
     expect(inspectManifestFile({ name: "manifest.json", size: 2, bytes: new Uint8Array([0xc3, 0x28]) }).issues).toContainEqual(expect.objectContaining({ reason_code: "INVALID_UTF8" }));
   });
 });
+
+describe("R3 inclusive-tax conversion inside prepareImport", () => {
+  it("still refuses inclusive sources without a conversion and rejects an out-of-range rate", () => {
+    const refused = prepareImport(manifest(), drafts(), { amountBasisConfirmed: true, sourceAmountBasis: "including_tax" });
+    expect(refused.validation.issues.map(issue => issue.reason_code)).toContain("SOURCE_AMOUNT_BASIS_UNSUPPORTED");
+    expect(refused.conversion).toBeNull();
+    const badRate = prepareImport(manifest(), drafts(), { amountBasisConfirmed: true, sourceAmountBasis: "including_tax", conversion: { rate: "0.25", fields: { "sales_daily.csv": ["gross_sales"] } } });
+    expect(badRate.validation.classification).toBe("blocking");
+    expect(badRate.validation.issues.map(issue => issue.reason_code)).toContain("INVALID_TAX_RATE");
+    expect(badRate.validation.issues.map(issue => issue.reason_code)).not.toContain("SOURCE_AMOUNT_BASIS_UNSUPPORTED");
+  });
+});

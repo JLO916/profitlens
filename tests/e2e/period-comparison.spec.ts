@@ -1,4 +1,5 @@
-import { clickReplacing, closeDownloads, openDownloads, openPeriodComparison } from "./replacement-helpers";
+import { closeDownloads, openDownloads, openPeriodComparison } from "./replacement-helpers";
+import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -43,20 +44,31 @@ const comparison = (page: Page) => page.getByTestId("period-comparison");
 const contributionRow = (page: Page) => comparison(page).getByRole("row").filter({ has: page.getByText(metric("contribution_after_marketing"), { exact: true }) });
 const revenueRow = (page: Page) => comparison(page).getByRole("row").filter({ has: page.getByText(metric("net_revenue"), { exact: true }) });
 const currentContribution = (page: Page) => page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value");
+/** R3: drives the four-step import wizard (step 1 files + advanced manifest → step 2 auto-skipped for standard headers → step 3 basis/settings → step 4 check → commit). */
 async function importMonthly(page: Page, kind: "complete" | "zero" | "missing" = "complete") {
   await page.goto("/");
-  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
-  const form = page.getByTestId("import-panel");
+  await openWizard(page);
+  const root = wizard(page);
   const input = monthlyFiles(kind);
-  for (const [label, file] of Object.entries(input.files)) await form.getByLabel(label, { exact: true }).setInputFiles({ name: file.name, mimeType: "text/csv", buffer: Buffer.from(file.text) });
-  await form.getByLabel(labels.ui.importPanel.manifestLabel, { exact: true }).setInputFiles({ name: "manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(input.manifest)) });
-  await expect(form.getByLabel(labels.ui.importPanel.datasetName, { exact: true })).toHaveValue(input.manifest.dataset_id);
-  await expect(form.getByLabel(labels.ui.importPanel.comparisonMode, { exact: true })).toHaveValue("calendar_months");
-  await form.getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
-  await form.getByRole("button", { name: labels.ui.importPanel.check, exact: true }).click();
-  await expect(page.getByTestId("import-status")).toHaveText(kind === "missing" ? labels.ui.importPanel.status.partial : labels.ui.importPanel.status.valid);
-  await clickReplacing(page, form.getByRole("button", { name: labels.ui.importPanel.commit, exact: true }));
-  await expect(form).toHaveCount(0);
+  for (const [label, file] of Object.entries(input.files)) await root.getByLabel(label, { exact: true }).setInputFiles({ name: file.name, mimeType: "text/csv", buffer: Buffer.from(file.text) });
+  for (const file of Object.values(input.files)) await expect(page.getByTestId(`import-file-${file.name}`)).toContainText(file.name);
+  await setWizardManifest(page, { name: "manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(input.manifest)) });
+  await nextFromFiles(page);
+  await confirmMappingIfShown(page);
+  // Standard headers only: the mapping step is skipped automatically.
+  await expect(page.getByTestId("import-stepper").locator("li").nth(1)).toHaveClass(/skipped/);
+  // Step 3 settings are prefilled from the manifest JSON read in step 1.
+  await expect(root.getByLabel(labels.importWizard.datasetName, { exact: true })).toHaveValue(input.manifest.dataset_id);
+  await expect(root.getByLabel(labels.importWizard.comparisonMode, { exact: true })).toHaveValue("calendar_months");
+  await expect(root.getByLabel(labels.csvColumns.previous_start, { exact: true })).toHaveValue("2026-08-01");
+  await expect(root.getByLabel(labels.csvColumns.previous_end, { exact: true })).toHaveValue("2026-08-31");
+  await expect(root.getByLabel(labels.csvColumns.current_start, { exact: true })).toHaveValue("2026-09-01");
+  await expect(root.getByLabel(labels.csvColumns.current_end, { exact: true })).toHaveValue("2026-09-30");
+  await expect(root.getByLabel("DTC", { exact: true })).toBeChecked();
+  // The former amount-basis checkbox is now the explicit basis choice plus the single confirm button.
+  await chooseBasis(page, "exclusive");
+  await confirmAndCheck(page, kind === "missing" ? "partial" : "valid");
+  await commitWizard(page);
   await openPeriodComparison(page);
   await expect(comparison(page)).toBeVisible();
   await expect(page.getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true })).toHaveValue("calendar_months");

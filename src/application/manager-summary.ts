@@ -3,7 +3,8 @@ import { compareMoney } from "../domain/metrics";
 import { formatCents, parseCents } from "../domain/money";
 import type { Diagnostic, Fact, Metric, MetricName, Period, RuleCode, Scope, SourceRef } from "../domain/types";
 import { fill, labels } from "../i18n";
-import { channelLabel, channelsLabel, csvHeader, demoAlias, ruleCopy, scopeLabel } from "./copy";
+import { channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, ruleCopy, scopeLabel } from "./copy";
+import type { TaxConversion } from "./tax-basis";
 import { encodeCsv, type CsvCell } from "./export";
 import { metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
@@ -52,6 +53,8 @@ export interface ManagerSummary {
   channels: { channel: string; revenue: SummaryMetric; contribution: SummaryMetric }[];
   priorities: SummaryPriority[]; groups: SummaryPriority[]; omitted_group_count: number;
   facts: Fact[]; assumptions: string[];
+  /** R3：含稅換算一句（沒有換算為 null），通路寬表 CSV 的口徑限制欄也帶上。 */
+  conversion_note: string | null;
 }
 
 /** 口徑說明（R2）：摘要的固定口徑直接沿用 labels.basis.items，與口徑說明對話框同一來源。 */
@@ -133,7 +136,9 @@ export function contributionImpact(diagnostic: Pick<Diagnostic, "code" | "rankin
 }
 
 /** Presentation-only prioritization. Rules, totals, facts and financial formulas stay unchanged. */
-export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { importanceThreshold?: string } = {}): ManagerSummary {
+export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { importanceThreshold?: string; conversion?: TaxConversion | null } = {}): ManagerSummary {
+  // R3：含稅換算一句併入口徑說明，Markdown 的「資料範圍與口徑」與畫面同源。
+  const converted = conversionSentence(options.conversion);
   let threshold: bigint | null;
   try { threshold = parseCents(options.importanceThreshold ?? "0.00"); } catch { throw new Error("INVALID_IMPORTANCE_THRESHOLD"); }
   if (threshold === null || threshold < 0n) throw new Error("INVALID_IMPORTANCE_THRESHOLD");
@@ -172,7 +177,7 @@ export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { impo
     scope: report.scope, previous_days: report.comparison.previous_days, current_days: report.comparison.current_days, importance_threshold: formatCents(threshold),
     headlines: [metricComparison(snapshot, "net_revenue"), metricComparison(snapshot, "contribution_after_marketing")],
     channels: report.scope.channels.map(channel => ({ channel, revenue: metricComparison(snapshot, "net_revenue", channel), contribution: metricComparison(snapshot, "contribution_after_marketing", channel) })),
-    priorities: eligible.slice(0, 3), groups, omitted_group_count: groups.length - Math.min(eligible.length, 3), facts: report.facts, assumptions: LIMITATIONS,
+    priorities: eligible.slice(0, 3), groups, omitted_group_count: groups.length - Math.min(eligible.length, 3), facts: report.facts, assumptions: converted ? [...LIMITATIONS, converted] : LIMITATIONS, conversion_note: converted,
   });
 }
 
@@ -255,6 +260,6 @@ export function exportChannelComparisonCsv(summary: ManagerSummary): string {
   return encodeCsv([headers.map(header => text(csvHeader(header))), ...summary.channels.map(row => {
     const metrics = [row.revenue.previous, row.revenue.current, row.revenue.change, row.contribution.previous, row.contribution.current, row.contribution.change];
     const missing = metrics.filter(metric => metric.value === null);
-    return [text(row.channel), ...metrics.map(metric => number(metric.value)), text(summary.data_as_of), text(summary.scope.previous_period.start), text(summary.scope.previous_period.end), text(summary.scope.current_period.start), text(summary.scope.current_period.end), number(String(summary.previous_days)), number(String(summary.current_days)), text(summary.scope.comparison_mode), text(missing.length ? labels.status.partial : labels.status.ready), text([...new Set(missing.flatMap(metric => metric.reason_codes))].join("；")), text(labels.basis.footer), text(summary.metric_version), text(summary.dataset_hash), text(summary.filter_hash)];
+    return [text(row.channel), ...metrics.map(metric => number(metric.value)), text(summary.data_as_of), text(summary.scope.previous_period.start), text(summary.scope.previous_period.end), text(summary.scope.current_period.start), text(summary.scope.current_period.end), number(String(summary.previous_days)), number(String(summary.current_days)), text(summary.scope.comparison_mode), text(missing.length ? labels.status.partial : labels.status.ready), text([...new Set(missing.flatMap(metric => metric.reason_codes))].join("；")), text(summary.conversion_note ? `${labels.basis.footer} ${summary.conversion_note}` : labels.basis.footer), text(summary.metric_version), text(summary.dataset_hash), text(summary.filter_hash)];
   })]);
 }

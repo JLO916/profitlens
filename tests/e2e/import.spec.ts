@@ -1,18 +1,13 @@
-import { clickReplacing, closeDownloads, openDownloads, ruleHeadline } from "./replacement-helpers";
+import { closeDownloads, openDownloads, ruleHeadline } from "./replacement-helpers";
+import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardFileLabels, wizardRoles, type Classification, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 
-const roles = ["sales_daily.csv", "channel_costs_daily.csv", "ad_spend_daily.csv"] as const;
-type FileRole = typeof roles[number];
-type FilePayload = { name: string; mimeType: string; buffer: Buffer };
-// R2：所有畫面字串由 labels 取字；檔案角色標籤對應 import-panel 的 aria-label。
+// R3：單頁匯入面板改為四步匯入精靈（選檔 → 對照欄位 → 口徑與期間 → 檢核與套用）；所有畫面字串由 labels 取字。
+const copy = labels.importWizard;
 const panel = labels.ui.importPanel;
-const fileLabels: Record<FileRole, string> = {
-  "sales_daily.csv": labels.importWizard.files.sales, "channel_costs_daily.csv": labels.importWizard.files.costs, "ad_spend_daily.csv": labels.importWizard.files.ads,
-};
-const commitButton = (page: Page) => form(page).getByRole("button", { name: panel.commit, exact: true });
 const channelFilter = (page: Page) => page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true });
 const navButton = (page: Page, item: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[item].label, exact: true });
 const alternative = resolve("tests/fixtures/alternative");
@@ -20,9 +15,13 @@ const golden = resolve("fixtures/golden");
 const maliciousSku = '=IMPORTXML("https://example.invalid","x")';
 const maliciousCategory = "<img src=x onerror=alert(1)>";
 const status = (page: Page) => page.getByTestId("workspace-status");
-const form = (page: Page) => page.getByTestId("import-panel");
 const importStatus = (page: Page) => page.getByTestId("import-status");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
+const nextButton = (page: Page) => wizard(page).getByRole("button", { name: copy.next, exact: true });
+const confirmButton = (page: Page) => wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true });
+const confirmMappingButton = (page: Page) => wizard(page).getByRole("button", { name: copy.confirmMapping, exact: true });
+/** importErrors 的白話訊息含 {line} 等占位符；比對時以任意文字代入。 */
+const plainMessage = (code: string) => new RegExp(labels.importErrors[code].replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\{\w+\\\}/g, ".+?"));
 
 interface AuditEvent { kind: string; errorName?: string; type?: string }
 const test = base.extend<{ browserAudit: AuditEvent[] }>({
@@ -49,38 +48,39 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
   }, { auto: true }],
 });
 
-async function openImport(page: Page) {
-  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
-  await expect(form(page)).toBeVisible();
+/** 第 1 步：三份 CSV（可覆寫成改名或合成檔）＋選填的資料集設定檔。 */
+async function selectCsvs(page: Page, directory: string, overrides: Partial<Record<WizardRole, FilePayload>> = {}) {
+  await setWizardFiles(page, directory, overrides);
 }
-async function selectCsvs(page: Page, directory: string, overrides: Partial<Record<FileRole, FilePayload>> = {}) {
-  for (const role of roles) await form(page).getByLabel(fileLabels[role], { exact: true }).setInputFiles(overrides[role] ?? resolve(directory, role));
+/** 第 1 步 → 第 3 步：設定檔帶入期間與通路，但讀 JSON 絕不會默默確認金額口徑；口徑要使用者自己選。 */
+async function toSettings(page: Page, expectedDatasetId?: string) {
+  await nextFromFiles(page);
+  await confirmMappingIfShown(page);
+  if (expectedDatasetId !== undefined) await expect(wizard(page).getByLabel(copy.datasetName, { exact: true })).toHaveValue(expectedDatasetId);
+  for (const basis of ["exclusive", "inclusive", "unsure"] as const) await expect(wizard(page).getByLabel(copy.basis[basis], { exact: true })).not.toBeChecked();
+  await expect(confirmButton(page)).toBeDisabled();
+  await chooseBasis(page, "exclusive");
+  await expect(confirmButton(page)).toBeEnabled();
 }
-async function readManifest(page: Page, directory: string) {
-  const path = resolve(directory, "manifest.json");
-  const manifest = JSON.parse(await readFile(path, "utf8")) as { dataset_id: string };
-  await form(page).getByLabel(panel.manifestLabel, { exact: true }).setInputFiles(path);
-  await expect(form(page).getByLabel(panel.datasetName, { exact: true })).toHaveValue(manifest.dataset_id);
-  // Reading JSON must never silently confirm the financial basis.
-  await expect(form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true })).not.toBeChecked();
-  await form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
+async function readManifest(page: Page, file: string | FilePayload) {
+  const manifest = typeof file === "string" ? JSON.parse(await readFile(file, "utf8")) as { dataset_id: string } : JSON.parse(file.buffer.toString("utf8")) as { dataset_id: string };
+  await setWizardManifest(page, file);
+  return manifest.dataset_id;
 }
-async function stage(page: Page, directory: string, overrides: Partial<Record<FileRole, FilePayload>> = {}) {
-  await openImport(page);
+async function stage(page: Page, directory: string, overrides: Partial<Record<WizardRole, FilePayload>> = {}, manifest: string | FilePayload = resolve(directory, "manifest.json")) {
+  await openWizard(page);
   await selectCsvs(page, directory, overrides);
-  await readManifest(page, directory);
+  await toSettings(page, await readManifest(page, manifest));
 }
-async function check(page: Page, classification: "valid" | "partial" | "blocking") {
-  await form(page).getByRole("button", { name: panel.check, exact: true }).click();
-  await expect(importStatus(page)).toHaveText({
-    valid: panel.status.valid, partial: panel.status.partial, blocking: panel.status.blocking,
-  }[classification]);
+async function check(page: Page, classification: Classification) {
+  await confirmAndCheck(page, classification);
+  await expect(importStatus(page)).toHaveText(copy.result[classification]);
 }
 async function commit(page: Page, classification: "valid" | "partial" = "valid") {
   await check(page, classification);
-  await clickReplacing(page, commitButton(page));
+  await commitWizard(page);
   await expect(status(page)).toContainText(classification === "valid" ? labels.status.ready : labels.status.partial);
-  await expect(form(page)).toHaveCount(0);
+  await expect(wizard(page)).toHaveCount(0);
   await navButton(page, "overview").click();
 }
 async function importFixture(page: Page, directory = alternative) {
@@ -88,7 +88,8 @@ async function importFixture(page: Page, directory = alternative) {
   await commit(page);
 }
 async function returnToGolden(page: Page) {
-  await form(page).getByRole("button", { name: panel.cancel, exact: true }).click();
+  await wizard(page).getByRole("button", { name: copy.cancel, exact: true }).click();
+  await expect(wizard(page)).toHaveCount(0);
   await navButton(page, "overview").click();
   await expect(kpi(page, "net_revenue")).toHaveText("2,470.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("255.00");
@@ -132,13 +133,17 @@ test.beforeEach(async ({ page }) => { await page.goto("/"); });
 test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診斷", async ({ page }, testInfo) => {
   await importFixture(page, golden);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("255.00");
-  await stage(page, alternative);
-  await expect(form(page).getByTestId("import-preview-sales_daily.csv").locator("tbody tr")).toHaveCount(10);
-  await expect(form(page).getByTestId("import-preview-sales_daily.csv")).toContainText(fill(panel.rowCount, { n: 16 }));
-  await expect(form(page)).toContainText(maliciousCategory);
+  await openWizard(page);
+  await selectCsvs(page, alternative);
+  // R3：舊版的 10 列預覽表改為第 1 步的檔案摘要（大小 · 列數 · 欄數 · 編碼）；惡意品類文字在套用後於商品頁檢查。
+  await expect(page.getByTestId("import-file-sales_daily.csv")).toContainText(fill(panel.rowCount, { n: 16 }));
   await expect(page.locator("img[src='x']")).toHaveCount(0);
+  await readManifest(page, resolve(alternative, "manifest.json"));
   await mkdir(resolve("verification"), { recursive: true });
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-import-regression-${testInfo.project.name}-import.png`), fullPage: true });
+  await toSettings(page, "alternative-import-synthetic-v1");
+  // 欄名全符合標準：第 2 步自動完成。
+  await expect(page.getByTestId("import-stepper").locator("li").nth(1)).toHaveClass(/skipped/);
   await commit(page);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "gross_profit")).toHaveText("260.00");
@@ -157,24 +162,32 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   await navButton(page, "products").click();
   await expect(page.getByTestId("product-table").locator("tbody tr")).toHaveCount(4);
   await expect(page.getByTestId("product-table")).toContainText(maliciousSku);
+  await expect(page.getByTestId("product-table")).toContainText(maliciousCategory);
   await expect(page.getByTestId("product-table")).toContainText("-100.00");
   await expect(page.locator("img[src='x']")).toHaveCount(0);
 });
 
-test("不讀 JSON 也能手填 manifest，金額口徑須明確確認", async ({ page }) => {
-  await openImport(page);
+test("不讀 JSON 也能手填 manifest，金額口徑須明確確認（R3：第 3 步由檔案預填，可改）", async ({ page }) => {
+  await openWizard(page);
   await selectCsvs(page, alternative);
+  await nextFromFiles(page);
+  await confirmMappingIfShown(page);
+  // 沒有設定檔：期間與通路由檔案提議；通路是勾選清單（預設全勾），不再是文字框。
+  await expect(page.getByTestId("import-settings-proposal")).toContainText(copy.proposedBy);
+  await expect(wizard(page).getByLabel("DTC", { exact: true })).toBeChecked();
+  await expect(wizard(page).getByLabel("MARKETPLACE", { exact: true })).toBeChecked();
   const settings: Record<string, string> = {
-    [panel.datasetName]: "alternative-manual-v1", [panel.dateFields.dataAsOf]: "2026-09-05", [panel.dateFields.coverageStart]: "2026-09-01", [panel.dateFields.coverageEnd]: "2026-09-04",
+    [copy.datasetName]: "alternative-manual-v1", [copy.dataAsOf]: "2026-09-05", [copy.coverageStart]: "2026-09-01", [copy.coverageEnd]: "2026-09-04",
     [labels.csvColumns.previous_start]: "2026-09-01", [labels.csvColumns.previous_end]: "2026-09-02", [labels.csvColumns.current_start]: "2026-09-03", [labels.csvColumns.current_end]: "2026-09-04",
-    [panel.channels]: "DTC\nMARKETPLACE",
   };
-  for (const [label, value] of Object.entries(settings)) await form(page).getByLabel(label, { exact: true }).fill(value);
-  await form(page).getByLabel(labels.importWizard.coverageConfirm, { exact: true }).check();
-  await expect(form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true })).not.toBeChecked();
-  await check(page, "blocking");
+  for (const [label, value] of Object.entries(settings)) await wizard(page).getByLabel(label, { exact: true }).fill(value);
+  for (const [label, value] of Object.entries(settings)) await expect(wizard(page).getByLabel(label, { exact: true })).toHaveValue(value);
+  // 金額口徑沒有預設：沒選就不能確認、不能檢核，也沒有套用按鈕。
+  for (const basis of ["exclusive", "inclusive", "unsure"] as const) await expect(wizard(page).getByLabel(copy.basis[basis], { exact: true })).not.toBeChecked();
+  await expect(confirmButton(page)).toBeDisabled();
+  await expect(importStatus(page)).toHaveCount(0);
   await expect(commitButton(page)).toHaveCount(0);
-  await form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
+  await chooseBasis(page, "exclusive");
   await commit(page);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
   const manifest = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.manifestJson, exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
@@ -184,8 +197,6 @@ test("不讀 JSON 也能手填 manifest，金額口徑須明確確認", async ({
 
 test("超長但格式合法的期間明確拒絕，不截斷或取代先前資料", async ({ page }) => {
   await importFixture(page, golden);
-  await openImport(page);
-  await selectCsvs(page, golden);
   const manifest = {
     ...JSON.parse(await readFile(resolve(golden, "manifest.json"), "utf8")) as Record<string, unknown>,
     dataset_id: "oversized-analysis-span-synthetic", data_as_of: "8000-12-31",
@@ -193,32 +204,34 @@ test("超長但格式合法的期間明確拒絕，不截斷或取代先前資�
     previous_period: { start: "0001-01-01", end: "4000-12-31" },
     current_period: { start: "4001-01-01", end: "8000-12-31" },
   };
-  await form(page).getByLabel(panel.manifestLabel, { exact: true }).setInputFiles({ name: "long-period-manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
-  await expect(form(page).getByLabel(panel.datasetName, { exact: true })).toHaveValue("oversized-analysis-span-synthetic");
-  await form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
+  await stage(page, golden, {}, { name: "long-period-manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
+  await expect(wizard(page).getByLabel(copy.coverageStart, { exact: true })).toHaveValue("0001-01-01");
+  await expect(wizard(page).getByLabel(copy.coverageEnd, { exact: true })).toHaveValue("8000-12-31");
   await check(page, "blocking");
-  await expect(form(page)).toContainText("ANALYSIS_PERIOD_TOO_LARGE");
+  await expect(wizard(page)).toContainText("ANALYSIS_PERIOD_TOO_LARGE");
   await expect(commitButton(page)).toHaveCount(0);
   await returnToGolden(page);
 });
 
 test("JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功", async ({ page }) => {
-  await openImport(page);
-  await selectCsvs(page, golden);
   const manifest = {
     ...JSON.parse(await readFile(resolve(golden, "manifest.json"), "utf8")) as Record<string, unknown>,
     dataset_id: "coverage-confirmed-in-form-synthetic", sales_coverage_confirmed: false,
   };
-  await form(page).getByLabel(panel.manifestLabel, { exact: true }).setInputFiles({ name: "unconfirmed-coverage-manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
-  await expect(form(page).getByLabel(panel.datasetName, { exact: true })).toHaveValue("coverage-confirmed-in-form-synthetic");
-  const coverage = form(page).getByLabel(labels.importWizard.coverageConfirm, { exact: true });
-  await expect(coverage).not.toBeChecked();
-  await form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
-  await check(page, "partial");
-  await coverage.check();
+  await stage(page, golden, {}, { name: "unconfirmed-coverage-manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
+  await expect(page.getByTestId("import-settings-proposal")).toContainText(copy.settingsFromManifest);
+  // R3 新契約：涵蓋範圍與金額口徑不再是兩個勾選框，而是第 3 步列出的兩句聲明，由「我確認口徑與期間，開始檢核」一次確認
+  // （會把 sales_coverage_confirmed 設為 true）。因此設定檔寫 false 時，使用者按下確認後的檢核結果是「通過」，不再是先前的「部分」。
+  await expect(wizard(page).getByRole("checkbox", { name: copy.coverageConfirm })).toHaveCount(0);
+  await expect(wizard(page).getByRole("checkbox", { name: copy.amountConfirm })).toHaveCount(0);
+  await expect(wizard(page).locator(".confirm-list")).toContainText(copy.coverageConfirm);
+  await expect(wizard(page).locator(".confirm-list")).toContainText(copy.amountConfirm);
   await commit(page);
   await expect(kpi(page, "net_revenue")).toHaveText("2,470.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("255.00");
+  const exported = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.manifestJson, exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
+  await closeDownloads(page);
+  expect(exported).toMatchObject({ dataset_id: "coverage-confirmed-in-form-synthetic", sales_coverage_confirmed: true });
 });
 
 for (const invalid of [
@@ -231,10 +244,10 @@ for (const invalid of [
     const sales = await readFile(resolve(directory, "sales_daily.csv"));
     await stage(page, directory, { "sales_daily.csv": { name: "=uploaded-sales.csv", mimeType: "text/csv", buffer: sales } });
     await check(page, "blocking");
-    await expect(form(page)).toContainText(invalid.reason);
-    await expect(form(page)).toContainText("=uploaded-sales.csv");
+    await expect(wizard(page)).toContainText(invalid.reason);
+    await expect(wizard(page)).toContainText("=uploaded-sales.csv");
     await expect(commitButton(page)).toHaveCount(0);
-    const content = await downloadText(page, form(page).getByRole("button", { name: labels.downloads.issuesCsv, exact: true }), "profitlens-import-issues.csv");
+    const content = await downloadText(page, wizard(page).getByRole("button", { name: labels.downloads.issuesCsv, exact: true }), "profitlens-import-issues.csv");
     const rows = csvRecords(content);
     const issue = rows.find(row => row.reason_code === invalid.reason);
     expect(issue).toBeDefined();
@@ -253,9 +266,10 @@ for (const incomplete of [
   test(`${incomplete.directory} 本機匯入保留收入、未知貢獻與未受影響通路`, async ({ page }) => {
     await stage(page, resolve("fixtures/errors", incomplete.directory));
     await check(page, "partial");
-    await expect(form(page)).toContainText(incomplete.reason);
-    await clickReplacing(page, commitButton(page));
+    await expect(wizard(page)).toContainText(incomplete.reason);
+    await commitWizard(page);
     await expect(status(page)).toContainText(labels.status.partial);
+    await navButton(page, "overview").click();
     await expect(kpi(page, "net_revenue")).toHaveText("2,470.00");
     await expect(kpi(page, "contribution_after_marketing")).toHaveText(labels.status.missing);
     const rows = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv"));
@@ -280,9 +294,16 @@ for (const invalid of ["malformed", "invalid-utf8", "too-many-bytes", "too-many-
       "too-many-rows": { reason: "ROW_LIMIT_EXCEEDED", buffer: Buffer.from(header + "2026-08-01,DTC,A,HOME,1,1,0,0,0,TWD\n".repeat(50_001)) },
     };
     const selected = cases[invalid];
-    await stage(page, golden, { "sales_daily.csv": { name: "invalid-sales.csv", mimeType: "text/csv", buffer: selected.buffer } });
-    await check(page, "blocking");
-    await expect(form(page)).toContainText(selected.reason);
+    await openWizard(page);
+    await selectCsvs(page, golden);
+    await setWizardManifest(page, resolve(golden, "manifest.json"));
+    // R3：讀檔錯誤在第 1 步就以白話訊息＋原因代碼擋下（不截斷、不部分讀入），「下一步」不能按，自然也到不了檢核與套用。
+    await wizard(page).getByLabel(wizardFileLabels["sales_daily.csv"], { exact: true }).setInputFiles({ name: "invalid-sales.csv", mimeType: "text/csv", buffer: selected.buffer });
+    const alert = page.getByTestId("import-file-sales_daily.csv").getByRole("alert");
+    await expect(alert).toContainText(selected.reason);
+    await expect(alert).toContainText(plainMessage(selected.reason));
+    await expect(nextButton(page)).toBeDisabled();
+    await expect(importStatus(page)).toHaveCount(0);
     await expect(commitButton(page)).toHaveCount(0);
     await returnToGolden(page);
   });
@@ -293,19 +314,40 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
   const renamed = source.trimEnd().split(/\r?\n/).map((line, index) => index === 0
     ? line.replace("gross_sales", "revenue") + ",private_note"
     : line + ",SYNTHETIC_UNKNOWN_MARKER").join("\n") + "\n";
-  await stage(page, alternative, { "sales_daily.csv": { name: "renamed-sales.csv", mimeType: "text/csv", buffer: Buffer.from(renamed) } });
-  const mapping = form(page).getByLabel(fill(panel.mappingAria, { file: "sales_daily.csv", field: "gross_sales" }), { exact: true });
+  await openWizard(page);
+  await selectCsvs(page, alternative, { "sales_daily.csv": { name: "renamed-sales.csv", mimeType: "text/csv", buffer: Buffer.from(renamed) } });
+  const datasetId = await readManifest(page, resolve(alternative, "manifest.json"));
+  await nextFromFiles(page);
+  // 欄名不同：第 2 步不能自動完成；不猜測 revenue＝gross_sales。
+  const card = page.getByTestId("import-mapping-sales_daily.csv");
+  await expect(card).toBeVisible();
+  const mappingAria = fill(panel.mappingAria, { file: "sales_daily.csv", field: "gross_sales" });
+  const mapping = card.getByLabel(mappingAria, { exact: true });
+  const mappingRow = card.locator("tbody tr").filter({ has: page.getByLabel(mappingAria, { exact: true }) });
   await expect(mapping).toHaveValue("");
-  await expect(form(page).getByTestId("import-preview-sales_daily.csv")).toContainText("private_note");
-  await check(page, "blocking");
+  await expect(mappingRow).toContainText(copy.mappingStatus.none);
+  await expect(card).toContainText("private_note");
+  await expect(card).toContainText(fill(copy.mappingIncomplete, { fields: "gross_sales" }));
+  await expect(card).toContainText(fill(copy.ignoredColumns, { columns: "revenue、private_note" }));
+  await expect(confirmMappingButton(page)).toBeDisabled();
   await mapping.selectOption("revenue");
-  await expect(form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true })).not.toBeChecked();
-  await form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
-  await check(page, "blocking");
-  await form(page).getByLabel(fill(panel.mappingConfirmAria, { file: "sales_daily.csv" }), { exact: true }).check();
-  await check(page, "blocking");
-  await form(page).getByLabel(fill(panel.ignoreAria, { file: "sales_daily.csv" }), { exact: true }).check();
-  await commit(page);
+  await expect(card).toContainText(fill(copy.ignoredColumns, { columns: "private_note" }));
+  await expect(mappingRow).toContainText(copy.mappingStatus.manual);
+  await expect(mappingRow.locator(".samples")).toContainText("100.00");
+  // 對照已補齊，但未知欄位尚未確認忽略：仍不能往下。
+  await expect(confirmMappingButton(page)).toBeDisabled();
+  await card.getByLabel(fill(panel.ignoreAria, { file: "sales_daily.csv" }), { exact: true }).check();
+  await expect(confirmMappingButton(page)).toBeEnabled();
+  await confirmMappingButton(page).click();
+  await expect(page.getByTestId("import-step-3")).toBeVisible();
+  await expect(wizard(page).getByLabel(copy.datasetName, { exact: true })).toHaveValue(datasetId);
+  await expect(confirmButton(page)).toBeDisabled();
+  await chooseBasis(page, "exclusive");
+  await check(page, "valid");
+  await expect(page.getByTestId("reconciliation-gross_sales")).toContainText("renamed-sales.csv／revenue");
+  await commitWizard(page);
+  await expect(status(page)).toContainText(labels.status.ready);
+  await navButton(page, "overview").click();
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
   const text = await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv");
@@ -316,7 +358,7 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
 });
 
 test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行", async ({ page, context, browserAudit }) => {
-  await openImport(page);
+  await openWizard(page);
   const beforeStorage = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
   await page.route("**/*", async route => {
@@ -325,7 +367,7 @@ test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文�
     await route.abort("blockedbyclient");
   });
   await selectCsvs(page, alternative);
-  await readManifest(page, alternative);
+  await toSettings(page, await readManifest(page, resolve(alternative, "manifest.json")));
   await commit(page);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
   await navButton(page, "products").click();
@@ -386,8 +428,8 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
 });
 
 test("空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各自正確", async ({ page }) => {
-  const overrides: Partial<Record<FileRole, FilePayload>> = {};
-  for (const role of roles) {
+  const overrides: Partial<Record<WizardRole, FilePayload>> = {};
+  for (const role of wizardRoles) {
     let text = (await readFile(resolve(alternative, role), "utf8")).replaceAll(",DTC,", ",all,");
     if (role === "sales_daily.csv") text = text.replaceAll(",+TEST(),@NOTE,", ",+TEST(),,");
     overrides[role] = { name: role, mimeType: "text/csv", buffer: Buffer.from(text) };
@@ -396,11 +438,10 @@ test("空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各
     ...JSON.parse(await readFile(resolve(alternative, "manifest.json"), "utf8")) as Record<string, unknown>,
     dataset_id: "alternative-blank-category-all-channel-synthetic", channels: ["all", "MARKETPLACE"],
   };
-  await openImport(page);
-  await selectCsvs(page, alternative, overrides);
-  await form(page).getByLabel(panel.manifestLabel, { exact: true }).setInputFiles({ name: "blank-category-manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
-  await expect(form(page).getByLabel(panel.datasetName, { exact: true })).toHaveValue("alternative-blank-category-all-channel-synthetic");
-  await form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
+  await stage(page, alternative, overrides, { name: "blank-category-manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
+  await expect(wizard(page).getByLabel(copy.datasetName, { exact: true })).toHaveValue("alternative-blank-category-all-channel-synthetic");
+  await expect(wizard(page).getByLabel("all", { exact: true })).toBeChecked();
+  await expect(wizard(page).getByLabel("MARKETPLACE", { exact: true })).toBeChecked();
   await commit(page);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");

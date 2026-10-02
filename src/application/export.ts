@@ -1,7 +1,8 @@
 import { uniqueSources } from "../domain/aggregation";
 import { AMOUNT_FIELDS, COST_FIELDS, MONEY_METRICS, PRODUCT_METRICS, SALES_FIELDS, type Dataset, type Metric, type MetricName, type Period, type ProductRow, type SourceRef, type ValidationIssue } from "../domain/types";
 import { fill, labels } from "../i18n";
-import { csvHeader } from "./copy";
+import { conversionSentence, csvHeader, plainIssueMessage } from "./copy";
+import type { TaxConversion } from "./tax-basis";
 import { metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
@@ -42,7 +43,8 @@ const HEADERS = [
 type ExportColumn = typeof HEADERS[number];
 type ExportRecord = Partial<Record<ExportColumn, CsvCell>>;
 
-function metadata(dataset: Dataset, snapshot: WorkspaceSnapshot): ExportRecord {
+function metadata(dataset: Dataset, snapshot: WorkspaceSnapshot, conversion?: TaxConversion | null): ExportRecord {
+  const converted = conversionSentence(conversion);
   return {
     dataset_id: text(dataset.manifest.dataset_id), dataset_hash: text(snapshot.dataset_hash), filter_hash: text(snapshot.filter_hash),
     metric_version: text(snapshot.metric_version), as_of: text(snapshot.data_as_of), currency: text(dataset.manifest.currency), timezone: text(dataset.manifest.timezone),
@@ -50,7 +52,7 @@ function metadata(dataset: Dataset, snapshot: WorkspaceSnapshot): ExportRecord {
     comparison_mode: text(snapshot.report.comparison.mode), previous_days: numeric(String(snapshot.report.comparison.previous_days)), current_days: numeric(String(snapshot.report.comparison.current_days)),
     previous_period_start: text(snapshot.report.previous.period.start), previous_period_end: text(snapshot.report.previous.period.end),
     current_period_start: text(snapshot.report.current.period.start), current_period_end: text(snapshot.report.current.period.end),
-    limitations: text(labels.ui.export.limitationsSnapshot),
+    limitations: text(converted ? `${labels.ui.export.limitationsSnapshot} ${converted}` : labels.ui.export.limitationsSnapshot),
   };
 }
 function sourceRefs(sources: readonly SourceRef[], filenameMap: FilenameMap): CsvCell {
@@ -83,7 +85,7 @@ function metricRecord(name: MetricName, metric: Metric, sources: readonly Source
 }
 
 /** Export the already-calculated active snapshot, without recomputing formulas. */
-export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot, filenameMap: FilenameMap = {}): string {
+export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot, filenameMap: FilenameMap = {}, conversion: TaxConversion | null = null): string {
   const records: ExportRecord[] = [];
   const metricNames = Object.keys(metricDefinitions) as MetricName[];
   for (const period of ["previous", "current"] as const) {
@@ -112,12 +114,12 @@ export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
   for (const name of AMOUNT_FIELDS) records.push({ ...bridgeMetadata, metric: text(name), metric_label: text(`${metricDefinitions[name].label}${labels.csvSuffix.change}`), ...valueFields(snapshot.report.bridge.components[name]), source_refs: sourceRefs(metricSources(name, bridgeSources), filenameMap) });
   records.push({ ...bridgeMetadata, metric: text("sum"), metric_label: text(labels.ui.export.bridgeSumLabel), ...valueFields(snapshot.report.bridge.sum), source_refs: sourceRefs(bridgeSources, filenameMap) });
   records.push({ ...bridgeMetadata, metric: text("contribution_change"), metric_label: text(fill(labels.ui.export.contributionChangeLabel, { metric: metricDefinitions.contribution_after_marketing.label })), ...valueFields(snapshot.report.bridge.contribution_change), source_refs: sourceRefs(bridgeSources, filenameMap) });
-  return renderRecords(metadata(dataset, snapshot), records);
+  return renderRecords(metadata(dataset, snapshot, conversion), records);
 }
 
 /** Caller supplies the exact currently visible product rows; no ad allocation. */
-export function exportProductsCsv(dataset: Dataset, snapshot: WorkspaceSnapshot, rows: readonly ProductRow[], productScope: ProductExportScope, filenameMap: FilenameMap = {}): string {
-  const selection: ExportRecord = { ...metadata(dataset, snapshot), product_category: text(productScope.category ?? ""), product_query: text(productScope.query ?? "") };
+export function exportProductsCsv(dataset: Dataset, snapshot: WorkspaceSnapshot, rows: readonly ProductRow[], productScope: ProductExportScope, filenameMap: FilenameMap = {}, conversion: TaxConversion | null = null): string {
+  const selection: ExportRecord = { ...metadata(dataset, snapshot, conversion), product_category: text(productScope.category ?? ""), product_query: text(productScope.query ?? "") };
   const records: ExportRecord[] = [];
   for (const row of rows) {
     for (const name of PRODUCT_METRICS) records.push({
@@ -132,9 +134,9 @@ export function exportProductsCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
 }
 
 export function exportIssuesCsv(issues: readonly ValidationIssue[], filenameMap: FilenameMap = {}): string {
-  const headers = ["severity", "file", "logical_file", "line", "field", "reason_code", "message", "date", "channel", "sku"];
+  const headers = ["severity", "file", "logical_file", "line", "field", "reason_code", "message", "message_plain", "date", "channel", "sku"];
   return encodeCsv([headers.map(header => text(csvHeader(header))), ...issues.map(issue => [
     text(issue.severity), text(filenameMap[issue.file] ?? issue.file), text(issue.file), issue.line === null ? empty : numeric(String(issue.line)),
-    text(issue.field), text(issue.reason_code), text(issue.message), text(issue.date ?? ""), text(issue.channel ?? ""), text(issue.sku ?? ""),
+    text(issue.field), text(issue.reason_code), text(issue.message), text(plainIssueMessage(issue)), text(issue.date ?? ""), text(issue.channel ?? ""), text(issue.sku ?? ""),
   ])]);
 }

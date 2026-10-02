@@ -11,6 +11,10 @@ import { AiPanel } from "./ai-panel";
 import { getAiCapability, type AiCapability } from "@/application/ai-client";
 import { IssueList } from "./issue-list";
 import { ImportPanel } from "./import-panel";
+import { ImportWizard } from "./import-wizard";
+import { clearWizardMemory, exampleTemplateUrl, FILE_ROLES } from "@/application/import-wizard";
+import { standardCsvTemplate } from "@/application/import-guidance";
+import type { RawValuesByFile, TaxConversion } from "@/application/tax-basis";
 import type { PreparedImport } from "@/application/import";
 import { downloadText } from "@/application/download";
 import { exportIssuesCsv, exportSnapshotCsv } from "@/application/export";
@@ -36,7 +40,7 @@ import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, type Acti
 
 type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "validation";
 type Status = "empty" | "loading" | "error" | "partial" | "ready";
-type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>> };
+type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; raw_values?: RawValuesByFile };
 // R2：導覽、資料集名稱與決議標籤都從 labels 取字；id／value 維持機器值。
 const panelIds: Panel[] = ["overview", "diagnosis", "products", "scenarios", "actions", "data", "validation"];
 const panels: { id: Panel; label: string; description: string }[] = panelIds.map(id => ({ id, label: labels.nav[id].label, description: labels.nav[id].description }));
@@ -73,6 +77,9 @@ export function Dashboard() {
   const [status, setStatus] = useState<Status>("empty");
   const [selected, setSelected] = useState("demo");
   const [showImport, setShowImport] = useState(false);
+  // R3：舊版單頁匯入面板只在網址帶 #legacy-import 時掛載（R4 刪除）；本機保存同意由這裡保存，供儲存面板與匯入精靈的對照記憶共用。
+  const [legacyImport, setLegacyImport] = useState(false);
+  const [localConsent, setLocalConsent] = useState(false);
   const [active, setActive] = useState<Active | null>(null);
   const [issues, setIssues] = useState<ValidationIssue[]>([]);
   const [error, setError] = useState("");
@@ -116,12 +123,12 @@ export function Dashboard() {
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty, showImport]);
   const [evidence, setEvidenceState] = useState<EvidenceSelection | null>(null);
-  const [evidenceSource, setEvidenceSource] = useState<Pick<Active, "dataset" | "filenames" | "mappings"> | null>(null);
+  const [evidenceSource, setEvidenceSource] = useState<(Pick<Active, "dataset" | "filenames" | "mappings"> & { dataset_hash?: string }) | null>(null);
   function setEvidence(selection: EvidenceSelection | null) { setEvidenceSource(null); setEvidenceState(selection); }
   function actionEvidence(selection: EvidenceSelection, context: ActionContext) {
     const historical = validateDataset(context.source_input).dataset;
     if (!historical) return;
-    setEvidenceSource({ dataset: historical, filenames: context.session.filenames, mappings: context.source_mappings });
+    setEvidenceSource({ dataset: historical, filenames: context.session.filenames, mappings: context.source_mappings, dataset_hash: context.session.dataset_hash });
     setEvidenceState(selection);
   }
   function activate(next: Active, newEpoch = true) {
@@ -206,17 +213,18 @@ export function Dashboard() {
   function startImport() {
     requestId.current++; controller.current?.abort(); setEvidence(null); setError(""); setFilterError("");
     setStatus(active ? (active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready") : "empty");
+    setLegacyImport(window.location.hash === "#legacy-import");
     setPanel("data"); setShowImport(true);
   }
   function cancelImport() {
     requestId.current++; controller.current?.abort(); setShowImport(false); setError("");
     setStatus(active ? (active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready") : "empty");
   }
-  async function commitImport(prepared: PreparedImport, manifestName?: string) {
+  async function commitImport(prepared: PreparedImport, manifestName?: string, afterCommit?: () => void) {
     if (!prepared.input || !prepared.validation.dataset || prepared.validation.classification === "blocking") return;
-    requestReplacement("import", () => performCommitImport(prepared, manifestName));
+    requestReplacement("import", () => performCommitImport(prepared, manifestName, afterCommit));
   }
-  async function performCommitImport(prepared: PreparedImport, manifestName?: string) {
+  async function performCommitImport(prepared: PreparedImport, manifestName?: string, afterCommit?: () => void) {
     if (!prepared.input || !prepared.validation.dataset || prepared.validation.classification === "blocking") return;
     const ticket = ++requestId.current;
     controller.current?.abort(); setStatus("loading"); setEvidence(null); setError(""); setFilterError("");
@@ -225,12 +233,13 @@ export function Dashboard() {
       const dataset = prepared.validation.dataset;
       const snapshot = await createSnapshot(dataset, {}, await hashInput(prepared.input));
       if (ticket !== requestId.current) return;
-      activate({ input: prepared.input, dataset, snapshot, id: `import-${snapshot.dataset_hash}`, revision: ++revision.current, mappings: prepared.columnMappings, filenames: { ...prepared.originalNames, ...(manifestName ? { "manifest.json": manifestName } : {}) } });
+      activate({ input: prepared.input, dataset, snapshot, id: `import-${snapshot.dataset_hash}`, revision: ++revision.current, mappings: prepared.columnMappings, filenames: { ...prepared.originalNames, ...(manifestName ? { "manifest.json": manifestName } : {}) }, conversion: prepared.conversion, raw_values: prepared.raw_values });
       setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
       setIssues(prepared.validation.issues);
       setStatus(prepared.validation.classification === "partial" ? "partial" : "ready");
       setShowImport(false); setPanel("overview");
+      afterCommit?.();
     } catch {
       if (ticket !== requestId.current) return;
       setError(labels.ui.dashboard.errors.importIncomplete); setStatus("error");
@@ -269,7 +278,8 @@ export function Dashboard() {
   function clear() { requestReplacement("clear", performClear); }
   function performClear() {
     storeScenarios(emptyScenarioWorkspace()); storeReview(null); storeActions(emptyActionWorkspace()); setSavedVersion(versionRef.current);
-    setStorageResetEpoch(value => value + 1);
+    // 清空工作區也重設本機保存同意（與 R2 以前儲存面板自己重掛載的行為一致）；對照記憶的 IndexedDB 寫入隨之停止。
+    setStorageResetEpoch(value => value + 1); setLocalConsent(false);
     requestId.current++; controller.current?.abort(); setActive(null); setIssues([]); setEvidence(null);
     setStatus("empty"); setError(""); setFilterError(""); setShowImport(false);
   }
@@ -294,13 +304,13 @@ export function Dashboard() {
   }
   function exportDecision(format: "md" | "csv" | "json") {
     if (!active) return;
-    const body = exportWorkspaceDecision(format, active, scenarioWorkspace, actionWorkspace, reviewSession);
+    const body = exportWorkspaceDecision(format, active, scenarioWorkspace, actionWorkspace, reviewSession, active.conversion ?? null);
     downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");
   }
   function reviewEvidence(selection: EvidenceSelection, review: ReviewSession) {
     const dataset = validateDataset(review.source_input).dataset;
     if (!dataset) return;
-    setEvidenceSource({ dataset, filenames: review.filenames, mappings: review.source_mappings }); setEvidenceState(selection);
+    setEvidenceSource({ dataset, filenames: review.filenames, mappings: review.source_mappings, dataset_hash: review.dataset_hash }); setEvidenceState(selection);
   }
   async function draftFromReview(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number], review: ReviewSession) {
     if (!active) return;
@@ -358,13 +368,13 @@ export function Dashboard() {
             <div id="ai-availability-detail" className="ai-popover" role="region" aria-label={labels.sections.aiDetail} hidden={!aiOpen}><p>{aiDetail}</p></div>
           </div>
         </div>
-        <WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { if (active) markChanged(); }} />
+        <WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { void clearWizardMemory(); if (active) markChanged(); }} consent={localConsent} onConsentChange={setLocalConsent} />
         <details className="topbar-menu auto-close download-menu" data-testid="download-menu">
             <summary>{labels.buttons.download}</summary>
             <div className="menu-panel">{visible ? <div className="menu-list">
               <p className="menu-section">{labels.sections.downloadCurrentView}</p>
-              <div className="menu-item"><button type="button" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames), "profitlens-analysis.csv")}>{labels.downloads.analysisCsv}</button><small>{labels.downloads.analysisCsvHint}</small></div>
-              <button type="button" onClick={() => downloadText(exportChannelComparisonCsv(buildManagerSummary(active.snapshot)), "profitlens-channel-comparison.csv")}>{labels.downloads.channelTableCsv}</button>
+              <div className="menu-item"><button type="button" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames, active.conversion ?? null), "profitlens-analysis.csv")}>{labels.downloads.analysisCsv}</button><small>{labels.downloads.analysisCsvHint}</small></div>
+              <button type="button" onClick={() => downloadText(exportChannelComparisonCsv(buildManagerSummary(active.snapshot, { conversion: active.conversion })), "profitlens-channel-comparison.csv")}>{labels.downloads.channelTableCsv}</button>
               <button type="button" onClick={() => downloadText(JSON.stringify(active.dataset.manifest, null, 2), "profitlens-manifest.json", "application/json;charset=utf-8")}>{labels.downloads.manifestJson}</button>
               {active.dataset.issues.length > 0 && <div className="menu-item"><button type="button" onClick={() => downloadText(exportIssuesCsv(active.dataset.issues, active.filenames), "profitlens-issues.csv")}>{labels.downloads.issuesCsv}</button><small>{labels.downloads.issuesCsvHint.replace("{n}", String(active.dataset.issues.length))}</small></div>}
               <p className="menu-section">{labels.sections.downloadDecision}</p>
@@ -372,7 +382,8 @@ export function Dashboard() {
               <button type="button" onClick={() => exportDecision("csv")}>{labels.downloads.decisionCsv}</button>
               <button type="button" onClick={() => exportDecision("json")}>{labels.downloads.decisionJson}</button>
               <p className="menu-note">{labels.downloads.menuNote}</p>
-            </div> : <p className="menu-note">{labels.status.empty}；{labels.downloads.menuEmpty}</p>}</div>
+            </div> : <p className="menu-note">{labels.status.empty}；{labels.downloads.menuEmpty}</p>}
+            <div className="menu-section" data-testid="download-templates"><p className="menu-heading">{labels.downloads.templatesHeading}</p>{FILE_ROLES.map(role => { const file = labels.importWizard.files[role === "sales_daily.csv" ? "sales" : role === "channel_costs_daily.csv" ? "costs" : "ads"]; return <div key={role} className="menu-item"><button type="button" onClick={() => downloadText(standardCsvTemplate(role), role)}>{fill(labels.downloads.blankTemplate, { file })}</button><a href={exampleTemplateUrl(role)} download={role}>{fill(labels.downloads.exampleTemplate, { file })}</a></div>; })}</div></div>
         </details>
       </header>
       <main id="main-content" tabIndex={-1}>
@@ -384,7 +395,7 @@ export function Dashboard() {
           <ul className="validation-descriptions"><li>{labels.ui.dashboard.validation.descriptions.demo}</li><li>{labels.ui.dashboard.validation.descriptions.golden}</li><li>{labels.ui.dashboard.validation.descriptions.missing}</li><li>{labels.ui.dashboard.validation.descriptions.duplicate}</li></ul>
           <p className="note">{labels.ui.dashboard.validation.note}</p>
         </section>}
-        {showImport && <div hidden={panel !== "data"}><ImportPanel onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} /></div>}
+        {showImport && <div hidden={panel !== "data"}>{legacyImport ? <div id="legacy-import"><ImportPanel onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} /></div> : <ImportWizard onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} localSaveConsented={localConsent} />}</div>}
         {visible && <>
           <div className="filter-bar">
             <label className="channel-field">{labels.ui.dashboard.filter.channel}<select aria-label={labels.ui.dashboard.filter.channel} value={active.snapshot.report.scope.channels.length > 1 ? "" : active.snapshot.report.scope.channels[0]} onChange={event => void applyFilters({ ...active.snapshot.report.scope, channels: event.target.value === "" ? active.dataset.manifest.channels : [event.target.value] })}><option value="">{labels.ui.dashboard.filter.allChannels}</option>{active.dataset.manifest.channels.map(channel => <option key={channel} value={channel}>{channelLabel(channel, alias)}</option>)}</select></label>
@@ -403,7 +414,7 @@ export function Dashboard() {
         {status === "empty" && !showImport && panel !== "validation" && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">{labels.emptyState.eyebrow}</p><h2>{labels.emptyState.title}</h2><p>{labels.emptyState.body}</p><button className="button primary large" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={18} /></button><div className="empty-steps">{labels.emptyState.steps.map((step, index) => <span key={step}>{index + 1} {step}</span>)}</div></section>}
         {status === "loading" && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>{labels.ui.dashboard.loading.heading}</h2><p>{labels.ui.dashboard.loading.body}</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
         {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>{labels.status.error}</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>{labels.ui.dashboard.errorState.retry}</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>{labels.ui.dashboard.errorState.back}</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
-        {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} /><details className="panel overview-meeting" data-testid="overview-meeting" open={meetingOpen} onToggle={event => setMeetingOpen(event.currentTarget.open)}><summary>{labels.sections.meetingDraft}<span className="tag">{reviewSession ? labels.meeting.decisions[decisionLabelKey[reviewSession.decision_state]] : labels.sections.meetingNotCreated}</span></summary><ReviewWorkbench source={active} scenarioWorkspace={scenarioWorkspace} review={reviewSession} onChange={setReview} actionWorkspace={actionWorkspace} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} /></details></>}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} />}</div>}
+        {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} /><details className="panel overview-meeting" data-testid="overview-meeting" open={meetingOpen} onToggle={event => setMeetingOpen(event.currentTarget.open)}><summary>{labels.sections.meetingDraft}<span className="tag">{reviewSession ? labels.meeting.decisions[decisionLabelKey[reviewSession.decision_state]] : labels.sections.meetingNotCreated}</span></summary><ReviewWorkbench source={active} conversion={active.conversion} scenarioWorkspace={scenarioWorkspace} review={reviewSession} onChange={setReview} actionWorkspace={actionWorkspace} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} /></details></>}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onChannelChange={channel => void applyFilters({ ...active.snapshot.report.scope, channels: [channel] })} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} />}
         <footer className="main-footer"><p>{labels.basis.footer} → <button type="button" className="text-button" onClick={() => setBasisOpen(true)}>{labels.buttons.basis}</button></p></footer>
@@ -413,7 +424,7 @@ export function Dashboard() {
       if (pendingReplacement.version !== versionRef.current) return;
       const run = pendingReplacement.run; setPendingReplacement(null); void run();
     }} />}
-    {active && <EvidenceDrawer dataset={evidenceSource?.dataset ?? active.dataset} snapshot={evidenceSource ? undefined : active.snapshot} filenames={evidenceSource?.filenames ?? active.filenames} mappings={evidenceSource ? evidenceSource.mappings : active.mappings} evidence={evidence} onClose={() => setEvidence(null)} onBasis={() => setBasisOpen(true)} />}
+    {active && <EvidenceDrawer dataset={evidenceSource?.dataset ?? active.dataset} snapshot={evidenceSource ? undefined : active.snapshot} filenames={evidenceSource?.filenames ?? active.filenames} mappings={evidenceSource ? evidenceSource.mappings : active.mappings} rawValues={!evidenceSource || evidenceSource.dataset_hash === active.snapshot.dataset_hash ? active.raw_values : undefined} conversion={!evidenceSource || evidenceSource.dataset_hash === active.snapshot.dataset_hash ? active.conversion : null} evidence={evidence} onClose={() => setEvidence(null)} onBasis={() => setBasisOpen(true)} />}
     <BasisDialog open={basisOpen} onClose={() => setBasisOpen(false)} />
   </div>;
 }

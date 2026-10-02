@@ -1,5 +1,14 @@
 # Status
 
+## Revamp v2｜R3 匯入精靈與台灣來源（完成，未合併、未部署）
+
+R3 依 `docs/revamp/06_BATCHES.md` R3-1～R3-9 與 `04_IMPORT_TW.md` 完成：單頁匯入表單改為四步精靈（`src/components/import-wizard/`，狀態機 `src/application/import-wizard.ts`；選檔拖放與自動歸位、對照欄位依「標準欄名 → 上次的對照 → 來源預設 → 中文欄名字典」預選、口徑與期間由檔案提議直接填入、檢核與套用）；含稅來源不再被擋：`src/application/tax-basis.ts` 逐列 ÷ (1＋稅率) ROUND_HALF_UP 兩位後才交給既有 `validateDataset`，原值→換算值顯示在「怎麼算的」抽屜、資料頁前處理摘要、分析／商品／通路寬表 CSV 與主管摘要、決策匯出；九個台灣來源 preset（全部 `verified: false`）＋ 53 個中文欄名別名；對照記憶（IndexedDB 新 store，受本機保存同意控制）；錯誤訊息白話對照表（全部 reason code）；含三列示範的範例範本；`scripts/aggregate_orders.py`＋`docs/ORDER_AGGREGATION.md`。D2、D5 依建議值執行；另四個取捨記於 `docs/DECISIONS.md`。`src/domain/*`、`fixtures/*`、`metric_version`、依賴零改動。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **51 files／921 tests pass**（R2 基線 839 ＋ tax-basis 7、import-wizard 17、mapping-memory、source-presets、aggregate-orders、templates 等）、build pass 無 warning、E2E 全套 **472 項：460 pass／12 fail → 12 項為審查修正（自動完成的第 2 步改為可回看）後三個改寫測試的「回上一步」預期過時，只改測試後該三個 spec 四尺寸重跑 **60/60 通過****（四尺寸，含新增 `import-wizard.spec.ts` 7 項）；對抗式審查 45 項候選、33 項確認、修 30 項（對帳表假差額、含稅全不勾、正規化誤判 exact、preset 誤判、清空未重設同意、刪除本機資料未清分頁記憶、記憶跨 session 讀取、設定檔失敗卡住、記憶寫入時點、第 1 步訂單級提示、說明連結、其他匯出註記、精度、白話回退、問題 CSV 白話欄、焦點外框、多檔選取與拖放等）。
+- 測試：八個驅動舊面板的 E2E spec（import、import-guidance、period-comparison、action-workspace、ai、m6-acceptance、product-comparison、review-v2-a）改為共用 `tests/e2e/import-wizard-helpers.ts` 驅動精靈，不刪測試、不 `.skip`、不改 golden；新增 `tests/e2e/import-wizard.spec.ts`（≤ 5 次點擊、含稅 KPI＝手算、記憶提示、超限拒絕、訂單級偵測、範本下載、拖放／多選）。`tests/fixtures/inclusive_tax/`（README 含手算）。
+- 截圖 68 張存 `verification/revamp-R3/`（精靈四步、檢核摘要、匯入後總覽、抽屜原值→換算值、資料頁前處理、記憶提示 × 四尺寸）。E2E 重寫的 A 批證據檔已 `git checkout` 還原。真實平台匯出檔走查、Live AI、Safari／Firefox、實體裝置：**未執行**。
+- 已知限制：備份仍 v3（conversion／raw_values 不入備份，R4 升 v4）；IndexedDB 升 v2，回滾到 R2 build 讀不到本機副本；preset 全部待真實匯出檔驗證；對照記憶不記標準欄名的手動覆寫；舊面板 `#legacy-import` 保留到 R4。完整紀錄見 [R3 驗收](../verification/revamp-R3-acceptance.md)。R3 完成即停止；R4 待確認後開始。
+
 ## Revamp v2｜R2 語言與文案層（完成，未合併、未部署）
 
 R2 依 `docs/revamp/06_BATCHES.md` R2-1～R2-10 與 `03_GLOSSARY_COPY.md` 完成：所有使用者可見文字集中到 `src/i18n/labels.zh-TW.ts`（`metrics`／`rules`／`nav`／`sections`／`buttons`／`status`／`periods`／`basis`／`downloads`／`notes`／`csvColumns`／`evidence`／`brand` 與由 31 檔盤點產生的 `ui.<元件>` 約 800 鍵）；`metricDefinitions` 改讀 labels（新增 `shortLabel`／`plain`／`formulaTechnical`）；規則卡改為模板文案（`ruleCopy`，標題金額「萬」規則）；新增口徑說明對話框（九條）、免責集中為每區塊一句＋頁尾一句；「怎麼算的」抽屜改為中文階梯＋技術細節收合＋來源依檔案分頁可搜尋；示範通路顯示「官網 · DTC／平台 · MARKETPLACE」（只對示範資料集）；CSV 標題列改「中文 (key)」；`<title>`／`description`／`lang="zh-Hant-TW"`。D1、D11 依建議值執行（記於 `docs/DECISIONS.md`）。財務核心、fixtures、依賴零改動。

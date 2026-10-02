@@ -1,0 +1,4 @@
+﻿date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency
+2026-08-01,官網,TW-TEE-001,服飾,3,1770.00,177.00,0.00,690.00,TWD
+2026-08-02,官網,TW-TEE-001,服飾,4,2360.00,236.00,590.00,920.00,TWD
+2026-08-03,官網,TW-CAP-001,配件,2,980.00,0.00,0.00,410.00,TWD

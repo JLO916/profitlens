@@ -4,7 +4,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { fill, labels } from '../../src/i18n';
 import { channelsLabel } from '../../src/application/copy';
 import { openMeeting, ruleHeadline } from './replacement-helpers';
-const aw=labels.ui.actionsWorkbench, ws=labels.ui.workspaceStorage, ip=labels.ui.importPanel, ms=labels.ui.managerSummary;
+import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from './import-wizard-helpers';
+const aw=labels.ui.actionsWorkbench, ws=labels.ui.workspaceStorage, ms=labels.ui.managerSummary;
 const cmAfter=labels.metrics.contribution_after_marketing.label;
 /** 事實選項／看證據按鈕的文字由 actions-workbench factLabel() 組成；golden 不套示範通路 alias。 */
 const factText=(start:string,end:string,metric:string,scope:string,value:string)=>fill(aw.factLabel,{start,end,metric,scope,scopeKind:labels.csvColumns.channel,value});
@@ -94,19 +95,22 @@ test('A1 檢視切換後仍可管理執行狀態與進度，管理編輯不撤�
 test('A1 真換CSV後重新綁定先預覽，取消保留270，再明確確認170與完整歷史',async({page},info)=>{
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.name));
  const {card,id}=await confirmedDtcAction(page);const before=JSON.parse(await download(page,labels.downloads.decisionJson));
- await page.getByRole('button',{name:labels.buttons.importData,exact:true}).click();const form=page.getByTestId('import-panel');
- const roles={'sales_daily.csv':labels.importWizard.files.sales,'channel_costs_daily.csv':labels.importWizard.files.costs,'ad_spend_daily.csv':labels.importWizard.files.ads};
- for(const [file,label] of Object.entries(roles)) {
-  const csv=await readFile(resolve('fixtures/golden',file),'utf8');
-  const replacement=file==='ad_spend_daily.csv'?csv.replace('2026-08-02,DTC,270.00','2026-08-02,DTC,370.00'):csv;
-  await form.getByLabel(label,{exact:true}).setInputFiles({name:file,mimeType:'text/csv',buffer:Buffer.from(replacement)});
+ // R3：單頁匯入表單改為四步匯入精靈；替換廣告檔後仍以 golden manifest 帶入設定，確認口徑後檢核、套用並明確捨棄未保存工作。
+ await openWizard(page);
+ const overrides:Partial<Record<WizardRole,FilePayload>>={};
+ for(const role of wizardRoles) {
+  const csv=await readFile(resolve('fixtures/golden',role),'utf8');
+  const replacement=role==='ad_spend_daily.csv'?csv.replace('2026-08-02,DTC,270.00','2026-08-02,DTC,370.00'):csv;
+  overrides[role]={name:role,mimeType:'text/csv',buffer:Buffer.from(replacement)};
  }
- await form.getByLabel(ip.manifestLabel,{exact:true}).setInputFiles(resolve('fixtures/golden/manifest.json'));
- await expect(form.getByLabel(ip.datasetName,{exact:true})).not.toHaveValue('');
- await form.getByLabel(labels.importWizard.amountConfirm,{exact:true}).check();
- await form.getByRole('button',{name:ip.check,exact:true}).click();await expect(form.getByTestId('import-status')).toHaveText(ip.status.valid);
- await form.getByRole('button',{name:ip.commit,exact:true}).click();await discardReplacement(page);
- await expect(page.getByTestId('workspace-status')).toContainText(labels.status.ready);await expect(form).toHaveCount(0);
+ await setWizardFiles(page,'fixtures/golden',overrides);
+ await setWizardManifest(page,resolve('fixtures/golden/manifest.json'));
+ await nextFromFiles(page);await confirmMappingIfShown(page);
+ await expect(wizard(page).getByLabel(labels.importWizard.datasetName,{exact:true})).not.toHaveValue('');
+ await chooseBasis(page,'exclusive');
+ await confirmAndCheck(page,'valid');
+ await commitButton(page).click();await discardReplacement(page);
+ await expect(page.getByTestId('workspace-status')).toContainText(labels.status.ready);await expect(wizard(page)).toHaveCount(0);
  await page.getByRole('button',{name:labels.nav.actions.label,exact:true}).click();await expect(card).toContainText(aw.historicalAlert);
  await card.getByLabel(labels.actions.status,{exact:true}).selectOption('blocked');await card.getByLabel(labels.actions.progress,{exact:true}).fill('等待新版本費用對帳');
  await card.getByRole('button',{name:labels.buttons.rebind,exact:true}).click();const preview=card.getByRole('region',{name:aw.rebindRegion,exact:true});

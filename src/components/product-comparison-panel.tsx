@@ -7,6 +7,7 @@ import { exportProductsCsv } from "@/application/export";
 import { exportProductComparisonCsv } from "@/application/product-comparison-export";
 import { formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
+import type { TaxConversion } from "@/application/tax-basis";
 import { uniqueSources } from "@/domain/aggregation";
 import { compareProducts, selectProductComparisonRows, type ProductComparisonRow, type ProductComparisonSort } from "@/domain/product-comparison";
 import type { Dataset, Metric, ProductMetrics, SourceRef } from "@/domain/types";
@@ -30,11 +31,13 @@ function display(name: keyof ProductMetrics, metric: Metric): string {
 }
 
 /** Product-only comparison. Filters remain local to this panel and never change channel contribution. */
-export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filenames }: {
+export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filenames, conversion = null }: {
   dataset: Dataset;
   snapshot: WorkspaceSnapshot;
   onEvidence: (evidence: EvidenceSelection) => void;
   filenames?: Partial<Record<SourceRef["file"], string>>;
+  /** R3：含稅換算摘要，寫進商品明細 CSV 的口徑限制欄。 */
+  conversion?: TaxConversion | null;
 }) {
   const [category, setCategory] = useState("");
   const [query, setQuery] = useState("");
@@ -86,7 +89,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     <div className="export-actions"><button type="button" className={`button ${negativeOnly ? "" : "quiet"}`} aria-pressed={negativeOnly} onClick={() => setNegativeOnly(value => !value)}>{copy.negativeOnly}</button><span className="note">{fill(copy.negativeNote, { n: unavailable })}</span></div>
     <div className="export-actions">
       <button type="button" className="button quiet" onClick={() => downloadText(exportProductComparisonCsv(dataset, snapshot, rows, selection, filenames), "profitlens-product-comparison.csv")}>{copy.downloadComparisonCsv}</button>
-      <button type="button" className="button quiet" onClick={() => downloadText(exportProductsCsv(dataset, snapshot, rows.map(row => ({ channel: row.channel, sku: row.sku, category: row.category, metrics: row.current.metrics, sources: row.current.sources })), { category: activeCategory, query: query.trim().toLowerCase() }, filenames), "profitlens-products.csv")}>{copy.downloadProductsCsv}</button>
+      <button type="button" className="button quiet" onClick={() => downloadText(exportProductsCsv(dataset, snapshot, rows.map(row => ({ channel: row.channel, sku: row.sku, category: row.category, metrics: row.current.metrics, sources: row.current.sources })), { category: activeCategory, query: query.trim().toLowerCase() }, filenames, conversion), "profitlens-products.csv")}>{copy.downloadProductsCsv}</button>
       <span className="note">{copy.downloadNote}</span>
     </div>
     <div className="metric-strip"><p aria-live="polite">{fill(copy.rowCount, { n: rows.length })}</p><p className="note">{activeCategory ? categoryLabel(activeCategory, alias) : copy.allCategories} · {negativeOnly ? copy.stateNegativeOnly : copy.stateAll}</p></div>

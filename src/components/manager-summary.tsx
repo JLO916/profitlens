@@ -7,6 +7,7 @@ import { channelLabel, channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/
 import { downloadText } from "@/application/download";
 import { formatMoney, formatSignedMoney, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
+import type { TaxConversion } from "@/application/tax-basis";
 import type { Diagnostic } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
@@ -22,19 +23,21 @@ export interface ManagerSummaryProps {
   onCreateAction?: (diagnostic: Diagnostic) => void;
   reviewControls?: { importanceThreshold: string; onThresholdChange: (value: string) => void };
   selectionManaged?: boolean;
+  /** R3：含稅換算一句併入口徑說明與 Markdown。 */
+  conversion?: TaxConversion | null;
 }
 
 const comparisonModeLabel = (mode: SummaryData["scope"]["comparison_mode"]) => mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays;
 const periodValues = (summary: SummaryData) => ({ prevStart: summary.scope.previous_period.start, prevEnd: summary.scope.previous_period.end, prevDays: summary.previous_days, curStart: summary.scope.current_period.start, curEnd: summary.scope.current_period.end, curDays: summary.current_days, mode: comparisonModeLabel(summary.scope.comparison_mode) });
 
-export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreateAction, reviewControls, selectionManaged = false }: ManagerSummaryProps) {
+export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreateAction, reviewControls, selectionManaged = false, conversion = null }: ManagerSummaryProps) {
   const [thresholdInput, setThresholdInput] = useState(reviewControls?.importanceThreshold ?? "0.00");
   const [threshold, setThreshold] = useState("0.00");
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [printing, setPrinting] = useState(false);
   const appliedThreshold = reviewControls?.importanceThreshold ?? threshold;
-  const summary = useMemo(() => buildManagerSummary(snapshot, { importanceThreshold: appliedThreshold }), [snapshot, appliedThreshold]);
+  const summary = useMemo(() => buildManagerSummary(snapshot, { importanceThreshold: appliedThreshold, conversion }), [snapshot, appliedThreshold, conversion]);
   const alias = demoAlias(summary.dataset_id);
   const effectiveContext = selectionManaged ? decisionContext : withSummaryScenarioSelection(decisionContext, selected);
   const decisions = summaryDecisionState(summary, effectiveContext);

@@ -3,6 +3,7 @@ import { aggregatePeriod } from "@/domain/aggregation";
 import { dayCount, isBusinessDate } from "@/domain/date";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS, type AmountField, type ComparisonMode, type FileName, type Metrics, type Period, type ValidationIssue } from "@/domain/types";
 import { importColumns, type ImportFileDraft, type PreparedImport } from "./import";
+import { convertInclusiveAmount } from "./tax-basis";
 import { fill, labels } from "@/i18n";
 
 const { importGuidance: guide } = labels.ui;
@@ -116,7 +117,9 @@ export function buildImportReconciliation(prepared: PreparedImport, drafts: Draf
     if (sourceIndex < 0) return null;
     let sum = new ExactDecimal(0), missing_values = 0;
     for (const row of draft.parsed.rows) {
-      const value = row.values[sourceIndex].trim();
+      // R3：含稅匯入時來源總額採逐列換算後的值（與 domain 收到的一致）；含稅原值合計另列在前處理摘要。
+      const raw = prepared.conversion ? prepared.raw_values[file]?.[row.line]?.[field] : undefined;
+      const value = raw !== undefined ? convertInclusiveAmount(raw, prepared.conversion!.rate) : row.values[sourceIndex].trim();
       if (!value) missing_values++;
       else if (!/^-?\d+(?:\.\d{1,2})?$/.test(value)) return null;
       else sum = sum.plus(value);

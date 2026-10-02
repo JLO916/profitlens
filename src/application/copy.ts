@@ -1,7 +1,8 @@
 import Decimal from "decimal.js";
 import { formatCents, parseCents } from "../domain/money";
-import type { Diagnostic, Fact, MetricName, RuleCode, Scope } from "../domain/types";
-import { labels } from "../i18n";
+import type { Diagnostic, Fact, MetricName, RuleCode, Scope, ValidationIssue } from "../domain/types";
+import { fill as fillTemplate, labels } from "../i18n";
+import type { TaxConversion } from "./tax-basis";
 import { formatRate, metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
@@ -93,4 +94,21 @@ export function csvHeader(key: string): string {
 export function csvHeaderKey(header: string): string {
   const match = /\(([^()]+)\)\s*$/.exec(header);
   return match ? match[1] : header;
+}
+
+/** R3 白話錯誤：以 reason code 查 labels.importErrors，查不到就用原訊息；reason code 本身不變。 */
+export function plainIssueMessage(issue: Pick<ValidationIssue, "reason_code" | "message" | "line" | "date" | "channel" | "field">): string {
+  const template = labels.importErrors[issue.reason_code];
+  if (!template) return issue.message;
+  // 模板要用的上下文（日期／通路／行號）這筆問題沒有時（例如範圍層級的缺列），回到原訊息，不印空白占位。
+  const values: Record<string, string> = { line: issue.line === null ? "" : String(issue.line), date: issue.date ?? "", channel: issue.channel ?? "", field: issue.field };
+  const missing = [...template.matchAll(/\{(\w+)\}/g)].some(([, key]) => !values[key]);
+  return missing ? issue.message : fillTemplate(template, values);
+}
+/** R3 含稅換算摘要一句：「含稅換算：5%，欄位 原價收入、折扣，共 12 列」；匯出、抽屜、資料頁共用。 */
+export function conversionSentence(conversion: TaxConversion | null | undefined): string | null {
+  if (!conversion) return null;
+  const percent = new Decimal(conversion.rate).mul(100).toFixed(0);
+  const fields = conversion.fields.map(field => field in labels.metrics ? labels.metrics[field as MetricName].label : field).join("、");
+  return fillTemplate(labels.importWizard.conversionSummary, { percent, fields, n: conversion.rows_converted });
 }

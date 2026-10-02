@@ -9,6 +9,7 @@ import { IssueList } from "../src/components/issue-list";
 import { validateDataset } from "../src/domain/validation";
 import { fixture } from "./helpers/fixtures";
 import { fill, labels } from "../src/i18n";
+import { plainIssueMessage } from "../src/application/copy";
 
 async function context(name = "golden") {
   const input = fixture(name);
@@ -85,9 +86,13 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     const issue = dataset.issues[0];
     expect(main).toContain(issue.file);
     expect(main).toContain(issue.field);
-    expect(main).toContain(issue.message);
+    // R3：主層顯示 labels.importErrors 的白話句；原始技術訊息與 reason code 收在「問題代碼」收合區。
+    expect(main).toContain(plainIssueMessage(issue));
+    expect(plainIssueMessage(issue)).toBe(fill(labels.importErrors.MISSING_COGS, { line: issue.line }));
     expect(main).toContain(fill(labels.ui.issueList.lineRef, { line: issue.line, date: issue.date, channel: issue.channel }).trim());
     expect(main).not.toContain(issue.reason_code);
+    expect(main).not.toContain(issue.message);
     expect(html).toContain(`<summary>${labels.ui.issueList.reasonCodeSummary}</summary><code>${issue.reason_code}</code>`);
+    expect(html).toContain(issue.message);
   });
 });

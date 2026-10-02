@@ -11,7 +11,8 @@ import { IssueList } from "./issue-list";
 import { downloadText } from "@/application/download";
 import { exportProductsCsv } from "@/application/export";
 import { buildManagerSummary } from "@/application/manager-summary";
-import { categoryLabel, channelLabel, channelsLabel, demoAlias, ruleCopy } from "@/application/copy";
+import { categoryLabel, channelLabel, channelsLabel, conversionSentence, demoAlias, ruleCopy } from "@/application/copy";
+import type { TaxConversion } from "@/application/tax-basis";
 import { fill, labels } from "@/i18n";
 import { ChannelWideTable } from "./channel-table";
 import { ImpactAmount } from "./top-three";
@@ -32,7 +33,7 @@ function displayMetric(name: MetricName, metric: Metric): string {
   return formatMoney(metric.value);
 }
 
-export function DataWorkspace({ dataset, snapshot, filenames, mappings }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>> }) {
+export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversion }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null }) {
   const settings = dataset.manifest;
   const alias = demoAlias(settings.dataset_id);
   const files = [
@@ -56,6 +57,7 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings }: { data
       </dl>
       <p className="note">{ui.datasetCaution}</p>
       <details><summary>{labels.sections.technicalDetails}</summary><dl className="metadata-grid"><div><dt>資料格式／指標版本</dt><dd>{settings.schema_version} / {snapshot.metric_version}</dd></div><div><dt>資料 SHA-256</dt><dd><code>{snapshot.dataset_hash}</code></dd></div><div><dt>篩選 SHA-256</dt><dd><code>{snapshot.filter_hash}</code></dd></div><div><dt>金額口徑識別</dt><dd><code>{settings.amount_basis}</code></dd></div></dl></details>
+      {conversion && <section aria-label={labels.sections.dataPreprocessing} data-testid="data-preprocessing"><h3>{labels.sections.dataPreprocessing}</h3><p>{conversionSentence(conversion)}</p>{conversion.totals && <ul>{Object.entries(conversion.totals).map(([field, totals]) => <li key={field}>{fill(labels.importWizard.conversionTotals, { field: field in labels.metrics ? labels.metrics[field as MetricName].label : field, raw: totals.raw, converted: totals.converted })}</li>)}</ul>}</section>}
       {mappings && <details><summary>{ui.mappingsSummary}</summary>{Object.entries(mappings).map(([file, mapping]) => <div key={file}><h3>{filenames?.[file as SourceRef["file"]] ?? file}</h3><dl className="metadata-grid">{Object.entries(mapping).map(([standard, original]) => <div key={standard}><dt>{standard}</dt><dd>{original}</dd></div>)}</dl></div>)}</details>}
     </section>
     <section className="panel" aria-labelledby="preview-heading">

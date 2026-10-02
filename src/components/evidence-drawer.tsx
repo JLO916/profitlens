@@ -4,9 +4,10 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Decimal from "decimal.js";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
 import { evidenceRows, formatMoney, formatRate, metricDefinitions } from "@/application/presentation";
+import { rateToPercent, type RawValuesByFile, type TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS } from "@/domain/types";
-import type { Dataset, Metric, MetricName, Metrics, Period, SourceRef } from "@/domain/types";
+import type { Dataset, FileName, Metric, MetricName, Metrics, Period, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 
 export interface EvidenceSelection {
@@ -28,6 +29,9 @@ interface EvidenceDrawerProps {
   snapshot?: Pick<WorkspaceSnapshot, "report" | "weeks">;
   filenames?: Partial<Record<SourceRef["file"], string>>;
   mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>;
+  /** R3：含稅匯入時每列被換算格子的原值（檔案 → 行號 → 欄位），顯示「含稅原值 → 未稅換算值」。 */
+  rawValues?: RawValuesByFile;
+  conversion?: TaxConversion | null;
   evidence: EvidenceSelection | null;
   onClose: () => void;
   onBasis?: () => void;
@@ -65,7 +69,7 @@ function ladderMetrics(snapshot: EvidenceDrawerProps["snapshot"], evidence: Evid
   return week ? week.metrics : null;
 }
 
-export function EvidenceDrawer({ dataset, snapshot, evidence, onClose, onBasis, filenames, mappings }: EvidenceDrawerProps) {
+export function EvidenceDrawer({ dataset, snapshot, evidence, onClose, onBasis, filenames, mappings, rawValues, conversion }: EvidenceDrawerProps) {
   // Remounting the modal for a different selected metric resets paging without
   // placing derived financial or source data in component state.
   if (!evidence) return null;
@@ -73,10 +77,11 @@ export function EvidenceDrawer({ dataset, snapshot, evidence, onClose, onBasis, 
     dataset.manifest.dataset_id, evidence.title, evidence.name, evidence.period,
     evidence.channels, evidence.scopeLabel, evidence.metric, evidence.formula, evidence.unitOverride,
   ]);
-  return <EvidenceDialog key={selectionKey} dataset={dataset} snapshot={snapshot} evidence={evidence} onClose={onClose} onBasis={onBasis} filenames={filenames} mappings={mappings} />;
+  return <EvidenceDialog key={selectionKey} dataset={dataset} snapshot={snapshot} evidence={evidence} onClose={onClose} onBasis={onBasis} filenames={filenames} mappings={mappings} rawValues={rawValues} conversion={conversion} />;
 }
 
-function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenames, mappings }: Omit<EvidenceDrawerProps, "evidence"> & { evidence: EvidenceSelection }) {
+function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenames, mappings, rawValues, conversion }: Omit<EvidenceDrawerProps, "evidence"> & { evidence: EvidenceSelection }) {
+  const conversionNote = conversion ? fill(copy.conversionNote, { percent: rateToPercent(conversion.rate), fields: conversion.fields.map(field => field in labels.metrics ? labels.metrics[field as MetricName].label : field).join("、") }) : null;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -185,6 +190,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
         <section aria-label={copy.sourcesTitle} className="evidence-sources">
           <h3>{copy.sourcesTitle}</h3>
           <p className="note">{copy.sourcesNote}</p>
+          {conversionNote && <p className="note" data-testid="evidence-conversion-note">{conversionNote}</p>}
           {rows.length === 0 ? <p>{copy.none}</p> : (<>
             <div className="source-controls">
               <div className="source-tabs" role="group" aria-label={labels.ui.evidenceDrawer.sourceTabsAria}>{tabs.map(item => <button key={item} type="button" className="preset" aria-pressed={item === activeTab} onClick={() => { setTab(item); setPage(0); }}>{fill(labels.ui.evidenceDrawer.tabWithCount, { tab: copy.sourceTabs[item], n: counts[item] })}</button>)}</div>
@@ -208,7 +214,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
                           {row.missing && <span className="tag">{copy.missingTag}</span>}
                         </th>
                         <td>{row.date ?? copy.wholeDataset}<br />{row.channel ? channelLabel(row.channel, alias) : copy.allChannels}{row.sku ? <><br />{fill(labels.ui.evidenceDrawer.skuLine, { sku: row.sku })}</> : null}</td>
-                        <td><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : value}</dd></div>)}</dl></td>
+                        <td><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : rawValues?.[row.file as FileName]?.[row.line ?? -1]?.[field] !== undefined ? <span className="converted-value" title={copy.rawToConverted}><s>{rawValues[row.file as FileName]![row.line!][field]}</s> → <strong>{value}</strong><span className="sr-only">（{copy.rawToConverted}）</span></span> : value}</dd></div>)}</dl></td>
                       </tr>
                     );
                   })}

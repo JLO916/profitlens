@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { plainIssueMessage } from "@/application/copy";
 import type { SourceRef, ValidationIssue } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 
@@ -23,7 +24,7 @@ export function IssueList({ issues, filenames, mappings }: {
         <td><span className={`tag ${issue.severity}`}>{issue.severity === "blocking" ? copy.severity.blocking : issue.severity === "partial" ? copy.severity.partial : copy.severity.warning}</span></td>
         <td>{filenames?.[issue.file] ?? issue.file}{filenames?.[issue.file] && filenames[issue.file] !== issue.file && <small>{fill(copy.logicalFile, { file: issue.file })}</small>}<small>{fill(copy.lineRef, { line: issue.line ?? "—", date: issue.date, channel: issue.channel })}</small></td>
         <td>{issue.field}{mappings?.[issue.file]?.[issue.field] && mappings[issue.file]![issue.field] !== issue.field && <small>{fill(copy.originalColumn, { column: mappings[issue.file]![issue.field] })}</small>}</td>
-        <td>{issue.message}<details><summary>{copy.reasonCodeSummary}</summary><code>{issue.reason_code}</code></details></td>
+        <td>{plainIssueMessage(issue)}<details><summary>{copy.reasonCodeSummary}</summary><code>{issue.reason_code}</code>{plainIssueMessage(issue) !== issue.message && <p className="note">{issue.message}</p>}</details></td>
       </tr>)}</tbody>
     </table></div>
     {issues.length > 50 && <nav className="issue-pagination" aria-label={copy.paginationAria}><button className="button quiet" disabled={current === 0} onClick={() => setPage(current - 1)}>{copy.prevPage}</button><span>{fill(copy.pageStatus, { page: current + 1, pages: last + 1 })}</span><button className="button quiet" disabled={current === last} onClick={() => setPage(current + 1)}>{copy.nextPage}</button></nav>}

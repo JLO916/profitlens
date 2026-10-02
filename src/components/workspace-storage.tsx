@@ -10,15 +10,18 @@ import { fill, labels } from "@/i18n";
 const copy = labels.ui.workspaceStorage;
 
 /** Persistence happens only after a deliberate user action, never during mount. */
-export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, onDeleted }: {
+export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, onDeleted, consent, onConsentChange }: {
   source: WorkspaceBackupSource | null;
   version: number;
   dirty: boolean;
   onRestore: (workspace: RestoredWorkspace, accepted?: () => void) => void;
   onSaved: (version: number) => void;
   onDeleted: () => void;
+  /** R3：本機保存同意由 Dashboard 保存，匯入精靈的對照記憶也依此決定是否寫進 IndexedDB。 */
+  consent: boolean;
+  onConsentChange: (value: boolean) => void;
 }) {
-  const [consent, setConsent] = useState(false);
+  const setConsent = onConsentChange;
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");

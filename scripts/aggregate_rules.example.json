@@ -1,0 +1,27 @@
+{
+  "description": "範例：Shopline 風格訂單報表（含 5% 營業稅）。欄名請改成你的匯出檔實際標題；不用的選填鍵整行刪掉即可。",
+  "columns": {
+    "order_id": "訂單號碼",
+    "date": "訂單日期",
+    "status": "訂單狀態",
+    "channel": "銷售通路",
+    "sku": "商品貨號",
+    "category": "商品分類",
+    "units": "數量",
+    "line_amount": "商品小計",
+    "order_discount": "訂單折扣金額",
+    "refund_amount": "退款金額",
+    "refund_date": "退款日期",
+    "unit_cost": "商品成本"
+  },
+  "channel_map": {
+    "官網": "DTC",
+    "蝦皮": "MARKETPLACE"
+  },
+  "exclude_status": ["已取消", "未付款"],
+  "inclusive_tax": true,
+  "tax_rate": "0.05",
+  "cogs_inclusive_tax": false,
+  "currency": "TWD",
+  "encoding": "utf-8-sig"
+}

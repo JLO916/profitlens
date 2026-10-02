@@ -1,4 +1,5 @@
 import { openMeeting } from './replacement-helpers';
+import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { fill, labels } from '../../src/i18n';
 import { appendFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -12,7 +13,7 @@ const test=base.extend<{audit:string[]}>({audit:[async({page},use,info)=>{
  expect(errors).toEqual([]);
 },{auto:true}]});
 // R2: every visible string comes from the label dictionary; this spec reads the same entries the components render.
-const dlg=labels.ui.replacementDialog, store=labels.ui.workspaceStorage, imp=labels.ui.importPanel, review=labels.ui.reviewWorkbench, summaryCopy=labels.ui.managerSummary;
+const dlg=labels.ui.replacementDialog, store=labels.ui.workspaceStorage, review=labels.ui.reviewWorkbench, summaryCopy=labels.ui.managerSummary;
 const escapeRe=(s:string)=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 /** RegExp from a label template: placeholders in `values` are filled exactly, the rest match any text. */
 const templateRe=(template:string,values:Record<string,string>={},flags='')=>new RegExp(`^${escapeRe(template).replace(/\\\{(\w+)\\\}/g,(_,key:string)=>key in values?escapeRe(values[key]):'.+?')}$`,flags);
@@ -21,7 +22,8 @@ const guard=(p:Page)=>p.getByRole('dialog',{name:dlg.heading});
 async function golden(p:Page){await p.goto('/');await p.getByRole('button',{name:labels.nav.validation.label,exact:true}).click();await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(labels.status.ready);}
 async function storage(p:Page){const s=p.getByTestId('workspace-storage');if(await s.getAttribute('open')===null)await s.locator(':scope > summary').click();return s;}
 async function backup(p:Page){const s=await storage(p);const event=p.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
-async function stageAlternative(p:Page){await p.getByRole('button',{name:labels.buttons.importData,exact:true}).click();const form=p.getByTestId('import-panel');for(const[label,file]of Object.entries({[labels.importWizard.files.sales]:'sales_daily.csv',[labels.importWizard.files.costs]:'channel_costs_daily.csv',[labels.importWizard.files.ads]:'ad_spend_daily.csv',[imp.manifestLabel]:'manifest.json'}))await form.getByLabel(label,{exact:true}).setInputFiles(resolve('tests/fixtures/alternative',file));await form.getByLabel(labels.importWizard.amountConfirm,{exact:true}).check();await form.getByRole('button',{name:imp.check,exact:true}).click();await expect(p.getByTestId('import-status')).toContainText(imp.status.valid);}
+/** R3: the alternative fixture + its manifest go through the four-step wizard and stop after the check (not committed), so the guard tests can cancel and retry the commit. */
+async function stageAlternative(p:Page){await openWizard(p);await setWizardFiles(p,resolve('tests/fixtures/alternative'));await setWizardManifest(p,resolve('tests/fixtures/alternative/manifest.json'));await nextFromFiles(p);await confirmMappingIfShown(p);await chooseBasis(p,'exclusive');await confirmAndCheck(p,'valid');await expect(wizardStatus(p)).toContainText(labels.importWizard.result.valid);}
 
 test('A3 示範替換可取消，下載尚未確認不能替換，確認後才繼續',async({page},info)=>{
  await golden(page);await page.getByRole('button',{name:labels.nav.data.label,exact:true}).click();await page.getByRole('button',{name:labels.buttons.loadDemo,exact:true}).click();await expect(guard(page)).toBeVisible();
@@ -34,8 +36,8 @@ test('A3 示範替換可取消，下載尚未確認不能替換，確認後才�
 });
 test('A3 新CSV套用取消保留預覽，明示繼續後才改金額；恢復取消不丟候選',async({page})=>{
  await golden(page);const original=await backup(page);await stageAlternative(page);
- await page.getByRole('button',{name:imp.commit,exact:true}).click();await expect(guard(page)).toBeVisible();await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(page.getByTestId('import-status')).toContainText(imp.status.valid);await expect(status(page)).toContainText('Golden');
- await page.getByRole('button',{name:imp.commit,exact:true}).click();await guard(page).getByRole('button',{name:dlg.discardAndContinue,exact:true}).click();await expect(status(page)).toContainText('alternative-import');await expect(page.getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')).toHaveText('10.00');
+ await commitButton(page).click();await expect(guard(page)).toBeVisible();await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(wizardStatus(page)).toContainText(labels.importWizard.result.valid);await expect(commitButton(page)).toBeVisible();await expect(status(page)).toContainText('Golden');
+ await commitButton(page).click();await guard(page).getByRole('button',{name:dlg.discardAndContinue,exact:true}).click();await expect(wizard(page)).toHaveCount(0);await expect(status(page)).toContainText('alternative-import');await expect(page.getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')).toHaveText('10.00');
  const s=await storage(page);await s.getByLabel(store.selectBackupFile,{exact:true}).setInputFiles({name:'review.json',mimeType:'application/json',buffer:Buffer.from(original)});await expect(page.getByRole('region',{name:store.restorePreviewAria})).toBeVisible();
  await s.getByRole('button',{name:store.applyRestore,exact:true}).click();await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(page.getByRole('region',{name:store.restorePreviewAria})).toBeVisible();await expect(status(page)).toContainText('alternative-import');
  await s.getByRole('button',{name:store.applyRestore,exact:true}).click();await guard(page).getByRole('button',{name:dlg.discardAndContinue,exact:true}).click();await expect(status(page)).toContainText('Golden');await expect(page.getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')).toHaveText('255.00');

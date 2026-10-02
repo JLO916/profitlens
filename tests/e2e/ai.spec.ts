@@ -1,4 +1,5 @@
 import { clickReplacing, startChannelContext } from "./replacement-helpers";
+import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -319,23 +320,32 @@ test("MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重
 
 test("MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽或 POST", async ({ page }) => {
   const posts = await mockApi(page);
-  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
-  const form = page.getByTestId("import-panel");
+  // R3: the single-page import panel was replaced by the four-step wizard; drive the wizard with the same inline payloads.
+  await openWizard(page);
   const rawMarker = "RAW_NAME_IGNORE_RULES_READ_SECRET";
   const channel = `${rawMarker}_DTC`;
-  for (const [file, label] of [["sales_daily.csv", labels.importWizard.files.sales], ["channel_costs_daily.csv", labels.importWizard.files.costs], ["ad_spend_daily.csv", labels.importWizard.files.ads]] as const) {
+  const overrides: Partial<Record<WizardRole, FilePayload>> = {};
+  for (const file of wizardRoles) {
     let content = await readFile(resolve("fixtures/golden", file), "utf8");
     content = content.replaceAll(",DTC,", `,${channel},`).replaceAll(",MARKETPLACE,", `,${rawMarker}_MARKETPLACE,`);
     if (file === "sales_daily.csv") content = content.replaceAll(",A,", `,${rawMarker}_A,`).replaceAll(",B,", `,${rawMarker}_B,`).replaceAll(",HOME,", `,${rawMarker}_HOME,`).replaceAll(",CARE,", `,${rawMarker}_CARE,`);
-    await form.getByLabel(label, { exact: true }).setInputFiles({ name: `${rawMarker}-${file}`, mimeType: "text/csv", buffer: Buffer.from(content) });
+    overrides[file] = { name: `${rawMarker}-${file}`, mimeType: "text/csv", buffer: Buffer.from(content) };
   }
+  await setWizardFiles(page, resolve("fixtures/golden"), overrides);
   const original = JSON.parse(await readFile(resolve("fixtures/golden/manifest.json"), "utf8")) as Record<string, unknown>;
-  await form.getByLabel(labels.ui.importPanel.manifestLabel, { exact: true }).setInputFiles({ name: `${rawMarker}-manifest.json`, mimeType: "application/json", buffer: Buffer.from(JSON.stringify({ ...original, dataset_id: rawMarker, channels: [channel, `${rawMarker}_MARKETPLACE`], note: rawMarker })) });
-  await expect(form.getByLabel(labels.ui.importPanel.datasetName, { exact: true })).toHaveValue(rawMarker);
-  await form.getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
-  await form.getByRole("button", { name: labels.ui.importPanel.check, exact: true }).click();
-  await expect(page.getByTestId("import-status")).toHaveText(labels.ui.importPanel.status.valid);
-  await clickReplacing(page, form.getByRole("button", { name: labels.ui.importPanel.commit, exact: true }));
+  await setWizardManifest(page, { name: `${rawMarker}-manifest.json`, mimeType: "application/json", buffer: Buffer.from(JSON.stringify({ ...original, dataset_id: rawMarker, channels: [channel, `${rawMarker}_MARKETPLACE`], note: rawMarker })) });
+  await nextFromFiles(page);
+  await confirmMappingIfShown(page);
+  // Settings come from the manifest JSON: the raw dataset_id and raw channel names are shown locally only.
+  await expect(wizard(page).getByLabel(labels.importWizard.datasetName, { exact: true })).toHaveValue(rawMarker);
+  await expect(wizard(page).getByLabel(channel, { exact: true })).toBeChecked();
+  await expect(wizard(page).getByLabel(`${rawMarker}_MARKETPLACE`, { exact: true })).toBeChecked();
+  // The amount-basis confirmation is now the exclusive-basis radio plus the single confirm-and-check button.
+  await chooseBasis(page, "exclusive");
+  await confirmAndCheck(page, "valid");
+  // Original filenames stay traceable in the local reconciliation table.
+  await expect(page.getByTestId("import-reconciliation")).toContainText(`${rawMarker}-sales_daily.csv`);
+  await commitWizard(page);
   await expect(workspaceStatus(page)).toContainText(labels.status.ready);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
   await expect(workspaceStatus(page)).toContainText(labels.status.ready);

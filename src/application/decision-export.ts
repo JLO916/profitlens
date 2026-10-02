@@ -22,7 +22,8 @@ type BoundExportAction = ReturnType<typeof actionDocuments>[number];
 type ExportAction = ActionCard & Pick<BoundExportAction, "priority" | "status" | "evidence"> & Partial<BoundExportAction>;
 
 /** Build one audited document shared by every export, retaining captured historical scope. */
-function decisionDocument(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace) {
+/** extraLimitations：R3 含稅換算一句等與這份資料有關的口徑限制，接在固定限制之後。 */
+function decisionDocument(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = []) {
   validateCollection(scenarios, MAX_SCENARIOS, "MAX_SCENARIOS");
   if (actionWorkspace === undefined) validateCollection(actions, MAX_ACTIONS, "MAX_ACTIONS");
   const plans = scenarios.map(plan => {
@@ -49,12 +50,12 @@ function decisionDocument(session: DecisionSession, scenarios: readonly Scenario
   return structuredClone({
     status: session.stale ? "stale" : "current",
     session, fixed_assumptions: SCENARIO_ASSUMPTIONS, formulas: SCENARIO_FORMULAS,
-    rounding: ROUNDING, limitations: LIMITATIONS, scenarios: plans, actions: cards,
+    rounding: ROUNDING, limitations: [...LIMITATIONS, ...extraLimitations], scenarios: plans, actions: cards,
   });
 }
 
-export function exportDecisionJson(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace): string {
-  return `${JSON.stringify(decisionDocument(session, scenarios, actions, actionWorkspace), null, 2)}\n`;
+export function exportDecisionJson(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = []): string {
+  return `${JSON.stringify(decisionDocument(session, scenarios, actions, actionWorkspace, extraLimitations), null, 2)}\n`;
 }
 
 /** Render all imported/manual strings as inert text; do not create user-controlled links. */
@@ -90,8 +91,8 @@ function mdFields(values: Record<string, unknown>, labelled = true): string[] {
 function mdTechnical(lines: readonly string[], summary: string = labels.sections.technicalDetails): string[] {
   return ["<details>", `<summary>${summary}</summary>`, "", ...lines, "", "</details>"];
 }
-export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace): string {
-  const document = decisionDocument(session, scenarios, actions, actionWorkspace);
+export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = []): string {
+  const document = decisionDocument(session, scenarios, actions, actionWorkspace, extraLimitations);
   const alias = demoAlias(session.dataset_id);
   const periodText = (period: Period) => `${period.start}～${period.end}`;
   const comparisonMode = session.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays;
@@ -122,7 +123,7 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   lines.push(`## ${copy.sectionFacts}`, "");
   for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: metricLabel(fact.metric) ?? fact.metric, value: fact.value, reason_codes: fact.reason_codes, period: periodText(fact.period), scope: scopeLabel(fact.scope, alias), sources: fact.sources }), "");
   lines.push(`## ${labels.sections.caution}`, "", `${labels.sections.caution}：${md(CAUTION)}`, "");
-  lines.push(...mdTechnical([...mdFields(document.formulas, false), "", md(document.rounding), "", ...TECHNICAL_LIMITATIONS.map(limitation => `- ${md(limitation)}`)], copy.sectionFormulas), "");
+  lines.push(...mdTechnical([...mdFields(document.formulas, false), "", md(document.rounding), "", ...document.limitations.slice(1).map(limitation => `- ${md(limitation)}`)], copy.sectionFormulas), "");
   return lines.join("\n");
 }
 
@@ -132,8 +133,8 @@ const numeric = (value: string): CsvCell => ({ kind: "number", value });
 const empty: CsvCell = { kind: "null" };
 type CsvRecord = Partial<Record<typeof HEADERS[number], CsvCell>>;
 
-export function exportDecisionCsv(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, contextMetadata?: { context_id: string; epoch: string; plan_revisions: Record<string, number> }): string {
-  const document = decisionDocument(session, scenarios, actions, actionWorkspace);
+export function exportDecisionCsv(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, contextMetadata?: { context_id: string; epoch: string; plan_revisions: Record<string, number> }, extraLimitations: readonly string[] = []): string {
+  const document = decisionDocument(session, scenarios, actions, actionWorkspace, extraLimitations);
   const sourceRefs = (sources: DecisionSession["sources"], filenames = session.filenames) => text(sources.map(source => ({ ...source, actual_filename: filenames[source.file] ?? source.file })));
   const sessionMetadata = (captured: DecisionSession): CsvRecord => ({
     schema_version: text(captured.schema_version), scenario_version: text(captured.scenario_version), metric_version: text(captured.metric_version),

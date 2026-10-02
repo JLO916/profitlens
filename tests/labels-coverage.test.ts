@@ -12,8 +12,9 @@ const NAV = ["overview", "diagnosis", "products", "scenarios", "actions", "meeti
 const OLD_TERMS = ["行銷後貢獻", "行銷前貢獻", "已入帳退款", "履約費用", "取分調整", "稽核資訊", "建立行動草稿"];
 
 function componentSources(): { file: string; text: string }[] {
+  // R3 起元件可放子目錄（例如 import-wizard/），一併掃描。
   const dir = resolve("src/components");
-  return readdirSync(dir).filter(name => name.endsWith(".tsx")).map(file => ({ file, text: readFileSync(resolve(dir, file), "utf8") }));
+  return readdirSync(dir, { recursive: true, encoding: "utf8" }).filter(name => name.endsWith(".tsx")).map(file => ({ file, text: readFileSync(resolve(dir, file), "utf8") }));
 }
 /** Strip collapsed technical blocks so jargon inside <details> is not counted as main-layer copy. */
 const withoutDetails = (text: string) => text.replace(/<details[\s\S]*?<\/details>/g, "");
@@ -39,6 +40,14 @@ describe("R2 labels are the single source of user-visible copy", () => {
       for (const term of OLD_TERMS) if (main.includes(term)) offenders.push(`${file}: ${term}`);
     }
     expect(offenders).toEqual([]);
+  });
+
+  it("keeps Chinese ideographs out of the R3 import wizard components (labels only)", () => {
+    const ideograph = /[\u4e00-\u9fff]/;
+    for (const { file, text } of componentSources().filter(source => source.file.startsWith("import-wizard"))) {
+      const code = text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+      expect(code, file).not.toMatch(ideograph);
+    }
   });
 
   it("does not leak forbidden jargon through metric or rule copy", () => {

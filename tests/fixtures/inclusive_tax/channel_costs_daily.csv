@@ -1,0 +1,5 @@
+date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency
+2026-08-01,官網,52.50,21.00,105.00,0.00,TWD
+2026-08-02,官網,63.00,25.20,105.00,0.00,TWD
+2026-08-03,官網,42.00,16.80,105.00,0.00,TWD
+2026-08-04,官網,78.75,31.50,105.00,1.00,TWD

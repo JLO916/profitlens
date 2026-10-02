@@ -213,3 +213,18 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 - 規則卡文案：`ruleCopy()`（`src/application/copy.ts`）以 `labels.rules` 模板＋該規則引用的事實填入占位符；標題金額用 `formatHeadlineAmount()`（≥ 10,000 顯示 x.x 萬，否則整數元），精確值在列內與抽屜。`src/domain/rules.ts` 不改。
 
 **原因：** 單一來源、機器可讀不變、驗證資料不受文案影響。**影響文件：** `03_GLOSSARY_COPY.md §4`（alias 範圍註記）、`09_DECISIONS_PENDING.md`（D1、D11 請補「決定」欄）。**驗收：** `tests/copy.test.ts`（golden 手算標題：營收多了 220 元…少賺 315 元；折扣率 8.00% → 14.52%，多花 250 元；MARKETPLACE −15 元）、`tests/labels-coverage.test.ts`、`tests/copy-density.test.ts`。
+
+## 2026-10-03｜Revamp v2 R3：匯入精靈的五個取捨（D2／D5 依建議值）
+
+**問題：** R3 要把單頁匯入表單改成四步精靈並接受含稅來源，同時 `src/domain` 零改動、既有 import 測試不刪、`fixtures/*` 零改動；`09_DECISIONS_PENDING.md` 的 D2（含稅換算預設勾選）與 D5（訂單級彙總）於本批開始時仍空白。
+
+**採用選項：**
+- **D2＝A（依建議值執行）**：含稅時預設勾選銷售三欄（原價收入、折扣、退款）、通路費用四欄、廣告費；`cogs_net` 預設不勾並在旁說明「進貨成本常是未稅價，確認後再勾」。常數在 `src/application/tax-basis.ts`（`DEFAULT_CONVERSION_FIELDS`）。來源預設的 `inclusiveTax` 只當提示（Meta／Google 的「花費」一般不含稅，但台灣媒體發票多含稅，仍沿用 §3 的預設勾選）。
+- **D5＝A（依建議值執行）**：`scripts/aggregate_orders.py`（Python 3 標準函式庫、Decimal ROUND_HALF_UP、依 `rules.json`）＋ `docs/ORDER_AGGREGATION.md`；精靈偵測到訂單級來源（preset 指紋命中 2 欄以上）時顯示「這是訂單明細，請先用整理工具彙總」並連到說明，不在 UI 內彙總。
+- **換算只在應用層、逐列**：`prepareImport` 新增 `conversion` 選項，含稅時先以 `convertInclusiveRows` 逐列 `÷ (1 + rate)` ROUND_HALF_UP 兩位，再組回 CSV 交給既有 `validateDataset`；`PreparedImport` 新增 `conversion`（basis／rate／fields／rows_converted／totals）與 `raw_values`（檔案 → 原始行號 → 欄位 → 含稅原值）。`metric_version`、manifest 欄位、`amount_basis` 字面值都不變；資料雜湊因 CSV 文字已換算而自然不同。原值→換算值顯示在抽屜來源列、資料頁「本次匯入的前處理」、分析 CSV 的口徑限制欄與主管摘要 Markdown 的口徑說明；**備份仍是 v3、不含 conversion／raw_values**（04 §3 指定 R4 升 v4 時一併；還原後抽屜只顯示換算後值，見驗收已知限制）。
+- **五次點擊的達成方式**：三份檔案欄名全部符合標準且沒有多餘欄位時，第 2 步「對照欄位」自動完成（步驟條標示「已自動完成」，可按上一步查看）；第 3 步的兩句確認（銷售完整、金額口徑）由一顆「我確認口徑與期間，開始檢核」按鈕一次確認（按鈕上方列出兩句，按下即 `sales_coverage_confirmed = true` 與 `amountBasisConfirmed = true`），第 4 步進入即自動檢核。路徑：匯入資料 → 下一步 → 未稅 → 確認並檢核 → 套用＝5 次；非標準欄名或有多餘欄位時第 2 步會出現，多 1–2 次點擊。金額口徑沒有預設值，「我不確定」停在第 3 步並顯示判斷方法。
+- **舊面板保留方式**：`import-panel.tsx` 不刪；只有網址帶 `#legacy-import` 時掛在 `<div id="legacy-import">`，平常不掛載（避免兩套相同 aria-label 的檔案輸入並存）。R4 刪除。對照記憶的 IndexedDB 寫入以儲存面板的「我同意把資料存在這個瀏覽器」為準（同意狀態提升到 Dashboard 共用），未同意只存分頁記憶體；「刪除本機資料」刪整個資料庫，記憶一併清除；備份不含記憶。
+
+**原因：** 不猜財務口徑（含稅是使用者明確選擇、逐列可追溯）、不改 domain、既有驗證一字不改；五次點擊靠少做事（自動對照）而不是少問（口徑仍必選）。
+
+**影響文件：** `docs/revamp/04_IMPORT_TW.md`（備份時點、自動對照註記）、`docs/ORDER_AGGREGATION.md`（新）、`09_DECISIONS_PENDING.md`（D2、D5 請補「決定」欄）。**驗收：** `tests/tax-basis.test.ts`（§3 golden ＋ 315.00→300.00、10.49→9.99、99.99→95.23、−21.00→−20.00、10% 稅率、逐列 vs 合計差一分）、`tests/import-wizard.test.ts`（`tests/fixtures/inclusive_tax` 手算：本期淨營收 2150.00、扣廣告後貢獻 518.05；誤選未稅為 2257.50）、`tests/e2e/import-wizard.spec.ts`。

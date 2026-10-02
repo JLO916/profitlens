@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "example-templates-v1",
+  "source_type": "user_provided",
+  "currency": "TWD",
+  "timezone": "Asia/Taipei",
+  "data_as_of": "2026-08-04",
+  "coverage_start": "2026-08-01",
+  "coverage_end": "2026-08-03",
+  "channels": [
+    "官網"
+  ],
+  "previous_period": {
+    "start": "2026-08-01",
+    "end": "2026-08-01"
+  },
+  "current_period": {
+    "start": "2026-08-02",
+    "end": "2026-08-02"
+  },
+  "sales_coverage_confirmed": true,
+  "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+  "note": "Illustrative example values only. Not real business data."
+}

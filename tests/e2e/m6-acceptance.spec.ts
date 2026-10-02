@@ -1,31 +1,22 @@
 import { ruleHeadline } from "./replacement-helpers";
+import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from "./import-wizard-helpers";
 import { labels, fill } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { test, expect, type Locator, type Page } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
+// R3：匯入改走四步精靈（data-testid="import-wizard"）；舊的單頁匯入面板只在 #legacy-import 掛載，這裡不使用。
 const alternative = resolve("tests/fixtures/alternative");
 const golden = resolve("fixtures/golden");
-const importCopy = labels.ui.importPanel;
+const wizardCopy = labels.importWizard;
 const scenarioCopy = labels.ui.decisionWorkbench;
 const actionCopy = labels.ui.actionsWorkbench;
-const csvLabels = {
-  "sales_daily.csv": labels.importWizard.files.sales,
-  "channel_costs_daily.csv": labels.importWizard.files.costs,
-  "ad_spend_daily.csv": labels.importWizard.files.ads,
-};
 const status = (page: Page) => page.getByTestId("workspace-status");
-const form = (page: Page) => page.getByTestId("import-panel");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
 const decisionDownloadLabels = { JSON: labels.downloads.decisionJson, CSV: labels.downloads.decisionCsv, Markdown: labels.downloads.decisionMd } as const;
 
-/** Local R2 variants of the shared helpers: dialog heading and start button now come from labels. */
-async function clickReplacing(page: Page, button: Locator) {
-  await button.click();
-  const dialog = page.getByRole("dialog", { name: labels.ui.replacementDialog.heading });
-  if (await dialog.isVisible()) await dialog.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
-}
+/** Local R2 variant of the shared helper: start button text comes from labels. */
 async function startChannelContext(page: Page) {
   const start = page.getByRole("button", { name: new RegExp(`^${fill(labels.ui.multiScenarioWorkbench.startButton, { channel: ".+" })}$`) });
   // The context preparation runs asynchronously from source validation.
@@ -50,25 +41,34 @@ interface DecisionDocument {
 }
 
 async function stage(page: Page, directory: string) {
-  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
-  await expect(form(page)).toContainText(importCopy.privacyNote);
-  for (const [file, label] of Object.entries(csvLabels)) await form(page).getByLabel(label, { exact: true }).setInputFiles(resolve(directory, file));
+  await openWizard(page);
+  await expect(wizard(page)).toContainText(wizardCopy.privacyNote);
+  await setWizardFiles(page, directory);
   const manifest = JSON.parse(await readFile(resolve(directory, "manifest.json"), "utf8")) as { dataset_id: string };
-  await form(page).getByLabel(importCopy.manifestLabel, { exact: true }).setInputFiles(resolve(directory, "manifest.json"));
-  await expect(form(page).getByLabel(importCopy.datasetName, { exact: true })).toHaveValue(manifest.dataset_id);
-  await expect(form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true })).not.toBeChecked();
-  await form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
+  await setWizardManifest(page, resolve(directory, "manifest.json"));
+  await nextFromFiles(page);
+  await confirmMappingIfShown(page);
+  await expect(wizard(page).getByLabel(wizardCopy.datasetName, { exact: true })).toHaveValue(manifest.dataset_id);
+  // R3 contract: the amount-basis confirmation is no longer a checkbox; it is a stated sentence confirmed by
+  // the single「我確認口徑與期間，開始檢核」button, which stays disabled until an amount basis is chosen.
+  const step = page.getByTestId("import-step-3");
+  await expect(step.getByText(wizardCopy.amountConfirm, { exact: true })).toBeVisible();
+  await expect(step.getByRole("checkbox", { name: wizardCopy.amountConfirm })).toHaveCount(0);
+  const confirm = wizard(page).getByRole("button", { name: wizardCopy.confirmAndCheck, exact: true });
+  await expect(confirm).toBeDisabled();
+  await chooseBasis(page, "exclusive");
+  await expect(confirm).toBeEnabled();
 }
 async function validate(page: Page) {
-  await form(page).getByRole("button", { name: importCopy.check, exact: true }).click();
-  await expect(form(page).getByTestId("import-status")).toHaveText(importCopy.status.valid);
+  await confirmAndCheck(page, "valid");
+  await expect(commitButton(page)).toBeVisible();
 }
 async function importDataset(page: Page, directory: string) {
   await stage(page, directory);
   await validate(page);
-  await clickReplacing(page, form(page).getByRole("button", { name: importCopy.commit, exact: true }));
+  await commitWizard(page);
   await expect(status(page)).toContainText(labels.status.ready);
-  await expect(form(page)).toHaveCount(0);
+  await expect(wizard(page)).toHaveCount(0);
 }
 async function scenario(page: Page, name: string, fulfillment: string, investment: string, expected: string) {
   await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
@@ -252,15 +252,34 @@ test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留�
   const before = await decision(page);
   await stage(page, alternative);
   await validate(page);
-  await form(page).getByLabel(importCopy.datasetName, { exact: true }).fill("m6-edited-import-candidate");
-  await expect(form(page).getByRole("button", { name: importCopy.commit, exact: true })).toHaveCount(0);
-  await expect(form(page).getByTestId("import-status")).toHaveText(importCopy.status.draft);
+  // R3: settings live in step 3. Going back from the check result and editing a setting drops the checked
+  // candidate (no commit button, no check result) until the user confirms and checks again.
+  const back = wizard(page).getByRole("button", { name: wizardCopy.back, exact: true });
+  await back.click();
+  await expect(page.getByTestId("import-step-3")).toBeVisible();
+  await wizard(page).getByLabel(wizardCopy.datasetName, { exact: true }).fill("m6-edited-import-candidate");
+  await expect(commitButton(page)).toHaveCount(0);
+  await expect(wizardStatus(page)).toHaveCount(0);
+  await expect(page.getByTestId("import-stepper").locator("li").nth(3)).toHaveClass(/todo/);
   await validate(page);
-  await form(page).getByLabel(labels.importWizard.files.sales, { exact: true }).setInputFiles({ name: "m6-malformed.csv", mimeType: "text/csv", buffer: Buffer.from('date,channel,sku\n"unclosed') });
-  await expect(form(page).getByRole("button", { name: importCopy.commit, exact: true })).toHaveCount(0);
-  await form(page).getByRole("button", { name: importCopy.check, exact: true }).click();
-  await expect(form(page).getByTestId("import-status")).toHaveText(importCopy.status.blocking);
-  await form(page).getByRole("button", { name: importCopy.cancel, exact: true }).click();
+  // Swapping in a malformed sales CSV (back to step 1; step 2 was skipped for standard headers) revokes the
+  // candidate again. The wizard blocks it at read time: the slot shows the plain message + code and
+  // 「下一步」stays disabled, so no check can run and nothing can be committed (old: status.blocking after check).
+  await back.click();
+  await expect(page.getByTestId("import-step-3")).toBeVisible();
+  await backToFiles(page);
+  await expect(commitButton(page)).toHaveCount(0);
+  await wizard(page).getByLabel(wizardCopy.files.sales, { exact: true }).setInputFiles({ name: "m6-malformed.csv", mimeType: "text/csv", buffer: Buffer.from('date,channel,sku\n"unclosed') });
+  const salesSlot = page.getByTestId("import-file-sales_daily.csv");
+  await expect(salesSlot).toContainText("m6-malformed.csv");
+  await expect(salesSlot.getByRole("alert")).toContainText(fill(labels.importErrors.MALFORMED_CSV, { line: 2 }));
+  await expect(salesSlot.getByRole("alert").locator("code")).toHaveText("MALFORMED_CSV");
+  await expect(wizard(page).getByRole("button", { name: wizardCopy.next, exact: true })).toBeDisabled();
+  await expect(wizard(page).getByRole("button", { name: wizardCopy.confirmAndCheck, exact: true })).toHaveCount(0);
+  await expect(commitButton(page)).toHaveCount(0);
+  await wizard(page).getByRole("button", { name: wizardCopy.cancel, exact: true }).click();
+  await expect(wizard(page)).toHaveCount(0);
+  await expect(status(page)).toContainText(labels.status.ready);
   await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
   await expect(page.getByTestId("decision-freshness")).toContainText(scenarioCopy.freshTitle);
   expect(await decision(page)).toEqual(before);

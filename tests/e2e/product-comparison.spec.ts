@@ -1,4 +1,5 @@
 import { clickReplacing } from "./replacement-helpers";
+import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -18,7 +19,6 @@ const test = base.extend<{ audit: string[] }>({
 
 /** R2: every visible string comes from the label dictionary; compose the same way the panel does. */
 const panel = labels.ui.productComparisonPanel;
-const importPanel = labels.ui.importPanel;
 const validation = labels.ui.dashboard.validation;
 /** 「商品毛利差額」= metric label + change suffix, as product-comparison-panel.tsx's changeLabel(). */
 const grossProfitChange = `${labels.metrics.gross_profit.label}${labels.csvSuffix.change}`;
@@ -127,8 +127,7 @@ test("PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來�
 
 test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
-  const form = page.getByTestId("import-panel");
+  await openWizard(page);
   const manifest = {
     schema_version: "1.0", dataset_id: "pl07-synthetic-union", source_type: "synthetic", currency: "TWD", timezone: "Asia/Taipei", data_as_of: "2026-08-03", coverage_start: "2026-08-01", coverage_end: "2026-08-02", channels: ["DTC"],
     previous_period: { start: "2026-08-01", end: "2026-08-01" }, current_period: { start: "2026-08-02", end: "2026-08-02" }, sales_coverage_confirmed: true, amount_basis: "product_amounts_excluding_tax_and_customer_shipping_income",
@@ -143,13 +142,18 @@ test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公�
     { label: labels.importWizard.files.costs, name: "channel_costs_daily.csv", text: "date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency\n2026-08-01,DTC,0,0,0,0,TWD\n2026-08-02,DTC,0,0,0,0,TWD" },
     { label: labels.importWizard.files.ads, name: "ad_spend_daily.csv", text: "date,channel,ad_spend,currency\n2026-08-01,DTC,0,TWD\n2026-08-02,DTC,0,TWD" },
   ];
-  for (const file of files) await form.getByLabel(file.label, { exact: true }).setInputFiles({ name: file.name, mimeType: "text/csv", buffer: Buffer.from(file.text) });
-  await form.getByLabel(importPanel.manifestLabel, { exact: true }).setInputFiles({ name: "manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
-  await expect(form.getByLabel(importPanel.datasetName, { exact: true })).toHaveValue(manifest.dataset_id);
-  await form.getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
-  await form.getByRole("button", { name: importPanel.check, exact: true }).click();
-  await expect(page.getByTestId("import-status")).toHaveText(importPanel.status.partial);
-  await clickReplacing(page, form.getByRole("button", { name: importPanel.commit, exact: true }));
+  // R3 wizard: step 1 files (the sales file keeps a custom name; headers are standard so step 2 auto-skips), manifest under 「進階」.
+  for (const file of files) await wizard(page).getByLabel(file.label, { exact: true }).setInputFiles({ name: file.name, mimeType: "text/csv", buffer: Buffer.from(file.text) });
+  for (const [role, file] of [["sales_daily.csv", files[0]], ["channel_costs_daily.csv", files[1]], ["ad_spend_daily.csv", files[2]]] as const) await expect(page.getByTestId(`import-file-${role}`)).toContainText(file.name);
+  await setWizardManifest(page, { name: "manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
+  await nextFromFiles(page);
+  await confirmMappingIfShown(page);
+  // Step 3: settings come from the manifest; the amount-basis confirmation is now the explicit 「未稅」 choice + the single confirm button.
+  await expect(wizard(page).getByLabel(labels.importWizard.datasetName, { exact: true })).toHaveValue(manifest.dataset_id);
+  await chooseBasis(page, "exclusive");
+  // MISSING has blank cogs_net → still partial (not blocking), so it can be committed.
+  await confirmAndCheck(page, "partial");
+  await commitWizard(page);
   await page.getByRole("button", { name: labels.nav.products.label, exact: true }).click();
   const table = page.getByTestId("product-table");
   await expect(table.locator("tbody tr")).toHaveCount(5);
