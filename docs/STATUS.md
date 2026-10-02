@@ -1,8 +1,16 @@
 # Status
 
-## 2026-10-02｜A 批 GitHub／Vercel 發布（進行中）
+## 2026-10-02｜A 批 GitHub／Vercel 發布（完成）
 
-依使用者「推送部署至github與vercel」授權，沿用私人 `JLO916/profitlens` main 及既有 Vercel profitlens 專案；不新建專案，不啟用 Live AI。已核對 139 件受測來源、60 件受保護原件及 golden 均相符。819 unit、400＋4 E2E、typecheck／lint／build 沿用 A 批原始驗收，不是本次重跑。待雲端建置、正式 alias／commit、HTTP 與真瀏覽器核對完成後更新結論。詳見 [發布紀錄](../verification/release-v2-a-20261002-acceptance.md)。
+依使用者「推送部署至github與vercel」授權，A 批已發布至 [正式站](https://profitlens-tau.vercel.app)。私人 `JLO916/profitlens` main 產品提交 `6c11a429dee50c08748891ade76b5972f72a593e`，Vercel deployment `dpl_7DMMB1jQ54FYy6C2AUDoZGj3e2nN` production READY；公開 alias 反查同一 SHA。後續驗收文件提交不改產品程式、公式或依賴。沒有新建專案、公開 repo 或開啟 Live AI。
+
+- 發布前核對 139 件受測來源／測試、60 件 protected（含5件 golden）均相符，有限秘密與合成資料來源審核 pass。沿用 A 批 819 unit、400＋4 E2E、typecheck／lint／本機 build；**這些未在本次重跑**。雲端另實際 `npm ci`／`npm run build` 成功，建置41秒、部署READY約55秒。
+- `git fetch origin main`、來源／文件 whitespace、commit、`git push origin main` pass。production 非機密旗標明確更新為 `APP_MODE=PUBLIC_DEMO`、`PUBLIC_DEMO=true`、`ENABLE_LIVE_AI=false`；環境名稱核對沒有 OpenAI key，未讀取 credential。
+- 正式站13/13 HTTP pass：五個白名單合成資料與本機 CSV bytes 相符；未知資料集／環境檔／Git／驗收文件／原始fixtures路徑404；AI GET unavailable／PUBLIC_DEMO、POST403。發布後約114秒窗口查不到5xx或runtime error，僅代表該短窗口。
+- 正式站真瀏覽器：Golden CM255.00／差−315.00；DTC履約−10%／量0／其他0＝284.00、K20＝264.00；MARKETPLACE同條件K0＝−6.50；切回DTC保留原稿。全通路診斷行動切DTC／商品頁後引用仍為全通路、進行中與備註保留。會議門檻1000、兩通路各選一版、補資料再議離頁後保留。Escape取消清空保留稿、Enter打開255.00公式及8筆來源。1440／1280／768／390px目視截圖，三個窄尺寸DOM無頁面橫溢，console warn/error為空。
+- 線上完整E2E、此次線上匯入／下載位元／備份恢復／列印、Live AI、真實資料、實體装置、Safari／Firefox及長期效能：**not_run**。完整匯入／恢復／下載／列印仍由原A批本機400＋4及手動流程提供證據，不混稱為此次遠端重跑。雲端既有Node主版／ESLint／allowScripts提示記於報告，本輪未升級。
+
+更新 README、STATUS 及 `verification/release-v2-a-20261002-*`。完整命令、限制與證據見 [發布紀錄](../verification/release-v2-a-20261002-acceptance.md)。A 批發布完成即停止；B–D／Live AI／真實試用未自動開始。下方「未部署」為先前輪次當時紀錄。
 
 ---
 

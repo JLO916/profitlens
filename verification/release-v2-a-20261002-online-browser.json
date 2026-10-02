@@ -1,0 +1,99 @@
+{
+  "url": "https://profitlens-tau.vercel.app/",
+  "checked_at": "2026-10-02T02:44:38.678Z",
+  "checks": [
+    {
+      "name": "golden",
+      "contribution": "行銷後貢獻\n255.00\n\n前期 570.00\n\n-315.00\n-55.26%"
+    },
+    {
+      "name": "action_after_DTC_product_navigation",
+      "status": "in_progress",
+      "progress": "合成發布驗收：已核對來源，待物流報價。",
+      "evidence": [
+        "查看證據 · 2026-08-01–2026-08-01 · 商品淨營收 · DTC、MARKETPLACE（範圍合計） · 2,250.00",
+        "查看證據 · 2026-08-02–2026-08-02 · 商品淨營收 · DTC、MARKETPLACE（範圍合計） · 2,470.00",
+        "查看證據 · 2026-08-01–2026-08-01 · 行銷後貢獻 · DTC、MARKETPLACE（範圍合計） · 570.00",
+        "查看證據 · 2026-08-02–2026-08-02 · 行銷後貢獻 · DTC、MARKETPLACE（範圍合計） · 255.00"
+      ]
+    },
+    {
+      "name": "DTC_f_minus10_v0_K0",
+      "value": "284.00"
+    },
+    {
+      "name": "edited_result_withdrawn",
+      "count": 0
+    },
+    {
+      "name": "DTC_f_minus10_v0_K20",
+      "value": "264.00"
+    },
+    {
+      "name": "MARKETPLACE_f_minus10_v0_K0",
+      "value": "-6.50"
+    },
+    {
+      "name": "DTC_return_preserved",
+      "value": "264.00",
+      "plan_name": "DTC 發布驗收"
+    },
+    {
+      "name": "meeting_after_navigation",
+      "decision": "needs_data",
+      "threshold": "1000.00",
+      "text": "會議設定與決策\n\n單份可恢復會議稿 · 來源已固定 · DTC、MARKETPLACE · 目標版本：未設定\n\n切換一般檢視不改會議範圍。更新來源會清空所選方案與決策，保留會議名稱、備註及門檻；舊情境仍在歷史工作稿。\n\n以目前資料與範圍更新會議來源\n會議名稱\n會議備註\n會議決策\n草稿\n採用\n補資料再議\n不採用\n\n這是人工決策紀錄；採用或行動完成均不表示已產生商業成效。方案、門檻或備註更動後需重新指定決策。\n\nDTC 本次摘要所選方案\n尚未選擇\nDTC 發布驗收（版本 9）\nMARKETPLACE 本次摘要所選方案\n尚未選擇\nMARKETPLACE 發布驗收（版本 8）\n\n主管會議工作稿\n\n本期經營摘要\n補資料再議\n\n資料截至 2026-08-03 · DTC、MARKETPLACE · TWD\n\n前期 2026-08-01 — 2026-08-01（1 天）；本期 2026-08-02 — 2026-08-02（1 天）。相同天數比較，以下為完整期間合計。\n\n商品淨營收\n\n+220.00\n\n2,250.00 → 2,470.00\n\n行銷後貢獻\n\n-315.00\n\n570.00 → 255.00\n\n已觀察金額差異，非改善收益。合計與通路包含相同交易，各範圍不可相加。\n\n本期最值得先查的三件事\n金額重要性門檻（TWD）\n套用摘要門檻\n\n缺漏一律優先；同一規則的合計與子通路合為一組，以組內最大絕對排序金額比較門檻（不相加）。只改摘要優先序，完整診斷保留。已套用 1,000.00 TWD。\n\n沒有達到此門檻的規則訊號；不代表沒有營運風險，仍可檢閱完整通路診斷。\n\n另有 6 組未在此優先清單列出；可至通路診斷查看全部規則。\n\n通路寬表・前期／本期／差額\n目前範圍通路合計，TWD；未知不補零，通路廣告不分攤至 SKU。\n通路\t前期淨營收\t本期淨營收\t營收差額\t前期貢獻\t本期貢獻\t貢獻差額\nDTC\t1,350.00\t1,480.00\t+130.00\t400.00\t270.00\t-130.00\nMARKETPLACE\n轉負\n\t900.00\t990.00\t+90.00\t170.00\t-15.00\t-185.00\n會議方案與交辦\n\nDTC 發布驗收（版本 9） · DTC · 2026-08-02～2026-08-02 · 基準貢獻 270.00 · 條件貢獻 264.00；相對基準差額 -6.00 TWD。方案差額不可相加，不是預測。\n\n所選方案假設\n\nMARKETPLACE 發布驗收（版本 8） · MARKETPLACE · 2026-08-02～2026-08-02 · 基準貢獻 -15.00 · 條件貢獻 -6.50；相對基準差額 +8.50 TWD。方案差額不可相加，不是預測。\n\n所選方案假設\n淨營收增加，行銷後貢獻下降 · 已確認 · DTC、MARKETPLACE · 2026-08-02～2026-08-02 · 證據版本 1\n\n核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。\n\n負責人：營運主管 · 期限：待設定 · 風險：待補\n\n執行：進行中 · 合成發布驗收：已核對來源，待物流報價。\n\n固定口徑與限制\n下載主管摘要 Markdown\n下載通路寬表 CSV\n列印主管摘要\n\n門檻、會議來源與方案版本納入完整工作區備份；仍須主動保存。主摘要最多三個置頂行動，其餘列於附錄。\n\n以上在本機產生；摘要 Markdown 的技術來源置於附錄，原完整分析／決策稽核匯出保留。列印稿適合一頁會議閱讀；通路或行動較多時依篇幅續頁，不截斷資料。"
+    },
+    {
+      "name": "replacement_escape_preserves",
+      "dialog_count": 0,
+      "workspace": "資料已就緒\nGolden｜小型對帳資料 · 資料截至 2026-08-03\n清空工作區",
+      "meeting": "A 批正式站發布驗收"
+    },
+    {
+      "name": "keyboard_evidence",
+      "text": "公式與來源\n\n主管摘要｜合計（DTC、MARKETPLACE） 本期行銷後貢獻｜公式與來源\n關閉\n\n目前篩選範圍；2026-08-02 至 2026-08-02；通路：DTC、MARKETPLACE。\n\nNT$ 255.00\n\n公式：CM_after = GP − P − Q − F − O − A；不是公司淨利\n\n原始來源列\n\n納入來源共 8 筆；本頁顯示 1–8 筆，每頁最多 50 筆。可翻頁查看全部來源。\n\n金額單位為 TWD，列號是 CSV 的原始實際行號。以下僅展示此指標依賴的欄位；缺列與缺值均不補零。\n\n主管摘要｜合計（DTC、MARKETPLACE） 本期行銷後貢獻的原始來源，第 1 頁，共 1 頁\n檔案／原始行號\t入帳範圍\t來源欄位與值\nad_spend_daily.csv\n第 4 行\t2026-08-02\nDTC\t\n入帳日\n2026-08-02\n通路\nDTC\n幣別\nTWD\n廣告費\n270.00\n\nad_spend_daily.csv\n第 5 行\t2026-08-02\nMARKETPLACE\t\n入帳日\n2026-08-02\n通路\nMARKETPLACE\n幣別\nTWD\n廣告費\n180.00\n\nchannel_costs_daily.csv\n第 4 行\t2026-08-02\nDTC\t\n入帳日\n2026-08-02\n通路\nDTC\n幣別\nTWD\n平台費\n0.00\n金流費\n44.00\n履約費\n140.00\n其他變動費用\n16.00\n\nchannel_costs_daily.csv\n第 5 行\t2026-08-02\nMARKETPLACE\t\n入帳日\n2026-08-02\n通路\nMARKETPLACE\n幣別\nTWD\n平台費\n120.00\n金流費\n22.00\n履約費\n85.00\n其他變動費用\n13.00\n\nsales_daily.csv\n第 6 行\t2026-08-02\nDTC\nSKU：A\t\n入帳日\n2026-08-02\n通路\nDTC\n幣別\nTWD\nSKU\nA\n品類\nHOME\n折扣前商品收入\n1400.00\n商品折扣\n210.00\n已入帳退款\n70.00\n已入帳銷貨成本淨額\n580.00\n\nsales_daily.csv\n第 7 行\t2026-08-02\nDTC\nSKU：B\t\n入帳日\n2026-08-02\n通路\nDTC\n幣別\nTWD\nSKU\nB\n品類\nCARE\n折扣前商品收入\n400.00\n商品折扣\n20.00\n已入帳退款\n20.00\n已入帳銷貨成本淨額\n160.00\n\nsales_daily.csv\n第 8 行\t2026-08-02\nMARKETPLACE\nSKU：A\t\n入帳日\n2026-08-02\n通路\nMARKETPLACE\n幣別\nTWD\nSKU\nA\n品類\nHOME\n折扣前商品收入\n800.00\n商品折扣\n120.00\n已入帳退款\n40.00\n已入帳銷貨成本淨額\n360.00\n\nsales_daily.csv\n第 9 行\t2026-08-02\nMARKETPLACE\nSKU：B\t\n入帳日\n2026-08-02\n通路\nMARKETPLACE\n幣別\nTWD\nSKU\nB\n品類\nCARE\n折扣前商品收入\n500.00\n商品折扣\n100.00\n已入帳退款\n50.00\n已入帳銷貨成本淨額\n225.00\n上一頁第 1／1 頁下一頁"
+    },
+    {
+      "name": "viewport",
+      "width": 1280,
+      "height": 900,
+      "bounds": {
+        "client": 1265,
+        "scroll": 1265
+      }
+    },
+    {
+      "name": "viewport",
+      "width": 768,
+      "height": 1024,
+      "bounds": {
+        "client": 753,
+        "scroll": 753
+      }
+    },
+    {
+      "name": "viewport",
+      "width": 390,
+      "height": 844,
+      "bounds": {
+        "client": 375,
+        "scroll": 375
+      }
+    }
+  ],
+  "screenshots": [
+    "release-v2-a-20261002-online-1440.jpg",
+    "release-v2-a-20261002-online-1280.jpg",
+    "release-v2-a-20261002-online-768.jpg",
+    "release-v2-a-20261002-online-390.jpg"
+  ],
+  "limitations": [
+    "線上為人工 smoke；完整 400＋4 E2E 沿用本機驗收",
+    "未測 Live AI、真實資料、實體裝置",
+    "本次線上未重做匯入、實際下載內容及備份恢復；已通過的完整本機 A 批驗收另見原報告",
+    "一次精確關閉按鈕 locator 未匹配，讀取控制後改用可见關閉名稱，Escape 關閉成功"
+  ],
+  "browser_logs": [],
+  "completed_at": "2026-10-02T02:47:41.904Z"
+}

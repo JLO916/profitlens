@@ -1,12 +1,12 @@
 # ProfitLens
 
-> 發布進行中（2026-10-02）：Review v2 A 批「營運與會議狀態分離」已完成本機驗收，正在推送既有私人 GitHub 並部署 Vercel。819 項單元／整合、400 項完整 E2E、最後 4 項列印／下載回歸，以及 typecheck、lint、production build 通過；本輪已核對全部 139 件受測來源雜湊相符，沿用原驗收結果，沒有冒稱重新執行。公開站是否已更新以 [發布紀錄](verification/release-v2-a-20261002-acceptance.md) 為準。
+> 最新發布（2026-10-02）：Review v2 A 批「營運與會議狀態分離」已推送私人 GitHub 並部署至 [正式站](https://profitlens-tau.vercel.app)。產品提交 `6c11a42`、Vercel production READY，正式網址反查同版本；13 項 HTTP 與四尺寸人工瀏覽器 smoke 通過。公開 Live AI 後端維持關閉，Live AI 未實測。819 項單元／整合、400＋4 項 E2E、typecheck／lint／本機 build 為本批原驗收結果；本次核對 139 件受測來源無差異後沿用，雲端另實際重新 `npm ci`／build。詳見 [發布紀錄](verification/release-v2-a-20261002-acceptance.md)。
 
 電商獲利診斷與決策工作台。
 
-先前發布（2026-10-01；本輪未重新驗證遠端狀態）：**三批管理者改善已發布至 [ProfitLens 正式站](https://profitlens-tau.vercel.app)**，程式版本 `2f8e539` 已推送至既有私人 GitHub，Vercel production READY。依最新指示先發布，公開版維持 `PUBLIC_DEMO`，Live AI 後端關閉；**Live AI 未實測**，20案僅完成離線準備。發布前重新通過766項unit/integration、282項三尺寸E2E、typecheck、lint及production build；正式站13項HTTP檢查與1440／768／390px人工操作通過。完整命令、證據及未驗收範圍見 [本次發布紀錄](verification/release-20261001-acceptance.md) 與 [STATUS](docs/STATUS.md)。
+歷史發布（2026-10-01；最新版本以上方 A 批發布為準）：**三批管理者改善已發布至 [ProfitLens 正式站](https://profitlens-tau.vercel.app)**，程式版本 `2f8e539` 已推送至既有私人 GitHub，Vercel production READY。依最新指示先發布，公開版維持 `PUBLIC_DEMO`，Live AI 後端關閉；**Live AI 未實測**，20案僅完成離線準備。發布前重新通過766項unit/integration、282項三尺寸E2E、typecheck、lint及production build；正式站13項HTTP檢查與1440／768／390px人工操作通過。完整命令、證據及未驗收範圍見 [本次發布紀錄](verification/release-20261001-acceptance.md) 與 [STATUS](docs/STATUS.md)。
 
-已發布功能包含每頁規則診斷及即時 AI 可用狀態、獨立「進階驗證」、主管摘要、商品比較、方案、行動與會議輸出。開發時的失敗修復與未執行項目保留於 [第三批](verification/manager-batch3-acceptance.md)、[第二批](verification/manager-batch2-acceptance.md)、[第一批](verification/manager-batch1-acceptance.md) 和 [M6](verification/app-acceptance.md) 歷史報告；不將歷史通過數當成本次重新執行結果。原有 [本機預覽 3200](http://127.0.0.1:3200/) 的程序未更動；A 批需以本輪建置啟動，不能以舊分頁判斷新功能。
+已發布功能另包含 A 批的行動執行管理、多通路方案、固定範圍會議、v3 備份及替換保存保護；原有每頁規則診斷及即時 AI 可用狀態、獨立「進階驗證」、主管摘要、商品比較、方案、行動與會議輸出。開發時的失敗修復與未執行項目保留於 [第三批](verification/manager-batch3-acceptance.md)、[第二批](verification/manager-batch2-acceptance.md)、[第一批](verification/manager-batch1-acceptance.md) 和 [M6](verification/app-acceptance.md) 歷史報告；不將歷史通過數當成本次重新執行結果。原有 [本機預覽 3200](http://127.0.0.1:3200/) 的程序未更動；A 批需以本輪建置啟動，不能以舊分頁判斷新功能。
 
 從 `START_HERE.md` 開始。工作流程：匯入 → 檢核 → 診斷 → 試算 → 行動與匯出。
 本產品中的行銷後貢獻為明示成本範圍下的管理指標，不等於淨利；情境試算不是預測或成效承諾。

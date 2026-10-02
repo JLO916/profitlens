@@ -1,0 +1,95 @@
+{
+  "checked_at_utc": "2026-10-02T02:46:40.516Z",
+  "release_commit": "6c11a429dee50c08748891ade76b5972f72a593e",
+  "production_url": "https://profitlens-tau.vercel.app",
+  "deployment": {
+    "checked_at": "2026-10-02T02:45:07.937Z",
+    "id": "dpl_7DMMB1jQ54FYy6C2AUDoZGj3e2nN",
+    "url": "profitlens-mxfra1gqz-jlo916s-projects.vercel.app",
+    "state": "READY",
+    "readyState": "READY",
+    "target": "production",
+    "alias": [
+      "profitlens-tau.vercel.app",
+      "profitlens-jlo916s-projects.vercel.app",
+      "profitlens-git-main-jlo916s-projects.vercel.app"
+    ],
+    "project": {
+      "id": "prj_tbTT4CUd5u51SUpc9mqw7UbQQfnY",
+      "name": "profitlens",
+      "framework": "nextjs"
+    },
+    "createdAt": 1790908994117,
+    "ready": 1790909049110,
+    "buildingAt": 1790908995732,
+    "git": {
+      "sha": "6c11a429dee50c08748891ade76b5972f72a593e",
+      "ref": "main",
+      "org": "JLO916",
+      "repo": "profitlens"
+    },
+    "aliasError": null
+  },
+  "alias_verification": {
+    "checked_at": "2026-10-02T02:45:37.919Z",
+    "id": "dpl_7DMMB1jQ54FYy6C2AUDoZGj3e2nN",
+    "state": "READY",
+    "readyState": "READY",
+    "target": "production",
+    "alias": [
+      "profitlens-tau.vercel.app",
+      "profitlens-jlo916s-projects.vercel.app",
+      "profitlens-git-main-jlo916s-projects.vercel.app"
+    ],
+    "git_sha": "6c11a429dee50c08748891ade76b5972f72a593e",
+    "match": true
+  },
+  "cloud_build": {
+    "status": "pass",
+    "log": "verification/release-v2-a-20261002-cloud-build.txt",
+    "completed_at_utc": "2026-10-02T02:44:09.280Z",
+    "build_command": "npm run build",
+    "install_command": "npm ci",
+    "connector_log_fetch": "Tool get_deployment_build_logs not found; read-only vercel inspect --logs fallback succeeded",
+    "credential_scan_redacted_lines": 0,
+    "warnings": [
+      "Node engines >=24.0.0 may adopt future major versions",
+      "eslint@9.39.5 deprecated",
+      "unrs-resolver@1.12.2 postinstall not covered by allowScripts"
+    ],
+    "audit_observation": "Cloud npm ci reported 0 vulnerabilities at build time; no claim about future advisories"
+  },
+  "http_evidence": "verification/release-v2-a-20261002-http.json",
+  "runtime_window": {
+    "since": "2026-10-02T02:44:09.110Z",
+    "until": "2026-10-02T02:46:02.655Z"
+  },
+  "runtime_checks": [
+    {
+      "query": "deployment production 5xx grouped by statusCode",
+      "status": "fulfilled",
+      "result": "## Runtime Log Counts\n\n**Project:** prj_tbTT4CUd5u51SUpc9mqw7UbQQfnY\n**Grouped by:** statusCode\n\n| statusCode | count |\n|---|---|",
+      "isError": false
+    },
+    {
+      "query": "project grouped runtime errors",
+      "status": "fulfilled",
+      "result": "## Runtime Errors\n\n**Project:** prj_tbTT4CUd5u51SUpc9mqw7UbQQfnY\n\nNo runtime errors found in the selected time range.",
+      "isError": false
+    }
+  ],
+  "limits": [
+    "Runtime queries cover only the recorded short window, are subject to log availability/ingestion, and do not establish long-term reliability.",
+    "Runtime error clusters are project-scoped; the 5xx query is explicitly scoped to this deployment and production.",
+    "No live AI call performed; public GET reports disabled and POST returns403.",
+    "Browser acceptance is performed separately by the primary agent.",
+    "Read-only remote operations only; no push, deploy, environment write, or credentials read by this subtask."
+  ],
+  "http_summary": {
+    "all_passed": true,
+    "passed": 13,
+    "total": 13,
+    "checked_at": "2026-10-02T02:45:48.393142+00:00",
+    "live_ai_called": false
+  }
+}

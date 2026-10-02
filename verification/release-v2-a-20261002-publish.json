@@ -1,0 +1,43 @@
+{
+  "recorded_at": "2026-10-02T02:44:08.691041+00:00",
+  "code_commit": "6c11a429dee50c08748891ade76b5972f72a593e",
+  "repository": "JLO916/profitlens",
+  "branch": "main",
+  "commands": [
+    {
+      "command": "git fetch origin main",
+      "exit_code": 0
+    },
+    {
+      "command": "git rev-list --left-right --count HEAD...origin/main (before commit)",
+      "output": "0 0",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --cached --check -- README.md docs src tests playwright.config.ts",
+      "exit_code": 0
+    },
+    {
+      "command": "git commit -m \"feat: release A batch operating and meeting workspaces\"",
+      "exit_code": 0
+    },
+    {
+      "command": "git push origin main",
+      "exit_code": 0,
+      "output": "bb9173e..6c11a42 main -> main"
+    }
+  ],
+  "production_non_secret_flags": {
+    "APP_MODE": "PUBLIC_DEMO",
+    "PUBLIC_DEMO": "true",
+    "ENABLE_LIVE_AI": "false"
+  },
+  "flags_update_command": "vercel env update NAME production --value VALUE --yes --scope jlo916s-projects",
+  "flags_update_exit_codes": [
+    0,
+    0,
+    0
+  ],
+  "new_project_created": false,
+  "live_ai_called": false
+}
