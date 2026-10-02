@@ -1,5 +1,16 @@
 # Status
 
+## Revamp v2（2026-10-02 起）｜R0 基線與安全網（完成）
+
+Revamp v2 依 `CLAUDE.md` 與 `docs/revamp/*`（R0–R7）把產品從稽核員工具改成經理人每週使用的工具；財務核心（`src/domain`、golden／demo／errors 等 fixtures、`contribution-v1`、`docs/METRICS.md` 公式）零改動，使用者可見文字集中於 `src/i18n/labels.zh-TW.ts`。原則記於 `docs/DECISIONS.md`「Revamp v2 原則」。工作分支 `revamp/v2` 自 main `5771104` 建立；**尚未合併 main、尚未部署**，正式站仍是下方 A 批發布版本。
+
+- R0 在乾淨環境（`rm -rf node_modules .next` → `npm ci`，442 packages、0 vulnerabilities）實際執行：typecheck pass、lint 0 warnings、unit **40 files／819 tests pass**（4.30s）、production build pass 無 warning、E2E **404 passed／0 unexpected／0 skipped／0 flaky**（7.5m；desktop／laptop／tablet／mobile 各 101）。與 main A 批紀錄 819／404 數量相同。
+- 改版前截圖 40 張（總覽、通路診斷、情境試算、行動摘要、資料工作區 × 四尺寸 × 視窗＋整頁）存 `verification/revamp-R0/before/`，由獨立 `verification/revamp-R0-capture.config.ts` 產生，不計入 E2E。目視：1440×1000 載入示範後 KPI 卡不在首屏，為 R1 要解決的問題。
+- 新增 `src/i18n/index.ts`（re-export `labels`＋`t(path)`），**未接線**；`verification/revamp-R1/testids.txt` 列出 40 個靜態、9 個動態 `data-testid` 與 E2E 的 74 個 testid、33 個 CSS、247 個 role／label／text 選擇器，供 R1 搬移對照。
+- E2E 執行重寫了 87 個 A 批歷史證據檔，已 `git checkout` 還原，不混入本批。Live AI、真實資料、Safari／Firefox、實體裝置：**未執行**（與 main 相同）。`09_DECISIONS_PENDING.md` D1–D12 尚未拍板，R0 無需決策。
+- 無 UI、邏輯、依賴、fixtures 改動。完整命令輸出與對照見 [R0 驗收](../verification/revamp-R0-acceptance.md)。R0 完成即停止；R1 待使用者確認後開始。
+
+---
 ## 2026-10-02｜A 批 GitHub／Vercel 發布（完成）
 
 依使用者「推送部署至github與vercel」授權，A 批已發布至 [正式站](https://profitlens-tau.vercel.app)。私人 `JLO916/profitlens` main 產品提交 `6c11a429dee50c08748891ade76b5972f72a593e`，Vercel deployment `dpl_7DMMB1jQ54FYy6C2AUDoZGj3e2nN` production READY；公開 alias 反查同一 SHA。後續驗收文件提交不改產品程式、公式或依賴。沒有新建專案、公開 repo 或開啟 Live AI。

@@ -1,0 +1,415 @@
+# R0-5 data-testid 與 E2E 選擇器清單（R1 搬移元件時逐一對照）
+# 產生：2026-10-02 14:27 CST；分支 revamp/v2 @ 5771104；格式：值<TAB>出現位置
+
+## A. src 內宣告的靜態 data-testid（唯一值，依字母排序）
+action-notice	src/components/actions-workbench.tsx:44
+actions-workbench	src/components/actions-workbench.tsx:41
+ai-advanced	src/components/ai-panel.tsx:92
+ai-availability	src/components/dashboard.tsx:303
+ai-facts-preview	src/components/ai-panel.tsx:90
+ai-live-result	src/components/ai-panel.tsx:104
+ai-local-mapping	src/components/ai-panel.tsx:95
+ai-mode	src/components/ai-panel.tsx:81
+ai-panel	src/components/ai-panel.tsx:80
+ai-payload-preview	src/components/ai-panel.tsx:93
+ai-readable-preview	src/components/ai-panel.tsx:86
+ai-request-preview	src/components/ai-panel.tsx:94
+ai-response-details	src/components/ai-panel.tsx:107
+ai-status	src/components/ai-panel.tsx:82
+decision-freshness	src/components/decision-workbench.tsx:76
+decision-notice	src/components/decision-workbench.tsx:122
+decision-workbench	src/components/decision-workbench.tsx:75
+import-panel	src/components/import-panel.tsx:140
+import-reconciliation	src/components/import-panel.tsx:185
+import-settings-proposal	src/components/import-panel.tsx:149
+import-status	src/components/import-panel.tsx:183
+manager-summary	src/components/manager-summary.tsx:41
+manager-summary-print	src/components/manager-summary.tsx:65
+multi-scenario-workbench	src/components/multi-scenario-workbench.tsx:48
+period-comparison	src/components/overview.tsx:53
+product-table	src/components/product-comparison-panel.tsx:88, src/components/workspace-panels.tsx:133
+review-view-difference	src/components/review-workbench.tsx:40
+review-workbench	src/components/review-workbench.tsx:28, src/components/review-workbench.tsx:38
+scenario-comparison	src/components/decision-workbench.tsx:113
+scenario-contribution	src/components/decision-workbench.tsx:109
+scenario-delta	src/components/decision-workbench.tsx:109
+scenario-result	src/components/decision-workbench.tsx:105
+scenario-sensitivity	src/components/scenario-sensitivity.tsx:22
+scenario-unavailable	src/components/decision-workbench.tsx:84
+sensitivity-result	src/components/scenario-sensitivity.tsx:46
+storage-notice	src/components/workspace-storage.tsx:100
+threshold-pct	src/components/scenario-sensitivity.tsx:31
+validation-panel	src/components/dashboard.tsx:307
+workspace-status	src/components/dashboard.tsx:314
+workspace-storage	src/components/workspace-storage.tsx:84
+
+## B. src 內動態 data-testid（含運算式或樣板字串，需人工對照）
+data-testid={`action-${index + 1}`}	src/components/actions-workbench.tsx:50
+data-testid={`baseline-${name}`}	src/components/decision-workbench.tsx:83
+data-testid={`import-preview-${role}`}	src/components/import-panel.tsx:173
+data-testid={`kpi-${name}`}	src/components/overview.tsx:42
+data-testid={`manager-priority-${item.code}`}	src/components/manager-summary.tsx:50
+data-testid={`reconciliation-${row.field}`}	src/components/import-panel.tsx:186
+data-testid={`reconciliation-metric-${metric}`}	src/components/import-panel.tsx:187
+data-testid={`scenario-${index + 1}`}	src/components/decision-workbench.tsx:97
+data-testid={`threshold-${target.id}`}	src/components/scenario-sensitivity.tsx:29
+
+## C. E2E 使用的 getByTestId（唯一值與檔案）
+"action-1"	tests/e2e/ai.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/workspace-storage.spec.ts
+"action-4"	tests/e2e/scenarios.spec.ts
+"action-notice"	tests/e2e/scenarios.spec.ts
+"actions-workbench"	tests/e2e/ai.spec.ts, tests/e2e/scenarios.spec.ts
+"ai-advanced"	tests/e2e/ai.spec.ts
+"ai-facts-preview"	tests/e2e/ai.spec.ts
+"ai-live-result"	tests/e2e/ai.spec.ts
+"ai-local-mapping"	tests/e2e/ai.spec.ts
+"ai-mode"	tests/e2e/ai.spec.ts
+"ai-panel"	tests/e2e/ai.spec.ts
+"ai-payload-preview"	tests/e2e/ai.spec.ts
+"ai-readable-preview"	tests/e2e/ai.spec.ts
+"ai-request-preview"	tests/e2e/ai.spec.ts
+"ai-response-details"	tests/e2e/ai.spec.ts
+"ai-status"	tests/e2e/ai.spec.ts
+"baseline-contribution_after_marketing"	tests/e2e/scenarios.spec.ts
+"baseline-net_revenue"	tests/e2e/scenarios.spec.ts
+"decision-freshness"	tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+"decision-workbench"	tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+"import-panel"	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+"import-preview-sales_daily.csv"	tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts
+"import-reconciliation"	tests/e2e/import-guidance.spec.ts
+"import-settings-proposal"	tests/e2e/import-guidance.spec.ts
+"import-status"	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+"kpi-contribution_after_marketing"	tests/e2e/import-guidance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+"kpi-contribution_margin"	tests/e2e/workspace.spec.ts
+"kpi-net_revenue"	tests/e2e/import.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/workspace.spec.ts
+"manager-priority-MISSING_CRITICAL_DATA"	tests/e2e/manager-summary.spec.ts
+"manager-priority-REV_UP_CM_DOWN"	tests/e2e/manager-summary.spec.ts
+"manager-summary"	tests/e2e/manager-presentation.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/review-v2-a-export.spec.ts
+"manager-summary-print"	tests/e2e/manager-summary.spec.ts, tests/e2e/review-v2-a-export.spec.ts
+"multi-scenario-workbench"	tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+"period-comparison"	tests/e2e/period-comparison.spec.ts
+"product-table"	tests/e2e/import.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/workspace.spec.ts
+"reconciliation-ad_spend"	tests/e2e/import-guidance.spec.ts
+"reconciliation-cogs_net"	tests/e2e/import-guidance.spec.ts
+"reconciliation-gross_sales"	tests/e2e/import-guidance.spec.ts
+"reconciliation-metric-contribution_after_marketing"	tests/e2e/import-guidance.spec.ts
+"reconciliation-metric-net_revenue"	tests/e2e/import-guidance.spec.ts
+"scenario-1"	tests/e2e/ai.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/workspace-storage.spec.ts
+"scenario-2"	tests/e2e/workspace-storage.spec.ts
+"scenario-4"	tests/e2e/scenarios.spec.ts
+"scenario-comparison"	tests/e2e/scenarios.spec.ts
+"scenario-contribution"	tests/e2e/ai.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+"scenario-delta"	tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts
+"scenario-result"	tests/e2e/scenarios.spec.ts
+"scenario-sensitivity"	tests/e2e/scenario-sensitivity.spec.ts
+"scenario-unavailable"	tests/e2e/scenarios.spec.ts
+"sensitivity-result"	tests/e2e/scenario-sensitivity.spec.ts
+"storage-notice"	tests/e2e/workspace-storage.spec.ts
+"threshold-maintain_baseline"	tests/e2e/scenario-sensitivity.spec.ts
+"threshold-zero_contribution"	tests/e2e/scenario-sensitivity.spec.ts
+"workspace-status"	tests/e2e/ai.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+"workspace-storage"	tests/e2e/workspace-storage.spec.ts
+'action-1'	tests/e2e/action-workspace.spec.ts
+'action-4'	tests/e2e/action-workspace.spec.ts
+'action-5'	tests/e2e/action-workspace.spec.ts
+'action-notice'	tests/e2e/action-workspace.spec.ts
+'decision-workbench'	tests/e2e/replacement-helpers.ts
+'import-panel'	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+'import-status'	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+'kpi-contribution_after_marketing'	tests/e2e/review-v2-a.spec.ts
+'manager-summary'	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+'review-workbench'	tests/e2e/review-v2-a.spec.ts
+'scenario-1'	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+'scenario-contribution'	tests/e2e/review-v2-a.spec.ts
+'workspace-status'	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+'workspace-storage'	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+`action-${index}`	tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts
+`action-${i}`	tests/e2e/review-v2-a.spec.ts
+`action-${n}`	tests/e2e/action-workspace.spec.ts
+`kpi-${metric}`	tests/e2e/ai.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts
+`scenario-${index}`	tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+`scenario-${i}`	tests/e2e/review-v2-a.spec.ts
+
+## D. E2E 的 CSS／屬性選擇器（locator / $ / waitForSelector）
+locator("#main-content"	tests/e2e/workspace.spec.ts
+locator(".."	tests/e2e/ai.spec.ts, tests/e2e/review-v2-a-export.spec.ts
+locator(".bridge-total"	tests/e2e/import.spec.ts, tests/e2e/period-comparison.spec.ts
+locator(".diagnostic-card"	tests/e2e/manager-presentation.spec.ts
+locator(".evidence-body > .number"	tests/e2e/workspace.spec.ts
+locator(".kpi-value"	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+locator(".scope-note"	tests/e2e/period-comparison.spec.ts
+locator(".subtitle, .scope-note, .diagnostic-card .note, .main-footer, .sidebar-note, .diagnostic-card .tag"	tests/e2e/manager-presentation.spec.ts
+locator(":scope > details"	tests/e2e/review-v2-a-export.spec.ts
+locator(":scope > section"	tests/e2e/review-v2-a-export.spec.ts
+locator(":scope > summary"	tests/e2e/manager-presentation.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenario-sensitivity.spec.ts
+locator(":scope > ul > li"	tests/e2e/review-v2-a-export.spec.ts
+locator("a[href^='javascript:']"	tests/e2e/scenarios.spec.ts
+locator("body"	tests/e2e/manager-presentation.spec.ts, tests/e2e/scenario-sensitivity.spec.ts
+locator("details"	tests/e2e/import.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace.spec.ts
+locator("html"	tests/e2e/manager-summary.spec.ts, tests/e2e/review-v2-a-export.spec.ts
+locator("img[src='x']"	tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts
+locator("li code"	tests/e2e/manager-presentation.spec.ts
+locator("option"	tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+locator("p.number"	tests/e2e/ai.spec.ts, tests/e2e/scenarios.spec.ts
+locator("summary"	tests/e2e/ai.spec.ts, tests/e2e/import.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+locator("tbody tr"	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace.spec.ts
+locator("th"	tests/e2e/scenarios.spec.ts
+locator('.diagnostic-card'	tests/e2e/action-workspace.spec.ts
+locator('.kpi-value'	tests/e2e/review-v2-a.spec.ts
+locator(':scope > summary'	tests/e2e/action-workspace.spec.ts
+locator('details li code'	tests/e2e/action-workspace.spec.ts
+locator('option'	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+locator('option:checked'	tests/e2e/action-workspace.spec.ts
+locator('p.number'	tests/e2e/action-workspace.spec.ts
+locator('summary'	tests/e2e/review-v2-a.spec.ts
+locator('tbody tr'	tests/e2e/action-workspace.spec.ts
+locator('tbody'	tests/e2e/action-workspace.spec.ts
+
+## E. E2E 的 role / label / text 選擇器（getByRole / getByLabel / getByText / getByPlaceholder / getByTitle）
+getByLabel("sales_daily.csv gross_sales 對應欄位", { exact: true })	tests/e2e/import.spec.ts
+getByLabel("來源金額口徑", { exact: true })	tests/e2e/import-guidance.spec.ts
+getByLabel("具體動作", { exact: true })	tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts
+getByLabel("前期結束", { exact: true })	tests/e2e/period-comparison.spec.ts, tests/e2e/workspace.spec.ts
+getByLabel("前期開始", { exact: true })	tests/e2e/workspace.spec.ts
+getByLabel("匯入比較方式", { exact: true })	tests/e2e/import-guidance.spec.ts, tests/e2e/period-comparison.spec.ts
+getByLabel("品類", { exact: true })	tests/e2e/import.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/workspace.spec.ts
+getByLabel("售出量變化（相對 %）", { exact: true })	tests/e2e/manager-presentation.spec.ts, tests/e2e/scenario-sensitivity.spec.ts
+getByLabel("商品排序方向", { exact: true })	tests/e2e/product-comparison.spec.ts
+getByLabel("商品銷售 CSV", { exact: true })	tests/e2e/import-guidance.spec.ts, tests/e2e/m6-acceptance.spec.ts
+getByLabel("問題", { exact: true })	tests/e2e/manager-presentation.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByLabel("執行狀態", { exact: true })	tests/e2e/scenarios.spec.ts
+getByLabel("我同意將工作區資料保存於這個瀏覽器（不自動保存）", { exact: true })	tests/e2e/workspace-storage.spec.ts
+getByLabel("我已檢查預覽，並同意將這份彙總資料傳送至 OpenAI", { exact: true })	tests/e2e/ai.spec.ts
+getByLabel("我已確認未稅商品金額與費用口徑", { exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+getByLabel("我接受此方案的全部固定假設", { exact: true })	tests/e2e/ai.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByLabel("折扣率變化（百分點）", { exact: true })	tests/e2e/manager-presentation.spec.ts
+getByLabel("搜尋 SKU", { exact: true })	tests/e2e/import.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/workspace.spec.ts
+getByLabel("敏感度 A 售出量變化（相對 %）", { exact: true })	tests/e2e/scenario-sensitivity.spec.ts
+getByLabel("敏感度 B 售出量變化（相對 %）", { exact: true })	tests/e2e/scenario-sensitivity.spec.ts
+getByLabel("方案名稱", { exact: true })	tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByLabel("本快照證據（可複選）", { exact: true })	tests/e2e/m6-acceptance.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByLabel("本期結束", { exact: true })	tests/e2e/period-comparison.spec.ts, tests/e2e/workspace.spec.ts
+getByLabel("本期開始", { exact: true })	tests/e2e/workspace.spec.ts
+getByLabel("比較方式", { exact: true })	tests/e2e/period-comparison.spec.ts
+getByLabel("涵蓋開始", { exact: true })	tests/e2e/import-guidance.spec.ts
+getByLabel("確認 sales_daily.csv 欄位對照", { exact: true })	tests/e2e/import.spec.ts
+getByLabel("確認忽略 sales_daily.csv 未使用欄位", { exact: true })	tests/e2e/import.spec.ts
+getByLabel("讀取 manifest JSON", { exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+getByLabel("負責角色", { exact: true })	tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts
+getByLabel("資料提供者確認銷售涵蓋範圍完整", { exact: true })	tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts
+getByLabel("資料集", { exact: true })	tests/e2e/ai.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+getByLabel("資料集名稱", { exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+getByLabel("通路", { exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+getByLabel("進度紀錄", { exact: true })	tests/e2e/scenarios.spec.ts
+getByLabel("選取工作區備份 JSON", { exact: true })	tests/e2e/workspace-storage.spec.ts
+getByLabel("金額重要性門檻（TWD）")	tests/e2e/manager-summary.spec.ts
+getByLabel("金額重要性門檻（TWD）", { exact: true })	tests/e2e/review-v2-a-export.spec.ts
+getByLabel("銷售通路（每行一個）", { exact: true })	tests/e2e/import-guidance.spec.ts
+getByLabel('DTC 本次摘要所選方案',{exact:true})	tests/e2e/action-workspace.spec.ts
+getByLabel('一次性投入（TWD）',{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel('具體動作',{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel('問題',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('單位履約成本變化（相對 %）',{exact:true})	tests/e2e/action-workspace.spec.ts
+getByLabel('執行狀態',{exact:true})	tests/e2e/action-workspace.spec.ts
+getByLabel('我同意將本次工作區儲存在這個瀏覽器',{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel('我已確認未稅商品金額與費用口徑',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('我接受此方案的全部固定假設',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('方案名稱',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('會議備註',{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel('會議名稱',{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel('會議決策',{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel('期限',{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel('本快照證據（可複選）',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('讀取 manifest JSON',{exact:true})	tests/e2e/action-workspace.spec.ts
+getByLabel('負責角色',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('資料集',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('資料集名稱',{exact:true})	tests/e2e/action-workspace.spec.ts
+getByLabel('通路',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('進度紀錄',{exact:true})	tests/e2e/action-workspace.spec.ts
+getByLabel('選取工作區備份 JSON',{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel('金額重要性門檻（TWD）',{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel(`${channel} 本次摘要所選方案`,{exact:true})	tests/e2e/review-v2-a.spec.ts
+getByLabel(`敏感度 ${String.fromCharCode(65 + index)	tests/e2e/scenario-sensitivity.spec.ts
+getByLabel(`敏感度 ${name} 售出量變化（相對 %）`, { exact: true })	tests/e2e/scenario-sensitivity.spec.ts
+getByLabel(consentLabel)	tests/e2e/scenarios.spec.ts
+getByLabel(consentLabel, { exact: true })	tests/e2e/scenarios.spec.ts
+getByLabel(file.label, { exact: true })	tests/e2e/product-comparison.spec.ts
+getByLabel(inputLabels[0], { exact: true })	tests/e2e/scenarios.spec.ts
+getByLabel(inputLabels[2], { exact: true })	tests/e2e/scenarios.spec.ts
+getByLabel(inputLabels[index], { exact: true })	tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts
+getByLabel(label, { exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByLabel(label,{exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByLabel(labels[index], { exact: true })	tests/e2e/import-guidance.spec.ts
+getByLabel(labels[role], { exact: true })	tests/e2e/import.spec.ts
+getByRole("alert")	tests/e2e/manager-summary.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("article")	tests/e2e/workspace.spec.ts
+getByRole("button")	tests/e2e/ai.spec.ts, tests/e2e/period-comparison.spec.ts
+getByRole("button", { name: "-15.01 百分點", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("button", { name: "270.00", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("button", { name: "316,379.67", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("button", { name: "下一頁", exact: true })	tests/e2e/period-comparison.spec.ts
+getByRole("button", { name: "下載 商品銷售 CSV 標準空白範本", exact: true })	tests/e2e/import-guidance.spec.ts
+getByRole("button", { name: "下載主管摘要 Markdown", exact: true })	tests/e2e/manager-summary.spec.ts, tests/e2e/review-v2-a-export.spec.ts
+getByRole("button", { name: "下載商品明細 CSV", exact: true })	tests/e2e/import.spec.ts
+getByRole("button", { name: "下載商品比較 CSV", exact: true })	tests/e2e/product-comparison.spec.ts
+getByRole("button", { name: "下載問題清單 CSV", exact: true })	tests/e2e/import.spec.ts
+getByRole("button", { name: "下載完整工作區備份", exact: true })	tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "下載決策 CSV", exact: true })	tests/e2e/review-v2-a-export.spec.ts
+getByRole("button", { name: "下載決策 JSON", exact: true })	tests/e2e/review-v2-a-export.spec.ts
+getByRole("button", { name: "下載目前分析 CSV", exact: true })	tests/e2e/import.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/period-comparison.spec.ts
+getByRole("button", { name: "下載資料集設定 JSON", exact: true })	tests/e2e/import.spec.ts
+getByRole("button", { name: "下載通路寬表 CSV", exact: true })	tests/e2e/manager-summary.spec.ts
+getByRole("button", { name: "不儲存並繼續", exact: true })	tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "主管摘要｜合計（DTC、MARKETPLACE） 商品淨營收差額", exact: true })	tests/e2e/manager-summary.spec.ts
+getByRole("button", { name: "主管摘要｜合計（DTC、MARKETPLACE） 行銷後貢獻差額", exact: true })	tests/e2e/manager-summary.spec.ts
+getByRole("button", { name: "主管摘要｜合計（DTC） 行銷後貢獻差額", exact: true })	tests/e2e/manager-summary.spec.ts
+getByRole("button", { name: "以目前資料與範圍更新會議來源", exact: true })	tests/e2e/manager-summary.spec.ts
+getByRole("button", { name: "保存本機副本", exact: true })	tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "傳送已同意的彙總資料", exact: true })	tests/e2e/ai.spec.ts
+getByRole("button", { name: "列印主管摘要", exact: true })	tests/e2e/manager-summary.spec.ts, tests/e2e/review-v2-a-export.spec.ts
+getByRole("button", { name: "刪除本機副本並關閉保存", exact: true })	tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "匯入標準 CSV", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+getByRole("button", { name: "取消 AI 請求", exact: true })	tests/e2e/ai.spec.ts
+getByRole("button", { name: "取消", exact: true })	tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "取消匯入", exact: true })	tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts
+getByRole("button", { name: "取消置頂", exact: true })	tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts
+getByRole("button", { name: "只看本期負毛利", exact: true })	tests/e2e/product-comparison.spec.ts
+getByRole("button", { name: "商品毛利", exact: true })	tests/e2e/import.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "填入零變動假設", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/scenarios.spec.ts
+getByRole("button", { name: "套用備份並取代工作區", exact: true })	tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "套用匯入資料", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+getByRole("button", { name: "套用摘要門檻" })	tests/e2e/manager-summary.spec.ts
+getByRole("button", { name: "套用摘要門檻", exact: true })	tests/e2e/review-v2-a-export.spec.ts
+getByRole("button", { name: "套用期間", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "已確認備份檔已保存", exact: true })	tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "建立 DTC 方案工作區", exact: true })	tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "情境試算", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "提高優先序", exact: true })	tests/e2e/scenarios.spec.ts
+getByRole("button", { name: "新增方案", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "新增行動", exact: true })	tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "查看 MARKETPLACE B 商品毛利差額兩期公式與來源，-55.00", exact: true })	tests/e2e/product-comparison.spec.ts
+getByRole("button", { name: "查看證據：行銷後貢獻 · 2026-08-02—2026-08-02", exact: true })	tests/e2e/ai.spec.ts
+getByRole("button", { name: "檢核匯入資料", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+getByRole("button", { name: "清空工作區", exact: true })	tests/e2e/m6-acceptance.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "確認並帶入日期與通路提議", exact: true })	tests/e2e/import-guidance.spec.ts
+getByRole("button", { name: "確認行動與證據", exact: true })	tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "經營總覽", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import-guidance.spec.ts, tests/e2e/import.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "置頂行動", exact: true })	tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts
+getByRole("button", { name: "行動摘要", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "複製名稱到目前基準（清空假設）", exact: true })	tests/e2e/scenarios.spec.ts
+getByRole("button", { name: "計算方案", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "讀取本機副本預覽", exact: true })	tests/e2e/workspace-storage.spec.ts
+getByRole("button", { name: "資料工作區", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("button", { name: "載入示範資料", exact: true })	tests/e2e/manager-presentation.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "載入資料集", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "返回前次成功資料", exact: true })	tests/e2e/manager-presentation.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "通路診斷", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "進階驗證", exact: true })	tests/e2e/ai.spec.ts, tests/e2e/manager-presentation.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/review-v2-a-export.spec.ts, tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: "重算三組敏感度", exact: true })	tests/e2e/scenario-sensitivity.spec.ts
+getByRole("button", { name: "關閉公式與來源", exact: true })	tests/e2e/manager-summary.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/scenarios.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("button", { name: /^更新會議行動引用：/ })	tests/e2e/review-v2-a-export.spec.ts
+getByRole("button", { name: /^查看折扣率上升排序金額來源/ })	tests/e2e/workspace.spec.ts
+getByRole("button", { name: /^查看證據 · 2026-08-02.*行銷後貢獻 · DTC（通路） · 270\.00$/ })	tests/e2e/scenarios.spec.ts
+getByRole("button", { name: /^查看證據 ·/ })	tests/e2e/scenarios.spec.ts
+getByRole("button", { name: /商品毛利差額兩期公式與來源，-5.00$/ })	tests/e2e/product-comparison.spec.ts
+getByRole("button", { name: /商品毛利差額兩期公式與來源，N\/A$/ })	tests/e2e/product-comparison.spec.ts
+getByRole("button", { name: `下載決策 ${format}`, exact: true })	tests/e2e/m6-acceptance.spec.ts, tests/e2e/scenarios.spec.ts
+getByRole("button", { name: `建立 ${channel} 方案工作區`, exact: true })	tests/e2e/scenarios.spec.ts
+getByRole("cell")	tests/e2e/period-comparison.spec.ts, tests/e2e/scenarios.spec.ts
+getByRole("columnheader")	tests/e2e/workspace.spec.ts
+getByRole("dialog")	tests/e2e/manager-summary.spec.ts, tests/e2e/scenarios.spec.ts
+getByRole("dialog", { name: "AI 引用證據 · 行銷後貢獻｜公式與來源", exact: true })	tests/e2e/ai.spec.ts
+getByRole("dialog", { name: "基準 · 行銷後貢獻｜公式與來源", exact: true })	tests/e2e/scenarios.spec.ts
+getByRole("dialog", { name: "替換前先儲存工作區" })	tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByRole("dialog", { name: "行動證據 · 行銷後貢獻｜公式與來源", exact: true })	tests/e2e/scenarios.spec.ts
+getByRole("dialog", { name: /公式與來源$/ })	tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("heading", { level: 3 })	tests/e2e/manager-presentation.spec.ts
+getByRole("heading", { name: "其他行動附錄", exact: true })	tests/e2e/review-v2-a-export.spec.ts
+getByRole("heading", { name: "廣告費占淨營收比上升", exact: true })	tests/e2e/m6-acceptance.spec.ts
+getByRole("heading", { name: "折扣率上升", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("heading", { name: "會議方案與交辦", exact: true })	tests/e2e/review-v2-a-export.spec.ts
+getByRole("heading", { name: "本期通路行銷後貢獻為負", exact: true })	tests/e2e/import.spec.ts
+getByRole("heading", { name: "淨營收增加，行銷後貢獻下降", exact: true })	tests/e2e/import.spec.ts, tests/e2e/m6-acceptance.spec.ts
+getByRole("heading", { name: "經營總覽", exact: true })	tests/e2e/manager-presentation.spec.ts
+getByRole("heading", { name: "資料範圍與口徑", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("heading", { name: "進階驗證", exact: true, level: 1 })	tests/e2e/manager-presentation.spec.ts
+getByRole("link", { name: "跳至主要內容", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("main")	tests/e2e/manager-presentation.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("region", { name: "三組敏感度條件比較，可水平捲動" })	tests/e2e/scenario-sensitivity.spec.ts
+getByRole("region", { name: "公式組成項目", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("region", { name: "工作區恢復預覽" })	tests/e2e/workspace-storage.spec.ts
+getByRole("row")	tests/e2e/import.spec.ts, tests/e2e/manager-summary.spec.ts, tests/e2e/period-comparison.spec.ts, tests/e2e/product-comparison.spec.ts
+getByRole("row", { name: /假設 A/ })	tests/e2e/scenario-sensitivity.spec.ts
+getByRole("row", { name: /假設 B/ })	tests/e2e/scenario-sensitivity.spec.ts
+getByRole("row", { name: /假設 C/ })	tests/e2e/scenario-sensitivity.spec.ts
+getByRole("rowheader")	tests/e2e/product-comparison.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("rowheader", { name: "+TEST()	tests/e2e/import.spec.ts
+getByRole("rowheader", { name: "A", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("rowheader", { name: "ENTER", exact: true })	tests/e2e/product-comparison.spec.ts
+getByRole("rowheader", { name: "EXIT", exact: true })	tests/e2e/product-comparison.spec.ts
+getByRole("rowheader", { name: "ZERO", exact: true })	tests/e2e/product-comparison.spec.ts
+getByRole("rowheader", { name: /MARKETPLACE/ })	tests/e2e/manager-summary.spec.ts
+getByRole("rowheader", { name: /^MARKETPLACE/ })	tests/e2e/manager-summary.spec.ts
+getByRole("table")	tests/e2e/scenario-sensitivity.spec.ts, tests/e2e/workspace.spec.ts
+getByRole("table", { name: "sales_daily.csv 原始來源前 10 列", exact: true })	tests/e2e/workspace.spec.ts
+getByRole("table", { name: `${file} 原始來源前 10 列`, exact: true })	tests/e2e/workspace.spec.ts
+getByRole('alert')	tests/e2e/review-v2-a.spec.ts
+getByRole('button', { name: '不儲存並繼續', exact: true })	tests/e2e/replacement-helpers.ts
+getByRole('button', { name: /^建立 .+ 方案工作區$/ })	tests/e2e/replacement-helpers.ts
+getByRole('button',{name:'下載主管摘要 Markdown',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'下載備份',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'下載完整工作區備份',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'不儲存並繼續',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'以目前資料與範圍更新會議來源',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:'儲存本機副本並繼續',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'先儲存',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'匯入標準 CSV',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'取消',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'取消重新綁定',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:'商品毛利',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'填入零變動假設',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:'套用備份並取代工作區',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'套用匯入資料',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'套用摘要門檻',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'已確認備份已保存並繼續',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'已確認備份檔已保存',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'建立 DTC 方案工作區',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:'建立行動草稿',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:'情境試算',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'新增方案',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'新增行動',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'檢核匯入資料',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'清空工作區',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'確認改用此資料版本',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:'確認行動與證據',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'經營總覽',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'置頂行動',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'行動摘要',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'計算方案',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'載入示範資料',exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'載入資料集',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'通路診斷',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:'進階驗證',exact:true})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:'預覽重新綁定目前資料',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:/^更新會議行動引用：/})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:/^查看歷史證據 ·/})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:/^查看證據 ·.*2026-08-02.*行銷後貢獻/})	tests/e2e/action-workspace.spec.ts
+getByRole('button',{name:`建立 ${channel} 方案工作區`,exact:true})	tests/e2e/review-v2-a.spec.ts
+getByRole('button',{name:label,exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('dialog')	tests/e2e/action-workspace.spec.ts
+getByRole('dialog', { name: '替換前先儲存工作區' })	tests/e2e/replacement-helpers.ts
+getByRole('dialog',{name:'替換前先儲存工作區',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('dialog',{name:'替換前先儲存工作區'})	tests/e2e/review-v2-a.spec.ts
+getByRole('heading',{name:'每個方案都必須接受的固定假設',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('heading',{name:'淨營收增加，行銷後貢獻下降',exact:true})	tests/e2e/action-workspace.spec.ts
+getByRole('region',{name:'工作區恢復預覽'})	tests/e2e/action-workspace.spec.ts, tests/e2e/review-v2-a.spec.ts
+getByRole('region',{name:'重新綁定證據預覽',exact:true})	tests/e2e/action-workspace.spec.ts
+getByText("其他行動附錄（5）", { exact: true })	tests/e2e/review-v2-a-export.spec.ts
+getByText("其他行動附錄（8）", { exact: true })	tests/e2e/review-v2-a-export.spec.ts
+getByText("商品淨營收", { exact: true })	tests/e2e/period-comparison.spec.ts
+getByText("此範圍沒有符合條件的商品資料。", { exact: false })	tests/e2e/product-comparison.spec.ts
+getByText("歷史通路工作稿", { exact: true })	tests/e2e/scenarios.spec.ts, tests/e2e/workspace-storage.spec.ts
+getByText("行銷後貢獻", { exact: true })	tests/e2e/period-comparison.spec.ts
+getByText('歷史引用（2 版）',{exact:true})	tests/e2e/action-workspace.spec.ts
+getByText(actionName(index)	tests/e2e/review-v2-a-export.spec.ts
+getByText(title, { exact: true })	tests/e2e/ai.spec.ts

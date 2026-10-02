@@ -161,3 +161,16 @@
 - 四入口共用 replacement guard，保存／不保存繼續／取消的狀態綁目前 workspace version；下載尚未確認不替換，本機保存失敗不替換。async ticket 防較早資料操作覆寫後來選擇。
 
 B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、push／部署不在本批。詳見本批驗收報告與 STATUS，歷史報告維持原始當時結果。
+
+## 2026-10-02｜Revamp v2 原則：財務核心零改動、標籤單一來源
+
+**問題：** Revamp v2（`docs/revamp/`，R0–R7）要把產品從稽核員工具改成台灣電商經理人每週使用的工具，會大量改動版面、名詞與流程；需要先劃定不可動的範圍，避免文案或版面調整悄悄改到財務口徑。
+
+**採用選項：**
+- **財務核心零改動。** `src/domain/*`、`fixtures/golden|demo|errors|refund_only|zero_ad`、`metric_version = contribution-v1` 與 `docs/METRICS.md` 公式不改。R1–R3 完全不碰 `src/domain`；R4 起只允許加法（新欄位、新函式、新版本標籤 `assist-kpi-v1`），既有指標輸入輸出不變，新增項目須有獨立手算 golden 測試。不以修改 golden 數字讓測試通過。
+- **標籤單一來源。** 使用者可見中文集中於 `src/i18n/labels.zh-TW.ts`，由 `src/i18n/index.ts` 提供 `labels` 與 `t(path)`；R0 只建立入口不接線，R2 起元件、匯出、AI 預覽一律從此取字，`metricDefinitions.label` 改讀 labels。改名時同批更新測試斷言（優先改為引用 labels），不得 `.skip`。
+- 隱私與公開站邊界（無登入／資料庫／伺服器保存、原始 CSV 不上傳、`PUBLIC_DEMO` 與 `/api/insights` 封鎖）、可追溯性、既有 `data-testid`／a11y 結構均不退步。
+
+**影響文件：** `CLAUDE.md`、`docs/revamp/*`、`docs/STATUS.md`。`09_DECISIONS_PENDING.md` D1–D12 於 R0 時「決定」欄皆空白，後續批次依建議值執行並於回報標註，使用者拍板後再各記一筆。
+
+**需重跑的驗收：** 每批完整 typecheck／lint／unit／build／E2E（四尺寸），並以 `verification/revamp-R0-acceptance.md` 的基線數量對照。
