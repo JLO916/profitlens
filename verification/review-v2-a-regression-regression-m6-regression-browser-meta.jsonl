@@ -1,0 +1,90 @@
+{"recorded_at":"2026-10-01T13:34:06.232Z","project":"desktop","test":"僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:34:22.340Z","project":"desktop","test":"三個方案各自從 270.00 重算為 270／284／264，不串接或相加","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:34:38.661Z","project":"desktop","test":"減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:34:54.822Z","project":"desktop","test":"輸入超界、負投入與過度精度不得默默修正為可用試算","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:35:10.891Z","project":"desktop","test":"百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:35:26.938Z","project":"desktop","test":"missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:35:43.202Z","project":"desktop","test":"missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:35:59.316Z","project":"desktop","test":"通路換回原值仍過期；重建清空情境假設，獨立行動保留歷史證據，複製文字須重選證據","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:36:15.427Z","project":"desktop","test":"資料集切換後即使回到相同 golden 與通路，舊方案仍過期","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:36:31.990Z","project":"desktop","test":"有效期間切換再回原期間仍過期，不自動沿用先前假設","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:36:48.086Z","project":"desktop","test":"四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:37:04.144Z","project":"desktop","test":"未填完七欄或未選 fact 的行動只能保持草稿","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:37:20.176Z","project":"desktop","test":"三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:37:36.472Z","project":"desktop","test":"不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結","status":"failed","events":[]}
+{"recorded_at":"2026-10-01T13:37:52.549Z","project":"desktop","test":"試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用","status":"failed","events":[]}
+{"recorded_at":"2026-10-02T01:42:04.076Z","project":"desktop","test":"僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:42:09.966Z","project":"desktop","test":"三個方案各自從 270.00 重算為 270／284／264，不串接或相加","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:42:14.487Z","project":"desktop","test":"減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:42:18.273Z","project":"desktop","test":"輸入超界、負投入與過度精度不得默默修正為可用試算","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:42:21.042Z","project":"desktop","test":"百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:42:22.684Z","project":"desktop","test":"missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:42:24.465Z","project":"desktop","test":"missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:42:29.690Z","project":"desktop","test":"切換通路保留個別方案與行動原始引用，管理欄位更新不撤銷引用確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:42:36.148Z","project":"desktop","test":"資料集切換再回相同 golden，舊方案仍為歷史；複製只保留名稱並清空假設","status":"failed","events":[]}
+{"recorded_at":"2026-10-02T01:43:06.171Z","project":"desktop","test":"有效期間切換再回原期間，歷史結果不復活或自動沿用假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:43:14.974Z","project":"desktop","test":"四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:43:20.498Z","project":"desktop","test":"未選 fact 的行動只能保持引用待確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:43:27.888Z","project":"desktop","test":"三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:43:33.436Z","project":"desktop","test":"不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:43:40.037Z","project":"desktop","test":"試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}
+{"recorded_at":"2026-10-02T01:51:58.245Z","project":"desktop","test":"僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:52:06.814Z","project":"desktop","test":"三個方案各自從 270.00 重算為 270／284／264，不串接或相加","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:52:12.628Z","project":"desktop","test":"減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:52:39.439Z","project":"desktop","test":"輸入超界、負投入與過度精度不得默默修正為可用試算","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:52:45.488Z","project":"desktop","test":"百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:52:48.587Z","project":"desktop","test":"missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:52:51.761Z","project":"desktop","test":"missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:52:59.971Z","project":"desktop","test":"切換通路保留個別方案與行動原始引用，管理欄位更新不撤銷引用確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:53:19.002Z","project":"desktop","test":"資料集切換再回相同 golden，舊方案仍為歷史；複製只保留名稱並清空假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:53:38.889Z","project":"desktop","test":"有效期間切換再回原期間，歷史結果不復活或自動沿用假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:53:47.556Z","project":"desktop","test":"四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:53:49.822Z","project":"desktop","test":"未選 fact 的行動只能保持引用待確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:53:54.917Z","project":"desktop","test":"三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:54:00.330Z","project":"desktop","test":"不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:54:07.084Z","project":"desktop","test":"試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}
+{"recorded_at":"2026-10-02T01:56:45.546Z","project":"laptop","test":"僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:56:50.017Z","project":"laptop","test":"三個方案各自從 270.00 重算為 270／284／264，不串接或相加","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:56:53.739Z","project":"laptop","test":"減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:56:59.214Z","project":"laptop","test":"輸入超界、負投入與過度精度不得默默修正為可用試算","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:57:03.666Z","project":"laptop","test":"百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:57:05.330Z","project":"laptop","test":"missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:57:06.946Z","project":"laptop","test":"missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:57:21.527Z","project":"laptop","test":"切換通路保留個別方案與行動原始引用，管理欄位更新不撤銷引用確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:57:30.312Z","project":"laptop","test":"資料集切換再回相同 golden，舊方案仍為歷史；複製只保留名稱並清空假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:57:49.757Z","project":"laptop","test":"有效期間切換再回原期間，歷史結果不復活或自動沿用假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:57:58.964Z","project":"laptop","test":"四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:58:01.847Z","project":"laptop","test":"未選 fact 的行動只能保持引用待確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:58:06.495Z","project":"laptop","test":"三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:58:09.747Z","project":"laptop","test":"不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T01:58:13.937Z","project":"laptop","test":"試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}
+{"recorded_at":"2026-10-02T02:00:09.352Z","project":"tablet","test":"僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:13.519Z","project":"tablet","test":"三個方案各自從 270.00 重算為 270／284／264，不串接或相加","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:16.100Z","project":"tablet","test":"減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:21.308Z","project":"tablet","test":"輸入超界、負投入與過度精度不得默默修正為可用試算","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:23.994Z","project":"tablet","test":"百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:25.580Z","project":"tablet","test":"missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:28.058Z","project":"tablet","test":"missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:32.792Z","project":"tablet","test":"切換通路保留個別方案與行動原始引用，管理欄位更新不撤銷引用確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:36.829Z","project":"tablet","test":"資料集切換再回相同 golden，舊方案仍為歷史；複製只保留名稱並清空假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:00:56.354Z","project":"tablet","test":"有效期間切換再回原期間，歷史結果不復活或自動沿用假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:01:04.610Z","project":"tablet","test":"四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:01:06.727Z","project":"tablet","test":"未選 fact 的行動只能保持引用待確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:01:10.519Z","project":"tablet","test":"三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:01:14.047Z","project":"tablet","test":"不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:01:17.983Z","project":"tablet","test":"試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}
+{"recorded_at":"2026-10-02T02:03:05.175Z","project":"mobile","test":"僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:08.631Z","project":"mobile","test":"三個方案各自從 270.00 重算為 270／284／264，不串接或相加","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:11.453Z","project":"mobile","test":"減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:16.068Z","project":"mobile","test":"輸入超界、負投入與過度精度不得默默修正為可用試算","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:19.776Z","project":"mobile","test":"百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 與差額 34.70","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:21.243Z","project":"mobile","test":"missing-cogs 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:22.886Z","project":"mobile","test":"missing-ad 缺漏通路保留營收，禁止情境補零或顯示 NaN","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:27.877Z","project":"mobile","test":"切換通路保留個別方案與行動原始引用，管理欄位更新不撤銷引用確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:31.785Z","project":"mobile","test":"資料集切換再回相同 golden，舊方案仍為歷史；複製只保留名稱並清空假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:03:53.498Z","project":"mobile","test":"有效期間切換再回原期間，歷史結果不復活或自動沿用假設","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:04:00.402Z","project":"mobile","test":"四項人工行動可新增但僅三項置頂，鍵盤排序及人類可讀證據保留來源與返回焦點","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:04:02.489Z","project":"mobile","test":"未選 fact 的行動只能保持引用待確認","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:04:06.774Z","project":"mobile","test":"三種本機匯出保存固定基準、五項輸入、公式、版本、範圍與來源","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:04:10.276Z","project":"mobile","test":"不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產生惡意連結","status":"passed","events":[]}
+{"recorded_at":"2026-10-02T02:04:12.956Z","project":"mobile","test":"試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用","status":"passed","events":[{"kind":"unsaved-changes-warning","type":"beforeunload"}]}

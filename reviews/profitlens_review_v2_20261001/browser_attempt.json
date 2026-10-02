@@ -1,0 +1,6 @@
+{
+  "url": "https://profitlens-tau.vercel.app/",
+  "method": "Chromium navigation through Python Playwright",
+  "attempted_at_utc": "2026-10-01T12:18:08.617579+00:00",
+  "error": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at https://profitlens-tau.vercel.app/\nCall log:\n  - navigating to \"https://profitlens-tau.vercel.app/\", waiting until \"domcontentloaded\"\n"
+}

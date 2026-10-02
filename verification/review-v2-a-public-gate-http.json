@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-02T02:07:15.733799+00:00",
+  "url": "http://127.0.0.1:3300/api/insights",
+  "mode": "PUBLIC_DEMO",
+  "live_model_call": false,
+  "checks": [
+    {
+      "method": "GET",
+      "status": 200,
+      "body": {
+        "available": false,
+        "reason": "PUBLIC_DEMO",
+        "provider": "openai"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 403,
+      "body": {
+        "status": "fallback",
+        "snapshot_id": null,
+        "reason": "PUBLIC_DEMO"
+      }
+    }
+  ]
+}

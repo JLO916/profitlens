@@ -105,6 +105,26 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     expect(result).toContain("非改善收益");
   });
 
+  it("leaves unpinned actions in the appendix and distinguishes them from an empty workspace", async () => {
+    const summary = buildManagerSummary(await snapshot());
+    const context: SummaryDecisionContext = {
+      dataset_hash: summary.dataset_hash, filter_hash: summary.filter_hash, pinnedOnly: true,
+      scenarios: [], actions: [{ id: "unpinned", problem: "核對物流帳單", action: "向物流商取得明細", owner: "營運主管", deadline: "2026-10-20", risk: "先核對入帳", status: "draft", scopeLabel: "DTC", pinned: false }],
+    };
+    const decisions = summaryDecisionState(summary, context);
+    expect(decisions.mainActions).toEqual([]);
+    expect(decisions.appendixActions.map(action => action.id)).toEqual(["unpinned"]);
+    const [body, appendix] = exportManagerSummaryMarkdown(summary, context).split("## 技術稽核附錄");
+    expect(body).toContain("尚未置頂行動；主摘要不會自動挑選，其餘列附錄。");
+    expect(body).not.toMatch(/行動尚未建立|尚未建立行動/);
+    expect(body).not.toContain("核對物流帳單");
+    expect(appendix).toContain("核對物流帳單");
+    expect(appendix).toContain("營運主管");
+    const empty = exportManagerSummaryMarkdown(summary, { ...context, actions: [] }).split("## 技術稽核附錄")[0];
+    expect(empty).toContain("尚未置頂行動；待指定負責人、期限與風險／停止條件。");
+    expect(empty).not.toContain("其餘列附錄");
+  });
+
   it("stale and mismatched decision snapshots never appear as a current selected plan", async () => {
     const summary = buildManagerSummary(await snapshot());
     const context: SummaryDecisionContext = {

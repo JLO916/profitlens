@@ -1,0 +1,130 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-actions.test.ts tests/action-workspace.test.ts tests/action-export.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/action-workspace.test.ts (8 tests | 2 failed) 155ms
+     × human confirms only valid original facts, edits revoke confirmation 17ms
+     × scope changes latch history, current new work coexists and never rewrites original bindings 14ms
+ ❯ tests/action-export.test.ts (9 tests | 3 failed) 353ms
+     × exports more than three actions and keeps historical bindings separate from the current scenario session 45ms
+     × every CSV action field uses its own captured metadata, period, scope and source filenames 50ms
+     × CSV has per-action numeric fact rows with the fact's own period, scope, reasons and sources 103ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/action-export.test.ts > PL-05 independent action ledger audited exports > exports more than three actions and keeps historical bindings separate from the current scenario session
+AssertionError: expected { id: 'old-dtc', …(23) } to match object { id: 'old-dtc', pinned: true, …(3) }
+(31 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -18,12 +18,12 @@
+      "scope": {
+        "channels": [
+          "DTC",
+        ],
+      },
+-     "status": "stale",
++     "status": "current",
+    },
+    "evidence_confirmed": true,
+    "id": "old-dtc",
+    "pinned": true,
+-   "status": "stale",
++   "status": "confirmed",
+  }
+
+ ❯ tests/action-export.test.ts:59:33
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/action-export.test.ts > PL-05 independent action ledger audited exports > every CSV action field uses its own captured metadata, period, scope and source filenames
+AssertionError: expected { Object (schema_version, scenario_version, ...) } to match object { …(6) }
+(24 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "as_of": "2026-08-03",
+    "dataset_hash": "92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48",
+    "filter_hash": "a66eb645b3a68190cd4387b7ed67e8508523c229953adaacb37b50bb3f606e69",
+    "revision": "1",
+-   "snapshot_status": "stale",
+-   "status": "stale",
++   "snapshot_status": "current",
++   "status": "confirmed",
+  }
+
+ ❯ tests/action-export.test.ts:75:19
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/action-export.test.ts > PL-05 independent action ledger audited exports > CSV has per-action numeric fact rows with the fact's own period, scope, reasons and sources
+AssertionError: expected { Object (schema_version, scenario_version, ...) } to match object { …(4) }
+(26 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "field": "contribution_after_marketing",
+    "revision": "1",
+-   "snapshot_status": "stale",
++   "snapshot_status": "current",
+    "value": "270.00",
+  }
+
+ ❯ tests/action-export.test.ts:89:25
+     87|     const rows = records(exportDecisionCsv(session, [], [], workspace)…
+     88|     const oldEvidence = rows.find(row => row.row_type === "action_fact…
+     89|     expect(oldEvidence).toMatchObject({ field: "contribution_after_mar…
+       |                         ^
+     90|     expect(JSON.parse(oldEvidence.fact_ids)).toEqual([oldFact.id]);
+     91|     expect(JSON.parse(oldEvidence.period)).toEqual(oldFact.period);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/action-workspace.test.ts > PL05 independent action workspace > human confirms only valid original facts, edits revoke confirmation
+AssertionError: expected [Function] to throw an error
+ ❯ tests/action-workspace.test.ts:69:41
+     67|  it('human confirms only valid original facts, edits revoke confirmati…
+     68|   const s=await setup();const d=s.snapshot.report.diagnostics[0];let w…
+     69|   expect(()=>confirmBoundAction(w,'A')).toThrow();
+       |                                         ^
+     70|   w=editBoundAction(w,'A',fields);w=confirmBoundAction(w,'A');expect(w…
+     71|   w=editBoundAction(w,'A',{problem:'修改'});expect(w.items[0].card.evide…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  tests/action-workspace.test.ts > PL05 independent action workspace > scope changes latch history, current new work coexists and never rewrites original bindings
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/action-workspace.test.ts:79:41
+     77|   let w=addActionDraft(emptyActionWorkspace(),a,'A',a.snapshot.report.…
+     78|   const original=structuredClone(w.contexts[0]);w=refreshActionWorkspa…
+     79|   expect(()=>confirmBoundAction(w,'A')).toThrow('STALE_ACTION');
+       |                                         ^
+     80|   w=addActionDraft(w,b,'B'); expect(w.items).toHaveLength(2);
+     81|   w=refreshActionWorkspace(w,a.snapshot,3);expect(w.contexts.every(x=>…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  5 failed | 23 passed (28)
+   Start at  21:18:10
+   Duration  662ms (transform 247ms, setup 0ms, import 495ms, tests 844ms, environment 0ms)
+

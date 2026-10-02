@@ -24,15 +24,19 @@ export interface SummaryPriority {
 export interface SummaryScenario {
   id: string; name: string; status: "draft" | "current" | "stale"; scopeLabel: string;
   contribution?: string | null; delta?: string | null; assumptions: string[];
+  baseline?: string | null;
+  binding?: { context_id: string; plan_revision: number; dataset_hash: string; filter_hash: string; metric_version: string; scenario_version: string; period: Period; channels: string[]; sources: SourceRef[] };
 }
 export interface SummaryAction {
   id: string; problem: string; action: string; owner: string; deadline: string; risk: string;
   status: "draft" | "current" | "stale"; scopeLabel: string;
+  pinned?: boolean; executionStatus?: string; executionNotes?: string;
 }
 /** Callers derive statuses from their captured workspaces, never from a result's presence. */
 export interface SummaryDecisionContext {
   dataset_hash: string; filter_hash: string; selectedScenarioId?: string;
   scenarios: SummaryScenario[]; actions: SummaryAction[];
+  selectedScenarioIds?: string[]; pinnedOnly?: boolean; notes?: string; decisionState?: string; reviewName?: string;
 }
 /** null means use the supplied default; an empty string explicitly clears it. */
 export function withSummaryScenarioSelection(context: SummaryDecisionContext | undefined, selection: string | null): SummaryDecisionContext | undefined {
@@ -159,9 +163,14 @@ export function summaryDecisionState(summary: ManagerSummary, context?: SummaryD
   const matches = context?.dataset_hash === summary.dataset_hash && context.filter_hash === summary.filter_hash;
   const scenarios = (context?.scenarios ?? []).map(row => ({ ...row, status: matches ? row.status : "stale" as const }));
   const actions = (context?.actions ?? []).map(row => ({ ...row, status: matches ? row.status : "stale" as const }));
-  const selected = scenarios.find(row => row.id === context?.selectedScenarioId && row.status === "current" && parseCents(row.contribution) !== null && parseCents(row.delta) !== null) ?? null;
-  return { scenarios, actions, selected };
+  const ids = context?.selectedScenarioIds ?? (context?.selectedScenarioId ? [context.selectedScenarioId] : []);
+  const selectedScenarios = scenarios.filter(row => ids.includes(row.id) && row.status === "current" && parseCents(row.contribution) !== null && parseCents(row.delta) !== null);
+  const mainActions = context?.pinnedOnly ? actions.filter(row => row.pinned).slice(0, 3) : actions;
+  const appendixActions = context?.pinnedOnly ? actions.filter(row => !row.pinned) : [];
+  return { scenarios, actions, selected: selectedScenarios[0] ?? null, selectedScenarios, mainActions, appendixActions };
 }
+
+export const UNPINNED_ACTIONS_NOTICE = "尚未置頂行動；主摘要不會自動挑選，其餘列附錄。";
 
 /** Neutralize user-controlled Markdown/HTML, including links and embedded line breaks. */
 const md = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
@@ -169,7 +178,7 @@ const md = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<
 const amount = (metric: Metric, signed = false): string => metric.value === null ? `未知（${metric.reason_codes.join("、")}）` : `${signed && parseCents(metric.value)! > 0n ? "+" : ""}${metric.value}`;
 export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: SummaryDecisionContext): string {
   const decisions = summaryDecisionState(summary, context);
-  const lines = ["# ProfitLens 主管會議摘要（草稿）", "", `資料截至：${summary.data_as_of}｜範圍：${md(summary.scope.channels.join("、"))}｜TWD`,
+  const lines = [`# ProfitLens 主管會議摘要（${md(context?.decisionState ?? "草稿")}）`, "", `資料截至：${summary.data_as_of}｜範圍：${md(summary.scope.channels.join("、"))}｜TWD`,
     `前期：${summary.scope.previous_period.start}～${summary.scope.previous_period.end}（${summary.previous_days} 天）`,
     `本期：${summary.scope.current_period.start}～${summary.scope.current_period.end}（${summary.current_days} 天）`,
     `比較：${summary.scope.comparison_mode === "calendar_months" ? "完整自然月" : "相同天數"}；以下為期間合計。重要性門檻：${summary.importance_threshold} TWD。`, "", "## 經營變化", ""];
@@ -183,16 +192,20 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
     if (item.members.length > 1) lines.push(`   相關子範圍：${item.members.slice(1, 4).map(member => md(summaryScopeLabel(member.scope))).join("、")}${item.members.length > 4 ? "等（詳附錄）" : ""}；各範圍不可相加。`);
   }
   lines.push("", "## 所選方案與交辦", "");
-  if (decisions.selected) {
-    const plan = decisions.selected;
-    lines.push(`所選方案：${md(plan.name)}｜${md(plan.scopeLabel)}｜條件貢獻 ${plan.contribution}；相對基準差額 ${plan.delta} TWD。`, ...plan.assumptions.map(item => `- 假設：${md(item)}`));
+  if (decisions.selectedScenarios.length) {
+    for (const plan of decisions.selectedScenarios) {
+    lines.push(`所選方案：${md(plan.name)}｜${md(plan.scopeLabel)}｜${plan.baseline !== undefined ? `基準貢獻 ${plan.baseline ?? "未知"}；` : ""}條件貢獻 ${plan.contribution}；相對基準差額 ${plan.delta} TWD。`, ...plan.assumptions.map(item => `- 假設：${md(item)}`));
+    }
+    lines.push("各通路方案獨立列示，差額不相加；條件結果不是預測或已實現改善。");
   } else lines.push("未選擇可沿用的方案；草稿及過期方案不作為本期決策。未宣稱已發生改善。");
-  if (!decisions.actions.length) lines.push("行動尚未建立；待指定負責人、期限與風險／停止條件。");
-  for (const action of decisions.actions) lines.push(`- ${md(action.problem)}（${action.status === "current" ? "已確認" : action.status === "stale" ? "過期／歷史證據" : "草稿待確認"}；${md(action.scopeLabel)}）：${md(action.action)}；負責人 ${md(action.owner || "待指定")}；期限 ${md(action.deadline || "待設定")}；風險／停止條件 ${md(action.risk || "待補")}。`);
+  if (!decisions.mainActions.length) lines.push(decisions.appendixActions.length ? UNPINNED_ACTIONS_NOTICE : "尚未置頂行動；待指定負責人、期限與風險／停止條件。");
+  for (const action of decisions.mainActions) lines.push(`- ${md(action.problem)}（${action.status === "current" ? "已確認" : action.status === "stale" ? "過期／歷史證據" : "草稿待確認"}；${md(action.scopeLabel)}）：${md(action.action)}；負責人 ${md(action.owner || "待指定")}；期限 ${md(action.deadline || "待設定")}；風險／停止條件 ${md(action.risk || "待補")}。${action.executionStatus ? ` 執行：${md(action.executionStatus)}；${md(action.executionNotes ?? "")}` : ""}`);
+  if (context?.reviewName) lines.push("", `會議：${md(context.reviewName)}；決策：${md(context.decisionState ?? "draft")}`, `備註：${md(context.notes ?? "")}`);
   lines.push("", "## 固定口徑與限制", "", ...summary.assumptions.map(item => `- ${md(item)}`), "", "---", "", "## 技術稽核附錄", "",
     `- dataset_id：${md(summary.dataset_id)}`, `- dataset_hash：${summary.dataset_hash}`, `- filter_hash：${summary.filter_hash}`, `- metric_version：${summary.metric_version}`,
     "- 摘要優先序：資料缺漏先列；同一規則分組；門檻取組內最大絕對排序金額，並非加總；最多列三組，不改底層規則。",
     "- 摘要與通路表差額＝本期金額 − 前期金額；下列 facts 保留兩期合計與各通路來源，即使沒有規則訊號仍可追溯。", "");
+  if (decisions.appendixActions.length) lines.push("### 其他行動", ...decisions.appendixActions.map(action => `- ${md(action.problem)}（${action.status}；${md(action.scopeLabel)}）：${md(action.action)}；負責人 ${md(action.owner || "待指定")}；期限 ${md(action.deadline || "待設定")}；風險 ${md(action.risk || "待補")}；${md(action.executionStatus ?? "")} ${md(action.executionNotes ?? "")}`), "");
   for (const group of summary.groups) {
     lines.push(`### ${group.code}`, `- 門檻比較金額：${group.importance_amount ?? "未知"}`);
     for (const member of group.members) lines.push(`- ${md(summaryScopeLabel(member.scope))}：${member.ranking_amount ? amount(member.ranking_amount) : "資料待補"}；${md(JSON.stringify(member.fact_ids))}`);
@@ -202,7 +215,7 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
     ...summary.facts.filter(fact => fact.scope.kind !== "sku" && (fact.metric === "net_revenue" || fact.metric === "contribution_after_marketing")).map(fact => fact.id),
   ]);
   for (const fact of summary.facts.filter(fact => ids.has(fact.id))) lines.push("", `- fact_id：${md(fact.id)}`, `- ${md(metricDefinitions[fact.metric].label)}：${fact.value ?? "未知"}；${md(JSON.stringify({ metric: fact.metric, reason_codes: fact.reason_codes, period: fact.period, scope: fact.scope, sources: fact.sources }))}`);
-  if (decisions.scenarios.length) lines.push("", "### 方案狀態", ...decisions.scenarios.map(plan => `- ${md(plan.name)}：${plan.status}；${md(plan.scopeLabel)}`));
+  if (decisions.scenarios.length) lines.push("", "### 方案狀態", ...decisions.scenarios.flatMap(plan => [`- ${md(plan.name)}：${plan.status}；${md(plan.scopeLabel)}；基準 ${plan.baseline ?? "未知"}；條件 ${plan.contribution ?? "未知"}；差額 ${plan.delta ?? "未知"}。`, ...plan.assumptions.map(value => `  - 假設：${md(value)}`), ...(plan.binding ? [`  - 原方案來源：${md(JSON.stringify(plan.binding))}`] : [])]));
   return `${lines.join("\n")}\n`;
 }
 

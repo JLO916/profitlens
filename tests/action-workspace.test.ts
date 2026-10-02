@@ -64,24 +64,25 @@ describe('PL05 independent action workspace',()=>{
   expect(moveActionUp(w,'3')).toBe(w);
   expect(w.items.map(x=>x.pinned)).toEqual([true,true,false,false,false]);
  });
- it('human confirms only valid original facts, edits revoke confirmation',async()=>{
+ it('human confirms original facts independently of management edits; evidence edits revoke confirmation',async()=>{
   const s=await setup();const d=s.snapshot.report.diagnostics[0];let w=addActionDraft(emptyActionWorkspace(),s,'A',d.id);
-  expect(()=>confirmBoundAction(w,'A')).toThrow();
+  expect(confirmBoundAction(w,'A').items[0].card.evidence_confirmed).toBe(true);
   w=editBoundAction(w,'A',fields);w=confirmBoundAction(w,'A');expect(w.items[0].card.evidence_confirmed).toBe(true);
-  w=editBoundAction(w,'A',{problem:'修改'});expect(w.items[0].card.evidence_confirmed).toBe(false);
+  w=editBoundAction(w,'A',{problem:'修改'});expect(w.items[0].card.evidence_confirmed).toBe(true);
+  w=editBoundAction(w,'A',{fact_ids:[]});expect(w.items[0].card.evidence_confirmed).toBe(false);
   expect(()=>editBoundAction(w,'A',{fact_ids:['invented']})).toThrow('UNKNOWN_FACT_ID');
   expect(()=>editBoundAction(w,'A',{fact_ids:[d.fact_ids[0],d.fact_ids[0]]})).toThrow('DUPLICATE_FACT_ID');
  });
- it('scope changes latch history, current new work coexists and never rewrites original bindings',async()=>{
+ it('view scope changes preserve independent original bindings and keep work editable',async()=>{
   const a=await setup(['DTC']);const b=await setup(['MARKETPLACE'],2);
   let w=addActionDraft(emptyActionWorkspace(),a,'A',a.snapshot.report.diagnostics[0].id);
   const original=structuredClone(w.contexts[0]);w=refreshActionWorkspace(w,b.snapshot,2);
-  expect(()=>confirmBoundAction(w,'A')).toThrow('STALE_ACTION');
+  expect(confirmBoundAction(w,'A').items[0].card.evidence_confirmed).toBe(true);
   w=addActionDraft(w,b,'B'); expect(w.items).toHaveLength(2);
-  w=refreshActionWorkspace(w,a.snapshot,3);expect(w.contexts.every(x=>x.session.stale)).toBe(true);
+  w=refreshActionWorkspace(w,a.snapshot,3);expect(w.contexts.every(x=>!x.session.stale)).toBe(true);
   expect(w.contexts[0].session.scope).toEqual(original.session.scope);
   expect(w.contexts[0].session.facts).toEqual(original.session.facts);
-  expect(actionDocuments(w)[0].binding.status).toBe('stale');
+  expect(actionDocuments(w)[0].binding.status).toBe('current');
  });
  it('does not replace scope with facts from another context, serializes explicit evidence and status',async()=>{
   const s=await setup();const d=s.snapshot.report.diagnostics.find(x=>x.code==='NEGATIVE_CHANNEL_CM')!;

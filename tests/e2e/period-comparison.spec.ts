@@ -1,3 +1,4 @@
+import { clickReplacing } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -25,7 +26,7 @@ const test = base.extend<{ audit: string[] }>({
     page.on("console", message => { if (message.type() === "error") events.push("console:error"); });
     await use(events);
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/manager-batch3-regression-period-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, test: testInfo.title, status: testInfo.status, browser_errors: events })}\n`);
+    await appendFile(resolve("verification/review-v2-a-regression-period-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, test: testInfo.title, status: testInfo.status, browser_errors: events })}\n`);
     expect(events).toEqual([]);
   }, { auto: true }],
 });
@@ -45,7 +46,7 @@ async function importMonthly(page: Page, kind: "complete" | "zero" | "missing" =
   await form.getByLabel("我已確認未稅商品金額與費用口徑", { exact: true }).check();
   await form.getByRole("button", { name: "檢核匯入資料", exact: true }).click();
   await expect(page.getByTestId("import-status")).toHaveText(kind === "missing" ? "部分資料待補，可套用已知範圍" : "檢核通過，可套用資料");
-  await form.getByRole("button", { name: "套用匯入資料", exact: true }).click();
+  await clickReplacing(page, form.getByRole("button", { name: "套用匯入資料", exact: true }));
   await expect(form).toHaveCount(0);
   await expect(comparison(page)).toBeVisible();
   await expect(page.getByLabel("比較方式", { exact: true })).toHaveValue("calendar_months");
@@ -102,7 +103,7 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
   expect(rows.find(row => row.row_type === "period_summary" && row.period === "current" && row.metric === "contribution_after_marketing")).toMatchObject({ value: "750.00" });
   expect(rows.find(row => row.row_type === "daily_average" && row.period === "current" && row.metric === "contribution_after_marketing")).toMatchObject({ value: "25.00", unit: "TWD/day" });
   expect(rows.find(row => row.row_type === "daily_average_change" && row.metric === "contribution_after_marketing")).toMatchObject({ value: "0.00" });
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-period-${testInfo.project.name}.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-period-${testInfo.project.name}.png`), fullPage: true });
 });
 
 test("PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍", async ({ page }) => {

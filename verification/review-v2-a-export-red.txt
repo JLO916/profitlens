@@ -1,0 +1,29 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-decision-export.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-decision-export.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-decision-export.test.ts [ tests/v2-decision-export.test.ts ]
+Error: Cannot find package '@/application/workspace-decision-export' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/v2-decision-export.test.ts
+ ❯ tests/v2-decision-export.test.ts:9:1
+      7| import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContex…
+      8| import { emptyActionWorkspace } from '@/application/action-workspace';
+      9| import { exportWorkspaceDecision } from '@/application/workspace-decis…
+       | ^
+     10|
+     11| it('exports both channel baselines and revisions without raw CSV or su…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  21:16:14
+   Duration  720ms (transform 334ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

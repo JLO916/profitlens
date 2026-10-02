@@ -1,3 +1,4 @@
+import { clickReplacing } from "./replacement-helpers";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
@@ -35,7 +36,7 @@ const test = base.extend<{ browserAudit: BrowserAudit }>({
       events: audit.events,
     };
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/manager-batch3-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl"), `${JSON.stringify(record)}\n`);
+    await appendFile(resolve("verification/review-v2-a-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl"), `${JSON.stringify(record)}\n`);
     await testInfo.attach("browser-log", { body: JSON.stringify(record, null, 2), contentType: "application/json" });
     const errors = audit.events.filter(event => {
       if (event.kind !== "pageerror" && event.kind !== "console:error") return false;
@@ -56,7 +57,7 @@ const revenue = (page: Page) => page.getByTestId("kpi-net_revenue");
 async function requestDataset(page: Page, id: string) {
   await page.getByRole("button", { name: "進階驗證", exact: true }).click();
   await page.getByLabel("資料集", { exact: true }).selectOption(id);
-  await page.getByRole("button", { name: "載入資料集", exact: true }).click();
+  await clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true }));
 }
 async function loadGolden(page: Page) {
   await requestDataset(page, "golden");
@@ -83,7 +84,7 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
   await expect(page.locator("#main-content")).toBeFocused();
   await expect(skip).not.toHaveCSS("clip-path", "none");
   await expect(page.getByTestId("workspace-status")).toContainText(/尚未載入|尚無資料|尚未選擇/);
-  await page.getByRole("button", { name: "載入示範資料", exact: true }).click();
+  await clickReplacing(page, page.getByRole("button", { name: "載入示範資料", exact: true }));
   await expect(ready(page)).toBeVisible();
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
   await expect(contribution(page)).toContainText("1,269,792.73");
@@ -99,7 +100,7 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
   await expect(alternatives.first().getByRole("table")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "工作台不可造成整頁水平溢出").toBe(true);
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-regression-workspace-regression-${testInfo.project.name}.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-workspace-regression-${testInfo.project.name}.png`), fullPage: true });
 });
 
 test("切換 golden 與 demo 會重算同一組 KPI", async ({ page }) => {
@@ -198,7 +199,7 @@ test("商品篩選只影響毛利明細，不帶入通路廣告與貢獻", async
   await expect(table.getByRole("rowheader", { name: "A", exact: true })).toBeVisible();
   await expect(table).toContainText("540.00");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-regression-workspace-regression-${testInfo.project.name}-products.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-workspace-regression-${testInfo.project.name}-products.png`), fullPage: true });
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
   await expect(contribution(page)).toContainText("270.00");
   await expect(revenue(page)).toContainText("1,480.00");
@@ -293,7 +294,7 @@ test("載入中與 HTTP 故障均有明確狀態", async ({ page, browserAudit }
     await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "合成測試：暫時無法載入資料" }) });
   });
   try {
-    await page.getByRole("button", { name: "載入示範資料", exact: true }).click();
+    await clickReplacing(page, page.getByRole("button", { name: "載入示範資料", exact: true }));
     await expect(page.getByTestId("workspace-status")).toContainText(/載入中|正在載入/);
   } finally {
     gate.release();
@@ -321,7 +322,7 @@ test("較慢的舊資料請求不可覆寫較新的 golden 選擇", async ({ pag
     finally { finished.release(); }
   });
   try {
-    await page.getByRole("button", { name: "載入示範資料", exact: true }).click();
+    await clickReplacing(page, page.getByRole("button", { name: "載入示範資料", exact: true }));
     await received.promise;
     await expect(page.getByTestId("workspace-status")).toContainText(/載入中|正在載入/);
     await loadGolden(page);
@@ -348,7 +349,7 @@ test("清空與重新整理回到空狀態，另一個頁面沒有共用資料",
   await expect(otherPage.getByTestId("kpi-contribution_after_marketing")).toHaveCount(0);
   await otherPage.close();
   await page.getByRole("button", { name: "清空工作區", exact: true }).click();
-  await page.getByRole("button", { name: "捨棄未保存變更並清空", exact: true }).click();
+  await page.getByRole("button", { name: "不儲存並繼續", exact: true }).click();
   await expect(contribution(page)).toHaveCount(0);
   await expect(page.getByTestId("workspace-status")).toContainText(/尚未載入|尚無資料|尚未選擇/);
   await loadGolden(page);

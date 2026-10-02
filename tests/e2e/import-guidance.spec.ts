@@ -1,3 +1,4 @@
+import { clickReplacing } from "./replacement-helpers";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
@@ -37,7 +38,7 @@ test("PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後�
   await expect(form.getByTestId("reconciliation-metric-net_revenue")).toContainText("4720.00");
   await expect(form.getByTestId("reconciliation-metric-contribution_after_marketing")).toContainText("825.00");
   await expect(form.getByTestId("import-reconciliation")).toContainText("平台補助");
-  await form.getByRole("button", { name: "套用匯入資料", exact: true }).click();
+  await clickReplacing(page, form.getByRole("button", { name: "套用匯入資料", exact: true }));
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
   await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("255.00");
 });

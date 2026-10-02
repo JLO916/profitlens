@@ -1,0 +1,6 @@
+
+/Users/j-work/Desktop/profitlens-codex-starter/src/components/actions-workbench.tsx
+  69:545  error  Parsing error: '}' expected
+
+✖ 1 problem (1 error, 0 warnings)
+

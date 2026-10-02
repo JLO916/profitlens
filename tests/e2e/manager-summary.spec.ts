@@ -1,3 +1,4 @@
+import { clickReplacing } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -9,7 +10,7 @@ const test = base.extend<{ audit: string[] }>({
     page.on("console", event => { if (event.type() === "error") errors.push(`console:${event.text()}`); });
     await use(errors);
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/manager-batch3-regression-summary-browser.jsonl"), `${JSON.stringify({ test: testInfo.title, project: testInfo.project.name, status: testInfo.status, errors })}\n`);
+    await appendFile(resolve("verification/review-v2-a-regression-summary-browser.jsonl"), `${JSON.stringify({ test: testInfo.title, project: testInfo.project.name, status: testInfo.status, errors })}\n`);
     expect(errors).toEqual([]);
   }, { auto: true }],
 });
@@ -17,7 +18,7 @@ async function load(page: Page, name = "golden") {
   await page.goto("/");
   await page.getByRole("button", { name: "進階驗證", exact: true }).click();
   await page.getByLabel("資料集", { exact: true }).selectOption(name);
-  await page.getByRole("button", { name: "載入資料集", exact: true }).click();
+  await clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(/資料已就緒|部分資料待補/);
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
   await expect(page.getByTestId("manager-summary")).toBeVisible();
@@ -55,6 +56,8 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   expect(csv).toContain('"170.00","-15.00","-185.00"');
   expect(csv).toContain('"400.00","270.00","-130.00"');
   await page.getByLabel("通路", { exact: true }).selectOption("DTC");
+  await expect(summary.getByRole("button", { name: "主管摘要｜合計（DTC、MARKETPLACE） 行銷後貢獻差額", exact: true })).toHaveText("-315.00");
+  await page.getByRole("button", { name: "以目前資料與範圍更新會議來源", exact: true }).click();
   await expect(summary.getByRole("button", { name: "主管摘要｜合計（DTC） 行銷後貢獻差額", exact: true })).toHaveText("-130.00");
   await expect(summary.getByRole("rowheader", { name: /MARKETPLACE/ })).toHaveCount(0);
   const markdownEvent = page.waitForEvent("download");
@@ -62,7 +65,7 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   const markdown = await readFile((await (await markdownEvent).path())!, "utf8");
   expect(markdown.split("## 技術稽核附錄")[0]).toContain("範圍：DTC");
   expect(markdown.split("## 技術稽核附錄")[0]).not.toContain("MARKETPLACE");
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-summary-${testInfo.project.name}.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-summary-${testInfo.project.name}.png`), fullPage: true });
 });
 
 test("PL06 unknown priorities survive a high threshold without zero contribution", async ({ page }) => {
@@ -84,12 +87,12 @@ test("PL09 print uses a dedicated manager draft and retains technical audit down
   await page.emulateMedia({ media: "print" });
   const print = page.getByTestId("manager-summary-print");
   await expect(print).toBeVisible();
-  await expect(print).toContainText("草稿・待人工決策");
+  await expect(print).toContainText("草稿");
   await expect(print).toContainText("+220.00");
   await expect(print).toContainText("-315.00");
   await expect(page.getByTestId("manager-summary")).toBeHidden();
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-summary-print-${testInfo.project.name}.png`), fullPage: true });
-  if (testInfo.project.name === "desktop") await page.pdf({ path: resolve("verification/manager-batch3-regression-summary-print.pdf"), format: "A4", printBackground: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-summary-print-${testInfo.project.name}.png`), fullPage: true });
+  if (testInfo.project.name === "desktop") await page.pdf({ path: resolve("verification/review-v2-a-regression-summary-print.pdf"), format: "A4", printBackground: true });
   await page.emulateMedia({ media: "screen" });
   await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
   await expect(page.getByTestId("manager-summary-print")).toHaveCount(0);

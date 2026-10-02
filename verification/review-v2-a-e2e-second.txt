@@ -1,0 +1,72 @@
+
+> profitlens@0.1.0 test:e2e
+> playwright test --project=desktop tests/e2e/review-v2-a.spec.ts
+
+[WebServer] (node:99348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99425) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99430) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99441) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99439) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99438) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99437) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99442) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99475) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:99545) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests/e2e/review-v2-a.spec.ts:19:1 › A3 示範替換可取消，下載尚未確認不能替換，確認後才繼續 (1.5s)
+  ✓  2 [desktop] › tests/e2e/review-v2-a.spec.ts:28:1 › A3 新CSV套用取消保留預覽，明示繼續後才改金額；恢復取消不丟候選 (1.3s)
+  ✓  3 [desktop] › tests/e2e/review-v2-a.spec.ts:36:1 › A3 本機保存失敗不清空；沒有保存同意不能儲存，Escape保留資料 (663ms)
+  ✘  4 [desktop] › tests/e2e/review-v2-a.spec.ts:43:1 › A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复一致且實際匯出 (2.0m)
+
+
+  1) [desktop] › tests/e2e/review-v2-a.spec.ts:43:1 › A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复一致且實際匯出 ─────────
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.selectOption: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for getByLabel('會議決策', { exact: true })
+
+
+      75 |   const choices=page.getByLabel(`${channel} 本次摘要所選方案`,{exact:true});const option=await choices.locator('option').filter({hasText:`${channel} 方案 1（版本`}).getAttribute('value');await choices.selectOption(option!);
+      76 |  }
+    > 77 |  await page.getByLabel('會議決策',{exact:true}).selectOption('needs_data');
+         |                                             ^
+      78 |  await expect(summary.locator('summary').filter({hasText:'其他行動附錄（5）'})).toBeVisible();
+      79 |  await page.getByRole('button',{name:'商品毛利',exact:true}).click();await page.getByRole('button',{name:'經營總覽',exact:true}).click();
+      80 |  await expect(summary.getByLabel('金額重要性門檻（TWD）',{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel('會議決策',{exact:true})).toHaveValue('needs_data');
+        at /Users/j-work/Desktop/profitlens-codex-starter/tests/e2e/review-v2-a.spec.ts:77:45
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/review-v2-a-A1–A3-多通路各三案、三置頂五附錄，會議離頁與v3恢复一致且實際匯出-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/review-v2-a-A1–A3-多通路各三案、三置頂五附錄，會議離頁與v3恢复一致且實際匯出-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/review-v2-a-A1–A3-多通路各三案、三置頂五附錄，會議離頁與v3恢复一致且實際匯出-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/review-v2-a-A1–A3-多通路各三案、三置頂五附錄，會議離頁與v3恢复一致且實際匯出-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › tests/e2e/review-v2-a.spec.ts:43:1 › A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复一致且實際匯出 ──────────
+  3 passed (2.3m)

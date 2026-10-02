@@ -1,0 +1,55 @@
+{
+  "checked_at": "2026-10-02T01:49:58.401Z",
+  "url": "http://127.0.0.1:3300/",
+  "tool": "Codex in-app browser CUA",
+  "data": "tests/fixtures/alternative synthetic only",
+  "steps": [
+    "選取三 CSV 與 manifest，確認金額口徑後驗證及套用",
+    "診斷點擊 CM 10.00 與16筆來源，Escape關閉",
+    "DTC明示 v0 δ0pp f-50% a0 K3 得44.00；MARKETPLACE零變動得-30.00；往返保留",
+    "建立原全部通路行動，編輯角色期限與進行中備註，確認引用並置頂",
+    "固定全部通路會議，門檻1000，選兩方案，決策補資料再議",
+    "明示同意本機保存，清空，再預覽恢復；會議/方案/行動保留",
+    "Enter計算、Escape關閉、Tab日期欄位操作"
+  ],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "screenshot": "review-v2-a-manual-1440.jpg"
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "scrollWidth": 1265,
+      "screenshot": "review-v2-a-manual-1280.jpg"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 753,
+      "screenshot": "review-v2-a-manual-768.jpg"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 375,
+      "screenshot": "review-v2-a-manual-390.jpg"
+    }
+  ],
+  "warnings_errors": [],
+  "download_note": "人工下載按鈕有執行，CUA download事件逾時，未取得位元；實際下載內容核對由 Playwright E2E 另存，不能混稱人工下載已驗證。",
+  "print_note": "列印媒體由 Chromium E2E 另驗證；未操作實體印表機。",
+  "final_rebuild_recheck": {
+    "at": "2026-10-02T02:07:59.777Z",
+    "build_id": "0U3urGYm_9KI-Zel0tOsR",
+    "mode": "PUBLIC_DEMO",
+    "steps": [
+      "reload回空狀態，無自動恢復",
+      "手動讀取本機備份預覽：2方案1行動",
+      "明確套用後會議範圍all與檢視DTC不同仍明示，門檻1000／needs_data／44.00與-30.00／原進度及期限保留"
+    ],
+    "warnings_errors": [],
+    "screenshot": "review-v2-a-final-meeting-1280.jpg"
+  }
+}

@@ -1,0 +1,28 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-replacement.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-replacement.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-replacement.test.ts [ tests/v2-replacement.test.ts ]
+Error: Cannot find package '@/application/replacement-guard' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/v2-replacement.test.ts
+ ❯ tests/v2-replacement.test.ts:2:1
+      1| import { describe, expect, it } from 'vitest';
+      2| import { beginReplacement, chooseReplacement, finishReplacementSave, c…
+       | ^
+      3|
+      4| describe('A3 atomic replacement consent', () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  21:12:08
+   Duration  165ms (transform 13ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

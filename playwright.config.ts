@@ -10,7 +10,7 @@ export default defineConfig({
   reporter: [
     ["list"],
     ["html", { outputFolder: "playwright-report", open: "never" }],
-    ["json", { outputFile: "verification/manager-batch3-e2e-results.json" }],
+    ["json", { outputFile: "verification/review-v2-a-e2e-results.json" }],
   ],
   use: {
     baseURL: "http://127.0.0.1:3100",
@@ -24,6 +24,7 @@ export default defineConfig({
   },
   projects: [
     { name: "desktop", use: { viewport: { width: 1440, height: 1000 } } },
+    { name: "laptop", use: { viewport: { width: 1280, height: 900 } } },
     { name: "tablet", use: { viewport: { width: 768, height: 1024 } } },
     { name: "mobile", use: { viewport: { width: 390, height: 844 } } },
   ],
@@ -35,7 +36,7 @@ export default defineConfig({
     reuseExistingServer: false,
     // Deliberately fake, non-secret canary: build verification asserts it never enters static assets.
     // Live is always disabled, regardless of the invoking shell or local environment files.
-    env: { ENABLE_LIVE_AI: "false", OPENAI_API_KEY: "sk-PROFITLENS-BATCH3-NONSECRET-BUNDLE-CANARY", OPENAI_MODEL: "verification-only-never-called", APP_MODE: "LOCAL", PUBLIC_DEMO: "false" },
+    env: { ENABLE_LIVE_AI: "false", OPENAI_API_KEY: "sk-PROFITLENS-REVIEW-V2-A-NONSECRET-BUNDLE-CANARY", OPENAI_MODEL: "verification-only-never-called", APP_MODE: "LOCAL", PUBLIC_DEMO: "false" },
     timeout: 120_000,
   },
 });

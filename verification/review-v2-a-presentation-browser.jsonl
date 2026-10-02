@@ -1,0 +1,24 @@
+{"recorded_at":"2026-10-01T13:32:57.841Z","project":"desktop","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T13:32:58.838Z","project":"desktop","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-01T13:33:43.987Z","project":"desktop","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"timedOut","errors":[]}
+{"recorded_at":"2026-10-01T13:33:46.310Z","project":"desktop","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:41:16.922Z","project":"desktop","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:41:20.198Z","project":"desktop","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:41:23.243Z","project":"desktop","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:41:27.246Z","project":"desktop","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:50:54.235Z","project":"desktop","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:50:57.146Z","project":"desktop","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:51:00.185Z","project":"desktop","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:51:03.256Z","project":"desktop","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:55:53.950Z","project":"laptop","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:55:57.755Z","project":"laptop","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:56:02.216Z","project":"laptop","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:56:04.689Z","project":"laptop","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:59:32.278Z","project":"tablet","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:59:35.719Z","project":"tablet","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:59:37.773Z","project":"tablet","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T01:59:40.667Z","project":"tablet","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T02:02:27.679Z","project":"mobile","test":"PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T02:02:29.962Z","project":"mobile","test":"PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T02:02:32.628Z","project":"mobile","test":"PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿","status":"passed","errors":[]}
+{"recorded_at":"2026-10-02T02:02:35.294Z","project":"mobile","test":"PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看","status":"passed","errors":[]}

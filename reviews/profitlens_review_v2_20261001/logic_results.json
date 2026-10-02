@@ -1,0 +1,282 @@
+{
+  "scope": "Narrow deployed-source regression checks, not browser E2E",
+  "source_url": "https://profitlens-tau.vercel.app/_next/static/chunks/app/page-1507c22542a1d442.js",
+  "source_etag": "W/\"e022f3f22f904c520fe028d0cfc8fc2f\"",
+  "date_validation": [
+    {
+      "name": "complete_august_september",
+      "input": {
+        "coverage_start": "2026-08-01",
+        "coverage_end": "2026-09-30",
+        "data_as_of": "2026-10-01",
+        "comparison_mode": "calendar_months",
+        "previous_period": {
+          "start": "2026-08-01",
+          "end": "2026-08-31"
+        },
+        "current_period": {
+          "start": "2026-09-01",
+          "end": "2026-09-30"
+        }
+      },
+      "actual": [],
+      "expected": [],
+      "passed": true
+    },
+    {
+      "name": "same_days_rejects_unequal_months",
+      "input": {
+        "coverage_start": "2026-08-01",
+        "coverage_end": "2026-09-30",
+        "data_as_of": "2026-10-01",
+        "comparison_mode": "same_days",
+        "previous_period": {
+          "start": "2026-08-01",
+          "end": "2026-08-31"
+        },
+        "current_period": {
+          "start": "2026-09-01",
+          "end": "2026-09-30"
+        }
+      },
+      "actual": [
+        "UNEQUAL_PERIOD_LENGTH"
+      ],
+      "expected": [
+        "UNEQUAL_PERIOD_LENGTH"
+      ],
+      "passed": true
+    },
+    {
+      "name": "reversed_periods",
+      "input": {
+        "coverage_start": "2026-08-01",
+        "coverage_end": "2026-09-30",
+        "data_as_of": "2026-10-01",
+        "comparison_mode": "calendar_months",
+        "previous_period": {
+          "start": "2026-09-01",
+          "end": "2026-09-30"
+        },
+        "current_period": {
+          "start": "2026-08-01",
+          "end": "2026-08-31"
+        }
+      },
+      "actual": [
+        "PERIOD_ORDER_INVALID"
+      ],
+      "expected": [
+        "PERIOD_ORDER_INVALID"
+      ],
+      "passed": true
+    },
+    {
+      "name": "after_data_as_of",
+      "input": {
+        "coverage_start": "2026-08-01",
+        "coverage_end": "2026-09-30",
+        "data_as_of": "2026-09-29",
+        "comparison_mode": "calendar_months",
+        "previous_period": {
+          "start": "2026-08-01",
+          "end": "2026-08-31"
+        },
+        "current_period": {
+          "start": "2026-09-01",
+          "end": "2026-09-30"
+        }
+      },
+      "actual": [
+        "PERIOD_AFTER_DATA_AS_OF"
+      ],
+      "expected": [
+        "PERIOD_AFTER_DATA_AS_OF"
+      ],
+      "passed": true
+    },
+    {
+      "name": "incomplete_calendar_month",
+      "input": {
+        "coverage_start": "2026-08-01",
+        "coverage_end": "2026-09-30",
+        "data_as_of": "2026-10-01",
+        "comparison_mode": "calendar_months",
+        "previous_period": {
+          "start": "2026-08-01",
+          "end": "2026-08-31"
+        },
+        "current_period": {
+          "start": "2026-09-01",
+          "end": "2026-09-29"
+        }
+      },
+      "actual": [
+        "INCOMPLETE_CALENDAR_MONTH"
+      ],
+      "expected": [
+        "INCOMPLETE_CALENDAR_MONTH"
+      ],
+      "passed": true
+    }
+  ],
+  "action_freshness": {
+    "input_is_synthetic": true,
+    "dataset_hash_unchanged": true,
+    "steps": [
+      {
+        "step": "create action with all-channel view",
+        "stale": false
+      },
+      {
+        "step": "switch only view filter to DTC",
+        "stale": true,
+        "reasons": [
+          "WORKSPACE_REVISION_CHANGED",
+          "SNAPSHOT_CHANGED"
+        ]
+      },
+      {
+        "step": "switch view filter back to original",
+        "stale": true,
+        "reasons": [
+          "WORKSPACE_REVISION_CHANGED",
+          "SNAPSHOT_CHANGED"
+        ]
+      }
+    ],
+    "ui_source": "const p=l.session.stale; fieldset disabled:p; the entire action edit form is disabled when stale.",
+    "limitation": "Pure deployed freshness functions and supplied state transition executed; React click handler / actual disabled control not executed in a live browser."
+  },
+  "weekly_buckets": [
+    {
+      "period": {
+        "start": "2026-08-01",
+        "end": "2026-08-31"
+      },
+      "buckets": [
+        {
+          "start": "2026-08-01",
+          "end": "2026-08-07",
+          "days": 7,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 7000
+        },
+        {
+          "start": "2026-08-08",
+          "end": "2026-08-14",
+          "days": 7,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 7000
+        },
+        {
+          "start": "2026-08-15",
+          "end": "2026-08-21",
+          "days": 7,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 7000
+        },
+        {
+          "start": "2026-08-22",
+          "end": "2026-08-28",
+          "days": 7,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 7000
+        },
+        {
+          "start": "2026-08-29",
+          "end": "2026-08-31",
+          "days": 3,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 3000
+        }
+      ]
+    },
+    {
+      "period": {
+        "start": "2026-09-01",
+        "end": "2026-09-30"
+      },
+      "buckets": [
+        {
+          "start": "2026-09-01",
+          "end": "2026-09-07",
+          "days": 7,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 7000
+        },
+        {
+          "start": "2026-09-08",
+          "end": "2026-09-14",
+          "days": 7,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 7000
+        },
+        {
+          "start": "2026-09-15",
+          "end": "2026-09-21",
+          "days": 7,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 7000
+        },
+        {
+          "start": "2026-09-22",
+          "end": "2026-09-28",
+          "days": 7,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 7000
+        },
+        {
+          "start": "2026-09-29",
+          "end": "2026-09-30",
+          "days": 2,
+          "synthetic_daily_revenue": 1000,
+          "synthetic_bucket_revenue": 2000
+        }
+      ]
+    }
+  ],
+  "priority_display_alignment": {
+    "input_is_synthetic": true,
+    "case": "Opposing channel spend changes can leave a small aggregate change while a subchannel change is large.",
+    "members": [
+      {
+        "id": "all",
+        "scope": {
+          "kind": "all",
+          "channels": [
+            "DTC",
+            "MARKETPLACE"
+          ]
+        },
+        "ranking_amount": {
+          "value": "10.00"
+        }
+      },
+      {
+        "id": "DTC",
+        "scope": {
+          "kind": "channel",
+          "channels": [
+            "DTC"
+          ]
+        },
+        "ranking_amount": {
+          "value": "100000.00"
+        }
+      }
+    ],
+    "threshold": "1000.00",
+    "qualifies": true,
+    "threshold_basis_amount": "100000.00",
+    "displayed_primary_amount": "10.00",
+    "default_action_scope": {
+      "kind": "all",
+      "channels": [
+        "DTC",
+        "MARKETPLACE"
+      ]
+    },
+    "limitation": "Isolated selection/sort expressions evaluated, not the full diagnostics rule engine. Synthetic feasibility: previous total revenue 2,000,000, current 1,999,000; total ads 200,000 -> 200,010; DTC revenue 1,000,000 -> 999,500 and ads 100,000 -> 200,000; marketplace ads 100,000 -> 10. Both aggregate and DTC ad/revenue ratios rise."
+  }
+}

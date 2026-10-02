@@ -1,0 +1,103 @@
+{
+  "archive_sha256": "95c1ebdeee2e5e4a7823c1d3f8f99286bbc7131e8fb1007c85f330a3811b7b08",
+  "files": [
+    {
+      "path": "reviews/profitlens_review_v2_20261001/CODEX_NEXT_SPRINT.md",
+      "sha256": "1b3badbd7ca57079543f512329587ec3932e8c82b09fea8e3bb75546a4b1e02c"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/OPERATING_REVIEW_SPEC.md",
+      "sha256": "53055d5d830c682ea3aa916dbdd9b63581b3ec6ffb6302ad9135132acc20a3d5"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/README.md",
+      "sha256": "5ae6038aa3d84a7c2f7e5b705d3e086f5abe623d8ed422f260a3e3da4cc60199"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/REVIEW_FINDINGS.md",
+      "sha256": "8135b0a3bdd3be6d0fc9205944bd5997e8259dd3609ff8010c413b43f54c622f"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/ZH_TW_COPY_GUIDE.md",
+      "sha256": "25190169b9326eb85fd9215f774a109ce586d162eac617b6f9a7cca4525fcfbd"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/browser_attempt.json",
+      "sha256": "564fe2a9d16b01bb694bbedaa405ba50fb9ae21e0578ce78d34ef43937d65835"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/deployed_logic_checks.js",
+      "sha256": "00bfda8d5fc2581ba4dfa57485ff25df57e63a186d119fc64846041825799ca1"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/evidence_receipt.json",
+      "sha256": "e075ed69e984af04f2d9a6ca7b31cc378c0624d35fa94231503462ebe219de15"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/logic_results.json",
+      "sha256": "711a7101d866946f48fc772165d6bbcc88cdf23aa98e67905212d3d3ad008874"
+    }
+  ],
+  "protected": {
+    "fixtures/demo/ad_spend_daily.csv": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d",
+    "fixtures/demo/channel_costs_daily.csv": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+    "fixtures/demo/computed_summary.json": "311e0a3cd69f01a8c3eb26cfd2f1a7cf673553a637308ae92a4610338c0a94f0",
+    "fixtures/demo/intent.json": "f613e164882cdb218be5c36fcefdeacca3c6b227f832ceca8cd87ccf124912db",
+    "fixtures/demo/manifest.json": "decb8aac6a536fbdd5046ba9d2d5162f29db4a7cdcd84a2aba621fde699163a1",
+    "fixtures/demo/sales_daily.csv": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+    "fixtures/errors/duplicate_sales_key/ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+    "fixtures/errors/duplicate_sales_key/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/errors/duplicate_sales_key/expected_validation.json": "6a6fb2ff5f2cdc9acdfb7c0a613b4231d010bc030dad144aa6ab40971f3c60b8",
+    "fixtures/errors/duplicate_sales_key/manifest.json": "92862ed77448416b0111ce72c2f2564164fa637b95fee2bc5bbdc279fa320cc2",
+    "fixtures/errors/duplicate_sales_key/sales_daily.csv": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+    "fixtures/errors/missing_ad_day/ad_spend_daily.csv": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084",
+    "fixtures/errors/missing_ad_day/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/errors/missing_ad_day/expected_validation.json": "662121d48a25df5e6f5bac05235d00df36e3b3c3340f321eb0b90c2c414f6f8c",
+    "fixtures/errors/missing_ad_day/manifest.json": "ee16fc7798c993cf95ef7cfcf359a0600c195afef07d18e7b10cb3f8e2724ea8",
+    "fixtures/errors/missing_ad_day/sales_daily.csv": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+    "fixtures/errors/missing_cogs/ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+    "fixtures/errors/missing_cogs/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/errors/missing_cogs/expected_validation.json": "92b26e35386d1e496eff3251147eb5a8df6e096eed1b53e28c7761d36ed9f431",
+    "fixtures/errors/missing_cogs/manifest.json": "0f16ad32bc3d8476a5e2b025db64e7f30764808884731121f1792bde20f013fc",
+    "fixtures/errors/missing_cogs/sales_daily.csv": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+    "fixtures/errors/mixed_currency/ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+    "fixtures/errors/mixed_currency/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/errors/mixed_currency/expected_validation.json": "ae1fced7aab37d296b10150cc4bb38932c9634f5f2f48b899102528b78ea7348",
+    "fixtures/errors/mixed_currency/manifest.json": "9b575fd3c14ae439d877633189408c4dd21243aadfc9f2c66412e58a02e56d84",
+    "fixtures/errors/mixed_currency/sales_daily.csv": "dcc87813a1ad1dff983966560e22ba1976360027314f18d4b34edd7662c8216b",
+    "fixtures/golden/ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+    "fixtures/golden/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/golden/expected.json": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+    "fixtures/golden/manifest.json": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+    "fixtures/golden/sales_daily.csv": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+    "fixtures/refund_only/ad_spend_daily.csv": "bde19c2628c34d4d4aec7d08fc75b841624c8b1ffb91fadc9e97c3e04b554ccc",
+    "fixtures/refund_only/channel_costs_daily.csv": "57750bd3a496d457e20aab82d8caa9572d5ff566908ea49735ac448de4d6b3c5",
+    "fixtures/refund_only/expected.json": "59820fa87818d9ded64ae5a6e948d7ec8d3b3724e4be8e106df51ef8fbd4a21a",
+    "fixtures/refund_only/manifest.json": "fc26ae44cf9a7ebede170c41e755a13fbc87f6f7974d5722a49f3b1f9d76fdf6",
+    "fixtures/refund_only/sales_daily.csv": "746e97efde53984ba0db1f0336ddac089ed5809344316e2674dbbb8a54910397",
+    "fixtures/zero_ad/ad_spend_daily.csv": "440fa23fe0ff5c7765c1375e0cf61ed28c31254de16708c3dd0e91cf8fd96747",
+    "fixtures/zero_ad/channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+    "fixtures/zero_ad/expected.json": "707f84b8c7ecb77860d5b2a9b10b2d3228e6cc6a338f5feb1965a545ce9fe34d",
+    "fixtures/zero_ad/manifest.json": "5b2cadb757072b6bfcb9b3ffb4ecc2a72f9fb6951fcfd8fd2f10ef7dccfbb15c",
+    "fixtures/zero_ad/sales_daily.csv": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+    "src/domain/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/domain/aggregation.ts": "d86b18b14f8c3a72b05956e6ee6ba855e5079ba9c801e5e39fb6b52637598ea9",
+    "src/domain/analysis.ts": "5518beb18091770cc8aae356b70dde28a0937be79e9eba8b35d4f802ee8c1c21",
+    "src/domain/bridge.ts": "a02fd4ee6a91a6de40c90bc8d5cc66b9602e183576305e3644e9de038bfdc501",
+    "src/domain/comparison.ts": "2c302147363f1d49daaa7cacef6084c1344037ece830a283fe51b1fccbf877bb",
+    "src/domain/date.ts": "354c6d10291dacf15444411dd4d86f7103d39e4143b7118123829aa150db87f1",
+    "src/domain/index.ts": "080520fcfe52c58449fd25f11cb9f084b07f4f1a374c3fdb2223bd2d072831cb",
+    "src/domain/metrics.ts": "eeb0ae5143975d9de9e1cea054845d72cc63148527094205e808ff3503760d78",
+    "src/domain/money.ts": "6b58c6c65e9827077e5e0785808a1b4afad47146b4bb6273bc22757a05a6e5b5",
+    "src/domain/product-comparison.ts": "3fffaeda4c32bf60e1841555b798a99819ec26b5d357097f2e4061173af56527",
+    "src/domain/rules.ts": "5f61666d130fd75d8010e76adc5e8e06291c2ef39d21bd91f84005998c562690",
+    "src/domain/scenario-sensitivity.ts": "3eeaa750d8534836f488f6df58d02b12724327cc68580dc1c8e89a76a25f90b0",
+    "src/domain/scenarios.ts": "db13b5cdbf88a4be70d5c11ab40c6d4c03a1e3915bc7a23e6356bcc3e74c7efe",
+    "src/domain/types.ts": "851647d086aa280b8355dd04aaa8c297f8cbd02cbb970589bd0b7c3e5724c0cc",
+    "src/domain/validation.ts": "a0742eacb03d122dc45a34ddb0c414cd362c85dd607dc0d9d6b2b03defa9ecf2",
+    "spec/insight-output.schema.json": "8228da4717447db33543bd065ea5541f974962790e4abd9cef1ff50863195218",
+    "package.json": "b3698b34b2cc982b07626fde2330ecca2d81fbe08dbe978fa6f774ca27e194f9",
+    "package-lock.json": "ab23151e36c2c4a5bc76ad52d0675866eee7465b5d63a52764bbaa3feac7dcfd",
+    "AGENTS.md": "23e0889056347dd206a7f3b334274011042c2f335229daf582a054916fcc75ff"
+  }
+}

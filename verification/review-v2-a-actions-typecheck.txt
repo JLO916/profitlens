@@ -1,0 +1,7 @@
+src/application/decision-export.ts(91,120): error TS2345: Argument of type 'ExportAction' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'ExportAction'.
+src/application/workspace-backup.ts(305,84): error TS2322: Type 'DatasetInput' is not assignable to type '{ manifest: Record<string, unknown>; files: { "sales_daily.csv": string; "channel_costs_daily.csv": string; "ad_spend_daily.csv": string; }; confirmedUnknownColumns?: Partial<Record<"sales_daily.csv" | "channel_costs_daily.csv" | "ad_spend_daily.csv", string[]>> | undefined; }'.
+  Types of property 'manifest' are incompatible.
+    Type 'unknown' is not assignable to type 'Record<string, unknown>'.
+src/components/dashboard.tsx(278,68): error TS2322: Type '(prepared: PreparedImport, manifestName?: string | undefined) => void' is not assignable to type '(prepared: PreparedImport, manifestName?: string | undefined) => Promise<void>'.
+  Type 'void' is not assignable to type 'Promise<void>'.

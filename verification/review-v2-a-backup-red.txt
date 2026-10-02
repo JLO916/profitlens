@@ -1,0 +1,161 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-backup.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-backup.test.ts (9 tests | 7 failed) 145ms
+     × deduplicates the active and retained sources by hash in a v3 backup 41ms
+     × validates and migrates genuine profitlens-workspace-v1 using its original shape 16ms
+     × validates and migrates genuine profitlens-workspace-v2 using its original shape 17ms
+     × does not revive stale profitlens-workspace-v1 action evidence during migration 11ms
+     × does not revive stale profitlens-workspace-v2 action evidence during migration 13ms
+     × rejects a source reference outside the v3 source table 19ms
+     × rejects changed source bytes even when the envelope checksum is recomputed 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > deduplicates the active and retained sources by hash in a v3 backup
+AssertionError: expected 'profitlens-workspace-v2' to be 'profitlens-workspace-v3' // Object.is equality
+
+Expected: "profitlens-workspace-v3"
+Received: "profitlens-workspace-v2"
+
+ ❯ tests/v2-backup.test.ts:49:33
+     47|     const { source, snapshot } = await setup();
+     48|     const body = JSON.parse(await exportWorkspaceBackup(source));
+     49|     expect(body.schema_version).toBe("profitlens-workspace-v3");
+       |                                 ^
+     50|     expect(Object.keys(body.payload.sources)).toEqual([snapshot.datase…
+     51|     expect(body.payload.active.source_hash).toBe(snapshot.dataset_hash…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > validates and migrates genuine profitlens-workspace-v1 using its original shape
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > validates and migrates genuine profitlens-workspace-v2 using its original shape
+AssertionError: expected { …(4) } to match object { …(3) }
+(17 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "binding_revision": 1,
+-   "execution_status": "not_started",
+-   "progress_notes": "",
++   "card": {
++     "action": "",
++     "deadline": "",
++     "evidence_confirmed": false,
++     "fact_ids": [],
++     "id": "legacy-task",
++     "origin": "manual",
++     "owner_role": "",
++     "problem": "原稿",
++     "required_data": "",
++     "stop_condition": "",
++     "validation_metric": "",
++   },
++   "context_id": "action-1-92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48-a66eb645b3a68190cd4387b7ed67e8508523c229953adaacb37b50bb3f606e69",
++   "pinned": true,
++   "scope": {
++     "channels": [
++       "DTC",
++     ],
++     "kind": "all",
++   },
+  }
+
+ ❯ tests/v2-backup.test.ts:65:48
+     63|     expect(restored.decision.scenarios[0].result?.contribution).toBe("…
+     64|     expect(restored.action_workspace.items[0].card.problem).toBe("原稿");
+     65|     expect(restored.action_workspace.items[0]).toMatchObject({ executi…
+       |                                                ^
+     66|   });
+     67|   it.each(["profitlens-workspace-v1", "profitlens-workspace-v2"] as co…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > does not revive stale profitlens-workspace-v1 action evidence during migration
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > does not revive stale profitlens-workspace-v2 action evidence during migration
+AssertionError: expected { …(4) } to match object { legacy_review_required: true, …(1) }
+(17 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "execution_status": "not_started",
+-   "legacy_review_required": true,
++   "card": {
++     "action": "",
++     "deadline": "",
++     "evidence_confirmed": false,
++     "fact_ids": [],
++     "id": "legacy-task",
++     "origin": "manual",
++     "owner_role": "",
++     "problem": "原稿",
++     "required_data": "",
++     "stop_condition": "",
++     "validation_metric": "",
++   },
++   "context_id": "action-1-92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48-a66eb645b3a68190cd4387b7ed67e8508523c229953adaacb37b50bb3f606e69",
++   "pinned": true,
++   "scope": {
++     "channels": [
++       "DTC",
++     ],
++     "kind": "all",
++   },
+  }
+
+ ❯ tests/v2-backup.test.ts:70:48
+     68|     const restored = await restoreWorkspaceBackup(await sign(await leg…
+     69|     expect(restored.action_workspace.contexts[0].session.stale).toBe(t…
+     70|     expect(restored.action_workspace.items[0]).toMatchObject({ legacy_…
+       |                                                ^
+     71|     expect(restored.decision.captured?.stale).toBe(true);
+     72|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > rejects a source reference outside the v3 source table
+AssertionError: expected [Function] to throw error including 'WORKSPACE_SOURCE_MISSING' but got 'INVALID_WORKSPACE_FORMAT'
+
+Expected: "WORKSPACE_SOURCE_MISSING"
+Received: "INVALID_WORKSPACE_FORMAT"
+
+ ❯ tests/v2-backup.test.ts:86:59
+     84|     const body = JSON.parse(await exportWorkspaceBackup((await setup()…
+     85|     body.payload.active.source_hash = "0".repeat(64);
+     86|     await expect(restoreWorkspaceBackup(await sign(body))).rejects.toT…
+       |                                                           ^
+     87|   });
+     88|   it("rejects changed source bytes even when the envelope checksum is …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > rejects changed source bytes even when the envelope checksum is recomputed
+AssertionError: expected 'profitlens-workspace-v2' to be 'profitlens-workspace-v3' // Object.is equality
+
+Expected: "profitlens-workspace-v3"
+Received: "profitlens-workspace-v2"
+
+ ❯ tests/v2-backup.test.ts:91:33
+     89|     const { source, snapshot } = await setup();
+     90|     const body = JSON.parse(await exportWorkspaceBackup(source));
+     91|     expect(body.schema_version).toBe("profitlens-workspace-v3");
+       |                                 ^
+     92|     body.payload.sources[snapshot.dataset_hash].files["sales_daily.csv…
+     93|     await expect(restoreWorkspaceBackup(await sign(body))).rejects.toT…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 2 passed (9)
+   Start at  21:13:06
+   Duration  461ms (transform 85ms, setup 0ms, import 142ms, tests 145ms, environment 0ms)
+

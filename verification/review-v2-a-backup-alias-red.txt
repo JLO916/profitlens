@@ -1,0 +1,46 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-backup.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-backup.test.ts (13 tests | 1 failed) 319ms
+     × deduplicates the active and retained sources by hash in a v3 backup 53ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > deduplicates the active and retained sources by hash in a v3 backup
+AssertionError: expected 'edited current in-memory source' to be 'date,channel,sku,category,units_sold,…' // Object.is equality
+
+- Expected
++ Received
+
+- date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency
+- 2026-08-01,DTC,A,HOME,2,1000.00,100.00,0.00,400.00,TWD
+- 2026-08-01,DTC,B,CARE,1,500.00,0.00,50.00,200.00,TWD
+- 2026-08-01,MARKETPLACE,A,HOME,2,600.00,60.00,0.00,270.00,TWD
+- 2026-08-01,MARKETPLACE,B,CARE,1,400.00,40.00,0.00,180.00,TWD
+- 2026-08-02,DTC,A,HOME,3,1400.00,210.00,70.00,580.00,TWD
+- 2026-08-02,DTC,B,CARE,1,400.00,20.00,20.00,160.00,TWD
+- 2026-08-02,MARKETPLACE,A,HOME,3,800.00,120.00,40.00,360.00,TWD
+- 2026-08-02,MARKETPLACE,B,CARE,1,500.00,100.00,50.00,225.00,TWD
+-
++ edited current in-memory source
+
+ ❯ tests/v2-backup.test.ts:63:89
+     61|     const retained = restored.action_workspace.contexts[0].source_inpu…
+     62|     restored.input.files["sales_daily.csv"] = "edited current in-memor…
+     63|     expect(restored.action_workspace.contexts[0].source_input.files["s…
+       |                                                                                         ^
+     64|     expect(restored.scenario_workspace.contexts[0].source_input.files[…
+     65|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed (13)
+   Start at  21:22:28
+   Duration  667ms (transform 141ms, setup 0ms, import 221ms, tests 319ms, environment 0ms)
+

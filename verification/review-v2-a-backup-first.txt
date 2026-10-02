@@ -1,0 +1,34 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-backup.test.ts tests/workspace-backup.test.ts tests/action-backup.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-backup.test.ts (11 tests | 1 failed) 918ms
+     × deduplicates separate channel scenario contexts and recalculates every stored plan revision 142ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > deduplicates separate channel scenario contexts and recalculates every stored plan revision
+AssertionError: expected '-6.50' to be '-5.00' // Object.is equality
+
+Expected: "-5.00"
+Received: "-6.50"
+
+ ❯ tests/v2-backup.test.ts:141:83
+    139|     expect(restored.scenario_workspace.contexts[0].plans[0].result?.co…
+    140|     expect(restored.scenario_workspace.contexts[0].versions.map(plan =…
+    141|     expect(restored.scenario_workspace.contexts[1].plans[0].result?.co…
+       |                                                                                   ^
+    142|     portable.payload.scenario_workspace.contexts[0].versions[0].result…
+    143|     await expect(restoreWorkspaceBackup(await sign(portable))).rejects…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 34 passed (35)
+   Start at  21:20:17
+   Duration  2.04s (transform 773ms, setup 0ms, import 1.45s, tests 2.83s, environment 0ms)
+

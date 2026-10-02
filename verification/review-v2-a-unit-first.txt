@@ -1,0 +1,47 @@
+
+> profitlens@0.1.0 test
+> vitest --run
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-decision-export.test.ts (1 test | 1 failed) 335ms
+   × exports both channel baselines and revisions without raw CSV or summed gains 334ms
+ ❯ tests/v2-review.test.ts (5 tests | 1 failed) 281ms
+     × binding mismatch cannot silently replace a same-ID action reference 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-decision-export.test.ts > exports both channel baselines and revisions without raw CSV or summed gains
+AssertionError: expected '-6.50' to be '1.00' // Object.is equality
+
+Expected: "1.00"
+Received: "-6.50"
+
+ ❯ tests/v2-decision-export.test.ts:26:69
+     24|  expect(json.scenario_contexts).toHaveLength(2);
+     25|  expect(json.scenario_contexts[0].scenarios[0].result.contribution).to…
+     26|  expect(json.scenario_contexts[1].scenarios[0].result.contribution).to…
+       |                                                                     ^
+     27|  expect(json.scenario_contexts[0].plan_revisions).toEqual({DTC:1});
+     28|  expect(JSON.stringify(json)).not.toContain(input.files['sales_daily.c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/v2-review.test.ts > A2 restorable fixed-source review session > binding mismatch cannot silently replace a same-ID action reference
+AssertionError: expected 'draft' to be 'stale' // Object.is equality
+
+Expected: "stale"
+Received: "draft"
+
+ ❯ tests/v2-review.test.ts:30:348
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 38 passed (40)
+      Tests  2 failed | 810 passed (812)
+   Start at  21:24:12
+   Duration  5.42s (transform 2.51s, setup 0ms, import 8.19s, tests 16.34s, environment 3ms)
+

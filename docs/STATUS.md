@@ -1,5 +1,26 @@
 # Status
 
+## 2026-10-02｜A 批 GitHub／Vercel 發布（進行中）
+
+依使用者「推送部署至github與vercel」授權，沿用私人 `JLO916/profitlens` main 及既有 Vercel profitlens 專案；不新建專案，不啟用 Live AI。已核對 139 件受測來源、60 件受保護原件及 golden 均相符。819 unit、400＋4 E2E、typecheck／lint／build 沿用 A 批原始驗收，不是本次重跑。待雲端建置、正式 alias／commit、HTTP 與真瀏覽器核對完成後更新結論。詳見 [發布紀錄](../verification/release-v2-a-20261002-acceptance.md)。
+
+---
+
+## 2026-10-02｜Review v2 A 批：營運與會議狀態分離（本機驗收完成）
+
+本批按核准計畫實作 A1–A3，**尚未推送或部署**。既有正式站仍是下方前次發布版本；不能視為已包含本批。完整結果見 [A 批驗收報告](../verification/review-v2-a-acceptance.md)，最終 typecheck、lint、819 項 unit/integration、production build、400 項完整 E2E 與最後 4 項四尺寸列印／下載回歸均 pass。
+
+- 行動的原始引用、管理完整性及執行狀態分離；切通路／頁面仍可更新進度。重新綁定須預覽與明確確認，以來源 context／revision／fact ID 保留歷史；同 ID 不自動替換金額，null 不補零。
+- 多通路各自最多三方案，切檢視可來回編輯；真正換資料／期間／比較模式建立新工作輪次，舊 context 不復活。編輯撤下目前結果並保留會議引用的已計算修訂；歷史複製只帶名稱，數值與同意清空。
+- 單份固定範圍會議可保存門檻、每通路選案修訂、三個有序置頂、備註及人工決議；其餘行動列附錄，沒有置頂不自動挑選。來源／引用更新撤回草稿，target_version 維持 null。
+- `profitlens-workspace-v3` 以來源 hash 去重，原 v1／v2 checksum 先驗後遷移；各來源重驗與方案重算，不信任備份答案。四種替換入口共用保存／繼續／取消，下載待確認、本機保存失敗及版本競爭均不提交替換；不恢復 AI 同意、不自動持久化或跨分頁同步。
+- 已完成：ZIP 九原件與 60 件受保護來源雜湊相符；819 tests 最終整合全通過；typecheck／lint 通過。實際 CUA 合成資料流程與 1440／1280／768／390px 截圖、鍵盤操作完成，warn/error 空記錄。400 項 E2E（每尺寸100）及最後提示修正後新增4項列印／下載回歸皆通過，0 skipped／unexpected／flaky，retries0；最後 BUILD_ID `0U3urGYm_9KI-Zel0tOsR`。真下載 MD／CSV／JSON 與列印 PDF 已保存。最後3300 PUBLIC_DEMO 實測 GET unavailable／POST403，並重新手動恢復合成會議成功；client23資產無假canary／server key標記。
+- Live AI／真實營運資料／商業成效／Safari、Firefox、實體裝置及印表機／push、deploy：**not_run**。B–D、敏感度保存、多場會議封存、目標引擎均不在本批。人工 CUA 下載事件逾時，位元核對使用實際 Playwright downloads，分開記錄。
+
+變更文件：README、ARCHITECTURE、SCENARIOS、ACCEPTANCE、DECISIONS；產品主要為 `action-workspace`、`scenario-workspace`、`review-session`、`workspace-backup`、`replacement-guard` 及相關 workbench／Dashboard。新增六份 A 批單元測試與端到端工作流程；golden／domain／依賴無改動。A 批驗收完成即停止，不自動進入下一批或發布。
+
+---
+
 ## 2026-10-01｜系統發布（依最新指示先發布）
 
 **已發布三批管理者改善**：[正式站](https://profitlens-tau.vercel.app)；程式 commit `2f8e539c22a3afc0260c6db08f9570b80eaebdb6` 已推送至既有私人 GitHub `JLO916/profitlens` main，Vercel deployment `dpl_C6WoYoo811nLC1578zNf434ycXrN` 為 production READY，公開 alias 對應同一 SHA。使用者最新指示「先做系統發布」取代下方上一輪 Live 先行順序。沒有建立新專案、公開 repo 或啟用公開 Live AI；此次只發布既有成果並補驗收文件，未改產品程式、財務定義、golden 或依賴。

@@ -1,3 +1,4 @@
+import { clickReplacing, startChannelContext } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
@@ -43,7 +44,7 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
     const record = { recorded_at: new Date().toISOString(), project: testInfo.project.name, test: testInfo.title,
       mode: testInfo.title.startsWith("MOCK") ? "browser_mock_no_live_call" : "real_local_disabled_endpoint_no_live_call", status: testInfo.status, events };
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/manager-batch3-browser-meta.jsonl"), `${JSON.stringify(record)}\n`);
+    await appendFile(resolve("verification/review-v2-a-browser-meta.jsonl"), `${JSON.stringify(record)}\n`);
     await testInfo.attach("browser-metadata-only", { body: JSON.stringify(record, null, 2), contentType: "application/json" });
     expect(events.filter(event => event.kind === "pageerror" || event.kind === "javascript-dialog" || event.type === "error"), "不得執行不可信回應或產生未處理的瀏覽器錯誤").toEqual([]);
   }, { auto: true }],
@@ -64,7 +65,7 @@ async function loadDataset(page: Page, id = "golden", channel = "DTC") {
   await page.getByLabel("資料集", { exact: true }).selectOption(id);
   await Promise.all([
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.ok()),
-    page.getByRole("button", { name: "載入資料集", exact: true }).click(),
+    clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true })),
   ]);
   await expect(workspaceStatus(page)).toContainText("資料已就緒");
   await page.getByLabel("通路", { exact: true }).selectOption(channel);
@@ -191,6 +192,7 @@ test("真實本機未啟用端點 GET／POST 降級，未同意不傳送，核�
   await expect(page.getByTestId("ai-live-result")).toHaveCount(0);
   await assertCore(page);
   await page.getByRole("button", { name: "情境試算", exact: true }).click();
+  await startChannelContext(page);
   await page.getByRole("button", { name: "新增方案", exact: true }).click();
   const card = page.getByTestId("scenario-1");
   await card.getByRole("button", { name: "填入零變動假設", exact: true }).click();
@@ -252,8 +254,8 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await page.keyboard.press("Escape");
   await expect(evidence).toBeFocused();
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/manager-batch3-mock-${testInfo.project.name}-ai.png`), fullPage: true });
-  await page.screenshot({ path: resolve(`verification/manager-batch3-mock-${testInfo.project.name}-ai-viewport.png`), fullPage: false });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-mock-${testInfo.project.name}-ai.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-mock-${testInfo.project.name}-ai-viewport.png`), fullPage: false });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await page.getByRole("button", { name: "行動摘要", exact: true }).click();
   await expect(page.getByTestId("action-1")).toHaveCount(0);
@@ -318,7 +320,7 @@ test("MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽�
   await form.getByLabel("我已確認未稅商品金額與費用口徑", { exact: true }).check();
   await form.getByRole("button", { name: "檢核匯入資料", exact: true }).click();
   await expect(page.getByTestId("import-status")).toHaveText("檢核通過，可套用資料");
-  await form.getByRole("button", { name: "套用匯入資料", exact: true }).click();
+  await clickReplacing(page, form.getByRole("button", { name: "套用匯入資料", exact: true }));
   await expect(workspaceStatus(page)).toContainText("資料已就緒");
   await page.getByLabel("通路", { exact: true }).selectOption(channel);
   await expect(workspaceStatus(page)).toContainText("資料已就緒");

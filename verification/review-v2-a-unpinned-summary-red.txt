@@ -1,0 +1,80 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/manager-summary.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/manager-summary.test.ts (19 tests | 1 failed) 3005ms
+     × leaves unpinned actions in the appendix and distinguishes them from an empty workspace 179ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/manager-summary.test.ts > PL-06/09 manager summary: fixed references and independent display policy > leaves unpinned actions in the appendix and distinguishes them from an empty workspace
+AssertionError: expected '# ProfitLens 主管會議摘要（草稿）\n\n資料截至：2026-…' to contain '尚未置頂行動；主摘要不會自動挑選，其餘列附錄。'
+
+- Expected
++ Received
+
+- 尚未置頂行動；主摘要不會自動挑選，其餘列附錄。
++ # ProfitLens 主管會議摘要（草稿）
++
++ 資料截至：2026-08-03｜範圍：DTC、MARKETPLACE｜TWD
++ 前期：2026-08-01～2026-08-01（1 天）
++ 本期：2026-08-02～2026-08-02（1 天）
++ 比較：相同天數；以下為期間合計。重要性門檻：0.00 TWD。
++
++ ## 經營變化
++
++ - 商品淨營收：2250.00 → 2470.00；差額 +220.00。
++ - 行銷後貢獻：570.00 → 255.00；差額 -315.00。
++
++ | 通路 | 前期貢獻 | 本期貢獻 | 差額 |
++ | --- | ---: | ---: | ---: |
++ | DTC | 400.00 | 270.00 | -130.00 |
++ | MARKETPLACE | 170.00 | -15.00 | -185.00 |
++
++ ## 本期最值得先查的三件事
++
++ 1. 淨營收增加，行銷後貢獻下降｜合計（DTC、MARKETPLACE）｜-315.00
++    下一步：核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。
++    相關子範圍：MARKETPLACE、DTC；各範圍不可相加。
++ 2. 折扣率上升｜合計（DTC、MARKETPLACE）｜+250.00
++    下一步：比對兩期折扣金額與折扣前收入，核對促銷及商品組合。
++    相關子範圍：DTC、MARKETPLACE；各範圍不可相加。
++ 3. 廣告費占淨營收比上升｜合計（DTC、MARKETPLACE）｜+150.00
++    下一步：核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。
++    相關子範圍：MARKETPLACE、DTC；各範圍不可相加。
++
++ ## 所選方案與交辦
++
++ 未選擇可沿用的方案；草稿及過期方案不作為本期決策。未宣稱已發生改善。
++ 尚未置頂行動；待指定負責人、期限與風險／停止條件。
++
++ ## 固定口徑與限制
++
++ - 行銷後貢獻是商品範圍管理指標，不是公司淨利；未含未輸入固定費、所得稅、運費收入或平台補貼。
++ - 金額為已觀察差異，非改善收益；各範圍不可相加。同一規則的合計與通路訊號分組呈現，不另加總。
++ - 退款按入帳日；銷貨成本使用來源已入帳淨額；缺費用保持未知，不能視為零。
++ - 期間合計完整保留；天數不同時可另看日均比較。情境是條件試算，不是營收預測；方案差額不可相加。
++
++ ---
++
++
+
+ ❯ tests/manager-summary.test.ts:118:18
+    116|     expect(decisions.appendixActions.map(action => action.id)).toEqual…
+    117|     const [body, appendix] = exportManagerSummaryMarkdown(summary, con…
+    118|     expect(body).toContain("尚未置頂行動；主摘要不會自動挑選，其餘列附錄。");
+       |                  ^
+    119|     expect(body).not.toMatch(/行動尚未建立|尚未建立行動/);
+    120|     expect(body).not.toContain("核對物流帳單");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  09:50:24
+   Duration  9.16s (transform 3.04s, setup 0ms, import 4.22s, tests 3.01s, environment 0ms)
+

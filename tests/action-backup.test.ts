@@ -5,27 +5,25 @@ import { createSnapshot, hashInput } from '@/application/workspace';
 import { emptyDecisionWorkspace, createDecisionSession } from '@/application/decision';
 import { emptyActionWorkspace, addActionDraft, pinAction, refreshActionWorkspace } from '@/application/action-workspace';
 import { exportWorkspaceBackup, restoreWorkspaceBackup } from '@/application/workspace-backup';
-it('keeps independent cross-scope actions and more than three work items through a v2 backup',async()=>{
+it('keeps independent cross-scope actions and more than three work items through a v3 backup',async()=>{
  const input=fixture();const dataset=validateDataset(input).dataset!;const hash=await hashInput(input);
  const a=await createSnapshot(dataset,{channels:['DTC']},hash);const b=await createSnapshot(dataset,{channels:['MARKETPLACE']},hash);
  let w=emptyActionWorkspace();for(let n=1;n<=4;n++)w=addActionDraft(w,{input,dataset,snapshot:a,revision:1},String(n));
  w=pinAction(w,'1',true);w=refreshActionWorkspace(w,b,2);w=addActionDraft(w,{input,dataset,snapshot:b,revision:2},'5');
  const saved=await exportWorkspaceBackup({input,filters:b.report.scope,id:'golden',revision:2,decision:emptyDecisionWorkspace(),action_workspace:w});
- expect(JSON.parse(saved).schema_version).toBe('profitlens-workspace-v2');
+ expect(JSON.parse(saved).schema_version).toBe('profitlens-workspace-v3');
  const result=await restoreWorkspaceBackup(saved);expect(result.action_workspace?.items).toHaveLength(5);
- expect(result.action_workspace?.contexts[0].session.stale).toBe(true);expect(result.action_workspace?.items[0].pinned).toBe(true);
+ expect(result.action_workspace?.contexts[0].session.stale).toBe(false);expect(result.action_workspace?.items[0].pinned).toBe(true);
  expect(result.action_workspace?.contexts[1].session.scope.channels).toEqual(['MARKETPLACE']);
 });
 it('migrates first-batch decision actions without losing their original scope or evidence',async()=>{
  const input=fixture();const dataset=validateDataset(input).dataset!;const snapshot=await createSnapshot(dataset,{},await hashInput(input));
  const decision=emptyDecisionWorkspace();decision.captured=createDecisionSession(dataset,snapshot,1);decision.source_input=input;
  decision.actions=[{id:'old',problem:'舊稿',action:'',owner_role:'',validation_metric:'',deadline:'',stop_condition:'',required_data:'',fact_ids:[],origin:'manual',evidence_confirmed:false}];
- const legacy=JSON.parse(await exportWorkspaceBackup({input,filters:snapshot.report.scope,id:'golden',revision:1,decision}));
- legacy.schema_version='profitlens-workspace-v1';
- const {checksum:oldChecksum,...body}=legacy;void oldChecksum;
+ const body={schema_version:'profitlens-workspace-v1',metric_version:'contribution-v1',scenario_version:'scenario-v1',saved_at:'2026-10-01T00:00:00.000Z',payload:{active:{input,filters:snapshot.report.scope,id:'golden',revision:1,filenames:{},mappings:{}},decision:{source_input:input,filters:snapshot.report.scope,filenames:{},dataset_hash:snapshot.dataset_hash,filter_hash:snapshot.filter_hash,revision:1,stale:false,stale_reasons:[],scenarios:[],actions:decision.actions}}};
  const {decisionSignature}=await import('@/application/decision');
  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(decisionSignature(body)));
- legacy.checksum=Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('');
+ const legacy={...body,checksum:Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('')};
  const restored=await restoreWorkspaceBackup(JSON.stringify(legacy));
  expect(restored.action_workspace?.items[0].card.problem).toBe('舊稿');expect(restored.action_workspace?.contexts[0].session.scope.channels).toEqual(['DTC','MARKETPLACE']);
 });

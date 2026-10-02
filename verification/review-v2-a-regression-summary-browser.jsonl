@@ -1,0 +1,18 @@
+{"test":"PL06 golden management summary, drilldown, threshold, scope and wide export","project":"desktop","status":"passed","errors":[]}
+{"test":"PL06 unknown priorities survive a high threshold without zero contribution","project":"desktop","status":"passed","errors":[]}
+{"test":"PL09 print uses a dedicated manager draft and retains technical audit downloads","project":"desktop","status":"passed","errors":[]}
+{"test":"PL06 golden management summary, drilldown, threshold, scope and wide export","project":"desktop","status":"passed","errors":[]}
+{"test":"PL06 unknown priorities survive a high threshold without zero contribution","project":"desktop","status":"passed","errors":[]}
+{"test":"PL09 print uses a dedicated manager draft and retains technical audit downloads","project":"desktop","status":"passed","errors":[]}
+{"test":"PL06 golden management summary, drilldown, threshold, scope and wide export","project":"desktop","status":"passed","errors":[]}
+{"test":"PL06 unknown priorities survive a high threshold without zero contribution","project":"desktop","status":"passed","errors":[]}
+{"test":"PL09 print uses a dedicated manager draft and retains technical audit downloads","project":"desktop","status":"passed","errors":[]}
+{"test":"PL06 golden management summary, drilldown, threshold, scope and wide export","project":"laptop","status":"passed","errors":[]}
+{"test":"PL06 unknown priorities survive a high threshold without zero contribution","project":"laptop","status":"passed","errors":[]}
+{"test":"PL09 print uses a dedicated manager draft and retains technical audit downloads","project":"laptop","status":"passed","errors":[]}
+{"test":"PL06 golden management summary, drilldown, threshold, scope and wide export","project":"tablet","status":"passed","errors":[]}
+{"test":"PL06 unknown priorities survive a high threshold without zero contribution","project":"tablet","status":"passed","errors":[]}
+{"test":"PL09 print uses a dedicated manager draft and retains technical audit downloads","project":"tablet","status":"passed","errors":[]}
+{"test":"PL06 golden management summary, drilldown, threshold, scope and wide export","project":"mobile","status":"passed","errors":[]}
+{"test":"PL06 unknown priorities survive a high threshold without zero contribution","project":"mobile","status":"passed","errors":[]}
+{"test":"PL09 print uses a dedicated manager draft and retains technical audit downloads","project":"mobile","status":"passed","errors":[]}

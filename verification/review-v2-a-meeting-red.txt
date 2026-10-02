@@ -1,0 +1,37 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-review.test.ts tests/v2-scenario-workspace.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-review.test.ts (0 test)
+ ❯ tests/v2-scenario-workspace.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-review.test.ts [ tests/v2-review.test.ts ]
+Error: Cannot find package '@/application/scenario-workspace' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/v2-review.test.ts
+ ❯ tests/v2-review.test.ts:6:1
+      4| import { createSnapshot, hashInput } from '@/application/workspace';
+      5| import { saveScenario } from '@/application/decision';
+      6| import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContex…
+       | ^
+      7| import { createReviewSession, updateReviewSession, selectReviewScenari…
+      8| import { emptyActionWorkspace, addActionDraft, pinAction } from '@/app…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/v2-scenario-workspace.test.ts [ tests/v2-scenario-workspace.test.ts ]
+Error: Cannot find package '@/application/scenario-workspace' imported from /Users/j-work/Desktop/profitlens-codex-starter/tests/v2-scenario-workspace.test.ts
+ ❯ tests/v2-scenario-workspace.test.ts:6:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  no tests
+   Start at  21:13:44
+   Duration  294ms (transform 155ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

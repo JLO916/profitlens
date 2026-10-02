@@ -1,0 +1,2198 @@
+{
+  "recorded_start_utc": "2026-10-02T02:39:24.357800+00:00",
+  "recorded_end_utc": "2026-10-02T02:41:50.803011+00:00",
+  "git_head": "bb9173edae9a28eb1970c5a968f1165b0ce64bb5",
+  "scope": "All modified tracked and non-ignored untracked files at start; no staging, git mutations, network or deployment by this audit.",
+  "candidate_count": 278,
+  "candidate_bytes": 72589017,
+  "verification_review_v2_a_count": 220,
+  "verification_review_v2_a_bytes": 71783468,
+  "largest_candidates": [
+    {
+      "path": "verification/review-v2-a-e2e-full-results.json",
+      "status": "untracked",
+      "size_bytes": 2815904,
+      "sha256": "c676875cad1100640fd48bc2a2a5fecee12faa9f36fa55eaed86d2316a7cff03"
+    },
+    {
+      "path": "verification/review-v2-a-backup-current-status-red.txt",
+      "status": "untracked",
+      "size_bytes": 2257714,
+      "sha256": "f80b002ee423111d3550d68fad55ee9006a87b75b73c0b4159c8232607627b60"
+    },
+    {
+      "path": "verification/review-v2-a-diagnosis-tablet.png",
+      "status": "untracked",
+      "size_bytes": 1416795,
+      "sha256": "a8e1e598716a83c81afdf1beea26fa5542a2d8db6f6c1620a87c3c8412fc4bd6"
+    },
+    {
+      "path": "verification/review-v2-a-diagnosis-mobile.png",
+      "status": "untracked",
+      "size_bytes": 1364042,
+      "sha256": "6271c158dc97640a1b92ee52788a956c87007b34ec75a07bea7f3092a3558ac6"
+    },
+    {
+      "path": "verification/review-v2-a-mock-tablet-ai.png",
+      "status": "untracked",
+      "size_bytes": 1319839,
+      "sha256": "ea0fe9e0dfcfc244088d23740aeb0e9848ec4d0c6034e10ecb02f6c166a4e34f"
+    },
+    {
+      "path": "verification/review-v2-a-diagnosis-laptop.png",
+      "status": "untracked",
+      "size_bytes": 1282113,
+      "sha256": "c701b4570f5a302c7c2802f2750d3346d64c761c2bab2f864c9fe54f0526df35"
+    },
+    {
+      "path": "verification/review-v2-a-diagnosis-desktop.png",
+      "status": "untracked",
+      "size_bytes": 1255730,
+      "sha256": "da83e94c887e20fe5ebb066e3c6720ba811628e6ff74506084fe321abd0ee4ee"
+    },
+    {
+      "path": "verification/review-v2-a-mock-mobile-ai.png",
+      "status": "untracked",
+      "size_bytes": 1228580,
+      "sha256": "1df68657d4c48fc750117752a9457a83916cae678cdc311225e3a925f276b032"
+    },
+    {
+      "path": "verification/review-v2-a-mock-desktop-ai.png",
+      "status": "untracked",
+      "size_bytes": 1177814,
+      "sha256": "238b1ce2c7b52bc7564a51b0fdd4b29ea267a74ba89c862ed157ea712a83d486"
+    },
+    {
+      "path": "verification/review-v2-a-mock-laptop-ai.png",
+      "status": "untracked",
+      "size_bytes": 1161110,
+      "sha256": "22b08812bc075967368f12e7cd5b5d3931506ce5a805f36bf9263f34b1008319"
+    },
+    {
+      "path": "verification/review-v2-a-actions-all-unit-first.txt",
+      "status": "untracked",
+      "size_bytes": 1129607,
+      "sha256": "f1c7b587eb6c326180ef06dce1f314742bf312e83361ba3d94dc4dfde258318f"
+    },
+    {
+      "path": "verification/review-v2-a-backup-verified.txt",
+      "status": "untracked",
+      "size_bytes": 1129201,
+      "sha256": "eba4dcc580f5e67762554d035317edcd4efd94272dae7211e0358e7296503358"
+    }
+  ],
+  "oversized_ge_10MiB": [],
+  "symlinks": [],
+  "sensitive_paths_not_read": [],
+  "candidate_inventory": [
+    {
+      "path": "README.md",
+      "status": "tracked_modified",
+      "size_bytes": 47055,
+      "sha256": "594cddbb81675c2ba37c2ea89d50b2fbc4446db2873fac1206f8e566ff1b80d8"
+    },
+    {
+      "path": "docs/ACCEPTANCE.md",
+      "status": "tracked_modified",
+      "size_bytes": 9506,
+      "sha256": "c6d206761c23f6f2781119e2ab9d50930e682534a97f15a6b255c88f5b0837e4"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "status": "tracked_modified",
+      "size_bytes": 8761,
+      "sha256": "2bdd43a756d6dd545fc500c376f13d39a25f67f466979c6cbc9139142ecd839a"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "status": "tracked_modified",
+      "size_bytes": 28280,
+      "sha256": "7c50a770af0cfceec7653d0eb4a279fd6203fd2606799ee4a754ebbcffee7e64"
+    },
+    {
+      "path": "docs/SCENARIOS.md",
+      "status": "tracked_modified",
+      "size_bytes": 6519,
+      "sha256": "c78a226b586d48ef6176a8fa4d3ad62d54dc51e2f2d322bb91263eed650dfbd9"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "status": "tracked_modified",
+      "size_bytes": 108585,
+      "sha256": "610b78f9013e860edd3626eda0d863abf54c602001267fbe36a269dbdf727615"
+    },
+    {
+      "path": "playwright.config.ts",
+      "status": "tracked_modified",
+      "size_bytes": 1677,
+      "sha256": "56515b2d6eaab77f2055fcd086c458971a5fcee11973f38c216964ef5c8813f8"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/CODEX_NEXT_SPRINT.md",
+      "status": "untracked",
+      "size_bytes": 6474,
+      "sha256": "1b3badbd7ca57079543f512329587ec3932e8c82b09fea8e3bb75546a4b1e02c"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/OPERATING_REVIEW_SPEC.md",
+      "status": "untracked",
+      "size_bytes": 6752,
+      "sha256": "53055d5d830c682ea3aa916dbdd9b63581b3ec6ffb6302ad9135132acc20a3d5"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/README.md",
+      "status": "untracked",
+      "size_bytes": 1425,
+      "sha256": "5ae6038aa3d84a7c2f7e5b705d3e086f5abe623d8ed422f260a3e3da4cc60199"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/REVIEW_FINDINGS.md",
+      "status": "untracked",
+      "size_bytes": 11070,
+      "sha256": "8135b0a3bdd3be6d0fc9205944bd5997e8259dd3609ff8010c413b43f54c622f"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/ZH_TW_COPY_GUIDE.md",
+      "status": "untracked",
+      "size_bytes": 8645,
+      "sha256": "25190169b9326eb85fd9215f774a109ce586d162eac617b6f9a7cca4525fcfbd"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/browser_attempt.json",
+      "status": "untracked",
+      "size_bytes": 372,
+      "sha256": "564fe2a9d16b01bb694bbedaa405ba50fb9ae21e0578ce78d34ef43937d65835"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/deployed_logic_checks.js",
+      "status": "untracked",
+      "size_bytes": 8692,
+      "sha256": "00bfda8d5fc2581ba4dfa57485ff25df57e63a186d119fc64846041825799ca1"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/evidence_receipt.json",
+      "status": "untracked",
+      "size_bytes": 2142,
+      "sha256": "e075ed69e984af04f2d9a6ca7b31cc378c0624d35fa94231503462ebe219de15"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/logic_results.json",
+      "status": "untracked",
+      "size_bytes": 7474,
+      "sha256": "711a7101d866946f48fc772165d6bbcc88cdf23aa98e67905212d3d3ad008874"
+    },
+    {
+      "path": "src/application/action-workspace.ts",
+      "status": "tracked_modified",
+      "size_bytes": 19611,
+      "sha256": "016d685e400d76dee42cc9f577eb041c6eb874961f0ae0adce94ec16588cb428"
+    },
+    {
+      "path": "src/application/decision-export.ts",
+      "status": "tracked_modified",
+      "size_bytes": 15500,
+      "sha256": "0b87a90f7c93e0ced4e580f05805ebd11e8578ba186d4008d4f9789225620c5d"
+    },
+    {
+      "path": "src/application/manager-summary.ts",
+      "status": "tracked_modified",
+      "size_bytes": 21025,
+      "sha256": "177d319a07954a81fac881788ba44a2ac24081738e442b47385c61fe573be05d"
+    },
+    {
+      "path": "src/application/replacement-guard.ts",
+      "status": "untracked",
+      "size_bytes": 1851,
+      "sha256": "e41cdba13ac73f2481183e0ff6a63d822125a1f66926edfebacde207530ca3c4"
+    },
+    {
+      "path": "src/application/review-session.ts",
+      "status": "untracked",
+      "size_bytes": 14527,
+      "sha256": "6a8e05593c62a7f11d2969bb642bd3f21763d24bd2505cdd9f371a9cfa1299c0"
+    },
+    {
+      "path": "src/application/scenario-workspace.ts",
+      "status": "untracked",
+      "size_bytes": 11210,
+      "sha256": "a3b0a9ad2a4df14d46fb5f689116eb6a2b68eb2a83ec20e8ef0bfdaba4e5e9a1"
+    },
+    {
+      "path": "src/application/workspace-backup.ts",
+      "status": "tracked_modified",
+      "size_bytes": 28713,
+      "sha256": "bf3504833d9c4a28ae9534b6ced0c75f171b6540b23756dd43f3eaf5710cf10f"
+    },
+    {
+      "path": "src/application/workspace-decision-export.ts",
+      "status": "untracked",
+      "size_bytes": 3971,
+      "sha256": "df822cc39bbe5ce433b5961e64b9e67ce1b09c68ddb3cbd85154c54a11404022"
+    },
+    {
+      "path": "src/components/actions-workbench.tsx",
+      "status": "tracked_modified",
+      "size_bytes": 14667,
+      "sha256": "577238b4734014acfd0ba626b859c4e2186292e16c21ba3abac614c6620de943"
+    },
+    {
+      "path": "src/components/dashboard.tsx",
+      "status": "tracked_modified",
+      "size_bytes": 34916,
+      "sha256": "a6315e69cd188bf58c8fe0340c666fd44814d5234b5d6338c3b12036c7db508f"
+    },
+    {
+      "path": "src/components/manager-summary.tsx",
+      "status": "tracked_modified",
+      "size_bytes": 14649,
+      "sha256": "1112c02acce8724597aae6072c8a4c663a8039abedda66ed526f5f69cc416126"
+    },
+    {
+      "path": "src/components/multi-scenario-workbench.tsx",
+      "status": "untracked",
+      "size_bytes": 7049,
+      "sha256": "e21ce389760a9bd77027b5441200876ac26d1e7a3277ea78e571ef1b67b41985"
+    },
+    {
+      "path": "src/components/replacement-dialog.tsx",
+      "status": "untracked",
+      "size_bytes": 5391,
+      "sha256": "278a2b0e359c9029341fe4ee0c635e268d4ae07dd7f6676b5972828362170186"
+    },
+    {
+      "path": "src/components/review-workbench.tsx",
+      "status": "untracked",
+      "size_bytes": 10615,
+      "sha256": "19893ac050183495fe70bffdfdc204df14068bfc926fe1d6d109fdbc3d7f73a9"
+    },
+    {
+      "path": "src/components/workspace-storage.tsx",
+      "status": "tracked_modified",
+      "size_bytes": 8500,
+      "sha256": "4c16c0a594951a661a2fc46a0aaf0cb49e2f34effbe7d4567fe0fcaa2c487fc8"
+    },
+    {
+      "path": "tests/action-backup.test.ts",
+      "status": "tracked_modified",
+      "size_bytes": 4680,
+      "sha256": "3a2f8c95a973e81eb97b698f2f9c2393664662c3d522de3ca94a50b829dc1c90"
+    },
+    {
+      "path": "tests/action-export.test.ts",
+      "status": "tracked_modified",
+      "size_bytes": 13178,
+      "sha256": "329edf849f0a2f941f5ba124ed9706a39d5acacae753766c34e32890614558b0"
+    },
+    {
+      "path": "tests/action-workspace.test.ts",
+      "status": "tracked_modified",
+      "size_bytes": 6371,
+      "sha256": "9041b7b7c187ae7c922ad40023c79176d82192aa798a3d2f0e4d2042196d823f"
+    },
+    {
+      "path": "tests/e2e/action-workspace.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 14964,
+      "sha256": "381877490817fcfd6285548634c437fc679639ef979829becb7fe73d084c84bb"
+    },
+    {
+      "path": "tests/e2e/ai.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 27640,
+      "sha256": "94c4ee429664c4f10249a73aa6d90f9d5f970f5dd0acdf38a926a4b4d19bc612"
+    },
+    {
+      "path": "tests/e2e/import-guidance.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 6904,
+      "sha256": "d587bc93341e40f2d6550e5446ceeae8e4b7b99697b67824371a88e2335ce898"
+    },
+    {
+      "path": "tests/e2e/import.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 28867,
+      "sha256": "c87b0e9c80f9833f612a2f5fce3a5d2d972d73043d7e12df8adf1855b2c54f17"
+    },
+    {
+      "path": "tests/e2e/m6-acceptance.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 18713,
+      "sha256": "e2e0f7dfc92380b563e1f30f5b69c17abde856a1882c2195b26bbd23c74895e4"
+    },
+    {
+      "path": "tests/e2e/manager-presentation.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 8983,
+      "sha256": "57190ba66a1e3bf94cb387a9529e6fc89c42f187af0b34fef505601021122675"
+    },
+    {
+      "path": "tests/e2e/manager-summary.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 7167,
+      "sha256": "81fbd45d2365d7ec2f564a10cdc90297acbd0e7b8010fe9a2785bb2b97d99102"
+    },
+    {
+      "path": "tests/e2e/period-comparison.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 11439,
+      "sha256": "8b5a46c6f6a948bb9275a460590f0e0cb179d0acf0dfe5d91ab1c0101c6fbb17"
+    },
+    {
+      "path": "tests/e2e/product-comparison.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 11080,
+      "sha256": "cfd126df0c87cfe83b5137a86e4709ce6a7ead10da4769fef9749a4a4f4d9715"
+    },
+    {
+      "path": "tests/e2e/replacement-helpers.ts",
+      "status": "untracked",
+      "size_bytes": 846,
+      "sha256": "74d59e95f24bfa25c183e30883c8346b6362c907658e7c76f6fa3be647703df7"
+    },
+    {
+      "path": "tests/e2e/review-v2-a-export.spec.ts",
+      "status": "untracked",
+      "size_bytes": 11595,
+      "sha256": "5044093cf4532dd792dca815e13fb85c0bff9761c62cc894be867be22d104d3f"
+    },
+    {
+      "path": "tests/e2e/review-v2-a.spec.ts",
+      "status": "untracked",
+      "size_bytes": 13116,
+      "sha256": "dad2e411d60de45af950759e42867ab3bbfdb93db9c0ca25fd6c65d070d50c54"
+    },
+    {
+      "path": "tests/e2e/scenario-sensitivity.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 7338,
+      "sha256": "67dd324b59fe7dd2dd18860f3161338bdb36fff8d28e475541ccbce48e4391ec"
+    },
+    {
+      "path": "tests/e2e/scenarios.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 36246,
+      "sha256": "2213819082f62330927183d3e59c174efd05f572d17b5c67e4bb6f2a69a3ac55"
+    },
+    {
+      "path": "tests/e2e/workspace-storage.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 14606,
+      "sha256": "40c47cfbc04786ecef762657e9de4881bf84a0c6e7b61fb42f1704b77cbe0f71"
+    },
+    {
+      "path": "tests/e2e/workspace.spec.ts",
+      "status": "tracked_modified",
+      "size_bytes": 19518,
+      "sha256": "031a17acfd01ba57296ff8eb1ae0563ac733ffe933adb6759cf942e22d953c39"
+    },
+    {
+      "path": "tests/manager-summary.test.ts",
+      "status": "tracked_modified",
+      "size_bytes": 10848,
+      "sha256": "02e8b739c648ff80d66fb17c8ad3de57acbf59c78e9bc368b44fd2e761cd2a8a"
+    },
+    {
+      "path": "tests/v2-actions.test.ts",
+      "status": "untracked",
+      "size_bytes": 9704,
+      "sha256": "7496b43cdfa6fd821944614305fbe2659e9df5ab607f8e3ccf2d4c584d18cfad"
+    },
+    {
+      "path": "tests/v2-backup.test.ts",
+      "status": "untracked",
+      "size_bytes": 17306,
+      "sha256": "d4935970370bba5b42b7bcf9ab22c4ff033c4ef8d16f8645459fb7c037dae656"
+    },
+    {
+      "path": "tests/v2-decision-export.test.ts",
+      "status": "untracked",
+      "size_bytes": 2378,
+      "sha256": "e36d89c4033a54d30f0fd7c5ca096cfa39f1de7923cdfa8d01f3b3a8bf0e7771"
+    },
+    {
+      "path": "tests/v2-replacement.test.ts",
+      "status": "untracked",
+      "size_bytes": 2660,
+      "sha256": "9c20d2a8cebc77849de0a52075abbc0cc890a2c844ea26f52670fbc9c7dad6ef"
+    },
+    {
+      "path": "tests/v2-review.test.ts",
+      "status": "untracked",
+      "size_bytes": 7862,
+      "sha256": "882e09c57056ace385fccb1db8065888610e6800da817b2222047cf5ec7b8881"
+    },
+    {
+      "path": "tests/v2-scenario-workspace.test.ts",
+      "status": "untracked",
+      "size_bytes": 4958,
+      "sha256": "8ca7e7fffb0d761e081cad0aba8f7ab8fd125156e5f86cd9cf7a376d58bd8440"
+    },
+    {
+      "path": "tests/workspace-backup.test.ts",
+      "status": "tracked_modified",
+      "size_bytes": 10958,
+      "sha256": "a72624246238dcf95f2f57f7e41e28b1caa2e3367bfc73c860f1d9a55ea6822b"
+    },
+    {
+      "path": "verification/review-v2-a-acceptance.md",
+      "status": "untracked",
+      "size_bytes": 12777,
+      "sha256": "96ef8c12e6153da00ed8fbf184d7d1e58d5e58316eb6c580b813918c31ce1dcd"
+    },
+    {
+      "path": "verification/review-v2-a-action-e2e-lint.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-action-management-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 759,
+      "sha256": "aea069b9c9bf2ea5295e32f689bec83eedc10ea0c9436d8b40c7bbb5a63c61ef"
+    },
+    {
+      "path": "verification/review-v2-a-action-management-desktop.png",
+      "status": "untracked",
+      "size_bytes": 320295,
+      "sha256": "72a39e98465661be5bf7c331694938c9c941d516628647259699cac7656a0105"
+    },
+    {
+      "path": "verification/review-v2-a-action-management-laptop.png",
+      "status": "untracked",
+      "size_bytes": 312841,
+      "sha256": "9bac8eae721a1b4a9d24fefd8a1fb4b778b6e2f49a08f97df0f58d72d1c150f4"
+    },
+    {
+      "path": "verification/review-v2-a-action-management-mobile.png",
+      "status": "untracked",
+      "size_bytes": 268037,
+      "sha256": "703eab6a7b8aabc7245e57abfc06ddece9177f9158485d77f3ad7bb9bf917eae"
+    },
+    {
+      "path": "verification/review-v2-a-action-management-tablet.png",
+      "status": "untracked",
+      "size_bytes": 308301,
+      "sha256": "a064990b4a537c07a996b66238d5ecb0fbd084fb6e071fe6f6b3b3d5be05f952"
+    },
+    {
+      "path": "verification/review-v2-a-action-rebind-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 993,
+      "sha256": "ce41db42cceef83b3cc3c65824d958895aa4751b40f6dc14f2fd0f74a94bb34f"
+    },
+    {
+      "path": "verification/review-v2-a-action-rebind-desktop.png",
+      "status": "untracked",
+      "size_bytes": 342428,
+      "sha256": "864499c8e291832cc14dd67a041a91a1f35bf994ec955e753f1d4807df4a5910"
+    },
+    {
+      "path": "verification/review-v2-a-action-rebind-laptop.png",
+      "status": "untracked",
+      "size_bytes": 334626,
+      "sha256": "75065d2faea31d7e535118cc37a7fd406336e00230b15754170c731526714e5c"
+    },
+    {
+      "path": "verification/review-v2-a-action-rebind-mobile.png",
+      "status": "untracked",
+      "size_bytes": 289625,
+      "sha256": "0eeaa25e46d79ba7923813b35f5ad0b0df9d22db9ad5a7b03e13b8fd802f7a9c"
+    },
+    {
+      "path": "verification/review-v2-a-action-rebind-tablet.png",
+      "status": "untracked",
+      "size_bytes": 329788,
+      "sha256": "69f8647fa7ed77b656ffd5e2f0f5ea60a491ce22fb626012eb3e9f85dddece93"
+    },
+    {
+      "path": "verification/review-v2-a-actions-all-unit-final.txt",
+      "status": "untracked",
+      "size_bytes": 1547,
+      "sha256": "567e86d6ce337e5a0a04661b00258b95fcd6184df699fd5ed235a5d6046d1d90"
+    },
+    {
+      "path": "verification/review-v2-a-actions-all-unit-first.txt",
+      "status": "untracked",
+      "size_bytes": 1129607,
+      "sha256": "f1c7b587eb6c326180ef06dce1f314742bf312e83361ba3d94dc4dfde258318f"
+    },
+    {
+      "path": "verification/review-v2-a-actions-all-unit-green.txt",
+      "status": "untracked",
+      "size_bytes": 282,
+      "sha256": "bb4403dc8da8181eb1a959ad24206656466b6a9676ef5e72021874d50908e281"
+    },
+    {
+      "path": "verification/review-v2-a-actions-first-green.txt",
+      "status": "untracked",
+      "size_bytes": 299,
+      "sha256": "b3a0b8a85b1717dd5ea4fd7fd3103a4e1dac4ec49c73204b8292e878b48f991a"
+    },
+    {
+      "path": "verification/review-v2-a-actions-green-final.txt",
+      "status": "untracked",
+      "size_bytes": 358,
+      "sha256": "0deb5986f4624dee3d08eacc1e54c56d8ab57f31080ce97c0fcafc8dea0d82cd"
+    },
+    {
+      "path": "verification/review-v2-a-actions-green.txt",
+      "status": "untracked",
+      "size_bytes": 358,
+      "sha256": "23cf58df7241b16dc9b68f9292a6063770af027fa23cd76b172e74fefc3618f4"
+    },
+    {
+      "path": "verification/review-v2-a-actions-integration-green.txt",
+      "status": "untracked",
+      "size_bytes": 382,
+      "sha256": "02221d1a03bb29f22cfe9b28e5cd40e6a79e93a3e95d2cd23dc9f69846a8b467"
+    },
+    {
+      "path": "verification/review-v2-a-actions-lint-final.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-actions-lint-first.txt",
+      "status": "untracked",
+      "size_bytes": 168,
+      "sha256": "04b2134abed2d7c7ec42b8507b207c00163f0daa2b2724b8bd09ed042d2b022c"
+    },
+    {
+      "path": "verification/review-v2-a-actions-lint.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-actions-red.txt",
+      "status": "untracked",
+      "size_bytes": 13575,
+      "sha256": "c4f024878738bef309227aded99782feca1c61607a6cd001a314680fdd0fbd41"
+    },
+    {
+      "path": "verification/review-v2-a-actions-regression-first.txt",
+      "status": "untracked",
+      "size_bytes": 5351,
+      "sha256": "269a37ff22278757709318fd0747ba84752e95bb584487a3447f1c80358d2a69"
+    },
+    {
+      "path": "verification/review-v2-a-actions-typecheck.txt",
+      "status": "untracked",
+      "size_bytes": 1028,
+      "sha256": "845bc3ff16eb9d8f5e010e31baded0fa7d03f52a5620d391a3ca5f3d290d8a8c"
+    },
+    {
+      "path": "verification/review-v2-a-actions.md",
+      "status": "untracked",
+      "size_bytes": 5830,
+      "sha256": "c64f22cbe713b74c3a245679f12eaffee979fe8b608e754847a74edd865665b9"
+    },
+    {
+      "path": "verification/review-v2-a-advanced-desktop.png",
+      "status": "untracked",
+      "size_bytes": 179783,
+      "sha256": "0b93ef1562b3e831743049f0ebc8b230bc2df8e9efaa64a3186f66a4b60c4585"
+    },
+    {
+      "path": "verification/review-v2-a-advanced-laptop.png",
+      "status": "untracked",
+      "size_bytes": 175385,
+      "sha256": "c0b1e2814f163e4deddfb330b65a0fe45bcf042e5327e43367acfc37b2c95e5f"
+    },
+    {
+      "path": "verification/review-v2-a-advanced-mobile.png",
+      "status": "untracked",
+      "size_bytes": 144161,
+      "sha256": "95d410737014a65eb125bfb3e3ccfe944092f13ed8de7c8e69b14b4ab0d4c585"
+    },
+    {
+      "path": "verification/review-v2-a-advanced-tablet.png",
+      "status": "untracked",
+      "size_bytes": 169137,
+      "sha256": "7d22593a49afc63bd9baa7c5022893f1fa9ac85b51f79d93749ae87dd6b661e7"
+    },
+    {
+      "path": "verification/review-v2-a-backup-alias-red.txt",
+      "status": "untracked",
+      "size_bytes": 1999,
+      "sha256": "70de5ee49b272a0387cf2606a1bc0c06184cb10037b8780fa7abd7d6cdf9a8ca"
+    },
+    {
+      "path": "verification/review-v2-a-backup-current-status-red.txt",
+      "status": "untracked",
+      "size_bytes": 2257714,
+      "sha256": "f80b002ee423111d3550d68fad55ee9006a87b75b73c0b4159c8232607627b60"
+    },
+    {
+      "path": "verification/review-v2-a-backup-e2e-lint.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-backup-final-green.txt",
+      "status": "untracked",
+      "size_bytes": 383,
+      "sha256": "00738fcae4928bc2d062a8e2b244cca07f85e112897e6a92626ca2498d78503e"
+    },
+    {
+      "path": "verification/review-v2-a-backup-final.txt",
+      "status": "untracked",
+      "size_bytes": 383,
+      "sha256": "47c52840f626fd2a5f0cd3e00656b42a7360837a802f8d6f02c983abb5623e79"
+    },
+    {
+      "path": "verification/review-v2-a-backup-first.txt",
+      "status": "untracked",
+      "size_bytes": 1519,
+      "sha256": "cb1f978ff72fd8f39c6631d0909d4432127400a9afd1fe40435ee21d9297d7c6"
+    },
+    {
+      "path": "verification/review-v2-a-backup-green.txt",
+      "status": "untracked",
+      "size_bytes": 357,
+      "sha256": "2990697f218c08952b7f20fe39bb9389fbdc9065ff62ee1386cdd4ac182cc67b"
+    },
+    {
+      "path": "verification/review-v2-a-backup-lint.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-backup-red.txt",
+      "status": "untracked",
+      "size_bytes": 6978,
+      "sha256": "de98b52e166677ef35f07caae05de0e905a0d1e8657b35a6655843fd70666616"
+    },
+    {
+      "path": "verification/review-v2-a-backup-typecheck.txt",
+      "status": "untracked",
+      "size_bytes": 521,
+      "sha256": "13418b1526e929e7784a97a3b3dfed54fe6f84bd9e8ef490af7a703a082122fc"
+    },
+    {
+      "path": "verification/review-v2-a-backup-verified.txt",
+      "status": "untracked",
+      "size_bytes": 1129201,
+      "sha256": "eba4dcc580f5e67762554d035317edcd4efd94272dae7211e0358e7296503358"
+    },
+    {
+      "path": "verification/review-v2-a-backup.md",
+      "status": "untracked",
+      "size_bytes": 2458,
+      "sha256": "0691bb25c417e4ba2ae3c207adabc8567298a3dd6215d830832e8f8ceb3eed0b"
+    },
+    {
+      "path": "verification/review-v2-a-baseline-unit.txt",
+      "status": "untracked",
+      "size_bytes": 279,
+      "sha256": "052e49a28bc9d5bf182032b1af169558a4dd53358972379c54beca433b0f9e81"
+    },
+    {
+      "path": "verification/review-v2-a-browser-meta.jsonl",
+      "status": "untracked",
+      "size_bytes": 40691,
+      "sha256": "f0e290a0c3d1e7e031c8759e287c9633e9261f8b6ea929f193112e6df2e011f9"
+    },
+    {
+      "path": "verification/review-v2-a-decision-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 569,
+      "sha256": "3e56c943cf81abc9d4f8b4e4004e1a21a2a896df040e96391ed1402efee9144d"
+    },
+    {
+      "path": "verification/review-v2-a-decision-desktop.csv",
+      "status": "untracked",
+      "size_bytes": 784014,
+      "sha256": "01fdd37a0c553ddbad9e8b38a57b035e4500e128c077ba25919c9a1b5c691c43"
+    },
+    {
+      "path": "verification/review-v2-a-decision-desktop.json",
+      "status": "untracked",
+      "size_bytes": 287702,
+      "sha256": "515e2a75e8e9e7e1fae345635e55ed032674e39177f18d9dc9169cd5469dfd02"
+    },
+    {
+      "path": "verification/review-v2-a-decision-desktop.md",
+      "status": "untracked",
+      "size_bytes": 68009,
+      "sha256": "78acfaaebc23122bd2e4431d51a185a64b02d68fa704a6e3b166e6de17e2a71d"
+    },
+    {
+      "path": "verification/review-v2-a-decision-laptop.csv",
+      "status": "untracked",
+      "size_bytes": 784014,
+      "sha256": "478b777892533dfa16d85763e0acab25bf3344e94a3c742bf31a44a3c57bfe9c"
+    },
+    {
+      "path": "verification/review-v2-a-decision-laptop.json",
+      "status": "untracked",
+      "size_bytes": 287702,
+      "sha256": "3622283cc94cc9adabfb5051c000307771e4657123cdf23a247eeee9501a684e"
+    },
+    {
+      "path": "verification/review-v2-a-decision-laptop.md",
+      "status": "untracked",
+      "size_bytes": 68009,
+      "sha256": "78acfaaebc23122bd2e4431d51a185a64b02d68fa704a6e3b166e6de17e2a71d"
+    },
+    {
+      "path": "verification/review-v2-a-decision-mobile.csv",
+      "status": "untracked",
+      "size_bytes": 784014,
+      "sha256": "921773b1d6f4a2f061037b858a5998571ddfcecea30494a30b0e32da00bd06bc"
+    },
+    {
+      "path": "verification/review-v2-a-decision-mobile.json",
+      "status": "untracked",
+      "size_bytes": 287702,
+      "sha256": "b298d93f1ce19d5d132a155e33253929a4d6f1e6d02de8635a6fe59de83968b9"
+    },
+    {
+      "path": "verification/review-v2-a-decision-mobile.md",
+      "status": "untracked",
+      "size_bytes": 68009,
+      "sha256": "78acfaaebc23122bd2e4431d51a185a64b02d68fa704a6e3b166e6de17e2a71d"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-pinned-desktop.pdf",
+      "status": "untracked",
+      "size_bytes": 446559,
+      "sha256": "80cfa478b04094e7b44a5f888de35270509e64f857bfda50cde70d65eb7ac0f5"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-pinned-desktop.png",
+      "status": "untracked",
+      "size_bytes": 285665,
+      "sha256": "83437b66ced35b225bde4536556c2c9d1c4722170e856f383f31e1c4fd14ae92"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-pinned-laptop.png",
+      "status": "untracked",
+      "size_bytes": 278610,
+      "sha256": "9e0232d7de45a136529f16d1be69b85f3e43387cd98483d3d09984a681f6c6d5"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-pinned-mobile.png",
+      "status": "untracked",
+      "size_bytes": 257949,
+      "sha256": "91ef64e909b48b94eb9a014d83e6aefd6ea6e2fe06d7c12d16b1ee6475b026fc"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-pinned-tablet.png",
+      "status": "untracked",
+      "size_bytes": 267473,
+      "sha256": "6d45408fc26c3fbab1441e482cda4986537ad8eafabcbdecf8df1e1f20402317"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-unpinned-desktop.pdf",
+      "status": "untracked",
+      "size_bytes": 457617,
+      "sha256": "4aff53179e487ce0d29483cceb22acdb10fc7ab45abeac7cbb6ce22a7d1443c7"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-unpinned-desktop.png",
+      "status": "untracked",
+      "size_bytes": 291660,
+      "sha256": "f5a9ff313dfca42fda998a87643808eacbc5c7a3a8079019b1b891aeb486d387"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-unpinned-laptop.png",
+      "status": "untracked",
+      "size_bytes": 284278,
+      "sha256": "28b835e1681e18253e2fd6bad607c14a8343af221d722bdab6e5da864e8f5f3c"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-unpinned-mobile.png",
+      "status": "untracked",
+      "size_bytes": 262477,
+      "sha256": "c12a6e3e0f01399c9095b1964c21658cd159d4803a4d31285c8d3086fcbf6c52"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-unpinned-tablet.png",
+      "status": "untracked",
+      "size_bytes": 273087,
+      "sha256": "50281c2b89429ea013357af2c35fe8b4276f9f1c953a93ceb7c0d69840a55626"
+    },
+    {
+      "path": "verification/review-v2-a-decision-tablet.csv",
+      "status": "untracked",
+      "size_bytes": 784014,
+      "sha256": "d3c7e8a72f768a3858a2cf884ee6e102ec549dddec856bb6c9019d829354fc94"
+    },
+    {
+      "path": "verification/review-v2-a-decision-tablet.json",
+      "status": "untracked",
+      "size_bytes": 287702,
+      "sha256": "ba130c99c08fecebd180c22f5f30307899b3277e92ed608191d3bcd65bbf677a"
+    },
+    {
+      "path": "verification/review-v2-a-decision-tablet.md",
+      "status": "untracked",
+      "size_bytes": 68009,
+      "sha256": "78acfaaebc23122bd2e4431d51a185a64b02d68fa704a6e3b166e6de17e2a71d"
+    },
+    {
+      "path": "verification/review-v2-a-decision-ui-pinned-desktop.png",
+      "status": "untracked",
+      "size_bytes": 797232,
+      "sha256": "2fb7cf2d6072b7f1a47232bcc507dbe20155c94c1c99f5157c59ad9f7f6d1b99"
+    },
+    {
+      "path": "verification/review-v2-a-decision-ui-pinned-laptop.png",
+      "status": "untracked",
+      "size_bytes": 777062,
+      "sha256": "afe329344192dfbb4d7a3af6956df2a61453ad1631435d71f51a8dd0d4552b0e"
+    },
+    {
+      "path": "verification/review-v2-a-decision-ui-pinned-mobile.png",
+      "status": "untracked",
+      "size_bytes": 687959,
+      "sha256": "b382f6e5fb13e91718e073cc5495af07b3f022fde5233147f6c799178a3cc206"
+    },
+    {
+      "path": "verification/review-v2-a-decision-ui-pinned-tablet.png",
+      "status": "untracked",
+      "size_bytes": 773791,
+      "sha256": "9d3df51c369e1092b8e7b9d338f29115c42712a80516920872a639ca079c41fa"
+    },
+    {
+      "path": "verification/review-v2-a-decision-ui-unpinned-desktop.png",
+      "status": "untracked",
+      "size_bytes": 802687,
+      "sha256": "3ad0b10ba22d8945eb2c33bf4623acdc88d0967c42d667c4d800c8e79c1cac20"
+    },
+    {
+      "path": "verification/review-v2-a-decision-ui-unpinned-laptop.png",
+      "status": "untracked",
+      "size_bytes": 783078,
+      "sha256": "1c634f021d3653917f736996861c591130a9f332d5d5fb0ae44fe9a4e248086b"
+    },
+    {
+      "path": "verification/review-v2-a-decision-ui-unpinned-mobile.png",
+      "status": "untracked",
+      "size_bytes": 692065,
+      "sha256": "70121f9fdff8bcbfa4834a4ab0c97300cdc9a529804ae819e449eaf2d8eed4c3"
+    },
+    {
+      "path": "verification/review-v2-a-decision-ui-unpinned-tablet.png",
+      "status": "untracked",
+      "size_bytes": 778856,
+      "sha256": "67fb0ae6e7341f1bc9e50da77f44df8f4dcc84bbf01602c5e90ec11686afa955"
+    },
+    {
+      "path": "verification/review-v2-a-decision-unpinned-desktop.md",
+      "status": "untracked",
+      "size_bytes": 67968,
+      "sha256": "ab793fbde444978ee93df6d1042442c33ebe6ff0e96d7f48ddb8c4cd658edbd0"
+    },
+    {
+      "path": "verification/review-v2-a-decision-unpinned-laptop.md",
+      "status": "untracked",
+      "size_bytes": 67968,
+      "sha256": "ab793fbde444978ee93df6d1042442c33ebe6ff0e96d7f48ddb8c4cd658edbd0"
+    },
+    {
+      "path": "verification/review-v2-a-decision-unpinned-mobile.md",
+      "status": "untracked",
+      "size_bytes": 67968,
+      "sha256": "ab793fbde444978ee93df6d1042442c33ebe6ff0e96d7f48ddb8c4cd658edbd0"
+    },
+    {
+      "path": "verification/review-v2-a-decision-unpinned-tablet.md",
+      "status": "untracked",
+      "size_bytes": 67968,
+      "sha256": "ab793fbde444978ee93df6d1042442c33ebe6ff0e96d7f48ddb8c4cd658edbd0"
+    },
+    {
+      "path": "verification/review-v2-a-desktop-first.txt",
+      "status": "untracked",
+      "size_bytes": 80729,
+      "sha256": "bb2cd3ce248da99169a41855217d80d32a48148e5959203891fb981db54e75d8"
+    },
+    {
+      "path": "verification/review-v2-a-desktop-second.txt",
+      "status": "untracked",
+      "size_bytes": 30367,
+      "sha256": "79a6fe6879ab1126278b94e54177c682e84a0c49614d64150cb669c0da337a8e"
+    },
+    {
+      "path": "verification/review-v2-a-diagnosis-desktop.png",
+      "status": "untracked",
+      "size_bytes": 1255730,
+      "sha256": "da83e94c887e20fe5ebb066e3c6720ba811628e6ff74506084fe321abd0ee4ee"
+    },
+    {
+      "path": "verification/review-v2-a-diagnosis-laptop.png",
+      "status": "untracked",
+      "size_bytes": 1282113,
+      "sha256": "c701b4570f5a302c7c2802f2750d3346d64c761c2bab2f864c9fe54f0526df35"
+    },
+    {
+      "path": "verification/review-v2-a-diagnosis-mobile.png",
+      "status": "untracked",
+      "size_bytes": 1364042,
+      "sha256": "6271c158dc97640a1b92ee52788a956c87007b34ec75a07bea7f3092a3558ac6"
+    },
+    {
+      "path": "verification/review-v2-a-diagnosis-tablet.png",
+      "status": "untracked",
+      "size_bytes": 1416795,
+      "sha256": "a8e1e598716a83c81afdf1beea26fa5542a2d8db6f6c1620a87c3c8412fc4bd6"
+    },
+    {
+      "path": "verification/review-v2-a-download-inventory.json",
+      "status": "untracked",
+      "size_bytes": 9520,
+      "sha256": "a78185bce8495a682dad34660ecb2dc3503da9e92c6d0c0361307cd606065aed"
+    },
+    {
+      "path": "verification/review-v2-a-e2e-final.txt",
+      "status": "untracked",
+      "size_bytes": 62848,
+      "sha256": "0e301dd08f00e3e18d7c92ca31041ce74d47339900decd8e21eaf44c83cbfb22"
+    },
+    {
+      "path": "verification/review-v2-a-e2e-first.txt",
+      "status": "untracked",
+      "size_bytes": 2604,
+      "sha256": "7564e6dbaf8c5d467a5c6739b56726a9524396c3cb270dc47eecfdc9eeec16b3"
+    },
+    {
+      "path": "verification/review-v2-a-e2e-full-build-id.txt",
+      "status": "untracked",
+      "size_bytes": 21,
+      "sha256": "a8f7c6535144c45666fe7a8a8406aa899f40bfb563b13149ba873dca1a8d5e02"
+    },
+    {
+      "path": "verification/review-v2-a-e2e-full-results.json",
+      "status": "untracked",
+      "size_bytes": 2815904,
+      "sha256": "c676875cad1100640fd48bc2a2a5fecee12faa9f36fa55eaed86d2316a7cff03"
+    },
+    {
+      "path": "verification/review-v2-a-e2e-results.json",
+      "status": "untracked",
+      "size_bytes": 8379,
+      "sha256": "9ed26a9175c34e8cb113886008fcdb14fb77d89b5c606759a495ca5634114b18"
+    },
+    {
+      "path": "verification/review-v2-a-e2e-second.txt",
+      "status": "untracked",
+      "size_bytes": 6211,
+      "sha256": "ee3990ca5ea343616284f9b88e96727018cb206668de737cc8f77e356dcfa5cd"
+    },
+    {
+      "path": "verification/review-v2-a-export-e2e-final.txt",
+      "status": "untracked",
+      "size_bytes": 3507,
+      "sha256": "a6a31fe407129ec7033735181b21ea33722e02aea2c2c299ddc74c72914900f4"
+    },
+    {
+      "path": "verification/review-v2-a-export-e2e-results.json",
+      "status": "untracked",
+      "size_bytes": 8379,
+      "sha256": "9ed26a9175c34e8cb113886008fcdb14fb77d89b5c606759a495ca5634114b18"
+    },
+    {
+      "path": "verification/review-v2-a-export-red.txt",
+      "status": "untracked",
+      "size_bytes": 1117,
+      "sha256": "673c472d721c8125039d8c873fe6079593d959ce24ca004c39acb308b445ea7e"
+    },
+    {
+      "path": "verification/review-v2-a-export-spec-lint.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-final-build-id.txt",
+      "status": "untracked",
+      "size_bytes": 21,
+      "sha256": "e5f6e4c9119d51494fa3508915d15dcb70282b1bb4afe57f06058fb454358cc3"
+    },
+    {
+      "path": "verification/review-v2-a-final-meeting-1280.jpg",
+      "status": "untracked",
+      "size_bytes": 85684,
+      "sha256": "e97f0e916306077781fb06bc9fc170822a8c21f8dd8994ecc3009b60dd4506f5"
+    },
+    {
+      "path": "verification/review-v2-a-final-server.txt",
+      "status": "untracked",
+      "size_bytes": 226,
+      "sha256": "98b3d53fc4807cda6deebed1794e6d6485888cf00556e0cb3096c1acf70cb9c3"
+    },
+    {
+      "path": "verification/review-v2-a-guard-desktop.png",
+      "status": "untracked",
+      "size_bytes": 180313,
+      "sha256": "a6775c1830100505c1f85e5bf37a71cfe53c71d5d8f832ed49c1464364334fca"
+    },
+    {
+      "path": "verification/review-v2-a-guard-laptop.png",
+      "status": "untracked",
+      "size_bytes": 173889,
+      "sha256": "5268bd728506de68956b2a7190645e005be51b42f8d7e0e9563a2e1bbdc3ce76"
+    },
+    {
+      "path": "verification/review-v2-a-guard-mobile.png",
+      "status": "untracked",
+      "size_bytes": 69407,
+      "sha256": "8047ec946477f1816989129dd520439805b4c63ea21b15981d710be05cbfd409"
+    },
+    {
+      "path": "verification/review-v2-a-guard-tablet.png",
+      "status": "untracked",
+      "size_bytes": 163866,
+      "sha256": "9222be1b6115c3b90463763427521415e457dca2bc2385253301033e0b4e5e86"
+    },
+    {
+      "path": "verification/review-v2-a-integrity.json",
+      "status": "untracked",
+      "size_bytes": 8345,
+      "sha256": "8a8497cc9f1cbc8d16d1436ec1d0ebd53ef2dbb642a4a6f058a91e9a1f0f01b6"
+    },
+    {
+      "path": "verification/review-v2-a-lint-final.txt",
+      "status": "untracked",
+      "size_bytes": 54,
+      "sha256": "74eaf9c2b48224e1962b6e217e5770073e15abd1636259901b2b71b17251d984"
+    },
+    {
+      "path": "verification/review-v2-a-lint-first.txt",
+      "status": "untracked",
+      "size_bytes": 54,
+      "sha256": "74eaf9c2b48224e1962b6e217e5770073e15abd1636259901b2b71b17251d984"
+    },
+    {
+      "path": "verification/review-v2-a-lint-second.txt",
+      "status": "untracked",
+      "size_bytes": 54,
+      "sha256": "74eaf9c2b48224e1962b6e217e5770073e15abd1636259901b2b71b17251d984"
+    },
+    {
+      "path": "verification/review-v2-a-manual-1280.jpg",
+      "status": "untracked",
+      "size_bytes": 82442,
+      "sha256": "672dcfe1092eac5d913f391170122b2a9299bf4eae96b9a178f3e7547577a009"
+    },
+    {
+      "path": "verification/review-v2-a-manual-1440.jpg",
+      "status": "untracked",
+      "size_bytes": 100156,
+      "sha256": "307d5181823879852eb3b15202a908f47cb13061406df4dddea395ae26d0b81c"
+    },
+    {
+      "path": "verification/review-v2-a-manual-390.jpg",
+      "status": "untracked",
+      "size_bytes": 42831,
+      "sha256": "ea588f8cfa64c64509cdbaa69400dace4e49c94e566607840383f06721881899"
+    },
+    {
+      "path": "verification/review-v2-a-manual-768.jpg",
+      "status": "untracked",
+      "size_bytes": 76487,
+      "sha256": "0330507b5f7b691669d4097aa0101d153e7606bb0ffc2b9a7100d85a31b23b11"
+    },
+    {
+      "path": "verification/review-v2-a-manual-browser.json",
+      "status": "untracked",
+      "size_bytes": 2045,
+      "sha256": "ed39d1831510d1f9c4a29ec589d112d9aaaf909fc522109640d3c8ee36293469"
+    },
+    {
+      "path": "verification/review-v2-a-manual-server.txt",
+      "status": "untracked",
+      "size_bytes": 226,
+      "sha256": "946c6da2779dd2ecc6e7760f2b0b5fb3b19d318569bded4d06c86702c7844139"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-desktop.md",
+      "status": "untracked",
+      "size_bytes": 76200,
+      "sha256": "23e8e654fe94b966897621ac5c98eeb83d8336c7352d22c949471a8c8f7f381f"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-desktop.png",
+      "status": "untracked",
+      "size_bytes": 799040,
+      "sha256": "01f55604406b315c937e7b6431e3974ad3b5d8681e9e328021224dea9206a19f"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-laptop.md",
+      "status": "untracked",
+      "size_bytes": 76200,
+      "sha256": "74577a6b2ebfb1573493e95fe297b4a483cfcf1965d3478c9c0d67486bf1dd8b"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-laptop.png",
+      "status": "untracked",
+      "size_bytes": 782646,
+      "sha256": "e9276ef558029b4e48951ae22b5b47056900ffb21c99819621a74fa4acbc941c"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-lint.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-mobile.md",
+      "status": "untracked",
+      "size_bytes": 76200,
+      "sha256": "da051f70d4b1f786e0926af3ad60f0d7609f5528abf9a08c6ed13fd038a9b336"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-mobile.png",
+      "status": "untracked",
+      "size_bytes": 705035,
+      "sha256": "a2e4e07b1199c887447a3802c417a10b6e2d57f71f3f275e0e44d4e34b771429"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-red.txt",
+      "status": "untracked",
+      "size_bytes": 1566,
+      "sha256": "ef0f00cd80362539f19f9f7edb0250cf41c130f753f67c26faaebf448baee791"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-tablet.md",
+      "status": "untracked",
+      "size_bytes": 76200,
+      "sha256": "d9b5323a12c880c18f32bf3815a840126e978f80e7cd978c0605eba663c15241"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-tablet.png",
+      "status": "untracked",
+      "size_bytes": 783275,
+      "sha256": "2eccf0428f52394a00d12f816944024d231e69010d7e748ecd6f48b14163e143"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-unit.txt",
+      "status": "untracked",
+      "size_bytes": 364,
+      "sha256": "1b291a522b292a1ac6e015e8b96b4a1b9f9f5d4e4db939b5a0625b9220bc6799"
+    },
+    {
+      "path": "verification/review-v2-a-mock-desktop-ai-viewport.png",
+      "status": "untracked",
+      "size_bytes": 156215,
+      "sha256": "93b3e285de718743cfd192077cded3055c40a2164d7166598b5c843f4468ca98"
+    },
+    {
+      "path": "verification/review-v2-a-mock-desktop-ai.png",
+      "status": "untracked",
+      "size_bytes": 1177814,
+      "sha256": "238b1ce2c7b52bc7564a51b0fdd4b29ea267a74ba89c862ed157ea712a83d486"
+    },
+    {
+      "path": "verification/review-v2-a-mock-laptop-ai-viewport.png",
+      "status": "untracked",
+      "size_bytes": 141450,
+      "sha256": "e42ac60beed31e3d62bed70766ffa183f10c3b8311234b8399911beb6b6dbf85"
+    },
+    {
+      "path": "verification/review-v2-a-mock-laptop-ai.png",
+      "status": "untracked",
+      "size_bytes": 1161110,
+      "sha256": "22b08812bc075967368f12e7cd5b5d3931506ce5a805f36bf9263f34b1008319"
+    },
+    {
+      "path": "verification/review-v2-a-mock-mobile-ai-viewport.png",
+      "status": "untracked",
+      "size_bytes": 81479,
+      "sha256": "bf787fa05195638b446e12a7c49b1406988e2977a004103aeff1d30dc6b93487"
+    },
+    {
+      "path": "verification/review-v2-a-mock-mobile-ai.png",
+      "status": "untracked",
+      "size_bytes": 1228580,
+      "sha256": "1df68657d4c48fc750117752a9457a83916cae678cdc311225e3a925f276b032"
+    },
+    {
+      "path": "verification/review-v2-a-mock-tablet-ai-viewport.png",
+      "status": "untracked",
+      "size_bytes": 144239,
+      "sha256": "4dd29915ab69ab3c54fb02ebae1e37573f438453ceee3622f0ef4584cb18ce95"
+    },
+    {
+      "path": "verification/review-v2-a-mock-tablet-ai.png",
+      "status": "untracked",
+      "size_bytes": 1319839,
+      "sha256": "ea0fe9e0dfcfc244088d23740aeb0e9848ec4d0c6034e10ecb02f6c166a4e34f"
+    },
+    {
+      "path": "verification/review-v2-a-presentation-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 4520,
+      "sha256": "1452e64fd44bca9845d81346c46c36e2a354063dfdd5bc211bf814aa2d45cd25"
+    },
+    {
+      "path": "verification/review-v2-a-preservation-final.json",
+      "status": "untracked",
+      "size_bytes": 30409,
+      "sha256": "7be95e763d9fcd601c0e65eca2eee9b339c79900d2f85945b4efddfa75f98358"
+    },
+    {
+      "path": "verification/review-v2-a-preservation-final.md",
+      "status": "untracked",
+      "size_bytes": 1416,
+      "sha256": "f04c52f94d15220abd154884ae280034ff5cd2b511a640b43f3b73e90959a40e"
+    },
+    {
+      "path": "verification/review-v2-a-public-gate-http.json",
+      "status": "untracked",
+      "size_bytes": 509,
+      "sha256": "67ad8b86850c79ad35b380c59c4a902dbc05b8848a861f68acf1c96b3f6a82e6"
+    },
+    {
+      "path": "verification/review-v2-a-regression-actions-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 813,
+      "sha256": "e9ca5d6f8e261a9820097c893604113a8ffa7f6aa5c8540f66a57357fa9d3a68"
+    },
+    {
+      "path": "verification/review-v2-a-regression-actions-desktop.png",
+      "status": "untracked",
+      "size_bytes": 937144,
+      "sha256": "9d02d9f09f8e23a56837036fa83f18459c287308e9eccaf8f443cb70a95f148c"
+    },
+    {
+      "path": "verification/review-v2-a-regression-actions-laptop.png",
+      "status": "untracked",
+      "size_bytes": 921411,
+      "sha256": "0469b0433526bda8a4bf5f38756cdbcff2329b71878ba977001f0cc501c3c70c"
+    },
+    {
+      "path": "verification/review-v2-a-regression-actions-mobile.png",
+      "status": "untracked",
+      "size_bytes": 704201,
+      "sha256": "7cb8505ebbe0368e5071e97661ffd82627b47a5a844ed7190099ddfd1f73350a"
+    },
+    {
+      "path": "verification/review-v2-a-regression-actions-tablet.png",
+      "status": "untracked",
+      "size_bytes": 901712,
+      "sha256": "30698d7e74f5d956927396b4a3ad3398735f302592441f88f1cc3838b69fb3e3"
+    },
+    {
+      "path": "verification/review-v2-a-regression-desktop-restored.png",
+      "status": "untracked",
+      "size_bytes": 408882,
+      "sha256": "7419d71703db77f8638519faf4918925e25dec35a3ec7300a70713f2d4212729"
+    },
+    {
+      "path": "verification/review-v2-a-regression-laptop-restored.png",
+      "status": "untracked",
+      "size_bytes": 400132,
+      "sha256": "d389e731e568081ba6a5589471282cbb65311aacac2b125cfbf31ccc82be8f86"
+    },
+    {
+      "path": "verification/review-v2-a-regression-mobile-restored.png",
+      "status": "untracked",
+      "size_bytes": 353911,
+      "sha256": "2797794c61b62430795150a9156fd74179b0cc839508a8b0cfa2ad671d753150"
+    },
+    {
+      "path": "verification/review-v2-a-regression-period-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 3276,
+      "sha256": "e502d1c15e5df59be91001f155564c8235be04bdaccb25af13001fdb6a0cb025"
+    },
+    {
+      "path": "verification/review-v2-a-regression-period-desktop.png",
+      "status": "untracked",
+      "size_bytes": 581767,
+      "sha256": "404789e8b94ca071f764b1dd792974da82a894fbd5744adafa4deeb7cf31ef89"
+    },
+    {
+      "path": "verification/review-v2-a-regression-period-laptop.png",
+      "status": "untracked",
+      "size_bytes": 574034,
+      "sha256": "71aeae010c368b5314ab0b7ec580cdcfbc9660993f936cbbef6948ada868a01b"
+    },
+    {
+      "path": "verification/review-v2-a-regression-period-mobile.png",
+      "status": "untracked",
+      "size_bytes": 513693,
+      "sha256": "102f32172980e53bf23c2a920e5e0fb33e7a207723db76c378cbce0402a42e4e"
+    },
+    {
+      "path": "verification/review-v2-a-regression-period-tablet.png",
+      "status": "untracked",
+      "size_bytes": 567913,
+      "sha256": "5bad87fc361a591a3bf858b9b5f6552f789b8b8f2fa3e36c589c1eaf6b7228bc"
+    },
+    {
+      "path": "verification/review-v2-a-regression-products-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 2679,
+      "sha256": "42e49c52c3ccefe11e9a66a0b8cbcd3e425e77fdaa742abab702c1b22c5b9430"
+    },
+    {
+      "path": "verification/review-v2-a-regression-products-desktop.png",
+      "status": "untracked",
+      "size_bytes": 248042,
+      "sha256": "64de806ab774c64b72028455f798301f037ace84a5d2b18511a025669c4d091f"
+    },
+    {
+      "path": "verification/review-v2-a-regression-products-laptop.png",
+      "status": "untracked",
+      "size_bytes": 242282,
+      "sha256": "682e4bfd040c6963e4eb9bb4fb05e5c076e7ec55a54d0d05277a56fcf642f28c"
+    },
+    {
+      "path": "verification/review-v2-a-regression-products-mobile.png",
+      "status": "untracked",
+      "size_bytes": 217246,
+      "sha256": "40fd4f7cd0be066a85fc4145a7662f62a406e967f6326799a13e77f4fd20b094"
+    },
+    {
+      "path": "verification/review-v2-a-regression-products-tablet.png",
+      "status": "untracked",
+      "size_bytes": 243131,
+      "sha256": "09d7a47498f90bf773fb3292c248dc3c9215dcc317c5380fea8f1386bd825c2e"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-context-isolation-meta.jsonl",
+      "status": "untracked",
+      "size_bytes": 937,
+      "sha256": "81200f1a8ad160362130f482f1dfabb6fa835d1e76f68154acfbaf9a1d82140d"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-desktop-complete-flow.png",
+      "status": "untracked",
+      "size_bytes": 336771,
+      "sha256": "d869eb1b589932a8ccde8080ef81975b080f2cf4faa377083e74aa5001d42ff1"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-laptop-complete-flow.png",
+      "status": "untracked",
+      "size_bytes": 329855,
+      "sha256": "f61fed5159a021a9c3877712cf813b1c76e7e0e92d6257511cf56a8dbdd02a28"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-mobile-complete-flow.png",
+      "status": "untracked",
+      "size_bytes": 284216,
+      "sha256": "de31b56d6262c9399bea80e4bbb62a1613e51c9e716d15880b9788b8960213d0"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-browser-meta.jsonl",
+      "status": "untracked",
+      "size_bytes": 16865,
+      "sha256": "506d0cbaabe4212797edeb7588e7c3eb87b4de084d9a1cd2bd708982c0b208b7"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-desktop-actions.png",
+      "status": "untracked",
+      "size_bytes": 744137,
+      "sha256": "efcfdce22b602bd72a6dba644d6fae7c20200fcaa827ca350130dd7beb56c26f"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-desktop-scenarios.png",
+      "status": "untracked",
+      "size_bytes": 596321,
+      "sha256": "f1e37f7e8d6c4ce26e6a941123ffeec47a42a6d7a2fcd2778610b6dc443f0fda"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-desktop-import.png",
+      "status": "untracked",
+      "size_bytes": 917419,
+      "sha256": "e0c64bdff822889bf27f32d8266ae0fcd5dbc29c53fc115ccf1404782b9252a4"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-desktop-overview.png",
+      "status": "untracked",
+      "size_bytes": 713498,
+      "sha256": "784d03c6ce0325580bf79586e85107bf0bcf847ec9482efee6cb32007fd9632d"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-laptop-import.png",
+      "status": "untracked",
+      "size_bytes": 907475,
+      "sha256": "9a1f97cdb8c8240695554e56012a98b608c116fc024884ca280fc9c74392b787"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-laptop-overview.png",
+      "status": "untracked",
+      "size_bytes": 698676,
+      "sha256": "0122f57208902d387e867ef3e6d895ce2d287a1d930f8437db149b1c4247851c"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-meta.jsonl",
+      "status": "untracked",
+      "size_bytes": 17160,
+      "sha256": "e33fbb1d65d0d09b93b9e3fc8321dfebbce0de1087eb1cd01541cee154fb5a4e"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-mobile-import.png",
+      "status": "untracked",
+      "size_bytes": 818203,
+      "sha256": "e83f03bdb3ad3ab3353dfc860f6b826a8ed424f7a19ce3a71af1a62320786925"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-mobile-overview.png",
+      "status": "untracked",
+      "size_bytes": 626732,
+      "sha256": "81b55aaffab702d4ed0d1061516332a9708b35413113de9c31791ff4586efc42"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-tablet-import.png",
+      "status": "untracked",
+      "size_bytes": 904401,
+      "sha256": "bf66057a2f1f153009189ee314ed578f2f6191ca1c3169c0dd1926e2112d366e"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-import-regression-tablet-overview.png",
+      "status": "untracked",
+      "size_bytes": 693803,
+      "sha256": "0468613223d440b07b4df0c9ccc933ec1e2d1805eabfa1ad1ccca2b9dd0fcd14"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-laptop-actions.png",
+      "status": "untracked",
+      "size_bytes": 727123,
+      "sha256": "9af48c2a981088ee3b958ce16b4071f9a2fc0bfbe15c721aefbd2c8ffb037951"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-laptop-scenarios.png",
+      "status": "untracked",
+      "size_bytes": 700552,
+      "sha256": "6abef229c4e7a18cd509f5110ac438ad464024ff1c380365bcb9ed877c65eb62"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-mobile-actions.png",
+      "status": "untracked",
+      "size_bytes": 595043,
+      "sha256": "d49832f2dd316abc6eb4df2ec7e470ad5e6a283db64852458df5b0257e6cf66a"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-mobile-scenarios.png",
+      "status": "untracked",
+      "size_bytes": 671952,
+      "sha256": "05a9c7ba99740d49c41a01cb24cd9f18cacafc6fe0e4a40aa1c6b96f66608275"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-tablet-actions.png",
+      "status": "untracked",
+      "size_bytes": 704981,
+      "sha256": "c69c9d56354211b9506fbfd24787029fdc20b462d28083fa2cb755de2f46a741"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-tablet-scenarios.png",
+      "status": "untracked",
+      "size_bytes": 722611,
+      "sha256": "a5cd871942b355219c9910c63bbc9d30c769b53105954f060288c56f83eaf5e4"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-browser-logs.jsonl",
+      "status": "untracked",
+      "size_bytes": 16421,
+      "sha256": "8fd53caf296602ba4e9ae4b0d7757e113dd163155c238d82689f6260197b771a"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-desktop-products.png",
+      "status": "untracked",
+      "size_bytes": 239408,
+      "sha256": "bc59440751c0d48db42dcbb7fd46b658259a087524a00ceb24e8fe40b165f537"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-desktop.png",
+      "status": "untracked",
+      "size_bytes": 811676,
+      "sha256": "945532fea64ff81c40c14b1e204215c06b121294920ea2aa6cf5200045c926dc"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-laptop-products.png",
+      "status": "untracked",
+      "size_bytes": 235086,
+      "sha256": "0ee1b7c6eee1a911467402bb95af23286975791457825610516aca867054c164"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-laptop.png",
+      "status": "untracked",
+      "size_bytes": 792704,
+      "sha256": "11d247fce05af609bdde5ed1ac5f961f91f97baf6403a62e77a7e00edb4aaa9b"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-mobile-products.png",
+      "status": "untracked",
+      "size_bytes": 214362,
+      "sha256": "798f0d40021b873ee334e78dcff2e5b413ed272a9d77350b350d5968a2be99bd"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-mobile.png",
+      "status": "untracked",
+      "size_bytes": 709297,
+      "sha256": "0fa58bc73c07b3cf38d59162e9c2acbc66890f208a19d4473b0120c807be9149"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-tablet-products.png",
+      "status": "untracked",
+      "size_bytes": 236216,
+      "sha256": "9c08191a0239811c1df9e5a701e1294035f3b9636ed253bc8d90b00a86605966"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-tablet.png",
+      "status": "untracked",
+      "size_bytes": 773444,
+      "sha256": "e83eb8377cc02bfadb91605622d322f8591c1d12707b5c8255cfecd106e51a5d"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-tablet-complete-flow.png",
+      "status": "untracked",
+      "size_bytes": 324827,
+      "sha256": "b90498107ab8c8ab4830c149f39f79b4b7c7a8b0c90cc54dd31511444fa0829f"
+    },
+    {
+      "path": "verification/review-v2-a-regression-regression-m6-ui-flow-meta.jsonl",
+      "status": "untracked",
+      "size_bytes": 1305,
+      "sha256": "a792b582a407b29189645ae0abbb326ce8442982e2a4cf3f461138126a2cd797"
+    },
+    {
+      "path": "verification/review-v2-a-regression-sensitivity-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 987,
+      "sha256": "a4ce01e9efaa33c4f3a3d3cc03d45c3d2f8e5ab9ff6fe865757cbe55217cdbbc"
+    },
+    {
+      "path": "verification/review-v2-a-regression-sensitivity-desktop.png",
+      "status": "untracked",
+      "size_bytes": 744066,
+      "sha256": "89514b3e0d4aa4098a394e95b4975e42523c3c5a6849664f7ea5f1ba094215e3"
+    },
+    {
+      "path": "verification/review-v2-a-regression-sensitivity-laptop.png",
+      "status": "untracked",
+      "size_bytes": 728646,
+      "sha256": "387b17e03e860b933ab2de44d725f8657879adff18bba56dd0815b0176ed3e66"
+    },
+    {
+      "path": "verification/review-v2-a-regression-sensitivity-mobile.png",
+      "status": "untracked",
+      "size_bytes": 682988,
+      "sha256": "292a5cf3e28d82b61ff117bac3020258d087bc6191c33f5d0128aac4ad47afd5"
+    },
+    {
+      "path": "verification/review-v2-a-regression-sensitivity-tablet.png",
+      "status": "untracked",
+      "size_bytes": 738216,
+      "sha256": "d020451255b36012a7b98eaeaccf7738593872166a0608b0a567509a58b66366"
+    },
+    {
+      "path": "verification/review-v2-a-regression-storage-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 1191,
+      "sha256": "9ad7d7797691b0d7c8fdd2067de9e8d24b4d672078c2b4267dee7e4f8de206ad"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 2475,
+      "sha256": "be6d3a46ab4a763218d613988d9bc60271e82cbaaf7440fed7f7d6d91f8c8e91"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-desktop.png",
+      "status": "untracked",
+      "size_bytes": 635573,
+      "sha256": "148842949db50947a5c645581204a1c4dec431f3c8d8989bcbd733a2b70310b0"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-laptop.png",
+      "status": "untracked",
+      "size_bytes": 622046,
+      "sha256": "80cfda8ff5aefcab33dec970bb81f2efdf1682704b5bae0fc92a52da7a20f6b2"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-mobile.png",
+      "status": "untracked",
+      "size_bytes": 553910,
+      "sha256": "b3727da005002e432bf6c542ce532d5a16eafae62ea1d2d101af008bf490a42f"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-print-desktop.png",
+      "status": "untracked",
+      "size_bytes": 162498,
+      "sha256": "e850a3e1c76b7ed093525a181d5b094206ef96f10a713f6764444d11ce90beea"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-print-laptop.png",
+      "status": "untracked",
+      "size_bytes": 157183,
+      "sha256": "798069c3884378e7888274aea341ca8e4b8b6ea8e1404df9e579667419a39b56"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-print-mobile.png",
+      "status": "untracked",
+      "size_bytes": 141492,
+      "sha256": "922a4ef537a845d37050f25390b92be56822d666339d0454b251a3eb27a52a19"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-print-tablet.png",
+      "status": "untracked",
+      "size_bytes": 151512,
+      "sha256": "9359cfebf7525a950dc18e8ebc0ec9922f7b9efd916393c01bebc03aed9d1db4"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-print.pdf",
+      "status": "untracked",
+      "size_bytes": 451243,
+      "sha256": "ca9b9e04544bf239d6913ee220aa11f39ccd0719e9fbc872b27ee26dc41351dd"
+    },
+    {
+      "path": "verification/review-v2-a-regression-summary-tablet.png",
+      "status": "untracked",
+      "size_bytes": 617853,
+      "sha256": "0ef40aa8d2b20f0e9d80eae14c360e2bfff0d872b03374b9217405472aa18581"
+    },
+    {
+      "path": "verification/review-v2-a-regression-tablet-restored.png",
+      "status": "untracked",
+      "size_bytes": 398807,
+      "sha256": "f4bb71e1fb297085d5bbb07262ce45f0e45e263542fb2da1fe33a974cc294cc3"
+    },
+    {
+      "path": "verification/review-v2-a-replacement-green.txt",
+      "status": "untracked",
+      "size_bytes": 297,
+      "sha256": "157841989218a976272ce85a6844444dd02241760fcc75938dcf332f3a7c1e2b"
+    },
+    {
+      "path": "verification/review-v2-a-replacement-red.txt",
+      "status": "untracked",
+      "size_bytes": 953,
+      "sha256": "ed87e50b2655e1a9f32a5fd3cba7762f593bf7d68fd7883dc29d58431e13e208"
+    },
+    {
+      "path": "verification/review-v2-a-scenarios-selector-lint.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-source-inventory.json",
+      "status": "untracked",
+      "size_bytes": 16796,
+      "sha256": "27371d547eb42dfc680a8ab6b0ceb4ea026bb56ca6259327ca20bb93afba2ea6"
+    },
+    {
+      "path": "verification/review-v2-a-typecheck-final.txt",
+      "status": "untracked",
+      "size_bytes": 121,
+      "sha256": "193d463cff574ac3535b5f28e3c8db4039a73115f3afbd7b1f67807114d51860"
+    },
+    {
+      "path": "verification/review-v2-a-typecheck-first.txt",
+      "status": "untracked",
+      "size_bytes": 121,
+      "sha256": "193d463cff574ac3535b5f28e3c8db4039a73115f3afbd7b1f67807114d51860"
+    },
+    {
+      "path": "verification/review-v2-a-unit-final.txt",
+      "status": "untracked",
+      "size_bytes": 282,
+      "sha256": "907a853d37cc16b3f8d010de2c0ec8a14f008ecca41a3fbf53f832969e135776"
+    },
+    {
+      "path": "verification/review-v2-a-unit-first.txt",
+      "status": "untracked",
+      "size_bytes": 1838,
+      "sha256": "5fe4882628f8b2cb7719d792963af9cef36e8d8106d3dd8545bc90d1a1a04d0d"
+    },
+    {
+      "path": "verification/review-v2-a-unpinned-summary-green.txt",
+      "status": "untracked",
+      "size_bytes": 329,
+      "sha256": "6265c6af762585bbac8bfbf8922278eefcb1fb8a646773116f4e52042021fdb7"
+    },
+    {
+      "path": "verification/review-v2-a-unpinned-summary-lint.txt",
+      "status": "untracked",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "verification/review-v2-a-unpinned-summary-red.txt",
+      "status": "untracked",
+      "size_bytes": 3763,
+      "sha256": "8c9ad67b4db58a31f3a40f9690c3b383a86f0441a9ef22a49115417021aefe76"
+    },
+    {
+      "path": "verification/review-v2-a-workflow-browser.jsonl",
+      "status": "untracked",
+      "size_bytes": 4262,
+      "sha256": "f6041479de7f169ffb789736c08d3dc27cec37dc4411e991a9a1321820a4a6b4"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-desktop.json",
+      "status": "untracked",
+      "size_bytes": 19988,
+      "sha256": "c325def8781d184d3843846e13af75fcb89737480e2d910772458e5774152969"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-laptop.json",
+      "status": "untracked",
+      "size_bytes": 19988,
+      "sha256": "5df6dbc213c6b92ac191bf8ca95b6aefbd22edf5d032c253fd20cb15687d504c"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-mobile.json",
+      "status": "untracked",
+      "size_bytes": 19988,
+      "sha256": "708834f30311b81bd310e93366fbadc39db2b78c621dc8450cb03b83a92ea989"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-tablet.json",
+      "status": "untracked",
+      "size_bytes": 19988,
+      "sha256": "77da5d19c68665d12ae2733aa08fbc715914e55f7518153a5e2a2923e150a5ed"
+    }
+  ],
+  "scan": {
+    "text_file_count": 166,
+    "binary_file_count": 112,
+    "binary_paths": [
+      "verification/review-v2-a-action-management-desktop.png",
+      "verification/review-v2-a-action-management-laptop.png",
+      "verification/review-v2-a-action-management-mobile.png",
+      "verification/review-v2-a-action-management-tablet.png",
+      "verification/review-v2-a-action-rebind-desktop.png",
+      "verification/review-v2-a-action-rebind-laptop.png",
+      "verification/review-v2-a-action-rebind-mobile.png",
+      "verification/review-v2-a-action-rebind-tablet.png",
+      "verification/review-v2-a-advanced-desktop.png",
+      "verification/review-v2-a-advanced-laptop.png",
+      "verification/review-v2-a-advanced-mobile.png",
+      "verification/review-v2-a-advanced-tablet.png",
+      "verification/review-v2-a-decision-print-pinned-desktop.pdf",
+      "verification/review-v2-a-decision-print-pinned-desktop.png",
+      "verification/review-v2-a-decision-print-pinned-laptop.png",
+      "verification/review-v2-a-decision-print-pinned-mobile.png",
+      "verification/review-v2-a-decision-print-pinned-tablet.png",
+      "verification/review-v2-a-decision-print-unpinned-desktop.pdf",
+      "verification/review-v2-a-decision-print-unpinned-desktop.png",
+      "verification/review-v2-a-decision-print-unpinned-laptop.png",
+      "verification/review-v2-a-decision-print-unpinned-mobile.png",
+      "verification/review-v2-a-decision-print-unpinned-tablet.png",
+      "verification/review-v2-a-decision-ui-pinned-desktop.png",
+      "verification/review-v2-a-decision-ui-pinned-laptop.png",
+      "verification/review-v2-a-decision-ui-pinned-mobile.png",
+      "verification/review-v2-a-decision-ui-pinned-tablet.png",
+      "verification/review-v2-a-decision-ui-unpinned-desktop.png",
+      "verification/review-v2-a-decision-ui-unpinned-laptop.png",
+      "verification/review-v2-a-decision-ui-unpinned-mobile.png",
+      "verification/review-v2-a-decision-ui-unpinned-tablet.png",
+      "verification/review-v2-a-diagnosis-desktop.png",
+      "verification/review-v2-a-diagnosis-laptop.png",
+      "verification/review-v2-a-diagnosis-mobile.png",
+      "verification/review-v2-a-diagnosis-tablet.png",
+      "verification/review-v2-a-final-meeting-1280.jpg",
+      "verification/review-v2-a-guard-desktop.png",
+      "verification/review-v2-a-guard-laptop.png",
+      "verification/review-v2-a-guard-mobile.png",
+      "verification/review-v2-a-guard-tablet.png",
+      "verification/review-v2-a-manual-1280.jpg",
+      "verification/review-v2-a-manual-1440.jpg",
+      "verification/review-v2-a-manual-390.jpg",
+      "verification/review-v2-a-manual-768.jpg",
+      "verification/review-v2-a-meeting-desktop.png",
+      "verification/review-v2-a-meeting-laptop.png",
+      "verification/review-v2-a-meeting-mobile.png",
+      "verification/review-v2-a-meeting-tablet.png",
+      "verification/review-v2-a-mock-desktop-ai-viewport.png",
+      "verification/review-v2-a-mock-desktop-ai.png",
+      "verification/review-v2-a-mock-laptop-ai-viewport.png",
+      "verification/review-v2-a-mock-laptop-ai.png",
+      "verification/review-v2-a-mock-mobile-ai-viewport.png",
+      "verification/review-v2-a-mock-mobile-ai.png",
+      "verification/review-v2-a-mock-tablet-ai-viewport.png",
+      "verification/review-v2-a-mock-tablet-ai.png",
+      "verification/review-v2-a-regression-actions-desktop.png",
+      "verification/review-v2-a-regression-actions-laptop.png",
+      "verification/review-v2-a-regression-actions-mobile.png",
+      "verification/review-v2-a-regression-actions-tablet.png",
+      "verification/review-v2-a-regression-desktop-restored.png",
+      "verification/review-v2-a-regression-laptop-restored.png",
+      "verification/review-v2-a-regression-mobile-restored.png",
+      "verification/review-v2-a-regression-period-desktop.png",
+      "verification/review-v2-a-regression-period-laptop.png",
+      "verification/review-v2-a-regression-period-mobile.png",
+      "verification/review-v2-a-regression-period-tablet.png",
+      "verification/review-v2-a-regression-products-desktop.png",
+      "verification/review-v2-a-regression-products-laptop.png",
+      "verification/review-v2-a-regression-products-mobile.png",
+      "verification/review-v2-a-regression-products-tablet.png",
+      "verification/review-v2-a-regression-regression-m6-desktop-complete-flow.png",
+      "verification/review-v2-a-regression-regression-m6-laptop-complete-flow.png",
+      "verification/review-v2-a-regression-regression-m6-mobile-complete-flow.png",
+      "verification/review-v2-a-regression-regression-m6-regression-desktop-actions.png",
+      "verification/review-v2-a-regression-regression-m6-regression-desktop-scenarios.png",
+      "verification/review-v2-a-regression-regression-m6-regression-import-regression-desktop-import.png",
+      "verification/review-v2-a-regression-regression-m6-regression-import-regression-desktop-overview.png",
+      "verification/review-v2-a-regression-regression-m6-regression-import-regression-laptop-import.png",
+      "verification/review-v2-a-regression-regression-m6-regression-import-regression-laptop-overview.png",
+      "verification/review-v2-a-regression-regression-m6-regression-import-regression-mobile-import.png",
+      "verification/review-v2-a-regression-regression-m6-regression-import-regression-mobile-overview.png",
+      "verification/review-v2-a-regression-regression-m6-regression-import-regression-tablet-import.png",
+      "verification/review-v2-a-regression-regression-m6-regression-import-regression-tablet-overview.png",
+      "verification/review-v2-a-regression-regression-m6-regression-laptop-actions.png",
+      "verification/review-v2-a-regression-regression-m6-regression-laptop-scenarios.png",
+      "verification/review-v2-a-regression-regression-m6-regression-mobile-actions.png",
+      "verification/review-v2-a-regression-regression-m6-regression-mobile-scenarios.png",
+      "verification/review-v2-a-regression-regression-m6-regression-tablet-actions.png",
+      "verification/review-v2-a-regression-regression-m6-regression-tablet-scenarios.png",
+      "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-desktop-products.png",
+      "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-desktop.png",
+      "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-laptop-products.png",
+      "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-laptop.png",
+      "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-mobile-products.png",
+      "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-mobile.png",
+      "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-tablet-products.png",
+      "verification/review-v2-a-regression-regression-m6-regression-workspace-regression-tablet.png",
+      "verification/review-v2-a-regression-regression-m6-tablet-complete-flow.png",
+      "verification/review-v2-a-regression-sensitivity-desktop.png",
+      "verification/review-v2-a-regression-sensitivity-laptop.png",
+      "verification/review-v2-a-regression-sensitivity-mobile.png",
+      "verification/review-v2-a-regression-sensitivity-tablet.png",
+      "verification/review-v2-a-regression-summary-desktop.png",
+      "verification/review-v2-a-regression-summary-laptop.png",
+      "verification/review-v2-a-regression-summary-mobile.png",
+      "verification/review-v2-a-regression-summary-print-desktop.png",
+      "verification/review-v2-a-regression-summary-print-laptop.png",
+      "verification/review-v2-a-regression-summary-print-mobile.png",
+      "verification/review-v2-a-regression-summary-print-tablet.png",
+      "verification/review-v2-a-regression-summary-print.pdf",
+      "verification/review-v2-a-regression-summary-tablet.png",
+      "verification/review-v2-a-regression-tablet-restored.png"
+    ],
+    "findings": [
+      {
+        "path": "docs/STATUS.md",
+        "line": 213,
+        "type": "openai_key_like",
+        "classification": "explicit_fake_canary"
+      },
+      {
+        "path": "playwright.config.ts",
+        "line": 39,
+        "type": "openai_key_like",
+        "classification": "explicit_fake_canary"
+      },
+      {
+        "path": "playwright.config.ts",
+        "line": 39,
+        "type": "credential_assignment",
+        "classification": "explicit_fake_canary"
+      },
+      {
+        "path": "verification/review-v2-a-e2e-full-results.json",
+        "line": 126,
+        "type": "openai_key_like",
+        "classification": "explicit_fake_canary"
+      },
+      {
+        "path": "verification/review-v2-a-e2e-results.json",
+        "line": 127,
+        "type": "openai_key_like",
+        "classification": "explicit_fake_canary"
+      },
+      {
+        "path": "verification/review-v2-a-export-e2e-results.json",
+        "line": 127,
+        "type": "openai_key_like",
+        "classification": "explicit_fake_canary"
+      }
+    ],
+    "pattern_types": [
+      "openai_key_like",
+      "github_token",
+      "aws_access_id",
+      "private_key_header",
+      "bearer_literal",
+      "credential_assignment",
+      "email_address"
+    ],
+    "limitations": [
+      "Matching values are deliberately omitted; only path, line, type and classification are reported.",
+      "No .env or credentials files are opened. Binary images/PDFs are not OCR scanned.",
+      "This is a finite regex scan, not universal proof that no secret exists."
+    ],
+    "unexplained_findings": []
+  },
+  "source_inventory_file": "verification/review-v2-a-source-inventory.json",
+  "source_inventory_count": 139,
+  "source_inventory_mismatches": [],
+  "protected_count": 60,
+  "protected_mismatches": [],
+  "review_original_count": 9,
+  "review_original_mismatches": [],
+  "zip_status": "pass",
+  "zip_members": [
+    {
+      "path": "reviews/profitlens_review_v2_20261001/CODEX_NEXT_SPRINT.md",
+      "status": "pass"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/OPERATING_REVIEW_SPEC.md",
+      "status": "pass"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/README.md",
+      "status": "pass"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/REVIEW_FINDINGS.md",
+      "status": "pass"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/ZH_TW_COPY_GUIDE.md",
+      "status": "pass"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/browser_attempt.json",
+      "status": "pass"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/deployed_logic_checks.js",
+      "status": "pass"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/evidence_receipt.json",
+      "status": "pass"
+    },
+    {
+      "path": "reviews/profitlens_review_v2_20261001/logic_results.json",
+      "status": "pass"
+    }
+  ],
+  "workspace_source_verification": [
+    {
+      "path": "verification/review-v2-a-workspace-desktop.json",
+      "schema_version": "profitlens-workspace-v3",
+      "sources": [
+        {
+          "source_hash": "92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48",
+          "source_type": "synthetic",
+          "manifest_equal_to_golden": true,
+          "csv_byte_checks": [
+            {
+              "file": "sales_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c"
+            },
+            {
+              "file": "channel_costs_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8"
+            },
+            {
+              "file": "ad_spend_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401"
+            }
+          ]
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-laptop.json",
+      "schema_version": "profitlens-workspace-v3",
+      "sources": [
+        {
+          "source_hash": "92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48",
+          "source_type": "synthetic",
+          "manifest_equal_to_golden": true,
+          "csv_byte_checks": [
+            {
+              "file": "sales_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c"
+            },
+            {
+              "file": "channel_costs_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8"
+            },
+            {
+              "file": "ad_spend_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401"
+            }
+          ]
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-mobile.json",
+      "schema_version": "profitlens-workspace-v3",
+      "sources": [
+        {
+          "source_hash": "92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48",
+          "source_type": "synthetic",
+          "manifest_equal_to_golden": true,
+          "csv_byte_checks": [
+            {
+              "file": "sales_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c"
+            },
+            {
+              "file": "channel_costs_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8"
+            },
+            {
+              "file": "ad_spend_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401"
+            }
+          ]
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-tablet.json",
+      "schema_version": "profitlens-workspace-v3",
+      "sources": [
+        {
+          "source_hash": "92339086dd83c9a89ae5ac754bdbad2a30c215eb81213211b953451918ebfc48",
+          "source_type": "synthetic",
+          "manifest_equal_to_golden": true,
+          "csv_byte_checks": [
+            {
+              "file": "sales_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c"
+            },
+            {
+              "file": "channel_costs_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8"
+            },
+            {
+              "file": "ad_spend_daily.csv",
+              "byte_equal_to_golden": true,
+              "sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401"
+            }
+          ]
+        }
+      ],
+      "status": "pass"
+    }
+  ],
+  "download_inventory_count": 26,
+  "download_inventory_mismatches": [],
+  "public_directory_exists": false,
+  "routes": [
+    "src/app/api/datasets/[id]/route.ts",
+    "src/app/api/insights/route.ts"
+  ],
+  "git_ignore_check": {
+    "command": "git check-ignore -v --no-index .env.local .env.production .vercel/project.json .next/cache/probe data/private/probe uploads/probe reports/private/probe test-results/probe playwright-report/probe",
+    "matches": [
+      ".gitignore:5:.env*\t.env.local",
+      ".gitignore:5:.env*\t.env.production",
+      ".gitignore:19:.vercel/\t.vercel/project.json",
+      ".gitignore:2:.next/\t.next/cache/probe",
+      ".gitignore:7:/data/private/\tdata/private/probe",
+      ".gitignore:8:/uploads/\tuploads/probe",
+      ".gitignore:9:/reports/private/\treports/private/probe",
+      ".gitignore:17:test-results*/\ttest-results/probe",
+      ".gitignore:16:playwright-report*/\tplaywright-report/probe"
+    ],
+    "status": "pass"
+  },
+  "vercel_excludes": {
+    "path": ".vercelignore",
+    "sha256": "d42ae64b91cb94fd6bf3186e453d20187f28babd67bfa565b40488c21a1d461f",
+    "required_rules": [
+      "verification/",
+      "reviews/",
+      "tests/",
+      "scripts/",
+      "docs/",
+      "prompts/",
+      "templates/",
+      ".env*",
+      ".vercel/",
+      ".next/",
+      "data/private/",
+      "uploads/",
+      "reports/private/"
+    ],
+    "missing_rules": [],
+    "limitation": "Vercel CLI upload exclusions do not exclude already committed files from GitHub or guarantee behavior of Git integration checkout."
+  },
+  "public_routes_review": {
+    "status": "pass_static_only",
+    "public_directory_exists": false,
+    "dataset_route": "src/app/api/datasets/[id]/route.ts",
+    "fixed_sample_ids": [
+      "demo",
+      "golden",
+      "missing-cogs",
+      "missing-ad",
+      "duplicate"
+    ],
+    "source_type_guard": "manifest.source_type === synthetic before response",
+    "raw_id_as_path": false,
+    "insights_route": "src/app/api/insights/route.ts",
+    "public_demo_gate": "readAiConfig returns PUBLIC_DEMO before reading API key; POST returns 403 before reading body or constructing provider",
+    "network_rechecked_by_this_audit": false
+  },
+  "evidence_provenance": {
+    "status": "pass_with_stated_limits",
+    "engineering_sources": "Modified product/docs/tests and 139-file source inventory are engineering material; no new data ingress route.",
+    "workspace_backups": "Four actual v3 backups independently match golden manifest and CSV bytes.",
+    "other_artifacts": "Acceptance and browser/E2E metadata identify golden/demo/errors/tests/fixtures/alternative or synthetic edge cases; 26 download hashes still match the original inventory. Screenshots/PDFs are retained engineering evidence from those runs.",
+    "review_package": "Nine originals hash-match attached ZIP. README/evidence_receipt explicitly identify public deployed resources and small synthetic fixture; reviewer did not complete browser E2E.",
+    "manual_browser_download_limit": "CUA manual download did not yield bytes; Playwright downloads supply verified bytes. This audit does not relabel manual downloads as passed."
+  },
+  "blocking_findings": [],
+  "release_package_conclusion": "pass_with_limits",
+  "suggested_stage_paths": [
+    "README.md",
+    "docs/ACCEPTANCE.md",
+    "docs/ARCHITECTURE.md",
+    "docs/DECISIONS.md",
+    "docs/SCENARIOS.md",
+    "docs/STATUS.md",
+    "playwright.config.ts",
+    "src/application",
+    "src/components",
+    "tests",
+    "reviews/profitlens_review_v2_20261001",
+    "verification/review-v2-a-*",
+    "verification/release-v2-a-20261002-package-audit.*"
+  ],
+  "excluded_from_stage": [
+    ".env*",
+    ".vercel",
+    ".next",
+    "node_modules",
+    "coverage",
+    "playwright-report*",
+    "test-results*",
+    "data/private",
+    "uploads",
+    "reports/private",
+    "unreviewed user or merchant data"
+  ],
+  "limitations": [
+    "Read-only package audit: no stage, commit, push, deployment, environment secret read or attachment script execution.",
+    "166 UTF-8 candidates were scanned with finite rules; 112 image/PDF binary artifacts were classified by known test/manual provenance, not full OCR or independent pixel re-review.",
+    "Candidate list is time-bound and excludes this audit pair created afterwards; any concurrently added release evidence must be reviewed before staging.",
+    "Original acceptance records are historical and still correctly say that release was not run then. This new release audit does not rewrite them.",
+    "Remote GitHub visibility, Vercel configuration, deployment identity and post-release live endpoint checks belong to the authorized main release flow.",
+    "Live AI remains not_run; mock/gate evidence is not live-provider acceptance."
+  ]
+}

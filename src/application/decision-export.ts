@@ -19,7 +19,7 @@ function validateCollection(items: readonly { id: string }[], max: number, error
 }
 
 type BoundExportAction = ReturnType<typeof actionDocuments>[number];
-type ExportAction = Omit<BoundExportAction, "binding" | "pinned" | "diagnostic_id"> & Partial<Pick<BoundExportAction, "binding" | "pinned" | "diagnostic_id">>;
+type ExportAction = ActionCard & Pick<BoundExportAction, "priority" | "status" | "evidence"> & Partial<BoundExportAction>;
 
 /** Build one audited document shared by every export, retaining captured historical scope. */
 function decisionDocument(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace) {
@@ -88,20 +88,20 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   }
   lines.push("## 人工行動（手動優先順序）", "");
   if (actionWorkspace !== undefined) lines.push("行動獨立保留各自建立時的期間、範圍、快照、來源與過期狀態；以下 binding 與 evidence 為每項行動的稽核依據，不沿用上方情境的目前範圍。只有 pinned=true 表示置頂優先事項，其餘仍是工作項目。", "");
-  for (const action of document.actions) lines.push(`### 優先 ${action.priority}：${md(action.problem)}`, "", ...mdFields(action), "");
+  for (const action of document.actions) lines.push(`### 優先 ${action.priority}：${md(action.problem)}`, "", ...mdFields({ ...action }), "");
   lines.push("## 系統資料事實與來源", "");
   for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: fact.metric, value: fact.value, reason_codes: fact.reason_codes, period: fact.period, scope: fact.scope, sources: fact.sources }), "");
   lines.push("## 使用限制", "", ...document.limitations.map(limitation => `- ${md(limitation)}`), "");
   return lines.join("\n");
 }
 
-const HEADERS = ["schema_version", "scenario_version", "metric_version", "dataset_id", "dataset_hash", "filter_hash", "as_of", "currency", "timezone", "amount_basis", "revision", "snapshot_status", "period", "scope", "comparison_mode", "previous_days", "current_days", "row_type", "item_id", "item_name", "status", "field", "value", "reason_codes", "fact_ids", "source_refs", "analysis_scope", "context_id"] as const;
+const HEADERS = ["schema_version", "scenario_version", "metric_version", "dataset_id", "dataset_hash", "filter_hash", "as_of", "currency", "timezone", "amount_basis", "revision", "snapshot_status", "period", "scope", "comparison_mode", "previous_days", "current_days", "row_type", "item_id", "item_name", "status", "field", "value", "reason_codes", "fact_ids", "source_refs", "analysis_scope", "context_id", "plan_revision", "analysis_epoch"] as const;
 const text = (value: unknown): CsvCell => ({ kind: "text", value: typeof value === "string" ? value : JSON.stringify(value) });
 const numeric = (value: string): CsvCell => ({ kind: "number", value });
 const empty: CsvCell = { kind: "null" };
 type CsvRecord = Partial<Record<typeof HEADERS[number], CsvCell>>;
 
-export function exportDecisionCsv(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace): string {
+export function exportDecisionCsv(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, contextMetadata?: { context_id: string; epoch: string; plan_revisions: Record<string, number> }): string {
   const document = decisionDocument(session, scenarios, actions, actionWorkspace);
   const sourceRefs = (sources: DecisionSession["sources"], filenames = session.filenames) => text(sources.map(source => ({ ...source, actual_filename: filenames[source.file] ?? source.file })));
   const sessionMetadata = (captured: DecisionSession): CsvRecord => ({
@@ -111,7 +111,7 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
     comparison_mode: text(captured.comparison.mode), previous_days: numeric(String(captured.comparison.previous_days)), current_days: numeric(String(captured.comparison.current_days)),
     revision: numeric(String(captured.revision)), snapshot_status: text(captured.stale ? "stale" : "current"), period: text(captured.period), scope: text(captured.scope), source_refs: sourceRefs(captured.sources, captured.filenames),
   });
-  const metadata = sessionMetadata(session);
+  const metadata: CsvRecord = { ...sessionMetadata(session), ...(contextMetadata ? { context_id: text(contextMetadata.context_id), analysis_epoch: text(contextMetadata.epoch) } : {}) };
   const records: CsvRecord[] = [];
   const push = (rowType: string, field: string, value: CsvCell, extra: CsvRecord = {}) => records.push({ row_type: text(rowType), field: text(field), value, ...extra });
   for (const [key, value] of Object.entries({ snapshot_signature: session.snapshot_signature, comparison: session.comparison, filenames: session.filenames, sources: session.sources, stale: session.stale, stale_reasons: session.stale_reasons })) push("snapshot", key, text(value));
@@ -124,7 +124,7 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
   push("rounding", "rounding_policy", text(document.rounding));
   document.limitations.forEach((value, index) => push("limitation", String(index + 1), text(value)));
   for (const plan of document.scenarios) {
-    const planMeta: CsvRecord = { item_id: text(plan.id), item_name: text(plan.name), status: text(plan.status) };
+    const planMeta: CsvRecord = { item_id: text(plan.id), item_name: text(plan.name), status: text(plan.status), ...(contextMetadata ? { plan_revision: numeric(String(contextMetadata.plan_revisions[plan.id])) } : {}) };
     // Inputs are user text, even when they happen to look numeric.
     for (const [key, value] of Object.entries(plan.inputs)) push("scenario_input", key, text(String(value)), planMeta);
     const result = plan.result;

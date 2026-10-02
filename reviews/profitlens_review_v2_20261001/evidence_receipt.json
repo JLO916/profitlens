@@ -1,0 +1,22 @@
+{
+  "review_date": "2026-10-01",
+  "timezone": "Asia/Taipei",
+  "target": "https://profitlens-tau.vercel.app/",
+  "access_method": "Vercel.web_fetch_vercel_url; read-only HTTP fetch",
+  "deployed_build_id": "W9hritmlfspu_0-6WkKeP",
+  "sources": [
+    {"path":"/","status":200,"http_date":"Thu, 01 Oct 2026 12:14:44 GMT","etag":"W/\"df0174aa0622833368bf7585639a88f3\"","scope":"Server-rendered initial HTML and asset references"},
+    {"path":"/_next/static/chunks/app/page-1507c22542a1d442.js","status":200,"http_date":"Thu, 01 Oct 2026 12:15:30 GMT","etag":"W/\"e022f3f22f904c520fe028d0cfc8fc2f\"","scope":"Deployed browser bundle, read in connector output; full bundle not independently downloaded into this package"},
+    {"path":"/_next/static/css/75e607c442e70bac.css","status":200,"http_date":"Thu, 01 Oct 2026 12:18:57 GMT","etag":"W/\"9482590491e2d0d1c84a938cf33b3db6\"","scope":"Manager summary and print CSS; not a rendered print verification"},
+    {"path":"/api/insights","status":200,"http_date":"Thu, 01 Oct 2026 12:18:16 GMT","payload":{"available":false,"reason":"PUBLIC_DEMO","provider":"openai"}},
+    {"path":"/api/datasets/golden","status":200,"http_date":"Thu, 01 Oct 2026 12:19:59 GMT","scope":"Small synthetic fixture. Read-only; no merchant data uploaded"}
+  ],
+  "limitations": [
+    "Chromium Playwright navigation failed with net::ERR_BLOCKED_BY_ADMINISTRATOR. See browser_attempt.json.",
+    "No successful live click-through, CSV upload, actual browser download, workspace reload, mobile layout, or print end-to-end verification.",
+    "Deployed source functions/expressions manually transcribed into a narrow local test harness. Tests are not a complete application build or E2E run.",
+    "Synthetic regression inputs were created for edge cases. They are not merchant observations or a performance estimate.",
+    "No repository/server source/permissions/security penetration testing; no changes deployed; no live AI generation."
+  ],
+  "external_reference_scope": "Official SHOPLINE, Shopify and Google Ads documentation used only to clarify naming and metric meanings, not to substitute for app evidence."
+}

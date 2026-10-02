@@ -10,7 +10,7 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   source: WorkspaceBackupSource | null;
   version: number;
   dirty: boolean;
-  onRestore: (workspace: RestoredWorkspace) => void;
+  onRestore: (workspace: RestoredWorkspace, accepted?: () => void) => void;
   onSaved: (version: number) => void;
   onDeleted: () => void;
 }) {
@@ -84,7 +84,7 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   return <details className="panel workspace-storage" data-testid="workspace-storage">
     <summary>工作區保存與恢復 <span className="tag">{source ? dirty ? "有未保存變更" : "此版本已保存" : "尚無工作區"}</span></summary>
     <p>預設只留在此分頁記憶體。您可下載完整工作區備份，或主動保存到這個瀏覽器；均不上傳伺服器。本機副本與下載檔未由本工具加密；共享電腦請避免保存，使用後刪除本機副本。同一瀏覽器的使用者可手動恢復保存檔，不同分頁不會自動載入或同步。</p>
-    <p className="note">備份包含分析所需資料、欄位對照、已套用範圍、方案、行動、確認狀態與版本；恢復時重新驗證與計算。未套用的日期／匯入草稿、商品搜尋、AI 回應、API key 與傳送同意不保存。校驗碼可偵測損毀，不證明檔案出處；只開啟可信備份。</p>
+    <p className="note">備份包含分析所需資料、欄位對照、已套用範圍、各通路方案與修訂、行動引用歷史與執行狀態、會議設定及確認紀錄；恢復時重新驗證與計算。未套用的日期／匯入草稿、商品搜尋、AI 回應、API key 與傳送同意不保存。校驗碼可偵測損毀，不證明檔案出處；只開啟可信備份。</p>
     <div className="button-row">
       <button className="button quiet" disabled={!source || busy} onClick={() => void save(false)}>下載完整工作區備份</button>
       <label className="backup-file-label">選取工作區備份 JSON<input aria-label="選取工作區備份 JSON" type="file" accept=".json,application/json" disabled={busy} onChange={event => void selectBackup(event)} /></label>
@@ -103,9 +103,9 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
       <h3>確認恢復的工作區</h3>
       <p>{candidate.dataset.manifest.dataset_id} · 資料截至 {candidate.snapshot.data_as_of} · 通路 {candidate.snapshot.report.scope.channels.join("、")}</p>
       <p>前期 {candidate.snapshot.report.previous.period.start} — {candidate.snapshot.report.previous.period.end}；本期 {candidate.snapshot.report.current.period.start} — {candidate.snapshot.report.current.period.end}</p>
-      <p>方案 {candidate.decision.scenarios.length} 個、行動 {candidate.action_workspace.items.length} 項。資料與方案已重新計算；過期工作稿仍保留過期狀態。</p>
+      <p>方案 {candidate.scenario_workspace.contexts.reduce((sum, context) => sum + context.plans.length, 0)} 個、行動 {candidate.action_workspace.items.length} 項。資料與方案已重新計算；過期工作稿仍保留過期狀態。</p>
       {dirty && <p className="alert partial">目前工作區有未保存變更。套用會取代目前資料；請先保存需要保留的版本。</p>}
-      <div className="button-row"><button className="button primary" onClick={() => { onRestore(candidate); setConsent(false); setCandidate(null); setDownloadVersion(null); setNotice("已恢復工作區。未自動開啟本機保存或 AI 傳送同意。"); }}>套用備份並取代工作區</button><button className="button quiet" onClick={() => setCandidate(null)}>取消恢復</button></div>
+      <div className="button-row"><button className="button primary" onClick={() => { onRestore(candidate, () => { setConsent(false); setCandidate(null); setDownloadVersion(null); setNotice("已恢復工作區。未自動開啟本機保存或 AI 傳送同意。"); }); }}>套用備份並取代工作區</button><button className="button quiet" onClick={() => setCandidate(null)}>取消恢復</button></div>
     </section>}
   </details>;
 }

@@ -5,18 +5,22 @@ import type { AnalysisFilters, Dataset, DatasetInput, ValidationResult } from "@
 import { createDecisionSession, decisionSignature, emptyDecisionWorkspace, refreshDecisionSession, validateActionContent, validateActionEvidence, validateScenarioName, type ColumnMappings, type DecisionWorkspaceState } from "./decision";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "./workspace";
 import type { FilenameMap } from "./export";
-import { actionContextId, actionDocuments, emptyActionWorkspace, type ActionWorkspace } from "./action-workspace";
+import { actionContextId, actionDocuments, emptyActionWorkspace, normalizeActionWorkspace, type ActionWorkspace } from "./action-workspace";
+import { emptyScenarioWorkspace, migrateLegacyDecisionWorkspace, validateScenarioWorkspace, type ScenarioWorkspace } from "./scenario-workspace";
+import { validateReviewSession, type ReviewSession } from "./review-session";
 import { MAX_CSV_BYTES } from "@/lib/csv";
 
-export const WORKSPACE_VERSION = "profitlens-workspace-v2";
+export const WORKSPACE_VERSION = "profitlens-workspace-v3";
 /** Total portable size cap includes active data, retained historical contexts, and JSON escaping. */
 export const MAX_WORKSPACE_BYTES = 64 * 1024 * 1024;
 export interface WorkspaceBackupSource {
   input: DatasetInput; filters: AnalysisFilters; id: string; revision: number;
   filenames?: FilenameMap; mappings?: ColumnMappings; decision: DecisionWorkspaceState; action_workspace?: ActionWorkspace;
+  scenario_workspace?: ScenarioWorkspace; review_session?: ReviewSession | null;
 }
 export interface RestoredWorkspace extends Omit<WorkspaceBackupSource, "filters"> {
   action_workspace: ActionWorkspace;
+  scenario_workspace: ScenarioWorkspace; review_session: ReviewSession | null;
   dataset: Dataset; snapshot: WorkspaceSnapshot; filenames: FilenameMap; mappings: ColumnMappings;
   issues: ValidationResult["issues"]; classification: "valid" | "partial";
 }
@@ -54,12 +58,42 @@ const savedActionWorkspace = z.strictObject({
   contexts: z.array(savedDecision.extend({ id: name })),
   items: z.array(z.strictObject({ card: action, context_id: name, pinned: z.boolean(), diagnostic_id: name.optional(), scope: z.strictObject({ kind: z.enum(["all","channel","sku"]), channels: z.array(name).min(1), sku: name.optional(), category: z.string().max(500).optional() }) })),
 });
-const envelopeSchema = z.strictObject({
-  schema_version: z.enum(["profitlens-workspace-v1", WORKSPACE_VERSION]), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION),
+// These schemas intentionally retain the original v1/v2 contract. Validate and
+// checksum the old wire representation before adding any migration defaults.
+const legacyEnvelopeSchema = z.strictObject({
+  schema_version: z.enum(["profitlens-workspace-v1", "profitlens-workspace-v2"]), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION),
   saved_at: z.iso.datetime(), checksum: hash,
   payload: z.strictObject({ active: z.strictObject({ input, filters, id: name, revision, filenames, mappings }), decision: savedDecision.nullable(), action_workspace: savedActionWorkspace.optional() }),
 });
 type SavedDecision = z.infer<typeof savedDecision>;
+const scope = z.strictObject({ kind: z.enum(["all", "channel", "sku"]), channels: z.array(name).min(1).max(1000), sku: name.optional(), category: z.string().max(500).optional() });
+const binding = z.strictObject({ revision: revision.min(1), context_id: name, scope, fact_ids: z.array(z.string().max(3000)).max(5000), evidence_confirmed: z.boolean(), legacy_review_required: z.boolean(), diagnostic_id: name.optional() });
+const savedAction = z.strictObject({
+  card: action, context_id: name, pinned: z.boolean(), diagnostic_id: name.optional(), scope,
+  execution_status: z.enum(["not_started", "in_progress", "blocked", "completed"]), progress_notes: z.string().max(2000),
+  binding_revision: revision.min(1), binding_history: z.array(binding), legacy_review_required: z.boolean(),
+});
+const referencedDecision = savedDecision.omit({ source_input: true }).extend({ source_hash: hash });
+const referencedActionWorkspace = z.strictObject({ active_dataset_hash: hash.optional(), contexts: z.array(referencedDecision.extend({ id: name })), items: z.array(savedAction) });
+const scenarioContext = referencedDecision.omit({ scenarios: true, actions: true }).extend({
+  id: name, epoch: name, status: z.enum(["current", "historical"]), historical_reasons: z.array(z.string().max(100)).max(20),
+  plans: z.array(scenario.extend({ revision: revision.min(1) })).max(3),
+  versions: z.array(z.strictObject({ plan_id: name, revision: revision.min(1), name: z.string().max(100), inputs: scenarioInputs, calculated: z.literal(true) })),
+});
+const referencedScenarioWorkspace = z.strictObject({ schema_version: z.literal("scenario-workspace-v1"), active_epoch: name, contexts: z.array(scenarioContext) });
+const selection = z.strictObject({ context_id: name, plan_id: name, plan_revision: revision.min(1), channel: name });
+const referencedReview = z.strictObject({
+  schema_version: z.literal("review-session-v1"), id: name, name: z.string().min(1).max(200), revision: revision.min(1), epoch: name,
+  dataset_hash: hash, filter_hash: hash, metric_version: z.literal("contribution-v1"), data_as_of: z.string().max(10),
+  meeting_filters: filters.required(), importance_threshold: z.string().max(30), selected_scenarios: z.array(selection), pinned_action_ids: z.array(name).max(3),
+  action_bindings: z.array(z.strictObject({ action_id: name, context_id: name, binding_revision: revision.min(1) })),
+  notes: z.string().max(8000), decision_state: z.enum(["draft", "adopted", "needs_data", "not_adopted"]), confirmed_revision: revision.nullable(), target_version: z.null(), status: z.enum(["current", "historical"]),
+  source_hash: hash, filenames, source_mappings: mappings.optional(),
+});
+const envelopeSchema = z.strictObject({
+  schema_version: z.literal(WORKSPACE_VERSION), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION), saved_at: z.iso.datetime(), checksum: hash,
+  payload: z.strictObject({ sources: z.record(hash, input), active: z.strictObject({ source_hash: hash, filters, id: name, revision, filenames, mappings }), decision: referencedDecision.nullable(), action_workspace: referencedActionWorkspace, scenario_workspace: referencedScenarioWorkspace, review_session: referencedReview.nullable() }),
+});
 
 async function checksum(value: unknown): Promise<string> {
   const result = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(decisionSignature(value)));
@@ -123,30 +157,63 @@ async function restoreDecision(saved: SavedDecision | null, activeSnapshot: Work
 export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Promise<string> {
   const activeInput = portableInput(source.input);
   const { snapshot } = await rebuild(activeInput, source.filters);
+  const sources: Record<string, DatasetInput> = {};
+  async function register(value: DatasetInput): Promise<string> {
+    const portable = portableInput(value), key = await hashInput(portable);
+    if (sources[key] && decisionSignature(sources[key]) !== decisionSignature(portable)) throw new Error("WORKSPACE_BINDING_MISMATCH");
+    sources[key] = portable;
+    return key;
+  }
+  const activeHash = await register(activeInput);
+  const reference = (session: NonNullable<DecisionWorkspaceState["captured"]>, sourceHash: string, sourceMappings?: ColumnMappings) => ({
+    source_hash: sourceHash, ...(sourceMappings ? { source_mappings: sourceMappings } : {}),
+    filters: session.scope, filenames: session.filenames, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash,
+    revision: session.revision, stale: session.stale, stale_reasons: session.stale_reasons,
+  });
   const current = source.decision.captured;
   let decision: unknown = null;
   if (current) {
     if (!source.decision.source_input) throw new Error("WORKSPACE_DECISION_SOURCE_MISSING");
     const captured = refreshDecisionSession(current, snapshot, source.revision);
     decision = {
-      source_input: portableInput(source.decision.source_input), ...(source.decision.source_mappings ? { source_mappings: source.decision.source_mappings } : {}),
-      filters: captured.scope, filenames: captured.filenames, dataset_hash: captured.dataset_hash, filter_hash: captured.filter_hash,
-      revision: captured.revision, stale: captured.stale, stale_reasons: captured.stale_reasons,
+      ...reference(captured, await register(source.decision.source_input), source.decision.source_mappings),
       scenarios: source.decision.scenarios.map(plan => ({ id: plan.id, name: plan.name, inputs: plan.inputs, calculated: plan.result !== null })),
       actions: source.decision.actions,
     };
   } else if (source.decision.scenarios.length || source.decision.actions.length) throw new Error("WORKSPACE_DECISION_SOURCE_MISSING");
-  let actionWorkspace: unknown = undefined;
-  if (source.action_workspace) {
-    actionDocuments(source.action_workspace);
-    actionWorkspace = { items: source.action_workspace.items, contexts: source.action_workspace.contexts.map(context => {
-      const session = refreshDecisionSession(context.session, snapshot, source.revision);
-      return { id: context.id, source_input: portableInput(context.source_input), ...(context.source_mappings ? {source_mappings:context.source_mappings}:{}), filters:session.scope, filenames:session.filenames, dataset_hash:session.dataset_hash, filter_hash:session.filter_hash, revision:session.revision, stale:session.stale, stale_reasons:session.stale_reasons, scenarios:[], actions:[] };
-    }) };
+  let actionState = normalizeActionWorkspace(source.action_workspace ?? emptyActionWorkspace());
+  // Legacy callers may still provide action cards on DecisionWorkspaceState.
+  if (!source.action_workspace && current && source.decision.source_input && source.decision.actions.length) {
+    const historical = await rebuild(source.decision.source_input, current.scope);
+    const captured = refreshDecisionSession(current, snapshot, source.revision), id = actionContextId(captured);
+    actionState = normalizeActionWorkspace({ contexts: [{ id, session: captured, diagnostics: historical.snapshot.report.diagnostics, source_input: source.decision.source_input, source_mappings: source.decision.source_mappings }], items: source.decision.actions.map((card, index) => ({ card, context_id: id, scope: { kind: "all", channels: captured.scope.channels }, pinned: index < 3 })) });
+  }
+  actionDocuments(actionState);
+  const actionWorkspace = {
+    active_dataset_hash: snapshot.dataset_hash,
+    items: actionState.items,
+    contexts: await Promise.all(actionState.contexts.map(async context => ({ id: context.id, ...reference(context.session, await register(context.source_input), context.source_mappings), scenarios: [], actions: [] }))),
+  };
+  const scenarioState = source.scenario_workspace ?? migrateLegacyDecisionWorkspace(source.decision, snapshot, source.revision, source.review_session?.epoch ?? `legacy-${source.revision}-${snapshot.dataset_hash}`);
+  validateScenarioWorkspace(scenarioState);
+  const scenarioWorkspace = {
+    schema_version: scenarioState.schema_version, active_epoch: scenarioState.active_epoch,
+    contexts: await Promise.all(scenarioState.contexts.map(async context => ({
+      id: context.id, epoch: context.epoch, status: context.status, historical_reasons: context.historical_reasons,
+      ...reference(context.session, await register(context.source_input), context.source_mappings),
+      plans: context.plans.map(plan => ({ id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, calculated: plan.result !== null })),
+      versions: context.versions.map(plan => ({ plan_id: plan.plan_id, revision: plan.revision, name: plan.name, inputs: plan.inputs, calculated: true })),
+    }))),
+  };
+  let reviewSession: unknown = null;
+  if (source.review_session) {
+    validateReviewSession(source.review_session, scenarioState);
+    const { source_input: reviewInput, ...review } = source.review_session;
+    reviewSession = { ...review, source_hash: await register(reviewInput) };
   }
   const body = {
     schema_version: WORKSPACE_VERSION, metric_version: "contribution-v1", scenario_version: SCENARIO_VERSION, saved_at: new Date().toISOString(),
-    payload: { active: { input: activeInput, filters: snapshot.report.scope, id: source.id, revision: source.revision, filenames: source.filenames ?? {}, mappings: source.mappings ?? {} }, decision, ...(actionWorkspace ? {action_workspace:actionWorkspace}:{}) },
+    payload: { sources, active: { source_hash: activeHash, filters: snapshot.report.scope, id: source.id, revision: source.revision, filenames: source.filenames ?? {}, mappings: source.mappings ?? {} }, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession },
   };
   const text = JSON.stringify({ ...body, checksum: await checksum(body) });
   // Check our own serialization through the same untrusted boundary used by restore.
@@ -165,14 +232,20 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
   assertSafeStructure(parsed);
   if (parsed && typeof parsed === "object") {
     const versions = parsed as Record<string, unknown>;
-    if (![WORKSPACE_VERSION,"profitlens-workspace-v1"].includes(String(versions.schema_version)) || versions.metric_version !== "contribution-v1" || versions.scenario_version !== SCENARIO_VERSION) throw new Error("WORKSPACE_VERSION_UNSUPPORTED");
+    if (![WORKSPACE_VERSION, "profitlens-workspace-v2", "profitlens-workspace-v1"].includes(String(versions.schema_version)) || versions.metric_version !== "contribution-v1" || versions.scenario_version !== SCENARIO_VERSION) throw new Error("WORKSPACE_VERSION_UNSUPPORTED");
   }
-  const result = envelopeSchema.safeParse(parsed);
+  const isLegacy = (parsed as { schema_version?: string } | null)?.schema_version !== WORKSPACE_VERSION;
+  const result = (isLegacy ? legacyEnvelopeSchema : envelopeSchema).safeParse(parsed);
   if (!result.success) throw new Error("INVALID_WORKSPACE_FORMAT");
   const { checksum: expected, ...body } = result.data;
   let actual: string;
   try { actual = await checksum(body); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
   if (actual !== expected) throw new Error("WORKSPACE_CHECKSUM_MISMATCH");
+  if (body.schema_version === WORKSPACE_VERSION) return restoreV3(body);
+  return restoreLegacy(body);
+}
+
+async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">): Promise<RestoredWorkspace> {
   if (body.schema_version === "profitlens-workspace-v1" && body.payload.action_workspace) throw new Error("INVALID_WORKSPACE_FORMAT");
   const active = body.payload.active;
   const { dataset, snapshot, validation } = await rebuild(active.input, active.filters);
@@ -183,9 +256,10 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
     for(const context of saved.contexts) {
       if(context.scenarios.length || context.actions.length) throw new Error("INVALID_ACTION_CONTEXT");
       const rebuilt=await rebuild(context.source_input,context.filters);
-      const restored=await restoreDecision(context,snapshot,active.revision,rebuilt);
-      if(!restored.captured || actionContextId(restored.captured)!==context.id)throw new Error("WORKSPACE_BINDING_MISMATCH");
-      actionWorkspace.contexts.push({id:context.id,session:restored.captured,diagnostics:rebuilt.snapshot.report.diagnostics,source_input:context.source_input,...(context.source_mappings?{source_mappings:context.source_mappings}:{})});
+      if(rebuilt.snapshot.dataset_hash!==context.dataset_hash || rebuilt.snapshot.filter_hash!==context.filter_hash)throw new Error("WORKSPACE_BINDING_MISMATCH");
+      const session={...createDecisionSession(rebuilt.dataset,rebuilt.snapshot,context.revision,context.filenames),stale:context.stale,stale_reasons:context.stale_reasons};
+      if(actionContextId(session)!==context.id)throw new Error("WORKSPACE_BINDING_MISMATCH");
+      actionWorkspace.contexts.push({id:context.id,session,diagnostics:rebuilt.snapshot.report.diagnostics,source_input:context.source_input,...(context.source_mappings?{source_mappings:context.source_mappings}:{})});
     }
     actionWorkspace.items=structuredClone(saved.items);
     actionDocuments(actionWorkspace);
@@ -194,5 +268,81 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
     const rebuilt=await rebuild(decision.source_input,decision.captured.scope);
     actionWorkspace={contexts:[{id,session:decision.captured,diagnostics:rebuilt.snapshot.report.diagnostics,source_input:decision.source_input,source_mappings:decision.source_mappings}],items:decision.actions.map((card,index)=>({card,context_id:id,scope:{kind:"all",channels:decision.captured!.scope.channels},pinned:index<3}))};
   }
-  return { action_workspace:actionWorkspace, input: active.input, dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial" };
+  actionWorkspace = normalizeActionWorkspace({ ...actionWorkspace, active_dataset_hash: snapshot.dataset_hash });
+  const scenarioWorkspace = migrateLegacyDecisionWorkspace(decision, snapshot, active.revision, `legacy-${active.revision}-${snapshot.dataset_hash}`);
+  return { action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: null, input: active.input, dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial" };
+}
+
+async function restoreV3(body: Omit<z.infer<typeof envelopeSchema>, "checksum">): Promise<RestoredWorkspace> {
+  const payload = body.payload;
+  // Every saved source, including retained history, passes the same CSV boundary.
+  // Cache validated datasets once; each context still rebuilds its own scope.
+  const validated = new Map<string, { input: z.infer<typeof input>; validation: ValidationResult; dataset: Dataset }>();
+  for (const [key, value] of Object.entries(payload.sources)) {
+    if (await hashInput(value) !== key) throw new Error("WORKSPACE_BINDING_MISMATCH");
+    const validation = validateDataset(value);
+    if (!validation.dataset || validation.classification === "blocking") throw new Error("WORKSPACE_DATA_INVALID");
+    validated.set(key, { input: value, validation, dataset: validation.dataset });
+  }
+  const resolve = (key: string) => {
+    const value = validated.get(key);
+    if (!value) throw new Error("WORKSPACE_SOURCE_MISSING");
+    return value;
+  };
+  const contexts = new Map<string, Promise<{ dataset: Dataset; snapshot: WorkspaceSnapshot; validation: ValidationResult }>>();
+  const scoped = (key: string, requested: AnalysisFilters) => {
+    const cacheKey = decisionSignature({ key, requested });
+    let result = contexts.get(cacheKey);
+    if (!result) {
+      const source = resolve(key);
+      result = createSnapshot(source.dataset, requested, key).then(snapshot => ({ dataset: source.dataset, snapshot, validation: source.validation }));
+      contexts.set(cacheKey, result);
+    }
+    return result;
+  };
+  const active = payload.active, activeSource = resolve(active.source_hash);
+  const { dataset, snapshot, validation } = await scoped(active.source_hash, active.filters);
+  const samePeriods = (scope: WorkspaceSnapshot["report"]["scope"]) => decisionSignature({ previous: scope.previous_period, current: scope.current_period, mode: scope.comparison_mode }) === decisionSignature({ previous: snapshot.report.scope.previous_period, current: snapshot.report.scope.current_period, mode: snapshot.report.scope.comparison_mode });
+  const decision = payload.decision ? await restoreDecision({ ...payload.decision, source_input: resolve(payload.decision.source_hash).input }, snapshot, active.revision, await scoped(payload.decision.source_hash, payload.decision.filters)) : emptyDecisionWorkspace();
+  const actionWorkspace: ActionWorkspace = { contexts: [], items: structuredClone(payload.action_workspace.items), active_dataset_hash: snapshot.dataset_hash };
+  if (payload.action_workspace.active_dataset_hash && payload.action_workspace.active_dataset_hash !== snapshot.dataset_hash) throw new Error("WORKSPACE_BINDING_MISMATCH");
+  for (const saved of payload.action_workspace.contexts) {
+    if (saved.scenarios.length || saved.actions.length) throw new Error("INVALID_ACTION_CONTEXT");
+    const own = await scoped(saved.source_hash, saved.filters);
+    if (own.snapshot.dataset_hash !== saved.dataset_hash || own.snapshot.filter_hash !== saved.filter_hash) throw new Error("WORKSPACE_BINDING_MISMATCH");
+    const session = { ...createDecisionSession(own.dataset, own.snapshot, saved.revision, saved.filenames), stale: saved.stale, stale_reasons: saved.stale_reasons };
+    if (actionContextId(session) !== saved.id) throw new Error("WORKSPACE_BINDING_MISMATCH");
+    actionWorkspace.contexts.push({ id: saved.id, session, diagnostics: own.snapshot.report.diagnostics, source_input: structuredClone(resolve(saved.source_hash).input), source_mappings: saved.source_mappings });
+  }
+  const normalizedActions = normalizeActionWorkspace(actionWorkspace);
+  actionDocuments(normalizedActions);
+  const scenarioWorkspace = emptyScenarioWorkspace(payload.scenario_workspace.active_epoch);
+  for (const saved of payload.scenario_workspace.contexts) {
+    const own = await scoped(saved.source_hash, saved.filters);
+    if (own.snapshot.dataset_hash !== saved.dataset_hash || own.snapshot.filter_hash !== saved.filter_hash) throw new Error("WORKSPACE_BINDING_MISMATCH");
+    if (saved.status === "current" && (saved.dataset_hash !== snapshot.dataset_hash || !samePeriods(own.snapshot.report.scope))) throw new Error("SCENARIO_CONTEXT_MISMATCH");
+    const session = { ...createDecisionSession(own.dataset, own.snapshot, saved.revision, saved.filenames), stale: saved.stale, stale_reasons: saved.stale_reasons };
+    const plans = saved.plans.map(plan => {
+      validateScenarioName(plan.name, plan.calculated);
+      return { id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null };
+    });
+    const versions = saved.versions.map(plan => {
+      validateScenarioName(plan.name);
+      const result = calculateScenario(session.baseline, plan.inputs);
+      if (result.status !== "valid") throw new Error("INVALID_SCENARIO_VERSION");
+      return { plan_id: plan.plan_id, revision: plan.revision, name: plan.name, inputs: plan.inputs, result };
+    });
+    scenarioWorkspace.contexts.push({ id: saved.id, epoch: saved.epoch, status: saved.status, historical_reasons: saved.historical_reasons, session, source_input: structuredClone(resolve(saved.source_hash).input), source_mappings: saved.source_mappings, plans, versions });
+  }
+  validateScenarioWorkspace(scenarioWorkspace);
+  let reviewSession: ReviewSession | null = null;
+  if (payload.review_session) {
+    const { source_hash: sourceHash, ...saved } = payload.review_session;
+    const own = await scoped(sourceHash, saved.meeting_filters);
+    if (sourceHash !== saved.dataset_hash || own.snapshot.data_as_of !== saved.data_as_of || own.snapshot.filter_hash !== saved.filter_hash) throw new Error("WORKSPACE_BINDING_MISMATCH");
+    reviewSession = { ...saved, meeting_filters: own.snapshot.report.scope, source_input: structuredClone(resolve(sourceHash).input) };
+    if (reviewSession.status === "current" && (reviewSession.epoch !== scenarioWorkspace.active_epoch || sourceHash !== snapshot.dataset_hash || !samePeriods(reviewSession.meeting_filters))) throw new Error("REVIEW_ACTIVE_CONTEXT_MISMATCH");
+    validateReviewSession(reviewSession, scenarioWorkspace);
+  }
+  return { action_workspace: normalizedActions, scenario_workspace: scenarioWorkspace, review_session: reviewSession, input: structuredClone(activeSource.input), dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial" };
 }

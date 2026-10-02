@@ -1,0 +1,1465 @@
+{
+  "checked_at_utc": "2026-10-02T02:40:30.723299+00:00",
+  "purpose": "Release A source/evidence audit; reuse already executed acceptance without running tests or build again",
+  "workspace": "/Users/j-work/Desktop/profitlens-codex-starter",
+  "status": "pass",
+  "current_environment_and_git": [
+    {
+      "command": "node --version",
+      "exit_code": 0,
+      "stdout": "v25.8.2",
+      "stderr": ""
+    },
+    {
+      "command": "npm --version",
+      "exit_code": 0,
+      "stdout": "11.11.1",
+      "stderr": ""
+    },
+    {
+      "command": "git --version",
+      "exit_code": 0,
+      "stdout": "git version 2.39.5 (Apple Git-154)",
+      "stderr": ""
+    },
+    {
+      "command": "git rev-parse HEAD",
+      "exit_code": 0,
+      "stdout": "bb9173edae9a28eb1970c5a968f1165b0ce64bb5",
+      "stderr": ""
+    },
+    {
+      "command": "git branch --show-current",
+      "exit_code": 0,
+      "stdout": "main",
+      "stderr": ""
+    },
+    {
+      "command": "git status --short --untracked-files=no",
+      "exit_code": 0,
+      "stdout": "M README.md\n M docs/ACCEPTANCE.md\n M docs/ARCHITECTURE.md\n M docs/DECISIONS.md\n M docs/SCENARIOS.md\n M docs/STATUS.md\n M playwright.config.ts\n M src/application/action-workspace.ts\n M src/application/decision-export.ts\n M src/application/manager-summary.ts\n M src/application/workspace-backup.ts\n M src/components/actions-workbench.tsx\n M src/components/dashboard.tsx\n M src/components/manager-summary.tsx\n M src/components/workspace-storage.tsx\n M tests/action-backup.test.ts\n M tests/action-export.test.ts\n M tests/action-workspace.test.ts\n M tests/e2e/action-workspace.spec.ts\n M tests/e2e/ai.spec.ts\n M tests/e2e/import-guidance.spec.ts\n M tests/e2e/import.spec.ts\n M tests/e2e/m6-acceptance.spec.ts\n M tests/e2e/manager-presentation.spec.ts\n M tests/e2e/manager-summary.spec.ts\n M tests/e2e/period-comparison.spec.ts\n M tests/e2e/product-comparison.spec.ts\n M tests/e2e/scenario-sensitivity.spec.ts\n M tests/e2e/scenarios.spec.ts\n M tests/e2e/workspace-storage.spec.ts\n M tests/e2e/workspace.spec.ts\n M tests/manager-summary.test.ts\n M tests/workspace-backup.test.ts",
+      "stderr": ""
+    },
+    {
+      "command": "git status --porcelain -- fixtures/golden src/domain package.json package-lock.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "source_inventory": {
+    "path": "verification/review-v2-a-source-inventory.json",
+    "sha256": "27371d547eb42dfc680a8ab6b0ceb4ea026bb56ca6259327ca20bb93afba2ea6",
+    "bytes": 16796
+  },
+  "inventory_recorded_at": "2026-10-02T02:10:27.332936+00:00",
+  "source_snapshot_sha256": "ed74b07a06c7839a78e1acc764f487a7a0ed80f187a832e8e9e7dec1f5f6e4b6",
+  "source_snapshot_sha256_method": "SHA-256 of UTF-8 JSON object {relative_path: actual_sha256}, sorted keys, separators comma/colon",
+  "source_files": {
+    "status": "pass",
+    "expected_count": 139,
+    "matched_count": 139,
+    "files": [
+      {
+        "path": "next.config.ts",
+        "expected_sha256": "1cb6e44cd0f6a3f82f0200990b9b9fe8ad5b68074374d7b290e92bcd86dcbbf7",
+        "actual_sha256": "1cb6e44cd0f6a3f82f0200990b9b9fe8ad5b68074374d7b290e92bcd86dcbbf7",
+        "status": "pass"
+      },
+      {
+        "path": "package-lock.json",
+        "expected_sha256": "ab23151e36c2c4a5bc76ad52d0675866eee7465b5d63a52764bbaa3feac7dcfd",
+        "actual_sha256": "ab23151e36c2c4a5bc76ad52d0675866eee7465b5d63a52764bbaa3feac7dcfd",
+        "status": "pass"
+      },
+      {
+        "path": "package.json",
+        "expected_sha256": "b3698b34b2cc982b07626fde2330ecca2d81fbe08dbe978fa6f774ca27e194f9",
+        "actual_sha256": "b3698b34b2cc982b07626fde2330ecca2d81fbe08dbe978fa6f774ca27e194f9",
+        "status": "pass"
+      },
+      {
+        "path": "playwright.config.ts",
+        "expected_sha256": "56515b2d6eaab77f2055fcd086c458971a5fcee11973f38c216964ef5c8813f8",
+        "actual_sha256": "56515b2d6eaab77f2055fcd086c458971a5fcee11973f38c216964ef5c8813f8",
+        "status": "pass"
+      },
+      {
+        "path": "src/ai/.gitkeep",
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "status": "pass"
+      },
+      {
+        "path": "src/ai/config.ts",
+        "expected_sha256": "5acded376681f9b93a6a3fea557549812dadff3a3d9d0b78946db9db01b2ed21",
+        "actual_sha256": "5acded376681f9b93a6a3fea557549812dadff3a3d9d0b78946db9db01b2ed21",
+        "status": "pass"
+      },
+      {
+        "path": "src/ai/contracts.ts",
+        "expected_sha256": "218a29ff17ce93a6e52b286d77c51e11cef7ea5da1fe68f4868afa8c0f700cff",
+        "actual_sha256": "218a29ff17ce93a6e52b286d77c51e11cef7ea5da1fe68f4868afa8c0f700cff",
+        "status": "pass"
+      },
+      {
+        "path": "src/ai/grounding.ts",
+        "expected_sha256": "a58f9d9a2d5faaea64e1ca70fb2129f056b8fe20cfd6e18376b02ea85eeb114a",
+        "actual_sha256": "a58f9d9a2d5faaea64e1ca70fb2129f056b8fe20cfd6e18376b02ea85eeb114a",
+        "status": "pass"
+      },
+      {
+        "path": "src/ai/openai-provider.ts",
+        "expected_sha256": "3e4b09ef9a1f12e1d49b68c5c27b4a4f7246a2722776c369a874ebda70e649ce",
+        "actual_sha256": "3e4b09ef9a1f12e1d49b68c5c27b4a4f7246a2722776c369a874ebda70e649ce",
+        "status": "pass"
+      },
+      {
+        "path": "src/ai/prompt.ts",
+        "expected_sha256": "68a25baa22ea138db0bd9cb9e27c5aed92272b109d99f8d52e13af2ea8a42e45",
+        "actual_sha256": "68a25baa22ea138db0bd9cb9e27c5aed92272b109d99f8d52e13af2ea8a42e45",
+        "status": "pass"
+      },
+      {
+        "path": "src/ai/provider.ts",
+        "expected_sha256": "e4275b2eb65dc6969396b32386e07ca5a28f24d31a7299b8ae1697101bedd7d2",
+        "actual_sha256": "e4275b2eb65dc6969396b32386e07ca5a28f24d31a7299b8ae1697101bedd7d2",
+        "status": "pass"
+      },
+      {
+        "path": "src/ai/service.ts",
+        "expected_sha256": "fa026f169214ed7fa3804e6f6cfb350f25ee18683176561c447b6fa8e5463d44",
+        "actual_sha256": "fa026f169214ed7fa3804e6f6cfb350f25ee18683176561c447b6fa8e5463d44",
+        "status": "pass"
+      },
+      {
+        "path": "src/app/api/datasets/[id]/route.ts",
+        "expected_sha256": "581cffdc644ad474885bd3e7037a748393e1ba344d68a919ad3ad57667ac2928",
+        "actual_sha256": "581cffdc644ad474885bd3e7037a748393e1ba344d68a919ad3ad57667ac2928",
+        "status": "pass"
+      },
+      {
+        "path": "src/app/api/insights/route.ts",
+        "expected_sha256": "73d15e27fe20973f94bd728919c5dc50be48b6a1a9661c3dd1a8284706196bd9",
+        "actual_sha256": "73d15e27fe20973f94bd728919c5dc50be48b6a1a9661c3dd1a8284706196bd9",
+        "status": "pass"
+      },
+      {
+        "path": "src/app/globals.css",
+        "expected_sha256": "f4774e0554b863d20a9472564e3e583394cb4473abc71f81ff8b465734f5ee30",
+        "actual_sha256": "f4774e0554b863d20a9472564e3e583394cb4473abc71f81ff8b465734f5ee30",
+        "status": "pass"
+      },
+      {
+        "path": "src/app/layout.tsx",
+        "expected_sha256": "a0413f6dafe797d32890cfc2da8e6d212cec1ac2229549e87aa04f3f196cf01d",
+        "actual_sha256": "a0413f6dafe797d32890cfc2da8e6d212cec1ac2229549e87aa04f3f196cf01d",
+        "status": "pass"
+      },
+      {
+        "path": "src/app/page.tsx",
+        "expected_sha256": "053b727978cb22bf1b4545fe6f96f1d902a926afd1d4dafc10c205b3a207d0e7",
+        "actual_sha256": "053b727978cb22bf1b4545fe6f96f1d902a926afd1d4dafc10c205b3a207d0e7",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/.gitkeep",
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/action-workspace.ts",
+        "expected_sha256": "016d685e400d76dee42cc9f577eb041c6eb874961f0ae0adce94ec16588cb428",
+        "actual_sha256": "016d685e400d76dee42cc9f577eb041c6eb874961f0ae0adce94ec16588cb428",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/ai-client.ts",
+        "expected_sha256": "90e0bc6f12558d834e9e9f7ab0ef5f9f5004286243a95f367dd6b5dd150bcd1f",
+        "actual_sha256": "90e0bc6f12558d834e9e9f7ab0ef5f9f5004286243a95f367dd6b5dd150bcd1f",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/ai-snapshot.ts",
+        "expected_sha256": "8b7425756e22e15fe798059e1d5b632f72393e63519132d1b3248f9b59657e1c",
+        "actual_sha256": "8b7425756e22e15fe798059e1d5b632f72393e63519132d1b3248f9b59657e1c",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/decision-export.ts",
+        "expected_sha256": "0b87a90f7c93e0ced4e580f05805ebd11e8578ba186d4008d4f9789225620c5d",
+        "actual_sha256": "0b87a90f7c93e0ced4e580f05805ebd11e8578ba186d4008d4f9789225620c5d",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/decision.ts",
+        "expected_sha256": "d4d212ac3e8cec269296111827f87fbf38dad0f82036648e3bd9a2ad4654cc28",
+        "actual_sha256": "d4d212ac3e8cec269296111827f87fbf38dad0f82036648e3bd9a2ad4654cc28",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/download.ts",
+        "expected_sha256": "2d6cfaea89cf93883a7a61d0f63fd2a734d311db72d4f8ebcb186293bc6de70a",
+        "actual_sha256": "2d6cfaea89cf93883a7a61d0f63fd2a734d311db72d4f8ebcb186293bc6de70a",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/export.ts",
+        "expected_sha256": "61309cb3c358d1cffacc0133415e2b071b1bf758ec49f1894c422cdd003a540d",
+        "actual_sha256": "61309cb3c358d1cffacc0133415e2b071b1bf758ec49f1894c422cdd003a540d",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/import-guidance.ts",
+        "expected_sha256": "d408935bcd287ea1289cf764f574aa2e0b3fb6f05ef0d3d140d9e269a9e0646a",
+        "actual_sha256": "d408935bcd287ea1289cf764f574aa2e0b3fb6f05ef0d3d140d9e269a9e0646a",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/import.ts",
+        "expected_sha256": "5c3f70dd571158b7de67c3466d14316a60aa7effeeae798fd0a0bdf627fbd1f9",
+        "actual_sha256": "5c3f70dd571158b7de67c3466d14316a60aa7effeeae798fd0a0bdf627fbd1f9",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/limits.ts",
+        "expected_sha256": "41a15df6447592310eb5e073f6d561281cf8996cbafbf44435b705f29c84e8ac",
+        "actual_sha256": "41a15df6447592310eb5e073f6d561281cf8996cbafbf44435b705f29c84e8ac",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/local-store.ts",
+        "expected_sha256": "9f6a301d948c1f85d49fca8c9d8889870f358793905b07cb8350239348ba3a5b",
+        "actual_sha256": "9f6a301d948c1f85d49fca8c9d8889870f358793905b07cb8350239348ba3a5b",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/manager-summary.ts",
+        "expected_sha256": "177d319a07954a81fac881788ba44a2ac24081738e442b47385c61fe573be05d",
+        "actual_sha256": "177d319a07954a81fac881788ba44a2ac24081738e442b47385c61fe573be05d",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/presentation.ts",
+        "expected_sha256": "67aa3b1c885e51f28347cd45a5fa1bdfcdb3178101aca8df1825c062611ba3d7",
+        "actual_sha256": "67aa3b1c885e51f28347cd45a5fa1bdfcdb3178101aca8df1825c062611ba3d7",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/product-comparison-export.ts",
+        "expected_sha256": "96226d7b1805530860c96cd7f80e1382f8c07338cb70e9ebb079b2d28f74990a",
+        "actual_sha256": "96226d7b1805530860c96cd7f80e1382f8c07338cb70e9ebb079b2d28f74990a",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/replacement-guard.ts",
+        "expected_sha256": "e41cdba13ac73f2481183e0ff6a63d822125a1f66926edfebacde207530ca3c4",
+        "actual_sha256": "e41cdba13ac73f2481183e0ff6a63d822125a1f66926edfebacde207530ca3c4",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/review-session.ts",
+        "expected_sha256": "6a8e05593c62a7f11d2969bb642bd3f21763d24bd2505cdd9f371a9cfa1299c0",
+        "actual_sha256": "6a8e05593c62a7f11d2969bb642bd3f21763d24bd2505cdd9f371a9cfa1299c0",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/scenario-workspace.ts",
+        "expected_sha256": "a3b0a9ad2a4df14d46fb5f689116eb6a2b68eb2a83ec20e8ef0bfdaba4e5e9a1",
+        "actual_sha256": "a3b0a9ad2a4df14d46fb5f689116eb6a2b68eb2a83ec20e8ef0bfdaba4e5e9a1",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/workspace-backup.ts",
+        "expected_sha256": "bf3504833d9c4a28ae9534b6ced0c75f171b6540b23756dd43f3eaf5710cf10f",
+        "actual_sha256": "bf3504833d9c4a28ae9534b6ced0c75f171b6540b23756dd43f3eaf5710cf10f",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/workspace-decision-export.ts",
+        "expected_sha256": "df822cc39bbe5ce433b5961e64b9e67ce1b09c68ddb3cbd85154c54a11404022",
+        "actual_sha256": "df822cc39bbe5ce433b5961e64b9e67ce1b09c68ddb3cbd85154c54a11404022",
+        "status": "pass"
+      },
+      {
+        "path": "src/application/workspace.ts",
+        "expected_sha256": "f300cc04b160c31e2c6a34af443b2397878e0c77f3e655c615436cce44a0c128",
+        "actual_sha256": "f300cc04b160c31e2c6a34af443b2397878e0c77f3e655c615436cce44a0c128",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/.gitkeep",
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/actions-workbench.tsx",
+        "expected_sha256": "577238b4734014acfd0ba626b859c4e2186292e16c21ba3abac614c6620de943",
+        "actual_sha256": "577238b4734014acfd0ba626b859c4e2186292e16c21ba3abac614c6620de943",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/ai-panel.tsx",
+        "expected_sha256": "5ae81298a8be73e6da0e4174ca390f212824db868d43434f2b24e1735abffff5",
+        "actual_sha256": "5ae81298a8be73e6da0e4174ca390f212824db868d43434f2b24e1735abffff5",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/dashboard.tsx",
+        "expected_sha256": "a6315e69cd188bf58c8fe0340c666fd44814d5234b5d6338c3b12036c7db508f",
+        "actual_sha256": "a6315e69cd188bf58c8fe0340c666fd44814d5234b5d6338c3b12036c7db508f",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/decision-workbench.tsx",
+        "expected_sha256": "b64026cc8b768088e587786b630bc6f0784bd4149b28b05bda1473cf05bf331b",
+        "actual_sha256": "b64026cc8b768088e587786b630bc6f0784bd4149b28b05bda1473cf05bf331b",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/evidence-drawer.tsx",
+        "expected_sha256": "f8efa53e224395fbdafee66eed9c5b99a2923a2fb72c1c1a8346beffda854cd4",
+        "actual_sha256": "f8efa53e224395fbdafee66eed9c5b99a2923a2fb72c1c1a8346beffda854cd4",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/import-panel.tsx",
+        "expected_sha256": "eada4c140c40400a3aed8504d7011657bf713fa5121f593677897b24c9ff4c27",
+        "actual_sha256": "eada4c140c40400a3aed8504d7011657bf713fa5121f593677897b24c9ff4c27",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/issue-list.tsx",
+        "expected_sha256": "add2e865815cc86a4268c443b61549b988542b5752c22cf2c65cf0c5ba02465b",
+        "actual_sha256": "add2e865815cc86a4268c443b61549b988542b5752c22cf2c65cf0c5ba02465b",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/manager-summary.module.css",
+        "expected_sha256": "80d3e8aaa6b5f941981332cc32d695a33be0cb3e96da6a6076ea39d8154b978c",
+        "actual_sha256": "80d3e8aaa6b5f941981332cc32d695a33be0cb3e96da6a6076ea39d8154b978c",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/manager-summary.tsx",
+        "expected_sha256": "1112c02acce8724597aae6072c8a4c663a8039abedda66ed526f5f69cc416126",
+        "actual_sha256": "1112c02acce8724597aae6072c8a4c663a8039abedda66ed526f5f69cc416126",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/multi-scenario-workbench.tsx",
+        "expected_sha256": "e21ce389760a9bd77027b5441200876ac26d1e7a3277ea78e571ef1b67b41985",
+        "actual_sha256": "e21ce389760a9bd77027b5441200876ac26d1e7a3277ea78e571ef1b67b41985",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/overview.tsx",
+        "expected_sha256": "cce62003ce2761912ad13e24b371b86f76f675934e69f2bec24b2c6d475ae361",
+        "actual_sha256": "cce62003ce2761912ad13e24b371b86f76f675934e69f2bec24b2c6d475ae361",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/product-comparison-panel.tsx",
+        "expected_sha256": "6c95a854c8af5885d966e8b845c2bb4b2852183848f7e587016f3c954a4b421a",
+        "actual_sha256": "6c95a854c8af5885d966e8b845c2bb4b2852183848f7e587016f3c954a4b421a",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/replacement-dialog.tsx",
+        "expected_sha256": "278a2b0e359c9029341fe4ee0c635e268d4ae07dd7f6676b5972828362170186",
+        "actual_sha256": "278a2b0e359c9029341fe4ee0c635e268d4ae07dd7f6676b5972828362170186",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/review-workbench.tsx",
+        "expected_sha256": "19893ac050183495fe70bffdfdc204df14068bfc926fe1d6d109fdbc3d7f73a9",
+        "actual_sha256": "19893ac050183495fe70bffdfdc204df14068bfc926fe1d6d109fdbc3d7f73a9",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/scenario-sensitivity.tsx",
+        "expected_sha256": "4171200481c59a6cd0132330f6fad2c7c0d69554853297c1f4be7e63b722bb9c",
+        "actual_sha256": "4171200481c59a6cd0132330f6fad2c7c0d69554853297c1f4be7e63b722bb9c",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/workspace-panels.tsx",
+        "expected_sha256": "37b572b4bb2319e1c37ea0091ed8e8498df266b58561684356bd01106598f121",
+        "actual_sha256": "37b572b4bb2319e1c37ea0091ed8e8498df266b58561684356bd01106598f121",
+        "status": "pass"
+      },
+      {
+        "path": "src/components/workspace-storage.tsx",
+        "expected_sha256": "4c16c0a594951a661a2fc46a0aaf0cb49e2f34effbe7d4567fe0fcaa2c487fc8",
+        "actual_sha256": "4c16c0a594951a661a2fc46a0aaf0cb49e2f34effbe7d4567fe0fcaa2c487fc8",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/.gitkeep",
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/aggregation.ts",
+        "expected_sha256": "d86b18b14f8c3a72b05956e6ee6ba855e5079ba9c801e5e39fb6b52637598ea9",
+        "actual_sha256": "d86b18b14f8c3a72b05956e6ee6ba855e5079ba9c801e5e39fb6b52637598ea9",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/analysis.ts",
+        "expected_sha256": "5518beb18091770cc8aae356b70dde28a0937be79e9eba8b35d4f802ee8c1c21",
+        "actual_sha256": "5518beb18091770cc8aae356b70dde28a0937be79e9eba8b35d4f802ee8c1c21",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/bridge.ts",
+        "expected_sha256": "a02fd4ee6a91a6de40c90bc8d5cc66b9602e183576305e3644e9de038bfdc501",
+        "actual_sha256": "a02fd4ee6a91a6de40c90bc8d5cc66b9602e183576305e3644e9de038bfdc501",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/comparison.ts",
+        "expected_sha256": "2c302147363f1d49daaa7cacef6084c1344037ece830a283fe51b1fccbf877bb",
+        "actual_sha256": "2c302147363f1d49daaa7cacef6084c1344037ece830a283fe51b1fccbf877bb",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/date.ts",
+        "expected_sha256": "354c6d10291dacf15444411dd4d86f7103d39e4143b7118123829aa150db87f1",
+        "actual_sha256": "354c6d10291dacf15444411dd4d86f7103d39e4143b7118123829aa150db87f1",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/index.ts",
+        "expected_sha256": "080520fcfe52c58449fd25f11cb9f084b07f4f1a374c3fdb2223bd2d072831cb",
+        "actual_sha256": "080520fcfe52c58449fd25f11cb9f084b07f4f1a374c3fdb2223bd2d072831cb",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/metrics.ts",
+        "expected_sha256": "eeb0ae5143975d9de9e1cea054845d72cc63148527094205e808ff3503760d78",
+        "actual_sha256": "eeb0ae5143975d9de9e1cea054845d72cc63148527094205e808ff3503760d78",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/money.ts",
+        "expected_sha256": "6b58c6c65e9827077e5e0785808a1b4afad47146b4bb6273bc22757a05a6e5b5",
+        "actual_sha256": "6b58c6c65e9827077e5e0785808a1b4afad47146b4bb6273bc22757a05a6e5b5",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/product-comparison.ts",
+        "expected_sha256": "3fffaeda4c32bf60e1841555b798a99819ec26b5d357097f2e4061173af56527",
+        "actual_sha256": "3fffaeda4c32bf60e1841555b798a99819ec26b5d357097f2e4061173af56527",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/rules.ts",
+        "expected_sha256": "5f61666d130fd75d8010e76adc5e8e06291c2ef39d21bd91f84005998c562690",
+        "actual_sha256": "5f61666d130fd75d8010e76adc5e8e06291c2ef39d21bd91f84005998c562690",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/scenario-sensitivity.ts",
+        "expected_sha256": "3eeaa750d8534836f488f6df58d02b12724327cc68580dc1c8e89a76a25f90b0",
+        "actual_sha256": "3eeaa750d8534836f488f6df58d02b12724327cc68580dc1c8e89a76a25f90b0",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/scenarios.ts",
+        "expected_sha256": "db13b5cdbf88a4be70d5c11ab40c6d4c03a1e3915bc7a23e6356bcc3e74c7efe",
+        "actual_sha256": "db13b5cdbf88a4be70d5c11ab40c6d4c03a1e3915bc7a23e6356bcc3e74c7efe",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/types.ts",
+        "expected_sha256": "851647d086aa280b8355dd04aaa8c297f8cbd02cbb970589bd0b7c3e5724c0cc",
+        "actual_sha256": "851647d086aa280b8355dd04aaa8c297f8cbd02cbb970589bd0b7c3e5724c0cc",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/validation.ts",
+        "expected_sha256": "a0742eacb03d122dc45a34ddb0c414cd362c85dd607dc0d9d6b2b03defa9ecf2",
+        "actual_sha256": "a0742eacb03d122dc45a34ddb0c414cd362c85dd607dc0d9d6b2b03defa9ecf2",
+        "status": "pass"
+      },
+      {
+        "path": "src/lib/.gitkeep",
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "status": "pass"
+      },
+      {
+        "path": "src/lib/csv.ts",
+        "expected_sha256": "b298a9959fdb346dae3890fcbfba878b9d6579cad73580d68c7c29a2f65f9406",
+        "actual_sha256": "b298a9959fdb346dae3890fcbfba878b9d6579cad73580d68c7c29a2f65f9406",
+        "status": "pass"
+      },
+      {
+        "path": "tests/action-backup.test.ts",
+        "expected_sha256": "3a2f8c95a973e81eb97b698f2f9c2393664662c3d522de3ca94a50b829dc1c90",
+        "actual_sha256": "3a2f8c95a973e81eb97b698f2f9c2393664662c3d522de3ca94a50b829dc1c90",
+        "status": "pass"
+      },
+      {
+        "path": "tests/action-export.test.ts",
+        "expected_sha256": "329edf849f0a2f941f5ba124ed9706a39d5acacae753766c34e32890614558b0",
+        "actual_sha256": "329edf849f0a2f941f5ba124ed9706a39d5acacae753766c34e32890614558b0",
+        "status": "pass"
+      },
+      {
+        "path": "tests/action-workspace.test.ts",
+        "expected_sha256": "9041b7b7c187ae7c922ad40023c79176d82192aa798a3d2f0e4d2042196d823f",
+        "actual_sha256": "9041b7b7c187ae7c922ad40023c79176d82192aa798a3d2f0e4d2042196d823f",
+        "status": "pass"
+      },
+      {
+        "path": "tests/aggregation-boundaries.test.ts",
+        "expected_sha256": "20f3dbecf3069803747b9ce2f33888d683a532a88ccf315eb8416a9fd720a315",
+        "actual_sha256": "20f3dbecf3069803747b9ce2f33888d683a532a88ccf315eb8416a9fd720a315",
+        "status": "pass"
+      },
+      {
+        "path": "tests/ai-client.test.ts",
+        "expected_sha256": "e08cdaae26a6510552635d52f504001d6135c0d73d0961dd66f95800151f8c19",
+        "actual_sha256": "e08cdaae26a6510552635d52f504001d6135c0d73d0961dd66f95800151f8c19",
+        "status": "pass"
+      },
+      {
+        "path": "tests/ai-config.test.ts",
+        "expected_sha256": "4a83bfdf810d62b799d210050f8a0de114660f21adaadbb23ff5641892aa26f3",
+        "actual_sha256": "4a83bfdf810d62b799d210050f8a0de114660f21adaadbb23ff5641892aa26f3",
+        "status": "pass"
+      },
+      {
+        "path": "tests/ai-grounding.test.ts",
+        "expected_sha256": "075ff7d22be908eec790a9039539584a02fcaee5e14ba8ad79e0c390aaa8314d",
+        "actual_sha256": "075ff7d22be908eec790a9039539584a02fcaee5e14ba8ad79e0c390aaa8314d",
+        "status": "pass"
+      },
+      {
+        "path": "tests/ai-presentation.test.ts",
+        "expected_sha256": "db1920a0b0a2d6d7a1c7b1f19e418b962f220c84e3a0d1ac6b42f9a3f68b2b4f",
+        "actual_sha256": "db1920a0b0a2d6d7a1c7b1f19e418b962f220c84e3a0d1ac6b42f9a3f68b2b4f",
+        "status": "pass"
+      },
+      {
+        "path": "tests/ai-provider.test.ts",
+        "expected_sha256": "4cde2b235c1edbb48a2e47b5836003d290ca5d2fb32eba8d98d7e53a89b5a1ee",
+        "actual_sha256": "4cde2b235c1edbb48a2e47b5836003d290ca5d2fb32eba8d98d7e53a89b5a1ee",
+        "status": "pass"
+      },
+      {
+        "path": "tests/ai-route.test.ts",
+        "expected_sha256": "52ffefe5a19e23ae18ef74b34657f60bc28a62cd2c2d3017cbdb67159fc75609",
+        "actual_sha256": "52ffefe5a19e23ae18ef74b34657f60bc28a62cd2c2d3017cbdb67159fc75609",
+        "status": "pass"
+      },
+      {
+        "path": "tests/ai-service.test.ts",
+        "expected_sha256": "e7bd464b7833c2f5c5c8ad8dfc9450fdc4a38f39567f16768cecf51ff5353bab",
+        "actual_sha256": "e7bd464b7833c2f5c5c8ad8dfc9450fdc4a38f39567f16768cecf51ff5353bab",
+        "status": "pass"
+      },
+      {
+        "path": "tests/analysis-limits.test.ts",
+        "expected_sha256": "18ebc681ee944e599934ed945678c5b159186f5f63f0d5ae62590ed1fc0e9c2f",
+        "actual_sha256": "18ebc681ee944e599934ed945678c5b159186f5f63f0d5ae62590ed1fc0e9c2f",
+        "status": "pass"
+      },
+      {
+        "path": "tests/app-smoke.test.tsx",
+        "expected_sha256": "b48af9b3903963957e172f6dd4a8b3c402871ed6f407de0cbe260975a61abb1d",
+        "actual_sha256": "b48af9b3903963957e172f6dd4a8b3c402871ed6f407de0cbe260975a61abb1d",
+        "status": "pass"
+      },
+      {
+        "path": "tests/dataset-route.test.ts",
+        "expected_sha256": "7a09008b41346bd70022bb7ee5936161af5f8b686ce3b497eaa64ac4befbcf4a",
+        "actual_sha256": "7a09008b41346bd70022bb7ee5936161af5f8b686ce3b497eaa64ac4befbcf4a",
+        "status": "pass"
+      },
+      {
+        "path": "tests/decision.test.ts",
+        "expected_sha256": "bdb344948180bea8b7b2080da309652a1e0ae11489e54a39fbc17903d4047fed",
+        "actual_sha256": "bdb344948180bea8b7b2080da309652a1e0ae11489e54a39fbc17903d4047fed",
+        "status": "pass"
+      },
+      {
+        "path": "tests/domain-acceptance.test.ts",
+        "expected_sha256": "7090a87d91f5ffd4d27f7f6a03eab08e424716e8e6f7dc1b28884a6ff6c7d9bf",
+        "actual_sha256": "7090a87d91f5ffd4d27f7f6a03eab08e424716e8e6f7dc1b28884a6ff6c7d9bf",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/action-workspace.spec.ts",
+        "expected_sha256": "381877490817fcfd6285548634c437fc679639ef979829becb7fe73d084c84bb",
+        "actual_sha256": "381877490817fcfd6285548634c437fc679639ef979829becb7fe73d084c84bb",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/ai.spec.ts",
+        "expected_sha256": "94c4ee429664c4f10249a73aa6d90f9d5f970f5dd0acdf38a926a4b4d19bc612",
+        "actual_sha256": "94c4ee429664c4f10249a73aa6d90f9d5f970f5dd0acdf38a926a4b4d19bc612",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/import-guidance.spec.ts",
+        "expected_sha256": "d587bc93341e40f2d6550e5446ceeae8e4b7b99697b67824371a88e2335ce898",
+        "actual_sha256": "d587bc93341e40f2d6550e5446ceeae8e4b7b99697b67824371a88e2335ce898",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/import.spec.ts",
+        "expected_sha256": "c87b0e9c80f9833f612a2f5fce3a5d2d972d73043d7e12df8adf1855b2c54f17",
+        "actual_sha256": "c87b0e9c80f9833f612a2f5fce3a5d2d972d73043d7e12df8adf1855b2c54f17",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/m6-acceptance.spec.ts",
+        "expected_sha256": "e2e0f7dfc92380b563e1f30f5b69c17abde856a1882c2195b26bbd23c74895e4",
+        "actual_sha256": "e2e0f7dfc92380b563e1f30f5b69c17abde856a1882c2195b26bbd23c74895e4",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/manager-presentation.spec.ts",
+        "expected_sha256": "57190ba66a1e3bf94cb387a9529e6fc89c42f187af0b34fef505601021122675",
+        "actual_sha256": "57190ba66a1e3bf94cb387a9529e6fc89c42f187af0b34fef505601021122675",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/manager-summary.spec.ts",
+        "expected_sha256": "81fbd45d2365d7ec2f564a10cdc90297acbd0e7b8010fe9a2785bb2b97d99102",
+        "actual_sha256": "81fbd45d2365d7ec2f564a10cdc90297acbd0e7b8010fe9a2785bb2b97d99102",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/period-comparison.spec.ts",
+        "expected_sha256": "8b5a46c6f6a948bb9275a460590f0e0cb179d0acf0dfe5d91ab1c0101c6fbb17",
+        "actual_sha256": "8b5a46c6f6a948bb9275a460590f0e0cb179d0acf0dfe5d91ab1c0101c6fbb17",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/product-comparison.spec.ts",
+        "expected_sha256": "cfd126df0c87cfe83b5137a86e4709ce6a7ead10da4769fef9749a4a4f4d9715",
+        "actual_sha256": "cfd126df0c87cfe83b5137a86e4709ce6a7ead10da4769fef9749a4a4f4d9715",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/replacement-helpers.ts",
+        "expected_sha256": "74d59e95f24bfa25c183e30883c8346b6362c907658e7c76f6fa3be647703df7",
+        "actual_sha256": "74d59e95f24bfa25c183e30883c8346b6362c907658e7c76f6fa3be647703df7",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/review-v2-a-export.spec.ts",
+        "expected_sha256": "5044093cf4532dd792dca815e13fb85c0bff9761c62cc894be867be22d104d3f",
+        "actual_sha256": "5044093cf4532dd792dca815e13fb85c0bff9761c62cc894be867be22d104d3f",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/review-v2-a.spec.ts",
+        "expected_sha256": "dad2e411d60de45af950759e42867ab3bbfdb93db9c0ca25fd6c65d070d50c54",
+        "actual_sha256": "dad2e411d60de45af950759e42867ab3bbfdb93db9c0ca25fd6c65d070d50c54",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/scenario-sensitivity.spec.ts",
+        "expected_sha256": "67dd324b59fe7dd2dd18860f3161338bdb36fff8d28e475541ccbce48e4391ec",
+        "actual_sha256": "67dd324b59fe7dd2dd18860f3161338bdb36fff8d28e475541ccbce48e4391ec",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/scenarios.spec.ts",
+        "expected_sha256": "2213819082f62330927183d3e59c174efd05f572d17b5c67e4bb6f2a69a3ac55",
+        "actual_sha256": "2213819082f62330927183d3e59c174efd05f572d17b5c67e4bb6f2a69a3ac55",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/workspace-storage.spec.ts",
+        "expected_sha256": "40c47cfbc04786ecef762657e9de4881bf84a0c6e7b61fb42f1704b77cbe0f71",
+        "actual_sha256": "40c47cfbc04786ecef762657e9de4881bf84a0c6e7b61fb42f1704b77cbe0f71",
+        "status": "pass"
+      },
+      {
+        "path": "tests/e2e/workspace.spec.ts",
+        "expected_sha256": "031a17acfd01ba57296ff8eb1ae0563ac733ffe933adb6759cf942e22d953c39",
+        "actual_sha256": "031a17acfd01ba57296ff8eb1ae0563ac733ffe933adb6759cf942e22d953c39",
+        "status": "pass"
+      },
+      {
+        "path": "tests/export.test.ts",
+        "expected_sha256": "ca189dd3669c43b89bda6b1c9ade4573cda0f6163a3f1ee59ac8df4bf78b50de",
+        "actual_sha256": "ca189dd3669c43b89bda6b1c9ade4573cda0f6163a3f1ee59ac8df4bf78b50de",
+        "status": "pass"
+      },
+      {
+        "path": "tests/fixtures/alternative/README.md",
+        "expected_sha256": "77effa8a3b1c8b056fd5b5a2d7576708389790ab507d807b5d1298ae4048d43b",
+        "actual_sha256": "77effa8a3b1c8b056fd5b5a2d7576708389790ab507d807b5d1298ae4048d43b",
+        "status": "pass"
+      },
+      {
+        "path": "tests/fixtures/alternative/ad_spend_daily.csv",
+        "expected_sha256": "7bc34b7f8f71fb5fb9ef1f2578aa5af6592837576dc6b70b06bf7ff291c1cae5",
+        "actual_sha256": "7bc34b7f8f71fb5fb9ef1f2578aa5af6592837576dc6b70b06bf7ff291c1cae5",
+        "status": "pass"
+      },
+      {
+        "path": "tests/fixtures/alternative/channel_costs_daily.csv",
+        "expected_sha256": "d9911ad72276430fce5296479a3ffde8f8eb5a761a478f590b2d962e9c05119a",
+        "actual_sha256": "d9911ad72276430fce5296479a3ffde8f8eb5a761a478f590b2d962e9c05119a",
+        "status": "pass"
+      },
+      {
+        "path": "tests/fixtures/alternative/expected.json",
+        "expected_sha256": "4abd132547077eea4bef17c5c8172f793d236f57e5cccb9ec5f04a706445a98a",
+        "actual_sha256": "4abd132547077eea4bef17c5c8172f793d236f57e5cccb9ec5f04a706445a98a",
+        "status": "pass"
+      },
+      {
+        "path": "tests/fixtures/alternative/manifest.json",
+        "expected_sha256": "7be898255bb6dce4eda33c5fcd17f30575c97fc35071c226539ff0b000087a78",
+        "actual_sha256": "7be898255bb6dce4eda33c5fcd17f30575c97fc35071c226539ff0b000087a78",
+        "status": "pass"
+      },
+      {
+        "path": "tests/fixtures/alternative/sales_daily.csv",
+        "expected_sha256": "6c778480071bb2501e5313bb918ab18b1e663ae807b76f15fb1c0cafbe93fba5",
+        "actual_sha256": "6c778480071bb2501e5313bb918ab18b1e663ae807b76f15fb1c0cafbe93fba5",
+        "status": "pass"
+      },
+      {
+        "path": "tests/helpers/ai-server.ts",
+        "expected_sha256": "c451c6cbf047aedf1b3b1b579772298012a034e4a0f3e34bbf2f82bad138df1e",
+        "actual_sha256": "c451c6cbf047aedf1b3b1b579772298012a034e4a0f3e34bbf2f82bad138df1e",
+        "status": "pass"
+      },
+      {
+        "path": "tests/helpers/fixtures.ts",
+        "expected_sha256": "f3db1faf8c567a12ebaa4c7b854f11d2e7d1be783fba8a7119cbef5218aeeb16",
+        "actual_sha256": "f3db1faf8c567a12ebaa4c7b854f11d2e7d1be783fba8a7119cbef5218aeeb16",
+        "status": "pass"
+      },
+      {
+        "path": "tests/import-guidance.test.ts",
+        "expected_sha256": "699b5a6ce096e478f3455e55c379a014ee3cc86286f02796ff751904bb232aa8",
+        "actual_sha256": "699b5a6ce096e478f3455e55c379a014ee3cc86286f02796ff751904bb232aa8",
+        "status": "pass"
+      },
+      {
+        "path": "tests/import.test.ts",
+        "expected_sha256": "91b72118df1768e997b9f904cf419cf1771eda1deab4bb50198e9dc608f50787",
+        "actual_sha256": "91b72118df1768e997b9f904cf419cf1771eda1deab4bb50198e9dc608f50787",
+        "status": "pass"
+      },
+      {
+        "path": "tests/local-store.test.ts",
+        "expected_sha256": "a535ca526fe2bab1b202c88e9f1fea735ffbfb2d1149d283d1705563ed6b4e62",
+        "actual_sha256": "a535ca526fe2bab1b202c88e9f1fea735ffbfb2d1149d283d1705563ed6b4e62",
+        "status": "pass"
+      },
+      {
+        "path": "tests/m6-financial-audit.test.ts",
+        "expected_sha256": "b5233c80d9f2cf499fccdc0820baf9cf31e5e1ca430e8b4f39bca4452cceecb6",
+        "actual_sha256": "b5233c80d9f2cf499fccdc0820baf9cf31e5e1ca430e8b4f39bca4452cceecb6",
+        "status": "pass"
+      },
+      {
+        "path": "tests/m6-security-audit.test.ts",
+        "expected_sha256": "53db780357a0be09c606ef37ecc9c3ccd0b56b960d4a99c74ab7046ea3c34223",
+        "actual_sha256": "53db780357a0be09c606ef37ecc9c3ccd0b56b960d4a99c74ab7046ea3c34223",
+        "status": "pass"
+      },
+      {
+        "path": "tests/manager-language.test.ts",
+        "expected_sha256": "0090961760465d58a3b96b1f2d4c9ed38ea7a0a47f1fd46eb4d1abb8330af186",
+        "actual_sha256": "0090961760465d58a3b96b1f2d4c9ed38ea7a0a47f1fd46eb4d1abb8330af186",
+        "status": "pass"
+      },
+      {
+        "path": "tests/manager-summary.test.ts",
+        "expected_sha256": "02e8b739c648ff80d66fb17c8ad3de57acbf59c78e9bc368b44fd2e761cd2a8a",
+        "actual_sha256": "02e8b739c648ff80d66fb17c8ad3de57acbf59c78e9bc368b44fd2e761cd2a8a",
+        "status": "pass"
+      },
+      {
+        "path": "tests/metrics.test.ts",
+        "expected_sha256": "6e514aeb3aaff34c6538eb6d6df043074a3dd3df4fa421a6446fbed37c20a468",
+        "actual_sha256": "6e514aeb3aaff34c6538eb6d6df043074a3dd3df4fa421a6446fbed37c20a468",
+        "status": "pass"
+      },
+      {
+        "path": "tests/money.test.ts",
+        "expected_sha256": "e1b43d3700fd3305dca5237b7c3cdde54046845a05a8d398d5e3023fea8128db",
+        "actual_sha256": "e1b43d3700fd3305dca5237b7c3cdde54046845a05a8d398d5e3023fea8128db",
+        "status": "pass"
+      },
+      {
+        "path": "tests/period-comparison.test.ts",
+        "expected_sha256": "67df8787f5a2f97a46eb2f4eba67274ce4eda13c79915912f66f871a01c13a35",
+        "actual_sha256": "67df8787f5a2f97a46eb2f4eba67274ce4eda13c79915912f66f871a01c13a35",
+        "status": "pass"
+      },
+      {
+        "path": "tests/product-comparison.test.ts",
+        "expected_sha256": "0e4af7741c99c1a06251606e5f48a7e86413a6fbcb79c6640936b00b112b814d",
+        "actual_sha256": "0e4af7741c99c1a06251606e5f48a7e86413a6fbcb79c6640936b00b112b814d",
+        "status": "pass"
+      },
+      {
+        "path": "tests/rules.test.ts",
+        "expected_sha256": "8f28c0df851557def50619caa1cb74a50b8d510ca2e5ca0681571b76dc4443ef",
+        "actual_sha256": "8f28c0df851557def50619caa1cb74a50b8d510ca2e5ca0681571b76dc4443ef",
+        "status": "pass"
+      },
+      {
+        "path": "tests/scenario-sensitivity.test.ts",
+        "expected_sha256": "e6120595fcaf82d65e2fe311aea10f75722e1e9e316225c2669eec941a892d56",
+        "actual_sha256": "e6120595fcaf82d65e2fe311aea10f75722e1e9e316225c2669eec941a892d56",
+        "status": "pass"
+      },
+      {
+        "path": "tests/scenarios.test.ts",
+        "expected_sha256": "23ce81c2c02e16859955c7c0dd144d49b87893e4ff2696aed337fa45d327b4fd",
+        "actual_sha256": "23ce81c2c02e16859955c7c0dd144d49b87893e4ff2696aed337fa45d327b4fd",
+        "status": "pass"
+      },
+      {
+        "path": "tests/v2-actions.test.ts",
+        "expected_sha256": "7496b43cdfa6fd821944614305fbe2659e9df5ab607f8e3ccf2d4c584d18cfad",
+        "actual_sha256": "7496b43cdfa6fd821944614305fbe2659e9df5ab607f8e3ccf2d4c584d18cfad",
+        "status": "pass"
+      },
+      {
+        "path": "tests/v2-backup.test.ts",
+        "expected_sha256": "d4935970370bba5b42b7bcf9ab22c4ff033c4ef8d16f8645459fb7c037dae656",
+        "actual_sha256": "d4935970370bba5b42b7bcf9ab22c4ff033c4ef8d16f8645459fb7c037dae656",
+        "status": "pass"
+      },
+      {
+        "path": "tests/v2-decision-export.test.ts",
+        "expected_sha256": "e36d89c4033a54d30f0fd7c5ca096cfa39f1de7923cdfa8d01f3b3a8bf0e7771",
+        "actual_sha256": "e36d89c4033a54d30f0fd7c5ca096cfa39f1de7923cdfa8d01f3b3a8bf0e7771",
+        "status": "pass"
+      },
+      {
+        "path": "tests/v2-replacement.test.ts",
+        "expected_sha256": "9c20d2a8cebc77849de0a52075abbc0cc890a2c844ea26f52670fbc9c7dad6ef",
+        "actual_sha256": "9c20d2a8cebc77849de0a52075abbc0cc890a2c844ea26f52670fbc9c7dad6ef",
+        "status": "pass"
+      },
+      {
+        "path": "tests/v2-review.test.ts",
+        "expected_sha256": "882e09c57056ace385fccb1db8065888610e6800da817b2222047cf5ec7b8881",
+        "actual_sha256": "882e09c57056ace385fccb1db8065888610e6800da817b2222047cf5ec7b8881",
+        "status": "pass"
+      },
+      {
+        "path": "tests/v2-scenario-workspace.test.ts",
+        "expected_sha256": "8ca7e7fffb0d761e081cad0aba8f7ab8fd125156e5f86cd9cf7a376d58bd8440",
+        "actual_sha256": "8ca7e7fffb0d761e081cad0aba8f7ab8fd125156e5f86cd9cf7a376d58bd8440",
+        "status": "pass"
+      },
+      {
+        "path": "tests/validation.test.ts",
+        "expected_sha256": "5f96da7472620a4ff3d54f962eff1147f87dce9f5bd00eb0975b79a48e59a5fc",
+        "actual_sha256": "5f96da7472620a4ff3d54f962eff1147f87dce9f5bd00eb0975b79a48e59a5fc",
+        "status": "pass"
+      },
+      {
+        "path": "tests/workspace-backup.test.ts",
+        "expected_sha256": "a72624246238dcf95f2f57f7e41e28b1caa2e3367bfc73c860f1d9a55ea6822b",
+        "actual_sha256": "a72624246238dcf95f2f57f7e41e28b1caa2e3367bfc73c860f1d9a55ea6822b",
+        "status": "pass"
+      },
+      {
+        "path": "tests/workspace.test.ts",
+        "expected_sha256": "3ad07ac3dc0998dad6225535a23a81f8d9c961a833e044db3c3ba1b1884cd99f",
+        "actual_sha256": "3ad07ac3dc0998dad6225535a23a81f8d9c961a833e044db3c3ba1b1884cd99f",
+        "status": "pass"
+      },
+      {
+        "path": "tsconfig.json",
+        "expected_sha256": "8617f5b9701bc1dc0f8292c765411f01337fa35a3768f46310096555c54a37d0",
+        "actual_sha256": "8617f5b9701bc1dc0f8292c765411f01337fa35a3768f46310096555c54a37d0",
+        "status": "pass"
+      },
+      {
+        "path": "vitest.config.mts",
+        "expected_sha256": "a79f97f28889e75266fd5c56aba1e1bb34290b77f4b924727fc3d1f0603952b9",
+        "actual_sha256": "a79f97f28889e75266fd5c56aba1e1bb34290b77f4b924727fc3d1f0603952b9",
+        "status": "pass"
+      }
+    ]
+  },
+  "unlisted_src_or_test_files": [],
+  "source_inventory_stable_during_audit": true,
+  "protected_inventory": {
+    "path": "verification/review-v2-a-integrity.json",
+    "sha256": "8a8497cc9f1cbc8d16d1436ec1d0ebd53ef2dbb642a4a6f058a91e9a1f0f01b6",
+    "bytes": 8345
+  },
+  "protected_files": {
+    "status": "pass",
+    "expected_count": 60,
+    "matched_count": 60,
+    "files": [
+      {
+        "path": "AGENTS.md",
+        "expected_sha256": "23e0889056347dd206a7f3b334274011042c2f335229daf582a054916fcc75ff",
+        "actual_sha256": "23e0889056347dd206a7f3b334274011042c2f335229daf582a054916fcc75ff",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/demo/ad_spend_daily.csv",
+        "expected_sha256": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d",
+        "actual_sha256": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/demo/channel_costs_daily.csv",
+        "expected_sha256": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+        "actual_sha256": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/demo/computed_summary.json",
+        "expected_sha256": "311e0a3cd69f01a8c3eb26cfd2f1a7cf673553a637308ae92a4610338c0a94f0",
+        "actual_sha256": "311e0a3cd69f01a8c3eb26cfd2f1a7cf673553a637308ae92a4610338c0a94f0",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/demo/intent.json",
+        "expected_sha256": "f613e164882cdb218be5c36fcefdeacca3c6b227f832ceca8cd87ccf124912db",
+        "actual_sha256": "f613e164882cdb218be5c36fcefdeacca3c6b227f832ceca8cd87ccf124912db",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/demo/manifest.json",
+        "expected_sha256": "decb8aac6a536fbdd5046ba9d2d5162f29db4a7cdcd84a2aba621fde699163a1",
+        "actual_sha256": "decb8aac6a536fbdd5046ba9d2d5162f29db4a7cdcd84a2aba621fde699163a1",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/demo/sales_daily.csv",
+        "expected_sha256": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+        "actual_sha256": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/duplicate_sales_key/ad_spend_daily.csv",
+        "expected_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+        "actual_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/duplicate_sales_key/channel_costs_daily.csv",
+        "expected_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "actual_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/duplicate_sales_key/expected_validation.json",
+        "expected_sha256": "6a6fb2ff5f2cdc9acdfb7c0a613b4231d010bc030dad144aa6ab40971f3c60b8",
+        "actual_sha256": "6a6fb2ff5f2cdc9acdfb7c0a613b4231d010bc030dad144aa6ab40971f3c60b8",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/duplicate_sales_key/manifest.json",
+        "expected_sha256": "92862ed77448416b0111ce72c2f2564164fa637b95fee2bc5bbdc279fa320cc2",
+        "actual_sha256": "92862ed77448416b0111ce72c2f2564164fa637b95fee2bc5bbdc279fa320cc2",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/duplicate_sales_key/sales_daily.csv",
+        "expected_sha256": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+        "actual_sha256": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_ad_day/ad_spend_daily.csv",
+        "expected_sha256": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084",
+        "actual_sha256": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_ad_day/channel_costs_daily.csv",
+        "expected_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "actual_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_ad_day/expected_validation.json",
+        "expected_sha256": "662121d48a25df5e6f5bac05235d00df36e3b3c3340f321eb0b90c2c414f6f8c",
+        "actual_sha256": "662121d48a25df5e6f5bac05235d00df36e3b3c3340f321eb0b90c2c414f6f8c",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_ad_day/manifest.json",
+        "expected_sha256": "ee16fc7798c993cf95ef7cfcf359a0600c195afef07d18e7b10cb3f8e2724ea8",
+        "actual_sha256": "ee16fc7798c993cf95ef7cfcf359a0600c195afef07d18e7b10cb3f8e2724ea8",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_ad_day/sales_daily.csv",
+        "expected_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+        "actual_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_cogs/ad_spend_daily.csv",
+        "expected_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+        "actual_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_cogs/channel_costs_daily.csv",
+        "expected_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "actual_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_cogs/expected_validation.json",
+        "expected_sha256": "92b26e35386d1e496eff3251147eb5a8df6e096eed1b53e28c7761d36ed9f431",
+        "actual_sha256": "92b26e35386d1e496eff3251147eb5a8df6e096eed1b53e28c7761d36ed9f431",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_cogs/manifest.json",
+        "expected_sha256": "0f16ad32bc3d8476a5e2b025db64e7f30764808884731121f1792bde20f013fc",
+        "actual_sha256": "0f16ad32bc3d8476a5e2b025db64e7f30764808884731121f1792bde20f013fc",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/missing_cogs/sales_daily.csv",
+        "expected_sha256": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+        "actual_sha256": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/mixed_currency/ad_spend_daily.csv",
+        "expected_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+        "actual_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/mixed_currency/channel_costs_daily.csv",
+        "expected_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "actual_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/mixed_currency/expected_validation.json",
+        "expected_sha256": "ae1fced7aab37d296b10150cc4bb38932c9634f5f2f48b899102528b78ea7348",
+        "actual_sha256": "ae1fced7aab37d296b10150cc4bb38932c9634f5f2f48b899102528b78ea7348",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/mixed_currency/manifest.json",
+        "expected_sha256": "9b575fd3c14ae439d877633189408c4dd21243aadfc9f2c66412e58a02e56d84",
+        "actual_sha256": "9b575fd3c14ae439d877633189408c4dd21243aadfc9f2c66412e58a02e56d84",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/errors/mixed_currency/sales_daily.csv",
+        "expected_sha256": "dcc87813a1ad1dff983966560e22ba1976360027314f18d4b34edd7662c8216b",
+        "actual_sha256": "dcc87813a1ad1dff983966560e22ba1976360027314f18d4b34edd7662c8216b",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/golden/ad_spend_daily.csv",
+        "expected_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+        "actual_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/golden/channel_costs_daily.csv",
+        "expected_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "actual_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/golden/expected.json",
+        "expected_sha256": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+        "actual_sha256": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/golden/manifest.json",
+        "expected_sha256": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+        "actual_sha256": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/golden/sales_daily.csv",
+        "expected_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+        "actual_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/refund_only/ad_spend_daily.csv",
+        "expected_sha256": "bde19c2628c34d4d4aec7d08fc75b841624c8b1ffb91fadc9e97c3e04b554ccc",
+        "actual_sha256": "bde19c2628c34d4d4aec7d08fc75b841624c8b1ffb91fadc9e97c3e04b554ccc",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/refund_only/channel_costs_daily.csv",
+        "expected_sha256": "57750bd3a496d457e20aab82d8caa9572d5ff566908ea49735ac448de4d6b3c5",
+        "actual_sha256": "57750bd3a496d457e20aab82d8caa9572d5ff566908ea49735ac448de4d6b3c5",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/refund_only/expected.json",
+        "expected_sha256": "59820fa87818d9ded64ae5a6e948d7ec8d3b3724e4be8e106df51ef8fbd4a21a",
+        "actual_sha256": "59820fa87818d9ded64ae5a6e948d7ec8d3b3724e4be8e106df51ef8fbd4a21a",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/refund_only/manifest.json",
+        "expected_sha256": "fc26ae44cf9a7ebede170c41e755a13fbc87f6f7974d5722a49f3b1f9d76fdf6",
+        "actual_sha256": "fc26ae44cf9a7ebede170c41e755a13fbc87f6f7974d5722a49f3b1f9d76fdf6",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/refund_only/sales_daily.csv",
+        "expected_sha256": "746e97efde53984ba0db1f0336ddac089ed5809344316e2674dbbb8a54910397",
+        "actual_sha256": "746e97efde53984ba0db1f0336ddac089ed5809344316e2674dbbb8a54910397",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/zero_ad/ad_spend_daily.csv",
+        "expected_sha256": "440fa23fe0ff5c7765c1375e0cf61ed28c31254de16708c3dd0e91cf8fd96747",
+        "actual_sha256": "440fa23fe0ff5c7765c1375e0cf61ed28c31254de16708c3dd0e91cf8fd96747",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/zero_ad/channel_costs_daily.csv",
+        "expected_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "actual_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/zero_ad/expected.json",
+        "expected_sha256": "707f84b8c7ecb77860d5b2a9b10b2d3228e6cc6a338f5feb1965a545ce9fe34d",
+        "actual_sha256": "707f84b8c7ecb77860d5b2a9b10b2d3228e6cc6a338f5feb1965a545ce9fe34d",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/zero_ad/manifest.json",
+        "expected_sha256": "5b2cadb757072b6bfcb9b3ffb4ecc2a72f9fb6951fcfd8fd2f10ef7dccfbb15c",
+        "actual_sha256": "5b2cadb757072b6bfcb9b3ffb4ecc2a72f9fb6951fcfd8fd2f10ef7dccfbb15c",
+        "status": "pass"
+      },
+      {
+        "path": "fixtures/zero_ad/sales_daily.csv",
+        "expected_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+        "actual_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+        "status": "pass"
+      },
+      {
+        "path": "package-lock.json",
+        "expected_sha256": "ab23151e36c2c4a5bc76ad52d0675866eee7465b5d63a52764bbaa3feac7dcfd",
+        "actual_sha256": "ab23151e36c2c4a5bc76ad52d0675866eee7465b5d63a52764bbaa3feac7dcfd",
+        "status": "pass"
+      },
+      {
+        "path": "package.json",
+        "expected_sha256": "b3698b34b2cc982b07626fde2330ecca2d81fbe08dbe978fa6f774ca27e194f9",
+        "actual_sha256": "b3698b34b2cc982b07626fde2330ecca2d81fbe08dbe978fa6f774ca27e194f9",
+        "status": "pass"
+      },
+      {
+        "path": "spec/insight-output.schema.json",
+        "expected_sha256": "8228da4717447db33543bd065ea5541f974962790e4abd9cef1ff50863195218",
+        "actual_sha256": "8228da4717447db33543bd065ea5541f974962790e4abd9cef1ff50863195218",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/.gitkeep",
+        "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/aggregation.ts",
+        "expected_sha256": "d86b18b14f8c3a72b05956e6ee6ba855e5079ba9c801e5e39fb6b52637598ea9",
+        "actual_sha256": "d86b18b14f8c3a72b05956e6ee6ba855e5079ba9c801e5e39fb6b52637598ea9",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/analysis.ts",
+        "expected_sha256": "5518beb18091770cc8aae356b70dde28a0937be79e9eba8b35d4f802ee8c1c21",
+        "actual_sha256": "5518beb18091770cc8aae356b70dde28a0937be79e9eba8b35d4f802ee8c1c21",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/bridge.ts",
+        "expected_sha256": "a02fd4ee6a91a6de40c90bc8d5cc66b9602e183576305e3644e9de038bfdc501",
+        "actual_sha256": "a02fd4ee6a91a6de40c90bc8d5cc66b9602e183576305e3644e9de038bfdc501",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/comparison.ts",
+        "expected_sha256": "2c302147363f1d49daaa7cacef6084c1344037ece830a283fe51b1fccbf877bb",
+        "actual_sha256": "2c302147363f1d49daaa7cacef6084c1344037ece830a283fe51b1fccbf877bb",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/date.ts",
+        "expected_sha256": "354c6d10291dacf15444411dd4d86f7103d39e4143b7118123829aa150db87f1",
+        "actual_sha256": "354c6d10291dacf15444411dd4d86f7103d39e4143b7118123829aa150db87f1",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/index.ts",
+        "expected_sha256": "080520fcfe52c58449fd25f11cb9f084b07f4f1a374c3fdb2223bd2d072831cb",
+        "actual_sha256": "080520fcfe52c58449fd25f11cb9f084b07f4f1a374c3fdb2223bd2d072831cb",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/metrics.ts",
+        "expected_sha256": "eeb0ae5143975d9de9e1cea054845d72cc63148527094205e808ff3503760d78",
+        "actual_sha256": "eeb0ae5143975d9de9e1cea054845d72cc63148527094205e808ff3503760d78",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/money.ts",
+        "expected_sha256": "6b58c6c65e9827077e5e0785808a1b4afad47146b4bb6273bc22757a05a6e5b5",
+        "actual_sha256": "6b58c6c65e9827077e5e0785808a1b4afad47146b4bb6273bc22757a05a6e5b5",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/product-comparison.ts",
+        "expected_sha256": "3fffaeda4c32bf60e1841555b798a99819ec26b5d357097f2e4061173af56527",
+        "actual_sha256": "3fffaeda4c32bf60e1841555b798a99819ec26b5d357097f2e4061173af56527",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/rules.ts",
+        "expected_sha256": "5f61666d130fd75d8010e76adc5e8e06291c2ef39d21bd91f84005998c562690",
+        "actual_sha256": "5f61666d130fd75d8010e76adc5e8e06291c2ef39d21bd91f84005998c562690",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/scenario-sensitivity.ts",
+        "expected_sha256": "3eeaa750d8534836f488f6df58d02b12724327cc68580dc1c8e89a76a25f90b0",
+        "actual_sha256": "3eeaa750d8534836f488f6df58d02b12724327cc68580dc1c8e89a76a25f90b0",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/scenarios.ts",
+        "expected_sha256": "db13b5cdbf88a4be70d5c11ab40c6d4c03a1e3915bc7a23e6356bcc3e74c7efe",
+        "actual_sha256": "db13b5cdbf88a4be70d5c11ab40c6d4c03a1e3915bc7a23e6356bcc3e74c7efe",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/types.ts",
+        "expected_sha256": "851647d086aa280b8355dd04aaa8c297f8cbd02cbb970589bd0b7c3e5724c0cc",
+        "actual_sha256": "851647d086aa280b8355dd04aaa8c297f8cbd02cbb970589bd0b7c3e5724c0cc",
+        "status": "pass"
+      },
+      {
+        "path": "src/domain/validation.ts",
+        "expected_sha256": "a0742eacb03d122dc45a34ddb0c414cd362c85dd607dc0d9d6b2b03defa9ecf2",
+        "actual_sha256": "a0742eacb03d122dc45a34ddb0c414cd362c85dd607dc0d9d6b2b03defa9ecf2",
+        "status": "pass"
+      }
+    ]
+  },
+  "golden_files": [
+    {
+      "path": "fixtures/golden/ad_spend_daily.csv",
+      "expected_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "actual_sha256": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401",
+      "status": "pass"
+    },
+    {
+      "path": "fixtures/golden/channel_costs_daily.csv",
+      "expected_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "actual_sha256": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+      "status": "pass"
+    },
+    {
+      "path": "fixtures/golden/expected.json",
+      "expected_sha256": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+      "actual_sha256": "856994c0e31e83c1ec88f3fa92b2223fc99eedd95358ad64297f3b01937d28a7",
+      "status": "pass"
+    },
+    {
+      "path": "fixtures/golden/manifest.json",
+      "expected_sha256": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+      "actual_sha256": "f52bd29af11b14cd15b2e09d236e3c2d8d6075d99b7c558c68e8a705f4a3cb39",
+      "status": "pass"
+    },
+    {
+      "path": "fixtures/golden/sales_daily.csv",
+      "expected_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "actual_sha256": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+      "status": "pass"
+    }
+  ],
+  "reused_checks": {
+    "unit_integration": {
+      "status": "pass",
+      "command": "npm test -- --run",
+      "files": 40,
+      "tests": 819,
+      "rerun_this_audit": false,
+      "evidence": {
+        "path": "verification/review-v2-a-unit-final.txt",
+        "sha256": "907a853d37cc16b3f8d010de2c0ec8a14f008ecca41a3fbf53f832969e135776",
+        "bytes": 282
+      },
+      "prior_recorded_exit_code": 0,
+      "exit_code_evidence": "verification/review-v2-a-acceptance.md; this read-only audit does not rerun or claim a newly observed test process exit code"
+    },
+    "typecheck": {
+      "status": "pass",
+      "command": "npm run typecheck",
+      "rerun_this_audit": false,
+      "evidence": {
+        "path": "verification/review-v2-a-typecheck-final.txt",
+        "sha256": "193d463cff574ac3535b5f28e3c8db4039a73115f3afbd7b1f67807114d51860",
+        "bytes": 121
+      },
+      "prior_recorded_exit_code": 0,
+      "exit_code_evidence": "verification/review-v2-a-acceptance.md; this read-only audit does not rerun or claim a newly observed test process exit code"
+    },
+    "lint": {
+      "status": "pass",
+      "command": "npm run lint",
+      "rerun_this_audit": false,
+      "evidence": {
+        "path": "verification/review-v2-a-lint-final.txt",
+        "sha256": "74eaf9c2b48224e1962b6e217e5770073e15abd1636259901b2b71b17251d984",
+        "bytes": 54
+      },
+      "prior_recorded_exit_code": 0,
+      "exit_code_evidence": "verification/review-v2-a-acceptance.md; this read-only audit does not rerun or claim a newly observed test process exit code"
+    },
+    "e2e_full": {
+      "status": "pass",
+      "reused_prior_execution": true,
+      "rerun_this_audit": false,
+      "stats": {
+        "startTime": "2026-10-02T01:47:53.791Z",
+        "duration": 979718.803,
+        "expected": 400,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "test_count": 400,
+      "result_count": 400,
+      "errors": [],
+      "projects": {
+        "desktop": 100,
+        "laptop": 100,
+        "mobile": 100,
+        "tablet": 100
+      },
+      "raw_log": {
+        "path": "verification/review-v2-a-e2e-final.txt",
+        "sha256": "0e301dd08f00e3e18d7c92ca31041ce74d47339900decd8e21eaf44c83cbfb22",
+        "bytes": 62848
+      },
+      "raw_result": {
+        "path": "verification/review-v2-a-e2e-full-results.json",
+        "sha256": "c676875cad1100640fd48bc2a2a5fecee12faa9f36fa55eaed86d2316a7cff03",
+        "bytes": 2815904
+      },
+      "build_command": "NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+      "reuse_existing_server": false,
+      "prior_recorded_exit_code": 0,
+      "exit_code_evidence": "verification/review-v2-a-acceptance.md; this read-only audit does not rerun or claim a newly observed test process exit code"
+    },
+    "e2e_final_export_regression": {
+      "status": "pass",
+      "reused_prior_execution": true,
+      "rerun_this_audit": false,
+      "stats": {
+        "startTime": "2026-10-02T02:04:37.756Z",
+        "duration": 68931.787,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "test_count": 4,
+      "result_count": 4,
+      "errors": [],
+      "projects": {
+        "desktop": 1,
+        "laptop": 1,
+        "mobile": 1,
+        "tablet": 1
+      },
+      "raw_log": {
+        "path": "verification/review-v2-a-export-e2e-final.txt",
+        "sha256": "a6a31fe407129ec7033735181b21ea33722e02aea2c2c299ddc74c72914900f4",
+        "bytes": 3507
+      },
+      "raw_result": {
+        "path": "verification/review-v2-a-export-e2e-results.json",
+        "sha256": "9ed26a9175c34e8cb113886008fcdb14fb77d89b5c606759a495ca5634114b18",
+        "bytes": 8379
+      },
+      "build_command": "NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+      "reuse_existing_server": false,
+      "prior_recorded_exit_code": 0,
+      "exit_code_evidence": "verification/review-v2-a-acceptance.md; this read-only audit does not rerun or claim a newly observed test process exit code"
+    },
+    "build": {
+      "status": "pass",
+      "rerun_this_audit": false,
+      "full_e2e_build_id": "OgD227c9M2k_CpLKXiow8",
+      "final_e2e_build_id": "0U3urGYm_9KI-Zel0tOsR",
+      "current_build_id": "0U3urGYm_9KI-Zel0tOsR",
+      "evidence": [
+        {
+          "path": "verification/review-v2-a-e2e-full-build-id.txt",
+          "sha256": "a8f7c6535144c45666fe7a8a8406aa899f40bfb563b13149ba873dca1a8d5e02",
+          "bytes": 21
+        },
+        {
+          "path": "verification/review-v2-a-final-build-id.txt",
+          "sha256": "e5f6e4c9119d51494fa3508915d15dcb70282b1bb4afe57f06058fb454358cc3",
+          "bytes": 21
+        },
+        {
+          "path": ".next/BUILD_ID",
+          "sha256": "e5f6e4c9119d51494fa3508915d15dcb70282b1bb4afe57f06058fb454358cc3",
+          "bytes": 21
+        }
+      ],
+      "basis": "Both completed Playwright runs configured npm run build && npm start with reuseExistingServer=false. Build success is also recorded by the prior acceptance report; no standalone build stdout/exit record is fabricated here."
+    }
+  },
+  "prior_acceptance_report": {
+    "path": "verification/review-v2-a-acceptance.md",
+    "sha256": "96ef8c12e6153da00ed8fbf184d7d1e58d5e58316eb6c580b813918c31ce1dcd",
+    "bytes": 12777
+  },
+  "not_run_this_audit": [
+    "typecheck",
+    "lint",
+    "unit/integration",
+    "build",
+    "E2E",
+    "live AI",
+    "Git commit/push",
+    "deployment",
+    "remote production acceptance"
+  ],
+  "limitations": [
+    "400 full E2E ran before the final unpinned copy fix; 4 additional E2E ran after that fix on the final build. They are separate commands, not one 404-test execution.",
+    "Original typecheck/lint logs do not embed shell exit numbers; prior acceptance records exit 0 and the raw logs contain no diagnostics. This audit records the distinction.",
+    "Source and protected hashes are freshly recomputed. Existing tests/build/browser results are reused only because the recorded source/test inventory still matches.",
+    "Runtime Node/npm/Git versions are local environment observations, not Vercel runtime guarantees.",
+    "No secrets, .env contents or private operating data were read. No production/test/Git/README/STATUS files were edited."
+  ]
+}

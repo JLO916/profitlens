@@ -1,3 +1,4 @@
+import { clickReplacing } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -9,7 +10,7 @@ const test = base.extend<{ audit: string[] }>({
     page.on("console", message => { if (message.type() === "error") events.push(`console:${message.text()}`); });
     await use(events);
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/manager-batch3-regression-products-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, test: testInfo.title, status: testInfo.status, browser_errors: events })}\n`);
+    await appendFile(resolve("verification/review-v2-a-regression-products-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, test: testInfo.title, status: testInfo.status, browser_errors: events })}\n`);
     expect(events).toEqual([]);
   }, { auto: true }],
 });
@@ -18,7 +19,7 @@ async function load(page: Page, id = "golden") {
   await page.goto("/");
   await page.getByRole("button", { name: "進階驗證", exact: true }).click();
   await page.getByLabel("資料集", { exact: true }).selectOption(id);
-  await page.getByRole("button", { name: "載入資料集", exact: true }).click();
+  await clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(/資料已就緒|部分資料待補/);
   await page.getByRole("button", { name: "商品毛利", exact: true }).click();
   await expect(page.getByTestId("product-table")).toBeVisible();
@@ -85,7 +86,7 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await expect(page.getByText("此範圍沒有符合條件的商品資料。", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "只看本期負毛利", exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-products-${testInfo.project.name}.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-products-${testInfo.project.name}.png`), fullPage: true });
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
 });
@@ -132,7 +133,7 @@ test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公�
   await form.getByLabel("我已確認未稅商品金額與費用口徑", { exact: true }).check();
   await form.getByRole("button", { name: "檢核匯入資料", exact: true }).click();
   await expect(page.getByTestId("import-status")).toHaveText("部分資料待補，可套用已知範圍");
-  await form.getByRole("button", { name: "套用匯入資料", exact: true }).click();
+  await clickReplacing(page, form.getByRole("button", { name: "套用匯入資料", exact: true }));
   await page.getByRole("button", { name: "商品毛利", exact: true }).click();
   const table = page.getByTestId("product-table");
   await expect(table.locator("tbody tr")).toHaveCount(5);

@@ -56,7 +56,7 @@ describe("PL-05 independent action ledger audited exports", () => {
     const saved = structuredClone(workspace);
     const document = JSON.parse(exportDecisionJson(session, [], [], workspace));
     expect(document.actions).toHaveLength(5);
-    expect(document.actions[0]).toMatchObject({ id: "old-dtc", pinned: true, status: "stale", evidence_confirmed: true, binding: { status: "stale", revision: 1, dataset_hash: oldSource.snapshot.dataset_hash, filter_hash: oldSource.snapshot.filter_hash, period: { start: "2026-08-02", end: "2026-08-02" }, scope: { channels: ["DTC"] }, analysis_scope: { channels: ["DTC"] }, filenames: { "sales_daily.csv": "原始八月.csv" } } });
+    expect(document.actions[0]).toMatchObject({ id: "old-dtc", pinned: true, status: "confirmed", evidence_confirmed: true, evidence_relation: "historical", binding: { status: "current", revision: 1, dataset_hash: oldSource.snapshot.dataset_hash, filter_hash: oldSource.snapshot.filter_hash, period: { start: "2026-08-02", end: "2026-08-02" }, scope: { channels: ["DTC"] }, analysis_scope: { channels: ["DTC"] }, filenames: { "sales_daily.csv": "原始八月.csv" } } });
     expect(document.actions[0].evidence).toEqual([oldFact]);
     expect(document.actions[0].evidence[0].value).toBe("270.00");
     expect(document.actions[1]).toMatchObject({ id: "new-1", status: "confirmed", binding: { status: "current", revision: 2, period: { start: "2026-09-02", end: "2026-09-02" }, scope: { channels: ["MARKETPLACE"] } } });
@@ -72,7 +72,7 @@ describe("PL-05 independent action ledger audited exports", () => {
     const oldRows = rows.filter(row => row.row_type === "manual_action" && row.item_id === "old-dtc");
     expect(oldRows.length).toBeGreaterThan(10);
     for (const row of oldRows) {
-      expect(row).toMatchObject({ dataset_hash: oldSource.snapshot.dataset_hash, filter_hash: oldSource.snapshot.filter_hash, revision: "1", snapshot_status: "stale", status: "stale", as_of: "2026-08-03" });
+      expect(row).toMatchObject({ dataset_hash: oldSource.snapshot.dataset_hash, filter_hash: oldSource.snapshot.filter_hash, revision: "1", snapshot_status: "current", status: "confirmed", as_of: "2026-08-03" });
       expect(JSON.parse(row.period)).toEqual({ start: "2026-08-02", end: "2026-08-02" });
       expect(JSON.parse(row.scope).channels).toEqual(["DTC"]);
       expect(JSON.parse(row.analysis_scope).channels).toEqual(["DTC"]);
@@ -86,7 +86,7 @@ describe("PL-05 independent action ledger audited exports", () => {
     const { session, workspace, oldFact, currentFact } = await setup();
     const rows = records(exportDecisionCsv(session, [], [], workspace));
     const oldEvidence = rows.find(row => row.row_type === "action_fact" && row.item_id === "old-dtc")!;
-    expect(oldEvidence).toMatchObject({ field: "contribution_after_marketing", value: "270.00", snapshot_status: "stale", revision: "1" });
+    expect(oldEvidence).toMatchObject({ field: "contribution_after_marketing", value: "270.00", snapshot_status: "current", revision: "1" });
     expect(JSON.parse(oldEvidence.fact_ids)).toEqual([oldFact.id]);
     expect(JSON.parse(oldEvidence.period)).toEqual(oldFact.period);
     expect(JSON.parse(oldEvidence.scope)).toEqual(oldFact.scope);
@@ -147,7 +147,7 @@ describe("PL-05 independent action ledger audited exports", () => {
     const markdown = exportDecisionMarkdown(session, [], [], workspace);
     expect(markdown).toContain("binding"); expect(markdown).toContain("analysis\\_scope");
     expect(markdown).toContain("270\\.00"); expect(markdown).toContain("\\-15\\.00");
-    expect(markdown).toContain("stale"); expect(markdown).toContain("&lt;script&gt;歷史\\.csv");
+    expect(markdown).toContain("historical"); expect(markdown).toContain("&lt;script&gt;歷史\\.csv");
     expect(markdown).not.toContain("<img"); expect(markdown).not.toContain("[開啟](javascript:"); expect(markdown).not.toContain("\n# 注入");
     const csv = records(exportDecisionCsv(session, [], [], workspace));
     expect(csv.find(row => row.row_type === "manual_action" && row.item_id === "new-1" && row.field === "owner_role")?.value).toBe("'+cmd");

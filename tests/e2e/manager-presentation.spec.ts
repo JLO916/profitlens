@@ -1,3 +1,4 @@
+import { clickReplacing, startChannelContext } from "./replacement-helpers";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -9,7 +10,7 @@ const test = base.extend<{ browserAudit: string[] }>({
     page.on("console", event => { if (event.type() === "error") errors.push(`console:${event.type()}`); });
     await use(errors);
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/manager-batch3-presentation-browser.jsonl"), `${JSON.stringify({ recorded_at: new Date().toISOString(), project: testInfo.project.name, test: testInfo.title, status: testInfo.status, errors })}\n`);
+    await appendFile(resolve("verification/review-v2-a-presentation-browser.jsonl"), `${JSON.stringify({ recorded_at: new Date().toISOString(), project: testInfo.project.name, test: testInfo.title, status: testInfo.status, errors })}\n`);
     expect(errors, "主管流程沒有未處理的瀏覽器錯誤").toEqual([]);
   }, { auto: true }],
 });
@@ -19,7 +20,7 @@ async function loadVerificationDataset(page: Page, id: string, state = "資料�
   await page.getByLabel("資料集", { exact: true }).selectOption(id);
   await Promise.all([
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.status() === 200),
-    page.getByRole("button", { name: "載入資料集", exact: true }).click(),
+    clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true })),
   ]);
   await expect(page.getByTestId("workspace-status")).toContainText(state);
 }
@@ -41,10 +42,10 @@ test("PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立
   await expect(page.getByTestId("manager-summary")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "載入資料集", exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-  await page.screenshot({ path: resolve(`verification/manager-batch3-advanced-${testInfo.project.name}.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-advanced-${testInfo.project.name}.png`), fullPage: true });
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
   await expect(datasets).toHaveCount(0);
-  await page.getByRole("button", { name: "載入示範資料", exact: true }).click();
+  await clickReplacing(page, page.getByRole("button", { name: "載入示範資料", exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
   await expect(datasets).toHaveCount(0);
 });
@@ -74,6 +75,7 @@ test("PL10 單純導航進階頁不載入資料、不更改通路，也不清除
   await loadVerificationDataset(page, "golden");
   await page.getByLabel("通路", { exact: true }).selectOption("DTC");
   await page.getByRole("button", { name: "情境試算", exact: true }).click();
+  await startChannelContext(page);
   await page.getByRole("button", { name: "新增方案", exact: true }).click();
   const scenario = page.getByTestId("scenario-1");
   await scenario.getByLabel("方案名稱", { exact: true }).fill("PL10 尚未送算的合成草稿");
@@ -118,5 +120,5 @@ test("PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看", as
   expect(measured.length).toBeGreaterThan(4);
   expect(measured.filter(item => item.size < 12), "主管主要說明、範圍及標記至少 12px").toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-  await page.screenshot({ path: resolve(`verification/manager-batch3-diagnosis-${testInfo.project.name}.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-diagnosis-${testInfo.project.name}.png`), fullPage: true });
 });

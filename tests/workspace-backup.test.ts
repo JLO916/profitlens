@@ -91,7 +91,12 @@ describe("PL-01 complete workspace backup and transactional restoration", () => 
     body.payload.decision.scenarios[0].result = { contribution: "999999" };
     await expect(restoreWorkspaceBackup(await resign(body))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
     delete body.payload.decision.scenarios[0].result;
-    body.payload.active.input.files["ad_spend_daily.csv"] += "2026-08-01,DTC,1.00,TWD\n";
+    const oldHash = body.payload.active.source_hash;
+    const invalidInput = body.payload.sources[oldHash];
+    invalidInput.files["ad_spend_daily.csv"] += "2026-08-01,DTC,1.00,TWD\n";
+    const changedHash = await hashInput(invalidInput);
+    delete body.payload.sources[oldHash]; body.payload.sources[changedHash] = invalidInput;
+    body.payload.active.source_hash = changedHash;
     await expect(restoreWorkspaceBackup(await resign(body))).rejects.toThrow("WORKSPACE_DATA_INVALID");
   });
   it("rejects stale metadata hashes inconsistent with the revalidated source", async () => {

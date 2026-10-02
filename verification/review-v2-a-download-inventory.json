@@ -1,0 +1,233 @@
+{
+  "recorded_at_utc": "2026-10-02T02:08:35.227848+00:00",
+  "status": "pass",
+  "scope_patterns": [
+    "review-v2-a-workspace-*.json",
+    "review-v2-a-workspace-*.csv",
+    "review-v2-a-workspace-*.md",
+    "review-v2-a-meeting-*.json",
+    "review-v2-a-meeting-*.csv",
+    "review-v2-a-meeting-*.md",
+    "review-v2-a-decision-*.json",
+    "review-v2-a-decision-*.csv",
+    "review-v2-a-decision-*.md",
+    "review-v2-a-decision-print-*.pdf"
+  ],
+  "file_count": 26,
+  "total_bytes": 6119700,
+  "missing_expected_files": [],
+  "files": [
+    {
+      "path": "verification/review-v2-a-decision-desktop.csv",
+      "format": "csv",
+      "size_bytes": 784014,
+      "sha256": "01fdd37a0c553ddbad9e8b38a57b035e4500e128c077ba25919c9a1b5c691c43",
+      "mtime_utc": "2026-10-02T02:05:27.413528+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-desktop.json",
+      "format": "json",
+      "size_bytes": 287702,
+      "sha256": "515e2a75e8e9e7e1fae345635e55ed032674e39177f18d9dc9169cd5469dfd02",
+      "mtime_utc": "2026-10-02T02:05:27.225286+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-desktop.md",
+      "format": "md",
+      "size_bytes": 68009,
+      "sha256": "78acfaaebc23122bd2e4431d51a185a64b02d68fa704a6e3b166e6de17e2a71d",
+      "mtime_utc": "2026-10-02T02:05:24.831083+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-laptop.csv",
+      "format": "csv",
+      "size_bytes": 784014,
+      "sha256": "478b777892533dfa16d85763e0acab25bf3344e94a3c742bf31a44a3c57bfe9c",
+      "mtime_utc": "2026-10-02T02:05:26.922136+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-laptop.json",
+      "format": "json",
+      "size_bytes": 287702,
+      "sha256": "3622283cc94cc9adabfb5051c000307771e4657123cdf23a247eeee9501a684e",
+      "mtime_utc": "2026-10-02T02:05:26.677410+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-laptop.md",
+      "format": "md",
+      "size_bytes": 68009,
+      "sha256": "78acfaaebc23122bd2e4431d51a185a64b02d68fa704a6e3b166e6de17e2a71d",
+      "mtime_utc": "2026-10-02T02:05:25.027378+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-mobile.csv",
+      "format": "csv",
+      "size_bytes": 784014,
+      "sha256": "921773b1d6f4a2f061037b858a5998571ddfcecea30494a30b0e32da00bd06bc",
+      "mtime_utc": "2026-10-02T02:05:42.480829+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-mobile.json",
+      "format": "json",
+      "size_bytes": 287702,
+      "sha256": "b298d93f1ce19d5d132a155e33253929a4d6f1e6d02de8635a6fe59de83968b9",
+      "mtime_utc": "2026-10-02T02:05:42.277276+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-mobile.md",
+      "format": "md",
+      "size_bytes": 68009,
+      "sha256": "78acfaaebc23122bd2e4431d51a185a64b02d68fa704a6e3b166e6de17e2a71d",
+      "mtime_utc": "2026-10-02T02:05:40.773321+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-pinned-desktop.pdf",
+      "format": "pdf",
+      "size_bytes": 446559,
+      "sha256": "80cfa478b04094e7b44a5f888de35270509e64f857bfda50cde70d65eb7ac0f5",
+      "mtime_utc": "2026-10-02T02:05:26.458861+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-print-unpinned-desktop.pdf",
+      "format": "pdf",
+      "size_bytes": 457617,
+      "sha256": "4aff53179e487ce0d29483cceb22acdb10fc7ab45abeac7cbb6ce22a7d1443c7",
+      "mtime_utc": "2026-10-02T02:05:30.434698+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-tablet.csv",
+      "format": "csv",
+      "size_bytes": 784014,
+      "sha256": "d3c7e8a72f768a3858a2cf884ee6e102ec549dddec856bb6c9019d829354fc94",
+      "mtime_utc": "2026-10-02T02:05:43.437647+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-tablet.json",
+      "format": "json",
+      "size_bytes": 287702,
+      "sha256": "ba130c99c08fecebd180c22f5f30307899b3277e92ed608191d3bcd65bbf677a",
+      "mtime_utc": "2026-10-02T02:05:43.241974+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-tablet.md",
+      "format": "md",
+      "size_bytes": 68009,
+      "sha256": "78acfaaebc23122bd2e4431d51a185a64b02d68fa704a6e3b166e6de17e2a71d",
+      "mtime_utc": "2026-10-02T02:05:41.492719+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-unpinned-desktop.md",
+      "format": "md",
+      "size_bytes": 67968,
+      "sha256": "ab793fbde444978ee93df6d1042442c33ebe6ff0e96d7f48ddb8c4cd658edbd0",
+      "mtime_utc": "2026-10-02T02:05:28.969853+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-unpinned-laptop.md",
+      "format": "md",
+      "size_bytes": 67968,
+      "sha256": "ab793fbde444978ee93df6d1042442c33ebe6ff0e96d7f48ddb8c4cd658edbd0",
+      "mtime_utc": "2026-10-02T02:05:28.704943+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-unpinned-mobile.md",
+      "format": "md",
+      "size_bytes": 67968,
+      "sha256": "ab793fbde444978ee93df6d1042442c33ebe6ff0e96d7f48ddb8c4cd658edbd0",
+      "mtime_utc": "2026-10-02T02:05:44.194203+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-decision-unpinned-tablet.md",
+      "format": "md",
+      "size_bytes": 67968,
+      "sha256": "ab793fbde444978ee93df6d1042442c33ebe6ff0e96d7f48ddb8c4cd658edbd0",
+      "mtime_utc": "2026-10-02T02:05:44.955100+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-desktop.md",
+      "format": "md",
+      "size_bytes": 76200,
+      "sha256": "23e8e654fe94b966897621ac5c98eeb83d8336c7352d22c949471a8c8f7f381f",
+      "mtime_utc": "2026-10-02T01:52:08.694611+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-laptop.md",
+      "format": "md",
+      "size_bytes": 76200,
+      "sha256": "74577a6b2ebfb1573493e95fe297b4a483cfcf1965d3478c9c0d67486bf1dd8b",
+      "mtime_utc": "2026-10-02T01:56:56.848123+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-mobile.md",
+      "format": "md",
+      "size_bytes": 76200,
+      "sha256": "da051f70d4b1f786e0926af3ad60f0d7609f5528abf9a08c6ed13fd038a9b336",
+      "mtime_utc": "2026-10-02T02:03:12.336868+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-meeting-tablet.md",
+      "format": "md",
+      "size_bytes": 76200,
+      "sha256": "d9b5323a12c880c18f32bf3815a840126e978f80e7cd978c0605eba663c15241",
+      "mtime_utc": "2026-10-02T02:00:15.551575+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-desktop.json",
+      "format": "json",
+      "size_bytes": 19988,
+      "sha256": "c325def8781d184d3843846e13af75fcb89737480e2d910772458e5774152969",
+      "mtime_utc": "2026-10-02T01:52:07.066065+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-laptop.json",
+      "format": "json",
+      "size_bytes": 19988,
+      "sha256": "5df6dbc213c6b92ac191bf8ca95b6aefbd22edf5d032c253fd20cb15687d504c",
+      "mtime_utc": "2026-10-02T01:56:55.727123+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-mobile.json",
+      "format": "json",
+      "size_bytes": 19988,
+      "sha256": "708834f30311b81bd310e93366fbadc39db2b78c621dc8450cb03b83a92ea989",
+      "mtime_utc": "2026-10-02T02:03:11.620486+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    },
+    {
+      "path": "verification/review-v2-a-workspace-tablet.json",
+      "format": "json",
+      "size_bytes": 19988,
+      "sha256": "77da5d19c68665d12ae2733aa08fbc715914e55f7518153a5e2a2923e150a5ed",
+      "mtime_utc": "2026-10-02T02:00:14.788094+00:00",
+      "data_classification": "synthetic acceptance fixture output"
+    }
+  ],
+  "limitations": [
+    "Hashes inventory the existing synthetic acceptance downloads only; no file contents were changed.",
+    "This inventory does not independently repeat each download or render its pages. Browser/E2E and PDF visual evidence are recorded by the main acceptance task."
+  ]
+}

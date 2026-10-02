@@ -1,0 +1,247 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-actions.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-actions.test.ts (11 tests | 11 failed) 92ms
+     × switching view leaves original evidence confirmed and management editable 22ms
+     × execution state and progress do not assert business effects or revoke evidence 5ms
+     × data replacement retains original references, never same-ID auto-replacement 4ms
+     × legacy stale cannot revive from navigation or normalization; explicit old-evidence review works 6ms
+     × data limitations stay separate from editable required data 5ms
+     × detaches retained source bytes and facts from mutable inputs 29ms
+     × rebind previews same-ID different values and commits only explicit consent, retaining old binding 4ms
+     × null stays null with reasons in preview and confirmed rebind 3ms
+     × recomputes original scope despite target current view and refuses changed source or tampered preview 6ms
+     × changed active evidence invalidates preview; repeated rebind preserves every original context 3ms
+     × requires matching original periods and rejects forged history at export 3ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > switching view leaves original evidence confirmed and management editable
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:22:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > execution state and progress do not assert business effects or revoke evidence
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:31:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > data replacement retains original references, never same-ID auto-replacement
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:40:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > legacy stale cannot revive from navigation or normalization; explicit old-evidence review works
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:47:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > data limitations stay separate from editable required data
+AssertionError: expected '降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ 降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。
+
+ ❯ tests/v2-actions.test.ts:57:43
+     55|     const s = await source(); const diagnostic = s.snapshot.report.dia…
+     56|     const w = addActionDraft(emptyActionWorkspace(), s, 'A', diagnosti…
+     57|     expect(w.items[0].card.required_data).toBe('');
+       |                                           ^
+     58|     expect(actionDocuments(w)[0].data_limitations).toEqual(diagnostic.…
+     59|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > detaches retained source bytes and facts from mutable inputs
+AssertionError: expected { contexts: [ { …(4) } ], …(1) } to deeply equal { contexts: [ { …(4) } ], …(1) }
+
+- Expected
++ Received
+
+@@ -4589,20 +4589,11 @@
+  2026-08-01,DTC,0.00,40.00,100.00,10.00,TWD
+  2026-08-01,MARKETPLACE,90.00,20.00,60.00,10.00,TWD
+  2026-08-02,DTC,0.00,44.00,140.00,16.00,TWD
+  2026-08-02,MARKETPLACE,120.00,22.00,85.00,13.00,TWD
+  ",
+-           "sales_daily.csv": "date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency
+- 2026-08-01,DTC,A,HOME,2,1000.00,100.00,0.00,400.00,TWD
+- 2026-08-01,DTC,B,CARE,1,500.00,0.00,50.00,200.00,TWD
+- 2026-08-01,MARKETPLACE,A,HOME,2,600.00,60.00,0.00,270.00,TWD
+- 2026-08-01,MARKETPLACE,B,CARE,1,400.00,40.00,0.00,180.00,TWD
+- 2026-08-02,DTC,A,HOME,3,1400.00,210.00,70.00,580.00,TWD
+- 2026-08-02,DTC,B,CARE,1,400.00,20.00,20.00,160.00,TWD
+- 2026-08-02,MARKETPLACE,A,HOME,3,800.00,120.00,40.00,360.00,TWD
+- 2026-08-02,MARKETPLACE,B,CARE,1,500.00,100.00,50.00,225.00,TWD
+- ",
++           "sales_daily.csv": "changed",
+          },
+          "manifest": {
+            "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+            "channels": [
+              "DTC",
+
+ ❯ tests/v2-actions.test.ts:63:15
+     61|     const s = await source(); const w = addActionDraft(emptyActionWork…
+     62|     s.input.files['sales_daily.csv'] = 'changed'; s.snapshot.report.fa…
+     63|     expect(w).toEqual(original);
+       |               ^
+     64|   });
+     65|   it('rebind previews same-ID different values and commits only explic…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > rebind previews same-ID different values and commits only explicit consent, retaining old binding
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:66:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > null stays null with reasons in preview and confirmed rebind
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:79:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > recomputes original scope despite target current view and refuses changed source or tampered preview
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:84:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > changed active evidence invalidates preview; repeated rebind preserves every original context
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:92:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  tests/v2-actions.test.ts > v2 A1 independent actions and immutable evidence binding > requires matching original periods and rejects forged history at export
+Error: INVALID_ACTION_FIELD
+ ❯ validateActionContent src/application/decision.ts:140:96
+    138|   for (const field of ["problem", "action", "owner_role", "validation_…
+    139|     const value = input[field];
+    140|     if (typeof value !== "string" || value.length > 2000 || (required …
+       |                                                                                                ^
+    141|   }
+    142|   if (required && !isBusinessDate(input.deadline)) throw new Error("IN…
+ ❯ src/application/action-workspace.ts:56:45
+ ❯ src/application/action-workspace.ts:45:70
+ ❯ edit src/application/action-workspace.ts:45:46
+ ❯ confirmBoundAction src/application/action-workspace.ts:56:10
+ ❯ confirmed tests/v2-actions.test.ts:17:61
+ ❯ tests/v2-actions.test.ts:104:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed (11)
+   Start at  21:12:44
+   Duration  390ms (transform 81ms, setup 0ms, import 163ms, tests 92ms, environment 0ms)
+

@@ -17,6 +17,9 @@ async function golden(page: Page) {
 }
 async function makeScenario(page: Page, index: number, cost: string, expected: string) {
   await page.getByRole("button", { name: "情境試算", exact: true }).click();
+  const create = page.getByRole("button", { name: "建立 DTC 方案工作區", exact: true });
+  await expect(create.or(page.getByTestId("decision-workbench"))).toBeVisible();
+  if (await create.isVisible()) await create.click();
   await page.getByRole("button", { name: "新增方案", exact: true }).click();
   const card = page.getByTestId(`scenario-${index}`);
   await card.getByLabel("方案名稱", { exact: true }).fill(`保存方案 ${index}`);
@@ -71,13 +74,16 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await openStorage(page);
   await expect(storage(page).getByRole("button", { name: "保存本機副本", exact: true })).toBeDisabled();
   const exported = JSON.parse(await backup(page));
-  expect(exported.schema_version).toBe("profitlens-workspace-v2");
+  expect(exported.schema_version).toBe("profitlens-workspace-v3");
+  expect(Object.keys(exported.payload.sources)).toEqual([exported.payload.active.source_hash]);
+  expect(exported.payload.active).not.toHaveProperty("input");
   expect(exported.payload.active.filters.channels).toEqual(["DTC"]);
-  expect(exported.payload.decision.scenarios).toHaveLength(2);
+  expect(exported.payload.scenario_workspace.contexts[0].plans).toHaveLength(2);
   expect(exported.payload.action_workspace.items[0].card.fact_ids).toEqual([factId]);
   expect(exported.payload.action_workspace.items[0].card.evidence_confirmed).toBe(true);
-  expect(exported.payload.decision.scenarios[0]).not.toHaveProperty("result");
-  expect(exported.payload.decision).not.toHaveProperty("baseline");
+  expect(exported.payload.scenario_workspace.contexts[0].plans[0]).not.toHaveProperty("result");
+  expect(exported.payload.scenario_workspace.contexts[0]).not.toHaveProperty("baseline");
+  expect(exported.payload.scenario_workspace.contexts[0].source_hash).toBe(exported.payload.active.source_hash);
   await saveLocal(page);
   const other = await context.newPage();
   await other.goto(page.url());
@@ -106,15 +112,15 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   expect(await page.evaluate(async () => (await indexedDB.databases()).map(item => item.name))).toEqual([]);
   await expect(status(page)).toContainText("資料已就緒");
   expect(posts).toEqual([]);
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-${testInfo.project.name}-restored.png`), fullPage: true });
-  await appendFile(resolve("verification/manager-batch3-regression-storage-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, save_restore: "pass", sources: "synthetic golden", scenarios: ["284.00", "264.00"], action_evidence: "confirmed", auto_cross_tab_load: false, posts, indexeddb_deleted: true })}\n`);
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-${testInfo.project.name}-restored.png`), fullPage: true });
+  await appendFile(resolve("verification/review-v2-a-regression-storage-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, save_restore: "pass", sources: "synthetic golden", scenarios: ["284.00", "264.00"], action_evidence: "confirmed", auto_cross_tab_load: false, posts, indexeddb_deleted: true })}\n`);
   await other.close();
 });
 
 test("PL01 portable備份驗證後才套用；篡改／舊格式不取代目前資料，恢復撤銷保存同意", async ({ page }) => {
   await golden(page);
   const original = await backup(page);
-  const tampered = JSON.parse(original); tampered.payload.active.input.manifest.dataset_id = "tampered";
+  const tampered = JSON.parse(original); tampered.payload.sources[tampered.payload.active.source_hash].manifest.dataset_id = "tampered";
   await restoreFile(page, JSON.stringify(tampered));
   await expect(storage(page).getByRole("alert")).toContainText("無法恢復");
   await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("270.00");
@@ -128,30 +134,37 @@ test("PL01 portable備份驗證後才套用；篡改／舊格式不取代目前�
   await expect(page.getByRole("region", { name: "工作區恢復預覽" })).toBeVisible();
   await expect(page.getByLabel("通路", { exact: true })).toHaveValue("MARKETPLACE");
   await storage(page).getByRole("button", { name: "套用備份並取代工作區", exact: true }).click();
+  await page.getByRole("dialog", { name: "替換前先儲存工作區" }).getByRole("button", { name: "不儲存並繼續", exact: true }).click();
   await expect(page.getByLabel("通路", { exact: true })).toHaveValue("DTC");
   await expect(storage(page).getByLabel("我同意將工作區資料保存於這個瀏覽器（不自動保存）", { exact: true })).not.toBeChecked();
 });
 
-test("PL01 清空提醒可取消；過期方案保存恢復仍過期，切回舊範圍不復活", async ({ page }) => {
+test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復活", async ({ page }) => {
   await golden(page); await makeScenario(page, 1, "0", "284.00");
   await page.getByRole("button", { name: "清空工作區", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "清空前先保存工作區" });
+  const dialog = page.getByRole("dialog", { name: "替換前先儲存工作區" });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: "返回並保存", exact: true }).click();
+  await dialog.getByRole("button", { name: "取消", exact: true }).click();
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText("284.00");
-  await page.getByLabel("通路", { exact: true }).selectOption("MARKETPLACE");
-  await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
+  await page.getByRole("button", { name: "進階驗證", exact: true }).click();
+  await page.getByLabel("資料集", { exact: true }).selectOption("golden");
+  await page.getByRole("button", { name: "載入資料集", exact: true }).click();
+  await dialog.getByRole("button", { name: "不儲存並繼續", exact: true }).click();
+  await expect(status(page)).toContainText("資料已就緒");
+  await page.getByLabel("通路", { exact: true }).selectOption("DTC");
   const saved = await backup(page);
+  expect(JSON.parse(saved).payload.scenario_workspace.contexts[0].status).toBe("historical");
   await page.getByRole("button", { name: "清空工作區", exact: true }).click();
-  await dialog.getByRole("button", { name: "捨棄未保存變更並清空", exact: true }).click();
+  await dialog.getByRole("button", { name: "不儲存並繼續", exact: true }).click();
   await expect(status(page)).toContainText("尚未載入資料");
   await restoreFile(page, saved);
   await storage(page).getByRole("button", { name: "套用備份並取代工作區", exact: true }).click();
   await page.getByRole("button", { name: "情境試算", exact: true }).click();
-  await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
-  await expect(page.getByTestId("scenario-1").getByRole("button", { name: "計算方案", exact: true })).toBeDisabled();
-  await page.getByLabel("通路", { exact: true }).selectOption("DTC");
-  await expect(page.getByTestId("decision-freshness")).toContainText("情境已過期");
+  await expect(page.getByTestId("decision-workbench")).toHaveCount(0);
+  await page.getByText("歷史通路工作稿", { exact: true }).click();
+  await expect(page.getByTestId("multi-scenario-workbench")).toContainText("歷史條件貢獻 284.00");
+  await expect(page.getByRole("button", { name: "建立 DTC 方案工作區", exact: true })).toBeVisible();
+  expect(JSON.parse(await backup(page)).payload.scenario_workspace.contexts[0].status).toBe("historical");
 });
 
 test("PL01 清空移除備份預覽、下載確認與本機保存同意；已保存副本僅可手動重讀", async ({ page }) => {
@@ -165,7 +178,7 @@ test("PL01 清空移除備份預覽、下載確認與本機保存同意；已保
   await expect(storage(page).getByRole("button", { name: "已確認備份檔已保存", exact: true })).toBeVisible();
   await expect(storage(page).getByLabel("我同意將工作區資料保存於這個瀏覽器（不自動保存）", { exact: true })).toBeChecked();
   await page.getByRole("button", { name: "清空工作區", exact: true }).click();
-  await page.getByRole("dialog", { name: "清空前先保存工作區" }).getByRole("button", { name: "捨棄未保存變更並清空", exact: true }).click();
+  await page.getByRole("dialog", { name: "替換前先儲存工作區" }).getByRole("button", { name: "不儲存並繼續", exact: true }).click();
   await expect(status(page)).toContainText("尚未載入資料");
   await openStorage(page);
   await expect(page.getByRole("region", { name: "工作區恢復預覽" })).toHaveCount(0);

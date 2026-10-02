@@ -1,3 +1,4 @@
+import { clickReplacing } from "./replacement-helpers";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -36,7 +37,7 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
     await use(events);
     const record = { recorded_at: new Date().toISOString(), project: testInfo.project.name, test: testInfo.title, status: testInfo.status, events };
     await mkdir(resolve("verification"), { recursive: true });
-    await appendFile(resolve("verification/manager-batch3-regression-regression-m6-regression-import-regression-meta.jsonl"), `${JSON.stringify(record)}\n`);
+    await appendFile(resolve("verification/review-v2-a-regression-regression-m6-regression-import-regression-meta.jsonl"), `${JSON.stringify(record)}\n`);
     await testInfo.attach("browser-metadata", { body: JSON.stringify(record, null, 2), contentType: "application/json" });
     expect(events.filter(event => event.kind === "pageerror" || event.kind === "javascript-dialog" || event.type === "error"), "匯入不得執行文字或產生未處理的瀏覽器錯誤").toEqual([]);
   }, { auto: true }],
@@ -71,7 +72,7 @@ async function check(page: Page, classification: "valid" | "partial" | "blocking
 }
 async function commit(page: Page, classification: "valid" | "partial" = "valid") {
   await check(page, classification);
-  await form(page).getByRole("button", { name: "套用匯入資料", exact: true }).click();
+  await clickReplacing(page, form(page).getByRole("button", { name: "套用匯入資料", exact: true }));
   await expect(status(page)).toContainText(classification === "valid" ? "資料已就緒" : "部分資料待補");
   await expect(form(page)).toHaveCount(0);
   await page.getByRole("button", { name: "經營總覽", exact: true }).click();
@@ -131,7 +132,7 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   await expect(form(page)).toContainText(maliciousCategory);
   await expect(page.locator("img[src='x']")).toHaveCount(0);
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-regression-import-regression-${testInfo.project.name}-import.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-import-regression-${testInfo.project.name}-import.png`), fullPage: true });
   await commit(page);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "gross_profit")).toHaveText("260.00");
@@ -143,7 +144,7 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   await expect(weekly.locator("tbody tr").first()).toContainText("464.00");
   await expect(weekly.locator("tbody tr").last()).toContainText("600.00");
   await expect(page.locator(".bridge-total")).toContainText("-130.00");
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-regression-m6-regression-import-regression-${testInfo.project.name}-overview.png`), fullPage: true });
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-import-regression-${testInfo.project.name}-overview.png`), fullPage: true });
   await page.getByRole("button", { name: "通路診斷", exact: true }).click();
   await expect(page.getByRole("heading", { name: "淨營收增加，行銷後貢獻下降", exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "本期通路行銷後貢獻為負", exact: true })).toBeVisible();
@@ -246,7 +247,7 @@ for (const incomplete of [
     await stage(page, resolve("fixtures/errors", incomplete.directory));
     await check(page, "partial");
     await expect(form(page)).toContainText(incomplete.reason);
-    await form(page).getByRole("button", { name: "套用匯入資料", exact: true }).click();
+    await clickReplacing(page, form(page).getByRole("button", { name: "套用匯入資料", exact: true }));
     await expect(status(page)).toContainText("部分資料待補");
     await expect(kpi(page, "net_revenue")).toHaveText("2,470.00");
     await expect(kpi(page, "contribution_after_marketing")).toHaveText("資料待補");

@@ -1,3 +1,4 @@
+import { clickReplacing, startChannelContext } from "./replacement-helpers";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Page } from "@playwright/test";
@@ -6,10 +7,11 @@ async function openPlan(page: Page, investment = "0") {
   await page.goto("/");
   await page.getByRole("button", { name: "進階驗證", exact: true }).click();
   await page.getByLabel("資料集", { exact: true }).selectOption("golden");
-  await page.getByRole("button", { name: "載入資料集", exact: true }).click();
+  await clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText("資料已就緒");
   await page.getByLabel("通路", { exact: true }).selectOption("DTC");
   await page.getByRole("button", { name: "情境試算", exact: true }).click();
+  await startChannelContext(page);
   await page.getByRole("button", { name: "新增方案", exact: true }).click();
   const card = page.getByTestId("scenario-1");
   await card.getByLabel("方案名稱", { exact: true }).fill("履約改善條件檢核");
@@ -54,8 +56,8 @@ test("PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立�
   await region.focus(); await expect(region).toBeFocused();
   await expect(page.locator("body")).toHaveJSProperty("scrollWidth", await page.locator("body").evaluate(element => element.clientWidth));
   await mkdir(resolve("verification"), { recursive: true });
-  await page.screenshot({ path: resolve(`verification/manager-batch3-regression-sensitivity-${testInfo.project.name}.png`), fullPage: true });
-  await appendFile(resolve("verification/manager-batch3-regression-sensitivity-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, title: testInfo.title, recorded_at: new Date().toISOString(), events })}\n`);
+  await page.screenshot({ path: resolve(`verification/review-v2-a-regression-sensitivity-${testInfo.project.name}.png`), fullPage: true });
+  await appendFile(resolve("verification/review-v2-a-regression-sensitivity-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, title: testInfo.title, recorded_at: new Date().toISOString(), events })}\n`);
   expect(events).toEqual([]);
 });
 
@@ -84,7 +86,11 @@ test("PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意�
   await card.getByRole("button", { name: "計算方案", exact: true }).click();
   await sensitivity.locator(":scope > summary").click();
   await page.getByLabel("通路", { exact: true }).selectOption("MARKETPLACE");
-  await expect(card).toContainText("已過期");
-  await expect(sensitivity.getByTestId("threshold-maintain_baseline")).toHaveCount(0);
-  await expect(sensitivity).toContainText("快照已過期");
+  await expect(card).toHaveCount(0);
+  await startChannelContext(page);
+  await expect(page.getByTestId("scenario-sensitivity")).toHaveCount(0);
+  await page.getByLabel("通路", { exact: true }).selectOption("DTC");
+  await expect(card.getByTestId("scenario-contribution")).toHaveText("284.00");
+  await sensitivity.locator(":scope > summary").click();
+  await expect(sensitivity.getByLabel("敏感度 A 售出量變化（相對 %）", { exact: true })).toHaveValue("");
 });

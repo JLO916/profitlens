@@ -1,0 +1,42 @@
+
+> profitlens@0.1.0 test
+> vitest --run
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+ ❯ tests/v2-backup.test.ts (15 tests | 1 failed) 1885ms
+     × retains independent action execution and immutable evidence history across a rebind 209ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v2-backup.test.ts > V2-A portable workspace v3 and exact legacy boundaries > retains independent action execution and immutable evidence history across a rebind
+AssertionError: expected { id: 'task', problem: '', …(22) } to match object { execution_status: 'completed', …(2) }
+(35 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "binding_revision": 2,
++   "binding_revision": 3,
+    "execution_status": "completed",
+    "progress_notes": "已核對帳單；成效尚待驗證",
+  }
+
+ ❯ tests/v2-backup.test.ts:117:17
+    115|     const restored = await restoreWorkspaceBackup(text);
+    116|     const doc = actionDocuments(restored.action_workspace)[0];
+    117|     expect(doc).toMatchObject({ execution_status: "completed", progres…
+       |                 ^
+    118|     expect(doc.evidence[0].value).toBe("170.00");
+    119|     expect(doc.binding_history[0].evidence[0].value).toBe("270.00");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 39 passed (40)
+      Tests  1 failed | 813 passed (814)
+   Start at  21:29:16
+   Duration  4.52s (transform 1.93s, setup 0ms, import 6.53s, tests 15.11s, environment 3ms)
+

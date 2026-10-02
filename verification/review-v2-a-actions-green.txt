@@ -1,0 +1,13 @@
+
+> profitlens@0.1.0 test
+> vitest --run tests/v2-actions.test.ts tests/action-workspace.test.ts tests/action-export.test.ts
+
+
+ RUN  v4.1.11 /Users/j-work/Desktop/profitlens-codex-starter
+
+
+ Test Files  3 passed (3)
+      Tests  28 passed (28)
+   Start at  21:18:48
+   Duration  633ms (transform 348ms, setup 0ms, import 613ms, tests 577ms, environment 0ms)
+
