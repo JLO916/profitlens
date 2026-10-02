@@ -1,4 +1,5 @@
 import { clickReplacing, startChannelContext } from "./replacement-helpers";
+import { labels } from "../../src/i18n";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -15,12 +16,17 @@ const test = base.extend<{ browserAudit: string[] }>({
   }, { auto: true }],
 });
 
-async function loadVerificationDataset(page: Page, id: string, state = "資料已就緒") {
-  await page.getByRole("button", { name: "進階驗證", exact: true }).click();
-  await page.getByLabel("資料集", { exact: true }).selectOption(id);
+// R2 renames (03_GLOSSARY_COPY): nav/status/button strings are read from the label dictionary, never retyped.
+const nav = labels.nav;
+const validation = labels.ui.dashboard.validation;
+const channelFilter = labels.ui.dashboard.filter.channel;
+
+async function loadVerificationDataset(page: Page, id: string, state: string = labels.status.ready) {
+  await page.getByRole("button", { name: nav.validation.label, exact: true }).click();
+  await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption(id);
   await Promise.all([
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.status() === 200),
-    clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true })),
+    clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true })),
   ]);
   await expect(page.getByTestId("workspace-status")).toContainText(state);
 }
@@ -28,81 +34,82 @@ async function loadVerificationDataset(page: Page, id: string, state = "資料�
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
 test("PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁", async ({ page }, testInfo) => {
-  await expect(page.getByLabel("資料集", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "載入資料集", exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "載入示範資料", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "匯入標準 CSV", exact: true })).toBeVisible();
+  await expect(page.getByLabel(validation.datasetLabel, { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: validation.loadButton, exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: labels.buttons.loadDemo, exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: labels.buttons.importData, exact: true })).toBeVisible();
   expect(await page.locator("body").innerText()).not.toMatch(/Golden|缺漏案例|錯誤案例|contribution-v1/);
-  await page.getByRole("button", { name: "進階驗證", exact: true }).focus();
+  await page.getByRole("button", { name: nav.validation.label, exact: true }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "進階驗證", exact: true, level: 1 })).toBeVisible();
-  const datasets = page.getByLabel("資料集", { exact: true });
+  await expect(page.getByRole("heading", { name: nav.validation.label, exact: true, level: 1 })).toBeVisible();
+  const datasets = page.getByLabel(validation.datasetLabel, { exact: true });
   await expect(datasets).toBeVisible();
   expect(await datasets.locator("option").evaluateAll(options => options.map(option => (option as HTMLOptionElement).value))).toEqual(["demo", "golden", "missing-cogs", "missing-ad", "duplicate"]);
   await expect(page.getByTestId("manager-summary")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "載入資料集", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: validation.loadButton, exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await page.screenshot({ path: resolve(`verification/review-v2-a-advanced-${testInfo.project.name}.png`), fullPage: true });
-  await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+  await page.getByRole("button", { name: nav.overview.label, exact: true }).click();
   await expect(datasets).toHaveCount(0);
-  await clickReplacing(page, page.getByRole("button", { name: "載入示範資料", exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
   await expect(datasets).toHaveCount(0);
 });
 
 test("PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料", async ({ page }) => {
   await loadVerificationDataset(page, "golden");
-  await expect(page.getByRole("heading", { name: "經營總覽", exact: true })).toBeVisible();
-  await expect(page.getByLabel("資料集", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: nav.overview.label, exact: true })).toBeVisible();
+  await expect(page.getByLabel(validation.datasetLabel, { exact: true })).toHaveCount(0);
   await expect(page.getByTestId("kpi-net_revenue")).toContainText("2,470.00");
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
-  await loadVerificationDataset(page, "missing-ad", "部分資料待補");
-  await expect(page.getByRole("heading", { name: "經營總覽", exact: true })).toBeVisible();
+  await loadVerificationDataset(page, "missing-ad", labels.status.partial);
+  await expect(page.getByRole("heading", { name: nav.overview.label, exact: true })).toBeVisible();
   await expect(page.getByTestId("kpi-net_revenue")).toContainText("2,470.00");
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("資料待補");
-  await page.getByLabel("通路", { exact: true }).selectOption("DTC");
+  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(labels.status.missing);
+  await page.getByLabel(channelFilter, { exact: true }).selectOption("DTC");
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("270.00");
-  await loadVerificationDataset(page, "duplicate", "資料載入失敗");
+  await loadVerificationDataset(page, "duplicate", labels.status.error);
+  // The blocking message is domain text (src/domain/validation.ts, financial core — not in labels); only its keyword is asserted.
   await expect(page.getByRole("main")).toContainText("重複");
-  await page.getByRole("button", { name: "返回前次成功資料", exact: true }).click();
-  await page.getByRole("button", { name: "經營總覽", exact: true }).click();
-  await expect(page.getByLabel("通路", { exact: true })).toHaveValue("DTC");
+  await page.getByRole("button", { name: labels.ui.dashboard.errorState.back, exact: true }).click();
+  await page.getByRole("button", { name: nav.overview.label, exact: true }).click();
+  await expect(page.getByLabel(channelFilter, { exact: true })).toHaveValue("DTC");
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("270.00");
   await expect(page.getByTestId("kpi-net_revenue")).toContainText("1,480.00");
 });
 
 test("PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿", async ({ page }) => {
   await loadVerificationDataset(page, "golden");
-  await page.getByLabel("通路", { exact: true }).selectOption("DTC");
-  await page.getByRole("button", { name: "情境試算", exact: true }).click();
+  await page.getByLabel(channelFilter, { exact: true }).selectOption("DTC");
+  await page.getByRole("button", { name: nav.scenarios.label, exact: true }).click();
   await startChannelContext(page);
-  await page.getByRole("button", { name: "新增方案", exact: true }).click();
+  await page.getByRole("button", { name: labels.buttons.addScenario, exact: true }).click();
   const scenario = page.getByTestId("scenario-1");
-  await scenario.getByLabel("方案名稱", { exact: true }).fill("PL10 尚未送算的合成草稿");
-  await scenario.getByLabel("售出量變化（相對 %）", { exact: true }).fill("3");
-  await page.getByRole("button", { name: "行動摘要", exact: true }).click();
-  await page.getByRole("button", { name: "新增行動", exact: true }).click();
+  await scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true }).fill("PL10 尚未送算的合成草稿");
+  await scenario.getByLabel(labels.scenario.volume.label, { exact: true }).fill("3");
+  await page.getByRole("button", { name: nav.actions.label, exact: true }).click();
+  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
   const action = page.getByTestId("action-1");
-  await action.getByLabel("問題", { exact: true }).fill("PL10 待人工確認的合成工作稿");
+  await action.getByLabel(labels.actions.problem, { exact: true }).fill("PL10 待人工確認的合成工作稿");
   const requests: string[] = [];
   page.on("request", request => { if (request.url().includes("/api/datasets/")) requests.push(request.url()); });
-  await page.getByRole("button", { name: "進階驗證", exact: true }).click();
-  await expect(page.getByLabel("資料集", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "行動摘要", exact: true }).click();
-  await expect(page.getByLabel("通路", { exact: true })).toHaveValue("DTC");
-  await expect(action.getByLabel("問題", { exact: true })).toHaveValue("PL10 待人工確認的合成工作稿");
-  await expect(action).not.toContainText("已過期");
-  await page.getByRole("button", { name: "情境試算", exact: true }).click();
-  await expect(scenario.getByLabel("方案名稱", { exact: true })).toHaveValue("PL10 尚未送算的合成草稿");
-  await expect(scenario.getByLabel("售出量變化（相對 %）", { exact: true })).toHaveValue("3");
-  await expect(scenario.getByLabel("折扣率變化（百分點）", { exact: true })).toHaveValue("");
-  await expect(page.getByTestId("decision-freshness")).toContainText("使用目前快照");
+  await page.getByRole("button", { name: nav.validation.label, exact: true }).click();
+  await expect(page.getByLabel(validation.datasetLabel, { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: nav.actions.label, exact: true }).click();
+  await expect(page.getByLabel(channelFilter, { exact: true })).toHaveValue("DTC");
+  await expect(action.getByLabel(labels.actions.problem, { exact: true })).toHaveValue("PL10 待人工確認的合成工作稿");
+  await expect(action).not.toContainText(labels.actions.staleBadge);
+  await page.getByRole("button", { name: nav.scenarios.label, exact: true }).click();
+  await expect(scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })).toHaveValue("PL10 尚未送算的合成草稿");
+  await expect(scenario.getByLabel(labels.scenario.volume.label, { exact: true })).toHaveValue("3");
+  await expect(scenario.getByLabel(labels.scenario.discount.label, { exact: true })).toHaveValue("");
+  await expect(page.getByTestId("decision-freshness")).toContainText(labels.ui.decisionWorkbench.freshTitle);
   expect(requests).toEqual([]);
 });
 
 test("PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看", async ({ page }, testInfo) => {
   await loadVerificationDataset(page, "golden");
-  await page.getByRole("button", { name: "通路診斷", exact: true }).click();
+  await page.getByRole("button", { name: nav.diagnosis.label, exact: true }).click();
   const diagnostic = page.locator(".diagnostic-card").first();
   const technical = diagnostic.locator("details");
   const fact = technical.locator("li code").first();

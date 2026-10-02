@@ -1,8 +1,17 @@
 import { clickReplacing, closeDownloads, openDownloads, openPeriodComparison } from "./replacement-helpers";
+import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
 
+/** R2: every user-visible string is read from the label dictionary; composed strings mirror the component exactly. */
+const ui = labels.ui.overview;
+const metric = (name: keyof typeof labels.metrics) => labels.metrics[name].label;
+/** dashboard.tsx periodFieldLabel: sr-only date labels such as 「上期開始」. */
+const periodField = (edge: "start" | "end", period: "previous" | "current") => fill((edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd).split(" → ")[0], { period: labels.periods[period] });
+/** Last segment of dashboard scopeNote: 「本期 {currentStart}–{currentEnd}」. */
+const scopeNoteCurrent = (start: string, end: string) => fill(labels.ui.dashboard.scopeNote.split(" · ").pop()!, { currentStart: start, currentEnd: end });
+const sourceTab = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.ui.evidenceDrawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
 /** Synthetic input only. Fixed expected answers below do not call domain calculations. */
 function monthlyFiles(kind: "complete" | "zero" | "missing" = "complete") {
   const dates = [...Array.from({ length: 31 }, (_, index) => `2026-08-${String(index + 1).padStart(2, "0")}`), ...Array.from({ length: 30 }, (_, index) => `2026-09-${String(index + 1).padStart(2, "0")}`)];
@@ -13,9 +22,9 @@ function monthlyFiles(kind: "complete" | "zero" | "missing" = "complete") {
       previous_period: { start: "2026-08-01", end: "2026-08-31" }, current_period: { start: "2026-09-01", end: "2026-09-30" }, sales_coverage_confirmed: true, amount_basis: "product_amounts_excluding_tax_and_customer_shipping_income",
     },
     files: {
-      "商品銷售 CSV": { name: "sales_daily.csv", text: "date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency\n" + dates.map(date => `${date},DTC,A,合成測試,1,${zero ? 0 : 100},0,0,${kind === "missing" && date === "2026-09-01" ? "" : zero ? 0 : 40},TWD`).join("\n") },
-      "通路費用 CSV": { name: "channel_costs_daily.csv", text: "date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency\n" + dates.map(date => `${date},DTC,${zero ? 0 : 5},0,${zero ? 0 : 10},0,TWD`).join("\n") },
-      "廣告支出 CSV": { name: "ad_spend_daily.csv", text: "date,channel,ad_spend,currency\n" + dates.map(date => `${date},DTC,${zero ? 0 : 20},TWD`).join("\n") },
+      [labels.importWizard.files.sales]: { name: "sales_daily.csv", text: "date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency\n" + dates.map(date => `${date},DTC,A,合成測試,1,${zero ? 0 : 100},0,0,${kind === "missing" && date === "2026-09-01" ? "" : zero ? 0 : 40},TWD`).join("\n") },
+      [labels.importWizard.files.costs]: { name: "channel_costs_daily.csv", text: "date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency\n" + dates.map(date => `${date},DTC,${zero ? 0 : 5},0,${zero ? 0 : 10},0,TWD`).join("\n") },
+      [labels.importWizard.files.ads]: { name: "ad_spend_daily.csv", text: "date,channel,ad_spend,currency\n" + dates.map(date => `${date},DTC,${zero ? 0 : 20},TWD`).join("\n") },
     },
   };
 }
@@ -31,26 +40,26 @@ const test = base.extend<{ audit: string[] }>({
   }, { auto: true }],
 });
 const comparison = (page: Page) => page.getByTestId("period-comparison");
-const contributionRow = (page: Page) => comparison(page).getByRole("row").filter({ has: page.getByText("行銷後貢獻", { exact: true }) });
-const revenueRow = (page: Page) => comparison(page).getByRole("row").filter({ has: page.getByText("商品淨營收", { exact: true }) });
+const contributionRow = (page: Page) => comparison(page).getByRole("row").filter({ has: page.getByText(metric("contribution_after_marketing"), { exact: true }) });
+const revenueRow = (page: Page) => comparison(page).getByRole("row").filter({ has: page.getByText(metric("net_revenue"), { exact: true }) });
 const currentContribution = (page: Page) => page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value");
 async function importMonthly(page: Page, kind: "complete" | "zero" | "missing" = "complete") {
   await page.goto("/");
-  await page.getByRole("button", { name: "匯入標準 CSV", exact: true }).click();
+  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
   const form = page.getByTestId("import-panel");
   const input = monthlyFiles(kind);
   for (const [label, file] of Object.entries(input.files)) await form.getByLabel(label, { exact: true }).setInputFiles({ name: file.name, mimeType: "text/csv", buffer: Buffer.from(file.text) });
-  await form.getByLabel("讀取 manifest JSON", { exact: true }).setInputFiles({ name: "manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(input.manifest)) });
-  await expect(form.getByLabel("資料集名稱", { exact: true })).toHaveValue(input.manifest.dataset_id);
-  await expect(form.getByLabel("匯入比較方式", { exact: true })).toHaveValue("calendar_months");
-  await form.getByLabel("我已確認未稅商品金額與費用口徑", { exact: true }).check();
-  await form.getByRole("button", { name: "檢核匯入資料", exact: true }).click();
-  await expect(page.getByTestId("import-status")).toHaveText(kind === "missing" ? "部分資料待補，可套用已知範圍" : "檢核通過，可套用資料");
-  await clickReplacing(page, form.getByRole("button", { name: "套用匯入資料", exact: true }));
+  await form.getByLabel(labels.ui.importPanel.manifestLabel, { exact: true }).setInputFiles({ name: "manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(input.manifest)) });
+  await expect(form.getByLabel(labels.ui.importPanel.datasetName, { exact: true })).toHaveValue(input.manifest.dataset_id);
+  await expect(form.getByLabel(labels.ui.importPanel.comparisonMode, { exact: true })).toHaveValue("calendar_months");
+  await form.getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
+  await form.getByRole("button", { name: labels.ui.importPanel.check, exact: true }).click();
+  await expect(page.getByTestId("import-status")).toHaveText(kind === "missing" ? labels.ui.importPanel.status.partial : labels.ui.importPanel.status.valid);
+  await clickReplacing(page, form.getByRole("button", { name: labels.ui.importPanel.commit, exact: true }));
   await expect(form).toHaveCount(0);
   await openPeriodComparison(page);
   await expect(comparison(page)).toBeVisible();
-  await expect(page.getByLabel("比較方式", { exact: true })).toHaveValue("calendar_months");
+  await expect(page.getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true })).toHaveValue("calendar_months");
 }
 /** Independent reader for exported quoted CSV, with no production parser/expected generator. */
 function records(csv: string): Record<string, string>[] {
@@ -71,11 +80,11 @@ function records(csv: string): Record<string, string>[] {
   const headers = rows.shift()!;
   return rows.map(values => {
     expect(values).toHaveLength(headers.length);
-    return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+    return Object.fromEntries(headers.map((header, index) => [header.replace(/^.*\(([^()]+)\)\s*$/, "$1"), values[index]]));
   });
 }
 async function downloadAnalysis(page: Page) {
-  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: "下載目前分析 CSV", exact: true }).click()]);
+  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).click()]);
   await closeDownloads(page);
   expect(download.suggestedFilename()).toBe("profitlens-analysis.csv");
   return records(await readFile((await download.path())!, "utf8"));
@@ -86,20 +95,23 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
   await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-value")).toHaveText("3,000.00");
   await expect(currentContribution(page)).toHaveText("750.00");
   await expect(page.locator(".bridge-total")).toContainText("-25.00");
-  await expect(comparison(page)).toContainText("前期 31 天；本期 30 天");
+  await expect(comparison(page)).toContainText(fill(ui.periodDays, { previousDays: 31, currentDays: 30 }));
   await expect(revenueRow(page).getByRole("cell")).toHaveText(["3,100.00", "3,000.00", "100.00", "100.00", "0.00"]);
   await expect(contributionRow(page).getByRole("cell")).toHaveText(["775.00", "750.00", "25.00", "25.00", "0.00"]);
   await contributionRow(page).getByRole("cell").nth(3).getByRole("button").click();
-  const dialog = page.getByRole("dialog", { name: /公式與來源$/ });
-  await expect(dialog).toContainText("期間合計 ÷ 30 個日曆天");
-  await expect(dialog).toContainText("日均值（TWD／日）");
+  const dialog = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+  await expect(dialog).toContainText(`${metric("contribution_after_marketing")}${ui.periodTotal} ÷ 30 天`);
+  await expect(dialog).toContainText(ui.dailyAverageScope);
   await expect(dialog).toContainText("2026-09-01 至 2026-09-30");
-  await expect(dialog).toContainText("ad_spend_daily.csv");
-  await expect(dialog).toContainText("納入來源共 90 筆");
-  await dialog.getByRole("button", { name: "下一頁", exact: true }).click();
+  // R2 groups source rows by file tab (sales／costs／ads) instead of one paged list: 30 + 30 + 30 = 90 rows.
+  await expect(dialog.getByRole("button", { name: sourceTab("sales", 30), exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(dialog.getByRole("button", { name: sourceTab("costs", 30), exact: true })).toBeVisible();
   await expect(dialog).toContainText("sales_daily.csv");
-  await expect(dialog).toContainText("第 2／2 頁");
-  await dialog.getByRole("button", { name: "關閉公式與來源", exact: true }).click();
+  await expect(dialog).toContainText(fill(labels.evidence.showing, { from: 1, to: 30, n: 30 }));
+  await dialog.getByRole("button", { name: sourceTab("ads", 30), exact: true }).click();
+  await expect(dialog).toContainText("ad_spend_daily.csv");
+  await expect(dialog).toContainText(fill(labels.evidence.showing, { from: 1, to: 30, n: 30 }));
+  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
   const rows = await downloadAnalysis(page);
   expect(rows.every(row => row.comparison_mode === "calendar_months" && row.previous_days === "31" && row.current_days === "30")).toBe(true);
   expect(rows.find(row => row.row_type === "period_summary" && row.period === "current" && row.metric === "contribution_after_marketing")).toMatchObject({ value: "750.00" });
@@ -110,34 +122,34 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
 
 test("PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍", async ({ page }) => {
   await importMonthly(page);
-  for (const [label, value] of Object.entries({ "前期開始": "2026-09-01", "前期結束": "2026-09-30", "本期開始": "2026-08-01", "本期結束": "2026-08-31" })) await page.getByLabel(label, { exact: true }).fill(value);
-  await page.getByRole("button", { name: "套用期間", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "期間未套用" })).toBeVisible();
+  for (const [label, value] of Object.entries({ [periodField("start", "previous")]: "2026-09-01", [periodField("end", "previous")]: "2026-09-30", [periodField("start", "current")]: "2026-08-01", [periodField("end", "current")]: "2026-08-31" })) await page.getByLabel(label, { exact: true }).fill(value);
+  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: labels.ui.dashboard.errors.periodNotApplied })).toBeVisible();
   await expect(currentContribution(page)).toHaveText("750.00");
-  await expect(page.locator(".scope-note")).toContainText("本期 2026-09-01 — 2026-09-30");
-  for (const [label, value] of Object.entries({ "前期開始": "2026-08-01", "前期結束": "2026-08-31", "本期開始": "2026-09-01", "本期結束": "2026-09-29" })) await page.getByLabel(label, { exact: true }).fill(value);
-  await page.getByRole("button", { name: "套用期間", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "完整自然月模式" })).toBeVisible();
+  await expect(page.locator(".scope-note")).toContainText(scopeNoteCurrent("2026-09-01", "2026-09-30"));
+  for (const [label, value] of Object.entries({ [periodField("start", "previous")]: "2026-08-01", [periodField("end", "previous")]: "2026-08-31", [periodField("start", "current")]: "2026-09-01", [periodField("end", "current")]: "2026-09-29" })) await page.getByLabel(label, { exact: true }).fill(value);
+  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: labels.periods.calendarMonths })).toBeVisible();
   await expect(currentContribution(page)).toHaveText("750.00");
   const unchanged = await downloadAnalysis(page);
   expect(unchanged.every(row => row.comparison_mode === "calendar_months" && row.current_period_end === "2026-09-30")).toBe(true);
-  await page.getByLabel("比較方式", { exact: true }).selectOption("same_days");
-  await expect(comparison(page)).toContainText("完整自然月");
-  await page.getByLabel("前期結束", { exact: true }).fill("2026-08-30");
-  await page.getByLabel("本期結束", { exact: true }).fill("2026-09-30");
-  await page.getByRole("button", { name: "套用期間", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "期間未套用" })).toHaveCount(0);
-  await expect(comparison(page)).toContainText("前期 30 天；本期 30 天");
+  await page.getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true }).selectOption("same_days");
+  await expect(comparison(page)).toContainText(labels.periods.calendarMonths);
+  await page.getByLabel(periodField("end", "previous"), { exact: true }).fill("2026-08-30");
+  await page.getByLabel(periodField("end", "current"), { exact: true }).fill("2026-09-30");
+  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: labels.ui.dashboard.errors.periodNotApplied })).toHaveCount(0);
+  await expect(comparison(page)).toContainText(fill(ui.periodDays, { previousDays: 30, currentDays: 30 }));
   await expect(contributionRow(page).getByRole("cell")).toHaveText(["750.00", "750.00", "25.00", "25.00", "0.00"]);
   expect((await downloadAnalysis(page)).every(row => row.comparison_mode === "same_days" && row.previous_days === "30" && row.current_days === "30")).toBe(true);
 });
 
 for (const kind of ["zero", "missing"] as const) test(`PL-02 ${kind} 月合計與日均保留零及未知邊界`, async ({ page }) => {
   await importMonthly(page, kind);
-  await expect(currentContribution(page)).toHaveText(kind === "zero" ? "0.00" : "資料待補");
+  await expect(currentContribution(page)).toHaveText(kind === "zero" ? "0.00" : labels.status.missing);
   await expect(revenueRow(page).getByRole("cell").nth(3)).toHaveText(kind === "zero" ? "0.00" : "100.00");
-  await expect(contributionRow(page).getByRole("cell").nth(3)).toHaveText(kind === "zero" ? "0.00" : "資料待補");
-  await expect(contributionRow(page).getByRole("cell").nth(4)).toHaveText(kind === "zero" ? "0.00" : "資料待補");
+  await expect(contributionRow(page).getByRole("cell").nth(3)).toHaveText(kind === "zero" ? "0.00" : labels.status.missing);
+  await expect(contributionRow(page).getByRole("cell").nth(4)).toHaveText(kind === "zero" ? "0.00" : labels.status.missing);
   const row = (await downloadAnalysis(page)).find(row => row.row_type === "daily_average" && row.period === "current" && row.metric === "contribution_after_marketing")!;
   expect(row.value).toBe(kind === "zero" ? "0.00" : "");
   if (kind === "missing") expect(JSON.parse(row.reason_codes)).toContain("MISSING_COGS");

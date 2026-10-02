@@ -1,5 +1,6 @@
 import type { AiSnapshot, InsightOutput } from "../ai/contracts";
 import { renderInsightOutput, validateInsightOutput } from "../ai/grounding";
+import { labels } from "../i18n";
 
 export interface AiCapability { available: boolean; reason: string; provider: "openai" }
 export interface AiResponseMetadata {
@@ -108,26 +109,6 @@ export async function sendAiRequest(options: AiRequestOptions): Promise<AiClient
 }
 
 export function aiReasonMessage(reason: string): string {
-  const messages: Record<string, string> = {
-    PUBLIC_DEMO: "公開展示模式已由伺服器關閉即時 AI，仍可使用規則診斷。",
-    DISABLED: "即時 AI 尚未啟用；計算、規則診斷、試算與行動整理仍可使用。",
-    NO_KEY: "伺服器未設定 API 金鑰，使用規則診斷；請勿將金鑰貼入頁面或對話。",
-    NO_MODEL: "伺服器尚未設定模型，使用規則診斷。",
-    LOCAL_ONLY: "此端點僅允許本機使用，使用規則診斷。",
-    INVALID_CONFIG: "伺服器 AI 設定尚不可用，使用規則診斷。",
-    TIMEOUT: "AI 請求逾時，未取得可驗證說明；既有規則診斷仍可使用。",
-    RATE_LIMIT: "模型服務暫時限流，未取得可用說明；請稍後重新確認再試。",
-    REFUSED: "模型未提供可用回應，保留規則診斷。",
-    TRUNCATED: "模型回應不完整，未呈現未驗證的內容。",
-    SCHEMA_ERROR: "回應格式未通過檢核，保留規則診斷。",
-    SEMANTIC_ERROR: "回應的事實、數字或語意引用未通過檢核，未呈現該內容。",
-    SNAPSHOT_MISMATCH: "回應不屬於目前資料快照，已丟棄。",
-    CONSENT_REQUIRED: "請重新檢查目前預覽並明確同意後再傳送。",
-    INPUT_TOO_LARGE: "彙總請求超過大小限制，未取得 AI 說明；規則診斷仍可使用。",
-    ABORTED: "AI 請求已取消，保留規則診斷。",
-    NETWORK_ERROR: "無法完成本機 AI 請求，保留規則診斷。",
-    INVALID_RESPONSE: "回應未通過本機檢核，保留規則診斷。",
-    STATUS_UNAVAILABLE: "無法確認即時 AI 是否可用，暫停傳送；規則診斷仍可使用。",
-  };
-  return messages[reason] ?? "AI 未完成，未呈現不明回應；既有計算與規則診斷仍可使用。";
+  const messages: Record<string, string> = labels.ui.aiClient.reasons;
+  return (Object.hasOwn(messages, reason) ? messages[reason] : undefined) ?? labels.ui.aiClient.reasonFallback;
 }

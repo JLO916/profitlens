@@ -201,3 +201,15 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 **原因：** 三者都讓首屏只剩結論（KPI → 三件事），又不改任何財務口徑、名詞或既有測試的斷言；需要調整的 E2E 僅是在互動前先展開會議區／下載選單（`tests/e2e/replacement-helpers.ts` 的 `openMeeting`／`openPeriodComparison`／`openDownloads`）。
 
 **影響文件：** `docs/revamp/02_IA_LAYOUT.md §2–§3`（儲存面板形式）、`verification/revamp-R1-acceptance.md`。**需重跑：** 全套 E2E 四尺寸。
+
+## 2026-10-02｜Revamp v2 R2：語言層的三個決定（D1／D11 依建議值、alias 範圍）
+
+**問題：** R2 把所有使用者可見文字改為 `03_GLOSSARY_COPY.md` 的經理人語言；`09_DECISIONS_PENDING.md` 的 D1（行銷後貢獻新名）、D11（CSV 標題列）於本批開始時「決定」欄仍空白，另需決定示範通路 alias 的套用範圍。
+
+**採用選項：**
+- **D1＝A（依建議值執行）**：`contribution_after_marketing` 主名「扣廣告後貢獻」、短名「廣告後貢獻」；`contribution_before_marketing` 「通路貢獻」。「行銷後貢獻／邊際貢獻／行銷前貢獻」只在口徑說明的別名註記與技術細節出現。指標名稱、白話一句、中文階梯公式與技術公式全部由 `labels.metrics` 提供，`src/application/presentation.ts` 的 `metricDefinitions` 改為讀取 labels（新增 `shortLabel`、`plain`、`formulaTechnical`）。
+- **D11＝A（依建議值執行）**：所有 CSV 的欄位 key 維持英文，第一列標題改為「中文名稱 (english_key)」（`csvHeader()`／`csvHeaderKey()`，`labels.csvColumns`）；下游解析只需取括號內的 key。通路寬表 CSV 原本是純中文標題，改為同一格式並補英文 key。
+- **示範通路 alias 只對示範資料集生效**：`demoAlias(dataset_id)` 以 `synthetic-demo` 前綴判斷，`DTC → 官網 · DTC`、`MARKETPLACE → 平台 · MARKETPLACE` 只在顯示層；golden／缺漏／重複鍵等驗證用合成資料維持原通路代碼（對帳與既有測試以代碼為準），使用者匯入的通路名稱原樣顯示。CSV、AI facts、備份內的 channel 值一律不變。這比規格的「`source_type === "synthetic"` 即生效」更窄，原因是驗證資料集的用途是對帳，不需要台灣化名稱。
+- 規則卡文案：`ruleCopy()`（`src/application/copy.ts`）以 `labels.rules` 模板＋該規則引用的事實填入占位符；標題金額用 `formatHeadlineAmount()`（≥ 10,000 顯示 x.x 萬，否則整數元），精確值在列內與抽屜。`src/domain/rules.ts` 不改。
+
+**原因：** 單一來源、機器可讀不變、驗證資料不受文案影響。**影響文件：** `03_GLOSSARY_COPY.md §4`（alias 範圍註記）、`09_DECISIONS_PENDING.md`（D1、D11 請補「決定」欄）。**驗收：** `tests/copy.test.ts`（golden 手算標題：營收多了 220 元…少賺 315 元；折扣率 8.00% → 14.52%，多花 250 元；MARKETPLACE −15 元）、`tests/labels-coverage.test.ts`、`tests/copy-density.test.ts`。

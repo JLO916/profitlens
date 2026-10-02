@@ -3,6 +3,7 @@ import { isBusinessDate } from "../domain/date";
 import type { Dataset, DatasetInput, Fact, Period, SourceRef } from "../domain/types";
 import type { FilenameMap } from "./export";
 import type { WorkspaceSnapshot } from "./workspace";
+import { labels } from "../i18n";
 
 export const MAX_SCENARIOS = 3;
 export const MAX_ACTIONS = 3;
@@ -80,7 +81,7 @@ export function createDecisionSession(dataset: Dataset, snapshot: WorkspaceSnaps
   const baseline = buildScenarioBaseline(summary, dataset.manifest.sales_coverage_confirmed);
   if (channels.length !== 1) {
     baseline.eligible = false;
-    baseline.reasons.unshift({ code: "SINGLE_CHANNEL_REQUIRED", message: "情境試算僅支援本期單一通路，請先選擇一個通路。" });
+    baseline.reasons.unshift({ code: "SINGLE_CHANNEL_REQUIRED", message: labels.ui.decision.singleChannelRequired });
   }
   const session: DecisionSession = structuredClone({
     schema_version: "decision-v1", scenario_version: SCENARIO_VERSION, metric_version: snapshot.metric_version,

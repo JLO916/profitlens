@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addActionDraft, confirmBoundAction, editBoundAction, emptyActionWorkspace, pinAction, type ActionSource } from "@/application/action-workspace";
+import { csvHeaderKey } from "@/application/copy";
 import { createDecisionSession } from "@/application/decision";
 import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from "@/application/decision-export";
 import { createSnapshot, hashInput } from "@/application/workspace";
@@ -30,7 +31,7 @@ async function setup() {
   return { workspace, oldSource, currentSource, oldFact, currentFact, session: createDecisionSession(currentSource.dataset, currentSource.snapshot, 2, currentSource.filenames) };
 }
 
-/** Independent quote-aware reader so assertions inspect actual CSV cells, not substrings. */
+/** Independent quote-aware reader so assertions inspect actual CSV cells, not substrings. Header cells are「中文 (key)」; records are keyed by the english key. */
 function records(text: string): Record<string, string>[] {
   const rows: string[][] = []; let row: string[] = [], cell = "", quoted = false;
   const value = text.replace(/^\uFEFF/, "");
@@ -46,7 +47,7 @@ function records(text: string): Record<string, string>[] {
   }
   if (cell || row.length) { row.push(cell); rows.push(row); }
   expect(quoted).toBe(false);
-  const headers = rows.shift()!;
+  const headers = rows.shift()!.map(csvHeaderKey);
   return rows.map(values => { expect(values).toHaveLength(headers.length); return Object.fromEntries(headers.map((key, index) => [key, values[index]])); });
 }
 

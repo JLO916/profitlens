@@ -1,4 +1,5 @@
 import { clickReplacing } from "./replacement-helpers";
+import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -15,13 +16,27 @@ const test = base.extend<{ audit: string[] }>({
   }, { auto: true }],
 });
 
+/** R2: every visible string comes from the label dictionary; compose the same way the panel does. */
+const panel = labels.ui.productComparisonPanel;
+const importPanel = labels.ui.importPanel;
+const validation = labels.ui.dashboard.validation;
+/** 「商品毛利差額」= metric label + change suffix, as product-comparison-panel.tsx's changeLabel(). */
+const grossProfitChange = `${labels.metrics.gross_profit.label}${labels.csvSuffix.change}`;
+const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** Evidence dialog is titled `${title}｜怎麼算的`; match by its suffix. */
+const evidenceDialog = new RegExp(`${escape(labels.sections.evidence)}$`);
+/** Two-period delta trigger `查看 {channel} {sku} {label}兩期怎麼算的，{value}`, matched from {label} onward so channel/sku stay open. */
+const deltaTrigger = (value: string) => new RegExp(`${escape(fill(panel.deltaEvidenceAria.slice(panel.deltaEvidenceAria.indexOf("{label}")), { label: grossProfitChange, value }))}$`);
+/** R2 evidence drawer lists source rows per file in tabs labelled `${sourceTabs[file]}（count）`; switch before asserting rows from that file. */
+const sourceTab = (dialog: ReturnType<Page["getByRole"]>, file: keyof typeof labels.evidence.sourceTabs) => dialog.getByRole("button", { name: new RegExp(`^${escape(labels.evidence.sourceTabs[file])}（\\d+）$`) });
+
 async function load(page: Page, id = "golden") {
   await page.goto("/");
-  await page.getByRole("button", { name: "進階驗證", exact: true }).click();
-  await page.getByLabel("資料集", { exact: true }).selectOption(id);
-  await clickReplacing(page, page.getByRole("button", { name: "載入資料集", exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(/資料已就緒|部分資料待補/);
-  await page.getByRole("button", { name: "商品毛利", exact: true }).click();
+  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption(id);
+  await clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true }));
+  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${escape(labels.status.ready)}|${escape(labels.status.partial)}`));
+  await page.getByRole("button", { name: labels.nav.products.label, exact: true }).click();
   await expect(page.getByTestId("product-table")).toBeVisible();
 }
 
@@ -44,11 +59,11 @@ function records(csv: string): Record<string, string>[] {
   const headers = rows.shift()!;
   return rows.map(values => {
     expect(values).toHaveLength(headers.length);
-    return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+    return Object.fromEntries(headers.map((header, index) => [header.replace(/^.*\(([^()]+)\)\s*$/, "$1"), values[index]]));
   });
 }
 async function downloadComparison(page: Page) {
-  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "下載商品比較 CSV", exact: true }).click()]);
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: panel.downloadComparisonCsv, exact: true }).click()]);
   expect(download.suggestedFilename()).toBe("profitlens-product-comparison.csv");
   return records(await readFile((await download.path())!, "utf8"));
 }
@@ -58,36 +73,37 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   const table = page.getByTestId("product-table");
   await expect(table.locator("tbody tr").first()).toContainText("MARKETPLACE");
   await expect(table.locator("tbody tr").first().getByRole("rowheader")).toHaveText("B");
-  const trigger = table.getByRole("button", { name: "查看 MARKETPLACE B 商品毛利差額兩期公式與來源，-55.00", exact: true });
+  // Golden keeps raw channel codes; the 官網／平台 alias applies only to the demo dataset.
+  const trigger = table.getByRole("button", { name: fill(panel.deltaEvidenceAria, { channel: "MARKETPLACE", sku: "B", label: grossProfitChange, value: "-55.00" }), exact: true });
   await trigger.focus();
   await page.keyboard.press("Enter");
-  const dialog = page.getByRole("dialog", { name: /公式與來源$/ });
+  const dialog = page.getByRole("dialog", { name: evidenceDialog });
   await expect(dialog).toContainText("NT$ -55.00");
   await expect(dialog).toContainText("NT$ 180.00");
   await expect(dialog).toContainText("NT$ 125.00");
   await expect(dialog).toContainText("2026-08-01");
   await expect(dialog).toContainText("2026-08-02");
-  await expect(dialog).toContainText("第 5 行");
-  await expect(dialog).toContainText("第 9 行");
+  await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 5 }));
+  await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 9 }));
   await expect(dialog).not.toContainText("ad_spend_daily.csv");
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
-  await page.getByLabel("商品排序方向", { exact: true }).selectOption("descending");
+  await page.getByLabel(panel.sortDirection, { exact: true }).selectOption("descending");
   await expect(table.locator("tbody tr").first()).toContainText("DTC");
   await expect(table.locator("tbody tr").first().getByRole("rowheader")).toHaveText("A");
-  await page.getByLabel("品類", { exact: true }).selectOption("HOME");
-  await page.getByLabel("搜尋 SKU", { exact: true }).fill("a");
+  await page.getByLabel(labels.csvColumns.category, { exact: true }).selectOption("HOME");
+  await page.getByLabel(panel.searchSku, { exact: true }).fill("a");
   await expect(table.locator("tbody tr")).toHaveCount(2);
   const output = await downloadComparison(page);
   expect(output.map(row => [row.channel, row.sku, row.gross_profit_change])).toEqual([["DTC", "A", "40.00"], ["MARKETPLACE", "A", "10.00"]]);
   expect(output.every(row => row.category_filter === "HOME" && row.query === "a" && row.direction === "descending" && row.previous_start === "2026-08-01" && row.current_start === "2026-08-02")).toBe(true);
-  await page.getByRole("button", { name: "只看本期負毛利", exact: true }).click();
-  await expect(page.getByRole("button", { name: "只看本期負毛利", exact: true })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText("此範圍沒有符合條件的商品資料。", { exact: false })).toBeVisible();
-  await page.getByRole("button", { name: "只看本期負毛利", exact: true }).click();
+  await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
+  await expect(page.getByRole("button", { name: panel.negativeOnly, exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText(panel.empty, { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-products-${testInfo.project.name}.png`), fullPage: true });
-  await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
 });
 
@@ -95,15 +111,15 @@ test("PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來�
   await load(page, "missing-cogs");
   const table = page.getByTestId("product-table");
   const last = table.locator("tbody tr").last();
-  await expect(last).toContainText("成本待補");
-  await expect(last).toContainText("差額未知");
-  await page.getByLabel("商品排序方向", { exact: true }).selectOption("descending");
-  await expect(last).toContainText("成本待補");
-  await last.getByRole("button", { name: /商品毛利差額兩期公式與來源，N\/A$/ }).click();
-  const dialog = page.getByRole("dialog", { name: /公式與來源$/ });
+  await expect(last).toContainText(panel.costMissing);
+  await expect(last).toContainText(panel.deltaMissing);
+  await page.getByLabel(panel.sortDirection, { exact: true }).selectOption("descending");
+  await expect(last).toContainText(panel.costMissing);
+  await last.getByRole("button", { name: deltaTrigger(labels.status.missing) }).click();
+  const dialog = page.getByRole("dialog", { name: evidenceDialog });
   await expect(dialog).toContainText("MISSING_COGS");
-  await expect(dialog).toContainText("缺值（未知）");
-  await dialog.getByRole("button", { name: "關閉公式與來源", exact: true }).click();
+  await expect(dialog).toContainText(labels.evidence.missingValue);
+  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
   const rows = await downloadComparison(page);
   expect(rows.at(-1)).toMatchObject({ gross_profit_change: "", current_gross_profit: "" });
   expect(rows.at(-1)!.gross_profit_change_reasons).toContain("MISSING_COGS");
@@ -111,7 +127,7 @@ test("PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來�
 
 test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公式注入", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "匯入標準 CSV", exact: true }).click();
+  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
   const form = page.getByTestId("import-panel");
   const manifest = {
     schema_version: "1.0", dataset_id: "pl07-synthetic-union", source_type: "synthetic", currency: "TWD", timezone: "Asia/Taipei", data_as_of: "2026-08-03", coverage_start: "2026-08-01", coverage_end: "2026-08-02", channels: ["DTC"],
@@ -123,31 +139,33 @@ test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公�
     "2026-08-02,DTC,=1+1,@HOME,0,0,0,100,-40,TWD", "2026-08-02,DTC,MISSING,@HOME,1,1,0,0,,TWD",
   ].join("\n");
   const files = [
-    { label: "商品銷售 CSV", name: "商品來源.csv", text: sales },
-    { label: "通路費用 CSV", name: "channel_costs_daily.csv", text: "date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency\n2026-08-01,DTC,0,0,0,0,TWD\n2026-08-02,DTC,0,0,0,0,TWD" },
-    { label: "廣告支出 CSV", name: "ad_spend_daily.csv", text: "date,channel,ad_spend,currency\n2026-08-01,DTC,0,TWD\n2026-08-02,DTC,0,TWD" },
+    { label: labels.importWizard.files.sales, name: "商品來源.csv", text: sales },
+    { label: labels.importWizard.files.costs, name: "channel_costs_daily.csv", text: "date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency\n2026-08-01,DTC,0,0,0,0,TWD\n2026-08-02,DTC,0,0,0,0,TWD" },
+    { label: labels.importWizard.files.ads, name: "ad_spend_daily.csv", text: "date,channel,ad_spend,currency\n2026-08-01,DTC,0,TWD\n2026-08-02,DTC,0,TWD" },
   ];
   for (const file of files) await form.getByLabel(file.label, { exact: true }).setInputFiles({ name: file.name, mimeType: "text/csv", buffer: Buffer.from(file.text) });
-  await form.getByLabel("讀取 manifest JSON", { exact: true }).setInputFiles({ name: "manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
-  await expect(form.getByLabel("資料集名稱", { exact: true })).toHaveValue(manifest.dataset_id);
-  await form.getByLabel("我已確認未稅商品金額與費用口徑", { exact: true }).check();
-  await form.getByRole("button", { name: "檢核匯入資料", exact: true }).click();
-  await expect(page.getByTestId("import-status")).toHaveText("部分資料待補，可套用已知範圍");
-  await clickReplacing(page, form.getByRole("button", { name: "套用匯入資料", exact: true }));
-  await page.getByRole("button", { name: "商品毛利", exact: true }).click();
+  await form.getByLabel(importPanel.manifestLabel, { exact: true }).setInputFiles({ name: "manifest.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(manifest)) });
+  await expect(form.getByLabel(importPanel.datasetName, { exact: true })).toHaveValue(manifest.dataset_id);
+  await form.getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
+  await form.getByRole("button", { name: importPanel.check, exact: true }).click();
+  await expect(page.getByTestId("import-status")).toHaveText(importPanel.status.partial);
+  await clickReplacing(page, form.getByRole("button", { name: importPanel.commit, exact: true }));
+  await page.getByRole("button", { name: labels.nav.products.label, exact: true }).click();
   const table = page.getByTestId("product-table");
   await expect(table.locator("tbody tr")).toHaveCount(5);
   const exit = table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "EXIT", exact: true }) });
-  await expect(exit).toContainText("本期未觀察銷售列");
-  await expect(table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "ENTER", exact: true }) })).toContainText("前期未觀察銷售列");
-  await expect(table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "ZERO", exact: true }) })).toContainText("兩期皆有銷售檔列");
-  await exit.getByRole("button", { name: /商品毛利差額兩期公式與來源，-5.00$/ }).click();
-  const dialog = page.getByRole("dialog", { name: /公式與來源$/ });
-  await expect(dialog).toContainText("manifest.json");
+  await expect(exit).toContainText(panel.activity.previousOnly);
+  await expect(table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "ENTER", exact: true }) })).toContainText(panel.activity.currentOnly);
+  await expect(table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "ZERO", exact: true }) })).toContainText(panel.activity.bothObserved);
+  await exit.getByRole("button", { name: deltaTrigger("-5.00") }).click();
+  const dialog = page.getByRole("dialog", { name: evidenceDialog });
+  // Sales rows show under the default「銷售」tab; manifest rows live under「資料集設定」.
   await expect(dialog).toContainText("商品來源.csv");
-  await expect(dialog).toContainText("依完整性確認計為零");
-  await dialog.getByRole("button", { name: "關閉公式與來源", exact: true }).click();
-  await page.getByRole("button", { name: "只看本期負毛利", exact: true }).click();
+  await expect(dialog).toContainText(panel.presence.noRowsConfirmed);
+  await sourceTab(dialog, "manifest").click();
+  await expect(dialog).toContainText("manifest.json");
+  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
   await expect(table.locator("tbody tr")).toHaveCount(1);
   await expect(table).toContainText("=1+1");
   await expect(table).toContainText("-60.00");

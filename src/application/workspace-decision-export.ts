@@ -3,6 +3,7 @@ import { createDecisionSession } from './decision';
 import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from './decision-export';
 import { validateScenarioWorkspace, type ScenarioSource, type ScenarioWorkspace } from './scenario-workspace';
 import type { ReviewSession } from './review-session';
+import { labels } from '@/i18n';
 
 /** Audit export is distinct from a portable backup: raw CSV never enters it. */
 export function exportWorkspaceDecision(format: 'json' | 'md' | 'csv', source: ScenarioSource, scenarios: ScenarioWorkspace, actions: ActionWorkspace, review: ReviewSession | null): string {
@@ -22,11 +23,11 @@ export function exportWorkspaceDecision(format: 'json' | 'md' | 'csv', source: S
     }, null, 2)+'\n';
   }
   if (format === 'md') {
-    const pieces = [exportDecisionMarkdown(current, currentPlans, [], actions), '\n# 各通路方案版本附錄\n\n各 context 有自己的基準與期間；不加總條件差額。\n'];
+    const pieces = [exportDecisionMarkdown(current, currentPlans, [], actions), `\n${labels.ui.workspaceDecisionExport.appendixHeading}\n\n${labels.ui.workspaceDecisionExport.appendixNote}\n`];
     for (const context of scenarios.contexts) {
       pieces.push(exportDecisionMarkdown({ ...context.session, stale: context.status === 'historical' || context.session.stale }, context.plans, []));
       // Context and plan ids are audit text; reuse the inert JSON formatter in a fenced block.
-      pieces.push('\n```json\n'+JSON.stringify({context_id:context.id,epoch:context.epoch,plan_revisions:Object.fromEntries(context.plans.map(plan=>[plan.id,plan.revision]))}).replaceAll('`','\\u0060').replaceAll('<','\\u003c')+'\n```\n');
+      pieces.push(`\n<details>\n<summary>${labels.sections.technicalDetails}</summary>\n\n`+'```json\n'+JSON.stringify({context_id:context.id,epoch:context.epoch,plan_revisions:Object.fromEntries(context.plans.map(plan=>[plan.id,plan.revision]))}).replaceAll('`','\\u0060').replaceAll('<','\\u003c')+'\n```\n\n</details>\n');
     }
     return pieces.join('\n');
   }

@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Decimal from "decimal.js";
+import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
 import { evidenceRows, formatMoney, formatRate, metricDefinitions } from "@/application/presentation";
-import { COST_FIELDS, SALES_FIELDS } from "@/domain/types";
-import type { Dataset, Metric, MetricName, Period, SourceRef } from "@/domain/types";
+import type { WorkspaceSnapshot } from "@/application/workspace";
+import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS } from "@/domain/types";
+import type { Dataset, Metric, MetricName, Metrics, Period, SourceRef } from "@/domain/types";
+import { fill, labels } from "@/i18n";
 
 export interface EvidenceSelection {
   title: string;
@@ -17,24 +20,52 @@ export interface EvidenceSelection {
   components?: { label: string; metric: Metric }[];
   scopeLabel?: string;
   unitOverride?: "percentage-point";
+  /** 商品層級證據：不畫四層階梯（商品只看毛利）。 */
+  sku?: string;
 }
 interface EvidenceDrawerProps {
   dataset: Dataset;
+  snapshot?: Pick<WorkspaceSnapshot, "report" | "weeks">;
   filenames?: Partial<Record<SourceRef["file"], string>>;
   mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>;
   evidence: EvidenceSelection | null;
   onClose: () => void;
+  onBasis?: () => void;
 }
 const pageSize = 50;
-const fieldLabels: Record<string, string> = {
-  date: "入帳日", channel: "通路", sku: "SKU", category: "品類", units_sold: "售出件數",
-  gross_sales: "折扣前商品收入", discounts: "商品折扣", refunds: "已入帳退款", cogs_net: "已入帳銷貨成本淨額",
-  platform_fees: "平台費", payment_fees: "金流費", fulfillment_costs: "履約費", other_variable_costs: "其他變動費用",
-  ad_spend: "廣告費", currency: "幣別", sales_coverage_confirmed: "銷售範圍完整性確認",
-  coverage_start: "涵蓋起日", coverage_end: "涵蓋迄日", data_as_of: "資料截至日",
+const copy = labels.evidence;
+type SourceTab = "sales" | "costs" | "ads" | "manifest";
+const fileOfTab: Record<SourceTab, SourceRef["file"]> = { sales: "sales_daily.csv", costs: "channel_costs_daily.csv", ads: "ad_spend_daily.csv", manifest: "manifest.json" };
+
+/** 四層階梯：原價收入 → 淨營收 → 商品毛利 → 通路貢獻 → 扣廣告後貢獻；每行的 sign 決定顯示 −／＝。 */
+const LADDER: { name: MetricName; op: "" | "−" | "＝" }[] = [
+  { name: "gross_sales", op: "" }, { name: "discounts", op: "−" }, { name: "refunds", op: "−" }, { name: "net_revenue", op: "＝" },
+  { name: "cogs_net", op: "−" }, { name: "gross_profit", op: "＝" },
+  { name: "platform_fees", op: "−" }, { name: "payment_fees", op: "−" }, { name: "fulfillment_costs", op: "−" }, { name: "other_variable_costs", op: "−" }, { name: "contribution_before_marketing", op: "＝" },
+  { name: "ad_spend", op: "−" }, { name: "contribution_after_marketing", op: "＝" },
+];
+const RATIOS: Partial<Record<MetricName, [MetricName, MetricName]>> = {
+  gross_margin: ["gross_profit", "net_revenue"], contribution_margin: ["contribution_after_marketing", "net_revenue"], discount_rate: ["discounts", "gross_sales"],
+  mer: ["net_revenue", "ad_spend"], fulfillment_burden: ["fulfillment_costs", "net_revenue"], marketing_burden: ["ad_spend", "net_revenue"],
 };
 
-export function EvidenceDrawer({ dataset, evidence, onClose, filenames, mappings }: EvidenceDrawerProps) {
+/** 找出與這筆證據同期間、同通路範圍的合計指標；找不到（例如商品或跨期差額）就不畫階梯。 */
+function ladderMetrics(snapshot: EvidenceDrawerProps["snapshot"], evidence: EvidenceSelection): Metrics | null {
+  if (!snapshot || evidence.components || evidence.unitOverride || evidence.sku) return null;
+  const { report, weeks } = snapshot;
+  const same = (period: Period) => period.start === evidence.period.start && period.end === evidence.period.end;
+  const base = same(report.previous.period) ? report.previous : same(report.current.period) ? report.current : null;
+  if (base) {
+    const all = [...report.scope.channels].sort().join("|") === [...evidence.channels].sort().join("|");
+    if (all) return base.metrics;
+    if (evidence.channels.length === 1 && base.channels[evidence.channels[0]]) return base.channels[evidence.channels[0]].metrics;
+    return null;
+  }
+  const week = weeks.find(row => row.start === evidence.period.start && row.end === evidence.period.end);
+  return week ? week.metrics : null;
+}
+
+export function EvidenceDrawer({ dataset, snapshot, evidence, onClose, onBasis, filenames, mappings }: EvidenceDrawerProps) {
   // Remounting the modal for a different selected metric resets paging without
   // placing derived financial or source data in component state.
   if (!evidence) return null;
@@ -42,14 +73,14 @@ export function EvidenceDrawer({ dataset, evidence, onClose, filenames, mappings
     dataset.manifest.dataset_id, evidence.title, evidence.name, evidence.period,
     evidence.channels, evidence.scopeLabel, evidence.metric, evidence.formula, evidence.unitOverride,
   ]);
-  return <EvidenceDialog key={selectionKey} dataset={dataset} evidence={evidence} onClose={onClose} filenames={filenames} mappings={mappings} />;
+  return <EvidenceDialog key={selectionKey} dataset={dataset} snapshot={snapshot} evidence={evidence} onClose={onClose} onBasis={onBasis} filenames={filenames} mappings={mappings} />;
 }
 
-function EvidenceDialog({ dataset, evidence, onClose, filenames, mappings }: Omit<EvidenceDrawerProps, "evidence"> & { evidence: EvidenceSelection }) {
+function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenames, mappings }: Omit<EvidenceDrawerProps, "evidence"> & { evidence: EvidenceSelection }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
-  const [page, setPage] = useState(0);
+  const alias = demoAlias(dataset.manifest.dataset_id);
   const definition = metricDefinitions[evidence.name];
   const files = new Set<SourceRef["file"]>(["manifest.json"]);
   for (const field of definition.fields) {
@@ -57,20 +88,32 @@ function EvidenceDialog({ dataset, evidence, onClose, filenames, mappings }: Omi
     else if ((COST_FIELDS as readonly string[]).includes(field)) files.add("channel_costs_daily.csv");
     else if (field === "ad_spend") files.add("ad_spend_daily.csv");
   }
-  const sources = evidence.formula ? evidence.sources : evidence.sources.filter((source) => files.has(source.file));
-  const rows = evidenceRows(dataset, sources);
-  const lastPage = Math.max(0, Math.ceil(rows.length / pageSize) - 1);
+  const rows = useMemo(() => evidenceRows(dataset, evidence.formula ? evidence.sources : evidence.sources.filter((source) => files.has(source.file))), [dataset, evidence]);  // eslint-disable-line react-hooks/exhaustive-deps -- files derives from evidence.name
+  const counts = { sales: 0, costs: 0, ads: 0, manifest: 0 } as Record<SourceTab, number>;
+  for (const row of rows) counts[(Object.keys(fileOfTab) as SourceTab[]).find(tab => fileOfTab[tab] === row.file) ?? "manifest"]++;
+  const tabs = (Object.keys(fileOfTab) as SourceTab[]).filter(tab => counts[tab] > 0);
+  const [tab, setTab] = useState<SourceTab>(tabs[0] ?? "sales");
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(0);
+  const activeTab = tabs.includes(tab) ? tab : tabs[0];
+  const needle = query.trim().toLowerCase();
+  const filtered = rows.filter(row => row.file === fileOfTab[activeTab]).filter(row => !needle || [row.date, row.channel, row.sku, row.channel ? channelLabel(row.channel, alias) : null].some(value => value?.toLowerCase().includes(needle)));
+  const lastPage = Math.max(0, Math.ceil(filtered.length / pageSize) - 1);
   const currentPage = Math.min(page, lastPage);
   const start = currentPage * pageSize;
-  const visibleRows = rows.slice(start, start + pageSize);
+  const visibleRows = filtered.slice(start, start + pageSize);
   const end = start + visibleRows.length;
+  const ladder = ladderMetrics(snapshot, evidence);
+  const ratio = RATIOS[evidence.name];
+  const ladderRows = ladder && !ratio ? LADDER.slice(0, LADDER.findIndex(row => row.name === evidence.name) + 1) : [];
   const displayValue = (metric: Metric) => {
-    if (evidence.unitOverride === "percentage-point") return metric.value === null ? "N/A" : `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} 百分點`;
-    if (definition.unit === "money") return metric.value === null ? "N/A" : `NT$ ${formatMoney(metric.value)}`;
+    if (evidence.unitOverride === "percentage-point") return metric.value === null ? labels.status.missing : `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} ${copy.percentagePoint}`;
+    if (definition.unit === "money") return metric.value === null ? labels.status.missing : fill(labels.ui.evidenceDrawer.money, { amount: formatMoney(metric.value) });
     if (definition.unit === "percent") return formatRate(metric.value);
-    // This is display rounding only; the exact domain ratio is preserved below.
-    return metric.value === null ? "N/A" : `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} 倍`;
+    // This is display rounding only; the exact domain ratio is preserved in technical details.
+    return metric.value === null ? labels.status.missing : `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} ${copy.times}`;
   };
+  const money = (metric: Metric) => metric.value === null ? labels.status.missing : formatMoney(metric.value);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -94,47 +137,65 @@ function EvidenceDialog({ dataset, evidence, onClose, filenames, mappings }: Omi
     >
       <header className="evidence-header">
         <div>
-          <p className="eyebrow">公式與來源</p>
-          <h2 id={titleId}>{evidence.title}｜公式與來源</h2>
+          <p className="eyebrow">{labels.sections.evidence}</p>
+          <h2 id={titleId}>{evidence.title}｜{labels.sections.evidence}</h2>
         </div>
-        <button type="button" className="button quiet" onClick={onClose} autoFocus aria-label="關閉公式與來源">關閉</button>
+        <button type="button" className="button quiet" onClick={onClose} autoFocus>{labels.buttons.close}</button>
       </header>
       <div className="evidence-body">
-        <p id={descriptionId}>{evidence.scopeLabel ?? "目前篩選範圍"}；{evidence.period.start} 至 {evidence.period.end}；通路：{evidence.channels.join("、") || "未選擇"}。</p>
+        <p id={descriptionId}>{fill(labels.ui.evidenceDrawer.scopeLine, { scope: evidence.scopeLabel ?? copy.scopeFallback, start: evidence.period.start, end: evidence.period.end, channels: evidence.channels.length ? channelsLabel(evidence.channels, alias) : copy.noChannels })}</p>
         <p className="number">{displayValue(evidence.metric)}</p>
-        <p><strong>公式：</strong>{evidence.formula ?? definition.formula}</p>
-        {(evidence.unitOverride || definition.unit !== "money") && evidence.metric.value !== null && (
-          <p className="note">{evidence.unitOverride === "percentage-point" ? "系統百分點差值：" : "系統比率值："}{evidence.metric.value}{evidence.unitOverride === "percentage-point" ? " 百分點" : definition.unit === "percent" ? "（百分比顯示時乘以 100）" : " 倍"}。顯示值僅做格式化與捨入。</p>
-        )}
-        {evidence.metric.reason_codes.length > 0 && (
-          <div className="note" role="status">
-            <strong>資料限制／指標條件</strong>
-            <ul>{evidence.metric.reason_codes.map((reason) => <li key={reason}>{reason}</li>)}</ul>
-            <p>缺值保持未知；缺少費用列不代表零費用。比率的分母條件不成立時顯示 N/A。</p>
-          </div>
-        )}
-        {evidence.components && evidence.components.length > 0 && (
-          <section aria-label="公式組成項目">
-            <h3>公式組成項目（TWD）</h3>
-            <dl>
-              {evidence.components.map((component, index) => (
-                <div key={`${component.label}-${index}`}>
-                  <dt>{component.label}</dt>
-                  <dd className="number">{component.metric.value === null ? "N/A" : `NT$ ${formatMoney(component.metric.value)}`}{component.metric.reason_codes.length > 0 && <span className="note">（{component.metric.reason_codes.join("、")}）</span>}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        )}
-        <section aria-label="原始來源列">
-          <h3>原始來源列</h3>
-          <p className="note" aria-live="polite">納入來源共 {rows.length} 筆；本頁顯示 {rows.length === 0 ? 0 : start + 1}–{end} 筆，每頁最多 {pageSize} 筆。可翻頁查看全部來源。</p>
-          <p className="note">金額單位為 TWD，列號是 CSV 的原始實際行號。以下僅展示此指標依賴的欄位；缺列與缺值均不補零。</p>
-          {rows.length === 0 ? <p>此範圍沒有可列示的來源；請確認資料完整性。</p> : (
-            <div className="table-scroll" tabIndex={0} role="region" aria-label="可水平捲動的來源明細表">
+        <section className="evidence-ladder" aria-label={copy.ladderTitle}>
+          <h3>{copy.ladderTitle}</h3>
+          <p>{evidence.formula ?? definition.formula}{onBasis && <> <button type="button" className="text-button" onClick={onBasis}>{labels.buttons.basis}</button></>}</p>
+          {ladderRows.length > 0 && <table className="ladder-table"><caption className="sr-only">{copy.ladderNote}</caption><tbody>{ladderRows.map(row => <tr key={row.name} className={row.name === evidence.name ? "current" : row.op === "＝" ? "subtotal" : ""}><td className="ladder-op" aria-hidden="true">{row.op}</td><th scope="row">{metricDefinitions[row.name].label}</th><td className="ladder-amount">{money(ladder![row.name])}</td></tr>)}</tbody></table>}
+          {ladder && ratio && <table className="ladder-table"><tbody>
+            <tr><td className="ladder-op" aria-hidden="true"></td><th scope="row">{metricDefinitions[ratio[0]].label}</th><td className="ladder-amount">{money(ladder[ratio[0]])}</td></tr>
+            <tr><td className="ladder-op" aria-hidden="true">÷</td><th scope="row">{metricDefinitions[ratio[1]].label}</th><td className="ladder-amount">{money(ladder[ratio[1]])}</td></tr>
+            <tr className="current"><td className="ladder-op" aria-hidden="true">＝</td><th scope="row">{definition.label}</th><td className="ladder-amount">{displayValue(evidence.metric)}</td></tr>
+          </tbody></table>}
+          {ladderRows.length > 0 && <p className="note">{copy.ladderNote}</p>}
+          {evidence.components && evidence.components.length > 0 && (
+            <section aria-label={copy.components}>
+              <h4>{copy.components}（TWD）</h4>
+              <dl>
+                {evidence.components.map((component, index) => (
+                  <div key={`${component.label}-${index}`}>
+                    <dt>{component.label}</dt>
+                    <dd className="number">{component.metric.value === null ? labels.status.missing : fill(labels.ui.evidenceDrawer.money, { amount: formatMoney(component.metric.value) })}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
+          {evidence.metric.reason_codes.length > 0 && (
+            <p className="note" role="status"><strong>{labels.sections.caution}：</strong>{copy.conditionsNote}</p>
+          )}
+        </section>
+        <details className="evidence-technical">
+          <summary>{labels.sections.technicalDetails}</summary>
+          <dl>
+            <div><dt>{copy.technicalFormula}</dt><dd><code>{definition.formulaTechnical}</code></dd></div>
+            {(evidence.unitOverride || definition.unit !== "money") && evidence.metric.value !== null && <div><dt>{copy.exactValue}</dt><dd><code>{evidence.metric.value}</code>{evidence.unitOverride === "percentage-point" ? `（${copy.pointNote}）` : definition.unit === "percent" ? `（${copy.ratioNote}）` : ""}</dd></div>}
+            {evidence.metric.reason_codes.length > 0 && <div><dt>{copy.conditions}</dt><dd><ul>{evidence.metric.reason_codes.map((reason) => <li key={reason}><code>{reason}</code></li>)}</ul></dd></div>}
+            {evidence.components?.some(component => component.metric.reason_codes.length > 0) && <div><dt>{copy.components}</dt><dd><ul>{evidence.components.filter(component => component.metric.reason_codes.length > 0).map((component, index) => <li key={index}>{component.label}：<code>{component.metric.reason_codes.join("、")}</code></li>)}</ul></dd></div>}
+            <div><dt>metric_version</dt><dd><code>contribution-v1</code></dd></div>
+          </dl>
+        </details>
+        <section aria-label={copy.sourcesTitle} className="evidence-sources">
+          <h3>{copy.sourcesTitle}</h3>
+          <p className="note">{copy.sourcesNote}</p>
+          {rows.length === 0 ? <p>{copy.none}</p> : (<>
+            <div className="source-controls">
+              <div className="source-tabs" role="group" aria-label={labels.ui.evidenceDrawer.sourceTabsAria}>{tabs.map(item => <button key={item} type="button" className="preset" aria-pressed={item === activeTab} onClick={() => { setTab(item); setPage(0); }}>{fill(labels.ui.evidenceDrawer.tabWithCount, { tab: copy.sourceTabs[item], n: counts[item] })}</button>)}</div>
+              <label className="source-search">{copy.searchLabel}<input type="search" value={query} placeholder={copy.searchPlaceholder} onChange={event => { setQuery(event.target.value); setPage(0); }} /></label>
+            </div>
+            <p className="note" aria-live="polite">{fill(copy.showing, { from: filtered.length === 0 ? 0 : start + 1, to: end, n: filtered.length })}</p>
+            {filtered.length === 0 ? <p>{copy.none}</p> : (
+            <div className="table-scroll" tabIndex={0} role="region" aria-label={labels.ui.evidenceDrawer.sourceTableAria}>
               <table className="source-table">
-                <caption className="sr-only">{evidence.title}的原始來源，第 {currentPage + 1} 頁，共 {lastPage + 1} 頁</caption>
-                <thead><tr><th scope="col">檔案／原始行號</th><th scope="col">入帳範圍</th><th scope="col">來源欄位與值</th></tr></thead>
+                <caption className="sr-only">{evidence.title}｜{copy.sourcesTitle}，{fill(copy.pageOf, { page: currentPage + 1, pages: lastPage + 1 })}</caption>
+                <thead><tr><th scope="col">{labels.ui.evidenceDrawer.colSource}</th><th scope="col">{labels.ui.evidenceDrawer.colScope}</th><th scope="col">{labels.ui.evidenceDrawer.colValues}</th></tr></thead>
                 <tbody>
                   {visibleRows.map((row, index) => {
                     const allowedFields: readonly string[] = ["date", "channel", "sku", "category", "currency", ...definition.fields];
@@ -142,24 +203,24 @@ function EvidenceDialog({ dataset, evidence, onClose, filenames, mappings }: Omi
                     return (
                       <tr key={`${row.file}-${row.line}-${row.date}-${row.channel}-${row.sku}-${start + index}`}>
                         <th scope="row">
-                          <span>{filenames?.[row.file] ?? row.file}</span><br />{filenames?.[row.file] && filenames[row.file] !== row.file && <small>標準角色：{row.file}</small>}
-                          <span>{row.line === null ? row.missing ? "缺列（無原始行號）" : "資料集設定（無 CSV 行號）" : `第 ${row.line} 行`}</span>
-                          {row.missing && <span className="tag">缺漏來源</span>}
+                          <span>{filenames?.[row.file] ?? row.file}</span><br />{filenames?.[row.file] && filenames[row.file] !== row.file && <small>{copy.standardRole}：{row.file}</small>}
+                          <span>{row.line === null ? row.missing ? copy.missingRow : copy.manifestRow : fill(copy.lineN, { n: row.line })}</span>
+                          {row.missing && <span className="tag">{copy.missingTag}</span>}
                         </th>
-                        <td>{row.date ?? "整體資料集"}<br />{row.channel ?? "全部通路"}{row.sku ? <><br />SKU：{row.sku}</> : null}</td>
-                        <td><dl>{values.map(([field, value]) => <div key={field}><dt>{fieldLabels[field] ?? field}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>原欄位：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? "缺值（未知）" : value}</dd></div>)}</dl></td>
+                        <td>{row.date ?? copy.wholeDataset}<br />{row.channel ? channelLabel(row.channel, alias) : copy.allChannels}{row.sku ? <><br />{fill(labels.ui.evidenceDrawer.skuLine, { sku: row.sku })}</> : null}</td>
+                        <td><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : value}</dd></div>)}</dl></td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
-            </div>
-          )}
-          <nav aria-label="原始來源分頁">
-            <button type="button" className="button quiet" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>上一頁</button>
-            <span>第 {currentPage + 1}／{lastPage + 1} 頁</span>
-            <button type="button" className="button quiet" disabled={currentPage >= lastPage} onClick={() => setPage(currentPage + 1)}>下一頁</button>
-          </nav>
+            </div>)}
+            {lastPage > 0 && <nav aria-label={labels.ui.evidenceDrawer.sourcePagerAria}>
+              <button type="button" className="button quiet" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{copy.prev}</button>
+              <span>{fill(copy.pageOf, { page: currentPage + 1, pages: lastPage + 1 })}</span>
+              <button type="button" className="button quiet" disabled={currentPage >= lastPage} onClick={() => setPage(currentPage + 1)}>{copy.next}</button>
+            </nav>}
+          </>)}
         </section>
       </div>
     </dialog>

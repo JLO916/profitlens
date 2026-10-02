@@ -10,8 +10,17 @@ describe("M4 工作台初始畫面 smoke test", () => {
     const html = renderToStaticMarkup(createElement(HomePage));
 
     expect(html).toContain("ProfitLens");
-    for (const label of ["經營總覽", "通路診斷", "商品毛利", "資料工作區", "情境試算", "行動摘要", "尚未載入資料", "載入示範資料"]) expect(html).toContain(label);
-    expect(html).toContain("行銷後貢獻不等於公司淨利");
+    for (const label of [
+      labels.nav.overview.label,
+      labels.nav.diagnosis.label,
+      labels.nav.products.label,
+      labels.nav.data.label,
+      labels.nav.scenarios.label,
+      labels.nav.actions.label,
+      labels.status.empty,
+      labels.buttons.loadDemo,
+    ]) expect(html).toContain(label);
+    expect(html).toContain(labels.basis.footer);
     expect(html).not.toContain("1,269,792.73");
     expect(html).not.toContain("kpi-contribution_after_marketing");
   });
@@ -23,7 +32,7 @@ describe("M4 工作台初始畫面 smoke test", () => {
       </RootLayout>,
     );
 
-    expect(html).toContain('<html lang="zh-Hant">');
+    expect(html).toContain('<html lang="zh-Hant-TW">');
     expect(html).toContain('id="main-content"');
     expect(html).toContain("ProfitLens");
     expect(metadata.title).toBe(labels.brand.title);

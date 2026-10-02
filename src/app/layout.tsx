@@ -5,12 +5,12 @@ import { labels } from "@/i18n";
 
 export const metadata: Metadata = {
   title: labels.brand.title,
-  description: "從銷售、成本與廣告資料，理解行銷後貢獻的變化。",
+  description: labels.brand.description,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="zh-Hant">
+    <html lang="zh-Hant-TW">
       <body>{children}</body>
     </html>
   );

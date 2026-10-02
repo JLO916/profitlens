@@ -2,40 +2,53 @@ import Decimal from "decimal.js";
 import { uniqueSources } from "../domain/aggregation";
 import { formatCents, parseCents } from "../domain/money";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS, type AmountField, type Dataset, type MetricName, type SourceRef } from "../domain/types";
+import { labels } from "../i18n";
 
 export interface MetricDefinition {
+  /** 主名稱（頁面、匯出）；來源 labels.metrics */
   label: string;
+  /** 短名（卡片、表頭） */
+  shortLabel: string;
+  /** 白話一句（tooltip） */
+  plain: string;
+  /** 中文階梯公式 */
   formula: string;
+  /** 技術公式（技術細節區） */
+  formulaTechnical: string;
   unit: "money" | "percent" | "multiple";
   fields: AmountField[];
 }
 const revenueFields: AmountField[] = ["gross_sales", "discounts", "refunds"];
 const grossProfitFields: AmountField[] = [...revenueFields, "cogs_net"];
 const beforeFields: AmountField[] = [...grossProfitFields, ...COST_FIELDS];
-
-/** Formula and source dependencies for contribution-v1 evidence views. */
-export const metricDefinitions: Record<MetricName, MetricDefinition> = {
-  gross_sales: { label: "折扣前商品收入", formula: "G = 來源已入帳 gross_sales 合計", unit: "money", fields: ["gross_sales"] },
-  discounts: { label: "商品折扣", formula: "D = 來源已入帳 discounts 合計", unit: "money", fields: ["discounts"] },
-  refunds: { label: "已入帳退款", formula: "R = 按退款入帳日合計 refunds，不依訂單原始日期重分配", unit: "money", fields: ["refunds"] },
-  cogs_net: { label: "銷貨成本淨額", formula: "C = 來源已入帳 cogs_net 合計；負值為來源實際成本沖回", unit: "money", fields: ["cogs_net"] },
-  platform_fees: { label: "平台費用", formula: "P = 每日通路 platform_fees 合計，每日通路只計一次", unit: "money", fields: ["platform_fees"] },
-  payment_fees: { label: "金流費用", formula: "Q = 每日通路 payment_fees 合計，每日通路只計一次", unit: "money", fields: ["payment_fees"] },
-  fulfillment_costs: { label: "履約費用", formula: "F = 每日通路 fulfillment_costs 合計，每日通路只計一次", unit: "money", fields: ["fulfillment_costs"] },
-  other_variable_costs: { label: "其他變動成本", formula: "O = 每日通路 other_variable_costs 合計，不含其他欄已列成本", unit: "money", fields: ["other_variable_costs"] },
-  ad_spend: { label: "廣告費", formula: "A = 每日銷售目的通路 ad_spend 合計，不分攤到 SKU", unit: "money", fields: ["ad_spend"] },
-  net_revenue: { label: "商品淨營收", formula: "N = G − D − R（折扣前收入 − 折扣 − 已入帳退款）", unit: "money", fields: [...revenueFields] },
-  gross_profit: { label: "商品毛利", formula: "GP = N − C（商品淨營收 − 已入帳銷貨成本淨額）", unit: "money", fields: [...grossProfitFields] },
-  contribution_before_marketing: { label: "行銷前貢獻", formula: "CM_before = GP − P − Q − F − O", unit: "money", fields: [...beforeFields] },
-  contribution_after_marketing: { label: "行銷後貢獻", formula: "CM_after = GP − P − Q − F − O − A；不是公司淨利", unit: "money", fields: [...AMOUNT_FIELDS] },
-  gross_margin: { label: "商品毛利率", formula: "GP / N；N > 0 才定義；先合計分子分母再相除", unit: "percent", fields: [...grossProfitFields] },
-  contribution_margin: { label: "行銷後貢獻率", formula: "CM_after / N；N > 0 才定義；先合計分子分母再相除", unit: "percent", fields: [...AMOUNT_FIELDS] },
-  discount_rate: { label: "折扣率", formula: "D / G；G > 0 才定義；不平均各列百分比", unit: "percent", fields: ["discounts", "gross_sales"] },
-  refund_ratio: { label: "退款金額比", formula: "R / (G − D)；G − D > 0 才定義；不是件數退貨率或 cohort 最終退款率", unit: "percent", fields: ["refunds", "gross_sales", "discounts"] },
-  mer: { label: "混合行銷效率 MER", formula: "N / A；N > 0 且 A > 0 才定義；不是 ROAS，不提供媒體歸因", unit: "multiple", fields: [...revenueFields, "ad_spend"] },
-  fulfillment_burden: { label: "履約費用占淨營收比", formula: "F / N；N > 0 才定義；不平均各列百分比", unit: "percent", fields: ["fulfillment_costs", ...revenueFields] },
-  marketing_burden: { label: "廣告費占淨營收比", formula: "A / N；N > 0 才定義；不提供因果或媒體歸因", unit: "percent", fields: ["ad_spend", ...revenueFields] },
+const metricShape: Record<MetricName, Pick<MetricDefinition, "unit" | "fields">> = {
+  gross_sales: { unit: "money", fields: ["gross_sales"] },
+  discounts: { unit: "money", fields: ["discounts"] },
+  refunds: { unit: "money", fields: ["refunds"] },
+  cogs_net: { unit: "money", fields: ["cogs_net"] },
+  platform_fees: { unit: "money", fields: ["platform_fees"] },
+  payment_fees: { unit: "money", fields: ["payment_fees"] },
+  fulfillment_costs: { unit: "money", fields: ["fulfillment_costs"] },
+  other_variable_costs: { unit: "money", fields: ["other_variable_costs"] },
+  ad_spend: { unit: "money", fields: ["ad_spend"] },
+  net_revenue: { unit: "money", fields: [...revenueFields] },
+  gross_profit: { unit: "money", fields: [...grossProfitFields] },
+  contribution_before_marketing: { unit: "money", fields: [...beforeFields] },
+  contribution_after_marketing: { unit: "money", fields: [...AMOUNT_FIELDS] },
+  gross_margin: { unit: "percent", fields: [...grossProfitFields] },
+  contribution_margin: { unit: "percent", fields: [...AMOUNT_FIELDS] },
+  discount_rate: { unit: "percent", fields: ["discounts", "gross_sales"] },
+  refund_ratio: { unit: "percent", fields: ["refunds", "gross_sales", "discounts"] },
+  mer: { unit: "multiple", fields: [...revenueFields, "ad_spend"] },
+  fulfillment_burden: { unit: "percent", fields: ["fulfillment_costs", ...revenueFields] },
+  marketing_burden: { unit: "percent", fields: ["ad_spend", ...revenueFields] },
 };
+
+/** Formula and source dependencies for contribution-v1 evidence views. Names and formulas come from labels (R2). */
+export const metricDefinitions: Record<MetricName, MetricDefinition> = Object.fromEntries((Object.keys(metricShape) as MetricName[]).map(name => {
+  const copy = labels.metrics[name];
+  return [name, { label: copy.label, shortLabel: copy.short, plain: copy.plain, formula: copy.formula, formulaTechnical: copy.formulaTechnical, ...metricShape[name] }];
+})) as Record<MetricName, MetricDefinition>;
 
 function amount(value: string | null): bigint | null {
   try { return parseCents(value); } catch { return null; }

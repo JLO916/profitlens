@@ -4,6 +4,10 @@ import { COST_FIELDS, SALES_FIELDS } from "@/domain/types";
 import type { DatasetInput, FileName, ValidationIssue, ValidationResult } from "@/domain/types";
 import { CsvParseError, MAX_CSV_BYTES, parseCsv } from "@/lib/csv";
 import type { ParsedCsv } from "@/lib/csv";
+import { fill, labels } from "@/i18n";
+import { metricDefinitions } from "./presentation";
+
+const copy = labels.ui.import;
 
 export type SourceAmountBasis = "standard" | "including_tax" | "net_after_deductions" | "unknown";
 export interface LocalFilePayload { name: string; size: number; bytes: Uint8Array }
@@ -42,11 +46,11 @@ function issue(file: FileName | "manifest.json", reason_code: string, message: s
 }
 function fileIssues(file: FileName | "manifest.json", payload: LocalFilePayload, extension: "csv" | "json"): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  if (!payload.name.toLowerCase().endsWith(`.${extension}`)) issues.push(issue(file, "INVALID_FILE_EXTENSION", `請選擇副檔名為 .${extension} 的檔案。`));
+  if (!payload.name.toLowerCase().endsWith(`.${extension}`)) issues.push(issue(file, "INVALID_FILE_EXTENSION", fill(copy.invalidFileExtension, { extension })));
   if (payload.size > MAX_CSV_BYTES || payload.bytes.byteLength > MAX_CSV_BYTES) {
-    issues.push(issue(file, "FILE_TOO_LARGE", "每個匯入檔案最多 5 MiB，請先縮小檔案；不會截斷資料。"));
+    issues.push(issue(file, "FILE_TOO_LARGE", copy.fileTooLarge));
   } else if (!Number.isSafeInteger(payload.size) || payload.size < 0 || payload.size !== payload.bytes.byteLength) {
-    issues.push(issue(file, "FILE_SIZE_MISMATCH", "檔案大小與完整讀取的內容不一致，請重新選取檔案。"));
+    issues.push(issue(file, "FILE_SIZE_MISMATCH", copy.fileSizeMismatch));
   }
   return issues;
 }
@@ -81,12 +85,12 @@ export function inspectManifestFile(payload: LocalFilePayload): ManifestInspecti
   if (issues.length > 0) return result;
   let text: string;
   try { text = new TextDecoder("utf-8", { fatal: true }).decode(payload.bytes); }
-  catch { issues.push(issue("manifest.json", "INVALID_UTF8", "JSON 必須使用有效的 UTF-8 編碼。")); return result; }
+  catch { issues.push(issue("manifest.json", "INVALID_UTF8", copy.manifestInvalidUtf8)); return result; }
   let manifest: unknown;
   try { manifest = JSON.parse(text); }
-  catch { issues.push(issue("manifest.json", "INVALID_MANIFEST_JSON", "JSON 語法無法解析，請確認檔案內容。")); return result; }
+  catch { issues.push(issue("manifest.json", "INVALID_MANIFEST_JSON", copy.manifestNotParsable)); return result; }
   if (!isRecord(manifest)) {
-    issues.push(issue("manifest.json", "INVALID_MANIFEST_STRUCTURE", "資料集設定必須是 JSON 物件。", "$manifest"));
+    issues.push(issue("manifest.json", "INVALID_MANIFEST_STRUCTURE", copy.manifestNotObject, "$manifest"));
     return result;
   }
   // Reuse the exact M1 contract. Missing CSVs are irrelevant to optional manifest prefill.
@@ -117,18 +121,18 @@ export function prepareImport(
       return { input: null, originalNames, columnMappings, validation: { classification: "blocking", dataset: null, issues, unknownColumns } };
     }
   }
-  if (!options.amountBasisConfirmed) issues.push(issue("manifest.json", "AMOUNT_BASIS_UNCONFIRMED", "請在本次匯入明確確認未稅商品收入與費用口徑，JSON 設定不能代替此確認。", "amount_basis"));
+  if (!options.amountBasisConfirmed) issues.push(issue("manifest.json", "AMOUNT_BASIS_UNCONFIRMED", copy.amountBasisUnconfirmed, "amount_basis"));
 
-  if (options.sourceAmountBasis && options.sourceAmountBasis !== "standard") issues.push(issue("manifest.json", "SOURCE_AMOUNT_BASIS_UNSUPPORTED", "來源為含稅、已扣折扣／退款／費用的淨額，或口徑仍未知；請先在來源端整理並對帳為標準口徑。系統不換算稅率、不反推 gross_sales，也不重複扣款。", "amount_basis"));
+  if (options.sourceAmountBasis && options.sourceAmountBasis !== "standard") issues.push(issue("manifest.json", "SOURCE_AMOUNT_BASIS_UNSUPPORTED", fill(copy.sourceAmountBasisUnsupported, { grossSales: metricDefinitions.gross_sales.shortLabel }), "amount_basis"));
 
   for (const file of fileNames) {
     const draft = drafts[file];
-    if (!draft) { issues.push(issue(file, "MISSING_FILE", "請選取此必要的 CSV 檔案。")); continue; }
+    if (!draft) { issues.push(issue(file, "MISSING_FILE", copy.missingFile)); continue; }
     originalNames[file] = draft.name;
     issues.push(...draft.issues);
-    if (draft.file !== file) { issues.push(issue(file, "LOGICAL_FILE_MISMATCH", "檔案草稿與選取的資料類型不一致，請重新選取。")); continue; }
+    if (draft.file !== file) { issues.push(issue(file, "LOGICAL_FILE_MISMATCH", copy.logicalFileMismatch)); continue; }
     if (!draft.parsed) {
-      if (!draft.issues.some(item => item.severity === "blocking")) issues.push(issue(file, "INVALID_IMPORT_DRAFT", "此檔案尚未成功解析，請重新選取。"));
+      if (!draft.issues.some(item => item.severity === "blocking")) issues.push(issue(file, "INVALID_IMPORT_DRAFT", copy.invalidImportDraft));
       continue;
     }
     const parsed = draft.parsed;
@@ -136,25 +140,25 @@ export function prepareImport(
     const fileMappingIssues: ValidationIssue[] = [];
     const mappingIssue = (reason: string, message: string, field: string) => fileMappingIssues.push(issue(file, reason, message, field, parsed.headerLine));
     for (const target of Object.keys(draft.mapping)) {
-      if (!standardFields.includes(target)) mappingIssue("UNKNOWN_MAPPING_TARGET", "對照目標必須是此資料類型的標準欄位。", target);
+      if (!standardFields.includes(target)) mappingIssue("UNKNOWN_MAPPING_TARGET", copy.unknownMappingTarget, target);
     }
     const used = new Set<string>();
     let renamed = false;
     for (const field of standardFields) {
       const source = draft.mapping[field];
-      if (!source) { mappingIssue("MISSING_COLUMN_MAPPING", "請明確選擇此標準欄位的來源欄位。", field); continue; }
-      if (!parsed.headers.includes(source)) { mappingIssue("MISSING_SOURCE_COLUMN", "選取的來源欄位不存在於此 CSV。", field); continue; }
-      if (used.has(source)) mappingIssue("DUPLICATE_SOURCE_MAPPING", "同一來源欄位不能同時對照多個標準欄位。", field);
+      if (!source) { mappingIssue("MISSING_COLUMN_MAPPING", copy.missingColumnMapping, field); continue; }
+      if (!parsed.headers.includes(source)) { mappingIssue("MISSING_SOURCE_COLUMN", copy.missingSourceColumn, field); continue; }
+      if (used.has(source)) mappingIssue("DUPLICATE_SOURCE_MAPPING", copy.duplicateSourceMapping, field);
       used.add(source);
       if (field !== source) renamed = true;
     }
-    if (renamed && !draft.mappingConfirmed) mappingIssue("COLUMN_MAPPING_UNCONFIRMED", "請明確確認非標準欄名的欄位對照；系統不猜測收入或成本。", "$mapping");
+    if (renamed && !draft.mappingConfirmed) mappingIssue("COLUMN_MAPPING_UNCONFIRMED", copy.columnMappingUnconfirmed, "$mapping");
     const ignored = parsed.headers.filter(header => !used.has(header));
     if (ignored.length > 0) {
       unknownColumns[file] = ignored;
       for (const field of ignored) {
-        if (!draft.ignoredColumnsConfirmed) mappingIssue("UNKNOWN_COLUMN_UNCONFIRMED", "請明確確認忽略未使用的來源欄位。", field);
-        else issues.push({ ...issue(file, "UNKNOWN_COLUMN_IGNORED", "已明確確認忽略此欄位；其內容不會進入提交的資料集。", field, parsed.headerLine), severity: "warning" });
+        if (!draft.ignoredColumnsConfirmed) mappingIssue("UNKNOWN_COLUMN_UNCONFIRMED", fill(copy.unknownColumnUnconfirmed, { ignoreConfirm: labels.importWizard.ignoreConfirm }), field);
+        else issues.push({ ...issue(file, "UNKNOWN_COLUMN_IGNORED", copy.unknownColumnIgnored, field, parsed.headerLine), severity: "warning" });
       }
     }
     issues.push(...fileMappingIssues);

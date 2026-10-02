@@ -6,6 +6,7 @@ import { evidenceRows, formatMoney, formatRate, formatSignedMoney, metricDefinit
 import { validateDataset } from "../src/domain/validation";
 import type { Dataset, DatasetInput, MetricName } from "../src/domain/types";
 import { fixture } from "./helpers/fixtures";
+import { labels } from "../src/i18n";
 
 function load(input: DatasetInput): Dataset {
   const result = validateDataset(input);
@@ -121,8 +122,8 @@ describe("M2 exact presentation and source evidence", () => {
     expect(metricDefinitions.contribution_after_marketing.fields).toEqual(["gross_sales", "discounts", "refunds", "cogs_net", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "ad_spend"]);
     expect(metricDefinitions.gross_profit.fields).toEqual(["gross_sales", "discounts", "refunds", "cogs_net"]);
     expect(metricDefinitions.mer.unit).toBe("multiple");
-    expect(metricDefinitions.mer.formula).toContain("N > 0");
-    expect(metricDefinitions.mer.formula).toContain("A > 0");
+    expect(metricDefinitions.mer.formula).toContain("> 0");
+    expect(metricDefinitions.mer.formulaTechnical).toBe(labels.metrics.mer.formulaTechnical);
     for (const definition of Object.values(metricDefinitions)) {
       expect(definition.label).toBeTruthy();
       expect(definition.formula).toBeTruthy();

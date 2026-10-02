@@ -1,19 +1,37 @@
-import { clickReplacing, startChannelContext } from "./replacement-helpers";
+import { ruleHeadline } from "./replacement-helpers";
+import { labels, fill } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 
 const alternative = resolve("tests/fixtures/alternative");
 const golden = resolve("fixtures/golden");
+const importCopy = labels.ui.importPanel;
+const scenarioCopy = labels.ui.decisionWorkbench;
+const actionCopy = labels.ui.actionsWorkbench;
 const csvLabels = {
-  "sales_daily.csv": "商品銷售 CSV",
-  "channel_costs_daily.csv": "通路費用 CSV",
-  "ad_spend_daily.csv": "廣告支出 CSV",
+  "sales_daily.csv": labels.importWizard.files.sales,
+  "channel_costs_daily.csv": labels.importWizard.files.costs,
+  "ad_spend_daily.csv": labels.importWizard.files.ads,
 };
 const status = (page: Page) => page.getByTestId("workspace-status");
 const form = (page: Page) => page.getByTestId("import-panel");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
-const inputLabels = ["售出量變化（相對 %）", "折扣率變化（百分點）", "單位履約成本變化（相對 %）", "總廣告支出變化（相對 %）", "一次性投入（TWD）"];
+const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
+const decisionDownloadLabels = { JSON: labels.downloads.decisionJson, CSV: labels.downloads.decisionCsv, Markdown: labels.downloads.decisionMd } as const;
+
+/** Local R2 variants of the shared helpers: dialog heading and start button now come from labels. */
+async function clickReplacing(page: Page, button: Locator) {
+  await button.click();
+  const dialog = page.getByRole("dialog", { name: labels.ui.replacementDialog.heading });
+  if (await dialog.isVisible()) await dialog.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
+}
+async function startChannelContext(page: Page) {
+  const start = page.getByRole("button", { name: new RegExp(`^${fill(labels.ui.multiScenarioWorkbench.startButton, { channel: ".+" })}$`) });
+  // The context preparation runs asynchronously from source validation.
+  await Promise.race([start.waitFor({ state: "visible" }), page.getByTestId("decision-workbench").waitFor({ state: "visible" })]);
+  if (await start.isVisible()) await start.click();
+}
 
 interface DecisionDocument {
   scenario_contexts: (DecisionDocument & {context_status:string})[];
@@ -32,39 +50,39 @@ interface DecisionDocument {
 }
 
 async function stage(page: Page, directory: string) {
-  await page.getByRole("button", { name: "匯入標準 CSV", exact: true }).click();
-  await expect(form(page)).toContainText("重新整理會清空資料與匯入草稿");
+  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
+  await expect(form(page)).toContainText(importCopy.privacyNote);
   for (const [file, label] of Object.entries(csvLabels)) await form(page).getByLabel(label, { exact: true }).setInputFiles(resolve(directory, file));
   const manifest = JSON.parse(await readFile(resolve(directory, "manifest.json"), "utf8")) as { dataset_id: string };
-  await form(page).getByLabel("讀取 manifest JSON", { exact: true }).setInputFiles(resolve(directory, "manifest.json"));
-  await expect(form(page).getByLabel("資料集名稱", { exact: true })).toHaveValue(manifest.dataset_id);
-  await expect(form(page).getByLabel("我已確認未稅商品金額與費用口徑", { exact: true })).not.toBeChecked();
-  await form(page).getByLabel("我已確認未稅商品金額與費用口徑", { exact: true }).check();
+  await form(page).getByLabel(importCopy.manifestLabel, { exact: true }).setInputFiles(resolve(directory, "manifest.json"));
+  await expect(form(page).getByLabel(importCopy.datasetName, { exact: true })).toHaveValue(manifest.dataset_id);
+  await expect(form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true })).not.toBeChecked();
+  await form(page).getByLabel(labels.importWizard.amountConfirm, { exact: true }).check();
 }
 async function validate(page: Page) {
-  await form(page).getByRole("button", { name: "檢核匯入資料", exact: true }).click();
-  await expect(form(page).getByTestId("import-status")).toHaveText("檢核通過，可套用資料");
+  await form(page).getByRole("button", { name: importCopy.check, exact: true }).click();
+  await expect(form(page).getByTestId("import-status")).toHaveText(importCopy.status.valid);
 }
 async function importDataset(page: Page, directory: string) {
   await stage(page, directory);
   await validate(page);
-  await clickReplacing(page, form(page).getByRole("button", { name: "套用匯入資料", exact: true }));
-  await expect(status(page)).toContainText("資料已就緒");
+  await clickReplacing(page, form(page).getByRole("button", { name: importCopy.commit, exact: true }));
+  await expect(status(page)).toContainText(labels.status.ready);
   await expect(form(page)).toHaveCount(0);
 }
 async function scenario(page: Page, name: string, fulfillment: string, investment: string, expected: string) {
-  await page.getByRole("button", { name: "情境試算", exact: true }).click();
+  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
   await startChannelContext(page);
-  await page.getByRole("button", { name: "新增方案", exact: true }).click();
+  await page.getByRole("button", { name: labels.buttons.addScenario, exact: true }).click();
   const card = page.getByTestId("scenario-1");
-  await card.getByLabel("方案名稱", { exact: true }).fill(name);
+  await card.getByLabel(scenarioCopy.planName, { exact: true }).fill(name);
   for (const [index, value] of ["0", "0", fulfillment, "0", investment].entries()) await card.getByLabel(inputLabels[index], { exact: true }).fill(value);
-  await card.getByLabel("我接受此方案的全部固定假設", { exact: true }).check();
-  await card.getByRole("button", { name: "計算方案", exact: true }).click();
+  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(expected);
 }
 async function download(page: Page, format: "JSON" | "CSV" | "Markdown") {
-  const [file] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: `下載決策 ${format}`, exact: true }).click()]);
+  const [file] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: decisionDownloadLabels[format], exact: true }).click()]);
   expect(file.suggestedFilename()).toBe(`profitlens-decision.${{ JSON: "json", CSV: "csv", Markdown: "md" }[format]}`);
   const path = await file.path();
   expect(path).not.toBeNull();
@@ -90,7 +108,8 @@ function csvRecords(input: string): Record<string, string>[] {
   }
   expect(quoted).toBe(false);
   if (value || row.length) { row.push(value); rows.push(row); }
-  const headers = rows.shift() ?? [];
+  // R2 CSV headers are「中文 (key)」; keep records keyed by the machine key.
+  const headers = (rows.shift() ?? []).map(header => /\(([^()]+)\)\s*$/.exec(header)?.[1] ?? header);
   expect(headers.length).toBeGreaterThan(0);
   return rows.map(values => {
     expect(values.length).toBe(headers.length);
@@ -124,29 +143,29 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   await importDataset(page, alternative);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
-  await page.getByLabel("通路", { exact: true }).selectOption("DTC");
+  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
   await expect(kpi(page, "net_revenue")).toHaveText("400.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("40.00");
-  await page.getByRole("button", { name: "通路診斷", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "淨營收增加，行銷後貢獻下降", exact: true }).first()).toBeVisible();
-  await expect(page.getByRole("heading", { name: "廣告費占淨營收比上升", exact: true }).first()).toBeVisible();
+  await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
+  await expect(page.getByRole("heading", { name: ruleHeadline("REV_UP_CM_DOWN") }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: ruleHeadline("MARKETING_BURDEN_UP") }).first()).toBeVisible();
 
   // Two DTC days: N=400, C=200, P=10, Q=6, F=14, O=0, A=130.
   // v=0, delta=0, f=-50%, a=0, K=3 => 400-200-10-6-7-0-130-3=44.
   await scenario(page, "M6 合成履約條件方案", "-50", "3", "44.00");
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-delta")).toHaveText("+4.00");
-  await expect(page.getByTestId("decision-workbench")).toContainText("不是預測");
-  await page.getByRole("button", { name: "行動摘要", exact: true }).click();
-  await page.getByRole("button", { name: "新增行動", exact: true }).click();
+  await expect(page.getByTestId("decision-workbench")).toContainText(labels.scenario.acceptAssumptions);
+  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
   const action = page.getByTestId("action-1");
-  const fields = { 問題: "營收上升但行銷後貢獻下降，需核對成本", 具體動作: "核對履約計價條款並設計有限範圍測試", 負責角色: "營運主管", 驗證指標: "同範圍履約費用與行銷後貢獻", 期限: "2026-10-15", 停止條件: "若服務品質下降即停止測試", 所需額外資料: "物流實際報價與服務品質資料" };
+  const fields = { [labels.actions.problem]: "營收上升但行銷後貢獻下降，需核對成本", [labels.actions.step]: "核對履約計價條款並設計有限範圍測試", [labels.actions.owner]: "營運主管", [labels.actions.metric]: "同範圍履約費用與行銷後貢獻", [labels.actions.due]: "2026-10-15", [labels.actions.stop]: "若服務品質下降即停止測試", [labels.actions.extraData]: "物流實際報價與服務品質資料" };
   for (const [label, value] of Object.entries(fields)) await action.getByLabel(label, { exact: true }).fill(value);
-  const evidence = action.getByLabel("本快照證據（可複選）", { exact: true });
-  const factId = await evidence.locator("option").filter({ hasText: /2026-09-03–2026-09-04 · 行銷後貢獻 · DTC（通路） · 40\.00/ }).getAttribute("value");
+  const evidence = action.getByLabel(actionCopy.evidencePicker, { exact: true });
+  const factId = await evidence.locator("option").filter({ hasText: fill(actionCopy.factLabel, { start: "2026-09-03", end: "2026-09-04", metric: labels.metrics.contribution_after_marketing.label, scope: "DTC", scopeKind: labels.csvColumns.channel, value: "40.00" }) }).getAttribute("value");
   expect(factId).toBeTruthy();
   await evidence.selectOption(factId!);
-  await action.getByRole("button", { name: "確認行動與證據", exact: true }).click();
-  await expect(action).toContainText("使用者已確認");
+  await action.getByRole("button", { name: labels.buttons.confirm, exact: true }).click();
+  await expect(action).toContainText(actionCopy.tagConfirmed);
 
   const document = await decision(page);
   expect(document.status).toBe("current");
@@ -176,7 +195,7 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   const markdown = await download(page, "Markdown");
   // Markdown escapes punctuation; decode only for test assertions, never render input HTML.
   const readableMarkdown = markdown.replace(/\\([\\`*_{}[\]()#+.!|~:\-])/g, "$1");
-  for (const value of [document.session.dataset_hash, document.session.filter_hash, "contribution-v1", "2026-09-05", "2026-09-03", "2026-09-04", "DTC", "44.00", "4.00", "固定假設", "fulfillment_change_pct：-50", "one_time_cost：3", fields.問題]) expect(readableMarkdown).toContain(value);
+  for (const value of [document.session.dataset_hash, document.session.filter_hash, "contribution-v1", "2026-09-05", "2026-09-03", "2026-09-04", "DTC", "44.00", "4.00", labels.sections.scenarioAssumptions, `${labels.scenario.fulfillmentUnit.label}：-50`, `${labels.scenario.oneOff.label}：3`, fields[labels.actions.problem]]) expect(readableMarkdown).toContain(value);
   await expect(page.locator("img[src='x']")).toHaveCount(0);
   expect(errors).toEqual([]);
   await mkdir(resolve("verification"), { recursive: true });
@@ -187,7 +206,7 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
 
 test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方", async ({ page, browser }, testInfo) => {
   await importDataset(page, alternative);
-  await page.getByLabel("通路", { exact: true }).selectOption("DTC");
+  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("40.00");
   await scenario(page, "甲分頁獨立假設", "-50", "3", "44.00");
   const first = await decision(page);
@@ -196,10 +215,10 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
   try {
     const other = await otherContext.newPage();
     await other.goto(page.url());
-    await expect(status(other)).toContainText("尚未載入資料");
+    await expect(status(other)).toContainText(labels.status.empty);
     await expect(other.getByTestId("decision-workbench")).toHaveCount(0);
     await importDataset(other, golden);
-    await other.getByLabel("通路", { exact: true }).selectOption("DTC");
+    await other.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
     await expect(kpi(other, "contribution_after_marketing")).toHaveText("270.00");
     await scenario(other, "乙分頁獨立假設", "-10", "0", "284.00");
     const second = await decision(other);
@@ -208,15 +227,15 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
     expect(second.session.baseline.amounts.contribution_after_marketing).toBe("270.00");
     expect(second.scenarios[0].name).toBe("乙分頁獨立假設");
     expect(await decision(page)).toEqual(first);
-    await other.getByRole("button", { name: "清空工作區", exact: true }).click();
-  await other.getByRole("button", { name: "不儲存並繼續", exact: true }).click();
-    await expect(status(other)).toContainText("尚未載入資料");
+    await other.getByRole("button", { name: labels.buttons.clear, exact: true }).click();
+  await other.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
+    await expect(status(other)).toContainText(labels.status.empty);
     expect(await decision(page)).toEqual(first);
     await importDataset(other, golden);
     expectedBeforeUnload.add(page);
     await page.reload();
     expect(dialogEvents.get(page)).toEqual(["unsaved-changes-warning:beforeunload"]);
-    await expect(status(page)).toContainText("尚未載入資料");
+    await expect(status(page)).toContainText(labels.status.empty);
     await expect(page.getByTestId("decision-workbench")).toHaveCount(0);
     await expect(kpi(other, "contribution_after_marketing")).toHaveText("255.00");
     expect(await otherContext.storageState()).toEqual({ cookies: [], origins: [] });
@@ -227,27 +246,27 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
 
 test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策", async ({ page }) => {
   await importDataset(page, golden);
-  await page.getByLabel("通路", { exact: true }).selectOption("DTC");
+  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("270.00");
   await scenario(page, "尚未被取代的工作稿", "-10", "0", "284.00");
   const before = await decision(page);
   await stage(page, alternative);
   await validate(page);
-  await form(page).getByLabel("資料集名稱", { exact: true }).fill("m6-edited-import-candidate");
-  await expect(form(page).getByRole("button", { name: "套用匯入資料", exact: true })).toHaveCount(0);
-  await expect(form(page).getByTestId("import-status")).toHaveText("匯入草稿，尚未提交");
+  await form(page).getByLabel(importCopy.datasetName, { exact: true }).fill("m6-edited-import-candidate");
+  await expect(form(page).getByRole("button", { name: importCopy.commit, exact: true })).toHaveCount(0);
+  await expect(form(page).getByTestId("import-status")).toHaveText(importCopy.status.draft);
   await validate(page);
-  await form(page).getByLabel("商品銷售 CSV", { exact: true }).setInputFiles({ name: "m6-malformed.csv", mimeType: "text/csv", buffer: Buffer.from('date,channel,sku\n"unclosed') });
-  await expect(form(page).getByRole("button", { name: "套用匯入資料", exact: true })).toHaveCount(0);
-  await form(page).getByRole("button", { name: "檢核匯入資料", exact: true }).click();
-  await expect(form(page).getByTestId("import-status")).toHaveText("檢核未通過，未取代目前資料");
-  await form(page).getByRole("button", { name: "取消匯入", exact: true }).click();
-  await page.getByRole("button", { name: "情境試算", exact: true }).click();
-  await expect(page.getByTestId("decision-freshness")).toContainText("使用目前快照");
+  await form(page).getByLabel(labels.importWizard.files.sales, { exact: true }).setInputFiles({ name: "m6-malformed.csv", mimeType: "text/csv", buffer: Buffer.from('date,channel,sku\n"unclosed') });
+  await expect(form(page).getByRole("button", { name: importCopy.commit, exact: true })).toHaveCount(0);
+  await form(page).getByRole("button", { name: importCopy.check, exact: true }).click();
+  await expect(form(page).getByTestId("import-status")).toHaveText(importCopy.status.blocking);
+  await form(page).getByRole("button", { name: importCopy.cancel, exact: true }).click();
+  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await expect(page.getByTestId("decision-freshness")).toContainText(scenarioCopy.freshTitle);
   expect(await decision(page)).toEqual(before);
   await importDataset(page, alternative);
-  await page.getByRole("button", { name: "情境試算", exact: true }).click();
-  await expect(page.getByTestId("multi-scenario-workbench")).toContainText("歷史通路工作稿");
+  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(labels.ui.multiScenarioWorkbench.historyHeading);
   const exported = await decision(page);
   const historical = exported.scenario_contexts.find(context => context.context_status === "historical")!;
   expect(historical.status).toBe("stale");

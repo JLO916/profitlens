@@ -11,6 +11,8 @@ import { AiSnapshotSchema } from "@/ai/contracts";
 import { exportSnapshotCsv } from "@/application/export";
 import { createDecisionSession, isDecisionSessionStale } from "@/application/decision";
 import { exportDecisionJson, exportDecisionMarkdown, exportDecisionCsv } from "@/application/decision-export";
+import { csvHeader, csvHeaderKey } from "@/application/copy";
+import { labels } from "@/i18n";
 import { parseCsv } from "@/lib/csv";
 import { fixture } from "./helpers/fixtures";
 
@@ -126,7 +128,9 @@ describe("PL-02 explicit period comparison contract", () => {
   it("AI catalog labels full-month totals and rejects relabeling them as daily facts", async () => {
     const payload = prepareAiSnapshot((await monthlySnapshot()).snapshot, 1).payload;
     const item = observationCatalog(payload).find(entry => entry.kind === "value")!;
-    expect(item.observation).toContain("金額為期間合計，不代表日均變化");
+    // R2：整月合計提醒改由 labels.ui.grounding.calendarMonthNote 供字，仍須出現在每則整月觀察裡。
+    expect(labels.ui.grounding.calendarMonthNote).not.toBe("");
+    expect(item.observation).toContain(labels.ui.grounding.calendarMonthNote);
     const output = {
       snapshot_id: payload.snapshot_id,
       insights: [{ fact_ids: item.fact_ids, observation: item.observation.replace("所選通路合計", "所選通路日均"), hypotheses: ["待驗證假說：來源時點可能不同。"], recommended_action: "核對來源帳務。", owner_role: "營運", verification_metric: "商品淨營收", stop_condition: "資料口徑不一致則停止。", additional_data_needed: [], limitations: ["不是因果分析。"] }],
@@ -138,14 +142,15 @@ describe("PL-02 explicit period comparison contract", () => {
   it("CSV and all decision formats contain mode, days and distinct daily amounts", async () => {
     const { dataset, snapshot } = await monthlySnapshot();
     const csv = parseCsv(exportSnapshotCsv(dataset, snapshot));
-    const rows = csv.rows.map(row => Object.fromEntries(csv.headers.map((key, index) => [key, row.values[index]])));
+    // R2：CSV 標題列為「中文名稱 (english_key)」，以 csvHeaderKey 取回英文 key 後再查欄位。
+    const rows = csv.rows.map(row => Object.fromEntries(csv.headers.map((header, index) => [csvHeaderKey(header), row.values[index]])));
     expect(rows.every(row => row.comparison_mode === "calendar_months" && row.previous_days === "31" && row.current_days === "30")).toBe(true);
     expect(rows.find(row => row.row_type === "daily_average" && row.period === "current" && row.metric === "net_revenue")).toMatchObject({ value: "200.00", unit: "TWD/day" });
     const session = createDecisionSession(dataset, snapshot, 1);
     const decision = JSON.parse(exportDecisionJson(session, [], []));
     expect(decision.session.comparison).toMatchObject({ mode: "calendar_months", previous_days: 31, current_days: 30 });
     expect(exportDecisionMarkdown(session, [], [])).toContain("calendar\\_months");
-    expect(exportDecisionCsv(session, [], [])).toContain('"comparison_mode"');
+    expect(exportDecisionCsv(session, [], [])).toContain(`"${csvHeader("comparison_mode")}"`);
   });
   it("a changed comparison mode expires the captured decision scope", async () => {
     const input = fixture("demo");

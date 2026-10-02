@@ -1,6 +1,17 @@
 # Status
 
-## Revamp v2（2026-10-02 起）｜R1 總覽重排與頁首減負（完成，未合併、未部署）
+## Revamp v2｜R2 語言與文案層（完成，未合併、未部署）
+
+R2 依 `docs/revamp/06_BATCHES.md` R2-1～R2-10 與 `03_GLOSSARY_COPY.md` 完成：所有使用者可見文字集中到 `src/i18n/labels.zh-TW.ts`（`metrics`／`rules`／`nav`／`sections`／`buttons`／`status`／`periods`／`basis`／`downloads`／`notes`／`csvColumns`／`evidence`／`brand` 與由 31 檔盤點產生的 `ui.<元件>` 約 800 鍵）；`metricDefinitions` 改讀 labels（新增 `shortLabel`／`plain`／`formulaTechnical`）；規則卡改為模板文案（`ruleCopy`，標題金額「萬」規則）；新增口徑說明對話框（九條）、免責集中為每區塊一句＋頁尾一句；「怎麼算的」抽屜改為中文階梯＋技術細節收合＋來源依檔案分頁可搜尋；示範通路顯示「官網 · DTC／平台 · MARKETPLACE」（只對示範資料集）；CSV 標題列改「中文 (key)」；`<title>`／`description`／`lang="zh-Hant-TW"`。D1、D11 依建議值執行（記於 `docs/DECISIONS.md`）。財務核心、fixtures、依賴零改動。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **45 files／839 tests pass**、build pass 無 warning、E2E 全套 **444 項 440 pass**（四尺寸各 110，含新增的 R2 文案 spec），4 項失敗為新 spec 的斷言寫錯（「注意」為標題非行內文字），修正測試後單獨重跑 16/16 通過；對抗式審查（4 視角 × 3 反駁者）確認 18 項、已修 14 項（商品證據不畫階梯、AI 狀態三分支、抽屜地標名稱、口徑說明可從抽屜開啟、字面值進 labels、萬元先取整、匯出狀態中文化等）。
+- 測試：13 個單元測試檔與 16 個 E2E spec 改為引用 labels／`ruleHeadline`／`csvHeaderKey`，不刪斷言、不 `.skip`、不改 golden；新增 `tests/copy.test.ts`（golden 手算標題）、`tests/labels-coverage.test.ts`（每個指標／規則／導覽有條目、元件 JSX 無舊名詞）、`tests/copy-density.test.ts`（三頁主層限制句各 ≤ 3）。
+- 主層文案稽查：六頁與頂欄無禁用詞；`grep` 舊名詞在 `.tsx` 零命中，`.ts` 只剩 domain 禁區與 AI 系統提示。
+- 截圖 42 張存 `verification/revamp-R2/`（五頁 × 四尺寸 × 視窗＋整頁，另口徑說明與抽屜）。E2E 重寫的 A 批證據檔已 `git checkout` 還原。Live AI、真實資料、Safari／Firefox、實體裝置：**未執行**。
+- 已知限制：alias 範圍比規格窄（只示範資料集）；會議固定來源的主管摘要仍在總覽頁尾收合區（R6）；「開發者驗證」仍在側欄（R7）；會議方案選單只顯示方案名稱。完整紀錄見 [R2 驗收](../verification/revamp-R2-acceptance.md)。R2 完成即停止；R3 待確認後開始。
+
+---
+## Revamp v2｜R1 總覽重排與頁首減負（完成，未合併、未部署）
 
 R1 依 `docs/revamp/06_BATCHES.md` R1-1～R1-9 完成：AI 狀態改為頂欄小標籤＋說明 popover；工作區保存整組搬進頂欄「儲存」展開面板；期間列 sticky 並新增近 7 天／近 4 週／近 12 週／本月 vs 上月快捷（只填日期，仍須套用；`src/application/period-presets.ts`）；總覽順序改為 KPI → 本期三件事（目前檢視）→ 趨勢 → 橋接＋通路比較 → 期間合計與日均（收合）→ 會議稿與主管摘要（頁尾收合）；通路寬表移到通路診斷頁頂；下載鈕集中到頂欄「下載」；切頁捲動歸零並聚焦 `main`；三件事與健檢卡顯示「對貢獻影響」（負＝紅不利、正＝綠有利，`contributionImpact()`，定義見 `docs/DECISIONS.md`）；修 select 高度、徽章「示範資料」、副標與 `<title>`。財務核心、fixtures、依賴零改動；不改任何名詞。
 

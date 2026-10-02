@@ -1,31 +1,34 @@
 import Decimal from "decimal.js";
 import { AiSnapshotSchema, InsightOutputSchema, type AiFact, type AiSnapshot, type InsightOutput } from "./contracts";
 import { formatMoney, formatRate, metricDefinitions } from "../application/presentation";
+import { fill, labels } from "../i18n";
 export interface AllowedObservation { fact_ids: string[]; observation: string; kind: "value" | "change" | "missing" }
 export interface GroundingIssue { code: string; path: string; message: string }
 export type GroundingResult = { ok: true; output: InsightOutput } | { ok: false; issues: GroundingIssue[] };
 const token = (fact: AiFact) => `{{fact:${fact.id}:${fact.metric}}}`;
-const refundCaution = "退款按入帳日觀察，不等於 cohort 最終退貨率。";
-const suffix = (fact: AiFact) => fact.metric === "refund_ratio" || fact.metric === "refunds" ? refundCaution : fact.metric === "mer" ? "MER 不是 ROAS，不提供媒體歸因。" : "";
+const copy = labels.ui.grounding;
+const suffix = (fact: AiFact) => fact.metric === "refund_ratio" || fact.metric === "refunds" ? copy.refundCaution : fact.metric === "mer" ? copy.merCaution : "";
+/** Null facts split into two user-facing states: data still to be supplied, or a ratio whose denominator does not hold. */
+const isMissing = (fact: AiFact) => fact.reason_codes.some(code => code.startsWith("MISSING_") || code === "SALES_COVERAGE_UNCONFIRMED" || code === "INVALID_OR_MISSING_METRIC");
 
 /** The model chooses supported language; it never invents scope, direction or financial claims. */
 export function observationCatalog(snapshot: AiSnapshot): AllowedObservation[] {
   const parsed = AiSnapshotSchema.parse(snapshot);
-  const periodCaution = parsed.comparison.mode === "calendar_months" ? "完整自然月比較；金額為期間合計，不代表日均變化。" : "";
+  const periodCaution = parsed.comparison.mode === "calendar_months" ? copy.calendarMonthNote : "";
   const entries: AllowedObservation[] = parsed.facts.map(fact => {
-    const subject = `${fact.period === "previous" ? "前期" : "本期"}所選通路合計的${metricDefinitions[fact.metric].label}`;
+    const subject = fill(copy.subject, { period: fact.period === "previous" ? labels.periods.previous : labels.periods.current, metric: metricDefinitions[fact.metric].label });
     if (fact.value === null) {
-      const missing = fact.reason_codes.some(code => code.startsWith("MISSING_") || code === "SALES_COVERAGE_UNCONFIRMED" || code === "INVALID_OR_MISSING_METRIC");
-      return { fact_ids: [fact.id], kind: "missing", observation: `${subject}${missing ? `尚未知（${token(fact)}），需先補齊資料。` : `不適用（${token(fact)}）；分母條件不成立時不顯示比率。`}${suffix(fact)}${periodCaution}` };
+      const missing = isMissing(fact);
+      return { fact_ids: [fact.id], kind: "missing", observation: `${fill(missing ? copy.observationMissing : copy.observationNotApplicable, { subject, value: token(fact) })}${suffix(fact)}${periodCaution}` };
     }
-    return { fact_ids: [fact.id], kind: "value", observation: `${subject}為 ${token(fact)}。${suffix(fact)}${periodCaution}` };
+    return { fact_ids: [fact.id], kind: "value", observation: `${fill(copy.observationValue, { subject, value: token(fact) })}${suffix(fact)}${periodCaution}` };
   });
   for (const current of parsed.facts.filter(fact => fact.period === "current" && fact.value !== null)) {
     const previous = parsed.facts.find(fact => fact.period === "previous" && fact.metric === current.metric && fact.value !== null);
     if (!previous) continue;
     const comparison = new Decimal(current.value!).comparedTo(previous.value!);
-    const direction = comparison > 0 ? "上升" : comparison < 0 ? "下降" : "持平";
-    entries.push({ fact_ids: [previous.id, current.id], kind: "change", observation: `本期所選通路合計的${metricDefinitions[current.metric].label}較前期${direction}（前期 ${token(previous)}；本期 ${token(current)}）。${suffix(current)}${periodCaution}` });
+    const direction = comparison > 0 ? copy.directionUp : comparison < 0 ? copy.directionDown : copy.directionFlat;
+    entries.push({ fact_ids: [previous.id, current.id], kind: "change", observation: `${fill(copy.observationChange, { metric: metricDefinitions[current.metric].label, direction, previous: token(previous), current: token(current) })}${suffix(current)}${periodCaution}` });
   }
   // A missing-data option is always presented first when the current aggregate is incomplete.
   return entries.sort((a, b) => Number(parsed.data_quality.missing_fact_ids.some(id => b.fact_ids.includes(id))) - Number(parsed.data_quality.missing_fact_ids.some(id => a.fact_ids.includes(id))));
@@ -53,7 +56,7 @@ function inspectText(text: string, path: string, facts: Map<string, AiFact>, cit
   if (unsafeContent.test(normalized)) add("UNSAFE_CONTENT", "不允許越權指令、連結、個資或可執行內容。");
   if (!observation) {
     // Permit explicit non-causal caveats without treating their negated words as a claim.
-    const claims = normalized.replace(/不代表因果關係|不是因果分析|不提供媒體歸因|不保證改善收益|不等於 cohort 最終退貨率/g, "");
+    const claims = normalized.replace(/不代表因果關係|不是因果分析|不提供媒體歸因|沒有媒體歸因|不保證改善收益|不等於 cohort 最終退貨率|不是同批訂單最終退貨率/g, "");
     if (unsafeClaim.test(claims)) add("UNSAFE_CLAIM", "不允許確定因果、信心評分、保證效益或未支持的財務口徑。");
   }
 }
@@ -93,11 +96,11 @@ export function validateInsightOutput(raw: unknown, snapshot: AiSnapshot): Groun
 }
 
 function formatFact(fact: AiFact): string {
-  if (fact.value === null) return metricDefinitions[fact.metric].unit === "money" ? "未知" : "N/A（未知或不適用）";
   const unit = metricDefinitions[fact.metric].unit;
+  if (fact.value === null) return unit === "money" || isMissing(fact) ? labels.status.missing : fill(copy.factUnavailable, { state: labels.status.notApplicable });
   if (unit === "money") return `TWD ${formatMoney(fact.value)}`;
   if (unit === "percent") return formatRate(fact.value);
-  return `${new Decimal(fact.value).toFixed(2, Decimal.ROUND_HALF_UP)} 倍`;
+  return `${new Decimal(fact.value).toFixed(2, Decimal.ROUND_HALF_UP)} ${labels.evidence.times}`;
 }
 
 /** Client calls this after server validation too; rendering never trusts a stale or malformed payload. */

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import golden from "../fixtures/golden/expected.json";
+import { csvHeader, csvHeaderKey } from "../src/application/copy";
 import { encodeCsv, exportIssuesCsv, exportProductsCsv, exportSnapshotCsv, type CsvCell } from "../src/application/export";
 import { createSnapshot, hashInput } from "../src/application/workspace";
+import { labels } from "../src/i18n";
 import { validateDataset } from "../src/domain/validation";
 import { parseCsv } from "../src/lib/csv";
 import type { DatasetInput, ProductRow, ValidationIssue } from "../src/domain/types";
@@ -9,9 +11,13 @@ import { fixture } from "./helpers/fixtures";
 
 const text = (value: string): CsvCell => ({ kind: "text", value });
 const number = (value: string): CsvCell => ({ kind: "number", value });
+/** R2：匯出標題列為「中文名稱 (english_key)」；測試以 english key 讀欄位，所以把標題透過 csvHeaderKey 還原。 */
 function records(csv: string): Record<string, string>[] {
   const result = parseCsv(csv);
-  return result.rows.map(row => Object.fromEntries(result.headers.map((header, index) => [header, row.values[index]])));
+  return result.rows.map(row => Object.fromEntries(result.headers.map((header, index) => [csvHeaderKey(header), row.values[index]])));
+}
+function headerRow(csv: string): string[] {
+  return parseCsv(csv).headers;
 }
 async function setup(input: DatasetInput = fixture()) {
   const result = validateDataset(input);
@@ -53,7 +59,12 @@ describe("M3 typed safe CSV encoder", () => {
 describe("M3 exact snapshot exports", () => {
   it("exports fixed golden period totals, channel facts, weeks and all bridge components", async () => {
     const { dataset, snapshot } = await setup();
-    const rows = records(exportSnapshotCsv(dataset, snapshot));
+    const csv = exportSnapshotCsv(dataset, snapshot);
+    const headers = headerRow(csv);
+    expect(headers.every(header => header === csvHeader(csvHeaderKey(header)))).toBe(true);
+    expect(headers).toContain(`${labels.csvColumns.row_type} (row_type)`);
+    expect(headers).toContain(`${labels.csvColumns.metric} (metric)`);
+    const rows = records(csv);
     for (const period of ["previous", "current"] as const) {
       for (const [metric, value] of Object.entries(golden[period])) {
         expect(rows.find(row => row.row_type === "period_summary" && row.period === period && row.metric === metric)?.value).toBe(value);
@@ -131,7 +142,10 @@ describe("M3 scoped product and issue exports", () => {
 
   it("issue CSV keeps logical/actual files and escapes untrusted error fields", () => {
     const issues: ValidationIssue[] = [{ severity: "blocking", file: "sales_daily.csv", line: 12, field: "=BAD", reason_code: "INVALID_MONEY", message: '含逗號,引號"與換行\n的文字', date: "2026-08-02", channel: "+DTC", sku: "-SKU" }];
-    const rows = records(exportIssuesCsv(issues, { "sales_daily.csv": "@actual.csv" }));
+    const csv = exportIssuesCsv(issues, { "sales_daily.csv": "@actual.csv" });
+    expect(headerRow(csv)).toEqual(["severity", "file", "logical_file", "line", "field", "reason_code", "message", "date", "channel", "sku"].map(csvHeader));
+    expect(headerRow(csv)[0]).toBe(`${labels.csvColumns.severity} (severity)`);
+    const rows = records(csv);
     expect(rows).toEqual([{ severity: "blocking", file: "'@actual.csv", logical_file: "sales_daily.csv", line: "12", field: "'=BAD", reason_code: "INVALID_MONEY", message: '含逗號,引號"與換行\n的文字', date: "2026-08-02", channel: "'+DTC", sku: "'-SKU" }]);
     expect(records(exportIssuesCsv([]))).toEqual([]);
   });

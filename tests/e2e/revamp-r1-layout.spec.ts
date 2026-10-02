@@ -1,11 +1,16 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clickReplacing } from "./replacement-helpers";
-import { labels } from "../../src/i18n";
+import { fill, labels } from "../../src/i18n";
+
+// R2 文案接線：期間列的範圍說明由 labels.ui.dashboard.scopeNote 模板組成，這裡只取測試關心的片段再填值。
+const scopeNoteDays = (previousDays: number, currentDays: number) => fill(labels.ui.dashboard.scopeNote.match(/（(.*?)）/)![1], { previousDays, currentDays });
+const scopeNoteCurrent = (currentStart: string, currentEnd: string) => fill(labels.ui.dashboard.scopeNote.split(" · ").at(-1)!, { currentStart, currentEnd });
+const aiLabelPrefix = labels.ui.dashboard.aiLabel.replace("{ai}", "");
 
 // R1 總覽重排與頁首減負：首屏 KPI、三件事一屏內、切頁歸零、頂欄 AI 標籤與選單、期間快捷只填日期。
 async function loadDemo(page: Page) {
   await page.goto("/");
-  await clickReplacing(page, page.getByRole("button", { name: "載入示範資料", exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
 }
 const box = async (page: Page, selector: string) => { const value = await page.locator(selector).first().boundingBox(); expect(value, `${selector} has a bounding box`).not.toBeNull(); return value!; };
@@ -27,10 +32,10 @@ test.describe("R1 overview first screen", () => {
       expect(after.y + after.height).toBeLessThanOrEqual(viewport.height);
       await page.evaluate(() => window.scrollTo(0, 0));
     }
-    const order = await page.evaluate(() => {
-      const ids = ["[aria-label='本期關鍵數字']", "[data-testid='top-three']", "[aria-labelledby='trend-title']", "[aria-labelledby='bridge-title']", "[data-testid='period-comparison']", "[data-testid='overview-meeting']"];
+    const order = await page.evaluate((kpiLabel) => {
+      const ids = [`[aria-label='${kpiLabel}']`, "[data-testid='top-three']", "[aria-labelledby='trend-title']", "[aria-labelledby='bridge-title']", "[data-testid='period-comparison']", "[data-testid='overview-meeting']"];
       return ids.map(selector => document.querySelector(selector)?.getBoundingClientRect().top ?? -1);
-    });
+    }, labels.sections.kpis);
     expect(order.every(top => top >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     await expect(page.getByTestId("period-comparison")).not.toHaveAttribute("open", /.*/);
@@ -61,23 +66,23 @@ test.describe("R1 shell", () => {
     await loadDemo(page);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-    await page.getByRole("button", { name: "通路診斷", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "通路診斷", exact: true, level: 1 })).toBeVisible();
+    await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
+    await expect(page.getByRole("heading", { name: labels.nav.diagnosis.label, exact: true, level: 1 })).toBeVisible();
     await page.waitForTimeout(100);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
     expect(await page.evaluate(() => document.activeElement?.id)).toBe("main-content");
-    await expect(page.getByRole("region", { name: "通路寬表", exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: labels.sections.channelTableAria, exact: true })).toBeVisible();
     await expect(page.locator(".diagnostic-card").first()).toContainText(labels.sections.impact);
   });
 
-  test("AI status is a top-bar label whose explanation opens in a popover", async ({ page }) => {
+  test("AI status is a top-bar label whose explanation opens in a popover", async ({ page }, testInfo) => {
     await page.goto("/");
     const status = page.getByTestId("ai-availability");
     await expect(status).toBeVisible();
     await expect(status).toHaveAttribute("role", "status");
     await expect(status).toHaveAttribute("aria-live", "polite");
     const label = status.getByRole("button");
-    await expect(label).toContainText("規則診斷可用");
+    await expect(label).toContainText(aiLabelPrefix);
     await expect(label).toHaveAttribute("aria-expanded", "false");
     await expect(status.locator("#ai-availability-detail")).toBeHidden();
     await label.click();
@@ -86,35 +91,37 @@ test.describe("R1 shell", () => {
     await page.keyboard.press("Escape");
     await expect(status.locator("#ai-availability-detail")).toBeHidden();
     await expect(label).toBeFocused();
-    expect(await page.locator("header.topbar").boundingBox().then(value => value!.height)).toBeLessThanOrEqual(120);
+    // 頂欄高度上限：桌機兩列內；平板／手機允許狀態列、徽章與選單各自換行（三列）。
+    const topbarLimit = { desktop: 120, laptop: 120, tablet: 160, mobile: 170 }[testInfo.project.name] ?? 170;
+    expect(await page.locator("header.topbar").boundingBox().then(value => value!.height)).toBeLessThanOrEqual(topbarLimit);
   });
 
   test("save and download live in top-bar menus and keep their test ids", async ({ page }) => {
     await loadDemo(page);
     const storage = page.getByTestId("workspace-storage");
-    await expect(storage.locator("summary")).toContainText(labels.status.unsaved);
-    await storage.locator("summary").click();
-    await storage.getByRole("button", { name: "讀取本機副本預覽", exact: true }).focus();
+    await expect(storage.locator(":scope > summary")).toContainText(labels.status.unsaved);
+    await storage.locator(":scope > summary").click();
+    await storage.getByRole("button", { name: labels.buttons.restorePreview, exact: true }).focus();
     await page.keyboard.press("Escape");
-    await expect(storage.locator("summary")).toBeFocused();
-    await expect(storage.getByRole("button", { name: "下載完整工作區備份", exact: true })).toBeHidden();
-    await storage.locator("summary").click();
-    await expect(storage.getByRole("button", { name: "下載完整工作區備份", exact: true })).toBeVisible();
+    await expect(storage.locator(":scope > summary")).toBeFocused();
+    await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeHidden();
+    await storage.locator(":scope > summary").click();
+    await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeVisible();
     await page.keyboard.press("Escape");
-    await expect(storage.getByRole("button", { name: "下載完整工作區備份", exact: true })).toBeHidden();
+    await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeHidden();
     const download = page.getByTestId("download-menu");
     await download.locator("summary").click();
-    await expect(download.getByRole("button", { name: "下載目前分析 CSV" })).toBeVisible();
-    const [file] = await Promise.all([page.waitForEvent("download"), download.getByRole("button", { name: "下載目前分析 CSV" }).click()]);
+    await expect(download.getByRole("button", { name: labels.downloads.analysisCsv })).toBeVisible();
+    const [file] = await Promise.all([page.waitForEvent("download"), download.getByRole("button", { name: labels.downloads.analysisCsv }).click()]);
     expect(file.suggestedFilename()).toBe("profitlens-analysis.csv");
     await page.keyboard.press("Escape");
-    await expect(download.getByRole("button", { name: "下載目前分析 CSV" })).toBeHidden();
+    await expect(download.getByRole("button", { name: labels.downloads.analysisCsv })).toBeHidden();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await expect(page.locator(".sidebar .tiny-tag")).toHaveText(labels.status.demo);
-    await expect(page).toHaveTitle("ProfitLens｜電商獲利診斷與決策工作台");
+    await expect(page).toHaveTitle(labels.brand.title);
   });
 
-  test("period presets only fill the form until 套用期間 is pressed", async ({ page }, testInfo) => {
+  test("period presets only fill the form until 套用 is pressed", async ({ page }, testInfo) => {
     await loadDemo(page);
     const group = page.getByRole("group", { name: labels.sections.presetGroup });
     const monthly = group.getByRole("button", { name: labels.periods.presets.monthVsPrev, exact: true });
@@ -127,11 +134,11 @@ test.describe("R1 shell", () => {
     await expect(page.locator("#previous-end")).toHaveValue("2026-08-16");
     await expect(page.locator("#current-start")).toHaveValue("2026-08-17");
     await expect(page.locator("#current-end")).toHaveValue("2026-08-23");
-    await expect(page.getByRole("button", { name: "套用期間", exact: true })).toBeFocused();
-    await expect(page.locator(".scope-note")).toContainText("前期 42 天／本期 42 天");
-    await page.getByRole("button", { name: "套用期間", exact: true }).click();
-    await expect(page.locator(".scope-note")).toContainText("前期 7 天／本期 7 天");
-    await expect(page.locator(".scope-note")).toContainText("本期 2026-08-17 — 2026-08-23");
+    await expect(page.getByRole("button", { name: labels.buttons.apply, exact: true })).toBeFocused();
+    await expect(page.locator(".scope-note")).toContainText(scopeNoteDays(42, 42));
+    await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+    await expect(page.locator(".scope-note")).toContainText(scopeNoteDays(7, 7));
+    await expect(page.locator(".scope-note")).toContainText(scopeNoteCurrent("2026-08-17", "2026-08-23"));
     await expect(group.getByRole("button", { name: labels.periods.presets.last7, exact: true })).toHaveAttribute("aria-pressed", "true");
     const bar = await box(page, ".filter-bar");
     if ((page.viewportSize()?.width ?? 0) > 640) {

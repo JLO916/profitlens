@@ -5,6 +5,11 @@ import { AiPanel } from "../src/components/ai-panel";
 import { createSnapshot, hashInput } from "../src/application/workspace";
 import { validateDataset } from "../src/domain/validation";
 import { fixture } from "./helpers/fixtures";
+import { fill, labels } from "../src/i18n";
+
+const copy = labels.ui.aiPanel;
+// R2 spec moved the "no per-channel breakdown" caveat into the technical <details> (ai-advanced); the sentence is still hardcoded in ai-panel.tsx.
+const noChannelBreakdownNote = "本次不傳個別通路拆解，模型無法指出是哪個通路";
 
 async function golden() {
   const input = fixture("golden");
@@ -18,42 +23,51 @@ describe("PL-10 AI capability must be confirmed before presenting a request", ()
     expect(validated.dataset).not.toBeNull();
     const snapshot = await createSnapshot(validated.dataset!, {}, await hashInput(input));
     const html = renderToStaticMarkup(createElement(AiPanel, { snapshot, revision: 1, onEvidence: () => undefined }));
-    expect(html).toContain("規則診斷可用");
-    expect(html).toContain("正在確認");
+    expect(html).toContain(copy.rulesAvailable);
+    expect(html).toContain(copy.statusChecking);
+    expect(html).toContain(copy.liveChecking);
     expect(html).not.toContain('data-testid="ai-payload-preview"');
     expect(html).not.toContain('data-testid="ai-request-preview"');
     expect(html).not.toContain('data-testid="ai-local-mapping"');
     expect(html).not.toContain('type="checkbox"');
-    expect(html).not.toContain("傳送已同意的彙總資料");
-    expect(html).not.toContain("即時 AI 說明");
+    expect(html).not.toContain(`>${copy.sendButton}</button>`);
+    expect(html).not.toContain(copy.consentLabel);
+    expect(html).not.toContain(`<h3>${copy.liveHeading}</h3>`);
+    expect(html).not.toContain('data-testid="ai-live-result"');
     expect(html).not.toContain("ai-v2:");
   });
 
   it.each(["PUBLIC_DEMO", "DISABLED", "NO_KEY", "NO_MODEL", "LOCAL_ONLY", "INVALID_CONFIG", "STATUS_UNAVAILABLE"])("%s explains the unavailable mode without rendering upload controls", async reason => {
     const html = renderToStaticMarkup(createElement(AiPanel, { snapshot: await golden(), revision: 1, onEvidence: () => undefined, capability: { available: false, reason, provider: "openai" } }));
-    expect(html).toContain("規則診斷可用");
-    expect(html).toContain(reason === "STATUS_UNAVAILABLE" ? "即時 AI 狀態未確認" : "即時 AI 未啟用");
+    expect(html).toContain(copy.rulesAvailable);
+    expect(html).toContain(reason === "STATUS_UNAVAILABLE" ? copy.liveStatusUnknown : copy.liveOff);
+    expect(html).toContain(labels.ui.aiClient.reasons[reason as keyof typeof labels.ui.aiClient.reasons]);
     expect(html).not.toContain('data-testid="ai-payload-preview"');
     expect(html).not.toContain('type="checkbox"');
-    expect(html).not.toContain("傳送已同意的彙總資料");
-    expect(html).not.toContain("仍可預覽");
+    expect(html).not.toContain(`>${copy.sendButton}</button>`);
+    expect(html).not.toContain(copy.consentLabel);
+    expect(html).not.toContain(copy.previewHeading);
+    expect(html).not.toContain(copy.liveConsentOnly);
   });
 
   it("available mode preserves all exact facts in readable preview and places JSON in closed advanced disclosure", async () => {
     const html = renderToStaticMarkup(createElement(AiPanel, { snapshot: await golden(), revision: 1, onEvidence: () => undefined, capability: { available: true, reason: "AVAILABLE", provider: "openai" } }));
-    expect(html).not.toContain("尚未傳送資料");
+    expect(html).not.toContain(copy.statusChecking);
+    expect(html).toContain(copy.statusAvailable);
     expect(html).toContain('data-testid="ai-facts-preview"');
-    expect(html).toContain("行銷後貢獻");
+    expect(html).toContain(`${labels.metrics.contribution_after_marketing.label}`);
     expect(html).toContain("270.00");
     expect(html).toContain("400.00");
-    expect(html).toContain("所選通路合計");
-    expect(html).toContain("無法指出個別通路的驅動因素");
+    expect(html).toContain(fill(copy.previewScope, { n: 1 }));
+    expect(html).toContain(copy.previewTableCaption);
+    const advanced = html.match(/<details[^>]*data-testid="ai-advanced"[^>]*>[\s\S]*<\/details>/)?.[0] ?? "";
+    expect(advanced).toContain(noChannelBreakdownNote);
     expect(html).toContain('data-testid="ai-payload-preview"');
     expect(html).toContain('data-testid="ai-request-preview"');
     expect(html).toContain('data-testid="ai-local-mapping"');
     expect(html).toContain('type="checkbox"');
     expect(html).toMatch(/<details[^>]*data-testid="ai-advanced"[^>]*><summary>/);
     expect(html.match(/<details[^>]*data-testid="ai-advanced"[^>]*>/)?.[0]).not.toContain("open=");
-    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>傳送已同意的彙總資料/);
+    expect(html).toMatch(new RegExp(`<button[^>]*disabled=""[^>]*>${copy.sendButton}</button>`));
   });
 });

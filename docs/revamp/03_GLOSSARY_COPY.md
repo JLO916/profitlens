@@ -55,6 +55,8 @@
 
 使用者自己匯入的通路名稱原樣顯示，不套 alias。alias 只對 `source_type === "synthetic"` 生效（`labels.demoChannelAlias`）。
 
+> R2 實作註記（2026-10-02）：alias 只對示範資料集（`dataset_id` 以 `synthetic-demo` 開頭）生效；golden／缺漏／重複鍵等驗證用合成資料維持原通路代碼，理由見 `docs/DECISIONS.md`。
+
 ## 5. 導覽與區塊標題
 | 現行 | 新 |
 |---|---|

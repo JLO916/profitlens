@@ -1,17 +1,17 @@
+import { channelsLabel, csvHeader, demoAlias, scopeLabel } from "./copy";
 import { SCENARIO_ASSUMPTIONS, SCENARIO_FORMULAS, calculateScenario } from "../domain/scenarios";
+import type { MetricName, Period } from "../domain/types";
+import { fill, labels } from "../i18n";
 import { MAX_ACTIONS, MAX_SCENARIOS, decisionSignature, validateActionContent, validateActionEvidence, validateScenarioName, type ActionCard, type DecisionSession, type ScenarioPlan } from "./decision";
 import { encodeCsv, type CsvCell } from "./export";
 import { actionDocuments, type ActionWorkspace } from "./action-workspace";
 
-const LIMITATIONS = [
-  "依使用者假設，重算同一期間單一通路；不是已發生的成果。",
-  "不同方案的差額不可相加；本試算不是營收預測。",
-  "廣告支出變動不推算銷量；銷量假設須另由使用者明確輸入。",
-  "退款比為按入帳日觀察的金額比，不等於 cohort 退貨機率。",
-  "行銷後貢獻不是公司淨利，不含未輸入固定費及所得稅。",
-  "人工行動與問題陳述由使用者提供，所引用 facts 才是系統產生的資料事實。",
-];
-const ROUNDING = "所有模型中間值使用高精度 Decimal；最終金額 round(2, HALF_UP)。rounding_adjustment 補足逐項已取分金額與未取分總額最後取分的差異。";
+const copy = labels.ui.decisionExport;
+/** 主層只留一句「注意」；其餘限制併入技術細節（Markdown），JSON／CSV 仍完整輸出。 */
+const CAUTION = labels.basis.items[6];
+const TECHNICAL_LIMITATIONS = [copy.limitations.scenarioScope, copy.limitations.adSpendNoVolume, copy.limitations.manualActions, labels.basis.items[5], labels.basis.items[2]];
+const LIMITATIONS = [CAUTION, ...TECHNICAL_LIMITATIONS];
+const ROUNDING = copy.roundingNote;
 
 function validateCollection(items: readonly { id: string }[], max: number, error: string): void {
   if (items.length > max) throw new Error(error);
@@ -64,34 +64,65 @@ function md(value: unknown): string {
     .replace(/[\\`*_{}\[\]()#+.!|~:-]/g, character => `\\${character}`)
     .replace(/\r\n|\r|\n/g, "&#10;");
 }
-function mdFields(values: Record<string, unknown>): string[] {
-  return Object.entries(values).map(([key, value]) => `- ${md(key)}：${md(value === null ? "N/A（未知或不適用）" : value)}`);
+/** Markdown 主層欄位名稱：指標 → CSV 欄位 → 試算欄位 → 待辦欄位 → 其他；都沒有就留英文 key（只會出現在技術細節）。 */
+const SCENARIO_FIELD_LABELS: Record<string, string> = {
+  volume_change_pct: labels.scenario.volume.label, discount_change_pp: labels.scenario.discount.label, fulfillment_change_pct: labels.scenario.fulfillmentUnit.label,
+  ad_change_pct: labels.scenario.adSpend.label, one_time_cost: labels.scenario.oneOff.label, assumptions_accepted: labels.scenario.acceptAssumptions,
+  contribution: labels.scenario.resultTitle, delta: labels.scenario.vsBaseline,
+};
+const ACTION_FIELD_LABELS: Record<string, string> = {
+  problem: labels.actions.problem, action: labels.actions.step, owner_role: labels.actions.owner, validation_metric: labels.actions.metric,
+  deadline: labels.actions.due, stop_condition: labels.actions.stop, required_data: labels.actions.extraData, status: labels.actions.status,
+};
+const OTHER_FIELD_LABELS: Record<string, string> = {
+  id: labels.csvColumns.item_id, fact_id: labels.csvColumns.fact_ids, reasons: labels.csvColumns.reason_codes, sources: labels.csvColumns.source_refs,
+  coverage_confirmed: labels.csvColumns.sales_coverage_confirmed, filenames: labels.csvColumns.file,
+};
+const metricLabel = (name: string): string | null => name in labels.metrics ? labels.metrics[name as MetricName].label : null;
+function fieldLabel(key: string): string {
+  return metricLabel(key) ?? labels.csvColumns[key] ?? SCENARIO_FIELD_LABELS[key] ?? ACTION_FIELD_LABELS[key] ?? OTHER_FIELD_LABELS[key] ?? key;
+}
+const ACTION_STATUS: Record<string, string> = { ...copy.actionStatus, ...copy.scenarioStatus };
+function mdFields(values: Record<string, unknown>, labelled = true): string[] {
+  return Object.entries(values).map(([key, value]) => fill(copy.fieldLine, { label: md(labelled ? fieldLabel(key) : key), value: md(value === null ? copy.nullValue : labelled && key === "status" && typeof value === "string" && ACTION_STATUS[value] ? ACTION_STATUS[value] : value) }));
+}
+/** 技術細節區塊：Markdown 內的 `<details>`，保留原始 key、代碼與公式。 */
+function mdTechnical(lines: readonly string[], summary: string = labels.sections.technicalDetails): string[] {
+  return ["<details>", `<summary>${summary}</summary>`, "", ...lines, "", "</details>"];
 }
 export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace): string {
   const document = decisionDocument(session, scenarios, actions, actionWorkspace);
-  const lines = ["# ProfitLens 決策紀錄", "", `狀態：${session.stale ? "過期（stale），不可沿用為目前方案；需重新確認基準與輸入。" : "目前快照（current）"}`, "", "## 快照與來源", "",
-    ...mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_id: session.dataset_id, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, period: session.period, scope: session.scope, comparison: session.comparison, filenames: session.filenames, sources: session.sources, stale_reasons: session.stale_reasons }),
-    "", "## 固定基準", "", ...mdFields({ version: session.baseline.version, eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons }),
-    "", ...mdFields(session.baseline.amounts), "", ...mdFields({ ...session.baseline.rates }),
-    "", "## 固定假設", "", ...document.fixed_assumptions.map(assumption => `- ${md(assumption)}`),
-    "", "## 完整公式與取分", "", ...mdFields(document.formulas), "", md(document.rounding),
-    "", "## 情境方案", "",
+  const alias = demoAlias(session.dataset_id);
+  const periodText = (period: Period) => `${period.start}～${period.end}`;
+  const comparisonMode = session.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays;
+  const lines = [`# ${copy.title}`, "", fill(copy.statusLine, { status: session.stale ? copy.statusStale : copy.statusCurrent }), "", `## ${copy.sectionSource}`, "",
+    ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: periodText(session.period), scope: channelsLabel(session.scope.channels, alias), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
+    "", ...mdTechnical(mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, comparison: session.comparison, sources: session.sources, stale_reasons: session.stale_reasons }, false)),
+    "", `## ${labels.sections.scenarioBaseline}`, "", ...mdFields(session.baseline.amounts), "", ...mdFields({ ...session.baseline.rates }),
+    "", ...mdTechnical(mdFields({ version: session.baseline.version, eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons }, false)),
+    "", `## ${labels.sections.scenarioAssumptions}`, "", ...document.fixed_assumptions.map(assumption => `- ${md(assumption)}`),
+    "", `## ${labels.nav.scenarios.label}`, "",
   ];
   for (const plan of document.scenarios) {
     lines.push(`### ${md(plan.name)}`, "", ...mdFields({ id: plan.id, status: plan.status }), "", ...mdFields({ ...plan.inputs }));
-    if (plan.result === null) lines.push("", "草稿：尚未計算，不提供條件貢獻或差額。", "");
+    if (plan.result === null) lines.push("", labels.scenario.draft, "");
     else {
-      lines.push("", ...mdFields({ reasons: plan.result.reasons, contribution: plan.result.contribution, delta: plan.result.delta, rounding_adjustment: plan.result.rounding_adjustment }), "");
-      if (plan.result.amounts) lines.push(...mdFields(plan.result.amounts), "", ...mdFields(plan.result.rates));
-      lines.push("", ...plan.result.assumptions.map(assumption => `- ${md(assumption)}`), "", ...mdFields(plan.result.formulas), "");
+      lines.push("", ...mdFields({ contribution: plan.result.contribution, delta: plan.result.delta }), "");
+      if (plan.result.amounts) lines.push(...mdFields(plan.result.amounts), "", ...mdFields(plan.result.rates), "");
+      lines.push(...mdTechnical([...mdFields({ reasons: plan.result.reasons, rounding_adjustment: plan.result.rounding_adjustment }, false), "", ...plan.result.assumptions.map(assumption => `- ${md(assumption)}`), "", ...mdFields(plan.result.formulas, false)]), "");
     }
   }
-  lines.push("## 人工行動（手動優先順序）", "");
-  if (actionWorkspace !== undefined) lines.push("行動獨立保留各自建立時的期間、範圍、快照、來源與過期狀態；以下 binding 與 evidence 為每項行動的稽核依據，不沿用上方情境的目前範圍。只有 pinned=true 表示置頂優先事項，其餘仍是工作項目。", "");
-  for (const action of document.actions) lines.push(`### 優先 ${action.priority}：${md(action.problem)}`, "", ...mdFields({ ...action }), "");
-  lines.push("## 系統資料事實與來源", "");
-  for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: fact.metric, value: fact.value, reason_codes: fact.reason_codes, period: fact.period, scope: fact.scope, sources: fact.sources }), "");
-  lines.push("## 使用限制", "", ...document.limitations.map(limitation => `- ${md(limitation)}`), "");
+  lines.push(`## ${labels.sections.actionList}`, "");
+  if (actionWorkspace !== undefined) lines.push(copy.actionsNote, "");
+  for (const action of document.actions) {
+    const main = Object.fromEntries(Object.entries(action).filter(([key]) => key in ACTION_FIELD_LABELS));
+    const technical = Object.fromEntries(Object.entries(action).filter(([key]) => !(key in ACTION_FIELD_LABELS)));
+    lines.push(`### ${fill(copy.actionHeading, { priority: action.priority, problem: md(action.problem) })}`, "", ...mdFields(main), "", ...mdTechnical(mdFields(technical, false)), "");
+  }
+  lines.push(`## ${copy.sectionFacts}`, "");
+  for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: metricLabel(fact.metric) ?? fact.metric, value: fact.value, reason_codes: fact.reason_codes, period: periodText(fact.period), scope: scopeLabel(fact.scope, alias), sources: fact.sources }), "");
+  lines.push(`## ${labels.sections.caution}`, "", `${labels.sections.caution}：${md(CAUTION)}`, "");
+  lines.push(...mdTechnical([...mdFields(document.formulas, false), "", md(document.rounding), "", ...TECHNICAL_LIMITATIONS.map(limitation => `- ${md(limitation)}`)], copy.sectionFormulas), "");
   return lines.join("\n");
 }
 
@@ -161,5 +192,5 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
   for (const fact of session.facts) push("fact", fact.metric, fact.value === null ? empty : numeric(fact.value), {
     item_id: text(fact.id), fact_ids: text([fact.id]), period: text(fact.period), scope: text(fact.scope), reason_codes: text(fact.value === null && !fact.reason_codes.length ? ["MISSING_VALUE"] : fact.reason_codes), source_refs: sourceRefs(fact.sources),
   });
-  return encodeCsv([HEADERS.map(text), ...records.map(record => HEADERS.map(header => record[header] ?? metadata[header] ?? empty))]);
+  return encodeCsv([HEADERS.map(header => text(csvHeader(header))), ...records.map(record => HEADERS.map(header => record[header] ?? metadata[header] ?? empty))]);
 }

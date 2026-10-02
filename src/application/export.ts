@@ -1,5 +1,7 @@
 import { uniqueSources } from "../domain/aggregation";
 import { AMOUNT_FIELDS, COST_FIELDS, MONEY_METRICS, PRODUCT_METRICS, SALES_FIELDS, type Dataset, type Metric, type MetricName, type Period, type ProductRow, type SourceRef, type ValidationIssue } from "../domain/types";
+import { fill, labels } from "../i18n";
+import { csvHeader } from "./copy";
 import { metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
@@ -48,7 +50,7 @@ function metadata(dataset: Dataset, snapshot: WorkspaceSnapshot): ExportRecord {
     comparison_mode: text(snapshot.report.comparison.mode), previous_days: numeric(String(snapshot.report.comparison.previous_days)), current_days: numeric(String(snapshot.report.comparison.current_days)),
     previous_period_start: text(snapshot.report.previous.period.start), previous_period_end: text(snapshot.report.previous.period.end),
     current_period_start: text(snapshot.report.current.period.start), current_period_end: text(snapshot.report.current.period.end),
-    limitations: text("行銷後貢獻不等於公司淨利；不含未輸入固定費與所得稅。合計為完整期間金額；日均值＝該期金額／該期日曆天數，日均差使用未取分比值計算；合計橋接不使用日均值。金額變化非因果或改善收益。退款按入帳日，缺值不補零。比率欄原值為分子／分母，不是已乘100的百分比。"),
+    limitations: text(labels.ui.export.limitationsSnapshot),
   };
 }
 function sourceRefs(sources: readonly SourceRef[], filenameMap: FilenameMap): CsvCell {
@@ -70,7 +72,7 @@ function recordScope(kind: string, channels: readonly string[], period: string, 
   return { scope: text(JSON.stringify({ kind, channels })), period: text(period), period_start: text(range.start), period_end: text(range.end) };
 }
 function renderRecords(base: ExportRecord, records: readonly ExportRecord[]): string {
-  return encodeCsv([HEADERS.map(text), ...records.map(record => HEADERS.map(header => record[header] ?? base[header] ?? text("")))]);
+  return encodeCsv([HEADERS.map(header => text(csvHeader(header))), ...records.map(record => HEADERS.map(header => record[header] ?? base[header] ?? text("")))]);
 }
 function metricRecord(name: MetricName, metric: Metric, sources: readonly SourceRef[], filenameMap: FilenameMap): ExportRecord {
   const definition = metricDefinitions[name];
@@ -88,7 +90,7 @@ export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
     const summary = snapshot.report[period];
     for (const name of metricNames) records.push({ row_type: text("period_summary"), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), ...metricRecord(name, summary.metrics[name], summary.sources, filenameMap) });
     const dailyAverages = snapshot.report.comparison[period === "previous" ? "previous_daily_average" : "current_daily_average"];
-    for (const name of MONEY_METRICS) records.push({ row_type: text("daily_average"), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), ...metricRecord(name, dailyAverages[name], summary.sources, filenameMap), metric_label: text(`${metricDefinitions[name].label}日均值`), unit: text("TWD/day") });
+    for (const name of MONEY_METRICS) records.push({ row_type: text("daily_average"), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), ...metricRecord(name, dailyAverages[name], summary.sources, filenameMap), metric_label: text(fill(labels.ui.export.dailyAverageLabel, { metric: metricDefinitions[name].label })), unit: text("TWD/day") });
     for (const channel of snapshot.report.scope.channels) {
       const channelSummary = summary.channels[channel];
       for (const name of metricNames) records.push({ row_type: text("channel"), channel: text(channel), ...recordScope("channel", [channel], period, summary.period), ...metricRecord(name, channelSummary.metrics[name], channelSummary.sources, filenameMap) });
@@ -102,14 +104,14 @@ export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
     end: [snapshot.report.previous.period.end, snapshot.report.current.period.end].sort()[1],
   };
   const bridgeSources = [...snapshot.report.previous.sources, ...snapshot.report.current.sources];
-  for (const name of MONEY_METRICS) records.push({ row_type: text("daily_average_change"), ...recordScope("all", snapshot.report.scope.channels, "comparison", comparison), ...metricRecord(name, snapshot.report.comparison.daily_average_changes[name], [...snapshot.report.previous.sources, ...snapshot.report.current.sources], filenameMap), metric_label: text(`${metricDefinitions[name].label}日均差`), unit: text("TWD/day") });
+  for (const name of MONEY_METRICS) records.push({ row_type: text("daily_average_change"), ...recordScope("all", snapshot.report.scope.channels, "comparison", comparison), ...metricRecord(name, snapshot.report.comparison.daily_average_changes[name], [...snapshot.report.previous.sources, ...snapshot.report.current.sources], filenameMap), metric_label: text(fill(labels.ui.export.dailyAverageChangeLabel, { metric: metricDefinitions[name].label })), unit: text("TWD/day") });
   const bridgeMetadata: ExportRecord = {
     row_type: text("bridge"), ...recordScope("all", snapshot.report.scope.channels, "comparison", comparison), unit: text("TWD"),
     bridge_reconciled: snapshot.report.bridge.reconciled === null ? empty : text(String(snapshot.report.bridge.reconciled)),
   };
-  for (const name of AMOUNT_FIELDS) records.push({ ...bridgeMetadata, metric: text(name), metric_label: text(`${metricDefinitions[name].label}之已觀察金額變化`), ...valueFields(snapshot.report.bridge.components[name]), source_refs: sourceRefs(metricSources(name, bridgeSources), filenameMap) });
-  records.push({ ...bridgeMetadata, metric: text("sum"), metric_label: text("九項金額變化加總"), ...valueFields(snapshot.report.bridge.sum), source_refs: sourceRefs(bridgeSources, filenameMap) });
-  records.push({ ...bridgeMetadata, metric: text("contribution_change"), metric_label: text("行銷後貢獻實際差額"), ...valueFields(snapshot.report.bridge.contribution_change), source_refs: sourceRefs(bridgeSources, filenameMap) });
+  for (const name of AMOUNT_FIELDS) records.push({ ...bridgeMetadata, metric: text(name), metric_label: text(`${metricDefinitions[name].label}${labels.csvSuffix.change}`), ...valueFields(snapshot.report.bridge.components[name]), source_refs: sourceRefs(metricSources(name, bridgeSources), filenameMap) });
+  records.push({ ...bridgeMetadata, metric: text("sum"), metric_label: text(labels.ui.export.bridgeSumLabel), ...valueFields(snapshot.report.bridge.sum), source_refs: sourceRefs(bridgeSources, filenameMap) });
+  records.push({ ...bridgeMetadata, metric: text("contribution_change"), metric_label: text(fill(labels.ui.export.contributionChangeLabel, { metric: metricDefinitions.contribution_after_marketing.label })), ...valueFields(snapshot.report.bridge.contribution_change), source_refs: sourceRefs(bridgeSources, filenameMap) });
   return renderRecords(metadata(dataset, snapshot), records);
 }
 
@@ -122,7 +124,7 @@ export function exportProductsCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
       row_type: text("product"), ...recordScope("sku", [row.channel], "current", snapshot.report.current.period),
       scope: text(JSON.stringify({ kind: "sku", channels: [row.channel], sku: row.sku, category: row.category, product_category: productScope.category ?? "", product_query: productScope.query ?? "" })),
       channel: text(row.channel), sku: text(row.sku), category: text(row.category), ...metricRecord(name, row.metrics[name], row.sources, filenameMap),
-      limitations: text("僅匯出目前商品明細。商品只呈現毛利，不分攤通路費用或廣告費，不提供 SKU 行銷後貢獻。退款按入帳日，缺值不補零。比率原值為分子／分母。"),
+      limitations: text(labels.ui.export.limitationsProducts),
     });
   }
   if (!rows.length) records.push({ row_type: text("selection"), ...recordScope("sku", snapshot.report.scope.channels, "current", snapshot.report.current.period), value: empty, reason_codes: text(JSON.stringify(["NO_MATCHING_PRODUCTS"])), source_refs: text("[]") });
@@ -131,7 +133,7 @@ export function exportProductsCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
 
 export function exportIssuesCsv(issues: readonly ValidationIssue[], filenameMap: FilenameMap = {}): string {
   const headers = ["severity", "file", "logical_file", "line", "field", "reason_code", "message", "date", "channel", "sku"];
-  return encodeCsv([headers.map(text), ...issues.map(issue => [
+  return encodeCsv([headers.map(header => text(csvHeader(header))), ...issues.map(issue => [
     text(issue.severity), text(filenameMap[issue.file] ?? issue.file), text(issue.file), issue.line === null ? empty : numeric(String(issue.line)),
     text(issue.field), text(issue.reason_code), text(issue.message), text(issue.date ?? ""), text(issue.channel ?? ""), text(issue.sku ?? ""),
   ])]);

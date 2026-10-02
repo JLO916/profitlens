@@ -3,6 +3,7 @@ import type { InsightOutput } from "@/ai/contracts";
 import { observationCatalog, renderInsightOutput, validateInsightOutput } from "@/ai/grounding";
 import { createAiConsentBinding, sendAiRequest } from "@/application/ai-client";
 import { serverOutput, serverSnapshot } from "./helpers/ai-server";
+import { labels } from "../src/i18n";
 
 function currentContributionOutput() {
   const snapshot = serverSnapshot();
@@ -17,9 +18,9 @@ function currentContributionOutput() {
 
 describe("M6 independent AI security regression audit (synthetic data; no network)", () => {
   it.each([
-    ["period", "前期所選通路合計的行銷後貢獻為"],
-    ["scope", "其他通路的行銷後貢獻為"],
-    ["metric", "本期所選通路合計的商品淨營收為"],
+    ["period", `前期所選通路合計的${labels.metrics.contribution_after_marketing.label}為`],
+    ["scope", `其他通路的${labels.metrics.contribution_after_marketing.label}為`],
+    ["metric", `本期所選通路合計的${labels.metrics.net_revenue.label}為`],
     ["unmodelled net profit", "本期公司淨利為"],
   ])("does not let a valid cited value become a false %s claim in a free field", (_kind, label) => {
     const { snapshot, output, placeholder } = currentContributionOutput();
@@ -58,7 +59,7 @@ describe("M6 independent AI security regression audit (synthetic data; no networ
     output.insights[0].recommended_action = "核對同一個範圍的成本口徑；萬一來源不一致，先補齊資料。";
     const original = JSON.stringify(snapshot);
     expect(validateInsightOutput(output, snapshot).ok).toBe(true);
-    expect(renderInsightOutput(output, snapshot).insights[0].observation).toBe("本期所選通路合計的行銷後貢獻為 TWD 255.00。");
+    expect(renderInsightOutput(output, snapshot).insights[0].observation).toBe(`本期所選通路合計的${labels.metrics.contribution_after_marketing.label}為 TWD 255.00。`);
     expect(JSON.stringify(snapshot)).toBe(original);
   });
 

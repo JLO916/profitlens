@@ -1,3 +1,5 @@
+import { labels } from "../i18n";
+import { csvHeader } from "./copy";
 import { encodeCsv, type CsvCell, type FilenameMap } from "./export";
 import type { WorkspaceSnapshot } from "./workspace";
 import { PRODUCT_MONEY_FIELDS, type ProductComparisonRow, type ProductComparisonSelection } from "../domain/product-comparison";
@@ -22,7 +24,7 @@ export function exportProductComparisonCsv(dataset: Dataset, snapshot: Workspace
     text(snapshot.report.comparison.mode), numeric(String(snapshot.report.comparison.previous_days)), numeric(String(snapshot.report.comparison.current_days)),
     text(snapshot.report.previous.period.start), text(snapshot.report.previous.period.end), text(snapshot.report.current.period.start), text(snapshot.report.current.period.end), text(JSON.stringify(snapshot.report.scope.channels)),
     text(selection.category ?? ""), text(selection.query ?? ""), text(String(selection.negativeOnly ?? false)), text(selection.sort ?? "gross_profit_change"), text(selection.direction ?? "ascending"),
-    text("兩期實際商品金額合計，非日均；差額為本期減前期。通路費用及廣告不分攤至 SKU，不提供商品行銷後貢獻。比率原值為分子／分母。未觀察銷售列不證明新品或停售；只有完整性確認後才能將無列視為無銷售活動。缺值不補零；退款按入帳日；成本回沖僅依已入帳淨額。"),
+    text(labels.ui.productComparisonExport.limitations),
   ];
   const contents = rows.map(row => [
     text("product_comparison"), text(row.channel), text(row.sku), text(row.category), text(row.activity), text(row.previous.presence), text(row.current.presence),
@@ -30,5 +32,5 @@ export function exportProductComparisonCsv(dataset: Dataset, snapshot: Workspace
     ...metricCells(row.previous.metrics.gross_margin), ...metricCells(row.current.metrics.gross_margin), sources(row.previous.sources), sources(row.current.sources), ...metadata,
   ]);
   if (!contents.length) contents.push([text("selection"), ...Array.from({ length: headers.length - metadata.length - 1 }, (): CsvCell => ({ kind: "null" })), ...metadata]);
-  return encodeCsv([headers.map(text), ...contents]);
+  return encodeCsv([headers.map(header => text(csvHeader(header))), ...contents]);
 }

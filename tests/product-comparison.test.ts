@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { compareProducts, selectProductComparisonRows } from "@/domain/product-comparison";
 import { exportProductComparisonCsv } from "@/application/product-comparison-export";
+import { csvHeaderKey } from "@/application/copy";
 import { validateDataset } from "@/domain/validation";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import { parseCsv } from "@/lib/csv";
@@ -129,12 +130,14 @@ describe("PL-07 比較 CSV 安全且與目前篩選同範圍", () => {
     const rows = selectProductComparisonRows(compareProducts(ds, snapshot.report.scope).rows, { negativeOnly: true });
     const csv = exportProductComparisonCsv(ds, snapshot, rows, { query: "=1+1", negativeOnly: true }, { "sales_daily.csv": "銷售.csv" });
     const parsed = parseCsv(csv);
-    const record = Object.fromEntries(parsed.headers.map((header, index) => [header, parsed.rows[0].values[index]]));
+    const keys = parsed.headers.map(csvHeaderKey);
+    const record = Object.fromEntries(keys.map((key, index) => [key, parsed.rows[0].values[index]]));
     expect(parsed.rows).toHaveLength(1);
     expect(record).toMatchObject({ sku: "'=1+1", query: "'=1+1", previous_gross_profit: "60.00", current_gross_profit: "-60.00", gross_profit_change: "-120.00", negative_only: "true", metric_version: "contribution-v1", dataset_hash: snapshot.dataset_hash, filter_hash: snapshot.filter_hash, previous_start: aug1, current_start: aug2 });
     expect(record.previous_sources).toContain("銷售.csv");
     expect(record.current_sources).toContain('"line":3');
-    expect(parsed.headers).not.toContain("ad_spend");
+    expect(keys).not.toContain("ad_spend");
+    expect(parsed.headers[keys.indexOf("sku")]).toMatch(/ \(sku\)$/);
   });
 
   it("未知差額輸出空值加原因；空結果仍保留 filter metadata", async () => {
@@ -143,12 +146,13 @@ describe("PL-07 比較 CSV 安全且與目前篩選同範圍", () => {
     const snapshot = await createSnapshot(ds, {}, await hashInput(input));
     const rows = compareProducts(ds).rows.filter(row => row.changes.gross_profit.value === null);
     const parsed = parseCsv(exportProductComparisonCsv(ds, snapshot, rows, {}));
-    const record = Object.fromEntries(parsed.headers.map((header, index) => [header, parsed.rows[0].values[index]]));
+    const record = Object.fromEntries(parsed.headers.map((header, index) => [csvHeaderKey(header), parsed.rows[0].values[index]]));
     expect(record.gross_profit_change).toBe("");
     expect(record.gross_profit_change_reasons).toContain("MISSING_COGS");
     const empty = parseCsv(exportProductComparisonCsv(ds, snapshot, [], { query: "NOT_FOUND" }));
     expect(empty.rows).toHaveLength(1);
-    expect(empty.rows[0].values[empty.headers.indexOf("row_type")]).toBe("selection");
-    expect(empty.rows[0].values[empty.headers.indexOf("query")]).toBe("NOT_FOUND");
+    const emptyKeys = empty.headers.map(csvHeaderKey);
+    expect(empty.rows[0].values[emptyKeys.indexOf("row_type")]).toBe("selection");
+    expect(empty.rows[0].values[emptyKeys.indexOf("query")]).toBe("NOT_FOUND");
   });
 });

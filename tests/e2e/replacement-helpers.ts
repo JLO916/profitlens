@@ -1,12 +1,13 @@
+import { labels } from '../../src/i18n';
 import { type Locator, type Page } from '@playwright/test';
 /** Legacy workflows explicitly choose to discard; guard behavior has its own dedicated tests. */
 export async function clickReplacing(page: Page, button: Locator) {
   await button.click();
-  const dialog = page.getByRole('dialog', { name: '替換前先儲存工作區' });
-  if (await dialog.isVisible()) await dialog.getByRole('button', { name: '不儲存並繼續', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: labels.ui.replacementDialog.heading });
+  if (await dialog.isVisible()) await dialog.getByRole('button', { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
 }
 export async function startChannelContext(page: Page) {
-  const start = page.getByRole('button', { name: /^建立 .+ 方案工作區$/ });
+  const start = page.getByRole('button', { name: new RegExp(`^${labels.ui.multiScenarioWorkbench.startButton.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{channel\\\}/, '.+')}$`) });
   // The context preparation runs asynchronously from source validation.
   await Promise.race([start.waitFor({state:'visible'}), page.getByTestId('decision-workbench').waitFor({state:'visible'})]);
   if (await start.isVisible()) await start.click();
@@ -24,3 +25,9 @@ export const openMeeting = (page: Page) => openDetails(page.getByTestId('overvie
 export const openPeriodComparison = (page: Page) => openDetails(page.getByTestId('period-comparison'));
 export const openDownloads = (page: Page) => openDetails(page.getByTestId('download-menu'));
 export const closeDownloads = (page: Page) => closeDetails(page.getByTestId('download-menu'));
+
+/** R2 rule-card headlines are glossary templates with numbers filled in; match them by template shape. */
+export function ruleHeadline(code: keyof typeof labels.rules): RegExp {
+  const template = labels.rules[code].title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{\w+\\\}/g, '.+?');
+  return new RegExp(`^${template}$`);
+}

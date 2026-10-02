@@ -1,4 +1,6 @@
 import { openMeeting } from "./replacement-helpers";
+import { fill, labels } from "../../src/i18n";
+import { metricDefinitions } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page, type TestInfo } from "@playwright/test";
@@ -15,8 +17,20 @@ const test = base.extend<{ audit: string[] }>({
   }, { auto: true }],
 });
 
-const notice = "尚未置頂行動；主摘要不會自動挑選，其餘列附錄。";
+const summaryCopy = labels.ui.managerSummary;
+const contributionLabel = metricDefinitions.contribution_after_marketing.label;
+const netRevenueLabel = metricDefinitions.net_revenue.label;
+/** R2: the "no pinned actions" notice and the "no actions at all" message both come from labels.ui.managerSummary. */
+const notice = summaryCopy.unpinnedNotice;
+const noActions = summaryCopy.noActions;
 const actionName = (index: number) => `匯出驗收行動第${index}項`;
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** R2 moved the Markdown technical appendix under labels.sections.technicalDetails ("## 技術細節"). */
+const technicalHeading = `## ${labels.sections.technicalDetails}`;
+/** review-workbench renders `改用這個待辦的最新數據：{name}`; match by the template prefix. */
+const refreshActionRef = new RegExp(`^${escapeRegExp(labels.ui.reviewWorkbench.refreshActionRef.split("{name}")[0])}`);
+/** Golden keeps raw channel codes (demo alias applies only to synthetic-demo datasets); scope kind "all" renders as labels.sections.total. */
+const goldenFactLabel = fill(labels.ui.actionsWorkbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC、MARKETPLACE", scopeKind: labels.sections.total, value: "255.00" });
 
 async function saveDownload(page: Page, button: Locator, path: string) {
   const pending = page.waitForEvent("download");
@@ -27,10 +41,13 @@ async function saveDownload(page: Page, button: Locator, path: string) {
   return readFile(destination, "utf8");
 }
 
+/** R2 CSV headers are「中文名稱 (english_key)」; keep the machine key so cell lookups stay on the English field names. */
+const csvKey = (header: string) => /\(([^()]+)\)\s*$/.exec(header)?.[1] ?? header;
+
 /** Independent quote-aware reader; inspect downloaded cells rather than substring matches. */
 function csvRecords(text: string): Record<string, string>[] {
   const rows: string[][] = []; let row: string[] = [], cell = "", quoted = false;
-  const value = text.replace(/^\uFEFF/, "");
+  const value = text.replace(/^﻿/, "");
   for (let index = 0; index < value.length; index++) {
     const character = value[index];
     if (character === '"') {
@@ -43,29 +60,29 @@ function csvRecords(text: string): Record<string, string>[] {
   }
   if (cell || row.length) { row.push(cell); rows.push(row); }
   expect(quoted).toBe(false);
-  const headers = rows.shift()!;
+  const headers = rows.shift()!.map(csvKey);
   return rows.map(values => { expect(values).toHaveLength(headers.length); return Object.fromEntries(headers.map((key, index) => [key, values[index]])); });
 }
 
 async function checkPrint(page: Page, info: TestInfo, pinned: boolean) {
   const summary = page.getByTestId("manager-summary");
-  await summary.getByRole("button", { name: "列印主管摘要", exact: true }).click();
+  await summary.getByRole("button", { name: labels.buttons.print, exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-print-invoked", "true");
   await page.emulateMedia({ media: "print" });
   const print = page.getByTestId("manager-summary-print");
   await expect(print).toBeVisible();
   await expect(summary).toBeHidden();
-  await expect(print).toContainText("門檻 1,000.00 TWD");
+  await expect(print).toContainText(fill(summaryCopy.printThresholdLine, { amount: "1,000.00" }));
   await expect(print).toContainText("-315.00");
   await expect(print).toContainText("+220.00");
   const main = print.locator(":scope > ul > li");
-  const appendix = print.locator(":scope > section").filter({ has: page.getByRole("heading", { name: "其他行動附錄", exact: true }) });
+  const appendix = print.locator(":scope > section").filter({ has: page.getByRole("heading", { name: summaryCopy.appendixHeading, exact: true }) });
   await expect(main).toHaveCount(pinned ? 3 : 0);
   await expect(appendix.locator(":scope > ul > li")).toHaveCount(pinned ? 5 : 8);
   for (let index = 1; index <= 8; index++) await expect((pinned && index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })).toBeVisible();
   if (!pinned) {
     await expect(print).toContainText(notice);
-    await expect(print).not.toContainText("尚未建立行動");
+    await expect(print).not.toContainText(noActions);
   }
   const suffix = `${pinned ? "pinned" : "unpinned"}-${info.project.name}`;
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-print-${suffix}.png`), fullPage: true });
@@ -82,52 +99,53 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   // Stub only the blocking OS dialog; the app's portal and real print-media layout still run.
   await page.addInitScript(() => { window.print = () => { document.documentElement.dataset.printInvoked = "true"; }; });
   await page.goto("/");
-  await page.getByRole("button", { name: "進階驗證", exact: true }).click();
-  await page.getByLabel("資料集", { exact: true }).selectOption("golden");
-  await page.getByRole("button", { name: "載入資料集", exact: true }).click();
-  await expect(page.getByTestId("workspace-status")).toContainText("資料已就緒");
-  await page.getByRole("button", { name: "行動摘要", exact: true }).click();
+  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
+  await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
   for (let index = 1; index <= 8; index++) {
-    await page.getByRole("button", { name: "新增行動", exact: true }).click();
+    await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
     const card = page.getByTestId(`action-${index}`);
-    await card.getByLabel("問題", { exact: true }).fill(actionName(index));
-    await card.getByLabel("具體動作", { exact: true }).fill("核對已入帳費用與來源");
-    await card.getByLabel("負責角色", { exact: true }).fill("營運主管");
-    const evidence = card.getByLabel("本快照證據（可複選）", { exact: true });
-    const id = await evidence.locator("option").filter({ hasText: /2026-08-02–2026-08-02 · 行銷後貢獻 · DTC、MARKETPLACE（範圍合計） · 255\.00/ }).getAttribute("value");
+    await card.getByLabel(labels.actions.problem, { exact: true }).fill(actionName(index));
+    await card.getByLabel(labels.actions.step, { exact: true }).fill("核對已入帳費用與來源");
+    await card.getByLabel(labels.actions.owner, { exact: true }).fill("營運主管");
+    const evidence = card.getByLabel(labels.ui.actionsWorkbench.evidencePicker, { exact: true });
+    const id = await evidence.locator("option").filter({ hasText: goldenFactLabel }).getAttribute("value");
     expect(id).toBeTruthy();
     await evidence.selectOption(id!);
-    if (index <= 3) await card.getByRole("button", { name: "置頂行動", exact: true }).click();
+    if (index <= 3) await card.getByRole("button", { name: labels.buttons.pin, exact: true }).click();
   }
-  await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await openMeeting(page);
-  const updates = page.getByRole("button", { name: /^更新會議行動引用：/ });
+  const updates = page.getByRole("button", { name: refreshActionRef });
   while (await updates.count()) await updates.first().click();
   const summary = page.getByTestId("manager-summary");
-  await summary.getByLabel("金額重要性門檻（TWD）", { exact: true }).fill("1000");
-  await summary.getByRole("button", { name: "套用摘要門檻", exact: true }).click();
-  await expect(summary.getByLabel("金額重要性門檻（TWD）", { exact: true })).toHaveValue("1000.00");
-  const main = summary.getByRole("heading", { name: "會議方案與交辦", exact: true }).locator("..").locator(":scope > ul > li");
+  await summary.getByLabel(labels.meeting.threshold, { exact: true }).fill("1000");
+  await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await expect(summary.getByLabel(labels.meeting.threshold, { exact: true })).toHaveValue("1000.00");
+  const main = summary.getByRole("heading", { name: summaryCopy.decisionsHeading, exact: true }).locator("..").locator(":scope > ul > li");
   await expect(main).toHaveCount(3);
-  const appendix = summary.locator(":scope > details").filter({ has: page.getByText("其他行動附錄（5）", { exact: true }) });
+  const appendix = summary.locator(":scope > details").filter({ has: page.getByText(fill(summaryCopy.appendixActions, { n: 5 }), { exact: true }) });
   await appendix.locator(":scope > summary").click();
   await expect(appendix.locator(":scope > ul > li")).toHaveCount(5);
   for (let index = 1; index <= 8; index++) await expect((index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })).toBeVisible();
 
   const prefix = `verification/review-v2-a-decision-${info.project.name}`;
-  const markdown = await saveDownload(page, summary.getByRole("button", { name: "下載主管摘要 Markdown", exact: true }), `${prefix}.md`);
-  const [body, technical] = markdown.split("## 技術稽核附錄");
+  const markdown = await saveDownload(page, summary.getByRole("button", { name: labels.buttons.exportMarkdown, exact: true }), `${prefix}.md`);
+  const [body, technical] = markdown.split(technicalHeading);
   expect(body.match(/匯出驗收行動第/g)).toHaveLength(3);
   expect(technical.match(/匯出驗收行動第/g)).toHaveLength(5);
-  expect(body).toContain("重要性門檻：1000.00 TWD");
-  expect(body).toContain("570.00 → 255.00；差額 -315.00");
-  expect(body).toContain("2250.00 → 2470.00；差額 +220.00");
+  // Threshold sentence is the tail of mdComparison after the comparison mode; assert that part so the mode label stays independent.
+  expect(body).toContain(fill(summaryCopy.mdComparison.split("{mode}")[1], { threshold: "1000.00" }));
+  expect(body).toContain(fill(summaryCopy.mdHeadlineRow, { metric: contributionLabel, previous: "570.00", current: "255.00", change: "-315.00" }));
+  expect(body).toContain(fill(summaryCopy.mdHeadlineRow, { metric: netRevenueLabel, previous: "2250.00", current: "2470.00", change: "+220.00" }));
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-ui-pinned-${info.project.name}.png`), fullPage: true });
   await checkPrint(page, info, true);
 
-  await page.getByRole("button", { name: "行動摘要", exact: true }).click();
-  const json = JSON.parse(await saveDownload(page, page.getByRole("button", { name: "下載決策 JSON", exact: true }), `${prefix}.json`));
-  const csv = csvRecords(await saveDownload(page, page.getByRole("button", { name: "下載決策 CSV", exact: true }), `${prefix}.csv`));
+  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  const json = JSON.parse(await saveDownload(page, page.getByRole("button", { name: labels.downloads.decisionJson, exact: true }), `${prefix}.json`));
+  const csv = csvRecords(await saveDownload(page, page.getByRole("button", { name: labels.downloads.decisionCsv, exact: true }), `${prefix}.csv`));
   expect(json.export_version).toBe("workspace-decision-v2");
   expect(json.session).toMatchObject({ dataset_id: "golden-v1", metric_version: "contribution-v1", data_as_of: "2026-08-03", period: { start: "2026-08-02", end: "2026-08-02" } });
   expect(json.session.dataset_hash).toMatch(/^[a-f0-9]{64}$/);
@@ -151,20 +169,20 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
     expect(JSON.parse(fact.source_refs).length).toBeGreaterThan(0);
   }
 
-  for (let index = 0; index < 3; index++) await page.getByRole("button", { name: "取消置頂", exact: true }).first().click();
-  await expect(page.getByRole("button", { name: "取消置頂", exact: true })).toHaveCount(0);
-  await page.getByRole("button", { name: "經營總覽", exact: true }).click();
+  for (let index = 0; index < 3; index++) await page.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true }).first().click();
+  await expect(page.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await openMeeting(page);
   await expect(main).toHaveCount(0);
   await expect(summary).toContainText(notice);
-  await expect(summary).not.toContainText("行動尚未建立");
-  const allAppendix = summary.locator(":scope > details").filter({ has: page.getByText("其他行動附錄（8）", { exact: true }) });
+  await expect(summary).not.toContainText(noActions);
+  const allAppendix = summary.locator(":scope > details").filter({ has: page.getByText(fill(summaryCopy.appendixActions, { n: 8 }), { exact: true }) });
   await allAppendix.locator(":scope > summary").click();
   await expect(allAppendix.locator(":scope > ul > li")).toHaveCount(8);
-  const unpinned = await saveDownload(page, summary.getByRole("button", { name: "下載主管摘要 Markdown", exact: true }), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);
-  const [unpinnedBody, unpinnedAppendix] = unpinned.split("## 技術稽核附錄");
+  const unpinned = await saveDownload(page, summary.getByRole("button", { name: labels.buttons.exportMarkdown, exact: true }), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);
+  const [unpinnedBody, unpinnedAppendix] = unpinned.split(technicalHeading);
   expect(unpinnedBody).toContain(notice);
-  expect(unpinnedBody).not.toMatch(/行動尚未建立|尚未建立行動|匯出驗收行動第/);
+  expect(unpinnedBody).not.toMatch(new RegExp(`${escapeRegExp(noActions)}|匯出驗收行動第`));
   expect(unpinnedAppendix.match(/匯出驗收行動第/g)).toHaveLength(8);
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-ui-unpinned-${info.project.name}.png`), fullPage: true });
   await checkPrint(page, info, false);

@@ -462,3 +462,29 @@ textarea { font: inherit; color: var(--ink); border: 1px solid #d8e2dc; border-r
 }
 /* R1: keep scrolled-to targets clear of the sticky period bar. */
 main summary, main button, main input, main select, main textarea, main [role="region"], main article, main section, main label, main h2, main h3 { scroll-margin-top: 120px; }
+
+/* R2: 口徑說明、怎麼算的階梯、來源分頁 */
+.basis-dialog { border: 0; border-radius: 12px; padding: 0; width: min(640px, 94vw); max-height: 90dvh; color: var(--ink); box-shadow: 0 24px 70px #233f3d33; }
+.basis-dialog::backdrop { background: #1f383858; backdrop-filter: blur(2px); }
+.basis-list { padding-left: 22px; display: grid; gap: 10px; font-size: 14px; line-height: 1.8; }
+.basis-button { min-height: 32px; padding: 5px 11px; font-size: 12px; gap: 5px; }
+@media (max-width: 900px) { .basis-button { padding: 5px 9px; } .basis-button .basis-text { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; } }
+.evidence-ladder { background: #f6f8f5; border-radius: 8px; padding: 16px 18px; margin: 18px 0; }
+.evidence-ladder > p { font-size: 13px; color: #3c5a4e; margin-bottom: 10px; }
+.evidence-ladder h4 { font-size: 13px; margin: 14px 0 6px; }
+.ladder-table { width: 100%; border-collapse: collapse; font-size: 13px; background: transparent; }
+.ladder-table td, .ladder-table th { padding: 7px 8px; border-bottom: 1px solid #e3ebe6; background: transparent; }
+.ladder-table th { font-weight: 500; color: #3c5a4e; text-align: left; white-space: normal; }
+.ladder-op { width: 28px; text-align: center; color: #7a8f85; }
+.ladder-amount { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ladder-table tr.subtotal th, .ladder-table tr.subtotal td { font-weight: 600; }
+.ladder-table tr.current th, .ladder-table tr.current td { font-weight: 650; color: #1f4f41; background: #e6efe9; }
+.evidence-technical { margin: 14px 0; font-size: 12px; }
+.evidence-technical summary { cursor: pointer; color: #56766a; }
+.evidence-technical dl > div { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(0, 3fr); gap: 10px; margin: 8px 0; }
+.evidence-technical dd, .evidence-technical ul { margin: 0; padding-left: 0; list-style: none; }
+.source-controls { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin: 10px 0; }
+.source-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.source-search { flex: 1; min-width: 180px; }
+.evidence-sources nav { display: flex; gap: 10px; align-items: center; margin-top: 12px; font-size: 12px; }
+@media (max-width: 640px) { .basis-dialog { width: 100vw; max-height: 100dvh; border-radius: 0; } .basis-button { padding: 4px 8px; } }
