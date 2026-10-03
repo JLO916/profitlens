@@ -231,20 +231,49 @@ export function buildExcelWorkbook(input: ExcelExportInput): ExcelWorkbook {
 /** 與 export.ts encodeCsv 同一條防注入規則：開頭是 = + - @、空白或控制／零寬／方向字元時前面加 '。 */
 const FORMULA_PREFIX = /^[=+\-@\s\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/u;
 const LONE_SURROGATE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
+/** XML 不允許的非字元 U+FFFE／U+FFFF：SheetJS 照原樣寫入，Excel 會說檔案有問題，直接移除。 */
+const NONCHARACTER = /[￾￿]/g;
+/** DEL 與 C1 控制字元（U+007F–U+009F）：SheetJS 不跳脫、讀回時被丟掉；改成 U+FFFD，看得出原本有字元。 */
+const C1_CONTROL = /[\u007f-\u009f]/g;
 /**
- * 不可信文字 → 安全的字串格內容：補不成對的代理字元、套 CSV 防注入規則、
- * 超過 32,767 字截斷（不切斷代理對），最後把字面上的 _xHHHH_ 跳脫成 _x005F_xHHHH_（Excel 會把它解碼成字元）。
+ * 字面上的 _xHHHH_ 會被 Excel 解碼成一個字元，所以把開頭的 _ 寫成 _x005F_。
+ * 用 lookahead 逐一檢查每個 _（不吃掉後面的字），重疊的 _x005F_x0041_ 兩個 _ 都會跳脫，讀回才與原文相同。
+ */
+const LITERAL_ESCAPE = /_(?=x[0-9a-fA-F]{4}_)/g;
+const ESCAPED_UNDERSCORE = "_x005F_";
+/**
+ * 不可信文字 → 安全的字串格內容：補不成對的代理字元、移除非字元、C1 控制字元改成 U+FFFD、套 CSV 防注入規則，
+ * 把字面上的 _xHHHH_ 跳脫成 _x005F_xHHHH_；跳脫後超過 32,767 字才截斷（不切斷代理對與跳脫序列），最終長度不超過上限。
  */
 export function excelText(value: string): string {
   if (typeof value !== "string") throw new TypeError("INVALID_TEXT_CELL");
-  let result = value.replace(LONE_SURROGATE, "�");
+  let result = value.replace(LONE_SURROGATE, "�").replace(NONCHARACTER, "").replace(C1_CONTROL, "�");
   if (FORMULA_PREFIX.test(result)) result = `'${result}`;
-  if (result.length > EXCEL_CELL_TEXT_LIMIT) {
-    let end = EXCEL_CELL_TEXT_LIMIT - copy.truncated.length;
-    if (/[\ud800-\udbff]/.test(result[end - 1])) end -= 1;
-    result = `${result.slice(0, end)}${copy.truncated}`;
+  const escaped = result.replace(LITERAL_ESCAPE, ESCAPED_UNDERSCORE);
+  if (escaped.length <= EXCEL_CELL_TEXT_LIMIT) return escaped;
+  return `${escapedPrefix(result, EXCEL_CELL_TEXT_LIMIT - copy.truncated.length)}${copy.truncated}`;
+}
+/**
+ * 取 text 開頭最長的一段，跳脫後長度不超過 budget，回傳跳脫後的結果。
+ * 切點不落在代理對中間，也不落在字面 _xHHHH_ 之內（跳脫後的 _x005F_xHHHH_ 整段保留或整段捨去）。
+ */
+function escapedPrefix(text: string, budget: number): string {
+  const escapes = new Uint8Array(text.length);
+  const inside = new Uint8Array(text.length + 1);
+  for (const match of text.matchAll(LITERAL_ESCAPE)) {
+    escapes[match.index] = 1;
+    inside.fill(1, match.index + 1, match.index + 7);
   }
-  return result.replace(/_(x[0-9a-fA-F]{4}_)/g, "_x005F_$1");
+  let used = 0;
+  let end = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    used += escapes[index] ? ESCAPED_UNDERSCORE.length : 1;
+    if (used > budget) break;
+    const code = text.charCodeAt(index);
+    // 不成對的代理字元已先換掉，所以高位代理後面一定是低位代理，不能切在兩者之間。
+    if (!inside[index + 1] && !(code >= 0xd800 && code <= 0xdbff)) end = index + 1;
+  }
+  return text.slice(0, end).replace(LITERAL_ESCAPE, ESCAPED_UNDERSCORE);
 }
 
 /** 工作表名稱：去掉 [ ] : * ? / \ 與控制字元、頭尾的 '，最多 31 字；空的或保留字 History 改用 fallback。 */

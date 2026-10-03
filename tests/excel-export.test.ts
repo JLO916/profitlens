@@ -293,6 +293,49 @@ describe("R6-4 cell converters", () => {
     expect(excelText("_x0041_ and _X0041_ and _x00zz_")).toBe("_x005F_x0041_ and _X0041_ and _x00zz_");
   });
 
+  it("text: removes U+FFFE/U+FFFF (not allowed in XML) and turns DEL/C1 controls into U+FFFD", () => {
+    expect(excelText("a￾b￿c")).toBe("abc");
+    expect(excelText("a\u007fb\u0085c\u009fd")).toBe("a�b�c�d");
+    // 開頭的 C1 控制字元改成 U+FFFD 後就不是公式字元，不必再加 '。
+    expect(excelText("\u0085=cmd")).toBe("�=cmd");
+    expect(excelText("￾=cmd")).toBe("'=cmd");
+    for (const sample of ["a￾b", "x\u0080y", "￿"]) expect(excelText(sample)).not.toMatch(/[￾￿\u007f-\u009f]/);
+  });
+
+  it("text: escapes overlapping literal _xHHHH_ so every underscore that starts one is protected", () => {
+    // 原文 _x005F_x0041_ 有兩個 _xHHHH_（共用中間的 _），兩個 _ 都要寫成 _x005F_。
+    expect(excelText("_x005F_x0041_")).toBe("_x005F_x005F_x005F_x0041_");
+    expect(excelText("__x0041_")).toBe("__x005F_x0041_");
+  });
+
+  it("text: escaping happens before truncation, so the final text never exceeds Excel's limit", () => {
+    const budget = EXCEL_CELL_TEXT_LIMIT - copy.truncated.length;
+    // 32,760 字＋_x0041_：原文剛好 32,767 字，跳脫後 32,773 字，必須截斷。
+    const boundary = excelText(`${"a".repeat(32_760)}_x0041_`);
+    expect(boundary.length).toBeLessThanOrEqual(EXCEL_CELL_TEXT_LIMIT);
+    expect(boundary).toBe(`${"a".repeat(budget)}${copy.truncated}`);
+    // 原文 32,767 字、沒有要跳脫的字：不截斷。
+    expect(excelText("a".repeat(EXCEL_CELL_TEXT_LIMIT))).toBe("a".repeat(EXCEL_CELL_TEXT_LIMIT));
+    // 跳脫後剛好放得下：整段 _x005F_x0041_ 保留，總長＝上限。
+    const fits = excelText(`${"a".repeat(budget - 13)}_x0041_${"b".repeat(100)}`);
+    expect(fits).toBe(`${"a".repeat(budget - 13)}_x005F_x0041_${copy.truncated}`);
+    expect(fits).toHaveLength(EXCEL_CELL_TEXT_LIMIT);
+    // 差一個字放不下：整段捨去，不留下半個跳脫序列。
+    for (const shift of [12, 7, 3, 1]) {
+      const cut = excelText(`${"a".repeat(budget - shift)}_x0041_${"b".repeat(100)}`);
+      expect(cut, String(shift)).toBe(`${"a".repeat(budget - shift)}${copy.truncated}`);
+      expect(cut.length).toBeLessThanOrEqual(EXCEL_CELL_TEXT_LIMIT);
+    }
+    // 大量要跳脫的文字（每 7 字變 13 字）也不超過上限，且結尾前是完整的跳脫序列。
+    const dense = excelText("_x0041_".repeat(10_000));
+    expect(dense.length).toBeLessThanOrEqual(EXCEL_CELL_TEXT_LIMIT);
+    expect(dense.endsWith(`_x005F_x0041_${copy.truncated}`)).toBe(true);
+    expect(dense.slice(0, -copy.truncated.length)).toBe("_x005F_x0041_".repeat((dense.length - copy.truncated.length) / 13));
+    // 代理對在切點上：不切斷。
+    const emoji = excelText(`${"a".repeat(budget - 1)}😀_x0041_${"b".repeat(100)}`);
+    expect(emoji).toBe(`${"a".repeat(budget - 1)}${copy.truncated}`);
+  });
+
   it("sheet names: strips [ ] : * ? / \\ and edge quotes, keeps 31 characters, falls back for empty or History", () => {
     expect(excelSheetName("a[b]c:d*e?f/g\\h", "S")).toBe("abcdefgh");
     expect(excelSheetName("x".repeat(40), "S")).toHaveLength(31);
@@ -376,6 +419,21 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
     expect(values[2]).toBe("_x0041_");
     expect(values[0]).toBe("' lead");
     expect(values[5]).toHaveLength(EXCEL_CELL_TEXT_LIMIT);
+  });
+
+  it("round-trips overlapping _xHHHH_, removes noncharacters and keeps escaped long text within the limit after parsing", async () => {
+    const budget = EXCEL_CELL_TEXT_LIMIT - copy.truncated.length;
+    const tricky = ["_x005F_x0041_", "__x0041__x0042_", "a￾b￿c", "a\u0085b", `${"a".repeat(32_760)}_x0041_`, `${"a".repeat(budget - 13)}_x0041_${"b".repeat(100)}`];
+    const sheet: ExcelSheet = { name: "測試", header: ["文字"], rows: tricky.map(item => [{ kind: "text", value: item }]) };
+    const { book } = parse(await writeExcel({ sheets: [sheet] }));
+    const values = XLSX.utils.sheet_to_json<string[]>(book.Sheets["測試"], { header: 1 }).slice(1).map(row => row[0]);
+    expect(values[0]).toBe("_x005F_x0041_");
+    expect(values[1]).toBe("__x0041__x0042_");
+    expect(values[2]).toBe("abc");
+    expect(values[3]).toBe("a�b");
+    expect(values[4]).toBe(`${"a".repeat(budget)}${copy.truncated}`);
+    expect(values[5]).toBe(`${"a".repeat(budget - 13)}_x0041_${copy.truncated}`);
+    for (const value of values) expect(value.length).toBeLessThanOrEqual(EXCEL_CELL_TEXT_LIMIT);
   });
 
   it("sanitizes and de-duplicates sheet names", async () => {

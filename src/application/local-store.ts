@@ -94,6 +94,25 @@ export async function localWorkspaceSavedAt(): Promise<string | null> {
   return typeof value === "string" && SAVED_AT_PATTERN.test(value) && !Number.isNaN(Date.parse(value)) ? value : null;
 }
 
+export interface LocalWorkspaceInfo {
+  /** 這台電腦是否已有保存的工作區紀錄（只有欄位對照記憶不算）。 */
+  exists: boolean;
+  /** 保存時間（規則同 localWorkspaceSavedAt）；沒有紀錄、R6 以前存的副本或值不可信時為 null。 */
+  savedAt: string | null;
+}
+/**
+ * R6：自動保存會改存成目前的工作區，同意前先問「這台電腦是否已有副本」。
+ * 沒有本機資料庫時直接回傳 { exists: false }，不會為了讀取而建立資料庫；有資料庫時在同一筆唯讀交易讀紀錄數與保存時間。
+ */
+export async function hasLocalWorkspace(): Promise<LocalWorkspaceInfo> {
+  if (!(await hasLocalDatabase())) return { exists: false, savedAt: null };
+  const reads: { savedAt?: IDBRequest<unknown> } = {};
+  const count = await transact(await openDatabase(), "readonly", store => { reads.savedAt = store.get(SAVED_AT_KEY); return store.count(RECORD_KEY); });
+  const value = reads.savedAt?.result;
+  const exists = typeof count === "number" && count > 0;
+  return { exists, savedAt: exists && typeof value === "string" && SAVED_AT_PATTERN.test(value) && !Number.isNaN(Date.parse(value)) ? value : null };
+}
+
 /**
  * Column-mapping memory (04 §5). Callers must only reach these after the user consented to local saving;
  * without consent mapping-memory.ts keeps entries in tab memory instead. Opens the DB only when called.

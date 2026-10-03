@@ -795,12 +795,17 @@ details.assumptions-panel[open] > summary { margin-bottom: 4px; }
 .local-save-alert p { color: #a84c31; }
 .storage-menu .consent-note { margin-top: 2px; }
 .storage-menu .autosave-status { margin-top: 4px; font-weight: 550; color: #2f4f44; }
+.storage-menu .autosave-toggle { margin-top: 6px; }
+.storage-menu .autosave-replace:not(:empty) { display: grid; gap: 8px; justify-items: start; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--line); border-left: 4px solid #b97a2b; border-radius: 6px; background: #fffaf0; }
+/* 提示開著時替主內容預留底部空間，頁尾最後幾行不會被固定在底部的提示蓋住；提示關閉即恢復。 */
+body:has([data-testid="local-save-prompt"]) main { padding-bottom: 240px; }
 @media (max-width: 640px) {
+  body:has([data-testid="local-save-prompt"]) main { padding-bottom: 260px; }
   .local-save-prompt, .local-save-alert { left: 0; right: 0; bottom: 0; width: auto; max-height: 60vh; border-radius: 12px 12px 0 0; border-left-width: 1px; border-top: 4px solid var(--teal); padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); }
   .local-save-alert { border-top-color: var(--negative); }
   .local-save-prompt .button-row .button { flex: 1 1 auto; justify-content: center; }
 }
-@media print { .local-save-prompt, .local-save-alert { display: none !important; } }
+@media print { .local-save-prompt, .local-save-alert { display: none !important; } body:has([data-testid="local-save-prompt"]) main { padding-bottom: 20px; } }
 
 
 

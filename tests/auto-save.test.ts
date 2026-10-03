@@ -329,6 +329,7 @@ function fakeIndexedDb(initial?: Record<string, Record<string, unknown>>) {
         const store = {
           put(value: unknown, key: string) { if (mode !== "readwrite") throw new Error("ReadOnlyError"); writes.push({ store: storeName, key, mode }); data.set(key, value); return { result: key }; },
           get(key: string) { return { result: data.get(key) }; },
+          count(key: string) { return { result: data.has(key) ? 1 : 0 }; },
         };
         queueMicrotask(() => transaction.oncomplete?.());
         return transaction;
@@ -404,6 +405,49 @@ describe("R6-6 local-store：保存時間另存一個 key，讀取時不建立�
       vi.stubGlobal("indexedDB", fakeIndexedDb({ workspace: { "explicitly-saved-at": value }, "mapping-memory": {} }).factory);
       const { localWorkspaceSavedAt } = await import("@/application/local-store");
       await expect(localWorkspaceSavedAt(), String(value)).resolves.toBeNull();
+    }
+  });
+
+  it("hasLocalWorkspace：沒有本機資料庫時回傳沒有副本，而且不會開啟（建立）資料庫；不支援 IndexedDB 也不丟錯", async () => {
+    const fake = fakeIndexedDb();
+    vi.stubGlobal("indexedDB", fake.factory);
+    const { hasLocalWorkspace } = await import("@/application/local-store");
+    await expect(hasLocalWorkspace()).resolves.toEqual({ exists: false, savedAt: null });
+    expect(fake.open).not.toHaveBeenCalled();
+    vi.resetModules();
+    vi.stubGlobal("indexedDB", undefined);
+    const again = await import("@/application/local-store");
+    await expect(again.hasLocalWorkspace()).resolves.toEqual({ exists: false, savedAt: null });
+  });
+
+  it("hasLocalWorkspace：存過之後回傳有副本與保存時間；只讀不寫", async () => {
+    const text = await validBackup();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(AT);
+    const fake = fakeIndexedDb();
+    vi.stubGlobal("indexedDB", fake.factory);
+    const { saveLocalWorkspace, hasLocalWorkspace } = await import("@/application/local-store");
+    await saveLocalWorkspace(text);
+    await expect(hasLocalWorkspace()).resolves.toEqual({ exists: true, savedAt: "2026-10-03T06:32:00.000Z" });
+    expect(fake.writes).toHaveLength(2);
+  });
+
+  it("hasLocalWorkspace：R6 以前的副本（沒有保存時間）算有副本、時間不明；只有欄位對照記憶不算副本；不可信的時間視為不明", async () => {
+    const cases: [Record<string, Record<string, unknown>>, { exists: boolean; savedAt: string | null }][] = [
+      [{ workspace: { "explicitly-saved": "{}" }, "mapping-memory": {} }, { exists: true, savedAt: null }],
+      [{ workspace: {}, "mapping-memory": { "sales:abc": { key: "sales:abc" } } }, { exists: false, savedAt: null }],
+      // 只有時間、沒有紀錄（不應發生）：不算副本。
+      [{ workspace: { "explicitly-saved-at": "2026-10-03T06:32:00.000Z" }, "mapping-memory": {} }, { exists: false, savedAt: null }],
+      [{ workspace: { "explicitly-saved": "{}", "explicitly-saved-at": "<img src=x onerror=alert(1)>" }, "mapping-memory": {} }, { exists: true, savedAt: null }],
+      [{ workspace: { "explicitly-saved": "{}", "explicitly-saved-at": "2026-10-01T06:32:00.000Z" }, "mapping-memory": {} }, { exists: true, savedAt: "2026-10-01T06:32:00.000Z" }],
+    ];
+    for (const [initial, expected] of cases) {
+      vi.resetModules();
+      const fake = fakeIndexedDb(initial);
+      vi.stubGlobal("indexedDB", fake.factory);
+      const { hasLocalWorkspace } = await import("@/application/local-store");
+      await expect(hasLocalWorkspace(), JSON.stringify(initial)).resolves.toEqual(expected);
+      expect(fake.writes).toEqual([]);
     }
   });
 
