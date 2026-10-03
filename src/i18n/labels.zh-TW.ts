@@ -1680,7 +1680,24 @@ export const actionBoard = {
 
 
 /** R5-D 商品毛利 Top／Bottom 與欄位（product-comparison-panel.tsx）。 */
-export const productHighlights = {} as const;
+export const productHighlights = {
+  intro: "通路費與廣告不分到商品，這裡只看商品毛利。",
+  worstTitle: "本期毛利最差 {n} 個",
+  worstNote: "依本期商品毛利由低到高；毛利待補的商品不列入。",
+  worstEmpty: "本期沒有可計算毛利的商品。",
+  worstAria: "本期毛利最差的商品，可水平捲動",
+  worstCaption: "本期商品毛利由低到高，含商品毛利差額與毛利率",
+  bestTitle: "毛利增加最多 {n} 個",
+  bestNote: "只列商品毛利差額大於 0 的商品，由高到低。",
+  bestEmpty: "本期沒有毛利增加的商品。",
+  bestAria: "毛利增加最多的商品，可水平捲動",
+  bestCaption: "商品毛利差額由高到低，含本期商品毛利與毛利率",
+  fullTable: "全部商品",
+  moreColumns: "更多欄位",
+  moreColumnsHint: "顯示本期商品成本、折扣、退款與上期其他欄位",
+  columns: { dataStatus: "資料狀態" },
+  status: { both: "兩期皆有", current_only: "僅本期", previous_only: "僅上期", cost_unknown: "成本未知", coverage_unknown: "銷售完整性待確認" },
+} as const;
 
 
 
