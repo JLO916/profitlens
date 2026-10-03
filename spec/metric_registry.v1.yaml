@@ -1,0 +1,473 @@
+# ProfitLens 3 指標註冊表（metric registry）
+# 唯一來源：指標 ID、顯示名稱、白話提示、公式、可計算條件、好方向、格式、核心對應。
+# 規則：
+#   1. contribution-v1 的公式不得修改；本檔只新增指標與顯示規則。
+#   2. 元件不得寫死指標名稱或格式，一律由本檔編譯出的 packages/metrics 取得。
+#   3. 與 PRD 第 10 章衝突時以本檔為準，並在完成回報中列出衝突。
+registry_version: 1
+metric_version: contribution-v1
+locale: zh-TW
+currency: TWD
+amount_basis: 未稅
+
+symbols:
+  G: { label: 原價營收（折扣前）, source: sales_daily.gross_sales }
+  D: { label: 折扣, source: sales_daily.discounts }
+  R: { label: 退款金額, source: sales_daily.refunds, note: 依退款入帳日 }
+  C: { label: 商品成本, source: sales_daily.cogs_net }
+  P: { label: 平台抽成, source: "cost_daily → platform_fees" }
+  Q: { label: 金流手續費, source: "cost_daily → payment_fees" }
+  F: { label: 物流與包材費, source: "cost_daily → fulfillment_costs" }
+  O: { label: 其他變動費用, source: "cost_daily → other_variable_costs" }
+  A: { label: 廣告費, source: ad_daily.spend, note: 只含已歸屬通路的廣告；未歸屬廣告只計入全公司 }
+  U: { label: 件數, source: sales_daily.units_sold }
+  Ord: { label: 訂單數, source: orders_daily.orders, optional: true }
+  S: { label: 工作階段數, source: orders_daily.sessions, optional: true }
+
+# ---------- 格式定義（PRD 第 14.4 節） ----------
+formats:
+  money_exec:
+    description: 主管層金額（標題、KPI、摘要、簡報、LINE）
+    rules:
+      - { when: "abs >= 100000000", unit: 億, decimals: 2 }
+      - { when: "abs >= 10000", unit: 萬, decimals: 1 }
+      - { when: "abs < 10000", unit: 元, decimals: 0, thousands_separator: true }
+    negative_sign: "−"   # U+2212
+    rounding: ROUND_HALF_UP
+    examples: { "12500000000": "125.00 億", "7850657.90": "785.1 萬", "4708.98": "4,709 元", "-61169.93": "−6.1 萬" }
+  money_detail:
+    description: 明細層金額（表格、公式抽屜、匯出）
+    unit: 元
+    decimals: 2
+    thousands_separator: true
+    examples: { "7850657.90": "7,850,657.90" }
+  pct_1: { decimals: 1, suffix: "%", examples: { "16.1743": "16.2%" } }
+  pct_2: { decimals: 2, suffix: "%" }
+  pp_1:
+    description: 比率差，以「個百分點」表示
+    decimals: 1
+    suffix: " 個百分點"
+    direction_words: { up: 升, down: 降, flat: 持平 }
+    flat_when: 顯示值四捨五入後為 0.0
+    examples: { "-14.2514": "降 14.3 個百分點" }
+  multiple_1: { decimals: 1, suffix: " 倍", examples: { "11.3989": "11.4 倍" } }
+  ratio_2: { decimals: 2, examples: { "0.9857": "0.99" } }
+  int_thousands: { decimals: 0, thousands_separator: true, examples: { "7420": "7,420" } }
+  yuan_int: { decimals: 0, suffix: " 元", thousands_separator: true }
+  score_int: { decimals: 0, suffix: " 分" }
+
+delta_wording:
+  money: { increase: 多, decrease: 少, example: "少 59.9 萬" }
+  rate: { increase: 升到, decrease: 降到, arrow: "→", example: "11.0% → 24.0%" }
+  growth_pct:
+    only_when: 前期 > 0
+    otherwise: sign_flip_text   # MET-11
+  sign_flip_text:
+    pos_to_neg: "由賺 {prev} 轉為虧 {abs_cur}"
+    neg_to_pos: "由虧 {abs_prev} 轉為賺 {cur}"
+    neg_to_neg_better: "虧損減少 {abs_delta}"
+    neg_to_neg_worse: "虧損擴大 {abs_delta}"
+    zero_prev: "上期為 0，本期 {cur}"
+
+kpi_color_rule: >
+  KPI 卡的變化色依「好方向」決定：往好方向為綠、往壞方向為紅、持平為灰。
+  good_direction 為 neutral 的指標（例如廣告費）一律使用灰色。
+
+# ---------- 指標 ----------
+metrics:
+  # 金額
+  - id: gross_sales
+    label: 原價營收
+    full_label: 原價營收（折扣前）
+    hint: 售價 × 件數，還沒扣折扣和退款
+    formula: G
+    defined_when: has_sales
+    good_direction: up
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: gross_sales
+    legacy_labels: [折扣前商品收入]
+  - id: discounts
+    label: 折扣
+    hint: 給顧客的折扣、優惠券、滿額折
+    formula: D
+    defined_when: has_sales
+    good_direction: down
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: discounts
+  - id: refunds
+    label: 退款金額
+    hint: 依退款日期計算，可能是上期訂單的退款
+    formula: R
+    defined_when: has_sales
+    good_direction: down
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: refunds
+    legacy_labels: [已入帳退款]
+  - id: net_revenue
+    label: 淨營收
+    hint: 扣掉折扣與退款後的商品營收（未稅）
+    formula: "G - D - R"
+    formula_zh: 原價營收 − 折扣 − 退款
+    defined_when: has_sales
+    good_direction: up
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: net_revenue
+    legacy_labels: [商品淨營收]
+    kpi_default: true
+  - id: cogs_net
+    label: 商品成本
+    hint: 進貨或製造成本
+    formula: C
+    defined_when: "has_sales AND no MISSING_COGS"
+    good_direction: down
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: cogs_net
+    legacy_labels: [銷貨成本淨額]
+  - id: gross_profit
+    label: 商品毛利
+    hint: 淨營收扣掉商品成本
+    formula: "N - C"
+    formula_zh: 淨營收 − 商品成本
+    defined_when: "has_sales AND no MISSING_COGS"
+    good_direction: up
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: gross_profit
+  - id: platform_fees
+    label: 平台抽成
+    hint: 蝦皮、momo 等平台的成交手續費、活動費
+    formula: P
+    defined_when: cost_coverage_complete
+    good_direction: down
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: platform_fees
+    legacy_labels: [平台費用]
+  - id: payment_fees
+    label: 金流手續費
+    hint: 刷卡、超商代收、行動支付的手續費
+    formula: Q
+    defined_when: cost_coverage_complete
+    good_direction: down
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: payment_fees
+    legacy_labels: [金流費用]
+  - id: fulfillment_costs
+    label: 物流費
+    full_label: 物流與包材費
+    hint: 出貨運費、包材、倉儲
+    formula: F
+    defined_when: cost_coverage_complete
+    good_direction: down
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: fulfillment_costs
+    legacy_labels: [履約費用]
+  - id: other_variable_costs
+    label: 其他變動費用
+    hint: 隨訂單增加的其他費用（例如分潤、贈品）
+    formula: O
+    defined_when: cost_coverage_complete
+    good_direction: down
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: other_variable_costs
+    legacy_labels: [其他變動成本]
+  - id: contribution_before_ads
+    label: 通路貢獻
+    full_label: 通路貢獻（扣廣告前）
+    hint: 商品毛利再扣掉平台抽成、金流、物流和其他變動費用
+    formula: "GP - P - Q - F - O"
+    formula_zh: 商品毛利 − 平台抽成 − 金流手續費 − 物流費 − 其他變動費用
+    defined_when: "no MISSING_COGS AND cost_coverage_complete"
+    good_direction: up
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: contribution_before_marketing
+    legacy_labels: [行銷前貢獻]
+  - id: ad_spend
+    label: 廣告費
+    hint: 已歸屬到通路的廣告費
+    formula: A
+    defined_when: ad_coverage_complete
+    good_direction: neutral
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: ad_spend
+    kpi_default: true
+  - id: contribution_after_ads
+    label: 扣廣告後貢獻
+    short_label: 廣告後貢獻
+    hint: 業績扣掉商品成本、平台抽成、金流、物流和廣告後留下來的錢，要拿來付人事、房租
+    formula: "CMb - A"
+    formula_zh: 通路貢獻 − 廣告費
+    defined_when: "no MISSING_COGS AND cost_coverage_complete AND ad_coverage_complete"
+    good_direction: up
+    format: { exec: money_exec, detail: money_detail }
+    kernel_ref: contribution_after_marketing
+    legacy_labels: [行銷後貢獻]
+    kpi_default: true
+    footnote: 貢獻還沒扣人事、房租等固定費用與稅，不等於公司淨利
+
+  # 比率
+  - id: gross_margin
+    label: 毛利率
+    hint: 每 100 元淨營收，扣掉商品成本後剩幾元
+    formula: "GP / N"
+    defined_when: "N > 0"
+    good_direction: up
+    format: { exec: pct_1, detail: pct_2, delta: pp_1 }
+    kernel_ref: gross_margin
+  - id: contribution_margin
+    label: 貢獻率
+    hint: 每 100 元淨營收，最後留下幾元
+    formula: "CMa / N"
+    defined_when: "N > 0"
+    good_direction: up
+    format: { exec: pct_1, detail: pct_2, delta: pp_1 }
+    kernel_ref: contribution_margin
+    legacy_labels: [行銷後貢獻率]
+    kpi_default: true
+  - id: discount_rate
+    label: 折扣率
+    hint: 原價營收中，有多少比例變成折扣
+    formula: "D / G"
+    defined_when: "G > 0"
+    good_direction: down
+    format: { exec: pct_1, detail: pct_2, delta: pp_1 }
+    kernel_ref: discount_rate
+    kpi_default: true
+  - id: refund_ratio
+    label: 退款率（金額）
+    hint: 退款金額 ÷ 折扣後營收；不是件數退貨率
+    formula: "R / (G - D)"
+    defined_when: "G - D > 0"
+    good_direction: down
+    format: { exec: pct_1, detail: pct_2, delta: pp_1 }
+    kernel_ref: refund_ratio
+    legacy_labels: [退款金額比]
+    caution: 這是金額退款率，不是件數退貨率
+  - id: platform_fee_rate
+    label: 平台抽成率
+    hint: 每 100 元淨營收，平台抽走幾元
+    formula: "P / N"
+    defined_when: "N > 0"
+    applies_to_channel_types: [marketplace]
+    good_direction: down
+    format: { exec: pct_1, detail: pct_2, delta: pp_1 }
+    kernel_ref: null
+    new_in: v3
+  - id: fulfillment_burden
+    label: 物流費佔比
+    hint: 每 100 元淨營收要付幾元物流費
+    formula: "F / N"
+    defined_when: "N > 0"
+    good_direction: down
+    format: { exec: pct_1, detail: pct_2, delta: pp_1 }
+    kernel_ref: fulfillment_burden
+    legacy_labels: [履約費用占淨營收比]
+  - id: marketing_burden
+    label: 廣告佔比
+    hint: 每 100 元淨營收花多少廣告費
+    formula: "A / N"
+    defined_when: "N > 0"
+    good_direction: down
+    format: { exec: pct_1, detail: pct_2, delta: pp_1 }
+    kernel_ref: marketing_burden
+    legacy_labels: [廣告費占淨營收比]
+
+  # 倍數與增量
+  - id: mer
+    label: 整體廣告效益（MER）
+    short_label: MER
+    hint: 淨營收 ÷ 廣告費，全通路合計；不是廣告後台的 ROAS
+    formula: "N / A"
+    defined_when: "A > 0 AND N > 0"
+    good_direction: up
+    format: { exec: multiple_1, detail: multiple_1 }
+    kernel_ref: mer
+    legacy_labels: [混合行銷效率 MER]
+    do_not_call: [廣告投報率, ROAS]
+  - id: platform_reported_roas
+    label: 廣告後台回報 ROAS
+    hint: Meta、Google 後台自己算的轉換營收 ÷ 花費，只供參考，不參與貢獻計算
+    formula: "ad_daily.reported_revenue / ad_daily.spend"
+    defined_when: "has reported_revenue AND spend > 0"
+    good_direction: up
+    format: { exec: multiple_1, detail: multiple_1 }
+    kernel_ref: null
+    new_in: v3
+    reference_only: true
+  - id: breakeven_mer
+    label: 打平廣告倍數
+    hint: MER 至少要到這個倍數，扣完廣告才不虧
+    formula: "N / CMb"
+    defined_when: "CMb > 0 AND N > 0"
+    good_direction: reference
+    format: { exec: multiple_1, detail: multiple_1 }
+    kernel_ref: null
+    new_in: v3
+    caution_when_used_incrementally: 假設多做的業績與平均一樣賺錢
+  - id: inc_rev_per_discount
+    label: 折扣換營收
+    hint: 每多給 1 元折扣，淨營收多了幾元
+    formula: "ΔN / ΔD"
+    defined_when: "ΔD > 0"
+    good_direction: up
+    format: { exec: ratio_2, detail: ratio_2 }
+    kernel_ref: null
+    new_in: v3
+    caution: 這是兩期差額的比值，不代表因果
+  - id: inc_rev_per_ad
+    label: 廣告換營收
+    hint: 每多花 1 元廣告，淨營收多了幾元
+    formula: "ΔN / ΔA"
+    defined_when: "ΔA > 0"
+    good_direction: up
+    format: { exec: multiple_1, detail: multiple_1 }
+    kernel_ref: null
+    new_in: v3
+    caution: 這是兩期差額的比值，不代表因果
+  - id: inc_contribution_margin
+    label: 增量貢獻率
+    hint: 多做的每 100 元業績，扣廣告後貢獻變化幾元
+    formula: "ΔCMa / ΔN"
+    defined_when: "ΔN > 0"
+    good_direction: up
+    format: { exec: pct_1, detail: pct_2 }
+    kernel_ref: null
+    new_in: v3
+    caution: 這是兩期差額的比值，不代表因果
+
+  # 件數與訂單
+  - id: units_sold
+    label: 件數
+    formula: U
+    defined_when: has_units
+    good_direction: up
+    format: { exec: int_thousands, detail: int_thousands }
+    kernel_ref: units_sold
+  - id: revenue_per_unit
+    label: 件均淨營收
+    formula: "N / U"
+    defined_when: "U > 0"
+    good_direction: up
+    format: { exec: yuan_int, detail: money_detail }
+    kernel_ref: null
+    new_in: v3
+  - id: gross_profit_per_unit
+    label: 件均毛利
+    formula: "GP / U"
+    defined_when: "U > 0 AND no MISSING_COGS"
+    good_direction: up
+    format: { exec: yuan_int, detail: money_detail }
+    kernel_ref: null
+    new_in: v3
+  - id: orders
+    label: 訂單數
+    formula: Ord
+    defined_when: has_orders_daily
+    good_direction: up
+    format: { exec: int_thousands, detail: int_thousands }
+    kernel_ref: null
+    new_in: v3
+  - id: aov
+    label: 客單價
+    hint: 平均每張訂單的淨營收
+    formula: "N / Ord"
+    defined_when: "Ord > 0"
+    good_direction: up
+    format: { exec: yuan_int, detail: money_detail }
+    kernel_ref: null
+    new_in: v3
+  - id: fulfillment_per_order
+    label: 每單物流費
+    formula: "F / Ord"
+    defined_when: "Ord > 0"
+    good_direction: down
+    format: { exec: yuan_int, detail: money_detail }
+    kernel_ref: null
+    new_in: v3
+  - id: conversion_rate
+    label: 轉換率
+    hint: 工作階段中，有多少比例成交
+    formula: "Ord / S"
+    defined_when: "S > 0"
+    good_direction: up
+    format: { exec: pct_2, detail: pct_2, delta: pp_1 }
+    kernel_ref: null
+    new_in: v3
+
+  # 計畫與進度
+  - id: attainment
+    label: 達成率
+    formula: "actual / target"
+    defined_when: "target > 0"
+    good_direction: up
+    format: { exec: pct_1, detail: pct_2 }
+    new_in: v3
+  - id: time_progress
+    label: 時間進度
+    formula: "elapsed_days / days_in_period"
+    defined_when: always
+    good_direction: reference
+    format: { exec: pct_1, detail: pct_2 }
+    new_in: v3
+  - id: pacing_gap
+    label: 進度差
+    hint: 達成率減時間進度；負數代表落後
+    formula: "attainment - time_progress"
+    defined_when: has_target
+    good_direction: up
+    format: { exec: pp_1, detail: pp_1 }
+    new_in: v3
+  - id: budget_used
+    label: 預算已用
+    formula: "ad_spend_mtd / ad_budget"
+    defined_when: "ad_budget > 0"
+    good_direction: reference
+    format: { exec: pct_1, detail: pct_2 }
+    new_in: v3
+  - id: linear_projection
+    label: 照目前速度推算
+    hint: 依日均線性推算，不是預測
+    formula: "cumulative / elapsed_days * days_in_period"
+    defined_when: "elapsed_days > 0"
+    good_direction: up
+    format: { exec: money_exec, detail: money_detail }
+    new_in: v3
+    caution: 依日均線性推算，不是預測
+  - id: data_health_score
+    label: 資料健康分數
+    formula: 見 PRD 第 12.9 節
+    defined_when: always
+    good_direction: up
+    format: { exec: score_int, detail: score_int }
+    new_in: v3
+
+# KPI 卡預設組合（GLB-14 角色檢視可覆寫）
+kpi_sets:
+  default: [net_revenue, contribution_after_ads, contribution_margin, ad_spend, discount_rate]
+  owner: [net_revenue, contribution_after_ads, contribution_margin, ad_spend, discount_rate]
+  ops: [net_revenue, contribution_after_ads, discount_rate, refund_ratio, fulfillment_burden]
+  marketing: [ad_spend, mer, marketing_burden, contribution_after_ads, net_revenue]
+  finance: [net_revenue, gross_profit, contribution_before_ads, contribution_after_ads, contribution_margin]
+kpi_secondary:
+  ad_spend: mer   # 廣告費卡的第二行顯示 MER
+
+# 貢獻樹（EXP-01）節點順序
+contribution_tree:
+  root: contribution_after_ads
+  children:
+    - id: net_revenue
+      children: [gross_sales, discounts, refunds]
+    - cogs_net
+    - platform_fees
+    - payment_fees
+    - fulfillment_costs
+    - other_variable_costs
+    - ad_spend
+  sign_in_tree: { discounts: "-", refunds: "-", cogs_net: "-", platform_fees: "-", payment_fees: "-", fulfillment_costs: "-", other_variable_costs: "-", ad_spend: "-" }
+  excess_base:   # 比例惡化金額的基數（PRD 第 11.3 節）
+    discounts: gross_sales
+    cogs_net: gross_sales
+    refunds: gross_sales_minus_discounts
+    platform_fees: net_revenue
+    payment_fees: net_revenue
+    fulfillment_costs: net_revenue
+    other_variable_costs: net_revenue
+    ad_spend: net_revenue

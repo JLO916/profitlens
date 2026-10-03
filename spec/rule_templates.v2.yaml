@@ -1,0 +1,440 @@
+# ProfitLens 3 洞察規則與文案模板（rules-v2）
+# 來源：PRD 第 11 章、第 15 章、PLN-03、REV-03。與 PRD 衝突時以本檔為準並回報。
+# 參數語法：{name}。金額參數自動套用 money_exec；比率參數自動套用 pct_1；倍數套用 multiple_1。
+# 「{scope}」在單一通路時為通路顯示名稱（例如「平台」），全部通路時為空字串。
+templates_version: 2
+rules_version: rules-v2
+locale: zh-TW
+
+# ---------- 一句話結論（INS-01，PRD 第 11.1 節） ----------
+headline:
+  flat_threshold: { pct: 3, abs_when_prev_le_0: 10000 }
+  driver_selection:
+    method: excess_vs_prev_ratio
+    min_ratio_of_abs_dcm: 0.20
+    max_drivers: 2
+    channel_attribution_min_share: 0.70
+  item_labels:
+    discounts: 折扣
+    refunds: 退款
+    cogs_net: 商品成本
+    platform_fees: 平台抽成
+    payment_fees: 金流手續費
+    fulfillment_costs: 物流費
+    other_variable_costs: 其他變動費用
+    ad_spend: 廣告
+  driver_phrases:
+    single_scope: "{item}（多 {delta}）"
+    channel_one: "{channel}的{item}（多 {delta}）"
+    channel_two_same: "{channel}的{item1}（多 {delta1}）與{item2}（多 {delta2}）"
+    two_items: "{driver1}與{driver2}"
+    improved_item: "{item}（少 {abs_delta}）"
+    fallback_down: 業績下滑
+  sentences:
+    H_MISSING: "{scope}的{missing_items}還沒有資料，獲利先不判讀"
+    H_FLAT: "業績和獲利與{compare_label}差不多（業績 {pct_n}、扣廣告後貢獻 {pct_cm}）"
+    H_UP_DOWN: "業績多了 {dn}，但扣完廣告反而少賺 {abs_dcm}，主因是{drivers}"
+    H_UP_UP: "業績多了 {dn}，扣完廣告也多賺 {dcm}，貢獻率 {cm_rate}"
+    H_DOWN_UP: "業績少了 {abs_dn}，但扣完廣告反而多賺 {dcm}，主因是{drivers}"
+    H_DOWN_DOWN: "業績少了 {abs_dn}，扣完廣告也少賺 {abs_dcm}，主因是{drivers}"
+  sign_flip_replacements:
+    "少賺 {abs_dcm}": "由賺 {prev_cm} 轉為虧 {abs_cur_cm}"
+    "多賺 {dcm}": "由虧 {abs_prev_cm} 轉為賺 {cur_cm}"
+  compare_labels: { prev: 上期, l7_prev: 前 7 天, lw_prev: 上週, yoy: 去年同期, target: 目標 }
+  warnings:
+    priority: [CONSECUTIVE_NEGATIVE_DAYS, other_red_anomaly, worst_red_light]
+    W_CONSECUTIVE_NEGATIVE: "需要注意：{channel}扣完廣告連 {days} 天虧損"
+    W_RED_LIGHT: "需要注意：{channel}{metric} {value}（警戒線 {threshold}）"
+  join: "{change_sentence}；{warning_sentence}"
+  examples:
+    - anchor: A.1
+      expected: 業績多了 170.9 萬，但扣完廣告反而少賺 59.9 萬，主因是平台的折扣（多 96.0 萬）與廣告（多 34.1 萬）
+    - anchor: A.3
+      expected: 業績和獲利與前 7 天差不多（業績 −1.8%、扣廣告後貢獻 −2.1%）；需要注意：平台扣完廣告連 6 天虧損
+
+# ---------- 洞察卡共同結構（INS-03） ----------
+card_structure:
+  sections: [title, causes, actions, caution]
+  causes_label: 可能原因（待確認）
+  actions_labels: { immediate: 立即止血, this_week: 本週驗證, next_campaign: 下次檔期 }
+  max_causes: 3
+  max_caution: 1
+  action_verb_rule: 不得只有「比對」「核對」「確認」類動詞；至少一項必須是可交辦的業務動作
+  buttons: [開始試算, 轉成行動]
+
+# ---------- 規則（INS-02，PRD 第 11.2 節） ----------
+rules:
+  - seq: 1
+    code: REV_UP_CM_DOWN
+    name: 業績升、獲利降
+    contexts: [three_things, explore]
+    trigger: "ΔN > 0 AND ΔCMa < 0"
+    impact: v1.ranking_amount
+    severity: by_impact
+    title: "{scope}業績多了 {dn}，扣廣告後貢獻卻少了 {abs_dcm}"
+    title_on_sign_flip: "{scope}業績多了 {dn}，扣廣告後貢獻卻由賺 {prev_cm} 轉為虧 {abs_cur_cm}"
+    example: 平台業績多了 94.6 萬，扣廣告後貢獻卻由賺 72.1 萬轉為虧 6.1 萬
+    causes: [折扣加深, 廣告加碼但效益下降, 平台抽成或物流費上升]
+    actions:
+      immediate: 先暫停{scope}折扣最深或成效最差的活動
+      this_week: 打開貢獻樹，找出吃掉最多的前兩項，指派負責人
+      next_campaign: 下一檔先用試算設定折扣與廣告上限
+    caution: null
+    scenario_template: discount_down
+    bind_metrics: [contribution_after_ads, contribution_margin]
+
+  - seq: 2
+    code: NEGATIVE_CHANNEL_CM
+    name: 通路扣完廣告虧損
+    contexts: [three_things, explore]
+    trigger: "channel CMa < 0（只對單一通路）"
+    impact: v1.ranking_amount
+    severity: red
+    title: "{channel}扣完廣告虧損 {abs_cm}（貢獻率 {cm_rate}）"
+    example: 平台扣完廣告虧損 6.1 萬（貢獻率 −1.5%）
+    causes: [折扣率過高, 廣告佔比過高, 平台抽成上升]
+    actions:
+      immediate: "{channel}廣告先降預算 3 成，保留成效最好的活動"
+      this_week: 列出{channel}每個活動的折扣深度與廣告花費
+      next_campaign: 用目標逆推算出{channel}不虧損的折扣率上限
+    caution: null
+    scenario_template: ad_cut
+    bind_metrics: [contribution_after_ads, contribution_margin]
+
+  - seq: 3
+    code: DISCOUNT_BURDEN_UP
+    name: 折扣負擔上升
+    contexts: [three_things, explore]
+    trigger: v1 條件（折扣率上升）
+    impact: v1.ranking_amount
+    severity: by_impact
+    title: "{scope}折扣率由 {prev_rate} 升到 {cur_rate}，折扣多給 {d_delta}（比照上期比例，多吃掉 {excess}）"
+    example: 平台折扣率由 11.0% 升到 24.0%，折扣多給 96.0 萬（比照上期比例，多吃掉 72.6 萬）
+    action_problem: "{scope}折扣率 {prev_rate} → {cur_rate}，多給 {d_delta}"
+    action_problem_example: 平台折扣率 11.0% → 24.0%，多給 96.0 萬
+    causes: [檔期折扣加深, 優惠券發放變多, 滿額折門檻太低]
+    actions:
+      immediate: 暫停{scope}折扣最深的 3 個活動或優惠券
+      this_week: 列出 {period_start} 之後的檔期與折扣深度，找出折扣率最高的活動
+      next_campaign: "{scope}折扣率先控制在 {suggested_cap} 以內，並先試算"
+    suggested_cap_default: 15%
+    caution: null
+    scenario_template: discount_down
+    bind_metrics: [discount_rate, contribution_margin]
+
+  - seq: 4
+    code: REFUND_BURDEN_UP
+    name: 退款負擔上升
+    contexts: [three_things, explore]
+    trigger: v1 條件（退款率上升）
+    impact: v1.ranking_amount
+    severity: by_impact
+    title: "{scope}退款率由 {prev_rate} 升到 {cur_rate}，比照上期比例多退 {excess}"
+    example: 平台退款率由 1.8% 升到 6.5%，比照上期比例多退 19.8 萬
+    causes: [特定商品品質或描述不符, 物流延遲或破損, 檔期衝動購買後退貨]
+    actions:
+      immediate: 下架或暫停推廣退款最多的 3 個商品
+      this_week: 請客服整理退款原因前 3 名與對應商品
+      next_campaign: 修正商品頁描述與尺寸表，檔期後追蹤退款率
+    caution: 這是金額退款率，不是件數退貨率
+    scenario_template: null
+    bind_metrics: [refund_ratio]
+
+  - seq: 5
+    code: FULFILLMENT_BURDEN_UP
+    name: 物流負擔上升
+    contexts: [three_things, explore]
+    trigger: v1 條件（物流費佔比上升）
+    impact: v1.ranking_amount
+    severity: by_impact
+    title: "{scope}物流費佔比由 {prev_rate} 升到 {cur_rate}，比照上期比例多付 {excess}"
+    example: 平台物流費佔比由 1.3% 升到 2.4%，比照上期比例多付 4.4 萬
+    causes: [免運門檻太低, 小額訂單變多, 物流商調價或包材變貴]
+    actions:
+      immediate: 檢查{scope}免運門檻是否低於客單價
+      this_week: 比較每單物流費與上期，找出漲幅最大的物流方式
+      next_campaign: 調高免運門檻或改用加價購拉高客單價
+    caution: null
+    scenario_template: fulfillment_adjust
+    bind_metrics: [fulfillment_burden]
+
+  - seq: 6
+    code: MARKETING_BURDEN_UP
+    name: 廣告負擔上升
+    contexts: [three_things, explore]
+    trigger: v1 條件（廣告佔比上升）
+    impact: v1.ranking_amount
+    severity: by_impact
+    title: "{scope}廣告佔比由 {prev_rate} 升到 {cur_rate}，比照上期比例多花 {excess}"
+    example: 平台廣告佔比由 5.4% 升到 12.7%，比照上期比例多花 28.9 萬
+    causes: [加碼的活動轉換變差, 競價變貴, 預算分配到低效益活動]
+    actions:
+      immediate: "{scope}成效最差的 3 個廣告活動降預算 3 成"
+      this_week: 用廣告後台報表比對各活動的花費與成交
+      next_campaign: 依打平廣告倍數設定活動的最低 MER
+    caution: null
+    scenario_template: ad_cut
+    bind_metrics: [marketing_burden, mer]
+
+  - seq: 7
+    code: SKU_NEGATIVE_GP
+    name: 商品賣越多虧越多
+    contexts: [three_things, products]
+    trigger: "SKU 本期 gross_profit < 0"
+    impact: v1.ranking_amount
+    severity: red
+    title: "{sku_name} 毛利為負（{gp}），賣越多虧越多"
+    causes: [售價低於成本, 折扣過深, 成本資料有誤]
+    actions:
+      immediate: 暫停{sku_name}的折扣與廣告
+      this_week: 確認{sku_name}的成本與售價
+      next_campaign: 調整售價或改為組合販售
+    caution: null
+    scenario_template: null
+    bind_metrics: [gross_profit]
+
+  - seq: 8
+    code: MISSING_CRITICAL_DATA
+    name: 缺關鍵資料
+    contexts: [all]
+    trigger: v1 條件
+    impact: none
+    severity: gray
+    sort: first
+    title: "{scope}的{missing_items}還沒有資料，相關數字先不計算"
+    causes: []
+    actions:
+      immediate: 匯入{missing_items}
+      this_week: 設定例行匯入提醒
+      next_campaign: null
+    caution: null
+    scenario_template: null
+    bind_metrics: []
+
+  - seq: 9
+    code: DISCOUNT_EXCEEDS_GROWTH
+    name: 多給的折扣比多做的業績多
+    contexts: [three_things, explore]
+    trigger: "ΔD > 0 AND ΔD >= ΔN"
+    impact: excess.discounts
+    severity: red
+    title: "{scope}多給的折扣（{d_delta}）比多做的業績（{dn}）還多"
+    example: 平台多給的折扣（96.0 萬）比多做的業績（94.6 萬）還多
+    causes: [檔期折扣加深, 優惠券發放變多]
+    actions:
+      immediate: 暫停{scope}折扣最深的 3 個活動
+      this_week: 列出 {period_start} 後檔期與折扣深度
+      next_campaign: 下一檔折扣上限 15% 並先試算
+    caution: 這是兩期差額的比較，不代表因果
+    scenario_template: discount_down
+    bind_metrics: [discount_rate, contribution_margin]
+
+  - seq: 10
+    code: AD_INCREMENT_BELOW_BREAKEVEN
+    name: 加碼的廣告沒賺回來
+    contexts: [three_things, explore]
+    trigger: "ΔA > 0 AND breakeven_mer defined AND (ΔN <= 0 OR ΔN/ΔA < breakeven_mer_cur)"
+    impact: "ΔA − ΔN ÷ breakeven_mer_cur"
+    severity: red
+    title: "{scope}每多花 1 元廣告只多換回 {inc_rev_per_ad_yuan} 元營收，低於打平所需的 {breakeven_mer}"
+    param_formats: { inc_rev_per_ad_yuan: "1 位小數，不加單位" }
+    example: 平台每多花 1 元廣告只多換回 2.8 元營收，低於打平所需的 9.0 倍
+    causes: [加碼的活動受眾重疊, 出價過高, 素材疲乏]
+    actions:
+      immediate: "{scope}加碼的廣告先降回上期水準"
+      this_week: 找出本期新增或加碼的活動，比較各自的 MER
+      next_campaign: 加碼前先用試算確認廣告增量要換回多少營收
+    caution: 這是兩期差額的比值，不代表因果；並假設多做的業績與平均一樣賺錢
+    scenario_template: ad_cut
+    bind_metrics: [mer, marketing_burden]
+
+  - seq: 11
+    code: PLATFORM_FEE_RATE_UP
+    name: 平台抽成率上升
+    contexts: [three_things, explore]
+    trigger: "channel_type == marketplace AND platform_fee_rate 上升 >= 1 個百分點"
+    impact: excess.platform_fees
+    severity: by_impact
+    title: "{channel}抽成率由 {prev_rate} 升到 {cur_rate}，多付 {p_delta}"
+    example: 平台抽成率由 10.0% 升到 14.0%，多付 25.3 萬
+    causes: [參加平台活動的服務費, 平台調整費率, 免運計畫費]
+    actions:
+      immediate: 檢查本期參加的平台活動與對應服務費
+      this_week: 從對帳單拆出成交手續費、活動費、免運計畫費
+      next_campaign: 報名平台活動前先試算抽成增加後是否仍賺錢
+    caution: null
+    scenario_template: null
+    bind_metrics: [platform_fee_rate]
+
+  - seq: 12
+    code: THRESHOLD_BREACH
+    name: 燈號轉紅
+    contexts: [today]
+    trigger: 指標本期為紅燈且比較期不是紅燈
+    impact: none
+    severity: red
+    title: "{channel}{metric}轉為紅燈：{value}（警戒線 {threshold}）"
+    actions: { immediate: "打開{metric}的拆解", this_week: 指派負責人, next_campaign: null }
+    caution: null
+    in_three_things: false
+
+  - seq: 13
+    code: PACING_BEHIND
+    name: 目標進度落後
+    contexts: [today, monthly_review]
+    trigger: "pacing_gap < −5 個百分點（黃）；< −15（紅）"
+    impact: none
+    severity: yellow_or_red
+    title: "{metric}進度落後：達成 {attainment}，時間已過 {time_progress}"
+    example: 扣廣告後貢獻進度落後：達成 60.1%，時間已過 74.2%
+    actions:
+      immediate: 檢查落後的通路
+      this_week: 用目標逆推算出剩下天數需要的業績或折扣上限
+      next_campaign: null
+    caution: 依日均線性推算，不是預測
+
+  - seq: 14
+    code: BUDGET_OVERPACE
+    name: 廣告預算花太快
+    contexts: [today, monthly_review]
+    trigger: "budget_used − time_progress > +5（黃）、> +15（紅）；< −15 為黃「預算可能花不完」"
+    impact: none
+    severity: yellow_or_red
+    title: "廣告預算已用 {budget_used}，時間已過 {time_progress}"
+    title_underpace: "廣告預算只用了 {budget_used}，時間已過 {time_progress}，預算可能花不完"
+    actions: { immediate: 檢查日預算設定, this_week: 依剩餘天數重新分配預算, next_campaign: null }
+    caution: null
+
+  - seq: 15
+    code: WOW_ANOMALY
+    name: 週對週異常
+    contexts: [today]
+    trigger: "近 7 天 vs 前 7 天，N 或 CMa 的 |變化| >= 30% 且 >= 3 萬（黃）；>= 50%（紅）"
+    impact: none
+    severity: yellow_or_red
+    title: "{scope}{metric}比前 7 天{direction} {pct}（{abs_delta}）"
+    actions: { immediate: 打開近 7 天每日趨勢, this_week: 對照檔期與活動時間, next_campaign: null }
+    caution: null
+
+  - seq: 16
+    code: CONSECUTIVE_NEGATIVE_DAYS
+    name: 連續虧損
+    contexts: [today]
+    trigger: 某通路每日 CMa < 0，連續 >= 3 天且延續到資料最後一天（3–4 天黃、>= 5 天紅）
+    impact: none
+    severity: yellow_or_red
+    title: "{channel}扣完廣告連 {days} 天虧損"
+    example: 平台扣完廣告連 6 天虧損
+    actions:
+      immediate: "{channel}廣告先降預算 3 成"
+      this_week: 檢查{channel}每日折扣與廣告花費
+      next_campaign: null
+    caution: null
+
+  - seq: 17
+    code: DATA_STALE
+    name: 資料過期
+    contexts: [today]
+    trigger: 任一事實類型的「資料到」早於今天 − 2 天
+    impact: none
+    severity: yellow
+    title: "{fact_type}資料只到 {data_through}，今天的數字可能不完整"
+    actions: { immediate: 匯入最新資料, this_week: 設定例行匯入提醒, next_campaign: null }
+    caution: null
+    demo_store_clock: "2026-08-24"
+
+  - seq: 18
+    code: DATA_HEALTH_LOW
+    name: 資料健康偏低
+    contexts: [today, settings]
+    trigger: "data_health_score < 90（黃）、< 70（紅）"
+    impact: none
+    severity: yellow_or_red
+    title: "資料健康 {score} 分，主要扣分：{top_deduction}"
+    actions: { immediate: 打開資料健康明細, this_week: 補齊缺漏資料, next_campaign: null }
+    caution: null
+
+  - seq: 19
+    code: UNALLOCATED_AD_SPEND
+    name: 有廣告費沒歸屬通路
+    contexts: [today, explore]
+    trigger: "unallocated_ad > 0（>= 總廣告 5% 為黃）"
+    impact: none
+    severity: info_or_yellow
+    title: "有 {amount} 廣告費還沒對應到通路，這部分只算在全公司"
+    actions: { immediate: 設定廣告帳戶或活動名稱的通路規則, this_week: null, next_campaign: null }
+    caution: null
+
+# ---------- 燈號門檻（INS-09、SET-03，PRD 第 11.4 節） ----------
+lights:
+  version: 1
+  thresholds:
+    contribution_margin: { direction: higher_is_better, green_min: 20, yellow_min: 10 }
+    discount_rate: { direction: lower_is_better, green_max: 12, yellow_max: 20 }
+    marketing_burden: { direction: lower_is_better, green_max: 8, yellow_max: 12 }
+    refund_ratio: { direction: lower_is_better, green_max: 3, yellow_max: 5 }
+    mer: { direction: higher_is_better, green_min: 12, yellow_min: 8, unit: 倍 }
+    platform_fee_rate: { direction: lower_is_better, green_max: 12, yellow_max: 16, applies_to_channel_types: [marketplace] }
+    pacing_gap: { direction: higher_is_better, green_min: -5, yellow_min: -15, unit: 個百分點, show_only_when: has_target }
+    budget_overpace: { direction: lower_is_better, green_max: 5, yellow_max: 15, unit: 個百分點, show_only_when: has_budget }
+  boundary_rule: 綠燈界線含等號（例如貢獻率 = 20% 為綠、= 10% 為黃）；黃燈上界含等號
+  gray: 指標無法計算或資料不完整時為灰色「資料待補」
+  editable: 依店與通路調整；調整寫入事件紀錄 threshold.changed
+
+# ---------- 試算範本（PLN-03） ----------
+scenario_templates:
+  - id: discount_down
+    label: 降折扣
+    description: 把折扣率降低，看扣廣告後貢獻會變多少
+    prefill: { delta_pp: -5 }
+    required_input: v_pct
+    hint: 折扣降低通常會讓銷量減少，請填你預估的銷量變化
+  - id: ad_cut
+    label: 廣告減碼
+    prefill: { a_pct: -30 }
+    required_input: v_pct
+    hint: 廣告減少不會自動影響銷量，請自己填銷量變化
+  - id: campaign_boost
+    label: 檔期加碼
+    prefill: { delta_pp: 5, a_pct: 50 }
+    required_input: v_pct
+    hint: 檔期通常折扣與廣告同時增加，請填預估的銷量成長
+  - id: fulfillment_adjust
+    label: 物流費調整
+    prefill: { f_pct: -10 }
+    required_input: v_pct
+    hint: 例如調高免運門檻或更換物流商
+  - id: one_time_cost
+    label: KOL／一次性費用
+    prefill: { K: 0 }
+    required_input: [v_pct, K]
+    hint: 例如 KOL、拍攝、贈品等一次性支出
+scenario_assumption_summary: 這個試算假設：售價與商品組合不變、抽成與金流費率不變、廣告增減不會自動影響銷量（銷量請自己填）
+
+# ---------- 檢討會議程（REV-03） ----------
+review_templates:
+  weekly:
+    title_pattern: "W{iso_week} 週會"
+    target_minutes: 45
+    sections:
+      - { seq: 1, id: follow_up, label: 上週追蹤, minutes: 5, content: 上次檢討會產生、本期間內到期或待檢核的行動與成效判定 }
+      - { seq: 2, id: scorecard, label: 本週成績, minutes: 5, content: 一句話結論、5 張 KPI、目標進度 }
+      - { seq: 3, id: three_things, label: 三件事, minutes: 15, content: 洞察前三名（可釘選）、貢獻樹、公式抽屜 }
+      - { seq: 4, id: scenarios, label: 試算, minutes: 10, content: 每通路最多一個方案 }
+      - { seq: 5, id: decisions, label: 決議與交辦, minutes: 5, content: 決議轉成行動（負責人、期限、檢核日、檢核指標） }
+      - { seq: 6, id: wrap_up, label: 收尾與分享, minutes: 5, content: 確認交辦清單、結束會議（鎖定）、匯出 PDF／PPTX／LINE 文字 }
+  monthly:
+    title_pattern: "{yyyy} 年 {m} 月 月會"
+    target_minutes: 90
+    sections:
+      - { seq: 1, id: month_scorecard, label: 月度成績單, minutes: 15, content: 淨營收、扣廣告後貢獻、貢獻率：實際 vs 目標 vs 去年同月；年累計 }
+      - { seq: 2, id: channel_structure, label: 通路損益結構, minutes: 20, content: 各通路瀑布、增量效率、打平倍數 }
+      - { seq: 3, id: product_mix, label: 商品組合, minutes: 15, content: ABC 分級、四象限、警訊商品 }
+      - { seq: 4, id: campaigns_actions, label: 檔期與行動回顧, minutes: 15, content: 檔期成效卡；行動預期影響 vs 實際 }
+      - { seq: 5, id: next_month, label: 下月決策, minutes: 25, content: 目標逆推、全公司合併試算、決議與負責人 }
+  campaign:
+    title_pattern: "{event_name} 檔期覆盤"
+    sections:
+      - { seq: 1, id: plan_vs_actual, label: 試算 vs 實際, minutes: 15 }
+      - { seq: 2, id: incremental, label: 增量效率, minutes: 15 }
+      - { seq: 3, id: lessons, label: 下次檔期的規則, minutes: 15 }

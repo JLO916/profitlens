@@ -1,0 +1,894 @@
+{
+  "anchors_version": 1,
+  "generated_at": "2026-10-03",
+  "source": {
+    "fixture": "fixtures/demo (seed 20260930, data_as_of 2026-08-24)",
+    "golden": "fixtures/golden/expected.json",
+    "metric_version": "contribution-v1",
+    "rules_version": "rules-v2",
+    "rounding": "ROUND_HALF_UP at output only"
+  },
+  "periods": {
+    "prev": {
+      "start": "2026-06-01",
+      "end": "2026-07-12"
+    },
+    "cur": {
+      "start": "2026-07-13",
+      "end": "2026-08-23"
+    },
+    "today_cur": {
+      "start": "2026-08-17",
+      "end": "2026-08-23"
+    },
+    "today_prev": {
+      "start": "2026-08-10",
+      "end": "2026-08-16"
+    }
+  },
+  "iso_weeks": {
+    "2026-06-01": "2026-W23",
+    "2026-07-13": "2026-W29",
+    "2026-08-17": "2026-W34",
+    "2026-08-23": "2026-W34",
+    "2026-08-24": "2026-W35",
+    "2026-12-28": "2026-W53",
+    "2027-01-03": "2026-W53"
+  },
+  "period_presets_data_as_of_2026_08_24": {
+    "yd": {
+      "cur": [
+        "2026-08-23",
+        "2026-08-23"
+      ],
+      "prev": [
+        "2026-08-22",
+        "2026-08-22"
+      ]
+    },
+    "l7": {
+      "cur": [
+        "2026-08-17",
+        "2026-08-23"
+      ],
+      "prev": [
+        "2026-08-10",
+        "2026-08-16"
+      ]
+    },
+    "l28": {
+      "cur": [
+        "2026-07-27",
+        "2026-08-23"
+      ],
+      "prev": [
+        "2026-06-29",
+        "2026-07-26"
+      ]
+    },
+    "lw": {
+      "cur": [
+        "2026-08-17",
+        "2026-08-23"
+      ],
+      "prev": [
+        "2026-08-10",
+        "2026-08-16"
+      ]
+    },
+    "mtd": {
+      "cur": [
+        "2026-08-01",
+        "2026-08-23"
+      ],
+      "prev": [
+        "2026-07-01",
+        "2026-07-23"
+      ]
+    },
+    "lm": {
+      "cur": [
+        "2026-07-01",
+        "2026-07-31"
+      ],
+      "prev": [
+        "2026-06-01",
+        "2026-06-30"
+      ]
+    },
+    "yoy_l7": {
+      "cur": [
+        "2026-08-17",
+        "2026-08-23"
+      ],
+      "compare": [
+        "2025-08-18",
+        "2025-08-24"
+      ]
+    }
+  },
+  "A1_period_compare": {
+    "ALL": {
+      "prev": {
+        "gross_sales": "6876430.00",
+        "discounts": "619787.70",
+        "refunds": "115066.58",
+        "cogs_net": "3417444.10",
+        "platform_fees": "302364.50",
+        "payment_fees": "122831.57",
+        "fulfillment_costs": "71783.00",
+        "other_variable_costs": "30707.87",
+        "ad_spend": "327818.00",
+        "net_revenue": "6141575.72",
+        "gross_profit": "2724131.62",
+        "contribution_before_ads": "2196444.68",
+        "contribution_after_ads": "1868626.68",
+        "units_sold": "5127",
+        "gross_margin_pct": "44.3556",
+        "contribution_margin_pct": "30.4259",
+        "discount_rate_pct": "9.0132",
+        "refund_ratio_pct": "1.8391",
+        "platform_fee_rate_pct": "4.9232",
+        "fulfillment_burden_pct": "1.1688",
+        "marketing_burden_pct": "5.3377",
+        "mer": "18.7347",
+        "breakeven_mer": "2.7961"
+      },
+      "cur": {
+        "gross_sales": "10038400.00",
+        "discounts": "1808152.80",
+        "refunds": "379589.30",
+        "cogs_net": "4992524.65",
+        "platform_fees": "555782.03",
+        "payment_fees": "157013.20",
+        "fulfillment_costs": "147574.00",
+        "other_variable_costs": "39253.29",
+        "ad_spend": "688718.00",
+        "net_revenue": "7850657.90",
+        "gross_profit": "2858133.25",
+        "contribution_before_ads": "1958510.73",
+        "contribution_after_ads": "1269792.73",
+        "units_sold": "7420",
+        "gross_margin_pct": "36.4063",
+        "contribution_margin_pct": "16.1743",
+        "discount_rate_pct": "18.0124",
+        "refund_ratio_pct": "4.6121",
+        "platform_fee_rate_pct": "7.0794",
+        "fulfillment_burden_pct": "1.8798",
+        "marketing_burden_pct": "8.7727",
+        "mer": "11.3989",
+        "breakeven_mer": "4.0085"
+      },
+      "delta": {
+        "net_revenue": "1709082.18",
+        "discounts": "1188365.10",
+        "ad_spend": "360900.00",
+        "refunds": "264522.72",
+        "platform_fees": "253417.53",
+        "contribution_after_ads": "-598833.95"
+      },
+      "incremental": {
+        "inc_rev_per_discount": "1.4382",
+        "inc_rev_per_ad": "4.7356",
+        "inc_contribution_margin_pct": "-35.0383"
+      },
+      "excess_vs_prev_ratio": {
+        "discounts": "903369.82",
+        "cogs_net": "3646.58",
+        "refunds": "228225.94",
+        "platform_fees": "169275.32",
+        "payment_fees": "-0.03",
+        "fulfillment_costs": "55815.17",
+        "other_variable_costs": "0.01",
+        "ad_spend": "269674.57"
+      }
+    },
+    "DTC": {
+      "prev": {
+        "gross_sales": "3415490.00",
+        "discounts": "239084.30",
+        "refunds": "58474.48",
+        "cogs_net": "1695289.10",
+        "platform_fees": "0.00",
+        "payment_fees": "62358.65",
+        "fulfillment_costs": "33293.00",
+        "other_variable_costs": "15589.67",
+        "ad_spend": "163875.00",
+        "net_revenue": "3117931.22",
+        "gross_profit": "1422642.12",
+        "contribution_before_ads": "1311400.80",
+        "contribution_after_ads": "1147525.80",
+        "units_sold": "2561",
+        "gross_margin_pct": "45.6278",
+        "contribution_margin_pct": "36.8041",
+        "discount_rate_pct": "7.0000",
+        "refund_ratio_pct": "1.8409",
+        "platform_fee_rate_pct": "0.0000",
+        "fulfillment_burden_pct": "1.0678",
+        "marketing_burden_pct": "5.2559",
+        "mer": "19.0263",
+        "breakeven_mer": "2.3776"
+      },
+      "cur": {
+        "gross_sales": "4452320.00",
+        "discounts": "467493.60",
+        "refunds": "104039.93",
+        "cogs_net": "2216018.15",
+        "platform_fees": "0.00",
+        "payment_fees": "77615.73",
+        "fulfillment_costs": "52768.00",
+        "other_variable_costs": "19403.93",
+        "ad_spend": "184018.00",
+        "net_revenue": "3880786.47",
+        "gross_profit": "1664768.32",
+        "contribution_before_ads": "1514980.66",
+        "contribution_after_ads": "1330962.66",
+        "units_sold": "3298",
+        "gross_margin_pct": "42.8977",
+        "contribution_margin_pct": "34.2962",
+        "discount_rate_pct": "10.5000",
+        "refund_ratio_pct": "2.6109",
+        "platform_fee_rate_pct": "0.0000",
+        "fulfillment_burden_pct": "1.3597",
+        "marketing_burden_pct": "4.7418",
+        "mer": "21.0892",
+        "breakeven_mer": "2.5616"
+      },
+      "delta": {
+        "net_revenue": "762855.25",
+        "discounts": "228409.30",
+        "ad_spend": "20143.00",
+        "refunds": "45565.45",
+        "platform_fees": "0.00",
+        "contribution_after_ads": "183436.86"
+      },
+      "incremental": {
+        "inc_rev_per_discount": "3.3399",
+        "inc_rev_per_ad": "37.8720",
+        "inc_contribution_margin_pct": "24.0461"
+      },
+      "excess_vs_prev_ratio": {
+        "discounts": "155831.20",
+        "cogs_net": "6095.25",
+        "refunds": "30683.23",
+        "platform_fees": "0.00",
+        "payment_fees": "-0.03",
+        "fulfillment_costs": "11329.30",
+        "other_variable_costs": "-0.02",
+        "ad_spend": "-19951.82"
+      }
+    },
+    "MARKETPLACE": {
+      "prev": {
+        "gross_sales": "3460940.00",
+        "discounts": "380703.40",
+        "refunds": "56592.10",
+        "cogs_net": "1722155.00",
+        "platform_fees": "302364.50",
+        "payment_fees": "60472.92",
+        "fulfillment_costs": "38490.00",
+        "other_variable_costs": "15118.20",
+        "ad_spend": "163943.00",
+        "net_revenue": "3023644.50",
+        "gross_profit": "1301489.50",
+        "contribution_before_ads": "885043.88",
+        "contribution_after_ads": "721100.88",
+        "units_sold": "2566",
+        "gross_margin_pct": "43.0437",
+        "contribution_margin_pct": "23.8487",
+        "discount_rate_pct": "11.0000",
+        "refund_ratio_pct": "1.8373",
+        "platform_fee_rate_pct": "10.0000",
+        "fulfillment_burden_pct": "1.2730",
+        "marketing_burden_pct": "5.4220",
+        "mer": "18.4433",
+        "breakeven_mer": "3.4164"
+      },
+      "cur": {
+        "gross_sales": "5586080.00",
+        "discounts": "1340659.20",
+        "refunds": "275549.37",
+        "cogs_net": "2776506.50",
+        "platform_fees": "555782.03",
+        "payment_fees": "79397.47",
+        "fulfillment_costs": "94806.00",
+        "other_variable_costs": "19849.36",
+        "ad_spend": "504700.00",
+        "net_revenue": "3969871.43",
+        "gross_profit": "1193364.93",
+        "contribution_before_ads": "443530.07",
+        "contribution_after_ads": "-61169.93",
+        "units_sold": "4122",
+        "gross_margin_pct": "30.0605",
+        "contribution_margin_pct": "-1.5409",
+        "discount_rate_pct": "24.0000",
+        "refund_ratio_pct": "6.4905",
+        "platform_fee_rate_pct": "14.0000",
+        "fulfillment_burden_pct": "2.3881",
+        "marketing_burden_pct": "12.7133",
+        "mer": "7.8658",
+        "breakeven_mer": "8.9506"
+      },
+      "delta": {
+        "net_revenue": "946226.93",
+        "discounts": "959955.80",
+        "ad_spend": "340757.00",
+        "refunds": "218957.27",
+        "platform_fees": "253417.53",
+        "contribution_after_ads": "-782270.81"
+      },
+      "incremental": {
+        "inc_rev_per_discount": "0.9857",
+        "inc_rev_per_ad": "2.7768",
+        "inc_contribution_margin_pct": "-82.6726"
+      },
+      "excess_vs_prev_ratio": {
+        "discounts": "726190.40",
+        "cogs_net": "-3112.79",
+        "refunds": "197549.75",
+        "platform_fees": "158794.82",
+        "payment_fees": "0.00",
+        "fulfillment_costs": "44270.84",
+        "other_variable_costs": "0.03",
+        "ad_spend": "289452.26"
+      }
+    }
+  },
+  "A1_headline": {
+    "scope": "all",
+    "template_id": "H_UP_DOWN",
+    "drivers": [
+      {
+        "item": "discounts",
+        "channel": "MARKETPLACE",
+        "channel_share_of_positive_excess_pct": "82.33",
+        "display_delta": "959955.80"
+      },
+      {
+        "item": "ad_spend",
+        "channel": "MARKETPLACE",
+        "channel_share_of_positive_excess_pct": "100.00",
+        "display_delta": "340757.00"
+      }
+    ],
+    "driver_min_ratio_of_abs_dcm": "0.20",
+    "channel_attribution_min_share": "0.70",
+    "expected_zh_TW": "業績多了 170.9 萬，但扣完廣告反而少賺 59.9 萬，主因是平台的折扣（多 96.0 萬）與廣告（多 34.1 萬）",
+    "channel_display_names": {
+      "DTC": "官網",
+      "MARKETPLACE": "平台"
+    }
+  },
+  "A3_today": {
+    "windows": {
+      "ALL": {
+        "cur": {
+          "gross_sales": "1703960.00",
+          "discounts": "305051.70",
+          "refunds": "64068.21",
+          "cogs_net": "849718.40",
+          "platform_fees": "93010.20",
+          "payment_fees": "26696.82",
+          "fulfillment_costs": "25096.00",
+          "other_variable_costs": "6674.22",
+          "ad_spend": "114362.00",
+          "net_revenue": "1334840.09",
+          "gross_profit": "485121.69",
+          "contribution_before_ads": "333644.45",
+          "contribution_after_ads": "219282.45",
+          "units_sold": "1264",
+          "gross_margin_pct": "36.3431",
+          "contribution_margin_pct": "16.4276",
+          "discount_rate_pct": "17.9025",
+          "refund_ratio_pct": "4.5799",
+          "platform_fee_rate_pct": "6.9679",
+          "fulfillment_burden_pct": "1.8801",
+          "marketing_burden_pct": "8.5675",
+          "mer": "11.6721",
+          "breakeven_mer": "4.0008"
+        },
+        "prev": {
+          "gross_sales": "1740400.00",
+          "discounts": "314379.15",
+          "refunds": "66042.82",
+          "cogs_net": "865990.00",
+          "platform_fees": "96920.13",
+          "payment_fees": "27199.59",
+          "fulfillment_costs": "25067.00",
+          "other_variable_costs": "6799.88",
+          "ad_spend": "114010.00",
+          "net_revenue": "1359978.03",
+          "gross_profit": "493988.03",
+          "contribution_before_ads": "338001.43",
+          "contribution_after_ads": "223991.43",
+          "units_sold": "1260",
+          "gross_margin_pct": "36.3232",
+          "contribution_margin_pct": "16.4702",
+          "discount_rate_pct": "18.0636",
+          "refund_ratio_pct": "4.6313",
+          "platform_fee_rate_pct": "7.1266",
+          "fulfillment_burden_pct": "1.8432",
+          "marketing_burden_pct": "8.3832",
+          "mer": "11.9286",
+          "breakeven_mer": "4.0236"
+        },
+        "pct_change": {
+          "net_revenue": "-1.8484",
+          "contribution_after_ads": "-2.1023"
+        }
+      },
+      "DTC": {
+        "cur": {
+          "gross_sales": "769620.00",
+          "discounts": "80810.10",
+          "refunds": "18328.36",
+          "cogs_net": "383266.65",
+          "platform_fees": "0.00",
+          "payment_fees": "13409.64",
+          "fulfillment_costs": "9088.00",
+          "other_variable_costs": "3352.42",
+          "ad_spend": "30355.00",
+          "net_revenue": "670481.54",
+          "gross_profit": "287214.89",
+          "contribution_before_ads": "261364.83",
+          "contribution_after_ads": "231009.83",
+          "units_sold": "568",
+          "gross_margin_pct": "42.8371",
+          "contribution_margin_pct": "34.4543",
+          "discount_rate_pct": "10.5000",
+          "refund_ratio_pct": "2.6609",
+          "platform_fee_rate_pct": "0.0000",
+          "fulfillment_burden_pct": "1.3554",
+          "marketing_burden_pct": "4.5273",
+          "mer": "22.0880",
+          "breakeven_mer": "2.5653"
+        },
+        "prev": {
+          "gross_sales": "765310.00",
+          "discounts": "80357.55",
+          "refunds": "17261.00",
+          "cogs_net": "381203.35",
+          "platform_fees": "0.00",
+          "payment_fees": "13353.84",
+          "fulfillment_costs": "8944.00",
+          "other_variable_costs": "3338.45",
+          "ad_spend": "29947.00",
+          "net_revenue": "667691.45",
+          "gross_profit": "286488.10",
+          "contribution_before_ads": "260851.81",
+          "contribution_after_ads": "230904.81",
+          "units_sold": "559",
+          "gross_margin_pct": "42.9073",
+          "contribution_margin_pct": "34.5826",
+          "discount_rate_pct": "10.5000",
+          "refund_ratio_pct": "2.5200",
+          "platform_fee_rate_pct": "0.0000",
+          "fulfillment_burden_pct": "1.3395",
+          "marketing_burden_pct": "4.4852",
+          "mer": "22.2958",
+          "breakeven_mer": "2.5597"
+        },
+        "pct_change": {
+          "net_revenue": "0.4179",
+          "contribution_after_ads": "0.0455"
+        }
+      },
+      "MARKETPLACE": {
+        "cur": {
+          "gross_sales": "934340.00",
+          "discounts": "224241.60",
+          "refunds": "45739.85",
+          "cogs_net": "466451.75",
+          "platform_fees": "93010.20",
+          "payment_fees": "13287.18",
+          "fulfillment_costs": "16008.00",
+          "other_variable_costs": "3321.80",
+          "ad_spend": "84007.00",
+          "net_revenue": "664358.55",
+          "gross_profit": "197906.80",
+          "contribution_before_ads": "72279.62",
+          "contribution_after_ads": "-11727.38",
+          "units_sold": "696",
+          "gross_margin_pct": "29.7892",
+          "contribution_margin_pct": "-1.7652",
+          "discount_rate_pct": "24.0000",
+          "refund_ratio_pct": "6.4413",
+          "platform_fee_rate_pct": "14.0000",
+          "fulfillment_burden_pct": "2.4095",
+          "marketing_burden_pct": "12.6448",
+          "mer": "7.9084",
+          "breakeven_mer": "9.1915"
+        },
+        "prev": {
+          "gross_sales": "975090.00",
+          "discounts": "234021.60",
+          "refunds": "48781.82",
+          "cogs_net": "484786.65",
+          "platform_fees": "96920.13",
+          "payment_fees": "13845.75",
+          "fulfillment_costs": "16123.00",
+          "other_variable_costs": "3461.43",
+          "ad_spend": "84063.00",
+          "net_revenue": "692286.58",
+          "gross_profit": "207499.93",
+          "contribution_before_ads": "77149.62",
+          "contribution_after_ads": "-6913.38",
+          "units_sold": "701",
+          "gross_margin_pct": "29.9731",
+          "contribution_margin_pct": "-0.9986",
+          "discount_rate_pct": "24.0000",
+          "refund_ratio_pct": "6.5826",
+          "platform_fee_rate_pct": "14.0000",
+          "fulfillment_burden_pct": "2.3289",
+          "marketing_burden_pct": "12.1428",
+          "mer": "8.2353",
+          "breakeven_mer": "8.9733"
+        },
+        "pct_change": {
+          "net_revenue": "-4.0342",
+          "contribution_after_ads": null
+        }
+      }
+    },
+    "marketplace_daily_cm": [
+      {
+        "date": "2026-08-17",
+        "contribution_after_ads": "1635.24"
+      },
+      {
+        "date": "2026-08-18",
+        "contribution_after_ads": "-1068.47"
+      },
+      {
+        "date": "2026-08-19",
+        "contribution_after_ads": "-3537.88"
+      },
+      {
+        "date": "2026-08-20",
+        "contribution_after_ads": "-898.04"
+      },
+      {
+        "date": "2026-08-21",
+        "contribution_after_ads": "-651.96"
+      },
+      {
+        "date": "2026-08-22",
+        "contribution_after_ads": "-4510.74"
+      },
+      {
+        "date": "2026-08-23",
+        "contribution_after_ads": "-2695.53"
+      }
+    ],
+    "consecutive_negative_days": {
+      "channel": "MARKETPLACE",
+      "days": 6,
+      "from": "2026-08-18",
+      "to": "2026-08-23",
+      "severity": "red"
+    },
+    "lights": {
+      "DTC": {
+        "contribution_margin_pct": {
+          "value": "34.4543",
+          "light": "green"
+        },
+        "discount_rate_pct": {
+          "value": "10.5000",
+          "light": "green"
+        },
+        "marketing_burden_pct": {
+          "value": "4.5273",
+          "light": "green"
+        },
+        "refund_ratio_pct": {
+          "value": "2.6609",
+          "light": "green"
+        },
+        "mer": {
+          "value": "22.0880",
+          "light": "green"
+        },
+        "platform_fee_rate_pct": {
+          "value": null,
+          "light": "not_applicable"
+        }
+      },
+      "MARKETPLACE": {
+        "contribution_margin_pct": {
+          "value": "-1.7652",
+          "light": "red"
+        },
+        "discount_rate_pct": {
+          "value": "24.0000",
+          "light": "red"
+        },
+        "marketing_burden_pct": {
+          "value": "12.6448",
+          "light": "red"
+        },
+        "refund_ratio_pct": {
+          "value": "6.4413",
+          "light": "red"
+        },
+        "mer": {
+          "value": "7.9084",
+          "light": "red"
+        },
+        "platform_fee_rate_pct": {
+          "value": "14.0000",
+          "light": "yellow"
+        }
+      }
+    },
+    "headline_template_id": "H_FLAT",
+    "warning_template_id": "W_CONSECUTIVE_NEGATIVE",
+    "expected_zh_TW": "業績和獲利與前 7 天差不多（業績 −1.8%、扣廣告後貢獻 −2.1%）；需要注意：平台扣完廣告連 6 天虧損"
+  },
+  "A5_pacing": {
+    "month": "2026-08",
+    "elapsed_days": 23,
+    "days_in_month": 31,
+    "time_progress_pct": "74.1935",
+    "targets": {
+      "net_revenue": "6000000.00",
+      "contribution_after_ads": "1200000.00",
+      "ad_budget": "500000.00"
+    },
+    "net_revenue": {
+      "actual": "4414986.77",
+      "attainment_pct": "73.5831",
+      "pacing_gap_pp": "-0.6104",
+      "light": "green",
+      "linear_projection": "5950634.34"
+    },
+    "contribution_after_ads": {
+      "actual": "721524.27",
+      "attainment_pct": "60.1270",
+      "pacing_gap_pp": "-14.0665",
+      "light": "yellow",
+      "linear_projection": "972489.23"
+    },
+    "ad_budget": {
+      "actual": "376651.00",
+      "used_pct": "75.3302",
+      "overpace_pp": "1.1367",
+      "light": "green"
+    }
+  },
+  "A6_scenario": {
+    "golden": {
+      "baseline_dtc_cur": "270.00",
+      "f_minus_10": "284.00",
+      "f_minus_10_K_20": "264.00"
+    },
+    "S4_marketplace": {
+      "inputs": {
+        "v_pct": -10,
+        "delta_pp": -5,
+        "f_pct": 0,
+        "a_pct": -30,
+        "K": 0
+      },
+      "baseline_contribution_after_ads": "-61169.93",
+      "net_revenue": "3807942.46",
+      "contribution_after_ads": "243335.93",
+      "delta_vs_baseline": "304505.86",
+      "ad_spend": "353290.00",
+      "discount_rate_pct": "19.0000",
+      "contribution_margin_pct": "6.3902",
+      "mer": "10.7785",
+      "threshold_T0_pct": "-46.706808158415",
+      "threshold_T_baseline_pct": "-55.934187406133",
+      "note": "門檻值取自 v2 正式站實測（scenario-sensitivity-v1），實作需與 kernel 結果逐位一致"
+    },
+    "S8_goal_seek_discount_cap": {
+      "inputs": {
+        "v_pct": -10,
+        "f_pct": 0,
+        "a_pct": -30,
+        "K": 0,
+        "target_contribution_after_ads": "0"
+      },
+      "max_discount_rate_pct": "25.1620",
+      "delta_pp": "1.1620",
+      "recheck_contribution_after_ads": "0.00"
+    },
+    "S9_goal_seek_ad_cap": {
+      "inputs": {
+        "v_pct": -10,
+        "delta_pp": -5,
+        "f_pct": 0,
+        "K": 0,
+        "target_contribution_after_ads": "0"
+      },
+      "max_ad_spend": "596625.93",
+      "a_pct": "18.2140",
+      "recheck_contribution_after_ads": "0.00"
+    }
+  },
+  "A7_tax_inclusive_5pct": {
+    "cases": [
+      {
+        "in": "105.00",
+        "out": "100.00"
+      },
+      {
+        "in": "1.00",
+        "out": "0.95"
+      },
+      {
+        "in": "1050.37",
+        "out": "1000.35"
+      },
+      {
+        "in": "0.01",
+        "out": "0.01"
+      },
+      {
+        "in": "",
+        "out": ""
+      },
+      {
+        "in": "abc",
+        "out": "abc"
+      }
+    ],
+    "row_level_sum": {
+      "rows": [
+        "1.00",
+        "1.00",
+        "1.00"
+      ],
+      "expected_sum": "2.85",
+      "not": "2.86"
+    }
+  },
+  "A8_outcome_checks": [
+    {
+      "id": "O1",
+      "channel": "MARKETPLACE",
+      "metric": "discount_rate_pct",
+      "started_at": "2026-08-10",
+      "check_date": "2026-08-23",
+      "baseline_period": [
+        "2026-07-27",
+        "2026-08-09"
+      ],
+      "after_period": [
+        "2026-08-10",
+        "2026-08-23"
+      ],
+      "before": "24.0000",
+      "after": "24.0000",
+      "diff_pp": "0.0000",
+      "min_change_pp": "1.0",
+      "verdict": "not_improved_flat"
+    },
+    {
+      "id": "O2",
+      "channel": "DTC",
+      "metric": "contribution_margin_pct",
+      "started_at": "2026-08-10",
+      "check_date": "2026-08-23",
+      "baseline_period": [
+        "2026-07-27",
+        "2026-08-09"
+      ],
+      "after_period": [
+        "2026-08-10",
+        "2026-08-23"
+      ],
+      "before": "34.1787",
+      "after": "34.5183",
+      "diff_pp": "0.3396",
+      "min_change_pp": "1.0",
+      "verdict": "not_improved_flat"
+    },
+    {
+      "id": "O3",
+      "check_date": "2026-09-06",
+      "data_through": "2026-08-23",
+      "verdict": "insufficient_data"
+    }
+  ],
+  "A9_golden": {
+    "prev": {
+      "G": 2500,
+      "D": 200,
+      "R": 50,
+      "C": 1050,
+      "P": 90,
+      "Q": 60,
+      "F": 160,
+      "O": 20,
+      "A": 300,
+      "N": 2250,
+      "GP": 1200,
+      "CMb": 870,
+      "CMa": 570
+    },
+    "cur": {
+      "G": 3100,
+      "D": 450,
+      "R": 180,
+      "C": 1325,
+      "P": 120,
+      "Q": 66,
+      "F": 225,
+      "O": 29,
+      "A": 450,
+      "N": 2470,
+      "GP": 1145,
+      "CMb": 705,
+      "CMa": 255
+    },
+    "cur_by_channel": {
+      "DTC": {
+        "N": 1480,
+        "CMa": 270
+      },
+      "MARKETPLACE": {
+        "N": 990,
+        "CMa": -15
+      }
+    },
+    "delta": {
+      "N": 220,
+      "CMa": -315
+    }
+  },
+  "A10_rule_triggers_cur_vs_prev": {
+    "REV_UP_CM_DOWN": {
+      "all": true,
+      "DTC": false,
+      "MARKETPLACE": true
+    },
+    "NEGATIVE_CHANNEL_CM": {
+      "DTC": false,
+      "MARKETPLACE": true
+    },
+    "DISCOUNT_BURDEN_UP": {
+      "all": true,
+      "DTC": true,
+      "MARKETPLACE": true
+    },
+    "REFUND_BURDEN_UP": {
+      "all": true,
+      "DTC": true,
+      "MARKETPLACE": true
+    },
+    "FULFILLMENT_BURDEN_UP": {
+      "all": true,
+      "DTC": true,
+      "MARKETPLACE": true
+    },
+    "MARKETING_BURDEN_UP": {
+      "all": true,
+      "DTC": false,
+      "MARKETPLACE": true
+    },
+    "SKU_NEGATIVE_GP": {
+      "any": false
+    },
+    "MISSING_CRITICAL_DATA": {
+      "any": false
+    },
+    "DISCOUNT_EXCEEDS_GROWTH": {
+      "all": false,
+      "DTC": false,
+      "MARKETPLACE": true
+    },
+    "AD_INCREMENT_BELOW_BREAKEVEN": {
+      "all": false,
+      "DTC": false,
+      "MARKETPLACE": true,
+      "MARKETPLACE_impact": "235040.71"
+    },
+    "PLATFORM_FEE_RATE_UP": {
+      "MARKETPLACE": true,
+      "MARKETPLACE_impact": "158794.82"
+    },
+    "v1_rule_group_count": 14
+  }
+}
