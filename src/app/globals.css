@@ -829,3 +829,7 @@ body:has([data-testid="local-save-prompt"]) main { padding-bottom: 240px; }
 .download-menu .menu-list button:disabled:hover, .download-menu .menu-list button[aria-disabled="true"]:hover { background: none; }
 .download-menu .menu-error { color: #a84c31; }
 
+
+/* R7 上線 */
+/* D9＝B 使用分析揭露（只在 Vercel production 出現）：頁尾一行，與口徑說明同一列、窄螢幕自動換行。 */
+.main-footer .analytics-note { color: #52685f; }

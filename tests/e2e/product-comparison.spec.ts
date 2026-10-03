@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openValidation } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -55,7 +55,7 @@ const statusCell = (row: Locator) => row.locator(":scope > *").nth(mainColumns.l
 
 async function load(page: Page, id = "golden") {
   await page.goto("/");
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${escape(labels.status.ready)}|${escape(labels.status.partial)}`));

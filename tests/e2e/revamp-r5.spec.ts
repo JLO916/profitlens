@@ -1,6 +1,6 @@
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { clickReplacing, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { clickReplacing, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R5（05 §7–§9、02 §4–§7）：健檢清單化、試算進頁即表單＋範本＋絕對值、行動看板、商品 Top／Bottom。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -42,7 +42,7 @@ const globalChannel = (page: Page) => page.locator(".filter-bar").getByLabel(das
 
 async function loadDataset(page: Page, id: "golden" | "demo") {
   await page.goto("/");
-  await nav(page, "validation").click();
+  await openValidation(page);
   await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);

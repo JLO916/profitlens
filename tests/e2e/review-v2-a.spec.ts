@@ -1,5 +1,5 @@
 import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
-import { closeDetails, dismissSavePrompt, openMeeting, selectScenarioChannel, switchActionsView } from './replacement-helpers';
+import { closeDetails, dismissSavePrompt, openMeeting, openValidation, selectScenarioChannel, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { fill, labels } from '../../src/i18n';
 import { appendFile, readFile } from 'node:fs/promises';
@@ -20,7 +20,7 @@ const escapeRe=(s:string)=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const templateRe=(template:string,values:Record<string,string>={},flags='')=>new RegExp(`^${escapeRe(template).replace(/\\\{(\w+)\\\}/g,(_,key:string)=>key in values?escapeRe(values[key]):'.+?')}$`,flags);
 const status=(p:Page)=>p.getByTestId('workspace-status');
 const guard=(p:Page)=>p.getByRole('dialog',{name:dlg.heading});
-async function golden(p:Page){await p.goto('/');await p.getByRole('button',{name:labels.nav.validation.label,exact:true}).click();await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(labels.status.ready);await dismissSavePrompt(p);}
+async function golden(p:Page){await p.goto('/');await openValidation(p);await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(labels.status.ready);await dismissSavePrompt(p);}
 async function storage(p:Page){const s=p.getByTestId('workspace-storage');if(await s.getAttribute('open')===null)await s.locator(':scope > summary').click();return s;}
 async function backup(p:Page){const s=await storage(p);const event=p.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
 /** R3: the alternative fixture + its manifest go through the four-step wizard and stop after the check (not committed), so the guard tests can cancel and retry the commit. */

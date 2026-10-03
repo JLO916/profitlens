@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, ruleHeadline } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openValidation, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { metricDefinitions } from "../../src/application/presentation";
 import { appendFile, mkdir } from "node:fs/promises";
@@ -82,7 +82,7 @@ function rankingButtonName(code: Parameters<typeof ruleHeadline>[0], amountPatte
 function escapeRegExp(value: string): string { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
 async function requestDataset(page: Page, id: string) {
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(dashboard.validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: dashboard.validation.loadButton, exact: true }));
 }

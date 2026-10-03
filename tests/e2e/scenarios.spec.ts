@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { AUTO_SAVE_DELAY_MS } from "../../src/application/auto-save";
-import { dismissSavePrompt, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { dismissSavePrompt, openValidation, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 const dw = labels.ui.decisionWorkbench, aw = labels.ui.actionsWorkbench, msw = labels.ui.multiScenarioWorkbench, dash = labels.ui.dashboard;
 const cmAfter = labels.metrics.contribution_after_marketing.label;
@@ -67,7 +67,7 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
 });
 
 async function loadDataset(page: Page, id = "golden", classification: string = labels.status.ready, keepSavePrompt = false) {
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
   const response = page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.status() === 200);
   await page.getByRole("button", { name: dash.validation.loadButton, exact: true }).click();

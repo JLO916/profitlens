@@ -38,6 +38,17 @@ export async function openMeeting(page: Page) {
   await root.waitFor({ state: 'visible' });
   return root;
 }
+/**
+ * R7-4（D10＝A）：「開發者驗證」頁隱藏為 #validation，側欄預設不顯示。網址還不是 #validation 就設定 hash（觸發 hashchange；
+ * 若尚未 hydrate，掛載時也會讀到），等側欄出現該項目後點它（已在其他頁時切回來），再等驗證頁可見。
+ */
+export async function openValidation(page: Page) {
+  if (await page.evaluate(() => location.hash) !== '#validation') await page.evaluate(() => { location.hash = '#validation'; });
+  const nav = page.getByRole('button', { name: labels.nav.validation.label, exact: true });
+  await nav.waitFor({ state: 'visible' });
+  await nav.click();
+  await page.getByTestId('validation-panel').waitFor({ state: 'visible' });
+}
 /** R6：首次載入資料時會出現非 modal 的「存在這台電腦？」提示（右下角）；不測自動保存的流程先按「先不要」。 */
 export async function dismissSavePrompt(page: Page) {
   const prompt = page.getByTestId('local-save-prompt');

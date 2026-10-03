@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, selectScenarioChannel, startChannelContext } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openValidation, selectScenarioChannel, startChannelContext } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -33,7 +33,7 @@ test.describe.configure({ timeout: 120_000 });
 
 async function openPlan(page: Page, investment = "0") {
   await page.goto("/");
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption("golden");
   await clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);

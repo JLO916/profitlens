@@ -6,7 +6,7 @@ import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { channelsLabel } from "../../src/application/copy";
 import { formatSavedDateTime } from "../../src/application/auto-save";
-import { acceptSavePrompt, clickReplacing, closeDownloads, dismissSavePrompt, openDownloads, openMeeting, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptSavePrompt, clickReplacing, closeDownloads, dismissSavePrompt, openDownloads, openMeeting, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -65,7 +65,7 @@ function slideXml(bytes: Buffer): string[] {
 
 async function loadDataset(page: Page, id: "golden" | "demo") {
   if (page.url() === "about:blank") await page.goto("/");
-  await nav(page, "validation").click();
+  await openValidation(page);
   await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
   await expect(status(page)).toContainText(labels.status.ready);
@@ -557,7 +557,7 @@ test("e. 總覽一行入口切到會議紀錄；側欄八個分頁（手機 4×2
   await expect(nav(page, "meeting")).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(labels.nav.meeting.label);
 
-  // 側欄八個分頁，順序固定；沒有水平捲動。
+  // 側欄八個分頁，順序固定；沒有水平捲動。（R7-4：本案例經 #validation 載入，「開發者驗證」顯示到重新整理為止，故仍為八個。）
   const buttons = page.getByRole("navigation", { name: dash.mainNavAria }).getByRole("button");
   await expect(buttons).toHaveCount(8);
   await expect(buttons).toHaveText(navIds.map(id => labels.nav[id].label));

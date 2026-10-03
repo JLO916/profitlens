@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { labels } from "../../src/i18n";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -22,7 +22,7 @@ const validation = labels.ui.dashboard.validation;
 const channelFilter = labels.ui.dashboard.filter.channel;
 
 async function loadVerificationDataset(page: Page, id: string, state: string = labels.status.ready) {
-  await page.getByRole("button", { name: nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption(id);
   await Promise.all([
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.status() === 200),
@@ -41,7 +41,14 @@ test("PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立
   await expect(page.getByRole("button", { name: labels.buttons.loadDemo, exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: labels.buttons.importData, exact: true })).toBeVisible();
   expect(await page.locator("body").innerText()).not.toMatch(/Golden|缺漏案例|錯誤案例|contribution-v1/);
-  await page.getByRole("button", { name: nav.validation.label, exact: true }).focus();
+  // R7-4（D10＝A）：首頁側欄沒有「開發者驗證」；只有網址 #validation 才出現，出現後切到別頁仍保留（直到重新整理），可用鍵盤切回。
+  const validationNav = page.getByRole("button", { name: nav.validation.label, exact: true });
+  await expect(validationNav).toHaveCount(0);
+  await openValidation(page);
+  await page.getByRole("button", { name: nav.overview.label, exact: true }).click();
+  await expect(page.getByTestId("validation-panel")).toHaveCount(0);
+  await expect(page).not.toHaveURL(/#validation$/);
+  await validationNav.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: nav.validation.label, exact: true, level: 1 })).toBeVisible();
   const datasets = page.getByLabel(validation.datasetLabel, { exact: true });
@@ -97,7 +104,7 @@ test("PL10 單純導航進階頁不載入資料、不更改通路，也不清除
   await action.getByLabel(labels.actions.problem, { exact: true }).fill("PL10 待人工確認的合成工作稿");
   const requests: string[] = [];
   page.on("request", request => { if (request.url().includes("/api/datasets/")) requests.push(request.url()); });
-  await page.getByRole("button", { name: nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await expect(page.getByLabel(validation.datasetLabel, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: nav.actions.label, exact: true }).click();
   await expect(page.getByLabel(channelFilter, { exact: true })).toHaveValue("DTC");

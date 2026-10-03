@@ -1,4 +1,4 @@
-import { dismissSavePrompt, openMeeting, switchActionsView } from "./replacement-helpers";
+import { dismissSavePrompt, openMeeting, openValidation, switchActionsView } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { metricDefinitions } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -106,7 +106,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   // Stub only the blocking OS dialog; the app's portal and real print-media layout still run.
   await page.addInitScript(() => { window.print = () => { document.documentElement.dataset.printInvoked = "true"; }; });
   await page.goto("/");
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);

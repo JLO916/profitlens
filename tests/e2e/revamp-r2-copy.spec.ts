@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { clickReplacing, dismissSavePrompt, openDownloads, ruleHeadline } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openDownloads, openValidation, ruleHeadline } from "./replacement-helpers";
 import { labels } from "../../src/i18n";
 import { csvHeaderKey } from "../../src/application/copy";
 
@@ -13,7 +13,7 @@ async function loadDemo(page: Page) {
 }
 async function loadGolden(page: Page) {
   await page.goto("/");
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
