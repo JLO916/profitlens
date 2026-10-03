@@ -1,3 +1,4 @@
+import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { appendFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Page } from "@playwright/test";
@@ -88,7 +89,7 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await openStorage(page);
   await expect(storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true })).toBeDisabled();
   const exported = JSON.parse(await backup(page));
-  expect(exported.schema_version).toBe("profitlens-workspace-v3");
+  expect(exported.schema_version).toBe(WORKSPACE_VERSION);
   expect(Object.keys(exported.payload.sources)).toEqual([exported.payload.active.source_hash]);
   expect(exported.payload.active).not.toHaveProperty("input");
   expect(exported.payload.active.filters.channels).toEqual(["DTC"]);

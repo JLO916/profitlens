@@ -5,6 +5,8 @@ import type { Diagnostic, Fact, Metric, MetricName, Period, RuleCode, Scope, Sou
 import { fill, labels } from "../i18n";
 import { channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, ruleCopy, scopeLabel } from "./copy";
 import type { TaxConversion } from "./tax-basis";
+import { assistKpis, ASSIST_KPI_VERSION, type AssistKpi } from "./assist-kpi";
+import { achievementText, matchTargets, mismatchText, TARGET_METRICS, type TargetMetric, type TargetSet } from "./targets";
 import { encodeCsv, type CsvCell } from "./export";
 import { metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
@@ -55,6 +57,10 @@ export interface ManagerSummary {
   facts: Fact[]; assumptions: string[];
   /** R3：含稅換算一句（沒有換算為 null），通路寬表 CSV 的口徑限制欄也帶上。 */
   conversion_note: string | null;
+  /** R4：輔助指標（assist-kpi-v1），上期與本期各七格。 */
+  assist: { version: typeof ASSIST_KPI_VERSION; previous: AssistKpi[]; current: AssistKpi[] };
+  /** R4：目標達成（只列與本期完全相同的目標；期間不一致者列出提示）。 */
+  targets: { metric: TargetMetric; text: string; status: "matched" | "mismatch" }[];
 }
 
 /** 口徑說明（R2）：摘要的固定口徑直接沿用 labels.basis.items，與口徑說明對話框同一來源。 */
@@ -136,7 +142,16 @@ export function contributionImpact(diagnostic: Pick<Diagnostic, "code" | "rankin
 }
 
 /** Presentation-only prioritization. Rules, totals, facts and financial formulas stay unchanged. */
-export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { importanceThreshold?: string; conversion?: TaxConversion | null } = {}): ManagerSummary {
+export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { importanceThreshold?: string; conversion?: TaxConversion | null; targets?: { set: TargetSet | null; allChannels: readonly string[] } } = {}): ManagerSummary {
+  const targetLines: ManagerSummary["targets"] = [];
+  if (options.targets?.set) {
+    const matches = matchTargets(options.targets.set, { current_period: snapshot.report.current.period, channels: snapshot.report.scope.channels, allChannels: options.targets.allChannels });
+    for (const metric of TARGET_METRICS) {
+      const match = matches[metric];
+      if (match.status === "matched") targetLines.push({ metric, status: "matched", text: achievementText(match.row, snapshot.report.current.metrics[metric]) });
+      else if (match.status === "mismatch") targetLines.push({ metric, status: "mismatch", text: mismatchText(match.nearest) });
+    }
+  }
   // R3：含稅換算一句併入口徑說明，Markdown 的「資料範圍與口徑」與畫面同源。
   const converted = conversionSentence(options.conversion);
   let threshold: bigint | null;
@@ -176,6 +191,7 @@ export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { impo
     dataset_id: report.dataset_id, dataset_hash: snapshot.dataset_hash, filter_hash: snapshot.filter_hash, metric_version: snapshot.metric_version, data_as_of: snapshot.data_as_of,
     scope: report.scope, previous_days: report.comparison.previous_days, current_days: report.comparison.current_days, importance_threshold: formatCents(threshold),
     headlines: [metricComparison(snapshot, "net_revenue"), metricComparison(snapshot, "contribution_after_marketing")],
+    assist: { version: ASSIST_KPI_VERSION, previous: assistKpis(report.previous), current: assistKpis(report.current) }, targets: targetLines,
     channels: report.scope.channels.map(channel => ({ channel, revenue: metricComparison(snapshot, "net_revenue", channel), contribution: metricComparison(snapshot, "contribution_after_marketing", channel) })),
     priorities: eligible.slice(0, 3), groups, omitted_group_count: groups.length - Math.min(eligible.length, 3), facts: report.facts, assumptions: converted ? [...LIMITATIONS, converted] : LIMITATIONS, conversion_note: converted,
   });
@@ -220,6 +236,12 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   for (const row of summary.headlines) lines.push(fill(copy.mdHeadlineRow, { metric: metricDefinitions[row.metric].label, previous: amount(row.previous), current: amount(row.current), change: amount(row.change, true) }));
   lines.push("", `| ${labels.csvColumns.channel} | ${labels.periods.previous}${contributionShort} | ${labels.periods.current}${contributionShort} | ${labels.csvSuffix.change} |`, "| --- | ---: | ---: | ---: |");
   for (const row of summary.channels) lines.push(`| ${md(channelLabel(row.channel, alias))} | ${amount(row.contribution.previous)} | ${amount(row.contribution.current)} | ${amount(row.contribution.change, true)} |`);
+  lines.push("", `## ${labels.sections.assistKpis}`, "", labels.assist.intro, "", `| ${labels.csvColumns.metric} | ${labels.periods.previous} | ${labels.periods.current} |`, "| --- | ---: | ---: |");
+  for (const [index, kpi] of summary.assist.current.entries()) lines.push(`| ${md(kpi.label)} | ${md(summary.assist.previous[index].display)} | ${md(kpi.display)} |`);
+  if (summary.targets.length) {
+    lines.push("", `## ${labels.targets.section}`, "");
+    for (const row of summary.targets) lines.push(`- ${metricDefinitions[row.metric].label}：${md(row.text)}`);
+  }
   lines.push("", `## ${labels.sections.topThree}`, "");
   if (!summary.priorities.length) lines.push(labels.notes.noPriorities);
   for (const [index, item] of summary.priorities.entries()) {
@@ -237,7 +259,7 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   for (const action of decisions.mainActions) lines.push(actionRow(action, actionStatusLabel(action.status)));
   if (context?.reviewName) lines.push("", fill(copy.mdMeeting, { name: md(context.reviewName), decision: md(decisionLabel(context.decisionState)) }), `${labels.meeting.notes}：${md(context.notes ?? "")}`);
   lines.push("", `## ${labels.basis.title}`, "", ...summary.assumptions.map(item => `- ${md(item)}`), "", "---", "", `## ${labels.sections.technicalDetails}`, "",
-    `- dataset_id：${md(summary.dataset_id)}`, `- dataset_hash：${summary.dataset_hash}`, `- filter_hash：${summary.filter_hash}`, `- metric_version：${summary.metric_version}`,
+    `- dataset_id：${md(summary.dataset_id)}`, `- dataset_hash：${summary.dataset_hash}`, `- filter_hash：${summary.filter_hash}`, `- metric_version：${summary.metric_version}`, `- ${labels.assist.technicalVersion}：${summary.assist.version}`,
     copy.techPriorityNote, copy.techFactsNote, "");
   if (decisions.appendixActions.length) lines.push(copy.otherActions, ...decisions.appendixActions.map(action => actionRow(action, actionStatusLabel(action.status))), "");
   for (const group of summary.groups) {

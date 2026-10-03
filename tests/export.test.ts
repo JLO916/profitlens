@@ -81,7 +81,8 @@ describe("M3 exact snapshot exports", () => {
     const { dataset, snapshot: original } = await setup();
     const snapshot = await createSnapshot(dataset, { channels: ["DTC"] }, original.dataset_hash);
     const rows = records(exportSnapshotCsv(dataset, snapshot, { "sales_daily.csv": "營運銷售.csv" }));
-    expect(rows.every(row => row.dataset_id === "golden-v1" && row.dataset_hash === snapshot.dataset_hash && row.filter_hash === snapshot.filter_hash && row.metric_version === "contribution-v1" && row.as_of === "2026-08-03")).toBe(true);
+    // R4：assist_kpi 列的版本欄是 assist-kpi-v1（輔助指標獨立版本），其餘列仍是 contribution-v1。
+    expect(rows.every(row => row.dataset_id === "golden-v1" && row.dataset_hash === snapshot.dataset_hash && row.filter_hash === snapshot.filter_hash && row.metric_version === (row.row_type === "assist_kpi" ? "assist-kpi-v1" : "contribution-v1") && row.as_of === "2026-08-03")).toBe(true);
     expect(rows.every(row => JSON.parse(row.scope).channels.length === 1 && JSON.parse(row.scope).channels[0] === "DTC")).toBe(true);
     expect(rows.filter(row => row.row_type === "channel").every(row => row.channel === "DTC")).toBe(true);
     expect(rows.find(row => row.row_type === "period_summary" && row.period === "current" && row.metric === "contribution_after_marketing")?.value).toBe("270.00");

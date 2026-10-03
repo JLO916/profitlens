@@ -1,6 +1,7 @@
 import { closeDownloads, openDownloads, ruleHeadline } from "./replacement-helpers";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardFileLabels, wizardRoles, type Classification, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
+import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -401,7 +402,9 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   expect(current!.current_period_end).toBe("2026-09-04");
   expect(JSON.parse(current!.filter_scope).channels).toEqual(["DTC"]);
   expect(analysis.filter(row => row.row_type === "channel").every(row => row.channel === "DTC")).toBe(true);
-  expect(analysis.every(row => row.metric_version === "contribution-v1" && row.as_of === "2026-09-05")).toBe(true);
+  // R4：assist_kpi 列的版本是 assist-kpi-v1；其餘列仍是 contribution-v1。
+  expect(analysis.every(row => row.metric_version === (row.row_type === "assist_kpi" ? ASSIST_KPI_VERSION : "contribution-v1") && row.as_of === "2026-09-05")).toBe(true);
+  expect(analysis.filter(row => row.row_type === "assist_kpi")).toHaveLength(14);
   await channelFilter(page).selectOption({ label: labels.ui.dashboard.filter.allChannels });
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
   await navButton(page, "products").click();

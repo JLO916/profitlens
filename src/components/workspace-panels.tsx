@@ -13,6 +13,8 @@ import { exportProductsCsv } from "@/application/export";
 import { buildManagerSummary } from "@/application/manager-summary";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, demoAlias, ruleCopy } from "@/application/copy";
 import type { TaxConversion } from "@/application/tax-basis";
+import { exportTargetsCsv, targetDisplay, targetsCsvTemplate, type TargetIssue, type TargetSet } from "@/application/targets";
+import { eventsCsvTemplate, exportEventsCsv, type EventIssue, type EventSet } from "@/application/events";
 import { fill, labels } from "@/i18n";
 import { ChannelWideTable } from "./channel-table";
 import { ImpactAmount } from "./top-three";
@@ -33,7 +35,7 @@ function displayMetric(name: MetricName, metric: Metric): string {
   return formatMoney(metric.value);
 }
 
-export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversion }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null }) {
+export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversion, targets = null, events = null, targetIssues = [], eventIssues = [], onTargets, onEvents, onRemoveTargets, onRemoveEvents, onRemoveTargetRow, onRemoveEventRow }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; targets?: TargetSet | null; events?: EventSet | null; targetIssues?: TargetIssue[]; eventIssues?: EventIssue[]; onTargets?: (file: File | undefined) => void; onEvents?: (file: File | undefined) => void; onRemoveTargets?: () => void; onRemoveEvents?: () => void; onRemoveTargetRow?: (line: number) => void; onRemoveEventRow?: (line: number) => void }) {
   const settings = dataset.manifest;
   const alias = demoAlias(settings.dataset_id);
   const files = [
@@ -59,6 +61,29 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
       <details><summary>{labels.sections.technicalDetails}</summary><dl className="metadata-grid"><div><dt>資料格式／指標版本</dt><dd>{settings.schema_version} / {snapshot.metric_version}</dd></div><div><dt>資料 SHA-256</dt><dd><code>{snapshot.dataset_hash}</code></dd></div><div><dt>篩選 SHA-256</dt><dd><code>{snapshot.filter_hash}</code></dd></div><div><dt>金額口徑識別</dt><dd><code>{settings.amount_basis}</code></dd></div></dl></details>
       {conversion && <section aria-label={labels.sections.dataPreprocessing} data-testid="data-preprocessing"><h3>{labels.sections.dataPreprocessing}</h3><p>{conversionSentence(conversion)}</p>{conversion.totals && <ul>{Object.entries(conversion.totals).map(([field, totals]) => <li key={field}>{fill(labels.importWizard.conversionTotals, { field: field in labels.metrics ? labels.metrics[field as MetricName].label : field, raw: totals.raw, converted: totals.converted })}</li>)}</ul>}</section>}
       {mappings && <details><summary>{ui.mappingsSummary}</summary>{Object.entries(mappings).map(([file, mapping]) => <div key={file}><h3>{filenames?.[file as SourceRef["file"]] ?? file}</h3><dl className="metadata-grid">{Object.entries(mapping).map(([standard, original]) => <div key={standard}><dt>{standard}</dt><dd>{original}</dd></div>)}</dl></div>)}</details>}
+    </section>
+    {/* R4 選配：目標（達成率）與促銷檔期（趨勢圖區帶）；只標示，不改計算。 */}
+    <section className="panel side-entry" aria-labelledby="targets-heading" data-testid="targets-entry">
+      <div className="section-heading"><div><h2 id="targets-heading">{labels.targets.entry}</h2><p className="note">{labels.targets.intro}</p></div><span className="tag">{targets ? fill(labels.targets.loaded, { n: targets.rows.length, name: targets.filename ?? "" }) : labels.targets.none}</span></div>
+      <div className="side-entry-controls">
+        <label className="file-pick"><span className="button quiet">{labels.targets.upload}</span><input aria-label={labels.targets.upload} type="file" accept=".csv,text/csv" onChange={event => { onTargets?.(event.target.files?.[0]); event.target.value = ""; }} /></label>
+        <button type="button" className="text-button" onClick={() => downloadText(targetsCsvTemplate(), "targets.csv")}>{labels.targets.template}</button>
+        {targets && <button type="button" className="text-button" onClick={() => downloadText(exportTargetsCsv(targets), "targets.csv")}>{labels.targets.download}</button>}
+        {targets && <button type="button" className="text-button" onClick={onRemoveTargets}>{labels.targets.remove}</button>}
+      </div>
+      {targetIssues.length > 0 && <ul className="alert file-issues" role="alert" data-testid="targets-issues">{targetIssues.map((issue, index) => <li key={index}>{issue.message}<br /><code>{issue.reason_code}</code></li>)}</ul>}
+      {targets && <div className="table-scroll" role="region" aria-label={labels.targets.entry} tabIndex={0}><table data-testid="targets-table"><thead><tr><th>{labels.csvColumns.line}</th><th>{labels.targets.columns.period_start}</th><th>{labels.targets.columns.period_end}</th><th>{labels.targets.columns.channel}</th><th>{labels.targets.columns.metric}</th><th>{labels.targets.columns.target}</th><th></th></tr></thead><tbody>{targets.rows.map(row => <tr key={row.line}><th scope="row">{row.line}</th><td>{row.period_start}</td><td>{row.period_end}</td><td>{row.channel === "ALL" ? ui.scopeAll : channelLabel(row.channel, alias)}</td><td>{metricDefinitions[row.metric].label}</td><td>{targetDisplay(row)}</td><td><button type="button" className="text-button" aria-label={`${labels.targets.removeRow} ${row.line}`} onClick={() => onRemoveTargetRow?.(row.line)}>{labels.targets.removeRow}</button></td></tr>)}</tbody></table></div>}
+    </section>
+    <section className="panel side-entry" aria-labelledby="events-heading" data-testid="events-entry">
+      <div className="section-heading"><div><h2 id="events-heading">{labels.events.entry}</h2><p className="note">{labels.events.intro}</p></div><span className="tag">{events ? fill(labels.events.loaded, { n: events.rows.length, name: events.filename ?? "" }) : labels.events.none}</span></div>
+      <div className="side-entry-controls">
+        <label className="file-pick"><span className="button quiet">{labels.events.upload}</span><input aria-label={labels.events.upload} type="file" accept=".csv,text/csv" onChange={event => { onEvents?.(event.target.files?.[0]); event.target.value = ""; }} /></label>
+        <button type="button" className="text-button" onClick={() => downloadText(eventsCsvTemplate(), "events.csv")}>{labels.events.template}</button>
+        {events && <button type="button" className="text-button" onClick={() => downloadText(exportEventsCsv(events), "events.csv")}>{labels.events.download}</button>}
+        {events && <button type="button" className="text-button" onClick={onRemoveEvents}>{labels.events.remove}</button>}
+      </div>
+      {eventIssues.length > 0 && <ul className="alert file-issues" role="alert" data-testid="events-issues">{eventIssues.map((issue, index) => <li key={index}>{issue.message}<br /><code>{issue.reason_code}</code></li>)}</ul>}
+      {events && <div className="table-scroll" role="region" aria-label={labels.events.entry} tabIndex={0}><table data-testid="events-table"><thead><tr><th>{labels.csvColumns.line}</th><th>{labels.events.columns.start}</th><th>{labels.events.columns.end}</th><th>{labels.events.columns.label}</th><th></th></tr></thead><tbody>{events.rows.map(row => <tr key={row.line}><th scope="row">{row.line}</th><td>{row.start}</td><td>{row.end}</td><td>{row.label}</td><td><button type="button" className="text-button" aria-label={`${labels.events.removeRow} ${row.line}`} onClick={() => onRemoveEventRow?.(row.line)}>{labels.events.removeRow}</button></td></tr>)}</tbody></table></div>}
     </section>
     <section className="panel" aria-labelledby="preview-heading">
       <div className="section-heading"><div><h2 id="preview-heading">{labels.sections.dataPreview}</h2><p className="note">{ui.previewNote}</p></div><span className="tag">{ui.previewTag}</span></div>
@@ -131,7 +156,7 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction }: { snapshot: 
   </>;
 }
 
-const productColumns: { name: keyof ProductMetrics; label: string }[] = [
+const productColumns: { name: Exclude<keyof ProductMetrics, "units_sold">; label: string }[] = [
   { name: "net_revenue", label: metricDefinitions.net_revenue.label }, { name: "cogs_net", label: metricDefinitions.cogs_net.label },
   { name: "gross_profit", label: metricDefinitions.gross_profit.label }, { name: "gross_margin", label: metricDefinitions.gross_margin.shortLabel },
   { name: "discounts", label: metricDefinitions.discounts.label }, { name: "refunds", label: metricDefinitions.refunds.shortLabel },

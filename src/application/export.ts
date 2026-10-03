@@ -1,6 +1,9 @@
 import { uniqueSources } from "../domain/aggregation";
 import { AMOUNT_FIELDS, COST_FIELDS, MONEY_METRICS, PRODUCT_METRICS, SALES_FIELDS, type Dataset, type Metric, type MetricName, type Period, type ProductRow, type SourceRef, type ValidationIssue } from "../domain/types";
 import { fill, labels } from "../i18n";
+import Decimal from "decimal.js";
+import { ASSIST_KPI_VERSION, assistKpis, type AssistKpi } from "./assist-kpi";
+import { achievement, matchTargets, TARGET_METRICS, type TargetSet } from "./targets";
 import { conversionSentence, csvHeader, plainIssueMessage } from "./copy";
 import type { TaxConversion } from "./tax-basis";
 import { metricDefinitions } from "./presentation";
@@ -85,7 +88,7 @@ function metricRecord(name: MetricName, metric: Metric, sources: readonly Source
 }
 
 /** Export the already-calculated active snapshot, without recomputing formulas. */
-export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot, filenameMap: FilenameMap = {}, conversion: TaxConversion | null = null): string {
+export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot, filenameMap: FilenameMap = {}, conversion: TaxConversion | null = null, targets: TargetSet | null = null): string {
   const records: ExportRecord[] = [];
   const metricNames = Object.keys(metricDefinitions) as MetricName[];
   for (const period of ["previous", "current"] as const) {
@@ -96,6 +99,34 @@ export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
     for (const channel of snapshot.report.scope.channels) {
       const channelSummary = summary.channels[channel];
       for (const name of metricNames) records.push({ row_type: text("channel"), channel: text(channel), ...recordScope("channel", [channel], period, summary.period), ...metricRecord(name, channelSummary.metrics[name], channelSummary.sources, filenameMap) });
+    }
+  }
+  // R4 輔助指標（assist-kpi-v1）：每期七列；unit 用 count／TWD/unit／ratio／multiple。
+  const assistUnit: Record<AssistKpi["unit"], string> = { count: "count", money_per_unit: "TWD/unit", percent: "ratio", multiple: "multiple" };
+  for (const period of ["previous", "current"] as const) {
+    const summary = snapshot.report[period];
+    for (const kpi of assistKpis(summary)) {
+      // 新指標只來自銷售檔（＋資料集設定）；既有比率沿用 metricSources；版本欄寫 assist-kpi-v1。
+      const sources = kpi.metric ? metricSources(kpi.metric, kpi.sources) : kpi.sources.filter(source => source.file === "sales_daily.csv" || source.file === "manifest.json");
+      records.push({ row_type: text("assist_kpi"), metric_version: text(ASSIST_KPI_VERSION), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), metric: text(kpi.id), metric_label: text(kpi.label), unit: text(assistUnit[kpi.unit]), value: kpi.value === null ? empty : numeric(kpi.value), reason_codes: text(JSON.stringify(kpi.reason_codes)), source_refs: sourceRefs(sources, filenameMap) });
+    }
+  }
+  // R4 目標達成：只有與本期完全相同的目標才列（target 金額一列、達成率一列）。
+  if (targets) {
+    const matches = matchTargets(targets, { current_period: snapshot.report.current.period, channels: snapshot.report.scope.channels, allChannels: dataset.manifest.channels });
+    for (const name of TARGET_METRICS) {
+      const match = matches[name];
+      if (match.status !== "matched") continue;
+      const actual = snapshot.report.current.metrics[name];
+      // 來源：目標列指向 targets.csv 的原始行號；達成率列同時帶實際值的來源。
+      const targetRef = { file: targets.filename ?? "targets.csv", logical_file: "targets.csv", line: match.row.line };
+      const actualRefs = uniqueSources(metricSources(name, snapshot.report.current.sources)).map(source => ({ ...source, file: filenameMap[source.file] ?? source.file, logical_file: source.file }));
+      const scope = { row_type: text("target"), ...recordScope("all", snapshot.report.scope.channels, "current", snapshot.report.current.period) };
+      records.push({ ...scope, metric: text(`target_${name}`), metric_label: text(fill(labels.targets.csvTarget, { metric: metricDefinitions[name].label })), unit: text("TWD"), value: numeric(match.row.target), reason_codes: text("[]"), source_refs: text(JSON.stringify([targetRef])) });
+      // 達成率以 12 位小數的比率字串輸出（unit=ratio 規則），畫面上的「77.5%」是同一個數的百分比顯示。
+      const rate = achievement(actual, match.row.target);
+      const ratio = rate.status === "ok" && actual.value !== null ? new Decimal(actual.value).div(match.row.target).toFixed(12, Decimal.ROUND_HALF_UP) : null;
+      records.push({ ...scope, metric: text(`achievement_${name}`), metric_label: text(fill(labels.targets.csvAchievement, { metric: metricDefinitions[name].label })), unit: text("ratio"), value: ratio === null ? empty : numeric(ratio), reason_codes: text(JSON.stringify(rate.status === "ok" ? [] : [rate.status === "undefined" ? "TARGET_NOT_POSITIVE" : "MISSING_VALUE"])), source_refs: text(JSON.stringify([targetRef, ...actualRefs])) });
     }
   }
   for (const week of snapshot.weeks) {

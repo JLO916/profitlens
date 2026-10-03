@@ -20,7 +20,12 @@ export interface EvidenceSelection {
   formula?: string;
   components?: { label: string; metric: Metric }[];
   scopeLabel?: string;
-  unitOverride?: "percentage-point";
+  /** R4：輔助指標的件數與件均不是金額；count／money_per_unit 不畫階梯，直接顯示。 */
+  unitOverride?: "percentage-point" | "count" | "money_per_unit";
+  /** R4：非 domain 指標（輔助指標、目標）自帶技術公式與版本；null 值的顯示字（例如「不適用」）。 */
+  formulaTechnical?: string;
+  metricVersion?: string;
+  nullDisplay?: string;
   /** 商品層級證據：不畫四層階梯（商品只看毛利）。 */
   sku?: string;
 }
@@ -112,6 +117,8 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const ratio = RATIOS[evidence.name];
   const ladderRows = ladder && !ratio ? LADDER.slice(0, LADDER.findIndex(row => row.name === evidence.name) + 1) : [];
   const displayValue = (metric: Metric) => {
+    if (evidence.unitOverride === "count") return metric.value === null ? evidence.nullDisplay ?? labels.status.missing : fill(labels.assist.units.count, { value: metric.value });
+    if (evidence.unitOverride === "money_per_unit") return metric.value === null ? evidence.nullDisplay ?? labels.status.missing : fill(labels.assist.units.perUnit, { value: formatMoney(metric.value) });
     if (evidence.unitOverride === "percentage-point") return metric.value === null ? labels.status.missing : `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} ${copy.percentagePoint}`;
     if (definition.unit === "money") return metric.value === null ? labels.status.missing : fill(labels.ui.evidenceDrawer.money, { amount: formatMoney(metric.value) });
     if (definition.unit === "percent") return formatRate(metric.value);
@@ -180,11 +187,11 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
         <details className="evidence-technical">
           <summary>{labels.sections.technicalDetails}</summary>
           <dl>
-            <div><dt>{copy.technicalFormula}</dt><dd><code>{definition.formulaTechnical}</code></dd></div>
+            <div><dt>{copy.technicalFormula}</dt><dd><code>{evidence.formulaTechnical ?? definition.formulaTechnical}</code></dd></div>
             {(evidence.unitOverride || definition.unit !== "money") && evidence.metric.value !== null && <div><dt>{copy.exactValue}</dt><dd><code>{evidence.metric.value}</code>{evidence.unitOverride === "percentage-point" ? `（${copy.pointNote}）` : definition.unit === "percent" ? `（${copy.ratioNote}）` : ""}</dd></div>}
             {evidence.metric.reason_codes.length > 0 && <div><dt>{copy.conditions}</dt><dd><ul>{evidence.metric.reason_codes.map((reason) => <li key={reason}><code>{reason}</code></li>)}</ul></dd></div>}
             {evidence.components?.some(component => component.metric.reason_codes.length > 0) && <div><dt>{copy.components}</dt><dd><ul>{evidence.components.filter(component => component.metric.reason_codes.length > 0).map((component, index) => <li key={index}>{component.label}：<code>{component.metric.reason_codes.join("、")}</code></li>)}</ul></dd></div>}
-            <div><dt>metric_version</dt><dd><code>contribution-v1</code></dd></div>
+            <div><dt>metric_version</dt><dd><code>{evidence.metricVersion ?? "contribution-v1"}</code></dd></div>
           </dl>
         </details>
         <section aria-label={copy.sourcesTitle} className="evidence-sources">

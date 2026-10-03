@@ -1,7 +1,7 @@
 import { calculateMetrics } from "./metrics";
 import { dateRange, dayCount } from "./date";
 import { reasons, sumAmounts } from "./money";
-import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS, type Amount, type AmountField, type Dataset, type DailyChannel, type Period, type PeriodAnalysis, type SalesRow, type SourceRef, type Summary, type Totals } from "./types";
+import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS, type Amount, type AmountField, type Count, type Dataset, type DailyChannel, type Metric, type Period, type PeriodAnalysis, type SalesRow, type SourceRef, type Summary, type Totals } from "./types";
 
 export function emptyTotals(): Totals {
   const totals = {} as Totals;
@@ -25,6 +25,22 @@ export function aggregateSales(rows: readonly SalesRow[], confirmed: boolean): T
     if (!confirmed) totals[field] = { cents: null, reason_codes: reasons(totals[field].reason_codes, ["SALES_COVERAGE_UNCONFIRMED"]) };
   }
   return totals;
+}
+/** R4 加法：件數加總。任一列缺件數 → null＋MISSING_UNITS_SOLD；涵蓋未確認 → null＋SALES_COVERAGE_UNCONFIRMED（與金額同規則）。 */
+export function sumUnits(rows: readonly SalesRow[], confirmed: boolean): Count {
+  const missing = rows.some(row => row.units_sold === null);
+  const reason_codes = reasons(missing ? ["MISSING_UNITS_SOLD"] : [], confirmed ? [] : ["SALES_COVERAGE_UNCONFIRMED"]);
+  if (missing || !confirmed) return { value: null, reason_codes };
+  return { value: rows.reduce((total, row) => total + row.units_sold!, 0n), reason_codes };
+}
+export function sumCounts(counts: readonly Count[]): Count {
+  const reason_codes = reasons(...counts.map(count => count.reason_codes));
+  if (counts.some(count => count.value === null)) return { value: null, reason_codes };
+  return { value: counts.reduce((total, count) => total + count.value!, 0n), reason_codes };
+}
+/** 件數以整數字串呈現（商品列與匯出用），不經過金額格式。 */
+export function countMetric(count: Count): Metric {
+  return { value: count.value === null ? null : count.value.toString(), reason_codes: [...count.reason_codes] };
 }
 const pairKey = (date: string, channel: string) => JSON.stringify([date, channel]);
 const within = (date: string, period: Period) => date >= period.start && date <= period.end;
@@ -87,9 +103,9 @@ export function aggregatePeriod(dataset: Dataset, period: Period, channels: read
       totals.ad_spend = { cents: null, reason_codes: reasons(totals.ad_spend.reason_codes, ["MISSING_AD_DAY"]) };
       if (!daily_complete) sources.push({ file: "ad_spend_daily.csv", line: null, channel });
     }
-    const summary: Summary = { totals, metrics: calculateMetrics(totals), sources: uniqueSources(sources) };
+    const summary: Summary = { totals, metrics: calculateMetrics(totals), sources: uniqueSources(sources), units_sold: sumUnits(sales.filter(row => row.channel === channel), dataset.manifest.sales_coverage_confirmed) };
     return [channel, summary] as const;
   });
   const totals = sumTotals(summaries.map(([, summary]) => summary.totals));
-  return { period: { ...period }, totals, metrics: calculateMetrics(totals), sources: uniqueSources(summaries.flatMap(([, summary]) => summary.sources)), channels: Object.fromEntries(summaries), daily, daily_complete };
+  return { period: { ...period }, totals, metrics: calculateMetrics(totals), sources: uniqueSources(summaries.flatMap(([, summary]) => summary.sources)), channels: Object.fromEntries(summaries), daily, daily_complete, units_sold: sumCounts(summaries.map(([, summary]) => summary.units_sold)) };
 }

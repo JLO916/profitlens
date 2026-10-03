@@ -22,7 +22,7 @@ function summary(values: Partial<Record<AmountField, string | null>> = {}): Summ
     const value = field in values ? values[field]! : defaults[field];
     return [field, { cents: value === null ? null : BigInt(value.replace(".", "")), reason_codes: value === null ? [`MISSING_${field.toUpperCase()}`] : [] }];
   })) as unknown as Totals;
-  return { totals, metrics: calculateMetrics(totals), sources: [] };
+  return { totals, metrics: calculateMetrics(totals), sources: [], units_sold: { value: null, reason_codes: [] } };
 }
 function result(input: Partial<ScenarioInputs> = {}, base = golden()) {
   return calculateScenario(buildScenarioBaseline(base, true), { ...zero, ...input });

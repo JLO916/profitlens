@@ -10,11 +10,12 @@ import { DataWorkspace, Diagnosis } from "./workspace-panels";
 import { AiPanel } from "./ai-panel";
 import { getAiCapability, type AiCapability } from "@/application/ai-client";
 import { IssueList } from "./issue-list";
-import { ImportPanel } from "./import-panel";
 import { ImportWizard } from "./import-wizard";
 import { clearWizardMemory, exampleTemplateUrl, FILE_ROLES } from "@/application/import-wizard";
 import { standardCsvTemplate } from "@/application/import-guidance";
 import type { RawValuesByFile, TaxConversion } from "@/application/tax-basis";
+import { parseTargets, type TargetIssue, type TargetSet } from "@/application/targets";
+import { parseEvents, type EventIssue, type EventSet } from "@/application/events";
 import type { PreparedImport } from "@/application/import";
 import { downloadText } from "@/application/download";
 import { exportIssuesCsv, exportSnapshotCsv } from "@/application/export";
@@ -40,7 +41,7 @@ import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, type Acti
 
 type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "validation";
 type Status = "empty" | "loading" | "error" | "partial" | "ready";
-type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; raw_values?: RawValuesByFile };
+type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; raw_values?: RawValuesByFile; targets?: TargetSet | null; events?: EventSet | null };
 // R2：導覽、資料集名稱與決議標籤都從 labels 取字；id／value 維持機器值。
 const panelIds: Panel[] = ["overview", "diagnosis", "products", "scenarios", "actions", "data", "validation"];
 const panels: { id: Panel; label: string; description: string }[] = panelIds.map(id => ({ id, label: labels.nav[id].label, description: labels.nav[id].description }));
@@ -77,8 +78,7 @@ export function Dashboard() {
   const [status, setStatus] = useState<Status>("empty");
   const [selected, setSelected] = useState("demo");
   const [showImport, setShowImport] = useState(false);
-  // R3：舊版單頁匯入面板只在網址帶 #legacy-import 時掛載（R4 刪除）；本機保存同意由這裡保存，供儲存面板與匯入精靈的對照記憶共用。
-  const [legacyImport, setLegacyImport] = useState(false);
+  // 本機保存同意由這裡保存，供儲存面板與匯入精靈的對照記憶共用（R4 已移除舊版單頁匯入面板）。
   const [localConsent, setLocalConsent] = useState(false);
   const [active, setActive] = useState<Active | null>(null);
   const [issues, setIssues] = useState<ValidationIssue[]>([]);
@@ -133,6 +133,8 @@ export function Dashboard() {
   }
   function activate(next: Active, newEpoch = true) {
     setActive(next);
+    // 目標／檔期的檢核錯誤屬於上一份資料；換資料就清掉。
+    setTargetIssues([]); setEventIssues([]);
     storeActions(refreshActionWorkspace(actionRef.current, next.snapshot, next.revision));
     if (newEpoch) {
       const epoch = crypto.randomUUID(); storeScenarios(activateScenarioEpoch(scenarioRef.current, epoch));
@@ -213,12 +215,41 @@ export function Dashboard() {
   function startImport() {
     requestId.current++; controller.current?.abort(); setEvidence(null); setError(""); setFilterError("");
     setStatus(active ? (active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready") : "empty");
-    setLegacyImport(window.location.hash === "#legacy-import");
     setPanel("data"); setShowImport(true);
   }
   function cancelImport() {
     requestId.current++; controller.current?.abort(); setShowImport(false); setError("");
     setStatus(active ? (active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready") : "empty");
+  }
+  // R4：目標與檔期（選配）掛在目前資料上；換資料即清空；寫進備份 v4。
+  const [targetIssues, setTargetIssues] = useState<TargetIssue[]>([]);
+  const [eventIssues, setEventIssues] = useState<EventIssue[]>([]);
+  async function readSideFile(kind: "targets" | "events", file: File | undefined) {
+    if (!file || !active) return;
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (kind === "targets") {
+      const result = parseTargets({ name: file.name, bytes }, active.dataset.manifest.channels);
+      setTargetIssues(result.issues);
+      if (result.set) { setActive(previous => previous ? { ...previous, targets: result.set } : previous); markChanged(); }
+    } else {
+      const result = parseEvents({ name: file.name, bytes });
+      setEventIssues(result.issues);
+      if (result.set) { setActive(previous => previous ? { ...previous, events: result.set } : previous); markChanged(); }
+    }
+  }
+  function removeSideFile(kind: "targets" | "events") {
+    if (kind === "targets") setTargetIssues([]); else setEventIssues([]);
+    setActive(previous => previous ? { ...previous, [kind]: null } : previous); markChanged();
+  }
+  /** 逐列刪除（05 §4 要求檔期可在資料來源頁編輯／刪除；目標同樣處理）；刪到沒有列就整組移除。 */
+  function removeSideRow(kind: "targets" | "events", line: number) {
+    setActive(previous => {
+      if (!previous) return previous;
+      if (kind === "targets") { const rows = (previous.targets?.rows ?? []).filter(row => row.line !== line); return { ...previous, targets: rows.length ? { filename: previous.targets?.filename ?? null, rows } : null }; }
+      const rows = (previous.events?.rows ?? []).filter(row => row.line !== line);
+      return { ...previous, events: rows.length ? { filename: previous.events?.filename ?? null, rows } : null };
+    });
+    markChanged();
   }
   async function commitImport(prepared: PreparedImport, manifestName?: string, afterCommit?: () => void) {
     if (!prepared.input || !prepared.validation.dataset || prepared.validation.classification === "blocking") return;
@@ -265,8 +296,11 @@ export function Dashboard() {
     }
   }
   // R1-3: presets only fill the form; applyFilters still waits for an explicit submit.
+  // R4 備份 v4 的 ui_prefs：記住上次用的快捷（只記錄，不自動套用）。
+  const [lastPreset, setLastPreset] = useState<string | undefined>(undefined);
   function choosePreset(preset: PeriodPreset) {
     if (preset.status !== "ready") return;
+    setLastPreset(preset.id);
     setComparisonMode(preset.comparison_mode);
     setDates({ previousStart: preset.previous.start, previousEnd: preset.previous.end, currentStart: preset.current.start, currentEnd: preset.current.end });
     requestAnimationFrame(() => applyRef.current?.focus());
@@ -289,7 +323,8 @@ export function Dashboard() {
   function performRestore(workspace: RestoredWorkspace) {
     requestId.current++; controller.current?.abort(); setEvidence(null);
     revision.current = Math.max(revision.current, workspace.revision);
-    setActive({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, id: workspace.id, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings });
+    setActive({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, id: workspace.id, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings, conversion: workspace.preprocessing?.conversion ?? null, raw_values: workspace.preprocessing?.raw_values, targets: workspace.targets, events: workspace.events });
+    setTargetIssues([]); setEventIssues([]); setLastPreset(workspace.ui_prefs.last_preset);
     storeScenarios(workspace.scenario_workspace); storeReview(workspace.review_session ?? syncReviewPins(createReviewSession({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings }, workspace.scenario_workspace.active_epoch), workspace.action_workspace)); storeActions(workspace.action_workspace); setIssues(workspace.issues);
     setComparisonMode(workspace.snapshot.report.scope.comparison_mode);
     setDates({ previousStart: workspace.snapshot.report.previous.period.start, previousEnd: workspace.snapshot.report.previous.period.end, currentStart: workspace.snapshot.report.current.period.start, currentEnd: workspace.snapshot.report.current.period.end });
@@ -338,14 +373,15 @@ export function Dashboard() {
   const local = active?.dataset.manifest.source_type === "user_provided";
   const currentContext = scenarioWorkspace.contexts.find(context => context.status === "current" && context.session.filter_hash === active?.snapshot.filter_hash);
   const decision = currentContext ? scenarioContextDecision(currentContext) : emptyDecisionWorkspace();
-  const presets = active ? periodPresets(active.dataset.manifest) : [];
+  // R4：第五個快捷「去年同期」以表單目前的兩期為準（本期不變、上期各減一年）；日期還沒填完整時顯示不可用，不拋錯。
+  const presets = active ? periodPresets(active.dataset.manifest, { previous: { start: dates.previousStart, end: dates.previousEnd }, current: { start: dates.currentStart, end: dates.currentEnd }, comparison_mode: comparisonMode }) : [];
   const presetMatches = (preset: PeriodPreset) => preset.status === "ready" && preset.comparison_mode === comparisonMode && preset.previous.start === dates.previousStart && preset.previous.end === dates.previousEnd && preset.current.start === dates.currentStart && preset.current.end === dates.currentEnd;
   const alias = active ? demoAlias(active.dataset.manifest.dataset_id) : false;
   const statusText = labels.status[status];
   const aiHeadline = aiCapability === null ? labels.status.aiUnknown : aiCapability.available ? labels.status.aiNeedsConsent : aiCapability.reason === "STATUS_UNAVAILABLE" ? labels.status.aiUnknown : aiCapability.reason === "PUBLIC_DEMO" ? labels.status.aiOff : labels.status.aiDisabled;
   // 03 §9：關閉狀態的說明只留一句（併入 AI popover）。
   const aiDetail = aiCapability?.available ? labels.ui.dashboard.aiDetail.consent : aiCapability?.reason === "PUBLIC_DEMO" ? labels.ui.dashboard.aiDetail.publicDemo : labels.ui.dashboard.aiDetail.off;
-  const backupSource: WorkspaceBackupSource | null = active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession } : null;
+  const backupSource: WorkspaceBackupSource | null = active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession, preprocessing: active.conversion ? { conversion: active.conversion, raw_values: active.raw_values ?? {} } : null, targets: active.targets ?? null, events: active.events ?? null, ui_prefs: lastPreset ? { last_preset: lastPreset } : {} } : null;
 
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">{labels.ui.dashboard.skipLink}</a>
@@ -373,8 +409,8 @@ export function Dashboard() {
             <summary>{labels.buttons.download}</summary>
             <div className="menu-panel">{visible ? <div className="menu-list">
               <p className="menu-section">{labels.sections.downloadCurrentView}</p>
-              <div className="menu-item"><button type="button" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames, active.conversion ?? null), "profitlens-analysis.csv")}>{labels.downloads.analysisCsv}</button><small>{labels.downloads.analysisCsvHint}</small></div>
-              <button type="button" onClick={() => downloadText(exportChannelComparisonCsv(buildManagerSummary(active.snapshot, { conversion: active.conversion })), "profitlens-channel-comparison.csv")}>{labels.downloads.channelTableCsv}</button>
+              <div className="menu-item"><button type="button" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames, active.conversion ?? null, active.targets ?? null), "profitlens-analysis.csv")}>{labels.downloads.analysisCsv}</button><small>{labels.downloads.analysisCsvHint}</small></div>
+              <button type="button" onClick={() => downloadText(exportChannelComparisonCsv(buildManagerSummary(active.snapshot, { conversion: active.conversion, targets: { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } })), "profitlens-channel-comparison.csv")}>{labels.downloads.channelTableCsv}</button>
               <button type="button" onClick={() => downloadText(JSON.stringify(active.dataset.manifest, null, 2), "profitlens-manifest.json", "application/json;charset=utf-8")}>{labels.downloads.manifestJson}</button>
               {active.dataset.issues.length > 0 && <div className="menu-item"><button type="button" onClick={() => downloadText(exportIssuesCsv(active.dataset.issues, active.filenames), "profitlens-issues.csv")}>{labels.downloads.issuesCsv}</button><small>{labels.downloads.issuesCsvHint.replace("{n}", String(active.dataset.issues.length))}</small></div>}
               <p className="menu-section">{labels.sections.downloadDecision}</p>
@@ -395,7 +431,7 @@ export function Dashboard() {
           <ul className="validation-descriptions"><li>{labels.ui.dashboard.validation.descriptions.demo}</li><li>{labels.ui.dashboard.validation.descriptions.golden}</li><li>{labels.ui.dashboard.validation.descriptions.missing}</li><li>{labels.ui.dashboard.validation.descriptions.duplicate}</li></ul>
           <p className="note">{labels.ui.dashboard.validation.note}</p>
         </section>}
-        {showImport && <div hidden={panel !== "data"}>{legacyImport ? <div id="legacy-import"><ImportPanel onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} /></div> : <ImportWizard onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} localSaveConsented={localConsent} />}</div>}
+        {showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} localSaveConsented={localConsent} /></div>}
         {visible && <>
           <div className="filter-bar">
             <label className="channel-field">{labels.ui.dashboard.filter.channel}<select aria-label={labels.ui.dashboard.filter.channel} value={active.snapshot.report.scope.channels.length > 1 ? "" : active.snapshot.report.scope.channels[0]} onChange={event => void applyFilters({ ...active.snapshot.report.scope, channels: event.target.value === "" ? active.dataset.manifest.channels : [event.target.value] })}><option value="">{labels.ui.dashboard.filter.allChannels}</option>{active.dataset.manifest.channels.map(channel => <option key={channel} value={channel}>{channelLabel(channel, alias)}</option>)}</select></label>
@@ -407,6 +443,8 @@ export function Dashboard() {
               <button ref={applyRef} className="button quiet" type="submit">{labels.buttons.apply}</button>
             </form>
           </div>
+          {/* R4：去年同期不可用的理由放在期間列正下方（不放進 sticky 期間列，維持 R1「1280 以上最多兩行」）；按鈕本身仍有 title 與 sr-only 說明。 */}
+          {presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset] : []).map(preset => <p key={preset.id} className="note preset-reason" role="status" data-testid="preset-reason-visible-yoy">{preset.reason}</p>)}
           {filterError && <p role="alert" className="alert error">{filterError}</p>}
           {status === "partial" && <div className="alert partial"><strong>{labels.status.partial}</strong><span>{labels.ui.dashboard.partialNote}</span><button className="text-button" onClick={() => setPanel("data")}>{fill(labels.ui.dashboard.viewIssues, { n: active.dataset.issues.length })}</button></div>}
           <p className="scope-note">{fill(labels.ui.dashboard.scopeNote, { channels: channelsLabel(active.snapshot.report.scope.channels, alias), mode: active.snapshot.report.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays, previousDays: active.snapshot.report.comparison.previous_days, currentDays: active.snapshot.report.comparison.current_days, dataAsOf: active.snapshot.data_as_of, previousStart: active.snapshot.report.previous.period.start, previousEnd: active.snapshot.report.previous.period.end, currentStart: active.snapshot.report.current.period.start, currentEnd: active.snapshot.report.current.period.end })}</p>
@@ -414,7 +452,7 @@ export function Dashboard() {
         {status === "empty" && !showImport && panel !== "validation" && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">{labels.emptyState.eyebrow}</p><h2>{labels.emptyState.title}</h2><p>{labels.emptyState.body}</p><button className="button primary large" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={18} /></button><div className="empty-steps">{labels.emptyState.steps.map((step, index) => <span key={step}>{index + 1} {step}</span>)}</div></section>}
         {status === "loading" && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>{labels.ui.dashboard.loading.heading}</h2><p>{labels.ui.dashboard.loading.body}</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
         {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>{labels.status.error}</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>{labels.ui.dashboard.errorState.retry}</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>{labels.ui.dashboard.errorState.back}</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
-        {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} /><details className="panel overview-meeting" data-testid="overview-meeting" open={meetingOpen} onToggle={event => setMeetingOpen(event.currentTarget.open)}><summary>{labels.sections.meetingDraft}<span className="tag">{reviewSession ? labels.meeting.decisions[decisionLabelKey[reviewSession.decision_state]] : labels.sections.meetingNotCreated}</span></summary><ReviewWorkbench source={active} conversion={active.conversion} scenarioWorkspace={scenarioWorkspace} review={reviewSession} onChange={setReview} actionWorkspace={actionWorkspace} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} /></details></>}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} />}</div>}
+        {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><details className="panel overview-meeting" data-testid="overview-meeting" open={meetingOpen} onToggle={event => setMeetingOpen(event.currentTarget.open)}><summary>{labels.sections.meetingDraft}<span className="tag">{reviewSession ? labels.meeting.decisions[decisionLabelKey[reviewSession.decision_state]] : labels.sections.meetingNotCreated}</span></summary><ReviewWorkbench source={active} conversion={active.conversion} targets={{ set: active.targets ?? null, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} review={reviewSession} onChange={setReview} actionWorkspace={actionWorkspace} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} /></details></>}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onChannelChange={channel => void applyFilters({ ...active.snapshot.report.scope, channels: [channel] })} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} />}
         <footer className="main-footer"><p>{labels.basis.footer} → <button type="button" className="text-button" onClick={() => setBasisOpen(true)}>{labels.buttons.basis}</button></p></footer>

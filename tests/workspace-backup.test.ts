@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { blankScenarioInputs, createDecisionSession, decisionSignature, emptyDecisionWorkspace, saveAction, saveScenario } from "@/application/decision";
-import { exportWorkspaceBackup, MAX_WORKSPACE_BYTES, restoreWorkspaceBackup, type WorkspaceBackupSource } from "@/application/workspace-backup";
+import { exportWorkspaceBackup, MAX_RAW_VALUE_LINES, MAX_WORKSPACE_BYTES, restoreWorkspaceBackup, WORKSPACE_VERSION, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
+import { addActionDraft, emptyActionWorkspace, pinAction } from "@/application/action-workspace";
+import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext } from "@/application/scenario-workspace";
+import { createReviewSession, selectReviewScenario, syncReviewPins, updateReviewSession } from "@/application/review-session";
+import type { TargetSet } from "@/application/targets";
+import type { EventSet } from "@/application/events";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import { validateDataset } from "@/domain/validation";
 import { fixture } from "./helpers/fixtures";
@@ -139,5 +144,159 @@ describe("PL-01 complete workspace backup and transactional restoration", () => 
   it("rejects malformed and oversized JSON before expensive revalidation", async () => {
     await expect(restoreWorkspaceBackup("{" )).rejects.toThrow("INVALID_WORKSPACE_JSON");
     await expect(restoreWorkspaceBackup(" ".repeat(MAX_WORKSPACE_BYTES + 1))).rejects.toThrow("WORKSPACE_TOO_LARGE");
+  });
+});
+
+// R4-6 schema v4. Helpers rebuild the exact v3 wire shape (no v4 keys) and re-sign it like a genuine v3 file.
+const V4_KEYS = ["preprocessing", "targets", "events", "meeting_history", "ui_prefs"] as const;
+async function asV3(text: string): Promise<string> {
+  const body = JSON.parse(text);
+  body.schema_version = "profitlens-workspace-v3";
+  for (const key of V4_KEYS) delete body.payload[key];
+  return resign(body);
+}
+function csvTexts(text: string): Record<string, unknown>[] {
+  const sources = JSON.parse(text).payload.sources as Record<string, { files: Record<string, string> }>;
+  return Object.entries(sources).map(([key, value]) => ({ key, ...value.files }));
+}
+function again(restored: RestoredWorkspace): WorkspaceBackupSource {
+  return { ...restored, filters: restored.snapshot.report.scope };
+}
+const planInputs = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
+/** Full workspace: decision plans, a scenario context, an action card and a meeting with a selected plan. */
+async function fullSource(): Promise<WorkspaceBackupSource> {
+  const input = fixture(); const dataset = validateDataset(input).dataset!;
+  const snapshot = await createSnapshot(dataset, { channels: ["DTC"] }, await hashInput(input));
+  const session = createDecisionSession(dataset, snapshot, 1);
+  const decision = { ...emptyDecisionWorkspace(), captured: session, source_input: input, scenarios: saveScenario(session, [], { id: "plan", name: "履約假設", inputs: planInputs }) };
+  const actions = pinAction(addActionDraft(emptyActionWorkspace(), { input, dataset, snapshot, revision: 1 }, "task"), "task", true);
+  const meetingSnapshot = await createSnapshot(dataset, {}, snapshot.dataset_hash);
+  let workspace = ensureScenarioContext(emptyScenarioWorkspace("meeting-epoch"), { input, dataset, snapshot, revision: 1 });
+  const context = workspace.contexts[0], contextDecision = scenarioContextDecision(context);
+  contextDecision.scenarios = saveScenario(context.session, [], { id: "plan", name: "履約假設", inputs: planInputs });
+  workspace = updateScenarioContext(workspace, context.id, contextDecision);
+  let review = createReviewSession({ input, dataset, snapshot: meetingSnapshot, revision: 1 }, "meeting-epoch", "meeting");
+  review = selectReviewScenario(review, workspace, scenarioSelectionRef(workspace.contexts[0], "plan"));
+  review = syncReviewPins(review, actions);
+  review = updateReviewSession(review, { name: "十月例會", notes: "只採用原始條件" });
+  return { input, filters: snapshot.report.scope, id: "golden", revision: 1, mappings: { "sales_daily.csv": { date: "交易日" } }, decision, action_workspace: actions, scenario_workspace: workspace, review_session: review };
+}
+// Small hand-made side data; amounts are decimal strings (1,050.00 incl. 5% → 1,000.00).
+const sideData = () => ({
+  preprocessing: {
+    conversion: { basis: "inclusive" as const, rate: "0.05", fields: ["gross_sales", "ad_spend"], rows_converted: 2, totals: { gross_sales: { raw: "1050.00", converted: "1000.00" }, ad_spend: { raw: "105.00", converted: "100.00" } } },
+    raw_values: { "sales_daily.csv": { 2: { gross_sales: "1050.00" } }, "ad_spend_daily.csv": { 3: { ad_spend: "105.00" } } },
+  },
+  targets: { filename: "targets.csv", rows: [{ period_start: "2026-08-03", period_end: "2026-08-04", channel: "ALL", metric: "net_revenue", target: "8000000.00", line: 2 }, { period_start: "2026-08-03", period_end: "2026-08-04", channel: "DTC", metric: "ad_spend", target: "300.50", line: 3 }] } satisfies TargetSet,
+  events: { filename: "events.csv", rows: [{ start: "2026-07-15", end: "2026-07-20", label: "夏季特賣", line: 2 }] } satisfies EventSet,
+  ui_prefs: { last_preset: "last_year", view: "board" as const },
+});
+
+describe("R4-6 workspace backup schema v4", () => {
+  it("exports profitlens-workspace-v4 with null side data and an empty reserved meeting history", async () => {
+    const parsed = JSON.parse(await exportWorkspaceBackup(await source()));
+    expect(WORKSPACE_VERSION).toBe("profitlens-workspace-v4");
+    expect(parsed.schema_version).toBe("profitlens-workspace-v4");
+    expect(parsed.payload).toMatchObject({ preprocessing: null, targets: null, events: null, meeting_history: [], ui_prefs: {} });
+  });
+  it("v3 → v4 → v3-shape: CSV bytes, scenarios, actions and meeting stay identical; v4 fields default to empty", async () => {
+    const original = await fullSource();
+    const v3Text = await asV3(await exportWorkspaceBackup(original));
+    expect(JSON.parse(v3Text).schema_version).toBe("profitlens-workspace-v3");
+    const fromV3 = await restoreWorkspaceBackup(v3Text);
+    expect(fromV3).toMatchObject({ preprocessing: null, targets: null, events: null, ui_prefs: {} });
+    const v4Text = await exportWorkspaceBackup(again(fromV3));
+    expect(JSON.parse(v4Text).schema_version).toBe("profitlens-workspace-v4");
+    const fromV4 = await restoreWorkspaceBackup(v4Text);
+    const v3AgainText = await asV3(await exportWorkspaceBackup(again(fromV4)));
+    const fromV3Again = await restoreWorkspaceBackup(v3AgainText);
+    // Byte-identical CSV text at every stage, both on the wire and after restore.
+    expect(csvTexts(v4Text)).toEqual(csvTexts(v3Text));
+    expect(csvTexts(v3AgainText)).toEqual(csvTexts(v3Text));
+    for (const file of ["sales_daily.csv", "channel_costs_daily.csv", "ad_spend_daily.csv"] as const) {
+      expect(fromV3.input.files[file]).toBe(original.input.files[file]);
+      expect(fromV4.input.files[file]).toBe(original.input.files[file]);
+      expect(fromV3Again.input.files[file]).toBe(original.input.files[file]);
+    }
+    for (const restored of [fromV4, fromV3Again]) {
+      expect(restored.scenario_workspace).toEqual(fromV3.scenario_workspace);
+      expect(restored.action_workspace).toEqual(fromV3.action_workspace);
+      expect(restored.review_session).toEqual(fromV3.review_session);
+      expect(restored.decision).toEqual(fromV3.decision);
+    }
+    expect(fromV3.review_session).toEqual(original.review_session);
+    expect(fromV3.scenario_workspace.contexts[0].plans.map(plan => plan.inputs)).toEqual([planInputs]);
+    expect(fromV3.action_workspace.items.map(item => item.card)).toEqual(original.action_workspace!.items.map(item => item.card));
+    expect(fromV3Again).toMatchObject({ preprocessing: null, targets: null, events: null, ui_prefs: {} });
+  });
+  it("a v3 file carrying v4-only keys is rejected rather than half-read", async () => {
+    const body = JSON.parse(await asV3(await exportWorkspaceBackup(await source())));
+    body.payload.targets = null;
+    await expect(restoreWorkspaceBackup(await resign(body))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+  });
+  it("v4 round trip keeps preprocessing raw values, targets, events and UI preferences exactly", async () => {
+    const side = sideData();
+    const text = await exportWorkspaceBackup({ ...(await fullSource()), ...side });
+    const parsed = JSON.parse(text);
+    expect(parsed.payload.preprocessing.raw_values["sales_daily.csv"]["2"]).toEqual({ gross_sales: "1050.00" });
+    const restored = await restoreWorkspaceBackup(text);
+    expect(restored.preprocessing).toEqual(side.preprocessing);
+    expect(restored.targets).toEqual(side.targets);
+    expect(restored.events).toEqual(side.events);
+    expect(restored.ui_prefs).toEqual(side.ui_prefs);
+    const twice = await restoreWorkspaceBackup(await exportWorkspaceBackup(again(restored)));
+    expect(twice).toMatchObject({ preprocessing: side.preprocessing, targets: side.targets, events: side.events, ui_prefs: side.ui_prefs });
+    expect(twice.snapshot.report.current.metrics.contribution_after_marketing.value).toBe(restored.snapshot.report.current.metrics.contribution_after_marketing.value);
+  });
+  it("drops undefined optional preferences so the file and its checksum agree", async () => {
+    const restored = await restoreWorkspaceBackup(await exportWorkspaceBackup({ ...(await source()), ui_prefs: { view: "list", last_preset: undefined } }));
+    expect(restored.ui_prefs).toEqual({ view: "list" });
+  });
+  it.each([
+    ["an unknown target metric", (body: { payload: Record<string, unknown> }) => { body.payload.targets = { filename: "targets.csv", rows: [{ period_start: "2026-08-03", period_end: "2026-08-04", channel: "ALL", metric: "orders", target: "1.00", line: 2 }] }; }],
+    ["a float target amount", (body: { payload: Record<string, unknown> }) => { body.payload.targets = { filename: null, rows: [{ period_start: "2026-08-03", period_end: "2026-08-04", channel: "ALL", metric: "net_revenue", target: 1.5, line: 2 }] }; }],
+    ["a target with three decimals", (body: { payload: Record<string, unknown> }) => { body.payload.targets = { filename: null, rows: [{ period_start: "2026-08-03", period_end: "2026-08-04", channel: "ALL", metric: "net_revenue", target: "1.005", line: 2 }] }; }],
+    ["an event label over 60 characters", (body: { payload: Record<string, unknown> }) => { body.payload.events = { filename: null, rows: [{ start: "2026-07-15", end: "2026-07-20", label: "檔".repeat(61), line: 2 }] }; }],
+    ["a tax rate above 20%", (body: { payload: Record<string, unknown> }) => { const side = sideData(); body.payload.preprocessing = { ...side.preprocessing, conversion: { ...side.preprocessing.conversion, rate: "0.25" } }; }],
+    ["raw values for a field that was not converted", (body: { payload: Record<string, unknown> }) => { const side = sideData(); body.payload.preprocessing = { ...side.preprocessing, raw_values: { "sales_daily.csv": { 2: { refunds: "10.00" } } } }; }],
+    ["raw values beyond the line bound", (body: { payload: Record<string, unknown> }) => {
+      const side = sideData();
+      const lines = Object.fromEntries(Array.from({ length: MAX_RAW_VALUE_LINES + 1 }, (_, index) => [index + 2, { ad_spend: "1.05" }]));
+      body.payload.preprocessing = { ...side.preprocessing, raw_values: { "ad_spend_daily.csv": lines } };
+    }],
+    ["a stored meeting history before R6", (body: { payload: Record<string, unknown> }) => { body.payload.meeting_history = [{ id: "m1" }]; }],
+    ["an unknown UI preference", (body: { payload: Record<string, unknown> }) => { body.payload.ui_prefs = { theme: "dark" }; }],
+    ["a missing v4 key", (body: { payload: Record<string, unknown> }) => { delete body.payload.ui_prefs; }],
+  ])("rejects %s with INVALID_WORKSPACE_FORMAT even after re-signing", async (_label, mutate) => {
+    const body = JSON.parse(await exportWorkspaceBackup(await source()));
+    mutate(body);
+    await expect(restoreWorkspaceBackup(await resign(body))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+  });
+  it("detects tampering of v4 side data through the unchanged checksum rule", async () => {
+    const body = JSON.parse(await exportWorkspaceBackup({ ...(await source()), ...sideData() }));
+    body.payload.targets.rows[0].target = "9000000.00";
+    await expect(restoreWorkspaceBackup(JSON.stringify(body))).rejects.toThrow("WORKSPACE_CHECKSUM_MISMATCH");
+  });
+});
+
+describe("R4 review follow-up: restore re-validates v4 side data against the dataset", () => {
+  it("rejects a v4 file whose targets name a channel the dataset does not have, or whose raw value does not convert to the stored cell", async () => {
+    const { exportWorkspaceBackup, restoreWorkspaceBackup } = await import("@/application/workspace-backup");
+    const { decisionSignature } = await import("@/application/decision");
+    const base = await source();
+    const resign = async (value: Record<string, unknown>) => {
+      const { checksum: _checksum, ...body } = value; void _checksum;
+      const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(decisionSignature(body)));
+      return JSON.stringify({ ...body, checksum: Array.from(new Uint8Array(hash), n => n.toString(16).padStart(2, "0")).join("") });
+    };
+    const good = JSON.parse(await exportWorkspaceBackup({ ...base, targets: { filename: "t.csv", rows: [{ period_start: "2026-08-02", period_end: "2026-08-02", channel: "ALL", metric: "net_revenue", target: "1.00", line: 2 }] } })) as { payload: { targets: { rows: { channel: string }[] }; preprocessing: unknown } };
+    await expect(restoreWorkspaceBackup(JSON.stringify(good))).resolves.toBeTruthy();
+    good.payload.targets.rows[0].channel = "NOT_A_CHANNEL";
+    await expect(restoreWorkspaceBackup(await resign(good as unknown as Record<string, unknown>))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+    const raw = JSON.parse(await exportWorkspaceBackup({ ...base, preprocessing: { conversion: { basis: "inclusive", rate: "0.05", fields: ["gross_sales"], rows_converted: 1 }, raw_values: { "sales_daily.csv": { 2: { gross_sales: "1050.00" } } } } })) as Record<string, unknown>;
+    // golden 第 2 行 gross_sales 是 1000.00：1050 ÷ 1.05 ＝ 1000.00 相符 → 接受；改成 999.00 → 拒絕。
+    await expect(restoreWorkspaceBackup(JSON.stringify(raw))).resolves.toBeTruthy();
+    (raw.payload as { preprocessing: { raw_values: { "sales_daily.csv": Record<string, Record<string, string>> } } }).preprocessing.raw_values["sales_daily.csv"]["2"].gross_sales = "999.00";
+    await expect(restoreWorkspaceBackup(await resign(raw))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
   });
 });

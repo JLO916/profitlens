@@ -72,6 +72,8 @@ export const COST_FIELDS = ["platform_fees", "payment_fees", "fulfillment_costs"
 export const AMOUNT_FIELDS = [...SALES_FIELDS, ...COST_FIELDS, "ad_spend"] as const;
 export type AmountField = typeof AMOUNT_FIELDS[number];
 export interface Amount { cents: bigint | null; reason_codes: ReasonCode[] }
+/** R4 加法：件數（非金額）。value 為 null 時 reason_codes 說明原因（MISSING_UNITS_SOLD／SALES_COVERAGE_UNCONFIRMED）。 */
+export interface Count { value: bigint | null; reason_codes: ReasonCode[] }
 export interface Metric { value: string | null; reason_codes: ReasonCode[] }
 export type Totals = Record<AmountField, Amount>;
 export type MetricName = AmountField | "net_revenue" | "gross_profit" | "contribution_before_marketing" | "contribution_after_marketing" | "gross_margin" | "contribution_margin" | "discount_rate" | "refund_ratio" | "mer" | "fulfillment_burden" | "marketing_burden";
@@ -87,7 +89,8 @@ export interface PeriodComparison {
   daily_average_changes: MoneyMetrics;
 }
 export const PRODUCT_METRICS = [...SALES_FIELDS, "net_revenue", "gross_profit", "gross_margin", "discount_rate", "refund_ratio"] as const;
-export type ProductMetrics = Pick<Metrics, typeof PRODUCT_METRICS[number]>;
+/** R4 加法：units_sold 為整數字串的 Metric（不是金額）；既有金額指標不變。 */
+export type ProductMetrics = Pick<Metrics, typeof PRODUCT_METRICS[number]> & { units_sold: Metric };
 export interface Scope { kind: "all" | "channel" | "sku"; channels: string[]; sku?: string; category?: string }
 export interface DailyChannel {
   date: string;
@@ -97,6 +100,8 @@ export interface DailyChannel {
   sources: SourceRef[];
 }
 export interface Summary { totals: Totals; metrics: Metrics; sources: SourceRef[] }
+/** R4 加法（宣告合併）：售出件數；既有欄位與既有函式的輸入輸出不變。 */
+export interface Summary { units_sold: Count }
 export interface PeriodAnalysis extends Summary { period: Period; daily: DailyChannel[]; daily_complete: boolean; channels: Record<string, Summary> }
 export interface ProductRow { channel: string; sku: string; category: string; metrics: ProductMetrics; sources: SourceRef[] }
 export interface Fact extends Metric { id: string; metric: MetricName; scope: Scope; period: Period; sources: SourceRef[] }

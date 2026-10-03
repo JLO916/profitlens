@@ -1,7 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
+
 import Decimal from "decimal.js";
-import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ASSIST_KPI_VERSION, assistKpis, type AssistKpi } from "@/application/assist-kpi";
+import { eventBands as computeEventBands, type EventSet } from "@/application/events";
+import { achievement, achievementText, matchTargets, mismatchText, targetDisplay, TARGET_METRICS, type TargetMetric, type TargetSet } from "@/application/targets";
 import { channelLabel, demoAlias } from "@/application/copy";
 import { formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -12,7 +17,7 @@ import type { EvidenceSelection } from "./evidence-drawer";
 import { TopThree } from "./top-three";
 import { fill, labels } from "@/i18n";
 
-type Props = { snapshot: WorkspaceSnapshot; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void; periodOpen?: boolean; onPeriodToggle?: (open: boolean) => void };
+type Props = { targets?: TargetSet | null; events?: EventSet | null; allChannels?: readonly string[]; snapshot: WorkspaceSnapshot; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void; periodOpen?: boolean; onPeriodToggle?: (open: boolean) => void };
 const ui = labels.ui.overview;
 const kpis = ["net_revenue", "gross_profit", "contribution_before_marketing", "contribution_after_marketing", "contribution_margin"] as const;
 const nullLabel = (metric: Metric) => metric.reason_codes.some(code => code.startsWith("MISSING") || code === "SALES_COVERAGE_UNCONFIRMED") ? labels.status.missing : labels.status.notApplicable;
@@ -30,8 +35,24 @@ function text(name: MetricName, metric: Metric) {
 function coordinate(metric: Metric) { return metric.value === null ? null : Number(metric.value); }
 const axis = (value: number) => new Intl.NumberFormat("zh-TW", { notation: "compact", maximumFractionDigits: 1 }).format(value);
 
-export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = false, onPeriodToggle }: Props) {
+export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = false, onPeriodToggle, targets = null, events = null, allChannels }: Props) {
   const { report, weeks } = snapshot;
+  // R4：目標只在期間完全相同時顯示達成率；檔期只標示，不改任何計算。
+  const targetMatches = matchTargets(targets, { current_period: report.current.period, channels: report.scope.channels, allChannels: allChannels ?? report.scope.channels });
+  const targetLine = (name: string, budget = false) => {
+    if (!(TARGET_METRICS as readonly string[]).includes(name)) return null;
+    const metric = name as TargetMetric;
+    const match = targetMatches[metric];
+    if (match.status === "none") return null;
+    const actual = report.current.metrics[metric];
+    const text = match.status === "matched" ? (budget ? fill(labels.targets.achievedBudget, { target: targetDisplay(match.row), rate: achievement(actual, match.row.target).display }) : achievementText(match.row, actual)) : mismatchText(match.nearest);
+    const row = match.status === "matched" ? match.row : match.nearest;
+    // 目標數字可追溯：抽屜列出實際與目標、公式「實際 ÷ 目標」、targets.csv 檔名與行號。
+    const openTarget = () => onEvidence({ title: fill(labels.targets.evidenceTitle, { metric: metricDefinitions[metric].label }), name: metric, metric: actual, period: report.current.period, channels, sources: report.current.sources, formula: labels.targets.formula, formulaTechnical: `${labels.targets.formula}：${actual.value ?? labels.status.missing} ÷ ${row.target}`, metricVersion: ASSIST_KPI_VERSION, components: [{ label: labels.targets.actual, metric: actual }, { label: labels.targets.columns.target, metric: { value: row.target, reason_codes: [] } }], scopeLabel: fill(labels.targets.sourceLine, { file: targets?.filename ?? "targets.csv", line: row.line }) });
+    return <p className={`kpi-target ${match.status}`} data-testid={`kpi-target-${name}`}><button className="number-link" onClick={openTarget}>{text}</button></p>;
+  };
+  const { previous: previousSummary, current: currentSummary } = report;
+  const assist = useMemo(() => ({ previous: assistKpis(previousSummary), current: assistKpis(currentSummary) }), [previousSummary, currentSummary]);
   const channels = report.scope.channels;
   const alias = demoAlias(report.dataset_id);
   const open = (name: MetricName, metric: Metric, period: Period, sources: SourceRef[], title?: string, selectedChannels = channels) => onEvidence({ name, metric, period, sources, channels: selectedChannels, title: title ?? metricDefinitions[name].label });
@@ -39,7 +60,9 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
   const sourcesBoth = [...report.previous.sources, ...report.current.sources];
   const changes = AMOUNT_FIELDS.map(name => ({ name: metricDefinitions[name].label, field: name, value: coordinate(report.bridge.components[name]), metric: report.bridge.components[name] }));
   const bridgeFormula = AMOUNT_FIELDS.map(name => `${metricDefinitions[name].label}${labels.csvSuffix.change}`).join(" − ");
-  const trend = weeks.map(week => ({ ...week, tick: week.start.slice(5).replace("-", "/"), revenue: coordinate(week.metrics.net_revenue), contribution: coordinate(week.metrics.contribution_after_marketing) }));
+  // 趨勢圖 x 軸用週序號（數值軸，避免上期／本期同月同日的刻度撞名），檔期區帶用 events.ts 的分數位置（週 i 的點在 x＝i，區帶以 ±0.5 置中）。
+  const eventBands = computeEventBands(events, weeks).map(band => ({ event: band.event, x1: band.from - 0.5, x2: band.to - 0.5 }));
+  const trend = weeks.map((week, index) => ({ ...week, index, tick: week.start.slice(5).replace("-", "/"), revenue: coordinate(week.metrics.net_revenue), contribution: coordinate(week.metrics.contribution_after_marketing) }));
   // `channel` 維持原始通路代碼（證據與 key 用）；`label` 只供圖軸與提示顯示。
   const comparisons = Object.entries(report.current.channels).map(([channel, summary]) => ({ channel, label: channelLabel(channel, alias), previous: coordinate(report.previous.channels[channel].metrics.contribution_after_marketing), current: coordinate(summary.metrics.contribution_after_marketing) }));
   const number = (name: MetricName, metric: Metric, period: Period, sources: SourceRef[], selectedChannels = channels) => <button className="number-link" onClick={() => open(name, metric, period, sources, undefined, selectedChannels)}>{text(name, metric)}</button>;
@@ -57,6 +80,7 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
         return <article className={`kpi-card ${name === "contribution_after_marketing" ? "featured" : ""}`} key={name} data-testid={`kpi-${name}`}>
           <h3>{metricDefinitions[name].label}</h3><div className="kpi-value">{number(name, current, report.current.period, report.current.sources)}</div>
           <p className="kpi-previous">{labels.periods.previous} {number(name, before, report.previous.period, report.previous.sources)}</p>
+          {targetLine(name)}
           <div className={`kpi-change ${change.value?.startsWith("-") ? "negative" : "positive"}`}>
             {change.value === null ? <span>{ui.changePending}</span> : <button className="number-link" onClick={() => onEvidence({ title: fill(ui.changeTitle, { metric: metricDefinitions[name].label }), unitOverride: rate ? "percentage-point" : undefined, name: rate ? "contribution_margin" : name, metric: change, period: periodBoth, channels, sources: sourcesBoth, formula: rate ? ui.ratePointFormula : ui.amountDeltaFormula, scopeLabel: rate ? ui.ratePointScope : ui.amountDeltaScope, components: rate ? undefined : [{ label: labels.periods.previous, metric: before }, { label: labels.periods.current, metric: current }] })}>{rate ? fill(ui.percentagePoints, { value: new Decimal(change.value).toFixed(2) }) : formatSignedMoney(change.value)}</button>}
             {!rate && growth?.value !== null && growth?.value !== undefined && <span className="change-rate">{formatRate(growth.value)}</span>}
@@ -65,14 +89,30 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
       })}
     </section>
 
-    <TopThree snapshot={snapshot} onEvidence={onEvidence} onCreateAction={onCreateAction} />
+    <section className="assist-row" aria-label={labels.sections.assistKpis} data-testid="assist-kpis">
+      <div className="section-heading compact"><h2>{labels.sections.assistKpis}</h2><span className="note">{labels.assist.intro}</span></div>
+      <div className="assist-grid">{assist.current.map((kpi, index) => {
+        const previous = assist.previous[index];
+        const open = (item: AssistKpi, period: Period) => () => onEvidence({ title: item.label, name: item.metric ?? "net_revenue", metric: { value: item.value, reason_codes: item.reason_codes }, period, channels, sources: item.sources, formula: item.formula, formulaTechnical: item.formulaTechnical, metricVersion: item.metric ? undefined : ASSIST_KPI_VERSION, nullDisplay: item.status === "not_applicable" ? labels.assist.notApplicable : undefined, unitOverride: item.unit === "count" ? "count" : item.unit === "money_per_unit" ? "money_per_unit" : undefined });
+        return <article className={`assist-card ${kpi.status}`} key={kpi.id} data-testid={`assist-${kpi.id}`} title={kpi.plain}>
+          <h3>{kpi.label}</h3>
+          <div className="assist-value"><button className="number-link" onClick={open(kpi, report.current.period)}>{kpi.display}</button></div>
+          <p className="kpi-previous">{labels.periods.previous} <button className="number-link" onClick={open(previous, report.previous.period)}>{previous.display}</button></p>
+          {kpi.id === "marketing_burden" && targetLine("ad_spend", true)}
+        </article>;
+      })}</div>
+    </section>
+
+    <TopThree snapshot={snapshot} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} />
 
     <section className="panel trend-panel" aria-labelledby="trend-title">
       <div className="section-heading"><div><p className="eyebrow">TREND</p><h2 id="trend-title">{labels.sections.trend}</h2></div><div className="chart-legend"><span><i className="legend-dot teal" />{metricDefinitions.net_revenue.label}</span><span><i className="legend-dot navy" />{metricDefinitions.contribution_after_marketing.label}</span></div></div>
       <p className="note">{ui.trendNote}</p>
+      {eventBands.length > 0 && <p className="note" data-testid="trend-events">{fill(labels.events.trendList, { list: eventBands.map(band => fill(labels.events.trendItem, { label: band.event.label, start: band.event.start, end: band.event.end })).join(labels.events.joiner) })}</p>}
       <div className="chart-frame" aria-hidden="true"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 800, height: 270 }}><LineChart data={trend} margin={{ top: 18, right: 20, bottom: 10, left: 10 }} accessibilityLayer={false}>
-        <CartesianGrid vertical={false} stroke="#e8eded" strokeDasharray="3 4" /><XAxis dataKey="tick" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#687878" }} minTickGap={26} /><YAxis tickFormatter={axis} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#687878" }} width={50} />
+        <CartesianGrid vertical={false} stroke="#e8eded" strokeDasharray="3 4" /><XAxis dataKey="index" type="number" domain={[-0.5, Math.max(trend.length - 0.5, 0.5)]} ticks={trend.map(row => row.index)} tickFormatter={(value: number) => trend[value]?.tick ?? ""} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#687878" }} minTickGap={26} /><YAxis tickFormatter={axis} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#687878" }} width={50} />
         <Tooltip content={({ active, payload }) => { const row = payload?.[0]?.payload as typeof trend[number] | undefined; return active && row ? <div className="chart-tooltip"><strong>{row.start} — {row.end}</strong><p>{periodLabel(row.period)}</p><p>{metricValue(metricDefinitions.net_revenue.shortLabel, formatMoney(row.metrics.net_revenue.value))}</p><p>{metricValue(metricDefinitions.contribution_after_marketing.shortLabel, formatMoney(row.metrics.contribution_after_marketing.value))}</p></div> : null; }} />
+        {eventBands.map(band => <ReferenceArea key={`${band.event.line}-${band.x1}`} x1={band.x1} x2={band.x2} ifOverflow="visible" fill="#f0c96b" fillOpacity={0.28} stroke="#d9a84a" strokeOpacity={0.6} label={{ value: band.event.label, position: "insideTop", fontSize: 11, fill: "#7a5a12" }} />)}
         <Line dataKey="revenue" stroke="#198b7b" strokeWidth={2.5} dot={{ r: 3, fill: "#fff", strokeWidth: 2 }} activeDot={{ r: 5 }} isAnimationActive={false} connectNulls={false} />
         <Line dataKey="contribution" stroke="#283f54" strokeWidth={2.5} dot={{ r: 3, fill: "#fff", strokeWidth: 2 }} isAnimationActive={false} connectNulls={false} />
       </LineChart></ResponsiveContainer></div>

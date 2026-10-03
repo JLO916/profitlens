@@ -10,8 +10,8 @@ const source: SourceRef = { file: "sales_daily.csv", line: 2, date: "2026-08-01"
 const zero = Object.fromEntries(AMOUNT_FIELDS.map(field => [field, known(0n)])) as Totals;
 const dataset: Dataset = { manifest: manifest as Manifest, sales: [], costs: [], ads: [], issues: [] };
 function period(totals: Totals, current = false): PeriodAnalysis {
-  const scope = { totals, metrics: calculateMetrics(totals), sources: [source] };
-  return { ...scope, period: current ? dataset.manifest.current_period : dataset.manifest.previous_period, daily: [], daily_complete: true, channels: { DTC: scope } };
+  const scope = { totals, metrics: calculateMetrics(totals), sources: [source], units_sold: { value: null, reason_codes: [] } };
+  return { ...scope, period: current ? dataset.manifest.current_period : dataset.manifest.previous_period, daily: [], daily_complete: true, channels: { DTC: scope }, units_sold: { value: null, reason_codes: [] } };
 }
 function input(before: Partial<Totals> = {}, after: Partial<Totals> = {}, products: ProductRow[] = []) {
   return { dataset, previous: period({ ...zero, gross_sales: known(10000n), ...before }), current: period({ ...zero, gross_sales: known(10000n), ...after }, true), currentProducts: products, channels: ["DTC"] };

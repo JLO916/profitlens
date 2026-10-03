@@ -1,3 +1,4 @@
+import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
 import { openMeeting } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { fill, labels } from '../../src/i18n';
@@ -29,7 +30,7 @@ test('A3 示範替換可取消，下載尚未確認不能替換，確認後才�
  await golden(page);await page.getByRole('button',{name:labels.nav.data.label,exact:true}).click();await page.getByRole('button',{name:labels.buttons.loadDemo,exact:true}).click();await expect(guard(page)).toBeVisible();
  await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(status(page)).toContainText('Golden');
  await page.getByRole('button',{name:labels.buttons.loadDemo,exact:true}).click();await guard(page).getByRole('button',{name:dlg.saveFirst,exact:true}).click();
- const event=page.waitForEvent('download');await guard(page).getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();const text=await readFile((await(await event).path())!,'utf8');expect(JSON.parse(text).schema_version).toBe('profitlens-workspace-v3');
+ const event=page.waitForEvent('download');await guard(page).getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();const text=await readFile((await(await event).path())!,'utf8');expect(JSON.parse(text).schema_version).toBe(WORKSPACE_VERSION);
  await expect(status(page)).toContainText('Golden');await expect(guard(page)).toBeVisible();
  await guard(page).getByRole('button',{name:dlg.confirmDownloadedAndContinue,exact:true}).click();await expect(status(page)).toContainText(labels.ui.dashboard.datasets.demo);
  await page.screenshot({path:resolve(`verification/review-v2-a-guard-${info.project.name}.png`),fullPage:false});
@@ -91,7 +92,7 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  await expect(summary.getByLabel(labels.meeting.threshold,{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('needs_data');
  const s=await storage(page), event=page.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();const download=await event;
  await download.saveAs(resolve(`verification/review-v2-a-workspace-${info.project.name}.json`));const text=await readFile((await download.path())!,'utf8');const wire=JSON.parse(text);
- expect(wire.schema_version).toBe('profitlens-workspace-v3');expect(Object.keys(wire.payload.sources)).toHaveLength(1);expect(wire.payload.scenario_workspace.contexts.map((c:{plans:unknown[]})=>c.plans.length)).toEqual([3,3]);expect(wire.payload.review_session.pinned_action_ids).toHaveLength(3);expect(wire.payload.review_session.selected_scenarios).toHaveLength(2);
+ expect(wire.schema_version).toBe(WORKSPACE_VERSION);expect(Object.keys(wire.payload.sources)).toHaveLength(1);expect(wire.payload.scenario_workspace.contexts.map((c:{plans:unknown[]})=>c.plans.length)).toEqual([3,3]);expect(wire.payload.review_session.pinned_action_ids).toHaveLength(3);expect(wire.payload.review_session.selected_scenarios).toHaveLength(2);
  await s.getByRole('button',{name:store.confirmDownloaded,exact:true}).click();
  await page.getByRole('button',{name:labels.buttons.clear,exact:true}).click();await expect(status(page)).toContainText(labels.status.empty);
  const fresh=await storage(page);await fresh.getByLabel(store.selectBackupFile,{exact:true}).setInputFiles({name:'meeting.json',mimeType:'application/json',buffer:Buffer.from(text)});await fresh.getByRole('button',{name:store.applyRestore,exact:true}).click();

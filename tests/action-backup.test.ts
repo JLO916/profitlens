@@ -1,3 +1,4 @@
+import { WORKSPACE_VERSION } from '@/application/workspace-backup';
 import { it, expect } from 'vitest';
 import { fixture } from './helpers/fixtures';
 import { validateDataset } from '@/domain/validation';
@@ -11,7 +12,7 @@ it('keeps independent cross-scope actions and more than three work items through
  let w=emptyActionWorkspace();for(let n=1;n<=4;n++)w=addActionDraft(w,{input,dataset,snapshot:a,revision:1},String(n));
  w=pinAction(w,'1',true);w=refreshActionWorkspace(w,b,2);w=addActionDraft(w,{input,dataset,snapshot:b,revision:2},'5');
  const saved=await exportWorkspaceBackup({input,filters:b.report.scope,id:'golden',revision:2,decision:emptyDecisionWorkspace(),action_workspace:w});
- expect(JSON.parse(saved).schema_version).toBe('profitlens-workspace-v3');
+ expect(JSON.parse(saved).schema_version).toBe(WORKSPACE_VERSION);
  const result=await restoreWorkspaceBackup(saved);expect(result.action_workspace?.items).toHaveLength(5);
  expect(result.action_workspace?.contexts[0].session.stale).toBe(false);expect(result.action_workspace?.items[0].pinned).toBe(true);
  expect(result.action_workspace?.contexts[1].session.scope.channels).toEqual(['MARKETPLACE']);

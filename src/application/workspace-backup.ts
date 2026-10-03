@@ -9,18 +9,37 @@ import { actionContextId, actionDocuments, emptyActionWorkspace, normalizeAction
 import { emptyScenarioWorkspace, migrateLegacyDecisionWorkspace, validateScenarioWorkspace, type ScenarioWorkspace } from "./scenario-workspace";
 import { validateReviewSession, type ReviewSession } from "./review-session";
 import { MAX_CSV_BYTES } from "@/lib/csv";
+import { CONVERTIBLE_FIELDS, isValidTaxRate, type RawValuesByFile, type TaxConversion } from "./tax-basis";
+import { MAX_TARGET_ROWS, targetRowIssues, type TargetRow, type TargetSet } from "./targets";
+import { MAX_EVENT_ROWS, eventRowIssues, type EventSet } from "./events";
+import { convertInclusiveAmount } from "./tax-basis";
+import { formatCents } from "@/domain/money";
 
-export const WORKSPACE_VERSION = "profitlens-workspace-v3";
+export const WORKSPACE_VERSION = "profitlens-workspace-v4";
+const WORKSPACE_V3 = "profitlens-workspace-v3";
+/** R4 前處理（含稅換算）：換算摘要＋被換算格子的含稅原值（檔案 → 原始行號 → 標準欄位 → 原值）。 */
+export interface WorkspacePreprocessing { conversion: TaxConversion; raw_values: RawValuesByFile }
+/** R4 介面偏好：上次使用的期間快捷、行動頁的看板／清單檢視。 */
+export interface WorkspaceUiPrefs { last_preset?: string; view?: "board" | "list" }
+/** Upper bound for raw-value lines kept per source file (matches MAX_CSV_ROWS). */
+export const MAX_RAW_VALUE_LINES = 50_000;
+export { MAX_TARGET_ROWS, MAX_EVENT_ROWS };
+// Structural node cap: raw_values may legitimately hold up to 3 × 50,000 lines × their converted cells,
+// so the v4 cap sits above that worst case; the 64 MiB byte cap below is unchanged.
+const MAX_STRUCTURE_NODES = 1_000_000;
 /** Total portable size cap includes active data, retained historical contexts, and JSON escaping. */
 export const MAX_WORKSPACE_BYTES = 64 * 1024 * 1024;
 export interface WorkspaceBackupSource {
   input: DatasetInput; filters: AnalysisFilters; id: string; revision: number;
   filenames?: FilenameMap; mappings?: ColumnMappings; decision: DecisionWorkspaceState; action_workspace?: ActionWorkspace;
   scenario_workspace?: ScenarioWorkspace; review_session?: ReviewSession | null;
+  preprocessing?: WorkspacePreprocessing | null; targets?: TargetSet | null; events?: EventSet | null; ui_prefs?: WorkspaceUiPrefs;
 }
 export interface RestoredWorkspace extends Omit<WorkspaceBackupSource, "filters"> {
   action_workspace: ActionWorkspace;
   scenario_workspace: ScenarioWorkspace; review_session: ReviewSession | null;
+  /** v1–v3 備份沒有這些欄位：一律還原為 null／{}。 */
+  preprocessing: WorkspacePreprocessing | null; targets: TargetSet | null; events: EventSet | null; ui_prefs: WorkspaceUiPrefs;
   dataset: Dataset; snapshot: WorkspaceSnapshot; filenames: FilenameMap; mappings: ColumnMappings;
   issues: ValidationResult["issues"]; classification: "valid" | "partial";
 }
@@ -90,9 +109,51 @@ const referencedReview = z.strictObject({
   notes: z.string().max(8000), decision_state: z.enum(["draft", "adopted", "needs_data", "not_adopted"]), confirmed_revision: revision.nullable(), target_version: z.null(), status: z.enum(["current", "historical"]),
   source_hash: hash, filenames, source_mappings: mappings.optional(),
 });
+const v3PayloadShape = { sources: z.record(hash, input), active: z.strictObject({ source_hash: hash, filters, id: name, revision, filenames, mappings }), decision: referencedDecision.nullable(), action_workspace: referencedActionWorkspace, scenario_workspace: referencedScenarioWorkspace, review_session: referencedReview.nullable() };
+const v3Payload = z.strictObject(v3PayloadShape);
+const v3EnvelopeSchema = z.strictObject({
+  schema_version: z.literal(WORKSPACE_V3), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION), saved_at: z.iso.datetime(), checksum: hash,
+  payload: v3Payload,
+});
+// v4 additions. Amounts stay decimal strings (≤ 2 decimals), never floats.
+const amount = z.string().max(200).regex(/^-?\d+(?:\.\d{1,2})?$/);
+const isoDate = z.string().max(10).regex(/^\d{4}-\d{2}-\d{2}$/);
+const convertibleFields = [...new Set(Object.values(CONVERTIBLE_FIELDS).flat())] as [string, ...string[]];
+const lineKey = z.string().regex(/^[1-9]\d{0,7}$/);
+function rawFile(fields: readonly string[]) {
+  return z.record(lineKey, z.partialRecord(z.enum(fields as [string, ...string[]]), amount).refine(cells => Object.keys(cells).length > 0))
+    .refine(lines => Object.keys(lines).length <= MAX_RAW_VALUE_LINES);
+}
+const conversion = z.strictObject({
+  basis: z.literal("inclusive"), rate: z.string().max(10).refine(isValidTaxRate),
+  fields: z.array(z.enum(convertibleFields)).max(convertibleFields.length).refine(fields => new Set(fields).size === fields.length),
+  rows_converted: z.number().int().nonnegative().max(csvFiles.length * MAX_RAW_VALUE_LINES),
+  totals: z.partialRecord(z.enum(convertibleFields), z.strictObject({ raw: amount, converted: amount })).optional(),
+});
+const preprocessing = z.strictObject({
+  conversion,
+  raw_values: z.strictObject({ "sales_daily.csv": rawFile(CONVERTIBLE_FIELDS["sales_daily.csv"]).optional(), "channel_costs_daily.csv": rawFile(CONVERTIBLE_FIELDS["channel_costs_daily.csv"]).optional(), "ad_spend_daily.csv": rawFile(CONVERTIBLE_FIELDS["ad_spend_daily.csv"]).optional() }),
+}).refine(value => Object.values(value.raw_values).every(lines => Object.values(lines ?? {}).every(cells => Object.keys(cells).every(field => value.conversion.fields.includes(field)))));
+const targetMetrics = ["net_revenue", "gross_profit", "contribution_after_marketing", "ad_spend"] as const satisfies readonly TargetRow["metric"][];
+const sourceLine = z.number().int().min(1).max(Number.MAX_SAFE_INTEGER);
+const targets = z.strictObject({
+  filename: name.nullable(),
+  rows: z.array(z.strictObject({ period_start: isoDate, period_end: isoDate, channel: name, metric: z.enum(targetMetrics), target: amount, line: sourceLine })).max(MAX_TARGET_ROWS),
+});
+const events = z.strictObject({
+  filename: name.nullable(),
+  rows: z.array(z.strictObject({ start: isoDate, end: isoDate, label: z.string().max(60), line: sourceLine })).max(MAX_EVENT_ROWS),
+});
+const uiPrefs = z.strictObject({ last_preset: z.string().min(1).max(64).optional(), view: z.enum(["board", "list"]).optional() });
 const envelopeSchema = z.strictObject({
   schema_version: z.literal(WORKSPACE_VERSION), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION), saved_at: z.iso.datetime(), checksum: hash,
-  payload: z.strictObject({ sources: z.record(hash, input), active: z.strictObject({ source_hash: hash, filters, id: name, revision, filenames, mappings }), decision: referencedDecision.nullable(), action_workspace: referencedActionWorkspace, scenario_workspace: referencedScenarioWorkspace, review_session: referencedReview.nullable() }),
+  payload: z.strictObject({
+    ...v3PayloadShape,
+    preprocessing: preprocessing.nullable(), targets: targets.nullable(), events: events.nullable(),
+    // Reserved for R6 meeting records; nothing may be stored here yet.
+    meeting_history: z.array(z.unknown()).max(0),
+    ui_prefs: uiPrefs,
+  }),
 });
 
 async function checksum(value: unknown): Promise<string> {
@@ -110,6 +171,10 @@ function portableInput(value: DatasetInput): DatasetInput {
     ...(value.confirmedUnknownColumns ? { confirmedUnknownColumns: structuredClone(value.confirmedUnknownColumns) } : {}),
   };
 }
+/** Wire form of optional side data: drops undefined members exactly as JSON would, so checksum and file agree. */
+function plain<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
 function uniqueIds(items: readonly { id: string }[]): void {
   if (new Set(items.map(item => item.id)).size !== items.length) throw new Error("INVALID_ITEM_ID");
 }
@@ -118,7 +183,7 @@ function assertSafeStructure(value: unknown): void {
   let nodes = 0;
   while (pending.length) {
     const item = pending.pop()!;
-    if (++nodes > 250_000 || item.depth > 32) throw new Error("INVALID_WORKSPACE_FORMAT");
+    if (++nodes > MAX_STRUCTURE_NODES || item.depth > 32) throw new Error("INVALID_WORKSPACE_FORMAT");
     if (!item.value || typeof item.value !== "object") continue;
     for (const [key, entry] of Object.entries(item.value)) {
       if (["__proto__", "prototype", "constructor"].includes(key)) throw new Error("INVALID_WORKSPACE_FORMAT");
@@ -211,9 +276,18 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
     const { source_input: reviewInput, ...review } = source.review_session;
     reviewSession = { ...review, source_hash: await register(reviewInput) };
   }
+  const uiPrefs: WorkspaceUiPrefs = {
+    ...(source.ui_prefs?.last_preset !== undefined ? { last_preset: source.ui_prefs.last_preset } : {}),
+    ...(source.ui_prefs?.view !== undefined ? { view: source.ui_prefs.view } : {}),
+  };
   const body = {
     schema_version: WORKSPACE_VERSION, metric_version: "contribution-v1", scenario_version: SCENARIO_VERSION, saved_at: new Date().toISOString(),
-    payload: { sources, active: { source_hash: activeHash, filters: snapshot.report.scope, id: source.id, revision: source.revision, filenames: source.filenames ?? {}, mappings: source.mappings ?? {} }, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession },
+    payload: {
+      sources, active: { source_hash: activeHash, filters: snapshot.report.scope, id: source.id, revision: source.revision, filenames: source.filenames ?? {}, mappings: source.mappings ?? {} }, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession,
+      preprocessing: source.preprocessing ? { conversion: plain(source.preprocessing.conversion), raw_values: plain(source.preprocessing.raw_values) } : null,
+      targets: source.targets ? plain(source.targets) : null, events: source.events ? plain(source.events) : null,
+      meeting_history: [], ui_prefs: uiPrefs,
+    },
   };
   const text = JSON.stringify({ ...body, checksum: await checksum(body) });
   // Check our own serialization through the same untrusted boundary used by restore.
@@ -232,20 +306,56 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
   assertSafeStructure(parsed);
   if (parsed && typeof parsed === "object") {
     const versions = parsed as Record<string, unknown>;
-    if (![WORKSPACE_VERSION, "profitlens-workspace-v2", "profitlens-workspace-v1"].includes(String(versions.schema_version)) || versions.metric_version !== "contribution-v1" || versions.scenario_version !== SCENARIO_VERSION) throw new Error("WORKSPACE_VERSION_UNSUPPORTED");
+    if (![WORKSPACE_VERSION, WORKSPACE_V3, "profitlens-workspace-v2", "profitlens-workspace-v1"].includes(String(versions.schema_version)) || versions.metric_version !== "contribution-v1" || versions.scenario_version !== SCENARIO_VERSION) throw new Error("WORKSPACE_VERSION_UNSUPPORTED");
   }
-  const isLegacy = (parsed as { schema_version?: string } | null)?.schema_version !== WORKSPACE_VERSION;
-  const result = (isLegacy ? legacyEnvelopeSchema : envelopeSchema).safeParse(parsed);
+  const version = (parsed as { schema_version?: string } | null)?.schema_version;
+  const schema = version === WORKSPACE_VERSION ? envelopeSchema : version === WORKSPACE_V3 ? v3EnvelopeSchema : legacyEnvelopeSchema;
+  const result = schema.safeParse(parsed);
   if (!result.success) throw new Error("INVALID_WORKSPACE_FORMAT");
+  // Checksum the wire representation of whichever version was read, before any migration defaults.
   const { checksum: expected, ...body } = result.data;
   let actual: string;
   try { actual = await checksum(body); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
   if (actual !== expected) throw new Error("WORKSPACE_CHECKSUM_MISMATCH");
-  if (body.schema_version === WORKSPACE_VERSION) return restoreV3(body);
-  return restoreLegacy(body);
+  if (body.schema_version === WORKSPACE_VERSION) return restoreV4(body as Omit<z.infer<typeof envelopeSchema>, "checksum">);
+  if (body.schema_version === WORKSPACE_V3) return { ...await restoreV3((body as Omit<z.infer<typeof v3EnvelopeSchema>, "checksum">).payload), ...EMPTY_V4_FIELDS() };
+  return { ...await restoreLegacy(body as Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">), ...EMPTY_V4_FIELDS() };
 }
 
-async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">): Promise<RestoredWorkspace> {
+type V4Fields = Pick<RestoredWorkspace, "preprocessing" | "targets" | "events" | "ui_prefs">;
+const EMPTY_V4_FIELDS = (): V4Fields => ({ preprocessing: null, targets: null, events: null, ui_prefs: {} });
+
+async function restoreV4(body: Omit<z.infer<typeof envelopeSchema>, "checksum">): Promise<RestoredWorkspace> {
+  const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: _reserved, ...payload } = body.payload;
+  void _reserved;
+  const restored = await restoreV3(payload);
+  // 還原不信任序列化結果：目標／檔期依 CSV 規則重驗（通路要在資料集裡），含稅原值要能換算回資料集裡的同一格。
+  if (savedTargets && targetRowIssues(savedTargets.rows, restored.dataset.manifest.channels).length) throw new Error("INVALID_WORKSPACE_FORMAT");
+  if (savedEvents && eventRowIssues(savedEvents.rows).length) throw new Error("INVALID_WORKSPACE_FORMAT");
+  if (savedPreprocessing) {
+    const rowsOf = { "sales_daily.csv": restored.dataset.sales, "channel_costs_daily.csv": restored.dataset.costs, "ad_spend_daily.csv": restored.dataset.ads } as const;
+    for (const [file, lines] of Object.entries(savedPreprocessing.raw_values) as [keyof typeof rowsOf, Record<string, Record<string, string>>][]) {
+      const rows = (rowsOf[file] ?? []) as unknown as readonly Record<string, unknown>[];
+      for (const [line, cells] of Object.entries(lines)) {
+        const row = rows.find(candidate => (candidate.source as { line: number | null }).line === Number(line));
+        if (!row) throw new Error("INVALID_WORKSPACE_FORMAT");
+        for (const [field, raw] of Object.entries(cells)) {
+          const stored = row[field];
+          if (typeof stored !== "bigint" || convertInclusiveAmount(raw, savedPreprocessing.conversion.rate) !== formatCents(stored)) throw new Error("INVALID_WORKSPACE_FORMAT");
+        }
+      }
+    }
+  }
+  const v4: V4Fields = {
+    preprocessing: savedPreprocessing ? { conversion: structuredClone(savedPreprocessing.conversion) as TaxConversion, raw_values: structuredClone(savedPreprocessing.raw_values) as RawValuesByFile } : null,
+    targets: savedTargets ? structuredClone(savedTargets) : null,
+    events: savedEvents ? structuredClone(savedEvents) : null,
+    ui_prefs: structuredClone(savedPrefs),
+  };
+  return { ...restored, ...v4 };
+}
+
+async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">): Promise<Omit<RestoredWorkspace, keyof V4Fields>> {
   if (body.schema_version === "profitlens-workspace-v1" && body.payload.action_workspace) throw new Error("INVALID_WORKSPACE_FORMAT");
   const active = body.payload.active;
   const { dataset, snapshot, validation } = await rebuild(active.input, active.filters);
@@ -273,8 +383,7 @@ async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "c
   return { action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: null, input: active.input, dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial" };
 }
 
-async function restoreV3(body: Omit<z.infer<typeof envelopeSchema>, "checksum">): Promise<RestoredWorkspace> {
-  const payload = body.payload;
+async function restoreV3(payload: z.infer<typeof v3Payload>): Promise<Omit<RestoredWorkspace, keyof V4Fields>> {
   // Every saved source, including retained history, passes the same CSV boundary.
   // Cache validated datasets once; each context still rebuilds its own scope.
   const validated = new Map<string, { input: z.infer<typeof input>; validation: ValidationResult; dataset: Dataset }>();

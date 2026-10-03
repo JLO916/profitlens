@@ -1,5 +1,14 @@
 # Status
 
+## Revamp v2｜R4 輔助指標、去年同期、目標、檔期、備份 v4（完成，未合併、未部署）
+
+R4 依 `docs/revamp/06_BATCHES.md` R4-1～R4-7 與 `05_FEATURES.md §1–§5` 完成（R4-8 `orders_daily.csv` 依 D6＝B 延後）。第一次碰 `src/domain`，只有加法：`Count` 型別、`Summary.units_sold`（介面宣告合併）、`ProductMetrics.units_sold`、`sumUnits`／`sumCounts`／`countMetric`；既有函式輸入輸出不變、`fixtures/*` 與 `docs/METRICS.md` 零改動、`metric_version` 不變。新增 `src/application/assist-kpi.ts`（`assist-kpi-v1`：售出件數、件均淨營收＋五個既有比率，總覽 KPI 五卡下方七格橫列、每格可開「怎麼算的」、分析 CSV 與主管摘要 Markdown 各加小節）、`period-presets.ts` 去年同期（本期不變、上期各減一年、閏年 2/29 → 2/28、四種不可用理由）、`targets.ts`（targets.csv 匯入／驗證／匹配，KPI 卡達成率只在期間完全相同時顯示）、`events.ts`（events.csv，趨勢圖區帶＋三件事後綴，不改計算）、備份 v4（`preprocessing`＝R3 含稅換算原值、`targets`、`events`、`meeting_history`、`ui_prefs`；v1–v3 仍可讀；v3→v4→再讀入 CSV 逐位元一致）；刪除 R3 保留的舊匯入面板。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **57 檔／1,014 測試全過**、build pass 無 warning、E2E 全套 **488 項全過**（四尺寸，含新增 `revamp-r4.spec.ts` 4 項；首跑 483 過／5 失敗——分析 CSV 測試未預期 `assist_kpi` 列的版本字串、去年同期理由讓 1280 期間列變三行——修正後三份 spec 104/104、全套重跑 488/488）；對抗式審查 34 項候選／32 項確認／修 30 項（2 項記為決策，見 `DECISIONS.md` R4 補記）。
+- 測試：`tests/units-sold.test.ts`（golden 人工加總：上期 6、本期 8、DTC 4／MARKETPLACE 4、商品列）、`tests/assist-kpi.test.ts`（308.75／375.00 元／件；A＝0、件數 0、缺件數；CSV 與 Markdown）、`tests/period-presets.test.ts`（月底、閏年、涵蓋邊緣、整月）、`tests/targets.test.ts`（匹配／不匹配、每個錯誤碼、CSV 列）、`tests/events.test.ts`、`tests/workspace-backup.test.ts`（v3→v4→v3 roundtrip）；既有測試改引用 `WORKSPACE_VERSION`。
+- 截圖 25 張（四尺寸 × 三個畫面 × 視窗／全頁＋示範資料 laptop 的去年同期不可用理由）存 `verification/revamp-R4/`（總覽輔助指標＋達成率＋檔期區帶、去年同期套用後、資料頁目標／檔期入口 × 四尺寸）。E2E 重寫的 A 批證據檔已還原。Live AI、真實資料、Safari／Firefox、實體裝置：**未執行**。
+- 已知限制：訂單數／客單價／轉換率（§6）延後；去年同期以表單目前兩期為準（涵蓋不足一年即不可用）；目標只支援四個指標與 ALL／單一通路；檔期只標示在週趨勢圖與三件事；備份 v4 的 `meeting_history` 先為空（R6）。完整紀錄見 [R4 驗收](../verification/revamp-R4-acceptance.md)。R4 完成即停止；R5 待確認後開始。
+
 ## Revamp v2｜R3 匯入精靈與台灣來源（完成，未合併、未部署）
 
 R3 依 `docs/revamp/06_BATCHES.md` R3-1～R3-9 與 `04_IMPORT_TW.md` 完成：單頁匯入表單改為四步精靈（`src/components/import-wizard/`，狀態機 `src/application/import-wizard.ts`；選檔拖放與自動歸位、對照欄位依「標準欄名 → 上次的對照 → 來源預設 → 中文欄名字典」預選、口徑與期間由檔案提議直接填入、檢核與套用）；含稅來源不再被擋：`src/application/tax-basis.ts` 逐列 ÷ (1＋稅率) ROUND_HALF_UP 兩位後才交給既有 `validateDataset`，原值→換算值顯示在「怎麼算的」抽屜、資料頁前處理摘要、分析／商品／通路寬表 CSV 與主管摘要、決策匯出；九個台灣來源 preset（全部 `verified: false`）＋ 53 個中文欄名別名；對照記憶（IndexedDB 新 store，受本機保存同意控制）；錯誤訊息白話對照表（全部 reason code）；含三列示範的範例範本；`scripts/aggregate_orders.py`＋`docs/ORDER_AGGREGATION.md`。D2、D5 依建議值執行；另四個取捨記於 `docs/DECISIONS.md`。`src/domain/*`、`fixtures/*`、`metric_version`、依賴零改動。

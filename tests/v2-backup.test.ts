@@ -1,3 +1,4 @@
+import { WORKSPACE_VERSION } from "@/application/workspace-backup";
 import { describe, expect, it } from "vitest";
 import { actionDocuments, addActionDraft, commitActionRebind, confirmBoundAction, editActionManagement, editBoundAction, emptyActionWorkspace, pinAction, previewActionRebind } from "@/application/action-workspace";
 import { createDecisionSession, emptyDecisionWorkspace, saveScenario } from "@/application/decision";
@@ -48,7 +49,7 @@ describe("V2-A portable workspace v3 and exact legacy boundaries", () => {
   it("deduplicates the active and retained sources by hash in a v3 backup", async () => {
     const { source, snapshot } = await setup();
     const body = JSON.parse(await exportWorkspaceBackup(source));
-    expect(body.schema_version).toBe("profitlens-workspace-v3");
+    expect(body.schema_version).toBe(WORKSPACE_VERSION);
     expect(Object.keys(body.payload.sources)).toEqual([snapshot.dataset_hash]);
     expect(body.payload.active.source_hash).toBe(snapshot.dataset_hash);
     expect(body.payload.active).not.toHaveProperty("input");
@@ -94,7 +95,7 @@ describe("V2-A portable workspace v3 and exact legacy boundaries", () => {
   it("rejects changed source bytes even when the envelope checksum is recomputed", async () => {
     const { source, snapshot } = await setup();
     const body = JSON.parse(await exportWorkspaceBackup(source));
-    expect(body.schema_version).toBe("profitlens-workspace-v3");
+    expect(body.schema_version).toBe(WORKSPACE_VERSION);
     body.payload.sources[snapshot.dataset_hash].files["sales_daily.csv"] += "\n";
     await expect(restoreWorkspaceBackup(await sign(body))).rejects.toThrow("WORKSPACE_BINDING_MISMATCH");
   });

@@ -233,6 +233,9 @@ export const periods = {
   presetTooShort: "資料從 {date} 開始，不足{preset}所需天數",
   monthIncomplete: "資料只到 {date}，本月未滿月；請改用等天數快捷",
   presetHint: "快捷只填入日期，按「套用」才生效",
+  yoyMode: "去年同期：本期不變，上期＝本期各減一年（閏年 2/29 → 2/28）",
+  yoyInvalidCurrent: "本期日期不完整，無法取去年同期",
+  yoyOverlap: "本期超過一年，去年同期會與本期重疊",
 } as const;
 
 export const importWizard = {
@@ -1505,5 +1508,86 @@ export const ui = {
   }
 } as const;
 
-export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState };
+
+/** R4 輔助指標（assist-kpi-v1）：件數與件均是新指標，其餘沿用 labels.metrics。 */
+export const assist = {
+  version: "assist-kpi-v1",
+  intro: "給經理人熟悉的數字；標示「輔助」，不混入上方的財務核心。",
+  items: {
+    units_sold: { label: "售出件數", short: "件數", plain: "期間內賣出的件數（退貨不扣）", formula: "Σ 售出件數", formulaTechnical: "units_sold = Σ sales.units_sold（任一列缺 → null）" },
+    net_revenue_per_unit: { label: "件均淨營收", short: "件均", plain: "平均每件賣出的淨營收", formula: "淨營收 ÷ 售出件數", formulaTechnical: "net_revenue_per_unit = net_revenue / units_sold（ROUND_HALF_UP 2 位；件數 0 或缺 → 不適用／資料待補）" },
+  },
+  notApplicable: "不適用",
+  reasons: { zeroUnits: "件數為 0，件均不適用", zeroAds: "廣告費為 0，MER 不適用", missingUnits: "有列缺件數，資料待補" },
+  units: { count: "{value} 件", perUnit: "{value} 元／件" },
+  technicalVersion: "assist_kpi_version",
+} as const;
+
+/** R4 目標與達成率（targets.csv，選配）。 */
+export const targets = {
+  section: "目標達成",
+  entry: "目標（選填）",
+  intro: "上傳 targets.csv（period_start,period_end,channel,metric,target；channel 可填 ALL；金額未稅 TWD）。只有目標期間與本期完全相同才顯示達成率，不按比例折算。",
+  upload: "讀取目標檔",
+  loaded: "已讀取 {n} 筆目標（{name}）",
+  remove: "移除目標",
+  none: "尚未提供目標。",
+  template: "下載 targets.csv 範本",
+  csvTarget: "目標：{metric}",
+  csvAchievement: "達成率：{metric}",
+  mdNone: "沒有與本期完全相同的目標期間。",
+  achievedBudget: "廣告預算 {target} · 用掉 {rate}",
+  evidenceTitle: "目標達成：{metric}",
+  formula: "實際 ÷ 目標",
+  actual: "實際",
+  sourceLine: "{file} 第 {line} 行",
+  download: "下載目前的 targets.csv",
+  removeRow: "刪除這列",
+  achieved: "目標 {target} · 達成 {rate}",
+  mismatch: "目標期間 {start}–{end} 與本期不一致",
+  undefinedTarget: "目標 ≤ 0，達成率不定義",
+  columns: { period_start: "目標起日", period_end: "目標迄日", channel: "通路", metric: "指標", target: "目標" },
+  errors: {
+    MISSING_COLUMN: "targets.csv 缺少欄位「{field}」",
+    INVALID_DATE: "第 {line} 行的日期格式要是 2026-08-01",
+    PERIOD_ORDER: "第 {line} 行的迄日早於起日",
+    INVALID_METRIC: "第 {line} 行的指標「{value}」不支援；可用：net_revenue、gross_profit、contribution_after_marketing、ad_spend",
+    INVALID_TARGET: "第 {line} 行的目標「{value}」只能是數字與小數點（最多兩位）",
+    UNKNOWN_CHANNEL: "第 {line} 行的通路「{value}」不在資料集裡（可填 ALL）",
+    DUPLICATE: "第 {line} 行與第 {other} 行重複（同期間、同通路、同指標）",
+    EMPTY: "targets.csv 沒有資料列",
+    TOO_MANY_ROWS: "targets.csv 超過 {max} 列（備份上限），請縮小範圍",
+  } as Record<string, string>,
+} as const;
+
+/** R4 促銷檔期（events.csv，選配）。 */
+export const events = {
+  section: "促銷檔期",
+  entry: "檔期（選填）",
+  intro: "上傳 events.csv（start,end,label；例 2026-07-15,2026-07-20,夏季特賣）。只在趨勢圖標示與三件事提示，不改任何計算。",
+  upload: "讀取檔期檔",
+  loaded: "已讀取 {n} 個檔期（{name}）",
+  remove: "移除檔期",
+  none: "尚未提供檔期。",
+  legend: "檔期",
+  during: "（{label}期間）",
+  joiner: "、",
+  template: "下載 events.csv 範本",
+  trendList: "檔期：{list}",
+  trendItem: "{label}（{start}～{end}）",
+  download: "下載目前的 events.csv",
+  removeRow: "刪除這列",
+  columns: { start: "起日", end: "迄日", label: "名稱" },
+  errors: {
+    MISSING_COLUMN: "events.csv 缺少欄位「{field}」",
+    INVALID_DATE: "第 {line} 行的日期格式要是 2026-08-01",
+    PERIOD_ORDER: "第 {line} 行的迄日早於起日",
+    EMPTY_LABEL: "第 {line} 行的名稱空白",
+    LABEL_TOO_LONG: "第 {line} 行的名稱超過 60 字",
+    EMPTY: "events.csv 沒有資料列",
+    TOO_MANY_ROWS: "events.csv 超過 {max} 個檔期（備份上限），請縮小範圍",
+  } as Record<string, string>,
+} as const;
+
+export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events };
 export type Labels = typeof labels;

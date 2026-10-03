@@ -15,7 +15,9 @@ import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
 
 const copy = labels.ui.productComparisonPanel;
-const currentColumns: (keyof ProductMetrics)[] = ["net_revenue", "cogs_net", "gross_profit", "gross_margin", "discounts", "refunds"];
+/** R4：ProductMetrics 多了件數（非金額）；表格欄仍只列金額／比率指標。 */
+type ProductMoneyMetric = Exclude<keyof ProductMetrics, "units_sold">;
+const currentColumns: ProductMoneyMetric[] = ["net_revenue", "cogs_net", "gross_profit", "gross_margin", "discounts", "refunds"];
 const activityLabels: Record<ProductComparisonRow["activity"], string> = {
   both_observed: copy.activity.bothObserved, current_only: copy.activity.currentOnly, previous_only: copy.activity.previousOnly, coverage_unknown: copy.activity.coverageUnknown,
 };
@@ -23,10 +25,10 @@ const presenceLabels: Record<ProductComparisonRow["previous"]["presence"], strin
   observed: copy.presence.observed, no_rows_confirmed: copy.presence.noRowsConfirmed, unknown_coverage: copy.presence.unknownCoverage,
 };
 /** 「淨營收差額」「商品毛利差額」：指標名＋差額後綴，與 CSV 標題同源。 */
-const changeLabel = (name: keyof ProductMetrics) => `${metricDefinitions[name].label}${labels.csvSuffix.change}`;
+const changeLabel = (name: ProductMoneyMetric) => `${metricDefinitions[name].label}${labels.csvSuffix.change}`;
 /** 「上期淨營收」「本期毛利率」：期間短名＋指標名。 */
 const periodMetric = (period: "previous" | "current", label: string) => `${labels.periods[period]}${label}`;
-function display(name: keyof ProductMetrics, metric: Metric): string {
+function display(name: ProductMoneyMetric, metric: Metric): string {
   return metric.value === null ? labels.status.missing : metricDefinitions[name].unit === "percent" ? formatRate(metric.value) : formatMoney(metric.value);
 }
 
@@ -54,7 +56,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   const { previous_period: previous, current_period: current, channels } = comparison.scope;
   const categoryText = (value: string) => value ? categoryLabel(value, alias) : copy.blankCategoryShort;
 
-  const cell = (row: ProductComparisonRow, period: "previous" | "current", name: keyof ProductMetrics, label: string) => {
+  const cell = (row: ProductComparisonRow, period: "previous" | "current", name: ProductMoneyMetric, label: string) => {
     const value = row[period];
     const metric = value.metrics[name];
     const periodLabel = labels.periods[period];

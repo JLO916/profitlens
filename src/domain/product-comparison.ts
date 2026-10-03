@@ -1,5 +1,5 @@
 import { analyzeProducts } from "./analysis";
-import { aggregateSales, uniqueSources } from "./aggregation";
+import { aggregateSales, countMetric, sumUnits, uniqueSources } from "./aggregation";
 import { validatePeriods } from "./date";
 import { calculateMetrics, compareMoney } from "./metrics";
 import { parseCents } from "./money";
@@ -48,7 +48,8 @@ export function compareProducts(dataset: Dataset, filters: AnalysisFilters = {})
   const after = new Map(current.rows.map(row => [key(row), row]));
   const keys = [...new Set([...before.keys(), ...after.keys()])].sort();
   const empty = calculateMetrics(aggregateSales([], dataset.manifest.sales_coverage_confirmed));
-  const emptyProductMetrics = Object.fromEntries(PRODUCT_METRICS.map(name => [name, empty[name]])) as ProductMetrics;
+  // R4 加法：沒有列的那一期件數為 0（涵蓋已確認）或未知（涵蓋未確認），與金額同規則。
+  const emptyProductMetrics = { ...(Object.fromEntries(PRODUCT_METRICS.map(name => [name, empty[name]])) as Pick<ProductMetrics, typeof PRODUCT_METRICS[number]>), units_sold: countMetric(sumUnits([], dataset.manifest.sales_coverage_confirmed)) } as ProductMetrics;
   const rows: ProductComparisonRow[] = keys.map(id => {
     const p = before.get(id);
     const c = after.get(id);

@@ -5,6 +5,7 @@ import type { Diagnostic } from '@/domain/types';
 import { validateDataset } from '@/domain/validation';
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from '@/application/workspace';
 import type { TaxConversion } from '@/application/tax-basis';
+import type { TargetSet } from '@/application/targets';
 import { decisionSignature } from '@/application/decision';
 import { actionDocuments, type ActionWorkspace } from '@/application/action-workspace';
 import { formatMoney } from '@/application/presentation';
@@ -27,8 +28,10 @@ export interface ReviewWorkbenchProps {
   onRefreshSource?: () => void;
   /** R3：目前資料的含稅換算摘要；只在會議鎖定的資料與目前資料相同時帶進主管摘要 Markdown。 */
   conversion?: TaxConversion | null;
+  /** R4：目標（與目前資料同版本時才帶進會議摘要）。 */
+  targets?: { set: TargetSet | null; allChannels: readonly string[] } | null;
 }
-export function ReviewWorkbench({ source, scenarioWorkspace, review, onChange, actionWorkspace, onEvidence, onCreateAction, onRefreshSource, conversion }: ReviewWorkbenchProps) {
+export function ReviewWorkbench({ source, scenarioWorkspace, review, onChange, actionWorkspace, onEvidence, onCreateAction, onRefreshSource, conversion, targets }: ReviewWorkbenchProps) {
   const [error, setError] = useState('');
   const alias = demoAlias(source.snapshot.report.dataset_id);
   function apply(patch: Parameters<typeof updateReviewSession>[1]) {
@@ -70,12 +73,12 @@ export function ReviewWorkbench({ source, scenarioWorkspace, review, onChange, a
       })}
       {context.scenarios.some(plan => plan.status === 'stale') && <details><summary>{copy.staleScenarios}</summary><ul>{context.scenarios.filter(plan => plan.status === 'stale').map(plan => <li key={plan.id}>{fill(copy.staleScenarioRow, { name: plan.name, scope: plan.scopeLabel, resultLabel: labels.scenario.resultTitle, amount: formatMoney(plan.contribution ?? null) })}<ul>{plan.assumptions.map(text => <li key={text}>{text}</li>)}</ul></li>)}</ul></details>}
     </section>
-    <FixedReviewSummary review={review} context={context} conversion={source.snapshot.dataset_hash === review.dataset_hash ? conversion ?? null : null} onEvidence={onEvidence} onCreateAction={onCreateAction} onThresholdChange={value => apply({ importance_threshold: value })} />
+    <FixedReviewSummary review={review} context={context} conversion={source.snapshot.dataset_hash === review.dataset_hash ? conversion ?? null : null} targets={source.snapshot.dataset_hash === review.dataset_hash ? targets ?? null : null} onEvidence={onEvidence} onCreateAction={onCreateAction} onThresholdChange={value => apply({ importance_threshold: value })} />
   </section>;
 }
 
-function FixedReviewSummary({ review, context, conversion, onEvidence, onCreateAction, onThresholdChange }: {
-  review: ReviewSession; context: ReturnType<typeof buildReviewDecisionContext>; conversion: TaxConversion | null;
+function FixedReviewSummary({ review, context, conversion, targets, onEvidence, onCreateAction, onThresholdChange }: {
+  review: ReviewSession; context: ReturnType<typeof buildReviewDecisionContext>; conversion: TaxConversion | null; targets: { set: TargetSet | null; allChannels: readonly string[] } | null;
   onEvidence: ReviewWorkbenchProps['onEvidence']; onCreateAction?: ReviewWorkbenchProps['onCreateAction']; onThresholdChange: (value: string) => void;
 }) {
   const [loaded, setLoaded] = useState<{ hash: string; snapshot: WorkspaceSnapshot } | null>(null);
@@ -95,5 +98,5 @@ function FixedReviewSummary({ review, context, conversion, onEvidence, onCreateA
   }, [source_input, meeting_filters, dataset_hash, filter_hash, data_as_of, metric_version, key]);
   if (error) return <p role="alert">{error}</p>;
   if (!loaded || loaded.hash !== key) return <p role="status">{copy.rebuilding}</p>;
-  return <ManagerSummary key={`${review.id}-${key}`} snapshot={loaded.snapshot} conversion={conversion} decisionContext={context} selectionManaged reviewControls={{ importanceThreshold: review.importance_threshold, onThresholdChange }} onEvidence={selection => onEvidence(selection, review)} onCreateAction={onCreateAction ? diagnostic => onCreateAction(diagnostic, review) : undefined} />;
+  return <ManagerSummary key={`${review.id}-${key}`} snapshot={loaded.snapshot} conversion={conversion} targets={targets} decisionContext={context} selectionManaged reviewControls={{ importanceThreshold: review.importance_threshold, onThresholdChange }} onEvidence={selection => onEvidence(selection, review)} onCreateAction={onCreateAction ? diagnostic => onCreateAction(diagnostic, review) : undefined} />;
 }

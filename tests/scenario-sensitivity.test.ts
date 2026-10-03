@@ -15,7 +15,7 @@ function baseline(values: Partial<Record<AmountField, string | null>>) {
     const value = field in values ? values[field] : field === "gross_sales" ? "100.00" : "0.00";
     return [field, { cents: value == null ? null : BigInt(value.replace(".", "")), reason_codes: value == null ? ["MISSING_COST"] : [] }];
   })) as Totals;
-  const summary: Summary = { totals, metrics: calculateMetrics(totals), sources: [] };
+  const summary: Summary = { totals, metrics: calculateMetrics(totals), sources: [], units_sold: { value: null, reason_codes: [] } };
   return buildScenarioBaseline(summary, true);
 }
 const analyze = (inputs: Partial<ScenarioInputs> = {}, values: string[] = ["-10", "0", "10"]) => analyzeScenarioSensitivity(golden(), { ...zero, ...inputs }, values);

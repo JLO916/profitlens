@@ -228,3 +228,29 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 **原因：** 不猜財務口徑（含稅是使用者明確選擇、逐列可追溯）、不改 domain、既有驗證一字不改；五次點擊靠少做事（自動對照）而不是少問（口徑仍必選）。
 
 **影響文件：** `docs/revamp/04_IMPORT_TW.md`（備份時點、自動對照註記）、`docs/ORDER_AGGREGATION.md`（新）、`09_DECISIONS_PENDING.md`（D2、D5 使用者 2026-10-03 確認採 A，已填「決定」欄）。**驗收：** `tests/tax-basis.test.ts`（§3 golden ＋ 315.00→300.00、10.49→9.99、99.99→95.23、−21.00→−20.00、10% 稅率、逐列 vs 合計差一分）、`tests/import-wizard.test.ts`（`tests/fixtures/inclusive_tax` 手算：本期淨營收 2150.00、扣廣告後貢獻 518.05；誤選未稅為 2257.50）、`tests/e2e/import-wizard.spec.ts`。
+
+## 2026-10-03｜Revamp v2 R4：第一次碰 domain 的方式與 D6
+
+**問題：** R4 要加「售出件數」等輔助指標、去年同期、目標、檔期與備份 v4；這是第一個允許碰 `src/domain` 的批次，規則是只能新增。`09_DECISIONS_PENDING.md` 的 D6（選配 `orders_daily.csv`）仍空白。
+
+**採用選項：**
+- **D6＝B（依建議值執行：延後到 Phase 2）**：不加 `orders_daily.csv`，不動 `validation.ts` 的檔案清單；訂單數／客單價／轉換率整列不顯示。
+- **domain 只加法的實作方式**：`Summary.units_sold: Count` 以**介面宣告合併**加入（原 `Summary` 那一行不變）；`Count { value: bigint | null; reason_codes }` 是新型別，不是 `Amount`（件數不是金額）；`aggregation.ts` 新增 `sumUnits`／`sumCounts`／`countMetric` 三個函式，既有函式的輸入輸出不變（`aggregatePeriod` 的回傳只多一個欄位）；`ProductMetrics` 型別別名多 `units_sold: Metric`（整數字串）；`analysis.ts` 的既有私有 `productMetrics` 不改，另加 `withUnits`。`git diff --numstat src/domain` 的刪除行全是被延長的 import 與物件字面值（內容保留、只多欄位）。涵蓋未確認時件數與金額同規則（null＋`SALES_COVERAGE_UNCONFIRMED`）。
+- **輔助指標橫列七格**（05 §1 表列七項：件數、件均、廣告佔比、MER、毛利率、退款比、物流費佔比），版本 `assist-kpi-v1` 獨立於 `contribution-v1`；件均淨營收在應用層以 decimal.js ROUND_HALF_UP 兩位計算；A＝0 的 MER 與件數 ≤ 0 的件均顯示「不適用」，件數缺顯示「資料待補」。
+- **去年同期以表單目前的兩期為準**（本期不變、上期各減一年；閏年 2/29 → 2/28；等天數模式以上期迄日為錨回推等長），日期未填完整時按鈕顯示不可用而不拋錯。
+- **目標達成只在期間完全相同時顯示**（不按比例折算）；達成率＝實際 ÷ 目標，一位小數；目標 ≤ 0 不定義。
+- **檔期只做標示**（趨勢圖區帶、三件事標題後綴），不改任何計算。
+- **備份升 v4**：新增 `preprocessing`（R3 含稅換算的 conversion＋raw_values）、`targets`、`events`、`meeting_history`（R6 用，先為空）、`ui_prefs`；v1–v3 仍可讀入（新欄位為空）；checksum 規則與 64 MiB 上限不變。
+- **刪除 R3 保留的舊匯入面板**（`import-panel.tsx` 與 `#legacy-import` 分支）；`labels.ui.importPanel` 中精靈仍共用的鍵保留。
+
+**原因：** 不猜、不改既有口徑；件數是經理人最熟悉的數字，但要和財務核心分開版本。
+
+**影響文件：** `docs/revamp/05_FEATURES.md §1`（七格註記）、`09_DECISIONS_PENDING.md`（D6 請補「決定」欄）。**驗收：** `tests/units-sold.test.ts`（golden 手算：上期 6 件、本期 8 件、DTC 4／MARKETPLACE 4）、`tests/assist-kpi.test.ts`（308.75／375.00 元／件；A＝0、件數 0、缺件數）、`tests/period-presets.test.ts`、`tests/targets.test.ts`、`tests/events.test.ts`、`tests/workspace-backup.test.ts`（v3→v4→v3 roundtrip）。
+
+補記（R4 對抗式審查後的四個小決定）：
+- 三件事的檔期後綴只看**本期**是否與檔期重疊（規格 §4 未指定期間）；上期的檔期不標註，避免標題過長。
+- `ad_spend` 目標在總覽顯示於「廣告佔比」輔助格下方，用「廣告預算 X · 用掉 Y%」措辭（費用預算不叫「達成」）。
+- 目標期間不一致的訊息改用完整日期（`目標期間 2025-08-01–2025-08-31 與本期不一致`），避免去年同期時與本期撞名。
+- 目標與檔期在資料來源頁可**逐列刪除**並可下載目前內容（`exportTargetsCsv`／`exportEventsCsv`），不做列內編輯（改檔重傳）。
+- 「去年同期」不可用的可見理由放在**期間列正下方**（不放進 sticky 期間列）：R1 規則「1280 以上期間列最多兩行」優先；按鈕本身仍有 `title` 與 sr-only 說明，`role="status"` 與 testid 不變。
+

@@ -1,10 +1,10 @@
-import { aggregatePeriod, aggregateSales, uniqueSources } from "./aggregation";
+import { aggregatePeriod, aggregateSales, countMetric, sumUnits, uniqueSources } from "./aggregation";
 import { buildBridge } from "./bridge";
 import { dayCount, validatePeriods } from "./date";
 import { calculateMetrics } from "./metrics";
 import { diagnose } from "./rules";
 import { comparePeriods } from "./comparison";
-import { PRODUCT_METRICS, type AnalysisFilters, type Dataset, type Metrics, type Period, type ProductFilters, type ProductMetrics, type ProductRow, type SalesRow } from "./types";
+import { PRODUCT_METRICS, type AnalysisFilters, type Count, type Dataset, type Metrics, type Period, type ProductFilters, type ProductMetrics, type ProductRow, type SalesRow } from "./types";
 
 function selectChannels(dataset: Dataset, selected?: string[]): string[] {
   const channels = selected ?? dataset.manifest.channels;
@@ -18,8 +18,12 @@ function checkPeriod(dataset: Dataset, period: Period): void {
   dayCount(period);
   if (period.start < dataset.manifest.coverage_start || period.end > dataset.manifest.coverage_end) throw new RangeError("PERIOD_OUTSIDE_COVERAGE");
 }
-function productMetrics(metrics: Metrics): ProductMetrics {
-  return Object.fromEntries(PRODUCT_METRICS.map(field => [field, metrics[field]])) as ProductMetrics;
+function productMetrics(metrics: Metrics): Pick<Metrics, typeof PRODUCT_METRICS[number]> {
+  return Object.fromEntries(PRODUCT_METRICS.map(field => [field, metrics[field]])) as Pick<Metrics, typeof PRODUCT_METRICS[number]>;
+}
+/** R4 加法：把件數掛到商品指標上（整數字串）。 */
+function withUnits(metrics: Pick<Metrics, typeof PRODUCT_METRICS[number]>, units: Count): ProductMetrics {
+  return { ...metrics, units_sold: countMetric(units) };
 }
 
 /** 僅限已驗證的完整通路scope；拒絕把SKU/category filters帶進通路貢獻。 */
@@ -70,12 +74,12 @@ export function analyzeProducts(dataset: Dataset, filters: ProductFilters) {
     channel: group[0].channel,
     sku: group[0].sku,
     category: group[0].category,
-    metrics: productMetrics(calculateMetrics(aggregateSales(group, dataset.manifest.sales_coverage_confirmed))),
+    metrics: withUnits(productMetrics(calculateMetrics(aggregateSales(group, dataset.manifest.sales_coverage_confirmed))), sumUnits(group, dataset.manifest.sales_coverage_confirmed)),
     sources: uniqueSources([...group.map(row => row.source), ...(!dataset.manifest.sales_coverage_confirmed ? [{ file: "manifest.json" as const, line: null }] : [])]),
   }));
   return {
     scope: { period: { ...filters.period }, channels, ...(filters.sku === undefined ? {} : { sku: filters.sku }), ...(filters.category === undefined ? {} : { category: filters.category }) },
-    metrics: productMetrics(calculateMetrics(aggregateSales(sales, dataset.manifest.sales_coverage_confirmed))),
+    metrics: withUnits(productMetrics(calculateMetrics(aggregateSales(sales, dataset.manifest.sales_coverage_confirmed))), sumUnits(sales, dataset.manifest.sales_coverage_confirmed)),
     sources: uniqueSources([...sales.map(row => row.source), ...(!dataset.manifest.sales_coverage_confirmed ? [{ file: "manifest.json" as const, line: null }] : [])]),
     rows,
   };

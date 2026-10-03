@@ -421,6 +421,7 @@ textarea { font: inherit; color: var(--ink); border: 1px solid #d8e2dc; border-r
 .preset-row .preset[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
 .preset-row .preset[aria-pressed="true"] { background: #e6efe9; border-color: #9cbfae; }
 .preset-row .note { margin-left: 2px; }
+.preset-reason { margin: 6px 2px -4px; }
 .scope-note { margin: 8px 2px 16px; }
 .period-comparison summary, .overview-meeting > summary { cursor: pointer; font-weight: 650; font-size: 14px; color: #2f4f44; }
 .period-comparison summary .section-title { font-size: 19px; font-weight: 650; letter-spacing: -.25px; margin-right: 10px; }
@@ -552,3 +553,21 @@ main summary, main button, main input, main select, main textarea, main [role="r
 .import-wizard .conversion-settings input[type="number"] { width: 110px; }
 .basis-choice .radio-label { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; justify-items: start; text-align: left; gap: 10px; margin: 8px 0; }
 .basis-choice .radio-label input[type="radio"] { margin: 0; flex: none; }
+
+/* R4 assist KPI row: helper numbers under the five financial KPI cards. */
+.assist-row { margin: 0 0 22px; }
+.assist-grid { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 10px; }
+.assist-card { background: #f5f8f2; border: 1px solid #e3ebde; border-radius: 6px; padding: 12px 12px 10px; min-width: 0; }
+.assist-card h3 { font-size: 12px; font-weight: 600; color: #66816b; margin-bottom: 6px; overflow-wrap: anywhere; }
+.assist-value { font-size: 18px; font-weight: 550; letter-spacing: -.3px; }
+.assist-card.not_applicable .assist-value, .assist-card.missing .assist-value { color: #7b8c7d; font-weight: 500; }
+.assist-card .kpi-previous { margin-top: 4px; }
+@media (max-width: 1190px) { .assist-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+/* 手機：七格改成單列橫向捲動，維持 R1「三件事在往下一頁內」的首屏規則。 */
+@media (max-width: 640px) { .assist-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(148px, 1fr); overflow-x: auto; gap: 8px; padding-bottom: 4px; scroll-snap-type: x proximity; } .assist-card { scroll-snap-align: start; padding: 10px; } .assist-value { font-size: 16px; } }
+
+/* R4 targets / events entries on the data page and the KPI achievement line. */
+.kpi-target { font-size: 12px; color: #355b4d; margin-top: 6px; overflow-wrap: anywhere; }
+.kpi-target.mismatch { color: #a06a1a; }
+.side-entry-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 10px 0 14px; }
+.side-entry table td, .side-entry table th { padding: 8px 10px; }
