@@ -6,6 +6,8 @@ import { emptyDecisionWorkspace } from "../src/application/decision";
 import { DataWorkspace, Diagnosis } from "../src/components/workspace-panels";
 import { DecisionWorkbench } from "../src/components/decision-workbench";
 import { IssueList } from "../src/components/issue-list";
+import { ManagerSummary } from "../src/components/manager-summary";
+import { buildManagerSummary } from "../src/application/manager-summary";
 import { validateDataset } from "../src/domain/validation";
 import { fixture } from "./helpers/fixtures";
 import { fill, labels } from "../src/i18n";
@@ -53,6 +55,17 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     const rows = [...html.matchAll(/<details([^>]*)data-testid="diagnosis-row-[A-Z_]+"([^>]*)>/g)].map(match => /\sopen(?:=|\s|>|$)/.test(`${match[1]} ${match[2]}`));
     expect(rows.length).toBeGreaterThan(3);
     expect(rows).toEqual(rows.map((_, index) => index < 3));
+  });
+
+  it("manager summary labels every priority amount 對貢獻影響 and states the ranking in the same words", async () => {
+    const { snapshot } = await context();
+    const html = renderToStaticMarkup(createElement(ManagerSummary, { snapshot, onEvidence: () => undefined }));
+    const priorities = buildManagerSummary(snapshot).priorities;
+    expect(priorities.length).toBeGreaterThan(0);
+    // 做法同總覽三件事：金額前有「對貢獻影響」標籤，金額可開抽屜。
+    expect(html.match(new RegExp(`<p class="top-three-impact"><span>${labels.sections.impact}</span><button[^>]*class="number-link impact-amount `, "g"))).toHaveLength(priorities.length);
+    expect(labels.ui.managerSummary.rankingNote).toContain(labels.sections.impact);
+    expect(html.split(labels.ui.managerSummary.rankingNote)).toHaveLength(priorities.length + 1);
   });
 
   it("workspace keeps filenames, line numbers and mappings visible while versions are folded", async () => {

@@ -50,27 +50,31 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     expect(html).toContain(`<span class="tag">${fill(labels.ui.workspacePanels.itemCount, { n: groups.length })}</span>`);
     expect(html).toContain(`<span class="tag">${labels.sections.autoCheck}</span>`);
     expect(html).not.toContain("diagnostic-grid");
+    // 每一列的 <summary> 都不含按鈕（summary 本身就是展開鈕）。
+    for (const group of groups) expect(summaryOf(row(html, group.rule)), group.rule).not.toContain("<button");
   });
 
-  it("summary holds only headline, scope labels and the impact amount; actions open the expanded body", async () => {
+  it("summary holds only non-interactive headline, scope labels and impact text; the clickable amount and actions open the expanded body", async () => {
     const snap = await snapshot();
     const group = diagnosisGroups(snap).groups.find(item => item.rule === "DISCOUNT_BURDEN_UP")!;
     const html = row(render(snap), "DISCOUNT_BURDEN_UP");
     const summary = summaryOf(html);
     expect(summary).toContain(`<h3 class="diagnosis-headline">${group.headline}</h3>`);
     expect([...summary.matchAll(/<span class="scope-tag">([^<]*)<\/span>/g)].map(match => match[1])).toEqual([labels.sections.total, "DTC", "MARKETPLACE"]);
-    expect(text(summary)).toContain(labels.sections.impact);
-    // summary 內唯一的按鈕是可開抽屜的影響金額（−250.00，紅＝不利）。
-    const buttons = [...summary.matchAll(/<button[^>]*>([^<]*)<\/button>/g)];
-    expect(buttons).toHaveLength(1);
-    expect(buttons[0][0]).toContain("impact-amount negative");
-    expect(buttons[0][1]).toBe("-250.00");
+    // summary 不放互動元件（<summary> 內有按鈕是巢狀互動）：影響金額是純文字，色調同可點的金額（−250.00，紅＝不利）。
+    expect(summary).not.toMatch(/<button|<a\s|<input|<select|tabindex/i);
+    expect(summary).toContain(`<span class="diagnosis-impact"><span class="diagnosis-impact-label">${labels.sections.impact}</span><span class="impact-amount negative">-250.00</span></span>`);
     expect(summary).not.toContain(labels.buttons.viewEvidence);
     expect(summary).not.toContain(labels.buttons.addToActions);
-    // 展開內容第一行：看證據、加入待辦。
+    // 展開內容第一行：可點的影響金額（目前範圍）、看證據、加入待辦。
     const body = html.slice(html.indexOf("</summary>"));
     expect(body.indexOf('class="diagnosis-actions"')).toBeLessThan(body.indexOf('class="scope-switch"'));
-    expect(text(body.slice(0, body.indexOf('<div class="scope-switch"')))).toBe(`${labels.buttons.viewEvidence}${labels.buttons.addToActions}`);
+    const firstLine = body.slice(body.indexOf('<div class="diagnosis-actions">'), body.indexOf('<div class="scope-switch"'));
+    expect(firstLine.indexOf('<p class="impact-line">')).toBe('<div class="diagnosis-actions">'.length);
+    expect(text(firstLine)).toBe(`${fill(labels.diagnosisList.scopeImpact, { impact: labels.sections.impact, scope: labels.sections.total })}-250.00${labels.buttons.viewEvidence}${labels.buttons.addToActions}`);
+    expect(firstLine).toMatch(/<p class="impact-line"><span>[^<]*<\/span><button type="button" class="number-link impact-amount negative" aria-label="[^"]+">-250.00<\/button><\/p>/);
+    // 每列只有一個可點的影響金額（E2E 以 .impact-line .impact-amount 取值）。
+    expect(html.match(/class="impact-line"/g)).toHaveLength(1);
     // 範圍切換：合計預設按下，其他通路 aria-pressed=false。
     expect([...body.matchAll(/<button type="button" class="scope-chip" aria-pressed="(true|false)">([^<]*)<\/button>/g)].map(match => [match[2], match[1]])).toEqual([[labels.sections.total, "true"], ["DTC", "false"], ["MARKETPLACE", "false"]]);
     expect(body).toContain(`role="group" aria-label="${labels.diagnosisList.scopeSwitch}"`);
@@ -94,6 +98,11 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     const group = diagnosisGroups(snap).groups.find(item => item.rule === "DISCOUNT_BURDEN_UP")!;
     expect(technical).toContain(`aria-label="${fill(labels.ui.workspacePanels.rankingAria, { title: group.headline, amount: "+250.00" })}">+250.00</button>`);
     expect(technical).toContain("<code>contribution-v1</code>");
+    // 快照版本：資料版本與範圍版本（與匯出、備份同一組雜湊）。
+    expect(technical).toContain(`<div><dt>${labels.csvColumns.dataset_hash}</dt><dd><code>${snap.dataset_hash}</code></dd></div>`);
+    expect(technical).toContain(`<div><dt>${labels.csvColumns.filter_hash}</dt><dd><code>${snap.filter_hash}</code></dd></div>`);
+    expect(snap.dataset_hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(snap.filter_hash).toMatch(/^[a-f0-9]{64}$/);
     for (const id of group.primary.fact_ids) expect(technical).toContain(`<li><code>${id.replaceAll('"', "&quot;")}</code></li>`);
     for (const limit of group.primary.limitations) expect(technical).toContain(`<li>${limit}</li>`);
   });
@@ -106,6 +115,8 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     expect(summary).toContain(`<span class="tag blocking">${labels.ui.workspacePanels.tagMissingData}</span>`);
     expect(summary).toContain(`<span class="impact-amount neutral">${labels.status.missing}</span>`);
     expect(summary).not.toContain("<button");
+    // 展開內容第一行同樣顯示「資料待補」（沒有金額可開）。
+    expect(row(html, "MISSING_CRITICAL_DATA")).toMatch(new RegExp(`<p class="impact-line"><span>[^<]*</span><span class="impact-amount neutral">${labels.status.missing}</span></p>`));
     // 本期合計商品成本未知：數據列顯示「資料待補」（不是 0，也不是「不適用」）。
     const metric = labels.metrics.cogs_net.label;
     const scope = fill(labels.ui.workspacePanels.scopeAllWith, { channels: "DTC、MARKETPLACE" });

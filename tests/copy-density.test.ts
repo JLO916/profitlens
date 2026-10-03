@@ -19,13 +19,45 @@ async function context() {
   const snapshot = await createSnapshot(dataset, {}, await hashInput(input));
   return { input, dataset, snapshot };
 }
-const withoutDetails = (html: string) => html.replace(/<details(?:\s[^>]*)?>[\s\S]*?<\/details>/g, "");
+/** 移除「收合」的 <details>（沒有 open 屬性），以巢狀深度配對：展開的 <details>（例如健檢前三列）算主層，只拿掉其中再收合的子區塊（技術細節等）。 */
+export function withoutDetails(html: string): string {
+  const tag = /<details(\s[^>]*)?>|<\/details>/g;
+  const stack: { start: number; open: boolean }[] = [];
+  const ranges: [number, number][] = [];
+  for (let match = tag.exec(html); match; match = tag.exec(html)) {
+    if (match[0] !== "</details>") { stack.push({ start: match.index, open: /\sopen(?:=|\s|$)/.test(match[1] ?? "") }); continue; }
+    const node = stack.pop();
+    if (!node) throw new Error("unbalanced </details>");
+    // 只記最外層的收合區塊（祖先都展開）；被它包住的子區塊一起拿掉。
+    if (!node.open && stack.every(parent => parent.open)) ranges.push([node.start, match.index + match[0].length]);
+  }
+  if (stack.length) throw new Error("unclosed <details>");
+  let kept = "", last = 0;
+  for (const [start, end] of ranges) { kept += html.slice(last, start); last = end; }
+  return kept + html.slice(last);
+}
 /** 以標籤邊界切成文字節點，再以句號／分號切句；這樣每張卡片的句子各自獨立計算。 */
 const textNodes = (html: string) => withoutDetails(html).split(/<[^>]*>/).map(node => node.replace(/&[a-z]+;|&#\d+;/g, " "));
 export function disclaimerSentences(html: string): string[] {
   const sentences = textNodes(html).flatMap(node => node.split(/[。；;\n]/)).map(sentence => sentence.replace(/\s+/g, " ").trim()).filter(sentence => /不是|不代表|不等於|不可/.test(sentence));
   return [...new Set(sentences.map(sentence => sentence.replace(/^.*?注意[:：]\s*/, "")).filter(sentence => !RULE_CAUTIONS.has(sentence)))];
 }
+
+describe("withoutDetails keeps what is visible at first glance", () => {
+  it("keeps open <details> (and their summary), drops collapsed ones with everything nested inside", () => {
+    const html = '<p>a</p><details open=""><summary>row</summary><p>body</p><details class="tech"><summary>tech</summary><p>hidden</p><details open=""><summary>inner</summary>x</details></details><p>after</p></details><details><summary>closed</summary><details open="">y</details></details><p>z</p>';
+    expect(withoutDetails(html)).toBe('<p>a</p><details open=""><summary>row</summary><p>body</p><p>after</p></details><p>z</p>');
+    expect(withoutDetails("<details>a</details>")).toBe("");
+    expect(withoutDetails('<details data-open="x">a</details><b>c</b>')).toBe("<b>c</b>");
+    expect(() => withoutDetails("<details open>")).toThrow();
+  });
+  it("the diagnosis page's open rows count as the main layer, their technical details do not", async () => {
+    const { snapshot } = await context();
+    const main = withoutDetails(renderToStaticMarkup(createElement(Diagnosis, { snapshot, onEvidence: () => undefined })));
+    expect(main).toContain(`<dt>${labels.sections.nextStep}</dt>`);
+    expect(main).not.toContain(`<summary>${labels.sections.technicalDetails}</summary>`);
+  });
+});
 
 describe("R2 copy density: at most three limitation sentences per page outside technical details", () => {
   it("overview", async () => {

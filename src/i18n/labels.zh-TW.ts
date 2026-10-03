@@ -567,7 +567,7 @@ export const ui = {
     "periodLine": "上期 {prevStart}–{prevEnd}（{prevDays} 天）；本期 {curStart}–{curEnd}（{curDays} 天）。{mode}，以下為整段期間合計。",
     "headlineNote": "注意：這是兩期的實際差額，不是可以省下的錢；合計已包含各通路。",
     "missingDataNote": "資料待補，無法估算金額",
-    "rankingNote": "依實際差額排序",
+    "rankingNote": "依對貢獻影響排序；負＝對貢獻不利",
     "relatedScopes": "相關範圍（{n}）",
     "channelTableSummary": "通路表・上期／本期／差額",
     "decisionsHeading": "方案與待辦",
@@ -1693,7 +1693,7 @@ export const actionBoard = {
 export const productHighlights = {
   intro: "通路費與廣告不分到商品，這裡只看商品毛利。",
   worstTitle: "本期毛利最差 {n} 個",
-  worstNote: "依本期商品毛利由低到高；毛利待補的商品不列入。",
+  worstNote: "依本期商品毛利由低到高；本期沒有銷售的商品以 0 計入；毛利待補的商品不列入。",
   worstEmpty: "本期沒有可計算毛利的商品。",
   worstAria: "本期毛利最差的商品，可水平捲動",
   worstCaption: "本期商品毛利由低到高，含商品毛利差額與毛利率",

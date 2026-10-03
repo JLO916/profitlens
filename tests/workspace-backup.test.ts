@@ -300,3 +300,28 @@ describe("R4 review follow-up: restore re-validates v4 side data against the dat
     await expect(restoreWorkspaceBackup(await resign(raw))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
   });
 });
+
+describe("R5 review follow-up: sensitivity and status_updated_at exist only in the v4 envelope", () => {
+  type Wire = { action_workspace: { items: Record<string, unknown>[] }; scenario_workspace: { contexts: { plans: Record<string, unknown>[] }[] }; decision: { scenarios: Record<string, unknown>[] } };
+  it.each([
+    ["status_updated_at on an action", (payload: Wire) => { payload.action_workspace.items[0].status_updated_at = "2026-10-03"; }],
+    ["sensitivity on a scenario-workspace plan", (payload: Wire) => { payload.scenario_workspace.contexts[0].plans[0].sensitivity = { volumes: ["1", "2", "3"] }; }],
+    ["sensitivity on a decision plan", (payload: Wire) => { payload.decision.scenarios[0].sensitivity = { volumes: ["1", "2", "3"] }; }],
+  ])("a v3 envelope with %s is INVALID_WORKSPACE_FORMAT, while the same v4 file restores", async (_label, mutate) => {
+    const v4 = JSON.parse(await exportWorkspaceBackup(await fullSource()));
+    mutate(v4.payload);
+    const v4Text = await resign(v4);
+    await expect(restoreWorkspaceBackup(v4Text)).resolves.toBeTruthy();
+    await expect(restoreWorkspaceBackup(await asV3(v4Text))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+  });
+  it.each([
+    ["an unknown key on a v4 action", (payload: Wire) => { payload.action_workspace.items[0].status_updated = "2026-10-03"; }],
+    ["an unknown key on a v4 scenario-workspace plan", (payload: Wire) => { payload.scenario_workspace.contexts[0].plans[0].sensitivities = { volumes: ["1", "2", "3"] }; }],
+    ["an unknown key on a v4 decision plan", (payload: Wire) => { payload.decision.scenarios[0].analysis = {}; }],
+    ["a non-ISO status day on a v4 action", (payload: Wire) => { payload.action_workspace.items[0].status_updated_at = "2026/10/03"; }],
+  ])("the v4-only extensions stay strict: %s is INVALID_WORKSPACE_FORMAT", async (_label, mutate) => {
+    const v4 = JSON.parse(await exportWorkspaceBackup(await fullSource()));
+    mutate(v4.payload);
+    await expect(restoreWorkspaceBackup(await resign(v4))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+  });
+});
