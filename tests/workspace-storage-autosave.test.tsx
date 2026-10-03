@@ -51,11 +51,12 @@ vi.mock("react", async importOriginal => {
 });
 const store = vi.hoisted(() => ({
   save: vi.fn(async (text: string) => { void text; }),
-  savedAt: vi.fn(async (): Promise<string | null> => null),
+  /** hasLocalWorkspace：這台電腦是否已有副本與保存時間（首次提示與選單勾選同意時查詢）。 */
+  existing: vi.fn(async (): Promise<{ exists: boolean; savedAt: string | null }> => ({ exists: false, savedAt: null })),
   remove: vi.fn(async () => undefined),
   load: vi.fn(async (): Promise<string | null> => null),
 }));
-vi.mock("@/application/local-store", () => ({ saveLocalWorkspace: store.save, localWorkspaceSavedAt: store.savedAt, deleteLocalWorkspace: store.remove, loadLocalWorkspace: store.load }));
+vi.mock("@/application/local-store", () => ({ saveLocalWorkspace: store.save, hasLocalWorkspace: store.existing, deleteLocalWorkspace: store.remove, loadLocalWorkspace: store.load }));
 const backup = vi.hoisted(() => ({ exported: [] as unknown[] }));
 vi.mock("@/application/workspace-backup", async importOriginal => ({
   ...(await importOriginal<typeof import("@/application/workspace-backup")>()),
@@ -119,7 +120,7 @@ function track<T extends { unmount: () => void }>(view: T): T { mounted.push(vie
 beforeEach(() => {
   vi.useFakeTimers(); vi.setSystemTime(AT);
   store.save.mockReset().mockImplementation(async () => undefined);
-  store.savedAt.mockReset().mockImplementation(async () => null);
+  store.existing.mockReset().mockImplementation(async () => ({ exists: false, savedAt: null }));
   store.remove.mockReset().mockImplementation(async () => undefined);
   backup.exported = [];
 });
@@ -150,6 +151,23 @@ describe("R6-6 首次同意對話框（D7＝A：問一次，同意後自動保�
     // 對話框在 <details> 之外：儲存選單收合時仍看得到。
     const details = findAll(tree, element => element.type === "details")[0];
     expect(findAll(details, element => element.props["data-testid"] === "local-save-prompt")).toEqual([]);
+    // 共享電腦提醒「移到」對話框內：儲存選單內不再重複。
+    expect(textOf(details)).not.toContain(labels.ui.workspaceStorage.caution);
+    // 對話框包在 portal 元件裡（渲染到 <body> 最後，Tab 順序在主內容之後）；沒有副本時 aria-describedby 只指向說明。
+    const portal = findAll(tree, element => typeof element.type === "function" && findAll(element.props.children as ReactNode, child => child === prompt).length > 0);
+    expect(portal).toHaveLength(1);
+    expect(prompt.props["aria-describedby"]).toBe(body.props.id);
+    // polite live region 宣告提示出現（不在 portal 裡，一直存在）。
+    const announce = byTestId(tree, "local-save-announce");
+    expect(announce.props["aria-live"]).toBe("polite");
+    expect(findAll(prompt, element => element === announce)).toEqual([]);
+    expect(textOf(announce)).toBe(auto.announce);
+  });
+
+  it("提示關閉後 live region 清空", () => {
+    const view = track(host());
+    click(button(view.render(), auto.decline));
+    expect(textOf(byTestId(view.render(), "local-save-announce"))).toBe("");
   });
 
   it("沒有資料時不問；資料載入後才問", () => {
@@ -225,21 +243,39 @@ describe("R6-6 首次同意對話框（D7＝A：問一次，同意後自動保�
     expect(store.save).toHaveBeenCalledTimes(1);
   });
 
-  it("這台電腦已有保存的工作區：提醒同意會改存成目前的（臺北時間）；讀不到時不提醒也不出錯", async () => {
-    store.savedAt.mockResolvedValueOnce("2026-10-01T06:32:00.000Z");
+  it("這台電腦已有保存的工作區：提醒同意會改存成目前的（臺北時間），aria-describedby 同時指向說明與提醒；讀不到時不提醒也不出錯", async () => {
+    store.existing.mockResolvedValueOnce({ exists: true, savedAt: "2026-10-01T06:32:00.000Z" });
     const view = track(host());
     view.render();
     await settle();
-    const warning = byTestId(view.render(), "local-save-replace-warning");
+    const prompt = byTestId(view.render(), "local-save-prompt");
+    const warning = byTestId(prompt, "local-save-replace-warning");
     expect(textOf(warning)).toBe(fill(auto.replaceWarning, { time: "2026-10-01 14:32" }));
+    const body = findAll(prompt, element => element.type === "p" && textOf(element) === auto.promptBody)[0];
+    expect(prompt.props["aria-describedby"]).toBe(`${body.props.id} ${warning.props.id}`);
+    expect(warning.props.id).not.toBe(body.props.id);
 
-    store.savedAt.mockRejectedValueOnce(new Error("LOCAL_STORAGE_UNAVAILABLE"));
+    store.existing.mockRejectedValueOnce(new Error("LOCAL_STORAGE_UNAVAILABLE"));
     const other = track(host());
     other.render();
     await settle();
     const tree = other.render();
     expect(byTestId(tree, "local-save-prompt")).toBeDefined();
     expect(byTestId(tree, "local-save-replace-warning")).toBeUndefined();
+  });
+
+  it("R6 以前存的副本（沒有保存時間）也提醒，改用「時間不明」的句子；只有欄位對照記憶（沒有工作區）不提醒", async () => {
+    store.existing.mockResolvedValueOnce({ exists: true, savedAt: null });
+    const view = track(host());
+    view.render();
+    await settle();
+    expect(textOf(byTestId(view.render(), "local-save-replace-warning"))).toBe(auto.replaceWarningUnknownTime);
+
+    store.existing.mockResolvedValueOnce({ exists: false, savedAt: null });
+    const other = track(host());
+    other.render();
+    await settle();
+    expect(byTestId(other.render(), "local-save-replace-warning")).toBeUndefined();
   });
 });
 
@@ -383,6 +419,223 @@ describe("R6-6 自動保存（同意後每次變更 2 秒內）", () => {
   });
 });
 
+const consentBox = (tree: ReactNode) => findAll(tree, element => element.type === "input" && element.props.type === "checkbox")[0];
+const toggle = (tree: ReactNode) => byTestId(tree, "autosave-toggle");
+const check = (element: TreeElement, checked: boolean) => (element.props.onChange as (event: unknown) => void)({ target: { checked } });
+const saveLocalButton = (tree: ReactNode) => button(findAll(tree, element => element.type === "details")[0], labels.buttons.saveLocal);
+
+describe("R6 修正：本機保存同意與自動保存分開（不同意或關閉＝每次手動）", () => {
+  it("未同意時沒有自動保存開關；同意後出現且預設開啟", () => {
+    const off = track(host());
+    expect(toggle(off.render())).toBeUndefined();
+    const on = track(host({ consent: true }));
+    const tree = on.render();
+    expect(toggle(tree).type).toBe("input");
+    expect(toggle(tree).props.type).toBe("checkbox");
+    expect(toggle(tree).props.checked).toBe(true);
+    expect(textOf(findAll(tree, element => element.type === "label" && findAll(element.props.children as ReactNode, child => child === toggle(tree)).length > 0)[0])).toBe(auto.toggle);
+  });
+
+  it("關閉自動保存：狀態顯示未開啟、變更不再自動保存；手動「存在這台電腦」仍可用，提示改為手動的說法", async () => {
+    const view = track(host({ consent: true }));
+    check(toggle(view.render()), false);
+    let tree = view.change();
+    expect(toggle(tree).props.checked).toBe(false);
+    expect(textOf(byTestId(tree, "autosave-status"))).toBe(auto.statusOff);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(store.save).not.toHaveBeenCalled();
+    expect(summaryTag(view.render())).toContain(labels.status.unsaved);
+    const manual = saveLocalButton(view.render());
+    expect(manual.props.disabled).toBe(false);
+    click(manual);
+    await settle();
+    expect(store.save.mock.calls).toEqual([["backup:v2"]]);
+    tree = view.render();
+    expect(textOf(byTestId(tree, "storage-notice"))).toBe(auto.savedLocalManualNotice);
+    expect(textOf(byTestId(tree, "autosave-status"))).toBe(`${auto.statusOff} · ${fill(auto.lastSaved, { time: "14:32" })}`);
+    // 再改一次：仍是手動。
+    view.change();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(store.save).toHaveBeenCalledTimes(1);
+  });
+
+  it("關閉時取消已排程的保存；重新開啟後未保存的修改 2 秒內保存", async () => {
+    const view = track(host({ consent: true }));
+    view.render();
+    await vi.advanceTimersByTimeAsync(1000);
+    check(toggle(view.render()), false);
+    view.render();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(store.save).not.toHaveBeenCalled();
+    check(toggle(view.render()), true);
+    expect(textOf(byTestId(view.render(), "autosave-status"))).toBe(auto.statusOn);
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(store.save).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(store.save.mock.calls).toEqual([["backup:v1"]]);
+  });
+
+  it("勾選同意＝自動保存預設開啟：之前關掉開關、取消同意後再勾選，開關回到開啟", async () => {
+    const view = track(host({ consent: true }));
+    check(toggle(view.render()), false);
+    check(consentBox(view.render()), false);
+    expect(toggle(view.render())).toBeUndefined();
+    check(consentBox(view.render()), true);
+    view.render();
+    await settle();
+    const tree = view.render();
+    expect(toggle(tree).props.checked).toBe(true);
+    expect(textOf(byTestId(tree, "autosave-status"))).toBe(auto.statusOn);
+  });
+
+  it("首次提示的「存在這台電腦」同時開啟本機保存與自動保存", async () => {
+    const view = track(host());
+    click(button(byTestId(view.render(), "local-save-prompt"), auto.accept));
+    await settle();
+    const tree = view.render();
+    expect(toggle(tree).props.checked).toBe(true);
+    view.change();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(store.save.mock.calls).toEqual([["backup:v1"], ["backup:v2"]]);
+  });
+
+  it("自動保存關閉時，自動保存失敗的警示不顯示", async () => {
+    store.save.mockRejectedValueOnce(new Error("QUOTA_EXCEEDED"));
+    const view = track(host({ consent: true }));
+    view.render();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(byTestId(view.render(), "autosave-error")).toBeDefined();
+    check(toggle(view.render()), false);
+    expect(byTestId(view.render(), "autosave-error")).toBeUndefined();
+  });
+});
+
+describe("R6 修正：在儲存選單勾選同意時，這台電腦已有副本就先確認再自動覆寫", () => {
+  const OLD = "2026-10-01T06:32:00.000Z";
+  /** 先回答首次提示（先不要），再到選單勾選同意；回傳勾選後查詢完成的畫面。 */
+  async function tickConsent(view: ReturnType<typeof host>) {
+    click(button(view.render(), auto.decline));
+    check(consentBox(view.render()), true);
+    expect(view.onConsentChange).toHaveBeenLastCalledWith(true);
+    view.render();
+    await settle();
+    return view.render();
+  }
+
+  it("沒有副本：勾選即開始自動保存（2 秒內），不出現確認", async () => {
+    const view = track(host());
+    const tree = await tickConsent(view);
+    expect(byTestId(tree, "autosave-confirm-replace")).toBeUndefined();
+    expect(byTestId(tree, "autosave-replace-warning")).toBeUndefined();
+    expect(textOf(byTestId(tree, "autosave-status"))).toBe(auto.statusOn);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(store.save.mock.calls).toEqual([["backup:v1"]]);
+  });
+
+  it("已有副本：顯示保存時間與確認按鈕，確認前不自動保存；按「改存成目前的工作區」立即保存，之後照常自動保存", async () => {
+    store.existing.mockResolvedValue({ exists: true, savedAt: OLD });
+    const view = track(host());
+    let tree: ReactNode = await tickConsent(view);
+    expect(textOf(byTestId(tree, "autosave-replace-warning"))).toBe(fill(auto.menuReplaceWarning, { time: "2026-10-01 14:32" }));
+    expect(textOf(byTestId(tree, "autosave-status"))).toBe(auto.statusPendingReplace);
+    // 警告與按鈕在常駐的 polite live region 裡，出現時會被宣告。
+    const region = findAll(tree, element => element.props["aria-live"] === "polite" && findAll(element.props.children as ReactNode, child => child.props["data-testid"] === "autosave-replace-warning").length > 0);
+    expect(region).toHaveLength(1);
+    view.change();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(store.save).not.toHaveBeenCalled();
+    const confirm = byTestId(view.render(), "autosave-confirm-replace");
+    expect(confirm.type).toBe("button");
+    expect(textOf(confirm)).toBe(auto.confirmReplace);
+    click(confirm);
+    await settle();
+    expect(store.save.mock.calls).toEqual([["backup:v2"]]);
+    tree = view.render();
+    expect(byTestId(tree, "autosave-confirm-replace")).toBeUndefined();
+    expect(textOf(byTestId(tree, "autosave-status"))).toBe(`${auto.statusOn} · ${fill(auto.lastSaved, { time: "14:32" })}`);
+    view.change();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(store.save.mock.calls).toEqual([["backup:v2"], ["backup:v3"]]);
+  });
+
+  it("保存時間不明的舊副本：用「時間不明」的句子", async () => {
+    store.existing.mockResolvedValue({ exists: true, savedAt: null });
+    const view = track(host());
+    const tree = await tickConsent(view);
+    expect(textOf(byTestId(tree, "autosave-replace-warning"))).toBe(auto.menuReplaceWarningUnknownTime);
+  });
+
+  it("確認前仍可手動「存在這台電腦」；手動保存後不必再確認，之後自動保存", async () => {
+    store.existing.mockResolvedValue({ exists: true, savedAt: OLD });
+    const view = track(host());
+    await tickConsent(view);
+    click(saveLocalButton(view.render()));
+    await settle();
+    expect(store.save.mock.calls).toEqual([["backup:v1"]]);
+    let tree = view.render();
+    expect(byTestId(tree, "autosave-confirm-replace")).toBeUndefined();
+    expect(textOf(byTestId(tree, "storage-notice"))).toBe(auto.savedLocalNotice);
+    tree = view.change();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(store.save.mock.calls).toEqual([["backup:v1"], ["backup:v2"]]);
+  });
+
+  it("確認前取消勾選：警告消失、不保存；再勾選會重新查詢", async () => {
+    store.existing.mockResolvedValue({ exists: true, savedAt: OLD });
+    const view = track(host());
+    await tickConsent(view);
+    check(consentBox(view.render()), false);
+    let tree = view.render();
+    expect(byTestId(tree, "autosave-replace-warning")).toBeUndefined();
+    expect(textOf(byTestId(tree, "autosave-status"))).toBe(auto.statusOff);
+    check(consentBox(tree), true);
+    view.render();
+    await settle();
+    tree = view.render();
+    expect(byTestId(tree, "autosave-confirm-replace")).toBeDefined();
+    expect(store.existing).toHaveBeenCalledTimes(3);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(store.save).not.toHaveBeenCalled();
+  });
+
+  it("查詢還沒回來就取消勾選：舊的查詢結果作廢，不會跳出確認", async () => {
+    let resolve: (value: { exists: boolean; savedAt: string | null }) => void = () => undefined;
+    const view = track(host());
+    click(button(view.render(), auto.decline));
+    store.existing.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+    check(consentBox(view.render()), true);
+    view.render();
+    check(consentBox(view.render()), false);
+    view.render();
+    resolve({ exists: true, savedAt: OLD });
+    await settle();
+    const tree = view.render();
+    expect(byTestId(tree, "autosave-replace-warning")).toBeUndefined();
+    expect(textOf(byTestId(tree, "autosave-status"))).toBe(auto.statusOff);
+  });
+
+  it("查詢失敗時視同沒有副本，照常開始自動保存（寫入失敗會另外警示）", async () => {
+    store.existing.mockRejectedValue(new Error("LOCAL_STORAGE_UNAVAILABLE"));
+    const view = track(host());
+    const tree = await tickConsent(view);
+    expect(byTestId(tree, "autosave-confirm-replace")).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(store.save.mock.calls).toEqual([["backup:v1"]]);
+  });
+
+  it("刪除本機資料會清掉待確認狀態", async () => {
+    store.existing.mockResolvedValue({ exists: true, savedAt: OLD });
+    const view = track(host());
+    await tickConsent(view);
+    click(button(view.render(), labels.buttons.deleteLocal));
+    await settle();
+    const tree = view.render();
+    expect(byTestId(tree, "autosave-replace-warning")).toBeUndefined();
+    expect(store.remove).toHaveBeenCalledTimes(1);
+    expect(store.save).not.toHaveBeenCalled();
+  });
+});
+
 describe("R6-6 SSR：既有 testid 與同意文案保留", () => {
   beforeEach(() => { hooks.active = false; });
   const base = { version: 1, dirty: true, onRestore: () => undefined, onSaved: () => undefined, onDeleted: () => undefined, onConsentChange: () => undefined };
@@ -397,22 +650,27 @@ describe("R6-6 SSR：既有 testid 與同意文案保留", () => {
     expect(html).toContain(labels.status.noWorkspace);
     expect(html).not.toContain("local-save-prompt");
     expect(html).not.toContain('role="alert"');
+    // 共享電腦提醒只在首次提示內；未同意時沒有自動保存開關與覆寫確認。
+    expect(html).not.toContain(labels.ui.workspaceStorage.caution);
+    expect(html).not.toContain("autosave-toggle");
+    expect(html).not.toContain("autosave-confirm-replace");
+    // 宣告提示的 live region 一直存在（沒有提示時是空的）。
+    expect(html).toMatch(/<p class="sr-only" role="status" aria-live="polite" data-testid="local-save-announce"><\/p>/);
   });
 
-  it("有資料且未同意：對話框在 </details> 之後、aria 指向標題與說明、沒有 autofocus", () => {
+  it("有資料且未同意：提示只在瀏覽器端 portal 到 <body> 最後，伺服器端不渲染（Tab 順序不會排在 h1 前）", () => {
     const html = renderToStaticMarkup(createElement(WorkspaceStorage, { ...base, source: source("v1"), consent: false }));
-    expect(html.indexOf('data-testid="local-save-prompt"')).toBeGreaterThan(html.indexOf("</details>"));
-    const labelledBy = /role="dialog" aria-labelledby="([^"]+)" aria-describedby="([^"]+)"/.exec(html);
-    expect(labelledBy).not.toBeNull();
-    expect(html).toContain(`<h2 id="${labelledBy![1]}">${auto.promptTitle}</h2>`);
-    expect(html).toContain(`<p id="${labelledBy![2]}">${auto.promptBody}</p>`);
+    expect(html).not.toContain('data-testid="local-save-prompt"');
+    expect(html).not.toContain('role="dialog"');
     expect(html).not.toMatch(/autofocus/i);
     expect(html).toContain(labels.status.unsaved);
   });
 
-  it("已同意：不出現對話框，狀態顯示已開啟自動保存", () => {
+  it("已同意：不出現對話框，狀態顯示已開啟自動保存，並有預設開啟的自動保存開關", () => {
     const html = renderToStaticMarkup(createElement(WorkspaceStorage, { ...base, source: source("v1"), consent: true }));
     expect(html).not.toContain("local-save-prompt");
     expect(html).toContain(auto.statusOn);
+    expect(html).toMatch(/<input type="checkbox" data-testid="autosave-toggle" checked=""\/>/);
+    expect(html).toContain(auto.toggle);
   });
 });
