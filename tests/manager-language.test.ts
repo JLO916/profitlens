@@ -81,9 +81,15 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     const refundAssumption = assumptions.find(text => text.includes("退貨率"));
     expect(main).toContain(labels.sections.scenarioBaseline);
     expect(main).toContain("270.00");
-    expect(main).toContain(labels.sections.scenarioAssumptions);
+    // R5-3（02 §6）：固定假設改為收合的 <details data-testid="scenario-assumptions">「這個試算假設了什麼（必讀）」；九條全文仍在，點開即見。
+    const start = html.indexOf('data-testid="scenario-assumptions"');
+    expect(start).toBeGreaterThan(-1);
+    const block = html.slice(html.lastIndexOf("<details", start), html.indexOf("</ol>", start) + "</ol>".length);
+    expect(block).toMatch(/^<details(?![^>]*\sopen)[^>]*>/);
+    expect(block).toContain(`>${labels.scenarioForm.assumptionsSummary}</summary>`);
+    expect(labels.scenarioForm.assumptionsSummary).toContain(labels.sections.scenarioAssumptions);
     expect(refundAssumption).toContain("同批訂單");
-    expect(main).toContain(refundAssumption);
+    expect(block).toContain(refundAssumption);
     expect(main).toContain(labels.ui.decisionWorkbench.baselineTagFixed);
     expect(main).toContain(`從${labels.sections.scenarioBaseline}算起`);
     expect(main.replace(/<[^>]*>/g, "")).not.toMatch(/BASELINE|baseline|cohort|fact IDs/);
@@ -91,8 +97,8 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     expect(html).toContain("rounding_adjustment");
     expect(html).toContain("每個中間值");
     expect(assumptions).toHaveLength(9);
-    for (const text of assumptions) expect(main).toContain(text);
-    expect(main.match(/<li>/g)).toHaveLength(9);
+    for (const text of assumptions) expect(block).toContain(text);
+    expect(block.match(/<li>/g)).toHaveLength(9);
     expect(main).not.toContain("golden-v1");
     expect(html).toContain("golden-v1");
   });
