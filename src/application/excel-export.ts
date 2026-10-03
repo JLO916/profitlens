@@ -229,7 +229,7 @@ export function buildExcelWorkbook(input: ExcelExportInput): ExcelWorkbook {
 }
 
 /** 與 export.ts encodeCsv 同一條防注入規則：開頭是 = + - @、空白或控制／零寬／方向字元時前面加 '。 */
-const FORMULA_PREFIX = /^[=+\-@\s\u0000-\u001f\u007f-\u009f​-‏‪-‮⁠-⁯﻿]/u;
+const FORMULA_PREFIX = /^[=+\-@\s\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/u;
 const LONE_SURROGATE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
 /**
  * 不可信文字 → 安全的字串格內容：補不成對的代理字元、套 CSV 防注入規則、

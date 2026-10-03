@@ -277,3 +277,20 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 **原因：** 經理人要的是「先看最嚴重的、一列一件事」與「進頁就能試算」；所有改動都在呈現與應用層，引擎與 golden 不變。
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
+
+## 2026-10-03｜Revamp v2 R6：會議紀錄、匯出依賴（D4）、預設保存（D7）
+
+**問題：** R6 要把會議稿升級成可結束、不可變的會議紀錄並做上次會議比較；加 Excel／PPT 匯出；把本機保存改成「首次詢問一次、同意後自動保存」。
+
+**採用選項：**
+- **D4＝A（依建議值）**：`xlsx@0.18.5`（SheetJS，npm 上最後的版本）與 `pptxgenjs@4.0.1`，版本以 `npm view` 當下最新穩定版精確鎖定（`"xlsx": "0.18.5"`、`"pptxgenjs": "4.0.1"`，不帶 `^`）。兩者只以**動態 import** 載入（按下「匯出 Excel／PPT」才下載 chunk），首頁 first-load JS 不變（量測見 `verification/revamp-R6-acceptance.md`）。
+  - `npm audit` 對這兩個套件的 3 個 high 項目：`xlsx` 的 prototype pollution／ReDoS 都在**讀取**不可信檔案的程式路徑；`pptxgenjs` 依賴的 `image-size` DoS 在**解析圖片**。ProfitLens 只用兩者的「寫出」API，不解析任何使用者檔案、不嵌圖片（測試用 `XLSX.read` 解析的是我們自己剛產生的檔）。沒有可升級的修正版（`npm audit fix --force` 會把 pptxgenjs 降到 4.0.0），因此接受並記錄；若日後要消除告警，可改 `exceljs`（D4 選項 B）。
+  - Excel 文字格一律字串型別（不產生公式格），且沿用 CSV 防公式注入規則（= + - @ 開頭加 `'`）；PPT 由 pptxgenjs 做 XML 轉義，測試解壓驗證。
+- **D7＝A（依建議值）**：首次載入資料時彈一次**非 modal** 的對話框「要不要把工作區存在這台電腦？（不上傳）」（固定在右下角，不鎖焦點、不蓋住主內容，避免影響首屏規則與既有流程）；同意後每次變更 2 秒內自動保存（debounce），頂欄顯示「已保存 hh:mm」（臺北時間）；拒絕則維持手動；「刪除本機資料」保留並同時關閉自動保存；恢復仍是「預覽 → 確認」。
+- **會議紀錄不可變**：「結束會議」把目前的會議稿（ReviewSession）凍結成 `Meeting`（schema `meeting-v1`，含固定範圍、議程快照、決議、置頂行動與其狀態），寫入備份 v4 的 `meeting_history`（上限 100 筆，欄位加法、版本字串不變），之後只讀；新會議從目前資料建立。
+- **上次會議比較規則（05 §10）**：同 dataset_hash 且同通路 → 比 KPI；期間不同仍比較並標示兩個期間；dataset 不同（或通路集合不同）→ 只列上次決議與行動狀態。
+- **總覽只留一行入口**（「本期會議：草稿／已結束 → 前往會議紀錄」），`ReviewWorkbench` 的內容搬到新分頁「會議紀錄」。
+
+**原因：** 經理人要的是「這次會議決定了什麼、和上次比如何」，而不是一個可被改掉的工作稿；匯出格式與自動保存都在瀏覽器本機完成，不碰隱私邊界。
+
+**影響文件：** `docs/revamp/09_DECISIONS_PENDING.md`（D4／D7 決定欄）、`docs/ARCHITECTURE.md`（meeting_history）、`verification/revamp-R6-acceptance.md`。**驗收：** `tests/meeting.test.ts`、`tests/meeting-backup.test.ts`、`tests/excel-export.test.ts`、`tests/pptx-export.test.ts`、`tests/auto-save.test.ts`、E2E 會議流程與自動保存。

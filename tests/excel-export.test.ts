@@ -268,9 +268,9 @@ describe("R6-4 cell converters", () => {
   });
 
   it("text: the same leading-character rule as encodeCsv", () => {
-    const samples = ["=1+1", "+886", "-5", "@SUM(A1)", "\tcmd", "\rcmd", "\ncmd", " lead", " nbsp", "​zero", "‮RTL", "﻿bom", "\u0001ctl", "normal", "a=b", "中文", "100", "", "'quoted"];
+    const samples = ["=1+1", "+886", "-5", "@SUM(A1)", "\tcmd", "\rcmd", "\ncmd", " lead", "\u00a0nbsp", "\u200bzero", "\u202eRTL", "\ufeffbom", "\u0001ctl", "normal", "a=b", "中文", "100", "", "'quoted"];
     for (const sample of samples) {
-      const csvPrefixed = encodeCsv([[{ kind: "text", value: sample }]]) === `﻿"'${sample.replaceAll('"', '""')}"\r\n`;
+      const csvPrefixed = encodeCsv([[{ kind: "text", value: sample }]]) === `\ufeff"'${sample.replaceAll('"', '""')}"\r\n`;
       expect(excelText(sample), JSON.stringify(sample)).toBe(csvPrefixed ? `'${sample}` : sample);
     }
     expect(samples.filter(sample => excelText(sample) !== sample)).toHaveLength(13);
