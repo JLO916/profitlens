@@ -21,7 +21,7 @@ const SAMPLE_HEADERS: Record<string, string[]> = {
 };
 
 describe("R3 source presets are honest candidates", () => {
-  it("ships exactly the nine spec presets, all unverified with a verification method", () => {
+  it("ships exactly the nine spec presets; verified only with real-export evidence, each with a verification method", () => {
     expect(SOURCE_PRESETS.map(p => p.id)).toEqual(["shopline_orders", "91app_orders", "cyberbiz_orders", "shopee_orders", "shopee_income", "momo_settlement", "pchome_settlement", "meta_ads", "google_ads"]);
     for (const preset of SOURCE_PRESETS) {
       // verified 只在跑過去識別化的真實匯出檔後才能為 true；公開文件重建的樣本只能把 evidence 提到 public_docs。

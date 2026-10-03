@@ -117,8 +117,9 @@ export const SOURCE_PRESETS: readonly SourcePreset[] = [
   },
   {
     id: "shopee_orders", source: "Shopee", grain: "order",
-    // 官方欄位表（賣家中心 教育文章 11911，57 欄）：訂單匯出沒有「買家支付金額」，正確名稱是「買家總支付金額」；
-    // 「商品選項貨號」是逐列欄位，用它和進帳報表（沒有貨號欄）區分。
+    // 2026-10-03 以真實「待出貨」匯出檔的標題列驗證（56 欄；tests/fixtures/source-samples/shopee_orders.header.csv 逐字保存）：
+    // 訂單匯出沒有「買家支付金額」，正確名稱是「買家總支付金額」；「商品選項貨號」是逐列欄位，用它和進帳報表（沒有貨號欄）區分。
+    // 與官方欄位表（文章 11911）的差異：沒有「不成立原因」「運送失敗狀態」、多了「成交手續費規則名稱」、「退貨 / 退款狀態」含空格、促銷組合標籤用半形冒號。
     fingerprint: ["訂單編號", "商品選項貨號", "買家總支付金額"],
     targets: [SALES, COSTS],
     columns: {
@@ -131,10 +132,10 @@ export const SOURCE_PRESETS: readonly SourcePreset[] = [
       },
     },
     inclusiveTax: true,
-    notes: "One row per order line; 商品活動價格 / 商品原價 are UNIT prices (× 數量; the aggregation script's unit_price does this). 商品總價, 買家總支付金額, coupon and fee columns are per ORDER and repeat on every line of the order: never sum them per line. Seller discounts = 賣家負擔優惠券 + 賣家負擔蝦幣回饋券 (per order, allocate to lines). No refund amount column (see 退貨退款報表 / 我的進帳). Rows with 訂單狀態=不成立 are cancelled (except 不成立原因 containing 遺失). The xlsx is password-protected (last 6 digits of the shop phone) — remove the password and save as CSV UTF-8 first.",
-    verified: false, verifiedAt: null,
-    verification: "Header row reconstructed from Shopee's official field-table image (seller.shopee.tw/edu/article/11911, 2026-03) and cross-checked against three public parsers of real 57-column files; sample in tests/fixtures/source-samples/shopee_orders.csv. Still needs one de-identified real export to flip verified.",
-    evidence: "public_docs",
+    notes: "One row per order line; 商品活動價格 / 商品原價 are UNIT prices (× 數量; the aggregation script's unit_price does this). 商品總價, 買家總支付金額, coupon and fee columns are per ORDER and repeat on every line of the order: never sum them per line. Seller discounts = 賣家負擔優惠券 + 賣家負擔蝦幣回饋券 (per order, allocate to lines). No refund amount column (see 退貨退款報表 / 我的進帳). Rows with 訂單狀態=不成立 are cancelled; the 待出貨 export has no 不成立原因 column (the 全部 export may). The xlsx is password-protected (last 6 digits of the shop phone) — remove the password and save as CSV UTF-8 first.",
+    verified: true, verifiedAt: "2026-10-03",
+    verification: "Verified 2026-10-03 against the header row of a real 待出貨 export (Order.toship.20260903_20261003, 56 columns, header only — no data rows were shared): fingerprint 3/3 and every candidate column present; header kept verbatim in tests/fixtures/source-samples/shopee_orders.header.csv. Per-order repetition of coupon/fee columns and fee signs are still from public sources (rows not inspected).",
+    evidence: "real_export",
     evidenceSources: ["https://seller.shopee.tw/edu/article/11911", "https://seller.shopee.tw/edu/article/554", "https://github.com/lee2nd/e-commerce-ERP-system-streamlit-app", "https://github.com/rootimes/shopee-dashboard", "https://www.ragic.com/intl/zh-TW/blog/366/free-shopee-reconciling-tool"],
   },
   {

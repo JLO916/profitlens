@@ -11,7 +11,7 @@ import type { FileName } from "@/domain/types";
  * index.json 每筆：{ file, presetId, role, expectMapping: { 標準欄位: 來源欄名 }, note }。
  * 真實匯出檔驗證通過後，把對應 preset 的 evidence 改為 "real_export" 並記錄日期；這裡的樣本仍要繼續通過。
  */
-interface Sample { file: string; presetId: string; role: FileName; expectMapping: Record<string, string>; note?: string }
+interface Sample { file: string; presetId: string; role: FileName; expectMapping: Record<string, string>; note?: string; /** 真實匯出檔的標題列（逐字、只有欄名）；有的話樣本標題列必須完全一致。 */ headerFile?: string }
 const dir = resolve("tests/fixtures/source-samples");
 const samples: Sample[] = JSON.parse(readFileSync(resolve(dir, "index.json"), "utf8"));
 
@@ -23,6 +23,12 @@ describe("R3 source presets detect the documented export headers", () => {
     it(`${sample.presetId}: ${sample.file} is detected and the key columns are suggested`, () => {
       const parsed = parseCsv(readFileSync(resolve(dir, sample.file)));
       expect(parsed.rows.length, "sample has data rows").toBeGreaterThanOrEqual(8);
+      if (sample.headerFile) {
+        const real = parseCsv(readFileSync(resolve(dir, sample.headerFile)));
+        expect(parsed.headers, "sample header equals the real export header verbatim").toEqual(real.headers);
+        expect(real.rows, "header file carries no data rows").toHaveLength(0);
+        expect(getPreset(sample.presetId)!.evidence, "a real header means real_export").toBe("real_export");
+      }
       const detected = detectPreset(parsed.headers);
       expect(detected?.preset.id, `detectPreset(${sample.file})`).toBe(sample.presetId);
       const preset = getPreset(sample.presetId)!;

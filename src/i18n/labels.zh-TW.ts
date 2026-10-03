@@ -337,6 +337,7 @@ export const importWizard = {
   memoryPersistent: "欄位對照會記在這台電腦的瀏覽器；「刪除本機資料」會一併清除，備份檔不含對照記憶。",
   presetHint: "看起來像 {preset} 的匯出檔，已套用建議對照（請確認）",
   presetUnverified: "候選對照（待驗證）：欄名以你的實際匯出檔為準，請逐欄確認。",
+  presetVerified: "欄名已用真實匯出檔的標題列驗證（{date}），仍請逐欄確認。",
   presetInclusiveHint: "這個來源的金額通常含稅，下一步請選「含稅」。",
   presetNames: {
     shopline_orders: "Shopline 訂單報表", "91app_orders": "91APP 訂單匯出", cyberbiz_orders: "Cyberbiz 訂單匯出", shopee_orders: "蝦皮賣家中心訂單", shopee_income: "蝦皮「我的進帳」撥款明細",
