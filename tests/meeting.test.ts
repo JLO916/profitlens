@@ -5,13 +5,17 @@ import type { AnalysisFilters } from "@/domain/types";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import { saveScenario } from "@/application/decision";
 import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext, type ScenarioWorkspace } from "@/application/scenario-workspace";
-import { createReviewSession, rebuildReviewSnapshot, refreshReviewSession, selectReviewScenario, syncReviewPins, updateReviewSession, type ReviewSession } from "@/application/review-session";
+import { createReviewSession, rebuildReviewSnapshot, refreshReviewScenarioReferences, refreshReviewSession, selectReviewScenario, syncReviewPins, updateReviewSession, type ReviewSession } from "@/application/review-session";
 import { addActionDraft, editActionManagement, editBoundAction, emptyActionWorkspace, pinAction, removeBoundAction, type ActionWorkspace } from "@/application/action-workspace";
 import { buildManagerSummary } from "@/application/manager-summary";
-import { appendMeeting, compareWithLastMeeting, exportMeetingMarkdown, finalizeMeeting, freezeMeeting, lastMeeting, MAX_MEETING_HISTORY, MEETING_SCHEMA_VERSION, validateMeeting, type Meeting } from "@/application/meeting";
+import { appendMeeting, compareWithLastMeeting, exportMeetingMarkdown, finalizeMeeting, freezeMeeting, lastMeeting, MAX_MEETING_HISTORY, meetingAgendaFromSnapshot, MEETING_SCHEMA_VERSION, removeMeeting, validateMeeting, type Meeting } from "@/application/meeting";
+import { conversionSentence } from "@/application/copy";
+import type { TaxConversion } from "@/application/tax-basis";
 import { fill, labels } from "@/i18n";
 
 const NOW = "2026-10-03T06:00:00.000Z";
+/** 會議稿（review）的建立時間：早於 NOW，結束會議時成為 Meeting.created_at。 */
+const CREATED = "2026-10-03T05:30:00.000Z";
 const inputs = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
 async function source(name = "golden", filters: AnalysisFilters = {}) {
   const input = fixture(name); const dataset = validateDataset(input).dataset!;
@@ -29,19 +33,25 @@ async function setup(reviewId = "rev-1", patch: Parameters<typeof updateReviewSe
   actions = addActionDraft(actions, s, "a2");
   actions = pinAction(actions, "a1", true);
   actions = editActionManagement(actions, "a1", { execution_status: "in_progress" }, "2026-10-01");
-  let review: ReviewSession = createReviewSession(s, "e", reviewId);
+  let review: ReviewSession = createReviewSession(s, "e", reviewId, CREATED);
   review = selectReviewScenario(review, scenarios, scenarioSelectionRef(scenarios.contexts[0], "p"));
   review = syncReviewPins(review, actions);
   review = updateReviewSession(review, patch);
   const snapshot = await rebuildReviewSnapshot(review);
   return { s, scenarios, actions, review, snapshot };
 }
-async function finalized(reviewId = "rev-1", now = NOW, patch?: Parameters<typeof updateReviewSession>[1]) {
+async function finalized(reviewId = "rev-1", now = NOW, patch?: Parameters<typeof updateReviewSession>[1], history?: readonly Meeting[]) {
   const state = await setup(reviewId, patch);
-  return { ...state, meeting: finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, date: "2026-10-03", now }) };
+  return { ...state, meeting: finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, date: "2026-10-03", now, history }) };
 }
 /** 可變的合法副本（測試竄改用）。 */
 const mutable = (meeting: Meeting): Meeting => structuredClone(meeting);
+/** 內部一致的同範圍 follow_up（上次與本次的本期相同，差額 0.00）：竄改測試的基準。 */
+const comparableFollowUp = (meeting: Meeting): Meeting["follow_up"] => ({
+  last_meeting_id: "meeting-prev", last_name: "上次例會", last_date: "2026-09-26", kind: "same_scope", note: labels.meetingRecord.sameScope,
+  kpis: meeting.agenda.kpis.map(row => ({ metric: row.metric, last: row.current, current: row.current, change: "0.00" })),
+  last_priorities: structuredClone(meeting.agenda.priorities) as Meeting["agenda"]["priorities"], last_decisions: structuredClone(meeting.decisions) as Meeting["decisions"], actions: [],
+});
 const withId = (meeting: Meeting, id: string, finalized_at = meeting.finalized_at): Meeting => freezeMeeting({ ...mutable(meeting), id, created_at: finalized_at, finalized_at });
 
 describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed scope", () => {
@@ -50,9 +60,14 @@ describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed s
     const golden = expected();
     expect(meeting.schema_version).toBe(MEETING_SCHEMA_VERSION);
     expect(meeting.id).toBe(`meeting-${review.id}-r${review.revision}`);
-    expect(meeting).toMatchObject({ review_id: "rev-1", review_revision: review.revision, name: "十月例會", date: "2026-10-03", created_at: NOW, finalized_at: NOW, notes: "照做", thresholds: { importance: "0.00" } });
+    // created_at 取會議稿的建立時間（早於結束時間）。
+    expect(meeting).toMatchObject({ review_id: "rev-1", review_revision: review.revision, name: "十月例會", date: "2026-10-03", created_at: CREATED, finalized_at: NOW, notes: "照做", thresholds: { importance: "0.00" } });
+    // 口徑是結束當時 labels.basis.items 的快照；沒有含稅換算時 preprocessing 為 null。
     expect(meeting.source_fixed).toEqual({ dataset_id: "golden-v1", dataset_hash: review.dataset_hash, filter_hash: review.filter_hash, metric_version: "contribution-v1", data_as_of: "2026-08-03",
-      periods: { previous: { start: "2026-08-01", end: "2026-08-01" }, current: { start: "2026-08-02", end: "2026-08-02" }, comparison_mode: "same_days" }, channels: ["DTC", "MARKETPLACE"] });
+      periods: { previous: { start: "2026-08-01", end: "2026-08-01" }, current: { start: "2026-08-02", end: "2026-08-02" }, comparison_mode: "same_days" }, channels: ["DTC", "MARKETPLACE"],
+      preprocessing: null, basis: [...labels.basis.items] });
+    // 沒有傳 history：沒有上次會議。
+    expect(meeting.follow_up).toEqual({ last_meeting_id: null, last_name: null, last_date: null, kind: "none", note: labels.meetingRecord.noLastMeeting, kpis: [], last_priorities: [], last_decisions: [], actions: [] });
     // 淨營收 2,250.00 → 2,470.00：差額 +220.00；扣廣告後貢獻 570.00 → 255.00：差額 −315.00（expected.json 的 bridge.sum）。
     expect(meeting.agenda.kpis).toEqual([
       { metric: "net_revenue", previous: golden.previous.net_revenue, current: golden.current.net_revenue, change: "220.00" },
@@ -69,6 +84,8 @@ describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed s
     expect(meeting.agenda.priorities.map(row => [row.rule, row.impact, row.scope])).toEqual([["REV_UP_CM_DOWN", "-315.00", labels.sections.total], ["DISCOUNT_BURDEN_UP", "-250.00", labels.sections.total], ["MARKETING_BURDEN_UP", "-150.00", labels.sections.total]]);
     expect(meeting.agenda.priorities.map(row => [row.headline, row.next_step])).toEqual(summary.priorities.map(row => [row.title, row.recommendation]));
     expect(meeting.agenda.priorities[0].next_step).toBe(labels.rules.REV_UP_CM_DOWN.nextStep);
+    // 金額部分與還原核對共用 meetingAgendaFromSnapshot。
+    expect(meetingAgendaFromSnapshot(snapshot, { importanceThreshold: review.importance_threshold })).toEqual({ kpis: meeting.agenda.kpis, priorities: meeting.agenda.priorities, channels: meeting.agenda.channels });
     // 方案：DTC 基準 270.00，試算後 284.00（golden），差 284 − 270 = 14.00。
     expect(meeting.agenda.scenarios).toHaveLength(1);
     expect(meeting.agenda.scenarios[0]).toMatchObject({ channel: "DTC", plan_id: "p", revision: 1, name: "履約", baseline: golden.current_channels.DTC.contribution_after_marketing, contribution: golden.scenario_dtc_fulfillment_reduction.expected_contribution, delta: "14.00" });
@@ -86,6 +103,52 @@ describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed s
     expect(meeting.agenda.priorities.map(row => row.rule)).toEqual(["REV_UP_CM_DOWN", "DISCOUNT_BURDEN_UP"]);
     expect(meeting.decisions).toEqual([{ state: "draft", notes: "", confirmed_revision: null }]);
     expect(meeting.created_at).toBe("2026-10-03T01:00:00Z");
+  });
+  it("defaults created_at to the review's creation time, falling back to now when it is missing or later than now", async () => {
+    const state = await setup("rev-c");
+    const base = { snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, date: "2026-10-03", now: NOW };
+    expect(state.review.created_at).toBe(CREATED);
+    expect(finalizeMeeting({ ...base, review: state.review }).created_at).toBe(CREATED);
+    const { created_at: _created, ...legacy } = state.review;
+    void _created;
+    expect(finalizeMeeting({ ...base, review: legacy }).created_at).toBe(NOW);
+    expect(finalizeMeeting({ ...base, review: { ...state.review, created_at: "2026-10-03T07:00:00.000Z" } }).created_at).toBe(NOW);
+  });
+  it("records the tax conversion sentence and the basis items at finalize time", async () => {
+    const state = await setup("rev-p");
+    const conversion: TaxConversion = { basis: "inclusive", rate: "0.05", fields: ["gross_sales", "discounts"], rows_converted: 12 };
+    const meeting = finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, conversion, date: "2026-10-03", now: NOW });
+    expect(meeting.source_fixed.preprocessing).toBe(conversionSentence(conversion));
+    expect(meeting.source_fixed.basis).toEqual([...labels.basis.items]);
+    expect(Object.isFrozen(meeting.source_fixed.basis)).toBe(true);
+    const text = exportMeetingMarkdown(meeting);
+    // 「## 口徑」在固定範圍之後、議程之前：口徑逐列，再加換算一句。
+    expect(text).toContain([labels.meetingRecord.mdBasis, "", ...labels.basis.items.map(item => `- ${item}`), `- ${conversionSentence(conversion)}`, ""].join("\n"));
+    expect(text.indexOf(labels.meetingRecord.mdScope)).toBeLessThan(text.indexOf(labels.meetingRecord.mdBasis));
+    expect(text.indexOf(labels.meetingRecord.mdBasis)).toBeLessThan(text.indexOf(`## ${labels.sections.meetingAgenda}`));
+    expect(exportMeetingMarkdown(finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, date: "2026-10-03", now: NOW }))).not.toContain(conversionSentence(conversion)!);
+  });
+  it("freezes only scenarios that are still the current version (a superseded plan is dropped with its reference)", async () => {
+    const state = await setup("rev-s", { name: "方案改版" });
+    expect(state.review.selected_scenarios).toHaveLength(1);
+    // 方案 p 重新計算（物流費 −20%）：會議選的第 1 版被第 2 版取代。
+    const context = state.scenarios.contexts[0], draft = scenarioContextDecision(context);
+    draft.scenarios = saveScenario(context.session, draft.scenarios, { id: "p", name: "履約加碼", inputs: { ...inputs, fulfillment_change_pct: "-20" } });
+    const scenarios = updateScenarioContext(state.scenarios, context.id, draft);
+    const meeting = finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios, actions: state.actions, date: "2026-10-03", now: NOW });
+    expect(meeting.agenda.scenarios).toEqual([]);
+    expect(meeting.selected_scenarios).toEqual([]);
+    expect(exportMeetingMarkdown(meeting)).toContain(labels.meetingRecord.noScenarios);
+    // 已採用的決議：先由 refreshReviewScenarioReferences 退回草稿（與「結束會議」流程相同），結束後同樣不帶已取代的方案。
+    const adopted = updateReviewSession(state.review, { decision_state: "adopted" });
+    expect(() => finalizeMeeting({ review: adopted, snapshot: state.snapshot, scenarios, actions: state.actions, date: "2026-10-03", now: NOW })).toThrow("REVIEW_ADOPTED_STALE_SCENARIO");
+    const reverted = refreshReviewScenarioReferences(adopted, scenarios);
+    expect(reverted.decision_state).toBe("draft");
+    const fromReverted = finalizeMeeting({ review: reverted, snapshot: state.snapshot, scenarios, actions: state.actions, date: "2026-10-03", now: NOW });
+    expect(fromReverted.agenda.scenarios).toEqual([]);
+    expect(fromReverted.selected_scenarios).toEqual([]);
+    // 對照：方案仍是目前版本時照常凍結。
+    expect(finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, date: "2026-10-03", now: NOW }).agenda.scenarios.map(row => [row.plan_id, row.revision])).toEqual([["p", 1]]);
   });
   it("is deeply frozen: every write throws TypeError and the review is left untouched", async () => {
     const { meeting, review } = await finalized();
@@ -115,6 +178,8 @@ describe("R6-1 validateMeeting", () => {
     const { meeting } = await finalized();
     expect(() => validateMeeting(meeting)).not.toThrow();
     expect(() => validateMeeting(JSON.parse(JSON.stringify(meeting)))).not.toThrow();
+    // 下面竄改案例的基準：一份內部一致的同範圍 follow_up 本身合法。
+    expect(() => validateMeeting({ ...mutable(meeting), follow_up: comparableFollowUp(meeting) })).not.toThrow();
   });
   it.each<[string, (meeting: Meeting) => unknown]>([
     ["null", () => null],
@@ -144,6 +209,21 @@ describe("R6-1 validateMeeting", () => {
     ["an invalid status date", meeting => { const value = mutable(meeting); value.agenda.pinned_actions[0].status_updated_at = "2026-02-30"; return value; }],
     ["a malformed threshold", meeting => ({ ...mutable(meeting), thresholds: { importance: "1e3" } })],
     ["overlapping periods", meeting => { const value = mutable(meeting); value.source_fixed.periods.previous = { start: "2026-08-01", end: "2026-08-02" }; return value; }],
+    ["no basis items", meeting => { const value = mutable(meeting); value.source_fixed.basis = []; return value; }],
+    ["a blank basis item", meeting => { const value = mutable(meeting); value.source_fixed.basis[0] = "  "; return value; }],
+    ["a blank preprocessing sentence", meeting => { const value = mutable(meeting); value.source_fixed.preprocessing = " "; return value; }],
+    ["a missing follow-up", meeting => { const { follow_up: _follow, ...value } = mutable(meeting); void _follow; return value; }],
+    ["an unknown follow-up key", meeting => { const value = mutable(meeting); (value.follow_up as unknown as Record<string, unknown>).extra = 1; return value; }],
+    ["a 'none' follow-up that names a last meeting", meeting => { const value = mutable(meeting); value.follow_up.last_name = "上次"; return value; }],
+    ["a 'none' follow-up with action rows", meeting => { const value = mutable(meeting); value.follow_up.actions = [{ action_id: "a1", problem: "", last_status: "in_progress", current_status: null, status_updated_at: null }]; return value; }],
+    ["a follow-up that points at the meeting itself", meeting => ({ ...mutable(meeting), follow_up: { ...comparableFollowUp(meeting), last_meeting_id: meeting.id } })],
+    ["a follow-up without the last decisions", meeting => ({ ...mutable(meeting), follow_up: { ...comparableFollowUp(meeting), last_decisions: [] } })],
+    ["a follow-up with an impossible last date", meeting => ({ ...mutable(meeting), follow_up: { ...comparableFollowUp(meeting), last_date: "2026-02-30" } })],
+    ["a follow-up KPI whose current is not this meeting's", meeting => { const follow = comparableFollowUp(meeting); follow.kpis[0] = { ...follow.kpis[0], current: "1.00", change: "-2469.00" }; return { ...mutable(meeting), follow_up: follow }; }],
+    ["a follow-up KPI change that is not current − last", meeting => { const follow = comparableFollowUp(meeting); follow.kpis[1] = { ...follow.kpis[1], change: "1.00" }; return { ...mutable(meeting), follow_up: follow }; }],
+    ["a different-dataset follow-up with KPI rows", meeting => ({ ...mutable(meeting), follow_up: { ...comparableFollowUp(meeting), kind: "different_dataset" } })],
+    ["a different-dataset follow-up with last priorities", meeting => ({ ...mutable(meeting), follow_up: { ...comparableFollowUp(meeting), kind: "different_dataset", kpis: [] } })],
+    ["a follow-up with an unknown comparison kind", meeting => ({ ...mutable(meeting), follow_up: { ...comparableFollowUp(meeting), kind: "other" } })],
   ])("rejects %s with INVALID_MEETING", async (_label, mutate) => {
     const { meeting } = await finalized();
     expect(() => validateMeeting(mutate(meeting))).toThrow("INVALID_MEETING");
@@ -177,6 +257,74 @@ describe("R6-1 meeting history", () => {
     expect(() => appendMeeting(full.slice(0, -1), full.at(-1)!)).not.toThrow();
     expect(() => appendMeeting(full, withId(meeting, "one-more"))).toThrow("MEETING_HISTORY_FULL");
     expect(() => appendMeeting([], { ...mutable(meeting), name: "" })).toThrow("INVALID_MEETING");
+  });
+  it("removeMeeting returns a new history without the meeting and rejects an unknown id", async () => {
+    const { meeting } = await finalized();
+    const later = withId(meeting, "later", "2026-10-10T06:00:00Z");
+    const history = Object.freeze([meeting, later]);
+    expect(removeMeeting(history, meeting.id).map(row => row.id)).toEqual(["later"]);
+    expect(history.map(row => row.id)).toEqual([meeting.id, "later"]);
+    expect(removeMeeting(history, "later")[0]).toBe(meeting);
+    expect(removeMeeting([meeting], meeting.id)).toEqual([]);
+    expect(() => removeMeeting(history, "missing")).toThrow("UNKNOWN_MEETING");
+    expect(() => removeMeeting([], meeting.id)).toThrow("UNKNOWN_MEETING");
+  });
+  it("finalize with a full history throws MEETING_HISTORY_FULL until an old meeting is removed", async () => {
+    const state = await setup("rev-full");
+    const { meeting } = await finalized();
+    const full = Array.from({ length: MAX_MEETING_HISTORY }, (_, index) => withId(meeting, `m${index}`, `2026-09-${String(1 + index % 28).padStart(2, "0")}T00:00:00.000Z`));
+    const input = { review: state.review, snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, date: "2026-10-03", now: NOW };
+    expect(() => finalizeMeeting({ ...input, history: full })).toThrow("MEETING_HISTORY_FULL");
+    const freed = removeMeeting(full, "m0");
+    const next = finalizeMeeting({ ...input, history: freed });
+    expect(appendMeeting(freed, next)).toHaveLength(MAX_MEETING_HISTORY);
+    // 同一版會議已在歷史裡：與 appendMeeting 相同的 DUPLICATE_MEETING。
+    expect(() => finalizeMeeting({ ...input, history: [next] })).toThrow("DUPLICATE_MEETING");
+  });
+});
+
+describe("R6-1 follow_up is frozen at finalize (④ and the comparison survive a restore)", () => {
+  it("the second of two meetings on the same scope freezes same_scope with 0.00 KPI differences", async () => {
+    const first = await finalized("rev-1");
+    const second = await finalized("rev-2", "2026-10-10T06:00:00.000Z", { name: "下週例會" }, appendMeeting([], first.meeting));
+    const follow = second.meeting.follow_up;
+    expect(follow.kind).toBe("same_scope");
+    expect(follow).toMatchObject({ last_meeting_id: first.meeting.id, last_name: "十月例會", last_date: "2026-10-03", note: labels.meetingRecord.sameScope });
+    // 同一份資料同一期間：本期對本期 2,470.00 − 2,470.00、255.00 − 255.00，差額都是 0.00。
+    expect(follow.kpis).toEqual([
+      { metric: "net_revenue", last: "2470.00", current: "2470.00", change: "0.00" },
+      { metric: "contribution_after_marketing", last: "255.00", current: "255.00", change: "0.00" },
+    ]);
+    expect(follow.last_priorities).toEqual(first.meeting.agenda.priorities);
+    expect(follow.last_decisions).toEqual(first.meeting.decisions);
+    expect(follow.actions).toEqual([{ action_id: "a1", problem: first.meeting.agenda.pinned_actions[0].problem, last_status: "in_progress", current_status: "in_progress", status_updated_at: "2026-10-01" }]);
+    expect(Object.isFrozen(follow.kpis[0])).toBe(true);
+    // 與 compareWithLastMeeting 同源（finalize 不再要求呼叫端另算）。
+    const comparison = compareWithLastMeeting({ snapshot: second.snapshot, review: second.review, actions: second.actions }, first.meeting);
+    expect({ kind: follow.kind, note: follow.note, kpis: follow.kpis, last_priorities: follow.last_priorities, last_decisions: follow.last_decisions, actions: follow.actions })
+      .toEqual({ kind: comparison.kind, note: comparison.note, kpis: comparison.kpis, last_priorities: comparison.priorities.last, last_decisions: comparison.decisions, actions: comparison.actions });
+    // 只有 JSON（例如還原備份後）也能輸出 ④ 與上次比較：不需要另傳比較結果。
+    const restored = JSON.parse(JSON.stringify(second.meeting)) as Meeting;
+    validateMeeting(restored);
+    const text = exportMeetingMarkdown(restored);
+    expect(text).toContain(fill(labels.meetingRecord.mdLastMeeting, { name: "十月例會", date: "2026-10-03" }));
+    expect(text).toContain(fill(labels.meetingRecord.mdFollowUpRow, { problem: first.meeting.agenda.pinned_actions[0].problem, last: labels.actions.statuses.in_progress, current: labels.actions.statuses.in_progress, updated: fill(labels.meetingRecord.statusUpdatedAt, { date: "2026-10-01" }) }));
+    expect(text).toContain(labels.meetingRecord.sameScope);
+    expect(text).toContain(`| ${labels.metrics.net_revenue.label} | 2470.00 | 2470.00 | 0.00 |`);
+    expect(text).toContain(`${labels.meetingRecord.lastPriorities}：`);
+    expect(text).toContain(`- comparison：same_scope；last_meeting_id：${first.meeting.id}`);
+    expect(text).not.toContain(labels.meetingRecord.noLastMeeting);
+  });
+  it("uses the latest meeting in history and freezes a different-dataset follow-up without KPI rows", async () => {
+    const { meeting: golden, actions } = await finalized();
+    const demo = await source("demo");
+    const review = createReviewSession(demo, "d", "demo-review", "2026-10-10T01:00:00.000Z");
+    const older = withId(golden, "older", "2026-09-01T00:00:00.000Z");
+    const current = finalizeMeeting({ review, snapshot: await rebuildReviewSnapshot(review), scenarios: emptyScenarioWorkspace("d"), actions, date: "2026-10-10", now: "2026-10-10T06:00:00.000Z", history: [golden, older] });
+    expect(current.follow_up).toEqual({
+      last_meeting_id: golden.id, last_name: golden.name, last_date: golden.date, kind: "different_dataset", note: labels.meeting.noComparable, kpis: [], last_priorities: [], last_decisions: golden.decisions,
+      actions: [{ action_id: "a1", problem: golden.agenda.pinned_actions[0].problem, last_status: "in_progress", current_status: "in_progress", status_updated_at: "2026-10-01" }],
+    });
   });
 });
 
@@ -235,6 +383,26 @@ describe("R6-1 compareWithLastMeeting (05 §10)", () => {
     expect(result.kind).toBe("different_periods");
     expect(result.note).toBe(fill(labels.meetingRecord.differentPeriods, { last: "2025/12/2–2025/12/2", current: "2026/8/2–2026/8/2" }));
   });
+  it("same current period: the note names the two previous periods instead of two identical current periods", async () => {
+    const { meeting, snapshot, review, actions } = await finalized();
+    const withPeriods = (periods: Meeting["source_fixed"]["periods"]) => freezeMeeting({ ...mutable(meeting), source_fixed: { ...mutable(meeting).source_fixed, periods } });
+    const current = { start: "2026-08-02", end: "2026-08-02" };
+    // 上次：上期 7/31、本期 8/2；本次：上期 8/1、本期 8/2（本期相同，只有上期不同）。
+    const previousOnly = compareWithLastMeeting({ snapshot, review, actions }, withPeriods({ previous: { start: "2026-07-31", end: "2026-07-31" }, current, comparison_mode: "same_days" }));
+    expect(previousOnly.kind).toBe("different_periods");
+    expect(previousOnly.note).toBe(fill(labels.meetingRecord.differentPreviousPeriods, { current: "8/2–8/2", lastPrevious: "7/31–7/31", currentPrevious: "8/1–8/1" }));
+    expect(previousOnly.note).not.toBe(fill(labels.meetingRecord.differentPeriods, { last: "8/2–8/2", current: "8/2–8/2" }));
+    // 兩期都相同、只有比較方式不同。
+    const modeOnly = compareWithLastMeeting({ snapshot, review, actions }, withPeriods({ previous: { start: "2026-08-01", end: "2026-08-01" }, current, comparison_mode: "calendar_months" }));
+    expect(modeOnly.kind).toBe("different_periods");
+    expect(modeOnly.note).toBe(fill(labels.meetingRecord.differentComparisonMode, { last: labels.periods.calendarMonths, current: labels.periods.sameDays }));
+    // 上期與比較方式都不同：兩句以分隔符號接起來。
+    const both = compareWithLastMeeting({ snapshot, review, actions }, withPeriods({ previous: { start: "2026-07-31", end: "2026-07-31" }, current, comparison_mode: "calendar_months" }));
+    expect(both.note).toBe([fill(labels.meetingRecord.differentPreviousPeriods, { current: "8/2–8/2", lastPrevious: "7/31–7/31", currentPrevious: "8/1–8/1" }), fill(labels.meetingRecord.differentComparisonMode, { last: labels.periods.calendarMonths, current: labels.periods.sameDays })].join(labels.meetingRecord.noteSeparator));
+    // 本期不同且比較方式不同：本期的句子＋比較方式。
+    const currentAndMode = compareWithLastMeeting({ snapshot, review, actions }, withPeriods({ previous: { start: "2026-07-30", end: "2026-07-30" }, current: { start: "2026-07-31", end: "2026-07-31" }, comparison_mode: "calendar_months" }));
+    expect(currentAndMode.note).toBe([fill(labels.meetingRecord.differentPeriods, { last: "7/31–7/31", current: "8/2–8/2" }), fill(labels.meetingRecord.differentComparisonMode, { last: labels.periods.calendarMonths, current: labels.periods.sameDays })].join(labels.meetingRecord.noteSeparator));
+  });
   it("different_dataset: another dataset only lists the last decisions and action statuses", async () => {
     const { meeting, actions } = await finalized();
     const demo = await source("demo");
@@ -259,9 +427,18 @@ describe("R6-1 compareWithLastMeeting (05 §10)", () => {
 describe("R6-1 exportMeetingMarkdown", () => {
   it("writes the six agenda sections, decisions, comparison and technical details", async () => {
     const first = await finalized("rev-1");
-    const second = await finalized("rev-2", "2026-10-10T06:00:00Z", { name: "下週例會" });
+    const second = await finalized("rev-2", "2026-10-10T06:00:00Z", { name: "下週例會" }, [first.meeting]);
     const comparison = compareWithLastMeeting({ snapshot: second.snapshot, review: second.review, actions: second.actions }, first.meeting);
     const text = exportMeetingMarkdown(second.meeting, comparison);
+    // 傳不傳舊的比較參數，主文都一樣（都讀凍結的 follow_up）；參數只在技術細節補上上次的 dataset_hash。
+    expect(exportMeetingMarkdown(second.meeting).split(`## ${labels.sections.technicalDetails}`)[0]).toBe(text.split(`## ${labels.sections.technicalDetails}`)[0]);
+    expect(text).toContain(`；last_dataset_hash：${first.meeting.source_fixed.dataset_hash}`);
+    expect(exportMeetingMarkdown(second.meeting)).not.toContain("last_dataset_hash");
+    // 結束時間：主文用臺北時間（06:00Z → 14:00），ISO 原值只在技術細節。
+    const [main, technical] = text.split(`## ${labels.sections.technicalDetails}`);
+    expect(main).toContain(fill(labels.meetingRecord.mdMeta, { date: labels.meeting.date, value: "2026-10-03", decision: labels.meeting.decision, state: fill(labels.meetingRecord.decisionUnconfirmed, { decision: labels.meeting.decisions.draft }), finalizedAt: "2026-10-10 14:00" }));
+    expect(main).not.toContain("2026-10-10T06:00:00Z");
+    expect(technical).toContain("- finalized_at：2026-10-10T06:00:00Z");
     expect(text.startsWith(fill(labels.meetingRecord.mdTitle, { brand: labels.brand.name, name: "下週例會" }))).toBe(true);
     for (const heading of Object.values(labels.meetingRecord.agenda)) expect(text).toContain(`### ${heading}`);
     for (const heading of [labels.meetingRecord.mdScope, `## ${labels.sections.meetingAgenda}`, `## ${labels.sections.meetingDecision}`, `## ${labels.sections.meetingCompare}`, `## ${labels.sections.technicalDetails}`]) expect(text).toContain(heading);
@@ -297,8 +474,10 @@ describe("R6-1 exportMeetingMarkdown", () => {
     const { meeting, actions } = await finalized();
     const demo = await source("demo");
     const review = createReviewSession(demo, "d", "demo-review");
-    const current = finalizeMeeting({ review, snapshot: await rebuildReviewSnapshot(review), scenarios: emptyScenarioWorkspace("d"), actions: emptyActionWorkspace(), date: "2026-10-10", now: "2026-10-10T06:00:00Z" });
-    const text = exportMeetingMarkdown(current, compareWithLastMeeting({ snapshot: demo.snapshot, review, actions }, meeting));
+    // 本次會議（示範資料）以 history 帶入上次（golden）會議；待辦狀態讀目前的待辦工作區。
+    const current = finalizeMeeting({ review, snapshot: await rebuildReviewSnapshot(review), scenarios: emptyScenarioWorkspace("d"), actions, date: "2026-10-10", now: "2026-10-10T06:00:00Z", history: [meeting] });
+    expect(current.agenda.pinned_actions).toEqual([]);
+    const text = exportMeetingMarkdown(current);
     expect(text).toContain(labels.meeting.noComparable);
     expect(text).not.toContain(`| ${labels.meetingRecord.compareColumns.metric} | ${labels.meetingRecord.compareColumns.last} |`);
     expect(text).not.toContain(`${labels.meetingRecord.lastPriorities}：`);
