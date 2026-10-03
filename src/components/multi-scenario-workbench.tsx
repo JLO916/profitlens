@@ -24,20 +24,24 @@ export interface MultiScenarioWorkbenchProps {
   onEvidence: (selection: EvidenceSelection) => void;
   onSelectForReview?: (reference: ScenarioSelectionRef) => void;
   onExport?: (format: 'md' | 'csv' | 'json') => void;
+  /** 回報本頁正在編輯的 scenario context id（尚未寫入 state 時是預計的 id）；決策匯出的「目前」區段以它為準。 */
+  onContextChange?: (contextId: string | null) => void;
 }
 /**
  * R5-3 進頁即表單：本頁自己選一個通路（不改全站篩選），預設＝全站範圍只有一個通路時的那個通路，否則第一個通路。
  * 單通路快照：全站範圍剛好就是該通路時直接沿用，否則另建；scenario context 與「方案 1」在第一次編輯或計算時才寫入 state。
  */
-export function MultiScenarioWorkbench({ source, state, setState, onEvidence, onSelectForReview, onExport }: MultiScenarioWorkbenchProps) {
+export function MultiScenarioWorkbench({ source, state, setState, onEvidence, onSelectForReview, onExport, onContextChange }: MultiScenarioWorkbenchProps) {
   const [built, setBuilt] = useState<PreparedChannel | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const [choice, setChoice] = useState<{ scope: string; channel: string } | null>(null);
   const alias = demoAlias(source.dataset.manifest.dataset_id);
   const channels = source.dataset.manifest.channels;
   const scope = source.snapshot.report.scope;
-  // 全站通路範圍改變時，本頁回到新的預設通路。
+  // 全站通路範圍改變時，本頁回到新的預設通路：範圍一變就丟掉本頁的選擇（A→B→A 不會讓 A 時期的選擇復活）。
   const scopeKey = decisionSignature(scope.channels);
+  const [choiceScope, setChoiceScope] = useState(scopeKey);
+  if (choiceScope !== scopeKey) { setChoiceScope(scopeKey); setChoice(null); }
   const fallback = scope.channels.length === 1 && channels.includes(scope.channels[0]) ? scope.channels[0] : channels[0] ?? null;
   const channel = choice && choice.scope === scopeKey && channels.includes(choice.channel) ? choice.channel : fallback;
   const epoch = state.active_epoch;
@@ -56,6 +60,11 @@ export function MultiScenarioWorkbench({ source, state, setState, onEvidence, on
     return () => { cancelled = true; };
   }, [source, channel, direct, epoch, key]);
   const prepared = directPrepared ?? (built?.key === key ? built : null);
+  const preparedContextId = prepared?.contextId ?? null;
+  useEffect(() => {
+    onContextChange?.(preparedContextId);
+    return () => onContextChange?.(null);
+  }, [onContextChange, preparedContextId]);
   const failure = !prepared && failedKey === key;
   const context = prepared ? state.contexts.find(row => row.id === prepared.contextId) : undefined;
   const draftState: DecisionWorkspaceState | null = prepared && !context ? { captured: null, scenarios: [], actions: [], source_input: prepared.source.input, source_mappings: prepared.source.mappings } : null;

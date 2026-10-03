@@ -213,7 +213,9 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
   push("rounding", "rounding_policy", text(document.rounding));
   document.limitations.forEach((value, index) => push("limitation", String(index + 1), text(value)));
   for (const plan of document.scenarios) {
-    const planMeta: CsvRecord = { item_id: text(plan.id), item_name: text(plan.name), status: text(plan.status), ...(contextMetadata ? { plan_revision: numeric(String(contextMetadata.plan_revisions[plan.id])) } : {}) };
+    // 草稿（result 為 null）沒有自己的版本號，plan_revision 留空；不沿用上一個已計算版本。
+    const revision = plan.result !== null ? contextMetadata?.plan_revisions[plan.id] : undefined;
+    const planMeta: CsvRecord = { item_id: text(plan.id), item_name: text(plan.name), status: text(plan.status), ...(revision !== undefined ? { plan_revision: numeric(String(revision)) } : {}) };
     // Inputs are user text, even when they happen to look numeric.
     for (const [key, value] of Object.entries(plan.inputs)) push("scenario_input", key, text(String(value)), planMeta);
     const result = plan.result;
@@ -226,14 +228,16 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
       result.assumptions.forEach((value, index) => push("scenario_assumption", String(index + 1), text(value), planMeta));
       for (const [key, value] of Object.entries(result.formulas)) push("scenario_formula", key, text(value), planMeta);
     }
-    // R5-4：只在有填敏感度時輸出；輸入是使用者原字串，結果是該組銷量下的試算後貢獻，reason_codes 第一個是狀態。
+    // R5-4：只在有填敏感度時輸出；輸入是使用者原字串，結果是該組銷量下的試算後貢獻。
+    // 結果列的 status 欄放敏感度狀態（draft／stale／unfilled／valid…），reason_codes 只放大寫原因碼。
     if (plan.sensitivity) {
       const sensitivity = plan.sensitivity;
-      const codes = text([sensitivityStatus(sensitivity), ...new Set((sensitivity.analysis?.reasons ?? []).map(reason => reason.code))]);
+      const status = sensitivityStatus(sensitivity);
+      const codes = text(status === "valid" ? [] : sensitivity.analysis === null ? ["UNCOMPUTED_DRAFT"] : [...new Set(sensitivity.analysis.reasons.map(reason => reason.code))]);
       SENSITIVITY_FIELDS.forEach((field, index) => push("scenario_sensitivity_input", field, text(sensitivity.volumes[index]), planMeta));
       SENSITIVITY_FIELDS.forEach((field, index) => {
         const row = sensitivity.analysis?.rows[index];
-        push("scenario_sensitivity_result", field, row ? numeric(row.contribution) : empty, { ...planMeta, reason_codes: codes });
+        push("scenario_sensitivity_result", field, row ? numeric(row.contribution) : empty, { ...planMeta, status: text(status), reason_codes: codes });
       });
     }
   }

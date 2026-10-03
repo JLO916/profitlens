@@ -87,16 +87,18 @@ describe('R5-4 sensitivity in decision exports', () => {
   // 方案本身的結果不受敏感度影響。
   expect(json.scenarios[0].result.contribution).toBe('284.00');
  });
- it('CSV adds input and result rows only for plans with sensitivity; reason_codes lead with the status', async () => {
+ it('CSV adds input and result rows only for plans with sensitivity; status column carries the state, reason_codes only codes', async () => {
   const { session, plans } = await dtc();
   const rows = records(exportDecisionCsv(session, plans, []));
   const inputsOf = (id: string) => rows.filter(row => row.row_type === 'scenario_sensitivity_input' && row.item_id === id).map(row => [row.field, row.value]);
-  const resultsOf = (id: string) => rows.filter(row => row.row_type === 'scenario_sensitivity_result' && row.item_id === id).map(row => [row.field, row.value, JSON.parse(row.reason_codes)]);
+  const resultsOf = (id: string) => rows.filter(row => row.row_type === 'scenario_sensitivity_result' && row.item_id === id).map(row => [row.field, row.value, row.status, JSON.parse(row.reason_codes)]);
   // 文字格以 ' 開頭防公式注入（-10 → '-10），與既有 scenario_input 一致。
   expect(inputsOf('p')).toEqual([['volume_a', "'-10"], ['volume_b', '0'], ['volume_c', '10']]);
-  expect(resultsOf('p')).toEqual([['volume_a', '228.60', ['valid']], ['volume_b', '284.00', ['valid']], ['volume_c', '339.40', ['valid']]]);
+  expect(resultsOf('p')).toEqual([['volume_a', '228.60', 'valid', []], ['volume_b', '284.00', 'valid', []], ['volume_c', '339.40', 'valid', []]]);
   expect(inputsOf('q')).toEqual([['volume_a', '5'], ['volume_b', ''], ['volume_c', '']]);
-  expect(resultsOf('q')).toEqual([['volume_a', '', ['draft']], ['volume_b', '', ['draft']], ['volume_c', '', ['draft']]]);
+  expect(resultsOf('q')).toEqual([['volume_a', '', 'draft', ['UNCOMPUTED_DRAFT']], ['volume_b', '', 'draft', ['UNCOMPUTED_DRAFT']], ['volume_c', '', 'draft', ['UNCOMPUTED_DRAFT']]]);
+  // reason_codes 只放大寫原因碼，不再混入狀態字。
+  for (const row of rows.filter(row => row.row_type === 'scenario_sensitivity_result')) for (const code of JSON.parse(row.reason_codes) as string[]) expect(code).toMatch(/^[A-Z_]+$/);
   expect(inputsOf('r')).toEqual([]); expect(resultsOf('r')).toEqual([]);
   expect(rows.find(row => row.row_type === 'scenario_sensitivity_input')!.item_name).toBe('履約');
  });
@@ -123,14 +125,15 @@ describe('R5-4 sensitivity in decision exports', () => {
   const partial = saveScenario(session, [], { id: 'p', name: '履約', inputs: golden, sensitivity: { volumes: ['-10', '', '10'] } });
   const json = JSON.parse(exportDecisionJson(session, partial, []));
   expect(json.scenarios[0].sensitivity.analysis).toMatchObject({ status: 'valid', sensitivity_status: 'unfilled', rows: [], reasons: [{ code: 'SENSITIVITY_VOLUME_REQUIRED' }] });
-  const unfilled = ['', ['unfilled', 'SENSITIVITY_VOLUME_REQUIRED']];
-  expect(records(exportDecisionCsv(session, partial, [])).filter(row => row.row_type === 'scenario_sensitivity_result').map(row => [row.value, JSON.parse(row.reason_codes)])).toEqual([unfilled, unfilled, unfilled]);
+  const unfilled = ['', 'unfilled', ['SENSITIVITY_VOLUME_REQUIRED']];
+  expect(records(exportDecisionCsv(session, partial, [])).filter(row => row.row_type === 'scenario_sensitivity_result').map(row => [row.value, row.status, JSON.parse(row.reason_codes)])).toEqual([unfilled, unfilled, unfilled]);
   expect(exportDecisionMarkdown(session, partial, [])).toContain(labels.ui.scenarioSensitivity.reasons.SENSITIVITY_VOLUME_REQUIRED.replaceAll('.', '\\.'));
   const outside = saveScenario(session, [], { id: 'p', name: '履約', inputs: golden, sensitivity: { volumes: ['-10', '101', '10'] } });
   expect(JSON.parse(exportDecisionJson(session, outside, [])).scenarios[0].sensitivity.analysis).toMatchObject({ sensitivity_status: 'invalid', rows: [], reasons: [{ code: 'INPUT_OUT_OF_RANGE' }] });
   const stale = { ...session, stale: true };
   expect(JSON.parse(exportDecisionJson(stale, plans, [])).scenarios[0].sensitivity.analysis).toMatchObject({ status: 'stale', targets: [], rows: [], reasons: [{ code: 'STALE_SCENARIO' }] });
-  expect(records(exportDecisionCsv(stale, plans, [])).find(row => row.row_type === 'scenario_sensitivity_result' && row.item_id === 'p')!.reason_codes).toBe(JSON.stringify(['stale', 'STALE_SCENARIO']));
+  const staleRow = records(exportDecisionCsv(stale, plans, [])).find(row => row.row_type === 'scenario_sensitivity_result' && row.item_id === 'p')!;
+  expect([staleRow.status, staleRow.reason_codes]).toEqual(['stale', JSON.stringify(['STALE_SCENARIO'])]);
   expect(exportDecisionMarkdown(stale, plans, [])).toContain(labels.ui.scenarioSensitivity.reasons.STALE_SCENARIO);
   expect(() => exportDecisionJson(session, [{ ...plans[0], sensitivity: { volumes: ['1', '2'] } as never }], [])).toThrow('INVALID_SENSITIVITY_INPUT');
  });
@@ -150,5 +153,64 @@ describe('R5-4 sensitivity in decision exports', () => {
   expect(exportWorkspaceDecision('md', source, workspace, emptyActionWorkspace(), null)).toContain('339\\.40');
   const historical = JSON.parse(exportWorkspaceDecision('json', source, activateScenarioEpoch(workspace, 'b'), emptyActionWorkspace(), null));
   expect(historical.scenario_contexts[0].scenarios[0].sensitivity.analysis.status).toBe('stale');
+ });
+});
+
+// R5 修正：試算頁的通路獨立於全站篩選，決策匯出的「目前」區段跟著試算頁正在編輯的 context；草稿方案沒有自己的版本號。
+async function dtcWorkspace() {
+ const input = fixture(), dataset = validateDataset(input).dataset!, hash = await hashInput(input);
+ const dtcSource = { input, dataset, snapshot: await createSnapshot(dataset, { channels: ['DTC'] }, hash), revision: 1 };
+ let workspace = ensureScenarioContext(emptyScenarioWorkspace('a'), dtcSource);
+ const context = workspace.contexts[0], draft = scenarioContextDecision(context);
+ draft.scenarios = saveScenario(context.session, [], { id: 'p', name: '履約試算', inputs: golden });
+ workspace = updateScenarioContext(workspace, context.id, draft);
+ const allSource = { input, dataset, snapshot: await createSnapshot(dataset, {}, hash), revision: 1 };
+ return { workspace, contextId: context.id, allSource };
+}
+describe('R5 fix: workspace export follows the scenario page context', () => {
+ it('site scope = all channels: selectedContextId puts the DTC plan (284.00) in the main section of JSON, Markdown and CSV', async () => {
+  const { workspace, contextId, allSource } = await dtcWorkspace();
+  // 沒有指定時沿用既有邏輯：全站多通路 → 主段沒有方案（只在附錄）。
+  const fallback = JSON.parse(exportWorkspaceDecision('json', allSource, workspace, emptyActionWorkspace(), null));
+  expect(fallback.scenarios).toEqual([]);
+  const json = JSON.parse(exportWorkspaceDecision('json', allSource, workspace, emptyActionWorkspace(), null, null, contextId));
+  expect(json.scenarios).toHaveLength(1);
+  expect(json.scenarios[0]).toMatchObject({ id: 'p', name: '履約試算', status: 'valid' });
+  expect(json.scenarios[0].result.contribution).toBe('284.00');
+  expect(json.session.scope.channels).toEqual(['DTC']);
+  const markdown = exportWorkspaceDecision('md', allSource, workspace, emptyActionWorkspace(), null, null, contextId);
+  const main = markdown.slice(0, markdown.indexOf(labels.ui.workspaceDecisionExport.appendixHeading));
+  expect(main).toContain('### 履約試算');
+  expect(main).toContain('284\\.00');
+  const csv = records(exportWorkspaceDecision('csv', allSource, workspace, emptyActionWorkspace(), null, null, contextId));
+  const contributions = csv.filter(row => row.row_type === 'scenario_result' && row.field === 'contribution' && row.item_id === 'p');
+  // 主段已含這個 context，附錄不重複輸出。
+  expect(contributions.map(row => [row.value, row.context_id, row.plan_revision])).toEqual([['284.00', contextId, '1']]);
+ });
+ it('falls back to the site-scope rule when the id is unknown or the context is historical', async () => {
+  const { workspace, contextId, allSource } = await dtcWorkspace();
+  expect(JSON.parse(exportWorkspaceDecision('json', allSource, workspace, emptyActionWorkspace(), null, null, 'missing')).scenarios).toEqual([]);
+  const historical = activateScenarioEpoch(workspace, 'b');
+  expect(JSON.parse(exportWorkspaceDecision('json', allSource, historical, emptyActionWorkspace(), null, null, contextId)).scenarios).toEqual([]);
+ });
+ it('draft plans have no plan revision: JSON lists them in draft_plan_ids, CSV leaves plan_revision empty', async () => {
+  const { workspace: calculated, contextId, allSource } = await dtcWorkspace();
+  const context = calculated.contexts[0], decision = scenarioContextDecision(context);
+  // p 計算過（版本 1）後又被編輯成草稿；q 新計算（版本 1）。
+  decision.scenarios = [
+   { ...decision.scenarios[0], inputs: { ...golden, one_time_cost: '20' }, result: null },
+   ...saveScenario(context.session, [], { id: 'q', name: '一次性', inputs: { ...golden, one_time_cost: '20' } }),
+  ];
+  const workspace = updateScenarioContext(calculated, contextId, decision);
+  expect(workspace.contexts[0].plans.map(plan => [plan.id, plan.revision, plan.result?.contribution ?? null])).toEqual([['p', 1, null], ['q', 1, '264.00']]);
+  const json = JSON.parse(exportWorkspaceDecision('json', allSource, workspace, emptyActionWorkspace(), null, null, contextId));
+  expect(json.scenario_contexts[0].plan_revisions).toEqual({ q: 1 });
+  expect(json.scenario_contexts[0].draft_plan_ids).toEqual(['p']);
+  const markdown = exportWorkspaceDecision('md', allSource, workspace, emptyActionWorkspace(), null, null, contextId);
+  expect(markdown).toContain('"plan_revisions":{"q":1},"draft_plan_ids":["p"]');
+  for (const selected of [contextId, null]) {
+   const rows = records(exportWorkspaceDecision('csv', allSource, workspace, emptyActionWorkspace(), null, null, selected)).filter(row => row.row_type === 'scenario_input' && row.field === 'volume_change_pct');
+   expect(rows.map(row => [row.item_id, row.status, row.plan_revision]), String(selected)).toEqual([['p', 'draft', ''], ['q', 'valid', '1']]);
+  }
  });
 });

@@ -1,16 +1,71 @@
-import { createElement } from "react";
+import { createElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createSnapshot, hashInput } from "../src/application/workspace";
 import { saveScenario, type ScenarioPlan } from "../src/application/decision";
 import { SCENARIO_PRESET_IDS, absoluteContext, absoluteToRelative, rangeHint, relativeToAbsolute } from "../src/application/scenario-presets";
 import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, updateScenarioContext, type ScenarioSource, type ScenarioWorkspace } from "../src/application/scenario-workspace";
+import { DecisionWorkbench } from "../src/components/decision-workbench";
 import { MultiScenarioWorkbench } from "../src/components/multi-scenario-workbench";
 import type { ScenarioInputs } from "../src/domain/scenarios";
 import type { AnalysisFilters } from "../src/domain/types";
 import { validateDataset } from "../src/domain/validation";
 import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
+
+/*
+ * 互動測試用的最小 hooks 執行環境（沒有 DOM 套件）：hooks.active 時接管 useState／useMemo／useId／useEffect，
+ * 直接呼叫元件函式取得元素樹，再呼叫樹上的 onClick／onChange；其餘時間一律交給真正的 React（SSR 測試不受影響）。
+ * useEffect 在接管時不執行（只測同步的狀態轉換）；render 期間呼叫 setState 會像 React 一樣立刻重跑一次。
+ */
+const hooks = vi.hoisted(() => ({ active: false, states: [] as unknown[], cursor: 0, dirty: false }));
+vi.mock("react", async importOriginal => {
+  const actual = await importOriginal<typeof import("react")>();
+  return {
+    ...actual,
+    useState: (initial: unknown) => {
+      if (!hooks.active) return actual.useState(initial);
+      const index = hooks.cursor++;
+      if (!(index in hooks.states)) hooks.states[index] = typeof initial === "function" ? (initial as () => unknown)() : initial;
+      const set = (next: unknown) => {
+        const previous = hooks.states[index];
+        const value = typeof next === "function" ? (next as (value: unknown) => unknown)(previous) : next;
+        if (!Object.is(value, previous)) { hooks.states[index] = value; hooks.dirty = true; }
+      };
+      return [hooks.states[index], set];
+    },
+    useMemo: (factory: () => unknown, deps: readonly unknown[]) => hooks.active ? factory() : actual.useMemo(factory, deps),
+    useId: () => hooks.active ? ":test:" : actual.useId(),
+    useEffect: (effect: () => void, deps?: readonly unknown[]) => hooks.active ? undefined : actual.useEffect(effect, deps),
+  };
+});
+afterEach(() => { hooks.active = false; hooks.states = []; });
+type TreeElement = ReactElement<Record<string, unknown>>;
+/** 掛上元件：回傳 render(props)，同一個 hooks 狀態跨 render 保留。 */
+function mount<P>(component: (props: P) => ReactNode) {
+  hooks.active = true; hooks.states = []; hooks.cursor = 0;
+  return (props: P): ReactNode => {
+    let tree: ReactNode, rounds = 0;
+    do { hooks.dirty = false; hooks.cursor = 0; tree = component(props); } while (hooks.dirty && ++rounds < 10);
+    return tree;
+  };
+}
+function findAll(node: ReactNode, match: (element: TreeElement) => boolean, found: TreeElement[] = []): TreeElement[] {
+  if (Array.isArray(node)) for (const child of node) findAll(child, match, found);
+  else if (node !== null && typeof node === "object" && "props" in node) {
+    const element = node as TreeElement;
+    if (match(element)) found.push(element);
+    findAll(element.props.children as ReactNode, match, found);
+  }
+  return found;
+}
+function byTestId(node: ReactNode, testid: string): TreeElement {
+  const [element] = findAll(node, item => item.props["data-testid"] === testid);
+  expect(element, testid).toBeDefined();
+  return element;
+}
+const textOf = (node: ReactNode): string => Array.isArray(node) ? node.map(textOf).join("") : typeof node === "string" || typeof node === "number" ? String(node) : node !== null && typeof node === "object" && "props" in node ? textOf((node as TreeElement).props.children as ReactNode) : "";
+const call = (element: TreeElement, handler: "onClick" | "onChange", value?: string) => (element.props[handler] as (event?: unknown) => void)(value === undefined ? undefined : { target: { value } });
 
 // R5-3 試算頁 DOM 契約（SSR，不需任何點擊）：進頁即表單、範本選單、收合的固定假設、版本徽章／草稿、絕對值等值文字。
 const form = labels.scenarioForm;
@@ -102,17 +157,29 @@ describe("R5-3 scenario page opens straight onto the form", () => {
     expect(element(all, "scenario-channel", "select")).toMatch(/<option value="DTC" selected="">DTC<\/option>/);
     // 多通路範圍要先另建單通路基準（非同步），SSR 時顯示重算中；選通路只改本頁，不呼叫全站篩選。
     expect(all).toContain(`<p role="status">${msw.rebuildingBaseline}</p>`);
-  });
+  }, 30_000);
 
   it("template menu lists the six presets after the placeholder and always shows the starting-point note", async () => {
     const html = render(await source());
     const plan = card(html, 1);
     const select = element(plan, "scenario-preset", "select");
-    expect(select).toContain(`aria-label="${labels.buttons.applyTemplate}"`);
+    expect(select).toContain(`aria-label="${form.presetSelect}"`);
     const options = [...select.matchAll(/<option value="([^"]*)"[^>]*>([^<]*)<\/option>/g)].map(match => [match[1], match[2]]);
     expect(options).toEqual([["", labels.scenarioPresets.menuPlaceholder], ...SCENARIO_PRESET_IDS.map(id => [id, labels.scenarioPresets.items[id].name])]);
     expect(options).toHaveLength(7);
     expect(plan).toContain(labels.scenario.templateNote);
+    // 兩步：選單旁的「套用範本」按鈕，未選範本時停用；五格都空白時不顯示覆寫提醒。
+    expect(element(plan, "scenario-preset-apply", "button")).toMatch(new RegExp(`^<button type="button"[^>]*disabled=""[^>]*>${labels.buttons.applyTemplate}</button>$`));
+    expect(plan).not.toContain('data-testid="scenario-preset-overwrite"');
+    expect(plan).not.toContain('data-testid="scenario-preset-purpose"');
+  });
+
+  it("warns next to the apply button that a template overwrites assumptions once any of the five fields has a value", async () => {
+    const src = await source();
+    const build = contextBuilder(src);
+    build.calculate({ id: "p", name: "P", inputs: { ...accepted(), volume_change_pct: "", discount_change_pp: "", fulfillment_change_pct: "", ad_change_pct: "", one_time_cost: "5" } });
+    const plan = card(render(src, build.workspace), 1);
+    expect(text(element(plan, "scenario-preset-overwrite", "span"))).toBe(form.presetOverwrite);
   });
 
   it("fixed assumptions are a collapsed <details> with the must-read summary; the consent checkbox stays in the form", async () => {
@@ -234,5 +301,117 @@ describe("R5-3 other channels stay reachable below the form", () => {
     expect(others).toContain(fill(msw.selectPlanForMeeting, { selectForMeeting: labels.buttons.selectForMeeting, channel: "MARKETPLACE", plan: "M" }));
     // DTC 本身還沒有方案：表單仍是草稿方案 1，不受其他通路影響。
     expect(card(html, 1)).toContain(`value="${fill(dw.defaultPlanName, { n: 1 })}"`);
+  });
+});
+
+describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", () => {
+  /** golden DTC 已計算 284.00（版本 1）的方案，直接掛 DecisionWorkbench；setState 是 spy，方案本身不會被改。 */
+  async function calculatedPlan(inputs: ScenarioInputs = accepted({ fulfillment_change_pct: "-10" })) {
+    const src = await source();
+    const build = contextBuilder(src);
+    build.calculate({ id: "p", name: "P", inputs });
+    const context = build.context();
+    const state = scenarioContextDecision(context);
+    const setState = vi.fn();
+    const props = { dataset: src.dataset, snapshot: src.snapshot, revision: context.session.revision, filenames: context.session.filenames, input: context.source_input, mappings: context.source_mappings, state, setState, onEvidence: noop };
+    return { props, state, setState, render: mount(DecisionWorkbench) };
+  }
+  const input = (tree: ReactNode, label: string) => findAll(tree, item => item.type === "input" && item.props["aria-label"] === label)[0];
+  const mode = (tree: ReactNode, field: string, which: "relative" | "absolute") => findAll(byTestId(tree, `scenario-mode-${field}`), item => item.type === "button")[which === "relative" ? 0 : 1];
+  const pct = (value: string) => fill(labels.scenarioPresets.absolute.equivalentPct, { value });
+
+  it("switching to absolute prefills from the current relative value and changes neither inputs nor the result; editing writes back", async () => {
+    const { props, state, setState, render } = await calculatedPlan();
+    let tree = render(props);
+    expect(input(tree, labels.scenario.volume.label).props.value).toBe("0");
+    call(mode(tree, "volume_change_pct", "absolute"), "onClick");
+    tree = render(props);
+    // 切換只換輸入框：預填本期 4 件，相對值 0、結果 284.00、版本 1 都還在，沒有寫入方案。
+    expect(setState).not.toHaveBeenCalled();
+    expect(mode(tree, "volume_change_pct", "absolute").props["aria-pressed"]).toBe(true);
+    expect(input(tree, labels.scenario.volume.label).props.value).toBe("4");
+    expect(textOf(byTestId(tree, "scenario-equivalent-volume_change_pct"))).toBe(pct("0.0"));
+    expect(textOf(byTestId(tree, "scenario-contribution"))).toBe("284.00");
+    expect(textOf(byTestId(tree, "scenario-version"))).toBe(fill(form.version, { n: 1 }));
+    expect(findAll(tree, item => item.props["data-testid"] === "scenario-draft")).toHaveLength(0);
+    // 廣告也一樣：預填 270.00。
+    call(mode(tree, "ad_change_pct", "absolute"), "onClick");
+    tree = render(props);
+    expect(input(tree, labels.scenario.adSpend.label).props.value).toBe("270.00");
+    // 切回相對：保留目前的相對值，仍不寫入。
+    call(mode(tree, "volume_change_pct", "relative"), "onClick");
+    tree = render(props);
+    expect(setState).not.toHaveBeenCalled();
+    expect(input(tree, labels.scenario.volume.label).props.value).toBe("0");
+    expect(textOf(byTestId(tree, "scenario-contribution"))).toBe("284.00");
+    // 真的改了絕對值才寫回：目標 6 件 → 相對 50，結果清空（變草稿），其他假設不動。
+    call(mode(tree, "volume_change_pct", "absolute"), "onClick");
+    tree = render(props);
+    call(input(tree, labels.scenario.volume.label), "onChange", "6");
+    expect(setState).toHaveBeenCalledTimes(1);
+    const next = (setState.mock.calls[0][0] as (previous: typeof state) => typeof state)(state);
+    expect(next.scenarios[0].inputs).toEqual(accepted({ volume_change_pct: "50", fulfillment_change_pct: "-10" }));
+    expect(next.scenarios[0].result).toBeNull();
+    tree = render(props);
+    expect(textOf(byTestId(tree, "scenario-equivalent-volume_change_pct"))).toBe(pct("+50.0"));
+  });
+
+  it("a non-integer unit prefill keeps the exact decimal and explains it instead of showing an error", async () => {
+    // 本期 4 件 × 1.1 = 4.4 件。
+    const { props, setState, render } = await calculatedPlan(accepted({ volume_change_pct: "10" }));
+    let tree = render(props);
+    call(mode(tree, "volume_change_pct", "absolute"), "onClick");
+    tree = render(props);
+    expect(setState).not.toHaveBeenCalled();
+    expect(input(tree, labels.scenario.volume.label).props.value).toBe("4.4");
+    expect(textOf(byTestId(tree, "scenario-absolute-note-volume_change_pct"))).toBe(fill(labels.scenarioPresets.absolute.nonIntegerUnits, { units: fill(labels.assist.units.count, { value: "4.4" }) }));
+    expect(findAll(tree, item => item.props["data-testid"] === "scenario-absolute-error-volume_change_pct")).toHaveLength(0);
+    expect(textOf(byTestId(tree, "scenario-equivalent-volume_change_pct"))).toBe(pct("+10.0"));
+  });
+
+  it("choosing a template only previews its purpose; the apply button overwrites the five fields and resets the menu", async () => {
+    const { props, state, setState, render } = await calculatedPlan();
+    let tree = render(props);
+    expect(byTestId(tree, "scenario-preset-apply").props.disabled).toBe(true);
+    expect(textOf(byTestId(tree, "scenario-preset-overwrite"))).toBe(form.presetOverwrite);
+    call(byTestId(tree, "scenario-preset"), "onChange", "double11");
+    tree = render(props);
+    // 只選不套：方案不動，顯示該範本的用途，按鈕可按。
+    expect(setState).not.toHaveBeenCalled();
+    expect(byTestId(tree, "scenario-preset").props.value).toBe("double11");
+    expect(textOf(byTestId(tree, "scenario-preset-purpose"))).toBe(labels.scenarioPresets.items.double11.purpose);
+    expect(byTestId(tree, "scenario-preset-apply").props.disabled).toBe(false);
+    // 改選回提示列：按鈕再停用。
+    call(byTestId(tree, "scenario-preset"), "onChange", "");
+    tree = render(props);
+    expect(byTestId(tree, "scenario-preset-apply").props.disabled).toBe(true);
+    call(byTestId(tree, "scenario-preset"), "onChange", "double11");
+    tree = render(props);
+    call(byTestId(tree, "scenario-preset-apply"), "onClick");
+    expect(setState).toHaveBeenCalledTimes(1);
+    const next = (setState.mock.calls[0][0] as (previous: typeof state) => typeof state)(state);
+    expect(next.scenarios[0].inputs).toEqual(accepted({ volume_change_pct: "60", discount_change_pp: "5", fulfillment_change_pct: "0", ad_change_pct: "100", one_time_cost: "0" }));
+    expect(next.scenarios[0].result).toBeNull();
+    tree = render(props);
+    expect(byTestId(tree, "scenario-preset").props.value).toBe("");
+    expect(textOf(byTestId(tree, "scenario-preset-purpose"))).toBe(fill(form.presetApplied, { name: labels.scenarioPresets.items.double11.name, purpose: labels.scenarioPresets.items.double11.purpose }));
+  });
+
+  it("the page's own channel choice is dropped when the site scope changes (A→B→A does not revive it)", async () => {
+    const dtc = await source();
+    const marketplace = await source("golden", { channels: ["MARKETPLACE"] });
+    const base = { state: emptyScenarioWorkspace(), setState: vi.fn(), onEvidence: noop };
+    const render = mount(MultiScenarioWorkbench);
+    const channel = (tree: ReactNode) => byTestId(tree, "scenario-channel").props.value;
+    let tree = render({ ...base, source: dtc });
+    expect(channel(tree)).toBe("DTC");
+    call(byTestId(tree, "scenario-channel"), "onChange", "MARKETPLACE");
+    tree = render({ ...base, source: dtc });
+    expect(channel(tree)).toBe("MARKETPLACE");
+    tree = render({ ...base, source: marketplace });
+    expect(channel(tree)).toBe("MARKETPLACE");
+    tree = render({ ...base, source: dtc });
+    expect(channel(tree)).toBe("DTC");
+    expect(base.setState).not.toHaveBeenCalled();
   });
 });

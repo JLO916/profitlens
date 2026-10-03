@@ -11,7 +11,7 @@ import {
 import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from "@/application/decision-export";
 import { downloadText } from "@/application/download";
 import { formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "@/application/presentation";
-import { ABSOLUTE_FIELDS, SCENARIO_PRESETS, absoluteAvailability, absoluteContext, absoluteToRelative, applyPreset, rangeHint, relativeToAbsolute, type AbsoluteContext, type AbsoluteField, type ScenarioNumericField, type ScenarioPresetId } from "@/application/scenario-presets";
+import { ABSOLUTE_FIELDS, SCENARIO_PRESETS, absoluteAvailability, absoluteContext, absoluteToRelative, applyPreset, rangeHint, relativeEquivalent, relativeToAbsolute, relativeToAbsoluteValue, type AbsoluteContext, type AbsoluteField, type ScenarioNumericField, type ScenarioPresetId } from "@/application/scenario-presets";
 import type { VersionedScenarioPlan } from "@/application/scenario-workspace";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { channelsLabel, demoAlias } from "@/application/copy";
@@ -42,8 +42,12 @@ function absoluteHelp(field: AbsoluteField, ctx: AbsoluteContext): string {
   if (field === "discount_change_pp") return fill(form.discountAbsoluteHint, { rate: formatRate(ctx.discount_rate) });
   return fill(labels.scenario.adSpend.absoluteHint, { ad: formatMoney(ctx.ad_spend) });
 }
-/** 每個方案、每個欄位各自的絕對值文字；有這個鍵就代表該格在絕對值模式（本頁暫存，不寫入方案）。 */
-type AbsoluteDrafts = Record<string, Partial<Record<AbsoluteField, string>>>;
+/**
+ * 每個方案、每個欄位各自的絕對值輸入；有這個鍵就代表該格在絕對值模式（本頁暫存，不寫入方案）。
+ * edited=false：切到絕對值時由目前相對值反推的預填值，使用者還沒改，方案的相對值與結果都不動。
+ */
+interface AbsoluteDraft { text: string; edited: boolean }
+type AbsoluteDrafts = Record<string, Partial<Record<AbsoluteField, AbsoluteDraft>>>;
 
 
 export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEvidence, state, setState, input, mappings, onExport }: {
@@ -70,6 +74,8 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
   const [draftId, setDraftId] = useState(() => crypto.randomUUID());
   const [absolute, setAbsolute] = useState<AbsoluteDrafts>({});
   const [applied, setApplied] = useState<Record<string, ScenarioPresetId>>({});
+  // 範本兩步：先在選單選（只顯示用途），再按「套用範本」才覆寫五格；鍵盤上下鍵瀏覽選單不會改到假設。
+  const [picked, setPicked] = useState<Record<string, ScenarioPresetId>>({});
   const draft: ScenarioPlan = { id: draftId, name: fill(ui.defaultPlanName, { n: 1 }), inputs: blankScenarioInputs(), result: null };
   const persisted = scenarios.length > 0;
   const plans = persisted || stale ? scenarios : [draft];
@@ -95,26 +101,34 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
     if (stale) return;
     setScenarios(previous => previous.map(plan => plan.id === id ? { ...plan, sensitivity } : plan));
   }
+  function pickTemplate(plan: ScenarioPlan, value: string) {
+    const id = SCENARIO_PRESETS.find(item => item.id === value)?.id;
+    setPicked(previous => { const next = { ...previous }; if (id) next[plan.id] = id; else delete next[plan.id]; return next; });
+  }
   function applyTemplate(plan: ScenarioPlan, id: ScenarioPresetId) {
     setAbsolute(previous => { const next = { ...previous }; delete next[plan.id]; return next; });
+    setPicked(previous => { const next = { ...previous }; delete next[plan.id]; return next; });
     setApplied(previous => ({ ...previous, [plan.id]: id }));
     editScenario(plan.id, { inputs: applyPreset(plan.inputs, id) });
   }
-  /** 切到絕對值：輸入框改放絕對值（從空白開始），該格的相對值清空；切回相對：保留已換算的相對值。 */
+  /**
+   * 切到絕對值：只換輸入框的顯示，預填由目前相對值反推的數值；方案的相對值、結果與版本都不動。
+   * 切回相對：保留目前的相對值（若在絕對值模式改過，就是換算後的值）。
+   */
   function setMode(plan: ScenarioPlan, field: AbsoluteField, mode: "relative" | "absolute") {
     const own = absolute[plan.id] ?? {};
     if (mode === "absolute") {
       if (own[field] !== undefined || !absoluteAvailability(field, ctx).available) return;
-      setAbsolute(previous => ({ ...previous, [plan.id]: { ...previous[plan.id], [field]: "" } }));
-      if (plan.inputs[field] !== "") editScenario(plan.id, { inputs: { ...plan.inputs, [field]: "" } });
+      const text = relativeToAbsoluteValue(field, plan.inputs[field], ctx) ?? "";
+      setAbsolute(previous => ({ ...previous, [plan.id]: { ...previous[plan.id], [field]: { text, edited: false } } }));
       return;
     }
     if (own[field] === undefined) return;
     setAbsolute(previous => { const next = { ...previous[plan.id] }; delete next[field]; return { ...previous, [plan.id]: next }; });
   }
-  /** 絕對值即時換算成引擎要的相對值寫進方案；格式不合或不可用時寫空字串（引擎會要求補值）。 */
+  /** 使用者改了絕對值才換算成引擎要的相對值寫進方案；格式不合或不可用時寫空字串（引擎會要求補值）。 */
   function setAbsoluteText(plan: ScenarioPlan, field: AbsoluteField, text: string) {
-    setAbsolute(previous => ({ ...previous, [plan.id]: { ...previous[plan.id], [field]: text } }));
+    setAbsolute(previous => ({ ...previous, [plan.id]: { ...previous[plan.id], [field]: { text, edited: true } } }));
     editScenario(plan.id, { inputs: { ...plan.inputs, [field]: absoluteToRelative(field, text, ctx).relative ?? "" } });
   }
   function rebuild() {
@@ -158,26 +172,32 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
       {!plans.length && <p className="empty-note">{ui.emptyPlans}</p>}
       <div className="scenario-grid">{plans.map((plan, index) => {
         const preset = applied[plan.id] ? SCENARIO_PRESETS.find(item => item.id === applied[plan.id]) : undefined;
+        const pickedPreset = picked[plan.id] ? SCENARIO_PRESETS.find(item => item.id === picked[plan.id]) : undefined;
+        const purpose = pickedPreset ? pickedPreset.purpose : preset ? fill(form.presetApplied, { name: preset.name, purpose: preset.purpose }) : null;
+        const filled = inputFields.some(field => plan.inputs[field.key].trim() !== "");
         const revision = revisionOf(plan);
         return <article className="panel scenario-card" key={plan.id} data-testid={`scenario-${index + 1}`}>
         <fieldset disabled={stale || !session.baseline.eligible}><legend>{fill(ui.planLegend, { n: index + 1 })}</legend>
           <label>{ui.planName}<input aria-label={ui.planName} maxLength={100} value={plan.name} onChange={e => editScenario(plan.id, { name: e.target.value })} /></label>
-          <div className="scenario-preset"><label>{labels.buttons.applyTemplate}<select data-testid="scenario-preset" aria-label={labels.buttons.applyTemplate} value="" onChange={e => { const id = SCENARIO_PRESETS.find(item => item.id === e.target.value)?.id; if (id) applyTemplate(plan, id); }}><option value="">{labels.scenarioPresets.menuPlaceholder}</option>{SCENARIO_PRESETS.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><p className="note" data-testid="scenario-template-note">{labels.scenario.templateNote}</p>{preset && <p className="note scenario-preset-purpose" data-testid="scenario-preset-purpose">{fill(form.presetApplied, { name: preset.name, purpose: preset.purpose })}</p>}</div>
+          <div className="scenario-preset"><div className="scenario-preset-row"><label>{form.presetSelect}<select data-testid="scenario-preset" aria-label={form.presetSelect} value={pickedPreset?.id ?? ""} onChange={e => pickTemplate(plan, e.target.value)}><option value="">{labels.scenarioPresets.menuPlaceholder}</option>{SCENARIO_PRESETS.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><button type="button" className="button quiet" data-testid="scenario-preset-apply" disabled={!pickedPreset} onClick={() => { if (pickedPreset) applyTemplate(plan, pickedPreset.id); }}>{labels.buttons.applyTemplate}</button>{filled && <span className="scenario-preset-overwrite" data-testid="scenario-preset-overwrite">{form.presetOverwrite}</span>}</div><p className="note" data-testid="scenario-template-note">{labels.scenario.templateNote}</p>{purpose && <p className="note scenario-preset-purpose" data-testid="scenario-preset-purpose">{purpose}</p>}</div>
           <div className="scenario-inputs">{inputFields.map(field => {
             const id = `${fieldId}-${index + 1}-${field.key}`;
             const absField = isAbsoluteField(field.key) ? field.key : null;
             const availability = absField ? absoluteAvailability(absField, ctx) : null;
-            const text = absField && availability?.available ? absolute[plan.id]?.[absField] : undefined;
-            const conversion = absField && text !== undefined ? absoluteToRelative(absField, text, ctx) : null;
-            const equivalent = conversion ? conversion.equivalent : absField ? relativeToAbsolute(absField, plan.inputs[field.key], ctx) : null;
+            const entry = absField && availability?.available ? absolute[plan.id]?.[absField] : undefined;
+            // 絕對值模式：改過才換算；預填值還沒改時，等值文字直接取方案目前的相對值。
+            const conversion = absField && entry?.edited ? absoluteToRelative(absField, entry.text, ctx) : null;
+            const equivalent = conversion ? conversion.equivalent : absField ? (entry ? relativeEquivalent(absField, plan.inputs[absField]) : relativeToAbsolute(absField, plan.inputs[absField], ctx)) : null;
+            const prefillNote = absField === "volume_change_pct" && entry && !entry.edited && entry.text !== "" && !/^\d+$/.test(entry.text) ? fill(labels.scenarioPresets.absolute.nonIntegerUnits, { units: fill(labels.assist.units.count, { value: entry.text }) }) : null;
             const hint = rangeHint(field.key, plan.inputs[field.key], ctx);
-            const described = [`${id}-help`, equivalent && `${id}-equivalent`, conversion?.error && `${id}-error`, hint && `${id}-range`].filter(Boolean).join(" ");
+            const described = [`${id}-help`, equivalent && `${id}-equivalent`, prefillNote && `${id}-prefill`, conversion?.error && `${id}-error`, hint && `${id}-range`].filter(Boolean).join(" ");
             return <div className="scenario-field" key={field.key}>
-              <div className="scenario-field-head"><label htmlFor={id}>{field.label}</label>{absField && availability && <div className="scenario-mode" role="group" aria-label={fill(form.modeGroup, { field: field.label })} data-testid={`scenario-mode-${absField}`}><button type="button" className="button quiet" aria-pressed={!conversion} onClick={() => setMode(plan, absField, "relative")}>{labels.scenario.modeRelative}</button><button type="button" className="button quiet" aria-pressed={!!conversion} disabled={!availability.available} onClick={() => setMode(plan, absField, "absolute")}>{labels.scenario.modeAbsolute}</button></div>}</div>
-              <input id={id} aria-label={field.label} aria-describedby={described} type="text" inputMode="decimal" maxLength={200} autoComplete="off" value={absField && text !== undefined ? text : plan.inputs[field.key]} onChange={e => absField && text !== undefined ? setAbsoluteText(plan, absField, e.target.value) : editScenario(plan.id, { inputs: { ...plan.inputs, [field.key]: e.target.value } })} />
-              <small id={`${id}-help`}>{absField && text !== undefined ? absoluteHelp(absField, ctx) : field.help}</small>
+              <div className="scenario-field-head"><label htmlFor={id}>{field.label}</label>{absField && availability && <div className="scenario-mode" role="group" aria-label={fill(form.modeGroup, { field: field.label })} data-testid={`scenario-mode-${absField}`}><button type="button" className="button quiet" aria-pressed={!entry} onClick={() => setMode(plan, absField, "relative")}>{labels.scenario.modeRelative}</button><button type="button" className="button quiet" aria-pressed={!!entry} disabled={!availability.available} onClick={() => setMode(plan, absField, "absolute")}>{labels.scenario.modeAbsolute}</button></div>}</div>
+              <input id={id} aria-label={field.label} aria-describedby={described} type="text" inputMode="decimal" maxLength={200} autoComplete="off" value={entry ? entry.text : plan.inputs[field.key]} onChange={e => absField && entry ? setAbsoluteText(plan, absField, e.target.value) : editScenario(plan.id, { inputs: { ...plan.inputs, [field.key]: e.target.value } })} />
+              <small id={`${id}-help`}>{absField && entry ? absoluteHelp(absField, ctx) : field.help}</small>
               {availability && !availability.available && <small className="scenario-field-note" data-testid={`scenario-unavailable-${field.key}`}>{availability.reason}</small>}
               {equivalent && <small id={`${id}-equivalent`} className="scenario-equivalent" data-testid={`scenario-equivalent-${field.key}`}>{equivalent}</small>}
+              {prefillNote && <small id={`${id}-prefill`} className="scenario-field-note" data-testid={`scenario-absolute-note-${field.key}`}>{prefillNote}</small>}
               {conversion?.error && <small id={`${id}-error`} className="scenario-field-error" role="status" data-testid={`scenario-absolute-error-${field.key}`}>{conversion.error}</small>}
               {hint && <small id={`${id}-range`} className="scenario-field-error" role="status" data-testid={`scenario-range-${field.key}`}>{hint}</small>}
             </div>;
