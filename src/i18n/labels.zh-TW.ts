@@ -1836,7 +1836,20 @@ export const pptxExport = {
 
 
 /** R6-E 預設保存（workspace-storage.tsx／auto-save.ts：首次同意對話框、自動保存狀態）。 */
-export const autoSave = {} as const;
+export const autoSave = {
+  promptTitle: "要不要把工作區存在這台電腦？（不上傳）",
+  promptBody: "同意後，之後每次修改都會在 2 秒內自動存在這個瀏覽器；選「先不要」就維持每次手動儲存。",
+  replaceWarning: "這台電腦已有 {time} 保存的工作區；選「存在這台電腦」會改存成目前的工作區。要先讀回舊的，請選「先不要」，再到「儲存」選單讀取本機副本。",
+  accept: "存在這台電腦",
+  decline: "先不要",
+  consentNote: "勾選後會自動保存：每次修改 2 秒內存一次；取消勾選就停止。",
+  statusOn: "已開啟自動保存（每次變更 2 秒內）",
+  statusOff: "未開啟自動保存：每次要手動儲存",
+  lastSaved: "最後保存 {time}",
+  savedLocalNotice: "已保存此版本到這台電腦；之後的修改會在 2 秒內自動保存。",
+  failed: "自動保存沒有完成：瀏覽器不允許儲存、空間不足，或檔案無法驗證。目前資料仍在；下次修改會再試一次，也可以先下載備份檔。",
+  dismiss: "知道了",
+} as const;
 
 
 
