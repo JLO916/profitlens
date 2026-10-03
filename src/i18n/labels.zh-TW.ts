@@ -1655,7 +1655,27 @@ export const scenarioForm = {} as const;
 
 
 /** R5-C 行動看板（actions-workbench.tsx）。 */
-export const actionBoard = {} as const;
+export const actionBoard = {
+  viewToggle: "待辦的檢視方式",
+  viewBoard: "看板",
+  viewList: "清單",
+  boardIntro: "依執行狀態分四欄；用卡片上的「移到…」按鈕改狀態，點「展開編輯」修改內容與引用的數據。",
+  columnCount: "{n} 項",
+  columnEmpty: "這一欄目前沒有待辦。",
+  moveGroup: "第 {n} 項改狀態",
+  moveTo: "移到{status}",
+  moved: "已把第 {n} 項移到「{status}」。",
+  expandEdit: "展開編輯",
+  untitled: "（還沒寫問題）",
+  unassigned: "未指定",
+  noDeadline: "未定",
+  ownerListHint: "可直接選最近用過的負責人，或輸入新的名字。",
+  evidenceSearchHint: "已勾選的數據會一直顯示；搜尋只過濾還沒勾選的。",
+  evidenceSelected: "已選 {n} 項",
+  evidenceNoMatch: "沒有符合搜尋的數據。",
+  evidenceNone: "這項待辦的範圍內沒有可引用的數據。",
+  statusUpdated: "狀態更新於 {date}",
+} as const;
 
 
 
