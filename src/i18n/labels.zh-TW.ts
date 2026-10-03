@@ -1770,13 +1770,19 @@ export const meetingPage = {
   /** 總覽頁只留一行入口（05 §10）。 */
   entry: "本期會議：{state}",
   entryLast: "上次會議 {date}",
+  /** 剛結束會議、新會議稿還沒動過（同一份資料與範圍）：一行說清楚兩件事。 */
+  entryFinalized: "本期會議：已結束（{date}）· 新會議稿：草稿",
   goToMeeting: "前往會議紀錄",
   basics: "會議基本",
   periodsLine: "上期 {previousStart}～{previousEnd} · 本期 {currentStart}～{currentEnd}",
   dateError: "會議日期需是有效的日期（年-月-日）。",
   agendaNote: "議程依會議固定的資料與範圍自動組成；點數字可看怎麼算的。",
   scenariosNote: "每個通路最多選入一個已計算的方案；方案改動後要重新選入。",
-  actionsNote: "置頂行動列在上方會議摘要的「方案與待辦」（最多三項）；要調整置頂或負責人，請到「待辦與決議」。",
+  /** ⑤ 下拉選單下方：已選入方案的試算結果（名稱、範圍、現況、試算後、差額）。 */
+  scenarioResults: "選入方案的試算結果",
+  actionsNote: "最多列三項置頂行動；要調整置頂或負責人，請到「待辦與決議」。",
+  /** ③ 在議程模式下的收合標題（標題「③ 通路表」已寫出表名，不再重複）。 */
+  channelTableSummary: "各通路上期／本期／差額",
   lastDecision: "上次決議",
   noLastPinned: "上次會議沒有置頂待辦。",
   followUpAria: "上次置頂待辦的狀態",
@@ -1788,8 +1794,14 @@ export const meetingPage = {
   finalizing: "正在結束會議…",
   finalized: "已結束會議並存入會議歷史；已用目前資料建立新的會議稿。",
   finalizeError: "沒有結束會議：會議用的資料和目前工作區不一致、方案已過期，或同一版會議已結束過。請先「用目前資料更新會議」再試。",
+  /** 結束會議的錯誤依錯誤碼顯示（MEETING_HISTORY_FULL／DUPLICATE_MEETING／REVIEW_ADOPTED_STALE_SCENARIO），其餘用 finalizeError。 */
+  historyFull: "會議歷史已達 100 筆，請先下載並移除最舊的紀錄。",
+  duplicateMeeting: "這一版會議已經結束過；請先修改會議內容，或「用目前資料更新會議」後再結束。",
+  staleScenario: `選入的方案已修改或過期；請到議程「${meetingRecord.agenda.scenarios}」重新選入後再結束會議。`,
   historicalNote: "會議用的是較早的資料；請先用目前資料更新會議，才能結束會議。",
   compareKind: "比較方式：{kind}",
+  /** 資料或通路不同：比較區只留這一句，上次決議與待辦狀態只列在議程 ④。 */
+  compareSeeFollowUp: `上次決議與置頂待辦的狀態列在議程「${meetingRecord.agenda.followUp}」。`,
   priorityRow: "{n}. {headline}｜{scope}｜{impact} {amount}",
   history: "會議歷史",
   historyEmpty: "還沒有已結束的會議。",
@@ -1798,16 +1810,30 @@ export const meetingPage = {
   historyKpiRow: "{metric}：{previous} → {current}；差額 {change}",
   historyActions: "置頂行動",
   historyActionRow: "{problem}｜{status}",
+  /** 歷史項目展開：結束當時凍結的上次決議追蹤與上次會議比較（meeting.follow_up）。 */
+  historyFollowUp: "上次會議追蹤（結束當時）",
   historyNote: "已結束的會議只能查看；數字是結束當時的結果。",
+  removeMeeting: "移除這筆紀錄",
+  removeWarning: "請先下載 Markdown，移除後無法復原。",
+  removeConfirm: "確定移除",
+  removed: "已移除會議紀錄：{name} · {date}",
   outputs: "輸出",
   pdfHint: "列印對話框中選擇「另存為 PDF」",
   exporting: "正在產生檔案…",
-  exportError: "沒有產生檔案：匯出元件載入失敗或會議資料不一致。請重新整理後再試；其他格式仍可下載。",
+  exportError: "匯出沒有完成；請稍後再試，或先到「儲存」下載備份檔再重新整理。其他格式仍可下載。",
+  markdownError: "會議紀錄 Markdown 沒有產生：會議資料無法重建。其他格式仍可下載。",
   notReady: "會議資料載入後才能匯出。",
   printHeader: "{name}｜會議日期 {date}｜資料到 {asOf}",
+  /** 下載選單「匯出 PDF」只依目前檢視：列印版的狀態欄改寫這句（不是會議決議）。 */
+  printViewState: "目前檢視（不含會議決議）",
+  /** 列印第一頁的備註超過 200 字時截斷，全文放附錄。 */
+  printNotesTruncated: "{text}…（全文見附錄）",
+  printNotesHeading: "會議備註全文",
+  printAssumptionsHeading: "選入方案的試算假設",
+  printAssumptionsItem: "{name}｜{scope}",
   menuMarkdown: "下載會議紀錄 Markdown",
   menuMarkdownHint: "有已結束的會議時下載最近一筆；否則下載目前會議稿的主管摘要。",
-  menuViewNote: "Excel 與 PPT 依目前檢視的期間與通路產生，並帶入目前會議稿的名稱與決議。",
+  menuViewNote: "PDF、Excel 與 PPT 依目前檢視的期間與通路產生，不含會議決議；會議範圍的版本請到會議紀錄頁輸出",
 } as const;
 
 
