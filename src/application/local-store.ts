@@ -7,6 +7,10 @@ const DATABASE_VERSION = 2;
 const STORE_NAME = "workspace";
 const MAPPING_STORE_NAME = "mapping-memory";
 const RECORD_KEY = "explicitly-saved";
+// R6：保存時間另存一個 key（同一個 store、同一筆交易）；RECORD_KEY 的內容格式不變。
+const SAVED_AT_KEY = "explicitly-saved-at";
+/** 只接受 Date#toISOString() 的格式，其他（被改過或來路不明的）值一律視為沒有。 */
+const SAVED_AT_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 function factory(): IDBFactory {
   if (typeof indexedDB === "undefined") throw new Error("LOCAL_STORAGE_UNAVAILABLE");
@@ -40,10 +44,14 @@ function transact<T>(database: IDBDatabase, mode: IDBTransactionMode, operation:
   });
 }
 
-/** No autosave: calling this is the UI's explicit, informed persistence action. */
+/**
+ * Persists only after the user consented: an explicit save, or R6 auto-save (auto-save.ts) once consent was given.
+ * Every call re-validates the backup first; the save time is written in the same transaction under SAVED_AT_KEY.
+ */
 export async function saveLocalWorkspace(text: string): Promise<void> {
   await restoreWorkspaceBackup(text);
-  await transact(await openDatabase(), "readwrite", store => store.put(text, RECORD_KEY));
+  const savedAt = new Date().toISOString();
+  await transact(await openDatabase(), "readwrite", store => { store.put(savedAt, SAVED_AT_KEY); return store.put(text, RECORD_KEY); });
 }
 
 /** No auto-restore: returns inert bytes for preview + validation + explicit application. */
@@ -74,6 +82,16 @@ export async function hasLocalDatabase(): Promise<boolean> {
     const list = await (factory() as IDBFactory & { databases?: () => Promise<{ name?: string }[]> }).databases?.();
     return Array.isArray(list) && list.some(item => item.name === DATABASE_NAME);
   } catch { return false; }
+}
+
+/**
+ * R6：這台電腦上次保存工作區的時間（ISO 字串）。沒有本機資料庫時直接回傳 null，不會為了讀取而建立資料庫；
+ * R6 以前存的副本沒有保存時間，也回傳 null。值不是合法時間字串時視為沒有。
+ */
+export async function localWorkspaceSavedAt(): Promise<string | null> {
+  if (!(await hasLocalDatabase())) return null;
+  const value: unknown = await transact(await openDatabase(), "readonly", store => store.get(SAVED_AT_KEY));
+  return typeof value === "string" && SAVED_AT_PATTERN.test(value) && !Number.isNaN(Date.parse(value)) ? value : null;
 }
 
 /**
