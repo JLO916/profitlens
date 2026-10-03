@@ -113,7 +113,7 @@ export const sections = {
   nextStep: "下一步",
   autoCheck: "自動健檢",
   missingFirst: "優先補資料",
-  meetingSummary: "會議摘要",
+  meetingSummary: "摘要匯出（目前檢視）",
   aiExplain: "AI 解釋（選配）",
 } as const;
 
@@ -1896,7 +1896,7 @@ export const pptxExport = {
   channelsMore: "另有 {n} 個通路未列出；完整通路表請下載 Excel 或 Markdown。",
   decision: "決議：{decision}",
   decisionNotes: "備註：{notes}",
-  noMeeting: "尚未建立會議；決議請到「會議紀錄」頁填寫。",
+  noMeeting: "目前檢視，不含會議決議；決議請到「會議紀錄」頁輸出。",
   pinnedTitle: "置頂待辦",
   pinnedEmpty: "還沒有置頂的待辦。",
   pinnedRow: "{n}. {problem}",
