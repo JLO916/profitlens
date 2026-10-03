@@ -1589,5 +1589,30 @@ export const events = {
   } as Record<string, string>,
 } as const;
 
-export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events };
+/** R5-A 健檢清單化：群組列、通路標籤、展開內容（diagnosis-list.tsx）。 */
+export const diagnosisList = {} as const;
+
+
+
+/** R5-B 情境範本與絕對值輸入（scenario-presets.ts）。 */
+export const scenarioPresets = {} as const;
+
+
+
+/** R5-B 試算表單（multi-scenario-workbench.tsx／decision-workbench.tsx／scenario-sensitivity.tsx）。 */
+export const scenarioForm = {} as const;
+
+
+
+/** R5-C 行動看板（actions-workbench.tsx）。 */
+export const actionBoard = {} as const;
+
+
+
+/** R5-D 商品毛利 Top／Bottom 與欄位（product-comparison-panel.tsx）。 */
+export const productHighlights = {} as const;
+
+
+
+export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights };
 export type Labels = typeof labels;

@@ -571,3 +571,23 @@ main summary, main button, main input, main select, main textarea, main [role="r
 .kpi-target.mismatch { color: #a06a1a; }
 .side-entry-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 10px 0 14px; }
 .side-entry table td, .side-entry table th { padding: 8px 10px; }
+
+
+/* R5-A 健檢清單（diagnosis-list.tsx） */
+
+
+
+/* R5-B 試算表單（scenario form / presets / absolute mode） */
+
+
+
+/* R5-C 行動看板（actions-workbench.tsx） */
+
+
+
+/* R5-D 商品 Top／Bottom（product-comparison-panel.tsx） */
+
+
+
+/* R5-E 殼層整合（dashboard.tsx） */
+

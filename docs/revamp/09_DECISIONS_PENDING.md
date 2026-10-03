@@ -9,7 +9,7 @@
 | D3 | 示範資料台灣化 | A 只用顯示 alias（官網／平台、居家／保養…）／B 新建 `fixtures/demo_tw`（官網／蝦皮／momo、商品名、檔期）並手算 expected | **A 先上線，B 排在 R7 若時間允許**。B 的手算 expected 約需半天 | R2／R7 | |
 | D4 | 允許新增的匯出依賴 | A `xlsx`（SheetJS）＋`pptxgenjs`／B `exceljs`＋`pptxgenjs`／C 不加依賴（Excel 改多工作表 CSV zip 不可行，故改為「Excel 友善 CSV」；PPT 改 PDF 一頁式） | **A**。兩者皆純前端、無伺服器；以動態 import 控制 bundle | R6 | |
 | D5 | 訂單級明細彙總 | A CLI 腳本（`scripts/aggregate_orders.py`）＋說明，UI 不彙總／B 在精靈內彙總（違反 v1 原則，需新契約與測試）／C 兩者都做 | **A**。維持「不猜」原則；UI 內彙總列 Phase 2 | R3 | A（依建議值；使用者 2026-10-03 確認） |
-| D6 | 選配 `orders_daily.csv`（訂單數、客單價、轉換率） | A R4 做／B 延後到 Phase 2 | **B**。R4 已碰 domain 加法；多一個檔案契約的風險值得放到真實使用者回饋後 | R4 | |
+| D6 | 選配 `orders_daily.csv`（訂單數、客單價、轉換率） | A R4 做／B 延後到 Phase 2 | **B**。R4 已碰 domain 加法；多一個檔案契約的風險值得放到真實使用者回饋後 | R4 | B（依建議值；使用者 2026-10-03 確認） |
 | D7 | 自動保存預設 | A 首次詢問一次，同意後自動保存／B 維持每次手動／C 預設自動不詢問 | **A**。符合既有「明確同意」原則又解決揮發問題 | R6 | |
 | D8 | 自訂網域 | A 維持 `profitlens-tau.vercel.app`／B 設定自訂網域（請提供） | **B**（若已有網域）；否則 A | R7 | |
 | D9 | 使用分析（Vercel Web Analytics） | A 不加／B 加（只頁面與互動事件，頁尾揭露） | **B**。上線後要知道有沒有人用到三件事與匯出 | R7 | |
