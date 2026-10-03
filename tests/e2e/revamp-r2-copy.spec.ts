@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { clickReplacing, openDownloads, ruleHeadline } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openDownloads, ruleHeadline } from "./replacement-helpers";
 import { labels } from "../../src/i18n";
 import { csvHeaderKey } from "../../src/application/copy";
 
@@ -8,6 +8,8 @@ async function loadDemo(page: Page) {
   await page.goto("/");
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
+  // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
+  await dismissSavePrompt(page);
 }
 async function loadGolden(page: Page) {
   await page.goto("/");
@@ -15,6 +17,7 @@ async function loadGolden(page: Page) {
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
+  await dismissSavePrompt(page);
 }
 const basis = (page: Page) => page.getByRole("dialog", { name: labels.basis.title });
 const drawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });

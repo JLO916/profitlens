@@ -1,4 +1,4 @@
-import { openMeeting, switchActionsView } from "./replacement-helpers";
+import { dismissSavePrompt, openMeeting, switchActionsView } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { metricDefinitions } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -64,9 +64,13 @@ function csvRecords(text: string): Record<string, string>[] {
   return rows.map(values => { expect(values).toHaveLength(headers.length); return Object.fromEntries(headers.map((key, index) => [key, values[index]])); });
 }
 
+/** R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）；主管摘要在會議頁不再有自己的列印／Markdown 鈕。 */
+const meetingOutput = (page: Page, name: string) => page.getByTestId("meeting-outputs").getByRole("button", { name, exact: true });
+
 async function checkPrint(page: Page, info: TestInfo, pinned: boolean) {
   const summary = page.getByTestId("manager-summary");
-  await summary.getByRole("button", { name: labels.buttons.print, exact: true }).click();
+  // R6：列印改由輸出列的「匯出 PDF」（同一個 PrintSummaryPortal → window.print()）。
+  await meetingOutput(page, labels.buttons.exportPdf).click();
   await expect(page.locator("html")).toHaveAttribute("data-print-invoked", "true");
   await page.emulateMedia({ media: "print" });
   const print = page.getByTestId("manager-summary-print");
@@ -103,6 +107,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
   // R5: the actions page opens on the board; the per-card edit form below uses the list view.
   await switchActionsView(page, "list");
@@ -120,7 +125,6 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
     await expect(card.getByTestId("evidence-checklist").locator("input[type=checkbox]:checked")).toHaveCount(1);
     if (index <= 3) await card.getByRole("button", { name: labels.buttons.pin, exact: true }).click();
   }
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await openMeeting(page);
   const updates = page.getByRole("button", { name: refreshActionRef });
   while (await updates.count()) await updates.first().click();
@@ -136,7 +140,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   for (let index = 1; index <= 8; index++) await expect((index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })).toBeVisible();
 
   const prefix = `verification/review-v2-a-decision-${info.project.name}`;
-  const markdown = await saveDownload(page, summary.getByRole("button", { name: labels.buttons.exportMarkdown, exact: true }), `${prefix}.md`);
+  const markdown = await saveDownload(page, meetingOutput(page, labels.buttons.exportMarkdown), `${prefix}.md`);
   const [body, technical] = markdown.split(technicalHeading);
   expect(body.match(/匯出驗收行動第/g)).toHaveLength(3);
   expect(technical.match(/匯出驗收行動第/g)).toHaveLength(5);
@@ -175,7 +179,6 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
 
   for (let index = 0; index < 3; index++) await page.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true }).first().click();
   await expect(page.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true })).toHaveCount(0);
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await openMeeting(page);
   await expect(main).toHaveCount(0);
   await expect(summary).toContainText(notice);
@@ -183,7 +186,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   const allAppendix = summary.locator(":scope > details").filter({ has: page.getByText(fill(summaryCopy.appendixActions, { n: 8 }), { exact: true }) });
   await allAppendix.locator(":scope > summary").click();
   await expect(allAppendix.locator(":scope > ul > li")).toHaveCount(8);
-  const unpinned = await saveDownload(page, summary.getByRole("button", { name: labels.buttons.exportMarkdown, exact: true }), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);
+  const unpinned = await saveDownload(page, meetingOutput(page, labels.buttons.exportMarkdown), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);
   const [unpinnedBody, unpinnedAppendix] = unpinned.split(technicalHeading);
   expect(unpinnedBody).toContain(notice);
   expect(unpinnedBody).not.toMatch(new RegExp(`${escapeRegExp(noActions)}|匯出驗收行動第`));

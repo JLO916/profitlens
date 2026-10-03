@@ -1,5 +1,15 @@
 # Status
 
+## Revamp v2｜R6 會議紀錄、匯出、預設保存（完成，未合併、未部署）
+
+R6 依 `docs/revamp/06_BATCHES.md` R6-1～R6-7 與 `05_FEATURES.md §10–§12`、`02_IA_LAYOUT.md §8` 完成；`src/domain`、`fixtures`、`docs/METRICS.md` 零改動。會議紀錄：`src/application/meeting.ts`（`Meeting`／`meeting-v1`：結束會議即凍結、進備份 v4 `meeting_history`（上限 100）、上次會議比較三種規則、會議 Markdown）與新分頁「會議紀錄」（`meeting-page.tsx`：會議基本含日期、議程 ①–⑥、決議、結束會議確認、上次會議比較、會議歷史、輸出列）；總覽只留一行入口。匯出：D4＝A——`xlsx@0.18.5`、`pptxgenjs@4.0.1` 精確鎖定、動態 import（首頁 first-load JS 由 1,552.6 KB 增為 1,619.6 KB raw，+66.9 KB，低於 +300 KB 門檻），`excel-export.ts` 六個工作表（文字格一律字串型別＋CSV 同一套防注入規則、金額數值、比率小數）、`pptx-export.ts` 16:9 一頁式（pptxgenjs XML 轉義、不嵌圖片）、PDF 走強化的 A4 列印樣式＋`window.print()`，下載選單整合所有格式。預設保存：D7＝A——首次載入資料時非 modal 提示「存在這台電腦？」，同意後 2 秒 debounce 自動保存到 IndexedDB、頂欄「已保存 hh:mm」（臺北時間），拒絕維持手動；「刪除本機資料」保留。決策見 `DECISIONS.md`（2026-10-03 R6）。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **__UNIT__**、build pass 無 warning、E2E 全套 **__E2E__**（四尺寸，含新增 `revamp-r6.spec.ts` 與 `workspace-storage.spec.ts` 自動保存案例）；對抗式審查 __REVIEW__。
+- 流程：四個獨立 worktree 代理平行實作（會議物件／Excel／PPT／自動保存）→ 合併 → 會議分頁與殼層整合代理 → 四個代理平行改寫 E2E（共用正式伺服器）→ 四視角審查（每項 3 位反駁者）→ 修正 → 全套重跑。
+- 測試：`tests/{meeting,meeting-backup,excel-export,pptx-export,auto-save}.test.ts`、`tests/{workspace-storage-autosave,meeting-page}.test.tsx`（Excel／PPT 以解析產物驗工作表、儲存格型別與逃逸）。
+- 產物與截圖：`verification/revamp-R6/`（四尺寸截圖 __SHOTS__ 張；E2E 實際下載的 `artifacts/*.xlsx`／`*.pptx`；headless Chromium 產生的 A4 PDF；用 Microsoft Excel／PowerPoint 開啟產物的螢幕截圖）。Live AI、真實資料、Safari／Firefox、實體裝置：**未執行**。
+- 已知限制：`npm audit` 對 `xlsx`／`image-size` 的 3 個 high 項目只在未使用的讀取／圖片程式路徑（已記錄於 DECISIONS）；會議的「上次比較」不存進 Meeting（還原後重算）；同意本機保存只在本次載入有效（重新整理後再問一次）。完整紀錄見 [R6 驗收](../verification/revamp-R6-acceptance.md)。R6 完成即停止；R7 待確認後開始。
+
 ## Revamp v2｜R5 健檢、試算、行動的決策化（完成，未合併、未部署）
 
 R5 依 `docs/revamp/06_BATCHES.md` R5-1～R5-6 與 `05_FEATURES.md §7–§9`、`02_IA_LAYOUT.md §4–§7` 完成；`src/domain`、`fixtures`、`docs/METRICS.md` 零改動，情境引擎輸入仍是相對值，Golden 情境答案（DTC 284.00／264.00、MARKETPLACE 19.70、零變動 270.00）不變。健檢改為清單（`diagnosis-group.ts`／`diagnosis-list.tsx`：同規則合計＋各通路合併一列、缺漏置頂、依對貢獻影響排序、前三列預設展開、通路寬表置頂、三件事與 Markdown／列印共用同一排序）；試算頁進頁即表單（`scenario-presets.ts`：六個範本兩步套用、絕對值輸入在表單層換算成相對值（12 位小數、折扣用精確 D/G）、界限即時提示、版本號只在計算成功時遞增、草稿標示、固定假設收合、敏感度三組輸入納入方案／匯出／備份 v4 欄位加法）；行動改為看板（四欄按鈕改狀態、`status_updated_at` 臺北日曆日、負責人 datalist、證據 checkbox 清單含搜尋、看板／清單偏好記在 `ui_prefs.view`）；商品頁加 Top／Bottom 10 小表、欄位重排、毛利率與資料狀態。決策匯出的「目前」區段改跟著試算頁正在編輯的 context。決策見 `DECISIONS.md`（2026-10-03 R5）。

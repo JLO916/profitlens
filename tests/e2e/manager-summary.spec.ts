@@ -1,4 +1,4 @@
-import { clickReplacing, openDownloads, openMeeting } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openDownloads, openMeeting } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -18,6 +18,8 @@ const technicalHeading = `## ${labels.sections.technicalDetails}`;
 const prioritySep = copy.mdPriorityRow.split("{amount}")[0].slice(-1);
 // R5 修正後列印列是「｜對貢獻影響 -315.00」：分隔符後接影響標籤（labels.sections.impact）再接金額。
 const endsWithAmount = (amount: string) => new RegExp(`${prioritySep}${labels.sections.impact}\\s*${amount.replace(/[.+-]/g, "\\$&")}`);
+/** R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）：匯出 PDF、Markdown、通路寬表 CSV、Excel、PPT。 */
+const meetingOutput = (page: Page, name: string) => page.getByTestId("meeting-outputs").getByRole("button", { name, exact: true });
 
 const test = base.extend<{ audit: string[] }>({
   audit: [async ({ page }, use, testInfo) => {
@@ -36,7 +38,8 @@ async function load(page: Page, name = "golden") {
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(name);
   await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${labels.status.ready}|${labels.status.partial}`));
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await dismissSavePrompt(page);
+  // R6：主管摘要（會議稿）在獨立分頁「會議紀錄」。
   await openMeeting(page);
   await expect(page.getByTestId("manager-summary")).toBeVisible();
 }
@@ -67,7 +70,7 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(summary.getByTestId("manager-priority-REV_UP_CM_DOWN")).toBeVisible();
   const csvEvent = page.waitForEvent("download");
-  await summary.getByRole("button", { name: labels.downloads.channelTableCsv, exact: true }).click();
+  await meetingOutput(page, labels.downloads.channelTableCsv).click();
   const download = await csvEvent;
   const csv = await readFile((await download.path())!, "utf8");
   expect(csv).toContain('"170.00","-15.00","-185.00"');
@@ -78,7 +81,7 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   await expect(summary.getByRole("button", { name: changeTitle(["DTC"], contribution), exact: true })).toHaveText("-130.00");
   await expect(summary.getByRole("rowheader", { name: /MARKETPLACE/ })).toHaveCount(0);
   const markdownEvent = page.waitForEvent("download");
-  await summary.getByRole("button", { name: labels.buttons.exportMarkdown, exact: true }).click();
+  await meetingOutput(page, labels.buttons.exportMarkdown).click();
   const markdown = await readFile((await (await markdownEvent).path())!, "utf8");
   expect(markdown.split(technicalHeading)[0]).toContain(mdScope("DTC"));
   expect(markdown.split(technicalHeading)[0]).not.toContain("MARKETPLACE");
@@ -102,7 +105,8 @@ test("PL09 print uses a dedicated manager draft and retains technical audit down
   // Replaces only the blocking OS print dialog; print-media layout is still real.
   await page.addInitScript(() => { window.print = () => { document.documentElement.dataset.printInvoked = "true"; }; });
   await load(page);
-  await page.getByTestId("manager-summary").getByRole("button", { name: labels.buttons.print, exact: true }).click();
+  // R6：會議頁的列印改由輸出列的「匯出 PDF」（同一個列印版面，window.print()）。
+  await meetingOutput(page, labels.buttons.exportPdf).click();
   await expect(page.locator("html")).toHaveAttribute("data-print-invoked", "true");
   await page.emulateMedia({ media: "print" });
   const print = page.getByTestId("manager-summary-print");

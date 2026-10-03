@@ -1,4 +1,4 @@
-import { clickReplacing, startChannelContext } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, startChannelContext } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -83,6 +83,8 @@ async function loadDataset(page: Page, id = "golden", channel = "DTC") {
   await expect(workspaceStatus(page)).toContainText(labels.status.ready);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
   await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+  // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
+  await dismissSavePrompt(page);
   await showAi(page);
 }
 async function preview(page: Page): Promise<ApprovedBody> {
@@ -351,6 +353,7 @@ test("MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽�
   await expect(page.getByTestId("import-reconciliation")).toContainText(`${rawMarker}-sales_daily.csv`);
   await commitWizard(page);
   await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+  await dismissSavePrompt(page);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
   await expect(workspaceStatus(page)).toContainText(labels.status.ready);
   await showAi(page);

@@ -1,4 +1,4 @@
-import { clickReplacing, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { labels } from "../../src/i18n";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -29,6 +29,8 @@ async function loadVerificationDataset(page: Page, id: string, state: string = l
     clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true })),
   ]);
   await expect(page.getByTestId("workspace-status")).toContainText(state);
+  // R6：第一次載入資料後右下角會出現「存在這台電腦？」提示（非 modal）；本檔不測自動保存，先按「先不要」。
+  await dismissSavePrompt(page);
 }
 
 test.beforeEach(async ({ page }) => { await page.goto("/"); });

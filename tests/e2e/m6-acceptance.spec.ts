@@ -1,4 +1,4 @@
-import { ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { dismissSavePrompt, ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from "./import-wizard-helpers";
 import { labels, fill } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -61,6 +61,8 @@ async function importDataset(page: Page, directory: string) {
   await commitWizard(page);
   await expect(status(page)).toContainText(labels.status.ready);
   await expect(wizard(page)).toHaveCount(0);
+  // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
+  await dismissSavePrompt(page);
 }
 /** R5: one nav click opens the form (no start button); the page's channel defaults to the single channel of the global filter, and plan 1 is the ready draft (no "add scenario" click). */
 async function scenario(page: Page, name: string, fulfillment: string, investment: string, expected: string) {

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { clickReplacing } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 
 // R2 文案接線：期間列的範圍說明由 labels.ui.dashboard.scopeNote 模板組成，這裡只取測試關心的片段再填值。
@@ -12,6 +12,10 @@ async function loadDemo(page: Page) {
   await page.goto("/");
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
+  // R6：首次載入資料時右下角出現非 modal 的保存提示（也是 role=dialog）；本檔不測自動保存，先選「先不要」。
+  await expect(page.getByTestId("local-save-prompt")).toBeVisible();
+  await dismissSavePrompt(page);
+  await expect(page.getByTestId("local-save-prompt")).toHaveCount(0);
 }
 const box = async (page: Page, selector: string) => { const value = await page.locator(selector).first().boundingBox(); expect(value, `${selector} has a bounding box`).not.toBeNull(); return value!; };
 
@@ -33,15 +37,24 @@ test.describe("R1 overview first screen", () => {
       await page.evaluate(() => window.scrollTo(0, 0));
     }
     const order = await page.evaluate((kpiLabel) => {
-      const ids = [`[aria-label='${kpiLabel}']`, "[data-testid='top-three']", "[aria-labelledby='trend-title']", "[aria-labelledby='bridge-title']", "[data-testid='period-comparison']", "[data-testid='overview-meeting']"];
+      const ids = [`[aria-label='${kpiLabel}']`, "[data-testid='top-three']", "[aria-labelledby='trend-title']", "[aria-labelledby='bridge-title']", "[data-testid='period-comparison']", "[data-testid='overview-meeting-entry']"];
       return ids.map(selector => document.querySelector(selector)?.getBoundingClientRect().top ?? -1);
     }, labels.sections.kpis);
     expect(order.every(top => top >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     await expect(page.getByTestId("period-comparison")).not.toHaveAttribute("open", /.*/);
-    await expect(page.getByTestId("overview-meeting")).not.toHaveAttribute("open", /.*/);
     await expect(page.locator(".view-content .export-actions")).toHaveCount(0);
     await expect(page.locator(".view-content .ai-availability")).toHaveCount(0);
+    // R6：會議稿搬到「會議紀錄」分頁，總覽頁尾只留一行入口（本期會議狀態＋前往按鈕），不再有收合的 overview-meeting。
+    await expect(page.getByTestId("overview-meeting")).toHaveCount(0);
+    const entry = page.getByTestId("overview-meeting-entry");
+    await expect(entry).toContainText(fill(labels.meetingPage.entry, { state: labels.meeting.decisions.draft }));
+    await expect(entry.getByRole("button")).toHaveCount(1);
+    await expect(page.getByTestId("manager-summary")).toHaveCount(0);
+    await entry.getByRole("button", { name: labels.meetingPage.goToMeeting }).click();
+    await expect(page.getByTestId("meeting-page")).toBeVisible();
+    await expect(page.getByRole("button", { name: labels.nav.meeting.label, exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByTestId("overview-meeting-entry")).toHaveCount(0);
   });
 
   test("top three show the contribution impact with unfavourable amounts in red", async ({ page }) => {

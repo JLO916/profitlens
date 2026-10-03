@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { fill, labels } from '../../src/i18n';
 import { channelsLabel } from '../../src/application/copy';
-import { openMeeting, ruleHeadline, startChannelContext, switchActionsView } from './replacement-helpers';
+import { dismissSavePrompt, openMeeting, ruleHeadline, startChannelContext, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from './import-wizard-helpers';
 // 每個案例都是長流程（載入 → 健檢／試算 → 行動 → 下載／備份／換檔重核）；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
 test.describe.configure({timeout:90_000});
@@ -19,7 +19,8 @@ const mdScenarioContribution=(contribution:string)=>ms.mdSelectedScenario.split(
 const technicalAppendix=`## ${labels.sections.technicalDetails}`;
 /** 備份預覽的「方案 n 個、行動 n 項」：方案數不在本測試的斷言範圍，允許任意數字。 */
 const restoreCounts=(actions:number)=>new RegExp(escapeRegExp(fill(ws.restoreCounts,{plans:'\u0000',actions})).replace('\u0000','\\d+'));
-async function load(page:Page){await page.goto('/');await page.getByRole('button',{name:labels.nav.validation.label,exact:true}).click();await page.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await page.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await openMeeting(page);await expect(page.getByTestId('manager-summary')).toBeVisible();}
+/** R6：首次保存提示（role=dialog，非 modal）出現在載入／恢復之後；本檔不測自動保存，載入後先按「先不要」。 */
+async function load(page:Page){await page.goto('/');await page.getByRole('button',{name:labels.nav.validation.label,exact:true}).click();await page.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await page.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(page.getByTestId('workspace-status')).toContainText(labels.status.ready);await dismissSavePrompt(page);await openMeeting(page);await expect(page.getByTestId('manager-summary')).toBeVisible();}
 async function discardReplacement(page:Page){const dialog=page.getByRole('dialog',{name:labels.ui.replacementDialog.heading,exact:true});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:labels.ui.replacementDialog.discardAndContinue,exact:true}).click();await expect(dialog).not.toBeVisible();}
 async function download(page:Page,label:string){const event=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
 /** R5：證據改為可搜尋的 checkbox 清單（fieldset role=group，名稱＝evidencePicker）。 */
@@ -55,6 +56,7 @@ test('PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作
  const backup=await download(page,labels.buttons.downloadBackup);await page.reload();await storage.locator(':scope > summary').click();
  await storage.getByLabel(ws.selectBackupFile,{exact:true}).setInputFiles({name:'bound.json',mimeType:'application/json',buffer:Buffer.from(backup)});
  await expect(page.getByRole('region',{name:ws.restorePreviewAria})).toContainText(restoreCounts(5));await page.getByRole('button',{name:ws.applyRestore,exact:true}).click();
+ await expect(page.getByTestId('workspace-status')).toContainText(labels.status.ready);await dismissSavePrompt(page);
  // 備份 ui_prefs.view 記住了清單檢視，恢復後直接回到清單。
  await page.getByRole('button',{name:labels.nav.actions.label,exact:true}).click();await expect(page.getByTestId('actions-view-list')).toHaveAttribute('aria-pressed','true');await expect(page.getByTestId('action-5')).toBeVisible();await expect(first.getByLabel(labels.actions.owner,{exact:true})).toBeEnabled();
  expect((await checkedEvidence(first)).sort()).toEqual([...ids].sort());

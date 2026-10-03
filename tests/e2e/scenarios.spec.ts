@@ -2,7 +2,8 @@ import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { AUTO_SAVE_DELAY_MS } from "../../src/application/auto-save";
+import { dismissSavePrompt, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 const dw = labels.ui.decisionWorkbench, aw = labels.ui.actionsWorkbench, msw = labels.ui.multiScenarioWorkbench, dash = labels.ui.dashboard;
 const cmAfter = labels.metrics.contribution_after_marketing.label;
@@ -65,7 +66,7 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
   }, { auto: true }],
 });
 
-async function loadDataset(page: Page, id = "golden", classification: string = labels.status.ready) {
+async function loadDataset(page: Page, id = "golden", classification: string = labels.status.ready, keepSavePrompt = false) {
   await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
   await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
   const response = page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.status() === 200);
@@ -76,6 +77,9 @@ async function loadDataset(page: Page, id = "golden", classification: string = l
   }
   await response;
   await expect(workspaceStatus(page)).toContainText(classification);
+  // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
+  // 零持久化案例自己按「先不要」並驗證之後沒有資料庫，所以可選擇保留提示。
+  if (!keepSavePrompt) await dismissSavePrompt(page);
 }
 async function selectChannel(page: Page, channel: string, classification: string = labels.status.ready) {
   await page.getByLabel(dash.filter.channel, { exact: true }).selectOption(channel);
@@ -658,8 +662,17 @@ test("不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產
 });
 
 test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用", async ({ page, context, browserAudit }) => {
-  await openGolden(page);
+  await loadDataset(page, "golden", labels.status.ready, true);
+  // R6（D7＝A）：載入資料後出現非 modal 的首次保存提示；按「先不要」維持手動保存，之後任何變更都不得建立本機資料庫。
+  const savePrompt = page.getByTestId("local-save-prompt");
+  await expect(savePrompt).toBeVisible();
+  await savePrompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
+  await expect(savePrompt).toHaveCount(0);
+  await selectChannel(page, "DTC");
+  await showScenarios(page);
+  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText("270.00");
   const before = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
+  expect(before.databases, "按「先不要」後 IndexedDB 不得有任何資料庫").toEqual([]);
   const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
   await page.route("**/*", async route => {
     const request = route.request();
@@ -671,6 +684,8 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   await calculate(card, "284.00", "+14.00");
   await addConfirmedAction(page);
   for (const format of ["Markdown", "CSV", "JSON"] as const) await downloadText(page, format);
+  // 自動保存的 debounce 是 AUTO_SAVE_DELAY_MS；多等一個週期再比對，確認拒絕後沒有排程中的寫入。
+  await page.waitForTimeout(AUTO_SAVE_DELAY_MS + 600);
   const after = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   expect(after).toEqual(before);
   expect(requests, "計算、行動與本機下載不得呼叫模型或任何 HTTP API").toEqual([]);

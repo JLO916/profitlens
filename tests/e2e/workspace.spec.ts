@@ -1,4 +1,4 @@
-import { clickReplacing, ruleHeadline } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { metricDefinitions } from "../../src/application/presentation";
 import { appendFile, mkdir } from "node:fs/promises";
@@ -89,6 +89,8 @@ async function requestDataset(page: Page, id: string) {
 async function loadGolden(page: Page) {
   await requestDataset(page, "golden");
   await expect(ready(page)).toBeVisible();
+  // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
+  await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await expect(contribution(page)).toContainText("255.00");
 }
@@ -113,6 +115,7 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
   await expect(page.getByTestId("workspace-status")).toContainText(emptyStatus);
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
   await expect(ready(page)).toBeVisible();
+  await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await expect(contribution(page)).toContainText("1,269,792.73");
   await expect(revenue(page)).toContainText("7,850,657.90");
@@ -262,6 +265,7 @@ test("無效期間不覆寫已套用的分析範圍", async ({ page }) => {
 test("有效自訂期間會同步更新 KPI、週資料及來源期間", async ({ page }) => {
   await requestDataset(page, "demo");
   await expect(ready(page)).toBeVisible();
+  await dismissSavePrompt(page);
   await page.getByLabel(periodField("start", "previous"), { exact: true }).fill("2026-06-01");
   await page.getByLabel(periodField("end", "previous"), { exact: true }).fill("2026-06-07");
   await page.getByLabel(periodField("start", "current"), { exact: true }).fill("2026-06-08");
@@ -311,6 +315,7 @@ for (const scenario of [
   test(`${scenario.id} 顯示待補資料，保留收入與未受影響通路`, async ({ page }) => {
     await requestDataset(page, scenario.id);
     await expect(partial(page)).toBeVisible();
+    await dismissSavePrompt(page);
     await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
     await expect(contribution(page)).toContainText(labels.status.missing);
     await expect(revenue(page)).toContainText("2,470.00");

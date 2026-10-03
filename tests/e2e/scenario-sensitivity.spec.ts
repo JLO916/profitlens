@@ -1,4 +1,4 @@
-import { clickReplacing, selectScenarioChannel, startChannelContext } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, selectScenarioChannel, startChannelContext } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -37,6 +37,8 @@ async function openPlan(page: Page, investment = "0") {
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption("golden");
   await clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
+  await dismissSavePrompt(page);
   await page.getByLabel(channelField, { exact: true }).selectOption("DTC");
   // R5-3 進頁即表單：方案 1 是進頁草稿，不按「新增方案」。
   await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();

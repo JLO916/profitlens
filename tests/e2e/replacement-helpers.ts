@@ -30,7 +30,24 @@ export async function openDetails(root: Locator) {
 export async function closeDetails(root: Locator) {
   if (await root.getAttribute('open') !== null) await root.locator(':scope > summary').click();
 }
-export const openMeeting = (page: Page) => openDetails(page.getByTestId('overview-meeting'));
+/** R6：會議稿搬到新分頁「會議紀錄」；openMeeting 改為切到該分頁並回傳 meeting-page 區塊（舊的 overview-meeting details 已移除）。 */
+export async function openMeeting(page: Page) {
+  const nav = page.getByRole('button', { name: labels.nav.meeting.label, exact: true });
+  if (await nav.getAttribute('aria-current') !== 'page') await nav.click();
+  const root = page.getByTestId('meeting-page');
+  await root.waitFor({ state: 'visible' });
+  return root;
+}
+/** R6：首次載入資料時會出現非 modal 的「存在這台電腦？」提示（右下角）；不測自動保存的流程先按「先不要」。 */
+export async function dismissSavePrompt(page: Page) {
+  const prompt = page.getByTestId('local-save-prompt');
+  if (await prompt.count() && await prompt.isVisible()) await prompt.getByRole('button', { name: labels.autoSave.decline, exact: true }).click();
+}
+export async function acceptSavePrompt(page: Page) {
+  const prompt = page.getByTestId('local-save-prompt');
+  await prompt.waitFor({ state: 'visible' });
+  await prompt.getByRole('button', { name: labels.autoSave.accept, exact: true }).click();
+}
 export const openPeriodComparison = (page: Page) => openDetails(page.getByTestId('period-comparison'));
 export const openDownloads = (page: Page) => openDetails(page.getByTestId('download-menu'));
 export const closeDownloads = (page: Page) => closeDetails(page.getByTestId('download-menu'));

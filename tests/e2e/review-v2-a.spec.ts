@@ -1,5 +1,5 @@
 import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
-import { openMeeting, selectScenarioChannel, switchActionsView } from './replacement-helpers';
+import { dismissSavePrompt, openMeeting, selectScenarioChannel, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { fill, labels } from '../../src/i18n';
 import { appendFile, readFile } from 'node:fs/promises';
@@ -20,7 +20,7 @@ const escapeRe=(s:string)=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const templateRe=(template:string,values:Record<string,string>={},flags='')=>new RegExp(`^${escapeRe(template).replace(/\\\{(\w+)\\\}/g,(_,key:string)=>key in values?escapeRe(values[key]):'.+?')}$`,flags);
 const status=(p:Page)=>p.getByTestId('workspace-status');
 const guard=(p:Page)=>p.getByRole('dialog',{name:dlg.heading});
-async function golden(p:Page){await p.goto('/');await p.getByRole('button',{name:labels.nav.validation.label,exact:true}).click();await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(labels.status.ready);}
+async function golden(p:Page){await p.goto('/');await p.getByRole('button',{name:labels.nav.validation.label,exact:true}).click();await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(labels.status.ready);await dismissSavePrompt(p);}
 async function storage(p:Page){const s=p.getByTestId('workspace-storage');if(await s.getAttribute('open')===null)await s.locator(':scope > summary').click();return s;}
 async function backup(p:Page){const s=await storage(p);const event=p.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
 /** R3: the alternative fixture + its manifest go through the four-step wizard and stop after the check (not committed), so the guard tests can cancel and retry the commit. */
@@ -80,7 +80,7 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
   const evidence=card.getByTestId('evidence-checklist').locator('input[type=checkbox]').first();expect(await evidence.getAttribute('value')).toBeTruthy();await evidence.check();await expect(card.getByTestId('evidence-checklist').locator('input[type=checkbox]:checked')).toHaveCount(1);await card.getByRole('button',{name:labels.buttons.confirm,exact:true}).click();
   if(i<=3)await card.getByRole('button',{name:labels.buttons.pin,exact:true}).click();
  }
- await page.getByRole('button',{name:labels.nav.overview.label,exact:true}).click();
+ // R6：會議稿在獨立分頁「會議紀錄」（openMeeting 切到該分頁）。
  await openMeeting(page);const summary=page.getByTestId('manager-summary');
  await page.getByLabel(labels.meeting.name,{exact:true}).fill('合成資料月度營運會議');await page.getByLabel(labels.meeting.notes,{exact:true}).fill('待補物流報價，僅為靜態條件比較。');
  await summary.getByLabel(labels.meeting.threshold,{exact:true}).fill('1000');await summary.getByRole('button',{name:labels.buttons.apply,exact:true}).click();
@@ -91,7 +91,9 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  while(await updates.count())await updates.first().click();
  await page.getByLabel(labels.meeting.decision,{exact:true}).selectOption('needs_data');
  await expect(summary.locator('summary').filter({hasText:fill(summaryCopy.appendixActions,{n:5})})).toBeVisible();
+ // 離開會議分頁再回來：總覽只剩一行入口（本期會議狀態＋「前往會議紀錄」），由入口回到會議紀錄。
  await page.getByRole('button',{name:labels.nav.products.label,exact:true}).click();await page.getByRole('button',{name:labels.nav.overview.label,exact:true}).click();
+ const entry=page.getByTestId('overview-meeting-entry');await expect(entry).toContainText(fill(labels.meetingPage.entry,{state:labels.meeting.decisions.need_data}));await entry.getByRole('button',{name:labels.meetingPage.goToMeeting,exact:true}).click();await expect(page.getByTestId('meeting-page')).toBeVisible();
  await expect(summary.getByLabel(labels.meeting.threshold,{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('needs_data');
  const s=await storage(page), event=page.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();const download=await event;
  await download.saveAs(resolve(`verification/review-v2-a-workspace-${info.project.name}.json`));const text=await readFile((await download.path())!,'utf8');const wire=JSON.parse(text);
@@ -99,13 +101,15 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  await s.getByRole('button',{name:store.confirmDownloaded,exact:true}).click();
  await page.getByRole('button',{name:labels.buttons.clear,exact:true}).click();await expect(status(page)).toContainText(labels.status.empty);
  const fresh=await storage(page);await fresh.getByLabel(store.selectBackupFile,{exact:true}).setInputFiles({name:'meeting.json',mimeType:'application/json',buffer:Buffer.from(text)});await fresh.getByRole('button',{name:store.applyRestore,exact:true}).click();
+ await expect(status(page)).toContainText(labels.status.ready);await dismissSavePrompt(page);await openMeeting(page);
  await expect(summary.getByLabel(labels.meeting.threshold,{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('needs_data');
  await expect(summary).toContainText('284.00');await expect(summary).toContainText('-6.50');
- const mdEvent=page.waitForEvent('download');await summary.getByRole('button',{name:labels.buttons.exportMarkdown,exact:true}).click();const mdDownload=await mdEvent;await mdDownload.saveAs(resolve(`verification/review-v2-a-meeting-${info.project.name}.md`));const md=await readFile((await mdDownload.path())!,'utf8');const[main,appendix]=md.split(`## ${labels.sections.technicalDetails}`);
+ const mdEvent=page.waitForEvent('download');await page.getByTestId('meeting-outputs').getByRole('button',{name:labels.buttons.exportMarkdown,exact:true}).click();const mdDownload=await mdEvent;await mdDownload.saveAs(resolve(`verification/review-v2-a-meeting-${info.project.name}.md`));const md=await readFile((await mdDownload.path())!,'utf8');const[main,appendix]=md.split(`## ${labels.sections.technicalDetails}`);
  expect((main.match(/合成行動第/g)||[])).toHaveLength(3);expect((appendix.match(/合成行動第/g)||[])).toHaveLength(5);expect(main).toMatch(templateRe(summaryCopy.mdComparison,{threshold:'1000.00'},'m'));
  await page.screenshot({path:resolve(`verification/review-v2-a-meeting-${info.project.name}.png`),fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.getByRole('button',{name:labels.nav.scenarios.label,exact:true}).click();await selectScenarioChannel(page,'DTC');
  const plan=page.getByTestId('scenario-1');await plan.getByLabel(labels.scenario.oneOff.label,{exact:true}).fill('20');await expect(plan.getByTestId('scenario-contribution')).toHaveCount(0);
- await page.getByRole('button',{name:labels.nav.overview.label,exact:true}).click();await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('draft');await expect(page.getByTestId('review-workbench')).toContainText(review.staleScenarios);
+ // R6：過期方案清單在議程 ⑤（meeting-agenda-5），不在會議基本（review-workbench）。
+ await openMeeting(page);await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('draft');await expect(page.getByTestId('meeting-agenda-5')).toContainText(review.staleScenarios);
 });
