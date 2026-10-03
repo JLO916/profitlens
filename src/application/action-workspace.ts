@@ -14,6 +14,8 @@ export interface BoundAction {
   card: ActionCard; context_id: string; scope: Scope; pinned: boolean; diagnostic_id?: string;
   execution_status?: ActionExecutionStatus; progress_notes?: string; binding_revision?: number;
   binding_history?: ActionBindingRecord[]; legacy_review_required?: boolean;
+  /** R5：執行狀態最後一次改變的日期（YYYY-MM-DD）；舊資料沒有就是 undefined，不補值。 */
+  status_updated_at?: string;
 }
 export interface ActionWorkspace { contexts: ActionContext[]; items: BoundAction[]; active_dataset_hash?: string }
 export interface ActionSource { dataset: Dataset; input: DatasetInput; snapshot: WorkspaceSnapshot; revision: number; filenames?: FilenameMap; mappings?: ColumnMappings }
@@ -75,6 +77,7 @@ function validateManagement(item: BoundAction) {
   validateActionContent(item.card, false);
   if (item.card.deadline && !isBusinessDate(item.card.deadline)) throw new Error('INVALID_ACTION_DEADLINE');
   if (item.execution_status !== undefined && !ACTION_EXECUTION_STATUSES.includes(item.execution_status) || item.progress_notes !== undefined && (typeof item.progress_notes !== 'string' || item.progress_notes.length > 2000)) throw new Error('INVALID_ACTION_FIELD');
+  if (item.status_updated_at !== undefined && !isBusinessDate(item.status_updated_at)) throw new Error('INVALID_ACTION_FIELD');
   if (typeof item.card.evidence_confirmed !== 'boolean' || item.legacy_review_required !== undefined && typeof item.legacy_review_required !== 'boolean') throw new Error('INVALID_ACTION_CONFIRMATION');
 }
 function edit(workspace: ActionWorkspace, id: string, change: (item: BoundAction, context: ActionContext) => BoundAction): ActionWorkspace {
@@ -99,10 +102,12 @@ export function editBoundAction(workspace: ActionWorkspace, id: string, patch: P
     validateManagement(next); validEvidence(context, next, false); return next;
   });
 }
-export function editActionManagement(workspace: ActionWorkspace, id: string, patch: Partial<Pick<BoundAction, 'execution_status' | 'progress_notes'>>): ActionWorkspace {
+/** today：狀態真的改變時寫入 status_updated_at（YYYY-MM-DD）；同狀態或只改進度紀錄不寫。 */
+export function editActionManagement(workspace: ActionWorkspace, id: string, patch: Partial<Pick<BoundAction, 'execution_status' | 'progress_notes'>>, today: string = new Date().toISOString().slice(0, 10)): ActionWorkspace {
   return edit(workspace, id, item => {
     if (Object.keys(patch).some(key => !['execution_status', 'progress_notes'].includes(key))) throw new Error('INVALID_ACTION_FIELD');
-    const next = { ...item, ...structuredClone(patch) }; validateManagement(next); return next;
+    const statusChanged = patch.execution_status !== undefined && patch.execution_status !== item.execution_status;
+    const next = { ...item, ...structuredClone(patch), ...(statusChanged ? { status_updated_at: today } : {}) }; validateManagement(next); return next;
   });
 }
 export function confirmBoundAction(workspace: ActionWorkspace, id: string): ActionWorkspace {
@@ -198,7 +203,7 @@ export function actionDocuments(workspace: ActionWorkspace) {
     if (history.length !== binding.revision - 1 || history.some((entry, position) => entry.revision !== position + 1)) throw new Error('INVALID_ACTION_BINDING_HISTORY');
     const legacy = needsLegacyReview(workspace, item);
     return { ...structuredClone(item.card), priority: index + 1, pinned: item.pinned, status: legacy ? 'stale' as const : item.card.evidence_confirmed ? 'confirmed' as const : 'draft' as const,
-      execution_status: item.execution_status ?? 'not_started', progress_notes: item.progress_notes ?? '', evidence_review_required: legacy,
+      execution_status: item.execution_status ?? 'not_started', progress_notes: item.progress_notes ?? '', status_updated_at: item.status_updated_at ?? null, evidence_review_required: legacy,
       evidence_relation: workspace.active_dataset_hash && workspace.active_dataset_hash !== s.dataset_hash ? 'historical' as const : 'current' as const,
       data_limitations: structuredClone(context.diagnostics.find(diagnostic => diagnostic.id === item.diagnostic_id)?.limitations ?? []),
       diagnostic_id: item.diagnostic_id ?? null, evidence: item.card.fact_ids.map(id => structuredClone(s.facts.find(fact => fact.id === id)!)),
@@ -206,4 +211,31 @@ export function actionDocuments(workspace: ActionWorkspace) {
       binding: { context_id: context.id, status: legacy ? 'stale' as const : 'current' as const, dataset_id: s.dataset_id, dataset_hash: s.dataset_hash, filter_hash: s.filter_hash, metric_version: s.metric_version,
         data_as_of: s.data_as_of, revision: s.revision, period: s.period, scope: structuredClone(item.scope), analysis_scope: s.scope, comparison: s.comparison, filenames: s.filenames, stale_reasons: legacy ? s.stale_reasons : [] } };
   });
+}
+/** R5 看板：所有待辦用過的負責人（trim 後非空、去重）；越後面的待辦越前面，當作「最近用過」。 */
+export function knownOwners(workspace: ActionWorkspace): string[] {
+  const owners: string[] = [];
+  for (const item of [...workspace.items].reverse()) {
+    const owner = item.card.owner_role.trim();
+    if (owner && !owners.includes(owner)) owners.push(owner);
+  }
+  return owners;
+}
+/** R5 看板：依執行狀態分四欄，欄內保持 items 的順序（置頂在前）；沒有狀態（或無法辨識）的舊資料視為未開始。 */
+export function boardColumns(workspace: ActionWorkspace): Record<ActionExecutionStatus, BoundAction[]> {
+  const columns = Object.fromEntries(ACTION_EXECUTION_STATUSES.map(status => [status, [] as BoundAction[]])) as Record<ActionExecutionStatus, BoundAction[]>;
+  for (const item of workspace.items) (ACTION_EXECUTION_STATUSES.includes(item.execution_status as ActionExecutionStatus) ? columns[item.execution_status!] : columns.not_started).push(item);
+  return columns;
+}
+/** R5 證據清單：勾選／取消一筆引用，結果依可選數據的順序排列；不在可選清單內的既有引用保留在後（交給驗證決定）。 */
+export function toggleEvidenceId(selected: readonly string[], id: string, checked: boolean, order: readonly string[]): string[] {
+  const wanted = new Set(selected.filter(value => value !== id));
+  if (checked) wanted.add(id);
+  const ordered = order.filter(value => wanted.has(value));
+  return [...ordered, ...[...wanted].filter(value => !order.includes(value))];
+}
+/** R5 證據清單：已勾的永遠顯示；未勾的依文字搜尋（不分大小寫、前後空白不計）過濾，保持原順序。 */
+export function filterEvidenceChoices<T extends { id: string }>(choices: readonly T[], selected: readonly string[], query: string, text: (choice: T) => string): T[] {
+  const needle = query.trim().toLowerCase();
+  return choices.filter(choice => selected.includes(choice.id) || !needle || text(choice).toLowerCase().includes(needle));
 }

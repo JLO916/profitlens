@@ -91,6 +91,7 @@ const savedAction = z.strictObject({
   card: action, context_id: name, pinned: z.boolean(), diagnostic_id: name.optional(), scope,
   execution_status: z.enum(["not_started", "in_progress", "blocked", "completed"]), progress_notes: z.string().max(2000),
   binding_revision: revision.min(1), binding_history: z.array(binding), legacy_review_required: z.boolean(),
+  status_updated_at: z.string().max(10).regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 const referencedDecision = savedDecision.omit({ source_input: true }).extend({ source_hash: hash });
 const referencedActionWorkspace = z.strictObject({ active_dataset_hash: hash.optional(), contexts: z.array(referencedDecision.extend({ id: name })), items: z.array(savedAction) });
