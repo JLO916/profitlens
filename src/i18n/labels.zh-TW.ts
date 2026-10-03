@@ -1715,7 +1715,46 @@ export const productHighlights = {
 
 
 /** R6-A 會議紀錄物件與上次會議比較（meeting.ts：比較說明、Markdown 標題）。 */
-export const meetingRecord = {} as const;
+export const meetingRecord = {
+  /** 上次會議比較的四種情況（畫面徽章用）。 */
+  kinds: { none: "沒有上次會議", same_scope: "同範圍，可直接比較", different_periods: "期間不同，照樣比較", different_dataset: "資料或通路不同，只列決議與待辦" },
+  noLastMeeting: "還沒有已結束的會議；結束本次會議後，下次會議會在這裡和本次比較。",
+  sameScope: "與上次會議使用同一份資料、同樣的兩期與通路，以下直接比較。",
+  /** 期間不同：只顯示兩次會議的本期，例「上次 7/13–8/23，本次 8/24–10/4」。 */
+  differentPeriods: "上次 {last}，本次 {current}",
+  differentChannels: "上次會議看的通路（{last}）與本次（{current}）不同，只列出上次決議與待辦狀態",
+  dateRange: "{start}–{end}",
+  shortDate: "{month}/{day}",
+  shortDateWithYear: "{year}/{month}/{day}",
+  /** 上次會議比較表的欄名（畫面與 Markdown 同源）。 */
+  compareColumns: { metric: "指標", last: "上次會議本期", current: "本次本期", change: "差額" },
+  lastPriorities: "上次三件事",
+  currentPriorities: "本次三件事",
+  statusUpdatedAt: "更新於 {date}",
+  statusNotUpdated: "尚未更新狀態",
+  actionMissing: "目前工作區找不到這項待辦",
+  decisionConfirmed: "{decision}（第 {revision} 版確認）",
+  decisionUnconfirmed: "{decision}（尚未確認）",
+  scenarioRevision: "{name}（第 {revision} 版）",
+  noScenarios: "本次會議沒有選入方案。",
+  noPinnedActions: "本次會議沒有置頂待辦。",
+  mdTitle: "# {brand} 會議紀錄：{name}",
+  mdMeta: "{date}：{value}｜{decision}：{state}｜結束時間：{finalizedAt}",
+  mdScope: "## 固定範圍",
+  mdField: "- {field}：{value}",
+  mdPeriod: "- {period}：{start}～{end}",
+  mdThreshold: "- {field}：{amount} TWD",
+  mdKpiRow: "- {metric}：{previous} → {current}；差額 {change}",
+  mdPriorityRow: "{n}. {headline}｜{scope}｜{impact} {amount}",
+  mdNextStep: "   {label}：{step}",
+  mdScenarioRow: "- {name}｜{channel}｜現況 {baseline}；試算後的扣廣告後貢獻 {contribution}；與現況相比 {delta} TWD",
+  mdAssumption: "  - 假設：{text}",
+  mdActionRow: "- {problem}：{action}｜{owner} {ownerValue}｜{due} {dueValue}｜{status} {statusValue}（{updated}）｜{scope}",
+  mdLastMeeting: "上次會議：{name}（{date}）",
+  mdLastDecision: "- 上次決議：{decision}；{notes}：{text}",
+  mdFollowUpRow: "- {problem}：上次 {last} → 目前 {current}（{updated}）",
+  agenda: { kpis: "① 兩個關鍵差額", priorities: "② 本期三件事", channels: "③ 通路表", followUp: "④ 上次決議追蹤", scenarios: "⑤ 本次選入方案", actions: "⑥ 置頂行動" },
+} as const;
 
 
 
