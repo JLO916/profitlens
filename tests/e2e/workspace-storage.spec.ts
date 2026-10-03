@@ -26,6 +26,11 @@ const savePrompt = (page: Page) => page.getByTestId("local-save-prompt");
 const autoStatus = (page: Page) => storage(page).getByTestId("autosave-status");
 const savedTag = (page: Page) => storage(page).locator(":scope > summary .tag");
 const consentBox = (page: Page) => storage(page).getByLabel(storageCopy.consent, { exact: true });
+/** 同意後才出現的「自動保存」開關（預設勾選；取消＝維持手動「存在這台電腦」）。 */
+const autoToggle = (page: Page) => storage(page).getByTestId("autosave-toggle");
+const announce = (page: Page) => page.getByTestId("local-save-announce");
+/** 本機副本目前保存的通路篩選（沒有副本時 null）。 */
+const savedChannels = async (page: Page) => { const copy = await readLocalCopy(page); return copy ? JSON.parse(copy.text).payload.active.filters.channels as string[] : null; };
 const kpiContribution = (page: Page) => page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value");
 const channelFilter = (page: Page) => page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true });
 /** 還原預覽摘要的通路片段（labels 模板「… · 通路 {channels}」最後一段）。 */
@@ -326,16 +331,24 @@ test("R6 首次保存提示：先不要維持手動保存、不建立本機資�
   await expect(page.getByRole("dialog", { name: autoCopy.promptTitle, exact: true })).toBeVisible();
   await expect(prompt).not.toHaveAttribute("aria-modal", "true");
   await expect(prompt).toContainText(autoCopy.promptBody);
-  // 共享電腦提醒在同意對話框內（05 §12）；這台電腦沒有保存過，所以沒有「會改存」提醒。
+  // 提示 portal 到 <body> 最後（在 main 之後，Tab 順序排在頁面內容後面）；出現時由 polite live region 宣告。
+  expect(await prompt.evaluate(element => element.parentElement === document.body && Boolean(document.querySelector("main")!.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  await expect(announce(page)).toHaveText(autoCopy.announce);
+  await expect(announce(page)).toHaveAttribute("role", "status");
+  // 共享電腦提醒只在同意對話框內（05 §12），儲存選單裡沒有；這台電腦沒有保存過，所以沒有「會改存」提醒。
   await expect(prompt).toContainText(storageCopy.caution);
+  await expect(storage(page)).not.toContainText(storageCopy.caution);
   await expect(prompt.getByTestId("local-save-replace-warning")).toHaveCount(0);
   // 提示開著也不讀寫本機資料庫。
   expect(await localDatabases(page)).toEqual([]);
   await prompt.getByRole("button", { name: autoCopy.decline, exact: true }).click();
   await expect(prompt).toHaveCount(0);
+  await expect(announce(page)).toHaveText("");
   await openStorage(page);
   await expect(consentBox(page)).not.toBeChecked();
   await expect(autoStatus(page)).toHaveText(autoCopy.statusOff);
+  // 沒同意就沒有自動保存開關。
+  await expect(autoToggle(page)).toHaveCount(0);
   await expect(storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true })).toBeDisabled();
   await channelFilter(page).selectOption("MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText("-15.00");
@@ -408,4 +421,114 @@ test("R6 自動保存：按「存在這台電腦」3 秒內寫入 v4 備份，�
   expect(await localDatabases(page)).toEqual([]);
   await expect(savedTag(page)).toHaveText(labels.status.unsaved);
   expect(posts).toEqual([]);
+});
+
+test("R6 自動保存開關：同意後預設開啟，取消後修改不再自動寫入、手動「存在這台電腦」仍可用；重新勾選後照常自動保存", async ({ page }) => {
+  await golden(page);
+  await acceptSavePrompt(page);
+  const first = await waitForLocalSave(page, null);
+  expect(JSON.parse(first.text).payload.active.filters.channels).toEqual(["DTC"]);
+  await openStorage(page);
+  await expect(consentBox(page)).toBeChecked();
+  await expect(autoToggle(page)).toBeChecked();
+  await expect(storage(page).getByRole("checkbox", { name: autoCopy.toggle, exact: true })).toBeChecked();
+  await expect(autoStatus(page)).toContainText(autoCopy.statusOn);
+  // 取消自動保存：狀態改「未開啟自動保存」，同意仍勾著（手動保存可用）。
+  await autoToggle(page).uncheck();
+  await expect(autoToggle(page)).not.toBeChecked();
+  await expect(autoStatus(page)).toContainText(autoCopy.statusOff);
+  await expect(consentBox(page)).toBeChecked();
+  await channelFilter(page).selectOption("MARKETPLACE");
+  await expect(kpiContribution(page)).toHaveText("-15.00");
+  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  // 超過 2 秒的自動保存間隔（等 3 秒）：本機副本不更新。
+  await page.waitForTimeout(3_000);
+  expect((await readLocalCopy(page))!.savedAt).toBe(first.savedAt);
+  expect(await savedChannels(page)).toEqual(["DTC"]);
+  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  // 手動「存在這台電腦」：寫入目前這一版，通知說明自動保存已關閉。
+  await openStorage(page);
+  await storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true }).click();
+  await expect(storage(page).getByTestId("storage-notice")).toHaveText(autoCopy.savedLocalManualNotice);
+  const manual = await waitForLocalSave(page, first.savedAt);
+  expect(JSON.parse(manual.text).payload.active.filters.channels).toEqual(["MARKETPLACE"]);
+  await expect(savedTag(page)).toHaveText(savedTagPattern(manual.savedAt));
+  await expect(autoStatus(page)).toContainText(autoCopy.statusOff);
+  // 之後的修改仍維持手動：3 秒內不寫入。
+  await channelFilter(page).selectOption("DTC");
+  await expect(kpiContribution(page)).toHaveText("270.00");
+  await page.waitForTimeout(3_000);
+  expect((await readLocalCopy(page))!.savedAt).toBe(manual.savedAt);
+  // 重新勾選自動保存：未保存的修改在 2 秒內寫入。
+  await openStorage(page);
+  await autoToggle(page).check();
+  await expect(autoStatus(page)).toContainText(autoCopy.statusOn);
+  const resumed = await waitForLocalSave(page, manual.savedAt);
+  expect(JSON.parse(resumed.text).payload.active.filters.channels).toEqual(["DTC"]);
+  await expect(savedTag(page)).toHaveText(savedTagPattern(resumed.savedAt));
+});
+
+test("R6 在儲存選單勾選同意而這台電腦已有副本：先顯示覆寫提醒、確認前不自動保存；按「改存成目前的工作區」後寫入並照常自動保存", async ({ page }) => {
+  await golden(page);
+  await acceptSavePrompt(page);
+  const first = await waitForLocalSave(page, null);
+  expect(JSON.parse(first.text).payload.active.filters.channels).toEqual(["DTC"]);
+  // 重新整理：工作區清空、同意重設；再載入資料時提示提醒這台電腦已有副本，這次選「先不要」。
+  await page.reload();
+  await expect(status(page)).toContainText(labels.status.empty);
+  await golden(page);
+  await expect(savePrompt(page)).toBeVisible();
+  await expect(savePrompt(page).getByTestId("local-save-replace-warning")).toHaveText(fill(autoCopy.replaceWarning, { time: formatSavedDateTime(new Date(first.savedAt)) }));
+  await savePrompt(page).getByRole("button", { name: autoCopy.decline, exact: true }).click();
+  await expect(savePrompt(page)).toHaveCount(0);
+  await channelFilter(page).selectOption("MARKETPLACE");
+  await expect(kpiContribution(page)).toHaveText("-15.00");
+  // 在選單勾選同意：已有副本 → 先顯示覆寫提醒與確認按鈕，自動保存等確認。
+  await openStorage(page);
+  await consentBox(page).check();
+  const warning = storage(page).getByTestId("autosave-replace-warning");
+  await expect(warning).toHaveText(fill(autoCopy.menuReplaceWarning, { time: formatSavedDateTime(new Date(first.savedAt)) }));
+  const confirm = storage(page).getByTestId("autosave-confirm-replace");
+  await expect(confirm).toHaveText(autoCopy.confirmReplace);
+  await expect(autoStatus(page)).toContainText(autoCopy.statusPendingReplace);
+  await expect(autoToggle(page)).toBeChecked();
+  // 確認前 3 秒內不寫入：本機副本仍是重新整理前的那一版（DTC）。
+  await page.waitForTimeout(3_000);
+  expect((await readLocalCopy(page))!.savedAt).toBe(first.savedAt);
+  expect(await savedChannels(page)).toEqual(["DTC"]);
+  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  // 確認改存：立即寫入目前的工作區（MARKETPLACE），提醒消失、狀態改為已開啟。
+  await confirm.click();
+  const replaced = await waitForLocalSave(page, first.savedAt);
+  expect(JSON.parse(replaced.text).payload.active.filters.channels).toEqual(["MARKETPLACE"]);
+  await expect(warning).toHaveCount(0);
+  await expect(confirm).toHaveCount(0);
+  await expect(autoStatus(page)).toContainText(autoCopy.statusOn);
+  await expect(savedTag(page)).toHaveText(savedTagPattern(replaced.savedAt));
+  // 之後照常自動保存。
+  await channelFilter(page).selectOption("DTC");
+  await expect(kpiContribution(page)).toHaveText("270.00");
+  const next = await waitForLocalSave(page, replaced.savedAt);
+  expect(JSON.parse(next.text).payload.active.filters.channels).toEqual(["DTC"]);
+  await expect(savedTag(page)).toHaveText(savedTagPattern(next.savedAt));
+});
+
+test("R6 首次保存提示開著時，捲到頁尾的「口徑說明」仍可點（主內容底部留白，不被提示擋住）", async ({ page }) => {
+  await golden(page);
+  const prompt = savePrompt(page);
+  await expect(prompt).toBeVisible();
+  await expect(announce(page)).toHaveText(autoCopy.announce);
+  // 捲到最底：頁尾按鈕在畫面上的位置已是最高，按鈕中心點命中的是按鈕本身（不是提示框）。
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const basis = page.locator("footer.main-footer").getByRole("button", { name: labels.buttons.basis, exact: true });
+  await expect(basis).toBeInViewport();
+  expect(await basis.evaluate(element => { const box = element.getBoundingClientRect(); const target = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2); return target !== null && (target === element || element.contains(target)); })).toBe(true);
+  await basis.click();
+  const dialog = page.getByTestId("basis-dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: labels.basis.title, exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  // 提示仍在（點頁尾不算回答）。
+  await expect(prompt).toBeVisible();
 });

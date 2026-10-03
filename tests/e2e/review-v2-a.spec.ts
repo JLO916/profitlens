@@ -1,5 +1,5 @@
 import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
-import { dismissSavePrompt, openMeeting, selectScenarioChannel, switchActionsView } from './replacement-helpers';
+import { closeDetails, dismissSavePrompt, openMeeting, selectScenarioChannel, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { fill, labels } from '../../src/i18n';
 import { appendFile, readFile } from 'node:fs/promises';
@@ -90,7 +90,9 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  const updates=page.getByRole('button',{name:templateRe(review.refreshActionRef)});
  while(await updates.count())await updates.first().click();
  await page.getByLabel(labels.meeting.decision,{exact:true}).selectOption('needs_data');
- await expect(summary.locator('summary').filter({hasText:fill(summaryCopy.appendixActions,{n:5})})).toBeVisible();
+ // R6：未置頂的五項收在議程 ⑥ 的「其他待辦（5）」（details.meeting-other-actions）；主管摘要不再有方案與待辦區塊。
+ await expect(page.getByTestId('meeting-agenda-6').locator('details.meeting-other-actions > summary')).toHaveText(fill(summaryCopy.appendixActions,{n:5}));
+ await expect(summary.locator('summary').filter({hasText:fill(summaryCopy.appendixActions,{n:5})})).toHaveCount(0);
  // 離開會議分頁再回來：總覽只剩一行入口（本期會議狀態＋「前往會議紀錄」），由入口回到會議紀錄。
  await page.getByRole('button',{name:labels.nav.products.label,exact:true}).click();await page.getByRole('button',{name:labels.nav.overview.label,exact:true}).click();
  const entry=page.getByTestId('overview-meeting-entry');await expect(entry).toContainText(fill(labels.meetingPage.entry,{state:labels.meeting.decisions.need_data}));await entry.getByRole('button',{name:labels.meetingPage.goToMeeting,exact:true}).click();await expect(page.getByTestId('meeting-page')).toBeVisible();
@@ -101,9 +103,12 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  await s.getByRole('button',{name:store.confirmDownloaded,exact:true}).click();
  await page.getByRole('button',{name:labels.buttons.clear,exact:true}).click();await expect(status(page)).toContainText(labels.status.empty);
  const fresh=await storage(page);await fresh.getByLabel(store.selectBackupFile,{exact:true}).setInputFiles({name:'meeting.json',mimeType:'application/json',buffer:Buffer.from(text)});await fresh.getByRole('button',{name:store.applyRestore,exact:true}).click();
- await expect(status(page)).toContainText(labels.status.ready);await dismissSavePrompt(page);await openMeeting(page);
+ await expect(status(page)).toContainText(labels.status.ready);
+ // R6：恢復後保存提示再出現（portal 到 body、z-index 低於頂欄選單）；390 寬時仍開著的儲存選單面板會蓋住底部提示，先收起選單再回答。
+ await closeDetails(fresh);await expect(page.getByTestId('local-save-prompt')).toBeVisible();await dismissSavePrompt(page);await expect(page.getByTestId('local-save-prompt')).toHaveCount(0);await openMeeting(page);
  await expect(summary.getByLabel(labels.meeting.threshold,{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('needs_data');
- await expect(summary).toContainText('284.00');await expect(summary).toContainText('-6.50');
+ // R6：選入方案的試算結果列在議程 ⑤（meeting-agenda-5）。
+ const scenarioResults=page.getByTestId('meeting-agenda-5').getByTestId('meeting-scenario-results');await expect(scenarioResults.getByTestId('meeting-scenario-result')).toHaveCount(2);await expect(scenarioResults).toContainText('284.00');await expect(scenarioResults).toContainText('-6.50');
  const mdEvent=page.waitForEvent('download');await page.getByTestId('meeting-outputs').getByRole('button',{name:labels.buttons.exportMarkdown,exact:true}).click();const mdDownload=await mdEvent;await mdDownload.saveAs(resolve(`verification/review-v2-a-meeting-${info.project.name}.md`));const md=await readFile((await mdDownload.path())!,'utf8');const[main,appendix]=md.split(`## ${labels.sections.technicalDetails}`);
  expect((main.match(/合成行動第/g)||[])).toHaveLength(3);expect((appendix.match(/合成行動第/g)||[])).toHaveLength(5);expect(main).toMatch(templateRe(summaryCopy.mdComparison,{threshold:'1000.00'},'m'));
  await page.screenshot({path:resolve(`verification/review-v2-a-meeting-${info.project.name}.png`),fullPage:true});

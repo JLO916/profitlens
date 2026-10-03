@@ -23,6 +23,9 @@ const netRevenueLabel = metricDefinitions.net_revenue.label;
 /** R2: the "no pinned actions" notice and the "no actions at all" message both come from labels.ui.managerSummary. */
 const notice = summaryCopy.unpinnedNotice;
 const noActions = summaryCopy.noActions;
+/** R6：會議紀錄頁的議程 ⑥ 列置頂行動（最多 3 項，meeting-pinned-actions）；未置頂收在 details.meeting-other-actions。主管摘要（議程模式）不再有「方案與待辦」區塊。 */
+const agendaActions = (page: Page) => page.getByTestId("meeting-agenda-6");
+const otherActions = (page: Page, n: number) => agendaActions(page).locator("details.meeting-other-actions").filter({ has: page.locator(":scope > summary", { hasText: new RegExp(`^${escapeRegExp(fill(summaryCopy.appendixActions, { n }))}$`) }) });
 const actionName = (index: number) => `匯出驗收行動第${index}項`;
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** R2 moved the Markdown technical appendix under labels.sections.technicalDetails ("## 技術細節"). */
@@ -132,9 +135,12 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await summary.getByLabel(labels.meeting.threshold, { exact: true }).fill("1000");
   await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(summary.getByLabel(labels.meeting.threshold, { exact: true })).toHaveValue("1000.00");
-  const main = summary.getByRole("heading", { name: summaryCopy.decisionsHeading, exact: true }).locator("..").locator(":scope > ul > li");
+  await expect(summary.getByRole("heading", { name: summaryCopy.decisionsHeading, exact: true })).toHaveCount(0);
+  const main = agendaActions(page).getByTestId("meeting-pinned-actions").locator(":scope > ul > li");
   await expect(main).toHaveCount(3);
-  const appendix = summary.locator(":scope > details").filter({ has: page.getByText(fill(summaryCopy.appendixActions, { n: 5 }), { exact: true }) });
+  await expect(agendaActions(page).getByTestId("meeting-pinned-actions-empty")).toHaveCount(0);
+  const appendix = otherActions(page, 5);
+  await expect(appendix).toHaveCount(1);
   await appendix.locator(":scope > summary").click();
   await expect(appendix.locator(":scope > ul > li")).toHaveCount(5);
   for (let index = 1; index <= 8; index++) await expect((index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })).toBeVisible();
@@ -181,9 +187,14 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await expect(page.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true })).toHaveCount(0);
   await openMeeting(page);
   await expect(main).toHaveCount(0);
-  await expect(summary).toContainText(notice);
+  // 取消全部置頂：⑥ 顯示「本次會議沒有置頂待辦」，八項都在「其他待辦（8）」；主管摘要不再有置頂提示或「沒有待辦」。
+  await expect(agendaActions(page).getByTestId("meeting-pinned-actions")).toHaveCount(0);
+  await expect(agendaActions(page).getByTestId("meeting-pinned-actions-empty")).toHaveText(labels.meetingRecord.noPinnedActions);
+  await expect(summary).not.toContainText(notice);
   await expect(summary).not.toContainText(noActions);
-  const allAppendix = summary.locator(":scope > details").filter({ has: page.getByText(fill(summaryCopy.appendixActions, { n: 8 }), { exact: true }) });
+  await expect(agendaActions(page)).not.toContainText(noActions);
+  const allAppendix = otherActions(page, 8);
+  await expect(allAppendix).toHaveCount(1);
   await allAppendix.locator(":scope > summary").click();
   await expect(allAppendix.locator(":scope > ul > li")).toHaveCount(8);
   const unpinned = await saveDownload(page, meetingOutput(page, labels.buttons.exportMarkdown), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);

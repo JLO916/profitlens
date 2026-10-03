@@ -5,7 +5,8 @@ import { expect, test as base, type Download, type Locator, type Page } from "@p
 import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { channelsLabel } from "../../src/application/copy";
-import { acceptSavePrompt, clickReplacing, dismissSavePrompt, openDownloads, openMeeting, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { formatSavedDateTime } from "../../src/application/auto-save";
+import { acceptSavePrompt, clickReplacing, closeDownloads, dismissSavePrompt, openDownloads, openMeeting, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -48,6 +49,9 @@ const status = (page: Page) => page.getByTestId("workspace-status");
 const outputDir = (...parts: string[]) => resolve("verification/revamp-R6", ...parts);
 const defaultMeetingName = labels.ui.reviewSession.defaultName;
 const firstPlanName = fill(labels.ui.decisionWorkbench.defaultPlanName, { n: 1 });
+const summaryCopy = labels.ui.managerSummary;
+/** golden 的資料日（fixtures/golden/manifest.json 的 data_as_of）。 */
+const GOLDEN_AS_OF = "2026-08-03";
 /** 「採用（第 n 版確認）」：版號是會議稿的修訂次數，只要求是數字。 */
 const confirmedRe = (decision: keyof typeof labels.meeting.decisions) => escapeRe(fill(record.decisionConfirmed, { decision: labels.meeting.decisions[decision], revision: "§" })).replace("§", "\\d+");
 const historyTitle = (name: string, date: string, decision: keyof typeof labels.meeting.decisions) => templateRe(meetingPage.historyItem, { name, date }, { decision: confirmedRe(decision) });
@@ -215,11 +219,12 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await expect(followUp.locator("tbody tr th")).toHaveText(problem);
   await expect(followUp.locator("tbody tr td")).toHaveText([labels.actions.statuses.not_started, labels.actions.statuses.not_started, record.statusNotUpdated]);
 
-  // 總覽只留一行入口：本期會議草稿＋上次會議日期。
+  // 總覽只留一行入口：剛結束會議、新會議稿還沒動過 → 「本期會議：已結束（日期）· 新會議稿：草稿」（不再另列「上次會議 日期」）。
   await nav(page, "overview").click();
   const entry = page.getByTestId("overview-meeting-entry");
-  await expect(entry).toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
-  await expect(entry).toContainText(fill(meetingPage.entryLast, { date: today }));
+  await expect(entry).toContainText(fill(meetingPage.entryFinalized, { date: today }));
+  await expect(entry).not.toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 
   // 備份 v4：meeting_history 一筆（凍結的議程：選入方案 270.00、置頂待辦一項）。
   const storage = await openStorage(page);
@@ -260,11 +265,12 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await expect(restored.getByTestId("meeting-history-item")).toHaveCount(1);
   await expect(restored.getByTestId("meeting-history-item").first().locator("summary")).toHaveText(historyTitle(name, today, "adopted"));
   await expectSameScopeCompare(restored);
+  // 還原備份後新會議稿仍是未動過的第 1 版草稿：總覽入口同樣顯示「已結束（日期）」。
   await nav(page, "overview").click();
-  await expect(page.getByTestId("overview-meeting-entry")).toContainText(fill(meetingPage.entryLast, { date: today }));
+  await expect(page.getByTestId("overview-meeting-entry")).toContainText(fill(meetingPage.entryFinalized, { date: today }));
 });
 
-test("b. 不同資料的降級：golden 結束會議後換成示範資料，會議改用目前資料 → 只列上次決議與置頂待辦狀態", async ({ page }) => {
+test("b. 不同資料的降級：golden 結束會議後換成示範資料，會議改用目前資料 → 比較區只留一句，上次決議與置頂待辦狀態只列在議程 ④", async ({ page }) => {
   test.setTimeout(120_000);
   const today = taipeiToday();
   const problem = "R6 跨資料追蹤的待辦";
@@ -300,7 +306,13 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   await expect(different.getByTestId("meeting-compare-note")).toHaveText(labels.meeting.noComparable);
   await expect(different.getByTestId("meeting-compare-kpis")).toHaveCount(0);
   await expect(different).toContainText(fill(meetingPage.compareKind, { kind: record.kinds.different_dataset }));
-  const followUp = different.getByTestId("meeting-compare-followup");
+  // 比較區只留一句「上次決議與置頂待辦的狀態列在議程 ④」；決議與待辦表只在 ④（meeting-agenda-4）出現一次。
+  await expect(different.getByTestId("meeting-compare-see-followup")).toHaveText(meetingPage.compareSeeFollowUp);
+  await expect(different.getByTestId("meeting-compare-followup")).toHaveCount(0);
+  await expect(different.locator("table")).toHaveCount(0);
+  await expect(different.locator("ul > li")).toHaveCount(0);
+  const followUp = meeting.getByTestId("meeting-agenda-4").getByTestId("meeting-followup");
+  await expect(meeting.getByTestId("meeting-followup")).toHaveCount(1);
   await expect(followUp).toContainText(fill(record.mdLastMeeting, { name: defaultMeetingName, date: today }));
   await expect(followUp.locator("ul > li")).toHaveText([new RegExp(`^${escapeRe(`${meetingPage.lastDecision}：`)}${confirmedRe("need_data")}$`)]);
   await expect(followUp.locator("tbody tr")).toHaveCount(1);
@@ -314,8 +326,7 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 });
 
-// 目前因產品 bug 失敗（已回報，不 skip）：meeting-page.tsx 用「目前檢視」的 dataset_id 決定通路別名（const alias = demoAlias(source.snapshot.report.dataset_id)），
-// 換成示範資料後，固定在 golden 的會議稿也被顯示成「官網 · DTC」。docs/DECISIONS.md（R2）：示範通路別名只對示範資料集生效，golden 維持原通路代碼。
+// 會議的通路別名依會議固定來源的 dataset_id（reviewDatasetId），不看目前檢視；docs/DECISIONS.md（R2）：示範通路別名只對示範資料集生效，golden 維持原通路代碼。
 test("b2. 換成示範資料後，固定在 golden 的會議稿仍顯示 golden 的通路代碼（不套示範別名）；目前檢視（示範）才用別名", async ({ page }) => {
   test.setTimeout(90_000);
   await loadDataset(page, "golden");
@@ -333,7 +344,7 @@ test("b2. 換成示範資料後，固定在 golden 的會議稿仍顯示 golden 
   for (const channel of channels) await expect(meeting.getByTestId("meeting-agenda-5").getByLabel(fill(review.scenarioSelect, { channel }), { exact: true })).toHaveCount(1);
 });
 
-test("c. 匯出產物：下載選單的會議摘要四項；Excel（六張工作表、公式逃逸）與 PPT 一頁式可下載並存檔；會議頁輸出列的 Excel 帶會議名稱", async ({ page }, testInfo) => {
+test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項；選單的 Excel／PPT 只依目前檢視（不含會議）、完成後焦點回到「下載」；會議頁輸出列的 Excel／PPT 帶會議名稱並逸出", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   const project = testInfo.project.name;
   await mkdir(outputDir("artifacts"), { recursive: true });
@@ -344,7 +355,7 @@ test("c. 匯出產物：下載選單的會議摘要四項；Excel（六張工作
   const menu = await openDownloads(page);
   const section = menu.getByTestId("download-meeting-section");
   await expect(section).toHaveText(labels.sections.meetingSummary);
-  // 「會議摘要」小標下（到下一個小標或說明為止）依序四項。
+  // 「摘要匯出（目前檢視）」小標下（到下一個小標或說明為止）依序四項。
   const sectionItems = await section.evaluate(element => {
     const names: string[] = [];
     for (let node = element.nextElementSibling; node && !node.matches(".menu-section, .menu-note"); node = node.nextElementSibling) {
@@ -356,7 +367,8 @@ test("c. 匯出產物：下載選單的會議摘要四項；Excel（六張工作
   expect(sectionItems).toEqual([labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown]);
   await expect(menu).toContainText(labels.meetingPage.menuViewNote);
 
-  // Excel：profitlens.xlsx、zip（PK）、> 5 KB、六張工作表；摘要帶目前會議稿的名稱。
+  // Excel：profitlens.xlsx、zip（PK）、> 5 KB、六張工作表；選單版只依目前檢視：摘要沒有會議名稱／日期列，也不帶會議稿的名稱。
+  const downloadSummary = page.getByTestId("download-menu").locator(":scope > summary");
   const excel = await downloadFrom(page, menu.getByRole("button", { name: labels.buttons.exportExcel, exact: true }));
   expect(excel.download.suggestedFilename()).toBe("profitlens.xlsx");
   expect(excel.bytes.subarray(0, 2).toString("latin1")).toBe("PK");
@@ -364,18 +376,29 @@ test("c. 匯出產物：下載選單的會議摘要四項；Excel（六張工作
   const workbook = XLSX.read(excel.bytes, { type: "buffer" });
   expect(workbook.SheetNames).toEqual(Object.values(labels.excelExport.sheets));
   const summaryCells = (book: XLSX.WorkBook) => XLSX.utils.sheet_to_json<unknown[]>(book.Sheets[labels.excelExport.sheets.summary], { header: 1, raw: false }).flat().map(String);
-  expect(summaryCells(workbook)).toEqual(expect.arrayContaining([labels.excelExport.summary.items.meetingName, defaultMeetingName]));
+  const viewCells = summaryCells(workbook);
+  expect(viewCells).toEqual(expect.arrayContaining([labels.excelExport.summary.items.dataset, "golden-v1"]));
+  expect(viewCells).not.toContain(labels.excelExport.summary.items.meetingName);
+  expect(viewCells).not.toContain(labels.excelExport.summary.items.meetingDate);
+  expect(viewCells).not.toContain(labels.excelExport.summary.sections.meeting);
+  expect(viewCells).not.toContain(defaultMeetingName);
   await excel.download.saveAs(outputDir("artifacts", `${project}-profitlens.xlsx`));
   await expect(menu).toHaveAttribute("open", "");
+  // 完成後焦點回到「下載」選單的 summary（不掉到 body）。
+  await expect(downloadSummary).toBeFocused();
 
-  // PPT 一頁式：profitlens-onepager.pptx、zip（PK）、只有一張投影片，標題是會議名稱（日期）。
+  // PPT 一頁式：profitlens-onepager.pptx、zip（PK）、只有一張投影片；選單版標題是「ProfitLens 一頁摘要」，並註明目前檢視、不含會議決議。
   const pptx = await downloadFrom(page, menu.getByRole("button", { name: labels.buttons.exportPptx, exact: true }));
   expect(pptx.download.suggestedFilename()).toBe("profitlens-onepager.pptx");
   expect(pptx.bytes.subarray(0, 2).toString("latin1")).toBe("PK");
   const slides = slideXml(pptx.bytes);
   expect(slides).toHaveLength(1);
-  expect(slides[0]).toContain(fill(labels.pptxExport.titleMeeting, { name: defaultMeetingName, date: today }));
+  expect(slides[0]).toContain(fill(labels.pptxExport.title, { brand: labels.brand.name }));
+  expect(slides[0]).toContain(labels.pptxExport.noMeeting);
+  expect(slides[0]).not.toContain(fill(labels.pptxExport.titleMeeting, { name: defaultMeetingName, date: today }));
+  expect(slides[0]).not.toContain(defaultMeetingName);
   await pptx.download.saveAs(outputDir("artifacts", `${project}-profitlens-onepager.pptx`));
+  await expect(downloadSummary).toBeFocused();
 
   // 會議頁輸出列五鈕；改會議名稱（含公式開頭與 XML 特殊字元）後匯出 Excel／PPT：Excel 是文字不是公式、PPT 的 XML 有逸出。
   const meeting = await openMeeting(page);
@@ -404,7 +427,7 @@ test("c. 匯出產物：下載選單的會議摘要四項；Excel（六張工作
   await expect(outputs.getByRole("alert")).toHaveCount(0);
 });
 
-test("d. PDF／列印：下載選單「匯出 PDF」呼叫 window.print()、列印版面只有三件事與附錄；A4 PDF 存檔；會議頁輸出列也走同一流程", async ({ page }, testInfo) => {
+test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 printContext、無會議）、afterprint 後焦點回到「下載」；A4 PDF 存檔；會議頁輸出列帶會議頁首、決議行與選入方案一行、假設在附錄", async ({ page }, testInfo) => {
   test.setTimeout(90_000);
   const project = testInfo.project.name;
   // 只替換會擋住流程的系統列印對話框，記錄呼叫次數；列印版面與 print media 樣式照常運作。
@@ -440,9 +463,14 @@ test("d. PDF／列印：下載選單「匯出 PDF」呼叫 window.print()、列�
   await expect(appendix).toHaveCount(1);
   await expect(appendix).toContainText("contribution-v1");
   expect(await appendix.evaluate(element => getComputedStyle(element).breakBefore)).toBe("page");
-  // 有會議稿：頁首帶會議名稱、日期與資料日。
-  const printMeta = templateRe(labels.meetingPage.printHeader, { name: defaultMeetingName, date: today }, { asOf: "\\d{4}-\\d{2}-\\d{2}" });
-  await expect(print.locator(":scope > header > p").first()).toHaveText(printMeta);
+  // 三件事的 ol 有 1. 2. 3. 編號。
+  expect(await print.locator(":scope > ol").evaluate(element => getComputedStyle(element).listStyleType)).toBe("decimal");
+  // 選單版只依目前檢視：頁首第一段是 printContext（狀態＝「目前檢視（不含會議決議）」），沒有會議名稱頁首、決議行與選入方案。
+  await expect(print.locator(":scope > header > p").first()).toHaveText(fill(summaryCopy.printContext, { state: meetingPage.printViewState, asOf: GOLDEN_AS_OF, channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
+  await expect(print.locator(":scope > header")).not.toContainText(defaultMeetingName);
+  await expect(print.getByTestId("print-decision-line")).toHaveCount(0);
+  await expect(print.getByTestId("print-scenario-line")).toHaveCount(0);
+  await expect(print.getByTestId("print-appendix-assumptions")).toHaveCount(0);
   await mkdir(outputDir(), { recursive: true });
   const pdfPath = outputDir(`manager-summary-A4-${project}.pdf`);
   await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
@@ -450,19 +478,55 @@ test("d. PDF／列印：下載選單「匯出 PDF」呼叫 window.print()、列�
   expect(pdf.subarray(0, 5).toString("latin1")).toBe("%PDF-");
   expect((pdf.toString("latin1").match(/\/Type\s*\/Page(?!s)/g) ?? []).length).toBeGreaterThanOrEqual(2);
   await page.emulateMedia({ media: "screen" });
+  // page.pdf() 本身會觸發 beforeprint／afterprint（當下仍模擬 print media，頂欄不顯示、無法聚焦），列印版面在那時就已移除；這裡的 afterprint 只是保險。
   await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
   await expect(print).toHaveCount(0);
   await expect(status(page)).toBeVisible();
+  // 再從選單列印一次（不產 PDF）：畫面模式下的 afterprint 後列印版面移除、焦點回到「下載」選單的 summary。
+  const again = await openDownloads(page);
+  await again.getByRole("button", { name: labels.buttons.exportPdf, exact: true }).click();
+  await expect(again).not.toHaveAttribute("open", "");
+  await expect.poll(printCalls).toBe(2);
+  await expect(print).toHaveCount(1);
+  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+  await expect(print).toHaveCount(0);
+  await expect(page.getByTestId("download-menu").locator(":scope > summary")).toBeFocused();
 
   // 會議頁輸出列「匯出 PDF」：同一流程；列印中多「回到畫面」按鈕，按下後列印版面移除。
+  // 先把 DTC「維持現況」方案（270.00）選入會議：⑤ 下方列出選入結果，列印第一頁每個方案一行、完整假設在附錄。
+  await calculateKeepPlan(page);
   const meeting = await openMeeting(page);
+  const agenda5 = meeting.getByTestId("meeting-agenda-5");
+  await expect(agenda5.getByTestId("meeting-scenario-results-empty")).toHaveText(summaryCopy.noScenario);
+  await agenda5.getByLabel(fill(review.scenarioSelect, { channel: "DTC" }), { exact: true }).selectOption({ label: fill(review.planOption, { name: firstPlanName }) });
+  const results = agenda5.getByTestId("meeting-scenario-results").getByTestId("meeting-scenario-result");
+  await expect(results).toHaveCount(1);
+  await expect(results.first()).toHaveAttribute("data-status", "current");
+  await expect(results.first()).toContainText(firstPlanName);
+  await expect(results.first()).toContainText("270.00");
+  await expect(agenda5.getByTestId("meeting-scenario-results-empty")).toHaveCount(0);
   const outputs = meeting.getByTestId("meeting-outputs");
   await expect(outputs.getByText(labels.meetingPage.pdfHint, { exact: true })).toBeVisible();
   await outputs.getByRole("button", { name: labels.buttons.exportPdf, exact: true }).click();
-  await expect.poll(printCalls).toBe(2);
+  await expect.poll(printCalls).toBe(3);
   await expect(print).toHaveCount(1);
+  // 有會議稿：頁首帶會議名稱、日期與資料日。
+  const printMeta = templateRe(labels.meetingPage.printHeader, { name: defaultMeetingName, date: today, asOf: GOLDEN_AS_OF });
   await expect(print.locator(":scope > header > p").first()).toHaveText(printMeta);
   await expect(print.locator(":scope > ol > li")).toHaveCount(3);
+  // 第一頁的決議行在關鍵差額之後、三件事（h2）之前。
+  const decisionLine = print.getByTestId("print-decision-line");
+  await expect(decisionLine).toHaveText(fill(summaryCopy.printMeetingLine, { name: defaultMeetingName, state: labels.meeting.decisions.draft, notes: "" }));
+  const neighbours = await decisionLine.evaluate(element => ({ previous: element.previousElementSibling?.textContent ?? "", nextTag: element.nextElementSibling?.tagName ?? "", next: element.nextElementSibling?.textContent ?? "" }));
+  expect(neighbours.previous).toContain(labels.metrics.contribution_after_marketing.label);
+  expect(neighbours).toMatchObject({ nextTag: "H2", next: labels.sections.topThree });
+  // 選入方案在第一頁只有一行；五項假設（數量、折扣、履約、廣告、一次性成本）在附錄。
+  await expect(print.getByTestId("print-scenario-line")).toHaveCount(1);
+  await expect(print.getByTestId("print-scenario-line")).toContainText("270.00");
+  const assumptions = print.getByTestId("print-appendix-assumptions");
+  await expect(assumptions).toHaveCount(1);
+  await expect(assumptions).toContainText(firstPlanName);
+  expect(await assumptions.locator("li").count()).toBeGreaterThanOrEqual(5);
   const exit = outputs.getByRole("button", { name: labels.ui.managerSummary.exitPrint, exact: true });
   await expect(exit).toBeVisible();
   await exit.click();
@@ -611,4 +675,92 @@ test("f2. 首次保存提示選「先不要」：維持手動、不建立本機�
   await page.keyboard.press("Escape");
   await expect(prompt).toHaveCount(0);
   expect(await hasDatabase()).toBe(false);
+});
+
+test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文有「## 口徑」與臺北結束時間、選單下載同一份；移除先確認（取消／確定）→ 歷史 0 筆、狀態宣告、焦點回到標題", async ({ page }) => {
+  test.setTimeout(90_000);
+  const today = taipeiToday();
+  const notes = "R6 g 的會議備註";
+  await loadDataset(page, "golden");
+  await declineSavePrompt(page);
+  const meeting = await openMeeting(page);
+  // 先填備註再選決議（改備註會讓已選的決議回到草稿，要重新確認）。
+  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.notes, { exact: true }).fill(notes);
+  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.decision, { exact: true }).selectOption("needs_data");
+  const before = Date.now();
+  await finalizeMeeting(meeting);
+  const after = Date.now();
+  const items = meeting.getByTestId("meeting-history-item");
+  await expect(items).toHaveCount(1);
+  const summary = items.first().locator("summary");
+  await expect(summary).toHaveText(historyTitle(defaultMeetingName, today, "need_data"));
+  const title = await summary.innerText();
+
+  // 歷史項目的 Markdown：檔名帶會議日期；主文的結束時間是臺北時間 YYYY-MM-DD hh:mm（ISO 原值只在技術細節）；有「## 口徑」段；④ 從紀錄本身讀（第一次會議沒有上次）。
+  const history = await downloadFrom(page, items.first().getByRole("button", { name: `${labels.buttons.exportMarkdown} · ${title}`, exact: true }));
+  expect(history.download.suggestedFilename()).toBe(`profitlens-meeting-${today}.md`);
+  const markdown = history.bytes.toString("utf8");
+  const [body, technical] = markdown.split(`## ${labels.sections.technicalDetails}`);
+  expect(body.split("\n")[0]).toBe(fill(record.mdTitle, { brand: labels.brand.name, name: defaultMeetingName }));
+  const finalizedTimes = [...new Set([formatSavedDateTime(new Date(before)), formatSavedDateTime(new Date(after))])];
+  expect(body).toMatch(templateIn(record.mdMeta, { date: labels.meeting.date, value: today, decision: labels.meeting.decision }, { state: confirmedRe("need_data"), finalizedAt: `(?:${finalizedTimes.map(escapeRe).join("|")})` }));
+  expect(body).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+  expect(technical).toMatch(/- finalized_at：\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
+  const lines = body.split("\n");
+  const basisAt = lines.indexOf(record.mdBasis);
+  expect(basisAt, "主文有「## 口徑」段").toBeGreaterThan(lines.indexOf(record.mdScope));
+  expect(lines[basisAt + 2]).toMatch(/^- \S/);
+  expect(body).toContain(`### ${record.agenda.followUp}\n\n${record.noLastMeeting}\n`);
+  expect(body).toContain(fill(record.mdField, { field: labels.meeting.notes, value: notes }));
+
+  // 「下載 ▾」的「下載會議紀錄 Markdown」：有已結束的會議就下載最近一筆，內容與歷史項目相同；完成後焦點回到「下載」。
+  const menu = await openDownloads(page);
+  const fromMenu = await downloadFrom(page, menu.getByRole("button", { name: meetingPage.menuMarkdown, exact: true }));
+  expect(fromMenu.download.suggestedFilename()).toBe(`profitlens-meeting-${today}.md`);
+  expect(fromMenu.bytes.toString("utf8")).toBe(markdown);
+  await expect(page.getByTestId("download-menu").locator(":scope > summary")).toBeFocused();
+  await closeDownloads(page);
+
+  // 移除：按鈕（aria-expanded）→ 確認區（role=group，提醒先下載 Markdown，焦點在提醒句）；取消回到按鈕、歷史不變。
+  const remove = meeting.getByRole("button", { name: `${meetingPage.removeMeeting} · ${title}`, exact: true });
+  await expect(remove).toHaveText(meetingPage.removeMeeting);
+  await expect(remove).toHaveAttribute("data-testid", /^meeting-history-remove-.+$/);
+  await expect(remove).toHaveAttribute("aria-expanded", "false");
+  const region = meeting.getByTestId("meeting-history-remove-confirm-region");
+  await expect(region).toHaveCount(0);
+  await remove.click();
+  await expect(remove).toHaveAttribute("aria-expanded", "true");
+  await expect(region).toBeVisible();
+  await expect(region).toHaveAttribute("role", "group");
+  await expect(region.getByText(meetingPage.removeWarning, { exact: true })).toBeFocused();
+  await expect(page.getByRole("group", { name: meetingPage.removeWarning, exact: true })).toBeVisible();
+  await region.getByRole("button", { name: labels.buttons.cancel, exact: true }).click();
+  await expect(region).toHaveCount(0);
+  await expect(remove).toBeFocused();
+  await expect(remove).toHaveAttribute("aria-expanded", "false");
+  await expect(items).toHaveCount(1);
+  // Esc 也是取消。
+  await remove.click();
+  await expect(region).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(region).toHaveCount(0);
+  await expect(remove).toBeFocused();
+  await expect(items).toHaveCount(1);
+
+  // 確定移除：歷史 0 筆、顯示「還沒有已結束的會議」、狀態宣告移除了哪一筆、焦點回到「會議歷史」標題；④ 與比較區回到沒有上次會議。
+  await remove.click();
+  await region.getByTestId("meeting-history-remove-confirm").click();
+  await expect(items).toHaveCount(0);
+  await expect(region).toHaveCount(0);
+  await expect(meeting.getByTestId("meeting-history")).toContainText(meetingPage.historyEmpty);
+  await expect(meeting.getByTestId("meeting-history-status")).toHaveText(fill(meetingPage.removed, { name: defaultMeetingName, date: today }));
+  await expect(meeting.getByTestId("meeting-history").getByRole("heading", { name: meetingPage.history, exact: true })).toBeFocused();
+  await expect(meeting.getByTestId("meeting-agenda-4")).toContainText(record.noLastMeeting);
+  await expect(meeting.getByTestId("meeting-compare")).toContainText(record.noLastMeeting);
+  // 總覽入口回到「本期會議：草稿」，不再顯示已結束或上次會議日期。
+  await nav(page, "overview").click();
+  const entry = page.getByTestId("overview-meeting-entry");
+  await expect(entry).toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).not.toContainText(fill(meetingPage.entryFinalized, { date: today }));
+  await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 });
