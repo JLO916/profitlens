@@ -623,6 +623,32 @@ main summary, main button, main input, main select, main textarea, main [role="r
 
 
 /* R5-B 試算表單（scenario form / presets / absolute mode） */
+.scenario-channel { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; font-weight: 600; color: #355b4d; margin-top: 12px; }
+.scenario-channel select { min-width: 200px; font-weight: 500; }
+.scenario-channel + .note { margin-top: 6px; }
+details.assumptions-panel > summary { cursor: pointer; font-size: 17px; font-weight: 650; color: #355a48; }
+details.assumptions-panel[open] > summary { margin-bottom: 4px; }
+.scenario-preset { display: grid; gap: 4px; margin: 14px 0 4px; padding: 12px; border-radius: 8px; background: #f4f7f3; }
+.scenario-card .scenario-preset select { width: 100%; }
+.scenario-preset .note { margin: 0; }
+.scenario-preset-purpose { color: #355b4d; }
+.scenario-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.scenario-field-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; min-width: 0; }
+.scenario-field-head label { font-size: 12px; color: #3b5549; }
+.scenario-mode { display: inline-flex; flex: none; }
+.scenario-mode .button { min-height: 32px; padding: 4px 10px; border-radius: 0; font-size: 11px; }
+.scenario-mode .button:first-child { border-radius: 6px 0 0 6px; }
+.scenario-mode .button:last-child { border-radius: 0 6px 6px 0; margin-left: -1px; }
+.scenario-mode .button[aria-pressed="true"] { background: #e6efe9; border-color: #9cbfae; color: #1f4f3f; position: relative; }
+.scenario-mode .button:disabled { color: #9aa79f; cursor: not-allowed; }
+.scenario-inputs .scenario-equivalent { color: #26755f; font-weight: 600; font-variant-numeric: tabular-nums; }
+.scenario-inputs .scenario-field-error { color: #ae5339; }
+.scenario-inputs .scenario-field-note { color: #926c25; }
+.scenario-result .scenario-version { margin: 0 0 6px; }
+.scenario-other-channels > summary { cursor: pointer; font-weight: 650; color: #355a48; }
+.scenario-other-channels ul { padding-left: 18px; margin: 10px 0; display: grid; gap: 8px; font-size: 13px; line-height: 1.8; }
+.scenario-other-channels li > .text-button, .scenario-other-channels li li .text-button { margin-left: 8px; }
+@media (max-width: 640px) { .scenario-channel select { min-width: 0; width: 100%; } .scenario-preset { padding: 10px; } }
 
 
 

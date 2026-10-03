@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { formatMoney, formatSignedMoney, metricDefinitions } from "@/application/presentation";
 import { analyzeScenarioSensitivity, type ContributionThreshold } from "@/domain/scenario-sensitivity";
 import type { ScenarioBaseline, ScenarioInputs } from "@/domain/scenarios";
+import { MAX_SENSITIVITY_INPUT_LENGTH, blankSensitivity, type SensitivityInputs } from "@/application/decision";
 import { fill, labels } from "@/i18n";
 
 const copy = labels.ui.scenarioSensitivity;
@@ -27,10 +28,13 @@ function reasonText(reason: { code: string; message: string }): string {
 const letter = (index: number) => String.fromCharCode(65 + index);
 const targetLabel = (id: ContributionThreshold["id"]) => id === "zero_contribution" ? fill(copy.targetZero, { metric: metricDefinitions.contribution_after_marketing.label }) : copy.targetMaintain;
 
-/** Inputs are inherited only from a validated parent plan; sensitivity drafts stay local to this view. */
-export function ScenarioSensitivity({ baseline, inputs, stale = false }: { baseline: ScenarioBaseline; inputs: ScenarioInputs; stale?: boolean }) {
-  const [drafts, setDrafts] = useState<[string, string, string]>(["", "", ""]);
-  const [submitted, setSubmitted] = useState<readonly string[] | null>(null);
+/**
+ * Inputs are inherited only from a validated parent plan. R5-4：三組銷量假設是受控值（plan.sensitivity，沒有時為空白），
+ * 每次輸入都經 onChange 寫回方案；只有「計算三個假設」的結果（submitted）留在本元件。三格都已填的既有值（例如讀入備份）直接帶出結果。
+ */
+export function ScenarioSensitivity({ baseline, inputs, stale = false, value, onChange }: { baseline: ScenarioBaseline; inputs: ScenarioInputs; stale?: boolean; value?: SensitivityInputs; onChange: (next: SensitivityInputs) => void }) {
+  const volumes = (value ?? blankSensitivity()).volumes;
+  const [submitted, setSubmitted] = useState<readonly string[] | null>(() => volumes.every(entry => entry.trim() !== "") ? [...volumes] : null);
   const analysis = useMemo(() => analyzeScenarioSensitivity(baseline, inputs, submitted ?? ["", "", ""], { stale }), [baseline, inputs, submitted, stale]);
   return <details className="scenario-sensitivity" data-testid="scenario-sensitivity">
     <summary>{labels.sections.scenarioBreakeven}</summary>
@@ -53,8 +57,8 @@ export function ScenarioSensitivity({ baseline, inputs, stale = false }: { basel
       <h4>{copy.inputsHeading}</h4>
       <p className="note">{copy.inputsHint}</p>
       <fieldset disabled={stale}><legend className="sr-only">{copy.inputsLegend}</legend>
-        <div className="sensitivity-inputs">{drafts.map((value, index) => <label key={index}>{fill(copy.inputLabel, { letter: letter(index) })}<input type="text" inputMode="decimal" value={value} onChange={event => { setDrafts(previous => previous.map((item, position) => position === index ? event.target.value : item) as [string, string, string]); setSubmitted(null); }} /></label>)}</div>
-        <button className="button quiet" onClick={() => setSubmitted([...drafts])}>{copy.recalc}</button>
+        <div className="sensitivity-inputs">{volumes.map((entry, index) => <label key={index}>{fill(copy.inputLabel, { letter: letter(index) })}<input type="text" inputMode="decimal" maxLength={MAX_SENSITIVITY_INPUT_LENGTH} value={entry} onChange={event => { onChange({ volumes: volumes.map((item, position) => position === index ? event.target.value : item) as SensitivityInputs["volumes"] }); setSubmitted(null); }} /></label>)}</div>
+        <button className="button quiet" onClick={() => setSubmitted([...volumes])}>{copy.recalc}</button>
       </fieldset>
       <div aria-live="polite" data-testid="sensitivity-result">
         {analysis.sensitivity.status !== "valid" ? <p className={analysis.sensitivity.status === "invalid" ? "alert" : "note"}>{analysis.sensitivity.reasons.map(reasonText).join(" ")}</p> : <div className="table-scroll" role="region" aria-label={copy.tableAria} tabIndex={0}><table>

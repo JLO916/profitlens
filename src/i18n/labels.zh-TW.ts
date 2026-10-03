@@ -1650,7 +1650,17 @@ export const scenarioPresets = {
 
 
 /** R5-B 試算表單（multi-scenario-workbench.tsx／decision-workbench.tsx／scenario-sensitivity.tsx）。 */
-export const scenarioForm = {} as const;
+export const scenarioForm = {
+  channel: "試算的通路",
+  channelHint: "只換這一頁要試算的通路，上方的範圍不變。",
+  assumptionsSummary: "這個試算假設了什麼（必讀）",
+  version: "版本 {n}",
+  modeGroup: "{field}的輸入方式",
+  presetApplied: "已套用「{name}」：{purpose}",
+  discountAbsoluteHint: "本期 {rate} → 新折扣率（%）",
+  otherChannels: "其他通路的方案",
+  otherChannelsEmpty: "這個通路還沒有方案。",
+} as const;
 
 
 
