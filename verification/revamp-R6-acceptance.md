@@ -24,10 +24,29 @@
 - 刪除：`src/components/review-workbench.tsx`（內容搬入會議分頁）
 
 ## 3. 驗收命令與真實結果
-（待填）
+| 命令 | 結果 |
+|---|---|
+| `npm run typecheck` | 通過（`✓ Types generated successfully`，無錯誤） |
+| `npm run lint` | 通過（`eslint . --max-warnings=0`，0 warnings） |
+| `npm test -- --run` | **72 檔／1,435 測試全過**（新增 meeting 43＋後續、meeting-backup、excel-export、pptx-export、auto-save、workspace-storage-autosave、meeting-page） |
+| `npm run build` | `✓ Compiled successfully`，無 warning；首頁 first-load JS 由 R5 的 1,552.6 KB 增為 1,635.3 KB（raw、未壓縮），**+82.7 KB**，低於 +300 KB 門檻；xlsx／pptxgenjs 在動態載入的 chunk（402 KB＋266 KB），按下匯出才下載 |
+| `npm run test:e2e`（四尺寸） | **576 項全過（15.7 分）**：含新增 `revamp-r6.spec.ts` 9 項（會議流程、不同資料降級、Excel／PPT 實際下載、PDF、總覽入口、會議歷史移除與 Markdown）與 `workspace-storage.spec.ts` 9 項（首次提示、自動保存 3 秒內寫入 IndexedDB 含 meeting_history、自動保存開關、覆寫提醒、提示不遮頁尾）。修正前的 inventory 由四個代理各自改寫（各 spec 四尺寸全過），審查修正後再由一個代理跟上（revamp-r6 36/36、review-v2-a 16/16、review-v2-a-export 4/4、action-workspace 20/20、workspace-storage 36/36），最後全套重跑 |
+| `verification/revamp-R6-capture.config.ts` | 4/4（四尺寸各五個畫面，40 檔） |
+| 財務核心 | `git diff --stat c7ac846 -- src/domain fixtures docs/METRICS.md` 為空；`metric_version` 不變 |
+| `npm audit --omit=dev` | 3 high（xlsx ×2、image-size ×1），皆在未使用的讀取／圖片程式路徑；記於 DECISIONS（無可升級版本） |
+| 未執行 | Live AI、真實資料、Safari／Firefox、實體裝置、PowerPoint for Windows |
 
 ## 4. 瀏覽器驗收與截圖
-（待填）
+`verification/revamp-R6/`（四尺寸 1440×1000／1280×900／768×1024／390×844，各有 `-viewport.png` 與 `-full.jpg`）：
+- `1-save-prompt-*`：載入資料後右下角（手機底部滿版）的首次提示「要不要把工作區存在這台電腦？（不上傳）」，含共享電腦提醒與兩個按鈕；主內容預留底部空間。
+- `2-saved-time-*`：按「存在這台電腦」後頂欄顯示「已保存 hh:mm」、儲存選單內的自動保存狀態與開關。
+- `3-meeting-page-*`：結束一次會議後的會議分頁——會議基本（名稱、日期、固定範圍）、議程 ①–⑥、決議、上次會議比較（same_scope、差額 0.00）、會議歷史一筆、輸出列五鈕。
+- `4-download-menu-*`：下載選單含「摘要匯出（目前檢視）」一節（PDF／Excel／PPT／會議紀錄 Markdown）。
+- `5-print-*`：`emulateMedia print` 的會議摘要列印版面。
+- `manager-summary-A4-*.pdf`：E2E 以 headless Chromium 產出的 A4 PDF（第 1 頁＝摘要：關鍵差額、三件事（有編號）、通路表、方案與待辦；第 2 頁＝技術細節附錄）。
+- `artifacts/<project>-profitlens.xlsx`／`<project>-profitlens-onepager.pptx`：E2E 從「下載 ▾」實際下載的產物（PK zip、檔名正確）。
+- `office-excel-desktop.png`／`office-powerpoint-desktop.png`：用這台 Mac 的 Microsoft Excel／PowerPoint 開啟上述產物的螢幕截圖——六個工作表（摘要、通路、貢獻變化拆解、商品比較、行動、口徑）數字為數值、以 = + - @ 開頭的文字顯示為字串；PPT 單張 16:9 一頁式（標題、兩個關鍵差額、三件事、通路表、決議、置頂待辦、頁尾），無錯誤提示。擷取時 macOS 曾跳出「螢幕錄製」權限提示，未點選任何選項，截圖仍成功。
+- 主流程另以 Playwright 在 1440 寬人工檢視：首次提示、已保存時間、會議分頁全頁、下載選單（scratchpad）。
 
 ## 4b. 對抗式審查（4 視角 → 每項 3 位反駁者，≥ 2 位不反駁才算確認）
 40 項候選、34 項確認（含跨視角重複：同意文案 × 3、上次比較未凍結 × 3、選單匯出混用範圍 × 4、入口不顯示已結束 × 3、議程順序 × 2、歷史上限 × 2、覆寫提醒 × 2）、6 項被反駁。確認項處理（已修＝本批修正階段完成並重跑單元／E2E）：

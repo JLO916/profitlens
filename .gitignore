@@ -19,3 +19,6 @@ test-results*/
 .vercel/
 .agents/
 .codex/
+
+# Office 鎖定檔（開啟 .xlsx／.pptx 時產生）
+~$*
