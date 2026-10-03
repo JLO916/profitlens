@@ -1730,7 +1730,26 @@ export const excelExport = {} as const;
 
 
 /** R6-D PPT 一頁式（pptx-export.ts：標題、區塊名）。 */
-export const pptxExport = {} as const;
+export const pptxExport = {
+  title: "{brand} 一頁摘要",
+  titleMeeting: "{name}（{date}）",
+  subtitle: "資料到 {asOf}｜上期 {previousStart}～{previousEnd}（{previousDays} 天）｜本期 {currentStart}～{currentEnd}（{currentDays} 天）｜通路：{channels}",
+  priorityRow: "{n}. {headline}",
+  priorityDetail: "{impactLabel} {impact}｜{nextStepLabel}：{nextStep}",
+  channelTitle: "{table}｜{metric}（元）",
+  channelsMore: "另有 {n} 個通路未列出；完整通路表請下載 Excel 或 Markdown。",
+  decision: "決議：{decision}",
+  decisionNotes: "備註：{notes}",
+  noMeeting: "尚未建立會議；決議請到「會議紀錄」頁填寫。",
+  pinnedTitle: "置頂待辦",
+  pinnedEmpty: "還沒有置頂的待辦。",
+  pinnedRow: "{n}. {problem}",
+  pinnedMeta: "{ownerLabel} {owner}｜{dueLabel} {deadline}｜{status}",
+  statusHistorical: "{status}・{badge}",
+  technical: "指標版本 {metricVersion}｜資料版本 {datasetHash}",
+  separator: "｜",
+  ellipsis: "…",
+} as const;
 
 
 
