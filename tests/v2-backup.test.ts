@@ -87,6 +87,14 @@ describe("V2-A portable workspace v3 and exact legacy boundaries", () => {
     const payload = body.payload as Record<string, unknown>; payload.review_session = {};
     await expect(restoreWorkspaceBackup(await sign(body))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
   });
+  it("rejects R5 sensitivity on a legacy decision plan (v1/v2 keep their original shape)", async () => {
+    for (const version of ["profitlens-workspace-v1", "profitlens-workspace-v2"] as const) {
+      const body = await legacy(version);
+      await expect(restoreWorkspaceBackup(await sign(body))).resolves.toBeTruthy();
+      (body.payload.decision.scenarios[0] as Record<string, unknown>).sensitivity = { volumes: ["1", "2", "3"] };
+      await expect(restoreWorkspaceBackup(await sign(body))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+    }
+  });
   it("rejects a source reference outside the v3 source table", async () => {
     const body = JSON.parse(await exportWorkspaceBackup((await setup()).source));
     body.payload.active.source_hash = "0".repeat(64);

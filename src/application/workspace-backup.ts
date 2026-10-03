@@ -65,9 +65,7 @@ const input = z.strictObject({
   confirmedUnknownColumns: z.partialRecord(z.enum(csvFiles), z.array(name).max(1000)).optional(),
 });
 const scenarioInputs = z.strictObject({ volume_change_pct: z.string().max(100), discount_change_pp: z.string().max(100), fulfillment_change_pct: z.string().max(100), ad_change_pct: z.string().max(100), one_time_cost: z.string().max(100), assumptions_accepted: z.boolean() });
-// R5-4 加法：敏感度三組原字串（選填）；舊備份沒有 → 讀回 undefined。versions 不存敏感度。
-const sensitivity = z.strictObject({ volumes: z.tuple([z.string().max(100), z.string().max(100), z.string().max(100)]) });
-const scenario = z.strictObject({ id: name, name: z.string().max(100), inputs: scenarioInputs, calculated: z.boolean(), sensitivity: sensitivity.optional() });
+const scenario = z.strictObject({ id: name, name: z.string().max(100), inputs: scenarioInputs, calculated: z.boolean() });
 const action = z.strictObject({ id: name, problem: z.string().max(2000), fact_ids: z.array(z.string().max(3000)).max(5000), action: z.string().max(2000), owner_role: z.string().max(2000), validation_metric: z.string().max(2000), deadline: z.string().max(2000), stop_condition: z.string().max(2000), required_data: z.string().max(2000), origin: z.literal("manual"), evidence_confirmed: z.boolean() });
 const savedDecision = z.strictObject({
   source_input: input, source_mappings: mappings.optional(), filters,
@@ -86,14 +84,12 @@ const legacyEnvelopeSchema = z.strictObject({
   saved_at: z.iso.datetime(), checksum: hash,
   payload: z.strictObject({ active: z.strictObject({ input, filters, id: name, revision, filenames, mappings }), decision: savedDecision.nullable(), action_workspace: savedActionWorkspace.optional() }),
 });
-type SavedDecision = z.infer<typeof savedDecision>;
 const scope = z.strictObject({ kind: z.enum(["all", "channel", "sku"]), channels: z.array(name).min(1).max(1000), sku: name.optional(), category: z.string().max(500).optional() });
 const binding = z.strictObject({ revision: revision.min(1), context_id: name, scope, fact_ids: z.array(z.string().max(3000)).max(5000), evidence_confirmed: z.boolean(), legacy_review_required: z.boolean(), diagnostic_id: name.optional() });
 const savedAction = z.strictObject({
   card: action, context_id: name, pinned: z.boolean(), diagnostic_id: name.optional(), scope,
   execution_status: z.enum(["not_started", "in_progress", "blocked", "completed"]), progress_notes: z.string().max(2000),
   binding_revision: revision.min(1), binding_history: z.array(binding), legacy_review_required: z.boolean(),
-  status_updated_at: z.string().max(10).regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 const referencedDecision = savedDecision.omit({ source_input: true }).extend({ source_hash: hash });
 const referencedActionWorkspace = z.strictObject({ active_dataset_hash: hash.optional(), contexts: z.array(referencedDecision.extend({ id: name })), items: z.array(savedAction) });
@@ -148,10 +144,25 @@ const events = z.strictObject({
   rows: z.array(z.strictObject({ start: isoDate, end: isoDate, label: z.string().max(60), line: sourceLine })).max(MAX_EVENT_ROWS),
 });
 const uiPrefs = z.strictObject({ last_preset: z.string().min(1).max(64).optional(), view: z.enum(["board", "list"]).optional() });
+// R5 加法（只在 v4 信封）：方案的敏感度三組原字串、待辦的狀態更新日；選填，舊 v4 沒有 → 讀回 undefined。
+// v1–v3 的 schema 維持原形狀：舊信封帶這兩個欄位一律 INVALID_WORKSPACE_FORMAT。versions 不存敏感度。
+const sensitivity = z.strictObject({ volumes: z.tuple([z.string().max(100), z.string().max(100), z.string().max(100)]) });
+const scenarioV4 = scenario.extend({ sensitivity: sensitivity.optional() });
+const savedActionV4 = savedAction.extend({ status_updated_at: isoDate.optional() });
+const savedDecisionV4 = savedDecision.extend({ scenarios: z.array(scenarioV4).max(3) });
+const referencedDecisionV4 = savedDecisionV4.omit({ source_input: true }).extend({ source_hash: hash });
+const referencedActionWorkspaceV4 = referencedActionWorkspace.extend({ contexts: z.array(referencedDecisionV4.extend({ id: name })), items: z.array(savedActionV4) });
+const scenarioContextV4 = scenarioContext.extend({ plans: z.array(scenarioV4.extend({ revision: revision.min(1) })).max(3) });
+const referencedScenarioWorkspaceV4 = referencedScenarioWorkspace.extend({ contexts: z.array(scenarioContextV4) });
+const v4CorePayload = z.strictObject({ ...v3PayloadShape, decision: referencedDecisionV4.nullable(), action_workspace: referencedActionWorkspaceV4, scenario_workspace: referencedScenarioWorkspaceV4 });
+/** restoreV3 讀的 payload：v4 核心（v3 是它的子集，只是沒有 R5 的選填欄位）。 */
+type CorePayload = z.infer<typeof v4CorePayload>;
+/** restoreDecision 讀的方案：v1–v3 沒有 sensitivity（型別上是選填，讀取時仍以 "sensitivity" in plan 守衛）。 */
+type SavedDecision = z.infer<typeof savedDecisionV4>;
 const envelopeSchema = z.strictObject({
   schema_version: z.literal(WORKSPACE_VERSION), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION), saved_at: z.iso.datetime(), checksum: hash,
-  payload: z.strictObject({
-    ...v3PayloadShape,
+  // .extend keeps the strict (no unknown keys) object config.
+  payload: v4CorePayload.extend({
     preprocessing: preprocessing.nullable(), targets: targets.nullable(), events: events.nullable(),
     // Reserved for R6 meeting records; nothing may be stored here yet.
     meeting_history: z.array(z.unknown()).max(0),
@@ -208,7 +219,7 @@ async function restoreDecision(saved: SavedDecision | null, activeSnapshot: Work
   uniqueIds(saved.scenarios); uniqueIds(saved.actions);
   const scenarios = saved.scenarios.map(plan => {
     validateScenarioName(plan.name, plan.calculated);
-    return { id: plan.id, name: plan.name, inputs: structuredClone(plan.inputs), result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null, ...(plan.sensitivity ? { sensitivity: structuredClone(plan.sensitivity) } : {}) };
+    return { id: plan.id, name: plan.name, inputs: structuredClone(plan.inputs), result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null, ...("sensitivity" in plan && plan.sensitivity ? { sensitivity: structuredClone(plan.sensitivity) } : {}) };
   });
   for (const card of saved.actions) {
     validateActionContent(card, card.evidence_confirmed);
@@ -386,7 +397,7 @@ async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "c
   return { action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: null, input: active.input, dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial" };
 }
 
-async function restoreV3(payload: z.infer<typeof v3Payload>): Promise<Omit<RestoredWorkspace, keyof V4Fields>> {
+async function restoreV3(payload: CorePayload): Promise<Omit<RestoredWorkspace, keyof V4Fields>> {
   // Every saved source, including retained history, passes the same CSV boundary.
   // Cache validated datasets once; each context still rebuilds its own scope.
   const validated = new Map<string, { input: z.infer<typeof input>; validation: ValidationResult; dataset: Dataset }>();
@@ -436,7 +447,7 @@ async function restoreV3(payload: z.infer<typeof v3Payload>): Promise<Omit<Resto
     const session = { ...createDecisionSession(own.dataset, own.snapshot, saved.revision, saved.filenames), stale: saved.stale, stale_reasons: saved.stale_reasons };
     const plans = saved.plans.map(plan => {
       validateScenarioName(plan.name, plan.calculated);
-      return { id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null, ...(plan.sensitivity ? { sensitivity: structuredClone(plan.sensitivity) } : {}) };
+      return { id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null, ...("sensitivity" in plan && plan.sensitivity ? { sensitivity: structuredClone(plan.sensitivity) } : {}) };
     });
     const versions = saved.versions.map(plan => {
       validateScenarioName(plan.name);

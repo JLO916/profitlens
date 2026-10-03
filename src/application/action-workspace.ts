@@ -50,7 +50,8 @@ function captureContext(source: ActionSource): ActionContext {
   const session = createDecisionSession(source.dataset, source.snapshot, source.revision, source.filenames);
   return { id: actionContextId(session), session, diagnostics: structuredClone(source.snapshot.report.diagnostics), source_input: structuredClone(source.input), ...(source.mappings ? { source_mappings: structuredClone(source.mappings) } : {}) };
 }
-export function addActionDraft(workspace: ActionWorkspace, source: ActionSource, id: string, diagnosticId?: string): ActionWorkspace {
+/** overrides：從健檢建立時，問題／行動欄改用畫面上的 R2 文案（ruleCopy 的 headline／nextStep）；沒給就沿用 diagnostic 的 title／recommendation。 */
+export function addActionDraft(workspace: ActionWorkspace, source: ActionSource, id: string, diagnosticId?: string, overrides?: { problem?: string; action?: string }): ActionWorkspace {
   if (!id.trim() || workspace.items.some(item => item.card.id === id)) throw new Error('INVALID_ITEM_ID');
   const refreshed = refreshActionWorkspace(workspace, source.snapshot, source.revision);
   const diagnostic = diagnosticId === undefined ? undefined : source.snapshot.report.diagnostics.find(item => item.id === diagnosticId);
@@ -58,7 +59,7 @@ export function addActionDraft(workspace: ActionWorkspace, source: ActionSource,
   const captured = captureContext(source);
   const existing = refreshed.contexts.find(context => context.id === captured.id);
   const context = existing ?? captured;
-  const card: ActionCard = { id, problem: diagnostic?.title ?? '', action: diagnostic?.recommendation ?? '', fact_ids: [...(diagnostic?.fact_ids ?? [])], owner_role: '', validation_metric: '', deadline: '', stop_condition: '', required_data: '', origin: 'manual', evidence_confirmed: false };
+  const card: ActionCard = { id, problem: overrides?.problem ?? diagnostic?.title ?? '', action: overrides?.action ?? diagnostic?.recommendation ?? '', fact_ids: [...(diagnostic?.fact_ids ?? [])], owner_role: '', validation_metric: '', deadline: '', stop_condition: '', required_data: '', origin: 'manual', evidence_confirmed: false };
   validateActionEvidence(context.session, card, false);
   return { ...refreshed, contexts: existing ? refreshed.contexts : [...refreshed.contexts, context], items: [...refreshed.items, {
     card, context_id: context.id, scope: structuredClone(diagnostic?.scope ?? { kind: 'all', channels: context.session.scope.channels }), pinned: false,
@@ -102,8 +103,11 @@ export function editBoundAction(workspace: ActionWorkspace, id: string, patch: P
     validateManagement(next); validEvidence(context, next, false); return next;
   });
 }
-/** today：狀態真的改變時寫入 status_updated_at（YYYY-MM-DD）；同狀態或只改進度紀錄不寫。 */
-export function editActionManagement(workspace: ActionWorkspace, id: string, patch: Partial<Pick<BoundAction, 'execution_status' | 'progress_notes'>>, today: string = new Date().toISOString().slice(0, 10)): ActionWorkspace {
+const TAIPEI_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' });
+/** 臺北日曆日（YYYY-MM-DD）：資料口徑是 Asia/Taipei，UTC 日期在臺北凌晨 0–8 點會差一天。 */
+export function taipeiToday(now: Date = new Date()): string { return TAIPEI_DAY.format(now); }
+/** today：狀態真的改變時寫入 status_updated_at（YYYY-MM-DD，預設臺北日曆日）；同狀態或只改進度紀錄不寫。 */
+export function editActionManagement(workspace: ActionWorkspace, id: string, patch: Partial<Pick<BoundAction, 'execution_status' | 'progress_notes'>>, today: string = taipeiToday()): ActionWorkspace {
   return edit(workspace, id, item => {
     if (Object.keys(patch).some(key => !['execution_status', 'progress_notes'].includes(key))) throw new Error('INVALID_ACTION_FIELD');
     const statusChanged = patch.execution_status !== undefined && patch.execution_status !== item.execution_status;

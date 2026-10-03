@@ -85,6 +85,19 @@ describe("R5-4 sensitivity inputs travel with scenario plans in backup v4 (addit
       expect(restored.scenario_workspace.contexts[0].plans[0].result?.contribution).toBe("284.00");
     }
   });
+  it("a v3 envelope never carries sensitivity: the v3 schema keeps its original shape", async () => {
+    const withField = await exportWorkspaceBackup(await setup());
+    await expect(restoreWorkspaceBackup(withField)).resolves.toBeTruthy();
+    await expect(restoreWorkspaceBackup(await asV3(withField))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+    const plansOnly = JSON.parse(await exportWorkspaceBackup(await setup(false)));
+    plansOnly.payload.scenario_workspace.contexts[0].plans[0].sensitivity = { volumes: ["1", "2", "3"] };
+    await expect(restoreWorkspaceBackup(await resign(plansOnly))).resolves.toBeTruthy();
+    await expect(restoreWorkspaceBackup(await asV3(await resign(plansOnly)))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+    const decisionOnly = JSON.parse(await exportWorkspaceBackup(await setup(false)));
+    decisionOnly.payload.decision.scenarios[0].sensitivity = { volumes: ["1", "2", "3"] };
+    await expect(restoreWorkspaceBackup(await resign(decisionOnly))).resolves.toBeTruthy();
+    await expect(restoreWorkspaceBackup(await asV3(await resign(decisionOnly)))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+  });
   it.each([
     ["two strings", { volumes: ["1", "2"] }],
     ["four strings", { volumes: ["1", "2", "3", "4"] }],

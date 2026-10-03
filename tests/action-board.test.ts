@@ -10,7 +10,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ActionsWorkbench } from '@/components/actions-workbench';
 import { fill, labels } from '@/i18n';
 import { exportWorkspaceBackup, restoreWorkspaceBackup } from '@/application/workspace-backup';
-import { actionDocuments, addActionDraft, boardColumns, editActionManagement, editBoundAction, emptyActionWorkspace, filterEvidenceChoices, knownOwners, normalizeActionWorkspace, pinAction, toggleEvidenceId, type ActionSource, type ActionWorkspace } from '@/application/action-workspace';
+import { actionDocuments, addActionDraft, boardColumns, editActionManagement, editBoundAction, emptyActionWorkspace, filterEvidenceChoices, knownOwners, normalizeActionWorkspace, pinAction, taipeiToday, toggleEvidenceId, type ActionSource, type ActionWorkspace } from '@/application/action-workspace';
 
 async function source(): Promise<ActionSource> {
   const input = fixture(); const dataset = validateDataset(input).dataset!;
@@ -74,10 +74,23 @@ describe('R5-5 editActionManagement writes status_updated_at only when the statu
     const next = editActionManagement(w, 'A', { execution_status: 'completed', progress_notes: '已完成' }, '2026-12-31');
     expect(next.items[0]).toMatchObject({ execution_status: 'completed', progress_notes: '已完成', status_updated_at: '2026-12-31' });
   });
-  it('defaults the day to the UTC calendar date of the clock', async () => {
+  it('defaults the day to the Asia/Taipei calendar date of the clock (not UTC)', async () => {
     const { w } = await drafts(['A']);
     vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-03T23:30:00.000Z'));
-    expect(editActionManagement(w, 'A', { execution_status: 'in_progress' }).items[0].status_updated_at).toBe('2026-10-03');
+    // UTC 10/03 23:30 = 臺北 10/04 07:30。
+    expect(editActionManagement(w, 'A', { execution_status: 'in_progress' }).items[0].status_updated_at).toBe('2026-10-04');
+  });
+  it('switches day exactly at Taipei midnight (UTC 16:00), including month and year ends', async () => {
+    const { w } = await drafts(['A']);
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-03T15:59:59.999Z'));
+    expect(editActionManagement(w, 'A', { execution_status: 'blocked' }).items[0].status_updated_at).toBe('2026-10-03');
+    vi.setSystemTime(new Date('2026-10-03T16:00:00.000Z'));
+    expect(editActionManagement(w, 'A', { execution_status: 'blocked' }).items[0].status_updated_at).toBe('2026-10-04');
+    expect(taipeiToday(new Date('2026-10-31T16:00:00.000Z'))).toBe('2026-11-01');
+    expect(taipeiToday(new Date('2026-12-31T15:59:59.999Z'))).toBe('2026-12-31');
+    expect(taipeiToday(new Date('2026-12-31T16:00:00.000Z'))).toBe('2027-01-01');
+    expect(taipeiToday(new Date('2028-02-28T16:30:00.000Z'))).toBe('2028-02-29');
   });
   it.each(['', '2026-13-01', '2026-02-30', '2026/10/03', '20261003', '2026-10-3'])('rejects an invalid status day %j with INVALID_ACTION_FIELD', async (day) => {
     const { w } = await drafts(['A']);
@@ -97,6 +110,28 @@ describe('R5-5 editActionManagement writes status_updated_at only when the statu
     expect(() => actionDocuments(tampered)).toThrow('INVALID_ACTION_FIELD');
     const leap = { ...w, items: [{ ...w.items[0], status_updated_at: '2028-02-29' }] };
     expect(actionDocuments(leap)[0].status_updated_at).toBe('2028-02-29');
+  });
+});
+
+describe('R5 addActionDraft overrides (health-check copy on the card)', () => {
+  it('without overrides the card keeps the diagnostic title and recommendation', async () => {
+    const s = await source(); const diagnostic = s.snapshot.report.diagnostics[0];
+    expect(diagnostic.title).not.toBe(''); expect(diagnostic.recommendation).not.toBe('');
+    const card = addActionDraft(emptyActionWorkspace(), s, 'A', diagnostic.id).items[0].card;
+    expect(card).toMatchObject({ problem: diagnostic.title, action: diagnostic.recommendation, fact_ids: diagnostic.fact_ids });
+  });
+  it('overrides replace problem and/or action only; evidence, scope and diagnostic binding are unchanged', async () => {
+    const s = await source(); const diagnostic = s.snapshot.report.diagnostics[0];
+    const plain = addActionDraft(emptyActionWorkspace(), s, 'A', diagnostic.id).items[0];
+    const both = addActionDraft(emptyActionWorkspace(), s, 'A', diagnostic.id, { problem: '健檢列標題', action: '健檢列下一步' }).items[0];
+    expect(both.card).toEqual({ ...plain.card, problem: '健檢列標題', action: '健檢列下一步' });
+    expect(both).toMatchObject({ diagnostic_id: diagnostic.id, scope: plain.scope, execution_status: 'not_started' });
+    const problemOnly = addActionDraft(emptyActionWorkspace(), s, 'A', diagnostic.id, { problem: '只換標題' }).items[0].card;
+    expect(problemOnly).toMatchObject({ problem: '只換標題', action: diagnostic.recommendation });
+    const actionOnly = addActionDraft(emptyActionWorkspace(), s, 'A', diagnostic.id, { action: '只換下一步' }).items[0].card;
+    expect(actionOnly).toMatchObject({ problem: diagnostic.title, action: '只換下一步' });
+    // 手動新增（沒有 diagnostic）也可帶 overrides；沒帶就是空白。
+    expect(addActionDraft(emptyActionWorkspace(), s, 'B', undefined, { problem: '手動' }).items[0].card).toMatchObject({ problem: '手動', action: '', fact_ids: [] });
   });
 });
 
@@ -216,6 +251,19 @@ describe('R5-5 status_updated_at reaches exports and survives backups', () => {
     expect(restored.action_workspace.items[0].status_updated_at).toBeUndefined();
     expect(restored.action_workspace.items[1]).toMatchObject({ execution_status: 'completed', status_updated_at: '2026-10-03' });
     expect(actionDocuments(restored.action_workspace).map(doc => doc.status_updated_at)).toEqual([null, '2026-10-03']);
+  });
+  it('a v3 envelope never carries status_updated_at (INVALID_WORKSPACE_FORMAT); without it the v3 file restores', async () => {
+    const { s, w: base } = await drafts(['A']);
+    const w = editActionManagement(base, 'A', { execution_status: 'in_progress' }, '2026-10-03');
+    const v3 = JSON.parse(await exportWorkspaceBackup({ input: s.input, filters: s.snapshot.report.scope, id: 'golden', revision: 1, decision: emptyDecisionWorkspace(), action_workspace: w }));
+    v3.schema_version = 'profitlens-workspace-v3';
+    for (const key of ['preprocessing', 'targets', 'events', 'meeting_history', 'ui_prefs']) delete v3.payload[key];
+    expect(v3.payload.action_workspace.items[0].status_updated_at).toBe('2026-10-03');
+    await expect(restoreWorkspaceBackup(await sign(v3))).rejects.toThrow('INVALID_WORKSPACE_FORMAT');
+    delete v3.payload.action_workspace.items[0].status_updated_at;
+    const restored = await restoreWorkspaceBackup(await sign(v3));
+    expect(restored.action_workspace.items[0]).toMatchObject({ execution_status: 'in_progress' });
+    expect(restored.action_workspace.items[0].status_updated_at).toBeUndefined();
   });
   it.each([['2026/10/03', 'shape'], ['2026-10-033', 'length'], ['2026-02-30', 'calendar']])('rejects a re-signed backup whose status day is %j (%s)', async (day) => {
     const { s, w } = await drafts(['A']);

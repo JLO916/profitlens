@@ -11,9 +11,10 @@ import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Diagnostic, Fact, Metric, MetricName, RuleCode } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
-import { ImpactAmount, impactEvidence } from "./top-three";
+import { amountTone, ImpactAmount, impactEvidence } from "./top-three";
 
-// R5-1 健檢清單（02_IA_LAYOUT.md §4）：一個規則一列，<summary> 只放標題、範圍標籤與影響金額；按鈕與數據放在展開內容。
+// R5-1 健檢清單（02_IA_LAYOUT.md §4）：一個規則一列，<summary> 只放非互動內容（標題、範圍標籤、影響金額純文字）；
+// 可點的影響金額、按鈕與數據放在展開內容（第一行是目前範圍的影響金額與看證據／加入待辦）。
 const ui = labels.ui.workspacePanels;
 const copy = labels.diagnosisList;
 /** 預設展開前幾列。 */
@@ -72,6 +73,14 @@ export function rankingSelection(snapshot: Pick<WorkspaceSnapshot, "report">, ro
   };
 }
 
+/** <summary> 內的影響金額：純文字（summary 不放互動元件）；色調同 ImpactAmount，可點的按鈕在展開內容第一行。 */
+function ImpactText({ snapshot, diagnostic }: { snapshot: Pick<WorkspaceSnapshot, "report">; diagnostic: Diagnostic }) {
+  const evidence = impactEvidence(snapshot, diagnostic);
+  if (!evidence) return <span className="impact-amount neutral">{diagnostic.code === "MISSING_CRITICAL_DATA" ? labels.status.missing : labels.status.notApplicable}</span>;
+  const value = evidence.metric.value;
+  return <span className={`impact-amount ${amountTone(value)}`}>{value === null ? labels.status.missing : formatSignedMoney(value)}</span>;
+}
+
 export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, events = null }: DiagnosisListProps) {
   const rows = useMemo(() => groups ?? diagnosisGroups(snapshot).groups, [groups, snapshot]);
   const suffix = eventSuffix(events, snapshot.report.current.period);
@@ -97,14 +106,13 @@ function DiagnosisRow({ group, defaultOpen, snapshot, suffix, onEvidence, onCrea
       <summary className="diagnosis-summary">
         <h3 className="diagnosis-headline">{group.headline}{suffix}</h3>
         <span className="diagnosis-scopes">{group.missing && <span className="tag blocking">{ui.tagMissingData}</span>}{shown.map(row => <span key={row.diagnostic.id} className="scope-tag">{row.label}</span>)}{more > 0 && <span className="scope-tag more">{fill(copy.moreScopes, { n: more })}</span>}</span>
-        <span className="diagnosis-impact"><span className="diagnosis-impact-label">{labels.sections.impact}</span><ImpactAmount snapshot={snapshot} diagnostic={group.primary} onEvidence={onEvidence} /></span>
+        <span className="diagnosis-impact"><span className="diagnosis-impact-label">{labels.sections.impact}</span><ImpactText snapshot={snapshot} diagnostic={group.primary} /></span>
       </summary>
       <div className="diagnosis-body">
-        <div className="diagnosis-actions"><button type="button" className="button quiet" onClick={() => onEvidence(impactEvidence(snapshot, selected.diagnostic) ?? priorityEvidence(snapshot, selected.diagnostic))}>{labels.buttons.viewEvidence}</button>{onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(selected.diagnostic)}>{labels.buttons.addToActions}</button>}</div>
+        <div className="diagnosis-actions"><p className="impact-line"><span>{fill(copy.scopeImpact, { impact: labels.sections.impact, scope: selected.label })}</span><ImpactAmount snapshot={snapshot} diagnostic={selected.diagnostic} onEvidence={onEvidence} /></p><button type="button" className="button quiet" onClick={() => onEvidence(impactEvidence(snapshot, selected.diagnostic) ?? priorityEvidence(snapshot, selected.diagnostic))}>{labels.buttons.viewEvidence}</button>{onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(selected.diagnostic)}>{labels.buttons.addToActions}</button>}</div>
         {group.scopes.length > 1 && <div className="scope-switch">
           <div className="scope-chips" role="group" aria-label={copy.scopeSwitch}>{group.scopes.slice(0, shown.length).map(chip)}</div>
           {more > 0 && <details className="scope-more"><summary>{fill(copy.moreScopes, { n: more })}</summary><div className="scope-chips" role="group" aria-label={copy.scopeSwitch}>{group.scopes.slice(shown.length).map(chip)}</div></details>}
-          <p className="impact-line"><span>{fill(copy.scopeImpact, { impact: labels.sections.impact, scope: selected.label })}</span><ImpactAmount snapshot={snapshot} diagnostic={selected.diagnostic} onEvidence={onEvidence} /></p>
           {!isPrimary && <p className="diagnosis-scope-headline">{fill(copy.scopeHeadline, { scope: selected.label, headline: ruleCopy(snapshot, selected.diagnostic, alias).headline })}</p>}
         </div>}
         <h4>{group.scopes.length > 1 ? fill(copy.dataFor, { data: labels.sections.data, scope: selected.label }) : labels.sections.data}</h4>
@@ -126,6 +134,8 @@ function DiagnosisRow({ group, defaultOpen, snapshot, suffix, onEvidence, onCrea
             <div><dt>{copy.ruleCode}</dt><dd><code>{selected.diagnostic.code}</code></dd></div>
             {ranking && <div><dt>{rankingLabel(selected.diagnostic.code)}</dt><dd>TWD {rankingEvidence ? <button type="button" className="number-link" onClick={() => onEvidence(rankingEvidence)} aria-label={fill(ui.rankingAria, { title: ruleCopy(snapshot, selected.diagnostic, alias).headline, amount: formatSignedMoney(ranking.value) })}>{formatSignedMoney(ranking.value)}</button> : formatSignedMoney(ranking.value)}</dd></div>}
             <div><dt>{copy.metricVersion}</dt><dd><code>{snapshot.metric_version}</code></dd></div>
+            <div><dt>{labels.csvColumns.dataset_hash}</dt><dd><code>{snapshot.dataset_hash}</code></dd></div>
+            <div><dt>{labels.csvColumns.filter_hash}</dt><dd><code>{snapshot.filter_hash}</code></dd></div>
           </dl>
           <p className="note">{copy.factIds}</p>
           <ul>{selected.diagnostic.fact_ids.map(id => <li key={id}><code>{id}</code></li>)}</ul>
