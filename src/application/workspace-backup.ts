@@ -8,6 +8,7 @@ import type { FilenameMap } from "./export";
 import { actionContextId, actionDocuments, emptyActionWorkspace, normalizeActionWorkspace, type ActionWorkspace } from "./action-workspace";
 import { emptyScenarioWorkspace, migrateLegacyDecisionWorkspace, validateScenarioWorkspace, type ScenarioWorkspace } from "./scenario-workspace";
 import { validateReviewSession, type ReviewSession } from "./review-session";
+import { freezeMeeting, MAX_MEETING_HISTORY, meetingSchema, validateMeeting, type Meeting } from "./meeting";
 import { MAX_CSV_BYTES } from "@/lib/csv";
 import { CONVERTIBLE_FIELDS, isValidTaxRate, type RawValuesByFile, type TaxConversion } from "./tax-basis";
 import { MAX_TARGET_ROWS, targetRowIssues, type TargetRow, type TargetSet } from "./targets";
@@ -34,12 +35,16 @@ export interface WorkspaceBackupSource {
   filenames?: FilenameMap; mappings?: ColumnMappings; decision: DecisionWorkspaceState; action_workspace?: ActionWorkspace;
   scenario_workspace?: ScenarioWorkspace; review_session?: ReviewSession | null;
   preprocessing?: WorkspacePreprocessing | null; targets?: TargetSet | null; events?: EventSet | null; ui_prefs?: WorkspaceUiPrefs;
+  /** R6 會議紀錄（已結束、只讀）；沒有就寫入 []。 */
+  meeting_history?: readonly Meeting[];
 }
 export interface RestoredWorkspace extends Omit<WorkspaceBackupSource, "filters"> {
   action_workspace: ActionWorkspace;
   scenario_workspace: ScenarioWorkspace; review_session: ReviewSession | null;
   /** v1–v3 備份沒有這些欄位：一律還原為 null／{}。 */
   preprocessing: WorkspacePreprocessing | null; targets: TargetSet | null; events: EventSet | null; ui_prefs: WorkspaceUiPrefs;
+  /** R6：v1–v3 與沒有欄位時為 []；每筆都重新 validateMeeting 並深層凍結。 */
+  meeting_history: Meeting[];
   dataset: Dataset; snapshot: WorkspaceSnapshot; filenames: FilenameMap; mappings: ColumnMappings;
   issues: ValidationResult["issues"]; classification: "valid" | "partial";
 }
@@ -164,8 +169,8 @@ const envelopeSchema = z.strictObject({
   // .extend keeps the strict (no unknown keys) object config.
   payload: v4CorePayload.extend({
     preprocessing: preprocessing.nullable(), targets: targets.nullable(), events: events.nullable(),
-    // Reserved for R6 meeting records; nothing may be stored here yet.
-    meeting_history: z.array(z.unknown()).max(0),
+    // R6 會議紀錄：每筆是完整的 meeting-v1（strict），最多 MAX_MEETING_HISTORY 筆；語意檢查在 restoreV4。
+    meeting_history: z.array(meetingSchema).max(MAX_MEETING_HISTORY),
     ui_prefs: uiPrefs,
   }),
 });
@@ -300,7 +305,7 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
       sources, active: { source_hash: activeHash, filters: snapshot.report.scope, id: source.id, revision: source.revision, filenames: source.filenames ?? {}, mappings: source.mappings ?? {} }, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession,
       preprocessing: source.preprocessing ? { conversion: plain(source.preprocessing.conversion), raw_values: plain(source.preprocessing.raw_values) } : null,
       targets: source.targets ? plain(source.targets) : null, events: source.events ? plain(source.events) : null,
-      meeting_history: [], ui_prefs: uiPrefs,
+      meeting_history: plain(source.meeting_history ?? []), ui_prefs: uiPrefs,
     },
   };
   const text = JSON.stringify({ ...body, checksum: await checksum(body) });
@@ -336,12 +341,17 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
   return { ...await restoreLegacy(body as Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">), ...EMPTY_V4_FIELDS() };
 }
 
-type V4Fields = Pick<RestoredWorkspace, "preprocessing" | "targets" | "events" | "ui_prefs">;
-const EMPTY_V4_FIELDS = (): V4Fields => ({ preprocessing: null, targets: null, events: null, ui_prefs: {} });
+type V4Fields = Pick<RestoredWorkspace, "preprocessing" | "targets" | "events" | "ui_prefs" | "meeting_history">;
+const EMPTY_V4_FIELDS = (): V4Fields => ({ preprocessing: null, targets: null, events: null, ui_prefs: {}, meeting_history: [] });
 
 async function restoreV4(body: Omit<z.infer<typeof envelopeSchema>, "checksum">): Promise<RestoredWorkspace> {
-  const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: _reserved, ...payload } = body.payload;
-  void _reserved;
+  const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: savedMeetings, ...payload } = body.payload;
+  // 會議紀錄是自足的只讀紀錄（可能來自較早的資料），不和目前資料集比對；逐筆語意檢查、id 不可重複。
+  const meetingHistory = savedMeetings.map(saved => {
+    try { validateMeeting(saved); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
+    return freezeMeeting(saved);
+  });
+  if (new Set(meetingHistory.map(meeting => meeting.id)).size !== meetingHistory.length) throw new Error("INVALID_WORKSPACE_FORMAT");
   const restored = await restoreV3(payload);
   // 還原不信任序列化結果：目標／檔期依 CSV 規則重驗（通路要在資料集裡），含稅原值要能換算回資料集裡的同一格。
   if (savedTargets && targetRowIssues(savedTargets.rows, restored.dataset.manifest.channels).length) throw new Error("INVALID_WORKSPACE_FORMAT");
@@ -365,6 +375,7 @@ async function restoreV4(body: Omit<z.infer<typeof envelopeSchema>, "checksum">)
     targets: savedTargets ? structuredClone(savedTargets) : null,
     events: savedEvents ? structuredClone(savedEvents) : null,
     ui_prefs: structuredClone(savedPrefs),
+    meeting_history: meetingHistory,
   };
   return { ...restored, ...v4 };
 }
