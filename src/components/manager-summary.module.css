@@ -22,23 +22,35 @@
 .decisions li { margin: .8rem 0; overflow-wrap: anywhere; }
 .controls { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
 .printSurface { display: none; }
+/* R6-2 會議紀錄頁的議程編號（①②③）；只在 agenda 模式出現。 */
+.agendaStep { margin: 1.1rem 0 .55rem; font-size: .95rem; color: #2f4f44; }
 @media (max-width: 520px) {
   .headlines { grid-template-columns: 1fr; gap: .6rem; }
   .headlines > div { padding: .8rem; }
   .threshold { width: 100%; }
   .controls button { width: 100%; }
 }
+/* R6-3 A4 直式「一頁摘要＋附錄」：第一頁放標題、關鍵差額、三件事、通路表、決議與置頂行動（9pt、表格緊湊）；
+   附錄（未置頂待辦、技術資訊）從新的一頁開始。「列印」與「匯出 PDF」都用這份版面（window.print()）。 */
 @media print {
-  @page { size: A4; margin: 14mm; }
+  @page { size: A4 portrait; margin: 12mm 13mm 13mm; }
   :global(body):has(> .printSurface) > :not(.printSurface) { display: none !important; }
-  .printSurface { display: block !important; color: #152f29; background: white; font-size: 9pt; line-height: 1.45; }
-  .printSurface h1 { font-size: 19pt; margin: 0 0 3mm; }
-  .printSurface h2 { font-size: 12pt; margin: 4mm 0 2mm; }
-  .printSurface p { margin: 1.5mm 0; }
-  .printSurface li { margin-bottom: 2mm; break-inside: avoid; }
-  .printSurface table { width: 100%; border-collapse: collapse; margin: 3mm 0; }
-  .printSurface td, .printSurface th { border-bottom: 1px solid #bbb; padding: 2mm; text-align: right; }
+  .printSurface { display: block !important; color: #152f29; background: white; font-size: 9pt; line-height: 1.4; }
+  .printSurface header { margin-bottom: 2mm; }
+  .printMeta { margin: 0 0 2.5mm !important; padding-bottom: 1.5mm; border-bottom: 1px solid #b9c7c1; font-size: 8pt; color: #4a625a; }
+  .printSurface h1 { font-size: 16pt; margin: 0 0 2mm; }
+  .printSurface h2 { font-size: 11pt; margin: 3.5mm 0 1.5mm; break-after: avoid; }
+  .printSurface p { margin: 1.2mm 0; }
+  .printSurface ol, .printSurface ul { margin: 1mm 0; padding-left: 5mm; }
+  .printSurface li { margin-bottom: 1.5mm; break-inside: avoid; }
+  .printSurface table { width: 100%; border-collapse: collapse; margin: 2mm 0; font-size: 8.5pt; break-inside: avoid; }
+  .printSurface caption { text-align: left; font-weight: 600; padding-bottom: 1mm; }
+  .printSurface td, .printSurface th { border-bottom: 1px solid #bbb; padding: 1mm 1.5mm; text-align: right; }
   .printSurface td:first-child, .printSurface th:first-child { text-align: left; }
-  .printSurface footer { margin-top: 4mm; border-top: 1px solid #aaa; font-size: 8pt; }
-  .printHeadlines { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .printSurface footer { margin-top: 3mm; border-top: 1px solid #aaa; font-size: 8pt; }
+  .printSurface code { font-family: inherit; font-weight: 600; }
+  .printHeadlines { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; break-inside: avoid; }
+  .printAppendix { break-before: page; }
+  .printAppendix + .printAppendix { break-before: auto; margin-top: 5mm; }
+  .printAppendix ul { font-size: 8pt; overflow-wrap: anywhere; }
 }

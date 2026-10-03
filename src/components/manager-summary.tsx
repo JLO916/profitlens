@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { buildManagerSummary, exportChannelComparisonCsv, exportManagerSummaryMarkdown, priorityEvidence, summaryDecisionState, withSummaryScenarioSelection, type ManagerSummary as SummaryData, type SummaryDecisionContext, type SummaryEvidence } from "@/application/manager-summary";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
@@ -29,12 +29,19 @@ export interface ManagerSummaryProps {
   conversion?: TaxConversion | null;
   /** R4：目標達成小節。 */
   targets?: { set: TargetSet | null; allChannels: readonly string[] } | null;
+  /** R6-2：false 時不顯示匯出列（會議紀錄頁另有「輸出」區）。預設 true。 */
+  outputs?: boolean;
+  /** R6-2：在會議紀錄頁以議程 ①②③ 標示關鍵差額、三件事與通路表。 */
+  agenda?: { kpis: string; priorities: string; channels: string };
+  /** R6-3：列印頁首的會議名稱與日期。 */
+  meeting?: PrintMeeting | null;
 }
+export interface PrintMeeting { name: string; date: string }
 
 const comparisonModeLabel = (mode: SummaryData["scope"]["comparison_mode"]) => mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays;
 const periodValues = (summary: SummaryData) => ({ prevStart: summary.scope.previous_period.start, prevEnd: summary.scope.previous_period.end, prevDays: summary.previous_days, curStart: summary.scope.current_period.start, curEnd: summary.scope.current_period.end, curDays: summary.current_days, mode: comparisonModeLabel(summary.scope.comparison_mode) });
 
-export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreateAction, reviewControls, selectionManaged = false, conversion = null, targets = null }: ManagerSummaryProps) {
+export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreateAction, reviewControls, selectionManaged = false, conversion = null, targets = null, outputs = true, agenda, meeting = null }: ManagerSummaryProps) {
   const [thresholdInput, setThresholdInput] = useState(reviewControls?.importanceThreshold ?? "0.00");
   const [threshold, setThreshold] = useState("0.00");
   const [error, setError] = useState("");
@@ -46,41 +53,56 @@ export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreate
   const effectiveContext = selectionManaged ? decisionContext : withSummaryScenarioSelection(decisionContext, selected);
   const decisions = summaryDecisionState(summary, effectiveContext);
   const amount = (evidence: SummaryEvidence, signed = false) => <button type="button" className="number-link" onClick={() => onEvidence(evidence)} aria-label={evidence.title}>{evidence.metric.value === null ? labels.status.missing : signed ? formatSignedMoney(evidence.metric.value) : formatMoney(evidence.metric.value)}</button>;
-  useEffect(() => {
-    if (!printing) return;
-    const stop = () => setPrinting(false);
-    window.addEventListener("afterprint", stop);
-    window.print();
-    return () => window.removeEventListener("afterprint", stop);
-  }, [printing]);
-
   return <section className={`panel ${styles.summary}`} data-testid="manager-summary" aria-labelledby="manager-summary-title">
     <div className="section-heading"><div><h2 id="manager-summary-title">{copy.title}</h2></div><span className="tag">{decisionContext?.decisionState ?? copy.draftDecision}</span></div>
     <p className={styles.context}>{fill(copy.context, { asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, alias) })}</p>
     <p className="note">{fill(copy.periodLine, periodValues(summary))}</p>
+    {agenda && <h3 className={styles.agendaStep} data-testid="meeting-agenda-1">{agenda.kpis}</h3>}
     <div className={styles.headlines}>{summary.headlines.map(row => <div key={row.metric}><h3>{metricDefinitions[row.metric].label}</h3><p className={styles.change}>{amount(row.evidence.change, true)}</p><p className="note">{amount(row.evidence.previous)} → {amount(row.evidence.current)}</p></div>)}</div>
     <p className="note">{copy.headlineNote}</p>
-    <div className={styles.priorityHeader}><h3>{labels.sections.topThree}</h3><form className={styles.threshold} onSubmit={event => { event.preventDefault(); try { const checked = buildManagerSummary(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); reviewControls?.onThresholdChange(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.notes.thresholdInvalid); } }}><label>{labels.meeting.threshold}<input aria-describedby="manager-threshold-help" value={thresholdInput} onChange={event => setThresholdInput(event.target.value)} inputMode="decimal" maxLength={30} /></label><button type="submit" className="button quiet">{labels.buttons.apply}</button></form></div>
+    <div className={styles.priorityHeader}><h3 data-testid={agenda ? "meeting-agenda-2" : undefined}>{agenda?.priorities ?? labels.sections.topThree}</h3><form className={styles.threshold} onSubmit={event => { event.preventDefault(); try { const checked = buildManagerSummary(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); reviewControls?.onThresholdChange(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.notes.thresholdInvalid); } }}><label>{labels.meeting.threshold}<input aria-describedby="manager-threshold-help" value={thresholdInput} onChange={event => setThresholdInput(event.target.value)} inputMode="decimal" maxLength={30} /></label><button type="submit" className="button quiet">{labels.buttons.apply}</button></form></div>
     <p className="note" id="manager-threshold-help">{fill(labels.diagnosisList.thresholdHelp, { amount: formatMoney(summary.importance_threshold) })}</p>
     {error && <p role="alert">{error}</p>}
     {summary.priorities.length ? <ol className={styles.priorities}>{summary.priorities.map(item => { const rule = ruleCopy(snapshot, item.primary, alias); return <li key={item.code} data-testid={`manager-priority-${item.code}`}><div className={styles.priorityTitle}><h4>{rule.headline}</h4></div><p className="top-three-impact"><span>{labels.sections.impact}</span>{item.code === "MISSING_CRITICAL_DATA" ? amount(item.evidence, true) : <ImpactAmount snapshot={snapshot} diagnostic={item.primary} onEvidence={onEvidence} />}</p><p className="note">{scopeLabel(item.primary.scope, alias)} · {item.code === "MISSING_CRITICAL_DATA" ? copy.missingDataNote : copy.rankingNote}</p><p>{rule.nextStep}</p>{item.members.length > 1 && <details><summary>{fill(copy.relatedScopes, { n: item.members.length - 1 })}</summary><ul>{item.members.slice(1).map(member => <li key={member.id}>{scopeLabel(member.scope, alias)}：{item.code === "MISSING_CRITICAL_DATA" ? amount(priorityEvidence(snapshot, member), true) : <ImpactAmount snapshot={snapshot} diagnostic={member} onEvidence={onEvidence} />}</li>)}</ul><p className="note">{labels.notes.scopesNotAdditive}</p></details>}{onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(item.primary)}>{labels.buttons.addToActions}</button>}</li>; })}</ol> : <p role="status">{labels.notes.noPriorities}</p>}
     <p className="note">{fill(labels.notes.omittedGroups, { n: summary.omitted_group_count })}</p>
+    {agenda && <h3 className={styles.agendaStep} data-testid="meeting-agenda-3">{agenda.channels}</h3>}
     <details className={styles.wideTable} open><summary>{copy.channelTableSummary}</summary><ChannelWideTable summary={summary} onEvidence={onEvidence} ariaLabel={labels.sections.channelTableAria} caption={labels.sections.channelTableCaption} /></details>
     <div className={styles.decisions}><h3>{copy.decisionsHeading}</h3>{!selectionManaged && decisions.scenarios.length > 0 && <label>{copy.selectedScenario}<select aria-label={copy.selectedScenario} value={decisions.selected?.id ?? ""} onChange={event => setSelected(event.target.value)}><option value="">{copy.noneSelected}</option>{decisions.scenarios.map(plan => <option key={plan.id} value={plan.id} disabled={plan.status !== "current"}>{fill(copy.scenarioOption, { name: plan.name, statusOrScope: plan.status === "current" ? plan.scopeLabel : plan.status === "stale" ? copy.scenarioStale : labels.meeting.decisions.draft })}</option>)}</select></label>}{decisions.selectedScenarios.length ? <>{decisions.selectedScenarios.map(plan => <div key={plan.id}><p>{fill(copy.scenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatMoney(plan.baseline ?? null), contribution: formatMoney(plan.contribution ?? null), delta: formatSignedMoney(plan.delta ?? null) })}</p><details><summary>{labels.sections.scenarioAssumptions}</summary><ul>{plan.assumptions.map((assumption, index) => <li key={index}>{assumption}</li>)}</ul></details></div>)}<p className="note">{copy.scenarioNote}</p></> : <p className="note">{copy.noScenario}</p>}{decisions.mainActions.length ? <ActionSummaryList actions={decisions.mainActions} /> : <p className="note">{decisions.appendixActions.length ? copy.unpinnedNotice : copy.noActions}</p>}</div>
     {decisions.appendixActions.length > 0 && <details><summary>{fill(copy.appendixActions, { n: decisions.appendixActions.length })}</summary><ActionSummaryList actions={decisions.appendixActions} /></details>}
     <details><summary>{labels.sections.technicalDetails}</summary><ul>{summary.assumptions.map(item => <li key={item}>{item}</li>)}</ul></details>
-    <div className={styles.controls}><button type="button" className="button quiet" onClick={() => downloadText(exportManagerSummaryMarkdown(summary, effectiveContext), "profitlens-manager-summary.md", "text/markdown;charset=utf-8")}>{labels.buttons.exportMarkdown}</button><button type="button" className="button quiet" onClick={() => downloadText(exportChannelComparisonCsv(summary), "profitlens-channel-comparison.csv")}>{labels.downloads.channelTableCsv}</button><button type="button" className="button quiet" onClick={() => setPrinting(true)}>{labels.buttons.print}</button>{printing && <button type="button" className="button quiet" onClick={() => setPrinting(false)}>{copy.exitPrint}</button>}</div>
+    {outputs && <><div className={styles.controls}><button type="button" className="button quiet" onClick={() => downloadText(exportManagerSummaryMarkdown(summary, effectiveContext), "profitlens-manager-summary.md", "text/markdown;charset=utf-8")}>{labels.buttons.exportMarkdown}</button><button type="button" className="button quiet" onClick={() => downloadText(exportChannelComparisonCsv(summary), "profitlens-channel-comparison.csv")}>{labels.downloads.channelTableCsv}</button><button type="button" className="button quiet" onClick={() => setPrinting(true)}>{labels.buttons.print}</button><button type="button" className="button quiet" aria-describedby="manager-summary-pdf-hint" onClick={() => setPrinting(true)}>{labels.buttons.exportPdf}</button>{printing && <button type="button" className="button quiet" onClick={() => setPrinting(false)}>{copy.exitPrint}</button>}</div>
+    <p className="note" id="manager-summary-pdf-hint">{labels.meetingPage.pdfHint}</p></>}
     <p className="note">{reviewControls ? copy.persistNoteManaged : copy.persistNoteLocal}</p>
-    {printing && createPortal(<PrintSummary summary={summary} decisionContext={effectiveContext} snapshot={snapshot} />, document.body)}
+    {printing && <PrintSummaryPortal summary={summary} decisionContext={effectiveContext} snapshot={snapshot} meeting={meeting} onDone={() => setPrinting(false)} />}
   </section>;
 }
 
-function PrintSummary({ summary, decisionContext, snapshot }: { summary: SummaryData; decisionContext?: SummaryDecisionContext; snapshot?: Pick<WorkspaceSnapshot, "report"> }) {
+export interface PrintSummaryProps { summary: SummaryData; decisionContext?: SummaryDecisionContext; snapshot?: Pick<WorkspaceSnapshot, "report">; meeting?: PrintMeeting | null }
+
+/**
+ * R6-3「列印」與「匯出 PDF」共用同一流程：把 PrintSummary 放到 body 後呼叫 window.print()（使用者在列印對話框選「另存為 PDF」）；
+ * afterprint 時呼叫 onDone 回到畫面。只在需要列印時掛上；reactStrictMode 的重複 effect 不會開兩次列印對話框。
+ */
+export function PrintSummaryPortal({ onDone, ...props }: PrintSummaryProps & { onDone: () => void }) {
+  const done = useRef(onDone);
+  const printed = useRef(false);
+  useEffect(() => { done.current = onDone; });
+  useEffect(() => {
+    const stop = () => done.current();
+    window.addEventListener("afterprint", stop);
+    if (!printed.current) { printed.current = true; window.print(); }
+    return () => window.removeEventListener("afterprint", stop);
+  }, []);
+  return createPortal(<PrintSummary {...props} />, document.body);
+}
+
+/** A4 直式：第一頁＝標題、關鍵差額、三件事、通路表、決議與置頂行動；附錄（未置頂待辦、技術資訊）從新的一頁開始。 */
+export function PrintSummary({ summary, decisionContext, snapshot, meeting = null }: PrintSummaryProps) {
   const decisions = summaryDecisionState(summary, decisionContext);
   const alias = demoAlias(summary.dataset_id);
   const signedOrMissing = (value: string | null) => value === null ? labels.status.missing : formatSignedMoney(value);
   const priorityCopy = (item: SummaryData["priorities"][number]) => snapshot ? ruleCopy(snapshot, item.primary, alias) : { headline: item.title, nextStep: item.recommendation };
-  return <article className={styles.printSurface} data-testid="manager-summary-print"><header><h1>{copy.printTitle}</h1><p>{fill(copy.printContext, { state: decisionContext?.decisionState ?? copy.draftDecision, asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, alias) })}</p><p>{fill(copy.printPeriodLine, periodValues(summary))}</p></header><div className={styles.printHeadlines}>{summary.headlines.map(row => <p key={row.metric}><strong>{metricDefinitions[row.metric].label}</strong><br />{fill(copy.printHeadline, { prev: formatMoney(row.previous.value), cur: formatMoney(row.current.value), change: signedOrMissing(row.change.value) })}</p>)}</div><h2>{labels.sections.topThree}</h2><p>{fill(copy.printThresholdLine, { amount: formatMoney(summary.importance_threshold) })}</p><ol>{summary.priorities.map(item => { const rule = priorityCopy(item); return <li key={item.code}><strong>{rule.headline}</strong>｜{scopeLabel(item.primary.scope, alias)}｜<span>{labels.sections.impact}</span> {signedOrMissing(item.impact?.value ?? null)}<p>{rule.nextStep}</p></li>; })}</ol>{!summary.priorities.length && <p>{labels.notes.noPriorities}</p>}<table><caption>{fill(copy.printChannelCaption, { metric: metricDefinitions.contribution_after_marketing.label })}</caption><thead><tr><th>{copy.channelColumn}</th><th>{labels.periods.previous}</th><th>{labels.periods.current}</th><th>{copy.changeColumn}</th></tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th>{channelLabel(row.channel, alias)}</th><td>{formatMoney(row.contribution.previous.value)}</td><td>{formatMoney(row.contribution.current.value)}</td><td>{signedOrMissing(row.contribution.change.value)}</td></tr>)}</tbody></table><h2>{copy.printDecisionsHeading}</h2>{decisions.selectedScenarios.length ? decisions.selectedScenarios.map(plan => <div key={plan.id}><p>{fill(copy.printScenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatMoney(plan.baseline ?? null), contribution: formatMoney(plan.contribution ?? null), delta: formatSignedMoney(plan.delta ?? null) })}</p><p>{plan.assumptions.join("；")}</p></div>) : <p>{copy.noScenario}</p>}{decisions.mainActions.length ? <ActionSummaryList actions={decisions.mainActions} /> : <p>{decisions.appendixActions.length ? copy.unpinnedNotice : copy.noActions}</p>}{decisionContext?.reviewName && <p>{fill(copy.printMeetingLine, { name: decisionContext.reviewName, state: decisionContext.decisionState, notes: decisionContext.notes })}</p>}{decisions.appendixActions.length > 0 && <section><h2>{copy.appendixHeading}</h2><ActionSummaryList actions={decisions.appendixActions} /></section>}<footer><p>{labels.basis.footer}</p></footer></article>;
+  return <article className={styles.printSurface} data-testid="manager-summary-print"><header>{meeting && <p className={styles.printMeta}>{fill(labels.meetingPage.printHeader, { name: meeting.name, date: meeting.date, asOf: summary.data_as_of })}</p>}<h1>{copy.printTitle}</h1><p>{fill(copy.printContext, { state: decisionContext?.decisionState ?? copy.draftDecision, asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, alias) })}</p><p>{fill(copy.printPeriodLine, periodValues(summary))}</p></header><div className={styles.printHeadlines}>{summary.headlines.map(row => <p key={row.metric}><strong>{metricDefinitions[row.metric].label}</strong><br />{fill(copy.printHeadline, { prev: formatMoney(row.previous.value), cur: formatMoney(row.current.value), change: signedOrMissing(row.change.value) })}</p>)}</div><h2>{labels.sections.topThree}</h2><p>{fill(copy.printThresholdLine, { amount: formatMoney(summary.importance_threshold) })}</p><ol>{summary.priorities.map(item => { const rule = priorityCopy(item); return <li key={item.code}><strong>{rule.headline}</strong>｜{scopeLabel(item.primary.scope, alias)}｜<span>{labels.sections.impact}</span> {signedOrMissing(item.impact?.value ?? null)}<p>{rule.nextStep}</p></li>; })}</ol>{!summary.priorities.length && <p>{labels.notes.noPriorities}</p>}<table><caption>{fill(copy.printChannelCaption, { metric: metricDefinitions.contribution_after_marketing.label })}</caption><thead><tr><th>{copy.channelColumn}</th><th>{labels.periods.previous}</th><th>{labels.periods.current}</th><th>{copy.changeColumn}</th></tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th>{channelLabel(row.channel, alias)}</th><td>{formatMoney(row.contribution.previous.value)}</td><td>{formatMoney(row.contribution.current.value)}</td><td>{signedOrMissing(row.contribution.change.value)}</td></tr>)}</tbody></table><h2>{copy.printDecisionsHeading}</h2>{decisions.selectedScenarios.length ? decisions.selectedScenarios.map(plan => <div key={plan.id}><p>{fill(copy.printScenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatMoney(plan.baseline ?? null), contribution: formatMoney(plan.contribution ?? null), delta: formatSignedMoney(plan.delta ?? null) })}</p><p>{plan.assumptions.join("；")}</p></div>) : <p>{copy.noScenario}</p>}{decisions.mainActions.length ? <ActionSummaryList actions={decisions.mainActions} /> : <p>{decisions.appendixActions.length ? copy.unpinnedNotice : copy.noActions}</p>}{decisionContext?.reviewName && <p>{fill(copy.printMeetingLine, { name: decisionContext.reviewName, state: decisionContext.decisionState, notes: decisionContext.notes })}</p>}<footer><p>{labels.basis.footer}</p></footer>{decisions.appendixActions.length > 0 && <section className={styles.printAppendix}><h2>{copy.appendixHeading}</h2><ActionSummaryList actions={decisions.appendixActions} /></section>}<section className={styles.printAppendix}><h2>{labels.sections.technicalDetails}</h2><ul>{summary.assumptions.map(item => <li key={item}>{item}</li>)}<li><code>metric_version</code> {summary.metric_version} · <code>dataset_id</code> {summary.dataset_id}</li><li><code>dataset_hash</code> {summary.dataset_hash}</li><li><code>filter_hash</code> {summary.filter_hash}</li></ul></section></article>;
 }
 
 function ActionSummaryList({ actions }: { actions: ReturnType<typeof summaryDecisionState>["actions"] }) {

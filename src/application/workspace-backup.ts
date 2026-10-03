@@ -105,13 +105,15 @@ const scenarioContext = referencedDecision.omit({ scenarios: true, actions: true
 });
 const referencedScenarioWorkspace = z.strictObject({ schema_version: z.literal("scenario-workspace-v1"), active_epoch: name, contexts: z.array(scenarioContext) });
 const selection = z.strictObject({ context_id: name, plan_id: name, plan_revision: revision.min(1), channel: name });
+// R6-2 會議日期（選填）；與下方 v4 的 isoDate 同格式（此處先宣告，避免在 isoDate 定義前引用）。
+const reviewMeetingDate = z.string().max(10).regex(/^\d{4}-\d{2}-\d{2}$/);
 const referencedReview = z.strictObject({
   schema_version: z.literal("review-session-v1"), id: name, name: z.string().min(1).max(200), revision: revision.min(1), epoch: name,
   dataset_hash: hash, filter_hash: hash, metric_version: z.literal("contribution-v1"), data_as_of: z.string().max(10),
   meeting_filters: filters.required(), importance_threshold: z.string().max(30), selected_scenarios: z.array(selection), pinned_action_ids: z.array(name).max(3),
   action_bindings: z.array(z.strictObject({ action_id: name, context_id: name, binding_revision: revision.min(1) })),
   notes: z.string().max(8000), decision_state: z.enum(["draft", "adopted", "needs_data", "not_adopted"]), confirmed_revision: revision.nullable(), target_version: z.null(), status: z.enum(["current", "historical"]),
-  source_hash: hash, filenames, source_mappings: mappings.optional(),
+  source_hash: hash, filenames, source_mappings: mappings.optional(), meeting_date: reviewMeetingDate.optional(),
 });
 const v3PayloadShape = { sources: z.record(hash, input), active: z.strictObject({ source_hash: hash, filters, id: name, revision, filenames, mappings }), decision: referencedDecision.nullable(), action_workspace: referencedActionWorkspace, scenario_workspace: referencedScenarioWorkspace, review_session: referencedReview.nullable() };
 const v3Payload = z.strictObject(v3PayloadShape);

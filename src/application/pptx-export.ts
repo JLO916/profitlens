@@ -2,6 +2,7 @@ import type { Metric } from "../domain/types";
 import { fill, labels } from "../i18n";
 import { MAX_PINNED_ACTIONS, type ActionWorkspace } from "./action-workspace";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "./copy";
+import { downloadBinary } from "./download";
 import type { ManagerSummary } from "./manager-summary";
 import { formatMoney, formatSignedMoney, metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
@@ -274,19 +275,10 @@ export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
   return toBytes(await pptx.write({ outputType: "arraybuffer", compression: true }));
 }
 
-/** 只在使用者點擊時於瀏覽器本機產生並下載；不送到任何伺服器。主流程合併後改用 download.ts 的共用 downloadBinary。 */
-function downloadBytes(bytes: Uint8Array, filename: string, mime: string) {
-  const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: mime }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
 /** 建模型 → 寫出 → 下載。回傳 bytes 方便呼叫端測試或記錄大小。 */
 export async function exportPptx(input: PptxOnePagerInput, filename: string = PPTX_FILENAME): Promise<Uint8Array> {
   const bytes = await writePptx(buildPptxOnePager(input));
-  downloadBytes(bytes, filename, PPTX_MIME);
+  // 只在使用者點擊時於瀏覽器本機產生並下載（download.ts 的共用 downloadBinary）；不送到任何伺服器。
+  downloadBinary(bytes, filename, PPTX_MIME);
   return bytes;
 }
