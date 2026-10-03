@@ -2,22 +2,22 @@
 
 import { useMemo, useState } from "react";
 import Decimal from "decimal.js";
-import { evidenceRows, formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "@/application/presentation";
+import { evidenceRows, formatMoney, formatRate, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { analyzeProducts } from "@/domain/analysis";
-import { COST_FIELDS, SALES_FIELDS, type Dataset, type Fact, type Metric, type MetricName, type ProductMetrics, type SourceRef } from "@/domain/types";
+import { COST_FIELDS, SALES_FIELDS, type Dataset, type Metric, type MetricName, type ProductMetrics, type SourceRef } from "@/domain/types";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { IssueList } from "./issue-list";
 import { downloadText } from "@/application/download";
 import { exportProductsCsv } from "@/application/export";
 import { buildManagerSummary } from "@/application/manager-summary";
-import { categoryLabel, channelLabel, channelsLabel, conversionSentence, demoAlias, ruleCopy } from "@/application/copy";
+import { categoryLabel, channelLabel, channelsLabel, conversionSentence, demoAlias } from "@/application/copy";
 import type { TaxConversion } from "@/application/tax-basis";
 import { exportTargetsCsv, targetDisplay, targetsCsvTemplate, type TargetIssue, type TargetSet } from "@/application/targets";
 import { eventsCsvTemplate, exportEventsCsv, type EventIssue, type EventSet } from "@/application/events";
 import { fill, labels } from "@/i18n";
 import { ChannelWideTable } from "./channel-table";
-import { ImpactAmount } from "./top-three";
+import { DiagnosisList } from "./diagnosis-list";
 
 type EvidenceHandler = (selection: EvidenceSelection) => void;
 const ui = labels.ui.workspacePanels;
@@ -103,56 +103,16 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
   </>;
 }
 
-function factSelection(fact: Fact, alias = false): EvidenceSelection {
-  return { sku: fact.scope.sku, title: metricDefinitions[fact.metric].label, name: fact.metric, metric: fact, period: fact.period, channels: fact.scope.channels, sources: fact.sources, scopeLabel: fact.scope.kind === "all" ? ui.scopeAll : channelsLabel(fact.scope.channels, alias) };
-}
-
-export function Diagnosis({ snapshot, onEvidence, onCreateAction }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler; onCreateAction?: (diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) => void }) {
-  const diagnostics = snapshot.report.diagnostics.filter(diagnostic => diagnostic.scope.kind !== "sku");
-  const facts = new Map(snapshot.report.facts.map(fact => [fact.id, fact]));
+export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler; onCreateAction?: (diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) => void; events?: EventSet | null }) {
   const summary = useMemo(() => buildManagerSummary(snapshot), [snapshot]);
   const alias = demoAlias(snapshot.report.dataset_id);
+  // R5：通路寬表置頂 → 健檢清單（一個規則一列，與三件事同一套 diagnosisGroups）；AI 區塊由 dashboard 接在後面。
   return <>
   <section className="panel" aria-labelledby="channel-table-heading">
     <div className="section-heading"><div><h2 id="channel-table-heading">{ui.channelTableHeading}</h2><p className="note">{ui.channelTableCaution}</p></div><span className="tag">{channelsLabel(summary.scope.channels, alias)}</span></div>
     <ChannelWideTable summary={summary} onEvidence={onEvidence} ariaLabel={labels.sections.channelTableAria} caption={labels.sections.channelTableCaption} />
   </section>
-  <section className="panel" aria-labelledby="diagnosis-heading">
-    <div className="section-heading"><div><h2 id="diagnosis-heading">{labels.sections.diagnosisList}</h2><p className="note">{ui.diagnosisNote}</p></div><span className="tag">{fill(ui.itemCount, { n: diagnostics.length })}</span></div>
-    {!diagnostics.length && <p>{ui.noDiagnostics}</p>}
-    <div className="diagnostic-grid">{diagnostics.map(diagnostic => {
-      const copy = ruleCopy(snapshot, diagnostic, alias);
-      return <article className="diagnostic-card" key={diagnostic.id}>
-      <div className="section-heading"><span className="tag">{diagnostic.scope.kind === "all" ? ui.scopeAll : channelsLabel(diagnostic.scope.channels, alias)}</span><span className="tag">{diagnostic.code === "MISSING_CRITICAL_DATA" ? ui.tagMissingData : labels.sections.autoCheck}</span></div>
-      <h3>{copy.headline}</h3>
-      <p className="impact-line"><span>{labels.sections.impact}</span><ImpactAmount snapshot={snapshot} diagnostic={diagnostic} onEvidence={onEvidence} /></p>
-      <h4>{labels.sections.data}</h4>
-      <ul className="fact-list">{diagnostic.fact_ids.map(id => {
-        const fact = facts.get(id);
-        if (!fact) return <li key={id}>{ui.factNotFound}</li>;
-        const period = fact.period.start === snapshot.report.previous.period.start && fact.period.end === snapshot.report.previous.period.end ? labels.periods.previous : labels.periods.current;
-        const scope = fact.scope.kind === "all" ? fill(ui.scopeAllWith, { channels: channelsLabel(fact.scope.channels, alias) }) : channelsLabel(fact.scope.channels, alias);
-        const metric = metricDefinitions[fact.metric].label;
-        return <li key={id}><span>{fill(ui.factLine, { period, metric, scope })}</span><button type="button" className="number-link" onClick={() => onEvidence(factSelection(fact, alias))} aria-label={fill(ui.factAria, { period, metric, value: displayMetric(fact.metric, fact), scope })}>{displayMetric(fact.metric, fact)}</button></li>;
-      })}</ul>
-      <h4>{labels.sections.cause}</h4><p>{copy.cause}</p>
-      <h4>{labels.sections.nextStep}</h4><p>{copy.nextStep}</p>
-      <h4>{labels.sections.caution}</h4><p className="note">{copy.caution}</p>
-      {onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(diagnostic)}>{labels.buttons.addToActions}</button>}
-      <details><summary>{labels.sections.technicalDetails}</summary>
-      {diagnostic.ranking_amount && <p className="note">{diagnostic.code === "NEGATIVE_CHANNEL_CM" ? ui.rankingCurrent : labels.sections.rankingAmount}：TWD <button type="button" className="number-link" onClick={() => {
-        const names: Partial<Record<typeof diagnostic.code, MetricName>> = { REV_UP_CM_DOWN: "contribution_after_marketing", NEGATIVE_CHANNEL_CM: "contribution_after_marketing", DISCOUNT_BURDEN_UP: "discounts", REFUND_BURDEN_UP: "refunds", FULFILLMENT_BURDEN_UP: "fulfillment_costs", MARKETING_BURDEN_UP: "ad_spend" };
-        const name = names[diagnostic.code];
-        if (!name || !diagnostic.ranking_amount) return;
-        const referenced = diagnostic.fact_ids.flatMap(id => { const fact = facts.get(id); return fact?.metric === name ? [fact] : []; });
-        const currentOnly = diagnostic.code === "NEGATIVE_CHANNEL_CM";
-        onEvidence({ title: currentOnly ? metricDefinitions[name].label : fill(ui.metricDelta, { metric: metricDefinitions[name].label }), name, metric: diagnostic.ranking_amount, period: currentOnly ? snapshot.report.current.period : { start: [snapshot.report.previous.period.start, snapshot.report.current.period.start].sort()[0], end: [snapshot.report.previous.period.end, snapshot.report.current.period.end].sort()[1] }, channels: diagnostic.scope.channels, sources: referenced.flatMap(fact => fact.sources), scopeLabel: diagnostic.scope.kind === "all" ? ui.scopeAll : channelsLabel(diagnostic.scope.channels, alias), ...(currentOnly ? {} : { formula: fill(ui.deltaFormula, { metric: metricDefinitions[name].label }), components: referenced.map(fact => ({ label: fact.period.start === snapshot.report.previous.period.start ? labels.periods.previous : labels.periods.current, metric: fact })) }) });
-      }} aria-label={fill(ui.rankingAria, { title: copy.headline, amount: formatSignedMoney(diagnostic.ranking_amount.value) })}>{formatSignedMoney(diagnostic.ranking_amount.value)}</button></p>}
-      <p className="note">規則：<code>{diagnostic.code}</code></p><ul>{diagnostic.fact_ids.map(id => <li key={id}><code>{id}</code></li>)}</ul>
-      <ul className="note">{diagnostic.limitations.map(limit => <li key={limit}>{limit}</li>)}</ul></details>
-    </article>;
-    })}</div>
-  </section>
+  <DiagnosisList snapshot={snapshot} groups={summary.diagnosis} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} />
   </>;
 }
 

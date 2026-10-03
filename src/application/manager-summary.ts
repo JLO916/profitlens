@@ -10,6 +10,10 @@ import { achievementText, matchTargets, mismatchText, TARGET_METRICS, type Targe
 import { encodeCsv, type CsvCell } from "./export";
 import { metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
+import { contributionImpact, diagnosisGroups, impactMagnitude, type DiagnosisGroup } from "./diagnosis-group";
+
+// R5：「對貢獻影響」與分組排序的單一來源在 diagnosis-group.ts；這裡沿用同名 export，對外簽名不變。
+export { contributionImpact };
 
 export interface SummaryEvidence {
   title: string; name: MetricName; metric: Metric; period: Period; channels: string[]; sources: SourceRef[];
@@ -24,7 +28,10 @@ export interface SummaryMetric {
 export interface SummaryPriority {
   code: RuleCode; title: string; recommendation: string; limitations: string[];
   members: Diagnostic[]; primary: Diagnostic; ranking_amount: Metric;
+  /** R5：|impact_cents|（primary 的對貢獻影響絕對值）；門檻與排序都用它。單一成員時與舊值相同。 */
   importance_amount: string | null; fact_ids: string[]; evidence: SummaryEvidence;
+  /** R5 加法：primary 的「對貢獻影響」（與三件事、健檢清單同一個金額）；資料缺漏為 null。 */
+  impact: Metric | null; impact_cents: string | null;
 }
 export interface SummaryScenario {
   id: string; name: string; status: "draft" | "current" | "stale"; scopeLabel: string;
@@ -54,6 +61,8 @@ export interface ManagerSummary {
   headlines: SummaryMetric[];
   channels: { channel: string; revenue: SummaryMetric; contribution: SummaryMetric }[];
   priorities: SummaryPriority[]; groups: SummaryPriority[]; omitted_group_count: number;
+  /** R5：健檢清單用的 DiagnosisGroup（全部 group，順序與 groups 相同）。 */
+  diagnosis: DiagnosisGroup[];
   facts: Fact[]; assumptions: string[];
   /** R3：含稅換算一句（沒有換算為 null），通路寬表 CSV 的口徑限制欄也帶上。 */
   conversion_note: string | null;
@@ -68,17 +77,8 @@ const LIMITATIONS: string[] = [...labels.basis.items];
 const copy = labels.ui.managerSummary;
 /** 會議決議狀態的顯示文字；未知的原始值原樣顯示。 */
 const decisionLabel = (state: string | undefined): string => (labels.meeting.decisions as Record<string, string>)[state ?? "draft"] ?? state ?? labels.meeting.decisions.draft;
-const compareText = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
-const abs = (value: bigint) => value < 0n ? -value : value;
 export function summaryScopeLabel(scope: Scope, alias = false): string {
   return scopeLabel(scope, alias);
-}
-function ranking(diagnostic: Diagnostic): bigint | null {
-  return parseCents(diagnostic.ranking_amount?.value);
-}
-function rankOrder(a: Diagnostic, b: Diagnostic): number {
-  const aa = abs(ranking(a) ?? 0n), bb = abs(ranking(b) ?? 0n);
-  return aa > bb ? -1 : aa < bb ? 1 : compareText(a.id, b.id);
 }
 function metricComparison(snapshot: WorkspaceSnapshot, name: SummaryMetric["metric"], channel?: string): SummaryMetric {
   const { report } = snapshot;
@@ -129,18 +129,6 @@ export function priorityEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, di
   };
 }
 
-/**
- * R1 呈現用「對貢獻影響」：負＝不利、正＝有利；不是新財務指標，定義見 docs/DECISIONS.md（Revamp v2 R1）。
- * 費用類規則的排序金額是「本期費用 − 前期費用」，費用增加對貢獻的影響為其負值；缺漏規則沒有金額。
- */
-export function contributionImpact(diagnostic: Pick<Diagnostic, "code" | "ranking_amount">): Metric | null {
-  if (!diagnostic.ranking_amount || diagnostic.code === "MISSING_CRITICAL_DATA") return null;
-  const cents = parseCents(diagnostic.ranking_amount.value);
-  if (cents === null) return { value: null, reason_codes: [...diagnostic.ranking_amount.reason_codes] };
-  const burden = diagnostic.code === "DISCOUNT_BURDEN_UP" || diagnostic.code === "REFUND_BURDEN_UP" || diagnostic.code === "FULFILLMENT_BURDEN_UP" || diagnostic.code === "MARKETING_BURDEN_UP";
-  return { value: formatCents(burden ? -cents : cents), reason_codes: [...diagnostic.ranking_amount.reason_codes] };
-}
-
 /** Presentation-only prioritization. Rules, totals, facts and financial formulas stay unchanged. */
 export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { importanceThreshold?: string; conversion?: TaxConversion | null; targets?: { set: TargetSet | null; allChannels: readonly string[] } } = {}): ManagerSummary {
   const targetLines: ManagerSummary["targets"] = [];
@@ -154,46 +142,25 @@ export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { impo
   }
   // R3：含稅換算一句併入口徑說明，Markdown 的「資料範圍與口徑」與畫面同源。
   const converted = conversionSentence(options.conversion);
-  let threshold: bigint | null;
-  try { threshold = parseCents(options.importanceThreshold ?? "0.00"); } catch { throw new Error("INVALID_IMPORTANCE_THRESHOLD"); }
-  if (threshold === null || threshold < 0n) throw new Error("INVALID_IMPORTANCE_THRESHOLD");
   const { report } = snapshot;
-  const alias = demoAlias(report.dataset_id);
-  const grouped = new Map<RuleCode, Diagnostic[]>();
-  for (const diagnostic of report.diagnostics) {
-    const members = grouped.get(diagnostic.code) ?? [];
-    // A single-channel all-scope signal repeats the very same channel facts.
-    const same = members.findIndex(row => row.scope.sku === diagnostic.scope.sku && JSON.stringify(row.scope.channels) === JSON.stringify(diagnostic.scope.channels));
-    if (same < 0) members.push(diagnostic);
-    else if (diagnostic.scope.kind === "all") members[same] = diagnostic;
-    grouped.set(diagnostic.code, members);
-  }
-  const groups: SummaryPriority[] = [...grouped].map(([code, source]) => {
-    const members = [...source].sort((a, b) => Number(b.scope.kind === "all") - Number(a.scope.kind === "all") || rankOrder(a, b));
-    const primary = members[0];
-    const knownAmounts = members.map(ranking).filter((value): value is bigint => value !== null).map(abs);
-    const importance = knownAmounts.length ? knownAmounts.reduce((max, amount) => amount > max ? amount : max, 0n) : null;
-    const rule = ruleCopy(snapshot, primary, alias);
+  // R5：分組、排序、門檻與三件事都由 diagnosisGroups 決定（與 TopThree、健檢清單同一套規則）。
+  const diagnosis = diagnosisGroups(snapshot, { importanceThreshold: options.importanceThreshold });
+  const groups: SummaryPriority[] = diagnosis.groups.map(group => {
+    const importance = impactMagnitude(group);
     return {
-      code, title: rule.headline, recommendation: rule.nextStep, limitations: [rule.caution], members, primary,
-      ranking_amount: primary.ranking_amount ?? { value: null, reason_codes: ["MISSING_CRITICAL_DATA"] },
-      importance_amount: importance === null ? null : formatCents(importance),
-      fact_ids: [...new Set(members.flatMap(row => row.fact_ids))], evidence: priorityEvidence(snapshot, primary),
+      code: group.rule, title: group.headline, recommendation: group.next_step, limitations: [group.caution], members: group.scopes.map(scope => scope.diagnostic), primary: group.primary,
+      ranking_amount: group.ranking_amount, importance_amount: importance === null ? null : formatCents(importance),
+      fact_ids: group.fact_ids, evidence: priorityEvidence(snapshot, group.primary), impact: group.impact, impact_cents: group.impact_cents,
     };
-  }).sort((a, b) => {
-    const unknownFirst = Number(b.code === "MISSING_CRITICAL_DATA") - Number(a.code === "MISSING_CRITICAL_DATA");
-    if (unknownFirst) return unknownFirst;
-    const aa = parseCents(a.importance_amount) ?? 0n, bb = parseCents(b.importance_amount) ?? 0n;
-    return aa > bb ? -1 : aa < bb ? 1 : compareText(a.code, b.code);
   });
-  const eligible = groups.filter(group => group.code === "MISSING_CRITICAL_DATA" || (parseCents(group.importance_amount) ?? -1n) >= threshold);
+  const byRule = new Map(groups.map(group => [group.code, group]));
   return structuredClone({
     dataset_id: report.dataset_id, dataset_hash: snapshot.dataset_hash, filter_hash: snapshot.filter_hash, metric_version: snapshot.metric_version, data_as_of: snapshot.data_as_of,
-    scope: report.scope, previous_days: report.comparison.previous_days, current_days: report.comparison.current_days, importance_threshold: formatCents(threshold),
+    scope: report.scope, previous_days: report.comparison.previous_days, current_days: report.comparison.current_days, importance_threshold: diagnosis.importance_threshold,
     headlines: [metricComparison(snapshot, "net_revenue"), metricComparison(snapshot, "contribution_after_marketing")],
     assist: { version: ASSIST_KPI_VERSION, previous: assistKpis(report.previous), current: assistKpis(report.current) }, targets: targetLines,
     channels: report.scope.channels.map(channel => ({ channel, revenue: metricComparison(snapshot, "net_revenue", channel), contribution: metricComparison(snapshot, "contribution_after_marketing", channel) })),
-    priorities: eligible.slice(0, 3), groups, omitted_group_count: groups.length - Math.min(eligible.length, 3), facts: report.facts, assumptions: converted ? [...LIMITATIONS, converted] : LIMITATIONS, conversion_note: converted,
+    priorities: diagnosis.priorities.map(group => byRule.get(group.rule)!), groups, omitted_group_count: diagnosis.omitted_group_count, diagnosis: diagnosis.groups, facts: report.facts, assumptions: converted ? [...LIMITATIONS, converted] : LIMITATIONS, conversion_note: converted,
   });
 }
 
@@ -245,7 +212,7 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   lines.push("", `## ${labels.sections.topThree}`, "");
   if (!summary.priorities.length) lines.push(labels.notes.noPriorities);
   for (const [index, item] of summary.priorities.entries()) {
-    lines.push(fill(copy.mdPriorityRow, { n: index + 1, headline: md(item.title), scope: md(summaryScopeLabel(item.primary.scope, alias)), amount: amount(item.ranking_amount, true) }), `   ${labels.sections.nextStep}：${md(item.recommendation)}`);
+    lines.push(fill(copy.mdPriorityRow, { n: index + 1, headline: md(item.title), scope: md(summaryScopeLabel(item.primary.scope, alias)), amount: amount(item.impact ?? item.ranking_amount, true) }), `   ${labels.sections.nextStep}：${md(item.recommendation)}`);
     if (item.members.length > 1) lines.push(fill(copy.mdRelatedScopes, { scopes: item.members.slice(1, 4).map(member => md(summaryScopeLabel(member.scope, alias))).join("、"), more: item.members.length > 4 ? `等（${labels.sections.technicalDetails}）` : "" }));
   }
   lines.push("", copy.mdDecisions, "");
@@ -260,7 +227,7 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   if (context?.reviewName) lines.push("", fill(copy.mdMeeting, { name: md(context.reviewName), decision: md(decisionLabel(context.decisionState)) }), `${labels.meeting.notes}：${md(context.notes ?? "")}`);
   lines.push("", `## ${labels.basis.title}`, "", ...summary.assumptions.map(item => `- ${md(item)}`), "", "---", "", `## ${labels.sections.technicalDetails}`, "",
     `- dataset_id：${md(summary.dataset_id)}`, `- dataset_hash：${summary.dataset_hash}`, `- filter_hash：${summary.filter_hash}`, `- metric_version：${summary.metric_version}`, `- ${labels.assist.technicalVersion}：${summary.assist.version}`,
-    copy.techPriorityNote, copy.techFactsNote, "");
+    labels.diagnosisList.techPriorityNote, copy.techFactsNote, "");
   if (decisions.appendixActions.length) lines.push(copy.otherActions, ...decisions.appendixActions.map(action => actionRow(action, actionStatusLabel(action.status))), "");
   for (const group of summary.groups) {
     lines.push(`### ${group.code}`, fill(copy.techThresholdAmount, { amount: group.importance_amount ?? labels.status.missing }));

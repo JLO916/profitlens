@@ -1590,7 +1590,21 @@ export const events = {
 } as const;
 
 /** R5-A 健檢清單化：群組列、通路標籤、展開內容（diagnosis-list.tsx）。 */
-export const diagnosisList = {} as const;
+export const diagnosisList = {
+  listAria: "健檢清單：資料缺漏排最前面，其餘依對貢獻影響的金額由大到小",
+  moreScopes: "等 {n} 個",
+  scopeSwitch: "切換要看的範圍",
+  scopeImpact: "{impact}・{scope}",
+  scopeHeadline: "{scope}：{headline}",
+  dataFor: "{data}・{scope}",
+  ruleCode: "規則代號",
+  factIds: "引用的數據代號",
+  limitations: "限制",
+  metricVersion: "指標版本",
+  skuRanking: "本期商品毛利",
+  thresholdHelp: "資料缺漏排最前面。同一個問題在合計與各通路都出現時合併成一列，以合計的金額為準（沒有合計時取金額最大的範圍）。已套用 {amount} 元。",
+  techPriorityNote: "- 摘要排序：資料缺漏排最前面。同一個問題在合計與各通路都出現時合併成一組，依合計的「對貢獻影響」絕對值排序（沒有合計時取金額最大的範圍）；最多列三組，不改底層規則。",
+} as const;
 
 
 

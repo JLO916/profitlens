@@ -19,22 +19,40 @@ async function context(name = "golden") {
 }
 const withoutClosedDetails = (html: string) => html.replace(/<details(?:\s[^>]*)?>[\s\S]*?<\/details>/g, "");
 const technicalSummary = `<summary>${labels.sections.technicalDetails}</summary>`;
+/** R5：健檢列本身是 <details>（前三列預設展開）。由內而外移除「收合」的 <details>，保留展開列，模擬第一眼看得到的內容。 */
+function withoutCollapsedDetails(html: string): string {
+  const innermost = /<details(\s[^>]*)?>((?:(?!<details[\s>])[\s\S])*?)<\/details>/g;
+  let current = html;
+  for (;;) {
+    const next = current.replace(innermost, (_match, attrs: string | undefined, body: string) => /\sopen(?:=|\s|$)/.test(attrs ?? "") ? `<open-details${attrs}>${body}</open-details>` : "");
+    if (next === current) break;
+    current = next;
+  }
+  return current.replaceAll("<open-details", "<details").replaceAll("</open-details>", "</details>");
+}
 
 describe("PL-10 manager language keeps technical evidence available on demand", () => {
   it("diagnosis presents readable period, metric and scope before collapsed audit identifiers", async () => {
     const { snapshot } = await context();
     const html = renderToStaticMarkup(createElement(Diagnosis, { snapshot, onEvidence: () => undefined }));
-    const main = withoutClosedDetails(html);
-    expect(main).toContain(`${labels.periods.previous} · ${labels.metrics.net_revenue.label} · DTC`);
-    expect(main).toContain(`${labels.periods.current} · ${labels.metrics.contribution_after_marketing.label} · DTC`);
+    // R5：只選 DTC 時「合計」與 DTC 是同一組數字，合併成一列並以合計為主（範圍文字為「所選通路合計（DTC）」）。
+    const main = withoutCollapsedDetails(html);
+    const scope = fill(labels.ui.workspacePanels.scopeAllWith, { channels: "DTC" });
+    expect(main).toContain(`${labels.periods.previous} · ${labels.metrics.net_revenue.label} · ${scope}`);
+    expect(main).toContain(`${labels.periods.current} · ${labels.metrics.contribution_after_marketing.label} · ${scope}`);
     expect(main).toContain("270.00");
     expect(main).toContain(labels.sections.evidence);
-    expect(main).not.toContain("REV_UP_CM_DOWN");
+    // 規則代號只出現在 data-testid（E2E 錨點）與收合的技術細節。
+    expect(main.replace(/data-testid="[^"]*"/g, "")).not.toContain("REV_UP_CM_DOWN");
     expect(main).not.toContain("&quot;fact&quot;");
     expect(html).toContain(technicalSummary);
     expect(html).toContain("REV_UP_CM_DOWN");
     expect(html).toContain("&quot;fact&quot;");
-    expect(html).not.toMatch(/<details[^>]*open/);
+    // 技術細節永遠收合；健檢列只有前三列預設展開。
+    expect(html).not.toMatch(new RegExp(`<details[^>]*open[^>]*>${technicalSummary}`));
+    const rows = [...html.matchAll(/<details([^>]*)data-testid="diagnosis-row-[A-Z_]+"([^>]*)>/g)].map(match => /\sopen(?:=|\s|>|$)/.test(`${match[1]} ${match[2]}`));
+    expect(rows.length).toBeGreaterThan(3);
+    expect(rows).toEqual(rows.map((_, index) => index < 3));
   });
 
   it("workspace keeps filenames, line numbers and mappings visible while versions are folded", async () => {

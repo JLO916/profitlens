@@ -574,6 +574,51 @@ main summary, main button, main input, main select, main textarea, main [role="r
 
 
 /* R5-A 健檢清單（diagnosis-list.tsx） */
+.diagnosis-heading-tags { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.diagnosis-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.diagnosis-item { min-width: 0; }
+.diagnosis-row { border: 1px solid var(--line); border-radius: 8px; background: #fbfcfa; min-width: 0; }
+.diagnosis-row[open] { background: #fff; }
+.diagnosis-row.missing { border-color: #efd3c9; }
+.diagnosis-summary { list-style: none; display: grid; grid-template-columns: 14px minmax(0,1fr) auto; grid-template-areas: "mark head impact" ". scopes impact"; column-gap: 10px; row-gap: 6px; align-items: center; padding: 13px 16px; color: var(--ink); font-size: 14px; border-radius: 8px; }
+.diagnosis-summary::-webkit-details-marker { display: none; }
+.diagnosis-summary::before { content: ""; grid-area: mark; justify-self: center; width: 7px; height: 7px; border-right: 2px solid #6b8378; border-bottom: 2px solid #6b8378; transform: rotate(-45deg); transition: transform .15s; }
+.diagnosis-row[open] > .diagnosis-summary::before { transform: rotate(45deg); }
+.diagnosis-summary:hover { background: #f4f7f3; }
+.diagnosis-headline { grid-area: head; font-size: 15px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.diagnosis-scopes { grid-area: scopes; display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.scope-tag { display: inline-block; padding: 1px 7px; border: 1px solid #dbe5df; border-radius: 999px; background: #f3f7f3; color: #4f665b; font-size: 12px; white-space: nowrap; }
+.scope-tag.more { border-style: dashed; background: transparent; }
+.diagnosis-impact { grid-area: impact; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.diagnosis-impact-label { font-size: 12px; color: #52685f; }
+.diagnosis-body { padding: 4px 16px 16px 40px; border-top: 1px solid var(--line); min-width: 0; }
+.diagnosis-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 10px; }
+.scope-switch { margin: 0 0 10px; }
+.scope-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.scope-chip { min-height: 30px; padding: 3px 11px; border: 1px solid #d3dfd8; border-radius: 999px; background: #fff; color: #3f5a4f; font-size: 12px; white-space: nowrap; }
+.scope-chip:hover { background: #edf3ec; }
+.scope-chip[aria-pressed="true"] { background: #26755f; border-color: #26755f; color: #fff; font-weight: 600; }
+.scope-more { margin-bottom: 8px; }
+.diagnosis-scope-headline { font-size: 13px; color: #355b4d; margin-bottom: 6px; overflow-wrap: anywhere; }
+.diagnosis-body h4 { font-size: 12px; font-weight: 600; color: #66816b; margin: 12px 0 6px; }
+.diagnosis-copy { display: grid; gap: 6px; margin: 12px 0 8px; }
+.diagnosis-copy > div { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: 10px; font-size: 12px; line-height: 1.8; }
+.diagnosis-copy dt { color: #66816b; font-weight: 600; }
+.diagnosis-copy dd { margin: 0; color: #4a6156; overflow-wrap: anywhere; }
+.diagnosis-technical { margin-top: 8px; font-size: 12px; color: #4a6156; }
+.diagnosis-technical ul { padding-left: 18px; margin: 4px 0 8px; }
+.diagnosis-technical code { overflow-wrap: anywhere; word-break: break-all; }
+.diagnosis-tech-list { display: grid; gap: 4px; margin: 6px 0; }
+.diagnosis-tech-list > div { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.diagnosis-tech-list dt { color: #66816b; }
+.diagnosis-tech-list dd { margin: 0; }
+@media (max-width: 640px) {
+  .diagnosis-summary { grid-template-columns: 14px minmax(0,1fr); grid-template-areas: "mark head" ". scopes" ". impact"; padding: 12px; }
+  .diagnosis-impact { flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 8px; text-align: left; }
+  .diagnosis-headline { font-size: 14px; }
+  .diagnosis-body { padding: 4px 12px 14px; }
+  .diagnosis-copy > div { grid-template-columns: minmax(0,1fr); gap: 0; }
+}
 
 
 
