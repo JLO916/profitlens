@@ -1,6 +1,8 @@
 # ProfitLens｜Codex 開發啟動包
 版本：0.1 規格草案｜2026-09-30
 
+> 歷史文件（2026-10-03 Revamp v2 R7 註記）：本檔是 2026-09-30 Codex 開發啟動包的說明，以下保留原文；「不是已完成的應用程式」「行銷後貢獻」等描述反映當時狀態。產品現況、30 秒試用與口徑說明見 [README.md](README.md)；工程與驗收見 [docs/ENGINEERING.md](docs/ENGINEERING.md)；發布紀錄見 [docs/RELEASES.md](docs/RELEASES.md)。
+
 ## 這是什麼
 這是「電商獲利診斷與決策工作台」的產品規格、Codex 任務與合成測試資料，不是已完成的應用程式。內容不使用任何個人履歷、前雇主或真實客戶資料。
 
