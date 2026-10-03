@@ -1763,8 +1763,51 @@ export const meetingPage = {} as const;
 
 
 
-/** R6-C Excel 匯出（excel-export.ts：工作表名、欄名、口徑表）。 */
-export const excelExport = {} as const;
+/** R6-C Excel 匯出（excel-export.ts：工作表名、欄名、口徑表）。03 §6：Excel 用本檔新名稱；欄名盡量沿用既有字串。
+ * columns 每個物件的 key 順序＝工作表欄位順序（excel-export.ts 依 Object.keys 組列）。 */
+export const excelExport = {
+  sheets: { summary: "摘要", channels: "通路", bridge: sections.bridge, products: "商品比較", actions: "行動", basis: "口徑" },
+  columns: {
+    summary: { section: "區塊", item: ui.overview.colItem, scope: csvColumns.scope, previous: periods.previous, current: periods.current, change: csvSuffix.change, impact: sections.impact, detail: "內容" },
+    channels: {
+      channel: csvColumns.channel,
+      previous_net_revenue: `${periods.previous}${metrics.net_revenue.label}`, current_net_revenue: `${periods.current}${metrics.net_revenue.label}`, net_revenue_change: `${metrics.net_revenue.label}${csvSuffix.change}`,
+      previous_contribution: `${periods.previous}${metrics.contribution_after_marketing.label}`, current_contribution: `${periods.current}${metrics.contribution_after_marketing.label}`, contribution_change: `${metrics.contribution_after_marketing.label}${csvSuffix.change}`,
+      data_status: csvColumns.data_status,
+    },
+    bridge: { item: ui.overview.colItem, previous: periods.previous, current: periods.current, impact: sections.impact, formula: "計算方式" },
+    products: {
+      channel: csvColumns.channel, sku: csvColumns.sku, category: csvColumns.category, current_units: `${periods.current}${assist.items.units_sold.label}`,
+      previous_net_revenue: `${periods.previous}${metrics.net_revenue.label}`, current_net_revenue: `${periods.current}${metrics.net_revenue.label}`,
+      previous_gross_profit: `${periods.previous}${metrics.gross_profit.label}`, current_gross_profit: `${periods.current}${metrics.gross_profit.label}`,
+      current_gross_margin: `${periods.current}${metrics.gross_margin.label}`, gross_profit_change: `${metrics.gross_profit.label}${csvSuffix.change}`,
+      data_status: productHighlights.columns.dataStatus,
+    },
+    actions: {
+      priority: "優先序", problem: actions.problem, step: actions.step, owner: actions.owner, due: actions.due, status: actions.status,
+      status_updated_at: "狀態更新日", pinned: buttons.pin, evidence_count: "引用數量", scope: csvColumns.scope, caution: sections.caution,
+    },
+    basis: { section: "區塊", item: ui.overview.colItem, detail: "內容" },
+  },
+  summary: {
+    sections: { scope: "資料範圍", keyDeltas: sections.keyDeltas, topThree: sections.topThree, meeting: nav.meeting.label },
+    items: { dataset: csvColumns.dataset_id, source: nav.data.label, asOf: status.dataAsOf, previous: periods.previous, current: periods.current, comparison: csvColumns.comparison_mode, channels: csvColumns.channels, meetingName: meeting.name, meetingDate: meeting.date, decision: meeting.decision, notes: meeting.notes },
+    periodValue: "{start}–{end}（{days} 天）",
+    priorityItem: "{n}. {headline}",
+    nextStep: `${sections.nextStep}：{text}`,
+    sourceTypes: { synthetic: status.demo, user_provided: status.local },
+  },
+  bridge: { mismatch: "九項加總與總差額不符，請重新匯入或回報" },
+  actions: { pinned: "是", notPinned: "否" },
+  basis: {
+    sections: { basis: basis.title, preprocessing: sections.dataPreprocessing, technical: sections.technicalDetails },
+    conversion: "含稅換算",
+    alias: "別名",
+    assistVersion: `${sections.assistKpis}版本 (${assist.technicalVersion})`,
+  },
+  /** 單格超過 Excel 上限（32,767 字）時截斷並加上這段，避免檔案打不開。 */
+  truncated: "…（超過 Excel 單格字數上限，已截斷）",
+} as const;
 
 
 
