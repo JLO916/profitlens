@@ -464,7 +464,7 @@ export const downloads = {
   exampleTemplate: "下載{file}範例檔",
   exampleManifest: "下載範例資料集設定（manifest.json）",
   templatesHeading: "匯入範本",
-  menuNote: "主管摘要 Markdown 與列印在總覽頁尾的會議稿內；完整工作區備份在「儲存」。",
+  menuNote: "會議議程、決議與上次比較在「會議紀錄」頁；完整工作區備份在「儲存」。",
   menuEmpty: "載入或匯入資料後才能下載。",
 } as const;
 
@@ -1759,7 +1759,49 @@ export const meetingRecord = {
 
 
 /** R6-B 會議紀錄分頁（meeting-page.tsx：議程、決議、結束會議、上次會議比較、輸出列）。 */
-export const meetingPage = {} as const;
+export const meetingPage = {
+  /** 總覽頁只留一行入口（05 §10）。 */
+  entry: "本期會議：{state}",
+  entryLast: "上次會議 {date}",
+  goToMeeting: "前往會議紀錄",
+  basics: "會議基本",
+  periodsLine: "上期 {previousStart}～{previousEnd} · 本期 {currentStart}～{currentEnd}",
+  dateError: "會議日期需是有效的日期（年-月-日）。",
+  agendaNote: "議程依會議固定的資料與範圍自動組成；點數字可看怎麼算的。",
+  scenariosNote: "每個通路最多選入一個已計算的方案；方案改動後要重新選入。",
+  actionsNote: "置頂行動列在上方會議摘要的「方案與待辦」（最多三項）；要調整置頂或負責人，請到「待辦與決議」。",
+  lastDecision: "上次決議",
+  noLastPinned: "上次會議沒有置頂待辦。",
+  followUpAria: "上次置頂待辦的狀態",
+  compareKpiAria: "上次會議與本次的關鍵差額",
+  followUpColumns: { problem: actions.problem, last: "上次狀態", current: "目前狀態", updated: "狀態更新日" },
+  finalizeHint: "結束後這次會議存入會議歷史，之後只能查看。",
+  confirmTitle: "確定結束這次會議？",
+  confirmBody: "結束後不可修改；會從目前資料建立新會議。",
+  finalizing: "正在結束會議…",
+  finalized: "已結束會議並存入會議歷史；已用目前資料建立新的會議稿。",
+  finalizeError: "沒有結束會議：會議用的資料和目前工作區不一致、方案已過期，或同一版會議已結束過。請先「用目前資料更新會議」再試。",
+  historicalNote: "會議用的是較早的資料；請先用目前資料更新會議，才能結束會議。",
+  compareKind: "比較方式：{kind}",
+  priorityRow: "{n}. {headline}｜{scope}｜{impact} {amount}",
+  history: "會議歷史",
+  historyEmpty: "還沒有已結束的會議。",
+  historyItem: "{name} · {date} · {decision}",
+  historyKpis: "關鍵差額",
+  historyKpiRow: "{metric}：{previous} → {current}；差額 {change}",
+  historyActions: "置頂行動",
+  historyActionRow: "{problem}｜{status}",
+  historyNote: "已結束的會議只能查看；數字是結束當時的結果。",
+  outputs: "輸出",
+  pdfHint: "列印對話框中選擇「另存為 PDF」",
+  exporting: "正在產生檔案…",
+  exportError: "沒有產生檔案：匯出元件載入失敗或會議資料不一致。請重新整理後再試；其他格式仍可下載。",
+  notReady: "會議資料載入後才能匯出。",
+  printHeader: "{name}｜會議日期 {date}｜資料到 {asOf}",
+  menuMarkdown: "下載會議紀錄 Markdown",
+  menuMarkdownHint: "有已結束的會議時下載最近一筆；否則下載目前會議稿的主管摘要。",
+  menuViewNote: "Excel 與 PPT 依目前檢視的期間與通路產生，並帶入目前會議稿的名稱與決議。",
+} as const;
 
 
 

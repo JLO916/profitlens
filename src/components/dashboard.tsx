@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { validateDataset } from "@/domain/validation";
 import type { AnalysisFilters, ComparisonMode, Dataset, DatasetInput, SourceRef, ValidationIssue } from "@/domain/types";
@@ -19,15 +19,20 @@ import { parseEvents, type EventIssue, type EventSet } from "@/application/event
 import type { PreparedImport } from "@/application/import";
 import { downloadText } from "@/application/download";
 import { exportIssuesCsv, exportSnapshotCsv } from "@/application/export";
-import { buildManagerSummary, exportChannelComparisonCsv } from "@/application/manager-summary";
+import { buildManagerSummary, exportChannelComparisonCsv, exportManagerSummaryMarkdown } from "@/application/manager-summary";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
 import { fill, labels } from "@/i18n";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "@/application/copy";
 import { AnalysisChannelLimitError, AnalysisPeriodLimitError } from "@/application/limits";
 import { MultiScenarioWorkbench } from "./multi-scenario-workbench";
-import { ReviewWorkbench } from "./review-workbench";
+import { MeetingEntry, MeetingPage, downloadMeetingMarkdown, meetingExportInfo } from "./meeting-page";
+import { PrintSummaryPortal, type PrintSummaryProps } from "./manager-summary";
 import { activateScenarioEpoch, emptyScenarioWorkspace, scenarioContextDecision, resolveScenarioReference, type ScenarioWorkspace, type ScenarioSelectionRef } from "@/application/scenario-workspace";
-import { createReviewSession, refreshReviewSession, syncReviewPins, selectReviewScenario, rebuildReviewSnapshot, updateReviewSession, type ReviewDecisionState, type ReviewSession } from "@/application/review-session";
+import { buildReviewDecisionContext, createReviewSession, refreshReviewScenarioReferences, refreshReviewSession, syncReviewPins, selectReviewScenario, rebuildReviewSnapshot, updateReviewSession, type ReviewSession } from "@/application/review-session";
+import { appendMeeting, compareWithLastMeeting, finalizeMeeting, lastMeeting, type Meeting, type MeetingComparison } from "@/application/meeting";
+import { exportExcel, preloadExcelWriter } from "@/application/excel-export";
+import { exportPptx } from "@/application/pptx-export";
+import { compareProducts } from "@/domain/product-comparison";
 import { exportWorkspaceDecision } from "@/application/workspace-decision-export";
 import { decisionSignature, emptyDecisionWorkspace } from "@/application/decision";
 import type { RestoredWorkspace, WorkspaceBackupSource } from "@/application/workspace-backup";
@@ -37,19 +42,18 @@ import { beginReplacement, type ReplacementKind } from "@/application/replacemen
 import { WorkspaceStorage } from "./workspace-storage";
 import { ActionsWorkbench } from "./actions-workbench";
 import { ProductComparisonPanel } from "./product-comparison-panel";
-import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, type ActionWorkspace, type ActionContext } from "@/application/action-workspace";
+import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, taipeiToday, type ActionWorkspace, type ActionContext } from "@/application/action-workspace";
 
-type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "validation";
+type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "meeting" | "validation";
 type Status = "empty" | "loading" | "error" | "partial" | "ready";
 type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; raw_values?: RawValuesByFile; targets?: TargetSet | null; events?: EventSet | null };
 // R2：導覽、資料集名稱與決議標籤都從 labels 取字；id／value 維持機器值。
-const panelIds: Panel[] = ["overview", "diagnosis", "products", "scenarios", "actions", "data", "validation"];
+const panelIds: Panel[] = ["overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "validation"];
 const panels: { id: Panel; label: string; description: string }[] = panelIds.map(id => ({ id, label: labels.nav[id].label, description: labels.nav[id].description }));
 const datasetLabels: Record<string, string> = {
   demo: labels.ui.dashboard.datasets.demo, golden: labels.ui.dashboard.datasets.golden,
   "missing-cogs": labels.ui.dashboard.datasets.missingCogs, "missing-ad": labels.ui.dashboard.datasets.missingAd, duplicate: labels.ui.dashboard.datasets.duplicate,
 };
-const decisionLabelKey: Record<ReviewDecisionState, keyof typeof labels.meeting.decisions> = { draft: "draft", adopted: "adopted", needs_data: "need_data", not_adopted: "rejected" };
 // 日期欄位的 sr-only 標籤「上期開始」等。labels.ui.dashboard.filter.periodStart/periodEnd 的模板值帶著「→ 範例」尾巴（盤點筆記誤入字典），
 // 直接填入會念成「上期開始 → 上期開始」；這裡只取箭頭前的模板，待字典修正後此處不必再改。
 const periodFieldLabel = (edge: "start" | "end", period: string) => fill((edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd).split(" → ")[0], { period });
@@ -61,6 +65,7 @@ export function Icon({ name, size = 20 }: { name: string; size?: number }) {
     data: "M4 4h16v16H4z M4 9h16 M9 4v16 M4 14h16",
     scenarios: "M4 4v16h16 M8 16l4-5 4 2 4-8",
     actions: "M8 5h12 M8 12h12 M8 19h12 M3 5h1 M3 12h1 M3 19h1",
+    meeting: "M4 5h16v15H4z M4 10h16 M8 3v4 M16 3v4",
     arrow: "M5 12h14 M13 6l6 6-6 6", lens: "M4 18V6h5v12 M13 18V3h6v15 M3 21h18",
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] ?? paths.data} /></svg>;
@@ -91,6 +96,12 @@ export function Dashboard() {
   const [actionWorkspace, setActionWorkspaceState] = useState<ActionWorkspace>(emptyActionWorkspace);
   const actionRef = useRef(actionWorkspace);
   const storeActions = (next: ActionWorkspace) => { actionRef.current = next; setActionWorkspaceState(next); };
+  // R6-2 已結束的會議（只讀，由舊到新）；寫進備份 v4 的 meeting_history。換資料保留（紀錄自足）；清空工作區時一起清掉。
+  const [meetingHistory, setMeetingHistoryState] = useState<Meeting[]>([]);
+  const meetingHistoryRef = useRef(meetingHistory);
+  const storeMeetingHistory = (next: Meeting[]) => { meetingHistoryRef.current = next; setMeetingHistoryState(next); };
+  // 本工作階段結束會議時算好的上次比較（給會議紀錄 Markdown）；備份不保存。
+  const [meetingComparisons, setMeetingComparisons] = useState<Record<string, MeetingComparison>>({});
   const [version, setVersion] = useState(0);
   const [savedVersion, setSavedVersion] = useState(0);
   const versionRef = useRef(0);
@@ -148,7 +159,6 @@ export function Dashboard() {
   const currentPanel = panels.find(item => item.id === panel)!;
   const [aiOpen, setAiOpen] = useState(false);
   // Collapsed overview sections keep their open state across filter reloads and page switches.
-  const [meetingOpen, setMeetingOpen] = useState(false);
   const [basisOpen, setBasisOpen] = useState(false);
   const [periodOpen, setPeriodOpen] = useState(false);
   const aiRef = useRef<HTMLDivElement>(null);
@@ -313,7 +323,7 @@ export function Dashboard() {
   }
   function clear() { requestReplacement("clear", performClear); }
   function performClear() {
-    storeScenarios(emptyScenarioWorkspace()); storeReview(null); storeActions(emptyActionWorkspace()); setSavedVersion(versionRef.current);
+    storeScenarios(emptyScenarioWorkspace()); storeReview(null); storeActions(emptyActionWorkspace()); storeMeetingHistory([]); setMeetingComparisons({}); setSavedVersion(versionRef.current);
     // 清空工作區也重設本機保存同意（與 R2 以前儲存面板自己重掛載的行為一致）；對照記憶的 IndexedDB 寫入隨之停止。
     setStorageResetEpoch(value => value + 1); setLocalConsent(false);
     requestId.current++; controller.current?.abort(); setActive(null); setIssues([]); setEvidence(null);
@@ -327,7 +337,7 @@ export function Dashboard() {
     revision.current = Math.max(revision.current, workspace.revision);
     setActive({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, id: workspace.id, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings, conversion: workspace.preprocessing?.conversion ?? null, raw_values: workspace.preprocessing?.raw_values, targets: workspace.targets, events: workspace.events });
     setTargetIssues([]); setEventIssues([]); setLastPreset(workspace.ui_prefs.last_preset); setActionsView(workspace.ui_prefs.view);
-    storeScenarios(workspace.scenario_workspace); storeReview(workspace.review_session ?? syncReviewPins(createReviewSession({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings }, workspace.scenario_workspace.active_epoch), workspace.action_workspace)); storeActions(workspace.action_workspace); setIssues(workspace.issues);
+    storeScenarios(workspace.scenario_workspace); storeReview(workspace.review_session ?? syncReviewPins(createReviewSession({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings }, workspace.scenario_workspace.active_epoch), workspace.action_workspace)); storeActions(workspace.action_workspace); storeMeetingHistory(workspace.meeting_history); setMeetingComparisons({}); setIssues(workspace.issues);
     setComparisonMode(workspace.snapshot.report.scope.comparison_mode);
     setDates({ previousStart: workspace.snapshot.report.previous.period.start, previousEnd: workspace.snapshot.report.previous.period.end, currentStart: workspace.snapshot.report.current.period.start, currentEnd: workspace.snapshot.report.current.period.end });
     const next = ++versionRef.current; setVersion(next); setSavedVersion(next);
@@ -347,6 +357,46 @@ export function Dashboard() {
     if (!active) return;
     const body = exportWorkspaceDecision(format, active, scenarioWorkspace, actionWorkspace, reviewSession, active.conversion ?? null, scenarioFocus);
     downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");
+  }
+  // R6-7「下載 ▾」的會議摘要：Excel／PPT／PDF 依目前檢視（active.snapshot）產生，帶入目前會議稿的名稱、日期與決議。
+  const [menuExport, setMenuExport] = useState<{ busy: "excel" | "pptx" | "md" | null; error: boolean }>({ busy: null, error: false });
+  const [menuPrint, setMenuPrint] = useState<PrintSummaryProps | null>(null);
+  const viewSummary = (current: Active) => buildManagerSummary(current.snapshot, { conversion: current.conversion, targets: { set: current.targets ?? null, allChannels: current.dataset.manifest.channels } });
+  async function exportCurrentView(kind: "excel" | "pptx") {
+    if (!active) return;
+    setMenuExport({ busy: kind, error: false });
+    try {
+      const summary = viewSummary(active), meeting = meetingExportInfo(reviewRef.current);
+      if (kind === "excel") await exportExcel({ summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting });
+      else await exportPptx({ summary, snapshot: active.snapshot, actions: actionRef.current, meeting });
+      setMenuExport({ busy: null, error: false });
+    } catch { setMenuExport({ busy: null, error: true }); }
+  }
+  /** 會議紀錄 Markdown：有已結束的會議就下載最近一筆；否則下載目前會議稿（固定範圍）的主管摘要 Markdown。 */
+  async function exportMeetingNotes() {
+    if (!active) return;
+    const latest = lastMeeting(meetingHistoryRef.current);
+    if (latest) { downloadMeetingMarkdown(latest, meetingComparisons[latest.id]); return; }
+    const review = reviewRef.current;
+    setMenuExport({ busy: "md", error: false });
+    try {
+      if (!review) downloadText(exportManagerSummaryMarkdown(viewSummary(active)), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
+      else {
+        const snapshot = await rebuildReviewSnapshot(review), same = active.snapshot.dataset_hash === review.dataset_hash;
+        const summary = buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold, conversion: same ? active.conversion : null, targets: same ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : undefined });
+        downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current)), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
+      }
+      setMenuExport({ busy: null, error: false });
+    } catch { setMenuExport({ busy: null, error: true }); }
+  }
+  /** 「匯出 PDF」：在 body 放列印版面後 window.print()（與會議頁、會議摘要的列印同一流程）。 */
+  function printCurrentView() {
+    if (!active) return;
+    const review = reviewRef.current;
+    let decisionContext: PrintSummaryProps["decisionContext"];
+    try { decisionContext = review ? buildReviewDecisionContext(review, scenarioRef.current, actionRef.current) : undefined; } catch { decisionContext = undefined; }
+    const info = meetingExportInfo(review);
+    setMenuPrint({ summary: viewSummary(active), decisionContext, snapshot: active.snapshot, meeting: info ? { name: info.name, date: info.date } : null });
   }
   function reviewEvidence(selection: EvidenceSelection, review: ReviewSession) {
     const dataset = validateDataset(review.source_input).dataset;
@@ -369,12 +419,33 @@ export function Dashboard() {
     if (!active) return;
     const old = reviewRef.current;
     const next = createReviewSession(active, scenarioRef.current.active_epoch, old?.id);
-    setReview(syncReviewPins({ ...next, revision: (old?.revision ?? 0) + 1, name: old?.name ?? next.name, notes: old?.notes ?? next.notes, importance_threshold: old?.importance_threshold ?? next.importance_threshold }, actionWorkspace));
+    setReview(syncReviewPins({ ...next, revision: (old?.revision ?? 0) + 1, name: old?.name ?? next.name, notes: old?.notes ?? next.notes, importance_threshold: old?.importance_threshold ?? next.importance_threshold, ...(old?.meeting_date ? { meeting_date: old.meeting_date } : {}) }, actionWorkspace));
+  }
+  /**
+   * R6-2「結束會議」：用會議的固定來源重建快照 → 方案已過期就先把決議退回草稿 → 算上次比較 → finalize（凍結）→ 寫入會議歷史
+   * → 從目前資料建立新的會議稿。任何一步失敗都擲錯、不改狀態，由會議頁顯示 finalizeError。
+   */
+  async function finalizeCurrentMeeting(): Promise<void> {
+    const current = active, review = reviewRef.current, ticket = requestId.current;
+    if (!current || !review) throw new Error("NO_MEETING");
+    const snapshot = await rebuildReviewSnapshot(review);
+    if (ticket !== requestId.current || reviewRef.current !== review) throw new Error("MEETING_CHANGED");
+    const scenarios = scenarioRef.current, actions = actionRef.current, history = meetingHistoryRef.current;
+    const fixed = refreshReviewScenarioReferences(review, scenarios);
+    const same = current.snapshot.dataset_hash === fixed.dataset_hash;
+    const conversion = same ? current.conversion ?? null : null;
+    const targets = same ? { set: current.targets ?? null, allChannels: current.dataset.manifest.channels } : null;
+    const comparison = compareWithLastMeeting({ snapshot, review: fixed, actions, conversion, targets }, lastMeeting(history));
+    const meeting = finalizeMeeting({ review: fixed, snapshot, scenarios, actions, conversion, targets, date: fixed.meeting_date ?? taipeiToday(), now: new Date().toISOString() });
+    storeMeetingHistory(appendMeeting(history, meeting));
+    setMeetingComparisons(previous => ({ ...previous, [meeting.id]: comparison }));
+    storeReview(syncReviewPins(createReviewSession(current, scenarios.active_epoch, crypto.randomUUID()), actions));
+    markChanged(); setEvidence(null); setPanel("meeting");
   }
   function selectForReview(reference: ScenarioSelectionRef) {
     if (!reviewRef.current) return;
     try { setReview(selectReviewScenario(reviewRef.current, scenarioRef.current, reference)); setFilterError(""); }
-    catch { setFilterError(fill(labels.ui.dashboard.errors.scenarioScopeMismatch, { overview: labels.nav.overview.label, updateMeeting: labels.buttons.updateMeetingSource })); }
+    catch { setFilterError(fill(labels.ui.dashboard.errors.scenarioScopeMismatch, { overview: labels.nav.meeting.label, updateMeeting: labels.buttons.updateMeetingSource })); }
   }
   const visible = active && (status === "ready" || status === "partial");
   const local = active?.dataset.manifest.source_type === "user_provided";
@@ -384,11 +455,13 @@ export function Dashboard() {
   const presets = active ? periodPresets(active.dataset.manifest, { previous: { start: dates.previousStart, end: dates.previousEnd }, current: { start: dates.currentStart, end: dates.currentEnd }, comparison_mode: comparisonMode }) : [];
   const presetMatches = (preset: PeriodPreset) => preset.status === "ready" && preset.comparison_mode === comparisonMode && preset.previous.start === dates.previousStart && preset.previous.end === dates.previousEnd && preset.current.start === dates.currentStart && preset.current.end === dates.currentEnd;
   const alias = active ? demoAlias(active.dataset.manifest.dataset_id) : false;
+  // 會議頁的目標（同一份資料才帶進摘要）；固定物件身分，避免每次 render 重算會議摘要。
+  const meetingTargets = useMemo(() => active ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : null, [active]);
   const statusText = labels.status[status];
   const aiHeadline = aiCapability === null ? labels.status.aiUnknown : aiCapability.available ? labels.status.aiNeedsConsent : aiCapability.reason === "STATUS_UNAVAILABLE" ? labels.status.aiUnknown : aiCapability.reason === "PUBLIC_DEMO" ? labels.status.aiOff : labels.status.aiDisabled;
   // 03 §9：關閉狀態的說明只留一句（併入 AI popover）。
   const aiDetail = aiCapability?.available ? labels.ui.dashboard.aiDetail.consent : aiCapability?.reason === "PUBLIC_DEMO" ? labels.ui.dashboard.aiDetail.publicDemo : labels.ui.dashboard.aiDetail.off;
-  const backupSource: WorkspaceBackupSource | null = active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession, preprocessing: active.conversion ? { conversion: active.conversion, raw_values: active.raw_values ?? {} } : null, targets: active.targets ?? null, events: active.events ?? null, ui_prefs: { ...(lastPreset ? { last_preset: lastPreset } : {}), ...(actionsView ? { view: actionsView } : {}) } } : null;
+  const backupSource: WorkspaceBackupSource | null = active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession, preprocessing: active.conversion ? { conversion: active.conversion, raw_values: active.raw_values ?? {} } : null, targets: active.targets ?? null, events: active.events ?? null, meeting_history: meetingHistory, ui_prefs: { ...(lastPreset ? { last_preset: lastPreset } : {}), ...(actionsView ? { view: actionsView } : {}) } } : null;
 
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">{labels.ui.dashboard.skipLink}</a>
@@ -412,7 +485,7 @@ export function Dashboard() {
           </div>
         </div>
         <WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { void clearWizardMemory(); if (active) markChanged(); }} consent={localConsent} onConsentChange={setLocalConsent} />
-        <details className="topbar-menu auto-close download-menu" data-testid="download-menu">
+        <details className="topbar-menu auto-close download-menu" data-testid="download-menu" onToggle={event => { if (event.currentTarget.open) void preloadExcelWriter(); }}>
             <summary>{labels.buttons.download}</summary>
             <div className="menu-panel">{visible ? <div className="menu-list">
               <p className="menu-section">{labels.sections.downloadCurrentView}</p>
@@ -424,6 +497,14 @@ export function Dashboard() {
               <button type="button" onClick={() => exportDecision("md")}>{labels.downloads.decisionMd}</button>
               <button type="button" onClick={() => exportDecision("csv")}>{labels.downloads.decisionCsv}</button>
               <button type="button" onClick={() => exportDecision("json")}>{labels.downloads.decisionJson}</button>
+              <p className="menu-section" data-testid="download-meeting-section">{labels.sections.meetingSummary}</p>
+              <div className="menu-item"><button type="button" aria-describedby="download-pdf-hint" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); printCurrentView(); }}>{labels.buttons.exportPdf}</button><small id="download-pdf-hint">{labels.meetingPage.pdfHint}</small></div>
+              <button type="button" disabled={menuExport.busy !== null} onClick={() => void exportCurrentView("excel")}>{labels.buttons.exportExcel}</button>
+              <button type="button" disabled={menuExport.busy !== null} onClick={() => void exportCurrentView("pptx")}>{labels.buttons.exportPptx}</button>
+              <div className="menu-item"><button type="button" disabled={menuExport.busy !== null} onClick={() => void exportMeetingNotes()}>{labels.meetingPage.menuMarkdown}</button><small>{labels.meetingPage.menuMarkdownHint}</small></div>
+              {menuExport.busy && <p className="menu-note" role="status">{labels.meetingPage.exporting}</p>}
+              {menuExport.error && <p className="menu-note menu-error" role="alert">{labels.meetingPage.exportError}</p>}
+              <p className="menu-note">{labels.meetingPage.menuViewNote}</p>
               <p className="menu-note">{labels.downloads.menuNote}</p>
             </div> : <p className="menu-note">{labels.status.empty}；{labels.downloads.menuEmpty}</p>}
             <div className="menu-section" data-testid="download-templates"><p className="menu-heading">{labels.downloads.templatesHeading}</p>{FILE_ROLES.map(role => { const file = labels.importWizard.files[role === "sales_daily.csv" ? "sales" : role === "channel_costs_daily.csv" ? "costs" : "ads"]; return <div key={role} className="menu-item"><button type="button" onClick={() => downloadText(standardCsvTemplate(role), role)}>{fill(labels.downloads.blankTemplate, { file })}</button><a href={exampleTemplateUrl(role)} download={role}>{fill(labels.downloads.exampleTemplate, { file })}</a></div>; })}</div></div>
@@ -459,7 +540,7 @@ export function Dashboard() {
         {status === "empty" && !showImport && panel !== "validation" && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">{labels.emptyState.eyebrow}</p><h2>{labels.emptyState.title}</h2><p>{labels.emptyState.body}</p><button className="button primary large" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={18} /></button><div className="empty-steps">{labels.emptyState.steps.map((step, index) => <span key={step}>{index + 1} {step}</span>)}</div></section>}
         {status === "loading" && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>{labels.ui.dashboard.loading.heading}</h2><p>{labels.ui.dashboard.loading.body}</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
         {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>{labels.status.error}</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>{labels.ui.dashboard.errorState.retry}</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>{labels.ui.dashboard.errorState.back}</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
-        {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><details className="panel overview-meeting" data-testid="overview-meeting" open={meetingOpen} onToggle={event => setMeetingOpen(event.currentTarget.open)}><summary>{labels.sections.meetingDraft}<span className="tag">{reviewSession ? labels.meeting.decisions[decisionLabelKey[reviewSession.decision_state]] : labels.sections.meetingNotCreated}</span></summary><ReviewWorkbench source={active} conversion={active.conversion} targets={{ set: active.targets ?? null, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} review={reviewSession} onChange={setReview} actionWorkspace={actionWorkspace} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} /></details></>}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
+        {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} /></>}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} comparisons={meetingComparisons} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
         <footer className="main-footer"><p>{labels.basis.footer} → <button type="button" className="text-button" onClick={() => setBasisOpen(true)}>{labels.buttons.basis}</button></p></footer>
@@ -471,5 +552,6 @@ export function Dashboard() {
     }} />}
     {active && <EvidenceDrawer dataset={evidenceSource?.dataset ?? active.dataset} snapshot={evidenceSource ? undefined : active.snapshot} filenames={evidenceSource?.filenames ?? active.filenames} mappings={evidenceSource ? evidenceSource.mappings : active.mappings} rawValues={!evidenceSource || evidenceSource.dataset_hash === active.snapshot.dataset_hash ? active.raw_values : undefined} conversion={!evidenceSource || evidenceSource.dataset_hash === active.snapshot.dataset_hash ? active.conversion : null} evidence={evidence} onClose={() => setEvidence(null)} onBasis={() => setBasisOpen(true)} />}
     <BasisDialog open={basisOpen} onClose={() => setBasisOpen(false)} />
+    {menuPrint && <PrintSummaryPortal {...menuPrint} onDone={() => setMenuPrint(null)} />}
   </div>;
 }
