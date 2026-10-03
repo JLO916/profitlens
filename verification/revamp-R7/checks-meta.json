@@ -1,0 +1,26 @@
+{
+  "tags": {
+    "title": "ProfitLens｜電商獲利診斷與決策工作台",
+    "description": "從銷售、通路費用與廣告資料，看清扣廣告後貢獻的變化，每個數字都能追到來源。",
+    "ogTitle": "ProfitLens｜電商獲利診斷與決策工作台",
+    "ogDescription": "從銷售、通路費用與廣告資料，看清扣廣告後貢獻的變化，每個數字都能追到來源。",
+    "ogImage": "https://profitlens-tau.vercel.app/og.png",
+    "ogUrl": "https://profitlens-tau.vercel.app",
+    "ogLocale": "zh_TW",
+    "twitterCard": "summary_large_image",
+    "twitterImage": "https://profitlens-tau.vercel.app/og.png",
+    "canonical": "https://profitlens-tau.vercel.app",
+    "icon": "/icon.svg?e3649170fa7c044f",
+    "lang": "zh-Hant-TW"
+  },
+  "ogImage": {
+    "width": 1200,
+    "height": 630,
+    "bytes": 140007
+  },
+  "iconStatus": 200,
+  "robots": "User-Agent: *\nAllow: /\n\nSitemap: https://profitlens-tau.vercel.app/sitemap.xml\n",
+  "sitemap": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n<url>\n<loc>https://profitlens-tau.vercel.app</loc>\n<lastmod>2026-10-03T14:55:18.128Z</lastmod>\n<changefreq>weekly</changefreq>\n<priority>1</priority>\n</url>\n</urlset>\n",
+  "readmeTrialLine": "開正式站 → 按「試試示範資料」→ 看「本期三件事」→ 點任一數字看「怎麼算的」。（示範資料為合成資料，不代表任何真實商家。）",
+  "emptyStateBody": "按「試試示範資料」→ 看「本期三件事」→ 點任一數字看「怎麼算的」。示範資料為合成資料，不代表任何真實商家。"
+}

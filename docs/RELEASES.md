@@ -14,7 +14,7 @@ Revamp v2：把產品從「稽核員工具」改成台灣電商經理人每週�
 - **通路健檢改為清單、假設試算更快**（R5）：同一問題的合計與各通路合併成一列、資料缺漏排最前、依對貢獻影響排序，標題一句話寫出問題與金額，前三列預設展開；假設試算進頁就是表單，六個範本、可直接輸入絕對值（目標件數、新折扣率、新廣告預算），「要賣到多少才划算」三組敏感度隨方案保存；待辦改為看板（未開始／進行中／受阻／已完成，按鈕改狀態、負責人選單、證據勾選含搜尋）；商品毛利頁新增「毛利最差／最好的商品」各 10 名。
 - **會議紀錄與匯出**（R6）：新分頁「會議紀錄」——議程自動組成、記錄決議、「結束會議」後凍結成紀錄、自動與上次會議比較；匯出 PDF（A4 列印一頁摘要＋附錄）、Excel（六個工作表）、PowerPoint 一頁式、Markdown 與 CSV，全部集中在「下載 ▾」。
 - **工作區可自動保存在你的電腦**（R6，需同意）：第一次載入資料時詢問一次，同意後每次修改 2 秒內自動保存，頂欄顯示「已保存 hh:mm」；可在「儲存 ▾」關閉自動保存或「刪除本機資料」。
-- **上線整理**（R7）：README 改寫給營運主管（工程內容移到 [ENGINEERING](ENGINEERING.md)）；示範資料只用顯示別名（官網 · DTC／平台 · MARKETPLACE；品類 居家／保養／配件／3C），並標示為合成資料（決策 D3＝A）；「開發者驗證」頁不在側欄顯示，改由網址 `#validation` 開啟（D10＝A）；網站標題、描述與分享卡片更新；網址維持 profitlens-tau.vercel.app（D8＝A）；啟用 Vercel Web Analytics，只記頁面瀏覽與互動事件、不含任何資料內容，並在頁尾揭露（D9＝B）。
+- **上線整理**（R7）：README 改寫給營運主管（工程內容移到 [ENGINEERING](ENGINEERING.md)）；示範資料只用顯示別名（官網 · DTC／平台 · MARKETPLACE；品類 居家／保養／配件／3C），側欄標示「示範資料是合成資料，不代表任何真實商家或業績」、匯出檔資料集識別碼以 `synthetic-demo` 開頭（決策 D3＝A）；「開發者驗證」頁不在側欄顯示，改由網址 `#validation` 開啟（D10＝A）；網站標題、描述與分享卡片更新；網址維持 profitlens-tau.vercel.app（D8＝A）；接上 Vercel Web Analytics（不加依賴，只在 Vercel production 載入；需在 Vercel 儀表板啟用後才開始記錄），只記頁面瀏覽與互動事件名、不含任何資料內容，並在頁尾揭露（D9＝B）；側欄次要文字加深以通過 Lighthouse 對比檢查。
 
 ### 不變的事
 - 財務口徑 `contribution-v1` 不變：淨營收 → 商品毛利 → 通路貢獻 → 扣廣告後貢獻的公式（`docs/METRICS.md`）與 golden／demo／errors／refund_only／zero_ad fixtures 零改動；R4 對 `src/domain` 只做加法（售出件數），既有指標的輸入輸出不變。
@@ -34,7 +34,7 @@ Revamp v2：把產品從「稽核員工具」改成台灣電商經理人每週�
 
 ### 驗收
 - 上線檢查：[verification/revamp-R7-acceptance.md](../verification/revamp-R7-acceptance.md)
-- 各批驗收：[R0](../verification/revamp-R0-acceptance.md)、[R1](../verification/revamp-R1-acceptance.md)、[R2](../verification/revamp-R2-acceptance.md)、[R3](../verification/revamp-R3-acceptance.md)、[R4](../verification/revamp-R4-acceptance.md)、[R5](../verification/revamp-R5-acceptance.md)、[R6](../verification/revamp-R6-acceptance.md)（R6 結束時：單元／整合 72 檔 1,435 項、E2E 四尺寸 576 項全過）
+- 各批驗收：[R0](../verification/revamp-R0-acceptance.md)、[R1](../verification/revamp-R1-acceptance.md)、[R2](../verification/revamp-R2-acceptance.md)、[R3](../verification/revamp-R3-acceptance.md)、[R4](../verification/revamp-R4-acceptance.md)、[R5](../verification/revamp-R5-acceptance.md)、[R6](../verification/revamp-R6-acceptance.md)（R7 結束時：單元／整合 73 檔 1,462 項、E2E 四尺寸 576 項全過；R6 結束時 72 檔 1,435 項、576 項）
 
 ## 2026-10-02 Review v2 A 批
 

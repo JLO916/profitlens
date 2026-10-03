@@ -31,6 +31,8 @@ test("R7 走查截圖", async ({ page }, testInfo) => {
   await shoot(page, dir, `1-demo-save-prompt-${suffix}`);
   await prompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
   await expect(page.getByTestId("top-three")).toBeVisible();
+  // 總覽首屏（README 首圖與 public/og.png 的來源：desktop 1440×1000）。
+  await shoot(page, dir, `1b-overview-${suffix}`);
   await shoot(page, dir, `2-top-three-${suffix}`, page.getByTestId("top-three"));
 
   // 看證據：第一個三件事的「看證據」開抽屜。

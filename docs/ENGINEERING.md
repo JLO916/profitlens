@@ -35,6 +35,7 @@ Revamp v2（`docs/revamp/`，R0–R7）把產品從稽核員工具改成經理�
 | R4 | 輔助指標、去年同期、目標、檔期、備份 v4 | 57 檔／1,014 | 488 | [revamp-R4-acceptance.md](../verification/revamp-R4-acceptance.md) |
 | R5 | 健檢、試算、行動的決策化 | 65 檔／1,207 | 520（516 過；4 項列印測試比對式修正後重跑 12/12） | [revamp-R5-acceptance.md](../verification/revamp-R5-acceptance.md) |
 | R6 | 會議紀錄、匯出、預設保存 | 72 檔／1,435 | 576 | [revamp-R6-acceptance.md](../verification/revamp-R6-acceptance.md) |
+| R7 | README、示範資料、上線整理 | 73 檔／1,462 | 576 | [revamp-R7-acceptance.md](../verification/revamp-R7-acceptance.md)（含 Lighthouse、13 項 HTTP、鍵盤、v3 恢復、網路紀錄） |
 
 R3 的來源預設查證另見 [revamp-R3-preset-verification.md](../verification/revamp-R3-preset-verification.md)。R7（README、示範資料、上線）的上線檢查紀錄寫在 `verification/revamp-R7-acceptance.md`，並由 [RELEASES](RELEASES.md) 的 v2.0.0 段落連結。
 

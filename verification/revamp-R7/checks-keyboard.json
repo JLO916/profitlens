@@ -1,0 +1,29 @@
+{
+  "tabOrderFromLanding": [
+    "a .skip-link 跳至主要內容",
+    "a .brand ProfitLens營運決策工作台",
+    "button .nav-item 經營總覽",
+    "button .nav-item 通路健檢",
+    "button .nav-item 商品毛利",
+    "button .nav-item 假設試算",
+    "button .nav-item 待辦與決議",
+    "button .nav-item 會議紀錄",
+    "button .nav-item 資料來源",
+    "button .text-button 清空"
+  ],
+  "afterSkipLinkEnter": "main #main-content 營運決策工作台經營總覽本期關鍵數字、三件事、趨勢",
+  "evidenceDrawer": {
+    "focusMovedIntoDialog": true,
+    "focusedElement": "button .button 關閉",
+    "escapeClosed": true,
+    "focusReturnedToOpener": true
+  },
+  "downloadMenu": {
+    "escapeClosed": true,
+    "focusAfterEscape": "summary 下載"
+  },
+  "meetingFinalizeConfirm": {
+    "escapeClosed": true,
+    "focusAfterEscape": "button [meeting-finalize] .button 結束會議"
+  }
+}

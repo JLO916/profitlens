@@ -1,0 +1,506 @@
+[
+  {
+    "doc": "README.md",
+    "href": "https://profitlens-tau.vercel.app",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "README.md",
+    "href": "templates/",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "README.md",
+    "href": "templates/examples/",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "README.md",
+    "href": "scripts/aggregate_orders.py",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "README.md",
+    "href": "docs/ORDER_AGGREGATION.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "README.md",
+    "href": "docs/METRICS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "README.md",
+    "href": "docs/ENGINEERING.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "README.md",
+    "href": "docs/RELEASES.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "README.md",
+    "href": "AGENTS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../README.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "RELEASES.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../AGENTS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../CLAUDE.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "http://127.0.0.1:3000",
+    "kind": "external",
+    "ok": false,
+    "status": "ERR fetch failed"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "STATUS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R0-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R1-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R2-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R3-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R4-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R5-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R6-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R7-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/revamp-R3-preset-verification.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "ARCHITECTURE.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "METRICS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "DATA_CONTRACT.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "SCENARIOS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "DECISIONS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "revamp/",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "ORDER_AGGREGATION.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "AI_CONTRACT.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "M5_EVALUATION.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "PRD.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "ACCEPTANCE.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "TASKS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "PILOT_PLAN.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "PILOT_WORKSHEET.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/pilot-rehearsal-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://profitlens-tau.vercel.app",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://github.com/JLO916/profitlens",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://vercel.com/jlo916s-projects/profitlens",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/deployment-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/m3-tests.txt",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://developers.openai.com/api/docs/guides/structured-outputs",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://developers.openai.com/api/docs/guides/migrate-to-responses",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://nextjs.org/docs/app/getting-started/installation",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://nextjs.org/docs/app/api-reference/config/eslint",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://nextjs.org/docs/app/guides/testing/vitest",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "https://tailwindcss.com/docs/installation/framework-guides/nextjs",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/ENGINEERING.md",
+    "href": "../verification/app-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "https://profitlens-tau.vercel.app",
+    "kind": "external",
+    "ok": true,
+    "status": "200"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "ENGINEERING.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "STATUS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "DECISIONS.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "ORDER_AGGREGATION.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R3-preset-verification.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R7-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R0-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R1-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R2-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R3-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R4-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R5-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/revamp-R6-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/release-v2-a-20261002-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/manager-batch3-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/manager-batch2-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/manager-batch1-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/app-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "http://127.0.0.1:3200/",
+    "kind": "external",
+    "ok": false,
+    "status": "ERR fetch failed"
+  },
+  {
+    "doc": "docs/RELEASES.md",
+    "href": "../verification/release-20261001-acceptance.md",
+    "kind": "relative",
+    "ok": true,
+    "status": "exists"
+  }
+]

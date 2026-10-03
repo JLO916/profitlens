@@ -25,11 +25,13 @@ export default defineConfig({
     { name: "tablet", use: { viewport: { width: 768, height: 1024 } } },
     { name: "mobile", use: { viewport: { width: 390, height: 844 } } },
   ],
+  // 上線檢查對著「正式站設定」的本機 production 伺服器（先 npm run build）：APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false，與 verification/deployment-config.json 相同；
+  // 同一個伺服器也供 smoke（revamp-R7-smoke.py）與 Lighthouse 使用，所以允許重用已啟動的 3100。
   webServer: {
-    command: "NEXT_TELEMETRY_DISABLED=1 npm run build && npm start -- --port 3100",
+    command: "NEXT_TELEMETRY_DISABLED=1 npm start -- --port 3100",
     url: "http://127.0.0.1:3100",
-    reuseExistingServer: false,
-    env: { ENABLE_LIVE_AI: "false", APP_MODE: "LOCAL", PUBLIC_DEMO: "false" },
+    reuseExistingServer: true,
+    env: { ENABLE_LIVE_AI: "false", APP_MODE: "PUBLIC_DEMO", PUBLIC_DEMO: "true" },
     timeout: 120_000,
   },
 });

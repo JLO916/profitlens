@@ -1,0 +1,182 @@
+{
+  "checked_at": "2026-10-03T14:55:23.338560+00:00",
+  "url": "http://127.0.0.1:3100",
+  "checks": [
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "s-maxage=31536000",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    },
+    {
+      "path": "/api/datasets/demo",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": true,
+        "channel_costs_daily.csv": true,
+        "ad_spend_daily.csv": true
+      },
+      "csv_sha256": {
+        "sales_daily.csv": "695d01530baefef59327589ad4fde465d4a48d0df799a3de332c16b1ae692f53",
+        "channel_costs_daily.csv": "82847eeba42d3157ccde3b9800e82b75c5fb9fa1400ed2411008a660d4273966",
+        "ad_spend_daily.csv": "1c8bb2137cd6bd853fc165ffdc1929d5b84d5d9693b94892766ddbe6e64dc69d"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/datasets/golden",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": true,
+        "channel_costs_daily.csv": true,
+        "ad_spend_daily.csv": true
+      },
+      "csv_sha256": {
+        "sales_daily.csv": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+        "channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/datasets/missing-cogs",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": true,
+        "channel_costs_daily.csv": true,
+        "ad_spend_daily.csv": true
+      },
+      "csv_sha256": {
+        "sales_daily.csv": "8435b367d0172ab15ce62ee0f4a0bfa89b1547f93f3d81a397bd3eb348fb8f5d",
+        "channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/datasets/missing-ad",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": true,
+        "channel_costs_daily.csv": true,
+        "ad_spend_daily.csv": true
+      },
+      "csv_sha256": {
+        "sales_daily.csv": "269f2a316a773f4f838fc7bc22e49c02bd62f443a815f0dcf19869aca0de569c",
+        "channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "ad_spend_daily.csv": "329b0a56c2834b05fa3f33f1f5af2da306b4edb1fe0d3c2a170af9d5d9254084"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/datasets/duplicate",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "synthetic": true,
+      "manifest_matches_local": true,
+      "csv_matches_local": {
+        "sales_daily.csv": true,
+        "channel_costs_daily.csv": true,
+        "ad_spend_daily.csv": true
+      },
+      "csv_sha256": {
+        "sales_daily.csv": "265e1198199a562621652ceca5e0c5d05149f89f92d7641da1765c7b861daf3a",
+        "channel_costs_daily.csv": "94efbc527fcc371b8573a9d94d6dfdb057203a68f89c4635ba5a782bce976bf8",
+        "ad_spend_daily.csv": "70a0870fc37b5f41760c87b539dbc0aeb4b79f2e8daf81b264e35fb7b9a42401"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/insights",
+      "method": "GET",
+      "status": 200,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "body": {
+        "available": false,
+        "reason": "PUBLIC_DEMO",
+        "provider": "openai"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/insights",
+      "method": "POST",
+      "status": 403,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "body": {
+        "status": "fallback",
+        "snapshot_id": null,
+        "reason": "PUBLIC_DEMO"
+      },
+      "pass": true
+    },
+    {
+      "path": "/api/datasets/not-allowed",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "no-store",
+      "content_type": "application/json",
+      "pass": true
+    },
+    {
+      "path": "/.env",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    },
+    {
+      "path": "/.git/config",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    },
+    {
+      "path": "/verification/app-acceptance.md",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    },
+    {
+      "path": "/fixtures/golden/sales_daily.csv",
+      "method": "GET",
+      "status": 404,
+      "cache_control": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "content_type": "text/html; charset=utf-8",
+      "pass": true
+    }
+  ],
+  "all_passed": true,
+  "live_ai_called": false
+}

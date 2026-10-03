@@ -1,9 +1,10 @@
 /**
- * Taiwan source presets (04_IMPORT_TW §4.2) — CANDIDATE header mappings, NOT VERIFIED.
+ * Taiwan source presets (04_IMPORT_TW §4.2) — header mappings; only `shopee_orders` is verified.
  *
- * verified: false — every preset in this file is `verified: false`, `verifiedAt: null`.
- * The fingerprints and candidate column names come from the spec table and public knowledge
- * of each platform's export; none has been checked against a real export file yet.
+ * `shopee_orders` is `verified: true, verifiedAt: "2026-10-03"` (checked against a de-identified real
+ * order export — see verification/revamp-R3-preset-verification.md). Every other preset is still
+ * `verified: false`, `verifiedAt: null`: their fingerprints and candidate column names come from the
+ * spec table and public documentation, not from a real export file.
  *
  * Verification method (per preset):
  *   1. Take one de-identified real export of that report (strip buyer names, phones,

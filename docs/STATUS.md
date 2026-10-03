@@ -1,5 +1,18 @@
 # Status
 
+## Revamp v2｜收尾（R0–R7 完成；未推送、未部署、未打 tag）
+
+Revamp v2 全部七個批次（`docs/revamp/06_BATCHES.md` R0–R7）在分支 `revamp/v2` 完成，財務核心（`src/domain` 既有指標、`fixtures`、`contribution-v1`、`docs/METRICS.md`）零改動；`package.json` 版本 2.0.0；發布說明 `docs/RELEASES.md` v2.0.0；上線檢查 `verification/revamp-R7-acceptance.md`。**推送、合併、tag `v2.0.0`、Vercel 部署與環境變數確認由使用者執行**（命令列在 R7 驗收 §5）；Vercel 端的檢查（環境變數截圖、Preview 13 項 HTTP、正式站 v3 恢復、社群預覽、啟用 Web Analytics）為未執行。
+
+## Revamp v2｜R7 README、示範資料、上線（完成，未推送、未部署）
+
+R7 依 `docs/revamp/06_BATCHES.md` R7-1～R7-6 與 `08_RELAUNCH.md` 完成；D3＝A（只用顯示別名）、D8＝A（維持 profitlens-tau.vercel.app）、D9＝B（Vercel Web Analytics，不加依賴、只在 production 載入、頁尾揭露）、D10＝A（`#validation`）。README 改寫給營運主管，工程內容移 `docs/ENGINEERING.md`、發布紀錄移 `docs/RELEASES.md`；metadata／OG（`public/og.png` 1200×630）／favicon／robots／sitemap；側欄示範標示改為「示範資料是合成資料」；Lighthouse 對比不足的 10 個灰色加深。
+
+- 最終驗收：`npm ci` 乾淨安裝、typecheck pass、lint 0 warnings、unit **73 檔／1,462 測試全過**、build pass 無 warning、E2E 全套 **576 項全過（14.9 分）**。
+- 08 §4 上線檢查（對本機 production 伺服器，`APP_MODE=PUBLIC_DEMO PUBLIC_DEMO=true ENABLE_LIVE_AI=false`）：13 項 HTTP smoke 13/13（`/api/insights` GET available=false／reason PUBLIC_DEMO、POST 403）；四尺寸走查 4/4（每尺寸 9 步、72 張截圖）；Lighthouse desktop **100／100／100／100**、mobile **93／100／100／100**（第一次 96／96 的 a11y 對比問題已修）；鍵盤走查（跳過連結、抽屜 Esc 與焦點回原按鈕、下載選單、結束會議確認）通過；0 console error、0 失敗資源；v3 備份（2026-10-02）恢復成功、本期扣廣告後貢獻 255.00；網路紀錄 12 個請求全 GET、同源、0 個 CSV 內容；71 個文件連結可開；首屏文字＝README。
+- 其他：首載 JS 1,636.8 KB（R6 1,635.3 KB）；`npm audit` 8 high（3 個 R6 已記錄；5 個新的都在 `eslint-config-next` 開發依賴鏈，修正需升主版本，待拍板）。
+- 未執行：Vercel 環境變數截圖、Preview／正式站 HTTP 檢查、正式站 v3 恢復、社群預覽工具、Web Analytics 啟用（需推送／部署）；Safari／Firefox、實體裝置、真實使用者。
+
 ## Revamp v2｜R6 會議紀錄、匯出、預設保存（完成，未合併、未部署）
 
 R6 依 `docs/revamp/06_BATCHES.md` R6-1～R6-7 與 `05_FEATURES.md §10–§12`、`02_IA_LAYOUT.md §8` 完成；`src/domain`、`fixtures`、`docs/METRICS.md` 零改動。會議紀錄：`src/application/meeting.ts`（`Meeting`／`meeting-v1`：結束會議即凍結、進備份 v4 `meeting_history`（上限 100）、上次會議比較三種規則、會議 Markdown）與新分頁「會議紀錄」（`meeting-page.tsx`：會議基本含日期、議程 ①–⑥、決議、結束會議確認、上次會議比較、會議歷史、輸出列）；總覽只留一行入口。匯出：D4＝A——`xlsx@0.18.5`、`pptxgenjs@4.0.1` 精確鎖定、動態 import（首頁 first-load JS 由 1,552.6 KB 增為 1,619.6 KB raw，+66.9 KB，低於 +300 KB 門檻），`excel-export.ts` 六個工作表（文字格一律字串型別＋CSV 同一套防注入規則、金額數值、比率小數）、`pptx-export.ts` 16:9 一頁式（pptxgenjs XML 轉義、不嵌圖片）、PDF 走強化的 A4 列印樣式＋`window.print()`，下載選單整合所有格式。預設保存：D7＝A——首次載入資料時非 modal 提示「存在這台電腦？」，同意後 2 秒 debounce 自動保存到 IndexedDB、頂欄「已保存 hh:mm」（臺北時間），拒絕維持手動；「刪除本機資料」保留。決策見 `DECISIONS.md`（2026-10-03 R6）。

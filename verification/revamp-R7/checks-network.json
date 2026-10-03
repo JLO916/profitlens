@@ -1,0 +1,94 @@
+{
+  "totalRequests": 12,
+  "foreignOrigins": [],
+  "nonGetRequests": [],
+  "csvContentLeaks": [],
+  "failedResources": [],
+  "consoleOrPageErrors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/",
+      "resourceType": "document",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/css/cb2c4c6506150630.css",
+      "resourceType": "stylesheet",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/css/5017c5092d7c98ff.css",
+      "resourceType": "stylesheet",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/chunks/webpack-ca6ba6d9ab6ef00e.js",
+      "resourceType": "script",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/chunks/4bd1b696-92152b0f5947070d.js",
+      "resourceType": "script",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/chunks/794-952c3dd6bb5cffa5.js",
+      "resourceType": "script",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/chunks/main-app-913b565503d0102e.js",
+      "resourceType": "script",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/chunks/739-1508a96ffa74aab4.js",
+      "resourceType": "script",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-f2a755c0c61c055e.js",
+      "resourceType": "script",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/api/insights",
+      "resourceType": "fetch",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/chunks/2170a4aa.8d16ea85e18a0c9e.js",
+      "resourceType": "script",
+      "postDataBytes": 0,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3100/_next/static/chunks/436.11bab3cf847df1c0.js",
+      "resourceType": "script",
+      "postDataBytes": 0,
+      "status": 200
+    }
+  ]
+}

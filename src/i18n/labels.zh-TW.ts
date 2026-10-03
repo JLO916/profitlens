@@ -852,7 +852,7 @@ export const ui = {
     "mainNavAria": "主要導覽",
     "sidebarNote": {
       "local": "資料只在你的瀏覽器裡，不會上傳。可以存在這台電腦或下載備份檔。",
-      "demo": "注意：示範資料是虛構的，不代表真實業績。"
+      "demo": "注意：示範資料是合成資料，不代表任何真實商家或業績。"
     },
     "sidebarFooter": "新臺幣 · 臺北時間",
     "breadcrumbRoot": "工作區",

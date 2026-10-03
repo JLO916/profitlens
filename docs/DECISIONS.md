@@ -278,6 +278,20 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
 
+## 2026-10-03｜Revamp v2 R7：README、示範資料（D3）、網域（D8）、使用分析（D9）、進階驗證頁（D10）與上線整理
+
+**問題：** R7 要把產品重新上線：README 改寫給營運主管、示範資料是否台灣化、是否加自訂網域與使用分析、「開發者驗證」頁怎麼處理，以及上線前檢查怎麼留下真實證據。
+
+**採用選項：**
+- **D3＝A（依建議值）**：示範資料只用顯示別名（R2 已做：官網 · DTC／平台 · MARKETPLACE、居家／保養／配件／3C），不新建 `fixtures/demo_tw`；台灣化新示範資料（官網／蝦皮／momo、商品名稱、檔期、獨立手算 expected）列為上線後待辦。原因：`fixtures/*` 是財務核心禁區，手算 expected 需要獨立試算表與人工核對，不適合在上線批次做。
+- **D8＝A**：網址維持 `profitlens-tau.vercel.app`（`src/app/site.ts` 單一來源，metadata、OG、robots、sitemap、README 都從這裡取）；使用者提供自訂網域後只改 `SITE_URL` 與 Vercel 網域設定。
+- **D9＝B**：Vercel Web Analytics，但**不加依賴**（R7 允許依賴為「無」）：`layout.tsx` 在 `VERCEL_ENV === "production"` 時注入官方 HTML 片段（`/_vercel/insights/script.js` 與 `window.va` 佇列），`src/application/analytics.ts` 的 `track()` 只送事件名（demo_loaded、import_committed、evidence_opened、action_added、scenario_calculated、meeting_finalized、export_*），永遠不帶金額、檔名、通路名；本機、preview、E2E 不載入；`NEXT_PUBLIC_DISABLE_ANALYTICS=1` 可關閉；頁尾一句揭露（`labels.relaunch.analyticsNote`）。要在 Vercel 儀表板啟用 Web Analytics 後腳本才會回應（未啟用時 404，不影響操作）。
+- **D10＝A**：「開發者驗證」不在側欄顯示，只有網址 `#validation` 才顯示（監聽 hashchange；離開時清掉 hash）；E2E 以 `openValidation()` 進入。
+- **示範資料的標示（08 §2）**：側欄文字改為「注意：示範資料是合成資料，不代表任何真實商家或業績。」（原「示範資料是虛構的」）；匯出檔沿用資料集識別碼（`synthetic-demo-*`）與來源檔名，不另加浮水印。README、RELEASES 以實際字串描述。
+- **上線檢查對著本機 production 伺服器**：`APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false`（與 `verification/deployment-config.json` 相同）跑 13 項 HTTP smoke、Lighthouse、四尺寸走查、鍵盤走查、v3 備份恢復、網路紀錄；Preview／正式站上的同一組檢查與 Vercel 環境變數截圖在推送後由使用者執行（本輪不推送、不部署；Vercel MCP／CLI 讀不到此專案）。
+
+**原因：** 上線批次只做文案、metadata 與檢查，不碰財務核心、不加依賴、不改隱私邊界；每一條檢查都留下可重跑的腳本與產物（`verification/revamp-R7-smoke.py`、`revamp-R7-capture/*.spec.ts`、Lighthouse 報告）。
+
 ## 2026-10-03｜Revamp v2 R6：會議紀錄、匯出依賴（D4）、預設保存（D7）
 
 **問題：** R6 要把會議稿升級成可結束、不可變的會議紀錄並做上次會議比較；加 Excel／PPT 匯出；把本機保存改成「首次詢問一次、同意後自動保存」。
