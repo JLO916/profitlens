@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { isBusinessDate } from '../domain/date';
 import type { DatasetInput } from '../domain/types';
 import { validateDataset } from '../domain/validation';
@@ -21,12 +22,16 @@ export interface ReviewSession {
   status: 'current' | 'historical'; source_input: DatasetInput; filenames: FilenameMap; source_mappings?: ColumnMappings;
   /** R6-2 會議日期（YYYY-MM-DD，臺北日曆日）；沒有時畫面與結束會議預設臺北今天。 */
   meeting_date?: string;
+  /** R6 會議稿建立時間（ISO）；結束會議時成為 Meeting.created_at。舊資料沒有這個欄位。 */
+  created_at?: string;
 }
 export const REVIEW_DECISION_LABELS: Record<ReviewDecisionState, string> = { draft: labels.meeting.decisions.draft, adopted: labels.meeting.decisions.adopted, needs_data: labels.meeting.decisions.need_data, not_adopted: labels.meeting.decisions.rejected };
 const EXECUTION_STATUS_LABELS = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done } as const;
 const ui = labels.ui.reviewSession;
-export function createReviewSession(source: ScenarioSource, epoch: string, id = crypto.randomUUID()): ReviewSession {
-  return { schema_version: 'review-session-v1', id, name: ui.defaultName, revision: 1, epoch, dataset_hash: source.snapshot.dataset_hash, filter_hash: source.snapshot.filter_hash, metric_version: source.snapshot.metric_version, data_as_of: source.snapshot.data_as_of, meeting_filters: structuredClone(source.snapshot.report.scope), importance_threshold: '0.00', selected_scenarios: [], pinned_action_ids: [], action_bindings: [], notes: '', decision_state: 'draft', confirmed_revision: null, target_version: null, status: 'current', source_input: structuredClone(source.input), filenames: structuredClone(source.filenames ?? {}), source_mappings: structuredClone(source.mappings) };
+/** 與備份 v4 的 created_at 同一個格式檢查（ISO 8601 UTC）。 */
+const isoDateTime = z.iso.datetime();
+export function createReviewSession(source: ScenarioSource, epoch: string, id = crypto.randomUUID(), createdAt = new Date().toISOString()): ReviewSession {
+  return { schema_version: 'review-session-v1', id, name: ui.defaultName, revision: 1, epoch, dataset_hash: source.snapshot.dataset_hash, filter_hash: source.snapshot.filter_hash, metric_version: source.snapshot.metric_version, data_as_of: source.snapshot.data_as_of, meeting_filters: structuredClone(source.snapshot.report.scope), importance_threshold: '0.00', selected_scenarios: [], pinned_action_ids: [], action_bindings: [], notes: '', decision_state: 'draft', confirmed_revision: null, target_version: null, status: 'current', source_input: structuredClone(source.input), filenames: structuredClone(source.filenames ?? {}), source_mappings: structuredClone(source.mappings), created_at: createdAt };
 }
 type ReviewPatch = Partial<Pick<ReviewSession, 'name' | 'importance_threshold' | 'notes' | 'decision_state' | 'meeting_date'>>;
 function changed(review: ReviewSession, patch: Partial<ReviewSession>): ReviewSession {
@@ -92,6 +97,7 @@ export function validateReviewSession(review: ReviewSession, workspace?: Scenari
   if (review.schema_version !== 'review-session-v1' || !review.id.trim() || !review.epoch.trim() || !Number.isSafeInteger(review.revision) || review.revision < 1 || !review.name.trim() || review.name.length > 200 || review.notes.length > 8000 || review.target_version !== null || !Object.hasOwn(REVIEW_DECISION_LABELS, review.decision_state) || !['current', 'historical'].includes(review.status)) throw new Error('INVALID_REVIEW_SESSION');
   if (!/^(?:0|[1-9]\d*)\.\d{2}$/.test(review.importance_threshold) || review.importance_threshold.length > 30) throw new Error('INVALID_IMPORTANCE_THRESHOLD');
   if (review.meeting_date !== undefined && !isBusinessDate(review.meeting_date)) throw new Error('INVALID_REVIEW_SESSION');
+  if (review.created_at !== undefined && !isoDateTime.safeParse(review.created_at).success) throw new Error('INVALID_REVIEW_SESSION');
   if (review.decision_state === 'draft' ? review.confirmed_revision !== null : review.confirmed_revision !== review.revision) throw new Error('REVIEW_CONFIRMATION_VERSION_MISMATCH');
   if (review.pinned_action_ids.length > 3 || new Set(review.pinned_action_ids).size !== review.pinned_action_ids.length || new Set(review.action_bindings.map(row => row.action_id)).size !== review.action_bindings.length || review.pinned_action_ids.some(id => !review.action_bindings.some(row => row.action_id === id))) throw new Error('INVALID_REVIEW_ACTION_BINDING');
   if (review.action_bindings.some(binding => !binding.action_id.trim() || !binding.context_id.trim() || !Number.isSafeInteger(binding.binding_revision) || binding.binding_revision < 1)) throw new Error('INVALID_REVIEW_ACTION_BINDING');

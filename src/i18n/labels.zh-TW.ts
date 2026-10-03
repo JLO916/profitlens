@@ -1722,6 +1722,11 @@ export const meetingRecord = {
   sameScope: "與上次會議使用同一份資料、同樣的兩期與通路，以下直接比較。",
   /** 期間不同：只顯示兩次會議的本期，例「上次 7/13–8/23，本次 8/24–10/4」。 */
   differentPeriods: "上次 {last}，本次 {current}",
+  /** 兩次本期相同、只有上期不同：改用上期組文案。 */
+  differentPreviousPeriods: "兩次本期相同（{current}），上期不同：上次 {lastPrevious}，本次 {currentPrevious}",
+  /** 比較方式（同天數／完整月份）不同：單獨一句，或接在期間說明之後。 */
+  differentComparisonMode: "比較方式不同：上次「{last}」，本次「{current}」",
+  noteSeparator: "；",
   differentChannels: "上次會議看的通路（{last}）與本次（{current}）不同，只列出上次決議與待辦狀態",
   dateRange: "{start}–{end}",
   shortDate: "{month}/{day}",
@@ -1739,8 +1744,10 @@ export const meetingRecord = {
   noScenarios: "本次會議沒有選入方案。",
   noPinnedActions: "本次會議沒有置頂待辦。",
   mdTitle: "# {brand} 會議紀錄：{name}",
-  mdMeta: "{date}：{value}｜{decision}：{state}｜結束時間：{finalizedAt}",
+  mdMeta: "{date}：{value}｜{decision}：{state}｜結束時間：{finalizedAt}（臺北時間）",
   mdScope: "## 固定範圍",
+  /** 結束會議當時的口徑（labels.basis.items 快照）與含稅換算一句。 */
+  mdBasis: "## 口徑",
   mdField: "- {field}：{value}",
   mdPeriod: "- {period}：{start}～{end}",
   mdThreshold: "- {field}：{amount} TWD",

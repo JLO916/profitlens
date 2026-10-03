@@ -8,7 +8,7 @@ import type { FilenameMap } from "./export";
 import { actionContextId, actionDocuments, emptyActionWorkspace, normalizeActionWorkspace, type ActionWorkspace } from "./action-workspace";
 import { emptyScenarioWorkspace, migrateLegacyDecisionWorkspace, validateScenarioWorkspace, type ScenarioWorkspace } from "./scenario-workspace";
 import { validateReviewSession, type ReviewSession } from "./review-session";
-import { freezeMeeting, MAX_MEETING_HISTORY, meetingSchema, validateMeeting, type Meeting } from "./meeting";
+import { freezeMeeting, MAX_MEETING_HISTORY, meetingAgendaFromSnapshot, meetingSchema, validateMeeting, type Meeting } from "./meeting";
 import { MAX_CSV_BYTES } from "@/lib/csv";
 import { CONVERTIBLE_FIELDS, isValidTaxRate, type RawValuesByFile, type TaxConversion } from "./tax-basis";
 import { MAX_TARGET_ROWS, targetRowIssues, type TargetRow, type TargetSet } from "./targets";
@@ -114,6 +114,8 @@ const referencedReview = z.strictObject({
   action_bindings: z.array(z.strictObject({ action_id: name, context_id: name, binding_revision: revision.min(1) })),
   notes: z.string().max(8000), decision_state: z.enum(["draft", "adopted", "needs_data", "not_adopted"]), confirmed_revision: revision.nullable(), target_version: z.null(), status: z.enum(["current", "historical"]),
   source_hash: hash, filenames, source_mappings: mappings.optional(), meeting_date: reviewMeetingDate.optional(),
+  // R6 會議稿建立時間（選填；舊檔沒有）：結束會議時成為 Meeting.created_at。
+  created_at: z.iso.datetime().optional(),
 });
 const v3PayloadShape = { sources: z.record(hash, input), active: z.strictObject({ source_hash: hash, filters, id: name, revision, filenames, mappings }), decision: referencedDecision.nullable(), action_workspace: referencedActionWorkspace, scenario_workspace: referencedScenarioWorkspace, review_session: referencedReview.nullable() };
 const v3Payload = z.strictObject(v3PayloadShape);
@@ -348,13 +350,14 @@ const EMPTY_V4_FIELDS = (): V4Fields => ({ preprocessing: null, targets: null, e
 
 async function restoreV4(body: Omit<z.infer<typeof envelopeSchema>, "checksum">): Promise<RestoredWorkspace> {
   const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: savedMeetings, ...payload } = body.payload;
-  // 會議紀錄是自足的只讀紀錄（可能來自較早的資料），不和目前資料集比對；逐筆語意檢查、id 不可重複。
+  // 會議紀錄逐筆語意檢查、id 不可重複；來源還在備份裡的會議另在 restoreV3 之後重算核對金額（verifyMeetingHistory）。
   const meetingHistory = savedMeetings.map(saved => {
     try { validateMeeting(saved); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
     return freezeMeeting(saved);
   });
   if (new Set(meetingHistory.map(meeting => meeting.id)).size !== meetingHistory.length) throw new Error("INVALID_WORKSPACE_FORMAT");
   const restored = await restoreV3(payload);
+  await verifyMeetingHistory(meetingHistory, payload.sources);
   // 還原不信任序列化結果：目標／檔期依 CSV 規則重驗（通路要在資料集裡），含稅原值要能換算回資料集裡的同一格。
   if (savedTargets && targetRowIssues(savedTargets.rows, restored.dataset.manifest.channels).length) throw new Error("INVALID_WORKSPACE_FORMAT");
   if (savedEvents && eventRowIssues(savedEvents.rows).length) throw new Error("INVALID_WORKSPACE_FORMAT");
@@ -380,6 +383,45 @@ async function restoreV4(body: Omit<z.infer<typeof envelopeSchema>, "checksum">)
     meeting_history: meetingHistory,
   };
   return { ...restored, ...v4 };
+}
+
+/**
+ * 會議紀錄的金額核對：會議用的來源（source_fixed.dataset_hash）還在備份的 sources 裡（目前資料一定在），就用同一套計算
+ * （validateDataset → createSnapshot → meetingAgendaFromSnapshot，門檻用 meeting.thresholds.importance）以會議的固定範圍重算，
+ * 比對 dataset_id、filter_hash、metric_version、data_as_of、兩個關鍵差額、通路表與三件事；不一致擲 INVALID_WORKSPACE_FORMAT。
+ * 三件事比規則與影響金額（標題、範圍、下一步是當時的文案，不逐字比對，避免文案改版讓舊備份無法還原）。
+ * 來源不在備份裡的會議是自足的只讀紀錄，不核對。sources 的雜湊與 CSV 規則已在 restoreV3 驗過。
+ */
+async function verifyMeetingHistory(meetings: readonly Meeting[], sources: CorePayload["sources"]): Promise<void> {
+  const datasets = new Map<string, Dataset>();
+  const snapshots = new Map<string, Promise<WorkspaceSnapshot>>();
+  const agendas = new Map<string, ReturnType<typeof meetingAgendaFromSnapshot>>();
+  const amounts = (rows: Meeting["agenda"]["priorities"]) => rows.map(row => ({ rule: row.rule, impact: row.impact }));
+  for (const meeting of meetings) {
+    const fixed = meeting.source_fixed, key = fixed.dataset_hash;
+    if (!Object.hasOwn(sources, key)) continue;
+    try {
+      let dataset = datasets.get(key);
+      if (!dataset) {
+        const validation = validateDataset(sources[key]);
+        if (!validation.dataset || validation.classification === "blocking") throw new Error("WORKSPACE_DATA_INVALID");
+        dataset = validation.dataset;
+        datasets.set(key, dataset);
+      }
+      const filters: AnalysisFilters = { channels: [...fixed.channels], previous_period: { ...fixed.periods.previous }, current_period: { ...fixed.periods.current }, comparison_mode: fixed.periods.comparison_mode };
+      const scopeKey = decisionSignature({ key, filters });
+      let pending = snapshots.get(scopeKey);
+      if (!pending) { pending = createSnapshot(dataset, filters, key); snapshots.set(scopeKey, pending); }
+      const snapshot = await pending;
+      const agendaKey = decisionSignature({ scopeKey, threshold: meeting.thresholds.importance });
+      let agenda = agendas.get(agendaKey);
+      if (!agenda) { agenda = meetingAgendaFromSnapshot(snapshot, { importanceThreshold: meeting.thresholds.importance }); agendas.set(agendaKey, agenda); }
+      const same = snapshot.report.dataset_id === fixed.dataset_id && snapshot.filter_hash === fixed.filter_hash && snapshot.metric_version === fixed.metric_version && snapshot.data_as_of === fixed.data_as_of
+        && decisionSignature(agenda.kpis) === decisionSignature(meeting.agenda.kpis) && decisionSignature(agenda.channels) === decisionSignature(meeting.agenda.channels)
+        && decisionSignature(amounts(agenda.priorities)) === decisionSignature(amounts(meeting.agenda.priorities));
+      if (!same) throw new Error("MEETING_AMOUNT_MISMATCH");
+    } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
+  }
 }
 
 async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">): Promise<Omit<RestoredWorkspace, keyof V4Fields>> {
