@@ -586,6 +586,19 @@ main summary, main button, main input, main select, main textarea, main [role="r
 
 
 /* R5-D 商品 Top／Bottom（product-comparison-panel.tsx） */
+.product-highlights { margin: 18px 0 6px; }
+.product-highlights > h3, .product-full-heading { margin-bottom: 10px; }
+.product-full-heading { margin-top: 22px; }
+.product-highlight-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: start; }
+.product-highlight { min-width: 0; }
+.product-highlight h4 { margin: 0 0 2px; font-size: 13px; font-weight: 600; color: #355b4d; }
+.product-highlight > .note { margin-bottom: 8px; }
+.product-highlight th, .product-highlight td { padding: 8px 10px; }
+.product-highlight tbody th small { display: block; font-weight: 400; color: #7a8980; white-space: nowrap; }
+.product-highlight .product-highlight-empty { border: 1px dashed var(--line); border-radius: 6px; padding: 12px; }
+.product-status { white-space: nowrap; }
+.product-status.cost_unknown, .product-status.coverage_unknown { color: #926c25; }
+@media (max-width: 900px) { .product-highlight-grid { grid-template-columns: 1fr; } }
 
 
 
