@@ -766,12 +766,27 @@ details.assumptions-panel[open] > summary { margin-bottom: 4px; }
 .meeting-entry { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; margin-top: 24px; padding: 12px 16px; background: #fff; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; font-weight: 600; color: #2f4f44; }
 .meeting-entry .note { font-weight: 400; }
 .meeting-entry .text-button { margin-left: auto; font-size: 13px; }
+/* R6-F2 議程 ⑤⑥ 內容、歷史的移除確認、處理中按鈕（aria-disabled：焦點留在按鈕上）。 */
+.meeting-scenario-results h4 { font-size: 13px; margin: 12px 0 4px; color: #2f4f44; }
+.meeting-scenario-results ul, .meeting-pinned-actions ul, .meeting-other-actions ul { padding-left: 18px; line-height: 1.8; font-size: 13px; overflow-wrap: anywhere; }
+.meeting-scenario-results li, .meeting-pinned-actions li, .meeting-other-actions li { margin: 6px 0; }
+.meeting-scenario-results .tag { margin-right: 4px; }
+.meeting-scenario-results details, .meeting-other-actions { margin-top: 6px; }
+.meeting-other-actions > summary { cursor: pointer; font-size: 13px; }
+.meeting-history-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.meeting-history-remove { flex: 1 1 100%; padding: 10px 12px; border: 1px solid #eee1bc; border-left: 4px solid #c99a2e; border-radius: 6px; background: #fffaf0; font-size: 13px; line-height: 1.7; }
+.meeting-history-remove p:focus:not(:focus-visible) { outline: none; }
+.meeting-history-remove .button-row { justify-content: flex-start; margin: 8px 0 0; gap: 8px; }
+.meeting-history h2[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
+.meeting-page .button[aria-disabled="true"] { opacity: .55; cursor: wait; }
 /* 八個導覽項目（R6 加「會議紀錄」）：手機底部分頁列改四欄兩列。覆寫上方 R5 的三欄規則。 */
 @media (max-width: 640px) {
   .sidebar nav { grid-template-columns: repeat(4,minmax(0,1fr)); }
   .meeting-output-buttons .button, .meeting-finalize .button { flex: 1 1 auto; justify-content: center; }
   .meeting-entry .text-button { margin-left: 0; }
   .meeting-history-list > li > .button { width: 100%; justify-content: center; }
+  .meeting-history-buttons { width: 100%; }
+  .meeting-history-buttons .button { flex: 1 1 auto; justify-content: center; }
 }
 
 
@@ -779,7 +794,7 @@ details.assumptions-panel[open] > summary { margin-bottom: 4px; }
 /* R6-B 列印／PDF（manager-summary.module.css 之外的全站列印規則） */
 /* 沒有列印版面（直接按瀏覽器列印）時，拿掉側欄、頂欄、期間列與按鈕列，只印頁面內容。 */
 @media print {
-  .sidebar, .topbar, .filter-bar, .skip-link, .main-footer, .meeting-outputs, .meeting-finalize, .meeting-confirm { display: none !important; }
+  .sidebar, .topbar, .filter-bar, .skip-link, .main-footer, .meeting-outputs, .meeting-finalize, .meeting-confirm, .meeting-history-buttons, .meeting-history-remove { display: none !important; }
   .main-shell { margin-left: 0 !important; }
 }
 
@@ -810,7 +825,7 @@ body:has([data-testid="local-save-prompt"]) main { padding-bottom: 240px; }
 
 
 /* R6-D 下載選單與匯出（dashboard.tsx） */
-.download-menu .menu-list button:disabled { opacity: .55; cursor: not-allowed; }
-.download-menu .menu-list button:disabled:hover { background: none; }
+.download-menu .menu-list button:disabled, .download-menu .menu-list button[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.download-menu .menu-list button:disabled:hover, .download-menu .menu-list button[aria-disabled="true"]:hover { background: none; }
 .download-menu .menu-error { color: #a84c31; }
 

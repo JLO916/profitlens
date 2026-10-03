@@ -2,7 +2,7 @@
 .context { font-weight: 600; }
 .headlines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .headlines > div { padding: 1rem; background: #f3f7f5; border-radius: 10px; }
-.headlines h3 { margin: 0; font-size: 1rem; }
+.headlines h3, .headlines h4 { margin: 0; font-size: 1rem; }
 .change { font-size: clamp(1.6rem, 4vw, 2.3rem); margin: .5rem 0; font-weight: 700; }
 .priorityHeader { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; }
 .threshold { display: flex; gap: .6rem; align-items: end; flex-wrap: wrap; }
@@ -42,6 +42,12 @@
   .printSurface h2 { font-size: 11pt; margin: 3.5mm 0 1.5mm; break-after: avoid; }
   .printSurface p { margin: 1.2mm 0; }
   .printSurface ol, .printSurface ul { margin: 1mm 0; padding-left: 5mm; }
+  /* Tailwind preflight 把 list-style 清成 none：列印的三件事要看得到 1. 2. 3.，其他清單用圓點。 */
+  .printSurface ol { list-style: decimal; }
+  .printSurface ul { list-style: disc; }
+  .printDecision { margin: 2mm 0 0 !important; padding: 1.5mm 2mm; border-left: 2px solid #2f6b52; background: #f3f7f5; font-weight: 600; overflow-wrap: anywhere; }
+  .printSurface h3 { font-size: 9.5pt; margin: 2.5mm 0 1mm; break-after: avoid; }
+  .printNotes { white-space: pre-wrap; overflow-wrap: anywhere; }
   .printSurface li { margin-bottom: 1.5mm; break-inside: avoid; }
   .printSurface table { width: 100%; border-collapse: collapse; margin: 2mm 0; font-size: 8.5pt; break-inside: avoid; }
   .printSurface caption { text-align: left; font-weight: 600; padding-bottom: 1mm; }

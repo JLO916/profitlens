@@ -25,11 +25,11 @@ import { fill, labels } from "@/i18n";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "@/application/copy";
 import { AnalysisChannelLimitError, AnalysisPeriodLimitError } from "@/application/limits";
 import { MultiScenarioWorkbench } from "./multi-scenario-workbench";
-import { MeetingEntry, MeetingPage, downloadMeetingMarkdown, meetingExportInfo } from "./meeting-page";
+import { MeetingEntry, MeetingPage, currentViewDecisionContext, downloadMeetingMarkdown } from "./meeting-page";
 import { PrintSummaryPortal, type PrintSummaryProps } from "./manager-summary";
 import { activateScenarioEpoch, emptyScenarioWorkspace, scenarioContextDecision, resolveScenarioReference, type ScenarioWorkspace, type ScenarioSelectionRef } from "@/application/scenario-workspace";
 import { buildReviewDecisionContext, createReviewSession, refreshReviewScenarioReferences, refreshReviewSession, syncReviewPins, selectReviewScenario, rebuildReviewSnapshot, updateReviewSession, type ReviewSession } from "@/application/review-session";
-import { appendMeeting, compareWithLastMeeting, finalizeMeeting, lastMeeting, type Meeting, type MeetingComparison } from "@/application/meeting";
+import { appendMeeting, finalizeMeeting, lastMeeting, removeMeeting, type Meeting } from "@/application/meeting";
 import { exportExcel, preloadExcelWriter } from "@/application/excel-export";
 import { exportPptx } from "@/application/pptx-export";
 import { compareProducts } from "@/domain/product-comparison";
@@ -100,8 +100,6 @@ export function Dashboard() {
   const [meetingHistory, setMeetingHistoryState] = useState<Meeting[]>([]);
   const meetingHistoryRef = useRef(meetingHistory);
   const storeMeetingHistory = (next: Meeting[]) => { meetingHistoryRef.current = next; setMeetingHistoryState(next); };
-  // 本工作階段結束會議時算好的上次比較（給會議紀錄 Markdown）；備份不保存。
-  const [meetingComparisons, setMeetingComparisons] = useState<Record<string, MeetingComparison>>({});
   const [version, setVersion] = useState(0);
   const [savedVersion, setSavedVersion] = useState(0);
   const versionRef = useRef(0);
@@ -323,7 +321,7 @@ export function Dashboard() {
   }
   function clear() { requestReplacement("clear", performClear); }
   function performClear() {
-    storeScenarios(emptyScenarioWorkspace()); storeReview(null); storeActions(emptyActionWorkspace()); storeMeetingHistory([]); setMeetingComparisons({}); setSavedVersion(versionRef.current);
+    storeScenarios(emptyScenarioWorkspace()); storeReview(null); storeActions(emptyActionWorkspace()); storeMeetingHistory([]); setSavedVersion(versionRef.current);
     // 清空工作區也重設本機保存同意（與 R2 以前儲存面板自己重掛載的行為一致）；對照記憶的 IndexedDB 寫入隨之停止。
     setStorageResetEpoch(value => value + 1); setLocalConsent(false);
     requestId.current++; controller.current?.abort(); setActive(null); setIssues([]); setEvidence(null);
@@ -337,7 +335,7 @@ export function Dashboard() {
     revision.current = Math.max(revision.current, workspace.revision);
     setActive({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, id: workspace.id, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings, conversion: workspace.preprocessing?.conversion ?? null, raw_values: workspace.preprocessing?.raw_values, targets: workspace.targets, events: workspace.events });
     setTargetIssues([]); setEventIssues([]); setLastPreset(workspace.ui_prefs.last_preset); setActionsView(workspace.ui_prefs.view);
-    storeScenarios(workspace.scenario_workspace); storeReview(workspace.review_session ?? syncReviewPins(createReviewSession({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings }, workspace.scenario_workspace.active_epoch), workspace.action_workspace)); storeActions(workspace.action_workspace); storeMeetingHistory(workspace.meeting_history); setMeetingComparisons({}); setIssues(workspace.issues);
+    storeScenarios(workspace.scenario_workspace); storeReview(workspace.review_session ?? syncReviewPins(createReviewSession({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings }, workspace.scenario_workspace.active_epoch), workspace.action_workspace)); storeActions(workspace.action_workspace); storeMeetingHistory(workspace.meeting_history); setIssues(workspace.issues);
     setComparisonMode(workspace.snapshot.report.scope.comparison_mode);
     setDates({ previousStart: workspace.snapshot.report.previous.period.start, previousEnd: workspace.snapshot.report.previous.period.end, currentStart: workspace.snapshot.report.current.period.start, currentEnd: workspace.snapshot.report.current.period.end });
     const next = ++versionRef.current; setVersion(next); setSavedVersion(next);
@@ -358,45 +356,47 @@ export function Dashboard() {
     const body = exportWorkspaceDecision(format, active, scenarioWorkspace, actionWorkspace, reviewSession, active.conversion ?? null, scenarioFocus);
     downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");
   }
-  // R6-7「下載 ▾」的會議摘要：Excel／PPT／PDF 依目前檢視（active.snapshot）產生，帶入目前會議稿的名稱、日期與決議。
-  const [menuExport, setMenuExport] = useState<{ busy: "excel" | "pptx" | "md" | null; error: boolean }>({ busy: null, error: false });
+  // R6-7「下載 ▾」的會議摘要：PDF／Excel／PPT 只依目前檢視（active.snapshot）產生，不帶會議名稱、日期、決議與選入方案；
+  // 會議範圍的版本在會議紀錄頁的輸出列。處理中的按鈕標 aria-disabled（焦點不會掉到 body），完成或失敗後焦點回到「下載」。
+  const [menuExport, setMenuExport] = useState<{ busy: "excel" | "pptx" | "md" | null; error: "export" | "markdown" | null }>({ busy: null, error: null });
+  const menuBusy = useRef(false);
+  const downloadSummaryRef = useRef<HTMLElement>(null);
   const [menuPrint, setMenuPrint] = useState<PrintSummaryProps | null>(null);
   const viewSummary = (current: Active) => buildManagerSummary(current.snapshot, { conversion: current.conversion, targets: { set: current.targets ?? null, allChannels: current.dataset.manifest.channels } });
   async function exportCurrentView(kind: "excel" | "pptx") {
-    if (!active) return;
-    setMenuExport({ busy: kind, error: false });
+    if (!active || menuBusy.current) return;
+    menuBusy.current = true;
+    setMenuExport({ busy: kind, error: null });
     try {
-      const summary = viewSummary(active), meeting = meetingExportInfo(reviewRef.current);
-      if (kind === "excel") await exportExcel({ summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting });
-      else await exportPptx({ summary, snapshot: active.snapshot, actions: actionRef.current, meeting });
-      setMenuExport({ busy: null, error: false });
-    } catch { setMenuExport({ busy: null, error: true }); }
+      const summary = viewSummary(active);
+      if (kind === "excel") await exportExcel({ summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null });
+      else await exportPptx({ summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null });
+      setMenuExport({ busy: null, error: null });
+    } catch { setMenuExport({ busy: null, error: "export" }); } finally { menuBusy.current = false; downloadSummaryRef.current?.focus(); }
   }
-  /** 會議紀錄 Markdown：有已結束的會議就下載最近一筆；否則下載目前會議稿（固定範圍）的主管摘要 Markdown。 */
+  /** 會議紀錄 Markdown：有已結束的會議就下載最近一筆（紀錄本身）；否則下載目前會議稿（固定範圍）的主管摘要 Markdown。 */
   async function exportMeetingNotes() {
-    if (!active) return;
-    const latest = lastMeeting(meetingHistoryRef.current);
-    if (latest) { downloadMeetingMarkdown(latest, meetingComparisons[latest.id]); return; }
-    const review = reviewRef.current;
-    setMenuExport({ busy: "md", error: false });
+    if (!active || menuBusy.current) return;
+    menuBusy.current = true;
+    const latest = lastMeeting(meetingHistoryRef.current), review = reviewRef.current;
+    setMenuExport({ busy: "md", error: null });
     try {
-      if (!review) downloadText(exportManagerSummaryMarkdown(viewSummary(active)), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
+      if (latest) downloadMeetingMarkdown(latest);
+      else if (!review) downloadText(exportManagerSummaryMarkdown(viewSummary(active)), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       else {
         const snapshot = await rebuildReviewSnapshot(review), same = active.snapshot.dataset_hash === review.dataset_hash;
         const summary = buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold, conversion: same ? active.conversion : null, targets: same ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : undefined });
         downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current)), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       }
-      setMenuExport({ busy: null, error: false });
-    } catch { setMenuExport({ busy: null, error: true }); }
+      setMenuExport({ busy: null, error: null });
+    } catch { setMenuExport({ busy: null, error: "markdown" }); } finally { menuBusy.current = false; downloadSummaryRef.current?.focus(); }
   }
-  /** 「匯出 PDF」：在 body 放列印版面後 window.print()（與會議頁、會議摘要的列印同一流程）。 */
+  /** 「匯出 PDF」：在 body 放列印版面後 window.print()（與會議頁、會議摘要的列印同一流程）；只帶目前待辦，不帶會議。 */
   function printCurrentView() {
     if (!active) return;
-    const review = reviewRef.current;
     let decisionContext: PrintSummaryProps["decisionContext"];
-    try { decisionContext = review ? buildReviewDecisionContext(review, scenarioRef.current, actionRef.current) : undefined; } catch { decisionContext = undefined; }
-    const info = meetingExportInfo(review);
-    setMenuPrint({ summary: viewSummary(active), decisionContext, snapshot: active.snapshot, meeting: info ? { name: info.name, date: info.date } : null });
+    try { decisionContext = currentViewDecisionContext(active.snapshot, actionRef.current); } catch { decisionContext = undefined; }
+    setMenuPrint({ summary: viewSummary(active), decisionContext, snapshot: active.snapshot, meeting: null });
   }
   function reviewEvidence(selection: EvidenceSelection, review: ReviewSession) {
     const dataset = validateDataset(review.source_input).dataset;
@@ -419,11 +419,11 @@ export function Dashboard() {
     if (!active) return;
     const old = reviewRef.current;
     const next = createReviewSession(active, scenarioRef.current.active_epoch, old?.id);
-    setReview(syncReviewPins({ ...next, revision: (old?.revision ?? 0) + 1, name: old?.name ?? next.name, notes: old?.notes ?? next.notes, importance_threshold: old?.importance_threshold ?? next.importance_threshold, ...(old?.meeting_date ? { meeting_date: old.meeting_date } : {}) }, actionWorkspace));
+    setReview(syncReviewPins({ ...next, revision: (old?.revision ?? 0) + 1, name: old?.name ?? next.name, notes: old?.notes ?? next.notes, importance_threshold: old?.importance_threshold ?? next.importance_threshold, ...(old?.meeting_date ? { meeting_date: old.meeting_date } : {}), ...(old?.created_at ? { created_at: old.created_at } : {}) }, actionWorkspace));
   }
   /**
-   * R6-2「結束會議」：用會議的固定來源重建快照 → 方案已過期就先把決議退回草稿 → 算上次比較 → finalize（凍結）→ 寫入會議歷史
-   * → 從目前資料建立新的會議稿。任何一步失敗都擲錯、不改狀態，由會議頁顯示 finalizeError。
+   * R6-2「結束會議」：用會議的固定來源重建快照 → 方案已過期就先把決議退回草稿 → finalize（以目前的會議歷史算上次比較並凍結進 follow_up）
+   * → 寫入會議歷史 → 從目前資料建立新的會議稿。任何一步失敗都擲錯、不改狀態；會議頁依錯誤碼顯示文案（例如 MEETING_HISTORY_FULL）。
    */
   async function finalizeCurrentMeeting(): Promise<void> {
     const current = active, review = reviewRef.current, ticket = requestId.current;
@@ -435,12 +435,19 @@ export function Dashboard() {
     const same = current.snapshot.dataset_hash === fixed.dataset_hash;
     const conversion = same ? current.conversion ?? null : null;
     const targets = same ? { set: current.targets ?? null, allChannels: current.dataset.manifest.channels } : null;
-    const comparison = compareWithLastMeeting({ snapshot, review: fixed, actions, conversion, targets }, lastMeeting(history));
-    const meeting = finalizeMeeting({ review: fixed, snapshot, scenarios, actions, conversion, targets, date: fixed.meeting_date ?? taipeiToday(), now: new Date().toISOString() });
+    const meeting = finalizeMeeting({ review: fixed, snapshot, scenarios, actions, conversion, targets, history, date: fixed.meeting_date ?? taipeiToday(), now: new Date().toISOString() });
     storeMeetingHistory(appendMeeting(history, meeting));
-    setMeetingComparisons(previous => ({ ...previous, [meeting.id]: comparison }));
-    storeReview(syncReviewPins(createReviewSession(current, scenarios.active_epoch, crypto.randomUUID()), actions));
+    // 新會議稿：同步置頂後仍是「第 1 版草稿」，總覽入口才能分辨「剛結束、新稿還沒動過」。
+    const fresh = syncReviewPins(createReviewSession(current, scenarios.active_epoch, crypto.randomUUID()), actions);
+    storeReview(fresh.revision === 1 ? fresh : { ...fresh, revision: 1 });
     markChanged(); setEvidence(null); setPanel("meeting");
+  }
+  /** 從會議歷史移除一筆（使用者確認後；歷史滿 100 筆時騰出空間）。 */
+  function removeMeetingRecord(id: string) {
+    // 已不在歷史裡（例如剛清空或還原）就不動作，避免 removeMeeting 擲 UNKNOWN_MEETING。
+    if (!meetingHistoryRef.current.some(row => row.id === id)) return;
+    storeMeetingHistory(removeMeeting(meetingHistoryRef.current, id));
+    markChanged();
   }
   function selectForReview(reference: ScenarioSelectionRef) {
     if (!reviewRef.current) return;
@@ -486,7 +493,7 @@ export function Dashboard() {
         </div>
         <WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { void clearWizardMemory(); if (active) markChanged(); }} consent={localConsent} onConsentChange={setLocalConsent} />
         <details className="topbar-menu auto-close download-menu" data-testid="download-menu" onToggle={event => { if (event.currentTarget.open) void preloadExcelWriter(); }}>
-            <summary>{labels.buttons.download}</summary>
+            <summary ref={downloadSummaryRef}>{labels.buttons.download}</summary>
             <div className="menu-panel">{visible ? <div className="menu-list">
               <p className="menu-section">{labels.sections.downloadCurrentView}</p>
               <div className="menu-item"><button type="button" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames, active.conversion ?? null, active.targets ?? null), "profitlens-analysis.csv")}>{labels.downloads.analysisCsv}</button><small>{labels.downloads.analysisCsvHint}</small></div>
@@ -499,11 +506,11 @@ export function Dashboard() {
               <button type="button" onClick={() => exportDecision("json")}>{labels.downloads.decisionJson}</button>
               <p className="menu-section" data-testid="download-meeting-section">{labels.sections.meetingSummary}</p>
               <div className="menu-item"><button type="button" aria-describedby="download-pdf-hint" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); printCurrentView(); }}>{labels.buttons.exportPdf}</button><small id="download-pdf-hint">{labels.meetingPage.pdfHint}</small></div>
-              <button type="button" disabled={menuExport.busy !== null} onClick={() => void exportCurrentView("excel")}>{labels.buttons.exportExcel}</button>
-              <button type="button" disabled={menuExport.busy !== null} onClick={() => void exportCurrentView("pptx")}>{labels.buttons.exportPptx}</button>
-              <div className="menu-item"><button type="button" disabled={menuExport.busy !== null} onClick={() => void exportMeetingNotes()}>{labels.meetingPage.menuMarkdown}</button><small>{labels.meetingPage.menuMarkdownHint}</small></div>
+              <button type="button" aria-disabled={menuExport.busy !== null || undefined} onClick={() => void exportCurrentView("excel")}>{labels.buttons.exportExcel}</button>
+              <button type="button" aria-disabled={menuExport.busy !== null || undefined} onClick={() => void exportCurrentView("pptx")}>{labels.buttons.exportPptx}</button>
+              <div className="menu-item"><button type="button" aria-disabled={menuExport.busy !== null || undefined} onClick={() => void exportMeetingNotes()}>{labels.meetingPage.menuMarkdown}</button><small>{labels.meetingPage.menuMarkdownHint}</small></div>
               {menuExport.busy && <p className="menu-note" role="status">{labels.meetingPage.exporting}</p>}
-              {menuExport.error && <p className="menu-note menu-error" role="alert">{labels.meetingPage.exportError}</p>}
+              {menuExport.error && <p className="menu-note menu-error" role="alert">{menuExport.error === "markdown" ? labels.meetingPage.markdownError : labels.meetingPage.exportError}</p>}
               <p className="menu-note">{labels.meetingPage.menuViewNote}</p>
               <p className="menu-note">{labels.downloads.menuNote}</p>
             </div> : <p className="menu-note">{labels.status.empty}；{labels.downloads.menuEmpty}</p>}
@@ -540,7 +547,7 @@ export function Dashboard() {
         {status === "empty" && !showImport && panel !== "validation" && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">{labels.emptyState.eyebrow}</p><h2>{labels.emptyState.title}</h2><p>{labels.emptyState.body}</p><button className="button primary large" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={18} /></button><div className="empty-steps">{labels.emptyState.steps.map((step, index) => <span key={step}>{index + 1} {step}</span>)}</div></section>}
         {status === "loading" && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>{labels.ui.dashboard.loading.heading}</h2><p>{labels.ui.dashboard.loading.body}</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
         {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>{labels.status.error}</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>{labels.ui.dashboard.errorState.retry}</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>{labels.ui.dashboard.errorState.back}</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
-        {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} /></>}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} comparisons={meetingComparisons} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
+        {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} /></>}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
         <footer className="main-footer"><p>{labels.basis.footer} → <button type="button" className="text-button" onClick={() => setBasisOpen(true)}>{labels.buttons.basis}</button></p></footer>
@@ -552,6 +559,6 @@ export function Dashboard() {
     }} />}
     {active && <EvidenceDrawer dataset={evidenceSource?.dataset ?? active.dataset} snapshot={evidenceSource ? undefined : active.snapshot} filenames={evidenceSource?.filenames ?? active.filenames} mappings={evidenceSource ? evidenceSource.mappings : active.mappings} rawValues={!evidenceSource || evidenceSource.dataset_hash === active.snapshot.dataset_hash ? active.raw_values : undefined} conversion={!evidenceSource || evidenceSource.dataset_hash === active.snapshot.dataset_hash ? active.conversion : null} evidence={evidence} onClose={() => setEvidence(null)} onBasis={() => setBasisOpen(true)} />}
     <BasisDialog open={basisOpen} onClose={() => setBasisOpen(false)} />
-    {menuPrint && <PrintSummaryPortal {...menuPrint} onDone={() => setMenuPrint(null)} />}
+    {menuPrint && <PrintSummaryPortal {...menuPrint} onDone={() => { setMenuPrint(null); downloadSummaryRef.current?.focus(); }} />}
   </div>;
 }
