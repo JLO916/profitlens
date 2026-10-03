@@ -4,7 +4,7 @@ import { appendFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { acceptSavePrompt, dismissSavePrompt, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptSavePrompt, dismissSavePrompt, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R2: every visible string comes from labels; machine values (dataset ids, channel codes, amounts, testids) stay literal.
 // 長流程（兩方案＋行動＋保存／重整／恢復）在平板曾跑到 40 秒；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
@@ -76,7 +76,7 @@ async function openStorage(page: Page) {
   if ((await storage(page).getAttribute("open")) === null) await storage(page).locator(":scope > summary").click();
 }
 async function golden(page: Page) {
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await expect(status(page)).toContainText(labels.status.ready);
@@ -254,7 +254,7 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: labels.buttons.cancel, exact: true }).click();
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText("284.00");
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();

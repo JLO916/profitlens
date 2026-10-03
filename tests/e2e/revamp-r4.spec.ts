@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { openWizard, setWizardFiles, nextFromFiles, confirmMappingIfShown, chooseBasis, confirmAndCheck, commitWizard } from "./import-wizard-helpers";
-import { clickReplacing, openDetails, openDownloads, closeDownloads } from "./replacement-helpers";
+import { clickReplacing, closeDownloads, openDetails, openDownloads, openValidation } from "./replacement-helpers";
 
 // R4：輔助指標橫列、「去年同期」快捷、目標達成率、趨勢檔期區帶、備份 v4 來回。
 // 合成資料（一個通路「官網」、一個商品）：2025-06-01～2026-08-31，2025 年每天原價收入 100.00、2026 年每天 200.00，成本一律 40.00；
@@ -39,7 +39,7 @@ const applyPeriod = (page: Page) => page.locator("form.period-form").getByRole("
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
 test("golden 的輔助指標橫列：七格、件數 8 件、件均 308.75 元／件，可開「怎麼算的」", async ({ page }) => {
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
   await expect(kpi(page, "net_revenue")).toHaveText("2,470.00");

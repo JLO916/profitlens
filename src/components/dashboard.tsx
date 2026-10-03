@@ -43,6 +43,7 @@ import { WorkspaceStorage } from "./workspace-storage";
 import { ActionsWorkbench } from "./actions-workbench";
 import { ProductComparisonPanel } from "./product-comparison-panel";
 import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, taipeiToday, type ActionWorkspace, type ActionContext } from "@/application/action-workspace";
+import { track } from "@/application/analytics";
 
 type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "meeting" | "validation";
 type Status = "empty" | "loading" | "error" | "partial" | "ready";
@@ -71,9 +72,16 @@ export function Icon({ name, size = 20 }: { name: string; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] ?? paths.data} /></svg>;
 }
 const afterPaint = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+// R7 使用分析（D9）：試算成功會新增一個方案版本、加入待辦會多一張卡；以數量增加判斷事件（不讀任何內容）。
+const scenarioVersionCount = (workspace: ScenarioWorkspace) => workspace.contexts.reduce((total, context) => total + context.versions.length, 0);
+// R7-4（D10＝A）：進階驗證頁只在網址 #validation 時出現在側欄。
+const VALIDATION_HASH = "#validation";
 
-export function Dashboard() {
+export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [panel, setPanel] = useState<Panel>("overview");
+  // D10＝A：側欄預設不顯示「開發者驗證」；掛載時或 hashchange 讀到 #validation 才顯示並切過去。
+  // 顯示後維持到重新整理（切到其他頁時不消失）；離開驗證頁時清掉 hash（replaceState，不觸發 hashchange），重新整理即回到一般首頁。
+  const [showValidation, setShowValidation] = useState(false);
   const [aiCapability, setAiCapability] = useState<AiCapability | null>(null);
   useEffect(() => {
     const abort = new AbortController();
@@ -114,13 +122,17 @@ export function Dashboard() {
   const setScenarios: Dispatch<SetStateAction<ScenarioWorkspace>> = useCallback(next => {
     const updated = typeof next === "function" ? next(scenarioRef.current) : next;
     if (updated === scenarioRef.current) return;
+    const calculated = scenarioVersionCount(updated) > scenarioVersionCount(scenarioRef.current);
     storeScenarios(updated);
+    if (calculated) track("scenario_calculated");
     const review = reviewRef.current;
     if (review && review.decision_state !== "draft" && review.selected_scenarios.some(ref => resolveScenarioReference(updated, ref).status !== "current")) storeReview(updateReviewSession(review, { decision_state: "draft" }));
     markChanged();
   }, [markChanged, storeScenarios, storeReview]);
   const setActionWorkspace = (next: ActionWorkspace) => {
+    const added = next.items.length > actionRef.current.items.length;
     storeActions(next);
+    if (added) track("action_added");
     if (reviewRef.current) storeReview(syncReviewPins(reviewRef.current, next));
     markChanged();
   };
@@ -133,13 +145,27 @@ export function Dashboard() {
   }, [dirty, showImport]);
   const [evidence, setEvidenceState] = useState<EvidenceSelection | null>(null);
   const [evidenceSource, setEvidenceSource] = useState<(Pick<Active, "dataset" | "filenames" | "mappings"> & { dataset_hash?: string }) | null>(null);
-  function setEvidence(selection: EvidenceSelection | null) { setEvidenceSource(null); setEvidenceState(selection); }
+  function setEvidence(selection: EvidenceSelection | null) { setEvidenceSource(null); setEvidenceState(selection); if (selection) track("evidence_opened"); }
   function actionEvidence(selection: EvidenceSelection, context: ActionContext) {
     const historical = validateDataset(context.source_input).dataset;
     if (!historical) return;
     setEvidenceSource({ dataset: historical, filenames: context.session.filenames, mappings: context.source_mappings, dataset_hash: context.session.dataset_hash });
-    setEvidenceState(selection);
+    setEvidenceState(selection); track("evidence_opened");
   }
+  useEffect(() => {
+    const sync = () => {
+      if (window.location.hash !== VALIDATION_HASH) return;
+      setShowValidation(true); setPanel("validation"); setEvidenceSource(null); setEvidenceState(null);
+    };
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+  const previousPanel = useRef<Panel>(panel);
+  useEffect(() => {
+    if (previousPanel.current === "validation" && panel !== "validation" && window.location.hash === VALIDATION_HASH) window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    previousPanel.current = panel;
+  }, [panel]);
   function activate(next: Active, newEpoch = true) {
     setActive(next);
     // 目標／檔期的檢核錯誤屬於上一份資料；換資料就清掉。
@@ -215,6 +241,7 @@ export function Dashboard() {
       setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
       setStatus(validation.classification === "partial" ? "partial" : "ready"); setPanel("overview");
+      if (id === "demo") track("demo_loaded");
     } catch (caught) {
       if (ticket !== requestId.current || abort.signal.aborted) return;
       setError(caught instanceof Error ? caught.message : labels.ui.dashboard.errors.processingFailed); setStatus("error");
@@ -278,6 +305,7 @@ export function Dashboard() {
       setIssues(prepared.validation.issues);
       setStatus(prepared.validation.classification === "partial" ? "partial" : "ready");
       setShowImport(false); setPanel("overview");
+      track("import_committed");
       afterCommit?.();
     } catch {
       if (ticket !== requestId.current) return;
@@ -355,6 +383,7 @@ export function Dashboard() {
     if (!active) return;
     const body = exportWorkspaceDecision(format, active, scenarioWorkspace, actionWorkspace, reviewSession, active.conversion ?? null, scenarioFocus);
     downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");
+    if (format === "md") track("export_markdown");
   }
   // R6-7「下載 ▾」的會議摘要：PDF／Excel／PPT 只依目前檢視（active.snapshot）產生，不帶會議名稱、日期、決議與選入方案；
   // 會議範圍的版本在會議紀錄頁的輸出列。處理中的按鈕標 aria-disabled（焦點不會掉到 body），完成或失敗後焦點回到「下載」。
@@ -371,6 +400,7 @@ export function Dashboard() {
       const summary = viewSummary(active);
       if (kind === "excel") await exportExcel({ summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null });
       else await exportPptx({ summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null });
+      track(kind === "excel" ? "export_excel" : "export_pptx");
       setMenuExport({ busy: null, error: null });
     } catch { setMenuExport({ busy: null, error: "export" }); } finally { menuBusy.current = false; downloadSummaryRef.current?.focus(); }
   }
@@ -388,6 +418,7 @@ export function Dashboard() {
         const summary = buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold, conversion: same ? active.conversion : null, targets: same ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : undefined });
         downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current)), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       }
+      track("export_markdown");
       setMenuExport({ busy: null, error: null });
     } catch { setMenuExport({ busy: null, error: "markdown" }); } finally { menuBusy.current = false; downloadSummaryRef.current?.focus(); }
   }
@@ -397,11 +428,12 @@ export function Dashboard() {
     let decisionContext: PrintSummaryProps["decisionContext"];
     try { decisionContext = currentViewDecisionContext(active.snapshot, actionRef.current); } catch { decisionContext = undefined; }
     setMenuPrint({ summary: viewSummary(active), decisionContext, snapshot: active.snapshot, meeting: null });
+    track("export_pdf");
   }
   function reviewEvidence(selection: EvidenceSelection, review: ReviewSession) {
     const dataset = validateDataset(review.source_input).dataset;
     if (!dataset) return;
-    setEvidenceSource({ dataset, filenames: review.filenames, mappings: review.source_mappings, dataset_hash: review.dataset_hash }); setEvidenceState(selection);
+    setEvidenceSource({ dataset, filenames: review.filenames, mappings: review.source_mappings, dataset_hash: review.dataset_hash }); setEvidenceState(selection); track("evidence_opened");
   }
   async function draftFromReview(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number], review: ReviewSession) {
     if (!active) return;
@@ -437,6 +469,7 @@ export function Dashboard() {
     const targets = same ? { set: current.targets ?? null, allChannels: current.dataset.manifest.channels } : null;
     const meeting = finalizeMeeting({ review: fixed, snapshot, scenarios, actions, conversion, targets, history, date: fixed.meeting_date ?? taipeiToday(), now: new Date().toISOString() });
     storeMeetingHistory(appendMeeting(history, meeting));
+    track("meeting_finalized");
     // 新會議稿：同步置頂後仍是「第 1 版草稿」，總覽入口才能分辨「剛結束、新稿還沒動過」。
     const fresh = syncReviewPins(createReviewSession(current, scenarios.active_epoch, crypto.randomUUID()), actions);
     storeReview(fresh.revision === 1 ? fresh : { ...fresh, revision: 1 });
@@ -475,7 +508,7 @@ export function Dashboard() {
     <aside className="sidebar">
       <a className="brand" href="#main-content"><span className="brand-mark"><Icon name="lens" size={24} /></span><span>{labels.brand.name}<small>{labels.brand.tagline}</small></span></a>
       <div className="workspace-label">{labels.ui.dashboard.workspaceLabel} <span className="tiny-tag">{local ? labels.status.local : labels.status.demo}</span></div>
-      <nav aria-label={labels.ui.dashboard.mainNavAria}>{panels.map(item => <button key={item.id} className={`nav-item ${panel === item.id ? "active" : ""}`} aria-current={panel === item.id ? "page" : undefined} onClick={() => { setPanel(item.id); setEvidence(null); }}><Icon name={item.id} /><span>{item.label}</span>{panel === item.id && <span className="nav-dot" />}</button>)}</nav>
+      <nav aria-label={labels.ui.dashboard.mainNavAria}>{panels.filter(item => item.id !== "validation" || showValidation).map(item => <button key={item.id} className={`nav-item ${panel === item.id ? "active" : ""}`} aria-current={panel === item.id ? "page" : undefined} onClick={() => { setPanel(item.id); setEvidence(null); }}><Icon name={item.id} /><span>{item.label}</span>{panel === item.id && <span className="nav-dot" />}</button>)}</nav>
       <div className="sidebar-note"><span className="green-dot" /> {local ? labels.status.local : labels.status.demo}<p>{local ? labels.ui.dashboard.sidebarNote.local : labels.ui.dashboard.sidebarNote.demo}</p></div>
       <footer className="sidebar-footer">{labels.ui.dashboard.sidebarFooter}</footer>
     </aside>
@@ -550,7 +583,7 @@ export function Dashboard() {
         {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} /></>}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
-        <footer className="main-footer"><p>{labels.basis.footer} → <button type="button" className="text-button" onClick={() => setBasisOpen(true)}>{labels.buttons.basis}</button></p></footer>
+        <footer className="main-footer"><p>{labels.basis.footer} → <button type="button" className="text-button" onClick={() => setBasisOpen(true)}>{labels.buttons.basis}</button></p>{analytics && <p className="analytics-note" data-testid="analytics-note">{labels.relaunch.analyticsNote}</p>}</footer>
       </main>
     </div>
     {pendingReplacement && <ReplacementDialog intent={pendingReplacement} source={backupSource} currentVersion={() => versionRef.current} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onCancel={() => setPendingReplacement(null)} onProceed={() => {

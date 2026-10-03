@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, startChannelContext } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openValidation, startChannelContext } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -74,7 +74,7 @@ async function showAi(page: Page) {
   await expect(panel(page)).toBeVisible();
 }
 async function loadDataset(page: Page, id = "golden", channel = "DTC") {
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(id);
   await Promise.all([
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.ok()),

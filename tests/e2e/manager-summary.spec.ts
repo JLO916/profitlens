@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, openDownloads, openMeeting } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, openDownloads, openMeeting, openValidation } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -34,7 +34,7 @@ const test = base.extend<{ audit: string[] }>({
 });
 async function load(page: Page, name = "golden") {
   await page.goto("/");
-  await page.getByRole("button", { name: labels.nav.validation.label, exact: true }).click();
+  await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(name);
   await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${labels.status.ready}|${labels.status.partial}`));

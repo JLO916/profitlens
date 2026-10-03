@@ -553,7 +553,8 @@ export const brand = {
 export const emptyState = {
   eyebrow: "先用示範資料看看",
   title: "營收漲了，到底多賺還是少賺？",
-  body: "匯入銷售、通路費用與廣告三份報表，從整體變化一路追到每一筆來源。",
+  // R7-3：與 README「30 秒試用」同一句；按鈕與區塊名稱直接引用 labels，改名時兩邊一起變。
+  body: `按「${buttons.loadDemo}」→ 看「${sections.topThree}」→ 點任一數字看「${sections.evidence}」。示範資料為合成資料，不代表任何真實商家。`,
   steps: ["匯入資料", "看哪裡賺、哪裡賠", "決定要做什麼"],
 } as const;
 
@@ -1939,7 +1940,15 @@ export const autoSave = {
   dismiss: "知道了",
 } as const;
 
+/** R7 上線：使用分析揭露（D9＝B，只在 Vercel production 顯示）、分享圖（public/og.png，由 scripts/make-og.mjs 產生）的文字。 */
+export const relaunch = {
+  analyticsNote: "使用分析只記錄頁面瀏覽與按鈕事件，不含任何資料內容",
+  /** 分享圖標題沿用空狀態的問句；一句話沿用 brand.description。 */
+  ogHeadline: emptyState.title,
+  ogScreenshotNote: "畫面為合成資料",
+} as const;
 
 
-export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave };
+
+export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave, relaunch };
 export type Labels = typeof labels;
