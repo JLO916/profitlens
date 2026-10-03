@@ -1,4 +1,4 @@
-import { clickReplacing, startChannelContext } from "./replacement-helpers";
+import { clickReplacing, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { labels } from "../../src/i18n";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -82,12 +82,14 @@ test("PL10 單純導航進階頁不載入資料、不更改通路，也不清除
   await loadVerificationDataset(page, "golden");
   await page.getByLabel(channelFilter, { exact: true }).selectOption("DTC");
   await page.getByRole("button", { name: nav.scenarios.label, exact: true }).click();
+  // R5-3 進頁即表單：方案 1 已是本地草稿，不必再按「新增方案」；第一次編輯才寫進工作區。
   await startChannelContext(page);
-  await page.getByRole("button", { name: labels.buttons.addScenario, exact: true }).click();
   const scenario = page.getByTestId("scenario-1");
   await scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true }).fill("PL10 尚未送算的合成草稿");
   await scenario.getByLabel(labels.scenario.volume.label, { exact: true }).fill("3");
   await page.getByRole("button", { name: nav.actions.label, exact: true }).click();
+  // R5-5 行動頁預設看板；這裡要驗證編輯表單的值，先切到清單檢視（檢視偏好由殼層保存，切頁回來仍是清單）。
+  await switchActionsView(page, "list");
   await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
   const action = page.getByTestId("action-1");
   await action.getByLabel(labels.actions.problem, { exact: true }).fill("PL10 待人工確認的合成工作稿");
@@ -110,10 +112,13 @@ test("PL10 單純導航進階頁不載入資料、不更改通路，也不清除
 test("PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看", async ({ page }, testInfo) => {
   await loadVerificationDataset(page, "golden");
   await page.getByRole("button", { name: nav.diagnosis.label, exact: true }).click();
-  const diagnostic = page.locator(".diagnostic-card").first();
-  const technical = diagnostic.locator("details");
+  // R5-1 健檢清單：一個規則一列（details.diagnosis-row，前三列預設展開）；技術細節是列內再一層 details.diagnosis-technical。
+  const diagnostic = page.getByTestId("diagnosis-list").locator("details.diagnosis-row").first();
+  const technical = diagnostic.locator("details.diagnosis-technical");
   const fact = technical.locator("li code").first();
+  await expect(diagnostic).toHaveAttribute("open", "");
   await expect(diagnostic.getByRole("heading", { level: 3 })).toBeVisible();
+  await expect(diagnostic.locator(".diagnosis-copy")).toBeVisible();
   await expect(technical).not.toHaveAttribute("open", "");
   await expect(fact).not.toBeVisible();
   expect(await page.locator("body").innerText()).not.toMatch(/REV_UP_CM_DOWN|contribution-v1|\["fact"/);
@@ -123,7 +128,7 @@ test("PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看", as
   await expect(fact).toContainText('["fact"');
   await page.keyboard.press("Enter");
   await expect(fact).not.toBeVisible();
-  const measured = await page.locator(".subtitle, .scope-note, .diagnostic-card .note, .main-footer, .sidebar-note, .diagnostic-card .tag").evaluateAll(elements => elements.filter(element => element.getClientRects().length > 0).map(element => ({ element: element.className, size: Number.parseFloat(getComputedStyle(element).fontSize) })));
+  const measured = await page.locator(".subtitle, .scope-note, .diagnosis-panel .note, .main-footer, .sidebar-note, .diagnosis-panel .tag, .diagnosis-row .scope-tag, .diagnosis-copy > div").evaluateAll(elements => elements.filter(element => element.getClientRects().length > 0).map(element => ({ element: element.className, size: Number.parseFloat(getComputedStyle(element).fontSize) })));
   expect(measured.length).toBeGreaterThan(4);
   expect(measured.filter(item => item.size < 12), "主管主要說明、範圍及標記至少 12px").toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);

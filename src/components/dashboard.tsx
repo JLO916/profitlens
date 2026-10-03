@@ -22,7 +22,7 @@ import { exportIssuesCsv, exportSnapshotCsv } from "@/application/export";
 import { buildManagerSummary, exportChannelComparisonCsv } from "@/application/manager-summary";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
 import { fill, labels } from "@/i18n";
-import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
+import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "@/application/copy";
 import { AnalysisChannelLimitError, AnalysisPeriodLimitError } from "@/application/limits";
 import { MultiScenarioWorkbench } from "./multi-scenario-workbench";
 import { ReviewWorkbench } from "./review-workbench";
@@ -336,7 +336,9 @@ export function Dashboard() {
   }
   function draftFromDiagnostic(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) {
     if (!active) return;
-    setActionWorkspace(addActionDraft(actionWorkspace, active, crypto.randomUUID(), diagnostic.id));
+    // R5：待辦卡的「問題／具體動作」預設用 R2 的規則文案（與健檢列同一句），不用 domain 的舊標題。
+    const rule = ruleCopy(active.snapshot, diagnostic, demoAlias(active.snapshot.report.dataset_id));
+    setActionWorkspace(addActionDraft(actionWorkspace, active, crypto.randomUUID(), diagnostic.id, { problem: rule.headline, action: rule.nextStep }));
     setPanel("actions"); setEvidence(null);
   }
   // R5 試算頁的通路獨立於全站篩選：決策匯出的「目前」區段跟著試算頁正在編輯的 context。
@@ -357,7 +359,8 @@ export function Dashboard() {
     try {
       const snapshot = await rebuildReviewSnapshot(review), dataset = validateDataset(review.source_input).dataset;
       if (!dataset || ticket !== requestId.current || reviewRef.current?.id !== review.id || reviewRef.current.revision !== review.revision) return;
-      const next = addActionDraft(actionRef.current, { input: review.source_input, dataset, snapshot, revision: review.revision, filenames: review.filenames, mappings: review.source_mappings }, crypto.randomUUID(), diagnostic.id);
+      const rule = ruleCopy(snapshot, diagnostic, demoAlias(snapshot.report.dataset_id));
+      const next = addActionDraft(actionRef.current, { input: review.source_input, dataset, snapshot, revision: review.revision, filenames: review.filenames, mappings: review.source_mappings }, crypto.randomUUID(), diagnostic.id, { problem: rule.headline, action: rule.nextStep });
       setActionWorkspace(refreshActionWorkspace(next, active.snapshot, active.revision));
       setPanel("actions"); setEvidence(null);
     } catch { if (ticket === requestId.current) setFilterError(labels.ui.dashboard.errors.reviewRebuildFailed); }
@@ -458,7 +461,7 @@ export function Dashboard() {
         {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>{labels.status.error}</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>{labels.ui.dashboard.errorState.retry}</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>{labels.ui.dashboard.errorState.back}</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
         {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><details className="panel overview-meeting" data-testid="overview-meeting" open={meetingOpen} onToggle={event => setMeetingOpen(event.currentTarget.open)}><summary>{labels.sections.meetingDraft}<span className="tag">{reviewSession ? labels.meeting.decisions[decisionLabelKey[reviewSession.decision_state]] : labels.sections.meetingNotCreated}</span></summary><ReviewWorkbench source={active} conversion={active.conversion} targets={{ set: active.targets ?? null, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} review={reviewSession} onChange={setReview} actionWorkspace={actionWorkspace} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} /></details></>}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
-        {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={view => { setActionsView(view); markChanged(); }} />}
+        {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
         <footer className="main-footer"><p>{labels.basis.footer} → <button type="button" className="text-button" onClick={() => setBasisOpen(true)}>{labels.buttons.basis}</button></p></footer>
       </main>
     </div>

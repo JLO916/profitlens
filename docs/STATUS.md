@@ -1,5 +1,15 @@
 # Status
 
+## Revamp v2｜R5 健檢、試算、行動的決策化（完成，未合併、未部署）
+
+R5 依 `docs/revamp/06_BATCHES.md` R5-1～R5-6 與 `05_FEATURES.md §7–§9`、`02_IA_LAYOUT.md §4–§7` 完成；`src/domain`、`fixtures`、`docs/METRICS.md` 零改動，情境引擎輸入仍是相對值，Golden 情境答案（DTC 284.00／264.00、MARKETPLACE 19.70、零變動 270.00）不變。健檢改為清單（`diagnosis-group.ts`／`diagnosis-list.tsx`：同規則合計＋各通路合併一列、缺漏置頂、依對貢獻影響排序、前三列預設展開、通路寬表置頂、三件事與 Markdown／列印共用同一排序）；試算頁進頁即表單（`scenario-presets.ts`：六個範本兩步套用、絕對值輸入在表單層換算成相對值（12 位小數、折扣用精確 D/G）、界限即時提示、版本號只在計算成功時遞增、草稿標示、固定假設收合、敏感度三組輸入納入方案／匯出／備份 v4 欄位加法）；行動改為看板（四欄按鈕改狀態、`status_updated_at` 臺北日曆日、負責人 datalist、證據 checkbox 清單含搜尋、看板／清單偏好記在 `ui_prefs.view`）；商品頁加 Top／Bottom 10 小表、欄位重排、毛利率與資料狀態。決策匯出的「目前」區段改跟著試算頁正在編輯的 context。決策見 `DECISIONS.md`（2026-10-03 R5）。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **65 檔／1,207 測試全過**、build pass 無 warning、E2E 全套 **520 項：516 過／4 失敗（同一列印測試的測試側比對式，改後重跑 12/12）**（四尺寸，含新增 `revamp-r5.spec.ts` 5 項與 `action-workspace.spec.ts` 看板案例）；對抗式審查 32 項候選／29 項確認／修 27 項（2 項記為決策），另修 E2E 代理發現的 1 個產品 bug（試算頁通路選擇在全站範圍 A→B→A 時復活）。
+- 流程：四個獨立 worktree 代理平行實作 → 合併 → 試算 UI 代理 → 五個代理平行重寫 E2E（共用正式伺服器）→ 四視角審查（每項 3 位反駁者）→ 兩個代理修正 → 全套重跑。
+- 測試：`tests/{diagnosis-group,diagnosis-list,scenario-presets,scenario-absolute-mode,scenario-sensitivity-backup,action-board,product-highlights}.test.ts`、`tests/scenario-form.test.tsx`；既有 E2E 15 份 spec 改用新流程（進頁即表單、看板預設、checkbox 證據、健檢列 testid）。
+- 截圖 32 張存 `verification/revamp-R5/`（健檢清單、試算表單（範本＋絕對值）、行動看板、商品 Top／Bottom × 四尺寸）。Live AI、真實資料、Safari／Firefox、實體裝置：**未執行**。
+- 已知限制：絕對值原文只存本頁（方案存換算後的相對值）；版本號只與最新版本比；Top／Bottom 小表不跟隨篩選、本期沒賣的商品以 0 計入「最差」；看板用按鈕改狀態不拖曳；「毛利率」不提供排序。完整紀錄見 [R5 驗收](../verification/revamp-R5-acceptance.md)。R5 完成即停止；R6 待確認後開始。
+
 ## Revamp v2｜R4 輔助指標、去年同期、目標、檔期、備份 v4（完成，未合併、未部署）
 
 R4 依 `docs/revamp/06_BATCHES.md` R4-1～R4-7 與 `05_FEATURES.md §1–§5` 完成（R4-8 `orders_daily.csv` 依 D6＝B 延後）。第一次碰 `src/domain`，只有加法：`Count` 型別、`Summary.units_sold`（介面宣告合併）、`ProductMetrics.units_sold`、`sumUnits`／`sumCounts`／`countMetric`；既有函式輸入輸出不變、`fixtures/*` 與 `docs/METRICS.md` 零改動、`metric_version` 不變。新增 `src/application/assist-kpi.ts`（`assist-kpi-v1`：售出件數、件均淨營收＋五個既有比率，總覽 KPI 五卡下方七格橫列、每格可開「怎麼算的」、分析 CSV 與主管摘要 Markdown 各加小節）、`period-presets.ts` 去年同期（本期不變、上期各減一年、閏年 2/29 → 2/28、四種不可用理由）、`targets.ts`（targets.csv 匯入／驗證／匹配，KPI 卡達成率只在期間完全相同時顯示）、`events.ts`（events.csv，趨勢圖區帶＋三件事後綴，不改計算）、備份 v4（`preprocessing`＝R3 含稅換算原值、`targets`、`events`、`meeting_history`、`ui_prefs`；v1–v3 仍可讀；v3→v4→再讀入 CSV 逐位元一致）；刪除 R3 保留的舊匯入面板。

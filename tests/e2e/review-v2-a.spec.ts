@@ -1,5 +1,5 @@
 import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
-import { openMeeting } from './replacement-helpers';
+import { openMeeting, selectScenarioChannel, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { fill, labels } from '../../src/i18n';
 import { appendFile, readFile } from 'node:fs/promises';
@@ -53,12 +53,12 @@ test('A3 本機保存失敗不清空；沒有保存同意不能儲存，Escape�
 test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复一致且實際匯出',async({page},info)=>{
  test.setTimeout(120_000);
  await golden(page);
+ // R5：試算頁進頁即表單，通路只在本頁切換（scenario-channel），不改全站篩選；方案 1 是進頁即有的草稿，第 2、3 案才按「新增方案」。
+ await page.getByRole('button',{name:labels.nav.scenarios.label,exact:true}).click();
  for(const channel of ['DTC','MARKETPLACE']) {
-  await page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true}).selectOption(channel);
-  await page.getByRole('button',{name:labels.nav.scenarios.label,exact:true}).click();
-  await page.getByRole('button',{name:fill(labels.ui.multiScenarioWorkbench.startButton,{channel}),exact:true}).click();
+  await selectScenarioChannel(page,channel);
   for(let i=1;i<=3;i++) {
-   await page.getByRole('button',{name:labels.buttons.addScenario,exact:true}).click();const card=page.getByTestId(`scenario-${i}`);
+   if(i>1)await page.getByRole('button',{name:labels.buttons.addScenario,exact:true}).click();const card=page.getByTestId(`scenario-${i}`);
    await card.getByLabel(labels.ui.decisionWorkbench.planName,{exact:true}).fill(`${channel} 方案 ${i}`);
    for(const[label,value]of Object.entries({[labels.scenario.volume.label]:'0',[labels.scenario.discount.label]:'0',[labels.scenario.fulfillmentUnit.label]:'-10',[labels.scenario.adSpend.label]:'0',[labels.scenario.oneOff.label]:i===1?'0':'20'}))await card.getByLabel(label,{exact:true}).fill(value);
    await card.getByLabel(labels.scenario.acceptAssumptions,{exact:true}).check();await card.getByRole('button',{name:labels.buttons.calculate,exact:true}).click();
@@ -66,15 +66,18 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
   }
   await expect(page.getByRole('button',{name:labels.buttons.addScenario,exact:true})).toBeDisabled();
  }
- await page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true}).selectOption('DTC');
+ await selectScenarioChannel(page,'DTC');
  await expect(page.getByTestId('scenario-1').getByLabel(labels.ui.decisionWorkbench.planName,{exact:true})).toHaveValue('DTC 方案 1');
- await page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true}).selectOption('');
+ // 試算頁切通路不動全站篩選：全站仍是全部通路。
+ await expect(page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})).toHaveValue('');
  await page.getByRole('button',{name:labels.nav.actions.label,exact:true}).click();
+ // R5：行動頁預設看板；逐張填寫用清單檢視，證據改為 checkbox 清單（evidence-checklist）。
+ await switchActionsView(page,'list');
  for(let i=1;i<=8;i++) {
   await page.getByRole('button',{name:labels.buttons.addAction,exact:true}).click();const card=page.getByTestId(`action-${i}`);
   await card.getByLabel(labels.actions.problem,{exact:true}).fill(`合成行動第${i}項`);await card.getByLabel(labels.actions.step,{exact:true}).fill('先核對來源與物流條件');
   await card.getByLabel(labels.actions.owner,{exact:true}).fill('營運主管');await card.getByLabel(labels.actions.due,{exact:true}).fill('2026-10-08');
-  const evidence=card.getByLabel(labels.ui.actionsWorkbench.evidencePicker,{exact:true});const fact=await evidence.locator('option').first().getAttribute('value');await evidence.selectOption(fact!);await card.getByRole('button',{name:labels.buttons.confirm,exact:true}).click();
+  const evidence=card.getByTestId('evidence-checklist').locator('input[type=checkbox]').first();expect(await evidence.getAttribute('value')).toBeTruthy();await evidence.check();await expect(card.getByTestId('evidence-checklist').locator('input[type=checkbox]:checked')).toHaveCount(1);await card.getByRole('button',{name:labels.buttons.confirm,exact:true}).click();
   if(i<=3)await card.getByRole('button',{name:labels.buttons.pin,exact:true}).click();
  }
  await page.getByRole('button',{name:labels.nav.overview.label,exact:true}).click();
@@ -102,7 +105,7 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  expect((main.match(/合成行動第/g)||[])).toHaveLength(3);expect((appendix.match(/合成行動第/g)||[])).toHaveLength(5);expect(main).toMatch(templateRe(summaryCopy.mdComparison,{threshold:'1000.00'},'m'));
  await page.screenshot({path:resolve(`verification/review-v2-a-meeting-${info.project.name}.png`),fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
- await page.getByRole('button',{name:labels.nav.scenarios.label,exact:true}).click();await page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true}).selectOption('DTC');
+ await page.getByRole('button',{name:labels.nav.scenarios.label,exact:true}).click();await selectScenarioChannel(page,'DTC');
  const plan=page.getByTestId('scenario-1');await plan.getByLabel(labels.scenario.oneOff.label,{exact:true}).fill('20');await expect(plan.getByTestId('scenario-contribution')).toHaveCount(0);
  await page.getByRole('button',{name:labels.nav.overview.label,exact:true}).click();await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('draft');await expect(page.getByTestId('review-workbench')).toContainText(review.staleScenarios);
 });

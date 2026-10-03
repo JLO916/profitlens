@@ -206,10 +206,12 @@ test("真實本機未啟用端點 GET／POST 降級，未同意不傳送，核�
   await expect(page.getByTestId("ai-live-result")).toHaveCount(0);
   await assertCore(page);
   await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  // R5：進頁即表單（方案 1 已在），「全部填 0」改為「維持現況」範本（五格皆 0）。
   await startChannelContext(page);
-  await page.getByRole("button", { name: labels.buttons.addScenario, exact: true }).click();
   const card = page.getByTestId("scenario-1");
-  await card.getByRole("button", { name: labels.buttons.fillZero, exact: true }).click();
+  await card.getByTestId("scenario-preset").selectOption("keep");
+  await card.getByTestId("scenario-preset-apply").click();
+  for (const label of [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label]) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
   await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText("270.00");
@@ -302,6 +304,8 @@ for (const unsafe of ["fabricated-fact", "literal-money", "causal-claim", "wrong
 }
 
 test("MOCK：timeout、429、拒絕、截斷及格式失敗清楚降級且不重送未重新同意的資料", async ({ page }) => {
+  // 六種失敗各跑一輪送出→核對核心→回健檢，平常約 24 秒；機器忙時手機尺寸會超過預設 45 秒，斷言不變。
+  test.setTimeout(90_000);
   let reason = "TIMEOUT";
   const posts = await mockApi(page, body => ({ status: "fallback", snapshot_id: body.snapshot.snapshot_id, reason }));
   await loadDataset(page);

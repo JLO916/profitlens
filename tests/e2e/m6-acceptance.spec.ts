@@ -1,4 +1,4 @@
-import { ruleHeadline } from "./replacement-helpers";
+import { ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from "./import-wizard-helpers";
 import { labels, fill } from "../../src/i18n";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -15,14 +15,6 @@ const status = (page: Page) => page.getByTestId("workspace-status");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
 const decisionDownloadLabels = { JSON: labels.downloads.decisionJson, CSV: labels.downloads.decisionCsv, Markdown: labels.downloads.decisionMd } as const;
-
-/** Local R2 variant of the shared helper: start button text comes from labels. */
-async function startChannelContext(page: Page) {
-  const start = page.getByRole("button", { name: new RegExp(`^${fill(labels.ui.multiScenarioWorkbench.startButton, { channel: ".+" })}$`) });
-  // The context preparation runs asynchronously from source validation.
-  await Promise.race([start.waitFor({ state: "visible" }), page.getByTestId("decision-workbench").waitFor({ state: "visible" })]);
-  if (await start.isVisible()) await start.click();
-}
 
 interface DecisionDocument {
   scenario_contexts: (DecisionDocument & {context_status:string})[];
@@ -70,10 +62,11 @@ async function importDataset(page: Page, directory: string) {
   await expect(status(page)).toContainText(labels.status.ready);
   await expect(wizard(page)).toHaveCount(0);
 }
+/** R5: one nav click opens the form (no start button); the page's channel defaults to the single channel of the global filter, and plan 1 is the ready draft (no "add scenario" click). */
 async function scenario(page: Page, name: string, fulfillment: string, investment: string, expected: string) {
   await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
   await startChannelContext(page);
-  await page.getByRole("button", { name: labels.buttons.addScenario, exact: true }).click();
+  await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   const card = page.getByTestId("scenario-1");
   await card.getByLabel(scenarioCopy.planName, { exact: true }).fill(name);
   for (const [index, value] of ["0", "0", fulfillment, "0", investment].entries()) await card.getByLabel(inputLabels[index], { exact: true }).fill(value);
@@ -147,8 +140,9 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   await expect(kpi(page, "net_revenue")).toHaveText("400.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("40.00");
   await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
-  await expect(page.getByRole("heading", { name: ruleHeadline("REV_UP_CM_DOWN") }).first()).toBeVisible();
-  await expect(page.getByRole("heading", { name: ruleHeadline("MARKETING_BURDEN_UP") }).first()).toBeVisible();
+  // R5: one list row per rule (details.diagnosis-row); the headline is the row's summary heading.
+  await expect(page.getByTestId("diagnosis-row-REV_UP_CM_DOWN").getByRole("heading", { name: ruleHeadline("REV_UP_CM_DOWN") })).toBeVisible();
+  await expect(page.getByTestId("diagnosis-row-MARKETING_BURDEN_UP").getByRole("heading", { name: ruleHeadline("MARKETING_BURDEN_UP") })).toBeVisible();
 
   // Two DTC days: N=400, C=200, P=10, Q=6, F=14, O=0, A=130.
   // v=0, delta=0, f=-50%, a=0, K=3 => 400-200-10-6-7-0-130-3=44.
@@ -156,14 +150,19 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-delta")).toHaveText("+4.00");
   await expect(page.getByTestId("decision-workbench")).toContainText(labels.scenario.acceptAssumptions);
   await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  // R5: the actions page opens on the board; the full edit form is filled in the list view.
+  await switchActionsView(page, "list");
   await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
   const action = page.getByTestId("action-1");
   const fields = { [labels.actions.problem]: "營收上升但行銷後貢獻下降，需核對成本", [labels.actions.step]: "核對履約計價條款並設計有限範圍測試", [labels.actions.owner]: "營運主管", [labels.actions.metric]: "同範圍履約費用與行銷後貢獻", [labels.actions.due]: "2026-10-15", [labels.actions.stop]: "若服務品質下降即停止測試", [labels.actions.extraData]: "物流實際報價與服務品質資料" };
   for (const [label, value] of Object.entries(fields)) await action.getByLabel(label, { exact: true }).fill(value);
-  const evidence = action.getByLabel(actionCopy.evidencePicker, { exact: true });
-  const factId = await evidence.locator("option").filter({ hasText: fill(actionCopy.factLabel, { start: "2026-09-03", end: "2026-09-04", metric: labels.metrics.contribution_after_marketing.label, scope: "DTC", scopeKind: labels.csvColumns.channel, value: "40.00" }) }).getAttribute("value");
+  // R5: evidence is a checkbox list; each checkbox is named by its fact label and carries the fact id as value.
+  const evidence = action.getByTestId("evidence-checklist").getByRole("checkbox", { name: fill(actionCopy.factLabel, { start: "2026-09-03", end: "2026-09-04", metric: labels.metrics.contribution_after_marketing.label, scope: "DTC", scopeKind: labels.csvColumns.channel, value: "40.00" }), exact: true });
+  await expect(evidence).toHaveCount(1);
+  const factId = await evidence.getAttribute("value");
   expect(factId).toBeTruthy();
-  await evidence.selectOption(factId!);
+  await evidence.check();
+  await expect(action.getByTestId("evidence-checklist").locator("input[type=checkbox]:checked")).toHaveCount(1);
   await action.getByRole("button", { name: labels.buttons.confirm, exact: true }).click();
   await expect(action).toContainText(actionCopy.tagConfirmed);
 
@@ -205,6 +204,9 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
 });
 
 test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不影響另一方", async ({ page, browser }, testInfo) => {
+  // Two browser contexts, three real wizard imports, two scenarios and five downloads: the 45s default left no headroom
+  // (laptop took 43.4s in verification/review-v2-a-e2e-full-results.json), so this chain gets an explicit budget like the A1 chains.
+  test.setTimeout(90_000);
   await importDataset(page, alternative);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("40.00");

@@ -1,4 +1,4 @@
-import { openMeeting } from "./replacement-helpers";
+import { openMeeting, switchActionsView } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { metricDefinitions } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -104,16 +104,20 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
   await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  // R5: the actions page opens on the board; the per-card edit form below uses the list view.
+  await switchActionsView(page, "list");
   for (let index = 1; index <= 8; index++) {
     await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
     const card = page.getByTestId(`action-${index}`);
     await card.getByLabel(labels.actions.problem, { exact: true }).fill(actionName(index));
     await card.getByLabel(labels.actions.step, { exact: true }).fill("核對已入帳費用與來源");
     await card.getByLabel(labels.actions.owner, { exact: true }).fill("營運主管");
-    const evidence = card.getByLabel(labels.ui.actionsWorkbench.evidencePicker, { exact: true });
-    const id = await evidence.locator("option").filter({ hasText: goldenFactLabel }).getAttribute("value");
-    expect(id).toBeTruthy();
-    await evidence.selectOption(id!);
+    // R5: evidence is a checkbox list (fieldset evidence-checklist); each checkbox is named by its fact label and carries the fact id as value.
+    const evidence = card.getByTestId("evidence-checklist").getByRole("checkbox", { name: goldenFactLabel, exact: true });
+    await expect(evidence).toHaveCount(1);
+    expect(await evidence.getAttribute("value")).toBeTruthy();
+    await evidence.check();
+    await expect(card.getByTestId("evidence-checklist").locator("input[type=checkbox]:checked")).toHaveCount(1);
     if (index <= 3) await card.getByRole("button", { name: labels.buttons.pin, exact: true }).click();
   }
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();

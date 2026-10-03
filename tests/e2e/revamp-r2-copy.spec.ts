@@ -81,9 +81,14 @@ test.describe("R2 口徑說明與怎麼算的", () => {
     await loadGolden(page);
     await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
     await expect(page.getByRole("heading", { name: ruleHeadline("REV_UP_CM_DOWN") }).first()).toBeVisible();
-    await expect(page.locator(".diagnostic-card").first()).toContainText(labels.sections.cause);
-    await expect(page.locator(".diagnostic-card").first()).toContainText(labels.sections.caution);
-    await expect(page.locator(".diagnostic-card").first()).toContainText(labels.rules.REV_UP_CM_DOWN.caution);
+    // R5-1：健檢改成一個規則一列；golden 的 REV_UP_CM_DOWN（|對貢獻影響| 315.00 最大）排第一且預設展開。
+    const rule = page.getByTestId("diagnosis-list").locator("details.diagnosis-row").first();
+    await expect(rule).toHaveAttribute("data-testid", "diagnosis-row-REV_UP_CM_DOWN");
+    await expect(rule.getByRole("heading", { level: 3, name: ruleHeadline("REV_UP_CM_DOWN") })).toBeVisible();
+    const ruleCopy = rule.locator(".diagnosis-copy");
+    await expect(ruleCopy.getByText(labels.sections.cause, { exact: true })).toBeVisible();
+    await expect(ruleCopy.getByText(labels.sections.caution, { exact: true })).toBeVisible();
+    await expect(ruleCopy.getByText(labels.rules.REV_UP_CM_DOWN.caution, { exact: true })).toBeVisible();
     const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).click()]);
     const text = await (await import("node:fs/promises")).readFile((await download.path())!, "utf8");
     const header = text.replace(/^﻿/, "").split(/\r?\n/)[0].split(",").map(cell => cell.replace(/^"|"$/g, ""));

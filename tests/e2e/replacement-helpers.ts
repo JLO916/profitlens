@@ -6,11 +6,20 @@ export async function clickReplacing(page: Page, button: Locator) {
   const dialog = page.getByRole('dialog', { name: labels.ui.replacementDialog.heading });
   if (await dialog.isVisible()) await dialog.getByRole('button', { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
 }
+/** R5：試算頁進頁即表單（沒有「開始試算」按鈕）；全站多通路時先等單通路基準重算完成，方案 1 的表單出現即可。 */
 export async function startChannelContext(page: Page) {
-  const start = page.getByRole('button', { name: new RegExp(`^${labels.ui.multiScenarioWorkbench.startButton.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{channel\\\}/, '.+')}$`) });
-  // The context preparation runs asynchronously from source validation.
-  await Promise.race([start.waitFor({state:'visible'}), page.getByTestId('decision-workbench').waitFor({state:'visible'})]);
-  if (await start.isVisible()) await start.click();
+  await page.getByTestId('decision-workbench').waitFor({ state: 'visible' });
+  await page.getByTestId('scenario-1').waitFor({ state: 'visible' });
+}
+/** R5：試算頁的通路只改本頁（select data-testid="scenario-channel"），不改全站篩選。 */
+export async function selectScenarioChannel(page: Page, channel: string) {
+  await page.getByTestId('scenario-channel').selectOption(channel);
+  await startChannelContext(page);
+}
+/** R5：行動頁預設看板；需要清單編輯表單時先切到清單檢視。 */
+export async function switchActionsView(page: Page, view: 'board' | 'list') {
+  const button = page.getByTestId(`actions-view-${view}`);
+  if (await button.getAttribute('aria-pressed') !== 'true') await button.click();
 }
 
 /** R1 folded the meeting draft and the period table into <details>, and moved downloads into a top-bar menu. */

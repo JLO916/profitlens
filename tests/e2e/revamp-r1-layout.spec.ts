@@ -72,7 +72,10 @@ test.describe("R1 shell", () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
     expect(await page.evaluate(() => document.activeElement?.id)).toBe("main-content");
     await expect(page.getByRole("region", { name: labels.sections.channelTableAria, exact: true })).toBeVisible();
-    await expect(page.locator(".diagnostic-card").first()).toContainText(labels.sections.impact);
+    // R5-1 健檢清單：一個規則一列（details.diagnosis-row），前三列預設展開，summary 帶「對貢獻影響」。
+    const firstRow = page.getByTestId("diagnosis-list").locator("details.diagnosis-row").first();
+    await expect(firstRow).toHaveAttribute("open", "");
+    await expect(firstRow.locator(":scope > summary")).toContainText(labels.sections.impact);
   });
 
   test("AI status is a top-bar label whose explanation opens in a popover", async ({ page }, testInfo) => {

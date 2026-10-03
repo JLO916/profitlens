@@ -196,14 +196,20 @@ test("貢獻率差額的證據保留百分點單位，不再乘以 100", async (
 test("診斷排序金額使用兩期已觀察差額，證據方向與來源一致", async ({ page }) => {
   await loadGolden(page);
   await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
-  const card = page.getByRole("article")
-    .filter({ has: page.getByRole("heading", { name: ruleHeadline("DISCOUNT_BURDEN_UP") }) })
-    .filter({ hasText: labels.ui.workspacePanels.scopeAll });
+  // R5-1：同一規則的合計與各通路合併成一列（details.diagnosis-row-<RuleCode>）；範圍切換鈕預設選「合計」。
+  const card = page.getByTestId("diagnosis-row-DISCOUNT_BURDEN_UP");
+  await expect(card.getByRole("heading", { level: 3, name: ruleHeadline("DISCOUNT_BURDEN_UP") })).toBeVisible();
+  if (await card.getAttribute("open") === null) await card.locator(":scope > summary h3").click();
+  await expect(card.getByRole("group", { name: labels.diagnosisList.scopeSwitch, exact: true }).getByRole("button", { name: labels.sections.total, exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(card.locator(".fact-list")).toContainText(labels.ui.workspacePanels.scopeAll);
+  // The summary shows the contribution impact (cost up => -250.00); the ranking amount stays the observed delta.
+  await expect(card.locator(":scope > summary .impact-amount")).toHaveText("-250.00");
   const ranking = card.getByRole("button", { name: rankingButtonName("DISCOUNT_BURDEN_UP", "\\+250\\.00") });
   // Golden booked discount delta: 450.00 - 200.00 = +250.00.
   // This is the observed increase, whereas the contribution bridge is -250.00.
-  // R1 keeps the ranking amount under the technical details of the card.
-  await card.locator("summary", { hasText: labels.sections.technicalDetails }).click();
+  // R1/R5 keep the ranking amount under the technical details of the row.
+  await expect(ranking).toBeHidden();
+  await card.locator("details.diagnosis-technical > summary", { hasText: labels.sections.technicalDetails }).click();
   await expect(ranking).toHaveText("+250.00");
   await ranking.click();
   const dialog = evidenceDialog(page);
