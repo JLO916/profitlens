@@ -161,20 +161,22 @@ test("貢獻率差額的證據保留百分點單位，不再乘以 100", async (
   await expect(dialog.locator(".evidence-body > .number")).not.toContainText("%");
 });
 
-test("診斷排序金額使用兩期已觀察差額，證據方向與來源一致", async ({ page }) => {
+test("診斷金額以對獲利的影響呈現（HF-03），證據方向與來源一致", async ({ page }) => {
   await loadGolden(page);
   await page.getByRole("button", { name: "通路診斷", exact: true }).click();
   const card = page.getByRole("article")
     .filter({ has: page.getByRole("heading", { name: "折扣率上升", exact: true }) })
     .filter({ hasText: "所選通路合計" });
   const ranking = card.getByRole("button", { name: /^查看折扣率上升排序金額來源/ });
-  // Golden booked discount delta: 450.00 - 200.00 = +250.00.
-  // This is the observed increase, whereas the contribution bridge is -250.00.
-  await expect(ranking).toHaveText("+250.00");
+  // Golden booked discount: 200.00 -> 450.00. HF-03 shows its effect on profit,
+  // 200.00 - 450.00 = -250.00, the same sign and colour as the contribution bridge.
+  await expect(ranking).toHaveText("-250.00");
+  await expect(ranking).toHaveClass(/impact-loss/);
   await ranking.click();
   const dialog = page.getByRole("dialog", { name: /公式與來源$/ });
-  await expect(dialog.locator(".evidence-body > .number")).toHaveText("NT$ 250.00");
-  await expect(dialog).toContainText("本期商品折扣 − 前期商品折扣");
+  await expect(dialog.locator(".evidence-body > .number")).toHaveText("NT$ -250.00");
+  await expect(dialog).toContainText("前期商品折扣 − 本期商品折扣");
+  await expect(dialog).toContainText("費用增加會減少獲利");
   await expect(dialog).toContainText("不是改善收益估計");
   const components = dialog.getByRole("region", { name: "公式組成項目", exact: true });
   await expect(components).toContainText("前期");

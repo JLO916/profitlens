@@ -4,6 +4,7 @@ import { formatCents, parseCents } from "../domain/money";
 import type { Diagnostic, Fact, Metric, MetricName, Period, RuleCode, Scope, SourceRef } from "../domain/types";
 import { encodeCsv, type CsvCell } from "./export";
 import { metricDefinitions } from "./presentation";
+import { COST_INCREASE_RULES, profitImpactAmount } from "./profit-impact";
 import type { WorkspaceSnapshot } from "./workspace";
 
 export interface SummaryEvidence {
@@ -19,6 +20,8 @@ export interface SummaryMetric {
 export interface SummaryPriority {
   code: RuleCode; title: string; recommendation: string; limitations: string[];
   members: Diagnostic[]; primary: Diagnostic; ranking_amount: Metric;
+  /** HF-03: display amount signed by its effect on profit (cost increases are negative). */
+  impact_amount: Metric;
   importance_amount: string | null; fact_ids: string[]; evidence: SummaryEvidence;
 }
 export interface SummaryScenario {
@@ -105,12 +108,15 @@ export function priorityEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, di
   const name = rankingMetric[diagnostic.code];
   const metricFacts = facts.filter(fact => fact.metric === name);
   const isCurrent = diagnostic.code === "NEGATIVE_CHANNEL_CM" || diagnostic.code === "SKU_NEGATIVE_GP";
+  const costIncrease = COST_INCREASE_RULES.has(diagnostic.code);
   return {
-    title: `主管摘要｜${scopeLabel} ${diagnostic.title}`, name, metric: diagnostic.ranking_amount!,
+    title: `主管摘要｜${scopeLabel} ${diagnostic.title}`, name, metric: profitImpactAmount(diagnostic.code, diagnostic.ranking_amount)!,
     period: isCurrent ? report.current.period : { start: report.previous.period.start, end: report.current.period.end },
     channels: diagnostic.scope.channels, scopeLabel, sources: uniqueSources(metricFacts.flatMap(fact => fact.sources)),
     ...(isCurrent ? {} : {
-      formula: `本期${metricDefinitions[name].label} − 前期${metricDefinitions[name].label}；排序金額，不是可回收收益`,
+      formula: costIncrease
+        ? `前期${metricDefinitions[name].label} − 本期${metricDefinitions[name].label}（費用增加會減少獲利）；對獲利的影響，不是可回收收益`
+        : `本期${metricDefinitions[name].label} − 前期${metricDefinitions[name].label}；對獲利的影響，不是可回收收益`,
       components: metricFacts.map(fact => ({ label: fact.period.start === report.previous.period.start ? "前期" : "本期", metric: fact })),
     }),
   };
@@ -139,6 +145,7 @@ export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { impo
     return {
       code, title: primary.title, recommendation: primary.recommendation, limitations: [...new Set(members.flatMap(row => row.limitations))], members, primary,
       ranking_amount: primary.ranking_amount ?? { value: null, reason_codes: ["MISSING_CRITICAL_DATA"] },
+      impact_amount: profitImpactAmount(code, primary.ranking_amount) ?? { value: null, reason_codes: ["MISSING_CRITICAL_DATA"] },
       importance_amount: importance === null ? null : formatCents(importance),
       fact_ids: [...new Set(members.flatMap(row => row.fact_ids))], evidence: priorityEvidence(snapshot, primary),
     };
@@ -188,7 +195,7 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   lines.push("", "## 本期最值得先查的三件事", "");
   if (!summary.priorities.length) lines.push("目前沒有達到門檻的規則訊號；不代表沒有營運風險。完整規則仍見診斷明細。");
   for (const [index, item] of summary.priorities.entries()) {
-    lines.push(`${index + 1}. ${md(item.title)}｜${md(summaryScopeLabel(item.primary.scope))}｜${amount(item.ranking_amount, true)}`, `   下一步：${md(item.recommendation)}`);
+    lines.push(`${index + 1}. ${md(item.title)}｜${md(summaryScopeLabel(item.primary.scope))}｜對獲利影響 ${amount(item.impact_amount, true)}`, `   下一步：${md(item.recommendation)}`);
     if (item.members.length > 1) lines.push(`   相關子範圍：${item.members.slice(1, 4).map(member => md(summaryScopeLabel(member.scope))).join("、")}${item.members.length > 4 ? "等（詳附錄）" : ""}；各範圍不可相加。`);
   }
   lines.push("", "## 所選方案與交辦", "");
@@ -204,11 +211,12 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   lines.push("", "## 固定口徑與限制", "", ...summary.assumptions.map(item => `- ${md(item)}`), "", "---", "", "## 技術稽核附錄", "",
     `- dataset_id：${md(summary.dataset_id)}`, `- dataset_hash：${summary.dataset_hash}`, `- filter_hash：${summary.filter_hash}`, `- metric_version：${summary.metric_version}`,
     "- 摘要優先序：資料缺漏先列；同一規則分組；門檻取組內最大絕對排序金額，並非加總；最多列三組，不改底層規則。",
+    "- 三件事與規則訊號金額＝對獲利的影響：費用增加以前期 − 本期表示，減少獲利為負、增加獲利為正。",
     "- 摘要與通路表差額＝本期金額 − 前期金額；下列 facts 保留兩期合計與各通路來源，即使沒有規則訊號仍可追溯。", "");
   if (decisions.appendixActions.length) lines.push("### 其他行動", ...decisions.appendixActions.map(action => `- ${md(action.problem)}（${action.status}；${md(action.scopeLabel)}）：${md(action.action)}；負責人 ${md(action.owner || "待指定")}；期限 ${md(action.deadline || "待設定")}；風險 ${md(action.risk || "待補")}；${md(action.executionStatus ?? "")} ${md(action.executionNotes ?? "")}`), "");
   for (const group of summary.groups) {
     lines.push(`### ${group.code}`, `- 門檻比較金額：${group.importance_amount ?? "未知"}`);
-    for (const member of group.members) lines.push(`- ${md(summaryScopeLabel(member.scope))}：${member.ranking_amount ? amount(member.ranking_amount) : "資料待補"}；${md(JSON.stringify(member.fact_ids))}`);
+    for (const member of group.members) lines.push(`- ${md(summaryScopeLabel(member.scope))}：${member.ranking_amount ? `對獲利影響 ${amount(profitImpactAmount(member.code, member.ranking_amount)!, true)}` : "資料待補"}；${md(JSON.stringify(member.fact_ids))}`);
   }
   const ids = new Set([
     ...summary.groups.flatMap(group => group.fact_ids),

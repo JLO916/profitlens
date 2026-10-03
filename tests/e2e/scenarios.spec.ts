@@ -174,7 +174,7 @@ test.beforeEach(async ({ page }) => { await page.goto("/"); });
 test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據", async ({ page }) => {
   await loadDataset(page);
   await showScenarios(page);
-  await expect(page.getByTestId("multi-scenario-workbench")).toContainText("全部通路（僅列各通路方案，不建立混合基準）");
+  await expect(page.getByTestId("multi-scenario-workbench")).toContainText("試算通路：尚未選擇（全部通路只列各通路方案，不建立混合基準）");
   await expect(workbench(page)).toHaveCount(0);
   await expect(page.getByRole("button", { name: "新增方案", exact: true })).toHaveCount(0);
   await selectChannel(page, "DTC");

@@ -21,7 +21,9 @@ import { activateScenarioEpoch, emptyScenarioWorkspace, scenarioContextDecision,
 import { createReviewSession, refreshReviewSession, syncReviewPins, selectReviewScenario, rebuildReviewSnapshot, updateReviewSession, type ReviewSession } from "@/application/review-session";
 import { exportWorkspaceDecision } from "@/application/workspace-decision-export";
 import { decisionSignature, emptyDecisionWorkspace } from "@/application/decision";
-import type { RestoredWorkspace, WorkspaceBackupSource } from "@/application/workspace-backup";
+import { exportWorkspaceBackup, restoreWorkspaceBackup, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
+import { clearAutosaveWorkspace, loadAutosaveWorkspace, saveAutosaveWorkspace } from "@/application/local-store";
+import { formatSavedClock, grantAutosaveConsent, readAutosaveConsent, revokeAutosaveConsent } from "@/application/autosave";
 import { ReplacementDialog, type PendingReplacement } from "./replacement-dialog";
 import { beginReplacement, type ReplacementKind } from "@/application/replacement-guard";
 import { WorkspaceStorage } from "./workspace-storage";
@@ -106,12 +108,25 @@ export function Dashboard() {
     markChanged();
   };
   const dirty = active !== null && version !== savedVersion;
+  // HF-05: consented autosave. `dirty` keeps meaning "not explicitly backed up" for the
+  // replacement guard; the unload warning is skipped once the autosave copy is current.
+  const [autosave, setAutosave] = useState(false);
+  const [autosaveAnswered, setAutosaveAnswered] = useState(false);
+  const [autosavedVersion, setAutosavedVersion] = useState<number | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [autosaveError, setAutosaveError] = useState("");
+  const [autosaveNotice, setAutosaveNotice] = useState("");
+  const backupRef = useRef<WorkspaceBackupSource | null>(null);
+  const autosaveBusy = useRef(false);
+  const autosaveAgain = useRef(false);
+  const autosaveCurrent = autosave && autosavedVersion === version;
+  const unloadWarning = (dirty && !autosaveCurrent) || showImport;
   useEffect(() => {
-    if (!dirty && !showImport) return;
+    if (!unloadWarning) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty, showImport]);
+  }, [unloadWarning]);
   const [evidence, setEvidenceState] = useState<EvidenceSelection | null>(null);
   const [evidenceSource, setEvidenceSource] = useState<Pick<Active, "dataset" | "filenames" | "mappings"> | null>(null);
   function setEvidence(selection: EvidenceSelection | null) { setEvidenceSource(null); setEvidenceState(selection); }
@@ -195,6 +210,8 @@ export function Dashboard() {
       setIssues(prepared.validation.issues);
       setStatus(prepared.validation.classification === "partial" ? "partial" : "ready");
       setShowImport(false); setPanel("overview");
+      // HF-07: the import form was long; land on the top of the new overview.
+      requestAnimationFrame(() => { document.getElementById("main-content")?.focus({ preventScroll: true }); window.scrollTo({ top: 0, left: 0 }); });
     } catch {
       if (ticket !== requestId.current) return;
       setError("匯入計算未完成，尚未取代先前資料。請重試或取消匯入。"); setStatus("error");
@@ -233,16 +250,18 @@ export function Dashboard() {
   function restore(workspace: RestoredWorkspace, accepted?: () => void) {
     requestReplacement("restore", () => { performRestore(workspace); accepted?.(); });
   }
-  function performRestore(workspace: RestoredWorkspace) {
+  /** `explicitlySaved` is false for autosave recovery: that copy is overwritten by later replacements. */
+  function performRestore(workspace: RestoredWorkspace, explicitlySaved = true) {
     requestId.current++; controller.current?.abort(); setEvidence(null);
     revision.current = Math.max(revision.current, workspace.revision);
     setActive({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, id: workspace.id, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings });
     storeScenarios(workspace.scenario_workspace); storeReview(workspace.review_session ?? syncReviewPins(createReviewSession({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings }, workspace.scenario_workspace.active_epoch), workspace.action_workspace)); storeActions(workspace.action_workspace); setIssues(workspace.issues);
     setComparisonMode(workspace.snapshot.report.scope.comparison_mode);
     setDates({ previousStart: workspace.snapshot.report.previous.period.start, previousEnd: workspace.snapshot.report.previous.period.end, currentStart: workspace.snapshot.report.current.period.start, currentEnd: workspace.snapshot.report.current.period.end });
-    const next = ++versionRef.current; setVersion(next); setSavedVersion(next);
+    const next = ++versionRef.current; setVersion(next); if (explicitlySaved) setSavedVersion(next);
     setRestoreEpoch(value => value + 1); setShowImport(false); setError(""); setFilterError(""); setPanel("overview");
     setStatus(workspace.classification === "partial" ? "partial" : "ready");
+    return next;
   }
   function draftFromDiagnostic(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) {
     if (!active) return;
@@ -286,6 +305,74 @@ export function Dashboard() {
   const currentContext = scenarioWorkspace.contexts.find(context => context.status === "current" && context.session.filter_hash === active?.snapshot.filter_hash);
   const decision = currentContext ? scenarioContextDecision(currentContext) : emptyDecisionWorkspace();
   const backupSource: WorkspaceBackupSource | null = active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession } : null;
+  useEffect(() => { backupRef.current = backupSource; });
+  const restoreRef = useRef(performRestore);
+  useEffect(() => { restoreRef.current = performRestore; });
+  const moreMenu = useRef<HTMLDetailsElement>(null);
+
+  // HF-05: write the current workspace after each change, serialised so only one write runs.
+  const runAutosave = useCallback(async () => {
+    if (autosaveBusy.current) { autosaveAgain.current = true; return; }
+    autosaveBusy.current = true;
+    try {
+      do {
+        autosaveAgain.current = false;
+        const target = versionRef.current;
+        const source = backupRef.current;
+        if (!readAutosaveConsent()) return;
+        if (source) {
+          const text = await exportWorkspaceBackup(source);
+          if (!readAutosaveConsent()) return;
+          const record = await saveAutosaveWorkspace(text);
+          setLastSavedAt(record.saved_at);
+        } else {
+          await clearAutosaveWorkspace();
+          setLastSavedAt(null);
+        }
+        setAutosavedVersion(target); setAutosaveError("");
+      } while (autosaveAgain.current);
+    } catch {
+      setAutosaveError("自動保存未完成：瀏覽器可能不允許儲存或容量不足。目前分頁資料仍保留，可先下載完整工作區備份。");
+    } finally { autosaveBusy.current = false; }
+  }, []);
+  useEffect(() => {
+    if (!autosave || autosavedVersion === version) return;
+    const timer = window.setTimeout(() => { void runAutosave(); }, 400);
+    return () => window.clearTimeout(timer);
+  }, [autosave, autosavedVersion, version, runAutosave]);
+  // HF-05: reopen restores the consented autosave copy after full validation and recalculation.
+  useEffect(() => {
+    if (!readAutosaveConsent()) return;
+    let cancelled = false;
+    const ticket = requestId.current;
+    void loadAutosaveWorkspace().then(async record => {
+      if (cancelled) return;
+      setAutosave(true); setAutosaveAnswered(true);
+      if (!record) return;
+      const workspace = await restoreWorkspaceBackup(record.text);
+      if (cancelled || ticket !== requestId.current) return;
+      const restoredVersion = restoreRef.current(workspace, false);
+      setAutosavedVersion(restoredVersion); setLastSavedAt(record.saved_at);
+      setAutosaveNotice(`已自動恢復 ${formatSavedClock(record.saved_at)} 保存的工作區。`);
+    }).catch(() => {
+      if (cancelled) return;
+      setAutosave(true); setAutosaveAnswered(true);
+      setAutosaveError("上次自動保存的工作區無法讀取或驗證，未載入任何資料。可重新載入資料，或在「工作區保存與恢復」刪除本機副本並關閉保存。");
+    });
+    return () => { cancelled = true; };
+  }, []);
+  function acceptAutosave() {
+    setAutosaveAnswered(true);
+    if (!grantAutosaveConsent()) { setAutosaveError("這個瀏覽器不允許保存，資料仍只留在此分頁。可改用「下載完整工作區備份」。"); return; }
+    setAutosaveError(""); setAutosave(true);
+  }
+  function stopAutosave() {
+    revokeAutosaveConsent();
+    setAutosave(false); setAutosaveAnswered(true); setAutosavedVersion(null); setLastSavedAt(null); setAutosaveNotice(""); setAutosaveError("");
+  }
+  const saveLabel = autosave
+    ? autosaveError ? "保存失敗" : active && !autosaveCurrent ? "保存中…" : lastSavedAt ? `已保存 ${formatSavedClock(lastSavedAt)}` : "自動保存已開啟"
+    : active ? "未保存（僅此分頁）" : null;
 
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">跳至主要內容</a>
@@ -297,9 +384,9 @@ export function Dashboard() {
       <footer className="sidebar-footer">新臺幣 · 臺北時間</footer>
     </aside>
     <div className="main-shell">
-      <header className="topbar"><div className="breadcrumb">工作區 <span>/</span> <strong>{currentPanel.label}</strong></div><span className="mode-badge"><span className="green-dot" /> {aiCapability?.reason === "PUBLIC_DEMO" ? "公開示範模式" : local ? "瀏覽器匯入資料" : "合成資料工作區"}</span></header>
+      <header className="topbar"><div className="breadcrumb">工作區 <span>/</span> <strong>{currentPanel.label}</strong></div><div className="topbar-badges">{saveLabel && <span className={`save-badge ${autosave && !autosaveError ? "on" : "off"}`} data-testid="save-status" aria-live="polite">{saveLabel}</span>}<span className="mode-badge"><span className="green-dot" /> {aiCapability?.reason === "PUBLIC_DEMO" ? "公開示範模式" : local ? "瀏覽器匯入資料" : "合成資料工作區"}</span></div></header>
       <main id="main-content" tabIndex={-1}>
-        <div className="page-heading"><div><p className="eyebrow">營運檢討工作台</p><h1>{currentPanel.label}</h1><p className="subtitle">{currentPanel.description}</p></div><div className="load-controls">{(status !== "empty" || showImport) && panel !== "validation" && <button className="button primary" onClick={() => void load("demo")}>載入示範資料 <Icon name="arrow" size={16} /></button>}<button className="button quiet" onClick={startImport}>匯入標準 CSV</button></div></div>
+        <div className="page-heading"><div><p className="eyebrow">營運檢討工作台</p><h1>{currentPanel.label}</h1><p className="subtitle">{currentPanel.description}</p></div><div className="load-controls">{!active && (status !== "empty" || showImport) && panel !== "validation" && <button className="button primary" onClick={() => void load("demo")}>載入示範資料 <Icon name="arrow" size={16} /></button>}<button className="button quiet" onClick={startImport}>匯入標準 CSV</button>{active && panel !== "validation" && <details className="more-menu" ref={moreMenu} data-testid="more-menu"><summary className="button quiet">更多</summary><div className="more-menu-items"><button type="button" className="button quiet" onClick={() => { if (moreMenu.current) moreMenu.current.open = false; void load("demo"); }}>載入示範資料</button><p className="note">會取代目前資料；未另存的工作稿會先提醒。</p></div></details>}</div></div>
         <div className="ai-availability" data-testid="ai-availability" role="status" aria-live="polite">
           <strong>規則診斷可用｜{aiCapability === null ? "正在確認即時 AI 設定" : aiCapability.available ? "即時 AI 需預覽同意" : aiCapability.reason === "STATUS_UNAVAILABLE" ? "即時 AI 狀態未確認" : "即時 AI 未啟用"}</strong>
           <p>{aiCapability?.reason === "PUBLIC_DEMO" ? "公開版已關閉模型連線。載入資料後，計算、診斷、試算與本機匯出仍可使用。" : aiCapability?.available ? "僅在預覽同意後才會送出彙總資料；請到通路診斷查看本次狀態與來源。" : "載入資料後即可查看可追溯的診斷與試算；目前未傳送分析資料給模型。"}</p>
@@ -312,7 +399,14 @@ export function Dashboard() {
           <p className="note">成功載入後返回經營總覽。舊方案保留歷史版本；舊行動會明示引用較早資料，仍可更新執行進度。未保存的資料請先備份。</p>
         </section>}
         <div className="status-line" role="status" aria-live="polite" data-testid="workspace-status"><span className={`status-dot ${status}`} />{({ empty: "尚未載入資料", loading: "正在載入與計算…", error: "資料載入失敗", partial: "部分資料待補", ready: "資料已就緒" })[status]}{active && status !== "empty" && <span className="muted">{datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} · 資料截至 {active.dataset.manifest.data_as_of}</span>}<button className="text-button clear-button" onClick={clear}>清空工作區</button></div>
-        <WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { if (active) markChanged(); }} />
+        {active && !autosave && !autosaveAnswered && <section className="autosave-prompt" aria-labelledby="autosave-prompt-heading" data-testid="autosave-prompt">
+          <h2 id="autosave-prompt-heading">要把資料存在這台電腦嗎？（不會上傳）</h2>
+          <p>同意後，之後每次變更都會自動保存在這個瀏覽器，下次開啟自動恢復。資料不會上傳伺服器；共享電腦建議選「先不要」。可隨時在「工作區保存與恢復」刪除本機副本並關閉保存。</p>
+          <div className="button-row"><button type="button" className="button primary" onClick={acceptAutosave}>存在這台電腦</button><button type="button" className="button quiet" onClick={() => setAutosaveAnswered(true)}>先不要</button></div>
+        </section>}
+        {autosaveNotice && <p className="note autosave-notice" data-testid="autosave-notice">{autosaveNotice}</p>}
+        {autosaveError && <p role="alert" className="alert error" data-testid="autosave-error">{autosaveError}</p>}
+        <WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} autosave={autosave} onBeforeDelete={stopAutosave} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { if (active) markChanged(); }} />
         {showImport && <div hidden={panel !== "data"}><ImportPanel onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} /></div>}
         {visible && <>
           <div className="filter-bar">
@@ -332,12 +426,12 @@ export function Dashboard() {
         {status === "loading" && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>正在檢核資料與計算指標</h2><p>銷售先彙總，再合併通路費用與廣告。請稍候。</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
         {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>資料載入失敗</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>重新載入</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>返回前次成功資料</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
         {visible && <div key={active.id} className="view-content">{!["products", "scenarios", "actions", "validation"].includes(panel) && <div className="export-actions"><button className="button quiet" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames), "profitlens-analysis.csv")}>下載目前分析 CSV</button><button className="text-button" onClick={() => downloadText(JSON.stringify(active.dataset.manifest, null, 2), "profitlens-manifest.json", "application/json;charset=utf-8")}>下載資料集設定 JSON</button><span className="note">依目前期間與通路匯出；不含原始 CSV。</span></div>}{panel === "overview" && <><ReviewWorkbench source={active} scenarioWorkspace={scenarioWorkspace} review={reviewSession} onChange={setReview} actionWorkspace={actionWorkspace} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} /><Overview snapshot={active.snapshot} onEvidence={setEvidence} /></>}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} />}</div>}
-        {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onChannelChange={channel => void applyFilters({ ...active.snapshot.report.scope, channels: [channel] })} /></div>}
+        {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} />}
-        <footer className="main-footer"><p>行銷後貢獻不等於公司淨利，不含未輸入的固定費與所得稅。</p><p>{local ? "本機記憶體資料" : "合成資料"} · 重新整理會清空分頁，已保存的備份須手動恢復 · 規則診斷不需 AI</p></footer>
+        <footer className="main-footer"><p>行銷後貢獻不等於公司淨利，不含未輸入的固定費與所得稅。</p><p>{local ? "本機記憶體資料" : "合成資料"} · {autosave ? "已開啟自動保存，重新整理後自動恢復" : "重新整理會清空分頁，已保存的備份須手動恢復"} · 規則診斷不需 AI</p></footer>
       </main>
     </div>
-    {pendingReplacement && <ReplacementDialog intent={pendingReplacement} source={backupSource} currentVersion={() => versionRef.current} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onCancel={() => setPendingReplacement(null)} onProceed={() => {
+    {pendingReplacement && <ReplacementDialog intent={pendingReplacement} source={backupSource} autosave={autosave} currentVersion={() => versionRef.current} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onCancel={() => setPendingReplacement(null)} onProceed={() => {
       if (pendingReplacement.version !== versionRef.current) return;
       const run = pendingReplacement.run; setPendingReplacement(null); void run();
     }} />}

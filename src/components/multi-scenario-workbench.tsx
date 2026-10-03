@@ -13,12 +13,19 @@ export interface MultiScenarioWorkbenchProps {
   onEvidence: (selection: EvidenceSelection) => void;
   onSelectForReview?: (reference: ScenarioSelectionRef) => void;
   onExport?: (format: 'md' | 'csv' | 'json') => void;
-  onChannelChange?: (channel: string) => void;
 }
-export function MultiScenarioWorkbench({ source, state, setState, onEvidence, onSelectForReview, onExport, onChannelChange }: MultiScenarioWorkbenchProps) {
+/**
+ * HF-01: the scenario channel is page-local state. Choosing a channel here never
+ * writes the global filter; when the global filter already selects exactly one
+ * channel, the scenario page follows it (read-only use of the global scope).
+ */
+export function MultiScenarioWorkbench({ source, state, setState, onEvidence, onSelectForReview, onExport }: MultiScenarioWorkbenchProps) {
   const [prepared, setPrepared] = useState<{ key: string; source: ScenarioSource; contextId: string } | null>(null);
   const [failure, setFailure] = useState('');
-  const channel = source.snapshot.report.scope.channels.length === 1 ? source.snapshot.report.scope.channels[0] : null;
+  const [pickedChannel, setPickedChannel] = useState<string | null>(null);
+  const globalChannel = source.snapshot.report.scope.channels.length === 1 ? source.snapshot.report.scope.channels[0] : null;
+  const localChannel = !globalChannel && pickedChannel && source.dataset.manifest.channels.includes(pickedChannel) ? pickedChannel : null;
+  const channel = globalChannel ?? localChannel;
   const epoch = state.active_epoch;
   const key = decisionSignature({ epoch, hash: source.snapshot.dataset_hash, previous: source.snapshot.report.scope.previous_period, current: source.snapshot.report.scope.current_period, mode: source.snapshot.report.scope.comparison_mode, channel });
   useEffect(() => {
@@ -47,7 +54,9 @@ export function MultiScenarioWorkbench({ source, state, setState, onEvidence, on
   };
   return <section data-testid="multi-scenario-workbench">
     <section className="panel"><h2>各通路方案工作區</h2><p>每個資料版本、前後期與通路最多三方案。切換通路保留原稿；更換資料、期間或比較方式後，舊版本保留為歷史。不同通路與方案差額不相加。</p>
-      <p>目前檢視：{channel ?? "全部通路（僅列各通路方案，不建立混合基準）"}</p>{!channel && <ul>{source.dataset.manifest.channels.map(name => <li key={name}>{name} {onChannelChange && <button type="button" className="button quiet" onClick={() => onChannelChange(name)}>編輯 {name} 方案</button>}<ul>{state.contexts.filter(row => row.status === "current" && row.epoch === epoch && row.session.scope.channels[0] === name).flatMap(row => row.plans.map(plan => <li key={`${row.id}-${plan.id}`}>{plan.name} · 版本 {plan.revision} · 條件貢獻 {formatMoney(plan.result?.contribution ?? null)}{onSelectForReview && plan.result?.status === "valid" && <button className="text-button" onClick={() => onSelectForReview(scenarioSelectionRef(row, plan.id))}>選用 {name} {plan.name}</button>}</li>))}</ul></li>)}</ul>}
+      <p className="scenario-channel" data-testid="scenario-channel"><strong>試算通路：{channel ?? "尚未選擇（全部通路只列各通路方案，不建立混合基準）"}</strong>{globalChannel && <span className="note">（沿用全站通路篩選）</span>}{localChannel && <span className="note">（只在試算頁生效，全站篩選維持「全部通路」）</span>}</p>
+      {localChannel && <button type="button" className="button quiet" onClick={() => setPickedChannel(null)}>返回各通路方案列表</button>}
+      {!channel && <ul>{source.dataset.manifest.channels.map(name => <li key={name}>{name} <button type="button" className="button quiet" onClick={() => setPickedChannel(name)}>編輯 {name} 方案</button><ul>{state.contexts.filter(row => row.status === "current" && row.epoch === epoch && row.session.scope.channels[0] === name).flatMap(row => row.plans.map(plan => <li key={`${row.id}-${plan.id}`}>{plan.name} · 版本 {plan.revision} · 條件貢獻 {formatMoney(plan.result?.contribution ?? null)}{onSelectForReview && plan.result?.status === "valid" && <button className="text-button" onClick={() => onSelectForReview(scenarioSelectionRef(row, plan.id))}>選用 {name} {plan.name}</button>}</li>))}</ul></li>)}</ul>}
       {channel && prepared?.key !== key && !failure && <p role="status">正在重建此通路的精確基準…</p>}
       {failure && <p role="alert">{failure}</p>}
       {channel && prepared?.key === key && !context && <button type="button" className="button primary" onClick={start}>建立 {channel} 方案工作區</button>}

@@ -1,6 +1,7 @@
 import { appendFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test as base, type Page } from '@playwright/test';
+import { demoButton } from './replacement-helpers';
 
 const test=base.extend<{audit:string[]}>({audit:[async({page},use,info)=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
@@ -17,9 +18,9 @@ async function backup(p:Page){const s=await storage(p);const event=p.waitForEven
 async function stageAlternative(p:Page){await p.getByRole('button',{name:'匯入標準 CSV',exact:true}).click();const form=p.getByTestId('import-panel');for(const[label,file]of Object.entries({'商品銷售 CSV':'sales_daily.csv','通路費用 CSV':'channel_costs_daily.csv','廣告支出 CSV':'ad_spend_daily.csv','讀取 manifest JSON':'manifest.json'}))await form.getByLabel(label,{exact:true}).setInputFiles(resolve('tests/fixtures/alternative',file));await form.getByLabel('我已確認未稅商品金額與費用口徑',{exact:true}).check();await form.getByRole('button',{name:'檢核匯入資料',exact:true}).click();await expect(p.getByTestId('import-status')).toContainText('檢核通過');}
 
 test('A3 示範替換可取消，下載尚未確認不能替換，確認後才繼續',async({page},info)=>{
- await golden(page);await page.getByRole('button',{name:'載入示範資料',exact:true}).click();await expect(guard(page)).toBeVisible();
+ await golden(page);await (await demoButton(page)).click();await expect(guard(page)).toBeVisible();
  await guard(page).getByRole('button',{name:'取消',exact:true}).click();await expect(status(page)).toContainText('Golden');
- await page.getByRole('button',{name:'載入示範資料',exact:true}).click();await guard(page).getByRole('button',{name:'先儲存',exact:true}).click();
+ await (await demoButton(page)).click();await guard(page).getByRole('button',{name:'先儲存',exact:true}).click();
  const event=page.waitForEvent('download');await guard(page).getByRole('button',{name:'下載備份',exact:true}).click();const text=await readFile((await(await event).path())!,'utf8');expect(JSON.parse(text).schema_version).toBe('profitlens-workspace-v3');
  await expect(status(page)).toContainText('Golden');await expect(guard(page)).toBeVisible();
  await guard(page).getByRole('button',{name:'已確認備份已保存並繼續',exact:true}).click();await expect(status(page)).toContainText('營運示範');

@@ -1,0 +1,3458 @@
+{
+  "tool": "axe-core 4.13.0",
+  "project": "desktop",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "results": [
+    {
+      "state": "empty-home",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">合成</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">合成</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>資料只用於功能驗證，不代表真實商業成果。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>經營總覽</strong></div>"
+            },
+            {
+              "target": [
+                "div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">掌握營收、成本與行銷後貢獻的變化。</p>"
+            },
+            {
+              "target": [
+                ".text-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                ".tag"
+              ],
+              "html": "<span class=\"tag\">尚無工作區</span>"
+            },
+            {
+              "target": [
+                "section > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">從一份完整的資料開始</p>"
+            },
+            {
+              "target": [
+                "p:nth-child(4)"
+              ],
+              "html": "<p>載入銷售、通路費用與廣告的合成資料，<br>從整體變化一路追溯到每筆來源。</p>"
+            },
+            {
+              "target": [
+                ".empty-steps > span:nth-child(1)"
+              ],
+              "html": "<span>01　確認資料</span>"
+            },
+            {
+              "target": [
+                ".empty-steps > span:nth-child(2)"
+              ],
+              "html": "<span>02　查看貢獻</span>"
+            },
+            {
+              "target": [
+                ".empty-steps > span:nth-child(3)"
+              ],
+              "html": "<span>03　追溯變化</span>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "overview-autosave-prompt",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">合成</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">合成</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>資料只用於功能驗證，不代表真實商業成果。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>經營總覽</strong></div>"
+            },
+            {
+              "target": [
+                ".page-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">掌握營收、成本與行銷後貢獻的變化。</p>"
+            },
+            {
+              "target": [
+                ".muted"
+              ],
+              "html": "<span class=\"muted\">營運示範｜12 週合成資料 · 資料截至 2026-08-24</span>"
+            },
+            {
+              "target": [
+                ".clear-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                "summary > .tag"
+              ],
+              "html": "<span class=\"tag\">有未保存變更</span>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">主管會議工作稿</p>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">草稿</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"主管摘要通路寬表\"] > table > caption"
+              ],
+              "html": "<caption>目前範圍通路合計，TWD；未知不補零，通路廣告不分攤至 SKU。</caption>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(1)"
+              ],
+              "html": "<th scope=\"col\">通路</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(2)"
+              ],
+              "html": "<th scope=\"col\">前期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(3)"
+              ],
+              "html": "<th scope=\"col\">本期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(4)"
+              ],
+              "html": "<th scope=\"col\">營收差額</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(5)"
+              ],
+              "html": "<th scope=\"col\">前期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(6)"
+              ],
+              "html": "<th scope=\"col\">本期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(7)"
+              ],
+              "html": "<th scope=\"col\">貢獻差額</th>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > h3"
+              ],
+              "html": "<h3>商品淨營收</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">6,141,575.72</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">6,141,575.72</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > h3"
+              ],
+              "html": "<h3>商品毛利</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">2,724,131.62</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">2,724,131.62</button>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h3"
+              ],
+              "html": "<h3>行銷前貢獻</h3>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">2,196,444.68</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">2,196,444.68</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > h3"
+              ],
+              "html": "<h3>行銷後貢獻率</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">30.43%</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">30.43%</button>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">PERIOD COMPARISON</p>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">相同天數</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > caption"
+              ],
+              "html": "<caption>金額 TWD；日均 TWD／日，顯示至分。日均差使用未取分值計算後再取分。</caption>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(1)"
+              ],
+              "html": "<th>指標</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(2)"
+              ],
+              "html": "<th>前期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(3)"
+              ],
+              "html": "<th>本期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(4)"
+              ],
+              "html": "<th>前期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(5)"
+              ],
+              "html": "<th>本期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(6)"
+              ],
+              "html": "<th>日均差</th>"
+            },
+            {
+              "target": [
+                ".trend-panel > .section-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">TREND</p>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>商品淨營收</span>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot navy\"></i>行銷後貢獻</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"bridge-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CONTRIBUTION BRIDGE</p>"
+            },
+            {
+              "target": [
+                ".bridge-summary > div:nth-child(1) > small"
+              ],
+              "html": "<small>前期</small>"
+            },
+            {
+              "target": [
+                "div:nth-child(3) > small"
+              ],
+              "html": "<small>本期</small>"
+            },
+            {
+              "target": [
+                ".bridge-total"
+              ],
+              "html": "<div class=\"bridge-total\">總差異 <button class=\"number-link impact-loss\">-598,833.95</button></div>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CHANNEL MIX</p>"
+            },
+            {
+              "target": [
+                ".unit"
+              ],
+              "html": "<span class=\"unit\">TWD</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot pale\"></i>前期</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>本期</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(1) > span"
+              ],
+              "html": "<span>DTC</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(1) > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">34.30%</button></small>"
+            },
+            {
+              "target": [
+                "div:nth-child(1) > small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">34.30%</button>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(2) > span"
+              ],
+              "html": "<span>MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "div:nth-child(2) > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">-1.54%</button></small>"
+            },
+            {
+              "target": [
+                "div:nth-child(2) > small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">-1.54%</button>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "overview-more-menu-open",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">合成</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">合成</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>資料只用於功能驗證，不代表真實商業成果。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>經營總覽</strong></div>"
+            },
+            {
+              "target": [
+                ".page-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">掌握營收、成本與行銷後貢獻的變化。</p>"
+            },
+            {
+              "target": [
+                ".muted"
+              ],
+              "html": "<span class=\"muted\">營運示範｜12 週合成資料 · 資料截至 2026-08-24</span>"
+            },
+            {
+              "target": [
+                ".clear-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                "summary > .tag"
+              ],
+              "html": "<span class=\"tag\">有未保存變更</span>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">主管會議工作稿</p>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">草稿</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"主管摘要通路寬表\"] > table > caption"
+              ],
+              "html": "<caption>目前範圍通路合計，TWD；未知不補零，通路廣告不分攤至 SKU。</caption>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(1)"
+              ],
+              "html": "<th scope=\"col\">通路</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(2)"
+              ],
+              "html": "<th scope=\"col\">前期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(3)"
+              ],
+              "html": "<th scope=\"col\">本期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(4)"
+              ],
+              "html": "<th scope=\"col\">營收差額</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(5)"
+              ],
+              "html": "<th scope=\"col\">前期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(6)"
+              ],
+              "html": "<th scope=\"col\">本期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(7)"
+              ],
+              "html": "<th scope=\"col\">貢獻差額</th>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > h3"
+              ],
+              "html": "<h3>商品淨營收</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">6,141,575.72</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">6,141,575.72</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > h3"
+              ],
+              "html": "<h3>商品毛利</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">2,724,131.62</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">2,724,131.62</button>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h3"
+              ],
+              "html": "<h3>行銷前貢獻</h3>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">2,196,444.68</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">2,196,444.68</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > h3"
+              ],
+              "html": "<h3>行銷後貢獻率</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">30.43%</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">30.43%</button>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">PERIOD COMPARISON</p>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">相同天數</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > caption"
+              ],
+              "html": "<caption>金額 TWD；日均 TWD／日，顯示至分。日均差使用未取分值計算後再取分。</caption>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(1)"
+              ],
+              "html": "<th>指標</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(2)"
+              ],
+              "html": "<th>前期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(3)"
+              ],
+              "html": "<th>本期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(4)"
+              ],
+              "html": "<th>前期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(5)"
+              ],
+              "html": "<th>本期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(6)"
+              ],
+              "html": "<th>日均差</th>"
+            },
+            {
+              "target": [
+                ".trend-panel > .section-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">TREND</p>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>商品淨營收</span>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot navy\"></i>行銷後貢獻</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"bridge-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CONTRIBUTION BRIDGE</p>"
+            },
+            {
+              "target": [
+                ".bridge-summary > div:nth-child(1) > small"
+              ],
+              "html": "<small>前期</small>"
+            },
+            {
+              "target": [
+                "div:nth-child(3) > small"
+              ],
+              "html": "<small>本期</small>"
+            },
+            {
+              "target": [
+                ".bridge-total"
+              ],
+              "html": "<div class=\"bridge-total\">總差異 <button class=\"number-link impact-loss\">-598,833.95</button></div>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CHANNEL MIX</p>"
+            },
+            {
+              "target": [
+                ".unit"
+              ],
+              "html": "<span class=\"unit\">TWD</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot pale\"></i>前期</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>本期</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(1) > span"
+              ],
+              "html": "<span>DTC</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(1) > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">34.30%</button></small>"
+            },
+            {
+              "target": [
+                "div:nth-child(1) > small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">34.30%</button>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(2) > span"
+              ],
+              "html": "<span>MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "div:nth-child(2) > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">-1.54%</button></small>"
+            },
+            {
+              "target": [
+                "div:nth-child(2) > small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">-1.54%</button>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "replacement-dialog",
+      "violations": []
+    },
+    {
+      "state": "overview-autosave-on-storage-open",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">合成</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">合成</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>資料只用於功能驗證，不代表真實商業成果。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>經營總覽</strong></div>"
+            },
+            {
+              "target": [
+                ".page-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">掌握營收、成本與行銷後貢獻的變化。</p>"
+            },
+            {
+              "target": [
+                ".muted"
+              ],
+              "html": "<span class=\"muted\">營運示範｜12 週合成資料 · 資料截至 2026-08-24</span>"
+            },
+            {
+              "target": [
+                ".clear-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                "summary > .tag"
+              ],
+              "html": "<span class=\"tag\">自動保存已開啟</span>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">主管會議工作稿</p>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">草稿</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"主管摘要通路寬表\"] > table > caption"
+              ],
+              "html": "<caption>目前範圍通路合計，TWD；未知不補零，通路廣告不分攤至 SKU。</caption>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(1)"
+              ],
+              "html": "<th scope=\"col\">通路</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(2)"
+              ],
+              "html": "<th scope=\"col\">前期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(3)"
+              ],
+              "html": "<th scope=\"col\">本期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(4)"
+              ],
+              "html": "<th scope=\"col\">營收差額</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(5)"
+              ],
+              "html": "<th scope=\"col\">前期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(6)"
+              ],
+              "html": "<th scope=\"col\">本期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(7)"
+              ],
+              "html": "<th scope=\"col\">貢獻差額</th>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > h3"
+              ],
+              "html": "<h3>商品淨營收</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">6,141,575.72</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">6,141,575.72</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > h3"
+              ],
+              "html": "<h3>商品毛利</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">2,724,131.62</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">2,724,131.62</button>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h3"
+              ],
+              "html": "<h3>行銷前貢獻</h3>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">2,196,444.68</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">2,196,444.68</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > h3"
+              ],
+              "html": "<h3>行銷後貢獻率</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">30.43%</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">30.43%</button>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">PERIOD COMPARISON</p>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">相同天數</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > caption"
+              ],
+              "html": "<caption>金額 TWD；日均 TWD／日，顯示至分。日均差使用未取分值計算後再取分。</caption>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(1)"
+              ],
+              "html": "<th>指標</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(2)"
+              ],
+              "html": "<th>前期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(3)"
+              ],
+              "html": "<th>本期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(4)"
+              ],
+              "html": "<th>前期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(5)"
+              ],
+              "html": "<th>本期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(6)"
+              ],
+              "html": "<th>日均差</th>"
+            },
+            {
+              "target": [
+                ".trend-panel > .section-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">TREND</p>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>商品淨營收</span>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot navy\"></i>行銷後貢獻</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"bridge-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CONTRIBUTION BRIDGE</p>"
+            },
+            {
+              "target": [
+                ".bridge-summary > div:nth-child(1) > small"
+              ],
+              "html": "<small>前期</small>"
+            },
+            {
+              "target": [
+                "div:nth-child(3) > small"
+              ],
+              "html": "<small>本期</small>"
+            },
+            {
+              "target": [
+                ".bridge-total"
+              ],
+              "html": "<div class=\"bridge-total\">總差異 <button class=\"number-link impact-loss\">-598,833.95</button></div>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CHANNEL MIX</p>"
+            },
+            {
+              "target": [
+                ".unit"
+              ],
+              "html": "<span class=\"unit\">TWD</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot pale\"></i>前期</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>本期</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(1) > span"
+              ],
+              "html": "<span>DTC</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(1) > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">34.30%</button></small>"
+            },
+            {
+              "target": [
+                "div:nth-child(1) > small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">34.30%</button>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(2) > span"
+              ],
+              "html": "<span>MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "div:nth-child(2) > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">-1.54%</button></small>"
+            },
+            {
+              "target": [
+                "div:nth-child(2) > small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">-1.54%</button>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "scenario-local-channel",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">合成</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">合成</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>資料只用於功能驗證，不代表真實商業成果。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>情境試算</strong></div>"
+            },
+            {
+              "target": [
+                ".eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">明示假設，從同一通路基準比較條件結果。</p>"
+            },
+            {
+              "target": [
+                ".muted"
+              ],
+              "html": "<span class=\"muted\">營運示範｜12 週合成資料 · 資料截至 2026-08-24</span>"
+            },
+            {
+              "target": [
+                ".text-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                ".tag"
+              ],
+              "html": "<span class=\"tag\">自動保存已開啟</span>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "diagnosis",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">合成</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">合成</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>資料只用於功能驗證，不代表真實商業成果。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>通路診斷</strong></div>"
+            },
+            {
+              "target": [
+                ".page-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">從可核查的事實，找到下一個需要確認的問題。</p>"
+            },
+            {
+              "target": [
+                ".muted"
+              ],
+              "html": "<span class=\"muted\">營運示範｜12 週合成資料 · 資料截至 2026-08-24</span>"
+            },
+            {
+              "target": [
+                ".clear-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                "summary > .tag"
+              ],
+              "html": "<span class=\"tag\">自動保存已開啟</span>"
+            },
+            {
+              "target": [
+                ".section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">規則與事實</p>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"diagnosis-heading\"] > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">14 項</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">所選通路合計</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看折扣率上升排序金額來源，對獲利的影響 -1,188,365.10\">-1,188,365.10</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 折扣率 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 折扣率 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 商品折扣 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 商品折扣 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 折扣前商品收入 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 折扣前商品收入 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > p:nth-child(9)"
+              ],
+              "html": "<p>比對兩期折扣金額與折扣前收入，核對促銷及商品組合。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(1) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看折扣率上升排序金額來源，對獲利的影響 -959,955.80\">-959,955.80</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 折扣率 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 折扣率 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 商品折扣 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 商品折扣 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 折扣前商品收入 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 折扣前商品收入 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > p:nth-child(9)"
+              ],
+              "html": "<p>比對兩期折扣金額與折扣前收入，核對促銷及商品組合。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(2) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看淨營收增加，行銷後貢獻下降排序金額來源，對獲利的影響 -782,270.81\">-782,270.81</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 商品淨營收 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 商品淨營收 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 行銷後貢獻 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 行銷後貢獻 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > p:nth-child(9)"
+              ],
+              "html": "<p>核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>金額差異不代表獨立因果效果，也不是改善後可取得的收益。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">所選通路合計</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看淨營收增加，行銷後貢獻下降排序金額來源，對獲利的影響 -598,833.95\">-598,833.95</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 商品淨營收 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 商品淨營收 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 行銷後貢獻 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 行銷後貢獻 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：商品組合、折扣、退款或費用結構的改變可能與差異有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > p:nth-child(9)"
+              ],
+              "html": "<p>核對九項金額拆解及通路明細，確認變動的入帳來源與可驗證原因。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(4) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>金額差異不代表獨立因果效果，也不是改善後可取得的收益。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">所選通路合計</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看廣告費占淨營收比上升排序金額來源，對獲利的影響 -360,900.00\">-360,900.00</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 廣告費占淨營收比 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 廣告費占淨營收比 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 廣告費 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 廣告費 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 商品淨營收 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 商品淨營收 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > p:nth-child(9)"
+              ],
+              "html": "<p>核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(5) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看廣告費占淨營收比上升排序金額來源，對獲利的影響 -340,757.00\">-340,757.00</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 廣告費占淨營收比 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 廣告費占淨營收比 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 廣告費 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 廣告費 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 商品淨營收 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 商品淨營收 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：投放規模、收入或入帳時間差可能與行銷負擔上升有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > p:nth-child(9)"
+              ],
+              "html": "<p>核對通路廣告歸屬與入帳期間，設計可驗證的銷量及投放調整假設。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(6) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>此比率不提供媒體歸因或因果效果；廣告費增加不等於可直接節省的金額。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">所選通路合計</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看退款金額比上升排序金額來源，對獲利的影響 -264,522.72\">-264,522.72</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 退款金額比 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 退款金額比 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 已入帳退款 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 已入帳退款 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 折扣前商品收入 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 折扣前商品收入 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .fact-list > li:nth-child(7) > span"
+              ],
+              "html": "<span>前期 · 商品折扣 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > .fact-list > li:nth-child(8) > span"
+              ],
+              "html": "<span>本期 · 商品折扣 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > p:nth-child(9)"
+              ],
+              "html": "<p>核對退款入帳日期及其來源期間，補充可追溯的退款原因。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(7) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看折扣率上升排序金額來源，對獲利的影響 -228,409.30\">-228,409.30</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 折扣率 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 折扣率 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 商品折扣 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 商品折扣 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 折扣前商品收入 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 折扣前商品收入 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：促銷條件或商品組合變化可能與折扣負擔上升有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > p:nth-child(9)"
+              ],
+              "html": "<p>比對兩期折扣金額與折扣前收入，核對促銷及商品組合。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(8) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>降低折扣是否改善貢獻仍須驗證銷量反應，不能視為保證收益。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看退款金額比上升排序金額來源，對獲利的影響 -218,957.27\">-218,957.27</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 退款金額比 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 退款金額比 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 已入帳退款 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 已入帳退款 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 折扣前商品收入 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 折扣前商品收入 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .fact-list > li:nth-child(7) > span"
+              ],
+              "html": "<span>前期 · 商品折扣 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > .fact-list > li:nth-child(8) > span"
+              ],
+              "html": "<span>本期 · 商品折扣 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > p:nth-child(9)"
+              ],
+              "html": "<p>核對退款入帳日期及其來源期間，補充可追溯的退款原因。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(9) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">所選通路合計</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看履約費用占淨營收比上升排序金額來源，對獲利的影響 -75,791.00\">-75,791.00</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 履約費用占淨營收比 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 履約費用占淨營收比 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 履約費用 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 履約費用 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 商品淨營收 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 商品淨營收 · 所選通路合計（DTC、MARKETPLACE）</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > p:nth-child(9)"
+              ],
+              "html": "<p>核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(10) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">本期已入帳貢獻：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看本期通路行銷後貢獻為負排序金額來源，對獲利的影響 -61,169.93\">-61,169.93</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > .fact-list > li > span"
+              ],
+              "html": "<span>本期 · 行銷後貢獻 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：通路當期收入可能不足以覆蓋已入帳商品成本及費用。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > p:nth-child(9)"
+              ],
+              "html": "<p>核對該通路收入、退款與費用完整性，再檢查商品毛利及費用明細。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(11) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>行銷後貢獻不是公司淨利，不含未輸入的固定費與所得稅。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看履約費用占淨營收比上升排序金額來源，對獲利的影響 -56,316.00\">-56,316.00</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 履約費用占淨營收比 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 履約費用占淨營收比 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 履約費用 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 履約費用 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 商品淨營收 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 商品淨營收 · MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > p:nth-child(9)"
+              ],
+              "html": "<p>核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(12) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看退款金額比上升排序金額來源，對獲利的影響 -45,565.45\">-45,565.45</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 退款金額比 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 退款金額比 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 已入帳退款 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 已入帳退款 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 折扣前商品收入 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 折扣前商品收入 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .fact-list > li:nth-child(7) > span"
+              ],
+              "html": "<span>前期 · 商品折扣 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > .fact-list > li:nth-child(8) > span"
+              ],
+              "html": "<span>本期 · 商品折扣 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：入帳時點或前期訂單退款可能與本期退款金額比上升有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > p:nth-child(9)"
+              ],
+              "html": "<p>核對退款入帳日期及其來源期間，補充可追溯的退款原因。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(13) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>退款按入帳日扣除，可能來自前期；此值不是訂單 cohort 的最終退款率或件數退貨率。</li>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .section-heading > .tag:nth-child(1)"
+              ],
+              "html": "<span class=\"tag\">DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .section-heading > .tag:nth-child(2)"
+              ],
+              "html": "<span class=\"tag\">規則診斷</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .note:nth-child(3)"
+              ],
+              "html": "<p class=\"note\">對獲利的影響（已觀察金額差）：TWD <button type=\"button\" class=\"number-link impact-loss\" data-testid=\"diagnostic-impact\" aria-label=\"查看履約費用占淨營收比上升排序金額來源，對獲利的影響 -19,475.00\">-19,475.00</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > h4:nth-child(4)"
+              ],
+              "html": "<h4>資料事實</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .fact-list > li:nth-child(1) > span"
+              ],
+              "html": "<span>前期 · 履約費用占淨營收比 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .fact-list > li:nth-child(2) > span"
+              ],
+              "html": "<span>本期 · 履約費用占淨營收比 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .fact-list > li:nth-child(3) > span"
+              ],
+              "html": "<span>前期 · 履約費用 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .fact-list > li:nth-child(4) > span"
+              ],
+              "html": "<span>本期 · 履約費用 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .fact-list > li:nth-child(5) > span"
+              ],
+              "html": "<span>前期 · 商品淨營收 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > .fact-list > li:nth-child(6) > span"
+              ],
+              "html": "<span>本期 · 商品淨營收 · DTC</span>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > h4:nth-child(6)"
+              ],
+              "html": "<h4>待驗證假說</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > p:nth-child(7)"
+              ],
+              "html": "<p>待驗證假說：物流條件、商品組合或收入變化可能與履約負擔有關。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > h4:nth-child(8)"
+              ],
+              "html": "<h4>建議</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > p:nth-child(9)"
+              ],
+              "html": "<p>核對履約費用入帳明細及兩期收入，確認是否存在服務或組合差異。</p>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > h4:nth-child(10)"
+              ],
+              "html": "<h4>資料限制</h4>"
+            },
+            {
+              "target": [
+                "article:nth-child(14) > ul:nth-child(11) > li"
+              ],
+              "html": "<li>只在兩期淨營收均為正時比較；比率變化不能直接轉成可節省金額。</li>"
+            },
+            {
+              "target": [
+                "span[data-testid=\"ai-mode\"]"
+              ],
+              "html": "<span class=\"tag \" data-testid=\"ai-mode\">規則診斷</span>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "actions-new-card",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">合成</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">合成</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>資料只用於功能驗證，不代表真實商業成果。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>行動摘要</strong></div>"
+            },
+            {
+              "target": [
+                ".eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">把證據、驗證方式與停止條件整理成可執行的工作稿。</p>"
+            },
+            {
+              "target": [
+                ".muted"
+              ],
+              "html": "<span class=\"muted\">營運示範｜12 週合成資料 · 資料截至 2026-08-24</span>"
+            },
+            {
+              "target": [
+                ".clear-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                "summary > .tag"
+              ],
+              "html": "<span class=\"tag\">自動保存已開啟</span>"
+            },
+            {
+              "target": [
+                ".section-heading > .tag"
+              ],
+              "html": "<span class=\"tag \">草稿／證據待確認</span>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "overview-marketplace-transition",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">合成</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">合成</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>資料只用於功能驗證，不代表真實商業成果。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>經營總覽</strong></div>"
+            },
+            {
+              "target": [
+                ".page-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">掌握營收、成本與行銷後貢獻的變化。</p>"
+            },
+            {
+              "target": [
+                ".muted"
+              ],
+              "html": "<span class=\"muted\">營運示範｜12 週合成資料 · 資料截至 2026-08-24</span>"
+            },
+            {
+              "target": [
+                ".clear-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                "summary > .tag"
+              ],
+              "html": "<span class=\"tag\">自動保存已開啟</span>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">主管會議工作稿</p>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">草稿</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"主管摘要通路寬表\"] > table > caption"
+              ],
+              "html": "<caption>目前範圍通路合計，TWD；未知不補零，通路廣告不分攤至 SKU。</caption>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(1)"
+              ],
+              "html": "<th scope=\"col\">通路</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(2)"
+              ],
+              "html": "<th scope=\"col\">前期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(3)"
+              ],
+              "html": "<th scope=\"col\">本期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(4)"
+              ],
+              "html": "<th scope=\"col\">營收差額</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(5)"
+              ],
+              "html": "<th scope=\"col\">前期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(6)"
+              ],
+              "html": "<th scope=\"col\">本期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(7)"
+              ],
+              "html": "<th scope=\"col\">貢獻差額</th>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > h3"
+              ],
+              "html": "<h3>商品淨營收</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">3,023,644.50</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">3,023,644.50</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > h3"
+              ],
+              "html": "<h3>商品毛利</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">1,301,489.50</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">1,301,489.50</button>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h3"
+              ],
+              "html": "<h3>行銷前貢獻</h3>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">885,043.88</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">885,043.88</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > h3"
+              ],
+              "html": "<h3>行銷後貢獻率</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">23.85%</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">23.85%</button>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">PERIOD COMPARISON</p>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">相同天數</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > caption"
+              ],
+              "html": "<caption>金額 TWD；日均 TWD／日，顯示至分。日均差使用未取分值計算後再取分。</caption>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(1)"
+              ],
+              "html": "<th>指標</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(2)"
+              ],
+              "html": "<th>前期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(3)"
+              ],
+              "html": "<th>本期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(4)"
+              ],
+              "html": "<th>前期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(5)"
+              ],
+              "html": "<th>本期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(6)"
+              ],
+              "html": "<th>日均差</th>"
+            },
+            {
+              "target": [
+                ".trend-panel > .section-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">TREND</p>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>商品淨營收</span>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot navy\"></i>行銷後貢獻</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"bridge-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CONTRIBUTION BRIDGE</p>"
+            },
+            {
+              "target": [
+                ".bridge-summary > div:nth-child(1) > small"
+              ],
+              "html": "<small>前期</small>"
+            },
+            {
+              "target": [
+                "div:nth-child(3) > small"
+              ],
+              "html": "<small>本期</small>"
+            },
+            {
+              "target": [
+                ".bridge-total"
+              ],
+              "html": "<div class=\"bridge-total\">總差異 <button class=\"number-link impact-loss\">-782,270.81</button></div>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CHANNEL MIX</p>"
+            },
+            {
+              "target": [
+                ".unit"
+              ],
+              "html": "<span class=\"unit\">TWD</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot pale\"></i>前期</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>本期</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div > span"
+              ],
+              "html": "<span>MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">-1.54%</button></small>"
+            },
+            {
+              "target": [
+                "small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">-1.54%</button>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "overview-meeting-differs",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".workspace-label"
+              ],
+              "html": "<div class=\"workspace-label\">我的工作區 <span class=\"tiny-tag\">匯入</span></div>"
+            },
+            {
+              "target": [
+                ".tiny-tag"
+              ],
+              "html": "<span class=\"tiny-tag\">匯入</span>"
+            },
+            {
+              "target": [
+                ".sidebar-note > p"
+              ],
+              "html": "<p>預設只留此分頁；主動保存才存本機，不上傳伺服器。</p>"
+            },
+            {
+              "target": [
+                ".sidebar-footer"
+              ],
+              "html": "<footer class=\"sidebar-footer\">新臺幣 · 臺北時間</footer>"
+            },
+            {
+              "target": [
+                ".breadcrumb"
+              ],
+              "html": "<div class=\"breadcrumb\">工作區 <span>/</span> <strong>經營總覽</strong></div>"
+            },
+            {
+              "target": [
+                ".page-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">營運檢討工作台</p>"
+            },
+            {
+              "target": [
+                ".subtitle"
+              ],
+              "html": "<p class=\"subtitle\">掌握營收、成本與行銷後貢獻的變化。</p>"
+            },
+            {
+              "target": [
+                ".muted"
+              ],
+              "html": "<span class=\"muted\">alternative-import-synthetic-v1 · 資料截至 2026-09-05</span>"
+            },
+            {
+              "target": [
+                ".clear-button"
+              ],
+              "html": "<button class=\"text-button clear-button\">清空工作區</button>"
+            },
+            {
+              "target": [
+                "summary > .tag"
+              ],
+              "html": "<span class=\"tag\">自動保存已開啟</span>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">主管會議工作稿</p>"
+            },
+            {
+              "target": [
+                ".manager-summary_summary__yfCnv > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">草稿</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"主管摘要通路寬表\"] > table > caption"
+              ],
+              "html": "<caption>目前範圍通路合計，TWD；未知不補零，通路廣告不分攤至 SKU。</caption>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(1)"
+              ],
+              "html": "<th scope=\"col\">通路</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(2)"
+              ],
+              "html": "<th scope=\"col\">前期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(3)"
+              ],
+              "html": "<th scope=\"col\">本期淨營收</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(4)"
+              ],
+              "html": "<th scope=\"col\">營收差額</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(5)"
+              ],
+              "html": "<th scope=\"col\">前期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(6)"
+              ],
+              "html": "<th scope=\"col\">本期貢獻</th>"
+            },
+            {
+              "target": [
+                "th[scope=\"col\"]:nth-child(7)"
+              ],
+              "html": "<th scope=\"col\">貢獻差額</th>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > h3"
+              ],
+              "html": "<h3>商品淨營收</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">464.00</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-net_revenue\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">464.00</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > h3"
+              ],
+              "html": "<h3>商品毛利</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">244.00</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-gross_profit\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">244.00</button>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > h3"
+              ],
+              "html": "<h3>行銷前貢獻</h3>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">200.00</button></p>"
+            },
+            {
+              "target": [
+                "article:nth-child(3) > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">200.00</button>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > h3"
+              ],
+              "html": "<h3>行銷後貢獻率</h3>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous"
+              ],
+              "html": "<p class=\"kpi-previous\">前期 <button class=\"number-link\">30.17%</button></p>"
+            },
+            {
+              "target": [
+                "article[data-testid=\"kpi-contribution_margin\"] > .kpi-previous > .number-link"
+              ],
+              "html": "<button class=\"number-link\">30.17%</button>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">PERIOD COMPARISON</p>"
+            },
+            {
+              "target": [
+                ".period-comparison > .section-heading > .tag"
+              ],
+              "html": "<span class=\"tag\">相同天數</span>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > caption"
+              ],
+              "html": "<caption>金額 TWD；日均 TWD／日，顯示至分。日均差使用未取分值計算後再取分。</caption>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(1)"
+              ],
+              "html": "<th>指標</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(2)"
+              ],
+              "html": "<th>前期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(3)"
+              ],
+              "html": "<th>本期合計</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(4)"
+              ],
+              "html": "<th>前期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(5)"
+              ],
+              "html": "<th>本期日均</th>"
+            },
+            {
+              "target": [
+                "div[aria-label=\"期間合計與日均值數據\"] > table > thead > tr > th:nth-child(6)"
+              ],
+              "html": "<th>日均差</th>"
+            },
+            {
+              "target": [
+                ".trend-panel > .section-heading > div:nth-child(1) > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">TREND</p>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>商品淨營收</span>"
+            },
+            {
+              "target": [
+                ".section-heading > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot navy\"></i>行銷後貢獻</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"bridge-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CONTRIBUTION BRIDGE</p>"
+            },
+            {
+              "target": [
+                ".bridge-summary > div:nth-child(1) > small"
+              ],
+              "html": "<small>前期</small>"
+            },
+            {
+              "target": [
+                "div:nth-child(3) > small"
+              ],
+              "html": "<small>本期</small>"
+            },
+            {
+              "target": [
+                ".bridge-total"
+              ],
+              "html": "<div class=\"bridge-total\">總差異 <button class=\"number-link impact-loss\">-130.00</button></div>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .section-heading > div > .eyebrow"
+              ],
+              "html": "<p class=\"eyebrow\">CHANNEL MIX</p>"
+            },
+            {
+              "target": [
+                ".unit"
+              ],
+              "html": "<span class=\"unit\">TWD</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(1)"
+              ],
+              "html": "<span><i class=\"legend-dot pale\"></i>前期</span>"
+            },
+            {
+              "target": [
+                "section[aria-labelledby=\"channel-title\"] > .chart-legend > span:nth-child(2)"
+              ],
+              "html": "<span><i class=\"legend-dot teal\"></i>本期</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(1) > span"
+              ],
+              "html": "<span>DTC</span>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(1) > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">10.00%</button></small>"
+            },
+            {
+              "target": [
+                "div:nth-child(1) > small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">10.00%</button>"
+            },
+            {
+              "target": [
+                ".channel-summaries > div:nth-child(2) > span"
+              ],
+              "html": "<span>MARKETPLACE</span>"
+            },
+            {
+              "target": [
+                "div:nth-child(2) > small"
+              ],
+              "html": "<small>貢獻率 <button class=\"number-link\">-15.00%</button></small>"
+            },
+            {
+              "target": [
+                "div:nth-child(2) > small > .number-link"
+              ],
+              "html": "<button class=\"number-link\">-15.00%</button>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

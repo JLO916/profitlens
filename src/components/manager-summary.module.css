@@ -42,3 +42,6 @@
   .printSurface footer { margin-top: 4mm; border-top: 1px solid #aaa; font-size: 8pt; }
   .printHeadlines { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
 }
+/* HF-02: a fixed meeting source that differs from the current view gets its own surface. */
+.summary.meetingDiffers { background: #fbf6ea; border-color: #e3cf9d; }
+.meetingNote { margin: 0 0 .75rem; padding: .6rem .8rem; border-left: 4px solid #b7791f; background: #fff7e0; color: #5c3d0a; font-weight: 600; }

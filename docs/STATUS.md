@@ -1,4 +1,11 @@
 # Status
+## 2026-10-03｜M0 現行站止血 v2.1（本機驗收完成，未部署）
+依 `docs/PRD_v3.md` 第 20.3 節 M0 任務卡，在分支 `m0/hotfix-v2.1` 完成 HF-01～HF-07；**尚未合併、推送或部署**，正式站仍是 A 批版本。完整回報見 [M0 完成回報](../verification/M0/M0_acceptance.md)，決策與偏離見 DECISIONS「M0 現行站止血」。
+- HF-01 試算通路改為頁內狀態，不再改動全站篩選。HF-02 會議稿固定在舊資料時，摘要標題改為「會議資料（M/D 版，與目前資料不同）」，並換成獨立底色。HF-03 三件事、診斷卡與拆解統一以「對獲利的影響」呈現，同號同色。HF-04 前後期跨越 0 時，以「由賺 X 轉為虧 Y」取代百分比。HF-05 經同意才自動保存到本機，頂部顯示「已保存 hh:mm」，重新整理後自動恢復。HF-06 有資料時，「載入示範資料」收進「更多」。HF-07 行動版對話框置中並加遮罩、匯入後捲回頁首、下拉高度與其他欄位一致。
+- 驗收：typecheck、lint pass；`npm test -- --run` 41 files／829 tests pass；production build pass；完整 E2E 439 passed／17 skipped（預期內）／0 failed／0 flaky（本機 3110 埠，含 2 項不提交的 axe；提交版 437 passed／15 skipped）。錨點重產逐位元組一致；`src/domain`、golden、fixtures、相依套件未變。
+- 已知問題（範圍外，未修）：axe 只剩 v2 既有灰字的 serious `color-contrast`，M0 新增元素為 0，建議併入 M1.3 或 M2.8。DoD 第 6 條禁用詞掃描留待 M1.3。`npm test` 不加 `--run` 會停在監看模式。本機 `~/Documents` 同步曾產生 `.next/static/chunks 2` 而導致 build 失敗，刪除 `.next` 後即恢復。
+- not_run：Safari、Firefox、實體裝置、正式站驗證、push／deploy。
+---
 
 ## 2026-10-02｜A 批 GitHub／Vercel 發布（完成）
 

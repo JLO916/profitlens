@@ -29,6 +29,14 @@ export function ReviewWorkbench({ source, scenarioWorkspace, review, onChange, a
   const context = buildReviewDecisionContext(review, scenarioWorkspace, actionWorkspace);
   const actions = actionDocuments(actionWorkspace);
   const viewDiffers = source.snapshot.dataset_hash !== review.dataset_hash || source.snapshot.filter_hash !== review.filter_hash;
+  // HF-02: never show the fixed meeting source under the plain "本期經營摘要" title when it differs from the view.
+  const dataDiffers = source.snapshot.dataset_hash !== review.dataset_hash;
+  const meetingVersion = viewDiffers ? {
+    heading: dataDiffers ? `會議資料（${shortDate(review.data_as_of)} 版，與目前資料不同）` : '會議資料（固定範圍，與目前檢視不同）',
+    detail: dataDiffers
+      ? `這份摘要是會議固定的舊資料（資料截至 ${review.data_as_of}），不是下方 KPI 的目前資料（資料截至 ${source.snapshot.data_as_of}）。要改用目前資料，請按「以目前資料與範圍更新會議來源」。`
+      : `這份摘要是會議固定範圍（${review.meeting_filters.channels.join('、')}，本期 ${review.meeting_filters.current_period.start}～${review.meeting_filters.current_period.end}），下方 KPI 是目前檢視（${source.snapshot.report.scope.channels.join('、')}，本期 ${source.snapshot.report.current.period.start}～${source.snapshot.report.current.period.end}）。`,
+  } : undefined;
   const options = scenarioWorkspace.contexts.filter(row => row.status === 'current' && row.epoch === review.epoch && row.session.dataset_hash === review.dataset_hash && decisionSignature({ previous: row.session.scope.previous_period, current: row.session.scope.current_period, mode: row.session.scope.comparison_mode }) === decisionSignature({ previous: review.meeting_filters.previous_period, current: review.meeting_filters.current_period, mode: review.meeting_filters.comparison_mode }));
   const refresh = () => {
     if (onRefreshSource) { onRefreshSource(); return; }
@@ -58,12 +66,17 @@ export function ReviewWorkbench({ source, scenarioWorkspace, review, onChange, a
       })}
       {context.scenarios.some(plan => plan.status === 'stale') && <details><summary>保留的舊方案版本（不作本期決策）</summary><ul>{context.scenarios.filter(plan => plan.status === 'stale').map(plan => <li key={plan.id}>{plan.name} · {plan.scopeLabel} · 原條件貢獻 {formatMoney(plan.contribution ?? null)}<ul>{plan.assumptions.map(text => <li key={text}>{text}</li>)}</ul></li>)}</ul></details>}
     </section>
-    <FixedReviewSummary review={review} context={context} onEvidence={onEvidence} onCreateAction={onCreateAction} onThresholdChange={value => apply({ importance_threshold: value })} />
+    <FixedReviewSummary review={review} context={context} meetingVersion={meetingVersion} onEvidence={onEvidence} onCreateAction={onCreateAction} onThresholdChange={value => apply({ importance_threshold: value })} />
   </section>;
 }
 
-function FixedReviewSummary({ review, context, onEvidence, onCreateAction, onThresholdChange }: {
-  review: ReviewSession; context: ReturnType<typeof buildReviewDecisionContext>;
+function shortDate(value: string): string {
+  const match = /^\d{4}-(\d{2})-(\d{2})$/.exec(value);
+  return match ? `${Number(match[1])}/${Number(match[2])}` : value;
+}
+
+function FixedReviewSummary({ review, context, meetingVersion, onEvidence, onCreateAction, onThresholdChange }: {
+  review: ReviewSession; context: ReturnType<typeof buildReviewDecisionContext>; meetingVersion?: { heading: string; detail: string };
   onEvidence: ReviewWorkbenchProps['onEvidence']; onCreateAction?: ReviewWorkbenchProps['onCreateAction']; onThresholdChange: (value: string) => void;
 }) {
   const [loaded, setLoaded] = useState<{ hash: string; snapshot: WorkspaceSnapshot } | null>(null);
@@ -83,5 +96,5 @@ function FixedReviewSummary({ review, context, onEvidence, onCreateAction, onThr
   }, [source_input, meeting_filters, dataset_hash, filter_hash, data_as_of, metric_version, key]);
   if (error) return <p role="alert">{error}</p>;
   if (!loaded || loaded.hash !== key) return <p role="status">正在重建會議固定來源…</p>;
-  return <ManagerSummary key={`${review.id}-${key}`} snapshot={loaded.snapshot} decisionContext={context} selectionManaged reviewControls={{ importanceThreshold: review.importance_threshold, onThresholdChange }} onEvidence={selection => onEvidence(selection, review)} onCreateAction={onCreateAction ? diagnostic => onCreateAction(diagnostic, review) : undefined} />;
+  return <ManagerSummary key={`${review.id}-${key}`} snapshot={loaded.snapshot} decisionContext={context} meetingVersion={meetingVersion} selectionManaged reviewControls={{ importanceThreshold: review.importance_threshold, onThresholdChange }} onEvidence={selection => onEvidence(selection, review)} onCreateAction={onCreateAction ? diagnostic => onCreateAction(diagnostic, review) : undefined} />;
 }
