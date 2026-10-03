@@ -1638,6 +1638,7 @@ export const scenarioPresets = {
     equivalentUnitsApprox: "＝ 目標約 {value}",
     equivalentDiscountRate: "＝ 新折扣率 {value}%",
     equivalentBudget: "＝ 新預算 {value}",
+    nonIntegerUnits: "目前的相對值換算是 {units}（有小數）；改填整數件數才會更新這一格。",
   },
   range: {
     invalidNumber: "請填數字，不含 %、千分位或科學記號。",
@@ -1657,6 +1658,8 @@ export const scenarioForm = {
   version: "版本 {n}",
   modeGroup: "{field}的輸入方式",
   presetApplied: "已套用「{name}」：{purpose}",
+  presetSelect: "範本",
+  presetOverwrite: "會覆寫目前的假設",
   discountAbsoluteHint: "本期 {rate} → 新折扣率（%）",
   otherChannels: "其他通路的方案",
   otherChannelsEmpty: "這個通路還沒有方案。",

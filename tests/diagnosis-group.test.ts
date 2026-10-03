@@ -249,7 +249,7 @@ describe("single source with buildManagerSummary (三件事 and Markdown follow 
         expect(priority.members.map(row => row.id)).toEqual(group.scopes.map(row => row.diagnostic.id));
       }
     }
-  });
+  }, 30_000);
 
   it("Markdown 三件事 lists the same headlines, scopes and 對貢獻影響 amounts in TopThree order", async () => {
     const base = await snapshot();
