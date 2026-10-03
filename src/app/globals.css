@@ -731,3 +731,18 @@ details.assumptions-panel[open] > summary { margin-bottom: 4px; }
 
 /* R5-E 殼層整合（dashboard.tsx） */
 
+
+/* R6-A 會議紀錄分頁（meeting-page.tsx） */
+
+
+
+/* R6-B 列印／PDF（manager-summary.module.css 之外的全站列印規則） */
+
+
+
+/* R6-C 預設保存提示（workspace-storage.tsx） */
+
+
+
+/* R6-D 下載選單與匯出（dashboard.tsx） */
+

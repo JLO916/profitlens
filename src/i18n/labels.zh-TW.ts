@@ -1714,5 +1714,30 @@ export const productHighlights = {
 
 
 
-export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights };
+/** R6-A 會議紀錄物件與上次會議比較（meeting.ts：比較說明、Markdown 標題）。 */
+export const meetingRecord = {} as const;
+
+
+
+/** R6-B 會議紀錄分頁（meeting-page.tsx：議程、決議、結束會議、上次會議比較、輸出列）。 */
+export const meetingPage = {} as const;
+
+
+
+/** R6-C Excel 匯出（excel-export.ts：工作表名、欄名、口徑表）。 */
+export const excelExport = {} as const;
+
+
+
+/** R6-D PPT 一頁式（pptx-export.ts：標題、區塊名）。 */
+export const pptxExport = {} as const;
+
+
+
+/** R6-E 預設保存（workspace-storage.tsx／auto-save.ts：首次同意對話框、自動保存狀態）。 */
+export const autoSave = {} as const;
+
+
+
+export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave };
 export type Labels = typeof labels;
