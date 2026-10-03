@@ -1,6 +1,6 @@
 import type { Dataset, DatasetInput } from '../domain/types';
 import { calculateScenario, type ScenarioInputs, type ScenarioResult } from '../domain/scenarios';
-import { blankScenarioInputs, createDecisionSession, decisionSignature, isDecisionStale, validateScenarioName, type ColumnMappings, type DecisionSession, type DecisionWorkspaceState, type ScenarioPlan } from './decision';
+import { blankScenarioInputs, createDecisionSession, decisionSignature, isDecisionStale, validateScenarioName, validateSensitivityInputs, type ColumnMappings, type DecisionSession, type DecisionWorkspaceState, type ScenarioPlan } from './decision';
 import type { FilenameMap } from './export';
 import type { WorkspaceSnapshot } from './workspace';
 
@@ -36,7 +36,12 @@ export function ensureScenarioContext(workspace: ScenarioWorkspace, source: Scen
 export function scenarioContextDecision(context: ScenarioContext): DecisionWorkspaceState {
   return { captured: structuredClone(context.session), scenarios: structuredClone(context.plans), actions: [], source_input: structuredClone(context.source_input), source_mappings: structuredClone(context.source_mappings) };
 }
-/** Adapter for the existing single-channel editor. Incoming monetary results are always recomputed. */
+/** Adapter for the existing single-channel editor. Incoming monetary results are always recomputed.
+ * R5 版本號規則（02 §6、05 §8）：版本號只在「計算成功」時前進。新方案從下一個未用過的版本開始（一般是 1）；
+ * 編輯（result 為 null）與未通過檢核的計算都不改版本號、不新增版本。計算成功時，若最新版本的假設與名稱都相同就沿用
+ * 該版本；否則目前版本號已有紀錄 → 開新版本（最大版本 + 1），尚無紀錄 → 記在目前版本號。敏感度三組輸入只跟著方案保存，
+ * 不影響版本號與 versions。
+ */
 export function updateScenarioContext(workspace: ScenarioWorkspace, id: string, decision: DecisionWorkspaceState): ScenarioWorkspace {
   const context = workspace.contexts.find(row => row.id === id);
   if (!context) throw new Error('UNKNOWN_SCENARIO_CONTEXT');
@@ -48,12 +53,21 @@ export function updateScenarioContext(workspace: ScenarioWorkspace, id: string, 
   const plans = decision.scenarios.map(plan => {
     if (!plan.id.trim()) throw new Error('INVALID_ITEM_ID');
     validateScenarioName(plan.name, plan.result !== null);
+    if (plan.sensitivity !== undefined) validateSensitivityInputs(plan.sensitivity);
     const old = context.plans.find(row => row.id === plan.id);
-    const changed = old && (!equal(old.inputs, plan.inputs) || old.name !== plan.name);
-    const revision = old ? old.revision + Number(changed) : Math.max(0, ...versions.filter(v => v.plan_id === plan.id).map(v => v.revision)) + 1;
+    const own = versions.filter(v => v.plan_id === plan.id);
+    const latest = own.reduce<ScenarioPlanVersion | undefined>((best, v) => !best || v.revision > best.revision ? v : best, undefined);
+    const maxRevision = latest?.revision ?? 0;
+    let revision = old ? old.revision : maxRevision + 1;
     const result = plan.result === null ? null : calculateScenario(context.session.baseline, plan.inputs);
-    if (result?.status === 'valid' && !versions.some(v => v.plan_id === plan.id && v.revision === revision)) versions.push({ plan_id: plan.id, revision, name: plan.name, inputs: structuredClone(plan.inputs), result: structuredClone(result) });
-    return { id: plan.id, name: plan.name, revision, inputs: structuredClone(plan.inputs), result };
+    if (result?.status === 'valid') {
+      if (latest && equal(latest.inputs, plan.inputs) && latest.name === plan.name) revision = latest.revision;
+      else {
+        if (own.some(v => v.revision === revision)) revision = maxRevision + 1;
+        versions.push({ plan_id: plan.id, revision, name: plan.name, inputs: structuredClone(plan.inputs), result: structuredClone(result) });
+      }
+    }
+    return { id: plan.id, name: plan.name, revision, inputs: structuredClone(plan.inputs), result, ...(plan.sensitivity !== undefined ? { sensitivity: structuredClone(plan.sensitivity) } : {}) };
   });
   return { ...workspace, contexts: workspace.contexts.map(row => row.id === id ? { ...row, plans, versions } : row) };
 }
@@ -70,6 +84,7 @@ export function copyHistoricalScenario(workspace: ScenarioWorkspace, source: Sce
   const id = scenarioContextId(next.active_epoch, createDecisionSession(source.dataset, source.snapshot, source.revision, source.filenames));
   const target = next.contexts.find(context => context.id === id)!;
   const decision = scenarioContextDecision(target);
+  // 只沿用名稱：假設、結果與敏感度三組輸入都清空（不帶 sensitivity）。
   decision.scenarios.push({ id: newId, name: original.name, inputs: blankScenarioInputs(), result: null });
   return updateScenarioContext(next, id, decision);
 }
@@ -92,6 +107,7 @@ export function validateScenarioWorkspace(workspace: ScenarioWorkspace): void {
     for (const plan of context.plans) {
       if (!validRevision(plan.revision) || !plan.id.trim()) throw new Error('INVALID_SCENARIO_REVISION');
       validateScenarioName(plan.name, plan.result !== null);
+      if (plan.sensitivity !== undefined) validateSensitivityInputs(plan.sensitivity);
       if (plan.result && !equal(plan.result, calculateScenario(context.session.baseline, plan.inputs))) throw new Error('SCENARIO_RESULT_MISMATCH');
       if (plan.result?.status === 'valid' && !context.versions.some(v => v.plan_id === plan.id && v.revision === plan.revision && equal(v.inputs, plan.inputs) && v.name === plan.name)) throw new Error('SCENARIO_VERSION_MISSING');
     }

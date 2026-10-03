@@ -1,8 +1,9 @@
 import { channelsLabel, csvHeader, demoAlias, scopeLabel } from "./copy";
-import { SCENARIO_ASSUMPTIONS, SCENARIO_FORMULAS, calculateScenario } from "../domain/scenarios";
+import { SCENARIO_ASSUMPTIONS, SCENARIO_FORMULAS, calculateScenario, type ScenarioReason } from "../domain/scenarios";
+import { analyzeScenarioSensitivity, type ScenarioSensitivityAnalysis } from "../domain/scenario-sensitivity";
 import type { MetricName, Period } from "../domain/types";
 import { fill, labels } from "../i18n";
-import { MAX_ACTIONS, MAX_SCENARIOS, decisionSignature, validateActionContent, validateActionEvidence, validateScenarioName, type ActionCard, type DecisionSession, type ScenarioPlan } from "./decision";
+import { MAX_ACTIONS, MAX_SCENARIOS, decisionSignature, hasSensitivityInputs, validateActionContent, validateActionEvidence, validateScenarioName, validateSensitivityInputs, type ActionCard, type DecisionSession, type ScenarioPlan, type SensitivityInputs } from "./decision";
 import { encodeCsv, type CsvCell } from "./export";
 import { actionDocuments, type ActionWorkspace } from "./action-workspace";
 
@@ -18,6 +19,42 @@ function validateCollection(items: readonly { id: string }[], max: number, error
   if (items.some(item => typeof item.id !== "string" || !item.id.trim()) || new Set(items.map(item => item.id)).size !== items.length) throw new Error("INVALID_ITEM_ID");
 }
 
+/** R5-4 敏感度匯出：三組原字串＋以本方案與原基準重算的門檻與三列結果；草稿方案（result 為 null）不分析。 */
+export interface SensitivityExport {
+  volumes: SensitivityInputs["volumes"];
+  analysis: null | {
+    version: ScenarioSensitivityAnalysis["version"];
+    status: ScenarioSensitivityAnalysis["status"];
+    sensitivity_status: ScenarioSensitivityAnalysis["sensitivity"]["status"];
+    reasons: ScenarioReason[];
+    targets: { id: string; target: string; status: string; threshold_pct: string | null; meets_target_when: string }[];
+    rows: { volume_change_pct: string; contribution: string; delta: string }[];
+  };
+}
+/** 沒填（undefined 或三格皆空白）→ null；stale 快照交給 domain 標示 stale，不產生新門檻。 */
+function sensitivityDocument(session: DecisionSession, plan: ScenarioPlan): SensitivityExport | null {
+  if (plan.sensitivity !== undefined) validateSensitivityInputs(plan.sensitivity);
+  if (!hasSensitivityInputs(plan.sensitivity)) return null;
+  const volumes: SensitivityInputs["volumes"] = [...plan.sensitivity.volumes];
+  if (plan.result === null) return { volumes, analysis: null };
+  const analysis = analyzeScenarioSensitivity(session.baseline, plan.inputs, volumes, { stale: session.stale });
+  return {
+    volumes,
+    analysis: {
+      version: analysis.version, status: analysis.status, sensitivity_status: analysis.sensitivity.status,
+      reasons: [...analysis.reasons, ...analysis.sensitivity.reasons],
+      targets: analysis.targets.map(target => ({ id: target.id, target: target.target, status: target.status, threshold_pct: target.threshold_pct, meets_target_when: target.meets_target_when })),
+      rows: analysis.sensitivity.rows.map(row => ({ volume_change_pct: row.volume_change_pct, contribution: row.result.contribution, delta: row.result.delta })),
+    },
+  };
+}
+/** 單一狀態字：draft（方案未計算）→ 方案層狀態（stale／ineligible／invalid）→ 三組輸入狀態（valid／invalid／unfilled）。 */
+function sensitivityStatus(sensitivity: SensitivityExport): string {
+  if (sensitivity.analysis === null) return "draft";
+  return sensitivity.analysis.status !== "valid" ? sensitivity.analysis.status : sensitivity.analysis.sensitivity_status;
+}
+const SENSITIVITY_FIELDS = ["volume_a", "volume_b", "volume_c"] as const;
+
 type BoundExportAction = ReturnType<typeof actionDocuments>[number];
 type ExportAction = ActionCard & Pick<BoundExportAction, "priority" | "status" | "evidence"> & Partial<BoundExportAction>;
 
@@ -31,7 +68,7 @@ function decisionDocument(session: DecisionSession, scenarios: readonly Scenario
     if (plan.result !== null) {
       if (decisionSignature(plan.inputs) !== decisionSignature(plan.result.inputs) || decisionSignature(plan.result) !== decisionSignature(calculateScenario(session.baseline, plan.inputs))) throw new Error("INVALID_SCENARIO_RESULT");
     }
-    return { id: plan.id, name: plan.name, status: plan.result?.status ?? "draft", inputs: plan.inputs, result: plan.result };
+    return { id: plan.id, name: plan.name, status: plan.result?.status ?? "draft", inputs: plan.inputs, result: plan.result, sensitivity: sensitivityDocument(session, plan) };
   });
   const cards: ExportAction[] = actionWorkspace === undefined ? actions.map((action, index) => {
     if (typeof action.evidence_confirmed !== "boolean") throw new Error("INVALID_ACTION_CONFIRMATION");
@@ -91,6 +128,25 @@ function mdFields(values: Record<string, unknown>, labelled = true): string[] {
 function mdTechnical(lines: readonly string[], summary: string = labels.sections.technicalDetails): string[] {
   return ["<details>", `<summary>${summary}</summary>`, "", ...lines, "", "</details>"];
 }
+const sensitivityCopy = labels.ui.scenarioSensitivity;
+/** 與試算頁同一套白話原因；沒有對應的沿用 domain 訊息（例如「假設 n：…」）。 */
+function sensitivityReasonText(reason: { code: string; message: string }): string {
+  const mapped: Record<string, string> = { STALE_SCENARIO: sensitivityCopy.reasons.STALE_SCENARIO, SENSITIVITY_VOLUME_REQUIRED: sensitivityCopy.reasons.SENSITIVITY_VOLUME_REQUIRED, THREE_VOLUME_VALUES_REQUIRED: sensitivityCopy.reasons.SENSITIVITY_VOLUME_REQUIRED };
+  return mapped[reason.code] ?? reason.message;
+}
+/** 每個方案下的小表：假設／銷量變化 %／試算後貢獻／與現況相比；未算出的格子寫「資料待補／不適用」並附原因一句。 */
+function mdSensitivity(sensitivity: SensitivityExport): string[] {
+  const row = (cells: readonly string[]) => `| ${cells.join(" | ")} |`;
+  const lines = [`#### ${md(labels.sections.scenarioBreakeven)}`, "",
+    row([sensitivityCopy.colAssumption, `${labels.scenario.volume.label}（%）`, labels.scenario.resultTitle, labels.scenario.vsBaseline].map(md)), row(["---", "---", "---", "---"])];
+  sensitivity.volumes.forEach((volume, index) => {
+    const result = sensitivity.analysis?.rows[index];
+    lines.push(row([md(fill(sensitivityCopy.rowLabel, { letter: String.fromCharCode(65 + index) })), md(volume.trim() === "" ? copy.nullValue : volume), md(result?.contribution ?? copy.nullValue), md(result?.delta ?? copy.nullValue)]));
+  });
+  if (sensitivity.analysis === null) lines.push("", md(labels.scenario.draft));
+  else if (sensitivityStatus(sensitivity) !== "valid") lines.push("", md([...new Set(sensitivity.analysis.reasons.map(sensitivityReasonText))].join(" ")));
+  return lines;
+}
 export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = []): string {
   const document = decisionDocument(session, scenarios, actions, actionWorkspace, extraLimitations);
   const alias = demoAlias(session.dataset_id);
@@ -112,6 +168,7 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
       if (plan.result.amounts) lines.push(...mdFields(plan.result.amounts), "", ...mdFields(plan.result.rates), "");
       lines.push(...mdTechnical([...mdFields({ reasons: plan.result.reasons, rounding_adjustment: plan.result.rounding_adjustment }, false), "", ...plan.result.assumptions.map(assumption => `- ${md(assumption)}`), "", ...mdFields(plan.result.formulas, false)]), "");
     }
+    if (plan.sensitivity) lines.push(...mdSensitivity(plan.sensitivity), "");
   }
   lines.push(`## ${labels.sections.actionList}`, "");
   if (actionWorkspace !== undefined) lines.push(copy.actionsNote, "");
@@ -168,6 +225,16 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
       if (result.rates) for (const [key, value] of Object.entries(result.rates)) push("scenario_rate", key, numeric(value), planMeta);
       result.assumptions.forEach((value, index) => push("scenario_assumption", String(index + 1), text(value), planMeta));
       for (const [key, value] of Object.entries(result.formulas)) push("scenario_formula", key, text(value), planMeta);
+    }
+    // R5-4：只在有填敏感度時輸出；輸入是使用者原字串，結果是該組銷量下的試算後貢獻，reason_codes 第一個是狀態。
+    if (plan.sensitivity) {
+      const sensitivity = plan.sensitivity;
+      const codes = text([sensitivityStatus(sensitivity), ...new Set((sensitivity.analysis?.reasons ?? []).map(reason => reason.code))]);
+      SENSITIVITY_FIELDS.forEach((field, index) => push("scenario_sensitivity_input", field, text(sensitivity.volumes[index]), planMeta));
+      SENSITIVITY_FIELDS.forEach((field, index) => {
+        const row = sensitivity.analysis?.rows[index];
+        push("scenario_sensitivity_result", field, row ? numeric(row.contribution) : empty, { ...planMeta, reason_codes: codes });
+      });
     }
   }
   for (const action of document.actions) {

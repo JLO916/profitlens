@@ -1608,8 +1608,44 @@ export const diagnosisList = {
 
 
 
-/** R5-B 情境範本與絕對值輸入（scenario-presets.ts）。 */
-export const scenarioPresets = {} as const;
+/** R5-B 情境範本與絕對值輸入（scenario-presets.ts）。
+ * 選單標題用 labels.buttons.applyTemplate；「只是起點」提示用 labels.scenario.templateNote；
+ * 絕對值欄位提示用 labels.scenario.{volume,discount,adSpend}.absoluteHint；切換鈕用 labels.scenario.modeRelative／modeAbsolute。 */
+export const scenarioPresets = {
+  menuPlaceholder: "選一個範本…",
+  items: {
+    keep: { name: "維持現況", purpose: "五格都是 0，結果應等於現況；適合從這裡一格一格改。" },
+    double11: { name: "雙 11 檔期", purpose: "檔期衝量：銷量 +60%、多給 5 個百分點折扣、廣告預算加倍，看衝完還剩多少。" },
+    cut_ads_half: { name: "砍廣告一半", purpose: "廣告預算減半，先假設銷量少 20%，看省下的廣告費補不補得回來。" },
+    cancel_free_shipping: { name: "取消免運（物流費自付）", purpose: "改由買家付運費：每件物流費少 40%，先假設銷量少 10%。" },
+    price_up_5: { name: "漲價 5%（以降折扣模擬）", purpose: "試算的牌價固定，用少給 5 個百分點折扣代替漲價，先假設銷量少 5%。" },
+    kol: { name: "KOL 合作", purpose: "付一筆 50,000 元的合作費（一次性），先假設銷量多 15%。" },
+  },
+  absolute: {
+    unavailable: {
+      volume_change_pct: "本期售出件數缺漏或為 0，請改用相對 %。",
+      discount_change_pp: "本期折扣率算不出來，請改用相對點數。",
+      ad_change_pct: "本期廣告費為 0 或缺漏，請改用相對 %。",
+    },
+    errors: {
+      volume_change_pct: "目標件數請填 0 以上的整數，不含千分位。",
+      discount_change_pp: "新折扣率請填 0 以上、未滿 100 的數字（單位 %），不含 % 符號。",
+      ad_change_pct: "新預算請填 0 以上的金額，最多兩位小數，不含千分位。",
+    },
+    equivalentPct: "＝ 相對 {value}%",
+    equivalentPoints: "＝ 相對 {value} 點",
+    equivalentUnits: "＝ 目標 {value}",
+    equivalentUnitsApprox: "＝ 目標約 {value}",
+    equivalentDiscountRate: "＝ 新折扣率 {value}%",
+    equivalentBudget: "＝ 新預算 {value}",
+  },
+  range: {
+    invalidNumber: "請填數字，不含 %、千分位或科學記號。",
+    pct: "這格要介於 {min}% 與 {max}%（含）；超出就無法試算。",
+    discount: "調整後折扣率會是 {rate}%，要在 0%（含）到 100%（不含）之間。",
+    oneOff: "一次性費用要填 0 以上的金額，最多兩位小數。",
+  },
+} as const;
 
 
 

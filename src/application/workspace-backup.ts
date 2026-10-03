@@ -65,7 +65,9 @@ const input = z.strictObject({
   confirmedUnknownColumns: z.partialRecord(z.enum(csvFiles), z.array(name).max(1000)).optional(),
 });
 const scenarioInputs = z.strictObject({ volume_change_pct: z.string().max(100), discount_change_pp: z.string().max(100), fulfillment_change_pct: z.string().max(100), ad_change_pct: z.string().max(100), one_time_cost: z.string().max(100), assumptions_accepted: z.boolean() });
-const scenario = z.strictObject({ id: name, name: z.string().max(100), inputs: scenarioInputs, calculated: z.boolean() });
+// R5-4 加法：敏感度三組原字串（選填）；舊備份沒有 → 讀回 undefined。versions 不存敏感度。
+const sensitivity = z.strictObject({ volumes: z.tuple([z.string().max(100), z.string().max(100), z.string().max(100)]) });
+const scenario = z.strictObject({ id: name, name: z.string().max(100), inputs: scenarioInputs, calculated: z.boolean(), sensitivity: sensitivity.optional() });
 const action = z.strictObject({ id: name, problem: z.string().max(2000), fact_ids: z.array(z.string().max(3000)).max(5000), action: z.string().max(2000), owner_role: z.string().max(2000), validation_metric: z.string().max(2000), deadline: z.string().max(2000), stop_condition: z.string().max(2000), required_data: z.string().max(2000), origin: z.literal("manual"), evidence_confirmed: z.boolean() });
 const savedDecision = z.strictObject({
   source_input: input, source_mappings: mappings.optional(), filters,
@@ -205,7 +207,7 @@ async function restoreDecision(saved: SavedDecision | null, activeSnapshot: Work
   uniqueIds(saved.scenarios); uniqueIds(saved.actions);
   const scenarios = saved.scenarios.map(plan => {
     validateScenarioName(plan.name, plan.calculated);
-    return { id: plan.id, name: plan.name, inputs: structuredClone(plan.inputs), result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null };
+    return { id: plan.id, name: plan.name, inputs: structuredClone(plan.inputs), result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null, ...(plan.sensitivity ? { sensitivity: structuredClone(plan.sensitivity) } : {}) };
   });
   for (const card of saved.actions) {
     validateActionContent(card, card.evidence_confirmed);
@@ -242,7 +244,7 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
     const captured = refreshDecisionSession(current, snapshot, source.revision);
     decision = {
       ...reference(captured, await register(source.decision.source_input), source.decision.source_mappings),
-      scenarios: source.decision.scenarios.map(plan => ({ id: plan.id, name: plan.name, inputs: plan.inputs, calculated: plan.result !== null })),
+      scenarios: source.decision.scenarios.map(plan => ({ id: plan.id, name: plan.name, inputs: plan.inputs, calculated: plan.result !== null, ...(plan.sensitivity ? { sensitivity: plan.sensitivity } : {}) })),
       actions: source.decision.actions,
     };
   } else if (source.decision.scenarios.length || source.decision.actions.length) throw new Error("WORKSPACE_DECISION_SOURCE_MISSING");
@@ -266,7 +268,7 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
     contexts: await Promise.all(scenarioState.contexts.map(async context => ({
       id: context.id, epoch: context.epoch, status: context.status, historical_reasons: context.historical_reasons,
       ...reference(context.session, await register(context.source_input), context.source_mappings),
-      plans: context.plans.map(plan => ({ id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, calculated: plan.result !== null })),
+      plans: context.plans.map(plan => ({ id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, calculated: plan.result !== null, ...(plan.sensitivity ? { sensitivity: plan.sensitivity } : {}) })),
       versions: context.versions.map(plan => ({ plan_id: plan.plan_id, revision: plan.revision, name: plan.name, inputs: plan.inputs, calculated: true })),
     }))),
   };
@@ -433,7 +435,7 @@ async function restoreV3(payload: z.infer<typeof v3Payload>): Promise<Omit<Resto
     const session = { ...createDecisionSession(own.dataset, own.snapshot, saved.revision, saved.filenames), stale: saved.stale, stale_reasons: saved.stale_reasons };
     const plans = saved.plans.map(plan => {
       validateScenarioName(plan.name, plan.calculated);
-      return { id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null };
+      return { id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, result: plan.calculated ? calculateScenario(session.baseline, plan.inputs) : null, ...(plan.sensitivity ? { sensitivity: structuredClone(plan.sensitivity) } : {}) };
     });
     const versions = saved.versions.map(plan => {
       validateScenarioName(plan.name);

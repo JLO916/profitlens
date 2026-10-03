@@ -30,7 +30,21 @@ export interface DecisionSession {
   stale: boolean;
   stale_reasons: string[];
 }
-export interface ScenarioPlan { id: string; name: string; inputs: ScenarioInputs; result: ScenarioResult | null }
+/** R5-4：敏感度三組銷量假設（使用者原字串，不預填、不補零）；只是方案的附帶輸入，不改方案版本號。 */
+export interface SensitivityInputs { volumes: [string, string, string] }
+export const blankSensitivity = (): SensitivityInputs => ({ volumes: ["", "", ""] });
+export const MAX_SENSITIVITY_INPUT_LENGTH = 100;
+/** 形狀檢查：剛好一個 volumes 欄位、三個 ≤ 100 字的字串；不檢查數值（數值交給 analyzeScenarioSensitivity）。 */
+export function validateSensitivityInputs(value: unknown): asserts value is SensitivityInputs {
+  if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).length !== 1 || !Object.hasOwn(value, "volumes")) throw new Error("INVALID_SENSITIVITY_INPUT");
+  const volumes = (value as { volumes: unknown }).volumes;
+  if (!Array.isArray(volumes) || volumes.length !== 3 || volumes.some(entry => typeof entry !== "string" || entry.length > MAX_SENSITIVITY_INPUT_LENGTH)) throw new Error("INVALID_SENSITIVITY_INPUT");
+}
+/** 至少一格有填（空白不算）才算「有敏感度」；匯出只輸出有填的方案。 */
+export function hasSensitivityInputs(value: SensitivityInputs | undefined): value is SensitivityInputs {
+  return value !== undefined && value.volumes.some(entry => entry.trim() !== "");
+}
+export interface ScenarioPlan { id: string; name: string; inputs: ScenarioInputs; result: ScenarioResult | null; sensitivity?: SensitivityInputs }
 export interface ActionCardInput {
   id: string; problem: string; fact_ids: string[]; action: string; owner_role: string;
   validation_metric: string; deadline: string; stop_condition: string; required_data: string;
@@ -167,6 +181,7 @@ export function reorderScenarios(plans: readonly ScenarioPlan[], ids: readonly s
 export function reorderActions(actions: readonly ActionCard[], ids: readonly string[]): ActionCard[] { return reorder(actions, ids); }
 export function reconfirmDecision(_oldSession: DecisionSession, plans: readonly ScenarioPlan[], actions: readonly ActionCard[], dataset: Dataset, snapshot: WorkspaceSnapshot, revision: number, filenames: FilenameMap = {}): DecisionDraft {
   void _oldSession; // Reconfirmation deliberately binds the new snapshot, never reuses old financial data.
+  // R5-4：方案只留 id 與名稱；假設、結果與敏感度三組輸入一律清空（sensitivity 不帶入 → undefined）。
   return {
     session: createDecisionSession(dataset, snapshot, revision, filenames),
     scenarios: plans.map(plan => ({ id: plan.id, name: plan.name, inputs: blankScenarioInputs(), result: null })),
