@@ -5,11 +5,13 @@ import { downloadText } from "@/application/download";
 import { exportWorkspaceBackup, restoreWorkspaceBackup, MAX_WORKSPACE_BYTES, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
 import { deleteLocalWorkspace, loadLocalWorkspace, saveLocalWorkspace } from "@/application/local-store";
 
-/** Persistence happens only after a deliberate user action, never during mount. */
-export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, onDeleted }: {
+/** Persistence happens only after a deliberate user action (manual save or HF-05 autosave consent), never during mount. */
+export function WorkspaceStorage({ source, version, dirty, autosave = false, onBeforeDelete, onRestore, onSaved, onDeleted }: {
   source: WorkspaceBackupSource | null;
   version: number;
   dirty: boolean;
+  autosave?: boolean;
+  onBeforeDelete?: () => void;
   onRestore: (workspace: RestoredWorkspace, accepted?: () => void) => void;
   onSaved: (version: number) => void;
   onDeleted: () => void;
@@ -74,6 +76,8 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   async function removeLocal() {
     ++ticket.current;
     setBusy(true); setError(""); setCandidate(null); setConsent(false);
+    // Stop autosave first so no in-flight write can recreate the database after deletion.
+    onBeforeDelete?.();
     try {
       await deleteLocalWorkspace(); onDeleted();
       setNotice("已刪除這個瀏覽器的本機副本並關閉保存。各分頁的目前資料與已下載檔案不會被刪除。");
@@ -82,7 +86,8 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   }
 
   return <details className="panel workspace-storage" data-testid="workspace-storage">
-    <summary>工作區保存與恢復 <span className="tag">{source ? dirty ? "有未保存變更" : "此版本已保存" : "尚無工作區"}</span></summary>
+    <summary>工作區保存與恢復 <span className="tag">{autosave ? "自動保存已開啟" : source ? dirty ? "有未保存變更" : "此版本已保存" : "尚無工作區"}</span></summary>
+    {autosave && <p className="note" data-testid="autosave-note">已開啟自動保存：每次變更都保存到這個瀏覽器，下次開啟自動恢復。自動保存只保留目前工作區；要保留特定版本，請下載完整工作區備份。按「刪除本機副本並關閉保存」會刪除本機資料並停止自動保存。</p>}
     <p>預設只留在此分頁記憶體。您可下載完整工作區備份，或主動保存到這個瀏覽器；均不上傳伺服器。本機副本與下載檔未由本工具加密；共享電腦請避免保存，使用後刪除本機副本。同一瀏覽器的使用者可手動恢復保存檔，不同分頁不會自動載入或同步。</p>
     <p className="note">備份包含分析所需資料、欄位對照、已套用範圍、各通路方案與修訂、行動引用歷史與執行狀態、會議設定及確認紀錄；恢復時重新驗證與計算。未套用的日期／匯入草稿、商品搜尋、AI 回應、API key 與傳送同意不保存。校驗碼可偵測損毀，不證明檔案出處；只開啟可信備份。</p>
     <div className="button-row">

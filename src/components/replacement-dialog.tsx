@@ -13,8 +13,8 @@ const descriptions: Record<ReplacementKind, string> = {
   restore: '用備份完整取代目前資料、方案、行動與會議工作稿。',
   clear: '清空目前分頁的資料、方案、行動與會議工作稿；本機副本及已下載檔案仍保留。',
 };
-export function ReplacementDialog({ intent, source, currentVersion, onSaved, onCancel, onProceed }: {
-  intent: PendingReplacement; source: WorkspaceBackupSource | null; currentVersion: () => number;
+export function ReplacementDialog({ intent, source, autosave = false, currentVersion, onSaved, onCancel, onProceed }: {
+  intent: PendingReplacement; source: WorkspaceBackupSource | null; autosave?: boolean; currentVersion: () => number;
   onSaved: (version: number) => void; onCancel: () => void; onProceed: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -59,7 +59,7 @@ export function ReplacementDialog({ intent, source, currentVersion, onSaved, onC
   return <dialog ref={ref} className="evidence-dialog clear-workspace-dialog" aria-labelledby="replacement-heading" onCancel={event => { event.preventDefault(); if (!busy) onCancel(); }}>
     <div className="evidence-body">
       <h2 id="replacement-heading">替換前先儲存工作區</h2>
-      <p>本次修改尚未儲存。{descriptions[intent.kind]}</p>
+      <p>{autosave ? '自動保存只保留目前工作區，替換後上一份內容會被覆蓋；本次內容尚未另存備份。' : '本次修改尚未儲存。'}{descriptions[intent.kind]}{autosave && intent.kind === 'clear' ? '自動保存的目前工作區也會一併清空；手動保存的本機副本不受影響。' : ''}</p>
       <p className="note">完整備份包含已套用資料及工作稿；未套用的匯入／日期草稿不包含在備份，取消可繼續編輯。</p>
       <div className="button-row">
         <button className="button primary" autoFocus disabled={!source || busy || state.stage === 'invalidated'} onClick={() => setSavingOptions(true)}>先儲存</button>

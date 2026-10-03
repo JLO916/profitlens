@@ -273,7 +273,9 @@ textarea { font: inherit; color: var(--ink); border: 1px solid #d8e2dc; border-r
 .decision-workbench td { font-variant-numeric: tabular-nums; }
 .decision-workbench th small { max-width: 350px; white-space: normal; margin-top: 5px; }
 .action-inputs { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 15px; margin-bottom: 20px; }
-.action-card select { min-height: 150px; margin-bottom: 18px; }
+/* HF-07: only the multi-select evidence list is tall; single selects match other fields. */
+.action-card select[multiple] { min-height: 150px; margin-bottom: 18px; }
+.action-card select:not([multiple]) { min-height: 36px; height: auto; margin-bottom: 18px; }
 .action-card textarea { border: 1px solid #d8e2dc; background: white; border-radius: 6px; padding: 9px; resize: vertical; }
 .action-evidence { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
 .action-evidence button { font-size: 12px; overflow-wrap: anywhere; text-align: left; }
@@ -372,3 +374,38 @@ textarea { font: inherit; color: var(--ink); border: 1px solid #d8e2dc; border-r
 .ai-readable-preview .table-wrap { overflow: auto; max-height: 420px; border: 1px solid var(--line); border-radius: 6px; }
 .ai-readable-preview table { min-width: 540px; }
 .ai-readable-preview thead { position: sticky; top: 0; z-index: 1; }
+
+/* ===== M0 hotfix (HF-01..HF-07) ===== */
+:root { --impact-loss: #b42318; --impact-gain: #17795e; }
+/* HF-03: one colour per profit impact, shared by three-things, diagnosis cards and the bridge. */
+.impact-loss, .number-link.impact-loss { color: var(--impact-loss); font-weight: 650; }
+.impact-gain, .number-link.impact-gain { color: var(--impact-gain); font-weight: 650; }
+.featured .sign-transition { background: #3b5c50; color: #fff; }
+.sign-transition { white-space: normal; }
+/* HF-05: save status in the top bar and the one-time local-save question. */
+.topbar-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.save-badge { font-size: 12px; padding: 3px 8px; border-radius: 999px; border: 1px solid #d8e2dc; background: #fff; color: #44605a; white-space: nowrap; }
+.save-badge.on { border-color: #b9dccd; background: #eef8f2; color: #1f6b52; }
+.autosave-prompt { border: 1px solid #b9dccd; background: #f2faf5; border-radius: 10px; padding: 16px 18px; margin: 12px 0 16px; }
+.autosave-prompt h2 { font-size: 16px; margin-bottom: 6px; }
+.autosave-prompt .button-row { justify-content: flex-start; margin: 12px 0 0; }
+.autosave-notice { margin: 8px 0; }
+/* HF-06: secondary actions live in a "更多" menu once data exists. */
+.more-menu { position: relative; }
+.more-menu > summary { list-style: none; cursor: pointer; }
+.more-menu > summary::-webkit-details-marker { display: none; }
+.more-menu > summary::after { content: "▾"; font-size: 11px; }
+.more-menu-items { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 240px; display: grid; gap: 6px; padding: 10px; background: #fff; border: 1px solid #d8e2dc; border-radius: 8px; box-shadow: 0 10px 30px #233f3d22; }
+.more-menu-items .note { font-size: 12px; line-height: 1.5; }
+/* HF-01: page-local scenario channel label. */
+.scenario-channel { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; margin: 10px 0; }
+/* HF-07: the replacement guard is a centred modal with a visible backdrop on every viewport. */
+.evidence-dialog.clear-workspace-dialog { margin: auto; inset: 0; width: min(560px, calc(100vw - 32px)); max-width: calc(100vw - 32px); height: fit-content; max-height: calc(100dvh - 48px); overflow: auto; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 24px 80px #102a2a40; }
+.evidence-dialog.clear-workspace-dialog::backdrop { background: #10262a99; backdrop-filter: blur(2px); }
+.clear-workspace-dialog .button-row { justify-content: flex-start; }
+@media (max-width: 640px) {
+  .topbar { height: auto; min-height: 42px; padding: 6px 16px; gap: 8px; flex-wrap: wrap; }
+  .evidence-dialog.clear-workspace-dialog { width: calc(100vw - 24px); max-width: calc(100vw - 24px); }
+  .clear-workspace-dialog .button-row .button { width: 100%; }
+  .more-menu-items { left: 0; right: auto; width: min(260px, calc(100vw - 40px)); }
+}

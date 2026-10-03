@@ -11,3 +11,9 @@ export async function startChannelContext(page: Page) {
   await Promise.race([start.waitFor({state:'visible'}), page.getByTestId('decision-workbench').waitFor({state:'visible'})]);
   if (await start.isVisible()) await start.click();
 }
+/** HF-06: once data exists, "載入示範資料" lives in the "更多" menu instead of the header. */
+export async function demoButton(page: Page): Promise<Locator> {
+  const menu = page.getByTestId('more-menu');
+  if (await menu.count() && await menu.isVisible() && await menu.getAttribute('open') === null) await menu.locator('summary').click();
+  return page.getByRole('button', { name: '載入示範資料', exact: true });
+}

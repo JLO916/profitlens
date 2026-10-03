@@ -3,6 +3,10 @@ import { restoreWorkspaceBackup, MAX_WORKSPACE_BYTES } from "./workspace-backup"
 const DATABASE_NAME = "profitlens-opt-in-workspace-v1";
 const STORE_NAME = "workspace";
 const RECORD_KEY = "explicitly-saved";
+/** HF-05: separate record so the consented autosave never overwrites a manual copy. */
+const AUTOSAVE_KEY = "autosave-current";
+
+export interface AutosaveRecord { schema_version: "profitlens-autosave-v1"; saved_at: string; text: string }
 
 function factory(): IDBFactory {
   if (typeof indexedDB === "undefined") throw new Error("LOCAL_STORAGE_UNAVAILABLE");
@@ -15,7 +19,11 @@ function openDatabase(): Promise<IDBDatabase> {
     request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME);
     request.onerror = () => reject(new Error("LOCAL_STORAGE_UNAVAILABLE"));
     request.onblocked = () => reject(new Error("LOCAL_STORAGE_BLOCKED"));
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      // Let an explicit delete proceed instead of being blocked by a short-lived write.
+      request.result.onversionchange = () => request.result.close();
+      resolve(request.result);
+    };
   });
 }
 function transact<T>(database: IDBDatabase, mode: IDBTransactionMode, operation: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
@@ -50,4 +58,30 @@ export function deleteLocalWorkspace(): Promise<void> {
     request.onblocked = () => reject(new Error("LOCAL_STORAGE_BLOCKED"));
     request.onsuccess = () => resolve();
   });
+}
+
+/**
+ * HF-05 autosave. Callers must only invoke these after the user granted the
+ * autosave consent; nothing here runs at import time or on mount by itself.
+ */
+export async function saveAutosaveWorkspace(text: string, savedAt: Date = new Date()): Promise<AutosaveRecord> {
+  if (new TextEncoder().encode(text).byteLength > MAX_WORKSPACE_BYTES) throw new Error("WORKSPACE_TOO_LARGE");
+  const record: AutosaveRecord = { schema_version: "profitlens-autosave-v1", saved_at: savedAt.toISOString(), text };
+  await transact(await openDatabase(), "readwrite", store => store.put(record, AUTOSAVE_KEY));
+  return record;
+}
+
+/** Returns inert bytes; the caller validates them with restoreWorkspaceBackup before use. */
+export async function loadAutosaveWorkspace(): Promise<AutosaveRecord | null> {
+  const value: unknown = await transact(await openDatabase(), "readonly", store => store.get(AUTOSAVE_KEY));
+  if (value === undefined) return null;
+  const record = value as Partial<AutosaveRecord> | null;
+  if (!record || record.schema_version !== "profitlens-autosave-v1" || typeof record.text !== "string" || typeof record.saved_at !== "string" || Number.isNaN(Date.parse(record.saved_at))) throw new Error("INVALID_WORKSPACE_FORMAT");
+  if (record.text.length > MAX_WORKSPACE_BYTES || new TextEncoder().encode(record.text).byteLength > MAX_WORKSPACE_BYTES) throw new Error("WORKSPACE_TOO_LARGE");
+  return { schema_version: record.schema_version, saved_at: record.saved_at, text: record.text };
+}
+
+/** Mirrors an emptied workspace: removes only the autosave record, keeping any manual copy. */
+export async function clearAutosaveWorkspace(): Promise<void> {
+  await transact(await openDatabase(), "readwrite", store => store.delete(AUTOSAVE_KEY));
 }

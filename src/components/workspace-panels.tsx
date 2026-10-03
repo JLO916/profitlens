@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Decimal from "decimal.js";
 import { evidenceRows, formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "@/application/presentation";
+import { COST_INCREASE_RULES, impactClass, profitImpactAmount } from "@/application/profit-impact";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { analyzeProducts } from "@/domain/analysis";
 import { COST_FIELDS, SALES_FIELDS, type Dataset, type Fact, type Metric, type MetricName, type ProductMetrics, type SourceRef } from "@/domain/types";
@@ -83,14 +84,16 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction }: { snapshot: 
     <div className="diagnostic-grid">{diagnostics.map(diagnostic => <article className="diagnostic-card" key={diagnostic.id}>
       <div className="section-heading"><span className="tag">{diagnostic.scope.kind === "all" ? "所選通路合計" : diagnostic.scope.channels.join("、")}</span><span className="tag">{diagnostic.code === "MISSING_CRITICAL_DATA" ? "優先補資料" : "規則診斷"}</span></div>
       <h3>{diagnostic.title}</h3>
-      {diagnostic.ranking_amount && <p className="note">{diagnostic.code === "NEGATIVE_CHANNEL_CM" ? "本期已入帳貢獻" : "排序用已觀察金額差"}：TWD <button type="button" className="number-link" onClick={() => {
+      {diagnostic.ranking_amount && <p className="note">{diagnostic.code === "NEGATIVE_CHANNEL_CM" ? "本期已入帳貢獻" : "對獲利的影響（已觀察金額差）"}：TWD <button type="button" className={`number-link ${impactClass(profitImpactAmount(diagnostic.code, diagnostic.ranking_amount)!.value)}`} data-testid="diagnostic-impact" onClick={() => {
         const names: Partial<Record<typeof diagnostic.code, MetricName>> = { REV_UP_CM_DOWN: "contribution_after_marketing", NEGATIVE_CHANNEL_CM: "contribution_after_marketing", DISCOUNT_BURDEN_UP: "discounts", REFUND_BURDEN_UP: "refunds", FULFILLMENT_BURDEN_UP: "fulfillment_costs", MARKETING_BURDEN_UP: "ad_spend" };
         const name = names[diagnostic.code];
         if (!name || !diagnostic.ranking_amount) return;
         const referenced = diagnostic.fact_ids.flatMap(id => { const fact = facts.get(id); return fact?.metric === name ? [fact] : []; });
         const currentOnly = diagnostic.code === "NEGATIVE_CHANNEL_CM";
-        onEvidence({ title: `${metricDefinitions[name].label}${currentOnly ? "" : "差額"}`, name, metric: diagnostic.ranking_amount, period: currentOnly ? snapshot.report.current.period : { start: [snapshot.report.previous.period.start, snapshot.report.current.period.start].sort()[0], end: [snapshot.report.previous.period.end, snapshot.report.current.period.end].sort()[1] }, channels: diagnostic.scope.channels, sources: referenced.flatMap(fact => fact.sources), scopeLabel: diagnostic.scope.kind === "all" ? "所選通路合計" : diagnostic.scope.channels.join("、"), ...(currentOnly ? {} : { formula: `已觀察差額 = 本期${metricDefinitions[name].label} − 前期${metricDefinitions[name].label}；不是改善收益估計`, components: referenced.map(fact => ({ label: fact.period.start === snapshot.report.previous.period.start ? "前期" : "本期", metric: fact })) }) });
-      }} aria-label={`查看${diagnostic.title}排序金額來源，${formatSignedMoney(diagnostic.ranking_amount.value)}`}>{formatSignedMoney(diagnostic.ranking_amount.value)}</button></p>}
+        // HF-03: cost increases are shown as their (negative) effect on profit, matching the bridge.
+        const costIncrease = COST_INCREASE_RULES.has(diagnostic.code);
+        onEvidence({ title: `${metricDefinitions[name].label}${currentOnly ? "" : "差額"}`, name, metric: profitImpactAmount(diagnostic.code, diagnostic.ranking_amount)!, period: currentOnly ? snapshot.report.current.period : { start: [snapshot.report.previous.period.start, snapshot.report.current.period.start].sort()[0], end: [snapshot.report.previous.period.end, snapshot.report.current.period.end].sort()[1] }, channels: diagnostic.scope.channels, sources: referenced.flatMap(fact => fact.sources), scopeLabel: diagnostic.scope.kind === "all" ? "所選通路合計" : diagnostic.scope.channels.join("、"), ...(currentOnly ? {} : { formula: costIncrease ? `對獲利的影響 = 前期${metricDefinitions[name].label} − 本期${metricDefinitions[name].label}（費用增加會減少獲利）；不是改善收益估計` : `已觀察差額 = 本期${metricDefinitions[name].label} − 前期${metricDefinitions[name].label}；不是改善收益估計`, components: referenced.map(fact => ({ label: fact.period.start === snapshot.report.previous.period.start ? "前期" : "本期", metric: fact })) }) });
+      }} aria-label={`查看${diagnostic.title}排序金額來源，對獲利的影響 ${formatSignedMoney(profitImpactAmount(diagnostic.code, diagnostic.ranking_amount)!.value)}`}>{formatSignedMoney(profitImpactAmount(diagnostic.code, diagnostic.ranking_amount)!.value)}</button></p>}
       <h4>資料事實</h4>
       <ul className="fact-list">{diagnostic.fact_ids.map(id => {
         const fact = facts.get(id);
