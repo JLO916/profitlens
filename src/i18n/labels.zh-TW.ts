@@ -927,7 +927,6 @@ export const ui = {
     "thresholdPrecisionTechnical": "門檻以未取分分數求得；畫面小數為近似值，臨界處請以精確分數核對。"
   },
   "workspaceStorage": {
-    "savedLocalNotice": "已保存此版本到這台電腦。之後的修改不會自動更新，請再存一次。",
     "downloadedNotice": "備份檔已開始下載。檔案包含分析用的資料與工作稿，請妥善保管。",
     "saveError": "儲存沒有完成：瀏覽器不允許儲存、空間不足，或檔案無法驗證。目前資料仍在；可以先下載備份檔。",
     "previewReadyNotice": "備份檔檢查通過，還沒有取代目前資料。請核對下方內容後再讀入。",

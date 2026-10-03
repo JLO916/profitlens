@@ -232,7 +232,7 @@ export function buildExcelWorkbook(input: ExcelExportInput): ExcelWorkbook {
 const FORMULA_PREFIX = /^[=+\-@\s\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/u;
 const LONE_SURROGATE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
 /** XML 不允許的非字元 U+FFFE／U+FFFF：SheetJS 照原樣寫入，Excel 會說檔案有問題，直接移除。 */
-const NONCHARACTER = /[￾￿]/g;
+const NONCHARACTER = /[\ufffe\uffff]/g;
 /** DEL 與 C1 控制字元（U+007F–U+009F）：SheetJS 不跳脫、讀回時被丟掉；改成 U+FFFD，看得出原本有字元。 */
 const C1_CONTROL = /[\u007f-\u009f]/g;
 /**
