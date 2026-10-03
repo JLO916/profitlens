@@ -35,10 +35,16 @@ DEFAULT_CURRENCY = "TWD"
 MAX_ERRORS_SHOWN = 30
 
 COLUMN_KEYS = (
-    "order_id", "date", "channel", "sku", "category", "units", "line_amount",
-    "order_discount", "refund_amount", "refund_date", "unit_cost", "line_cogs", "status",
+    "order_id", "date", "channel", "sku", "category", "units", "line_amount", "unit_price",
+    "order_discount", "line_discount", "refund_amount", "refund_date", "unit_cost", "line_cogs", "status",
 )
-REQUIRED_COLUMN_KEYS = ("order_id", "date", "sku", "units", "line_amount")
+REQUIRED_COLUMN_KEYS = ("order_id", "date", "sku", "units")
+# 這些鍵可以給陣列：把列出的欄位相加（空白＝0），折扣一律取絕對值（91APP 以負數表示折扣、蝦皮以正數）。
+LIST_COLUMN_KEYS = ("order_discount", "line_discount")
+
+
+def column_names(value: "str | list[str]") -> list[str]:
+    return value if isinstance(value, list) else [value]
 TOP_LEVEL_KEYS = (
     "columns", "channel", "channel_map", "category", "inclusive_tax", "tax_rate",
     "cogs_inclusive_tax", "currency", "encoding", "exclude_status", "description",
@@ -77,7 +83,7 @@ def round2(value: Decimal) -> Decimal:
 
 @dataclass
 class Rules:
-    columns: dict[str, str]
+    columns: "dict[str, str | list[str]]"
     fixed_channel: str | None
     channel_map: dict[str, str]
     default_category: str | None
@@ -113,11 +119,19 @@ def load_rules(path: Path) -> Rules:
     if unknown_cols:
         raise RulesError(f"columns 有不認得的鍵：{', '.join(unknown_cols)}（可用：{', '.join(COLUMN_KEYS)}）")
     for key, value in columns.items():
+        if key in LIST_COLUMN_KEYS and isinstance(value, list):
+            if not value or not all(isinstance(v, str) and v.strip() for v in value):
+                raise RulesError(f"columns.{key} 若是陣列，必須是非空字串陣列（這些欄位會相加）。")
+            continue
         if not isinstance(value, str) or not value.strip():
             raise RulesError(f"columns.{key} 必須是非空字串（訂單檔裡的欄名）。")
     for key in REQUIRED_COLUMN_KEYS:
         if key not in columns:
             raise RulesError(f"columns.{key} 是必填（訂單檔裡對應的欄名）。")
+    if ("line_amount" in columns) == ("unit_price" in columns):
+        raise RulesError("商品金額請二擇一：columns.line_amount（該列金額合計）或 columns.unit_price（單價，會乘以數量）。")
+    if "order_discount" in columns and "line_discount" in columns:
+        raise RulesError("折扣請二擇一：columns.order_discount（訂單層折扣，按商品金額比例分攤到各列）或 columns.line_discount（該列自己的折扣）。")
 
     fixed_channel = raw.get("channel")
     if fixed_channel is not None and (not isinstance(fixed_channel, str) or not fixed_channel.strip()):
@@ -179,7 +193,7 @@ def load_rules(path: Path) -> Rules:
         exclude_values = [v.strip() for v in exclude_status]
 
     return Rules(
-        columns={k: v.strip() for k, v in columns.items()}, fixed_channel=fixed_channel.strip() if fixed_channel else None,
+        columns={k: ([name.strip() for name in v] if isinstance(v, list) else v.strip()) for k, v in columns.items()}, fixed_channel=fixed_channel.strip() if fixed_channel else None,
         channel_map={k.strip(): v.strip() for k, v in channel_map.items()}, default_category=default_category.strip() if default_category else None,
         inclusive_tax=inclusive_tax, tax_rate=tax_rate, cogs_inclusive_tax=cogs_inclusive_tax, currency=currency,
         encoding=encoding, status_column=status_column, exclude_values=exclude_values, raw=raw,
@@ -267,10 +281,11 @@ def read_orders(path: Path, rules: Rules) -> ReadResult:
             duplicated = sorted({h for h in header if header.count(h) > 1 and h})
             if duplicated:
                 raise DataError([f"{path.name}：標題列有重複欄名：{', '.join(duplicated)}"])
-            missing = [f"columns.{k} → 「{v}」" for k, v in rules.columns.items() if v not in header]
+            missing = [f"columns.{k} → 「{name}」" for k, v in rules.columns.items() for name in column_names(v) if name not in header]
             if missing:
                 raise RulesError(f"訂單檔標題列找不到 rules 指定的欄位：{'；'.join(missing)}。檔案裡的欄名：{', '.join(header)}")
-            index = {key: header.index(name) for key, name in rules.columns.items()}
+            index = {key: header.index(name) for key, name in rules.columns.items() if isinstance(name, str)}
+            list_index = {key: [header.index(name) for name in names] for key, names in rules.columns.items() if isinstance(names, list)}
 
             previous_end = reader.line_num
             for cells in reader:
@@ -287,6 +302,24 @@ def read_orders(path: Path, rules: Rules) -> ReadResult:
 
                 def get(key: str) -> str:
                     return cells[index[key]].strip() if key in index else ""
+
+                def values_of(key: str) -> list[str]:
+                    if key in list_index:
+                        return [cells[position].strip() for position in list_index[key]]
+                    return [get(key)] if key in index else []
+
+                def discount_total(key: str, label: str, row_problems: list[str]) -> "Decimal | None":
+                    """折扣欄（單欄或陣列）相加後取絕對值；空白＝0；非數字記錯誤。"""
+                    total = ZERO
+                    for raw_value in values_of(key):
+                        if not raw_value:
+                            continue
+                        parsed = parse_amount(raw_value, COST_RE)
+                        if parsed is None:
+                            row_problems.append(f"{label}「{raw_value}」必須是數字、最多兩位小數")
+                            return None
+                        total += abs(parsed)
+                    return round2(total)
 
                 if rules.status_column and get("status") in rules.exclude_values:
                     result.dropped.setdefault(f"訂單狀態＝{get('status')}（exclude_status）", []).append(line_no)
@@ -321,16 +354,29 @@ def read_orders(path: Path, rules: Rules) -> ReadResult:
                 units = int(units_text) if INT_RE.fullmatch(units_text) else None
                 if units is None:
                     row_problems.append(f"數量「{get('units')}」必須是非負整數")
-                gross = parse_amount(get("line_amount"))
-                if gross is None or gross < ZERO:
-                    row_problems.append(f"商品金額「{get('line_amount')}」必須是非負數字、最多兩位小數")
-                discount_raw = get("order_discount")
-                if discount_raw:
-                    discount_value = parse_amount(discount_raw)
-                    if discount_value is None or discount_value < ZERO:
-                        row_problems.append(f"訂單折扣「{discount_raw}」必須是非負數字、最多兩位小數")
+                gross: Decimal | None
+                if "line_amount" in index:
+                    gross = parse_amount(get("line_amount"))
+                    if gross is None or gross < ZERO:
+                        row_problems.append(f"商品金額「{get('line_amount')}」必須是非負數字、最多兩位小數")
+                else:
+                    # 單價 × 數量（蝦皮「商品活動價格」、momo「單筆售價」這類只有單價的匯出）。
+                    unit_price = parse_amount(get("unit_price"))
+                    if unit_price is None or unit_price < ZERO:
+                        row_problems.append(f"單價「{get('unit_price')}」必須是非負數字、最多兩位小數")
+                        gross = None
                     else:
-                        discount_raw = format(discount_value, "f")
+                        gross = None if units is None else round2(unit_price * units)
+                discount_raw = ""
+                if "order_discount" in index or "order_discount" in list_index:
+                    order_total = discount_total("order_discount", "訂單折扣", row_problems)
+                    if order_total is not None and order_total != ZERO:
+                        discount_raw = format(order_total, "f")
+                line_discount_value = ZERO
+                if "line_discount" in index or "line_discount" in list_index:
+                    line_total = discount_total("line_discount", "該列折扣", row_problems)
+                    if line_total is not None:
+                        line_discount_value = line_total
                 refund = ZERO
                 refund_day: str | None = None
                 refund_raw = get("refund_amount")
@@ -355,10 +401,10 @@ def read_orders(path: Path, rules: Rules) -> ReadResult:
                     cogs = parse_amount(get("line_cogs"))
                     if cogs is None:
                         row_problems.append(f"成本「{get('line_cogs')}」必須是數字、最多兩位小數")
-                for key in ("units", "line_amount", "order_discount", "refund_amount", "unit_cost", "line_cogs"):
-                    raw_value = get(key).strip()
-                    if raw_value and clean_number(raw_value) != raw_value:
-                        result.normalized_numbers += 1
+                for key in ("units", "line_amount", "unit_price", "order_discount", "line_discount", "refund_amount", "unit_cost", "line_cogs"):
+                    for raw_value in values_of(key):
+                        if raw_value and clean_number(raw_value) != raw_value:
+                            result.normalized_numbers += 1
 
                 if row_problems:
                     problems.append(f"第 {line_no} 行：" + "；".join(row_problems))
@@ -367,7 +413,7 @@ def read_orders(path: Path, rules: Rules) -> ReadResult:
                 result.lines.append(Line(
                     line_no=line_no, order_id=order_id, date=day, channel=channel, sku=sku, category=category,
                     units=units, gross_incl=gross, order_discount_raw=discount_raw, refund_incl=refund,
-                    refund_date=refund_day, cogs=cogs,
+                    refund_date=refund_day, cogs=cogs, discount_incl=line_discount_value,
                 ))
         except UnicodeDecodeError as error:
             raise DataError([f"{path.name}：無法用 {rules.encoding} 讀取（位置 {error.start}）。若是 Excel 存的 Big5 檔，請在 rules.json 設定 \"encoding\": \"cp950\"。"]) from error
@@ -515,7 +561,7 @@ def build_log(orders_path: Path, rules_path: Path, rules: Rules, read: ReadResul
     out.append("|---|---|")
     for key in COLUMN_KEYS:
         if key in rules.columns:
-            out.append(f"| columns.{key} | 「{md_cell(rules.columns[key])}」 |")
+            out.append(f"| columns.{key} | 「{md_cell('＋'.join(column_names(rules.columns[key])))}」 |")
     if rules.fixed_channel:
         out.append(f"| channel（固定通路） | {md_cell(rules.fixed_channel)} |")
     for source, target in rules.channel_map.items():
@@ -581,7 +627,7 @@ def build_log(orders_path: Path, rules_path: Path, rules: Rules, read: ReadResul
         out.append("| cogs_net | — | 全部留白 | — |")
         out.append("")
         out.append("- 沒有設定成本欄（columns.unit_cost 或 columns.line_cogs），cogs_net 全部留白；匯入後毛利會顯示「資料待補」。")
-    if "order_discount" not in rules.columns:
+    if "order_discount" not in rules.columns and "line_discount" not in rules.columns:
         out.append("- 沒有設定 columns.order_discount，discounts 全部填 0.00。")
     if "refund_amount" not in rules.columns:
         out.append("- 沒有設定 columns.refund_amount，refunds 全部填 0.00；退款若在其他報表，請另外整理。")

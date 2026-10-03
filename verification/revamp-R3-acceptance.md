@@ -51,7 +51,7 @@
 - 截圖：`npx playwright test --config verification/revamp-R3-capture.config.ts` → `verification/revamp-R3/{1-step1-empty,2-step1-files,3-step2-mapping,4-step3-basis,5-step4-review,6-overview-after,8-data-preprocessing,9-step2-memory}-{desktop,laptop,tablet,mobile}-{viewport.png,full.jpg}` ＋ `7-drawer-raw-converted-{四尺寸}.png`，共 68 張（四尺寸各至少 9 張）。流程：中文欄名的銷售檔（第 2 步出現）→ 含稅 5% → 檢核通過 → 套用 → 總覽淨營收 2,150.00 → 抽屜「840.00 → 800.00」→ 資料頁前處理 → 再匯入同檔顯示記憶提示。
 - 人工檢視截圖：第 1 步拖放區與三格、第 2 步對照表（藍色「系統建議，請確認」）、第 3 步口徑（修正全域 `fieldset` flex 樣式造成的單選排版後重拍）、第 4 步摘要、抽屜「~~含稅原值~~ → 換算值」在 1440／390 寬度皆可讀。
 - E2E 四種視窗：1440×1000、1280×900、768×1024、390×844（`playwright.config.ts` 四個 project）。
-- 真實平台匯出檔走查 preset 偵測與對照：**未執行**（需使用者提供去識別化匯出檔，見批次回報）。
+- 真實平台匯出檔走查 preset 偵測與對照：**未執行**（真實檔仍待使用者提供）。2026-10-03 追加：蝦皮、momo 店+、91APP 以公開文件重建標題列、製作去識別化合成樣本並通過偵測／對照／彙總手算測試，紀錄在 [revamp-R3-preset-verification.md](revamp-R3-preset-verification.md)。
 
 ## 4b. 對抗式審查（4 視角 → 每項 3 位反駁者，≥ 2 位不反駁才算確認）
 45 項候選、33 項確認、12 項被反駁。確認項處理如下（全部修於本批，產品與測試同批更新）：

@@ -33,13 +33,18 @@ export function getPreset(id: string): SourcePreset | null {
  * (case / whitespace / full-width insensitive). Several hits → most matches wins,
  * then the larger share of its fingerprint, then list order.
  */
+/** 指紋比對用：在 headerKey 之外再去掉【註】、冒號後的說明與 TG／TM／TS 單號標記（「購物車編號 TG:單號」「賣場負擔優惠券【註1】」也要命中）。 */
+export function fingerprintKey(header: string): string {
+  return headerKey(header.replace(/【[^】]*】/g, "").replace(/[:：].*$/, "").replace(/\s+\(?(TG|TM|TS)\)?\s*$/i, ""));
+}
+
 export function detectPreset(headers: string[]): PresetDetection | null {
-  const keys = new Set(headers.map(headerKey).filter(Boolean));
+  const keys = new Set(headers.map(fingerprintKey).filter(Boolean));
   let best: (PresetDetection & { share: number }) | null = null;
   for (const preset of SOURCE_PRESETS) {
-    const matched = preset.fingerprint.filter(name => keys.has(headerKey(name)));
-    // 第一個指紋欄（訂單編號／商品編號／Day）必須命中，避免日粒度檔案只因「結帳日＋手續費」之類的常見欄名被誤判為訂單級。
-    if (matched.length < 2 || !keys.has(headerKey(preset.fingerprint[0]))) continue;
+    const matched = preset.fingerprint.filter(name => keys.has(fingerprintKey(name)));
+    // 第一個指紋欄（訂單編號／主單編號／商品編號／Day）必須命中，避免日粒度檔案只因「結帳日＋手續費」之類的常見欄名被誤判為訂單級。
+    if (matched.length < 2 || !keys.has(fingerprintKey(preset.fingerprint[0]))) continue;
     const share = matched.length / preset.fingerprint.length;
     if (!best || matched.length > best.matched.length || (matched.length === best.matched.length && share > best.share)) best = { preset, matched, share };
   }

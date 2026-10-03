@@ -1,0 +1,20 @@
+{
+  "description": "momo 店+ 帳務 → H101商店對帳 → 對帳明細 → 工作表「訂單明細」（刪掉前兩列，讓標題列在第 1 列後另存 CSV UTF-8）。單筆售價是單價（會乘以數量）；總折扣金額是該列折扣；退貨列排除。",
+  "columns": {
+    "order_id": "訂單號碼",
+    "date": "訂單確認日（出貨日）",
+    "status": "訂單狀態",
+    "sku": "商品原廠編號",
+    "units": "數量",
+    "unit_price": "單筆售價",
+    "line_discount": "總折扣金額"
+  },
+  "channel": "momo",
+  "category": "未分類",
+  "exclude_status": ["退貨"],
+  "inclusive_tax": true,
+  "tax_rate": "0.05",
+  "cogs_inclusive_tax": false,
+  "currency": "TWD",
+  "encoding": "utf-8-sig"
+}

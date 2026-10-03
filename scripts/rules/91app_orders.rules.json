@@ -1,0 +1,21 @@
+{
+  "description": "91APP OSM → 所有訂單查詢 → 批次匯出資料（匯出時選全部欄位）。一列＝一筆訂單編號（TS）；商品總金額已是單價×數量；訂單總折扣金額以負數表示（會取絕對值）；已取消排除；商品總成本直接當成本（未稅）。欄名依官方 API 說明，實際匯出表頭請對照後修改。",
+  "columns": {
+    "order_id": "訂單編號",
+    "date": "訂單轉單日",
+    "status": "訂單狀態",
+    "sku": "商品料號",
+    "units": "商品數量",
+    "line_amount": "商品總金額(單價*數量)",
+    "line_discount": "訂單總折扣金額",
+    "line_cogs": "商品總成本(成本*數量)"
+  },
+  "channel": "官網",
+  "category": "未分類",
+  "exclude_status": ["已取消"],
+  "inclusive_tax": true,
+  "tax_rate": "0.05",
+  "cogs_inclusive_tax": false,
+  "currency": "TWD",
+  "encoding": "utf-8-sig"
+}

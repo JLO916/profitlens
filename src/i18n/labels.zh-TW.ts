@@ -339,8 +339,8 @@ export const importWizard = {
   presetUnverified: "候選對照（待驗證）：欄名以你的實際匯出檔為準，請逐欄確認。",
   presetInclusiveHint: "這個來源的金額通常含稅，下一步請選「含稅」。",
   presetNames: {
-    shopline_orders: "Shopline 訂單報表", "91app_orders": "91APP 訂單匯出", cyberbiz_orders: "Cyberbiz 訂單匯出", shopee_orders: "蝦皮賣家中心訂單", shopee_income: "蝦皮「我的收入／對帳」",
-    momo_settlement: "momo 供應商對帳", pchome_settlement: "PChome 商店街對帳", meta_ads: "Meta 廣告管理員（日）", google_ads: "Google Ads 報表（日）",
+    shopline_orders: "Shopline 訂單報表", "91app_orders": "91APP 訂單匯出", cyberbiz_orders: "Cyberbiz 訂單匯出", shopee_orders: "蝦皮賣家中心訂單", shopee_income: "蝦皮「我的進帳」撥款明細",
+    momo_settlement: "momo 店+ 商店對帳明細（訂單明細）", pchome_settlement: "PChome 商店街對帳", meta_ads: "Meta 廣告管理員（日）", google_ads: "Google Ads 報表（日）",
   } as Record<string, string>,
   ignoreConfirm: "我知道這些欄位不會進入分析",
   orderLevelDetected: "這是訂單明細，請先用整理工具彙總成日 × 通路 × 商品",

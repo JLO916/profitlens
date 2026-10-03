@@ -10,11 +10,11 @@ const ADS: FileName = "ad_spend_daily.csv";
 /** One plausible header row per preset (fingerprints plus unrelated columns). */
 const SAMPLE_HEADERS: Record<string, string[]> = {
   shopline_orders: ["訂單號碼", "訂單日期", "顧客", "商品名稱", "商品貨號", "數量", "商品原價小計", "優惠折扣"],
-  "91app_orders": ["訂單編號", "交易日期", "商品名稱", "SKU", "數量", "商品金額"],
+  "91app_orders": ["購物車編號", "主單編號", "訂單編號", "訂單轉單日", "商品料號", "商品數量", "商品總金額(單價*數量)"],
   cyberbiz_orders: ["訂單編號", "建立時間", "商品代碼", "商品名稱", "數量", "小計"],
-  shopee_orders: ["訂單編號", "訂單成立日期", "商品名稱", "商品選項貨號", "數量", "商品原價", "買家支付金額"],
-  shopee_income: ["訂單編號", "撥款完成日期", "成交手續費", "金流與系統處理費", "活動服務費"],
-  momo_settlement: ["對帳期間", "商品編號", "商品名稱", "銷售數量", "銷售金額"],
+  shopee_orders: ["訂單編號", "訂單成立日期", "商品名稱", "商品選項貨號", "數量", "商品活動價格", "買家總支付金額", "成交手續費", "金流與系統處理費"],
+  shopee_income: ["序號", "訂單編號", "退款編號", "錢包入帳日期", "成交手續費", "金流與系統處理費", "其他服務費"],
+  momo_settlement: ["NO", "訂單確認日（出貨日）", "訂單號碼", "訂單序號", "單筆售價", "數量", "總折扣金額", "商品編號", "成交手續費", "實際入帳金額"],
   pchome_settlement: ["訂單編號", "結帳日", "商品編號", "銷售金額", "手續費"],
   meta_ads: ["Reporting starts", "Day", "Campaign name", "Impressions", "Amount spent (TWD)"],
   google_ads: ["Day", "Campaign", "Impr.", "Clicks", "Cost", "Currency code"],
@@ -24,8 +24,10 @@ describe("R3 source presets are honest candidates", () => {
   it("ships exactly the nine spec presets, all unverified with a verification method", () => {
     expect(SOURCE_PRESETS.map(p => p.id)).toEqual(["shopline_orders", "91app_orders", "cyberbiz_orders", "shopee_orders", "shopee_income", "momo_settlement", "pchome_settlement", "meta_ads", "google_ads"]);
     for (const preset of SOURCE_PRESETS) {
-      expect(preset.verified, preset.id).toBe(false);
-      expect(preset.verifiedAt, preset.id).toBeNull();
+      // verified 只在跑過去識別化的真實匯出檔後才能為 true；公開文件重建的樣本只能把 evidence 提到 public_docs。
+      expect(preset.verified, preset.id).toBe(preset.evidence === "real_export");
+      if (!preset.verified) expect(preset.verifiedAt, preset.id).toBeNull();
+      if (preset.evidence !== "none") expect(preset.evidenceSources.length, preset.id).toBeGreaterThan(0);
       expect(preset.verification.trim(), preset.id).not.toBe("");
       expect(preset.fingerprint.length, preset.id).toBeGreaterThanOrEqual(2);
       expect(preset.fingerprint.length, preset.id).toBeLessThanOrEqual(3);
@@ -68,10 +70,10 @@ describe("R3 detectPreset", () => {
   });
 
   it("prefers the preset with the most fingerprint matches", () => {
-    // 訂單編號 + 結帳日 hit pchome (2); 訂單編號 + 成交手續費 + 金流與系統處理費 hit shopee_income (3).
-    const result = detectPreset(["訂單編號", "結帳日", "成交手續費", "金流與系統處理費"]);
+    // 訂單編號 + 結帳日 hit pchome (2); 訂單編號 + 錢包入帳日期 + 退款編號 hit shopee_income (3).
+    const result = detectPreset(["訂單編號", "結帳日", "錢包入帳日期", "退款編號", "成交手續費"]);
     expect(result?.preset.id).toBe("shopee_income");
-    expect(result?.matched).toEqual(["訂單編號", "成交手續費", "金流與系統處理費"]);
+    expect(result?.matched).toEqual(["訂單編號", "錢包入帳日期", "退款編號"]);
   });
 });
 

@@ -227,4 +227,4 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 不猜財務口徑（含稅是使用者明確選擇、逐列可追溯）、不改 domain、既有驗證一字不改；五次點擊靠少做事（自動對照）而不是少問（口徑仍必選）。
 
-**影響文件：** `docs/revamp/04_IMPORT_TW.md`（備份時點、自動對照註記）、`docs/ORDER_AGGREGATION.md`（新）、`09_DECISIONS_PENDING.md`（D2、D5 請補「決定」欄）。**驗收：** `tests/tax-basis.test.ts`（§3 golden ＋ 315.00→300.00、10.49→9.99、99.99→95.23、−21.00→−20.00、10% 稅率、逐列 vs 合計差一分）、`tests/import-wizard.test.ts`（`tests/fixtures/inclusive_tax` 手算：本期淨營收 2150.00、扣廣告後貢獻 518.05；誤選未稅為 2257.50）、`tests/e2e/import-wizard.spec.ts`。
+**影響文件：** `docs/revamp/04_IMPORT_TW.md`（備份時點、自動對照註記）、`docs/ORDER_AGGREGATION.md`（新）、`09_DECISIONS_PENDING.md`（D2、D5 使用者 2026-10-03 確認採 A，已填「決定」欄）。**驗收：** `tests/tax-basis.test.ts`（§3 golden ＋ 315.00→300.00、10.49→9.99、99.99→95.23、−21.00→−20.00、10% 稅率、逐列 vs 合計差一分）、`tests/import-wizard.test.ts`（`tests/fixtures/inclusive_tax` 手算：本期淨營收 2150.00、扣廣告後貢獻 518.05；誤選未稅為 2257.50）、`tests/e2e/import-wizard.spec.ts`。

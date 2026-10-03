@@ -1,0 +1,20 @@
+{
+  "description": "蝦皮賣家中心 → 我的銷售 → 匯出報表（xlsx 先解除密碼、另存 CSV UTF-8）。一列＝一個商品選項；商品活動價格是單價（會乘以數量）；優惠券為訂單層（兩欄相加後按比例分攤）；不成立訂單排除。",
+  "columns": {
+    "order_id": "訂單編號",
+    "date": "訂單成立日期",
+    "status": "訂單狀態",
+    "sku": "商品選項貨號",
+    "units": "數量",
+    "unit_price": "商品活動價格",
+    "order_discount": ["賣家負擔優惠券", "賣家負擔蝦幣回饋券"]
+  },
+  "channel": "蝦皮",
+  "category": "未分類",
+  "exclude_status": ["不成立"],
+  "inclusive_tax": true,
+  "tax_rate": "0.05",
+  "cogs_inclusive_tax": false,
+  "currency": "TWD",
+  "encoding": "utf-8-sig"
+}

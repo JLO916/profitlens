@@ -1,0 +1,8 @@
+[
+  { "file": "shopee_orders.csv", "presetId": "shopee_orders", "role": "sales_daily.csv", "expectMapping": { "date": "訂單成立日期", "sku": "商品選項貨號", "units_sold": "數量", "gross_sales": "商品活動價格", "discounts": "賣家負擔優惠券" }, "note": "賣家中心 我的銷售 → 匯出報表；標題列依官方欄位表（文章 11911）重建，資料列為合成值" },
+  { "file": "shopee_orders.csv", "presetId": "shopee_orders", "role": "channel_costs_daily.csv", "expectMapping": { "date": "訂單成立日期", "platform_fees": "成交手續費", "payment_fees": "金流與系統處理費", "other_variable_costs": "其他服務費", "fulfillment_costs": "退貨運費" } },
+  { "file": "shopee_income.csv", "presetId": "shopee_income", "role": "channel_costs_daily.csv", "expectMapping": { "date": "錢包入帳日期", "platform_fees": "成交手續費", "payment_fees": "金流與系統處理費", "other_variable_costs": "其他服務費", "fulfillment_costs": "蝦皮代付運費" }, "note": "我的進帳 → 已撥款 匯出；費用欄為負數，2026 欄名部分推論" },
+  { "file": "momo_store_plus.csv", "presetId": "momo_settlement", "role": "sales_daily.csv", "expectMapping": { "date": "訂單確認日（出貨日）", "sku": "商品編號", "units_sold": "數量", "gross_sales": "單筆售價", "discounts": "總折扣金額" }, "note": "momo 店+ H101商店對帳 → 對帳明細 → 工作表「訂單明細」（2026-04-21 版）；原檔標題列在第 3 列" },
+  { "file": "momo_store_plus.csv", "presetId": "momo_settlement", "role": "channel_costs_daily.csv", "expectMapping": { "date": "訂單確認日（出貨日）", "platform_fees": "成交手續費", "payment_fees": "信用卡手續費", "fulfillment_costs": "超商取貨運費 - 出貨", "other_variable_costs": "發票處理費" } },
+  { "file": "91app_orders.csv", "presetId": "91app_orders", "role": "sales_daily.csv", "expectMapping": { "date": "訂單轉單日", "sku": "商品料號", "units_sold": "商品數量", "gross_sales": "商品總金額(單價*數量)", "discounts": "訂單總折扣金額", "cogs_net": "商品總成本(成本*數量)" }, "note": "欄名取自官方 Admin Order API 欄位說明（evidence: api_docs），匯出檔實際表頭未公開" }
+]

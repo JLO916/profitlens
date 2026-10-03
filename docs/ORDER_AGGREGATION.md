@@ -121,3 +121,41 @@ python3 scripts/aggregate_orders.py \
 - **preset 欄名尚未驗證**：各平台實際欄名以你的真實匯出檔為準；範例規則只是起點。
 - **只支援單一幣別**，且 ProfitLens v1 只接受 TWD。
 - 單一 CSV 讀入記憶體處理；ProfitLens 匯入上限是每檔 5 MB／50,000 列，輸出若超過請分期間處理。
+
+## 8. 2026-10-03 補充：單價、逐列折扣、多欄加總
+
+| 鍵 | 意義 |
+|---|---|
+| `columns.unit_price` | 只有單價沒有列金額的匯出（蝦皮「商品活動價格」、momo「單筆售價」）：列金額＝單價 × `units`，ROUND_HALF_UP 2 位。與 `columns.line_amount` 二擇一。 |
+| `columns.line_discount` | 該列自己的折扣（momo「總折扣金額」、91APP「訂單總折扣金額」），直接計入該列，不分攤。與 `columns.order_discount` 二擇一。 |
+| 陣列 | `order_discount` 與 `line_discount` 可以給欄名陣列，會把這些欄位相加（空白＝0），例如蝦皮 `["賣家負擔優惠券", "賣家負擔蝦幣回饋券"]`。 |
+| 折扣正負號 | 折扣一律取絕對值（91APP 以負數表示折扣、蝦皮以正數）。 |
+| 日期 | `YYYY-MM-DD`、`YYYY/MM/DD`，後面可接時間（`2026-08-01 10:12`），只取日期部分。 |
+
+## 9. 各平台的前置步驟與規則範例（第一階段：蝦皮、momo 店+、91APP）
+
+規則範例在 `scripts/rules/`，欄名依公開文件重建並以去識別化樣本（`tests/fixtures/source-samples/`）實跑驗證；**實際匯出檔的表頭可能不同**，請先比對再改欄名。各平台的來源與信心等級見 `verification/revamp-R3-preset-verification.md`。
+
+### 9.1 蝦皮 賣家中心 → 訂單管理 → 我的銷售 → 匯出報表（`scripts/rules/shopee_orders.rules.json`）
+1. 匯出的 xlsx 有密碼（預設為賣場綁定手機末 6 碼），先解除密碼，只保留需要的工作表後另存成 **CSV UTF-8**。
+2. 一列＝一個商品選項；「商品活動價格」「商品原價」是**單價**，規則用 `unit_price` 乘以「數量」。
+3. 「商品總價」「買家總支付金額」「成交手續費」等是**訂單層**，每一列重複，不能逐列相加；優惠券（賣家負擔優惠券＋賣家負擔蝦幣回饋券）用 `order_discount` 陣列按比例分攤。
+4. 「訂單狀態」＝「不成立」用 `exclude_status` 排除（注意：不成立原因含「遺失」的是蝦皮賠付，視為完成，若有請手動保留）。
+5. 退款金額不在這份檔；費用請用「我的進帳」撥款明細另外整理成 `channel_costs_daily.csv`（費用在該報表是負數，要轉正）。
+
+```bash
+python3 scripts/aggregate_orders.py --orders shopee_orders.csv --rules scripts/rules/shopee_orders.rules.json --out out/shopee
+```
+
+### 9.2 momo 店+ 帳務 → H101商店對帳 → 對帳明細 → 工作表「訂單明細」（`scripts/rules/momo_store_plus.rules.json`）
+1. 下載的 .xls 有多個工作表，只用「訂單明細」；標題列在第 3 列（第 2 列是「總金額」合計列），請刪掉前兩列後另存 CSV UTF-8。
+2. 「單筆售價」是單價（`unit_price` × 數量）；「總折扣金額」是該列折扣（`line_discount`）；「訂單狀態」＝「退貨」排除。
+3. SKU 用「商品原廠編號」（你自己的料號，方便接成本）；沒有填的話改用「商品編號」。
+4. 這份是 **momo 店+（商店）** 的對帳明細，不是 3P 供應商（SCM）對帳單；SCM 對帳單為未稅、以品號 × 月為粒度，欄名尚未公開，需另建規則。
+
+### 9.3 91APP OSM → 所有訂單查詢 → 批次匯出資料（`scripts/rules/91app_orders.rules.json`）
+1. 匯出時請選「所有訂單資料（全部欄位）」，否則欄位不完整；一列＝一筆訂單編號（TS），主單（TM）運費在每一列重複，不要相加。
+2. 「商品總金額(單價*數量)」已是列金額（`line_amount`）；「訂單總折扣金額」是該列折扣、以負數表示（`line_discount`，取絕對值）；「商品總成本(成本*數量)」可直接當未稅成本（`line_cogs`）。
+3. 「訂單狀態」＝「已取消」排除；退貨在另一份退貨單報表。
+4. 欄名目前依 91APP 官方 Admin API 的欄位說明重建（匯出檔表頭未公開），請拿到檔案後逐欄核對。
+
