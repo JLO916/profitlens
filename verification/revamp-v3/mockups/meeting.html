@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>會議紀錄 · EC ProfitLens 設計稿</title>
+<meta name="description" content="H2 設計稿：v3 會議紀錄（已結束會議，示範資料，虛構）">
+<style>
+@import url("tokens.css");
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg-page);color:var(--text-primary);font-family:var(--font-sans);font-size:var(--text-14);line-height:var(--lh-14);font-variant-numeric:tabular-nums;letter-spacing:0}
+h1,h2,h3,p,ol,ul,dl,dd{margin:0}
+ol,ul{padding:0}
+td,th,.num,.metric-value{font-variant-numeric:tabular-nums}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+button,select,input{font:inherit;color:inherit}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.mono{font-family:var(--font-mono);font-size:var(--text-12);line-height:var(--lh-12)}
+.icon{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.icon-20{width:20px;height:20px}
+.neg{color:var(--unfavorable)}
+.muted{color:var(--text-tertiary)}
+.secondary{color:var(--text-secondary)}
+.t12{font-size:var(--text-12);line-height:var(--lh-12)}
+.t13{font-size:var(--text-13);line-height:var(--lh-13)}
+
+/* 設計稿標示（不是產品元件）：只標在假想值旁 */
+.mock-flag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border:1px dashed var(--border-input);border-radius:var(--radius-sm);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);font-weight:400;vertical-align:middle;margin-left:var(--space-2)}
+
+/* C12 按鈕 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:var(--control-h);padding:0 var(--space-3);border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-surface);color:var(--text-primary);font-size:var(--text-14);font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--bg-hover);text-decoration:none}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-sm{height:var(--control-h-sm);font-size:var(--text-13);padding:0 10px}
+.btn-text{border:0;background:none;color:var(--accent);padding:0 2px;height:auto;min-height:24px;font-weight:500}
+.btn-text:hover{background:none;text-decoration:underline}
+.btn-icon{width:var(--control-h);padding:0;color:var(--text-secondary)}
+.btn-help{width:16px;height:16px;padding:0;border:0;background:none;color:var(--text-tertiary);display:inline-grid;place-items:center;cursor:pointer}
+.btn-help .icon{width:16px;height:16px}
+.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:var(--space-2);justify-content:flex-start;flex-wrap:wrap}
+.nl{color:inherit;text-decoration:underline dotted 1px var(--border-input);text-underline-offset:3px;cursor:pointer;padding:2px 0}
+.nl:hover{text-decoration:underline solid 1px var(--accent)}
+.nl.neg,.neg .nl{color:var(--unfavorable)}
+
+/* C8 狀態標籤與計數徽章 */
+.loz{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 6px;border-radius:var(--radius-sm);font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;white-space:nowrap}
+.loz-unfav{background:var(--unfavorable-subtle);color:var(--unfavorable)}
+.loz-warn{background:var(--warning-subtle);color:var(--warning)}
+.loz-fav{background:var(--favorable-subtle);color:var(--favorable)}
+.loz-accent{background:var(--accent-subtle);color:var(--accent)}
+.loz-neutral{background:var(--bg-subtle);color:var(--text-secondary)}
+.loz .icon{width:12px;height:12px}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:var(--radius-full);background:var(--bg-subtle);color:var(--text-secondary);font-size:var(--text-12);line-height:var(--lh-12);font-weight:500}
+.dot{width:8px;height:8px;border-radius:var(--radius-full);background:var(--accent);flex:none}
+
+/* C7 頂欄 */
+.topbar{position:sticky;top:0;z-index:var(--z-sticky);height:var(--topbar-h);display:flex;align-items:center;gap:var(--space-2);padding:0 var(--space-4) 0 var(--space-5);background:var(--bg-surface);border-bottom:1px solid var(--border-subtle)}
+.brand{display:flex;align-items:center;gap:var(--space-2);margin-right:auto;font-size:var(--text-16);line-height:var(--lh-16);font-weight:600;color:var(--text-primary);white-space:nowrap}
+.brand-mark{width:24px;height:24px;border-radius:var(--radius-sm);background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+.brand-mark .icon{width:16px;height:16px}
+.status-btn{font-size:var(--text-13);font-weight:500}
+.ai-status{border:0;background:none;padding:0 var(--space-2);height:var(--control-h);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.ai-status .icon{display:none}
+.save-state{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);font-weight:400}
+.only-mobile{display:none}
+
+/* 版面 */
+.layout{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);min-height:calc(100vh - var(--topbar-h))}
+.sidebar{background:var(--bg-sidebar);border-right:1px solid var(--border-subtle)}
+.sidebar-inner{position:sticky;top:var(--topbar-h);padding:var(--space-4) var(--space-3)}
+.nav-group + .nav-group{margin-top:var(--space-4)}
+.nav-group h2{padding:0 var(--space-3);margin-bottom:var(--space-1);font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;color:var(--text-tertiary)}
+.nav-item{display:flex;align-items:center;gap:var(--space-2);height:32px;padding:0 var(--space-3);border-left:2px solid transparent;color:var(--text-secondary);font-size:var(--text-14);text-decoration:none}
+.nav-item:hover{background:var(--bg-hover);text-decoration:none}
+.nav-item .icon{width:20px;height:20px;color:var(--text-tertiary)}
+.nav-item .nav-end{margin-left:auto}
+.nav-item[aria-current="page"]{border-left-color:var(--accent);color:var(--text-primary);font-weight:600}
+.nav-item[aria-current="page"] .icon{color:var(--text-primary)}
+.main{min-width:0}
+.page-header{height:var(--page-header-h);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:0 var(--gutter);max-width:var(--content-max)}
+.page-header h1{font-size:var(--text-20);line-height:var(--lh-20);font-weight:600}
+.page-header .desc{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary)}
+
+/* C23 期間列 */
+.period-bar{position:sticky;top:var(--topbar-h);z-index:var(--z-sticky);height:var(--period-bar-h);display:flex;align-items:center;gap:var(--space-3);padding:0 var(--gutter);background:var(--bg-page);border-bottom:1px solid var(--border-subtle)}
+.period-summary{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.period-bar .push{margin-left:auto}
+.period-trigger{display:none}
+.seg{display:inline-flex;border:1px solid var(--border-input);border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-surface);flex:none}
+.seg button{height:26px;padding:0 10px;border:0;border-left:1px solid var(--border-subtle);background:var(--bg-surface);color:var(--text-secondary);font-size:var(--text-13);line-height:1;white-space:nowrap;cursor:pointer}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--accent-subtle);color:var(--accent);outline:1px solid var(--accent-border);outline-offset:-1px;font-weight:500}
+.seg button[aria-disabled="true"]{color:var(--text-disabled);cursor:not-allowed}
+.preset-reason{padding:6px var(--gutter);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary)}
+.sheet{display:none}
+
+/* 內容 */
+.content{padding:var(--space-5) var(--gutter) var(--space-7);max-width:var(--content-max)}
+.stack > * + *{margin-top:var(--space-6)}
+.sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-3);min-height:32px}
+.sec-title{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+.sec-head h2,.h2{font-size:var(--text-16);line-height:var(--lh-16);font-weight:600}
+.sub{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary);margin-top:2px}
+.scope{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary);font-weight:400}
+.sec-tools{display:flex;align-items:center;gap:var(--space-3);flex:none;font-size:var(--text-13);color:var(--text-secondary)}
+.unit-note{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary)}
+
+/* C5 面板 */
+.panel{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-5)}
+.panel > .sec-head{margin-bottom:var(--space-4)}
+.divider{border-top:1px solid var(--border-subtle);margin-top:var(--space-5);padding-top:var(--space-5)}
+
+/* C3 資料表 */
+.table{width:100%;border-collapse:collapse;font-size:var(--text-14);line-height:var(--lh-14)}
+.table th{height:var(--row-h);padding:0 var(--space-3);background:var(--bg-subtle);font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;color:var(--text-secondary);text-align:left;white-space:nowrap}
+.table td{height:var(--row-h);padding:0 var(--space-3);border-bottom:1px solid var(--border-subtle);vertical-align:middle}
+.table .num,.table th.num{text-align:right;white-space:nowrap}
+.table.compact th,.table.compact td{height:var(--row-h-compact)}
+.table.l3{font-size:var(--text-13);line-height:var(--lh-13)}
+.table tr.subtotal td{font-weight:600;border-top:1px solid var(--border-strong)}
+.table tr.total td{font-weight:600;border-top:var(--rule-total) solid var(--border-strong)}
+.table tr:hover td{background:var(--bg-hover)}
+.table-scroll{overflow-x:auto}
+
+/* C2 緊湊表 */
+.kv{width:100%;border-collapse:collapse;font-size:var(--text-13);line-height:var(--lh-13)}
+.kv th,.kv td{height:var(--row-h-compact);padding:0 var(--space-2);border-bottom:1px solid var(--border-subtle);text-align:left;font-weight:400}
+.kv thead th{font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;color:var(--text-secondary)}
+.kv .num{text-align:right;white-space:nowrap}
+.kv td.prev{color:var(--text-secondary)}
+
+/* details（進階、資料表、技術細節） */
+details > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary);min-height:24px}
+details > summary::-webkit-details-marker{display:none}
+details > summary .chev{transition:transform var(--dur-fast) var(--ease)}
+details[open] > summary .chev{transform:rotate(90deg)}
+.data-alternative{margin-top:var(--space-3)}
+.data-alternative[open] > summary{margin-bottom:var(--space-2)}
+.advanced{padding:var(--space-3) 0;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle)}
+.advanced > summary{font-size:var(--text-14);line-height:var(--lh-14);font-weight:500;color:var(--text-primary)}
+
+/* 頁尾 */
+.footer{padding:var(--space-4) var(--gutter) var(--space-6);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);max-width:var(--content-max);border-top:1px solid var(--border-subtle)}
+.footer a{color:var(--accent)}
+
+/* 圖表 */
+.chart{display:block;width:100%;height:auto}
+.chart-wrap{overflow-x:auto}
+.chart text{font-family:var(--font-sans);font-size:12px;fill:var(--chart-axis)}
+.chart .lbl{fill:var(--text-secondary)}
+.chart .lbl-strong{fill:var(--text-primary);font-weight:600}
+.chart .lbl-neg{fill:var(--unfavorable);font-weight:600}
+.chart .grid{stroke:var(--chart-grid);stroke-width:1}
+.chart .zero{stroke:var(--border-strong);stroke-width:1}
+.chart .conn{stroke:var(--border-strong);stroke-width:1}
+.chart .b-total{fill:var(--chart-total)}
+.chart .b-unfav{fill:var(--chart-unfavorable)}
+.chart .b-fav{fill:var(--chart-favorable)}
+.chart .b-current{fill:var(--chart-current)}
+.chart .b-prev{fill:var(--chart-previous)}
+.chart .l-current{fill:none;stroke:var(--chart-current);stroke-width:2}
+.chart .l-prev{fill:none;stroke:var(--chart-previous);stroke-width:1.5}
+.chart .pt-current{fill:var(--chart-current)}
+.legend{display:flex;gap:var(--space-3);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-secondary);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:2px;background:var(--chart-current)}
+.legend i.prev{background:var(--chart-previous)}
+.takeaways{display:flex;gap:var(--space-6);margin-bottom:var(--space-3)}
+.takeaway dt{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary)}
+.takeaway dd{font-size:var(--text-20);line-height:var(--lh-20);font-weight:600}
+.takeaway dd small{font-size:var(--text-12);font-weight:400;color:var(--text-tertiary);margin-left:6px}
+
+/* 手機底部分頁列 */
+.tabbar{display:none}
+
+@media (max-width: 1279px){
+  .ai-status .label{display:none}
+  .ai-status .icon{display:block}
+}
+@media (max-width: 767px){
+  .layout{display:block}
+  .sidebar{display:none}
+  .topbar{padding:0 var(--space-4);gap:var(--space-1)}
+  .topbar .desk-only{display:none}
+  .only-mobile{display:inline-flex}
+  .status-btn{height:var(--control-h);padding:0 10px}
+  .page-header{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;padding:0}
+  .chart-wrap .chart.mw-460{min-width:460px}
+  .chart-wrap .chart.mw-560{min-width:560px}
+  .chart-wrap .chart.mw-760{min-width:760px}
+  .period-bar{height:auto;padding:var(--space-2) var(--gutter);flex-wrap:wrap}
+  .period-bar > :not(.period-trigger){display:none}
+  .period-trigger{display:flex;width:100%;height:var(--control-h-touch);justify-content:space-between;font-size:var(--text-14)}
+  .preset-reason{display:none}
+  .content{padding-top:var(--space-4);padding-bottom:calc(56px + var(--space-6))}
+  .stack > * + *{margin-top:var(--space-5)}
+  .panel{padding:var(--space-4)}
+  .sec-head{flex-wrap:wrap;gap:var(--space-2)}
+  .btn{height:var(--control-h-touch)}
+  .btn-sm{height:32px}
+  .btn-icon{width:var(--control-h-touch)}
+  .takeaways{gap:var(--space-4)}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:var(--z-sticky);height:calc(56px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--bg-surface);border-top:1px solid var(--border-subtle)}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-secondary);text-decoration:none;border-top:2px solid transparent}
+  .tabbar a[aria-current="page"]{color:var(--text-primary);font-weight:600;border-top-color:var(--accent)}
+  .tabbar .icon{width:20px;height:20px}
+  .footer{padding-bottom:calc(56px + var(--space-5))}
+}
+
+.mt-page .period-bar{position:static}
+.mt-header{position:sticky;top:var(--topbar-h);z-index:var(--z-sticky);height:var(--page-header-h);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:0 var(--gutter);background:var(--bg-page);border-bottom:1px solid var(--border-subtle);max-width:var(--content-max)}
+.mt-header h1{font-size:var(--text-20);line-height:var(--lh-20);font-weight:600;white-space:nowrap}
+.mt-header .btn-row{flex-wrap:nowrap;align-items:center}
+.decision-state{display:inline-flex;align-items:center;gap:var(--space-2);font-size:var(--text-13);color:var(--text-secondary);white-space:nowrap}
+.mt-layout{display:grid;grid-template-columns:200px minmax(0,880px);gap:var(--space-6);padding:var(--space-5) var(--gutter) var(--space-7);max-width:var(--content-max)}
+.toc{position:sticky;top:calc(var(--topbar-h) + var(--page-header-h) + var(--space-5));align-self:start}
+.toc h2{font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;color:var(--text-tertiary);margin-bottom:var(--space-2)}
+.toc ol{list-style:none;counter-reset:toc}
+.toc li{counter-increment:toc}
+.toc a{display:flex;gap:var(--space-2);align-items:center;min-height:28px;padding:0 var(--space-3);border-left:2px solid var(--border-subtle);color:var(--text-secondary);font-size:var(--text-13);text-decoration:none}
+.toc li.agenda-item a::before{content:counter(toc) ".";color:var(--text-tertiary);min-width:14px}
+.toc a[aria-current="true"]{border-left-color:var(--accent);color:var(--text-primary);font-weight:600}
+.toc .sep{margin-top:var(--space-2)}
+.doc{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-6)}
+.snapshot-note{padding:var(--space-2) var(--space-3);background:var(--bg-subtle);border-left:3px solid var(--border-strong);font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary)}
+.scope-line{margin-top:var(--space-3);font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary)}
+.doc-title{margin-top:var(--space-5);font-size:var(--text-20);line-height:var(--lh-20);font-weight:600}
+.doc-meta{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary);margin-top:var(--space-1)}
+.agenda{list-style:none;counter-reset:ag;margin-top:var(--space-5)}
+.agenda > li{counter-increment:ag;padding-top:var(--space-5);margin-top:var(--space-5);border-top:1px solid var(--border-subtle)}
+.agenda > li:first-child{margin-top:0}
+.agenda > li > .sec-head h2::before{content:counter(ag) ". ";color:var(--text-tertiary);font-weight:600}
+.doc-sec{padding-top:var(--space-5);margin-top:var(--space-5);border-top:1px solid var(--border-subtle)}
+.key-nums{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
+.key-nums > div{padding:var(--space-4) 20px}
+.key-nums > div + div{border-left:1px solid var(--border-subtle)}
+.key-nums .is-key{border-top:var(--rule-accent) solid var(--accent);padding-top:14px}
+.kn-name{font-size:var(--text-13);line-height:var(--lh-13);font-weight:500;color:var(--text-secondary)}
+.kn-value{font-size:var(--num-24);line-height:var(--lh-24);font-weight:600}
+.kn-delta{font-size:var(--text-13);line-height:var(--lh-13)}
+.kn-prev{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary)}
+.kn-sentence{margin-top:var(--space-3);font-size:var(--text-14);line-height:var(--lh-14)}
+.rows{border-top:1px solid var(--border-subtle)}
+.row-item{border-bottom:1px solid var(--border-subtle)}
+.row-item > summary,.row-item > .row-line{display:grid;grid-template-columns:16px auto minmax(0,1fr) auto;column-gap:var(--space-3);align-items:center;min-height:48px;padding:var(--space-2) 0;color:var(--text-primary);font-size:var(--text-14)}
+.row-line{grid-template-columns:auto minmax(0,1fr) auto !important}
+.row-title{font-size:var(--text-14);line-height:var(--lh-14);font-weight:600}
+.row-amount{font-weight:600;white-space:nowrap;text-align:right}
+.row-meta{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary);white-space:nowrap}
+.row-body{padding:0 0 var(--space-3) calc(16px + var(--space-3));font-size:var(--text-14);line-height:var(--lh-14)}
+.row-body p + p{margin-top:var(--space-1)}
+.row-body .limit{font-size:var(--text-13);color:var(--text-tertiary)}
+.threshold{margin-top:var(--space-3)}
+.notes{margin-top:var(--space-2);padding:var(--space-3);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:var(--text-14);line-height:var(--lh-14)}
+.foot-link{margin-top:var(--space-3)}
+@media (max-width: 1279px){
+  .mt-layout{grid-template-columns:minmax(0,1fr)}
+  .toc{position:static}
+  .toc h2{display:none}
+  .toc ol{display:flex;gap:var(--space-1);overflow-x:auto;padding-bottom:var(--space-1)}
+  .toc a{border-left:0;border-bottom:2px solid transparent;white-space:nowrap;padding:0 var(--space-2)}
+  .toc a[aria-current="true"]{border-bottom-color:var(--accent)}
+  .toc .sep{margin-top:0}
+}
+@media (max-width: 767px){
+  .mt-header{position:static;height:auto;flex-wrap:wrap;padding:var(--space-3) var(--gutter);gap:var(--space-2)}
+  .mt-header h1{font-size:var(--text-16);line-height:var(--lh-16)}
+  .mt-header .btn-row{flex-wrap:wrap}
+  .mt-header .btn .lbl-long{display:none}
+  .mt-layout{padding:var(--space-3) var(--gutter) calc(56px + var(--space-6));gap:var(--space-3)}
+  .doc{padding:var(--space-4)}
+  .key-nums{grid-template-columns:1fr}
+  .key-nums > div + div{border-left:0;border-top:1px solid var(--border-subtle)}
+  .key-nums .is-key{order:-1}
+  .row-item > summary{grid-template-columns:16px auto minmax(0,1fr);row-gap:var(--space-1)}
+  .row-item > summary .row-amount{grid-column:3;text-align:left}
+  .row-line{grid-template-columns:auto minmax(0,1fr) !important;row-gap:var(--space-1)}
+  .row-line .row-meta{grid-column:2;white-space:normal}
+  .table.ch-table .hide-m{display:none}
+}
+</style>
+</head>
+<body>
+<header class="topbar" role="banner">
+  <a class="brand" href="overview.html"><span class="brand-mark"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V11M10 19V5M15 19v-6M20 19V9"/></svg></span>EC ProfitLens</a>
+  <button type="button" class="btn status-btn" data-testid="data-status" data-status="ready" aria-haspopup="dialog" aria-expanded="false"><span class="dot" aria-hidden="true"></span>示範資料 · 資料到 8/24</button>
+  <button type="button" class="ai-status" data-testid="ai-availability" aria-label="AI 未啟用" aria-haspopup="dialog"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M9 11h.01M15 11h.01M9 15h6"/></svg><span class="label">AI 未啟用</span></button>
+  <button type="button" class="btn btn-icon desk-only" aria-label="指標定義" data-testid="basis-button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg></button>
+  <button type="button" class="btn desk-only" aria-haspopup="menu" aria-expanded="false" data-testid="save-menu">儲存<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span class="save-state">未保存</span></button>
+  <button type="button" class="btn desk-only" aria-haspopup="menu" aria-expanded="false" data-testid="download-menu">匯出<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+</header>
+<div class="layout">
+<nav class="sidebar" aria-label="主要導覽"><div class="sidebar-inner">
+<div class="nav-group"><h2>看結果</h2>
+<a class="nav-item" href="overview.html" data-testid="nav-overview"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>經營總覽</span></a>
+</div>
+<div class="nav-group"><h2>找原因</h2>
+<a class="nav-item" href="#" data-testid="nav-diagnosis"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg><span>通路健檢</span><span class="badge nav-end" aria-label="6 項不利">6</span></a>
+<a class="nav-item" href="#" data-testid="nav-products"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg><span>商品毛利</span></a>
+</div>
+<div class="nav-group"><h2>做決定</h2>
+<a class="nav-item" href="#" data-testid="nav-scenarios"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg><span>假設試算</span></a>
+<a class="nav-item" href="#" data-testid="nav-actions"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg><span>待辦</span></a>
+<a class="nav-item" href="meeting.html" data-testid="nav-meeting" aria-current="page"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>會議紀錄</span></a>
+</div>
+<div class="nav-group"><h2>管資料</h2>
+<a class="nav-item" href="#" data-testid="nav-data"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg><span>資料來源</span></a>
+</div>
+</div></nav>
+<main class="main mt-page" id="main-content">
+  <div class="mt-header" data-testid="meeting-header">
+    <h1>已結束會議 · 10/5</h1>
+    <div class="btn-row">
+      <span class="decision-state" data-testid="meeting-decision">決議 <span class="loz loz-accent"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>採用</span></span>
+      <button type="button" class="btn" aria-label="複製週會摘要"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="lbl-long">複製週會摘要</span></button>
+      <button type="button" class="btn" aria-haspopup="menu" aria-expanded="false" data-testid="meeting-outputs">匯出會議<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+  </div>
+  <div class="period-bar" data-testid="period-bar">
+  <button type="button" class="btn btn-sm" aria-haspopup="listbox" data-testid="channel-filter">全部通路<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+  <div class="seg" role="group" aria-label="期間快捷" data-testid="period-presets">
+    <button type="button" aria-pressed="false">近 7 天</button><button type="button" aria-pressed="false">近 4 週</button><button type="button" aria-disabled="true" title="資料不足 12 週的兩期">近 12 週</button><button type="button" aria-disabled="true" title="目前資料沒有兩個完整月份">本月 vs 上月</button><button type="button" aria-disabled="true" title="資料從 6/1 開始，沒有去年同期">去年同期</button>
+  </div>
+  <p class="period-summary" data-testid="period-summary">本期 7/13–8/23 對比 上期 6/1–7/12（各 42 天）</p>
+  <button type="button" class="btn btn-sm push" aria-haspopup="dialog" aria-expanded="false">自訂期間<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+  <button type="button" class="btn period-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="period-sheet"><span>自訂期間 · 7/13–8/23</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+</div>
+<p class="preset-reason" data-testid="preset-reason-visible-yoy">去年同期不可用：資料從 6/1 開始。</p>
+<div class="sheet" id="period-sheet" role="dialog" aria-label="期間" hidden></div>
+  <div class="mt-layout">
+    <nav class="toc" aria-label="議程目錄"><h2>議程</h2><ol><li class="agenda-item"><a href="#ag-key" aria-current="true">關鍵數字</a></li><li class="agenda-item"><a href="#ag-priorities">本期重點</a></li><li class="agenda-item"><a href="#ag-channels">各通路表現</a></li><li class="agenda-item"><a href="#ag-followup">上次決議追蹤</a></li><li class="agenda-item"><a href="#ag-scenarios">選入方案</a></li><li class="agenda-item"><a href="#ag-actions">置頂待辦</a></li><li class="sep"><a href="#mt-decision">決議與備註</a></li><li><a href="#mt-compare">與上次會議比較</a></li><li><a href="#mt-history">會議歷史</a></li></ol></nav>
+    <article class="doc" aria-labelledby="doc-title">
+      <p class="snapshot-note" data-testid="meeting-snapshot-note">這份紀錄在 10/5 結束，之後的資料變動不會影響內容。</p>
+      <p class="scope-line">會議範圍：全部通路 · 本期 7/13–8/23 對比 上期 6/1–7/12（各 42 天）· 資料到 8/24 · 金額未稅</p>
+      <h2 class="doc-title" id="doc-title">本期營運會議</h2>
+      <p class="doc-meta">會議日期 10/5 · 已結束</p>
+
+      <ol class="agenda" aria-label="議程">
+        <li id="ag-key"><div class="sec-head"><h2>關鍵數字</h2></div>
+          <div class="key-nums">
+            <div><p class="kn-name">淨營收</p><p class="kn-value"><a class="nl" href="evidence-drawer.html">785.1 萬</a></p><p class="kn-delta">比上期多 170.9 萬（+27.8%）</p><p class="kn-prev">上期 614.2 萬</p></div>
+            <div class="is-key"><p class="kn-name">扣廣告後貢獻</p><p class="kn-value"><a class="nl" href="evidence-drawer.html">127.0 萬</a></p><p class="kn-delta neg">比上期少賺 59.9 萬（−32.0%）</p><p class="kn-prev">上期 186.9 萬</p></div>
+          </div>
+          <p class="kn-sentence">淨營收多 170.9 萬，扣廣告後貢獻卻少賺 59.9 萬；最大一項是折扣多花 118.8 萬。</p>
+        </li>
+
+        <li id="ag-priorities"><div class="sec-head"><h2>本期重點</h2><span class="scope">全部通路 · 依影響金額排序</span></div>
+          <div class="rows">
+            <details class="row-item" data-testid="meeting-priority-1">
+  <summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg><span class="loz loz-unfav">不利</span><span class="row-title">折扣多花 118.8 萬</span><span class="row-amount"><span class="row-meta" style="font-weight:400;margin-right:6px">影響</span><a class="nl neg" href="evidence-drawer.html">−118.8 萬</a></span></summary>
+  <div class="row-body"><p>折扣率從 9.0% 升到 18.0%，可能是檔期更深、折扣券更多或商品組合改變。</p><p>先列出本期的促銷檔期，核對折扣有沒有換到足夠的銷量。</p><p class="limit">降折扣前，先看銷量會不會跟著掉。</p></div>
+</details>
+            <details class="row-item" data-testid="meeting-priority-2">
+  <summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg><span class="loz loz-unfav">不利</span><span class="row-title">淨營收多 170.9 萬，卻少賺 59.9 萬</span><span class="row-amount"><span class="row-meta" style="font-weight:400;margin-right:6px">影響</span><a class="nl neg" href="evidence-drawer.html">−59.9 萬</a></span></summary>
+  <div class="row-body"><p>成長被費用吃掉了，可能是折扣、退款、平台抽成或廣告費增加。</p><p>先看貢獻變化拆解中扣最多的兩項，再到通路健檢確認是哪個通路。</p><p class="limit">差額說明發生了什麼，原因還需要確認。</p></div>
+</details>
+            <details class="row-item" data-testid="meeting-priority-3">
+  <summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg><span class="loz loz-unfav">不利</span><span class="row-title">廣告多花 36.1 萬</span><span class="row-amount"><span class="row-meta" style="font-weight:400;margin-right:6px">影響</span><a class="nl neg" href="evidence-drawer.html">−36.1 萬</a></span></summary>
+  <div class="row-body"><p>廣告佔比從 5.3% 升到 8.8%，可能是投放加碼、轉換變差或訂單入帳延後。</p><p>比對各媒體的 ROAS，先縮減表現最差的活動，再設定每週檢查點。</p><p class="limit">廣告增加不等於浪費，先看帶來的淨營收。</p></div>
+</details>
+          </div>
+          <details class="threshold"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>金額門檻 0 元（會議專用，和總覽分開）</summary></details>
+        </li>
+
+        <li id="ag-channels"><div class="sec-head"><h2>各通路表現</h2><span class="unit-note">金額單位：元</span></div>
+          <div class="table-scroll" role="region" aria-label="各通路表現" tabindex="0"><table class="table ch-table">
+            <thead><tr><th scope="col">通路</th><th scope="col" class="num hide-m">上期扣廣告後貢獻</th><th scope="col" class="num">本期扣廣告後貢獻</th><th scope="col" class="num">差額</th></tr></thead>
+            <tbody>
+              <tr><td>官網 · DTC</td><td class="num hide-m"><a class="nl" href="#">1,147,526</a></td><td class="num"><a class="nl" href="#">1,330,963</a></td><td class="num"><a class="nl" href="#">+183,437</a></td></tr>
+              <tr><td>平台 · MARKETPLACE <span class="loz loz-unfav">轉負</span></td><td class="num hide-m"><a class="nl" href="#">721,101</a></td><td class="num"><a class="nl neg" href="#">−61,170</a></td><td class="num"><a class="nl neg" href="#">−782,271</a></td></tr>
+            </tbody></table></div>
+          <details class="data-alternative"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>完整通路寬表</summary></details>
+        </li>
+
+        <li id="ag-followup"><div class="sec-head"><h2>上次決議追蹤<span class="mock-flag">示意值</span></h2><span class="scope">上次會議 9/28</span></div>
+          <div class="rows">
+            <div class="row-item"><div class="row-line"><span class="loz loz-accent">進行中</span><span class="row-title">檢討折扣檔期</span><span class="row-meta">王小明 · 期限 9/30</span></div></div>
+            <div class="row-item"><div class="row-line"><span class="loz loz-neutral"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>已完成</span><span class="row-title">核對平台 · MARKETPLACE 廣告費的通路歸屬</span><span class="row-meta">陳怡君 · 期限 9/26</span></div></div>
+          </div>
+        </li>
+
+        <li id="ag-scenarios"><div class="sec-head"><h2>選入方案<span class="mock-flag">示意值</span></h2><span class="unit-note">金額單位：元</span></div>
+          <div class="table-scroll" role="region" aria-label="選入方案" tabindex="0"><table class="table">
+            <thead><tr><th scope="col">通路</th><th scope="col">選入的方案</th><th scope="col" class="num">試算後扣廣告後貢獻</th><th scope="col" class="num">差額</th></tr></thead>
+            <tbody>
+              <tr><td>官網 · DTC</td><td class="muted" colspan="3">未選入</td></tr>
+              <tr><td>平台 · MARKETPLACE</td><td>廣告預算 −20%</td><td class="num"><a class="nl" href="#">39,770</a></td><td class="num"><a class="nl" href="#">+100,940</a></td></tr>
+            </tbody></table></div>
+          <details class="data-alternative"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>這個試算假設了什麼（1 項）</summary></details>
+        </li>
+
+        <li id="ag-actions"><div class="sec-head"><h2>置頂待辦<span class="mock-flag">示意值</span></h2></div>
+          <div class="rows">
+            <div class="row-item"><div class="row-line"><span class="loz loz-unfav">逾期</span><span class="row-title">檢討折扣檔期</span><span class="row-meta">王小明 · 期限 9/30</span></div></div>
+            <div class="row-item"><div class="row-line"><span class="loz loz-neutral">未開始</span><span class="row-title">停掉平台 · MARKETPLACE 表現最差的兩檔廣告</span><span class="row-meta">陳怡君 · 期限 10/10</span></div></div>
+          </div>
+          <details class="data-alternative"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>其他待辦（1）</summary></details>
+        </li>
+      </ol>
+
+      <section class="doc-sec" id="mt-decision" aria-labelledby="decision-title">
+        <div class="sec-head"><h2 id="decision-title">決議與備註<span class="mock-flag">示意值</span></h2><span class="loz loz-accent"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>採用</span></div>
+        <p class="notes">先停平台 · MARKETPLACE 表現最差的兩檔廣告，10/12 週會看扣廣告後貢獻有沒有回到正數。</p>
+      </section>
+
+      <section class="doc-sec" id="mt-compare" aria-labelledby="compare-title">
+        <details data-testid="meeting-compare"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg><span id="compare-title" class="h2" style="color:var(--text-primary)">與上次會議比較</span><span class="mock-flag">示意值</span></summary>
+          <div class="table-scroll" role="region" aria-label="與上次會議比較" tabindex="0" style="margin-top:var(--space-3)"><table class="table compact l3">
+            <thead><tr><th scope="col">項目</th><th scope="col" class="num">上次 9/28（元）</th><th scope="col" class="num">本次 10/5（元）</th><th scope="col" class="num">差額（元）</th></tr></thead>
+            <tbody>
+              <tr><td>淨營收</td><td class="num">7,612,480.00</td><td class="num">7,850,657.90</td><td class="num">+238,177.90</td></tr>
+              <tr><td>扣廣告後貢獻</td><td class="num">1,302,115.40</td><td class="num">1,269,792.73</td><td class="num neg">−32,322.67</td></tr>
+              <tr><td>未完成待辦</td><td class="num">4 項</td><td class="num">5 項</td><td class="num">+1 項</td></tr>
+            </tbody></table></div>
+        </details>
+      </section>
+
+      <section class="doc-sec" id="mt-history" aria-labelledby="history-title">
+        <div class="sec-head"><h2 id="history-title">會議歷史<span class="mock-flag">示意值</span></h2></div>
+        <div class="rows">
+          <div class="row-item"><div class="row-line"><span class="loz loz-accent">採用</span><span class="row-title">10/5 本期營運會議</span><span class="row-meta">已結束 · 目前檢視</span></div></div>
+          <div class="row-item"><div class="row-line"><span class="loz loz-warn">補資料再議</span><span class="row-title">9/28 本期營運會議</span><span class="row-meta">已結束</span></div></div>
+        </div>
+      </section>
+    </article>
+  </div>
+  <footer class="footer">扣廣告後貢獻不含固定費與稅。<a href="#">指標定義</a> · 新台幣 · 台北時間</footer>
+</main>
+</div>
+<nav class="tabbar" aria-label="主要導覽（手機）">
+<a href="overview.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>總覽</span></a>
+<a href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg><span>健檢</span></a>
+<a href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg><span>待辦</span></a>
+<a href="meeting.html" aria-current="page"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>會議</span></a>
+<a href="#" aria-haspopup="dialog"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>更多</span></a>
+</nav>
+</body>
+</html>

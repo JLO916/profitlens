@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>計算與來源 · EC ProfitLens 設計稿</title>
+<meta name="description" content="H2 設計稿：v3 計算與來源抽屜（示範資料，虛構）">
+<style>
+@import url("tokens.css");
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg-page);color:var(--text-primary);font-family:var(--font-sans);font-size:var(--text-14);line-height:var(--lh-14);font-variant-numeric:tabular-nums;letter-spacing:0}
+h1,h2,h3,p,ol,ul,dl,dd{margin:0}
+ol,ul{padding:0}
+td,th,.num,.metric-value{font-variant-numeric:tabular-nums}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+button,select,input{font:inherit;color:inherit}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.mono{font-family:var(--font-mono);font-size:var(--text-12);line-height:var(--lh-12)}
+.icon{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.icon-20{width:20px;height:20px}
+.neg{color:var(--unfavorable)}
+.muted{color:var(--text-tertiary)}
+.secondary{color:var(--text-secondary)}
+.t12{font-size:var(--text-12);line-height:var(--lh-12)}
+.t13{font-size:var(--text-13);line-height:var(--lh-13)}
+
+/* 設計稿標示（不是產品元件）：只標在假想值旁 */
+.mock-flag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border:1px dashed var(--border-input);border-radius:var(--radius-sm);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);font-weight:400;vertical-align:middle;margin-left:var(--space-2)}
+
+/* C12 按鈕 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:var(--control-h);padding:0 var(--space-3);border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--bg-surface);color:var(--text-primary);font-size:var(--text-14);font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--bg-hover);text-decoration:none}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-sm{height:var(--control-h-sm);font-size:var(--text-13);padding:0 10px}
+.btn-text{border:0;background:none;color:var(--accent);padding:0 2px;height:auto;min-height:24px;font-weight:500}
+.btn-text:hover{background:none;text-decoration:underline}
+.btn-icon{width:var(--control-h);padding:0;color:var(--text-secondary)}
+.btn-help{width:16px;height:16px;padding:0;border:0;background:none;color:var(--text-tertiary);display:inline-grid;place-items:center;cursor:pointer}
+.btn-help .icon{width:16px;height:16px}
+.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:var(--space-2);justify-content:flex-start;flex-wrap:wrap}
+.nl{color:inherit;text-decoration:underline dotted 1px var(--border-input);text-underline-offset:3px;cursor:pointer;padding:2px 0}
+.nl:hover{text-decoration:underline solid 1px var(--accent)}
+.nl.neg,.neg .nl{color:var(--unfavorable)}
+
+/* C8 狀態標籤與計數徽章 */
+.loz{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 6px;border-radius:var(--radius-sm);font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;white-space:nowrap}
+.loz-unfav{background:var(--unfavorable-subtle);color:var(--unfavorable)}
+.loz-warn{background:var(--warning-subtle);color:var(--warning)}
+.loz-fav{background:var(--favorable-subtle);color:var(--favorable)}
+.loz-accent{background:var(--accent-subtle);color:var(--accent)}
+.loz-neutral{background:var(--bg-subtle);color:var(--text-secondary)}
+.loz .icon{width:12px;height:12px}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:var(--radius-full);background:var(--bg-subtle);color:var(--text-secondary);font-size:var(--text-12);line-height:var(--lh-12);font-weight:500}
+.dot{width:8px;height:8px;border-radius:var(--radius-full);background:var(--accent);flex:none}
+
+/* C7 頂欄 */
+.topbar{position:sticky;top:0;z-index:var(--z-sticky);height:var(--topbar-h);display:flex;align-items:center;gap:var(--space-2);padding:0 var(--space-4) 0 var(--space-5);background:var(--bg-surface);border-bottom:1px solid var(--border-subtle)}
+.brand{display:flex;align-items:center;gap:var(--space-2);margin-right:auto;font-size:var(--text-16);line-height:var(--lh-16);font-weight:600;color:var(--text-primary);white-space:nowrap}
+.brand-mark{width:24px;height:24px;border-radius:var(--radius-sm);background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+.brand-mark .icon{width:16px;height:16px}
+.status-btn{font-size:var(--text-13);font-weight:500}
+.ai-status{border:0;background:none;padding:0 var(--space-2);height:var(--control-h);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.ai-status .icon{display:none}
+.save-state{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);font-weight:400}
+.only-mobile{display:none}
+
+/* 版面 */
+.layout{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);min-height:calc(100vh - var(--topbar-h))}
+.sidebar{background:var(--bg-sidebar);border-right:1px solid var(--border-subtle)}
+.sidebar-inner{position:sticky;top:var(--topbar-h);padding:var(--space-4) var(--space-3)}
+.nav-group + .nav-group{margin-top:var(--space-4)}
+.nav-group h2{padding:0 var(--space-3);margin-bottom:var(--space-1);font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;color:var(--text-tertiary)}
+.nav-item{display:flex;align-items:center;gap:var(--space-2);height:32px;padding:0 var(--space-3);border-left:2px solid transparent;color:var(--text-secondary);font-size:var(--text-14);text-decoration:none}
+.nav-item:hover{background:var(--bg-hover);text-decoration:none}
+.nav-item .icon{width:20px;height:20px;color:var(--text-tertiary)}
+.nav-item .nav-end{margin-left:auto}
+.nav-item[aria-current="page"]{border-left-color:var(--accent);color:var(--text-primary);font-weight:600}
+.nav-item[aria-current="page"] .icon{color:var(--text-primary)}
+.main{min-width:0}
+.page-header{height:var(--page-header-h);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:0 var(--gutter);max-width:var(--content-max)}
+.page-header h1{font-size:var(--text-20);line-height:var(--lh-20);font-weight:600}
+.page-header .desc{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary)}
+
+/* C23 期間列 */
+.period-bar{position:sticky;top:var(--topbar-h);z-index:var(--z-sticky);height:var(--period-bar-h);display:flex;align-items:center;gap:var(--space-3);padding:0 var(--gutter);background:var(--bg-page);border-bottom:1px solid var(--border-subtle)}
+.period-summary{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.period-bar .push{margin-left:auto}
+.period-trigger{display:none}
+.seg{display:inline-flex;border:1px solid var(--border-input);border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-surface);flex:none}
+.seg button{height:26px;padding:0 10px;border:0;border-left:1px solid var(--border-subtle);background:var(--bg-surface);color:var(--text-secondary);font-size:var(--text-13);line-height:1;white-space:nowrap;cursor:pointer}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--accent-subtle);color:var(--accent);outline:1px solid var(--accent-border);outline-offset:-1px;font-weight:500}
+.seg button[aria-disabled="true"]{color:var(--text-disabled);cursor:not-allowed}
+.preset-reason{padding:6px var(--gutter);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary)}
+.sheet{display:none}
+
+/* 內容 */
+.content{padding:var(--space-5) var(--gutter) var(--space-7);max-width:var(--content-max)}
+.stack > * + *{margin-top:var(--space-6)}
+.sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-3);min-height:32px}
+.sec-title{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+.sec-head h2,.h2{font-size:var(--text-16);line-height:var(--lh-16);font-weight:600}
+.sub{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary);margin-top:2px}
+.scope{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary);font-weight:400}
+.sec-tools{display:flex;align-items:center;gap:var(--space-3);flex:none;font-size:var(--text-13);color:var(--text-secondary)}
+.unit-note{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary)}
+
+/* C5 面板 */
+.panel{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-5)}
+.panel > .sec-head{margin-bottom:var(--space-4)}
+.divider{border-top:1px solid var(--border-subtle);margin-top:var(--space-5);padding-top:var(--space-5)}
+
+/* C3 資料表 */
+.table{width:100%;border-collapse:collapse;font-size:var(--text-14);line-height:var(--lh-14)}
+.table th{height:var(--row-h);padding:0 var(--space-3);background:var(--bg-subtle);font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;color:var(--text-secondary);text-align:left;white-space:nowrap}
+.table td{height:var(--row-h);padding:0 var(--space-3);border-bottom:1px solid var(--border-subtle);vertical-align:middle}
+.table .num,.table th.num{text-align:right;white-space:nowrap}
+.table.compact th,.table.compact td{height:var(--row-h-compact)}
+.table.l3{font-size:var(--text-13);line-height:var(--lh-13)}
+.table tr.subtotal td{font-weight:600;border-top:1px solid var(--border-strong)}
+.table tr.total td{font-weight:600;border-top:var(--rule-total) solid var(--border-strong)}
+.table tr:hover td{background:var(--bg-hover)}
+.table-scroll{overflow-x:auto}
+
+/* C2 緊湊表 */
+.kv{width:100%;border-collapse:collapse;font-size:var(--text-13);line-height:var(--lh-13)}
+.kv th,.kv td{height:var(--row-h-compact);padding:0 var(--space-2);border-bottom:1px solid var(--border-subtle);text-align:left;font-weight:400}
+.kv thead th{font-size:var(--text-12);line-height:var(--lh-12);font-weight:500;color:var(--text-secondary)}
+.kv .num{text-align:right;white-space:nowrap}
+.kv td.prev{color:var(--text-secondary)}
+
+/* details（進階、資料表、技術細節） */
+details > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary);min-height:24px}
+details > summary::-webkit-details-marker{display:none}
+details > summary .chev{transition:transform var(--dur-fast) var(--ease)}
+details[open] > summary .chev{transform:rotate(90deg)}
+.data-alternative{margin-top:var(--space-3)}
+.data-alternative[open] > summary{margin-bottom:var(--space-2)}
+.advanced{padding:var(--space-3) 0;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle)}
+.advanced > summary{font-size:var(--text-14);line-height:var(--lh-14);font-weight:500;color:var(--text-primary)}
+
+/* 頁尾 */
+.footer{padding:var(--space-4) var(--gutter) var(--space-6);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);max-width:var(--content-max);border-top:1px solid var(--border-subtle)}
+.footer a{color:var(--accent)}
+
+/* 圖表 */
+.chart{display:block;width:100%;height:auto}
+.chart-wrap{overflow-x:auto}
+.chart text{font-family:var(--font-sans);font-size:12px;fill:var(--chart-axis)}
+.chart .lbl{fill:var(--text-secondary)}
+.chart .lbl-strong{fill:var(--text-primary);font-weight:600}
+.chart .lbl-neg{fill:var(--unfavorable);font-weight:600}
+.chart .grid{stroke:var(--chart-grid);stroke-width:1}
+.chart .zero{stroke:var(--border-strong);stroke-width:1}
+.chart .conn{stroke:var(--border-strong);stroke-width:1}
+.chart .b-total{fill:var(--chart-total)}
+.chart .b-unfav{fill:var(--chart-unfavorable)}
+.chart .b-fav{fill:var(--chart-favorable)}
+.chart .b-current{fill:var(--chart-current)}
+.chart .b-prev{fill:var(--chart-previous)}
+.chart .l-current{fill:none;stroke:var(--chart-current);stroke-width:2}
+.chart .l-prev{fill:none;stroke:var(--chart-previous);stroke-width:1.5}
+.chart .pt-current{fill:var(--chart-current)}
+.legend{display:flex;gap:var(--space-3);font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-secondary);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:2px;background:var(--chart-current)}
+.legend i.prev{background:var(--chart-previous)}
+.takeaways{display:flex;gap:var(--space-6);margin-bottom:var(--space-3)}
+.takeaway dt{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary)}
+.takeaway dd{font-size:var(--text-20);line-height:var(--lh-20);font-weight:600}
+.takeaway dd small{font-size:var(--text-12);font-weight:400;color:var(--text-tertiary);margin-left:6px}
+
+/* 手機底部分頁列 */
+.tabbar{display:none}
+
+@media (max-width: 1279px){
+  .ai-status .label{display:none}
+  .ai-status .icon{display:block}
+}
+@media (max-width: 767px){
+  .layout{display:block}
+  .sidebar{display:none}
+  .topbar{padding:0 var(--space-4);gap:var(--space-1)}
+  .topbar .desk-only{display:none}
+  .only-mobile{display:inline-flex}
+  .status-btn{height:var(--control-h);padding:0 10px}
+  .page-header{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;padding:0}
+  .chart-wrap .chart.mw-460{min-width:460px}
+  .chart-wrap .chart.mw-560{min-width:560px}
+  .chart-wrap .chart.mw-760{min-width:760px}
+  .period-bar{height:auto;padding:var(--space-2) var(--gutter);flex-wrap:wrap}
+  .period-bar > :not(.period-trigger){display:none}
+  .period-trigger{display:flex;width:100%;height:var(--control-h-touch);justify-content:space-between;font-size:var(--text-14)}
+  .preset-reason{display:none}
+  .content{padding-top:var(--space-4);padding-bottom:calc(56px + var(--space-6))}
+  .stack > * + *{margin-top:var(--space-5)}
+  .panel{padding:var(--space-4)}
+  .sec-head{flex-wrap:wrap;gap:var(--space-2)}
+  .btn{height:var(--control-h-touch)}
+  .btn-sm{height:32px}
+  .btn-icon{width:var(--control-h-touch)}
+  .takeaways{gap:var(--space-4)}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:var(--z-sticky);height:calc(56px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--bg-surface);border-top:1px solid var(--border-subtle)}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-secondary);text-decoration:none;border-top:2px solid transparent}
+  .tabbar a[aria-current="page"]{color:var(--text-primary);font-weight:600;border-top-color:var(--accent)}
+  .tabbar .icon{width:20px;height:20px}
+  .footer{padding-bottom:calc(56px + var(--space-5))}
+}
+
+/* 2 本期一句話 */
+.snapshot{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-5)}
+.stack > .kpi-section{margin-top:var(--space-4)}
+.snapshot-sentence{font-size:var(--text-20);line-height:var(--lh-20);font-weight:600;color:var(--text-primary)}
+.snapshot-meta{margin-top:var(--space-1);font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary)}
+.snapshot-actions{display:flex;align-items:center;gap:var(--space-3);flex:none}
+.snapshot-actions a{font-size:var(--text-13);font-weight:500}
+
+/* 3 C1 KPI 帶 */
+.kpi-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--space-2)}
+.kpi-band{display:grid;grid-template-columns:1fr 1fr 1fr 1.25fr 1fr;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden}
+.kpi{padding:var(--space-4) 20px;min-height:132px;border-left:1px solid var(--border-subtle);display:flex;flex-direction:column;gap:2px}
+.kpi:first-child{border-left:0}
+.kpi.is-key{border-top:var(--rule-accent) solid var(--accent);padding-top:14px}
+.kpi-name{display:flex;align-items:center;gap:4px;font-size:var(--text-13);line-height:var(--lh-13);font-weight:500;color:var(--text-secondary)}
+.kpi-value{font-size:var(--num-28);line-height:var(--lh-28);font-weight:600;color:var(--text-primary)}
+.kpi.is-key .kpi-value{font-size:var(--num-32);line-height:var(--lh-32)}
+.kpi-delta{font-size:var(--text-13);line-height:var(--lh-13)}
+.kpi-prev{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary)}
+
+/* 4 C9 警示列（摘要型） */
+.alert-list{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
+.alert + .alert{border-top:1px solid var(--border-subtle)}
+.alert > summary{display:grid;grid-template-columns:16px auto minmax(0,1fr) 160px auto;grid-template-areas:"chev loz title impact actions" ". . explain explain actions";column-gap:var(--space-3);row-gap:2px;align-items:center;padding:var(--space-3) var(--space-4);min-height:64px;color:var(--text-primary);font-size:var(--text-14)}
+.alert > summary .chev{grid-area:chev;color:var(--text-tertiary)}
+.alert-loz{grid-area:loz}
+.alert-title{grid-area:title;font-size:var(--text-16);line-height:var(--lh-16);font-weight:600}
+.alert-impact{grid-area:impact;text-align:right;font-size:var(--text-16);line-height:var(--lh-16);font-weight:600;white-space:nowrap}
+.alert-impact .k{font-size:var(--text-13);font-weight:400;color:var(--text-tertiary);margin-right:6px}
+.alert-actions{grid-area:actions;display:flex;gap:var(--space-2);align-self:start}
+.alert-explain{grid-area:explain;font-size:var(--text-14);line-height:var(--lh-14);color:var(--text-primary)}
+.alert-body{padding:0 var(--space-4) var(--space-4) calc(var(--space-4) + 16px + var(--space-3));font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary)}
+.alert-body dl{display:grid;grid-template-columns:auto 1fr;gap:var(--space-1) var(--space-4)}
+.alert-body dt{color:var(--text-tertiary)}
+.list-foot{margin-top:var(--space-3);font-size:var(--text-13)}
+
+/* 5 拆解 */
+.bridge-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-5);align-items:start}
+.balance{display:flex;align-items:center;gap:6px}
+.balance .icon{color:var(--accent)}
+
+/* 7、8 */
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--space-5);align-items:start}
+.pair > *,.bridge-grid > *,.overview-stack > *{min-width:0}
+
+/* 9 其他常用指標 */
+.assist-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);align-items:start}
+
+@media (max-width: 1279px){
+  .pair{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width: 1023px){
+  .bridge-grid{grid-template-columns:1fr}
+}
+@media (max-width: 1023px) and (min-width: 768px){
+  .kpi-band{grid-template-columns:repeat(6,1fr)}
+  .kpi{grid-column:span 2;border-top:1px solid var(--border-subtle)}
+  .kpi:nth-child(-n+3){border-top:0}
+  .kpi:nth-child(4){border-left:0;grid-column:span 3}
+  .kpi:nth-child(5){grid-column:span 3}
+}
+@media (max-width: 767px){
+  .snapshot{flex-direction:column;gap:var(--space-3);min-height:0}
+  .snapshot-sentence{font-size:var(--text-16);line-height:var(--lh-16)}
+  .kpi-head{display:none}
+  .overview-stack{display:flex;flex-direction:column}
+  .overview-stack > *{margin-top:var(--space-5)}
+  .overview-stack > .kpi-section{margin-top:var(--space-4)}
+  .overview-stack > :first-child{margin-top:0}
+  .kpi-band{display:flex;flex-direction:column}
+  .kpi{min-height:0;border-left:0;border-top:1px solid var(--border-subtle);padding:10px var(--space-4);display:grid;grid-template-columns:1fr auto auto;column-gap:var(--space-3);align-items:baseline}
+  .kpi .kpi-prev,.kpi .dl-long,.kpi .pct{display:none}
+  .kpi-value{font-size:var(--text-14);line-height:var(--lh-14)}
+  .kpi-delta{text-align:right}
+  .kpi.is-key{order:-1;border-top:var(--rule-accent) solid var(--accent);display:flex;padding:14px var(--space-4) var(--space-4)}
+  .kpi.is-key .kpi-value{font-size:var(--num-24);line-height:var(--lh-24)}
+  .kpi.is-key .kpi-prev,.kpi.is-key .dl-long,.kpi.is-key .pct{display:inline}
+  .kpi.is-key .kpi-prev{display:block}
+  .kpi:not(.is-key) .kpi-name .btn-help{display:none}
+  .alert > summary{grid-template-columns:16px auto minmax(0,1fr);grid-template-areas:"chev loz title" ". impact impact" ". explain explain" ". actions actions";row-gap:var(--space-1);column-gap:var(--space-2)}
+  .alert-impact{text-align:left}
+  .alert-actions{margin-top:var(--space-2)}
+  .alert-body{padding-left:calc(var(--space-4) + 16px + var(--space-3))}
+  .assist-grid{grid-template-columns:1fr;gap:0}
+  .assist-grid .kv + .kv thead{display:none}
+  .sec-tools .lbl-long{display:none}
+}
+
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:var(--z-overlay)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:var(--drawer-w-wide);max-width:100%;display:flex;flex-direction:column;background:var(--bg-surface);border-left:1px solid var(--border-subtle);box-shadow:var(--shadow-overlay);border-radius:var(--radius-md) 0 0 var(--radius-md);z-index:var(--z-drawer)}
+.drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);min-height:56px;padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-subtle)}
+.drawer-head h2{font-size:var(--text-20);line-height:var(--lh-20);font-weight:600}
+.drawer-head .sub{color:var(--text-tertiary)}
+.drawer-body{flex:1;overflow:auto;padding:var(--space-5)}
+.dsec + .dsec{margin-top:var(--space-5)}
+.dsec h3{font-size:var(--text-13);line-height:var(--lh-13);font-weight:600;color:var(--text-secondary);margin-bottom:var(--space-2)}
+.dsec .note{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary);margin-top:var(--space-2)}
+.main-value{font-size:var(--num-28);line-height:var(--lh-28);font-weight:600}
+.exact{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-secondary)}
+.value-delta{font-size:var(--text-13);line-height:var(--lh-13);margin-top:var(--space-1)}
+.ladder{width:100%;border-collapse:collapse;font-size:var(--text-14);line-height:var(--lh-14)}
+.ladder td{height:28px;padding:0 var(--space-2)}
+.ladder td.op{width:24px;text-align:center;color:var(--text-tertiary);padding:0}
+.ladder td.num{text-align:right;white-space:nowrap}
+.ladder tr.eq td{font-weight:600;border-top:1px solid var(--border-strong)}
+.ladder tr.is-target td{border-top:var(--rule-total) solid var(--border-strong)}
+.ladder tr.is-target td:not(.op){color:var(--text-primary)}
+.ladder tr.indent td.name{padding-left:var(--space-2)}
+.def{font-size:var(--text-14);line-height:var(--lh-14)}
+.def p + p{margin-top:var(--space-2)}
+.def .meta{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-tertiary)}
+.src-tools{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-3);align-items:center;margin-bottom:var(--space-2)}
+.field{display:flex;align-items:center;gap:6px;height:var(--control-h);padding:0 var(--space-2);border:1px solid var(--border-input);border-radius:var(--radius-sm);background:var(--bg-surface);color:var(--text-tertiary);font-size:var(--text-14);flex:1;min-width:180px}
+.field input{border:0;outline:0;background:none;flex:1;min-width:0;font-size:var(--text-14);color:var(--text-primary)}
+.src-count{font-size:var(--text-12);line-height:var(--lh-12);color:var(--text-tertiary);margin-bottom:var(--space-2)}
+.drawer .table td:first-child,.drawer .table th{white-space:nowrap}
+.src td{vertical-align:top;padding-top:10px;padding-bottom:10px;height:auto}
+.src .mono{white-space:nowrap}
+.src .vals{font-size:var(--text-13);line-height:var(--lh-13);color:var(--text-primary)}
+.src .vals span{white-space:nowrap}
+.src .vals span + span::before{content:"· ";color:var(--text-tertiary)}
+.src .col-ch{white-space:nowrap}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-3);font-size:var(--text-12);color:var(--text-tertiary)}
+.tech{margin-top:var(--space-5);padding-top:var(--space-3);border-top:1px solid var(--border-subtle)}
+.tech dl{display:grid;grid-template-columns:auto 1fr;gap:var(--space-1) var(--space-4);margin-top:var(--space-2);font-size:var(--text-13);line-height:var(--lh-13)}
+.tech dt{color:var(--text-tertiary)}
+@media (max-width: 1439px){ .drawer{width:var(--drawer-w)} }
+@media (max-width: 1279px){ .drawer{width:var(--drawer-w-narrow)} }
+@media (max-width: 767px){
+  .drawer{width:100%;border-left:0;border-radius:0}
+  .drawer-head{padding:var(--space-3) var(--space-4)}
+  .drawer-body{padding:var(--space-4)}
+  .tabbar{display:none}
+  .src .col-date,.src .col-ch{display:none}
+}
+</style>
+</head>
+<body>
+<header class="topbar" role="banner" aria-hidden="true" inert>
+  <a class="brand" href="overview.html"><span class="brand-mark"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V11M10 19V5M15 19v-6M20 19V9"/></svg></span>EC ProfitLens</a>
+  <button type="button" class="btn status-btn" data-testid="data-status" data-status="ready" aria-haspopup="dialog" aria-expanded="false"><span class="dot" aria-hidden="true"></span>示範資料 · 資料到 8/24</button>
+  <button type="button" class="ai-status" data-testid="ai-availability" aria-label="AI 未啟用" aria-haspopup="dialog"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M9 11h.01M15 11h.01M9 15h6"/></svg><span class="label">AI 未啟用</span></button>
+  <button type="button" class="btn btn-icon desk-only" aria-label="指標定義" data-testid="basis-button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg></button>
+  <button type="button" class="btn desk-only" aria-haspopup="menu" aria-expanded="false" data-testid="save-menu">儲存<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span class="save-state">未保存</span></button>
+  <button type="button" class="btn desk-only" aria-haspopup="menu" aria-expanded="false" data-testid="download-menu">匯出<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+</header>
+<div class="layout" aria-hidden="true" inert>
+<nav class="sidebar" aria-label="主要導覽"><div class="sidebar-inner">
+<div class="nav-group"><h2>看結果</h2>
+<a class="nav-item" href="overview.html" data-testid="nav-overview" aria-current="page"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>經營總覽</span></a>
+</div>
+<div class="nav-group"><h2>找原因</h2>
+<a class="nav-item" href="#" data-testid="nav-diagnosis"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg><span>通路健檢</span><span class="badge nav-end" aria-label="6 項不利">6</span></a>
+<a class="nav-item" href="#" data-testid="nav-products"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg><span>商品毛利</span></a>
+</div>
+<div class="nav-group"><h2>做決定</h2>
+<a class="nav-item" href="#" data-testid="nav-scenarios"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg><span>假設試算</span></a>
+<a class="nav-item" href="#" data-testid="nav-actions"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg><span>待辦</span></a>
+<a class="nav-item" href="meeting.html" data-testid="nav-meeting"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>會議紀錄</span><span class="loz loz-accent nav-end">草稿</span></a>
+</div>
+<div class="nav-group"><h2>管資料</h2>
+<a class="nav-item" href="#" data-testid="nav-data"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg><span>資料來源</span></a>
+</div>
+</div></nav>
+<main class="main" id="main-content">
+  <div class="page-header"><h1>經營總覽</h1><button type="button" class="btn"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>匯出本頁</button></div>
+  <div class="period-bar" data-testid="period-bar">
+  <button type="button" class="btn btn-sm" aria-haspopup="listbox" data-testid="channel-filter">全部通路<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+  <div class="seg" role="group" aria-label="期間快捷" data-testid="period-presets">
+    <button type="button" aria-pressed="false">近 7 天</button><button type="button" aria-pressed="false">近 4 週</button><button type="button" aria-disabled="true" title="資料不足 12 週的兩期">近 12 週</button><button type="button" aria-disabled="true" title="目前資料沒有兩個完整月份">本月 vs 上月</button><button type="button" aria-disabled="true" title="資料從 6/1 開始，沒有去年同期">去年同期</button>
+  </div>
+  <p class="period-summary" data-testid="period-summary">本期 7/13–8/23 對比 上期 6/1–7/12（各 42 天）</p>
+  <button type="button" class="btn btn-sm push" aria-haspopup="dialog" aria-expanded="false">自訂期間<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+  <button type="button" class="btn period-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="period-sheet"><span>自訂期間 · 7/13–8/23</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+</div>
+<p class="preset-reason" data-testid="preset-reason-visible-yoy">去年同期不可用：資料從 6/1 開始。</p>
+<div class="sheet" id="period-sheet" role="dialog" aria-label="期間" hidden></div>
+  <div class="content stack overview-stack">
+
+    <section class="snapshot" data-testid="weekly-snapshot" aria-label="本期一句話">
+      <div>
+        <p class="snapshot-sentence" data-testid="snapshot-sentence">淨營收多 170.9 萬，扣廣告後貢獻卻少賺 59.9 萬；最大一項是折扣多花 118.8 萬。</p>
+        <p class="snapshot-meta">本期 7/13–8/23 · 全部通路 · 金額未稅</p>
+      </div>
+      <div class="snapshot-actions">
+        <button type="button" class="btn" data-testid="copy-summary"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>複製週會摘要</button>
+        <a href="meeting.html" data-testid="overview-meeting-entry">會議：草稿</a>
+        <span role="status" class="sr-only" data-testid="copy-summary-status"></span>
+      </div>
+    </section>
+
+    <section class="kpi-section" aria-labelledby="kpi-title">
+      <div class="kpi-head"><h2 id="kpi-title" class="sr-only">本期關鍵數字</h2><span></span><span class="unit-note">金額單位：元，未稅</span></div>
+      <div class="kpi-band" data-testid="kpi-band">
+        <div class="kpi" data-testid="kpi-net_revenue">
+  <div class="kpi-name">淨營收<button type="button" class="btn-help" aria-label="淨營收的定義"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.1 2-2.1 3.4"/><path d="M12 17h.01"/></svg></button></div>
+  <a class="kpi-value nl" href="evidence-drawer.html" aria-label="淨營收 785.1 萬，看明細">785.1 萬</a>
+  <div class="kpi-delta"><span class="dl-long">比上期</span>多 170.9 萬<span class="pct">（+27.8%）</span></div>
+  <div class="kpi-prev">上期 <a class="nl" href="#">614.2 萬</a></div>
+</div>
+        <div class="kpi" data-testid="kpi-gross_profit">
+  <div class="kpi-name">商品毛利<button type="button" class="btn-help" aria-label="商品毛利的定義"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.1 2-2.1 3.4"/><path d="M12 17h.01"/></svg></button></div>
+  <a class="kpi-value nl" href="evidence-drawer.html" aria-label="商品毛利 285.8 萬，看明細">285.8 萬</a>
+  <div class="kpi-delta"><span class="dl-long">比上期</span>多 13.4 萬<span class="pct">（+4.9%）</span></div>
+  <div class="kpi-prev">上期 <a class="nl" href="#">272.4 萬</a></div>
+</div>
+        <div class="kpi" data-testid="kpi-contribution_before_marketing">
+  <div class="kpi-name">扣廣告前貢獻<button type="button" class="btn-help" aria-label="扣廣告前貢獻的定義"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.1 2-2.1 3.4"/><path d="M12 17h.01"/></svg></button></div>
+  <a class="kpi-value nl" href="evidence-drawer.html" aria-label="扣廣告前貢獻 195.9 萬，看明細">195.9 萬</a>
+  <div class="kpi-delta"><span class="neg"><span class="dl-long">比上期</span>少賺 23.8 萬<span class="pct">（−10.8%）</span></span></div>
+  <div class="kpi-prev">上期 <a class="nl" href="#">219.6 萬</a></div>
+</div>
+        <div class="kpi is-key" data-testid="kpi-contribution_after_marketing">
+  <div class="kpi-name">扣廣告後貢獻<button type="button" class="btn-help" aria-label="扣廣告後貢獻的定義"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.1 2-2.1 3.4"/><path d="M12 17h.01"/></svg></button></div>
+  <a class="kpi-value nl" href="evidence-drawer.html" aria-label="扣廣告後貢獻 127.0 萬，看明細">127.0 萬</a>
+  <div class="kpi-delta"><span class="neg"><span class="dl-long">比上期</span>少賺 59.9 萬<span class="pct">（−32.0%）</span></span></div>
+  <div class="kpi-prev">上期 <a class="nl" href="#">186.9 萬</a></div>
+</div>
+        <div class="kpi" data-testid="kpi-contribution_margin">
+  <div class="kpi-name">扣廣告後貢獻率<button type="button" class="btn-help" aria-label="扣廣告後貢獻率的定義"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.1 2-2.1 3.4"/><path d="M12 17h.01"/></svg></button></div>
+  <a class="kpi-value nl" href="evidence-drawer.html" aria-label="扣廣告後貢獻率 16.2%，看明細">16.2%</a>
+  <div class="kpi-delta"><span class="neg">降 14.3 個百分點</span></div>
+  <div class="kpi-prev">上期 <a class="nl" href="#">30.4%</a></div>
+</div>
+      </div>
+    </section>
+
+    <section aria-labelledby="top-three-title" data-testid="top-three">
+      <div class="sec-head">
+        <div class="sec-title"><h2 id="top-three-title">本期三件事</h2><span class="scope">全部通路</span></div>
+        <div class="sec-tools"><span class="lbl-long" style="display:inline-flex;align-items:center;gap:4px">依影響金額排序<button type="button" class="btn-help" aria-label="依影響金額排序的定義"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.1 2-2.1 3.4"/><path d="M12 17h.01"/></svg></button></span><button type="button" class="btn-text" aria-haspopup="dialog">調整門檻</button></div>
+      </div>
+      <div class="alert-list">
+        <details class="alert" data-testid="top-three-1">
+  <summary>
+    <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+    <span class="alert-loz"><span class="loz loz-unfav">不利</span></span>
+    <span class="alert-title">折扣多花 118.8 萬</span>
+    <span class="alert-impact"><span class="k">影響</span><a class="nl neg" href="evidence-drawer.html">−118.8 萬</a></span>
+    <span class="alert-actions"><a class="btn btn-sm" href="evidence-drawer.html">看明細</a><button type="button" class="btn btn-sm">加入待辦</button></span>
+    <span class="alert-explain">折扣率從 9.0% 升到 18.0%。先列出本期的促銷檔期，核對折扣有沒有換到足夠的銷量。</span>
+  </summary>
+  <div class="alert-body"><dl><dt>限制</dt><dd>降折扣前，先看銷量會不會跟著掉。</dd><dt>相關範圍</dt><dd>平台 · MARKETPLACE、官網 · DTC</dd></dl></div>
+</details>
+        <details class="alert" data-testid="top-three-2">
+  <summary>
+    <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+    <span class="alert-loz"><span class="loz loz-unfav">不利</span></span>
+    <span class="alert-title">淨營收多 170.9 萬，卻少賺 59.9 萬</span>
+    <span class="alert-impact"><span class="k">影響</span><a class="nl neg" href="evidence-drawer.html">−59.9 萬</a></span>
+    <span class="alert-actions"><a class="btn btn-sm" href="evidence-drawer.html">看明細</a><button type="button" class="btn btn-sm">加入待辦</button></span>
+    <span class="alert-explain">成長被費用吃掉了。先看貢獻變化拆解中扣最多的兩項，再到通路健檢確認是哪個通路。</span>
+  </summary>
+  <div class="alert-body"><dl><dt>限制</dt><dd>差額說明發生了什麼，原因還需要確認。</dd><dt>相關範圍</dt><dd>平台 · MARKETPLACE</dd></dl></div>
+</details>
+        <details class="alert" data-testid="top-three-3">
+  <summary>
+    <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+    <span class="alert-loz"><span class="loz loz-unfav">不利</span></span>
+    <span class="alert-title">廣告多花 36.1 萬</span>
+    <span class="alert-impact"><span class="k">影響</span><a class="nl neg" href="evidence-drawer.html">−36.1 萬</a></span>
+    <span class="alert-actions"><a class="btn btn-sm" href="evidence-drawer.html">看明細</a><button type="button" class="btn btn-sm">加入待辦</button></span>
+    <span class="alert-explain">廣告佔比從 5.3% 升到 8.8%。比對各媒體的 ROAS，先縮減表現最差的活動。</span>
+  </summary>
+  <div class="alert-body"><dl><dt>限制</dt><dd>廣告增加不等於浪費，先看帶來的淨營收。</dd><dt>相關範圍</dt><dd>平台 · MARKETPLACE</dd></dl></div>
+</details>
+      </div>
+      <p class="list-foot"><a href="#">查看全部 6 項健檢結果</a></p>
+    </section>
+
+    <section class="panel" aria-labelledby="bridge-title" aria-describedby="bridge-sub">
+      <div class="sec-head">
+        <div><h2 id="bridge-title">少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）</h2><p class="sub" id="bridge-sub">貢獻變化拆解 · 上期 6/1–7/12 到本期 7/13–8/23。每一項都是兩期的實際差額，九項加起來就是總差額。</p></div>
+        <span class="unit-note" style="flex:none">圖：萬元 · 表：元</span>
+      </div>
+      <div class="bridge-grid">
+        <div class="chart-wrap"><svg class="chart mw-560" viewBox="0 0 660 320" aria-hidden="true" focusable="false" data-testid="bridge-waterfall">
+<line class="grid" x1="56" x2="652" y1="280.0" y2="280.0"/>
+<text x="48" y="284.0" text-anchor="end">0</text>
+<line class="grid" x1="56" x2="652" y1="233.1" y2="233.1"/>
+<text x="48" y="237.1" text-anchor="end">100 萬</text>
+<line class="grid" x1="56" x2="652" y1="186.2" y2="186.2"/>
+<text x="48" y="190.2" text-anchor="end">200 萬</text>
+<line class="grid" x1="56" x2="652" y1="139.3" y2="139.3"/>
+<text x="48" y="143.3" text-anchor="end">300 萬</text>
+<line class="grid" x1="56" x2="652" y1="92.4" y2="92.4"/>
+<text x="48" y="96.4" text-anchor="end">400 萬</text>
+<line class="grid" x1="56" x2="652" y1="45.5" y2="45.5"/>
+<text x="48" y="49.5" text-anchor="end">500 萬</text>
+<rect class="b-total" x="66.3" y="192.3" width="33.6" height="87.7"/>
+<text class="lbl-strong" x="83.1" y="186.3" text-anchor="middle">186.9</text>
+<text x="83.1" y="296.0" text-anchor="middle">上期</text>
+<rect class="b-fav" x="120.5" y="44.0" width="33.6" height="148.3"/>
+<line class="conn" x1="99.9" x2="120.5" y1="192.3" y2="192.3"/>
+<text class="lbl" x="137.3" y="38.0" text-anchor="middle">+316.2</text>
+<text x="137.3" y="296.0" text-anchor="middle">原價收入</text>
+<rect class="b-unfav" x="174.7" y="44.0" width="33.6" height="55.7"/>
+<line class="conn" x1="154.1" x2="174.7" y1="44.0" y2="44.0"/>
+<text class="lbl-neg" x="191.5" y="38.0" text-anchor="middle">−118.8</text>
+<text x="191.5" y="296.0" text-anchor="middle">折扣</text>
+<rect class="b-unfav" x="228.8" y="99.7" width="33.6" height="12.4"/>
+<line class="conn" x1="208.3" x2="228.8" y1="99.7" y2="99.7"/>
+<text class="lbl-neg" x="245.6" y="93.7" text-anchor="middle">−26.5</text>
+<text x="245.6" y="296.0" text-anchor="middle">退款</text>
+<rect class="b-unfav" x="283.0" y="112.2" width="33.6" height="73.9"/>
+<line class="conn" x1="262.4" x2="283.0" y1="112.2" y2="112.2"/>
+<text class="lbl-neg" x="299.8" y="106.2" text-anchor="middle">−157.5</text>
+<text x="299.8" y="296.0" text-anchor="middle">商品</text>
+<text x="299.8" y="310.0" text-anchor="middle">成本</text>
+<rect class="b-unfav" x="337.2" y="186.0" width="33.6" height="11.9"/>
+<line class="conn" x1="316.6" x2="337.2" y1="186.0" y2="186.0"/>
+<text class="lbl-neg" x="354.0" y="180.0" text-anchor="middle">−25.3</text>
+<text x="354.0" y="296.0" text-anchor="middle">平台</text>
+<text x="354.0" y="310.0" text-anchor="middle">抽成</text>
+<rect class="b-unfav" x="391.4" y="197.9" width="33.6" height="1.6"/>
+<line class="conn" x1="370.8" x2="391.4" y1="197.9" y2="197.9"/>
+<text class="lbl-neg" x="408.2" y="191.9" text-anchor="middle">−3.4</text>
+<text x="408.2" y="296.0" text-anchor="middle">金流費</text>
+<rect class="b-unfav" x="445.6" y="199.5" width="33.6" height="3.6"/>
+<line class="conn" x1="425.0" x2="445.6" y1="199.5" y2="199.5"/>
+<text class="lbl-neg" x="462.4" y="193.5" text-anchor="middle">−7.6</text>
+<text x="462.4" y="296.0" text-anchor="middle">物流費</text>
+<rect class="b-unfav" x="499.7" y="203.1" width="33.6" height="1.0"/>
+<line class="conn" x1="479.2" x2="499.7" y1="203.1" y2="203.1"/>
+<text class="lbl-neg" x="516.5" y="197.1" text-anchor="middle">−0.9</text>
+<text x="516.5" y="296.0" text-anchor="middle">其他</text>
+<text x="516.5" y="310.0" text-anchor="middle">變動費</text>
+<rect class="b-unfav" x="553.9" y="203.5" width="33.6" height="16.9"/>
+<line class="conn" x1="533.3" x2="553.9" y1="203.5" y2="203.5"/>
+<text class="lbl-neg" x="570.7" y="197.5" text-anchor="middle">−36.1</text>
+<text x="570.7" y="296.0" text-anchor="middle">廣告費</text>
+<rect class="b-total" x="608.1" y="220.4" width="33.6" height="59.6"/>
+<line class="conn" x1="587.5" x2="608.1" y1="220.4" y2="220.4"/>
+<text class="lbl-strong" x="624.9" y="214.4" text-anchor="middle">127.0</text>
+<text x="624.9" y="296.0" text-anchor="middle">本期</text>
+<line class="zero" x1="56" x2="652" y1="280.0" y2="280.0"/>
+</svg></div>
+        <div><div class="table-scroll" role="region" aria-label="貢獻變化拆解表" tabindex="0"><table class="table compact l3" data-testid="bridge-table">
+<caption class="sr-only">貢獻變化拆解表。正數讓扣廣告後貢獻增加，負數讓它減少；金額單位：元。</caption>
+<thead><tr><th scope="col">項目</th><th scope="col" class="num">金額（元）</th></tr></thead>
+<tbody><tr><td>上期扣廣告後貢獻</td><td class="num"><a class="nl " href="evidence-drawer.html">1,868,626.68</a></td></tr><tr><td>商品原價收入</td><td class="num"><a class="nl " href="evidence-drawer.html">+3,161,970.00</a></td></tr><tr><td>減：折扣</td><td class="num"><a class="nl neg" href="evidence-drawer.html">−1,188,365.10</a></td></tr><tr><td>減：退款金額</td><td class="num"><a class="nl neg" href="evidence-drawer.html">−264,522.72</a></td></tr><tr><td>減：商品成本</td><td class="num"><a class="nl neg" href="evidence-drawer.html">−1,575,080.55</a></td></tr><tr><td>減：平台抽成</td><td class="num"><a class="nl neg" href="evidence-drawer.html">−253,417.53</a></td></tr><tr><td>減：金流手續費</td><td class="num"><a class="nl neg" href="evidence-drawer.html">−34,181.63</a></td></tr><tr><td>減：物流與包材費</td><td class="num"><a class="nl neg" href="evidence-drawer.html">−75,791.00</a></td></tr><tr><td>減：其他變動費用</td><td class="num"><a class="nl neg" href="evidence-drawer.html">−8,545.42</a></td></tr><tr><td>減：廣告投放費</td><td class="num"><a class="nl neg" href="evidence-drawer.html">−360,900.00</a></td></tr><tr class="total"><td>本期扣廣告後貢獻</td><td class="num"><a class="nl" href="evidence-drawer.html">1,269,792.73</a></td></tr><tr data-testid="bridge-balance-check"><td>平衡檢核</td><td class="num"><span class="balance" style="justify-content:flex-end"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>已平衡（差 0.00）</span></td></tr></tbody></table></div></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="profit-title" aria-describedby="profit-sub" data-testid="profit-waterfall">
+      <div class="sec-head">
+        <div><h2 id="profit-title">每 100 元淨營收，扣完廣告剩 16.2 元</h2><p class="sub" id="profit-sub">本期利潤結構 · 7/13–8/23 · 全部通路。切換範圍只影響這張圖。</p></div>
+        <div class="seg" role="group" aria-label="利潤結構範圍" data-testid="profit-waterfall-scope"><button type="button" aria-pressed="true">合計</button><button type="button" aria-pressed="false">官網 · DTC</button><button type="button" aria-pressed="false">平台 · MARKETPLACE</button></div>
+      </div>
+      <div class="chart-wrap"><svg class="chart mw-760" viewBox="0 0 1080 320" aria-hidden="true" focusable="false">
+<line class="grid" x1="56" x2="1072" y1="280.0" y2="280.0"/>
+<text x="48" y="284.0" text-anchor="end">0</text>
+<line class="grid" x1="56" x2="1072" y1="215.5" y2="215.5"/>
+<text x="48" y="219.5" text-anchor="end">200 萬</text>
+<line class="grid" x1="56" x2="1072" y1="151.0" y2="151.0"/>
+<text x="48" y="155.0" text-anchor="end">400 萬</text>
+<line class="grid" x1="56" x2="1072" y1="86.5" y2="86.5"/>
+<text x="48" y="90.5" text-anchor="end">600 萬</text>
+<line class="grid" x1="56" x2="1072" y1="22.0" y2="22.0"/>
+<text x="48" y="26.0" text-anchor="end">800 萬</text>
+<rect class="b-total" x="75.3" y="26.8" width="63.0" height="253.2" data-testid="profit-waterfall-bar-net_revenue"/>
+<text class="lbl-strong" x="106.8" y="20.8" text-anchor="middle">785.1</text>
+<text x="106.8" y="296.0" text-anchor="middle">淨營收</text>
+<rect class="b-unfav" x="176.9" y="26.8" width="63.0" height="161.0" data-testid="profit-waterfall-bar-cogs_net"/>
+<line class="conn" x1="138.3" x2="176.9" y1="26.8" y2="26.8"/>
+<text class="lbl-neg" x="208.4" y="20.8" text-anchor="middle">−499.3</text>
+<text x="208.4" y="296.0" text-anchor="middle">商品成本</text>
+<rect class="b-total" x="278.5" y="187.8" width="63.0" height="92.2" data-testid="profit-waterfall-bar-gross_profit"/>
+<line class="conn" x1="239.9" x2="278.5" y1="187.8" y2="187.8"/>
+<text class="lbl-strong" x="310.0" y="181.8" text-anchor="middle">285.8</text>
+<text x="310.0" y="296.0" text-anchor="middle">商品毛利</text>
+<rect class="b-unfav" x="380.1" y="187.8" width="63.0" height="17.9" data-testid="profit-waterfall-bar-platform_fees"/>
+<line class="conn" x1="341.5" x2="380.1" y1="187.8" y2="187.8"/>
+<text class="lbl-neg" x="411.6" y="181.8" text-anchor="middle">−55.6</text>
+<text x="411.6" y="296.0" text-anchor="middle">平台抽成</text>
+<rect class="b-unfav" x="481.7" y="205.8" width="63.0" height="5.1" data-testid="profit-waterfall-bar-payment_fees"/>
+<line class="conn" x1="443.1" x2="481.7" y1="205.8" y2="205.8"/>
+<text class="lbl-neg" x="513.2" y="199.8" text-anchor="middle">−15.7</text>
+<text x="513.2" y="296.0" text-anchor="middle">金流手續費</text>
+<rect class="b-unfav" x="583.3" y="210.8" width="63.0" height="4.7" data-testid="profit-waterfall-bar-fulfillment_costs"/>
+<line class="conn" x1="544.7" x2="583.3" y1="210.8" y2="210.8"/>
+<text class="lbl-neg" x="614.8" y="204.8" text-anchor="middle">−14.8</text>
+<text x="614.8" y="296.0" text-anchor="middle">物流與包材費</text>
+<rect class="b-unfav" x="684.9" y="215.6" width="63.0" height="1.3" data-testid="profit-waterfall-bar-other_variable_costs"/>
+<line class="conn" x1="646.3" x2="684.9" y1="215.6" y2="215.6"/>
+<text class="lbl-neg" x="716.4" y="209.6" text-anchor="middle">−3.9</text>
+<text x="716.4" y="296.0" text-anchor="middle">其他變動費用</text>
+<rect class="b-total" x="786.5" y="216.8" width="63.0" height="63.2" data-testid="profit-waterfall-bar-contribution_before_marketing"/>
+<line class="conn" x1="747.9" x2="786.5" y1="216.8" y2="216.8"/>
+<text class="lbl-strong" x="818.0" y="210.8" text-anchor="middle">195.9</text>
+<text x="818.0" y="296.0" text-anchor="middle">扣廣告前貢獻</text>
+<rect class="b-unfav" x="888.1" y="216.8" width="63.0" height="22.2" data-testid="profit-waterfall-bar-ad_spend"/>
+<line class="conn" x1="849.5" x2="888.1" y1="216.8" y2="216.8"/>
+<text class="lbl-neg" x="919.6" y="210.8" text-anchor="middle">−68.9</text>
+<text x="919.6" y="296.0" text-anchor="middle">廣告投放費</text>
+<rect class="b-current" x="989.7" y="239.0" width="63.0" height="41.0" data-testid="profit-waterfall-bar-contribution_after_marketing"/>
+<line class="conn" x1="951.1" x2="989.7" y1="239.0" y2="239.0"/>
+<text class="lbl-strong" x="1021.2" y="233.0" text-anchor="middle">127.0</text>
+<text x="1021.2" y="296.0" text-anchor="middle">扣廣告後貢獻</text>
+<line class="zero" x1="56" x2="1072" y1="280.0" y2="280.0"/>
+</svg></div>
+      <details class="data-alternative"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>資料表 · 本期利潤結構</summary>
+        <div class="table-scroll" role="region" aria-label="本期利潤結構表" tabindex="0"><table class="table compact l3"><thead><tr><th scope="col">項目</th><th scope="col" class="num">金額（元）</th><th scope="col" class="num">佔淨營收</th></tr></thead><tbody><tr class=""><td>淨營收</td><td class="num"><a class="nl" href="evidence-drawer.html">7,850,657.90</a></td><td class="num">100.0%</td></tr><tr class=""><td>減：商品成本</td><td class="num"><a class="nl" href="evidence-drawer.html">4,992,524.65</a></td><td class="num">63.6%</td></tr><tr class="subtotal"><td>商品毛利</td><td class="num"><a class="nl" href="evidence-drawer.html">2,858,133.25</a></td><td class="num">36.4%</td></tr><tr class=""><td>減：平台抽成</td><td class="num"><a class="nl" href="evidence-drawer.html">555,782.03</a></td><td class="num">7.1%</td></tr><tr class=""><td>減：金流手續費</td><td class="num"><a class="nl" href="evidence-drawer.html">157,013.20</a></td><td class="num">2.0%</td></tr><tr class=""><td>減：物流與包材費</td><td class="num"><a class="nl" href="evidence-drawer.html">147,574.00</a></td><td class="num">1.9%</td></tr><tr class=""><td>減：其他變動費用</td><td class="num"><a class="nl" href="evidence-drawer.html">39,253.29</a></td><td class="num">0.5%</td></tr><tr class="subtotal"><td>扣廣告前貢獻</td><td class="num"><a class="nl" href="evidence-drawer.html">1,958,510.73</a></td><td class="num">24.9%</td></tr><tr class=""><td>減：廣告投放費</td><td class="num"><a class="nl" href="evidence-drawer.html">688,718.00</a></td><td class="num">8.8%</td></tr><tr class="total"><td>扣廣告後貢獻</td><td class="num"><a class="nl" href="evidence-drawer.html">1,269,792.73</a></td><td class="num">16.2%</td></tr></tbody></table></div>
+      </details>
+    </section>
+
+    <div class="pair">
+      <section class="panel" aria-labelledby="trend-title" aria-describedby="trend-sub" data-testid="trend">
+        <div class="sec-head">
+          <div><h2 id="trend-title">每週淨營收與扣廣告後貢獻</h2><p class="sub" id="trend-sub">每 7 天一組，缺資料的週不畫線。</p></div>
+          <div class="legend"><span><i></i>本期</span><span><i class="prev"></i>上期</span></div>
+        </div>
+        <dl class="takeaways"><div class="takeaway"><dt>淨營收期間合計</dt><dd><a class="nl" href="evidence-drawer.html">785.1 萬</a></dd></div><div class="takeaway"><dt>最近完整週淨營收</dt><dd><a class="nl" href="#">133.5 萬</a><small>8/17–8/23</small></dd></div></dl>
+        <div class="chart-wrap"><svg class="chart mw-460" viewBox="0 0 520 180" aria-hidden="true" focusable="false">
+<line class="grid" x1="48" x2="416" y1="156.0" y2="156.0"/>
+<text x="40" y="160.0" text-anchor="end">0</text>
+<line class="grid" x1="48" x2="416" y1="107.3" y2="107.3"/>
+<text x="40" y="111.3" text-anchor="end">50 萬</text>
+<line class="grid" x1="48" x2="416" y1="58.7" y2="58.7"/>
+<text x="40" y="62.7" text-anchor="end">100 萬</text>
+<line class="grid" x1="48" x2="416" y1="10.0" y2="10.0"/>
+<text x="40" y="14.0" text-anchor="end">150 萬</text>
+<text x="48.0" y="174" text-anchor="middle">7/13</text>
+<text x="120.0" y="174" text-anchor="middle">7/20</text>
+<text x="192.0" y="174" text-anchor="middle">7/27</text>
+<text x="264.0" y="174" text-anchor="middle">8/3</text>
+<text x="336.0" y="174" text-anchor="middle">8/10</text>
+<text x="408.0" y="174" text-anchor="middle">8/17</text>
+<path class="l-prev" d="M48.0 52.0 L120.0 55.5 L192.0 52.6 L264.0 60.3 L336.0 60.8 L408.0 57.0"/>
+<path class="l-prev" d="M48.0 124.2 L120.0 125.2 L192.0 124.6 L264.0 127.6 L336.0 126.8 L408.0 125.8"/>
+<path class="l-current" d="M48.0 30.9 L120.0 37.8 L192.0 28.2 L264.0 25.2 L336.0 23.6 L408.0 26.1"/>
+<circle class="pt-current" cx="408.0" cy="26.1" r="3"/>
+<path class="l-current" d="M48.0 135.1 L120.0 138.1 L192.0 135.8 L264.0 134.7 L336.0 134.2 L408.0 134.7"/>
+<circle class="pt-current" cx="408.0" cy="134.7" r="3"/>
+<text class="lbl-strong" x="418.0" y="30.1">淨營收 133.5 萬</text>
+<text class="lbl-strong" x="418.0" y="144.7">扣廣告後 21.9 萬</text>
+<text x="418.0" y="69.0">上期 101.7 萬</text>
+<text x="418.0" y="119.8">上期 31.0 萬</text>
+</svg></div>
+        <details class="data-alternative"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>資料表 · 每週淨營收與扣廣告後貢獻</summary><div class="table-scroll" role="region" aria-label="每週金額表" tabindex="0"><table class="table compact l3"><thead><tr><th scope="col">本期週次</th><th scope="col">起訖日</th><th scope="col" class="num">本期淨營收（元）</th><th scope="col" class="num">本期扣廣告後（元）</th><th scope="col" class="num">上期淨營收（元）</th><th scope="col" class="num">上期扣廣告後（元）</th></tr></thead><tbody><tr><td>第 1 週</td><td>7/13–7/19</td><td class="num">1,284,691</td><td class="num">214,857</td><td class="num">1,069,415</td><td class="num">327,101</td></tr><tr><td>第 2 週</td><td>7/20–7/26</td><td class="num">1,214,389</td><td class="num">184,085</td><td class="num">1,032,680</td><td class="num">316,380</td></tr><tr><td>第 3 週</td><td>7/27–8/2</td><td class="num">1,313,148</td><td class="num">208,422</td><td class="num">1,062,227</td><td class="num">323,373</td></tr><tr><td>第 4 週</td><td>8/3–8/9</td><td class="num">1,343,612</td><td class="num">219,156</td><td class="num">983,111</td><td class="num">291,861</td></tr><tr><td>第 5 週</td><td>8/10–8/16</td><td class="num">1,359,978</td><td class="num">223,991</td><td class="num">977,608</td><td class="num">299,557</td></tr><tr><td>第 6 週</td><td>8/17–8/23</td><td class="num">1,334,840</td><td class="num">219,282</td><td class="num">1,016,535</td><td class="num">310,356</td></tr></tbody></table></div></details>
+      </section>
+      <section class="panel" aria-labelledby="channel-title" aria-describedby="channel-sub">
+        <div class="sec-head">
+          <div><h2 id="channel-title">平台 · MARKETPLACE 扣完廣告虧 6.1 萬</h2><p class="sub" id="channel-sub">各通路扣廣告後貢獻 · 本期 7/13–8/23</p></div>
+          <div class="legend"><span><i></i>本期</span><span><i class="prev"></i>上期</span></div>
+        </div>
+        <div class="chart-wrap"><svg class="chart mw-460" viewBox="0 0 520 180" aria-hidden="true" focusable="false">
+<line class="grid" x1="185.3" x2="185.3" y1="8" y2="156"/>
+<text x="185.3" y="174" text-anchor="middle">0</text>
+<line class="grid" x1="273.5" x2="273.5" y1="8" y2="156"/>
+<text x="273.5" y="174" text-anchor="middle">50 萬</text>
+<line class="grid" x1="361.8" x2="361.8" y1="8" y2="156"/>
+<text x="361.8" y="174" text-anchor="middle">100 萬</text>
+<line class="grid" x1="450.0" x2="450.0" y1="8" y2="156"/>
+<text x="450.0" y="174" text-anchor="middle">150 萬</text>
+<text class="lbl" x="0" y="42">官網 · DTC</text>
+<rect class="b-prev" x="185.3" y="20" width="202.6" height="8"/>
+<text x="393.9" y="28">上期 114.8 萬</text>
+<rect class="b-current" x="185.3" y="34" width="234.9" height="18"/>
+<text class="lbl-strong" x="426.2" y="48">133.1 萬</text>
+<text class="lbl" x="0" y="118">平台 · MARKETPLACE</text>
+<rect class="b-prev" x="185.3" y="96" width="127.2" height="8"/>
+<text x="318.5" y="104">上期 72.1 萬</text>
+<rect class="b-unfav" x="174.5" y="110" width="10.8" height="18"/>
+<text class="lbl-neg" x="191.3" y="124">−6.1 萬</text>
+<line class="zero" x1="185.3" x2="185.3" y1="8" y2="156"/>
+</svg></div>
+        <table class="kv" style="margin-top:var(--space-3)"><thead><tr><th scope="col">通路</th><th scope="col" class="num">本期（元）</th><th scope="col" class="num">貢獻率</th></tr></thead>
+          <tbody><tr><td>官網 · DTC</td><td class="num"><a class="nl" href="#">1,330,963</a></td><td class="num">34.3%</td></tr><tr><td>平台 · MARKETPLACE <span class="loz loz-unfav">轉負</span></td><td class="num"><a class="nl neg" href="#">−61,170</a></td><td class="num neg">−1.5%</td></tr></tbody></table>
+        <details class="data-alternative"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>資料表 · 各通路扣廣告後貢獻</summary><div class="table-scroll" role="region" aria-label="各通路扣廣告後貢獻表" tabindex="0"><table class="table compact l3"><thead><tr><th scope="col">通路</th><th scope="col" class="num">上期（元）</th><th scope="col" class="num">本期（元）</th><th scope="col" class="num">差額（元）</th></tr></thead><tbody><tr><td>官網 · DTC</td><td class="num">1,147,526</td><td class="num">1,330,963</td><td class="num">+183,437</td></tr><tr><td>平台 · MARKETPLACE</td><td class="num">721,101</td><td class="num neg">−61,170</td><td class="num neg">−782,271</td></tr></tbody></table></div></details>
+      </section>
+    </div>
+
+    <section aria-labelledby="assist-title">
+      <div class="sec-head"><div class="sec-title"><h2 id="assist-title">其他常用指標</h2><button type="button" class="btn-help" aria-label="其他常用指標的定義"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.1 2-2.1 3.4"/><path d="M12 17h.01"/></svg></button></div></div>
+      <div class="panel" style="padding-top:var(--space-3);padding-bottom:var(--space-3)">
+        <div class="assist-grid">
+          <table class="kv"><thead><tr><th scope="col">指標</th><th scope="col" class="num">本期</th><th scope="col" class="num">上期</th></tr></thead><tbody>
+            <tr data-testid="assist-units_sold"><td>售出件數</td><td class="num"><a class="nl" href="#">7,420 件</a></td><td class="num prev"><a class="nl" href="#">5,127 件</a></td></tr>
+            <tr data-testid="assist-aov"><td>件均淨營收</td><td class="num"><a class="nl" href="#">1,058 元／件</a></td><td class="num prev"><a class="nl" href="#">1,198 元／件</a></td></tr>
+            <tr data-testid="assist-marketing_burden"><td>廣告佔比</td><td class="num"><a class="nl" href="#">8.8%</a></td><td class="num prev"><a class="nl" href="#">5.3%</a></td></tr>
+            <tr data-testid="assist-mer"><td>廣告效率（MER）</td><td class="num"><a class="nl" href="#">11.4 倍</a></td><td class="num prev"><a class="nl" href="#">18.7 倍</a></td></tr>
+          </tbody></table>
+          <table class="kv"><thead><tr><th scope="col">指標</th><th scope="col" class="num">本期</th><th scope="col" class="num">上期</th></tr></thead><tbody>
+            <tr data-testid="assist-gross_margin"><td>商品毛利率</td><td class="num"><a class="nl" href="#">36.4%</a></td><td class="num prev"><a class="nl" href="#">44.4%</a></td></tr>
+            <tr data-testid="assist-refund_ratio"><td>退款金額比</td><td class="num"><a class="nl" href="#">4.6%</a></td><td class="num prev"><a class="nl" href="#">1.8%</a></td></tr>
+            <tr data-testid="assist-fulfillment_burden"><td>物流費佔比</td><td class="num"><a class="nl" href="#">1.9%</a></td><td class="num prev"><a class="nl" href="#">1.2%</a></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <details class="advanced" data-testid="overview-advanced"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>進階：期間合計與日均、每日／每週管理損益表</summary></details>
+  </div>
+  <footer class="footer">扣廣告後貢獻不含固定費與稅。<a href="#">指標定義</a> · 新台幣 · 台北時間</footer>
+</main>
+</div>
+<nav class="tabbar" aria-label="主要導覽（手機）">
+<a href="overview.html" aria-current="page"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>總覽</span></a>
+<a href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg><span>健檢</span></a>
+<a href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg><span>待辦</span></a>
+<a href="meeting.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>會議</span></a>
+<a href="#" aria-haspopup="dialog"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>更多</span></a>
+</nav>
+<div class="scrim" aria-hidden="true"></div>
+<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="evidence-title" aria-describedby="evidence-sub" data-testid="evidence-drawer">
+  <div class="drawer-head">
+    <div><h2 id="evidence-title">扣廣告後貢獻</h2><p class="sub" id="evidence-sub">全部通路 · 本期 7/13–8/23</p></div>
+    <button type="button" class="btn btn-icon" aria-label="關閉" data-testid="evidence-close" autofocus><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <section class="dsec" aria-label="數值">
+      <p class="main-value">127.0 萬</p>
+      <p class="exact" data-testid="evidence-exact">1,269,792.73 元</p>
+      <p class="value-delta neg">比上期少賺 59.9 萬（−32.0%）</p>
+    </section>
+
+    <section class="dsec" aria-labelledby="ladder-title">
+      <h3 id="ladder-title">計算方式</h3>
+      <table class="ladder" data-testid="evidence-ladder"><caption class="sr-only">扣廣告後貢獻的計算階梯，本期，單位：元</caption><tbody><tr class=""><td class="op"></td><td class="name">商品原價收入</td><td class="num">10,038,400.00</td></tr><tr class=""><td class="op">−</td><td class="name">折扣</td><td class="num">1,808,152.80</td></tr><tr class=""><td class="op">−</td><td class="name">退款金額</td><td class="num">379,589.30</td></tr><tr class="eq"><td class="op">＝</td><td class="name">淨營收</td><td class="num">7,850,657.90</td></tr><tr class=""><td class="op">−</td><td class="name">商品成本</td><td class="num">4,992,524.65</td></tr><tr class="eq"><td class="op">＝</td><td class="name">商品毛利</td><td class="num">2,858,133.25</td></tr><tr class=""><td class="op">−</td><td class="name">平台抽成</td><td class="num">555,782.03</td></tr><tr class=""><td class="op">−</td><td class="name">金流手續費</td><td class="num">157,013.20</td></tr><tr class=""><td class="op">−</td><td class="name">物流與包材費</td><td class="num">147,574.00</td></tr><tr class=""><td class="op">−</td><td class="name">其他變動費用</td><td class="num">39,253.29</td></tr><tr class="eq"><td class="op">＝</td><td class="name">扣廣告前貢獻</td><td class="num">1,958,510.73</td></tr><tr class=""><td class="op">−</td><td class="name">廣告投放費</td><td class="num">688,718.00</td></tr><tr class="eq is-target"><td class="op">＝</td><td class="name">扣廣告後貢獻</td><td class="num">1,269,792.73</td></tr></tbody></table>
+      <p class="note">每一行都是同一期間、同一通路範圍的合計。點「原始明細」看逐列資料。</p>
+    </section>
+
+    <section class="dsec" aria-labelledby="comp-title">
+      <h3 id="comp-title">組成項目</h3>
+      <div class="table-scroll" role="region" aria-label="組成項目表" tabindex="0"><table class="table compact l3">
+        <thead><tr><th scope="col">項目</th><th scope="col" class="num">上期（元）</th><th scope="col" class="num">本期（元）</th><th scope="col" class="num">差額（元）</th></tr></thead>
+        <tbody>
+          <tr><td>扣廣告前貢獻</td><td class="num">2,196,444.68</td><td class="num">1,958,510.73</td><td class="num neg">−237,933.95</td></tr>
+          <tr><td>廣告投放費</td><td class="num">327,818.00</td><td class="num">688,718.00</td><td class="num neg">+360,900.00</td></tr>
+          <tr class="total"><td>扣廣告後貢獻</td><td class="num">1,868,626.68</td><td class="num">1,269,792.73</td><td class="num neg">−598,833.95</td></tr>
+        </tbody></table></div>
+      <p class="note">廣告投放費增加會讓扣廣告後貢獻變少，所以 +360,900.00 標為不利。</p>
+    </section>
+
+    <section class="dsec def" aria-labelledby="def-title">
+      <h3 id="def-title">指標定義與算法</h3>
+      <p>扣廣告前貢獻再扣廣告投放費；還沒扣固定費和所得稅，不是公司淨利。</p>
+      <p class="meta">業界說法：近似 CM2。差異：這裡只扣廣告投放費，不含 trade spend。版本 <span class="mono">contribution-v1</span> · <a href="#">指標定義</a></p>
+    </section>
+
+    <section class="dsec" aria-labelledby="src-title">
+      <h3 id="src-title">原始明細</h3>
+      <div class="src-tools">
+        <div class="seg" role="group" aria-label="來源分類"><button type="button" aria-pressed="true">銷售 1,680</button><button type="button" aria-pressed="false">通路費用 84</button><button type="button" aria-pressed="false">廣告 84</button></div>
+        <label class="field"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><span class="sr-only">搜尋來源列</span><input type="search" placeholder="搜尋日期、通路或商品"></label>
+      </div>
+      <p class="src-count">顯示第 1–10 筆，共 1,680 筆 · 金額單位：元，未稅；行號是 CSV 的原始行號。</p>
+      <div class="table-scroll" role="region" aria-label="原始明細表" tabindex="0"><table class="table l3 src" data-testid="evidence-sources">
+        <thead><tr><th scope="col">檔案:行號</th><th scope="col" class="col-date">日期</th><th scope="col" class="col-ch">通路</th><th scope="col">欄位與數值</th></tr></thead>
+        <tbody><tr><td><span class="mono">sales_daily.csv:1682</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-001</span> <span>原價收入 2,730.00</span> <span>折扣 286.65</span> <span>退款 31.76</span> <span>商品成本 1,092.00</span></td></tr><tr><td><span class="mono">sales_daily.csv:1683</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-002</span> <span>原價收入 2,940.00</span> <span>折扣 308.70</span> <span>退款 102.62</span> <span>商品成本 1,308.30</span></td></tr><tr><td><span class="mono">sales_daily.csv:1684</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-003</span> <span>原價收入 2,360.00</span> <span>折扣 247.80</span> <span>退款 82.38</span> <span>商品成本 1,156.40</span></td></tr><tr><td><span class="mono">sales_daily.csv:1685</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-004</span> <span>原價收入 2,760.00</span> <span>折扣 289.80</span> <span>退款 32.11</span> <span>商品成本 1,476.60</span></td></tr><tr><td><span class="mono">sales_daily.csv:1686</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-005</span> <span>原價收入 4,740.00</span> <span>折扣 497.70</span> <span>退款 55.15</span> <span>商品成本 2,749.20</span></td></tr><tr><td><span class="mono">sales_daily.csv:1687</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-006</span> <span>原價收入 5,340.00</span> <span>折扣 560.70</span> <span>退款 124.26</span> <span>商品成本 2,136.00</span></td></tr><tr><td><span class="mono">sales_daily.csv:1688</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-007</span> <span>原價收入 4,950.00</span> <span>折扣 519.75</span> <span>退款 115.19</span> <span>商品成本 2,202.75</span></td></tr><tr><td><span class="mono">sales_daily.csv:1689</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-008</span> <span>原價收入 1,090.00</span> <span>折扣 114.45</span> <span>退款 38.05</span> <span>商品成本 534.10</span></td></tr><tr><td><span class="mono">sales_daily.csv:1690</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-009</span> <span>原價收入 7,140.00</span> <span>折扣 749.70</span> <span>退款 83.07</span> <span>商品成本 3,819.90</span></td></tr><tr><td><span class="mono">sales_daily.csv:1691</span></td><td class="col-date"><span class="mono">2026-07-13</span></td><td class="col-ch">官網 · DTC</td><td class="vals"><span>SKU-010</span> <span>原價收入 5,160.00</span> <span>折扣 541.80</span> <span>退款 180.11</span> <span>商品成本 2,992.80</span></td></tr></tbody></table></div>
+      <div class="pager"><span>第 1／168 頁</span><button type="button" class="btn btn-sm" aria-disabled="true">上一頁</button><button type="button" class="btn btn-sm">下一頁</button></div>
+    </section>
+
+    <details class="tech"><summary><svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>技術細節</summary>
+      <dl><dt>技術公式</dt><dd><span class="mono">CM_after = CM_before − A</span></dd><dt>精確值</dt><dd><span class="mono">1269792.73</span></dd><dt>條件碼</dt><dd>無</dd><dt>metric_version</dt><dd><span class="mono">contribution-v1</span></dd><dt>資料集</dt><dd><span class="mono">synthetic-demo-12w-v1</span></dd></dl>
+    </details>
+  </div>
+</aside>
+</body>
+</html>
