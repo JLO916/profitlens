@@ -65,7 +65,7 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, events = null }
     </li>)}</ol> : <p role="status">{labels.notes.noPriorities}</p>}
     <p className="note">{fill(labels.notes.omittedGroups, { n: summary.omitted_group_count })}</p>
     <details className="top-three-threshold"><summary>{labels.sections.adjustThreshold}</summary>
-      <form className="threshold-form" onSubmit={event => { event.preventDefault(); try { const checked = diagnosisGroups(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.notes.thresholdInvalid); } }}>
+      <form className="threshold-form" data-testid="threshold-form-overview" onSubmit={event => { event.preventDefault(); try { const checked = diagnosisGroups(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.notes.thresholdInvalid); } }}>
         <label>{labels.meeting.threshold}<input aria-describedby="top-three-threshold-help" value={thresholdInput} onChange={event => setThresholdInput(event.target.value)} inputMode="decimal" maxLength={30} /></label><button type="submit" className="button quiet">{labels.buttons.apply}</button>
       </form>
       <p className="note" id="top-three-threshold-help">{fill(labels.diagnosisList.thresholdHelp, { amount: formatMoney(summary.importance_threshold) })}</p>

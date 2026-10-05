@@ -551,7 +551,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
         </details>
       </header>
       <main id="main-content" tabIndex={-1}>
-        <div className="page-heading"><div><p className="eyebrow">{labels.brand.tagline}</p><h1>{currentPanel.label}</h1><p className="subtitle">{currentPanel.description}</p></div><div className="load-controls">{panel === "data" && (status !== "empty" || showImport) && <button className="button primary" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={16} /></button>}<button className="button quiet" onClick={startImport}>{labels.buttons.importData}</button></div></div>
+        <div className="page-heading"><div><p className="eyebrow">{labels.brand.tagline}</p><h1>{currentPanel.label}</h1><p className="subtitle">{currentPanel.description}</p></div><div className="load-controls">{panel === "data" && (status !== "empty" || showImport) && <button className="button primary" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={16} /></button>}<button className="button quiet" data-testid="page-import" onClick={startImport}>{labels.buttons.importData}</button></div></div>
         {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
           <h2 id="validation-heading">{labels.ui.dashboard.validation.heading}</h2>
           <p>{labels.ui.dashboard.validation.intro}</p>

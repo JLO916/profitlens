@@ -146,6 +146,6 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
         {editor(item, index, 'list')}
       </article>;
     })}
-    <section className="panel"><h2>{ui.exportHeading}</h2><p className="note">{ui.exportNote}</p><div className="button-row">{(['md', 'csv', 'json'] as const).map(format => <button key={format} className="button quiet" onClick={() => { try { onExport(format); setNotice(ui.exportDone); } catch { setNotice(ui.exportFailed); } }}>{format === 'md' ? labels.downloads.decisionMd : format === 'csv' ? labels.downloads.decisionCsv : labels.downloads.decisionJson}</button>)}</div></section>
+    <section className="panel"><h2>{ui.exportHeading}</h2><p className="note">{ui.exportNote}</p><div className="button-row">{(['md', 'csv', 'json'] as const).map(format => <button key={format} className="button quiet" data-testid={`actions-export-${format}`} onClick={() => { try { onExport(format); setNotice(ui.exportDone); } catch { setNotice(ui.exportFailed); } }}>{format === 'md' ? labels.downloads.decisionMd : format === 'csv' ? labels.downloads.decisionCsv : labels.downloads.decisionJson}</button>)}</div></section>
   </section>;
 }

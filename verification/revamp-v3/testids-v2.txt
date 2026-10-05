@@ -1,0 +1,246 @@
+# EC ProfitLens v2 data-testid 基準（V3-0，PRD §11.7；產生日 2026-10-05，基準 revamp/v2 87f6f8e＋V3-0 補屬性）
+# 格式：testid<TAB>來源<TAB>說明（原始碼位置；收集到它的 SSR 情境或瀏覽器步驟）。以 # 開頭的是註解。
+# 來源：
+#   ssr  = tests/testid-baseline.test.ts 以 renderToStaticMarkup 渲染 golden／示範資料各頁狀態後實際出現（嚴格比對，少一個即失敗）。
+#   e2e  = 只在瀏覽器互動後出現（#validation、確認區、IndexedDB 既有副本等），由 verification/revamp-v3/collect-testids.spec.ts
+#          （設定檔 verification/revamp-v3.config.ts，production build）實際收集；結果在 collect-testids.json。
+#   cond = 條件項（失敗狀態、live AI、非整數件數），SSR 與收集流程都不進入；說明欄列出覆蓋它的既有測試。
+#   e2e／cond 在 vitest 另做原始碼檢查（字面值或樣板前綴仍存在）；真正的渲染比對在 Playwright。
+# 統計（實測）：共 228 列（ssr 208、e2e 15、cond 5）。
+#   原始碼字面值 testid 132 個（含 V3-0 新增的 page-import、threshold-form-overview、meeting-create；新增前為 129 個，與 PRD §11.7 的 129 相符）；
+#   運算式／testId 屬性來源 5 個：meeting-agenda-2、threshold-form-meeting（manager-summary.tsx 三元運算式）、meeting-followup、meeting-compare-kpis、meeting-history-kpis（testId 屬性）；
+#   樣板 29 種，全部展開成實際渲染值（例如 kpi-net_revenue、product-worst、board-card-1-move-in_progress）。
+# 樣板實例依資料而定：diagnosis-row-／overview-priority-／manager-priority- 依示範資料與 golden 觸發的規則；meeting-history-remove-{meeting.id} 以 SSR 的固定 id
+#   （meeting-rev-1-r4 等）收錄，瀏覽器中帶 uuid 的版本不收錄。
+# V3-0 為 v2 沒有 testid 的保留功能補上的屬性（畫面零變化）：page-import、actions-export-{md,csv,json}、threshold-form-overview、threshold-form-meeting、
+#   meeting-create、meeting-scenario-select-{DTC,MARKETPLACE}。
+# workspace-panels.tsx 的 Products 元件（也有 product-table）目前沒有被 Dashboard 掛載，依 PRD §6.3 #36 一併以 SSR 渲染納入（情境 products-legacy）。
+# 重新產生：TESTID_BASELINE_DUMP=<路徑> npx vitest run tests/testid-baseline.test.ts（SSR）＋ PROFITLENS_PORT=<埠> npx playwright test -c verification/revamp-v3.config.ts（瀏覽器）。
+action-1	ssr	樣板 `action-${index + 1}` src/components/actions-workbench.tsx:144；SSR 情境：actions-list
+action-2	ssr	樣板 `action-${index + 1}` src/components/actions-workbench.tsx:144；SSR 情境：actions-list
+action-board	ssr	字面值 src/components/actions-workbench.tsx:123；SSR 情境：actions-board
+action-notice	e2e	字面值 src/components/actions-workbench.tsx:121；瀏覽器步驟：待辦：新增並移動卡片
+actions-export-csv	ssr	樣板 `actions-export-${format}` src/components/actions-workbench.tsx:149；SSR 情境：actions-board、actions-list
+actions-export-json	ssr	樣板 `actions-export-${format}` src/components/actions-workbench.tsx:149；SSR 情境：actions-board、actions-list
+actions-export-md	ssr	樣板 `actions-export-${format}` src/components/actions-workbench.tsx:149；SSR 情境：actions-board、actions-list
+actions-view-board	ssr	字面值 src/components/actions-workbench.tsx:119；SSR 情境：actions-board、actions-list
+actions-view-list	ssr	字面值 src/components/actions-workbench.tsx:119；SSR 情境：actions-board、actions-list
+actions-workbench	ssr	字面值 src/components/actions-workbench.tsx:118；SSR 情境：actions-board、actions-list
+ai-advanced	ssr	字面值 src/components/ai-panel.tsx:99；SSR 情境：diagnosis-ai-available
+ai-availability	ssr	字面值 src/components/dashboard.tsx:522；SSR 情境：shell-empty
+ai-facts-preview	ssr	字面值 src/components/ai-panel.tsx:97；SSR 情境：diagnosis-ai-available
+ai-live-result	cond	字面值 src/components/ai-panel.tsx:112；live AI 回覆：公開示範站 ENABLE_LIVE_AI=false 不會出現；tests/e2e/ai.spec.ts（假 AI 伺服器）覆蓋
+ai-local-mapping	ssr	字面值 src/components/ai-panel.tsx:103；SSR 情境：diagnosis-ai-available
+ai-mode	ssr	字面值 src/components/ai-panel.tsx:88；SSR 情境：diagnosis-ai、diagnosis-ai-available
+ai-panel	ssr	字面值 src/components/ai-panel.tsx:87；SSR 情境：diagnosis-ai、diagnosis-ai-available
+ai-payload-preview	ssr	字面值 src/components/ai-panel.tsx:101；SSR 情境：diagnosis-ai-available
+ai-readable-preview	ssr	字面值 src/components/ai-panel.tsx:93；SSR 情境：diagnosis-ai-available
+ai-request-preview	ssr	字面值 src/components/ai-panel.tsx:102；SSR 情境：diagnosis-ai-available
+ai-response-details	cond	字面值 src/components/ai-panel.tsx:115；live AI 回覆的技術細節；同上 tests/e2e/ai.spec.ts
+ai-status	ssr	字面值 src/components/ai-panel.tsx:89；SSR 情境：diagnosis-ai、diagnosis-ai-available
+analytics-note	ssr	字面值 src/components/dashboard.tsx:586；SSR 情境：shell-empty
+assist-fulfillment_burden	ssr	樣板 `assist-${kpi.id}` src/components/overview.tsx:97；SSR 情境：overview
+assist-gross_margin	ssr	樣板 `assist-${kpi.id}` src/components/overview.tsx:97；SSR 情境：overview
+assist-kpis	ssr	字面值 src/components/overview.tsx:92；SSR 情境：overview
+assist-marketing_burden	ssr	樣板 `assist-${kpi.id}` src/components/overview.tsx:97；SSR 情境：overview
+assist-mer	ssr	樣板 `assist-${kpi.id}` src/components/overview.tsx:97；SSR 情境：overview
+assist-net_revenue_per_unit	ssr	樣板 `assist-${kpi.id}` src/components/overview.tsx:97；SSR 情境：overview
+assist-refund_ratio	ssr	樣板 `assist-${kpi.id}` src/components/overview.tsx:97；SSR 情境：overview
+assist-units_sold	ssr	樣板 `assist-${kpi.id}` src/components/overview.tsx:97；SSR 情境：overview
+autosave-confirm-replace	e2e	字面值 src/components/workspace-storage.tsx:231；瀏覽器步驟：儲存選單：同意後待確認覆寫、儲存選單：讀取本機副本預覽
+autosave-error	cond	字面值 src/components/workspace-storage.tsx:265；自動保存寫入 IndexedDB 失敗；tests/workspace-storage-autosave.test.tsx（hooks 驅動的元素樹）覆蓋
+autosave-replace-warning	e2e	字面值 src/components/workspace-storage.tsx:230；瀏覽器步驟：儲存選單：同意後待確認覆寫、儲存選單：讀取本機副本預覽
+autosave-status	ssr	字面值 src/components/workspace-storage.tsx:233；SSR 情境：shell-empty、storage
+autosave-toggle	ssr	字面值 src/components/workspace-storage.tsx:227；SSR 情境：storage
+baseline-contribution_after_marketing	ssr	樣板 `baseline-${name}` src/components/decision-workbench.tsx:160；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+baseline-net_revenue	ssr	樣板 `baseline-${name}` src/components/decision-workbench.tsx:160；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+basis-dialog	ssr	字面值 src/components/basis-dialog.tsx:20；SSR 情境：basis-dialog
+board-card-1	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:132；SSR 情境：actions-board
+board-card-1-move-blocked	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:132；SSR 情境：actions-board
+board-card-1-move-completed	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:132；SSR 情境：actions-board
+board-card-1-move-not_started	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:132；SSR 情境：actions-board
+board-card-2	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:132；SSR 情境：actions-board
+board-card-2-move-blocked	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:132；SSR 情境：actions-board
+board-card-2-move-completed	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:132；SSR 情境：actions-board
+board-card-2-move-in_progress	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:132；SSR 情境：actions-board
+board-column-blocked	ssr	樣板 `board-column-${status}` src/components/actions-workbench.tsx:125；SSR 情境：actions-board
+board-column-completed	ssr	樣板 `board-column-${status}` src/components/actions-workbench.tsx:125；SSR 情境：actions-board
+board-column-in_progress	ssr	樣板 `board-column-${status}` src/components/actions-workbench.tsx:125；SSR 情境：actions-board
+board-column-not_started	ssr	樣板 `board-column-${status}` src/components/actions-workbench.tsx:125；SSR 情境：actions-board
+data-preprocessing	ssr	字面值 src/components/workspace-panels.tsx:62；SSR 情境：data
+decision-freshness	ssr	字面值 src/components/decision-workbench.tsx:153；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+decision-notice	ssr	字面值 src/components/decision-workbench.tsx:228；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+decision-workbench	ssr	字面值 src/components/decision-workbench.tsx:152；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+diagnosis-list	ssr	字面值 src/components/diagnosis-list.tsx:89；SSR 情境：diagnosis
+diagnosis-panel	ssr	字面值 src/components/diagnosis-list.tsx:87；SSR 情境：diagnosis
+diagnosis-row-DISCOUNT_BURDEN_UP	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:105；SSR 情境：diagnosis
+diagnosis-row-FULFILLMENT_BURDEN_UP	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:105；SSR 情境：diagnosis
+diagnosis-row-MARKETING_BURDEN_UP	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:105；SSR 情境：diagnosis
+diagnosis-row-NEGATIVE_CHANNEL_CM	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:105；SSR 情境：diagnosis
+diagnosis-row-REFUND_BURDEN_UP	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:105；SSR 情境：diagnosis
+diagnosis-row-REV_UP_CM_DOWN	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:105；SSR 情境：diagnosis
+download-meeting-section	e2e	字面值 src/components/dashboard.tsx:540；瀏覽器步驟：載入示範資料＋首次保存提示、總覽（示範資料）
+download-menu	ssr	字面值 src/components/dashboard.tsx:528；SSR 情境：shell-empty
+download-templates	ssr	字面值 src/components/dashboard.tsx:550；SSR 情境：shell-empty
+events-entry	ssr	字面值 src/components/workspace-panels.tsx:77；SSR 情境：data
+events-issues	ssr	字面值 src/components/workspace-panels.tsx:85；SSR 情境：data
+events-table	ssr	字面值 src/components/workspace-panels.tsx:86；SSR 情境：data
+evidence-checklist	ssr	字面值 src/components/actions-workbench.tsx:46；SSR 情境：actions-list
+evidence-conversion-note	ssr	字面值 src/components/evidence-drawer.tsx:200；SSR 情境：evidence-drawer
+import-commit	ssr	字面值 src/components/import-wizard/step-review.tsx:49；SSR 情境：import-step-4-inclusive
+import-conversion	ssr	字面值 src/components/import-wizard/step-basis.tsx:29；SSR 情境：import-step-3-inclusive
+import-file-ad_spend_daily.csv	ssr	樣板 `import-file-${role}` src/components/import-wizard/step-files.tsx:37；SSR 情境：import-step-1、import-step-1-order-level
+import-file-channel_costs_daily.csv	ssr	樣板 `import-file-${role}` src/components/import-wizard/step-files.tsx:37；SSR 情境：import-step-1、import-step-1-order-level
+import-file-sales_daily.csv	ssr	樣板 `import-file-${role}` src/components/import-wizard/step-files.tsx:37；SSR 情境：import-step-1、import-step-1-order-level
+import-mapping-ad_spend_daily.csv	ssr	樣板 `import-mapping-${role}` src/components/import-wizard/step-mapping.tsx:30；SSR 情境：import-step-2-order-level、import-step-2-preset、import-step-2-memory
+import-mapping-channel_costs_daily.csv	ssr	樣板 `import-mapping-${role}` src/components/import-wizard/step-mapping.tsx:30；SSR 情境：import-step-2-order-level、import-step-2-preset、import-step-2-memory
+import-mapping-sales_daily.csv	ssr	樣板 `import-mapping-${role}` src/components/import-wizard/step-mapping.tsx:30；SSR 情境：import-step-2-order-level、import-step-2-preset、import-step-2-memory
+import-memory-hint	ssr	字面值 src/components/import-wizard/step-mapping.tsx:32；SSR 情境：import-step-2-memory
+import-memory-note	ssr	字面值 src/components/import-wizard/step-review.tsx:40；SSR 情境：import-step-4-inclusive
+import-order-level	ssr	字面值 src/components/import-wizard/step-mapping.tsx:34；SSR 情境：import-step-2-order-level
+import-order-level-sales_daily.csv	ssr	樣板 `import-order-level-${role}` src/components/import-wizard/step-files.tsx:42；SSR 情境：import-step-1-order-level
+import-preprocessing	ssr	字面值 src/components/import-wizard/step-review.tsx:35；SSR 情境：import-step-4-inclusive
+import-preset-hint	ssr	字面值 src/components/import-wizard/step-mapping.tsx:35；SSR 情境：import-step-2-preset
+import-reconciliation	ssr	字面值 src/components/import-wizard/step-review.tsx:44；SSR 情境：import-step-4-inclusive
+import-settings-proposal	ssr	字面值 src/components/import-wizard/step-basis.tsx:38；SSR 情境：import-step-3-inclusive
+import-status	ssr	字面值 src/components/import-wizard/step-review.tsx:34；SSR 情境：import-step-4-inclusive
+import-step-1	ssr	字面值 src/components/import-wizard/step-files.tsx:28；SSR 情境：import-step-1、import-step-1-order-level
+import-step-2	ssr	字面值 src/components/import-wizard/step-mapping.tsx:20；SSR 情境：import-step-2-order-level、import-step-2-preset、import-step-2-memory
+import-step-3	ssr	字面值 src/components/import-wizard/step-basis.tsx:24；SSR 情境：import-step-3-inclusive
+import-step-4	ssr	字面值 src/components/import-wizard/step-review.tsx:33；SSR 情境：import-step-4-inclusive
+import-stepper	ssr	字面值 src/components/import-wizard/index.tsx:99；SSR 情境：import-step-1
+import-wizard	ssr	字面值 src/components/import-wizard/index.tsx:97；SSR 情境：import-step-1
+kpi-contribution_after_marketing	ssr	樣板 `kpi-${name}` src/components/overview.tsx:80；SSR 情境：overview
+kpi-contribution_before_marketing	ssr	樣板 `kpi-${name}` src/components/overview.tsx:80；SSR 情境：overview
+kpi-contribution_margin	ssr	樣板 `kpi-${name}` src/components/overview.tsx:80；SSR 情境：overview
+kpi-gross_profit	ssr	樣板 `kpi-${name}` src/components/overview.tsx:80；SSR 情境：overview
+kpi-net_revenue	ssr	樣板 `kpi-${name}` src/components/overview.tsx:80；SSR 情境：overview
+kpi-target-ad_spend	ssr	樣板 `kpi-target-${name}` src/components/overview.tsx:52；SSR 情境：overview
+kpi-target-contribution_after_marketing	ssr	樣板 `kpi-target-${name}` src/components/overview.tsx:52；SSR 情境：overview
+kpi-target-gross_profit	ssr	樣板 `kpi-target-${name}` src/components/overview.tsx:52；SSR 情境：overview
+kpi-target-net_revenue	ssr	樣板 `kpi-target-${name}` src/components/overview.tsx:52；SSR 情境：overview
+local-save-announce	ssr	字面值 src/components/workspace-storage.tsx:264；SSR 情境：shell-empty、storage
+local-save-prompt	e2e	字面值 src/components/workspace-storage.tsx:254；瀏覽器步驟：載入示範資料＋首次保存提示、重新整理後載入：提示附覆蓋提醒
+local-save-replace-warning	e2e	字面值 src/components/workspace-storage.tsx:257；瀏覽器步驟：重新整理後載入：提示附覆蓋提醒
+manager-priority-DISCOUNT_BURDEN_UP	ssr	樣板 `manager-priority-${item.code}` src/components/manager-summary.tsx:72；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset
+manager-priority-MARKETING_BURDEN_UP	ssr	樣板 `manager-priority-${item.code}` src/components/manager-summary.tsx:72；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset
+manager-priority-REV_UP_CM_DOWN	ssr	樣板 `manager-priority-${item.code}` src/components/manager-summary.tsx:72；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset
+manager-summary	ssr	字面值 src/components/manager-summary.tsx:62；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset
+manager-summary-print	ssr	字面值 src/components/manager-summary.tsx:120；SSR 情境：print-summary
+meeting-agenda	ssr	字面值 src/components/meeting-page.tsx:253；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-agenda-1	ssr	字面值 src/components/manager-summary.tsx:66；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset
+meeting-agenda-2	ssr	運算式 src/components/manager-summary.tsx:69；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset
+meeting-agenda-3	ssr	字面值 src/components/manager-summary.tsx:74；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset
+meeting-agenda-4	ssr	字面值 src/components/meeting-page.tsx:257；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-agenda-5	ssr	字面值 src/components/meeting-page.tsx:258；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-agenda-6	ssr	字面值 src/components/meeting-page.tsx:270；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-compare	ssr	字面值 src/components/meeting-page.tsx:298；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-compare-different_dataset	ssr	樣板 `meeting-compare-${comparison.kind}` src/components/meeting-page.tsx:344；SSR 情境：meeting-different-dataset
+meeting-compare-kpis	ssr	testId 屬性 src/components/meeting-page.tsx:348；SSR 情境：meeting-with-history
+meeting-compare-note	ssr	字面值 src/components/meeting-page.tsx:346；SSR 情境：meeting-with-history、meeting-different-dataset
+meeting-compare-same_scope	ssr	樣板 `meeting-compare-${comparison.kind}` src/components/meeting-page.tsx:344；SSR 情境：meeting-with-history
+meeting-compare-see-followup	ssr	字面值 src/components/meeting-page.tsx:347；SSR 情境：meeting-different-dataset
+meeting-create	ssr	字面值 src/components/meeting-page.tsx:177；SSR 情境：meeting-none
+meeting-decision	ssr	字面值 src/components/meeting-page.tsx:277；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-export-excel	ssr	字面值 src/components/meeting-page.tsx:311；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-export-pptx	ssr	字面值 src/components/meeting-page.tsx:312；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-finalize	ssr	字面值 src/components/meeting-page.tsx:287；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-finalize-confirm	e2e	字面值 src/components/meeting-page.tsx:290；瀏覽器步驟：會議：結束會議確認區
+meeting-finalize-confirm-button	e2e	字面值 src/components/meeting-page.tsx:294；瀏覽器步驟：會議：結束會議確認區
+meeting-finalize-error	cond	字面值 src/components/meeting-page.tsx:293；結束會議失敗；tests/meeting-page.test.tsx（hooks 驅動的元素樹）覆蓋
+meeting-followup	ssr	testId 屬性 src/components/meeting-page.tsx:257；SSR 情境：meeting-with-history、meeting-different-dataset
+meeting-history	ssr	字面值 src/components/meeting-page.tsx:387；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none
+meeting-history-followup	ssr	字面值 src/components/meeting-page.tsx:360；SSR 情境：meeting-history
+meeting-history-item	ssr	字面值 src/components/meeting-page.tsx:393；SSR 情境：meeting-with-history、meeting-none、meeting-history、meeting-different-dataset
+meeting-history-kpis	ssr	testId 屬性 src/components/meeting-page.tsx:363；SSR 情境：meeting-history
+meeting-history-remove-confirm	e2e	字面值 src/components/meeting-page.tsx:403；瀏覽器步驟：會議：歷史移除確認區
+meeting-history-remove-confirm-region	e2e	字面值 src/components/meeting-page.tsx:401；瀏覽器步驟：會議：歷史移除確認區
+meeting-history-remove-meeting-rev-1-r4	ssr	樣板 `meeting-history-remove-${meeting.id}` src/components/meeting-page.tsx:399；SSR 情境：meeting-with-history、meeting-none、meeting-history
+meeting-history-remove-meeting-rev-2-r2	ssr	樣板 `meeting-history-remove-${meeting.id}` src/components/meeting-page.tsx:399；SSR 情境：meeting-history
+meeting-history-remove-meeting-rev-demo-r2	ssr	樣板 `meeting-history-remove-${meeting.id}` src/components/meeting-page.tsx:399；SSR 情境：meeting-different-dataset
+meeting-history-status	ssr	字面值 src/components/meeting-page.tsx:389；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none
+meeting-outputs	ssr	字面值 src/components/meeting-page.tsx:305；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-page	ssr	字面值 src/components/meeting-page.tsx:177；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none
+meeting-pinned-actions	ssr	字面值 src/components/meeting-page.tsx:271；SSR 情境：meeting-draft、meeting-with-history、meeting-view-differs、meeting-different-dataset
+meeting-pinned-actions-empty	ssr	字面值 src/components/meeting-page.tsx:271；SSR 情境：meeting-empty-draft
+meeting-scenario-result	ssr	字面值 src/components/meeting-page.tsx:268；SSR 情境：meeting-draft、meeting-with-history、meeting-view-differs、meeting-different-dataset
+meeting-scenario-results	ssr	字面值 src/components/meeting-page.tsx:268；SSR 情境：meeting-draft、meeting-with-history、meeting-view-differs、meeting-different-dataset
+meeting-scenario-results-empty	ssr	字面值 src/components/meeting-page.tsx:268；SSR 情境：meeting-empty-draft
+meeting-scenario-select-DTC	ssr	樣板 `meeting-scenario-select-${channel}` src/components/meeting-page.tsx:264；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-scenario-select-MARKETPLACE	ssr	樣板 `meeting-scenario-select-${channel}` src/components/meeting-page.tsx:264；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs
+meeting-status	ssr	字面值 src/components/meeting-page.tsx:174；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none
+multi-scenario-workbench	ssr	字面值 src/components/multi-scenario-workbench.tsx:85；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad
+overview-meeting-entry	ssr	字面值 src/components/meeting-page.tsx:93；SSR 情境：overview-meeting-entry
+overview-priority-DISCOUNT_BURDEN_UP	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:57；SSR 情境：overview
+overview-priority-MARKETING_BURDEN_UP	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:57；SSR 情境：overview
+overview-priority-REV_UP_CM_DOWN	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:57；SSR 情境：overview
+page-import	ssr	字面值 src/components/dashboard.tsx:554；SSR 情境：shell-empty
+period-comparison	ssr	字面值 src/components/overview.tsx:137；SSR 情境：overview
+preset-reason-visible-yoy	e2e	字面值 src/components/dashboard.tsx:575；瀏覽器步驟：載入示範資料＋首次保存提示、總覽（示範資料）
+print-appendix-assumptions	ssr	字面值 src/components/manager-summary.tsx:132；SSR 情境：print-summary
+print-appendix-notes	ssr	字面值 src/components/manager-summary.tsx:133；SSR 情境：print-summary
+print-decision-line	ssr	字面值 src/components/manager-summary.tsx:123；SSR 情境：print-summary
+print-scenario-line	ssr	字面值 src/components/manager-summary.tsx:129；SSR 情境：print-summary
+product-best	ssr	樣板 `product-${kind}` src/components/product-comparison-panel.tsx:101；SSR 情境：products
+product-more-columns	ssr	字面值 src/components/product-comparison-panel.tsx:123；SSR 情境：products
+product-table	ssr	字面值 src/components/product-comparison-panel.tsx:131；SSR 情境：products、products-legacy
+product-worst	ssr	樣板 `product-${kind}` src/components/product-comparison-panel.tsx:101；SSR 情境：products
+reconciliation-ad_spend	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+reconciliation-cogs_net	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+reconciliation-discounts	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+reconciliation-fulfillment_costs	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+reconciliation-gross_sales	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+reconciliation-metric-contribution_after_marketing	ssr	樣板 `reconciliation-metric-${metric}` src/components/import-wizard/step-review.tsx:46；SSR 情境：import-step-4-inclusive
+reconciliation-metric-contribution_before_marketing	ssr	樣板 `reconciliation-metric-${metric}` src/components/import-wizard/step-review.tsx:46；SSR 情境：import-step-4-inclusive
+reconciliation-metric-gross_profit	ssr	樣板 `reconciliation-metric-${metric}` src/components/import-wizard/step-review.tsx:46；SSR 情境：import-step-4-inclusive
+reconciliation-metric-net_revenue	ssr	樣板 `reconciliation-metric-${metric}` src/components/import-wizard/step-review.tsx:46；SSR 情境：import-step-4-inclusive
+reconciliation-other_variable_costs	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+reconciliation-payment_fees	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+reconciliation-platform_fees	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+reconciliation-refunds	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:45；SSR 情境：import-step-4-inclusive
+review-view-difference	ssr	字面值 src/components/meeting-page.tsx:242；SSR 情境：meeting-view-differs
+review-workbench	ssr	字面值 src/components/meeting-page.tsx:177；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none
+scenario-1	ssr	樣板 `scenario-${index + 1}` src/components/decision-workbench.tsx:179；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-2	ssr	樣板 `scenario-${index + 1}` src/components/decision-workbench.tsx:179；SSR 情境：scenarios
+scenario-absolute-error-volume_change_pct	e2e	樣板 `scenario-absolute-error-${field.key}` src/components/decision-workbench.tsx:201；瀏覽器步驟：試算：範本＋絕對值格式錯誤、待辦：新增並移動卡片
+scenario-absolute-note-volume_change_pct	cond	樣板 `scenario-absolute-note-${field.key}` src/components/decision-workbench.tsx:200；絕對值預填遇到非整數件數（示範／golden 件數皆為整數）；tests/scenario-form.test.tsx 覆蓋
+scenario-assumptions	ssr	字面值 src/components/decision-workbench.tsx:164；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-channel	ssr	字面值 src/components/multi-scenario-workbench.tsx:87；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad
+scenario-comparison	ssr	字面值 src/components/decision-workbench.tsx:219；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-contribution	ssr	字面值 src/components/decision-workbench.tsx:214；SSR 情境：scenarios
+scenario-delta	ssr	字面值 src/components/decision-workbench.tsx:214；SSR 情境：scenarios
+scenario-draft	ssr	字面值 src/components/decision-workbench.tsx:211；SSR 情境：scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-equivalent-ad_change_pct	ssr	樣板 `scenario-equivalent-${field.key}` src/components/decision-workbench.tsx:199；SSR 情境：scenarios
+scenario-equivalent-discount_change_pp	ssr	樣板 `scenario-equivalent-${field.key}` src/components/decision-workbench.tsx:199；SSR 情境：scenarios
+scenario-equivalent-volume_change_pct	ssr	樣板 `scenario-equivalent-${field.key}` src/components/decision-workbench.tsx:199；SSR 情境：scenarios
+scenario-mode-ad_change_pct	ssr	樣板 `scenario-mode-${absField}` src/components/decision-workbench.tsx:195；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-mode-discount_change_pp	ssr	樣板 `scenario-mode-${absField}` src/components/decision-workbench.tsx:195；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-mode-volume_change_pct	ssr	樣板 `scenario-mode-${absField}` src/components/decision-workbench.tsx:195；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-other-channels	ssr	字面值 src/components/multi-scenario-workbench.tsx:94；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad
+scenario-preset	ssr	字面值 src/components/decision-workbench.tsx:182；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-preset-apply	ssr	字面值 src/components/decision-workbench.tsx:182；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-preset-overwrite	ssr	字面值 src/components/decision-workbench.tsx:182；SSR 情境：scenarios
+scenario-preset-purpose	e2e	字面值 src/components/decision-workbench.tsx:182；瀏覽器步驟：試算：範本＋絕對值格式錯誤、待辦：新增並移動卡片
+scenario-range-volume_change_pct	ssr	樣板 `scenario-range-${field.key}` src/components/decision-workbench.tsx:202；SSR 情境：scenarios
+scenario-result	ssr	字面值 src/components/decision-workbench.tsx:208；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-sensitivity	ssr	字面值 src/components/scenario-sensitivity.tsx:39；SSR 情境：scenarios
+scenario-template-note	ssr	字面值 src/components/decision-workbench.tsx:182；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible
+scenario-unavailable	ssr	字面值 src/components/decision-workbench.tsx:161；SSR 情境：scenarios-ineligible
+scenario-unavailable-ad_change_pct	ssr	樣板 `scenario-unavailable-${field.key}` src/components/decision-workbench.tsx:198；SSR 情境：scenarios-zero-ad
+scenario-unavailable-volume_change_pct	ssr	樣板 `scenario-unavailable-${field.key}` src/components/decision-workbench.tsx:198；SSR 情境：scenarios-ineligible
+scenario-version	ssr	字面值 src/components/decision-workbench.tsx:210；SSR 情境：scenarios
+sensitivity-result	ssr	字面值 src/components/scenario-sensitivity.tsx:63；SSR 情境：scenarios
+storage-notice	e2e	字面值 src/components/workspace-storage.tsx:240；瀏覽器步驟：儲存選單：讀取本機副本預覽
+targets-entry	ssr	字面值 src/components/workspace-panels.tsx:66；SSR 情境：data
+targets-issues	ssr	字面值 src/components/workspace-panels.tsx:74；SSR 情境：data
+targets-table	ssr	字面值 src/components/workspace-panels.tsx:75；SSR 情境：data
+threshold-form-meeting	ssr	運算式 src/components/manager-summary.tsx:69；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset
+threshold-form-overview	ssr	字面值 src/components/top-three.tsx:68；SSR 情境：overview
+threshold-maintain_baseline	ssr	樣板 `threshold-${target.id}` src/components/scenario-sensitivity.tsx:44；SSR 情境：scenarios
+threshold-pct	ssr	字面值 src/components/scenario-sensitivity.tsx:46；SSR 情境：scenarios
+threshold-zero_contribution	ssr	樣板 `threshold-${target.id}` src/components/scenario-sensitivity.tsx:44；SSR 情境：scenarios
+top-three	ssr	字面值 src/components/top-three.tsx:55；SSR 情境：overview
+trend-events	ssr	字面值 src/components/overview.tsx:111；SSR 情境：overview
+validation-panel	e2e	字面值 src/components/dashboard.tsx:555；瀏覽器步驟：#validation 開發者驗證
+workspace-status	ssr	字面值 src/components/dashboard.tsx:518；SSR 情境：shell-empty
+workspace-storage	ssr	字面值 src/components/workspace-storage.tsx:214；SSR 情境：shell-empty、storage
