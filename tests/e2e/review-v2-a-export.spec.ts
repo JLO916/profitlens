@@ -1,6 +1,7 @@
 import { dismissSavePrompt, openMeeting, openValidation, switchActionsView } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { metricDefinitions } from "../../src/application/presentation";
+import { readFileSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page, type TestInfo } from "@playwright/test";
@@ -18,6 +19,8 @@ const test = base.extend<{ audit: string[] }>({
 });
 
 const summaryCopy = labels.ui.managerSummary;
+/** V3-2a：狀態列「資料到 {date}」的日期取自 golden manifest 的 data_as_of。 */
+const goldenReady = fill(labels.status.ready, { date: JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")).data_as_of });
 const contributionLabel = metricDefinitions.contribution_after_marketing.label;
 const netRevenueLabel = metricDefinitions.net_revenue.label;
 /** R2: the "no pinned actions" notice and the "no actions at all" message both come from labels.ui.managerSummary. */
@@ -109,7 +112,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await expect(page.getByTestId("workspace-status")).toContainText(goldenReady);
   await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
   // R5: the actions page opens on the board; the per-card edit form below uses the list view.

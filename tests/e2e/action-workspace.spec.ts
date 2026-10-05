@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { appendFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
@@ -16,11 +17,15 @@ const escapeRegExp=(text:string)=>text.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const evidenceButton=(template:string,...fragments:string[])=>new RegExp(`^${escapeRegExp(template.split('{fact}')[0])}${fragments.map(f=>`.*${escapeRegExp(f)}`).join('')}`);
 /** 主管摘要 Markdown 的方案列：取「試算後的扣廣告後貢獻 {contribution}」這一段。 */
 const mdScenarioContribution=(contribution:string)=>ms.mdSelectedScenario.split('；')[1].replace('{contribution}',contribution);
+/** V3-2a：狀態列「資料到 {date}」的日期取自 golden manifest 的 data_as_of。 */
+const goldenReady=fill(labels.status.ready,{date:JSON.parse(readFileSync(resolve('fixtures/golden/manifest.json'),'utf8')).data_as_of});
+/** V3-2a：抽屜大數字刪除 NT$，改用 evidenceDrawer.money 模板「{amount} 元」。 */
+const drawerMoney=(amount:string)=>fill(labels.ui.evidenceDrawer.money,{amount});
 const technicalAppendix=`## ${labels.sections.technicalDetails}`;
 /** 備份預覽的「方案 n 個、行動 n 項」：方案數不在本測試的斷言範圍，允許任意數字。 */
 const restoreCounts=(actions:number)=>new RegExp(escapeRegExp(fill(ws.restoreCounts,{plans:'\u0000',actions})).replace('\u0000','\\d+'));
 /** R6：首次保存提示（role=dialog，非 modal）出現在載入／恢復之後；本檔不測自動保存，載入後先按「先不要」。 */
-async function load(page:Page){await page.goto('/');await openValidation(page);await page.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await page.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(page.getByTestId('workspace-status')).toContainText(labels.status.ready);await dismissSavePrompt(page);await openMeeting(page);await expect(page.getByTestId('manager-summary')).toBeVisible();}
+async function load(page:Page){await page.goto('/');await openValidation(page);await page.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await page.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(page.getByTestId('workspace-status')).toContainText(goldenReady);await dismissSavePrompt(page);await openMeeting(page);await expect(page.getByTestId('manager-summary')).toBeVisible();}
 async function discardReplacement(page:Page){const dialog=page.getByRole('dialog',{name:labels.ui.replacementDialog.heading,exact:true});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:labels.ui.replacementDialog.discardAndContinue,exact:true}).click();await expect(dialog).not.toBeVisible();}
 async function download(page:Page,label:string){const event=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
 /** R5：證據改為可搜尋的 checkbox 清單（fieldset role=group，名稱＝evidencePicker）。 */
@@ -47,7 +52,7 @@ test('PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作
  let doc=JSON.parse(await download(page,labels.downloads.decisionJson));expect(doc.actions[0].fact_ids).toEqual(ids);expect(doc.actions[0].evidence_confirmed).toBe(false);expect(doc.actions[0].binding.scope.channels).toEqual(['DTC','MARKETPLACE']);
  await page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true}).selectOption('MARKETPLACE');await expect(first.getByLabel(labels.actions.owner,{exact:true})).toBeEnabled();await expect(first).not.toContainText(labels.actions.staleBadge);
  await first.getByRole('button',{name:evidenceButton(aw.viewEvidenceItem,'2026-08-02',cmAfter)}).first().click();
- await expect(page.getByRole('dialog').locator('p.number')).toHaveText('NT$ 255.00');await expect(page.getByRole('dialog')).toContainText(channelsLabel(['DTC','MARKETPLACE'],false));await page.keyboard.press('Escape');
+ await expect(page.getByRole('dialog').locator('p.number')).toHaveText(drawerMoney('255.00'));await expect(page.getByRole('dialog')).toContainText(channelsLabel(['DTC','MARKETPLACE'],false));await page.keyboard.press('Escape');
  for(let n=2;n<=5;n++)await page.getByRole('button',{name:labels.buttons.addAction,exact:true}).click();
  for(let n=1;n<=3;n++)await page.getByTestId(`action-${n}`).getByRole('button',{name:labels.buttons.pin,exact:true}).click();
  await page.getByTestId('action-4').getByRole('button',{name:labels.buttons.pin,exact:true}).click();await expect(page.getByTestId('action-notice')).toContainText(aw.maxPinned);
@@ -56,7 +61,7 @@ test('PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作
  const backup=await download(page,labels.buttons.downloadBackup);await page.reload();await storage.locator(':scope > summary').click();
  await storage.getByLabel(ws.selectBackupFile,{exact:true}).setInputFiles({name:'bound.json',mimeType:'application/json',buffer:Buffer.from(backup)});
  await expect(page.getByRole('region',{name:ws.restorePreviewAria})).toContainText(restoreCounts(5));await page.getByRole('button',{name:ws.applyRestore,exact:true}).click();
- await expect(page.getByTestId('workspace-status')).toContainText(labels.status.ready);await dismissSavePrompt(page);
+ await expect(page.getByTestId('workspace-status')).toContainText(goldenReady);await dismissSavePrompt(page);
  // 備份 ui_prefs.view 記住了清單檢視，恢復後直接回到清單。
  await page.getByRole('button',{name:labels.nav.actions.label,exact:true}).click();await expect(page.getByTestId('actions-view-list')).toHaveAttribute('aria-pressed','true');await expect(page.getByTestId('action-5')).toBeVisible();await expect(first.getByLabel(labels.actions.owner,{exact:true})).toBeEnabled();
  expect((await checkedEvidence(first)).sort()).toEqual([...ids].sort());
@@ -137,7 +142,7 @@ test('A1 真換CSV後重新綁定先預覽，取消保留270，再明確確認17
  await chooseBasis(page,'exclusive');
  await confirmAndCheck(page,'valid');
  await commitButton(page).click();await discardReplacement(page);
- await expect(page.getByTestId('workspace-status')).toContainText(labels.status.ready);await expect(wizard(page)).toHaveCount(0);
+ await expect(page.getByTestId('workspace-status')).toContainText(goldenReady);await expect(wizard(page)).toHaveCount(0);
  await page.getByRole('button',{name:labels.nav.actions.label,exact:true}).click();await expect(card).toContainText(aw.historicalAlert);
  await card.getByLabel(labels.actions.status,{exact:true}).selectOption('blocked');await card.getByLabel(labels.actions.progress,{exact:true}).fill('等待新版本費用對帳');
  await card.getByRole('button',{name:labels.buttons.rebind,exact:true}).click();const preview=card.getByRole('region',{name:aw.rebindRegion,exact:true});
@@ -149,7 +154,7 @@ test('A1 真換CSV後重新綁定先預覽，取消保留270，再明確確認17
  expect(action).toMatchObject({execution_status:'blocked',progress_notes:'等待新版本費用對帳',evidence_confirmed:true,binding_revision:before.actions[0].binding_revision+1,fact_ids:[id]});
  expect(action.evidence[0].value).toBe('170.00');expect(action.binding.dataset_hash).not.toBe(before.actions[0].binding.dataset_hash);
  expect(action.binding_history.at(-1).fact_ids).toEqual([id]);expect(action.binding_history.at(-1).evidence[0].value).toBe('270.00');expect(action.binding_history.at(-1).dataset_hash).toBe(before.actions[0].binding.dataset_hash);
- await card.getByText(fill(aw.historySummary,{n:2}),{exact:true}).click();await card.getByRole('button',{name:evidenceButton(aw.viewHistoryEvidence)}).click();await expect(page.getByRole('dialog').locator('p.number')).toHaveText('NT$ 270.00');await page.keyboard.press('Escape');
+ await card.getByText(fill(aw.historySummary,{n:2}),{exact:true}).click();await card.getByRole('button',{name:evidenceButton(aw.viewHistoryEvidence)}).click();await expect(page.getByRole('dialog').locator('p.number')).toHaveText(drawerMoney('270.00'));await page.keyboard.press('Escape');
  await page.screenshot({path:resolve(`verification/review-v2-a-action-rebind-${info.project.name}.png`),fullPage:true});
  await appendFile(resolve('verification/review-v2-a-action-rebind-browser.jsonl'),JSON.stringify({project:info.project.name,status:'passed',cancel_kept_original:true,old_value:'270.00',new_value:'170.00',same_fact_id:true,history_verified:true,errors})+'\n');expect(errors).toEqual([]);
 });

@@ -1,6 +1,7 @@
 import { closeDownloads, dismissSavePrompt, openDownloads, openPeriodComparison } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
+import { channelsLabel } from "../../src/application/copy";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -10,8 +11,10 @@ const ui = labels.ui.overview;
 const metric = (name: keyof typeof labels.metrics) => labels.metrics[name].label;
 /** dashboard.tsx periodFieldLabel: sr-only date labels such as 「上期開始」. */
 const periodField = (edge: "start" | "end", period: "previous" | "current") => fill((edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd).split(" → ")[0], { period: labels.periods[period] });
-/** Last segment of dashboard scopeNote: 「本期 {currentStart}–{currentEnd}」. */
-const scopeNoteCurrent = (start: string, end: string) => fill(labels.ui.dashboard.scopeNote.split(" · ").pop()!, { currentStart: start, currentEnd: end });
+/** V3-2a：dashboard scopeNote 改成一句「本期 {currentStart}–{currentEnd} 對比 上期 …」；取模板開頭到 {currentEnd} 的本期片段。 */
+const scopeNoteCurrent = (start: string, end: string) => { const template = labels.ui.dashboard.scopeNote; return fill(template.slice(0, template.indexOf("{currentEnd}") + "{currentEnd}".length), { currentStart: start, currentEnd: end }); };
+/** V3-2a：抽屜說明列 evidenceDrawer.scopeLine「{scope}；{start}–{end}；通路：{channels}。」（期間改用 en dash，不再寫「至」）。 */
+const drawerScopeLine = (scope: string, start: string, end: string, channels: string[]) => fill(labels.ui.evidenceDrawer.scopeLine, { scope, start, end, channels: channelsLabel(channels, false) });
 const sourceTab = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.ui.evidenceDrawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
 /** Synthetic input only. Fixed expected answers below do not call domain calculations. */
 function monthlyFiles(kind: "complete" | "zero" | "missing" = "complete") {
@@ -116,7 +119,7 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
   const dialog = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
   await expect(dialog).toContainText(`${metric("contribution_after_marketing")}${ui.periodTotal} ÷ 30 天`);
   await expect(dialog).toContainText(ui.dailyAverageScope);
-  await expect(dialog).toContainText("2026-09-01 至 2026-09-30");
+  await expect(dialog).toContainText(drawerScopeLine(ui.dailyAverageScope, "2026-09-01", "2026-09-30", ["DTC"]));
   // R2 groups source rows by file tab (sales／costs／ads) instead of one paged list: 30 + 30 + 30 = 90 rows.
   await expect(dialog.getByRole("button", { name: sourceTab("sales", 30), exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(dialog.getByRole("button", { name: sourceTab("costs", 30), exact: true })).toBeVisible();

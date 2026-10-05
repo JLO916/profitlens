@@ -11,13 +11,16 @@ const netRevenue = labels.metrics.net_revenue.label;
 /** metricComparison(): all-channel scope is `${sections.total}（${channelsLabel(...)}）`; golden keeps raw channel codes. */
 const totalScope = (channels: string[]) => `${labels.sections.total}（${channels.join("、")}）`;
 const changeTitle = (channels: string[], metric: string) => fill(copy.evidenceChange, { scope: totalScope(channels), metric });
-/** Markdown meta line is "資料到：{asOf}｜範圍：{channels}｜TWD"; assert only the scope segment. */
-const mdScope = (channels: string) => fill(copy.mdMeta.split("｜")[1], { channels });
+/** V3-2a：狀態列「資料到 {date}」— 以模板組 RegExp，{date} 對應 YYYY-MM-DD（各驗證資料集的 data_as_of 不同）。 */
+const escapeRe = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const readyRe = escapeRe(labels.status.ready).replace(escapeRe("{date}"), "\\d{4}-\\d{2}-\\d{2}");
 const technicalHeading = `## ${labels.sections.technicalDetails}`;
-/** 三件事一列「標題｜範圍｜金額」的分隔符（取自 mdPriorityRow 模板；列印版用同一個分隔符）。 */
-const prioritySep = copy.mdPriorityRow.split("{amount}")[0].slice(-1);
-// R5 修正後列印列是「｜對貢獻影響 -315.00」：分隔符後接影響標籤（labels.sections.impact）再接金額。
-const endsWithAmount = (amount: string) => new RegExp(`${prioritySep}${labels.sections.impact}\\s*${amount.replace(/[.+-]/g, "\\$&")}`);
+/** 三件事一列「標題 · 範圍 · 金額」的分隔符（取自 mdPriorityRow 模板 {scope} 與 {amount} 之間；列印版用同一個分隔符，§8.4 第 5 點）。 */
+const prioritySep = copy.mdPriorityRow.split("{scope}")[1].split("{amount}")[0];
+/** Markdown meta line is mdMeta（V3-2a 分隔符改「 · 」，與 prioritySep 相同）; assert only the segment that carries {channels}. */
+const mdScope = (channels: string) => fill(copy.mdMeta.split(prioritySep).find(part => part.includes("{channels}"))!, { channels });
+// R5 修正後列印列是「 · 影響金額 -315.00」：分隔符後接影響標籤（labels.sections.impact）再接金額。
+const endsWithAmount = (amount: string) => new RegExp(`${escapeRe(prioritySep)}${escapeRe(labels.sections.impact)}\\s*${escapeRe(amount)}`);
 /** R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）：匯出 PDF、Markdown、通路寬表 CSV、Excel、PPT。 */
 const meetingOutput = (page: Page, name: string) => page.getByTestId("meeting-outputs").getByRole("button", { name, exact: true });
 
@@ -37,7 +40,7 @@ async function load(page: Page, name = "golden") {
   await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(name);
   await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${labels.status.ready}|${labels.status.partial}`));
+  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${readyRe}|${escapeRe(labels.status.partial)}`));
   await dismissSavePrompt(page);
   // R6：主管摘要（會議稿）在獨立分頁「會議紀錄」。
   await openMeeting(page);
