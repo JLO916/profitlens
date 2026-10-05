@@ -1978,10 +1978,77 @@ export const relaunch = {
 
 
 /** V3-2a（F23，PRD §8.9）：「這版改了什麼」提示；由 V3-2a 代理填入。 */
-export const whatsNew = {} as const;
+export const whatsNew = {
+  /** {oldName}／{newName} 由 whats-new.ts 從 glossary.terms 取（扣廣告前貢獻與它的第一個舊名），舊名只放在白名單的 oldNames。 */
+  text: "這一版改了部分名稱，例如『{oldName}』改為『{newName}』。",
+  link: "查看名詞對照",
+  dismiss: "知道了",
+  /** 可見文字「知道了」必須包含在可及名稱裡（WCAG 2.5.3）。 */
+  dismissAria: "知道了，關閉名稱更新提示",
+} as const;
 
 /** V3-2a（F5／F23，PRD §6.3 #12、§8.9）：名詞小辭典（指標定義對話框的搜尋與舊名對照）；由 V3-2a 代理填入。 */
-export const glossary = {} as const;
+export const glossary = {
+  heading: "名詞小辭典",
+  intro: "輸入這一版的名詞或 v2 的舊名都找得到。",
+  searchLabel: "搜尋名詞",
+  searchPlaceholder: "例如：扣廣告前貢獻、MER",
+  resultCount: "找到 {n} 個名詞",
+  noResult: "找不到「{query}」。換個寫法試試，或看下方的 v2 舊名對照。",
+  shortLine: "短名：{short}",
+  oldNamesLine: "舊名：{names}",
+  englishKeyLine: "英文欄名：{key}",
+  listSeparator: "、",
+  industryHeading: "業界說法對照",
+  industryIntro: "只供對照；算法不完全相同，所以不宣稱等同。",
+  industryColumns: { ours: brand.name, industry: "業界常見說法", difference: "差異" },
+  industryRows: [
+    { ours: "商品毛利", industry: "Gross profit", difference: "同一個概念。" },
+    { ours: "扣廣告前貢獻", industry: "近似 Daasity 的 CM1（毛利減運費、履約、金流與平台費）", difference: `${brand.name} 不抵買家付的運費收入，而且「其他變動費用」由使用者匯入，所以不宣稱等同。` },
+    { ours: "扣廣告後貢獻", industry: "近似 Daasity 的 CM2（CM1 再扣行銷費與 trade spend）", difference: `${brand.name} 只扣廣告投放費，不含 trade spend；停在扣廣告後，不含固定費與稅，不是淨利。` },
+  ],
+  industrySource: "Daasity 的定義",
+  industrySourceUrl: "https://help.daasity.com/core-concepts/contribution-margin",
+  v2Heading: "v2 舊名",
+  v2Intro: "左欄是 v2 的名稱，右欄是這一版的名稱；數字的算法沒有改。",
+  v2Columns: { old: "v2 舊名", current: "這一版" },
+  /**
+   * 名詞表（docs/revamp-v3/GLOSSARY.md §1 的 30 列）。oldNames 是 v2 舊名，列入 copy-scan 白名單（同 basis.aliases）；
+   * 搜尋時另外併入 basis.aliases[englishKey]。englishKey 沿用名詞表「英文 key／labels key」欄，沒有的寫空字串。
+   */
+  terms: [
+    { term: "淨營收", short: "淨營收", definition: "商品原價收入減折扣和退款，未稅，不含買家付的運費。", englishKey: "net_revenue", oldNames: [] },
+    { term: "商品毛利", short: "商品毛利", definition: "淨營收減商品成本，還沒扣平台、金流、物流和廣告費。", englishKey: "gross_profit", oldNames: ["毛利"] },
+    { term: "扣廣告前貢獻", short: "扣廣告前", definition: "商品毛利再扣平台抽成、金流手續費、物流與包材費、其他變動費用，還沒扣廣告。", englishKey: "contribution_before_marketing", oldNames: ["通路貢獻", "行銷前貢獻"] },
+    { term: "扣廣告後貢獻", short: "扣廣告後", definition: "扣廣告前貢獻再扣廣告投放費；還沒扣固定費和所得稅，不是公司淨利。", englishKey: "contribution_after_marketing", oldNames: ["行銷後貢獻", "邊際貢獻"] },
+    { term: "扣廣告後貢獻率", short: "貢獻率", definition: "每 100 元淨營收，扣完廣告後還剩幾元。", englishKey: "contribution_margin", oldNames: ["貢獻率"] },
+    { term: "平台抽成", short: "平台抽成", definition: "市集平台依成交收的手續費和佣金，例如蝦皮的成交手續費。", englishKey: "platform_fees", oldNames: ["平台費"] },
+    { term: "金流手續費", short: "金流費", definition: "刷卡、貨到付款、電子支付等收款手續費；蝦皮稱「金流與系統處理費」。", englishKey: "payment_fees", oldNames: ["金流費"] },
+    { term: "物流與包材費", short: "物流費", definition: "出貨運費、倉儲與包材支出；買家付的運費收入沒有抵掉。", englishKey: "fulfillment_costs", oldNames: ["物流費"] },
+    { term: "廣告效率（MER）", short: "MER", definition: "淨營收除以廣告投放費，也就是每 1 元廣告對應幾元淨營收；這是全通路合計，算法和平台後台的 ROAS 不同。", englishKey: "mer", oldNames: ["廣告投報（MER）", "廣告投報"] },
+    { term: "退款金額比", short: "退款比", definition: "退款金額除以（原價收入減折扣），依退款日計算。", englishKey: "refund_ratio", oldNames: ["退款比"] },
+    { term: "影響金額", short: "影響", definition: "這一項讓扣廣告後貢獻增加（正）或減少（負）多少，是兩期的實際差額。", englishKey: "contributionImpact", oldNames: ["對貢獻影響"] },
+    { term: "差額", short: "差額", definition: "本期減上期的實際金額，不是預測，也不是可以省下的錢；試算輸入用「增減」。", englishKey: "change", oldNames: ["變化", "變動"] },
+    { term: "計算與來源", short: "明細", definition: "這個數字的公式、組成項目，以及原始檔名和行號；按「看明細」開啟。", englishKey: "evidence", oldNames: ["看證據", "怎麼算的", "公式與來源"] },
+    { term: "原始明細", short: "", definition: "計算用到的 CSV 列，附檔名和行號。", englishKey: "evidence.sourcesTitle", oldNames: ["來源資料"] },
+    { term: "指標定義", short: "定義", definition: "九條固定規則，說明數字算了什麼、沒算什麼。", englishKey: "basis.title", oldNames: ["口徑說明", "口徑"] },
+    { term: "金額基準", short: "", definition: "匯入的金額是未稅還是含稅；含稅會先換算成未稅。", englishKey: "importWizard.basis", oldNames: ["金額口徑", "口徑"] },
+    { term: "解讀限制", short: "", definition: "解讀這個數字時要知道的限制（CSV、Excel 欄名）。", englishKey: "basis_note", oldNames: ["口徑限制", "口徑"] },
+    { term: "待辦", short: "待辦", definition: "要做什麼、誰負責、何時到期、何時喊停，每項都記住引用的數字；置頂的叫「置頂待辦」。", englishKey: "nav.actions", oldNames: ["行動", "待辦與決議", "置頂行動"] },
+    { term: "會議紀錄", short: "會議", definition: "本次議程、決議與上次會議的比較，結束後就固定；匯出物叫「一頁摘要」。", englishKey: "nav.meeting", oldNames: ["會議稿", "新會議稿", "主管摘要", "會議摘要"] },
+    { term: "通路健檢", short: "健檢", definition: "用 8 條固定規則檢查各通路與費用的增減，資料缺漏排最前。", englishKey: "nav.diagnosis", oldNames: ["自動健檢"] },
+    { term: "本期三件事", short: "三件事", definition: "依影響金額排出最該先處理的三組健檢結果，資料缺漏排最前；會議議程叫「本期重點」。", englishKey: "sections.topThree", oldNames: [] },
+    { term: "假設試算", short: "試算", definition: "如果調整銷量、折扣、物流費或廣告預算，單一通路的扣廣告後貢獻會變多少。", englishKey: "nav.scenarios", oldNames: ["計算"] },
+    { term: "相關數字", short: "", definition: "這條健檢引用的兩期數字，每個都能點開看明細。", englishKey: "sections.data", oldNames: ["數據"] },
+    { term: "其他常用指標", short: "常用指標", definition: "件數、件均、毛利率、費用佔比與 MER，用的是同一份資料，不列入貢獻計算。", englishKey: "sections.assistKpis", oldNames: ["輔助指標"] },
+    { term: "資料待補／不適用", short: "", definition: "缺的資料不當成 0；分母不成立時不算比率。", englishKey: "status.missing", oldNames: ["N/A"] },
+    { term: "資料到（日期）", short: "", definition: "目前資料已通過檢核；括號裡的日期是資料的最後一天。", englishKey: "status.ready", oldNames: ["資料就緒"] },
+    { term: "目前的資料與紀錄", short: "", definition: "儲存相關訊息用這個說法，主層不另外命名；備份檔與技術細節保留原本的名稱。", englishKey: "workspaceLabel", oldNames: ["我的工作區", "工作區"] },
+    { term: "公開示範站", short: "示範站", definition: "任何人都能開的公開版本，不使用 AI，也不保存資料。", englishKey: "modeBadge.publicDemo", oldNames: ["公開示範版"] },
+    { term: "資料", short: "", definition: "全站統一用這個詞。", englishKey: "", oldNames: ["數據"] },
+    { term: "台", short: "", definition: "全站統一寫「台」，例如新台幣、台北時間；法規引用維持原文。", englishKey: "", oldNames: ["臺"] },
+  ],
+} as const;
 
 export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave, relaunch, whatsNew, glossary };
 export type Labels = typeof labels;

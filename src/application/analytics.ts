@@ -13,7 +13,8 @@ export type AnalyticsEvent =
   | "export_pdf"
   | "export_excel"
   | "export_pptx"
-  | "export_markdown";
+  | "export_markdown"
+  | "glossary_opened";
 
 /** Vercel Web Analytics 的腳本路徑（專案在 Vercel 儀表板啟用 Web Analytics 後才會回應）。 */
 export const ANALYTICS_SCRIPT_SRC = "/_vercel/insights/script.js";

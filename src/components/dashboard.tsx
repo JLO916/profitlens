@@ -37,7 +37,8 @@ import { exportWorkspaceDecision } from "@/application/workspace-decision-export
 import { decisionSignature, emptyDecisionWorkspace } from "@/application/decision";
 import type { RestoredWorkspace, WorkspaceBackupSource } from "@/application/workspace-backup";
 import { ReplacementDialog, type PendingReplacement } from "./replacement-dialog";
-import { BasisDialog } from "./basis-dialog";
+import { BasisDialog, type BasisDialogSection } from "./basis-dialog";
+import { useWhatsNew, WhatsNewNote } from "./whats-new-note";
 import { beginReplacement, type ReplacementKind } from "@/application/replacement-guard";
 import { WorkspaceStorage } from "./workspace-storage";
 import { ActionsWorkbench } from "./actions-workbench";
@@ -183,6 +184,9 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [aiOpen, setAiOpen] = useState(false);
   // Collapsed overview sections keep their open state across filter reloads and page switches.
   const [basisOpen, setBasisOpen] = useState(false);
+  // V3-2a（F23）：「這版改了什麼」提示；連結開啟指標定義並捲到「v2 舊名」。
+  const [basisSection, setBasisSection] = useState<BasisDialogSection | null>(null);
+  const whatsNew = useWhatsNew();
   const [periodOpen, setPeriodOpen] = useState(false);
   const aiRef = useRef<HTMLDivElement>(null);
   const aiButtonRef = useRef<HTMLButtonElement>(null);
@@ -368,6 +372,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     const next = ++versionRef.current; setVersion(next); setSavedVersion(next);
     setRestoreEpoch(value => value + 1); setShowImport(false); setError(""); setFilterError(""); setPanel("overview");
     setStatus(workspace.classification === "partial" ? "partial" : "ready");
+    whatsNew.onRestore();
   }
   function draftFromDiagnostic(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) {
     if (!active) return;
@@ -552,6 +557,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       </header>
       <main id="main-content" tabIndex={-1}>
         <div className="page-heading"><div><p className="eyebrow">{labels.brand.tagline}</p><h1>{currentPanel.label}</h1><p className="subtitle">{currentPanel.description}</p></div><div className="load-controls">{panel === "data" && (status !== "empty" || showImport) && <button className="button primary" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={16} /></button>}<button className="button quiet" data-testid="page-import" onClick={startImport}>{labels.buttons.importData}</button></div></div>
+        {whatsNew.visible && <WhatsNewNote onOpenGlossary={() => { whatsNew.markRead(); setBasisSection("v2-names"); setBasisOpen(true); }} onDismiss={whatsNew.dismiss} />}
         {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
           <h2 id="validation-heading">{labels.ui.dashboard.validation.heading}</h2>
           <p>{labels.ui.dashboard.validation.intro}</p>
@@ -591,7 +597,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       const run = pendingReplacement.run; setPendingReplacement(null); void run();
     }} />}
     {active && <EvidenceDrawer dataset={evidenceSource?.dataset ?? active.dataset} snapshot={evidenceSource ? undefined : active.snapshot} filenames={evidenceSource?.filenames ?? active.filenames} mappings={evidenceSource ? evidenceSource.mappings : active.mappings} rawValues={!evidenceSource || evidenceSource.dataset_hash === active.snapshot.dataset_hash ? active.raw_values : undefined} conversion={!evidenceSource || evidenceSource.dataset_hash === active.snapshot.dataset_hash ? active.conversion : null} evidence={evidence} onClose={() => setEvidence(null)} onBasis={() => setBasisOpen(true)} />}
-    <BasisDialog open={basisOpen} onClose={() => setBasisOpen(false)} />
+    <BasisDialog open={basisOpen} section={basisSection} onClose={() => { setBasisOpen(false); setBasisSection(null); }} />
     {menuPrint && <PrintSummaryPortal {...menuPrint} onDone={() => { setMenuPrint(null); downloadSummaryRef.current?.focus(); }} />}
   </div>;
 }
