@@ -1,5 +1,15 @@
 # Status
 
+## Revamp v3｜V3-1 Token、基礎元件與設計稿（完成，未推送、未部署；H2 審查待人工）
+
+只改樣式、不改版面與文案（JSX 結構與 labels 未動）。`:root` 改為 PRD §9.1–9.3 的完整 token（原始色階＋語意別名、字級 8 階、間距、圓角 3 種、唯一陰影、圖表色）；既有 class 全部改引用 token：`:root` 以外 hex 201 → **0**（token 定義區 23）、圓角 18 → 4、字級 32 → 13（螢幕 8 種；列印 pt 5 種留 V3-7）、字距 13 → 0、box-shadow 7 → 0；`.button-row` 靠左、強調 KPI 改白底加綠頂線、綠點與空狀態旋轉移除；新增 `ui-*` 基礎元件 class（C3／C4／C5／C8／C10／C11／C12／C14／C15／C21／C22）；Recharts 顏色與主管摘要 CSS 接上 token；`contrast-check` 75 組全過、v2 兩項豁免已修正；品牌名 EC ProfitLens 折行修正。三頁靜態設計稿（總覽、計算與來源抽屜、會議紀錄）與 H2 審查說明在 `verification/revamp-v3/mockups/`。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit 77 檔／1,509 全過、`lint:design` exit 0、build pass、E2E 全套 **576 項全過（15.9m）**；畫面基準改寫為 V3-1（36 張，對 V3-0 差異比例 0.10–0.38，肉眼核對只有樣式差異、無元素重排、無水平溢出）；禁區 diff 空；testid 刪除數 0；棘輪上限調低至實測值。
+- Lighthouse（示範資料已載入，1440 與 390）：五頁 Accessibility **100**（V3-0 96–97）；空狀態 Performance desktop 100／mobile 97。
+- 偏離：強調 KPI 24px（32px 留 V3-4）、h1 28px（20px 留 V3-3）、列印 pt 字級留 V3-7、9 個補充 token。
+- 未執行／待人工：**H2 設計稿審查（擋 V3-3）**、**H3 文案審稿（擋 V3-2）**。
+- 下一批：V3-2 語言與數字格式（需 H3），或由使用者指示先行。
+
 ## Revamp v3｜V3-0 基準與護欄（完成，未推送、未部署）
 
 產品名稱自 2026-10-05 起為 **EC ProfitLens**（D-V3-25；技術識別不改）。D-V3-1–24 全部依建議值（使用者 2026-10-05 拍板）。V3-0 依 `docs/revamp-v3/06_BATCHES.md` ①–⑧ 完成：畫面零變化（四尺寸 `toHaveScreenshot` 36 張基準、合併後 4/4 通過 0 差異）；禁區 diff 對 `82b70df`（本機 tag `v2.0.0`）為空；無新依賴。

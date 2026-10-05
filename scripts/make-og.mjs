@@ -1,6 +1,6 @@
 // R7-3：產生分享卡片 public/og.png（1200×630）。用法：node scripts/make-og.mjs（需已安裝 Playwright 的 Chromium）。
 // 文字一律取自 src/i18n/labels.zh-TW.ts 與 src/app/site.ts（Node 24+ 直接載入 .ts，只做型別剝除）；
-// 截圖取自 V3-0 畫面基準的總覽首屏（示範資料，verification/revamp-v3-capture/baseline.spec.ts 產生），裁掉側欄後縮放放在右側。產物是靜態檔，改字或換截圖後重跑本腳本並提交 PNG。
+// 截圖取自 V3-1 畫面基準的總覽首屏（示範資料，verification/revamp-v3-capture/baseline.spec.ts 產生），裁掉側欄後縮放放在右側。產物是靜態檔，改字或換截圖後重跑本腳本並提交 PNG。
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { chromium } from "@playwright/test";
@@ -9,7 +9,7 @@ const { labels } = await import(new URL("../src/i18n/labels.zh-TW.ts", import.me
 const { SITE_URL } = await import(new URL("../src/app/site.ts", import.meta.url).href);
 
 const WIDTH = 1200, HEIGHT = 630;
-const SCREENSHOT = resolve("verification/revamp-v3/V3-0/snapshots/desktop/01-overview-top.png");
+const SCREENSHOT = resolve("verification/revamp-v3/V3-1/snapshots/desktop/01-overview-top.png");
 const OUTPUT = resolve("public/og.png");
 // 來源截圖 1440×1000：x 212 起是主內容（裁掉側欄）；縮放到 640px 寬。
 const SOURCE = { width: 1440, sidebar: 212 }, FRAME = { left: 584, top: 104, width: 640, height: 420 };

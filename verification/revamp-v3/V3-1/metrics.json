@@ -1,0 +1,485 @@
+{
+  "lighthouse": {
+    "version": "13.5.0",
+    "base": "http://127.0.0.1:3100",
+    "generatedAt": "2026-10-05T11:41:03.102Z",
+    "loadAverage": {
+      "before": [
+        24.39,
+        21.2,
+        17.33
+      ],
+      "after": [
+        28.95,
+        23.21,
+        18.33
+      ],
+      "note": "os.loadavg()（1／5／15 分鐘）；本機負載高時 timespan 的 TBT／INP 會偏高，比較時以同負載重跑為準"
+    },
+    "method": "user-flow：navigate（空狀態首頁）→ timespan（載入示範資料）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot；accessibility 取 snapshot、performance 0–100 只有 navigation 有，timespan 記 TBT／CLS／INP；desktop 用 lighthouse desktopConfig、mobile 用預設（模擬節流）並改成 390×844",
+    "desktop-1440": [
+      {
+        "step": "首頁（空狀態，navigation）",
+        "mode": "navigation",
+        "accessibility": 100,
+        "performance": 100,
+        "performanceAudits": "26/31",
+        "metrics": {
+          "fcpMs": 252.031,
+          "lcpMs": 578.047,
+          "speedIndexMs": 252.031,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "載入示範資料（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "22/23",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 157.001,
+          "cls": 0.05,
+          "inpMs": 27.993
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "經營總覽（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "label-content-name-mismatch": {
+            "count": 3,
+            "nodes": [
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -1,188,365.10",
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -598,833.95",
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -360,900.00"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到通路健檢（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 169.759,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "通路健檢（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "label-content-name-mismatch": {
+            "count": 15,
+            "nodes": [
+              "tbody > tr > td > button.number-link ｜ 3,117,931.22",
+              "tbody > tr > td > button.number-link ｜ 3,880,786.47",
+              "tbody > tr > td.positive > button.number-link ｜ +762,855.25",
+              "tbody > tr > td > button.number-link ｜ 1,147,525.80",
+              "tbody > tr > td > button.number-link ｜ 1,330,962.66",
+              "tbody > tr > td.positive > button.number-link ｜ +183,436.86",
+              "tbody > tr > td > button.number-link ｜ 3,023,644.50",
+              "tbody > tr > td > button.number-link ｜ 3,969,871.43"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到商品毛利（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/6",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "商品毛利（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到假設試算（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/6",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "假設試算（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到會議紀錄（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "19/22",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 221.424,
+          "cls": 0,
+          "inpMs": 283.583
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "會議紀錄（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "label-content-name-mismatch": {
+            "count": 21,
+            "nodes": [
+              "div.manager-summary_headlines__PVsm1 > div > p.manager-summary_change__9_jRF > button.number-link ｜ +1,709,082.18",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 6,141,575.72",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 7,850,657.90",
+              "div.manager-summary_headlines__PVsm1 > div > p.manager-summary_change__9_jRF > button.number-link ｜ -598,833.95",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 1,868,626.68",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 1,269,792.73",
+              "ol.manager-summary_priorities__6Vjeq > li > p.top-three-impact > button.number-link ｜ -1,188,365.10",
+              "ol.manager-summary_priorities__6Vjeq > li > p.top-three-impact > button.number-link ｜ -598,833.95"
+            ]
+          }
+        }
+      }
+    ],
+    "mobile-390": [
+      {
+        "step": "首頁（空狀態，navigation）",
+        "mode": "navigation",
+        "accessibility": 100,
+        "performance": 97,
+        "performanceAudits": "26/31",
+        "metrics": {
+          "fcpMs": 922,
+          "lcpMs": 1900,
+          "speedIndexMs": 922,
+          "tbtMs": 139,
+          "cls": 0.081,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "載入示範資料（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "22/24",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 1091.579,
+          "cls": 0,
+          "inpMs": 41.195
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "經營總覽（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "label-content-name-mismatch": {
+            "count": 3,
+            "nodes": [
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -1,188,365.10",
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -598,833.95",
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -360,900.00"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到通路健檢（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 796.806,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "通路健檢（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "label-content-name-mismatch": {
+            "count": 15,
+            "nodes": [
+              "tbody > tr > td > button.number-link ｜ 3,117,931.22",
+              "tbody > tr > td > button.number-link ｜ 3,880,786.47",
+              "tbody > tr > td.positive > button.number-link ｜ +762,855.25",
+              "tbody > tr > td > button.number-link ｜ 1,147,525.80",
+              "tbody > tr > td > button.number-link ｜ 1,330,962.66",
+              "tbody > tr > td.positive > button.number-link ｜ +183,436.86",
+              "tbody > tr > td > button.number-link ｜ 3,023,644.50",
+              "tbody > tr > td > button.number-link ｜ 3,969,871.43"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到商品毛利（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "21/21",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 82.085,
+          "cls": 0,
+          "inpMs": 151.059
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "商品毛利（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到假設試算（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "7/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 13.358,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "假設試算（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到會議紀錄（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "19/22",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 1081.806,
+          "cls": 0,
+          "inpMs": 1145.087
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "會議紀錄（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "label-content-name-mismatch": {
+            "count": 21,
+            "nodes": [
+              "div.manager-summary_headlines__PVsm1 > div > p.manager-summary_change__9_jRF > button.number-link ｜ +1,709,082.18",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 6,141,575.72",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 7,850,657.90",
+              "div.manager-summary_headlines__PVsm1 > div > p.manager-summary_change__9_jRF > button.number-link ｜ -598,833.95",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 1,868,626.68",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 1,269,792.73",
+              "ol.manager-summary_priorities__6Vjeq > li > p.top-three-impact > button.number-link ｜ -1,188,365.10",
+              "ol.manager-summary_priorities__6Vjeq > li > p.top-three-impact > button.number-link ｜ -598,833.95"
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
