@@ -31,7 +31,7 @@ function displayMetric(name: MetricName, metric: Metric): string {
   if (metric.value === null) return labels.status.notApplicable;
   const unit = metricDefinitions[name].unit;
   if (unit === "percent") return formatRate(metric.value);
-  if (unit === "multiple") return `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} 倍`;
+  if (unit === "multiple") return fill(labels.units.multiple, { value: new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP) });
   return formatMoney(metric.value);
 }
 
@@ -58,7 +58,7 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
         <div><dt>{ui.meta.scopeChannels}</dt><dd>{channelsLabel(snapshot.report.scope.channels, alias)}</dd></div>
       </dl>
       <p className="note">{ui.datasetCaution}</p>
-      <details><summary>{labels.sections.technicalDetails}</summary><dl className="metadata-grid"><div><dt>資料格式／指標版本</dt><dd>{settings.schema_version} / {snapshot.metric_version}</dd></div><div><dt>資料 SHA-256</dt><dd><code>{snapshot.dataset_hash}</code></dd></div><div><dt>篩選 SHA-256</dt><dd><code>{snapshot.filter_hash}</code></dd></div><div><dt>金額口徑識別</dt><dd><code>{settings.amount_basis}</code></dd></div></dl></details>
+      <details><summary>{labels.sections.technicalDetails}</summary><dl className="metadata-grid"><div><dt>{labels.ui.workspacePanels.meta.formatVersionTechnical}</dt><dd>{settings.schema_version} / {snapshot.metric_version}</dd></div><div><dt>{labels.ui.workspacePanels.meta.datasetShaTechnical}</dt><dd><code>{snapshot.dataset_hash}</code></dd></div><div><dt>{labels.ui.workspacePanels.meta.filterShaTechnical}</dt><dd><code>{snapshot.filter_hash}</code></dd></div><div><dt>{labels.ui.workspacePanels.meta.amountBasisTechnical}</dt><dd><code>{settings.amount_basis}</code></dd></div></dl></details>
       {conversion && <section aria-label={labels.sections.dataPreprocessing} data-testid="data-preprocessing"><h3>{labels.sections.dataPreprocessing}</h3><p>{conversionSentence(conversion)}</p>{conversion.totals && <ul>{Object.entries(conversion.totals).map(([field, totals]) => <li key={field}>{fill(labels.importWizard.conversionTotals, { field: field in labels.metrics ? labels.metrics[field as MetricName].label : field, raw: totals.raw, converted: totals.converted })}</li>)}</ul>}</section>}
       {mappings && <details><summary>{ui.mappingsSummary}</summary>{Object.entries(mappings).map(([file, mapping]) => <div key={file}><h3>{filenames?.[file as SourceRef["file"]] ?? file}</h3><dl className="metadata-grid">{Object.entries(mapping).map(([standard, original]) => <div key={standard}><dt>{standard}</dt><dd>{original}</dd></div>)}</dl></div>)}</details>}
     </section>

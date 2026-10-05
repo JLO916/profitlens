@@ -147,7 +147,7 @@ function channelSheet(summary: ManagerSummary): ExcelSheet {
       channel: text(channel),
       previous_net_revenue: moneyCell(revenue.previous.value), current_net_revenue: moneyCell(revenue.current.value), net_revenue_change: moneyCell(revenue.change.value),
       previous_contribution: moneyCell(contribution.previous.value), current_contribution: moneyCell(contribution.current.value), contribution_change: moneyCell(contribution.change.value),
-      data_status: text(metrics.some(metric => metric.value === null) ? labels.status.partial : labels.status.ready),
+      data_status: text(metrics.some(metric => metric.value === null) ? labels.status.partial : fill(labels.status.ready, { date: summary.data_as_of })),
     };
   };
   // 最後一列合計＝兩個關鍵差額（同一個來源）；各通路差額不能再加總（口徑說明第 5 條）。

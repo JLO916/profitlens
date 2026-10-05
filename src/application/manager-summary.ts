@@ -186,7 +186,7 @@ const amount = (metric: Metric, signed = false): string => metric.value === null
 const actionStatusLabel = (status: SummaryAction["status"]): string => status === "current" ? copy.actionStatus.current : status === "stale" ? labels.actions.staleBadge : copy.actionStatus.draft;
 /** 待辦列：沒有進度時省略模板尾段（「{stop}」之後的進度欄）。 */
 const actionRow = (action: SummaryAction, status: string): string => {
-  const template = action.executionStatus ? copy.mdActionRow : `${copy.mdActionRow.split("{stop}")[0]}{stop}。`;
+  const template = action.executionStatus ? copy.mdActionRow : copy.mdActionRowNoProgress;
   return fill(template, {
     problem: md(action.problem), status, scope: md(action.scopeLabel), step: md(action.action), owner: md(action.owner || copy.ownerUnset), due: md(action.deadline || copy.dueUnset), stop: md(action.risk || copy.riskUnset),
     executionStatus: md(action.executionStatus ?? ""), executionNotes: md(action.executionNotes ?? ""),
@@ -249,6 +249,6 @@ export function exportChannelComparisonCsv(summary: ManagerSummary): string {
   return encodeCsv([headers.map(header => text(csvHeader(header))), ...summary.channels.map(row => {
     const metrics = [row.revenue.previous, row.revenue.current, row.revenue.change, row.contribution.previous, row.contribution.current, row.contribution.change];
     const missing = metrics.filter(metric => metric.value === null);
-    return [text(row.channel), ...metrics.map(metric => number(metric.value)), text(summary.data_as_of), text(summary.scope.previous_period.start), text(summary.scope.previous_period.end), text(summary.scope.current_period.start), text(summary.scope.current_period.end), number(String(summary.previous_days)), number(String(summary.current_days)), text(summary.scope.comparison_mode), text(missing.length ? labels.status.partial : labels.status.ready), text([...new Set(missing.flatMap(metric => metric.reason_codes))].join("；")), text(summary.conversion_note ? `${labels.basis.footer} ${summary.conversion_note}` : labels.basis.footer), text(summary.metric_version), text(summary.dataset_hash), text(summary.filter_hash)];
+    return [text(row.channel), ...metrics.map(metric => number(metric.value)), text(summary.data_as_of), text(summary.scope.previous_period.start), text(summary.scope.previous_period.end), text(summary.scope.current_period.start), text(summary.scope.current_period.end), number(String(summary.previous_days)), number(String(summary.current_days)), text(summary.scope.comparison_mode), text(missing.length ? labels.status.partial : fill(labels.status.ready, { date: summary.data_as_of })), text([...new Set(missing.flatMap(metric => metric.reason_codes))].join("；")), text(summary.conversion_note ? `${labels.basis.footer} ${summary.conversion_note}` : labels.basis.footer), text(summary.metric_version), text(summary.dataset_hash), text(summary.filter_hash)];
   })]);
 }

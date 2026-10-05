@@ -61,7 +61,8 @@ export function ruleCopy(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic
   const code: RuleCode = diagnostic.code;
   switch (code) {
     case "REV_UP_CM_DOWN": values.dNet = formatHeadlineAmount(difference("net_revenue")); values.dCM = formatHeadlineAmount(ranking); break;
-    case "NEGATIVE_CHANNEL_CM": case "SKU_NEGATIVE_GP": values.cm = formatHeadlineAmount(ranking, true); break;
+    // V3-2a：標題改成「扣完廣告虧 {cm}」「商品毛利虧 {cm}」，方向已由「虧」表達，金額取絕對值。
+    case "NEGATIVE_CHANNEL_CM": case "SKU_NEGATIVE_GP": values.cm = formatHeadlineAmount(ranking); break;
     case "DISCOUNT_BURDEN_UP": values.prevRate = rate("discount_rate", "previous"); values.curRate = rate("discount_rate", "current"); values.dAmount = formatHeadlineAmount(ranking); break;
     case "REFUND_BURDEN_UP": values.prevRate = rate("refund_ratio", "previous"); values.curRate = rate("refund_ratio", "current"); values.dAmount = formatHeadlineAmount(ranking); break;
     case "FULFILLMENT_BURDEN_UP": values.prevRate = rate("fulfillment_burden", "previous"); values.curRate = rate("fulfillment_burden", "current"); values.dAmount = formatHeadlineAmount(ranking); break;
@@ -69,7 +70,8 @@ export function ruleCopy(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic
     case "MISSING_CRITICAL_DATA": values.missing = [...new Set(facts.filter(fact => fact.value === null).map(fact => metricDefinitions[fact.metric].shortLabel))].join("、") || labels.status.missing; break;
   }
   const copy = labels.rules[code];
-  return { headline: fill(copy.title, values), cause: copy.cause, nextStep: copy.nextStep, caution: copy.caution };
+  // V3-2a：比率（{prevRate}{curRate}）從標題移到 cause（PRD §8.8 #3），四段都用同一組占位符值填入。
+  return { headline: fill(copy.title, values), cause: fill(copy.cause, values), nextStep: fill(copy.nextStep, values), caution: fill(copy.caution, values) };
 }
 
 /** CSV 標題列「中文名稱 (english_key)」；欄位 key 維持英文，機器可讀。 */
