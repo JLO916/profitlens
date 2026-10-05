@@ -8,7 +8,7 @@ import {
   reconfirmDecision, saveScenario,
   type DecisionSession, type ScenarioPlan, type DecisionWorkspaceState, type ColumnMappings, type SensitivityInputs,
 } from "@/application/decision";
-import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from "@/application/decision-export";
+import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown, scenarioReasonText } from "@/application/decision-export";
 import { downloadText } from "@/application/download";
 import { formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "@/application/presentation";
 import { ABSOLUTE_FIELDS, SCENARIO_PRESETS, absoluteAvailability, absoluteContext, absoluteToRelative, applyPreset, rangeHint, relativeEquivalent, relativeToAbsolute, relativeToAbsoluteValue, type AbsoluteContext, type AbsoluteField, type ScenarioNumericField, type ScenarioPresetId } from "@/application/scenario-presets";
@@ -20,6 +20,12 @@ import type { EvidenceSelection } from "./evidence-drawer";
 import { ScenarioSensitivity } from "./scenario-sensitivity";
 
 const ui = labels.ui.decisionWorkbench;
+/** 基準不能試算的原因：依 code 取 labels 文案（不顯示 domain 訊息）；逐欄位的原因碼前面加上指標名稱，才分得出是哪一項。 */
+const FIELD_REASON_CODES = new Set(["BASELINE_MISSING_AMOUNT", "BASELINE_NEGATIVE_COST"]);
+function baselineReasonText(reason: { code: string; message: string; field?: string }): string {
+  const text = scenarioReasonText(reason);
+  return reason.field && FIELD_REASON_CODES.has(reason.code) && Object.hasOwn(metricDefinitions, reason.field) ? fill(ui.baselineReasonField, { field: metricDefinitions[reason.field as MetricName].label, reason: text }) : text;
+}
 const inputFields: { key: Exclude<keyof ScenarioInputs, "assumptions_accepted">; label: string; help: string; note?: string }[] = [
   { key: "volume_change_pct", label: labels.scenario.volume.label, help: ui.volumeHelp },
   { key: "discount_change_pp", label: labels.scenario.discount.label, help: ui.discountHelp },
@@ -158,7 +164,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
     <section className="panel decision-baseline" aria-labelledby="baseline-heading">
       <div className="section-heading"><div><p className="eyebrow">{ui.baselineEyebrow}</p><h2 id="baseline-heading">{labels.sections.scenarioBaseline}</h2><p className="note">{fill(ui.baselineMeta, { start: session.period.start, end: session.period.end, channels: channelsLabel(session.scope.channels, alias), asOf: session.data_as_of })}</p></div><span className={`tag ${stale ? "blocking" : ""}`}>{stale ? ui.baselineTagStale : ui.baselineTagFixed}</span></div>
       <div className="baseline-metrics">{(["net_revenue", "contribution_after_marketing"] as const).map(name => <div key={name}><span>{metricDefinitions[name].label}</span><button className="baseline-number" data-testid={`baseline-${name}`} disabled={stale || !singleChannel} onClick={() => baselineEvidence(name)}>{money(session.baseline.amounts[name])}</button></div>)}<div><span>{fill(ui.baselineRates, { discountRate: metricDefinitions.discount_rate.shortLabel, refundRatio: metricDefinitions.refund_ratio.shortLabel })}</span><strong>{formatRate(session.baseline.rates.discount_rate)} ／ {formatRate(session.baseline.rates.refund_ratio)}</strong></div><div><span>{ui.baselineFeeRates}</span><strong>{formatRate(session.baseline.rates.platform_rate)} ／ {formatRate(session.baseline.rates.payment_rate)}</strong></div></div>
-      {!session.baseline.eligible && <div className="alert partial" data-testid="scenario-unavailable"><strong>{ui.unavailableTitle}</strong><ul>{session.baseline.reasons.map((reason, i) => <li key={`${reason.code}-${i}`}>{reason.message}</li>)}</ul><p>{ui.unavailableHelp}</p></div>}
+      {!session.baseline.eligible && <div className="alert partial" data-testid="scenario-unavailable"><strong>{ui.unavailableTitle}</strong><ul>{session.baseline.reasons.map((reason, i) => <li key={`${reason.code}-${i}`}>{baselineReasonText(reason)}</li>)}</ul><p>{ui.unavailableHelp}</p></div>}
       <details><summary>{labels.sections.technicalDetails}</summary><dl className="decision-metadata"><dt>{labels.csvColumns.dataset_id}</dt><dd>{session.dataset_id}</dd><dt>{ui.techVersions}</dt><dd>{session.schema_version} / {session.scenario_version} / {session.metric_version}</dd><dt>{labels.csvColumns.dataset_hash}</dt><dd>{session.dataset_hash}</dd><dt>{labels.csvColumns.filter_hash}</dt><dd>{session.filter_hash}</dd><dt>{labels.csvColumns.revision}</dt><dd>{session.revision}</dd></dl></details>
     </section>
     <details className="panel assumptions-panel" data-testid="scenario-assumptions">
@@ -211,7 +217,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
           {plan.result?.status === "valid" && revision !== undefined && <p className="scenario-version"><span className="tag valid" data-testid="scenario-version">{fill(form.version, { n: revision })}</span></p>}
           {!plan.result && <p className="scenario-version"><span className="tag partial" data-testid="scenario-draft">{labels.scenario.draft}</span></p>}
           {!plan.result && <p>{ui.noResult}</p>}
-          {plan.result?.status !== "valid" && plan.result && <div><strong>{plan.inputs.assumptions_accepted ? ui.cannotCalculate : ui.planUnavailable}</strong><ul>{plan.result.reasons.map((reason, i) => <li key={i}>{inputFields.find(field => field.key === reason.field)?.label}{reason.field ? "：" : ""}{reason.message}</li>)}</ul></div>}
+          {plan.result?.status !== "valid" && plan.result && <div><strong>{plan.inputs.assumptions_accepted ? ui.cannotCalculate : ui.planUnavailable}</strong><ul>{plan.result.reasons.map((reason, i) => <li key={i}>{inputFields.find(field => field.key === reason.field)?.label}{reason.field ? "：" : ""}{scenarioReasonText(reason)}</li>)}</ul></div>}
           {plan.result?.status === "valid" && <><span>{labels.scenario.resultTitle}</span><strong data-testid="scenario-contribution">{money(plan.result.contribution)}</strong><p>{labels.scenario.vsBaseline} <b data-testid="scenario-delta">{formatSignedMoney(plan.result.delta)}</b></p></>}
         </div>
         {plan.result?.status === "valid" && <ScenarioSensitivity baseline={session.baseline} inputs={plan.inputs} stale={stale} value={plan.sensitivity} onChange={next => setSensitivity(plan.id, next)} />}

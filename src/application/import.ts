@@ -398,3 +398,13 @@ export function issueMessageParts(issue: IssueRef, context: IssueMessageContext 
 export function importIssueMessage(issue: IssueRef, context: IssueMessageContext = {}): string {
   return issueMessageParts(issue, context).message;
 }
+/**
+ * 選配檔（targets.csv／events.csv）的問題訊息。該檔自己的原因碼已由 labels.targets.errors／labels.events.errors 樣板產生 message，原樣使用；
+ * CSV 讀取錯誤（csv.ts 的 FILE_TOO_LARGE、MALFORMED_CSV 等）的 message 是 lib 的中文，改用 labels.importErrors 樣板帶入檔名與行號。
+ */
+export function sideFileIssueMessage(file: "targets.csv" | "events.csv", issue: { line: number | null; field: string; reason_code: string; message: string }): string {
+  const own: Readonly<Record<string, string>> = file === "targets.csv" ? labels.targets.errors : labels.events.errors;
+  if (Object.hasOwn(own, issue.reason_code)) return issue.message;
+  // IssueRef.file 只列三份核心 CSV；這裡的檔名只用來填 {file}，不查對照與原始列。
+  return importIssueMessage({ file: file as unknown as IssueRef["file"], line: issue.line, field: issue.field, reason_code: issue.reason_code });
+}

@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { SCENARIO_REASON_ALIASES, SCENARIO_REASON_CODES, scenarioReasonLabel, scenarioReasonText } from "@/application/decision-export";
-import { ALL_IMPORT_ISSUE_REASON_CODES, issueTemplate } from "@/application/import";
+import { ALL_IMPORT_ISSUE_REASON_CODES, issueTemplate, sideFileIssueMessage } from "@/application/import";
+import { parseTargets } from "@/application/targets";
+import { parseEvents } from "@/application/events";
 import { analyzeDataset } from "@/domain/analysis";
 import { analyzeScenarioSensitivity } from "@/domain/scenario-sensitivity";
 import { buildScenarioBaseline, type ScenarioInputs } from "@/domain/scenarios";
@@ -88,5 +90,31 @@ describe("試算頁與匯出不退回 domain 訊息", () => {
       expect(texts[index]).not.toContain(reason.message);
       expect(texts[index]).not.toContain(reason.message.replace(/^\S+ \d+：/u, ""));
     });
+  });
+
+  it("試算基準不能試算的原因也用 labels（試算頁的「這個範圍不能試算」清單）", () => {
+    const unconfirmed = buildScenarioBaseline(analyzeDataset(validateDataset(fixture()).dataset!).current.channels.DTC, false);
+    expect(unconfirmed.reasons.map(reason => reason.code)).toEqual(["BASELINE_COVERAGE_UNCONFIRMED"]);
+    expect(unconfirmed.reasons.map(scenarioReasonText)).toEqual([labels.ui.scenarioSensitivity.reasons.BASELINE_COVERAGE_UNCONFIRMED]);
+    expect(scenarioReasonText(unconfirmed.reasons[0])).not.toContain(unconfirmed.reasons[0].message);
+  });
+});
+
+describe("選配檔（targets.csv／events.csv）的 CSV 讀取錯誤不顯示 lib 的中文訊息", () => {
+  const malformed = new TextEncoder().encode('period_start,period_end\n"2026-08-01,2026-08-31\n');
+  it.each([
+    ["targets.csv", () => parseTargets({ name: "targets.csv", bytes: malformed }, ["DTC"]).issues],
+    ["events.csv", () => parseEvents({ name: "events.csv", bytes: malformed }).issues],
+  ] as const)("%s 用 labels.importErrors 樣板帶入檔名", (file, parse) => {
+    const [issue] = parse();
+    const template = issueTemplate(issue.reason_code);
+    expect(template, issue.reason_code).not.toBeNull();
+    expect(sideFileIssueMessage(file, issue)).toBe(fill(labels.importErrors[issue.reason_code], { file, line: issue.line ?? "—", field: issue.field }));
+    expect(sideFileIssueMessage(file, issue)).not.toContain(issue.message);
+  });
+  it("該檔自己的原因碼沿用 labels.targets.errors／labels.events.errors 產生的訊息", () => {
+    const [issue] = parseTargets({ name: "targets.csv", bytes: new TextEncoder().encode("period_start\n2026-08-01\n") }, ["DTC"]).issues;
+    expect(Object.hasOwn(labels.targets.errors, issue.reason_code)).toBe(true);
+    expect(sideFileIssueMessage("targets.csv", issue)).toBe(issue.message);
   });
 });
