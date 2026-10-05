@@ -51,7 +51,9 @@ const test = base.extend<{ browserAudit: BrowserAudit }>({
 });
 
 const dashboard = labels.ui.dashboard;
-const ready = (page: Page) => page.getByTestId("workspace-status").filter({ hasText: labels.status.ready });
+/** Ready status reads fill(status.ready, { date: manifest.data_as_of }) (dashboard.tsx statusText); fixtures/{golden,demo}/manifest.json. */
+const dataAsOf = { golden: "2026-08-03", demo: "2026-08-24" } as const;
+const ready = (page: Page, dataset: keyof typeof dataAsOf) => page.getByTestId("workspace-status").filter({ hasText: fill(labels.status.ready, { date: dataAsOf[dataset] }) });
 const partial = (page: Page) => page.getByTestId("workspace-status").filter({ hasText: labels.status.partial });
 const failed = (page: Page) => page.getByTestId("workspace-status").filter({ hasText: labels.status.error });
 const contribution = (page: Page) => page.getByTestId("kpi-contribution_after_marketing");
@@ -61,6 +63,8 @@ const emptyStatus = labels.status.empty;
 const loadingStatus = labels.status.loading;
 /** Evidence dialog: `${title}｜${labels.sections.evidence}` (evidence-drawer.tsx). */
 const evidenceDialog = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${escapeRegExp(labels.sections.evidence)}$`) });
+/** Evidence drawer money display: fill(ui.evidenceDrawer.money, { amount }) (evidence-drawer.tsx displayValue and component rows). */
+const drawerMoney = (amount: string) => fill(labels.ui.evidenceDrawer.money, { amount });
 /** Date-range segment of the evidence scope line (`{scope}；{start} 至 {end}；通路：{channels}。`). */
 const evidenceDateRange = (start: string, end: string) => fill(labels.ui.evidenceDrawer.scopeLine, { scope: "", start, end, channels: "" }).split("；")[1];
 /** R2 evidence drawer lists source rows per file behind tabs: `${labels.evidence.sourceTabs[x]}（count）` buttons inside role="group" (evidence-drawer.tsx). */
@@ -88,7 +92,7 @@ async function requestDataset(page: Page, id: string) {
 }
 async function loadGolden(page: Page) {
   await requestDataset(page, "golden");
-  await expect(ready(page)).toBeVisible();
+  await expect(ready(page, "golden")).toBeVisible();
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
@@ -114,7 +118,7 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
   await expect(skip).not.toHaveCSS("clip-path", "none");
   await expect(page.getByTestId("workspace-status")).toContainText(emptyStatus);
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
-  await expect(ready(page)).toBeVisible();
+  await expect(ready(page, "demo")).toBeVisible();
   await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await expect(contribution(page)).toContainText("1,269,792.73");
@@ -137,7 +141,7 @@ test("切換 golden 與 demo 會重算同一組 KPI", async ({ page }) => {
   await loadGolden(page);
   await expect(revenue(page)).toContainText("2,470.00");
   await requestDataset(page, "demo");
-  await expect(ready(page)).toBeVisible();
+  await expect(ready(page, "demo")).toBeVisible();
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await expect(contribution(page)).toContainText("1,269,792.73");
   await expect(revenue(page)).toContainText("7,850,657.90");
@@ -163,7 +167,7 @@ test("通路篩選共用，金額證據可用鍵盤開啟與返回", async ({ pa
   await expect(dialog).toContainText("ad_spend_daily.csv");
   await expect(dialog).toContainText("2026-08-02");
   await expect(dialog).toContainText("CM_after =");
-  await expect(dialog).toContainText("NT$ 270.00");
+  await expect(dialog).toContainText(drawerMoney("270.00"));
   for (let index = 0; index < 8; index += 1) {
     await page.keyboard.press(index % 2 ? "Shift+Tab" : "Tab");
     expect(await dialog.evaluate(element => element.contains(document.activeElement)), "Tab 焦點必須留在原生 modal 內").toBe(true);
@@ -216,14 +220,14 @@ test("診斷排序金額使用兩期已觀察差額，證據方向與來源一�
   await expect(ranking).toHaveText("+250.00");
   await ranking.click();
   const dialog = evidenceDialog(page);
-  await expect(dialog.locator(".evidence-body > .number")).toHaveText("NT$ 250.00");
+  await expect(dialog.locator(".evidence-body > .number")).toHaveText(drawerMoney("250.00"));
   // R2 glossary formula: 「差額 = 本期折扣 − 上期折扣（這是實際差額，不是可以省下的錢）」 replaces the 改善收益估計 wording.
   await expect(dialog).toContainText(fill(labels.ui.workspacePanels.deltaFormula, { metric: metricDefinitions.discounts.label }));
   const components = dialog.getByRole("region", { name: labels.evidence.components, exact: true });
   await expect(components).toContainText(labels.periods.previous);
-  await expect(components).toContainText("NT$ 200.00");
+  await expect(components).toContainText(drawerMoney("200.00"));
   await expect(components).toContainText(labels.periods.current);
-  await expect(components).toContainText("NT$ 450.00");
+  await expect(components).toContainText(drawerMoney("450.00"));
   await expect(dialog).toContainText("sales_daily.csv");
   await expect(dialog).toContainText("2026-08-01");
   await expect(dialog).toContainText("2026-08-02");
@@ -264,7 +268,7 @@ test("無效期間不覆寫已套用的分析範圍", async ({ page }) => {
 
 test("有效自訂期間會同步更新 KPI、週資料及來源期間", async ({ page }) => {
   await requestDataset(page, "demo");
-  await expect(ready(page)).toBeVisible();
+  await expect(ready(page, "demo")).toBeVisible();
   await dismissSavePrompt(page);
   await page.getByLabel(periodField("start", "previous"), { exact: true }).fill("2026-06-01");
   await page.getByLabel(periodField("end", "previous"), { exact: true }).fill("2026-06-07");
@@ -285,7 +289,7 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
   await contribution(page).getByRole("button", { name: "316,379.67", exact: true }).click();
   const dialog = evidenceDialog(page);
   await expect(dialog).toContainText(evidenceDateRange("2026-06-08", "2026-06-14"));
-  await expect(dialog.locator(".evidence-body > .number")).toHaveText("NT$ 316,379.67");
+  await expect(dialog.locator(".evidence-body > .number")).toHaveText(drawerMoney("316,379.67"));
 });
 
 test("資料工作區展示三份原始檔案、行號、口徑與未縮減預覽", async ({ page }) => {
@@ -329,7 +333,7 @@ test("blocking 資料集載入失敗仍保留先前成功資料", async ({ page 
   await requestDataset(page, "duplicate");
   await expect(failed(page)).toBeVisible();
   await page.getByRole("button", { name: dashboard.errorState.back, exact: true }).click();
-  await expect(ready(page)).toBeVisible();
+  await expect(ready(page, "golden")).toBeVisible();
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
   await expect(contribution(page)).toContainText("255.00");
   await expect(revenue(page)).toContainText("2,470.00");
@@ -385,7 +389,7 @@ test("較慢的舊資料請求不可覆寫較新的 golden 選擇", async ({ pag
   await page.evaluate(() => new Promise<void>(resolvePaint => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolvePaint()));
   }));
-  await expect(ready(page)).toBeVisible();
+  await expect(ready(page, "golden")).toBeVisible();
   await expect(contribution(page)).toContainText("255.00");
   await expect(revenue(page)).toContainText("2,470.00");
 });
