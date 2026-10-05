@@ -21,6 +21,10 @@ const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).lo
 const nextButton = (page: Page) => wizard(page).getByRole("button", { name: copy.next, exact: true });
 const confirmButton = (page: Page) => wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true });
 const confirmMappingButton = (page: Page) => wizard(page).getByRole("button", { name: copy.confirmMapping, exact: true });
+/** V3-2a：「資料到 {date}」由套用資料集的 data_as_of 填入。 */
+const ready = (dataAsOf: string) => fill(labels.status.ready, { date: dataAsOf });
+const alternativeAsOf = "2026-09-05";
+const goldenAsOf = "2026-08-03";
 /** importErrors 的白話訊息含 {line} 等占位符；比對時以任意文字代入。 */
 const plainMessage = (code: string) => new RegExp(labels.importErrors[code].replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\{\w+\\\}/g, ".+?"));
 
@@ -77,16 +81,16 @@ async function check(page: Page, classification: Classification) {
   await confirmAndCheck(page, classification);
   await expect(importStatus(page)).toHaveText(copy.result[classification]);
 }
-async function commit(page: Page, classification: "valid" | "partial" = "valid") {
+async function commit(page: Page, dataAsOf: string, classification: "valid" | "partial" = "valid") {
   await check(page, classification);
   await commitWizard(page);
-  await expect(status(page)).toContainText(classification === "valid" ? labels.status.ready : labels.status.partial);
+  await expect(status(page)).toContainText(classification === "valid" ? ready(dataAsOf) : labels.status.partial);
   await expect(wizard(page)).toHaveCount(0);
   await navButton(page, "overview").click();
 }
 async function importFixture(page: Page, directory = alternative) {
   await stage(page, directory);
-  await commit(page);
+  await commit(page, (JSON.parse(await readFile(resolve(directory, "manifest.json"), "utf8")) as { data_as_of: string }).data_as_of);
 }
 async function returnToGolden(page: Page) {
   await wizard(page).getByRole("button", { name: copy.cancel, exact: true }).click();
@@ -145,7 +149,7 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   await toSettings(page, "alternative-import-synthetic-v1");
   // 欄名全符合標準：第 2 步自動完成。
   await expect(page.getByTestId("import-stepper").locator("li").nth(1)).toHaveClass(/skipped/);
-  await commit(page);
+  await commit(page, alternativeAsOf);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "gross_profit")).toHaveText("260.00");
   await expect(kpi(page, "contribution_before_marketing")).toHaveText("200.00");
@@ -189,7 +193,7 @@ test("不讀 JSON 也能手填 manifest，金額口徑須明確確認（R3：第
   await expect(importStatus(page)).toHaveCount(0);
   await expect(commitButton(page)).toHaveCount(0);
   await chooseBasis(page, "exclusive");
-  await commit(page);
+  await commit(page, settings[copy.dataAsOf]);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
   const manifest = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.manifestJson, exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
   await closeDownloads(page);
@@ -227,7 +231,7 @@ test("JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功", 
   await expect(wizard(page).getByRole("checkbox", { name: copy.amountConfirm })).toHaveCount(0);
   await expect(wizard(page).locator(".confirm-list")).toContainText(copy.coverageConfirm);
   await expect(wizard(page).locator(".confirm-list")).toContainText(copy.amountConfirm);
-  await commit(page);
+  await commit(page, goldenAsOf);
   await expect(kpi(page, "net_revenue")).toHaveText("2,470.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("255.00");
   const exported = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.manifestJson, exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
@@ -347,7 +351,7 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
   await check(page, "valid");
   await expect(page.getByTestId("reconciliation-gross_sales")).toContainText("renamed-sales.csv／revenue");
   await commitWizard(page);
-  await expect(status(page)).toContainText(labels.status.ready);
+  await expect(status(page)).toContainText(ready(alternativeAsOf));
   await navButton(page, "overview").click();
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
@@ -369,7 +373,7 @@ test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文�
   });
   await selectCsvs(page, alternative);
   await toSettings(page, await readManifest(page, resolve(alternative, "manifest.json")));
-  await commit(page);
+  await commit(page, alternativeAsOf);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
   await navButton(page, "products").click();
   await expect(page.getByTestId("product-table")).toContainText(maliciousCategory);
@@ -445,7 +449,7 @@ test("空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各
   await expect(wizard(page).getByLabel(copy.datasetName, { exact: true })).toHaveValue("alternative-blank-category-all-channel-synthetic");
   await expect(wizard(page).getByLabel("all", { exact: true })).toBeChecked();
   await expect(wizard(page).getByLabel("MARKETPLACE", { exact: true })).toBeChecked();
-  await commit(page);
+  await commit(page, alternativeAsOf);
   await expect(kpi(page, "net_revenue")).toHaveText("600.00");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
   await channelFilter(page).selectOption({ label: "all" });

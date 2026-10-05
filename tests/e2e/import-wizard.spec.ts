@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { labels } from "../../src/i18n";
+import { fill, labels } from "../../src/i18n";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, importViaWizard, nextFromFiles, openWizard, setWizardFiles, wizard, wizardFileLabels, wizardStatus } from "./import-wizard-helpers";
 import { closeDownloads, openDownloads } from "./replacement-helpers";
 
@@ -113,7 +113,8 @@ test("超過 5 MiB 或 50,000 列在第 1 步直接拒絕，不能下一步", as
   const huge = { name: "huge-sales.csv", mimeType: "text/csv", buffer: Buffer.alloc(5 * 1024 * 1024 + 1, 0x61) };
   await wizard(page).getByLabel(wizardFileLabels["sales_daily.csv"], { exact: true }).setInputFiles(huge);
   const slot = page.getByTestId("import-file-sales_daily.csv");
-  await expect(slot.getByRole("alert")).toContainText(labels.importErrors.FILE_TOO_LARGE);
+  // V3-2a：{file} 由 application 帶入標準檔名（SourceRef.file），不是使用者上傳的檔名。
+  await expect(slot.getByRole("alert")).toContainText(fill(labels.importErrors.FILE_TOO_LARGE, { file: "sales_daily.csv" }));
   await expect(wizard(page).getByRole("button", { name: copy.next, exact: true })).toBeDisabled();
   const rows = ["date,channel,ad_spend,currency", ...Array.from({ length: 50_001 }, (_, index) => `2026-01-01,C${index},1.00,TWD`)].join("\n");
   await wizard(page).getByLabel(wizardFileLabels["ad_spend_daily.csv"], { exact: true }).setInputFiles({ name: "too-many-rows.csv", mimeType: "text/csv", buffer: Buffer.from(rows) });
