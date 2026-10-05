@@ -1,0 +1,950 @@
+{
+  "desktop": {
+    "firstScreen": {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "snapshotSentenceTop": null,
+      "snapshotSentenceNote": "v2 沒有 snapshot-sentence（本期一句話是 V3-4 新增）",
+      "firstKpiTop": 397.8,
+      "kpiCardsBottom": 563.6,
+      "kpiCards": [
+        {
+          "id": "kpi-net_revenue",
+          "top": 397.8,
+          "bottom": 563.6
+        },
+        {
+          "id": "kpi-gross_profit",
+          "top": 397.8,
+          "bottom": 563.6
+        },
+        {
+          "id": "kpi-contribution_before_marketing",
+          "top": 397.8,
+          "bottom": 563.6
+        },
+        {
+          "id": "kpi-contribution_after_marketing",
+          "top": 397.8,
+          "bottom": 563.6
+        },
+        {
+          "id": "kpi-contribution_margin",
+          "top": 397.8,
+          "bottom": 563.6
+        }
+      ],
+      "contributionAfterMarketingValueTop": 445.9,
+      "contributionAfterMarketingValueBottom": 479.2,
+      "topThreeFirstRowTitleBottom": 871.6,
+      "topThreeFirstRowBottom": 1080.5,
+      "viewportHeight": 1000,
+      "numbersVisibleInFirstScreen": true
+    },
+    "focusableBeforeFirstKpi": {
+      "count": 13,
+      "tabStops": 25,
+      "method": "main 內、文件順序在第一張 KPI 卡之前、checkVisibility 可見、未 disabled、tabIndex ≥ 0、大於 1×1 px 的 a[href]／button／input／select／textarea／summary／[tabindex]；以元素計（date 輸入的年月日分段算 1 個）。tabStops 是參考值：從 main 按 Tab 到第一張 KPI 卡的按鍵數（date 每個分段各一次）",
+      "elements": [
+        {
+          "tag": "button",
+          "text": "匯入資料"
+        },
+        {
+          "tag": "select",
+          "text": "通路"
+        },
+        {
+          "tag": "button",
+          "text": "近 7 天"
+        },
+        {
+          "tag": "button",
+          "text": "近 4 週"
+        },
+        {
+          "tag": "button",
+          "text": "近 12 週"
+        },
+        {
+          "tag": "button",
+          "text": "本月 vs 上月"
+        },
+        {
+          "tag": "button",
+          "text": "去年同期"
+        },
+        {
+          "tag": "select",
+          "text": "比較方式"
+        },
+        {
+          "tag": "input[type=date]",
+          "text": "previous-start"
+        },
+        {
+          "tag": "input[type=date]",
+          "text": "previous-end"
+        },
+        {
+          "tag": "input[type=date]",
+          "text": "current-start"
+        },
+        {
+          "tag": "input[type=date]",
+          "text": "current-end"
+        },
+        {
+          "tag": "button",
+          "text": "套用"
+        }
+      ]
+    },
+    "importEntryClicks": {
+      "perPage": {
+        "overview": 1,
+        "diagnosis": 1,
+        "products": 1,
+        "scenarios": 1,
+        "actions": 1,
+        "meeting": 1,
+        "data": 1
+      },
+      "max": 1,
+      "method": "先用側欄切到該頁（不計），再數到 import-step-1 可見為止的點擊；每頁量完按「取消」關閉精靈"
+    },
+    "inclusiveTaxImportClicks": {
+      "count": 5,
+      "steps": [
+        "頁首「匯入資料」",
+        "下一步",
+        "口徑：含稅",
+        "確認並檢核",
+        "套用"
+      ],
+      "fileInputs": 3,
+      "start": "空狀態首頁（新訪客）",
+      "end": "總覽 KPI 淨營收 2,150.00、扣廣告後貢獻 518.05（與 tests/fixtures/inclusive_tax/README.md 手算相同）",
+      "method": "只數點擊；三個檔案用 setInputFiles 放入，不計點擊（實際使用者另有 3 次選檔對話框或 1 次拖放）；含稅換算的稅率 5% 與勾選欄位用精靈預設值"
+    }
+  },
+  "_meta": {
+    "batch": "V3-0",
+    "note": "PRD §2.3 B／C 的 v2 基準（EC ProfitLens 2.0.0，revamp/v2）。由 verification/revamp-v3-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v3/V3-0-baseline.md。",
+    "clock": "2026-10-05T02:00:00.000Z",
+    "server": "本機 production（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）"
+  },
+  "laptop": {
+    "topbar": {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "height": 113.2,
+      "rows": 2,
+      "children": 6,
+      "method": "header.topbar 的高度；列數＝可見、非 absolute 的直接子元素依垂直範圍分群（與上一列垂直範圍重疊者同列）"
+    }
+  },
+  "mobile": {
+    "firstScreen": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "snapshotSentenceTop": null,
+      "snapshotSentenceNote": "v2 沒有 snapshot-sentence（本期一句話是 V3-4 新增）",
+      "firstKpiTop": 1066.2,
+      "kpiCardsBottom": 1548.9,
+      "kpiCards": [
+        {
+          "id": "kpi-net_revenue",
+          "top": 1066.2,
+          "bottom": 1221.8
+        },
+        {
+          "id": "kpi-gross_profit",
+          "top": 1066.2,
+          "bottom": 1221.8
+        },
+        {
+          "id": "kpi-contribution_before_marketing",
+          "top": 1230.8,
+          "bottom": 1386.3
+        },
+        {
+          "id": "kpi-contribution_after_marketing",
+          "top": 1230.8,
+          "bottom": 1386.3
+        },
+        {
+          "id": "kpi-contribution_margin",
+          "top": 1395.3,
+          "bottom": 1548.9
+        }
+      ],
+      "contributionAfterMarketingValueTop": 1275,
+      "contributionAfterMarketingValueBottom": 1303,
+      "topThreeFirstRowTitleBottom": 1925.8,
+      "topThreeFirstRowBottom": 2209.2,
+      "viewportHeight": 844,
+      "numbersVisibleInFirstScreen": false
+    },
+    "focusableBeforeFirstKpi": {
+      "count": 13,
+      "tabStops": 25,
+      "method": "main 內、文件順序在第一張 KPI 卡之前、checkVisibility 可見、未 disabled、tabIndex ≥ 0、大於 1×1 px 的 a[href]／button／input／select／textarea／summary／[tabindex]；以元素計（date 輸入的年月日分段算 1 個）。tabStops 是參考值：從 main 按 Tab 到第一張 KPI 卡的按鍵數（date 每個分段各一次）",
+      "elements": [
+        {
+          "tag": "button",
+          "text": "匯入資料"
+        },
+        {
+          "tag": "select",
+          "text": "通路"
+        },
+        {
+          "tag": "button",
+          "text": "近 7 天"
+        },
+        {
+          "tag": "button",
+          "text": "近 4 週"
+        },
+        {
+          "tag": "button",
+          "text": "近 12 週"
+        },
+        {
+          "tag": "button",
+          "text": "本月 vs 上月"
+        },
+        {
+          "tag": "button",
+          "text": "去年同期"
+        },
+        {
+          "tag": "select",
+          "text": "比較方式"
+        },
+        {
+          "tag": "input[type=date]",
+          "text": "previous-start"
+        },
+        {
+          "tag": "input[type=date]",
+          "text": "previous-end"
+        },
+        {
+          "tag": "input[type=date]",
+          "text": "current-start"
+        },
+        {
+          "tag": "input[type=date]",
+          "text": "current-end"
+        },
+        {
+          "tag": "button",
+          "text": "套用"
+        }
+      ]
+    }
+  },
+  "lighthouse": {
+    "version": "13.5.0",
+    "base": "http://127.0.0.1:3107",
+    "generatedAt": "2026-10-05T10:32:54.000Z",
+    "loadAverage": {
+      "before": [
+        9.55,
+        25.01,
+        21.32
+      ],
+      "after": [
+        6.46,
+        21.54,
+        20.26
+      ],
+      "note": "os.loadavg()（1／5／15 分鐘）；本機負載高時 timespan 的 TBT／INP 會偏高，比較時以同負載重跑為準"
+    },
+    "method": "user-flow：navigate（空狀態首頁）→ timespan（載入示範資料）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot；accessibility 取 snapshot、performance 0–100 只有 navigation 有，timespan 記 TBT／CLS／INP；desktop 用 lighthouse desktopConfig、mobile 用預設（模擬節流）並改成 390×844",
+    "desktop-1440": [
+      {
+        "step": "首頁（空狀態，navigation）",
+        "mode": "navigation",
+        "accessibility": 100,
+        "performance": 100,
+        "performanceAudits": "25/30",
+        "metrics": {
+          "fcpMs": 248.281,
+          "lcpMs": 572.422,
+          "speedIndexMs": 248.281,
+          "tbtMs": 4,
+          "cls": 0.001,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "載入示範資料（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "21/25",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 164.907,
+          "cls": 0.814,
+          "inpMs": 23.542
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "經營總覽（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 96,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast",
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 43,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "div.view-content > section.kpi-grid > article.kpi-card > h3 ｜ 淨營收",
+              "div.view-content > section.kpi-grid > article.kpi-card > p.kpi-previous ｜ 上期 6,141,575.72",
+              "section.kpi-grid > article.kpi-card > p.kpi-previous > button.number-link ｜ 6,141,575.72",
+              "div.view-content > section.kpi-grid > article.kpi-card > h3 ｜ 商品毛利",
+              "div.view-content > section.kpi-grid > article.kpi-card > p.kpi-previous ｜ 上期 2,724,131.62",
+              "section.kpi-grid > article.kpi-card > p.kpi-previous > button.number-link ｜ 2,724,131.62"
+            ]
+          },
+          "label-content-name-mismatch": {
+            "count": 3,
+            "nodes": [
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -1,188,365.10",
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -598,833.95",
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -360,900.00"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到通路健檢（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "7/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 148.934,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "通路健檢（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 97,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast",
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 21,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "table > thead > tr > th ｜ 通路",
+              "table > thead > tr > th ｜ 上期淨營收",
+              "table > thead > tr > th ｜ 本期淨營收",
+              "table > thead > tr > th ｜ 淨營收差額",
+              "table > thead > tr > th ｜ 上期廣告後貢獻",
+              "table > thead > tr > th ｜ 本期廣告後貢獻"
+            ]
+          },
+          "label-content-name-mismatch": {
+            "count": 15,
+            "nodes": [
+              "tbody > tr > td > button.number-link ｜ 3,117,931.22",
+              "tbody > tr > td > button.number-link ｜ 3,880,786.47",
+              "tbody > tr > td.positive > button.number-link ｜ +762,855.25",
+              "tbody > tr > td > button.number-link ｜ 1,147,525.80",
+              "tbody > tr > td > button.number-link ｜ 1,330,962.66",
+              "tbody > tr > td.positive > button.number-link ｜ +183,436.86",
+              "tbody > tr > td > button.number-link ｜ 3,023,644.50",
+              "tbody > tr > td > button.number-link ｜ 3,969,871.43"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到商品毛利（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/6",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "商品毛利（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 96,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 24,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "table.table > thead > tr > th ｜ SKU",
+              "table.table > thead > tr > th ｜ 品類",
+              "table.table > thead > tr > th ｜ 本期商品毛利",
+              "table.table > thead > tr > th ｜ 商品毛利差額",
+              "table.table > thead > tr > th ｜ 本期毛利率",
+              "table.table > thead > tr > th ｜ SKU"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到假設試算（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/6",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "假設試算（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 96,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 15,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "section.panel > div.baseline-metrics > div > span ｜ 淨營收",
+              "section.panel > div.baseline-metrics > div > span ｜ 扣廣告後貢獻",
+              "section.panel > div.baseline-metrics > div > span ｜ 本期折扣率／退款比",
+              "section.panel > div.baseline-metrics > div > span ｜ 平台抽成率／金流費率（佔淨營收）",
+              "fieldset > div.scenario-inputs > div.scenario-field > small#_r_5_-1-volume_change_pct-help ｜ 例：多賣 10% 填 +10（範圍 −90 到 +100，維持現況請填 0）",
+              "fieldset > div.scenario-inputs > div.scenario-field > small#_r_5_-1-discount_change_pp-help ｜ 例：10% 改成 12% 填 +2；改成 8% 填 −2（調整後折扣率要在 0%"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到會議紀錄（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 217.153,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "會議紀錄（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 96,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast",
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 9,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "table > thead > tr > th ｜ 通路",
+              "table > thead > tr > th ｜ 上期淨營收",
+              "table > thead > tr > th ｜ 本期淨營收",
+              "table > thead > tr > th ｜ 淨營收差額",
+              "table > thead > tr > th ｜ 上期廣告後貢獻",
+              "table > thead > tr > th ｜ 本期廣告後貢獻"
+            ]
+          },
+          "label-content-name-mismatch": {
+            "count": 21,
+            "nodes": [
+              "div.manager-summary_headlines__PVsm1 > div > p.manager-summary_change__9_jRF > button.number-link ｜ +1,709,082.18",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 6,141,575.72",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 7,850,657.90",
+              "div.manager-summary_headlines__PVsm1 > div > p.manager-summary_change__9_jRF > button.number-link ｜ -598,833.95",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 1,868,626.68",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 1,269,792.73",
+              "ol.manager-summary_priorities__6Vjeq > li > p.top-three-impact > button.number-link ｜ -1,188,365.10",
+              "ol.manager-summary_priorities__6Vjeq > li > p.top-three-impact > button.number-link ｜ -598,833.95"
+            ]
+          }
+        }
+      }
+    ],
+    "mobile-390": [
+      {
+        "step": "首頁（空狀態，navigation）",
+        "mode": "navigation",
+        "accessibility": 100,
+        "performance": 94,
+        "performanceAudits": "23/30",
+        "metrics": {
+          "fcpMs": 914.434,
+          "lcpMs": 2571.651,
+          "speedIndexMs": 914.434,
+          "tbtMs": 134,
+          "cls": 0.092,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "載入示範資料（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "22/24",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 1101.882,
+          "cls": 0,
+          "inpMs": 38.002
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "經營總覽（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 96,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast",
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 43,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "div.view-content > section.kpi-grid > article.kpi-card > h3 ｜ 淨營收",
+              "div.view-content > section.kpi-grid > article.kpi-card > p.kpi-previous ｜ 上期 6,141,575.72",
+              "section.kpi-grid > article.kpi-card > p.kpi-previous > button.number-link ｜ 6,141,575.72",
+              "div.view-content > section.kpi-grid > article.kpi-card > h3 ｜ 商品毛利",
+              "div.view-content > section.kpi-grid > article.kpi-card > p.kpi-previous ｜ 上期 2,724,131.62",
+              "section.kpi-grid > article.kpi-card > p.kpi-previous > button.number-link ｜ 2,724,131.62"
+            ]
+          },
+          "label-content-name-mismatch": {
+            "count": 3,
+            "nodes": [
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -1,188,365.10",
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -598,833.95",
+              "ol.top-three-list > li > p.top-three-impact > button.number-link ｜ -360,900.00"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到通路健檢（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 779.786,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "通路健檢（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 97,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast",
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 21,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "table > thead > tr > th ｜ 通路",
+              "table > thead > tr > th ｜ 上期淨營收",
+              "table > thead > tr > th ｜ 本期淨營收",
+              "table > thead > tr > th ｜ 淨營收差額",
+              "table > thead > tr > th ｜ 上期廣告後貢獻",
+              "table > thead > tr > th ｜ 本期廣告後貢獻"
+            ]
+          },
+          "label-content-name-mismatch": {
+            "count": 15,
+            "nodes": [
+              "tbody > tr > td > button.number-link ｜ 3,117,931.22",
+              "tbody > tr > td > button.number-link ｜ 3,880,786.47",
+              "tbody > tr > td.positive > button.number-link ｜ +762,855.25",
+              "tbody > tr > td > button.number-link ｜ 1,147,525.80",
+              "tbody > tr > td > button.number-link ｜ 1,330,962.66",
+              "tbody > tr > td.positive > button.number-link ｜ +183,436.86",
+              "tbody > tr > td > button.number-link ｜ 3,023,644.50",
+              "tbody > tr > td > button.number-link ｜ 3,969,871.43"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到商品毛利（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "21/21",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 75.603,
+          "cls": 0,
+          "inpMs": 143.606
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "商品毛利（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 96,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 24,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "table.table > thead > tr > th ｜ SKU",
+              "table.table > thead > tr > th ｜ 品類",
+              "table.table > thead > tr > th ｜ 本期商品毛利",
+              "table.table > thead > tr > th ｜ 商品毛利差額",
+              "table.table > thead > tr > th ｜ 本期毛利率",
+              "table.table > thead > tr > th ｜ SKU"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到假設試算（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/6",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "假設試算（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 96,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 15,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "section.panel > div.baseline-metrics > div > span ｜ 淨營收",
+              "section.panel > div.baseline-metrics > div > span ｜ 扣廣告後貢獻",
+              "section.panel > div.baseline-metrics > div > span ｜ 本期折扣率／退款比",
+              "section.panel > div.baseline-metrics > div > span ｜ 平台抽成率／金流費率（佔淨營收）",
+              "fieldset > div.scenario-inputs > div.scenario-field > small#_r_5_-1-volume_change_pct-help ｜ 例：多賣 10% 填 +10（範圍 −90 到 +100，維持現況請填 0）",
+              "fieldset > div.scenario-inputs > div.scenario-field > small#_r_5_-1-discount_change_pp-help ｜ 例：10% 改成 12% 填 +2；改成 8% 填 −2（調整後折扣率要在 0%"
+            ]
+          }
+        }
+      },
+      {
+        "step": "切到會議紀錄（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 981.224,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "會議紀錄（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 96,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [
+          "color-contrast",
+          "label-content-name-mismatch"
+        ],
+        "failedAccessibilityNodes": {
+          "color-contrast": {
+            "count": 9,
+            "nodes": [
+              "div.main-shell > header.topbar > div.status-line > span.muted ｜ 營運示範｜12 週示範資料 · 資料到 2026-08-24",
+              "header.topbar > details.topbar-menu > summary > span.tag ｜ ● 未保存",
+              "table > thead > tr > th ｜ 通路",
+              "table > thead > tr > th ｜ 上期淨營收",
+              "table > thead > tr > th ｜ 本期淨營收",
+              "table > thead > tr > th ｜ 淨營收差額",
+              "table > thead > tr > th ｜ 上期廣告後貢獻",
+              "table > thead > tr > th ｜ 本期廣告後貢獻"
+            ]
+          },
+          "label-content-name-mismatch": {
+            "count": 21,
+            "nodes": [
+              "div.manager-summary_headlines__PVsm1 > div > p.manager-summary_change__9_jRF > button.number-link ｜ +1,709,082.18",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 6,141,575.72",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 7,850,657.90",
+              "div.manager-summary_headlines__PVsm1 > div > p.manager-summary_change__9_jRF > button.number-link ｜ -598,833.95",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 1,868,626.68",
+              "div.manager-summary_headlines__PVsm1 > div > p.note > button.number-link ｜ 1,269,792.73",
+              "ol.manager-summary_priorities__6Vjeq > li > p.top-three-impact > button.number-link ｜ -1,188,365.10",
+              "ol.manager-summary_priorities__6Vjeq > li > p.top-three-impact > button.number-link ｜ -598,833.95"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "firstLoadJs": {
+    "scripts": 6,
+    "bytes": 1563491,
+    "kib": 1526.8,
+    "gzipBytes": 463379,
+    "gzipKiB": 452.5,
+    "nomoduleExcluded": [
+      {
+        "src": "/_next/static/chunks/polyfills-42372ed130431b0a.js",
+        "bytes": 112594,
+        "gzip": 39473
+      }
+    ],
+    "allScripts": {
+      "scripts": 7,
+      "bytes": 1676085,
+      "gzipBytes": 502852
+    },
+    "files": [
+      {
+        "src": "/_next/static/chunks/0937d497-4bac4f7c73c04ac9.js",
+        "nomodule": false,
+        "bytes": 201053,
+        "gzip": 63369
+      },
+      {
+        "src": "/_next/static/chunks/858-0524d61646634654.js",
+        "nomodule": false,
+        "bytes": 240777,
+        "gzip": 66159
+      },
+      {
+        "src": "/_next/static/chunks/main-app-e73c7cd4e9dca3d8.js",
+        "nomodule": false,
+        "bytes": 510,
+        "gzip": 219
+      },
+      {
+        "src": "/_next/static/chunks/679-de56929891633cc2.js",
+        "nomodule": false,
+        "bytes": 530583,
+        "gzip": 159062
+      },
+      {
+        "src": "/_next/static/chunks/app/page-e945920764194a53.js",
+        "nomodule": false,
+        "bytes": 587006,
+        "gzip": 172726
+      },
+      {
+        "src": "/_next/static/chunks/polyfills-42372ed130431b0a.js",
+        "nomodule": true,
+        "bytes": 112594,
+        "gzip": 39473
+      },
+      {
+        "src": "/_next/static/chunks/webpack-c0c5b71f239f12b2.js",
+        "nomodule": false,
+        "bytes": 3562,
+        "gzip": 1844
+      }
+    ],
+    "method": "GET / 的 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重）；主數字排除 nomodule（polyfills，現代瀏覽器不下載），allScripts 為含 nomodule 的總和；bytes＝未壓縮大小，gzip＝Node zlib gzipSync 預設等級（next start 也以 gzip 傳送）"
+  }
+}
