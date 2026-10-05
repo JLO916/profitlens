@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { clickReplacing, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
@@ -40,12 +42,14 @@ const resetClicks = (page: Page) => page.evaluate(() => { (window as unknown as 
 const nav = (page: Page, id: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[id].label, exact: true });
 const globalChannel = (page: Page) => page.locator(".filter-bar").getByLabel(dash.filter.channel, { exact: true });
 
+// V3-2a：status.ready 帶 {date}＝資料集 manifest 的 data_as_of（golden 2026-08-03、demo 2026-08-24）。
+const dataAsOf = (id: "golden" | "demo") => (JSON.parse(readFileSync(resolve("fixtures", id, "manifest.json"), "utf8")) as { data_as_of: string }).data_as_of;
 async function loadDataset(page: Page, id: "golden" | "demo") {
   await page.goto("/");
   await openValidation(page);
   await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await expect(page.getByTestId("workspace-status")).toContainText(fill(labels.status.ready, { date: dataAsOf(id) }));
 }
 async function calculate(card: Locator, contribution: string, delta: string) {
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
