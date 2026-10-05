@@ -278,6 +278,26 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
 
+## 2026-10-05｜Revamp v3 開工：D-V3-1–24 依建議值、產品改名 EC ProfitLens、V3-0 範圍
+
+**問題：** v2.0.0 數字正確、可追溯，但使用者反映「介面複雜、不好懂」與「AI 製作感太重」。`docs/revamp-v3/01_PRD.md` 提出 Revamp v3（11 批、不加依賴、不刪功能、不動財務核心），並列出 24 件需拍板事項；使用者同時要求產品改名。
+
+**採用選項：**
+- **使用者 2026-10-05 指示「都依建議值」並開始 V3**：D-V3-1–24 全部採 PRD §13.2 的建議值，逐項寫在 `docs/revamp-v3/09_DECISIONS_PENDING.md` 的「決定」欄。重點：
+  - 用詞（V3-2 落地）：D-V3-1＝A「通路貢獻」改「扣廣告前貢獻」（修正 D1 的一部分，舊名留作 alias）；D-V3-2＝A「口徑」拆成指標定義／金額基準／解讀限制；D-V3-3＝A 抽屜「計算與來源」、按鈕「看明細」；D-V3-4＝A「行動」全面改「待辦」（含 Excel 工作表名，列入 RELEASES 破壞性變更）；D-V3-5＝A 廣告效率（MER）；D-V3-6＝A 全站「台」；D-V3-18＝A CM1／CM2 對照只放指標定義與抽屜；D-V3-22＝A 舊紀錄數字與決議不動、介面用新名詞並加註。
+  - 視覺與格式：D-V3-7＝A 只有不利上色；D-V3-8＝A UI「−」、CSV／JSON「-」、列印／PDF／Excel 管理損益表用括號；D-V3-9＝A 沿用深綠 `#1f5a4f`。
+  - 互動：D-V3-10＝A 期間快捷直接套用（改變 R1 的明確套用，V3-3 同批改測試）；D-V3-11＝A KPI 依四層順序；D-V3-12＝B 試算聲明同一工作區勾一次就記住；D-V3-13＝A 週會摘要預設內容；D-V3-14＝A 側欄四組；D-V3-15 新增 7 個只含事件名的分析事件。
+  - P1 範圍（V3-9）：D-V3-16＝A 目標只顯示實際／目標／差額，F11 本輪不做；D-V3-17＝C 損益兩平 MER 用獨立版本 `breakeven-mer-v1`、實作在 `src/application`，既有 7 個輔助指標維持 `assist-kpi-v1`；D-V3-19＝A 管理損益表放總覽「進階」；D-V3-20＝A `fixtures/demo_tw` 排入 V3-9（新增 fixture，附手算 expected）；D-V3-21＝A 不做費率參考提示；D-V3-23＝A 投影模式納入 V3-9。
+  - 部署：D-V3-24＝A MVP（V3-0–V3-4）後只部署 Vercel preview，V3-10 才切正式站。這是策略，**每一次實際部署（含 preview）仍須使用者當次明確同意**（AGENTS.md）。
+- **拍板不取代人工關卡**：D-V3-2、D-V3-14 的用語在 V3-2／V3-3 落地前仍要通過 H3（`copy-rewrite.csv` 審稿與紙本用語測試）；H4 複測不過時只改 labels 值換回舊名。H1–H4 沒完成時 STATUS 寫「未執行／待人工」。
+- **D-V3-25 產品改名為 EC ProfitLens（已執行，commit `87f6f8e`）**：改的是使用者看得到的名稱（`labels.brand`、`<title>`、列印與決策紀錄標題、AI 提示、README／RELEASES／ENGINEERING／AGENTS／CLAUDE、`public/og.png`）。**技術識別不變**：package 名 `profitlens`、下載檔名前綴 `profitlens-`、備份 schema 字串、`dataset_id`、網址 `profitlens-tau.vercel.app`，以免舊備份、已下載檔與既有連結失效。
+- **V3-0 範圍（不改任何 UI，畫面零變化）**：tag `v2.0.0`（指向 `82b70df`）作為禁區比對基準；`scripts/ui-audit.mjs`、`scripts/contrast-check.mjs`、`tests/design-lint.test.ts`、`tests/copy-style.test.ts`（上限＝v2 實測值，之後只能下降）；`verification/revamp-v3/testids-v2.txt`＋`tests/testid-baseline.test.ts`，並為 6 個保留功能只補 testid 屬性；`feature-retention.csv`、`backup-schema-v4.json`、完整下載入口清單、`e2e-text-assertions.csv`；`toHaveScreenshot` 四尺寸基準；`copy-rewrite.csv` 與紙本用語測試材料（H3）；基準量測寫進 `verification/revamp-v3/V3-0-baseline.md`；v3 文件套件（`docs/revamp-v3/00_README.md`、`06_BATCHES.md`、`09_DECISIONS_PENDING.md`、`GLOSSARY.md`、`usability-test.md`）與 CLAUDE.md 改為 v3 規則。
+- **禁區比對基準改為 `82b70df`／tag `v2.0.0`**，不用 `main`（v2 R4 已在 `src/domain` 新增過內容）。V3-0–V3-8 禁區零 diff；V3-9 只允許白名單內的新增（目前只有 `fixtures/demo_tw/**`，`src/domain` 無）。
+
+**原因：** 使用者明確授權依 PRD 開工並採用全部建議值；把拍板、名詞、批次與量測腳本先固定成文件與棘輪測試，後面 10 批才有可檢查的完成條件，也避免改名造成測試被改回舊文案。
+
+**影響文件：** `docs/revamp-v3/00_README.md`、`06_BATCHES.md`、`09_DECISIONS_PENDING.md`、`GLOSSARY.md`、`usability-test.md`、`CLAUDE.md`。**需重跑驗收：** V3-0 不改 UI 與計算；typecheck、lint、單元測試照常；golden（255.00、−315.00、284.00／264.00／19.70）不變。
+
 ## 2026-10-03｜Revamp v2 R7：README、示範資料（D3）、網域（D8）、使用分析（D9）、進階驗證頁（D10）與上線整理
 
 **問題：** R7 要把產品重新上線：README 改寫給營運主管、示範資料是否台灣化、是否加自訂網域與使用分析、「開發者驗證」頁怎麼處理，以及上線前檢查怎麼留下真實證據。
