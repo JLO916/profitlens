@@ -256,3 +256,145 @@ function mappedCsv(parsed: ParsedCsv, fields: readonly string[], mapping: Record
   }
   return csv;
 }
+
+// —— V3-2a §7.7.3：匯入錯誤句型「{file} 第 {line} 行：{問題}。{修法}。」的 application 端接線 ——
+// domain 的 ValidationIssue（SourceRef、severity、reason_code、field、message）維持不變；
+// 畫面與匯出只用 labels.importErrors 的樣板，不再退回 domain 的中文 message。
+
+/** importErrors 樣板可以用的占位符，以及每一個占位符在 application 端的來源。樣板只能用這裡列出的鍵。 */
+export const SUPPORTED_ISSUE_PLACEHOLDERS = {
+  file: "SourceRef.file（標準檔名，例如 sales_daily.csv）",
+  line: "SourceRef.line（原始 CSV 實體行號）",
+  value: "已讀入的原始 CSV 列：依 file:line 與欄位對照取出該格原值（INVALID_DATE 等）；沒有原始列時日期欄退回 SourceRef.date",
+  column: "欄位對照：標準欄位 → 來源欄名；沒有對照時用標準欄位名",
+  field: "ValidationIssue.field（標準欄位名、欄名或設定路徑）",
+  date: "SourceRef.date",
+  channel: "SourceRef.channel",
+} as const;
+export type IssuePlaceholder = keyof typeof SUPPORTED_ISSUE_PLACEHOLDERS;
+
+/**
+ * 所有會出現在 ValidationIssue.reason_code 的原因碼（依產生位置分組）；每一個都要有 labels.importErrors 樣板。
+ * tests/reason-code-labels.test.ts 會掃描產生位置的原始碼，確認這份清單沒有漏列。
+ */
+export const IMPORT_ISSUE_REASON_CODES = {
+  /** src/lib/csv.ts */
+  csv: ["FILE_TOO_LARGE", "INVALID_UTF8", "INVALID_HEADER", "DUPLICATE_COLUMN", "COLUMN_COUNT_MISMATCH", "ROW_LIMIT_EXCEEDED", "MALFORMED_CSV", "EMPTY_CSV"],
+  /** src/application/import.ts、import-guidance.ts、limits.ts、components/import-wizard（讀檔失敗） */
+  application: ["FILE_READ_FAILED", "INVALID_FILE_EXTENSION", "FILE_SIZE_MISMATCH", "MISSING_FILE", "LOGICAL_FILE_MISMATCH", "INVALID_IMPORT_DRAFT", "UNKNOWN_MAPPING_TARGET", "MISSING_COLUMN_MAPPING", "MISSING_SOURCE_COLUMN", "DUPLICATE_SOURCE_MAPPING", "COLUMN_MAPPING_UNCONFIRMED", "UNKNOWN_COLUMN_UNCONFIRMED", "UNKNOWN_COLUMN_IGNORED", "AMOUNT_BASIS_UNCONFIRMED", "SOURCE_AMOUNT_BASIS_UNSUPPORTED", "INVALID_TAX_RATE", "INVALID_MANIFEST_JSON", "INVALID_MANIFEST_STRUCTURE", "PROPOSAL_KEYS_INVALID", "ANALYSIS_PERIOD_TOO_LARGE", "ANALYSIS_CHANNEL_LIMIT"],
+  /** src/domain/validation.ts（資料集設定）與 src/domain/date.ts validatePeriods */
+  manifest: ["INVALID_MANIFEST", "INVALID_PERIOD", "PERIOD_ORDER_INVALID", "OVERLAPPING_PERIODS", "PERIOD_OUTSIDE_COVERAGE", "INVALID_DATA_AS_OF", "PERIOD_AFTER_DATA_AS_OF", "UNEQUAL_PERIOD_LENGTH", "INCOMPLETE_CALENDAR_MONTH", "INVALID_COMPARISON_MODE", "SALES_COVERAGE_UNCONFIRMED", "MISSING_COLUMN"],
+  /** src/domain/validation.ts（逐列；MISSING_<欄位> 由欄位名組成） */
+  row: ["MISSING_KEY", "INVALID_DATE", "OUTSIDE_COVERAGE", "UNKNOWN_CHANNEL", "MIXED_CURRENCY", "DUPLICATE_SALES_KEY", "DUPLICATE_COST_KEY", "DUPLICATE_AD_KEY", "INVALID_AMOUNT", "NEGATIVE_AMOUNT", "MISSING_COGS", "MISSING_GROSS_SALES", "MISSING_DISCOUNTS", "MISSING_REFUNDS", "MISSING_PLATFORM_FEES", "MISSING_PAYMENT_FEES", "MISSING_FULFILLMENT_COSTS", "MISSING_OTHER_VARIABLE_COSTS", "MISSING_AD_SPEND", "MISSING_UNITS_SOLD", "INVALID_UNITS", "INCONSISTENT_CATEGORY", "DISCOUNT_EXCEEDS_GROSS", "MISSING_CHANNEL_COST_DAY", "MISSING_AD_DAY"],
+} as const;
+export const ALL_IMPORT_ISSUE_REASON_CODES: readonly string[] = Object.values(IMPORT_ISSUE_REASON_CODES).flat();
+
+/** 樣板裡的句號（U+3002）：L1（列標題）是第一個句號之前的部分，L2（展開說明）是其後。 */
+const SENTENCE_END = "。";
+/** 占位符拿不到值時（例如超過上限的缺列沒有日期與通路）顯示的記號，和問題清單行號欄的「—」一致。 */
+const UNKNOWN_PLACEHOLDER = "—";
+
+/** labels.importErrors 的一筆：現行是一整句字串（L1。L2），也接受拆好的 { headline, explain }。 */
+type ImportErrorEntry = string | { headline: string; explain?: string };
+export interface IssueTemplate { headline: string; explain: string; full: string }
+/** 把一筆樣板拆成 L1／L2（都還沒帶入占位符）。L1 不含句號；L2 保留自己的句號；full 是整句。 */
+export function splitIssueTemplate(entry: ImportErrorEntry): IssueTemplate {
+  if (typeof entry !== "string") {
+    const explain = entry.explain ?? "";
+    return { headline: entry.headline, explain, full: explain ? `${entry.headline}${SENTENCE_END}${explain}` : entry.headline };
+  }
+  const index = entry.indexOf(SENTENCE_END);
+  return index < 0 ? { headline: entry, explain: "", full: entry } : { headline: entry.slice(0, index), explain: entry.slice(index + 1).trim(), full: entry };
+}
+/** 原因碼對應的樣板；labels 沒有這個原因碼時回傳 null。 */
+export function issueTemplate(code: string): IssueTemplate | null {
+  const entries = labels.importErrors as Record<string, ImportErrorEntry | undefined>;
+  const entry = Object.hasOwn(entries, code) ? entries[code] : undefined;
+  return entry === undefined ? null : splitIssueTemplate(entry);
+}
+/** 樣板裡用到的占位符鍵（依出現順序、不重複）。 */
+export function templatePlaceholders(template: string): string[] {
+  return [...new Set([...template.matchAll(/\{(\w+)\}/g)].map(([, key]) => key))];
+}
+
+/** 帶入 {value}／{column} 需要的匯入上下文：已讀入的原始 CSV 列與欄位對照。沒有時退回 SourceRef 與標準欄位名。 */
+export interface IssueMessageContext {
+  /** 標準欄位 → 來源欄名（PreparedImport.columnMappings 或草稿的 mapping）。 */
+  mappings?: Partial<Record<FileName | "manifest.json", Record<string, string>>>;
+  /** 已讀入的原始 CSV（含原始行號）；只在匯入精靈裡有。 */
+  sources?: Partial<Record<FileName, ParsedCsv>>;
+}
+/** 由匯入草稿組出上下文：原始列取自 draft.parsed，對照取自 draft.mapping（還沒選的欄位不列入）。 */
+export function issueContextFromDrafts(drafts: Partial<Record<FileName, Pick<ImportFileDraft, "parsed" | "mapping">>>): IssueMessageContext {
+  const mappings: NonNullable<IssueMessageContext["mappings"]> = {};
+  const sources: NonNullable<IssueMessageContext["sources"]> = {};
+  for (const file of fileNames) {
+    const draft = drafts[file];
+    if (!draft) continue;
+    mappings[file] = Object.fromEntries(Object.entries(draft.mapping).filter(([, source]) => source));
+    if (draft.parsed) sources[file] = draft.parsed;
+  }
+  return { mappings, sources };
+}
+
+const rowIndexCache = new WeakMap<ParsedCsv, Map<number, string[]>>();
+function rowAtLine(parsed: ParsedCsv, line: number): string[] | undefined {
+  let index = rowIndexCache.get(parsed);
+  if (!index) { index = new Map(parsed.rows.map(row => [row.line, row.values])); rowIndexCache.set(parsed, index); }
+  return index.get(line);
+}
+export type IssueRef = Pick<ValidationIssue, "file" | "line" | "field" | "reason_code"> & Partial<Pick<ValidationIssue, "date" | "channel">>;
+/** 來源欄名：有對照就用來源欄名，沒有就用標準欄位名。 */
+function sourceColumn(issue: IssueRef, context: IssueMessageContext): string {
+  return context.mappings?.[issue.file]?.[issue.field] || issue.field;
+}
+/** 原始值：依 file:line 從已讀入的原始 CSV 取出該欄原值；沒有原始列時，日期欄退回 SourceRef.date（domain 記下的就是原始日期字串）。 */
+function rawValue(issue: IssueRef, context: IssueMessageContext): string | undefined {
+  if (issue.file !== "manifest.json" && issue.line !== null) {
+    const parsed = context.sources?.[issue.file];
+    const values = parsed ? rowAtLine(parsed, issue.line) : undefined;
+    const column = parsed ? parsed.headers.indexOf(sourceColumn(issue, context)) : -1;
+    if (values && column >= 0) return values[column] ?? "";
+  }
+  return issue.field === "date" ? issue.date : undefined;
+}
+/** 每個支援的占位符在這筆問題上的值；拿不到的是 undefined（畫面顯示「—」）。 */
+export function issuePlaceholderValues(issue: IssueRef, context: IssueMessageContext = {}): Record<IssuePlaceholder, string | undefined> {
+  return {
+    file: issue.file,
+    line: issue.line === null ? undefined : String(issue.line),
+    value: rawValue(issue, context),
+    column: sourceColumn(issue, context),
+    field: issue.field,
+    date: issue.date,
+    channel: issue.channel,
+  };
+}
+function fillIssueTemplate(template: string, values: Record<IssuePlaceholder, string | undefined>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) => {
+    if (!Object.hasOwn(SUPPORTED_ISSUE_PLACEHOLDERS, key)) return match;
+    return values[key as IssuePlaceholder] ?? UNKNOWN_PLACEHOLDER;
+  });
+}
+
+/** 用這筆問題的占位符值填一段樣板（不查 labels；預覽 copy-rewrite 現稿與測試用）。 */
+export function renderIssueTemplate(template: string, issue: IssueRef, context: IssueMessageContext = {}): string {
+  return fillIssueTemplate(template, issuePlaceholderValues(issue, context));
+}
+
+/** 一筆問題的三層文字：L1 列標題、L2 展開說明、L3 原因碼；message 是主層整句（L1。L2）。 */
+export interface IssueMessageParts { headline: string; explain: string; message: string; code: string; mapped: boolean }
+/** labels 沒有樣板時，L1 是帶標籤的原因碼（「問題代碼 XXX」），不退回 domain 的中文 message；reason-code-labels 測試保證不會發生。 */
+export function issueMessageParts(issue: IssueRef, context: IssueMessageContext = {}): IssueMessageParts {
+  const template = issueTemplate(issue.reason_code);
+  if (!template) {
+    const headline = `${labels.ui.issueList.reasonCodeSummary} ${issue.reason_code}`;
+    return { headline, explain: "", message: headline, code: issue.reason_code, mapped: false };
+  }
+  const values = issuePlaceholderValues(issue, context);
+  return { headline: fillIssueTemplate(template.headline, values), explain: fillIssueTemplate(template.explain, values), message: fillIssueTemplate(template.full, values), code: issue.reason_code, mapped: true };
+}
+/** 主層顯示的一整句（L1。L2）；畫面、問題清單 CSV 都用這一句。 */
+export function importIssueMessage(issue: IssueRef, context: IssueMessageContext = {}): string {
+  return issueMessageParts(issue, context).message;
+}

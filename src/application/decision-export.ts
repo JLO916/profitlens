@@ -129,10 +129,33 @@ function mdTechnical(lines: readonly string[], summary: string = labels.sections
   return ["<details>", `<summary>${summary}</summary>`, "", ...lines, "", "</details>"];
 }
 const sensitivityCopy = labels.ui.scenarioSensitivity;
-/** 與試算頁同一套白話原因；沒有對應的沿用 domain 訊息（例如「假設 n：…」）。 */
-function sensitivityReasonText(reason: { code: string; message: string }): string {
-  const mapped: Record<string, string> = { STALE_SCENARIO: sensitivityCopy.reasons.STALE_SCENARIO, SENSITIVITY_VOLUME_REQUIRED: sensitivityCopy.reasons.SENSITIVITY_VOLUME_REQUIRED, THREE_VOLUME_VALUES_REQUIRED: sensitivityCopy.reasons.SENSITIVITY_VOLUME_REQUIRED };
-  return mapped[reason.code] ?? reason.message;
+/**
+ * V3-2a §7.7.3：domain 的試算原因碼（src/domain/scenarios.ts 的 eligibility／calculateScenario，與 scenario-sensitivity.ts）。
+ * 每一個都要在 labels.ui.scenarioSensitivity.reasons 有白話文案（別名見 SCENARIO_REASON_ALIASES）；tests/reason-code-labels.test.ts 檢查。
+ */
+export const SCENARIO_REASON_CODES = [
+  "BASELINE_COVERAGE_UNCONFIRMED", "BASELINE_MISSING_AMOUNT", "BASELINE_NEGATIVE_COST", "BASELINE_NON_POSITIVE_GROSS", "BASELINE_NON_POSITIVE_NET", "BASELINE_DISCOUNT_RATE_OUT_OF_RANGE", "BASELINE_REFUND_RATIO_OUT_OF_RANGE",
+  "ASSUMPTIONS_NOT_ACCEPTED", "INPUT_REQUIRED", "INVALID_NUMBER", "INPUT_OUT_OF_RANGE", "SCENARIO_DISCOUNT_RATE_OUT_OF_RANGE",
+  "STALE_SCENARIO", "THREE_VOLUME_VALUES_REQUIRED", "SENSITIVITY_VOLUME_REQUIRED",
+] as const;
+/** 共用同一句文案的原因碼。 */
+export const SCENARIO_REASON_ALIASES: Readonly<Record<string, string>> = { THREE_VOLUME_VALUES_REQUIRED: "SENSITIVITY_VOLUME_REQUIRED" };
+/** 原因碼的白話文案；labels 沒有時回傳 null。 */
+export function scenarioReasonLabel(code: string): string | null {
+  const reasons = sensitivityCopy.reasons as Readonly<Record<string, string | undefined>>;
+  const key = SCENARIO_REASON_ALIASES[code] ?? code;
+  return Object.hasOwn(reasons, key) ? reasons[key] ?? null : null;
+}
+/** scenario-sensitivity.ts 逐列原因的前綴（「假設 n：」）；只取 n，改用畫面上的 A／B／C 編號。 */
+const SENSITIVITY_ROW_PREFIX = /^\S+ (\d+)：/u;
+/**
+ * 試算頁與匯出共用的白話原因；不退回 domain 的中文 message。labels 沒有對應時顯示帶標籤的原因碼（「問題代碼 XXX」），
+ * reason-code-labels 測試保證每個原因碼都有文案。
+ */
+export function scenarioReasonText(reason: { code: string; message: string }): string {
+  const text = scenarioReasonLabel(reason.code) ?? `${labels.ui.issueList.reasonCodeSummary} ${reason.code}`;
+  const row = SENSITIVITY_ROW_PREFIX.exec(reason.message);
+  return row ? `${fill(sensitivityCopy.rowLabel, { letter: String.fromCharCode(64 + Number(row[1])) })}：${text}` : text;
 }
 /** 每個方案下的小表：假設／銷量變化 %／試算後貢獻／與現況相比；未算出的格子寫「資料待補／不適用」並附原因一句。 */
 function mdSensitivity(sensitivity: SensitivityExport): string[] {
@@ -144,7 +167,7 @@ function mdSensitivity(sensitivity: SensitivityExport): string[] {
     lines.push(row([md(fill(sensitivityCopy.rowLabel, { letter: String.fromCharCode(65 + index) })), md(volume.trim() === "" ? copy.nullValue : volume), md(result?.contribution ?? copy.nullValue), md(result?.delta ?? copy.nullValue)]));
   });
   if (sensitivity.analysis === null) lines.push("", md(labels.scenario.draft));
-  else if (sensitivityStatus(sensitivity) !== "valid") lines.push("", md([...new Set(sensitivity.analysis.reasons.map(sensitivityReasonText))].join(" ")));
+  else if (sensitivityStatus(sensitivity) !== "valid") lines.push("", md([...new Set(sensitivity.analysis.reasons.map(scenarioReasonText))].join(" ")));
   return lines;
 }
 export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = []): string {

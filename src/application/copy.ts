@@ -3,6 +3,7 @@ import { formatCents, parseCents } from "../domain/money";
 import type { Diagnostic, Fact, MetricName, RuleCode, Scope, ValidationIssue } from "../domain/types";
 import { fill as fillTemplate, labels } from "../i18n";
 import type { TaxConversion } from "./tax-basis";
+import { importIssueMessage, type IssueMessageContext, type IssueRef } from "./import";
 import { formatRate, metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
@@ -98,14 +99,12 @@ export function csvHeaderKey(header: string): string {
   return match ? match[1] : header;
 }
 
-/** R3 白話錯誤：以 reason code 查 labels.importErrors，查不到就用原訊息；reason code 本身不變。 */
-export function plainIssueMessage(issue: Pick<ValidationIssue, "reason_code" | "message" | "line" | "date" | "channel" | "field">): string {
-  const template = labels.importErrors[issue.reason_code];
-  if (!template) return issue.message;
-  // 模板要用的上下文（日期／通路／行號）這筆問題沒有時（例如範圍層級的缺列），回到原訊息，不印空白占位。
-  const values: Record<string, string> = { line: issue.line === null ? "" : String(issue.line), date: issue.date ?? "", channel: issue.channel ?? "", field: issue.field };
-  const missing = [...template.matchAll(/\{(\w+)\}/g)].some(([, key]) => !values[key]);
-  return missing ? issue.message : fillTemplate(template, values);
+/**
+ * 白話錯誤（V3-2a §7.7.3）：以 reason code 查 labels.importErrors 樣板，帶入 {file}{line}{value}{column} 等占位符；
+ * 一律不退回 domain 的中文 message。實作在 import.ts（importIssueMessage）；這裡保留舊入口給既有呼叫端。
+ */
+export function plainIssueMessage(issue: IssueRef & Partial<Pick<ValidationIssue, "message">>, context?: IssueMessageContext): string {
+  return importIssueMessage(issue, context);
 }
 /** R3 含稅換算摘要一句：「含稅換算：5%，欄位 原價收入、折扣，共 12 列」；匯出、抽屜、資料頁共用。 */
 export function conversionSentence(conversion: TaxConversion | null | undefined): string | null {

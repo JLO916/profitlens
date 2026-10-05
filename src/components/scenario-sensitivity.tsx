@@ -5,6 +5,7 @@ import { formatMoney, formatSignedMoney, metricDefinitions } from "@/application
 import { analyzeScenarioSensitivity, type ContributionThreshold } from "@/domain/scenario-sensitivity";
 import type { ScenarioBaseline, ScenarioInputs } from "@/domain/scenarios";
 import { MAX_SENSITIVITY_INPUT_LENGTH, blankSensitivity, type SensitivityInputs } from "@/application/decision";
+import { scenarioReasonText } from "@/application/decision-export";
 import { fill, labels } from "@/i18n";
 
 const copy = labels.ui.scenarioSensitivity;
@@ -19,11 +20,8 @@ function thresholdDescription(target: ContributionThreshold): string {
   return fill(copy.thresholdExact, { direction });
 }
 
-/** domain 的 reason.message 含技術口吻；主層依 code 改用標籤字典，沒有對應時沿用原訊息（例如「假設 n：…」逐列訊息）。 */
-function reasonText(reason: { code: string; message: string }): string {
-  const mapped: Record<string, string> = { STALE_SCENARIO: copy.reasons.STALE_SCENARIO, SENSITIVITY_VOLUME_REQUIRED: copy.reasons.SENSITIVITY_VOLUME_REQUIRED, THREE_VOLUME_VALUES_REQUIRED: copy.reasons.SENSITIVITY_VOLUME_REQUIRED };
-  return mapped[reason.code] ?? reason.message;
-}
+/** domain 的 reason.message 含技術口吻；主層一律依 code 用標籤字典（與匯出共用 scenarioReasonText），不退回 domain 訊息。 */
+const reasonText = scenarioReasonText;
 
 const letter = (index: number) => String.fromCharCode(65 + index);
 const targetLabel = (id: ContributionThreshold["id"]) => id === "zero_contribution" ? fill(copy.targetZero, { metric: metricDefinitions.contribution_after_marketing.label }) : copy.targetMaintain;
