@@ -1,0 +1,12 @@
+# EC ProfitLens v3 新增的瀏覽器 localStorage 鍵（PRD §6.3 #59、§11.8）
+# V3-0 基準（2026-10-05，revamp/v2 87f6f8e）：v2 的 src/ 完全沒有使用 localStorage 或 sessionStorage（grep 結果 0 筆），所以本清單目前是空的。
+# v3 新增的偏好（表格密度、改名提示已讀、首次導覽略過等）才使用 localStorage，一律包 try/catch；新增一個鍵就在下方「鍵清單」加一列：
+#   鍵<TAB>用途<TAB>值的格式<TAB>新增批次
+# 既有偏好（備份 v4 的 ui_prefs：view、last_preset）不搬到 localStorage，欄位見 backup-schema-v4.json。
+#
+# 參考：v2 既有的瀏覽器保存全部在 IndexedDB（src/application/local-store.ts；只在使用者同意後寫入）：
+#   資料庫 profitlens-opt-in-workspace-v1（DATABASE_VERSION = 2）
+#     store "workspace"       鍵 explicitly-saved（備份 v4 JSON 文字）、explicitly-saved-at（保存時間 ISO 字串）
+#     store "mapping-memory"  鍵 = SHA-256(檔案角色＋欄名集合) 的 64 位十六進位字串（欄位對照記憶，R3 新增；IndexedDB v1 → v2 只加 store）
+#
+# 鍵清單（v3 新增；目前無）：
