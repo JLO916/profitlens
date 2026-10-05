@@ -1,43 +1,46 @@
 .summary { margin-bottom: 1.5rem; }
 .context { font-weight: 600; }
 .headlines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-.headlines > div { padding: 1rem; background: #f3f7f5; border-radius: 10px; }
-.headlines h3, .headlines h4 { margin: 0; font-size: 1rem; }
-.change { font-size: clamp(1.6rem, 4vw, 2.3rem); margin: .5rem 0; font-weight: 700; }
+.headlines > div { padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md); }
+.headlines h3, .headlines h4 { margin: 0; font-size: var(--text-16); }
+.change { font-size: var(--text-28); margin: .5rem 0; font-weight: 700; }
 .priorityHeader { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; }
 .threshold { display: flex; gap: .6rem; align-items: end; flex-wrap: wrap; }
-.threshold label { display: grid; gap: .3rem; font-size: .8rem; }
+.threshold label { display: grid; gap: .3rem; font-size: var(--text-13); }
 .threshold input { max-width: 12rem; }
 .priorities { padding: 0; list-style-position: inside; counter-reset: priority; }
-.priorities > li { padding: .9rem 0; border-bottom: 1px solid #dce6e1; }
+.priorities > li { padding: .9rem 0; border-bottom: 1px solid var(--border-subtle); }
 .priorityTitle { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
 .priorityTitle h4 { margin: 0; }
 .priorities p { margin: .5rem 0; }
 .priorities details { margin: .7rem 0; }
 .wideTable { margin-top: 1rem; }
 .wideTable table { min-width: 780px; }
-.transition { display: block; color: #ad5538; font-size: .75rem; }
-.decisions { margin: 1.1rem 0; padding-top: .8rem; border-top: 1px solid #dce6e1; }
+.transition { display: block; color: var(--warning); font-size: var(--text-12); }
+.decisions { margin: 1.1rem 0; padding-top: .8rem; border-top: 1px solid var(--border-subtle); }
 .decisions label { display: grid; gap: .5rem; max-width: 34rem; }
 .decisions li { margin: .8rem 0; overflow-wrap: anywhere; }
 .controls { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
 .printSurface { display: none; }
 /* R6-2 會議紀錄頁的議程編號（①②③）；只在 agenda 模式出現。 */
-.agendaStep { margin: 1.1rem 0 .55rem; font-size: .95rem; color: #2f4f44; }
+.agendaStep { margin: 1.1rem 0 .55rem; font-size: var(--text-16); color: var(--text-primary); }
 @media (max-width: 520px) {
   .headlines { grid-template-columns: 1fr; gap: .6rem; }
   .headlines > div { padding: .8rem; }
+  .change { font-size: var(--text-24); }
   .threshold { width: 100%; }
   .controls button { width: 100%; }
 }
+/* V3-1：色彩改引用 :root 語意 token；9pt 等同 12px，改用 var(--text-12)。其餘 pt 字級（8／8.5／9.5／11／16pt）沒有等值 token，
+   為維持 A4 一頁版面暫留，待 V3-7 依 §9.6 新增 --print-* token 時一併收斂。 */
 /* R6-3 A4 直式「一頁摘要＋附錄」：第一頁放標題、關鍵差額、三件事、通路表、決議與置頂行動（9pt、表格緊湊）；
    附錄（未置頂待辦、技術資訊）從新的一頁開始。「列印」與「匯出 PDF」都用這份版面（window.print()）。 */
 @media print {
   @page { size: A4 portrait; margin: 12mm 13mm 13mm; }
   :global(body):has(> .printSurface) > :not(.printSurface) { display: none !important; }
-  .printSurface { display: block !important; color: #152f29; background: white; font-size: 9pt; line-height: 1.4; }
+  .printSurface { display: block !important; color: var(--text-primary); background: var(--bg-surface); font-size: var(--text-12); line-height: 1.4; }
   .printSurface header { margin-bottom: 2mm; }
-  .printMeta { margin: 0 0 2.5mm !important; padding-bottom: 1.5mm; border-bottom: 1px solid #b9c7c1; font-size: 8pt; color: #4a625a; }
+  .printMeta { margin: 0 0 2.5mm !important; padding-bottom: 1.5mm; border-bottom: 1px solid var(--border-strong); font-size: 8pt; color: var(--text-secondary); }
   .printSurface h1 { font-size: 16pt; margin: 0 0 2mm; }
   .printSurface h2 { font-size: 11pt; margin: 3.5mm 0 1.5mm; break-after: avoid; }
   .printSurface p { margin: 1.2mm 0; }
@@ -45,15 +48,15 @@
   /* Tailwind preflight 把 list-style 清成 none：列印的三件事要看得到 1. 2. 3.，其他清單用圓點。 */
   .printSurface ol { list-style: decimal; }
   .printSurface ul { list-style: disc; }
-  .printDecision { margin: 2mm 0 0 !important; padding: 1.5mm 2mm; border-left: 2px solid #2f6b52; background: #f3f7f5; font-weight: 600; overflow-wrap: anywhere; }
+  .printDecision { margin: 2mm 0 0 !important; padding: 1.5mm 2mm; border-left: 2px solid var(--accent); background: var(--bg-subtle); font-weight: 600; overflow-wrap: anywhere; }
   .printSurface h3 { font-size: 9.5pt; margin: 2.5mm 0 1mm; break-after: avoid; }
   .printNotes { white-space: pre-wrap; overflow-wrap: anywhere; }
   .printSurface li { margin-bottom: 1.5mm; break-inside: avoid; }
   .printSurface table { width: 100%; border-collapse: collapse; margin: 2mm 0; font-size: 8.5pt; break-inside: avoid; }
   .printSurface caption { text-align: left; font-weight: 600; padding-bottom: 1mm; }
-  .printSurface td, .printSurface th { border-bottom: 1px solid #bbb; padding: 1mm 1.5mm; text-align: right; }
+  .printSurface td, .printSurface th { border-bottom: 1px solid var(--border-strong); padding: 1mm 1.5mm; text-align: right; }
   .printSurface td:first-child, .printSurface th:first-child { text-align: left; }
-  .printSurface footer { margin-top: 3mm; border-top: 1px solid #aaa; font-size: 8pt; }
+  .printSurface footer { margin-top: 3mm; border-top: 1px solid var(--border-strong); font-size: 8pt; }
   .printSurface code { font-family: inherit; font-weight: 600; }
   .printHeadlines { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; break-inside: avoid; }
   .printAppendix { break-before: page; }
