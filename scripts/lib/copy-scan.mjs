@@ -4,11 +4,13 @@
 /**
  * 白名單（L3 技術字串與舊名，PRD §5.4、§8.4）：
  * - 路徑中任一段鍵名為 `technical`，或以 `technical` 開頭、以 `Technical` 結尾（例如 formulaTechnical、technicalVersion）的整個子樹；
- * - `basis.aliases`（舊名對照）。
+ * - `basis.aliases`（舊名對照）；
+ * - `glossary.terms.<n>.oldNames`（V3-2a 名詞小辭典的 v2 舊名，PRD §8.9；和 basis.aliases 同性質，本來就要寫出舊名）。
  */
 export function isWhitelisted(path) {
   const segments = path.split(".");
   if (segments.some(segment => segment === "technical" || /^technical[A-Z]/.test(segment) || /Technical$/.test(segment))) return true;
+  if (/^glossary\.terms\.\d+\.oldNames(\.|$)/.test(path)) return true;
   return path === "basis.aliases" || path.startsWith("basis.aliases.");
 }
 

@@ -770,6 +770,24 @@ main summary, main button, main input, main select, main textarea, main [role="r
 .basis-dialog { border: 0; border-radius: var(--radius-md); padding: 0; width: min(640px, 94vw); max-height: 90dvh; color: var(--text-primary); box-shadow: var(--shadow-overlay); }
 .basis-dialog::backdrop { background: var(--scrim); backdrop-filter: blur(2px); }
 .basis-list { padding-left: 22px; display: grid; gap: 10px; font-size: var(--text-14); line-height: 1.8; }
+/* V3-2a（F5／F23）：指標定義對話框的名詞小辭典，以及頁首下方「這版改了什麼」一行提示（最低 40px，窄螢幕可換行）。 */
+.glossary { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-subtle); display: grid; gap: 10px; }
+.glossary h3 { font-size: var(--text-16); scroll-margin-top: 96px; }
+.glossary h3:focus { outline: none; }
+.glossary h3:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.glossary-search { font-size: var(--text-13); font-weight: 500; }
+.glossary input[type="search"] { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid var(--border-input); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary); font-size: var(--text-14); }
+.glossary-list { display: grid; gap: 0; margin: 0; }
+.glossary-entry { padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.glossary-entry dt { font-weight: 600; font-size: var(--text-14); }
+.glossary-entry dd { margin: 4px 0 0; font-size: var(--text-13); line-height: 1.7; color: var(--text-secondary); }
+.glossary-meta { display: block; font-size: var(--text-12); color: var(--text-tertiary); }
+.glossary-table td, .glossary-table th[scope="row"] { vertical-align: top; }
+.whats-new { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 40px; box-sizing: border-box; padding: 3px 8px 3px 14px; margin: 0 0 16px; border: 1px solid var(--accent-border); border-radius: var(--radius-md); background: var(--accent-subtle); font-size: var(--text-13); color: var(--text-primary); }
+.whats-new p { margin: 0; }
+.whats-new .text-button { font-size: var(--text-13); margin-left: 4px; }
+.whats-new-dismiss { min-height: 32px; padding: 4px 10px; font-size: var(--text-12); }
+@media print { .whats-new { display: none !important; } }
 .basis-button { min-height: 32px; padding: 5px 11px; font-size: var(--text-12); gap: 5px; }
 @media (max-width: 900px) { .basis-button { padding: 5px 9px; } .basis-button .basis-text { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; } }
 .evidence-ladder { background: var(--bg-page); border-radius: var(--radius-md); padding: 16px 18px; margin: 18px 0; }
