@@ -14,6 +14,8 @@ const actionCopy = labels.ui.actionsWorkbench;
 const status = (page: Page) => page.getByTestId("workspace-status");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
+/** V3-2a：「資料到 {date}」由套用資料集的 data_as_of 填入。 */
+const ready = (dataAsOf: string) => fill(labels.status.ready, { date: dataAsOf });
 const decisionDownloadLabels = { JSON: labels.downloads.decisionJson, CSV: labels.downloads.decisionCsv, Markdown: labels.downloads.decisionMd } as const;
 
 interface DecisionDocument {
@@ -59,7 +61,8 @@ async function importDataset(page: Page, directory: string) {
   await stage(page, directory);
   await validate(page);
   await commitWizard(page);
-  await expect(status(page)).toContainText(labels.status.ready);
+  const { data_as_of } = JSON.parse(await readFile(resolve(directory, "manifest.json"), "utf8")) as { data_as_of: string };
+  await expect(status(page)).toContainText(ready(data_as_of));
   await expect(wizard(page)).toHaveCount(0);
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
@@ -276,14 +279,16 @@ test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留�
   await wizard(page).getByLabel(wizardCopy.files.sales, { exact: true }).setInputFiles({ name: "m6-malformed.csv", mimeType: "text/csv", buffer: Buffer.from('date,channel,sku\n"unclosed') });
   const salesSlot = page.getByTestId("import-file-sales_daily.csv");
   await expect(salesSlot).toContainText("m6-malformed.csv");
-  await expect(salesSlot.getByRole("alert")).toContainText(fill(labels.importErrors.MALFORMED_CSV, { line: 2 }));
+  // V3-2a：{file} 由 application 帶入標準檔名（SourceRef.file），不是上傳的檔名。
+  await expect(salesSlot.getByRole("alert")).toContainText(fill(labels.importErrors.MALFORMED_CSV, { file: "sales_daily.csv", line: 2 }));
   await expect(salesSlot.getByRole("alert").locator("code")).toHaveText("MALFORMED_CSV");
   await expect(wizard(page).getByRole("button", { name: wizardCopy.next, exact: true })).toBeDisabled();
   await expect(wizard(page).getByRole("button", { name: wizardCopy.confirmAndCheck, exact: true })).toHaveCount(0);
   await expect(commitButton(page)).toHaveCount(0);
   await wizard(page).getByRole("button", { name: wizardCopy.cancel, exact: true }).click();
   await expect(wizard(page)).toHaveCount(0);
-  await expect(status(page)).toContainText(labels.status.ready);
+  // 取消後仍是原本的 golden 資料（data_as_of 2026-08-03）。
+  await expect(status(page)).toContainText(ready("2026-08-03"));
   await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
   await expect(page.getByTestId("decision-freshness")).toContainText(scenarioCopy.freshTitle);
   expect(await decision(page)).toEqual(before);
