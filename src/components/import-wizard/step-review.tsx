@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { buildImportReconciliation, columnGuidance } from "@/application/import-guidance";
 import { downloadText } from "@/application/download";
 import { exportIssuesCsv } from "@/application/export";
-import { mappingSourceSummary, plainIssueMessage, FILE_ROLES, type WizardState } from "@/application/import-wizard";
+import { issueContextFromDrafts } from "@/application/import";
+import { mappingSourceSummary, FILE_ROLES, type WizardState } from "@/application/import-wizard";
 import { metricDefinitions } from "@/application/presentation";
 import { rateToPercent } from "@/application/tax-basis";
 import type { SourceRef } from "@/domain/types";
@@ -26,7 +27,8 @@ export function StepReview({ state, filenames, onCommit, busy, memoryPersistent 
   const drafts = useMemo(() => Object.fromEntries(FILE_ROLES.flatMap(role => state.files[role] ? [[role, state.files[role]!.draft]] : [])), [state.files]);
   const reconciliation = useMemo(() => candidate ? buildImportReconciliation(candidate, drafts) : null, [candidate, drafts]);
   const issues = useMemo(() => candidate?.validation.issues ?? [], [candidate]);
-  const plainIssues = useMemo(() => issues.map(issue => ({ ...issue, message: plainIssueMessage(issue) })), [issues]);
+  // V3-2a §7.7.3：{value} 取自已讀入的原始 CSV 列，{column} 取自欄位對照；問題清單只顯示 labels 樣板。
+  const issueContext = useMemo(() => issueContextFromDrafts(drafts), [drafts]);
   const statusText = state.checking ? copy.checking : candidate ? copy.result[candidate.validation.classification] : copy.result.draft;
   const conversion = candidate?.conversion ?? null;
   const sources = mappingSourceSummary(state);
@@ -39,7 +41,7 @@ export function StepReview({ state, filenames, onCommit, busy, memoryPersistent 
       <p className="note">{fill(copy.mappingSourceSummary, { sources: sources.map(origin => copy.mappingSources[origin as keyof typeof copy.mappingSources] ?? origin).join("、") || copy.mappingSources.exact })}</p>
       <p className="note" data-testid="import-memory-note">{memoryPersistent ? copy.memoryPersistent : copy.memorySessionOnly}</p>
     </section>}
-    {issues.length > 0 && <section className="file-card" aria-label={copy.issuesTitle}><h3>{copy.issuesTitle}</h3><button type="button" className="button quiet" onClick={() => downloadText(exportIssuesCsv(issues, filenames), "profitlens-import-issues.csv")}>{labels.downloads.issuesCsv}</button><IssueList issues={plainIssues} filenames={filenames} mappings={candidate?.columnMappings} /></section>}
+    {issues.length > 0 && <section className="file-card" aria-label={copy.issuesTitle}><h3>{copy.issuesTitle}</h3><button type="button" className="button quiet" onClick={() => downloadText(exportIssuesCsv(issues, filenames), "profitlens-import-issues.csv")}>{labels.downloads.issuesCsv}</button><IssueList issues={issues} filenames={filenames} mappings={candidate?.columnMappings} context={issueContext} /></section>}
     {issues.some(issue => issue.reason_code.startsWith("DUPLICATE_")) && <p className="alert">{panel.duplicateAlert}</p>}
     {reconciliation && <section className="file-card" aria-label={panel.reconciliationAria} data-testid="import-reconciliation"><h3>{panel.stepReconcile}</h3><p className="note">{fill(panel.reconciliationNote, { start: reconciliation.period.start, end: reconciliation.period.end, channels: reconciliation.channels.join("、") })}</p>{conversion && <p className="note">{copy.reconciliationConverted}</p>}
       <div className="table-scroll" role="region" aria-label={panel.reconciliationTableAria} tabIndex={0}><table><caption>{panel.reconciliationCaption}</caption><thead><tr><th>{panel.reconciliationHead.source}</th><th>{panel.reconciliationHead.field}</th><th>{panel.reconciliationHead.sourceTotal}</th><th>{panel.reconciliationHead.standardTotal}</th><th>{panel.reconciliationHead.difference}</th></tr></thead><tbody>{reconciliation.fields.map(row => <tr key={row.field} data-testid={`reconciliation-${row.field}`}><th>{row.filename}／{row.source_column}</th><td>{fill(panel.fieldWithKey, { label: columnGuidance[row.field].label, field: row.field })}</td><td>{row.source_total ?? fill(panel.unknownBlanks, { n: row.missing_values })}{row.source_total === null && <small>{fill(panel.knownSubtotal, { subtotal: row.known_subtotal })}</small>}</td><td>{row.standard_total ?? labels.status.missing}</td><td>{row.difference ?? fill(panel.cannotReconcile, { reasons: row.reason_codes.join("、") || panel.sourceMissing })}</td></tr>)}</tbody></table></div>
