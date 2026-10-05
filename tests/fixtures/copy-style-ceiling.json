@@ -1,0 +1,21 @@
+{
+  "_說明": "tests/copy-style.test.ts 的棘輪上限（PRD §5.4、§8.4）。V3-0（2026-10-05）以 labels 實測的 v2 數值初始化；之後每批只能調低，不得調高；V3-2 目標全部為 0。量測口徑見 scripts/lib/copy-scan.mjs。",
+  "ceilings": {
+    "noticePrefix": 29,
+    "noticeAnywhere": 42,
+    "arrows": 21,
+    "circledNumbers": 8,
+    "decorativeChars": 1,
+    "exclamations": 0,
+    "emoji": 0,
+    "allCaps": 0,
+    "pipes": 32,
+    "blacklistSynonym": 132,
+    "blacklistJargon": 6,
+    "blacklistTone": 0,
+    "blacklistEmotion": 0,
+    "placeholderMalformed": 0,
+    "placeholderVariantMismatch": 0,
+    "l1ClauseOverLimit": 0
+  }
+}
