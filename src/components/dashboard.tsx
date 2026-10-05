@@ -55,9 +55,8 @@ const datasetLabels: Record<string, string> = {
   demo: labels.ui.dashboard.datasets.demo, golden: labels.ui.dashboard.datasets.golden,
   "missing-cogs": labels.ui.dashboard.datasets.missingCogs, "missing-ad": labels.ui.dashboard.datasets.missingAd, duplicate: labels.ui.dashboard.datasets.duplicate,
 };
-// 日期欄位的 sr-only 標籤「上期開始」等。labels.ui.dashboard.filter.periodStart/periodEnd 的模板值帶著「→ 範例」尾巴（盤點筆記誤入字典），
-// 直接填入會念成「上期開始 → 上期開始」；這裡只取箭頭前的模板，待字典修正後此處不必再改。
-const periodFieldLabel = (edge: "start" | "end", period: string) => fill((edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd).split(" → ")[0], { period });
+// 日期欄位的 sr-only 標籤「上期開始」等（V3-2a：字典已清掉盤點尾巴，直接填入模板）。
+const periodFieldLabel = (edge: "start" | "end", period: string) => fill(edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd, { period });
 export function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const paths: Record<string, string> = {
     overview: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
@@ -497,7 +496,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const alias = active ? demoAlias(active.dataset.manifest.dataset_id) : false;
   // 會議頁的目標（同一份資料才帶進摘要）；固定物件身分，避免每次 render 重算會議摘要。
   const meetingTargets = useMemo(() => active ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : null, [active]);
-  const statusText = labels.status[status];
+  // V3-2a：「資料就緒」改為「資料到 {date}」（§8.3 #26）；資料到的日期已在狀態文字內，旁邊只留資料集名稱。
+  const statusText = status === "ready" && active ? fill(labels.status.ready, { date: active.dataset.manifest.data_as_of }) : labels.status[status];
   const aiHeadline = aiCapability === null ? labels.status.aiUnknown : aiCapability.available ? labels.status.aiNeedsConsent : aiCapability.reason === "STATUS_UNAVAILABLE" ? labels.status.aiUnknown : aiCapability.reason === "PUBLIC_DEMO" ? labels.status.aiOff : labels.status.aiDisabled;
   // 03 §9：關閉狀態的說明只留一句（併入 AI popover）。
   const aiDetail = aiCapability?.available ? labels.ui.dashboard.aiDetail.consent : aiCapability?.reason === "PUBLIC_DEMO" ? labels.ui.dashboard.aiDetail.publicDemo : labels.ui.dashboard.aiDetail.off;
@@ -515,7 +515,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     <div className="main-shell">
       <header className="topbar">
         <div className="breadcrumb">{labels.ui.dashboard.breadcrumbRoot} <span>/</span> <strong>{currentPanel.label}</strong></div>
-        <div className="status-line" role="status" aria-live="polite" data-testid="workspace-status"><span className={`status-dot ${status}`} />{statusText}{active && status !== "empty" && <span className="muted">{fill(labels.ui.dashboard.statusDataset, { dataset: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, date: active.dataset.manifest.data_as_of })}</span>}<button className="text-button clear-button" onClick={clear}>{labels.buttons.clear}</button></div>
+        <div className="status-line" role="status" aria-live="polite" data-testid="workspace-status"><span className={`status-dot ${status}`} />{statusText}{active && status !== "empty" && <span className="muted">{status === "ready" ? datasetLabels[active.id] ?? active.dataset.manifest.dataset_id : fill(labels.ui.dashboard.statusDataset, { dataset: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, date: active.dataset.manifest.data_as_of })}</span>}<button className="text-button clear-button" onClick={clear}>{labels.buttons.clear}</button></div>
         <div className="topbar-actions">
           <span className="mode-badge"><span className="green-dot" /> {aiCapability?.reason === "PUBLIC_DEMO" ? labels.ui.dashboard.modeBadge.publicDemo : local ? labels.status.local : labels.status.demo}</span>
           <button type="button" className="button quiet basis-button" onClick={() => setBasisOpen(true)} aria-haspopup="dialog" aria-label={labels.buttons.basis}><span aria-hidden="true">ⓘ</span><span className="basis-text">{labels.buttons.basis}</span></button>

@@ -42,7 +42,7 @@ function ActionEditor({ workspace, item, index, document, owners, showPin, query
         <label>{labels.actions.status}<select className="action-status-select" aria-label={labels.actions.status} value={item.execution_status ?? 'not_started'} onChange={e => onStatus(e.target.value as ActionExecutionStatus)}>{statuses.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{item.status_updated_at && <small>{fill(board.statusUpdated, { date: item.status_updated_at })}</small>}</label>
         <label>{labels.actions.progress}<textarea aria-label={labels.actions.progress} rows={3} maxLength={2000} value={item.progress_notes ?? ''} onChange={e => change(() => editActionManagement(workspace, card.id, { progress_notes: e.target.value }))} /></label>
       </div>
-      <p className="note">{labels.sections.caution}：{labels.actions.confirmedNote}。{ui.evidenceChangeNote}</p>
+      <p className="note">{labels.sections.caution}：{labels.actions.confirmedNote}{ui.evidenceChangeNote}</p>
       <fieldset className="evidence-checklist" aria-label={ui.evidencePicker} data-testid="evidence-checklist"><legend>{ui.evidencePicker}</legend>
         <label className="evidence-search">{labels.actions.searchEvidence}<input aria-label={labels.actions.searchEvidence} type="search" value={query} onChange={e => onQuery(e.target.value)} /></label>
         <p className="note">{board.evidenceSearchHint} <strong>{fill(board.evidenceSelected, { n: card.fact_ids.length })}</strong></p>

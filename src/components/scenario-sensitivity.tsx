@@ -45,12 +45,12 @@ export function ScenarioSensitivity({ baseline, inputs, stale = false, value, on
         <h5>{fill(copy.targetHeading, { target: targetLabel(target.id), amount: formatMoney(target.target) })}</h5>
         {target.threshold_pct !== null && <p>{copy.thresholdPctLabel} <strong data-testid="threshold-pct">{target.threshold_pct}%</strong></p>}
         <p>{thresholdDescription(target)}</p>
-        {target.threshold_fraction && <details><summary>{copy.exactFractionSummary}</summary><p className="formula">售出量變化百分比 = {target.threshold_fraction.numerator} ÷ {target.threshold_fraction.denominator}（%）。比較門檻使用此未取分分數；不從已取分金額倒算。</p></details>}
+        {target.threshold_fraction && <details><summary>{copy.exactFractionSummary}</summary><p className="formula">{fill(copy.exactFractionTechnical, { numerator: target.threshold_fraction.numerator, denominator: target.threshold_fraction.denominator })}</p></details>}
       </section>)}
       <details className="sensitivity-formula"><summary>{labels.sections.technicalDetails}</summary>
         <p className="formula">{analysis.formula}</p>
-        <p>L（量變係數）約 TWD {formatMoney(analysis.coefficients!.volume_coefficient)}；B（本方案廣告＋一次性投入）約 TWD {formatMoney(analysis.coefficients!.fixed_outflow)}。L 的未取分分數 = {analysis.coefficients!.volume_coefficient_fraction.numerator} ÷ {analysis.coefficients!.volume_coefficient_fraction.denominator}。</p>
-        <p>{analysis.coefficients!.slope === "positive" ? "本假設下 L 為正，銷量增加時條件貢獻增加。" : analysis.coefficients!.slope === "negative" ? "本假設下 L 為負，銷量增加時條件貢獻反而減少；不可套用「銷量至少多少」的方向。" : "本假設下 L 為零，銷量變化不改變條件貢獻。"}</p>
+        <p>{fill(copy.coefficientsTechnical, { volume: formatMoney(analysis.coefficients!.volume_coefficient), fixed: formatMoney(analysis.coefficients!.fixed_outflow), numerator: analysis.coefficients!.volume_coefficient_fraction.numerator, denominator: analysis.coefficients!.volume_coefficient_fraction.denominator })}</p>
+        <p>{analysis.coefficients!.slope === "positive" ? copy.slopePositiveTechnical : analysis.coefficients!.slope === "negative" ? copy.slopeNegativeTechnical : copy.slopeZeroTechnical}</p>
         <p>{copy.fixedAssumptionsTechnical}</p>
         <p>{copy.thresholdPrecisionTechnical}</p>
       </details>

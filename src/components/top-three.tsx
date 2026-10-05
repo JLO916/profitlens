@@ -22,8 +22,9 @@ export function impactEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, diag
   const base = priorityEvidence(snapshot, diagnostic);
   const values = { impact: labels.sections.impact, metric: metricDefinitions[base.name].label };
   const formula = BURDEN.has(diagnostic.code) ? fill(labels.notes.impactFormulaBurden, values) : base.formula ?? fill(labels.notes.impactFormulaDefault, values);
-  const title = fill(labels.ui.topThree.impactEvidenceTitle, { impact: labels.sections.impact, scope: scopeLabel(diagnostic.scope, alias), title: ruleCopy(snapshot, diagnostic, alias).headline });
-  return { ...base, title, metric: impact, formula };
+  // V3-2a：抽屜標題只留結論句；影響金額與範圍放副標（抽屜的範圍行，§8.8 #15）。
+  const title = fill(labels.ui.topThree.impactEvidenceTitle, { title: ruleCopy(snapshot, diagnostic, alias).headline });
+  return { ...base, title, scopeLabel: fill(labels.ui.topThree.impactEvidenceSubtitle, { impact: labels.sections.impact, scope: scopeLabel(diagnostic.scope, alias) }), metric: impact, formula };
 }
 
 /** 紅＝不利、綠＝有利；零與未知為中性（以分為單位比較，不看字串正負號）。 */
@@ -53,7 +54,7 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, events = null }
   const alias = demoAlias(snapshot.report.dataset_id);
   const member = (item: DiagnosisGroup, row: DiagnosisScope) => <li key={row.diagnostic.id}>{fill(labels.ui.topThree.memberRow, { scope: scopeLabel(row.scope, alias), amount: "" })}<ImpactAmount snapshot={snapshot} diagnostic={row.diagnostic} onEvidence={onEvidence} />{item.missing && <span className="note">{formatMoney(null)}</span>}</li>;
   return <section className="panel top-three" aria-labelledby="top-three-title" data-testid="top-three">
-    <div className="section-heading"><div><h2 id="top-three-title">{labels.sections.topThree}</h2><p className="note">{labels.sections.impactLegend}</p></div><span className="tag">{channelsLabel(snapshot.report.scope.channels, alias)}</span></div>
+    <div className="section-heading"><div><h2 id="top-three-title">{labels.sections.topThree}</h2><p className="note" title={labels.sections.impactLegendHelp}>{labels.sections.impactLegend}</p></div><span className="tag">{channelsLabel(snapshot.report.scope.channels, alias)}</span></div>
     {summary.priorities.length ? <ol className="top-three-list">{summary.priorities.map(item => <li key={item.rule} data-testid={`overview-priority-${item.rule}`}>
       <div className="top-three-head"><h3>{item.headline}{suffix}</h3><span className="tag">{scopeLabel(item.primary.scope, alias)}</span></div>
       <p className="top-three-impact"><span>{labels.sections.impact}</span><ImpactAmount snapshot={snapshot} diagnostic={item.primary} onEvidence={onEvidence} /></p>

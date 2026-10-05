@@ -20,11 +20,11 @@ import type { EvidenceSelection } from "./evidence-drawer";
 import { ScenarioSensitivity } from "./scenario-sensitivity";
 
 const ui = labels.ui.decisionWorkbench;
-const inputFields: { key: Exclude<keyof ScenarioInputs, "assumptions_accepted">; label: string; help: string }[] = [
+const inputFields: { key: Exclude<keyof ScenarioInputs, "assumptions_accepted">; label: string; help: string; note?: string }[] = [
   { key: "volume_change_pct", label: labels.scenario.volume.label, help: ui.volumeHelp },
   { key: "discount_change_pp", label: labels.scenario.discount.label, help: ui.discountHelp },
   { key: "fulfillment_change_pct", label: labels.scenario.fulfillmentUnit.label, help: ui.fulfillmentHelp },
-  { key: "ad_change_pct", label: labels.scenario.adSpend.label, help: ui.adHelp },
+  { key: "ad_change_pct", label: labels.scenario.adSpend.label, help: ui.adHelp, note: ui.adVolumeNote },
   { key: "one_time_cost", label: labels.scenario.oneOff.label, help: labels.scenario.oneOff.hint },
 ];
 // 呈現層九條白話假設（labels 以 JSON 陣列字串保存）；匯出仍用 domain 的 SCENARIO_ASSUMPTIONS 原文。
@@ -165,7 +165,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
       <summary id="assumptions-heading">{form.assumptionsSummary}</summary>
       <ol>{assumptionCopy.map((assumption, i) => <li key={i}>{assumption}</li>)}</ol>
       <p className="alert">{ui.assumptionsCaution}</p>
-      <details><summary>{ui.techFormulasSummary}</summary><dl className="formula-list">{Object.entries(SCENARIO_FORMULAS).map(([key, formula]) => <div key={key}><dt>{key}</dt><dd>{formula}</dd></div>)}</dl><p className="note">每個中間值採高精度 Decimal；最後才取兩位小數 HALF_UP。明細的 G−D−R−C−P−Q−F−O−A−K，加上 rounding_adjustment，精確等於顯示的試算後貢獻。</p></details>
+      <details><summary>{ui.techFormulasSummary}</summary><dl className="formula-list">{Object.entries(SCENARIO_FORMULAS).map(([key, formula]) => <div key={key}><dt>{key}</dt><dd>{formula}</dd></div>)}</dl><p className="note">{ui.roundingTechnical}</p></details>
     </details>
     <div>
       <div className="section-heading"><div><h2>{labels.sections.scenarioCompare}</h2><p className="note">{ui.compareNote}</p></div><button className="button primary" disabled={stale || !session.baseline.eligible || plans.length >= 3} onClick={() => { capture(); setScenarios([...plans, { id: crypto.randomUUID(), name: fill(ui.defaultPlanName, { n: plans.length + 1 }), inputs: blankScenarioInputs(), result: null }]); }}>{labels.buttons.addScenario}</button></div>
@@ -195,6 +195,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
               <div className="scenario-field-head"><label htmlFor={id}>{field.label}</label>{absField && availability && <div className="scenario-mode" role="group" aria-label={fill(form.modeGroup, { field: field.label })} data-testid={`scenario-mode-${absField}`}><button type="button" className="button quiet" aria-pressed={!entry} onClick={() => setMode(plan, absField, "relative")}>{labels.scenario.modeRelative}</button><button type="button" className="button quiet" aria-pressed={!!entry} disabled={!availability.available} onClick={() => setMode(plan, absField, "absolute")}>{labels.scenario.modeAbsolute}</button></div>}</div>
               <input id={id} aria-label={field.label} aria-describedby={described} type="text" inputMode="decimal" maxLength={200} autoComplete="off" value={entry ? entry.text : plan.inputs[field.key]} onChange={e => absField && entry ? setAbsoluteText(plan, absField, e.target.value) : editScenario(plan.id, { inputs: { ...plan.inputs, [field.key]: e.target.value } })} />
               <small id={`${id}-help`}>{absField && entry ? absoluteHelp(absField, ctx) : field.help}</small>
+              {field.note && <small className="scenario-field-note">{field.note}</small>}
               {availability && !availability.available && <small className="scenario-field-note" data-testid={`scenario-unavailable-${field.key}`}>{availability.reason}</small>}
               {equivalent && <small id={`${id}-equivalent`} className="scenario-equivalent" data-testid={`scenario-equivalent-${field.key}`}>{equivalent}</small>}
               {prefillNote && <small id={`${id}-prefill`} className="scenario-field-note" data-testid={`scenario-absolute-note-${field.key}`}>{prefillNote}</small>}
