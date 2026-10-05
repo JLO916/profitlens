@@ -295,12 +295,12 @@ describe("R6-4 cell converters", () => {
   });
 
   it("text: removes U+FFFE/U+FFFF (not allowed in XML) and turns DEL/C1 controls into U+FFFD", () => {
-    expect(excelText("a￾b￿c")).toBe("abc");
+    expect(excelText("a\ufffeb\uffffc")).toBe("abc");
     expect(excelText("a\u007fb\u0085c\u009fd")).toBe("a�b�c�d");
     // 開頭的 C1 控制字元改成 U+FFFD 後就不是公式字元，不必再加 '。
     expect(excelText("\u0085=cmd")).toBe("�=cmd");
-    expect(excelText("￾=cmd")).toBe("'=cmd");
-    for (const sample of ["a￾b", "x\u0080y", "￿"]) expect(excelText(sample)).not.toMatch(/[￾￿\u007f-\u009f]/);
+    expect(excelText("\ufffe=cmd")).toBe("'=cmd");
+    for (const sample of ["a\ufffeb", "x\u0080y", "\uffff"]) expect(excelText(sample)).not.toMatch(/[\ufffe\uffff\u007f-\u009f]/);
   });
 
   it("text: escapes overlapping literal _xHHHH_ so every underscore that starts one is protected", () => {
@@ -424,7 +424,7 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
 
   it("round-trips overlapping _xHHHH_, removes noncharacters and keeps escaped long text within the limit after parsing", async () => {
     const budget = EXCEL_CELL_TEXT_LIMIT - copy.truncated.length;
-    const tricky = ["_x005F_x0041_", "__x0041__x0042_", "a￾b￿c", "a\u0085b", `${"a".repeat(32_760)}_x0041_`, `${"a".repeat(budget - 13)}_x0041_${"b".repeat(100)}`];
+    const tricky = ["_x005F_x0041_", "__x0041__x0042_", "a\ufffeb\uffffc", "a\u0085b", `${"a".repeat(32_760)}_x0041_`, `${"a".repeat(budget - 13)}_x0041_${"b".repeat(100)}`];
     const sheet: ExcelSheet = { name: "測試", header: ["文字"], rows: tricky.map(item => [{ kind: "text", value: item }]) };
     const { book } = parse(await writeExcel({ sheets: [sheet] }));
     const values = XLSX.utils.sheet_to_json<string[]>(book.Sheets["測試"], { header: 1 }).slice(1).map(row => row[0]);
