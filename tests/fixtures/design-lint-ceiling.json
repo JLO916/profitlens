@@ -1,0 +1,20 @@
+{
+  "_說明": "tests/design-lint.test.ts 的棘輪上限（PRD §5.4）。V3-0（2026-10-05）以 scripts/ui-audit.mjs 實測的 v2 數值初始化；之後每批只能調低，不得調高。量測口徑見 scripts/lib/ui-scan.mjs。",
+  "ceilings": {
+    "hexOutsideRoot": 201,
+    "borderRadiusValues": 18,
+    "fontSizeValues": 32,
+    "letterSpacingNonZero": 13,
+    "decorativeRotate": 1,
+    "jsxArrowTextNodes": 6,
+    "jsxAllCapsEyebrow": 3,
+    "jsxDecorativeChars": 1,
+    "cssDecorativeContent": 2,
+    "buttonRowCentered": 1,
+    "nestedCardSelectors": 0,
+    "linearGradient": 0,
+    "boxShadow": 7,
+    "jsxCjkTextNodes": 15,
+    "cjkStringLiterals": 7
+  }
+}
