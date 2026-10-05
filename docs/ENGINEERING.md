@@ -15,7 +15,10 @@ npm run lint           # eslint . --max-warnings=0，警告也算失敗
 npm test -- --run      # Vitest 單元／整合（不加 --run 會進監看模式）
 npm run build          # next build --webpack
 npm run test:e2e       # Playwright Chromium；首次需 npx playwright install chromium
+npm run lint:design    # V3-0 起：scripts/ui-audit.mjs（UI 靜態掃描）＋ scripts/contrast-check.mjs（色彩對比）
 ```
+
+Revamp v3（2026-10-05 起）另有棘輪測試（`tests/design-lint.test.ts`、`tests/copy-style.test.ts`）、testid 基準（`tests/testid-baseline.test.ts`）與禁區 diff（`git diff --stat 82b70df -- src/domain fixtures/golden fixtures/demo fixtures/errors fixtures/refund_only fixtures/zero_ad docs/METRICS.md`），見 `docs/revamp-v3/00_README.md`。
 
 - `npm run test:e2e` 會自行執行正式 build，並在本機 **3100 port** 以 `npm start` 啟動獨立服務、結束後停止；執行前請確認 3100 沒有其他服務，測試／建置期間不要修改程式。
 - E2E 以四種視窗執行（`playwright.config.ts` 的四個 project）：`desktop` 1440×1000、`laptop` 1280×900、`tablet` 768×1024、`mobile` 390×844。

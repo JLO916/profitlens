@@ -1,6 +1,17 @@
 # Status
 
-## Revamp v2｜收尾（R0–R7 完成；未推送、未部署、未打 tag）
+## Revamp v3｜V3-0 基準與護欄（完成，未推送、未部署）
+
+產品名稱自 2026-10-05 起為 **EC ProfitLens**（D-V3-25；技術識別不改）。D-V3-1–24 全部依建議值（使用者 2026-10-05 拍板）。V3-0 依 `docs/revamp-v3/06_BATCHES.md` ①–⑧ 完成：畫面零變化（四尺寸 `toHaveScreenshot` 36 張基準、合併後 4/4 通過 0 差異）；禁區 diff 對 `82b70df`（本機 tag `v2.0.0`）為空；無新依賴。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **77 檔／1,509 測試全過**（新增 design-lint、copy-style、testid-baseline、backup-schema-v4）、`lint:design` exit 0（對比 22 組：20 過、2 個 v2 既有問題列為已知，V3-1 必修）、build pass、E2E 全套 **576 項全過（16.5m）**。
+- 護欄：`scripts/ui-audit.mjs`／`contrast-check.mjs`／`lib/*`；棘輪上限以實測初始化（`:root` 以外 hex 201、圓角 18、字級 32、字距 13、labels「注意：」29、箭頭 21、主層「｜」32、同義詞黑名單 132…，全表見 `verification/revamp-v3-V3-0-acceptance.md` §3a）；testid 基準 228 個（SSR 208、E2E 15、條件 5；刪除數 0）；補 6 組 testid 屬性；功能保留表 113 列；備份 v4 欄位 309 條；E2E 定位器清單 1,231 列。
+- 基準：1440 首屏 KPI 頂端 397.8px、5 卡底邊 563.6px；390 首屏看不到數字（扣廣告後貢獻數值頂端 1275px）；內容前可聚焦元素 13（Tab 鍵 25）；1280 頂欄 113px 2 列；含稅匯入 5 次點擊；First Load JS 1,563,491 bytes；Lighthouse（示範資料已載入）a11y 總覽 96／健檢 97／商品 96／試算 96／會議 96（color-contrast、label-content-name-mismatch），Performance 空狀態 desktop 100／mobile 94。
+- 文件：`docs/revamp-v3/{00_README,06_BATCHES,09_DECISIONS_PENDING,GLOSSARY,usability-test,term-test-paper}.md`、`copy-rewrite.csv`（1,948 列）、`CLAUDE.md` 改為 v3 規則、`docs/DECISIONS.md` 2026-10-05 一筆。
+- 未執行／待人工：H1（v2 的 5 人可用性測試與盲評，只擋 V3-10 前後對照）；H3（`copy-rewrite.csv` 審稿與紙本用語測試，**擋 V3-2**）；示範資料頁的 Lighthouse Performance 0–100 分（flow 模式量不到，改記 TBT／CLS）。
+- 下一批：V3-1 token、基礎元件、設計稿（交 H2）。
+
+## Revamp v2｜收尾（R0–R7 完成；未推送、未部署；本機 tag `v2.0.0` → 82b70df，未推送）
 
 Revamp v2 全部七個批次（`docs/revamp/06_BATCHES.md` R0–R7）在分支 `revamp/v2` 完成，財務核心（`src/domain` 既有指標、`fixtures`、`contribution-v1`、`docs/METRICS.md`）零改動；`package.json` 版本 2.0.0；發布說明 `docs/RELEASES.md` v2.0.0；上線檢查 `verification/revamp-R7-acceptance.md`。**推送、合併、tag `v2.0.0`、Vercel 部署與環境變數確認由使用者執行**（命令列在 R7 驗收 §5）；Vercel 端的檢查（環境變數截圖、Preview 13 項 HTTP、正式站 v3 恢復、社群預覽、啟用 Web Analytics）為未執行。
 
