@@ -130,17 +130,21 @@ describe("R7-3 metadata、robots、sitemap、favicon、分享圖", () => {
 });
 
 describe("R7-3 空狀態文案與 R7-4 進階驗證頁預設隱藏", () => {
-  it("空狀態與 README「30 秒試用」一致：試試示範資料 → 本期三件事 → 怎麼算的；標示合成資料", () => {
-    expect(labels.emptyState.eyebrow).toBe("先用示範資料看看");
-    expect(labels.emptyState.title).toBe("營收漲了，到底多賺還是少賺？");
-    expect(labels.emptyState.body).toContain("試試示範資料");
-    expect(labels.emptyState.body).toBe("按「試試示範資料」→ 看「本期三件事」→ 點任一數字看「怎麼算的」。示範資料為合成資料，不代表任何真實商家。");
-    expect(labels.emptyState.body).toContain(labels.buttons.loadDemo);
-    expect(labels.emptyState.body).toContain(labels.sections.topThree);
-    expect(labels.emptyState.body).toContain(labels.sections.evidence);
+  it("空狀態與 README「30 秒試用」一致：載入示範資料 → 本期三件事 → 看明細；標示示範資料是虛構的", () => {
+    // V3-2a（copy-rewrite.csv emptyState.*）：首次進入只留標題與一句說明；舊問句改成獨立的 relaunch.ogHeadline（分享圖）。
+    expect(labels.emptyState.title).toBe("還沒有資料");
+    expect(labels.relaunch.ogHeadline).not.toBe(labels.emptyState.title);
+    expect(labels.emptyState.body).toBe("匯入銷售、通路費用、廣告三份日報 CSV，或先用示範資料（虛構）看看。");
+    expect(labels.emptyState.body).toContain("示範資料（虛構）");
+    // README「30 秒試用」引用畫面上真的有的按鈕與區塊名稱，並標示示範資料是虛構的。
+    const readme = readFileSync(resolve("README.md"), "utf8");
+    const trial = readme.slice(readme.indexOf("## 30 秒試用"), readme.indexOf("\n## ", readme.indexOf("## 30 秒試用") + 1));
+    for (const name of [labels.buttons.loadDemo, labels.sections.topThree, labels.buttons.viewEvidence]) expect(trial).toContain(`「${name}」`);
+    expect(trial).toContain("虛構");
     expect(labels.emptyState.steps).toHaveLength(3);
     const html = renderToStaticMarkup(createElement(Dashboard));
     expect(html).toContain(`<p>${labels.emptyState.body}</p>`);
+    expect(html).toContain(labels.emptyState.title);
   });
   it("首頁側欄不顯示「開發者驗證」（只有 #validation 才出現），其他七個分頁都在", () => {
     const html = renderToStaticMarkup(createElement(Dashboard));
