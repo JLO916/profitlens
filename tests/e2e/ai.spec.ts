@@ -67,6 +67,9 @@ const mode = (page: Page) => page.getByTestId("ai-mode");
 const consent = (page: Page) => panel(page).getByLabel(ai.consentLabel, { exact: true });
 const send = (page: Page) => panel(page).getByRole("button", { name: ai.sendButton, exact: true });
 const workspaceStatus = (page: Page) => page.getByTestId("workspace-status");
+// V3-2a：labels.status.ready 改為「資料到 {date}」，日期取該資料集 manifest 的 data_as_of（不在測試裡寫死）。
+const dataAsOf = async (id: string) => (JSON.parse(await readFile(resolve(`fixtures/${id}/manifest.json`), "utf8")) as { data_as_of: string }).data_as_of;
+const ready = async (id: string) => fill(labels.status.ready, { date: await dataAsOf(id) });
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 
 async function showAi(page: Page) {
@@ -80,9 +83,9 @@ async function loadDataset(page: Page, id = "golden", channel = "DTC") {
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.ok()),
     clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true })),
   ]);
-  await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+  await expect(workspaceStatus(page)).toContainText(await ready(id));
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
-  await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+  await expect(workspaceStatus(page)).toContainText(await ready(id));
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
   await showAi(page);
@@ -269,7 +272,9 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await expect(dialog).toBeVisible();
   await expect(dialog.locator("p.number")).toHaveText(fill(labels.ui.evidenceDrawer.money, { amount: "270.00" }));
   // Golden dataset keeps the raw channel name (demo alias applies only to synthetic-demo).
-  await expect(dialog).toContainText(`2026-08-02 至 2026-08-02；${labels.evidence.channels}：DTC`);
+  // V3-2a（copy-rewrite.csv ui.evidenceDrawer.scopeLine）：日期區間改用「–」，片段從模板的 {start} 起取並填值。
+  const scopeLine = labels.ui.evidenceDrawer.scopeLine;
+  await expect(dialog).toContainText(fill(scopeLine.slice(scopeLine.indexOf("{start}")), { start: "2026-08-02", end: "2026-08-02", channels: "DTC" }));
   await expect(dialog).toContainText("sales_daily.csv");
   await page.keyboard.press("Escape");
   await expect(evidence).toBeFocused();
@@ -352,10 +357,11 @@ test("MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽�
   // Original filenames stay traceable in the local reconciliation table.
   await expect(page.getByTestId("import-reconciliation")).toContainText(`${rawMarker}-sales_daily.csv`);
   await commitWizard(page);
-  await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+  // 匯入的 manifest 沿用 golden 的 data_as_of。
+  await expect(workspaceStatus(page)).toContainText(fill(labels.status.ready, { date: String(original.data_as_of) }));
   await dismissSavePrompt(page);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
-  await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+  await expect(workspaceStatus(page)).toContainText(fill(labels.status.ready, { date: String(original.data_as_of) }));
   await showAi(page);
   await expect(page.getByTestId("ai-local-mapping")).toContainText(channel);
   const approved = await preview(page);
@@ -406,7 +412,7 @@ for (const change of ["channel", "dataset", "period"] as const) {
     if (change === "channel") {
       for (const channel of ["MARKETPLACE", "DTC"]) {
         await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
-        await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+        await expect(workspaceStatus(page)).toContainText(await ready("golden"));
       }
     } else if (change === "dataset") {
       await loadDataset(page, "demo");
@@ -416,7 +422,7 @@ for (const change of ["channel", "dataset", "period"] as const) {
       for (const values of [["2026-06-01", "2026-06-01", "2026-07-13", "2026-07-13"], ["2026-06-01", "2026-07-12", "2026-07-13", "2026-08-23"]]) {
         for (const [index, label] of dateLabels.entries()) await page.getByLabel(label, { exact: true }).fill(values[index]);
         await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
-        await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+        await expect(workspaceStatus(page)).toContainText(await ready("demo"));
       }
     }
     await expect(consent(page)).not.toBeChecked();

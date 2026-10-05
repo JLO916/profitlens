@@ -4,7 +4,8 @@ import { fill, labels } from "../../src/i18n";
 
 // R2 文案接線：期間列的範圍說明由 labels.ui.dashboard.scopeNote 模板組成，這裡只取測試關心的片段再填值。
 const scopeNoteDays = (previousDays: number, currentDays: number) => fill(labels.ui.dashboard.scopeNote.match(/（(.*?)）/)![1], { previousDays, currentDays });
-const scopeNoteCurrent = (currentStart: string, currentEnd: string) => fill(labels.ui.dashboard.scopeNote.split(" · ").at(-1)!, { currentStart, currentEnd });
+// V3-2a：scopeNote 改為「本期…對比 上期…（天數）」單句、不再用分隔符串接，本期片段改由 {currentStart}…{currentEnd} 連同前一個詞取出。
+const scopeNoteCurrent = (currentStart: string, currentEnd: string) => fill(labels.ui.dashboard.scopeNote.match(/\S*\s*\{currentStart\}[^{]*\{currentEnd\}/)![0], { currentStart, currentEnd });
 const aiLabelPrefix = labels.ui.dashboard.aiLabel.replace("{ai}", "");
 
 // R1 總覽重排與頁首減負：首屏 KPI、三件事一屏內、切頁歸零、頂欄 AI 標籤與選單、期間快捷只填日期。

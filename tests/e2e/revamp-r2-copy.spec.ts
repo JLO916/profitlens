@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clickReplacing, dismissSavePrompt, openDownloads, openValidation, ruleHeadline } from "./replacement-helpers";
-import { labels } from "../../src/i18n";
+import { fill, labels } from "../../src/i18n";
 import { csvHeaderKey } from "../../src/application/copy";
 
 // R2 語言與文案層：口徑說明的三個入口、怎麼算的階梯、商品證據不畫階梯、示範通路 alias、CSV 標題列、規則卡模板標題。
@@ -19,6 +19,8 @@ async function loadGolden(page: Page) {
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
   await dismissSavePrompt(page);
 }
+// 把含 {占位符} 的標籤模板轉成整行比對的正規式（占位符換成非空字串）。
+const templatePattern = (template: string) => new RegExp(`^${template.split(/\{[^}]+\}/).map(part => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".+?")}$`);
 const basis = (page: Page) => page.getByRole("dialog", { name: labels.basis.title });
 const drawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
 
@@ -74,10 +76,15 @@ test.describe("R2 口徑說明與怎麼算的", () => {
   test("demo channels show the Taiwanese alias while golden keeps raw codes", async ({ page }) => {
     await loadDemo(page);
     await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).locator("option")).toContainText([labels.ui.dashboard.filter.allChannels, labels.demoChannelAlias.DTC, labels.demoChannelAlias.MARKETPLACE]);
-    await expect(page.locator(".scope-note")).toContainText(labels.demoChannelAlias.DTC);
-    await loadGolden(page);
+    // V3-2a（copy-rewrite.csv ui.dashboard.scopeNote）：通路移出期間說明列，只留在通路選單；說明列只剩兩期日期與天數。
+    await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).locator("option")).toHaveText([labels.ui.dashboard.filter.allChannels, labels.demoChannelAlias.DTC, labels.demoChannelAlias.MARKETPLACE]);
+    await expect(page.locator(".scope-note")).toHaveText(fill(labels.ui.dashboard.scopeNote, { currentStart: "2026-07-13", currentEnd: "2026-08-23", previousStart: "2026-06-01", previousEnd: "2026-07-12", previousDays: 42, currentDays: 42 }));
     await expect(page.locator(".scope-note")).not.toContainText(labels.demoChannelAlias.DTC);
-    await expect(page.locator(".scope-note")).toContainText("DTC");
+    await loadGolden(page);
+    await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).locator("option")).toHaveText([labels.ui.dashboard.filter.allChannels, "DTC", "MARKETPLACE"]);
+    await expect(page.locator(".scope-note")).toHaveText(templatePattern(labels.ui.dashboard.scopeNote));
+    await expect(page.locator(".scope-note")).not.toContainText(labels.demoChannelAlias.DTC);
+    await expect(page.locator(".scope-note")).not.toContainText("DTC");
   });
 
   test("rule cards use glossary headlines and the analysis CSV header reads 中文 (key)", async ({ page }) => {
