@@ -20,6 +20,8 @@ const restorePreview = (page: Page) => page.getByRole("region", { name: storageC
 
 const storage = (page: Page) => page.getByTestId("workspace-storage");
 const status = (page: Page) => page.getByTestId("workspace-status");
+/** Ready status reads fill(status.ready, { date: manifest.data_as_of }) (dashboard.tsx statusText); every flow here uses golden (fixtures/golden/manifest.json data_as_of). */
+const goldenReady = fill(labels.status.ready, { date: "2026-08-03" });
 const autoCopy = labels.autoSave;
 // R6（D7＝A）：首次載入資料時的非 modal 保存提示、儲存選單內的自動保存狀態、頂欄「儲存」tag。
 const savePrompt = (page: Page) => page.getByTestId("local-save-prompt");
@@ -79,7 +81,7 @@ async function golden(page: Page) {
   await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
-  await expect(status(page)).toContainText(labels.status.ready);
+  await expect(status(page)).toContainText(goldenReady);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
   await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("270.00");
 }
@@ -181,7 +183,7 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await expect(restorePreview(page)).toContainText(fill(storageCopy.restoreCounts, { plans: 2, actions: 1 }));
   await expect(status(page)).toContainText(labels.status.empty);
   await storage(page).getByRole("button", { name: storageCopy.applyRestore, exact: true }).click();
-  await expect(status(page)).toContainText(labels.status.ready);
+  await expect(status(page)).toContainText(goldenReady);
   await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })).toHaveValue("DTC");
   await expect(storage(page).getByLabel(storageCopy.consent, { exact: true })).not.toBeChecked();
   // R6：恢復後同意重設為未勾選（自動保存關閉），保存提示再出現，並提醒這台電腦已有保存的工作區。
@@ -206,7 +208,7 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await storage(page).getByRole("button", { name: labels.buttons.deleteLocal, exact: true }).click();
   await expect(storage(page).getByTestId("storage-notice")).toContainText(storageCopy.deletedNotice);
   expect(await localDatabases(page)).toEqual([]);
-  await expect(status(page)).toContainText(labels.status.ready);
+  await expect(status(page)).toContainText(goldenReady);
   expect(posts).toEqual([]);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-${testInfo.project.name}-restored.png`), fullPage: true });
   await appendFile(resolve("verification/review-v2-a-regression-storage-browser.jsonl"), `${JSON.stringify({ project: testInfo.project.name, save_restore: "pass", sources: "synthetic golden", scenarios: ["284.00", "264.00"], action_evidence: "confirmed", auto_cross_tab_load: false, posts, indexeddb_deleted: true })}\n`);
@@ -258,7 +260,7 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
-  await expect(status(page)).toContainText(labels.status.ready);
+  await expect(status(page)).toContainText(goldenReady);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
   const saved = await backup(page);
   expect(JSON.parse(saved).payload.scenario_workspace.contexts[0].status).toBe("historical");
@@ -267,7 +269,7 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   await expect(status(page)).toContainText(labels.status.empty);
   await restoreFile(page, saved);
   await storage(page).getByRole("button", { name: storageCopy.applyRestore, exact: true }).click();
-  await expect(status(page)).toContainText(labels.status.ready);
+  await expect(status(page)).toContainText(goldenReady);
   // R6：清空後儲存面板重掛，恢復出的工作區尚未同意本機保存 → 保存提示再出現；本案例不測保存，選「先不要」。
   await expect(savePrompt(page)).toBeVisible();
   await dismissSavePrompt(page);
