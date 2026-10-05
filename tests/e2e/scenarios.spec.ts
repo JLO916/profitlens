@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -15,8 +16,8 @@ const consentLabel = labels.scenario.acceptAssumptions;
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** evidence-drawer.tsx names the dialog `${title}｜${labels.sections.evidence}`. */
 const evidenceDialogName = (title: string) => `${title}｜${labels.sections.evidence}`;
-/** evidence-drawer.tsx scope line: `{scope}；{start} 至 {end}；通路：{channels}。` — the period/channel tail only. */
-const evidencePeriodLine = (start: string, end: string, channels: string) => `${start} 至 ${end}；${labels.evidence.channels}：${channels}`;
+/** evidence-drawer.tsx scope line（V3-2a 起由 labels.ui.evidenceDrawer.scopeLine 組字，期間改用「–」）；沒有 scopeLabel 時 scope 為 labels.evidence.scopeFallback。 */
+const evidenceScopeLine = (start: string, end: string, channels: string, scope: string = labels.evidence.scopeFallback) => fill(labels.ui.evidenceDrawer.scopeLine, { scope, start, end, channels });
 /** evidence-drawer.tsx lists source rows per file behind `${labels.evidence.sourceTabs[tab]}（{count}）` buttons; rows of a file appear only on its tab. */
 const sourceTabFiles = { sales: "sales_daily.csv", costs: "channel_costs_daily.csv", ads: "ad_spend_daily.csv" } as const;
 async function showSourceTab(dialog: Locator, tab: keyof typeof sourceTabFiles) {
@@ -33,6 +34,10 @@ const factText = (start: string, end: string, metric: string, scope: string, val
 const startButtonPrefix = new RegExp(`^${escapeRegExp(msw.startButton.split("{channel}")[0])}`);
 const historyPlanLine = (plan: string, amount: string) => fill(msw.historyPlanSummary.split("（")[0], { plan, resultLabel: labels.scenario.resultTitle, amount });
 const periodFieldLabel = (edge: "start" | "end", period: string) => fill(edge === "start" ? dash.filter.periodStart : dash.filter.periodEnd, { period });
+/** V3-2a：狀態列「資料到 {date}」，日期取各資料集 manifest 的 data_as_of（不在測試內另寫日期）。 */
+const ready = (id: "golden" | "demo" = "golden") => fill(labels.status.ready, { date: (JSON.parse(readFileSync(resolve(`fixtures/${id}/manifest.json`), "utf8")) as { data_as_of: string }).data_as_of });
+/** V3-2a：計算與來源抽屜的金額改為「{amount} 元」（labels.ui.evidenceDrawer.money），不再顯示「NT$ 」前綴。 */
+const drawerMoney = (amount: string) => fill(labels.ui.evidenceDrawer.money, { amount });
 const workspaceStatus = (page: Page) => page.getByTestId("workspace-status");
 const workbench = (page: Page) => page.getByTestId("decision-workbench");
 const actionsWorkbench = (page: Page) => page.getByTestId("actions-workbench");
@@ -66,7 +71,7 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
   }, { auto: true }],
 });
 
-async function loadDataset(page: Page, id = "golden", classification: string = labels.status.ready, keepSavePrompt = false) {
+async function loadDataset(page: Page, id = "golden", classification: string = id === "demo" ? ready("demo") : ready(), keepSavePrompt = false) {
   await openValidation(page);
   await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
   const response = page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.status() === 200);
@@ -81,7 +86,7 @@ async function loadDataset(page: Page, id = "golden", classification: string = l
   // 零持久化案例自己按「先不要」並驗證之後沒有資料庫，所以可選擇保留提示。
   if (!keepSavePrompt) await dismissSavePrompt(page);
 }
-async function selectChannel(page: Page, channel: string, classification: string = labels.status.ready) {
+async function selectChannel(page: Page, channel: string, classification: string = ready()) {
   await page.getByLabel(dash.filter.channel, { exact: true }).selectOption(channel);
   await expect(workspaceStatus(page)).toContainText(classification);
 }
@@ -256,8 +261,8 @@ test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: evidenceDialogName(fill(dw.baselineEvidenceTitle, { metric: cmAfter })), exact: true });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator("p.number")).toHaveText("NT$ 270.00");
-  await expect(dialog).toContainText(evidencePeriodLine("2026-08-02", "2026-08-02", "DTC"));
+  await expect(dialog.locator("p.number")).toHaveText(drawerMoney("270.00"));
+  await expect(dialog).toContainText(evidenceScopeLine("2026-08-02", "2026-08-02", "DTC"));
   await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 6 }));
   for (const tab of ["sales", "costs", "ads"] as const) {
     await showSourceTab(dialog, tab);
@@ -453,7 +458,7 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await action(page).getByLabel(labels.actions.progress, { exact: true }).fill("已索取報價，尚待核對");
   await expect(action(page)).toContainText(aw.tagConfirmed);
   await action(page).getByRole("button", { name: new RegExp(`^${escapeRegExp(aw.viewEvidenceItem.split("{fact}")[0])}`) }).click();
-  await expect(page.getByRole("dialog").locator("p.number")).toHaveText("NT$ 270.00");
+  await expect(page.getByRole("dialog").locator("p.number")).toHaveText(drawerMoney("270.00"));
   await page.getByRole("dialog").getByRole("button", { name: labels.buttons.close, exact: true }).click();
   const document = await downloadJson(page);
   expect(document.actions[0]).toMatchObject({ status: "confirmed", owner_role: "物流主管", evidence_confirmed: true, fact_ids: [original.factId], execution_status: "in_progress", progress_notes: "已索取報價，尚待核對" });
@@ -508,7 +513,7 @@ test("資料集切換再回相同 golden，舊方案仍為歷史；複製只保�
 
 test("有效期間切換再回原期間，歷史結果不復活或自動沿用假設", async ({ page }) => {
   await loadDataset(page, "demo");
-  await selectChannel(page, "DTC");
+  await selectChannel(page, "DTC", ready("demo"));
   await showScenarios(page);
   const card = await addScenario(page);
   await fillScenario(card, ["0", "0", "0", "0", "0"]);
@@ -526,7 +531,7 @@ test("有效期間切換再回原期間，歷史結果不復活或自動沿用�
   for (const values of ranges) {
     for (const [index, label] of dateLabels.entries()) await page.getByLabel(label, { exact: true }).fill(values[index]);
     await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
-    await expect(workspaceStatus(page)).toContainText(labels.status.ready);
+    await expect(workspaceStatus(page)).toContainText(ready("demo"));
     await showScenarios(page);
     // R5-3：新期間只有進頁草稿，原期間的結果與假設不沿用。
     await expectFreshDraft(page);
@@ -564,8 +569,8 @@ test("四項人工行動可新增但僅三項置頂，鍵盤排序及人類可�
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: evidenceDialogName(fill(aw.evidenceTitle, { metric: cmAfter })), exact: true });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator("p.number")).toHaveText("NT$ 270.00");
-  await expect(dialog).toContainText(`DTC；${evidencePeriodLine("2026-08-02", "2026-08-02", "DTC")}`);
+  await expect(dialog.locator("p.number")).toHaveText(drawerMoney("270.00"));
+  await expect(dialog).toContainText(evidenceScopeLine("2026-08-02", "2026-08-02", "DTC", "DTC"));
   await expect(dialog).toContainText("sales_daily.csv");
   await page.keyboard.press("Escape");
   await expect(opener).toBeFocused();
@@ -662,7 +667,7 @@ test("不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產
 });
 
 test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用", async ({ page, context, browserAudit }) => {
-  await loadDataset(page, "golden", labels.status.ready, true);
+  await loadDataset(page, "golden", ready(), true);
   // R6（D7＝A）：載入資料後出現非 modal 的首次保存提示；按「先不要」維持手動保存，之後任何變更都不得建立本機資料庫。
   const savePrompt = page.getByTestId("local-save-prompt");
   await expect(savePrompt).toBeVisible();

@@ -1,5 +1,6 @@
 import { clickReplacing, dismissSavePrompt, openValidation, selectScenarioChannel, startChannelContext } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
+import { readFileSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Locator, type Page } from "@playwright/test";
@@ -14,6 +15,8 @@ const sensitivityRow = (index: number) => new RegExp(fill(copy.rowLabel, { lette
 /** Main-layer caution is the single "注意：…" sentence (03_GLOSSARY_COPY §8); the rest moved into 技術細節. */
 const mainCaution = `${labels.sections.caution}：${labels.basis.items[6]}`;
 const dw = labels.ui.decisionWorkbench;
+/** V3-2a：狀態列「資料到 {date}」，日期取 golden manifest 的 data_as_of（不在測試內另寫日期）。 */
+const goldenReady = fill(labels.status.ready, { date: (JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")) as { data_as_of: string }).data_as_of });
 const inputValues = ["-3", "-2.5", "0"] as const;
 
 /** R5-4：三格受控，輸入即寫回方案（plan.sensitivity）。 */
@@ -36,7 +39,7 @@ async function openPlan(page: Page, investment = "0") {
   await openValidation(page);
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption("golden");
   await clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await expect(page.getByTestId("workspace-status")).toContainText(goldenReady);
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
   await page.getByLabel(channelField, { exact: true }).selectOption("DTC");
@@ -117,8 +120,8 @@ test("PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不�
   await sensitivity.getByLabel(sensitivityInput(1), { exact: true }).fill("100.1");
   await expect(sensitivity.getByRole("table")).toHaveCount(0);
   await sensitivity.getByRole("button", { name: copy.recalc, exact: true }).click();
-  // 逐列錯誤前綴「假設 n：」來自 src/domain/scenario-sensitivity.ts（財務核心禁區，未入 labels），維持原字。
-  await expect(sensitivity.getByTestId("sensitivity-result")).toContainText("假設 2");
+  // V3-2a：逐列錯誤改由 scenarioReasonText 依原因碼組字，前綴與畫面列名同一模板「假設 {letter}：」（第 2 格＝B），不再顯示 domain 的「假設 n」。
+  await expect(sensitivity.getByTestId("sensitivity-result")).toContainText(`${fill(copy.rowLabel, { letter: letter(1) })}：${copy.reasons.INPUT_OUT_OF_RANGE}`);
   await expect(sensitivity.getByRole("table")).toHaveCount(0);
 });
 
