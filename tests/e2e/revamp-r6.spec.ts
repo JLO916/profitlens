@@ -52,6 +52,9 @@ const firstPlanName = fill(labels.ui.decisionWorkbench.defaultPlanName, { n: 1 }
 const summaryCopy = labels.ui.managerSummary;
 /** golden 的資料日（fixtures/golden/manifest.json 的 data_as_of）。 */
 const GOLDEN_AS_OF = "2026-08-03";
+/** V3-2a：status.ready 帶 {date}＝資料集 manifest 的 data_as_of（demo 為 2026-08-24）。 */
+const DATA_AS_OF = { golden: GOLDEN_AS_OF, demo: "2026-08-24" } as const;
+const ready = (id: keyof typeof DATA_AS_OF) => fill(labels.status.ready, { date: DATA_AS_OF[id] });
 /** 「採用（第 n 版確認）」：版號是會議稿的修訂次數，只要求是數字。 */
 const confirmedRe = (decision: keyof typeof labels.meeting.decisions) => escapeRe(fill(record.decisionConfirmed, { decision: labels.meeting.decisions[decision], revision: "§" })).replace("§", "\\d+");
 const historyTitle = (name: string, date: string, decision: keyof typeof labels.meeting.decisions) => templateRe(meetingPage.historyItem, { name, date }, { decision: confirmedRe(decision) });
@@ -68,7 +71,7 @@ async function loadDataset(page: Page, id: "golden" | "demo") {
   await openValidation(page);
   await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
-  await expect(status(page)).toContainText(labels.status.ready);
+  await expect(status(page)).toContainText(ready(id));
 }
 /** 首次載入（或清空、從備份恢復）後一定會出現保存提示：等它出現再按「先不要」，避免手機版底部提示蓋住按鈕。 */
 async function declineSavePrompt(page: Page) {
@@ -256,7 +259,7 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await fresh.getByLabel(store.selectBackupFile, { exact: true }).setInputFiles({ name: "r6-meeting.json", mimeType: "application/json", buffer: backup.bytes });
   await expect(page.getByRole("region", { name: store.restorePreviewAria })).toBeVisible();
   await clickReplacing(page, fresh.getByRole("button", { name: store.applyRestore, exact: true }));
-  await expect(status(page)).toContainText(labels.status.ready);
+  await expect(status(page)).toContainText(ready("golden"));
   await expect(fresh.getByTestId("storage-notice")).toHaveText(store.restoredNotice);
   await closeStorage(page);
   // 恢復後本機保存同意重設，提示再出現一次。
