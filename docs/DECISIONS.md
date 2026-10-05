@@ -278,6 +278,14 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
 
+## 2026-10-05｜Revamp v3 V3-2 拆批與 H3 先行
+
+**問題：** V3-2（語言與數字格式）是最大的一批，且依賴人工關卡 H3（`copy-rewrite.csv` 審稿與紙本用語測試）。
+
+**採用選項：** 使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，開始 V3-2」。依 PRD §12.1「批次太大時在開工前拆成 a／b」，V3-2 拆為 V3-2a（語言落地、匯入錯誤句型、F23、名詞小辭典、測試同步）、V3-2b（三層數字格式與 `favorableDirection`）、V3-2c（labels 結構重整與舊 key alias）。H3 改為「落地後補審」：審稿意見在之後的批次以改 labels 的方式修正，測試斷言一律引用 labels，所以不會再出現硬編碼。`copy-rewrite.csv` 中 `removed` 的 9 列（主層不顯示的工作區標籤、麵包屑、空狀態步驟列等）等到該元素在 V3-3／V3-8 移除時一起處理，V3-2a 不先清空文字。
+
+**原因：** 每批要能獨立驗收；文字改名與數字尺度分開落地，E2E 斷言的遷移才能分批勾銷。
+
 ## 2026-10-05｜Revamp v3 開工：D-V3-1–24 依建議值、產品改名 EC ProfitLens、V3-0 範圍
 
 **問題：** v2.0.0 數字正確、可追溯，但使用者反映「介面複雜、不好懂」與「AI 製作感太重」。`docs/revamp-v3/01_PRD.md` 提出 Revamp v3（11 批、不加依賴、不刪功能、不動財務核心），並列出 24 件需拍板事項；使用者同時要求產品改名。

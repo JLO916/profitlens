@@ -1950,5 +1950,11 @@ export const relaunch = {
 
 
 
-export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave, relaunch };
+/** V3-2a（F23，PRD §8.9）：「這版改了什麼」提示；由 V3-2a 代理填入。 */
+export const whatsNew = {} as const;
+
+/** V3-2a（F5／F23，PRD §6.3 #12、§8.9）：名詞小辭典（指標定義對話框的搜尋與舊名對照）；由 V3-2a 代理填入。 */
+export const glossary = {} as const;
+
+export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave, relaunch, whatsNew, glossary };
 export type Labels = typeof labels;
