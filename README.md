@@ -1,10 +1,10 @@
-# ProfitLens｜電商獲利診斷與決策工作台
+# EC ProfitLens｜電商獲利診斷與決策工作台
 
 從銷售、通路費用與廣告資料，看清扣廣告後貢獻的變化，每個數字都能追到來源。
 
 **正式站：[profitlens-tau.vercel.app](https://profitlens-tau.vercel.app)**
 
-<img src="docs/images/overview-1440.png" width="1200" alt="ProfitLens 經營總覽：本期關鍵數字、輔助指標與本期三件事">
+<img src="docs/images/overview-1440.png" width="1200" alt="EC ProfitLens 經營總覽：本期關鍵數字、輔助指標與本期三件事">
 
 ## 它回答三個問題（給營運／行銷主管）
 

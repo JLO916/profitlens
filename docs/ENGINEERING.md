@@ -1,4 +1,4 @@
-# ProfitLens 工程與驗收
+# EC ProfitLens 工程與驗收
 
 > 給開發者與驗收者。產品介紹、試用方式與口徑說明見 [README](../README.md)；各次發布說明見 [RELEASES](RELEASES.md)；專案規則見 [AGENTS.md](../AGENTS.md)（優先）與 [CLAUDE.md](../CLAUDE.md)。
 >
@@ -93,7 +93,7 @@ R3 的來源預設查證另見 [revamp-R3-preset-verification.md](../verificatio
 
 ## 線上示範與原始碼
 
-- [開啟 ProfitLens 公開合成示範](https://profitlens-tau.vercel.app)
+- [開啟 EC ProfitLens 公開合成示範](https://profitlens-tau.vercel.app)
 - [GitHub：JLO916/profitlens（私人，須帳號權限）](https://github.com/JLO916/profitlens)
 - [Vercel 專案與部署記錄](https://vercel.com/jlo916s-projects/profitlens)
 - [首次部署驗證與限制](../verification/deployment-acceptance.md)
@@ -113,7 +113,7 @@ npm ci
 npm run dev
 ```
 
-以瀏覽器開啟 [http://127.0.0.1:3000](http://127.0.0.1:3000)。應看到繁體中文 ProfitLens 空工作區。按「載入示範資料」後，三份合成 CSV 經 M1 驗證與計算才顯示結果。終端機按 `Ctrl+C` 停止。
+以瀏覽器開啟 [http://127.0.0.1:3000](http://127.0.0.1:3000)。應看到繁體中文 EC ProfitLens 空工作區。按「載入示範資料」後，三份合成 CSV 經 M1 驗證與計算才顯示結果。終端機按 `Ctrl+C` 停止。
 
 > **R7 註記**：R2 起空工作區標題為「營收漲了，到底多賺還是少賺？」，按鈕為「試試示範資料」。
 

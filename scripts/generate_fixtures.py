@@ -1,4 +1,4 @@
-"""Generate synthetic test assets only; not the ProfitLens application."""
+"""Generate synthetic test assets only; not the EC ProfitLens application."""
 from pathlib import Path
 from decimal import Decimal as D, ROUND_HALF_UP
 from datetime import date,timedelta

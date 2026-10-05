@@ -1,4 +1,4 @@
-# ProfitLens — Repository instructions
+# EC ProfitLens — Repository instructions
 
 ## Product intent
 建立真正可操作的電商獲利診斷工具，不是履歷頁、行銷落地頁或靜態報告。所有介面與使用說明預設繁體中文，不包含個人經歷或前雇主資訊。

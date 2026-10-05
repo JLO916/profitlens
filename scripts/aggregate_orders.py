@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""ProfitLens 訂單明細彙總工具（R3 / 決策 D5：CLI，不在 UI 內彙總）。
+"""EC ProfitLens 訂單明細彙總工具（R3 / 決策 D5：CLI，不在 UI 內彙總）。
 
-把「一列一個訂單商品行」的平台匯出檔，依 rules.json 彙總成 ProfitLens 的三份標準 CSV：
+把「一列一個訂單商品行」的平台匯出檔，依 rules.json 彙總成 EC ProfitLens 的三份標準 CSV：
   sales_daily.csv          date × channel × sku
   channel_costs_daily.csv  date × channel，費用全部填 0（佔位，使用者須自行填入實際費用）
   ad_spend_daily.csv       date × channel，廣告費全部填 0（佔位，使用者須自行填入）
@@ -554,7 +554,7 @@ def build_log(orders_path: Path, rules_path: Path, rules: Rules, read: ReadResul
     out.append(f"- 訂單檔：`{orders_path.name}`")
     out.append(f"- 規則檔：`{rules_path.name}`")
     out.append("- 工具：`scripts/aggregate_orders.py`（Python 標準函式庫，Decimal、ROUND_HALF_UP、2 位小數）")
-    out.append("- 本紀錄與三份 CSV 一起保存，作為 ProfitLens 匯入前處理的來源說明。\n")
+    out.append("- 本紀錄與三份 CSV 一起保存，作為 EC ProfitLens 匯入前處理的來源說明。\n")
 
     out.append("## 套用的規則\n")
     out.append("| 項目 | 設定 |")
@@ -579,7 +579,7 @@ def build_log(orders_path: Path, rules_path: Path, rules: Rules, read: ReadResul
     out.append("| 退款入帳 | 以退款日期入帳到同通路、同 SKU；不影響件數，不沖回成本 |")
     out.append("| 換算順序 | 先在來源口徑分攤折扣，再逐列換算未稅並四捨五入，最後才加總 |\n")
     if rules.currency != "TWD":
-        out.append(f"> 注意：currency 設為 {rules.currency}，但 ProfitLens v1 只接受 TWD，匯入時會被擋下。\n")
+        out.append(f"> 注意：currency 設為 {rules.currency}，但 EC ProfitLens v1 只接受 TWD，匯入時會被擋下。\n")
 
     out.append("## 讀取、保留與丟棄\n")
     out.append(f"- 讀取資料列：{read.rows_read}")
@@ -662,7 +662,7 @@ def build_log(orders_path: Path, rules_path: Path, rules: Rules, read: ReadResul
             whole = round2(raw_total / divisor)
             out.append(f"| cogs_net | {len(known)} | {money(raw_total)} | {money(converted)} | {money(whole)} | {money(converted - whole)} |")
         out.append("")
-        out.append("- 差額是「逐列四捨五入」與「合計後才四捨五入」的分位差，屬正常；ProfitLens 以逐列結果為準。\n")
+        out.append("- 差額是「逐列四捨五入」與「合計後才四捨五入」的分位差，屬正常；EC ProfitLens 以逐列結果為準。\n")
 
     out.append("## 費用與廣告是佔位 0，請自行填入\n")
     out.append(f"- `channel_costs_daily.csv` 與 `ad_spend_daily.csv` 已列出銷售出現過的每個日 × 通路（{len(day_channels)} 列），**金額全部是 0**。")
@@ -712,13 +712,13 @@ def run(orders_path: Path, rules_path: Path, out_dir: Path) -> str:
     dropped_total = sum(len(v) for v in read.dropped.values())
     return (f"完成：讀取 {read.rows_read} 列，保留 {len(lines)} 列，丟棄 {dropped_total} 列；"
             f"輸出 sales_daily.csv {len(sales_rows)} 列、channel_costs_daily.csv 與 ad_spend_daily.csv 各 {len(day_channels)} 列到 {out_dir}。\n"
-            "提醒：通路費用與廣告費都是 0 佔位，請先填入實際金額再匯入 ProfitLens（詳見 aggregation_log.md）。")
+            "提醒：通路費用與廣告費都是 0 佔位，請先填入實際金額再匯入 EC ProfitLens（詳見 aggregation_log.md）。")
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="aggregate_orders.py",
-        description="把訂單明細 CSV 依 rules.json 彙總成 ProfitLens 三份標準 CSV 與 aggregation_log.md。",
+        description="把訂單明細 CSV 依 rules.json 彙總成 EC ProfitLens 三份標準 CSV 與 aggregation_log.md。",
     )
     parser.add_argument("--orders", required=True, help="訂單明細 CSV（一列一個訂單商品行）")
     parser.add_argument("--rules", required=True, help="rules.json（欄位對照、通路、含稅等規則）")

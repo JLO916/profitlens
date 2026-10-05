@@ -1,4 +1,4 @@
-# ProfitLens 發布紀錄
+# EC ProfitLens 發布紀錄
 
 > 新的在上。正式站：<https://profitlens-tau.vercel.app>。工程驗收命令與各批驗收紀錄見 [ENGINEERING](ENGINEERING.md)；每批真實執行結果見 [STATUS](STATUS.md)；取捨見 [DECISIONS](DECISIONS.md)。
 
@@ -26,7 +26,7 @@ Revamp v2：把產品從「稽核員工具」改成台灣電商經理人每週�
 ### 已知限制
 - 平台訂單明細需先用 `scripts/aggregate_orders.py` 整理成日粒度（見 [ORDER_AGGREGATION](ORDER_AGGREGATION.md)）；精靈只偵測並引導，不在畫面內彙總（D5＝A）。
 - 來源預設只有 `shopee_orders`（蝦皮訂單匯出）以真實匯出檔的標題列驗證；其餘八個尚未以真實匯出檔驗證：`shopee_income`、`momo_settlement`、`91app_orders`（以公開文件或 API 文件重建樣本）、`shopline_orders`、`cyberbiz_orders`、`pchome_settlement`、`meta_ads`、`google_ads`（見 [R3 來源預設查證](../verification/revamp-R3-preset-verification.md)）。
-- `npm audit` 對 `xlsx@0.18.5` 與 `pptxgenjs@4.0.1` 依賴的 `image-size` 回報 3 個 high：都在 ProfitLens 未使用的讀取／圖片解析路徑，沒有可升級的修正版；已記錄於 [DECISIONS](DECISIONS.md)（2026-10-03 R6）。
+- `npm audit` 對 `xlsx@0.18.5` 與 `pptxgenjs@4.0.1` 依賴的 `image-size` 回報 3 個 high：都在 EC ProfitLens 未使用的讀取／圖片解析路徑，沒有可升級的修正版；已記錄於 [DECISIONS](DECISIONS.md)（2026-10-03 R6）。
 - 示範資料台灣化（新 fixture `fixtures/demo_tw`：官網／蝦皮／momo 三通路、商品名稱、檔期，並獨立手算 expected）列為上線後待辦；本版只做顯示別名（D3＝A）。
 - Live AI 未實測；真實營運資料、真實使用者試用、Safari／Firefox 與實體裝置未驗收。
 - 訂單數、客單價、轉換率（選配 `orders_daily.csv`）延後到 Phase 2（D6＝B）。
@@ -48,4 +48,4 @@ R7 搬移註記：以下為原 README 開頭的發布說明原文，連結改為
 
 R7 搬移註記：以下為原 README 開頭的歷史發布說明原文，連結改為從 `docs/` 出發。三批各自的改善內容見 [ENGINEERING](ENGINEERING.md) 的「管理者改善第一／二／三批」。
 
-歷史發布（2026-10-01；最新版本以上方 A 批發布為準）：**三批管理者改善已發布至 [ProfitLens 正式站](https://profitlens-tau.vercel.app)**，程式版本 `2f8e539` 已推送至既有私人 GitHub，Vercel production READY。依最新指示先發布，公開版維持 `PUBLIC_DEMO`，Live AI 後端關閉；**Live AI 未實測**，20案僅完成離線準備。發布前重新通過766項unit/integration、282項三尺寸E2E、typecheck、lint及production build；正式站13項HTTP檢查與1440／768／390px人工操作通過。完整命令、證據及未驗收範圍見 [本次發布紀錄](../verification/release-20261001-acceptance.md) 與 [STATUS](STATUS.md)。
+歷史發布（2026-10-01；最新版本以上方 A 批發布為準）：**三批管理者改善已發布至 [EC ProfitLens 正式站](https://profitlens-tau.vercel.app)**，程式版本 `2f8e539` 已推送至既有私人 GitHub，Vercel production READY。依最新指示先發布，公開版維持 `PUBLIC_DEMO`，Live AI 後端關閉；**Live AI 未實測**，20案僅完成離線準備。發布前重新通過766項unit/integration、282項三尺寸E2E、typecheck、lint及production build；正式站13項HTTP檢查與1440／768／390px人工操作通過。完整命令、證據及未驗收範圍見 [本次發布紀錄](../verification/release-20261001-acceptance.md) 與 [STATUS](STATUS.md)。

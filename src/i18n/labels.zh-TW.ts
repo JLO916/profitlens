@@ -1,4 +1,4 @@
-// ProfitLens — 使用者可見文字的單一來源（繁體中文／台灣電商用語）
+// EC ProfitLens — 使用者可見文字的單一來源（繁體中文／台灣電商用語）
 // 規格：docs/revamp/03_GLOSSARY_COPY.md。R0 放入、R2 接線。
 // 規則：元件、匯出、AI 預覽都從這裡取字；技術代號只放在 *.technical 或 basis 內。
 import type { MetricName, RuleCode } from "@/domain/types";
@@ -544,9 +544,9 @@ export const evidence = {
 export const units = { wan: "{value} 萬", yuan: "{value} 元" } as const;
 
 export const brand = {
-  name: "ProfitLens",
+  name: "EC ProfitLens",
   tagline: "營運決策工作台",
-  title: "ProfitLens｜電商獲利診斷與決策工作台",
+  title: "EC ProfitLens｜電商獲利診斷與決策工作台",
   description: "從銷售、通路費用與廣告資料，看清扣廣告後貢獻的變化，每個數字都能追到來源。",
 } as const;
 
@@ -584,7 +584,7 @@ export const ui = {
     "exitPrint": "結束列印",
     "persistNoteManaged": "門檻與所選方案會一起存進備份檔。摘要最多三個置頂待辦，其餘列在附錄。",
     "persistNoteLocal": "門檻與所選方案只在這一頁有效，不會存進備份檔；下載的摘要會保留這次的設定。",
-    "printTitle": "ProfitLens 會議摘要",
+    "printTitle": "EC ProfitLens 會議摘要",
     "printContext": "{state}｜資料到 {asOf}｜{channels}｜TWD",
     "printPeriodLine": "上期 {prevStart}–{prevEnd}（{prevDays} 天）；本期 {curStart}–{curEnd}（{curDays} 天）；{mode}。",
     "printHeadline": "{prev} → {cur}；差額 {change}",
@@ -1357,7 +1357,7 @@ export const ui = {
     "roundingNote": "中間計算用高精度小數，最後金額才四捨五入到分（HALF_UP）。rounding_adjustment 是逐項四捨五入後的合計與總額之間的差。",
     "fieldLine": "- {label}：{value}",
     "nullValue": "資料待補／不適用",
-    "title": "ProfitLens 決策紀錄",
+    "title": "EC ProfitLens 決策紀錄",
     "statusLine": "狀態：{status}",
     "statusStale": "已過期：資料或範圍已變動，不能直接沿用；請重新確認基準與輸入",
     "statusCurrent": "目前資料",
