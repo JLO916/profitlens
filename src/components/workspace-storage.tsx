@@ -1,5 +1,6 @@
 "use client";
 
+import { markV3Save } from "@/application/whats-new";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ChangeEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { downloadText } from "@/application/download";
@@ -69,7 +70,7 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
       save: async () => {
         const current = latest.current.source;
         if (!current) throw new Error("AUTO_SAVE_NO_WORKSPACE");
-        await saveLocalWorkspace(await exportWorkspaceBackup(current));
+        await saveLocalWorkspace(await exportWorkspaceBackup(current)); markV3Save();
       },
       onSaved: (saved, at) => { setLastSaved({ version: saved, at }); setAutoError(false); latest.current.onSaved(saved); },
       onError: () => setAutoError(true),
@@ -141,7 +142,7 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
     try {
       const text = await exportWorkspaceBackup(source);
       if (local) {
-        await saveLocalWorkspace(text);
+        await saveLocalWorkspace(text); markV3Save();
         onSaved(currentVersion);
         setLastSaved({ version: currentVersion, at: new Date() });
         // 手動保存＝已明確改存成目前的工作區，不必再確認覆寫。

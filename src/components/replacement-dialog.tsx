@@ -1,5 +1,6 @@
 'use client';
 
+import { markV3Save } from "@/application/whats-new";
 import { useEffect, useRef, useState } from 'react';
 import { beginReplacement, chooseReplacement, confirmReplacementDownload, finishReplacementSave, type ReplacementKind, type ReplacementState } from '@/application/replacement-guard';
 import { exportWorkspaceBackup, type WorkspaceBackupSource } from '@/application/workspace-backup';
@@ -40,7 +41,7 @@ export function ReplacementDialog({ intent, source, currentVersion, onSaved, onC
     try {
       const data = await exportWorkspaceBackup(source);
       if (!live.current) return;
-      if (local) await saveLocalWorkspace(data);
+      if (local) { await saveLocalWorkspace(data); markV3Save(); }
       else downloadText(data, 'profitlens-workspace.json', 'application/json;charset=utf-8');
       if (!live.current) return;
       const next = finishReplacementSave(pending, local ? 'local_saved' : 'downloaded', currentVersion());

@@ -1,5 +1,14 @@
 # Status
 
+## Revamp v3｜V3-2a 語言落地（完成，未推送、未部署；H3 補審待人工）
+
+使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地」，V3-2 於開工前拆成 a／b／c。V3-2a：labels 依 CSV 落地（586 個字面值；reworded 442、renamed 61、split 92、moved-to-technical 3；removed 9 列待元素移除的批次）、55 列占位符搬移的呼叫端、JSX 硬編碼中文 15＋7 → **0**、`importErrors` 句型「{file} 第 {line} 行：問題。修法。」與 {file}{line}{value}{column} 由 application 帶入（不改 domain、不再退回 domain 中文）、F23「這版改了什麼」提示（只對偵測到 v2 資料者顯示；v3 自己保存後才記 localStorage）、「指標定義」對話框加名詞小辭典（30 詞、舊名可搜、CM1／CM2 對照）、12 個試算原因碼文案、主層「｜」改「 · 」、頁尾與會議入口的箭頭移除；copy-style 棘輪：「注意：」29 → 0、箭頭 21 → 0、圈數字 8 → 0、主層「｜」32 → 0、同義詞 132 → 13、禁用詞 6 → 4（殘餘皆來自現稿，待 H3）。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **81 檔／1,763 全過**（新增 import-errors-copy、reason-code-labels、whats-new、glossary）、`lint:design` exit 0、build pass、E2E 全套 **576 項全過（15.0 分）**；禁區 diff 空；testid 刪除數 0（新增 whats-new、glossary-search、glossary-v2-names）。
+- E2E 遷移：合併後盤點 436／576 項時 328 項失敗（19 個 spec），六個代理對共用伺服器逐 spec 改為 `labels`＋`fill` 斷言；主要根因為 `status.ready` 帶 {date}、抽屜金額改「{amount} 元」、抽屜範圍行、匯入錯誤樣板帶標準檔名、試算原因「假設 A／B／C」、scopeNote 不再含通路；另修正三個產品面問題（主管摘要列印清單與抽屜標題的「｜」、頁尾與會議入口箭頭、F23 新訪客不得寫 localStorage）。
+- 未執行／待人工：H3 補審（現稿、7 句自擬試算原因、黑名單殘餘 17 筆）；H2 設計稿審查（擋 V3-3）。
+- 下一批：V3-2b 三層數字格式與 `favorableDirection`。
+
 ## Revamp v3｜V3-1 Token、基礎元件與設計稿（完成，未推送、未部署；H2 審查待人工）
 
 只改樣式、不改版面與文案（JSX 結構與 labels 未動）。`:root` 改為 PRD §9.1–9.3 的完整 token（原始色階＋語意別名、字級 8 階、間距、圓角 3 種、唯一陰影、圖表色）；既有 class 全部改引用 token：`:root` 以外 hex 201 → **0**（token 定義區 23）、圓角 18 → 4、字級 32 → 13（螢幕 8 種；列印 pt 5 種留 V3-7）、字距 13 → 0、box-shadow 7 → 0；`.button-row` 靠左、強調 KPI 改白底加綠頂線、綠點與空狀態旋轉移除；新增 `ui-*` 基礎元件 class（C3／C4／C5／C8／C10／C11／C12／C14／C15／C21／C22）；Recharts 顏色與主管摘要 CSS 接上 token；`contrast-check` 75 組全過、v2 兩項豁免已修正；品牌名 EC ProfitLens 折行修正。三頁靜態設計稿（總覽、計算與來源抽屜、會議紀錄）與 H2 審查說明在 `verification/revamp-v3/mockups/`。

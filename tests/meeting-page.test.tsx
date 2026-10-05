@@ -291,7 +291,7 @@ describe("R6-2 overview keeps a one-line entry (05 §10)", () => {
     expect(html).toMatch(/^<p class="meeting-entry" data-testid="overview-meeting-entry">/);
     expect(text(html)).toContain(fill(page.entry, { state: labels.meeting.decisions.adopted }));
     expect(text(html)).toContain(fill(page.entryLast, { date: "2026-10-03" }));
-    expect(buttons(html)).toEqual([`${page.goToMeeting} →`]);
+    expect(buttons(html)).toEqual([page.goToMeeting]); // V3-2a：裝飾箭頭已移除（PRD §5.2 X5）
     const empty = renderToStaticMarkup(createElement(MeetingEntry, { review: null, history: [], datasetHash: state.s.snapshot.dataset_hash, onOpen: noop }));
     expect(text(empty)).toContain(fill(page.entry, { state: labels.sections.meetingNotCreated }));
   });

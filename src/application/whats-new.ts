@@ -4,7 +4,7 @@ import { hasLocalWorkspace, type LocalWorkspaceInfo } from "./local-store";
 /**
  * V3-2a（F23，PRD §8.9）：「這版改了什麼」提示。
  * - 只對既有 v2 使用者顯示：這台電腦已有本機保存的工作區（IndexedDB），或剛還原了 v1–v4 備份檔。
- * - 新訪客（第一次載入時沒有本機工作區）記為 fresh，之後在 v3 自己存的本機副本不再觸發；還原備份仍會觸發。
+ * - 新訪客第一次載入時不寫任何東西（localStorage 維持空白）；v3 自己存本機副本時才記為 fresh，之後不再因為本機副本而顯示；還原備份仍會觸發。
  * - 已讀與 fresh 記在 localStorage；讀寫都包 try/catch，讀不到就當作沒記過（最多再顯示一次，不影響功能）。
  */
 export const WHATS_NEW_STORAGE_KEY = "profitlens-v3-whats-new";
@@ -44,13 +44,19 @@ export async function detectV2Workspace(probe: () => Promise<LocalWorkspaceInfo>
 
 /**
  * 首次載入時要不要顯示提示。已關閉或已記為 fresh 時不讀 IndexedDB；
- * 沒有本機工作區時記為 fresh（新訪客），之後不再因為本機副本而顯示。
+ * 沒有本機工作區時不顯示，也不寫 localStorage（新訪客的瀏覽器維持空白）。
  */
 export async function shouldShowWhatsNewOnLoad(storage: WhatsNewStorage | null = browserStorage(), probe: () => Promise<LocalWorkspaceInfo> = hasLocalWorkspace): Promise<boolean> {
   if (readWhatsNewMark(storage) !== null) return false;
-  if (await detectV2Workspace(probe)) return true;
-  writeWhatsNewMark("fresh", storage);
-  return false;
+  return detectV2Workspace(probe);
+}
+
+/**
+ * v3 自己把工作區存到這台電腦（使用者已同意本機保存）之後呼叫：還沒有任何標記時記為 fresh，
+ * 之後載入就不會把這份本機副本誤判成 v2 資料。已關閉（dismissed）不覆寫。
+ */
+export function markV3Save(storage: WhatsNewStorage | null = browserStorage()): void {
+  if (readWhatsNewMark(storage) === null) writeWhatsNewMark("fresh", storage);
 }
 
 /**

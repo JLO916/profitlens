@@ -14,8 +14,8 @@ const inputLabels = [
 ] as const;
 const consentLabel = labels.scenario.acceptAssumptions;
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-/** evidence-drawer.tsx names the dialog `${title}｜${labels.sections.evidence}`. */
-const evidenceDialogName = (title: string) => `${title}｜${labels.sections.evidence}`;
+/** evidence-drawer.tsx names the dialog `${title} · ${labels.sections.evidence}`（V3-2a：分隔符改「 · 」）. */
+const evidenceDialogName = (title: string) => `${title} · ${labels.sections.evidence}`;
 /** evidence-drawer.tsx scope line（V3-2a 起由 labels.ui.evidenceDrawer.scopeLine 組字，期間改用「–」）；沒有 scopeLabel 時 scope 為 labels.evidence.scopeFallback。 */
 const evidenceScopeLine = (start: string, end: string, channels: string, scope: string = labels.evidence.scopeFallback) => fill(labels.ui.evidenceDrawer.scopeLine, { scope, start, end, channels });
 /** evidence-drawer.tsx lists source rows per file behind `${labels.evidence.sourceTabs[tab]}（{count}）` buttons; rows of a file appear only on its tab. */

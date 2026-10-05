@@ -13,7 +13,7 @@ export async function loadDemo(page: Page) {
   await page.clock.setFixedTime(FIXED_NOW);
   await page.goto("/");
   await page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }).first().click();
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready.replace("{date}", ""));
   const prompt = page.getByTestId("local-save-prompt");
   await expect(prompt).toBeVisible();
   await prompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();

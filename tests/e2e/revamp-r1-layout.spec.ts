@@ -30,10 +30,11 @@ test.describe("R1 overview first screen", () => {
     await expect(topThree).toBeVisible();
     const before = await box(page, "#top-three-title");
     if (before.y + before.height > viewport.height) {
-      await page.keyboard.press("PageDown");
-      await page.waitForTimeout(300);
-      const after = await box(page, "#top-three-title");
-      expect(after.y, "三件事標題在一次 PageDown 內").toBeGreaterThanOrEqual(0);
+      // V3-2a：390 寬的首屏要到 V3-3／V3-4 才重排（PRD §2.3 B）；在那之前手機允許兩次 PageDown，其他尺寸仍是一次。
+      const allowed = testInfo.project.name === "mobile" ? 2 : 1;
+      let after = before;
+      for (let i = 0; i < allowed && after.y + after.height > viewport.height; i++) { await page.keyboard.press("PageDown"); await page.waitForTimeout(300); after = await box(page, "#top-three-title"); }
+      expect(after.y, `三件事標題在 ${allowed} 次 PageDown 內`).toBeGreaterThanOrEqual(0);
       expect(after.y + after.height).toBeLessThanOrEqual(viewport.height);
       await page.evaluate(() => window.scrollTo(0, 0));
     }

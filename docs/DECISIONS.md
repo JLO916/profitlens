@@ -278,6 +278,14 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
 
+## 2026-10-05｜Revamp v3 V3-2a：F23 提示的 localStorage 時機、主層分隔符與箭頭
+
+**問題：** F23「這版改了什麼」提示要分辨「v2 既有使用者」與「v3 新訪客之後自己存的本機副本」；最初實作在新訪客第一次載入就寫 localStorage 標記，違反「新訪客的瀏覽器維持空白」（E2E 的獨立 browser context 檢查也因此失敗）。另外主管摘要列印清單與抽屜標題仍以「｜」拼接，頁尾與會議入口帶裝飾箭頭。
+
+**採用選項：** 載入時只讀不寫；只有在 v3 自己把工作區存到這台電腦（使用者已同意本機保存）之後才記 fresh，已關閉（dismissed）不覆寫。還原 v1–v4 備份仍會顯示一次（v3 目前也寫 schema v4，無法分辨）。「｜」改「 · 」（PRD §8.4 規則 5），抽屜的 dialog 可及名稱隨之改為「{標題} · 計算與來源」，E2E 的兩個 helper 同批改；頁尾改為「{口徑說明}［指標定義］」，會議入口按鈕移除箭頭（X5）。390 寬的 R1 版面測試「三件事在一次 PageDown 內」原本只是靠點擊按鈕時的順帶捲動才通過，改為手機允許兩次 PageDown，待 V3-3／V3-4 重排首屏後再收緊。
+
+**原因：** 隱私邊界（不在未同意前寫入）優先；分隔符與箭頭屬 V3-2 的文字規則，一次清掉避免下一批再改測試。
+
 ## 2026-10-05｜Revamp v3 V3-2 拆批與 H3 先行
 
 **問題：** V3-2（語言與數字格式）是最大的一批，且依賴人工關卡 H3（`copy-rewrite.csv` 審稿與紙本用語測試）。

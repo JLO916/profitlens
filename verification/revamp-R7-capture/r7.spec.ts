@@ -25,7 +25,7 @@ test("R7 走查截圖", async ({ page }, testInfo) => {
   await page.goto("/");
   await shoot(page, dir, `0-landing-${suffix}`);
   await page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }).first().click();
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready.replace("{date}", ""));
   const prompt = page.getByTestId("local-save-prompt");
   await expect(prompt).toBeVisible();
   await shoot(page, dir, `1-demo-save-prompt-${suffix}`);

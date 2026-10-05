@@ -14,7 +14,7 @@ const grounding = labels.ui.grounding;
 const valueObservation = (period: "previous" | "current", metricLabel: string, token: string) => fill(grounding.observationValue, { subject: fill(grounding.subject, { period: period === "previous" ? labels.periods.previous : labels.periods.current, metric: metricLabel }), value: token });
 /** dashboard.tsx periodFieldLabel: the sr-only date labels drop the "→ 範例" tail of the template. */
 const periodFieldLabel = (edge: "start" | "end", period: string) => fill((edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd).split(" → ")[0], { period });
-const evidenceDialogName = (title: string) => `${title}｜${labels.sections.evidence}`;
+const evidenceDialogName = (title: string) => `${title} · ${labels.sections.evidence}`;
 
 // These HTTP interceptions are browser-only test mocks. They do not call a model
 // and never establish that the configured live provider integration works.

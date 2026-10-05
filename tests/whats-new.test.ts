@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { labels } from "@/i18n";
 import { track, type AnalyticsEvent } from "../src/application/analytics";
-import { detectV2Workspace, isV2BackupSchema, readWhatsNewMark, shouldShowWhatsNewAfterRestore, shouldShowWhatsNewOnLoad, V2_BACKUP_SCHEMAS, whatsNewText, WHATS_NEW_STORAGE_KEY, writeWhatsNewMark, type WhatsNewStorage } from "../src/application/whats-new";
+import { detectV2Workspace, isV2BackupSchema, readWhatsNewMark, shouldShowWhatsNewAfterRestore, shouldShowWhatsNewOnLoad, V2_BACKUP_SCHEMAS, whatsNewText, WHATS_NEW_STORAGE_KEY, writeWhatsNewMark, type WhatsNewStorage, markV3Save } from "../src/application/whats-new";
 
 // V3-2a（F23，PRD §8.9）：「這版改了什麼」提示的偵測與已讀紀錄。IndexedDB 與 localStorage 都以假的物件注入。
 
@@ -19,10 +19,13 @@ describe("whats-new 偵測", () => {
     expect(storage.data).toEqual({});
   });
 
-  it("新訪客不顯示，並記為 fresh；之後在 v3 自己存的本機副本不再觸發，也不再讀 IndexedDB", async () => {
+  it("新訪客不顯示，而且載入時不寫 localStorage；v3 自己存本機副本後記為 fresh，之後不再觸發、也不再讀 IndexedDB", async () => {
     const storage = memoryStorage();
     expect(await shouldShowWhatsNewOnLoad(storage, workspace(false))).toBe(false);
+    expect(storage.data).toEqual({});
+    markV3Save(storage);
     expect(storage.data[WHATS_NEW_STORAGE_KEY]).toBe("fresh");
+    markV3Save(memoryStorage({ [WHATS_NEW_STORAGE_KEY]: "dismissed" }));
     const probe = workspace(true);
     expect(await shouldShowWhatsNewOnLoad(storage, probe)).toBe(false);
     expect(probe).not.toHaveBeenCalled();

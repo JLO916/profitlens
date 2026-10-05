@@ -90,7 +90,7 @@ export function MeetingEntry({ review, history, datasetHash, onOpen }: { review:
   const state = review ? labels.meeting.decisions[DECISION_LABEL_KEY[review.decision_state]] : labels.sections.meetingNotCreated;
   const last = lastMeeting(history);
   const justFinalized = review !== null && last !== null && last.source_fixed.dataset_hash === review.dataset_hash && last.source_fixed.filter_hash === review.filter_hash && review.revision === 1 && review.decision_state === "draft";
-  return <p className="meeting-entry" data-testid="overview-meeting-entry">{justFinalized ? <span>{fill(page.entryFinalized, { date: last.date })}</span> : <><span>{fill(page.entry, { state })}</span>{last && last.source_fixed.dataset_hash === datasetHash && <span className="note">{fill(page.entryLast, { date: last.date })}</span>}</>}<button type="button" className="text-button" onClick={onOpen}>{page.goToMeeting} <span aria-hidden="true">→</span></button></p>;
+  return <p className="meeting-entry" data-testid="overview-meeting-entry">{justFinalized ? <span>{fill(page.entryFinalized, { date: last.date })}</span> : <><span>{fill(page.entry, { state })}</span>{last && last.source_fixed.dataset_hash === datasetHash && <span className="note">{fill(page.entryLast, { date: last.date })}</span>}</>}<button type="button" className="text-button" onClick={onOpen}>{page.goToMeeting}</button></p>;
 }
 
 type ReviewSource = { key: string; snapshot: WorkspaceSnapshot; dataset: Dataset };

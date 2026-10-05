@@ -150,7 +150,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
       <header className="evidence-header">
         <div>
           <p className="eyebrow">{labels.sections.evidence}</p>
-          <h2 id={titleId}>{evidence.title}｜{labels.sections.evidence}</h2>
+          <h2 id={titleId}>{evidence.title} · {labels.sections.evidence}</h2>
         </div>
         <button type="button" className="button quiet" onClick={onClose} autoFocus>{labels.buttons.close}</button>
       </header>
@@ -207,7 +207,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
             {filtered.length === 0 ? <p>{copy.none}</p> : (
             <div className="table-scroll" tabIndex={0} role="region" aria-label={labels.ui.evidenceDrawer.sourceTableAria}>
               <table className="source-table">
-                <caption className="sr-only">{evidence.title}｜{copy.sourcesTitle}，{fill(copy.pageOf, { page: currentPage + 1, pages: lastPage + 1 })}</caption>
+                <caption className="sr-only">{evidence.title} · {copy.sourcesTitle}，{fill(copy.pageOf, { page: currentPage + 1, pages: lastPage + 1 })}</caption>
                 <thead><tr><th scope="col">{labels.ui.evidenceDrawer.colSource}</th><th scope="col">{labels.ui.evidenceDrawer.colScope}</th><th scope="col">{labels.ui.evidenceDrawer.colValues}</th></tr></thead>
                 <tbody>
                   {visibleRows.map((row, index) => {
