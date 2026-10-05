@@ -23,6 +23,10 @@ const validation = labels.ui.dashboard.validation;
 /** 「商品毛利差額」= metric label + change suffix, as product-comparison-panel.tsx's changeLabel(). */
 const grossProfitChange = `${labels.metrics.gross_profit.label}${labels.csvSuffix.change}`;
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** V3-2a：抽屜金額刪除 NT$，改用 evidenceDrawer.money 模板「{amount} 元」（大數字與組成項目同一模板）。 */
+const drawerMoney = (amount: string) => fill(labels.ui.evidenceDrawer.money, { amount });
+/** V3-2a：狀態列「資料到 {date}」— 以模板組 RegExp，{date} 對應 YYYY-MM-DD（各驗證資料集的 data_as_of 不同）。 */
+const readyRe = escape(labels.status.ready).replace(escape("{date}"), "\\d{4}-\\d{2}-\\d{2}");
 /** Evidence dialog is titled `${title}｜怎麼算的`; match by its suffix. */
 const evidenceDialog = new RegExp(`${escape(labels.sections.evidence)}$`);
 /** Two-period delta trigger `查看 {channel} {sku} {label}兩期怎麼算的，{value}`, matched from {label} onward so channel/sku stay open. */
@@ -58,7 +62,7 @@ async function load(page: Page, id = "golden") {
   await openValidation(page);
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${escape(labels.status.ready)}|${escape(labels.status.partial)}`));
+  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${readyRe}|${escape(labels.status.partial)}`));
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.products.label, exact: true }).click();
@@ -136,9 +140,9 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await trigger.focus();
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: evidenceDialog });
-  await expect(dialog).toContainText("NT$ -55.00");
-  await expect(dialog).toContainText("NT$ 180.00");
-  await expect(dialog).toContainText("NT$ 125.00");
+  await expect(dialog).toContainText(drawerMoney("-55.00"));
+  await expect(dialog).toContainText(drawerMoney("180.00"));
+  await expect(dialog).toContainText(drawerMoney("125.00"));
   await expect(dialog).toContainText("2026-08-01");
   await expect(dialog).toContainText("2026-08-02");
   await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 5 }));

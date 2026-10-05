@@ -2,6 +2,7 @@ import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
 import { closeDetails, dismissSavePrompt, openMeeting, openValidation, selectScenarioChannel, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { fill, labels } from '../../src/i18n';
+import { readFileSync } from 'node:fs';
 import { appendFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test as base, type Page } from '@playwright/test';
@@ -18,9 +19,11 @@ const dlg=labels.ui.replacementDialog, store=labels.ui.workspaceStorage, review=
 const escapeRe=(s:string)=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 /** RegExp from a label template: placeholders in `values` are filled exactly, the rest match any text. */
 const templateRe=(template:string,values:Record<string,string>={},flags='')=>new RegExp(`^${escapeRe(template).replace(/\\\{(\w+)\\\}/g,(_,key:string)=>key in values?escapeRe(values[key]):'.+?')}$`,flags);
+/** V3-2a：狀態列「資料到 {date}」的日期取自該資料集 manifest 的 data_as_of。 */
+const ready=(dataset:'golden')=>fill(labels.status.ready,{date:JSON.parse(readFileSync(resolve(`fixtures/${dataset}/manifest.json`),'utf8')).data_as_of});
 const status=(p:Page)=>p.getByTestId('workspace-status');
 const guard=(p:Page)=>p.getByRole('dialog',{name:dlg.heading});
-async function golden(p:Page){await p.goto('/');await openValidation(p);await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(labels.status.ready);await dismissSavePrompt(p);}
+async function golden(p:Page){await p.goto('/');await openValidation(p);await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(ready('golden'));await dismissSavePrompt(p);}
 async function storage(p:Page){const s=p.getByTestId('workspace-storage');if(await s.getAttribute('open')===null)await s.locator(':scope > summary').click();return s;}
 async function backup(p:Page){const s=await storage(p);const event=p.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
 /** R3: the alternative fixture + its manifest go through the four-step wizard and stop after the check (not committed), so the guard tests can cancel and retry the commit. */
@@ -103,7 +106,7 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  await s.getByRole('button',{name:store.confirmDownloaded,exact:true}).click();
  await page.getByRole('button',{name:labels.buttons.clear,exact:true}).click();await expect(status(page)).toContainText(labels.status.empty);
  const fresh=await storage(page);await fresh.getByLabel(store.selectBackupFile,{exact:true}).setInputFiles({name:'meeting.json',mimeType:'application/json',buffer:Buffer.from(text)});await fresh.getByRole('button',{name:store.applyRestore,exact:true}).click();
- await expect(status(page)).toContainText(labels.status.ready);
+ await expect(status(page)).toContainText(ready('golden'));
  // R6：恢復後保存提示再出現（portal 到 body、z-index 低於頂欄選單）；390 寬時仍開著的儲存選單面板會蓋住底部提示，先收起選單再回答。
  await closeDetails(fresh);await expect(page.getByTestId('local-save-prompt')).toBeVisible();await dismissSavePrompt(page);await expect(page.getByTestId('local-save-prompt')).toHaveCount(0);await openMeeting(page);
  await expect(summary.getByLabel(labels.meeting.threshold,{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('needs_data');

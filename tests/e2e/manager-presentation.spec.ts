@@ -1,5 +1,6 @@
 import { clickReplacing, dismissSavePrompt, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
-import { labels } from "../../src/i18n";
+import { fill, labels } from "../../src/i18n";
+import { readFileSync } from "node:fs";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -21,7 +22,10 @@ const nav = labels.nav;
 const validation = labels.ui.dashboard.validation;
 const channelFilter = labels.ui.dashboard.filter.channel;
 
-async function loadVerificationDataset(page: Page, id: string, state: string = labels.status.ready) {
+/** V3-2a：狀態列「資料到 {date}」的日期取自 fixtures/{id}/manifest.json 的 data_as_of（本檔只有 golden 用預設狀態）。 */
+const readyFor = (id: string) => fill(labels.status.ready, { date: JSON.parse(readFileSync(resolve(`fixtures/${id}/manifest.json`), "utf8")).data_as_of });
+
+async function loadVerificationDataset(page: Page, id: string, state: string = readyFor(id)) {
   await openValidation(page);
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption(id);
   await Promise.all([
