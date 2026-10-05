@@ -115,10 +115,11 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     expect(rows).toHaveLength(input.summary.channels.length + 1);
     const pick = (row: Record<string, unknown>) => [row[col.channels.channel], row[col.channels.previous_net_revenue], row[col.channels.current_net_revenue], row[col.channels.net_revenue_change], row[col.channels.previous_contribution], row[col.channels.current_contribution], row[col.channels.contribution_change], row[col.channels.data_status]];
     // 手算：DTC 上期 900+450、本期 1120+360；MARKETPLACE 上期 540+360、本期 640+350。
+    const ready = fill(labels.status.ready, { date: input.summary.data_as_of });
     expect(rows.map(pick)).toEqual([
-      ["DTC", 1350, 1480, 130, 400, 270, -130, labels.status.ready],
-      ["MARKETPLACE", 900, 990, 90, 170, -15, -185, labels.status.ready],
-      [labels.sections.total, 2250, 2470, 220, 570, 255, -315, labels.status.ready],
+      ["DTC", 1350, 1480, 130, 400, 270, -130, ready],
+      ["MARKETPLACE", 900, 990, 90, 170, -15, -185, ready],
+      [labels.sections.total, 2250, 2470, 220, 570, 255, -315, ready],
     ]);
   });
 
@@ -174,7 +175,7 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     expect([dtcA[c.current_net_revenue], dtcA[c.current_gross_profit], dtcA[c.current_gross_margin], dtcA[c.gross_profit_change], dtcA[c.data_status]]).toEqual([1120, null, null, null, labels.productHighlights.status.cost_unknown]);
     const channelRows = records(sheetOf(workbook, "channels"));
     expect(channelRows.find(row => row[col.channels.channel] === "DTC")![col.channels.data_status]).toBe(labels.status.partial);
-    expect(channelRows.find(row => row[col.channels.channel] === "MARKETPLACE")![col.channels.data_status]).toBe(labels.status.ready);
+    expect(channelRows.find(row => row[col.channels.channel] === "MARKETPLACE")![col.channels.data_status]).toBe(fill(labels.status.ready, { date: missingSummary.data_as_of }));
     const contribution = records(sheetOf(workbook, "summary")).find(row => row[col.summary.item] === labels.metrics.contribution_after_marketing.label)!;
     expect(contribution[col.summary.current]).toBeNull();
     expect(contribution[col.summary.detail]).toBe(fill(labels.ui.managerSummary.missingWithReasons, { reasons: "MISSING_COGS" }));

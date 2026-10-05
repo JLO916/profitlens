@@ -43,7 +43,8 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     expect(main).toContain(`${labels.periods.previous} · ${labels.metrics.net_revenue.label} · ${scope}`);
     expect(main).toContain(`${labels.periods.current} · ${labels.metrics.contribution_after_marketing.label} · ${scope}`);
     expect(main).toContain("270.00");
-    expect(main).toContain(labels.sections.evidence);
+    // V3-2a：開抽屜的按鈕文字改為「看明細」（labels.buttons.viewEvidence）。
+    expect(main).toContain(`>${labels.buttons.viewEvidence}</button>`);
     // 規則代號只出現在 data-testid（E2E 錨點）與收合的技術細節。
     expect(main.replace(/data-testid="[^"]*"/g, "")).not.toContain("REV_UP_CM_DOWN");
     expect(main).not.toContain("&quot;fact&quot;");
@@ -123,13 +124,13 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     const issue = dataset.issues[0];
     expect(main).toContain(issue.file);
     expect(main).toContain(issue.field);
-    // R3：主層顯示 labels.importErrors 的白話句；原始技術訊息與 reason code 收在「問題代碼」收合區。
+    // R3：主層顯示 labels.importErrors 的白話句；V3-2a 起「問題代碼」收合區只放 reason code，domain 的原始訊息不再出現在畫面上。
     expect(main).toContain(plainIssueMessage(issue));
-    expect(plainIssueMessage(issue)).toBe(fill(labels.importErrors.MISSING_COGS, { line: issue.line }));
+    expect(plainIssueMessage(issue)).toBe(fill(labels.importErrors.MISSING_COGS, { file: issue.file, line: issue.line }));
     expect(main).toContain(fill(labels.ui.issueList.lineRef, { line: issue.line, date: issue.date, channel: issue.channel }).trim());
     expect(main).not.toContain(issue.reason_code);
     expect(main).not.toContain(issue.message);
     expect(html).toContain(`<summary>${labels.ui.issueList.reasonCodeSummary}</summary><code>${issue.reason_code}</code>`);
-    expect(html).toContain(issue.message);
+    expect(html).not.toContain(issue.message);
   });
 });

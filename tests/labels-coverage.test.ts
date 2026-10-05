@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { scanTsxText } from "../scripts/lib/ui-scan.mjs";
 import { metricDefinitions } from "../src/application/presentation";
 import { labels } from "../src/i18n";
 import type { MetricName, RuleCode } from "../src/domain/types";
@@ -48,6 +49,28 @@ describe("R2 labels are the single source of user-visible copy", () => {
       const code = text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
       expect(code, file).not.toMatch(ideograph);
     }
+  });
+
+  it("keeps CJK out of every component's JSX text and string literals, technical <details> included (V3-2a)", () => {
+    // 與 scripts/ui-audit.mjs／tests/design-lint.test.ts 同一個掃描器（TypeScript AST：JSX 文字節點、字串與樣板常值；註解不算）。
+    // 收合的技術細節也是程式碼，裡面的中文一樣要放在 labels；這裡不做任何豁免。
+    const files = componentSources();
+    expect(files.length).toBeGreaterThan(20);
+    const offenders = files.flatMap(({ file, text }) => {
+      const result = scanTsxText(text, `src/components/${file}`);
+      return [...result.jsxCjk.map(where => `JSX 文字 ${where}`), ...result.cjkLiterals.map(where => `字串常值 ${where}`)];
+    });
+    expect(offenders).toEqual([]);
+  });
+
+  it("the component CJK scan catches text nodes, attributes, template literals and text inside <details>", () => {
+    const sample = [
+      "export const A = () => <div title=\"標題\">{`共 ${1} 筆`}<details><summary>技術</summary>細節</details></div>;",
+      "// 註解不算",
+    ].join("\n");
+    const result = scanTsxText(sample, "sample.tsx");
+    expect(result.jsxCjk).toHaveLength(2);
+    expect(result.cjkLiterals).toHaveLength(3); // 屬性「標題」、樣板的頭「共 」與尾「 筆」
   });
 
   it("does not leak forbidden jargon through metric or rule copy", () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { channelLabel, channelsLabel, csvHeader, csvHeaderKey, demoAlias, formatHeadlineAmount, ruleCopy, scopeLabel } from "../src/application/copy";
 import { createSnapshot, hashInput } from "../src/application/workspace";
 import { validateDataset } from "../src/domain/validation";
-import { labels } from "../src/i18n";
+import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
 
 async function snapshot(name = "golden") {
@@ -50,14 +50,17 @@ describe("R2 rule copy fills the glossary templates from the diagnostic's own fa
     const { report } = await snapshot();
     const find = (code: string, kind: string) => report.diagnostics.find(row => row.code === code && row.scope.kind === kind)!;
     const revenue = ruleCopy({ report }, find("REV_UP_CM_DOWN", "all"), false);
-    expect(revenue.headline).toBe("營收多了 220 元，但扣完廣告反而少賺 315 元");
+    expect(revenue.headline).toBe(fill(labels.rules.REV_UP_CM_DOWN.title, { dNet: "220 元", dCM: "315 元" }));
     expect(revenue.cause).toBe(labels.rules.REV_UP_CM_DOWN.cause);
     expect(revenue.nextStep).toBe(labels.rules.REV_UP_CM_DOWN.nextStep);
     expect(revenue.caution).toBe(labels.rules.REV_UP_CM_DOWN.caution);
-    expect(ruleCopy({ report }, find("DISCOUNT_BURDEN_UP", "all"), false).headline).toBe("折扣率從 8.00% 升到 14.52%，折扣多花 250 元");
+    // V3-2a：比率移到 cause（PRD §8.8 #3），標題只留金額。
+    const discount = ruleCopy({ report }, find("DISCOUNT_BURDEN_UP", "all"), false);
+    expect(discount.headline).toBe(fill(labels.rules.DISCOUNT_BURDEN_UP.title, { dAmount: "250 元" }));
+    expect(discount.cause).toBe(fill(labels.rules.DISCOUNT_BURDEN_UP.cause, { prevRate: "8.00%", curRate: "14.52%" }));
     const negative = report.diagnostics.find(row => row.code === "NEGATIVE_CHANNEL_CM" && row.scope.channels[0] === "MARKETPLACE")!;
-    expect(ruleCopy({ report }, negative, false).headline).toBe("MARKETPLACE 本期扣完廣告是虧的（−15 元）");
-    expect(ruleCopy({ report }, negative, true).headline).toBe(`${labels.demoChannelAlias.MARKETPLACE} 本期扣完廣告是虧的（−15 元）`);
+    expect(ruleCopy({ report }, negative, false).headline).toBe(fill(labels.rules.NEGATIVE_CHANNEL_CM.title, { channel: "MARKETPLACE", cm: "15 元" }));
+    expect(ruleCopy({ report }, negative, true).headline).toBe(fill(labels.rules.NEGATIVE_CHANNEL_CM.title, { channel: labels.demoChannelAlias.MARKETPLACE, cm: "15 元" }));
   });
 
   it("names the missing metrics for data gaps without inventing amounts", async () => {
@@ -65,7 +68,7 @@ describe("R2 rule copy fills the glossary templates from the diagnostic's own fa
     const missing = report.diagnostics.find(row => row.code === "MISSING_CRITICAL_DATA")!;
     const copy = ruleCopy({ report }, missing, false);
     expect(copy.headline).toContain(labels.metrics.cogs_net.short);
-    expect(copy.headline).toContain("相關數字無法計算");
+    expect(copy.headline).toBe(fill(labels.rules.MISSING_CRITICAL_DATA.title, { channel: labels.sections.total, missing: labels.metrics.cogs_net.short }));
     expect(copy.caution).toBe(labels.rules.MISSING_CRITICAL_DATA.caution);
   });
 });

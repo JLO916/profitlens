@@ -117,7 +117,7 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     expect(result).toContain(summary.dataset_hash);
     // R2 §8：免責集中到「口徑說明」清單（labels.basis.items），舊句「各範圍不可相加」「非改善收益」改為以下兩條。
     expect(result).toContain(`## ${labels.basis.title}`);
-    expect(result).toContain(basisItem("各通路的差額不能再加總"));
+    expect(result).toContain(basisItem("各通路的差額不能再相加"));
     expect(result).toContain(basisItem("不是可以省下的錢"));
   });
 

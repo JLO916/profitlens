@@ -61,7 +61,8 @@ describe("diagnosisGroups merges all/channel signals into one row per rule", () 
     const group = find(diagnosisGroups(base).groups, "DISCOUNT_BURDEN_UP");
     const copy = ruleCopy(base, group.primary, false);
     expect([group.headline, group.cause, group.next_step, group.caution]).toEqual([copy.headline, copy.cause, copy.nextStep, copy.caution]);
-    expect(group.cause).toBe(labels.rules.DISCOUNT_BURDEN_UP.cause);
+    // 折扣率 200/2500=8.00% → 450/3100=14.52%（golden 手算），V3-2a 起寫在 cause。
+    expect(group.cause).toBe(fill(labels.rules.DISCOUNT_BURDEN_UP.cause, { prevRate: "8.00%", curRate: "14.52%" }));
     // 排序用已觀察金額差（技術細節）仍是 +250.00；對貢獻影響是它的負值。
     expect(group.ranking_amount.value).toBe("250.00");
     expect(group.impact).toEqual({ value: "-250.00", reason_codes: [] });

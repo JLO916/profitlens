@@ -1,5 +1,5 @@
 {
-  "_說明": "tests/design-lint.test.ts 的棘輪上限（PRD §5.4）。V3-0（2026-10-05）以 scripts/ui-audit.mjs 實測的 v2 數值初始化；V3-1（2026-10-05）token 化後調低至實測值（hex 0、圓角 4、字級 13＝螢幕 8 種＋列印 5 種 pt 值，列印 token 於 V3-7 處理）。之後每批只能調低，不得調高。量測口徑見 scripts/lib/ui-scan.mjs。",
+  "_說明": "tests/design-lint.test.ts 的棘輪上限（PRD §5.4）。V3-0（2026-10-05）以 scripts/ui-audit.mjs 實測的 v2 數值初始化；V3-1（2026-10-05）token 化後調低至實測值（hex 0、圓角 4、字級 13＝螢幕 8 種＋列印 5 種 pt 值，列印 token 於 V3-7 處理）。V3-2a（2026-10-05）元件中文全部移到 labels，jsxCjkTextNodes、cjkStringLiterals 調為 0。之後每批只能調低，不得調高。量測口徑見 scripts/lib/ui-scan.mjs。",
   "ceilings": {
     "hexOutsideRoot": 0,
     "borderRadiusValues": 4,
@@ -14,7 +14,7 @@
     "nestedCardSelectors": 0,
     "linearGradient": 0,
     "boxShadow": 0,
-    "jsxCjkTextNodes": 15,
-    "cjkStringLiterals": 7
+    "jsxCjkTextNodes": 0,
+    "cjkStringLiterals": 0
   }
 }

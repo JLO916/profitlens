@@ -144,11 +144,11 @@ describe("M3 scoped product and issue exports", () => {
   it("issue CSV keeps logical/actual files and escapes untrusted error fields", () => {
     const issues: ValidationIssue[] = [{ severity: "blocking", file: "sales_daily.csv", line: 12, field: "=BAD", reason_code: "INVALID_MONEY", message: '含逗號,引號"與換行\n的文字', date: "2026-08-02", channel: "+DTC", sku: "-SKU" }];
     const csv = exportIssuesCsv(issues, { "sales_daily.csv": "@actual.csv" });
-    // R3：多一欄白話說明（labels.importErrors 查不到的代碼就與原訊息相同）。
+    // R3：多一欄白話說明；V3-2a 起 labels.importErrors 查不到的代碼顯示「問題代碼 XXX」，不退回 domain 的原訊息。
     expect(headerRow(csv)).toEqual(["severity", "file", "logical_file", "line", "field", "reason_code", "message", "message_plain", "date", "channel", "sku"].map(csvHeader));
     expect(headerRow(csv)[0]).toBe(`${labels.csvColumns.severity} (severity)`);
     const rows = records(csv);
-    expect(rows).toEqual([{ severity: "blocking", file: "'@actual.csv", logical_file: "sales_daily.csv", line: "12", field: "'=BAD", reason_code: "INVALID_MONEY", message: '含逗號,引號"與換行\n的文字', message_plain: '含逗號,引號"與換行\n的文字', date: "2026-08-02", channel: "'+DTC", sku: "'-SKU" }]);
+    expect(rows).toEqual([{ severity: "blocking", file: "'@actual.csv", logical_file: "sales_daily.csv", line: "12", field: "'=BAD", reason_code: "INVALID_MONEY", message: '含逗號,引號"與換行\n的文字', message_plain: `${labels.ui.issueList.reasonCodeSummary} INVALID_MONEY`, date: "2026-08-02", channel: "'+DTC", sku: "'-SKU" }]);
     expect(records(exportIssuesCsv([]))).toEqual([]);
   });
 });

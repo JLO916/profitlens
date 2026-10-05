@@ -3,18 +3,23 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { createSnapshot, hashInput } from "../src/application/workspace";
 import { emptyDecisionWorkspace } from "../src/application/decision";
+import { emptyScenarioWorkspace } from "../src/application/scenario-workspace";
+import { emptyActionWorkspace } from "../src/application/action-workspace";
+import { createReviewSession, rebuildReviewSnapshot, updateReviewSession } from "../src/application/review-session";
+import { finalizeMeeting, freezeMeeting } from "../src/application/meeting";
 import { DecisionWorkbench } from "../src/components/decision-workbench";
+import { MeetingPage } from "../src/components/meeting-page";
 import { Overview } from "../src/components/overview";
-import { Diagnosis } from "../src/components/workspace-panels";
+import { DataWorkspace, Diagnosis } from "../src/components/workspace-panels";
 import { validateDataset } from "../src/domain/validation";
 import { labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
 
-// 03_GLOSSARY_COPY.md §8-4：總覽、健檢、試算三頁主層（排除 <details>）含「不是／不代表／不等於／不可」的句子各 ≤ 3。
+// 03_GLOSSARY_COPY.md §8-4：總覽、健檢、試算三頁（V3-2a 起加上會議紀錄與資料來源，共五頁）主層（排除 <details>）含「不是／不代表／不等於／不可」的句子各 ≤ 3。
 // 規則卡的「注意」句（labels.rules[*].caution）是 §7 規定的每張卡一句內容，不算免責樣板；重複句只算一次。
 const RULE_CAUTIONS = new Set(Object.values(labels.rules).map(rule => rule.caution.replace(/[。；]$/, "")));
-async function context() {
-  const input = fixture("golden");
+async function context(name = "golden") {
+  const input = fixture(name);
   const dataset = validateDataset(input).dataset!;
   const snapshot = await createSnapshot(dataset, {}, await hashInput(input));
   return { input, dataset, snapshot };
@@ -74,5 +79,25 @@ describe("R2 copy density: at most three limitation sentences per page outside t
     const { input, dataset, snapshot } = await context();
     const sentences = disclaimerSentences(renderToStaticMarkup(createElement(DecisionWorkbench, { dataset, snapshot, revision: 1, input, state: emptyDecisionWorkspace(), setState: () => undefined, onEvidence: () => undefined })));
     expect(sentences, sentences.join("\n")).toHaveLength(Math.min(sentences.length, 3));
+  });
+  it("meeting record (draft with one finished meeting in history)", async () => {
+    const golden = { ...(await context()), revision: 1 };
+    const noop = () => undefined;
+    const scenarios = emptyScenarioWorkspace("e"), actions = emptyActionWorkspace();
+    const finished = updateReviewSession(createReviewSession(golden, "e", "rev-1"), { name: "M1", decision_state: "adopted", notes: "N", meeting_date: "2026-10-03" });
+    const meeting = freezeMeeting(finalizeMeeting({ review: finished, snapshot: await rebuildReviewSnapshot(finished), scenarios, actions, date: "2026-10-03", now: "2026-10-03T06:00:00.000Z" }));
+    const html = renderToStaticMarkup(createElement(MeetingPage, { source: golden, scenarioWorkspace: scenarios, actionWorkspace: actions, review: createReviewSession(golden, "e", "rev-2"), history: [meeting], onChange: noop, onEvidence: noop, onFinalize: async () => undefined, onRemoveMeeting: noop, onCreateAction: noop }));
+    expect(html).toContain('data-testid="meeting-page"');
+    const sentences = disclaimerSentences(html);
+    expect(sentences, sentences.join("\n")).toHaveLength(Math.min(sentences.length, 3));
+  });
+  it("data sources (complete data, and partial data with the issue list)", async () => {
+    for (const name of ["golden", "errors/missing_cogs"]) {
+      const { dataset, snapshot } = await context(name);
+      const html = renderToStaticMarkup(createElement(DataWorkspace, { dataset, snapshot }));
+      expect(html, name).toContain('data-testid="targets-entry"');
+      const sentences = disclaimerSentences(html);
+      expect(sentences, `${name}\n${sentences.join("\n")}`).toHaveLength(Math.min(sentences.length, 3));
+    }
   });
 });

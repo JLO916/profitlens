@@ -10,6 +10,7 @@ import type { EvidenceSelection } from "./evidence-drawer";
 import { IssueList } from "./issue-list";
 import { downloadText } from "@/application/download";
 import { exportProductsCsv } from "@/application/export";
+import { sideFileIssueMessage } from "@/application/import";
 import { buildManagerSummary } from "@/application/manager-summary";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, demoAlias } from "@/application/copy";
 import type { TaxConversion } from "@/application/tax-basis";
@@ -71,7 +72,7 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
         {targets && <button type="button" className="text-button" onClick={() => downloadText(exportTargetsCsv(targets), "targets.csv")}>{labels.targets.download}</button>}
         {targets && <button type="button" className="text-button" onClick={onRemoveTargets}>{labels.targets.remove}</button>}
       </div>
-      {targetIssues.length > 0 && <ul className="alert file-issues" role="alert" data-testid="targets-issues">{targetIssues.map((issue, index) => <li key={index}>{issue.message}<br /><code>{issue.reason_code}</code></li>)}</ul>}
+      {targetIssues.length > 0 && <ul className="alert file-issues" role="alert" data-testid="targets-issues">{targetIssues.map((issue, index) => <li key={index}>{sideFileIssueMessage("targets.csv", issue)}<br /><code>{issue.reason_code}</code></li>)}</ul>}
       {targets && <div className="table-scroll" role="region" aria-label={labels.targets.entry} tabIndex={0}><table data-testid="targets-table"><thead><tr><th>{labels.csvColumns.line}</th><th>{labels.targets.columns.period_start}</th><th>{labels.targets.columns.period_end}</th><th>{labels.targets.columns.channel}</th><th>{labels.targets.columns.metric}</th><th>{labels.targets.columns.target}</th><th></th></tr></thead><tbody>{targets.rows.map(row => <tr key={row.line}><th scope="row">{row.line}</th><td>{row.period_start}</td><td>{row.period_end}</td><td>{row.channel === "ALL" ? ui.scopeAll : channelLabel(row.channel, alias)}</td><td>{metricDefinitions[row.metric].label}</td><td>{targetDisplay(row)}</td><td><button type="button" className="text-button" aria-label={`${labels.targets.removeRow} ${row.line}`} onClick={() => onRemoveTargetRow?.(row.line)}>{labels.targets.removeRow}</button></td></tr>)}</tbody></table></div>}
     </section>
     <section className="panel side-entry" aria-labelledby="events-heading" data-testid="events-entry">
@@ -82,7 +83,7 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
         {events && <button type="button" className="text-button" onClick={() => downloadText(exportEventsCsv(events), "events.csv")}>{labels.events.download}</button>}
         {events && <button type="button" className="text-button" onClick={onRemoveEvents}>{labels.events.remove}</button>}
       </div>
-      {eventIssues.length > 0 && <ul className="alert file-issues" role="alert" data-testid="events-issues">{eventIssues.map((issue, index) => <li key={index}>{issue.message}<br /><code>{issue.reason_code}</code></li>)}</ul>}
+      {eventIssues.length > 0 && <ul className="alert file-issues" role="alert" data-testid="events-issues">{eventIssues.map((issue, index) => <li key={index}>{sideFileIssueMessage("events.csv", issue)}<br /><code>{issue.reason_code}</code></li>)}</ul>}
       {events && <div className="table-scroll" role="region" aria-label={labels.events.entry} tabIndex={0}><table data-testid="events-table"><thead><tr><th>{labels.csvColumns.line}</th><th>{labels.events.columns.start}</th><th>{labels.events.columns.end}</th><th>{labels.events.columns.label}</th><th></th></tr></thead><tbody>{events.rows.map(row => <tr key={row.line}><th scope="row">{row.line}</th><td>{row.start}</td><td>{row.end}</td><td>{row.label}</td><td><button type="button" className="text-button" aria-label={`${labels.events.removeRow} ${row.line}`} onClick={() => onRemoveEventRow?.(row.line)}>{labels.events.removeRow}</button></td></tr>)}</tbody></table></div>}
     </section>
     <section className="panel" aria-labelledby="preview-heading">

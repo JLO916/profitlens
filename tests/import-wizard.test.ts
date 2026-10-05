@@ -6,7 +6,7 @@ import type { FileName } from "../src/domain/types";
 import { inspectImportFile } from "../src/application/import";
 import { buildManifest, canConfirm, canLeaveFiles, canLeaveMapping, initialWizardState, memoryEntries, monthShortcut, needsMappingStep, plainIssueMessage, proposeSettings, roleForFilename, runCheck, suggestFileMapping, wizardMappingStore, wizardReducer, type WizardState } from "../src/application/import-wizard";
 import { MemoryMappingStore, rememberMapping } from "../src/application/mapping-memory";
-import { labels } from "../src/i18n";
+import { fill, labels } from "../src/i18n";
 
 const roles: FileName[] = ["sales_daily.csv", "channel_costs_daily.csv", "ad_spend_daily.csv"];
 function payload(dir: string, role: FileName, name = role) {
@@ -44,7 +44,7 @@ describe("R3 wizard: file slots", () => {
     expect(canLeaveFiles(state)).toBe(true);
     const broken = wizardReducer(state, { type: "fileFailed", role: "sales_daily.csv", issues: [{ file: "sales_daily.csv", field: "$file", line: null, severity: "blocking", reason_code: "FILE_TOO_LARGE", message: "x" }] });
     expect(canLeaveFiles(broken)).toBe(false);
-    expect(plainIssueMessage(broken.readIssues["sales_daily.csv"]![0])).toBe(labels.importErrors.FILE_TOO_LARGE);
+    expect(plainIssueMessage(broken.readIssues["sales_daily.csv"]![0])).toBe(fill(labels.importErrors.FILE_TOO_LARGE, { file: "sales_daily.csv" }));
   });
 });
 
@@ -190,10 +190,12 @@ describe("R3 review follow-ups", () => {
     const daily = loaded(alternative, { "sales_daily.csv": "交易日期,通路,SKU,品類,件數,商品金額,折扣,退款,成本,幣別\n2026-09-01,DTC,A,T,1,100.00,0.00,0.00,50.00,TWD\n" });
     expect(daily.files["sales_daily.csv"]!.preset).toBeNull();
   });
-  it("falls back to the technical message when a plain template needs context the issue lacks", () => {
+  it("fills placeholders the issue lacks with 「—」 instead of falling back to the technical message", () => {
+    // V3-2a §7.7.3：一律用 labels.importErrors 樣板，不退回 domain 的中文 message；拿不到的占位符顯示「—」。
     const rangeLevel = { file: "ad_spend_daily.csv" as const, field: "$coverage", line: null, severity: "partial" as const, reason_code: "MISSING_AD_DAY", message: "涵蓋日期與通路所需列數超過每檔上限" };
-    expect(plainIssueMessage(rangeLevel)).toBe(rangeLevel.message);
-    expect(plainIssueMessage({ ...rangeLevel, date: "2026-08-01", channel: "官網" })).toBe("2026-08-01 官網 沒有廣告列；沒投放請填 0，不要留空");
+    expect(plainIssueMessage(rangeLevel)).toBe(fill(labels.importErrors.MISSING_AD_DAY, { date: "—", channel: "—" }));
+    expect(plainIssueMessage(rangeLevel)).not.toContain(rangeLevel.message);
+    expect(plainIssueMessage({ ...rangeLevel, date: "2026-08-01", channel: "官網" })).toBe(fill(labels.importErrors.MISSING_AD_DAY, { date: "2026-08-01", channel: "官網" }));
   });
   it("reads previously persisted memory without the consent box when a local database already exists, but never writes without consent", async () => {
     const memory = new MemoryMappingStore(), persistent = new MemoryMappingStore();
