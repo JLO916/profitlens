@@ -2,12 +2,14 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { labels } from "@/i18n";
+import * as labelModule from "@/i18n/labels.zh-TW";
 import { isWhitelisted, l1ClauseLengths, scanLabels, type CopyScanMetrics } from "../scripts/lib/copy-scan.mjs";
 
 // V3-0 護欄（PRD §5.4、§8.4）：只掃 labels 的字串值，不渲染頁面。量測與 scripts/ui-audit.mjs 共用 scripts/lib/copy-scan.mjs。
-// 白名單：鍵名為 technical（或以 technical 開頭／Technical 結尾）的子樹、basis.aliases。
+// 白名單：鍵名為 technical（或以 technical 開頭／Technical 結尾）的子樹、glossary.aliases（v2 basis.aliases）。
+// V3-2c 起只掃新分組（LABEL_GROUPS），略過 v2 舊鍵 alias，同一個字串只算一次（scripts/lib/copy-scan.mjs labelScope）。
 // 頁面層的否定句計數由 tests/copy-density.test.ts 負責，這裡不重複（§5.4）。
-// L1 子句長度：PRD 沒有把「頁面、區塊、列的標題」對應到 labels 鍵，V3-0 先限定 rules.*.title、sections.*、nav.*.label、buttons.*。
+// L1 子句長度：PRD 沒有把「頁面、區塊、列的標題」對應到 labels 鍵，V3-0 先限定 rules.*.title、sections.*、nav.*.label、buttons.*（V3-2c 新位置 rules.*.headline、<分組>.sections.*、shell.nav.*.headline、<分組>.buttons.*）。
 
 const CEILING_FILE = resolve("tests/fixtures/copy-style-ceiling.json");
 const readCeilings = () => (JSON.parse(readFileSync(CEILING_FILE, "utf8")) as { ceilings: Record<string, unknown> }).ceilings;
@@ -19,7 +21,7 @@ const V3_0_BASELINE: CopyScanMetrics = {
 };
 
 describe("copy-style 棘輪（labels 值）", () => {
-  const { metrics, details } = scanLabels(labels);
+  const { metrics, details } = scanLabels(labels, labelModule);
 
   it.each(Object.keys(V3_0_BASELINE) as (keyof CopyScanMetrics)[])("%s 不超過上限", key => {
     const ceiling = readCeilings()[key];
@@ -39,10 +41,12 @@ describe("copy-style 棘輪（labels 值）", () => {
 });
 
 describe("copy-scan 口徑（合成輸入）", () => {
-  it("technical 子樹與 basis.aliases 列入白名單，其他不列", () => {
+  it("technical 子樹與 glossary.aliases／basis.aliases 列入白名單，其他不列", () => {
     expect(isWhitelisted("pptxExport.technical")).toBe(true);
     expect(isWhitelisted("metrics.mer.formulaTechnical")).toBe(true);
     expect(isWhitelisted("basis.aliases.contribution_after_marketing.0")).toBe(true);
+    expect(isWhitelisted("glossary.aliases.contribution_after_marketing.0")).toBe(true);
+    expect(isWhitelisted("metrics.mer.technical.formula")).toBe(true);
     expect(isWhitelisted("basis.items.1")).toBe(false);
   });
 

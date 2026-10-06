@@ -5,7 +5,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { scanLabels } from "./lib/copy-scan.mjs";
-import { loadLabels } from "./lib/load-labels.mjs";
+import { loadLabelsModule } from "./lib/load-labels.mjs";
 import { scanUi } from "./lib/ui-scan.mjs";
 
 const args = process.argv.slice(2);
@@ -14,11 +14,13 @@ const jsonPath = jsonIndex >= 0 ? args[jsonIndex + 1] : undefined;
 if (jsonIndex >= 0 && !jsonPath) { console.error("用法：node scripts/ui-audit.mjs [--json out.json]"); process.exit(2); }
 
 const ui = scanUi();
-const copy = scanLabels(await loadLabels());
+const labelModule = await loadLabelsModule();
+// V3-2c：只掃新分組，略過 v2 舊鍵 alias（同一個字串不算兩次）；口徑與 tests/copy-style.test.ts 相同。
+const copy = scanLabels(labelModule.labels, labelModule);
 
 const report = {
   generatedAt: new Date().toISOString(),
-  scope: { css: ["src/app/globals.css（:root token 定義區另計）", "src/components/**/*.css"], tsx: ["src/components/**/*.tsx"], labels: "src/i18n/labels.zh-TW.ts（technical 子樹與 basis.aliases 除外）" },
+  scope: { css: ["src/app/globals.css（:root token 定義區另計）", "src/components/**/*.css"], tsx: ["src/components/**/*.tsx"], labels: "src/i18n/labels.zh-TW.ts 新分組（LABEL_GROUPS；v2 舊鍵 alias、technical 子樹與 glossary.aliases／basis.aliases 除外）" },
   design: ui.metrics,
   copy: copy.metrics,
   info: ui.info,

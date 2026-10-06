@@ -2,7 +2,7 @@
 import { labels } from "./labels.zh-TW";
 
 export { labels };
-export type { Labels, MetricLabel, RuleLabel } from "./labels.zh-TW";
+export type { Labels, MetricLabel, MetricUnit, RuleLabel, RuleUnit } from "./labels.zh-TW";
 
 type Join<K extends string, P extends string> = `${K}.${P}`;
 
