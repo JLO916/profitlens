@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, openDownloads, openMeeting, openValidation } from "./replacement-helpers";
+import { clickReplacing, closePeriodSheet, dismissSavePrompt, openDownloads, openMeeting, openPeriodSheet, openValidation } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { deltaWord, formatAmountL1, formatAmountL2, formatGrowth, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -93,7 +93,10 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   const csv = await readFile((await download.path())!, "utf8");
   expect(csv).toContain('"170.00","-15.00","-185.00"');
   expect(csv).toContain('"400.00","270.00","-130.00"');
+  // V3-3：全站通路下拉在期間列；手機期間列收成 period-toggle，先開底部面板再選，選完按「完成」收起（桌機兩者都不動）。
+  await openPeriodSheet(page);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await closePeriodSheet(page);
   await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
   await page.getByRole("button", { name: labels.buttons.updateMeetingSource, exact: true }).click();
   await expect(summary.getByRole("button", { name: changeTitle(["DTC"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "400.00", "270.00", "-130.00"));

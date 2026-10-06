@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, openValidation } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, navigateTo, openValidation } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatRateL2, formatSignedDelta } from "../../src/application/presentation";
@@ -76,7 +76,8 @@ async function load(page: Page, id = "golden") {
   await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${readyRe}|${escape(labels.status.partial)}`));
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
-  await page.getByRole("button", { name: labels.nav.products.label, exact: true }).click();
+  // V3-3：切頁走 navigateTo（桌機側欄；手機底部分頁列「更多」→ 商品毛利）。
+  await navigateTo(page, "products");
   await expect(page.getByTestId("product-table")).toBeVisible();
 }
 
@@ -176,7 +177,7 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-products-${testInfo.project.name}.png`), fullPage: true });
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText(formatAmountL1("255.00"));
 });
 
@@ -234,7 +235,8 @@ test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公�
   await confirmAndCheck(page, "partial");
   await commitWizard(page);
   await dismissSavePrompt(page);
-  await page.getByRole("button", { name: labels.nav.products.label, exact: true }).click();
+  // V3-3：切頁走 navigateTo（桌機側欄；手機底部分頁列「更多」→ 商品毛利）。
+  await navigateTo(page, "products");
   const table = page.getByTestId("product-table");
   await expect(table.locator("tbody tr")).toHaveCount(5);
   const skuRow = (sku: string) => table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: sku, exact: true }) });
