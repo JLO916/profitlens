@@ -533,7 +533,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       exportMenu={<ExportMenu source={visible ? active : null} busy={menuExport.busy} error={menuExport.error} summaryRef={downloadSummaryRef} onDecision={exportDecision} onPrint={printCurrentView} onExport={kind => void exportCurrentView(kind)} onMeetingNotes={() => void exportMeetingNotes()} />} />
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
-        <PageHeader title={currentPanel.label} description={currentPanel.description} isData={panel === "data"} showLoadDemo={status !== "empty" || showImport} onLoadDemo={() => void load("demo")} onImport={startImport} />
+        <PageHeader title={currentPanel.label} description={panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} showLoadDemo={status !== "empty" || showImport} onLoadDemo={() => void load("demo")} onImport={startImport} />
         {whatsNew.visible && <WhatsNewNote onOpenGlossary={() => { whatsNew.markRead(); setBasisSection("v2-names"); setBasisOpen(true); }} onDismiss={whatsNew.dismiss} />}
         {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
           <h2 id="validation-heading">{labels.ui.dashboard.validation.heading}</h2>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { labels } from "@/i18n";
 import { ShellIcon } from "./shell-icon";
 
@@ -5,14 +6,17 @@ import { ShellIcon } from "./shell-icon";
  * V3-3 A1 頁首（56px）：h1 20／600＋選填的一行 13px 描述＋右側本頁動作。不放 eyebrow（X1／X2；labels.brand.tagline 保留給 <title>）。
  * 「匯入資料」（§6.3 #23，`page-import`）只留在資料來源頁；其他頁從頂欄資料狀態的「匯入新資料」或空狀態進入（≤ 2 次點擊）。
  * 資料來源頁的「載入示範資料」維持 v2 的出現條件（已有資料或匯入中），改成次要按鈕（每個容器最多 1 顆主要按鈕）。
+ * V3-5：右側固定一個動作插槽 #page-actions（每頁都渲染；沒有內容時不佔高度）。各頁的「匯出本頁」由頁面元件以 portal 放進來（例如商品毛利），
+ * 也可以直接用 actions 傳入。
  */
-export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void }) {
+export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode }) {
   return <div className="page-heading">
     <div className="page-heading-text"><h1>{title}</h1>{description && <p className="subtitle">{description}</p>}</div>
     {isData && <div className="load-controls">
       <button type="button" className="ui-btn ui-btn-primary" data-testid="page-import" onClick={onImport}><ShellIcon name="import" size={16} />{labels.buttons.importData}</button>
       {showLoadDemo && <button type="button" className="ui-btn ui-btn-secondary" onClick={onLoadDemo}>{labels.buttons.loadDemo}</button>}
     </div>}
+    <div className="page-actions" id="page-actions" data-testid="page-actions">{actions}</div>
   </div>;
 }
 
