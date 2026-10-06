@@ -292,6 +292,16 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-07｜Revamp v3 V3-5：健檢頁、商品頁、抽屜的取捨
+
+**健檢頁：** 健檢結果移到各通路兩期比較之前（PRD §7.2「先放結論」），列改 C9 清單型（summary 一行、互動元件在展開內容）；標題列計數徽章依 `alertStatus` 的色調算資料待補／不利／有利，側欄的健檢徽章改用同一個 `diagnosisCounts`。範圍標籤只在該列範圍與頁面範圍不同時顯示；檔期後綴從標題移到列內「檔期」。通路寬表以 `variant="diagnosis"` 做台灣報表欄序、兩層表頭、可排序與備註欄，會議摘要沿用 default 變體（V3-7 再處理）；每格可及名稱用 PRD §7 句型「{通路} {指標} {值} 元，看明細」。AI 區包進 `<details>` 收合（內容全部保持掛載）；公開站附註用 GLOSSARY 的「公開示範站」而非 PRD 範例的「公開版」。
+
+**商品頁：** 「匯出本頁」以 portal 放進頁首的 `#page-actions` 插槽（SSR 先在面板內渲染，掛載後搬到頁首，任何時候只有一份；testid `product-export-menu`，summary `export-page-products` 同時符合 §6.3 #16 的 `export-page-{page}`），兩個 CSV 的 handler 與內容零改動。排序與方向合併成一個 select（值「{sort}.{direction}」），`#product-direction` 移除。前 10 名表用 C3 `.ui-table`（跟著密度切換），不用 C2 `.kv`。密度 40／32px 記在 localStorage `profitlens.table-density`（try/catch），不進備份。工具列直接子控制 5 個。手機三張表都改清單（CSS 重排、保留 table DOM 與明確 role）。
+
+**抽屜：** h2 可見文字只放標題，加 sr-only「 · 計算與來源」讓 dialog 可及名稱不變（E2E 的 /計算與來源$/ 定位器沿用）；副標「{範圍} · {期間}」用 M/D 與本期／上期前綴；組成項目改表格（上期／本期／差額）；新增固定段「指標定義與算法」（白話定義＋版本＋指標定義按鈕）；原始明細欄位 檔案:行號（等寬）、日期、通路、欄位與數值；條件句去掉「注意：」。原始明細在抽屜寬 < 640px（視窗 ≤ 1439）時以 CSS 重排成清單，比 C3 的 767px 斷點寬，因為 480／560px 抽屜放不下四欄。
+
+**保留的舊鍵（V3-10 清理）：** `ui.workspacePanels.channelTableHeading`／`tagMissingData`、`sections.autoCheck`、`diagnosisList.moreScopes`、`ui.evidenceDrawer.scopeLine`／`colSource`／`colScope`／`colValues`、`evidence.scopeFallback`／`lineN`。
+
 ## 2026-10-06｜MVP preview 部署（D-V3-24 的當次同意）
 
 使用者於 2026-10-06 回覆「部署 Vercel preview」，並在推送被權限系統擋下後明確指示 `git push origin revamp/v2`。做法：只推送分支（不推 main、不推 tag、不改正式站），由 Vercel 的 Git 整合建置 preview（`dpl_72NujVv69QYxLuoZA9r8qCkQw2E5`，commit `f61e8cc`）。preview 環境變數沿用 `verification/deployment-config.json` 記錄的公開示範模式；Deployment Protection（SSO）維持專案既有設定，由使用者決定是否放行。之後每批完成後是否再推送 preview，仍需使用者當次指示。

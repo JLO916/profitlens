@@ -1,5 +1,16 @@
 # Status
 
+## Revamp v3｜V3-5 通路健檢、商品毛利、計算與來源抽屜（完成，未推送、未部署）
+
+PRD §7.2／§7.3／§7.8 落地：健檢頁改 C9 清單型警示列（健檢結果在前、計數徽章資料待補／不利／有利、範圍只標一次、chips 與更多範圍 popover 留在列內、技術細節 12px 等寬）、通路寬表健檢變體（台灣報表欄序、兩層表頭、可排序 aria-sort、備註欄轉負與健檢連結、手機清單）、AI 區收合一列（內容保持掛載）；商品頁頁首「匯出本頁」下拉（兩個 CSV 零改動）、範圍副標、前 10 名 C3 表、工具列 5 控制（合併排序、欄位 popover 含密度切換 F18 記 localStorage）、完整表 sticky 表頭、篩選空狀態、手機清單；抽屜依 §7.8 重排（h2 只放標題、副標、組成表、指標定義與算法、原始明細 檔案:行號、寬度 560／640／480／全螢幕）。`src/domain`、`fixtures`、`docs/METRICS.md` 零改動；無新依賴。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit 101 檔／2,042 全過、`lint:design` exit 0（hex 0、圓角 4、字級 13、字距 0、箭頭 3、eyebrow 0）、build pass、E2E 全套 612／612（17.1m，四專案）；禁區 diff 空；testid 刪除數 0（新增 ai-collapsed、channel-compare、diagnosis-count-*、page-actions、product-export-*、product-toolbar、product-count、product-density…）；`feature-retention.csv` V3-5 的 8 列打勾。
+- 本批驗收：前三列展開、計數徽章＝列數、範圍只標一次（E2E revamp-r5）；工具列 5 控制、排序合併、欄位 popover 保持掛載（unit product-page-v3）；兩份 CSV 由零改動的匯出模組以相同引數產生；抽屜 h2／aria-describedby／關閉鈕聚焦（unit evidence-drawer-v3）；axe（Lighthouse axe-core）390 寬健檢與商品頁 0 失敗審核。
+- 畫面基準：`verification/revamp-v3/V3-5/snapshots/` 四尺寸 36 張，重跑 0 差異；首屏量測與 V3-4b 相同（1440 一句話 192px、KPI 帶底 419px、可聚焦 9）；Lighthouse 1440／390 五頁 accessibility 全 100、首頁 performance 100／98；通路健檢頁的 `label-content-name-mismatch` 本批清零，會議紀錄頁仍有（V3-7 範圍）。
+- 偏離（詳見驗收文件 §5 與 DECISIONS 2026-10-07）：抽屜原始明細清單版斷點 ≤ 1439（抽屜寬 < 640）；前 10 名用 C3 表不用 C2；AI 收合附註用「公開示範站」；通路寬表會議摘要變體留 V3-7。
+- 未執行／待人工：H2 設計稿審查（後補）、H3 補審（本批健檢徽章、排序選項、抽屜段落文案一併）。
+- 下一批：V3-6 假設試算與待辦。
+
 ## Revamp v3｜V3-4b 經營總覽圖表（完成，未推送、未部署；V3-0–V3-4 的 MVP 切線已到，部署 preview 待使用者當次同意）
 
 PRD §7.1 區塊 5–8 與 §10.3（F2）落地：貢獻變化拆解改 C17 瀑布（inline SVG）＋橋接表（L3）＋平衡檢核，標題改 L1 結論句；新增本期利潤結構四層瀑布（10 根、範圍切換只影響本圖、資料表、資料待補虛線框、三個恆等式到分）；趨勢與各通路改 C16 ChartFrame（結論標題／副標＝aria 描述、takeaway、線段圖例、最後一點標值、缺資料斷線、負值不利色、固定高度四態等高）；圖表色集中 `chart-theme.ts`；事件 `waterfall_clicked`；區塊順序依 §7.1、1280 上下排列。`src/domain`、`fixtures`、`docs/METRICS.md` 零改動；無新依賴。
