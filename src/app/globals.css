@@ -709,18 +709,11 @@ textarea { font: inherit; color: var(--text-primary); border: 1px solid var(--bo
 .overview-meeting > summary .tag { margin-left: 8px; }
 .overview-meeting[open] > summary { margin-bottom: 14px; }
 .top-three-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-.top-three-list > li { border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 16px; background: var(--bg-surface); }
-.top-three-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-.top-three-head h3 { font-size: var(--text-16); line-height: 1.5; }
 .top-three-impact { display: flex; align-items: baseline; gap: 10px; margin: 8px 0 4px; font-size: var(--text-12); color: var(--text-tertiary); }
 .impact-amount { font-size: var(--text-20); font-weight: 600; font-variant-numeric: tabular-nums; }
 .impact-amount.neutral { color: var(--text-tertiary); font-size: var(--text-14); }
 .impact-line { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; font-size: var(--text-12); color: var(--text-tertiary); }
 .impact-line .impact-amount { font-size: var(--text-16); }
-.top-three-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-.top-three-list details { margin: 8px 0; font-size: var(--text-12); }
-.top-three-list details ul { padding-left: 18px; }
-.top-three-threshold { margin-top: 14px; border-top: 1px solid var(--border-subtle); padding-top: 10px; }
 .threshold-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin: 10px 0; }
 .threshold-form label { max-width: 220px; }
 .page-heading { margin-bottom: 16px; }
@@ -1336,5 +1329,73 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-4a 錨點 B：總覽本期一句話、KPI 帶（C1、C18）、其他常用指標表（C2）、進階（代理 B 只在此錨點之後、錨點 C 之前新增規則） ── */
 
 /* ── V3-4a 錨點 C：本期三件事警示列（C9 摘要型；代理 C 只在此錨點之後、結束錨點之前新增規則） ── */
+/* C4 區段（不是卡片）＋C9 摘要型警示列（PRD §7.1 第 4 點、§9.4 C9；設計稿 mockups/overview.html 的 .alert-list／.alert）。
+   一列是 <li.alert-row> 的三欄格線：<details.alert> 跨第 1–2 欄（summary＝展開指示｜狀態標籤｜L1 標題｜預留影響金額欄，第二行 L2 解讀跨標題與預留欄；
+   展開內容只有限制、其餘範圍、檔期）；影響金額放第 2 欄、疊在 summary 預留的 160px 上；動作放第 3 欄。影響金額與按鈕不放進 summary（summary 不放互動元件）。
+   全域 .alert（v2 通知列）的 flex、padding、margin、圓角與 12px 字級在這裡歸零。 */
+.top-three { --alert-chev-w: 16px; --alert-impact-w: 160px; min-width: 0; margin-bottom: var(--space-5); }
+.top-three .sec-head { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); min-height: var(--control-h); margin-bottom: var(--space-3); }
+.top-three .sec-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); min-width: 0; }
+.top-three .sec-title h2 { font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.top-three .sec-scope { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.top-three .sec-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+/* 「依影響金額排序」的 `?`（C14）：圖示 16px，點擊範圍補到 24×24；說明 popover 掛在按鈕下方靠右，用 hidden 切換（常駐掛載）。 */
+.top-three .sort-legend { position: relative; display: inline-flex; align-items: center; gap: var(--space-1); }
+.top-three .sort-legend .ui-help-trigger { width: 24px; height: 24px; }
+.top-three .sort-help { position: absolute; top: calc(100% + var(--space-2)); right: 0; width: min(var(--help-w), calc(100vw - 32px)); padding: var(--space-3); }
+/* 「調整門檻」popover：<details> 收合時表單仍掛載（M1）；絕對定位在 summary 下方靠右、寬 320px。 */
+.top-three .threshold-popover { position: relative; }
+.top-three .threshold-popover > summary { list-style: none; min-height: 24px; font-size: var(--text-13); line-height: var(--leading-13); }
+.top-three .threshold-popover > summary::-webkit-details-marker { display: none; }
+.top-three .threshold-popover[open] > summary { text-decoration: underline; text-underline-offset: 3px; }
+.top-three .threshold-popover > .popover { position: absolute; top: calc(100% + var(--space-2)); right: 0; width: min(var(--popover-w), calc(100vw - 32px)); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.top-three .threshold-popover .threshold-form { margin: 0 0 var(--space-2); }
+.top-three .threshold-popover .threshold-form input { height: var(--control-h); min-height: var(--control-h); padding: 0 var(--space-2); font-size: var(--text-14); }
+.top-three .threshold-popover [role="alert"] { margin-top: var(--space-2); font-size: var(--text-12); line-height: var(--leading-12); color: var(--unfavorable); }
+/* 警示列容器：一個 --bg-surface 外框，列與列之間 1px 分隔線，不做卡片。 */
+.top-three .alert-list { list-style: none; margin: 0; padding: 0; background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); }
+.top-three .alert-row { display: grid; grid-template-columns: minmax(0, 1fr) var(--alert-impact-w) auto; column-gap: var(--space-3); align-items: start; min-width: 0; }
+.top-three .alert-row + .alert-row { border-top: var(--border-w) solid var(--border-subtle); }
+.top-three .alert { grid-column: 1 / 3; grid-row: 1; display: block; min-width: 0; margin: 0; padding: 0; border-radius: 0; font-size: inherit; }
+.top-three .alert > summary { list-style: none; display: grid; grid-template-columns: var(--alert-chev-w) auto minmax(0, 1fr) var(--alert-impact-w); grid-template-areas: "chev loz title ." ". . explain explain"; column-gap: var(--space-3); row-gap: 2px; align-items: center; min-height: 64px; padding: var(--space-3) 0 var(--space-3) var(--space-4); border-radius: var(--radius-md); color: var(--text-primary); font-size: var(--text-14); line-height: var(--leading-14); }
+.top-three .alert > summary::-webkit-details-marker { display: none; }
+/* 展開指示：用 rotate 屬性轉 90 度（disclosure 指示，不是裝飾）；減少動態時全站規則會關掉 transition。 */
+.top-three .alert-chev { grid-area: chev; color: var(--text-tertiary); transition: rotate var(--dur-fast) var(--ease); }
+.top-three .alert[open] > summary .alert-chev { rotate: 90deg; }
+.top-three .alert-loz { grid-area: loz; display: inline-flex; }
+.top-three .alert-title { grid-area: title; min-width: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.top-three .alert-explain { grid-area: explain; min-width: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.top-three .alert-impact { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; justify-content: flex-end; gap: var(--space-2); margin: var(--space-3) 0 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); white-space: nowrap; text-align: right; }
+.top-three .alert-impact .k { font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-regular); color: var(--text-tertiary); }
+.top-three .alert-impact .impact-amount { font-size: var(--text-16); }
+.top-three .alert-impact .impact-amount.neutral { font-size: var(--text-14); font-weight: var(--weight-regular); }
+.top-three .alert-actions { grid-column: 3; grid-row: 1; display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 10px var(--space-4) 0 0; }
+.top-three .alert-actions .ui-btn { height: var(--control-h-sm); min-height: var(--control-h-sm); padding: 0 var(--space-2); font-size: var(--text-13); line-height: var(--leading-13); }
+.top-three .alert-body { padding: 0 0 var(--space-4) calc(var(--space-4) + var(--alert-chev-w) + var(--space-3)); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.top-three .alert-body dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-1) var(--space-4); margin: 0; }
+.top-three .alert-body dt { color: var(--text-tertiary); }
+.top-three .alert-body dd { margin: 0; min-width: 0; }
+.top-three .alert-scopes { list-style: none; margin: 0; padding: 0; }
+.top-three .alert-scopes li { line-height: var(--leading-16); }
+.top-three .alert-scopes .impact-amount { font-size: var(--text-13); }
+/* 0 件（C10 區段型空狀態）與區塊底部「查看全部 n 項健檢結果」。 */
+.top-three .alert-empty { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-4); border: var(--border-w) dashed var(--border-default); border-radius: var(--radius-md); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+.top-three .list-foot { margin-top: var(--space-3); }
+.top-three .alert-empty .ui-btn-text, .top-three .list-foot .ui-btn-text { min-height: 24px; font-size: var(--text-13); line-height: var(--leading-13); }
+/* ≤ 1023px：側欄 220px 佔掉寬度，標題欄會被影響金額與動作擠窄；改成兩行——summary（標題、解讀）在上，影響金額與動作同一行在下。 */
+@media (max-width: 1023px) {
+  .top-three .alert-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-2); padding-bottom: var(--space-3); }
+  .top-three .alert { grid-column: 1 / -1; }
+  .top-three .alert > summary { grid-template-columns: var(--alert-chev-w) auto minmax(0, 1fr); grid-template-areas: "chev loz title" ". explain explain"; column-gap: var(--space-2); row-gap: var(--space-1); min-height: 0; padding: var(--space-3) var(--space-4) 0; }
+  .top-three .alert-impact { grid-column: 1; grid-row: 2; align-self: center; justify-content: flex-start; margin: 0 0 0 calc(var(--space-4) + var(--alert-chev-w) + var(--space-2)); text-align: left; }
+  .top-three .alert-actions { grid-column: 2; grid-row: 2; align-self: center; margin: 0 var(--space-4) 0 0; }
+  .top-three .alert-body { padding: var(--space-2) var(--space-4) 0 calc(var(--space-4) + var(--alert-chev-w) + var(--space-2)); }
+}
+/* ≤ 767px：工具列換到標題下一行；兩個 popover 改以標題列為定位基準、全寬展開，避免超出左緣。按鈕回到 32px 點擊高度。 */
+@media (max-width: 767px) {
+  .top-three .sort-legend, .top-three .threshold-popover { position: static; }
+  .top-three .sort-help, .top-three .threshold-popover > .popover { left: 0; right: 0; width: auto; }
+  .top-three .alert-actions .ui-btn { height: var(--control-h); min-height: var(--control-h); }
+}
 
 /* ── V3-4a 錨點結束 ── */

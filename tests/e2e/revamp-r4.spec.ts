@@ -132,7 +132,9 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await expect(page.getByTestId("kpi-target-contribution_after_marketing")).toHaveCount(0);
   await expect(page.getByTestId("trend-events")).toContainText(fill(labels.events.trendItem, { label: "夏季特賣", start: "2026-08-10", end: "2026-08-16" }));
   const topThree = page.getByTestId("top-three");
-  if (await topThree.locator(".top-three-list li").count()) await expect(topThree.locator(".top-three-list li").first().locator("h3")).toContainText(fill(labels.events.during, { label: "夏季特賣" }));
+  // V3-4a（C9 摘要型）：檔期不再接在標題後，改放進列內展開內容的「檔期」一行（收合時仍掛載，textContent 可讀）。
+  const firstPriority = topThree.locator("[data-testid^='overview-priority-']").first();
+  if (await firstPriority.count()) await expect(firstPriority.locator(".alert-body")).toContainText(`${labels.overview.alerts.eventPeriod}${fill(labels.overview.alerts.eventValue, { label: "夏季特賣" })}`);
   // 匯出：分析 CSV 有 target／achievement 列；主管摘要 Markdown 有「目標達成」。
   const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).click()]);
   const csv = await readFile((await download.path())!, "utf8");

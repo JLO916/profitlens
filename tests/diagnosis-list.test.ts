@@ -207,12 +207,18 @@ describe("Diagnosis page and TopThree share the same groups", () => {
     const priorities = diagnosisGroups(snap).priorities;
     expect([...html.matchAll(/data-testid="overview-priority-([A-Z_]+)"/g)].map(match => match[1])).toEqual(priorities.map(group => group.rule));
     expect(priorities.map(group => group.rule)).toEqual(buildManagerSummary(snap).priorities.map(group => group.code));
-    for (const group of priorities) expect(html).toContain(`<h3>${group.headline}</h3>`);
+    // V3-4a（C9 摘要型警示列）：標題是 summary 內的 h3.alert-title；相關範圍收進列內展開內容（第一列其餘 2 個範圍各一個 L2 影響金額）；
+    // v2「另有 n 組未列出」改成區塊底部「查看全部 {n} 項健檢結果」（n＝健檢結果總數）。
+    for (const group of priorities) expect(html).toContain(`<h3 class="alert-title">${group.headline}</h3>`);
     expect(html).toContain('data-testid="top-three"');
     expect(html).toContain('aria-describedby="top-three-threshold-help"');
     expect(html).toContain(fill(labels.diagnosisList.thresholdHelp, { amount: formatAmountL3("0.00") }));
-    expect(html).toContain(fill(labels.ui.topThree.relatedScopesCount, { n: 2 }));
-    expect(html).toContain(fill(labels.notes.omittedGroups, { n: 3 }));
+    const firstScopes = html.slice(html.indexOf('<ul class="alert-scopes">'), html.indexOf("</ul>", html.indexOf('<ul class="alert-scopes">')));
+    expect(html).toContain(`<dt>${labels.overview.alerts.relatedScopes}</dt>`);
+    expect(firstScopes.match(/class="number-link impact-amount /g)).toHaveLength(priorities[0].scopes.length - 1);
+    expect(priorities[0].scopes.length - 1).toBe(2);
+    expect(html).toContain(fill(labels.overview.alerts.viewAll, { n: diagnosisGroups(snap).groups.length }));
+    expect(diagnosisGroups(snap).omitted_group_count).toBe(3);
     // 三件事的影響金額是 L1（同一列只用一種尺度）。
     expect(text(html)).toContain(impactL1("-315.00"));
     expect(text(html)).toContain(impactL1("-250.00"));
