@@ -719,6 +719,12 @@ export const diagnosis = {
     deltaFormula: "差額＝本期{metric} − 上期{metric}，是兩期實際發生的金額",
     rankingAria: "看「{title}」排序金額的來源，{amount}",
   },
+  // ── V3-5 錨點（代理 A：listV3 警示列與計數徽章、tableV3 通路寬表、aiCollapse AI 區收合；收尾時刪除仍為空的物件）
+  listV3: {},
+
+  tableV3: {},
+
+  aiCollapse: {},
 } as const;
 
 // ── products：商品毛利：商品頁、最差與增加最多、商品比較
@@ -801,6 +807,8 @@ export const products = {
     tableCaption: "兩期淨營收與商品毛利差額，以及本期明細；不含廣告與平台抽成",
     blankCategory: "未填品類",
   },
+  // ── V3-5 錨點（代理 B：pageV3 頁首匯出選單、工具列、前 10 名表、密度切換、手機清單）
+  pageV3: {},
 } as const;
 
 // ── scenarios：假設試算：輸入欄、範本、表單、敏感度、方案並排
@@ -1642,6 +1650,8 @@ export const evidence = {
     skuLine: "商品：{sku}",
     tabWithCount: "{tab}（{n}）",
   },
+  // ── V3-5 錨點（代理 C：drawerV3 抽屜重排：標題列、區段標題、組成表、指標定義段、原始明細）
+  drawerV3: {},
 } as const;
 
 // ── exports：匯出：CSV 欄名與後綴、下載選單、Excel、PPT、決策 Markdown／CSV／JSON
