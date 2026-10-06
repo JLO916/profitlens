@@ -578,15 +578,94 @@ export const overview = {
     summary: "進階：期間合計與日均",
   },
   // ── V3-4b 錨點：圖表（A 先填全部文案；B1 只補 bridgeV3／profit 的介面字串、B2 只補 trendV3／channelsV3／chartFrame）；收尾時刪除仍為空的物件。
-  chartFrame: {},
+  /** V3-4b 圖表框（C16）共用字：資料表連結與摘要、無資料、資料待補的柱、圖例（沿用 shell.periods）、單位說明。 */
+  chartFrame: {
+    dataTable: "資料表",
+    /** `<details>` 摘要：「資料表 · 本期利潤結構」；{title} 放區塊的標準名稱（副標第一段）。 */
+    dataTableSummary: "資料表 · {title}",
+    noData: "無資料",
+    missingBar: shell.status.missing,
+    legend: { current: shell.periods.current, previous: shell.periods.previous },
+    unitNote: "圖：萬元 · 表：元",
+  },
 
-  bridgeV3: {},
+  /** V3-4b 貢獻變化拆解（C17，PRD §7.1 第 5 點；src/application/waterfall.ts 的 bridgeWaterfall 使用）。 */
+  bridgeV3: {
+    /** L1 結論句：{amount}＝扣廣告後貢獻差額絕對值（L1），{item}＝最大一項的指標名，{delta}＝該項帶號差額（L1）；沒有最大一項時用 NoLargest 版。 */
+    title: {
+      decrease: "少賺 {amount}，扣最多的一項是{item}（{delta}）",
+      decreaseNoLargest: "少賺 {amount}",
+      increase: "多賺 {amount}，加最多的一項是{item}（{delta}）",
+      increaseNoLargest: "多賺 {amount}",
+      flat: "扣廣告後貢獻與上期持平",
+      /** {word}＝由負轉正／轉為虧損；{value}＝本期扣廣告後貢獻（L1，可為負）。 */
+      turned: "扣廣告後貢獻{word}，本期 {value}",
+      missing: "部分資料待補，差額暫時無法拆解",
+    },
+    /** {section}＝overview.sections.bridge；期間為主層 M/D，不附天數。 */
+    subtitle: "{section} · 上期 {previous} 到本期 {current}",
+    /** 平衡檢核列（bridge-balance-check）：{difference} 為 L3 到分的絕對值。 */
+    balance: { label: "平衡檢核", balanced: "已平衡（差 {difference}）", unbalanced: "差 {difference} 元", missing: "資料待補，無法檢核" },
+    /** 橋接表的列名（L3 表）：上期 → 九項 → 本期 → 總差額。 */
+    rows: {
+      previous: "上期扣廣告後貢獻",
+      gross_sales: "原價收入",
+      discounts: "減：折扣",
+      refunds: "減：退款金額",
+      cogs_net: "減：商品成本",
+      platform_fees: "減：平台抽成",
+      payment_fees: "減：金流手續費",
+      fulfillment_costs: "減：物流與包材費",
+      other_variable_costs: "減：其他變動費用",
+      ad_spend: "減：廣告投放費",
+      current: "本期扣廣告後貢獻",
+      total: "總差額",
+    },
+    table: { item: overviewPageColItem, amount: "金額（元）" },
+    /** 瀑布第一根與最後一根的柱名。 */
+    barLabels: { previous: shellPeriodsPrevious, current: shellPeriodsCurrent },
+  },
 
-  profit: {},
+  /** V3-4b 本期利潤結構（F2，PRD §10.3；waterfall.ts 的 profitWaterfall 使用）。柱名直接用 metricDefinitions 的指標名。 */
+  profit: {
+    section: "本期利潤結構",
+    /** {n}＝每 100 元淨營收剩下（或虧掉）的元數，一位小數、絕對值。 */
+    title: { positive: "每 100 元淨營收，扣完廣告剩 {n} 元", negative: "每 100 元淨營收，扣完廣告虧 {n} 元" },
+    /** {scope}＝合計（或全部通路）／通路名稱；這個切換只影響本圖。 */
+    subtitle: "{section} · {period} · {scope}。切換範圍只影響這張圖。",
+    /** 分段按鈕（profit-waterfall-scope）：合計＋各通路名稱；aria 是按鈕群組的可及名稱。 */
+    scope: { all: "合計", aria: "本期利潤結構的範圍" },
+    table: { item: overviewPageColItem, amount: "金額（元）", share: "佔淨營收", aria: "本期利潤結構表" },
+  },
 
-  trendV3: {},
+  /** V3-4b 每週趨勢（C16，PRD §7.1 第 7 點；chart-takeaways.ts 的 trendTakeaways 使用）。 */
+  trendV3: {
+    takeaways: { total: "淨營收期間合計", lastCompleteWeek: "最近完整週淨營收" },
+    incompleteNote: "最後一週未滿 7 天",
+    /** 圖上最後一點旁的短標（§9.5）。 */
+    incompleteShort: "未滿 7 天",
+    legend: { current: shell.periods.current, previous: shell.periods.previous },
+    /** 折線最後一點的直接標籤：{metric}＝指標短名，{value}＝L1 金額。 */
+    lastPoint: "{metric} {value}",
+    previousPoint: "上期 {value}",
+  },
 
-  channelsV3: {},
+  /** V3-4b 各通路扣廣告後貢獻（C16，PRD §7.1 第 8 點；chart-takeaways.ts 的 channelConclusion 使用）。 */
+  channelsV3: {
+    /** {channel}＝通路名稱（示範資料用 alias），{amount}＝L1 金額（虧損時為絕對值）。 */
+    title: { negative: "{channel} 扣完廣告虧 {amount}", best: "{channel} 扣廣告後貢獻最高，{amount}" },
+    /** {section}＝overview.sections.channelMix。 */
+    subtitle: "{section} · 本期 {period}",
+    table: { channel: exportsCsvColumnsChannel, current: "本期（元）", margin: "貢獻率" },
+    /** `<details>` 資料表（L3）：上期、本期與差額。 */
+    dataTable: { channel: exportsCsvColumnsChannel, previous: "上期（元）", current: "本期（元）", change: "差額（元）" },
+    turnedNegative: "轉負",
+    turnedPositive: "轉正",
+    /** 超過 4 個通路時合併的類別。 */
+    other: "其他",
+    /** 上期細條末端的標值。 */
+    previousValue: "上期 {value}",
+  },
 } as const;
 
 // ── diagnosis：通路健檢：健檢清單與健檢頁
