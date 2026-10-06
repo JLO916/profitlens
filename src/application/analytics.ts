@@ -14,7 +14,10 @@ export type AnalyticsEvent =
   | "export_excel"
   | "export_pptx"
   | "export_markdown"
-  | "glossary_opened";
+  | "glossary_opened"
+  // V3-4（D-V3-15）：總覽「複製週會摘要」與瀑布圖長條點擊；只記事件名。
+  | "summary_copied"
+  | "waterfall_clicked";
 
 /** Vercel Web Analytics 的腳本路徑（專案在 Vercel 儀表板啟用 Web Analytics 後才會回應）。 */
 export const ANALYTICS_SCRIPT_SRC = "/_vercel/insights/script.js";

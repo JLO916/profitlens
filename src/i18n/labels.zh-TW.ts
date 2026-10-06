@@ -501,7 +501,27 @@ export const overview = {
   },
   channelTable: { channelHeader: "通路", turnedNegative: "轉為虧損", turnedPositive: "由負轉正", unitCaption: "{caption}金額單位：元。" },
   // ── V3-4a 錨點：各代理只填自己的物件（A：snapshot；B：kpiBand、snapshotUi、assistTable、advanced；C：alerts）；收尾時刪除仍為空的物件。
-  snapshot: {},
+  /**
+   * 本期一句話（PRD §7.1 區塊 2；src/application/weekly-summary.ts 的 snapshotSentence 使用）。
+   * 鍵名就是 SnapshotKind；金額一律 L1 絕對值（方向由句中的多／少／多賺／少賺表達），本期值可為負（U+2212）。
+   * {top} 是本期三件事中第一個「費用或通路項目」的標題（跳過與本句重複的「淨營收多…卻少賺…」與資料缺漏）；沒有時用 NoTop 版。
+   */
+  snapshot: {
+    sentence: {
+      revenueUpContributionDown: "淨營收多 {revenueDelta}，扣廣告後貢獻卻少賺 {contributionDelta}；最大一項是{top}。",
+      revenueUpContributionDownNoTop: "淨營收多 {revenueDelta}，扣廣告後貢獻卻少賺 {contributionDelta}。",
+      bothUp: "淨營收多 {revenueDelta}，扣廣告後貢獻多賺 {contributionDelta}。",
+      bothDown: "淨營收少 {revenueDelta}，扣廣告後貢獻少賺 {contributionDelta}；最大一項是{top}。",
+      bothDownNoTop: "淨營收少 {revenueDelta}，扣廣告後貢獻少賺 {contributionDelta}。",
+      revenueDownContributionUp: "淨營收少 {revenueDelta}，扣廣告後貢獻多賺 {contributionDelta}。",
+      /** 任一差額取位後為 0：持平的一側 {…Delta} 為空字串，另一側是「 1.2 萬」（含前置空格）。 */
+      flat: "淨營收{revenueWord}{revenueDelta}，扣廣告後貢獻{contributionWord}{contributionDelta}。",
+      /** 上期 ≤ 0 轉正，或上期 > 0 轉為虧損；{word}＝由負轉正／轉為虧損，{contribution}＝本期扣廣告後貢獻（L1，可為負）。 */
+      turned: "扣廣告後貢獻{word}，本期 {contribution}。",
+      missing: "部分資料待補，扣廣告後貢獻暫不計算；先到資料來源補齊 {n} 項。",
+      missingNoCount: "部分資料待補，扣廣告後貢獻暫不計算；先到資料來源補齊缺漏。",
+    },
+  },
 
   snapshotUi: {},
 
@@ -2038,7 +2058,39 @@ export const format = {
 
 // ── summary：週會摘要（V3-4a 起使用：F1 複製週會摘要的純文字與 Markdown 模板；代理 A 填寫）
 export const summary = {
-  weekly: {},
+  /**
+   * F1 週會摘要（PRD §10.2；src/application/weekly-summary.ts 的 buildWeeklySummary 使用）。
+   * 純文字版標題用換行，不用「｜」；Markdown 版由程式加上 ## 與 -。金額 L1（萬／億）、負號 U+2212；方向詞後面的差額用絕對值。
+   * 資料待補時三行關鍵數字改成本期一句話的 missing 句（overview.snapshot.sentence.missing）。
+   */
+  weekly: {
+    title: "週會摘要",
+    /** {current}／{previous}＝「7/13–8/23（42 天）」；{channels}＝所選通路。 */
+    period: "本期 {current}對比 上期 {previous}· {channels} · 金額未稅",
+    keyLine: "{metric} {value}，比上期{word} {amount}（{growth}）",
+    /** 上期 ≤ 0 時不附成長率。 */
+    keyLineNoGrowth: "{metric} {value}，比上期{word} {amount}",
+    /** 差額取位後為 0（金額與比率共用）。 */
+    keyLineFlat: "{metric} {value}，與上期持平",
+    /** 扣廣告後貢獻由負轉正／轉為虧損（PRD §8.2）：不顯示成長率。 */
+    keyLineTurned: "{metric}{word}，本期 {value}",
+    /** 差額無法計算時只列本期值。 */
+    keyLineValueOnly: "{metric} {value}",
+    /** {points}＝「降 14.3 個百分點」。 */
+    rateLine: "{metric} {value}，{points}",
+    /** 不足 3 件時的標題（GLOSSARY #21）；3 件時用 overview.sections.topThree。 */
+    topThreeFew: "本期要先看的事（{n} 件）",
+    topThreeNone: "本期沒有需要先看的事。",
+    topThreeItem: "{n}. {headline}：{nextStep}",
+    actions: "待辦：未完成 {pending} 項",
+    actionsPinned: "待辦：未完成 {pending} 項；置頂 {pinned}",
+    pinnedItem: "{problem}（{owner}，{deadline}）",
+    pinnedSeparator: "、",
+    problemUntitled: "未命名的待辦",
+    ownerUnassigned: "未指定負責人",
+    deadlineUnassigned: "未定期限",
+    footer: "資料到 {date}。數字由 {brand} 在這台電腦計算，可在「計算與來源」查到原始檔名與行號。",
+  },
 } as const;
 
 // ── metrics：指標（跨頁）：每個指標 { headline, short, explain, technical: { formula, formulaTechnical } }
