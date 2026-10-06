@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
-import { clickReplacing, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { clickReplacing, isMobile, navigateTo, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R5（05 §7–§9、02 §4–§7）：健檢清單化、試算進頁即表單＋範本＋絕對值、行動看板、商品 Top／Bottom。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -40,8 +40,8 @@ const statusLabel = { not_started: labels.actions.statuses.not_started, in_progr
 
 const clicks = (page: Page) => page.evaluate(() => (window as unknown as { __r5Clicks: number }).__r5Clicks);
 const resetClicks = (page: Page) => page.evaluate(() => { (window as unknown as { __r5Clicks: number }).__r5Clicks = 0; });
-const nav = (page: Page, id: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[id].label, exact: true });
-const globalChannel = (page: Page) => page.locator(".filter-bar").getByLabel(dash.filter.channel, { exact: true });
+// V3-3：切頁走 navigateTo（桌機側欄；手機底部分頁列或「更多」面板）。全站通路篩選在期間列（period-bar）裡；手機收在期間底部面板，值仍可讀。
+const globalChannel = (page: Page) => page.getByTestId("period-bar").getByLabel(dash.filter.channel, { exact: true });
 
 // V3-2a：status.ready 帶 {date}＝資料集 manifest 的 data_as_of（golden 2026-08-03、demo 2026-08-24）。
 const dataAsOf = (id: "golden" | "demo") => (JSON.parse(readFileSync(resolve("fixtures", id, "manifest.json"), "utf8")) as { data_as_of: string }).data_as_of;
@@ -51,6 +51,18 @@ async function loadDataset(page: Page, id: "golden" | "demo") {
   await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(fill(labels.status.ready, { date: dataAsOf(id) }));
+  await declineSavePromptOnMobile(page);
+}
+/**
+ * V3-3 手機：首次保存提示（.local-save-prompt，z-index 25）疊在「更多」面板（.mobile-tabbar 的堆疊層 20）與頂欄「更多」工具列（.topbar 的堆疊層 21）之上，
+ * 提示出現時點不到「更多」裡的頁面與儲存／匯出選單（已回報為產品問題）。本檔不測保存提示，手機流程先按「先不要」；桌機流程不變。
+ */
+async function declineSavePromptOnMobile(page: Page) {
+  if (!isMobile(page)) return;
+  const prompt = page.getByTestId("local-save-prompt");
+  await expect(prompt).toBeVisible();
+  await prompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
+  await expect(prompt).toHaveCount(0);
 }
 // V3-2b：試算結果是 L1（< 1 萬顯示整數元＋「元」，差額帶 +／U+2212）；參數是 golden 的精確值，由格式化函式轉成畫面字串。
 async function calculate(card: Locator, contribution: string, delta: string) {
@@ -66,12 +78,12 @@ test("試算：側欄一次點擊就到表單；範本只填數字不代勾、�
   await loadDataset(page, "golden");
   await expect(globalChannel(page)).toHaveValue("");
   await resetClicks(page);
-  await nav(page, "scenarios").click();
+  await navigateTo(page, "scenarios");
   await startChannelContext(page);
   const card = page.getByTestId("scenario-1");
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toBeVisible();
-  // ≤ 2 次點擊：除了側欄「假設試算」之外沒有其他點擊（沒有「開始試算」）。
-  expect(await clicks(page)).toBe(1);
+  // ≤ 2 次點擊：除了導覽到「假設試算」之外沒有其他點擊（沒有「開始試算」）。桌機是側欄 1 次；手機在「更多」面板裡，是「更多」→「假設試算」2 次。
+  expect(await clicks(page)).toBe(isMobile(page) ? 2 : 1);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   await expect(page.getByTestId("scenario-assumptions")).not.toHaveAttribute("open", "");
   await expect(page.getByTestId("scenario-assumptions").locator(":scope > summary")).toHaveText(form.assumptionsSummary);
@@ -139,7 +151,7 @@ test("試算通路單選只改本頁：全站篩選不變、各通路方案各�
   // 步驟多（四次計算＋兩種模式切換），在負載高的機器上可能超過預設 45 秒；只放寬時間，不放寬斷言。
   test.setTimeout(90_000);
   await loadDataset(page, "golden");
-  await nav(page, "scenarios").click();
+  await navigateTo(page, "scenarios");
   await startChannelContext(page);
   const card = page.getByTestId("scenario-1");
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
@@ -175,7 +187,7 @@ test("試算通路單選只改本頁：全站篩選不變、各通路方案各�
 
 test("健檢清單：通路寬表置頂、同規則合併一列、依影響金額排序、前三列展開、範圍切換、技術細節收合", async ({ page }) => {
   await loadDataset(page, "golden");
-  await nav(page, "diagnosis").click();
+  await navigateTo(page, "diagnosis");
   const panel = page.getByTestId("diagnosis-panel");
   await expect(panel).toBeVisible();
   // 通路寬表在健檢清單之前。
@@ -230,7 +242,7 @@ test("健檢清單：通路寬表置頂、同規則合併一列、依影響金�
 
 test("加入待辦一次點擊就到看板；看板按鈕改狀態、焦點留在卡片；清單檢視狀態一致", async ({ page }) => {
   await loadDataset(page, "golden");
-  await nav(page, "diagnosis").click();
+  await navigateTo(page, "diagnosis");
   const first = page.getByTestId("diagnosis-list").locator(":scope > li > details.diagnosis-row").first();
   await expect(first).toHaveAttribute("open", "");
   await expect(first).toHaveAttribute("data-testid", "diagnosis-row-REV_UP_CM_DOWN");
@@ -276,7 +288,7 @@ test("加入待辦一次點擊就到看板；看板按鈕改狀態、焦點留�
 
 test("商品頁：Top／Bottom 小表看整個範圍、不跟著篩選；資料狀態用新文案", async ({ page }) => {
   await loadDataset(page, "golden");
-  await nav(page, "products").click();
+  await navigateTo(page, "products");
   const worst = page.getByTestId("product-worst"), best = page.getByTestId("product-best"), table = page.getByTestId("product-table");
   await expect(page.locator("#product-highlights-heading")).toHaveText(labels.sections.productTopBottom);
   // 本期商品毛利由低到高：MARKETPLACE/B 125、DTC/B 200、MARKETPLACE/A 280、DTC/A 540；毛利增加：DTC/A +40、MARKETPLACE/A +10。
