@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, openValidation, startChannelContext } from "./replacement-helpers";
+import { clickReplacing, closePeriodSheet, dismissSavePrompt, isMobile, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, startChannelContext } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
@@ -73,8 +73,16 @@ const dataAsOf = async (id: string) => (JSON.parse(await readFile(resolve(`fixtu
 const ready = async (id: string) => fill(labels.status.ready, { date: await dataAsOf(id) });
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 
+/** V3-3：通路選單在期間列裡；手機期間列收成 period-toggle，先開底部面板、選完按「完成」收起（桌機不動）。 */
+async function selectChannel(page: Page, channel: string) {
+  await openPeriodSheet(page);
+  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
+  await closePeriodSheet(page);
+}
+
 async function showAi(page: Page) {
-  await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
+  // V3-3：桌機點側欄、手機點底部分頁列「健檢」。
+  await navigateTo(page, "diagnosis");
   await expect(panel(page)).toBeVisible();
 }
 async function loadDataset(page: Page, id = "golden", channel = "DTC") {
@@ -85,7 +93,7 @@ async function loadDataset(page: Page, id = "golden", channel = "DTC") {
     clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true })),
   ]);
   await expect(workspaceStatus(page)).toContainText(await ready(id));
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
+  await selectChannel(page, channel);
   await expect(workspaceStatus(page)).toContainText(await ready(id));
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
@@ -137,7 +145,7 @@ async function approveAndSend(page: Page) {
   await send(page).click();
 }
 async function assertCore(page: Page) {
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   // V3-2b：KPI 大數字是 L1（< 1 萬顯示整數元），由 golden 精確值經 formatAmountL1 產生。
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("1480.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
@@ -212,7 +220,8 @@ test("真實本機未啟用端點 GET／POST 降級，未同意不傳送，核�
   expect(fallback).toMatchObject({ status: "fallback", reason: config.reason });
   await expect(page.getByTestId("ai-live-result")).toHaveCount(0);
   await assertCore(page);
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  // V3-3：假設試算在手機的「更多」面板裡，navigateTo 會先開「更多」。
+  await navigateTo(page, "scenarios");
   // R5：進頁即表單（方案 1 已在），「全部填 0」改為「維持現況」範本（五格皆 0）。
   await startChannelContext(page);
   const card = page.getByTestId("scenario-1");
@@ -287,7 +296,7 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await page.screenshot({ path: resolve(`verification/review-v2-a-mock-${testInfo.project.name}-ai.png`), fullPage: true });
   await page.screenshot({ path: resolve(`verification/review-v2-a-mock-${testInfo.project.name}-ai-viewport.png`), fullPage: false });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  await navigateTo(page, "actions");
   await expect(page.getByTestId("action-1")).toHaveCount(0);
   await expect(page.getByTestId("actions-workbench")).toContainText(labels.ui.actionsWorkbench.empty);
 });
@@ -365,7 +374,7 @@ test("MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽�
   // 匯入的 manifest 沿用 golden 的 data_as_of。
   await expect(workspaceStatus(page)).toContainText(fill(labels.status.ready, { date: String(original.data_as_of) }));
   await dismissSavePrompt(page);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
+  await selectChannel(page, channel);
   await expect(workspaceStatus(page)).toContainText(fill(labels.status.ready, { date: String(original.data_as_of) }));
   await showAi(page);
   await expect(page.getByTestId("ai-local-mapping")).toContainText(channel);
@@ -416,7 +425,7 @@ for (const change of ["channel", "dataset", "period"] as const) {
     await expect(panel(page).getByRole("button", { name: ai.cancelButton, exact: true })).toBeVisible();
     if (change === "channel") {
       for (const channel of ["MARKETPLACE", "DTC"]) {
-        await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
+        await selectChannel(page, channel);
         await expect(workspaceStatus(page)).toContainText(await ready("golden"));
       }
     } else if (change === "dataset") {
@@ -425,8 +434,12 @@ for (const change of ["channel", "dataset", "period"] as const) {
     } else {
       const dateLabels = [periodFieldLabel("start", labels.periods.previous), periodFieldLabel("end", labels.periods.previous), periodFieldLabel("start", labels.periods.current), periodFieldLabel("end", labels.periods.current)];
       for (const values of [["2026-06-01", "2026-06-01", "2026-07-13", "2026-07-13"], ["2026-06-01", "2026-07-12", "2026-07-13", "2026-08-23"]]) {
-        for (const [index, label] of dateLabels.entries()) await page.getByLabel(label, { exact: true }).fill(values[index]);
-        await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+        // V3-3：日期欄在「自訂期間」popover（手機：期間底部面板）裡，開了才填得到；改日期仍要按面板裡的「套用」。
+        const custom = await openCustomPeriod(page);
+        for (const [index, label] of dateLabels.entries()) await custom.getByLabel(label, { exact: true }).fill(values[index]);
+        await custom.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+        await expect(page.getByTestId(isMobile(page) ? "period-toggle" : "period-custom")).toHaveAttribute("aria-expanded", "false");
+        await expect(page.getByTestId("period-bar")).not.toHaveAttribute("aria-busy", "true");
         await expect(workspaceStatus(page)).toContainText(await ready("demo"));
       }
     }
