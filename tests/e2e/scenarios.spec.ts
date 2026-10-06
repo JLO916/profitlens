@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { AUTO_SAVE_DELAY_MS } from "../../src/application/auto-save";
+import { MINUS, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatMetric, formatSignedDelta } from "../../src/application/presentation";
 import { dismissSavePrompt, openValidation, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 const dw = labels.ui.decisionWorkbench, aw = labels.ui.actionsWorkbench, msw = labels.ui.multiScenarioWorkbench, dash = labels.ui.dashboard;
@@ -36,8 +37,19 @@ const historyPlanLine = (plan: string, amount: string) => fill(msw.historyPlanSu
 const periodFieldLabel = (edge: "start" | "end", period: string) => fill(edge === "start" ? dash.filter.periodStart : dash.filter.periodEnd, { period });
 /** V3-2a：狀態列「資料到 {date}」，日期取各資料集 manifest 的 data_as_of（不在測試內另寫日期）。 */
 const ready = (id: "golden" | "demo" = "golden") => fill(labels.status.ready, { date: (JSON.parse(readFileSync(resolve(`fixtures/${id}/manifest.json`), "utf8")) as { data_as_of: string }).data_as_of });
-/** V3-2a：計算與來源抽屜的金額改為「{amount} 元」（labels.ui.evidenceDrawer.money），不再顯示「NT$ 」前綴。 */
-const drawerMoney = (amount: string) => fill(labels.ui.evidenceDrawer.money, { amount });
+/**
+ * V3-2b（§7.8）：計算與來源抽屜標題下的大數字是 L1（萬／元），下一行 evidence-precise-value 永遠顯示到分的精確值（L3＋「元」）。
+ * 傳入的是 golden 的精確字串（例如 "270.00"），顯示文字一律由呈現層格式化函式產生。
+ */
+async function expectDrawerAmount(dialog: Locator, value: string) {
+  await expect(dialog.locator("p.number")).toHaveText(formatAmountL1(value));
+  await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatAmountL3(value) }));
+}
+/** V3-2b：試算卡的結果大字與本期基準是 L1（formatAmountL1），與現況相比是帶號 L1（formatSignedDelta）。 */
+const amountL1 = (value: string) => formatAmountL1(value);
+const deltaL1 = (value: string) => formatSignedDelta(value, "L1");
+/** V3-2b：待辦證據選項的數值用 L1（actions-workbench factValue → formatMetric(…, "L1")）。 */
+const cmAfterFact = (value: string) => formatMetric("contribution_after_marketing", { value }, "L1");
 const workspaceStatus = (page: Page) => page.getByTestId("workspace-status");
 const workbench = (page: Page) => page.getByTestId("decision-workbench");
 const actionsWorkbench = (page: Page) => page.getByTestId("actions-workbench");
@@ -102,7 +114,7 @@ async function openGolden(page: Page, channel = "DTC") {
   await showScenarios(page);
   // 全站只有一個通路時，試算頁的通路單選預設就是它。
   await expect(page.getByTestId("scenario-channel")).toHaveValue(channel);
-  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(channel === "DTC" ? "270.00" : "-15.00");
+  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1(channel === "DTC" ? "270.00" : "-15.00"));
 }
 /** 進頁草稿「方案 1」：預設名稱、五格空白、未勾同意、沒有結果與版本號。 */
 async function expectFreshDraft(page: Page) {
@@ -156,7 +168,7 @@ async function addConfirmedAction(page: Page, index = 1, problem = `待驗證問
   await expect(card.getByLabel(labels.actions.due, { exact: true })).toHaveAttribute("type", "date");
   const evidence = evidenceChecklist(card);
   await expect(evidence).toHaveAttribute("data-testid", "evidence-checklist");
-  const option = evidence.getByRole("checkbox", { name: factText("2026-08-02", "2026-08-02", cmAfter, "DTC", "270.00"), exact: true });
+  const option = evidence.getByRole("checkbox", { name: factText("2026-08-02", "2026-08-02", cmAfter, "DTC", cmAfterFact("270.00")), exact: true });
   const factId = await option.getAttribute("value");
   expect(factId, "引用本期 DTC 270.00 的系統事實，而非人工結果").toBeTruthy();
   expect(JSON.parse(factId!)[4]).toBe("channel");
@@ -243,7 +255,7 @@ test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看
   await expect(channelSelect).toHaveValue("DTC");
   await expect(page.getByLabel(dash.filter.channel, { exact: true })).toHaveValue("");
   await expect(page.getByRole("button", { name: startButtonPrefix })).toHaveCount(0);
-  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText("270.00");
+  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("270.00"));
   await expect(page.getByTestId("scenario-unavailable")).toHaveCount(0);
   await expectFreshDraft(page);
   const card = await addScenario(page);
@@ -253,7 +265,7 @@ test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
   await expect(card.getByLabel(consentLabel)).not.toBeChecked();
   await card.getByLabel(consentLabel).check();
-  await calculate(card, "270.00", "0.00");
+  await calculate(card, amountL1("270.00"), deltaL1("0.00"));
   await expect(card.getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
   await expect(card.getByTestId("scenario-draft")).toHaveCount(0);
   const opener = page.getByTestId("baseline-contribution_after_marketing");
@@ -261,7 +273,7 @@ test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: evidenceDialogName(fill(dw.baselineEvidenceTitle, { metric: cmAfter })), exact: true });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator("p.number")).toHaveText(drawerMoney("270.00"));
+  await expectDrawerAmount(dialog, "270.00");
   await expect(dialog).toContainText(evidenceScopeLine("2026-08-02", "2026-08-02", "DTC"));
   await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 6 }));
   for (const tab of ["sales", "costs", "ads"] as const) {
@@ -287,13 +299,15 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
   for (const [index, item] of cases.entries()) {
     const card = await addScenario(page, index + 1);
     await fillScenario(card, item.values);
-    await calculate(card, item.contribution, item.delta);
+    await calculate(card, amountL1(item.contribution), deltaL1(item.delta));
     await expect(card.getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
   }
   await expect(page.getByRole("button", { name: labels.buttons.addScenario, exact: true })).toBeDisabled();
   await expect(page.getByTestId("scenario-4")).toHaveCount(0);
   const total = page.getByTestId("scenario-comparison").locator("tbody tr").filter({ has: page.locator("th").filter({ hasText: new RegExp(`^${escapeRegExp(cmAfter)}$`) }) });
-  await expect(total.getByRole("cell")).toHaveText(["270.00", "270.00", "284.00", "264.00"]);
+  // V3-2b：方案比較表是 L2（整數元，表頭「（元）」）。
+  await expect(total.getByRole("cell")).toHaveText(["270.00", "270.00", "284.00", "264.00"].map(value => formatAmountL2(value)));
+  await expect(page.getByTestId("scenario-comparison").locator("thead th").first()).toHaveText(fill(labels.units.yuanColumn, { label: dw.compareColItem }));
   await expect(page.getByTestId("scenario-comparison")).toContainText(dw.compareTableCaption);
   await mkdir(resolve("verification"), { recursive: true });
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-${testInfo.project.name}-scenarios.png`), fullPage: true });
@@ -303,15 +317,15 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
   // R5-3：修改後顯示「草稿（未重新計算）」，版本徽章只在結果有效時出現。
   await expect(scenario(page, 2).getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
   await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveCount(0);
-  await expect(scenario(page, 1).getByTestId("scenario-contribution")).toHaveText("270.00");
-  await expect(scenario(page, 3).getByTestId("scenario-contribution")).toHaveText("264.00");
+  await expect(scenario(page, 1).getByTestId("scenario-contribution")).toHaveText(amountL1("270.00"));
+  await expect(scenario(page, 3).getByTestId("scenario-contribution")).toHaveText(amountL1("264.00"));
   // 版本號只在計算成功時前進：改回與最新版本相同的假設再算 → 維持版本 1；
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-10");
-  await calculate(scenario(page, 2), "284.00", "+14.00");
+  await calculate(scenario(page, 2), amountL1("284.00"), deltaL1("+14.00"));
   await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
   // 假設不同 → 版本 2。手算：DTC 本期物流費 140.00（−10% 省 14.00），−5% 省 7.00 → 270.00 + 7.00 = 277.00；
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-5");
-  await calculate(scenario(page, 2), "277.00", "+7.00");
+  await calculate(scenario(page, 2), amountL1("277.00"), deltaL1("+7.00"));
   await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 2 }));
   // 未通過檢核的計算不前進版本號、也不顯示版本徽章；同樣假設重算仍是版本 2。
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-101");
@@ -319,7 +333,7 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
   await expect(scenario(page, 2).getByTestId("scenario-result")).toContainText(dw.cannotCalculate);
   await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveCount(0);
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-5");
-  await calculate(scenario(page, 2), "277.00", "+7.00");
+  await calculate(scenario(page, 2), amountL1("277.00"), deltaL1("+7.00"));
   await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 2 }));
   await expect(scenario(page, 1).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
   await expect(scenario(page, 3).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
@@ -335,7 +349,7 @@ test("減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確�
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(card.getByTestId("scenario-delta")).toHaveCount(0);
   await card.getByLabel(inputLabels[0], { exact: true }).fill("0");
-  await calculate(card, "324.00", "+54.00");
+  await calculate(card, amountL1("324.00"), deltaL1("+54.00"));
   await card.getByLabel(consentLabel).uncheck();
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await calculate(card);
@@ -364,20 +378,20 @@ test("百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 
   await openGolden(page, "MARKETPLACE");
   const card = await addScenario(page);
   await fillScenario(card, ["20", "2", "-10", "-20", "20"]);
-  await calculate(card, "19.70", "+34.70");
+  await calculate(card, amountL1("19.70"), deltaL1("+34.70"));
   // Independently derived rational anchor: CM = 4433/225 = 19.70222…;
   // displayed components sum to 19.71, so adjustment must be -0.01.
+  // V3-2b：比較表的金額列是 L2（整數元，表頭「（元）」）；取位調整列只有幾分錢，維持 L3（到分、U+2212）才看得到。
   const m = labels.metrics;
   const expected: Record<string, string> = {
-    [m.gross_sales.label]: "1,560.00", [m.discounts.label]: "295.20", [m.refunds.label]: "105.40",
+    [m.gross_sales.label]: "1560.00", [m.discounts.label]: "295.20", [m.refunds.label]: "105.40",
     [m.cogs_net.label]: "702.00", [m.platform_fees.label]: "140.53", [m.payment_fees.label]: "25.76",
     [m.fulfillment_costs.label]: "91.80", [m.other_variable_costs.label]: "15.60", [m.ad_spend.label]: "144.00",
-    [labels.scenario.oneOff.label]: "20.00", [dw.roundingAdjustment]: "-0.01", [fill(dw.netRevenueSummaryRow, { metric: m.net_revenue.label })]: "1,159.40",
+    [labels.scenario.oneOff.label]: "20.00", [fill(dw.netRevenueSummaryRow, { metric: m.net_revenue.label })]: "1159.40",
   };
-  for (const [label, amount] of Object.entries(expected)) {
-    const row = page.getByTestId("scenario-comparison").locator("tbody tr").filter({ has: page.locator("th").filter({ hasText: new RegExp(`^${escapeRegExp(label)}`) }) });
-    await expect(row.getByRole("cell").last()).toHaveText(amount);
-  }
+  const comparisonRow = (label: string) => page.getByTestId("scenario-comparison").locator("tbody tr").filter({ has: page.locator("th").filter({ hasText: new RegExp(`^${escapeRegExp(label)}`) }) });
+  for (const [label, amount] of Object.entries(expected)) await expect(comparisonRow(label).getByRole("cell").last()).toHaveText(formatAmountL2(amount));
+  await expect(comparisonRow(dw.roundingAdjustment).getByRole("cell").last()).toHaveText(formatAmountL3("-0.01"));
   const document = await downloadJson(page);
   expect(document.session.baseline.amounts.contribution_after_marketing).toBe("-15.00");
   expect(document.scenarios[0].result).toMatchObject({ contribution: "19.70", delta: "34.70", rounding_adjustment: "-0.01" });
@@ -387,18 +401,19 @@ test("百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 
 });
 
 for (const incomplete of [
-  { dataset: "missing-cogs", channel: "DTC", revenue: "1,480.00" },
+  { dataset: "missing-cogs", channel: "DTC", revenue: "1480.00" },
   { dataset: "missing-ad", channel: "MARKETPLACE", revenue: "990.00" },
 ]) {
   test(`${incomplete.dataset} 缺漏通路保留營收，禁止情境補零或顯示 NaN`, async ({ page }) => {
     await loadDataset(page, incomplete.dataset, labels.status.partial);
     await selectChannel(page, incomplete.channel, labels.status.partial);
-    await expect(kpi(page, "net_revenue")).toHaveText(incomplete.revenue);
-    await expect(kpi(page, "contribution_after_marketing")).toHaveText(labels.status.missing);
+    // V3-2b：KPI 卡與試算基準大字都是 L1；缺值顯示「資料待補」（formatEmpty），不用「—」。
+    await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1(incomplete.revenue));
+    await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatEmpty("missing"));
     await showScenarios(page);
     await expect(page.getByTestId("scenario-unavailable")).toBeVisible();
-    await expect(page.getByTestId("baseline-net_revenue")).toHaveText(incomplete.revenue);
-    await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText("—");
+    await expect(page.getByTestId("baseline-net_revenue")).toHaveText(formatAmountL1(incomplete.revenue));
+    await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(formatEmpty("missing"));
     await expect(page.getByRole("button", { name: labels.buttons.addScenario, exact: true })).toBeDisabled();
     // R5-3：進頁草稿仍顯示，但整張表單停用，不能補零計算。
     await expect(page.getByTestId("scenario-channel")).toHaveValue(incomplete.channel);
@@ -413,22 +428,22 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await openGolden(page);
   const card = await addScenario(page, 1, "保留名稱的履約測試");
   await fillScenario(card, ["0", "0", "-10", "0", "20"]);
-  await calculate(card, "264.00", "-6.00");
+  await calculate(card, amountL1("264.00"), deltaL1("-6.00"));
   const original = await addConfirmedAction(page, 1, "保留人工問題");
   const before = await downloadJson(page);
   await selectChannel(page, "MARKETPLACE");
   await showScenarios(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("MARKETPLACE");
-  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText("-15.00");
+  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("-15.00"));
   // R5-3：MARKETPLACE 只有進頁草稿「方案 1」，DTC 的方案不帶過來，而是列在「其他通路的方案」。
   await expectFreshDraft(page);
   const others = page.getByTestId("scenario-other-channels");
   await others.locator(":scope > summary").click();
-  await expect(others).toContainText(fill(msw.planSummary, { plan: "保留名稱的履約測試", resultLabel: labels.scenario.resultTitle, amount: "264.00" }));
+  await expect(others).toContainText(fill(msw.planSummary, { plan: "保留名稱的履約測試", resultLabel: labels.scenario.resultTitle, amount: amountL1("264.00") }));
   // 本頁通路單選只換本頁：切到 DTC 看得到原方案，全站篩選仍是 MARKETPLACE；再切回 MARKETPLACE 仍是草稿。
   await selectScenarioChannel(page, "DTC");
   await expect(page.getByLabel(dash.filter.channel, { exact: true })).toHaveValue("MARKETPLACE");
-  await expect(card.getByTestId("scenario-contribution")).toHaveText("264.00");
+  await expect(card.getByTestId("scenario-contribution")).toHaveText(amountL1("264.00"));
   await selectScenarioChannel(page, "MARKETPLACE");
   await expectFreshDraft(page);
   await selectChannel(page, "DTC");
@@ -436,7 +451,7 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   await expect(page.getByTestId("decision-freshness")).toContainText(dw.freshTitle);
   await expect(card.getByRole("button", { name: labels.buttons.calculate, exact: true })).toBeEnabled();
-  await expect(card.getByTestId("scenario-contribution")).toHaveText("264.00");
+  await expect(card.getByTestId("scenario-contribution")).toHaveText(amountL1("264.00"));
   await expect(card.getByLabel(dw.planName, { exact: true })).toHaveValue("保留名稱的履約測試");
   await expect(card.getByLabel(inputLabels[2], { exact: true })).toHaveValue("-10");
   await expect(scenario(page, 2)).toHaveCount(0);
@@ -458,7 +473,7 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await action(page).getByLabel(labels.actions.progress, { exact: true }).fill("已索取報價，尚待核對");
   await expect(action(page)).toContainText(aw.tagConfirmed);
   await action(page).getByRole("button", { name: new RegExp(`^${escapeRegExp(aw.viewEvidenceItem.split("{fact}")[0])}`) }).click();
-  await expect(page.getByRole("dialog").locator("p.number")).toHaveText(drawerMoney("270.00"));
+  await expectDrawerAmount(page.getByRole("dialog"), "270.00");
   await page.getByRole("dialog").getByRole("button", { name: labels.buttons.close, exact: true }).click();
   const document = await downloadJson(page);
   expect(document.actions[0]).toMatchObject({ status: "confirmed", owner_role: "物流主管", evidence_confirmed: true, fact_ids: [original.factId], execution_status: "in_progress", progress_notes: "已索取報價，尚待核對" });
@@ -473,26 +488,26 @@ test("試算頁自選通路後，全站通路範圍改變再改回，本頁回�
   await openGolden(page);
   await selectScenarioChannel(page, "MARKETPLACE");
   await expect(page.getByLabel(dash.filter.channel, { exact: true })).toHaveValue("DTC");
-  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText("-15.00");
+  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("-15.00"));
   await selectChannel(page, "MARKETPLACE");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("MARKETPLACE");
   await selectChannel(page, "DTC");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel"), "全站範圍改成 DTC 後，試算頁應回到新範圍的預設通路 DTC").toHaveValue("DTC");
-  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText("270.00");
+  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("270.00"));
 });
 
 test("資料集切換再回相同 golden，舊方案仍為歷史；複製只保留名稱並清空假設", async ({ page }) => {
   await openGolden(page);
   const card = await addScenario(page, 1, "歷史履約方案");
   await fillScenario(card, ["0", "0", "-10", "0", "0"]);
-  await calculate(card, "284.00", "+14.00");
+  await calculate(card, amountL1("284.00"), deltaL1("+14.00"));
   const oldContext = (await downloadJson(page)).scenario_contexts[0].context_id;
   await loadDataset(page, "demo");
   await showScenarios(page);
   await page.getByText(msw.historyHeading, { exact: true }).click();
-  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(historyPlanLine("歷史履約方案", "284.00"));
+  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(historyPlanLine("歷史履約方案", amountL1("284.00")));
   await loadDataset(page);
   await selectChannel(page, "DTC");
   await showScenarios(page);
@@ -563,13 +578,13 @@ test("四項人工行動可新增但僅三項置頂，鍵盤排序及人類可�
   await expect(action(page, 2).getByLabel(labels.actions.problem, { exact: true })).toHaveValue("第一個人工問題");
   await action(page, 1).getByLabel(labels.actions.step, { exact: true }).fill("修改後先核對單位履約成本");
   await expect(action(page, 1)).toContainText(aw.tagConfirmed);
-  const opener = action(page, 2).getByRole("button", { name: fill(aw.viewEvidenceItem, { fact: factText("2026-08-02", "2026-08-02", cmAfter, "DTC", "270.00") }), exact: true });
+  const opener = action(page, 2).getByRole("button", { name: fill(aw.viewEvidenceItem, { fact: factText("2026-08-02", "2026-08-02", cmAfter, "DTC", cmAfterFact("270.00")) }), exact: true });
   await expect(opener).not.toContainText(first.factId);
   await opener.focus();
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: evidenceDialogName(fill(aw.evidenceTitle, { metric: cmAfter })), exact: true });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator("p.number")).toHaveText(drawerMoney("270.00"));
+  await expectDrawerAmount(dialog, "270.00");
   await expect(dialog).toContainText(evidenceScopeLine("2026-08-02", "2026-08-02", "DTC", "DTC"));
   await expect(dialog).toContainText("sales_daily.csv");
   await page.keyboard.press("Escape");
@@ -601,7 +616,7 @@ test("三種本機匯出保存固定基準、五項輸入、公式、版本、�
   await openGolden(page);
   const card = await addScenario(page, 1, "含一次性投入的履約方案");
   await fillScenario(card, ["0", "0", "-10", "0", "20"]);
-  await calculate(card, "264.00", "-6.00");
+  await calculate(card, amountL1("264.00"), deltaL1("-6.00"));
   const { factId } = await addConfirmedAction(page);
   const document = await downloadJson(page);
   expect(document.status).toBe("current");
@@ -627,6 +642,8 @@ test("三種本機匯出保存固定基準、五項輸入、公式、版本、�
   expect(document.session.sources.some(source => source.file === "sales_daily.csv" && source.line === 6 && source.channel === "DTC")).toBe(true);
   const csv = await downloadText(page, "CSV");
   expect(csv.charCodeAt(0)).toBe(0xfeff);
+  // 數字欄維持 ASCII 負號：不得出現「U+2212 緊接數字」（domain 公式文字裡的運算子「 − 」不是數值，不在此限）。
+  expect(csv, "CSV 的數值維持 ASCII 負號，不得出現 U+2212").not.toMatch(new RegExp(`${MINUS}\\d`));
   const rows = csvRecords(csv);
   expect(rows.every(row => row.dataset_id === "golden-v1" && row.dataset_hash === document.session.dataset_hash && row.filter_hash === document.session.filter_hash && row.snapshot_status === "current")).toBe(true);
   const summaryRows = rows.filter(row => row.row_type !== "fact");
@@ -638,7 +655,9 @@ test("三種本機匯出保存固定基準、五項輸入、公式、版本、�
   expect(rows.some(row => row.source_refs.includes('"actual_filename":"sales_daily.csv"'))).toBe(true);
   const markdown = await downloadText(page, "Markdown");
   const de = labels.ui.decisionExport;
-  for (const text of [`# ${de.title}`, de.statusCurrent, "264", "DTC", "HALF", labels.sections.scenarioAssumptions, de.sectionFormulas, labels.sections.actionList, de.sectionFacts]) expect(markdown).toContain(text);
+  // V3-2b §3.3：Markdown 主文 L2（整數元、U+2212、正差額加「+」），技術細節 L3（到分；Markdown 會把「.」跳脫成「\.」，先去掉跳脫再比對）。
+  for (const text of [`# ${de.title}`, de.statusCurrent, formatAmountL2("264.00"), formatSignedDelta("-6.00", "L2"), "DTC", "HALF", labels.sections.scenarioAssumptions, de.sectionFormulas, labels.sections.actionList, de.sectionFacts]) expect(markdown).toContain(text);
+  for (const text of [formatAmountL3("264.00"), formatSignedDelta("-6.00", "L3")]) expect(markdown.replaceAll("\\", "")).toContain(text);
   await expect(page.getByTestId("action-notice")).toContainText(aw.exportDone);
 });
 
@@ -648,7 +667,7 @@ test("不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產
   const problem = '=HYPERLINK("https://example.invalid","x")\n<script>alert(1)</script>';
   const card = await addScenario(page, 1, name);
   await fillScenario(card, ["0", "0", "-10", "0", "20"]);
-  await calculate(card, "264.00", "-6.00");
+  await calculate(card, amountL1("264.00"), deltaL1("-6.00"));
   await addConfirmedAction(page, 1, problem);
   await expect(page.locator("img[src='x']")).toHaveCount(0);
   await expect(page.locator("a[href^='javascript:']")).toHaveCount(0);
@@ -675,7 +694,7 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   await expect(savePrompt).toHaveCount(0);
   await selectChannel(page, "DTC");
   await showScenarios(page);
-  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText("270.00");
+  await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("270.00"));
   const before = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   expect(before.databases, "按「先不要」後 IndexedDB 不得有任何資料庫").toEqual([]);
   const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
@@ -686,7 +705,7 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   });
   const card = await addScenario(page);
   await fillScenario(card, ["0", "0", "-10", "0", "0"]);
-  await calculate(card, "284.00", "+14.00");
+  await calculate(card, amountL1("284.00"), deltaL1("+14.00"));
   await addConfirmedAction(page);
   for (const format of ["Markdown", "CSV", "JSON"] as const) await downloadText(page, format);
   // 自動保存的 debounce 是 AUTO_SAVE_DELAY_MS；多等一個週期再比對，確認拒絕後沒有排程中的寫入。
