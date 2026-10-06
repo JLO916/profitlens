@@ -1,4 +1,5 @@
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
+import { formatAmountL1 } from "../../src/application/presentation";
 import { formatSavedDateTime, formatSavedTime } from "../../src/application/auto-save";
 import { appendFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -34,6 +35,12 @@ const announce = (page: Page) => page.getByTestId("local-save-announce");
 /** 本機副本目前保存的通路篩選（沒有副本時 null）。 */
 const savedChannels = async (page: Page) => { const copy = await readLocalCopy(page); return copy ? JSON.parse(copy.text).payload.active.filters.channels as string[] : null; };
 const kpiContribution = (page: Page) => page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value");
+/**
+ * V3-2b（PRD §8.5）：KPI 卡、試算結果、待辦引用與歷史方案摘要的金額是 L1。
+ * golden DTC 扣廣告後貢獻 270.00、MARKETPLACE −15.00；試算 284.00／264.00（golden 數字不變，只經 formatAmountL1 產生顯示字串）。
+ */
+const DTC_CONTRIBUTION = formatAmountL1("270.00");
+const MARKETPLACE_CONTRIBUTION = formatAmountL1("-15.00");
 const channelFilter = (page: Page) => page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true });
 /** 還原預覽摘要的通路片段（labels 模板「… · 通路 {channels}」最後一段）。 */
 const restoreChannels = (channels: string) => fill(storageCopy.restoreSummary.split(" · ").at(-1)!, { channels });
@@ -83,7 +90,7 @@ async function golden(page: Page) {
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await expect(status(page)).toContainText(goldenReady);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
-  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("270.00");
+  await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
 }
 /** R5：試算頁進頁即表單（方案 1 是本地草稿），第二個方案起才按「新增方案」；通路預設＝全站單一通路 DTC。 */
 async function makeScenario(page: Page, index: number, cost: string, expected: string) {
@@ -97,7 +104,7 @@ async function makeScenario(page: Page, index: number, cost: string, expected: s
   for (const [label, value] of Object.entries(values)) await card.getByLabel(label, { exact: true }).fill(value);
   await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
-  await expect(card.getByTestId("scenario-contribution")).toHaveText(expected);
+  await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(expected));
 }
 async function makeAction(page: Page) {
   await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
@@ -107,7 +114,7 @@ async function makeAction(page: Page) {
   const fields = { [labels.actions.problem]: "核對履約成本", [labels.actions.step]: "取得物流報價與服務條款", [labels.actions.owner]: "營運主管", [labels.actions.metric]: "本期履約費用", [labels.actions.due]: "2026-10-15", [labels.actions.stop]: "服務品質下降即停止", [labels.actions.extraData]: "物流合約" };
   for (const [label, value] of Object.entries(fields)) await card.getByLabel(label, { exact: true }).fill(value);
   // R5：證據改為 checkbox 清單（fieldset role=group）。
-  const factText = fill(labels.ui.actionsWorkbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC", scopeKind: labels.csvColumns.channel, value: "270.00" });
+  const factText = fill(labels.ui.actionsWorkbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC", scopeKind: labels.csvColumns.channel, value: DTC_CONTRIBUTION });
   const box = evidenceList(card).getByRole("checkbox", { name: factText, exact: true });
   const value = await box.getAttribute("value");
   expect(value).toBeTruthy();
@@ -195,8 +202,8 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   expect((await readLocalCopy(page))!.savedAt).toBe(saved.savedAt);
   await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
   await expect(page.getByTestId("decision-freshness")).toContainText(labels.ui.decisionWorkbench.freshTitle);
-  await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText("284.00");
-  await expect(page.getByTestId("scenario-2").getByTestId("scenario-contribution")).toHaveText("264.00");
+  await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
+  await expect(page.getByTestId("scenario-2").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("264.00"));
   await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
   // 備份 ui_prefs.view 記住了清單檢視（R5），恢復後直接是清單。
   await expect(page.getByTestId("actions-view-list")).toHaveAttribute("aria-pressed", "true");
@@ -221,7 +228,7 @@ test("PL01 portable備份驗證後才套用；篡改／舊格式不取代目前�
   const tampered = JSON.parse(original); tampered.payload.sources[tampered.payload.active.source_hash].manifest.dataset_id = "tampered";
   await restoreFile(page, JSON.stringify(tampered));
   await expect(storage(page).getByRole("alert")).toContainText(storageCopy.invalidBackupError);
-  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("270.00");
+  await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
   const old = JSON.parse(original); old.schema_version = "profitlens-workspace-v0";
   await restoreFile(page, JSON.stringify(old));
   await expect(storage(page).getByRole("alert")).toContainText(storageCopy.invalidBackupError);
@@ -230,7 +237,7 @@ test("PL01 portable備份驗證後才套用；篡改／舊格式不取代目前�
   await expect(autoStatus(page)).toContainText(autoCopy.statusOn);
   await expect(savePrompt(page)).toHaveCount(0);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("MARKETPLACE");
-  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("-15.00");
+  await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // 已同意＝修改在 2 秒內自動保存：等 MARKETPLACE 這一版存好（頂欄「已保存 hh:mm」），之後的恢復沒有未保存的修改要確認。
   await expect.poll(async () => { const copy = await readLocalCopy(page); return copy ? JSON.parse(copy.text).payload.active.filters.channels : null; }, { timeout: 15_000 }).toEqual(["MARKETPLACE"]);
   const autosaved = (await readLocalCopy(page))!;
@@ -255,7 +262,7 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   const dialog = replacementDialog(page);
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: labels.buttons.cancel, exact: true }).click();
-  await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText("284.00");
+  await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
   await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
@@ -282,7 +289,7 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   await expect(draft.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(page.getByTestId("scenario-2")).toHaveCount(0);
   await page.getByText(scenarioCopy.historyHeading, { exact: true }).click();
-  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(fill(scenarioTemplate(scenarioCopy.historyPlanSummary), { plan: "保存方案 1", resultLabel: labels.scenario.resultTitle, amount: "284.00" }));
+  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(fill(scenarioTemplate(scenarioCopy.historyPlanSummary), { plan: "保存方案 1", resultLabel: labels.scenario.resultTitle, amount: formatAmountL1("284.00") }));
   // 要沿用只能明確按「複製到目前方案」。
   await expect(page.getByRole("button", { name: scenarioCopy.copyToCurrent, exact: true })).toBeVisible();
   // 只是打開試算頁不會寫入新的方案範圍：備份仍只有那一個歷史範圍。
@@ -298,7 +305,7 @@ test("PL01 清空移除備份預覽、下載確認與本機保存同意；已保
   const manual = await saveLocal(page);
   expect(JSON.parse(manual.text).payload.active.filters.channels).toEqual(["DTC"]);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("MARKETPLACE");
-  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("-15.00");
+  await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // R6：已同意本機保存，修改會在 2 秒內自動覆寫本機副本；等自動保存寫完，副本停在 MARKETPLACE 這一版再往下驗。
   const autosaved = await waitForLocalSave(page, manual.savedAt);
   expect(JSON.parse(autosaved.text).payload.active.filters.channels).toEqual(["MARKETPLACE"]);
@@ -353,7 +360,7 @@ test("R6 首次保存提示：先不要維持手動保存、不建立本機資�
   await expect(autoToggle(page)).toHaveCount(0);
   await expect(storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true })).toBeDisabled();
   await channelFilter(page).selectOption("MARKETPLACE");
-  await expect(kpiContribution(page)).toHaveText("-15.00");
+  await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // 超過 2 秒的自動保存間隔：維持手動，不建立資料庫、不標已保存，也不再問一次。
   await page.waitForTimeout(3_000);
   expect(await localDatabases(page)).toEqual([]);
@@ -401,7 +408,7 @@ test("R6 自動保存：按「存在這台電腦」3 秒內寫入 v4 備份，�
   // 再改一次（換通路）：2 秒 debounce 後自動保存，副本與保存時間都更新。
   const changedAt = await page.evaluate(() => Date.now());
   await channelFilter(page).selectOption("MARKETPLACE");
-  await expect(kpiContribution(page)).toHaveText("-15.00");
+  await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   const second = await waitForLocalSave(page, first.savedAt);
   expect(Date.parse(second.savedAt)).toBeGreaterThan(Date.parse(first.savedAt));
   expect(Date.parse(second.savedAt) - changedAt).toBeLessThanOrEqual(3_000);
@@ -418,7 +425,7 @@ test("R6 自動保存：按「存在這台電腦」3 秒內寫入 v4 備份，�
   await expect(consentBox(page)).not.toBeChecked();
   await expect(autoStatus(page)).toHaveText(autoCopy.statusOff);
   await channelFilter(page).selectOption("DTC");
-  await expect(kpiContribution(page)).toHaveText("270.00");
+  await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
   await page.waitForTimeout(3_000);
   expect(await localDatabases(page)).toEqual([]);
   await expect(savedTag(page)).toHaveText(labels.status.unsaved);
@@ -441,7 +448,7 @@ test("R6 自動保存開關：同意後預設開啟，取消後修改不再自�
   await expect(autoStatus(page)).toContainText(autoCopy.statusOff);
   await expect(consentBox(page)).toBeChecked();
   await channelFilter(page).selectOption("MARKETPLACE");
-  await expect(kpiContribution(page)).toHaveText("-15.00");
+  await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   await expect(savedTag(page)).toHaveText(labels.status.unsaved);
   // 超過 2 秒的自動保存間隔（等 3 秒）：本機副本不更新。
   await page.waitForTimeout(3_000);
@@ -458,7 +465,7 @@ test("R6 自動保存開關：同意後預設開啟，取消後修改不再自�
   await expect(autoStatus(page)).toContainText(autoCopy.statusOff);
   // 之後的修改仍維持手動：3 秒內不寫入。
   await channelFilter(page).selectOption("DTC");
-  await expect(kpiContribution(page)).toHaveText("270.00");
+  await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
   await page.waitForTimeout(3_000);
   expect((await readLocalCopy(page))!.savedAt).toBe(manual.savedAt);
   // 重新勾選自動保存：未保存的修改在 2 秒內寫入。
@@ -484,7 +491,7 @@ test("R6 在儲存選單勾選同意而這台電腦已有副本：先顯示覆�
   await savePrompt(page).getByRole("button", { name: autoCopy.decline, exact: true }).click();
   await expect(savePrompt(page)).toHaveCount(0);
   await channelFilter(page).selectOption("MARKETPLACE");
-  await expect(kpiContribution(page)).toHaveText("-15.00");
+  await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // 在選單勾選同意：已有副本 → 先顯示覆寫提醒與確認按鈕，自動保存等確認。
   await openStorage(page);
   await consentBox(page).check();
@@ -509,7 +516,7 @@ test("R6 在儲存選單勾選同意而這台電腦已有副本：先顯示覆�
   await expect(savedTag(page)).toHaveText(savedTagPattern(replaced.savedAt));
   // 之後照常自動保存。
   await channelFilter(page).selectOption("DTC");
-  await expect(kpiContribution(page)).toHaveText("270.00");
+  await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
   const next = await waitForLocalSave(page, replaced.savedAt);
   expect(JSON.parse(next.text).payload.active.filters.channels).toEqual(["DTC"]);
   await expect(savedTag(page)).toHaveText(savedTagPattern(next.savedAt));
