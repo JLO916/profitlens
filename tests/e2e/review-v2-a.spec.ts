@@ -104,7 +104,7 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  await expect(summary.locator('summary').filter({hasText:fill(summaryCopy.appendixActions,{n:5})})).toHaveCount(0);
  // 離開會議分頁再回來：總覽只剩一行入口（本期會議狀態＋「前往會議紀錄」），由入口回到會議紀錄。
  await navigateTo(page,'products');await navigateTo(page,'overview');
- const entry=page.getByTestId('overview-meeting-entry');await expect(entry).toContainText(fill(labels.meetingPage.entry,{state:labels.meeting.decisions.need_data}));await entry.getByRole('button',{name:labels.meetingPage.goToMeeting,exact:true}).click();await expect(page.getByTestId('meeting-page')).toBeVisible();
+ const entry=page.getByTestId('overview-meeting-entry');const entryText=fill(labels.overview.snapshotUi.meetingEntry,{state:labels.meeting.decisions.need_data});await expect(entry).toContainText(entryText);await entry.getByRole('button',{name:fill(labels.overview.snapshotUi.meetingGoAria,{text:entryText,go:labels.meetingPage.goToMeeting}),exact:true}).click();await expect(page.getByTestId('meeting-page')).toBeVisible();
  await expect(summary.getByLabel(labels.meeting.threshold,{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('needs_data');
  const s=await storage(page), event=page.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();const download=await event;
  await download.saveAs(resolve(`verification/review-v2-a-workspace-${info.project.name}.json`));const text=await readFile((await download.path())!,'utf8');const wire=JSON.parse(text);

@@ -1,25 +1,31 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, type ReactNode } from "react";
 
-import Decimal from "decimal.js";
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ASSIST_KPI_VERSION, assistKpis, type AssistKpi } from "@/application/assist-kpi";
+import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
 import { eventBands as computeEventBands, type EventSet } from "@/application/events";
 import { achievement, achievementText, matchTargets, mismatchText, targetDisplay, TARGET_METRICS, type TargetMetric, type TargetSet } from "@/application/targets";
 import { channelLabel, demoAlias } from "@/application/copy";
-import { deltaTone, formatAmount, formatAmountL1, formatEmpty, formatGrowth, formatMetric, formatRatePoints, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
+import { deltaTone, favorableDirectionOf, formatAmount, formatAmountL1, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, MINUS, type Layer } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
-import { compareMoney, percentagePointChange } from "@/domain/metrics";
 import { AMOUNT_FIELDS, type Metric, type MetricName, type Period, type SourceRef } from "@/domain/types";
 import type { Diagnostic } from "@/domain/types";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { TopThree, toneClass } from "./top-three";
 import { fill, labels } from "@/i18n";
+import { AssistTable } from "./overview/assist-table";
+import { KPI_BAND_METRICS, KpiBand, type KpiBandMetric } from "./overview/kpi-band";
+import { WeeklySnapshot } from "./overview/weekly-snapshot";
 
-type Props = { targets?: TargetSet | null; events?: EventSet | null; allChannels?: readonly string[]; snapshot: WorkspaceSnapshot; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void; periodOpen?: boolean; onPeriodToggle?: (open: boolean) => void };
+/** 週會摘要用的待辦概況（由 dashboard 從待辦工作區算出）：未完成數與置頂的前 3 項。 */
+export type OverviewActionsSummary = { pending: number; pinned: { problem: string; owner: string; deadline: string }[] };
+type Props = {
+  targets?: TargetSet | null; events?: EventSet | null; allChannels?: readonly string[]; snapshot: WorkspaceSnapshot; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void; periodOpen?: boolean; onPeriodToggle?: (open: boolean) => void;
+  // V3-4a：本期一句話（資料集名、資料待補項數、待辦概況、會議入口）、KPI 帶的 `?` 定義按鈕與「先補齊」連結。
+  onBasis?: () => void; onNavigate?: (id: "diagnosis" | "meeting" | "data") => void; datasetName: string; missingItems: number; actionsSummary: OverviewActionsSummary; meetingEntry?: ReactNode;
+};
 const ui = labels.ui.overview;
-const kpis = ["net_revenue", "gross_profit", "contribution_before_marketing", "contribution_after_marketing", "contribution_margin"] as const;
 const nullLabel = (metric: Metric) => formatEmpty(metric.reason_codes.some(code => code.startsWith("MISSING") || code === "SALES_COVERAGE_UNCONFIRMED") ? "missing" : "notApplicable");
 const periodLabel = (period: "previous" | "current") => labels.periods[period];
 // 「數據表 · {標題}」：labels.ui.overview.dataTable 目前帶有實作註記，先以標籤組合；標籤修正後改回 fill(ui.dataTable, { title })。
@@ -38,9 +44,24 @@ function coordinate(metric: Metric) { return metric.value === null ? null : Numb
 const axis = (value: number) => Number.isFinite(value) ? formatAmountL1(String(value)) : "";
 /** 差額的顏色：只有不利上色（D-V3-7＝A），依 favorableDirection，不依數學正負號；未知為無色。 */
 const toneOf = (metric: MetricName, delta: string | null, layer: Layer) => delta === null ? "" : toneClass(deltaTone(metric, delta, layer));
+/**
+ * C18 目標細條（V3-4a；只是視覺，aria-hidden）：實際值長條寬＝達成率（targets.ts achievement 的同一個數字）夾在 0–1，目標刻度在 100%；
+ * 落後（收入、毛利、貢獻低於目標；廣告費高於預算）時長條改不利色。數字本身仍是旁邊的 number-link 文字。
+ */
+function targetBar(metric: TargetMetric, actual: Metric, target: string): ReactNode {
+  const result = achievement(actual, target);
+  if (result.status !== "ok" || result.rate === null) return null;
+  const ratio = Number(result.rate.replace(MINUS, "-").replace(/[%,]/g, "")) / 100;
+  if (!Number.isFinite(ratio)) return null;
+  const behind = favorableDirectionOf(metric) === "up" ? ratio < 1 : ratio > 1;
+  const width = Math.min(Math.max(ratio, 0), 1);
+  return <span className={`kpi-bullet${behind ? " is-behind" : ""}`} aria-hidden="true"><span className="kpi-bullet-bar" style={{ width: `${(width * 100).toFixed(1)}%` }} /><span className="kpi-bullet-target" /></span>;
+}
 
-export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = false, onPeriodToggle, targets = null, events = null, allChannels }: Props) {
+export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = false, onPeriodToggle, targets = null, events = null, allChannels, onBasis, onNavigate, datasetName, missingItems, actionsSummary, meetingEntry }: Props) {
   const { report, weeks } = snapshot;
+  // 進階（收合）：重新進入總覽時，若期間合計與日均原本是展開的，外層一起展開；之後各自開關。
+  const [advancedOpen, setAdvancedOpen] = useState(periodOpen);
   // R4：目標只在期間完全相同時顯示達成率；檔期只標示，不改任何計算。
   const targetMatches = matchTargets(targets, { current_period: report.current.period, channels: report.scope.channels, allChannels: allChannels ?? report.scope.channels });
   const targetLine = (name: string, budget = false) => {
@@ -53,15 +74,14 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
     const row = match.status === "matched" ? match.row : match.nearest;
     // 目標數字可追溯：抽屜列出實際與目標、公式「實際 ÷ 目標」、targets.csv 檔名與行號。
     const openTarget = () => onEvidence({ title: fill(labels.targets.evidenceTitle, { metric: metricDefinitions[metric].label }), name: metric, metric: actual, period: report.current.period, channels, sources: report.current.sources, formula: labels.targets.formula, formulaTechnical: `${labels.targets.formula}：${actual.value ?? labels.status.missing} ÷ ${row.target}`, metricVersion: ASSIST_KPI_VERSION, components: [{ label: labels.targets.actual, metric: actual }, { label: labels.targets.columns.target, metric: { value: row.target, reason_codes: [] } }], scopeLabel: fill(labels.targets.sourceLine, { file: targets?.filename ?? "targets.csv", line: row.line }) });
-    return <p className={`kpi-target ${match.status}`} data-testid={`kpi-target-${name}`}><button className="number-link" onClick={openTarget}>{text}</button></p>;
+    return <p className={`kpi-target ${match.status}`} data-testid={`kpi-target-${name}`}>{match.status === "matched" && targetBar(metric, actual, match.row.target)}<button className="number-link" onClick={openTarget}>{text}</button></p>;
   };
-  const { previous: previousSummary, current: currentSummary } = report;
-  const assist = useMemo(() => ({ previous: assistKpis(previousSummary), current: assistKpis(currentSummary) }), [previousSummary, currentSummary]);
   const channels = report.scope.channels;
   const alias = demoAlias(report.dataset_id);
   const open = (name: MetricName, metric: Metric, period: Period, sources: SourceRef[], title?: string, selectedChannels = channels) => onEvidence({ name, metric, period, sources, channels: selectedChannels, title: title ?? metricDefinitions[name].label });
   const periodBoth = { start: [report.previous.period.start, report.current.period.start].sort()[0], end: [report.previous.period.end, report.current.period.end].sort()[1] };
   const sourcesBoth = [...report.previous.sources, ...report.current.sources];
+  const kpiTargets: Partial<Record<KpiBandMetric, ReactNode>> = Object.fromEntries(KPI_BAND_METRICS.map(name => [name, targetLine(name)]));
   const changes = AMOUNT_FIELDS.map(name => ({ name: metricDefinitions[name].label, field: name, value: coordinate(report.bridge.components[name]), metric: report.bridge.components[name] }));
   const bridgeFormula = AMOUNT_FIELDS.map(name => `${metricDefinitions[name].label}${labels.csvSuffix.change}`).join(" − ");
   // 趨勢圖 x 軸用週序號（數值軸，避免上期／本期同月同日的刻度撞名），檔期區帶用 events.ts 的分數位置（週 i 的點在 x＝i，區帶以 ±0.5 置中）。
@@ -74,40 +94,9 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
   const dailyAverageLabel = (period: "previous" | "current") => fill(ui.dailyAverageTitle, { period: periodLabel(period), metric: "" });
 
   return <>
-    <div className="section-heading compact"><h2>{labels.sections.kpis}</h2><span className="note">{ui.kpiHint}</span></div>
-    <section className="kpi-grid" aria-label={labels.sections.kpis}>
-      {kpis.map(name => {
-        const before = report.previous.metrics[name], current = report.current.metrics[name];
-        const rate = name === "contribution_margin";
-        const change = rate ? percentagePointChange(before, current) : compareMoney(before, current).absolute_change;
-        // 比率卡：domain 的差額單位是百分點，換回比率小數再交給 formatRatePoints（÷ 100 在十進位下是精確的）；金額卡：L1 差額＋成長率（上期 > 0 才有）。
-        const delta = rate && change.value !== null ? new Decimal(change.value).div(100).toFixed() : change.value;
-        const growth = rate ? null : formatGrowth(current.value, before.value, "L1");
-        return <article className={`kpi-card ${name === "contribution_after_marketing" ? "featured" : ""}`} key={name} data-testid={`kpi-${name}`}>
-          <h3>{metricDefinitions[name].label}</h3><div className="kpi-value">{number(name, current, report.current.period, report.current.sources, "L1")}</div>
-          <p className="kpi-previous">{labels.periods.previous} {number(name, before, report.previous.period, report.previous.sources, "L1")}</p>
-          {targetLine(name)}
-          <div className={`kpi-change ${toneOf(name, delta, "L1")}`}>
-            {change.value === null ? <span>{ui.changePending}</span> : <button className="number-link" onClick={() => onEvidence({ title: fill(ui.changeTitle, { metric: metricDefinitions[name].label }), unitOverride: rate ? "percentage-point" : undefined, name: rate ? "contribution_margin" : name, metric: change, period: periodBoth, channels, sources: sourcesBoth, formula: rate ? ui.ratePointFormula : ui.amountDeltaFormula, scopeLabel: rate ? ui.ratePointScope : ui.amountDeltaScope, components: rate ? undefined : [{ label: labels.periods.previous, metric: before }, { label: labels.periods.current, metric: current }] })}>{rate ? formatRatePoints(delta, "L1") : formatSignedDelta(change.value, "L1")}</button>}
-            {growth !== null && <span className="change-rate">{fill(ui.growthInline, { value: growth })}</span>}
-          </div>
-        </article>;
-      })}
-    </section>
+    <WeeklySnapshot snapshot={snapshot} datasetName={datasetName} missingItems={missingItems} actionsSummary={actionsSummary} allChannels={allChannels} meetingEntry={meetingEntry} />
 
-    <section className="assist-row" aria-label={labels.sections.assistKpis} data-testid="assist-kpis">
-      <div className="section-heading compact"><h2>{labels.sections.assistKpis}</h2><span className="note">{labels.assist.intro}</span></div>
-      <div className="assist-grid">{assist.current.map((kpi, index) => {
-        const previous = assist.previous[index];
-        const open = (item: AssistKpi, period: Period) => () => onEvidence({ title: item.label, name: item.metric ?? "net_revenue", metric: { value: item.value, reason_codes: item.reason_codes }, period, channels, sources: item.sources, formula: item.formula, formulaTechnical: item.formulaTechnical, metricVersion: item.metric ? undefined : ASSIST_KPI_VERSION, nullDisplay: item.status === "not_applicable" ? labels.assist.notApplicable : undefined, unitOverride: item.unit === "count" ? "count" : item.unit === "money_per_unit" ? "money_per_unit" : undefined });
-        return <article className={`assist-card ${kpi.status}`} key={kpi.id} data-testid={`assist-${kpi.id}`} title={kpi.plain}>
-          <h3>{kpi.label}</h3>
-          <div className="assist-value"><button className="number-link" onClick={open(kpi, report.current.period)}>{kpi.display}</button></div>
-          <p className="kpi-previous">{labels.periods.previous} <button className="number-link" onClick={open(previous, report.previous.period)}>{previous.display}</button></p>
-          {kpi.id === "marketing_burden" && targetLine("ad_spend", true)}
-        </article>;
-      })}</div>
-    </section>
+    <KpiBand snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} onNavigate={onNavigate} missingItems={missingItems} targets={kpiTargets} />
 
     <TopThree snapshot={snapshot} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} />
 
@@ -116,9 +105,9 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
       <p className="note">{ui.trendNote}</p>
       {eventBands.length > 0 && <p className="note" data-testid="trend-events">{fill(labels.events.trendList, { list: eventBands.map(band => fill(labels.events.trendItem, { label: band.event.label, start: band.event.start, end: band.event.end })).join(labels.events.joiner) })}</p>}
       <div className="chart-frame" aria-hidden="true"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 800, height: 270 }}><LineChart data={trend} margin={{ top: 18, right: 20, bottom: 10, left: 10 }} accessibilityLayer={false}>
-        <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="3 4" /><XAxis dataKey="index" type="number" domain={[-0.5, Math.max(trend.length - 0.5, 0.5)]} ticks={trend.map(row => row.index)} tickFormatter={(value: number) => trend[value]?.tick ?? ""} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--chart-axis)" }} minTickGap={26} /><YAxis tickFormatter={axis} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--chart-axis)" }} width={50} />
+        <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="3 4" /><XAxis dataKey="index" type="number" domain={[-0.5, Math.max(trend.length - 0.5, 0.5)]} ticks={trend.map(row => row.index)} tickFormatter={(value: number) => trend[value]?.tick ?? ""} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: "var(--text-12)", fill: "var(--chart-axis)" }} minTickGap={26} /><YAxis tickFormatter={axis} tickLine={false} axisLine={false} tick={{ fontSize: "var(--text-12)", fill: "var(--chart-axis)" }} width={50} />
         <Tooltip content={({ active, payload }) => { const row = payload?.[0]?.payload as typeof trend[number] | undefined; return active && row ? <div className="chart-tooltip"><strong>{row.start} — {row.end}</strong><p>{periodLabel(row.period)}</p><p>{metricValue(metricDefinitions.net_revenue.shortLabel, text("net_revenue", row.metrics.net_revenue, "L1"))}</p><p>{metricValue(metricDefinitions.contribution_after_marketing.shortLabel, text("contribution_after_marketing", row.metrics.contribution_after_marketing, "L1"))}</p></div> : null; }} />
-        {eventBands.map(band => <ReferenceArea key={`${band.event.line}-${band.x1}`} x1={band.x1} x2={band.x2} ifOverflow="visible" fill="var(--chart-band)" fillOpacity={1} stroke="var(--border-default)" strokeOpacity={1} label={{ value: band.event.label, position: "insideTop", fontSize: 12, fill: "var(--text-secondary)" }} />)}
+        {eventBands.map(band => <ReferenceArea key={`${band.event.line}-${band.x1}`} x1={band.x1} x2={band.x2} ifOverflow="visible" fill="var(--chart-band)" fillOpacity={1} stroke="var(--border-default)" strokeOpacity={1} label={{ value: band.event.label, position: "insideTop", fontSize: "var(--text-12)", fill: "var(--text-secondary)" }} />)}
         <Line dataKey="revenue" stroke="var(--chart-current)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--bg-surface)", strokeWidth: 2 }} activeDot={{ r: 5 }} isAnimationActive={false} connectNulls={false} />
         <Line dataKey="contribution" stroke="var(--chart-total)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--bg-surface)", strokeWidth: 2 }} isAnimationActive={false} connectNulls={false} />
       </LineChart></ResponsiveContainer></div>
@@ -129,17 +118,20 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
       <section className="panel" aria-labelledby="bridge-title"><div className="section-heading"><div><p className="eyebrow">CONTRIBUTION BRIDGE</p><h2 id="bridge-title">{labels.sections.bridge}</h2></div><span className={`tag ${report.bridge.reconciled ? "valid" : "partial"}`}>{report.bridge.reconciled ? ui.bridgeReconciled : labels.status.missing}</span></div>
         <div className="bridge-summary"><div><small>{labels.periods.previous}</small>{number("contribution_after_marketing", report.previous.metrics.contribution_after_marketing, report.previous.period, report.previous.sources, "L3")}</div><span>→</span><div><small>{labels.periods.current}</small>{number("contribution_after_marketing", report.current.metrics.contribution_after_marketing, report.current.period, report.current.sources, "L3")}</div></div>
         <div className="bridge-total">{ui.bridgeTotal} <button className={`number-link ${toneOf("contribution_after_marketing", report.bridge.sum.value, "L3")}`} onClick={() => onEvidence({ title: `${metricDefinitions.contribution_after_marketing.label}${ui.bridgeTotal}`, name: "contribution_after_marketing", metric: report.bridge.sum, period: periodBoth, channels, sources: sourcesBoth, formula: bridgeFormula, components: changes.map(row => ({ label: metricDefinitions[row.field].label, metric: row.metric })) })}>{report.bridge.sum.value === null ? labels.status.missing : formatSignedDelta(report.bridge.sum.value, "L3")}</button></div>
-        <div className="chart-frame bridge-chart" aria-hidden="true"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 500, height: 300 }}><BarChart data={changes} layout="vertical" margin={{ top: 0, right: 14, left: 0, bottom: 0 }} accessibilityLayer={false}><CartesianGrid horizontal={false} stroke="var(--chart-grid)" /><XAxis type="number" tickFormatter={axis} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--chart-axis)" }} /><YAxis type="category" dataKey="name" width={106} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--chart-axis)" }} /><ReferenceLine x={0} stroke="var(--border-strong)" /><Tooltip content={({ active, payload }) => { const row = payload?.[0]?.payload as typeof changes[number] | undefined; return active && row ? <div className="chart-tooltip">{fill(ui.tooltipDelta, { metric: row.name, value: row.metric.value === null ? labels.status.missing : formatSignedDelta(row.metric.value, "L3") })}</div> : null; }} /><Bar dataKey="value" barSize={12} radius={3} isAnimationActive={false}>{changes.map(row => <Cell key={row.field} fill={row.metric.value !== null && deltaTone("contribution_after_marketing", row.metric.value) === "unfavorable" ? "var(--chart-unfavorable)" : "var(--chart-favorable)"} />)}</Bar></BarChart></ResponsiveContainer></div>
+        <div className="chart-frame bridge-chart" aria-hidden="true"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 500, height: 300 }}><BarChart data={changes} layout="vertical" margin={{ top: 0, right: 14, left: 0, bottom: 0 }} accessibilityLayer={false}><CartesianGrid horizontal={false} stroke="var(--chart-grid)" /><XAxis type="number" tickFormatter={axis} tickLine={false} axisLine={false} tick={{ fontSize: "var(--text-12)", fill: "var(--chart-axis)" }} /><YAxis type="category" dataKey="name" width={106} tickLine={false} axisLine={false} tick={{ fontSize: "var(--text-12)", fill: "var(--chart-axis)" }} /><ReferenceLine x={0} stroke="var(--border-strong)" /><Tooltip content={({ active, payload }) => { const row = payload?.[0]?.payload as typeof changes[number] | undefined; return active && row ? <div className="chart-tooltip">{fill(ui.tooltipDelta, { metric: row.name, value: row.metric.value === null ? labels.status.missing : formatSignedDelta(row.metric.value, "L3") })}</div> : null; }} /><Bar dataKey="value" barSize={12} radius={3} isAnimationActive={false}>{changes.map(row => <Cell key={row.field} fill={row.metric.value !== null && deltaTone("contribution_after_marketing", row.metric.value) === "unfavorable" ? "var(--chart-unfavorable)" : "var(--chart-favorable)"} />)}</Bar></BarChart></ResponsiveContainer></div>
         <p className="note">{ui.bridgeNote}</p>
         <details className="data-alternative"><summary>{dataTable(labels.sections.bridge)}</summary><div className="table-scroll" tabIndex={0} role="region" aria-label={ui.bridgeTableAria}><table><caption>{ui.bridgeCaption}</caption><thead><tr><th>{ui.colItem}</th><th>{labels.periods.previous}</th><th>{labels.periods.current}</th><th>{labels.sections.impact}</th></tr></thead><tbody>{changes.map(row => <tr key={row.field}><th>{row.name}</th><td>{number(row.field, report.previous.metrics[row.field], report.previous.period, report.previous.sources, "L3")}</td><td>{number(row.field, report.current.metrics[row.field], report.current.period, report.current.sources, "L3")}</td><td><button className="number-link" onClick={() => onEvidence({ title: fill(ui.bridgeRowTitle, { metric: row.name }), name: row.field, metric: row.metric, period: periodBoth, channels, sources: sourcesBoth, formula: row.field === "gross_sales" ? ui.amountDeltaFormula : ui.costDeltaFormula, components: [{ label: labels.periods.previous, metric: report.previous.metrics[row.field] }, { label: labels.periods.current, metric: report.current.metrics[row.field] }] })}>{row.metric.value === null ? labels.status.missing : formatSignedDelta(row.metric.value, "L3")}</button></td></tr>)}</tbody><tfoot><tr><td colSpan={4} className="note">{labels.format.roundingNote}</td></tr></tfoot></table></div></details>
       </section>
       <section className="panel" aria-labelledby="channel-title"><div className="section-heading"><div><p className="eyebrow">CHANNEL MIX</p><h2 id="channel-title">{labels.sections.channelMix}</h2></div><span className="unit">{ui.kpiHint}</span></div><div className="chart-legend"><span><i className="legend-dot pale" />{labels.periods.previous}</span><span><i className="legend-dot teal" />{labels.periods.current}</span></div>
-        <div className="chart-frame channel-chart" aria-hidden="true"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 500, height: 250 }}><BarChart data={comparisons} margin={{ top: 20, left: 5, right: 10, bottom: 0 }} accessibilityLayer={false}><CartesianGrid vertical={false} stroke="var(--chart-grid)" /><XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "var(--chart-axis)" }} /><YAxis axisLine={false} tickLine={false} tickFormatter={axis} width={50} tick={{ fontSize: 12, fill: "var(--chart-axis)" }} /><ReferenceLine y={0} stroke="var(--border-strong)" /><Tooltip content={({ active, payload }) => { const row = payload?.[0]?.payload as typeof comparisons[number] | undefined; return active && row ? <div className="chart-tooltip"><strong>{row.label}</strong><p>{metricValue(labels.periods.previous, text("contribution_after_marketing", report.previous.channels[row.channel].metrics.contribution_after_marketing, "L1"))}</p><p>{metricValue(labels.periods.current, text("contribution_after_marketing", report.current.channels[row.channel].metrics.contribution_after_marketing, "L1"))}</p></div> : null; }} /><Bar dataKey="previous" fill="var(--chart-previous)" barSize={35} radius={[4, 4, 0, 0]} isAnimationActive={false} /><Bar dataKey="current" fill="var(--chart-current)" barSize={35} radius={[4, 4, 0, 0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
+        <div className="chart-frame channel-chart" aria-hidden="true"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 500, height: 250 }}><BarChart data={comparisons} margin={{ top: 20, left: 5, right: 10, bottom: 0 }} accessibilityLayer={false}><CartesianGrid vertical={false} stroke="var(--chart-grid)" /><XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: "var(--text-12)", fill: "var(--chart-axis)" }} /><YAxis axisLine={false} tickLine={false} tickFormatter={axis} width={50} tick={{ fontSize: "var(--text-12)", fill: "var(--chart-axis)" }} /><ReferenceLine y={0} stroke="var(--border-strong)" /><Tooltip content={({ active, payload }) => { const row = payload?.[0]?.payload as typeof comparisons[number] | undefined; return active && row ? <div className="chart-tooltip"><strong>{row.label}</strong><p>{metricValue(labels.periods.previous, text("contribution_after_marketing", report.previous.channels[row.channel].metrics.contribution_after_marketing, "L1"))}</p><p>{metricValue(labels.periods.current, text("contribution_after_marketing", report.current.channels[row.channel].metrics.contribution_after_marketing, "L1"))}</p></div> : null; }} /><Bar dataKey="previous" fill="var(--chart-previous)" barSize={35} radius={[4, 4, 0, 0]} isAnimationActive={false} /><Bar dataKey="current" fill="var(--chart-current)" barSize={35} radius={[4, 4, 0, 0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
         <div className="channel-summaries">{Object.entries(report.current.channels).map(([channel, row]) => <div key={channel}><span>{channelLabel(channel, alias)}</span>{number("contribution_after_marketing", row.metrics.contribution_after_marketing, report.current.period, row.sources, "L2", [channel])}<small>{metricDefinitions.contribution_margin.shortLabel} {number("contribution_margin", row.metrics.contribution_margin, report.current.period, row.sources, "L2", [channel])}</small></div>)}</div>
         <details className="data-alternative"><summary>{dataTable(labels.sections.channelMix)}</summary><div className="table-scroll" tabIndex={0} role="region" aria-label={ui.channelTableAria}><table><caption>{fill(ui.captionWithUnit, { caption: ui.channelCaption })}</caption><thead><tr><th>{ui.colChannel}</th><th>{labels.periods.current}{metricDefinitions.net_revenue.label}</th><th>{labels.periods.previous}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.periods.current}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.periods.current}{metricDefinitions.contribution_margin.shortLabel}</th></tr></thead><tbody>{Object.entries(report.current.channels).map(([channel, row]) => <tr key={channel}><th>{channelLabel(channel, alias)}</th><td>{number("net_revenue", row.metrics.net_revenue, report.current.period, row.sources, "L2", [channel])}</td><td>{number("contribution_after_marketing", report.previous.channels[channel].metrics.contribution_after_marketing, report.previous.period, report.previous.channels[channel].sources, "L2", [channel])}</td><td>{number("contribution_after_marketing", row.metrics.contribution_after_marketing, report.current.period, row.sources, "L2", [channel])}</td><td>{number("contribution_margin", row.metrics.contribution_margin, report.current.period, row.sources, "L2", [channel])}</td></tr>)}</tbody></table></div></details>
       </section>
     </div>
 
+    <AssistTable snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} budget={targetLine("ad_spend", true)} />
+
+    <details className="advanced" data-testid="overview-advanced" open={advancedOpen} onToggle={event => setAdvancedOpen(event.currentTarget.open)}><summary>{labels.overview.advanced.summary}</summary>
     <details className="panel period-comparison" aria-labelledby="daily-average-title" data-testid="period-comparison" open={periodOpen} onToggle={event => onPeriodToggle?.(event.currentTarget.open)}>
       <summary><span className="section-title">{labels.sections.periodTotals}</span><span className="tag">{report.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays}</span></summary>
       <h2 id="daily-average-title" className="sr-only">{labels.sections.periodTotals}</h2>
@@ -155,6 +147,7 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
         <td><button className="number-link" onClick={() => onEvidence({ title: fill(ui.dailyAverageDeltaTitle, { metric: metricDefinitions[name].label }), name, metric: report.comparison.daily_average_changes[name], period: periodBoth, channels, sources: sourcesBoth, formula: fill(ui.dailyAverageDeltaFormula, { currentDays: report.comparison.current_days, previousDays: report.comparison.previous_days }), scopeLabel: ui.dailyAverageDeltaScope, components: [{ label: periodTotalLabel("previous"), metric: report.previous.metrics[name] }, { label: periodTotalLabel("current"), metric: report.current.metrics[name] }] })}>{report.comparison.daily_average_changes[name].value === null ? labels.status.missing : formatSignedDelta(report.comparison.daily_average_changes[name].value, "L2")}</button></td>
       </tr>)}</tbody></table></div>
       <details className="data-alternative"><summary>{labels.sections.technicalDetails}</summary><p className="note">{ui.periodModeTechnical}</p><p className="note">{ui.periodRoundingTechnical}</p></details>
+    </details>
     </details>
   </>;
 }

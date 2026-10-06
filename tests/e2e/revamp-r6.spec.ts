@@ -29,6 +29,8 @@ const test = base.extend<{ audit: string[] }>({
 
 const dash = labels.ui.dashboard;
 const meetingPage = labels.meetingPage;
+/** V3-4a：總覽會議入口的字串搬到本期一句話區塊（labels.overview.snapshotUi）。 */
+const entryUi = labels.overview.snapshotUi;
 const record = labels.meetingRecord;
 const review = labels.ui.reviewWorkbench;
 const store = labels.ui.workspaceStorage;
@@ -233,8 +235,8 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   // 總覽只留一行入口：剛結束會議、新會議稿還沒動過 → 「本期會議：已結束（日期）· 新會議稿：草稿」（不再另列「上次會議 日期」）。
   await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
-  await expect(entry).toContainText(fill(meetingPage.entryFinalized, { date: today }));
-  await expect(entry).not.toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).toContainText(fill(entryUi.meetingEntryFinalized, { date: today }));
+  await expect(entry).not.toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 
   // 備份 v4：meeting_history 一筆（凍結的議程：選入方案 270.00、置頂待辦一項）。
@@ -278,7 +280,7 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await expectSameScopeCompare(restored);
   // 還原備份後新會議稿仍是未動過的第 1 版草稿：總覽入口同樣顯示「已結束（日期）」。
   await navigateTo(page, "overview");
-  await expect(page.getByTestId("overview-meeting-entry")).toContainText(fill(meetingPage.entryFinalized, { date: today }));
+  await expect(page.getByTestId("overview-meeting-entry")).toContainText(fill(entryUi.meetingEntryFinalized, { date: today }));
 });
 
 test("b. 不同資料的降級：golden 結束會議後換成示範資料，會議改用目前資料 → 比較區只留一句，上次決議與置頂待辦狀態只列在議程 ④", async ({ page }) => {
@@ -333,7 +335,7 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
   await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
-  await expect(entry).toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 });
 
@@ -567,9 +569,9 @@ test("e. 總覽一行入口切到會議紀錄；導覽：桌機側欄四組＋�
   const entry = page.getByTestId("overview-meeting-entry");
   await expect(entry).toBeVisible();
   expect(await entry.evaluate(element => element.tagName)).toBe("P");
-  await expect(entry).toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
   await expect(entry).not.toContainText(meetingPage.entryLast.split("{date}")[0].trim());
-  const go = entry.getByRole("button", { name: meetingPage.goToMeeting, exact: true });
+  const go = entry.getByRole("button", { name: fill(entryUi.meetingGoAria, { text: fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }), go: meetingPage.goToMeeting }), exact: true });
   await expect(go).toBeVisible();
   // 一行：入口內的文字與按鈕垂直置中在同一列（手機寬度允許換行，只檢查高度不超過兩行）。
   const rows = await entry.evaluate(element => new Set(Array.from(element.children).map(child => { const box = child.getBoundingClientRect(); return Math.round((box.top + box.height / 2) / 8); })).size);
@@ -824,7 +826,7 @@ test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文�
   // 總覽入口回到「本期會議：草稿」，不再顯示已結束或上次會議日期。
   await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
-  await expect(entry).toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
-  await expect(entry).not.toContainText(fill(meetingPage.entryFinalized, { date: today }));
+  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).not.toContainText(fill(entryUi.meetingEntryFinalized, { date: today }));
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 });

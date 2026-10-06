@@ -98,7 +98,11 @@ export async function acceptSavePrompt(page: Page) {
   await settleMoreBeforePrompt(page);
   await prompt.getByRole('button', { name: labels.autoSave.accept, exact: true }).click();
 }
-export const openPeriodComparison = (page: Page) => openDetails(page.getByTestId('period-comparison'));
+/** V3-4a：期間合計與日均收在總覽的「進階」<details> 裡；先展開外層再展開本身。 */
+export async function openPeriodComparison(page: Page) {
+  await openDetails(page.getByTestId('overview-advanced'));
+  return openDetails(page.getByTestId('period-comparison'));
+}
 
 /** V3-3 手機：頂欄右側的 AI 狀態／指標定義／儲存／匯出收在「更多」（topbar-more）裡，收起時是 display:none；用之前先展開。桌機不動。 */
 export async function openTopbarMore(page: Page) {

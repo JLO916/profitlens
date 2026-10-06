@@ -14,6 +14,10 @@ const PATHS: Record<string, string> = {
   ai: "M4 6h16v12H4z M9 11h.01 M15 11h.01 M9 15h6",
   more: "M5 12h.01 M12 12h.01 M19 12h.01",
   import: "M12 4v11 M7 10l5 5 5-5 M5 20h14",
+  // V3-4a 總覽：複製週會摘要、`?` 定義按鈕、勾（已平衡、已複製）。
+  copy: "M10 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2",
+  help: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.1 2-2.1 3.4 M12 17h.01",
+  check: "M5 12l5 5 9-10",
 };
 
 export function ShellIcon({ name, size = 20, className }: { name: keyof typeof PATHS | string; size?: number; className?: string }) {

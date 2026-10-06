@@ -84,13 +84,17 @@ export function currentViewDecisionContext(snapshot: Pick<WorkspaceSnapshot, "da
 
 /**
  * 總覽頁只留一行入口（05 §10）：本期會議的決議狀態（或尚未建立）＋同一份資料的上次會議日期。
- * 剛結束會議、新會議稿還沒動過（同資料同範圍、第 1 版草稿）時改顯示「已結束（日期）· 新會議稿：草稿」。
+ * 剛結束會議、新會議稿還沒動過（同資料同範圍、第 1 版草稿）時改顯示「已結束（日期）· 本次草稿」。
+ * V3-4a：放在本期一句話右側，整句就是唯一的文字按鈕（可及名稱補上「前往會議紀錄」）；上次會議日期是旁邊的註記。
  */
 export function MeetingEntry({ review, history, datasetHash, onOpen }: { review: ReviewSession | null; history: readonly Meeting[]; datasetHash: string; onOpen: () => void }) {
   const state = review ? labels.meeting.decisions[DECISION_LABEL_KEY[review.decision_state]] : labels.sections.meetingNotCreated;
   const last = lastMeeting(history);
   const justFinalized = review !== null && last !== null && last.source_fixed.dataset_hash === review.dataset_hash && last.source_fixed.filter_hash === review.filter_hash && review.revision === 1 && review.decision_state === "draft";
-  return <p className="meeting-entry" data-testid="overview-meeting-entry">{justFinalized ? <span>{fill(page.entryFinalized, { date: last.date })}</span> : <><span>{fill(page.entry, { state })}</span>{last && last.source_fixed.dataset_hash === datasetHash && <span className="note">{fill(page.entryLast, { date: last.date })}</span>}</>}<button type="button" className="text-button" onClick={onOpen}>{page.goToMeeting}</button></p>;
+  const entry = labels.overview.snapshotUi;
+  const text = justFinalized ? fill(entry.meetingEntryFinalized, { date: last.date }) : fill(entry.meetingEntry, { state });
+  const showLast = !justFinalized && last !== null && last.source_fixed.dataset_hash === datasetHash;
+  return <p className="meeting-entry" data-testid="overview-meeting-entry"><button type="button" className="text-button" aria-label={fill(entry.meetingGoAria, { text, go: page.goToMeeting })} onClick={onOpen}>{text}</button>{showLast && <span className="note">{fill(page.entryLast, { date: last.date })}</span>}</p>;
 }
 
 type ReviewSource = { key: string; snapshot: WorkspaceSnapshot; dataset: Dataset };
