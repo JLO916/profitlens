@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, openValidation, ruleHeadline } from "./replacement-helpers";
+import { applyCustomPeriod, clearWorkspace, clickReplacing, closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { MINUS, deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatGrowth, formatPointsValue, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { appendFile, mkdir } from "node:fs/promises";
@@ -106,8 +106,14 @@ async function loadGolden(page: Page) {
   await expect(ready(page, "golden")).toBeVisible();
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
+}
+/** V3-3：通路下拉在期間列裡；手機期間列收成 period-toggle，先開底部面板，選完按「完成」收起（桌機不動）。 */
+async function selectChannel(page: Page, channel: string) {
+  await openPeriodSheet(page);
+  await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption(channel);
+  await closePeriodSheet(page);
 }
 function deferred() {
   let release!: () => void;
@@ -131,7 +137,7 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
   await expect(ready(page, "demo")).toBeVisible();
   await dismissSavePrompt(page);
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("1269792.73"));
   await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("7850657.90"));
   // L1 只到 0.1 萬；到分的精確值在抽屜標題下一行（§7.8），逐一打開確認仍可追溯到分。
@@ -170,7 +176,7 @@ test("切換 golden 與 demo 會重算同一組 KPI", async ({ page }) => {
   await expect(change).toHaveClass(/\bnegative\b/);
   await requestDataset(page, "demo");
   await expect(ready(page, "demo")).toBeVisible();
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("1269792.73"));
   await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("7850657.90"));
   await loadGolden(page);
@@ -179,7 +185,7 @@ test("切換 golden 與 demo 會重算同一組 KPI", async ({ page }) => {
 
 test("通路篩選共用，金額證據可用鍵盤開啟與返回", async ({ page }) => {
   await loadGolden(page);
-  await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
   await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("1480.00"));
   const trigger = kpiValue(contribution(page)).getByRole("button", { name: formatAmountL1("270.00"), exact: true });
@@ -207,9 +213,9 @@ test("通路篩選共用，金額證據可用鍵盤開啟與返回", async ({ pa
   await trigger.click();
   await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
+  await navigateTo(page, "diagnosis");
   await expect(page.getByLabel(dashboard.filter.channel, { exact: true })).toHaveValue("DTC");
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
 });
 
@@ -236,7 +242,7 @@ test("貢獻率差額的證據保留百分點單位，不再乘以 100", async (
 
 test("診斷排序金額使用兩期已觀察差額，證據方向與來源一致", async ({ page }) => {
   await loadGolden(page);
-  await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
+  await navigateTo(page, "diagnosis");
   // R5-1：同一規則的合計與各通路合併成一列（details.diagnosis-row-<RuleCode>）；範圍切換鈕預設選「合計」。
   const card = page.getByTestId("diagnosis-row-DISCOUNT_BURDEN_UP");
   await expect(card.getByRole("heading", { level: 3, name: ruleHeadline("DISCOUNT_BURDEN_UP") })).toBeVisible();
@@ -274,8 +280,8 @@ test("診斷排序金額使用兩期已觀察差額，證據方向與來源一�
 
 test("商品篩選只影響毛利明細，不帶入通路廣告與貢獻", async ({ page }, testInfo) => {
   await loadGolden(page);
-  await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption("DTC");
-  await page.getByRole("button", { name: labels.nav.products.label, exact: true }).click();
+  await selectChannel(page, "DTC");
+  await navigateTo(page, "products");
   const table = page.getByTestId("product-table");
   await expect(table).toBeVisible();
   // Product columns must not carry channel-level ad or contribution metrics (any of their labels or short labels).
@@ -291,31 +297,42 @@ test("商品篩選只影響毛利明細，不帶入通路廣告與貢獻", async
   await expect(grossProfit).toHaveText(formatAmountL2("540.00"));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-workspace-regression-${testInfo.project.name}-products.png`), fullPage: true });
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
   await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("1480.00"));
 });
 
 test("無效期間不覆寫已套用的分析範圍", async ({ page }) => {
   await loadGolden(page);
+  // V3-3：日期欄收在「自訂期間」popover（手機是期間底部面板）；在裡面改日期仍要按「套用」。golden 上期 8/1、本期 8/2。
+  const applied = periodSummaryText("2026-08-02", "2026-08-02", "2026-08-01", "2026-08-01", { anchor: dataAsOf.golden });
+  await expect(periodSummary(page)).toContainText(applied);
+  let panel = await openCustomPeriod(page);
   await page.getByLabel(periodField("start", "current"), { exact: true }).fill("2026-08-01");
-  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(page.getByRole("main").getByRole("alert")).toContainText(dashboard.errors.periodNotApplied);
+  await expect(page.getByTestId("banner-filter-error")).toHaveText(dashboard.errors.periodNotApplied);
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
+  await expect(periodSummary(page)).toContainText(applied);
+  panel = await openCustomPeriod(page);
   await page.getByLabel(periodField("start", "current"), { exact: true }).fill("2026-08-02");
-  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
+  await expect(page.getByTestId("banner-filter-error")).toHaveCount(0);
+  await expect(periodSummary(page)).toContainText(applied);
 });
 
 test("有效自訂期間會同步更新 KPI、週資料及來源期間", async ({ page }) => {
   await requestDataset(page, "demo");
   await expect(ready(page, "demo")).toBeVisible();
   await dismissSavePrompt(page);
-  await page.getByLabel(periodField("start", "previous"), { exact: true }).fill("2026-06-01");
-  await page.getByLabel(periodField("end", "previous"), { exact: true }).fill("2026-06-07");
-  await page.getByLabel(periodField("start", "current"), { exact: true }).fill("2026-06-08");
-  await page.getByLabel(periodField("end", "current"), { exact: true }).fill("2026-06-14");
-  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  // V3-3：自訂期間 popover（手機是底部面板）裡填四個日期欄（id／標籤不變）再按「套用」；期間摘要改成新範圍。
+  const panel = await openCustomPeriod(page);
+  for (const [edge, period] of [["start", "previous"], ["end", "previous"], ["start", "current"], ["end", "current"]] as const) {
+    await expect(panel.getByLabel(periodField(edge, period), { exact: true })).toBeVisible();
+  }
+  await applyCustomPeriod(page, { previousStart: "2026-06-01", previousEnd: "2026-06-07", currentStart: "2026-06-08", currentEnd: "2026-06-14" });
+  await expect(periodSummary(page)).toContainText(periodSummaryText("2026-06-08", "2026-06-14", "2026-06-01", "2026-06-07", { anchor: dataAsOf.demo }));
   // Independently computed once from original demo CSV with Python csv + Decimal;
   // these literal expectations never call the application's financial functions.
   // KPI 卡是 L1（本期主數字＋上期連結）；到分的值在下面的抽屜精確值行驗證。
@@ -341,9 +358,9 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
 
 test("資料工作區展示三份原始檔案、行號、口徑與未縮減預覽", async ({ page }) => {
   await loadGolden(page);
-  await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
-  await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();
+  await navigateTo(page, "data");
   await expect(page.getByRole("heading", { name: labels.sections.dataScope, exact: true })).toBeVisible();
   await expect(page.getByRole("main")).toContainText(labels.ui.workspacePanels.previewNote);
   const sales = page.getByRole("table", { name: fill(labels.ui.workspacePanels.previewCaption, { fileName: "sales_daily.csv" }), exact: true });
@@ -368,12 +385,12 @@ for (const scenario of [
     await requestDataset(page, scenario.id);
     await expect(partial(page)).toBeVisible();
     await dismissSavePrompt(page);
-    await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+    await navigateTo(page, "overview");
     // 缺值寫「資料待補」（不是「—」）；金額為 L1。
     await expect(kpiValue(contribution(page))).toHaveText(labels.status.missing);
     await expect(contribution(page)).not.toContainText("—");
     await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
-    await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption(scenario.unaffectedChannel);
+    await selectChannel(page, scenario.unaffectedChannel);
     await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1(scenario.unaffectedContribution));
   });
 }
@@ -384,7 +401,7 @@ test("blocking 資料集載入失敗仍保留先前成功資料", async ({ page 
   await expect(failed(page)).toBeVisible();
   await page.getByRole("button", { name: dashboard.errorState.back, exact: true }).click();
   await expect(ready(page, "golden")).toBeVisible();
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
   await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
 });
@@ -451,8 +468,9 @@ test("清空與重新整理回到空狀態，另一個頁面沒有共用資料",
   await expect(otherPage.getByTestId("workspace-status")).toContainText(emptyStatus);
   await expect(otherPage.getByTestId("kpi-contribution_after_marketing")).toHaveCount(0);
   await otherPage.close();
-  await page.getByRole("button", { name: labels.buttons.clear, exact: true }).click();
-  await page.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
+  // V3-3：「清空」搬進頂欄儲存選單的危險區（手機先開頂欄「更多」）。
+  const replacement = await clearWorkspace(page);
+  await replacement.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
   await expect(contribution(page)).toHaveCount(0);
   await expect(page.getByTestId("workspace-status")).toContainText(emptyStatus);
   await loadGolden(page);
