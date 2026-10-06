@@ -28,7 +28,8 @@ test.describe("R1 overview first screen", () => {
   test("KPI cards fit the first screen and the top three are one page down", async ({ page }, testInfo) => {
     await loadDemo(page);
     const viewport = page.viewportSize()!;
-    const kpi = await box(page, `[aria-label="${labels.sections.kpis}"]`);
+    // V3-4a：五張卡改成一個 KPI 帶（C1）。
+    const kpi = await box(page, "[data-testid='kpi-band']");
     if (["desktop", "laptop"].includes(testInfo.project.name)) expect(kpi.y + kpi.height, "KPI 區塊不捲動即可見").toBeLessThanOrEqual(viewport.height);
     const topThree = page.getByTestId("top-three");
     await expect(topThree).toBeVisible();
@@ -42,19 +43,22 @@ test.describe("R1 overview first screen", () => {
       expect(after.y + after.height).toBeLessThanOrEqual(viewport.height);
       await page.evaluate(() => window.scrollTo(0, 0));
     }
-    const order = await page.evaluate((kpiLabel) => {
-      const ids = [`[aria-label='${kpiLabel}']`, "[data-testid='top-three']", "[aria-labelledby='trend-title']", "[aria-labelledby='bridge-title']", "[data-testid='period-comparison']", "[data-testid='overview-meeting-entry']"];
+    // V3-4a（§7.1）：本期一句話（含會議入口）→ KPI 帶 → 三件事 → 趨勢 → 拆解 → 其他常用指標 → 進階（期間合計與日均收在裡面）。
+    const order = await page.evaluate(() => {
+      const ids = ["[data-testid='weekly-snapshot']", "[data-testid='kpi-band']", "[data-testid='top-three']", "[aria-labelledby='trend-title']", "[aria-labelledby='bridge-title']", "[data-testid='assist-kpis']", "[data-testid='overview-advanced']"];
       return ids.map(selector => document.querySelector(selector)?.getBoundingClientRect().top ?? -1);
-    }, labels.sections.kpis);
+    });
     expect(order.every(top => top >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
+    await expect(page.getByTestId("overview-advanced")).not.toHaveAttribute("open", /.*/);
     await expect(page.getByTestId("period-comparison")).not.toHaveAttribute("open", /.*/);
+    await expect(page.getByTestId("weekly-snapshot").getByTestId("overview-meeting-entry")).toHaveCount(1);
     await expect(page.locator(".view-content .export-actions")).toHaveCount(0);
     await expect(page.locator(".view-content .ai-availability")).toHaveCount(0);
     // R6：會議稿搬到「會議紀錄」分頁，總覽頁尾只留一行入口（本期會議狀態＋前往按鈕），不再有收合的 overview-meeting。
     await expect(page.getByTestId("overview-meeting")).toHaveCount(0);
     const entry = page.getByTestId("overview-meeting-entry");
-    await expect(entry).toContainText(fill(labels.meetingPage.entry, { state: labels.meeting.decisions.draft }));
+    await expect(entry).toContainText(fill(labels.overview.snapshotUi.meetingEntry, { state: labels.meeting.decisions.draft }));
     await expect(entry.getByRole("button")).toHaveCount(1);
     await expect(page.getByTestId("manager-summary")).toHaveCount(0);
     await entry.getByRole("button", { name: labels.meetingPage.goToMeeting }).click();
@@ -265,9 +269,10 @@ test.describe("V3-3 shell acceptance", () => {
       expect(bar.y + bar.height, "1440：頂欄＋頁首＋期間列底緣 ≤ 152px").toBeLessThanOrEqual(152);
     }
     if (testInfo.project.name === "mobile") {
-      const top = await page.evaluate(() => { const value = [...document.querySelectorAll("[data-testid^='kpi-'] .kpi-value")].find(element => element.checkVisibility()); return value ? value.getBoundingClientRect().top : null; });
-      expect(top, "390：第一個可見的 KPI 數字").not.toBeNull();
-      expect(top!, "390：第一個 KPI 數字 top ≤ 360px").toBeLessThanOrEqual(360);
+      // V3-4a（§2.3 B）：390 的 KPI 帶改成清單，扣廣告後貢獻放第一列；量它的數字頂端。
+      const top = await page.evaluate(() => { const value = document.querySelector("[data-testid='kpi-contribution_after_marketing'] .kpi-value"); return value && value.checkVisibility() ? value.getBoundingClientRect().top : null; });
+      expect(top, "390：扣廣告後貢獻的數字可見").not.toBeNull();
+      expect(top!, "390：扣廣告後貢獻數字 top ≤ 360px").toBeLessThanOrEqual(360);
     }
   });
 

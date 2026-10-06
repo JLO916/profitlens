@@ -1,6 +1,7 @@
 import { applyCustomPeriod, clearWorkspace, clickReplacing, closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { MINUS, deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatGrowth, formatPointsValue, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
+import { formatHeadlineAmount } from "../../src/application/copy";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -68,7 +69,9 @@ const evidenceDialog = (page: Page) => page.getByRole("dialog", { name: new RegE
  * 金額一律由 golden／獨立手算的到分字串經 presentation 格式化函式產生，不手寫顯示字串。
  */
 const kpiValue = (card: Locator) => card.locator(".kpi-value");
-const kpiPrevious = (card: Locator) => card.locator(".kpi-previous");
+const kpiPrevious = (card: Locator) => card.locator(".kpi-prev");
+/** V3-4a KPI 帶：上期 number-link 的可及名稱「{指標}上期 {L1}，看明細」（可見文字包含在內）。 */
+const previousLinkName = (metric: keyof typeof metricDefinitions, amount: string) => fill(labels.overview.kpiBand.previousAria, { metric: metricDefinitions[metric].label, value: formatAmountL1(amount) });
 /** KPI 卡「上期 {L1}」（overview.tsx：`{labels.periods.previous} {number(...)}`）。 */
 const previousLine = (amount: string) => `${labels.periods.previous} ${formatAmountL1(amount)}`;
 /** 抽屜大數字（L1）與下一行精確值（L3＋元，evidence-drawer.tsx data-testid="evidence-precise-value"）。 */
@@ -141,8 +144,9 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("1269792.73"));
   await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("7850657.90"));
   // L1 只到 0.1 萬；到分的精確值在抽屜標題下一行（§7.8），逐一打開確認仍可追溯到分。
-  for (const [card, amount] of [[contribution(page), "1269792.73"], [revenue(page), "7850657.90"]] as const) {
-    await kpiValue(card).getByRole("button", { name: formatAmountL1(amount), exact: true }).click();
+  for (const [card, metric, amount] of [[contribution(page), "contribution_after_marketing", "1269792.73"], [revenue(page), "net_revenue", "7850657.90"]] as const) {
+    // V3-4a：主值 number-link 的可及名稱「{指標} {L1}，看明細」（可見文字包含在內）。
+    await kpiValue(card).getByRole("button", { name: fill(labels.overview.kpiBand.valueAria, { metric: metricDefinitions[metric].label, value: formatAmountL1(amount) }), exact: true }).click();
     const dialog = evidenceDialog(page);
     await expect(drawerNumber(dialog)).toHaveText(formatAmountL1(amount));
     await expect(drawerPrecise(dialog)).toHaveText(preciseMoney(amount));
@@ -168,10 +172,12 @@ test("切換 golden 與 demo 會重算同一組 KPI", async ({ page }) => {
   await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
   // golden 本期 255.00、上期 570.00、差額 −315.00：上期連結（L1）、帶號差額（L1）與成長率（上期 > 0 才有），不利方向才上色。
   await expect(kpiPrevious(contribution(page))).toHaveText(previousLine("570.00"));
-  await expect(kpiPrevious(contribution(page)).getByRole("button", { name: formatAmountL1("570.00"), exact: true })).toBeVisible();
-  const change = contribution(page).locator(".kpi-change");
-  await expect(change.getByRole("button", { name: formatSignedDelta("-315.00", "L1"), exact: true })).toBeVisible();
-  await expect(change.locator(".change-rate")).toHaveText(fill(labels.ui.overview.growthInline, { value: formatGrowth("255.00", "570.00", "L1")! }));
+  await expect(kpiPrevious(contribution(page)).getByRole("button", { name: previousLinkName("contribution_after_marketing", "570.00"), exact: true })).toBeVisible();
+  // V3-4a 差額行：「比上期」＋方向詞＋絕對值（L1）＋成長率；差額本身仍是 number-link。
+  const change = contribution(page).locator(".kpi-delta");
+  const deltaText = fill(labels.overview.kpiBand.deltaLine, { word: labels.format.earnLess, amount: formatHeadlineAmount("-315.00") });
+  await expect(change.getByRole("button", { name: fill(labels.overview.kpiBand.deltaAria, { metric: metricDefinitions.contribution_after_marketing.label, delta: deltaText }), exact: true })).toHaveText(deltaText);
+  await expect(change.locator(".pct")).toHaveText(fill(labels.ui.overview.growthInline, { value: formatGrowth("255.00", "570.00", "L1")! }));
   expect(deltaTone("contribution_after_marketing", "-315.00", "L1")).toBe("unfavorable");
   await expect(change).toHaveClass(/\bnegative\b/);
   await requestDataset(page, "demo");
@@ -188,7 +194,7 @@ test("通路篩選共用，金額證據可用鍵盤開啟與返回", async ({ pa
   await selectChannel(page, "DTC");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
   await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("1480.00"));
-  const trigger = kpiValue(contribution(page)).getByRole("button", { name: formatAmountL1("270.00"), exact: true });
+  const trigger = kpiValue(contribution(page)).getByRole("button", { name: fill(labels.overview.kpiBand.valueAria, { metric: metricDefinitions.contribution_after_marketing.label, value: formatAmountL1("270.00") }), exact: true });
   await trigger.focus();
   await page.keyboard.press("Enter");
   const dialog = evidenceDialog(page);
@@ -345,13 +351,13 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
   await expect(weekly.locator("tbody tr")).toHaveCount(2);
   await expect(weekly).toContainText("2026-06-01 — 2026-06-07");
   await expect(weekly).toContainText("2026-06-08 — 2026-06-14");
-  await kpiValue(contribution(page)).getByRole("button", { name: formatAmountL1("316379.67"), exact: true }).click();
+  await kpiValue(contribution(page)).getByRole("button", { name: fill(labels.overview.kpiBand.valueAria, { metric: metricDefinitions.contribution_after_marketing.label, value: formatAmountL1("316379.67") }), exact: true }).click();
   const dialog = evidenceDialog(page);
   await expect(dialog).toContainText(evidenceDateRange("2026-06-08", "2026-06-14"));
   await expect(drawerNumber(dialog)).toHaveText(formatAmountL1("316379.67"));
   await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("316379.67"));
   await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
-  await kpiPrevious(revenue(page)).getByRole("button", { name: formatAmountL1("1069415.21"), exact: true }).click();
+  await kpiPrevious(revenue(page)).getByRole("button", { name: previousLinkName("net_revenue", "1069415.21"), exact: true }).click();
   await expect(dialog).toContainText(evidenceDateRange("2026-06-01", "2026-06-07"));
   await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("1069415.21"));
 });

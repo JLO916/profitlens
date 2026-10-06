@@ -98,7 +98,7 @@ function shellPage(state: ShellState): ReactElement {
   const yoyReason = presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null;
   const content = (() => {
     switch (panel) {
-      case "overview": return <><Overview snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} periodOpen={false} onPeriodToggle={noop} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><MeetingEntry review={review} history={history} datasetHash={active.snapshot.dataset_hash} onOpen={noop} /></>;
+      case "overview": return <Overview snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} periodOpen={false} onPeriodToggle={noop} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={noop} onNavigate={noop} datasetName={datasetName} missingItems={active.dataset.issues.length} actionsSummary={{ pending: actionWorkspace.items.filter(item => item.execution_status !== "completed").length, pinned: actionWorkspace.items.filter(item => item.pinned).slice(0, 3).map(item => ({ problem: item.card.problem, owner: item.card.owner_role, deadline: item.card.deadline })) }} meetingEntry={<MeetingEntry review={review} history={history} datasetHash={active.snapshot.dataset_hash} onOpen={noop} />} />;
       case "meeting": return <MeetingPage source={active} conversion={active.conversion} targets={{ set: active.targets ?? null, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={review} history={history} onChange={noop} onEvidence={noop} onRefreshSource={noop} onCreateAction={noop} onFinalize={asyncNoop} onRemoveMeeting={noop} />;
       case "diagnosis": return <><Diagnosis snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} events={active.events} /><AiPanel capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }} snapshot={active.snapshot} revision={active.revision} onEvidence={noop} /></>;
       case "products": return <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={noop} filenames={active.filenames} conversion={active.conversion} />;
@@ -359,6 +359,17 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(testIdCounts(states.find(state => state.name === "shell-empty")!.html).get("page-import") ?? 0).toBe(0);
     });
 
+    it("V3-4a 總覽：進階 <details> 收合時期間合計與日均仍掛著；會議入口在本期一句話區塊內、只有一個", () => {
+      const { html } = states.find(state => state.name === "overview")!;
+      const advanced = element(html, 'data-testid="overview-advanced"')!;
+      expect(openTag(html, 'data-testid="overview-advanced"')).toMatch(/^<details\s/);
+      expect(openTag(html, 'data-testid="overview-advanced"')).not.toMatch(/\sopen=""/);
+      expect(advanced).toContain('data-testid="period-comparison"');
+      expect(advanced).toContain('id="daily-average-title"');
+      expect(element(html, 'data-testid="weekly-snapshot"')).toContain('data-testid="overview-meeting-entry"');
+      for (const id of ["weekly-snapshot", "snapshot-sentence", "copy-summary", "copy-summary-status", "overview-meeting-entry", "kpi-band", "assist-kpis", "overview-advanced", "period-comparison"]) expect(testIdCounts(html).get(id), id).toBe(1);
+    });
+
     it("開發者分組只在 #validation 時出現（§6.3 #3）", () => {
       for (const { name, html, state } of loaded()) expect(testIdCounts(html).get("nav-group-developer") ?? 0, name).toBe(state!.showValidation ? 1 : 0);
     });
@@ -480,6 +491,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(source).toMatch(/storage=\{<WorkspaceStorage /);
       expect(source).toMatch(/exportMenu=\{<ExportMenu /);
       expect(source).toMatch(/<BasisDialog open=\{basisOpen\}/);
+      // V3-4a：會議入口搬進總覽的本期一句話區塊（Overview 的 meetingEntry），不再在 Overview 外渲染。
+      expect(source).toMatch(/meetingEntry=\{<MeetingEntry /);
     });
   });
 });

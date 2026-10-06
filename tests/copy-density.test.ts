@@ -67,7 +67,7 @@ describe("withoutDetails keeps what is visible at first glance", () => {
 describe("R2 copy density: at most three limitation sentences per page outside technical details", () => {
   it("overview", async () => {
     const { snapshot } = await context();
-    const sentences = disclaimerSentences(renderToStaticMarkup(createElement(Overview, { snapshot, onEvidence: () => undefined })));
+    const sentences = disclaimerSentences(renderToStaticMarkup(createElement(Overview, { snapshot, onEvidence: () => undefined, datasetName: "golden", missingItems: 0, actionsSummary: { pending: 0, pinned: [] } })));
     expect(sentences, sentences.join("\n")).toHaveLength(Math.min(sentences.length, 3));
   });
   it("diagnosis", async () => {

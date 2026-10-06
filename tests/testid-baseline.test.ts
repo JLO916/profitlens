@@ -93,7 +93,7 @@ async function scenarios(): Promise<Record<string, string>> {
   const badEvents = parseEvents({ name: "bad-events.csv", bytes: bytes("start,end,label\n2026-13-01,2026-08-31,x\n") });
 
   // 總覽（示範資料、有目標與檔期、期間合計展開）＋會議入口。
-  render("overview", createElement(Overview, { snapshot, onEvidence: noop, onCreateAction: noop, periodOpen: true, onPeriodToggle: noop, targets: targets.set, events: events.set, allChannels: dataset.manifest.channels }));
+  render("overview", createElement(Overview, { snapshot, onEvidence: noop, onCreateAction: noop, periodOpen: true, onPeriodToggle: noop, targets: targets.set, events: events.set, allChannels: dataset.manifest.channels, datasetName: "demo", missingItems: 0, actionsSummary: { pending: 0, pinned: [] } }));
   // 健檢＋ AI（未知能力與可用兩種）。
   render("diagnosis", createElement(Diagnosis, { snapshot, onEvidence: noop, onCreateAction: noop, events: events.set }));
   render("diagnosis-ai", createElement(AiPanel, { snapshot, revision: 1, onEvidence: noop, capability: null }));

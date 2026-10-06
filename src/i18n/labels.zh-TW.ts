@@ -523,9 +523,30 @@ export const overview = {
     },
   },
 
-  snapshotUi: {},
+  /** V3-4a 本期一句話區塊（§7.1 區塊 2）：一句話下方的範圍行、複製週會摘要（F1）、剪貼簿失敗時的對話框、會議入口。 */
+  snapshotUi: {
+    heading: "本期一句話",
+    meta: "本期 {period} · {channels} · 金額未稅",
+    copy: "複製週會摘要",
+    copied: "已複製週會摘要。",
+    fallbackTitle: "複製週會摘要",
+    fallbackBody: "瀏覽器沒有開放剪貼簿。內容已全選，請用鍵盤複製。",
+    fallbackTextAria: "週會摘要全文",
+    meetingEntry: "會議：{state}",
+    meetingEntryFinalized: "會議：已結束（{date}） · 本次草稿",
+    meetingGoAria: "{text}，{go}",
+  },
 
-  kpiBand: {},
+  /** V3-4a KPI 帶（C1、C18）：定義按鈕、數字與差額的可及名稱、差額行、資料待補時的補齊連結。 */
+  kpiBand: {
+    helpAria: "{metric}的定義",
+    valueAria: "{metric} {value}，看明細",
+    deltaAria: "{metric}比上期{delta}，看明細",
+    previousAria: "{metric}上期 {value}，看明細",
+    vsPrevious: "比上期",
+    deltaLine: "{word} {amount}",
+    fillMissing: "先補齊 {n} 項",
+  },
 
   /** V3-4a 代理 C：本期三件事警示列（C9 摘要型，PRD §7.1 第 4 點、§8.2）。3 件時標題沿用 sections.topThree。 */
   alerts: {
@@ -545,9 +566,17 @@ export const overview = {
     sortHelpAria: "依影響金額排序的定義",
   },
 
-  assistTable: {},
+  /** V3-4a 其他常用指標（C2 兩欄緊湊表）：表頭、`?` 說明的可及名稱、每格數字的可及名稱。 */
+  assistTable: {
+    helpAria: "{section}的定義",
+    columns: { metric: "指標", current: "本期", previous: "上期" },
+    cellAria: "{metric}{period} {value}，看明細",
+  },
 
-  advanced: {},
+  /** V3-4a 進階（收合）：期間合計與日均。 */
+  advanced: {
+    summary: "進階：期間合計與日均",
+  },
 } as const;
 
 // ── diagnosis：通路健檢：健檢清單與健檢頁

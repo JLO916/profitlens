@@ -86,6 +86,8 @@ const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 const byTestId = (tree: ReactNode, id: string) => findAll(tree, element => element.props["data-testid"] === id);
 
 const page = labels.meetingPage, record = labels.meetingRecord, copy = labels.ui.reviewWorkbench, summaryCopy = labels.ui.managerSummary;
+/** V3-4a：總覽會議入口的字串搬到本期一句話區塊（labels.overview.snapshotUi）。 */
+const entryUi = labels.overview.snapshotUi;
 const NOW = "2026-10-03T06:00:00.000Z";
 const inputs = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
 async function source(name = "golden", filters: AnalysisFilters = {}) {
@@ -293,11 +295,14 @@ describe("R6-2 overview keeps a one-line entry (05 §10)", () => {
     const state = await finalized();
     const html = renderToStaticMarkup(createElement(MeetingEntry, { review: state.review, history: [state.meeting], datasetHash: state.s.snapshot.dataset_hash, onOpen: noop }));
     expect(html).toMatch(/^<p class="meeting-entry" data-testid="overview-meeting-entry">/);
-    expect(text(html)).toContain(fill(page.entry, { state: labels.meeting.decisions.adopted }));
+    // V3-4a：入口放在本期一句話右側，整句「會議：{狀態}」就是唯一的文字按鈕；可及名稱補上「前往會議紀錄」，上次會議日期是旁邊的註記。
+    const adopted = fill(entryUi.meetingEntry, { state: labels.meeting.decisions.adopted });
+    expect(text(html)).toContain(adopted);
     expect(text(html)).toContain(fill(page.entryLast, { date: "2026-10-03" }));
-    expect(buttons(html)).toEqual([page.goToMeeting]); // V3-2a：裝飾箭頭已移除（PRD §5.2 X5）
+    expect(buttons(html)).toEqual([adopted]); // V3-2a：裝飾箭頭已移除（PRD §5.2 X5）
+    expect(html).toContain(`<button type="button" class="text-button" aria-label="${fill(entryUi.meetingGoAria, { text: adopted, go: page.goToMeeting })}">${adopted}</button>`);
     const empty = renderToStaticMarkup(createElement(MeetingEntry, { review: null, history: [], datasetHash: state.s.snapshot.dataset_hash, onOpen: noop }));
-    expect(text(empty)).toContain(fill(page.entry, { state: labels.sections.meetingNotCreated }));
+    expect(text(empty)).toContain(fill(entryUi.meetingEntry, { state: labels.sections.meetingNotCreated }));
   });
 });
 
@@ -434,19 +439,21 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
 describe("R6-F2 overview entry after finalizing", () => {
   it("an untouched new draft on the same data and scope reads 已結束（date）· 新會議稿：草稿; edits or another scope fall back", async () => {
     const state = await finalized();
-    const entry = (review: ReviewSession) => text(renderToStaticMarkup(createElement(MeetingEntry, { review, history: [state.meeting], datasetHash: state.s.snapshot.dataset_hash, onOpen: noop })));
+    const markup = (review: ReviewSession) => renderToStaticMarkup(createElement(MeetingEntry, { review, history: [state.meeting], datasetHash: state.s.snapshot.dataset_hash, onOpen: noop }));
+    const entry = (review: ReviewSession) => text(markup(review));
     const fresh = createReviewSession(state.s, "e", "rev-2");
     expect(fresh).toMatchObject({ revision: 1, decision_state: "draft" });
-    expect(entry(fresh)).toContain(fill(page.entryFinalized, { date: "2026-10-03" }));
-    expect(entry(fresh)).not.toContain(fill(page.entry, { state: labels.meeting.decisions.draft }));
-    expect(entry(fresh)).toContain(page.goToMeeting);
+    const finalizedText = fill(entryUi.meetingEntryFinalized, { date: "2026-10-03" });
+    expect(entry(fresh)).toContain(finalizedText);
+    expect(entry(fresh)).not.toContain(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+    expect(markup(fresh)).toContain(`aria-label="${fill(entryUi.meetingGoAria, { text: finalizedText, go: page.goToMeeting })}"`);
     const edited = updateReviewSession(fresh, { name: "改過的會議" });
-    expect(entry(edited)).not.toContain(fill(page.entryFinalized, { date: "2026-10-03" }));
-    expect(entry(edited)).toContain(fill(page.entry, { state: labels.meeting.decisions.draft }));
+    expect(entry(edited)).not.toContain(finalizedText);
+    expect(entry(edited)).toContain(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
     expect(entry(edited)).toContain(fill(page.entryLast, { date: "2026-10-03" }));
     const dtc = createReviewSession(await source("golden", { channels: ["DTC"] }), "e", "rev-3");
-    expect(entry(dtc)).toContain(fill(page.entry, { state: labels.meeting.decisions.draft }));
-    expect(entry(dtc)).not.toContain(fill(page.entryFinalized, { date: "2026-10-03" }));
+    expect(entry(dtc)).toContain(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+    expect(entry(dtc)).not.toContain(finalizedText);
   });
 });
 
