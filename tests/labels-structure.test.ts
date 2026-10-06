@@ -12,6 +12,11 @@ import { labelEntries, labelScope, scanLabels } from "../scripts/lib/copy-scan.m
 
 const LABELS_FILE = resolve("src/i18n/labels.zh-TW.ts");
 const SNAPSHOT = JSON.parse(readFileSync(resolve("verification/revamp-v3/labels-v3-2b.flat.json"), "utf8")) as Record<string, string>;
+/** V3-2c 收尾刪除的鍵（scripts/labels-unused.mjs 判定沒有引用）：每列第一欄是 V3-2b 舊路徑，第二欄是新路徑。 */
+const REMOVED_ROWS = readFileSync(resolve("verification/revamp-v3/labels-removed-v3-2c.txt"), "utf8").split("\n").filter(line => line.trim() && !line.startsWith("#")).map(line => line.split("\t"));
+const REMOVED = new Set(REMOVED_ROWS.map(([old]) => old));
+/** 快照扣掉已刪除的鍵：V3-2c 之後 labels 應該剛好有這些舊路徑。 */
+const KEPT: Record<string, string> = Object.fromEntries(Object.entries(SNAPSHOT).filter(([path]) => !REMOVED.has(path)));
 const GROUPS: readonly string[] = LABEL_GROUPS;
 const LEGACY: readonly string[] = LEGACY_SECTIONS;
 
@@ -46,13 +51,24 @@ describe("V3-2c labels 結構重整", () => {
       else rebuilt[olds[0]] = value;
     }
     expect(unmapped).toEqual([]);
-    expect(rebuilt).toEqual(SNAPSHOT);
+    expect(rebuilt).toEqual(KEPT);
   });
 
-  it("(ii) 每個舊路徑都還能從 labels 取到同一個字串（alias 樹完整）", () => {
-    const mismatched = Object.entries(SNAPSHOT).filter(([path, value]) => get(path) !== value).map(([path]) => path);
+  it("(ii) 每個舊路徑（扣掉 V3-2c 刪除的鍵）都還能從 labels 取到同一個字串（alias 樹完整）", () => {
+    const mismatched = Object.entries(KEPT).filter(([path, value]) => get(path) !== value).map(([path]) => path);
     expect(mismatched).toEqual([]);
-    expect(Object.keys(legacyAliases).sort()).toEqual(Object.keys(SNAPSHOT).sort());
+    expect(Object.keys(legacyAliases).sort()).toEqual(Object.keys(KEPT).sort());
+  });
+
+  it("V3-2c 刪除的鍵：每一列都是快照裡的字串，新舊路徑都已不存在", () => {
+    expect(REMOVED_ROWS.length).toBe(REMOVED.size);
+    expect(REMOVED.size).toBeGreaterThan(0);
+    for (const [old, next, value] of REMOVED_ROWS) {
+      expect(JSON.stringify(SNAPSHOT[old]), old).toBe(value);
+      expect(get(old), old).toBeUndefined();
+      expect(get(next), next).toBeUndefined();
+    }
+    expect(Object.keys(KEPT)).toHaveLength(Object.keys(SNAPSHOT).length - REMOVED.size);
   });
 
   it("(iii) alias 只放參照：舊區段與同名分組的展開區沒有任何字串常值（字串不會在新樹與 alias 樹重複）", () => {
@@ -89,10 +105,10 @@ describe("V3-2c labels 結構重整", () => {
     expect(GROUPS).toEqual(["shell", "overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "importWizard", "evidence", "exports", "storage", "empty", "errors", "glossary", "format", "summary", "metrics", "rules", "assist", "targets", "events", "brand", "relaunch"]);
   });
 
-  it("掃描器每個字串只算一次，copy-scan 指標與 V3-2b 快照的掃描逐項相同", () => {
+  it("掃描器每個字串只算一次，copy-scan 指標與 V3-2b 快照（扣掉已刪除的鍵）的掃描逐項相同", () => {
     const { view } = labelScope(labels, labelModule);
-    expect(labelEntries(view)).toHaveLength(Object.keys(SNAPSHOT).length);
-    expect(scanLabels(labels, labelModule).metrics).toEqual(scanLabels(unflatten(SNAPSHOT)).metrics);
+    expect(labelEntries(view)).toHaveLength(Object.keys(KEPT).length);
+    expect(scanLabels(labels, labelModule).metrics).toEqual(scanLabels(unflatten(KEPT)).metrics);
   });
 
   it("規則卡 { headline, explain: { cause, nextStep }, caution }、指標 { headline, short, explain, technical }，舊鍵指向同一個字串", () => {

@@ -7,6 +7,8 @@
 //      舊區段與新分組同名（metrics、rules、actions、meeting）時，以「...新分組」展開再補上舊鍵的參照；
 //   4. 匯出 LABEL_GROUPS、LEGACY_SECTIONS 與 legacyAliases（舊路徑 → 新路徑，由 LEGACY_PREFIXES 在載入時展開到每個葉節點）。
 // 文字一字不改；tests/labels-structure.test.ts 逐一比對快照。只用 Node 內建模組與既有 devDependency「typescript」。
+// V3-2c 收尾：verification/revamp-v3/labels-removed-v3-2c.txt 列的舊路徑（scripts/labels-unused.mjs 判定沒有引用）在搬家前先剪掉；
+//   快照仍是 V3-2b 全量，自我檢查略過這些路徑。
 // 用法：node scripts/labels-regroup.mjs [--base <git 版本>] [--check]
 //   --check：只比對產生結果與目前檔案是否相同（不寫檔），不同時結束碼 1。
 import { execFileSync } from "node:child_process";
@@ -18,6 +20,7 @@ const ROOT = process.cwd();
 const LABELS = "src/i18n/labels.zh-TW.ts";
 const SNAPSHOT = "verification/revamp-v3/labels-v3-2b.flat.json";
 const MAP = "scripts/labels-regroup.map.json";
+const REMOVED = "verification/revamp-v3/labels-removed-v3-2c.txt";
 /** V3-2b 收尾（6e64b05）；之後到 V3-2c 開工前 labels 沒有再改。 */
 const BASE_REV = "6e64b05";
 
@@ -25,6 +28,8 @@ const args = process.argv.slice(2);
 const baseRev = args.includes("--base") ? args[args.indexOf("--base") + 1] : BASE_REV;
 const checkOnly = args.includes("--check");
 const fail = message => { console.error(`labels-regroup：${message}`); process.exit(1); };
+/** V3-2c 刪除的舊路徑（每列第一欄；# 開頭是註解）。 */
+const removedPaths = new Set(readFileSync(resolve(ROOT, REMOVED), "utf8").split("\n").filter(line => line.trim() && !line.startsWith("#")).map(line => line.split("\t")[0]));
 
 const text = execFileSync("git", ["show", `${baseRev}:${LABELS}`], { cwd: ROOT, encoding: "utf8", maxBuffer: 1 << 26 });
 const sf = ts.createSourceFile(LABELS, text, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
@@ -137,6 +142,22 @@ for (const [index, statement] of statements.entries()) {
   }
 }
 if (labelsOrder.length !== sections.length) fail(`labels 匯出 ${labelsOrder.length} 個區段，檔案宣告 ${sections.length} 個`);
+
+// 剪掉 V3-2c 刪除的葉節點；因此變空的容器一併移除（原本就空的容器保留）。
+{
+  const pruned = new Set();
+  const prune = (node, path) => {
+    if (node.kind === "leaf") return !removedPaths.has(path);
+    if (!node.children.length) return true;
+    node.children = node.children.filter(child => prune(child.node, `${path}.${child.key}`) || (pruned.add(`${path}.${child.key}`), false));
+    if (node.kind === "array" && node.children.some((child, i) => child.key !== String(i))) fail(`${path} 是陣列，不能只刪其中幾項`);
+    return node.children.length > 0;
+  };
+  for (const section of sections) if (!prune(section.node, section.name)) fail(`區段 ${section.name} 整個被刪除`);
+  const unknown = [...removedPaths].filter(path => !pruned.has(path));
+  if (unknown.length) fail(`${REMOVED} 有不是字串葉節點的路徑：${unknown.slice(0, 5).join("、")}`);
+}
+const isRemoved = path => removedPaths.has(path) || [...removedPaths].some(removed => path.startsWith(`${removed}.`));
 const sectionByName = new Map(sections.map(section => [section.name, section]));
 
 /** 葉節點清單（檔案順序）：{ path: string[], node, section, nonConst }。nonConst：原型別是 string（非 as const 或在 Record 斷言內）。 */
@@ -172,7 +193,7 @@ const oldModule = await runtimeLabels(text);
 const snapshot = flatten(oldModule.labels, "");
 {
   const parsed = new Set(leafByPath.keys());
-  const missing = Object.keys(snapshot).filter(path => !parsed.has(path));
+  const missing = Object.keys(snapshot).filter(path => !parsed.has(path) && !isRemoved(path));
   const extra = [...parsed].filter(path => !(path in snapshot));
   if (missing.length || extra.length) fail(`解析結果與執行期不一致：缺 ${missing.slice(0, 5).join("、")}；多 ${extra.slice(0, 5).join("、")}`);
 }
@@ -404,7 +425,7 @@ const out = [];
 out.push(
   "// EC ProfitLens — 使用者可見文字的單一來源（繁體中文／台灣電商用語）",
   "// 規格：docs/revamp-v3/01_PRD.md §8.10、docs/revamp-v3/GLOSSARY.md（v2 規格 docs/revamp/03_GLOSSARY_COPY.md 為歷史紀錄）。",
-  "// V3-2c 結構（由 scripts/labels-regroup.mjs 依 scripts/labels-regroup.map.json 產生，文字與 V3-2b 逐字相同）：",
+  "// V3-2c 結構（由 scripts/labels-regroup.mjs 依 scripts/labels-regroup.map.json 產生，文字與 V3-2b 逐字相同；沒有引用而刪除的鍵見 verification/revamp-v3/labels-removed-v3-2c.txt）：",
   "//   第 1 部分：被其他字串引用的共用字串（具名常數）；",
   "//   第 2 部分：新分組（頁面 › 區塊 › 元件）。字串常值只寫在這裡；改字、加字都改這一部分；",
   "//   第 3 部分：v2 舊鍵 alias（只放參照，不放字串；V3-10 移除）；",
@@ -542,19 +563,25 @@ const generated = `${out.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd()}\n`;
 
 const newModule = await runtimeLabels(generated);
 for (const [path, value] of Object.entries(snapshot)) {
+  if (isRemoved(path)) {
+    if (path.split(".").reduce((node, key) => node?.[key], newModule.labels) !== undefined || path in newModule.legacyAliases) fail(`已刪除的 ${path} 還在`);
+    continue;
+  }
   const actual = path.split(".").reduce((node, key) => node?.[key], newModule.labels);
   if (actual !== value) fail(`舊路徑 ${path} 不同：${JSON.stringify(actual)} ≠ ${JSON.stringify(value)}`);
   const target = newModule.legacyAliases[path];
   const viaAlias = target?.split(".").reduce((node, key) => node?.[key], newModule.labels);
   if (viaAlias !== value) fail(`legacyAliases ${path} → ${target} 不同`);
 }
-if (Object.keys(newModule.legacyAliases).length !== Object.keys(snapshot).length) fail(`legacyAliases 筆數 ${Object.keys(newModule.legacyAliases).length} ≠ 快照 ${Object.keys(snapshot).length}`);
+const keptLeaves = Object.keys(snapshot).filter(path => !isRemoved(path)).length;
+if (Object.keys(newModule.legacyAliases).length !== keptLeaves) fail(`legacyAliases 筆數 ${Object.keys(newModule.legacyAliases).length} ≠ 快照扣掉已刪除 ${keptLeaves}`);
 
 const snapshotText = `${JSON.stringify(snapshot, null, 2)}\n`;
 const stats = {
   base: baseRev,
   sectionsBefore: sections.length,
   leavesBefore: Object.keys(snapshot).length,
+  removedLeaves: Object.keys(snapshot).length - keptLeaves,
   storageLeaves: newLeavesUnder(newRoot).length,
   groups: groupNames.length,
   mergedGroups: [...mergedGroups],
