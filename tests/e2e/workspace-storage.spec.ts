@@ -5,7 +5,7 @@ import { appendFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { acceptSavePrompt, dismissSavePrompt, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptSavePrompt, clearWorkspace, closePeriodSheet, closeTopbarMore, dismissSavePrompt, isMobile, navigateTo, openPeriodSheet, openStorage, openTopbarMore, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R2: every visible string comes from labels; machine values (dataset ids, channel codes, amounts, testids) stay literal.
 // 長流程（兩方案＋行動＋保存／重整／恢復）在平板曾跑到 40 秒；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
@@ -81,20 +81,29 @@ function savedTimes(savedAt: string) {
 }
 const savedTagPattern = (savedAt: string) => new RegExp(`^(${savedTimes(savedAt).map(time => escapeRegExp(fill(labels.status.savedAt, { time }))).join("|")})$`);
 const lastSavedPattern = (savedAt: string) => new RegExp(`(${savedTimes(savedAt).map(time => escapeRegExp(fill(autoCopy.lastSaved, { time }))).join("|")})`);
-async function openStorage(page: Page) {
-  if ((await storage(page).getAttribute("open")) === null) await storage(page).locator(":scope > summary").click();
+/**
+ * V3-3：通路下拉在期間列裡；手機期間列收成 period-toggle，先開底部面板，選完按「完成」收起（桌機不動）。
+ * 手機頂欄「更多」開著時（儲存選單浮層蓋住期間按鈕）先收起，選完再展開，讓儲存選單維持和桌機一樣開著的狀態。
+ */
+async function selectChannel(page: Page, channel: string) {
+  const reopenMore = isMobile(page) && await page.getByTestId("topbar-more").getAttribute("aria-expanded") === "true";
+  if (reopenMore) await closeTopbarMore(page);
+  await openPeriodSheet(page);
+  await channelFilter(page).selectOption(channel);
+  await closePeriodSheet(page);
+  if (reopenMore) await openTopbarMore(page);
 }
 async function golden(page: Page) {
   await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await expect(status(page)).toContainText(goldenReady);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
 }
 /** R5：試算頁進頁即表單（方案 1 是本地草稿），第二個方案起才按「新增方案」；通路預設＝全站單一通路 DTC。 */
 async function makeScenario(page: Page, index: number, cost: string, expected: string) {
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await navigateTo(page, "scenarios");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   if (index > 1) await page.getByRole("button", { name: labels.buttons.addScenario, exact: true }).click();
@@ -107,7 +116,7 @@ async function makeScenario(page: Page, index: number, cost: string, expected: s
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(expected));
 }
 async function makeAction(page: Page) {
-  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  await navigateTo(page, "actions");
   await switchActionsView(page, "list");
   await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
   const card = page.getByTestId("action-1");
@@ -200,11 +209,11 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await dismissSavePrompt(page);
   await expect(savePrompt(page)).toHaveCount(0);
   expect((await readLocalCopy(page))!.savedAt).toBe(saved.savedAt);
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await navigateTo(page, "scenarios");
   await expect(page.getByTestId("decision-freshness")).toContainText(labels.ui.decisionWorkbench.freshTitle);
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
   await expect(page.getByTestId("scenario-2").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("264.00"));
-  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  await navigateTo(page, "actions");
   // 備份 ui_prefs.view 記住了清單檢視（R5），恢復後直接是清單。
   await expect(page.getByTestId("actions-view-list")).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByTestId("action-1")).toContainText(labels.ui.actionsWorkbench.tagConfirmed);
@@ -236,7 +245,7 @@ test("PL01 portable備份驗證後才套用；篡改／舊格式不取代目前�
   // R6：勾選同意＝開啟自動保存（勾選也算回答了保存提示）。
   await expect(autoStatus(page)).toContainText(autoCopy.statusOn);
   await expect(savePrompt(page)).toHaveCount(0);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("MARKETPLACE");
+  await selectChannel(page, "MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // 已同意＝修改在 2 秒內自動保存：等 MARKETPLACE 這一版存好（頂欄「已保存 hh:mm」），之後的恢復沒有未保存的修改要確認。
   await expect.poll(async () => { const copy = await readLocalCopy(page); return copy ? JSON.parse(copy.text).payload.active.filters.channels : null; }, { timeout: 15_000 }).toEqual(["MARKETPLACE"]);
@@ -258,8 +267,8 @@ test("PL01 portable備份驗證後才套用；篡改／舊格式不取代目前�
 
 test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復活", async ({ page }) => {
   await golden(page); await dismissSavePrompt(page); await makeScenario(page, 1, "0", "284.00");
-  await page.getByRole("button", { name: labels.buttons.clear, exact: true }).click();
-  const dialog = replacementDialog(page);
+  // V3-3：「清空」搬進頂欄儲存選單的危險區（手機先開頂欄「更多」）。
+  const dialog = await clearWorkspace(page);
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: labels.buttons.cancel, exact: true }).click();
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
@@ -267,11 +276,14 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
+  // V3-3：期間列在載入中仍掛載（v2 載入中隱藏，選通路會自然等到載入完成）；重新載入同一份 golden 時狀態文字前後相同，
+  // 改等「載入成功後回到經營總覽」再選通路，避免在載入途中改通路（見回報：載入途中改通路會中斷載入）。
+  await expect(sidebarNav(page, "overview")).toHaveAttribute("aria-current", "page");
   await expect(status(page)).toContainText(goldenReady);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await selectChannel(page, "DTC");
   const saved = await backup(page);
   expect(JSON.parse(saved).payload.scenario_workspace.contexts[0].status).toBe("historical");
-  await page.getByRole("button", { name: labels.buttons.clear, exact: true }).click();
+  await clearWorkspace(page);
   await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
   await expect(status(page)).toContainText(labels.status.empty);
   await restoreFile(page, saved);
@@ -280,7 +292,7 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   // R6：清空後儲存面板重掛，恢復出的工作區尚未同意本機保存 → 保存提示再出現；本案例不測保存，選「先不要」。
   await expect(savePrompt(page)).toBeVisible();
   await dismissSavePrompt(page);
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await navigateTo(page, "scenarios");
   // R5 進頁即表單：目前通路只有一個未計算的本地草稿「方案 1」，歷史方案不會被復活成目前方案。
   await startChannelContext(page);
   const draft = page.getByTestId("scenario-1");
@@ -304,7 +316,7 @@ test("PL01 清空移除備份預覽、下載確認與本機保存同意；已保
   const original = await backup(page);
   const manual = await saveLocal(page);
   expect(JSON.parse(manual.text).payload.active.filters.channels).toEqual(["DTC"]);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("MARKETPLACE");
+  await selectChannel(page, "MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // R6：已同意本機保存，修改會在 2 秒內自動覆寫本機副本；等自動保存寫完，副本停在 MARKETPLACE 這一版再往下驗。
   const autosaved = await waitForLocalSave(page, manual.savedAt);
@@ -315,7 +327,7 @@ test("PL01 清空移除備份預覽、下載確認與本機保存同意；已保
   await expect(storage(page).getByRole("button", { name: storageCopy.confirmDownloaded, exact: true })).toBeVisible();
   await expect(storage(page).getByLabel(storageCopy.consent, { exact: true })).toBeChecked();
   // R6：修改已自動保存（沒有未保存的變更），清空不再跳「替換前先儲存」提醒，直接清空。
-  await page.getByRole("button", { name: labels.buttons.clear, exact: true }).click();
+  await clearWorkspace(page);
   await expect(status(page)).toContainText(labels.status.empty);
   await expect(replacementDialog(page)).toHaveCount(0);
   await openStorage(page);
@@ -359,7 +371,7 @@ test("R6 首次保存提示：先不要維持手動保存、不建立本機資�
   // 沒同意就沒有自動保存開關。
   await expect(autoToggle(page)).toHaveCount(0);
   await expect(storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true })).toBeDisabled();
-  await channelFilter(page).selectOption("MARKETPLACE");
+  await selectChannel(page, "MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // 超過 2 秒的自動保存間隔：維持手動，不建立資料庫、不標已保存，也不再問一次。
   await page.waitForTimeout(3_000);
@@ -367,8 +379,7 @@ test("R6 首次保存提示：先不要維持手動保存、不建立本機資�
   await expect(savedTag(page)).toHaveText(labels.status.unsaved);
   await expect(prompt).toHaveCount(0);
   // 清空工作區後（儲存面板重掛）再載入資料會再問；在提示內按 Esc 等於「先不要」。
-  await page.getByRole("button", { name: labels.buttons.clear, exact: true }).click();
-  await replacementDialog(page).getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
+  await (await clearWorkspace(page)).getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
   await expect(status(page)).toContainText(labels.status.empty);
   await expect(prompt).toHaveCount(0);
   await golden(page);
@@ -407,7 +418,7 @@ test("R6 自動保存：按「存在這台電腦」3 秒內寫入 v4 備份，�
   await expect(autoStatus(page)).toContainText(lastSavedPattern(first.savedAt));
   // 再改一次（換通路）：2 秒 debounce 後自動保存，副本與保存時間都更新。
   const changedAt = await page.evaluate(() => Date.now());
-  await channelFilter(page).selectOption("MARKETPLACE");
+  await selectChannel(page, "MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   const second = await waitForLocalSave(page, first.savedAt);
   expect(Date.parse(second.savedAt)).toBeGreaterThan(Date.parse(first.savedAt));
@@ -424,7 +435,7 @@ test("R6 自動保存：按「存在這台電腦」3 秒內寫入 v4 備份，�
   expect(await localDatabases(page)).toEqual([]);
   await expect(consentBox(page)).not.toBeChecked();
   await expect(autoStatus(page)).toHaveText(autoCopy.statusOff);
-  await channelFilter(page).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
   await page.waitForTimeout(3_000);
   expect(await localDatabases(page)).toEqual([]);
@@ -447,7 +458,7 @@ test("R6 自動保存開關：同意後預設開啟，取消後修改不再自�
   await expect(autoToggle(page)).not.toBeChecked();
   await expect(autoStatus(page)).toContainText(autoCopy.statusOff);
   await expect(consentBox(page)).toBeChecked();
-  await channelFilter(page).selectOption("MARKETPLACE");
+  await selectChannel(page, "MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   await expect(savedTag(page)).toHaveText(labels.status.unsaved);
   // 超過 2 秒的自動保存間隔（等 3 秒）：本機副本不更新。
@@ -464,7 +475,7 @@ test("R6 自動保存開關：同意後預設開啟，取消後修改不再自�
   await expect(savedTag(page)).toHaveText(savedTagPattern(manual.savedAt));
   await expect(autoStatus(page)).toContainText(autoCopy.statusOff);
   // 之後的修改仍維持手動：3 秒內不寫入。
-  await channelFilter(page).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
   await page.waitForTimeout(3_000);
   expect((await readLocalCopy(page))!.savedAt).toBe(manual.savedAt);
@@ -490,7 +501,7 @@ test("R6 在儲存選單勾選同意而這台電腦已有副本：先顯示覆�
   await expect(savePrompt(page).getByTestId("local-save-replace-warning")).toHaveText(fill(autoCopy.replaceWarning, { time: formatSavedDateTime(new Date(first.savedAt)) }));
   await savePrompt(page).getByRole("button", { name: autoCopy.decline, exact: true }).click();
   await expect(savePrompt(page)).toHaveCount(0);
-  await channelFilter(page).selectOption("MARKETPLACE");
+  await selectChannel(page, "MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // 在選單勾選同意：已有副本 → 先顯示覆寫提醒與確認按鈕，自動保存等確認。
   await openStorage(page);
@@ -515,7 +526,7 @@ test("R6 在儲存選單勾選同意而這台電腦已有副本：先顯示覆�
   await expect(autoStatus(page)).toContainText(autoCopy.statusOn);
   await expect(savedTag(page)).toHaveText(savedTagPattern(replaced.savedAt));
   // 之後照常自動保存。
-  await channelFilter(page).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
   const next = await waitForLocalSave(page, replaced.savedAt);
   expect(JSON.parse(next.text).payload.active.filters.channels).toEqual(["DTC"]);
