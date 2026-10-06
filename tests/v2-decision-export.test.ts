@@ -10,6 +10,10 @@ import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from '@
 import { fill, labels } from '@/i18n';
 import { emptyActionWorkspace } from '@/application/action-workspace';
 import { exportWorkspaceDecision } from '@/application/workspace-decision-export';
+import { formatAmountL2, formatAmountL3, formatSignedDelta, MINUS } from '@/application/presentation';
+
+/** decision-export 的 Markdown 跳脫（與 md() 相同的字元集），用來比對格式化後的數字。 */
+const mdEscape = (text: string) => text.replace(/[\\`*_{}\[\]()#+.!|~:-]/g, character => `\\${character}`);
 
 it('exports both channel baselines and revisions without raw CSV or summed gains', async () => {
  const input=fixture(), dataset=validateDataset(input).dataset!, hash=await hashInput(input);
@@ -105,14 +109,19 @@ describe('R5-4 sensitivity in decision exports', () => {
  it('Markdown adds a small table under each plan using the scenario labels', async () => {
   const { session, plans } = await dtc();
   const markdown = exportDecisionMarkdown(session, plans, []);
-  const header = `| ${[labels.ui.scenarioSensitivity.colAssumption, `${labels.scenario.volume.label}（%）`, labels.scenario.resultTitle, labels.scenario.vsBaseline].join(' | ')} |`;
+  // V3-2b：小表是 L2（整數元、U+2212、正差額加「+」），金額欄表頭加「（元）」；到分的值在技術細節。
+  const money = (label: string) => fill(labels.ui.export.moneyColumn, { label });
+  const header = `| ${[labels.ui.scenarioSensitivity.colAssumption, `${labels.scenario.volume.label}（%）`, money(labels.scenario.resultTitle), money(labels.scenario.vsBaseline)].join(' | ')} |`;
+  const cells = (contribution: string, delta: string) => `${mdEscape(formatAmountL2(contribution))} | ${mdEscape(formatSignedDelta(delta, 'L2'))}`;
   const letter = (value: string) => fill(labels.ui.scenarioSensitivity.rowLabel, { letter: value });
   const empty = labels.ui.decisionExport.nullValue;
   expect(markdown.split(`#### ${labels.sections.scenarioBreakeven}`)).toHaveLength(3);
   expect(markdown).toContain(header);
-  expect(markdown).toContain(`| ${letter('A')} | \\-10 | 228\\.60 | \\-41\\.40 |`);
-  expect(markdown).toContain(`| ${letter('B')} | 0 | 284\\.00 | 14\\.00 |`);
-  expect(markdown).toContain(`| ${letter('C')} | 10 | 339\\.40 | 69\\.40 |`);
+  expect(markdown).toContain(`| ${letter('A')} | \\-10 | ${cells('228.60', '-41.40')} |`);
+  expect(markdown).toContain(`| ${letter('B')} | 0 | ${cells('284.00', '14.00')} |`);
+  expect(markdown).toContain(`| ${letter('C')} | 10 | ${cells('339.40', '69.40')} |`);
+  expect(markdown).toContain(`| ${letter('A')} | \\-10 | 229 | ${MINUS}41 |`);
+  expect(markdown).toContain(`| ${letter('C')} | 10 | 339 | \\+69 |`);
   // 草稿方案：只列輸入，結果格寫「資料待補／不適用」，附草稿說明；三格空白的方案不輸出小表。
   const draftSection = markdown.slice(markdown.indexOf('### 草稿'), markdown.indexOf('### 空白'));
   expect(draftSection).toContain(`| ${letter('A')} | 5 | ${empty} | ${empty} |`);
@@ -150,7 +159,7 @@ describe('R5-4 sensitivity in decision exports', () => {
   expect(current.scenario_contexts[0].scenarios[0].sensitivity.volumes).toEqual(['-10', '0', '10']);
   expect(current.scenario_contexts[0].calculated_versions[0]).not.toHaveProperty('sensitivity');
   expect(exportWorkspaceDecision('csv', source, workspace, emptyActionWorkspace(), null)).toContain('scenario_sensitivity_result');
-  expect(exportWorkspaceDecision('md', source, workspace, emptyActionWorkspace(), null)).toContain('339\\.40');
+  expect(exportWorkspaceDecision('md', source, workspace, emptyActionWorkspace(), null)).toContain(`| ${mdEscape(formatAmountL2('339.40'))} | ${mdEscape(formatSignedDelta('69.40', 'L2'))} |`);
   const historical = JSON.parse(exportWorkspaceDecision('json', source, activateScenarioEpoch(workspace, 'b'), emptyActionWorkspace(), null));
   expect(historical.scenario_contexts[0].scenarios[0].sensitivity.analysis.status).toBe('stale');
  });
@@ -181,7 +190,9 @@ describe('R5 fix: workspace export follows the scenario page context', () => {
   const markdown = exportWorkspaceDecision('md', allSource, workspace, emptyActionWorkspace(), null, null, contextId);
   const main = markdown.slice(0, markdown.indexOf(labels.ui.workspaceDecisionExport.appendixHeading));
   expect(main).toContain('### 履約試算');
-  expect(main).toContain('284\\.00');
+  // 主文 L2「284」、技術細節 L3「284.00」（md 跳脫後是 284\.00）。
+  expect(main).toContain(mdEscape(formatAmountL3('284.00')));
+  expect(main).toContain(`${mdEscape(labels.scenario.resultTitle)}：${formatAmountL2('284.00')}`);
   const csv = records(exportWorkspaceDecision('csv', allSource, workspace, emptyActionWorkspace(), null, null, contextId));
   const contributions = csv.filter(row => row.row_type === 'scenario_result' && row.field === 'contribution' && row.item_id === 'p');
   // 主段已含這個 context，附錄不重複輸出。

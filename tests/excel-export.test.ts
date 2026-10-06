@@ -11,7 +11,8 @@ import { addActionDraft, editActionManagement, editBoundAction, emptyActionWorks
 import { conversionSentence, scopeLabel } from "@/application/copy";
 import { encodeCsv } from "@/application/export";
 import { downloadBinary } from "@/application/download";
-import { buildExcelWorkbook, countCell, EXCEL_CELL_TEXT_LIMIT, EXCEL_MIME, excelSheetName, excelText, exportExcel, moneyCell, ratioCell, writeExcel, type ExcelCell, type ExcelExportInput, type ExcelSheet, type ExcelWorkbook } from "@/application/excel-export";
+import { buildExcelWorkbook, countCell, EXCEL_CELL_TEXT_LIMIT, EXCEL_MIME, EXCEL_NUMBER_FORMATS, excelHeader, excelSheetName, excelText, exportExcel, moneyCell, ratioCell, writeExcel, type ExcelCell, type ExcelExportInput, type ExcelSheet, type ExcelWorkbook } from "@/application/excel-export";
+import { formatPeriodExport, MINUS } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
 import { fill, labels } from "@/i18n";
 
@@ -48,7 +49,18 @@ function records(sheet: ExcelSheet): Record<string, string | number | null>[] {
 }
 const sheetOf = (workbook: ExcelWorkbook, key: typeof SHEET_KEYS[number]) => workbook.sheets.find(sheet => sheet.name === copy.sheets[key])!;
 const cents = (amount: number) => BigInt(Math.round(amount * 100));
-const col = copy.columns;
+/**
+ * V3-2b §8.5 規則 5：金額欄的表頭加「（元）」（單位只標一次）。這裡逐欄寫出哪些是金額欄（手寫的預期，不從程式反推），
+ * col 是實際的表頭字串；labels 原字串仍在 copy.columns。
+ */
+const MONEY_COLUMNS: { [S in keyof typeof copy.columns]?: readonly (keyof typeof copy.columns[S])[] } = {
+  summary: ["previous", "current", "change", "impact"],
+  channels: ["previous_net_revenue", "current_net_revenue", "net_revenue_change", "previous_contribution", "current_contribution", "contribution_change"],
+  bridge: ["previous", "current", "impact"],
+  products: ["previous_net_revenue", "current_net_revenue", "previous_gross_profit", "current_gross_profit", "gross_profit_change"],
+};
+const moneyHeader = (label: string) => fill(labels.ui.export.moneyColumn, { label });
+const col = Object.fromEntries(Object.entries(copy.columns).map(([sheet, columns]) => [sheet, Object.fromEntries(Object.entries(columns).map(([key, label]) => [key, (MONEY_COLUMNS[sheet as keyof typeof copy.columns] as readonly string[] | undefined)?.includes(key) ? moneyHeader(label) : label]))])) as { [S in keyof typeof copy.columns]: Record<keyof typeof copy.columns[S], string> };
 
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
@@ -60,12 +72,18 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     for (const key of SHEET_KEYS) {
       const sheet = sheetOf(workbook, key);
       expect(sheet.header, key).toEqual(Object.values(col[key]));
+      expect(sheet.header, key).toEqual(Object.values(copy.columns[key]).map((label, index) => excelHeader(label, sheet.formats![index])));
       expect(sheet.formats, key).toHaveLength(sheet.header.length);
       for (const row of sheet.rows) expect(row, key).toHaveLength(sheet.header.length);
     }
     // 03 §6：Excel 用新名稱；拆解表與畫面同名，欄名沿用既有指標字串。
     expect(copy.sheets.bridge).toBe(labels.sections.bridge);
-    expect(col.channels.previous_net_revenue).toBe(`${labels.periods.previous}${labels.metrics.net_revenue.label}`);
+    expect(copy.columns.channels.previous_net_revenue).toBe(`${labels.periods.previous}${labels.metrics.net_revenue.label}`);
+    expect(col.channels.previous_net_revenue).toBe(moneyHeader(`${labels.periods.previous}${labels.metrics.net_revenue.label}`));
+    // V3-2b §3.3：摘要與通路表是 L2（整數元），拆解與商品明細是 L3（到分）。
+    expect(sheetOf(workbook, "summary").formats).toEqual([null, null, null, "money_l2", "money_l2", "money_l2", "money_l2", null]);
+    expect(sheetOf(workbook, "channels").formats!.filter(Boolean)).toEqual(Array(6).fill("money_l2"));
+    expect(sheetOf(workbook, "bridge").formats).toEqual([null, "money", "money", "money", null]);
   });
 
   it("summary: scope lines, the two key deltas (golden 2250 → 2470, +220) and the three things", async () => {
@@ -76,8 +94,9 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const scope = rows.filter(row => row[col.summary.section] === s.sections.scope);
     expect(scope.map(row => [row[col.summary.item], row[col.summary.detail]])).toEqual([
       [s.items.dataset, "golden-v1"], [s.items.source, labels.status.demo], [s.items.asOf, "2026-08-03"],
-      [s.items.previous, fill(s.periodValue, { start: "2026-08-01", end: "2026-08-01", days: 1 })],
-      [s.items.current, fill(s.periodValue, { start: "2026-08-02", end: "2026-08-02", days: 1 })],
+      // V3-2b §8.6：版頭期間「YYYY-MM-DD 至 YYYY-MM-DD（天數）」。
+      [s.items.previous, formatPeriodExport("2026-08-01", "2026-08-01")],
+      [s.items.current, fill(labels.units.exportRange, { start: "2026-08-02", end: "2026-08-02", days: 1 })],
       [s.items.comparison, labels.periods.sameDays], [s.items.channels, "DTC、MARKETPLACE"],
     ]);
     const revenue = rows.find(row => row[col.summary.section] === s.sections.keyDeltas && row[col.summary.item] === labels.metrics.net_revenue.label)!;
@@ -384,13 +403,18 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
     const revenue = summary.find(row => row[col.summary.item] === labels.metrics.net_revenue.label)!;
     expect(revenue[col.summary.change]).toBe(220);
     expect(typeof revenue[col.summary.change]).toBe("number");
-    // 金額格的顯示格式是千分位兩位小數，比率是百分比；數值本身不變。
+    // V3-2b：格子仍是數字（數值本身不變）；顯示格式依層取位，負號 U+2212。摘要 L2 整數元，拆解與商品 L3 到分，比率百分比兩位小數。
     const sheet = book.Sheets[copy.sheets.summary];
     const changeCell = cellsOf(sheet).find(({ cell }) => cell.t === "n" && cell.v === 220)!.cell;
-    expect(changeCell.z).toBe("#,##0.00");
+    expect([changeCell.z, changeCell.w]).toEqual([EXCEL_NUMBER_FORMATS.money_l2, "220"]);
+    const minusCell = cellsOf(sheet).find(({ cell }) => cell.t === "n" && cell.v === -315)!.cell;
+    expect([minusCell.z, minusCell.w]).toEqual([EXCEL_NUMBER_FORMATS.money_l2, `${MINUS}315`]);
+    const bridgeSheet = book.Sheets[copy.sheets.bridge];
+    const bridgeCell = cellsOf(bridgeSheet).find(({ cell }) => cell.t === "n" && cell.v === -315)!.cell;
+    expect([bridgeCell.z, bridgeCell.w]).toEqual([EXCEL_NUMBER_FORMATS.money, `${MINUS}315.00`]);
     const products = book.Sheets[copy.sheets.products];
     const margin = cellsOf(products).find(({ cell }) => cell.v === 0.4375)!.cell;
-    expect([margin.t, margin.z, margin.w]).toEqual(["n", "0.00%", "43.75%"]);
+    expect([margin.t, margin.z, margin.w]).toEqual(["n", EXCEL_NUMBER_FORMATS.ratio, "43.75%"]);
     const header = XLSX.utils.sheet_to_json<string[]>(book.Sheets[copy.sheets.channels], { header: 1 })[0];
     expect(header).toEqual(Object.values(col.channels));
     const channelRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(book.Sheets[copy.sheets.channels]);

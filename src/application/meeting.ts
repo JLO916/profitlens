@@ -9,7 +9,7 @@ import { channelLabel, channelsLabel, conversionSentence, demoAlias } from "./co
 import { decisionSignature } from "./decision";
 import { diagnosisScopeLabel } from "./diagnosis-group";
 import { buildManagerSummary, type ManagerSummary } from "./manager-summary";
-import { metricDefinitions } from "./presentation";
+import { formatAmount, formatPeriodExport, formatSignedDelta, metricDefinitions } from "./presentation";
 import { buildReviewDecisionContext, REVIEW_DECISION_LABELS, type ReviewDecisionState, type ReviewSession } from "./review-session";
 import { resolveScenarioReference, type ScenarioSelectionRef, type ScenarioWorkspace } from "./scenario-workspace";
 import type { TargetSet } from "./targets";
@@ -394,7 +394,9 @@ export function compareWithLastMeeting(current: { snapshot: WorkspaceSnapshot; r
 /** Neutralize user-controlled Markdown/HTML, including links and embedded line breaks（與 manager-summary.ts 相同規則）。 */
 const md = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
   .replace(/[\\`*_{}\[\]()#+!|~]/g, character => `\\${character}`).replace(/\r\n|\r|\n/g, "&#10;");
-const money = (value: string | null, signed = false): string => value === null ? labels.status.missing : `${signed && parseCents(value)! > 0n ? "+" : ""}${value}`;
+/** V3-2b §3.3：會議紀錄 Markdown 主文用 L2 整數元（U+2212、正的差額加「+」）；單位寫在表頭「（元）」或「金額單位：元」，儲存格內不重複。 */
+const money = (value: string | null, signed = false): string => value === null ? labels.status.missing : signed ? formatSignedDelta(value, "L2") : formatAmount(value, "L2");
+const moneyColumn = (label: string): string => fill(labels.ui.export.moneyColumn, { label });
 const decisionText = (row: MeetingDecision): string => row.confirmed_revision === null
   ? fill(copy.decisionUnconfirmed, { decision: REVIEW_DECISION_LABELS[row.state] })
   : fill(copy.decisionConfirmed, { decision: REVIEW_DECISION_LABELS[row.state], revision: row.confirmed_revision });
@@ -417,13 +419,14 @@ export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComp
     fill(copy.mdMeta, { date: labels.meeting.date, value: meeting.date, decision: labels.meeting.decision, state: decisionText(latest), finalizedAt }), "",
     copy.mdScope, "",
     fill(copy.mdField, { field: labels.status.dataAsOf, value: fixed.data_as_of }),
-    fill(copy.mdPeriod, { period: labels.periods.previous, start: fixed.periods.previous.start, end: fixed.periods.previous.end }),
-    fill(copy.mdPeriod, { period: labels.periods.current, start: fixed.periods.current.start, end: fixed.periods.current.end }),
+    fill(copy.mdPeriod, { period: labels.periods.previous, range: formatPeriodExport(fixed.periods.previous.start, fixed.periods.previous.end) }),
+    fill(copy.mdPeriod, { period: labels.periods.current, range: formatPeriodExport(fixed.periods.current.start, fixed.periods.current.end) }),
     fill(copy.mdField, { field: labels.csvColumns.comparison_mode, value: comparisonModeLabel(fixed.periods.comparison_mode) }),
     fill(copy.mdField, { field: labels.csvColumns.channels, value: md(channelsLabel(fixed.channels, alias)) }),
-    fill(copy.mdThreshold, { field: labels.meeting.threshold, amount: meeting.thresholds.importance }), "",
+    // 門檻是使用者設定的精確值，取到分（L3）。
+    fill(copy.mdThreshold, { field: labels.meeting.threshold, amount: formatAmount(meeting.thresholds.importance, "L3") }), "",
     copy.mdBasis, "", ...fixed.basis.map(text => `- ${md(text)}`), ...(fixed.preprocessing ? [`- ${md(fixed.preprocessing)}`] : []), "",
-    `## ${labels.sections.meetingAgenda}`, "", `### ${copy.agenda.kpis}`, "",
+    `## ${labels.sections.meetingAgenda}`, "", `### ${copy.agenda.kpis}`, "", labels.ui.export.amountUnitNote, "",
   ];
   for (const row of meeting.agenda.kpis) lines.push(fill(copy.mdKpiRow, { metric: metricDefinitions[row.metric].label, previous: money(row.previous), current: money(row.current), change: money(row.change, true) }));
   lines.push("", `### ${copy.agenda.priorities}`, "");
@@ -432,7 +435,7 @@ export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComp
     fill(copy.mdPriorityRow, { n: index + 1, headline: md(row.headline), scope: md(row.scope), impact: labels.sections.impact, amount: money(row.impact, true) }),
     fill(copy.mdNextStep, { label: labels.sections.nextStep, step: md(row.next_step) }));
   lines.push("", `### ${copy.agenda.channels}`, "",
-    `| ${labels.csvColumns.channel} | ${labels.periods.previous}${revenue} | ${labels.periods.current}${revenue} | ${labels.csvSuffix.change} | ${labels.periods.previous}${contribution} | ${labels.periods.current}${contribution} | ${labels.csvSuffix.change} |`,
+    `| ${labels.csvColumns.channel} | ${[`${labels.periods.previous}${revenue}`, `${labels.periods.current}${revenue}`, labels.csvSuffix.change, `${labels.periods.previous}${contribution}`, `${labels.periods.current}${contribution}`, labels.csvSuffix.change].map(moneyColumn).join(" | ")} |`,
     "| --- | ---: | ---: | ---: | ---: | ---: | ---: |");
   for (const row of meeting.agenda.channels) lines.push(`| ${md(channelLabel(row.channel, alias))} | ${money(row.previous_net_revenue)} | ${money(row.current_net_revenue)} | ${money(row.net_revenue_change, true)} | ${money(row.previous_contribution)} | ${money(row.current_contribution)} | ${money(row.contribution_change, true)} |`);
   lines.push("", `### ${copy.agenda.followUp}`, "");
@@ -457,7 +460,7 @@ export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComp
     `## ${labels.sections.meetingCompare}`, "", md(follow.kind === "none" ? copy.noLastMeeting : follow.note));
   if (follow.kpis.length) {
     const columns = copy.compareColumns;
-    lines.push("", `| ${columns.metric} | ${columns.last} | ${columns.current} | ${columns.change} |`, "| --- | ---: | ---: | ---: |");
+    lines.push("", `| ${columns.metric} | ${moneyColumn(columns.last)} | ${moneyColumn(columns.current)} | ${moneyColumn(columns.change)} |`, "| --- | ---: | ---: | ---: |");
     for (const row of follow.kpis) lines.push(`| ${metricDefinitions[row.metric].label} | ${money(row.last)} | ${money(row.current)} | ${money(row.change, true)} |`);
   }
   // 三件事只在同資料同通路時比較；本次三件事就是本次議程的 ②。

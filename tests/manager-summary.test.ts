@@ -4,8 +4,9 @@ import { createSnapshot, hashInput } from "../src/application/workspace";
 import { validateDataset } from "../src/domain/validation";
 import type { AnalysisFilters } from "../src/domain/types";
 import { fixture } from "./helpers/fixtures";
-import { labels } from "../src/i18n";
+import { fill, labels } from "../src/i18n";
 import { csvHeader } from "../src/application/copy";
+import { formatAmountL2, formatAmountL3, formatPeriodExport, formatSignedDelta, MINUS } from "../src/application/presentation";
 
 // R2：Markdown 標題與附錄分隔都走 labels，避免硬編碼中文。
 const copy = labels.ui.managerSummary;
@@ -107,8 +108,16 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     const result = exportManagerSummaryMarkdown(summary, context);
     const body = result.split(TECH_APPENDIX)[0];
     expect(body).toContain(DRAFT_TITLE);
-    expect(body).toContain("+220.00");
-    expect(body).toContain("-315.00");
+    // V3-2b：主文 L2 整數元（U+2212、正的差額加「+」），單位寫一次；到分的值只在技術細節與 CSV。
+    expect(body).toContain(fill(copy.mdHeadlineRow, { metric: labels.metrics.net_revenue.label, previous: formatAmountL2("2250.00"), current: formatAmountL2("2470.00"), change: formatSignedDelta("220.00", "L2") }));
+    expect(body).toContain(fill(copy.mdHeadlineRow, { metric: labels.metrics.contribution_after_marketing.label, previous: formatAmountL2("570.00"), current: formatAmountL2("255.00"), change: formatSignedDelta("-315.00", "L2") }));
+    expect(formatSignedDelta("-315.00", "L2")).toBe(`${MINUS}315`);
+    expect(body).toContain(labels.ui.export.amountUnitNote);
+    expect(body).toContain(fill(copy.mdPeriod, { period: labels.periods.current, range: formatPeriodExport("2026-08-02", "2026-08-02") }));
+    expect(body).toContain(`| ${fill(labels.ui.export.moneyColumn, { label: labels.csvSuffix.change })} |`);
+    expect(body).toContain(`| ${formatAmountL2("170.00")} | ${formatAmountL2("-15.00")} | ${formatSignedDelta("-185.00", "L2")} |`);
+    expect(body).not.toContain("-315");
+    expect(body).not.toContain("315.00");
     expect(body).toContain("&lt;img");
     expect(body).not.toContain("<img");
     expect(body).not.toContain("[click](javascript:");
@@ -149,9 +158,10 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     };
     const stale = exportManagerSummaryMarkdown(summary, context).split(TECH_APPENDIX)[0];
     expect(stale).toContain(copy.noSelectedScenario);
-    expect(stale).not.toContain("284.00");
+    // V3-2b：主文金額是 L2（284），所以同時檢查方案名稱與兩種取位都不在主文。
+    for (const text of ["284.00", "歷史方案"]) expect(stale).not.toContain(text);
     const mismatch = { ...context, dataset_hash: "other", scenarios: context.scenarios.map(row => ({ ...row, status: "current" as const })) };
-    expect(exportManagerSummaryMarkdown(summary, mismatch).split(TECH_APPENDIX)[0]).not.toContain("284.00");
+    for (const text of ["284.00", "歷史方案"]) expect(exportManagerSummaryMarkdown(summary, mismatch).split(TECH_APPENDIX)[0]).not.toContain(text);
   });
 
   it("headline and channel facts remain traceable in the appendix when no diagnostic fires", async () => {
@@ -160,12 +170,15 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     expect(summary.priorities).toEqual([]);
     const [body, appendix] = exportManagerSummaryMarkdown(summary).split(TECH_APPENDIX);
     expect(body).not.toContain("fact_id");
-    expect(appendix).toContain(`${labels.metrics.net_revenue.label}：2250.00`);
-    expect(appendix).toContain(`${labels.metrics.net_revenue.label}：2470.00`);
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：570.00`);
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：255.00`);
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：170.00`);
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：-15.00`);
+    expect(appendix).toContain(`${labels.metrics.net_revenue.label}：${formatAmountL3("2250.00")}`);
+    expect(appendix).toContain(`${labels.metrics.net_revenue.label}：${formatAmountL3("2470.00")}`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("570.00")}`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("255.00")}`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("170.00")}`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("-15.00")}`);
+    // V3-2b：技術細節是 L3（到分、千分位、U+2212）。
+    expect(formatAmountL3("2250.00")).toBe("2,250.00");
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${MINUS}15.00`);
     expect(appendix).toContain("sales\\_daily.csv");
     expect(appendix).toContain("channel\\_costs\\_daily.csv");
     expect(appendix).toContain("ad\\_spend\\_daily.csv");

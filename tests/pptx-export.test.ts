@@ -6,7 +6,7 @@ import {
   buildPptxOnePager, estimatedLines, exportPptx, pptxChannelRows, pptxText, writePptx,
   PPTX_FILENAME, PPTX_MAX_CHANNEL_ROWS, PPTX_MIME, PPTX_TEXT_LIMITS, type PptxOnePager, type PptxOnePagerInput,
 } from "@/application/pptx-export";
-import { formatMoney, formatSignedMoney } from "@/application/presentation";
+import { formatAmountL1, formatAmountL2, formatPeriodExport, formatSignedDelta, MINUS } from "@/application/presentation";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import type { DatasetInput } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
@@ -63,26 +63,32 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     const { summary, snapshot, build } = await setup();
     const model = build();
     expect(model.title).toBe(fill(copy.title, { brand: labels.brand.name }));
-    expect(model.subtitle).toBe(fill(copy.subtitle, { asOf: "2026-08-03", previousStart: "2026-08-01", previousEnd: "2026-08-01", previousDays: 1, currentStart: "2026-08-02", currentEnd: "2026-08-02", currentDays: 1, channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
+    // V3-2b §8.6：版頭期間用匯出格式「YYYY-MM-DD 至 YYYY-MM-DD（天數）」。
+    expect(model.subtitle).toBe(fill(copy.subtitle, { asOf: "2026-08-03", previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
+    expect(formatPeriodExport("2026-08-01", "2026-08-01")).toBe(fill(labels.units.exportRange, { start: "2026-08-01", end: "2026-08-01", days: 1 }));
     // 手算：淨營收 上期 2500−200−50＝2250、本期 3100−450−180＝2470，差 +220；扣廣告後貢獻 570 → 255，差 −315（fixtures/golden/expected.json）。
+    // V3-2b §3.3：PPT 關鍵差額卡是 L1（< 1 萬寫「元」、≥ 1 萬寫「萬」；U+2212 負號、正差額加「+」）。
     expect(model.key_deltas).toEqual([
-      { label: labels.metrics.net_revenue.label, previous: "2,250.00", current: "2,470.00", change: "+220.00" },
-      { label: labels.metrics.contribution_after_marketing.label, previous: "570.00", current: "255.00", change: "-315.00" },
+      { label: labels.metrics.net_revenue.label, previous: formatAmountL1("2250.00"), current: formatAmountL1("2470.00"), change: formatSignedDelta("220.00", "L1") },
+      { label: labels.metrics.contribution_after_marketing.label, previous: formatAmountL1("570.00"), current: formatAmountL1("255.00"), change: formatSignedDelta("-315.00", "L1") },
     ]);
-    expect(model.key_deltas.map(row => [row.previous, row.current, row.change])).toEqual(summary.headlines.map(row => [formatMoney(row.previous.value), formatMoney(row.current.value), formatSignedMoney(row.change.value)]));
+    expect(model.key_deltas[1]).toEqual({ label: labels.metrics.contribution_after_marketing.label, previous: fill(labels.units.yuan, { value: "570" }), current: fill(labels.units.yuan, { value: "255" }), change: `${MINUS}${fill(labels.units.yuan, { value: "315" })}` });
+    expect(model.key_deltas.map(row => [row.previous, row.current, row.change])).toEqual(summary.headlines.map(row => [formatAmountL1(row.previous.value), formatAmountL1(row.current.value), formatSignedDelta(row.change.value, "L1")]));
     // 三件事：標題與下一步來自 ruleCopy；影響金額手算——貢獻 −315；折扣 200 → 450 多 250（影響 −250）；廣告 300 → 450 多 150（影響 −150）。
     expect(model.priorities.length).toBeLessThanOrEqual(3);
     expect(model.priorities.map(row => row.headline)).toEqual(summary.priorities.map(item => ruleCopy(snapshot, item.primary, false).headline));
     expect(model.priorities[0].headline).toBe(fill(labels.rules.REV_UP_CM_DOWN.title, { dNet: fill(labels.units.yuan, { value: "220" }), dCM: fill(labels.units.yuan, { value: "315" }) }));
-    expect(model.priorities.map(row => row.impact)).toEqual(["-315.00", "-250.00", "-150.00"]);
+    expect(model.priorities.map(row => row.impact)).toEqual(["-315.00", "-250.00", "-150.00"].map(value => formatSignedDelta(value, "L1")));
     expect(model.priorities.map(row => row.next_step)).toEqual([labels.rules.REV_UP_CM_DOWN.nextStep, labels.rules.DISCOUNT_BURDEN_UP.nextStep, labels.rules.MARKETING_BURDEN_UP.nextStep]);
     // 通路（扣廣告後貢獻）手算自 fixtures/golden CSV：
     // DTC 上期 (1500−100−50)−600−(0+40+100+10)−200＝400，本期 (1800−230−90)−740−(0+44+140+16)−270＝270；
     // MARKETPLACE 上期 (1000−100−0)−450−(90+20+60+10)−100＝170，本期 (1300−220−90)−585−(120+22+85+13)−180＝−15。
+    // 通路表是 L2 整數元（單位在表格標題「（元）」）。
     expect(model.channels).toEqual([
-      { channel: "DTC", previous: "400.00", current: "270.00", change: "-130.00" },
-      { channel: "MARKETPLACE", previous: "170.00", current: "-15.00", change: "-185.00" },
+      { channel: "DTC", previous: formatAmountL2("400.00"), current: formatAmountL2("270.00"), change: formatSignedDelta("-130.00", "L2") },
+      { channel: "MARKETPLACE", previous: formatAmountL2("170.00"), current: formatAmountL2("-15.00"), change: formatSignedDelta("-185.00", "L2") },
     ]);
+    expect(model.channels[1]).toEqual({ channel: "MARKETPLACE", previous: "170", current: `${MINUS}15`, change: `${MINUS}185` });
     expect(model.channels).toHaveLength(summary.channels.length);
     expect(model.decision).toBe(copy.noMeeting);
     expect(model.footer).toBe(labels.basis.footer);
@@ -223,12 +229,14 @@ describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
     expect([Number(size[1]), Number(size[2])]).toEqual([9144000, 5143500]);
     expect(Number(size[1]) * 9).toBe(Number(size[2]) * 16);
     const texts = runs(slide);
-    for (const value of [model.title, model.subtitle, "+220.00", "-315.00", `${labels.periods.previous} 2,250.00`, `${labels.periods.current} 2,470.00`, "DTC", "MARKETPLACE", "400.00", "-15.00", "-185.00", copy.noMeeting,
+    // V3-2b：關鍵差額卡 L1、通路表 L2，負號 U+2212；ASCII「-」金額不再出現在投影片上。
+    for (const value of [model.title, model.subtitle, formatSignedDelta("220.00", "L1"), formatSignedDelta("-315.00", "L1"), `${labels.periods.previous} ${formatAmountL1("2250.00")}`, `${labels.periods.current} ${formatAmountL1("2470.00")}`, "DTC", "MARKETPLACE", formatAmountL2("400.00"), formatAmountL2("-15.00"), formatSignedDelta("-185.00", "L2"), copy.noMeeting,
       labels.sections.keyDeltas, labels.sections.topThree, labels.sections.meetingDecision, copy.pinnedTitle]) expect(texts, value).toContain(value);
     model.priorities.forEach((row, index) => expect(texts).toContain(fill(copy.priorityRow, { n: index + 1, headline: row.headline })));
     expect(texts.some(value => value.startsWith(labels.basis.footer))).toBe(true);
     expect(texts).toContain(`${copy.separator}${model.technical}`);
     expect(slide).not.toContain(UNPINNED);
+    expect(texts.filter(value => /^-\d/.test(value))).toEqual([]);
   });
 
   it("escapes untrusted text: <script> only as &lt;script&gt; and & as &amp;", async () => {

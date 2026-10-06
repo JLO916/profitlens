@@ -6,6 +6,7 @@ import { fill, labels } from "../i18n";
 import { MAX_ACTIONS, MAX_SCENARIOS, decisionSignature, hasSensitivityInputs, validateActionContent, validateActionEvidence, validateScenarioName, validateSensitivityInputs, type ActionCard, type DecisionSession, type ScenarioPlan, type SensitivityInputs } from "./decision";
 import { encodeCsv, type CsvCell } from "./export";
 import { actionDocuments, type ActionWorkspace } from "./action-workspace";
+import { formatAmount, formatMetric, formatPeriodExport, formatRateL2, formatSignedDelta, type Layer } from "./presentation";
 
 const copy = labels.ui.decisionExport;
 /** 主層只留一句「注意」；其餘限制併入技術細節（Markdown），JSON／CSV 仍完整輸出。 */
@@ -130,6 +131,14 @@ function mdTechnical(lines: readonly string[], summary: string = labels.sections
 }
 const sensitivityCopy = labels.ui.scenarioSensitivity;
 /**
+ * V3-2b §3.3：Markdown 主文用 L2（整數元、比率一位小數），技術細節用 L3（到分）；負號 U+2212、正的差額加「+」。
+ * JSON／CSV 不經過這裡，維持 domain 的精確字串（ASCII 負號、到分）。
+ */
+const amountText = (value: string | null | undefined, layer: Layer = "L2", signed = false): string => value === null || value === undefined ? copy.nullValue : signed ? formatSignedDelta(value, layer) : formatAmount(value, layer);
+const amountFields = (values: Readonly<Record<string, string | null>>, layer: Layer = "L2"): Record<string, string> => Object.fromEntries(Object.entries(values).map(([key, value]) => [key, amountText(value, layer)]));
+const rateFields = (values: Readonly<Record<string, string | null>>): Record<string, string> => Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value === null ? copy.nullValue : formatRateL2(value)]));
+const moneyColumn = (label: string): string => fill(labels.ui.export.moneyColumn, { label });
+/**
  * V3-2a §7.7.3：domain 的試算原因碼（src/domain/scenarios.ts 的 eligibility／calculateScenario，與 scenario-sensitivity.ts）。
  * 每一個都要在 labels.ui.scenarioSensitivity.reasons 有白話文案（別名見 SCENARIO_REASON_ALIASES）；tests/reason-code-labels.test.ts 檢查。
  */
@@ -161,10 +170,10 @@ export function scenarioReasonText(reason: { code: string; message: string }): s
 function mdSensitivity(sensitivity: SensitivityExport): string[] {
   const row = (cells: readonly string[]) => `| ${cells.join(" | ")} |`;
   const lines = [`#### ${md(labels.sections.scenarioBreakeven)}`, "",
-    row([sensitivityCopy.colAssumption, `${labels.scenario.volume.label}（%）`, labels.scenario.resultTitle, labels.scenario.vsBaseline].map(md)), row(["---", "---", "---", "---"])];
+    row([sensitivityCopy.colAssumption, `${labels.scenario.volume.label}（%）`, moneyColumn(labels.scenario.resultTitle), moneyColumn(labels.scenario.vsBaseline)].map(md)), row(["---", "---:", "---:", "---:"])];
   sensitivity.volumes.forEach((volume, index) => {
     const result = sensitivity.analysis?.rows[index];
-    lines.push(row([md(fill(sensitivityCopy.rowLabel, { letter: String.fromCharCode(65 + index) })), md(volume.trim() === "" ? copy.nullValue : volume), md(result?.contribution ?? copy.nullValue), md(result?.delta ?? copy.nullValue)]));
+    lines.push(row([md(fill(sensitivityCopy.rowLabel, { letter: String.fromCharCode(65 + index) })), md(volume.trim() === "" ? copy.nullValue : volume), md(amountText(result?.contribution)), md(amountText(result?.delta, "L2", true))]));
   });
   if (sensitivity.analysis === null) lines.push("", md(labels.scenario.draft));
   else if (sensitivityStatus(sensitivity) !== "valid") lines.push("", md([...new Set(sensitivity.analysis.reasons.map(scenarioReasonText))].join(" ")));
@@ -176,10 +185,10 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   const periodText = (period: Period) => `${period.start}～${period.end}`;
   const comparisonMode = session.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays;
   const lines = [`# ${copy.title}`, "", fill(copy.statusLine, { status: session.stale ? copy.statusStale : copy.statusCurrent }), "", `## ${copy.sectionSource}`, "",
-    ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: periodText(session.period), scope: channelsLabel(session.scope.channels, alias), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
+    ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: formatPeriodExport(session.period.start, session.period.end), scope: channelsLabel(session.scope.channels, alias), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
     "", ...mdTechnical(mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, comparison: session.comparison, sources: session.sources, stale_reasons: session.stale_reasons }, false)),
-    "", `## ${labels.sections.scenarioBaseline}`, "", ...mdFields(session.baseline.amounts), "", ...mdFields({ ...session.baseline.rates }),
-    "", ...mdTechnical(mdFields({ version: session.baseline.version, eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons }, false)),
+    "", `## ${labels.sections.scenarioBaseline}`, "", labels.ui.export.amountUnitNote, "", ...mdFields(amountFields(session.baseline.amounts)), "", ...mdFields(rateFields({ ...session.baseline.rates })),
+    "", ...mdTechnical([...mdFields({ version: session.baseline.version, eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons }, false), "", ...mdFields(amountFields(session.baseline.amounts, "L3"), false)]),
     "", `## ${labels.sections.scenarioAssumptions}`, "", ...document.fixed_assumptions.map(assumption => `- ${md(assumption)}`),
     "", `## ${labels.nav.scenarios.label}`, "",
   ];
@@ -187,9 +196,10 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
     lines.push(`### ${md(plan.name)}`, "", ...mdFields({ id: plan.id, status: plan.status }), "", ...mdFields({ ...plan.inputs }));
     if (plan.result === null) lines.push("", labels.scenario.draft, "");
     else {
-      lines.push("", ...mdFields({ contribution: plan.result.contribution, delta: plan.result.delta }), "");
-      if (plan.result.amounts) lines.push(...mdFields(plan.result.amounts), "", ...mdFields(plan.result.rates), "");
-      lines.push(...mdTechnical([...mdFields({ reasons: plan.result.reasons, rounding_adjustment: plan.result.rounding_adjustment }, false), "", ...plan.result.assumptions.map(assumption => `- ${md(assumption)}`), "", ...mdFields(plan.result.formulas, false)]), "");
+      lines.push("", ...mdFields({ contribution: amountText(plan.result.contribution), delta: amountText(plan.result.delta, "L2", true) }), "");
+      if (plan.result.amounts) lines.push(...mdFields(amountFields(plan.result.amounts)), "", ...mdFields(rateFields(plan.result.rates)), "");
+      // 技術細節：到分的試算結果（L3），和 JSON／CSV 的值相同，只是加千分位與 U+2212。
+      lines.push(...mdTechnical([...mdFields({ contribution: amountText(plan.result.contribution, "L3"), delta: amountText(plan.result.delta, "L3", true), reasons: plan.result.reasons, rounding_adjustment: amountText(plan.result.rounding_adjustment, "L3", true) }, false), "", ...plan.result.assumptions.map(assumption => `- ${md(assumption)}`), "", ...mdFields(plan.result.formulas, false)]), "");
     }
     if (plan.sensitivity) lines.push(...mdSensitivity(plan.sensitivity), "");
   }
@@ -201,7 +211,8 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
     lines.push(`### ${fill(copy.actionHeading, { priority: action.priority, problem: md(action.problem) })}`, "", ...mdFields(main), "", ...mdTechnical(mdFields(technical, false)), "");
   }
   lines.push(`## ${copy.sectionFacts}`, "");
-  for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: metricLabel(fact.metric) ?? fact.metric, value: fact.value, reason_codes: fact.reason_codes, period: periodText(fact.period), scope: scopeLabel(fact.scope, alias), sources: fact.sources }), "");
+  // 引用的數字是依據（L3）：到分、比率兩位小數。
+  for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: metricLabel(fact.metric) ?? fact.metric, value: fact.value === null ? null : formatMetric(fact.metric, fact, "L3"), reason_codes: fact.reason_codes, period: periodText(fact.period), scope: scopeLabel(fact.scope, alias), sources: fact.sources }), "");
   lines.push(`## ${labels.sections.caution}`, "", `${labels.sections.caution}：${md(CAUTION)}`, "");
   lines.push(...mdTechnical([...mdFields(document.formulas, false), "", md(document.rounding), "", ...document.limitations.slice(1).map(limitation => `- ${md(limitation)}`)], copy.sectionFormulas), "");
   return lines.join("\n");

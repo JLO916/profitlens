@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { contributionImpact, diagnosisGroups, diagnosisScopeLabel, impactMagnitude, parseImportanceThreshold, summaryScopes, SUMMARY_SCOPE_LIMIT, TOP_PRIORITY_COUNT, type DiagnosisGroup } from "../src/application/diagnosis-group";
 import { buildManagerSummary, contributionImpact as summaryContributionImpact, exportManagerSummaryMarkdown } from "../src/application/manager-summary";
 import { ruleCopy } from "../src/application/copy";
+import { formatSignedDelta, MINUS } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { validateDataset } from "../src/domain/validation";
 import type { AnalysisFilters, Diagnostic, RuleCode, Scope } from "../src/domain/types";
@@ -257,11 +258,12 @@ describe("single source with buildManagerSummary (三件事 and Markdown follow 
     const summary = buildManagerSummary(base);
     const body = exportManagerSummaryMarkdown(summary).split(`## ${labels.sections.technicalDetails}`)[0];
     const section = body.split(`## ${labels.sections.topThree}`)[1];
-    const expected = diagnosisGroups(base).priorities.map((group, index) => fill(labels.ui.managerSummary.mdPriorityRow, { n: index + 1, headline: group.headline, scope: `${labels.sections.total}（DTC、MARKETPLACE）`, amount: group.impact_cents! }));
+    const expected = diagnosisGroups(base).priorities.map((group, index) => fill(labels.ui.managerSummary.mdPriorityRow, { n: index + 1, headline: group.headline, scope: `${labels.sections.total}（DTC、MARKETPLACE）`, amount: formatSignedDelta(group.impact_cents!, "L2") }));
     const rows = section.split("\n").filter(line => /^\d+\. /.test(line));
     expect(rows).toEqual(expected);
-    expect(rows.join("\n")).toContain("-250.00");
-    expect(rows.join("\n")).not.toContain("+250.00");
+    // V3-2b：Markdown 主文是 L2 整數元、U+2212 負號。
+    expect(rows.join("\n")).toContain(`${MINUS}250`);
+    expect(rows.join("\n")).not.toContain("+250");
     expect(exportManagerSummaryMarkdown(summary)).toContain(labels.diagnosisList.techPriorityNote);
   });
 });
