@@ -5,7 +5,7 @@ import { test as base, expect, type Locator, type Page } from "@playwright/test"
 import { fill, labels } from "../../src/i18n";
 import { AUTO_SAVE_DELAY_MS } from "../../src/application/auto-save";
 import { MINUS, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatMetric, formatSignedDelta } from "../../src/application/presentation";
-import { dismissSavePrompt, openValidation, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 const dw = labels.ui.decisionWorkbench, aw = labels.ui.actionsWorkbench, msw = labels.ui.multiScenarioWorkbench, dash = labels.ui.dashboard;
 const cmAfter = labels.metrics.contribution_after_marketing.label;
@@ -98,13 +98,19 @@ async function loadDataset(page: Page, id = "golden", classification: string = i
   // 零持久化案例自己按「先不要」並驗證之後沒有資料庫，所以可選擇保留提示。
   if (!keepSavePrompt) await dismissSavePrompt(page);
 }
-async function selectChannel(page: Page, channel: string, classification: string = ready()) {
+/** V3-3：全站通路選單在期間列（手機收在期間底部面板，先開面板、選完按「完成」）。 */
+async function selectGlobalChannel(page: Page, channel: string) {
+  await openPeriodSheet(page);
   await page.getByLabel(dash.filter.channel, { exact: true }).selectOption(channel);
+  await closePeriodSheet(page);
+}
+async function selectChannel(page: Page, channel: string, classification: string = ready()) {
+  await selectGlobalChannel(page, channel);
   await expect(workspaceStatus(page)).toContainText(classification);
 }
-/** R5-3 進頁即表單：點側欄「假設試算」一次就出現方案 1 的表單（沒有「開始試算」按鈕；全站多通路時先等單通路基準重算完成）。 */
+/** R5-3 進頁即表單：點側欄「假設試算」一次就出現方案 1 的表單（沒有「開始試算」按鈕；全站多通路時先等單通路基準重算完成）。V3-3：手機走「更多」→「假設試算」。 */
 async function showScenarios(page: Page) {
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await navigateTo(page, "scenarios");
   await expect(page.getByTestId("multi-scenario-workbench")).toBeVisible();
   await startChannelContext(page);
 }
@@ -147,7 +153,7 @@ async function calculate(card: Locator, contribution?: string, delta?: string) {
 }
 /** R5-5：行動頁預設看板；這裡用清單檢視的 action-<n> 編輯表單（期限 type=date、負責人 datalist、證據 checkbox 清單）。 */
 async function showActionList(page: Page) {
-  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  await navigateTo(page, "actions");
   await expect(actionsWorkbench(page)).toBeVisible();
   await switchActionsView(page, "list");
   await expect(page.getByTestId("actions-view-list")).toHaveAttribute("aria-pressed", "true");
@@ -244,8 +250,8 @@ test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
 test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看基準證據", async ({ page }) => {
   await loadDataset(page);
-  // R5-3：全站為全部通路時，點側欄一次（≤2 次點擊）就到表單；本頁通路單選只有個別通路（沒有「全部通路」），預設第一個，全站篩選不變。
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  // R5-3：全站為全部通路時，點側欄一次（≤2 次點擊；V3-3 手機為「更多」→「假設試算」）就到表單；本頁通路單選只有個別通路（沒有「全部通路」），預設第一個，全站篩選不變。
+  await navigateTo(page, "scenarios");
   await startChannelContext(page);
   await expect(scenario(page).getByLabel(inputLabels[0], { exact: true })).toBeEditable();
   const channelSelect = page.getByTestId("scenario-channel");
@@ -544,8 +550,12 @@ test("有效期間切換再回原期間，歷史結果不復活或自動沿用�
     periodFieldLabel("start", labels.periods.current), periodFieldLabel("end", labels.periods.current),
   ];
   for (const values of ranges) {
-    for (const [index, label] of dateLabels.entries()) await page.getByLabel(label, { exact: true }).fill(values[index]);
-    await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+    // V3-3：四個日期欄在「自訂期間」popover（手機在期間底部面板）裡，欄位標籤不變；在這裡改日期仍要按「套用」。
+    const panel = await openCustomPeriod(page);
+    for (const [index, label] of dateLabels.entries()) await panel.getByLabel(label, { exact: true }).fill(values[index]);
+    await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+    await expect(page.getByTestId("period-bar")).not.toHaveAttribute("aria-busy", "true");
+    await expect(periodSummary(page)).toContainText(periodSummaryText(values[2], values[3], values[0], values[1]));
     await expect(workspaceStatus(page)).toContainText(ready("demo"));
     await showScenarios(page);
     // R5-3：新期間只有進頁草稿，原期間的結果與假設不沿用。

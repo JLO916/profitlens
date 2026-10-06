@@ -1,4 +1,4 @@
-import { clickReplacing, dismissSavePrompt, openValidation, selectScenarioChannel, startChannelContext } from "./replacement-helpers";
+import { clickReplacing, closePeriodSheet, dismissSavePrompt, navigateTo, openPeriodSheet, openValidation, selectScenarioChannel, startChannelContext } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatPercentNumber, formatSignedDelta } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
@@ -58,6 +58,13 @@ async function openSensitivity(sensitivity: Locator) {
 // 每個案例都是多段流程（載入→試算→敏感度→換通路／下載）；比照 review-v2-a 長流程把逾時放寬到 120 秒（平行代理共用伺服器時單步明顯變慢），斷言不放寬。
 test.describe.configure({ timeout: 120_000 });
 
+/** V3-3：全站通路選單在期間列（手機收在期間底部面板，先開面板、選完按「完成」）。 */
+async function selectGlobalChannel(page: Page, channel: string) {
+  await openPeriodSheet(page);
+  await page.getByLabel(channelField, { exact: true }).selectOption(channel);
+  await closePeriodSheet(page);
+}
+
 async function openPlan(page: Page, investment = "0") {
   await page.goto("/");
   await openValidation(page);
@@ -66,9 +73,9 @@ async function openPlan(page: Page, investment = "0") {
   await expect(page.getByTestId("workspace-status")).toContainText(goldenReady);
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
-  await page.getByLabel(channelField, { exact: true }).selectOption("DTC");
-  // R5-3 進頁即表單：方案 1 是進頁草稿，不按「新增方案」。
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await selectGlobalChannel(page, "DTC");
+  // R5-3 進頁即表單：方案 1 是進頁草稿，不按「新增方案」。V3-3：手機走「更多」→「假設試算」。
+  await navigateTo(page, "scenarios");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   const card = page.getByTestId("scenario-1");
@@ -170,14 +177,14 @@ test("PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意�
   await expectSensitivityValues(sensitivity, inputValues);
   await expectSensitivityRow(sensitivity, 0, golden.base[0]);
   // 全站篩選切到 MARKETPLACE：試算頁跟著換到 MARKETPLACE，只有進頁草稿，沒有可用的舊門檻。
-  await page.getByLabel(channelField, { exact: true }).selectOption("MARKETPLACE");
+  await selectGlobalChannel(page, "MARKETPLACE");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("MARKETPLACE");
   await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(formatAmountL1("-15.00"));
   await expect(card.getByLabel(dw.planName, { exact: true })).toHaveValue(fill(dw.defaultPlanName, { n: 1 }));
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(page.getByTestId("scenario-sensitivity")).toHaveCount(0);
-  await page.getByLabel(channelField, { exact: true }).selectOption("DTC");
+  await selectGlobalChannel(page, "DTC");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
