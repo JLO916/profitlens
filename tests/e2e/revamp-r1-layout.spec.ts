@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
-import { choosePreset, clickReplacing, dismissSavePrompt, isMobile, navigateTo, openCustomPeriod, openTopbarMore, periodSummary, periodSummaryText, periodSummaryVisibleText, periodToggleText, presetButton, sidebarNav } from "./replacement-helpers";
+import { applyCustomPeriod, choosePreset, clickReplacing, dismissSavePrompt, isMobile, navigateTo, openCustomPeriod, openDetails, openPeriodSheet, openTopbarMore, periodSummary, periodSummaryText, periodSummaryVisibleText, periodToggleText, presetButton, sidebarNav } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
-import { MINUS, deltaTone, formatAmountL1, formatDateL1, formatSignedDelta } from "../../src/application/presentation";
+import { MINUS, deltaTone, formatAmountL1, formatAmountL3, formatDateL1, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
+import { AMOUNT_FIELDS } from "../../src/domain/types";
 
 const aiLabelPrefix = labels.ui.dashboard.aiLabel.replace("{ai}", "");
 // V3-3：示範資料（fixtures/demo/manifest.json）的「資料到」；頂欄資料狀態按鈕寫「示範資料 · 資料到 8/24」。
@@ -43,9 +44,10 @@ test.describe("R1 overview first screen", () => {
       expect(after.y + after.height).toBeLessThanOrEqual(viewport.height);
       await page.evaluate(() => window.scrollTo(0, 0));
     }
-    // V3-4b（§7.1）：本期一句話（含會議入口）→ KPI 帶 → 三件事 → 拆解（B1 元件，#bridge-title）→ 趨勢 → 各通路（1440 並排、同一列頂端對齊；1280 上下排列）→ 其他常用指標 → 進階（期間合計與日均收在裡面）。
+    // V3-4b（§7.1）：本期一句話（含會議入口）→ KPI 帶 → 三件事 → 貢獻變化拆解（#bridge-title）→ 本期利潤結構（profit-waterfall）
+    // → 趨勢與各通路（.pair；1440 並排、同一列頂端對齊；1280 以下上下排列）→ 其他常用指標 → 進階（期間合計與日均收在裡面）。
     const order = await page.evaluate(() => {
-      const ids = ["[data-testid='weekly-snapshot']", "[data-testid='kpi-band']", "[data-testid='top-three']", "[aria-labelledby='bridge-title']", "[aria-labelledby='trend-title']", "[aria-labelledby='channel-title']", "[data-testid='assist-kpis']", "[data-testid='overview-advanced']"];
+      const ids = ["[data-testid='weekly-snapshot']", "[data-testid='kpi-band']", "[data-testid='top-three']", "[aria-labelledby='bridge-title']", "[data-testid='profit-waterfall']", "[aria-labelledby='trend-title']", "[aria-labelledby='channel-title']", "[data-testid='assist-kpis']", "[data-testid='overview-advanced']"];
       return ids.map(selector => document.querySelector(selector)?.getBoundingClientRect().top ?? -1);
     });
     expect(order.every(top => top >= 0)).toBe(true);
@@ -323,5 +325,136 @@ test.describe("V3-3 shell acceptance", () => {
     console.log(`[V3-3] focusable before first KPI @${testInfo.project.name} = ${focusables.length}: ${focusables.join(" | ")}`);
     // §2.3 B 的預算只定在 1440（desktop）；其他尺寸只記錄數值。
     if (testInfo.project.name === "desktop") expect(focusables.length, "1440：第一個 KPI 之前 main 內可聚焦元素 ≤ 10").toBeLessThanOrEqual(10);
+  });
+});
+
+// ── V3-4b 圖表段（PRD §7.1 第 5–8 點、§9.4 C16／C17、§9.5、§10.3）：固定高的圖表框（CLS）、瀑布與表格共用抽屜、平衡檢核 ──
+const evidenceDrawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+/** 抽屜標題：「{title} · 計算與來源」。 */
+const evidenceHeading = (title: string) => `${title} · ${labels.sections.evidence}`;
+/** 四個圖表框：拆解與利潤結構是瀑布（.chart-frame.waterfall），趨勢與各通路是 C16 的 .chart-frame.sm。 */
+const CHART_FRAMES = ["[data-testid='bridge-section'] .chart-frame", "[data-testid='profit-waterfall'] .chart-frame", "[data-testid='trend'] .chart-frame", "[data-testid='channel-mix'] .chart-frame"] as const;
+const chartFrameHeights = (page: Page) => Promise.all(CHART_FRAMES.map(async selector => (await box(page, selector)).height));
+/** 含 {占位符} 的標籤模板 → 正規式片段（占位符換成非空字串）。 */
+const templateSource = (template: string) => template.split(/\{[^}]+\}/).map(part => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".+?");
+const profitTitlePattern = new RegExp(`^(?:${templateSource(labels.overview.profit.title.positive)}|${templateSource(labels.overview.profit.title.negative)})$`);
+/** 「每 100 元淨營收」句型的固定字：positive／negative 兩個模板在占位符之前的共同前綴。 */
+const profitTitleFixed = (() => {
+  const [a, b] = [labels.overview.profit.title.positive, labels.overview.profit.title.negative].map(template => template.split("{")[0]);
+  let i = 0;
+  while (i < a.length && a[i] === b[i]) i++;
+  return a.slice(0, i);
+})();
+type ShiftState = { cls: number; all: number; observer: PerformanceObserver };
+
+test.describe("V3-4b charts", () => {
+  test("切換期間前後圖表容器等高、CLS < 0.05", async ({ page }, testInfo) => {
+    await loadDemo(page);
+    await expect(page.locator("main .chart-frame")).toHaveCount(CHART_FRAMES.length);
+    const before = await chartFrameHeights(page);
+    expect(before.every(height => height > 0), "四個圖表框都有高度").toBe(true);
+    // 只累加非使用者輸入造成的位移（hadRecentInput 為 false，與 CLS 的定義相同）；另記錄含輸入後 500ms 內的全部位移，只供參考。
+    await page.evaluate(() => {
+      const holder = window as unknown as { __v34bShift: ShiftState };
+      const observer = new PerformanceObserver(list => {
+        for (const entry of list.getEntries() as unknown as { value: number; hadRecentInput: boolean }[]) { holder.__v34bShift.all += entry.value; if (!entry.hadRecentInput) holder.__v34bShift.cls += entry.value; }
+      });
+      holder.__v34bShift = { cls: 0, all: 0, observer };
+      observer.observe({ type: "layout-shift", buffered: false });
+    });
+    // 手機：期間列收成 period-toggle，快捷在底部面板裡（先開面板；choosePreset 點完會等面板收起）。桌機不動。
+    await openPeriodSheet(page);
+    expect(await choosePreset(page, "last7")).toContain(LAST7_SUMMARY);
+    await expect.poll(() => periodSummaryVisibleText(page)).toBe(LAST7_SUMMARY);
+    await expect(page.getByTestId("period-bar")).not.toHaveAttribute("aria-busy", "true");
+    expect(await chartFrameHeights(page), "近 7 天：四個圖表框高度不變").toEqual(before);
+    // 示範資料載入時的預設範圍（各 42 天）不是任何一個快捷：用自訂期間套回原範圍。
+    await applyCustomPeriod(page, { previousStart: "2026-06-01", previousEnd: "2026-07-12", currentStart: "2026-07-13", currentEnd: "2026-08-23" });
+    await expect.poll(() => periodSummaryVisibleText(page)).toBe(DEFAULT_SUMMARY);
+    await expect(page.getByTestId("period-bar")).not.toHaveAttribute("aria-busy", "true");
+    await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(formatAmountL1("1269792.73"));
+    const shift = await page.evaluate(() => {
+      const state = (window as unknown as { __v34bShift: ShiftState }).__v34bShift;
+      for (const entry of state.observer.takeRecords() as unknown as { value: number; hadRecentInput: boolean }[]) { state.all += entry.value; if (!entry.hadRecentInput) state.cls += entry.value; }
+      state.observer.disconnect();
+      return { cls: state.cls, all: state.all };
+    });
+    testInfo.annotations.push({ type: "v3-4b-period-switch-cls", description: `cls=${shift.cls.toFixed(4)} all=${shift.all.toFixed(4)}` });
+    console.log(`[V3-4b] period switch CLS @${testInfo.project.name}: cls=${shift.cls.toFixed(4)} (incl. shifts after input: ${shift.all.toFixed(4)})`);
+    expect(shift.cls, "切換期間的累積版面位移 < 0.05").toBeLessThan(0.05);
+    expect(await chartFrameHeights(page), "套回原範圍：四個圖表框高度與切換前相同").toEqual(before);
+  });
+
+  test("瀑布與表格共用抽屜", async ({ page }) => {
+    await loadDemo(page);
+    const dialog = evidenceDrawer(page);
+    const heading = dialog.getByRole("heading", { level: 2 });
+    // 貢獻變化拆解：橋接表第一個差額列（九項的第一項）→ 抽屜「{指標}拆解差額」；Esc 關閉後焦點回到該 number-link。
+    const bridgeTable = page.getByTestId("bridge-table");
+    const firstDelta = bridgeTable.locator("tbody tr[data-row]").nth(1);
+    await expect(firstDelta).toHaveAttribute("data-row", AMOUNT_FIELDS[0]);
+    const bridgeTitle = evidenceHeading(fill(labels.overview.page.bridgeRowTitle, { metric: metricDefinitions[AMOUNT_FIELDS[0]].label }));
+    const bridgeLink = firstDelta.locator(".number-link");
+    await bridgeLink.click();
+    await expect(dialog).toBeVisible();
+    await expect(heading).toHaveText(bridgeTitle);
+    const bridgePrecise = (await dialog.getByTestId("evidence-precise-value").textContent())!.trim();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(bridgeLink).toBeFocused();
+    // 瀑布（aria-hidden 的視覺層）：第 1 根是上期，第 2 根是九項的第一項；點柱與點表格列是同一個抽屜（同標題、同精確值）。
+    await page.getByTestId("bridge-waterfall").locator("rect.wf-bar").nth(1).click();
+    await expect(dialog).toBeVisible();
+    await expect(heading).toHaveText(bridgeTitle);
+    await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(bridgePrecise);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+
+    // 本期利潤結構：資料表在收合的 <details> 裡，先展開；扣廣告後貢獻列的 number-link 與同名的瀑布柱開出同一個抽屜（合計＝示範資料本期 1269792.73）。
+    const profit = page.getByTestId("profit-waterfall");
+    await openDetails(profit.locator("details.data-alternative"));
+    const resultLink = profit.locator("tr[data-row='contribution_after_marketing'] .number-link");
+    const profitTitle = evidenceHeading(metricDefinitions.contribution_after_marketing.label);
+    const profitPrecise = fill(labels.units.yuan, { value: formatAmountL3("1269792.73") });
+    await resultLink.click();
+    await expect(dialog).toBeVisible();
+    await expect(heading).toContainText(metricDefinitions.contribution_after_marketing.label);
+    await expect(heading).toHaveText(profitTitle);
+    await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(profitPrecise);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(resultLink).toBeFocused();
+    await page.getByTestId("profit-waterfall-bar-contribution_after_marketing").click();
+    await expect(dialog).toBeVisible();
+    await expect(heading).toHaveText(profitTitle);
+    await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(profitPrecise);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+
+    // 範圍分段按鈕：合計＋各通路（示範資料兩個通路）；切到第二個通路，標題（每 100 元淨營收句型）跟著改變。
+    const scope = page.getByTestId("profit-waterfall-scope").getByRole("button");
+    await expect(scope).toHaveCount(3);
+    await expect(scope.first()).toHaveText(labels.overview.profit.scope.all);
+    await expect(scope.first()).toHaveAttribute("aria-pressed", "true");
+    const title = page.locator("#profit-title");
+    await expect(title).toHaveText(profitTitlePattern);
+    const totalTitle = (await title.textContent())!.trim();
+    await scope.nth(2).click();
+    await expect(scope.nth(2)).toHaveAttribute("aria-pressed", "true");
+    await expect(scope.first()).toHaveAttribute("aria-pressed", "false");
+    await expect(title).not.toHaveText(totalTitle);
+    await expect(title).toContainText(profitTitleFixed);
+    await expect(title).toHaveText(profitTitlePattern);
+    // 範圍切換只影響本圖：KPI 帶仍是全部通路的本期扣廣告後貢獻。
+    await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(formatAmountL1("1269792.73"));
+  });
+
+  test("平衡檢核", async ({ page }) => {
+    await loadDemo(page);
+    const balance = page.getByTestId("bridge-balance-check");
+    await expect(balance.locator("th")).toHaveText(labels.overview.bridgeV3.balance.label);
+    // 九項加總＝兩期扣廣告後貢獻差額：「已平衡（差 0.00）」（差額是 L3 到分的絕對值；與 bridgeWaterfall 的 balanceText 同一個模板）。
+    await expect(balance.locator("td")).toHaveText(fill(labels.overview.bridgeV3.balance.balanced, { difference: formatAmountL3("0.00") }));
+    await expect(balance.locator(".bridge-balance")).toHaveAttribute("data-tone", "balanced");
   });
 });
