@@ -1,6 +1,6 @@
 import { dismissSavePrompt, openMeeting, openValidation, switchActionsView } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
-import { metricDefinitions } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL2, formatAmountL3, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -35,8 +35,15 @@ const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&
 const technicalHeading = `## ${labels.sections.technicalDetails}`;
 /** review-workbench renders `改用這個待辦的最新數據：{name}`; match by the template prefix. */
 const refreshActionRef = new RegExp(`^${escapeRegExp(labels.ui.reviewWorkbench.refreshActionRef.split("{name}")[0])}`);
-/** Golden keeps raw channel codes (demo alias applies only to synthetic-demo datasets); scope kind "all" renders as labels.sections.total. */
-const goldenFactLabel = fill(labels.ui.actionsWorkbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC、MARKETPLACE", scopeKind: labels.sections.total, value: "255.00" });
+/**
+ * Golden keeps raw channel codes (demo alias applies only to synthetic-demo datasets); scope kind "all" renders as labels.sections.total.
+ * V3-2b：待辦引用清單的事實值是 L1（actions-workbench factValue 預設層）。
+ */
+const goldenFactLabel = fill(labels.ui.actionsWorkbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC、MARKETPLACE", scopeKind: labels.sections.total, value: formatAmountL1("255.00") });
+/** V3-2b：列印版關鍵差額一行 printHeadline「上期 {prev}，本期 {cur}，差額 {change}」，三個數字都是 L1（U+2212）。 */
+const printHeadline = (previous: string, current: string, change: string) => fill(summaryCopy.printHeadline, { prev: formatAmountL1(previous), cur: formatAmountL1(current), change: formatSignedDelta(change, "L1") });
+/** V3-2b：一頁摘要 Markdown 主文是 L2（整數元、千分位、U+2212，正差額加「+」）。 */
+const mdHeadline = (metric: string, previous: string, current: string, change: string) => fill(summaryCopy.mdHeadlineRow, { metric, previous: formatAmountL2(previous), current: formatAmountL2(current), change: formatSignedDelta(change, "L2") });
 
 async function saveDownload(page: Page, button: Locator, path: string) {
   const pending = page.waitForEvent("download");
@@ -82,9 +89,10 @@ async function checkPrint(page: Page, info: TestInfo, pinned: boolean) {
   const print = page.getByTestId("manager-summary-print");
   await expect(print).toBeVisible();
   await expect(summary).toBeHidden();
-  await expect(print).toContainText(fill(summaryCopy.printThresholdLine, { amount: "1,000.00" }));
-  await expect(print).toContainText("-315.00");
-  await expect(print).toContainText("+220.00");
+  // 門檻是使用者輸入的設定值，列印版沿用到分（L3）。
+  await expect(print).toContainText(fill(summaryCopy.printThresholdLine, { amount: formatAmountL3("1000.00") }));
+  await expect(print).toContainText(printHeadline("570.00", "255.00", "-315.00"));
+  await expect(print).toContainText(printHeadline("2250.00", "2470.00", "220.00"));
   const main = print.locator(":scope > ul > li");
   const appendix = print.locator(":scope > section").filter({ has: page.getByRole("heading", { name: summaryCopy.appendixHeading, exact: true }) });
   await expect(main).toHaveCount(pinned ? 3 : 0);
@@ -154,9 +162,10 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   expect(body.match(/匯出驗收行動第/g)).toHaveLength(3);
   expect(technical.match(/匯出驗收行動第/g)).toHaveLength(5);
   // Threshold sentence is the tail of mdComparison after the comparison mode; assert that part so the mode label stays independent.
-  expect(body).toContain(fill(summaryCopy.mdComparison.split("{mode}")[1], { threshold: "1000.00" }));
-  expect(body).toContain(fill(summaryCopy.mdHeadlineRow, { metric: contributionLabel, previous: "570.00", current: "255.00", change: "-315.00" }));
-  expect(body).toContain(fill(summaryCopy.mdHeadlineRow, { metric: netRevenueLabel, previous: "2250.00", current: "2470.00", change: "+220.00" }));
+  // V3-2b：門檻是使用者設定的精確值，Markdown 取到分（L3，千分位）。
+  expect(body).toContain(fill(summaryCopy.mdComparison.split("{mode}")[1], { threshold: formatAmountL3("1000.00") }));
+  expect(body).toContain(mdHeadline(contributionLabel, "570.00", "255.00", "-315.00"));
+  expect(body).toContain(mdHeadline(netRevenueLabel, "2250.00", "2470.00", "220.00"));
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-ui-pinned-${info.project.name}.png`), fullPage: true });
   await checkPrint(page, info, true);
 

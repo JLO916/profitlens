@@ -2,6 +2,7 @@ import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
 import { closeDetails, dismissSavePrompt, openMeeting, openValidation, selectScenarioChannel, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { fill, labels } from '../../src/i18n';
+import { formatAmountL1, formatAmountL3 } from '../../src/application/presentation';
 import { readFileSync } from 'node:fs';
 import { appendFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -22,6 +23,8 @@ const templateRe=(template:string,values:Record<string,string>={},flags='')=>new
 /** V3-2a：狀態列「資料到 {date}」的日期取自該資料集 manifest 的 data_as_of。 */
 const ready=(dataset:'golden')=>fill(labels.status.ready,{date:JSON.parse(readFileSync(resolve(`fixtures/${dataset}/manifest.json`),'utf8')).data_as_of});
 const status=(p:Page)=>p.getByTestId('workspace-status');
+/** V3-2b（§3.3、§8.5）：KPI 大數字與試算結果都是 L1（< 1 萬寫整數元「284 元」，HALF_UP：−6.50 →「−7 元」）；金額取自 golden 精確值。 */
+const l1=(amount:string)=>formatAmountL1(amount);
 const guard=(p:Page)=>p.getByRole('dialog',{name:dlg.heading});
 async function golden(p:Page){await p.goto('/');await openValidation(p);await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(ready('golden'));await dismissSavePrompt(p);}
 async function storage(p:Page){const s=p.getByTestId('workspace-storage');if(await s.getAttribute('open')===null)await s.locator(':scope > summary').click();return s;}
@@ -41,10 +44,10 @@ test('A3 示範替換可取消，下載尚未確認不能替換，確認後才�
 test('A3 新CSV套用取消保留預覽，明示繼續後才改金額；恢復取消不丟候選',async({page})=>{
  await golden(page);const original=await backup(page);await stageAlternative(page);
  await commitButton(page).click();await expect(guard(page)).toBeVisible();await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(wizardStatus(page)).toContainText(labels.importWizard.result.valid);await expect(commitButton(page)).toBeVisible();await expect(status(page)).toContainText('Golden');
- await commitButton(page).click();await guard(page).getByRole('button',{name:dlg.discardAndContinue,exact:true}).click();await expect(wizard(page)).toHaveCount(0);await expect(status(page)).toContainText('alternative-import');await expect(page.getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')).toHaveText('10.00');
+ await commitButton(page).click();await guard(page).getByRole('button',{name:dlg.discardAndContinue,exact:true}).click();await expect(wizard(page)).toHaveCount(0);await expect(status(page)).toContainText('alternative-import');await expect(page.getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')).toHaveText(l1('10.00'));
  const s=await storage(page);await s.getByLabel(store.selectBackupFile,{exact:true}).setInputFiles({name:'review.json',mimeType:'application/json',buffer:Buffer.from(original)});await expect(page.getByRole('region',{name:store.restorePreviewAria})).toBeVisible();
  await s.getByRole('button',{name:store.applyRestore,exact:true}).click();await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(page.getByRole('region',{name:store.restorePreviewAria})).toBeVisible();await expect(status(page)).toContainText('alternative-import');
- await s.getByRole('button',{name:store.applyRestore,exact:true}).click();await guard(page).getByRole('button',{name:dlg.discardAndContinue,exact:true}).click();await expect(status(page)).toContainText('Golden');await expect(page.getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')).toHaveText('255.00');
+ await s.getByRole('button',{name:store.applyRestore,exact:true}).click();await guard(page).getByRole('button',{name:dlg.discardAndContinue,exact:true}).click();await expect(status(page)).toContainText('Golden');await expect(page.getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')).toHaveText(l1('255.00'));
 });
 test('A3 本機保存失敗不清空；沒有保存同意不能儲存，Escape保留資料',async({page})=>{
  await page.addInitScript(()=>{const original=IDBFactory.prototype.open;IDBFactory.prototype.open=function(...args:Parameters<IDBFactory['open']>){if(args[0]==='profitlens-opt-in-workspace-v1')throw new DOMException('test denied','QuotaExceededError');return original.apply(this,args);};});
@@ -65,7 +68,7 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
    await card.getByLabel(labels.ui.decisionWorkbench.planName,{exact:true}).fill(`${channel} 方案 ${i}`);
    for(const[label,value]of Object.entries({[labels.scenario.volume.label]:'0',[labels.scenario.discount.label]:'0',[labels.scenario.fulfillmentUnit.label]:'-10',[labels.scenario.adSpend.label]:'0',[labels.scenario.oneOff.label]:i===1?'0':'20'}))await card.getByLabel(label,{exact:true}).fill(value);
    await card.getByLabel(labels.scenario.acceptAssumptions,{exact:true}).check();await card.getByRole('button',{name:labels.buttons.calculate,exact:true}).click();
-   await expect(card.getByTestId('scenario-contribution')).toHaveText(channel==='DTC'?(i===1?'284.00':'264.00'):(i===1?'-6.50':'-26.50'));
+   await expect(card.getByTestId('scenario-contribution')).toHaveText(l1(channel==='DTC'?(i===1?'284.00':'264.00'):(i===1?'-6.50':'-26.50')));
   }
   await expect(page.getByRole('button',{name:labels.buttons.addScenario,exact:true})).toBeDisabled();
  }
@@ -111,9 +114,9 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  await closeDetails(fresh);await expect(page.getByTestId('local-save-prompt')).toBeVisible();await dismissSavePrompt(page);await expect(page.getByTestId('local-save-prompt')).toHaveCount(0);await openMeeting(page);
  await expect(summary.getByLabel(labels.meeting.threshold,{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('needs_data');
  // R6：選入方案的試算結果列在議程 ⑤（meeting-agenda-5）。
- const scenarioResults=page.getByTestId('meeting-agenda-5').getByTestId('meeting-scenario-results');await expect(scenarioResults.getByTestId('meeting-scenario-result')).toHaveCount(2);await expect(scenarioResults).toContainText('284.00');await expect(scenarioResults).toContainText('-6.50');
+ const scenarioResults=page.getByTestId('meeting-agenda-5').getByTestId('meeting-scenario-results');await expect(scenarioResults.getByTestId('meeting-scenario-result')).toHaveCount(2);await expect(scenarioResults.getByTestId('meeting-scenario-result').filter({hasText:'DTC 方案 1'})).toContainText(l1('284.00'));await expect(scenarioResults.getByTestId('meeting-scenario-result').filter({hasText:'MARKETPLACE 方案 1'})).toContainText(l1('-6.50'));
  const mdEvent=page.waitForEvent('download');await page.getByTestId('meeting-outputs').getByRole('button',{name:labels.buttons.exportMarkdown,exact:true}).click();const mdDownload=await mdEvent;await mdDownload.saveAs(resolve(`verification/review-v2-a-meeting-${info.project.name}.md`));const md=await readFile((await mdDownload.path())!,'utf8');const[main,appendix]=md.split(`## ${labels.sections.technicalDetails}`);
- expect((main.match(/合成行動第/g)||[])).toHaveLength(3);expect((appendix.match(/合成行動第/g)||[])).toHaveLength(5);expect(main).toMatch(templateRe(summaryCopy.mdComparison,{threshold:'1000.00'},'m'));
+ expect((main.match(/合成行動第/g)||[])).toHaveLength(3);expect((appendix.match(/合成行動第/g)||[])).toHaveLength(5);expect(main).toMatch(templateRe(summaryCopy.mdComparison,{threshold:formatAmountL3('1000.00')},'m')); // V3-2b：門檻在 Markdown 取到分（L3，千分位）
  await page.screenshot({path:resolve(`verification/review-v2-a-meeting-${info.project.name}.png`),fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.getByRole('button',{name:labels.nav.scenarios.label,exact:true}).click();await selectScenarioChannel(page,'DTC');

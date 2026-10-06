@@ -2,6 +2,7 @@ import { closeDownloads, dismissSavePrompt, openDownloads, openPeriodComparison 
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { channelsLabel } from "../../src/application/copy";
+import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -47,6 +48,8 @@ const comparison = (page: Page) => page.getByTestId("period-comparison");
 const contributionRow = (page: Page) => comparison(page).getByRole("row").filter({ has: page.getByText(metric("contribution_after_marketing"), { exact: true }) });
 const revenueRow = (page: Page) => comparison(page).getByRole("row").filter({ has: page.getByText(metric("net_revenue"), { exact: true }) });
 const currentContribution = (page: Page) => page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value");
+/** V3-2b（§8.5）：期間合計與日均表是 L2（整數元、千分位、不帶單位），最後一欄日均差額帶正負號（U+2212）；KPI 大數字 L1；橋接總差額 L3。 */
+const periodCells = (prevTotal: string, curTotal: string, prevAvg: string, curAvg: string, avgChange: string) => [formatAmountL2(prevTotal), formatAmountL2(curTotal), formatAmountL2(prevAvg), formatAmountL2(curAvg), formatSignedDelta(avgChange, "L2")];
 /** R3: drives the four-step import wizard (step 1 files + advanced manifest → step 2 auto-skipped for standard headers → step 3 basis/settings → step 4 check → commit). */
 async function importMonthly(page: Page, kind: "complete" | "zero" | "missing" = "complete") {
   await page.goto("/");
@@ -109,12 +112,12 @@ async function downloadAnalysis(page: Page) {
 
 test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下載一致", async ({ page }, testInfo) => {
   await importMonthly(page);
-  await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-value")).toHaveText("3,000.00");
-  await expect(currentContribution(page)).toHaveText("750.00");
-  await expect(page.locator(".bridge-total")).toContainText("-25.00");
+  await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-value")).toHaveText(formatAmountL1("3000.00"));
+  await expect(currentContribution(page)).toHaveText(formatAmountL1("750.00"));
+  await expect(page.locator(".bridge-total")).toContainText(formatSignedDelta("-25.00", "L3"));
   await expect(comparison(page)).toContainText(fill(ui.periodDays, { previousDays: 31, currentDays: 30 }));
-  await expect(revenueRow(page).getByRole("cell")).toHaveText(["3,100.00", "3,000.00", "100.00", "100.00", "0.00"]);
-  await expect(contributionRow(page).getByRole("cell")).toHaveText(["775.00", "750.00", "25.00", "25.00", "0.00"]);
+  await expect(revenueRow(page).getByRole("cell")).toHaveText(periodCells("3100.00", "3000.00", "100.00", "100.00", "0.00"));
+  await expect(contributionRow(page).getByRole("cell")).toHaveText(periodCells("775.00", "750.00", "25.00", "25.00", "0.00"));
   await contributionRow(page).getByRole("cell").nth(3).getByRole("button").click();
   const dialog = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
   await expect(dialog).toContainText(`${metric("contribution_after_marketing")}${ui.periodTotal} ÷ 30 天`);
@@ -142,12 +145,12 @@ test("PL-02 反向、未完整自然月與未套用模式不取代目前有效�
   for (const [label, value] of Object.entries({ [periodField("start", "previous")]: "2026-09-01", [periodField("end", "previous")]: "2026-09-30", [periodField("start", "current")]: "2026-08-01", [periodField("end", "current")]: "2026-08-31" })) await page.getByLabel(label, { exact: true }).fill(value);
   await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(page.getByRole("alert").filter({ hasText: labels.ui.dashboard.errors.periodNotApplied })).toBeVisible();
-  await expect(currentContribution(page)).toHaveText("750.00");
+  await expect(currentContribution(page)).toHaveText(formatAmountL1("750.00"));
   await expect(page.locator(".scope-note")).toContainText(scopeNoteCurrent("2026-09-01", "2026-09-30"));
   for (const [label, value] of Object.entries({ [periodField("start", "previous")]: "2026-08-01", [periodField("end", "previous")]: "2026-08-31", [periodField("start", "current")]: "2026-09-01", [periodField("end", "current")]: "2026-09-29" })) await page.getByLabel(label, { exact: true }).fill(value);
   await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(page.getByRole("alert").filter({ hasText: labels.periods.calendarMonths })).toBeVisible();
-  await expect(currentContribution(page)).toHaveText("750.00");
+  await expect(currentContribution(page)).toHaveText(formatAmountL1("750.00"));
   const unchanged = await downloadAnalysis(page);
   expect(unchanged.every(row => row.comparison_mode === "calendar_months" && row.current_period_end === "2026-09-30")).toBe(true);
   await page.getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true }).selectOption("same_days");
@@ -157,16 +160,17 @@ test("PL-02 反向、未完整自然月與未套用模式不取代目前有效�
   await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(page.getByRole("alert").filter({ hasText: labels.ui.dashboard.errors.periodNotApplied })).toHaveCount(0);
   await expect(comparison(page)).toContainText(fill(ui.periodDays, { previousDays: 30, currentDays: 30 }));
-  await expect(contributionRow(page).getByRole("cell")).toHaveText(["750.00", "750.00", "25.00", "25.00", "0.00"]);
+  await expect(contributionRow(page).getByRole("cell")).toHaveText(periodCells("750.00", "750.00", "25.00", "25.00", "0.00"));
   expect((await downloadAnalysis(page)).every(row => row.comparison_mode === "same_days" && row.previous_days === "30" && row.current_days === "30")).toBe(true);
 });
 
 for (const kind of ["zero", "missing"] as const) test(`PL-02 ${kind} 月合計與日均保留零及未知邊界`, async ({ page }) => {
   await importMonthly(page, kind);
-  await expect(currentContribution(page)).toHaveText(kind === "zero" ? "0.00" : labels.status.missing);
-  await expect(revenueRow(page).getByRole("cell").nth(3)).toHaveText(kind === "zero" ? "0.00" : "100.00");
-  await expect(contributionRow(page).getByRole("cell").nth(3)).toHaveText(kind === "zero" ? "0.00" : labels.status.missing);
-  await expect(contributionRow(page).getByRole("cell").nth(4)).toHaveText(kind === "zero" ? "0.00" : labels.status.missing);
+  // V3-2b（§8.5 規則 3）：真正的零顯示「0 元」（L1）／「0」（L2），不帶正負號；缺值只寫「資料待補」。
+  await expect(currentContribution(page)).toHaveText(kind === "zero" ? formatAmountL1("0.00") : labels.status.missing);
+  await expect(revenueRow(page).getByRole("cell").nth(3)).toHaveText(formatAmountL2(kind === "zero" ? "0.00" : "100.00"));
+  await expect(contributionRow(page).getByRole("cell").nth(3)).toHaveText(kind === "zero" ? formatAmountL2("0.00") : labels.status.missing);
+  await expect(contributionRow(page).getByRole("cell").nth(4)).toHaveText(kind === "zero" ? formatSignedDelta("0.00", "L2") : labels.status.missing);
   const row = (await downloadAnalysis(page)).find(row => row.row_type === "daily_average" && row.period === "current" && row.metric === "contribution_after_marketing")!;
   expect(row.value).toBe(kind === "zero" ? "0.00" : "");
   if (kind === "missing") expect(JSON.parse(row.reason_codes)).toContain("MISSING_COGS");
