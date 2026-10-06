@@ -23,7 +23,11 @@ describe("R2 headline amounts use 萬 above 10,000 and whole yuan below", () => 
     expect(formatHeadlineAmount("-315.00", true)).toBe("−315 元");
     expect(formatHeadlineAmount("0.00", true)).toBe("0 元");
     expect(formatHeadlineAmount("-0.40", true)).toBe("0 元");
-    expect(formatHeadlineAmount("9999.49")).toBe("9999 元");
+    // V3-2b §8.5 規則 7：4 位數以上加千分位；L1 ≥ 1 億改用「億」兩位小數。
+    expect(formatHeadlineAmount("9999.49")).toBe("9,999 元");
+    expect(formatHeadlineAmount("125034120.37")).toBe("1.25 億");
+    expect(formatHeadlineAmount("-125034120.37", true)).toBe("−1.25 億");
+    expect(formatHeadlineAmount("1709082.18", true)).toBe("+170.9 萬");
     expect(formatHeadlineAmount(null)).toBe(labels.status.missing);
   });
 });

@@ -4,7 +4,7 @@ import type { Diagnostic, Fact, MetricName, RuleCode, Scope, ValidationIssue } f
 import { fill as fillTemplate, labels } from "../i18n";
 import type { TaxConversion } from "./tax-basis";
 import { importIssueMessage, type IssueMessageContext, type IssueRef } from "./import";
-import { formatRate, metricDefinitions } from "./presentation";
+import { formatAmountL1, formatRate, formatSignedDelta, metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R2 文案機制：示範通路 alias、標題用「萬」金額、規則卡文案模板、CSV 標題列。全部只做呈現，不碰 domain 數值。
@@ -29,17 +29,13 @@ export function scopeLabel(scope: Scope, alias: boolean): string {
   return scope.sku ? `${channels}／${scope.sku}` : channels;
 }
 
-/** 標題用金額：≥ 10,000 元顯示 x.x 萬，否則顯示整數元；未知顯示「資料待補」。預設取絕對值，signed 時加正負號。 */
+/**
+ * 標題用金額（L1，V3-2b）：≥ 1 億「1.25 億」、≥ 1 萬「118.8 萬」、否則「8,420 元」；未知顯示「資料待補」。
+ * 預設取絕對值（方向由「多花／少賺」等方向詞表達），signed 時改用 formatSignedDelta（+／U+2212，零不帶符號）。
+ */
 export function formatHeadlineAmount(value: string | null, signed = false): string {
-  const cents = parseCents(value);
-  if (cents === null) return labels.status.missing;
-  const abs = new Decimal((cents < 0n ? -cents : cents).toString());
-  // 先取整再決定單位與正負號：9,999.995 元進位成 1.0 萬，取整後為 0 不帶符號。
-  const yuan = abs.div(100).toFixed(0, Decimal.ROUND_HALF_UP);
-  const text = new Decimal(yuan).gte(10_000) ? labels.units.wan.replace("{value}", abs.div(1_000_000).toFixed(1, Decimal.ROUND_HALF_UP)) : labels.units.yuan.replace("{value}", yuan);
-  const zero = new Decimal(yuan).isZero() && !text.includes("萬");
-  const prefix = signed && !zero ? (cents < 0n ? "−" : "+") : "";
-  return `${prefix}${text}`;
+  if (signed) return formatSignedDelta(value, "L1");
+  return formatAmountL1(value === null ? null : value.trim().replace(/^[-+]/, ""));
 }
 
 export interface RuleCopy { headline: string; cause: string; nextStep: string; caution: string }
