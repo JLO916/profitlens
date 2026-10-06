@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
+import { formatAmountL1, formatCount, formatPerUnit, formatRateL1 } from "../../src/application/presentation";
 import { openWizard, setWizardFiles, nextFromFiles, confirmMappingIfShown, chooseBasis, confirmAndCheck, commitWizard } from "./import-wizard-helpers";
 import { clickReplacing, closeDownloads, openDetails, openDownloads, openValidation } from "./replacement-helpers";
 
@@ -42,17 +43,20 @@ test("golden 的輔助指標橫列：七格、件數 8 件、件均 308.75 元�
   await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
-  await expect(kpi(page, "net_revenue")).toHaveText("2,470.00");
+  // V3-2b：KPI 卡大數字是 L1（< 1 萬顯示整數元＋「元」）。
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
   const row = page.getByTestId("assist-kpis");
   await expect(row.locator(".assist-card")).toHaveCount(7);
-  await expect(page.getByTestId("assist-units_sold")).toContainText("8 件");
-  await expect(page.getByTestId("assist-units_sold")).toContainText(`${labels.periods.previous} 6 件`);
-  await expect(page.getByTestId("assist-net_revenue_per_unit")).toContainText("308.75 元／件");
+  await expect(page.getByTestId("assist-units_sold")).toContainText(formatCount("8", "L1"));
+  await expect(page.getByTestId("assist-units_sold")).toContainText(`${labels.periods.previous} ${formatCount("6", "L1")}`);
+  // 輔助指標橫列是 L1（件均取整元）；抽屜下一行是到分的精確值（L3）。
+  await expect(page.getByTestId("assist-net_revenue_per_unit")).toContainText(formatPerUnit("308.75", "L1"));
   // 本期值與上期值都是按鈕；點本期的。
   await page.getByTestId("assist-net_revenue_per_unit").locator(".assist-value button").click();
   const drawer = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
   await expect(drawer).toBeVisible();
-  await expect(drawer).toContainText("308.75 元／件");
+  await expect(drawer).toContainText(formatPerUnit("308.75", "L1"));
+  await expect(drawer.getByTestId("evidence-precise-value")).toHaveText(formatPerUnit("308.75", "L3"));
   await expect(drawer).toContainText(labels.assist.items.net_revenue_per_unit.formula);
   await expect(drawer.locator(".ladder-table")).toHaveCount(0);
   await page.keyboard.press("Escape");
@@ -69,7 +73,7 @@ test("去年同期快捷：本月 vs 上月套用後，上期各減一年；超�
   await expect(page.getByTestId("preset-reason-visible-yoy")).toContainText("2025-06-01");
   await preset(page, labels.periods.presets.monthVsPrev).click();
   await applyPeriod(page).click();
-  await expect(kpi(page, "net_revenue")).toHaveText("6,200.00");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("6200.00"));
   await expect(yoy).not.toHaveAttribute("aria-disabled", "true");
   await yoy.click();
   await expect(page.locator("#previous-start")).toHaveValue("2025-08-01");
@@ -78,16 +82,16 @@ test("去年同期快捷：本月 vs 上月套用後，上期各減一年；超�
   await expect(page.locator("#current-end")).toHaveValue("2026-08-31");
   await expect(yoy).toHaveAttribute("aria-pressed", "true");
   await applyPeriod(page).click();
-  await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-previous")).toContainText("3,100.00");
-  await expect(page.getByTestId("assist-units_sold")).toContainText("62 件");
-  await expect(page.getByTestId("assist-net_revenue_per_unit")).toContainText("100.00 元／件");
+  await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-previous")).toContainText(formatAmountL1("3100.00"));
+  await expect(page.getByTestId("assist-units_sold")).toContainText(formatCount("62", "L1"));
+  await expect(page.getByTestId("assist-net_revenue_per_unit")).toContainText(formatPerUnit("100.00", "L1"));
 });
 
 test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨勢圖標示檔期、備份 v4 來回保留", async ({ page }) => {
   await importSynthetic(page);
   await preset(page, labels.periods.presets.monthVsPrev).click();
   await applyPeriod(page).click();
-  await expect(kpi(page, "net_revenue")).toHaveText("6,200.00");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("6200.00"));
   await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();
   const targetsCsv = ["period_start,period_end,channel,metric,target", "2026-08-01,2026-08-31,ALL,net_revenue,8000.00", "2026-07-01,2026-07-31,ALL,gross_profit,5000.00"].join("\n");
   await page.getByLabel(labels.targets.upload, { exact: true }).setInputFiles({ name: "targets.csv", mimeType: "text/csv", buffer: Buffer.from(targetsCsv) });
@@ -100,7 +104,7 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await page.getByLabel(labels.events.upload, { exact: true }).setInputFiles({ name: "events.csv", mimeType: "text/csv", buffer: Buffer.from(eventsCsv) });
   await expect(page.getByTestId("events-table").locator("tbody tr")).toHaveCount(1);
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: "8,000.00", rate: "77.5%" }));
+  await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: formatAmountL1("8000.00"), rate: formatRateL1("0.775") }));
   await expect(page.getByTestId("kpi-target-gross_profit")).toHaveText(fill(labels.targets.mismatch, { start: "2026-07-01", end: "2026-07-31" }));
   // 目標數字可追溯：抽屜列出實際、目標與 targets.csv 行號。
   await page.getByTestId("kpi-target-net_revenue").getByRole("button").click();
@@ -133,7 +137,7 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await storage.getByLabel(labels.ui.workspaceStorage.selectBackupFile, { exact: true }).setInputFiles({ name: "r4.json", mimeType: "application/json", buffer: Buffer.from(text) });
   await expect(page.getByRole("region", { name: labels.ui.workspaceStorage.restorePreviewAria })).toBeVisible();
   await clickReplacing(page, storage.getByRole("button", { name: labels.ui.workspaceStorage.applyRestore, exact: true }));
-  await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: "8,000.00", rate: "77.5%" }));
+  await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: formatAmountL1("8000.00"), rate: formatRateL1("0.775") }));
   await expect(page.getByTestId("trend-events")).toContainText("夏季特賣");
   // 資料頁可逐列刪除：刪掉毛利那列後只剩一列。
   await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();

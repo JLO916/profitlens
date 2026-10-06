@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
+import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
 import { clickReplacing, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R5（05 §7–§9、02 §4–§7）：健檢清單化、試算進頁即表單＋範本＋絕對值、行動看板、商品 Top／Bottom。
@@ -51,10 +52,11 @@ async function loadDataset(page: Page, id: "golden" | "demo") {
   await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
   await expect(page.getByTestId("workspace-status")).toContainText(fill(labels.status.ready, { date: dataAsOf(id) }));
 }
+// V3-2b：試算結果是 L1（< 1 萬顯示整數元＋「元」，差額帶 +／U+2212）；參數是 golden 的精確值，由格式化函式轉成畫面字串。
 async function calculate(card: Locator, contribution: string, delta: string) {
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
-  await expect(card.getByTestId("scenario-contribution")).toHaveText(contribution);
-  await expect(card.getByTestId("scenario-delta")).toHaveText(delta);
+  await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(contribution));
+  await expect(card.getByTestId("scenario-delta")).toHaveText(formatSignedDelta(delta, "L1"));
 }
 const modeButton = (card: Locator, field: string, mode: "relative" | "absolute") => card.getByTestId(`scenario-mode-${field}`).getByRole("button", { name: mode === "relative" ? labels.scenario.modeRelative : labels.scenario.modeAbsolute, exact: true });
 
@@ -166,7 +168,7 @@ test("試算通路單選只改本頁：全站篩選不變、各通路方案各�
   await expect(globalChannel(page)).toHaveValue("");
   await page.getByTestId("scenario-channel").selectOption("DTC");
   await startChannelContext(page);
-  await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText("270.00");
+  await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("270.00"));
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-version")).toHaveText(fill(form.version, { n: 1 }));
   await expect(globalChannel(page)).toHaveValue("");
 });
@@ -185,7 +187,7 @@ test("健檢清單：通路寬表置頂、同規則合併一列、依影響金�
   const order = ["REV_UP_CM_DOWN", "DISCOUNT_BURDEN_UP", "MARKETING_BURDEN_UP", "REFUND_BURDEN_UP", "FULFILLMENT_BURDEN_UP", "NEGATIVE_CHANNEL_CM"];
   await expect(rows).toHaveCount(order.length);
   expect(await rows.evaluateAll(list => list.map(row => row.getAttribute("data-testid")))).toEqual(order.map(code => `diagnosis-row-${code}`));
-  await expect(rows.locator(":scope > summary .diagnosis-impact .impact-amount")).toHaveText(["-315.00", "-250.00", "-150.00", "-130.00", "-65.00", "-15.00"]);
+  await expect(rows.locator(":scope > summary .diagnosis-impact .impact-amount")).toHaveText(["-315.00", "-250.00", "-150.00", "-130.00", "-65.00", "-15.00"].map(value => formatSignedDelta(value, "L1")));
   await expect(page.locator(".diagnostic-card")).toHaveCount(0);
   // 前三列預設展開，第四列起收合；點 summary 可展開。
   for (let index = 0; index < order.length; index++) {
@@ -201,21 +203,22 @@ test("健檢清單：通路寬表置頂、同規則合併一列、依影響金�
   const chips = first.getByRole("group", { name: labels.diagnosisList.scopeSwitch });
   await expect(chips.getByRole("button")).toHaveText([labels.sections.total, "MARKETPLACE", "DTC"]);
   await expect(chips.getByRole("button", { name: labels.sections.total, exact: true })).toHaveAttribute("aria-pressed", "true");
-  await expect(first.locator(".impact-line .impact-amount")).toHaveText("-315.00");
+  await expect(first.locator(".impact-line .impact-amount")).toHaveText(formatSignedDelta("-315.00", "L1"));
   const factButtons = first.locator(".fact-list .number-link");
   // 合計：扣廣告後貢獻 570.00 → 255.00；淨營收 2,250.00 → 2,470.00。
   await expect(factButtons).toHaveCount(4);
   const totalFacts = await factButtons.allTextContents();
-  expect(totalFacts).toEqual(expect.arrayContaining(["570.00", "255.00", "2,250.00", "2,470.00"]));
+  // 展開列的數據是 L2（整數元、千分位）。
+  expect(totalFacts).toEqual(expect.arrayContaining(["570.00", "255.00", "2250.00", "2470.00"].map(value => formatAmountL2(value))));
   // 切到 MARKETPLACE：數據換成該通路（貢獻 170.00 → −15.00、淨營收 900.00 → 990.00），影響 −185.00；合計列的標題仍在 summary。
   await chips.getByRole("button", { name: "MARKETPLACE", exact: true }).click();
   await expect(chips.getByRole("button", { name: "MARKETPLACE", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(chips.getByRole("button", { name: labels.sections.total, exact: true })).toHaveAttribute("aria-pressed", "false");
-  await expect(first.locator(".impact-line .impact-amount")).toHaveText("-185.00");
+  await expect(first.locator(".impact-line .impact-amount")).toHaveText(formatSignedDelta("-185.00", "L1"));
   await expect(first.locator(".diagnosis-body > h4")).toHaveText(fill(labels.diagnosisList.dataFor, { data: labels.sections.data, scope: "MARKETPLACE" }));
   await expect(first.locator(".diagnosis-scope-headline")).toBeVisible();
-  expect(await factButtons.allTextContents()).toEqual(expect.arrayContaining(["170.00", "-15.00", "900.00", "990.00"]));
-  await expect(first.locator(":scope > summary .impact-amount")).toHaveText("-315.00");
+  expect(await factButtons.allTextContents()).toEqual(expect.arrayContaining(["170.00", "-15.00", "900.00", "990.00"].map(value => formatAmountL2(value))));
+  await expect(first.locator(":scope > summary .impact-amount")).toHaveText(formatSignedDelta("-315.00", "L1"));
   // 技術細節預設收合；展開後才看到規則代號與指標版本。
   const technical = first.locator("details.diagnosis-technical");
   await expect(technical).not.toHaveAttribute("open", "");
@@ -279,9 +282,9 @@ test("商品頁：Top／Bottom 小表看整個範圍、不跟著篩選；資料�
   // 本期商品毛利由低到高：MARKETPLACE/B 125、DTC/B 200、MARKETPLACE/A 280、DTC/A 540；毛利增加：DTC/A +40、MARKETPLACE/A +10。
   const rowHeads = (root: Locator) => root.locator("tbody tr th").evaluateAll(cells => cells.map(cell => (cell.textContent ?? "").replace(/\s+/g, " ").trim()));
   expect(await rowHeads(worst)).toEqual(["B MARKETPLACE", "B DTC", "A MARKETPLACE", "A DTC"]);
-  await expect(worst.locator("tbody tr td:nth-of-type(2)")).toHaveText(["125.00", "200.00", "280.00", "540.00"]);
+  await expect(worst.locator("tbody tr td:nth-of-type(2)")).toHaveText(["125.00", "200.00", "280.00", "540.00"].map(value => formatAmountL2(value)));
   expect(await rowHeads(best)).toEqual(["A DTC", "A MARKETPLACE"]);
-  await expect(best.locator("tbody tr td:nth-of-type(3)")).toHaveText(["+40.00", "+10.00"]);
+  await expect(best.locator("tbody tr td:nth-of-type(3)")).toHaveText(["40.00", "10.00"].map(value => formatSignedDelta(value, "L2")));
   // 小表不跟著下方篩選。
   await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("a");
   await expect(table.locator("tbody tr")).toHaveCount(2);
