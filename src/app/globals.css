@@ -1330,3 +1330,11 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
   .topbar[data-more-open] { z-index: var(--z-overlay); }
   .mobile-tabbar[data-more-open] { z-index: var(--z-overlay); }
 }
+
+/* ── V3-4a 錨點 A：（保留；代理 A 不碰 CSS） ── */
+
+/* ── V3-4a 錨點 B：總覽本期一句話、KPI 帶（C1、C18）、其他常用指標表（C2）、進階（代理 B 只在此錨點之後、錨點 C 之前新增規則） ── */
+
+/* ── V3-4a 錨點 C：本期三件事警示列（C9 摘要型；代理 C 只在此錨點之後、結束錨點之前新增規則） ── */
+
+/* ── V3-4a 錨點結束 ── */

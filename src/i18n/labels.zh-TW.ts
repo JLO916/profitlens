@@ -500,6 +500,18 @@ export const overview = {
     impactFormulaDefault: "{impact}＝{metric}；負數表示讓扣廣告後貢獻變少",
   },
   channelTable: { channelHeader: "通路", turnedNegative: "轉為虧損", turnedPositive: "由負轉正", unitCaption: "{caption}金額單位：元。" },
+  // ── V3-4a 錨點：各代理只填自己的物件（A：snapshot；B：kpiBand、snapshotUi、assistTable、advanced；C：alerts）；收尾時刪除仍為空的物件。
+  snapshot: {},
+
+  snapshotUi: {},
+
+  kpiBand: {},
+
+  alerts: {},
+
+  assistTable: {},
+
+  advanced: {},
 } as const;
 
 // ── diagnosis：通路健檢：健檢清單與健檢頁
@@ -2024,8 +2036,10 @@ export const format = {
   },
 } as const;
 
-// ── summary：週會摘要（V3-7 起使用；目前保留空位）
-export const summary = { weekly: {} } as const;
+// ── summary：週會摘要（V3-4a 起使用：F1 複製週會摘要的純文字與 Markdown 模板；代理 A 填寫）
+export const summary = {
+  weekly: {},
+} as const;
 
 // ── metrics：指標（跨頁）：每個指標 { headline, short, explain, technical: { formula, formulaTechnical } }
 const metricsStore = {
