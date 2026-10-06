@@ -1,5 +1,15 @@
 # Status
 
+## Revamp v3｜V3-2b 數字格式（完成，未推送、未部署）
+
+三層數字尺度落地：L1（KPI、標題、三件事、試算結果、摘要關鍵數字）用萬／億一位小數與「降 N 個百分點」，L2（表格）整數元且單位只在表頭或 caption，L3（抽屜、橋接表、對帳表、匯出）到分；全部從精確值 HALF_UP 取位（−32.0%、降 14.3 個百分點兩個規則案例入測）；UI 負號 U+2212、CSV／JSON 維持 ASCII；零值不帶符號、缺值「資料待補」；`favorableDirection`／`deltaTone`／`deltaWord` 進呈現層（只有不利上色）；抽屜標題下新增精確值行；匯出依格式分層（CSV／JSON 位元組級不變、Markdown L2＋L3、Excel 儲存格顯示格式、PPT L1＋L2）；匯入對帳表與會議假設文字同步。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **86 檔／1,820 全過**、`lint:design` exit 0、build pass、E2E 全套 **576 項全過（15.5 分）**；禁區 diff 空；testid 刪除數 0；棘輪數值不變。
+- E2E：六個代理逐 spec 把數字斷言改為格式化函式輸出（golden 仍為真相）；修正兩個代理發現的產品問題（匯入第 4 步對帳表 L3、會議假設 U+2212）。
+- 偏離：舊格式函式留 V3-2c 清理；抽屜階梯每列的「元」留 V3-5；待辦引用數字 L1 留 V3-6 改 L2；主層日期 M/D 留 V3-3／V3-4。
+- 未執行／待人工：H3 補審、H2 設計稿審查（擋 V3-3）。
+- 下一批：V3-2c labels 結構重整與 alias。
+
 ## Revamp v3｜V3-2a 語言落地（完成，未推送、未部署；H3 補審待人工）
 
 使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地」，V3-2 於開工前拆成 a／b／c。V3-2a：labels 依 CSV 落地（586 個字面值；reworded 442、renamed 61、split 92、moved-to-technical 3；removed 9 列待元素移除的批次）、55 列占位符搬移的呼叫端、JSX 硬編碼中文 15＋7 → **0**、`importErrors` 句型「{file} 第 {line} 行：問題。修法。」與 {file}{line}{value}{column} 由 application 帶入（不改 domain、不再退回 domain 中文）、F23「這版改了什麼」提示（只對偵測到 v2 資料者顯示；v3 自己保存後才記 localStorage）、「指標定義」對話框加名詞小辭典（30 詞、舊名可搜、CM1／CM2 對照）、12 個試算原因碼文案、主層「｜」改「 · 」、頁尾與會議入口的箭頭移除；copy-style 棘輪：「注意：」29 → 0、箭頭 21 → 0、圈數字 8 → 0、主層「｜」32 → 0、同義詞 132 → 13、禁用詞 6 → 4（殘餘皆來自現稿，待 H3）。

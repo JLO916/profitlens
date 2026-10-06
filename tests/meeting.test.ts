@@ -1,3 +1,4 @@
+import { formatPercentNumber } from "../src/application/presentation";
 import { describe, expect, it } from "vitest";
 import { expected, fixture } from "./helpers/fixtures";
 import { validateDataset } from "@/domain/validation";
@@ -94,7 +95,7 @@ describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed s
     // 方案：DTC 基準 270.00，試算後 284.00（golden），差 284 − 270 = 14.00。
     expect(meeting.agenda.scenarios).toHaveLength(1);
     expect(meeting.agenda.scenarios[0]).toMatchObject({ channel: "DTC", plan_id: "p", revision: 1, name: "履約", baseline: golden.current_channels.DTC.contribution_after_marketing, contribution: golden.scenario_dtc_fulfillment_reduction.expected_contribution, delta: "14.00" });
-    expect(meeting.agenda.scenarios[0].assumptions[0]).toBe(fill(labels.ui.reviewSession.assumptionVolume, { value: "0" }));
+    expect(meeting.agenda.scenarios[0].assumptions[0]).toBe(fill(labels.ui.reviewSession.assumptionVolume, { value: formatPercentNumber("0", "L2", { signed: true }) }));
     expect(meeting.selected_scenarios).toEqual(review.selected_scenarios);
     // 只取置頂待辦；執行狀態與更新日來自 actionDocuments。
     expect(meeting.pinned_action_ids).toEqual(["a1"]);

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { formatAmountL1 } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, importViaWizard, nextFromFiles, openWizard, setWizardFiles, wizard, wizardFileLabels, wizardStatus } from "./import-wizard-helpers";
 import { closeDownloads, openDownloads } from "./replacement-helpers";
 
@@ -60,9 +60,9 @@ test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算
   const summary = page.getByTestId("import-preprocessing");
   await expect(summary).toContainText("5%");
   await expect(summary).toContainText("12");
-  await expect(summary).toContainText("4725.00");
-  await expect(summary).toContainText("4500.00");
-  await expect(page.getByTestId("reconciliation-metric-net_revenue")).toContainText("4150.00");
+  await expect(summary).toContainText(formatAmountL3("4725.00"));
+  await expect(summary).toContainText(formatAmountL3("4500.00"));
+  await expect(page.getByTestId("reconciliation-metric-net_revenue")).toContainText(formatAmountL3("4150.00"));
   await commitWizard(page);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2150.00"));
   await expect(kpi(page, "gross_profit")).toHaveText(formatAmountL1("1230.00"));

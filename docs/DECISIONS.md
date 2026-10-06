@@ -278,6 +278,21 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
 
+## 2026-10-06｜Revamp v3 V3-2b：三層數字尺度的落地取捨
+
+**問題：** §8.5 定義 L1／L2／L3 三層尺度，但既有畫面（KPI 卡、表格、抽屜、匯出）的層級歸屬與幾個邊界案例需要決定。
+
+**採用選項：**
+- 格式化只在 `presentation.ts`／`copy.ts`，從精確字串 HALF_UP 取位（decimal.js），不經浮點數；`favorableDirection` 是呈現層屬性，不進 domain。
+- Excel 維持數值型別儲存格，以顯示格式（`[>=0.5]#,##0;[<=-0.5]"−"#,##0;0` 等）呈現 L2／L3，而非改成文字格：保留加總與排序，顯示層仍用 U+2212。CSV／JSON 位元組級不變（ASCII 負號、到分），以 `export-numeric-stability` 測試鎖住。
+- 待辦卡片與引用數字暫用 L1（v2 的編輯是內嵌表單，沒有「編輯抽屜」）；V3-6 做編輯抽屜時依 §3.3 改 L2。
+- 門檻（使用者輸入的金額門檻）顯示 L3，與輸入值一致；試算比較表的取位調整列用 L3（L2 恆為 0）。
+- 敏感度門檻只有 `threshold_pct`，顯示為帶號百分比，不新增件數換算。
+- 抽屜「計算方式」階梯每列的「元」與主層日期 M/D 留給 V3-5／V3-3／V3-4 的版面批次。
+- 舊的 ASCII 負號函式（`formatMoney` 等）保留給 AI grounding 與少數呼叫端，V3-2c 清理。
+
+**原因：** 本批只做數字格式，不動版面；匯出要同時滿足人讀（U+2212、分層）與機器讀（CSV／JSON 不變）。
+
 ## 2026-10-05｜Revamp v3 V3-2a：F23 提示的 localStorage 時機、主層分隔符與箭頭
 
 **問題：** F23「這版改了什麼」提示要分辨「v2 既有使用者」與「v3 新訪客之後自己存的本機副本」；最初實作在新訪客第一次載入就寫 localStorage 標記，違反「新訪客的瀏覽器維持空白」（E2E 的獨立 browser context 檢查也因此失敗）。另外主管摘要列印清單與抽屜標題仍以「｜」拼接，頁尾與會議入口帶裝飾箭頭。

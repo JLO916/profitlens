@@ -20,6 +20,7 @@ import { currentViewDecisionContext, DECISION_LABEL_KEY, finalizeErrorText, Meet
 import { PRINT_NOTES_LIMIT, PrintSummary } from "../src/components/manager-summary";
 import styles from "../src/components/manager-summary.module.css";
 import { fill, labels } from "../src/i18n";
+import { formatPercentNumber } from "../src/application/presentation";
 
 /*
  * R6-2 會議紀錄分頁的 DOM 契約（主流程 E2E 會依這些 testid 重寫）：
@@ -368,7 +369,7 @@ describe("R6-2 meeting date and export info", () => {
  * 結束會議的錯誤碼文案、處理中按鈕的焦點、通路別名看會議自己的資料、列印第一頁＋附錄規則。
  * ------------------------------------------------------------------------------------------- */
 const DTC_SCOPE = fill(labels.ui.reviewSession.scenarioScope, { channel: "DTC", start: "2026-08-02", end: "2026-08-02" });
-const FULFILLMENT_10 = fill(labels.ui.reviewSession.assumptionFulfillment, { value: "-10" });
+const FULFILLMENT_10 = fill(labels.ui.reviewSession.assumptionFulfillment, { value: formatPercentNumber("-10", "L2", { signed: true }) });
 
 describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () => {
   it("⑤ lists the selected plan's result under the selects; ⑥ lists the pinned action; the summary no longer repeats 方案與待辦", async () => {
@@ -680,7 +681,7 @@ describe("R6-F2 print: one-page summary plus appendix (A4)", () => {
     for (const line of lines) expect(line.match(/<p>/g)).toHaveLength(1);
     expect(text(lines[0])).toBe(fill(summaryCopy.printScenarioLine, { name: "官網履約", scope: DTC_SCOPE, baseline: formatAmountL1("270.00"), contribution: formatAmountL1("284.00"), delta: formatSignedDelta("14.00", "L1") }));
     expect(firstPage).not.toContain(FULFILLMENT_10);
-    expect(firstPage).not.toContain(fill(labels.ui.reviewSession.assumptionVolume, { value: "0" }));
+    expect(firstPage).not.toContain(fill(labels.ui.reviewSession.assumptionVolume, { value: formatPercentNumber("0", "L2", { signed: true }) }));
     // 附錄：兩個方案的完整假設。
     const assumptions = block(appendix, "print-appendix-assumptions");
     expect(assumptions.startsWith(appendixTag)).toBe(true);

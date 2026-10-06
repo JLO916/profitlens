@@ -4,6 +4,7 @@
 .headlines > div { padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md); }
 .headlines h3, .headlines h4 { margin: 0; font-size: var(--text-16); }
 .change { font-size: var(--text-28); margin: .5rem 0; font-weight: 700; }
+.change button { white-space: normal; overflow-wrap: anywhere; } /* V3-2b：關鍵差額改為「少賺 59.9 萬（−32.0%）」後較寬，768 寬時允許折行，避免水平捲動 */
 .priorityHeader { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; }
 .threshold { display: flex; gap: .6rem; align-items: end; flex-wrap: wrap; }
 .threshold label { display: grid; gap: .3rem; font-size: var(--text-13); }
