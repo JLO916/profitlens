@@ -244,6 +244,16 @@ export function periodToggleText(preset: PresetId | null, start: string, end: st
   return fill(labels.shell.periodBarV3.toggle, { preset: preset ? labels.periods.presets[preset] : labels.shell.periodBarV3.custom, range: formatPeriodL1(start, end, { anchor: options.anchor ?? end, days: false }) });
 }
 
+/**
+ * V3-5（PRD §7.2 第 4 點）：通路健檢最底的 AI 解釋包在 details.ai-collapsed（data-testid="ai-collapsed"）裡、預設收合；
+ * 收合時 ai-panel 與所有 ai-* 內容仍掛載（toContainText／toHaveCount 不受影響），但看不到也點不到。可見性斷言或點擊前先展開（已展開就不動），等 ai-panel 可見。
+ */
+export async function openAiSection(page: Page) {
+  const section = await openDetails(page.getByTestId('ai-collapsed'));
+  await expect(page.getByTestId('ai-panel')).toBeVisible();
+  return section;
+}
+
 /** R2 rule-card headlines are glossary templates with numbers filled in; match them by template shape. */
 export function ruleHeadline(code: keyof typeof labels.rules): RegExp {
   const template = labels.rules[code].title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{\w+\\\}/g, '.+?');

@@ -165,7 +165,10 @@ test("PL10 主要說明可讀、技術 ID 預設折疊並可用鍵盤查看", as
   await page.keyboard.press("Enter");
   await expect(fact).not.toBeVisible();
   // V3-3：.scope-note 改為期間摘要（.period-summary），側欄說明（.sidebar-note）併入頂欄資料狀態（.data-status-text）；手機 .subtitle 隱藏，由可見篩選排除。
-  const measured = await page.locator(".subtitle, .period-summary, .diagnosis-panel .note, .main-footer, .data-status-text, .diagnosis-panel .tag, .diagnosis-row .scope-tag, .diagnosis-copy > div").evaluateAll(elements => elements.filter(element => element.getClientRects().length > 0).map(element => ({ element: element.className, size: Number.parseFloat(getComputedStyle(element).fontSize) })));
+  // V3-5：健檢標題列的說明改為 .sub、範圍改為 .sec-scope；v2 的 .tag（「自動健檢」「n 項」「先補資料」）改為計數徽章（.diagnosis-badge-text＋.ui-count-badge）與每列狀態標籤（.ui-lozenge）；
+  // .note 只剩技術細節內；.scope-tag 只在非合計列；dl.diagnosis-copy 的 dt／dd 也逐一量。
+  const measured = await page.locator(".subtitle, .period-summary, .diagnosis-panel .note, .main-footer, .data-status-text, .diagnosis-panel .sub, .diagnosis-panel .sec-scope, .diagnosis-badge-text, .diagnosis-panel .ui-count-badge, .diagnosis-panel .ui-lozenge, .diagnosis-row .scope-tag, .diagnosis-copy > div, .diagnosis-copy dt, .diagnosis-copy dd").evaluateAll(elements => elements.filter(element => element.getClientRects().length > 0).map(element => ({ element: element.className, size: Number.parseFloat(getComputedStyle(element).fontSize) })));
+  await expect(page.locator(".diagnosis-panel .tag")).toHaveCount(0);
   expect(measured.length).toBeGreaterThan(4);
   expect(measured.filter(item => item.size < 12), "主管主要說明、範圍及標記至少 12px").toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);

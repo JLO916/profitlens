@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL2, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { clickReplacing, isMobile, navigateTo, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R5（05 §7–§9、02 §4–§7）：健檢清單化、試算進頁即表單＋範本＋絕對值、行動看板、商品 Top／Bottom。
@@ -34,6 +34,7 @@ const form = labels.scenarioForm;
 const board = labels.actionBoard;
 const presets = labels.scenarioPresets;
 const highlight = labels.productHighlights;
+const productPage = labels.products.pageV3;
 const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label] as const;
 const [volume, discount, fulfillment, adSpend, oneOff] = inputLabels;
 const statusLabel = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done } as const;
@@ -185,15 +186,16 @@ test("試算通路單選只改本頁：全站篩選不變、各通路方案各�
   await expect(globalChannel(page)).toHaveValue("");
 });
 
-test("健檢清單：通路寬表置頂、同規則合併一列、依影響金額排序、前三列展開、範圍切換、技術細節收合", async ({ page }) => {
+test("健檢清單：健檢結果在前、通路寬表在後、同規則合併一列、依影響金額排序、前三列展開、範圍切換、技術細節收合", async ({ page }) => {
   await loadDataset(page, "golden");
   await navigateTo(page, "diagnosis");
   const panel = page.getByTestId("diagnosis-panel");
   await expect(panel).toBeVisible();
-  // 通路寬表在健檢清單之前。
+  // V3-5（PRD §7.2）：健檢結果（結論）在前，各通路兩期比較（通路寬表，data-testid="channel-compare"）在後。
   const channelTable = page.locator("section[aria-labelledby='channel-table-heading']");
   await expect(channelTable).toBeVisible();
-  expect(await channelTable.evaluate((table, list) => !!(table.compareDocumentPosition(list!) & Node.DOCUMENT_POSITION_FOLLOWING), await panel.elementHandle())).toBe(true);
+  await expect(channelTable).toHaveAttribute("data-testid", "channel-compare");
+  expect(await panel.evaluate((list, table) => !!(list.compareDocumentPosition(table!) & Node.DOCUMENT_POSITION_FOLLOWING), await channelTable.elementHandle())).toBe(true);
   const rows = page.getByTestId("diagnosis-list").locator(":scope > li > details.diagnosis-row");
   // 合計與各通路合併成一列：六條規則各一列，依 |對貢獻影響| 由大到小。
   const order = ["REV_UP_CM_DOWN", "DISCOUNT_BURDEN_UP", "MARKETING_BURDEN_UP", "REFUND_BURDEN_UP", "FULFILLMENT_BURDEN_UP", "NEGATIVE_CHANNEL_CM"];
@@ -201,6 +203,11 @@ test("健檢清單：通路寬表置頂、同規則合併一列、依影響金�
   expect(await rows.evaluateAll(list => list.map(row => row.getAttribute("data-testid")))).toEqual(order.map(code => `diagnosis-row-${code}`));
   await expect(rows.locator(":scope > summary .diagnosis-impact .impact-amount")).toHaveText(["-315.00", "-250.00", "-150.00", "-130.00", "-65.00", "-15.00"].map(value => formatSignedDelta(value, "L1")));
   await expect(page.locator(".diagnostic-card")).toHaveCount(0);
+  // V3-5（C8／C9）：每列 summary 的狀態標籤＝影響金額的方向（golden 六列都不利）；標題列的計數徽章等於同色調標籤的列數，可及名稱是完整意思，0 項不顯示。
+  await expect(rows.locator(":scope > summary .ui-lozenge")).toHaveText(order.map(() => labels.format.unfavorable));
+  await expect(page.getByTestId("diagnosis-count-unfavorable").getByRole("img")).toHaveAccessibleName(fill(labels.diagnosis.listV3.countUnfavorable, { n: order.length }));
+  await expect(page.getByTestId("diagnosis-count-missing")).toHaveCount(0);
+  await expect(page.getByTestId("diagnosis-count-favorable")).toHaveCount(0);
   // 前三列預設展開，第四列起收合；點 summary 可展開。
   for (let index = 0; index < order.length; index++) {
     if (index < 3) await expect(rows.nth(index)).toHaveAttribute("open", "");
@@ -209,9 +216,11 @@ test("健檢清單：通路寬表置頂、同規則合併一列、依影響金�
   await rows.nth(3).locator(":scope > summary").click();
   await expect(rows.nth(3)).toHaveAttribute("open", "");
   await expect(rows.nth(3).getByRole("button", { name: labels.buttons.addToActions, exact: true })).toBeVisible();
-  // 第一列：合計／MARKETPLACE／DTC 三個範圍合併；預設看合計。
+  // 第一列：合計／MARKETPLACE／DTC 三個範圍合併（展開內容的範圍 chips）；預設看合計。
+  // V3-5：summary 的範圍標籤只在該列範圍與頁面範圍不同時才有——合計列沒有；只有 MARKETPLACE 觸發的「通路貢獻為負」列標 MARKETPLACE。
   const first = rows.first();
-  await expect(first.locator(":scope > summary .scope-tag")).toHaveText([labels.sections.total, "MARKETPLACE", "DTC"]);
+  await expect(first.locator(":scope > summary .scope-tag")).toHaveCount(0);
+  await expect(rows.last().locator(":scope > summary .scope-tag")).toHaveText(["MARKETPLACE"]);
   const chips = first.getByRole("group", { name: labels.diagnosisList.scopeSwitch });
   await expect(chips.getByRole("button")).toHaveText([labels.sections.total, "MARKETPLACE", "DTC"]);
   await expect(chips.getByRole("button", { name: labels.sections.total, exact: true })).toHaveAttribute("aria-pressed", "true");
@@ -231,6 +240,15 @@ test("健檢清單：通路寬表置頂、同規則合併一列、依影響金�
   await expect(first.locator(".diagnosis-scope-headline")).toBeVisible();
   expect(await factButtons.allTextContents()).toEqual(expect.arrayContaining(["170.00", "-15.00", "900.00", "990.00"].map(value => formatAmountL2(value))));
   await expect(first.locator(":scope > summary .impact-amount")).toHaveText(formatSignedDelta("-315.00", "L1"));
+  // V3-5：「看明細」在展開內容的動作列，開的是目前所選範圍（MARKETPLACE）的影響金額；抽屜以 icon 關閉鈕（aria-label＝關閉）收起，焦點回到按鈕。
+  const viewEvidence = first.getByRole("button", { name: labels.buttons.viewEvidence, exact: true });
+  await viewEvidence.click();
+  const drawer = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatSignedDelta("-185.00", "L3") }));
+  await drawer.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await expect(drawer).toHaveCount(0);
+  await expect(viewEvidence).toBeFocused();
   // 技術細節預設收合；展開後才看到規則代號與指標版本。
   const technical = first.locator("details.diagnosis-technical");
   await expect(technical).not.toHaveAttribute("open", "");
@@ -238,6 +256,54 @@ test("健檢清單：通路寬表置頂、同規則合併一列、依影響金�
   await expect(technical).toHaveAttribute("open", "");
   await expect(technical).toContainText("REV_UP_CM_DOWN");
   await expect(technical).toContainText("contribution-v1");
+});
+
+test("健檢頁通路寬表（diagnosis 變體）：台灣報表欄序、預設依本期扣廣告後貢獻由低到高、表頭排序換欄、備註連結展開對應列", async ({ page }) => {
+  // golden（上期 2026-08-01、本期 2026-08-02）各通路：
+  //   DTC 淨營收 1,350.00 → 1,480.00（+130.00）、扣廣告後貢獻 400.00 → 270.00（−130.00）；
+  //   MARKETPLACE 淨營收 900.00 → 990.00（+90.00）、扣廣告後貢獻 170.00 → −15.00（−185.00，轉負）。
+  await loadDataset(page, "golden");
+  await navigateTo(page, "diagnosis");
+  const table = page.getByTestId("channel-compare").getByRole("table");
+  const tableV3 = labels.diagnosis.tableV3;
+  const groups = ["net_revenue", "contribution_after_marketing"] as const;
+  // 表頭兩列：通路｜淨營收（元）｜扣廣告後貢獻（元）｜備註；第二列每組 本期｜上期｜差額。
+  await expect(table.locator("thead tr.group-row th")).toHaveText([labels.ui.channelTable.channelHeader, ...groups.map(name => fill(labels.format.units.yuanColumn, { label: metricDefinitions[name].label })), tableV3.note]);
+  await expect(table.locator("thead tr.column-row th")).toHaveText(groups.flatMap(() => [labels.periods.current, labels.periods.previous, tableV3.change]));
+  const rowHeads = table.locator("tbody tr th[role=rowheader]");
+  const sortButton = (name: typeof groups[number], period: "current" | "change") => table.getByRole("button", { name: period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.periods.current, metric: metricDefinitions[name].label }), exact: true });
+  const sortedHeader = table.locator("thead th[aria-sort]");
+  // 預設：本期扣廣告後貢獻由低到高（MARKETPLACE −15 在前）。
+  await expect(rowHeads).toHaveText(["MARKETPLACE", "DTC"]);
+  await expect(sortedHeader).toHaveCount(1);
+  await expect(sortedHeader).toHaveAttribute("aria-sort", "ascending");
+  await expect(sortedHeader.getByRole("button")).toHaveAccessibleName(fill(tableV3.cellLabel, { period: labels.periods.current, metric: metricDefinitions.contribution_after_marketing.label }));
+  // 每格數字可開「計算與來源」，可及名稱「{通路} {指標} {值} 元，看明細」；差額帶正負號。手機清單（≤ 767px）不顯示上期欄（td.prev），所以上期只驗 DOM（includeHidden）。
+  const cell = (channel: string, name: typeof groups[number], period: "current" | "previous" | "change", value: string) => table.getByRole("button", { name: fill(labels.overview.channelsV3.amountAria, { channel, metric: period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.periods[period], metric: metricDefinitions[name].label }), value: period === "change" ? formatSignedDelta(value, "L2") : formatAmountL2(value) }), exact: true, includeHidden: period === "previous" });
+  for (const [channel, values] of [["DTC", { net_revenue: ["1480.00", "1350.00", "130.00"], contribution_after_marketing: ["270.00", "400.00", "-130.00"] }], ["MARKETPLACE", { net_revenue: ["990.00", "900.00", "90.00"], contribution_after_marketing: ["-15.00", "170.00", "-185.00"] }]] as const) {
+    for (const name of groups) for (const [index, period] of (["current", "previous", "change"] as const).entries()) await expect(cell(channel, name, period, values[name][index])).toHaveCount(1);
+  }
+  // 備註欄：MARKETPLACE 轉負標籤。
+  const marketplaceRow = table.locator("tbody tr").filter({ has: page.getByRole("rowheader", { name: "MARKETPLACE", exact: true }) });
+  await expect(marketplaceRow.locator(".note-cell .ui-lozenge")).toHaveText([labels.overview.channelsV3.turnedNegative]);
+  // 同一欄再按一次 → 由高到低；換欄 → 新欄由低到高，aria-sort 移到新欄。
+  await sortButton("contribution_after_marketing", "current").click();
+  await expect(rowHeads).toHaveText(["DTC", "MARKETPLACE"]);
+  await expect(sortedHeader).toHaveAttribute("aria-sort", "descending");
+  await sortButton("net_revenue", "change").click();
+  await expect(rowHeads).toHaveText(["MARKETPLACE", "DTC"]);
+  await expect(sortedHeader).toHaveCount(1);
+  await expect(sortedHeader).toHaveAttribute("aria-sort", "ascending");
+  await expect(sortedHeader.getByRole("button")).toHaveAccessibleName(fill(tableV3.changeLabel, { metric: metricDefinitions.net_revenue.label }));
+  // 備註連結＝該通路觸發的第一個健檢列標題：點了展開那一列（先收起來）並把焦點移到它的 summary。
+  const target = page.getByTestId("diagnosis-row-REV_UP_CM_DOWN");
+  const link = marketplaceRow.locator("a.note-link");
+  await expect(link).toHaveText((await target.locator(":scope > summary h3").textContent()) ?? "");
+  await target.locator(":scope > summary").click();
+  await expect(target).not.toHaveAttribute("open", "");
+  await link.click();
+  await expect(target).toHaveAttribute("open", "");
+  await expect(target.locator(":scope > summary")).toBeFocused();
 });
 
 test("加入待辦一次點擊就到看板；看板按鈕改狀態、焦點留在卡片；清單檢視狀態一致", async ({ page }) => {
@@ -292,17 +358,20 @@ test("商品頁：Top／Bottom 小表看整個範圍、不跟著篩選；資料�
   const worst = page.getByTestId("product-worst"), best = page.getByTestId("product-best"), table = page.getByTestId("product-table");
   await expect(page.locator("#product-highlights-heading")).toHaveText(labels.sections.productTopBottom);
   // 本期商品毛利由低到高：MARKETPLACE/B 125、DTC/B 200、MARKETPLACE/A 280、DTC/A 540；毛利增加：DTC/A +40、MARKETPLACE/A +10。
+  // V3-5（C3）：小表欄序＝排名｜商品（列標頭「SKU · 通路」）｜本期商品毛利（元）｜差額（元）；td 依序是排名、本期商品毛利、差額。
+  const rankHeaders = [productPage.columns.rank, productPage.columns.product, fill(labels.units.yuanColumn, { label: `${labels.periods.current}${metricDefinitions.gross_profit.shortLabel}` }), fill(labels.units.yuanColumn, { label: productPage.columns.change })];
+  for (const root of [worst, best]) await expect(root.locator("thead th")).toHaveText(rankHeaders);
   const rowHeads = (root: Locator) => root.locator("tbody tr th").evaluateAll(cells => cells.map(cell => (cell.textContent ?? "").replace(/\s+/g, " ").trim()));
-  expect(await rowHeads(worst)).toEqual(["B MARKETPLACE", "B DTC", "A MARKETPLACE", "A DTC"]);
+  expect(await rowHeads(worst)).toEqual(["B · MARKETPLACE", "B · DTC", "A · MARKETPLACE", "A · DTC"]);
   await expect(worst.locator("tbody tr td:nth-of-type(2)")).toHaveText(["125.00", "200.00", "280.00", "540.00"].map(value => formatAmountL2(value)));
-  expect(await rowHeads(best)).toEqual(["A DTC", "A MARKETPLACE"]);
+  expect(await rowHeads(best)).toEqual(["A · DTC", "A · MARKETPLACE"]);
   await expect(best.locator("tbody tr td:nth-of-type(3)")).toHaveText(["40.00", "10.00"].map(value => formatSignedDelta(value, "L2")));
   // 小表不跟著下方篩選。
   await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("a");
   await expect(table.locator("tbody tr")).toHaveCount(2);
-  expect(await rowHeads(worst)).toEqual(["B MARKETPLACE", "B DTC", "A MARKETPLACE", "A DTC"]);
-  // 「全部商品」標題在篩選列之前；資料狀態欄用新文案。
-  expect(await page.locator("#product-full-heading").evaluate(heading => !!(heading.compareDocumentPosition(document.querySelector(".product-filters")!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  expect(await rowHeads(worst)).toEqual(["B · MARKETPLACE", "B · DTC", "A · MARKETPLACE", "A · DTC"]);
+  // 「全部商品」標題在篩選列之前（V3-5：篩選列是 .ui-toolbar.product-toolbar，data-testid="product-toolbar"）；資料狀態欄用新文案。
+  expect(await page.locator("#product-full-heading").evaluate((heading, toolbar) => !!(heading.compareDocumentPosition(toolbar!) & Node.DOCUMENT_POSITION_FOLLOWING), await page.getByTestId("product-toolbar").elementHandle())).toBe(true);
   await expect(table.locator("thead th").last()).toHaveText(highlight.columns.dataStatus);
   await expect(table.locator("tbody tr td:last-child")).toHaveText([highlight.status.both, highlight.status.both]);
 });

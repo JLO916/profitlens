@@ -1,7 +1,8 @@
-import { clickReplacing, closePeriodSheet, dismissSavePrompt, isMobile, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, startChannelContext } from "./replacement-helpers";
+import { clickReplacing, closePeriodSheet, dismissSavePrompt, isMobile, navigateTo, openAiSection, openCustomPeriod, openPeriodSheet, openValidation, startChannelContext } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
+import { evidenceSubtitle } from "../../src/components/evidence-drawer";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
@@ -93,6 +94,8 @@ function channelLabelFor(page: Page, channel: string): string {
 async function showAi(page: Page) {
   // V3-3：桌機點側欄、手機點底部分頁列「健檢」。
   await navigateTo(page, "diagnosis");
+  // V3-5：AI 區在健檢頁最底、預設收合（ai-collapsed）；切頁回來會重新收合，所以每次都展開再斷言。
+  await openAiSection(page);
   await expect(panel(page)).toBeVisible();
 }
 async function loadDataset(page: Page, id = "golden", channel = "DTC") {
@@ -110,6 +113,8 @@ async function loadDataset(page: Page, id = "golden", channel = "DTC") {
   await showAi(page);
 }
 async function preview(page: Page): Promise<ApprovedBody> {
+  // V3-5：點 ai-advanced 前確認 AI 區已展開（已展開就不動）。
+  await openAiSection(page);
   const advanced = page.getByTestId("ai-advanced");
   if (await advanced.getAttribute("open") === null) await advanced.locator("summary").first().click();
   for (const title of [ai.payloadSummary, ai.requestSummary]) {
@@ -151,6 +156,8 @@ async function mockApi(page: Page, responder: (body: ApprovedBody) => MockEnvelo
   return posts;
 }
 async function approveAndSend(page: Page) {
+  // V3-5：同意勾選與送出鈕在收合的 AI 區裡，先展開（已展開就不動）。
+  await openAiSection(page);
   await consent(page).check();
   await send(page).click();
 }
@@ -204,6 +211,17 @@ for (const reason of ["NO_KEY", "PUBLIC_DEMO", "STATUS_UNAVAILABLE"] as const) {
     await expect(page.getByTestId("ai-live-result")).toHaveCount(0);
     expect(posts).toBe(0);
     await assertCore(page);
+    // V3-5（PRD §7.2 第 4 點）：回到健檢頁時 AI 區預設收合成一列「AI 解釋 · {狀態}」（公開示範站另附說明）；收合時 ai-panel 仍掛載但看不到。
+    await navigateTo(page, "diagnosis");
+    const collapsed = page.getByTestId("ai-collapsed");
+    await expect(collapsed).not.toHaveAttribute("open", "");
+    const aiCollapse = labels.diagnosis.aiCollapse;
+    await expect(collapsed.locator(":scope > summary")).toContainText(fill(aiCollapse.summary, { status: reason === "STATUS_UNAVAILABLE" ? aiCollapse.status.unknown : aiCollapse.status.off }));
+    if (reason === "PUBLIC_DEMO") await expect(collapsed.locator(":scope > summary")).toContainText(aiCollapse.publicNote);
+    else await expect(collapsed.locator(":scope > summary")).not.toContainText(aiCollapse.publicNote);
+    await expect(panel(page)).toBeAttached();
+    await expect(panel(page)).toBeHidden();
+    await expect(panel(page)).toContainText(ai.rulesAvailable);
   });
 }
 
@@ -296,9 +314,13 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await expect(dialog.locator("p.number")).toHaveText(formatAmountL1("270.00"));
   await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatAmountL3("270.00") }));
   // Golden dataset keeps the raw channel name (demo alias applies only to synthetic-demo).
-  // V3-2a（copy-rewrite.csv ui.evidenceDrawer.scopeLine）：日期區間改用「–」，片段從模板的 {start} 起取並填值。
-  const scopeLine = labels.ui.evidenceDrawer.scopeLine;
-  await expect(dialog).toContainText(fill(scopeLine.slice(scopeLine.indexOf("{start}")), { start: "2026-08-02", end: "2026-08-02", channels: "DTC" }));
+  // V3-5（§7.8）：範圍行改為標題下的副標「{範圍} · {期間}（· 通路：…）」，期間是 formatPeriodL1（M/D），與報表本期相同時前綴「本期」；
+  // 期待值由抽屜同一支 evidenceSubtitle 以 golden manifest（data_as_of、channels、上期／本期）組出，範圍是 AI 引用證據的 scopeLabel。
+  const goldenManifest = JSON.parse(await readFile(resolve("fixtures/golden/manifest.json"), "utf8")) as { data_as_of: string; channels: string[]; previous_period: { start: string; end: string }; current_period: { start: string; end: string } };
+  const subtitle = evidenceSubtitle({ period: { start: "2026-08-02", end: "2026-08-02" }, channels: ["DTC"], scopeLabel: ai.evidenceScope }, { alias: false, anchor: goldenManifest.data_as_of, allChannels: goldenManifest.channels, report: { current: { period: goldenManifest.current_period }, previous: { period: goldenManifest.previous_period } } });
+  await expect(dialog.locator(".evidence-head .sub")).toHaveText(subtitle);
+  await expect(dialog).toHaveAccessibleDescription(subtitle);
+  await expect(dialog.locator(".evidence-head .sub")).toContainText("DTC");
   await expect(dialog).toContainText("sales_daily.csv");
   await page.keyboard.press("Escape");
   await expect(evidence).toBeFocused();
