@@ -99,6 +99,7 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
     <KpiBand snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} onNavigate={onNavigate} missingItems={missingItems} targets={kpiTargets} />
 
     <TopThree snapshot={snapshot} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} onOpenDiagnosis={onNavigate ? () => onNavigate("diagnosis") : undefined} />
+    {/* V3-4b 錨點：區塊 5「貢獻變化拆解」與區塊 6「本期利潤結構」（代理 B1 的元件，合併後由主控在此插入） */}
 
     <section className="panel trend-panel" aria-labelledby="trend-title">
       <div className="section-heading"><div><p className="eyebrow">TREND</p><h2 id="trend-title">{labels.sections.trend}</h2></div><div className="chart-legend"><span><i className="legend-dot teal" />{metricDefinitions.net_revenue.label}</span><span><i className="legend-dot navy" />{metricDefinitions.contribution_after_marketing.label}</span></div></div>

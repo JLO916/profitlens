@@ -19,7 +19,7 @@ const REMOVED = new Set(REMOVED_ROWS.map(([old]) => old));
 const KEPT: Record<string, string> = Object.fromEntries(Object.entries(SNAPSHOT).filter(([path]) => !REMOVED.has(path)));
 const GROUPS: readonly string[] = LABEL_GROUPS;
 /** V3-3 起新增的鍵（沒有 v2 舊路徑）：只放在 shell 的 V3-3 錨點物件內；快照比對略過，但 copy-scan 指標仍須與快照相同（新字串不得新增違規）。 */
-const V3_NEW_KEY_PREFIXES = ["shell.topbarV3.", "shell.sidebarV3.", "shell.dataStatus.", "shell.mobileNav.", "shell.periodBarV3.", "shell.banner.", "overview.snapshot.", "overview.snapshotUi.", "overview.kpiBand.", "overview.alerts.", "overview.assistTable.", "overview.advanced.", "summary.weekly."];
+const V3_NEW_KEY_PREFIXES = ["shell.topbarV3.", "shell.sidebarV3.", "shell.dataStatus.", "shell.mobileNav.", "shell.periodBarV3.", "shell.banner.", "overview.snapshot.", "overview.snapshotUi.", "overview.kpiBand.", "overview.alerts.", "overview.assistTable.", "overview.advanced.", "summary.weekly.", "overview.chartFrame.", "overview.bridgeV3.", "overview.profit.", "overview.trendV3.", "overview.channelsV3."];
 const isV3NewKey = (path: string) => V3_NEW_KEY_PREFIXES.some(prefix => path.startsWith(prefix));
 const LEGACY: readonly string[] = LEGACY_SECTIONS;
 

@@ -577,6 +577,16 @@ export const overview = {
   advanced: {
     summary: "進階：期間合計與日均",
   },
+  // ── V3-4b 錨點：圖表（A 先填全部文案；B1 只補 bridgeV3／profit 的介面字串、B2 只補 trendV3／channelsV3／chartFrame）；收尾時刪除仍為空的物件。
+  chartFrame: {},
+
+  bridgeV3: {},
+
+  profit: {},
+
+  trendV3: {},
+
+  channelsV3: {},
 } as const;
 
 // ── diagnosis：通路健檢：健檢清單與健檢頁
