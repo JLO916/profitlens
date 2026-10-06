@@ -278,6 +278,19 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
 
+## 2026-10-06｜Revamp v3 V3-2c：labels 重組的 alias 策略與清理範圍
+
+**問題：** §8.10 要求 labels 依頁面重新分組並保留舊 key 到 V3-10，但 1,950 個字串、49 個測試檔與所有元件都用舊路徑；重組不能改任何畫面文字。
+
+**採用選項：**
+- 新分組是字串唯一存放處；舊的 41 個頂層區段由產生器重生成**只放參照**的型別化 alias 樹（AST 測試保證 alias 宣告沒有字串常值），`legacyAliases` 匯出給掃描器略過，計數口徑與 V3-2b 相同。元件與測試 import 不動，V3-10 再一次遷移並刪 alias。
+- 規則卡的 `explain` 採 `{ cause, nextStep }` 物件，不合併成一句（畫面分行顯示，合併會改文字）；指標 `{ headline, short, explain, technical }`；導覽 `{ headline, explain }`；其餘單元只搬位置。
+- 以 V3-2b 的展平快照（`labels-v3-2b.flat.json`）作為「文字零改動」的證據，重組與刪鍵都對它驗證。
+- 無引用 key 以 AST 追 `labels` 取值鏈判定；動態索引的物件整棵保留；tests／e2e／scripts 直接取用的 12 個也保留；刪除的 127 個記在 `labels-removed-v3-2c.txt`。
+- 舊 ASCII 負號格式函式刪除；AI grounding 的事實改用 `asciiMinus(formatAmountL3)`（輸出逐字相同）；規則卡比率暫維持 ASCII 以不改文字，V3-4 改版面時換 U+2212。
+
+**原因：** 結構重整與文字變更分開，才能用「0 像素差異」證明本批沒有副作用；alias 保留到 V3-10 讓 49 個測試檔與元件可以分批遷移。
+
 ## 2026-10-06｜Revamp v3 V3-2b：三層數字尺度的落地取捨
 
 **問題：** §8.5 定義 L1／L2／L3 三層尺度，但既有畫面（KPI 卡、表格、抽屜、匯出）的層級歸屬與幾個邊界案例需要決定。

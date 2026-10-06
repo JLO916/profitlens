@@ -179,7 +179,7 @@ export async function findUnused() {
   // copy-rewrite.csv 的 removed 列（v2 路徑）：版面改版前仍可能顯示，保留。
   const removedRows = new Set();
   const csvPath = resolve(ROOT, "docs/revamp-v3/copy-rewrite.csv");
-  if (existsSync(csvPath)) for (const line of readFileSync(csvPath, "utf8").replace(/^﻿/, "").split(/\r?\n/).slice(1)) {
+  if (existsSync(csvPath)) for (const line of readFileSync(csvPath, "utf8").replace(/^\ufeff/, "").split(/\r?\n/).slice(1)) {
     const key = line.split(",")[0];
     if (/,removed,/.test(line) && key) removedRows.add(toNew(key));
   }

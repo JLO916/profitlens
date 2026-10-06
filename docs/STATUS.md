@@ -1,5 +1,13 @@
 # Status
 
+## Revamp v3｜V3-2c labels 結構重整與清理（完成，未推送、未部署；V3-2 a／b／c 全部完成）
+
+不改任何畫面文字與版面（四尺寸截圖對 V3-2b 基準 0 差異）。labels 依「頁面 › 區塊 › 元件」重組成 24 個新分組（字串唯一存放處），v2 的 41 個區段全部改為只放參照的型別化 alias（`legacyAliases` 2,221 筆，到 V3-10 才移除），元件與測試 import 零改動；規則卡、指標、導覽套用 `headline／explain／caution／technical` 形狀；`scripts/labels-regroup.mjs` 可重現並 `--check`；`tests/labels-structure.test.ts` 以 V3-2b 展平快照逐字驗證。刪除 v2 ASCII 負號格式函式（AI 酬載改用 `asciiMinus(formatAmountL3)`，輸出逐字相同）與 127 個無引用 key（清單 `verification/revamp-v3/labels-removed-v3-2c.txt`）。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **87 檔／1,829 全過**、`lint:design` exit 0（設計指標不變；禁用詞 4 → 3）、build pass、E2E 全套 **576 項全過（15.2m）**；截圖對 V3-2b 0 差異；Lighthouse 五頁 a11y 100；禁區 diff 空；testid 刪除數 0。
+- 未執行／待人工：**H2 設計稿審查（擋 V3-3）**、H3 補審。
+- 下一批：V3-3 殼層與導覽（需 H2）。
+
 ## Revamp v3｜V3-2b 數字格式（完成，未推送、未部署）
 
 三層數字尺度落地：L1（KPI、標題、三件事、試算結果、摘要關鍵數字）用萬／億一位小數與「降 N 個百分點」，L2（表格）整數元且單位只在表頭或 caption，L3（抽屜、橋接表、對帳表、匯出）到分；全部從精確值 HALF_UP 取位（−32.0%、降 14.3 個百分點兩個規則案例入測）；UI 負號 U+2212、CSV／JSON 維持 ASCII；零值不帶符號、缺值「資料待補」；`favorableDirection`／`deltaTone`／`deltaWord` 進呈現層（只有不利上色）；抽屜標題下新增精確值行；匯出依格式分層（CSV／JSON 位元組級不變、Markdown L2＋L3、Excel 儲存格顯示格式、PPT L1＋L2）；匯入對帳表與會議假設文字同步。
