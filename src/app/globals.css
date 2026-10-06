@@ -787,58 +787,6 @@ main summary, main button, main input, main select, main textarea, main [role="r
 .side-entry table td, .side-entry table th { padding: 8px 10px; }
 
 
-/* R5-A 健檢清單（diagnosis-list.tsx） */
-.diagnosis-heading-tags { display: inline-flex; flex-wrap: wrap; gap: 6px; }
-.diagnosis-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.diagnosis-item { min-width: 0; }
-.diagnosis-row { border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-surface); min-width: 0; }
-.diagnosis-row[open] { background: var(--bg-surface); }
-.diagnosis-row.missing { border-color: var(--border-default); }
-.diagnosis-summary { list-style: none; display: grid; grid-template-columns: 14px minmax(0,1fr) auto; grid-template-areas: "mark head impact" ". scopes impact"; column-gap: 10px; row-gap: 6px; align-items: center; padding: 13px 16px; color: var(--text-primary); font-size: var(--text-14); border-radius: var(--radius-md); }
-.diagnosis-summary::-webkit-details-marker { display: none; }
-.diagnosis-summary::before { content: ""; grid-area: mark; justify-self: center; width: 7px; height: 7px; border-right: 2px solid var(--text-tertiary); border-bottom: 2px solid var(--text-tertiary); transform: rotate(-45deg); transition: transform var(--dur-fast) var(--ease); }
-.diagnosis-row[open] > .diagnosis-summary::before { transform: rotate(45deg); }
-.diagnosis-summary:hover { background: var(--bg-hover); }
-.diagnosis-headline { grid-area: head; font-size: var(--text-16); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
-.diagnosis-scopes { grid-area: scopes; display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
-.scope-tag { display: inline-block; padding: 1px 7px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--bg-subtle); color: var(--text-tertiary); font-size: var(--text-12); white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
-.scope-tag.more { border-style: dashed; background: transparent; }
-.diagnosis-impact { grid-area: impact; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
-.diagnosis-impact-label { font-size: var(--text-12); color: var(--text-tertiary); }
-.diagnosis-impact .impact-amount { white-space: nowrap; }
-.diagnosis-body { padding: 4px 16px 16px 40px; border-top: 1px solid var(--border-subtle); min-width: 0; }
-.diagnosis-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0 10px; }
-.diagnosis-actions .impact-line { margin: 0 auto 0 0; min-width: 0; flex-wrap: wrap; }
-.scope-switch { margin: 0 0 10px; }
-.scope-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.scope-chip { min-height: 30px; padding: 3px 11px; border: 1px solid var(--border-default); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-secondary); font-size: var(--text-12); white-space: normal; overflow-wrap: anywhere; max-width: 100%; text-align: left; }
-.scope-chip:hover { background: var(--bg-hover); }
-.scope-chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
-.scope-more { margin-bottom: 8px; }
-.diagnosis-scope-headline { font-size: var(--text-13); color: var(--text-secondary); margin-bottom: 6px; overflow-wrap: anywhere; }
-.diagnosis-body h4 { font-size: var(--text-12); font-weight: 600; color: var(--text-tertiary); margin: 12px 0 6px; }
-.diagnosis-copy { display: grid; gap: 6px; margin: 12px 0 8px; }
-.diagnosis-copy > div { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: 10px; font-size: var(--text-12); line-height: 1.8; }
-.diagnosis-copy dt { color: var(--text-tertiary); font-weight: 600; }
-.diagnosis-copy dd { margin: 0; color: var(--text-secondary); overflow-wrap: anywhere; }
-.diagnosis-technical { margin-top: 8px; font-size: var(--text-12); color: var(--text-secondary); }
-.diagnosis-technical ul { padding-left: 18px; margin: 4px 0 8px; }
-.diagnosis-technical code { overflow-wrap: anywhere; word-break: break-all; }
-.diagnosis-tech-list { display: grid; gap: 4px; margin: 6px 0; }
-.diagnosis-tech-list > div { display: flex; flex-wrap: wrap; gap: 4px 10px; }
-.diagnosis-tech-list dt { color: var(--text-tertiary); }
-.diagnosis-tech-list dd { margin: 0; }
-@media (max-width: 640px) {
-  .diagnosis-summary { grid-template-columns: 14px minmax(0,1fr); grid-template-areas: "mark head" ". scopes" ". impact"; padding: 12px; }
-  .diagnosis-impact { flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 8px; text-align: left; }
-  .diagnosis-headline { font-size: var(--text-16); }
-  .diagnosis-body { padding: 4px 12px 14px; }
-  .diagnosis-actions .impact-line { flex: 1 1 100%; }
-  .diagnosis-copy > div { grid-template-columns: minmax(0,1fr); gap: 0; }
-}
-
-
-
 /* R5-B 試算表單（scenario form / presets / absolute mode） */
 .scenario-channel { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: var(--text-13); font-weight: 600; color: var(--text-secondary); margin-top: 12px; }
 .scenario-channel select { min-width: 200px; font-weight: 500; }
@@ -1535,6 +1483,151 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-4b 錨點結束 ── */
 
 /* ── V3-5 錨點 A：通路健檢（警示列清單型、計數徽章、通路寬表欄序與排序、手機清單、AI 區收合）（代理 A 只在此錨點之後、錨點 B 之前新增規則） ── */
+/* 通路健檢頁（PRD §7.2）。區段標題列（C4）：左邊 h2（16／600）＋計數徽章（C8），右邊範圍文字（13px，一個區塊只寫一次）；副標 13px 次要色在下一行。 */
+.diagnosis-panel, .channel-compare { --alert-chev-w: 16px; --alert-impact-w: 160px; min-width: 0; }
+.diagnosis-panel > .sec-head, .channel-compare > .sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); min-height: var(--control-h); }
+.diagnosis-panel .sec-title, .channel-compare .sec-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); min-width: 0; }
+.diagnosis-panel .sec-title h2, .channel-compare .sec-title h2 { margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.diagnosis-panel .sec-scope, .channel-compare .sec-scope { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.diagnosis-panel > .sub, .channel-compare > .sub { margin: 2px 0 var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+/* 計數徽章：狀態字（13px，對輔助科技隱藏）＋C8 徽章（只放數字，可及名稱寫完整意思「3 項不利」）。 */
+.diagnosis-badges { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
+.diagnosis-badge { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+
+/* C9 清單型警示列：面板本身就是容器，列與列之間 1px 分隔線，不做卡片。全域 .alert（v2 通知列）的 flex、padding、margin、圓角與 12px 字級在這裡歸零。 */
+.diagnosis-panel .alert-list { list-style: none; margin: 0; padding: 0; border-top: var(--border-w) solid var(--border-subtle); }
+.diagnosis-panel .alert-row { min-width: 0; border-bottom: var(--border-w) solid var(--border-subtle); }
+.diagnosis-panel .alert-row:last-child { border-bottom: 0; }
+.diagnosis-panel .diagnosis-row { display: block; min-width: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; font-size: inherit; color: var(--text-primary); scroll-margin-top: calc(var(--topbar-h) + var(--period-bar-h) + var(--space-3)); }
+/* summary（L1）一行：展開指示｜狀態標籤｜標題（16／600）｜範圍（只在和頁面範圍不同時）｜影響金額（16／600 tabular，右對齊 160px）；高 ≥ 48px。 */
+.diagnosis-panel .diagnosis-row > summary { list-style: none; display: grid; grid-template-columns: var(--alert-chev-w) auto minmax(0, 1fr) auto var(--alert-impact-w); grid-template-areas: "chev loz title scope impact"; column-gap: var(--space-3); align-items: center; min-height: 48px; padding: var(--space-3) 0; cursor: pointer; font-size: var(--text-14); line-height: var(--leading-14); }
+.diagnosis-panel .diagnosis-row > summary::-webkit-details-marker { display: none; }
+.diagnosis-panel .diagnosis-row > summary:hover .alert-title { text-decoration: underline; text-underline-offset: 3px; }
+/* 展開指示：rotate 屬性轉 90 度（disclosure，不是裝飾）；減少動態時全站規則會關掉 transition。 */
+.diagnosis-panel .alert-chev { grid-area: chev; color: var(--text-tertiary); transition: rotate var(--dur-fast) var(--ease); }
+.diagnosis-panel .diagnosis-row[open] > summary .alert-chev { rotate: 90deg; }
+.diagnosis-panel .alert-loz { grid-area: loz; display: inline-flex; }
+.diagnosis-panel .alert-title { grid-area: title; min-width: 0; margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.diagnosis-panel .diagnosis-row > summary .scope-tag { grid-area: scope; }
+.diagnosis-panel .scope-tag { display: inline-flex; align-items: center; max-width: 100%; min-height: var(--lozenge-h); padding: 0 6px; border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--bg-subtle); color: var(--text-secondary); font-size: var(--text-12); line-height: var(--leading-12); overflow-wrap: anywhere; }
+.diagnosis-panel .diagnosis-impact { grid-area: impact; justify-self: end; text-align: right; white-space: nowrap; }
+.diagnosis-panel .diagnosis-impact .impact-amount { font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); }
+.diagnosis-panel .diagnosis-impact .impact-amount.neutral { font-size: var(--text-14); font-weight: var(--weight-regular); }
+
+/* 展開內容（L2）：左緣對齊標題欄；段落用 13／600 次要色小標分隔（相關數字、可能原因、下一步、限制），不用卡片。 */
+.diagnosis-panel .diagnosis-body { min-width: 0; padding: 0 0 var(--space-5) calc(var(--alert-chev-w) + var(--space-3)); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.diagnosis-panel .impact-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin: 0 0 var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.diagnosis-panel .impact-line .impact-amount { font-size: var(--text-16); line-height: var(--leading-16); }
+/* 範圍切換 chips（沿用 v2 .scope-chip 的樣式；aria-pressed＝目前範圍）；超過 4 個收進「更多範圍」popover（C14，內容保持掛載）。 */
+.diagnosis-panel .scope-switch { position: relative; margin: 0 0 var(--space-3); }
+.diagnosis-panel .scope-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.diagnosis-panel .scope-chip { display: inline-flex; align-items: center; min-height: 30px; max-width: 100%; padding: 3px 11px; border: var(--border-w) solid var(--border-default); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-secondary); font-size: var(--text-12); line-height: var(--leading-12); text-align: left; white-space: normal; overflow-wrap: anywhere; cursor: pointer; }
+.diagnosis-panel .scope-chip:hover { background: var(--bg-hover); }
+.diagnosis-panel .scope-chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: var(--weight-semibold); }
+.diagnosis-panel .ui-popover-host { position: relative; display: inline-flex; }
+.diagnosis-panel .scope-more > summary { list-style: none; }
+.diagnosis-panel .scope-more > summary::-webkit-details-marker { display: none; }
+.diagnosis-panel .scope-more[data-active] > .scope-more-trigger, .diagnosis-panel .scope-more[open] > .scope-more-trigger { border-color: var(--accent); color: var(--accent); }
+.diagnosis-panel .scope-more-panel { position: absolute; top: calc(100% + var(--space-2)); left: 0; }
+.diagnosis-panel .diagnosis-scope-headline { margin: var(--space-2) 0 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); overflow-wrap: anywhere; }
+/* 相關數字（C2 緊湊表的兩欄定義列表）：左「期間 · 指標 · 範圍」13px，右整數元（L2）number-link，列高 32px。 */
+.diagnosis-panel .kv-heading { margin: var(--space-3) 0 var(--space-1); font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.diagnosis-panel .kv-list { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0; max-width: 640px; margin: 0; padding: 0; border-radius: 0; background: transparent; }
+.diagnosis-panel .kv-list > div { display: contents; }
+.diagnosis-panel .kv-list dt, .diagnosis-panel .kv-list dd { display: flex; align-items: center; min-height: var(--row-h-compact); margin: 0; border-bottom: var(--border-w) solid var(--border-subtle); font-size: var(--text-13); line-height: var(--leading-13); }
+.diagnosis-panel .kv-list dt { padding-right: var(--space-4); color: var(--text-secondary); overflow-wrap: anywhere; }
+.diagnosis-panel .kv-list dd { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+.diagnosis-panel .kv-list .number-link { color: var(--text-primary); font-size: var(--text-14); line-height: var(--leading-14); }
+/* 可能原因（待確認）、下一步：小標 13／600 次要色、正文 14px；限制與檔期是一句 13px 次要色，小標同列。 */
+.diagnosis-panel .diagnosis-copy { display: grid; gap: var(--space-3); max-width: 720px; margin: var(--space-4) 0 0; }
+.diagnosis-panel .diagnosis-copy > div { display: grid; gap: 2px; min-width: 0; }
+.diagnosis-panel .diagnosis-copy dt { font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.diagnosis-panel .diagnosis-copy dd { margin: 0; min-width: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); overflow-wrap: anywhere; }
+.diagnosis-panel .diagnosis-copy > .diagnosis-limit, .diagnosis-panel .diagnosis-copy > .diagnosis-event { grid-template-columns: auto minmax(0, 1fr); column-gap: var(--space-2); }
+.diagnosis-panel .diagnosis-limit dd, .diagnosis-panel .diagnosis-event dd { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+/* 動作列靠左（看明細、加入待辦：次要按鈕）。 */
+.diagnosis-panel .diagnosis-actions { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--space-2); margin: var(--space-4) 0 0; }
+/* 技術細節（L3）：12px 等寬字；summary 維持一般字體與原生展開指示。 */
+.diagnosis-panel .diagnosis-technical { margin-top: var(--space-4); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.diagnosis-panel .diagnosis-technical > summary { min-height: 24px; cursor: pointer; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.diagnosis-panel .diagnosis-technical > :not(summary) { font-family: var(--font-mono); }
+.diagnosis-panel .diagnosis-technical .note { margin: var(--space-2) 0 var(--space-1); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.diagnosis-panel .diagnosis-technical ul { margin: 0 0 var(--space-2); padding-left: 18px; }
+.diagnosis-panel .diagnosis-technical code { font-family: var(--font-mono); font-size: var(--text-12); overflow-wrap: anywhere; word-break: break-all; }
+.diagnosis-panel .diagnosis-tech-list { display: grid; gap: var(--space-1); margin: var(--space-2) 0; }
+.diagnosis-panel .diagnosis-tech-list > div { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+.diagnosis-panel .diagnosis-tech-list dt { color: var(--text-tertiary); }
+.diagnosis-panel .diagnosis-tech-list dd { margin: 0; }
+/* 0 列（C10 區段型空狀態）。 */
+.diagnosis-panel .diagnosis-empty { padding: var(--space-4); border: var(--border-w) dashed var(--border-default); border-radius: var(--radius-md); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+
+/* 各通路兩期比較（C3 資料表，diagnosis 變體）：兩層表頭（欄群組標單位一次）、金額欄右對齊 tabular、可排序欄頭（SVG icon＋aria-sort）、備註欄。 */
+.channel-table-v3 caption { padding: var(--space-2) var(--cell-px); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.channel-table-v3 thead th { height: var(--row-h-compact); text-align: right; }
+.channel-table-v3 thead .channel-col, .channel-table-v3 thead .note-col { text-align: left; vertical-align: bottom; }
+.channel-table-v3 thead .group-head { text-align: center; border-left: var(--border-w) solid var(--border-subtle); }
+.channel-table-v3 .sort-button { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 24px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.channel-table-v3 .sort-button:hover { color: var(--text-primary); }
+.channel-table-v3 .sort-icon { flex: none; color: var(--text-tertiary); }
+.channel-table-v3 th[aria-sort] .sort-button { color: var(--text-primary); }
+.channel-table-v3 th[aria-sort] .sort-icon { color: var(--accent); }
+.channel-table-v3 tbody .channel-cell { font-weight: var(--weight-medium); white-space: nowrap; }
+.channel-table-v3 .num .number-link { color: inherit; }
+/* 欄群組之間的直線分隔（只在表格版面；手機清單不畫）。 */
+@media (min-width: 768px) {
+  .channel-table-v3 thead .column-row th:nth-child(3n + 1), .channel-table-v3 tbody td:nth-child(3n + 2) { border-left: var(--border-w) solid var(--border-subtle); }
+}
+.channel-table-v3 .note-cell { min-width: 160px; font-size: var(--text-13); line-height: var(--leading-13); white-space: normal; }
+.channel-table-v3 .note-cell > * + * { margin-left: var(--space-2); }
+.channel-table-v3 .note-link { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+
+/* AI 區收合（PRD §7.2 第 4 點）：收合時是一列（48px）；展開後內層 AiPanel 去掉自己的外框，以 details 當面板（C5 面板只有一層）。summary 只有文字。 */
+.ai-collapsed { min-width: 0; margin-bottom: var(--space-5); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-surface); }
+.ai-collapsed > summary { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); min-height: 48px; padding: var(--space-2) var(--space-4); cursor: pointer; border-radius: var(--radius-md); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.ai-collapsed > summary::-webkit-details-marker { display: none; }
+.ai-collapsed-chev { flex: none; color: var(--text-tertiary); transition: rotate var(--dur-fast) var(--ease); }
+.ai-collapsed[open] > summary .ai-collapsed-chev { rotate: 90deg; }
+.ai-collapsed-title { font-weight: var(--weight-semibold); }
+.ai-collapsed-note { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.ai-collapsed > .ai-panel { margin: 0; border: 0; border-top: var(--border-w) solid var(--border-subtle); border-radius: 0; }
+
+/* ≤ 1023px：影響金額欄改成自動寬度，範圍標籤移到標題下一行。 */
+@media (max-width: 1023px) {
+  .diagnosis-panel .diagnosis-row > summary { grid-template-columns: var(--alert-chev-w) auto minmax(0, 1fr) auto; grid-template-areas: "chev loz title impact" ". . scope ."; row-gap: var(--space-1); }
+  .diagnosis-panel .diagnosis-row > summary .scope-tag { justify-self: start; }
+}
+/* ≤ 767px：警示列兩行（狀態與金額一行、標題一行）；「更多範圍」以範圍切換區為定位基準全寬展開；
+   通路寬表改成清單（C3 手機）：保留 <table> 與明確的 role，用 CSS 重排。data-list-role：
+   primary＝主行的名稱（14／600，不顯示欄名）；labeled＝主行的關鍵金額（14／600，上方 12px 欄名）；secondary＝次行的 key-value（12px，前面顯示欄名）。
+   上期欄在清單中不顯示（差額的「計算與來源」列出上期與本期）；表頭只留可排序的四個欄名當作排序列。 */
+@media (max-width: 767px) {
+  .diagnosis-panel .diagnosis-row > summary { grid-template-columns: var(--alert-chev-w) auto minmax(0, 1fr) auto; grid-template-areas: "chev loz . impact" ". title title title" ". scope scope scope"; column-gap: var(--space-2); }
+  .diagnosis-panel .diagnosis-body { padding-left: 0; }
+  .diagnosis-panel .ui-popover-host { position: static; }
+  .diagnosis-panel .scope-more-panel { right: 0; width: auto; }
+  .diagnosis-panel .diagnosis-actions .ui-btn { height: var(--control-h-touch); min-height: var(--control-h-touch); }
+  .channel-table-v3, .channel-table-v3 caption, .channel-table-v3 thead, .channel-table-v3 tbody { display: block; }
+  .channel-table-v3 colgroup, .channel-table-v3 thead .group-row, .channel-table-v3 thead .column-row th:not(.sortable) { display: none; }
+  .channel-table-v3 thead .column-row { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); padding: var(--space-1) var(--cell-px); background: var(--bg-subtle); border-bottom: var(--border-w) solid var(--border-subtle); }
+  .channel-table-v3 thead .column-row th.sortable { position: static; display: block; height: auto; padding: 0; border: 0; background: transparent; }
+  .channel-table-v3 .sort-button { min-height: var(--control-h); font-size: var(--text-12); line-height: var(--leading-12); }
+  .channel-table-v3 .sort-button .sort-text { display: none; }
+  .channel-table-v3 .sort-button::before { content: attr(data-label); }
+  .channel-table-v3 tbody tr { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-1) var(--space-4); padding: var(--space-3) var(--cell-px); border-bottom: var(--border-w) solid var(--border-subtle); }
+  .channel-table-v3 tbody tr:last-child { border-bottom: 0; }
+  .channel-table-v3 tbody tr:hover { background: transparent; }
+  .channel-table-v3 tbody tr::after { content: ""; order: 2; flex-basis: 100%; height: 0; }
+  .channel-table-v3 tbody th, .channel-table-v3 tbody td { display: block; height: auto; padding: 0; border: 0; text-align: left; }
+  .channel-table-v3 [data-list-role="primary"] { order: 0; flex: 1 1 0; min-width: 96px; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); white-space: normal; overflow-wrap: anywhere; }
+  .channel-table-v3 [data-list-role="labeled"] { order: 1; display: grid; justify-items: end; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); }
+  .channel-table-v3 [data-list-role="labeled"]::before { content: attr(data-label); font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); color: var(--text-tertiary); }
+  .channel-table-v3 [data-list-role="secondary"] { order: 3; display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+  .channel-table-v3 [data-list-role="secondary"]::before { content: attr(data-label); color: var(--text-tertiary); }
+  .channel-table-v3 td.prev { display: none; }
+  .channel-table-v3 .note-cell { flex: 1 1 100%; min-width: 0; }
+  .channel-table-v3 .note-cell:empty { display: none; }
+  .channel-table-v3 .note-cell > * + * { margin-left: 0; }
+}
 
 /* ── V3-5 錨點 B：商品毛利（頁首匯出選單、工具列 C15、前 10 名表、全部商品表、密度切換、手機清單）（代理 B 只在此錨點之後、錨點 C 之前新增規則） ── */
 

@@ -48,8 +48,11 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     expect(main).toContain(formatAmountL2("270.00"));
     // V3-2a：開抽屜的按鈕文字改為「看明細」（labels.buttons.viewEvidence）。
     expect(main).toContain(`>${labels.buttons.viewEvidence}</button>`);
-    // 規則代號只出現在 data-testid（E2E 錨點）與收合的技術細節。
-    expect(main.replace(/data-testid="[^"]*"/g, "")).not.toContain("REV_UP_CM_DOWN");
+    // 規則代號只出現在 data-testid（E2E 錨點）與收合的技術細節；V3-5 起健檢列的 id 與通路寬表備註欄的同頁連結也用它當錨點（屬性值，不是可見文字）。
+    const anchorsRemoved = main.replace(/data-testid="[^"]*"/g, "").replace(/\sid="diagnosis-row-[A-Z_]+"/g, "").replace(/\shref="#diagnosis-row-[A-Z_]+"/g, "");
+    expect(anchorsRemoved).not.toContain("REV_UP_CM_DOWN");
+    expect(main.replace(/<[^>]*>/g, "")).not.toMatch(/[A-Z]+_[A-Z_]+/);
+    expect(main).toContain('id="diagnosis-row-REV_UP_CM_DOWN"');
     expect(main).not.toContain("&quot;fact&quot;");
     expect(html).toContain(technicalSummary);
     expect(html).toContain("REV_UP_CM_DOWN");

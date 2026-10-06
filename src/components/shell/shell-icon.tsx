@@ -21,6 +21,10 @@ const PATHS: Record<string, string> = {
   // V3-4a 總覽：複製週會摘要、`?` 定義按鈕、勾（已平衡、已複製）。
   copy: "M10 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2",
   check: "M5 12l5 5 9-10",
+  // V3-5 代理 A：可排序欄頭（C3）。未排序是上下兩個小箭頭；由低到高箭頭朝上，由高到低朝下。
+  sort: "M8 9l4-4 4 4 M8 15l4 4 4-4",
+  "sort-asc": "M12 19V5 M7 10l5-5 5 5",
+  "sort-desc": "M12 5v14 M7 14l5 5 5-5",
 };
 
 export function ShellIcon({ name, size = 20, className }: { name: keyof typeof PATHS | string; size?: number; className?: string }) {

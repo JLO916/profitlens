@@ -107,13 +107,14 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
 export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler; onCreateAction?: (diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) => void; events?: EventSet | null }) {
   const summary = useMemo(() => buildManagerSummary(snapshot), [snapshot]);
   const alias = demoAlias(snapshot.report.dataset_id);
-  // R5：通路寬表置頂 → 健檢清單（一個規則一列，與三件事同一套 diagnosisGroups）；AI 區塊由 dashboard 接在後面。
+  // V3-5（PRD §7.2）：健檢結果先放（這是結論；一個規則一列，與三件事同一套 diagnosisGroups）→ 各通路兩期比較（通路寬表 diagnosis 變體）；AI 區塊由 dashboard 接在最後（預設收合）。
   return <>
-  <section className="panel" aria-labelledby="channel-table-heading">
-    <div className="section-heading"><div><h2 id="channel-table-heading">{ui.channelTableHeading}</h2><p className="note">{ui.channelTableCaution}</p></div><span className="tag">{channelsLabel(summary.scope.channels, alias)}</span></div>
-    <ChannelWideTable summary={summary} onEvidence={onEvidence} ariaLabel={labels.sections.channelTableAria} caption={labels.sections.channelTableCaption} />
-  </section>
   <DiagnosisList snapshot={snapshot} groups={summary.diagnosis} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} />
+  <section className="panel channel-compare" aria-labelledby="channel-table-heading" data-testid="channel-compare">
+    <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{channelsLabel(summary.scope.channels, alias)}</span></div>
+    <p className="sub">{ui.channelTableCaution}</p>
+    <ChannelWideTable variant="diagnosis" summary={summary} onEvidence={onEvidence} ariaLabel={labels.sections.channelTableAria} caption={labels.sections.channelTableCaption} />
+  </section>
   </>;
 }
 
