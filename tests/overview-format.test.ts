@@ -4,14 +4,13 @@ import { describe, expect, it } from "vitest";
 import { assistKpis } from "../src/application/assist-kpi";
 import { buildManagerSummary } from "../src/application/manager-summary";
 import { formatHeadlineAmount } from "../src/application/copy";
-import { deltaTone, deltaWord, formatAmountL2, formatAmountL3, formatGrowth, formatMetric, formatRateChange, formatSignedDelta, metricDefinitions, MINUS } from "../src/application/presentation";
+import { deltaTone, deltaWord, formatAmountL2, formatGrowth, formatMetric, formatRateChange, formatSignedDelta, metricDefinitions, MINUS } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { ChannelWideTable } from "../src/components/channel-table";
 import { Overview } from "../src/components/overview";
 import { toneClass } from "../src/components/top-three";
 import { compareMoney } from "../src/domain/metrics";
 import { validateDataset } from "../src/domain/validation";
-import { AMOUNT_FIELDS } from "../src/domain/types";
 import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
 import { byTestId, escapeAttr, textOf } from "./helpers/markup";
@@ -92,7 +91,7 @@ describe("V3-2b overview KPI band uses L1 (萬／億, U+2212, growth only when p
   });
 });
 
-describe("V3-2b overview tables: period totals L2, bridge L3 with rounding note", () => {
+describe("V3-2b overview tables: period totals L2; channel mix L2 (bridge L3 moved to the V3-4b B1 component)", () => {
   it("期間合計與日均 uses integer yuan (L2) for totals, daily averages and daily deltas", async () => {
     const snap = await snapshot();
     const table = section(render(snap), 'data-testid="period-comparison"', "</details>");
@@ -104,22 +103,25 @@ describe("V3-2b overview tables: period totals L2, bridge L3 with rounding note"
     }
   });
 
-  it("bridge summary, total and table are L3 to cents; the table ends with the rounding note", async () => {
-    const snap = await snapshot();
-    const bridge = section(render(snap), 'aria-labelledby="bridge-title"');
-    expect(bridge).toContain(`>${formatAmountL3(snap.report.previous.metrics.contribution_after_marketing.value)}</button>`);
-    expect(bridge).toContain(`>${formatAmountL3(snap.report.current.metrics.contribution_after_marketing.value)}</button>`);
-    expect(bridge).toContain(`<button class="number-link negative">${formatSignedDelta("-315.00", "L3")}</button>`);
-    for (const field of AMOUNT_FIELDS) expect(bridge, field).toContain(`>${formatSignedDelta(snap.report.bridge.components[field].value, "L3")}</button>`);
-    expect(bridge).toContain(`<tfoot><tr><td colSpan="4" class="note">${labels.format.roundingNote}</td></tr></tfoot>`);
-  });
+  // V3-4b：貢獻變化拆解（橋接摘要、總差額與橋接表 L3）的 v2 markup 已刪除；新版瀑布＋橋接表＋平衡檢核由代理 B1 的元件負責（到分的斷言在 B1 的測試），
+  // 合併時由主控插入 overview.tsx 的 V3-4b 錨點，這裡不再斷言 bridge 區塊。
 
-  it("channel mix panel: unit written once, per-channel amounts L2", async () => {
+  it("channel mix panel (V3-4b ChartFrame): unit written once in the compact table header, per-channel amounts L2 in the table and the data alternative", async () => {
     const snap = await snapshot();
     const panel = section(render(snap), 'aria-labelledby="channel-title"');
-    expect(panel).toContain(`<span class="unit">${labels.ui.overview.kpiHint}</span>`);
+    const copy = labels.overview.channelsV3;
+    // 單位只在緊湊表表頭寫一次（「本期（元）」）；KPI 帶右上的單位說明不重複出現在本區塊。
+    expect(panel.split(copy.table.current)).toHaveLength(2);
+    expect(panel).toContain(`<th scope="col" class="num">${copy.table.current}</th>`);
+    expect(panel).not.toContain(labels.ui.overview.kpiHint);
     expect(panel).not.toContain("TWD");
-    for (const [channel, row] of Object.entries(snap.report.current.channels)) expect(panel, channel).toContain(`>${formatAmountL2(row.metrics.contribution_after_marketing.value)}</button>`);
+    const kv = panel.slice(panel.indexOf('<table class="kv channel-kv"'), panel.indexOf("</table>", panel.indexOf('<table class="kv channel-kv"')));
+    for (const [channel, row] of Object.entries(snap.report.current.channels)) {
+      const amount = formatAmountL2(row.metrics.contribution_after_marketing.value);
+      expect(kv, channel).toContain(`>${amount}</button>`);
+      expect(panel.slice(panel.indexOf('class="data-alternative"')), channel).toContain(`>${amount}</button>`);
+    }
+    expect(text(kv)).not.toMatch(/-\d/);
   });
 });
 

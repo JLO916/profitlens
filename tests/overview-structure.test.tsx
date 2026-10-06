@@ -55,15 +55,19 @@ function render(options: { periodOpen?: boolean; withTargets?: boolean; snapshot
 }
 const link = (aria: string, shown: string) => `<button type="button" class="number-link" aria-label="${escapeAttr(aria)}">${shown}</button>`;
 
-describe("V3-4a 區塊順序（§7.1；圖表區塊維持 v2 版面）", () => {
-  it("一句話 → KPI 帶 → 本期三件事 → 每週趨勢 → 貢獻變化拆解 → 其他常用指標 → 進階", () => {
+describe("V3-4a／V3-4b 區塊順序（§7.1）", () => {
+  // V3-4b：區塊 5「貢獻變化拆解」（#bridge-title）與區塊 6「本期利潤結構」由代理 B1 的元件負責，合併時由主控插在三件事與 .pair 之間（overview.tsx 的 V3-4b 錨點註解），
+  // 這兩個區塊的順序斷言隨 B1 元件一起補回；這裡只斷言 B2 範圍：三件事之後是並排的趨勢與各通路，再來是其他常用指標與進階。
+  it("一句話 → KPI 帶 → 本期三件事 → 並排（每週趨勢、各通路）→ 其他常用指標 → 進階", () => {
     const html = render();
-    const markers = ['data-testid="weekly-snapshot"', 'data-testid="kpi-band"', 'data-testid="top-three"', 'aria-labelledby="trend-title"', 'aria-labelledby="bridge-title"', 'data-testid="assist-kpis"', 'data-testid="overview-advanced"'];
+    const markers = ['data-testid="weekly-snapshot"', 'data-testid="kpi-band"', 'data-testid="top-three"', '<div class="pair">', 'aria-labelledby="trend-title"', 'aria-labelledby="channel-title"', 'data-testid="assist-kpis"', 'data-testid="overview-advanced"'];
     const positions = markers.map(marker => html.indexOf(marker));
     for (const [index, position] of positions.entries()) expect(position, markers[index]).toBeGreaterThan(-1);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
     // v2 的五張卡、七格與 kpiHint 說明列都已移除。
     for (const old of ['class="kpi-grid"', 'class="kpi-card', 'class="assist-row"', 'class="assist-card', 'class="kpi-change', 'class="change-rate"', 'class="section-heading compact"']) expect(html, old).not.toContain(old);
+    // V3-4b：v2 圖表區的 eyebrow、圓點圖例、analysis-grid、通路摘要卡與趨勢面板都已移除（橋接的 v2 markup 一併刪除，新版由 B1 元件負責）。
+    for (const old of ['class="eyebrow"', 'legend-dot', 'class="chart-legend"', 'class="analysis-grid"', 'class="channel-summaries"', 'trend-panel', 'class="bridge-summary"', 'bridge-chart']) expect(html, old).not.toContain(old);
   });
 
   it("KPI 帶之前只有兩個互動元素：複製週會摘要與會議入口（沒有連結，剪貼簿對話框在 SSR 不出現）", () => {
