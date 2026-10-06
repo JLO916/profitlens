@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { fill, labels } from "@/i18n";
 import { diagnosisGroups } from "@/application/diagnosis-group";
+import { diagnosisCounts } from "../diagnosis-list";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { DataStatus, type DataStatusProps } from "./data-status";
 import { ShellIcon } from "./shell-icon";
@@ -48,7 +49,8 @@ const navLabel = (id: ShellPanel) => labels.nav[id].label;
  */
 export function ShellFrame({ panel, showValidation, onNavigate, dataStatus, ai, aiContainerRef, aiButtonRef, onBasis, storage, exportMenu, badges }: ShellFrameProps) {
   const [moreOpen, setMoreOpen] = useState(false);
-  const unfavorable = useMemo(() => badges.snapshot ? diagnosisGroups(badges.snapshot).groups.filter(group => !group.missing).length : 0, [badges.snapshot]);
+  // V3-5：與健檢頁標題列的計數徽章同一個口徑（alertStatus 的不利色調），不再把所有非資料缺漏的群組都算成不利。
+  const unfavorable = useMemo(() => badges.snapshot ? diagnosisCounts(diagnosisGroups(badges.snapshot).groups).unfavorable : 0, [badges.snapshot]);
   const moreTrigger = useRef<HTMLButtonElement | null>(null);
   const topbarMoreRef = useRef<HTMLButtonElement>(null);
   const tabMoreRef = useRef<HTMLButtonElement>(null);

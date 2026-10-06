@@ -89,7 +89,12 @@ function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption }: Omit
   const alias = demoAlias(summary.dataset_id);
   const rows = sortChannelRows(summary.channels, sort);
   const toggle = (key: ChannelSortKey) => setSort(current => current.key === key ? { key, direction: current.direction === "ascending" ? "descending" : "ascending" } : { key, direction: "ascending" });
-  const amount = (evidence: SummaryEvidence, signed: boolean) => <button type="button" className="number-link" onClick={() => onEvidence(evidence)} aria-label={evidence.title}>{evidence.metric.value === null ? labels.status.missing : signed ? formatSignedDelta(evidence.metric.value, "L2") : formatAmountL2(evidence.metric.value)}</button>;
+  // PRD §7 共通規則的可及名稱句型「{通路} {指標} {值} 元，看明細」（labels.overview.channelsV3.amountAria），取代 manager-summary 的「一頁摘要 · …」標題。
+  const amount = (evidence: SummaryEvidence, signed: boolean, channel: string, label: string) => {
+    const text = evidence.metric.value === null ? labels.status.missing : signed ? formatSignedDelta(evidence.metric.value, "L2") : formatAmountL2(evidence.metric.value);
+    const aria = evidence.metric.value === null ? fill(labels.overview.channelsV3.marginAria, { channel, metric: label, value: text }) : fill(labels.overview.channelsV3.amountAria, { channel, metric: label, value: text });
+    return <button type="button" className="number-link" onClick={() => onEvidence(evidence)} aria-label={aria}>{text}</button>;
+  };
   const header = (name: GroupName, period: Period) => {
     const key = sortKeyOf(name, period);
     const active = key !== null && sort.key === key;
@@ -116,7 +121,7 @@ function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption }: Omit
             const value = metric.evidence[period].metric.value;
             const tone = period !== "change" ? "" : value === null ? " neutral" : ` ${toneClass(deltaTone(name, value, "L2"))}`;
             const listRole = period === "previous" ? "secondary" : name === "contribution_after_marketing" ? "labeled" : "secondary";
-            return <td key={`${name}-${period}`} role="cell" className={`num${period === "previous" ? " prev" : ""}${tone}`} data-label={columnLabel(name, period, true)} data-list-role={listRole}>{amount(metric.evidence[period], period === "change")}</td>;
+            return <td key={`${name}-${period}`} role="cell" className={`num${period === "previous" ? " prev" : ""}${tone}`} data-label={columnLabel(name, period, true)} data-list-role={listRole}>{amount(metric.evidence[period], period === "change", channelLabel(row.channel, alias), columnLabel(name, period, false))}</td>;
           }))}
           <td role="cell" className="note-cell" data-label={tableV3.note} data-list-role="secondary">{turned === labels.format.turnedLoss && <span className="ui-lozenge" data-tone="unfavorable">{labels.overview.channelsV3.turnedNegative}</span>}{turned === labels.format.turnedPositive && <span className="ui-lozenge">{labels.overview.channelsV3.turnedPositive}</span>}{group && <a className="note-link" href={`#diagnosis-row-${group.rule}`} onClick={event => jumpToRow(event, group.rule)}>{group.headline}</a>}</td>
         </tr>;
