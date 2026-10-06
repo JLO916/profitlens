@@ -9,9 +9,11 @@ import { deleteLocalWorkspace, hasLocalWorkspace, loadLocalWorkspace, saveLocalW
 import { AUTO_SAVE_DELAY_MS, createAutoSaver, formatSavedDateTime, formatSavedTime, type AutoSaver } from "@/application/auto-save";
 import { channelsLabel, demoAlias } from "@/application/copy";
 import { fill, labels } from "@/i18n";
+import { ShellIcon } from "./shell/shell-icon";
 
 const copy = labels.ui.workspaceStorage;
 const auto = labels.autoSave;
+const groupCopy = labels.shell.topbarV3.storageGroups;
 
 const subscribeNever = () => () => undefined;
 /**
@@ -31,7 +33,7 @@ type ReplaceGate = "open" | "checking" | "confirm";
  * after the user agreed in the first-use prompt or ticked the consent box. Restore still needs preview → confirm.
  * 本機保存同意（consent，Dashboard 保存）與自動保存開關（autoSaveEnabled，本元件）分開：同意時預設開啟自動保存，關閉後維持手動。
  */
-export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, onDeleted, consent, onConsentChange }: {
+export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, onDeleted, consent, onConsentChange, onClear }: {
   source: WorkspaceBackupSource | null;
   version: number;
   dirty: boolean;
@@ -41,6 +43,8 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   /** R3：本機保存同意由 Dashboard 保存，匯入精靈的對照記憶也依此決定是否寫進 IndexedDB。 */
   consent: boolean;
   onConsentChange: (value: boolean) => void;
+  /** V3-3（§6.3 #10）：v2 頂欄的「清空目前資料」搬到本選單的危險區；流程不變（Dashboard 的取代確認 dialog）。 */
+  onClear?: () => void;
 }) {
   const setConsent = onConsentChange;
   const [busy, setBusy] = useState(false);
@@ -213,41 +217,53 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   const autoStatus = !consent || !autoSaveEnabled ? auto.statusOff : gate === "confirm" ? auto.statusPendingReplace : auto.statusOn;
   return <>
   <details className="topbar-menu storage-menu workspace-storage" data-testid="workspace-storage">
-    <summary ref={summaryRef}>{labels.buttons.save} <span className={`tag ${source && dirty ? "unsaved" : ""}`}>{savedTag}</span></summary>
-    <div className="menu-panel">
-    <h3>{labels.buttons.save}</h3>
-    <p>{copy.intro}</p>
-    <details className="note"><summary>{labels.sections.technicalDetails}</summary><p>{copy.backupContents}</p></details>
-    <div className="button-row">
-      <button className="button quiet" disabled={!source || busy} onClick={() => void save(false)}>{labels.buttons.downloadBackup}</button>
-      <label className="backup-file-label">{copy.selectBackupFile}<input aria-label={copy.selectBackupFile} type="file" accept=".json,application/json" disabled={busy} onChange={event => void selectBackup(event)} /></label>
-      <button className="button quiet" disabled={busy} onClick={() => void loadLocal()}>{labels.buttons.restorePreview}</button>
-    </div>
-    <label className="local-save-consent"><input type="checkbox" checked={consent} onChange={event => changeConsent(event.target.checked)} disabled={busy} />{copy.consent}</label>
-    <p className="note consent-note">{auto.consentNote}</p>
-    {consent && <label className="local-save-consent autosave-toggle"><input type="checkbox" data-testid="autosave-toggle" checked={autoSaveEnabled} onChange={event => setAutoSaveEnabled(event.target.checked)} disabled={busy} />{auto.toggle}</label>}
-    {/* 這台電腦已有副本：確認前不自動覆寫。容器常駐，警告出現時由 polite live region 宣告。 */}
-    <div className="autosave-replace" aria-live="polite">{replacePending && <>
-      <p className="note" data-testid="autosave-replace-warning">{menuWarning}</p>
-      <button type="button" className="button primary" data-testid="autosave-confirm-replace" disabled={busy} onClick={confirmReplace}>{auto.confirmReplace}</button>
-    </>}</div>
-    <p className="note autosave-status" data-testid="autosave-status">{autoStatus}{consent && lastSaved && <span> · {fill(auto.lastSaved, { time: formatSavedTime(lastSaved.at) })}</span>}</p>
-    <div className="button-row">
-      <button className="button primary" disabled={!source || !consent || busy} onClick={() => void save(true)}>{labels.buttons.saveLocal}</button>
-      <button className="button quiet" disabled={busy} onClick={() => void removeLocal()}>{labels.buttons.deleteLocal}</button>
-      {downloadVersion !== null && <button className="button quiet" onClick={() => { onSaved(downloadVersion); setDownloadVersion(null); setNotice(copy.downloadConfirmedNotice); }}>{copy.confirmDownloaded}</button>}
-    </div>
+    <summary ref={summaryRef} className="topbar-summary">{labels.buttons.save}<ShellIcon name="chevron" size={16} className="chevron" /><span className={`tag save-state ${source && dirty ? "unsaved" : ""}`}>{savedTag}</span></summary>
+    {/* V3-3（§6.3 #14）：依序分三段——本機保存／備份檔／危險區；控制、testid 與行為都和 v2 相同，只重排。 */}
+    <div className="menu-panel ui-menu storage-panel">
+    <p className="storage-intro">{copy.intro}</p>
+    <section className="storage-group" aria-labelledby={`${promptId}-local`}>
+      <h3 className="ui-menu-group" id={`${promptId}-local`}>{groupCopy.local}</h3>
+      <label className="local-save-consent"><input type="checkbox" checked={consent} onChange={event => changeConsent(event.target.checked)} disabled={busy} />{copy.consent}</label>
+      <p className="note consent-note">{auto.consentNote}</p>
+      {consent && <label className="local-save-consent autosave-toggle"><input type="checkbox" data-testid="autosave-toggle" checked={autoSaveEnabled} onChange={event => setAutoSaveEnabled(event.target.checked)} disabled={busy} />{auto.toggle}</label>}
+      {/* 這台電腦已有副本：確認前不自動覆寫。容器常駐，警告出現時由 polite live region 宣告。 */}
+      <div className="autosave-replace" aria-live="polite">{replacePending && <>
+        <p className="note" data-testid="autosave-replace-warning">{menuWarning}</p>
+        <button type="button" className="button primary" data-testid="autosave-confirm-replace" disabled={busy} onClick={confirmReplace}>{auto.confirmReplace}</button>
+      </>}</div>
+      <p className="note autosave-status" data-testid="autosave-status">{autoStatus}{consent && lastSaved && <span> · {fill(auto.lastSaved, { time: formatSavedTime(lastSaved.at) })}</span>}</p>
+      <div className="button-row">
+        <button className="button primary" disabled={!source || !consent || busy} onClick={() => void save(true)}>{labels.buttons.saveLocal}</button>
+        <button className="button quiet" disabled={busy} onClick={() => void loadLocal()}>{labels.buttons.restorePreview}</button>
+      </div>
+    </section>
+    <section className="storage-group" aria-labelledby={`${promptId}-backup`}>
+      <h3 className="ui-menu-group" id={`${promptId}-backup`}>{groupCopy.backup}</h3>
+      <div className="button-row">
+        <button className="button quiet" disabled={!source || busy} onClick={() => void save(false)}>{labels.buttons.downloadBackup}</button>
+        <label className="backup-file-label">{copy.selectBackupFile}<input aria-label={copy.selectBackupFile} type="file" accept=".json,application/json" disabled={busy} onChange={event => void selectBackup(event)} /></label>
+        {downloadVersion !== null && <button className="button quiet" onClick={() => { onSaved(downloadVersion); setDownloadVersion(null); setNotice(copy.downloadConfirmedNotice); }}>{copy.confirmDownloaded}</button>}
+      </div>
+      {candidate && <section className="restore-preview" aria-label={copy.restorePreviewAria}>
+        <h3>{copy.restoreHeading}</h3>
+        <p>{fill(copy.restoreSummary, { datasetId: candidate.dataset.manifest.dataset_id, asOf: candidate.snapshot.data_as_of, channels: channelsLabel(candidate.snapshot.report.scope.channels, alias) })}</p>
+        <p>{fill(copy.restorePeriods, { prevStart: candidate.snapshot.report.previous.period.start, prevEnd: candidate.snapshot.report.previous.period.end, curStart: candidate.snapshot.report.current.period.start, curEnd: candidate.snapshot.report.current.period.end })}</p>
+        <p>{fill(copy.restoreCounts, { plans: candidate.scenario_workspace.contexts.reduce((sum, context) => sum + context.plans.length, 0), actions: candidate.action_workspace.items.length })}</p>
+        {dirty && <p className="alert partial">{copy.unsavedWarning}</p>}
+        <div className="button-row"><button className="button primary" onClick={() => { onRestore(candidate, () => { setConsent(false); openGate(); setCandidate(null); setDownloadVersion(null); setNotice(copy.restoredNotice); }); }}>{copy.applyRestore}</button><button className="button quiet" onClick={() => setCandidate(null)}>{labels.buttons.cancel}</button></div>
+      </section>}
+      <details className="note"><summary>{labels.sections.technicalDetails}</summary><p>{copy.backupContents}</p></details>
+    </section>
     {busy && <p aria-live="polite">{copy.busy}</p>}
     {notice && <p className="note" data-testid="storage-notice" aria-live="polite">{notice}</p>}
     {error && <p role="alert" className="alert error">{error}</p>}
-    {candidate && <section className="restore-preview" aria-label={copy.restorePreviewAria}>
-      <h3>{copy.restoreHeading}</h3>
-      <p>{fill(copy.restoreSummary, { datasetId: candidate.dataset.manifest.dataset_id, asOf: candidate.snapshot.data_as_of, channels: channelsLabel(candidate.snapshot.report.scope.channels, alias) })}</p>
-      <p>{fill(copy.restorePeriods, { prevStart: candidate.snapshot.report.previous.period.start, prevEnd: candidate.snapshot.report.previous.period.end, curStart: candidate.snapshot.report.current.period.start, curEnd: candidate.snapshot.report.current.period.end })}</p>
-      <p>{fill(copy.restoreCounts, { plans: candidate.scenario_workspace.contexts.reduce((sum, context) => sum + context.plans.length, 0), actions: candidate.action_workspace.items.length })}</p>
-      {dirty && <p className="alert partial">{copy.unsavedWarning}</p>}
-      <div className="button-row"><button className="button primary" onClick={() => { onRestore(candidate, () => { setConsent(false); openGate(); setCandidate(null); setDownloadVersion(null); setNotice(copy.restoredNotice); }); }}>{copy.applyRestore}</button><button className="button quiet" onClick={() => setCandidate(null)}>{labels.buttons.cancel}</button></div>
-    </section>}
+    <section className="storage-group storage-danger" aria-labelledby={`${promptId}-danger`}>
+      <h3 className="ui-menu-group" id={`${promptId}-danger`}>{groupCopy.danger}</h3>
+      <div className="button-row">
+        <button className="button quiet danger" disabled={busy} onClick={() => void removeLocal()}>{labels.buttons.deleteLocal}</button>
+        {onClear && <button type="button" className="button quiet danger clear-button" onClick={onClear}>{labels.buttons.clear}</button>}
+      </div>
+    </section>
     </div>
   </details>
   {/* R6-6 首次同意對話框：非 modal（不蓋主內容、不鎖焦點、不自動 focus），在 details 外面，收合時仍看得到。

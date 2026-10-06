@@ -19,6 +19,7 @@ import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
 import type { MappingMemoryEntry } from "@/application/mapping-memory";
 import { Dashboard } from "@/components/dashboard";
+import { PageHeader } from "@/components/shell/page-chrome";
 import { Overview } from "@/components/overview";
 import { Diagnosis, DataWorkspace, Products } from "@/components/workspace-panels";
 import { AiPanel } from "@/components/ai-panel";
@@ -78,6 +79,8 @@ async function scenarios(): Promise<Record<string, string>> {
 
   // 殼層：空工作區（Dashboard 是 client 元件，載入資料要經過 fetch／effect，載入後的殼層由 Playwright 收集）。
   render("shell-empty", createElement(Dashboard, { analytics: true }));
+  // V3-3（§6.3 #23）：頁首「匯入資料」（page-import）只留在資料來源頁；Dashboard 的 SSR 停在總覽，這裡直接渲染資料來源頁的頁首。
+  render("shell-data-header", createElement(PageHeader, { title: "", description: "", isData: true, showLoadDemo: true, onLoadDemo: noop, onImport: noop }));
 
   const demo = await source("demo");
   const golden = await source("golden");

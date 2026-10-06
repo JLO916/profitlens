@@ -18,6 +18,12 @@ const REMOVED = new Set(REMOVED_ROWS.map(([old]) => old));
 /** 快照扣掉已刪除的鍵：V3-2c 之後 labels 應該剛好有這些舊路徑。 */
 const KEPT: Record<string, string> = Object.fromEntries(Object.entries(SNAPSHOT).filter(([path]) => !REMOVED.has(path)));
 const GROUPS: readonly string[] = LABEL_GROUPS;
+/**
+ * V3-3 起新增的字串放在 shell 的錨點物件（A1：topbarV3、sidebarV3、dataStatus、mobileNav、footerV3；A2：periodBarV3、banner），
+ * 它們是 v3 新字，沒有 v2 舊路徑，也不在 V3-2b 快照裡；比對快照時先把這些錨點清空。
+ */
+const V3_ANCHORS = ["topbarV3", "sidebarV3", "dataStatus", "mobileNav", "footerV3", "periodBarV3", "banner"] as const;
+const withoutV3Anchors = (): typeof labels => ({ ...labels, shell: { ...labels.shell, ...Object.fromEntries(V3_ANCHORS.map(key => [key, {}])) } }) as typeof labels;
 const LEGACY: readonly string[] = LEGACY_SECTIONS;
 
 const get = (path: string): unknown => path.split(".").reduce<unknown>((node, key) => (node !== null && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined), labels);
@@ -40,7 +46,7 @@ describe("V3-2c labels 結構重整", () => {
   });
 
   it("(i) 新分組的字串經 legacyAliases 反推回舊路徑，與快照逐字相同（一對一，沒有多也沒有少）", () => {
-    const { view } = labelScope(labels, labelModule);
+    const { view } = labelScope(withoutV3Anchors(), labelModule);
     const inverse = new Map<string, string[]>();
     for (const [from, to] of Object.entries(legacyAliases)) inverse.set(to, [...(inverse.get(to) ?? []), from]);
     const rebuilt: Record<string, string> = {};
@@ -106,9 +112,9 @@ describe("V3-2c labels 結構重整", () => {
   });
 
   it("掃描器每個字串只算一次，copy-scan 指標與 V3-2b 快照（扣掉已刪除的鍵）的掃描逐項相同", () => {
-    const { view } = labelScope(labels, labelModule);
+    const { view } = labelScope(withoutV3Anchors(), labelModule);
     expect(labelEntries(view)).toHaveLength(Object.keys(KEPT).length);
-    expect(scanLabels(labels, labelModule).metrics).toEqual(scanLabels(unflatten(KEPT)).metrics);
+    expect(scanLabels(withoutV3Anchors(), labelModule).metrics).toEqual(scanLabels(unflatten(KEPT)).metrics);
   });
 
   it("規則卡 { headline, explain: { cause, nextStep }, caution }、指標 { headline, short, explain, technical }，舊鍵指向同一個字串", () => {

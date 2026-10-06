@@ -1,0 +1,21 @@
+// V3-3 A1 殼層用的線框 icon（inline SVG，不加套件）。只畫圖形，一律 aria-hidden；語意由旁邊的文字或按鈕的 aria-label 承擔。
+const PATHS: Record<string, string> = {
+  overview: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
+  diagnosis: "M4 20V10 M10 20V4 M16 20v-7 M21 20H3",
+  products: "M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z M3 7.5 12 12l9-4.5 M12 12v9",
+  scenarios: "M3 3v18h18 M7 15l4-4 3 3 5-6",
+  actions: "M9 6h11 M9 12h11 M9 18h11 M4 6h.01 M4 12h.01 M4 18h.01",
+  meeting: "M3 5h18v16H3z M3 10h18 M8 3v4 M16 3v4",
+  data: "M3 4h18v16H3z M3 10h18 M9 10v10",
+  validation: "M9 3h6 M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3",
+  lens: "M4 18V6h5v12 M13 18V3h6v15 M3 21h18",
+  chevron: "m6 9 6 6 6-6",
+  book: "M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z",
+  ai: "M4 6h16v12H4z M9 11h.01 M15 11h.01 M9 15h6",
+  more: "M5 12h.01 M12 12h.01 M19 12h.01",
+  import: "M12 4v11 M7 10l5 5 5-5 M5 20h14",
+};
+
+export function ShellIcon({ name, size = 20, className }: { name: keyof typeof PATHS | string; size?: number; className?: string }) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={name === "more" ? 3 : 1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={PATHS[name] ?? PATHS.data} /></svg>;
+}

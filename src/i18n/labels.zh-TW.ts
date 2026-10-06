@@ -145,10 +145,45 @@ const brandName = "EC ProfitLens";
 // ── shell：應用殼層：側欄、頂欄、期間列、狀態、共用按鈕、AI 狀態與面板、新版提示、開發者驗證
 export const shell = {
   /** V3-3 A1 anchor：頂欄、側欄、資料狀態、手機底部分頁列、頁尾（由 A1 代理填入，不改名） */
-  topbarV3: {},
-  sidebarV3: {},
-  dataStatus: {},
-  mobileNav: {},
+  topbarV3: {
+    /** 頂欄「匯出」選單（v2「下載」）；分組標題沿用 sections.downloadCurrentView／meetingSummary／downloadDecision 與 downloads.templatesHeading。 */
+    export: "匯出",
+    /** 匯入範本 3×3 表：欄頭與格內按鈕的可見字（可及名稱仍是 downloads.blankTemplate／exampleTemplate，含「下載」二字）。 */
+    templateColumns: { file: "檔案", blank: "空白範本", example: "範例檔" },
+    templateCell: "下載",
+    /** 儲存選單三段（PRD §6.3 #14）。 */
+    storageGroups: { local: "本機保存", backup: "備份檔", danger: "危險區" },
+    /** 手機（≤ 767px）收進「更多」的頂欄右側控制：AI 狀態、指標定義、儲存、匯出。 */
+    clusterAria: "AI 狀態、指標定義、儲存與匯出",
+  },
+  sidebarV3: {
+    /** D-V3-14＝A：側欄四組＋只在 #validation 出現的開發者組。 */
+    groups: { results: "看結果", causes: "找原因", decisions: "做決定", data: "管資料", developer: "開發者" },
+    unfavorableBadge: "{n} 項不利",
+    issuesBadge: "{n} 項資料問題",
+    meetingDraft: "草稿",
+  },
+  dataStatus: {
+    /** 頂欄資料狀態按鈕（§7.0）：{source} 是「示範資料／本機匯入／部分資料待補」，{date} 用主層 M/D。 */
+    button: "{source} · 資料到 {date}",
+    popoverAria: "資料狀態",
+    demoTitle: "示範資料（虛構）",
+    localTitle: "本機匯入（資料只在這個瀏覽器）",
+    dataset: "資料集",
+    dataAsOf: "資料到",
+    dataAsOfValue: "{date}（{days} 天）",
+    issues: "資料問題",
+    issuesValue: "{n} 項",
+    goToData: "前往資料來源",
+    importNew: "匯入新資料",
+  },
+  mobileNav: {
+    /** ≤ 767px 底部分頁列（M6：與側欄是不同 aria-label 的第二個 nav）。 */
+    aria: "手機導覽",
+    tabs: { overview: "總覽", diagnosis: "健檢", actions: "待辦", meeting: "會議" },
+    more: "更多",
+    moreAria: "更多頁面與工具",
+  },
   footerV3: {},
 
   /** V3-3 A2 anchor：期間列、需要處理橫幅、手機期間底部面板（由 A2 代理填入，不改名） */
