@@ -184,7 +184,6 @@ export const shell = {
     more: "更多",
     moreAria: "更多頁面與工具",
   },
-  footerV3: {},
 
   /** V3-3 A2 anchor：期間列、需要處理橫幅、手機期間底部面板（由 A2 代理填入，不改名） */
   periodBarV3: {

@@ -29,7 +29,8 @@ const guard=(p:Page)=>p.getByRole('dialog',{name:dlg.heading});
 async function golden(p:Page){await p.goto('/');await openValidation(p);await p.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true}).selectOption('golden');await p.getByRole('button',{name:labels.ui.dashboard.validation.loadButton,exact:true}).click();await expect(status(p)).toContainText(ready('golden'));await dismissSavePrompt(p);}
 /** V3-3：儲存選單（workspace-storage）經 openStorage（手機先展開頂欄「更多」）。 */
 const storage=(p:Page)=>openStorage(p);
-async function backup(p:Page){const s=await storage(p);const event=p.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
+/** V3-3：下載後收起儲存選單——768–900 寬時 .menu-panel 橫跨整個版面，開著會蓋住下方的匯入精靈。 */
+async function backup(p:Page){const s=await storage(p);const event=p.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();const text=await readFile((await(await event).path())!,'utf8');await closeStorage(p);return text;}
 /** R3: the alternative fixture + its manifest go through the four-step wizard and stop after the check (not committed), so the guard tests can cancel and retry the commit. */
 async function stageAlternative(p:Page){await openWizard(p);await setWizardFiles(p,resolve('tests/fixtures/alternative'));await setWizardManifest(p,resolve('tests/fixtures/alternative/manifest.json'));await nextFromFiles(p);await confirmMappingIfShown(p);await chooseBasis(p,'exclusive');await confirmAndCheck(p,'valid');await expect(wizardStatus(p)).toContainText(labels.importWizard.result.valid);}
 

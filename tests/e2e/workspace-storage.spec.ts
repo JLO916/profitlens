@@ -5,7 +5,7 @@ import { appendFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { acceptSavePrompt, clearWorkspace, closePeriodSheet, closeTopbarMore, dismissSavePrompt, isMobile, navigateTo, openPeriodSheet, openStorage, openTopbarMore, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptSavePrompt, clearWorkspace, closePeriodSheet, closeStorage, closeTopbarMore, dismissSavePrompt, isMobile, navigateTo, openPeriodSheet, openStorage, openTopbarMore, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R2: every visible string comes from labels; machine values (dataset ids, channel codes, amounts, testids) stay literal.
 // 長流程（兩方案＋行動＋保存／重整／恢復）在平板曾跑到 40 秒；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
@@ -272,6 +272,8 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: labels.buttons.cancel, exact: true }).click();
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
+  // 取消後儲存選單仍開著（同 v2 的選單行為）；768–900 寬時面板橫跨版面會蓋住驗證頁的「載入資料集」，先收起。
+  await closeStorage(page);
   await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
