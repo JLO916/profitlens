@@ -12,6 +12,7 @@ import { validateDataset } from "../src/domain/validation";
 import { fixture } from "./helpers/fixtures";
 import { fill, labels } from "../src/i18n";
 import { plainIssueMessage } from "../src/application/copy";
+import { formatAmountL1 } from "../src/application/presentation";
 
 async function context(name = "golden") {
   const input = fixture(name);
@@ -94,7 +95,8 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     const assumptions = JSON.parse(labels.ui.decisionWorkbench.assumptions) as string[];
     const refundAssumption = assumptions.find(text => text.includes("退貨率"));
     expect(main).toContain(labels.sections.scenarioBaseline);
-    expect(main).toContain("270.00");
+    // V3-2b：本期基準大字是 L1（golden DTC 扣廣告後貢獻 270.00 →「270 元」）。
+    expect(main).toContain(formatAmountL1("270.00"));
     // R5-3（02 §6）：固定假設改為收合的 <details data-testid="scenario-assumptions">「這個試算假設了什麼（必讀）」；九條全文仍在，點開即見。
     const start = html.indexOf('data-testid="scenario-assumptions"');
     expect(start).toBeGreaterThan(-1);

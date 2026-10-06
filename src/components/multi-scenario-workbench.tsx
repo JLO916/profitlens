@@ -4,14 +4,15 @@ import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from
 import { createSnapshot } from '@/application/workspace';
 import { createDecisionSession, decisionSignature, type DecisionWorkspaceState } from '@/application/decision';
 import { copyHistoricalScenario, ensureScenarioContext, scenarioContextDecision, scenarioContextId, scenarioSelectionRef, updateScenarioContext, type ScenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from '@/application/scenario-workspace';
-import { formatMoney } from '@/application/presentation';
+import { formatAmountL1 } from '@/application/presentation';
 import { channelLabel, channelsLabel, demoAlias } from '@/application/copy';
 import { fill, labels } from '@/i18n';
 import { DecisionWorkbench } from './decision-workbench';
 import type { EvidenceSelection } from './evidence-drawer';
 
 const copy = labels.ui.multiScenarioWorkbench;
-const planResultLine = (plan: { name: string; result?: { contribution?: string | null } | null }, text: string) => fill(text, { plan: plan.name, resultLabel: labels.scenario.resultTitle, amount: formatMoney(plan.result?.contribution ?? null) });
+// V3-2b：其他通路與歷史方案的一行結果用 L1（萬）。
+const planResultLine = (plan: { name: string; result?: { contribution?: string | null } | null }, text: string) => fill(text, { plan: plan.name, resultLabel: labels.scenario.resultTitle, amount: formatAmountL1(plan.result?.contribution ?? null) });
 const technicalPlanLine = (plans: readonly { id: string; name: string; revision: number }[]) => plans.map(plan => `${plan.name} · plan_id ${plan.id} · revision ${plan.revision}`).join('；');
 
 const form = labels.scenarioForm;

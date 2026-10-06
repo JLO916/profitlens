@@ -13,7 +13,8 @@ import { buildReviewDecisionContext, createReviewSession, rebuildReviewSnapshot,
 import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction, taipeiToday, type ActionWorkspace } from "@/application/action-workspace";
 import { exportMeetingMarkdown, finalizeMeeting, freezeMeeting, MAX_MEETING_HISTORY, removeMeeting, validateMeeting, type Meeting } from "@/application/meeting";
 import { buildManagerSummary } from "@/application/manager-summary";
-import { channelsLabel } from "@/application/copy";
+import { channelsLabel, formatHeadlineAmount } from "@/application/copy";
+import { formatAmountL1, formatAmountL2, formatGrowth, formatSignedDelta } from "@/application/presentation";
 import { exportWorkspaceBackup, restoreWorkspaceBackup } from "@/application/workspace-backup";
 import { currentViewDecisionContext, DECISION_LABEL_KEY, finalizeErrorText, MeetingEntry, MeetingHistory, MeetingPage, meetingExportInfo, meetingMarkdownFilename, reviewDatasetId, type MeetingPageProps } from "../src/components/meeting-page";
 import { PRINT_NOTES_LIMIT, PrintSummary } from "../src/components/manager-summary";
@@ -163,10 +164,11 @@ describe("R6-2 meeting page with a draft", () => {
     expect(text(basics)).toContain(fill(page.periodsLine, { previousStart: "2026-08-01", previousEnd: "2026-08-01", currentStart: "2026-08-02", currentEnd: "2026-08-02" }));
     expect(text(basics)).toContain(labels.buttons.updateMeetingSource);
     expect(basics).not.toContain('data-testid="review-view-difference"');
-    // ①②③ 由會議摘要（固定範圍）提供：淨營收 +220.00、扣廣告後貢獻 −315.00（golden 手算）。
+    // ①②③ 由會議摘要（固定範圍）提供：淨營收 +220.00、扣廣告後貢獻 −315.00（golden 手算）；V3-2b 起主層用 L1 方向詞＋成長率。
     const summary = block(html, "manager-summary");
-    expect(summary).toContain("+220.00");
-    expect(summary).toContain("-315.00");
+    const golden = expected();
+    expect(text(summary)).toContain(fill(summaryCopy.changePhraseGrowth, { word: labels.format.more, amount: formatHeadlineAmount("220.00"), growth: formatGrowth(golden.current.net_revenue, golden.previous.net_revenue, "L1")! }));
+    expect(text(summary)).toContain(fill(summaryCopy.changePhraseGrowth, { word: labels.format.earnLess, amount: formatHeadlineAmount("-315.00"), growth: formatGrowth(golden.current.contribution_after_marketing, golden.previous.contribution_after_marketing, "L1")! }));
     expect(summary).not.toContain(labels.buttons.print);
     // ⑤ 每個通路一個「選入會議的方案」；DTC 已選 p 第 1 版。
     const scenarios = block(html, "meeting-agenda-5");
@@ -234,14 +236,15 @@ describe("R6-2 comparison with the last meeting (05 §10)", () => {
     const rows = [...kpis.matchAll(/<tr><th scope="row">([\s\S]*?)<\/th>([\s\S]*?)<\/tr>/g)].map(match => [text(match[1]), ...[...match[2].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(cell => text(cell[1]))]);
     expect(golden.current.net_revenue).toBe("2470.00");
     expect(golden.current.contribution_after_marketing).toBe("255.00");
+    // V3-2b：議程表格是 L2（整數元，表頭標「（元）」）；顏色依有利／不利。
     expect(rows).toEqual([
-      [labels.metrics.net_revenue.label, "2,470.00", "2,470.00", "0.00"],
-      [labels.metrics.contribution_after_marketing.label, "300.00", "255.00", "-45.00"],
+      [labels.metrics.net_revenue.label, formatAmountL2("2470.00"), formatAmountL2("2470.00"), formatSignedDelta("0.00", "L2")],
+      [labels.metrics.contribution_after_marketing.label, formatAmountL2("300.00"), formatAmountL2("255.00"), formatSignedDelta("-45.00", "L2")],
     ]);
-    expect(kpis).toContain('<td class="negative">-45.00</td>');
+    expect(kpis).toContain(`<td class="negative">${formatSignedDelta("-45.00", "L2")}</td>`);
     expect(text(compare)).toContain(record.lastPriorities);
     expect(text(compare)).toContain(record.currentPriorities);
-    expect(text(compare)).toContain(fill(page.priorityRow, { n: 1, headline: last.agenda.priorities[0].headline, scope: labels.sections.total, impact: labels.sections.impact, amount: "-315.00" }));
+    expect(text(compare)).toContain(fill(page.priorityRow, { n: 1, headline: last.agenda.priorities[0].headline, scope: labels.sections.total, impact: labels.sections.impact, amount: formatSignedDelta("-315.00", "L1") }));
     // ④ 上次決議追蹤：上次「採用」（已確認）；a1 上次與目前都是進行中，更新日 2026-10-01。
     const followUp = block(html, "meeting-followup");
     expect(text(followUp)).toContain(fill(record.decisionConfirmed, { decision: labels.meeting.decisions.adopted, revision: state.review.revision }));
@@ -251,7 +254,7 @@ describe("R6-2 comparison with the last meeting (05 §10)", () => {
     const history = block(html, "meeting-history");
     expect(history.match(/data-testid="meeting-history-item"/g)).toHaveLength(1);
     expect(text(history)).toContain(fill(page.historyItem, { name: "十月例會", date: "2026-10-03", decision: fill(record.decisionConfirmed, { decision: labels.meeting.decisions.adopted, revision: state.review.revision }) }));
-    expect(text(history)).toContain(fill(page.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.label, previous: "570.00", current: "300.00", change: "-270.00" }));
+    expect(text(history)).toContain(fill(page.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.label, previous: formatAmountL1("570.00"), current: formatAmountL1("300.00"), change: formatSignedDelta("-270.00", "L1") }));
     expect(buttons(history)).toEqual([labels.buttons.exportMarkdown]);
   });
 
@@ -379,7 +382,7 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
     expect(results).toContain('data-status="current"');
     // DTC 方案 p（物流費 −10%）：現況 270.00 → 試算後 284.00，差額 +14.00（golden 手算）。
     expect(golden.scenario_dtc_fulfillment_reduction.expected_contribution).toBe("284.00");
-    expect(text(results)).toContain(fill(summaryCopy.scenarioLine, { name: "履約", scope: DTC_SCOPE, baseline: "270.00", contribution: "284.00", delta: "+14.00" }));
+    expect(text(results)).toContain(fill(summaryCopy.scenarioLine, { name: "履約", scope: DTC_SCOPE, baseline: formatAmountL1("270.00"), contribution: formatAmountL1("284.00"), delta: formatSignedDelta("14.00", "L1") }));
     expect(text(results)).toContain(FULFILLMENT_10);
     expect(text(results)).not.toContain(copy.staleScenarios);
     // select 在結果之前。
@@ -465,8 +468,8 @@ describe("R6-F2 meeting history reads the record itself", () => {
     const rows = [...kpis.matchAll(/<tr><th scope="row">([\s\S]*?)<\/th>([\s\S]*?)<\/tr>/g)].map(match => [text(match[1]), ...[...match[2].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(cell => text(cell[1]))]);
     // 同一份資料同範圍：上次本期 = 本次本期（2,470.00；255.00），差額 0.00。
     expect(rows).toEqual([
-      [labels.metrics.net_revenue.label, "2,470.00", "2,470.00", "0.00"],
-      [labels.metrics.contribution_after_marketing.label, "255.00", "255.00", "0.00"],
+      [labels.metrics.net_revenue.label, formatAmountL2("2470.00"), formatAmountL2("2470.00"), formatSignedDelta("0.00", "L2")],
+      [labels.metrics.contribution_after_marketing.label, formatAmountL2("255.00"), formatAmountL2("255.00"), formatSignedDelta("0.00", "L2")],
     ]);
     expect(text(followUp)).toContain(`${page.lastDecision}：${fill(record.decisionConfirmed, { decision: labels.meeting.decisions.adopted, revision: state.review.revision })}`);
     expect(text(followUp)).toContain(`${labels.actions.statuses.in_progress}${labels.actions.statuses.in_progress}2026-10-01`);
@@ -675,7 +678,7 @@ describe("R6-F2 print: one-page summary plus appendix (A4)", () => {
     const lines = [...firstPage.matchAll(/<div data-testid="print-scenario-line">([\s\S]*?)<\/div>/g)].map(match => match[1]);
     expect(lines).toHaveLength(2);
     for (const line of lines) expect(line.match(/<p>/g)).toHaveLength(1);
-    expect(text(lines[0])).toBe(fill(summaryCopy.printScenarioLine, { name: "官網履約", scope: DTC_SCOPE, baseline: "270.00", contribution: "284.00", delta: "+14.00" }));
+    expect(text(lines[0])).toBe(fill(summaryCopy.printScenarioLine, { name: "官網履約", scope: DTC_SCOPE, baseline: formatAmountL1("270.00"), contribution: formatAmountL1("284.00"), delta: formatSignedDelta("14.00", "L1") }));
     expect(firstPage).not.toContain(FULFILLMENT_10);
     expect(firstPage).not.toContain(fill(labels.ui.reviewSession.assumptionVolume, { value: "0" }));
     // 附錄：兩個方案的完整假設。

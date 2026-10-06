@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import Decimal from "decimal.js";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
-import { evidenceRows, formatMoney, formatRate, metricDefinitions } from "@/application/presentation";
+import { emptyKindOf, evidenceRows, formatAmountL1, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatPointsValue, formatRateLayer, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import { rateToPercent, type RawValuesByFile, type TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS } from "@/domain/types";
@@ -57,6 +56,14 @@ const RATIOS: Partial<Record<MetricName, [MetricName, MetricName]>> = {
   gross_margin: ["gross_profit", "net_revenue"], contribution_margin: ["contribution_after_marketing", "net_revenue"], discount_rate: ["discounts", "gross_sales"],
   mer: ["net_revenue", "ad_spend"], fulfillment_burden: ["fulfillment_costs", "net_revenue"], marketing_burden: ["ad_spend", "net_revenue"],
 };
+
+/** 原始明細裡要依 L3 取位的欄位（金額到分、件數加千分位）；其他欄位（日期、通路、幣別）原樣顯示。 */
+const NUMERIC_TEXT = /^[+-]?\d+(?:\.\d+)?$/;
+function sourceValue(field: string, value: string): string {
+  if (!NUMERIC_TEXT.test(value.trim())) return value;
+  if ((AMOUNT_FIELDS as readonly string[]).includes(field)) return formatAmountL3(value);
+  return field === "units_sold" ? formatCount(value, "L3") : value;
+}
 
 /** 找出與這筆證據同期間、同通路範圍的合計指標；找不到（例如商品或跨期差額）就不畫階梯。 */
 function ladderMetrics(snapshot: EvidenceDrawerProps["snapshot"], evidence: EvidenceSelection): Metrics | null {
@@ -116,16 +123,24 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const ladder = ladderMetrics(snapshot, evidence);
   const ratio = RATIOS[evidence.name];
   const ladderRows = ladder && !ratio ? LADDER.slice(0, LADDER.findIndex(row => row.name === evidence.name) + 1) : [];
-  const displayValue = (metric: Metric) => {
-    if (evidence.unitOverride === "count") return metric.value === null ? evidence.nullDisplay ?? labels.status.missing : fill(labels.assist.units.count, { value: metric.value });
-    if (evidence.unitOverride === "money_per_unit") return metric.value === null ? evidence.nullDisplay ?? labels.status.missing : fill(labels.assist.units.perUnit, { value: formatMoney(metric.value) });
-    if (evidence.unitOverride === "percentage-point") return metric.value === null ? labels.status.missing : `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} ${copy.percentagePoint}`;
-    if (definition.unit === "money") return metric.value === null ? labels.status.missing : fill(labels.ui.evidenceDrawer.money, { amount: formatMoney(metric.value) });
-    if (definition.unit === "percent") return formatRate(metric.value);
-    // This is display rounding only; the exact domain ratio is preserved in technical details.
-    return metric.value === null ? labels.status.missing : `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} ${copy.times}`;
+  // V3-2b（§7.8）：標題下的大數字是 L1（萬、一位小數），下一行永遠顯示到分的精確值（L3）；抽屜內其餘數字（階梯、組成、原始明細）一律 L3。
+  // 差額類證據（有上期／本期組成或百分點）帶正負號。只做顯示取位，精確的 domain 值仍在技術細節。
+  const signed = Boolean(evidence.components?.length);
+  const displayValue = (metric: Metric, layer: Layer = "L3") => {
+    if (metric.value === null) return evidence.nullDisplay ?? formatEmpty(emptyKindOf(metric.reason_codes), layer === "L3" ? { layer, reasonCodes: metric.reason_codes } : {});
+    if (evidence.unitOverride === "count") return formatCount(metric.value, "L1");
+    if (evidence.unitOverride === "money_per_unit") return formatPerUnit(metric.value, layer === "L1" ? "L1" : "L3");
+    if (evidence.unitOverride === "percentage-point") return formatPointsValue(metric.value, layer);
+    if (definition.unit === "money") {
+      if (layer === "L1") return signed ? formatSignedDelta(metric.value, "L1") : formatAmountL1(metric.value);
+      return fill(labels.units.yuan, { value: signed ? formatSignedDelta(metric.value, "L3") : formatAmountL3(metric.value) });
+    }
+    if (definition.unit === "percent") return formatRateLayer(metric.value, layer);
+    return formatMultiple(metric.value, layer);
   };
-  const money = (metric: Metric) => metric.value === null ? labels.status.missing : formatMoney(metric.value);
+  /** 精確值行：件數沒有取位，不重複顯示；空值不顯示（原因碼在技術細節）。 */
+  const preciseValue = evidence.metric.value === null || evidence.unitOverride === "count" ? null : displayValue(evidence.metric, "L3");
+  const money = (metric: Metric) => metric.value === null ? formatEmpty(emptyKindOf(metric.reason_codes), { layer: "L3", reasonCodes: metric.reason_codes }) : fill(labels.units.yuan, { value: formatAmountL3(metric.value) });
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -156,7 +171,8 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
       </header>
       <div className="evidence-body">
         <p id={descriptionId}>{fill(labels.ui.evidenceDrawer.scopeLine, { scope: evidence.scopeLabel ?? copy.scopeFallback, start: evidence.period.start, end: evidence.period.end, channels: evidence.channels.length ? channelsLabel(evidence.channels, alias) : copy.noChannels })}</p>
-        <p className="number">{displayValue(evidence.metric)}</p>
+        <p className="number">{displayValue(evidence.metric, "L1")}</p>
+        {preciseValue && <p className="note" data-testid="evidence-precise-value">{preciseValue}</p>}
         <section className="evidence-ladder" aria-label={copy.ladderTitle}>
           <h3>{copy.ladderTitle}</h3>
           <p>{evidence.formula ?? definition.formula}{onBasis && <> <button type="button" className="text-button" onClick={onBasis}>{labels.buttons.basis}</button></>}</p>
@@ -169,12 +185,12 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
           {ladderRows.length > 0 && <p className="note">{copy.ladderNote}</p>}
           {evidence.components && evidence.components.length > 0 && (
             <section aria-label={copy.components}>
-              <h4>{copy.components}（TWD）</h4>
+              <h4>{fill(labels.units.yuanColumn, { label: copy.components })}</h4>
               <dl>
                 {evidence.components.map((component, index) => (
                   <div key={`${component.label}-${index}`}>
                     <dt>{component.label}</dt>
-                    <dd className="number">{component.metric.value === null ? labels.status.missing : fill(labels.ui.evidenceDrawer.money, { amount: formatMoney(component.metric.value) })}</dd>
+                    <dd className="number">{component.metric.value === null ? formatEmpty(emptyKindOf(component.metric.reason_codes), { layer: "L3", reasonCodes: component.metric.reason_codes }) : formatAmountL3(component.metric.value)}</dd>
                   </div>
                 ))}
               </dl>
@@ -193,6 +209,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
             {evidence.components?.some(component => component.metric.reason_codes.length > 0) && <div><dt>{copy.components}</dt><dd><ul>{evidence.components.filter(component => component.metric.reason_codes.length > 0).map((component, index) => <li key={index}>{component.label}：<code>{component.metric.reason_codes.join("、")}</code></li>)}</ul></dd></div>}
             <div><dt>metric_version</dt><dd><code>{evidence.metricVersion ?? "contribution-v1"}</code></dd></div>
           </dl>
+          {(signed || evidence.unitOverride === "percentage-point") && <p className="note" data-testid="evidence-rounding-note">{labels.format.roundingNote}</p>}
         </details>
         <section aria-label={copy.sourcesTitle} className="evidence-sources">
           <h3>{copy.sourcesTitle}</h3>
@@ -221,7 +238,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
                           {row.missing && <span className="tag">{copy.missingTag}</span>}
                         </th>
                         <td>{row.date ?? copy.wholeDataset}<br />{row.channel ? channelLabel(row.channel, alias) : copy.allChannels}{row.sku ? <><br />{fill(labels.ui.evidenceDrawer.skuLine, { sku: row.sku })}</> : null}</td>
-                        <td><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : rawValues?.[row.file as FileName]?.[row.line ?? -1]?.[field] !== undefined ? <span className="converted-value" title={copy.rawToConverted}><s>{rawValues[row.file as FileName]![row.line!][field]}</s> → <strong>{value}</strong><span className="sr-only">（{copy.rawToConverted}）</span></span> : value}</dd></div>)}</dl></td>
+                        <td><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : rawValues?.[row.file as FileName]?.[row.line ?? -1]?.[field] !== undefined ? <span className="converted-value" title={copy.rawToConverted}><s>{sourceValue(field, rawValues[row.file as FileName]![row.line!][field])}</s> → <strong>{sourceValue(field, value)}</strong><span className="sr-only">（{copy.rawToConverted}）</span></span> : sourceValue(field, value)}</dd></div>)}</dl></td>
                       </tr>
                     );
                   })}
