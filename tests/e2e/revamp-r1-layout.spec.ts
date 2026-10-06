@@ -43,9 +43,9 @@ test.describe("R1 overview first screen", () => {
       expect(after.y + after.height).toBeLessThanOrEqual(viewport.height);
       await page.evaluate(() => window.scrollTo(0, 0));
     }
-    // V3-4a（§7.1）：本期一句話（含會議入口）→ KPI 帶 → 三件事 → 趨勢 → 拆解 → 其他常用指標 → 進階（期間合計與日均收在裡面）。
+    // V3-4b（§7.1）：本期一句話（含會議入口）→ KPI 帶 → 三件事 → 拆解（B1 元件，#bridge-title）→ 趨勢 → 各通路（1440 並排、同一列頂端對齊；1280 上下排列）→ 其他常用指標 → 進階（期間合計與日均收在裡面）。
     const order = await page.evaluate(() => {
-      const ids = ["[data-testid='weekly-snapshot']", "[data-testid='kpi-band']", "[data-testid='top-three']", "[aria-labelledby='trend-title']", "[aria-labelledby='bridge-title']", "[data-testid='assist-kpis']", "[data-testid='overview-advanced']"];
+      const ids = ["[data-testid='weekly-snapshot']", "[data-testid='kpi-band']", "[data-testid='top-three']", "[aria-labelledby='bridge-title']", "[aria-labelledby='trend-title']", "[aria-labelledby='channel-title']", "[data-testid='assist-kpis']", "[data-testid='overview-advanced']"];
       return ids.map(selector => document.querySelector(selector)?.getBoundingClientRect().top ?? -1);
     });
     expect(order.every(top => top >= 0)).toBe(true);

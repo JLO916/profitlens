@@ -587,6 +587,9 @@ export const overview = {
     missingBar: shell.status.missing,
     legend: { current: shell.periods.current, previous: shell.periods.previous },
     unitNote: "圖：萬元 · 表：元",
+    /** B2：載入中（骨架旁的 role=status 文字）與圖表無法繪製時的同高訊息。 */
+    loading: "圖表載入中",
+    error: "圖表無法顯示，請改看下方資料表。",
   },
 
   /** V3-4b 貢獻變化拆解（C17，PRD §7.1 第 5 點；src/application/waterfall.ts 的 bridgeWaterfall 使用）。 */
@@ -648,6 +651,8 @@ export const overview = {
     /** 折線最後一點的直接標籤：{metric}＝指標短名，{value}＝L1 金額。 */
     lastPoint: "{metric} {value}",
     previousPoint: "上期 {value}",
+    /** B2：takeaway 數字（number-link）的可及名稱；{label}＝takeaway 名稱，{value}＝畫面上的 L1 金額。 */
+    takeawayAria: "{label} {value}，看明細",
   },
 
   /** V3-4b 各通路扣廣告後貢獻（C16，PRD §7.1 第 8 點；chart-takeaways.ts 的 channelConclusion 使用）。 */
@@ -665,6 +670,10 @@ export const overview = {
     other: "其他",
     /** 上期細條末端的標值。 */
     previousValue: "上期 {value}",
+    /** B2：長條下方緊湊表的可及名稱，與金額、貢獻率 number-link 的可及名稱（{value}＝畫面上的 L2 值）。 */
+    tableAria: "各通路本期扣廣告後貢獻與貢獻率",
+    amountAria: "{channel} {metric} {value} 元，看明細",
+    marginAria: "{channel} {metric} {value}，看明細",
   },
 } as const;
 
