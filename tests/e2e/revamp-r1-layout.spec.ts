@@ -1,15 +1,17 @@
 import { expect, test, type Page } from "@playwright/test";
-import { clickReplacing, dismissSavePrompt } from "./replacement-helpers";
+import { choosePreset, clickReplacing, dismissSavePrompt, isMobile, navigateTo, openCustomPeriod, openTopbarMore, periodSummary, periodSummaryText, periodSummaryVisibleText, periodToggleText, presetButton, sidebarNav } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
-import { MINUS, deltaTone, formatAmountL1, formatSignedDelta } from "../../src/application/presentation";
+import { MINUS, deltaTone, formatAmountL1, formatDateL1, formatSignedDelta } from "../../src/application/presentation";
 
-// R2 文案接線：期間列的範圍說明由 labels.ui.dashboard.scopeNote 模板組成，這裡只取測試關心的片段再填值。
-const scopeNoteDays = (previousDays: number, currentDays: number) => fill(labels.ui.dashboard.scopeNote.match(/（(.*?)）/)![1], { previousDays, currentDays });
-// V3-2a：scopeNote 改為「本期…對比 上期…（天數）」單句、不再用分隔符串接，本期片段改由 {currentStart}…{currentEnd} 連同前一個詞取出。
-const scopeNoteCurrent = (currentStart: string, currentEnd: string) => fill(labels.ui.dashboard.scopeNote.match(/\S*\s*\{currentStart\}[^{]*\{currentEnd\}/)![0], { currentStart, currentEnd });
 const aiLabelPrefix = labels.ui.dashboard.aiLabel.replace("{ai}", "");
+// V3-3：示範資料（fixtures/demo/manifest.json）的「資料到」；頂欄資料狀態按鈕寫「示範資料 · 資料到 8/24」。
+const DEMO_AS_OF = "2026-08-24";
+const demoStatusButton = fill(labels.shell.dataStatus.button, { source: labels.status.demo, date: formatDateL1(DEMO_AS_OF, { anchor: DEMO_AS_OF }) });
+// V3-3 期間列（period-summary）：示範資料載入後的預設範圍（v2 scopeNote 的「各 42 天」）與「近 7 天」快捷的範圍。
+const DEFAULT_SUMMARY = periodSummaryText("2026-07-13", "2026-08-23", "2026-06-01", "2026-07-12", { anchor: DEMO_AS_OF });
+const LAST7_SUMMARY = periodSummaryText("2026-08-17", "2026-08-23", "2026-08-10", "2026-08-16", { anchor: DEMO_AS_OF });
 
-// R1 總覽重排與頁首減負：首屏 KPI、三件事一屏內、切頁歸零、頂欄 AI 標籤與選單、期間快捷只填日期。
+// R1 總覽重排與頁首減負：首屏 KPI、三件事一屏內、切頁歸零、頂欄 AI 標籤與選單、期間快捷（V3-3 起單擊即套用）。
 async function loadDemo(page: Page) {
   await page.goto("/");
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
@@ -57,7 +59,8 @@ test.describe("R1 overview first screen", () => {
     await expect(page.getByTestId("manager-summary")).toHaveCount(0);
     await entry.getByRole("button", { name: labels.meetingPage.goToMeeting }).click();
     await expect(page.getByTestId("meeting-page")).toBeVisible();
-    await expect(page.getByRole("button", { name: labels.nav.meeting.label, exact: true })).toHaveAttribute("aria-current", "page");
+    // V3-3：手機側欄隱藏（改用底部分頁列），目前頁面一律讀側欄按鈕的 aria-current（sidebarNav 在手機上仍掛載）。
+    await expect(sidebarNav(page, "meeting")).toHaveAttribute("aria-current", "page");
     await expect(page.getByTestId("overview-meeting-entry")).toHaveCount(0);
   });
 
@@ -91,7 +94,8 @@ test.describe("R1 shell", () => {
     await loadDemo(page);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-    await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
+    // V3-3：桌機點側欄、手機點底部分頁列（navigateTo 依視窗選可見的控制）。
+    await navigateTo(page, "diagnosis");
     await expect(page.getByRole("heading", { name: labels.nav.diagnosis.label, exact: true, level: 1 })).toBeVisible();
     await page.waitForTimeout(100);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
@@ -103,8 +107,12 @@ test.describe("R1 shell", () => {
     await expect(firstRow.locator(":scope > summary")).toContainText(labels.sections.impact);
   });
 
-  test("AI status is a top-bar label whose explanation opens in a popover", async ({ page }, testInfo) => {
+  test("AI status is a top-bar label whose explanation opens in a popover", async ({ page }) => {
     await page.goto("/");
+    // V3-3 C7：頂欄 48px 單列，四種尺寸都一樣（v2 上限是桌機 120／手機 170）；手機的 AI／指標定義／儲存／匯出收進 topbar-more。
+    expect(await page.locator("header.topbar").boundingBox().then(value => Math.round(value!.height)), "頂欄 48px").toBe(48);
+    // 手機：AI 狀態在 topbar-more 裡（收起時 display:none），先展開；桌機不動。
+    await openTopbarMore(page);
     const status = page.getByTestId("ai-availability");
     await expect(status).toBeVisible();
     await expect(status).toHaveAttribute("role", "status");
@@ -119,13 +127,12 @@ test.describe("R1 shell", () => {
     await page.keyboard.press("Escape");
     await expect(status.locator("#ai-availability-detail")).toBeHidden();
     await expect(label).toBeFocused();
-    // 頂欄高度上限：桌機兩列內；平板／手機允許狀態列、徽章與選單各自換行（三列）。
-    const topbarLimit = { desktop: 120, laptop: 120, tablet: 160, mobile: 170 }[testInfo.project.name] ?? 170;
-    expect(await page.locator("header.topbar").boundingBox().then(value => value!.height)).toBeLessThanOrEqual(topbarLimit);
   });
 
   test("save and download live in top-bar menus and keep their test ids", async ({ page }) => {
     await loadDemo(page);
+    // V3-3：手機的儲存／匯出選單在 topbar-more 裡（收起時 display:none），先展開；桌機不動。
+    await openTopbarMore(page);
     const storage = page.getByTestId("workspace-storage");
     await expect(storage.locator(":scope > summary")).toContainText(labels.status.unsaved);
     await storage.locator(":scope > summary").click();
@@ -135,9 +142,15 @@ test.describe("R1 shell", () => {
     await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeHidden();
     await storage.locator(":scope > summary").click();
     await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeVisible();
+    // V3-3：v2 頂欄的「清空」搬進儲存選單的危險區；全頁只有這一顆。
+    await expect(storage.getByRole("button", { name: labels.buttons.clear, exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: labels.buttons.clear, exact: true })).toHaveCount(1);
     await page.keyboard.press("Escape");
     await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeHidden();
+    await openTopbarMore(page);
     const download = page.getByTestId("download-menu");
+    // V3-3：選單摘要「下載」改名「匯出」；項目名稱不變。
+    await expect(download.locator(":scope > summary")).toContainText(labels.shell.topbarV3.export);
     await download.locator("summary").click();
     await expect(download.getByRole("button", { name: labels.downloads.analysisCsv })).toBeVisible();
     const [file] = await Promise.all([page.waitForEvent("download"), download.getByRole("button", { name: labels.downloads.analysisCsv }).click()]);
@@ -145,36 +158,164 @@ test.describe("R1 shell", () => {
     await page.keyboard.press("Escape");
     await expect(download.getByRole("button", { name: labels.downloads.analysisCsv })).toBeHidden();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-    await expect(page.locator(".sidebar .tiny-tag")).toHaveText(labels.status.demo);
+    // V3-3：側欄的 .tiny-tag 移除；「示範資料」改由頂欄資料狀態按鈕呈現（v2 狀態文字在 sr-only 的 workspace-status）。
+    await expect(page.locator(".sidebar .tiny-tag")).toHaveCount(0);
+    await expect(page.getByTestId("data-status")).toHaveText(demoStatusButton);
+    await expect(page.getByTestId("workspace-status")).toContainText(labels.status.demo);
     await expect(page).toHaveTitle(labels.brand.title);
   });
 
-  test("period presets only fill the form until 套用 is pressed", async ({ page }, testInfo) => {
+  test("period presets apply on one click; only custom dates need 套用", async ({ page }, testInfo) => {
     await loadDemo(page);
-    const group = page.getByRole("group", { name: labels.sections.presetGroup });
-    const monthly = group.getByRole("button", { name: labels.periods.presets.monthVsPrev, exact: true });
+    // V3-3（D-V3-10＝A）：期間列單列；v2 的 .filter-bar／.scope-note 移除，套用中的範圍改由 period-summary 呈現。
+    await expect(page.locator(".filter-bar, .scope-note")).toHaveCount(0);
+    await expect(periodSummary(page)).toContainText(DEFAULT_SUMMARY);
+    expect(await periodSummaryVisibleText(page)).toBe(DEFAULT_SUMMARY);
+    if (isMobile(page)) await expect(page.getByTestId("period-toggle")).toHaveText(periodToggleText(null, "2026-07-13", "2026-08-23", { anchor: DEMO_AS_OF }));
+    const monthly = presetButton(page, "monthVsPrev");
     await expect(monthly).toBeDisabled();
     await expect(monthly).toHaveAttribute("title", /2026-08-23/);
     await expect(monthly).toHaveAccessibleDescription(/2026-08-23/);
-    await expect(group.getByRole("button", { name: labels.periods.presets.last12w, exact: true })).toBeDisabled();
-    await group.getByRole("button", { name: labels.periods.presets.last7, exact: true }).click();
+    await expect(presetButton(page, "last12w")).toBeDisabled();
+    // 單擊快捷就套用：不按「套用」、自訂期間 popover 維持收合；表單日期同步成快捷的範圍。
+    const summaryText = await choosePreset(page, "last7");
+    expect(summaryText).toContain(LAST7_SUMMARY);
+    await expect.poll(() => periodSummaryVisibleText(page)).toBe(LAST7_SUMMARY);
     await expect(page.locator("#previous-start")).toHaveValue("2026-08-10");
     await expect(page.locator("#previous-end")).toHaveValue("2026-08-16");
     await expect(page.locator("#current-start")).toHaveValue("2026-08-17");
     await expect(page.locator("#current-end")).toHaveValue("2026-08-23");
-    await expect(page.getByRole("button", { name: labels.buttons.apply, exact: true })).toBeFocused();
-    await expect(page.locator(".scope-note")).toContainText(scopeNoteDays(42, 42));
-    await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
-    await expect(page.locator(".scope-note")).toContainText(scopeNoteDays(7, 7));
-    await expect(page.locator(".scope-note")).toContainText(scopeNoteCurrent("2026-08-17", "2026-08-23"));
-    await expect(group.getByRole("button", { name: labels.periods.presets.last7, exact: true })).toHaveAttribute("aria-pressed", "true");
-    const bar = await box(page, ".filter-bar");
+    await expect(presetButton(page, "last7")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId(isMobile(page) ? "period-toggle" : "period-custom")).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByRole("button", { name: labels.buttons.apply, exact: true })).toBeHidden();
+    if (isMobile(page)) await expect(page.getByTestId("period-toggle")).toHaveText(periodToggleText("last7", "2026-08-17", "2026-08-23", { anchor: DEMO_AS_OF }));
+    // 自訂期間：改了日期、按「套用」之前，期間摘要不變；按了才套用，快捷不再 aria-pressed。
+    const panel = await openCustomPeriod(page);
+    await page.locator("#previous-start").fill("2026-08-03");
+    await page.locator("#previous-end").fill("2026-08-09");
+    await page.locator("#current-start").fill("2026-08-10");
+    await page.locator("#current-end").fill("2026-08-16");
+    expect(await periodSummaryVisibleText(page)).toBe(LAST7_SUMMARY);
+    await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+    const customSummary = periodSummaryText("2026-08-10", "2026-08-16", "2026-08-03", "2026-08-09", { anchor: DEMO_AS_OF });
+    await expect.poll(() => periodSummaryVisibleText(page)).toBe(customSummary);
+    await expect(page.getByTestId(isMobile(page) ? "period-toggle" : "period-custom")).toHaveAttribute("aria-expanded", "false");
+    await expect(presetButton(page, "last7")).toHaveAttribute("aria-pressed", "false");
+    if (isMobile(page)) await expect(page.getByTestId("period-toggle")).toHaveText(periodToggleText(null, "2026-08-10", "2026-08-16", { anchor: DEMO_AS_OF }));
+    const bar = await box(page, "[data-testid='period-bar']");
     if ((page.viewportSize()?.width ?? 0) > 640) {
       await page.evaluate(() => window.scrollTo(0, 600));
       await page.waitForTimeout(100);
-      const stuck = await box(page, ".filter-bar");
-      expect(stuck.y, "期間列 sticky 貼在頂端").toBeLessThanOrEqual(1);
-      if (["desktop", "laptop"].includes(testInfo.project.name)) expect(bar.height, "期間列在 1280 以上最多兩行").toBeLessThanOrEqual(100);
+      const stuck = await box(page, "[data-testid='period-bar']");
+      const topbar = await box(page, "header.topbar");
+      // V3-3：頂欄也是 sticky（48px），期間列貼在頂欄下緣。
+      expect(topbar.y, "頂欄 sticky 貼在頂端").toBeLessThanOrEqual(1);
+      expect(Math.abs(stuck.y - (topbar.y + topbar.height)), "期間列 sticky 貼在頂欄下緣").toBeLessThanOrEqual(1);
+      if (["desktop", "laptop"].includes(testInfo.project.name)) expect(bar.height, "期間列在 1280 以上單列").toBeLessThanOrEqual(56);
     }
+  });
+});
+
+// ── V3-3 殼層驗收（PRD §7.0 殼層、§2.3 B） ──
+/** 看得到才回傳框（checkVisibility＋寬度 > 0）；手機收起的 topbar-more 內容是 display:none，會回傳 null。 */
+const visibleBox = (page: Page, selector: string) => page.locator(selector).first().evaluate(element => { const rect = element.getBoundingClientRect(); return element.checkVisibility() && rect.width > 0 ? { top: rect.top, bottom: rect.bottom } : null; });
+
+test.describe("V3-3 shell acceptance", () => {
+  test("top bar is one 48px row with a single visible 示範資料", async ({ page }, testInfo) => {
+    await loadDemo(page);
+    const topbar = await box(page, "header.topbar");
+    expect(Math.round(topbar.height), "頂欄 48px").toBe(48);
+    // 單列：頂欄裡每個看得到的控制都落在 48px 之內（沒有折到第二列）。手機右側只剩資料狀態與 topbar-more。
+    const controls = isMobile(page)
+      ? ["header.topbar .brand", "[data-testid='data-status']", "[data-testid='topbar-more']"]
+      : ["header.topbar .brand", "[data-testid='data-status']", "[data-testid='ai-availability'] button", `header.topbar button[aria-label='${labels.buttons.basis}']`, "[data-testid='workspace-storage'] > summary", "[data-testid='download-menu'] > summary"];
+    for (const selector of controls) {
+      const value = await visibleBox(page, selector);
+      expect(value, `${selector} 在頂欄可見`).not.toBeNull();
+      expect(value!.top, `${selector} 在頂欄第一列`).toBeGreaterThanOrEqual(topbar.y);
+      expect(value!.bottom, `${selector} 在頂欄第一列`).toBeLessThanOrEqual(topbar.y + topbar.height);
+    }
+    if (!isMobile(page)) {
+      // 768 以上（含 1280）：品牌與「匯出」同一列（垂直中心對齊）。
+      const brand = (await visibleBox(page, "header.topbar .brand"))!, exportButton = (await visibleBox(page, "[data-testid='download-menu'] > summary"))!;
+      expect(Math.abs((brand.top + brand.bottom) / 2 - (exportButton.top + exportButton.bottom) / 2), `${testInfo.project.name}：品牌與匯出同一列`).toBeLessThanOrEqual(2);
+      await expect(page.getByTestId("download-menu").locator(":scope > summary")).toContainText(labels.shell.topbarV3.export);
+    }
+    // §6.3 #9：頂欄可見的「示範資料」只有一處（資料狀態按鈕）；sr-only 的 workspace-status 與收合的 popover 不算。
+    const visibleDemo = await page.locator("header.topbar").evaluate((root, text) => {
+      const shown = (element: Element) => element.checkVisibility() && !element.closest(".sr-only, [hidden]") && element.getBoundingClientRect().width > 1;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let count = 0;
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) if (node.textContent?.includes(text) && node.parentElement && shown(node.parentElement)) count++;
+      return count;
+    }, labels.status.demo);
+    expect(visibleDemo, "頂欄可見的「示範資料」只有一處").toBe(1);
+    await expect(page.getByTestId("data-status")).toHaveText(demoStatusButton);
+  });
+
+  test("first screen budget: 1440 chrome ends by 152px, 390 first KPI value by 360px", async ({ page }, testInfo) => {
+    await loadDemo(page);
+    // v2 頁首的 eyebrow、麵包屑、模式徽章、側欄說明／頁尾、.tiny-tag、.scope-note、.preset-reason、.filter-bar 都移除（§7.0；區塊內的 eyebrow 屬 V3-4）。
+    await expect(page.locator(".page-heading .eyebrow, header.topbar .eyebrow, .breadcrumb, .mode-badge, .sidebar-note, .sidebar-footer, .tiny-tag, .scope-note, .preset-reason, .filter-bar")).toHaveCount(0);
+    if (testInfo.project.name === "desktop") {
+      const topbar = await box(page, "header.topbar"), heading = await box(page, "main .page-heading"), bar = await box(page, "[data-testid='period-bar']");
+      expect(heading.y, "頁首在頂欄下").toBeGreaterThanOrEqual(topbar.y + topbar.height - 1);
+      expect(bar.y, "期間列在頁首下").toBeGreaterThanOrEqual(heading.y + heading.height - 1);
+      expect(bar.y + bar.height, "1440：頂欄＋頁首＋期間列底緣 ≤ 152px").toBeLessThanOrEqual(152);
+    }
+    if (testInfo.project.name === "mobile") {
+      const top = await page.evaluate(() => { const value = [...document.querySelectorAll("[data-testid^='kpi-'] .kpi-value")].find(element => element.checkVisibility()); return value ? value.getBoundingClientRect().top : null; });
+      expect(top, "390：第一個可見的 KPI 數字").not.toBeNull();
+      expect(top!, "390：第一個 KPI 數字 top ≤ 360px").toBeLessThanOrEqual(360);
+    }
+  });
+
+  test("import wizard is two clicks away from the overview", async ({ page }) => {
+    await loadDemo(page);
+    await expect(sidebarNav(page, "overview")).toHaveAttribute("aria-current", "page");
+    // 頁首的「匯入資料」只在資料來源頁；總覽從頂欄資料狀態進：資料狀態 → 匯入新資料（2 次點擊）。
+    await expect(page.getByTestId("page-import")).toHaveCount(0);
+    await page.getByTestId("data-status").click();
+    await expect(page.getByTestId("data-status-popover")).toBeVisible();
+    await page.getByTestId("data-status-import").click();
+    await expect(page.getByTestId("import-wizard")).toBeVisible();
+    await expect(page.getByTestId("data-status-popover")).toBeHidden();
+  });
+
+  test("data-status and custom-period popovers close on Esc and return focus", async ({ page }) => {
+    await loadDemo(page);
+    const status = page.getByTestId("data-status");
+    await status.click();
+    await expect(status).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByTestId("data-status-popover")).toBeVisible();
+    await page.getByTestId("data-status-import").focus();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("data-status-popover")).toBeHidden();
+    await expect(status).toHaveAttribute("aria-expanded", "false");
+    await expect(status).toBeFocused();
+    // 自訂期間：桌機是 period-custom 的 popover；手機是 period-toggle 的底部面板（同一份表單）。
+    const trigger = page.getByTestId(isMobile(page) ? "period-toggle" : "period-custom");
+    const panel = await openCustomPeriod(page);
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await page.locator("#previous-start").focus();
+    await page.keyboard.press("Escape");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
+  test("main has at most 10 focusable controls before the first KPI at 1440", async ({ page }, testInfo) => {
+    await loadDemo(page);
+    const focusables = await page.evaluate(() => {
+      const main = document.querySelector("main")!, kpi = main.querySelector("[data-testid^='kpi-']")!;
+      return [...main.querySelectorAll<HTMLElement>("a[href], button, input, select, textarea, summary, [tabindex]")]
+        .filter(element => (element.compareDocumentPosition(kpi) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0 && !kpi.contains(element))
+        .filter(element => element.tabIndex >= 0 && !(element as HTMLButtonElement).disabled && element.checkVisibility() && element.getBoundingClientRect().width > 1)
+        .map(element => element.getAttribute("aria-label") || element.textContent?.trim() || element.tagName);
+    });
+    testInfo.annotations.push({ type: "focusable-before-first-kpi", description: `${focusables.length}: ${focusables.join(" | ")}` });
+    console.log(`[V3-3] focusable before first KPI @${testInfo.project.name} = ${focusables.length}: ${focusables.join(" | ")}`);
+    // §2.3 B 的預算只定在 1440（desktop）；其他尺寸只記錄數值。
+    if (testInfo.project.name === "desktop") expect(focusables.length, "1440：第一個 KPI 之前 main 內可聚焦元素 ≤ 10").toBeLessThanOrEqual(10);
   });
 });
