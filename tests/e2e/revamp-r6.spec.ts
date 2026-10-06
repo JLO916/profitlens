@@ -6,6 +6,7 @@ import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { channelsLabel } from "../../src/application/copy";
 import { formatSavedDateTime } from "../../src/application/auto-save";
+import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
 import { acceptSavePrompt, clickReplacing, closeDownloads, dismissSavePrompt, openDownloads, openMeeting, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
@@ -107,8 +108,9 @@ async function calculateKeepPlan(page: Page) {
   await card.getByTestId("scenario-preset-apply").click();
   await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
-  await expect(card.getByTestId("scenario-contribution")).toHaveText("270.00");
-  await expect(card.getByTestId("scenario-delta")).toHaveText("0.00");
+  // V3-2b：試算結果是 L1（< 1 萬顯示整數元＋「元」；差額為零不帶符號）。
+  await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("270.00"));
+  await expect(card.getByTestId("scenario-delta")).toHaveText(formatSignedDelta("0.00", "L1"));
 }
 /** 行動頁（看板）：新增一張待辦、填問題、按星號置頂。 */
 async function addPinnedAction(page: Page, problem: string) {
@@ -141,13 +143,15 @@ async function expectSameScopeCompare(meeting: Locator) {
   const rows = same.getByTestId("meeting-compare-kpis").locator("tbody tr");
   await expect(rows).toHaveCount(2);
   await expect(rows.locator("th")).toHaveText([labels.metrics.net_revenue.label, labels.metrics.contribution_after_marketing.label]);
-  await expect(rows.nth(0).locator("td")).toHaveText(["2,470.00", "2,470.00", "0.00"]);
-  await expect(rows.nth(1).locator("td")).toHaveText(["255.00", "255.00", "0.00"]);
+  // 議程表格是 L2（整數元，表頭標「（元）」）；差額取位後為零不帶符號。
+  await expect(rows.nth(0).locator("td")).toHaveText([formatAmountL2("2470.00"), formatAmountL2("2470.00"), formatSignedDelta("0.00", "L2")]);
+  await expect(rows.nth(1).locator("td")).toHaveText([formatAmountL2("255.00"), formatAmountL2("255.00"), formatSignedDelta("0.00", "L2")]);
   // 上次／本次三件事：同資料同範圍，兩邊都是同樣三項（−315.00、−250.00、−150.00）。
   for (const title of [record.lastPriorities, record.currentPriorities]) {
     const list = same.locator("div").filter({ has: meeting.page().getByRole("heading", { name: title, exact: true }) }).last().locator("ul > li");
     await expect(list).toHaveCount(3);
-    for (const [index, amount] of ["-315.00", "-250.00", "-150.00"].entries()) await expect(list.nth(index)).toHaveText(new RegExp(`^${index + 1}\\. .+${escapeRe(amount)}$`));
+    // 三件事的影響金額是 L1（U+2212 負號）。
+    for (const [index, amount] of ["-315.00", "-250.00", "-150.00"].entries()) await expect(list.nth(index)).toHaveText(new RegExp(`^${index + 1}\\. .+${escapeRe(formatSignedDelta(amount, "L1"))}$`));
   }
 }
 
@@ -460,7 +464,8 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   // 第一頁只有三件事（ol > li），依 |對貢獻影響|：−315.00、−250.00、−150.00。
   const priorities = print.locator(":scope > ol > li");
   await expect(priorities).toHaveCount(3);
-  for (const [index, amount] of ["-315.00", "-250.00", "-150.00"].entries()) await expect(priorities.nth(index)).toContainText(amount);
+  // 一頁摘要的三件事影響金額是 L1（U+2212 負號）。
+  for (const [index, amount] of ["-315.00", "-250.00", "-150.00"].entries()) await expect(priorities.nth(index)).toContainText(`${labels.sections.impact} ${formatSignedDelta(amount, "L1")}`);
   // 附錄（技術資訊）是獨立的 section，從新的一頁開始。
   const appendix = print.locator(":scope > section").filter({ has: page.getByRole("heading", { name: labels.sections.technicalDetails, exact: true }) });
   await expect(appendix).toHaveCount(1);
@@ -506,7 +511,7 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   await expect(results).toHaveCount(1);
   await expect(results.first()).toHaveAttribute("data-status", "current");
   await expect(results.first()).toContainText(firstPlanName);
-  await expect(results.first()).toContainText("270.00");
+  await expect(results.first()).toContainText(formatAmountL1("270.00"));
   await expect(agenda5.getByTestId("meeting-scenario-results-empty")).toHaveCount(0);
   const outputs = meeting.getByTestId("meeting-outputs");
   await expect(outputs.getByText(labels.meetingPage.pdfHint, { exact: true })).toBeVisible();
@@ -525,7 +530,7 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   expect(neighbours).toMatchObject({ nextTag: "H2", next: labels.sections.topThree });
   // 選入方案在第一頁只有一行；五項假設（數量、折扣、履約、廣告、一次性成本）在附錄。
   await expect(print.getByTestId("print-scenario-line")).toHaveCount(1);
-  await expect(print.getByTestId("print-scenario-line")).toContainText("270.00");
+  await expect(print.getByTestId("print-scenario-line")).toContainText(formatAmountL1("270.00"));
   const assumptions = print.getByTestId("print-appendix-assumptions");
   await expect(assumptions).toHaveCount(1);
   await expect(assumptions).toContainText(firstPlanName);
