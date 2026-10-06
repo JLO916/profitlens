@@ -1,4 +1,4 @@
-import { dismissSavePrompt, ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { clearWorkspace, closePeriodSheet, dismissSavePrompt, navigateTo, openPeriodSheet, ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from "./import-wizard-helpers";
 import { labels, fill } from "../../src/i18n";
 import { formatAmountL1, formatMetric, formatSignedDelta } from "../../src/application/presentation";
@@ -18,6 +18,12 @@ const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).lo
 const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
 /** V3-2a：「資料到 {date}」由套用資料集的 data_as_of 填入。 */
 const ready = (dataAsOf: string) => fill(labels.status.ready, { date: dataAsOf });
+/** V3-3：通路下拉在期間列裡；手機期間列收成 period-toggle，要先開底部面板、選完按「完成」收起（桌機兩步都不動）。 */
+async function selectChannel(page: Page, channel: string) {
+  await openPeriodSheet(page);
+  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
+  await closePeriodSheet(page);
+}
 const decisionDownloadLabels = { JSON: labels.downloads.decisionJson, CSV: labels.downloads.decisionCsv, Markdown: labels.downloads.decisionMd } as const;
 
 interface DecisionDocument {
@@ -71,7 +77,7 @@ async function importDataset(page: Page, directory: string) {
 }
 /** R5: one nav click opens the form (no start button); the page's channel defaults to the single channel of the global filter, and plan 1 is the ready draft (no "add scenario" click). */
 async function scenario(page: Page, name: string, fulfillment: string, investment: string, expected: string) {
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await navigateTo(page, "scenarios");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   const card = page.getByTestId("scenario-1");
@@ -143,10 +149,10 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   await importDataset(page, alternative);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("400.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("40.00"));
-  await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
+  await navigateTo(page, "diagnosis");
   // R5: one list row per rule (details.diagnosis-row); the headline is the row's summary heading.
   await expect(page.getByTestId("diagnosis-row-REV_UP_CM_DOWN").getByRole("heading", { name: ruleHeadline("REV_UP_CM_DOWN") })).toBeVisible();
   await expect(page.getByTestId("diagnosis-row-MARKETING_BURDEN_UP").getByRole("heading", { name: ruleHeadline("MARKETING_BURDEN_UP") })).toBeVisible();
@@ -156,7 +162,7 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   await scenario(page, "M6 合成履約條件方案", "-50", "3", "44.00");
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-delta")).toHaveText(formatSignedDelta("4.00", "L1"));
   await expect(page.getByTestId("decision-workbench")).toContainText(labels.scenario.acceptAssumptions);
-  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  await navigateTo(page, "actions");
   // R5: the actions page opens on the board; the full edit form is filled in the list view.
   await switchActionsView(page, "list");
   await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
@@ -215,7 +221,7 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
   // (laptop took 43.4s in verification/review-v2-a-e2e-full-results.json), so this chain gets an explicit budget like the A1 chains.
   test.setTimeout(90_000);
   await importDataset(page, alternative);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("40.00"));
   await scenario(page, "甲分頁獨立假設", "-50", "3", "44.00");
   const first = await decision(page);
@@ -227,7 +233,7 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
     await expect(status(other)).toContainText(labels.status.empty);
     await expect(other.getByTestId("decision-workbench")).toHaveCount(0);
     await importDataset(other, golden);
-    await other.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
+    await selectChannel(other, "DTC");
     await expect(kpi(other, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
     await scenario(other, "乙分頁獨立假設", "-10", "0", "284.00");
     const second = await decision(other);
@@ -236,8 +242,9 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
     expect(second.session.baseline.amounts.contribution_after_marketing).toBe("270.00");
     expect(second.scenarios[0].name).toBe("乙分頁獨立假設");
     expect(await decision(page)).toEqual(first);
-    await other.getByRole("button", { name: labels.buttons.clear, exact: true }).click();
-  await other.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
+    // V3-3：v2 頂欄的「清空」搬進儲存選單的「危險區」；有未保存的試算，一定會出現取代確認對話框。
+    const replaceDialog = await clearWorkspace(other);
+    await replaceDialog.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
     await expect(status(other)).toContainText(labels.status.empty);
     expect(await decision(page)).toEqual(first);
     await importDataset(other, golden);
@@ -255,7 +262,7 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
 
 test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策", async ({ page }) => {
   await importDataset(page, golden);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
   await scenario(page, "尚未被取代的工作稿", "-10", "0", "284.00");
   const before = await decision(page);
@@ -291,11 +298,11 @@ test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留�
   await expect(wizard(page)).toHaveCount(0);
   // 取消後仍是原本的 golden 資料（data_as_of 2026-08-03）。
   await expect(status(page)).toContainText(ready("2026-08-03"));
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await navigateTo(page, "scenarios");
   await expect(page.getByTestId("decision-freshness")).toContainText(scenarioCopy.freshTitle);
   expect(await decision(page)).toEqual(before);
   await importDataset(page, alternative);
-  await page.getByRole("button", { name: labels.nav.scenarios.label, exact: true }).click();
+  await navigateTo(page, "scenarios");
   await expect(page.getByTestId("multi-scenario-workbench")).toContainText(labels.ui.multiScenarioWorkbench.historyHeading);
   const exported = await decision(page);
   const historical = exported.scenario_contexts.find(context => context.context_status === "historical")!;

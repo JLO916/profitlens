@@ -1,4 +1,4 @@
-import { closeDownloads, openDownloads, ruleHeadline } from "./replacement-helpers";
+import { closeDownloads, closePeriodSheet, dismissSavePrompt, navigateTo, openDownloads, openPeriodSheet, ruleHeadline } from "./replacement-helpers";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardFileLabels, wizardRoles, type Classification, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
@@ -11,7 +11,12 @@ import { test as base, expect, type Locator, type Page } from "@playwright/test"
 const copy = labels.importWizard;
 const panel = labels.ui.importPanel;
 const channelFilter = (page: Page) => page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true });
-const navButton = (page: Page, item: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[item].label, exact: true });
+/** V3-3：通路下拉在期間列；手機期間列收成 period-toggle，先開底部面板、選完按「完成」（桌機兩步不動）。 */
+async function selectChannel(page: Page, option: Parameters<Locator["selectOption"]>[0]) {
+  await openPeriodSheet(page);
+  await channelFilter(page).selectOption(option);
+  await closePeriodSheet(page);
+}
 const alternative = resolve("tests/fixtures/alternative");
 const golden = resolve("fixtures/golden");
 const maliciousSku = '=IMPORTXML("https://example.invalid","x")';
@@ -89,7 +94,9 @@ async function commit(page: Page, dataAsOf: string, classification: "valid" | "p
   await commitWizard(page);
   await expect(status(page)).toContainText(classification === "valid" ? ready(dataAsOf) : labels.status.partial);
   await expect(wizard(page)).toHaveCount(0);
-  await navButton(page, "overview").click();
+  // R6：首次載入資料後出現非 modal 的「自動保存？」提示；V3-3 手機它疊在底部分頁列上方，會擋住「更多」面板與頂欄「更多」的匯出選單。本檔不測自動保存，先按「暫時不要」。
+  await dismissSavePrompt(page);
+  await navigateTo(page, "overview");
 }
 async function importFixture(page: Page, directory = alternative) {
   await stage(page, directory);
@@ -98,7 +105,7 @@ async function importFixture(page: Page, directory = alternative) {
 async function returnToGolden(page: Page) {
   await wizard(page).getByRole("button", { name: copy.cancel, exact: true }).click();
   await expect(wizard(page)).toHaveCount(0);
-  await navButton(page, "overview").click();
+  await navigateTo(page, "overview");
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("255.00"));
 }
@@ -165,10 +172,10 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   await expect(weekly.locator("tbody tr").last().locator("td").nth(2)).toHaveText(formatAmountL2("600.00"));
   await expect(page.locator(".bridge-total")).toContainText(formatSignedDelta("-130.00", "L3"));
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-import-regression-${testInfo.project.name}-overview.png`), fullPage: true });
-  await navButton(page, "diagnosis").click();
+  await navigateTo(page, "diagnosis");
   await expect(page.getByRole("heading", { name: ruleHeadline("REV_UP_CM_DOWN") }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: ruleHeadline("NEGATIVE_CHANNEL_CM") })).toBeVisible();
-  await navButton(page, "products").click();
+  await navigateTo(page, "products");
   await expect(page.getByTestId("product-table").locator("tbody tr")).toHaveCount(4);
   await expect(page.getByTestId("product-table")).toContainText(maliciousSku);
   await expect(page.getByTestId("product-table")).toContainText(maliciousCategory);
@@ -278,7 +285,8 @@ for (const incomplete of [
     await expect(wizard(page)).toContainText(incomplete.reason);
     await commitWizard(page);
     await expect(status(page)).toContainText(labels.status.partial);
-    await navButton(page, "overview").click();
+    await dismissSavePrompt(page);
+    await navigateTo(page, "overview");
     await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
     await expect(kpi(page, "contribution_after_marketing")).toHaveText(labels.status.missing);
     const rows = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv"));
@@ -287,7 +295,7 @@ for (const incomplete of [
     expect(current).toBeDefined();
     expect(current!.value).toBe("");
     expect(JSON.parse(current!.reason_codes)).toContain(incomplete.reason);
-    await channelFilter(page).selectOption(incomplete.unaffected);
+    await selectChannel(page, incomplete.unaffected);
     await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1(incomplete.expected));
   });
 }
@@ -356,7 +364,8 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
   await expect(page.getByTestId("reconciliation-gross_sales")).toContainText("renamed-sales.csv／revenue");
   await commitWizard(page);
   await expect(status(page)).toContainText(ready(alternativeAsOf));
-  await navButton(page, "overview").click();
+  await dismissSavePrompt(page);
+  await navigateTo(page, "overview");
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
   const text = await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv");
@@ -379,7 +388,7 @@ test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文�
   await toSettings(page, await readManifest(page, resolve(alternative, "manifest.json")));
   await commit(page, alternativeAsOf);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  await navButton(page, "products").click();
+  await navigateTo(page, "products");
   await expect(page.getByTestId("product-table")).toContainText(maliciousCategory);
   await expect(page.locator("img[src='x']")).toHaveCount(0);
   const afterStorage = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
@@ -399,7 +408,7 @@ test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文�
 
 test("下載共用期間通路與商品篩選，公式文字安全而負數金額仍是數字", async ({ page }) => {
   await importFixture(page);
-  await channelFilter(page).selectOption("DTC");
+  await selectChannel(page, "DTC");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("40.00"));
   const analysis = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv"));
   await closeDownloads(page);
@@ -413,9 +422,9 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   // R4：assist_kpi 列的版本是 assist-kpi-v1；其餘列仍是 contribution-v1。
   expect(analysis.every(row => row.metric_version === (row.row_type === "assist_kpi" ? ASSIST_KPI_VERSION : "contribution-v1") && row.as_of === "2026-09-05")).toBe(true);
   expect(analysis.filter(row => row.row_type === "assist_kpi")).toHaveLength(14);
-  await channelFilter(page).selectOption({ label: labels.ui.dashboard.filter.allChannels });
+  await selectChannel(page, { label: labels.ui.dashboard.filter.allChannels });
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  await navButton(page, "products").click();
+  await navigateTo(page, "products");
   const downloadProducts = page.getByRole("button", { name: labels.downloads.productsCsv, exact: true });
   const allProducts = csvRecords(await downloadText(page, downloadProducts, "profitlens-products.csv"));
   expect(new Set(allProducts.map(row => row.sku))).toEqual(new Set([`'${maliciousSku}`, "'+TEST()", "'-TEST()", "'@TEST()"]));
@@ -423,7 +432,7 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   expect(allProducts.some(row => row.category === "'@NOTE")).toBe(true);
   expect(allProducts.some(row => row.metric === "gross_profit" && row.value === "-100.00")).toBe(true);
   expect(allProducts.every(row => !["ad_spend", "contribution_after_marketing", "contribution_before_marketing"].includes(row.metric))).toBe(true);
-  await channelFilter(page).selectOption("MARKETPLACE");
+  await selectChannel(page, "MARKETPLACE");
   await page.getByLabel(labels.csvColumns.category, { exact: true }).selectOption("\t=FORMULA()");
   await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("-TEST()");
   await expect(page.getByTestId("product-table").locator("tbody tr")).toHaveCount(1);
@@ -433,7 +442,7 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   expect(selectedProducts.every(row => row.product_query === "'-test()" && row.product_category === "'\t=FORMULA()")).toBe(true);
   expect(selectedProducts.find(row => row.metric === "net_revenue")?.value).toBe("-40.00");
   expect(selectedProducts.find(row => row.metric === "gross_profit")?.value).toBe("-100.00");
-  await navButton(page, "overview").click();
+  await navigateTo(page, "overview");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("-30.00"));
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("200.00"));
 });
@@ -456,13 +465,13 @@ test("空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各
   await commit(page, alternativeAsOf);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  await channelFilter(page).selectOption({ label: "all" });
+  await selectChannel(page, { label: "all" });
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("400.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("40.00"));
-  await channelFilter(page).selectOption({ label: labels.ui.dashboard.filter.allChannels });
+  await selectChannel(page, { label: labels.ui.dashboard.filter.allChannels });
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  await navButton(page, "products").click();
+  await navigateTo(page, "products");
   const table = page.getByTestId("product-table");
   await expect(table.locator("tbody tr")).toHaveCount(4);
   const blankCategoryRow = table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "+TEST()", exact: true }) });
@@ -481,7 +490,7 @@ test("空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各
   expect(exported.find(row => row.metric === "net_revenue")?.value).toBe("120.00");
   expect(exported.find(row => row.metric === "gross_profit")?.value).toBe("80.00");
   expect(exported.every(row => !["ad_spend", "contribution_after_marketing", "contribution_before_marketing"].includes(row.metric))).toBe(true);
-  await navButton(page, "overview").click();
+  await navigateTo(page, "overview");
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
 });

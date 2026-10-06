@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, importViaWizard, nextFromFiles, openWizard, setWizardFiles, wizard, wizardFileLabels, wizardStatus } from "./import-wizard-helpers";
-import { closeDownloads, openDownloads } from "./replacement-helpers";
+import { closeDownloads, dismissSavePrompt, navigateTo, openDownloads, sidebarNav } from "./replacement-helpers";
 
 // R3 匯入精靈：≤ 5 次點擊、對照記憶提示、含稅換算後 KPI＝手算、超限拒絕、訂單級偵測、「我不確定」停下。
 const copy = labels.importWizard;
@@ -16,11 +16,24 @@ const drawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${la
 
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
+// V3-3：頁首「匯入資料」（page-import）只留在資料來源頁；從總覽進精靈改為 資料狀態（data-status）→「匯入新資料」（data-status-import），
+// 入口多 1 次點擊。點擊預算的算法：從總覽起算，入口 2 次＋精靈內（第 1 步起）≤ 5 次（v2 原本的預算不放寬），合計 ≤ 6；兩段分開斷言。
 test("標準三檔從「匯入資料」到總覽 KPI 最多 5 次點擊", async ({ page }) => {
   let clicks = 0;
   const count = async (action: () => Promise<void>) => { clicks += 1; await action(); };
-  await count(() => page.getByRole("button", { name: labels.buttons.importData, exact: true }).click());
+  await expect(sidebarNav(page, "overview")).toHaveAttribute("aria-current", "page");
+  await expect(page.getByTestId("page-import")).toHaveCount(0);
+  // 第 1 次（資料狀態）：剛 goto 時可能還沒 hydrate，toPass 只為等互動就緒而重試，使用者只點 1 次；點之前看 aria-expanded，不會把 popover 關掉。
+  const dataStatus = page.getByTestId("data-status");
+  await count(() => expect(async () => {
+    if (await dataStatus.getAttribute("aria-expanded") !== "true") await dataStatus.click();
+    await expect(page.getByTestId("data-status-popover")).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 }));
+  await expect(page.getByTestId("data-status-import")).toHaveText(labels.shell.dataStatus.importNew);
+  await count(() => page.getByTestId("data-status-import").click());
   await expect(wizard(page)).toBeVisible();
+  const entryClicks = clicks;
+  expect(entryClicks, "從總覽開啟匯入精靈的點擊數（資料狀態 → 匯入新資料）").toBe(2);
   await setWizardFiles(page, alternative);
   await count(() => wizard(page).getByRole("button", { name: copy.next, exact: true }).click());
   // 欄名全部符合標準：第 2 步自動完成，直接到口徑與期間，期間與通路已由檔案填好。
@@ -42,7 +55,8 @@ test("標準三檔從「匯入資料」到總覽 KPI 最多 5 次點擊", async 
   await expect(wizard(page)).toHaveCount(0);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  expect(clicks, "從「匯入資料」到 KPI 的點擊數").toBeLessThanOrEqual(5);
+  expect(clicks - entryClicks, "精靈第 1 步到 KPI 的點擊數").toBeLessThanOrEqual(5);
+  expect(clicks, "從總覽（資料狀態 → 匯入新資料）到 KPI 的點擊數").toBeLessThanOrEqual(6);
 });
 
 test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算值，匯出帶換算摘要", async ({ page }) => {
@@ -67,6 +81,8 @@ test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2150.00"));
   await expect(kpi(page, "gross_profit")).toHaveText(formatAmountL1("1230.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("518.05"));
+  // R6：首次載入資料後的「自動保存？」提示（非 modal）；V3-3 手機它疊在底部，會擋住頂欄「更多」裡的匯出選單。本測試不測自動保存，先按「暫時不要」。
+  await dismissSavePrompt(page);
   await page.getByTestId("kpi-net_revenue").locator(".kpi-value button").click();
   await expect(drawer(page)).toBeVisible();
   await expect(page.getByTestId("evidence-conversion-note")).toContainText("5%");
@@ -75,7 +91,7 @@ test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算
   await expect(sourceTable).toContainText("800.00");
   await expect(sourceTable.locator(".converted-value").first()).toContainText("→");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();
+  await navigateTo(page, "data");
   await expect(page.getByTestId("data-preprocessing")).toContainText("5%");
   const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).click()]);
   const text = await readFile((await download.path())!, "utf8");
