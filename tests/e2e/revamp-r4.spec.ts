@@ -131,7 +131,8 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await expect(targetDrawer).toContainText(labels.targets.formula);
   await page.keyboard.press("Escape");
   await expect(page.getByTestId("kpi-target-contribution_after_marketing")).toHaveCount(0);
-  await expect(page.getByTestId("trend-events")).toContainText(fill(labels.events.trendItem, { label: "夏季特賣", start: "2026-08-10", end: "2026-08-16" }));
+  // V3-4b：趨勢改成 C16 圖表框（section data-testid="trend"）；檔期清單 trend-events 仍在趨勢區塊內（圖下方的註記）。
+  await expect(page.getByTestId("trend").getByTestId("trend-events")).toContainText(fill(labels.events.trendItem, { label: "夏季特賣", start: "2026-08-10", end: "2026-08-16" }));
   const topThree = page.getByTestId("top-three");
   // V3-4a（C9 摘要型）：檔期不再接在標題後，改放進列內展開內容的「檔期」一行（收合時仍掛載，textContent 可讀）。
   const firstPriority = topThree.locator("[data-testid^='overview-priority-']").first();
@@ -159,7 +160,7 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await expect(page.getByRole("region", { name: labels.ui.workspaceStorage.restorePreviewAria })).toBeVisible();
   await clickReplacing(page, storage.getByRole("button", { name: labels.ui.workspaceStorage.applyRestore, exact: true }));
   await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: formatAmountL1("8000.00"), rate: formatRateL1("0.775") }));
-  await expect(page.getByTestId("trend-events")).toContainText("夏季特賣");
+  await expect(page.getByTestId("trend").getByTestId("trend-events")).toContainText("夏季特賣");
   // 若恢復後又出現保存提示，先按「先不要」（手機上才點得到頂欄「更多」裡的儲存選單）。
   await dismissSavePrompt(page);
   await closeStorage(page);
