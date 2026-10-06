@@ -48,7 +48,8 @@ test.describe("R2 口徑說明與怎麼算的", () => {
     await expect(footer).toBeFocused();
     await page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value button").click();
     await expect(drawer(page)).toBeVisible();
-    await drawer(page).getByRole("button", { name: labels.buttons.basis, exact: true }).click();
+    // V3-5：抽屜內的「指標定義」按鈕搬到「指標定義與算法」段。
+    await drawer(page).getByRole("region", { name: labels.evidence.drawerV3.definitionTitle, exact: true }).getByRole("button", { name: labels.buttons.basis, exact: true }).click();
     await expect(basis(page)).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(basis(page)).toBeHidden();
@@ -68,6 +69,9 @@ test.describe("R2 口徑說明與怎麼算的", () => {
     await expect(rows.last()).toContainText(fill(labels.units.yuan, { value: formatAmountL3("255.00") }));
     await expect(drawer(page).getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatAmountL3("255.00") }));
     await expect(drawer(page).locator(".ladder-table tr.current")).toHaveCount(1);
+    // V3-5 區段順序：計算方式 →（組成項目，KPI 沒有）→ 指標定義與算法（「指標定義」按鈕在這段）→ 原始明細 → 技術細節（收合）。
+    await expect(drawer(page).locator(".evidence-body > section > h3")).toHaveText([labels.evidence.ladderTitle, labels.evidence.drawerV3.definitionTitle, labels.evidence.drawerV3.sourcesTitle]);
+    await expect(drawer(page).locator(".evidence-body > :is(section, details)").last()).toHaveClass(/evidence-technical/);
     await expect(drawer(page).getByRole("group", { name: labels.ui.evidenceDrawer.sourceTabsAria })).toBeVisible();
     await expect(drawer(page).locator("details.evidence-technical")).not.toHaveAttribute("open", /.*/);
     await page.keyboard.press("Escape");
