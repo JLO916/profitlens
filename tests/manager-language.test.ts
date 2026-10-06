@@ -8,6 +8,7 @@ import { DecisionWorkbench } from "../src/components/decision-workbench";
 import { IssueList } from "../src/components/issue-list";
 import { ManagerSummary } from "../src/components/manager-summary";
 import { buildManagerSummary } from "../src/application/manager-summary";
+import { formatAmountL2 } from "../src/application/presentation";
 import { validateDataset } from "../src/domain/validation";
 import { fixture } from "./helpers/fixtures";
 import { fill, labels } from "../src/i18n";
@@ -42,7 +43,8 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     const scope = fill(labels.ui.workspacePanels.scopeAllWith, { channels: "DTC" });
     expect(main).toContain(`${labels.periods.previous} · ${labels.metrics.net_revenue.label} · ${scope}`);
     expect(main).toContain(`${labels.periods.current} · ${labels.metrics.contribution_after_marketing.label} · ${scope}`);
-    expect(main).toContain("270.00");
+    // V3-2b：健檢頁的通路表與相關數字是 L2（整數元）。
+    expect(main).toContain(formatAmountL2("270.00"));
     // V3-2a：開抽屜的按鈕文字改為「看明細」（labels.buttons.viewEvidence）。
     expect(main).toContain(`>${labels.buttons.viewEvidence}</button>`);
     // 規則代號只出現在 data-testid（E2E 錨點）與收合的技術細節。

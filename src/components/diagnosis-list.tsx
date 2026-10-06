@@ -1,17 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Decimal from "decimal.js";
 import { diagnosisGroups, summaryScopes, type DiagnosisGroup, type DiagnosisScope } from "@/application/diagnosis-group";
 import { priorityEvidence } from "@/application/manager-summary";
 import { channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
 import { eventSuffix, type EventSet } from "@/application/events";
-import { formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "@/application/presentation";
+import { deltaTone, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Diagnostic, Fact, Metric, MetricName, RuleCode } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
-import { amountTone, ImpactAmount, impactEvidence } from "./top-three";
+import { ImpactAmount, impactEvidence, toneClass } from "./top-three";
 
 // R5-1 健檢清單（02_IA_LAYOUT.md §4）：一個規則一列，<summary> 只放非互動內容（標題、範圍標籤、影響金額純文字）；
 // 可點的影響金額、按鈕與數據放在展開內容（第一行是目前範圍的影響金額與看證據／加入待辦）。
@@ -30,13 +29,13 @@ export interface DiagnosisListProps {
   events?: EventSet | null;
 }
 
-/** 未知值：比率分母 ≤ 0 是「不適用」，其餘（缺列、空白、未確認完整）是「資料待補」——缺的不是零。 */
-export function displayMetric(name: MetricName, metric: Metric): string {
-  if (metric.value === null) return metric.reason_codes.length > 0 && metric.reason_codes.every(code => code === "NON_POSITIVE_DENOMINATOR") ? labels.status.notApplicable : labels.status.missing;
-  const unit = metricDefinitions[name].unit;
-  if (unit === "percent") return formatRate(metric.value);
-  if (unit === "multiple") return `${new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP)} ${labels.evidence.times}`;
-  return formatMoney(metric.value);
+/**
+ * 未知值：比率分母 ≤ 0 是「不適用」，其餘（缺列、空白、未確認完整）是「資料待補」——缺的不是零。
+ * V3-2b：展開列的相關數字是 L2（整數元、16.2%、11.4 倍）；layer 可指定其他層。
+ */
+export function displayMetric(name: MetricName, metric: Metric, layer: Layer = "L2"): string {
+  if (metric.value === null) return formatEmpty(metric.reason_codes.length > 0 && metric.reason_codes.every(code => code === "NON_POSITIVE_DENOMINATOR") ? "notApplicable" : "missing");
+  return formatMetric(name, metric, layer);
 }
 /** 數據列的範圍文字：合計「所選通路合計（…）」、通路名、SKU「通路／SKU」。 */
 function factScope(fact: Fact, alias: boolean): string {
@@ -56,6 +55,10 @@ const CURRENT_ONLY = new Set<RuleCode>(["NEGATIVE_CHANNEL_CM", "SKU_NEGATIVE_GP"
 export function rankingLabel(code: RuleCode): string {
   return code === "NEGATIVE_CHANNEL_CM" ? ui.rankingCurrent : code === "SKU_NEGATIVE_GP" ? copy.skuRanking : labels.sections.rankingAmount;
 }
+/** 技術細節的排序金額：L3 到分、帶正負號與單位「+250.00 元」（TWD 只出現在匯出 metadata，§8.5 規則 5）。 */
+export function rankingText(value: string | null): string {
+  return value === null ? formatEmpty("missing") : fill(labels.units.yuan, { value: formatSignedDelta(value, "L3") });
+}
 /** 排序金額的抽屜內容：沿用 R1 健檢卡的行為（差額規則附公式與上期／本期組成，本期值規則只列本期）。 */
 export function rankingSelection(snapshot: Pick<WorkspaceSnapshot, "report">, row: DiagnosisScope, alias: boolean): EvidenceSelection | null {
   const { diagnostic } = row;
@@ -73,12 +76,12 @@ export function rankingSelection(snapshot: Pick<WorkspaceSnapshot, "report">, ro
   };
 }
 
-/** <summary> 內的影響金額：純文字（summary 不放互動元件）；色調同 ImpactAmount，可點的按鈕在展開內容第一行。 */
+/** <summary> 內的影響金額：純文字（summary 不放互動元件）；L1（萬）與色調同 ImpactAmount，可點的按鈕在展開內容第一行。 */
 function ImpactText({ snapshot, diagnostic }: { snapshot: Pick<WorkspaceSnapshot, "report">; diagnostic: Diagnostic }) {
   const evidence = impactEvidence(snapshot, diagnostic);
   if (!evidence) return <span className="impact-amount neutral">{diagnostic.code === "MISSING_CRITICAL_DATA" ? labels.status.missing : labels.status.notApplicable}</span>;
   const value = evidence.metric.value;
-  return <span className={`impact-amount ${amountTone(value)}`}>{value === null ? labels.status.missing : formatSignedMoney(value)}</span>;
+  return <span className={`impact-amount ${value === null ? "neutral" : toneClass(deltaTone("contribution_after_marketing", value, "L1"))}`}>{value === null ? labels.status.missing : formatSignedDelta(value, "L1")}</span>;
 }
 
 export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, events = null }: DiagnosisListProps) {
@@ -132,7 +135,7 @@ function DiagnosisRow({ group, defaultOpen, snapshot, suffix, onEvidence, onCrea
         <details className="diagnosis-technical"><summary>{labels.sections.technicalDetails}</summary>
           <dl className="diagnosis-tech-list">
             <div><dt>{copy.ruleCode}</dt><dd><code>{selected.diagnostic.code}</code></dd></div>
-            {ranking && <div><dt>{rankingLabel(selected.diagnostic.code)}</dt><dd>TWD {rankingEvidence ? <button type="button" className="number-link" onClick={() => onEvidence(rankingEvidence)} aria-label={fill(ui.rankingAria, { title: ruleCopy(snapshot, selected.diagnostic, alias).headline, amount: formatSignedMoney(ranking.value) })}>{formatSignedMoney(ranking.value)}</button> : formatSignedMoney(ranking.value)}</dd></div>}
+            {ranking && <div><dt>{rankingLabel(selected.diagnostic.code)}</dt><dd>{rankingEvidence ? <button type="button" className="number-link" onClick={() => onEvidence(rankingEvidence)} aria-label={fill(ui.rankingAria, { title: ruleCopy(snapshot, selected.diagnostic, alias).headline, amount: rankingText(ranking.value) })}>{rankingText(ranking.value)}</button> : rankingText(ranking.value)}</dd></div>}
             <div><dt>{copy.metricVersion}</dt><dd><code>{snapshot.metric_version}</code></dd></div>
             <div><dt>{labels.csvColumns.dataset_hash}</dt><dd><code>{snapshot.dataset_hash}</code></dd></div>
             <div><dt>{labels.csvColumns.filter_hash}</dt><dd><code>{snapshot.filter_hash}</code></dd></div>

@@ -554,7 +554,48 @@ export const evidence = {
   } as Record<string, string>,
 } as const;
 
-export const units = { wan: "{value} 萬", yuan: "{value} 元", multiple: "{value} 倍" } as const;
+/** V3-2b §8.5–§8.7 數字與期間的單位模板：數字和中文單位之間空一個半形空格，% 不空格，範圍用 en dash。 */
+export const units = {
+  wan: "{value} 萬",
+  yi: "{value} 億",
+  yuan: "{value} 元",
+  multiple: "{value} 倍",
+  percent: "{value}%",
+  count: "{value} 件",
+  perUnit: "{value} 元／件",
+  points: "{value} 個百分點",
+  pointsUp: "升 {value} 個百分點",
+  pointsDown: "降 {value} 個百分點",
+  periodDays: "（{days} 天）",
+  exportRange: "{start} 至 {end}（{days} 天）",
+} as const;
+
+/** V3-2b 方向詞與格式說明（GLOSSARY「方向詞的固定用法」）；presentation.ts 的 deltaWord／formatEmpty 從這裡取字。 */
+export const format = {
+  /** 淨營收、商品毛利、退款、件數 */
+  more: "多",
+  less: "少",
+  /** 費用 */
+  spendMore: "多花",
+  spendLess: "少花",
+  /** 扣廣告前／後貢獻 */
+  earnMore: "多賺",
+  earnLess: "少賺",
+  /** 比率、倍數 */
+  rise: "升",
+  fall: "降",
+  riseTo: "升到",
+  fallTo: "降到",
+  /** 上期 ≤ 0 時的貢獻方向 */
+  turnedPositive: "由負轉正",
+  turnedLoss: "轉為虧損",
+  flat: "持平",
+  favorable: "有利",
+  unfavorable: "不利",
+  /** L3：資料待補／不適用後附原因碼 */
+  emptyWithReason: "{state}（{code}）",
+  roundingNote: "差額由精確值取位，可能和兩個顯示值相減差 0.1。",
+} as const;
 
 export const brand = {
   name: "EC ProfitLens",
@@ -661,7 +702,8 @@ export const ui = {
     "currentHeader": "本期淨營收",
     "changeHeader": "淨營收差額",
     "turnedNegative": "轉為虧損",
-    "turnedPositive": "由負轉正"
+    "turnedPositive": "由負轉正",
+    "unitCaption": "{caption}金額單位：元。"
   },
   "topThree": {
     "impactEvidenceTitle": "{title}",
@@ -797,7 +839,9 @@ export const ui = {
     "trendTechnical": "圖形為近似比例，數字表保留精確金額。",
     "periodModeTechnical": "整月比較只接受兩個完整且已涵蓋的月份；未滿月請用等天數比較。確認沒有交易的日期仍算天數；缺資料的維持資料待補。",
     "periodRoundingTechnical": "日均差以未取分日均值相減後再取分；日均以 Decimal 計算，顯示時才取分。",
-    "bridgeTableTitle": "九項拆解"
+    "bridgeTableTitle": "九項拆解",
+    "growthInline": "（{value}）",
+    "captionWithUnit": "{caption}（元）"
   },
   "multiScenarioWorkbench": {
     "baselineFailed": "這個通路的基準算不出來；原本的方案還在，請檢查資料範圍。",
@@ -2063,5 +2107,5 @@ export const glossary = {
   ],
 } as const;
 
-export const labels = { ui, units, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave, relaunch, whatsNew, glossary };
+export const labels = { ui, units, format, brand, downloads, notes, csvColumns, csvSuffix, evidence, metrics, rules, nav, sections, buttons, scenario, actions, meeting, status, periods, importWizard, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, assist, targets, events, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave, relaunch, whatsNew, glossary };
 export type Labels = typeof labels;
