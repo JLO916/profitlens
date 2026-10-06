@@ -14,13 +14,12 @@ import { compareWithLastMeeting, exportMeetingMarkdown, lastMeeting, type Meetin
 import { exportExcel, type ExcelMeeting } from "@/application/excel-export";
 import { exportPptx } from "@/application/pptx-export";
 import { downloadText } from "@/application/download";
-import { formatMoney, formatSignedMoney, metricDefinitions } from "@/application/presentation";
+import { deltaTone, formatAmountL1, formatAmountL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
 import { fill, labels } from "@/i18n";
 import { scenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from "@/application/scenario-workspace";
 import { buildReviewDecisionContext, createReviewSession, refreshReviewActionReferences, REVIEW_DECISION_LABELS, reviewScenarioId, selectReviewScenario, syncReviewPins, updateReviewSession, validateReviewSession, type ReviewDecisionState, type ReviewSession } from "@/application/review-session";
-import { ActionSummaryList, ManagerSummary, PrintSummaryPortal } from "./manager-summary";
-import { amountTone } from "./top-three";
+import { ActionSummaryList, ManagerSummary, PrintSummaryPortal, toneClass } from "./manager-summary";
 import type { EvidenceSelection } from "./evidence-drawer";
 
 // R6-2 會議紀錄分頁（02 §8）：會議基本 → 議程 ①–⑥ → 決議與結束會議 → 上次會議比較 → 會議歷史 → 輸出。承接原 ReviewWorkbench 的全部控制項。
@@ -49,8 +48,9 @@ const decisionText = (row: MeetingDecision): string => row.confirmed_revision ==
   ? fill(record.decisionUnconfirmed, { decision: REVIEW_DECISION_LABELS[row.state] })
   : fill(record.decisionConfirmed, { decision: REVIEW_DECISION_LABELS[row.state], revision: row.confirmed_revision });
 const latestDecision = (meeting: Meeting): MeetingDecision => meeting.decisions[meeting.decisions.length - 1];
-const signedOrMissing = (value: string | null) => value === null ? labels.status.missing : formatSignedMoney(value);
-const moneyOrMissing = (value: string | null) => value === null ? labels.status.missing : formatMoney(value);
+// V3-2b：會議頁的句子與三件事用 L1（萬），議程表格用 L2（整數元，表頭標「（元）」）。
+const signedL1 = (value: string | null) => formatSignedDelta(value, "L1");
+const yuanColumn = (label: string) => fill(labels.units.yuanColumn, { label });
 /** 會議紀錄 Markdown 的檔名（含會議日期）。 */
 export const meetingMarkdownFilename = (meeting: Meeting): string => `profitlens-meeting-${meeting.date}.md`;
 /** 已結束會議的 Markdown：紀錄本身含結束當時凍結的上次比較（follow_up），還原備份後輸出相同。 */
@@ -265,7 +265,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
           })}</div>
           {alertFor("scenarios")}
           {/* 已選入方案的試算結果（與會議摘要同一份 buildReviewDecisionContext）；過期方案標示、不列入決議。 */}
-          {context.scenarios.length ? <div className="meeting-scenario-results" data-testid="meeting-scenario-results"><h4>{page.scenarioResults}</h4><ul>{context.scenarios.map(plan => <li key={plan.id} data-testid="meeting-scenario-result" data-status={plan.status}>{plan.status === "stale" && <><span className="tag warning">{copy.staleScenarios}</span> </>}{fill(summaryCopy.scenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatMoney(plan.baseline ?? null), contribution: formatMoney(plan.contribution ?? null), delta: formatSignedMoney(plan.delta ?? null) })}{plan.assumptions.length > 0 && <details><summary>{labels.sections.scenarioAssumptions}</summary><ul>{plan.assumptions.map((text, index) => <li key={index}>{text}</li>)}</ul></details>}</li>)}</ul><p className="note">{summaryCopy.scenarioNote}</p></div> : <p className="note" data-testid="meeting-scenario-results-empty">{summaryCopy.noScenario}</p>}
+          {context.scenarios.length ? <div className="meeting-scenario-results" data-testid="meeting-scenario-results"><h4>{page.scenarioResults}</h4><ul>{context.scenarios.map(plan => <li key={plan.id} data-testid="meeting-scenario-result" data-status={plan.status}>{plan.status === "stale" && <><span className="tag warning">{copy.staleScenarios}</span> </>}{fill(summaryCopy.scenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatAmountL1(plan.baseline ?? null), contribution: formatAmountL1(plan.contribution ?? null), delta: signedL1(plan.delta ?? null) })}{plan.assumptions.length > 0 && <details><summary>{labels.sections.scenarioAssumptions}</summary><ul>{plan.assumptions.map((text, index) => <li key={index}>{text}</li>)}</ul></details>}</li>)}</ul><p className="note">{summaryCopy.scenarioNote}</p></div> : <p className="note" data-testid="meeting-scenario-results-empty">{summaryCopy.noScenario}</p>}
         </section>
         <section data-testid="meeting-agenda-6" aria-labelledby="meeting-agenda-6-title"><h3 id="meeting-agenda-6-title">{record.agenda.actions}</h3><p className="note">{page.actionsNote}</p>
           {pinnedActions.length ? <div className="meeting-pinned-actions" data-testid="meeting-pinned-actions"><ActionSummaryList actions={pinnedActions} /></div> : <p className="note" data-testid="meeting-pinned-actions-empty">{record.noPinnedActions}</p>}
@@ -335,7 +335,7 @@ function FollowUpTable({ rows }: { rows: readonly MeetingActionFollowUp[] }) {
 }
 function KpiCompareTable({ rows, testId, ariaLabel = page.compareKpiAria }: { rows: readonly { metric: MeetingKpiMetric; last: string | null; current: string | null; change: string | null }[]; testId: string; ariaLabel?: string }) {
   const columns = record.compareColumns;
-  return <div className="table-scroll" tabIndex={0} role="region" aria-label={ariaLabel}><table data-testid={testId}><thead><tr><th scope="col">{columns.metric}</th><th scope="col">{columns.last}</th><th scope="col">{columns.current}</th><th scope="col">{columns.change}</th></tr></thead><tbody>{rows.map(row => <tr key={row.metric}><th scope="row">{metricDefinitions[row.metric].label}</th><td>{moneyOrMissing(row.last)}</td><td>{moneyOrMissing(row.current)}</td><td className={amountTone(row.change)}>{signedOrMissing(row.change)}</td></tr>)}</tbody></table></div>;
+  return <div className="table-scroll" tabIndex={0} role="region" aria-label={ariaLabel}><table data-testid={testId}><thead><tr><th scope="col">{columns.metric}</th><th scope="col">{yuanColumn(columns.last)}</th><th scope="col">{yuanColumn(columns.current)}</th><th scope="col">{yuanColumn(columns.change)}</th></tr></thead><tbody>{rows.map(row => <tr key={row.metric}><th scope="row">{metricDefinitions[row.metric].label}</th><td>{formatAmountL2(row.last)}</td><td>{formatAmountL2(row.current)}</td><td className={toneClass(deltaTone(row.metric, row.change, "L2"))}>{formatSignedDelta(row.change, "L2")}</td></tr>)}</tbody></table></div>;
 }
 
 /** 上次會議比較（05 §10）：同資料同通路才比 KPI 與三件事；資料或通路不同只留說明，上次決議與待辦狀態只列在 ④。 */
@@ -352,7 +352,7 @@ function MeetingCompare({ comparison }: { comparison: MeetingComparison }) {
 }
 function PriorityList({ rows }: { rows: readonly MeetingPriority[] }) {
   if (!rows.length) return <p className="note">{labels.notes.noPriorities}</p>;
-  return <ul>{rows.map((row, index) => <li key={row.rule}>{fill(page.priorityRow, { n: index + 1, headline: row.headline, scope: row.scope, impact: labels.sections.impact, amount: signedOrMissing(row.impact) })}</li>)}</ul>;
+  return <ul>{rows.map((row, index) => <li key={row.rule}>{fill(page.priorityRow, { n: index + 1, headline: row.headline, scope: row.scope, impact: labels.sections.impact, amount: signedL1(row.impact) })}</li>)}</ul>;
 }
 /** 歷史項目展開時的上次追蹤：結束當時凍結的 meeting.follow_up（比較方式、說明、KPI、上次決議、待辦狀態）。 */
 function FrozenFollowUp({ follow, title }: { follow: MeetingFollowUp; title: string }) {
@@ -391,7 +391,7 @@ export function MeetingHistory({ history, onRemove }: { history: readonly Meetin
       const title = fill(page.historyItem, { name: meeting.name, date: meeting.date, decision: decisionText(latestDecision(meeting)) });
       const warningId = `meeting-history-remove-warning-${index}`;
       return <li key={meeting.id} data-testid="meeting-history-item"><details><summary>{title}</summary>
-        <h3>{page.historyKpis}</h3><ul>{meeting.agenda.kpis.map(row => <li key={row.metric}>{fill(page.historyKpiRow, { metric: metricDefinitions[row.metric].label, previous: moneyOrMissing(row.previous), current: moneyOrMissing(row.current), change: signedOrMissing(row.change) })}</li>)}</ul>
+        <h3>{page.historyKpis}</h3><ul>{meeting.agenda.kpis.map(row => <li key={row.metric}>{fill(page.historyKpiRow, { metric: metricDefinitions[row.metric].label, previous: formatAmountL1(row.previous), current: formatAmountL1(row.current), change: signedL1(row.change) })}</li>)}</ul>
         <h3>{page.historyActions}</h3>{meeting.agenda.pinned_actions.length ? <ul>{meeting.agenda.pinned_actions.map(row => <li key={row.action_id}>{fill(page.historyActionRow, { problem: row.problem || copy.actionFallback, status: EXECUTION_LABELS[row.execution_status] })}</li>)}</ul> : <p className="note">{record.noPinnedActions}</p>}
         <h3>{page.historyFollowUp}</h3><FrozenFollowUp follow={meeting.follow_up} title={title} />
       </details><div className="meeting-history-buttons">

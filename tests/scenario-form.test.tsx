@@ -5,6 +5,7 @@ import { createSnapshot, hashInput } from "../src/application/workspace";
 import { saveScenario, type ScenarioPlan } from "../src/application/decision";
 import { SCENARIO_PRESET_IDS, absoluteContext, absoluteToRelative, rangeHint, relativeToAbsolute } from "../src/application/scenario-presets";
 import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, updateScenarioContext, type ScenarioSource, type ScenarioWorkspace } from "../src/application/scenario-workspace";
+import { formatAmountL1 } from "../src/application/presentation";
 import { DecisionWorkbench } from "../src/components/decision-workbench";
 import { MultiScenarioWorkbench } from "../src/components/multi-scenario-workbench";
 import type { ScenarioInputs } from "../src/domain/scenarios";
@@ -133,7 +134,8 @@ describe("R5-3 scenario page opens straight onto the form", () => {
     expect(select).toMatch(/<option value="DTC" selected="">DTC<\/option>/);
     expect(html).toContain('data-testid="baseline-net_revenue"');
     expect(html).toContain('data-testid="baseline-contribution_after_marketing"');
-    expect(text(element(html, "baseline-contribution_after_marketing", "button"))).toBe("270.00");
+    // V3-2b：本期基準大字是 L1（golden DTC 270.00）。
+    expect(text(element(html, "baseline-contribution_after_marketing", "button"))).toBe(formatAmountL1("270.00"));
     const plan = card(html, 1);
     expect(plan).toContain(`value="${fill(dw.defaultPlanName, { n: 1 })}"`);
     for (const label of FIELDS) expect(plan, label).toMatch(new RegExp(`<input id="[^"]+" aria-label="${label.replace(/[()（）]/g, ".")}"`));
@@ -207,7 +209,7 @@ describe("R5-3 version badge, draft tag and sensitivity on stored plans", () => 
     const html = render(src, build.workspace);
     const [a, b, c] = [card(html, 1), card(html, 2), card(html, 3)];
     expect(text(element(a, "scenario-version", "span"))).toBe(fill(form.version, { n: 2 }));
-    expect(text(element(a, "scenario-contribution", "strong"))).toBe("284.00");
+    expect(text(element(a, "scenario-contribution", "strong"))).toBe(formatAmountL1("284.00"));
     expect(a).not.toContain('data-testid="scenario-draft"');
     expect(text(element(b, "scenario-draft", "span"))).toBe(labels.scenario.draft);
     expect(b).not.toContain('data-testid="scenario-version"');
@@ -297,7 +299,7 @@ describe("R5-3 other channels stay reachable below the form", () => {
     expect(others).toMatch(/^<details(?![^>]*\sopen)/);
     expect(others).toContain(`<summary>${form.otherChannels}</summary>`);
     expect(others).toContain(fill(msw.editChannelPlans, { channel: "MARKETPLACE" }));
-    expect(others).toContain(fill(msw.planSummary, { plan: "M", resultLabel: labels.scenario.resultTitle, amount: "19.70" }));
+    expect(others).toContain(fill(msw.planSummary, { plan: "M", resultLabel: labels.scenario.resultTitle, amount: formatAmountL1("19.70") }));
     expect(others).toContain(fill(msw.selectPlanForMeeting, { selectForMeeting: labels.buttons.selectForMeeting, channel: "MARKETPLACE", plan: "M" }));
     // DTC 本身還沒有方案：表單仍是草稿方案 1，不受其他通路影響。
     expect(card(html, 1)).toContain(`value="${fill(dw.defaultPlanName, { n: 1 })}"`);
@@ -331,7 +333,7 @@ describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", ()
     expect(mode(tree, "volume_change_pct", "absolute").props["aria-pressed"]).toBe(true);
     expect(input(tree, labels.scenario.volume.label).props.value).toBe("4");
     expect(textOf(byTestId(tree, "scenario-equivalent-volume_change_pct"))).toBe(pct("0.0"));
-    expect(textOf(byTestId(tree, "scenario-contribution"))).toBe("284.00");
+    expect(textOf(byTestId(tree, "scenario-contribution"))).toBe(formatAmountL1("284.00"));
     expect(textOf(byTestId(tree, "scenario-version"))).toBe(fill(form.version, { n: 1 }));
     expect(findAll(tree, item => item.props["data-testid"] === "scenario-draft")).toHaveLength(0);
     // 廣告也一樣：預填 270.00。
@@ -343,7 +345,7 @@ describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", ()
     tree = render(props);
     expect(setState).not.toHaveBeenCalled();
     expect(input(tree, labels.scenario.volume.label).props.value).toBe("0");
-    expect(textOf(byTestId(tree, "scenario-contribution"))).toBe("284.00");
+    expect(textOf(byTestId(tree, "scenario-contribution"))).toBe(formatAmountL1("284.00"));
     // 真的改了絕對值才寫回：目標 6 件 → 相對 50，結果清空（變草稿），其他假設不動。
     call(mode(tree, "volume_change_pct", "absolute"), "onClick");
     tree = render(props);

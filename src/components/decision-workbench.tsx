@@ -10,7 +10,7 @@ import {
 } from "@/application/decision";
 import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown, scenarioReasonText } from "@/application/decision-export";
 import { downloadText } from "@/application/download";
-import { formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "@/application/presentation";
+import { deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatRateL1, formatRateL3, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { ABSOLUTE_FIELDS, SCENARIO_PRESETS, absoluteAvailability, absoluteContext, absoluteToRelative, applyPreset, rangeHint, relativeEquivalent, relativeToAbsolute, relativeToAbsoluteValue, type AbsoluteContext, type AbsoluteField, type ScenarioNumericField, type ScenarioPresetId } from "@/application/scenario-presets";
 import type { VersionedScenarioPlan } from "@/application/scenario-workspace";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -18,6 +18,7 @@ import { channelsLabel, demoAlias } from "@/application/copy";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { ScenarioSensitivity } from "./scenario-sensitivity";
+import { toneClass } from "./manager-summary";
 
 const ui = labels.ui.decisionWorkbench;
 /** 基準不能試算的原因：依 code 取 labels 文案（不顯示 domain 訊息）；逐欄位的原因碼前面加上指標名稱，才分得出是哪一項。 */
@@ -36,7 +37,10 @@ const inputFields: { key: Exclude<keyof ScenarioInputs, "assumptions_accepted">;
 // 呈現層九條白話假設（labels 以 JSON 陣列字串保存）；匯出仍用 domain 的 SCENARIO_ASSUMPTIONS 原文。
 const assumptionCopy: string[] = JSON.parse(ui.assumptions) as string[];
 const staleSuffix = `（${ui.baselineTagStale}）`;
-const money = (value: string | null | undefined) => formatMoney(value ?? null);
+// V3-2b：本期基準與試算結果的大字用 L1（萬），方案比較表用 L2（整數元，表頭標「（元）」）；輸入框與絕對值提示維持原樣。
+const amountL1 = (value: string | null | undefined) => formatAmountL1(value ?? null);
+/** 方案比較表的一格：方案還沒有有效結果時寫「尚未試算」，有結果才用 L2（取位調整列只有幾分錢，用 L3 才看得到）。 */
+const planCell = (plan: ScenarioPlan, value: string | null | undefined, format: (value: string | null) => string = formatAmountL2) => plan.result?.status === "valid" ? format(value ?? null) : ui.notCalculated;
 const form = labels.scenarioForm;
 const isAbsoluteField = (key: ScenarioNumericField): key is AbsoluteField => (ABSOLUTE_FIELDS as readonly string[]).includes(key);
 /** 方案若來自 scenario workspace 會帶版本號（VersionedScenarioPlan）；單獨使用時沒有版本號就不顯示徽章。 */
@@ -45,8 +49,8 @@ const groupDigits = (integer: string) => integer.replace(/\B(?=(\d{3})+(?!\d))/g
 /** 絕對值模式下輸入框的說明：帶出本期值（件數／折扣率／廣告費），讓使用者知道從哪裡改起。 */
 function absoluteHelp(field: AbsoluteField, ctx: AbsoluteContext): string {
   if (field === "volume_change_pct") return fill(labels.scenario.volume.absoluteHint, { units: fill(labels.assist.units.count, { value: groupDigits(ctx.units_sold?.toString() ?? "") }) });
-  if (field === "discount_change_pp") return fill(form.discountAbsoluteHint, { rate: formatRate(ctx.discount_rate) });
-  return fill(labels.scenario.adSpend.absoluteHint, { ad: formatMoney(ctx.ad_spend) });
+  if (field === "discount_change_pp") return fill(form.discountAbsoluteHint, { rate: formatRateL3(ctx.discount_rate) });
+  return fill(labels.scenario.adSpend.absoluteHint, { ad: formatAmountL3(ctx.ad_spend) });
 }
 /**
  * 每個方案、每個欄位各自的絕對值輸入；有這個鍵就代表該格在絕對值模式（本頁暫存，不寫入方案）。
@@ -163,7 +167,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
     </div>
     <section className="panel decision-baseline" aria-labelledby="baseline-heading">
       <div className="section-heading"><div><p className="eyebrow">{ui.baselineEyebrow}</p><h2 id="baseline-heading">{labels.sections.scenarioBaseline}</h2><p className="note">{fill(ui.baselineMeta, { start: session.period.start, end: session.period.end, channels: channelsLabel(session.scope.channels, alias), asOf: session.data_as_of })}</p></div><span className={`tag ${stale ? "blocking" : ""}`}>{stale ? ui.baselineTagStale : ui.baselineTagFixed}</span></div>
-      <div className="baseline-metrics">{(["net_revenue", "contribution_after_marketing"] as const).map(name => <div key={name}><span>{metricDefinitions[name].label}</span><button className="baseline-number" data-testid={`baseline-${name}`} disabled={stale || !singleChannel} onClick={() => baselineEvidence(name)}>{money(session.baseline.amounts[name])}</button></div>)}<div><span>{fill(ui.baselineRates, { discountRate: metricDefinitions.discount_rate.shortLabel, refundRatio: metricDefinitions.refund_ratio.shortLabel })}</span><strong>{formatRate(session.baseline.rates.discount_rate)} ／ {formatRate(session.baseline.rates.refund_ratio)}</strong></div><div><span>{ui.baselineFeeRates}</span><strong>{formatRate(session.baseline.rates.platform_rate)} ／ {formatRate(session.baseline.rates.payment_rate)}</strong></div></div>
+      <div className="baseline-metrics">{(["net_revenue", "contribution_after_marketing"] as const).map(name => <div key={name}><span>{metricDefinitions[name].label}</span><button className="baseline-number" data-testid={`baseline-${name}`} disabled={stale || !singleChannel} onClick={() => baselineEvidence(name)}>{amountL1(session.baseline.amounts[name])}</button></div>)}<div><span>{fill(ui.baselineRates, { discountRate: metricDefinitions.discount_rate.shortLabel, refundRatio: metricDefinitions.refund_ratio.shortLabel })}</span><strong>{formatRateL1(session.baseline.rates.discount_rate)} ／ {formatRateL1(session.baseline.rates.refund_ratio)}</strong></div><div><span>{ui.baselineFeeRates}</span><strong>{formatRateL1(session.baseline.rates.platform_rate)} ／ {formatRateL1(session.baseline.rates.payment_rate)}</strong></div></div>
       {!session.baseline.eligible && <div className="alert partial" data-testid="scenario-unavailable"><strong>{ui.unavailableTitle}</strong><ul>{session.baseline.reasons.map((reason, i) => <li key={`${reason.code}-${i}`}>{baselineReasonText(reason)}</li>)}</ul><p>{ui.unavailableHelp}</p></div>}
       <details><summary>{labels.sections.technicalDetails}</summary><dl className="decision-metadata"><dt>{labels.csvColumns.dataset_id}</dt><dd>{session.dataset_id}</dd><dt>{ui.techVersions}</dt><dd>{session.schema_version} / {session.scenario_version} / {session.metric_version}</dd><dt>{labels.csvColumns.dataset_hash}</dt><dd>{session.dataset_hash}</dd><dt>{labels.csvColumns.filter_hash}</dt><dd>{session.filter_hash}</dd><dt>{labels.csvColumns.revision}</dt><dd>{session.revision}</dd></dl></details>
     </section>
@@ -218,17 +222,17 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
           {!plan.result && <p className="scenario-version"><span className="tag partial" data-testid="scenario-draft">{labels.scenario.draft}</span></p>}
           {!plan.result && <p>{ui.noResult}</p>}
           {plan.result?.status !== "valid" && plan.result && <div><strong>{plan.inputs.assumptions_accepted ? ui.cannotCalculate : ui.planUnavailable}</strong><ul>{plan.result.reasons.map((reason, i) => <li key={i}>{inputFields.find(field => field.key === reason.field)?.label}{reason.field ? "：" : ""}{scenarioReasonText(reason)}</li>)}</ul></div>}
-          {plan.result?.status === "valid" && <><span>{labels.scenario.resultTitle}</span><strong data-testid="scenario-contribution">{money(plan.result.contribution)}</strong><p>{labels.scenario.vsBaseline} <b data-testid="scenario-delta">{formatSignedMoney(plan.result.delta)}</b></p></>}
+          {plan.result?.status === "valid" && <><span>{labels.scenario.resultTitle}</span><strong data-testid="scenario-contribution">{amountL1(plan.result.contribution)}</strong><p>{labels.scenario.vsBaseline} <b data-testid="scenario-delta" className={toneClass(deltaTone("contribution_after_marketing", plan.result.delta, "L1"))}>{formatSignedDelta(plan.result.delta, "L1")}</b></p></>}
         </div>
         {plan.result?.status === "valid" && <ScenarioSensitivity baseline={session.baseline} inputs={plan.inputs} stale={stale} value={plan.sensitivity} onChange={next => setSensitivity(plan.id, next)} />}
       </article>;
       })}</div>
-      {plans.length > 0 && <section className="panel"><h2>{fill(ui.compareTableHeading, { staleSuffix: stale ? staleSuffix : "" })}</h2><div className="table-scroll" role="region" aria-label={ui.compareTableAria} tabIndex={0}><table data-testid="scenario-comparison"><caption>{ui.compareTableCaption}</caption><thead><tr><th>{ui.compareColItem}</th><th>{ui.compareColBaseline}</th>{plans.map(plan => <th key={plan.id}>{plan.name}</th>)}</tr></thead><tbody>
-        {AMOUNT_FIELDS.map(field => <tr key={field}><th>{metricDefinitions[field].label}</th><td>{money(session.baseline.amounts[field])}</td>{plans.map(plan => <td key={plan.id}>{money(plan.result?.amounts?.[field])}</td>)}</tr>)}
-        <tr><th>{labels.scenario.oneOff.label}</th><td>{labels.status.notApplicable}</td>{plans.map(plan => <td key={plan.id}>{money(plan.result?.amounts?.one_time_cost)}</td>)}</tr>
-        <tr><th>{ui.roundingAdjustment}</th><td>{labels.status.notApplicable}</td>{plans.map(plan => <td key={plan.id}>{money(plan.result?.rounding_adjustment)}</td>)}</tr>
-        <tr className="scenario-total"><th>{metricDefinitions.contribution_after_marketing.label}</th><td>{money(session.baseline.amounts.contribution_after_marketing)}</td>{plans.map(plan => <td key={plan.id}>{money(plan.result?.contribution)}</td>)}</tr>
-        <tr><th>{fill(ui.netRevenueSummaryRow, { metric: metricDefinitions.net_revenue.label })}</th><td>{money(session.baseline.amounts.net_revenue)}</td>{plans.map(plan => <td key={plan.id}>{money(plan.result?.amounts?.net_revenue)}</td>)}</tr>
+      {plans.length > 0 && <section className="panel"><h2>{fill(ui.compareTableHeading, { staleSuffix: stale ? staleSuffix : "" })}</h2><div className="table-scroll" role="region" aria-label={ui.compareTableAria} tabIndex={0}><table data-testid="scenario-comparison"><caption>{ui.compareTableCaption}</caption><thead><tr><th>{fill(labels.units.yuanColumn, { label: ui.compareColItem })}</th><th>{ui.compareColBaseline}</th>{plans.map(plan => <th key={plan.id}>{plan.name}</th>)}</tr></thead><tbody>
+        {AMOUNT_FIELDS.map(field => <tr key={field}><th>{metricDefinitions[field].label}</th><td>{formatAmountL2(session.baseline.amounts[field])}</td>{plans.map(plan => <td key={plan.id}>{planCell(plan, plan.result?.amounts?.[field])}</td>)}</tr>)}
+        <tr><th>{labels.scenario.oneOff.label}</th><td>{labels.status.notApplicable}</td>{plans.map(plan => <td key={plan.id}>{planCell(plan, plan.result?.amounts?.one_time_cost)}</td>)}</tr>
+        <tr><th>{ui.roundingAdjustment}</th><td>{labels.status.notApplicable}</td>{plans.map(plan => <td key={plan.id}>{planCell(plan, plan.result?.rounding_adjustment, formatAmountL3)}</td>)}</tr>
+        <tr className="scenario-total"><th>{metricDefinitions.contribution_after_marketing.label}</th><td>{formatAmountL2(session.baseline.amounts.contribution_after_marketing)}</td>{plans.map(plan => <td key={plan.id}>{planCell(plan, plan.result?.contribution)}</td>)}</tr>
+        <tr><th>{fill(ui.netRevenueSummaryRow, { metric: metricDefinitions.net_revenue.label })}</th><td>{formatAmountL2(session.baseline.amounts.net_revenue)}</td>{plans.map(plan => <td key={plan.id}>{planCell(plan, plan.result?.amounts?.net_revenue)}</td>)}</tr>
       </tbody></table></div></section>}
     </div>
     <section className="panel decision-export"><h2>{fill(ui.exportHeading, { staleSuffix: stale ? staleSuffix : "" })}</h2><p className="note">{ui.exportNote}</p><div className="button-row"><button className="button quiet" onClick={() => download("md")}>{labels.downloads.decisionMd}</button><button className="button quiet" onClick={() => download("csv")}>{labels.downloads.decisionCsv}</button><button className="button quiet" onClick={() => download("json")}>{labels.downloads.decisionJson}</button></div></section>

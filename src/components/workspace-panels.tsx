@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Decimal from "decimal.js";
-import { evidenceRows, formatMoney, formatRate, metricDefinitions } from "@/application/presentation";
+import { evidenceRows, formatAmountL2, formatMultiple, formatRateL2, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { analyzeProducts } from "@/domain/analysis";
 import { COST_FIELDS, SALES_FIELDS, type Dataset, type Metric, type MetricName, type ProductMetrics, type SourceRef } from "@/domain/types";
@@ -28,12 +27,13 @@ const previewLabels: Record<string, string> = {
   platform_fees: metricDefinitions.platform_fees.shortLabel, payment_fees: metricDefinitions.payment_fees.shortLabel, fulfillment_costs: metricDefinitions.fulfillment_costs.shortLabel, other_variable_costs: metricDefinitions.other_variable_costs.shortLabel, ad_spend: metricDefinitions.ad_spend.shortLabel,
 };
 
+/** V3-2b：商品表是 L2（整數元、一位小數 %），金額欄的表頭標一次「（元）」；精確值在「計算與來源」抽屜。 */
 function displayMetric(name: MetricName, metric: Metric): string {
   if (metric.value === null) return labels.status.notApplicable;
   const unit = metricDefinitions[name].unit;
-  if (unit === "percent") return formatRate(metric.value);
-  if (unit === "multiple") return fill(labels.units.multiple, { value: new Decimal(metric.value).toFixed(2, Decimal.ROUND_HALF_UP) });
-  return formatMoney(metric.value);
+  if (unit === "percent") return formatRateL2(metric.value);
+  if (unit === "multiple") return formatMultiple(metric.value, "L2");
+  return formatAmountL2(metric.value);
 }
 
 export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversion, targets = null, events = null, targetIssues = [], eventIssues = [], onTargets, onEvents, onRemoveTargets, onRemoveEvents, onRemoveTargetRow, onRemoveEventRow }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; targets?: TargetSet | null; events?: EventSet | null; targetIssues?: TargetIssue[]; eventIssues?: EventIssue[]; onTargets?: (file: File | undefined) => void; onEvents?: (file: File | undefined) => void; onRemoveTargets?: () => void; onRemoveEvents?: () => void; onRemoveTargetRow?: (line: number) => void; onRemoveEventRow?: (line: number) => void }) {
@@ -139,7 +139,7 @@ export function Products({ dataset, snapshot, onEvidence, filenames }: { dataset
     <div className="product-filters"><label htmlFor="product-category">{ui.filterCategory}<select aria-label={ui.filterCategory} id="product-category" value={activeCategory} onChange={event => setCategory(event.target.value)}><option value="">{ui.allCategories}</option>{categories.map(value => <option key={value} value={value}>{categoryLabel(value, alias)}</option>)}</select></label><label htmlFor="product-search">{ui.searchSku}<input id="product-search" type="search" placeholder={ui.searchSkuPlaceholder} value={search} onChange={event => setSearch(event.target.value)} /></label></div>
     <div className="export-actions"><button className="button quiet" onClick={() => downloadText(exportProductsCsv(dataset, snapshot, rows, { category: activeCategory, query }, filenames), "profitlens-products.csv")}>{labels.downloads.productsCsv}</button><span className="note">{ui.productsCsvHint}</span></div>
     <div className="metric-strip"><p aria-live="polite">{fill(ui.productCount, { n: rows.length })}</p><p className="note">{fill(ui.productScope, { start: period.start, end: period.end, channels: channelsLabel(channels, alias), category: activeCategory ? categoryLabel(activeCategory, alias) : ui.allCategories })}</p></div>
-    {rows.length === 0 ? <p>{ui.noProducts}</p> : <div className="table-scroll" tabIndex={0} role="region" aria-label={ui.productTableAria}><table className="table" data-testid="product-table"><caption className="sr-only">{ui.productTableCaption}</caption><thead><tr><th scope="col">{ui.previewColumns.channel}</th><th scope="col">SKU</th><th scope="col">{ui.previewColumns.category}</th>{productColumns.map(column => <th scope="col" key={column.name}>{column.label}</th>)}</tr></thead><tbody>{rows.map(row => <tr key={JSON.stringify([row.channel, row.sku])}><td>{channelLabel(row.channel, alias)}</td><th scope="row">{row.sku}</th><td>{row.category.trim() ? categoryLabel(row.category, alias) : ui.uncategorized}</td>{productColumns.map(column => {
+    {rows.length === 0 ? <p>{ui.noProducts}</p> : <div className="table-scroll" tabIndex={0} role="region" aria-label={ui.productTableAria}><table className="table" data-testid="product-table"><caption className="sr-only">{ui.productTableCaption}</caption><thead><tr><th scope="col">{ui.previewColumns.channel}</th><th scope="col">SKU</th><th scope="col">{ui.previewColumns.category}</th>{productColumns.map(column => <th scope="col" key={column.name}>{metricDefinitions[column.name].unit === "money" ? fill(labels.units.yuanColumn, { label: column.label }) : column.label}</th>)}</tr></thead><tbody>{rows.map(row => <tr key={JSON.stringify([row.channel, row.sku])}><td>{channelLabel(row.channel, alias)}</td><th scope="row">{row.sku}</th><td>{row.category.trim() ? categoryLabel(row.category, alias) : ui.uncategorized}</td>{productColumns.map(column => {
       const metric = row.metrics[column.name];
       return <td key={column.name}><button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined} aria-label={fill(ui.productCellAria, { channel: channelLabel(row.channel, alias), sku: row.sku, metric: column.label, value: displayMetric(column.name, metric) })} onClick={() => onEvidence({ title: fill(ui.productEvidenceTitle, { sku: row.sku, metric: column.label }), name: column.name, metric, period, channels: [row.channel], sources: row.sources, scopeLabel: fill(ui.productScopeLabel, { sku: row.sku, category: categoryLabel(row.category, alias) }) })}>{displayMetric(column.name, metric)}</button>{metric.value === null && metric.reason_codes.length > 0 && <small className="note">{labels.status.missing}</small>}</td>;
     })}</tr>)}</tbody></table></div>}

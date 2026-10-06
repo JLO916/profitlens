@@ -208,6 +208,16 @@ export function formatSignedRate(value: string | null | undefined, layer: Layer,
   return v === null ? formatEmpty(empty) : percent(v, layer === "L3" ? 2 : 1, true);
 }
 /**
+ * 已經是百分數的值（不是比率小數）：試算的銷量增減「10」、銷量門檻 threshold_pct「12.345678901234」。
+ * L1／L2 一位小數「+10.0%」、L3 兩位「+10.00%」；signed 時正值加「+」，負值一律 U+2212，取位後為零不帶符號。
+ */
+export function formatPercentNumber(value: string | null | undefined, layer: Layer, options: { signed?: boolean; empty?: EmptyKind } = {}): string {
+  const v = exact(value);
+  if (v === null) return formatEmpty(options.empty ?? "missing");
+  const result = rounded(v, layer === "L3" ? 2 : 1);
+  return withUnit(labels.units.percent, `${signPrefix(result.sign, options.signed ?? false)}${result.text}`);
+}
+/**
  * 比率差（兩個比率小數的差，例如 −0.14251）：L1「降 14.3 個百分點」／「升 2.1 個百分點」、L2「−14.3 個百分點」、L3「−14.25 個百分點」；零「0.0 個百分點」。
  * 要從精確值相減後再取位（§8.5 規則 1），不要用兩個顯示值相減；手上是兩期比率時用 formatRateChange。
  */
@@ -217,6 +227,11 @@ export function formatRatePoints(value: string | null | undefined, layer: Layer,
   const result = rounded(v.times(100), layer === "L3" ? 2 : 1);
   if (layer === "L1") return withUnit(result.sign < 0 ? labels.units.pointsDown : result.sign > 0 ? labels.units.pointsUp : labels.units.points, result.text);
   return withUnit(labels.units.points, `${signPrefix(result.sign, true)}${result.text}`);
+}
+/** 已經以「百分點」為單位的差（例如總覽貢獻率的 percentagePointChange「−14.251…」）：先精確除以 100 再交給 formatRatePoints。 */
+export function formatPointsValue(value: string | null | undefined, layer: Layer, empty: EmptyKind = "missing"): string {
+  const v = exact(value);
+  return v === null ? formatEmpty(empty) : formatRatePoints(v.div(100).toFixed(), layer, empty);
 }
 /** 兩期比率的差（本期 − 上期，精確相減後取位）。任一期缺值回傳空值文字。 */
 export function formatRateChange(current: string | null | undefined, previous: string | null | undefined, layer: Layer, empty: EmptyKind = "missing"): string {
