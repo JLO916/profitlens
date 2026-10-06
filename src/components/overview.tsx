@@ -98,7 +98,7 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
 
     <KpiBand snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} onNavigate={onNavigate} missingItems={missingItems} targets={kpiTargets} />
 
-    <TopThree snapshot={snapshot} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} />
+    <TopThree snapshot={snapshot} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} onOpenDiagnosis={onNavigate ? () => onNavigate("diagnosis") : undefined} />
 
     <section className="panel trend-panel" aria-labelledby="trend-title">
       <div className="section-heading"><div><p className="eyebrow">TREND</p><h2 id="trend-title">{labels.sections.trend}</h2></div><div className="chart-legend"><span><i className="legend-dot teal" />{metricDefinitions.net_revenue.label}</span><span><i className="legend-dot navy" />{metricDefinitions.contribution_after_marketing.label}</span></div></div>

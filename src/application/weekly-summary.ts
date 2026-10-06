@@ -14,7 +14,7 @@ import { fill, labels } from "@/i18n";
 export type SnapshotKind = "revenueUpContributionDown" | "bothUp" | "bothDown" | "revenueDownContributionUp" | "flat" | "turned" | "missing";
 export interface SnapshotSentence { kind: SnapshotKind; text: string; topHeadline: string | null }
 
-export interface WeeklySummaryInput { snapshot: WorkspaceSnapshot; datasetName: string; importanceThreshold?: string; missingItems?: number; actions: { pending: number; pinned: { problem: string; owner: string; deadline: string }[] } }
+export interface WeeklySummaryInput { snapshot: WorkspaceSnapshot; datasetName: string; importanceThreshold?: string; missingItems?: number; actions: { pending: number; pinned: { problem: string; owner: string; deadline: string }[] }; /** 資料集全部通路；目前範圍涵蓋全部時期間行寫「全部通路」（與一句話的範圍行、期間列相同）。 */ allChannels?: readonly string[] }
 export interface WeeklySummary { text: string; markdown: string; sentence: SnapshotSentence }
 
 const sentences = labels.overview.snapshot.sentence;
@@ -110,6 +110,10 @@ export function buildWeeklySummary(input: WeeklySummaryInput): WeeklySummary {
   const topHeading = groups.length > 0 && groups.length < 3 ? fill(weekly.topThreeFew, { n: groups.length }) : labels.overview.sections.topThree;
   const footer = fill(weekly.footer, { date: formatDateL1(anchor, { anchor }), brand: labels.brand.name });
   const alias = demoAlias(report.dataset_id);
+  // 範圍：目前通路涵蓋資料集全部通路時寫「全部通路」（PRD §10.2 範例），否則列出通路名稱。
+  const scopeChannels = report.scope.channels;
+  const everyChannel = !!input.allChannels && input.allChannels.length > 0 && input.allChannels.every(channel => scopeChannels.includes(channel));
+  const channelsText = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scopeChannels, alias);
 
   /** 依輸出格式處理使用者文字後組出各段；數字由格式化函式產生，不需要跳脫。 */
   const parts = (text: (value: string) => string) => {
@@ -121,7 +125,7 @@ export function buildWeeklySummary(input: WeeklySummaryInput): WeeklySummary {
     const pending = count(input.actions.pending);
     return {
       datasetName: text(input.datasetName),
-      period: fill(weekly.period, { current: span(report.current.period, report.comparison.current_days), previous: span(report.previous.period, report.comparison.previous_days), channels: text(channelsLabel(report.scope.channels, alias)) }),
+      period: fill(weekly.period, { current: span(report.current.period, report.comparison.current_days), previous: span(report.previous.period, report.comparison.previous_days), channels: text(channelsText) }),
       items: groups.map((group, index) => fill(weekly.topThreeItem, { n: index + 1, headline: text(group.headline), nextStep: text(group.next_step) })),
       actions: pinned.length ? fill(weekly.actionsPinned, { pending, pinned: pinned.join(weekly.pinnedSeparator) }) : fill(weekly.actions, { pending }),
     };

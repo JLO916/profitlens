@@ -25,7 +25,8 @@ export async function loadDemo(page: Page) {
   await prompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
   await expect(prompt).toHaveCount(0);
   await expect(page.getByTestId("top-three")).toBeVisible();
-  await expect(page.locator(".kpi-grid article.kpi-card")).toHaveCount(5);
+  // V3-4a：KPI 帶（C1）取代五張卡；五格仍帶 kpi-* testid。
+  await expect(page.locator(".kpi-band [data-testid^='kpi-']")).toHaveCount(5);
 }
 
 /** V3-3：經 navigateTo 切頁（桌機側欄；手機底部分頁列或「更多」），等 anchor 可見後捲回頂端。 */

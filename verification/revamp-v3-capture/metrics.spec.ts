@@ -13,7 +13,8 @@ import { FIXED_NOW, loadDemo, nav } from "./shared";
 const OUT = resolve(process.env.METRICS_OUT ?? "verification/revamp-v3/V3-0/metrics.json");
 const copy = labels.importWizard;
 const inclusive = resolve("tests/fixtures/inclusive_tax");
-const KPI_CARDS = ".kpi-grid article.kpi-card[data-testid^='kpi-']";
+/** V3-4a 起是 KPI 帶的五格（C1）；V3-0 基準量的是 .kpi-grid 的五張卡，口徑相同（第一格頂端、五格底邊）。 */
+const KPI_CARDS = ".kpi-band [data-testid^='kpi-']";
 
 /** 依路徑合併寫入（Lighthouse 腳本也寫同一個檔的 lighthouse 鍵）。 */
 async function record(path: string[], value: unknown) {
@@ -75,8 +76,9 @@ test("首屏位置與內容前控制項數", async ({ page }, testInfo) => {
   await page.evaluate(() => window.scrollTo(0, 0));
   const cards = await page.locator(KPI_CARDS).evaluateAll(elements => elements.map(element => { const rect = element.getBoundingClientRect(); return { id: element.getAttribute("data-testid"), top: rect.top + window.scrollY, bottom: rect.bottom + window.scrollY }; }));
   expect(cards).toHaveLength(5);
-  const firstRow = await box(page, "[data-testid='top-three'] .top-three-list > li:first-child");
-  const firstRowTitle = await box(page, "[data-testid='top-three'] .top-three-list > li:first-child h3");
+  // V3-4a：三件事改成警示列（.alert-list > li.alert-row），標題是列內的 h3.alert-title。
+  const firstRow = await box(page, "[data-testid='top-three'] .alert-list > li:first-child");
+  const firstRowTitle = await box(page, "[data-testid='top-three'] .alert-list > li:first-child h3");
   const contribution = await box(page, "[data-testid='kpi-contribution_after_marketing'] .kpi-value");
   const focusable = await focusableBeforeFirstKpi(page);
   const snapshotSentence = await page.getByTestId("snapshot-sentence").count();

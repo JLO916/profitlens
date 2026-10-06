@@ -229,6 +229,11 @@ describe("buildWeeklySummary：F1 週會摘要（PRD §10.2）", () => {
     const summary = buildWeeklySummary(input(demo, { datasetName: "示範資料" }));
     const lines = summary.text.split("\n");
     expect(lines[2]).toBe(fill(weekly.period, { current: span(demo, "current"), previous: span(demo, "previous"), channels: channelsLabel(demo.report.scope.channels, true) }));
+    // 目前範圍涵蓋資料集全部通路時，期間行寫「全部通路」（PRD §10.2 範例；與一句話的範圍行、期間列同一個字）。
+    const all = buildWeeklySummary(input(demo, { datasetName: "示範資料", allChannels: demo.report.scope.channels })).text.split("\n");
+    expect(all[2]).toBe(fill(weekly.period, { current: span(demo, "current"), previous: span(demo, "previous"), channels: labels.shell.periodBar.filter.allChannels }));
+    const partial = buildWeeklySummary(input(demo, { datasetName: "示範資料", allChannels: [...demo.report.scope.channels, "OTHER"] })).text.split("\n");
+    expect(partial[2]).toBe(lines[2]);
     expect(lines.slice(4, 7)).toEqual(keyLines(demo));
     expect(lines[8]).toBe(labels.overview.sections.topThree);
     expect(lines[9]).toBe(fill(weekly.topThreeItem, { n: 1, headline: diagnosisGroups(demo).priorities[0].headline, nextStep: diagnosisGroups(demo).priorities[0].next_step }));

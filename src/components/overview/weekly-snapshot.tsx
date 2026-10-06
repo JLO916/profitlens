@@ -67,7 +67,7 @@ export function WeeklySnapshot({ snapshot, datasetName, missingItems, actionsSum
     return () => { if (pending.current) clearTimeout(pending.current); };
   }, []);
   const copy = async () => {
-    const { copied, text } = await copyWeeklySummary({ snapshot, datasetName, missingItems, actions: actionsSummary }, typeof navigator === "undefined" ? null : navigator.clipboard);
+    const { copied, text } = await copyWeeklySummary({ snapshot, datasetName, missingItems, actions: actionsSummary, allChannels }, typeof navigator === "undefined" ? null : navigator.clipboard);
     if (!copied) { setFallback(text); return; }
     track("summary_copied");
     setStatus(previous => ({ text: ui.copied, key: previous.key + 1 }));
