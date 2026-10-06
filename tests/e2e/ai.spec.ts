@@ -1,6 +1,7 @@
 import { clickReplacing, dismissSavePrompt, openValidation, startChannelContext } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
+import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
@@ -137,8 +138,9 @@ async function approveAndSend(page: Page) {
 }
 async function assertCore(page: Page) {
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(kpi(page, "net_revenue")).toHaveText("1,480.00");
-  await expect(kpi(page, "contribution_after_marketing")).toHaveText("270.00");
+  // V3-2b：KPI 大數字是 L1（< 1 萬顯示整數元），由 golden 精確值經 formatAmountL1 產生。
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("1480.00"));
+  await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
 }
 
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
@@ -219,7 +221,8 @@ test("真實本機未啟用端點 GET／POST 降級，未同意不傳送，核�
   for (const label of [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label]) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
   await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
-  await expect(card.getByTestId("scenario-contribution")).toHaveText("270.00");
+  // V3-2b：試算結果大字是 L1。
+  await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("270.00"));
 });
 
 test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並可追溯證據", async ({ page }, testInfo) => {
@@ -270,7 +273,9 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: evidenceDialogName(fill(ai.evidenceTitle, { metric: cmLabel })), exact: true });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator("p.number")).toHaveText(fill(labels.ui.evidenceDrawer.money, { amount: "270.00" }));
+  // V3-2b（§7.8）：抽屜標題下的大數字是 L1，下一行永遠是到分的精確值（L3＋「元」）。
+  await expect(dialog.locator("p.number")).toHaveText(formatAmountL1("270.00"));
+  await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatAmountL3("270.00") }));
   // Golden dataset keeps the raw channel name (demo alias applies only to synthetic-demo).
   // V3-2a（copy-rewrite.csv ui.evidenceDrawer.scopeLine）：日期區間改用「–」，片段從模板的 {start} 起取並填值。
   const scopeLine = labels.ui.evidenceDrawer.scopeLine;

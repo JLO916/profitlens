@@ -1,4 +1,5 @@
 import { fill, labels } from "../../src/i18n";
+import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
@@ -57,15 +58,17 @@ test("PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後�
   await setupWithoutManifest(page);
   await expect(form.getByLabel(copy.comparisonMode, { exact: true })).toHaveValue("same_days");
   await confirmAndCheck(page, "valid");
-  await expect(form.getByTestId("reconciliation-gross_sales")).toContainText("5600.00");
+  // V3-2b：對帳表是 L3（到分、千分位，PRD §3.3／§8.5），數字一律由 golden 精確值經 formatAmountL3 產生。
+  await expect(form.getByTestId("reconciliation-gross_sales")).toContainText(formatAmountL3("5600.00"));
   await expect(form.getByTestId("reconciliation-gross_sales")).toContainText("sales_daily.csv");
-  await expect(form.getByTestId("reconciliation-ad_spend")).toContainText("750.00");
-  await expect(form.getByTestId("reconciliation-metric-net_revenue")).toContainText("4720.00");
-  await expect(form.getByTestId("reconciliation-metric-contribution_after_marketing")).toContainText("825.00");
+  await expect(form.getByTestId("reconciliation-ad_spend")).toContainText(formatAmountL3("750.00"));
+  await expect(form.getByTestId("reconciliation-metric-net_revenue")).toContainText(formatAmountL3("4720.00"));
+  await expect(form.getByTestId("reconciliation-metric-contribution_after_marketing")).toContainText(formatAmountL3("825.00"));
   await expect(form.getByTestId("import-reconciliation")).toContainText(labels.ui.importGuidance.excluded.platformSubsidy);
   await commitWizard(page);
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("255.00");
+  // V3-2b：KPI 大數字是 L1；golden 本期 255.00 < 1 萬，顯示為整數元。
+  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText(formatAmountL1("255.00"));
 });
 test("PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合計", async ({ page }) => {
   const form = await stage(page, "fixtures/errors/missing_cogs");
@@ -74,7 +77,7 @@ test("PL04缺成本保留來源未知與已知小計，貢獻不冒充完整合�
   await expect(form.getByTestId("reconciliation-cogs_net")).toContainText(fill(panel.unknownBlanks, { n: 1 }));
   await expect(form.getByTestId("reconciliation-cogs_net")).toContainText(templateText(panel.knownSubtotal));
   await expect(form.getByTestId("reconciliation-cogs_net")).toContainText("MISSING_COGS");
-  await expect(form.getByTestId("reconciliation-metric-net_revenue")).toContainText("4720.00");
+  await expect(form.getByTestId("reconciliation-metric-net_revenue")).toContainText(formatAmountL3("4720.00"));
   await expect(form.getByTestId("reconciliation-metric-contribution_after_marketing")).toContainText(templateText(panel.unknownReasons));
 });
 test("PL04含稅或淨結算來源不可直接套用，也不自動換算（R3：含稅改為明示換算；淨結算選項已移除；「我不確定」停在第 3 步）", async ({ page }) => {
@@ -102,7 +105,7 @@ test("PL04含稅或淨結算來源不可直接套用，也不自動換算（R3�
   await expect(page.getByTestId("import-preprocessing")).toContainText("5%");
   await expect(page.getByTestId("import-preprocessing")).not.toContainText(copy.noConversion);
   // 原始含稅值保留可追溯：前處理摘要列出原價收入的含稅合計（golden 原值 5600.00）與換算後合計。
-  await expect(page.getByTestId("import-preprocessing")).toContainText("5600.00");
+  await expect(page.getByTestId("import-preprocessing")).toContainText(formatAmountL3("5600.00"));
   await expect(form.getByTestId("import-reconciliation")).toBeVisible();
   await expect(commitButton(page)).toBeVisible();
 });
