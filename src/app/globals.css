@@ -424,9 +424,6 @@ code { font-family: var(--font-mono); font-size: var(--text-12); overflow-wrap: 
 .evidence-body dd { margin: 0; overflow-wrap: anywhere; }
 .evidence-body dt { color: var(--text-tertiary); font-size: var(--text-12); }
 .evidence-body p { overflow-wrap: anywhere; }
-.source-table dl { display: flex; gap: 6px 12px; flex-wrap: wrap; min-width: 220px; }
-.source-table dl > div { min-width: 110px; }
-.source-table th, .source-table td { padding: 11px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 50% { opacity: .45; } }
 @media (max-width: 1190px) { .period-form { gap: 12px; }.page-heading { align-items: flex-start; }.load-controls { flex: 1; justify-content: flex-end; } }
@@ -697,9 +694,6 @@ main summary, main button, main input, main select, main textarea, main [role="r
 .whats-new .text-button { font-size: var(--text-13); margin-left: 4px; }
 .whats-new-dismiss { min-height: 32px; padding: 4px 10px; font-size: var(--text-12); }
 @media print { .whats-new { display: none !important; } }
-.evidence-ladder { background: var(--bg-page); border-radius: var(--radius-md); padding: 16px 18px; margin: 18px 0; }
-.evidence-ladder > p { font-size: var(--text-13); color: var(--text-secondary); margin-bottom: 10px; }
-.evidence-ladder h4 { font-size: var(--text-13); margin: 14px 0 6px; }
 .ladder-table { width: 100%; border-collapse: collapse; font-size: var(--text-13); background: transparent; }
 .ladder-table td, .ladder-table th { padding: 7px 8px; border-bottom: 1px solid var(--border-subtle); background: transparent; }
 .ladder-table th { font-weight: 500; color: var(--text-secondary); text-align: left; white-space: normal; }
@@ -707,14 +701,6 @@ main summary, main button, main input, main select, main textarea, main [role="r
 .ladder-amount { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ladder-table tr.subtotal th, .ladder-table tr.subtotal td { font-weight: 600; }
 .ladder-table tr.current th, .ladder-table tr.current td { font-weight: 600; color: var(--text-primary); background: var(--accent-subtle); }
-.evidence-technical { margin: 14px 0; font-size: var(--text-12); }
-.evidence-technical summary { cursor: pointer; color: var(--text-tertiary); }
-.evidence-technical dl > div { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(0, 3fr); gap: 10px; margin: 8px 0; }
-.evidence-technical dd, .evidence-technical ul { margin: 0; padding-left: 0; list-style: none; }
-.source-controls { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin: 10px 0; }
-.source-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-.source-search { flex: 1; min-width: 180px; }
-.evidence-sources nav { display: flex; gap: 10px; align-items: center; margin-top: 12px; font-size: var(--text-12); }
 @media (max-width: 640px) { .basis-dialog { width: 100vw; max-height: 100dvh; border-radius: 0; } .basis-button { padding: 4px 8px; } }
 
 /* R3 import wizard: four steps, drop zone, mapping table, basis choice. */
@@ -1539,5 +1525,94 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-5 錨點 B：商品毛利（頁首匯出選單、工具列 C15、前 10 名表、全部商品表、密度切換、手機清單）（代理 B 只在此錨點之後、錨點 C 之前新增規則） ── */
 
 /* ── V3-5 錨點 C：計算與來源抽屜（C6：標題列、區段、組成表、原始明細）（代理 C 只在此錨點之後、結束錨點之前新增規則） ── */
+
+/* C6 抽屜外框：右側滑入；桌機 560px、≥ 1440 時 640px、768–1279 時 480px、< 768 全螢幕。
+   只套在 .evidence-drawer：指標定義對話框與取代確認對話框仍共用 .evidence-dialog／.evidence-header／.evidence-body 的 v2 規則，不受影響。
+   焦點圈限與回焦沿用 <dialog> showModal；遮罩沿用 .evidence-dialog::backdrop（--scrim）。 */
+.evidence-drawer { width: var(--drawer-w); max-width: 100vw; height: 100dvh; max-height: 100dvh; border: 0; border-left: var(--border-w) solid var(--border-subtle); background: var(--bg-surface); box-shadow: var(--shadow-overlay); overflow-y: auto; overscroll-behavior: contain; }
+.evidence-drawer[open] { animation: evidence-drawer-in var(--dur-base) var(--ease); }
+@keyframes evidence-drawer-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) { .evidence-drawer[open] { animation: none; } }
+@media (min-width: 1440px) { .evidence-drawer { width: var(--drawer-w-wide); } }
+@media (max-width: 1279px) { .evidence-drawer { width: var(--drawer-w-narrow); } }
+@media (max-width: 767px) { .evidence-drawer { width: 100vw; border-left: 0; } }
+
+/* 固定標題列 56px：h2 20／600（只放指標名或結論句）＋副標 13px 次要色＋右側關閉 icon 按鈕；捲動內容時黏在頂端。 */
+.evidence-drawer .evidence-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 56px; padding: var(--space-1) var(--space-3) var(--space-1) var(--space-5); background: var(--bg-surface); border-bottom: var(--border-w) solid var(--border-subtle); }
+.evidence-drawer .evidence-head-text { flex: 1 1 auto; min-width: 0; }
+.evidence-drawer .evidence-head h2 { margin: 0; font-size: var(--text-20); line-height: var(--leading-20); font-weight: var(--weight-semibold); color: var(--text-primary); overflow-wrap: anywhere; }
+.evidence-drawer .evidence-head .sub { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.evidence-drawer .evidence-close { flex: none; color: var(--text-secondary); }
+.evidence-drawer .evidence-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* 可捲動內容：padding 24px、段落間距 24px、段落小標 13／600 次要色。大數字 28／600，下一行精確值 13px tabular（永遠到分）。 */
+.evidence-drawer .evidence-body { padding: var(--space-5); }
+.evidence-drawer .evidence-body > .number { margin: 0; font-size: var(--text-28); line-height: var(--leading-28); font-weight: var(--weight-semibold); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.evidence-drawer .evidence-precise { margin: var(--space-1) 0 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.evidence-drawer .evidence-body > .evidence-section { margin: var(--space-5) 0 0; }
+.evidence-drawer .evidence-section > h3 { margin: 0 0 var(--space-2); font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.evidence-drawer .evidence-formula { margin: 0 0 var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.evidence-drawer .evidence-ladder > .note { margin-top: var(--space-2); }
+
+/* 組成項目：14px 緊湊表（.kv.l3），單位只寫在表頭，數字欄右對齊 tabular。 */
+.evidence-drawer .evidence-components .kv th, .evidence-drawer .evidence-components .kv td { height: var(--row-h); padding: 0 var(--cell-px); font-size: var(--text-14); line-height: var(--leading-14); }
+.evidence-drawer .evidence-components .kv thead th { height: var(--row-h-compact); background: var(--bg-subtle); font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.evidence-drawer .evidence-components .kv tbody tr:last-child > * { border-bottom: 0; }
+
+/* 指標定義與算法：一段定義＋「版本 …」＋「指標定義」文字按鈕（點擊目標 ≥ 24px）。 */
+.evidence-drawer .evidence-definition p { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.evidence-drawer .evidence-version { margin-left: var(--space-2); font-size: var(--text-13); color: var(--text-secondary); white-space: nowrap; }
+.evidence-drawer .evidence-basis { min-height: 24px; margin-left: var(--space-2); font-size: var(--text-13); line-height: var(--leading-13); vertical-align: baseline; }
+
+/* 原始明細：分段鈕（C11）＋搜尋＋筆數＋表格（檔案:行號用等寬字）＋分頁。 */
+.evidence-drawer .source-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); margin: var(--space-3) 0 var(--space-2); }
+.evidence-drawer .source-tabs { max-width: 100%; overflow-x: auto; }
+.evidence-drawer .source-search { display: grid; gap: var(--space-1); flex: 1 1 180px; min-width: 0; font-size: var(--text-12); color: var(--text-secondary); }
+.evidence-drawer .source-table { font-size: var(--text-13); }
+.evidence-drawer .source-table th, .evidence-drawer .source-table td { padding: var(--space-2); vertical-align: top; }
+/* 表格版（640px 抽屜）：前三欄（檔案:行號、日期、通路）縮到內容寬、不折行，剩下的寬度給欄位與數值。 */
+.evidence-drawer .source-table thead th:not(:last-child) { width: 1%; }
+.evidence-drawer .source-table th, .evidence-drawer .source-table td[data-list-role="secondary"] { white-space: nowrap; }
+.evidence-drawer .source-table tbody th { font-weight: var(--weight-regular); white-space: normal; }
+.evidence-drawer .evidence-fileline { font-family: var(--font-mono); font-size: var(--text-12); line-height: var(--leading-12); white-space: nowrap; }
+.evidence-drawer .source-table th small, .evidence-drawer .source-table td[data-label] > small { display: block; margin-top: var(--space-1); font-size: var(--text-12); color: var(--text-tertiary); white-space: normal; }
+.evidence-drawer .source-table th .tag { margin-top: var(--space-1); }
+/* 欄位與數值：每個欄位一行「欄名 … 數值」，數值靠右 tabular；含稅原值與換算值並列在同一格。 */
+.evidence-drawer .source-table dl { display: grid; gap: var(--space-1) var(--space-4); min-width: 150px; }
+.evidence-drawer .source-table dl > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 var(--space-2); min-width: 0; }
+.evidence-drawer .source-table dd { text-align: right; font-variant-numeric: tabular-nums; }
+.evidence-drawer .evidence-sources nav { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); font-size: var(--text-12); }
+
+/* 條件句（不加「注意：」前綴）與技術細節：放在最底，13px 次要色一句，技術細節預設收合。 */
+.evidence-drawer .evidence-limit { margin: var(--space-5) 0 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.evidence-drawer .evidence-technical { margin: var(--space-5) 0 0; font-size: var(--text-12); }
+.evidence-drawer .evidence-technical summary { min-height: 24px; color: var(--text-tertiary); }
+.evidence-drawer .evidence-technical dl > div { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(0, 3fr); gap: var(--space-2); margin: var(--space-2) 0; }
+.evidence-drawer .evidence-technical dd, .evidence-drawer .evidence-technical ul { margin: 0; padding-left: 0; list-style: none; }
+
+/* C3 清單版：手機（≤ 767px）一定用清單；抽屜只有 480／560px 的 768–1439 也用同一份清單（四欄表在窄抽屜擠不下，不出現橫向捲動）。
+   保留 <table>（各格已明確標 role），以 CSS 重排：主行是檔案:行號（14／600），次行是日期與通路（12px），欄位與數值前面用 data-label 顯示欄名；表頭只對輔助科技保留。 */
+@media (max-width: 1439px) {
+  .evidence-drawer .table-scroll { overflow-x: visible; border: 0; border-radius: 0; }
+  .evidence-drawer .source-table tbody { border-top: var(--border-w) solid var(--border-subtle); }
+  .evidence-drawer .source-table dl { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); min-width: 0; }
+  .evidence-drawer .source-table, .evidence-drawer .source-table tbody, .evidence-drawer .source-table tbody th, .evidence-drawer .source-table tbody td { display: block; }
+  .evidence-drawer .source-table thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .evidence-drawer .source-table tbody tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); padding: var(--space-3) 0; border-bottom: var(--border-w) solid var(--border-subtle); }
+  .evidence-drawer .source-table tbody tr:last-child { border-bottom: 0; }
+  .evidence-drawer .source-table tbody th, .evidence-drawer .source-table tbody td { padding: 0; border: 0; }
+  .evidence-drawer .source-table [data-list-role="primary"] { flex: 1 1 100%; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); }
+  .evidence-drawer .source-table [data-list-role="primary"] .evidence-fileline { font-size: var(--text-14); line-height: var(--leading-14); white-space: normal; overflow-wrap: anywhere; }
+  .evidence-drawer .source-table [data-list-role="secondary"] { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+  .evidence-drawer .source-table td[data-list-role="secondary"] > small { display: inline; margin: 0 0 0 var(--space-2); }
+  .evidence-drawer .source-table [data-list-role="labeled"] { flex: 1 1 100%; font-size: var(--text-12); line-height: var(--leading-12); }
+  .evidence-drawer .source-table [data-list-role="labeled"]::before { content: attr(data-label); display: block; margin-bottom: var(--space-1); color: var(--text-tertiary); }
+}
+@media (max-width: 767px) {
+  .evidence-drawer .evidence-head { padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4); }
+  .evidence-drawer .evidence-body { padding: var(--space-4); }
+  .evidence-drawer .source-controls { align-items: stretch; }
+  .evidence-drawer .source-search { flex-basis: 100%; }
+}
 
 /* ── V3-5 錨點結束 ── */

@@ -2,12 +2,13 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
-import { emptyKindOf, evidenceRows, formatAmountL1, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatPointsValue, formatRateLayer, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
+import { emptyKindOf, evidenceRows, formatAmountL1, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatPeriodL1, formatPointsValue, formatRateLayer, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import { rateToPercent, type RawValuesByFile, type TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS } from "@/domain/types";
 import type { Dataset, FileName, Metric, MetricName, Metrics, Period, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
+import { ShellIcon } from "./shell/shell-icon";
 
 export interface EvidenceSelection {
   title: string;
@@ -42,6 +43,7 @@ interface EvidenceDrawerProps {
 }
 const pageSize = 50;
 const copy = labels.evidence;
+const v3 = labels.evidence.drawerV3;
 type SourceTab = "sales" | "costs" | "ads" | "manifest";
 const fileOfTab: Record<SourceTab, SourceRef["file"]> = { sales: "sales_daily.csv", costs: "channel_costs_daily.csv", ads: "ad_spend_daily.csv", manifest: "manifest.json" };
 
@@ -57,6 +59,8 @@ const RATIOS: Partial<Record<MetricName, [MetricName, MetricName]>> = {
   mer: ["net_revenue", "ad_spend"], fulfillment_burden: ["fulfillment_costs", "net_revenue"], marketing_burden: ["ad_spend", "net_revenue"],
 };
 
+/** 原始明細表自己有欄的來源欄位（日期、通路；商品寫在通路欄下一行）。 */
+const OWN_COLUMNS: readonly string[] = ["date", "channel", "sku"];
 /** 原始明細裡要依 L3 取位的欄位（金額到分、件數加千分位）；其他欄位（日期、通路、幣別）原樣顯示。 */
 const NUMERIC_TEXT = /^[+-]?\d+(?:\.\d+)?$/;
 function sourceValue(field: string, value: string): string {
@@ -79,6 +83,25 @@ function ladderMetrics(snapshot: EvidenceDrawerProps["snapshot"], evidence: Evid
   }
   const week = weeks.find(row => row.start === evidence.period.start && row.end === evidence.period.end);
   return week ? week.metrics : null;
+}
+
+/**
+ * V3-5（§7.8）：標題列副標「{範圍} · {期間}」，例如「全部通路 · 本期 7/13–8/23」「影響金額 · 合計（…） · 7/13–8/23」。
+ * 期間用 formatPeriodL1（M/D，不附天數；以資料到的年份為準，跨年才寫年份）；與報表本期或上期相同時前面加「本期」「上期」。
+ * 沒有 scopeLabel 時範圍就是通路（涵蓋資料集全部通路時寫「全部通路」）；scopeLabel 沒寫出通路時另附「通路：…」（v2 範圍行的資訊不少）。只組字，不做任何計算。
+ */
+export function evidenceSubtitle(evidence: Pick<EvidenceSelection, "period" | "channels" | "scopeLabel">, options: { alias: boolean; anchor?: string; allChannels?: readonly string[]; report?: { current: { period: Period }; previous: { period: Period } } }): string {
+  const sorted = (list: readonly string[]) => [...list].sort().join("|");
+  const all = options.allChannels !== undefined && options.allChannels.length > 0 && sorted(options.allChannels) === sorted(evidence.channels);
+  const listed = evidence.channels.length ? channelsLabel(evidence.channels, options.alias) : copy.noChannels;
+  const channels = all ? copy.allChannels : listed;
+  const range = formatPeriodL1(evidence.period.start, evidence.period.end, { anchor: options.anchor, days: false });
+  const same = (period: Period | undefined) => period !== undefined && period.start === evidence.period.start && period.end === evidence.period.end;
+  const name = same(options.report?.current.period) ? labels.periods.current : same(options.report?.previous.period) ? labels.periods.previous : null;
+  const period = name ? fill(v3.periodNamed, { name, range }) : range;
+  if (!evidence.scopeLabel) return fill(v3.subtitle, { scope: channels, period });
+  const named = evidence.scopeLabel.includes(listed) || (all && evidence.scopeLabel.includes(copy.allChannels));
+  return named ? fill(v3.subtitle, { scope: evidence.scopeLabel, period }) : fill(v3.subtitleChannels, { scope: evidence.scopeLabel, period, channels });
 }
 
 export function EvidenceDrawer({ dataset, snapshot, evidence, onClose, onBasis, filenames, mappings, rawValues, conversion }: EvidenceDrawerProps) {
@@ -140,7 +163,20 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   };
   /** 精確值行：件數沒有取位，不重複顯示；空值不顯示（原因碼在技術細節）。 */
   const preciseValue = evidence.metric.value === null || evidence.unitOverride === "count" ? null : displayValue(evidence.metric, "L3");
-  const money = (metric: Metric) => metric.value === null ? formatEmpty(emptyKindOf(metric.reason_codes), { layer: "L3", reasonCodes: metric.reason_codes }) : fill(labels.units.yuan, { value: formatAmountL3(metric.value) });
+  const emptyL3 = (metric: Metric) => formatEmpty(emptyKindOf(metric.reason_codes), { layer: "L3", reasonCodes: metric.reason_codes });
+  const money = (metric: Metric) => metric.value === null ? emptyL3(metric) : fill(labels.units.yuan, { value: formatAmountL3(metric.value) });
+  // V3-5 組成項目表（14px）：單位只寫在表頭；上期／本期兩項時一列三欄加差額（差額＝這筆證據的值），其他情況兩欄。
+  const components = evidence.components ?? [];
+  const moneyUnit = !evidence.unitOverride && definition.unit === "money";
+  const componentValue = (metric: Metric) => metric.value === null ? emptyL3(metric) : moneyUnit ? formatAmountL3(metric.value) : displayValue(metric);
+  const previousComponent = components.find(component => component.label === labels.periods.previous);
+  const currentComponent = components.find(component => component.label === labels.periods.current);
+  const periodPair = components.length === 2 && previousComponent && currentComponent ? { previous: previousComponent.metric, current: currentComponent.metric } : null;
+  // 指標定義與算法：domain 指標用指標定義；件數、件均這類非 domain 指標用證據自帶的公式說明。版本與技術細節同源。
+  const definitionText = evidence.unitOverride === "count" || evidence.unitOverride === "money_per_unit" ? evidence.formula ?? definition.plain : definition.plain;
+  const metricVersion = evidence.metricVersion ?? "contribution-v1";
+  const subtitle = evidenceSubtitle(evidence, { alias, anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot?.report });
+  const column = v3.sourceColumns;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -157,25 +193,24 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   return (
     <dialog
       ref={dialogRef}
-      className="evidence-dialog"
+      className="evidence-dialog evidence-drawer"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       onCancel={(event) => { event.preventDefault(); onClose(); }}
     >
-      <header className="evidence-header">
-        <div>
-          <p className="eyebrow">{labels.sections.evidence}</p>
-          <h2 id={titleId}>{evidence.title} · {labels.sections.evidence}</h2>
+      <header className="evidence-head">
+        <div className="evidence-head-text">
+          <h2 id={titleId}>{evidence.title}<span className="sr-only">{" · "}{labels.sections.evidence}</span></h2>
+          <p id={descriptionId} className="sub">{subtitle}</p>
         </div>
-        <button type="button" className="button quiet" onClick={onClose} autoFocus>{labels.buttons.close}</button>
+        <button type="button" className="ui-btn ui-btn-icon evidence-close" aria-label={labels.buttons.close} onClick={onClose} autoFocus><ShellIcon name="close" size={20} /></button>
       </header>
       <div className="evidence-body">
-        <p id={descriptionId}>{fill(labels.ui.evidenceDrawer.scopeLine, { scope: evidence.scopeLabel ?? copy.scopeFallback, start: evidence.period.start, end: evidence.period.end, channels: evidence.channels.length ? channelsLabel(evidence.channels, alias) : copy.noChannels })}</p>
         <p className="number">{displayValue(evidence.metric, "L1")}</p>
-        {preciseValue && <p className="note" data-testid="evidence-precise-value">{preciseValue}</p>}
-        <section className="evidence-ladder" aria-label={copy.ladderTitle}>
+        {preciseValue && <p className="evidence-precise" data-testid="evidence-precise-value">{preciseValue}</p>}
+        <section className="evidence-section evidence-ladder" aria-label={copy.ladderTitle}>
           <h3>{copy.ladderTitle}</h3>
-          <p>{evidence.formula ?? definition.formula}{onBasis && <> <button type="button" className="text-button" onClick={onBasis}>{labels.buttons.basis}</button></>}</p>
+          <p className="evidence-formula">{evidence.formula ?? definition.formula}</p>
           {ladderRows.length > 0 && <table className="ladder-table"><caption className="sr-only">{copy.ladderNote}</caption><tbody>{ladderRows.map(row => <tr key={row.name} className={row.name === evidence.name ? "current" : row.op === "＝" ? "subtotal" : ""}><td className="ladder-op" aria-hidden="true">{row.op}</td><th scope="row">{metricDefinitions[row.name].label}</th><td className="ladder-amount">{money(ladder![row.name])}</td></tr>)}</tbody></table>}
           {ladder && ratio && <table className="ladder-table"><tbody>
             <tr><td className="ladder-op" aria-hidden="true"></td><th scope="row">{metricDefinitions[ratio[0]].label}</th><td className="ladder-amount">{money(ladder[ratio[0]])}</td></tr>
@@ -183,62 +218,66 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
             <tr className="current"><td className="ladder-op" aria-hidden="true">＝</td><th scope="row">{definition.label}</th><td className="ladder-amount">{displayValue(evidence.metric)}</td></tr>
           </tbody></table>}
           {ladderRows.length > 0 && <p className="note">{copy.ladderNote}</p>}
-          {evidence.components && evidence.components.length > 0 && (
-            <section aria-label={copy.components}>
-              <h4>{fill(labels.units.yuanColumn, { label: copy.components })}</h4>
-              <dl>
-                {evidence.components.map((component, index) => (
-                  <div key={`${component.label}-${index}`}>
-                    <dt>{component.label}</dt>
-                    <dd className="number">{component.metric.value === null ? formatEmpty(emptyKindOf(component.metric.reason_codes), { layer: "L3", reasonCodes: component.metric.reason_codes }) : formatAmountL3(component.metric.value)}</dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-          )}
-          {evidence.metric.reason_codes.length > 0 && (
-            <p className="note" role="status"><strong>{labels.sections.caution}：</strong>{copy.conditionsNote}</p>
-          )}
         </section>
-        <details className="evidence-technical">
-          <summary>{labels.sections.technicalDetails}</summary>
-          <dl>
-            <div><dt>{copy.technicalFormula}</dt><dd><code>{evidence.formulaTechnical ?? definition.formulaTechnical}</code></dd></div>
-            {(evidence.unitOverride || definition.unit !== "money") && evidence.metric.value !== null && <div><dt>{copy.exactValue}</dt><dd><code>{evidence.metric.value}</code>{evidence.unitOverride === "percentage-point" ? `（${copy.pointNote}）` : definition.unit === "percent" ? `（${copy.ratioNote}）` : ""}</dd></div>}
-            {evidence.metric.reason_codes.length > 0 && <div><dt>{copy.conditions}</dt><dd><ul>{evidence.metric.reason_codes.map((reason) => <li key={reason}><code>{reason}</code></li>)}</ul></dd></div>}
-            {evidence.components?.some(component => component.metric.reason_codes.length > 0) && <div><dt>{copy.components}</dt><dd><ul>{evidence.components.filter(component => component.metric.reason_codes.length > 0).map((component, index) => <li key={index}>{component.label}：<code>{component.metric.reason_codes.join("、")}</code></li>)}</ul></dd></div>}
-            <div><dt>metric_version</dt><dd><code>{evidence.metricVersion ?? "contribution-v1"}</code></dd></div>
-          </dl>
-          {(signed || evidence.unitOverride === "percentage-point") && <p className="note" data-testid="evidence-rounding-note">{labels.format.roundingNote}</p>}
-        </details>
-        <section aria-label={copy.sourcesTitle} className="evidence-sources">
-          <h3>{copy.sourcesTitle}</h3>
+        {components.length > 0 && (
+          <section className="evidence-section evidence-components" aria-label={copy.components}>
+            <h3>{copy.components}</h3>
+            {periodPair ? (
+              <table className="kv l3">
+                <thead><tr><th scope="col">{v3.componentsColumns.item}</th><th scope="col" className="num">{v3.componentsColumns.previous}</th><th scope="col" className="num">{v3.componentsColumns.current}</th><th scope="col" className="num">{v3.componentsColumns.change}</th></tr></thead>
+                <tbody><tr>
+                  <th scope="row">{definition.label}</th>
+                  <td className="num">{componentValue(periodPair.previous)}</td>
+                  <td className="num">{componentValue(periodPair.current)}</td>
+                  <td className="num">{evidence.metric.value === null ? emptyL3(evidence.metric) : moneyUnit ? formatSignedDelta(evidence.metric.value, "L3") : displayValue(evidence.metric)}</td>
+                </tr></tbody>
+              </table>
+            ) : (
+              <table className="kv l3">
+                <thead><tr><th scope="col">{v3.componentsColumns.item}</th><th scope="col" className="num">{moneyUnit ? v3.componentsColumns.amount : v3.componentsColumns.value}</th></tr></thead>
+                <tbody>{components.map((component, index) => <tr key={`${component.label}-${index}`}><th scope="row">{component.label}</th><td className="num">{componentValue(component.metric)}</td></tr>)}</tbody>
+              </table>
+            )}
+          </section>
+        )}
+        <section className="evidence-section evidence-definition" aria-label={v3.definitionTitle}>
+          <h3>{v3.definitionTitle}</h3>
+          <p>{definitionText}<span className="evidence-version">{fill(v3.version, { version: metricVersion })}</span>{onBasis && <button type="button" className="ui-btn ui-btn-text evidence-basis" onClick={onBasis}>{labels.buttons.basis}</button>}</p>
+        </section>
+        <section aria-label={copy.sourcesTitle} className="evidence-section evidence-sources">
+          <h3>{v3.sourcesTitle}</h3>
           <p className="note">{copy.sourcesNote}</p>
           {conversionNote && <p className="note" data-testid="evidence-conversion-note">{conversionNote}</p>}
           {rows.length === 0 ? <p>{copy.none}</p> : (<>
             <div className="source-controls">
-              <div className="source-tabs" role="group" aria-label={labels.ui.evidenceDrawer.sourceTabsAria}>{tabs.map(item => <button key={item} type="button" className="preset" aria-pressed={item === activeTab} onClick={() => { setTab(item); setPage(0); }}>{fill(labels.ui.evidenceDrawer.tabWithCount, { tab: copy.sourceTabs[item], n: counts[item] })}</button>)}</div>
+              <div className="source-tabs ui-segmented" role="group" aria-label={labels.ui.evidenceDrawer.sourceTabsAria}>{tabs.map(item => <button key={item} type="button" className="preset" aria-pressed={item === activeTab} onClick={() => { setTab(item); setPage(0); }}>{fill(labels.ui.evidenceDrawer.tabWithCount, { tab: copy.sourceTabs[item], n: counts[item] })}</button>)}</div>
               <label className="source-search">{copy.searchLabel}<input type="search" value={query} placeholder={copy.searchPlaceholder} onChange={event => { setQuery(event.target.value); setPage(0); }} /></label>
             </div>
             <p className="note" aria-live="polite">{fill(copy.showing, { from: filtered.length === 0 ? 0 : start + 1, to: end, n: filtered.length })}</p>
             {filtered.length === 0 ? <p>{copy.none}</p> : (
             <div className="table-scroll" tabIndex={0} role="region" aria-label={labels.ui.evidenceDrawer.sourceTableAria}>
-              <table className="source-table">
+              {/* C3 手機清單：保留 <table>，≤ 767px 以 CSS 重排；明確的 role 讓 display 改變後仍是表格語意，data-label 是每格的欄名。 */}
+              <table className="source-table" role="table">
                 <caption className="sr-only">{evidence.title} · {copy.sourcesTitle}，{fill(copy.pageOf, { page: currentPage + 1, pages: lastPage + 1 })}</caption>
-                <thead><tr><th scope="col">{labels.ui.evidenceDrawer.colSource}</th><th scope="col">{labels.ui.evidenceDrawer.colScope}</th><th scope="col">{labels.ui.evidenceDrawer.colValues}</th></tr></thead>
-                <tbody>
+                <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">{column.fileLine}</th><th scope="col" role="columnheader">{column.date}</th><th scope="col" role="columnheader">{column.channel}</th><th scope="col" role="columnheader">{column.values}</th></tr></thead>
+                <tbody role="rowgroup">
                   {visibleRows.map((row, index) => {
                     const allowedFields: readonly string[] = ["date", "channel", "sku", "category", "currency", ...definition.fields];
-                    const values = Object.entries(row.values).filter(([field]) => evidence.formula || row.file === "manifest.json" || allowedFields.includes(field));
+                    // V3-5：日期、通路、商品已有自己的欄，欄位與數值不重複列出；匯入時改過欄名（有「原欄位」）的仍列出，原欄位資訊不少。
+                    const ownColumn = (field: string) => row.file !== "manifest.json" && OWN_COLUMNS.includes(field) && !(mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field);
+                    const values = Object.entries(row.values).filter(([field]) => !ownColumn(field) && (evidence.formula || row.file === "manifest.json" || allowedFields.includes(field)));
+                    const file = filenames?.[row.file] ?? row.file;
                     return (
-                      <tr key={`${row.file}-${row.line}-${row.date}-${row.channel}-${row.sku}-${start + index}`}>
-                        <th scope="row">
-                          <span>{filenames?.[row.file] ?? row.file}</span><br />{filenames?.[row.file] && filenames[row.file] !== row.file && <small>{copy.standardRole}：{row.file}</small>}
-                          <span>{row.line === null ? row.missing ? copy.missingRow : copy.manifestRow : fill(copy.lineN, { n: row.line })}</span>
+                      <tr key={`${row.file}-${row.line}-${row.date}-${row.channel}-${row.sku}-${start + index}`} role="row">
+                        <th scope="row" role="rowheader" data-label={column.fileLine} data-list-role="primary">
+                          <span className="evidence-fileline">{row.line === null ? file : fill(v3.fileLine, { file, line: row.line })}</span>
+                          {row.line === null && <small>{row.missing ? copy.missingRow : copy.manifestRow}</small>}
+                          {filenames?.[row.file] && filenames[row.file] !== row.file && <small>{copy.standardRole}：{row.file}</small>}
                           {row.missing && <span className="tag">{copy.missingTag}</span>}
                         </th>
-                        <td>{row.date ?? copy.wholeDataset}<br />{row.channel ? channelLabel(row.channel, alias) : copy.allChannels}{row.sku ? <><br />{fill(labels.ui.evidenceDrawer.skuLine, { sku: row.sku })}</> : null}</td>
-                        <td><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : rawValues?.[row.file as FileName]?.[row.line ?? -1]?.[field] !== undefined ? <span className="converted-value" title={copy.rawToConverted}><s>{sourceValue(field, rawValues[row.file as FileName]![row.line!][field])}</s> → <strong>{sourceValue(field, value)}</strong><span className="sr-only">（{copy.rawToConverted}）</span></span> : sourceValue(field, value)}</dd></div>)}</dl></td>
+                        <td role="cell" className="evidence-date" data-label={column.date} data-list-role="secondary">{row.date ?? copy.wholeDataset}</td>
+                        <td role="cell" data-label={column.channel} data-list-role="secondary">{row.channel ? channelLabel(row.channel, alias) : copy.allChannels}{row.sku ? <small>{fill(labels.ui.evidenceDrawer.skuLine, { sku: row.sku })}</small> : null}</td>
+                        <td role="cell" data-label={column.values} data-list-role="labeled"><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : rawValues?.[row.file as FileName]?.[row.line ?? -1]?.[field] !== undefined ? <span className="converted-value" title={copy.rawToConverted}><s>{sourceValue(field, rawValues[row.file as FileName]![row.line!][field])}</s> → <strong>{sourceValue(field, value)}</strong><span className="sr-only">（{copy.rawToConverted}）</span></span> : sourceValue(field, value)}</dd></div>)}</dl></td>
                       </tr>
                     );
                   })}
@@ -252,6 +291,18 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
             </nav>}
           </>)}
         </section>
+        {evidence.metric.reason_codes.length > 0 && <p className="evidence-limit" role="status">{copy.conditionsNote}</p>}
+        <details className="evidence-technical">
+          <summary>{labels.sections.technicalDetails}</summary>
+          <dl>
+            <div><dt>{copy.technicalFormula}</dt><dd><code>{evidence.formulaTechnical ?? definition.formulaTechnical}</code></dd></div>
+            {(evidence.unitOverride || definition.unit !== "money") && evidence.metric.value !== null && <div><dt>{copy.exactValue}</dt><dd><code>{evidence.metric.value}</code>{evidence.unitOverride === "percentage-point" ? `（${copy.pointNote}）` : definition.unit === "percent" ? `（${copy.ratioNote}）` : ""}</dd></div>}
+            {evidence.metric.reason_codes.length > 0 && <div><dt>{copy.conditions}</dt><dd><ul>{evidence.metric.reason_codes.map((reason) => <li key={reason}><code>{reason}</code></li>)}</ul></dd></div>}
+            {evidence.components?.some(component => component.metric.reason_codes.length > 0) && <div><dt>{copy.components}</dt><dd><ul>{evidence.components.filter(component => component.metric.reason_codes.length > 0).map((component, index) => <li key={index}>{component.label}：<code>{component.metric.reason_codes.join("、")}</code></li>)}</ul></dd></div>}
+            <div><dt>metric_version</dt><dd><code>{metricVersion}</code></dd></div>
+          </dl>
+          {(signed || evidence.unitOverride === "percentage-point") && <p className="note" data-testid="evidence-rounding-note">{labels.format.roundingNote}</p>}
+        </details>
       </div>
     </dialog>
   );

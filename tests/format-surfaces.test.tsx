@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { formatHeadlineAmount } from "@/application/copy";
-import { formatAmountL1, formatAmountL3, formatGrowth, formatPercentNumber, formatPointsValue, formatRateL1, formatRateL3, MINUS } from "@/application/presentation";
+import { formatAmountL1, formatAmountL3, formatGrowth, formatPercentNumber, formatPointsValue, formatRateL1, formatRateL3, formatSignedDelta, MINUS } from "@/application/presentation";
 import { validateDataset } from "@/domain/validation";
 import { EvidenceDrawer, type EvidenceSelection } from "@/components/evidence-drawer";
 import { headlineChangeText, toneClass } from "@/components/manager-summary";
@@ -89,8 +89,10 @@ describe("計算與來源抽屜（§7.8）：L1 大數字＋到分的精確值�
       formula: "f", components: [{ label: labels.periods.previous, metric: metric("570.00") }, { label: labels.periods.current, metric: metric("255.00") }] });
     expect(big(html)).toBe(`${MINUS}315 元`);
     expect(precise(html)).toBe(`${MINUS}315.00 元`);
-    expect(html).toContain(fill(labels.units.yuanColumn, { label: labels.evidence.components }));
-    expect(html).toContain(`<dd class="number">${formatAmountL3("255.00")}</dd>`);
+    // V3-5（§7.8）：組成項目改成 14px 表格，「（元）」只標在欄頭（上期（元）／本期（元）／差額（元）），儲存格到分不帶單位。
+    expect(html).toContain(`<th scope="col" class="num">${fill(labels.units.yuanColumn, { label: labels.periods.current })}</th>`);
+    expect(html).toContain(`<td class="num">${formatAmountL3("255.00")}</td>`);
+    expect(html).toContain(`<td class="num">${formatSignedDelta("-315.00", "L3")}</td>`);
     expect(html).toContain(labels.format.roundingNote);
   });
 

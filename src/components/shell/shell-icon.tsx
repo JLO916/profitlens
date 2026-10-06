@@ -21,6 +21,8 @@ const PATHS: Record<string, string> = {
   // V3-4a 總覽：複製週會摘要、`?` 定義按鈕、勾（已平衡、已複製）。
   copy: "M10 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2",
   check: "M5 12l5 5 9-10",
+  /** V3-5 代理 C：計算與來源抽屜標題列的關閉 icon 按鈕（C6）。 */
+  close: "M6 6l12 12 M18 6 6 18",
 };
 
 export function ShellIcon({ name, size = 20, className }: { name: keyof typeof PATHS | string; size?: number; className?: string }) {

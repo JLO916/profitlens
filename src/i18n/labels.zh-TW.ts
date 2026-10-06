@@ -1651,7 +1651,21 @@ export const evidence = {
     tabWithCount: "{tab}（{n}）",
   },
   // ── V3-5 錨點（代理 C：drawerV3 抽屜重排：標題列、區段標題、組成表、指標定義段、原始明細）
-  drawerV3: {},
+  drawerV3: {
+    /** 標題列副標（§7.8）：「全部通路 · 本期 7/13–8/23」；範圍沒寫出通路時另附「通路：…」。期間由 formatPeriodL1 產生。 */
+    subtitle: "{scope} · {period}",
+    subtitleChannels: "{scope} · {period} · 通路：{channels}",
+    /** 期間與報表的本期或上期相同時加名稱：「本期 7/13–8/23」。 */
+    periodNamed: "{name} {range}",
+    definitionTitle: "指標定義與算法",
+    version: "版本 {version}",
+    sourcesTitle: "原始明細",
+    /** 組成項目表（14px）：上期／本期兩項時三欄加差額；其他情況兩欄。 */
+    componentsColumns: { item: "項目", previous: "上期（元）", current: "本期（元）", change: "差額（元）", amount: "金額（元）", value: "數值" },
+    /** 原始明細表欄名（手機清單也用作每格的 data-label）。 */
+    sourceColumns: { fileLine: "檔案:行號", date: "日期", channel: "通路", values: "欄位與數值" },
+    fileLine: "{file}:{line}",
+  },
 } as const;
 
 // ── exports：匯出：CSV 欄名與後綴、下載選單、Excel、PPT、決策 Markdown／CSV／JSON
