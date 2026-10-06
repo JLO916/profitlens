@@ -627,6 +627,12 @@ export const overview = {
     table: { item: overviewPageColItem, amount: "金額（元）" },
     /** 瀑布第一根與最後一根的柱名。 */
     barLabels: { previous: shellPeriodsPrevious, current: shellPeriodsCurrent },
+    // ── B1 介面字串（bridge-section.tsx）
+    /** 副標（#bridge-sub，也是 aria 描述）：{subtitle}＝bridgeWaterfall().subtitle，{note}＝overview.page.bridgeNote。 */
+    subtitleWithNote: "{subtitle}。{note}",
+    /** 標題列右側的單位說明：圖上標萬元、橋接表到分；金額都不到 1 萬時圖上也標元，改用 unitNoteYuan。 */
+    unitNote: "圖：萬元 · 表：元",
+    unitNoteYuan: "圖、表：元",
   },
 
   /** V3-4b 本期利潤結構（F2，PRD §10.3；waterfall.ts 的 profitWaterfall 使用）。柱名直接用 metricDefinitions 的指標名。 */
@@ -639,6 +645,9 @@ export const overview = {
     /** 分段按鈕（profit-waterfall-scope）：合計＋各通路名稱；aria 是按鈕群組的可及名稱。 */
     scope: { all: "合計", aria: "本期利潤結構的範圍" },
     table: { item: overviewPageColItem, amount: "金額（元）", share: "佔淨營收", aria: "本期利潤結構表" },
+    // ── B1 介面字串（profit-section.tsx）
+    /** 資料表的扣項列名：{label}＝指標名（商品成本、四項費用、廣告投放費）。 */
+    rowDeduct: "減：{label}",
   },
 
   /** V3-4b 每週趨勢（C16，PRD §7.1 第 7 點；chart-takeaways.ts 的 trendTakeaways 使用）。 */

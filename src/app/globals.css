@@ -1431,6 +1431,62 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-4a 錨點結束 ── */
 
 /* ── V3-4b 錨點 B1：貢獻變化拆解瀑布（C17）、本期利潤結構（F2）、瀑布 SVG、橋接表（代理 B1 只在此錨點之後、錨點 B2 之前新增規則） ── */
+/* 區塊 5、6 的標題列（C16）：左邊 L1 結論標題（16／600）＋副標（13px，同時是 aria 描述）；右邊單位說明或分段按鈕。 */
+.chart-section { min-width: 0; padding: var(--space-5); }
+.chart-section > .sec-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--space-2) var(--space-4); min-height: var(--control-h); margin-bottom: var(--space-4); }
+.chart-section .sec-title { min-width: 0; flex: 1 1 320px; }
+.chart-section .sec-title h2 { margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.chart-section .sub { margin: 2px 0 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.chart-section .sec-head > .unit-note { flex: none; }
+
+/* 區塊 5：左 7/12 瀑布、右 5/12 橋接表；≤ 1023px 單欄（瀑布在上、表在下）。 */
+.bridge-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-5); align-items: start; }
+.bridge-grid > * { min-width: 0; }
+
+/* C17 瀑布：外框固定高（inline style＝--chart-h-lg 的 px 值），資料與狀態改變不改高度。SVG 最小寬 --wf-min-w（元件依柱數給，預設 560px），
+   與幾何計算的最小寬相同，所以永遠 1:1 顯示；容器較窄（手機、平板單欄）時外框水平捲動。外框 aria-hidden，鍵盤走旁邊的表格。 */
+.chart-frame.waterfall { margin-top: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+.waterfall-svg { display: block; width: 100%; min-width: var(--wf-min-w, 560px); font-family: var(--font-sans); }
+.waterfall-svg text { font-size: var(--text-12); fill: var(--chart-axis); pointer-events: none; }
+.waterfall-svg .wf-value { fill: var(--text-secondary); }
+.waterfall-svg .wf-value.is-strong { fill: var(--text-primary); font-weight: var(--weight-semibold); }
+.waterfall-svg .wf-value.is-neg { fill: var(--unfavorable); font-weight: var(--weight-semibold); }
+.waterfall-svg .wf-value.is-missing { fill: var(--text-secondary); }
+.waterfall-svg .wf-x text { fill: var(--text-secondary); }
+.waterfall-svg .wf-bar.is-clickable { cursor: pointer; }
+
+/* 橋接表與利潤結構資料表（C2 緊湊表 L3）：數字右對齊 tabular；本期與結果列粗體加 2px 線，小計列粗體加 1px 線。 */
+.kv.l3 th[scope="row"] { color: var(--text-primary); }
+.kv.l3 .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kv.l3 tr.is-total > th, .kv.l3 tr.is-total > td { font-weight: var(--weight-semibold); border-top: var(--rule-total) solid var(--border-strong); }
+.kv.l3 tr.is-subtotal > th, .kv.l3 tr.is-subtotal > td, .kv.l3 tr.is-sum > th, .kv.l3 tr.is-sum > td { font-weight: var(--weight-semibold); border-top: var(--border-w) solid var(--border-strong); }
+.kv.l3 tr.is-total .number-link, .kv.l3 tr.is-subtotal .number-link, .kv.l3 tr.is-sum .number-link { font-weight: var(--weight-semibold); }
+/* 總差額的 number-link 帶 .bridge-total（E2E 既有定位器）：取消 v2 .bridge-total 區塊樣式，保留有利／不利色。 */
+.bridge-table .bridge-total { display: inline; margin: 0; font-size: inherit; color: inherit; }
+.bridge-table .bridge-total.negative { color: var(--unfavorable); }
+.bridge-table .bridge-total.positive { color: var(--favorable); }
+/* 平衡檢核：已平衡＝check icon（--accent）＋文字；不平衡＝warning 色；資料待補＝第三色。 */
+.bridge-balance { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-1); color: var(--text-primary); }
+.bridge-balance svg { flex: none; color: var(--accent); }
+.bridge-balance[data-tone="warning"] { color: var(--warning); font-weight: var(--weight-semibold); }
+.bridge-balance[data-tone="missing"] { color: var(--text-tertiary); }
+
+/* 區塊 6 範圍分段按鈕（設計稿 .seg）：只影響本圖；目前選取 aria-pressed＝true。通路多時群組可水平捲動。 */
+.seg { display: inline-flex; flex: none; max-width: 100%; overflow-x: auto; border: var(--border-w) solid var(--border-input); border-radius: var(--radius-sm); background: var(--bg-surface); }
+.seg button { flex: none; height: 26px; padding: 0 10px; border: 0; border-left: var(--border-w) solid var(--border-subtle); background: var(--bg-surface); color: var(--text-secondary); font-size: var(--text-13); line-height: 1; white-space: nowrap; }
+.seg button:first-child { border-left: 0; }
+.seg button:hover { background: var(--bg-hover); color: var(--text-primary); }
+.seg button[aria-pressed="true"] { background: var(--accent-subtle); color: var(--accent); outline: var(--border-w) solid var(--accent-border); outline-offset: -1px; font-weight: var(--weight-medium); }
+.seg button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+
+@media (max-width: 1023px) {
+  .bridge-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) {
+  .chart-section { padding: var(--space-4); }
+  .chart-section > .sec-head { gap: var(--space-2); }
+  .seg button { height: var(--control-h); }
+}
 
 /* ── V3-4b 錨點 B2：ChartFrame（C16）、趨勢與各通路、並排 .pair（代理 B2 只在此錨點之後、結束錨點之前新增規則） ── */
 /* 區塊 7、8 並排（.pair，PRD §7.1）：兩欄等寬、間距 24px、頂端對齊；1280 寬（含）以下上下排列（§7.1「1280：區塊 7、8 上下排列」）。 */
