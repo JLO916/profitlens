@@ -1,4 +1,4 @@
-import { applyCustomPeriod, clearWorkspace, clickReplacing, closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, ruleHeadline } from "./replacement-helpers";
+import { applyCustomPeriod, clearWorkspace, clickReplacing, closePeriodSheet, dismissSavePrompt, isMobile, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { MINUS, deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatGrowth, formatPointsValue, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { formatHeadlineAmount } from "../../src/application/copy";
@@ -229,7 +229,8 @@ test("貢獻率差額的證據保留百分點單位，不再乘以 100", async (
   await loadGolden(page);
   const card = page.getByTestId("kpi-contribution_margin");
   // Independent fixed answer: (255 / 2470 - 570 / 2250) * 100 = -15.01 pp（百分點單位的差，交給 formatPointsValue；L1「降 15.0 個百分點」）。
-  await card.getByRole("button", { name: formatPointsValue("-15.01", "L1"), exact: true }).click();
+  // V3-4a：KPI 帶的差額按鈕有可及名稱「{指標}比上期{差額}，看明細」（labels.overview.kpiBand.deltaAria）。
+  await card.getByRole("button", { name: fill(labels.overview.kpiBand.deltaAria, { metric: metricDefinitions.contribution_margin.label, delta: formatPointsValue("-15.01", "L1") }), exact: true }).click();
   const dialog = evidenceDialog(page);
   await expect(dialog).toBeVisible();
   await expect(drawerNumber(dialog)).toHaveText(formatPointsValue("-15.01", "L1"));
@@ -357,9 +358,11 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
   await expect(drawerNumber(dialog)).toHaveText(formatAmountL1("316379.67"));
   await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("316379.67"));
   await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
-  await kpiPrevious(revenue(page)).getByRole("button", { name: previousLinkName("net_revenue", "1069415.21"), exact: true }).click();
+  // V3-4a 390 寬：非強調格是單行「名稱｜數值｜差額」，「上期」連結只在扣廣告後貢獻（強調格）可見；手機改點它，上期範圍與精確值的檢查相同。
+  const [previousCard, previousMetric, previousAmount] = isMobile(page) ? [contribution(page), "contribution_after_marketing", "327100.88"] as const : [revenue(page), "net_revenue", "1069415.21"] as const;
+  await kpiPrevious(previousCard).getByRole("button", { name: previousLinkName(previousMetric, previousAmount), exact: true }).click();
   await expect(dialog).toContainText(evidenceDateRange("2026-06-01", "2026-06-07"));
-  await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("1069415.21"));
+  await expect(drawerPrecise(dialog)).toHaveText(preciseMoney(previousAmount));
 });
 
 test("資料工作區展示三份原始檔案、行號、口徑與未縮減預覽", async ({ page }) => {

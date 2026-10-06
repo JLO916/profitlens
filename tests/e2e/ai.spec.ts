@@ -77,7 +77,17 @@ const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).lo
 async function selectChannel(page: Page, channel: string) {
   await openPeriodSheet(page);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
+  // V3-3 的期間摘要（period-summary）title／sr-only 帶已套用的通路；等它出現新通路，才算這次篩選真的套用完成
+  // （workspace-status 的 ready 文字不含通路，連續切兩次時可能還沒套用第一次就切第二次，工作區 revision 不會前進）。
+  await expect(page.getByTestId("period-summary")).toHaveAttribute("title", new RegExp(channelLabelFor(page, channel)));
+  await expect(page.getByTestId("period-bar")).not.toHaveAttribute("aria-busy", "true");
   await closePeriodSheet(page);
+}
+/** 期間摘要裡的通路名稱：示範資料套 alias（官網 · DTC），golden 等其他資料集用原始代碼；取正規式安全的字串。 */
+function channelLabelFor(page: Page, channel: string): string {
+  const alias = (labels.demoChannelAlias as Record<string, string>)[channel];
+  const demo = page.url().includes("demo") ? alias : undefined;
+  return (demo ?? channel).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 async function showAi(page: Page) {
