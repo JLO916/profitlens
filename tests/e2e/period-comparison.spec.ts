@@ -1,4 +1,4 @@
-import { closeDownloads, dismissSavePrompt, openDownloads, openPeriodComparison } from "./replacement-helpers";
+import { closeDownloads, dismissSavePrompt, openCustomPeriod, openDownloads, openPeriodComparison, periodSummary, periodSummaryText } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { channelsLabel } from "../../src/application/copy";
@@ -12,8 +12,15 @@ const ui = labels.ui.overview;
 const metric = (name: keyof typeof labels.metrics) => labels.metrics[name].label;
 /** dashboard.tsx periodFieldLabel: sr-only date labels such as 「上期開始」. */
 const periodField = (edge: "start" | "end", period: "previous" | "current") => fill((edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd).split(" → ")[0], { period: labels.periods[period] });
-/** V3-2a：dashboard scopeNote 改成一句「本期 {currentStart}–{currentEnd} 對比 上期 …」；取模板開頭到 {currentEnd} 的本期片段。 */
-const scopeNoteCurrent = (start: string, end: string) => { const template = labels.ui.dashboard.scopeNote; return fill(template.slice(0, template.indexOf("{currentEnd}") + "{currentEnd}".length), { currentStart: start, currentEnd: end }); };
+/**
+ * V3-3：自訂期間的四個日期欄與比較方式收在 period-custom popover（手機是期間底部面板）裡，關著時看不到；開面板 → 填欄位 → 按面板裡的「套用」。
+ * 只填有給的欄位（沒給的沿用表單目前的值，與 v2 直接改欄位相同）。套用後面板收起（成功或被擋都一樣）。
+ */
+async function applyDates(page: Page, values: Record<string, string>) {
+  const panel = await openCustomPeriod(page);
+  for (const [label, value] of Object.entries(values)) await page.getByLabel(label, { exact: true }).fill(value);
+  await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+}
 /** V3-2a：抽屜說明列 evidenceDrawer.scopeLine「{scope}；{start}–{end}；通路：{channels}。」（期間改用 en dash，不再寫「至」）。 */
 const drawerScopeLine = (scope: string, start: string, end: string, channels: string[]) => fill(labels.ui.evidenceDrawer.scopeLine, { scope, start, end, channels: channelsLabel(channels, false) });
 const sourceTab = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.ui.evidenceDrawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
@@ -142,24 +149,26 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
 
 test("PL-02 反向、未完整自然月與未套用模式不取代目前有效範圍", async ({ page }) => {
   await importMonthly(page);
-  for (const [label, value] of Object.entries({ [periodField("start", "previous")]: "2026-09-01", [periodField("end", "previous")]: "2026-09-30", [periodField("start", "current")]: "2026-08-01", [periodField("end", "current")]: "2026-08-31" })) await page.getByLabel(label, { exact: true }).fill(value);
-  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await applyDates(page, { [periodField("start", "previous")]: "2026-09-01", [periodField("end", "previous")]: "2026-09-30", [periodField("start", "current")]: "2026-08-01", [periodField("end", "current")]: "2026-08-31" });
+  // V3-3：套用失敗的訊息在期間列下方的「需要處理」橫幅（banner-filter-error，role=alert）。
   await expect(page.getByRole("alert").filter({ hasText: labels.ui.dashboard.errors.periodNotApplied })).toBeVisible();
+  await expect(page.getByTestId("banner-filter-error")).toContainText(labels.ui.dashboard.errors.periodNotApplied);
   await expect(currentContribution(page)).toHaveText(formatAmountL1("750.00"));
-  await expect(page.locator(".scope-note")).toContainText(scopeNoteCurrent("2026-09-01", "2026-09-30"));
-  for (const [label, value] of Object.entries({ [periodField("start", "previous")]: "2026-08-01", [periodField("end", "previous")]: "2026-08-31", [periodField("start", "current")]: "2026-09-01", [periodField("end", "current")]: "2026-09-29" })) await page.getByLabel(label, { exact: true }).fill(value);
-  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  // V3-3：v2 的 .scope-note 改為期間摘要（period-summary）；仍是 9 月對比 8 月（30／31 天）。
+  await expect(periodSummary(page)).toContainText(periodSummaryText("2026-09-01", "2026-09-30", "2026-08-01", "2026-08-31"));
+  await applyDates(page, { [periodField("start", "previous")]: "2026-08-01", [periodField("end", "previous")]: "2026-08-31", [periodField("start", "current")]: "2026-09-01", [periodField("end", "current")]: "2026-09-29" });
   await expect(page.getByRole("alert").filter({ hasText: labels.periods.calendarMonths })).toBeVisible();
+  await expect(periodSummary(page)).toContainText(periodSummaryText("2026-09-01", "2026-09-30", "2026-08-01", "2026-08-31"));
   await expect(currentContribution(page)).toHaveText(formatAmountL1("750.00"));
   const unchanged = await downloadAnalysis(page);
   expect(unchanged.every(row => row.comparison_mode === "calendar_months" && row.current_period_end === "2026-09-30")).toBe(true);
-  await page.getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true }).selectOption("same_days");
+  // 比較方式只在自訂期間面板裡改；改了還沒套用時，期間比較表仍是已套用的自然月。
+  await (await openCustomPeriod(page)).getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true }).selectOption("same_days");
   await expect(comparison(page)).toContainText(labels.periods.calendarMonths);
-  await page.getByLabel(periodField("end", "previous"), { exact: true }).fill("2026-08-30");
-  await page.getByLabel(periodField("end", "current"), { exact: true }).fill("2026-09-30");
-  await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await applyDates(page, { [periodField("end", "previous")]: "2026-08-30", [periodField("end", "current")]: "2026-09-30" });
   await expect(page.getByRole("alert").filter({ hasText: labels.ui.dashboard.errors.periodNotApplied })).toHaveCount(0);
   await expect(comparison(page)).toContainText(fill(ui.periodDays, { previousDays: 30, currentDays: 30 }));
+  await expect(periodSummary(page)).toContainText(periodSummaryText("2026-09-01", "2026-09-30", "2026-08-01", "2026-08-30"));
   await expect(contributionRow(page).getByRole("cell")).toHaveText(periodCells("750.00", "750.00", "25.00", "25.00", "0.00"));
   expect((await downloadAnalysis(page)).every(row => row.comparison_mode === "same_days" && row.previous_days === "30" && row.current_days === "30")).toBe(true);
 });

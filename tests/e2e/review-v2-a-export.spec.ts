@@ -1,4 +1,4 @@
-import { dismissSavePrompt, openMeeting, openValidation, switchActionsView } from "./replacement-helpers";
+import { dismissSavePrompt, navigateTo, openMeeting, openValidation, switchActionsView } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
@@ -122,7 +122,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
   await expect(page.getByTestId("workspace-status")).toContainText(goldenReady);
   await dismissSavePrompt(page);
-  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  await navigateTo(page, "actions");
   // R5: the actions page opens on the board; the per-card edit form below uses the list view.
   await switchActionsView(page, "list");
   for (let index = 1; index <= 8; index++) {
@@ -169,7 +169,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-ui-pinned-${info.project.name}.png`), fullPage: true });
   await checkPrint(page, info, true);
 
-  await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
+  await navigateTo(page, "actions");
   const json = JSON.parse(await saveDownload(page, page.getByRole("button", { name: labels.downloads.decisionJson, exact: true }), `${prefix}.json`));
   const csv = csvRecords(await saveDownload(page, page.getByRole("button", { name: labels.downloads.decisionCsv, exact: true }), `${prefix}.csv`));
   expect(json.export_version).toBe("workspace-decision-v2");
