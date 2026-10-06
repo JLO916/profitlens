@@ -1,4 +1,4 @@
-import { closeDownloads, closePeriodSheet, dismissSavePrompt, navigateTo, openDownloads, openPeriodSheet, ruleHeadline } from "./replacement-helpers";
+import { closeDownloads, closePeriodSheet, dismissSavePrompt, navigateTo, openDownloads, openPeriodSheet, openProductExport, ruleHeadline } from "./replacement-helpers";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardFileLabels, wizardRoles, type Classification, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
@@ -108,6 +108,12 @@ async function returnToGolden(page: Page) {
   await navigateTo(page, "overview");
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("255.00"));
+}
+/** V3-5：「下載商品明細 CSV」搬進商品毛利頁頁首「匯出本頁」下拉（product-export-menu）；每次下載前先展開，再依原按鈕名稱取得。 */
+async function productsCsvButton(page: Page) {
+  const button = (await openProductExport(page)).getByRole("button", { name: labels.downloads.productsCsv, exact: true });
+  await expect(button).toHaveAttribute("data-testid", "product-export-products");
+  return button;
 }
 async function downloadText(page: Page, button: Locator, expectedName: string) {
   const [download] = await Promise.all([page.waitForEvent("download"), button.click()]);
@@ -425,8 +431,7 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   await selectChannel(page, { label: labels.ui.dashboard.filter.allChannels });
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
   await navigateTo(page, "products");
-  const downloadProducts = page.getByRole("button", { name: labels.downloads.productsCsv, exact: true });
-  const allProducts = csvRecords(await downloadText(page, downloadProducts, "profitlens-products.csv"));
+  const allProducts = csvRecords(await downloadText(page, await productsCsvButton(page), "profitlens-products.csv"));
   expect(new Set(allProducts.map(row => row.sku))).toEqual(new Set([`'${maliciousSku}`, "'+TEST()", "'-TEST()", "'@TEST()"]));
   expect(allProducts.some(row => row.category === "'\t=FORMULA()")).toBe(true);
   expect(allProducts.some(row => row.category === "'@NOTE")).toBe(true);
@@ -436,7 +441,7 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   await page.getByLabel(labels.csvColumns.category, { exact: true }).selectOption("\t=FORMULA()");
   await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("-TEST()");
   await expect(page.getByTestId("product-table").locator("tbody tr")).toHaveCount(1);
-  const selectedProducts = csvRecords(await downloadText(page, downloadProducts, "profitlens-products.csv"));
+  const selectedProducts = csvRecords(await downloadText(page, await productsCsvButton(page), "profitlens-products.csv"));
   expect(selectedProducts.length).toBeGreaterThan(0);
   expect(selectedProducts.every(row => row.channel === "MARKETPLACE" && row.sku === "'-TEST()" && row.category === "'\t=FORMULA()")).toBe(true);
   expect(selectedProducts.every(row => row.product_query === "'-test()" && row.product_category === "'\t=FORMULA()")).toBe(true);
@@ -483,7 +488,7 @@ test("空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各
   await expect(table).toContainText(labels.ui.workspacePanels.uncategorized);
   await expect(table).toContainText(formatAmountL2("120.00"));
   await expect(table).toContainText(formatAmountL2("80.00"));
-  const exported = csvRecords(await downloadText(page, page.getByRole("button", { name: labels.downloads.productsCsv, exact: true }), "profitlens-products.csv"));
+  const exported = csvRecords(await downloadText(page, await productsCsvButton(page), "profitlens-products.csv"));
   expect(exported.length).toBeGreaterThan(0);
   expect(exported.every(row => row.channel === "all" && row.sku === "'+TEST()" && row.category === "")).toBe(true);
   expect(exported.every(row => row.product_query === "'+test()" && row.product_category === "")).toBe(true);

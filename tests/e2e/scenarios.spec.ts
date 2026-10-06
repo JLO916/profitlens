@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { AUTO_SAVE_DELAY_MS } from "../../src/application/auto-save";
-import { MINUS, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatMetric, formatSignedDelta } from "../../src/application/presentation";
+import { MINUS, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatMetric, formatPeriodL1, formatSignedDelta } from "../../src/application/presentation";
 import { closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 const dw = labels.ui.decisionWorkbench, aw = labels.ui.actionsWorkbench, msw = labels.ui.multiScenarioWorkbench, dash = labels.ui.dashboard;
@@ -17,8 +17,18 @@ const consentLabel = labels.scenario.acceptAssumptions;
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** evidence-drawer.tsx names the dialog `${title} · ${labels.sections.evidence}`（V3-2a：分隔符改「 · 」）. */
 const evidenceDialogName = (title: string) => `${title} · ${labels.sections.evidence}`;
-/** evidence-drawer.tsx scope line（V3-2a 起由 labels.ui.evidenceDrawer.scopeLine 組字，期間改用「–」）；沒有 scopeLabel 時 scope 為 labels.evidence.scopeFallback。 */
-const evidenceScopeLine = (start: string, end: string, channels: string, scope: string = labels.evidence.scopeFallback) => fill(labels.ui.evidenceDrawer.scopeLine, { scope, start, end, channels });
+/**
+ * V3-5（§7.8）：抽屜標題列副標（dialog 的 aria-describedby）＝labels.evidence.drawerV3.subtitle「{範圍} · {期間}」。
+ * 範圍：沒有 scopeLabel 時就是通路；scopeLabel 已寫出通路時直接用它。期間：formatPeriodL1（M/D，不附天數，以資料到為錨），
+ * 與報表本期／上期相同時前綴期間名（drawerV3.periodNamed「本期 8/2–8/2」）。
+ */
+const goldenAsOf = (JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")) as { data_as_of: string }).data_as_of;
+const evidenceSubtitle = (start: string, end: string, scope: string, period?: "current" | "previous") => {
+  const range = formatPeriodL1(start, end, { anchor: goldenAsOf, days: false });
+  return fill(labels.evidence.drawerV3.subtitle, { scope, period: period ? fill(labels.evidence.drawerV3.periodNamed, { name: labels.periods[period], range }) : range });
+};
+/** V3-5：原始明細每列的「檔名:行號」（labels.evidence.drawerV3.fileLine）。 */
+const evidenceFileLine = (file: string, line: number) => fill(labels.evidence.drawerV3.fileLine, { file, line });
 /** evidence-drawer.tsx lists source rows per file behind `${labels.evidence.sourceTabs[tab]}（{count}）` buttons; rows of a file appear only on its tab. */
 const sourceTabFiles = { sales: "sales_daily.csv", costs: "channel_costs_daily.csv", ads: "ad_spend_daily.csv" } as const;
 async function showSourceTab(dialog: Locator, tab: keyof typeof sourceTabFiles) {
@@ -280,8 +290,9 @@ test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看
   const dialog = page.getByRole("dialog", { name: evidenceDialogName(fill(dw.baselineEvidenceTitle, { metric: cmAfter })), exact: true });
   await expect(dialog).toBeVisible();
   await expectDrawerAmount(dialog, "270.00");
-  await expect(dialog).toContainText(evidenceScopeLine("2026-08-02", "2026-08-02", "DTC"));
-  await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 6 }));
+  // 基準證據沒有 scopeLabel：範圍＝通路 DTC；期間＝本期（golden 2026-08-02）。
+  await expect(dialog).toHaveAccessibleDescription(evidenceSubtitle("2026-08-02", "2026-08-02", "DTC", "current"));
+  await expect(dialog).toContainText(evidenceFileLine("sales_daily.csv", 6));
   for (const tab of ["sales", "costs", "ads"] as const) {
     await showSourceTab(dialog, tab);
     await expect(dialog).toContainText(sourceTabFiles[tab]);
@@ -595,7 +606,8 @@ test("四項人工行動可新增但僅三項置頂，鍵盤排序及人類可�
   const dialog = page.getByRole("dialog", { name: evidenceDialogName(fill(aw.evidenceTitle, { metric: cmAfter })), exact: true });
   await expect(dialog).toBeVisible();
   await expectDrawerAmount(dialog, "270.00");
-  await expect(dialog).toContainText(evidenceScopeLine("2026-08-02", "2026-08-02", "DTC", "DTC"));
+  // 行動證據的 scopeLabel 是通路「DTC」（已寫出通路，不另附「通路：…」）。待辦引用的 fact 以自己的資料來源開抽屜（不帶目前報表），期間不加「本期」前綴。
+  await expect(dialog).toHaveAccessibleDescription(evidenceSubtitle("2026-08-02", "2026-08-02", "DTC"));
   await expect(dialog).toContainText("sales_daily.csv");
   await page.keyboard.press("Escape");
   await expect(opener).toBeFocused();
