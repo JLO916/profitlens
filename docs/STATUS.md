@@ -8,7 +8,8 @@ PRD §7.1 區塊 5–8 與 §10.3（F2）落地：貢獻變化拆解改 C17 瀑�
 - 圖表驗收：九項加總＝總差額（到分）、平衡檢核「已平衡（差 0.00）」；合計與每通路四層恆等式 true；點柱／點列同一抽屜；切換期間四個圖框高度差 0、CLS 0（含輸入後位移 desktop 0.012／mobile 0.050，修正前 0.20／0.32）。
 - 畫面基準：`verification/revamp-v3/V3-4b/snapshots` 36 張寫入後重跑 4/4、0 差異；Lighthouse 五頁 Accessibility 100／100、空狀態 Performance 100／98、總覽頁 0 個失敗稽核；首屏數字與 V3-4a 相同（一句話頂端 192／無橫幅 168、KPI 底邊 419／無橫幅 395、390 貢獻數值頂端 295、內容前控制項 9）。
 - 偏離（詳見驗收文件 §5 與 DECISIONS 2026-10-06 V3-4b）：瀑布用 inline SVG 而非 Recharts 堆疊長條；拆解結論句「扣最多的一項是」依資料（示範資料為商品成本）；軸刻度「50.0 萬」帶一位小數；趨勢標題沿用標準名。
-- 未執行／待人工：H2 設計稿審查（後補）、H3 補審（本批結論句與瀑布文案一併）；**MVP 切線的 Vercel preview 部署需使用者當次明確同意（D-V3-24）**。
+- **MVP preview 已部署（2026-10-06 使用者當次同意）**：推送 `revamp/v2`（`5771104..f61e8cc`）後 Vercel Git 整合自動建置，deployment `dpl_72NujVv69QYxLuoZA9r8qCkQw2E5`（READY）：`https://profitlens-r5yb1091y-jlo916s-projects.vercel.app`、分支別名 `https://profitlens-git-revamp-v2-jlo916s-projects.vercel.app`；preview 環境變數為公開示範模式（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）。專案的 Deployment Protection（SSO，自訂網域以外）仍開著：老闆試用前請在 Vercel 專案設定放行 preview 或用 share link。正式站（main）未動。
+- 未執行／待人工：H2 設計稿審查（後補）、H3 補審（本批結論句與瀑布文案一併）。
 - 下一批：V3-5 通路健檢、商品毛利、計算與來源抽屜。
 
 ## Revamp v3｜V3-4a 經營總覽首屏與結構（完成，未推送、未部署；V3-4 拆批後的前半）

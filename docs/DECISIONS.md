@@ -292,6 +292,10 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-06｜MVP preview 部署（D-V3-24 的當次同意）
+
+使用者於 2026-10-06 回覆「部署 Vercel preview」，並在推送被權限系統擋下後明確指示 `git push origin revamp/v2`。做法：只推送分支（不推 main、不推 tag、不改正式站），由 Vercel 的 Git 整合建置 preview（`dpl_72NujVv69QYxLuoZA9r8qCkQw2E5`，commit `f61e8cc`）。preview 環境變數沿用 `verification/deployment-config.json` 記錄的公開示範模式；Deployment Protection（SSO）維持專案既有設定，由使用者決定是否放行。之後每批完成後是否再推送 preview，仍需使用者當次指示。
+
 ## 2026-10-06｜Revamp v3 V3-4b：圖表的取捨
 
 **圖表實作：** 瀑布（貢獻變化拆解、本期利潤結構）用 inline SVG（固定高 320px、viewBox 依容器寬度），趨勢與各通路沿用 Recharts 3.10.1；不加套件（§12.1）。圖本身 `aria-hidden`，鍵盤操作經由橋接表、資料表與各通路表的 number-link；點柱與點表格列呼叫同一個開抽屜 handler；柱點擊記 `waterfall_clicked`（只記事件名）。
