@@ -13,7 +13,9 @@ import type { EvidenceSelection } from "./evidence-drawer";
 import { TopThree } from "./top-three";
 import { fill, labels } from "@/i18n";
 import { AssistTable } from "./overview/assist-table";
+import { BridgeSection } from "./overview/charts/bridge-section";
 import { ChannelSection } from "./overview/charts/channel-section";
+import { ProfitSection } from "./overview/charts/profit-section";
 import { TrendSection } from "./overview/charts/trend-section";
 import { KPI_BAND_METRICS, KpiBand, type KpiBandMetric } from "./overview/kpi-band";
 import { WeeklySnapshot } from "./overview/weekly-snapshot";
@@ -80,7 +82,9 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
     <KpiBand snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} onNavigate={onNavigate} missingItems={missingItems} targets={kpiTargets} />
 
     <TopThree snapshot={snapshot} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} onOpenDiagnosis={onNavigate ? () => onNavigate("diagnosis") : undefined} />
-    {/* V3-4b 錨點：區塊 5「貢獻變化拆解」與區塊 6「本期利潤結構」（代理 B1 的元件，合併後由主控在此插入） */}
+    {/* V3-4b 區塊 5「貢獻變化拆解」（C17 瀑布＋橋接表＋平衡檢核）與區塊 6「本期利潤結構」（F2 四層瀑布，範圍切換只影響本圖） */}
+    <BridgeSection snapshot={snapshot} onEvidence={onEvidence} />
+    <ProfitSection snapshot={snapshot} onEvidence={onEvidence} allChannels={allChannels} />
 
     <div className="pair">
       <TrendSection snapshot={snapshot} events={events} onEvidence={onEvidence} />

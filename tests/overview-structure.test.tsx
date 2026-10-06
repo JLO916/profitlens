@@ -56,11 +56,10 @@ function render(options: { periodOpen?: boolean; withTargets?: boolean; snapshot
 const link = (aria: string, shown: string) => `<button type="button" class="number-link" aria-label="${escapeAttr(aria)}">${shown}</button>`;
 
 describe("V3-4a／V3-4b 區塊順序（§7.1）", () => {
-  // V3-4b：區塊 5「貢獻變化拆解」（#bridge-title）與區塊 6「本期利潤結構」由代理 B1 的元件負責，合併時由主控插在三件事與 .pair 之間（overview.tsx 的 V3-4b 錨點註解），
-  // 這兩個區塊的順序斷言隨 B1 元件一起補回；這裡只斷言 B2 範圍：三件事之後是並排的趨勢與各通路，再來是其他常用指標與進階。
+  // V3-4b：§7.1 順序——一句話 → KPI 帶 → 三件事 → 貢獻變化拆解（#bridge-title）→ 本期利潤結構（profit-waterfall）→ 並排的趨勢與各通路 → 其他常用指標 → 進階。
   it("一句話 → KPI 帶 → 本期三件事 → 並排（每週趨勢、各通路）→ 其他常用指標 → 進階", () => {
     const html = render();
-    const markers = ['data-testid="weekly-snapshot"', 'data-testid="kpi-band"', 'data-testid="top-three"', '<div class="pair">', 'aria-labelledby="trend-title"', 'aria-labelledby="channel-title"', 'data-testid="assist-kpis"', 'data-testid="overview-advanced"'];
+    const markers = ['data-testid="weekly-snapshot"', 'data-testid="kpi-band"', 'data-testid="top-three"', 'aria-labelledby="bridge-title"', 'data-testid="profit-waterfall"', '<div class="pair">', 'aria-labelledby="trend-title"', 'aria-labelledby="channel-title"', 'data-testid="assist-kpis"', 'data-testid="overview-advanced"'];
     const positions = markers.map(marker => html.indexOf(marker));
     for (const [index, position] of positions.entries()) expect(position, markers[index]).toBeGreaterThan(-1);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
