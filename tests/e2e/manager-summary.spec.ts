@@ -1,5 +1,6 @@
 import { clickReplacing, dismissSavePrompt, openDownloads, openMeeting, openValidation } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
+import { deltaWord, formatAmountL1, formatAmountL2, formatGrowth, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -23,6 +24,18 @@ const mdScope = (channels: string) => fill(copy.mdMeta.split(prioritySep).find(p
 const endsWithAmount = (amount: string) => new RegExp(`${escapeRe(prioritySep)}${escapeRe(labels.sections.impact)}\\s*${escapeRe(amount)}`);
 /** R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）：匯出 PDF、Markdown、通路寬表 CSV、Excel、PPT。 */
 const meetingOutput = (page: Page, name: string) => page.getByTestId("meeting-outputs").getByRole("button", { name, exact: true });
+/**
+ * V3-2b（§8.5、§8.8 #1）：一頁摘要的關鍵差額是 L1 句子「{方向詞} {絕對值 L1}（{成長率}）」，成長率只在上期 > 0 時附上（formatGrowth 回傳 null 就不附）。
+ * 全部由 golden 的精確值經 formatter 組出，不手打「220 元」。
+ */
+const headlineChange = (metric: "net_revenue" | "contribution_after_marketing", previous: string, current: string, change: string) => {
+  const word = deltaWord(metric, change, { previous, layer: "L1" })!;
+  const amount = formatAmountL1(change.replace(/^[-+]/, ""));
+  const growth = formatGrowth(current, previous, "L1");
+  return growth ? fill(copy.changePhraseGrowth, { word, amount, growth }) : fill(copy.changePhrase, { word, amount });
+};
+/** 列印版關鍵差額一行：printHeadline「上期 {prev}，本期 {cur}，差額 {change}」，三個數字都是 L1（萬／元、U+2212）。 */
+const printHeadline = (previous: string, current: string, change: string) => fill(copy.printHeadline, { prev: formatAmountL1(previous), cur: formatAmountL1(current), change: formatSignedDelta(change, "L1") });
 
 const test = base.extend<{ audit: string[] }>({
   audit: [async ({ page }, use, testInfo) => {
@@ -50,13 +63,15 @@ async function load(page: Page, name = "golden") {
 test("PL06 golden management summary, drilldown, threshold, scope and wide export", async ({ page }, testInfo) => {
   await load(page);
   const summary = page.getByTestId("manager-summary");
-  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], netRevenue), exact: true })).toHaveText("+220.00");
+  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], netRevenue), exact: true })).toHaveText(headlineChange("net_revenue", "2250.00", "2470.00", "220.00"));
   const cm = summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true });
-  await expect(cm).toHaveText("-315.00");
+  await expect(cm).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
   const marketplace = summary.getByRole("row").filter({ has: page.getByRole("rowheader", { name: /^MARKETPLACE/ }) });
-  await expect(marketplace).toContainText("170.00");
-  await expect(marketplace).toContainText("-15.00");
-  await expect(marketplace).toContainText("-185.00");
+  // V3-2b：通路寬表是 L2（整數元、U+2212，單位只在 caption）；最後三欄是扣廣告後貢獻的上期、本期、差額。
+  const marketplaceCells = marketplace.getByRole("cell");
+  await expect(marketplaceCells.nth(3)).toHaveText(formatAmountL2("170.00"));
+  await expect(marketplaceCells.nth(4)).toHaveText(formatAmountL2("-15.00"));
+  await expect(marketplaceCells.nth(5)).toHaveText(formatSignedDelta("-185.00", "L2"));
   await expect(summary.getByTestId("manager-priority-REV_UP_CM_DOWN")).toHaveCount(1);
   await cm.click();
   await expect(page.getByRole("dialog")).toContainText(fill(copy.changeFormula, { metric: contribution }));
@@ -79,9 +94,9 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   expect(csv).toContain('"170.00","-15.00","-185.00"');
   expect(csv).toContain('"400.00","270.00","-130.00"');
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
-  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText("-315.00");
+  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
   await page.getByRole("button", { name: labels.buttons.updateMeetingSource, exact: true }).click();
-  await expect(summary.getByRole("button", { name: changeTitle(["DTC"], contribution), exact: true })).toHaveText("-130.00");
+  await expect(summary.getByRole("button", { name: changeTitle(["DTC"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "400.00", "270.00", "-130.00"));
   await expect(summary.getByRole("rowheader", { name: /MARKETPLACE/ })).toHaveCount(0);
   const markdownEvent = page.waitForEvent("download");
   await meetingOutput(page, labels.buttons.exportMarkdown).click();
@@ -89,8 +104,9 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   expect(markdown.split(technicalHeading)[0]).toContain(mdScope("DTC"));
   expect(markdown.split(technicalHeading)[0]).not.toContain("MARKETPLACE");
   // R5（05 §7）：Markdown 三件事的金額是「對貢獻影響」；golden DTC：折扣 -130.00、營收增貢獻減 -130.00（同值依規則代號）、廣告 -70.00。
+  // V3-2b：Markdown 主文是 L2（整數元、U+2212）。
   const topThree = markdown.split(`## ${labels.sections.topThree}`)[1].split(copy.mdDecisions)[0];
-  expect(topThree.split("\n").filter(line => /^\d+\. /.test(line)).map(line => line.split(prioritySep).at(-1))).toEqual(["-130.00", "-130.00", "-70.00"]);
+  expect(topThree.split("\n").filter(line => /^\d+\. /.test(line)).map(line => line.split(prioritySep).at(-1))).toEqual(["-130.00", "-130.00", "-70.00"].map(value => formatSignedDelta(value, "L2")));
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-summary-${testInfo.project.name}.png`), fullPage: true });
 });
 
@@ -116,15 +132,16 @@ test("PL09 print uses a dedicated manager draft and retains technical audit down
   await expect(print).toBeVisible();
   // Print context shows either the meeting decision state or copy.draftDecision; both contain the draft label.
   await expect(print).toContainText(labels.meeting.decisions.draft);
-  await expect(print).toContainText("+220.00");
-  await expect(print).toContainText("-315.00");
+  // V3-2b：列印版的句子用 L1（萬／元、U+2212）。
+  await expect(print).toContainText(printHeadline("2250.00", "2470.00", "220.00"));
+  await expect(print).toContainText(printHeadline("570.00", "255.00", "-315.00"));
   // R5（05 §7）：三件事顯示「對貢獻影響」——費用類規則（折扣、廣告增加）為負號，不再是排序用的 +250.00／+150.00。
   const priorities = print.locator("ol > li");
   await expect(priorities).toHaveCount(3);
-  await expect(priorities.nth(0)).toContainText(endsWithAmount("-315.00"));
-  await expect(priorities.nth(1)).toContainText(endsWithAmount("-250.00"));
-  await expect(priorities.nth(2)).toContainText(endsWithAmount("-150.00"));
-  await expect(print.locator("ol")).not.toContainText(/\+250\.00|\+150\.00/);
+  await expect(priorities.nth(0)).toContainText(endsWithAmount(formatSignedDelta("-315.00", "L1")));
+  await expect(priorities.nth(1)).toContainText(endsWithAmount(formatSignedDelta("-250.00", "L1")));
+  await expect(priorities.nth(2)).toContainText(endsWithAmount(formatSignedDelta("-150.00", "L1")));
+  await expect(print.locator("ol")).not.toContainText(new RegExp(["250.00", "150.00"].map(value => escapeRe(formatSignedDelta(value, "L1"))).join("|")));
   await expect(page.getByTestId("manager-summary")).toBeHidden();
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-summary-print-${testInfo.project.name}.png`), fullPage: true });
   if (testInfo.project.name === "desktop") await page.pdf({ path: resolve("verification/review-v2-a-regression-summary-print.pdf"), format: "A4", printBackground: true });

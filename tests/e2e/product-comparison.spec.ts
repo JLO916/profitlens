@@ -1,6 +1,7 @@
 import { clickReplacing, dismissSavePrompt, openValidation } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
+import { formatAmountL1, formatAmountL2, formatAmountL3, formatRateL2, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
@@ -23,8 +24,16 @@ const validation = labels.ui.dashboard.validation;
 /** 「商品毛利差額」= metric label + change suffix, as product-comparison-panel.tsx's changeLabel(). */
 const grossProfitChange = `${labels.metrics.gross_profit.label}${labels.csvSuffix.change}`;
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-/** V3-2a：抽屜金額刪除 NT$，改用 evidenceDrawer.money 模板「{amount} 元」（大數字與組成項目同一模板）。 */
-const drawerMoney = (amount: string) => fill(labels.ui.evidenceDrawer.money, { amount });
+/**
+ * V3-2b（§7.8、§8.5）：抽屜標題下的大數字是 L1（差額帶號「−55 元」），下一行 evidence-precise-value 是到分的精確值「−55.00 元」；
+ * 組成項目一律 L3 到分、不帶單位（單位在小標「組成（元）」）。
+ */
+const drawerHeadlineDelta = (delta: string) => formatSignedDelta(delta, "L1");
+const drawerPreciseDelta = (delta: string) => fill(labels.units.yuan, { value: formatSignedDelta(delta, "L3") });
+/** V3-2b：商品表與小表是 L2——金額整數元（單位只在表頭「（元）」）、差額帶正負號（U+2212）、毛利率一位小數。 */
+const deltaL2 = (value: string) => formatSignedDelta(value, "L2");
+/** 毛利率 = 毛利 ÷ 淨營收（golden 手算的分子、分母；顯示取位交給 formatRateL2）。 */
+const marginL2 = (grossProfit: string, netRevenue: string) => formatRateL2(String(Number(grossProfit) / Number(netRevenue)));
 /** V3-2a：狀態列「資料到 {date}」— 以模板組 RegExp，{date} 對應 YYYY-MM-DD（各驗證資料集的 data_as_of 不同）。 */
 const readyRe = escape(labels.status.ready).replace(escape("{date}"), "\\d{4}-\\d{2}-\\d{2}");
 /** Evidence dialog is titled `${title}｜怎麼算的`; match by its suffix. */
@@ -39,18 +48,20 @@ const current = (label: string) => `${labels.periods.current}${label}`;
 const previous = (label: string) => `${labels.periods.previous}${label}`;
 const netRevenueChange = `${labels.metrics.net_revenue.label}${labels.csvSuffix.change}`;
 const unitsLabel = labels.assist.items.units_sold.label;
+/** V3-2b（§8.5 規則 5）：金額欄的表頭標一次「（元）」（labels.units.yuanColumn），比率與件數欄不標。 */
+const yuan = (label: string) => fill(labels.units.yuanColumn, { label });
 /** 通路｜SKU｜品類｜本期售出件數｜本期淨營收｜本期商品毛利｜本期毛利率｜商品毛利差額｜淨營收差額｜上期淨營收｜上期商品毛利｜資料狀態 */
 const mainColumns = [
   labels.csvColumns.channel, "SKU", labels.csvColumns.category, current(unitsLabel),
-  current(labels.metrics.net_revenue.short), current(labels.metrics.gross_profit.short), current(labels.metrics.gross_margin.short),
-  grossProfitChange, netRevenueChange, previous(labels.metrics.net_revenue.label), previous(labels.metrics.gross_profit.label), highlight.columns.dataStatus,
+  yuan(current(labels.metrics.net_revenue.short)), yuan(current(labels.metrics.gross_profit.short)), current(labels.metrics.gross_margin.short),
+  yuan(grossProfitChange), yuan(netRevenueChange), yuan(previous(labels.metrics.net_revenue.label)), yuan(previous(labels.metrics.gross_profit.label)), highlight.columns.dataStatus,
 ];
 /** 「更多欄位」：本期商品成本／折扣／退款，上期售出件數／商品成本／毛利率／折扣／退款。 */
 const moreColumns = [
-  current(labels.metrics.cogs_net.short), current(labels.metrics.discounts.short), current(labels.metrics.refunds.short),
-  previous(unitsLabel), previous(labels.metrics.cogs_net.short), previous(labels.metrics.gross_margin.short), previous(labels.metrics.discounts.short), previous(labels.metrics.refunds.short),
+  yuan(current(labels.metrics.cogs_net.short)), yuan(current(labels.metrics.discounts.short)), yuan(current(labels.metrics.refunds.short)),
+  previous(unitsLabel), yuan(previous(labels.metrics.cogs_net.short)), previous(labels.metrics.gross_margin.short), yuan(previous(labels.metrics.discounts.short)), yuan(previous(labels.metrics.refunds.short)),
 ];
-const highlightColumns = ["SKU", labels.csvColumns.category, current(labels.metrics.gross_profit.short), grossProfitChange, current(labels.metrics.gross_margin.short)];
+const highlightColumns = ["SKU", labels.csvColumns.category, yuan(current(labels.metrics.gross_profit.short)), yuan(grossProfitChange), current(labels.metrics.gross_margin.short)];
 const headerTexts = (table: Locator) => table.locator("thead th").evaluateAll(cells => cells.map(cell => (cell.textContent ?? "").replace(/\s+/g, " ").trim()));
 /** 每列儲存格文字（空白壓成一格）；小表的列標頭是「SKU 通路」。 */
 const rowTexts = (root: Locator) => root.locator("tbody tr").evaluateAll(rows => rows.map(row => [...row.children].map(cell => (cell.textContent ?? "").replace(/\s+/g, " ").trim())));
@@ -105,8 +116,8 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   expect(await headerTexts(table)).toEqual(mainColumns);
   // 預設由小到大（先看下降）：MARKETPLACE/B −55、DTC/B −50、MARKETPLACE/A +10、DTC/A +40；四列都是兩期皆有。
   expect((await rowTexts(table)).map(row => [row[0], row[1], row[7], row[11]])).toEqual([
-    ["MARKETPLACE", "B", "-55.00", highlight.status.both], ["DTC", "B", "-50.00", highlight.status.both],
-    ["MARKETPLACE", "A", "+10.00", highlight.status.both], ["DTC", "A", "+40.00", highlight.status.both],
+    ["MARKETPLACE", "B", deltaL2("-55.00"), highlight.status.both], ["DTC", "B", deltaL2("-50.00"), highlight.status.both],
+    ["MARKETPLACE", "A", deltaL2("10.00"), highlight.status.both], ["DTC", "A", deltaL2("40.00"), highlight.status.both],
   ]);
   for (const old of [panel.activity.bothObserved, panel.activity.currentOnly, panel.activity.previousOnly]) await expect(table).not.toContainText(old);
   // Top／Bottom 小表（golden 手算）：本期毛利 = 淨營收 − 成本；毛利率 = 毛利 ÷ 淨營收（兩位小數百分比）。
@@ -116,12 +127,12 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   expect(await headerTexts(worst)).toEqual(highlightColumns);
   expect(await headerTexts(best)).toEqual(highlightColumns);
   expect(await rowTexts(worst)).toEqual([
-    ["B MARKETPLACE", "CARE", "125.00", "-55.00", "35.71%"], // 500−100−50=350；350−225=125；125÷350
-    ["B DTC", "CARE", "200.00", "-50.00", "55.56%"], // 400−20−20=360；360−160=200；200÷360
-    ["A MARKETPLACE", "HOME", "280.00", "+10.00", "43.75%"], // 800−120−40=640；640−360=280；280÷640
-    ["A DTC", "HOME", "540.00", "+40.00", "48.21%"], // 1400−210−70=1120；1120−580=540；540÷1120
+    ["B MARKETPLACE", "CARE", formatAmountL2("125.00"), deltaL2("-55.00"), marginL2("125", "350")], // 500−100−50=350；350−225=125；125÷350
+    ["B DTC", "CARE", formatAmountL2("200.00"), deltaL2("-50.00"), marginL2("200", "360")], // 400−20−20=360；360−160=200；200÷360
+    ["A MARKETPLACE", "HOME", formatAmountL2("280.00"), deltaL2("10.00"), marginL2("280", "640")], // 800−120−40=640；640−360=280；280÷640
+    ["A DTC", "HOME", formatAmountL2("540.00"), deltaL2("40.00"), marginL2("540", "1120")], // 1400−210−70=1120；1120−580=540；540÷1120
   ]);
-  expect(await rowTexts(best)).toEqual([["A DTC", "HOME", "540.00", "+40.00", "48.21%"], ["A MARKETPLACE", "HOME", "280.00", "+10.00", "43.75%"]]);
+  expect(await rowTexts(best)).toEqual([["A DTC", "HOME", formatAmountL2("540.00"), deltaL2("40.00"), marginL2("540", "1120")], ["A MARKETPLACE", "HOME", formatAmountL2("280.00"), deltaL2("10.00"), marginL2("280", "640")]]);
   await expect(worst.getByRole("region", { name: highlight.worstAria, exact: true })).toHaveAttribute("tabindex", "0");
   await expect(best.getByRole("region", { name: highlight.bestAria, exact: true })).toHaveAttribute("tabindex", "0");
   // 「更多欄位」：開啟後 12 → 20 欄（主欄後接 8 欄），再關回 12 欄。
@@ -136,13 +147,13 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await expect(table.locator("tbody tr").first()).toContainText("MARKETPLACE");
   await expect(table.locator("tbody tr").first().getByRole("rowheader")).toHaveText("B");
   // Golden keeps raw channel codes; the 官網／平台 alias applies only to the demo dataset.
-  const trigger = table.getByRole("button", { name: fill(panel.deltaEvidenceAria, { channel: "MARKETPLACE", sku: "B", label: grossProfitChange, value: "-55.00" }), exact: true });
+  const trigger = table.getByRole("button", { name: fill(panel.deltaEvidenceAria, { channel: "MARKETPLACE", sku: "B", label: grossProfitChange, value: deltaL2("-55.00") }), exact: true });
   await trigger.focus();
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: evidenceDialog });
-  await expect(dialog).toContainText(drawerMoney("-55.00"));
-  await expect(dialog).toContainText(drawerMoney("180.00"));
-  await expect(dialog).toContainText(drawerMoney("125.00"));
+  await expect(dialog.locator("p.number")).toHaveText(drawerHeadlineDelta("-55.00"));
+  await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(drawerPreciseDelta("-55.00"));
+  await expect(dialog.locator("dd.number")).toHaveText([formatAmountL3("180.00"), formatAmountL3("125.00")]);
   await expect(dialog).toContainText("2026-08-01");
   await expect(dialog).toContainText("2026-08-02");
   await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 5 }));
@@ -166,7 +177,7 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-products-${testInfo.project.name}.png`), fullPage: true });
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
+  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText(formatAmountL1("255.00"));
 });
 
 test("PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來源", async ({ page }) => {
@@ -179,8 +190,8 @@ test("PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來�
   await expect(last.getByRole("rowheader")).toHaveText("A");
   await expect(statusCell(last)).toHaveText(highlight.status.cost_unknown);
   expect((await rowTexts(table)).map(row => row[11])).toEqual([highlight.status.both, highlight.status.both, highlight.status.both, highlight.status.cost_unknown]);
-  expect((await rowTexts(page.getByTestId("product-worst"))).map(row => [row[0], row[2]])).toEqual([["B MARKETPLACE", "125.00"], ["B DTC", "200.00"], ["A MARKETPLACE", "280.00"]]);
-  expect((await rowTexts(page.getByTestId("product-best"))).map(row => [row[0], row[3]])).toEqual([["A MARKETPLACE", "+10.00"]]);
+  expect((await rowTexts(page.getByTestId("product-worst"))).map(row => [row[0], row[2]])).toEqual([["B MARKETPLACE", formatAmountL2("125.00")], ["B DTC", formatAmountL2("200.00")], ["A MARKETPLACE", formatAmountL2("280.00")]]);
+  expect((await rowTexts(page.getByTestId("product-best"))).map(row => [row[0], row[3]])).toEqual([["A MARKETPLACE", deltaL2("10.00")]]);
   await page.getByLabel(panel.sortDirection, { exact: true }).selectOption("descending");
   await expect(last).toContainText(panel.costMissing);
   await last.getByRole("button", { name: deltaTrigger(labels.status.missing) }).click();
@@ -235,7 +246,7 @@ test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公�
   await expect(statusCell(skuRow("MISSING"))).toHaveText(highlight.status.cost_unknown);
   await expect(statusCell(skuRow("=1+1"))).toHaveText(highlight.status.current_only);
   for (const old of [panel.activity.bothObserved, panel.activity.currentOnly, panel.activity.previousOnly]) await expect(table).not.toContainText(old);
-  await exit.getByRole("button", { name: deltaTrigger("-5.00") }).click();
+  await exit.getByRole("button", { name: deltaTrigger(deltaL2("-5.00")) }).click();
   const dialog = page.getByRole("dialog", { name: evidenceDialog });
   // Sales rows show under the default「銷售」tab; manifest rows live under「資料集設定」.
   await expect(dialog).toContainText("商品來源.csv");
@@ -246,7 +257,8 @@ test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公�
   await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
   await expect(table.locator("tbody tr")).toHaveCount(1);
   await expect(table).toContainText("=1+1");
-  await expect(table).toContainText("-60.00");
+  // 「=1+1」本期毛利與差額都是 −60（L2，U+2212）；CSV 仍是 ASCII 到分。
+  await expect(skuRow("=1+1").getByRole("button", { name: deltaTrigger(deltaL2("-60.00")) })).toHaveText(deltaL2("-60.00"));
   const rows = await downloadComparison(page);
   expect(rows).toHaveLength(1);
   expect(rows[0]).toMatchObject({ sku: "'=1+1", category: "'@HOME", previous_gross_profit: "0.00", current_gross_profit: "-60.00", gross_profit_change: "-60.00", negative_only: "true", previous_presence: "no_rows_confirmed" });

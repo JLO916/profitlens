@@ -1,5 +1,6 @@
 import { clickReplacing, dismissSavePrompt, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
+import { formatAmountL1 } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -21,6 +22,8 @@ const test = base.extend<{ browserAudit: string[] }>({
 const nav = labels.nav;
 const validation = labels.ui.dashboard.validation;
 const channelFilter = labels.ui.dashboard.filter.channel;
+/** V3-2b（§8.5）：KPI 大數字是 L1（< 1 萬「255 元」、≥ 1 萬「127.0 萬」）；斷言 .kpi-value 整格文字，金額取自 golden／demo 精確值。 */
+const kpiValue = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 
 /** V3-2a：狀態列「資料到 {date}」的日期取自 fixtures/{id}/manifest.json 的 data_as_of（本檔只有 golden 用預設狀態）。 */
 const readyFor = (id: string) => fill(labels.status.ready, { date: JSON.parse(readFileSync(resolve(`fixtures/${id}/manifest.json`), "utf8")).data_as_of });
@@ -65,7 +68,7 @@ test("PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立
   await page.getByRole("button", { name: nav.overview.label, exact: true }).click();
   await expect(datasets).toHaveCount(0);
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
+  await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(formatAmountL1("1269792.73"));
   await expect(datasets).toHaveCount(0);
 });
 
@@ -73,22 +76,22 @@ test("PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不�
   await loadVerificationDataset(page, "golden");
   await expect(page.getByRole("heading", { name: nav.overview.label, exact: true })).toBeVisible();
   await expect(page.getByLabel(validation.datasetLabel, { exact: true })).toHaveCount(0);
-  await expect(page.getByTestId("kpi-net_revenue")).toContainText("2,470.00");
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
+  await expect(kpiValue(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
+  await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(formatAmountL1("255.00"));
   await loadVerificationDataset(page, "missing-ad", labels.status.partial);
   await expect(page.getByRole("heading", { name: nav.overview.label, exact: true })).toBeVisible();
-  await expect(page.getByTestId("kpi-net_revenue")).toContainText("2,470.00");
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(labels.status.missing);
+  await expect(kpiValue(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
+  await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(labels.status.missing);
   await page.getByLabel(channelFilter, { exact: true }).selectOption("DTC");
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("270.00");
+  await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
   await loadVerificationDataset(page, "duplicate", labels.status.error);
   // The blocking message is domain text (src/domain/validation.ts, financial core — not in labels); only its keyword is asserted.
   await expect(page.getByRole("main")).toContainText("重複");
   await page.getByRole("button", { name: labels.ui.dashboard.errorState.back, exact: true }).click();
   await page.getByRole("button", { name: nav.overview.label, exact: true }).click();
   await expect(page.getByLabel(channelFilter, { exact: true })).toHaveValue("DTC");
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("270.00");
-  await expect(page.getByTestId("kpi-net_revenue")).toContainText("1,480.00");
+  await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
+  await expect(kpiValue(page, "net_revenue")).toHaveText(formatAmountL1("1480.00"));
 });
 
 test("PL10 單純導航進階頁不載入資料、不更改通路，也不清除方案及行動草稿", async ({ page }) => {
