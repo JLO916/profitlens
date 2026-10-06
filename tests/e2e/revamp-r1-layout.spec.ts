@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clickReplacing, dismissSavePrompt } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
+import { MINUS, deltaTone, formatAmountL1, formatSignedDelta } from "../../src/application/presentation";
 
 // R2 文案接線：期間列的範圍說明由 labels.ui.dashboard.scopeNote 模板組成，這裡只取測試關心的片段再填值。
 const scopeNoteDays = (previousDays: number, currentDays: number) => fill(labels.ui.dashboard.scopeNote.match(/（(.*?)）/)![1], { previousDays, currentDays });
@@ -12,7 +13,8 @@ const aiLabelPrefix = labels.ui.dashboard.aiLabel.replace("{ai}", "");
 async function loadDemo(page: Page) {
   await page.goto("/");
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
+  // V3-2b：KPI 卡是 L1（萬、一位小數），golden 精確值 1269792.73 經 formatAmountL1 顯示；到分的值改在抽屜的精確值行。
+  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(formatAmountL1("1269792.73"));
   // R6：首次載入資料時右下角出現非 modal 的保存提示（也是 role=dialog）；本檔不測自動保存，先選「先不要」。
   await expect(page.getByTestId("local-save-prompt")).toBeVisible();
   await dismissSavePrompt(page);
@@ -64,13 +66,21 @@ test.describe("R1 overview first screen", () => {
     const first = page.getByTestId("top-three").locator("li[data-testid^='overview-priority-']").first();
     await expect(first).toContainText(labels.sections.impact);
     const amount = first.locator(".impact-amount").first();
-    await expect(amount).toHaveText(/^[-+]\d{1,3}(,\d{3})*\.\d{2}$/);
+    // V3-2b：三件事的影響金額是 L1 帶號差額（「−59.9 萬」，U+2212）；精確值在抽屜的 evidence-precise-value（L3 到分），兩者要同源。
+    const shown = (await amount.textContent())!.trim();
+    expect(shown).toMatch(new RegExp(`^[+${MINUS}]`));
     await expect(amount).toHaveClass(/negative|positive/);
     await expect(first.getByRole("button", { name: labels.buttons.viewEvidence, exact: true })).toBeVisible();
     await expect(first.getByRole("button", { name: labels.buttons.addToActions, exact: true })).toBeVisible();
     await amount.click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByRole("dialog")).toContainText(labels.sections.impact);
+    const precise = (await page.getByRole("dialog").getByTestId("evidence-precise-value").textContent())!.trim();
+    const exactValue = precise.replace(fill(labels.units.yuan, { value: "" }).trim(), "").trim().replaceAll(",", "").replace("+", "").replace(MINUS, "-");
+    expect(precise).toBe(fill(labels.units.yuan, { value: formatSignedDelta(exactValue, "L3") }));
+    expect(shown).toBe(formatSignedDelta(exactValue, "L1"));
+    // 只有不利上色：class 依 deltaTone（對扣廣告後貢獻的影響），不依數學正負號。
+    await expect(amount).toHaveClass(deltaTone("contribution_after_marketing", exactValue, "L1") === "unfavorable" ? /negative/ : /positive/);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
   });

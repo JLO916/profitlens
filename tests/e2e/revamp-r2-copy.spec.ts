@@ -2,12 +2,14 @@ import { expect, test, type Page } from "@playwright/test";
 import { clickReplacing, dismissSavePrompt, openDownloads, openValidation, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { csvHeaderKey } from "../../src/application/copy";
+import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
 
 // R2 語言與文案層：口徑說明的三個入口、怎麼算的階梯、商品證據不畫階梯、示範通路 alias、CSV 標題列、規則卡模板標題。
 async function loadDemo(page: Page) {
   await page.goto("/");
   await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
+  // V3-2b：KPI 卡是 L1（萬），由 golden 精確值經 formatAmountL1 產生。
+  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(formatAmountL1("1269792.73"));
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
 }
@@ -16,7 +18,8 @@ async function loadGolden(page: Page) {
   await openValidation(page);
   await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
   await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
-  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("255.00");
+  // V3-2b：golden 本期 255.00 在 KPI 卡（L1，< 1 萬）顯示為整數元。
+  await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(formatAmountL1("255.00"));
   await dismissSavePrompt(page);
 }
 // 把含 {占位符} 的標籤模板轉成整行比對的正規式（占位符換成非空字串）。
@@ -60,7 +63,9 @@ test.describe("R2 口徑說明與怎麼算的", () => {
     await expect(rows).toHaveCount(13);
     await expect(rows.first()).toContainText(labels.metrics.gross_sales.label);
     await expect(rows.last()).toContainText(labels.metrics.contribution_after_marketing.label);
-    await expect(rows.last()).toContainText("255.00");
+    // V3-2b：抽屜階梯是 L3（到分＋「元」），標題下一行的精確值也是 L3。
+    await expect(rows.last()).toContainText(fill(labels.units.yuan, { value: formatAmountL3("255.00") }));
+    await expect(drawer(page).getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatAmountL3("255.00") }));
     await expect(drawer(page).locator(".ladder-table tr.current")).toHaveCount(1);
     await expect(drawer(page).getByRole("group", { name: labels.ui.evidenceDrawer.sourceTabsAria })).toBeVisible();
     await expect(drawer(page).locator("details.evidence-technical")).not.toHaveAttribute("open", /.*/);
