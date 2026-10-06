@@ -527,7 +527,23 @@ export const overview = {
 
   kpiBand: {},
 
-  alerts: {},
+  /** V3-4a 代理 C：本期三件事警示列（C9 摘要型，PRD §7.1 第 4 點、§8.2）。3 件時標題沿用 sections.topThree。 */
+  alerts: {
+    /** 不足 3 件（1–2 件）時的區塊標題。 */
+    titleCount: "本期要先看的事（{n} 件）",
+    /** 0 件（門檻濾掉全部或沒有健檢結果）。 */
+    empty: "本期沒有需要先看的事。",
+    goDiagnosis: "前往通路健檢",
+    /** 區塊底部連結，取代 v2「另有 n 組未列出」；n＝健檢結果總數。 */
+    viewAll: "查看全部 {n} 項健檢結果",
+    /** 列內展開（收合）的定義清單：限制句、其餘範圍、檔期。 */
+    limitation: "限制",
+    relatedScopes: "相關範圍",
+    eventPeriod: "檔期",
+    eventValue: "{label}期間",
+    /** 「依影響金額排序」旁的 `?` 說明按鈕（C14：aria-label「{名稱}的定義」）。 */
+    sortHelpAria: "依影響金額排序的定義",
+  },
 
   assistTable: {},
 

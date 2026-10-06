@@ -68,7 +68,8 @@ test.describe("R1 overview first screen", () => {
     await loadDemo(page);
     const first = page.getByTestId("top-three").locator("li[data-testid^='overview-priority-']").first();
     await expect(first).toContainText(labels.sections.impact);
-    const amount = first.locator(".impact-amount").first();
+    // V3-4a（C9 摘要型）：列的影響金額在 .alert-impact；列內收合的「相關範圍」另有各範圍的 L2 金額，不取那些。
+    const amount = first.locator(".alert-impact .impact-amount");
     // V3-2b：三件事的影響金額是 L1 帶號差額（「−59.9 萬」，U+2212）；精確值在抽屜的 evidence-precise-value（L3 到分），兩者要同源。
     const shown = (await amount.textContent())!.trim();
     expect(shown).toMatch(new RegExp(`^[+${MINUS}]`));
