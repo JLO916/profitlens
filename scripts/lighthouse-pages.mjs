@@ -55,10 +55,16 @@ const sizes = [
   { name: "mobile-390", config: undefined, flags: { formFactor: "mobile", screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 3, disabled: false } } },
 ];
 
-/** 依完整文字找可見按鈕（可限定在某個容器內），用 puppeteer 的真實滑鼠點擊。 */
+/** 依完整文字（或 aria-label）找可見按鈕（可限定在某個容器內），用 puppeteer 的真實滑鼠點擊。 */
 async function clickButton(page, text, within = "body") {
-  const handle = await page.waitForFunction((label, scope) => [...document.querySelectorAll(`${scope} button`)].find(button => button.textContent.trim() === label && button.checkVisibility()), { timeout: 30_000 }, text, within);
+  const handle = await page.waitForFunction((label, scope) => [...document.querySelectorAll(`${scope} button`)].find(button => (button.textContent.trim() === label || button.getAttribute("aria-label") === label) && button.checkVisibility()), { timeout: 30_000 }, text, within);
   await handle.asElement().click();
+}
+/** V3-3 切頁：桌機點側欄；390 寬的底部分頁列以 aria-label 帶頁名（可見字是短名），不在分頁列上的頁先點「更多」再點面板裡的項目。 */
+async function navigateTo(page, label) {
+  const visible = await page.evaluate(label => [...document.querySelectorAll("nav button")].some(button => (button.textContent.trim() === label || button.getAttribute("aria-label") === label) && button.checkVisibility()), label);
+  if (!visible) await clickButton(page, labels.shell.mobileNav.more, "nav");
+  await clickButton(page, label, "nav");
 }
 
 const metric = (lhr, id) => lhr.audits[id]?.numericValue === undefined ? null : Math.round(lhr.audits[id].numericValue * 1000) / 1000;
@@ -101,7 +107,7 @@ try {
     for (const target of pages) {
       const label = labels.nav[target.id].label;
       await flow.startTimespan({ name: `切到${label}（timespan）`, ...perfOnly });
-      await clickButton(page, label, "nav");
+      await navigateTo(page, label);
       await page.waitForSelector(target.anchor, { visible: true, timeout: 30_000 });
       await flow.endTimespan();
       await page.evaluate(() => window.scrollTo(0, 0));

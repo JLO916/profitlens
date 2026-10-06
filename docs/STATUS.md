@@ -1,5 +1,17 @@
 # Status
 
+## Revamp v3｜V3-3 殼層與導覽（完成，未推送、未部署；H2 設計稿審查後補）
+
+使用者 2026-10-06 指示「H2 後補，先開 V3-3」。依 PRD §6.1／§6.3 #1–#23／§6.4 M1–M6／§7.0 落地：48px 單列頂欄（資料狀態按鈕＋popover、AI 狀態、指標定義、儲存三段含危險區「清空目前資料」、匯出分組）、四組側欄與計數徽章、56px 頁首（「匯入資料」只留資料來源頁）、全站頁尾、單列期間列（快捷單擊即套用 D-V3-10、期間摘要、自訂期間 popover）、需要處理橫幅、手機底部分頁列＋「更多」＋期間底部面板（同一份 DOM，CSS 重新定位）。各頁內容元件、`src/domain`、`fixtures`、`docs/METRICS.md` 零改動；無新依賴。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **90 檔／1,879 全過**（新增 shell、period-bar、mounted-testids 18 項）、`lint:design` exit 0（JSX 箭頭 6 → 4、JSX 裝飾字元 1 → 0、CSS 裝飾 content 2 → 0，棘輪上限同步調低；hex 0、圓角 4、字級 13、字距 0；對比 75／75）、build pass、E2E 全套 **596／596 全過（17.3 分，四尺寸）**（第一輪 594／596，tablet 2 項因儲存選單面板蓋住下方內容，spec 先收選單後修正）；禁區 diff 空；testid 刪除數 0（新增 25 個殼層 testid）；`feature-retention.csv` V3-3 的 42 列全部打勾；`e2e-text-assertions.csv` 新增 status 欄，V3-3 的 388 列勾銷（159 列改寫、229 列定位器未變）。
+- 殼層實測：頂欄 48px（四尺寸）；1440 頂欄＋頁首＋期間列 152px；390 首個 KPI 數值頂端 224px（V3-0 基準 1,066px）；「示範資料」字樣 1 處；任一頁到匯入精靈 2 次點擊；四尺寸無水平捲動；內容前可聚焦元素（1440）7（V3-0 基準 13）；含稅匯入最少點擊 6（V3-0 5，匯入入口改兩次點擊）。
+- 畫面基準：`verification/revamp-v3/V3-3/snapshots` 36 張（四尺寸 × 9 頁面狀態）寫入後重跑 4/4、0 差異；Lighthouse 五頁 Accessibility 100／100、空狀態 Performance 100／98（不計分的 label-content-name-mismatch 自 V3-0 即存在，留 V3-5／V3-7）。
+- E2E 遷移：共用 helper 改走 V3-3 殼層後，六個代理逐 spec 遷移（21 個 spec＋2 個 helper）；代理回報並於本批修正兩個產品問題（手機 Esc 一次關兩層、手機「更多」展開時面板被首次保存提示蓋住）。
+- 偏離（詳見驗收文件 §5）：768–1279 期間列兩列；手機 AI 狀態也收進「更多」；匯出選單只改名與分組（各項新名稱與說明留 V3-7）；空狀態未加匯入按鈕（V3-8）；§7.10 四態等高版面未做；v2 的 `.filter-bar`／`.preset-row`／`.scope-note` CSS 留 V3-4 清理。
+- 未執行／待人工：**H2 設計稿審查（後補）**、H3 補審。
+- 下一批：V3-4 經營總覽（MVP 切線；完成後部署 preview 需使用者當次明確同意）。
+
 ## Revamp v3｜V3-2c labels 結構重整與清理（完成，未推送、未部署；V3-2 a／b／c 全部完成）
 
 不改任何畫面文字與版面（四尺寸截圖對 V3-2b 基準 0 差異）。labels 依「頁面 › 區塊 › 元件」重組成 24 個新分組（字串唯一存放處），v2 的 41 個區段全部改為只放參照的型別化 alias（`legacyAliases` 2,221 筆，到 V3-10 才移除），元件與測試 import 零改動；規則卡、指標、導覽套用 `headline／explain／caution／technical` 形狀；`scripts/labels-regroup.mjs` 可重現並 `--check`；`tests/labels-structure.test.ts` 以 V3-2b 展平快照逐字驗證。刪除 v2 ASCII 負號格式函式（AI 酬載改用 `asciiMinus(formatAmountL3)`，輸出逐字相同）與 127 個無引用 key（清單 `verification/revamp-v3/labels-removed-v3-2c.txt`）。

@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 import { expect, test, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
+import { formatAmountL1 } from "../../src/application/presentation";
 import { chooseBasis, commitButton, wizard, wizardStatus, setWizardFiles } from "../../tests/e2e/import-wizard-helpers";
 import { FIXED_NOW, loadDemo, nav } from "./shared";
 
@@ -21,7 +22,7 @@ async function record(path: string[], value: unknown) {
   let node = json;
   for (const key of path.slice(0, -1)) node = (node[key] ??= {}) as Record<string, unknown>;
   node[path.at(-1)!] = value;
-  json._meta = { batch: "V3-0", note: "PRD §2.3 B／C 的 v2 基準（EC ProfitLens 2.0.0，revamp/v2）。由 verification/revamp-v3-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v3/V3-0-baseline.md。", clock: FIXED_NOW.toISOString(), server: "本機 production（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）" };
+  json._meta = { batch: process.env.CAPTURE_BATCH ?? "V3-0", note: "PRD §2.3 B／C 的 v2 基準（EC ProfitLens 2.0.0，revamp/v2）。由 verification/revamp-v3-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v3/V3-0-baseline.md。", clock: FIXED_NOW.toISOString(), server: "本機 production（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）" };
   await mkdir(dirname(OUT), { recursive: true });
   await writeFile(OUT, `${JSON.stringify(json, null, 2)}\n`);
 }
@@ -125,13 +126,15 @@ test("各頁頁首到匯入精靈步驟 1 的點擊數", async ({ page }, testIn
     await nav(page, id).click();
     await expect(page.getByRole("heading", { level: 1, name: labels.nav[id].label, exact: true })).toBeVisible();
     let clicks = 0;
-    clicks += 1; await page.locator(".page-heading").getByRole("button", { name: labels.buttons.importData, exact: true }).click();
+    // V3-3（§6.3 #23）：「匯入資料」只留在資料來源頁首（page-import）；其他頁走頂欄資料狀態 → popover 的「匯入新資料」（data-status → data-status-import）。
+    if (await page.getByTestId("page-import").count()) { clicks += 1; await page.getByTestId("page-import").click(); }
+    else { clicks += 1; await page.getByTestId("data-status").click(); clicks += 1; await page.getByTestId("data-status-import").click(); }
     await expect(page.getByTestId("import-step-1")).toBeVisible();
     result[id] = clicks;
     await wizard(page).getByRole("button", { name: copy.cancel, exact: true }).click();
     await expect(wizard(page)).toHaveCount(0);
   }
-  await record(["desktop", "importEntryClicks"], { perPage: result, max: Math.max(...Object.values(result)), method: "先用側欄切到該頁（不計），再數到 import-step-1 可見為止的點擊；每頁量完按「取消」關閉精靈" });
+  await record(["desktop", "importEntryClicks"], { perPage: result, max: Math.max(...Object.values(result)), method: "先用側欄切到該頁（不計），再數到 import-step-1 可見為止的點擊（V3-3：資料來源頁 page-import 1 次，其他頁 data-status → data-status-import 2 次）；每頁量完按「取消」關閉精靈" });
 });
 
 test("含稅匯入（tests/fixtures/inclusive_tax）經精靈完成的最少點擊數", async ({ page }, testInfo) => {
@@ -140,7 +143,9 @@ test("含稅匯入（tests/fixtures/inclusive_tax）經精靈完成的最少點�
   await page.goto("/");
   const steps: string[] = [];
   const click = async (name: string, action: () => Promise<void>) => { steps.push(name); await action(); };
-  await click("頁首「匯入資料」", () => page.locator(".page-heading").getByRole("button", { name: labels.buttons.importData, exact: true }).click());
+  // V3-3：空狀態首頁沒有頁首「匯入資料」，走頂欄資料狀態 → 「匯入新資料」（2 次）。
+  await click("頂欄「資料狀態」", () => page.getByTestId("data-status").click());
+  await click("「匯入新資料」", () => page.getByTestId("data-status-import").click());
   await expect(wizard(page)).toBeVisible();
   await setWizardFiles(page, inclusive); // setInputFiles 不算點擊（使用者選檔的檔案對話框另計，見基準文件）
   await click("下一步", () => wizard(page).getByRole("button", { name: copy.next, exact: true }).click());
@@ -153,8 +158,9 @@ test("含稅匯入（tests/fixtures/inclusive_tax）經精靈完成的最少點�
   const replacement = page.getByRole("dialog", { name: labels.ui.replacementDialog.heading });
   if (await replacement.isVisible()) await click("取代確認", () => replacement.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click());
   await expect(wizard(page)).toHaveCount(0);
-  await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-value")).toHaveText("2,150.00");
-  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText("518.05");
+  // V3-2b 起 KPI 大數字是 L1（< 1 萬寫整數元）；golden 精確值仍是真相來源。
+  await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-value")).toHaveText(formatAmountL1("2150.00"));
+  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText(formatAmountL1("518.05"));
   await record(["desktop", "inclusiveTaxImportClicks"], { count: steps.length, steps, fileInputs: 3, start: "空狀態首頁（新訪客）", end: "總覽 KPI 淨營收 2,150.00、扣廣告後貢獻 518.05（與 tests/fixtures/inclusive_tax/README.md 手算相同）", method: "只數點擊；三個檔案用 setInputFiles 放入，不計點擊（實際使用者另有 3 次選檔對話框或 1 次拖放）；含稅換算的稅率 5% 與勾選欄位用精靈預設值" });
 });
 
