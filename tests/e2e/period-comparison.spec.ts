@@ -1,8 +1,7 @@
 import { closeDownloads, dismissSavePrompt, openCustomPeriod, openDownloads, openPeriodComparison, periodSummary, periodSummaryText } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
-import { channelsLabel } from "../../src/application/copy";
-import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL2, formatPeriodL1, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -21,8 +20,14 @@ async function applyDates(page: Page, values: Record<string, string>) {
   for (const [label, value] of Object.entries(values)) await page.getByLabel(label, { exact: true }).fill(value);
   await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
 }
-/** V3-2a：抽屜說明列 evidenceDrawer.scopeLine「{scope}；{start}–{end}；通路：{channels}。」（期間改用 en dash，不再寫「至」）。 */
-const drawerScopeLine = (scope: string, start: string, end: string, channels: string[]) => fill(labels.ui.evidenceDrawer.scopeLine, { scope, start, end, channels: channelsLabel(channels, false) });
+/**
+ * V3-5（§7.8）：抽屜標題列副標（dialog 的 aria-describedby）。範圍說明沒寫出通路時用 evidence.drawerV3.subtitleChannels「{scope} · {period} · 通路：{channels}」；
+ * 期間用 formatPeriodL1（不附天數，anchor＝manifest.data_as_of），與報表本期／上期相同時前綴「本期／上期」（drawerV3.periodNamed）。
+ */
+const drawerSubtitle = (scope: string, period: "current" | "previous", start: string, end: string, anchor: string, channels: string) => fill(labels.evidence.drawerV3.subtitleChannels, {
+  scope, channels,
+  period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.periods[period], range: formatPeriodL1(start, end, { anchor, days: false }) }),
+});
 const sourceTab = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.ui.evidenceDrawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
 /** Synthetic input only. Fixed expected answers below do not call domain calculations. */
 function monthlyFiles(kind: "complete" | "zero" | "missing" = "complete") {
@@ -129,7 +134,8 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
   const dialog = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
   await expect(dialog).toContainText(`${metric("contribution_after_marketing")}${ui.periodTotal} ÷ 30 天`);
   await expect(dialog).toContainText(ui.dailyAverageScope);
-  await expect(dialog).toContainText(drawerScopeLine(ui.dailyAverageScope, "2026-09-01", "2026-09-30", ["DTC"]));
+  // 合成資料只有 DTC 一個通路：證據涵蓋資料集全部通路，通路寫「全部通路」；9/1–9/30 就是報表本期。
+  await expect(dialog).toHaveAccessibleDescription(drawerSubtitle(ui.dailyAverageScope, "current", "2026-09-01", "2026-09-30", "2026-09-30", labels.evidence.allChannels));
   // R2 groups source rows by file tab (sales／costs／ads) instead of one paged list: 30 + 30 + 30 = 90 rows.
   await expect(dialog.getByRole("button", { name: sourceTab("sales", 30), exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(dialog.getByRole("button", { name: sourceTab("costs", 30), exact: true })).toBeVisible();

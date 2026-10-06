@@ -1,6 +1,6 @@
 import { applyCustomPeriod, clearWorkspace, clickReplacing, closePeriodSheet, dismissSavePrompt, isMobile, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
-import { MINUS, deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatGrowth, formatPointsValue, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
+import { MINUS, deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatGrowth, formatPeriodL1, formatPointsValue, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { formatHeadlineAmount } from "../../src/application/copy";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -62,7 +62,7 @@ const revenue = (page: Page) => page.getByTestId("kpi-net_revenue");
 /** The empty workspace status line shows labels.status.empty; the loading one shows labels.status.loading. */
 const emptyStatus = labels.status.empty;
 const loadingStatus = labels.status.loading;
-/** Evidence dialog: `${title}｜${labels.sections.evidence}` (evidence-drawer.tsx). */
+/** Evidence dialog: h2 可見文字只有標題，sr-only 後綴「 · 計算與來源」讓可及名稱仍是 `${title} · ${labels.sections.evidence}`（evidence-drawer.tsx）。 */
 const evidenceDialog = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${escapeRegExp(labels.sections.evidence)}$`) });
 /**
  * V3-2b 三層數字（PRD §8.5）：KPI 卡主數字與上期是 L1（萬／元），表格 L2，抽屜標題下的精確值行與橋接是 L3（到分）。
@@ -79,8 +79,14 @@ const drawerNumber = (dialog: Locator) => dialog.locator(".evidence-body > .numb
 const drawerPrecise = (dialog: Locator) => dialog.getByTestId("evidence-precise-value");
 const preciseMoney = (amount: string) => fill(labels.units.yuan, { value: formatAmountL3(amount) });
 const preciseSignedMoney = (amount: string) => fill(labels.units.yuan, { value: formatSignedDelta(amount, "L3") });
-/** Date-range segment of the evidence scope line (`{scope}；{start} 至 {end}；通路：{channels}。`). */
-const evidenceDateRange = (start: string, end: string) => fill(labels.ui.evidenceDrawer.scopeLine, { scope: "", start, end, channels: "" }).split("；")[1];
+/**
+ * V3-5（§7.8）：抽屜標題列副標（dialog 的 aria-describedby）evidence.drawerV3.subtitle「{範圍} · {期間}」。KPI 證據沒有另寫範圍，
+ * 涵蓋資料集全部通路時範圍寫「全部通路」；期間用 formatPeriodL1（不附天數，anchor＝manifest.data_as_of），與報表本期／上期相同時前綴「本期／上期」（drawerV3.periodNamed）。
+ */
+const drawerSubtitle = (period: "current" | "previous", start: string, end: string, anchor: string) => fill(labels.evidence.drawerV3.subtitle, {
+  scope: labels.evidence.allChannels,
+  period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.periods[period], range: formatPeriodL1(start, end, { anchor, days: false }) }),
+});
 /** R2 evidence drawer lists source rows per file behind tabs: `${labels.evidence.sourceTabs[x]}（count）` buttons inside role="group" (evidence-drawer.tsx). */
 async function openSourceTab(dialog: ReturnType<Page["getByRole"]>, tab: keyof typeof labels.evidence.sourceTabs) {
   await dialog.getByRole("group", { name: labels.ui.evidenceDrawer.sourceTabsAria, exact: true })
@@ -275,12 +281,20 @@ test("診斷排序金額使用兩期已觀察差額，證據方向與來源一�
   // R2 glossary formula: 「差額 = 本期折扣 − 上期折扣（這是實際差額，不是可以省下的錢）」 replaces the 改善收益估計 wording.
   await expect(dialog).toContainText(fill(labels.ui.workspacePanels.deltaFormula, { metric: metricDefinitions.discounts.label }));
   const components = dialog.getByRole("region", { name: labels.evidence.components, exact: true });
-  // 組成表頭標一次「（元）」，儲存格是 L3 不帶單位。
-  await expect(components.getByRole("heading", { name: fill(labels.units.yuanColumn, { label: labels.evidence.components }), exact: true })).toBeVisible();
-  const component = (period: "previous" | "current") => components.locator("dl > div").filter({ has: page.locator("dt", { hasText: labels.periods[period] }) }).locator("dd");
-  await expect(component("previous")).toHaveText(formatAmountL3("200.00"));
-  await expect(component("current")).toHaveText(formatAmountL3("450.00"));
+  // V3-5 組成項目表（table.kv.l3）：小標只寫「組成項目」，單位「（元）」標在欄頭；上期／本期兩項時一列「指標｜上期｜本期｜差額」，儲存格是 L3 不帶單位。
+  await expect(components.getByRole("heading", { level: 3, name: labels.evidence.components, exact: true })).toBeVisible();
+  const columns = labels.evidence.drawerV3.componentsColumns;
+  const componentTable = components.locator("table.kv.l3");
+  await expect(componentTable.getByRole("columnheader")).toHaveText([columns.item, columns.previous, columns.current, columns.change]);
+  const componentRow = componentTable.locator("tbody tr");
+  await expect(componentRow).toHaveCount(1);
+  await expect(componentRow.getByRole("rowheader")).toHaveText(metricDefinitions.discounts.label);
+  await expect(componentRow.getByRole("cell")).toHaveText([formatAmountL3("200.00"), formatAmountL3("450.00"), formatSignedDelta("250.00", "L3")]);
   await expect(dialog).toContainText("sales_daily.csv");
+  // V3-5 原始明細的第一欄寫「檔名:行號」（drawerV3.fileLine）：golden 兩天的折扣列是 fixtures/golden/sales_daily.csv 第 2–9 行（第 1 行是標題列）。
+  const fileLines = dialog.locator(".source-table .evidence-fileline");
+  await expect(fileLines).toHaveCount(8);
+  for (const line of [2, 9]) await expect(fileLines.filter({ hasText: new RegExp(`^${escapeRegExp(fill(labels.evidence.drawerV3.fileLine, { file: "sales_daily.csv", line }))}$`) })).toHaveCount(1);
   await expect(dialog).toContainText("2026-08-01");
   await expect(dialog).toContainText("2026-08-02");
 });
@@ -354,14 +368,14 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
   await expect(weekly).toContainText("2026-06-08 — 2026-06-14");
   await kpiValue(contribution(page)).getByRole("button", { name: fill(labels.overview.kpiBand.valueAria, { metric: metricDefinitions.contribution_after_marketing.label, value: formatAmountL1("316379.67") }), exact: true }).click();
   const dialog = evidenceDialog(page);
-  await expect(dialog).toContainText(evidenceDateRange("2026-06-08", "2026-06-14"));
+  await expect(dialog).toHaveAccessibleDescription(drawerSubtitle("current", "2026-06-08", "2026-06-14", dataAsOf.demo));
   await expect(drawerNumber(dialog)).toHaveText(formatAmountL1("316379.67"));
   await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("316379.67"));
   await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
   // V3-4a 390 寬：非強調格是單行「名稱｜數值｜差額」，「上期」連結只在扣廣告後貢獻（強調格）可見；手機改點它，上期範圍與精確值的檢查相同。
   const [previousCard, previousMetric, previousAmount] = isMobile(page) ? [contribution(page), "contribution_after_marketing", "327100.88"] as const : [revenue(page), "net_revenue", "1069415.21"] as const;
   await kpiPrevious(previousCard).getByRole("button", { name: previousLinkName(previousMetric, previousAmount), exact: true }).click();
-  await expect(dialog).toContainText(evidenceDateRange("2026-06-01", "2026-06-07"));
+  await expect(dialog).toHaveAccessibleDescription(drawerSubtitle("previous", "2026-06-01", "2026-06-07", dataAsOf.demo));
   await expect(drawerPrecise(dialog)).toHaveText(preciseMoney(previousAmount));
 });
 
