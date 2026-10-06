@@ -1,9 +1,9 @@
 import { clickReplacing, dismissSavePrompt, openValidation, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
-import { metricDefinitions } from "../../src/application/presentation";
+import { MINUS, deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatGrowth, formatPointsValue, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type Locator, type Page } from "@playwright/test";
 
 interface BrowserEvent {
   kind: string;
@@ -63,8 +63,19 @@ const emptyStatus = labels.status.empty;
 const loadingStatus = labels.status.loading;
 /** Evidence dialog: `${title}｜${labels.sections.evidence}` (evidence-drawer.tsx). */
 const evidenceDialog = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${escapeRegExp(labels.sections.evidence)}$`) });
-/** Evidence drawer money display: fill(ui.evidenceDrawer.money, { amount }) (evidence-drawer.tsx displayValue and component rows). */
-const drawerMoney = (amount: string) => fill(labels.ui.evidenceDrawer.money, { amount });
+/**
+ * V3-2b 三層數字（PRD §8.5）：KPI 卡主數字與上期是 L1（萬／元），表格 L2，抽屜標題下的精確值行與橋接是 L3（到分）。
+ * 金額一律由 golden／獨立手算的到分字串經 presentation 格式化函式產生，不手寫顯示字串。
+ */
+const kpiValue = (card: Locator) => card.locator(".kpi-value");
+const kpiPrevious = (card: Locator) => card.locator(".kpi-previous");
+/** KPI 卡「上期 {L1}」（overview.tsx：`{labels.periods.previous} {number(...)}`）。 */
+const previousLine = (amount: string) => `${labels.periods.previous} ${formatAmountL1(amount)}`;
+/** 抽屜大數字（L1）與下一行精確值（L3＋元，evidence-drawer.tsx data-testid="evidence-precise-value"）。 */
+const drawerNumber = (dialog: Locator) => dialog.locator(".evidence-body > .number");
+const drawerPrecise = (dialog: Locator) => dialog.getByTestId("evidence-precise-value");
+const preciseMoney = (amount: string) => fill(labels.units.yuan, { value: formatAmountL3(amount) });
+const preciseSignedMoney = (amount: string) => fill(labels.units.yuan, { value: formatSignedDelta(amount, "L3") });
 /** Date-range segment of the evidence scope line (`{scope}；{start} 至 {end}；通路：{channels}。`). */
 const evidenceDateRange = (start: string, end: string) => fill(labels.ui.evidenceDrawer.scopeLine, { scope: "", start, end, channels: "" }).split("；")[1];
 /** R2 evidence drawer lists source rows per file behind tabs: `${labels.evidence.sourceTabs[x]}（count）` buttons inside role="group" (evidence-drawer.tsx). */
@@ -96,7 +107,7 @@ async function loadGolden(page: Page) {
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(contribution(page)).toContainText("255.00");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
 }
 function deferred() {
   let release!: () => void;
@@ -121,8 +132,17 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
   await expect(ready(page, "demo")).toBeVisible();
   await dismissSavePrompt(page);
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(contribution(page)).toContainText("1,269,792.73");
-  await expect(revenue(page)).toContainText("7,850,657.90");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("1269792.73"));
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("7850657.90"));
+  // L1 只到 0.1 萬；到分的精確值在抽屜標題下一行（§7.8），逐一打開確認仍可追溯到分。
+  for (const [card, amount] of [[contribution(page), "1269792.73"], [revenue(page), "7850657.90"]] as const) {
+    await kpiValue(card).getByRole("button", { name: formatAmountL1(amount), exact: true }).click();
+    const dialog = evidenceDialog(page);
+    await expect(drawerNumber(dialog)).toHaveText(formatAmountL1(amount));
+    await expect(drawerPrecise(dialog)).toHaveText(preciseMoney(amount));
+    await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+    await expect(dialog).not.toBeVisible();
+  }
   const alternatives = page.locator("details").filter({ has: page.locator("summary", { hasText: dataTablePrefix }) });
   expect(await alternatives.count(), "週趨勢、金額橋接與通路比較皆須提供數據表").toBeGreaterThanOrEqual(3);
   for (const alternative of await alternatives.all()) {
@@ -139,22 +159,30 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
 
 test("切換 golden 與 demo 會重算同一組 KPI", async ({ page }) => {
   await loadGolden(page);
-  await expect(revenue(page)).toContainText("2,470.00");
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
+  // golden 本期 255.00、上期 570.00、差額 −315.00：上期連結（L1）、帶號差額（L1）與成長率（上期 > 0 才有），不利方向才上色。
+  await expect(kpiPrevious(contribution(page))).toHaveText(previousLine("570.00"));
+  await expect(kpiPrevious(contribution(page)).getByRole("button", { name: formatAmountL1("570.00"), exact: true })).toBeVisible();
+  const change = contribution(page).locator(".kpi-change");
+  await expect(change.getByRole("button", { name: formatSignedDelta("-315.00", "L1"), exact: true })).toBeVisible();
+  await expect(change.locator(".change-rate")).toHaveText(fill(labels.ui.overview.growthInline, { value: formatGrowth("255.00", "570.00", "L1")! }));
+  expect(deltaTone("contribution_after_marketing", "-315.00", "L1")).toBe("unfavorable");
+  await expect(change).toHaveClass(/\bnegative\b/);
   await requestDataset(page, "demo");
   await expect(ready(page, "demo")).toBeVisible();
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(contribution(page)).toContainText("1,269,792.73");
-  await expect(revenue(page)).toContainText("7,850,657.90");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("1269792.73"));
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("7850657.90"));
   await loadGolden(page);
-  await expect(revenue(page)).toContainText("2,470.00");
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
 });
 
 test("通路篩選共用，金額證據可用鍵盤開啟與返回", async ({ page }) => {
   await loadGolden(page);
   await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption("DTC");
-  await expect(contribution(page)).toContainText("270.00");
-  await expect(revenue(page)).toContainText("1,480.00");
-  const trigger = contribution(page).getByRole("button", { name: "270.00", exact: true });
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("1480.00"));
+  const trigger = kpiValue(contribution(page)).getByRole("button", { name: formatAmountL1("270.00"), exact: true });
   await trigger.focus();
   await page.keyboard.press("Enter");
   const dialog = evidenceDialog(page);
@@ -167,7 +195,8 @@ test("通路篩選共用，金額證據可用鍵盤開啟與返回", async ({ pa
   await expect(dialog).toContainText("ad_spend_daily.csv");
   await expect(dialog).toContainText("2026-08-02");
   await expect(dialog).toContainText("CM_after =");
-  await expect(dialog).toContainText(drawerMoney("270.00"));
+  await expect(drawerNumber(dialog)).toHaveText(formatAmountL1("270.00"));
+  await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("270.00"));
   for (let index = 0; index < 8; index += 1) {
     await page.keyboard.press(index % 2 ? "Shift+Tab" : "Tab");
     expect(await dialog.evaluate(element => element.contains(document.activeElement)), "Tab 焦點必須留在原生 modal 內").toBe(true);
@@ -181,23 +210,28 @@ test("通路篩選共用，金額證據可用鍵盤開啟與返回", async ({ pa
   await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
   await expect(page.getByLabel(dashboard.filter.channel, { exact: true })).toHaveValue("DTC");
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(contribution(page)).toContainText("270.00");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
 });
 
 test("貢獻率差額的證據保留百分點單位，不再乘以 100", async ({ page }) => {
   await loadGolden(page);
   const card = page.getByTestId("kpi-contribution_margin");
-  // Independent fixed answer: (255 / 2470 - 570 / 2250) * 100 = -15.01 pp.
-  await card.getByRole("button", { name: fill(labels.ui.overview.percentagePoints, { value: "-15.01" }), exact: true }).click();
+  // Independent fixed answer: (255 / 2470 - 570 / 2250) * 100 = -15.01 pp（百分點單位的差，交給 formatPointsValue；L1「降 15.0 個百分點」）。
+  await card.getByRole("button", { name: formatPointsValue("-15.01", "L1"), exact: true }).click();
   const dialog = evidenceDialog(page);
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator(".evidence-body > .number")).toHaveText(`-15.01 ${labels.evidence.percentagePoint}`);
+  await expect(drawerNumber(dialog)).toHaveText(formatPointsValue("-15.01", "L1"));
+  // 精確值行到兩位小數、U+2212、單位仍是百分點（不是乘 100 的百分比）。
+  await expect(drawerPrecise(dialog)).toHaveText(formatPointsValue("-15.01", "L3"));
+  await expect(drawerPrecise(dialog)).toContainText(labels.evidence.percentagePoint);
   // R2 moved the exact system value into the technical <details>: `系統原值 <code>…</code>（百分點差值）`.
   await expect(dialog.locator(".evidence-technical")).toContainText(labels.evidence.exactValue);
   await expect(dialog.locator(".evidence-technical")).toContainText(`（${labels.evidence.pointNote}）`);
   await expect(dialog).toContainText(labels.ui.overview.ratePointFormula);
   await expect(dialog).not.toContainText("-1,501.13%");
-  await expect(dialog.locator(".evidence-body > .number")).not.toContainText("%");
+  await expect(dialog).not.toContainText(`${MINUS}1,501.13%`);
+  await expect(drawerNumber(dialog)).not.toContainText("%");
+  await expect(drawerPrecise(dialog)).not.toContainText("%");
 });
 
 test("診斷排序金額使用兩期已觀察差額，證據方向與來源一致", async ({ page }) => {
@@ -210,24 +244,29 @@ test("診斷排序金額使用兩期已觀察差額，證據方向與來源一�
   await expect(card.getByRole("group", { name: labels.diagnosisList.scopeSwitch, exact: true }).getByRole("button", { name: labels.sections.total, exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(card.locator(".fact-list")).toContainText(labels.ui.workspacePanels.scopeAll);
   // The summary shows the contribution impact (cost up => -250.00); the ranking amount stays the observed delta.
-  await expect(card.locator(":scope > summary .impact-amount")).toHaveText("-250.00");
-  const ranking = card.getByRole("button", { name: rankingButtonName("DISCOUNT_BURDEN_UP", "\\+250\\.00") });
+  // V3-2b：列摘要的影響金額是 L1（U+2212）；技術細節的排序金額是 L3 帶號＋元（diagnosis-list.tsx rankingText）。
+  await expect(card.locator(":scope > summary .impact-amount")).toHaveText(formatSignedDelta("-250.00", "L1"));
+  const rankingAmount = preciseSignedMoney("250.00");
+  const ranking = card.getByRole("button", { name: rankingButtonName("DISCOUNT_BURDEN_UP", escapeRegExp(rankingAmount)) });
   // Golden booked discount delta: 450.00 - 200.00 = +250.00.
   // This is the observed increase, whereas the contribution bridge is -250.00.
   // R1/R5 keep the ranking amount under the technical details of the row.
   await expect(ranking).toBeHidden();
   await card.locator("details.diagnosis-technical > summary", { hasText: labels.sections.technicalDetails }).click();
-  await expect(ranking).toHaveText("+250.00");
+  await expect(ranking).toHaveText(rankingAmount);
   await ranking.click();
   const dialog = evidenceDialog(page);
-  await expect(dialog.locator(".evidence-body > .number")).toHaveText(drawerMoney("250.00"));
+  // 差額類證據（有上期／本期組成）帶正負號：大數字 L1、精確值行 L3。
+  await expect(drawerNumber(dialog)).toHaveText(formatSignedDelta("250.00", "L1"));
+  await expect(drawerPrecise(dialog)).toHaveText(preciseSignedMoney("250.00"));
   // R2 glossary formula: 「差額 = 本期折扣 − 上期折扣（這是實際差額，不是可以省下的錢）」 replaces the 改善收益估計 wording.
   await expect(dialog).toContainText(fill(labels.ui.workspacePanels.deltaFormula, { metric: metricDefinitions.discounts.label }));
   const components = dialog.getByRole("region", { name: labels.evidence.components, exact: true });
-  await expect(components).toContainText(labels.periods.previous);
-  await expect(components).toContainText(drawerMoney("200.00"));
-  await expect(components).toContainText(labels.periods.current);
-  await expect(components).toContainText(drawerMoney("450.00"));
+  // 組成表頭標一次「（元）」，儲存格是 L3 不帶單位。
+  await expect(components.getByRole("heading", { name: fill(labels.units.yuanColumn, { label: labels.evidence.components }), exact: true })).toBeVisible();
+  const component = (period: "previous" | "current") => components.locator("dl > div").filter({ has: page.locator("dt", { hasText: labels.periods[period] }) }).locator("dd");
+  await expect(component("previous")).toHaveText(formatAmountL3("200.00"));
+  await expect(component("current")).toHaveText(formatAmountL3("450.00"));
   await expect(dialog).toContainText("sales_daily.csv");
   await expect(dialog).toContainText("2026-08-01");
   await expect(dialog).toContainText("2026-08-02");
@@ -247,12 +286,14 @@ test("商品篩選只影響毛利明細，不帶入通路廣告與貢獻", async
   await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("A");
   await expect(table.locator("tbody tr")).toHaveCount(1);
   await expect(table.getByRole("rowheader", { name: "A", exact: true })).toBeVisible();
-  await expect(table).toContainText("540.00");
+  // DTC／A 本期商品毛利 = (1400.00 − 210.00 − 70.00) − 580.00 = 540.00；表格是 L2 整數元（表頭帶「（元）」）。
+  const grossProfit = table.getByRole("button", { name: fill(labels.ui.productComparisonPanel.evidenceAria, { channel: "DTC", sku: "A", period: "", label: metricDefinitions.gross_profit.shortLabel, value: formatAmountL2("540.00") }), exact: true });
+  await expect(grossProfit).toHaveText(formatAmountL2("540.00"));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-workspace-regression-${testInfo.project.name}-products.png`), fullPage: true });
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(contribution(page)).toContainText("270.00");
-  await expect(revenue(page)).toContainText("1,480.00");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("1480.00"));
 });
 
 test("無效期間不覆寫已套用的分析範圍", async ({ page }) => {
@@ -260,10 +301,10 @@ test("無效期間不覆寫已套用的分析範圍", async ({ page }) => {
   await page.getByLabel(periodField("start", "current"), { exact: true }).fill("2026-08-01");
   await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(page.getByRole("main").getByRole("alert")).toContainText(dashboard.errors.periodNotApplied);
-  await expect(contribution(page)).toContainText("255.00");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
   await page.getByLabel(periodField("start", "current"), { exact: true }).fill("2026-08-02");
   await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
-  await expect(contribution(page)).toContainText("255.00");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
 });
 
 test("有效自訂期間會同步更新 KPI、週資料及來源期間", async ({ page }) => {
@@ -277,31 +318,38 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
   await page.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   // Independently computed once from original demo CSV with Python csv + Decimal;
   // these literal expectations never call the application's financial functions.
-  await expect(revenue(page)).toContainText("1,032,680.09");
-  await expect(contribution(page)).toContainText("316,379.67");
-  await expect(revenue(page)).toContainText("1,069,415.21");
-  await expect(contribution(page)).toContainText("327,100.88");
+  // KPI 卡是 L1（本期主數字＋上期連結）；到分的值在下面的抽屜精確值行驗證。
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("1032680.09"));
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("316379.67"));
+  await expect(kpiPrevious(revenue(page))).toHaveText(previousLine("1069415.21"));
+  await expect(kpiPrevious(contribution(page))).toHaveText(previousLine("327100.88"));
   const weekly = page.locator("details").filter({ has: page.locator("summary", { hasText: dataTable(labels.sections.trend) }) });
   await weekly.locator("summary").click();
   await expect(weekly.locator("tbody tr")).toHaveCount(2);
   await expect(weekly).toContainText("2026-06-01 — 2026-06-07");
   await expect(weekly).toContainText("2026-06-08 — 2026-06-14");
-  await contribution(page).getByRole("button", { name: "316,379.67", exact: true }).click();
+  await kpiValue(contribution(page)).getByRole("button", { name: formatAmountL1("316379.67"), exact: true }).click();
   const dialog = evidenceDialog(page);
   await expect(dialog).toContainText(evidenceDateRange("2026-06-08", "2026-06-14"));
-  await expect(dialog.locator(".evidence-body > .number")).toHaveText(drawerMoney("316,379.67"));
+  await expect(drawerNumber(dialog)).toHaveText(formatAmountL1("316379.67"));
+  await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("316379.67"));
+  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await kpiPrevious(revenue(page)).getByRole("button", { name: formatAmountL1("1069415.21"), exact: true }).click();
+  await expect(dialog).toContainText(evidenceDateRange("2026-06-01", "2026-06-07"));
+  await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("1069415.21"));
 });
 
 test("資料工作區展示三份原始檔案、行號、口徑與未縮減預覽", async ({ page }) => {
   await loadGolden(page);
   await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption("DTC");
-  await expect(contribution(page)).toContainText("270.00");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
   await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();
   await expect(page.getByRole("heading", { name: labels.sections.dataScope, exact: true })).toBeVisible();
   await expect(page.getByRole("main")).toContainText(labels.ui.workspacePanels.previewNote);
   const sales = page.getByRole("table", { name: fill(labels.ui.workspacePanels.previewCaption, { fileName: "sales_daily.csv" }), exact: true });
   await expect(sales.locator("tbody tr")).toHaveCount(8);
   await expect(sales.locator("tbody tr").first().getByRole("rowheader")).toHaveText("2");
+  // 原始預覽保留 CSV 原字串（不套三層格式）。
   await expect(sales.locator("tbody tr").first()).toContainText("1000.00");
   // Golden keeps raw channel codes; the 官網／平台 alias applies only to the demo dataset.
   await expect(sales).toContainText("MARKETPLACE");
@@ -321,10 +369,12 @@ for (const scenario of [
     await expect(partial(page)).toBeVisible();
     await dismissSavePrompt(page);
     await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-    await expect(contribution(page)).toContainText(labels.status.missing);
-    await expect(revenue(page)).toContainText("2,470.00");
+    // 缺值寫「資料待補」（不是「—」）；金額為 L1。
+    await expect(kpiValue(contribution(page))).toHaveText(labels.status.missing);
+    await expect(contribution(page)).not.toContainText("—");
+    await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
     await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption(scenario.unaffectedChannel);
-    await expect(contribution(page)).toContainText(scenario.unaffectedContribution);
+    await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1(scenario.unaffectedContribution));
   });
 }
 
@@ -335,8 +385,8 @@ test("blocking 資料集載入失敗仍保留先前成功資料", async ({ page 
   await page.getByRole("button", { name: dashboard.errorState.back, exact: true }).click();
   await expect(ready(page, "golden")).toBeVisible();
   await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-  await expect(contribution(page)).toContainText("255.00");
-  await expect(revenue(page)).toContainText("2,470.00");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
 });
 
 test("載入中與 HTTP 故障均有明確狀態", async ({ page, browserAudit }) => {
@@ -390,8 +440,8 @@ test("較慢的舊資料請求不可覆寫較新的 golden 選擇", async ({ pag
     requestAnimationFrame(() => requestAnimationFrame(() => resolvePaint()));
   }));
   await expect(ready(page, "golden")).toBeVisible();
-  await expect(contribution(page)).toContainText("255.00");
-  await expect(revenue(page)).toContainText("2,470.00");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
+  await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
 });
 
 test("清空與重新整理回到空狀態，另一個頁面沒有共用資料", async ({ page, context }) => {
