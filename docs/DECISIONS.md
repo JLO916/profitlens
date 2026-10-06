@@ -278,6 +278,14 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
 
+## 2026-10-06｜Revamp v3 V3-3 開工：H2 後補
+
+**問題：** V3-3（殼層與導覽）依 PRD 需人工關卡 H2（靜態設計稿審查）通過才能開工。
+
+**採用選項：** 使用者 2026-10-06 指示「H2 後補，先開 V3-3」。設計稿（`verification/revamp-v3/mockups/`）維持不變作為實作依據；H2 審查意見之後以樣式與文案修正落地，不重做結構。
+
+**原因：** 使用者決定；殼層實作以 PRD §7.0 與設計稿為準，審查主要影響視覺細節。
+
 ## 2026-10-06｜Revamp v3 V3-2c：labels 重組的 alias 策略與清理範圍
 
 **問題：** §8.10 要求 labels 依頁面重新分組並保留舊 key 到 V3-10，但 1,950 個字串、49 個測試檔與所有元件都用舊路徑；重組不能改任何畫面文字。
