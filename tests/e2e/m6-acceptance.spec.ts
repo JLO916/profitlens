@@ -1,6 +1,7 @@
 import { dismissSavePrompt, ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from "./import-wizard-helpers";
 import { labels, fill } from "../../src/i18n";
+import { formatAmountL1, formatMetric, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Page } from "@playwright/test";
@@ -13,6 +14,7 @@ const scenarioCopy = labels.ui.decisionWorkbench;
 const actionCopy = labels.ui.actionsWorkbench;
 const status = (page: Page) => page.getByTestId("workspace-status");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
+// V3-2b（PRD §8.5）：KPI 卡與試算結果是 L1；手算精確值交給格式化函式轉成畫面文字。
 const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
 /** V3-2a：「資料到 {date}」由套用資料集的 data_as_of 填入。 */
 const ready = (dataAsOf: string) => fill(labels.status.ready, { date: dataAsOf });
@@ -77,7 +79,7 @@ async function scenario(page: Page, name: string, fulfillment: string, investmen
   for (const [index, value] of ["0", "0", fulfillment, "0", investment].entries()) await card.getByLabel(inputLabels[index], { exact: true }).fill(value);
   await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
-  await expect(card.getByTestId("scenario-contribution")).toHaveText(expected);
+  await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(expected));
 }
 async function download(page: Page, format: "JSON" | "CSV" | "Markdown") {
   const [file] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: decisionDownloadLabels[format], exact: true }).click()]);
@@ -139,11 +141,11 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.name));
   await importDataset(page, alternative);
-  await expect(kpi(page, "net_revenue")).toHaveText("600.00");
-  await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
+  await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
-  await expect(kpi(page, "net_revenue")).toHaveText("400.00");
-  await expect(kpi(page, "contribution_after_marketing")).toHaveText("40.00");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("400.00"));
+  await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("40.00"));
   await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
   // R5: one list row per rule (details.diagnosis-row); the headline is the row's summary heading.
   await expect(page.getByTestId("diagnosis-row-REV_UP_CM_DOWN").getByRole("heading", { name: ruleHeadline("REV_UP_CM_DOWN") })).toBeVisible();
@@ -152,7 +154,7 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   // Two DTC days: N=400, C=200, P=10, Q=6, F=14, O=0, A=130.
   // v=0, delta=0, f=-50%, a=0, K=3 => 400-200-10-6-7-0-130-3=44.
   await scenario(page, "M6 合成履約條件方案", "-50", "3", "44.00");
-  await expect(page.getByTestId("scenario-1").getByTestId("scenario-delta")).toHaveText("+4.00");
+  await expect(page.getByTestId("scenario-1").getByTestId("scenario-delta")).toHaveText(formatSignedDelta("4.00", "L1"));
   await expect(page.getByTestId("decision-workbench")).toContainText(labels.scenario.acceptAssumptions);
   await page.getByRole("button", { name: labels.nav.actions.label, exact: true }).click();
   // R5: the actions page opens on the board; the full edit form is filled in the list view.
@@ -162,7 +164,7 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   const fields = { [labels.actions.problem]: "營收上升但行銷後貢獻下降，需核對成本", [labels.actions.step]: "核對履約計價條款並設計有限範圍測試", [labels.actions.owner]: "營運主管", [labels.actions.metric]: "同範圍履約費用與行銷後貢獻", [labels.actions.due]: "2026-10-15", [labels.actions.stop]: "若服務品質下降即停止測試", [labels.actions.extraData]: "物流實際報價與服務品質資料" };
   for (const [label, value] of Object.entries(fields)) await action.getByLabel(label, { exact: true }).fill(value);
   // R5: evidence is a checkbox list; each checkbox is named by its fact label and carries the fact id as value.
-  const evidence = action.getByTestId("evidence-checklist").getByRole("checkbox", { name: fill(actionCopy.factLabel, { start: "2026-09-03", end: "2026-09-04", metric: labels.metrics.contribution_after_marketing.label, scope: "DTC", scopeKind: labels.csvColumns.channel, value: "40.00" }), exact: true });
+  const evidence = action.getByTestId("evidence-checklist").getByRole("checkbox", { name: fill(actionCopy.factLabel, { start: "2026-09-03", end: "2026-09-04", metric: labels.metrics.contribution_after_marketing.label, scope: "DTC", scopeKind: labels.csvColumns.channel, value: formatMetric("contribution_after_marketing", { value: "40.00" }, "L1") }), exact: true });
   await expect(evidence).toHaveCount(1);
   const factId = await evidence.getAttribute("value");
   expect(factId).toBeTruthy();
@@ -214,7 +216,7 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
   test.setTimeout(90_000);
   await importDataset(page, alternative);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
-  await expect(kpi(page, "contribution_after_marketing")).toHaveText("40.00");
+  await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("40.00"));
   await scenario(page, "甲分頁獨立假設", "-50", "3", "44.00");
   const first = await decision(page);
   // A separate context has independent cookie/storage partitions and a new page.
@@ -226,7 +228,7 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
     await expect(other.getByTestId("decision-workbench")).toHaveCount(0);
     await importDataset(other, golden);
     await other.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
-    await expect(kpi(other, "contribution_after_marketing")).toHaveText("270.00");
+    await expect(kpi(other, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
     await scenario(other, "乙分頁獨立假設", "-10", "0", "284.00");
     const second = await decision(other);
     expect(second.session.dataset_id).toBe("golden-v1");
@@ -244,7 +246,7 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
     expect(dialogEvents.get(page)).toEqual(["unsaved-changes-warning:beforeunload"]);
     await expect(status(page)).toContainText(labels.status.empty);
     await expect(page.getByTestId("decision-workbench")).toHaveCount(0);
-    await expect(kpi(other, "contribution_after_marketing")).toHaveText("255.00");
+    await expect(kpi(other, "contribution_after_marketing")).toHaveText(formatAmountL1("255.00"));
     expect(await otherContext.storageState()).toEqual({ cookies: [], origins: [] });
     await mkdir(resolve("verification"), { recursive: true });
     await appendFile(resolve("verification/review-v2-a-regression-regression-m6-context-isolation-meta.jsonl"), `${JSON.stringify({ project: testInfo.project.name, status: "passed", independent_contexts: 2, synthetic_only: true, mutual_update_clear_reload_isolation: true, dialog_events: dialogEvents.get(page) })}\n`);
@@ -254,7 +256,7 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
 test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留原資料及有效決策", async ({ page }) => {
   await importDataset(page, golden);
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
-  await expect(kpi(page, "contribution_after_marketing")).toHaveText("270.00");
+  await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
   await scenario(page, "尚未被取代的工作稿", "-10", "0", "284.00");
   const before = await decision(page);
   await stage(page, alternative);

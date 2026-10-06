@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
+import { formatAmountL1 } from "../../src/application/presentation";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, importViaWizard, nextFromFiles, openWizard, setWizardFiles, wizard, wizardFileLabels, wizardStatus } from "./import-wizard-helpers";
 import { closeDownloads, openDownloads } from "./replacement-helpers";
 
@@ -10,6 +11,7 @@ const copy = labels.importWizard;
 const alternative = resolve("tests/fixtures/alternative");
 const inclusive = resolve("tests/fixtures/inclusive_tax");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
+// V3-2b（PRD §8.5）：KPI 卡是 L1；golden／手算精確值交給 formatAmountL1 轉成畫面文字。
 const drawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
 
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
@@ -38,8 +40,8 @@ test("標準三檔從「匯入資料」到總覽 KPI 最多 5 次點擊", async 
   await expect(page.getByTestId("import-memory-note")).toHaveText(copy.memorySessionOnly);
   await count(() => commitButton(page).click());
   await expect(wizard(page)).toHaveCount(0);
-  await expect(kpi(page, "net_revenue")).toHaveText("600.00");
-  await expect(kpi(page, "contribution_after_marketing")).toHaveText("10.00");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
+  await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
   expect(clicks, "從「匯入資料」到 KPI 的點擊數").toBeLessThanOrEqual(5);
 });
 
@@ -62,9 +64,9 @@ test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算
   await expect(summary).toContainText("4500.00");
   await expect(page.getByTestId("reconciliation-metric-net_revenue")).toContainText("4150.00");
   await commitWizard(page);
-  await expect(kpi(page, "net_revenue")).toHaveText("2,150.00");
-  await expect(kpi(page, "gross_profit")).toHaveText("1,230.00");
-  await expect(kpi(page, "contribution_after_marketing")).toHaveText("518.05");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2150.00"));
+  await expect(kpi(page, "gross_profit")).toHaveText(formatAmountL1("1230.00"));
+  await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("518.05"));
   await page.getByTestId("kpi-net_revenue").locator(".kpi-value button").click();
   await expect(drawer(page)).toBeVisible();
   await expect(page.getByTestId("evidence-conversion-note")).toContainText("5%");
@@ -96,7 +98,7 @@ test("同一組非標準欄名第二次匯入會顯示記憶提示並帶入對�
   await chooseBasis(page, "exclusive");
   await confirmAndCheck(page, "valid");
   await commitWizard(page);
-  await expect(kpi(page, "net_revenue")).toHaveText("600.00");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   // 第二次：同一組欄名 → 記憶命中，狀態改為「上次用過，請確認」，仍要按確認。
   await openWizard(page);
   await setWizardFiles(page, alternative, { "sales_daily.csv": payload });
@@ -157,7 +159,7 @@ test("下載選單提供空白範本與含三列範例的範本", async ({ page 
   // 範例三檔可直接匯入（先收起下載選單，免得遮住「匯入資料」）。
   await closeDownloads(page);
   await importViaWizard(page, resolve("templates/examples"));
-  await expect(kpi(page, "net_revenue")).toHaveText("980.00");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("980.00"));
 });
 
 test("拖放三份檔案或一次選三份會依檔名自動歸位；看不出角色的檔案留給使用者指定", async ({ page }) => {
@@ -179,5 +181,5 @@ test("拖放三份檔案或一次選三份會依檔名自動歸位；看不出�
   await chooseBasis(page, "exclusive");
   await confirmAndCheck(page, "valid");
   await commitWizard(page);
-  await expect(kpi(page, "net_revenue")).toHaveText("600.00");
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
 });
