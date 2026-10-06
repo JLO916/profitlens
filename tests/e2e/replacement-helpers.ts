@@ -126,6 +126,24 @@ export async function closeDownloads(page: Page) {
   await closeDetails(page.getByTestId('download-menu'));
   await closeTopbarMore(page);
 }
+/**
+ * V3-5：商品毛利頁頁首（#page-actions）的「匯出本頁」頁內下拉（details data-testid="product-export-menu"，summary testid export-page-products）。
+ * 兩個項目沿用 v2 按鈕名稱（labels.ui.productComparisonPanel.downloadComparisonCsv／labels.downloads.productsCsv；testid product-export-comparison／product-export-products）。
+ * 沒展開就點 summary 展開；回傳展開後的 details（在裡面依按鈕名稱點下載）。
+ */
+export async function openProductExport(page: Page) {
+  const menu = page.getByTestId('product-export-menu');
+  if (await menu.getAttribute('open') === null) await page.getByTestId('export-page-products').click();
+  await expect(menu).toHaveAttribute('open', '');
+  return menu;
+}
+/** V3-5：商品毛利工具列的「欄位」popover（details.ui-popover-host.product-columns，summary 名稱 labels.products.pageV3.columnsMenu；內含 product-more-columns 與列高切換）。沒展開就點開，回傳 details。 */
+export async function openProductColumns(page: Page) {
+  const popover = page.locator('details.product-columns');
+  if (await popover.getAttribute('open') === null) await popover.locator(':scope > summary').click();
+  await expect(popover).toHaveAttribute('open', '');
+  return popover;
+}
 /** 頂欄「儲存」選單（workspace-storage；V3-3 分三段：本機保存／備份檔／危險區）。手機先展開 topbar-more。回傳展開後的 details。 */
 export async function openStorage(page: Page) {
   await openTopbarMore(page);

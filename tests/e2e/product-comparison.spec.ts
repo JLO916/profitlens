@@ -1,7 +1,7 @@
-import { clickReplacing, dismissSavePrompt, navigateTo, openValidation } from "./replacement-helpers";
+import { clickReplacing, dismissSavePrompt, navigateTo, openProductColumns, openProductExport, openValidation } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
-import { formatAmountL1, formatAmountL2, formatAmountL3, formatRateL2, formatSignedDelta } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL2, formatAmountL3, formatCount, formatPeriodL1, formatRateL2, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
@@ -61,9 +61,21 @@ const moreColumns = [
   yuan(current(labels.metrics.cogs_net.short)), yuan(current(labels.metrics.discounts.short)), yuan(current(labels.metrics.refunds.short)),
   previous(unitsLabel), yuan(previous(labels.metrics.cogs_net.short)), previous(labels.metrics.gross_margin.short), yuan(previous(labels.metrics.discounts.short)), yuan(previous(labels.metrics.refunds.short)),
 ];
-const highlightColumns = ["SKU", labels.csvColumns.category, yuan(current(labels.metrics.gross_profit.short)), yuan(grossProfitChange), current(labels.metrics.gross_margin.short)];
+/** V3-5（C3）：前 10 名兩表改成 排名｜商品（SKU · 通路）｜本期商品毛利（元）｜差額（元）（labels.products.pageV3.columns）；毛利率改在全表核對。 */
+const pageV3 = labels.products.pageV3;
+const highlightColumns = [pageV3.columns.rank, pageV3.columns.product, yuan(current(labels.metrics.gross_profit.short)), yuan(pageV3.columns.change)];
+/** 小表的列標頭：「{SKU} · {通路}」（通路在 .product-channel 內，分隔號 aria-hidden 但仍在 textContent）。 */
+const productHead = (sku: string, channel: string) => `${sku} · ${channel}`;
+/** 小表的排名欄（L2 件數格式，1 起算）。 */
+const rank = (n: number) => formatCount(n, "L2");
+/** V3-5：排序依據與方向合併成一個 select（#product-sort，名稱 labels.products.pageV3.sortLabel），依選項文字選。 */
+const sortSelect = (page: Page) => page.getByLabel(pageV3.sortLabel, { exact: true });
+/** V3-5：抽屜原始明細的「檔名:行號」（labels.evidence.drawerV3.fileLine）。 */
+const fileLine = (line: number, file = "sales_daily.csv") => fill(labels.evidence.drawerV3.fileLine, { file, line });
+/** V3-5：工具列右端的筆數句（product-count，aria-live=polite）「顯示 {n} 筆，共 {total} 筆」。 */
+const showing = (n: number, total: number) => fill(pageV3.showing, { n: formatCount(n, "L2"), total: formatCount(total, "L2") });
 const headerTexts = (table: Locator) => table.locator("thead th").evaluateAll(cells => cells.map(cell => (cell.textContent ?? "").replace(/\s+/g, " ").trim()));
-/** 每列儲存格文字（空白壓成一格）；小表的列標頭是「SKU 通路」。 */
+/** 每列儲存格文字（空白壓成一格）；小表的列標頭是「SKU · 通路」。 */
 const rowTexts = (root: Locator) => root.locator("tbody tr").evaluateAll(rows => rows.map(row => [...row.children].map(cell => (cell.textContent ?? "").replace(/\s+/g, " ").trim())));
 /** 全表某列的「資料狀態」欄（主欄第 12 欄）。 */
 const statusCell = (row: Locator) => row.locator(":scope > *").nth(mainColumns.length - 1);
@@ -103,8 +115,12 @@ function records(csv: string): Record<string, string>[] {
     return Object.fromEntries(headers.map((header, index) => [header.replace(/^.*\(([^()]+)\)\s*$/, "$1"), values[index]]));
   });
 }
+/** V3-5：「下載商品比較 CSV」搬進頁首「匯出本頁」下拉（product-export-menu）；先展開再依原按鈕名稱點。 */
 async function downloadComparison(page: Page) {
-  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: panel.downloadComparisonCsv, exact: true }).click()]);
+  const menu = await openProductExport(page);
+  const button = menu.getByRole("button", { name: panel.downloadComparisonCsv, exact: true });
+  await expect(button).toHaveAttribute("data-testid", "product-export-comparison");
+  const [download] = await Promise.all([page.waitForEvent("download"), button.click()]);
   expect(download.suggestedFilename()).toBe("profitlens-product-comparison.csv");
   return records(await readFile((await download.path())!, "utf8"));
 }
@@ -112,6 +128,13 @@ async function downloadComparison(page: Page) {
 test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出同範圍", async ({ page }, testInfo) => {
   await load(page);
   const table = page.getByTestId("product-table");
+  // V3-5 頁首：描述（取代 v2 eyebrow／「元，未稅」）、範圍副標（golden 本期 8/2、上期 8/1，全部通路，金額未稅）、筆數句。
+  await expect(page.getByRole("heading", { level: 1, name: labels.nav.products.label, exact: true }).locator("xpath=following-sibling::p[1]")).toHaveText(pageV3.description);
+  const asOf = "2026-08-03";
+  await expect(page.getByTestId("product-scope")).toHaveText(fill(pageV3.scope, { current: formatPeriodL1("2026-08-02", "2026-08-02", { days: false, anchor: asOf }), previous: formatPeriodL1("2026-08-01", "2026-08-01", { days: false, anchor: asOf }), channels: labels.shell.periodBar.filter.allChannels }));
+  const count = page.getByTestId("product-count");
+  await expect(count).toHaveAttribute("aria-live", "polite");
+  await expect(count).toHaveText(showing(4, 4));
   // R5-6：欄位重排（件數、毛利率、資料狀態），「更多欄位」預設關閉。
   await expect(page.getByTestId("product-more-columns")).toHaveAttribute("aria-pressed", "false");
   expect(await headerTexts(table)).toEqual(mainColumns);
@@ -121,22 +144,32 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
     ["MARKETPLACE", "A", deltaL2("10.00"), highlight.status.both], ["DTC", "A", deltaL2("40.00"), highlight.status.both],
   ]);
   for (const old of [panel.activity.bothObserved, panel.activity.currentOnly, panel.activity.previousOnly]) await expect(table).not.toContainText(old);
-  // Top／Bottom 小表（golden 手算）：本期毛利 = 淨營收 − 成本；毛利率 = 毛利 ÷ 淨營收（兩位小數百分比）。
+  // 全表本期商品毛利與毛利率（golden 手算）：本期毛利 = 淨營收 − 成本；毛利率 = 毛利 ÷ 淨營收（V3-5 小表不再有毛利率欄，改在全表核對同一組數字）。
+  expect((await rowTexts(table)).map(row => [row[0], row[1], row[5], row[6]])).toEqual([
+    ["MARKETPLACE", "B", formatAmountL2("125.00"), marginL2("125", "350")], // 500−100−50=350；350−225=125；125÷350
+    ["DTC", "B", formatAmountL2("200.00"), marginL2("200", "360")], // 400−20−20=360；360−160=200；200÷360
+    ["MARKETPLACE", "A", formatAmountL2("280.00"), marginL2("280", "640")], // 800−120−40=640；640−360=280；280÷640
+    ["DTC", "A", formatAmountL2("540.00"), marginL2("540", "1120")], // 1400−210−70=1120；1120−580=540；540÷1120
+  ]);
+  // Top／Bottom 小表（golden 手算，同上）：排名｜商品（SKU · 通路）｜本期商品毛利｜商品毛利差額。
   const worst = page.getByTestId("product-worst"), best = page.getByTestId("product-best");
   await expect(worst.getByRole("heading", { level: 4 })).toHaveText(fill(highlight.worstTitle, { n: 10 }));
   await expect(best.getByRole("heading", { level: 4 })).toHaveText(fill(highlight.bestTitle, { n: 10 }));
   expect(await headerTexts(worst)).toEqual(highlightColumns);
   expect(await headerTexts(best)).toEqual(highlightColumns);
   expect(await rowTexts(worst)).toEqual([
-    ["B MARKETPLACE", "CARE", formatAmountL2("125.00"), deltaL2("-55.00"), marginL2("125", "350")], // 500−100−50=350；350−225=125；125÷350
-    ["B DTC", "CARE", formatAmountL2("200.00"), deltaL2("-50.00"), marginL2("200", "360")], // 400−20−20=360；360−160=200；200÷360
-    ["A MARKETPLACE", "HOME", formatAmountL2("280.00"), deltaL2("10.00"), marginL2("280", "640")], // 800−120−40=640；640−360=280；280÷640
-    ["A DTC", "HOME", formatAmountL2("540.00"), deltaL2("40.00"), marginL2("540", "1120")], // 1400−210−70=1120；1120−580=540；540÷1120
+    [rank(1), productHead("B", "MARKETPLACE"), formatAmountL2("125.00"), deltaL2("-55.00")],
+    [rank(2), productHead("B", "DTC"), formatAmountL2("200.00"), deltaL2("-50.00")],
+    [rank(3), productHead("A", "MARKETPLACE"), formatAmountL2("280.00"), deltaL2("10.00")],
+    [rank(4), productHead("A", "DTC"), formatAmountL2("540.00"), deltaL2("40.00")],
   ]);
-  expect(await rowTexts(best)).toEqual([["A DTC", "HOME", formatAmountL2("540.00"), deltaL2("40.00"), marginL2("540", "1120")], ["A MARKETPLACE", "HOME", formatAmountL2("280.00"), deltaL2("10.00"), marginL2("280", "640")]]);
+  expect(await rowTexts(best)).toEqual([[rank(1), productHead("A", "DTC"), formatAmountL2("540.00"), deltaL2("40.00")], [rank(2), productHead("A", "MARKETPLACE"), formatAmountL2("280.00"), deltaL2("10.00")]]);
+  await expect(worst.getByRole("rowheader")).toHaveText([productHead("B", "MARKETPLACE"), productHead("B", "DTC"), productHead("A", "MARKETPLACE"), productHead("A", "DTC")]);
   await expect(worst.getByRole("region", { name: highlight.worstAria, exact: true })).toHaveAttribute("tabindex", "0");
   await expect(best.getByRole("region", { name: highlight.bestAria, exact: true })).toHaveAttribute("tabindex", "0");
-  // 「更多欄位」：開啟後 12 → 20 欄（主欄後接 8 欄），再關回 12 欄。
+  // 「更多欄位」：開啟後 12 → 20 欄（主欄後接 8 欄），再關回 12 欄。V3-5：按鈕在工具列「欄位」popover 內，先展開。
+  const columnsPopover = await openProductColumns(page);
+  await expect(columnsPopover.getByTestId("product-more-columns")).toBeVisible();
   await page.getByTestId("product-more-columns").click();
   await expect(page.getByTestId("product-more-columns")).toHaveAttribute("aria-pressed", "true");
   await expect(table.locator("thead th")).toHaveCount(mainColumns.length + moreColumns.length);
@@ -145,6 +178,19 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await page.getByTestId("product-more-columns").click();
   await expect(page.getByTestId("product-more-columns")).toHaveAttribute("aria-pressed", "false");
   await expect(table.locator("thead th")).toHaveCount(mainColumns.length);
+  // 同一 popover 的列高（F18）：預設標準，切精簡後本頁 data-density 跟著改，再切回標準。
+  const density = columnsPopover.getByTestId("product-density");
+  await expect(density.getByRole("radio", { name: pageV3.densityStandard, exact: true })).toBeChecked();
+  await density.getByRole("radio", { name: pageV3.densityCompact, exact: true }).check();
+  await expect(page.locator("section.product-page")).toHaveAttribute("data-density", "compact");
+  await density.getByRole("radio", { name: pageV3.densityStandard, exact: true }).check();
+  await expect(page.locator("section.product-page")).toHaveAttribute("data-density", "standard");
+  // C14：焦點在 popover 內按 Esc 關閉，焦點回到「欄位」觸發器。
+  await page.getByTestId("product-more-columns").focus();
+  await page.keyboard.press("Escape");
+  await expect(columnsPopover).not.toHaveAttribute("open", "");
+  await expect(columnsPopover.locator(":scope > summary")).toBeFocused();
+  await expect(page.getByTestId("product-more-columns")).toBeHidden();
   await expect(table.locator("tbody tr").first()).toContainText("MARKETPLACE");
   await expect(table.locator("tbody tr").first().getByRole("rowheader")).toHaveText("B");
   // Golden keeps raw channel codes; the 官網／平台 alias applies only to the demo dataset.
@@ -154,29 +200,46 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   const dialog = page.getByRole("dialog", { name: evidenceDialog });
   await expect(dialog.locator("p.number")).toHaveText(drawerHeadlineDelta("-55.00"));
   await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(drawerPreciseDelta("-55.00"));
-  await expect(dialog.locator("dd.number")).toHaveText([formatAmountL3("180.00"), formatAmountL3("125.00")]);
+  // V3-5：組成項目改成表格（table.kv.l3，單位只在欄頭）；上期、本期各一列。
+  await expect(dialog.locator(".evidence-components h3")).toHaveText(labels.evidence.components);
+  await expect(dialog.locator(".evidence-components table.kv.l3 tbody td.num")).toHaveText([formatAmountL3("180.00"), formatAmountL3("125.00")]);
   await expect(dialog).toContainText("2026-08-01");
   await expect(dialog).toContainText("2026-08-02");
-  await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 5 }));
-  await expect(dialog).toContainText(fill(labels.evidence.lineN, { n: 9 }));
+  await expect(dialog).toContainText(fileLine(5));
+  await expect(dialog).toContainText(fileLine(9));
   await expect(dialog).not.toContainText("ad_spend_daily.csv");
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
-  await page.getByLabel(panel.sortDirection, { exact: true }).selectOption("descending");
+  await sortSelect(page).selectOption({ label: pageV3.sortOptions.grossProfitChangeDescending });
+  await expect(sortSelect(page)).toHaveValue("gross_profit_change.descending");
   await expect(table.locator("tbody tr").first()).toContainText("DTC");
   await expect(table.locator("tbody tr").first().getByRole("rowheader")).toHaveText("A");
   await page.getByLabel(labels.csvColumns.category, { exact: true }).selectOption("HOME");
   await page.getByLabel(panel.searchSku, { exact: true }).fill("a");
   await expect(table.locator("tbody tr")).toHaveCount(2);
+  await expect(count).toHaveText(showing(2, 4));
   const output = await downloadComparison(page);
   expect(output.map(row => [row.channel, row.sku, row.gross_profit_change])).toEqual([["DTC", "A", "40.00"], ["MARKETPLACE", "A", "10.00"]]);
   expect(output.every(row => row.category_filter === "HOME" && row.query === "a" && row.direction === "descending" && row.previous_start === "2026-08-01" && row.current_start === "2026-08-02")).toBe(true);
   await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
   await expect(page.getByRole("button", { name: panel.negativeOnly, exact: true })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText(panel.empty, { exact: false })).toBeVisible();
+  // V3-5（C10）：篩選型空狀態＝labels.products.panel.noProducts＋「清除篩選」。
+  await expect(page.getByTestId("product-empty")).toContainText(labels.products.panel.noProducts);
+  await expect(page.getByTestId("product-clear-filters")).toHaveText(pageV3.clearFilters);
+  await expect(count).toHaveText(showing(0, 4));
   await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
+  await expect(table.locator("tbody tr")).toHaveCount(2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-products-${testInfo.project.name}.png`), fullPage: true });
+  // 「清除篩選」：品類、搜尋、只看負毛利一起清空，回到全部 4 筆，焦點回到搜尋框。
+  await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
+  await page.getByTestId("product-clear-filters").click();
+  await expect(table.locator("tbody tr")).toHaveCount(4);
+  await expect(count).toHaveText(showing(4, 4));
+  await expect(page.getByLabel(labels.csvColumns.category, { exact: true })).toHaveValue("");
+  await expect(page.getByLabel(panel.searchSku, { exact: true })).toHaveValue("");
+  await expect(page.getByLabel(panel.searchSku, { exact: true })).toBeFocused();
+  await expect(page.getByRole("button", { name: panel.negativeOnly, exact: true })).toHaveAttribute("aria-pressed", "false");
   await navigateTo(page, "overview");
   await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText(formatAmountL1("255.00"));
 });
@@ -191,9 +254,9 @@ test("PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來�
   await expect(last.getByRole("rowheader")).toHaveText("A");
   await expect(statusCell(last)).toHaveText(highlight.status.cost_unknown);
   expect((await rowTexts(table)).map(row => row[11])).toEqual([highlight.status.both, highlight.status.both, highlight.status.both, highlight.status.cost_unknown]);
-  expect((await rowTexts(page.getByTestId("product-worst"))).map(row => [row[0], row[2]])).toEqual([["B MARKETPLACE", formatAmountL2("125.00")], ["B DTC", formatAmountL2("200.00")], ["A MARKETPLACE", formatAmountL2("280.00")]]);
-  expect((await rowTexts(page.getByTestId("product-best"))).map(row => [row[0], row[3]])).toEqual([["A MARKETPLACE", deltaL2("10.00")]]);
-  await page.getByLabel(panel.sortDirection, { exact: true }).selectOption("descending");
+  expect((await rowTexts(page.getByTestId("product-worst"))).map(row => [row[1], row[2]])).toEqual([[productHead("B", "MARKETPLACE"), formatAmountL2("125.00")], [productHead("B", "DTC"), formatAmountL2("200.00")], [productHead("A", "MARKETPLACE"), formatAmountL2("280.00")]]);
+  expect((await rowTexts(page.getByTestId("product-best"))).map(row => [row[1], row[3]])).toEqual([[productHead("A", "MARKETPLACE"), deltaL2("10.00")]]);
+  await sortSelect(page).selectOption({ label: pageV3.sortOptions.grossProfitChangeDescending });
   await expect(last).toContainText(panel.costMissing);
   await last.getByRole("button", { name: deltaTrigger(labels.status.missing) }).click();
   const dialog = page.getByRole("dialog", { name: evidenceDialog });
@@ -267,22 +330,47 @@ test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公�
   expect(rows[0].current_sources).toContain("商品來源.csv");
 });
 
-test("PL-07 390px：Top／Bottom 小表在可捲動區塊內，頁面本身不橫向溢出", async ({ page }) => {
+test("PL-07 390px：Top／Bottom 小表改成手機清單，每列主行是商品與本期商品毛利，頁面本身不橫向溢出", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await load(page);
+  // V3-5（C3）：≤ 767px 時小表以 CSS 重排成清單（DOM 仍是 table，明確的 role=table／row／rowheader／cell 讓 display 改變後語意不變），不再需要橫向捲動。
+  // golden 手算（同 PL-07 golden 案例）：本期商品毛利 = 淨營收 − 成本；差額 = 本期 − 上期。
+  const expected = {
+    worst: [["B", "MARKETPLACE", "125.00", "-55.00"], ["B", "DTC", "200.00", "-50.00"], ["A", "MARKETPLACE", "280.00", "10.00"], ["A", "DTC", "540.00", "40.00"]],
+    best: [["A", "DTC", "540.00", "40.00"], ["A", "MARKETPLACE", "280.00", "10.00"]],
+  } as const;
   for (const [kind, name] of [["worst", highlight.worstAria], ["best", highlight.bestAria]] as const) {
     const region = page.getByTestId(`product-${kind}`).getByRole("region", { name, exact: true });
     await expect(region).toBeVisible();
     await expect(region).toHaveAttribute("tabindex", "0");
-    const box = await region.evaluate(element => ({ overflowX: getComputedStyle(element).overflowX, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth, right: element.getBoundingClientRect().right }));
-    // 五欄在 390px 放不下：表格比區塊寬，區塊自己可橫向捲動，且區塊不超出視窗。
-    expect(["auto", "scroll"]).toContain(box.overflowX);
-    expect(box.scrollWidth).toBeGreaterThan(box.clientWidth);
+    // 清單不溢出：區塊內容不比區塊寬，區塊也不超出視窗。
+    const box = await region.evaluate(element => ({ scrollWidth: element.scrollWidth, clientWidth: element.clientWidth, right: element.getBoundingClientRect().right }));
+    expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth + 1);
     expect(box.right).toBeLessThanOrEqual(390 + 1);
-    // 鍵盤可達：聚焦區塊後按右鍵會捲動。
-    await region.focus();
-    await page.keyboard.press("ArrowRight");
-    await expect.poll(() => region.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+    const list = region.getByRole("table");
+    await expect(list).toBeVisible();
+    // 表頭只給輔助科技（視覺隱藏，欄頭仍可讀）；畫面上的欄名改由每格的 data-label 標示。
+    await expect(list.getByRole("columnheader")).toHaveText(highlightColumns);
+    expect(await list.locator("thead").evaluate(element => element.getBoundingClientRect().width)).toBeLessThanOrEqual(1);
+    const rows = list.locator("tbody").getByRole("row");
+    await expect(rows).toHaveCount(expected[kind].length);
+    for (const [index, [sku, channel, grossProfit, change]] of expected[kind].entries()) {
+      const row = rows.nth(index);
+      await expect(row.getByRole("rowheader")).toHaveText(productHead(sku, channel));
+      await expect(row.getByRole("cell")).toHaveText([rank(index + 1), formatAmountL2(grossProfit), deltaL2(change)]);
+      await expect(row.locator("td[data-list-role='primary']")).toHaveText(formatAmountL2(grossProfit));
+      await expect(row.locator("td[data-list-role='secondary']")).toHaveText([rank(index + 1), deltaL2(change)]);
+      expect(await row.locator("td[data-list-role='secondary']").evaluateAll(cells => cells.map(cell => cell.getAttribute("data-label")))).toEqual([pageV3.columns.rank, yuan(pageV3.columns.change)]);
+      // 主行：商品（列標頭）與本期商品毛利在同一行；排名與差額在下一行。
+      const layout = await row.evaluate(tr => {
+        const rect = (element: Element) => element.getBoundingClientRect();
+        const head = rect(tr.querySelector("th")!), primary = rect(tr.querySelector("td[data-list-role='primary']")!);
+        return { head: { top: head.top, bottom: head.bottom }, primary: { top: primary.top, bottom: primary.bottom }, secondary: [...tr.querySelectorAll("td[data-list-role='secondary']")].map(cell => rect(cell).top) };
+      });
+      expect(layout.primary.top).toBeLessThan(layout.head.bottom);
+      expect(layout.primary.bottom).toBeGreaterThan(layout.head.top);
+      for (const top of layout.secondary) expect(top).toBeGreaterThanOrEqual(Math.max(layout.head.bottom, layout.primary.bottom) - 1);
+    }
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 });
