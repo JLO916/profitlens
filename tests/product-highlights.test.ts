@@ -169,8 +169,9 @@ describe("R5-6 商品毛利頁版面（伺服器端渲染）", () => {
     return renderToStaticMarkup(createElement(ProductComparisonPanel, { dataset: ds, snapshot, onEvidence: () => undefined }));
   }
   const between = (html: string, start: string, end: string) => html.slice(html.indexOf(start), html.indexOf(end, html.indexOf(start)));
-  const headers = (html: string) => [...html.matchAll(/<th scope="col">([^<]*)<\/th>/g)].map(match => match[1]);
-  const rowHeaders = (html: string) => [...html.matchAll(/<th scope="row">([^<]*)/g)].map(match => match[1].trim());
+  /** V3-5（C3 手機清單）：表頭與列標頭明確帶 role＋data-label／data-list-role，屬性不固定，取文字即可。 */
+  const headers = (html: string) => [...html.matchAll(/<th scope="col"[^>]*>([^<]*)<\/th>/g)].map(match => match[1]);
+  const rowHeaders = (html: string) => [...html.matchAll(/<th scope="row"[^>]*>([^<]*)/g)].map(match => match[1].trim());
   const per = (period: "previous" | "current", label: string) => `${labels.periods[period]}${label}`;
   const change = (name: "gross_profit" | "net_revenue") => `${metricDefinitions[name].label}${labels.csvSuffix.change}`;
   /** V3-2b：表格是 L2，金額欄表頭標一次「（元）」。 */
@@ -178,7 +179,7 @@ describe("R5-6 商品毛利頁版面（伺服器端渲染）", () => {
   /** 依序出現的格式化字串（中間可夾任何標記）。 */
   const inOrder = (...parts: string[]) => new RegExp(parts.map(part => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[\\s\\S]*"));
 
-  it("兩張小表在完整表之前，最多 10 列，欄位為 SKU、品類、本期毛利、差額、毛利率", async () => {
+  it("兩張小表在完整表之前，最多 10 列，欄位為 排名、商品（SKU · 通路）、本期商品毛利、差額（V3-5，PRD §7.3）", async () => {
     const html = await render();
     expect(html.indexOf('data-testid="product-worst"')).toBeGreaterThan(-1);
     expect(html.indexOf('data-testid="product-worst"')).toBeLessThan(html.indexOf('data-testid="product-best"'));
@@ -188,15 +189,21 @@ describe("R5-6 商品毛利頁版面（伺服器端渲染）", () => {
     const best = between(html, 'data-testid="product-best"', "</section>");
     expect(worst).toContain(fill(labels.productHighlights.worstTitle, { n: 10 }));
     expect(best).toContain(fill(labels.productHighlights.bestTitle, { n: 10 }));
-    const expected = ["SKU", labels.csvColumns.category, yuan(per("current", metricDefinitions.gross_profit.shortLabel)), yuan(change("gross_profit")), per("current", metricDefinitions.gross_margin.shortLabel)];
+    const page = labels.products.pageV3;
+    const expected = [page.columns.rank, page.columns.product, yuan(per("current", metricDefinitions.gross_profit.shortLabel)), yuan(page.columns.change)];
     expect(headers(worst)).toEqual(expected);
     expect(headers(best)).toEqual(expected);
     expect(rowHeaders(worst)).toEqual(["B", "B", "A", "A"]);
-    expect(worst).toMatch(/<th scope="row">B <small>MARKETPLACE<\/small><\/th>/);
+    // 商品格：SKU 與通路同一行（通路是 12px 次要色的 .product-channel，分隔號只給視覺）。
+    expect(worst).toMatch(/<th scope="row"[^>]*>B<span class="product-channel"><span aria-hidden="true"> · <\/span>MARKETPLACE<\/span><\/th>/);
     expect(rowHeaders(best)).toEqual(["A", "A"]);
-    // 手算：A／DTC 本期毛利 540.00、差額 +40.00、毛利率 540 ÷ 1,120 = 48.21%；B 本期毛利 125.00、差額 −55.00、毛利率 35.71%（L2：整數元、一位小數 %）。
-    expect(best).toMatch(inOrder('<th scope="row">A <small>DTC</small></th>', formatAmountL2("540.00"), formatSignedDelta("40.00", "L2"), formatRateL2("0.482142857143")));
-    expect(worst).toMatch(inOrder(formatAmountL2("125.00"), formatSignedDelta("-55.00", "L2"), formatRateL2("0.357142857143")));
+    // 手算：A／DTC 本期毛利 540.00、差額 +40.00；B／MARKETPLACE 本期毛利 125.00、差額 −55.00（L2：整數元）。排名依序 1、2…。
+    expect(best).toMatch(inOrder(`>${formatCount(1, "L2")}</td>`, ">A<", ">DTC<", formatAmountL2("540.00"), formatSignedDelta("40.00", "L2")));
+    expect(worst).toMatch(inOrder(`>${formatCount(1, "L2")}</td>`, ">B<", ">MARKETPLACE<", formatAmountL2("125.00"), formatSignedDelta("-55.00", "L2")));
+    // 毛利率從小表移到完整表（同一列、同一個手算值：540 ÷ 1,120 = 48.21%、125 ÷ 350 = 35.71%，L2 一位小數 %）。
+    const table = between(html, 'data-testid="product-table"', "</table>");
+    expect(table).toContain(`>${formatRateL2("0.482142857143")}</button>`);
+    expect(table).toContain(`>${formatRateL2("0.357142857143")}</button>`);
     expect(worst).toContain('class="table-scroll" tabindex="0" role="region"');
   });
 
@@ -221,8 +228,8 @@ describe("R5-6 商品毛利頁版面（伺服器端渲染）", () => {
     expect(table).toContain(`>${formatCount("3", "L2")}</button>`);
     expect(table).toContain(labels.productHighlights.status.both);
     expect(html).toMatch(/aria-pressed="false" data-testid="product-more-columns"/);
-    expect(html).toContain(labels.productHighlights.intro);
-    expect(html).not.toContain(labels.ui.productComparisonPanel.intro);
+    // V3-5：說明改由頁首描述承擔（labels.products.pageV3.description，見 product-page-v3.test.tsx）；面板內不再有 eyebrow、「元，未稅」標籤與兩段說明。
+    for (const old of [labels.productHighlights.intro, labels.ui.productComparisonPanel.intro, labels.ui.productComparisonPanel.eyebrow, labels.ui.productComparisonPanel.basisTag]) expect(html).not.toContain(old);
     expect(html).toContain('aria-live="polite"');
     expect(html).toContain(labels.ui.productComparisonPanel.tableCaption);
   });

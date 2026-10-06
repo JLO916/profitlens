@@ -926,23 +926,6 @@ details.assumptions-panel[open] > summary { margin-bottom: 4px; }
 
 
 
-/* R5-D 商品 Top／Bottom（product-comparison-panel.tsx） */
-.product-highlights { margin: 18px 0 6px; }
-.product-highlights > h3, .product-full-heading { margin-bottom: 10px; }
-.product-full-heading { margin-top: 22px; }
-.product-highlight-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: start; }
-.product-highlight { min-width: 0; }
-.product-highlight h4 { margin: 0 0 2px; font-size: var(--text-13); font-weight: 600; color: var(--text-secondary); }
-.product-highlight > .note { margin-bottom: 8px; }
-.product-highlight th, .product-highlight td { padding: 8px 10px; }
-.product-highlight tbody th small { display: block; font-weight: 400; color: var(--text-tertiary); white-space: nowrap; }
-.product-highlight .product-highlight-empty { border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 12px; }
-.product-status { white-space: nowrap; }
-.product-status.cost_unknown, .product-status.coverage_unknown { color: var(--warning); }
-@media (max-width: 900px) { .product-highlight-grid { grid-template-columns: 1fr; } }
-
-
-
 /* R5-E 殼層整合（dashboard.tsx） */
 
 
@@ -1537,6 +1520,104 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-5 錨點 A：通路健檢（警示列清單型、計數徽章、通路寬表欄序與排序、手機清單、AI 區收合）（代理 A 只在此錨點之後、錨點 B 之前新增規則） ── */
 
 /* ── V3-5 錨點 B：商品毛利（頁首匯出選單、工具列 C15、前 10 名表、全部商品表、密度切換、手機清單）（代理 B 只在此錨點之後、錨點 C 之前新增規則） ── */
+
+/* 頁首動作插槽（shell/page-chrome.tsx #page-actions）：每頁都渲染；沒有內容時不佔位置。 */
+.page-actions { display: flex; flex: none; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+.page-actions:empty { display: none; }
+
+/* 「匯出本頁」頁內下拉：summary 是次要按鈕（蓋過 v2 .topbar-menu > summary），選單沿用 .menu-panel／C14（選單 padding 8px、項目 36px、說明 12px）。 */
+.export-page { position: relative; }
+.export-page > summary.ui-btn { list-style: none; gap: var(--space-1); height: var(--control-h); min-height: var(--control-h); padding: 0 var(--space-2) 0 var(--space-3); border: var(--border-w) solid var(--border-default); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-primary); font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-medium); }
+.export-page > summary::-webkit-details-marker { display: none; }
+.export-page > summary.ui-btn:hover, .export-page[open] > summary.ui-btn { background: var(--bg-hover); }
+.export-page > .menu-panel { position: absolute; top: calc(100% + var(--space-1)); right: 0; left: auto; width: min(var(--menu-w), calc(100vw - 32px)); max-height: none; margin: 0; padding: var(--space-2); }
+.export-page .menu-item { display: grid; }
+.export-page .menu-item + .menu-item { border-top: var(--border-w) solid var(--border-subtle); }
+.export-page .ui-menu-item { min-height: var(--menu-item-h); }
+.export-page .menu-item small { padding: 0 var(--space-2) var(--space-2); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+/* 伺服器端渲染時（沒有頁首插槽）選單先放在面板內；掛載後改用 portal 放進頁首，同一時間只有一份。 */
+.product-export-inline { display: flex; justify-content: flex-end; margin: 0 0 var(--space-3); }
+
+/* 商品毛利頁：範圍副標一行 13px；區段之間 32px；區段標題 16／600。 */
+.product-page { min-width: 0; }
+.product-scope { margin: 0 0 var(--space-5); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.product-highlights { margin: 0 0 var(--space-6); }
+.product-highlights > h3, .product-full-heading { margin: 0 0 var(--space-3); font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+
+/* 前 10 名兩表並排（C3，列高跟著本頁密度）：排名｜商品（SKU · 通路，通路 12px 次要色）｜本期商品毛利（元）｜差額（元）。 */
+.product-highlight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); align-items: start; }
+.product-highlight { min-width: 0; }
+.product-highlight h4 { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.product-highlight > .note { margin: var(--space-1) 0 var(--space-2); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.product-highlight .product-highlight-empty { margin: 0; padding: var(--space-4); border: var(--border-w) dashed var(--border-default); border-radius: var(--radius-md); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.product-rank-table .rank { width: 1%; white-space: nowrap; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.product-channel { font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); color: var(--text-secondary); white-space: nowrap; }
+.product-status { white-space: nowrap; }
+.product-status.cost_unknown, .product-status.coverage_unknown { color: var(--warning); }
+
+/* C15 工具列：品類｜搜尋｜排序｜只看負毛利｜欄位（最多 5 個控制），筆數放最右（12px、aria-live）。放不下時換行，不橫向溢出。 */
+.product-toolbar { position: relative; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
+.product-toolbar > select.ui-field-control { width: auto; max-width: 100%; }
+.product-toolbar > input.ui-field-control { width: 200px; max-width: 100%; }
+.product-toggle[aria-pressed="true"] { background: var(--accent-subtle); border-color: var(--accent-border); color: var(--accent); }
+.product-toolbar > .product-count { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+
+/* 「欄位」popover（C14）：更多欄位切換與說明、列高（F18）。關著時內容仍掛載；位置對齊工具列右緣，窄螢幕不溢出。 */
+.product-columns > summary { list-style: none; gap: var(--space-1); padding: 0 var(--space-2) 0 var(--space-3); }
+.product-columns > summary::-webkit-details-marker { display: none; }
+.product-columns[open] > summary { background: var(--bg-hover); }
+.product-columns-panel { position: absolute; top: calc(100% + var(--space-1)); right: 0; display: grid; justify-items: start; gap: var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); }
+.product-columns-hint { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.product-density { display: grid; gap: var(--space-2); }
+.product-density legend { margin: 0 0 var(--space-1); padding: 0; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.product-density label { flex-direction: row; align-items: center; gap: var(--space-2); min-height: 24px; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-regular); color: var(--text-primary); cursor: pointer; }
+
+/* 全部商品表（C3）：金額欄右對齊整數元、單位只在表頭；表頭 sticky（在自己的捲動容器內）；列高 40px，精簡 32px（data-density）。 */
+.product-table-scroll { max-height: calc(100dvh - var(--topbar-h) - var(--period-bar-h) - var(--space-7)); overflow: auto; }
+.product-page .ui-table td .note { display: block; font-size: var(--text-12); line-height: var(--leading-12); }
+.product-page .ui-table tbody th { white-space: nowrap; }
+/* C10 篩選型空狀態：區段型虛線框＋「清除篩選」。 */
+.product-empty .ui-btn { margin-top: var(--space-1); }
+.product-technical { margin-top: var(--space-3); }
+.product-technical > summary { min-height: 24px; }
+.product-technical > .note { margin-top: var(--space-1); }
+
+@media (max-width: 900px) { .product-highlight-grid { grid-template-columns: minmax(0, 1fr); } }
+/* 桌機與平板：通路、品類等短文字不逐字折行（欄位多時改由表格容器橫向捲動）。 */
+@media (min-width: 768px) { .product-page .ui-table td { white-space: nowrap; } }
+
+/* C3 手機清單（≤ 767px）：保留 <table>（明確 role），以 CSS 重排。主行＝商品＋本期商品毛利（14／600）；次行＝差額、件數、毛利率（12px，差額排第一）；
+   其餘欄位用 data-label 標名（12px，兩欄）。表頭只對輔助科技保留；data-label 的產生內容不重複朗讀（alt 文字為空）。 */
+@media (max-width: 767px) {
+  .page-actions { justify-content: flex-start; padding: var(--space-3) 0; }
+  .product-scope { margin-bottom: var(--space-4); }
+  .product-toolbar > select.ui-field-control { flex: 1 1 100%; }
+  .product-toolbar > input.ui-field-control { flex: 1 1 100%; width: auto; }
+  .product-toolbar > .product-count { flex: 1 1 100%; margin-left: 0; }
+  .product-columns-panel { left: 0; right: 0; width: auto; }
+  .product-table-scroll { max-height: none; }
+  .product-list thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .product-list, .product-list tbody { display: block; }
+  .product-list tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: var(--border-w) solid var(--border-subtle); }
+  .product-list tr:last-child { border-bottom: 0; }
+  .product-list th, .product-list td { display: block; height: auto; padding: 0; border: 0; text-align: left; white-space: normal; }
+  .product-list .num { text-align: left; }
+  .product-rank-table .rank { width: auto; }
+  .product-list [data-list-role="primary"] { font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-primary); }
+  .product-list th[data-list-role="primary"] { order: -1; min-width: 0; overflow-wrap: anywhere; }
+  .product-list td[data-list-role="primary"]:not(.num) { order: 0; font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); color: var(--text-secondary); }
+  .product-list td.num[data-list-role="primary"] { order: 1; margin-left: auto; text-align: right; }
+  /* 兩個 0 高的整列項目把主行、次行、其餘欄位分成三段（tr 的 ::after 與 ::before 也是 flex 項目）。次行把差額（.list-lead）排第一。 */
+  .product-list tr::after, .product-list tr::before { content: ""; flex-basis: 100%; height: 0; }
+  .product-list tr::after { order: 2; }
+  .product-list [data-list-role="secondary"] { order: 4; font-size: var(--text-12); line-height: var(--leading-12); }
+  .product-list [data-list-role="secondary"].list-lead { order: 3; }
+  .product-list tr::before { order: 5; }
+  .product-list [data-list-role="labeled"] { order: 6; flex: 1 1 calc(50% - var(--space-3)); min-width: 0; font-size: var(--text-12); line-height: var(--leading-12); }
+  .product-list [data-list-role="secondary"]::before, .product-list [data-list-role="labeled"]::before { content: attr(data-label); content: attr(data-label) / ""; margin-right: var(--space-1); font-weight: var(--weight-regular); color: var(--text-tertiary); }
+  .product-list td .note { display: inline; margin-left: var(--space-1); }
+  .product-list td .number-link { min-height: 24px; }
+}
 
 /* ── V3-5 錨點 C：計算與來源抽屜（C6：標題列、區段、組成表、原始明細）（代理 C 只在此錨點之後、結束錨點之前新增規則） ── */
 

@@ -808,7 +808,43 @@ export const products = {
     blankCategory: "未填品類",
   },
   // ── V3-5 錨點（代理 B：pageV3 頁首匯出選單、工具列、前 10 名表、密度切換、手機清單）
-  pageV3: {},
+  pageV3: {
+    /** 頁首描述（PRD §7.3 第 1 點，取代 v2 的 eyebrow「商品毛利 · 兩期比較」與「元，未稅」標籤）。 */
+    description: "只看商品毛利，不分攤平台費和廣告費",
+    /** 範圍副標一行（13px）：「本期 7/13–8/23 對比 上期 6/1–7/12 · 全部通路 · 金額未稅」。 */
+    scope: "本期 {current} 對比 上期 {previous} · {channels} · 金額未稅",
+    /** 頁首「匯出本頁」頁內下拉：兩個項目沿用 v2 的按鈕名稱（下載商品比較 CSV／下載商品明細 CSV），每項一行 12px 說明。 */
+    exportPage: "匯出本頁",
+    exportComparisonHint: "每個商品一列，含上期、本期與差額；只匯出目前顯示的商品。",
+    exportProductsHint: "本期各指標逐列；只匯出目前顯示的商品。",
+    exportConverted: "{summary}；CSV 是換算後的未稅金額。",
+    /** 前 10 名兩表的欄名：排名｜商品｜本期商品毛利（元）｜差額（元）。 */
+    columns: { rank: "排名", product: "商品", change: "差額" },
+    worstCaption: "本期商品毛利由低到高，含排名與商品毛利差額",
+    bestCaption: "商品毛利差額由高到低，含排名與本期商品毛利",
+    /** 工具列（C15）：品類｜搜尋｜排序｜只看負毛利｜欄位。排序依據與方向合併成一個 select。 */
+    sortLabel: "排序",
+    sortOptions: {
+      grossProfitChangeAscending: "商品毛利差額：下降最多優先",
+      grossProfitChangeDescending: "商品毛利差額：上升最多優先",
+      currentGrossProfitAscending: "本期商品毛利：由低到高",
+      currentGrossProfitDescending: "本期商品毛利：由高到低",
+      netRevenueChangeAscending: "淨營收差額：下降最多優先",
+      netRevenueChangeDescending: "淨營收差額：上升最多優先",
+      currentNetRevenueAscending: "本期淨營收：由低到高",
+      currentNetRevenueDescending: "本期淨營收：由高到低",
+      skuAscending: "SKU：A 到 Z",
+    },
+    columnsMenu: "欄位",
+    /** F18 表格密度：只是個人偏好，記在 localStorage，不進備份。 */
+    densityLegend: "列高",
+    densityStandard: "標準 40px",
+    densityCompact: "精簡 32px",
+    /** 表格右上角 12px、aria-live=polite。 */
+    showing: "顯示 {n} 筆，共 {total} 筆",
+    /** C10 篩選型空狀態的動作（說明句沿用 products.panel.noProducts）。 */
+    clearFilters: "清除篩選",
+  },
 } as const;
 
 // ── scenarios：假設試算：輸入欄、範本、表單、敏感度、方案並排
