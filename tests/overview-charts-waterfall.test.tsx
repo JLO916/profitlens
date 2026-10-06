@@ -278,7 +278,7 @@ describe("ProfitSection：本期利潤結構（F2，§10.3）", () => {
       const data = profitWaterfall(snapshot, "all");
       const details = element(html, 'class="data-alternative"')!;
       expect(details).not.toMatch(/^<details[^>]*\sopen/);
-      expect(textOf(element(details, "<summary")!)).toBe(fill(labels.overview.chartFrame.dataTableSummary, { title: profitCopy.section }));
+      expect(textOf(element(details, "<summary")!)).toBe(fill(labels.ui.overview.dataTable, { title: profitCopy.section }));
       expect(openTag(details, 'role="region"')).toContain(`aria-label="${profitCopy.table.aria}"`);
       expect(textOf(element(details, "<thead")!)).toBe(`${profitCopy.table.item}${profitCopy.table.amount}${profitCopy.table.share}`);
       const rows = rowsOf(details);

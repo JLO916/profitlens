@@ -581,8 +581,6 @@ export const overview = {
   /** V3-4b 圖表框（C16）共用字：資料表連結與摘要、無資料、資料待補的柱、圖例（沿用 shell.periods）、單位說明。 */
   chartFrame: {
     dataTable: "資料表",
-    /** `<details>` 摘要：「資料表 · 本期利潤結構」；{title} 放區塊的標準名稱（副標第一段）。 */
-    dataTableSummary: "資料表 · {title}",
     noData: "無資料",
     missingBar: shell.status.missing,
     legend: { current: shell.periods.current, previous: shell.periods.previous },

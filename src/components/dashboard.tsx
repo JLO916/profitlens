@@ -192,6 +192,9 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [basisSection, setBasisSection] = useState<BasisDialogSection | null>(null);
   const whatsNew = useWhatsNew();
   const [periodOpen, setPeriodOpen] = useState(false);
+  // V3-4b（C16「切換時區塊不跳動」）：套用篩選（期間、通路）時舊內容保持掛載、只標 aria-busy，不換成全頁載入畫面；新快照算好後原地更新（圖表容器固定高度，CLS 不累加、捲動位置不重設）。
+  // 只有載入資料集（performLoad）才顯示全頁載入畫面。
+  const [refiltering, setRefiltering] = useState(false);
   const aiRef = useRef<HTMLDivElement>(null);
   const aiButtonRef = useRef<HTMLButtonElement>(null);
   const applyRef = useRef<HTMLButtonElement>(null);
@@ -233,7 +236,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     const ticket = ++requestId.current;
     controller.current?.abort();
     const abort = new AbortController(); controller.current = abort;
-    setShowImport(false); setSelected(id); setStatus("loading"); setError(""); setFilterError(""); setIssues([]); setEvidence(null);
+    setShowImport(false); setSelected(id); setStatus("loading"); setRefiltering(false); setError(""); setFilterError(""); setIssues([]); setEvidence(null);
     try {
       const response = await fetch(`/api/datasets/${encodeURIComponent(id)}`, { signal: abort.signal, cache: "no-store" });
       if (!response.ok) throw new Error(labels.ui.dashboard.errors.fetchFailed);
@@ -322,11 +325,12 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   async function applyFilters(filters: AnalysisFilters) {
     if (!active) return;
     const ticket = ++requestId.current;
-    setFilterError(""); setEvidence(null); setStatus("loading");
+    setFilterError(""); setEvidence(null); setStatus("loading"); setRefiltering(true);
     try {
       await afterPaint();
       const snapshot = await createSnapshot(active.dataset, filters, active.snapshot.dataset_hash);
       if (ticket !== requestId.current) return;
+      setRefiltering(false);
       const oldScope = active.snapshot.report.scope, newScope = snapshot.report.scope;
       const periodChanged = decisionSignature([oldScope.previous_period, oldScope.current_period, oldScope.comparison_mode]) !== decisionSignature([newScope.previous_period, newScope.current_period, newScope.comparison_mode]);
       activate({ ...active, snapshot, revision: snapshot.filter_hash === active.snapshot.filter_hash ? active.revision : ++revision.current }, periodChanged);
@@ -334,6 +338,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready");
     } catch (caught) {
       if (ticket !== requestId.current) return;
+      setRefiltering(false);
       setFilterError(caught instanceof AnalysisPeriodLimitError || caught instanceof AnalysisChannelLimitError ? caught.message : labels.ui.dashboard.errors.periodNotApplied);
       setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready");
     }
@@ -496,7 +501,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     try { setReview(selectReviewScenario(reviewRef.current, scenarioRef.current, reference)); setFilterError(""); }
     catch { setFilterError(fill(labels.ui.dashboard.errors.scenarioScopeMismatch, { overview: labels.nav.meeting.label, updateMeeting: labels.buttons.updateMeetingSource })); }
   }
-  const visible = active && (status === "ready" || status === "partial");
+  const visible = active && (status === "ready" || status === "partial" || (status === "loading" && refiltering));
   const local = active?.dataset.manifest.source_type === "user_provided";
   const currentContext = scenarioWorkspace.contexts.find(context => context.status === "current" && context.session.filter_hash === active?.snapshot.filter_hash);
   const decision = currentContext ? scenarioContextDecision(currentContext) : emptyDecisionWorkspace();
@@ -548,9 +553,9 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
           {visible && <NeedsAttention filterError={filterError} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={() => setPanel("data")} yoyReason={presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null} />}
         </>}
         {status === "empty" && !showImport && panel !== "validation" && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">{labels.emptyState.eyebrow}</p><h2>{labels.emptyState.title}</h2><p>{labels.emptyState.body}</p><button className="button primary large" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={18} /></button><div className="empty-steps">{labels.emptyState.steps.map((step, index) => <span key={step}>{index + 1} {step}</span>)}</div></section>}
-        {status === "loading" && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>{labels.ui.dashboard.loading.heading}</h2><p>{labels.ui.dashboard.loading.body}</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
+        {status === "loading" && !refiltering && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>{labels.ui.dashboard.loading.heading}</h2><p>{labels.ui.dashboard.loading.body}</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
         {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>{labels.status.error}</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>{labels.ui.dashboard.errorState.retry}</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>{labels.ui.dashboard.errorState.back}</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
-        {visible && <div key={active.id} className="view-content">{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} />}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
+        {visible && <div key={active.id} className="view-content" aria-busy={refiltering || undefined}>{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} />}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
         <ShellFooter analytics={analytics} onBasis={() => setBasisOpen(true)} />
