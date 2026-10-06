@@ -11,15 +11,13 @@ import { AiPanel } from "./ai-panel";
 import { getAiCapability, type AiCapability } from "@/application/ai-client";
 import { IssueList } from "./issue-list";
 import { ImportWizard } from "./import-wizard";
-import { clearWizardMemory, exampleTemplateUrl, FILE_ROLES } from "@/application/import-wizard";
-import { standardCsvTemplate } from "@/application/import-guidance";
+import { clearWizardMemory } from "@/application/import-wizard";
 import type { RawValuesByFile, TaxConversion } from "@/application/tax-basis";
 import { parseTargets, type TargetIssue, type TargetSet } from "@/application/targets";
 import { parseEvents, type EventIssue, type EventSet } from "@/application/events";
 import type { PreparedImport } from "@/application/import";
 import { downloadText } from "@/application/download";
-import { exportIssuesCsv, exportSnapshotCsv } from "@/application/export";
-import { buildManagerSummary, exportChannelComparisonCsv, exportManagerSummaryMarkdown } from "@/application/manager-summary";
+import { buildManagerSummary, exportManagerSummaryMarkdown } from "@/application/manager-summary";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
 import { fill, labels } from "@/i18n";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "@/application/copy";
@@ -30,7 +28,7 @@ import { PrintSummaryPortal, type PrintSummaryProps } from "./manager-summary";
 import { activateScenarioEpoch, emptyScenarioWorkspace, scenarioContextDecision, resolveScenarioReference, type ScenarioWorkspace, type ScenarioSelectionRef } from "@/application/scenario-workspace";
 import { buildReviewDecisionContext, createReviewSession, refreshReviewScenarioReferences, refreshReviewSession, syncReviewPins, selectReviewScenario, rebuildReviewSnapshot, updateReviewSession, type ReviewSession } from "@/application/review-session";
 import { appendMeeting, finalizeMeeting, lastMeeting, removeMeeting, type Meeting } from "@/application/meeting";
-import { exportExcel, preloadExcelWriter } from "@/application/excel-export";
+import { exportExcel } from "@/application/excel-export";
 import { exportPptx } from "@/application/pptx-export";
 import { compareProducts } from "@/domain/product-comparison";
 import { exportWorkspaceDecision } from "@/application/workspace-decision-export";
@@ -46,6 +44,9 @@ import { ProductComparisonPanel } from "./product-comparison-panel";
 import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, taipeiToday, type ActionWorkspace, type ActionContext } from "@/application/action-workspace";
 import { track } from "@/application/analytics";
 // V3-3 A1 imports（頂欄／側欄／頁尾／手機底部分頁列的子元件）
+import { ShellFrame } from "./shell/shell-frame";
+import { ExportMenu } from "./shell/export-menu";
+import { PageHeader, ShellFooter } from "./shell/page-chrome";
 
 // V3-3 A2 imports（期間列／橫幅／手機期間底部面板的子元件）
 
@@ -514,53 +515,17 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
 
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">{labels.ui.dashboard.skipLink}</a>
-    <aside className="sidebar">
-      <a className="brand" href="#main-content"><span className="brand-mark"><Icon name="lens" size={24} /></span><span>{labels.brand.name}<small>{labels.brand.tagline}</small></span></a>
-      <div className="workspace-label">{labels.ui.dashboard.workspaceLabel} <span className="tiny-tag">{local ? labels.status.local : labels.status.demo}</span></div>
-      <nav aria-label={labels.ui.dashboard.mainNavAria}>{panels.filter(item => item.id !== "validation" || showValidation).map(item => <button key={item.id} className={`nav-item ${panel === item.id ? "active" : ""}`} aria-current={panel === item.id ? "page" : undefined} onClick={() => { setPanel(item.id); setEvidence(null); }}><Icon name={item.id} /><span>{item.label}</span>{panel === item.id && <span className="nav-dot" />}</button>)}</nav>
-      <div className="sidebar-note"><span className="green-dot" /> {local ? labels.status.local : labels.status.demo}<p>{local ? labels.ui.dashboard.sidebarNote.local : labels.ui.dashboard.sidebarNote.demo}</p></div>
-      <footer className="sidebar-footer">{labels.ui.dashboard.sidebarFooter}</footer>
-    </aside>
+    {/* V3-3 A1：頂欄（48px 單列）、側欄四組、手機底部分頁列與「更多」面板（src/components/shell/）。 */}
+    <ShellFrame panel={panel} showValidation={showValidation} onNavigate={id => { setPanel(id); setEvidence(null); }}
+      dataStatus={{ state: status, data: active ? { local: !!local, datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, dataAsOf: active.dataset.manifest.data_as_of, coverageStart: active.dataset.manifest.coverage_start, issueCount: active.dataset.issues.length } : null, statusText, statusDetail: active && status !== "empty" ? status === "ready" ? datasetLabels[active.id] ?? active.dataset.manifest.dataset_id : fill(labels.ui.dashboard.statusDataset, { dataset: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, date: active.dataset.manifest.data_as_of }) : null, publicDemo: aiCapability?.reason === "PUBLIC_DEMO", onGoData: () => { setPanel("data"); setEvidence(null); }, onImport: startImport }}
+      ai={{ headline: aiHeadline, detail: aiDetail, open: aiOpen, onToggle: () => setAiOpen(open => !open) }} aiContainerRef={aiRef} aiButtonRef={aiButtonRef}
+      onBasis={() => setBasisOpen(true)}
+      badges={{ snapshot: visible ? active.snapshot : null, issues: active ? active.dataset.issues.length : 0, meetingDraft: !!visible && reviewSession?.decision_state === "draft" }}
+      storage={<WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { void clearWizardMemory(); if (active) markChanged(); }} consent={localConsent} onConsentChange={setLocalConsent} onClear={clear} />}
+      exportMenu={<ExportMenu source={visible ? active : null} busy={menuExport.busy} error={menuExport.error} summaryRef={downloadSummaryRef} onDecision={exportDecision} onPrint={printCurrentView} onExport={kind => void exportCurrentView(kind)} onMeetingNotes={() => void exportMeetingNotes()} />} />
     <div className="main-shell">
-      <header className="topbar">
-        <div className="breadcrumb">{labels.ui.dashboard.breadcrumbRoot} <span>/</span> <strong>{currentPanel.label}</strong></div>
-        <div className="status-line" role="status" aria-live="polite" data-testid="workspace-status"><span className={`status-dot ${status}`} />{statusText}{active && status !== "empty" && <span className="muted">{status === "ready" ? datasetLabels[active.id] ?? active.dataset.manifest.dataset_id : fill(labels.ui.dashboard.statusDataset, { dataset: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, date: active.dataset.manifest.data_as_of })}</span>}<button className="text-button clear-button" onClick={clear}>{labels.buttons.clear}</button></div>
-        <div className="topbar-actions">
-          <span className="mode-badge"><span className="green-dot" /> {aiCapability?.reason === "PUBLIC_DEMO" ? labels.ui.dashboard.modeBadge.publicDemo : local ? labels.status.local : labels.status.demo}</span>
-          <button type="button" className="button quiet basis-button" onClick={() => setBasisOpen(true)} aria-haspopup="dialog" aria-label={labels.buttons.basis}><span aria-hidden="true">ⓘ</span><span className="basis-text">{labels.buttons.basis}</span></button>
-          <div className="ai-availability" data-testid="ai-availability" role="status" aria-live="polite" ref={aiRef}>
-            <button ref={aiButtonRef} type="button" className="ai-label" aria-expanded={aiOpen} aria-controls="ai-availability-detail" onClick={() => setAiOpen(open => !open)}><strong>{fill(labels.ui.dashboard.aiLabel, { ai: aiHeadline })}</strong></button>
-            <div id="ai-availability-detail" className="ai-popover" role="region" aria-label={labels.sections.aiDetail} hidden={!aiOpen}><p>{aiDetail}</p></div>
-          </div>
-        </div>
-        <WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { void clearWizardMemory(); if (active) markChanged(); }} consent={localConsent} onConsentChange={setLocalConsent} />
-        <details className="topbar-menu auto-close download-menu" data-testid="download-menu" onToggle={event => { if (event.currentTarget.open) void preloadExcelWriter(); }}>
-            <summary ref={downloadSummaryRef}>{labels.buttons.download}</summary>
-            <div className="menu-panel">{visible ? <div className="menu-list">
-              <p className="menu-section">{labels.sections.downloadCurrentView}</p>
-              <div className="menu-item"><button type="button" onClick={() => downloadText(exportSnapshotCsv(active.dataset, active.snapshot, active.filenames, active.conversion ?? null, active.targets ?? null), "profitlens-analysis.csv")}>{labels.downloads.analysisCsv}</button><small>{labels.downloads.analysisCsvHint}</small></div>
-              <button type="button" onClick={() => downloadText(exportChannelComparisonCsv(buildManagerSummary(active.snapshot, { conversion: active.conversion, targets: { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } })), "profitlens-channel-comparison.csv")}>{labels.downloads.channelTableCsv}</button>
-              <button type="button" onClick={() => downloadText(JSON.stringify(active.dataset.manifest, null, 2), "profitlens-manifest.json", "application/json;charset=utf-8")}>{labels.downloads.manifestJson}</button>
-              {active.dataset.issues.length > 0 && <div className="menu-item"><button type="button" onClick={() => downloadText(exportIssuesCsv(active.dataset.issues, active.filenames), "profitlens-issues.csv")}>{labels.downloads.issuesCsv}</button><small>{labels.downloads.issuesCsvHint.replace("{n}", String(active.dataset.issues.length))}</small></div>}
-              <p className="menu-section">{labels.sections.downloadDecision}</p>
-              <button type="button" onClick={() => exportDecision("md")}>{labels.downloads.decisionMd}</button>
-              <button type="button" onClick={() => exportDecision("csv")}>{labels.downloads.decisionCsv}</button>
-              <button type="button" onClick={() => exportDecision("json")}>{labels.downloads.decisionJson}</button>
-              <p className="menu-section" data-testid="download-meeting-section">{labels.sections.meetingSummary}</p>
-              <div className="menu-item"><button type="button" aria-describedby="download-pdf-hint" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); printCurrentView(); }}>{labels.buttons.exportPdf}</button><small id="download-pdf-hint">{labels.meetingPage.pdfHint}</small></div>
-              <button type="button" aria-disabled={menuExport.busy !== null || undefined} onClick={() => void exportCurrentView("excel")}>{labels.buttons.exportExcel}</button>
-              <button type="button" aria-disabled={menuExport.busy !== null || undefined} onClick={() => void exportCurrentView("pptx")}>{labels.buttons.exportPptx}</button>
-              <div className="menu-item"><button type="button" aria-disabled={menuExport.busy !== null || undefined} onClick={() => void exportMeetingNotes()}>{labels.meetingPage.menuMarkdown}</button><small>{labels.meetingPage.menuMarkdownHint}</small></div>
-              {menuExport.busy && <p className="menu-note" role="status">{labels.meetingPage.exporting}</p>}
-              {menuExport.error && <p className="menu-note menu-error" role="alert">{menuExport.error === "markdown" ? labels.meetingPage.markdownError : labels.meetingPage.exportError}</p>}
-              <p className="menu-note">{labels.meetingPage.menuViewNote}</p>
-              <p className="menu-note">{labels.downloads.menuNote}</p>
-            </div> : <p className="menu-note">{labels.status.empty}；{labels.downloads.menuEmpty}</p>}
-            <div className="menu-section" data-testid="download-templates"><p className="menu-heading">{labels.downloads.templatesHeading}</p>{FILE_ROLES.map(role => { const file = labels.importWizard.files[role === "sales_daily.csv" ? "sales" : role === "channel_costs_daily.csv" ? "costs" : "ads"]; return <div key={role} className="menu-item"><button type="button" onClick={() => downloadText(standardCsvTemplate(role), role)}>{fill(labels.downloads.blankTemplate, { file })}</button><a href={exampleTemplateUrl(role)} download={role}>{fill(labels.downloads.exampleTemplate, { file })}</a></div>; })}</div></div>
-        </details>
-      </header>
       <main id="main-content" tabIndex={-1}>
-        <div className="page-heading"><div><p className="eyebrow">{labels.brand.tagline}</p><h1>{currentPanel.label}</h1><p className="subtitle">{currentPanel.description}</p></div><div className="load-controls">{panel === "data" && (status !== "empty" || showImport) && <button className="button primary" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={16} /></button>}<button className="button quiet" data-testid="page-import" onClick={startImport}>{labels.buttons.importData}</button></div></div>
+        <PageHeader title={currentPanel.label} description={currentPanel.description} isData={panel === "data"} showLoadDemo={status !== "empty" || showImport} onLoadDemo={() => void load("demo")} onImport={startImport} />
         {whatsNew.visible && <WhatsNewNote onOpenGlossary={() => { whatsNew.markRead(); setBasisSection("v2-names"); setBasisOpen(true); }} onDismiss={whatsNew.dismiss} />}
         {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
           <h2 id="validation-heading">{labels.ui.dashboard.validation.heading}</h2>
@@ -593,7 +558,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
         {visible && <div key={active.id} className="view-content">{panel === "overview" && <><Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} /><MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} /></>}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
-        <footer className="main-footer"><p>{labels.basis.footer}［<button type="button" className="text-button" onClick={() => setBasisOpen(true)}>{labels.buttons.basis}</button>］</p>{analytics && <p className="analytics-note" data-testid="analytics-note">{labels.relaunch.analyticsNote}</p>}</footer>
+        <ShellFooter analytics={analytics} onBasis={() => setBasisOpen(true)} />
       </main>
     </div>
     {pendingReplacement && <ReplacementDialog intent={pendingReplacement} source={backupSource} currentVersion={() => versionRef.current} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onCancel={() => setPendingReplacement(null)} onProceed={() => {
