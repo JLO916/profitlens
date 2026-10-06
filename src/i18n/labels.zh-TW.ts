@@ -702,7 +702,8 @@ export const ui = {
     "currentHeader": "本期淨營收",
     "changeHeader": "淨營收差額",
     "turnedNegative": "轉為虧損",
-    "turnedPositive": "由負轉正"
+    "turnedPositive": "由負轉正",
+    "unitCaption": "{caption}金額單位：元。"
   },
   "topThree": {
     "impactEvidenceTitle": "{title}",
@@ -838,7 +839,9 @@ export const ui = {
     "trendTechnical": "圖形為近似比例，數字表保留精確金額。",
     "periodModeTechnical": "整月比較只接受兩個完整且已涵蓋的月份；未滿月請用等天數比較。確認沒有交易的日期仍算天數；缺資料的維持資料待補。",
     "periodRoundingTechnical": "日均差以未取分日均值相減後再取分；日均以 Decimal 計算，顯示時才取分。",
-    "bridgeTableTitle": "九項拆解"
+    "bridgeTableTitle": "九項拆解",
+    "growthInline": "（{value}）",
+    "captionWithUnit": "{caption}（元）"
   },
   "multiScenarioWorkbench": {
     "baselineFailed": "這個通路的基準算不出來；原本的方案還在，請檢查資料範圍。",

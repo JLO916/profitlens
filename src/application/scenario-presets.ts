@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import type { ScenarioBaseline, ScenarioInputs } from "../domain/scenarios";
 import { fill, labels } from "../i18n";
-import { formatMoney } from "./presentation";
+import { formatAmountL3 } from "./presentation";
 
 /**
  * R5-3 試算範本與絕對值輸入（05 §8、02 §6）。全部在表單層：
@@ -234,7 +234,8 @@ export function relativeToAbsolute(field: AbsoluteField, relativeTextValue: stri
     return fill(result.integer ? copy.equivalentUnits : copy.equivalentUnitsApprox, { value: units });
   }
   if (result.field === "discount_change_pp") return fill(copy.equivalentDiscountRate, { value: plainOneDecimal(result.rate) });
-  return fill(copy.equivalentBudget, { value: formatMoney(result.budget.toFixed(2, Decimal.ROUND_HALF_UP)) });
+  // 預算輸入到分，等值提示用 L3（千分位、兩位小數；換算後為負已在 reverse 擋掉）。
+  return fill(copy.equivalentBudget, { value: formatAmountL3(result.budget.toFixed(2, Decimal.ROUND_HALF_UP)) });
 }
 
 /**

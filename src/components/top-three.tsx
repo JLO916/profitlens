@@ -5,7 +5,7 @@ import { contributionImpact, priorityEvidence } from "@/application/manager-summ
 import { diagnosisGroups, type DiagnosisGroup, type DiagnosisScope } from "@/application/diagnosis-group";
 import { channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
 import { eventSuffix, type EventSet } from "@/application/events";
-import { formatMoney, formatSignedMoney, metricDefinitions } from "@/application/presentation";
+import { deltaTone, formatAmountL3, formatEmpty, formatSignedDelta, metricDefinitions, type DeltaTone, type Layer } from "@/application/presentation";
 import { parseCents } from "@/domain/money";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Diagnostic } from "@/domain/types";
@@ -27,18 +27,27 @@ export function impactEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, diag
   return { ...base, title, scopeLabel: fill(labels.ui.topThree.impactEvidenceSubtitle, { impact: labels.sections.impact, scope: scopeLabel(diagnostic.scope, alias) }), metric: impact, formula };
 }
 
-/** 紅＝不利、綠＝有利；零與未知為中性（以分為單位比較，不看字串正負號）。 */
+/** 紅＝不利、綠＝有利；零與未知為中性（以分為單位比較，不看字串正負號）。V3-2b 起本檔與總覽、健檢改用 toneClass(deltaTone(...))；會議頁仍沿用。 */
 export function amountTone(value: string | null): "negative" | "positive" | "neutral" {
   const cents = parseCents(value);
   return cents === null || cents === 0n ? "neutral" : cents < 0n ? "negative" : "positive";
 }
 
-export function ImpactAmount({ snapshot, diagnostic, onEvidence }: { snapshot: Pick<WorkspaceSnapshot, "report">; diagnostic: Diagnostic; onEvidence: (evidence: EvidenceSelection) => void }) {
+/**
+ * V3-2b（D-V3-7＝A）：只有不利上色。不利 → 既有的 negative（--unfavorable）；有利與持平 → positive（--favorable＝主文字色，不上色），
+ * 但仍保留「+」或方向詞。顏色依 favorableDirection（presentation.deltaTone），不依數學正負號。
+ */
+export function toneClass(tone: DeltaTone): "negative" | "positive" {
+  return tone === "unfavorable" ? "negative" : "positive";
+}
+
+/** 影響金額（對扣廣告後貢獻的影響，費用類已取負）：預設 L1「−118.8 萬」；展開列內的相關範圍傳 "L2"。 */
+export function ImpactAmount({ snapshot, diagnostic, onEvidence, layer = "L1" }: { snapshot: Pick<WorkspaceSnapshot, "report">; diagnostic: Diagnostic; onEvidence: (evidence: EvidenceSelection) => void; layer?: Layer }) {
   const evidence = impactEvidence(snapshot, diagnostic);
   if (!evidence) return <span className="impact-amount neutral">{diagnostic.code === "MISSING_CRITICAL_DATA" ? labels.status.missing : labels.status.notApplicable}</span>;
   const value = evidence.metric.value;
-  const tone = amountTone(value);
-  return <button type="button" className={`number-link impact-amount ${tone}`} aria-label={evidence.title} onClick={() => onEvidence(evidence)}>{value === null ? labels.status.missing : formatSignedMoney(value)}</button>;
+  const tone = value === null ? "neutral" : toneClass(deltaTone("contribution_after_marketing", value, layer));
+  return <button type="button" className={`number-link impact-amount ${tone}`} aria-label={evidence.title} onClick={() => onEvidence(evidence)}>{value === null ? labels.status.missing : formatSignedDelta(value, layer)}</button>;
 }
 
 export interface TopThreeProps { events?: EventSet | null; snapshot: WorkspaceSnapshot; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void }
@@ -52,7 +61,7 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, events = null }
   const [error, setError] = useState("");
   const summary = useMemo(() => diagnosisGroups(snapshot, { importanceThreshold: threshold }), [snapshot, threshold]);
   const alias = demoAlias(snapshot.report.dataset_id);
-  const member = (item: DiagnosisGroup, row: DiagnosisScope) => <li key={row.diagnostic.id}>{fill(labels.ui.topThree.memberRow, { scope: scopeLabel(row.scope, alias), amount: "" })}<ImpactAmount snapshot={snapshot} diagnostic={row.diagnostic} onEvidence={onEvidence} />{item.missing && <span className="note">{formatMoney(null)}</span>}</li>;
+  const member = (item: DiagnosisGroup, row: DiagnosisScope) => <li key={row.diagnostic.id}>{fill(labels.ui.topThree.memberRow, { scope: scopeLabel(row.scope, alias), amount: "" })}<ImpactAmount snapshot={snapshot} diagnostic={row.diagnostic} onEvidence={onEvidence} layer="L2" />{item.missing && <span className="note">{formatEmpty("missing")}</span>}</li>;
   return <section className="panel top-three" aria-labelledby="top-three-title" data-testid="top-three">
     <div className="section-heading"><div><h2 id="top-three-title">{labels.sections.topThree}</h2><p className="note" title={labels.sections.impactLegendHelp}>{labels.sections.impactLegend}</p></div><span className="tag">{channelsLabel(snapshot.report.scope.channels, alias)}</span></div>
     {summary.priorities.length ? <ol className="top-three-list">{summary.priorities.map(item => <li key={item.rule} data-testid={`overview-priority-${item.rule}`}>
@@ -69,7 +78,7 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, events = null }
       <form className="threshold-form" data-testid="threshold-form-overview" onSubmit={event => { event.preventDefault(); try { const checked = diagnosisGroups(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.notes.thresholdInvalid); } }}>
         <label>{labels.meeting.threshold}<input aria-describedby="top-three-threshold-help" value={thresholdInput} onChange={event => setThresholdInput(event.target.value)} inputMode="decimal" maxLength={30} /></label><button type="submit" className="button quiet">{labels.buttons.apply}</button>
       </form>
-      <p className="note" id="top-three-threshold-help">{fill(labels.diagnosisList.thresholdHelp, { amount: formatMoney(summary.importance_threshold) })}</p>
+      <p className="note" id="top-three-threshold-help">{fill(labels.diagnosisList.thresholdHelp, { amount: formatAmountL3(summary.importance_threshold) })}</p>
       {error && <p role="alert">{error}</p>}
     </details>
   </section>;

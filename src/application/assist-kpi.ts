@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import type { Count, Metric, MetricName, SourceRef, Summary } from "@/domain/types";
-import { fill, labels } from "@/i18n";
-import { formatMoney, formatRate, metricDefinitions } from "./presentation";
+import { labels } from "@/i18n";
+import { formatCount, formatMultiple, formatPerUnit, formatRateL1, metricDefinitions } from "./presentation";
 
 // R4 輔助指標（assist-kpi-v1）：給經理人熟悉的數字，明確標示「輔助」，不混入財務核心。
 // 件數來自 domain 的 Summary.units_sold（R4 加法）；件均淨營收在這裡算；其餘五個沿用既有 domain 比率，只做呈現。
@@ -41,13 +41,14 @@ function status(value: string | null, reason_codes: readonly string[]): AssistKp
   if (value !== null) return "ok";
   return reason_codes.length === 0 || reason_codes.some(reason => reason.startsWith("MISSING") || reason === "SALES_COVERAGE_UNCONFIRMED") ? "missing" : "not_applicable";
 }
+/** 畫面值一律 L1（§8.5）：「7,420 件」「1,058 元／件」「8.8%」「11.4 倍」；精確值留在 value，抽屜與匯出用 value。 */
 function display(unit: AssistUnit, value: string | null, state: AssistKpi["status"]): string {
   if (value === null) return state === "not_applicable" ? labels.assist.notApplicable : labels.status.missing;
   switch (unit) {
-    case "count": return fill(labels.assist.units.count, { value: new Decimal(value).toFixed(0) });
-    case "money_per_unit": return fill(labels.assist.units.perUnit, { value: formatMoney(value) });
-    case "percent": return formatRate(value);
-    case "multiple": return `${new Decimal(value).toFixed(2, Decimal.ROUND_HALF_UP)} ${labels.evidence.times}`;
+    case "count": return formatCount(value, "L1");
+    case "money_per_unit": return formatPerUnit(value, "L1");
+    case "percent": return formatRateL1(value);
+    case "multiple": return formatMultiple(value, "L1");
   }
 }
 function existing(id: Extract<AssistKpiId, MetricName>, summary: Summary, unit: AssistUnit): AssistKpi {

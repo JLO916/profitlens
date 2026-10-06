@@ -4,7 +4,7 @@ import { formatCents, parseCents } from "@/domain/money";
 import type { Metric, MetricName, Period } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import { CsvParseError, parseCsv } from "@/lib/csv";
-import { formatMoney } from "./presentation";
+import { formatAmount, formatRateL1, type Layer } from "./presentation";
 
 // R4 目標與達成率（targets.csv，選配；05_FEATURES §3）。
 // 目標是使用者輸入的參考值，不進入任何財務計算；只在本期與目標期間完全相同時顯示達成率，不按比例折算。
@@ -175,27 +175,30 @@ export function matchTargets(set: TargetSet | null, scope: TargetScope): Record<
   return result;
 }
 
-/** 達成率 = 實際 ÷ 目標，以百分比一位小數（ROUND_HALF_UP）呈現；目標 ≤ 0 不定義，實際缺值為資料待補。 */
+/**
+ * 達成率 = 實際 ÷ 目標，以百分比一位小數（ROUND_HALF_UP）呈現；目標 ≤ 0 不定義，實際缺值為資料待補。
+ * V3-2b：取位與負號交給 presentation 的 formatRateL1（從精確比率一次取位，負號 U+2212，取位後為 0 不帶符號）。
+ */
 export function achievement(actual: Metric, target: string): Achievement {
   const targetCents = MONEY_PATTERN.test(target) ? parseCents(target) : null;
   if (targetCents === null || targetCents <= 0n) return { rate: null, display: labels.targets.undefinedTarget, status: "undefined" };
   if (actual.value === null || !/^-?\d+(?:\.\d+)?$/.test(actual.value)) return { rate: null, display: labels.status.missing, status: "missing" };
-  const ExactDecimal = Decimal.clone({ precision: actual.value.length + targetCents.toString().length + 20, rounding: Decimal.ROUND_HALF_UP });
-  // 目標以分為單位：actual ÷ (cents / 100) × 100 = actual × 10000 ÷ cents。
-  const fixed = new ExactDecimal(actual.value).times(10000).div(targetCents.toString()).toFixed(1);
-  const rate = `${fixed === "-0.0" ? "0.0" : fixed}%`;
+  const ExactDecimal = Decimal.clone({ precision: actual.value.length + targetCents.toString().length + 40, rounding: Decimal.ROUND_HALF_UP });
+  // 目標以分為單位：actual ÷ (cents / 100) = actual × 100 ÷ cents（比率小數，formatRateL1 再 × 100 成百分比）。
+  const ratio = new ExactDecimal(actual.value).times(100).div(targetCents.toString()).toFixed();
+  const rate = formatRateL1(ratio);
   return { rate, display: rate, status: "ok" };
 }
 
-/** 目標金額的畫面格式（千分位、兩位小數）。 */
-export function targetDisplay(row: TargetRow): string {
-  return formatMoney(row.target);
+/** 目標金額的畫面格式。預設 L3（千分位、兩位小數，例如目標清單）；KPI 卡傳 "L1"（萬／億）。 */
+export function targetDisplay(row: TargetRow, layer: Layer = "L3"): string {
+  return formatAmount(row.target, layer);
 }
 
-/** KPI 卡右下角的一行字：matched 且可算 →「目標 X · 達成 Y」；目標 ≤ 0 或實際缺值 → 對應說明。 */
-export function achievementText(row: TargetRow, actual: Metric): string {
+/** KPI 卡右下角的一行字：matched 且可算 →「目標 X · 達成 Y」；目標 ≤ 0 或實際缺值 → 對應說明。目標金額的層由 layer 決定（預設 L3）。 */
+export function achievementText(row: TargetRow, actual: Metric, layer: Layer = "L3"): string {
   const result = achievement(actual, row.target);
-  return result.status === "ok" ? fill(labels.targets.achieved, { target: targetDisplay(row), rate: result.rate }) : result.display;
+  return result.status === "ok" ? fill(labels.targets.achieved, { target: targetDisplay(row, layer), rate: result.rate }) : result.display;
 }
 
 /** 期間不一致提示：「目標期間 8/1–8/31 與本期不一致」。 */

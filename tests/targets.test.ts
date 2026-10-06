@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { achievement, achievementText, exportTargetsCsv, matchTargets, mismatchText, parseTargets, targetDisplay, targetsCsvTemplate, TARGET_METRICS, type TargetScope, type TargetSet } from "../src/application/targets";
+import { formatAmountL1, formatAmountL3, formatRateL1, MINUS } from "../src/application/presentation";
 import { fill, labels } from "../src/i18n";
 import type { Metric } from "../src/domain/types";
 
@@ -203,8 +204,10 @@ describe("R4 achievement rate", () => {
   });
 
   it("keeps negative actuals signed and avoids -0.0%", () => {
-    expect(achievement(metric("-100.00"), "1000.00").rate).toBe("-10.0%");
-    expect(achievement(metric("-0.01"), "1000000.00").rate).toBe("0.0%");
+    // V3-2b：負號由 formatRateL1 決定（U+2212）；−100 ÷ 1,000 ＝ −0.1；−0.01 ÷ 1,000,000 取位後為 0，不帶符號。
+    expect(achievement(metric("-100.00"), "1000.00").rate).toBe(formatRateL1("-0.1"));
+    expect(achievement(metric("-100.00"), "1000.00").rate?.startsWith(MINUS)).toBe(true);
+    expect(achievement(metric("-0.01"), "1000000.00").rate).toBe(formatRateL1("0"));
   });
 
   it("is undefined when the target is zero or negative, and missing when actual is unknown", () => {
@@ -215,8 +218,11 @@ describe("R4 achievement rate", () => {
 
   it("formats the KPI card line from labels", () => {
     const row = sixRowSet().rows[0];
-    expect(targetDisplay(row)).toBe("8,000,000.00");
-    expect(achievementText(row, metric("7848000.00"))).toBe(fill(labels.targets.achieved, { target: "8,000,000.00", rate: "98.1%" }));
+    // 預設 L3（目標清單）；KPI 卡傳 L1（萬）。
+    expect(targetDisplay(row)).toBe(formatAmountL3(row.target));
+    expect(targetDisplay(row, "L1")).toBe(formatAmountL1(row.target));
+    expect(achievementText(row, metric("7848000.00"))).toBe(fill(labels.targets.achieved, { target: formatAmountL3("8000000.00"), rate: "98.1%" }));
+    expect(achievementText(row, metric("7848000.00"), "L1")).toBe(fill(labels.targets.achieved, { target: formatAmountL1("8000000.00"), rate: "98.1%" }));
     expect(achievementText(row, metric(null))).toBe(labels.status.missing);
   });
 });
