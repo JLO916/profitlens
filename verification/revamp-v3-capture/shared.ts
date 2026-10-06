@@ -1,12 +1,18 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
+import { navControl, navigateTo, type NavId } from "../../tests/e2e/replacement-helpers";
 
 // V3-0 基準共用的操作：所有字串由 labels 取字，與 tests/e2e 同一套選擇器。
 
 /** 固定時鐘（台北 2026-10-05 10:00）：行動到期日、會議日期等「今天」衍生的文字不會因執行日不同而變。計時器照常執行。 */
 export const FIXED_NOW = new Date("2026-10-05T10:00:00+08:00");
 
-export const nav = (page: Page, id: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[id].label, exact: true });
+/**
+ * 目前看得到的導覽控制（V3-3：桌機是側欄按鈕；手機是底部分頁列，商品毛利／假設試算／資料來源／開發者驗證在「更多」面板裡，要先開面板）。
+ * 只在桌機直接 .click()（metrics.spec.ts）；四尺寸的走查請用 goTo／navigateTo（手機會先開「更多」）。
+ */
+export const nav = (page: Page, id: NavId) => navControl(page, id);
+export { navigateTo };
 
 /** 新訪客：開首頁 → 載入示範資料 → 拒絕本機保存提示（量測狀態：示範資料 ready、沒有保存提示）。 */
 export async function loadDemo(page: Page) {
@@ -22,8 +28,9 @@ export async function loadDemo(page: Page) {
   await expect(page.locator(".kpi-grid article.kpi-card")).toHaveCount(5);
 }
 
-export async function goTo(page: Page, id: keyof typeof labels.nav, anchor: Locator) {
-  await nav(page, id).click();
+/** V3-3：經 navigateTo 切頁（桌機側欄；手機底部分頁列或「更多」），等 anchor 可見後捲回頂端。 */
+export async function goTo(page: Page, id: NavId, anchor: Locator) {
+  await navigateTo(page, id);
   await expect(anchor).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, 0));
 }

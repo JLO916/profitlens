@@ -14,8 +14,22 @@ export const wizardStatus = (page: Page) => page.getByTestId("import-status");
 export const commitButton = (page: Page) => wizard(page).getByRole("button", { name: copy.commit, exact: true });
 export type Classification = "valid" | "partial" | "blocking";
 
+/**
+ * V3-3：頁首的「匯入資料」（page-import）只留在資料來源頁；其他頁（含空狀態）從頂欄資料狀態（data-status）→「匯入新資料」（data-status-import），2 次點擊。
+ * 手機的資料狀態按鈕仍在頂欄（不在「更多」裡）。簽名不變。
+ */
 export async function openWizard(page: Page) {
-  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
+  const pageImport = page.getByTestId("page-import");
+  if (await pageImport.isVisible()) await pageImport.click();
+  else {
+    // 剛 goto 時按鈕可能還沒 hydrate（點了不會開）：重試到 popover 出現為止；每次點之前看 aria-expanded，不會把它關掉。
+    const status = page.getByTestId("data-status");
+    await expect(async () => {
+      if (await status.getAttribute("aria-expanded") !== "true") await status.click();
+      await expect(page.getByTestId("data-status-popover")).toBeVisible({ timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
+    await page.getByTestId("data-status-import").click();
+  }
   await expect(wizard(page)).toBeVisible();
 }
 /** setInputFiles 不算點擊。 */
