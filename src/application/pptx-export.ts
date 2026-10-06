@@ -4,7 +4,7 @@ import { MAX_PINNED_ACTIONS, type ActionWorkspace } from "./action-workspace";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "./copy";
 import { downloadBinary } from "./download";
 import type { ManagerSummary } from "./manager-summary";
-import { formatMoney, formatSignedMoney, metricDefinitions } from "./presentation";
+import { formatAmount, formatPeriodExport, formatSignedDelta, metricDefinitions, MINUS, type Layer } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R6-5 PPT 一頁式（docs/revamp/05_FEATURES.md §11、06_BATCHES.md R6-5；D4＝A：pptxgenjs 4.0.1）。
@@ -19,7 +19,7 @@ export const PPTX_MAX_PRIORITIES = 3;
 export const PPTX_MAX_CHANNEL_ROWS = 4;
 /**
  * 各欄位截斷長度（以字元計，含結尾「…」），確保一頁放得下且版面固定（10pt 中文約 6.5 字／英吋）。
- * 金額上限（24）大於任何 TWD 兩位小數金額的長度，金額字串實際上不會被截斷。
+ * 金額上限（24）大於任何 L1（萬／億）或 L2（整數元）金額字串的長度，金額字串實際上不會被截斷。
  */
 export const PPTX_TEXT_LIMITS = {
   title: 36, subtitle: 120, keyLabel: 12, money: 24, headline: 40, impact: 24, nextStep: 40, channel: 16,
@@ -61,8 +61,12 @@ export function pptxText(value: unknown, max: number = PPTX_TEXT_LIMITS.footer):
   return characters.length > limit ? `${characters.slice(0, limit - 1).join("")}${labels.pptxExport.ellipsis}` : text;
 }
 
-const money = (metric: Metric | null | undefined, signed = false): string =>
-  !metric || metric.value === null ? labels.status.missing : signed ? formatSignedMoney(metric.value) : formatMoney(metric.value);
+/**
+ * V3-2b §3.3：PPT 一頁式只有 L1＋L2。關鍵差額卡與三件事的影響金額用 L1（萬／億、一位小數；同一張卡只用一種尺度），
+ * 通路表用 L2 整數元（單位寫在表格標題「（元）」）。負號 U+2212，正的差額加「+」。
+ */
+const money = (metric: Metric | null | undefined, layer: Layer, signed = false): string =>
+  !metric || metric.value === null ? labels.status.missing : signed ? formatSignedDelta(metric.value, layer) : formatAmount(metric.value, layer);
 
 /** 會議決議：接受狀態代碼（labels.meeting.decisions 與 review-session 的舊代碼）或已翻好的文字；未知值原樣顯示。 */
 const DECISION_LABELS: Record<string, string> = { ...labels.meeting.decisions, needs_data: labels.meeting.decisions.need_data, not_adopted: labels.meeting.decisions.rejected };
@@ -83,15 +87,16 @@ export function buildPptxOnePager(input: PptxOnePagerInput): PptxOnePager {
   const date = meeting ? pptxText(meeting.date, limit.deadline) : "";
   const title = name ? pptxText(date ? fill(copy.titleMeeting, { name, date }) : name, limit.title) : fill(copy.title, { brand: labels.brand.name });
   const subtitle = pptxText(fill(copy.subtitle, {
-    asOf: summary.data_as_of, previousStart: summary.scope.previous_period.start, previousEnd: summary.scope.previous_period.end, previousDays: summary.previous_days,
-    currentStart: summary.scope.current_period.start, currentEnd: summary.scope.current_period.end, currentDays: summary.current_days, channels: channelsLabel(summary.scope.channels, alias),
+    // 版頭的期間用匯出格式「2026-07-13 至 2026-08-23（42 天）」（§8.6）。
+    asOf: summary.data_as_of, previous: formatPeriodExport(summary.scope.previous_period.start, summary.scope.previous_period.end),
+    current: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end), channels: channelsLabel(summary.scope.channels, alias),
   }), limit.subtitle);
-  const key_deltas = summary.headlines.map(row => ({ label: metricDefinitions[row.metric].label, previous: money(row.previous), current: money(row.current), change: money(row.change, true) }));
+  const key_deltas = summary.headlines.map(row => ({ label: metricDefinitions[row.metric].label, previous: money(row.previous, "L1"), current: money(row.current, "L1"), change: money(row.change, "L1", true) }));
   const priorities = summary.priorities.slice(0, PPTX_MAX_PRIORITIES).map(item => {
     const rule = ruleCopy(snapshot, item.primary, alias);
-    return { headline: pptxText(rule.headline, limit.headline), impact: money(item.impact ?? item.ranking_amount, true), next_step: pptxText(rule.nextStep, limit.nextStep) };
+    return { headline: pptxText(rule.headline, limit.headline), impact: money(item.impact ?? item.ranking_amount, "L1", true), next_step: pptxText(rule.nextStep, limit.nextStep) };
   });
-  const channels = summary.channels.map(row => ({ channel: pptxText(channelLabel(row.channel, alias), limit.channel), previous: money(row.contribution.previous), current: money(row.contribution.current), change: money(row.contribution.change, true) }));
+  const channels = summary.channels.map(row => ({ channel: pptxText(channelLabel(row.channel, alias), limit.channel), previous: money(row.contribution.previous, "L2"), current: money(row.contribution.current, "L2"), change: money(row.contribution.change, "L2", true) }));
   const notes = meeting ? pptxText(meeting.notes, limit.decision) : "";
   const decision = meeting ? pptxText([fill(copy.decision, { decision: decisionLabel(meeting.decision) }), notes ? fill(copy.decisionNotes, { notes }) : ""].filter(Boolean).join(copy.separator), limit.decision) : copy.noMeeting;
   const pinned_actions = actions.items.filter(item => item.pinned).slice(0, MAX_PINNED_ACTIONS).map(item => {
@@ -118,9 +123,10 @@ const COLOR = { brand: "214C45", onBrand: "FFFFFF", onBrandMuted: "D7E6DE", ink:
 const LEFT = { x: 0.4, w: 4.4 } as const, RIGHT = { x: 5.0, w: 4.6 } as const, FULL = { x: 0.4, w: 9.2 } as const;
 const ROW_H = 0.24;
 const CELL_MARGIN: [number, number, number, number] = [0.02, 0.06, 0.02, 0.06];
-/** 金額欄 1.15 英吋：即使檢視器忽略儲存格邊距（Quick Look 會），「-12,345,678.90」10pt 仍是一行。 */
+/** 金額欄 1.15 英吋：即使檢視器忽略儲存格邊距（Quick Look 會），L2「−123,456,789」10pt 仍是一行。 */
 const CHANNEL_COL_W = [1.15, 1.15, 1.15, 1.15];
-const changeColor = (value: string): string => value.startsWith("+") ? COLOR.positive : value.startsWith("-") ? COLOR.negative : COLOR.ink;
+/** 兩個關鍵指標（淨營收、扣廣告後貢獻）都是往上有利，所以「+」用正色、U+2212 用負色；顏色一定搭配正負號（§8.5 規則 8）。 */
+const changeColor = (value: string): string => value.startsWith("+") ? COLOR.positive : value.startsWith(MINUS) || value.startsWith("-") ? COLOR.negative : COLOR.ink;
 
 /**
  * 估計行數（只用來排後續區塊位置，不影響內容）：全形字算 1、半形字算 0.6，capacity 是一行可放的全形字數。

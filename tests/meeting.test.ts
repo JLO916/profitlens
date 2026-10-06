@@ -12,6 +12,11 @@ import { appendMeeting, compareWithLastMeeting, exportMeetingMarkdown, finalizeM
 import { conversionSentence } from "@/application/copy";
 import type { TaxConversion } from "@/application/tax-basis";
 import { fill, labels } from "@/i18n";
+import { formatAmountL2 as l2, formatPeriodExport, formatSignedDelta, MINUS } from "@/application/presentation";
+
+/** V3-2b：會議紀錄 Markdown 主文是 L2（整數元、U+2212、正差額加「+」），表頭加「（元）」。 */
+const signed = (value: string) => formatSignedDelta(value, "L2");
+const moneyColumn = (label: string) => fill(labels.ui.export.moneyColumn, { label });
 
 const NOW = "2026-10-03T06:00:00.000Z";
 /** 會議稿（review）的建立時間：早於 NOW，結束會議時成為 Meeting.created_at。 */
@@ -310,7 +315,8 @@ describe("R6-1 follow_up is frozen at finalize (④ and the comparison survive a
     expect(text).toContain(fill(labels.meetingRecord.mdLastMeeting, { name: "十月例會", date: "2026-10-03" }));
     expect(text).toContain(fill(labels.meetingRecord.mdFollowUpRow, { problem: first.meeting.agenda.pinned_actions[0].problem, last: labels.actions.statuses.in_progress, current: labels.actions.statuses.in_progress, updated: fill(labels.meetingRecord.statusUpdatedAt, { date: "2026-10-01" }) }));
     expect(text).toContain(labels.meetingRecord.sameScope);
-    expect(text).toContain(`| ${labels.metrics.net_revenue.label} | 2470.00 | 2470.00 | 0.00 |`);
+    expect(text).toContain(`| ${labels.metrics.net_revenue.label} | ${l2("2470.00")} | ${l2("2470.00")} | ${signed("0.00")} |`);
+    expect(text).toContain(`| ${labels.metrics.net_revenue.label} | 2,470 | 2,470 | 0 |`);
     expect(text).toContain(`${labels.meetingRecord.lastPriorities}：`);
     expect(text).toContain(`- comparison：same_scope；last_meeting_id：${first.meeting.id}`);
     expect(text).not.toContain(labels.meetingRecord.noLastMeeting);
@@ -443,14 +449,17 @@ describe("R6-1 exportMeetingMarkdown", () => {
     for (const heading of Object.values(labels.meetingRecord.agenda)) expect(text).toContain(`### ${heading}`);
     for (const heading of [labels.meetingRecord.mdScope, `## ${labels.sections.meetingAgenda}`, `## ${labels.sections.meetingDecision}`, `## ${labels.sections.meetingCompare}`, `## ${labels.sections.technicalDetails}`]) expect(text).toContain(heading);
     expect(text.indexOf(labels.meetingRecord.agenda.kpis)).toBeLessThan(text.indexOf(labels.meetingRecord.agenda.actions));
-    expect(text).toContain(fill(labels.meetingRecord.mdKpiRow, { metric: labels.metrics.contribution_after_marketing.label, previous: "570.00", current: "255.00", change: "-315.00" }));
-    expect(text).toContain(fill(labels.meetingRecord.mdKpiRow, { metric: labels.metrics.net_revenue.label, previous: "2250.00", current: "2470.00", change: "+220.00" }));
-    expect(text).toContain("| MARKETPLACE | 900.00 | 990.00 | +90.00 | 170.00 | -15.00 | -185.00 |");
+    expect(text).toContain(fill(labels.meetingRecord.mdKpiRow, { metric: labels.metrics.contribution_after_marketing.label, previous: l2("570.00"), current: l2("255.00"), change: signed("-315.00") }));
+    expect(text).toContain(fill(labels.meetingRecord.mdKpiRow, { metric: labels.metrics.net_revenue.label, previous: l2("2250.00"), current: l2("2470.00"), change: signed("220.00") }));
+    expect(text).toContain(`| MARKETPLACE | ${l2("900.00")} | ${l2("990.00")} | ${signed("90.00")} | ${l2("170.00")} | ${l2("-15.00")} | ${signed("-185.00")} |`);
+    expect(text).toContain(`| MARKETPLACE | 900 | 990 | +90 | 170 | ${MINUS}15 | ${MINUS}185 |`);
+    expect(text).toContain(labels.ui.export.amountUnitNote);
+    expect(text).toContain(fill(labels.meetingRecord.mdPeriod, { period: labels.periods.current, range: formatPeriodExport("2026-08-02", "2026-08-02") }));
     expect(text).toContain(fill(labels.meetingRecord.mdLastMeeting, { name: "十月例會", date: "2026-10-03" }));
     expect(text).toContain(labels.meetingRecord.sameScope);
     const columns = labels.meetingRecord.compareColumns;
-    expect(text).toContain(`| ${columns.metric} | ${columns.last} | ${columns.current} | ${columns.change} |`);
-    expect(text).toContain(`| ${labels.metrics.contribution_after_marketing.label} | 255.00 | 255.00 | 0.00 |`);
+    expect(text).toContain(`| ${columns.metric} | ${moneyColumn(columns.last)} | ${moneyColumn(columns.current)} | ${moneyColumn(columns.change)} |`);
+    expect(text).toContain(`| ${labels.metrics.contribution_after_marketing.label} | ${l2("255.00")} | ${l2("255.00")} | ${signed("0.00")} |`);
     expect(text).toContain(`- meeting_id：meeting-rev-2-r${second.review.revision}`);
     expect(text).toContain(`- comparison：same_scope；last_meeting_id：meeting-rev-1-r${first.review.revision}`);
   });

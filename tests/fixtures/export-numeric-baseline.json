@@ -1,0 +1,3470 @@
+{
+ "snapshot_csv": {
+  "period_summary|previous||gross_sales|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "2500.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||discounts|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "200.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||refunds|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "50.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||cogs_net|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "1050.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||platform_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "90.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||payment_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "60.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||fulfillment_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "160.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||other_variable_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "20.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||ad_spend|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "300.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||net_revenue|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "2250.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||gross_profit|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "1200.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||contribution_before_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "870.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||contribution_after_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "570.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||gross_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.533333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||contribution_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.253333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||discount_rate|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.080000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||refund_ratio|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.021739130435",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||mer|2026-08-01|2026-08-01": {
+   "unit": "multiple",
+   "value": "7.500000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||fulfillment_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.071111111111",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|previous||marketing_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.133333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||gross_sales|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "2500.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||discounts|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "200.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||refunds|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "50.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||cogs_net|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "1050.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||platform_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "90.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||payment_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "60.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||fulfillment_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "160.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||other_variable_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "20.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||ad_spend|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "300.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||net_revenue|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "2250.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||gross_profit|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "1200.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||contribution_before_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "870.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|previous||contribution_after_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD/day",
+   "value": "570.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|gross_sales|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "1500.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|discounts|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "100.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|refunds|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "50.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|cogs_net|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "600.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|platform_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "0.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|payment_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "40.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|fulfillment_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "100.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|other_variable_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "10.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|ad_spend|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "200.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|net_revenue|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "1350.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|gross_profit|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "750.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|contribution_before_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "600.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|contribution_after_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "400.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|gross_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.555555555556",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|contribution_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.296296296296",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|discount_rate|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.066666666667",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|refund_ratio|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.035714285714",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|mer|2026-08-01|2026-08-01": {
+   "unit": "multiple",
+   "value": "6.750000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|fulfillment_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.074074074074",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|DTC|marketing_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.148148148148",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|gross_sales|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "1000.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|discounts|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "100.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|refunds|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "0.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|cogs_net|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "450.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|platform_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "90.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|payment_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "20.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|fulfillment_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "60.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|other_variable_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "10.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|ad_spend|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "100.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|net_revenue|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "900.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|gross_profit|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "450.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|contribution_before_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "270.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|contribution_after_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "170.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|gross_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.500000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|contribution_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.188888888889",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|discount_rate|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.100000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|refund_ratio|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.000000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|mer|2026-08-01|2026-08-01": {
+   "unit": "multiple",
+   "value": "9.000000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|fulfillment_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.066666666667",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|previous|MARKETPLACE|marketing_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.111111111111",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||gross_sales|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "3100.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||discounts|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "450.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||refunds|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "180.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||cogs_net|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "1325.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||platform_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "120.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||payment_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "66.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||fulfillment_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "225.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||other_variable_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "29.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||ad_spend|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "450.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||net_revenue|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "2470.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||gross_profit|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "1145.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||contribution_before_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "705.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||contribution_after_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "255.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||gross_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.463562753036",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||contribution_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.103238866397",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||discount_rate|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.145161290323",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||refund_ratio|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.067924528302",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||mer|2026-08-02|2026-08-02": {
+   "unit": "multiple",
+   "value": "5.488888888889",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||fulfillment_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.091093117409",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "period_summary|current||marketing_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.182186234818",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||gross_sales|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "3100.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||discounts|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "450.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||refunds|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "180.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||cogs_net|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "1325.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||platform_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "120.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||payment_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "66.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||fulfillment_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "225.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||other_variable_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "29.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||ad_spend|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "450.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||net_revenue|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "2470.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||gross_profit|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "1145.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||contribution_before_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "705.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average|current||contribution_after_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "255.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|gross_sales|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "1800.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|discounts|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "230.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|refunds|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "90.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|cogs_net|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "740.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|platform_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "0.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|payment_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "44.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|fulfillment_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "140.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|other_variable_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "16.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|ad_spend|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "270.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|net_revenue|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "1480.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|gross_profit|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "740.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|contribution_before_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "540.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|contribution_after_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "270.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|gross_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.500000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|contribution_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.182432432432",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|discount_rate|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.127777777778",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|refund_ratio|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.057324840764",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|mer|2026-08-02|2026-08-02": {
+   "unit": "multiple",
+   "value": "5.481481481481",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|fulfillment_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.094594594595",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|DTC|marketing_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.182432432432",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|gross_sales|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "1300.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|discounts|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "220.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|refunds|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "90.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|cogs_net|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "585.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|platform_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "120.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|payment_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "22.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|fulfillment_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "85.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|other_variable_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "13.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|ad_spend|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "180.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|net_revenue|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "990.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|gross_profit|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "405.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|contribution_before_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "165.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|contribution_after_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "-15.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|gross_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.409090909091",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|contribution_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "-0.015151515152",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|discount_rate|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.169230769231",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|refund_ratio|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.083333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|mer|2026-08-02|2026-08-02": {
+   "unit": "multiple",
+   "value": "5.500000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|fulfillment_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.085858585859",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "channel|current|MARKETPLACE|marketing_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.181818181818",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|previous||units_sold|2026-08-01|2026-08-01": {
+   "unit": "count",
+   "value": "6",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|previous||net_revenue_per_unit|2026-08-01|2026-08-01": {
+   "unit": "TWD/unit",
+   "value": "375.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|previous||marketing_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.133333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|previous||mer|2026-08-01|2026-08-01": {
+   "unit": "multiple",
+   "value": "7.500000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|previous||gross_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.533333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|previous||refund_ratio|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.021739130435",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|previous||fulfillment_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.071111111111",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|current||units_sold|2026-08-02|2026-08-02": {
+   "unit": "count",
+   "value": "8",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|current||net_revenue_per_unit|2026-08-02|2026-08-02": {
+   "unit": "TWD/unit",
+   "value": "308.75",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|current||marketing_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.182186234818",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|current||mer|2026-08-02|2026-08-02": {
+   "unit": "multiple",
+   "value": "5.488888888889",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|current||gross_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.463562753036",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|current||refund_ratio|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.067924528302",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "assist_kpi|current||fulfillment_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.091093117409",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||gross_sales|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "2500.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||discounts|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "200.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||refunds|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "50.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||cogs_net|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "1050.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||platform_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "90.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||payment_fees|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "60.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||fulfillment_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "160.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||other_variable_costs|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "20.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||ad_spend|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "300.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||net_revenue|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "2250.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||gross_profit|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "1200.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||contribution_before_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "870.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||contribution_after_marketing|2026-08-01|2026-08-01": {
+   "unit": "TWD",
+   "value": "570.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||gross_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.533333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||contribution_margin|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.253333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||discount_rate|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.080000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||refund_ratio|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.021739130435",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||mer|2026-08-01|2026-08-01": {
+   "unit": "multiple",
+   "value": "7.500000000000",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||fulfillment_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.071111111111",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|previous||marketing_burden|2026-08-01|2026-08-01": {
+   "unit": "ratio",
+   "value": "0.133333333333",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||gross_sales|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "3100.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||discounts|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "450.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||refunds|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "180.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||cogs_net|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "1325.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||platform_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "120.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||payment_fees|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "66.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||fulfillment_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "225.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||other_variable_costs|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "29.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||ad_spend|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "450.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||net_revenue|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "2470.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||gross_profit|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "1145.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||contribution_before_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "705.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||contribution_after_marketing|2026-08-02|2026-08-02": {
+   "unit": "TWD",
+   "value": "255.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||gross_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.463562753036",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||contribution_margin|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.103238866397",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||discount_rate|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.145161290323",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||refund_ratio|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.067924528302",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||mer|2026-08-02|2026-08-02": {
+   "unit": "multiple",
+   "value": "5.488888888889",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||fulfillment_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.091093117409",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "weekly|current||marketing_burden|2026-08-02|2026-08-02": {
+   "unit": "ratio",
+   "value": "0.182186234818",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||gross_sales|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "600.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||discounts|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "250.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||refunds|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "130.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||cogs_net|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "275.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||platform_fees|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "30.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||payment_fees|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "6.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||fulfillment_costs|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "65.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||other_variable_costs|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "9.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||ad_spend|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "150.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||net_revenue|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "220.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||gross_profit|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "-55.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||contribution_before_marketing|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "-165.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "daily_average_change|comparison||contribution_after_marketing|2026-08-01|2026-08-02": {
+   "unit": "TWD/day",
+   "value": "-315.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "bridge|comparison||gross_sales|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "600.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||discounts|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-250.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||refunds|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-130.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||cogs_net|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-275.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||platform_fees|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-30.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||payment_fees|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-6.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||fulfillment_costs|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-65.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||other_variable_costs|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-9.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||ad_spend|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-150.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||sum|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-315.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  },
+  "bridge|comparison||contribution_change|2026-08-01|2026-08-02": {
+   "unit": "TWD",
+   "value": "-315.00",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": "true"
+  }
+ },
+ "products_csv": {
+  "DTC|A|gross_sales": {
+   "unit": "TWD",
+   "value": "1400.00",
+   "reason_codes": "[]"
+  },
+  "DTC|A|discounts": {
+   "unit": "TWD",
+   "value": "210.00",
+   "reason_codes": "[]"
+  },
+  "DTC|A|refunds": {
+   "unit": "TWD",
+   "value": "70.00",
+   "reason_codes": "[]"
+  },
+  "DTC|A|cogs_net": {
+   "unit": "TWD",
+   "value": "580.00",
+   "reason_codes": "[]"
+  },
+  "DTC|A|net_revenue": {
+   "unit": "TWD",
+   "value": "1120.00",
+   "reason_codes": "[]"
+  },
+  "DTC|A|gross_profit": {
+   "unit": "TWD",
+   "value": "540.00",
+   "reason_codes": "[]"
+  },
+  "DTC|A|gross_margin": {
+   "unit": "ratio",
+   "value": "0.482142857143",
+   "reason_codes": "[]"
+  },
+  "DTC|A|discount_rate": {
+   "unit": "ratio",
+   "value": "0.150000000000",
+   "reason_codes": "[]"
+  },
+  "DTC|A|refund_ratio": {
+   "unit": "ratio",
+   "value": "0.058823529412",
+   "reason_codes": "[]"
+  },
+  "DTC|B|gross_sales": {
+   "unit": "TWD",
+   "value": "400.00",
+   "reason_codes": "[]"
+  },
+  "DTC|B|discounts": {
+   "unit": "TWD",
+   "value": "20.00",
+   "reason_codes": "[]"
+  },
+  "DTC|B|refunds": {
+   "unit": "TWD",
+   "value": "20.00",
+   "reason_codes": "[]"
+  },
+  "DTC|B|cogs_net": {
+   "unit": "TWD",
+   "value": "160.00",
+   "reason_codes": "[]"
+  },
+  "DTC|B|net_revenue": {
+   "unit": "TWD",
+   "value": "360.00",
+   "reason_codes": "[]"
+  },
+  "DTC|B|gross_profit": {
+   "unit": "TWD",
+   "value": "200.00",
+   "reason_codes": "[]"
+  },
+  "DTC|B|gross_margin": {
+   "unit": "ratio",
+   "value": "0.555555555556",
+   "reason_codes": "[]"
+  },
+  "DTC|B|discount_rate": {
+   "unit": "ratio",
+   "value": "0.050000000000",
+   "reason_codes": "[]"
+  },
+  "DTC|B|refund_ratio": {
+   "unit": "ratio",
+   "value": "0.052631578947",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|gross_sales": {
+   "unit": "TWD",
+   "value": "800.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|discounts": {
+   "unit": "TWD",
+   "value": "120.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|refunds": {
+   "unit": "TWD",
+   "value": "40.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|cogs_net": {
+   "unit": "TWD",
+   "value": "360.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|net_revenue": {
+   "unit": "TWD",
+   "value": "640.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|gross_profit": {
+   "unit": "TWD",
+   "value": "280.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|gross_margin": {
+   "unit": "ratio",
+   "value": "0.437500000000",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|discount_rate": {
+   "unit": "ratio",
+   "value": "0.150000000000",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|A|refund_ratio": {
+   "unit": "ratio",
+   "value": "0.058823529412",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|gross_sales": {
+   "unit": "TWD",
+   "value": "500.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|discounts": {
+   "unit": "TWD",
+   "value": "100.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|refunds": {
+   "unit": "TWD",
+   "value": "50.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|cogs_net": {
+   "unit": "TWD",
+   "value": "225.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|net_revenue": {
+   "unit": "TWD",
+   "value": "350.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|gross_profit": {
+   "unit": "TWD",
+   "value": "125.00",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|gross_margin": {
+   "unit": "ratio",
+   "value": "0.357142857143",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|discount_rate": {
+   "unit": "ratio",
+   "value": "0.200000000000",
+   "reason_codes": "[]"
+  },
+  "MARKETPLACE|B|refund_ratio": {
+   "unit": "ratio",
+   "value": "0.125000000000",
+   "reason_codes": "[]"
+  }
+ },
+ "channel_csv": {
+  "DTC": {
+   "previous_net_revenue": "1350.00",
+   "current_net_revenue": "1480.00",
+   "net_revenue_change": "130.00",
+   "previous_contribution_after_marketing": "400.00",
+   "current_contribution_after_marketing": "270.00",
+   "contribution_after_marketing_change": "-130.00",
+   "previous_days": "1",
+   "current_days": "1"
+  },
+  "MARKETPLACE": {
+   "previous_net_revenue": "900.00",
+   "current_net_revenue": "990.00",
+   "net_revenue_change": "90.00",
+   "previous_contribution_after_marketing": "170.00",
+   "current_contribution_after_marketing": "-15.00",
+   "contribution_after_marketing_change": "-185.00",
+   "previous_days": "1",
+   "current_days": "1"
+  }
+ },
+ "decision_csv": {
+  "baseline_amount||gross_sales": {
+   "value": "1800.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||discounts": {
+   "value": "230.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||refunds": {
+   "value": "90.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||cogs_net": {
+   "value": "740.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||platform_fees": {
+   "value": "0.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||payment_fees": {
+   "value": "44.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||fulfillment_costs": {
+   "value": "140.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||other_variable_costs": {
+   "value": "16.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||ad_spend": {
+   "value": "270.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||net_revenue": {
+   "value": "1480.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||gross_profit": {
+   "value": "740.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||contribution_before_marketing": {
+   "value": "540.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_amount||contribution_after_marketing": {
+   "value": "270.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_rate||discount_rate": {
+   "value": "0.127777777778",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_rate||refund_ratio": {
+   "value": "0.057324840764",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_rate||platform_rate": {
+   "value": "0.000000000000",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "baseline_rate||payment_rate": {
+   "value": "0.029729729730",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_input|p|volume_change_pct": {
+   "value": "0",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|p|discount_change_pp": {
+   "value": "0",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|p|ad_change_pct": {
+   "value": "0",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|p|one_time_cost": {
+   "value": "0",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_result|p|contribution": {
+   "value": "284.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_result|p|delta": {
+   "value": "14.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_result|p|rounding_adjustment": {
+   "value": "0.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|gross_sales": {
+   "value": "1800.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|discounts": {
+   "value": "230.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|refunds": {
+   "value": "90.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|cogs_net": {
+   "value": "740.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|platform_fees": {
+   "value": "0.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|payment_fees": {
+   "value": "44.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|fulfillment_costs": {
+   "value": "126.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|other_variable_costs": {
+   "value": "16.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|ad_spend": {
+   "value": "270.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|net_revenue": {
+   "value": "1480.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|gross_profit": {
+   "value": "740.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|contribution_before_marketing": {
+   "value": "554.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|contribution_after_marketing": {
+   "value": "284.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|p|one_time_cost": {
+   "value": "0.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_rate|p|discount_rate": {
+   "value": "0.127777777778",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_rate|p|refund_ratio": {
+   "value": "0.057324840764",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_rate|p|platform_rate": {
+   "value": "0.000000000000",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_rate|p|payment_rate": {
+   "value": "0.029729729730",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_sensitivity_input|p|volume_b": {
+   "value": "0",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_sensitivity_input|p|volume_c": {
+   "value": "10",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_sensitivity_result|p|volume_a": {
+   "value": "228.60",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_sensitivity_result|p|volume_b": {
+   "value": "284.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_sensitivity_result|p|volume_c": {
+   "value": "339.40",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_input|q|volume_change_pct": {
+   "value": "0",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|q|discount_change_pp": {
+   "value": "0",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|q|ad_change_pct": {
+   "value": "0",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|q|one_time_cost": {
+   "value": "20",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_result|q|contribution": {
+   "value": "264.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_result|q|delta": {
+   "value": "-6.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_result|q|rounding_adjustment": {
+   "value": "0.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|gross_sales": {
+   "value": "1800.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|discounts": {
+   "value": "230.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|refunds": {
+   "value": "90.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|cogs_net": {
+   "value": "740.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|platform_fees": {
+   "value": "0.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|payment_fees": {
+   "value": "44.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|fulfillment_costs": {
+   "value": "126.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|other_variable_costs": {
+   "value": "16.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|ad_spend": {
+   "value": "270.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|net_revenue": {
+   "value": "1480.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|gross_profit": {
+   "value": "740.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|contribution_before_marketing": {
+   "value": "554.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|contribution_after_marketing": {
+   "value": "264.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_amount|q|one_time_cost": {
+   "value": "20.00",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_rate|q|discount_rate": {
+   "value": "0.127777777778",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_rate|q|refund_ratio": {
+   "value": "0.057324840764",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_rate|q|platform_rate": {
+   "value": "0.000000000000",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_rate|q|payment_rate": {
+   "value": "0.029729729730",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|d|volume_change_pct": {
+   "value": "",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|d|discount_change_pp": {
+   "value": "",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|d|fulfillment_change_pct": {
+   "value": "",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|d|ad_change_pct": {
+   "value": "",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_input|d|one_time_cost": {
+   "value": "",
+   "reason_codes": "",
+   "plan_revision": ""
+  },
+  "scenario_result|d|contribution": {
+   "value": "",
+   "reason_codes": "[\"UNCOMPUTED_DRAFT\"]",
+   "plan_revision": ""
+  },
+  "scenario_result|d|delta": {
+   "value": "",
+   "reason_codes": "[\"UNCOMPUTED_DRAFT\"]",
+   "plan_revision": ""
+  },
+  "scenario_result|d|rounding_adjustment": {
+   "value": "",
+   "reason_codes": "[\"UNCOMPUTED_DRAFT\"]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"gross_sales\"]|gross_sales": {
+   "value": "1500.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"discounts\"]|discounts": {
+   "value": "100.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"refunds\"]|refunds": {
+   "value": "50.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"cogs_net\"]|cogs_net": {
+   "value": "600.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"platform_fees\"]|platform_fees": {
+   "value": "0.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"payment_fees\"]|payment_fees": {
+   "value": "40.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"fulfillment_costs\"]|fulfillment_costs": {
+   "value": "100.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"other_variable_costs\"]|other_variable_costs": {
+   "value": "10.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"ad_spend\"]|ad_spend": {
+   "value": "200.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"net_revenue\"]|net_revenue": {
+   "value": "1350.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"gross_profit\"]|gross_profit": {
+   "value": "750.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"contribution_before_marketing\"]|contribution_before_marketing": {
+   "value": "600.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"contribution_after_marketing\"]|contribution_after_marketing": {
+   "value": "400.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"gross_margin\"]|gross_margin": {
+   "value": "0.555555555556",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"contribution_margin\"]|contribution_margin": {
+   "value": "0.296296296296",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"discount_rate\"]|discount_rate": {
+   "value": "0.066666666667",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"refund_ratio\"]|refund_ratio": {
+   "value": "0.035714285714",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"mer\"]|mer": {
+   "value": "6.750000000000",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"fulfillment_burden\"]|fulfillment_burden": {
+   "value": "0.074074074074",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"all\",[\"DTC\"],null,\"marketing_burden\"]|marketing_burden": {
+   "value": "0.148148148148",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"gross_sales\"]|gross_sales": {
+   "value": "1800.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"discounts\"]|discounts": {
+   "value": "230.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"refunds\"]|refunds": {
+   "value": "90.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"cogs_net\"]|cogs_net": {
+   "value": "740.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"platform_fees\"]|platform_fees": {
+   "value": "0.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"payment_fees\"]|payment_fees": {
+   "value": "44.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"fulfillment_costs\"]|fulfillment_costs": {
+   "value": "140.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"other_variable_costs\"]|other_variable_costs": {
+   "value": "16.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"ad_spend\"]|ad_spend": {
+   "value": "270.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"net_revenue\"]|net_revenue": {
+   "value": "1480.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"gross_profit\"]|gross_profit": {
+   "value": "740.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"contribution_before_marketing\"]|contribution_before_marketing": {
+   "value": "540.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"contribution_after_marketing\"]|contribution_after_marketing": {
+   "value": "270.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"gross_margin\"]|gross_margin": {
+   "value": "0.500000000000",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"contribution_margin\"]|contribution_margin": {
+   "value": "0.182432432432",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"discount_rate\"]|discount_rate": {
+   "value": "0.127777777778",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"refund_ratio\"]|refund_ratio": {
+   "value": "0.057324840764",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"mer\"]|mer": {
+   "value": "5.481481481481",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"fulfillment_burden\"]|fulfillment_burden": {
+   "value": "0.094594594595",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"all\",[\"DTC\"],null,\"marketing_burden\"]|marketing_burden": {
+   "value": "0.182432432432",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"gross_sales\"]|gross_sales": {
+   "value": "1500.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"discounts\"]|discounts": {
+   "value": "100.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"refunds\"]|refunds": {
+   "value": "50.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"cogs_net\"]|cogs_net": {
+   "value": "600.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"platform_fees\"]|platform_fees": {
+   "value": "0.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"payment_fees\"]|payment_fees": {
+   "value": "40.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"fulfillment_costs\"]|fulfillment_costs": {
+   "value": "100.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"other_variable_costs\"]|other_variable_costs": {
+   "value": "10.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"ad_spend\"]|ad_spend": {
+   "value": "200.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"net_revenue\"]|net_revenue": {
+   "value": "1350.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"gross_profit\"]|gross_profit": {
+   "value": "750.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"contribution_before_marketing\"]|contribution_before_marketing": {
+   "value": "600.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"contribution_after_marketing\"]|contribution_after_marketing": {
+   "value": "400.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"gross_margin\"]|gross_margin": {
+   "value": "0.555555555556",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"contribution_margin\"]|contribution_margin": {
+   "value": "0.296296296296",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"discount_rate\"]|discount_rate": {
+   "value": "0.066666666667",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"refund_ratio\"]|refund_ratio": {
+   "value": "0.035714285714",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"mer\"]|mer": {
+   "value": "6.750000000000",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"fulfillment_burden\"]|fulfillment_burden": {
+   "value": "0.074074074074",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-01\",\"2026-08-01\",\"channel\",[\"DTC\"],null,\"marketing_burden\"]|marketing_burden": {
+   "value": "0.148148148148",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"gross_sales\"]|gross_sales": {
+   "value": "1800.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"discounts\"]|discounts": {
+   "value": "230.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"refunds\"]|refunds": {
+   "value": "90.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"cogs_net\"]|cogs_net": {
+   "value": "740.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"platform_fees\"]|platform_fees": {
+   "value": "0.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"payment_fees\"]|payment_fees": {
+   "value": "44.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"fulfillment_costs\"]|fulfillment_costs": {
+   "value": "140.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"other_variable_costs\"]|other_variable_costs": {
+   "value": "16.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"ad_spend\"]|ad_spend": {
+   "value": "270.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"net_revenue\"]|net_revenue": {
+   "value": "1480.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"gross_profit\"]|gross_profit": {
+   "value": "740.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"contribution_before_marketing\"]|contribution_before_marketing": {
+   "value": "540.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"contribution_after_marketing\"]|contribution_after_marketing": {
+   "value": "270.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"gross_margin\"]|gross_margin": {
+   "value": "0.500000000000",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"contribution_margin\"]|contribution_margin": {
+   "value": "0.182432432432",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"discount_rate\"]|discount_rate": {
+   "value": "0.127777777778",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"refund_ratio\"]|refund_ratio": {
+   "value": "0.057324840764",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"mer\"]|mer": {
+   "value": "5.481481481481",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"fulfillment_burden\"]|fulfillment_burden": {
+   "value": "0.094594594595",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"channel\",[\"DTC\"],null,\"marketing_burden\"]|marketing_burden": {
+   "value": "0.182432432432",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"gross_sales\"]|gross_sales": {
+   "value": "1400.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"discounts\"]|discounts": {
+   "value": "210.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"refunds\"]|refunds": {
+   "value": "70.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"cogs_net\"]|cogs_net": {
+   "value": "580.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"net_revenue\"]|net_revenue": {
+   "value": "1120.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"gross_profit\"]|gross_profit": {
+   "value": "540.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"gross_margin\"]|gross_margin": {
+   "value": "0.482142857143",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"discount_rate\"]|discount_rate": {
+   "value": "0.150000000000",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"A\",\"refund_ratio\"]|refund_ratio": {
+   "value": "0.058823529412",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"gross_sales\"]|gross_sales": {
+   "value": "400.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"discounts\"]|discounts": {
+   "value": "20.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"refunds\"]|refunds": {
+   "value": "20.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"cogs_net\"]|cogs_net": {
+   "value": "160.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"net_revenue\"]|net_revenue": {
+   "value": "360.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"gross_profit\"]|gross_profit": {
+   "value": "200.00",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"gross_margin\"]|gross_margin": {
+   "value": "0.555555555556",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"discount_rate\"]|discount_rate": {
+   "value": "0.050000000000",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  },
+  "fact|[\"fact\",\"golden-v1\",\"2026-08-02\",\"2026-08-02\",\"sku\",[\"DTC\"],\"B\",\"refund_ratio\"]|refund_ratio": {
+   "value": "0.052631578947",
+   "reason_codes": "[]",
+   "plan_revision": ""
+  }
+ },
+ "decision_json": {
+  "$.session.baseline.amounts.gross_sales": "1800.00",
+  "$.session.baseline.amounts.discounts": "230.00",
+  "$.session.baseline.amounts.refunds": "90.00",
+  "$.session.baseline.amounts.cogs_net": "740.00",
+  "$.session.baseline.amounts.platform_fees": "0.00",
+  "$.session.baseline.amounts.payment_fees": "44.00",
+  "$.session.baseline.amounts.fulfillment_costs": "140.00",
+  "$.session.baseline.amounts.other_variable_costs": "16.00",
+  "$.session.baseline.amounts.ad_spend": "270.00",
+  "$.session.baseline.amounts.net_revenue": "1480.00",
+  "$.session.baseline.amounts.gross_profit": "740.00",
+  "$.session.baseline.amounts.contribution_before_marketing": "540.00",
+  "$.session.baseline.amounts.contribution_after_marketing": "270.00",
+  "$.session.baseline.rates.discount_rate": "0.127777777778",
+  "$.session.baseline.rates.refund_ratio": "0.057324840764",
+  "$.session.baseline.rates.platform_rate": "0.000000000000",
+  "$.session.baseline.rates.payment_rate": "0.029729729730",
+  "$.session.baseline.sources[0].line": "4",
+  "$.session.baseline.sources[1].line": "4",
+  "$.session.baseline.sources[2].line": "6",
+  "$.session.baseline.sources[3].line": "7",
+  "$.session.facts[0].value": "1500.00",
+  "$.session.facts[0].sources[0].line": "2",
+  "$.session.facts[0].sources[1].line": "2",
+  "$.session.facts[0].sources[2].line": "2",
+  "$.session.facts[0].sources[3].line": "3",
+  "$.session.facts[1].value": "100.00",
+  "$.session.facts[1].sources[0].line": "2",
+  "$.session.facts[1].sources[1].line": "2",
+  "$.session.facts[1].sources[2].line": "2",
+  "$.session.facts[1].sources[3].line": "3",
+  "$.session.facts[2].value": "50.00",
+  "$.session.facts[2].sources[0].line": "2",
+  "$.session.facts[2].sources[1].line": "2",
+  "$.session.facts[2].sources[2].line": "2",
+  "$.session.facts[2].sources[3].line": "3",
+  "$.session.facts[3].value": "600.00",
+  "$.session.facts[3].sources[0].line": "2",
+  "$.session.facts[3].sources[1].line": "2",
+  "$.session.facts[3].sources[2].line": "2",
+  "$.session.facts[3].sources[3].line": "3",
+  "$.session.facts[4].value": "0.00",
+  "$.session.facts[4].sources[0].line": "2",
+  "$.session.facts[4].sources[1].line": "2",
+  "$.session.facts[4].sources[2].line": "2",
+  "$.session.facts[4].sources[3].line": "3",
+  "$.session.facts[5].value": "40.00",
+  "$.session.facts[5].sources[0].line": "2",
+  "$.session.facts[5].sources[1].line": "2",
+  "$.session.facts[5].sources[2].line": "2",
+  "$.session.facts[5].sources[3].line": "3",
+  "$.session.facts[6].value": "100.00",
+  "$.session.facts[6].sources[0].line": "2",
+  "$.session.facts[6].sources[1].line": "2",
+  "$.session.facts[6].sources[2].line": "2",
+  "$.session.facts[6].sources[3].line": "3",
+  "$.session.facts[7].value": "10.00",
+  "$.session.facts[7].sources[0].line": "2",
+  "$.session.facts[7].sources[1].line": "2",
+  "$.session.facts[7].sources[2].line": "2",
+  "$.session.facts[7].sources[3].line": "3",
+  "$.session.facts[8].value": "200.00",
+  "$.session.facts[8].sources[0].line": "2",
+  "$.session.facts[8].sources[1].line": "2",
+  "$.session.facts[8].sources[2].line": "2",
+  "$.session.facts[8].sources[3].line": "3",
+  "$.session.facts[9].value": "1350.00",
+  "$.session.facts[9].sources[0].line": "2",
+  "$.session.facts[9].sources[1].line": "2",
+  "$.session.facts[9].sources[2].line": "2",
+  "$.session.facts[9].sources[3].line": "3",
+  "$.session.facts[10].value": "750.00",
+  "$.session.facts[10].sources[0].line": "2",
+  "$.session.facts[10].sources[1].line": "2",
+  "$.session.facts[10].sources[2].line": "2",
+  "$.session.facts[10].sources[3].line": "3",
+  "$.session.facts[11].value": "600.00",
+  "$.session.facts[11].sources[0].line": "2",
+  "$.session.facts[11].sources[1].line": "2",
+  "$.session.facts[11].sources[2].line": "2",
+  "$.session.facts[11].sources[3].line": "3",
+  "$.session.facts[12].value": "400.00",
+  "$.session.facts[12].sources[0].line": "2",
+  "$.session.facts[12].sources[1].line": "2",
+  "$.session.facts[12].sources[2].line": "2",
+  "$.session.facts[12].sources[3].line": "3",
+  "$.session.facts[13].value": "0.555555555556",
+  "$.session.facts[13].sources[0].line": "2",
+  "$.session.facts[13].sources[1].line": "2",
+  "$.session.facts[13].sources[2].line": "2",
+  "$.session.facts[13].sources[3].line": "3",
+  "$.session.facts[14].value": "0.296296296296",
+  "$.session.facts[14].sources[0].line": "2",
+  "$.session.facts[14].sources[1].line": "2",
+  "$.session.facts[14].sources[2].line": "2",
+  "$.session.facts[14].sources[3].line": "3",
+  "$.session.facts[15].value": "0.066666666667",
+  "$.session.facts[15].sources[0].line": "2",
+  "$.session.facts[15].sources[1].line": "2",
+  "$.session.facts[15].sources[2].line": "2",
+  "$.session.facts[15].sources[3].line": "3",
+  "$.session.facts[16].value": "0.035714285714",
+  "$.session.facts[16].sources[0].line": "2",
+  "$.session.facts[16].sources[1].line": "2",
+  "$.session.facts[16].sources[2].line": "2",
+  "$.session.facts[16].sources[3].line": "3",
+  "$.session.facts[17].value": "6.750000000000",
+  "$.session.facts[17].sources[0].line": "2",
+  "$.session.facts[17].sources[1].line": "2",
+  "$.session.facts[17].sources[2].line": "2",
+  "$.session.facts[17].sources[3].line": "3",
+  "$.session.facts[18].value": "0.074074074074",
+  "$.session.facts[18].sources[0].line": "2",
+  "$.session.facts[18].sources[1].line": "2",
+  "$.session.facts[18].sources[2].line": "2",
+  "$.session.facts[18].sources[3].line": "3",
+  "$.session.facts[19].value": "0.148148148148",
+  "$.session.facts[19].sources[0].line": "2",
+  "$.session.facts[19].sources[1].line": "2",
+  "$.session.facts[19].sources[2].line": "2",
+  "$.session.facts[19].sources[3].line": "3",
+  "$.session.facts[20].value": "1800.00",
+  "$.session.facts[20].sources[0].line": "4",
+  "$.session.facts[20].sources[1].line": "4",
+  "$.session.facts[20].sources[2].line": "6",
+  "$.session.facts[20].sources[3].line": "7",
+  "$.session.facts[21].value": "230.00",
+  "$.session.facts[21].sources[0].line": "4",
+  "$.session.facts[21].sources[1].line": "4",
+  "$.session.facts[21].sources[2].line": "6",
+  "$.session.facts[21].sources[3].line": "7",
+  "$.session.facts[22].value": "90.00",
+  "$.session.facts[22].sources[0].line": "4",
+  "$.session.facts[22].sources[1].line": "4",
+  "$.session.facts[22].sources[2].line": "6",
+  "$.session.facts[22].sources[3].line": "7",
+  "$.session.facts[23].value": "740.00",
+  "$.session.facts[23].sources[0].line": "4",
+  "$.session.facts[23].sources[1].line": "4",
+  "$.session.facts[23].sources[2].line": "6",
+  "$.session.facts[23].sources[3].line": "7",
+  "$.session.facts[24].value": "0.00",
+  "$.session.facts[24].sources[0].line": "4",
+  "$.session.facts[24].sources[1].line": "4",
+  "$.session.facts[24].sources[2].line": "6",
+  "$.session.facts[24].sources[3].line": "7",
+  "$.session.facts[25].value": "44.00",
+  "$.session.facts[25].sources[0].line": "4",
+  "$.session.facts[25].sources[1].line": "4",
+  "$.session.facts[25].sources[2].line": "6",
+  "$.session.facts[25].sources[3].line": "7",
+  "$.session.facts[26].value": "140.00",
+  "$.session.facts[26].sources[0].line": "4",
+  "$.session.facts[26].sources[1].line": "4",
+  "$.session.facts[26].sources[2].line": "6",
+  "$.session.facts[26].sources[3].line": "7",
+  "$.session.facts[27].value": "16.00",
+  "$.session.facts[27].sources[0].line": "4",
+  "$.session.facts[27].sources[1].line": "4",
+  "$.session.facts[27].sources[2].line": "6",
+  "$.session.facts[27].sources[3].line": "7",
+  "$.session.facts[28].value": "270.00",
+  "$.session.facts[28].sources[0].line": "4",
+  "$.session.facts[28].sources[1].line": "4",
+  "$.session.facts[28].sources[2].line": "6",
+  "$.session.facts[28].sources[3].line": "7",
+  "$.session.facts[29].value": "1480.00",
+  "$.session.facts[29].sources[0].line": "4",
+  "$.session.facts[29].sources[1].line": "4",
+  "$.session.facts[29].sources[2].line": "6",
+  "$.session.facts[29].sources[3].line": "7",
+  "$.session.facts[30].value": "740.00",
+  "$.session.facts[30].sources[0].line": "4",
+  "$.session.facts[30].sources[1].line": "4",
+  "$.session.facts[30].sources[2].line": "6",
+  "$.session.facts[30].sources[3].line": "7",
+  "$.session.facts[31].value": "540.00",
+  "$.session.facts[31].sources[0].line": "4",
+  "$.session.facts[31].sources[1].line": "4",
+  "$.session.facts[31].sources[2].line": "6",
+  "$.session.facts[31].sources[3].line": "7",
+  "$.session.facts[32].value": "270.00",
+  "$.session.facts[32].sources[0].line": "4",
+  "$.session.facts[32].sources[1].line": "4",
+  "$.session.facts[32].sources[2].line": "6",
+  "$.session.facts[32].sources[3].line": "7",
+  "$.session.facts[33].value": "0.500000000000",
+  "$.session.facts[33].sources[0].line": "4",
+  "$.session.facts[33].sources[1].line": "4",
+  "$.session.facts[33].sources[2].line": "6",
+  "$.session.facts[33].sources[3].line": "7",
+  "$.session.facts[34].value": "0.182432432432",
+  "$.session.facts[34].sources[0].line": "4",
+  "$.session.facts[34].sources[1].line": "4",
+  "$.session.facts[34].sources[2].line": "6",
+  "$.session.facts[34].sources[3].line": "7",
+  "$.session.facts[35].value": "0.127777777778",
+  "$.session.facts[35].sources[0].line": "4",
+  "$.session.facts[35].sources[1].line": "4",
+  "$.session.facts[35].sources[2].line": "6",
+  "$.session.facts[35].sources[3].line": "7",
+  "$.session.facts[36].value": "0.057324840764",
+  "$.session.facts[36].sources[0].line": "4",
+  "$.session.facts[36].sources[1].line": "4",
+  "$.session.facts[36].sources[2].line": "6",
+  "$.session.facts[36].sources[3].line": "7",
+  "$.session.facts[37].value": "5.481481481481",
+  "$.session.facts[37].sources[0].line": "4",
+  "$.session.facts[37].sources[1].line": "4",
+  "$.session.facts[37].sources[2].line": "6",
+  "$.session.facts[37].sources[3].line": "7",
+  "$.session.facts[38].value": "0.094594594595",
+  "$.session.facts[38].sources[0].line": "4",
+  "$.session.facts[38].sources[1].line": "4",
+  "$.session.facts[38].sources[2].line": "6",
+  "$.session.facts[38].sources[3].line": "7",
+  "$.session.facts[39].value": "0.182432432432",
+  "$.session.facts[39].sources[0].line": "4",
+  "$.session.facts[39].sources[1].line": "4",
+  "$.session.facts[39].sources[2].line": "6",
+  "$.session.facts[39].sources[3].line": "7",
+  "$.session.facts[40].value": "1500.00",
+  "$.session.facts[40].sources[0].line": "2",
+  "$.session.facts[40].sources[1].line": "2",
+  "$.session.facts[40].sources[2].line": "2",
+  "$.session.facts[40].sources[3].line": "3",
+  "$.session.facts[41].value": "100.00",
+  "$.session.facts[41].sources[0].line": "2",
+  "$.session.facts[41].sources[1].line": "2",
+  "$.session.facts[41].sources[2].line": "2",
+  "$.session.facts[41].sources[3].line": "3",
+  "$.session.facts[42].value": "50.00",
+  "$.session.facts[42].sources[0].line": "2",
+  "$.session.facts[42].sources[1].line": "2",
+  "$.session.facts[42].sources[2].line": "2",
+  "$.session.facts[42].sources[3].line": "3",
+  "$.session.facts[43].value": "600.00",
+  "$.session.facts[43].sources[0].line": "2",
+  "$.session.facts[43].sources[1].line": "2",
+  "$.session.facts[43].sources[2].line": "2",
+  "$.session.facts[43].sources[3].line": "3",
+  "$.session.facts[44].value": "0.00",
+  "$.session.facts[44].sources[0].line": "2",
+  "$.session.facts[44].sources[1].line": "2",
+  "$.session.facts[44].sources[2].line": "2",
+  "$.session.facts[44].sources[3].line": "3",
+  "$.session.facts[45].value": "40.00",
+  "$.session.facts[45].sources[0].line": "2",
+  "$.session.facts[45].sources[1].line": "2",
+  "$.session.facts[45].sources[2].line": "2",
+  "$.session.facts[45].sources[3].line": "3",
+  "$.session.facts[46].value": "100.00",
+  "$.session.facts[46].sources[0].line": "2",
+  "$.session.facts[46].sources[1].line": "2",
+  "$.session.facts[46].sources[2].line": "2",
+  "$.session.facts[46].sources[3].line": "3",
+  "$.session.facts[47].value": "10.00",
+  "$.session.facts[47].sources[0].line": "2",
+  "$.session.facts[47].sources[1].line": "2",
+  "$.session.facts[47].sources[2].line": "2",
+  "$.session.facts[47].sources[3].line": "3",
+  "$.session.facts[48].value": "200.00",
+  "$.session.facts[48].sources[0].line": "2",
+  "$.session.facts[48].sources[1].line": "2",
+  "$.session.facts[48].sources[2].line": "2",
+  "$.session.facts[48].sources[3].line": "3",
+  "$.session.facts[49].value": "1350.00",
+  "$.session.facts[49].sources[0].line": "2",
+  "$.session.facts[49].sources[1].line": "2",
+  "$.session.facts[49].sources[2].line": "2",
+  "$.session.facts[49].sources[3].line": "3",
+  "$.session.facts[50].value": "750.00",
+  "$.session.facts[50].sources[0].line": "2",
+  "$.session.facts[50].sources[1].line": "2",
+  "$.session.facts[50].sources[2].line": "2",
+  "$.session.facts[50].sources[3].line": "3",
+  "$.session.facts[51].value": "600.00",
+  "$.session.facts[51].sources[0].line": "2",
+  "$.session.facts[51].sources[1].line": "2",
+  "$.session.facts[51].sources[2].line": "2",
+  "$.session.facts[51].sources[3].line": "3",
+  "$.session.facts[52].value": "400.00",
+  "$.session.facts[52].sources[0].line": "2",
+  "$.session.facts[52].sources[1].line": "2",
+  "$.session.facts[52].sources[2].line": "2",
+  "$.session.facts[52].sources[3].line": "3",
+  "$.session.facts[53].value": "0.555555555556",
+  "$.session.facts[53].sources[0].line": "2",
+  "$.session.facts[53].sources[1].line": "2",
+  "$.session.facts[53].sources[2].line": "2",
+  "$.session.facts[53].sources[3].line": "3",
+  "$.session.facts[54].value": "0.296296296296",
+  "$.session.facts[54].sources[0].line": "2",
+  "$.session.facts[54].sources[1].line": "2",
+  "$.session.facts[54].sources[2].line": "2",
+  "$.session.facts[54].sources[3].line": "3",
+  "$.session.facts[55].value": "0.066666666667",
+  "$.session.facts[55].sources[0].line": "2",
+  "$.session.facts[55].sources[1].line": "2",
+  "$.session.facts[55].sources[2].line": "2",
+  "$.session.facts[55].sources[3].line": "3",
+  "$.session.facts[56].value": "0.035714285714",
+  "$.session.facts[56].sources[0].line": "2",
+  "$.session.facts[56].sources[1].line": "2",
+  "$.session.facts[56].sources[2].line": "2",
+  "$.session.facts[56].sources[3].line": "3",
+  "$.session.facts[57].value": "6.750000000000",
+  "$.session.facts[57].sources[0].line": "2",
+  "$.session.facts[57].sources[1].line": "2",
+  "$.session.facts[57].sources[2].line": "2",
+  "$.session.facts[57].sources[3].line": "3",
+  "$.session.facts[58].value": "0.074074074074",
+  "$.session.facts[58].sources[0].line": "2",
+  "$.session.facts[58].sources[1].line": "2",
+  "$.session.facts[58].sources[2].line": "2",
+  "$.session.facts[58].sources[3].line": "3",
+  "$.session.facts[59].value": "0.148148148148",
+  "$.session.facts[59].sources[0].line": "2",
+  "$.session.facts[59].sources[1].line": "2",
+  "$.session.facts[59].sources[2].line": "2",
+  "$.session.facts[59].sources[3].line": "3",
+  "$.session.facts[60].value": "1800.00",
+  "$.session.facts[60].sources[0].line": "4",
+  "$.session.facts[60].sources[1].line": "4",
+  "$.session.facts[60].sources[2].line": "6",
+  "$.session.facts[60].sources[3].line": "7",
+  "$.session.facts[61].value": "230.00",
+  "$.session.facts[61].sources[0].line": "4",
+  "$.session.facts[61].sources[1].line": "4",
+  "$.session.facts[61].sources[2].line": "6",
+  "$.session.facts[61].sources[3].line": "7",
+  "$.session.facts[62].value": "90.00",
+  "$.session.facts[62].sources[0].line": "4",
+  "$.session.facts[62].sources[1].line": "4",
+  "$.session.facts[62].sources[2].line": "6",
+  "$.session.facts[62].sources[3].line": "7",
+  "$.session.facts[63].value": "740.00",
+  "$.session.facts[63].sources[0].line": "4",
+  "$.session.facts[63].sources[1].line": "4",
+  "$.session.facts[63].sources[2].line": "6",
+  "$.session.facts[63].sources[3].line": "7",
+  "$.session.facts[64].value": "0.00",
+  "$.session.facts[64].sources[0].line": "4",
+  "$.session.facts[64].sources[1].line": "4",
+  "$.session.facts[64].sources[2].line": "6",
+  "$.session.facts[64].sources[3].line": "7",
+  "$.session.facts[65].value": "44.00",
+  "$.session.facts[65].sources[0].line": "4",
+  "$.session.facts[65].sources[1].line": "4",
+  "$.session.facts[65].sources[2].line": "6",
+  "$.session.facts[65].sources[3].line": "7",
+  "$.session.facts[66].value": "140.00",
+  "$.session.facts[66].sources[0].line": "4",
+  "$.session.facts[66].sources[1].line": "4",
+  "$.session.facts[66].sources[2].line": "6",
+  "$.session.facts[66].sources[3].line": "7",
+  "$.session.facts[67].value": "16.00",
+  "$.session.facts[67].sources[0].line": "4",
+  "$.session.facts[67].sources[1].line": "4",
+  "$.session.facts[67].sources[2].line": "6",
+  "$.session.facts[67].sources[3].line": "7",
+  "$.session.facts[68].value": "270.00",
+  "$.session.facts[68].sources[0].line": "4",
+  "$.session.facts[68].sources[1].line": "4",
+  "$.session.facts[68].sources[2].line": "6",
+  "$.session.facts[68].sources[3].line": "7",
+  "$.session.facts[69].value": "1480.00",
+  "$.session.facts[69].sources[0].line": "4",
+  "$.session.facts[69].sources[1].line": "4",
+  "$.session.facts[69].sources[2].line": "6",
+  "$.session.facts[69].sources[3].line": "7",
+  "$.session.facts[70].value": "740.00",
+  "$.session.facts[70].sources[0].line": "4",
+  "$.session.facts[70].sources[1].line": "4",
+  "$.session.facts[70].sources[2].line": "6",
+  "$.session.facts[70].sources[3].line": "7",
+  "$.session.facts[71].value": "540.00",
+  "$.session.facts[71].sources[0].line": "4",
+  "$.session.facts[71].sources[1].line": "4",
+  "$.session.facts[71].sources[2].line": "6",
+  "$.session.facts[71].sources[3].line": "7",
+  "$.session.facts[72].value": "270.00",
+  "$.session.facts[72].sources[0].line": "4",
+  "$.session.facts[72].sources[1].line": "4",
+  "$.session.facts[72].sources[2].line": "6",
+  "$.session.facts[72].sources[3].line": "7",
+  "$.session.facts[73].value": "0.500000000000",
+  "$.session.facts[73].sources[0].line": "4",
+  "$.session.facts[73].sources[1].line": "4",
+  "$.session.facts[73].sources[2].line": "6",
+  "$.session.facts[73].sources[3].line": "7",
+  "$.session.facts[74].value": "0.182432432432",
+  "$.session.facts[74].sources[0].line": "4",
+  "$.session.facts[74].sources[1].line": "4",
+  "$.session.facts[74].sources[2].line": "6",
+  "$.session.facts[74].sources[3].line": "7",
+  "$.session.facts[75].value": "0.127777777778",
+  "$.session.facts[75].sources[0].line": "4",
+  "$.session.facts[75].sources[1].line": "4",
+  "$.session.facts[75].sources[2].line": "6",
+  "$.session.facts[75].sources[3].line": "7",
+  "$.session.facts[76].value": "0.057324840764",
+  "$.session.facts[76].sources[0].line": "4",
+  "$.session.facts[76].sources[1].line": "4",
+  "$.session.facts[76].sources[2].line": "6",
+  "$.session.facts[76].sources[3].line": "7",
+  "$.session.facts[77].value": "5.481481481481",
+  "$.session.facts[77].sources[0].line": "4",
+  "$.session.facts[77].sources[1].line": "4",
+  "$.session.facts[77].sources[2].line": "6",
+  "$.session.facts[77].sources[3].line": "7",
+  "$.session.facts[78].value": "0.094594594595",
+  "$.session.facts[78].sources[0].line": "4",
+  "$.session.facts[78].sources[1].line": "4",
+  "$.session.facts[78].sources[2].line": "6",
+  "$.session.facts[78].sources[3].line": "7",
+  "$.session.facts[79].value": "0.182432432432",
+  "$.session.facts[79].sources[0].line": "4",
+  "$.session.facts[79].sources[1].line": "4",
+  "$.session.facts[79].sources[2].line": "6",
+  "$.session.facts[79].sources[3].line": "7",
+  "$.session.facts[80].value": "1400.00",
+  "$.session.facts[80].sources[0].line": "6",
+  "$.session.facts[81].value": "210.00",
+  "$.session.facts[81].sources[0].line": "6",
+  "$.session.facts[82].value": "70.00",
+  "$.session.facts[82].sources[0].line": "6",
+  "$.session.facts[83].value": "580.00",
+  "$.session.facts[83].sources[0].line": "6",
+  "$.session.facts[84].value": "1120.00",
+  "$.session.facts[84].sources[0].line": "6",
+  "$.session.facts[85].value": "540.00",
+  "$.session.facts[85].sources[0].line": "6",
+  "$.session.facts[86].value": "0.482142857143",
+  "$.session.facts[86].sources[0].line": "6",
+  "$.session.facts[87].value": "0.150000000000",
+  "$.session.facts[87].sources[0].line": "6",
+  "$.session.facts[88].value": "0.058823529412",
+  "$.session.facts[88].sources[0].line": "6",
+  "$.session.facts[89].value": "400.00",
+  "$.session.facts[89].sources[0].line": "7",
+  "$.session.facts[90].value": "20.00",
+  "$.session.facts[90].sources[0].line": "7",
+  "$.session.facts[91].value": "20.00",
+  "$.session.facts[91].sources[0].line": "7",
+  "$.session.facts[92].value": "160.00",
+  "$.session.facts[92].sources[0].line": "7",
+  "$.session.facts[93].value": "360.00",
+  "$.session.facts[93].sources[0].line": "7",
+  "$.session.facts[94].value": "200.00",
+  "$.session.facts[94].sources[0].line": "7",
+  "$.session.facts[95].value": "0.555555555556",
+  "$.session.facts[95].sources[0].line": "7",
+  "$.session.facts[96].value": "0.050000000000",
+  "$.session.facts[96].sources[0].line": "7",
+  "$.session.facts[97].value": "0.052631578947",
+  "$.session.facts[97].sources[0].line": "7",
+  "$.session.comparison.previous_days": "1",
+  "$.session.comparison.current_days": "1",
+  "$.session.comparison.previous_daily_average.gross_sales.value": "1500.00",
+  "$.session.comparison.previous_daily_average.discounts.value": "100.00",
+  "$.session.comparison.previous_daily_average.refunds.value": "50.00",
+  "$.session.comparison.previous_daily_average.cogs_net.value": "600.00",
+  "$.session.comparison.previous_daily_average.platform_fees.value": "0.00",
+  "$.session.comparison.previous_daily_average.payment_fees.value": "40.00",
+  "$.session.comparison.previous_daily_average.fulfillment_costs.value": "100.00",
+  "$.session.comparison.previous_daily_average.other_variable_costs.value": "10.00",
+  "$.session.comparison.previous_daily_average.ad_spend.value": "200.00",
+  "$.session.comparison.previous_daily_average.net_revenue.value": "1350.00",
+  "$.session.comparison.previous_daily_average.gross_profit.value": "750.00",
+  "$.session.comparison.previous_daily_average.contribution_before_marketing.value": "600.00",
+  "$.session.comparison.previous_daily_average.contribution_after_marketing.value": "400.00",
+  "$.session.comparison.current_daily_average.gross_sales.value": "1800.00",
+  "$.session.comparison.current_daily_average.discounts.value": "230.00",
+  "$.session.comparison.current_daily_average.refunds.value": "90.00",
+  "$.session.comparison.current_daily_average.cogs_net.value": "740.00",
+  "$.session.comparison.current_daily_average.platform_fees.value": "0.00",
+  "$.session.comparison.current_daily_average.payment_fees.value": "44.00",
+  "$.session.comparison.current_daily_average.fulfillment_costs.value": "140.00",
+  "$.session.comparison.current_daily_average.other_variable_costs.value": "16.00",
+  "$.session.comparison.current_daily_average.ad_spend.value": "270.00",
+  "$.session.comparison.current_daily_average.net_revenue.value": "1480.00",
+  "$.session.comparison.current_daily_average.gross_profit.value": "740.00",
+  "$.session.comparison.current_daily_average.contribution_before_marketing.value": "540.00",
+  "$.session.comparison.current_daily_average.contribution_after_marketing.value": "270.00",
+  "$.session.comparison.daily_average_changes.gross_sales.value": "300.00",
+  "$.session.comparison.daily_average_changes.discounts.value": "130.00",
+  "$.session.comparison.daily_average_changes.refunds.value": "40.00",
+  "$.session.comparison.daily_average_changes.cogs_net.value": "140.00",
+  "$.session.comparison.daily_average_changes.platform_fees.value": "0.00",
+  "$.session.comparison.daily_average_changes.payment_fees.value": "4.00",
+  "$.session.comparison.daily_average_changes.fulfillment_costs.value": "40.00",
+  "$.session.comparison.daily_average_changes.other_variable_costs.value": "6.00",
+  "$.session.comparison.daily_average_changes.ad_spend.value": "70.00",
+  "$.session.comparison.daily_average_changes.net_revenue.value": "130.00",
+  "$.session.comparison.daily_average_changes.gross_profit.value": "-10.00",
+  "$.session.comparison.daily_average_changes.contribution_before_marketing.value": "-60.00",
+  "$.session.comparison.daily_average_changes.contribution_after_marketing.value": "-130.00",
+  "$.scenarios[0].inputs.volume_change_pct": "0",
+  "$.scenarios[0].inputs.discount_change_pp": "0",
+  "$.scenarios[0].inputs.fulfillment_change_pct": "-10",
+  "$.scenarios[0].inputs.ad_change_pct": "0",
+  "$.scenarios[0].inputs.one_time_cost": "0",
+  "$.scenarios[0].result.inputs.volume_change_pct": "0",
+  "$.scenarios[0].result.inputs.discount_change_pp": "0",
+  "$.scenarios[0].result.inputs.fulfillment_change_pct": "-10",
+  "$.scenarios[0].result.inputs.ad_change_pct": "0",
+  "$.scenarios[0].result.inputs.one_time_cost": "0",
+  "$.scenarios[0].result.amounts.gross_sales": "1800.00",
+  "$.scenarios[0].result.amounts.discounts": "230.00",
+  "$.scenarios[0].result.amounts.refunds": "90.00",
+  "$.scenarios[0].result.amounts.cogs_net": "740.00",
+  "$.scenarios[0].result.amounts.platform_fees": "0.00",
+  "$.scenarios[0].result.amounts.payment_fees": "44.00",
+  "$.scenarios[0].result.amounts.fulfillment_costs": "126.00",
+  "$.scenarios[0].result.amounts.other_variable_costs": "16.00",
+  "$.scenarios[0].result.amounts.ad_spend": "270.00",
+  "$.scenarios[0].result.amounts.net_revenue": "1480.00",
+  "$.scenarios[0].result.amounts.gross_profit": "740.00",
+  "$.scenarios[0].result.amounts.contribution_before_marketing": "554.00",
+  "$.scenarios[0].result.amounts.contribution_after_marketing": "284.00",
+  "$.scenarios[0].result.amounts.one_time_cost": "0.00",
+  "$.scenarios[0].result.contribution": "284.00",
+  "$.scenarios[0].result.delta": "14.00",
+  "$.scenarios[0].result.rounding_adjustment": "0.00",
+  "$.scenarios[0].result.rates.discount_rate": "0.127777777778",
+  "$.scenarios[0].result.rates.refund_ratio": "0.057324840764",
+  "$.scenarios[0].result.rates.platform_rate": "0.000000000000",
+  "$.scenarios[0].result.rates.payment_rate": "0.029729729730",
+  "$.scenarios[0].sensitivity.volumes[0]": "-10",
+  "$.scenarios[0].sensitivity.volumes[1]": "0",
+  "$.scenarios[0].sensitivity.volumes[2]": "10",
+  "$.scenarios[0].sensitivity.analysis.targets[0].target": "0.00",
+  "$.scenarios[0].sensitivity.analysis.targets[0].threshold_pct": "-51.263537906137",
+  "$.scenarios[0].sensitivity.analysis.targets[1].target": "270.00",
+  "$.scenarios[0].sensitivity.analysis.targets[1].threshold_pct": "-2.527075812274",
+  "$.scenarios[0].sensitivity.analysis.rows[0].volume_change_pct": "-10",
+  "$.scenarios[0].sensitivity.analysis.rows[0].contribution": "228.60",
+  "$.scenarios[0].sensitivity.analysis.rows[0].delta": "-41.40",
+  "$.scenarios[0].sensitivity.analysis.rows[1].volume_change_pct": "0",
+  "$.scenarios[0].sensitivity.analysis.rows[1].contribution": "284.00",
+  "$.scenarios[0].sensitivity.analysis.rows[1].delta": "14.00",
+  "$.scenarios[0].sensitivity.analysis.rows[2].volume_change_pct": "10",
+  "$.scenarios[0].sensitivity.analysis.rows[2].contribution": "339.40",
+  "$.scenarios[0].sensitivity.analysis.rows[2].delta": "69.40",
+  "$.scenarios[1].inputs.volume_change_pct": "0",
+  "$.scenarios[1].inputs.discount_change_pp": "0",
+  "$.scenarios[1].inputs.fulfillment_change_pct": "-10",
+  "$.scenarios[1].inputs.ad_change_pct": "0",
+  "$.scenarios[1].inputs.one_time_cost": "20",
+  "$.scenarios[1].result.inputs.volume_change_pct": "0",
+  "$.scenarios[1].result.inputs.discount_change_pp": "0",
+  "$.scenarios[1].result.inputs.fulfillment_change_pct": "-10",
+  "$.scenarios[1].result.inputs.ad_change_pct": "0",
+  "$.scenarios[1].result.inputs.one_time_cost": "20",
+  "$.scenarios[1].result.amounts.gross_sales": "1800.00",
+  "$.scenarios[1].result.amounts.discounts": "230.00",
+  "$.scenarios[1].result.amounts.refunds": "90.00",
+  "$.scenarios[1].result.amounts.cogs_net": "740.00",
+  "$.scenarios[1].result.amounts.platform_fees": "0.00",
+  "$.scenarios[1].result.amounts.payment_fees": "44.00",
+  "$.scenarios[1].result.amounts.fulfillment_costs": "126.00",
+  "$.scenarios[1].result.amounts.other_variable_costs": "16.00",
+  "$.scenarios[1].result.amounts.ad_spend": "270.00",
+  "$.scenarios[1].result.amounts.net_revenue": "1480.00",
+  "$.scenarios[1].result.amounts.gross_profit": "740.00",
+  "$.scenarios[1].result.amounts.contribution_before_marketing": "554.00",
+  "$.scenarios[1].result.amounts.contribution_after_marketing": "264.00",
+  "$.scenarios[1].result.amounts.one_time_cost": "20.00",
+  "$.scenarios[1].result.contribution": "264.00",
+  "$.scenarios[1].result.delta": "-6.00",
+  "$.scenarios[1].result.rounding_adjustment": "0.00",
+  "$.scenarios[1].result.rates.discount_rate": "0.127777777778",
+  "$.scenarios[1].result.rates.refund_ratio": "0.057324840764",
+  "$.scenarios[1].result.rates.platform_rate": "0.000000000000",
+  "$.scenarios[1].result.rates.payment_rate": "0.029729729730"
+ }
+}

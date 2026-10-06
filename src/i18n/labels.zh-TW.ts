@@ -667,7 +667,7 @@ export const ui = {
     "missingWithReasons": "資料待補（{reasons}）",
     "mdTitle": "# {brand} 一頁摘要（{decision}）",
     "mdMeta": "資料到：{asOf} · 範圍：{channels} · TWD",
-    "mdPeriod": "{period}：{start}–{end}（{days} 天）",
+    "mdPeriod": "{period}：{range}",
     "mdComparison": "比較方式：{mode}；以下為期間合計。金額門檻：{threshold} 元。",
     "mdHeadlines": "## 關鍵數字",
     "mdHeadlineRow": "- {metric}：上期 {previous}，本期 {current}，差額 {change}。",
@@ -1415,7 +1415,9 @@ export const ui = {
     "dailyAverageChangeLabel": "{metric}日均差額",
     "bridgeSumLabel": "九項差額加總",
     "contributionChangeLabel": "{metric}實際差額",
-    "limitationsProducts": "通路費與廣告不分到商品，這裡只看商品毛利。退款依結帳日，缺值不補零。比率欄原值為分子 ÷ 分母。"
+    "limitationsProducts": "通路費與廣告不分到商品，這裡只看商品毛利。退款依結帳日，缺值不補零。比率欄原值為分子 ÷ 分母。",
+    "moneyColumn": "{label}（元）",
+    "amountUnitNote": "金額單位：元。表格取到整數元，技術細節取到分。"
   },
   "evidenceDrawer": {
     "money": "{amount} 元",
@@ -1830,7 +1832,7 @@ export const meetingRecord = {
   /** 結束會議當時的口徑（labels.basis.items 快照）與含稅換算一句。 */
   mdBasis: "## 指標定義",
   mdField: "- {field}：{value}",
-  mdPeriod: "- {period}：{start}–{end}",
+  mdPeriod: "- {period}：{range}",
   mdThreshold: "- {field}：{amount} 元",
   mdKpiRow: "- {metric}：上期 {previous}，本期 {current}，差額 {change}",
   mdPriorityRow: "{n}. {headline} · {scope} · {impact} {amount}",
@@ -1971,7 +1973,7 @@ export const excelExport = {
 export const pptxExport = {
   title: "{brand} 一頁摘要",
   titleMeeting: "{name}（{date}）",
-  subtitle: "資料到 {asOf} · 上期 {previousStart}–{previousEnd}（{previousDays} 天） · 本期 {currentStart}–{currentEnd}（{currentDays} 天） · 通路：{channels}",
+  subtitle: "資料到 {asOf} · 上期 {previous} · 本期 {current} · 通路：{channels}",
   priorityRow: "{n}. {headline}",
   priorityDetail: "{impactLabel} {impact} · {nextStepLabel}：{nextStep}",
   channelTitle: "{table} · {metric}（元）",

@@ -10,6 +10,7 @@ import { downloadBinary } from "./download";
 import type { ManagerSummary, SummaryMetric } from "./manager-summary";
 import { dataStatus } from "./product-highlights";
 import type { TaxConversion } from "./tax-basis";
+import { formatPeriodExport } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R6-4 Excel 匯出（D4＝A：SheetJS xlsx 0.18.5）。
@@ -17,8 +18,12 @@ import type { WorkspaceSnapshot } from "./workspace";
 // writeExcel 才動態載入 xlsx（主 bundle 不含）；文字一律寫成字串格、絕不產生公式格，並沿用 CSV 的防注入規則。
 
 export type ExcelCell = { kind: "text"; value: string } | { kind: "number"; value: number } | { kind: "null" };
-/** 數字格的顯示格式（只影響 Excel 顯示，不改數值）：金額千分位兩位小數、比率百分比、件數整數。 */
-export type ExcelNumberFormat = "money" | "ratio" | "count";
+/**
+ * 數字格的顯示格式（只影響 Excel 顯示，不改數值；格子仍是數字，可加總、可排序）。V3-2b §3.3：Excel 有 L2 與 L3。
+ * money_l2：摘要、通路表用整數元（L2）；money：拆解、商品明細到分（L3）；ratio：百分比兩位小數（L3）；count：件數整數。
+ * 負號一律用 U+2212（Excel 是給人看的文件；CSV／JSON 才保留 ASCII「-」）。金額欄的表頭加「（元）」，儲存格內不帶單位。
+ */
+export type ExcelNumberFormat = "money" | "money_l2" | "ratio" | "count";
 export interface ExcelSheet {
   name: string; header: string[]; rows: ExcelCell[][];
   /** 每欄的數字格式（與 header 等長）；沒有就是一般格式。只套在 number 格。 */
@@ -43,7 +48,18 @@ export const EXCEL_MIME = "application/vnd.openxmlformats-officedocument.spreads
 export const EXCEL_CELL_TEXT_LIMIT = 32767;
 /** Excel 工作表名稱上限。 */
 export const EXCEL_SHEET_NAME_LIMIT = 31;
-const NUMBER_FORMATS: Record<ExcelNumberFormat, string> = { money: "#,##0.00", ratio: "0.00%", count: "#,##0" };
+/**
+ * Excel 自訂格式：「正;負;零」三段，負段用字面的 U+2212。L2 用條件段：|值| < 0.5 元顯示 0（與 formatAmountL2 取位後為零不帶符號一致）。
+ * Excel 顯示取位是四捨五入（.5 遠離零），與 HALF_UP 相同。
+ */
+export const EXCEL_NUMBER_FORMATS: Record<ExcelNumberFormat, string> = {
+  money: '#,##0.00;"−"#,##0.00;0.00',
+  money_l2: '[>=0.5]#,##0;[<=-0.5]"−"#,##0;0',
+  ratio: '0.00%;"−"0.00%;0.00%',
+  count: '#,##0;"−"#,##0;0',
+};
+const NUMBER_FORMATS = EXCEL_NUMBER_FORMATS;
+const isMoneyFormat = (format: ExcelNumberFormat | null | undefined): boolean => format === "money" || format === "money_l2";
 
 const text = (value: string): ExcelCell => ({ kind: "text", value });
 const EMPTY: ExcelCell = { kind: "null" };
@@ -78,10 +94,14 @@ export function countCell(value: string | null): ExcelCell {
 
 type Columns = Readonly<Record<string, string>>;
 type SheetRecord<C extends Columns> = Partial<Record<keyof C & string, ExcelCell>>;
-/** 欄位順序＝labels 物件的 key 順序；每列依 key 取值，缺的欄位是空格。 */
+/** 欄位順序＝labels 物件的 key 順序；每列依 key 取值，缺的欄位是空格。金額欄的表頭加「（元）」（§8.5 規則 5：單位只標一次）。 */
 function sheet<C extends Columns>(name: string, columns: C, records: readonly SheetRecord<C>[], formats: Partial<Record<keyof C & string, ExcelNumberFormat>> = {}): ExcelSheet {
   const keys = Object.keys(columns) as (keyof C & string)[];
-  return { name, header: keys.map(key => columns[key]), rows: records.map(record => keys.map(key => record[key] ?? EMPTY)), formats: keys.map(key => formats[key] ?? null) };
+  return { name, header: keys.map(key => excelHeader(columns[key], formats[key])), rows: records.map(record => keys.map(key => record[key] ?? EMPTY)), formats: keys.map(key => formats[key] ?? null) };
+}
+/** 工作表表頭：金額欄加「（元）」，其他欄沿用 labels。 */
+export function excelHeader(label: string, format?: ExcelNumberFormat | null): string {
+  return isMoneyFormat(format) ? fill(labels.ui.export.moneyColumn, { label }) : label;
 }
 /** labels 的對照表只認自己的 key（避免 "constructor" 之類的原型屬性）；查不到就原樣顯示。 */
 function lookup(table: Readonly<Record<string, string>>, key: string): string {
@@ -98,7 +118,8 @@ function summarySheet(input: ExcelExportInput): ExcelSheet {
   const alias = demoAlias(summary.dataset_id);
   const s = copy.summary;
   const info = (section: string, item: string, detail: string) => ({ section: text(section), item: text(item), detail: text(detail) });
-  const period = (range: Period, days: number) => fill(s.periodValue, { start: range.start, end: range.end, days });
+  // 版頭的期間用匯出格式「2026-07-13 至 2026-08-23（42 天）」（§8.6；天數含頭尾，與 domain 的 previous_days／current_days 相同）。
+  const period = (range: Period) => formatPeriodExport(range.start, range.end);
   const missing = (metrics: Metric[]) => {
     const reasons = [...new Set(metrics.filter(metric => metric.value === null).flatMap(metric => metric.reason_codes))];
     return metrics.some(metric => metric.value === null) ? text(fill(labels.ui.managerSummary.missingWithReasons, { reasons: reasons.join("、") })) : EMPTY;
@@ -107,8 +128,8 @@ function summarySheet(input: ExcelExportInput): ExcelSheet {
     info(s.sections.scope, s.items.dataset, dataset.manifest.dataset_id),
     info(s.sections.scope, s.items.source, lookup(s.sourceTypes, dataset.manifest.source_type)),
     info(s.sections.scope, s.items.asOf, summary.data_as_of),
-    info(s.sections.scope, s.items.previous, period(summary.scope.previous_period, summary.previous_days)),
-    info(s.sections.scope, s.items.current, period(summary.scope.current_period, summary.current_days)),
+    info(s.sections.scope, s.items.previous, period(summary.scope.previous_period)),
+    info(s.sections.scope, s.items.current, period(summary.scope.current_period)),
     info(s.sections.scope, s.items.comparison, summary.scope.comparison_mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays),
     info(s.sections.scope, s.items.channels, channelsLabel(summary.scope.channels, alias)),
   ];
@@ -131,7 +152,7 @@ function summarySheet(input: ExcelExportInput): ExcelSheet {
     info(s.sections.meeting, s.items.decision, lookup(labels.meeting.decisions, meeting.decision)),
     info(s.sections.meeting, s.items.notes, meeting.notes),
   );
-  return sheet(copy.sheets.summary, copy.columns.summary, records, { previous: "money", current: "money", change: "money", impact: "money" });
+  return sheet(copy.sheets.summary, copy.columns.summary, records, { previous: "money_l2", current: "money_l2", change: "money_l2", impact: "money_l2" });
 }
 
 function channelSheet(summary: ManagerSummary): ExcelSheet {
@@ -152,7 +173,8 @@ function channelSheet(summary: ManagerSummary): ExcelSheet {
   };
   // 最後一列合計＝兩個關鍵差額（同一個來源）；各通路差額不能再加總（口徑說明第 5 條）。
   const records = [...summary.channels.map(row => record(channelLabel(row.channel, alias), row.revenue, row.contribution)), record(labels.sections.total, headline("net_revenue"), headline("contribution_after_marketing"))];
-  const money = "money" as const;
+  // 通路表是摘要層（§3.3 通路寬表 L2）：整數元；到分的值在 CSV 與「貢獻變化拆解」。
+  const money = "money_l2" as const;
   return sheet(copy.sheets.channels, copy.columns.channels, records, { previous_net_revenue: money, current_net_revenue: money, net_revenue_change: money, previous_contribution: money, current_contribution: money, contribution_change: money });
 }
 

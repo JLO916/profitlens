@@ -9,6 +9,7 @@ import { createReviewSession, rebuildReviewSnapshot, selectReviewScenario, syncR
 import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction } from "@/application/action-workspace";
 import { appendMeeting, exportMeetingMarkdown, finalizeMeeting, freezeMeeting, MAX_MEETING_HISTORY, type Meeting } from "@/application/meeting";
 import { fill, labels } from "@/i18n";
+import { formatAmountL2, formatSignedDelta } from "@/application/presentation";
 import { exportWorkspaceBackup, restoreWorkspaceBackup, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
 
 const inputs = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
@@ -91,7 +92,8 @@ describe("R6-1 backup v4 carries meeting_history (additive, same version string)
     const markdown = exportMeetingMarkdown(restored.meeting_history[1]);
     expect(markdown).toContain(fill(labels.meetingRecord.mdLastMeeting, { name: "十月第一週", date: "2026-10-03" }));
     expect(markdown).toContain(fill(labels.meetingRecord.mdFollowUpRow, { problem: first.agenda.pinned_actions[0].problem, last: labels.actions.statuses.in_progress, current: labels.actions.statuses.done, updated: fill(labels.meetingRecord.statusUpdatedAt, { date: "2026-10-08" }) }));
-    expect(markdown).toContain(`| ${labels.metrics.contribution_after_marketing.label} | 255.00 | 255.00 | 0.00 |`);
+    // V3-2b：會議紀錄 Markdown 主文是 L2 整數元。
+    expect(markdown).toContain(`| ${labels.metrics.contribution_after_marketing.label} | ${formatAmountL2("255.00")} | ${formatAmountL2("255.00")} | ${formatSignedDelta("0.00", "L2")} |`);
     expect(markdown).not.toContain(labels.meetingRecord.noLastMeeting);
     // 會議稿沒有建立時間（舊資料）也照常備份與還原。
     const { created_at: _created, ...legacyReview } = backup.review_session!;
