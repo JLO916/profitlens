@@ -1,23 +1,30 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { diagnosisGroups, summaryScopes, type DiagnosisGroup, type DiagnosisScope } from "@/application/diagnosis-group";
 import { priorityEvidence } from "@/application/manager-summary";
 import { channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
-import { eventSuffix, type EventSet } from "@/application/events";
+import { overlapping, type EventSet } from "@/application/events";
 import { deltaTone, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Diagnostic, Fact, Metric, MetricName, RuleCode } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
-import { ImpactAmount, impactEvidence, toneClass } from "./top-three";
+import { ShellIcon } from "./shell/shell-icon";
+import { alertStatus, ImpactAmount, impactEvidence, toneClass } from "./top-three";
 
-// R5-1 健檢清單（02_IA_LAYOUT.md §4）：一個規則一列，<summary> 只放非互動內容（標題、範圍標籤、影響金額純文字）；
-// 可點的影響金額、按鈕與數據放在展開內容（第一行是目前範圍的影響金額與看證據／加入待辦）。
+// V3-5 A 健檢結果（PRD §7.2 第 2 點、§9.4 C9 清單型警示列）：一個規則一列 <li.alert-row> > <details.alert.diagnosis-row>。
+// <summary>（L1，一行）只放非互動內容：展開指示、狀態標籤、標題、（與頁面範圍不同時的）範圍標籤、影響金額純文字。
+// 展開內容（L2）：影響金額（可點）、範圍切換 chips（超過 4 個收進「更多範圍」popover，內容保持掛載）、相關數字、可能原因／下一步／限制、
+// 動作列（看明細、加入待辦），最底是收合的技術細節（L3）。
 const ui = labels.ui.workspacePanels;
 const copy = labels.diagnosisList;
+const listV3 = labels.diagnosis.listV3;
+const alerts = labels.overview.alerts;
 /** 預設展開前幾列。 */
 export const DIAGNOSIS_DEFAULT_OPEN = 3;
+/** 範圍切換 chips 直接顯示幾個；超過時其餘收進「更多範圍」popover（PRD §7.2）。 */
+export const DIAGNOSIS_SCOPE_CHIPS = 4;
 
 export interface DiagnosisListProps {
   snapshot: WorkspaceSnapshot;
@@ -25,7 +32,7 @@ export interface DiagnosisListProps {
   onCreateAction?: (diagnostic: Diagnostic) => void;
   /** 已算好的 group（例如 buildManagerSummary(...).diagnosis）；省略時以 diagnosisGroups(snapshot) 計算，門檻 0。 */
   groups?: DiagnosisGroup[];
-  /** R4 檔期：本期與檔期重疊時標題加「（○○期間）」。 */
+  /** R4 檔期：本期與檔期重疊時，每列展開內容多一行「檔期」（V3-5 起不再接在標題後）。 */
   events?: EventSet | null;
 }
 
@@ -76,6 +83,15 @@ export function rankingSelection(snapshot: Pick<WorkspaceSnapshot, "report">, ro
   };
 }
 
+/**
+ * 標題列的計數徽章（PRD §7.2、§9.4 C8）：直接數每列的狀態標籤（alertStatus），不做新的分類；中性（沒有方向）的列不計。
+ * 回傳的數字一定等於列內同色調狀態標籤的個數。
+ */
+export function diagnosisCounts(groups: readonly Pick<DiagnosisGroup, "missing" | "impact_cents">[]): { missing: number; unfavorable: number; favorable: number } {
+  const tones = groups.map(group => alertStatus(group)?.tone ?? null);
+  return { missing: tones.filter(tone => tone === "warning").length, unfavorable: tones.filter(tone => tone === "unfavorable").length, favorable: tones.filter(tone => tone === "favorable").length };
+}
+
 /** <summary> 內的影響金額：純文字（summary 不放互動元件）；L1（萬）與色調同 ImpactAmount，可點的按鈕在展開內容第一行。 */
 function ImpactText({ snapshot, diagnostic }: { snapshot: Pick<WorkspaceSnapshot, "report">; diagnostic: Diagnostic }) {
   const evidence = impactEvidence(snapshot, diagnostic);
@@ -84,54 +100,108 @@ function ImpactText({ snapshot, diagnostic }: { snapshot: Pick<WorkspaceSnapshot
   return <span className={`impact-amount ${value === null ? "neutral" : toneClass(deltaTone("contribution_after_marketing", value, "L1"))}`}>{value === null ? labels.status.missing : formatSignedDelta(value, "L1")}</span>;
 }
 
+/** C14／M3（同 top-three.tsx 的 useDismiss）：彈出層開著時，Esc 關閉（焦點在裡面時回到觸發器）、點外面關閉；在 modal dialog（抽屜、對話框）裡的操作不算外面。 */
+function useDismiss(open: boolean, close: () => void, rootRef: RefObject<HTMLElement | null>, triggerRef: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!open) return;
+    const inDialog = (target: EventTarget | null) => target instanceof Element && target.closest("dialog") !== null;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || inDialog(event.target)) return;
+      const inside = rootRef.current?.contains(document.activeElement) ?? false;
+      close();
+      if (inside) triggerRef.current?.focus();
+    };
+    const onPointer = (event: MouseEvent) => {
+      if (inDialog(event.target)) return;
+      const target = event.target instanceof Node ? event.target : null;
+      if (!target || !rootRef.current?.contains(target)) close();
+    };
+    document.addEventListener("keydown", onKey); document.addEventListener("mousedown", onPointer);
+    return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("mousedown", onPointer); };
+  }, [open, close, rootRef, triggerRef]);
+}
+
+type CountKind = keyof ReturnType<typeof diagnosisCounts>;
+const BADGES: { kind: CountKind; tone: "warning" | "unfavorable" | "favorable"; text: string; aria: string }[] = [
+  { kind: "missing", tone: "warning", text: labels.status.missing, aria: listV3.countMissing },
+  { kind: "unfavorable", tone: "unfavorable", text: labels.format.unfavorable, aria: listV3.countUnfavorable },
+  { kind: "favorable", tone: "favorable", text: labels.format.favorable, aria: listV3.countFavorable },
+];
+
 export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, events = null }: DiagnosisListProps) {
   const rows = useMemo(() => groups ?? diagnosisGroups(snapshot).groups, [groups, snapshot]);
-  const suffix = eventSuffix(events, snapshot.report.current.period);
+  const alias = demoAlias(snapshot.report.dataset_id);
+  const counts = diagnosisCounts(rows);
+  // R4 檔期提示：本期與檔期重疊時，每列展開內容多一行「檔期」；不改任何數字。
+  const eventNames = [...new Set(overlapping(events, snapshot.report.current.period).map(row => row.label))];
+  const eventText = eventNames.length ? fill(alerts.eventValue, { label: eventNames.join(labels.events.joiner) }) : "";
+  // 計數徽章（C8）：可見的是狀態字＋數字；可及名稱是完整意思「3 項不利」（狀態字對輔助科技隱藏，避免念兩次）。0 項不顯示。
+  const badges = BADGES.filter(item => counts[item.kind] > 0);
   return <section className="panel diagnosis-panel" aria-labelledby="diagnosis-heading" data-testid="diagnosis-panel">
-    <div className="section-heading"><div><h2 id="diagnosis-heading">{labels.sections.diagnosisList}</h2><p className="note">{ui.diagnosisNote}</p></div><span className="diagnosis-heading-tags"><span className="tag">{labels.sections.autoCheck}</span><span className="tag">{fill(ui.itemCount, { n: rows.length })}</span></span></div>
-    {rows.length ? <ol className="diagnosis-list" data-testid="diagnosis-list" aria-label={copy.listAria}>{rows.map((group, index) => <DiagnosisRow key={group.rule} group={group} defaultOpen={index < DIAGNOSIS_DEFAULT_OPEN} snapshot={snapshot} suffix={suffix} onEvidence={onEvidence} onCreateAction={onCreateAction} />)}</ol> : <p role="status">{ui.noDiagnostics}</p>}
+    <div className="sec-head">
+      <div className="sec-title"><h2 id="diagnosis-heading">{labels.sections.diagnosisList}</h2>{badges.length > 0 && <span className="diagnosis-badges">{badges.map(item => <span key={item.kind} className="diagnosis-badge" data-testid={`diagnosis-count-${item.kind}`}><span className="diagnosis-badge-text" data-tone={item.tone} aria-hidden="true">{item.text}</span><span className="ui-count-badge" role="img" aria-label={fill(item.aria, { n: counts[item.kind] })}>{counts[item.kind]}</span></span>)}</span>}</div>
+      <span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, alias)}</span>
+    </div>
+    <p className="sub">{ui.diagnosisNote}</p>
+    {rows.length ? <ol className="alert-list diagnosis-list" data-testid="diagnosis-list" aria-label={copy.listAria}>{rows.map((group, index) => <DiagnosisRow key={group.rule} group={group} defaultOpen={index < DIAGNOSIS_DEFAULT_OPEN} snapshot={snapshot} eventText={eventText} onEvidence={onEvidence} onCreateAction={onCreateAction} />)}</ol> : <p role="status" className="diagnosis-empty">{ui.noDiagnostics}</p>}
   </section>;
 }
 
-function DiagnosisRow({ group, defaultOpen, snapshot, suffix, onEvidence, onCreateAction }: { group: DiagnosisGroup; defaultOpen: boolean; snapshot: WorkspaceSnapshot; suffix: string; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void }) {
+function DiagnosisRow({ group, defaultOpen, snapshot, eventText, onEvidence, onCreateAction }: { group: DiagnosisGroup; defaultOpen: boolean; snapshot: WorkspaceSnapshot; eventText: string; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void }) {
   const [selectedId, setSelectedId] = useState(group.primary.id);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDetailsElement>(null);
+  const moreTriggerRef = useRef<HTMLElement>(null);
+  const closeMore = useCallback(() => { if (moreRef.current) moreRef.current.open = false; setMoreOpen(false); }, []);
+  useDismiss(moreOpen, closeMore, moreRef, moreTriggerRef);
   const selected = group.scopes.find(row => row.diagnostic.id === selectedId) ?? group.scopes[0];
   const alias = demoAlias(snapshot.report.dataset_id);
   const { previous } = snapshot.report;
-  const { shown, more } = summaryScopes(group);
+  const { shown, more } = summaryScopes(group, DIAGNOSIS_SCOPE_CHIPS);
+  const hidden = group.scopes.slice(shown.length);
   const facts = new Map(selected.facts.map(fact => [fact.id, fact]));
   const isPrimary = selected.diagnostic.id === group.primary.id;
   const ranking = selected.diagnostic.ranking_amount;
   const rankingEvidence = rankingSelection(snapshot, selected, alias);
-  const chip = (row: DiagnosisScope) => <button key={row.diagnostic.id} type="button" className="scope-chip" aria-pressed={row.diagnostic.id === selected.diagnostic.id} onClick={() => setSelectedId(row.diagnostic.id)}>{row.label}</button>;
-  return <li className="diagnosis-item">
-    <details className={`diagnosis-row${group.missing ? " missing" : ""}`} data-testid={`diagnosis-row-${group.rule}`} open={defaultOpen}>
-      <summary className="diagnosis-summary">
-        <h3 className="diagnosis-headline">{group.headline}{suffix}</h3>
-        <span className="diagnosis-scopes">{group.missing && <span className="tag blocking">{ui.tagMissingData}</span>}{shown.map(row => <span key={row.diagnostic.id} className="scope-tag">{row.label}</span>)}{more > 0 && <span className="scope-tag more">{fill(copy.moreScopes, { n: more })}</span>}</span>
-        <span className="diagnosis-impact"><span className="diagnosis-impact-label">{labels.sections.impact}</span><ImpactText snapshot={snapshot} diagnostic={group.primary} /></span>
+  const status = alertStatus(group);
+  // 範圍標籤只在這一列的範圍和頁面範圍不同時顯示（合計與頁面範圍相同，不重複；頁面範圍只在標題列寫一次）。
+  const primaryScope = group.scopes[0];
+  const chip = (row: DiagnosisScope, inMore = false) => <button key={row.diagnostic.id} type="button" className="scope-chip" aria-pressed={row.diagnostic.id === selected.diagnostic.id} onClick={() => { setSelectedId(row.diagnostic.id); if (inMore) { closeMore(); moreTriggerRef.current?.focus(); } }}>{row.label}</button>;
+  return <li className="alert-row">
+    <details className={`alert diagnosis-row${group.missing ? " missing" : ""}`} data-testid={`diagnosis-row-${group.rule}`} id={`diagnosis-row-${group.rule}`} open={defaultOpen}>
+      <summary>
+        <ShellIcon name="chevron-right" size={16} className="alert-chev" />
+        {status && <span className="alert-loz"><span className="ui-lozenge" data-tone={status.tone}>{status.text}</span></span>}
+        <h3 className="alert-title diagnosis-headline">{group.headline}</h3>
+        {primaryScope.scope.kind !== "all" && <span className="scope-tag">{primaryScope.label}</span>}
+        <span className="diagnosis-impact"><span className="sr-only">{labels.sections.impact}</span><ImpactText snapshot={snapshot} diagnostic={group.primary} /></span>
       </summary>
-      <div className="diagnosis-body">
-        <div className="diagnosis-actions"><p className="impact-line"><span>{fill(copy.scopeImpact, { impact: labels.sections.impact, scope: selected.label })}</span><ImpactAmount snapshot={snapshot} diagnostic={selected.diagnostic} onEvidence={onEvidence} /></p><button type="button" className="button quiet" onClick={() => onEvidence(impactEvidence(snapshot, selected.diagnostic) ?? priorityEvidence(snapshot, selected.diagnostic))}>{labels.buttons.viewEvidence}</button>{onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(selected.diagnostic)}>{labels.buttons.addToActions}</button>}</div>
+      <div className="alert-body diagnosis-body">
+        <p className="impact-line"><span>{fill(copy.scopeImpact, { impact: labels.sections.impact, scope: selected.label })}</span><ImpactAmount snapshot={snapshot} diagnostic={selected.diagnostic} onEvidence={onEvidence} /></p>
         {group.scopes.length > 1 && <div className="scope-switch">
-          <div className="scope-chips" role="group" aria-label={copy.scopeSwitch}>{group.scopes.slice(0, shown.length).map(chip)}</div>
-          {more > 0 && <details className="scope-more"><summary>{fill(copy.moreScopes, { n: more })}</summary><div className="scope-chips" role="group" aria-label={copy.scopeSwitch}>{group.scopes.slice(shown.length).map(chip)}</div></details>}
+          <div className="scope-chips" role="group" aria-label={copy.scopeSwitch}>{shown.map(row => chip(row))}
+            {more > 0 && <details ref={moreRef} className="scope-more ui-popover-host" data-active={hidden.some(row => row.diagnostic.id === selected.diagnostic.id) || undefined} onToggle={event => setMoreOpen(event.currentTarget.open)}><summary ref={moreTriggerRef} className="scope-chip scope-more-trigger">{fill(listV3.moreScopes, { n: more })}</summary>
+              <div className="ui-popover scope-more-panel"><div className="scope-chips" role="group" aria-label={copy.scopeSwitch}>{hidden.map(row => chip(row, true))}</div></div>
+            </details>}
+          </div>
           {!isPrimary && <p className="diagnosis-scope-headline">{fill(copy.scopeHeadline, { scope: selected.label, headline: ruleCopy(snapshot, selected.diagnostic, alias).headline })}</p>}
         </div>}
-        <h4>{group.scopes.length > 1 ? fill(copy.dataFor, { data: labels.sections.data, scope: selected.label }) : labels.sections.data}</h4>
-        <ul className="fact-list">{selected.diagnostic.fact_ids.map(id => {
+        <h4 className="kv-heading">{group.scopes.length > 1 ? fill(copy.dataFor, { data: labels.sections.data, scope: selected.label }) : labels.sections.data}</h4>
+        <dl className="kv-list fact-list">{selected.diagnostic.fact_ids.map(id => {
           const fact = facts.get(id);
-          if (!fact) return <li key={id}>{ui.factNotFound}</li>;
+          if (!fact) return <div key={id}><dt>{ui.factNotFound}</dt><dd /></div>;
           const period = fact.period.start === previous.period.start && fact.period.end === previous.period.end ? labels.periods.previous : labels.periods.current;
           const scope = factScope(fact, alias);
           const metric = metricDefinitions[fact.metric].label;
-          return <li key={id}><span>{fill(ui.factLine, { period, metric, scope })}</span><button type="button" className="number-link" onClick={() => onEvidence(factSelection(fact, alias))} aria-label={fill(ui.factAria, { period, metric, value: displayMetric(fact.metric, fact), scope })}>{displayMetric(fact.metric, fact)}</button></li>;
-        })}</ul>
+          return <div key={id}><dt>{fill(ui.factLine, { period, metric, scope })}</dt><dd><button type="button" className="number-link" onClick={() => onEvidence(factSelection(fact, alias))} aria-label={fill(ui.factAria, { period, metric, value: displayMetric(fact.metric, fact), scope })}>{displayMetric(fact.metric, fact)}</button></dd></div>;
+        })}</dl>
         <dl className="diagnosis-copy">
           <div><dt>{labels.sections.cause}</dt><dd>{group.cause}</dd></div>
           <div><dt>{labels.sections.nextStep}</dt><dd>{group.next_step}</dd></div>
-          <div><dt>{labels.sections.caution}</dt><dd>{group.caution}</dd></div>
+          <div className="diagnosis-limit"><dt>{alerts.limitation}</dt><dd>{group.caution}</dd></div>
+          {eventText && <div className="diagnosis-event"><dt>{alerts.eventPeriod}</dt><dd>{eventText}</dd></div>}
         </dl>
+        <div className="diagnosis-actions"><button type="button" className="ui-btn ui-btn-secondary" onClick={() => onEvidence(impactEvidence(snapshot, selected.diagnostic) ?? priorityEvidence(snapshot, selected.diagnostic))}>{labels.buttons.viewEvidence}</button>{onCreateAction && <button type="button" className="ui-btn ui-btn-secondary" onClick={() => onCreateAction(selected.diagnostic)}>{labels.buttons.addToActions}</button>}</div>
         <details className="diagnosis-technical"><summary>{labels.sections.technicalDetails}</summary>
           <dl className="diagnosis-tech-list">
             <div><dt>{copy.ruleCode}</dt><dd><code>{selected.diagnostic.code}</code></dd></div>

@@ -720,11 +720,32 @@ export const diagnosis = {
     rankingAria: "看「{title}」排序金額的來源，{amount}",
   },
   // ── V3-5 錨點（代理 A：listV3 警示列與計數徽章、tableV3 通路寬表、aiCollapse AI 區收合；收尾時刪除仍為空的物件）
-  listV3: {},
+  /** V3-5 A 健檢結果（C9 清單型警示列，PRD §7.2 第 2 點）：標題列的計數徽章（只放數字，完整意思放可及名稱）與每列的「更多範圍」popover。 */
+  listV3: {
+    /** 計數徽章的可及名稱：{n}＝該狀態的列數（與列內狀態標籤一致）。 */
+    countMissing: "{n} 項資料待補",
+    countUnfavorable: "{n} 項不利",
+    countFavorable: "{n} 項有利",
+    /** 單列範圍超過 4 個時，其餘收進這個 popover；{n}＝收進去的範圍數。 */
+    moreScopes: "更多範圍（{n}）",
+  },
 
-  tableV3: {},
+  /** V3-5 A 各通路兩期比較（通路寬表 diagnosis 變體，PRD §7.2 第 3 點、§9.4 C3）：欄群組「淨營收（元）」用 format.units.yuanColumn 組成。 */
+  tableV3: {
+    heading: "各通路兩期比較",
+    change: "差額",
+    note: "備註",
+    /** 手機清單的欄名（data-label）與排序按鈕的可及名稱：{period}＝本期／上期，{metric}＝指標名。 */
+    cellLabel: "{period}{metric}",
+    changeLabel: "{metric}差額",
+  },
 
-  aiCollapse: {},
+  /** V3-5 A AI 區收合（PRD §7.2 第 4 點）：預設收合成一列「AI 解釋 · 未啟用（公開示範站不送出任何資料）」，展開後內容不變。 */
+  aiCollapse: {
+    summary: "AI 解釋 · {status}",
+    status: { off: "未啟用", needsConsent: "需先預覽並同意", unknown: "狀態確認中" },
+    publicNote: "（公開示範站不送出任何資料）",
+  },
 } as const;
 
 // ── products：商品毛利：商品頁、最差與增加最多、商品比較

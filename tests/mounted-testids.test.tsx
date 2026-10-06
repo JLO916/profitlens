@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
 import { fixture } from "./helpers/fixtures";
 import { validateDataset } from "@/domain/validation";
-import type { AnalysisFilters, Dataset, DatasetInput, FileName, SourceRef } from "@/domain/types";
+import type { AnalysisFilters, Dataset, DatasetInput, Diagnostic, FileName, Scope, SourceRef } from "@/domain/types";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { emptyDecisionWorkspace, saveScenario } from "@/application/decision";
 import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, updateScenarioContext, scenarioSelectionRef, type ScenarioWorkspace } from "@/application/scenario-workspace";
@@ -29,6 +29,7 @@ import { NeedsAttention, PeriodBar } from "@/components/shell/period-bar";
 import { Overview } from "@/components/overview";
 import { Diagnosis, DataWorkspace } from "@/components/workspace-panels";
 import { AiPanel } from "@/components/ai-panel";
+import { AiCollapse } from "@/components/ai-collapse";
 import { ProductComparisonPanel } from "@/components/product-comparison-panel";
 import { MultiScenarioWorkbench } from "@/components/multi-scenario-workbench";
 import { ActionsWorkbench } from "@/components/actions-workbench";
@@ -100,7 +101,7 @@ function shellPage(state: ShellState): ReactElement {
     switch (panel) {
       case "overview": return <Overview snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} periodOpen={false} onPeriodToggle={noop} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={noop} onNavigate={noop} datasetName={datasetName} missingItems={active.dataset.issues.length} actionsSummary={{ pending: actionWorkspace.items.filter(item => item.execution_status !== "completed").length, pinned: actionWorkspace.items.filter(item => item.pinned).slice(0, 3).map(item => ({ problem: item.card.problem, owner: item.card.owner_role, deadline: item.card.deadline })) }} meetingEntry={<MeetingEntry review={review} history={history} datasetHash={active.snapshot.dataset_hash} onOpen={noop} />} />;
       case "meeting": return <MeetingPage source={active} conversion={active.conversion} targets={{ set: active.targets ?? null, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={review} history={history} onChange={noop} onEvidence={noop} onRefreshSource={noop} onCreateAction={noop} onFinalize={asyncNoop} onRemoveMeeting={noop} />;
-      case "diagnosis": return <><Diagnosis snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} events={active.events} /><AiPanel capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }} snapshot={active.snapshot} revision={active.revision} onEvidence={noop} /></>;
+      case "diagnosis": return <><Diagnosis snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} events={active.events} /><AiCollapse capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }}><AiPanel capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }} snapshot={active.snapshot} revision={active.revision} onEvidence={noop} /></AiCollapse></>;
       case "products": return <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={noop} filenames={active.filenames} conversion={active.conversion} />;
       case "data": return <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={[]} eventIssues={[]} onTargets={noop} onEvents={noop} onRemoveTargets={noop} onRemoveEvents={noop} onRemoveTargetRow={noop} onRemoveEventRow={noop} />;
       default: return null;
@@ -370,6 +371,62 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       for (const id of ["weekly-snapshot", "snapshot-sentence", "copy-summary", "copy-summary-status", "overview-meeting-entry", "kpi-band", "assist-kpis", "overview-advanced", "period-comparison"]) expect(testIdCounts(html).get(id), id).toBe(1);
     });
 
+    it("V3-5 通路健檢：健檢結果在前、各通路兩期比較在後、AI 區最後；AI 區收合（<details data-testid=ai-collapsed>）時 ai-panel 與 ai-* testid 仍掛著，summary 只有文字", () => {
+      const { html } = states.find(state => state.name === "diagnosis")!;
+      const order = ['data-testid="diagnosis-panel"', 'data-testid="channel-compare"', 'data-testid="ai-collapsed"'].map(attr => html.indexOf(attr));
+      expect(order.every(index => index > -1)).toBe(true);
+      expect([...order].sort((a, b) => a - b)).toEqual(order);
+      const tag = openTag(html, 'data-testid="ai-collapsed"')!;
+      expect(tag).toMatch(/^<details\s/);
+      expect(tag).not.toMatch(/\sopen=""/);
+      const collapsed = element(html, 'data-testid="ai-collapsed"')!;
+      const summary = collapsed.slice(collapsed.indexOf("<summary"), collapsed.indexOf("</summary>") + "</summary>".length);
+      expect(summary).not.toMatch(/<button|<a\s|<input|<select|<details|tabindex/i);
+      const copy = labels.diagnosis.aiCollapse;
+      expect(summary.replace(/<[^>]*>/g, "")).toBe(`${fill(copy.summary, { status: copy.status.off })}${copy.publicNote}`);
+      // 公開示範站（能力不可用）時 SSR 會出現的 ai-* testid 全部在收合的 details 裡（與 testid 基準的 diagnosis-ai 情境同一組）。
+      for (const id of ["ai-panel", "ai-mode", "ai-status"]) {
+        expect(collapsed, id).toContain(`data-testid="${id}"`);
+        expect(testIdCounts(html).get(id), id).toBe(1);
+      }
+      // 每一列健檢的 id 唯一，通路寬表備註欄的同頁連結都指到存在的列。
+      const anchors = idCounts(html);
+      const links = [...html.matchAll(/\shref="#(diagnosis-row-[A-Z_]+)"/g)].map(match => match[1]);
+      expect(links.length).toBeGreaterThan(0);
+      for (const id of links) expect(anchors.get(id), id).toBe(1);
+    });
+
+    it("V3-5 AI 可用時（需先預覽並同意）：預覽、進階、payload、request、對照等 ai-* testid 也都在收合的 details 裡；summary 不寫公開示範站", async () => {
+      const { snapshot } = await load("demo", "demo");
+      const capability = { available: true, reason: "AVAILABLE", provider: "openai" as const };
+      const html = renderToStaticMarkup(<AiCollapse capability={capability}><AiPanel capability={capability} snapshot={snapshot} revision={1} onEvidence={noop} /></AiCollapse>);
+      const collapsed = element(html, 'data-testid="ai-collapsed"')!;
+      expect(openTag(html, 'data-testid="ai-collapsed"')).not.toMatch(/\sopen=""/);
+      for (const id of ["ai-panel", "ai-mode", "ai-status", "ai-readable-preview", "ai-facts-preview", "ai-advanced", "ai-payload-preview", "ai-request-preview", "ai-local-mapping"]) expect(collapsed, id).toContain(`data-testid="${id}"`);
+      const copy = labels.diagnosis.aiCollapse;
+      const summary = collapsed.slice(collapsed.indexOf("<summary"), collapsed.indexOf("</summary>"));
+      expect(summary.replace(/<[^>]*>/g, "")).toBe(fill(copy.summary, { status: copy.status.needsConsent }));
+      expect(html).not.toContain(copy.publicNote);
+    });
+
+    it("V3-5 健檢列範圍超過 4 個：其餘 chips 收進「更多範圍」popover，<details> 收合時仍掛著，而且仍是同一組 role=group 的範圍切換", async () => {
+      const golden = await load("golden", "golden");
+      const scope = (index: number): Scope => ({ kind: "sku", channels: ["DTC"], sku: `S${String(index).padStart(2, "0")}` });
+      const diagnostics: Diagnostic[] = Array.from({ length: 9 }, (_, index) => ({ id: `sku-${index}`, code: "SKU_NEGATIVE_GP", scope: scope(index), title: "", fact_ids: [], hypothesis: "", recommendation: "", limitations: [], ranking_amount: { value: `-${index + 1}.00`, reason_codes: [] } }));
+      const snapshot = { ...golden.snapshot, report: { ...golden.snapshot.report, diagnostics } };
+      const html = renderToStaticMarkup(<Diagnosis snapshot={snapshot} onEvidence={noop} onCreateAction={noop} />);
+      const row = element(html, 'data-testid="diagnosis-row-SKU_NEGATIVE_GP"')!;
+      const more = element(row, 'class="scope-more ui-popover-host"')!;
+      expect(more).toMatch(/^<details\s/);
+      expect(more.slice(0, more.indexOf(">") + 1)).not.toMatch(/\sopen=""/);
+      expect(more).toContain(`>${fill(labels.diagnosis.listV3.moreScopes, { n: 5 })}</summary>`);
+      expect(more.match(/class="scope-chip" aria-pressed=/g)).toHaveLength(5);
+      expect(row.match(/class="scope-chip" aria-pressed=/g)).toHaveLength(9);
+      expect(occurrences(row, `role="group" aria-label="${escapeAttr(labels.diagnosisList.scopeSwitch)}"`)).toBe(2);
+      const duplicates = [...idCounts(html)].filter(([, count]) => count > 1);
+      expect(duplicates).toEqual([]);
+    });
+
     it("開發者分組只在 #validation 時出現（§6.3 #3）", () => {
       for (const { name, html, state } of loaded()) expect(testIdCounts(html).get("nav-group-developer") ?? 0, name).toBe(state!.showValidation ? 1 : 0);
     });
@@ -481,7 +538,10 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
   describe("Dashboard 的組法與本測試一致（防漂移）", () => {
     const source = readFileSync(resolve("src/components/dashboard.tsx"), "utf8");
     it("每個殼層元件在 Dashboard 只實例化一次", () => {
-      for (const component of ["ShellFrame", "ExportMenu", "WorkspaceStorage", "PageHeader", "PeriodBar", "NeedsAttention", "ShellFooter", "ImportWizard", "MultiScenarioWorkbench", "ActionsWorkbench", "EvidenceDrawer", "BasisDialog", "Overview", "Diagnosis", "AiPanel", "ProductComparisonPanel", "DataWorkspace", "MeetingPage", "MeetingEntry"]) expect(source.match(new RegExp(`<${component}[\\s/>]`, "g"))?.length ?? 0, component).toBe(1);
+      for (const component of ["ShellFrame", "ExportMenu", "WorkspaceStorage", "PageHeader", "PeriodBar", "NeedsAttention", "ShellFooter", "ImportWizard", "MultiScenarioWorkbench", "ActionsWorkbench", "EvidenceDrawer", "BasisDialog", "Overview", "Diagnosis", "AiCollapse", "AiPanel", "ProductComparisonPanel", "DataWorkspace", "MeetingPage", "MeetingEntry"]) expect(source.match(new RegExp(`<${component}[\\s/>]`, "g"))?.length ?? 0, component).toBe(1);
+    });
+    it("V3-5：通路健檢的 AI 區包在 AiCollapse 裡（預設收合），與 shellPage() 的組法相同", () => {
+      expect(source).toMatch(/<AiCollapse capability=\{aiCapability\}><AiPanel key=\{restoreEpoch\} capability=\{aiCapability\} /);
     });
     it("掛載條件與 shellPage() 相同：試算工作台每頁都掛著（hidden 切換）、匯入精靈只在資料來源頁顯示、期間列與橫幅在有資料或套用中時掛著", () => {
       expect(source).toMatch(/\{active && <div hidden=\{!visible \|\| panel !== "scenarios"\}><MultiScenarioWorkbench /);
