@@ -45,6 +45,10 @@ import { ActionsWorkbench } from "./actions-workbench";
 import { ProductComparisonPanel } from "./product-comparison-panel";
 import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, taipeiToday, type ActionWorkspace, type ActionContext } from "@/application/action-workspace";
 import { track } from "@/application/analytics";
+// V3-3 A1 imports（頂欄／側欄／頁尾／手機底部分頁列的子元件）
+
+// V3-3 A2 imports（期間列／橫幅／手機期間底部面板的子元件）
+
 
 type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "meeting" | "validation";
 type Status = "empty" | "loading" | "error" | "partial" | "ready";

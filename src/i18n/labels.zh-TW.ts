@@ -144,6 +144,17 @@ const brandName = "EC ProfitLens";
 
 // ── shell：應用殼層：側欄、頂欄、期間列、狀態、共用按鈕、AI 狀態與面板、新版提示、開發者驗證
 export const shell = {
+  /** V3-3 A1 anchor：頂欄、側欄、資料狀態、手機底部分頁列、頁尾（由 A1 代理填入，不改名） */
+  topbarV3: {},
+  sidebarV3: {},
+  dataStatus: {},
+  mobileNav: {},
+  footerV3: {},
+
+  /** V3-3 A2 anchor：期間列、需要處理橫幅、手機期間底部面板（由 A2 代理填入，不改名） */
+  periodBarV3: {},
+  banner: {},
+
   nav: {
     overview: { headline: "經營總覽", explain: "本期關鍵數字、三件事、趨勢與拆解" },
     diagnosis: { headline: "通路健檢", explain: "哪個通路、哪項費用出了問題" },
