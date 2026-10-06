@@ -1,5 +1,16 @@
 # Status
 
+## Revamp v3｜V3-4b 經營總覽圖表（完成，未推送、未部署；V3-0–V3-4 的 MVP 切線已到，部署 preview 待使用者當次同意）
+
+PRD §7.1 區塊 5–8 與 §10.3（F2）落地：貢獻變化拆解改 C17 瀑布（inline SVG）＋橋接表（L3）＋平衡檢核，標題改 L1 結論句；新增本期利潤結構四層瀑布（10 根、範圍切換只影響本圖、資料表、資料待補虛線框、三個恆等式到分）；趨勢與各通路改 C16 ChartFrame（結論標題／副標＝aria 描述、takeaway、線段圖例、最後一點標值、缺資料斷線、負值不利色、固定高度四態等高）；圖表色集中 `chart-theme.ts`；事件 `waterfall_clicked`；區塊順序依 §7.1、1280 上下排列。`src/domain`、`fixtures`、`docs/METRICS.md` 零改動；無新依賴。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **98 檔／1,996 全過**、`lint:design` exit 0（hex 0、圓角 4、字級 13、字距 0；eyebrow 3 → 0、箭頭 4 → 3）、build pass、E2E 全套 **608／608 全過（16.9 分，四尺寸）**；禁區 diff 空；testid 刪除數 0（新增 bridge-section、bridge-waterfall、bridge-table、bridge-balance-check、profit-waterfall、profit-waterfall-scope、profit-waterfall-bar-{metric}、trend、channel-mix）；`feature-retention.csv` #28–#30 打勾（V3-4 全部 10 列完成）。
+- 圖表驗收：九項加總＝總差額（到分）、平衡檢核「已平衡（差 0.00）」；合計與每通路四層恆等式 true；點柱／點列同一抽屜；切換期間四個圖框高度差 0、CLS 0（含輸入後位移 desktop 0.012／mobile 0.050，修正前 0.20／0.32）。
+- 畫面基準：`verification/revamp-v3/V3-4b/snapshots` 36 張寫入後重跑 4/4、0 差異；Lighthouse 五頁 Accessibility 100／100、空狀態 Performance 100／98、總覽頁 0 個失敗稽核；首屏數字與 V3-4a 相同（一句話頂端 192／無橫幅 168、KPI 底邊 419／無橫幅 395、390 貢獻數值頂端 295、內容前控制項 9）。
+- 偏離（詳見驗收文件 §5 與 DECISIONS 2026-10-06 V3-4b）：瀑布用 inline SVG 而非 Recharts 堆疊長條；拆解結論句「扣最多的一項是」依資料（示範資料為商品成本）；軸刻度「50.0 萬」帶一位小數；趨勢標題沿用標準名。
+- 未執行／待人工：H2 設計稿審查（後補）、H3 補審（本批結論句與瀑布文案一併）；**MVP 切線的 Vercel preview 部署需使用者當次明確同意（D-V3-24）**。
+- 下一批：V3-5 通路健檢、商品毛利、計算與來源抽屜。
+
 ## Revamp v3｜V3-4a 經營總覽首屏與結構（完成，未推送、未部署；V3-4 拆批後的前半）
 
 V3-4（L）於開工前拆成 V3-4a／V3-4b。V3-4a 落地 PRD §7.1 區塊 2、3、4、9、10 與 §10.2（F1）：本期一句話（5 種情境＋2 種補充，`snapshot-sentence`）＋複製週會摘要（純文字＋Markdown、剪貼簿失敗改對話框、`summary_copied`）＋會議入口搬到右側；KPI 帶（C1：單一容器五格、扣廣告後貢獻 32px＋強調線、差額方向詞、C18 目標細條、`?` 定義；768 3＋2、390 清單）；三件事改 C9 摘要型警示列（原因＋下一步常駐、限制與相關範圍收進列內、門檻 popover 保持掛載、不足 3 件與 0 件句型、查看全部）；其他常用指標改 C2 兩欄緊湊表；進階 `<details>`。圖表段維持 v2，留 V3-4b。`src/domain`、`fixtures`、`docs/METRICS.md` 零改動；無新依賴。
