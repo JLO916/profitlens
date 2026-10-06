@@ -4,7 +4,7 @@ import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { formatAmountL1, formatCount, formatPerUnit, formatRateL1 } from "../../src/application/presentation";
 import { openWizard, setWizardFiles, nextFromFiles, confirmMappingIfShown, chooseBasis, confirmAndCheck, commitWizard } from "./import-wizard-helpers";
-import { clickReplacing, closeDownloads, openDetails, openDownloads, openValidation } from "./replacement-helpers";
+import { choosePreset, clickReplacing, closeDownloads, closeStorage, dismissSavePrompt, isMobile, navigateTo, openDownloads, openStorage, openValidation, periodSummary, periodSummaryText, presetButton } from "./replacement-helpers";
 
 // R4：輔助指標橫列、「去年同期」快捷、目標達成率、趨勢檔期區帶、備份 v4 來回。
 // 合成資料（一個通路「官網」、一個商品）：2025-06-01～2026-08-31，2025 年每天原價收入 100.00、2026 年每天 200.00，成本一律 40.00；
@@ -34,8 +34,22 @@ async function importSynthetic(page: Page) {
   await confirmAndCheck(page, "valid");
   await commitWizard(page);
 }
-const preset = (page: Page, name: string) => page.getByRole("group", { name: labels.sections.presetGroup }).getByRole("button", { name, exact: true });
-const applyPeriod = (page: Page) => page.locator("form.period-form").getByRole("button", { name: labels.buttons.apply, exact: true });
+// V3-3（D-V3-10＝A）：期間快捷單擊就套用，不再按「套用」；套用後的範圍看期間摘要（period-summary）。手機上快捷在期間底部面板裡（choosePreset 會先開）。
+// 本月 vs 上月：本期 2026-08-01～08-31、上期 2026-07-01～07-31（各 31 天）；去年同期：上期 2025-08-01～08-31。資料到 2026-08-31。
+const MONTH_SUMMARY = periodSummaryText("2026-08-01", "2026-08-31", "2026-07-01", "2026-07-31");
+const YOY_SUMMARY = periodSummaryText("2026-08-01", "2026-08-31", "2025-08-01", "2025-08-31");
+
+/**
+ * V3-3 手機：首次保存提示（.local-save-prompt，z-index 25）疊在「更多」面板（.mobile-tabbar 的堆疊層 20）與頂欄「更多」工具列（.topbar 的堆疊層 21）之上，
+ * 提示出現時點不到「更多」裡的頁面與儲存／匯出選單（已回報為產品問題）。本檔不測保存提示，手機流程先按「先不要」；桌機流程不變。
+ */
+async function declineSavePromptOnMobile(page: Page) {
+  if (!isMobile(page)) return;
+  const prompt = page.getByTestId("local-save-prompt");
+  await expect(prompt).toBeVisible();
+  await prompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
+  await expect(prompt).toHaveCount(0);
+}
 
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
@@ -66,22 +80,24 @@ test("去年同期快捷：本月 vs 上月套用後，上期各減一年；超�
   await importSynthetic(page);
   await expect(kpi(page, "net_revenue")).toBeVisible();
   // 剛匯入的提議期間：上期起日是 2025-06-01，去年同期會早於涵蓋 → 停用＋原因。
-  const yoy = preset(page, labels.periods.presets.yoy);
+  const yoy = presetButton(page, "yoy");
   await expect(yoy).toHaveAttribute("aria-disabled", "true");
   await expect(page.locator("#preset-reason-yoy")).toContainText("2025-06-01");
   // 理由也要看得見（不只 title／sr-only）。
   await expect(page.getByTestId("preset-reason-visible-yoy")).toContainText("2025-06-01");
-  await preset(page, labels.periods.presets.monthVsPrev).click();
-  await applyPeriod(page).click();
+  await choosePreset(page, "monthVsPrev");
+  await expect(periodSummary(page)).toContainText(MONTH_SUMMARY);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("6200.00"));
   await expect(yoy).not.toHaveAttribute("aria-disabled", "true");
-  await yoy.click();
+  // 理由橫幅在去年同期可用後消失。
+  await expect(page.getByTestId("preset-reason-visible-yoy")).toHaveCount(0);
+  await choosePreset(page, "yoy");
   await expect(page.locator("#previous-start")).toHaveValue("2025-08-01");
   await expect(page.locator("#previous-end")).toHaveValue("2025-08-31");
   await expect(page.locator("#current-start")).toHaveValue("2026-08-01");
   await expect(page.locator("#current-end")).toHaveValue("2026-08-31");
   await expect(yoy).toHaveAttribute("aria-pressed", "true");
-  await applyPeriod(page).click();
+  await expect(periodSummary(page)).toContainText(YOY_SUMMARY);
   await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-previous")).toContainText(formatAmountL1("3100.00"));
   await expect(page.getByTestId("assist-units_sold")).toContainText(formatCount("62", "L1"));
   await expect(page.getByTestId("assist-net_revenue_per_unit")).toContainText(formatPerUnit("100.00", "L1"));
@@ -89,10 +105,11 @@ test("去年同期快捷：本月 vs 上月套用後，上期各減一年；超�
 
 test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨勢圖標示檔期、備份 v4 來回保留", async ({ page }) => {
   await importSynthetic(page);
-  await preset(page, labels.periods.presets.monthVsPrev).click();
-  await applyPeriod(page).click();
+  await declineSavePromptOnMobile(page);
+  await choosePreset(page, "monthVsPrev");
+  await expect(periodSummary(page)).toContainText(MONTH_SUMMARY);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("6200.00"));
-  await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();
+  await navigateTo(page, "data");
   const targetsCsv = ["period_start,period_end,channel,metric,target", "2026-08-01,2026-08-31,ALL,net_revenue,8000.00", "2026-07-01,2026-07-31,ALL,gross_profit,5000.00"].join("\n");
   await page.getByLabel(labels.targets.upload, { exact: true }).setInputFiles({ name: "targets.csv", mimeType: "text/csv", buffer: Buffer.from(targetsCsv) });
   await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(2);
@@ -103,7 +120,7 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   const eventsCsv = "start,end,label\n2026-08-10,2026-08-16,夏季特賣\n";
   await page.getByLabel(labels.events.upload, { exact: true }).setInputFiles({ name: "events.csv", mimeType: "text/csv", buffer: Buffer.from(eventsCsv) });
   await expect(page.getByTestId("events-table").locator("tbody tr")).toHaveCount(1);
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: formatAmountL1("8000.00"), rate: formatRateL1("0.775") }));
   await expect(page.getByTestId("kpi-target-gross_profit")).toHaveText(fill(labels.targets.mismatch, { start: "2026-07-01", end: "2026-07-31" }));
   // 目標數字可追溯：抽屜列出實際、目標與 targets.csv 行號。
@@ -124,7 +141,8 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   expect(csv).toContain("assist_kpi");
   await closeDownloads(page);
   // 備份 v4：下載 → 檢查 → 清空 → 恢復 → 目標與檔期都回來。
-  const storage = await openDetails(page.getByTestId("workspace-storage"));
+  // V3-3：儲存選單（手機收在頂欄「更多」）。
+  const storage = await openStorage(page);
   const [backup] = await Promise.all([page.waitForEvent("download"), storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true }).click()]);
   const text = await readFile((await backup.path())!, "utf8");
   const wire = JSON.parse(text) as { schema_version: string; payload: { targets: { rows: unknown[] } | null; events: { rows: unknown[] } | null; preprocessing: unknown; meeting_history: unknown[]; ui_prefs: Record<string, unknown> } };
@@ -139,15 +157,19 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await clickReplacing(page, storage.getByRole("button", { name: labels.ui.workspaceStorage.applyRestore, exact: true }));
   await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: formatAmountL1("8000.00"), rate: formatRateL1("0.775") }));
   await expect(page.getByTestId("trend-events")).toContainText("夏季特賣");
+  // 若恢復後又出現保存提示，先按「先不要」（手機上才點得到頂欄「更多」裡的儲存選單）。
+  await dismissSavePrompt(page);
+  await closeStorage(page);
   // 資料頁可逐列刪除：刪掉毛利那列後只剩一列。
-  await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();
+  await navigateTo(page, "data");
   await page.getByTestId("targets-table").getByRole("button", { name: `${labels.targets.removeRow} 3`, exact: true }).click();
   await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(1);
 });
 
 test("舊的單頁匯入面板已移除：#legacy-import 不再掛載", async ({ page }) => {
   await page.goto("/#legacy-import");
-  await page.getByRole("button", { name: labels.buttons.importData, exact: true }).click();
+  // V3-3：頁首「匯入資料」只在資料來源頁；其他頁經頂欄資料狀態 →「匯入新資料」開精靈。
+  await openWizard(page);
   await expect(page.getByTestId("import-wizard")).toBeVisible();
   await expect(page.locator("#legacy-import")).toHaveCount(0);
   await expect(page.getByTestId("import-panel")).toHaveCount(0);

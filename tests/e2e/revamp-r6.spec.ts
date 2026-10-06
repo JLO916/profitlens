@@ -7,7 +7,7 @@ import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { channelsLabel } from "../../src/application/copy";
 import { formatSavedDateTime } from "../../src/application/auto-save";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
-import { acceptSavePrompt, clickReplacing, closeDownloads, dismissSavePrompt, openDownloads, openMeeting, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptSavePrompt, clearButton, clickReplacing, closeDownloads, closeStorage as closeStorageMenu, dismissSavePrompt, isMobile, navControl, navigateTo, openDownloads, openMeeting, openMobileMore, openStorage as openStorageMenu, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -45,7 +45,11 @@ const templateRe = (...args: Parameters<typeof templateSource>) => new RegExp(`^
 const templateIn = (...args: Parameters<typeof templateSource>) => new RegExp(templateSource(...args));
 /** 臺北日曆日 YYYY-MM-DD（會議日期預設值；與 app 的 taipeiToday() 同一個時區）。 */
 const taipeiToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-const nav = (page: Page, id: typeof navIds[number]) => page.getByRole("button", { name: labels.nav[id].label, exact: true });
+/** V3-3 側欄分組（D-V3-14＝A：頁面順序維持 v2，只加組標題；開發者組只在 #validation 出現）。依序串起來就是 navIds。 */
+const navGroups = [["results", ["overview"]], ["causes", ["diagnosis", "products"]], ["decisions", ["scenarios", "actions", "meeting"]], ["data", ["data"]], ["developer", ["validation"]]] as const;
+/** V3-3 手機：底部分頁列前四格（第五格是「更多」），其餘四頁在「更多」面板。 */
+const tabIds = ["overview", "diagnosis", "actions", "meeting"] as const;
+const moreIds = ["products", "scenarios", "data", "validation"] as const;
 const status = (page: Page) => page.getByTestId("workspace-status");
 const outputDir = (...parts: string[]) => resolve("verification/revamp-R6", ...parts);
 const defaultMeetingName = labels.ui.reviewSession.defaultName;
@@ -81,16 +85,15 @@ async function declineSavePrompt(page: Page) {
   await prompt.getByRole("button", { name: auto.decline, exact: true }).click();
   await expect(prompt).toHaveCount(0);
 }
+/** V3-3：儲存選單在頂欄（手機收在 topbar-more，共用 helper 會先展開）。 */
 async function openStorage(page: Page) {
-  const menu = page.getByTestId("workspace-storage");
-  if (await menu.getAttribute("open") === null) await menu.locator(":scope > summary").click();
+  const menu = await openStorageMenu(page);
   await expect(menu).toHaveAttribute("open", "");
   return menu;
 }
 async function closeStorage(page: Page) {
-  const menu = page.getByTestId("workspace-storage");
-  if (await menu.getAttribute("open") !== null) await menu.locator(":scope > summary").click();
-  await expect(menu).not.toHaveAttribute("open", "");
+  await closeStorageMenu(page);
+  await expect(page.getByTestId("workspace-storage")).not.toHaveAttribute("open", "");
 }
 async function downloadFrom(page: Page, button: Locator): Promise<{ download: Download; bytes: Buffer }> {
   const event = page.waitForEvent("download");
@@ -100,7 +103,7 @@ async function downloadFrom(page: Page, button: Locator): Promise<{ download: Do
 }
 /** 試算頁：DTC 方案 1 套用「維持現況」範本 → 計算，得到基準 270.00。 */
 async function calculateKeepPlan(page: Page) {
-  await nav(page, "scenarios").click();
+  await navigateTo(page, "scenarios");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   const card = page.getByTestId("scenario-1");
@@ -114,7 +117,7 @@ async function calculateKeepPlan(page: Page) {
 }
 /** 行動頁（看板）：新增一張待辦、填問題、按星號置頂。 */
 async function addPinnedAction(page: Page, problem: string) {
-  await nav(page, "actions").click();
+  await navigateTo(page, "actions");
   await switchActionsView(page, "board");
   await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
   const card = page.getByTestId("board-card-1");
@@ -167,7 +170,7 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await addPinnedAction(page, problem);
 
   const meeting = await openMeeting(page);
-  await expect(nav(page, "meeting")).toHaveAttribute("aria-current", "page");
+  await expect(sidebarNav(page, "meeting")).toHaveAttribute("aria-current", "page");
   // 載入資料時已自動建立會議稿；沒有的話按「建立這次的會議紀錄」。
   if (await meeting.getByRole("button", { name: review.createButton, exact: true }).count()) await meeting.getByRole("button", { name: review.createButton, exact: true }).click();
   await expect(basics(meeting).getByLabel(labels.meeting.name, { exact: true })).toHaveValue(defaultMeetingName);
@@ -227,7 +230,7 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await expect(followUp.locator("tbody tr td")).toHaveText([labels.actions.statuses.not_started, labels.actions.statuses.not_started, record.statusNotUpdated]);
 
   // 總覽只留一行入口：剛結束會議、新會議稿還沒動過 → 「本期會議：已結束（日期）· 新會議稿：草稿」（不再另列「上次會議 日期」）。
-  await nav(page, "overview").click();
+  await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
   await expect(entry).toContainText(fill(meetingPage.entryFinalized, { date: today }));
   await expect(entry).not.toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
@@ -256,8 +259,8 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await storage.getByRole("button", { name: store.confirmDownloaded, exact: true }).click();
   await closeStorage(page);
 
-  // 清空 → 讀回備份：會議歷史仍一筆，比較仍是 same_scope（差額 0.00）。
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.clear, exact: true }));
+  // 清空 → 讀回備份：會議歷史仍一筆，比較仍是 same_scope（差額 0.00）。V3-3：「清空」在儲存選單的危險區。
+  await clickReplacing(page, await clearButton(page));
   await expect(status(page)).toContainText(labels.status.empty);
   const fresh = await openStorage(page);
   await fresh.getByLabel(store.selectBackupFile, { exact: true }).setInputFiles({ name: "r6-meeting.json", mimeType: "application/json", buffer: backup.bytes });
@@ -265,15 +268,15 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await clickReplacing(page, fresh.getByRole("button", { name: store.applyRestore, exact: true }));
   await expect(status(page)).toContainText(ready("golden"));
   await expect(fresh.getByTestId("storage-notice")).toHaveText(store.restoredNotice);
-  await closeStorage(page);
-  // 恢復後本機保存同意重設，提示再出現一次。
+  // 恢復後本機保存同意重設，提示再出現一次。V3-3：先回應提示再收儲存選單（手機上提示蓋住頂欄「更多」的工具列，見 e 的檢查）。
   await declineSavePrompt(page);
+  await closeStorage(page);
   const restored = await openMeeting(page);
   await expect(restored.getByTestId("meeting-history-item")).toHaveCount(1);
   await expect(restored.getByTestId("meeting-history-item").first().locator("summary")).toHaveText(historyTitle(name, today, "adopted"));
   await expectSameScopeCompare(restored);
   // 還原備份後新會議稿仍是未動過的第 1 版草稿：總覽入口同樣顯示「已結束（日期）」。
-  await nav(page, "overview").click();
+  await navigateTo(page, "overview");
   await expect(page.getByTestId("overview-meeting-entry")).toContainText(fill(meetingPage.entryFinalized, { date: today }));
 });
 
@@ -290,7 +293,7 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
   await expect(meeting.getByTestId("meeting-history-item").first().locator("summary")).toHaveText(historyTitle(defaultMeetingName, today, "need_data"));
   // 結束會議之後才推進待辦：上次「未開始」→ 目前「進行中」（狀態更新日＝今天）。
-  await nav(page, "actions").click();
+  await navigateTo(page, "actions");
   await page.getByTestId("board-card-1-move-in_progress").click();
   await expect(page.getByTestId("board-column-in_progress").getByTestId("board-card-1")).toBeVisible();
 
@@ -327,7 +330,7 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   await expect(followUp.locator("tbody tr td")).toHaveText([labels.actions.statuses.not_started, labels.actions.statuses.in_progress, today]);
   // 會議歷史換資料後仍保留；總覽入口不顯示別份資料的上次會議日期。
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
-  await nav(page, "overview").click();
+  await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
   await expect(entry).toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
@@ -542,10 +545,21 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   await expect(exit).toHaveCount(0);
 });
 
-test("e. 總覽一行入口切到會議紀錄；側欄八個分頁（手機 4×2）、沒有水平捲動", async ({ page }, testInfo) => {
+test("e. 總覽一行入口切到會議紀錄；導覽：桌機側欄四組＋開發者組（七頁＋開發者驗證）、手機底部分頁列 5 格＋「更多」4 項；每頁都沒有水平捲動", async ({ page }) => {
   await loadDataset(page, "golden");
+  if (isMobile(page)) {
+    // V3-3 手機：首次保存提示出現時，使用者打開的「更多」面板（頁面）與頂欄「更多」工具列（儲存／匯出）應在提示之上、點得到。
+    // 目前 .local-save-prompt（z-index 25）蓋在 .mobile-tabbar（20）與 .topbar（21）的堆疊層之上 → 產品問題，soft 斷言保持失敗，其餘流程照常檢查。
+    await expect(page.getByTestId("local-save-prompt")).toBeVisible();
+    await openMobileMore(page);
+    const onTop = (locator: Locator) => locator.evaluate(element => { const box = element.getBoundingClientRect(); const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2); return !!hit && element.contains(hit); });
+    expect.soft(await onTop(navControl(page, "products")), "「更多」面板的項目不應被首次保存提示蓋住").toBe(true);
+    expect.soft(await onTop(page.getByTestId("workspace-storage").locator(":scope > summary")), "頂欄「更多」的儲存選單不應被首次保存提示蓋住").toBe(true);
+    await page.getByTestId("mobile-tabbar-more").click();
+    await expect(page.getByTestId("mobile-more")).toBeHidden();
+  }
   await declineSavePrompt(page);
-  await expect(nav(page, "overview")).toHaveAttribute("aria-current", "page");
+  await expect(sidebarNav(page, "overview")).toHaveAttribute("aria-current", "page");
   // 舊的總覽會議 <details> 已移除，只剩一行入口 <p>。
   await expect(page.getByTestId("overview-meeting")).toHaveCount(0);
   await expect(page.getByTestId("meeting-page")).toHaveCount(0);
@@ -558,30 +572,70 @@ test("e. 總覽一行入口切到會議紀錄；側欄八個分頁（手機 4×2
   await expect(go).toBeVisible();
   // 一行：入口內的文字與按鈕垂直置中在同一列（手機寬度允許換行，只檢查高度不超過兩行）。
   const rows = await entry.evaluate(element => new Set(Array.from(element.children).map(child => { const box = child.getBoundingClientRect(); return Math.round((box.top + box.height / 2) / 8); })).size);
-  if (testInfo.project.name === "mobile") expect(rows).toBeLessThanOrEqual(2);
+  if (isMobile(page)) expect(rows).toBeLessThanOrEqual(2);
   else expect(rows).toBe(1);
   await go.click();
   await expect(page.getByTestId("meeting-page")).toBeVisible();
-  await expect(nav(page, "meeting")).toHaveAttribute("aria-current", "page");
+  await expect(sidebarNav(page, "meeting")).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(labels.nav.meeting.label);
 
-  // 側欄八個分頁，順序固定；沒有水平捲動。（R7-4：本案例經 #validation 載入，「開發者驗證」顯示到重新整理為止，故仍為八個。）
-  const buttons = page.getByRole("navigation", { name: dash.mainNavAria }).getByRole("button");
-  await expect(buttons).toHaveCount(8);
-  await expect(buttons).toHaveText(navIds.map(id => labels.nav[id].label));
-  for (const id of navIds) {
-    await nav(page, id).click();
-    await expect(nav(page, id)).toHaveAttribute("aria-current", "page");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  // 側欄（主要導覽）：八個頁面按鈕、順序固定（D-V3-14＝A 維持 v2 順序），分在「看結果／找原因／做決定／管資料」四組＋「開發者」組。
+  // R7-4：本案例經 #validation 載入，「開發者驗證」顯示到重新整理為止，故開發者組在。手機上側欄隱藏但仍掛載（同一份 DOM）。
+  const sidebarButtons = page.locator("aside.sidebar nav button.nav-item");
+  await expect(sidebarButtons).toHaveCount(navIds.length);
+  await expect(sidebarButtons).toHaveText(navIds.map(id => labels.nav[id].label));
+  expect(navGroups.flatMap(([, ids]) => ids)).toEqual([...navIds]);
+  for (const [group, ids] of navGroups) {
+    const root = page.getByTestId(`nav-group-${group}`);
+    await expect(root).toHaveAttribute("role", "group");
+    await expect(root.locator(".nav-group-title")).toHaveText(labels.shell.sidebarV3.groups[group]);
+    await expect(root.locator("button.nav-item")).toHaveText(ids.map(id => labels.nav[id].label));
   }
-  if (testInfo.project.name === "mobile") {
-    // 手機：底部分頁列 4×2，每個按鈕都在視窗寬度內。
-    const boxes = await buttons.evaluateAll(list => list.map(button => { const box = button.getBoundingClientRect(); return { top: Math.round(box.top), left: box.left, right: box.right }; }));
-    const tops = [...new Set(boxes.map(box => box.top))];
-    expect(tops).toHaveLength(2);
-    for (const top of tops) expect(boxes.filter(box => box.top === top)).toHaveLength(4);
-    const width = await page.evaluate(() => window.innerWidth);
-    for (const box of boxes) { expect(box.left).toBeGreaterThanOrEqual(0); expect(box.right).toBeLessThanOrEqual(width); }
+  const width = await page.evaluate(() => window.innerWidth);
+  const inViewport = async (buttons: Locator) => {
+    for (const box of await buttons.evaluateAll(list => list.map(button => { const rect = button.getBoundingClientRect(); return { left: rect.left, right: rect.right, width: rect.width }; }))) {
+      expect(box.width).toBeGreaterThan(0);
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(width);
+    }
+  };
+  const tabbar = page.getByTestId("mobile-tabbar");
+  if (!isMobile(page)) {
+    // 桌機（含平板 768）：側欄看得到，組名是 role=group 的可及名稱；手機底部分頁列不顯示。
+    await expect(page.getByRole("navigation", { name: dash.mainNavAria, exact: true })).toBeVisible();
+    for (const [group] of navGroups) await expect(page.getByRole("group", { name: labels.shell.sidebarV3.groups[group], exact: true })).toBeVisible();
+    await expect(tabbar).toBeHidden();
+  } else {
+    // 手機：側欄隱藏；底部分頁列（第二個 nav「手機導覽」）一列 5 格：總覽／健檢／待辦／會議／更多，每格都在視窗寬度內。
+    await expect(page.locator("aside.sidebar")).toBeHidden();
+    await expect(page.getByRole("navigation", { name: labels.shell.mobileNav.aria, exact: true })).toBeVisible();
+    const tabs = tabbar.locator(":scope > button");
+    await expect(tabs).toHaveCount(5);
+    await expect(tabs).toHaveText([...tabIds.map(id => labels.shell.mobileNav.tabs[id]), labels.shell.mobileNav.more]);
+    for (const [index, id] of tabIds.entries()) await expect(tabs.nth(index)).toHaveAccessibleName(labels.nav[id].label);
+    const tops = await tabs.evaluateAll(list => list.map(button => Math.round(button.getBoundingClientRect().top)));
+    expect(new Set(tops).size).toBe(1);
+    await inViewport(tabs);
+    // 「更多」面板：商品毛利／假設試算／資料來源／開發者驗證，每項都在視窗寬度內。
+    await openMobileMore(page);
+    const moreItems = page.getByTestId("mobile-more").getByRole("button");
+    await expect(moreItems).toHaveText(moreIds.map(id => labels.nav[id].label));
+    await inViewport(moreItems);
+  }
+
+  // 每一頁都切得到（桌機點側欄；手機點分頁或「更多」→ 項目），切過去後是 aria-current="page"，而且沒有水平捲動。
+  for (const id of navIds) {
+    await navigateTo(page, id);
+    await expect(sidebarNav(page, id)).toHaveAttribute("aria-current", "page");
+    if (isMobile(page)) {
+      // 手機：底部分頁的四頁本身是 aria-current；「更多」裡的頁面由「更多」那格標示（data-active），面板選完即關閉。
+      if ((tabIds as readonly string[]).includes(id)) await expect(navControl(page, id)).toHaveAttribute("aria-current", "page");
+      else {
+        await expect(page.getByTestId("mobile-more")).toBeHidden();
+        await expect(page.getByTestId("mobile-tabbar-more")).toHaveAttribute("data-active", "true");
+      }
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   }
 });
 
@@ -673,9 +727,10 @@ test("f2. 首次保存提示選「先不要」：維持手動、不建立本機�
   expect(await hasDatabase()).toBe(false);
   await expect(page.getByTestId("workspace-storage").locator(":scope > summary")).toContainText(labels.status.unsaved);
   await expect(page.getByTestId("local-save-prompt")).toHaveCount(0);
-  // Escape 等於「先不要」：清空後再載入，提示再出現；在提示內按 Escape 關閉。
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.clear, exact: true }));
+  // Escape 等於「先不要」：清空後再載入，提示再出現；在提示內按 Escape 關閉。V3-3：「清空」在儲存選單的危險區。
+  await clickReplacing(page, await clearButton(page));
   await expect(status(page)).toContainText(labels.status.empty);
+  await closeStorage(page);
   await loadDataset(page, "golden");
   const prompt = page.getByTestId("local-save-prompt");
   await expect(prompt).toBeVisible();
@@ -766,7 +821,7 @@ test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文�
   await expect(meeting.getByTestId("meeting-agenda-4")).toContainText(record.noLastMeeting);
   await expect(meeting.getByTestId("meeting-compare")).toContainText(record.noLastMeeting);
   // 總覽入口回到「本期會議：草稿」，不再顯示已結束或上次會議日期。
-  await nav(page, "overview").click();
+  await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
   await expect(entry).toContainText(fill(meetingPage.entry, { state: labels.meeting.decisions.draft }));
   await expect(entry).not.toContainText(fill(meetingPage.entryFinalized, { date: today }));
