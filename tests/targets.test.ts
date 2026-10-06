@@ -46,7 +46,7 @@ describe("R4 targets.csv parsing", () => {
   });
 
   it("accepts a BOM, ignores extra columns and column order, and trims cells", () => {
-    const text = "﻿note,target,metric,channel,period_end,period_start\r\nfree text, -5 ,ad_spend,momo,2026-08-31,2026-08-01\r\n";
+    const text = "\ufeffnote,target,metric,channel,period_end,period_start\r\nfree text, -5 ,ad_spend,momo,2026-08-31,2026-08-01\r\n";
     const { set, issues } = load(text, "my-targets.csv");
     expect(issues).toEqual([]);
     expect(set).toEqual({ filename: "my-targets.csv", rows: [{ period_start: "2026-08-01", period_end: "2026-08-31", channel: "momo", metric: "ad_spend", target: "-5.00", line: 2 }] });
@@ -100,7 +100,7 @@ describe("R4 targets.csv parsing", () => {
       expect(set).toBeNull();
       expect(issues).toEqual([{ line: null, field: "$record", reason_code: "EMPTY", message: labels.targets.errors.EMPTY }]);
     }
-    expect(targetsCsvTemplate()).toBe("﻿period_start,period_end,channel,metric,target\r\n");
+    expect(targetsCsvTemplate()).toBe("\ufeffperiod_start,period_end,channel,metric,target\r\n");
   });
 
   it("passes CSV-level failures through with their reason code", () => {
@@ -114,7 +114,7 @@ describe("R4 targets.csv parsing", () => {
   it("round-trips through exportTargetsCsv with identical rows and lines", () => {
     const set = sixRowSet();
     const csv = exportTargetsCsv(set);
-    expect(csv.startsWith("﻿\"period_start\",\"period_end\",\"channel\",\"metric\",\"target\"\r\n")).toBe(true);
+    expect(csv.startsWith("\ufeff\"period_start\",\"period_end\",\"channel\",\"metric\",\"target\"\r\n")).toBe(true);
     expect(csv).toContain("\"2026-08-01\",\"2026-08-31\",\"ALL\",\"gross_profit\",\"3200000.50\"\r\n");
     const again = parseTargets({ name: "targets.csv", bytes: bytes(csv) }, CHANNELS);
     expect(again).toEqual({ set, issues: [] });
