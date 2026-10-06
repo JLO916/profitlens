@@ -4,7 +4,9 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, wizard, wizardStatus } from "./import-wizard-helpers";
+import { navigateTo } from "./replacement-helpers";
 // R3：舊的單頁匯入面板（import-panel）已由四步匯入精靈取代；本檔改由精靈操作，產品行為的斷言照舊保留。
+// V3-3：空狀態從頂欄資料狀態 →「匯入新資料」開精靈（openWizard 處理）；切頁走 navigateTo（手機用底部分頁列）。
 const panel = labels.ui.importPanel;
 const copy = labels.importWizard;
 /** R2 labels with placeholders (e.g. "已有的部分小計 {subtotal}，不是完整總額") are matched by template shape, like ruleHeadline. */
@@ -66,7 +68,7 @@ test("PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後�
   await expect(form.getByTestId("reconciliation-metric-contribution_after_marketing")).toContainText(formatAmountL3("825.00"));
   await expect(form.getByTestId("import-reconciliation")).toContainText(labels.ui.importGuidance.excluded.platformSubsidy);
   await commitWizard(page);
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await navigateTo(page, "overview");
   // V3-2b：KPI 大數字是 L1；golden 本期 255.00 < 1 萬，顯示為整數元。
   await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText(formatAmountL1("255.00"));
 });

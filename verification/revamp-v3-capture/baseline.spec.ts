@@ -1,9 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
-import { calculateKeepPreset, evidenceDrawer, goTo, loadDemo, nav } from "./shared";
+import { calculateKeepPreset, evidenceDrawer, goTo, loadDemo, navigateTo } from "./shared";
 
 // V3-0 ⑤：四尺寸 toHaveScreenshot 基準（PRD §11.7「截圖」、§12.2 V3-0「畫面零變化（toHaveScreenshot 差異 0）」）。
 // 走查順序：總覽首屏 → 總覽整頁 → 公式與來源抽屜 → 三件事加入待辦（行動看板）→ 通路健檢 → 商品毛利 → 假設試算（維持現況＋計算）→ 會議紀錄 → 資料來源。
+// V3-3：切頁經 navigateTo／goTo（桌機側欄；手機底部分頁列，商品毛利／假設試算／資料來源在「更多」）；抽屜與試算流程不變。
 // 基準位置：verification/revamp-v3/V3-0/snapshots/{project}/{名稱}.png（見 verification/revamp-v3.capture.config.ts 的 snapshotPathTemplate）。
 // 用 expect.soft：一張不同不會擋住後面幾張，報告一次列出全部差異。
 const top = (page: Page) => page.evaluate(() => window.scrollTo(0, 0));
@@ -37,7 +38,7 @@ test("V3-0 四尺寸畫面基準", async ({ page }) => {
   await goTo(page, "products", page.getByTestId("product-table"));
   await expect.soft(page).toHaveScreenshot("06-products.png", { fullPage: true });
 
-  await nav(page, "scenarios").click();
+  await navigateTo(page, "scenarios");
   await calculateKeepPreset(page);
   await top(page);
   await expect.soft(page).toHaveScreenshot("07-scenarios.png", { fullPage: true });

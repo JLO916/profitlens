@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { clickReplacing, dismissSavePrompt, openDownloads, openValidation, ruleHeadline } from "./replacement-helpers";
+import { clickReplacing, closeTopbarMore, dismissSavePrompt, navigateTo, openBasis, openDownloads, openValidation, periodSummary, periodSummaryText, periodSummaryVisibleText, ruleHeadline } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
 import { csvHeaderKey } from "../../src/application/copy";
 import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
@@ -30,14 +30,15 @@ const drawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${la
 test.describe("R2 口徑說明與怎麼算的", () => {
   test("basis dialog opens from the top bar, the footer and the evidence drawer, and Escape returns focus", async ({ page }) => {
     await loadDemo(page);
-    const topbar = page.locator("header.topbar").getByRole("button", { name: labels.buttons.basis, exact: true });
-    await topbar.click();
+    // V3-3：頂欄「指標定義」是 icon 按鈕（aria-label 不變）；手機收在頂欄「更多」裡，openBasis 先展開再點。
+    const topbar = await openBasis(page);
     await expect(basis(page)).toBeVisible();
     await expect(basis(page).getByRole("listitem")).toHaveCount(9);
     await expect(basis(page)).toContainText(labels.basis.items[2]);
     await page.keyboard.press("Escape");
     await expect(basis(page)).toBeHidden();
     await expect(topbar).toBeFocused();
+    await closeTopbarMore(page);
     const footer = page.locator("footer.main-footer").getByRole("button", { name: labels.buttons.basis, exact: true });
     await expect(page.locator("footer.main-footer")).toContainText(labels.basis.footer);
     await footer.click();
@@ -70,7 +71,7 @@ test.describe("R2 口徑說明與怎麼算的", () => {
     await expect(drawer(page).getByRole("group", { name: labels.ui.evidenceDrawer.sourceTabsAria })).toBeVisible();
     await expect(drawer(page).locator("details.evidence-technical")).not.toHaveAttribute("open", /.*/);
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: labels.nav.products.label, exact: true }).click();
+    await navigateTo(page, "products");
     const table = page.getByTestId("product-table");
     await table.locator("tbody tr").first().getByRole("button").first().click();
     await expect(drawer(page)).toBeVisible();
@@ -83,18 +84,22 @@ test.describe("R2 口徑說明與怎麼算的", () => {
     await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).locator("option")).toContainText([labels.ui.dashboard.filter.allChannels, labels.demoChannelAlias.DTC, labels.demoChannelAlias.MARKETPLACE]);
     // V3-2a（copy-rewrite.csv ui.dashboard.scopeNote）：通路移出期間說明列，只留在通路選單；說明列只剩兩期日期與天數。
     await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).locator("option")).toHaveText([labels.ui.dashboard.filter.allChannels, labels.demoChannelAlias.DTC, labels.demoChannelAlias.MARKETPLACE]);
-    await expect(page.locator(".scope-note")).toHaveText(fill(labels.ui.dashboard.scopeNote, { currentStart: "2026-07-13", currentEnd: "2026-08-23", previousStart: "2026-06-01", previousEnd: "2026-07-12", previousDays: 42, currentDays: 42 }));
-    await expect(page.locator(".scope-note")).not.toContainText(labels.demoChannelAlias.DTC);
+    // V3-3（§6.3 #19）：v2 的範圍說明列（.scope-note）併入期間列的期間摘要（period-summary）；可見文字只寫兩期與天數，
+    // 通路、比較方式、資料到只在 title 與 sr-only（不是可見文字）。
+    const demoSummary = periodSummaryText("2026-07-13", "2026-08-23", "2026-06-01", "2026-07-12");
+    await expect(periodSummary(page)).toContainText(demoSummary);
+    await expect.poll(() => periodSummaryVisibleText(page)).toBe(demoSummary);
+    expect(await periodSummaryVisibleText(page)).not.toContain(labels.demoChannelAlias.DTC);
     await loadGolden(page);
     await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).locator("option")).toHaveText([labels.ui.dashboard.filter.allChannels, "DTC", "MARKETPLACE"]);
-    await expect(page.locator(".scope-note")).toHaveText(templatePattern(labels.ui.dashboard.scopeNote));
-    await expect(page.locator(".scope-note")).not.toContainText(labels.demoChannelAlias.DTC);
-    await expect(page.locator(".scope-note")).not.toContainText("DTC");
+    await expect.poll(() => periodSummaryVisibleText(page)).toMatch(templatePattern(labels.shell.periodBarV3.summary));
+    expect(await periodSummaryVisibleText(page)).not.toContain(labels.demoChannelAlias.DTC);
+    expect(await periodSummaryVisibleText(page)).not.toContain("DTC");
   });
 
   test("rule cards use glossary headlines and the analysis CSV header reads 中文 (key)", async ({ page }) => {
     await loadGolden(page);
-    await page.getByRole("button", { name: labels.nav.diagnosis.label, exact: true }).click();
+    await navigateTo(page, "diagnosis");
     await expect(page.getByRole("heading", { name: ruleHeadline("REV_UP_CM_DOWN") }).first()).toBeVisible();
     // R5-1：健檢改成一個規則一列；golden 的 REV_UP_CM_DOWN（|對貢獻影響| 315.00 最大）排第一且預設展開。
     const rule = page.getByTestId("diagnosis-list").locator("details.diagnosis-row").first();
