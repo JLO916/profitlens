@@ -6,10 +6,18 @@ import ts from "typescript";
 
 export const LABELS_SOURCE = "src/i18n/labels.zh-TW.ts";
 
-/** @param {{ root?: string }} [options] */
-export async function loadLabels({ root = process.cwd() } = {}) {
+/**
+ * 載入整個 labels 模組（labels、LABEL_GROUPS、LEGACY_SECTIONS、legacyAliases…）。
+ * V3-2c 起掃描器要用 LABEL_GROUPS／legacyAliases 略過 v2 alias，見 scripts/lib/copy-scan.mjs labelScope。
+ * @param {{ root?: string }} [options]
+ */
+export async function loadLabelsModule({ root = process.cwd() } = {}) {
   const source = readFileSync(resolve(root, LABELS_SOURCE), "utf8");
   const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022, verbatimModuleSyntax: false }, fileName: LABELS_SOURCE });
-  const loaded = await import(`data:text/javascript;base64,${Buffer.from(outputText, "utf8").toString("base64")}`);
-  return loaded.labels;
+  return import(`data:text/javascript;base64,${Buffer.from(outputText, "utf8").toString("base64")}`);
+}
+
+/** @param {{ root?: string }} [options] */
+export async function loadLabels(options) {
+  return (await loadLabelsModule(options)).labels;
 }

@@ -30,7 +30,9 @@ describe("名詞小辭典資料（labels.glossary.terms）", () => {
     expect(isWhitelisted("glossary.terms.2.oldNames.0")).toBe(true);
     expect(isWhitelisted("glossary.terms.2.oldNames")).toBe(true);
     expect(isWhitelisted("glossary.terms.2.definition")).toBe(false);
-    const { metrics } = scanLabels({ glossary: labels.glossary, whatsNew: labels.whatsNew });
+    // V3-2c：glossary 分組另外收了指標定義（basis，原 labels.basis）與舊名對照（aliases），這兩塊原本就不屬於小辭典，掃描時排除，範圍與 V3-2b 相同。
+    const dictionary = Object.fromEntries(Object.entries(labels.glossary).filter(([key]) => key !== "basis" && key !== "aliases"));
+    const { metrics } = scanLabels({ glossary: dictionary, whatsNew: labels.whatsNew });
     expect(metrics.blacklistSynonym).toBe(0);
     expect(metrics.blacklistJargon).toBe(0);
     expect(metrics.placeholderMalformed).toBe(0);

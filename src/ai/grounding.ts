@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import { AiSnapshotSchema, InsightOutputSchema, type AiFact, type AiSnapshot, type InsightOutput } from "./contracts";
-import { formatMoney, formatRate, metricDefinitions } from "../application/presentation";
+import { asciiMinus, formatAmountL3, formatRateL3, metricDefinitions } from "../application/presentation";
 import { fill, labels } from "../i18n";
 export interface AllowedObservation { fact_ids: string[]; observation: string; kind: "value" | "change" | "missing" }
 export interface GroundingIssue { code: string; path: string; message: string }
@@ -98,8 +98,9 @@ export function validateInsightOutput(raw: unknown, snapshot: AiSnapshot): Groun
 function formatFact(fact: AiFact): string {
   const unit = metricDefinitions[fact.metric].unit;
   if (fact.value === null) return unit === "money" || isMissing(fact) ? labels.status.missing : fill(copy.factUnavailable, { state: labels.status.notApplicable });
-  if (unit === "money") return `TWD ${formatMoney(fact.value)}`;
-  if (unit === "percent") return formatRate(fact.value);
+  // AI 事實維持 ASCII 負號、到分（L3）。
+  if (unit === "money") return `TWD ${asciiMinus(formatAmountL3(fact.value))}`;
+  if (unit === "percent") return asciiMinus(formatRateL3(fact.value));
   return `${new Decimal(fact.value).toFixed(2, Decimal.ROUND_HALF_UP)} ${labels.evidence.times}`;
 }
 

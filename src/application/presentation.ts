@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import { uniqueSources } from "../domain/aggregation";
-import { formatCents, parseCents } from "../domain/money";
+import { formatCents } from "../domain/money";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS, type AmountField, type Dataset, type MetricName, type SourceRef } from "../domain/types";
 import { labels } from "../i18n";
 
@@ -53,32 +53,11 @@ export const metricDefinitions: Record<MetricName, MetricDefinition> = Object.fr
   return [name, { label: copy.label, shortLabel: copy.short, plain: copy.plain, formula: copy.formula, formulaTechnical: copy.formulaTechnical, ...metricShape[name] }];
 })) as Record<MetricName, MetricDefinition>;
 
-function amount(value: string | null): bigint | null {
-  try { return parseCents(value); } catch { return null; }
-}
-export function formatMoney(value: string | null): string {
-  const cents = amount(value);
-  if (cents === null) return "—";
-  const [integer, fractional] = formatCents(cents).split(".");
-  return `${integer.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}.${fractional}`;
-}
-export function formatSignedMoney(value: string | null): string {
-  const cents = amount(value);
-  return `${cents !== null && cents > 0n ? "+" : ""}${formatMoney(value)}`;
-}
-export function formatRate(value: string | null): string {
-  if (value === null || !/^-?\d+(?:\.\d+)?$/.test(value)) return "N/A";
-  const ExactDecimal = Decimal.clone({ precision: value.length + 20, rounding: Decimal.ROUND_HALF_UP });
-  const formatted = new ExactDecimal(value).times(100).toFixed(2);
-  return `${formatted === "-0.00" ? "0.00" : formatted}%`;
-}
-
 // ───────────────────────── V3-2b 三層數字格式（PRD §8.5–§8.7） ─────────────────────────
 // 一律從精確字串（domain 的到分金額、12 位小數比率）以 decimal.js ROUND_HALF_UP 取位，從不經過浮點數。
 // L1＝萬／億（KPI、標題、一句話）；L2＝整數元（一般表格）；L3＝到分（抽屜、橋接、對帳、匯出）。
 // UI 負號用 U+2212，正的差額加「+」，取位後為零不帶符號；CSV／JSON 用 asciiMinus 轉回 ASCII「-」。
-// 上面的 formatMoney／formatSignedMoney／formatRate 維持 v2 行為（ASCII 負號；AI grounding、PPT、目標與試算範本仍在用），
-// 呼叫端改接下面的函式後於 V3-2c 移除。
+// v2 的 formatMoney／formatSignedMoney／formatRate（ASCII 負號）已於 V3-2c 移除；需要 ASCII 輸出的呼叫端改用 asciiMinus(formatAmountL3(…))／asciiMinus(formatRateL3(…))。
 
 /** 三層閱讀模式（§3.2）。 */
 export type Layer = "L1" | "L2" | "L3";

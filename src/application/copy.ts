@@ -4,7 +4,7 @@ import type { Diagnostic, Fact, MetricName, RuleCode, Scope, ValidationIssue } f
 import { fill as fillTemplate, labels } from "../i18n";
 import type { TaxConversion } from "./tax-basis";
 import { importIssueMessage, type IssueMessageContext, type IssueRef } from "./import";
-import { formatAmountL1, formatRate, formatSignedDelta, metricDefinitions } from "./presentation";
+import { asciiMinus, formatAmountL1, formatRateL3, formatSignedDelta, metricDefinitions } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R2 文案機制：示範通路 alias、標題用「萬」金額、規則卡文案模板、CSV 標題列。全部只做呈現，不碰 domain 數值。
@@ -47,7 +47,7 @@ export function ruleCopy(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic
   const facts = report.facts.filter(fact => diagnostic.fact_ids.includes(fact.id));
   const isPrevious = (fact: Fact) => fact.period.start === report.previous.period.start && fact.period.end === report.previous.period.end;
   const find = (metric: MetricName, period: "previous" | "current") => facts.find(fact => fact.metric === metric && (period === "previous" ? isPrevious(fact) : !isPrevious(fact)));
-  const rate = (metric: MetricName, period: "previous" | "current") => { const fact = find(metric, period); return fact && fact.value !== null ? formatRate(fact.value) : labels.status.missing; };
+  const rate = (metric: MetricName, period: "previous" | "current") => { const fact = find(metric, period); return fact && fact.value !== null ? asciiMinus(formatRateL3(fact.value)) : labels.status.missing; };
   const difference = (metric: MetricName) => {
     const before = parseCents(find(metric, "previous")?.value ?? null), after = parseCents(find(metric, "current")?.value ?? null);
     return before === null || after === null ? null : formatCents(after - before);

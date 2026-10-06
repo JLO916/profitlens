@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import demoExpected from "../fixtures/demo/computed_summary.json";
 import goldenExpected from "../fixtures/golden/expected.json";
 import { createSnapshot, hashInput } from "../src/application/workspace";
-import { evidenceRows, formatMoney, formatRate, formatSignedMoney, metricDefinitions } from "../src/application/presentation";
+import { asciiMinus, evidenceRows, formatAmountL3, formatRateL3, formatSignedDelta, metricDefinitions } from "../src/application/presentation";
 import { validateDataset } from "../src/domain/validation";
 import type { Dataset, DatasetInput, MetricName } from "../src/domain/types";
 import { fixture } from "./helpers/fixtures";
@@ -101,21 +101,21 @@ describe("M2 application snapshot", () => {
 
 describe("M2 exact presentation and source evidence", () => {
   it("formats money without Number precision loss and preserves two decimal places", () => {
-    expect(formatMoney("9007199254740993.01")).toBe("9,007,199,254,740,993.01");
-    expect(formatMoney("-1234.5")).toBe("-1,234.50");
-    expect(formatMoney("0.00")).toBe("0.00");
-    expect(formatMoney(null)).toBe("—");
-    expect(formatSignedMoney("315.00")).toBe("+315.00");
-    expect(formatSignedMoney("-315.00")).toBe("-315.00");
-    expect(formatSignedMoney("0.00")).toBe("0.00");
+    expect(formatAmountL3("9007199254740993.01")).toBe("9,007,199,254,740,993.01");
+    expect(asciiMinus(formatAmountL3("-1234.5"))).toBe("-1,234.50");
+    expect(formatAmountL3("0.00")).toBe("0.00");
+    expect(formatAmountL3(null)).toBe(labels.status.missing);
+    expect(formatSignedDelta("315.00", "L3")).toBe("+315.00");
+    expect(asciiMinus(formatSignedDelta("-315.00", "L3"))).toBe("-315.00");
+    expect(formatSignedDelta("0.00", "L3")).toBe("0.00");
   });
 
   it("formats rates as percentages, not ratio numbers or monetary calculations", () => {
-    expect(formatRate("0.12345")).toBe("12.35%");
-    expect(formatRate("-0.1")).toBe("-10.00%");
-    expect(formatRate("0")).toBe("0.00%");
-    expect(formatRate(null)).toBe("N/A");
-    expect(formatRate("-0.00000001")).toBe("0.00%");
+    expect(formatRateL3("0.12345")).toBe("12.35%");
+    expect(asciiMinus(formatRateL3("-0.1"))).toBe("-10.00%");
+    expect(formatRateL3("0")).toBe("0.00%");
+    expect(formatRateL3(null, "notApplicable")).toBe(labels.status.notApplicable);
+    expect(formatRateL3("-0.00000001")).toBe("0.00%");
   });
 
   it("provides formulas and correct raw-field dependencies including MER gates", () => {
