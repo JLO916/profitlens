@@ -6,7 +6,7 @@ const demo = { data_as_of: "2026-08-24", coverage_start: "2026-06-01", coverage_
 const golden = { data_as_of: "2026-08-03", coverage_start: "2026-08-01", coverage_end: "2026-08-02" };
 const byId = (manifest: typeof demo) => Object.fromEntries(periodPresets(manifest).map(preset => [preset.id, preset]));
 
-describe("R1 period presets fill dates only, anchored to the last covered day", () => {
+describe("R1 period presets compute dates (pure; V3-3 期間列按快捷即套用), anchored to the last covered day", () => {
   it("anchors on the earlier of data_as_of and coverage_end", () => {
     expect(presetAnchor(demo)).toBe("2026-08-23");
     expect(presetAnchor({ ...demo, data_as_of: "2026-08-20" })).toBe("2026-08-20");

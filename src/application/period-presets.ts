@@ -2,7 +2,7 @@ import { dayCount, isBusinessDate, isCompleteCalendarMonth } from "@/domain/date
 import type { ComparisonMode, Manifest, Period } from "@/domain/types";
 import { labels } from "@/i18n";
 
-// 期間快捷：只產生四個日期與比較方式，不套用；使用者仍須按「套用」。規則見 docs/revamp/05_FEATURES.md §2。
+// 期間快捷：本模組只產生四個日期與比較方式（純函式，不套用）。V3-3 起（D-V3-10＝A）期間列按快捷就直接套用（src/components/shell/period-bar.tsx 的 presetFilters）。規則見 docs/revamp/05_FEATURES.md §2。
 // R1：近 7 天、近 4 週、近 12 週、本月 vs 上月（以 presetAnchor 為基準）。
 // R4：periodPresets 的第二個參數（選填）傳入使用者目前的兩期與比較方式時，另附第五個「去年同期」：
 //   本期不變；上期＝本期起訖各減一年（shiftYear，2/29 → 2/28），比較方式沿用。

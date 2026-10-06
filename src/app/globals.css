@@ -1266,3 +1266,61 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 /* V3-3 A2 期間列、需要處理橫幅、手機期間底部面板（A2 代理在此區塊之後新增；只用 token） */
 
+/* C23 期間列：sticky（top＝頂欄高）、48px、--bg-page 底、下緣 1px --border-subtle。≥ 1280 一列；768–1279 放不下時期間摘要換到第二列。 */
+.period-bar { position: sticky; top: var(--topbar-h); z-index: var(--z-sticky); min-height: var(--period-bar-h); display: flex; align-items: center; margin-bottom: var(--space-4); background: var(--bg-page); border-bottom: var(--border-w) solid var(--border-subtle); }
+.period-toggle, .period-sheet-scrim, .period-sheet-head { display: none; }
+.period-bar-panel { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); width: 100%; min-width: 0; min-height: calc(var(--period-bar-h) - var(--border-w)); padding: var(--space-2) 0; }
+.period-bar .period-channel { display: block; flex: none; }
+.period-bar .period-channel select { width: auto; max-width: 200px; }
+.period-presets { flex: none; }
+.period-presets > .preset[aria-disabled="true"] { color: var(--text-disabled); cursor: not-allowed; }
+.period-presets > .preset[aria-disabled="true"]:hover { background: var(--bg-surface); }
+.period-summary { flex: 1 1 auto; min-width: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.period-chevron { flex: none; color: var(--text-tertiary); }
+/* C14 自訂期間 popover：同一份表單（比較方式、4 個日期、套用）；關閉時用 CSS 隱藏，保持掛載（M1）。 */
+.period-custom { position: relative; flex: none; margin-left: auto; }
+.period-custom-trigger { height: var(--control-h); }
+.period-custom-trigger[aria-expanded="true"] { background: var(--bg-hover); }
+.period-custom-panel { position: absolute; right: 0; top: calc(100% + var(--space-1)); }
+.period-custom-panel:not([data-open]) { display: none; }
+.period-bar .period-form { display: grid; gap: var(--space-3); align-items: stretch; }
+.period-bar .comparison-mode { display: grid; gap: var(--space-1); width: auto; }
+.period-bar .period-form fieldset { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-2); width: 100%; }
+.period-bar .period-form legend { float: none; margin: 0 0 var(--space-1); padding: 0; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.period-bar .period-form fieldset input { flex: 1 1 0; width: 0; min-width: 0; }
+.period-bar .period-form fieldset span { color: var(--text-tertiary); }
+.period-custom-hint { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.period-bar .period-form button[type="submit"] { justify-self: start; }
+@media (min-width: 1280px) { .period-bar-panel { flex-wrap: nowrap; padding: 0; } }
+/* C22 需要處理橫幅：期間列下方的固定位置；沒有內容時整塊不渲染。去年同期不可用的理由用 12px 文字（不加底色）。 */
+.period-bar + .needs-attention { margin-top: calc(-1 * var(--space-2)); }
+.needs-attention { display: grid; gap: var(--space-2); margin-bottom: var(--space-4); }
+.period-banner { margin: 0; }
+.period-banner-note { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+/* 手機（≤ 767px）：期間列收成一顆按鈕；點開後同一個面板改成底部面板（M6：不複製元件，日期欄位 id 只有一份）。 */
+@media (max-width: 767px) {
+  .period-bar { padding: var(--space-2) 0 calc(var(--space-2) - var(--border-w)); margin-bottom: var(--space-3); }
+  .period-bar[data-sheet-open] { z-index: var(--z-drawer); }
+  .period-toggle { display: flex; width: 100%; height: var(--control-h-touch); min-height: var(--control-h-touch); justify-content: space-between; font-size: var(--text-14); font-weight: var(--weight-regular); }
+  .period-toggle > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .period-bar:not([data-sheet-open]) .period-bar-panel { display: none; }
+  .period-bar[data-sheet-open] .period-sheet-scrim { display: block; position: fixed; inset: 0; background: var(--scrim); }
+  .period-bar[data-sheet-open] .period-bar-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: var(--space-4); max-height: 85dvh; overflow: auto; padding: var(--space-4) var(--gutter) calc(var(--space-4) + env(safe-area-inset-bottom)); background: var(--bg-surface); border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md); box-shadow: var(--shadow-overlay); }
+  .period-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .period-sheet-title { font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); }
+  .period-bar .period-channel select { width: 100%; max-width: none; }
+  .period-presets { display: flex; flex-wrap: wrap; }
+  .period-presets > .preset { flex: 1 1 auto; height: var(--control-h-touch); }
+  .period-summary { white-space: normal; }
+  .period-custom { margin-left: 0; }
+  .period-custom-trigger { display: none; }
+  .period-custom-panel, .period-custom-panel:not([data-open]) { display: block; position: static; width: auto; padding: 0; border: 0; box-shadow: none; }
+  .period-bar .period-form button[type="submit"] { justify-self: stretch; height: var(--control-h-touch); }
+  .period-banner-note { display: none; }
+  .needs-attention:not(:has(> :not(.period-banner-note))) { display: none; }
+}
+/* 768–1023：側欄佔掉寬度，快捷縮小左右留白、通路下拉限寬，盡量讓通路與快捷同一列（期間摘要與自訂期間換到下一列）。 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .period-presets > .preset { padding: 0 var(--space-2); }
+  .period-bar .period-channel select { max-width: 160px; }
+}

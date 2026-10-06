@@ -49,6 +49,7 @@ import { ExportMenu } from "./shell/export-menu";
 import { PageHeader, ShellFooter } from "./shell/page-chrome";
 
 // V3-3 A2 imports（期間列／橫幅／手機期間底部面板的子元件）
+import { NeedsAttention, PeriodBar, presetFilters } from "./shell/period-bar";
 
 
 type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "meeting" | "validation";
@@ -61,8 +62,6 @@ const datasetLabels: Record<string, string> = {
   demo: labels.ui.dashboard.datasets.demo, golden: labels.ui.dashboard.datasets.golden,
   "missing-cogs": labels.ui.dashboard.datasets.missingCogs, "missing-ad": labels.ui.dashboard.datasets.missingAd, duplicate: labels.ui.dashboard.datasets.duplicate,
 };
-// 日期欄位的 sr-only 標籤「上期開始」等（V3-2a：字典已清掉盤點尾巴，直接填入模板）。
-const periodFieldLabel = (edge: "start" | "end", period: string) => fill(edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd, { period });
 export function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const paths: Record<string, string> = {
     overview: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
@@ -339,17 +338,18 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready");
     }
   }
-  // R1-3: presets only fill the form; applyFilters still waits for an explicit submit.
-  // R4 備份 v4 的 ui_prefs：記住上次用的快捷（只記錄，不自動套用）。
+  // V3-3（D-V3-10＝A）：快捷單擊就套用，與「套用」按鈕走同一個 applyFilters；只有在自訂期間裡手動改日期才需要按「套用」。
+  // R4 備份 v4 的 ui_prefs：記住上次用的快捷（只記錄，還原時不自動套用）。
   const [lastPreset, setLastPreset] = useState<string | undefined>(undefined);
   // R5 行動頁的看板／清單檢視也記在 ui_prefs.view（只記錄，還原時讀回）。
   const [actionsView, setActionsView] = useState<"board" | "list" | undefined>(undefined);
   function choosePreset(preset: PeriodPreset) {
-    if (preset.status !== "ready") return;
+    const filters = active ? presetFilters(preset, active.snapshot.report.scope.channels) : null;
+    if (preset.status !== "ready" || !filters) return;
     setLastPreset(preset.id);
     setComparisonMode(preset.comparison_mode);
     setDates({ previousStart: preset.previous.start, previousEnd: preset.previous.end, currentStart: preset.current.start, currentEnd: preset.current.end });
-    requestAnimationFrame(() => applyRef.current?.focus());
+    void applyFilters(filters);
   }
   function submitDates(event: FormEvent) {
     event.preventDefault();
@@ -535,22 +535,15 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
           <p className="note">{labels.ui.dashboard.validation.note}</p>
         </section>}
         {showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} localSaveConsented={localConsent} /></div>}
-        {visible && <>
-          <div className="filter-bar">
-            <label className="channel-field">{labels.ui.dashboard.filter.channel}<select aria-label={labels.ui.dashboard.filter.channel} value={active.snapshot.report.scope.channels.length > 1 ? "" : active.snapshot.report.scope.channels[0]} onChange={event => void applyFilters({ ...active.snapshot.report.scope, channels: event.target.value === "" ? active.dataset.manifest.channels : [event.target.value] })}><option value="">{labels.ui.dashboard.filter.allChannels}</option>{active.dataset.manifest.channels.map(channel => <option key={channel} value={channel}>{channelLabel(channel, alias)}</option>)}</select></label>
-            <div className="preset-row" role="group" aria-label={labels.sections.presetGroup}>{presets.map(preset => <button key={preset.id} type="button" className="preset" aria-disabled={preset.status !== "ready" || undefined} aria-describedby={preset.status === "ready" ? undefined : `preset-reason-${preset.id}`} title={preset.status === "ready" ? undefined : preset.reason} aria-pressed={presetMatches(preset)} onClick={() => choosePreset(preset)}>{preset.label}</button>)}{presets.filter(preset => preset.status !== "ready").map(preset => <span key={preset.id} id={`preset-reason-${preset.id}`} className="sr-only">{fill(labels.ui.dashboard.filter.presetReason, { preset: preset.label, reason: preset.status === "unavailable" ? preset.reason : "" })}</span>)}<span className="note">{labels.periods.presetHint}</span></div>
-            <form className="period-form" onSubmit={submitDates}>
-              <label className="comparison-mode">{labels.ui.dashboard.filter.comparisonMode}<select aria-label={labels.ui.dashboard.filter.comparisonMode} value={comparisonMode} onChange={event => setComparisonMode(event.target.value as ComparisonMode)}><option value="same_days">{labels.periods.sameDays}</option><option value="calendar_months">{labels.periods.calendarMonths}</option></select></label>
-              <fieldset><legend>{labels.periods.previous}</legend><label className="sr-only" htmlFor="previous-start">{periodFieldLabel("start", labels.periods.previous)}</label><input id="previous-start" type="date" required value={dates.previousStart} onChange={e => setDates({ ...dates, previousStart: e.target.value })} /><span>—</span><label className="sr-only" htmlFor="previous-end">{periodFieldLabel("end", labels.periods.previous)}</label><input id="previous-end" type="date" required value={dates.previousEnd} onChange={e => setDates({ ...dates, previousEnd: e.target.value })} /></fieldset>
-              <fieldset><legend>{labels.periods.current}</legend><label className="sr-only" htmlFor="current-start">{periodFieldLabel("start", labels.periods.current)}</label><input id="current-start" type="date" required value={dates.currentStart} onChange={e => setDates({ ...dates, currentStart: e.target.value })} /><span>—</span><label className="sr-only" htmlFor="current-end">{periodFieldLabel("end", labels.periods.current)}</label><input id="current-end" type="date" required value={dates.currentEnd} onChange={e => setDates({ ...dates, currentEnd: e.target.value })} /></fieldset>
-              <button ref={applyRef} className="button quiet" type="submit">{labels.buttons.apply}</button>
-            </form>
-          </div>
-          {/* R4：去年同期不可用的理由放在期間列正下方（不放進 sticky 期間列，維持 R1「1280 以上最多兩行」）；按鈕本身仍有 title 與 sr-only 說明。 */}
-          {presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset] : []).map(preset => <p key={preset.id} className="note preset-reason" role="status" data-testid="preset-reason-visible-yoy">{preset.reason}</p>)}
-          {filterError && <p role="alert" className="alert error">{filterError}</p>}
-          {status === "partial" && <div className="alert partial"><strong>{labels.status.partial}</strong><span>{labels.ui.dashboard.partialNote}</span><button className="text-button" onClick={() => setPanel("data")}>{fill(labels.ui.dashboard.viewIssues, { n: active.dataset.issues.length })}</button></div>}
-          <p className="scope-note">{fill(labels.ui.dashboard.scopeNote, { channels: channelsLabel(active.snapshot.report.scope.channels, alias), mode: active.snapshot.report.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays, previousDays: active.snapshot.report.comparison.previous_days, currentDays: active.snapshot.report.comparison.current_days, dataAsOf: active.snapshot.data_as_of, previousStart: active.snapshot.report.previous.period.start, previousEnd: active.snapshot.report.previous.period.end, currentStart: active.snapshot.report.current.period.start, currentEnd: active.snapshot.report.current.period.end })}</p>
+        {/* V3-3 A2：期間列（C23，sticky）＋需要處理橫幅（C22）。套用中（loading）期間列保持掛載，焦點留在剛按的快捷上；橫幅只在有內容時出現。 */}
+        {active && (visible || status === "loading") && <>
+          <PeriodBar
+            channel={{ value: active.snapshot.report.scope.channels.length > 1 ? "" : active.snapshot.report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, alias) })), onChange: value => void applyFilters({ ...active.snapshot.report.scope, channels: value === "" ? active.dataset.manifest.channels : [value] }) }}
+            presets={presets} isPressed={presetMatches} onPreset={choosePreset}
+            comparisonMode={comparisonMode} onComparisonMode={setComparisonMode} dates={dates} onDates={setDates} onSubmit={submitDates} applyRef={applyRef}
+            scope={{ previous: active.snapshot.report.previous.period, current: active.snapshot.report.current.period, previousDays: active.snapshot.report.comparison.previous_days, currentDays: active.snapshot.report.comparison.current_days, comparisonMode: active.snapshot.report.comparison.mode, channelsText: channelsLabel(active.snapshot.report.scope.channels, alias), dataAsOf: active.snapshot.data_as_of }}
+            busy={status === "loading"} />
+          {visible && <NeedsAttention filterError={filterError} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={() => setPanel("data")} yoyReason={presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null} />}
         </>}
         {status === "empty" && !showImport && panel !== "validation" && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">{labels.emptyState.eyebrow}</p><h2>{labels.emptyState.title}</h2><p>{labels.emptyState.body}</p><button className="button primary large" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={18} /></button><div className="empty-steps">{labels.emptyState.steps.map((step, index) => <span key={step}>{index + 1} {step}</span>)}</div></section>}
         {status === "loading" && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>{labels.ui.dashboard.loading.heading}</h2><p>{labels.ui.dashboard.loading.body}</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
