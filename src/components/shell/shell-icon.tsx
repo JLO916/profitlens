@@ -25,6 +25,8 @@ const PATHS: Record<string, string> = {
   sort: "M8 9l4-4 4 4 M8 15l4 4 4-4",
   "sort-asc": "M12 19V5 M7 10l5-5 5 5",
   "sort-desc": "M12 5v14 M7 14l5 5 5-5",
+  /** V3-5 代理 C：計算與來源抽屜標題列的關閉 icon 按鈕（C6）。 */
+  close: "M6 6l12 12 M18 6 6 18",
 };
 
 export function ShellIcon({ name, size = 20, className }: { name: keyof typeof PATHS | string; size?: number; className?: string }) {
