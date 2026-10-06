@@ -18,6 +18,9 @@ const REMOVED = new Set(REMOVED_ROWS.map(([old]) => old));
 /** 快照扣掉已刪除的鍵：V3-2c 之後 labels 應該剛好有這些舊路徑。 */
 const KEPT: Record<string, string> = Object.fromEntries(Object.entries(SNAPSHOT).filter(([path]) => !REMOVED.has(path)));
 const GROUPS: readonly string[] = LABEL_GROUPS;
+/** V3-3 起新增的鍵（沒有 v2 舊路徑）：只放在 shell 的 V3-3 錨點物件內；快照比對略過，但 copy-scan 指標仍須與快照相同（新字串不得新增違規）。 */
+const V3_NEW_KEY_PREFIXES = ["shell.topbarV3.", "shell.sidebarV3.", "shell.dataStatus.", "shell.mobileNav.", "shell.footerV3.", "shell.periodBarV3.", "shell.banner."];
+const isV3NewKey = (path: string) => V3_NEW_KEY_PREFIXES.some(prefix => path.startsWith(prefix));
 const LEGACY: readonly string[] = LEGACY_SECTIONS;
 
 const get = (path: string): unknown => path.split(".").reduce<unknown>((node, key) => (node !== null && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined), labels);
@@ -46,6 +49,7 @@ describe("V3-2c labels 結構重整", () => {
     const rebuilt: Record<string, string> = {};
     const unmapped: string[] = [];
     for (const [path, value] of labelEntries(view)) {
+      if (isV3NewKey(path)) continue;
       const olds = inverse.get(path) ?? [];
       if (olds.length !== 1) unmapped.push(`${path}（對到 ${olds.length} 個舊路徑）`);
       else rebuilt[olds[0]] = value;
@@ -107,7 +111,7 @@ describe("V3-2c labels 結構重整", () => {
 
   it("掃描器每個字串只算一次，copy-scan 指標與 V3-2b 快照（扣掉已刪除的鍵）的掃描逐項相同", () => {
     const { view } = labelScope(labels, labelModule);
-    expect(labelEntries(view)).toHaveLength(Object.keys(KEPT).length);
+    expect(labelEntries(view).filter(([path]) => !isV3NewKey(path))).toHaveLength(Object.keys(KEPT).length);
     expect(scanLabels(labels, labelModule).metrics).toEqual(scanLabels(unflatten(KEPT)).metrics);
   });
 

@@ -152,8 +152,31 @@ export const shell = {
   footerV3: {},
 
   /** V3-3 A2 anchor：期間列、需要處理橫幅、手機期間底部面板（由 A2 代理填入，不改名） */
-  periodBarV3: {},
-  banner: {},
+  periodBarV3: {
+    /** 期間列整列（桌機一列；手機是底部面板）的區域名稱。 */
+    regionAria: "期間",
+    /** 期間摘要（§7.0）：兩期天數相同。日期用 formatPeriodL1（不附天數）。 */
+    summary: "本期 {current} 對比 上期 {previous}（各 {days} 天）",
+    /** 兩期天數不同（例如整月比較 30 天對 31 天）。 */
+    summaryUnequal: "本期 {current} 對比 上期 {previous}（本期 {currentDays} 天、上期 {previousDays} 天，日均較可比）",
+    /** 期間摘要的 title 與 sr-only：v2 整行範圍說明併入此處（§6.3 #19），可見文字只寫期間與天數。 */
+    summaryDetail: "通路：{channels}；{mode}；資料到 {dataAsOf}",
+    custom: "自訂期間",
+    customPanelAria: "自訂期間設定",
+    customHint: "快捷按一下就套用；改日期後按「套用」才生效。",
+    /** 手機（≤ 767px）期間列縮成的按鈕：「近 4 週 · 7/13–8/23」；沒有對到快捷時寫「自訂期間 · 7/13–8/23」。 */
+    toggle: "{preset} · {range}",
+    toggleAria: "{preset} · {range}，開啟期間設定",
+    sheetTitle: "期間設定",
+    sheetClose: "完成",
+  },
+  banner: {
+    /** C22 需要處理橫幅的位置名稱（只在需要時出現）。 */
+    regionAria: "需要處理",
+    partial: "部分資料待補：缺資料的指標顯示「資料待補」，不會當成 0。",
+    /** 去年同期不可用的可見理由（取代 v2 的 preset-reason 行）。 */
+    yoyUnavailable: "去年同期不可用：{reason}",
+  },
 
   nav: {
     overview: { headline: "經營總覽", explain: "本期關鍵數字、三件事、趨勢與拆解" },
