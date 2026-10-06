@@ -1,5 +1,16 @@
 # Status
 
+## Revamp v3｜V3-4a 經營總覽首屏與結構（完成，未推送、未部署；V3-4 拆批後的前半）
+
+V3-4（L）於開工前拆成 V3-4a／V3-4b。V3-4a 落地 PRD §7.1 區塊 2、3、4、9、10 與 §10.2（F1）：本期一句話（5 種情境＋2 種補充，`snapshot-sentence`）＋複製週會摘要（純文字＋Markdown、剪貼簿失敗改對話框、`summary_copied`）＋會議入口搬到右側；KPI 帶（C1：單一容器五格、扣廣告後貢獻 32px＋強調線、差額方向詞、C18 目標細條、`?` 定義；768 3＋2、390 清單）；三件事改 C9 摘要型警示列（原因＋下一步常駐、限制與相關範圍收進列內、門檻 popover 保持掛載、不足 3 件與 0 件句型、查看全部）；其他常用指標改 C2 兩欄緊湊表；進階 `<details>`。圖表段維持 v2，留 V3-4b。`src/domain`、`fixtures`、`docs/METRICS.md` 零改動；無新依賴。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit **93 檔／1,925 全過**、`lint:design` exit 0（hex 0、圓角 4、字級 13、字距 0；copy-style 同義詞 13／禁用詞 3 不變）、build pass、E2E 全套 **596／596 全過（16.3 分，四尺寸）**（第一輪 589／596，7 項為 spec 跟進新結構）；禁區 diff 空；testid 刪除數 0（新增 weekly-snapshot、snapshot-sentence、copy-summary、copy-summary-status、copy-summary-fallback、kpi-band、overview-advanced）；`feature-retention.csv` V3-4 的 7 列（#24–#27、#31、#32、#45）打勾，#28–#30 留 V3-4b；`e2e-text-assertions.csv` V3-4 的 79 列勾銷。
+- 首屏實測（1440×1000，示範資料、新訪客）：一句話頂端 192px（含示範資料必有的去年同期理由列 24px；無橫幅 168px ≤ 176）、5 個 KPI 底邊 419px（無橫幅 395px）≤ 420、三件事第 1 列標題底邊 525px；390 扣廣告後貢獻數值頂端 295px ≤ 360；內容前可聚焦元素 9。
+- 畫面基準：`verification/revamp-v3/V3-4a/snapshots` 36 張寫入後重跑 4/4、0 差異；Lighthouse 五頁 Accessibility 100／100、空狀態 Performance 100／97、總覽頁 0 個失敗稽核。
+- 偏離（詳見驗收文件 §5 與 DECISIONS 2026-10-06）：「最大一項」跳過與本句重複的規則；KPI 格內距 16px 四邊；警示列互動元件在 `<summary>` 之外；≤1023 警示列兩行版；門檻不連動一句話；拆解仍在趨勢之後。
+- 未執行／待人工：H2 設計稿審查（後補）、H3 補審（本批新增文案一併）。
+- 下一批：V3-4b 圖表（完成後為 MVP 切線；部署 preview 需使用者當次明確同意）。
+
 ## Revamp v3｜V3-3 殼層與導覽（完成，未推送、未部署；H2 設計稿審查後補）
 
 使用者 2026-10-06 指示「H2 後補，先開 V3-3」。依 PRD §6.1／§6.3 #1–#23／§6.4 M1–M6／§7.0 落地：48px 單列頂欄（資料狀態按鈕＋popover、AI 狀態、指標定義、儲存三段含危險區「清空目前資料」、匯出分組）、四組側欄與計數徽章、56px 頁首（「匯入資料」只留資料來源頁）、全站頁尾、單列期間列（快捷單擊即套用 D-V3-10、期間摘要、自訂期間 popover）、需要處理橫幅、手機底部分頁列＋「更多」＋期間底部面板（同一份 DOM，CSS 重新定位）。各頁內容元件、`src/domain`、`fixtures`、`docs/METRICS.md` 零改動；無新依賴。

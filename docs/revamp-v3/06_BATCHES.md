@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／另需的人工時間。
 >
-> **目前進度：V3-4 於開工前拆成 V3-4a（首屏與結構）／V3-4b（圖表）；V3-4a 進行中（2026-10-06）。V3-3 完成（2026-10-06；H2 後補；驗收見 `verification/revamp-v3-V3-3-acceptance.md`）。** V3-2 全部完成（驗收見 `verification/revamp-v3-V3-2{a,b,c}-acceptance.md`）。使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，審稿後再修」，H3 審稿改為落地後補做；H2 同樣改為 V3-3 落地後補審（2026-10-06）。V3-2 依 §12.1 在開工前拆成 a／b／c（見下表）。** D-V3-1–24 已於 2026-10-05 全部依建議值拍板（見 `09_DECISIONS_PENDING.md`），所以下表「依賴」欄的拍板項目都已滿足；尚未滿足的只剩前一批與人工關卡 H1–H4。
+> **目前進度：V3-4 於開工前拆成 V3-4a（首屏與結構）／V3-4b（圖表）；V3-4a 完成（2026-10-06；驗收見 `verification/revamp-v3-V3-4a-acceptance.md`），下一批 V3-4b。V3-3 完成（2026-10-06；H2 後補；驗收見 `verification/revamp-v3-V3-3-acceptance.md`）。** V3-2 全部完成（驗收見 `verification/revamp-v3-V3-2{a,b,c}-acceptance.md`）。使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，審稿後再修」，H3 審稿改為落地後補做；H2 同樣改為 V3-3 落地後補審（2026-10-06）。V3-2 依 §12.1 在開工前拆成 a／b／c（見下表）。** D-V3-1–24 已於 2026-10-05 全部依建議值拍板（見 `09_DECISIONS_PENDING.md`），所以下表「依賴」欄的拍板項目都已滿足；尚未滿足的只剩前一批與人工關卡 H1–H4。
 
 ---
 
@@ -49,7 +49,7 @@
 | V3-2b | 數字格式：三層尺度（L1 萬／億、L2 整數元、L3 到分）、HALF_UP、U+2212、`favorableDirection`，只改 `presentation.ts`／`copy.ts` 並接到所有元件與匯出；formatter 單元測試（含 −32.0%、−14.3 個百分點）；數字斷言改成格式化函式輸出 | L | V3-2a | — | **完成（2026-10-06）** |
 | V3-2c | labels 結構重整（§8.10 依頁面›區塊›元件分組、`{headline, explain?, caution?, technical?}` 形狀、舊 key alias 到 V3-10）；刪除 R2「由盤點產生」區段與 split 繞道取字；刪除舊格式函式（ASCII 負號）與無引用 key | M | V3-2b | — | **完成（2026-10-06）** |
 | V3-3 | 殼層與導覽 | M | V3-2；**H2**；D-V3-10、14 | — | **完成（2026-10-06；H2 後補）** |
-| V3-4 | 經營總覽（**MVP 切線**） | L | V3-3；D-V3-11、13 | 內部走查半天 | **開工前拆成 V3-4a／V3-4b（2026-10-06）：V3-4a 進行中、V3-4b 未開始** |
+| V3-4 | 經營總覽（**MVP 切線**） | L | V3-3；D-V3-11、13 | 內部走查半天 | **開工前拆成 V3-4a／V3-4b（2026-10-06）：V3-4a 完成（2026-10-06，驗收見 `verification/revamp-v3-V3-4a-acceptance.md`）、V3-4b 下一批** |
 | **MVP 切線** | V3-0–V3-4，至少 5 個工作階段 | | 完成後**經使用者當次明確同意**（D-V3-24＝A）才部署成 Vercel preview，讓老闆試用新首屏；正式站到 V3-10 才切 | | |
 | V3-5 | 通路健檢、商品毛利、計算與來源抽屜 | M | V3-4；D-V3-3 | — | 未開始 |
 | V3-6 | 假設試算與待辦 | M | V3-5；D-V3-12 | — | 未開始 |
@@ -143,9 +143,9 @@
 
 ### V3-4 拆批（2026-10-06 開工前，依 §12.1「批次太大時在開工前拆成 a／b」）
 
-**V3-4a 首屏與結構（M；進行中）**：本期一句話（`weekly-snapshot`、`snapshot-sentence`，§7.1 的 5 種情境）＋複製週會摘要（F1，§10.2：純文字與 Markdown、`copy-summary`、`copy-summary-status`、剪貼簿失敗改 textarea dialog、事件 `summary_copied`）＋會議入口搬到一句話右側（`overview-meeting-entry`）；KPI 帶（C1：5 格單一容器、扣廣告後貢獻 32px＋強調線＋1.25 倍寬、差額行方向詞、上期 number-link、目標細條 C18 與期間不符提示、`?` 定義按鈕；768 改 3＋2、390 改清單且扣廣告後貢獻放第一列）；本期三件事改 C9 摘要型警示列（狀態標籤、L1 標題、影響金額、看明細／加入待辦、第二行 L2 解讀常駐、限制與相關範圍收進列內「更多」、「調整門檻」popover 保持掛載、不足 3 件與 0 件的句型、「查看全部 {n} 項健檢結果」）；其他常用指標改 C2 兩欄緊湊表（本期、上期皆 number-link，不加差額欄；廣告預算達成放「廣告佔淨營收」列下方）；進階 `<details>`（期間合計與日均；保留 `period-comparison` 與 `#daily-average-title`）；區塊順序依 §7.1（一句話 → KPI 帶 → 三件事 → 拆解 → 趨勢 → 各通路 → 其他常用指標 → 進階）；C1、C9、C2 的 class 與 v2 `.kpi-grid`／`.kpi-card`／`.assist-card`／`.filter-bar`／`.preset-row`／`.scope-note`／`.preset-reason`／`.alert.partial` 等無用 CSS 清理；labels 新分組 `overview.snapshot`、`overview.kpiBand`、`overview.alerts`、`overview.assistTable`、`overview.advanced`、`summary.weekly`；單元測試（一句話 5 種情境、週會摘要純文字＋Markdown 快照、KPI 帶、警示列、緊湊表；`copy-density`、`manager-language`、`overview-format`、`mounted-testids` 同步）；E2E 與截圖 spec 遷移；§2.3 B 首屏量測（結論句頂端 ≤ 176px、5 個 KPI 底邊 ≤ 420px、`top-three` 第 1 列標題底邊 ≤ 1000px；390 扣廣告後貢獻數值頂端 ≤ 360px）。**圖表區塊（趨勢、拆解、各通路）維持 v2 版面不動。**
+**V3-4a 首屏與結構（M；完成 2026-10-06）**：本期一句話（`weekly-snapshot`、`snapshot-sentence`，§7.1 的 5 種情境）＋複製週會摘要（F1，§10.2：純文字與 Markdown、`copy-summary`、`copy-summary-status`、剪貼簿失敗改 textarea dialog、事件 `summary_copied`）＋會議入口搬到一句話右側（`overview-meeting-entry`）；KPI 帶（C1：5 格單一容器、扣廣告後貢獻 32px＋強調線＋1.25 倍寬、差額行方向詞、上期 number-link、目標細條 C18 與期間不符提示、`?` 定義按鈕；768 改 3＋2、390 改清單且扣廣告後貢獻放第一列）；本期三件事改 C9 摘要型警示列（狀態標籤、L1 標題、影響金額、看明細／加入待辦、第二行 L2 解讀常駐、限制與相關範圍收進列內「更多」、「調整門檻」popover 保持掛載、不足 3 件與 0 件的句型、「查看全部 {n} 項健檢結果」）；其他常用指標改 C2 兩欄緊湊表（本期、上期皆 number-link，不加差額欄；廣告預算達成放「廣告佔淨營收」列下方）；進階 `<details>`（期間合計與日均；保留 `period-comparison` 與 `#daily-average-title`）；區塊順序依 §7.1（一句話 → KPI 帶 → 三件事 → 拆解 → 趨勢 → 各通路 → 其他常用指標 → 進階）；C1、C9、C2 的 class 與 v2 `.kpi-grid`／`.kpi-card`／`.assist-card`／`.filter-bar`／`.preset-row`／`.scope-note`／`.preset-reason`／`.alert.partial` 等無用 CSS 清理；labels 新分組 `overview.snapshot`、`overview.kpiBand`、`overview.alerts`、`overview.assistTable`、`overview.advanced`、`summary.weekly`；單元測試（一句話 5 種情境、週會摘要純文字＋Markdown 快照、KPI 帶、警示列、緊湊表；`copy-density`、`manager-language`、`overview-format`、`mounted-testids` 同步）；E2E 與截圖 spec 遷移；§2.3 B 首屏量測（結論句頂端 ≤ 176px、5 個 KPI 底邊 ≤ 420px、`top-three` 第 1 列標題底邊 ≤ 1000px；390 扣廣告後貢獻數值頂端 ≤ 360px）。**圖表區塊（趨勢、拆解、各通路）維持 v2 版面不動。**
 
-**V3-4b 圖表（M；未開始）**：貢獻變化拆解瀑布（C17）＋橋接表＋平衡檢核（`bridge-waterfall`、`bridge-table`、`bridge-balance-check`、結論句標題）；本期利潤結構四層瀑布（F2，§10.3：`profit-waterfall`、`profit-waterfall-scope`、`profit-waterfall-bar-{metric}`、資料表、資料待補虛線框）；趨勢與各通路改 ChartFrame（C16：結論標題、takeaway 列「期間合計／最近完整週」、圖例線段、最後一點標值、缺資料斷線、檔期區帶、四態等高、1280 上下排列）；`src/application/chart-theme.ts`（圖表色由 token 讀取）；事件 `waterfall_clicked`；瀑布九項加總到分與四層恆等式的單元測試；切換期間 CLS < 0.05 的 E2E。
+**V3-4b 圖表（M；下一批）**：貢獻變化拆解瀑布（C17）＋橋接表＋平衡檢核（`bridge-waterfall`、`bridge-table`、`bridge-balance-check`、結論句標題）；本期利潤結構四層瀑布（F2，§10.3：`profit-waterfall`、`profit-waterfall-scope`、`profit-waterfall-bar-{metric}`、資料表、資料待補虛線框）；趨勢與各通路改 ChartFrame（C16：結論標題、takeaway 列「期間合計／最近完整週」、圖例線段、最後一點標值、缺資料斷線、檔期區帶、四態等高、1280 上下排列）；`src/application/chart-theme.ts`（圖表色由 token 讀取）；事件 `waterfall_clicked`；瀑布九項加總到分與四層恆等式的單元測試；切換期間 CLS < 0.05 的 E2E。
 
 ---
 
