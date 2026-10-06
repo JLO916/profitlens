@@ -82,13 +82,20 @@ export async function openValidation(page: Page) {
   await page.getByTestId('validation-panel').waitFor({ state: 'visible' });
 }
 /** R6：首次載入資料時會出現非 modal 的「存在這台電腦？」提示（右下角）；不測自動保存的流程先按「先不要」。 */
+/** V3-3：手機「更多」展開時，使用者主動打開的選單／面板疊在非 modal 的保存提示之上（產品決定），所以回應提示前先收起「更多」。 */
+async function settleMoreBeforePrompt(page: Page) {
+  if (!isMobile(page)) return;
+  const more = page.getByTestId('topbar-more');
+  if (await more.count() && await more.getAttribute('aria-expanded') === 'true') { await more.click(); await expect(more).toHaveAttribute('aria-expanded', 'false'); }
+}
 export async function dismissSavePrompt(page: Page) {
   const prompt = page.getByTestId('local-save-prompt');
-  if (await prompt.count() && await prompt.isVisible()) await prompt.getByRole('button', { name: labels.autoSave.decline, exact: true }).click();
+  if (await prompt.count() && await prompt.isVisible()) { await settleMoreBeforePrompt(page); await prompt.getByRole('button', { name: labels.autoSave.decline, exact: true }).click(); }
 }
 export async function acceptSavePrompt(page: Page) {
   const prompt = page.getByTestId('local-save-prompt');
   await prompt.waitFor({ state: 'visible' });
+  await settleMoreBeforePrompt(page);
   await prompt.getByRole('button', { name: labels.autoSave.accept, exact: true }).click();
 }
 export const openPeriodComparison = (page: Page) => openDetails(page.getByTestId('period-comparison'));

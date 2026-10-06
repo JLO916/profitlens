@@ -58,7 +58,10 @@ export function ShellFrame({ panel, showValidation, onNavigate, dataStatus, ai, 
     if (!moreOpen) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      // 先讓 Dashboard 關掉開著的頂欄選單；沒有開著的選單時才收起「更多」。
+      // 用捕獲階段先於 Dashboard 的 keydown 判斷：開著的頂欄選單、AI popover 或任何 dialog（指標定義、抽屜）要先由各自的處理器關閉並回焦；
+      // 只有在沒有任何內層浮層時，這次 Esc 才收起「更多」（V3-3 修正：原本一次 Esc 會同時關閉內層與「更多」，焦點掉到 body）。
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest("dialog, [role=dialog]")) return;
       if (clusterRef.current?.querySelector(".topbar-menu[open]") || ai.open) return;
       setMoreOpen(false);
       moreTrigger.current?.focus();
@@ -70,8 +73,8 @@ export function ShellFrame({ panel, showValidation, onNavigate, dataStatus, ai, 
       if ([clusterRef, sheetRef, topbarMoreRef, tabMoreRef].some(ref => ref.current?.contains(target))) return;
       setMoreOpen(false);
     };
-    document.addEventListener("keydown", onKey); document.addEventListener("mousedown", onPointer);
-    return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("mousedown", onPointer); };
+    document.addEventListener("keydown", onKey, true); document.addEventListener("mousedown", onPointer);
+    return () => { document.removeEventListener("keydown", onKey, true); document.removeEventListener("mousedown", onPointer); };
   }, [moreOpen, ai.open]);
   const toggleMore = (trigger: HTMLButtonElement | null) => { moreTrigger.current = trigger; setMoreOpen(open => !open); };
   const go = (id: ShellPanel) => { setMoreOpen(false); onNavigate(id); };
@@ -116,7 +119,7 @@ export function ShellFrame({ panel, showValidation, onNavigate, dataStatus, ai, 
         {showValidation && <div className="nav-group nav-group-developer" role="group" aria-labelledby="nav-group-title-developer" data-testid="nav-group-developer"><p className="nav-group-title" id="nav-group-title-developer">{groups.developer}</p>{navItem("validation")}</div>}
       </nav>
     </aside>
-    <nav className="mobile-tabbar" aria-label={labels.shell.mobileNav.aria} data-testid="mobile-tabbar">
+    <nav className="mobile-tabbar" aria-label={labels.shell.mobileNav.aria} data-testid="mobile-tabbar" data-more-open={moreOpen || undefined}>
       {TABS.map(id => <button key={id} type="button" className="tab-item" aria-label={navLabel(id)} aria-current={panel === id ? "page" : undefined} onClick={() => go(id)}><ShellIcon name={id} /><span>{labels.shell.mobileNav.tabs[id]}</span></button>)}
       <button ref={tabMoreRef} type="button" className="tab-item" data-testid="mobile-tabbar-more" data-active={moreActive || undefined} aria-expanded={moreOpen} aria-controls="mobile-more topbar-cluster" onClick={event => toggleMore(event.currentTarget)}><ShellIcon name="more" /><span>{labels.shell.mobileNav.more}</span></button>
       <div className="mobile-more" id="mobile-more" ref={sheetRef} role="region" aria-label={labels.shell.mobileNav.moreAria} data-testid="mobile-more" hidden={!moreOpen}>

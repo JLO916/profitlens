@@ -278,6 +278,20 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **影響文件：** `docs/revamp/05_FEATURES.md §7–§9`、`docs/SCENARIOS.md`、`verification/revamp-R5-acceptance.md`。**驗收：** `tests/diagnosis-group.test.ts`、`tests/scenario-presets.test.ts`、`tests/scenario-absolute-mode.test.ts`、`tests/scenario-sensitivity-backup.test.ts`、`tests/action-board.test.ts`、`tests/product-highlights.test.ts`、`tests/e2e/revamp-r5.spec.ts`。
 
+## 2026-10-06｜Revamp v3 V3-3：殼層實作的取捨
+
+**問題：** 頂欄、側欄、期間列、手機底部分頁列要在不刪功能、不複製 DOM（M1／M6）的前提下重排，且既有 E2E 多以頁名與角色定位。
+
+**採用選項：**
+- 側欄徽章（健檢不利計數、資料問題數、會議「草稿」）以 CSS `attr(data-mark)` 繪製，意義用 aria-describedby 連結：導覽按鈕的文字與可及名稱仍等於頁名，既有 `getByRole(name)` 不受影響。
+- v2 的狀態列文字（含資料集名）保留為 sr-only 的 `workspace-status` role=status／aria-live 鏡像；可見的資料狀態按鈕只寫「示範資料 · 資料到 8/24」。
+- 手機（≤767）：`topbar-more` 與底部分頁列的「更多」共用一個狀態，展開同一份已掛載的 AI／指標定義／儲存／匯出（CSS 重新定位）；AI 狀態也一起收進「更多」（PRD 只寫三項），因為 390 寬只放得下品牌、資料狀態與一顆按鈕。
+- 期間列 768–1279 允許兩列；只有 ≥1280 單列（PRD 的驗收點）。快捷依 D-V3-10 單擊即套用，套用中期間列保持掛載以免焦點掉到 body。
+- 資料狀態 popover 的天數算到 data_as_of（與 §7.0 範例 85 天一致）。
+- 匯入入口：只有資料來源頁首保留「匯入資料」按鈕；其他頁經資料狀態 → 匯入新資料（2 次點擊）。E2E 的 `openWizard` helper 改走此路徑。
+
+**原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
+
 ## 2026-10-06｜Revamp v3 V3-3 開工：H2 後補
 
 **問題：** V3-3（殼層與導覽）依 PRD 需人工關卡 H2（靜態設計稿審查）通過才能開工。

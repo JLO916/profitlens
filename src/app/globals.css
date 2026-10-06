@@ -1324,3 +1324,9 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
   .period-presets > .preset { padding: 0 var(--space-2); }
   .period-bar .period-channel select { max-width: 160px; }
 }
+
+/* V3-3 修正：手機「更多」展開時，頂欄叢集與底部面板的堆疊層要高於非 modal 的首次保存提示（.local-save-prompt z 25），否則提示會蓋住儲存／匯出／更多項目 */
+@media (max-width: 767px) {
+  .topbar[data-more-open] { z-index: var(--z-overlay); }
+  .mobile-tabbar[data-more-open] { z-index: var(--z-overlay); }
+}

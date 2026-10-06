@@ -7,7 +7,7 @@ import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { channelsLabel } from "../../src/application/copy";
 import { formatSavedDateTime } from "../../src/application/auto-save";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
-import { acceptSavePrompt, clearButton, clickReplacing, closeDownloads, closeStorage as closeStorageMenu, dismissSavePrompt, isMobile, navControl, navigateTo, openDownloads, openMeeting, openMobileMore, openStorage as openStorageMenu, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptSavePrompt, clearButton, clickReplacing, closeDownloads, closeStorage as closeStorageMenu, closeTopbarMore, dismissSavePrompt, isMobile, navControl, navigateTo, openDownloads, openMeeting, openMobileMore, openStorage as openStorageMenu, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -78,10 +78,11 @@ async function loadDataset(page: Page, id: "golden" | "demo") {
   await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
   await expect(status(page)).toContainText(ready(id));
 }
-/** 首次載入（或清空、從備份恢復）後一定會出現保存提示：等它出現再按「先不要」，避免手機版底部提示蓋住按鈕。 */
+/** 首次載入（或清空、從備份恢復）後一定會出現保存提示：等它出現再按「先不要」。V3-3 手機：展開中的「更多」（頂欄工具列＋底部頁面面板）疊在非 modal 的提示之上，先收起再回應。 */
 async function declineSavePrompt(page: Page) {
   const prompt = page.getByTestId("local-save-prompt");
   await expect(prompt).toBeVisible();
+  await closeTopbarMore(page);
   await prompt.getByRole("button", { name: auto.decline, exact: true }).click();
   await expect(prompt).toHaveCount(0);
 }
@@ -268,9 +269,9 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await clickReplacing(page, fresh.getByRole("button", { name: store.applyRestore, exact: true }));
   await expect(status(page)).toContainText(ready("golden"));
   await expect(fresh.getByTestId("storage-notice")).toHaveText(store.restoredNotice);
-  // 恢復後本機保存同意重設，提示再出現一次。V3-3：先回應提示再收儲存選單（手機上提示蓋住頂欄「更多」的工具列，見 e 的檢查）。
-  await declineSavePrompt(page);
+  // 恢復後本機保存同意重設，提示再出現一次。V3-3：先收儲存選單（手機上一併收起「更多」）再回應提示——展開中的選單與底部面板疊在提示之上（見 e 的檢查）。
   await closeStorage(page);
+  await declineSavePrompt(page);
   const restored = await openMeeting(page);
   await expect(restored.getByTestId("meeting-history-item")).toHaveCount(1);
   await expect(restored.getByTestId("meeting-history-item").first().locator("summary")).toHaveText(historyTitle(name, today, "adopted"));
@@ -548,13 +549,13 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
 test("e. 總覽一行入口切到會議紀錄；導覽：桌機側欄四組＋開發者組（七頁＋開發者驗證）、手機底部分頁列 5 格＋「更多」4 項；每頁都沒有水平捲動", async ({ page }) => {
   await loadDataset(page, "golden");
   if (isMobile(page)) {
-    // V3-3 手機：首次保存提示出現時，使用者打開的「更多」面板（頁面）與頂欄「更多」工具列（儲存／匯出）應在提示之上、點得到。
-    // 目前 .local-save-prompt（z-index 25）蓋在 .mobile-tabbar（20）與 .topbar（21）的堆疊層之上 → 產品問題，soft 斷言保持失敗，其餘流程照常檢查。
+    // V3-3 手機：首次保存提示出現時，使用者打開的「更多」面板（頁面）與頂欄「更多」工具列（儲存／匯出）在提示之上、點得到
+    //（產品決定：展開中的 .topbar／.mobile-tabbar 以 --z-overlay 疊在非 modal 的 .local-save-prompt 之上；收起「更多」後提示仍可回應）。
     await expect(page.getByTestId("local-save-prompt")).toBeVisible();
     await openMobileMore(page);
     const onTop = (locator: Locator) => locator.evaluate(element => { const box = element.getBoundingClientRect(); const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2); return !!hit && element.contains(hit); });
-    expect.soft(await onTop(navControl(page, "products")), "「更多」面板的項目不應被首次保存提示蓋住").toBe(true);
-    expect.soft(await onTop(page.getByTestId("workspace-storage").locator(":scope > summary")), "頂欄「更多」的儲存選單不應被首次保存提示蓋住").toBe(true);
+    expect(await onTop(navControl(page, "products")), "「更多」面板的項目不應被首次保存提示蓋住").toBe(true);
+    expect(await onTop(page.getByTestId("workspace-storage").locator(":scope > summary")), "頂欄「更多」的儲存選單不應被首次保存提示蓋住").toBe(true);
     await page.getByTestId("mobile-tabbar-more").click();
     await expect(page.getByTestId("mobile-more")).toBeHidden();
   }
