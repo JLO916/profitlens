@@ -493,7 +493,10 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       for (const name of ["actions", "actions-list", "actions-empty"]) {
         const { html } = states.find(state => state.name === name)!;
         const ids = testIdCounts(html);
-        for (const id of ["actions-workbench", "actions-count", "actions-help", "actions-add", "actions-export-menu", "export-page-actions", "actions-export-md", "actions-export-csv", "actions-export-json"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        for (const id of ["actions-workbench", "actions-count", "actions-help", "actions-export-menu", "export-page-actions", "actions-export-md", "actions-export-csv", "actions-export-json"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        // 「新增待辦」全頁唯一：有待辦時在頁首（actions-add），空狀態時只在空狀態區（actions-empty-add）。
+        expect(ids.get("actions-add"), `${name} actions-add`).toBe(name === "actions-empty" ? undefined : 1);
+        expect(ids.get("actions-empty-add"), `${name} actions-empty-add`).toBe(name === "actions-empty" ? 1 : undefined);
         expect(openTag(html, 'data-testid="actions-help"'), name).toMatch(/\shidden=""/);
         expect(openTag(html, `aria-controls="actions-help-panel"`), name).toMatch(/aria-expanded="false"/);
         const menu = openTag(html, 'data-testid="actions-export-menu"')!;
@@ -503,7 +506,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         const body = element(html, 'data-testid="actions-export-menu"')!;
         for (const format of ["md", "csv", "json"]) expect(body, `${name} actions-export-${format}`).toContain(`data-testid="actions-export-${format}"`);
         const inline = element(html, 'class="actions-page-head-inline"')!;
-        for (const id of ["actions-count", "actions-help", "actions-add", "actions-export-menu"]) expect(inline, `${name} ${id} inline`).toContain(`data-testid="${id}"`);
+        for (const id of ["actions-count", "actions-help", "actions-export-menu", ...(name === "actions-empty" ? [] : ["actions-add"])]) expect(inline, `${name} ${id} inline`).toContain(`data-testid="${id}"`);
         expect(element(html, 'id="page-actions"'), name).toBe('<div class="page-actions" id="page-actions" data-testid="page-actions"></div>');
         expect(element(html, 'id="page-title-addon"'), name).toBe('<div class="page-title-addon" id="page-title-addon" data-testid="page-title-addon"></div>');
         // 試算工作台每頁都掛著（hidden），所以只數待辦工作台內的主要按鈕；清單檢視的內嵌編輯器自成一個容器（C12 每個容器最多 1 顆），不在此計。
@@ -511,7 +514,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       }
     });
 
-    it("V3-6 B 待辦看板：每張卡的「移到」三個文字按鈕與「編輯」各一份、可及名稱是「移到{狀態}」；看板不渲染 action-{n}；清單不渲染看板；空狀態不渲染工具列與看板", () => {
+    it("V3-6 B 待辦看板：每張卡的「移到」三個文字按鈕與「編輯」各一份、可及名稱是「移到{狀態}」；看板不渲染 action-{n}；清單不渲染看板；空狀態不渲染看板（工具列仍在）", () => {
       const { html } = states.find(state => state.name === "actions")!;
       const ids = testIdCounts(html);
       const moves: Record<string, string[]> = { "board-card-1": ["not_started", "blocked", "completed"], "board-card-2": ["in_progress", "blocked", "completed"] };
@@ -533,8 +536,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       for (const id of ["action-1", "action-2", "actions-view-list"]) expect(list.get(id), `actions-list ${id}`).toBe(1);
       expect([...list.keys()].filter(id => /^(?:board-card-|board-column-|action-board$)/.test(id)), "清單不渲染看板").toEqual([]);
       const empty = testIdCounts(states.find(state => state.name === "actions-empty")!.html);
-      for (const id of ["actions-empty", "actions-empty-add"]) expect(empty.get(id), `actions-empty ${id}`).toBe(1);
-      for (const id of ["actions-toolbar", "actions-view-board", "actions-view-list", "action-board"]) expect(empty.has(id), `actions-empty ${id}`).toBe(false);
+      // 空狀態：工具列仍在（可先選檢視，同 v2），看板與「新增待辦」頁首鈕不渲染。
+      for (const id of ["actions-empty", "actions-empty-add", "actions-toolbar", "actions-view-board", "actions-view-list"]) expect(empty.get(id), `actions-empty ${id}`).toBe(1);
+      for (const id of ["action-board", "actions-add"]) expect(empty.has(id), `actions-empty ${id}`).toBe(false);
     });
 
 

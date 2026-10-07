@@ -170,7 +170,8 @@ describe("V3-6 B 工具列與看板（§7.5 第 2–3 點、C15）", () => {
     // 清單檢視：v2 的每項 article＋內嵌編輯器；標題列的引用狀態改成 ui-lozenge。
     const first = element(listHtml, 'data-testid="action-1"')!;
     expect(openTag(listHtml, 'data-testid="action-1"')).toContain('class="panel action-card"');
-    expect(first).toContain(`<h3>${fill(ui.itemHeading, { kind: labels.buttons.pin, n: 1 })}</h3><span class="ui-lozenge">${ui.tagDraft}</span>`);
+    expect(first).toContain(`<h3 id="action-1-title">${fill(ui.itemHeading, { kind: labels.buttons.pin, n: 1 })}</h3><span class="ui-lozenge">${ui.tagDraft}</span>`);
+    expect(openTag(listHtml, 'data-testid="action-1"')).toContain('aria-labelledby="action-1-title"');
     expect(first).toContain('data-testid="evidence-checklist"');
     expect(occurrences(listHtml, 'data-testid="evidence-checklist"')).toBe(2);
   });
@@ -315,13 +316,14 @@ describe("V3-6 B 待辦編輯抽屜接線（§7.5 第 4 點；ActionDrawer 的 p
 });
 
 describe("V3-6 B 空狀態（§7.5 第 6 點、C10 頁面型）", () => {
-  it("沒有待辦：actions-empty（h2＋說明＋次要按鈕「新增待辦」），工具列與看板不渲染；頁首仍有新增待辦與匯出", () => {
+  it("沒有待辦：actions-empty（h2＋說明＋主要按鈕「新增待辦」是全頁唯一一顆，頁首此時不放）；看板不渲染但工具列仍在（同 v2，可先選檢視）；頁首仍有徽章與匯出", () => {
     const html = render(emptyActionWorkspace());
     const empty = element(html, 'data-testid="actions-empty"')!;
     expect(openTag(html, 'data-testid="actions-empty"')).toBe('<div class="ui-empty-page actions-empty" data-testid="actions-empty">');
-    expect(empty).toBe(`<div class="ui-empty-page actions-empty" data-testid="actions-empty"><h2>${page.emptyTitle}</h2><p>${page.emptyBody}</p><button type="button" class="ui-btn ui-btn-secondary" data-testid="actions-empty-add">${labels.buttons.addAction}</button></div>`);
-    for (const id of ["actions-toolbar", "actions-view-board", "actions-view-list", "action-board"]) expect(html, id).not.toContain(`data-testid="${id}"`);
-    for (const id of ["actions-add", "actions-count", "actions-help", "actions-export-md", "actions-export-csv", "actions-export-json"]) expect(occurrences(html, `data-testid="${id}"`), id).toBe(1);
+    expect(empty).toBe(`<div class="ui-empty-page actions-empty" data-testid="actions-empty"><h2>${page.emptyTitle}</h2><p>${page.emptyBody}</p><button type="button" class="ui-btn ui-btn-primary" data-testid="actions-empty-add">${labels.buttons.addAction}</button></div>`);
+    for (const id of ["action-board", "actions-add"]) expect(html, id).not.toContain(`data-testid="${id}"`);
+    for (const id of ["actions-toolbar", "actions-view-board", "actions-view-list", "actions-count", "actions-help", "actions-export-md", "actions-export-csv", "actions-export-json"]) expect(occurrences(html, `data-testid="${id}"`), id).toBe(1);
+    expect(occurrences(element(html, 'data-testid="actions-workbench"')!, "ui-btn-primary"), "空狀態只有一顆主要按鈕").toBe(1);
     expect(text(element(html, 'data-testid="actions-count"')!)).toBe(fill(page.countBadge, { total: 0, pinned: 0 }));
     expect(html).not.toContain(ui.empty);
   });

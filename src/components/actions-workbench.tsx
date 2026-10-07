@@ -124,7 +124,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
   </>;
   // §7.5 第 1 點、§6.3 #42：「新增待辦」＋「匯出本頁」頁內下拉（handler、通知同 v2；Esc／點外面關閉沿用 Dashboard 的 `.topbar-menu.auto-close`）。
   const headActions = <>
-    <button ref={addButtonRef} type="button" className="ui-btn ui-btn-primary" data-testid="actions-add" onClick={addDraft}>{labels.buttons.addAction}</button>
+    {total > 0 && <button ref={addButtonRef} type="button" className="ui-btn ui-btn-primary" data-testid="actions-add" onClick={addDraft}>{labels.buttons.addAction}</button>}
     <details ref={exportRef} className="topbar-menu auto-close export-page" data-testid="actions-export-menu">
       <summary className="ui-btn ui-btn-secondary" data-testid="export-page-actions">{labels.products.pageV3.exportPage}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
       <div className="menu-panel ui-menu">{(['md', 'csv', 'json'] as const).map(format => <div key={format} className="menu-item"><button type="button" className="ui-menu-item" data-testid={`actions-export-${format}`} onClick={() => exportAs(format)}>{format === 'md' ? labels.downloads.decisionMd : format === 'csv' ? labels.downloads.decisionCsv : labels.downloads.decisionJson}</button></div>)}</div>
@@ -173,16 +173,16 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
     {actionsSlot && createPortal(headActions, actionsSlot)}
     {(!titleSlot || !actionsSlot) && <div className="actions-page-head-inline">{!titleSlot && <div className="actions-head-title">{titleAddon}</div>}{!actionsSlot && <div className="actions-head-actions">{headActions}</div>}</div>}
     {notice && <p role="status" className="ui-notice actions-notice" data-testid="action-notice">{notice}</p>}
-    {/* §7.5 第 6 點、C10 頁面型空狀態：沒有待辦時不渲染工具列與看板。 */}
+    {/* §7.5 第 2 點、C15：看板｜清單分段按鈕（偏好仍由 onViewChange 記進 ui_prefs.view）；空工作區也顯示（同 v2，E2E 會先切清單再新增）。 */}
+    <div className="ui-toolbar actions-toolbar" data-testid="actions-toolbar">
+      <div className="ui-segmented" role="group" aria-label={board.viewToggle}><button type="button" aria-pressed={current === 'board'} data-testid="actions-view-board" onClick={() => selectView('board')}>{board.viewBoard}</button><button type="button" aria-pressed={current === 'list'} data-testid="actions-view-list" onClick={() => selectView('list')}>{board.viewList}</button></div>
+    </div>
+    {/* §7.5 第 6 點、C10 頁面型空狀態：沒有待辦時不渲染看板／清單；「新增待辦」在這裡是全頁唯一的主要按鈕（頁首此時不放）。 */}
     {total === 0 ? <div className="ui-empty-page actions-empty" data-testid="actions-empty">
       <h2>{page.emptyTitle}</h2>
       <p>{page.emptyBody}</p>
-      <button type="button" className="ui-btn ui-btn-secondary" data-testid="actions-empty-add" onClick={addDraft}>{labels.buttons.addAction}</button>
+      <button ref={addButtonRef} type="button" className="ui-btn ui-btn-primary" data-testid="actions-empty-add" onClick={addDraft}>{labels.buttons.addAction}</button>
     </div> : <>
-      {/* §7.5 第 2 點、C15：看板｜清單分段按鈕（偏好仍由 onViewChange 記進 ui_prefs.view）。 */}
-      <div className="ui-toolbar actions-toolbar" data-testid="actions-toolbar">
-        <div className="ui-segmented" role="group" aria-label={board.viewToggle}><button type="button" aria-pressed={current === 'board'} data-testid="actions-view-board" onClick={() => selectView('board')}>{board.viewBoard}</button><button type="button" aria-pressed={current === 'list'} data-testid="actions-view-list" onClick={() => selectView('list')}>{board.viewList}</button></div>
-      </div>
       {/* §7.5 第 3 點：四欄，欄標題＝狀態名＋計數徽章；空欄是 C10 區段型空狀態。 */}
       {current === 'board' && <div className="action-board" data-testid="action-board">{ACTION_EXECUTION_STATUSES.map(status => {
         const headingId = `board-column-${status}-heading`; const items = columns[status];
@@ -195,8 +195,8 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
       {/* §7.5 第 5 點：清單檢視維持 v2 的每項 article＋常駐的內嵌編輯器（與抽屜共用 ActionEditor；兩種檢視不同時渲染，M6）。 */}
       {current === 'list' && workspace.items.map((item, index) => {
         const card = item.card; const document = documents[index];
-        return <article key={card.id} className="panel action-card" data-testid={`action-${index + 1}`}>
-          <div className="section-heading"><h3>{fill(ui.itemHeading, { kind: item.pinned ? labels.buttons.pin : ui.item, n: index + 1 })}</h3><span className="ui-lozenge" data-tone={document.evidence_review_required ? 'warning' : undefined}>{evidenceTag(document, card.evidence_confirmed)}</span></div>
+        return <article key={card.id} className="panel action-card" data-testid={`action-${index + 1}`} aria-labelledby={`action-${index + 1}-title`}>
+          <div className="section-heading"><h3 id={`action-${index + 1}-title`}>{fill(ui.itemHeading, { kind: item.pinned ? labels.buttons.pin : ui.item, n: index + 1 })}</h3><span className="ui-lozenge" data-tone={document.evidence_review_required ? 'warning' : undefined}>{evidenceTag(document, card.evidence_confirmed)}</span></div>
           {editor(item, index, 'list')}
         </article>;
       })}
