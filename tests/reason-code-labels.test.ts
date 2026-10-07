@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { BREAKEVEN_MER_REASON_CODES, breakevenReasonLabel } from "@/application/breakeven-mer";
 import { SCENARIO_REASON_ALIASES, SCENARIO_REASON_CODES, scenarioReasonLabel, scenarioReasonText } from "@/application/decision-export";
 import { ALL_IMPORT_ISSUE_REASON_CODES, issueTemplate, sideFileIssueMessage } from "@/application/import";
 import { parseTargets } from "@/application/targets";
@@ -116,5 +117,15 @@ describe("選配檔（targets.csv／events.csv）的 CSV 讀取錯誤不顯示 l
     const [issue] = parseTargets({ name: "targets.csv", bytes: new TextEncoder().encode("period_start\n2026-08-01\n") }, ["DTC"]).issues;
     expect(Object.hasOwn(labels.targets.errors, issue.reason_code)).toBe(true);
     expect(sideFileIssueMessage("targets.csv", issue)).toBe(issue.message);
+  });
+});
+
+describe("V3-9a F12 損益兩平 MER 的 application 原因碼都有 labels 文案", () => {
+  it("breakeven-mer.ts 產生的原因碼＝BREAKEVEN_MER_REASON_CODES（另沿用 domain 的 NON_POSITIVE_NET_REVENUE 與缺漏原因碼），每個都有 labels.assist.breakevenV3.reasons", () => {
+    const source = read("src/application/breakeven-mer.ts");
+    const produced = [...source.matchAll(/push\("([A-Z][A-Z0-9_]+)"\)/g)].map(([, code]) => code);
+    expect([...new Set(produced)].sort()).toEqual([...BREAKEVEN_MER_REASON_CODES, "NON_POSITIVE_NET_REVENUE"].sort());
+    for (const code of BREAKEVEN_MER_REASON_CODES) expect(breakevenReasonLabel(code), `labels.assist.breakevenV3.reasons.${code} 缺文案`).toMatch(/\S/);
+    expect(Object.keys(labels.assist.breakevenV3.reasons).sort()).toEqual([...BREAKEVEN_MER_REASON_CODES].sort());
   });
 });

@@ -2669,6 +2669,41 @@ export const assist = {
   technicalVersion: assistTechnicalVersion,
   // ── V3-9a 錨點（代理 A：損益兩平 MER（F12）——其他常用指標的獨立列／段、? 說明、CSV／Excel／Markdown 的標籤、抽屜公式與版本；收尾時刪除仍為空的物件）
   breakevenV3: {
+    /** F12 指標名（PRD §10.1 F12；名詞表「損益兩平」保留給 F12）。 */
+    label: "損益兩平 MER",
+    short: "損益兩平",
+    plain: "扣廣告後貢獻等於 0 時的最低 MER",
+    formula: "淨營收 ÷ 扣廣告前貢獻",
+    formulaTechnical: "breakeven_mer = N / CM_before（ROUND_HALF_UP 12 位小數，與 MER 相同；N ≤ 0 或 CM_before ≤ 0 時不適用，不顯示 0 或無限大）",
+    /** 「計算與來源」抽屜的公式行：兩個輸入帶 L3 金額（含單位）；括號說明它和下方 MER 定義的關係（抽屜的定義段沿用 MER）。 */
+    evidenceFormula: "淨營收 {revenue} ÷ 扣廣告前貢獻 {contribution}（扣廣告後貢獻等於 0 時的最低 MER）",
+    /** `?` 說明（兩句；M1：關著時 hidden 保持掛載）。 */
+    help: {
+      definition: "扣廣告後貢獻等於 0 時的最低 MER，等於淨營收除以扣廣告前貢獻。",
+      version: "版本 {version}，不列入貢獻計算。",
+    },
+    helpAria: "{metric}的定義",
+    /** 本期一句 L1 結論（不上色，D-V3-7）；{mer} 是 metricDefinitions.mer.label，數字用 formatMultiple。 */
+    note: {
+      above: "本期{mer}{actual}，高於損益兩平（{breakeven}）。",
+      below: "本期{mer}{actual}，低於損益兩平（{breakeven}）。",
+      equal: "本期{mer}{actual}，剛好在損益兩平。",
+      zeroAds: "廣告費為 0，無法比較。",
+      actualMissing: "廣告費資料待補，無法比較。",
+      actualNotApplicable: "本期{mer}不適用，無法比較。",
+      nonPositiveContribution: "扣廣告前貢獻為 0 或負數，沒有損益兩平點。",
+      nonPositiveRevenue: "淨營收為 0 或負數，沒有損益兩平點。",
+      missing: "資料待補，算不出損益兩平 MER。",
+    },
+    /** application 新原因碼（只在 breakeven-mer.ts 產生）的白話文案。 */
+    reasons: {
+      ZERO_NET_REVENUE: "淨營收為 0",
+      NON_POSITIVE_CONTRIBUTION_BEFORE_MARKETING: "扣廣告前貢獻為 0 或負數",
+    },
+    /** Excel 摘要表「其他常用指標」列的內容欄、指標定義表的技術列；Markdown 技術細節的版本列。 */
+    excelDetail: "版本 {version}",
+    excelVersion: "損益兩平 MER 版本 (breakeven_mer_version)",
+    technicalVersion: "breakeven_mer_version",
   },
 } as const;
 
@@ -3196,7 +3231,8 @@ const LEGACY_PREFIXES: readonly (readonly [string, string, string])[] = [
   ["ui", "products", "productComparisonPanel:comparison"],
   ["ui", "evidence", "evidenceDrawer:drawer"],
   ["ui", "errors", "import:importDraft"],
-  ["", "", "assist"],
+  // V3-9a A：列出 v2 的五個鍵（不整棵對照，同 V3-8 C 的 emptyState），assist.breakevenV3 是 v3 新鍵，不屬於舊路徑。
+  ["assist", "assist", "intro items notApplicable units technicalVersion"],
   ["", "", "targets"],
   ["", "", "events"],
   ["", "diagnosis", "diagnosisList:list"],

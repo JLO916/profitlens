@@ -83,6 +83,9 @@ describe("R4 assist KPIs reach the analysis CSV and the manager summary Markdown
     const rows = parsed.rows.map(row => Object.fromEntries(parsed.headers.map((header, index) => [csvHeaderKey(header), row.values[index]])));
     const assist = rows.filter(row => row.row_type === "assist_kpi");
     expect(assist).toHaveLength(14);
+    // V3-9a F12（D-V3-17＝C）：損益兩平 MER 是獨立的 row_type 與版本，不混進 assist-kpi-v1 的七格。
+    expect(assist.every(row => row.metric_version === ASSIST_KPI_VERSION && (ASSIST_KPI_IDS as readonly string[]).includes(row.metric))).toBe(true);
+    expect(rows.filter(row => row.row_type === "breakeven_mer").map(row => row.metric_version)).toEqual(["breakeven-mer-v1", "breakeven-mer-v1"]);
     expect(assist.find(row => row.period === "current" && row.metric === "units_sold")).toMatchObject({ value: "8", unit: "count", metric_label: labels.assist.items.units_sold.label });
     expect(assist.find(row => row.period === "current" && row.metric === "net_revenue_per_unit")).toMatchObject({ value: "308.75", unit: "TWD/unit" });
     expect(assist.find(row => row.period === "previous" && row.metric === "net_revenue_per_unit")!.value).toBe("375.00");

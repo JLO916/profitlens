@@ -6,6 +6,7 @@ import { fill, labels } from "../i18n";
 import { channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, ruleCopy, scopeLabel } from "./copy";
 import type { TaxConversion } from "./tax-basis";
 import { assistKpis, ASSIST_KPI_VERSION, type AssistKpi } from "./assist-kpi";
+import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
 import { achievementText, matchTargets, mismatchText, TARGET_METRICS, type TargetMetric, type TargetSet } from "./targets";
 import { encodeCsv, type CsvCell } from "./export";
 import { buildExportHeader, markdownExportHeader } from "./export-header";
@@ -69,6 +70,8 @@ export interface ManagerSummary {
   conversion_note: string | null;
   /** R4：輔助指標（assist-kpi-v1），上期與本期各七格。 */
   assist: { version: typeof ASSIST_KPI_VERSION; previous: AssistKpi[]; current: AssistKpi[] };
+  /** V3-9a F12：損益兩平 MER（breakeven-mer-v1，獨立於 assist-kpi-v1）；選填，舊的摘要物件沒有這個欄位。 */
+  breakeven?: { version: typeof BREAKEVEN_MER_VERSION; previous: BreakevenMer; current: BreakevenMer };
   /** R4：目標達成（只列與本期完全相同的目標；期間不一致者列出提示）。 */
   targets: { metric: TargetMetric; text: string; status: "matched" | "mismatch" }[];
 }
@@ -160,6 +163,7 @@ export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { impo
     scope: report.scope, previous_days: report.comparison.previous_days, current_days: report.comparison.current_days, importance_threshold: diagnosis.importance_threshold,
     headlines: [metricComparison(snapshot, "net_revenue"), metricComparison(snapshot, "contribution_after_marketing")],
     assist: { version: ASSIST_KPI_VERSION, previous: assistKpis(report.previous), current: assistKpis(report.current) }, targets: targetLines,
+    breakeven: { version: BREAKEVEN_MER_VERSION, previous: breakevenMer(report.previous), current: breakevenMer(report.current) },
     channels: report.scope.channels.map(channel => ({ channel, revenue: metricComparison(snapshot, "net_revenue", channel), contribution: metricComparison(snapshot, "contribution_after_marketing", channel) })),
     priorities: diagnosis.priorities.map(group => byRule.get(group.rule)!), groups, omitted_group_count: diagnosis.omitted_group_count, diagnosis: diagnosis.groups, facts: report.facts, assumptions: converted ? [...LIMITATIONS, converted] : LIMITATIONS, conversion_note: converted,
   });
@@ -223,6 +227,8 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   for (const row of summary.channels) lines.push(`| ${md(channelLabel(row.channel, alias))} | ${amount(row.contribution.previous)} | ${amount(row.contribution.current)} | ${amount(row.contribution.change, true)} |`);
   lines.push("", `## ${labels.sections.assistKpis}`, "", labels.assist.intro, "", `| ${labels.csvColumns.metric} | ${labels.periods.previous} | ${labels.periods.current} |`, "| --- | ---: | ---: |");
   for (const [index, kpi] of summary.assist.current.entries()) lines.push(`| ${md(kpi.label)} | ${md(summary.assist.previous[index].display)} | ${md(kpi.display)} |`);
+  // V3-9a F12：損益兩平 MER 接在其他常用指標表的最後一列（版本 breakeven-mer-v1 寫在技術細節）；既有各列不變。
+  if (summary.breakeven) lines.push(`| ${md(summary.breakeven.current.label)} | ${md(summary.breakeven.previous.display)} | ${md(summary.breakeven.current.display)} |`);
   if (summary.targets.length) {
     lines.push("", `## ${labels.targets.section}`, "");
     for (const row of summary.targets) lines.push(`- ${metricDefinitions[row.metric].label}：${md(row.text)}`);
@@ -245,6 +251,7 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   if (context?.reviewName) lines.push("", fill(copy.mdMeeting, { name: md(context.reviewName), decision: md(decisionLabel(context.decisionState)) }), `${labels.meeting.notes}：${md(context.notes ?? "")}`);
   lines.push("", `## ${labels.basis.title}`, "", ...summary.assumptions.map(item => `- ${md(item)}`), "", "---", "", `## ${labels.sections.technicalDetails}`, "",
     `- dataset_id：${md(summary.dataset_id)}`, `- dataset_hash：${summary.dataset_hash}`, `- filter_hash：${summary.filter_hash}`, `- metric_version：${summary.metric_version}`, `- ${labels.assist.technicalVersion}：${summary.assist.version}`,
+    ...(summary.breakeven ? [`- ${labels.assist.breakevenV3.technicalVersion}：${summary.breakeven.version}`] : []),
     labels.diagnosisList.techPriorityNote, copy.techFactsNote, "");
   if (decisions.appendixActions.length) lines.push(copy.otherActions, ...decisions.appendixActions.map(action => actionRow(action, actionStatusLabel(action.status))), "");
   for (const group of summary.groups) {

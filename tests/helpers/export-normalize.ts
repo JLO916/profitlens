@@ -30,8 +30,14 @@ function headerPatterns() {
   return { title, version };
 }
 /**
+ * V3-9a F12 損益兩平 MER（breakeven-mer-v1，D-V3-17＝C）是新增的列：Markdown 的其他常用指標表最後多一列、技術細節多一行版本；
+ * Excel 摘要表多一列（其他常用指標）、指標定義表的技術區多一列版本。正規化時拿掉這些新增列，其餘內容仍須與 V3-7 開工前逐字相同（既有列與數值不變）。
+ */
+const isBreakevenMarkdownLine = (line: string) => line.startsWith(`| ${labels.assist.breakevenV3.label} |`) || line.startsWith(`- ${labels.assist.breakevenV3.technicalVersion}：`);
+const isBreakevenExcelRow = (row: ExcelWorkbook["sheets"][number]["rows"][number]) => row[1]?.kind === "text" && (row[1].value === labels.assist.breakevenV3.label || row[1].value === labels.assist.breakevenV3.excelVersion);
+/**
  * Markdown 正規化：去掉每一段四行版頭（第 2 行是報表名、第 4 行是版本與產出時間；行尾換行用的兩個空白一併去掉）與其後一個空行，
- * U+2212 換回 ASCII「-」，全形括號包住的金額（有千分位或小數）換成「-金額」。
+ * U+2212 換回 ASCII「-」，全形括號包住的金額（有千分位或小數）換成「-金額」；V3-9a 起另拿掉損益兩平 MER 的新增列（isBreakevenMarkdownLine）。
  */
 export function normalizeMarkdown(text: string): string {
   const { title, version } = headerPatterns();
@@ -44,14 +50,15 @@ export function normalizeMarkdown(text: string): string {
       if (lines[index + 1] === "") index += 1;
       continue;
     }
+    if (isBreakevenMarkdownLine(lines[index])) continue;
     out.push(lines[index]);
   }
   return out.join("\n").replaceAll(MINUS, "-").replace(/（(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+)）/g, "-$1");
 }
-/** Excel 正規化：摘要工作表拿掉「版頭」區塊的列；其餘工作表、表頭、每一格原樣保留。 */
+/** Excel 正規化：摘要工作表拿掉「版頭」區塊的列；V3-9a 起另拿掉損益兩平 MER 的新增列（isBreakevenExcelRow）；其餘工作表、表頭、每一格原樣保留。 */
 export function normalizeWorkbook(workbook: ExcelWorkbook): ExcelWorkbook {
   const section = labels.exports.headerV3.excelSection;
-  return { sheets: workbook.sheets.map(sheet => ({ ...sheet, rows: sheet.rows.filter(row => !(row[0]?.kind === "text" && row[0].value === section)) })) };
+  return { sheets: workbook.sheets.map(sheet => ({ ...sheet, rows: sheet.rows.filter(row => !(row[0]?.kind === "text" && row[0].value === section) && !isBreakevenExcelRow(row)) })) };
 }
 
 async function source(filters: AnalysisFilters = {}) {

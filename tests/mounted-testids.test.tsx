@@ -233,6 +233,9 @@ async function pageStates(): Promise<StateMarkup[]> {
     // ── V3-8 C 新增的頁面狀態在此之後（例如 error 狀態）──
 
     // ── V3-9a A 新增的頁面狀態在此之後（例如損益兩平 MER 不適用的資料集）──
+    // 總覽＋廣告費為 0（fixtures/zero_ad：損益兩平 MER 照算、實際 MER 不適用）與淨營收為負（fixtures/refund_only：損益兩平 MER 不適用）。
+    "overview-zero-ad": { panel: "overview", active: await load("zero-ad", "zero_ad"), status: "ready" },
+    "overview-refund-only": { panel: "overview", active: await load("refund-only", "refund_only"), status: "ready" },
 
     // ── V3-9a B 新增的頁面狀態在此之後（例如帶廣告決策標籤的待辦）──
 
@@ -871,6 +874,31 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V3-9a A（損益兩平 MER）的 M1 掛載測試在此之後新增（其他常用指標內的獨立列／段、? 說明掛載）──
+    it("V3-9a A：總覽的其他常用指標內有損益兩平 MER 一段（各控制一份）；`?` 說明關著但掛著（hidden、role=region、兩句說明），觸發器 aria-expanded=false 指到它", async () => {
+      const { BREAKEVEN_MER_VERSION, breakevenMer, breakevenNote } = await import("@/application/breakeven-mer");
+      const copy = labels.assist.breakevenV3;
+      const overviews = loaded().filter(({ state }) => state!.panel === "overview");
+      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only"]);
+      for (const { name, html, state } of overviews) {
+        const ids = testIdCounts(html);
+        for (const id of ["assist-breakeven-mer", "assist-breakeven-current", "assist-breakeven-previous", "assist-breakeven-note", "assist-breakeven-help", "assist-breakeven-help-trigger"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        for (const id of ["assist-breakeven-help", "assist-breakeven-name"]) expect(idCounts(html).get(id), `${name} #${id}`).toBe(1);
+        expect(element(html, 'data-testid="assist-kpis"'), name).toContain('data-testid="assist-breakeven-mer"');
+        const help = openTag(html, 'data-testid="assist-breakeven-help"')!;
+        expect(help, name).toMatch(/\shidden=""/);
+        expect(help, name).toContain('role="region"');
+        const body = element(html, 'data-testid="assist-breakeven-help"')!;
+        expect(body, name).toContain(`<p>${escapeAttr(copy.help.definition)}</p><p>${escapeAttr(fill(copy.help.version, { version: BREAKEVEN_MER_VERSION }))}</p>`);
+        const trigger = openTag(html, 'data-testid="assist-breakeven-help-trigger"')!;
+        expect(trigger, name).toContain('aria-expanded="false"');
+        expect(trigger, name).toContain('aria-controls="assist-breakeven-help"');
+        const note = element(html, 'data-testid="assist-breakeven-note"')!.replace(/<[^>]*>/g, "");
+        expect(note, name).toBe(breakevenNote(breakevenMer(state!.active.snapshot.report.current)));
+      }
+      const note = (state: string) => element(overviews.find(({ name }) => name === state)!.html, 'data-testid="assist-breakeven-note"')!.replace(/<[^>]*>/g, "");
+      expect(note("overview-zero-ad")).toBe(copy.note.zeroAds);
+      expect(note("overview-refund-only")).toBe(copy.note.nonPositiveRevenue);
+    });
 
 
     // ── V3-9a B（廣告決策標籤）的 M1 掛載測試在此之後新增（編輯器 select 在抽屜與清單各一份、卡片徽章）──

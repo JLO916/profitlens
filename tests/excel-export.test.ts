@@ -228,7 +228,9 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     expect(rows.filter(row => row[col.basis.section] === b.sections.basis && row[col.basis.item] === null).map(row => row[col.basis.detail])).toEqual([...labels.basis.items]);
     expect(rows.some(row => row[col.basis.section] === b.sections.preprocessing)).toBe(false);
     const technical = Object.fromEntries(rows.filter(row => row[col.basis.section] === b.sections.technical).map(row => [row[col.basis.item], row[col.basis.detail]]));
-    expect(Object.values(technical)).toEqual(["golden-v1", input.snapshot.dataset_hash, input.snapshot.filter_hash, "contribution-v1", "assist-kpi-v1", "TWD", "Asia/Taipei"]);
+    // V3-9a F12：損益兩平 MER 的版本列接在輔助指標版本之後（D-V3-17＝C，獨立版本 breakeven-mer-v1）。
+    expect(Object.values(technical)).toEqual(["golden-v1", input.snapshot.dataset_hash, input.snapshot.filter_hash, "contribution-v1", "assist-kpi-v1", "breakeven-mer-v1", "TWD", "Asia/Taipei"]);
+    expect(technical[labels.assist.breakevenV3.excelVersion]).toBe("breakeven-mer-v1");
     expect(input.snapshot.dataset_hash).toMatch(/^[0-9a-f]{64}$/);
 
     const conversion: TaxConversion = { basis: "inclusive", rate: "0.05", fields: ["gross_sales", "ad_spend"], rows_converted: 8 };
