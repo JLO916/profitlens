@@ -55,6 +55,8 @@ import { WorkspaceStorage } from "@/components/workspace-storage";
 
 const noop = () => undefined;
 const asyncNoop = async () => undefined;
+/** V3-7 C：dashboard 一律傳 onCopySummary（copySummaryFromView）給頂欄匯出選單；SSR 不會呼叫。 */
+const copySummaryNoop = async () => ({ copied: true, text: "" });
 const bytes = (text: string) => new TextEncoder().encode(text);
 
 type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; conversion?: TaxConversion | null; targets?: TargetSet | null; events?: EventSet | null };
@@ -117,7 +119,7 @@ function shellPage(state: ShellState): ReactElement {
       onBasis={noop}
       badges={{ snapshot: active.snapshot, issues: active.dataset.issues.length, meetingDraft: review?.decision_state === "draft" }}
       storage={<WorkspaceStorage source={backupSource} version={1} dirty={false} onRestore={noop} onSaved={noop} onDeleted={noop} consent={state.consent ?? true} onConsentChange={noop} onClear={noop} />}
-      exportMenu={<ExportMenu source={active} busy={null} error={null} summaryRef={{ current: null }} onDecision={noop} onPrint={noop} onExport={noop} onMeetingNotes={noop} />} />
+      exportMenu={<ExportMenu source={active} busy={null} error={null} summaryRef={{ current: null }} onCopySummary={copySummaryNoop} onDecision={noop} onPrint={noop} onExport={noop} onMeetingNotes={noop} />} />
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
         <PageHeader title={panelCopy(panel).label} description={panelCopy(panel).description} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} />
@@ -341,7 +343,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect([...more.matchAll(/<button[^>]*class="more-item"[^>]*>.*?<span>([^<]+)<\/span><\/button>/g)].map(match => match[1]), name).toEqual(moreItems);
         const menu = element(html, 'data-testid="download-menu"')!;
         for (const id of ["download-meeting-section", "download-templates"]) expect(menu, `${name} ${id}`).toContain(`data-testid="${id}"`);
-        for (const text of [labels.downloads.analysisCsv, labels.downloads.channelTableCsv, labels.downloads.manifestJson, labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown, labels.downloads.decisionMd, labels.downloads.decisionCsv, labels.downloads.decisionJson]) expect(menu, `${name} 匯出：${text}`).toContain(`>${escapeAttr(text)}</button>`);
+        // V3-7 C：每項是 button.ui-menu-item[data-lines="2"]，可見名稱在 .export-item-name（可及名稱以 aria-labelledby 指到它，名稱不變）。
+        for (const text of [labels.downloads.analysisCsv, labels.downloads.channelTableCsv, labels.downloads.manifestJson, labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown, labels.downloads.decisionMd, labels.downloads.decisionCsv, labels.downloads.decisionJson]) expect(menu, `${name} 匯出：${text}`).toContain(`class="export-item-name">${escapeAttr(text)}</span>`);
         const storage = element(html, 'data-testid="workspace-storage"')!;
         expect(storage, `${name} 清空目前資料在儲存選單的危險區`).toMatch(/storage-danger[\s\S]*clear-button/);
         for (const id of ["autosave-status", ...(state!.consent ?? true ? ["autosave-toggle"] : [])]) expect(storage, `${name} ${id}`).toContain(`data-testid="${id}"`);
@@ -582,6 +585,41 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-7 C（頂欄匯出選單）的 M1 掛載測試在此之後新增（分組與每項說明、會議分組「複製週會摘要」、3×3 範本表）──
+    it("V3-7 C：各頁狀態的頂欄匯出選單仍是收合的 details，五個分組依序（目前檢視、一頁摘要、決策工作稿、會議、匯入範本）與每一項都掛在裡面；每項名稱與說明的 id 都在選單內", () => {
+      const groups = ["download-group-current", "download-group-summary", "download-group-decision", "download-group-meeting", "download-group-templates"];
+      for (const { name, html, state } of loaded()) {
+        const menu = element(html, 'data-testid="download-menu"')!;
+        expect(openTag(html, 'data-testid="download-menu"'), name).not.toMatch(/\sopen=""/);
+        const at = groups.map(id => menu.indexOf(`data-testid="${id}"`));
+        expect(at.every(index => index >= 0), `${name} 五個分組`).toBe(true);
+        expect([...at].sort((a, b) => a - b), `${name} 分組順序`).toEqual(at);
+        const names = (id: string) => [...element(menu, `data-testid="${id}"`)!.matchAll(/class="export-item-name">([^<]+)<\/span>/g)].map(match => match[1]);
+        expect(names("download-group-current"), name).toEqual([labels.downloads.analysisCsv, labels.downloads.channelTableCsv, labels.downloads.manifestJson, ...(state!.active.dataset.issues.length > 0 ? [labels.downloads.issuesCsv] : [])].map(escapeAttr));
+        expect(names("download-group-summary"), name).toEqual([labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown].map(escapeAttr));
+        expect(names("download-group-decision"), name).toEqual([labels.downloads.decisionMd, labels.downloads.decisionCsv, labels.downloads.decisionJson].map(escapeAttr));
+        expect(names("download-group-meeting"), name).toEqual([escapeAttr(labels.overview.snapshotUi.copy)]);
+        expect(element(menu, 'data-testid="download-group-summary"'), name).toContain('data-testid="download-meeting-section"');
+        const meeting = element(menu, 'data-testid="download-group-meeting"')!;
+        for (const id of ["download-copy-summary", "download-copy-summary-status"]) expect(meeting, `${name} ${id}`).toContain(`data-testid="${id}"`);
+        const templates = element(menu, 'data-testid="download-group-templates"')!;
+        expect(templates, name).toContain('data-testid="download-templates"');
+        expect(occurrences(templates, "<tr>"), `${name} 3×3 範本表（含表頭列）`).toBe(4);
+        const ids = idCounts(menu);
+        for (const button of menu.matchAll(/<button[^>]*class="ui-menu-item export-item"[^>]*>/g)) {
+          const refs = [/aria-labelledby="([^"]+)"/.exec(button[0])![1], ...(/aria-describedby="([^"]+)"/.exec(button[0])![1].split(/\s+/))];
+          for (const ref of refs) expect(ids.get(ref), `${name} ${ref}`).toBe(1);
+        }
+        for (const text of [labels.downloads.menuNote, labels.meetingPage.menuViewNote]) expect(menu, `${name} v2 說明已拿掉`).not.toContain(escapeAttr(text));
+      }
+    });
+
+    it("V3-7 C：空工作區（真正的 Dashboard SSR）的匯出選單只有匯入範本分組與一句 menuEmpty", () => {
+      const { html } = states.find(state => state.name === "shell-empty")!;
+      const menu = element(html, 'data-testid="download-menu"')!;
+      for (const id of ["download-group-templates", "download-templates"]) expect(testIdCounts(menu).get(id), id).toBe(1);
+      for (const id of ["download-group-current", "download-group-summary", "download-group-decision", "download-group-meeting", "download-meeting-section", "download-copy-summary"]) expect(testIdCounts(menu).has(id), id).toBe(false);
+      expect(menu).toContain(escapeAttr(labels.downloads.menuEmpty));
+    });
 
   });
 

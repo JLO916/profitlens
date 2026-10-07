@@ -207,18 +207,19 @@ describe("V3-3 側欄分組（D-V3-14＝A）與手機底部分頁列", () => {
 });
 
 describe("V3-3 匯出選單分組（§6.5）與儲存選單三段（§6.3 #14）", () => {
-  it("匯出：目前檢視 → 一頁摘要 → 決策工作稿 → 匯入範本（3×3 表）；17 個下載項（含資料問題 CSV 條件項）", async () => {
+  it("匯出：目前檢視 → 一頁摘要 → 決策工作稿 → 會議（V3-7 新增）→ 匯入範本（3×3 表）；17 個下載項（含資料問題 CSV 條件項）＋複製週會摘要", async () => {
     const input = fixture("errors/missing_cogs");
     const dataset = validateDataset(input).dataset!;
     const snapshot = await createSnapshot(dataset, {}, await hashInput(input));
     expect(dataset.issues.length).toBeGreaterThan(0);
-    const html = renderToStaticMarkup(createElement(ExportMenu, { source: { dataset, snapshot }, busy: null, error: null, summaryRef: createRef<HTMLElement>(), onDecision: noop, onPrint: noop, onExport: noop, onMeetingNotes: noop }));
+    const html = renderToStaticMarkup(createElement(ExportMenu, { source: { dataset, snapshot }, busy: null, error: null, summaryRef: createRef<HTMLElement>(), onCopySummary: async () => ({ copied: true, text: "" }), onDecision: noop, onPrint: noop, onExport: noop, onMeetingNotes: noop }));
     expect(html).toMatch(new RegExp(`<summary[^>]*>${labels.shell.topbarV3.export}<svg`));
-    const order = [labels.sections.downloadCurrentView, labels.sections.meetingSummary, labels.sections.downloadDecision, labels.downloads.templatesHeading].map(text => html.indexOf(text));
+    const order = [labels.sections.downloadCurrentView, labels.sections.meetingSummary, labels.sections.downloadDecision, labels.exports.menuV3.groupMeeting, labels.downloads.templatesHeading].map(text => html.indexOf(`>${text}</p>`));
     expect(order.every(index => index >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     const items = [labels.downloads.analysisCsv, labels.downloads.channelTableCsv, labels.downloads.manifestJson, labels.downloads.issuesCsv, labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown, labels.downloads.decisionMd, labels.downloads.decisionCsv, labels.downloads.decisionJson];
-    for (const item of items) expect(count(html, `>${item}</button>`), item).toBe(1);
+    // V3-7 C：每項是兩行選單項目，可見名稱在 .export-item-name（可及名稱 aria-labelledby 指到它，與 v2 相同）。
+    for (const item of [...items, labels.overview.snapshotUi.copy]) expect(count(html, `class="export-item-name">${item}</span>`), item).toBe(1);
     const templates = section(html, "download-templates");
     for (const text of Object.values(labels.shell.topbarV3.templateColumns)) expect(templates).toContain(`<th scope="col">${text}</th>`);
     expect(count(templates, "<tr>")).toBe(4);
