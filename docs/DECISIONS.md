@@ -292,6 +292,16 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-07｜Revamp v3 V3-8：資料來源頁、匯入精靈與空狀態的取捨
+
+**資料來源頁（§7.7.1）：** 問題表搬到第二段，六欄（檔案｜行號｜欄位｜問題｜修法｜原因碼）；「問題」只放 V3-2a 的 L1 去掉「{file} 第 {line} 行：」前綴（檔案與行號已是獨立欄；含 {date}、{channel} 的前綴保留整句），「修法」放 L2，原因碼整欄預設 hidden 掛載、表頭工具列「顯示原因碼」用 aria-pressed（APG toggle button 不隨狀態改字）。D-V3-28 直接依 PRD §7.7.1 第 3 段實作：工具列「下載問題清單 CSV」（`data-issues-download`，檔名與頂欄相同）。前處理改表格並沿用步驟 4 的 formatAmountL3／formatRateL2（值不變，只多千分位）。「版本與來源資訊」details 是既有資料的彙整（指標版本取自 snapshot 與 `ASSIST_KPI_VERSION`，不寫死）；匯入時間只在本次工作階段由精靈套用時記下（D-V3-30：是否寫進備份 v5 待拍板）。頁首沒有資料時「載入示範資料」主要、「匯入資料」次要（`page-import` 永遠在「匯入資料」上）。健檢「沒有結果」的「查看健檢規則」因為沒有既有的規則說明區塊，改成就地展開 8 條規則的白話說明（新文案，需下次文案審稿）。
+
+**匯入精靈（§7.7.2）：** 全版專注模式由 dashboard 的 `importing` 旗標做：PageHeader 的 h1 改「匯入資料」、描述改隱私一句，期間列／橫幅／頁面內容與頁首按鈕保持掛載但 hidden（M1；包裝 div 用 `display: contents`，否則期間列 sticky 失效）；手機（< 768）頁首 h1 本來只給螢幕閱讀器（V3-3），精靈另補一行只在手機顯示的隱私句（D-V3-29 待拍板）。精靈 h2 只寫「第 n 步，共 4 步：{步驟名}」。步驟 3 為了「含稅時預設可見控制 ≤ 12」（含版頭「取消匯入」），比較方式／兩期日期／整月捷徑收進「調整比較期間」details（兩期不完整時自動展開），通路多於 1 個時收進「調整通路」；PRD 把比較方式列在兩欄表單內，但全部可見會超過 12。步驟 2 來源欄 select 的可及名稱沿用 v2（E2E 以此定位）；欄位說明的 ? 就地展開而不是浮層（對照表在可橫向捲動容器內，浮層會被裁切）。步驟 4 `import-status` 改 L1 樣板並帶 `data-classification`，既有 result 句子移到 `import-result-note`；精靈仍用自己的「下載問題清單 CSV」（不傳 IssueList 的 `download`，避免兩顆同名按鈕）。
+
+**空狀態（§7.10）：** 三種全頁狀態抽成 `shell/page-states.tsx`（SSR 測試才能渲染錯誤狀態）。容器高度 `--empty-min-h` 不是「本期一句話＋KPI 帶」的 228px，而是「有資料時頁首下緣到視窗底」（calc(100svh − 頂欄 − 頁首 − 8px)）：首次進入的內容本身就超過 228px，而且容器太矮時頁尾落在首屏內，資料載入超過 500ms 頁尾移走就是 0.05 的 CLS（改版前實測 0.0519）；改後四種尺寸 CLS ≤ 0.0019、三者高度差 8px。資料來源頁的空狀態不重複按鈕列（頁首已有兩顆；M6），其他頁的空狀態才有「載入示範資料」主要＋「匯入資料」次要。區段空狀態只補三要素：會議「本次沒有選入方案。」加「前往假設試算」（MeetingPage 新 `onGoToScenarios` prop），v2 的「草稿與過期方案不會列入決議」這句資訊從會議頁消失（既有鍵保留，列入下次審稿）。
+
+**影響文件：** `docs/revamp-v3/09_DECISIONS_PENDING.md`（D-V3-28 已依 PRD 執行；新增 D-V3-29、D-V3-30）、`verification/revamp-v3-V3-8-acceptance.md`。**驗收：** `tests/data-workspace-v3.test.tsx`、`tests/issue-list-v3.test.tsx`、`tests/import-wizard-v3.test.tsx`、`tests/empty-states-v3.test.tsx`、`tests/e2e/data-page-v3.spec.ts`、`tests/e2e/empty-states-v3.spec.ts`、`tests/e2e/import-wizard.spec.ts`。
+
 ## 2026-10-07｜Revamp v3 V3-7：會議紀錄頁與匯出的取捨
 
 **會議紀錄頁：** 殼層的 h1「會議紀錄」只有一個（M6），頁首動作列的標題用 h2「本次會議（草稿）」；已結束的會議在歷史清單，每筆帶結束標示（PRD 的「已結束會議 · 10/5」句型用在這裡）。頁首動作列只在 ≥ 1280 sticky（更窄時期間列與頁首會換列，sticky 會蓋住內容）。`manager-summary` testid 搬到議程 `<ol>`（ol 只能含 li）。議程 1–3 由 ManagerSummary 的議程模式回傳三個 li；門檻表單與完整通路寬表收進 details；「與上次會議比較」預設收合；備註在議程之後。D-V3-22：`finalizeMeeting` 寫 `copy_version: "v3"`（meeting-v1 schema 選填，舊備份照常還原），沒有的紀錄在歷史與會議紀錄 Markdown 加註。

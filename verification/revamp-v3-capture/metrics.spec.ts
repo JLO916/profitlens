@@ -155,7 +155,9 @@ test("含稅匯入（tests/fixtures/inclusive_tax）經精靈完成的最少點�
   await expect(page.getByTestId("import-step-3")).toBeVisible();
   await click("口徑：含稅", () => chooseBasis(page, "inclusive"));
   await click("確認並檢核", () => wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true }).click());
-  await expect(wizardStatus(page)).toHaveText(copy.result.valid, { timeout: 20_000 });
+  // V3-8：import-status 改成 L1 狀態一行（「可以套用：…」），既有的 result 句子移到 import-result-note。
+  await expect(wizardStatus(page)).toHaveAttribute("data-classification", "valid", { timeout: 20_000 });
+  await expect(page.getByTestId("import-result-note")).toHaveText(copy.result.valid);
   await click("套用", () => commitButton(page).click());
   const replacement = page.getByRole("dialog", { name: labels.ui.replacementDialog.heading });
   if (await replacement.isVisible()) await click("取代確認", () => replacement.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click());
