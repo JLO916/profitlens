@@ -2,8 +2,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { formatAmountL1, formatAmountL2, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL2, formatDateL1, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { clickReplacing, isMobile, navigateTo, openValidation, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptAssumptions, expectAcknowledged, expectConsentPending, modeButton, openTemplateHelp } from "./scenario-helpers-v3";
 
 // R5（05 §7–§9、02 §4–§7）：健檢清單化、試算進頁即表單＋範本＋絕對值、行動看板、商品 Top／Bottom。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -71,7 +72,22 @@ async function calculate(card: Locator, contribution: string, delta: string) {
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(contribution));
   await expect(card.getByTestId("scenario-delta")).toHaveText(formatSignedDelta(delta, "L1"));
 }
-const modeButton = (card: Locator, field: string, mode: "relative" | "absolute") => card.getByTestId(`scenario-mode-${field}`).getByRole("button", { name: mode === "relative" ? labels.scenario.modeRelative : labels.scenario.modeAbsolute, exact: true });
+// V3-6（PRD §7.4）：分段鈕文字改「增減｜改成」（labels.scenarios.pageV3.modeRelative／modeAbsolute）；modeButton 在 scenario-helpers-v3.ts。
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** 臺北日曆日（YYYY-MM-DD），與 action-workspace.ts 的 taipeiToday 同一個時區；狀態更新日期以它為準。 */
+const taipeiDay = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
+/**
+ * V3-6（PRD §7.5 第 3 點）：看板欄標題＝狀態名＋計數徽章。徽章是 span.ui-count-badge[role=img]，可見文字只有數字，aria-label「{n} 項」（labels.actionBoard.columnCount）；
+ * 欄標題的可及名稱因此是「{狀態} {n} 項」。
+ */
+async function expectColumnCount(page: Page, status: keyof typeof statusLabel, n: number) {
+  const heading = page.getByTestId(`board-column-${status}`).locator(`h3#board-column-${status}-heading`);
+  const badge = heading.locator(".ui-count-badge");
+  await expect(badge).toHaveAttribute("role", "img");
+  await expect(badge).toHaveAttribute("aria-label", fill(board.columnCount, { n }));
+  await expect(badge).toHaveText(String(n));
+  await expect(heading).toHaveAccessibleName(`${statusLabel[status]} ${fill(board.columnCount, { n })}`);
+}
 
 test("試算：側欄一次點擊就到表單；範本只填數字不代勾、版本只在計算成功時遞增、絕對值換算與超界提示", async ({ page }) => {
   // 步驟多（四次計算＋兩種模式切換），在負載高的機器上可能超過預設 45 秒；只放寬時間，不放寬斷言。
@@ -88,7 +104,11 @@ test("試算：側欄一次點擊就到表單；範本只填數字不代勾、�
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   await expect(page.getByTestId("scenario-assumptions")).not.toHaveAttribute("open", "");
   await expect(page.getByTestId("scenario-assumptions").locator(":scope > summary")).toHaveText(form.assumptionsSummary);
-  await expect(card.getByTestId("scenario-template-note")).toHaveText(labels.scenario.templateNote);
+  // V3-6：範本提示收進範本旁的 ? 說明（hidden 掛載，M1／M4）：先點開再看；Esc 收起。
+  const templateHelp = await openTemplateHelp(card);
+  await expect(templateHelp.panel.getByTestId("scenario-template-note")).toHaveText(labels.scenario.templateNote);
+  await page.keyboard.press("Escape");
+  await expect(templateHelp.panel).toBeHidden();
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("");
 
   // 範本：選單第一項是提示，其餘六個範本；套用 keep 只填五格 0，不代替使用者勾選同意。
@@ -100,11 +120,16 @@ test("試算：側欄一次點擊就到表單；範本只填數字不代勾、�
   await card.getByTestId("scenario-preset-apply").click();
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
   await expect(card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })).not.toBeChecked();
-  await expect(card.getByTestId("scenario-preset-purpose")).toHaveText(fill(form.presetApplied, { name: presets.items.keep.name, purpose: presets.items.keep.purpose }));
+  await expectConsentPending(card);
+  // 套用後的用途也在 ? 說明裡：先點開再看。
+  const appliedHelp = await openTemplateHelp(card);
+  await expect(appliedHelp.panel.getByTestId("scenario-preset-purpose")).toHaveText(fill(form.presetApplied, { name: presets.items.keep.name, purpose: presets.items.keep.purpose }));
+  await page.keyboard.press("Escape");
+  await expect(appliedHelp.panel).toBeHidden();
   await expect(card.getByTestId("scenario-version")).toHaveCount(0);
 
-  // 計算成功才有版本 1；零變動回到基準 270.00。
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  // 計算成功才有版本 1；零變動回到基準 270.00。V3-6（D-V3-12＝B）：勾下去後勾選框換成「已了解」一行（acceptAssumptions）。
+  await acceptAssumptions(card);
   await calculate(card, "270.00", "0.00");
   await expect(card.getByTestId("scenario-version")).toHaveText(fill(form.version, { n: 1 }));
   await expect(card.getByTestId("scenario-draft")).toHaveCount(0);
@@ -137,15 +162,16 @@ test("試算：側欄一次點擊就到表單；範本只填數字不代勾、�
   await expect(card.getByTestId("scenario-equivalent-volume_change_pct")).toHaveText(fill(presets.absolute.equivalentPct, { value: "+125.0" }));
   await expect(card.getByTestId("scenario-range-volume_change_pct")).toHaveText(fill(presets.range.pct, { min: "−90", max: "+100" }));
   await card.getByLabel(volume, { exact: true }).fill("6");
-  await expect(card.getByTestId("scenario-absolute-error-volume_change_pct")).toHaveCount(0);
-  await expect(card.getByTestId("scenario-range-volume_change_pct")).toHaveCount(0);
+  // V3-6（M1）：換算錯誤與範圍提示一律掛載，沒有內容時 hidden。
+  await expect(card.getByTestId("scenario-absolute-error-volume_change_pct")).toBeHidden();
+  await expect(card.getByTestId("scenario-range-volume_change_pct")).toBeHidden();
   await modeButton(card, "volume_change_pct", "relative").click();
   await expect(card.getByLabel(volume, { exact: true })).toHaveValue("50");
   // 超界：銷量增減 [−90%, +100%]（docs/SCENARIOS.md）。
   await card.getByLabel(volume, { exact: true }).fill("101");
   await expect(card.getByTestId("scenario-range-volume_change_pct")).toHaveText(fill(presets.range.pct, { min: "−90", max: "+100" }));
   await card.getByLabel(volume, { exact: true }).fill("100");
-  await expect(card.getByTestId("scenario-range-volume_change_pct")).toHaveCount(0);
+  await expect(card.getByTestId("scenario-range-volume_change_pct")).toBeHidden();
 });
 
 test("試算通路單選只改本頁：全站篩選不變、各通路方案各自保留；MARKETPLACE 用絕對值廣告預算仍得 19.70", async ({ page }) => {
@@ -159,7 +185,7 @@ test("試算通路單選只改本頁：全站篩選不變、各通路方案各�
   await expect(page.getByTestId("scenario-channel").locator("option")).toHaveText(["DTC", "MARKETPLACE"]);
   await card.getByTestId("scenario-preset").selectOption("keep");
   await card.getByTestId("scenario-preset-apply").click();
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  await acceptAssumptions(card);
   await calculate(card, "270.00", "0.00");
   // 通路單選只改本頁：全站通路篩選仍是全部通路。
   await page.getByTestId("scenario-channel").selectOption("MARKETPLACE");
@@ -173,7 +199,8 @@ test("試算通路單選只改本頁：全站篩選不變、各通路方案各�
   await modeButton(marketplace, "ad_change_pct", "absolute").click();
   await marketplace.getByLabel(adSpend, { exact: true }).fill("144");
   await expect(marketplace.getByTestId("scenario-equivalent-ad_change_pct")).toHaveText(fill(presets.absolute.equivalentPct, { value: "−20.0" }));
-  await marketplace.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  // D-V3-12＝B：DTC 已勾過聲明，同一工作區換到 MARKETPLACE 不再有勾選框，只有「已了解」一行。
+  await expectAcknowledged(marketplace);
   await calculate(marketplace, "19.70", "+34.70");
   await expect(marketplace.getByTestId("scenario-version")).toHaveText(fill(form.version, { n: 1 }));
   // DTC 的方案移到「其他通路的方案」，仍保留；切回 DTC 結果還在（不重算、不升版）。
@@ -321,20 +348,41 @@ test("加入待辦一次點擊就到看板；看板按鈕改狀態、焦點留�
   await expect(page.getByTestId("actions-view-board")).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByTestId("board-column-not_started").getByTestId("board-card-1")).toBeVisible();
   await expect(card.getByRole("heading", { level: 4 })).not.toHaveText(board.untitled);
-  for (const status of ["in_progress", "blocked", "completed"] as const) await expect(page.getByTestId(`board-card-1-move-${status}`)).toHaveText(fill(board.moveTo, { status: statusLabel[status] }));
+  // V3-6（C13）：「移到：」列的按鈕只寫狀態名，可及名稱仍是「移到{狀態}」（aria-label）。
+  for (const status of ["in_progress", "blocked", "completed"] as const) {
+    const move = page.getByTestId(`board-card-1-move-${status}`);
+    await expect(move).toHaveAccessibleName(fill(board.moveTo, { status: statusLabel[status] }));
+    await expect(move).toHaveText(statusLabel[status]);
+  }
   await expect(page.getByTestId("board-card-1-move-not_started")).toHaveCount(0);
-  await expect(page.getByTestId("board-column-not_started").locator("h3")).toContainText(fill(board.columnCount, { n: 1 }));
-  await expect(page.getByTestId("board-column-in_progress").locator("h3")).toContainText(fill(board.columnCount, { n: 0 }));
+  // 欄標題＝狀態名＋計數徽章（span.ui-count-badge[role=img]，可見文字只有數字，aria-label「{n} 項」）。
+  await expectColumnCount(page, "not_started", 1);
+  await expectColumnCount(page, "in_progress", 0);
 
   // 看板改狀態：按「移到進行中」，卡片移欄、通知、焦點到卡片、狀態更新日期。
+  const movedDay = taipeiDay();
   await page.getByTestId("board-card-1-move-in_progress").click();
   await expect(page.getByTestId("board-column-in_progress").getByTestId("board-card-1")).toBeVisible();
   await expect(page.getByTestId("board-column-not_started").getByTestId("board-card-1")).toHaveCount(0);
   await expect(page.getByTestId("action-notice")).toHaveText(fill(board.moved, { n: 1, status: statusLabel.in_progress }));
   await expect(page.getByTestId("board-card-1")).toBeFocused();
-  await expect(page.getByTestId("board-card-1")).toContainText(new RegExp(fill(board.statusUpdated, { date: "\\d{4}-\\d{2}-\\d{2}" })));
-  await expect(page.getByTestId("board-column-in_progress").locator("h3")).toContainText(fill(board.columnCount, { n: 1 }));
+  // V3-6（C13 第 2 列）：狀態更新日期是「M/D 更新」（formatDateL1，臺北日曆日；跨午夜時容許前後一天）。
+  await expect(page.getByTestId("board-card-1").locator(".board-card-updated")).toHaveText(new RegExp(`^(?:${[...new Set([movedDay, taipeiDay()])].map(day => escapeRegExp(fill(labels.actions.pageV3.updated, { date: formatDateL1(day, { today: day }) }))).join("|")})$`));
+  await expectColumnCount(page, "in_progress", 1);
   await expect(page.getByTestId("board-card-1-move-in_progress")).toHaveCount(0);
+
+  // V3-6（PRD §7.5 第 4 點）：「編輯」開待辦編輯抽屜（modal，焦點先到標題列的關閉鈕）；Esc 關閉、焦點回到「編輯」。
+  const edit = page.getByTestId("board-card-1-edit");
+  await expect(edit).toHaveText(labels.actions.pageV3.edit);
+  await edit.click();
+  const drawer = page.getByTestId("action-drawer");
+  await expect(drawer).toBeVisible();
+  await expect(page.getByRole("dialog", { name: (await card.getByRole("heading", { level: 4 }).textContent())!.trim(), exact: true })).toBeVisible();
+  await expect(drawer.getByTestId("action-drawer-close")).toBeFocused();
+  await expect(drawer.getByLabel(labels.actions.status, { exact: true })).toHaveValue("in_progress");
+  await page.keyboard.press("Escape");
+  await expect(drawer).toHaveCount(0);
+  await expect(edit).toBeFocused();
 
   // 清單檢視：同一項的狀態下拉是「進行中」；草稿帶入健檢第一列合計的 4 個數據（證據勾選清單）。
   await switchActionsView(page, "list");
