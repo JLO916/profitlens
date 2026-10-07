@@ -64,8 +64,8 @@ const yuanColumn = (label: string) => fill(labels.units.yuanColumn, { label });
 /** 會議紀錄 Markdown 的檔名（含會議日期）。 */
 export const meetingMarkdownFilename = (meeting: Meeting): string => `profitlens-meeting-${meeting.date}.md`;
 /** 已結束會議的 Markdown：紀錄本身含結束當時凍結的上次比較（follow_up），還原備份後輸出相同。 */
-export function downloadMeetingMarkdown(meeting: Meeting) {
-  downloadText(exportMeetingMarkdown(meeting), meetingMarkdownFilename(meeting), MARKDOWN_MIME);
+export function downloadMeetingMarkdown(meeting: Meeting, datasetName?: string) {
+  downloadText(exportMeetingMarkdown(meeting, undefined, datasetName ? { datasetName } : {}), meetingMarkdownFilename(meeting), MARKDOWN_MIME);
 }
 /** 「結束會議」失敗時依錯誤碼顯示的文案（meeting.ts／review-session.ts 的錯誤碼）；其餘一律 finalizeError。 */
 export function finalizeErrorText(error: unknown): string {
@@ -201,7 +201,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
   const comparison = useMemo(() => ready && review ? compareWithLastMeeting({ snapshot: ready.snapshot, review, actions: actionWorkspace, conversion: reviewConversion, targets: reviewTargets }, last) : null, [ready, review, actionWorkspace, reviewConversion, reviewTargets, last]);
   const statusText = finalizing ? page.finalizing : finalizeResult === "done" ? page.finalized : "";
   const status = <p className="meeting-status" role="status" aria-live="polite" data-testid="meeting-status">{statusText}</p>;
-  const historySection = <MeetingHistory history={history} onRemove={onRemoveMeeting} />;
+  const historySection = <MeetingHistory history={history} onRemove={onRemoveMeeting} datasetNameFor={meeting => summaryContext && meeting.source_fixed.dataset_hash === source.snapshot.dataset_hash ? summaryContext.datasetName : undefined} />;
 
   // §6.3 #43a、C10 頁面型空狀態：還沒有會議稿（例如還原沒有會議稿的舊備份）；按鈕文字與行為同 v2，是全頁唯一的主要按鈕。
   if (!review) return <section className="meeting-page" data-testid="meeting-page">{status}<div className="ui-empty-page meeting-empty" data-testid="review-workbench"><h2>{pageV3.emptyTitle}</h2><p>{copy.createIntro}</p><button type="button" className="ui-btn ui-btn-primary" data-testid="meeting-create" onClick={() => onChange(syncReviewPins(createReviewSession(source, scenarioWorkspace.active_epoch), actionWorkspace))}>{copy.createButton}</button></div>{historySection}</section>;
@@ -241,14 +241,16 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
       confirmRef.current?.focus();
     } finally { working.current = false; }
   }
+  // V3-7 §7.9：版頭第 1 行用畫面上的資料集名稱；會議固定的資料與目前不同時維持 dataset_id（由匯出函式預設）。
+  const exportDatasetName = summaryContext && sameData ? summaryContext.datasetName : undefined;
   async function runExport(kind: "excel" | "pptx", trigger: FocusTarget) {
     if (!ready || !summary || !review || working.current || busy) return;
     working.current = true;
     setExporting(kind); setExportError(false);
     try {
       const meeting = meetingExportInfo(review, date);
-      if (kind === "excel") await exportExcel({ summary, snapshot: ready.snapshot, dataset: ready.dataset, actions: actionWorkspace, products: compareProducts(ready.dataset, ready.snapshot.report.scope).rows, conversion: reviewConversion, meeting });
-      else await exportPptx({ summary, snapshot: ready.snapshot, actions: actionWorkspace, meeting });
+      if (kind === "excel") await exportExcel({ summary, snapshot: ready.snapshot, dataset: ready.dataset, actions: actionWorkspace, products: compareProducts(ready.dataset, ready.snapshot.report.scope).rows, conversion: reviewConversion, meeting, datasetName: exportDatasetName });
+      else await exportPptx({ summary, snapshot: ready.snapshot, actions: actionWorkspace, meeting, datasetName: exportDatasetName });
     } catch { setExportError(true); } finally {
       working.current = false; setExporting(null);
       // 完成或失敗都把焦點留在觸發的地方（V3-7：選單已關閉，觸發點是「匯出會議」的 summary）。
@@ -285,7 +287,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
     <summary className="ui-btn ui-btn-secondary" data-testid="export-page-meeting">{pageV3.exportMenu}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
     <div className="menu-panel ui-menu meeting-export-menu">
       <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-pdf" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.buttons.exportPdf} aria-describedby="meeting-pdf-hint" onClick={startPrint}><span>{labels.buttons.exportPdf}</span><small id="meeting-pdf-hint">{hint(page.pdfHint)}</small></button>
-      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-markdown" disabled={!summary} aria-label={labels.buttons.exportMarkdown} aria-describedby="meeting-markdown-hint" onClick={() => download(() => { if (summary) downloadText(exportManagerSummaryMarkdown(summary, context), "profitlens-manager-summary.md", MARKDOWN_MIME); })}><span>{labels.buttons.exportMarkdown}</span><small id="meeting-markdown-hint">{hint(pageV3.exportHints.markdown)}</small></button>
+      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-markdown" disabled={!summary} aria-label={labels.buttons.exportMarkdown} aria-describedby="meeting-markdown-hint" onClick={() => download(() => { if (summary) downloadText(exportManagerSummaryMarkdown(summary, context, exportDatasetName ? { datasetName: exportDatasetName } : {}), "profitlens-manager-summary.md", MARKDOWN_MIME); })}><span>{labels.buttons.exportMarkdown}</span><small id="meeting-markdown-hint">{hint(pageV3.exportHints.markdown)}</small></button>
       <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-csv" disabled={!summary} aria-label={labels.downloads.channelTableCsv} aria-describedby="meeting-csv-hint" onClick={() => download(() => { if (summary) downloadText(exportChannelComparisonCsv(summary), "profitlens-channel-comparison.csv"); })}><span>{labels.downloads.channelTableCsv}</span><small id="meeting-csv-hint">{hint(pageV3.exportHints.channelCsv)}</small></button>
       <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-excel" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.buttons.exportExcel} aria-describedby="meeting-excel-hint" onClick={() => startExport("excel")}><span>{labels.buttons.exportExcel}</span><small id="meeting-excel-hint">{hint(pageV3.exportHints.excel)}</small></button>
       <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-pptx" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.buttons.exportPptx} aria-describedby="meeting-pptx-hint" onClick={() => startExport("pptx")}><span>{labels.buttons.exportPptx}</span><small id="meeting-pptx-hint">{hint(pageV3.exportHints.pptx)}</small></button>
@@ -406,7 +408,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
       </div>
     </div>
     {copyFallback !== null && <CopyFallback text={copyFallback} onClose={() => setCopyFallback(null)} />}
-    {printing && summary && ready && <PrintSummaryPortal summary={summary} decisionContext={context} snapshot={ready.snapshot} meeting={{ name: review.name, date }} onDone={endPrint} />}
+    {printing && summary && ready && <PrintSummaryPortal summary={summary} decisionContext={context} snapshot={ready.snapshot} meeting={{ name: review.name, date }} datasetName={exportDatasetName} onDone={endPrint} />}
   </section>;
 }
 
@@ -481,7 +483,7 @@ function FrozenFollowUp({ follow, title }: { follow: MeetingFollowUp; title: str
  * 會議歷史：每筆已結束的會議一個 <details>（只讀）；可下載該次的會議紀錄 Markdown（紀錄本身），也可移除（先確認；歷史滿 100 筆時騰出空間）。
  * V3-7（§7.6 第 2 點、D-V3-22）：展開內容頂部一行結束標示；v2 結束的紀錄（沒有 copy_version）再加一行「本紀錄建立於 v2」。數字、決議與備註照紀錄顯示，欄名用新名詞。
  */
-export function MeetingHistory({ history, onRemove }: { history: readonly Meeting[]; onRemove?: (id: string) => void }) {
+export function MeetingHistory({ history, onRemove, datasetNameFor }: { history: readonly Meeting[]; onRemove?: (id: string) => void; /** V3-7：該筆紀錄的版頭資料集名稱（與目前資料同一版本時才有）。 */ datasetNameFor?: (meeting: Meeting) => string | undefined }) {
   const [pending, setPending] = useState<string | null>(null);
   const [removed, setRemoved] = useState("");
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -510,7 +512,7 @@ export function MeetingHistory({ history, onRemove }: { history: readonly Meetin
         <h3>{page.historyActions}</h3>{meeting.agenda.pinned_actions.length ? <ul>{meeting.agenda.pinned_actions.map(row => <li key={row.action_id}>{fill(page.historyActionRow, { problem: row.problem || copy.actionFallback, status: EXECUTION_LABELS[row.execution_status] })}</li>)}</ul> : <p className="note">{record.noPinnedActions}</p>}
         <h3>{page.historyFollowUp}</h3><FrozenFollowUp follow={meeting.follow_up} title={title} />
       </details><div className="meeting-history-buttons">
-        <button type="button" className="button quiet" aria-label={`${labels.buttons.exportMarkdown} · ${title}`} onClick={() => downloadMeetingMarkdown(meeting)}>{labels.buttons.exportMarkdown}</button>
+        <button type="button" className="button quiet" aria-label={`${labels.buttons.exportMarkdown} · ${title}`} onClick={() => downloadMeetingMarkdown(meeting, datasetNameFor?.(meeting))}>{labels.buttons.exportMarkdown}</button>
         {onRemove && <button type="button" className="button quiet" data-testid={`meeting-history-remove-${meeting.id}`} aria-label={`${page.removeMeeting} · ${title}`} aria-expanded={pending === meeting.id} onClick={event => { trigger.current = event.currentTarget; setPending(meeting.id); }}>{page.removeMeeting}</button>}
       </div>
       {onRemove && pending === meeting.id && <div className="meeting-history-remove" role="group" aria-labelledby={warningId} data-testid="meeting-history-remove-confirm-region" onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); cancel(); } }}>

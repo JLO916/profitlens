@@ -397,7 +397,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [scenarioFocus, setScenarioFocus] = useState<string | null>(null);
   function exportDecision(format: "md" | "csv" | "json") {
     if (!active) return;
-    const body = exportWorkspaceDecision(format, active, scenarioWorkspace, actionWorkspace, reviewSession, active.conversion ?? null, scenarioFocus);
+    const body = exportWorkspaceDecision(format, active, scenarioWorkspace, actionWorkspace, reviewSession, active.conversion ?? null, scenarioFocus, activeDatasetName(active));
     downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");
     if (format === "md") track("export_markdown");
   }
@@ -407,6 +407,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const menuBusy = useRef(false);
   const downloadSummaryRef = useRef<HTMLElement>(null);
   const [menuPrint, setMenuPrint] = useState<PrintSummaryProps | null>(null);
+  // V3-7 §7.9：匯出版頭第 1 行用畫面上的資料集名稱（示範資料／golden／使用者檔名），不用 dataset_id。
+  const activeDatasetName = (current: Active) => datasetLabels[current.id] ?? current.dataset.manifest.dataset_id;
   const viewSummary = (current: Active) => buildManagerSummary(current.snapshot, { conversion: current.conversion, targets: { set: current.targets ?? null, allChannels: current.dataset.manifest.channels } });
   async function exportCurrentView(kind: "excel" | "pptx") {
     if (!active || menuBusy.current) return;
@@ -414,8 +416,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     setMenuExport({ busy: kind, error: null });
     try {
       const summary = viewSummary(active);
-      if (kind === "excel") await exportExcel({ summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null });
-      else await exportPptx({ summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null });
+      if (kind === "excel") await exportExcel({ summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null, datasetName: activeDatasetName(active) });
+      else await exportPptx({ summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null, datasetName: activeDatasetName(active) });
       track(kind === "excel" ? "export_excel" : "export_pptx");
       setMenuExport({ busy: null, error: null });
     } catch { setMenuExport({ busy: null, error: "export" }); } finally { menuBusy.current = false; downloadSummaryRef.current?.focus(); }
@@ -427,12 +429,12 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     const latest = lastMeeting(meetingHistoryRef.current), review = reviewRef.current;
     setMenuExport({ busy: "md", error: null });
     try {
-      if (latest) downloadMeetingMarkdown(latest);
-      else if (!review) downloadText(exportManagerSummaryMarkdown(viewSummary(active)), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
+      if (latest) downloadMeetingMarkdown(latest, latest.source_fixed.dataset_hash === active.snapshot.dataset_hash ? activeDatasetName(active) : undefined);
+      else if (!review) downloadText(exportManagerSummaryMarkdown(viewSummary(active), undefined, { datasetName: activeDatasetName(active) }), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       else {
         const snapshot = await rebuildReviewSnapshot(review), same = active.snapshot.dataset_hash === review.dataset_hash;
         const summary = buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold, conversion: same ? active.conversion : null, targets: same ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : undefined });
-        downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current)), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
+        downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current), same ? { datasetName: activeDatasetName(active) } : {}), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       }
       track("export_markdown");
       setMenuExport({ busy: null, error: null });
@@ -443,7 +445,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     if (!active) return;
     let decisionContext: PrintSummaryProps["decisionContext"];
     try { decisionContext = currentViewDecisionContext(active.snapshot, actionRef.current); } catch { decisionContext = undefined; }
-    setMenuPrint({ summary: viewSummary(active), decisionContext, snapshot: active.snapshot, meeting: null });
+    setMenuPrint({ summary: viewSummary(active), decisionContext, snapshot: active.snapshot, meeting: null, datasetName: activeDatasetName(active) });
     track("export_pdf");
   }
   function reviewEvidence(selection: EvidenceSelection, review: ReviewSession) {

@@ -432,6 +432,8 @@ export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComp
   });
   const lines = [
     fill(copy.mdTitle, { brand: labels.brand.name, name: md(meeting.name) }), "", ...markdownExportHeader(header), "",
+    // D-V3-22＝A：v2 結束的紀錄（沒有 copy_version）在版頭之後加註，數字與決議不動。
+    ...(meeting.copy_version === "v3" ? [] : [labels.meeting.pageV3.v2Note, ""]),
     fill(copy.mdMeta, { date: labels.meeting.date, value: meeting.date, decision: labels.meeting.decision, state: decisionText(latest), finalizedAt }), "",
     copy.mdScope, "",
     fill(copy.mdField, { field: labels.status.dataAsOf, value: fixed.data_as_of }),
