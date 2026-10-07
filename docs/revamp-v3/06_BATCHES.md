@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／另需的人工時間。
 >
-> **目前進度：V3-7 進行中（2026-10-07 開工）。V3-6 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-6-acceptance.md`；使用者同日指示略過 H2 設計稿審查與 H3 文案補審，以 `copy-rewrite.csv` 現稿為準）。V3-5 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-5-acceptance.md`）；MVP preview 已於 2026-10-06 依使用者當次同意部署（`revamp/v2` 分支）。V3-3 完成（2026-10-06；H2 後補；驗收見 `verification/revamp-v3-V3-3-acceptance.md`）。** V3-2 全部完成（驗收見 `verification/revamp-v3-V3-2{a,b,c}-acceptance.md`）。使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，審稿後再修」，H3 審稿改為落地後補做；H2 同樣改為 V3-3 落地後補審（2026-10-06）。V3-2 依 §12.1 在開工前拆成 a／b／c（見下表）。** D-V3-1–24 已於 2026-10-05 全部依建議值拍板（見 `09_DECISIONS_PENDING.md`），所以下表「依賴」欄的拍板項目都已滿足；尚未滿足的只剩前一批與人工關卡 H1–H4。
+> **目前進度：V3-7 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-7-acceptance.md`）；下一批 V3-8 資料來源、匯入精靈、空狀態。V3-6 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-6-acceptance.md`；使用者同日指示略過 H2 設計稿審查與 H3 文案補審，以 `copy-rewrite.csv` 現稿為準）。V3-5 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-5-acceptance.md`）；MVP preview 已於 2026-10-06 依使用者當次同意部署（`revamp/v2` 分支）。V3-3 完成（2026-10-06；H2 後補；驗收見 `verification/revamp-v3-V3-3-acceptance.md`）。** V3-2 全部完成（驗收見 `verification/revamp-v3-V3-2{a,b,c}-acceptance.md`）。使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，審稿後再修」，H3 審稿改為落地後補做；H2 同樣改為 V3-3 落地後補審（2026-10-06）。V3-2 依 §12.1 在開工前拆成 a／b／c（見下表）。** D-V3-1–24 已於 2026-10-05 全部依建議值拍板（見 `09_DECISIONS_PENDING.md`），所以下表「依賴」欄的拍板項目都已滿足；尚未滿足的只剩前一批與人工關卡 H1–H4。
 
 ---
 
@@ -53,8 +53,8 @@
 | **MVP 切線** | V3-0–V3-4，至少 5 個工作階段 | | 完成後**經使用者當次明確同意**（D-V3-24＝A）才部署成 Vercel preview，讓老闆試用新首屏；正式站到 V3-10 才切 | | |
 | V3-5 | 通路健檢、商品毛利、計算與來源抽屜 | M | V3-4；D-V3-3 | — | **完成（2026-10-07；驗收見 `verification/revamp-v3-V3-5-acceptance.md`）** |
 | V3-6 | 假設試算與待辦 | M | V3-5；D-V3-12 | — | **完成（2026-10-07；驗收見 `verification/revamp-v3-V3-6-acceptance.md`）** |
-| V3-7 | 會議紀錄與匯出 | M | V3-6 | 匯出檔人工檢查半天 | **進行中（2026-10-07 開工）** |
-| V3-8 | 資料來源、匯入精靈、空狀態 | M | V3-7 | — | 未開始 |
+| V3-7 | 會議紀錄與匯出 | M | V3-6 | 匯出檔人工檢查半天 | **完成（2026-10-07；驗收見 `verification/revamp-v3-V3-7-acceptance.md`）** |
+| V3-8 | 資料來源、匯入精靈、空狀態 | M | V3-7 | — | **下一批** |
 | V3-9 | P1 新增功能 | L | V3-8；D-V3-16、17、19、20、23 | 視 F15、F16 的檔案 | 未開始（可整批延到 v3.1） |
 | V3-10 | 上線檢查 | M | V3-9（若 V3-9 延期，依賴 V3-8） | H4：3–5 工作天＋盲評 1 天 | 未開始 |
 
@@ -186,6 +186,8 @@
 **同批 labels 與測試**：`meeting-page.test.tsx`、`manager-summary.test.ts`、`tests/manager-language.test.ts`（議程與門檻斷言）、`tests/export.test.ts`（改成正規化比對）、`excel-export.test.ts`、`pptx-export.test.ts`、會議 E2E。
 
 **另需的人工時間**：匯出檔人工檢查半天。
+
+**執行紀錄（2026-10-07）**：不拆批；開工錨點 `71e9f5f`（列印版與共用小件搬出、複製週會摘要接點）後以三個 worktree 代理並行（A 會議紀錄頁／B 匯出版頭、export-theme、列印 token／C 頂欄匯出選單），合併無衝突；合併後接線 `9e66719`（匯出版頭第 1 行用畫面上的資料集名稱、會議紀錄 Markdown 的 v2 加註）；三個 E2E 代理對共用伺服器遷移。驗收重點的實測：PDF 頁數 golden／demo 選單版與會議版都 2 → 2；§6.5 正規化比對（去版頭、U+2212 → ASCII）與 71e9f5f 的 sha256 相同；D01–D41 下載入口逐列有入口；design-lint 字級原值 13 → 11。驗收見 `verification/revamp-v3-V3-7-acceptance.md`。
 
 ---
 

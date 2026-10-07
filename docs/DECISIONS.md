@@ -292,6 +292,18 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-07｜Revamp v3 V3-7：會議紀錄頁與匯出的取捨
+
+**會議紀錄頁：** 殼層的 h1「會議紀錄」只有一個（M6），頁首動作列的標題用 h2「本次會議（草稿）」；已結束的會議在歷史清單，每筆帶結束標示（PRD 的「已結束會議 · 10/5」句型用在這裡）。頁首動作列只在 ≥ 1280 sticky（更窄時期間列與頁首會換列，sticky 會蓋住內容）。`manager-summary` testid 搬到議程 `<ol>`（ol 只能含 li）。議程 1–3 由 ManagerSummary 的議程模式回傳三個 li；門檻表單與完整通路寬表收進 details；「與上次會議比較」預設收合；備註在議程之後。D-V3-22：`finalizeMeeting` 寫 `copy_version: "v3"`（meeting-v1 schema 選填，舊備份照常還原），沒有的紀錄在歷史與會議紀錄 Markdown 加註。
+
+**匯出版頭（§7.9）：** `src/application/export-header.ts` 一處組四行，套在一頁摘要、決策、會議紀錄三種 Markdown、Excel 摘要表前四列、PPT 標題區與 A4 列印 header。第 1 行用畫面上的資料集名稱（示範資料／golden／使用者檔名）；會議固定的資料與目前不同、或歷史紀錄不是目前資料時退回 dataset_id。產出時間：一頁摘要與決策 Markdown＝下載當下；會議紀錄 Markdown＝結束時間（同一筆每次下載相同，E2E 比對兩次下載也依賴）。期間與單位用「 · 」相連（§8.7），不用 PRD 範例的寬空白。含稅換算時單位寫「已換算為未稅」。既有 mdMeta／mdPeriod 行保留，期間資訊重複一次，換來 §6.5 正規化比對（去版頭、U+2212 → ASCII）的 sha256 與改版前完全相同。
+
+**export-theme 與列印：** PPT／Excel 色碼集中在 `export-theme.ts`，值與 `:root` token 一一對應並有測試；PPT 拿掉品牌色標題塊與卡片底色，改 4pt 頂線（§9.6）。列印字級改三個 token（14／10／8pt），白底、0.5pt 表格線；design-lint 字級原值 13 → 11，上限同步下降。Excel 表頭樣式與凍結列靠寫檔後改 zip 內的 `xl/styles.xml` 與 sheetView（SheetJS 社群版不支援樣式；找不到預期片段時保留原檔）。D-V3-8 的括號格式本批沒有用到（管理損益表是 V3-9 的 F9）。
+
+**頂欄「匯出」選單：** 五組 role=group；每項名稱放在 span 以 aria-labelledby 指到（可及名稱與 v2 相同，E2E 不用改名稱），說明以 aria-describedby；PDF 說明把既有 pdfHint 填進「A4 一頁 · {hint}」；處理中以 spinner＋aria-disabled＋常駐 sr-only status 取代 v2 的條件渲染提示；失敗訊息在該項下方並回焦該項。新分組「會議：複製週會摘要」與總覽同一個動作、同名（E2E 用 testid）。menuNote／menuViewNote 移除（鍵保留）。資料問題 CSV 的資料來源頁入口（§6.5 D04 備註）v2 沒有、本批未做，待 D-V3-28（V3-8）。
+
+**保留的舊鍵與舊 CSS（V3-10 清理）：** 見 `verification/revamp-v3-V3-7-acceptance.md` §5。
+
 ## 2026-10-07｜Revamp v3 V3-6：試算頁與待辦頁的取捨
 
 **假設試算頁：** 方案並排成欄（≥ 1280 三欄、1 個方案 8/12＋新增區；subgrid 對齊各欄結果區），不用分頁；說明句改 placeholder（sr-only 保留給 aria-describedby），範本說明收進 `?` popover 並以 `hidden` 保持掛載（M1）；範圍提示與絕對值錯誤一律掛載、未超出時 `hidden`；分段鈕改「增減／改成」（舊鍵「相對 %／絕對值」保留）；單位後綴依欄位與模式（%／個百分點／元／件）；「選入會議」改為每個有效方案結果下的次要鈕，獨立區塊移除；決策輸出移到頁首「匯出本頁」下拉（同一 handler）；基準列改定義列表，「固定不變」標籤移除、不過期只顯示「使用目前資料」。可見 label 沿用既有「試算的通路」（PRD 寫「試算通路」），與 aria-label 同字。

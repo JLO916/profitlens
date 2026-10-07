@@ -1,5 +1,16 @@
 # Status
 
+## Revamp v3｜V3-7 會議紀錄與匯出（完成，未推送、未部署）
+
+PRD §7.6／§7.9／§9.6 落地：會議紀錄頁改文件式版面（左側議程目錄、sticky 頁首動作列：本次會議標題、名稱／日期行內編輯、決議 select＋結束會議、複製週會摘要、「匯出會議」下拉五項；固定範圍一行與範圍不同的 C22 橫幅；議程 `<ol>` 1–6：關鍵數字兩個 24px 數字＋本期一句話、本期重點 C9 清單型＋收合的門檻、各通路表現精簡表＋收合的完整寬表、上次決議追蹤、選入方案、置頂待辦；備註在議程後；比較收合；歷史最底，每筆結束標示與 v2 紀錄加註 D-V3-22）；匯出版頭四行（Markdown 三種、Excel 摘要表、PPT 標題區、A4 列印）；export-theme 色碼單一來源（PPT 去品牌色塊、4pt 頂線）；列印 token 三個（白底、0.5pt 表格線）；Excel 表頭粗體底色與凍結列；頂欄「匯出」選單五組、每項名稱＋說明、處理中 spinner、失敗訊息回焦、會議分組「複製週會摘要」。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit 108 檔／2,158 全過、`lint:design` exit 0（hex 0、圓角 4、字級 11（13 → 11）、字距 0、箭頭 3、eyebrow 0）、build pass、E2E 全套 644／644（19.5m，四專案；新增 16 條）；禁區 diff 空；testid 刪除數 0（新增 meeting-title、export-page-meeting、meeting-export-*、meeting-snapshot-note、meeting-v2-note、print-header-*、download-group-*、download-copy-summary…）；`feature-retention.csv` V3-7 的 20 列打勾（#43–#50、D26–D32、D38–D41）。
+- 本批驗收重點：PDF 頁數 golden／demo 選單版與會議版 2 → 2；§6.5 正規化比對與 71e9f5f 的 sha256 相同；D01–D41 下載入口逐列有入口；會議門檻與總覽門檻兩份 state；E2E 新增：頂欄匯出選單五組與說明、失敗路徑回焦、複製週會摘要（備案與剪貼簿）、議程目錄、比較收合、v2 紀錄還原加註、PDF 頁數 ≤ 2、備份 copy_version。
+- 畫面基準：`verification/revamp-v3/V3-7/snapshots/` 四尺寸 36 張，重跑 0 差異；首屏量測與 V3-6 相同；Lighthouse 1440／390 六個步驟 accessibility 全 100、首頁 performance 99／97；會議紀錄頁 `label-content-name-mismatch` 18 → 10 個節點（V3-10 連 E2E 一起改名）；Excel／PPT 開檔截圖 `verification/revamp-v3/V3-7/office/`（golden 目前檢視、示範資料目前檢視、golden 會議版的 Excel 與 PPT 各一張）。
+- 偏離（詳見驗收文件 §5 與 DECISIONS 2026-10-07 V3-7）：頁首動作列只在 ≥ 1280 sticky；h2 固定「本次會議（草稿）」；版頭第 1 行在資料不同時退回 dataset_id；會議紀錄 Markdown 產出時間＝結束時間；Markdown 既有期間行保留；Excel 樣式靠改 zip；資料問題 CSV 的資料來源頁入口留 V3-8（D-V3-28）。
+- 未執行／待人工：H2、H3 依使用者 2026-10-07 指示略過；H1、H4 未執行。
+- 下一批：V3-8 資料來源、匯入精靈、空狀態。
+
 ## Revamp v3｜V3-6 假設試算與待辦（完成，未推送、未部署）
 
 PRD §7.4／§7.5 落地：試算頁頁首「試算的通路」select＋`?` 說明與「匯出本頁」下拉（portal 進頁首）、基準列改定義列表（新鮮度同列）、方案並排成欄（不用分頁；≥ 1280 三欄、1 個方案 8/12＋新增區）、精簡表單（placeholder、單位後綴、分段鈕「增減／改成」、範圍提示 hidden 掛載、範本說明 `?` popover 保持掛載）、D-V3-12＝B 聲明勾一次就記住並寫入備份 v4 選填欄位、結果區（24px 金額、差額上色、版本／草稿標籤、每方案「選入會議」）、敏感度每方案一份不變；待辦頁頁首計數徽章與 `?` 說明、「新增待辦」唯一主要鈕、「匯出本頁」下拉、看板｜清單分段鈕、四欄看板（計數徽章、空欄區段型空狀態）、C13 卡片（置頂 icon、標題鈕、到期／更新／逾期、狀態與引用標籤、「移到：」文字按鈕列、編輯）、待辦編輯抽屜（C6 三段、底部動作列、focus trap、Esc 回焦）、清單檢視維持內嵌編輯器、空狀態。`ActionEditor` 搬出成 `action-editor.tsx`，新增 `action-drawer.tsx`、`shell/page-slot.ts`、頁首 `#page-title-addon` 插槽。
