@@ -545,7 +545,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       onBasis={() => setBasisOpen(true)}
       badges={{ snapshot: visible ? active.snapshot : null, issues: active ? active.dataset.issues.length : 0, meetingDraft: !!visible && reviewSession?.decision_state === "draft" }}
       storage={<WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { void clearWizardMemory(); if (active) markChanged(); }} consent={localConsent} onConsentChange={setLocalConsent} onClear={clear} />}
-      exportMenu={<ExportMenu source={visible ? active : null} busy={menuExport.busy} error={menuExport.error} summaryRef={downloadSummaryRef} onCopySummary={copySummaryFromView} onDecision={exportDecision} onPrint={printCurrentView} onExport={kind => void exportCurrentView(kind)} onMeetingNotes={() => void exportMeetingNotes()} />} />
+      exportMenu={<ExportMenu source={visible ? active : null} busy={menuExport.busy} error={menuExport.error} summaryRef={downloadSummaryRef} onCopySummary={copySummaryFromView} onDecision={exportDecision} onPrint={printCurrentView} onExport={(kind, variant) => void exportCurrentView(kind, variant)} onMeetingNotes={() => void exportMeetingNotes()} />} />
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
         {/* V3-8 開工錨點（§7.7.2 全版專注模式）：匯入中頁首改「匯入資料」＋隱私一句，期間列、橫幅與頁面內容保持掛載但 hidden；頂欄保留。 */}

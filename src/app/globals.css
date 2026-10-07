@@ -2582,4 +2582,7 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 }
 
 
+/* ── V3-9b 收尾：.ui-segmented 的 overflow: hidden 會裁掉全站 :focus-visible 的外框（V3-9a 的 pnl-granularity 與其他分段控制也受影響，B 代理回報）；分段內的按鈕改用內縮外框 ── */
+.ui-segmented > button:focus-visible { outline-offset: -2px; }
+
 /* ── V3-9b 錨點結束 ── */
