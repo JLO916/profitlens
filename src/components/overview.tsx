@@ -18,6 +18,7 @@ import { ChannelSection } from "./overview/charts/channel-section";
 import { ProfitSection } from "./overview/charts/profit-section";
 import { TrendSection } from "./overview/charts/trend-section";
 import { KPI_BAND_METRICS, KpiBand, type KpiBandMetric } from "./overview/kpi-band";
+import { PnlTable } from "./overview/pnl-table";
 import { WeeklySnapshot } from "./overview/weekly-snapshot";
 
 /** 週會摘要用的待辦概況（由 dashboard 從待辦工作區算出）：未完成數與置頂的前 3 項。 */
@@ -110,6 +111,8 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
       </tr>)}</tbody></table></div>
       <details className="data-alternative"><summary>{labels.sections.technicalDetails}</summary><p className="note">{ui.periodModeTechnical}</p><p className="note">{ui.periodRoundingTechnical}</p></details>
     </details>
+    {/* V3-9a F9（D-V3-19＝A）：每日／每週管理損益表，放在期間合計與日均之後；預設收合、內容掛載。 */}
+    <PnlTable snapshot={snapshot} onEvidence={onEvidence} />
     </details>
   </>;
 }

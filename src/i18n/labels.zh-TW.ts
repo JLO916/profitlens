@@ -684,6 +684,30 @@ export const overview = {
   },
   // ── V3-9a 錨點（代理 C：每日／每週管理損益表（F9）——details 標題、日／週切換、列名與「減：」前綴、合計與佔淨營收 %、顯示零值列、抽屜標題；收尾時刪除仍為空的物件）
   pnlV3: {
+    /** 總覽「進階」內的 <details> 標題（summary；PRD §7.1 區塊 10）。 */
+    summary: "每日／每週管理損益表",
+    /** 日／週分段按鈕（aria-pressed）；aria 是按鈕群組的可及名稱。 */
+    granularity: { aria: "管理損益表的欄", day: "每日", week: "每週" },
+    /** 本期天數超過上限時日按鈕停用，只提供每週；{n}＝上限天數。 */
+    dayLimit: "本期超過 {n} 天，只提供每週。",
+    /** 零值列預設隱藏（hidden 但掛載），按鈕 aria-pressed 切換（§9.3）。 */
+    showZero: "顯示零值列",
+    /** 表頭右上角的單位（只寫一次，§8.5 規則 5）。 */
+    unit: "單位：元",
+    columns: { item: overviewPageColItem, total: "合計", share: "佔淨營收 %" },
+    /** 費用列名：{label}＝指標名（§9.3「減：」前綴）。 */
+    rowDeduct: "減：{label}",
+    /** daily 沒有那一天的任何列：整欄寫無資料，不當成 0。 */
+    noData: "無資料",
+    /** 捲動容器（.table-scroll role=region）的可及名稱與表格標題；{granularity}＝每日／每週。 */
+    tableAria: "管理損益表",
+    caption: "本期{granularity}管理損益表，單位：元",
+    /** 每格 number-link 的可及名稱：{date}＝欄名（日期、週或合計），{metric}＝指標名，{value}＝畫面上的 L2 值。 */
+    cellAria: "{date} {metric} {value}，看明細",
+    /** 抽屜標題：{metric}＝指標名，{date}＝欄名。 */
+    evidenceTitle: "{metric} · {date}",
+    /** 收合的技術細節：每欄怎麼來、佔淨營收 % 的算式、空格的寫法。 */
+    noteTechnical: "每日欄是同一天各通路相加；每週欄與每週趨勢同一組 7 天；合計就是本期合計。佔淨營收 % ＝該列合計 ÷ 淨營收合計，淨營收為 0 或負數時寫不適用。缺資料的格子寫資料待補；那天沒有任何一列資料時寫無資料，都不當成 0。",
   },
 } as const;
 

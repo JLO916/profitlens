@@ -2468,6 +2468,31 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 
 /* ── V3-9a 錨點（代理 C：管理損益表（報表型表格：費用列「減：」、小計列 600／1px、合計列 600／2px、數字右對齊 tabular、第一欄 sticky、零值列切換）；只用 token） ── */
+/* F9 每日／每週管理損益表（PRD §10.1 F9、§9.3）：總覽「進階」內期間合計與日均之後的第二個收合面板；summary 與期間合計同一種樣式。 */
+.advanced > .pnl-table { margin: var(--space-4) 0 0; }
+.pnl-table > summary { cursor: pointer; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.pnl-table > summary .section-title { margin-right: var(--space-2); font-size: var(--text-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.pnl-table[open] > summary { margin-bottom: var(--space-3); }
+/* 工具列：左邊日／週分段（C11）與「顯示零值列」切換，右邊單位（表頭右上角只寫一次，§8.5 規則 5）。 */
+.pnl-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.pnl-toolbar > p { margin: 0; }
+.pnl-toolbar .pnl-unit { margin-left: auto; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.pnl-zero-toggle { height: var(--control-h-sm); min-height: var(--control-h-sm); font-size: var(--text-13); line-height: var(--leading-13); }
+.pnl-zero-toggle[aria-pressed="true"] { background: var(--accent-subtle); border-color: var(--accent-border); color: var(--accent); }
+/* 報表型表格（C3）：數字欄與欄頭右對齊、tabular；列名不換行；欄多時在 .table-scroll 內橫向捲動，第一欄（列名）sticky，底色不透明以免捲動時透出數字。 */
+.report-table th.num, .report-table td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.report-table tbody th { white-space: nowrap; }
+.report-table thead th:first-child, .report-table tbody th { position: sticky; left: 0; z-index: 1; background: var(--bg-surface); }
+.report-table thead th:first-child { z-index: 2; background: var(--bg-subtle); }
+.report-table tbody tr:hover > th { background: var(--bg-hover); }
+.report-table .pnl-col-label, .report-table .pnl-col-range { display: block; }
+.report-table .pnl-col-range { font-weight: var(--weight-regular); color: var(--text-tertiary); }
+/* 小計列（淨營收、商品毛利、扣廣告前貢獻）600＋1px --border-strong 上框線；合計列（扣廣告後貢獻）600＋2px。 */
+.report-table tr.pnl-row-subtotal > th, .report-table tr.pnl-row-subtotal > td { font-weight: var(--weight-semibold); border-top: var(--border-w) solid var(--border-strong); }
+.report-table tr.pnl-row-total > th, .report-table tr.pnl-row-total > td { font-weight: var(--weight-semibold); border-top: var(--rule-total) solid var(--border-strong); }
+/* 零值列預設 hidden（保持掛載）；無資料的格子用第三色。 */
+.report-table tr[hidden] { display: none; }
+.report-table td.pnl-empty { color: var(--text-tertiary); }
 
 
 /* ── V3-9a 錨點結束 ── */
