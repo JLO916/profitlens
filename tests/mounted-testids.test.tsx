@@ -680,6 +680,59 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-8 B（匯入精靈）的 M1 掛載測試在此之後新增（stepper、步驟 2 收合的已對照欄、步驟 3 收合的換算欄位、匯入中頁面內容 hidden 仍掛載）──
+    // shellPage() 的 <ImportWizard> 不帶起始狀態（那一行在錨點外），所以第 2–4 步用 initialState 渲染精靈，再換進 import-step-1 整頁的精靈位置，整頁一起檢查 M1／M6。
+    it("V3-8 B 匯入精靈：第 1–4 步嵌在匯入中的資料來源頁，每個 testid／id 只有一份；取消匯入與套用各一份；收合的範本、已對照欄、? 說明、換算欄位、比較期間與通路都掛載", () => {
+      const base = states.find(state => state.name === "import-step-1")!.html;
+      const wizardHtml = element(base, 'data-testid="import-wizard"')!;
+      const alternativeDir = resolve("tests/fixtures/alternative");
+      const renamed = readFileSync(resolve(alternativeDir, "sales_daily.csv"), "utf8").trimEnd().split(/\r?\n/).map((line, index) => index === 0 ? line.replace("gross_sales", "revenue") + ",private_note" : line + ",X").join("\n") + "\n";
+      let mapping = initialWizardState();
+      for (const role of roles) {
+        const content = role === "sales_daily.csv" ? bytes(renamed) : new Uint8Array(readFileSync(resolve(alternativeDir, role)));
+        mapping = wizardReducer(mapping, { type: "fileRead", role, draft: inspectImportFile(role, { name: role, size: content.byteLength, bytes: content }), encoding: "utf8", memory: null });
+      }
+      mapping = wizardReducer(mapping, { type: "next" });
+      const basis = wizardReducer(wizardReducer(wizardFiles(alternativeDir), { type: "next" }), { type: "basis", basis: "inclusive" });
+      const confirmed = wizardReducer(basis, { type: "confirm" });
+      const checked = wizardReducer(confirmed, { type: "checked", candidate: runCheck(confirmed) });
+      expect([mapping.step, basis.step, checked.step]).toEqual([2, 3, 4]);
+      const page = (wizard: WizardState) => base.replace(wizardHtml, renderToStaticMarkup(createElement(ImportWizard, { onCommit: asyncNoop, onCancel: noop, busy: false, localSaveConsented: false, initialState: wizard })));
+      const pages: Record<string, string> = { "import-step-1": base, "import-step-2": page(mapping), "import-step-3": page(basis), "import-step-4": page(checked) };
+      for (const [name, html] of Object.entries(pages)) {
+        expect(duplicateTestIds(html), name).toEqual([]);
+        expect([...idCounts(html)].filter(([, count]) => count > 1), name).toEqual([]);
+        const ids = testIdCounts(html);
+        for (const id of ["import-wizard", "import-stepper", name, "page-import", "period-bar"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        expect(SHELL_TESTIDS.filter(id => !ids.has(id)), name).toEqual([]);
+        expect(occurrences(html, `>${labels.importWizard.cancel}</button>`), `${name} 取消匯入`).toBe(1);
+        expect(ids.get("import-commit") ?? 0, `${name} 套用`).toBe(name === "import-step-4" ? 1 : 0);
+        const wizard = element(html, 'data-testid="import-wizard"')!;
+        for (const match of wizard.matchAll(/aria-controls="([^"]+)"/g)) expect(idCounts(wizard).get(match[1]), `${name} aria-controls ${match[1]}`).toBe(1);
+        // 版頭 h2 只寫步驟名（§7.7.2），一頁一個 h1 由 PageHeader 提供。
+        expect(element(wizard, 'id="import-heading"'), name).not.toContain("｜");
+      }
+      // 第 1 步：範本 3×3、欄位說明、進階設定檔收在關著的 <details>，內容掛載。
+      const step1 = element(pages["import-step-1"], 'data-testid="import-step-1"')!;
+      const step1Details = [...step1.matchAll(/<details class="wizard-details">/g)];
+      expect(step1Details).toHaveLength(3);
+      expect(step1).toContain('<table class="template-table">');
+      expect(step1).toContain(`aria-label="${escapeAttr(labels.importWizard.manifestLabel)}"`);
+      // 第 2 步：已對照的 9 欄收在關著的 details 內（select 掛載）；? 說明 hidden 掛載。
+      const sales = element(pages["import-step-2"], 'data-testid="import-mapping-sales_daily.csv"')!;
+      const done = element(sales, 'class="wizard-details mapping-done"')!;
+      expect(openTag(done, 'class="wizard-details mapping-done"')).toBe('<details class="wizard-details mapping-done">');
+      expect(done.match(/<select /g)).toHaveLength(9);
+      expect(occurrences(pages["import-step-2"], 'field-help-panel" hidden=""')).toBe(21);
+      // 第 3 步：9 個換算欄位、比較期間（比較方式＋兩期日期）、通路（2 個，收合）都在關著的 details 內。
+      const conversion = element(pages["import-step-3"], 'data-testid="import-conversion"')!;
+      const convertDetails = element(conversion, 'class="wizard-details convert-details"')!;
+      expect(openTag(convertDetails, 'class="wizard-details convert-details"')).toBe('<details class="wizard-details convert-details">');
+      expect(occurrences(convertDetails, 'type="checkbox"')).toBe(9);
+      const proposal = element(pages["import-step-3"], 'data-testid="import-settings-proposal"')!;
+      const closed = proposal.split('<details class="wizard-details">').slice(1).map(part => part.split("</details>")[0]);
+      expect(closed.some(part => part.includes(`aria-label="${escapeAttr(labels.importWizard.comparisonMode)}"`) && part.includes(`aria-label="${escapeAttr(labels.csvColumns.current_end)}"`))).toBe(true);
+      expect(closed.some(part => part.includes('aria-label="DTC"') && part.includes('aria-label="MARKETPLACE"'))).toBe(true);
+    });
 
 
     // ── V3-8 C（空狀態）的 M1 掛載測試在此之後新增（空狀態的需要的檔案表、四種狀態等高容器）──

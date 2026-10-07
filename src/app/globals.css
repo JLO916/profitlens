@@ -442,31 +442,20 @@ code { font-family: var(--font-mono); font-size: var(--text-12); overflow-wrap: 
 .import-panel .alert { margin: 15px 0; }
 .import-fields { display: block; width: 100%; }
 .import-fields > h3 { font-size: var(--text-16); margin: 24px 0 8px; }
-.import-files, .import-settings, .mapping-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 15px; margin: 15px 0; }
-.import-files > label, .import-files > article { border: 1px solid var(--border-subtle); padding: 14px; border-radius: var(--radius-md); min-width: 0; background: var(--bg-page); }
-.import-files input { width: 100%; font-size: var(--text-12); }
 input[type="file"] { max-width: 100%; }
-.import-settings label, .mapping-grid label { min-width: 0; }
 textarea { font: inherit; color: var(--text-primary); border: 1px solid var(--border-input); border-radius: var(--radius-sm); padding: 8px; resize: vertical; min-height: 72px; }
 .check-label { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; font-size: var(--text-13); color: var(--text-secondary); margin: 16px 0 6px; }
 .check-label input { flex: none; min-height: 0; width: 17px; height: 17px; accent-color: var(--accent); margin-top: 2px; }
-.import-result { margin: 22px 0 10px; font-weight: 600; }
 .import-panel table td { max-width: 280px; overflow-wrap: anywhere; white-space: pre-wrap; }
 .import-panel h4, .import-panel label, .source-table th, .sidebar-note { overflow-wrap: anywhere; }
 .import-panel .file-card { padding: 18px 0; }
-.mapping-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
-.mapping-grid select { min-width: 0; width: 100%; }
 .export-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 0 0 18px; }
 .issue-pagination { display: flex; gap: 12px; align-items: center; padding: 12px 0; }
 /* C15 工具列 Toolbar：高 40px、最多 5 個控制、靠左；匯出或筆數放最右（.ui-toolbar-end）；768 以下自動換行。 */
 .ui-toolbar { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-2); min-height: var(--toolbar-h); min-width: 0; }
 .ui-toolbar-end { display: inline-flex; align-items: center; gap: var(--space-2); margin-left: auto; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); white-space: nowrap; }
 @media (max-width: 767px) { .ui-toolbar { flex-wrap: wrap; } }
-@media (max-width: 1000px) {
-  .import-files, .import-settings, .mapping-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-}
 @media (max-width: 640px) {
-  .import-files, .import-settings, .mapping-grid { grid-template-columns: 1fr; }
   .import-panel .section-heading { align-items: flex-start; }
   .import-panel .alert { padding: 12px; }
   .export-actions { gap: 9px; }
@@ -708,69 +697,13 @@ main summary, main button, main input, main select, main textarea, main [role="r
 .ladder-table tr.current th, .ladder-table tr.current td { font-weight: 600; color: var(--text-primary); background: var(--accent-subtle); }
 @media (max-width: 640px) { .basis-dialog { width: 100vw; max-height: 100dvh; border-radius: 0; } .basis-button { padding: 4px 8px; } }
 
-/* R3 import wizard: four steps, drop zone, mapping table, basis choice. */
-.import-wizard { margin-bottom: 24px; }
-.import-wizard h2:focus { outline: none; }
-.wizard-steps { list-style: none; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; padding: 0; margin: 18px 0 22px; }
-.wizard-steps li { display: flex; align-items: center; gap: 8px; font-size: var(--text-13); color: var(--text-tertiary); border-top: 3px solid var(--border-subtle); padding-top: 8px; min-width: 0; }
-.wizard-steps li.current { color: var(--text-primary); border-top-color: var(--accent); font-weight: 600; }
-.wizard-steps li.done, .wizard-steps li.skipped { color: var(--text-secondary); border-top-color: var(--accent-border); }
-.wizard-step-number { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: var(--radius-full); background: var(--accent-subtle); font-size: var(--text-12); flex: none; }
-.wizard-steps li.current .wizard-step-number { background: var(--accent); color: var(--on-accent); }
-.wizard-footer { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--border-subtle); }
-.dropzone { border: 2px dashed var(--border-strong); border-radius: var(--radius-md); padding: 16px; background: var(--bg-page); margin: 14px 0; }
-.dropzone-hint { font-weight: 600; margin-bottom: 4px; }
-.dropzone .import-files { margin: 12px 0 0; }
-.file-slot { background: var(--bg-surface); }
-.file-slot.ready { border-color: var(--accent-border); }
-.file-slot.blocked { border-color: var(--unfavorable); background: var(--unfavorable-subtle); }
-.file-slot h3 { font-size: var(--text-14); margin-bottom: 4px; }
+/* R3 匯入精靈的舊規則已由 V3-8 錨點（代理 B）取代；這裡只留與資料來源頁（目標、促銷檔期上傳）共用的選檔與錯誤清單樣式，以及抽屜的換算值。 */
 .file-pick { display: block; margin: 10px 0; }
 .file-pick input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 .file-pick .button { display: inline-block; cursor: pointer; }
-.file-meta { font-size: var(--text-12); color: var(--text-tertiary); line-height: 1.7; overflow-wrap: anywhere; }
 .file-issues { list-style: none; padding: 10px 12px; margin: 10px 0 0; font-size: var(--text-12); }
-.template-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin: 12px 0; }
-.template-grid > div { display: grid; gap: 4px; font-size: var(--text-13); }
-.column-guide { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px 18px; font-size: var(--text-12); margin: 10px 0; }
-.column-guide dt { font-weight: 600; } .column-guide dd { margin: 0; color: var(--text-tertiary); }
-.mapping-card .hint { font-size: var(--text-13); padding: 10px 12px; border-radius: var(--radius-md); margin: 10px 0; }
-.mapping-card .hint.memory { background: var(--accent-subtle); color: var(--accent); }
-.mapping-card .hint.preset { background: var(--accent-subtle); color: var(--accent); }
-.mapping-table th, .mapping-table td { vertical-align: top; }
-.mapping-table th small { display: block; font-weight: 400; color: var(--text-tertiary); }
-.mapping-table select { min-width: 160px; width: 100%; }
-.mapping-table .samples { font-size: var(--text-12); color: var(--text-tertiary); max-width: 260px; overflow-wrap: anywhere; }
-.tag.origin.memory, .tag.origin.preset, .tag.origin.dictionary { background: var(--accent-subtle); color: var(--accent); }
-.tag.origin.none { background: var(--unfavorable-subtle); color: var(--unfavorable); }
-.tag.origin.exact, .tag.origin.manual { background: var(--accent-subtle); color: var(--accent); }
-.basis-choice { border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 16px; margin: 8px 0 18px; }
-.basis-choice legend { font-weight: 600; padding: 0 6px; }
-.radio-label { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: var(--text-14); }
-.radio-label input { width: 18px; height: 18px; min-height: 0; accent-color: var(--accent); }
-.conversion-settings { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-subtle); }
-.conversion-settings input[type="number"] { width: 110px; }
-.convert-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin: 8px 0; }
-.convert-grid .check-label { margin: 8px 0; flex-wrap: wrap; }
-.convert-grid .check-label small { width: 100%; margin-left: 27px; color: var(--text-tertiary); }
-.settings-block { margin: 18px 0; }
-.channel-list { display: flex; flex-wrap: wrap; gap: 4px 20px; }
-.channel-list .check-label { margin: 6px 0; }
-.confirm-list { padding-left: 20px; margin: 18px 0 6px; font-size: var(--text-14); color: var(--text-secondary); line-height: 1.9; }
-.import-result.valid { color: var(--accent); } .import-result.partial { color: var(--warning); } .import-result.blocking { color: var(--unfavorable); }
-.commit-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
 .converted-value s { color: var(--text-tertiary); }
-@media (max-width: 1000px) { .template-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .convert-grid { grid-template-columns: 1fr; } }
-@media (max-width: 640px) { .wizard-steps { grid-template-columns: repeat(2,minmax(0,1fr)); } .wizard-steps li { font-size: var(--text-12); } .template-grid, .column-guide { grid-template-columns: 1fr; } .dropzone { padding: 12px; } .mapping-table select { min-width: 120px; } }
 .file-pick:has(input:focus-visible) .button { outline: 3px solid var(--accent); outline-offset: 2px; }
-/* R3 wizard fieldsets must not inherit the inline period-form fieldset layout (flex row, 128px inputs, grey spans). */
-.basis-choice { display: block; }
-.basis-choice input[type="radio"] { width: 18px; }
-.basis-choice span, .import-wizard .file-pick span { color: inherit; font-size: inherit; }
-.import-wizard .import-settings input, .import-wizard .import-settings select { width: 100%; }
-.import-wizard .conversion-settings input[type="number"] { width: 110px; }
-.basis-choice .radio-label { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; justify-items: start; text-align: left; gap: 10px; margin: 8px 0; }
-.basis-choice .radio-label input[type="radio"] { margin: 0; flex: none; }
 
 
 /* R4 targets / events entries on the data page and the KPI achievement line. */
@@ -2282,6 +2215,150 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 
 /* ── V3-8 錨點（代理 B：匯入精靈全版模式——stepper C20、拖放區、檔案槽列、對照表與收合、金額基準與兩欄表單、底部固定動作列；只用 token） ── */
+/* 精靈容器（§7.7.2 全版專注模式）：最大寬 960px、靠左；面板內子區塊用上框線分隔，不再放帶框子卡片（C5）。關著的說明、收合內容一律 hidden 掛載（M1）。 */
+.import-wizard.panel { max-width: 960px; margin-bottom: var(--space-5); padding: var(--space-5) var(--space-5) 0; container: wizard / inline-size; }
+.import-wizard [hidden] { display: none; }
+.import-wizard h2:focus { outline: none; }
+.import-wizard .ui-field-control { width: 100%; }
+.import-wizard .ui-field { align-content: start; }
+.import-wizard .ui-help-trigger { width: var(--space-5); height: var(--space-5); }
+.import-wizard .wizard-step { min-width: 0; }
+.wizard-note { margin-top: var(--space-2); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.wizard-line { margin-top: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.import-wizard .ui-notice { margin-top: var(--space-2); }
+.import-wizard .ui-notice p + p { margin-top: var(--space-1); }
+.import-wizard ul.ui-notice { list-style: none; margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); }
+.import-wizard .ui-notice a { margin-left: var(--space-2); color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+/* 版頭：h2 只寫目前步驟名；「取消匯入」文字按鈕在右上角。 */
+.wizard-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--control-h); }
+.wizard-head h2 { font-size: var(--text-20); line-height: var(--leading-20); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.wizard-cancel { flex: none; }
+.wizard-privacy { display: none; }
+
+/* C20 stepper：4 步水平排列；目前步驟 600 字重＋2px --accent 下緣；完成步驟是 SVG 勾；步驟之間 SVG chevron。手機（< 640）只留序號與目前步驟名。 */
+.wizard-steps { list-style: none; display: flex; flex-wrap: nowrap; align-items: stretch; gap: var(--space-2); margin: var(--space-4) 0 var(--space-5); padding: 0; border-bottom: var(--border-w) solid var(--border-subtle); }
+.wizard-steps li { display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: var(--toolbar-h); margin-bottom: calc(-1 * var(--border-w)); border-bottom: var(--rule-accent) solid transparent; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-tertiary); }
+.wizard-steps li.current { border-bottom-color: var(--accent); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.wizard-steps li.done, .wizard-steps li.skipped { color: var(--text-secondary); }
+.wizard-step-number { display: inline-grid; place-items: center; flex: none; width: var(--space-5); height: var(--space-5); border: var(--border-w) solid var(--border-default); border-radius: var(--radius-full); font-size: var(--text-12); line-height: var(--leading-12); }
+.wizard-steps li.current .wizard-step-number { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.wizard-steps li.done .wizard-step-number, .wizard-steps li.skipped .wizard-step-number { background: var(--accent-subtle); border-color: var(--accent-border); color: var(--accent); }
+.wizard-step-title { min-width: 0; overflow-wrap: anywhere; }
+.wizard-step-sep { flex: none; color: var(--text-tertiary); }
+/* 「< 640」以精靈本身的寬度判斷（容器查詢）：768 寬時側欄還在，精靈只剩約 500px，四個步驟名會折行。 */
+@container wizard (max-width: 639px) { .wizard-steps li:not(.current) .wizard-step-title { display: none; } }
+
+/* 步驟 1：拖放區（1px 虛線 --border-strong、高 120px、文字靠左）。 */
+.import-wizard .dropzone { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-1); min-height: 120px; padding: var(--space-4); border: var(--border-w) dashed var(--border-strong); border-radius: var(--radius-md); background: var(--bg-surface); text-align: left; }
+.dropzone-hint { font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.dropzone-note { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+
+/* 步驟 1：檔案槽 C3 列（角色｜檔名｜編碼｜列數｜狀態標籤｜選檔與移除）；表頭 --bg-subtle、12／500。 */
+.file-rows { margin-top: var(--space-4); border-top: var(--border-w) solid var(--border-subtle); }
+.file-rows-head, .file-slot { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.6fr) minmax(0, .8fr) minmax(0, .7fr) minmax(0, .9fr) auto; align-items: center; column-gap: var(--space-3); }
+.file-rows-head { min-height: var(--row-h-compact); padding: 0 var(--cell-px); border-bottom: var(--border-w) solid var(--border-subtle); background: var(--bg-subtle); font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.file-rows-head .num, .file-slot .num { text-align: right; font-variant-numeric: tabular-nums; }
+.file-slot { min-height: var(--row-h); padding: var(--space-2) var(--cell-px); border-bottom: var(--border-w) solid var(--border-subtle); }
+.file-slot[data-state="failed"] { border-left: var(--rule-notice) solid var(--unfavorable); }
+.file-slot h3 { font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.file-cell { display: grid; gap: var(--space-1); min-width: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-primary); }
+.import-wizard .file-mono { font-family: var(--font-mono); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-primary); overflow-wrap: anywhere; }
+.import-wizard .file-sub { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); overflow-wrap: anywhere; }
+.file-state { justify-items: start; }
+.file-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+.import-wizard .file-pick { display: inline-flex; margin: 0; }
+.import-wizard .file-pick:has(input:focus-visible) .ui-btn { outline: var(--rule-accent) solid var(--focus-ring); outline-offset: var(--rule-accent); }
+.file-slot > .ui-notice { grid-column: 1 / -1; }
+.import-wizard .manifest-field { max-width: var(--menu-w); margin-top: var(--space-2); }
+.import-wizard .manifest-field input { width: auto; max-width: 100%; }
+@container wizard (max-width: 639px) {
+  .file-rows-head { display: none; }
+  .file-slot { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "role state" "name name" "encoding rows" "actions actions"; row-gap: var(--space-1); }
+  .file-role { grid-area: role; }
+  .file-state { grid-area: state; }
+  .file-name { grid-area: name; }
+  .file-encoding { grid-area: encoding; }
+  .file-rows-count { grid-area: rows; }
+  .file-actions { grid-area: actions; justify-content: flex-start; }
+}
+
+/* 收合區（<details>）：summary 是文字按鈕樣式（--accent、14px、點擊高度 ≥ 24px）；內容保持掛載。 */
+.wizard-details { margin-top: var(--space-3); }
+.wizard-details > summary { display: list-item; min-height: var(--space-5); padding: 0; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-medium); color: var(--accent); }
+.wizard-details[open] > summary { margin-bottom: var(--space-2); }
+.import-wizard .column-guide { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2) var(--space-4); margin: var(--space-2) 0 0; font-size: var(--text-13); line-height: var(--leading-13); }
+.import-wizard .column-guide dt { font-weight: var(--weight-semibold); color: var(--text-primary); }
+.import-wizard .column-guide dd { margin: 0; color: var(--text-secondary); }
+@media (max-width: 639px) { .import-wizard .column-guide { grid-template-columns: 1fr; } }
+
+/* 步驟 2：每份檔一個區段（C4）；需要確認的列展開，已對照的列收在 <details>；欄位說明是欄位名旁的 ? 就地展開。 */
+.mapping-card { margin-top: var(--space-5); padding-top: var(--space-5); border-top: var(--border-w) solid var(--border-subtle); }
+.mapping-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); margin-bottom: var(--space-3); }
+.mapping-head h3 { font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.import-wizard .mapping-file { font-family: var(--font-mono); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); overflow-wrap: anywhere; }
+.mapping-hints { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin-bottom: var(--space-3); padding: var(--space-2) var(--space-3); border-left: var(--rule-notice) solid var(--accent); background: var(--bg-subtle); }
+.import-wizard .mapping-hint { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-primary); }
+.mapping-table th[scope="row"] { white-space: normal; }
+.import-wizard .mapping-field { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.field-help { display: contents; }
+.field-help-panel:not([hidden]) { display: block; flex-basis: 100%; margin: var(--space-1) 0 var(--space-2); padding: var(--space-3); box-shadow: none; font-weight: var(--weight-regular); white-space: normal; }
+.mapping-table .ui-field-control { min-width: calc(var(--space-6) * 5); }
+.mapping-table .samples { max-width: calc(var(--space-6) * 8); font-family: var(--font-mono); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); white-space: normal; overflow-wrap: anywhere; }
+.import-wizard .check-label { align-items: flex-start; gap: var(--space-2); margin: var(--space-2) 0 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.import-wizard .check-label .ui-check { width: var(--space-4); height: var(--space-4); margin-top: 3px; }
+
+/* 步驟 3：金額基準 radio（每個選項下一行 13px 說明）、含稅換算（稅率＋一行摘要＋收合的 9 個欄位）、設定提案兩欄表單。 */
+.import-wizard .basis-choice { display: block; margin: 0; padding: 0; border: 0; }
+.import-wizard .basis-choice legend { margin-bottom: var(--space-2); padding: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.basis-option + .basis-option { margin-top: var(--space-2); }
+.import-wizard .radio-label { display: flex; flex-direction: row; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-medium); color: var(--text-primary); }
+.basis-help { margin-left: calc(var(--space-4) + var(--space-2)); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.conversion-settings { margin-top: var(--space-4); padding-top: var(--space-4); border-top: var(--border-w) solid var(--border-subtle); }
+.import-wizard .rate-field { max-width: var(--help-w); }
+.convert-details h3 { margin: 0 0 var(--space-2); font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.convert-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); }
+.convert-group { display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
+.convert-group > strong { font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.import-wizard .check-text { display: grid; gap: var(--space-1); min-width: 0; font-size: var(--text-14); color: var(--text-primary); }
+.import-wizard .check-text small { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.settings-proposal { margin-top: var(--space-6); padding-top: var(--space-5); border-top: var(--border-w) solid var(--border-subtle); }
+.wizard-section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); min-height: var(--control-h); margin-bottom: var(--space-3); }
+.wizard-section-head h3 { font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.import-wizard .ui-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); }
+.import-wizard .month-shortcut { align-content: end; }
+.wizard-group { margin-top: var(--space-4); }
+.import-wizard .channel-list { display: flex; flex-wrap: wrap; gap: 0 var(--space-5); }
+.import-wizard .confirm-list { margin: var(--space-5) 0 0; padding-left: var(--space-5); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+.import-wizard .confirm-list li + li { margin-top: var(--space-1); }
+@media (max-width: 767px) { .convert-grid { grid-template-columns: 1fr; } }
+@media (max-width: 639px) { .import-wizard .ui-form-grid { grid-template-columns: 1fr; } }
+
+/* 步驟 4：頂部狀態一行（L1 16／600）→ 前處理摘要表 → 問題清單 → 對帳表 → 記憶備註；表格用 C3（數字欄右對齊、到分）。 */
+.review-status { padding-bottom: var(--space-4); border-bottom: var(--border-w) solid var(--border-subtle); }
+.import-result { font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.import-result.valid { color: var(--accent); }
+.import-result.partial { color: var(--warning); }
+.import-result.blocking { color: var(--unfavorable); }
+.wizard-section { margin-top: var(--space-5); }
+.wizard-section > h3 { margin-bottom: var(--space-2); font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.wizard-section h4 { margin: var(--space-4) 0 var(--space-1); font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.wizard-section > ul { margin: 0; padding-left: var(--space-5); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.import-wizard .table-scroll { margin-top: var(--space-3); }
+.import-wizard .ui-table caption { padding: var(--space-2) var(--cell-px); caption-side: top; text-align: left; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.import-wizard .ui-table thead th.num { text-align: right; }
+.import-wizard .ui-table td small { font-size: var(--text-12); line-height: var(--leading-12); }
+
+/* 底部固定動作列（64px）：左「上一步」（次要）、右「下一步」或「套用這批資料」（主要）；--bg-surface、上緣 1px --border-subtle。手機放在底部分頁列之上。 */
+.wizard-footer { position: sticky; bottom: 0; z-index: var(--z-sticky); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); min-height: calc(var(--control-h) * 2); margin: var(--space-6) calc(-1 * var(--space-5)) 0; padding: var(--space-3) var(--space-5); border-top: var(--border-w) solid var(--border-subtle); border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); background: var(--bg-surface); }
+.wizard-footer-start { display: flex; align-items: center; gap: var(--space-2); }
+.wizard-footer-end { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2) var(--space-3); margin-left: auto; min-width: 0; }
+.wizard-footer-note { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+@media (max-width: 767px) {
+  .import-wizard.panel { padding: var(--space-4) var(--space-4) 0; }
+  .wizard-privacy { display: block; margin-top: var(--space-1); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+  .wizard-footer { bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); margin: var(--space-5) calc(-1 * var(--space-4)) 0; padding: var(--space-3) var(--space-4); }
+}
 
 
 /* ── V3-8 錨點（代理 C：全站空狀態、載入骨架、錯誤狀態等高（C10、§7.10）；舊 .empty-state／.empty-illustration／.empty-steps 規則在此覆寫或由代理刪除；只用 token） ── */

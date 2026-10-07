@@ -2,11 +2,12 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { inspectImportFile, inspectManifestFile, type PreparedImport } from "@/application/import";
-import { canConfirm, canLeaveFiles, canLeaveMapping, detectEncoding, initialWizardState, memoryEntries, recallForRole, rememberAll, roleForFilename, runCheck, wizardMappingStore, wizardReducer, FILE_ROLES, type WizardRole } from "@/application/import-wizard";
+import { canConfirm, canLeaveFiles, canLeaveMapping, detectEncoding, initialWizardState, memoryEntries, recallForRole, rememberAll, roleForFilename, runCheck, wizardMappingStore, wizardReducer, FILE_ROLES, type WizardRole, type WizardState } from "@/application/import-wizard";
 import { mappingMemoryDate, type MappingStore } from "@/application/mapping-memory";
 import { MAX_CSV_BYTES } from "@/lib/csv";
 import type { FileName, SourceRef, ValidationIssue } from "@/domain/types";
 import { fill, labels } from "@/i18n";
+import { ShellIcon } from "../shell/shell-icon";
 import { StepBasis } from "./step-basis";
 import { StepFiles, fileLabels } from "./step-files";
 import { StepMapping } from "./step-mapping";
@@ -16,15 +17,17 @@ const copy = labels.importWizard;
 const stepIds = ["files", "mapping", "basis", "review"] as const;
 
 /** R3 四步匯入精靈；對外仍是 onCommit／onCancel。狀態機在 src/application/import-wizard.ts，這裡只做讀檔與渲染。 */
-export function ImportWizard({ onCommit, onCancel, busy, localSaveConsented }: {
+export function ImportWizard({ onCommit, onCancel, busy, localSaveConsented, initialState }: {
   /** afterCommit 在資料真的被套用後才呼叫（取代對話框取消時不呼叫）；對照記憶在這裡寫入。 */
   onCommit: (prepared: PreparedImport, manifestName?: string, afterCommit?: () => void) => Promise<void>;
   onCancel: () => void;
   busy: boolean;
   /** 使用者已同意本機保存時，對照記憶才寫進 IndexedDB；否則只留在這個分頁。 */
   localSaveConsented: boolean;
+  /** V3-8 B：起始狀態（預設是空的第 1 步）。只給 SSR 測試用 reducer 推進後的狀態渲染第 2–4 步；dashboard 不傳。 */
+  initialState?: WizardState;
 }) {
-  const [state, dispatch] = useReducer(wizardReducer, undefined, initialWizardState);
+  const [state, dispatch] = useReducer(wizardReducer, initialState, seed => seed ?? initialWizardState());
   const [dropNotice, setDropNotice] = useState("");
   const consent = useRef(localSaveConsented);
   useEffect(() => { consent.current = localSaveConsented; }, [localSaveConsented]);
@@ -94,22 +97,31 @@ export function ImportWizard({ onCommit, onCancel, busy, localSaveConsented }: {
     dropFiles(files);
   }
   const stepState = (n: number): "done" | "current" | "todo" | "skipped" => n === state.step ? "current" : n < state.step ? (n === 2 && state.mappingSkipped ? "skipped" : "done") : "todo";
+  const canCommit = state.step === 4 && !!state.candidate?.validation.dataset;
   return <section className="panel import-wizard" aria-labelledby="import-heading" data-testid="import-wizard">
-    <div className="section-heading"><div><p className="eyebrow">{labels.status.local}</p><h2 id="import-heading" ref={heading} tabIndex={-1}>{copy.title}｜{copy.steps[state.step - 1]}</h2><p className="note">{copy.privacyNote}</p></div><button className="button quiet" type="button" onClick={onCancel}>{copy.cancel}</button></div>
-    <ol className="wizard-steps" aria-label={copy.stepperAria} data-testid="import-stepper">{copy.steps.map((title, index) => { const n = index + 1; const status = stepState(n); return <li key={stepIds[index]} className={status} aria-current={status === "current" ? "step" : undefined}><span className="wizard-step-number" aria-hidden="true">{n}</span><span>{title}</span><span className="sr-only">（{copy.stepState[status]}）</span></li>; })}</ol>
+    {/* §7.7.2 版頭：h1「匯入資料」由 PageHeader 提供；這裡的 h2 只寫目前步驟名（不再「匯入資料｜對照欄位」拼接），右上角「取消匯入」文字按鈕。 */}
+    <div className="wizard-head"><h2 id="import-heading" ref={heading} tabIndex={-1}><span className="sr-only">{fill(copy.wizardV3.stepOf, { n: state.step, total: copy.steps.length })}</span>{copy.steps[state.step - 1]}</h2><button className="ui-btn ui-btn-text wizard-cancel" type="button" onClick={onCancel}>{copy.cancel}</button></div>
+    {/* 隱私說明一行（13px）：桌機由 PageHeader 描述顯示；手機頁首文字只留給螢幕閱讀器，所以這裡補一行可見的（aria-hidden，避免唸兩次）。 */}
+    <p className="wizard-privacy" aria-hidden="true">{copy.privacyNote}</p>
+    {/* C20 stepper：4 步水平排列；完成的步驟用 SVG 勾，步驟之間用 SVG chevron；aria-current=step。 */}
+    <ol className="wizard-steps" aria-label={copy.stepperAria} data-testid="import-stepper">{copy.steps.map((title, index) => { const n = index + 1; const status = stepState(n); const finished = status === "done" || status === "skipped"; return <li key={stepIds[index]} className={status} aria-current={status === "current" ? "step" : undefined}><span className="wizard-step-number" aria-hidden="true">{finished ? <ShellIcon name="check" size={12} /> : n}</span><span className="wizard-step-title">{title}</span><span className="sr-only">（{copy.stepState[status]}）</span>{n < copy.steps.length && <ShellIcon name="chevron-right" size={16} className="wizard-step-sep" />}</li>; })}</ol>
     <fieldset className="import-fields" disabled={busy}>
       <legend className="sr-only">{copy.title}</legend>
       {state.step === 1 && <StepFiles state={state} dropNotice={dropNotice} onPick={pick} onDrop={dropFiles} onRemove={role => { sequence.current[role] = (sequence.current[role] ?? 0) + 1; dispatch({ type: "removeFile", role }); }} onManifest={file => void read(file, "manifest.json")} onManifestClear={() => { sequence.current["manifest.json"] = (sequence.current["manifest.json"] ?? 0) + 1; dispatch({ type: "manifestCleared" }); }} />}
       {state.step === 2 && <StepMapping state={state} onMap={(role, field, source) => dispatch({ type: "mapField", role, field, source })} onIgnore={(role, value) => dispatch({ type: "ignoreConfirmed", role, value })} />}
       {state.step === 3 && <StepBasis state={state} dispatch={dispatch} />}
-      {state.step === 4 && <StepReview state={state} filenames={filenames} busy={busy} memoryPersistent={localSaveConsented} onCommit={() => void commit()} />}
+      {state.step === 4 && <StepReview state={state} filenames={filenames} memoryPersistent={localSaveConsented} />}
     </fieldset>
+    {/* §7.7.2 底部固定動作列（64px）：左「上一步」（次要），右「下一步」或第 4 步「套用這批資料」（主要）；第 2、3 步的確認按鈕就是該步的主要按鈕。 */}
     <div className="wizard-footer">
-      {state.step > 1 && <button type="button" className="button quiet" onClick={() => dispatch({ type: "back" })}>{copy.back}</button>}
-      {state.step === 1 && <button type="button" className="button primary" disabled={!canLeaveFiles(state)} onClick={() => dispatch({ type: "next" })}>{copy.next}</button>}
-      {state.step === 2 && <button type="button" className="button primary" disabled={!canLeaveMapping(state)} onClick={() => dispatch({ type: "next" })}>{copy.confirmMapping}</button>}
-      {state.step === 3 && <button type="button" className="button primary" disabled={!canConfirm(state)} onClick={() => dispatch({ type: "confirm" })}>{copy.confirmAndCheck}</button>}
-      {state.step === 1 && !canLeaveFiles(state) && <span className="note">{FILE_ROLES.filter(role => !state.files[role]).map(role => fileLabels[role]).join("、")}</span>}
+      <div className="wizard-footer-start">{state.step > 1 && <button type="button" className="ui-btn ui-btn-secondary" onClick={() => dispatch({ type: "back" })}>{copy.back}</button>}</div>
+      <div className="wizard-footer-end">
+        {state.step === 1 && !canLeaveFiles(state) && <span className="wizard-footer-note">{FILE_ROLES.filter(role => !state.files[role]).map(role => fileLabels[role]).join("、")}</span>}
+        {state.step === 1 && <button type="button" className="ui-btn ui-btn-primary" disabled={!canLeaveFiles(state)} onClick={() => dispatch({ type: "next" })}>{copy.next}</button>}
+        {state.step === 2 && <button type="button" className="ui-btn ui-btn-primary" disabled={!canLeaveMapping(state)} onClick={() => dispatch({ type: "next" })}>{copy.confirmMapping}</button>}
+        {state.step === 3 && <button type="button" className="ui-btn ui-btn-primary" disabled={!canConfirm(state)} onClick={() => dispatch({ type: "confirm" })}>{copy.confirmAndCheck}</button>}
+        {canCommit && <><span className="wizard-footer-note">{copy.commitHint}</span><button type="button" className="ui-btn ui-btn-primary" data-testid="import-commit" disabled={busy || state.checking} onClick={() => void commit()}>{copy.commit}</button></>}
+      </div>
     </div>
   </section>;
 }
