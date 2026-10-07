@@ -15,6 +15,7 @@ import { acceptAssumptions, actionDrawer } from "./actions-helpers-v3";
 import { exportPeriodLine, exportReportTitle, exportVersionLineRe, expectExportHeader, MEETING_EXPORTS, meetingExportItem, openCompare, openMeetingExport, type ExportHeaderExpectation } from "./meeting-helpers-v3";
 import { expectMeetingHistoryEmpty, expectMeetingNoScenario, goToScenariosFromMeeting } from "./misc-helpers-v38";
 import { GOLDEN_BREAKEVEN, markdownAssistSection, markdownBreakevenRow, markdownBreakevenVersion, markdownTechnicalLines } from "./breakeven-helpers-v39";
+import { EXPORT_VARIANTS, STANDARD_SHEETS, summaryExportItems, variantPicker } from "./variant-helpers-v39";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -431,10 +432,13 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
     [labels.meetingPage.menuMarkdown, menuV3.descriptions.menuMarkdown],
   ] as const;
   await expect(group.locator(".export-item-name")).toHaveText(summaryItems.map(([name]) => name));
-  await expect(group.getByRole("button")).toHaveCount(summaryItems.length);
+  // V3-9b F14：分組標題下先是版本切換（三顆 aria-pressed 按鈕，class export-variant），之後才是四個匯出項目（button.export-item）。
+  await expect(variantPicker(menu).getByRole("button")).toHaveCount(EXPORT_VARIANTS.length);
+  await expect(summaryExportItems(menu)).toHaveCount(summaryItems.length);
+  await expect(group.getByRole("button")).toHaveCount(EXPORT_VARIANTS.length + summaryItems.length);
   // 可及名稱只取名稱（aria-labelledby）；範圍差異寫在說明行（aria-describedby），取代 v2 選單底部的 menuViewNote／menuNote。
   for (const [index, [name, description]] of summaryItems.entries()) {
-    const item = group.getByRole("button").nth(index);
+    const item = summaryExportItems(menu).nth(index);
     await expect(item).toHaveAccessibleName(name);
     await expect(item).toHaveAccessibleDescription(description);
     await expect(item.locator("small")).toHaveText(description);
@@ -442,14 +446,14 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   await expect(menu).not.toContainText(labels.meetingPage.menuViewNote);
   await expect(menu).not.toContainText(labels.downloads.menuNote);
 
-  // Excel：profitlens.xlsx、zip（PK）、> 5 KB、六張工作表；選單版只依目前檢視：摘要沒有會議名稱／日期列，也不帶會議稿的名稱。
+  // Excel：profitlens.xlsx、zip（PK）、> 5 KB、六張工作表＋V3-9b 最後一張管理損益表（預設標準版）；選單版只依目前檢視：摘要沒有會議名稱／日期列，也不帶會議稿的名稱。
   const downloadSummary = page.getByTestId("download-menu").locator(":scope > summary");
   const excel = await downloadFrom(page, menu.getByRole("button", { name: labels.buttons.exportExcel, exact: true }));
   expect(excel.download.suggestedFilename()).toBe("profitlens.xlsx");
   expect(excel.bytes.subarray(0, 2).toString("latin1")).toBe("PK");
   expect(excel.bytes.length).toBeGreaterThan(5 * 1024);
   const workbook = XLSX.read(excel.bytes, { type: "buffer" });
-  expect(workbook.SheetNames).toEqual(Object.values(labels.excelExport.sheets));
+  expect(workbook.SheetNames).toEqual(STANDARD_SHEETS);
   const summaryCells = (book: XLSX.WorkBook) => XLSX.utils.sheet_to_json<unknown[]>(book.Sheets[labels.excelExport.sheets.summary], { header: 1, raw: false }).flat().map(String);
   const viewCells = summaryCells(workbook);
   expect(viewCells).toEqual(expect.arrayContaining([labels.excelExport.summary.items.dataset, "golden-v1"]));
@@ -545,7 +549,8 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   expect(meetingExcel.download.suggestedFilename()).toBe("profitlens.xlsx");
   expect(meetingExcel.bytes.subarray(0, 2).toString("latin1")).toBe("PK");
   const meetingBook = XLSX.read(meetingExcel.bytes, { type: "buffer", cellFormula: true });
-  expect(meetingBook.SheetNames).toEqual(Object.values(labels.excelExport.sheets));
+  // V3-9b：會議頁的匯出會議是標準版（六張＋管理損益表）。
+  expect(meetingBook.SheetNames).toEqual(STANDARD_SHEETS);
   const sheet = meetingBook.Sheets[labels.excelExport.sheets.summary];
   const nameCell = Object.entries(sheet).find(([address, cell]) => !address.startsWith("!") && (cell as XLSX.CellObject).v === `'${hostile}`);
   expect(nameCell, "會議名稱以文字（前置 '）寫入摘要工作表").toBeTruthy();
@@ -575,7 +580,11 @@ test("c2. 頂欄「匯出」選單：五個分組（role=group）與每項一行
     ["download-group-decision", labels.sections.downloadDecision, [[labels.downloads.decisionMd, describe.decisionMd], [labels.downloads.decisionCsv, describe.decisionCsv], [labels.downloads.decisionJson, describe.decisionJson]]],
     ["download-group-meeting", menuV3.groupMeeting, [[entryUi.copy, describe.copySummary]]],
   ] as const;
-  await expect(menu.locator("[role=group]")).toHaveCount(groups.length + 1);
+  // V3-9b F14：「一頁摘要」分組內另有版本切換（div.ui-segmented[role=group]，以 pickerAria 為名）；分組本身仍是五個。
+  await expect(menu.locator("[role=group]:not([data-testid=download-variant-picker])")).toHaveCount(groups.length + 1);
+  await expect(variantPicker(menu)).toHaveCount(1);
+  await expect(variantPicker(menu)).toHaveAttribute("role", "group");
+  await expect(variantPicker(menu)).toHaveAccessibleName(labels.exports.variantsV3.pickerAria);
   for (const [testId, title, items] of groups) {
     const group = menu.getByTestId(testId);
     await expect(group).toHaveAttribute("role", "group");
@@ -676,11 +685,16 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   await expect(priorities).toHaveCount(3);
   // 一頁摘要的三件事影響金額是 L1（U+2212 負號）。
   for (const [index, amount] of ["-315.00", "-250.00", "-150.00"].entries()) await expect(priorities.nth(index)).toContainText(`${labels.sections.impact} ${formatSignedDelta(amount, "L1")}`);
-  // 附錄（技術資訊）是獨立的 section，從新的一頁開始。
+  // 附錄（技術資訊）是獨立的 section。V3-9b F14：標準版的附錄依序是（方案假設 → 備註 → 其他待辦 →）每週管理損益表 → 技術細節；
+  // 附錄從新的一頁開始＝第一個附錄（選單版沒有假設、備註與其他待辦，所以是管理損益表）break-before: page，之後的附錄接著排（.printAppendix + .printAppendix 是 auto）。
   const appendix = print.locator(":scope > section").filter({ has: page.getByRole("heading", { name: labels.sections.technicalDetails, exact: true }) });
   await expect(appendix).toHaveCount(1);
   await expect(appendix).toContainText("contribution-v1");
-  expect(await appendix.evaluate(element => getComputedStyle(element).breakBefore)).toBe("page");
+  const pnlAppendix = print.getByTestId("print-appendix-pnl");
+  await expect(pnlAppendix).toHaveCount(1);
+  expect(await print.locator(":scope > section").evaluateAll(sections => sections.map(section => section.getAttribute("data-testid")))).toEqual(["print-appendix-pnl", null]);
+  expect(await pnlAppendix.evaluate(element => getComputedStyle(element).breakBefore)).toBe("page");
+  expect(await appendix.evaluate(element => element.previousElementSibling?.getAttribute("data-testid") ?? "")).toBe("print-appendix-pnl");
   // 三件事的 ol 有 1. 2. 3. 編號。
   expect(await print.locator(":scope > ol").evaluate(element => getComputedStyle(element).listStyleType)).toBe("decimal");
   // 選單版只依目前檢視：版頭之後的範圍一行（狀態＝「目前檢視（不含會議決議）」· 資料到 · 通路 · 比較方式），沒有會議名稱頁首、決議行與選入方案。
