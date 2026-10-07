@@ -340,7 +340,8 @@ describe('R5-5 ActionsWorkbench markup (board default, list on request)', () => 
     expect(html).toContain(`aria-label="${labels.actions.searchEvidence}"`);
     expect(html).toContain('type="checkbox"');
     expect(html).not.toContain('multiple=""');
-    expect(html).toContain('class="action-status-select"');
+    // V3-6：狀態 select 套 C11 欄位樣式（ui-field-control），仍保留 action-status-select。
+    expect(html).toContain('class="ui-field-control action-status-select"');
     expect(html).toContain(fill(labels.actionBoard.statusUpdated, { date: '2026-10-02' }));
   });
   it('shows the empty note and no board when there are no actions', async () => {

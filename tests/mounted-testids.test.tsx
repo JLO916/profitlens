@@ -448,6 +448,36 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-6 C（待辦編輯抽屜）的 M1 掛載測試在此之後新增（清單檢視的內嵌編輯器三段仍常駐；抽屜是條件渲染的 dialog，同 v2）──
+    it("V3-6 C：看板狀態沒有 action-{n}、evidence-checklist 與待辦編輯抽屜（抽屜是條件渲染的 dialog，同 v2；看板與清單不同時渲染）", () => {
+      const { html } = states.find(state => state.name === "actions")!;
+      const ids = testIdCounts(html);
+      expect([...ids.keys()].filter(id => /^action-\d+$/.test(id))).toEqual([]);
+      for (const id of ["evidence-checklist", "action-drawer", "action-drawer-close", "action-drawer-remove"]) expect(ids.get(id) ?? 0, id).toBe(0);
+      expect(html).not.toContain('<dialog class="action-drawer"');
+      for (const id of ["board-card-1", "board-card-2"]) expect(ids.get(id), id).toBe(1);
+    });
+
+    it("V3-6 C：清單檢視每個 action-{n} 內嵌同一個編輯器的三段（內容／引用的數字／歷史），evidence-checklist 各一份；收合的限制與技術細節仍掛著；id 不重複", async () => {
+      const golden = await load("golden", "golden");
+      const diagnostic = golden.snapshot.report.diagnostics.find(row => row.code === "REV_UP_CM_DOWN" && row.scope.kind === "all")!;
+      const workspace = addActionDraft(addActionDraft(emptyActionWorkspace(), golden, "a1", diagnostic.id), golden, "a2");
+      const html = renderToStaticMarkup(<ActionsWorkbench workspace={workspace} onChange={noop} source={golden} onEvidence={noop} onExport={noop} view="list" onViewChange={noop} />);
+      const copy = labels.actions.drawerV3;
+      for (const n of [1, 2]) {
+        const item = element(html, `data-testid="action-${n}"`)!;
+        const regions = [copy.content, copy.evidence, copy.history].map(name => element(item, `role="region" aria-label="${escapeAttr(name)}"`));
+        expect(regions.every(Boolean), `action-${n}`).toBe(true);
+        expect(regions.map(region => item.indexOf(region!)), `action-${n}`).toEqual([...regions.map(region => item.indexOf(region!))].sort((a, b) => a - b));
+        expect(testIdCounts(item).get("evidence-checklist"), `action-${n}`).toBe(1);
+        expect(regions[1], `action-${n}`).toContain('data-testid="evidence-checklist"');
+        expect(regions[2], `action-${n}`).toContain(`<summary>${labels.sections.technicalDetails}</summary>`);
+        for (const region of regions) expect(region, `action-${n}`).not.toMatch(/<details[^>]*\sopen=""/);
+      }
+      expect(element(html, `data-testid="action-1"`)).toContain(`<summary>${labels.ui.actionsWorkbench.limitations}</summary>`);
+      expect(testIdCounts(html).get("action-drawer") ?? 0).toBe(0);
+      expect([...idCounts(html)].filter(([, count]) => count > 1)).toEqual([]);
+      expect(duplicateTestIds(html)).toEqual([]);
+    });
 
   });
 
