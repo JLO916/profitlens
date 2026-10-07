@@ -27,6 +27,11 @@ const PATHS: Record<string, string> = {
   "sort-desc": "M12 5v14 M7 14l5 5 5-5",
   /** V3-5 代理 C：計算與來源抽屜標題列的關閉 icon 按鈕（C6）。 */
   close: "M6 6l12 12 M18 6 6 18",
+  /** V3-6 代理 B：看板卡置頂 icon 按鈕（C13）。未置頂是線框星；置頂用同一個外形，由呼叫端加 class（globals.css `.icon-filled`）填實心。 */
+  star: "M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 16.95 6.75 19.7l1-5.85L3.5 9.7l5.9-.9z",
+  "star-filled": "M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 16.95 6.75 19.7l1-5.85L3.5 9.7l5.9-.9z",
+  /** V3-6 代理 B：編輯（鉛筆）。 */
+  edit: "M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z M14 7l3 3",
 };
 
 export function ShellIcon({ name, size = 20, className }: { name: keyof typeof PATHS | string; size?: number; className?: string }) {

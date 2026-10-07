@@ -1164,6 +1164,29 @@ const actionsStore = {
   },
   // ── V3-6 錨點（代理 B：pageV3 待辦頁——頁首計數徽章與 ? 說明、匯出本頁選單、看板欄計數、C13 卡片（到期／更新／逾期、引用數）、「移到：」列、「編輯」、空狀態；收尾時刪除仍為空的物件）
   pageV3: {
+    /** §7.5 第 1 點：h1 旁的計數徽章（可見文字）；完整意思放在 aria-label（workbench.countSummary）。 */
+    countBadge: "{total} · 置頂 {pinned}",
+    /** h1 旁 ? 說明的觸發器與內容區名稱。 */
+    helpAria: "待辦的說明",
+    help: "最多置頂 3 項，置頂項目會列入會議摘要。",
+    /** C10 區段型空狀態（看板空欄）。 */
+    columnEmpty: "沒有待辦",
+    /** C13 第 2 列：負責人 · {M/D} 到期 · {M/D} 更新；逾期時期限後面接「逾期」。 */
+    due: "{date} 到期",
+    updated: "{date} 更新",
+    overdue: "逾期",
+    /** C13 第 3 列：引用數與引用狀態，條件徽章二擇一（需要重新核對優先）。 */
+    evidenceCount: "引用 {n} 個數字 · {state}",
+    evidenceConfirmed: "已確認",
+    evidenceDraft: "草稿",
+    reviewRequired: "需要重新核對",
+    stale: "過期",
+    /** C13 第 4 列：「移到：」文字按鈕列與「編輯」（開啟待辦編輯抽屜）。 */
+    movePrefix: "移到：",
+    edit: "編輯",
+    /** §7.5 第 6 點：頁面型空狀態。 */
+    emptyTitle: "尚無待辦。",
+    emptyBody: "從健檢結果或會議決議新增。",
   },
   // ── V3-6 錨點（代理 C：drawerV3 待辦編輯抽屜——標題列、三段標題（內容／引用的數字／歷史）、底部動作列；收尾時刪除仍為空的物件）
   drawerV3: {

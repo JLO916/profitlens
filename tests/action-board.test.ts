@@ -5,6 +5,7 @@ import { createSnapshot, hashInput } from '@/application/workspace';
 import { createDecisionSession, decisionSignature, emptyDecisionWorkspace } from '@/application/decision';
 import { exportDecisionCsv, exportDecisionJson } from '@/application/decision-export';
 import { csvHeaderKey } from '@/application/copy';
+import { formatDateL1 } from '@/application/presentation';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ActionsWorkbench } from '@/components/actions-workbench';
@@ -299,7 +300,9 @@ describe('R5-5 ActionsWorkbench markup (board default, list on request)', () => 
     }
     expect(html).toContain('aria-pressed="true" data-testid="actions-view-board"');
     expect(html).toContain('aria-pressed="false" data-testid="actions-view-list"');
-    expect(html).toContain(labels.sections.actionBoard);
+    // V3-6：v2 的 h2「待辦看板」改成頁首 h1「待辦」；工作台區段以 aria-label 命名。
+    expect(html).toContain(`data-testid="actions-workbench" class="actions-page" aria-label="${labels.nav.actions.label}"`);
+    expect(html).not.toContain(labels.sections.actionBoard);
     // Not started holds C (pinned, card 1) and A (card 2): count 2; in progress and done are empty.
     const notStarted = between(html, 'data-testid="board-column-not_started"', 'data-testid="board-column-in_progress"');
     expect(notStarted).toContain(fill(labels.actionBoard.columnCount, { n: 2 }));
@@ -308,25 +311,28 @@ describe('R5-5 ActionsWorkbench markup (board default, list on request)', () => 
     expect(notStarted).toContain(labels.actionBoard.untitled);
     expect(notStarted).toContain(labels.actionBoard.unassigned);
     expect(notStarted).toContain(labels.actionBoard.noDeadline);
-    expect(between(html, 'data-testid="board-column-completed"')).toContain(labels.actionBoard.columnEmpty);
+    expect(between(html, 'data-testid="board-column-completed"')).toContain(labels.actions.pageV3.columnEmpty);
     // Card 3 is B (blocked) with its status day and only the three other moves.
     const blocked = between(html, 'data-testid="board-column-blocked"', 'data-testid="board-column-completed"');
     expect(blocked).toContain('data-testid="board-card-3"');
-    expect(blocked).toContain(fill(labels.actionBoard.statusUpdated, { date: '2026-10-02' }));
+    expect(blocked).toContain(fill(labels.actions.pageV3.updated, { date: formatDateL1('2026-10-02', { today: taipeiToday() }) }));
     expect(blocked).toContain(fill(labels.actionBoard.moveTo, { status: labels.actions.statuses.done }));
     expect(blocked).not.toContain(fill(labels.actionBoard.moveTo, { status: labels.actions.statuses.blocked }));
     expect(blocked).toContain(`aria-label="${fill(labels.actionBoard.moveGroup, { n: 3 })}"`);
     // Card 1 (C) is pinned: its star is pressed and named "unpin"; card 2's star is not pressed.
     expect(between(html, 'data-testid="board-card-1"', 'data-testid="board-card-2"')).toContain(`aria-pressed="true" aria-label="${labels.ui.actionsWorkbench.unpin}"`);
     expect(between(html, 'data-testid="board-card-2"', 'data-testid="board-column-in_progress"')).toContain(`aria-pressed="false" aria-label="${labels.buttons.pin}"`);
-    expect(html).toContain(labels.actionBoard.expandEdit);
+    // V3-6：「展開編輯」改成卡片底部的「編輯」（開啟待辦編輯抽屜）。
+    expect(html).not.toContain(labels.actionBoard.expandEdit);
+    expect(html).toContain(`data-testid="board-card-1-edit" aria-describedby="board-card-1-title">${labels.actions.pageV3.edit}</button>`);
     expect(html).not.toContain('data-testid="action-1"');
     expect(html).not.toContain('data-testid="evidence-checklist"');
   });
   it('the list view keeps the action-<n> articles and the shared editor with date, owner datalist and evidence checklist', async () => {
     const { s, w } = await workspace();
     const html = render({ workspace: w, source: s, view: 'list' });
-    expect(html).toContain(labels.sections.actionList);
+    expect(html).not.toContain(labels.sections.actionList);
+    expect(html).not.toContain('data-testid="action-board"');
     expect(html).toContain('aria-pressed="true" data-testid="actions-view-list"');
     expect(html).toContain('data-testid="action-1"');
     expect(html).toContain('data-testid="action-3"');
@@ -347,7 +353,10 @@ describe('R5-5 ActionsWorkbench markup (board default, list on request)', () => 
   it('shows the empty note and no board when there are no actions', async () => {
     const s = await source();
     const html = render({ workspace: emptyActionWorkspace(), source: s });
-    expect(html).toContain(labels.ui.actionsWorkbench.empty);
+    // V3-6（§7.5 第 6 點）：頁面型空狀態，工具列與看板都不渲染。
+    expect(html).toContain('data-testid="actions-empty"');
+    expect(html).toContain(`<h2>${labels.actions.pageV3.emptyTitle}</h2><p>${labels.actions.pageV3.emptyBody}</p>`);
     expect(html).not.toContain('data-testid="action-board"');
+    expect(html).not.toContain('data-testid="actions-view-board"');
   });
 });
