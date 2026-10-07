@@ -1799,7 +1799,63 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 
 /* ── V3-6 錨點（代理 B：待辦——頁首徽章與 ? 說明、工具列、看板欄、C13 卡片、「移到」列、空狀態、匯出選單；只用 token；在本註解之後、下一個錨點之前新增） ── */
+/* 舊的 R5-C 看板規則（.board-column、.board-card、.board-card-meta、.board-move、.actions-toolbar…）保留不刪，以下同名選擇器在後面覆寫；.pin-star、.board-edit、.board-count、.actions-view-toggle 已沒有元件使用。 */
 
+/* §7.5 第 1 點：頁首計數徽章與 ? 說明（portal 到 #page-title-addon）；SSR／未掛載時與「新增待辦」「匯出本頁」一起 inline 放在工作台最上方。 */
+.actions-page { min-width: 0; }
+.actions-page-head-inline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
+.actions-head-title, .actions-head-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.actions-head-actions { margin-left: auto; }
+.actions-count { padding: 0 var(--space-2); }
+.actions-help-host { position: relative; display: inline-flex; align-items: center; }
+.actions-help { position: absolute; top: calc(100% + var(--space-2)); left: 0; width: min(var(--help-w), calc(100vw - var(--space-6))); }
+.actions-notice { margin: 0 0 var(--space-3); }
+
+/* C15 工具列：看板｜清單分段按鈕；768 以下自動換行。 */
+.actions-toolbar { flex-wrap: wrap; width: auto; gap: var(--space-2); margin: 0 0 var(--space-3); }
+
+/* §7.5 第 3 點：四欄，欄底色 --bg-subtle、無邊框；只有 1–2 張卡時欄高不拉滿。 */
+.action-board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); align-items: start; margin: 0; }
+.board-column { --board-card-h: calc(var(--space-7) * 2); display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; padding: var(--space-2); background: var(--bg-subtle); border: 0; border-radius: var(--radius-md); }
+.board-column h3, .board-column-blocked h3, .board-column-completed h3 { display: flex; align-items: center; justify-content: flex-start; gap: var(--space-2); margin: 0; padding: var(--space-1) var(--space-1) 0; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.board-column h3 .ui-count-badge { background: var(--bg-surface); }
+/* C10 區段型空狀態：高度與一張卡相同（96px）。 */
+.board-column .board-empty { min-height: var(--board-card-h); margin: 0; padding: var(--space-4); align-content: center; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-tertiary); }
+
+/* C13 看板卡：四列固定行數（標題最多 2 行），單行標題時收合高度 96px。 */
+.board-card { display: flex; flex-direction: column; min-width: 0; padding: var(--space-3) var(--space-3) var(--space-2); background: var(--bg-surface); border: var(--border-w) solid var(--border-default); border-radius: var(--radius-md); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); transition: border-color var(--dur-fast) var(--ease); }
+.board-card:hover { border-color: var(--border-strong); }
+.board-card-head { display: flex; align-items: flex-start; gap: 0; min-width: 0; }
+/* 置頂 icon 按鈕維持 C12 的點擊區（32／手機 40），以負邊距只佔標題一行的高度。 */
+.board-pin { --pin-size: var(--control-h); flex: none; width: var(--pin-size); height: var(--pin-size); min-height: var(--pin-size); margin: calc((var(--pin-size) - var(--leading-13)) / -2) 0 calc((var(--pin-size) - var(--leading-13)) / -2) calc(var(--space-2) * -1); color: var(--text-tertiary); }
+.board-pin:hover { background: var(--bg-hover); color: var(--text-primary); }
+.board-pin[aria-pressed="true"] { color: var(--accent); }
+.board-pin .icon-filled { fill: currentColor; }
+/* 標題是欄 h3 下的 h4（保留標題導覽），裡面的按鈕開啟待辦編輯抽屜；蓋過舊的 .board-card-head h4。 */
+.board-card-head .board-card-heading { flex: 1 1 auto; min-width: 0; margin: 0; font-size: var(--text-14); line-height: var(--leading-13); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.board-card-title { display: block; width: 100%; padding: 0; text-align: left; font: inherit; color: var(--text-primary); }
+.board-card-title-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.board-card-title:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.board-card-meta { display: block; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.board-card-due[data-overdue="true"] { color: var(--unfavorable); }
+.board-card-overdue { font-weight: var(--weight-medium); }
+.board-card-tags { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-2); min-width: 0; margin: calc(var(--space-1) / 2) 0 0; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.board-card-tags > .ui-lozenge { flex: none; }
+.board-card-evidence { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.board-card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); min-width: 0; margin: 0; font-size: var(--text-12); line-height: var(--leading-12); }
+.board-move { display: flex; flex-wrap: wrap; align-items: center; gap: 0; min-width: 0; margin: 0; color: var(--text-tertiary); }
+.board-move-sep { padding: 0 calc(var(--space-1) / 2); }
+.board-card-foot .ui-btn-text { flex: none; font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); }
+.board-card-edit { margin-left: auto; }
+
+/* §7.5 第 6 點、C10 頁面型空狀態。 */
+.actions-empty { padding: var(--space-5) 0; }
+.actions-empty h2 { margin: 0; }
+.actions-empty p { margin: 0; }
+
+@media (max-width: 1100px) { .action-board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 767px) { .board-card .board-pin { --pin-size: var(--control-h-touch); } }
+@media (max-width: 640px) { .action-board { grid-template-columns: minmax(0, 1fr); } .actions-toolbar { width: auto; } }
 
 /* ── V3-6 錨點（代理 C：待辦編輯抽屜 C6 與編輯器三段；只用 token；在本註解之後、結束錨點之前新增） ── */
 

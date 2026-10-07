@@ -70,6 +70,8 @@ type ShellState = {
   review?: ReviewSession | null;
   history?: Meeting[];
   consent?: boolean;
+  /** V3-6 B：待辦頁的檢視（預設看板；清單檢視用 actions-list 狀態）。 */
+  actionsView?: "board" | "list";
 };
 
 const datasetNames: Record<string, string> = { demo: labels.ui.dashboard.datasets.demo, golden: labels.ui.dashboard.datasets.golden, "missing-cogs": labels.ui.dashboard.datasets.missingCogs };
@@ -128,7 +130,7 @@ function shellPage(state: ShellState): ReactElement {
         <NeedsAttention filterError={state.filterError ?? ""} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={noop} yoyReason={yoyReason} />
         {visible && <div className="view-content">{content}</div>}
         <div hidden={panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={noop} onExport={noop} onEvidence={noop} onSelectForReview={noop} onContextChange={noop} /></div>
-        {panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={noop} source={active} onEvidence={noop} onExport={noop} view="board" onViewChange={noop} />}
+        {panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={noop} source={active} onEvidence={noop} onExport={noop} view={state.actionsView ?? "board"} onViewChange={noop} />}
         <ShellFooter analytics onBasis={noop} />
       </main>
     </div>
@@ -202,6 +204,8 @@ async function pageStates(): Promise<StateMarkup[]> {
     // ── V3-6 A 新增的頁面狀態在此之後（例如 scenarios-first-visit）──
 
     // ── V3-6 B 新增的頁面狀態在此之後（例如 actions-empty、actions-list）──
+    "actions-empty": { panel: "actions", active: golden, status: "ready", actionWorkspace: emptyActionWorkspace(), scenarioWorkspace: scenarios },
+    "actions-list": { panel: "actions", active: golden, status: "ready", actionWorkspace: actions, scenarioWorkspace: scenarios, actionsView: "list" },
 
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];
@@ -445,6 +449,53 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-6 B（待辦）的 M1 掛載測試在此之後新增（頁首 ? 說明、匯出選單 actions-export-*、看板卡「移到」列）──
+    it("V3-6 B 待辦：頁首 ? 說明 hidden 掛載；匯出本頁三項在收合的 <details> 內；SSR 時頁首節點 inline 一份、頁首插槽是空的", () => {
+      for (const name of ["actions", "actions-list", "actions-empty"]) {
+        const { html } = states.find(state => state.name === name)!;
+        const ids = testIdCounts(html);
+        for (const id of ["actions-workbench", "actions-count", "actions-help", "actions-add", "actions-export-menu", "export-page-actions", "actions-export-md", "actions-export-csv", "actions-export-json"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        expect(openTag(html, 'data-testid="actions-help"'), name).toMatch(/\shidden=""/);
+        expect(openTag(html, `aria-controls="actions-help-panel"`), name).toMatch(/aria-expanded="false"/);
+        const menu = openTag(html, 'data-testid="actions-export-menu"')!;
+        expect(menu, name).toMatch(/^<details\s/);
+        expect(menu, name).not.toMatch(/\sopen=""/);
+        expect(menu, name).toContain("topbar-menu auto-close export-page");
+        const body = element(html, 'data-testid="actions-export-menu"')!;
+        for (const format of ["md", "csv", "json"]) expect(body, `${name} actions-export-${format}`).toContain(`data-testid="actions-export-${format}"`);
+        const inline = element(html, 'class="actions-page-head-inline"')!;
+        for (const id of ["actions-count", "actions-help", "actions-add", "actions-export-menu"]) expect(inline, `${name} ${id} inline`).toContain(`data-testid="${id}"`);
+        expect(element(html, 'id="page-actions"'), name).toBe('<div class="page-actions" id="page-actions" data-testid="page-actions"></div>');
+        expect(element(html, 'id="page-title-addon"'), name).toBe('<div class="page-title-addon" id="page-title-addon" data-testid="page-title-addon"></div>');
+        // 試算工作台每頁都掛著（hidden），所以只數待辦工作台內的主要按鈕；清單檢視的內嵌編輯器自成一個容器（C12 每個容器最多 1 顆），不在此計。
+        if (name !== "actions-list") expect(occurrences(element(html, 'data-testid="actions-workbench"')!, "ui-btn-primary"), `${name} 待辦頁唯一主要按鈕`).toBe(1);
+      }
+    });
+
+    it("V3-6 B 待辦看板：每張卡的「移到」三個文字按鈕與「編輯」各一份、可及名稱是「移到{狀態}」；看板不渲染 action-{n}；清單不渲染看板；空狀態不渲染工具列與看板", () => {
+      const { html } = states.find(state => state.name === "actions")!;
+      const ids = testIdCounts(html);
+      const moves: Record<string, string[]> = { "board-card-1": ["not_started", "blocked", "completed"], "board-card-2": ["in_progress", "blocked", "completed"] };
+      const statusName: Record<string, string> = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done };
+      for (const [card, statuses] of Object.entries(moves)) {
+        const body = element(html, `data-testid="${card}"`)!;
+        for (const status of statuses) {
+          expect(ids.get(`${card}-move-${status}`), `${card}-move-${status}`).toBe(1);
+          expect(openTag(body, `data-testid="${card}-move-${status}"`), status).toContain(`aria-label="${escapeAttr(fill(labels.actionBoard.moveTo, { status: statusName[status] }))}"`);
+        }
+        expect(ids.get(`${card}-edit`), `${card}-edit`).toBe(1);
+        expect(body, card).not.toMatch(/<details|<dl/);
+      }
+      for (const id of ["actions-toolbar", "actions-view-board", "actions-view-list", "action-board", "board-column-not_started", "board-column-in_progress", "board-column-blocked", "board-column-completed"]) expect(ids.get(id), id).toBe(1);
+      expect([...ids.keys()].filter(id => /^action-\d+$/.test(id)), "看板不渲染 action-{n}").toEqual([]);
+      expect(ids.has("evidence-checklist")).toBe(false);
+      expect(ids.has("action-drawer"), "抽屜是條件渲染的 dialog（同 v2）").toBe(false);
+      const list = testIdCounts(states.find(state => state.name === "actions-list")!.html);
+      for (const id of ["action-1", "action-2", "actions-view-list"]) expect(list.get(id), `actions-list ${id}`).toBe(1);
+      expect([...list.keys()].filter(id => /^(?:board-card-|board-column-|action-board$)/.test(id)), "清單不渲染看板").toEqual([]);
+      const empty = testIdCounts(states.find(state => state.name === "actions-empty")!.html);
+      for (const id of ["actions-empty", "actions-empty-add"]) expect(empty.get(id), `actions-empty ${id}`).toBe(1);
+      for (const id of ["actions-toolbar", "actions-view-board", "actions-view-list", "action-board"]) expect(empty.has(id), `actions-empty ${id}`).toBe(false);
+    });
 
 
     // ── V3-6 C（待辦編輯抽屜）的 M1 掛載測試在此之後新增（清單檢視的內嵌編輯器三段仍常駐；抽屜是條件渲染的 dialog，同 v2）──
