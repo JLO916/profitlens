@@ -554,7 +554,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
         </section>}
         {showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} localSaveConsented={localConsent} /></div>}
         {/* V3-3 A2：期間列（C23，sticky）＋需要處理橫幅（C22）。套用中（loading）期間列保持掛載，焦點留在剛按的快捷上；橫幅只在有內容時出現。 */}
-        {active && (visible || status === "loading") && <div hidden={importing || undefined}>
+        {active && (visible || status === "loading") && <div className="period-wrap" hidden={importing || undefined}>
           <PeriodBar
             channel={{ value: active.snapshot.report.scope.channels.length > 1 ? "" : active.snapshot.report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, alias) })), onChange: value => void applyFilters({ ...active.snapshot.report.scope, channels: value === "" ? active.dataset.manifest.channels : [value] }) }}
             presets={presets} isPressed={presetMatches} onPreset={choosePreset}

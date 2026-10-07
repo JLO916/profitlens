@@ -975,7 +975,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(source).toMatch(/\{active && <div hidden=\{!visible \|\| panel !== "scenarios"\}><MultiScenarioWorkbench /);
       expect(source).toMatch(/\{showImport && <div hidden=\{panel !== "data"\}><ImportWizard /);
       // V3-8 開工錨點：匯入中（importing）期間列、橫幅與頁面內容保持掛載但 hidden（§7.7.2 全版專注模式）。
-      expect(source).toMatch(/\{active && \(visible \|\| status === "loading"\) && <div hidden=\{importing \|\| undefined\}>\s*<PeriodBar/);
+      expect(source).toMatch(/\{active && \(visible \|\| status === "loading"\) && <div className="period-wrap" hidden=\{importing \|\| undefined\}>\s*<PeriodBar/);
       expect(source).toMatch(/const importing = showImport && panel === "data";/);
       expect(source).toMatch(/\{visible && <NeedsAttention /);
       expect(source).toMatch(/storage=\{<WorkspaceStorage /);
