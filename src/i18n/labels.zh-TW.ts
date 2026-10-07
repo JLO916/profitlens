@@ -682,6 +682,9 @@ export const overview = {
     amountAria: "{channel} {metric} {value} 元，看明細",
     marginAria: "{channel} {metric} {value}，看明細",
   },
+  // ── V3-9a 錨點（代理 C：每日／每週管理損益表（F9）——details 標題、日／週切換、列名與「減：」前綴、合計與佔淨營收 %、顯示零值列、抽屜標題；收尾時刪除仍為空的物件）
+  pnlV3: {
+  },
 } as const;
 
 // ── diagnosis：通路健檢：健檢清單與健檢頁
@@ -2664,6 +2667,9 @@ export const assist = {
   notApplicable: "不適用",
   units: { count: "{value} 件" },
   technicalVersion: assistTechnicalVersion,
+  // ── V3-9a 錨點（代理 A：損益兩平 MER（F12）——其他常用指標的獨立列／段、? 說明、CSV／Excel／Markdown 的標籤、抽屜公式與版本；收尾時刪除仍為空的物件）
+  breakevenV3: {
+  },
 } as const;
 
 // ── targets：目標達成（跨頁，沿用 v2 結構）
@@ -2937,6 +2943,9 @@ export const actions = {
   statuses: actionsStore.form.statuses,
   staleBadge: actionsStore.form.staleBadge,
   confirmedNote: actionsStore.form.confirmedNote,
+  // ── V3-9a 錨點（代理 B：廣告決策標籤（F13）——暫停／調整／加碼與「不標」、編輯器欄位名、卡片徽章、匯出欄名、備份 v5 說明；收尾時刪除仍為空的物件）
+  adDecisionV3: {
+  },
 } as const;
 /** v2 meeting：展開新分組，再補上舊鍵。 */
 export const meeting = {

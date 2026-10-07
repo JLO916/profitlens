@@ -231,6 +231,12 @@ async function pageStates(): Promise<StateMarkup[]> {
     // ── V3-8 B 新增的頁面狀態在此之後（例如 import-step-2／3／4 的 SSR 狀態）──
 
     // ── V3-8 C 新增的頁面狀態在此之後（例如 error 狀態）──
+
+    // ── V3-9a A 新增的頁面狀態在此之後（例如損益兩平 MER 不適用的資料集）──
+
+    // ── V3-9a B 新增的頁面狀態在此之後（例如帶廣告決策標籤的待辦）──
+
+    // ── V3-9a C 新增的頁面狀態在此之後（例如進階區展開、週檢視）──
     // 沒有資料（空工作區停在資料來源頁）與載入失敗的整頁不是 ShellState（它需要資料），由下方 statusShells() 依 dashboard.tsx 的 return 另外組，state 為 null（同 shell-empty）。
 
   };
@@ -863,6 +869,14 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(section.indexOf('data-testid="error-issues"')).toBeGreaterThan(section.indexOf('data-testid="error-view-issues"'));
       for (const name of ["shell-empty", "shell-empty-data", "shell-error"]) expect(testIdCounts(states.find(state => state.name === name)!.html).has("period-bar"), name).toBe(false);
     });
+
+    // ── V3-9a A（損益兩平 MER）的 M1 掛載測試在此之後新增（其他常用指標內的獨立列／段、? 說明掛載）──
+
+
+    // ── V3-9a B（廣告決策標籤）的 M1 掛載測試在此之後新增（編輯器 select 在抽屜與清單各一份、卡片徽章）──
+
+
+    // ── V3-9a C（管理損益表）的 M1 掛載測試在此之後新增（進階區收合時表格掛載、日／週切換只一份、零值列 hidden 掛載）──
 
   });
 

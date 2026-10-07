@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／另需的人工時間。
 >
-> **目前進度：V3-8 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-8-acceptance.md`）；下一批 V3-9 P1 新增功能（或依本表整批延到 v3.1，直接做 V3-10）。V3-6 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-6-acceptance.md`；使用者同日指示略過 H2 設計稿審查與 H3 文案補審，以 `copy-rewrite.csv` 現稿為準）。V3-5 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-5-acceptance.md`）；MVP preview 已於 2026-10-06 依使用者當次同意部署（`revamp/v2` 分支）。V3-3 完成（2026-10-06；H2 後補；驗收見 `verification/revamp-v3-V3-3-acceptance.md`）。** V3-2 全部完成（驗收見 `verification/revamp-v3-V3-2{a,b,c}-acceptance.md`）。使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，審稿後再修」，H3 審稿改為落地後補做；H2 同樣改為 V3-3 落地後補審（2026-10-06）。V3-2 依 §12.1 在開工前拆成 a／b／c（見下表）。** D-V3-1–24 已於 2026-10-05 全部依建議值拍板（見 `09_DECISIONS_PENDING.md`），所以下表「依賴」欄的拍板項目都已滿足；尚未滿足的只剩前一批與人工關卡 H1–H4。
+> **目前進度：V3-9a 進行中（2026-10-07 開工；V3-9 依 CLAUDE.md 規則在開工前拆成 V3-9a 計算與資料層／V3-9b 圖表與呈現）。V3-8 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-8-acceptance.md`）。V3-6 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-6-acceptance.md`；使用者同日指示略過 H2 設計稿審查與 H3 文案補審，以 `copy-rewrite.csv` 現稿為準）。V3-5 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-5-acceptance.md`）；MVP preview 已於 2026-10-06 依使用者當次同意部署（`revamp/v2` 分支）。V3-3 完成（2026-10-06；H2 後補；驗收見 `verification/revamp-v3-V3-3-acceptance.md`）。** V3-2 全部完成（驗收見 `verification/revamp-v3-V3-2{a,b,c}-acceptance.md`）。使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，審稿後再修」，H3 審稿改為落地後補做；H2 同樣改為 V3-3 落地後補審（2026-10-06）。V3-2 依 §12.1 在開工前拆成 a／b／c（見下表）。** D-V3-1–24 已於 2026-10-05 全部依建議值拍板（見 `09_DECISIONS_PENDING.md`），所以下表「依賴」欄的拍板項目都已滿足；尚未滿足的只剩前一批與人工關卡 H1–H4。
 
 ---
 
@@ -55,7 +55,8 @@
 | V3-6 | 假設試算與待辦 | M | V3-5；D-V3-12 | — | **完成（2026-10-07；驗收見 `verification/revamp-v3-V3-6-acceptance.md`）** |
 | V3-7 | 會議紀錄與匯出 | M | V3-6 | 匯出檔人工檢查半天 | **完成（2026-10-07；驗收見 `verification/revamp-v3-V3-7-acceptance.md`）** |
 | V3-8 | 資料來源、匯入精靈、空狀態 | M | V3-7 | — | 完成（2026-10-07） |
-| V3-9 | P1 新增功能 | L | V3-8；D-V3-16、17、19、20、23 | 視 F15、F16 的檔案 | 未開始（可整批延到 v3.1） |
+| V3-9a | P1 新增功能：計算與資料層（F12 損益兩平 MER、F13 廣告決策標籤＋備份 v5、F9 管理損益表） | M | V3-8；D-V3-17、19 | — | **進行中（2026-10-07 開工）** |
+| V3-9b | P1 新增功能：圖表與呈現（F8 三線趨勢、F10 下鑽、F14 匯出變體、F22 投影模式；F15／F16 待檔案） | M | V3-9a；D-V3-20、23 | 視 F15、F16 的檔案 | 未開始 |
 | V3-10 | 上線檢查 | M | V3-9（若 V3-9 延期，依賴 V3-8） | H4：3–5 工作天＋盲評 1 天 | 未開始 |
 
 總計 11 批、至少 11 個工作階段（L 級批次可能在開工前拆成 a／b）；另需約 2.5–3.5 週的人工時間（兩輪 5 人可用性測試、兩輪外部盲評、一次設計稿審查、`copy-rewrite.csv` 審稿，加上招募與等待）。時間不夠時，V3-9 可整批延到 v3.1，不影響「簡明、專業、不砍功能」三個目標。
@@ -203,22 +204,36 @@
 
 ---
 
-## V3-9 P1 新增功能（L；可整批延到 v3.1）
+## V3-9a P1 新增功能：計算與資料層（M；V3-9 拆批後的前半，2026-10-07 開工）
 
-**範圍**：F8 三線趨勢、F9 管理損益表（D-V3-19＝A：總覽「進階」`<details>`）、F10 圖表下鑽、F12 損益兩平 MER（D-V3-17＝C：實作在 `src/application`，獨立版本 `breakeven-mer-v1`＋手算 golden）、F13 廣告決策標籤（備份 v5＋遷移）、F14 匯出變體、F22 投影模式（D-V3-23＝A）；F15 台灣化示範資料（D-V3-20＝A，需使用者提供商品與檔期設定）；F16 在取得檔案時做。F11 目標三態**本輪不做**（D-V3-16＝A，#25 已在 V3-4 提供實際／目標／差額＋細條）。
+> V3-9 原列為 L。依 CLAUDE.md「批次太大時要在開工前拆成 a／b」拆成兩批：V3-9a 做需要新增計算、新增資料欄位與備份升版的三項，V3-9b 做圖表、匯出與投影這些純呈現的四項；F15／F16 需要使用者提供檔案，列在 V3-9b。
 
-**依賴**：V3-8；D-V3-16、17、19、20、23（已拍板）。
+**範圍**：
+- F12 損益兩平 MER（D-V3-17＝C）：新增 `src/application/breakeven-mer.ts`，獨立版本常數 `breakeven-mer-v1`；公式 淨營收 ÷ 扣廣告前貢獻（扣廣告後貢獻＝0 時的最低 MER）；扣廣告前貢獻 ≤ 0 回傳 null 加原因碼，不顯示 0 或無限大；手算 golden（golden 本期 2,470 ÷ 705、上期 2,250 ÷ 870）含扣廣告前貢獻 ≤ 0、廣告費 = 0、淨營收 = 0 三種邊界。顯示在總覽「其他常用指標」（獨立一列或一段，標示版本）、分析 CSV 的獨立列、Excel 技術列、主管摘要 Markdown；可開「計算與來源」。
+- F13 待辦的廣告決策標籤（暫停／調整／加碼，使用者自選，不自動判斷）：待辦編輯器與卡片；寫入決策匯出（Markdown／CSV／JSON）；備份 schema 升到 **v5**（`profitlens-workspace-v5`），v1–v4 仍可還原、舊檔缺此欄位補預設；`verification/revamp-v3/backup-schema-v5.json`＋`tests/backup-schema-v5.test.ts`；v4 的欄位清單保留為歷史。
+- F9 每日／每週管理損益表（D-V3-19＝A）：總覽「進階」`<details>` 內新增一個 `<details>`；列是四層（淨營收、商品毛利、扣廣告前貢獻、扣廣告後貢獻）與費用項（「減：」前綴），欄是本期的日或週（切換）＋合計＋「佔淨營收 %」；零值列預設隱藏並提供「顯示零值列」切換；每格可開「計算與來源」；只重新呈現既有的日粒度彙總（`PeriodAnalysis.daily` 跨通路加總與 `snapshot.weeks`），加總在 `src/application` 做並以 golden 驗證（每日加總＝期間合計）；螢幕上負數用 U+2212（括號只在 V3-9b 進匯出時依 D-V3-8）。
 
-**禁區白名單（只允許新增）**：
-- `fixtures/demo_tw/**`（F15 新 fixture，附獨立手算 expected）。
-- `src/domain`：**無**（D-V3-17＝C，F12 在 `src/application`）。只有確定必須進 `src/domain` 時，才另列要新增的檔案與函式簽名，由人拍板後補進本白名單。
-- 既有 7 個輔助指標維持 `assist-kpi-v1`，輸出不變。
+**依賴**：V3-8；D-V3-17、D-V3-19（已拍板）。
 
-**驗收重點**：每項新增計算都有獨立手算 golden；禁區 diff 只有白名單內的新增；`assist-kpi-v1` 的既有輸出不變；備份 v1–v5 還原測試。
+**禁區白名單（只允許新增）**：`src/domain`：**無**；`fixtures/**`：**無**（F15 在 V3-9b）。本批不碰禁區；既有 7 個輔助指標維持 `assist-kpi-v1`、輸出不變；`contribution-v1` 不變。
 
-**同批 labels 與測試**：`assist-kpi.test.ts`（新增案例）、`action-backup.test.ts`、新功能的 E2E。
+**驗收重點**：損益兩平 MER 手算 golden 與三種邊界；`assist-kpi-v1` 既有輸出不變（`tests/assist-kpi.test.ts`、`export-numeric` 基準）；管理損益表每日與每週加總＝期間合計（golden）；備份 v1–v5 還原測試；testid 刪除數 0；棘輪不上升；E2E 全套。
 
-**另需的人工時間**：視 F15、F16 的檔案。
+**同批 labels 與測試**：新增 `tests/breakeven-mer.test.ts`、`tests/pnl-table.test.ts`、`tests/backup-schema-v5.test.ts`；更新 `assist-kpi.test.ts`、`action-backup.test.ts`、`workspace-backup.test.ts`、`backup-schema-v4.test.ts`；E2E：workspace-storage／revamp-r6（備份版本字串）、action-workspace（標籤）、新增 overview 進階區與其他常用指標的斷言。
+
+---
+
+## V3-9b P1 新增功能：圖表與呈現（M；V3-9 拆批後的後半）
+
+**範圍**：F8 趨勢圖三線比較（去年同期第三線：用既有 domain 函式多算一段期間，不改函式；去年同期不可用時保留位置並寫原因；缺資料不畫成 0）；F10 圖表點擊下鑽（週與通路點擊後開抽屜並篩到該週或該通路；新增的 filter 參數只在 application 層）；F14 匯出範本變體（老闆一頁版、代營運客戶報告版；沿用既有 PDF、Excel、PPT 管線與 metric_version 標記，只改版面；管理損益表進匯出時依 D-V3-8 用括號負數）；F22 投影模式（D-V3-23＝A；§9.7：`:root[data-mode="present"]` 重新對應 token 值、只用在總覽與會議頁、Esc 離開）；F15 台灣化示範資料 `fixtures/demo_tw`（D-V3-20＝A，**需使用者提供商品與檔期設定**，沒有就延後）；F16 來源預設實檔驗證（**需使用者提供去識別化的平台匯出檔**，沒有就延後）。
+
+**依賴**：V3-9a；D-V3-20、D-V3-23（已拍板）；F15／F16 的檔案。
+
+**禁區白名單（只允許新增）**：`fixtures/demo_tw/**`（F15 新 fixture，附獨立手算 expected）；`src/domain`：**無**。
+
+**驗收重點**：三線圖缺資料不畫成 0、去年同期不可用時有原因；下鑽後抽屜的期間與通路和點擊一致；匯出變體的數值與標準版逐格相同（§6.5 正規化比對）；投影模式不新增字級種類、Esc 離開、Lighthouse a11y 不退步；CLS 不退步。
+
+**同批 labels 與測試**：`chart-takeaways`、`trend-section`、`evidence-drawer` 測試；匯出變體的 export-numeric 基準；投影模式的 E2E。
 
 ---
 
