@@ -8,6 +8,7 @@ import type { TaxConversion } from "./tax-basis";
 import { assistKpis, ASSIST_KPI_VERSION, type AssistKpi } from "./assist-kpi";
 import { achievementText, matchTargets, mismatchText, TARGET_METRICS, type TargetMetric, type TargetSet } from "./targets";
 import { encodeCsv, type CsvCell } from "./export";
+import { buildExportHeader, markdownExportHeader } from "./export-header";
 import { formatAmount, formatMetric, formatPeriodExport, formatSignedDelta, metricDefinitions, type Layer } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 import { contributionImpact, diagnosisGroups, impactMagnitude, type DiagnosisGroup } from "./diagnosis-group";
@@ -198,11 +199,21 @@ const actionRow = (action: SummaryAction, status: string): string => {
     executionStatus: md(action.executionStatus ?? ""), executionNotes: md(action.executionNotes ?? ""),
   });
 };
-export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: SummaryDecisionContext): string {
+/** V3-7：Markdown 匯出的選項。generatedAt 是版頭的產出時間（預設現在；測試注入固定時間）；datasetName 預設 dataset_id。 */
+export interface MarkdownExportOptions { generatedAt?: Date; datasetName?: string }
+/** V3-7 §7.9：一頁摘要的版頭四行（資料集、報表名、兩期與單位、版本與產出時間）；含稅換算過時單位寫「已換算為未稅」。 */
+export function summaryExportHeader(summary: ManagerSummary, options: MarkdownExportOptions = {}) {
+  return buildExportHeader({
+    datasetName: options.datasetName ?? summary.dataset_id, metricVersion: summary.metric_version, generatedAt: options.generatedAt ?? new Date(), amountBasis: summary.conversion_note ? "inclusive" : "exclusive",
+    scope: { previous: summary.scope.previous_period, current: summary.scope.current_period, previousDays: summary.previous_days, currentDays: summary.current_days },
+  });
+}
+export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: SummaryDecisionContext, options: MarkdownExportOptions = {}): string {
   const decisions = summaryDecisionState(summary, context);
   const alias = demoAlias(summary.dataset_id);
   const contributionShort = metricDefinitions.contribution_after_marketing.shortLabel;
-  const lines = [fill(copy.mdTitle, { brand: labels.brand.name, decision: md(decisionLabel(context?.decisionState)) }), "", fill(copy.mdMeta, { asOf: summary.data_as_of, channels: md(channelsLabel(summary.scope.channels, alias)) }),
+  // V3-7 §7.9：「# 標題」之後緊接版頭四行，其後的資料範圍、期間、門檻與各段順序、數值都不變。
+  const lines = [fill(copy.mdTitle, { brand: labels.brand.name, decision: md(decisionLabel(context?.decisionState)) }), "", ...markdownExportHeader(summaryExportHeader(summary, options)), "", fill(copy.mdMeta, { asOf: summary.data_as_of, channels: md(channelsLabel(summary.scope.channels, alias)) }),
     fill(copy.mdPeriod, { period: labels.periods.previous, range: formatPeriodExport(summary.scope.previous_period.start, summary.scope.previous_period.end) }),
     fill(copy.mdPeriod, { period: labels.periods.current, range: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end) }),
     // 門檻是使用者設定的精確值，取到分（L3）。

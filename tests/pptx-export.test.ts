@@ -3,9 +3,10 @@ import { addActionDraft, editActionManagement, editBoundAction, emptyActionWorks
 import { channelsLabel, ruleCopy } from "@/application/copy";
 import { buildManagerSummary, type ManagerSummary } from "@/application/manager-summary";
 import {
-  buildPptxOnePager, estimatedLines, exportPptx, pptxChannelRows, pptxText, writePptx,
+  buildPptxOnePager, estimatedLines, exportPptx, fitLine, pptxChannelRows, pptxKpiRuns, pptxText, pptxTitleSize, writePptx,
   PPTX_FILENAME, PPTX_MAX_CHANNEL_ROWS, PPTX_MIME, PPTX_TEXT_LIMITS, type PptxOnePager, type PptxOnePagerInput,
 } from "@/application/pptx-export";
+import { EXPORT_THEME } from "@/application/export-theme";
 import { formatAmountL1, formatAmountL2, formatPeriodExport, formatSignedDelta, MINUS } from "@/application/presentation";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import type { DatasetInput } from "@/domain/types";
@@ -17,6 +18,13 @@ import { readZip, zipText } from "./helpers/zip";
 // R6-5 PPT 一頁式：資料層的字串（golden 手算）＋寫出的 .pptx 以測試用最小 zip 讀取器拆開，直接檢查 XML。
 
 const copy = labels.pptxExport;
+const headerCopy = labels.exports.headerV3;
+/** V3-7：版頭的產出時間固定（2026-10-05 06:32Z＝台北 14:32），輸出可重現。 */
+const GENERATED_AT = new Date("2026-10-05T06:32:00.000Z");
+const REPORT_TITLE = fill(headerCopy.reportTitle, { metric: labels.metrics.contribution_after_marketing.label });
+/** golden 的版頭第 3、4 行（期間＋單位；版本＋產出時間），用 labels 與 formatPeriodExport 組字。 */
+const PERIOD_UNIT_LINE = fill(headerCopy.periodUnitLine, { period: fill(headerCopy.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") }), unit: headerCopy.unitExclusive });
+const VERSION_LINE = fill(headerCopy.versionLine, { version: "contribution-v1", time: "2026-10-05 14:32" });
 const SCRIPT = "<script>alert(1)</script>";
 const UNPINNED = "UNPINNED-SHOULD-NOT-APPEAR";
 const ch = (...codes: number[]) => String.fromCharCode(...codes);
@@ -42,7 +50,7 @@ async function setup() {
   actions = addActionDraft(actions, current, "unpinned");
   actions = editBoundAction(actions, "unpinned", { problem: UNPINNED });
   const summary = buildManagerSummary(current.snapshot);
-  const build = (extra: Partial<PptxOnePagerInput> = {}) => buildPptxOnePager({ summary, snapshot: current.snapshot, actions, ...extra });
+  const build = (extra: Partial<PptxOnePagerInput> = {}) => buildPptxOnePager({ summary, snapshot: current.snapshot, actions, generatedAt: GENERATED_AT, ...extra });
   return { snapshot: current.snapshot, older: older.snapshot, summary, actions, build };
 }
 
@@ -50,6 +58,15 @@ const xmlEscape = (value: string) => value.replaceAll("&", "&amp;").replaceAll("
 const xmlUnescape = (value: string) => value.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&apos;", "'").replaceAll("&amp;", "&");
 /** 投影片上每一段文字（<a:t>），已還原 XML 跳脫。 */
 const runs = (xml: string): string[] => [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(match => xmlUnescape(match[1]));
+/** 投影片上第一個文字恰為 value 的一段（<a:r>）：字級（百分之一 pt）與文字色。 */
+function runOf(xml: string, value: string): { size: number; color: string | null } | null {
+  for (const match of xml.matchAll(/<a:r>([\s\S]*?)<\/a:r>/g)) {
+    const t = /<a:t>([^<]*)<\/a:t>/.exec(match[1]);
+    if (!t || xmlUnescape(t[1]) !== value) continue;
+    return { size: Number(/ sz="(\d+)"/.exec(match[1])?.[1] ?? Number.NaN), color: /<a:srgbClr val="(\w+)"\/>/.exec(match[1])?.[1] ?? null };
+  }
+  return null;
+}
 /** XML 1.0 不允許的字元：Tab／LF／CR 以外的 C0 控制字元、U+FFFE、U+FFFF。 */
 const hasInvalidXmlCharacter = (xml: string) => [...xml].some(character => { const code = character.charCodeAt(0); return (code < 0x20 && code !== 0x09 && code !== 0x0a && code !== 0x0d) || code === 0xfffe || code === 0xffff; });
 async function unpack(model: PptxOnePager) {
@@ -62,8 +79,10 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
   it("formats the golden headline deltas, three things and channel table from hand-derived amounts", async () => {
     const { summary, snapshot, build } = await setup();
     const model = build();
-    expect(model.title).toBe(fill(copy.title, { brand: labels.brand.name }));
-    // V3-2b §8.6：版頭期間用匯出格式「YYYY-MM-DD 至 YYYY-MM-DD（天數）」。
+    // V3-7 §7.9：沒有會議時標題是版頭第 2 行（報表名）；副標是版頭第 1／3／4 行（資料集；兩期與單位；指標版本與產出時間）。
+    expect(model.title).toBe(REPORT_TITLE);
+    expect(model.header).toEqual(["golden-v1", PERIOD_UNIT_LINE, VERSION_LINE]);
+    // 檔案屬性（主旨）沿用 V3-2b 的副標：版頭期間用匯出格式「YYYY-MM-DD 至 YYYY-MM-DD（天數）」。
     expect(model.subtitle).toBe(fill(copy.subtitle, { asOf: "2026-08-03", previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
     expect(formatPeriodExport("2026-08-01", "2026-08-01")).toBe(fill(labels.units.exportRange, { start: "2026-08-01", end: "2026-08-01", days: 1 }));
     // 手算：淨營收 上期 2500−200−50＝2250、本期 3100−450−180＝2470，差 +220；扣廣告後貢獻 570 → 255，差 −315（fixtures/golden/expected.json）。
@@ -92,7 +111,22 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     expect(model.channels).toHaveLength(summary.channels.length);
     expect(model.decision).toBe(copy.noMeeting);
     expect(model.footer).toBe(labels.basis.footer);
-    expect(model.technical).toBe(fill(copy.technical, { metricVersion: "contribution-v1", datasetHash: summary.dataset_hash.slice(0, 12) }));
+    // V3-7：指標版本已在版頭第 4 行，頁尾只留資料版本（前 12 碼）。
+    expect(model.technical).toBe(fill(headerCopy.pptxDataVersion, { datasetHash: summary.dataset_hash.slice(0, 12) }));
+  });
+
+  it("V3-7 版頭：含稅換算寫「已換算為未稅」；有會議時標題是會議名稱，資料集與報表名併成副標第一行（最多三行）", async () => {
+    const { summary, build } = await setup();
+    const converted = build({ summary: { ...summary, conversion_note: "TAX-NOTE" } });
+    expect(converted.header[1]).toBe(fill(headerCopy.periodUnitLine, { period: fill(headerCopy.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") }), unit: headerCopy.unitConverted }));
+    const meeting = build({ meeting: { name: "十月例會", date: "2026-10-03", decision: "adopted", notes: "" }, datasetName: "示範資料" });
+    expect(meeting.title).toBe(fill(copy.titleMeeting, { name: "十月例會", date: "2026-10-03" }));
+    expect(meeting.header).toEqual([`示範資料${copy.separator}${REPORT_TITLE}`, PERIOD_UNIT_LINE, VERSION_LINE]);
+    // 很長的資料集名稱截到一行（全寬 10pt 約 66 個全形字），版頭仍是三行、版面固定。
+    const long = build({ datasetName: "長".repeat(200) });
+    expect(long.header).toHaveLength(3);
+    expect(estimatedLines(long.header[0], 66)).toBe(1);
+    expect(long.header[0].endsWith(copy.ellipsis)).toBe(true);
   });
 
   it("lists only pinned actions (≤ 3) with labels for blanks and the older-data badge", async () => {
@@ -124,7 +158,7 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
       [labels.meeting.decisions.adopted, labels.meeting.decisions.adopted], ["Custom verdict", "Custom verdict"], ["constructor", "constructor"], ["__proto__", "__proto__"],
     ];
     for (const [decision, label] of cases) expect(build({ meeting: { ...meeting, decision, notes: "" } }).decision, decision).toBe(fill(copy.decision, { decision: label }));
-    expect(build({ meeting: { ...meeting, name: "   ", date: "" } }).title).toBe(fill(copy.title, { brand: labels.brand.name }));
+    expect(build({ meeting: { ...meeting, name: "   ", date: "" } }).title).toBe(REPORT_TITLE);
     expect(build({ meeting: { ...meeting, date: "" } }).title).toBe("第 40 週 <b>會議</b>");
     expect(build({ meeting: null }).decision).toBe(copy.noMeeting);
     const long = build({ meeting: { ...meeting, name: "週".repeat(80), notes: "備".repeat(200) } });
@@ -206,6 +240,35 @@ describe("R6-5 文字清理與版面估計", () => {
   });
 });
 
+describe("V3-7 版頭與大字的版面估計", () => {
+  it("pptxTitleSize：28pt 放得下一行就用 28，太長依序縮成 24／20／18", () => {
+    expect(pptxTitleSize(REPORT_TITLE)).toBe(28);
+    expect(pptxTitleSize("週".repeat(23))).toBe(28);
+    expect(pptxTitleSize("週".repeat(26))).toBe(24);
+    expect(pptxTitleSize("週".repeat(36))).toBe(18);
+  });
+
+  it("pptxKpiRuns：數字 36pt、單位 20pt，兩段串起來就是原字串；估計放不下時數字縮小（最小 24pt）", () => {
+    const golden = formatSignedDelta("-315.00", "L1");
+    expect(pptxKpiRuns(golden)).toEqual([{ text: `${MINUS}315`, size: 36 }, { text: golden.slice(`${MINUS}315`.length), size: 20 }]);
+    expect(pptxKpiRuns(golden).map(run => run.text).join("")).toBe(golden);
+    expect(pptxKpiRuns(formatSignedDelta("1709082.18", "L1")).map(run => run.size)).toEqual([36, 20]);
+    const wide = pptxKpiRuns(formatSignedDelta("12345678.00", "L1"));
+    expect(wide.map(run => run.text).join("")).toBe(formatSignedDelta("12345678.00", "L1"));
+    expect(wide[0].size).toBeLessThan(36);
+    expect(wide[0].size).toBeGreaterThanOrEqual(24);
+    expect(pptxKpiRuns(labels.status.missing)).toEqual([{ text: labels.status.missing, size: 36 }]);
+  });
+
+  it("fitLine：截到估計一行放得下，結尾補「…」；本來就一行的不動", () => {
+    expect(fitLine(PERIOD_UNIT_LINE, 66)).toBe(PERIOD_UNIT_LINE);
+    const cut = fitLine("長".repeat(100), 66);
+    expect(estimatedLines(cut, 66)).toBe(1);
+    expect(cut.endsWith(copy.ellipsis)).toBe(true);
+    expect(Array.from(cut)).toHaveLength(66);
+  });
+});
+
 describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
   afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
@@ -230,7 +293,11 @@ describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
     expect(Number(size[1]) * 9).toBe(Number(size[2]) * 16);
     const texts = runs(slide);
     // V3-2b：關鍵差額卡 L1、通路表 L2，負號 U+2212；ASCII「-」金額不再出現在投影片上。
-    for (const value of [model.title, model.subtitle, formatSignedDelta("220.00", "L1"), formatSignedDelta("-315.00", "L1"), `${labels.periods.previous} ${formatAmountL1("2250.00")}`, `${labels.periods.current} ${formatAmountL1("2470.00")}`, "DTC", "MARKETPLACE", formatAmountL2("400.00"), formatAmountL2("-15.00"), formatSignedDelta("-185.00", "L2"), copy.noMeeting,
+    // V3-7：標題與版頭三行副標各是一段；關鍵差額大字拆成數字（36pt）與單位（20pt）兩段，串起來就是 L1 字串；檔案屬性的副標不畫在投影片上。
+    const kpi = (value: string) => pptxKpiRuns(value).map(run => run.text);
+    expect(kpi(formatSignedDelta("220.00", "L1")).join("")).toBe(formatSignedDelta("220.00", "L1"));
+    expect(texts).not.toContain(model.subtitle);
+    for (const value of [model.title, ...model.header, ...kpi(formatSignedDelta("220.00", "L1")), ...kpi(formatSignedDelta("-315.00", "L1")), `${labels.periods.previous} ${formatAmountL1("2250.00")}`, `${labels.periods.current} ${formatAmountL1("2470.00")}`, "DTC", "MARKETPLACE", formatAmountL2("400.00"), formatAmountL2("-15.00"), formatSignedDelta("-185.00", "L2"), copy.noMeeting,
       labels.sections.keyDeltas, labels.sections.topThree, labels.sections.meetingDecision, copy.pinnedTitle]) expect(texts, value).toContain(value);
     model.priorities.forEach((row, index) => expect(texts).toContain(fill(copy.priorityRow, { n: index + 1, headline: row.headline })));
     expect(texts.some(value => value.startsWith(labels.basis.footer))).toBe(true);
@@ -273,11 +340,38 @@ describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
     const sizes = [...slide.matchAll(/ sz="(\d+)"/g)].map(match => Number(match[1]));
     expect(sizes.length).toBeGreaterThan(0);
     expect(Math.min(...sizes)).toBeGreaterThanOrEqual(1000);
-    expect(slide).toContain('srgbClr val="214C45"');
+    // V3-7：色碼全部來自 export-theme（品牌色 #1f5a4f＝--accent）。
+    expect(slide).toContain(`srgbClr val="${EXPORT_THEME.brand}"`);
     // pptxgenjs 一律寫出空的 ppt/media/ 目錄項；只要沒有任何檔案在裡面。
     expect([...files.entries()].filter(([name]) => name.startsWith("ppt/media/")).every(([name, data]) => name.endsWith("/") && data.length === 0)).toBe(true);
     expect(zipText(files, "ppt/slides/_rels/slide1.xml.rels")).not.toMatch(/relationships\/image/);
     expect(slide).not.toContain("<p:pic");
+  });
+
+  it("V3-7 §9.6：白底、只有一條 4pt 強調色頂線（沒有色塊）、標題 28pt、關鍵差額 36pt；不利差額 #b03a2e、有利不上色；表頭淺灰底", async () => {
+    const { build } = await setup();
+    const { slide } = await unpack(build());
+    expect(slide).toMatch(new RegExp(`<p:bg>[\\s\\S]*?srgbClr val="${EXPORT_THEME.surface}"`));
+    const shapes = [...slide.matchAll(/<p:spPr>([\s\S]*?)<\/p:spPr>/g)].map(match => match[1]);
+    // 每個圖形都不填色（文字方塊是 noFill，沒有 v2 的品牌色標題塊與卡片底）；唯一的線是頂線：4pt（50800 EMU）、品牌色。
+    expect(shapes.length).toBeGreaterThan(5);
+    expect(shapes.every(shape => shape.includes("<a:noFill/>"))).toBe(true);
+    const lines = shapes.filter(shape => shape.includes('prst="line"'));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('<a:ln w="50800">');
+    expect(lines[0]).toContain(`srgbClr val="${EXPORT_THEME.brand}"`);
+    // 字級：標題 28pt、關鍵差額數字 36pt（單位 20pt）。
+    expect(runOf(slide, REPORT_TITLE)).toMatchObject({ size: 2800, color: EXPORT_THEME.ink });
+    expect(runOf(slide, "+220")).toEqual({ size: 3600, color: EXPORT_THEME.favorable });
+    expect(runOf(slide, `${MINUS}315`)).toEqual({ size: 3600, color: EXPORT_THEME.unfavorable });
+    // 通路表：差額只有不利上色（DTC −130、MARKETPLACE −185）；本期欄是本期資料，用強調色；表頭淺灰底、主文字色。
+    expect(runOf(slide, `${MINUS}185`)).toMatchObject({ color: EXPORT_THEME.unfavorable });
+    expect(runOf(slide, formatAmountL2("270.00"))).toMatchObject({ color: EXPORT_THEME.brand });
+    expect(runOf(slide, formatAmountL2("400.00"))).toMatchObject({ color: EXPORT_THEME.ink });
+    expect(slide).toContain(`<a:solidFill><a:srgbClr val="${EXPORT_THEME.headerFill}"/></a:solidFill>`);
+    expect(runOf(slide, labels.csvColumns.channel)).toMatchObject({ color: EXPORT_THEME.ink });
+    // v2 的色碼（品牌綠 214C45、正色 177F6C、負色 AD533A、白底淺綠字 D7E6DE）都不再出現。
+    for (const legacy of ["214C45", "177F6C", "AD533A", "D7E6DE"]) expect(slide).not.toContain(legacy);
   });
 
   it("truncates a long channel table with a remainder row, caps lists at three and shows empty-state notes", async () => {

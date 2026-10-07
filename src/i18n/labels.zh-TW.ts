@@ -2022,6 +2022,26 @@ export const exportLabels = {
   productComparison: { limitations: "通路費與廣告不分到商品，這裡只看商品毛利；差額＝本期 − 上期。比率原值為分子／分母。沒有銷售列不代表新品或停售，要先確認銷售完整性。缺值不補零；退款按結帳日；商品成本依來源已入帳淨額。" },
   // ── V3-7 錨點（代理 B：headerV3 匯出版頭四行（PDF／PPT／Excel 首頁／Markdown）與列印版；收尾時刪除仍為空的物件）
   headerV3: {
+    /** §7.9 版頭第 2 行：報表名（{metric}＝metricDefinitions.contribution_after_marketing.label）。 */
+    reportTitle: "{metric}兩期比較（管理報表）",
+    /** §7.9 版頭第 3 行前段：兩期期間（formatPeriodExport「2026-07-13 至 2026-08-23（42 天）」）。 */
+    periodLine: "本期 {current}；上期 {previous}",
+    /** §7.9 版頭第 3 行後段：金額單位（D-V3-6：新台幣用「台」）。 */
+    unitExclusive: "單位：新台幣元，未稅",
+    /** 匯入時做過含稅換算。 */
+    unitConverted: "單位：新台幣元，已換算為未稅",
+    /** §7.9 版頭第 3 行：期間與單位同一行（§8.7：同一行多段資訊用「 · 」分隔）。 */
+    periodUnitLine: "{period} · {unit}",
+    /** §7.9 版頭第 4 行：版本字串照原樣放（PRD 規定在版頭）；時間是台北時間 YYYY-MM-DD hh:mm。 */
+    versionLine: "指標版本 {version} · 產出時間 {time}（台北時間）",
+    /** Excel 摘要工作表最前面四列的區塊名。 */
+    excelSection: "版頭",
+    /** PPT 頁尾的技術資訊：指標版本已在版頭，頁尾只留資料版本（前 12 碼）。 */
+    pptxDataVersion: "資料版本 {datasetHash}",
+    /** 列印版版頭之後的範圍一行（沒有會議時帶資料到）。 */
+    printScope: "{state} · 資料到 {asOf} · {channels} · {mode}",
+    /** 列印版有會議時：會議行已有資料到，範圍一行不重複。 */
+    printScopeMeeting: "{state} · {channels} · {mode}",
   },
   // ── V3-7 錨點（代理 C：menuV3 頂欄「匯出」選單——每項 14px 名稱＋12px 說明、分組標題、會議分組「複製週會摘要」、處理中與失敗；收尾時刪除仍為空的物件）
   menuV3: {

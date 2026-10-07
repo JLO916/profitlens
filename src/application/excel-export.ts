@@ -7,6 +7,8 @@ import { actionDocuments, type ActionExecutionStatus, type ActionWorkspace } fro
 import { ASSIST_KPI_VERSION } from "./assist-kpi";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, scopeLabel } from "./copy";
 import { downloadBinary } from "./download";
+import { buildExportHeader } from "./export-header";
+import { argb, EXPORT_THEME } from "./export-theme";
 import type { ManagerSummary, SummaryMetric } from "./manager-summary";
 import { dataStatus } from "./product-highlights";
 import type { TaxConversion } from "./tax-basis";
@@ -41,6 +43,10 @@ export interface ExcelExportInput {
   products?: readonly ProductComparisonRow[];
   conversion?: TaxConversion | null;
   meeting?: ExcelMeeting | null;
+  /** V3-7 版頭的產出時間（預設現在；測試注入固定時間）。 */
+  generatedAt?: Date;
+  /** V3-7 版頭第 1 行；預設 dataset_id。 */
+  datasetName?: string;
 }
 
 export const EXCEL_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -124,7 +130,14 @@ function summarySheet(input: ExcelExportInput): ExcelSheet {
     const reasons = [...new Set(metrics.filter(metric => metric.value === null).flatMap(metric => metric.reason_codes))];
     return metrics.some(metric => metric.value === null) ? text(fill(labels.ui.managerSummary.missingWithReasons, { reasons: reasons.join("、") })) : EMPTY;
   };
+  // V3-7 §7.9／§9.6：摘要工作表最前面是版頭四列（區塊「版頭」，內容欄放各行），之後才是既有的資料範圍與關鍵數字（列與數值不變）。
+  const header = buildExportHeader({
+    datasetName: input.datasetName ?? summary.dataset_id, metricVersion: summary.metric_version, generatedAt: input.generatedAt ?? new Date(),
+    amountBasis: input.conversion || summary.conversion_note ? "inclusive" : "exclusive",
+    scope: { previous: summary.scope.previous_period, current: summary.scope.current_period, previousDays: summary.previous_days, currentDays: summary.current_days },
+  });
   const records: SheetRecord<typeof copy.columns.summary>[] = [
+    ...header.lines.map(line => ({ section: text(labels.exports.headerV3.excelSection), detail: text(line) })),
     info(s.sections.scope, s.items.dataset, dataset.manifest.dataset_id),
     info(s.sections.scope, s.items.source, lookup(s.sourceTypes, dataset.manifest.source_type)),
     info(s.sections.scope, s.items.asOf, summary.data_as_of),
@@ -389,9 +402,59 @@ export async function writeExcel(workbook: ExcelWorkbook): Promise<Uint8Array> {
   for (const { name, sheet } of sheets) XLSX.utils.book_append_sheet(book, sheet, name);
   book.Props = { Title: labels.brand.name };
   const output: unknown = XLSX.write(book, { type: "array", bookType: "xlsx", bookSST: true, compression: true });
-  if (output instanceof ArrayBuffer) return new Uint8Array(output);
-  if (output instanceof Uint8Array) return output;
+  if (output instanceof ArrayBuffer) return styleHeaderRows(XLSX, new Uint8Array(output));
+  if (output instanceof Uint8Array) return styleHeaderRows(XLSX, output);
   throw new Error("XLSX_WRITE_FAILED");
+}
+
+/** SheetJS 附的 CFB（zip 讀寫）：只用到這幾個介面。 */
+interface CfbEntry { content?: Uint8Array | number[]; size?: number }
+interface CfbModule {
+  read(data: Uint8Array, options: { type: "array" }): { FullPaths: string[] };
+  find(container: unknown, path: string): CfbEntry | null;
+  write(container: unknown, options: { fileType: "zip"; type: "array"; compression: boolean }): Uint8Array | number[];
+}
+/** 表頭列（第 1 列）的樣式：粗體主文字色、export-theme 的 headerFill 底（#f1f3f3）。 */
+const HEADER_FONT = `<font><b/><sz val="12"/><color rgb="${argb(EXPORT_THEME.ink)}"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font>`;
+const HEADER_FILL = `<fill><patternFill patternType="solid"><fgColor rgb="${argb(EXPORT_THEME.headerFill)}"/><bgColor indexed="64"/></patternFill></fill>`;
+/** 凍結第 1 列（表頭）：往下捲時表頭留在畫面上。 */
+const FROZEN_HEADER = '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A2" sqref="A2"/>';
+/**
+ * V3-7 §9.6：表頭粗體＋headerFill 底、凍結表頭列。SheetJS 社群版（0.18.5）寫不出儲存格樣式與凍結窗格，
+ * 寫檔後用同一個套件附的 CFB 打開 zip，改 styles.xml（加一個粗體字型、一個底色、一個表頭樣式）與每張工作表的第 1 列及 sheetView。
+ * 只動樣式與檢視：格子的值、型別、數字格式都不變。找不到預期的 XML 片段（例如套件改版）時保留原檔，不讓匯出失敗。
+ */
+function styleHeaderRows(XLSX: XlsxModule, bytes: Uint8Array): Uint8Array {
+  const CFB = (XLSX as unknown as { CFB?: CfbModule }).CFB;
+  if (!CFB || typeof CFB.read !== "function" || typeof CFB.find !== "function" || typeof CFB.write !== "function") return bytes;
+  const zip = CFB.read(bytes, { type: "array" });
+  const decoder = new TextDecoder(), encoder = new TextEncoder();
+  const edit = (path: string, change: (xml: string) => string): void => {
+    const entry = CFB.find(zip, path);
+    if (!entry?.content) return;
+    const before = decoder.decode(Uint8Array.from(entry.content));
+    const after = change(before);
+    if (after === before) return;
+    entry.content = encoder.encode(after);
+    entry.size = entry.content.length;
+  };
+  let headerStyle = -1;
+  edit("/xl/styles.xml", xml => {
+    const fonts = /<fonts count="(\d+)">([\s\S]*?)<\/fonts>/.exec(xml), fills = /<fills count="(\d+)">([\s\S]*?)<\/fills>/.exec(xml), xfs = /<cellXfs count="(\d+)">([\s\S]*?)<\/cellXfs>/.exec(xml);
+    if (!fonts || !fills || !xfs) return xml;
+    const fontId = Number(fonts[1]), fillId = Number(fills[1]), xfId = Number(xfs[1]);
+    headerStyle = xfId;
+    return xml
+      .replace(fonts[0], () => `<fonts count="${fontId + 1}">${fonts[2]}${HEADER_FONT}</fonts>`)
+      .replace(fills[0], () => `<fills count="${fillId + 1}">${fills[2]}${HEADER_FILL}</fills>`)
+      .replace(xfs[0], () => `<cellXfs count="${xfId + 1}">${xfs[2]}<xf numFmtId="0" fontId="${fontId}" fillId="${fillId}" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs>`);
+  });
+  if (headerStyle < 0) return bytes;
+  for (const path of zip.FullPaths.map(full => full.replace(/^Root Entry/, "")).filter(path => /^\/xl\/worksheets\/sheet\d+\.xml$/.test(path))) edit(path, xml => xml
+    .replace(/<row r="1"([^>]*)>([\s\S]*?)<\/row>/, (_, attributes: string, cells: string) => `<row r="1"${attributes}>${cells.replace(/<c ([^>]*?)(\/?)>/g, (__, cell: string, close: string) => `<c ${cell.replace(/\s*\bs="\d+"/, "")} s="${headerStyle}"${close}>`)}</row>`)
+    .replace(/<sheetView ([^>]*?)\/>/, (_, attributes: string) => `<sheetView ${attributes}>${FROZEN_HEADER}</sheetView>`));
+  const written = CFB.write(zip, { fileType: "zip", type: "array", compression: true });
+  return Uint8Array.from(written);
 }
 
 /** 使用者按「匯出 Excel」時呼叫：組活頁簿 → 寫檔 → 在瀏覽器本機下載；不上傳。 */

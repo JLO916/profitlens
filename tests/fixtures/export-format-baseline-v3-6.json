@@ -1,0 +1,27 @@
+{
+  "_說明": "V3-7 §6.5 正規化比對的基準：V3-7 開工錨點（71e9f5f）時 tests/helpers/export-normalize.ts 的 goldenFormattedExports() 輸出，經 normalizeMarkdown（Markdown）或 JSON.stringify（Excel 活頁簿模型）後的 SHA-256 與字元數。要重產：在 71e9f5f 上執行 goldenFormattedExports()，再以同一個正規化函式計算。",
+  "managerSummaryMd": {
+    "sha256": "76df5a7033e201e99137f709d89eaa935bf467cbe9470922681cff867090baef",
+    "chars": 64467
+  },
+  "managerSummaryContextMd": {
+    "sha256": "5a70e1cee88e0e273c7c3ebf71383118a139feed7086556431cac29bd57e410c",
+    "chars": 64638
+  },
+  "decisionMd": {
+    "sha256": "cad1fbc9a5b0ef658c46b480f646de9413ef62816a5f8649f56461a10d1b7c10",
+    "chars": 59709
+  },
+  "workspaceDecisionMd": {
+    "sha256": "81cfb435423c42addd8785f55cf716bf6318a79586b898b08f4fb459b5e34e13",
+    "chars": 129261
+  },
+  "meetingMd": {
+    "sha256": "7fb99483fdc4b749cfbdfaab060a2e0f83f29e1ebfe79e2c290eb5435e253c7d",
+    "chars": 2720
+  },
+  "excel": {
+    "sha256": "252c0234769d5f3de73e02ccbf89a74da9cffe48965c994c645152a9c8f917fd",
+    "chars": 10933
+  }
+}

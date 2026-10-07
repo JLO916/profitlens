@@ -8,6 +8,7 @@ import { formatSavedDateTime } from "./auto-save";
 import { channelLabel, channelsLabel, conversionSentence, demoAlias } from "./copy";
 import { decisionSignature } from "./decision";
 import { diagnosisScopeLabel } from "./diagnosis-group";
+import { buildExportHeader, markdownExportHeader } from "./export-header";
 import { buildManagerSummary, type ManagerSummary } from "./manager-summary";
 import { formatAmount, formatPeriodExport, formatSignedDelta, metricDefinitions } from "./presentation";
 import { buildReviewDecisionContext, REVIEW_DECISION_LABELS, type ReviewDecisionState, type ReviewSession } from "./review-session";
@@ -403,19 +404,29 @@ const decisionText = (row: MeetingDecision): string => row.confirmed_revision ==
 const updatedText = (date: string | null): string => date ? fill(copy.statusUpdatedAt, { date }) : copy.statusNotUpdated;
 
 /**
+ * V3-7 options：generatedAt 是版頭的產出時間。已結束會議的內容在結束時就固定了，預設用結束時間（finalized_at），
+ * 同一筆紀錄（含還原備份後）每次下載都是同一份檔案；datasetName 預設 dataset_id。
+ */
+export interface MeetingMarkdownOptions { generatedAt?: Date; datasetName?: string }
+/**
  * 會議紀錄 Markdown：標題／固定範圍／口徑／議程六段／決議／上次比較／技術細節；所有不可信文字都經過 md()。
  * ④ 與「上次會議比較」一律讀結束當時凍結的 meeting.follow_up（還原備份後輸出相同）。comparison 為舊呼叫方式保留：
  * 只在它指向同一筆上次會議時，於技術細節補上上次會議的 dataset_hash，其餘忽略。
  */
-export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComparison): string {
+export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComparison, options: MeetingMarkdownOptions = {}): string {
   const fixed = meeting.source_fixed, follow = meeting.follow_up;
   const alias = demoAlias(fixed.dataset_id);
   const latest = meeting.decisions.at(-1)!;
   const contribution = metricDefinitions.contribution_after_marketing.shortLabel, revenue = metricDefinitions.net_revenue.shortLabel;
   // 主文用臺北時間 YYYY-MM-DD hh:mm；ISO 原值只放技術細節。
   const finalizedAt = formatSavedDateTime(new Date(meeting.finalized_at)) || meeting.finalized_at;
+  // V3-7 §7.9：「# 標題」之後緊接版頭四行（兩期取會議固定範圍；結束時有含稅換算就寫「已換算為未稅」），其後各段順序與數值不變。
+  const header = buildExportHeader({
+    datasetName: options.datasetName ?? fixed.dataset_id, metricVersion: fixed.metric_version, generatedAt: options.generatedAt ?? new Date(meeting.finalized_at),
+    amountBasis: fixed.preprocessing ? "inclusive" : "exclusive", scope: { previous: fixed.periods.previous, current: fixed.periods.current },
+  });
   const lines = [
-    fill(copy.mdTitle, { brand: labels.brand.name, name: md(meeting.name) }), "",
+    fill(copy.mdTitle, { brand: labels.brand.name, name: md(meeting.name) }), "", ...markdownExportHeader(header), "",
     fill(copy.mdMeta, { date: labels.meeting.date, value: meeting.date, decision: labels.meeting.decision, state: decisionText(latest), finalizedAt }), "",
     copy.mdScope, "",
     fill(copy.mdField, { field: labels.status.dataAsOf, value: fixed.data_as_of }),
