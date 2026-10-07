@@ -9,12 +9,11 @@ import { track } from "@/application/analytics";
 import { downloadText } from "@/application/download";
 import { exportIssuesCsv, exportSnapshotCsv } from "@/application/export";
 import { buildManagerSummary, exportChannelComparisonCsv } from "@/application/manager-summary";
-import { exampleTemplateUrl, FILE_ROLES } from "@/application/import-wizard";
-import { standardCsvTemplate } from "@/application/import-guidance";
 import { preloadExcelWriter } from "@/application/excel-export";
 import { fill, labels } from "@/i18n";
 import { COPY_STATUS_MS } from "../overview/weekly-snapshot";
 import { ShellIcon } from "./shell-icon";
+import { TemplateTable } from "./template-table";
 
 export interface ExportMenuSource {
   dataset: Dataset;
@@ -40,7 +39,6 @@ export interface ExportMenuProps {
 type AsyncItem = NonNullable<ExportMenuProps["busy"]>;
 
 const menu = labels.exports.menuV3;
-const fileLabel = (role: (typeof FILE_ROLES)[number]) => labels.importWizard.files[role === "sales_daily.csv" ? "sales" : role === "channel_costs_daily.csv" ? "costs" : "ads"];
 
 // §7.9／C14 匯出項目：14px 名稱＋一行 12px 說明（data-lines="2"）；可及名稱只取名稱（aria-labelledby，E2E 以名稱定位），說明與失敗訊息以 aria-describedby 連結。
 function ExportItem({ id, name, description, onClick, disabled, busy, error, buttonRef, testId }: { id: string; name: string; description: string; onClick: (event: MouseEvent<HTMLButtonElement>) => void; disabled?: boolean; busy?: boolean; error?: string | null; buttonRef?: RefObject<HTMLButtonElement | null>; testId?: string }) {
@@ -148,10 +146,7 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
       <div className="menu-section" data-testid="download-templates">
         <p id="download-templates-title" className="menu-heading ui-menu-group">{labels.downloads.templatesHeading}</p>
         {/* §6.5：3×3 表「檔案｜空白範本｜範例檔」，修正 v2 範本列錯位；格內可見「下載」，可及名稱沿用 v2 的完整說法。 */}
-        <table className="template-table"><thead><tr><th scope="col">{copy.templateColumns.file}</th><th scope="col">{copy.templateColumns.blank}</th><th scope="col">{copy.templateColumns.example}</th></tr></thead>
-          <tbody>{FILE_ROLES.map(role => { const file = fileLabel(role); return <tr key={role}><th scope="row">{file}</th>
-            <td><button type="button" className="ui-btn ui-btn-text" aria-label={fill(labels.downloads.blankTemplate, { file })} onClick={() => downloadText(standardCsvTemplate(role), role)}>{copy.templateCell}</button></td>
-            <td><a className="ui-btn ui-btn-text" href={exampleTemplateUrl(role)} download={role} aria-label={fill(labels.downloads.exampleTemplate, { file })}>{copy.templateCell}</a></td></tr>; })}</tbody></table>
+        <TemplateTable />
       </div>
     </div></div>
   </details>;

@@ -14,6 +14,8 @@ export function IssueList({ issues, filenames, mappings, context }: {
   mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>;
   /** V3-2a §7.7.3：帶入 {value}（原始 CSV 列）與 {column}（欄位對照）；只有匯入精靈有原始列。 */
   context?: IssueMessageContext;
+  /** V3-8 開工錨點（§7.7.1 第 3 段）：給檔名時，表格工具列出現「下載問題清單 CSV」（A 代理實作；B 代理在步驟 4 傳入）。 */
+  download?: { filename: string };
 }) {
   const messageContext: IssueMessageContext = { mappings: context?.mappings ?? mappings, sources: context?.sources };
   const [page, setPage] = useState(0);

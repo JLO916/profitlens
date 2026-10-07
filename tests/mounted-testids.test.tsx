@@ -223,6 +223,12 @@ async function pageStates(): Promise<StateMarkup[]> {
 
     // ── V3-7 C 新增的頁面狀態在此之後（例如匯出選單處理中）──
 
+    // ── V3-8 A 新增的頁面狀態在此之後（例如 data-with-issues）──
+
+    // ── V3-8 B 新增的頁面狀態在此之後（例如 import-step-2／3／4 的 SSR 狀態）──
+
+    // ── V3-8 C 新增的頁面狀態在此之後（例如 error 狀態）──
+
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];
   for (const [name, state] of Object.entries(states)) out.push({ name, html: renderToStaticMarkup(shellPage(state)), state });
@@ -670,6 +676,14 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(menu).toContain(escapeAttr(labels.downloads.menuEmpty));
     });
 
+    // ── V3-8 A（資料來源頁）的 M1 掛載測試在此之後新增（問題表在第二段、版本與來源資訊 details、來源預覽三個 details、範本 3×3）──
+
+
+    // ── V3-8 B（匯入精靈）的 M1 掛載測試在此之後新增（stepper、步驟 2 收合的已對照欄、步驟 3 收合的換算欄位、匯入中頁面內容 hidden 仍掛載）──
+
+
+    // ── V3-8 C（空狀態）的 M1 掛載測試在此之後新增（空狀態的需要的檔案表、四種狀態等高容器）──
+
   });
 
   describe("M6：同一個控制在 DOM 只有一個實例", () => {
@@ -780,7 +794,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     it("掛載條件與 shellPage() 相同：試算工作台每頁都掛著（hidden 切換）、匯入精靈只在資料來源頁顯示、期間列與橫幅在有資料或套用中時掛著", () => {
       expect(source).toMatch(/\{active && <div hidden=\{!visible \|\| panel !== "scenarios"\}><MultiScenarioWorkbench /);
       expect(source).toMatch(/\{showImport && <div hidden=\{panel !== "data"\}><ImportWizard /);
-      expect(source).toMatch(/\{active && \(visible \|\| status === "loading"\) && <>\s*<PeriodBar/);
+      // V3-8 開工錨點：匯入中（importing）期間列、橫幅與頁面內容保持掛載但 hidden（§7.7.2 全版專注模式）。
+      expect(source).toMatch(/\{active && \(visible \|\| status === "loading"\) && <div hidden=\{importing \|\| undefined\}>\s*<PeriodBar/);
+      expect(source).toMatch(/const importing = showImport && panel === "data";/);
       expect(source).toMatch(/\{visible && <NeedsAttention /);
       expect(source).toMatch(/storage=\{<WorkspaceStorage /);
       expect(source).toMatch(/exportMenu=\{<ExportMenu /);

@@ -1525,6 +1525,9 @@ export const data = {
   },
   demoChannelAlias: { DTC: "官網 · DTC", MARKETPLACE: "平台 · MARKETPLACE" } as Record<string, string>,
   demoCategoryAlias: { HOME: "居家", CARE: "保養", ACCESSORIES: "配件", ELECTRONICS: "3C" } as Record<string, string>,
+  // ── V3-8 錨點（代理 A：pageV3 資料來源頁——資料狀態一行、資料問題表欄名、金額基準定義列表、前處理表、版本與來源資訊、範本下載；收尾時刪除仍為空的物件）
+  pageV3: {
+  },
 } as const;
 
 // ── importWizard：匯入精靈：步驟文字（沿用 v2 鍵）、各步驟元件（panel）、欄位說明與提示（guidance）
@@ -1717,6 +1720,9 @@ export const importWizard = {
       sameDays: "建議等天數比較，上期與本期各 {days} 天；按「套用」前都可以改。",
     },
     excluded: { shippingIncome: "消費者付的運費收入：沒有算進來（物流費照扣）。", platformSubsidy: "平台補助：沒有算進來，也不要當成折扣填。", fixedAndTax: "固定費與稅沒有算進來，所以扣廣告後貢獻不是公司淨利。［指標定義］" },
+  },
+  // ── V3-8 錨點（代理 B：wizardV3 匯入精靈全版模式——stepper、步驟標題句型、檔案槽、對照收合、金額基準說明、檢核狀態一行；收尾時刪除仍為空的物件）
+  wizardV3: {
   },
 } as const;
 
@@ -2175,6 +2181,9 @@ export const empty = {
   // R7-3：與 README「30 秒試用」同一句；按鈕與區塊名稱直接引用 labels，改名時兩邊一起變。
   body: "匯入銷售、通路費用、廣告三份日報 CSV，或先用示範資料（虛構）看看。",
   steps: [ "匯入資料", "看哪裡賺、哪裡賠", "決定要做什麼" ],
+  // ── V3-8 錨點（代理 C：stateV3 全站空狀態、載入骨架與錯誤狀態（§7.10、C10）；收尾時刪除仍為空的物件）
+  stateV3: {
+  },
 } as const;
 
 // ── errors：錯誤訊息：匯入原因碼（import）與匯入草稿檢核（importDraft）

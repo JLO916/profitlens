@@ -10,11 +10,11 @@ import { ShellIcon } from "./shell-icon";
  * 也可以直接用 actions 傳入。
  * V3-6：h1 旁再加一個插槽 #page-title-addon（每頁都渲染；空時不佔位），待辦頁的計數徽章「12 · 置頂 3」與 ? 說明由頁面元件 portal 放進來（或用 titleAddon 傳入）。
  */
-export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode }) {
+export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon, importing }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode; /** V3-8 開工錨點（§7.7.1 第 1 點）：資料來源頁已有資料時「匯入資料」主要、「載入示範資料」次要；沒有資料時對調（A 代理實作）。 */ hasData?: boolean; /** V3-8 開工錨點（§7.7.2）：匯入中「匯入資料／載入示範資料」保持掛載但 hidden（M1；page-import testid 不消失）。 */ importing?: boolean }) {
   return <div className="page-heading">
     <div className="page-heading-text"><h1>{title}</h1>{description && <p className="subtitle">{description}</p>}</div>
     <div className="page-title-addon" id="page-title-addon" data-testid="page-title-addon">{titleAddon}</div>
-    {isData && <div className="load-controls">
+    {isData && <div className="load-controls" hidden={importing || undefined}>
       <button type="button" className="ui-btn ui-btn-primary" data-testid="page-import" onClick={onImport}><ShellIcon name="import" size={16} />{labels.buttons.importData}</button>
       {showLoadDemo && <button type="button" className="ui-btn ui-btn-secondary" onClick={onLoadDemo}>{labels.buttons.loadDemo}</button>}
     </div>}
