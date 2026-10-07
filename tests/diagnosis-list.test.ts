@@ -221,7 +221,17 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
   it("an empty diagnosis shows the no-signal status instead of an empty list (and no count badges)", async () => {
     const base = await snapshot();
     const html = render({ ...base, report: { ...base.report, diagnostics: [] } });
-    expect(html).toContain(`<p role="status" class="diagnosis-empty">${labels.ui.workspacePanels.noDiagnostics}</p>`);
+    // V3-8（PRD §7.10「健檢沒有結果」、C10 區段型）：標題＋說明（role=status 沿用 v2，兩句合起來就是 v2 的 noDiagnostics）＋「查看健檢規則」文字按鈕；
+    // 按鈕展開的 8 條規則說明保持掛載（hidden，M1），aria-controls 指到它。
+    const empty = labels.data.pageV3.diagnosisEmpty;
+    expect(`${empty.title}${empty.body}`).toBe(labels.ui.workspacePanels.noDiagnostics);
+    expect(html).toContain(`<div class="ui-empty-block diagnosis-empty" data-testid="diagnosis-empty"><div role="status"><p class="diagnosis-empty-title">${empty.title}</p><p>${empty.body}</p></div>`);
+    const button = new RegExp(`<button type="button" class="ui-btn ui-btn-text" aria-expanded="false" aria-controls="([^"]+)">${escapeRegExp(empty.action)}</button>`).exec(html);
+    expect(button).not.toBeNull();
+    const rules = new RegExp(`<ol id="${escapeRegExp(button![1])}" class="diagnosis-empty-rules" aria-label="${empty.rulesAria}" tabindex="-1" hidden="">(.*?)</ol>`).exec(html);
+    expect(rules).not.toBeNull();
+    expect(rules![1].match(/<li>/g)).toHaveLength(8);
+    for (const text of Object.values(empty.rules)) expect(rules![1]).toContain(`<li>${text}</li>`);
     expect(html).not.toContain('data-testid="diagnosis-list"');
     expect(html).not.toContain("diagnosis-count-");
   });

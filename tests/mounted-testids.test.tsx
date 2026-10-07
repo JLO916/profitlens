@@ -224,6 +224,8 @@ async function pageStates(): Promise<StateMarkup[]> {
     // ── V3-7 C 新增的頁面狀態在此之後（例如匯出選單處理中）──
 
     // ── V3-8 A 新增的頁面狀態在此之後（例如 data-with-issues）──
+    // 資料來源頁：有問題的資料集（missing_cogs）＋實際檔名與標準檔名不同＋目標與檔期都已讀入（選填資料兩表與問題表同時掛著）。
+    "data-with-issues": { panel: "data", active: { ...partial, filenames: { "sales_daily.csv": "=uploaded-sales.csv" }, targets, events }, status: "partial" },
 
     // ── V3-8 B 新增的頁面狀態在此之後（例如 import-step-2／3／4 的 SSR 狀態）──
 
@@ -677,6 +679,52 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V3-8 A（資料來源頁）的 M1 掛載測試在此之後新增（問題表在第二段、版本與來源資訊 details、來源預覽三個 details、範本 3×3）──
+    it("V3-8 A：資料來源頁依 §7.7.1 排序（資料狀態一行 → 資料問題 → … → 範本下載）；來源預覽三個 details 與版本與來源資訊 details 收合但內容掛載；範本 3×3 與頂欄 download-templates 各一份", () => {
+      const sections = ["data-status-line", "data-issues", "data-scope", "data-preprocessing", "data-optional", "data-preview", "data-version-info", "data-templates"];
+      for (const name of ["data", "data-partial", "data-with-issues"]) {
+        const { html, state } = states.find(entry => entry.name === name)!;
+        const view = element(html, 'class="view-content"')!;
+        const order = sections.map(id => view.indexOf(`data-testid="${id}"`));
+        expect(order.every(index => index >= 0), `${name} ${order.join()}`).toBe(true);
+        expect([...order].sort((a, b) => a - b), name).toEqual(order);
+        for (const id of [...sections, "targets-entry", "events-entry"]) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+        // 版本與來源資訊：收合的 details（L3），資料版本與指標版本（snapshot.metric_version）都在裡面。
+        expect(openTag(view, 'data-testid="data-version-info"'), name).toBe('<details class="panel data-section data-version" data-testid="data-version-info">');
+        const version = element(view, 'data-testid="data-version-info"')!;
+        expect(version, name).toContain(state!.active.snapshot.dataset_hash);
+        expect(version, name).toContain(state!.active.snapshot.metric_version);
+        // 來源檔案預覽：三個收合的 details，前 10 列表格（caption、region）保持掛載。
+        for (const role of ["sales_daily.csv", "channel_costs_daily.csv", "ad_spend_daily.csv"]) {
+          expect(openTag(view, `data-testid="data-preview-${role}"`), `${name} ${role}`).toBe(`<details class="data-preview-file" data-testid="data-preview-${role}">`);
+          expect(element(view, `data-testid="data-preview-${role}"`), `${name} ${role}`).toContain(escapeAttr(fill(labels.ui.workspacePanels.previewCaption, { fileName: role })));
+        }
+        // 範本下載：資料來源頁一份 3×3（含表頭 4 列），頂欄匯出選單的 download-templates 仍只有一份（M6：兩處是不同容器，沒有共用 testid）。
+        const templates = element(view, 'data-testid="data-templates"')!;
+        expect(occurrences(templates, "<tr>"), `${name} 3×3`).toBe(4);
+        expect(testIdCounts(html).get("download-templates"), name).toBe(1);
+        expect(element(html, 'data-testid="download-menu"'), name).not.toContain('data-testid="data-templates"');
+      }
+    });
+
+    it("V3-8 A：有問題的資料集——問題表在第二段（資料狀態一行之後、範圍之前），六欄、原因碼欄 hidden 但掛載；工具列的下載鈕只有一份", () => {
+      for (const name of ["data-partial", "data-with-issues"]) {
+        const { html, state } = states.find(entry => entry.name === name)!;
+        const issues = element(html, 'data-testid="data-issues"')!;
+        expect(html.indexOf('data-testid="data-status-line"'), name).toBeLessThan(html.indexOf('data-testid="data-issues"'));
+        expect(html.indexOf('data-testid="data-issues"'), name).toBeLessThan(html.indexOf('data-testid="data-scope"'));
+        expect(occurrences(issues, '<th scope="col"'), name).toBe(6);
+        expect(issues, name).toContain(`<th scope="col" class="issue-code" hidden="">${escapeAttr(labels.data.pageV3.issueTable.columns.code)}</th>`);
+        for (const issue of state!.active.dataset.issues) expect(issues, `${name} ${issue.reason_code}`).toContain(`<code>${issue.reason_code}</code>`);
+        expect(occurrences(issues, '<td class="issue-code" hidden="">'), name).toBe(state!.active.dataset.issues.length);
+        expect(testIdCounts(html).get("data-issues-download"), name).toBe(1);
+        // aria-controls（顯示原因碼）指到唯一的表格 id。
+        const controls = /class="ui-btn ui-btn-text issue-codes-toggle" aria-pressed="false" aria-controls="([^"]+)"/.exec(issues)![1];
+        expect(idCounts(html).get(controls), name).toBe(1);
+      }
+      const uploaded = element(states.find(entry => entry.name === "data-with-issues")!.html, 'data-testid="data-issues"')!;
+      expect(uploaded).toContain('<span class="ui-mono">=uploaded-sales.csv</span>');
+      expect(testIdCounts(states.find(entry => entry.name === "data")!.html).get("data-issues-download") ?? 0).toBe(0);
+    });
 
 
     // ── V3-8 B（匯入精靈）的 M1 掛載測試在此之後新增（stepper、步驟 2 收合的已對照欄、步驟 3 收合的換算欄位、匯入中頁面內容 hidden 仍掛載）──

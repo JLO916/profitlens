@@ -395,10 +395,6 @@ td small { font-size: var(--text-12); max-width: 400px; overflow-wrap: anywhere;
 .error-icon { display: grid; place-items: center; background: var(--unfavorable-subtle); color: var(--unfavorable); width: 50px; height: 50px; border-radius: var(--radius-full); margin: 0 auto 20px; font-size: var(--text-24); }
 .error-state .table-scroll { margin-top: 30px; text-align: left; }
 .main-footer { border-top: 1px solid var(--border-subtle); margin-top: 28px; padding-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; font-size: var(--text-12); color: var(--text-tertiary); }
-.metadata-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 20px 0; }
-.metadata-grid > div { border-left: 2px solid var(--border-subtle); padding-left: 13px; overflow-wrap: anywhere; }
-.metadata-grid dt { font-size: var(--text-12); color: var(--text-tertiary); margin-bottom: 4px; }
-.metadata-grid dd { margin: 0; font-size: var(--text-13); }
 .file-card { margin-top: 20px; }
 .file-card h3 { margin-bottom: 8px; }
 .preview-table { font-size: var(--text-12); }
@@ -432,7 +428,7 @@ code { font-family: var(--font-mono); font-size: var(--text-12); overflow-wrap: 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 50% { opacity: .45; } }
 @media (max-width: 1190px) { .period-form { gap: 12px; }.page-heading { align-items: flex-start; }.load-controls { flex: 1; justify-content: flex-end; } }
-@media (max-width: 900px) { .sidebar { width: 172px; padding: 24px 12px; }.main-shell { margin-left: 172px; }.brand { font-size: var(--text-16); gap: 7px; }.brand small { font-size: var(--text-12); }.brand-mark { width: 29px; }.nav-item { font-size: var(--text-13); gap: 10px; padding: 12px; }.sidebar-note { margin-right: 0; margin-left: 0; padding: 10px; }.topbar { padding: 0 22px; }main { padding: 24px 22px 18px; }.load-controls { justify-content: flex-start; }.diagnostic-grid { grid-template-columns: 1fr; }.metadata-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.metric-strip { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .sidebar { width: 172px; padding: 24px 12px; }.main-shell { margin-left: 172px; }.brand { font-size: var(--text-16); gap: 7px; }.brand small { font-size: var(--text-12); }.brand-mark { width: 29px; }.nav-item { font-size: var(--text-13); gap: 10px; padding: 12px; }.sidebar-note { margin-right: 0; margin-left: 0; padding: 10px; }.topbar { padding: 0 22px; }main { padding: 24px 22px 18px; }.load-controls { justify-content: flex-start; }.diagnostic-grid { grid-template-columns: 1fr; }.metric-strip { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { body { font-size: var(--text-13); }.app-shell { display: block; }.sidebar { width: 100%; position: static; padding: 17px 16px 10px; border-right: 0; border-bottom: 1px solid var(--border-subtle); }.brand { font-size: var(--text-20); margin-bottom: 17px; }.brand small { font-size: var(--text-12); }.brand-mark { width: 34px; }.workspace-label, .sidebar-note, .sidebar-footer { display: none; }.sidebar nav { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 5px; }.nav-item { padding: 9px 1px; font-size: var(--text-12); gap: 5px; justify-content: center; flex-direction: column; }.nav-item svg { width: 18px; height: 18px; }.main-shell { margin-left: 0; }.topbar { padding: 0 20px; height: 42px; }.breadcrumb { font-size: var(--text-12); gap: 8px; }.mode-badge { font-size: var(--text-12); padding: 3px 7px; }main { padding: 23px 17px 20px; }.page-heading { gap: 18px; margin-bottom: 13px; }h1 { font-size: var(--text-24); }.subtitle { font-size: var(--text-12); }.eyebrow { font-size: var(--text-12); }.load-controls { width: 100%; flex: auto; gap: 8px; }.load-controls label { flex: 1; min-width: 0; }.load-controls select { font-size: var(--text-12); }.load-controls .button { padding: 8px 10px; font-size: var(--text-12); }.status-line { font-size: var(--text-12); gap: 7px; }.status-line .muted { order: 4; width: 100%; }.clear-button { font-size: var(--text-12); }.channel-field { width: 100%; }.period-form { width: 100%; gap: 12px; }.period-form fieldset { width: 100%; }.period-form input { flex: 1; width: 0; min-width: 0; font-size: var(--text-12); padding: 6px 4px; }.period-form .button { width: 100%; }.section-heading.compact { display: block; }.section-heading.compact .note { display: block; margin-top: 5px; }.panel { padding: 17px 13px; margin-bottom: 18px; }.section-heading h2 { font-size: var(--text-16); }.note { font-size: var(--text-12); }.empty-state { padding: 42px 18px 25px; }.empty-state h2 { font-size: var(--text-24); }.empty-state > p:not(.eyebrow) { font-size: var(--text-12); }.empty-steps { gap: 16px; font-size: var(--text-12); }.empty-state .button { margin-bottom: 32px; }.main-footer { font-size: var(--text-12); }.diagnostic-card { padding: 16px; }.metadata-grid { gap: 13px; }.metadata-grid dd { font-size: var(--text-12); }.product-filters { gap: 12px; }.product-filters label, .product-filters input, .product-filters select { width: 100%; min-width: 0; }.evidence-dialog { width: 100vw; }.evidence-header { padding: 18px; }.evidence-body { padding: 18px; }.evidence-header h2 { font-size: var(--text-20); }.evidence-header .button { font-size: var(--text-12); }.skeleton-grid { grid-template-columns: repeat(2,1fr); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
@@ -773,9 +769,6 @@ main summary, main button, main input, main select, main textarea, main [role="r
 .basis-choice .radio-label input[type="radio"] { margin: 0; flex: none; }
 
 
-/* R4 targets / events entries on the data page and the KPI achievement line. */
-.side-entry-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 10px 0 14px; }
-.side-entry table td, .side-entry table th { padding: 8px 10px; }
 
 
 /* R5-B 試算表單（scenario form / presets / absolute mode） */
@@ -1534,8 +1527,6 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 .diagnosis-panel .diagnosis-tech-list > div { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
 .diagnosis-panel .diagnosis-tech-list dt { color: var(--text-tertiary); }
 .diagnosis-panel .diagnosis-tech-list dd { margin: 0; }
-/* 0 列（C10 區段型空狀態）。 */
-.diagnosis-panel .diagnosis-empty { padding: var(--space-4); border: var(--border-w) dashed var(--border-default); border-radius: var(--radius-md); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
 
 /* 各通路兩期比較（C3 資料表，diagnosis 變體）：兩層表頭（欄群組標單位一次）、金額欄右對齊 tabular、可排序欄頭（SVG icon＋aria-sort）、備註欄。 */
 .channel-table-v3 caption { padding: var(--space-2) var(--cell-px); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
@@ -2279,6 +2270,81 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-7 錨點結束 ── */
 
 /* ── V3-8 錨點（代理 A：資料來源頁——資料狀態一行、資料問題表、兩欄定義列表、前處理表、選填資料並列、來源預覽 details、範本表；只用 token；在本註解之後、下一個錨點之前新增） ── */
+/* 等寬字（§8.5 規則 6）：檔名、行號、原因碼、英文 key、版本字串。 */
+.ui-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* 兩欄定義列表（§7.7.1 第 4 點，取代 v2 的 .metadata-grid）：≥ 768 兩欄 grid、< 768 一欄；每格 dt 13px 次要色在上、dd 14px 在下，格與格之間 1px --border-subtle。 */
+.ui-dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-6); margin: 0; }
+.ui-dl > div { min-width: 0; padding-bottom: var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); }
+.ui-dl > .ui-dl-wide { grid-column: 1 / -1; }
+.ui-dl dt { margin: 0 0 var(--space-1); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.ui-dl dd { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); overflow-wrap: anywhere; }
+@media (max-width: 767px) { .ui-dl { grid-template-columns: minmax(0, 1fr); } }
+
+/* §7.7.1 第 2 點：資料狀態一行（L1，14px）。 */
+.data-status-line { margin: 0 0 var(--space-4); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* C4 區段標題列（h2＋計數徽章、副標下一行）；區段內的收合與說明。 */
+.data-section-title { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.data-section-empty { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+.data-scope > .note { margin: var(--space-3) 0 0; }
+.data-scope > details { margin-top: var(--space-3); }
+.data-scope > details > summary, .data-version > summary, .data-preview-file > summary { cursor: pointer; }
+.data-scope > details > summary { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.data-scope > details[open] > summary { margin-bottom: var(--space-2); }
+.data-scope > details h3 { margin: var(--space-3) 0 var(--space-2); font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); }
+
+/* §7.7.1 第 3 點：資料問題表（C3＋C15 工具列）。原因碼欄預設以 hidden 收合（保持掛載）；檔名、行號、欄位 key 用等寬字。 */
+.issue-toolbar { flex-wrap: wrap; margin-bottom: var(--space-2); }
+.issue-toolbar .ui-btn-text { min-height: var(--space-5); font-size: var(--text-13); line-height: var(--leading-13); }
+.issue-codes-toggle[aria-pressed="true"] { font-weight: var(--weight-semibold); text-decoration: underline; text-underline-offset: 3px; }
+.issue-table [hidden] { display: none; }
+.issue-table tbody td { height: auto; min-height: var(--row-h); padding-top: var(--space-2); padding-bottom: var(--space-2); vertical-align: top; }
+.issue-table small { display: block; margin-top: var(--space-1); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.issue-table .ui-lozenge { margin-right: var(--space-2); }
+.issue-table .issue-code summary { cursor: pointer; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.issue-table code { font-family: var(--font-mono); font-size: var(--text-12); }
+/* 檔名、行號、欄位 key 不斷行；問題與修法保留可讀寬度，表格比容器寬時在 .table-scroll 內橫向捲動（C3 手機退回方案：第一欄 sticky）。 */
+.issue-table .issue-file, .issue-table .issue-field, .issue-table td.num { white-space: nowrap; }
+.issue-table .issue-file .ui-mono, .issue-table .issue-field .ui-mono { overflow-wrap: normal; }
+.issue-table .issue-problem, .issue-table .issue-fix { min-width: 12em; }
+@media (max-width: 767px) { .issue-table thead th:first-child, .issue-table tbody td:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg-surface); } .issue-table thead th:first-child { z-index: 2; background: var(--bg-subtle); } }
+
+/* §7.7.1 第 5 點：前處理表（欄位｜含稅合計（元）｜未稅合計（元）｜稅率）。 */
+.data-preprocessing-table tbody th { font-weight: var(--weight-regular); }
+
+/* §7.7.1 第 6 點：選填資料——目標與促銷檔期 ≥ 1024 兩欄並列，否則上下疊；子區塊不加框或底色（C5）。 */
+.data-optional-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
+@media (min-width: 1024px) { .data-optional-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.side-entry { min-width: 0; }
+.side-entry-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-3); }
+.side-entry-head h3 { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); }
+.side-entry-state, .side-entry-intro { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.side-entry-intro { margin: var(--space-1) 0 var(--space-2); }
+.side-entry-controls { flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-3); }
+.side-entry-controls .file-pick { margin: 0; }
+.side-entry-controls .ui-btn-text { min-height: var(--space-5); font-size: var(--text-13); line-height: var(--leading-13); }
+.side-entry-issues { margin-bottom: var(--space-3); }
+
+/* §7.7.1 第 7 點：來源檔案預覽——三個 details，列與列之間 1px 分隔線。 */
+.data-preview-file { border-top: var(--border-w) solid var(--border-subtle); }
+.data-preview-file > summary { padding: var(--space-2) 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.data-preview-file > .note { margin: 0 0 var(--space-2); }
+.data-preview-file > .table-scroll { margin-bottom: var(--space-3); }
+
+/* §7.7.1 第 8 點：版本與來源資訊（L3，details）；summary 內是區段 h2。 */
+.data-version > summary .ui-section-title { display: inline; }
+.data-version[open] > summary { margin-bottom: var(--space-3); }
+.data-version-mappings { margin: 0; padding-left: var(--space-4); }
+
+/* §7.7.1 第 9 點：範本下載 3×3（與頂欄匯出選單同一張表）；在頁面上依內容寬度排列。 */
+.data-templates .template-table { width: auto; }
+.data-templates .template-table th, .data-templates .template-table td { padding-right: var(--space-6); }
+
+/* §7.10 健檢沒有結果（C10 區段型，.ui-empty-block）：標題、說明、「查看健檢規則」與展開的 8 條規則。 */
+.diagnosis-empty [role="status"] > p { margin: 0; }
+.diagnosis-empty .diagnosis-empty-title { color: var(--text-primary); }
+.diagnosis-empty > .ui-btn-text { min-height: var(--space-5); font-size: var(--text-14); line-height: var(--leading-14); }
+.diagnosis-empty-rules { margin: 0; padding-left: var(--space-5); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.diagnosis-empty-rules[hidden] { display: none; }
 
 
 /* ── V3-8 錨點（代理 B：匯入精靈全版模式——stepper C20、拖放區、檔案槽列、對照表與收合、金額基準與兩欄表單、底部固定動作列；只用 token） ── */

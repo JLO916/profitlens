@@ -1527,6 +1527,59 @@ export const data = {
   demoCategoryAlias: { HOME: "居家", CARE: "保養", ACCESSORIES: "配件", ELECTRONICS: "3C" } as Record<string, string>,
   // ── V3-8 錨點（代理 A：pageV3 資料來源頁——資料狀態一行、資料問題表欄名、金額基準定義列表、前處理表、版本與來源資訊、範本下載；收尾時刪除仍為空的物件）
   pageV3: {
+    /** §8.7：同一行的多段資訊用「 · 」分隔（資料狀態一行、來源預覽的 summary、版本資訊）。 */
+    separator: " · ",
+    /** §7.7.1 第 2 點：資料狀態一行（L1）。來源沿用 status.demo／local，「資料到」沿用 status.ready；日期用 formatDateL1、formatPeriodL1（附天數）。 */
+    statusLine: {
+      coverage: "涵蓋 {range}",
+      files: "{n} 份檔案",
+      basis: "金額基準：{basis}",
+      basisExclusive: "未稅",
+      basisConverted: "未稅（匯入時含稅已換算）",
+      issues: "{n} 項問題",
+      noIssues: "沒有問題",
+    },
+    /** §7.7.1 第 3 點：資料問題表（C3）欄位；問題＝L1、修法＝L2、原因碼＝L3（預設收合，工具列切換）。單位只在表頭右上角寫一次。 */
+    issueTable: {
+      columns: { file: "檔案", line: "行號", field: "欄位", problem: "問題", fix: "修法", code: "原因碼" },
+      showCodes: "顯示原因碼",
+      unit: "單位：元",
+      /** 目標、促銷檔期的錯誤清單（同一組欄位）的區域名稱；{name} 是 targets.entry／events.entry。 */
+      sideRegionAria: "{name}的問題清單",
+    },
+    /** §7.7.1 第 5 點：本次匯入的前處理表，一列一個換算欄位；金額用 formatAmountL3，稅率用 formatRateL2。 */
+    preprocessing: {
+      columns: { field: "欄位", raw: "含稅合計（元）", converted: "未稅合計（元）", rate: "稅率" },
+      tableAria: "含稅換算前後的合計",
+    },
+    /** §7.7.1 第 6 點：目標與促銷檔期兩表並列的分組標題。 */
+    optionalHeading: "選填資料",
+    /** §7.7.1 第 8 點：版本與來源資訊（L3，預設收合）；金額基準代碼沿用 ui.workspacePanels.meta.amountBasisTechnical、欄位對照沿用 mappingsSummary。 */
+    version: {
+      heading: "版本與來源資訊",
+      dataVersion: "資料版本",
+      metricVersion: "指標版本",
+      importedAt: "匯入時間",
+      mappingItem: "{original}（{standard}）",
+      mappingJoiner: "、",
+    },
+    /** §7.10 區段空狀態「健檢沒有結果」（C10）：標題、說明、動作；舊鍵 diagnosis.panel.noDiagnostics 保留。動作展開下面 8 條規則的白話說明。 */
+    diagnosisEmpty: {
+      title: "本期沒有需要處理的項目。",
+      body: "8 條規則都沒有觸發。",
+      action: "查看健檢規則",
+      rulesAria: "健檢規則",
+      rules: {
+        REV_UP_CM_DOWN: "淨營收比上期多，扣廣告後貢獻卻比上期少。",
+        NEGATIVE_CHANNEL_CM: "有通路的扣廣告後貢獻小於 0。",
+        DISCOUNT_BURDEN_UP: "折扣率高於上期。",
+        REFUND_BURDEN_UP: "退款金額比高於上期。",
+        FULFILLMENT_BURDEN_UP: "物流費佔比高於上期。",
+        MARKETING_BURDEN_UP: "廣告佔比高於上期。",
+        SKU_NEGATIVE_GP: "有商品的商品毛利小於 0。",
+        MISSING_CRITICAL_DATA: "成本或費用有缺漏，先補資料。",
+      } satisfies Record<RuleCode, string>,
+    },
   },
 } as const;
 
