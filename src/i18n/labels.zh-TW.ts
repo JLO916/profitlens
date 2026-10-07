@@ -2065,6 +2065,28 @@ export const exportLabels = {
   },
   // ── V3-7 錨點（代理 C：menuV3 頂欄「匯出」選單——每項 14px 名稱＋12px 說明、分組標題、會議分組「複製週會摘要」、處理中與失敗；收尾時刪除仍為空的物件）
   menuV3: {
+    /** §6.5 新分組「會議」的標題（其他分組沿用 sections.downloadCurrentView／meetingSummary／downloadDecision 與 downloads.templatesHeading）。 */
+    groupMeeting: "會議",
+    /** §7.9：每項名稱下方一行 12px 說明；範圍差異寫在這裡，取代 v2 的 downloads.menuNote 與 meetingPage.menuViewNote（兩鍵保留不用）。 */
+    descriptions: {
+      analysisCsv: "依目前期間與通路，不含原始 CSV",
+      channelTableCsv: "每個通路兩期的淨營收與扣廣告後貢獻",
+      manifestJson: "涵蓋期間、通路與金額基準",
+      issuesCsv: "{n} 項來源問題，含檔名與行號",
+      /** {hint} 是 meetingPage.pdfHint（列印對話框的操作提示）。 */
+      exportPdf: "A4 一頁 · {hint}",
+      exportExcel: "目前畫面的期間與通路，不含會議決議",
+      exportPptx: "一張投影片 · 目前畫面，不含會議決議",
+      menuMarkdown: "最近一次已結束會議；沒有時是本次會議（草稿）",
+      decisionMd: "試算方案與待辦，附引用的數字與來源",
+      decisionCsv: "試算方案與待辦，可用試算表篩選",
+      decisionJson: "試算方案與待辦的完整欄位，供其他系統讀取",
+      copySummary: "純文字，可貼到群組或信件",
+    },
+    /** 複製成功（role=status，2 秒後清空；與總覽 overview.snapshotUi.copied 同一句）。 */
+    copied: "已複製週會摘要。",
+    /** 剪貼簿不可用：項目下方出現唯讀文字框（已全選）與這一句。 */
+    copyFallback: "瀏覽器沒有開放剪貼簿。下方文字已全選，請用鍵盤複製。",
   },
 } as const;
 

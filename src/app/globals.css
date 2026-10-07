@@ -2254,6 +2254,26 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 
 /* ── V3-7 錨點（代理 C：頂欄「匯出」選單 400px、項目名稱＋說明、分組標題、處理中 spinner、失敗訊息；只用 token；在本註解之後、結束錨點之前新增） ── */
+/* §7.9 匯出選單寬 400px（< 768px 由上方手機規則改成固定在頂欄下的全寬面板，寬度 auto，這裡不覆寫）。 */
+@media (min-width: 768px) { .topbar .download-menu .menu-panel { width: min(400px, calc(100vw - 32px)); } }
+/* §6.5 分組（role=group）：標題沿用 .ui-menu-group（12／500 --text-tertiary），分組之間是 .ui-menu-divider。 */
+.download-menu .menu-group { display: block; }
+/* C14 兩行項目：名稱 14px＋一行 12px 說明（52px），右側留給 16px spinner；蓋過 V3-3 的 .topbar .download-menu .menu-list button（單行 36px）。 */
+.topbar .download-menu .menu-list .export-item[data-lines="2"], .download-menu .export-item[data-lines="2"] { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-2); width: 100%; min-height: var(--menu-item-h-2); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); color: var(--text-primary); text-align: left; white-space: normal; }
+.download-menu .export-item-text { display: grid; flex: 1 1 auto; min-width: 0; }
+.download-menu .export-item-name { font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.topbar .download-menu .menu-item .export-item small, .download-menu .export-item small { padding: 0; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+/* 處理中（C12）：該項右側 16px spinner（沿用 @keyframes spin；reduced-motion 不轉）；處理中的那一項不淡化，另外兩項照停用樣式。 */
+.download-menu .export-spinner { flex: none; width: 16px; height: 16px; border: var(--rule-accent) solid var(--border-subtle); border-top-color: var(--accent); border-radius: var(--radius-full); animation: spin 0.8s linear infinite; }
+.download-menu .menu-list .export-item[data-busy="true"] { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .download-menu .export-spinner { animation: none; } }
+/* 失敗：項目下方一行 12px 錯誤（不利色，role=alert）。 */
+.download-menu .export-item-error { margin: 0; padding: 0 var(--space-2) var(--space-2); font-size: var(--text-12); line-height: var(--leading-12); color: var(--unfavorable); }
+/* 會議分組：複製成功的 role=status（常駐，沒字時高度 0）；剪貼簿不可用時的說明一句與唯讀文字框。 */
+.download-menu .export-copy-status { margin: 0; padding: 0 var(--space-2); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.download-menu .export-copy-fallback { display: grid; gap: var(--space-1); padding: 0 var(--space-2) var(--space-2); }
+.download-menu .export-copy-note { margin: 0; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.download-menu textarea.export-copy-text { width: 100%; min-height: 0; font-size: var(--text-12); line-height: var(--leading-12); resize: vertical; }
 
 
 /* ── V3-7 錨點結束 ── */
