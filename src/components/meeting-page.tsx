@@ -424,8 +424,11 @@ function AgendaToc({ version }: { version: string }) {
     const visible = new Set<string>();
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) { if (entry.isIntersecting) visible.add(entry.target.id); else visible.delete(entry.target.id); }
-      const first = sections.find(section => visible.has(section.id));
-      if (first) setCurrent(sections.indexOf(first) + 1);
+      // 捲到底時最後一段可能進不了觀察帶（例如 1280×900 的議程 6），改取最後一個可見的段落，點擊目錄最後一項才不會被前一段蓋回去（E2E 代理回報）。
+      const candidates = sections.filter(section => visible.has(section.id));
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      const pick = atBottom ? candidates[candidates.length - 1] : candidates[0];
+      if (pick) setCurrent(sections.indexOf(pick) + 1);
     }, { rootMargin: "-160px 0px -50% 0px" });
     for (const section of sections) observer.observe(section);
     return () => observer.disconnect();
