@@ -1167,6 +1167,13 @@ const actionsStore = {
   },
   // ── V3-6 錨點（代理 C：drawerV3 待辦編輯抽屜——標題列、三段標題（內容／引用的數字／歷史）、底部動作列；收尾時刪除仍為空的物件）
   drawerV3: {
+    /** §7.5 第 4 點：編輯器三段標題（看板的抽屜與清單的內嵌編輯器共用；同一頁捲動，不用分頁）；也是各段 region 的 aria-label。 */
+    content: "內容",
+    evidence: "引用的數字",
+    history: "歷史",
+    /** C6 標題列副標：「王小明 · 9/30 到期 · 進行中」；負責人空白寫 actionBoard.unassigned，沒有期限寫 actionBoard.noDeadline。日期由 formatDateL1 產生。 */
+    subtitle: "{owner} · {due} · {status}",
+    due: "{date} 到期",
   },
 } as const;
 

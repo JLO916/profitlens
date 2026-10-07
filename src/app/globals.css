@@ -1905,5 +1905,92 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 /* ── V3-6 錨點（代理 C：待辦編輯抽屜 C6 與編輯器三段；只用 token；在本註解之後、結束錨點之前新增） ── */
 
+/* C6 待辦編輯抽屜（§7.5 第 4 點、§9.4 抽屜規格）：右側貼齊；桌機 560px、≥ 1440 時 640px、768–1279 時 480px、< 768 全螢幕；高 100dvh。
+   dialog 自己捲動（overflow-y:auto）：標題列 56px 黏在頂端、底部動作列 64px 黏在底部；遮罩 --scrim；從右側滑入 --dur-base，reduced-motion 直接出現。 */
+.action-drawer { box-sizing: border-box; width: var(--drawer-w); max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0 0 0 auto; padding: 0; border: 0; border-left: var(--border-w) solid var(--border-subtle); border-radius: 0; background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-overlay); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+.action-drawer[open] { display: flex; flex-direction: column; animation: action-drawer-in var(--dur-base) var(--ease); }
+.action-drawer::backdrop { background: var(--scrim); }
+@keyframes action-drawer-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) { .action-drawer[open] { animation: none; } }
+@media (min-width: 1440px) { .action-drawer { width: var(--drawer-w-wide); } }
+@media (max-width: 1279px) { .action-drawer { width: var(--drawer-w-narrow); } }
+@media (max-width: 767px) { .action-drawer { width: 100vw; border-left: 0; } }
+
+/* 固定標題列 56px：h2 20／600（卡片標題，最多 2 行）＋副標 13px 次要色「負責人 · 期限 · 狀態」＋右側關閉 icon 按鈕。 */
+.action-drawer-head { position: sticky; top: 0; z-index: 2; flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); box-sizing: border-box; min-height: 56px; padding: var(--space-1) var(--space-3) var(--space-1) var(--space-5); background: var(--bg-surface); border-bottom: var(--border-w) solid var(--border-subtle); }
+.action-drawer-head-text { flex: 1 1 auto; min-width: 0; }
+.action-drawer-head h2 { margin: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; font-size: var(--text-20); line-height: var(--leading-20); font-weight: var(--weight-semibold); color: var(--text-primary); overflow-wrap: anywhere; }
+.action-drawer-sub { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.action-drawer-close { flex: none; color: var(--text-secondary); }
+.action-drawer-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* 可捲動內容：padding 24px（< 768 時 16px）；通知（role=status）放在內容頂端。 */
+.action-drawer-body { flex: 1 0 auto; min-width: 0; padding: var(--space-5); }
+.action-drawer-notice { margin: 0 0 var(--space-5); }
+
+/* 固定底部動作列 64px：--bg-surface、上緣 1px；按鈕靠右（關閉、置頂、往上移是次要按鈕），移除是危險文字按鈕放最右。 */
+.action-drawer-foot { position: sticky; bottom: 0; z-index: 2; flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2); box-sizing: border-box; min-height: 64px; padding: var(--space-3) var(--space-5); background: var(--bg-surface); border-top: var(--border-w) solid var(--border-subtle); }
+.action-drawer-foot .ui-btn-text.ui-btn-danger { height: var(--control-h); min-height: var(--control-h); padding: 0 var(--space-2); border: 0; background: transparent; color: var(--unfavorable); }
+@media (max-width: 767px) {
+  .action-drawer-head { padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4); }
+  .action-drawer-body { padding: var(--space-4); }
+  .action-drawer-foot { padding: var(--space-3) var(--space-4); }
+}
+
+/* 編輯器三段（抽屜與清單檢視共用）：段落小標 13／600 次要色；段與段之間 24px 加 1px 分隔線；範圍、說明 13px 次要色一行。
+   清單檢視的編輯器在 article.action-card 內：舊的 .action-card label／input／textarea 規則以較高的選擇器蓋過，讓兩種檢視的欄位一致（C11）。 */
+.action-editor-section { min-width: 0; }
+.action-editor-section + .action-editor-section { margin-top: var(--space-5); padding-top: var(--space-5); border-top: var(--border-w) solid var(--border-subtle); }
+.action-editor-heading { margin: 0 0 var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.action-editor-scope, .action-editor-note { margin: 0 0 var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); overflow-wrap: anywhere; }
+.action-editor-text { margin: 0 0 var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.action-editor-section .ui-notice { margin: 0 0 var(--space-3); }
+
+/* 內容段：7 欄兩欄排（窄抽屜與手機一欄）；進度紀錄整列；label 13／500 在上，輸入 32px（手機 40px），textarea 至少兩行。 */
+.action-editor-section fieldset.action-editor-fields { display: grid; gap: var(--space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+.action-editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); }
+.action-editor-progress { grid-column: 1 / -1; }
+.action-editor-section .ui-field { display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
+.action-editor-section .ui-field-label { display: block; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.action-editor-section input.ui-field-control, .action-editor-section select.ui-field-control, .action-editor-section textarea.ui-field-control { box-sizing: border-box; width: 100%; min-width: 0; border: var(--border-w) solid var(--border-input); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-primary); font-family: inherit; font-size: var(--text-14); line-height: var(--leading-14); }
+.action-editor-section input.ui-field-control, .action-editor-section select.ui-field-control { height: var(--control-h); min-height: var(--control-h); padding: 0 var(--space-2); }
+.action-editor-section textarea.ui-field-control { height: auto; min-height: calc(2 * var(--leading-14) + 2 * var(--space-2) + 2 * var(--border-w)); padding: var(--space-2); resize: vertical; }
+.action-editor-section .ui-field-control:focus-visible { border-color: var(--accent); }
+.action-editor-section .ui-field-hint { margin: 0; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+
+/* 引用的數字段：搜尋與勾選清單（checkbox 16px）、確認（唯一主要按鈕）、看明細（文字按鈕，一行一個）、重新核對與預覽、限制。 */
+.action-editor-section fieldset.evidence-checklist { display: grid; gap: var(--space-2); margin: 0; padding: 0; border: 0; min-width: 0; }
+.action-editor-section .evidence-options { padding: var(--space-1); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--bg-surface); }
+.action-editor-section .evidence-checklist label.evidence-option { display: flex; flex-direction: row; align-items: flex-start; gap: var(--space-2); padding: var(--space-1); border-radius: var(--radius-sm); font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-regular); color: var(--text-primary); cursor: pointer; }
+.action-editor-section .evidence-checklist label.evidence-option:hover { background: var(--bg-hover); }
+.action-editor-section .evidence-checklist input.ui-check { width: 16px; height: 16px; min-height: 0; margin: calc((var(--leading-13) - 16px) / 2) 0 0; padding: 0; flex: none; }
+.action-editor-section .evidence-options .ui-field-hint { margin: var(--space-1); }
+.action-editor-section .button-row { margin: var(--space-3) 0 0; }
+.action-editor-section .action-evidence { display: grid; justify-items: start; gap: var(--space-2); margin: var(--space-3) 0 0; }
+.action-editor-section .action-evidence .ui-btn-text, .action-history-entry .ui-btn-text { height: auto; min-height: 24px; white-space: normal; text-align: left; justify-content: flex-start; overflow-wrap: anywhere; font-size: var(--text-13); line-height: var(--leading-13); }
+.action-editor-section .action-rebind { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin: var(--space-4) 0 0; }
+.action-editor-section .action-rebind .action-editor-note { margin: 0; }
+.action-rebind-preview { margin: var(--space-4) 0 0; padding-top: var(--space-4); border-top: var(--border-w) solid var(--border-subtle); }
+.action-rebind-preview h4 { margin: 0 0 var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.action-rebind-preview .table-scroll { margin: var(--space-2) 0 0; }
+.action-rebind-preview caption { padding: 0 0 var(--space-2); background: transparent; }
+
+/* 限制、引用歷史、技術細節：預設收合的 <details>，13px 次要色。 */
+.action-editor-section .action-editor-details { margin: var(--space-3) 0 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.action-editor-section .action-editor-details > summary { min-height: 24px; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.action-editor-section .action-editor-details ul { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+.action-history-entry { display: grid; justify-items: start; gap: var(--space-1); margin: var(--space-3) 0 0; }
+.action-history-entry h4 { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.action-history-entry .action-editor-note { margin: 0; }
+
+/* 清單檢視：三段之後的置頂、往上移、移除（抽屜改由底部動作列提供）。 */
+.action-editor-actions.button-row { margin: var(--space-5) 0 0; padding-top: var(--space-4); border-top: var(--border-w) solid var(--border-subtle); }
+.action-editor-actions .ui-btn-text { height: var(--control-h); padding: 0 var(--space-2); }
+
+@media (max-width: 1279px) { .action-drawer .action-editor-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 767px) {
+  .action-editor-grid { grid-template-columns: minmax(0, 1fr); }
+  .action-editor-section input.ui-field-control, .action-editor-section select.ui-field-control { height: var(--control-h-touch); min-height: var(--control-h-touch); }
+}
 
 /* ── V3-6 錨點結束 ── */
