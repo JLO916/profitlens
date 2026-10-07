@@ -25,6 +25,8 @@ export interface MultiScenarioWorkbenchProps {
   onExport?: (format: 'md' | 'csv' | 'json') => void;
   /** 回報本頁正在編輯的 scenario context id（尚未寫入 state 時是預計的 id）；決策匯出的「目前」區段以它為準。 */
   onContextChange?: (contextId: string | null) => void;
+  /** V3-6：本頁是否正顯示（Dashboard 把試算工作台一直掛著、用 hidden 切換）。只有 active 時才把「試算通路」與「匯出本頁」portal 進頁首 #page-actions。 */
+  active?: boolean;
 }
 /**
  * R5-3 進頁即表單：本頁自己選一個通路（不改全站篩選），預設＝全站範圍只有一個通路時的那個通路，否則第一個通路。

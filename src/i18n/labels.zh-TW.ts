@@ -1050,6 +1050,9 @@ export const scenarios = {
     slopeNegativeTechnical: "本假設下 L 為負，銷量增加時條件貢獻反而減少；不可套用「銷量至少多少」的方向。",
     slopeZeroTechnical: "本假設下 L 為零，銷量變化不改變條件貢獻。",
   },
+  // ── V3-6 錨點（代理 A：pageV3 假設試算頁——頁首「試算通路」與 ? 說明、匯出本頁選單、基準列、方案欄、精簡表單 placeholder、分段鈕「增減／改成」、結果區、D-V3-12 聲明記住；收尾時刪除仍為空的物件）
+  pageV3: {
+  },
 } as const;
 
 // ── actions：待辦：欄位（form）、看板（board）、清單與編輯（workbench）
@@ -1145,6 +1148,12 @@ const actionsStore = {
     bindingVersion: "引用版本",
     originalRule: "原始規則",
     manualOrigin: "手動建立",
+  },
+  // ── V3-6 錨點（代理 B：pageV3 待辦頁——頁首計數徽章與 ? 說明、匯出本頁選單、看板欄計數、C13 卡片（到期／更新／逾期、引用數）、「移到：」列、「編輯」、空狀態；收尾時刪除仍為空的物件）
+  pageV3: {
+  },
+  // ── V3-6 錨點（代理 C：drawerV3 待辦編輯抽屜——標題列、三段標題（內容／引用的數字／歷史）、底部動作列；收尾時刪除仍為空的物件）
+  drawerV3: {
   },
 } as const;
 

@@ -1790,3 +1790,18 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 }
 
 /* ── V3-5 錨點結束 ── */
+
+/* ── V3-6 共用（開工錨點）：頁首 h1 旁的標題附加插槽（計數徽章、? 說明）；空時不佔位，手機上 h1 視覺隱藏時插槽仍在左側顯示 ── */
+.page-title-addon { display: flex; flex: none; align-items: center; gap: var(--space-2); margin-right: auto; }
+.page-title-addon:empty { display: none; }
+
+/* ── V3-6 錨點（代理 A：假設試算——頁首動作、基準列、方案欄並排、精簡表單、分段鈕、結果區；只用 token；在本註解之後、下一個錨點之前新增） ── */
+
+
+/* ── V3-6 錨點（代理 B：待辦——頁首徽章與 ? 說明、工具列、看板欄、C13 卡片、「移到」列、空狀態、匯出選單；只用 token；在本註解之後、下一個錨點之前新增） ── */
+
+
+/* ── V3-6 錨點（代理 C：待辦編輯抽屜 C6 與編輯器三段；只用 token；在本註解之後、結束錨點之前新增） ── */
+
+
+/* ── V3-6 錨點結束 ── */

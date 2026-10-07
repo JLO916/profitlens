@@ -8,10 +8,12 @@ import { ShellIcon } from "./shell-icon";
  * 資料來源頁的「載入示範資料」維持 v2 的出現條件（已有資料或匯入中），改成次要按鈕（每個容器最多 1 顆主要按鈕）。
  * V3-5：右側固定一個動作插槽 #page-actions（每頁都渲染；沒有內容時不佔高度）。各頁的「匯出本頁」由頁面元件以 portal 放進來（例如商品毛利），
  * 也可以直接用 actions 傳入。
+ * V3-6：h1 旁再加一個插槽 #page-title-addon（每頁都渲染；空時不佔位），待辦頁的計數徽章「12 · 置頂 3」與 ? 說明由頁面元件 portal 放進來（或用 titleAddon 傳入）。
  */
-export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode }) {
+export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode }) {
   return <div className="page-heading">
     <div className="page-heading-text"><h1>{title}</h1>{description && <p className="subtitle">{description}</p>}</div>
+    <div className="page-title-addon" id="page-title-addon" data-testid="page-title-addon">{titleAddon}</div>
     {isData && <div className="load-controls">
       <button type="button" className="ui-btn ui-btn-primary" data-testid="page-import" onClick={onImport}><ShellIcon name="import" size={16} />{labels.buttons.importData}</button>
       {showLoadDemo && <button type="button" className="ui-btn ui-btn-secondary" onClick={onLoadDemo}>{labels.buttons.loadDemo}</button>}

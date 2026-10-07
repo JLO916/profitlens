@@ -199,6 +199,10 @@ async function pageStates(): Promise<StateMarkup[]> {
     "import-step-1": { panel: "data", active: demo, status: "ready", showImport: true, consent: false },
     "data-partial": { panel: "data", active: partial, status: "partial" },
     validation: { panel: "validation", active: demo, status: "ready", showValidation: true },
+    // ── V3-6 A 新增的頁面狀態在此之後（例如 scenarios-first-visit）──
+
+    // ── V3-6 B 新增的頁面狀態在此之後（例如 actions-empty、actions-list）──
+
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];
   for (const [name, state] of Object.entries(states)) out.push({ name, html: renderToStaticMarkup(shellPage(state)), state });
@@ -436,6 +440,15 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const ids = testIdCounts(html);
       for (const id of ["import-wizard", "import-stepper", "import-step-1", "page-import", "period-bar"]) expect(ids.get(id), id).toBe(1);
     });
+
+    // ── V3-6 A（假設試算）的 M1 掛載測試在此之後新增（範本 ? popover 的 scenario-preset-purpose／scenario-template-note、範圍提示 hidden 掛載、匯出選單）──
+
+
+    // ── V3-6 B（待辦）的 M1 掛載測試在此之後新增（頁首 ? 說明、匯出選單 actions-export-*、看板卡「移到」列）──
+
+
+    // ── V3-6 C（待辦編輯抽屜）的 M1 掛載測試在此之後新增（清單檢視的內嵌編輯器三段仍常駐；抽屜是條件渲染的 dialog，同 v2）──
+
   });
 
   describe("M6：同一個控制在 DOM 只有一個實例", () => {
