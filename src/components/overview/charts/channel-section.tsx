@@ -36,11 +36,12 @@ export interface ChannelSectionProps {
 /**
  * 長條與表格共用的抽屜內容：該通路該期的扣廣告後貢獻（與 v2 通路摘要的 number() 相同：指標名為標題、範圍是單一通路、來源是該通路該期的列）。
  * 點本期粗條、點上期細條、點緊湊表與資料表的金額，都經由這一個函式。
+ * V3-9b F10 下鑽（PRD §9.5 互動 P1）：帶 filter.channel，抽屜的原始明細篩到該通路並顯示篩選片語（鍵盤經由表格得到同一個抽屜）。
  */
 export function channelEvidence(snapshot: WorkspaceSnapshot, channel: string, period: "previous" | "current", name: MetricName = "contribution_after_marketing"): EvidenceSelection {
   const summary = snapshot.report[period];
   const row = Object.hasOwn(summary.channels, channel) ? summary.channels[channel] : null;
-  return { name, metric: row?.metrics[name] ?? { value: null, reason_codes: ["MISSING_VALUE"] }, period: summary.period, sources: row?.sources ?? [], channels: [channel], title: metricDefinitions[name].label };
+  return { name, metric: row?.metrics[name] ?? { value: null, reason_codes: ["MISSING_VALUE"] }, period: summary.period, sources: row?.sources ?? [], channels: [channel], title: metricDefinitions[name].label, filter: { channel } };
 }
 
 export function ChannelSection({ snapshot, onEvidence }: ChannelSectionProps) {

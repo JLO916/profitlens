@@ -38,6 +38,8 @@ beforeAll(async () => { golden = await load("golden"); demo = await load("demo")
 const overview = (snapshot: WorkspaceSnapshot, events: EventSet | null = null) => renderToStaticMarkup(createElement(Overview, { snapshot, onEvidence: noop, events, datasetName: "demo", missingItems: 0, actionsSummary: { pending: 0, pinned: [] } }));
 const frameTag = (html: string) => openTag(html, 'class="chart-frame ');
 const legendHtml = `<div class="sec-end"><div class="legend"><span><i aria-hidden="true" style="background:${chartColors.current}"></i>${labels.periods.current}</span><span><i aria-hidden="true" style="background:${chartColors.previous}"></i>${labels.periods.previous}</span></div></div>`;
+/** V3-9b F8：趨勢圖的圖例多第三項「去年同期」（虛線段）；demo 的資料從 2026-06-01 開始，去年同期不可用 → 標「無資料」。 */
+const trendLegendHtml = (ready: boolean) => `<div class="sec-end"><div class="legend"><span><i aria-hidden="true" style="background:${chartColors.current}"></i>${labels.periods.current}</span><span><i aria-hidden="true" style="background:${chartColors.previous}"></i>${labels.periods.previous}</span><span data-testid="trend-legend-yoy"><svg class="legend-dash" width="12" height="2" viewBox="0 0 12 2" aria-hidden="true" focusable="false"><line x1="0" y1="1" x2="12" y2="1" stroke="${chartColors.yoy}" stroke-width="2" stroke-dasharray="4 3"></line></svg>${labels.overview.trendYoyV3.legend}${ready ? "" : `<small>${frameCopy.noData}</small>`}</span></div></div>`;
 
 describe("C16 ChartFrame：標題列、takeaway 列、固定高度的圖、資料表", () => {
   const render = (props: Partial<Parameters<typeof ChartFrame>[0]> = {}) => renderToStaticMarkup(createElement(ChartFrame, { id: "demo-chart", testId: "demo-chart", title: "T", subtitle: "S", ...props }));
@@ -82,14 +84,14 @@ describe("C16 ChartFrame：標題列、takeaway 列、固定高度的圖、資�
 describe("區塊 7 每週淨營收與扣廣告後貢獻（ChartFrame id=trend）", () => {
   const events = (snapshot: WorkspaceSnapshot): EventSet => ({ filename: "events.csv", rows: [{ start: snapshot.report.current.period.start, end: snapshot.report.current.period.end, label: "E", line: 2 }] });
 
-  it("demo：標題是標準名稱、副標是週的分組說明；圖例本期／上期；takeaway 兩個數字＝trendTakeaways 的 display（number-link），最近完整週附週範圍", () => {
+  it("demo：標題是標準名稱、副標是週的分組說明；圖例本期／上期／去年同期（無資料）；takeaway 兩個數字＝trendTakeaways 的 display（number-link），最近完整週附週範圍", () => {
     const html = overview(demo);
     const trend = byTestId(html, "trend");
     const takeaway = trendTakeaways(demo);
     expect(openTag(html, 'data-testid="trend"')).toBe('<section class="panel chart-section" aria-labelledby="trend-title" aria-describedby="trend-sub" data-testid="trend">');
     expect(trend).toContain(`<h2 id="trend-title">${labels.sections.trend}</h2><p class="sub" id="trend-sub">${takeaway.subtitle}</p>`);
     expect(takeaway.subtitle).toBe(ui.trendNote);
-    expect(trend).toContain(legendHtml);
+    expect(trend).toContain(trendLegendHtml(false));
     const dl = element(trend, 'class="takeaways"')!;
     expect([...dl.matchAll(/<dt>([^<]*)<\/dt>/g)].map(match => match[1])).toEqual([trendCopy.takeaways.total, trendCopy.takeaways.lastCompleteWeek]);
     const buttons = [...dl.matchAll(/<button type="button" class="number-link" aria-label="([^"]*)">([^<]*)<\/button>/g)];
@@ -218,10 +220,10 @@ describe("區塊 8 各通路扣廣告後貢獻（ChartFrame id=channel）", () =
     expect(details.match(/<tbody>[\s\S]*<\/tbody>/)![0].match(/<tr>/g)).toHaveLength(Object.keys(demo.report.current.channels).length);
   });
 
-  it("channelEvidence：長條（本期、上期）與表格共用的抽屜內容＝v2 通路摘要的 number()（指標名、單一通路、該期期間與來源列）", () => {
+  it("channelEvidence：長條（本期、上期）與表格共用的抽屜內容＝v2 通路摘要的 number()（指標名、單一通路、該期期間與來源列）＋V3-9b 下鑽篩到該通路", () => {
     for (const channel of demo.report.scope.channels) for (const period of ["previous", "current"] as const) {
       const summary = demo.report[period];
-      const expected: EvidenceSelection = { name: "contribution_after_marketing", metric: summary.channels[channel].metrics.contribution_after_marketing, period: summary.period, sources: summary.channels[channel].sources, channels: [channel], title: metricDefinitions.contribution_after_marketing.label };
+      const expected: EvidenceSelection = { name: "contribution_after_marketing", metric: summary.channels[channel].metrics.contribution_after_marketing, period: summary.period, sources: summary.channels[channel].sources, channels: [channel], title: metricDefinitions.contribution_after_marketing.label, filter: { channel } };
       expect(channelEvidence(demo, channel, period)).toEqual(expected);
     }
     expect(channelEvidence(demo, "DTC", "current", "contribution_margin")).toMatchObject({ name: "contribution_margin", metric: demo.report.current.channels.DTC.metrics.contribution_margin, title: metricDefinitions.contribution_margin.label });

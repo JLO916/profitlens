@@ -720,6 +720,28 @@ export const overview = {
   },
   // ── V3-9b 錨點（代理 A：trendYoyV3 趨勢圖去年同期第三線（F8）——圖例、不可用原因、提示列；與 F10 下鑽的篩選片語；收尾時刪除仍為空的物件）
   trendYoyV3: {
+    /** 圖例第三項（12×2px 虛線段）、資料表欄名與提示列都用快捷「去年同期」同一個詞。 */
+    legend: shell.periods.presets.yoy,
+    /** 去年同期的週（snapshot.yoy.weeks 的 label；抽屜篩選片語與標題用）：{n}＝第幾週。 */
+    weekLabel: "去年同期第 {n} 週",
+    /** 去年同期不可用：圖下方一行 13px 次要色；{reason}＝期間快捷的不可用原因（labels.periods.*）。 */
+    unavailable: "沒有去年同期線：{reason}",
+    /** 提示列第三格：去年同期整段的淨營收合計（number-link 開抽屜）。 */
+    takeawayTotal: "去年同期淨營收合計",
+    /** 資料表的去年同期欄：{metric}＝指標名；該列沒有對得到的去年同期週時寫 chartFrame.noData。 */
+    tableColumn: "去年同期{metric}",
+    /** 圖上去年同期某週缺資料（斷線）時的短標。 */
+    missingPoint: "去年同期無資料",
+    /** F10 下鑽：抽屜原始明細上方的篩選片語（{scope}＝週與通路以 joiner 相接）、全部來源、清除與套用按鈕。 */
+    filter: {
+      phrase: "篩選：{scope}",
+      /** {label}＝週名（本期第 2 週、去年同期第 1 週），{range}＝主層期間（M/D–M/D）。 */
+      week: "{label}（{range}）",
+      joiner: " · ",
+      all: "全部來源",
+      clear: "清除篩選",
+      apply: "套用篩選",
+    },
   },
 } as const;
 

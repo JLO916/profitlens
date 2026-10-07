@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
+import { applyEvidenceFilter, evidenceFilterText, hasEvidenceFilter, type EvidenceFilter } from "@/application/evidence-filter";
 import { emptyKindOf, evidenceRows, formatAmountL1, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatPeriodL1, formatPointsValue, formatRateLayer, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import { rateToPercent, type RawValuesByFile, type TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -31,10 +32,12 @@ export interface EvidenceSelection {
   nullDisplay?: string;
   /** 商品層級證據：不畫四層階梯（商品只看毛利）。 */
   sku?: string;
+  /** V3-9b F10 圖表下鑽：點趨勢圖的週或通路長條時帶入；原始明細先依此過濾再分頁，抽屜內可清除（src/application/evidence-filter.ts）。 */
+  filter?: EvidenceFilter;
 }
 interface EvidenceDrawerProps {
   dataset: Dataset;
-  snapshot?: Pick<WorkspaceSnapshot, "report" | "weeks">;
+  snapshot?: Pick<WorkspaceSnapshot, "report" | "weeks" | "yoy">;
   filenames?: Partial<Record<SourceRef["file"], string>>;
   mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>;
   /** R3：含稅匯入時每列被換算格子的原值（檔案 → 行號 → 欄位），顯示「含稅原值 → 未稅換算值」。 */
@@ -84,7 +87,11 @@ function ladderMetrics(snapshot: EvidenceDrawerProps["snapshot"], evidence: Evid
     if (evidence.channels.length === 1 && base.channels[evidence.channels[0]]) return base.channels[evidence.channels[0]].metrics;
     return null;
   }
-  const week = weeks.find(row => row.start === evidence.period.start && row.end === evidence.period.end);
+  // V3-9b F8：去年同期整段與各週（snapshot.yoy）也能畫階梯；既有 weeks 的查找不變，找不到才看去年同期。
+  const yoy = snapshot.yoy?.status === "ready" ? snapshot.yoy : null;
+  const allChannels = [...report.scope.channels].sort().join("|") === [...evidence.channels].sort().join("|");
+  if (yoy && allChannels && same(yoy.period)) return yoy.metrics;
+  const week = weeks.find(row => row.start === evidence.period.start && row.end === evidence.period.end) ?? yoy?.weeks.find(row => same(row));
   return week ? week.metrics : null;
 }
 
@@ -93,14 +100,15 @@ function ladderMetrics(snapshot: EvidenceDrawerProps["snapshot"], evidence: Evid
  * 期間用 formatPeriodL1（M/D，不附天數；以資料到的年份為準，跨年才寫年份）；與報表本期或上期相同時前面加「本期」「上期」。
  * 沒有 scopeLabel 時範圍就是通路（涵蓋資料集全部通路時寫「全部通路」）；scopeLabel 沒寫出通路時另附「通路：…」（v2 範圍行的資訊不少）。只組字，不做任何計算。
  */
-export function evidenceSubtitle(evidence: Pick<EvidenceSelection, "period" | "channels" | "scopeLabel">, options: { alias: boolean; anchor?: string; allChannels?: readonly string[]; report?: { current: { period: Period }; previous: { period: Period } } }): string {
+export function evidenceSubtitle(evidence: Pick<EvidenceSelection, "period" | "channels" | "scopeLabel">, options: { alias: boolean; anchor?: string; allChannels?: readonly string[]; report?: { current: { period: Period }; previous: { period: Period } }; yoy?: Period }): string {
   const sorted = (list: readonly string[]) => [...list].sort().join("|");
   const all = options.allChannels !== undefined && options.allChannels.length > 0 && sorted(options.allChannels) === sorted(evidence.channels);
   const listed = evidence.channels.length ? channelsLabel(evidence.channels, options.alias) : copy.noChannels;
   const channels = all ? copy.allChannels : listed;
   const range = formatPeriodL1(evidence.period.start, evidence.period.end, { anchor: options.anchor, days: false });
   const same = (period: Period | undefined) => period !== undefined && period.start === evidence.period.start && period.end === evidence.period.end;
-  const name = same(options.report?.current.period) ? labels.periods.current : same(options.report?.previous.period) ? labels.periods.previous : null;
+  // V3-9b F8：與去年同期整段相同時寫「去年同期」（本期、上期優先）。
+  const name = same(options.report?.current.period) ? labels.periods.current : same(options.report?.previous.period) ? labels.periods.previous : same(options.yoy) ? labels.periods.presets.yoy : null;
   const period = name ? fill(v3.periodNamed, { name, range }) : range;
   if (!evidence.scopeLabel) return fill(v3.subtitle, { scope: channels, period });
   const named = evidence.scopeLabel.includes(listed) || (all && evidence.scopeLabel.includes(copy.allChannels));
@@ -113,7 +121,7 @@ export function EvidenceDrawer({ dataset, snapshot, evidence, onClose, onBasis, 
   if (!evidence) return null;
   const selectionKey = JSON.stringify([
     dataset.manifest.dataset_id, evidence.title, evidence.name, evidence.period,
-    evidence.channels, evidence.scopeLabel, evidence.metric, evidence.formula, evidence.unitOverride,
+    evidence.channels, evidence.scopeLabel, evidence.metric, evidence.formula, evidence.unitOverride, evidence.filter,
   ]);
   return <EvidenceDialog key={selectionKey} dataset={dataset} snapshot={snapshot} evidence={evidence} onClose={onClose} onBasis={onBasis} filenames={filenames} mappings={mappings} rawValues={rawValues} conversion={conversion} />;
 }
@@ -131,7 +139,11 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
     else if ((COST_FIELDS as readonly string[]).includes(field)) files.add("channel_costs_daily.csv");
     else if (field === "ad_spend") files.add("ad_spend_daily.csv");
   }
-  const rows = useMemo(() => evidenceRows(dataset, evidence.formula ? evidence.sources : evidence.sources.filter((source) => files.has(source.file))), [dataset, evidence]);  // eslint-disable-line react-hooks/exhaustive-deps -- files derives from evidence.name
+  const allRows = useMemo(() => evidenceRows(dataset, evidence.formula ? evidence.sources : evidence.sources.filter((source) => files.has(source.file))), [dataset, evidence]);  // eslint-disable-line react-hooks/exhaustive-deps -- files derives from evidence.name
+  // V3-9b F10：下鑽帶入的篩選預設套用，原始明細過濾後再算分段筆數與分頁；清除後回到 sources 的全部列（換一筆證據時抽屜重新掛載，篩選回到預設）。
+  const [filterOn, setFilterOn] = useState(true);
+  const filterable = hasEvidenceFilter(evidence.filter);
+  const rows = useMemo(() => filterable && filterOn ? applyEvidenceFilter(allRows, evidence.filter) : allRows, [allRows, evidence.filter, filterable, filterOn]);
   const counts = { sales: 0, costs: 0, ads: 0, manifest: 0 } as Record<SourceTab, number>;
   for (const row of rows) counts[(Object.keys(fileOfTab) as SourceTab[]).find(tab => fileOfTab[tab] === row.file) ?? "manifest"]++;
   const tabs = (Object.keys(fileOfTab) as SourceTab[]).filter(tab => counts[tab] > 0);
@@ -178,8 +190,10 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   // 指標定義與算法：domain 指標用指標定義；件數、件均這類非 domain 指標用證據自帶的公式說明。版本與技術細節同源。
   const definitionText = evidence.definition ?? (evidence.unitOverride === "count" || evidence.unitOverride === "money_per_unit" ? evidence.formula ?? definition.plain : definition.plain);
   const metricVersion = evidence.metricVersion ?? "contribution-v1";
-  const subtitle = evidenceSubtitle(evidence, { alias, anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot?.report });
+  const subtitle = evidenceSubtitle(evidence, { alias, anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot?.report, yoy: snapshot?.yoy?.status === "ready" ? snapshot.yoy.period : undefined });
   const column = v3.sourceColumns;
+  const filterCopy = labels.overview.trendYoyV3.filter;
+  const filterText = filterable ? evidenceFilterText(evidence.filter, { alias, anchor: dataset.manifest.data_as_of }) : null;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -252,6 +266,8 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
           <h3>{v3.sourcesTitle}</h3>
           <p className="note">{copy.sourcesNote}</p>
           {conversionNote && <p className="note" data-testid="evidence-conversion-note">{conversionNote}</p>}
+          {/* V3-9b F10：下鑽的篩選片語與清除／套用（同一顆按鈕切換，焦點留在原處）。 */}
+          {filterText !== null && <div className="evidence-filter" data-testid="evidence-filter"><span>{filterOn ? filterText : filterCopy.all}</span><button type="button" className="ui-btn ui-btn-text" data-testid={filterOn ? "evidence-filter-clear" : "evidence-filter-apply"} onClick={() => { setFilterOn(!filterOn); setPage(0); }}>{filterOn ? filterCopy.clear : filterCopy.apply}</button></div>}
           {rows.length === 0 ? <p>{copy.none}</p> : (<>
             <div className="source-controls">
               <div className="source-tabs ui-segmented" role="group" aria-label={labels.ui.evidenceDrawer.sourceTabsAria}>{tabs.map(item => <button key={item} type="button" className="preset" aria-pressed={item === activeTab} onClick={() => { setTab(item); setPage(0); }}>{fill(labels.ui.evidenceDrawer.tabWithCount, { tab: copy.sourceTabs[item], n: counts[item] })}</button>)}</div>

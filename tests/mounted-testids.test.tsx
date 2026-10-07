@@ -39,6 +39,8 @@ import { ImportWizard } from "@/components/import-wizard";
 import { EvidenceDrawer } from "@/components/evidence-drawer";
 import { BasisDialog } from "@/components/basis-dialog";
 import { WorkspaceStorage } from "@/components/workspace-storage";
+import { channelEvidence } from "@/components/overview/charts/channel-section";
+import { yoyInput } from "./helpers/yoy-dataset";
 
 /*
  * V3-3 掛載規則測試（PRD §6.4 M1／M6、§11.7）。
@@ -245,6 +247,8 @@ async function pageStates(): Promise<StateMarkup[]> {
     // ── V3-9a C 新增的頁面狀態在此之後（例如進階區展開、週檢視）──
 
     // ── V3-9b A 新增的頁面狀態在此之後（例如去年同期不可用的資料集）──
+    // 總覽＋涵蓋兩年的合成資料（tests/helpers/yoy-dataset.ts）：去年同期可用，趨勢圖多第三線圖例、提示列第三格與資料表兩欄（demo 的 overview 狀態是不可用）。
+    "overview-yoy": { panel: "overview", active: await (async () => { const input = yoyInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "yoy", revision: 1 }; })(), status: "ready" },
 
     // ── V3-9b B 新增的頁面狀態在此之後（例如匯出選單選了變體）──
 
@@ -888,7 +892,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const { BREAKEVEN_MER_VERSION, breakevenMer, breakevenNote } = await import("@/application/breakeven-mer");
       const copy = labels.assist.breakevenV3;
       const overviews = loaded().filter(({ state }) => state!.panel === "overview");
-      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only"]);
+      // V3-9b A 加了 overview-yoy（兩年合成資料）狀態，同樣檢查。
+      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         for (const id of ["assist-breakeven-mer", "assist-breakeven-current", "assist-breakeven-previous", "assist-breakeven-note", "assist-breakeven-help", "assist-breakeven-help-trigger"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
@@ -993,6 +998,45 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V3-9b A（三線趨勢與下鑽）的 M1 掛載測試在此之後新增（第三線圖例、不可用原因、抽屜篩選片語各一份）──
+    it("V3-9b A 總覽：趨勢圖的去年同期圖例項每個狀態一份；不可用時原因句一份（在趨勢區塊內），可用時沒有原因句、資料表多兩欄", () => {
+      const overviews = states.filter(entry => entry.state?.panel === "overview");
+      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-refund-only", "overview-yoy", "overview-zero-ad"]);
+      for (const { name, html, state } of overviews) {
+        const ids = testIdCounts(html);
+        expect(ids.get("trend-legend-yoy"), name).toBe(1);
+        const trend = element(html, 'data-testid="trend"')!;
+        expect(trend, name).toContain('data-testid="trend-legend-yoy"');
+        const yoy = state!.active.snapshot.yoy!;
+        if (yoy.status === "ready") {
+          expect(ids.has("trend-yoy-note"), name).toBe(false);
+          expect(element(trend, 'data-testid="trend-legend-yoy"'), name).not.toContain("<small>");
+        } else {
+          expect(ids.get("trend-yoy-note"), name).toBe(1);
+          expect(trend, name).toContain(`data-testid="trend-yoy-note">${escapeAttr(fill(labels.overview.trendYoyV3.unavailable, { reason: yoy.reason }))}</p>`);
+          expect(element(trend, 'data-testid="trend-legend-yoy"'), name).toContain(`<small>${labels.overview.chartFrame.noData}</small>`);
+        }
+        // 資料表（收合的 <details>）照樣掛載，表頭 7 欄。
+        const details = element(trend, 'class="data-alternative"')!;
+        expect(openTag(trend, 'class="data-alternative"'), name).not.toMatch(/\sopen=""/);
+        expect(details.match(/<thead>[\s\S]*<\/thead>/)![0].match(/<th>/g), name).toHaveLength(7);
+      }
+      expect(states.find(entry => entry.name === "overview-yoy")!.state!.active.snapshot.yoy!.status).toBe("ready");
+      expect(states.find(entry => entry.name === "overview")!.state!.active.snapshot.yoy!.status).toBe("unavailable");
+    });
+
+    it("V3-9b A 抽屜：下鑽（通路長條）開的抽屜篩選片語與清除鈕各一份；沒有篩選的抽屜沒有；抽屜關著時都不在 DOM（維持 v2 條件渲染）", async () => {
+      const demo = await load("demo", "demo");
+      const drawer = (evidence: Parameters<typeof EvidenceDrawer>[0]["evidence"]) => renderToStaticMarkup(<EvidenceDrawer dataset={demo.dataset} snapshot={demo.snapshot} evidence={evidence} onClose={noop} onBasis={noop} />);
+      const filtered = testIdCounts(drawer(channelEvidence(demo.snapshot, "DTC", "current")));
+      expect(filtered.get("evidence-filter")).toBe(1);
+      expect(filtered.get("evidence-filter-clear")).toBe(1);
+      expect(filtered.has("evidence-filter-apply")).toBe(false);
+      const { filter: _filter, ...plain } = channelEvidence(demo.snapshot, "DTC", "current");
+      void _filter;
+      expect(testIdCounts(drawer(plain)).has("evidence-filter")).toBe(false);
+      for (const { name, html } of states) expect(testIdCounts(html).has("evidence-filter"), name).toBe(false);
+    });
+
 
 
     // ── V3-9b B（匯出變體）的 M1 掛載測試在此之後新增（選單內變體選擇器一份、三個格式項目不變）──

@@ -2,7 +2,7 @@ import Decimal from "decimal.js";
 import { channelLabel, demoAlias, formatHeadlineAmount } from "@/application/copy";
 import { deltaTone, formatAmountL1, formatEmpty, formatMetric, formatPeriodL1, periodDays } from "@/application/presentation";
 import type { WeeklyRow, WorkspaceSnapshot } from "@/application/workspace";
-import type { Metric } from "@/domain/types";
+import type { Metric, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 
 // V3-4b 趨勢與各通路的結論標題與 takeaway 列（C16，PRD §7.1 第 7、8 點、§8.2 圖表標題與副標）。
@@ -18,6 +18,11 @@ export interface TrendTakeaways {
   lastWeekIncomplete: boolean;
   incompleteNote: string | null;
   subtitle: string;
+  /**
+   * V3-9b F8 提示列第三格「去年同期淨營收合計」（L1）：snapshot.yoy 可用時取整段的 net_revenue（createSnapshot 用 aggregatePeriod 算好，這裡不重算），
+   * range 是去年同期的主層期間；不可用或快照沒有 yoy 時為 null（原因由趨勢圖下方的 trend-yoy-note 說明）。
+   */
+  yoy: { label: string; metric: Metric; display: string; range: string; period: { start: string; end: string }; sources: SourceRef[] } | null;
 }
 
 export interface ChannelConclusionRow {
@@ -66,7 +71,16 @@ export function trendTakeaways(snapshot: WorkspaceSnapshot): TrendTakeaways {
     lastWeekIncomplete,
     incompleteNote: lastWeekIncomplete ? copy.incompleteNote : null,
     subtitle: labels.ui.overview.trendNote,
+    yoy: yoyTakeaway(snapshot),
   };
+}
+
+/** V3-9b F8：去年同期淨營收合計（只取 snapshot.yoy 已算好的整段指標與來源列）。 */
+function yoyTakeaway(snapshot: WorkspaceSnapshot): TrendTakeaways["yoy"] {
+  const yoy = snapshot.yoy;
+  if (yoy === undefined || yoy.status !== "ready") return null;
+  const metric = yoy.metrics.net_revenue;
+  return { label: labels.overview.trendYoyV3.takeawayTotal, metric, display: formatMetric("net_revenue", metric, "L1"), range: periodText(snapshot, yoy.period), period: { ...yoy.period }, sources: yoy.sources };
 }
 
 /** 各通路扣廣告後貢獻的結論標題（PRD §7.1 第 8 點）：有虧損的通路時寫虧最多的一個，否則寫最高的一個。 */

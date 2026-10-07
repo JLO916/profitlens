@@ -15,8 +15,12 @@ const copy = labels.overview.chartFrame;
 export type ChartFrameState = "ready" | "loading" | "empty" | "error";
 export type ChartFrameSize = keyof typeof chartHeights;
 
-/** 圖例一項：12×2px 線段（顏色用 chartColors 的 var() 字串）＋文字；不用彩色圓點（§9.5）。 */
-export interface ChartLegendItem { key: string; label: string; color: string }
+/**
+ * 圖例一項：12×2px 線段（顏色用 chartColors 的 var() 字串）＋文字；不用彩色圓點（§9.5）。
+ * V3-9b F8：dash＝虛線段的 stroke-dasharray（與折線相同，例如去年同期 --chart-yoy；12px 的 CSS 虛線框在瀏覽器會畫成實線，所以用 12×2 的 SVG 線段）；
+ * note＝線段文字後的第三色短註（例如「無資料」）；testId 給需要定位的項目。
+ */
+export interface ChartLegendItem { key: string; label: string; color: string; dash?: string; note?: string; testId?: string }
 /** takeaway 列的一格：dt 12px 第三色、dd 20px tabular 600；note 是 dd 內的 <small> 註記（例如週範圍）。 */
 export interface ChartTakeaway { key: string; label: string; value: ReactNode; note?: ReactNode }
 
@@ -46,7 +50,7 @@ export interface ChartFrameProps {
 }
 
 export function ChartLegend({ items }: { items: readonly ChartLegendItem[] }) {
-  return <div className="legend">{items.map(item => <span key={item.key}><i aria-hidden="true" style={{ background: item.color }} />{item.label}</span>)}</div>;
+  return <div className="legend">{items.map(item => <span key={item.key} data-testid={item.testId}>{item.dash === undefined ? <i aria-hidden="true" style={{ background: item.color }} /> : <svg className="legend-dash" width={12} height={2} viewBox="0 0 12 2" aria-hidden="true" focusable="false"><line x1={0} y1={1} x2={12} y2={1} stroke={item.color} strokeWidth={2} strokeDasharray={item.dash} /></svg>}{item.label}{item.note !== undefined && <small>{item.note}</small>}</span>)}</div>;
 }
 
 export function ChartFrame({ id, testId, title, subtitle, legend, extra, takeaways, height = "sm", state, message, after, dataTable, className, children }: ChartFrameProps) {
