@@ -11,6 +11,7 @@ import type { Diagnostic, Fact, Metric, MetricName, RuleCode } from "@/domain/ty
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { ShellIcon } from "./shell/shell-icon";
+import { DiagnosisEmpty } from "./diagnosis-empty";
 import { alertStatus, ImpactAmount, impactEvidence, toneClass } from "./top-three";
 
 // V3-5 A 健檢結果（PRD §7.2 第 2 點、§9.4 C9 清單型警示列）：一個規則一列 <li.alert-row> > <details.alert.diagnosis-row>。
@@ -143,7 +144,7 @@ export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, ev
       <span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, alias)}</span>
     </div>
     <p className="sub">{ui.diagnosisNote}</p>
-    {rows.length ? <ol className="alert-list diagnosis-list" data-testid="diagnosis-list" aria-label={copy.listAria}>{rows.map((group, index) => <DiagnosisRow key={group.rule} group={group} defaultOpen={index < DIAGNOSIS_DEFAULT_OPEN} snapshot={snapshot} eventText={eventText} onEvidence={onEvidence} onCreateAction={onCreateAction} />)}</ol> : <p role="status" className="diagnosis-empty">{ui.noDiagnostics}</p>}
+    {rows.length ? <ol className="alert-list diagnosis-list" data-testid="diagnosis-list" aria-label={copy.listAria}>{rows.map((group, index) => <DiagnosisRow key={group.rule} group={group} defaultOpen={index < DIAGNOSIS_DEFAULT_OPEN} snapshot={snapshot} eventText={eventText} onEvidence={onEvidence} onCreateAction={onCreateAction} />)}</ol> : <DiagnosisEmpty />}
   </section>;
 }
 

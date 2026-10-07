@@ -80,9 +80,14 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     const originalColumn = "商品折扣前收入";
     const html = renderToStaticMarkup(createElement(DataWorkspace, { dataset, snapshot, filenames: { "sales_daily.csv": "經營銷售.csv" }, mappings: { "sales_daily.csv": { gross_sales: originalColumn } } }));
     const main = withoutClosedDetails(html);
-    expect(main).toContain("經營銷售.csv");
-    expect(main).toContain(labels.ui.workspacePanels.lineNumber);
-    expect(main).toContain(labels.metrics.gross_sales.short);
+    // V3-8（PRD §7.7.1 第 7 點）：來源檔案預覽收進三個 <details>，summary（收合時也看得到）寫檔案角色＋實際檔名＋列數；前 10 列表格（行號欄、指標短名）保持掛載。
+    const sep = labels.data.pageV3.separator;
+    expect(html).toContain(`<summary>${labels.importWizard.files.sales}${sep}<span class="ui-mono">經營銷售.csv</span>${sep}${fill(labels.ui.workspacePanels.rowCount, { n: dataset.sales.length })}</summary>`);
+    expect(html).toContain(`<th scope="col">${labels.ui.workspacePanels.lineNumber}</th>`);
+    expect(html).toContain(labels.metrics.gross_sales.short);
+    // 資料狀態一行與範圍、金額基準在主層。
+    expect(main).toContain('data-testid="data-status-line"');
+    expect(main).toContain(labels.sections.dataScope);
     expect(main).not.toContain("contribution-v1");
     expect(main).not.toContain(snapshot.dataset_hash);
     expect(html).toContain(technicalSummary);
@@ -133,9 +138,13 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     expect(main).toContain(issue.file);
     expect(main).toContain(issue.field);
     // R3：主層顯示 labels.importErrors 的白話句；V3-2a 起「問題代碼」收合區只放 reason code，domain 的原始訊息不再出現在畫面上。
-    expect(main).toContain(plainIssueMessage(issue));
+    // V3-8（PRD §7.7.1 第 3 點）：檔案、行號各自一欄，問題欄是 L1 去掉「{file} 第 {line} 行：」前綴，修法欄是 L2；原因碼欄預設 hidden（仍掛載）。
     expect(plainIssueMessage(issue)).toBe(fill(labels.importErrors.MISSING_COGS, { file: issue.file, line: issue.line }));
-    expect(main).toContain(fill(labels.ui.issueList.lineRef, { line: issue.line, date: issue.date, channel: issue.channel }).trim());
+    const [headline, ...explain] = labels.importErrors.MISSING_COGS.split("。");
+    expect(main).toContain(`${headline.slice(headline.indexOf("：") + 1)}</td>`);
+    expect(main).toContain(`<td class="issue-fix">${explain.join("。")}</td>`);
+    expect(main).toContain(`<td class="num ui-mono">${issue.line}</td>`);
+    expect(main).toContain(`<td class="issue-code" hidden="">`);
     expect(main).not.toContain(issue.reason_code);
     expect(main).not.toContain(issue.message);
     expect(html).toContain(`<summary>${labels.ui.issueList.reasonCodeSummary}</summary><code>${issue.reason_code}</code>`);
