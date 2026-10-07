@@ -243,6 +243,8 @@ async function pageStates(): Promise<StateMarkup[]> {
     "actions-ad-decision-list": { panel: "actions", active: golden, status: "ready", actionWorkspace: setAdDecision(actions, "a1", "increase"), scenarioWorkspace: scenarios, actionsView: "list" },
 
     // ── V3-9a C 新增的頁面狀態在此之後（例如進階區展開、週檢視）──
+    // 總覽：淨營收為負、零值列多的資料集（refund_only）——管理損益表 7 列零值列 hidden 但掛載，佔淨營收 % 不適用。
+    "overview-refund-only": { panel: "overview", active: await load("refund-only", "refund_only"), status: "ready" },
     // 沒有資料（空工作區停在資料來源頁）與載入失敗的整頁不是 ShellState（它需要資料），由下方 statusShells() 依 dashboard.tsx 的 return 另外組，state 為 null（同 shell-empty）。
 
   };
@@ -961,6 +963,29 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-9a C（管理損益表）的 M1 掛載測試在此之後新增（進階區收合時表格掛載、日／週切換只一份、零值列 hidden 掛載）──
+    it("V3-9a C 總覽：管理損益表在收合的「進階」內、期間合計與日均之後，自己也收合但表格掛載；日／週切換與顯示零值列各一份；零值列 hidden 掛載", () => {
+      for (const name of ["overview", "overview-refund-only"]) {
+        const { html } = states.find(state => state.name === name)!;
+        const ids = testIdCounts(html);
+        for (const id of ["pnl-table", "pnl-granularity-day", "pnl-granularity-week", "pnl-show-zero"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        const advanced = element(html, 'data-testid="overview-advanced"')!;
+        expect(openTag(html, 'data-testid="overview-advanced"'), name).not.toMatch(/\sopen=""/);
+        expect(advanced.indexOf('data-testid="pnl-table"'), name).toBeGreaterThan(advanced.indexOf('data-testid="period-comparison"'));
+        const pnl = element(html, 'data-testid="pnl-table"')!;
+        expect(openTag(html, 'data-testid="pnl-table"'), name).toMatch(/^<details class="panel pnl-table"/);
+        expect(openTag(html, 'data-testid="pnl-table"'), name).not.toMatch(/\sopen=""/);
+        for (const id of ["pnl-granularity-day", "pnl-granularity-week", "pnl-show-zero"]) expect(pnl, `${name} ${id} 在面板內`).toContain(`data-testid="${id}"`);
+        // 表格（13 列）與每格的 number-link 都在收合的 details 裡。
+        expect(occurrences(pnl, '<tr class="pnl-row-'), name).toBe(13);
+        expect(occurrences(pnl, 'class="number-link"'), name).toBeGreaterThanOrEqual(26);
+        expect(pnl, name).toContain(`role="region" aria-label="${escapeAttr(labels.overview.pnlV3.tableAria)}"`);
+      }
+      // 零值列：hidden 屬性隱藏、不卸載（refund_only 的原價收入、折扣、四項費用、廣告投放費）。
+      const pnl = element(states.find(state => state.name === "overview-refund-only")!.html, 'data-testid="pnl-table"')!;
+      const hidden = [...pnl.matchAll(/<tr class="pnl-row-item" data-row="([^"]+)" data-zero="true" hidden="">/g)].map(match => match[1]);
+      expect(hidden).toEqual(["gross_sales", "discounts", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "ad_spend"]);
+      expect(openTag(states.find(state => state.name === "overview-refund-only")!.html, 'data-testid="pnl-show-zero"')).toMatch(/aria-pressed="false"/);
+    });
 
   });
 
