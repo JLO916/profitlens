@@ -1,4 +1,5 @@
 import { clickReplacing, closePeriodSheet, dismissSavePrompt, openDownloads, openMeeting, openPeriodSheet, openValidation } from "./replacement-helpers";
+import { meetingExportItem, openThreshold, openWideTable, type MeetingExportKind } from "./meeting-helpers-v3";
 import { fill, labels } from "../../src/i18n";
 import { deltaWord, formatAmountL1, formatAmountL2, formatGrowth, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -22,8 +23,11 @@ const prioritySep = copy.mdPriorityRow.split("{scope}")[1].split("{amount}")[0];
 const mdScope = (channels: string) => fill(copy.mdMeta.split(prioritySep).find(part => part.includes("{channels}"))!, { channels });
 // R5 修正後列印列是「 · 影響金額 -315.00」：分隔符後接影響標籤（labels.sections.impact）再接金額。
 const endsWithAmount = (amount: string) => new RegExp(`${escapeRe(prioritySep)}${escapeRe(labels.sections.impact)}\\s*${escapeRe(amount)}`);
-/** R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）：匯出 PDF、Markdown、通路寬表 CSV、Excel、PPT。 */
-const meetingOutput = (page: Page, name: string) => page.getByTestId("meeting-outputs").getByRole("button", { name, exact: true });
+/**
+ * R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）：匯出 PDF、Markdown、通路寬表 CSV、Excel、PPT。
+ * V3-7（§7.6 第 1 點）：輸出列改成頁首的「匯出會議」下拉（summary export-page-meeting）；每次先打開選單，再點該項（可及名稱不變）。
+ */
+const meetingOutput = (page: Page, kind: MeetingExportKind) => meetingExportItem(page, kind);
 /**
  * V3-2b（§8.5、§8.8 #1）：一頁摘要的關鍵差額是 L1 句子「{方向詞} {絕對值 L1}（{成長率}）」，成長率只在上期 > 0 時附上（formatGrowth 回傳 null 就不附）。
  * 全部由 golden 的精確值經 formatter 組出，不手打「220 元」。
@@ -66,7 +70,11 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], netRevenue), exact: true })).toHaveText(headlineChange("net_revenue", "2250.00", "2470.00", "220.00"));
   const cm = summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true });
   await expect(cm).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
-  const marketplace = summary.getByRole("row").filter({ has: page.getByRole("rowheader", { name: /^MARKETPLACE/ }) });
+  // V3-7（§7.6 第 4 點 3）：議程 3 先是精簡表（本期扣廣告後貢獻、差額），完整通路寬表收在「完整通路寬表」details（預設收合、保持掛載）。
+  const compact = summary.getByTestId("meeting-agenda-3").locator("table.meeting-channel-table").getByRole("row").filter({ has: page.getByRole("rowheader", { name: /^MARKETPLACE/ }) });
+  await expect(compact.getByRole("cell")).toHaveText([formatAmountL2("-15.00"), formatSignedDelta("-185.00", "L2")]);
+  const wide = await openWideTable(summary);
+  const marketplace = wide.getByRole("row").filter({ has: page.getByRole("rowheader", { name: /^MARKETPLACE/ }) });
   // V3-2b：通路寬表是 L2（整數元、U+2212，單位只在 caption）；最後三欄是扣廣告後貢獻的上期、本期、差額。
   const marketplaceCells = marketplace.getByRole("cell");
   await expect(marketplaceCells.nth(3)).toHaveText(formatAmountL2("170.00"));
@@ -77,6 +85,8 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   await expect(page.getByRole("dialog")).toContainText(fill(copy.changeFormula, { metric: contribution }));
   await expect(page.getByRole("dialog")).toContainText("sales_daily.csv");
   await page.getByRole("dialog").getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  // V3-7：門檻表單收在議程 2 的「調整門檻」details；先展開（錯誤訊息 role=alert 在 details 外、仍在議程內）。
+  await openThreshold(summary);
   await summary.getByLabel(labels.meeting.threshold).fill("315.01");
   await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(summary.getByTestId("manager-priority-REV_UP_CM_DOWN")).toHaveCount(0);
@@ -88,7 +98,7 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(summary.getByTestId("manager-priority-REV_UP_CM_DOWN")).toBeVisible();
   const csvEvent = page.waitForEvent("download");
-  await meetingOutput(page, labels.downloads.channelTableCsv).click();
+  await (await meetingOutput(page, "csv")).click();
   const download = await csvEvent;
   const csv = await readFile((await download.path())!, "utf8");
   expect(csv).toContain('"170.00","-15.00","-185.00"');
@@ -100,9 +110,11 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
   await page.getByRole("button", { name: labels.buttons.updateMeetingSource, exact: true }).click();
   await expect(summary.getByRole("button", { name: changeTitle(["DTC"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "400.00", "270.00", "-130.00"));
+  // 更新會議來源後議程重新掛載（完整通路寬表回到收合）：展開後再確認精簡表與完整寬表都沒有 MARKETPLACE。
+  await openWideTable(summary);
   await expect(summary.getByRole("rowheader", { name: /MARKETPLACE/ })).toHaveCount(0);
   const markdownEvent = page.waitForEvent("download");
-  await meetingOutput(page, labels.buttons.exportMarkdown).click();
+  await (await meetingOutput(page, "markdown")).click();
   const markdown = await readFile((await (await markdownEvent).path())!, "utf8");
   expect(markdown.split(technicalHeading)[0]).toContain(mdScope("DTC"));
   expect(markdown.split(technicalHeading)[0]).not.toContain("MARKETPLACE");
@@ -116,6 +128,7 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
 test("PL06 unknown priorities survive a high threshold without zero contribution", async ({ page }) => {
   await load(page, "missing-cogs");
   const summary = page.getByTestId("manager-summary");
+  await openThreshold(summary);
   await summary.getByLabel(labels.meeting.threshold).fill("99999999");
   await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(summary.getByTestId("manager-priority-MISSING_CRITICAL_DATA")).toBeVisible();
@@ -128,7 +141,7 @@ test("PL09 print uses a dedicated manager draft and retains technical audit down
   await page.addInitScript(() => { window.print = () => { document.documentElement.dataset.printInvoked = "true"; }; });
   await load(page);
   // R6：會議頁的列印改由輸出列的「匯出 PDF」（同一個列印版面，window.print()）。
-  await meetingOutput(page, labels.buttons.exportPdf).click();
+  await (await meetingOutput(page, "pdf")).click();
   await expect(page.locator("html")).toHaveAttribute("data-print-invoked", "true");
   await page.emulateMedia({ media: "print" });
   const print = page.getByTestId("manager-summary-print");
