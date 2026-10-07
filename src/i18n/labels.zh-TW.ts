@@ -1052,6 +1052,19 @@ export const scenarios = {
   },
   // ── V3-6 錨點（代理 A：pageV3 假設試算頁——頁首「試算通路」與 ? 說明、匯出本頁選單、基準列、方案欄、精簡表單 placeholder、分段鈕「增減／改成」、結果區、D-V3-12 聲明記住；收尾時刪除仍為空的物件）
   pageV3: {
+    channelHelpAria: "試算通路的說明",
+    channelHelp: "只影響本頁，不改全站篩選。",
+    baselineTitle: "本期基準（{channels}，{period}）",
+    templateHelpAria: "範本的說明",
+    templatePurposeEmpty: "選一個範本，這裡會說明它的用途。",
+    modeRelative: "增減",
+    modeAbsolute: "改成",
+    unitPercent: "%",
+    unitPoints: "個百分點",
+    unitYuan: "元",
+    unitCount: "件",
+    acknowledged: "已了解這是試算，不是預測。",
+    addNote: "最多 3 個方案，都從同一個本期基準算起。",
   },
 } as const;
 

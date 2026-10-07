@@ -7,7 +7,7 @@ import { createSnapshot, hashInput } from "@/application/workspace";
 import { saveScenario } from "@/application/decision";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer } from "@/application/import-wizard";
-import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext } from "@/application/scenario-workspace";
+import { acknowledgeScenarioAssumptions, emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext } from "@/application/scenario-workspace";
 import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction } from "@/application/action-workspace";
 import { createReviewSession, rebuildReviewSnapshot, selectReviewScenario, syncReviewPins } from "@/application/review-session";
 import { finalizeMeeting } from "@/application/meeting";
@@ -53,6 +53,8 @@ async function fullBackup() {
   const context = scenarios.contexts[0], draft = scenarioContextDecision(context);
   draft.scenarios = saveScenario(context.session, [], { id: "p", name: "履約", inputs: { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true } }).map(plan => ({ ...plan, sensitivity: { volumes: ["5", "10", "20"] as [string, string, string] } }));
   scenarios = updateScenarioContext(scenarios, context.id, draft);
+  // V3-6（D-V3-12＝B）：記住「我了解這是試算」的時間（選填）。
+  scenarios = acknowledgeScenarioAssumptions(scenarios, "2026-10-02T06:00:00.000Z");
   const diagnostic = source.snapshot.report.diagnostics[0];
   let actions = addActionDraft(emptyActionWorkspace(), source, "a1", diagnostic?.id);
   actions = editActionManagement(pinAction(actions, "a1", true), "a1", { execution_status: "in_progress" }, "2026-10-01");
@@ -90,6 +92,8 @@ describe("V3-0 備份 v4 欄位清單（backup-schema-v4.json）", () => {
     const restored = await restoreWorkspaceBackup(await fullBackup());
     expect(restored.ui_prefs).toEqual({ last_preset: "last28", view: "list" });
     expect(restored.scenario_workspace.contexts[0].plans[0].sensitivity).toEqual({ volumes: ["5", "10", "20"] });
+    expect(restored.scenario_workspace.assumptions_acknowledged_at).toBe("2026-10-02T06:00:00.000Z");
+    expect(schema.scenario_assumptions_acknowledged.path).toBe("payload.scenario_workspace.assumptions_acknowledged_at");
     expect(restored.action_workspace.items[0].status_updated_at).toBe("2026-10-01");
     expect(restored.meeting_history).toHaveLength(1);
   }, 60_000);

@@ -1796,7 +1796,109 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 .page-title-addon:empty { display: none; }
 
 /* ── V3-6 錨點（代理 A：假設試算——頁首動作、基準列、方案欄並排、精簡表單、分段鈕、結果區；只用 token；在本註解之後、下一個錨點之前新增） ── */
+/* §7.4 共通：hidden 保持掛載的說明、範圍提示、等值換算（small 預設 display:block，要明確隱藏） */
+.scenario-page [hidden], .scenario-help-panel[hidden] { display: none; }
+/* §7.4 頁首動作：試算通路（label＋select＋ ? 說明）與「匯出本頁」；SSR 或本頁沒顯示時放在工作台頂端 */
+.scenario-page-actions-inline { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2); margin: 0 0 var(--space-3); }
+.scenario-channel-field { display: inline-flex; flex-direction: row; align-items: center; gap: var(--space-2); min-width: 0; }
+.scenario-channel-field .ui-field-label { white-space: nowrap; }
+.scenario-channel-field select.ui-field-control { width: auto; min-width: 160px; max-width: 100%; }
+/* C14 `?` 說明：觸發器 16px icon（點擊範圍 24px）；內容 popover 靠右對齊觸發器 */
+.scenario-help { position: relative; display: inline-flex; flex: none; align-items: center; }
+.scenario-help .ui-help-trigger { width: var(--space-5); height: var(--space-5); }
+.scenario-help-panel { position: absolute; top: calc(100% + var(--space-1)); right: 0; display: grid; gap: var(--space-2); }
+.scenario-help-panel p { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-primary); }
 
+/* §7.4 基準列：一列定義列表（不用卡片）＋右側新鮮度 */
+.scenario-baseline { margin: 0 0 var(--space-5); min-width: 0; }
+.baseline-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-5); padding: 0 0 var(--space-3); border-bottom: var(--border-w) solid var(--border-subtle); }
+.decision-workbench .baseline-title { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.baseline-list { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-5); margin: 0; }
+.baseline-list > div { display: inline-flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
+.baseline-list dt { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.baseline-list dd { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text-primary); }
+.baseline-list .number-link { display: inline-block; min-height: var(--space-5); font-weight: inherit; color: inherit; }
+.baseline-freshness { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-left: auto; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.baseline-freshness.ui-notice { flex-basis: 100%; margin-left: 0; color: var(--text-primary); }
+.scenario-baseline .scenario-unavailable { margin-top: var(--space-3); display: grid; gap: var(--space-1); }
+.scenario-baseline .scenario-unavailable ul { margin: 0; padding-left: var(--space-5); }
+.scenario-assumptions, .scenario-technical { margin-top: var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.scenario-assumptions > summary, .scenario-technical > summary { width: max-content; max-width: 100%; font-weight: var(--weight-medium); color: var(--text-secondary); }
+.scenario-assumptions ol { display: grid; gap: var(--space-1); margin: var(--space-2) 0; padding-left: var(--space-5); }
+.scenario-assumptions-caution { margin: 0 0 var(--space-2); color: var(--warning); }
+.scenario-technical .decision-metadata { margin: var(--space-2) 0; }
+.scenario-technical-plans { margin: 0; overflow-wrap: anywhere; }
+
+/* §7.4 方案欄：≥ 1280 最多 3 欄並排（1 個方案時 8/12＋4/12 新增區），< 1280 單欄；每欄底部的結果對齊 */
+.scenario-columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-items: stretch; margin: 0 0 var(--space-6); }
+@media (min-width: 1280px) {
+  .scenario-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .scenario-columns[data-count="1"] { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .scenario-columns[data-count="1"] .scenario-card .scenario-inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-5); }
+}
+/* 每欄佔兩列（表單／結果），用 subgrid 讓各欄的結果區從同一高度開始（不支援 subgrid 時退回各欄自己的兩列） */
+.scenario-columns > .scenario-card { display: grid; grid-row: span 2; grid-template-rows: subgrid; row-gap: var(--space-4); align-content: start; min-width: 0; padding: var(--space-4); background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); }
+.scenario-columns > .scenario-add { grid-row: span 2; }
+.scenario-columns .scenario-card .scenario-form { margin: 0; min-width: 0; }
+.scenario-columns .scenario-card fieldset { display: grid; gap: var(--space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+.scenario-columns .scenario-card legend.sr-only { margin: -1px; }
+.scenario-columns .scenario-card .ui-field-label { display: block; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.scenario-columns .scenario-card input.ui-field-control, .scenario-columns .scenario-card select.ui-field-control { width: 100%; font-size: var(--text-14); line-height: var(--leading-14); }
+.scenario-template-row, .scenario-input-row { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.scenario-columns .scenario-template-row > select.ui-field-control, .scenario-columns .scenario-input-row > input.ui-field-control { flex: 1 1 auto; width: auto; min-width: 0; }
+.scenario-template-row > .ui-btn { flex: none; }
+.scenario-columns .scenario-card .scenario-inputs { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); margin: 0; }
+.scenario-unit { flex: none; min-width: var(--space-4); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); white-space: nowrap; }
+.scenario-columns .scenario-card .ui-field-hint { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.scenario-columns .scenario-card .scenario-ad-note { color: var(--text-secondary); }
+.scenario-columns .scenario-card .scenario-equivalent { font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-regular); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.scenario-columns .scenario-card .ui-field-error { font-size: var(--text-12); line-height: var(--leading-12); color: var(--unfavorable); }
+.scenario-columns .scenario-card .scenario-preset-overwrite { color: var(--warning); }
+.scenario-columns .scenario-card .scenario-accept { display: flex; flex-direction: row; align-items: flex-start; gap: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-regular); color: var(--text-primary); }
+.scenario-columns .scenario-card .scenario-accept .ui-check { width: 16px; height: 16px; min-height: 0; margin: var(--space-1) 0 0; padding: 0; }
+.scenario-acknowledged { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.scenario-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: var(--space-3); }
+/* §7.4 結果：試算後扣廣告後貢獻（24px）、與現況相比、版本或草稿、「選入會議」；下方是敏感度 */
+.scenario-outcome { display: grid; gap: var(--space-3); justify-items: start; align-content: start; padding-top: var(--space-4); border-top: var(--border-w) solid var(--border-subtle); min-width: 0; }
+.scenario-outcome > * { max-width: 100%; }
+.scenario-columns .scenario-result { display: grid; gap: var(--space-1); justify-items: start; margin: 0; padding: 0; border: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.scenario-columns .scenario-result p { margin: 0; }
+.scenario-columns .scenario-result .scenario-result-value { display: block; font-size: var(--text-24); line-height: var(--leading-24); font-weight: var(--weight-semibold); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.scenario-result-delta b { font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
+.scenario-result-reasons { display: grid; gap: var(--space-1); color: var(--text-primary); }
+.scenario-columns .scenario-result ul { margin: 0; padding-left: var(--space-5); color: var(--unfavorable); }
+.scenario-outcome .scenario-sensitivity { justify-self: stretch; margin: 0; padding-top: var(--space-3); }
+.scenario-caution { margin: var(--space-2) 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+/* C10 區段型空狀態：「新增方案」與一句說明（3 個方案時不出現） */
+.scenario-add { align-content: start; min-height: 0; }
+.scenario-add p { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+/* §7.4 方案欄之後：比較表（預設展開）、其他通路的方案、之前的試算 */
+.scenario-compare { margin: 0 0 var(--space-5); }
+.scenario-compare .ui-section-head { margin-bottom: var(--space-3); }
+.decision-workbench .scenario-compare .ui-section-title { margin: 0; }
+.scenario-compare-table caption { padding: 0 0 var(--space-2); text-align: left; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.scenario-compare-table tr.scenario-total { background: transparent; }
+.scenario-page .scenario-other-channels, .scenario-page .scenario-history { margin: 0 0 var(--space-4); padding-top: var(--space-4); border-top: var(--border-w) solid var(--border-subtle); font-size: var(--text-13); line-height: var(--leading-13); }
+.scenario-page .scenario-other-channels > summary, .scenario-page .scenario-history > summary { width: max-content; max-width: 100%; font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.scenario-history article { margin-top: var(--space-3); }
+.scenario-history article h3 { font-size: var(--text-13); line-height: var(--leading-13); }
+.scenario-history ul { display: grid; gap: var(--space-2); margin: var(--space-2) 0; padding-left: var(--space-5); }
+.scenario-other-channels .ui-btn-text, .scenario-history .ui-btn { margin-left: var(--space-2); }
+@media (max-width: 1279px) { .scenario-channel-field select.ui-field-control { min-width: 120px; } }
+@media (max-width: 767px) {
+  .page-actions:has(> .scenario-channel-field) { flex: 1 1 auto; flex-wrap: wrap; min-width: 0; }
+  .scenario-channel-field { flex: 1 1 auto; }
+  .scenario-channel-field select.ui-field-control { flex: 1 1 auto; min-width: 0; }
+  /* 手機：? 說明不浮動，展開在同一列下方（整列寬），不會超出畫面 */
+  .scenario-channel-field { flex-wrap: wrap; }
+  .scenario-help { display: contents; }
+  .scenario-help-panel { position: static; flex-basis: 100%; width: 100%; max-width: none; }
+  .baseline-freshness { margin-left: 0; }
+  .scenario-columns > .scenario-card { padding: var(--space-3); }
+  .scenario-template-row { flex-wrap: wrap; }
+  .scenario-columns .scenario-template-row > select.ui-field-control { flex-basis: 100%; }
+  .scenario-columns .scenario-card input.ui-field-control, .scenario-columns .scenario-card select.ui-field-control { height: var(--control-h-touch); min-height: var(--control-h-touch); }
+}
 
 /* ── V3-6 錨點（代理 B：待辦——頁首徽章與 ? 說明、工具列、看板欄、C13 卡片、「移到」列、空狀態、匯出選單；只用 token；在本註解之後、下一個錨點之前新增） ── */
 

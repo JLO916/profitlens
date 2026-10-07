@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { blankScenarioInputs, createDecisionSession, decisionSignature, emptyDecisionWorkspace, saveAction, saveScenario } from "@/application/decision";
 import { exportWorkspaceBackup, MAX_RAW_VALUE_LINES, MAX_WORKSPACE_BYTES, restoreWorkspaceBackup, WORKSPACE_VERSION, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
 import { addActionDraft, emptyActionWorkspace, pinAction } from "@/application/action-workspace";
-import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext } from "@/application/scenario-workspace";
+import { acknowledgeScenarioAssumptions, activateScenarioEpoch, copyHistoricalScenario, emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext } from "@/application/scenario-workspace";
 import { createReviewSession, selectReviewScenario, syncReviewPins, updateReviewSession } from "@/application/review-session";
 import type { TargetSet } from "@/application/targets";
 import type { EventSet } from "@/application/events";
@@ -323,5 +323,47 @@ describe("R5 review follow-up: sensitivity and status_updated_at exist only in t
     const v4 = JSON.parse(await exportWorkspaceBackup(await fullSource()));
     mutate(v4.payload);
     await expect(restoreWorkspaceBackup(await resign(v4))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+  });
+});
+
+// V3-6（D-V3-12＝B）：「我了解這是試算」勾一次就記住；記住的時間寫進備份 v4 的 scenario_workspace（選填）。
+describe("V3-6 remembered scenario disclaimer (assumptions_acknowledged_at)", () => {
+  it("記住的聲明寫入備份並還原；舊檔沒有欄位時 undefined", async () => {
+    const original = await fullSource();
+    const acknowledged = acknowledgeScenarioAssumptions(original.scenario_workspace!, "2026-10-07T01:02:03.000Z");
+    // 只設欄位，不改 contexts；已記住時回傳原物件（沒有取消）。
+    expect(acknowledged.contexts).toBe(original.scenario_workspace!.contexts);
+    expect(acknowledgeScenarioAssumptions(acknowledged, "2026-10-08T00:00:00.000Z")).toBe(acknowledged);
+    expect(emptyScenarioWorkspace("e")).not.toHaveProperty("assumptions_acknowledged_at");
+    const text = await exportWorkspaceBackup({ ...original, scenario_workspace: acknowledged });
+    expect(JSON.parse(text).payload.scenario_workspace.assumptions_acknowledged_at).toBe("2026-10-07T01:02:03.000Z");
+    const restored = await restoreWorkspaceBackup(text);
+    expect(restored.scenario_workspace.assumptions_acknowledged_at).toBe("2026-10-07T01:02:03.000Z");
+    expect(restored.scenario_workspace.contexts.map(context => context.plans.map(plan => plan.result?.contribution))).toEqual([["284.00"]]);
+    // 沒記住時不寫欄位；舊 v4（沒有欄位）與 v3 還原後都是 undefined。
+    const plainText = await exportWorkspaceBackup(original);
+    expect(JSON.parse(plainText).payload.scenario_workspace).not.toHaveProperty("assumptions_acknowledged_at");
+    expect((await restoreWorkspaceBackup(plainText)).scenario_workspace.assumptions_acknowledged_at).toBeUndefined();
+    expect((await restoreWorkspaceBackup(await asV3(plainText))).scenario_workspace.assumptions_acknowledged_at).toBeUndefined();
+  });
+  it("只在 v4 信封：v3 帶此欄位、或 v4 的值不是 ISO 時間，一律 INVALID_WORKSPACE_FORMAT", async () => {
+    const original = await fullSource();
+    const text = await exportWorkspaceBackup({ ...original, scenario_workspace: acknowledgeScenarioAssumptions(original.scenario_workspace!, "2026-10-07T01:02:03.000Z") });
+    await expect(restoreWorkspaceBackup(await asV3(text))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+    const body = JSON.parse(text);
+    body.payload.scenario_workspace.assumptions_acknowledged_at = "2026-10-07";
+    await expect(restoreWorkspaceBackup(await resign(body))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+  });
+  it("記住之後複製之前的試算，新方案的聲明直接視為已勾；沒記住時維持未勾（copyHistoricalScenario）", async () => {
+    const original = await fullSource();
+    const input = original.input, dataset = validateDataset(input).dataset!;
+    const source = { input, dataset, snapshot: await createSnapshot(dataset, { channels: ["DTC"] }, await hashInput(input)), revision: 1 };
+    const moved = activateScenarioEpoch(original.scenario_workspace!, "next-epoch");
+    const historical = moved.contexts[0];
+    const remembered = copyHistoricalScenario(acknowledgeScenarioAssumptions(moved, "2026-10-07T01:02:03.000Z"), source, historical.id, "plan", "copy");
+    expect(remembered.contexts.find(context => context.status === "current")!.plans.map(plan => plan.inputs.assumptions_accepted)).toEqual([true]);
+    expect(remembered.assumptions_acknowledged_at).toBe("2026-10-07T01:02:03.000Z");
+    const plain = copyHistoricalScenario(moved, source, historical.id, "plan", "copy");
+    expect(plain.contexts.find(context => context.status === "current")!.plans.map(plan => plan.inputs.assumptions_accepted)).toEqual([false]);
   });
 });

@@ -200,6 +200,7 @@ async function pageStates(): Promise<StateMarkup[]> {
     "data-partial": { panel: "data", active: partial, status: "partial" },
     validation: { panel: "validation", active: demo, status: "ready", showValidation: true },
     // ── V3-6 A 新增的頁面狀態在此之後（例如 scenarios-first-visit）──
+    "scenarios-first-visit": { panel: "scenarios", active: goldenDtc, status: "ready" },
 
     // ── V3-6 B 新增的頁面狀態在此之後（例如 actions-empty、actions-list）──
 
@@ -442,6 +443,45 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V3-6 A（假設試算）的 M1 掛載測試在此之後新增（範本 ? popover 的 scenario-preset-purpose／scenario-template-note、範圍提示 hidden 掛載、匯出選單）──
+    it("V3-6 假設試算：範本 ? 說明（用途、只是起點）與範圍提示 hidden 掛載；匯出本頁三項在收合的 details 內；每個方案欄內各一份", () => {
+      for (const name of ["scenarios", "scenarios-first-visit"]) {
+        const { html } = states.find(state => state.name === name)!;
+        const plans = [...html.matchAll(/\sdata-testid="(scenario-\d+)"/g)].map(match => match[1]);
+        expect(plans.length, name).toBe(name === "scenarios" ? 2 : 1);
+        for (const plan of plans) {
+          const column = element(html, `data-testid="${plan}"`)!;
+          const ids = testIdCounts(column);
+          for (const id of ["scenario-preset", "scenario-preset-apply", "scenario-preset-purpose", "scenario-template-note", "scenario-range-volume_change_pct", "scenario-range-one_time_cost", "scenario-equivalent-volume_change_pct", "scenario-absolute-error-volume_change_pct", "scenario-mode-volume_change_pct", "scenario-result"]) expect(ids.get(id), `${name} ${plan} ${id}`).toBe(1);
+          // 範本說明在 ? popover（role=region、hidden）內；觸發器的 aria-controls 指到它。
+          const help = element(column, 'class="ui-popover ui-help-content scenario-help-panel"')!;
+          expect(help, `${name} ${plan}`).toMatch(/^<div id="[^"]+" role="region"[^>]*\shidden=""/);
+          for (const id of ["scenario-preset-purpose", "scenario-template-note"]) expect(help, `${name} ${plan} ${id}`).toContain(`data-testid="${id}"`);
+          const helpId = /^<div id="([^"]+)"/.exec(help)![1];
+          expect(column, `${name} ${plan}`).toContain(`aria-expanded="false" aria-controls="${helpId}"`);
+          expect(idCounts(html).get(helpId), helpId).toBe(1);
+        }
+        // 範圍提示沒有超出時 hidden（方案 1 都在範圍內）；第 2 個方案銷量 250% 超出，提示看得到。
+        expect(openTag(element(html, 'data-testid="scenario-1"')!, 'data-testid="scenario-range-volume_change_pct"'), name).toMatch(/\shidden=""/);
+        if (name === "scenarios") expect(openTag(element(html, 'data-testid="scenario-2"')!, 'data-testid="scenario-range-volume_change_pct"')).not.toMatch(/\shidden=""/);
+        // 頁首「匯出本頁」：SSR 時在工作台頂端；收合的 details（auto-close），三項各一份。
+        const menuTag = openTag(html, 'data-testid="scenario-export-menu"')!;
+        expect(menuTag, name).toMatch(/^<details class="topbar-menu auto-close export-page/);
+        expect(menuTag, name).not.toMatch(/\sopen=""/);
+        const menu = element(html, 'data-testid="scenario-export-menu"')!;
+        for (const id of ["export-page-scenarios", "scenario-export-md", "scenario-export-csv", "scenario-export-json"]) {
+          expect(menu, `${name} ${id}`).toContain(`data-testid="${id}"`);
+          expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+        }
+        // 試算通路的 ? 說明也是 hidden 掛載；試算通路 select 只有一份。
+        expect(testIdCounts(html).get("scenario-channel"), name).toBe(1);
+        expect(occurrences(html, `aria-label="${escapeAttr(labels.scenarios.pageV3.channelHelpAria)}" aria-expanded="false"`), name).toBe(1);
+      }
+      // 其他頁也掛著試算工作台（hidden 切換）：試算通路 select 與頁首插槽各只有一份。
+      for (const { name, html } of loaded()) {
+        expect(testIdCounts(html).get("scenario-channel") ?? 0, name).toBe(1);
+        expect(testIdCounts(html).get("page-actions"), name).toBe(1);
+      }
+    });
 
 
     // ── V3-6 B（待辦）的 M1 掛載測試在此之後新增（頁首 ? 說明、匯出選單 actions-export-*、看板卡「移到」列）──

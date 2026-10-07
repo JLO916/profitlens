@@ -71,6 +71,9 @@ const call = (element: TreeElement, handler: "onClick" | "onChange", value?: str
 // R5-3 試算頁 DOM 契約（SSR，不需任何點擊）：進頁即表單、範本選單、收合的固定假設、版本徽章／草稿、絕對值等值文字。
 const form = labels.scenarioForm;
 const dw = labels.ui.decisionWorkbench;
+const pageV3 = labels.scenarios.pageV3;
+/** V3-6（M1）：開始標籤帶 hidden（關著的 ? 說明、沒有內容的範圍提示）。 */
+const isHidden = (html: string) => /^<[^>]*\shidden=""/.test(html);
 const msw = labels.ui.multiScenarioWorkbench;
 const FIELDS = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
 const noop = () => undefined;
@@ -173,7 +176,15 @@ describe("R5-3 scenario page opens straight onto the form", () => {
     // 兩步：選單旁的「套用範本」按鈕，未選範本時停用；五格都空白時不顯示覆寫提醒。
     expect(element(plan, "scenario-preset-apply", "button")).toMatch(new RegExp(`^<button type="button"[^>]*disabled=""[^>]*>${labels.buttons.applyTemplate}</button>$`));
     expect(plan).not.toContain('data-testid="scenario-preset-overwrite"');
-    expect(plan).not.toContain('data-testid="scenario-preset-purpose"');
+    // V3-6（PRD §7.4、M1）：「只是起點」與用途收進範本旁的 ? 說明，關著時 hidden 但仍掛載；還沒選範本時用途寫提示句。
+    const help = element(plan, "scenario-template-note", "p");
+    expect(text(help)).toBe(labels.scenario.templateNote);
+    const popover = plan.slice(plan.lastIndexOf("<div", plan.indexOf('data-testid="scenario-template-note"')));
+    expect(isHidden(popover)).toBe(true);
+    expect(popover).toMatch(new RegExp(`^<div id="([^"]+)" role="region" aria-label="${pageV3.templateHelpAria}"`));
+    expect(text(element(plan, "scenario-preset-purpose", "p"))).toBe(pageV3.templatePurposeEmpty);
+    const trigger = plan.match(new RegExp(`<button type="button" class="ui-help-trigger" aria-label="${pageV3.templateHelpAria}" aria-expanded="false" aria-controls="([^"]+)"`));
+    expect(trigger?.[1]).toBe(popover.match(/^<div id="([^"]+)"/)?.[1]);
   });
 
   it("warns next to the apply button that a template overwrites assumptions once any of the five fields has a value", async () => {
@@ -191,7 +202,9 @@ describe("R5-3 scenario page opens straight onto the form", () => {
     expect(block).toContain(`>${form.assumptionsSummary}</summary>`);
     expect(block.match(/<li>/g)).toHaveLength((JSON.parse(dw.assumptions) as string[]).length);
     expect(block).not.toContain(labels.scenario.acceptAssumptions);
+    // D-V3-12＝B：工作區還沒記住聲明時，每個方案都有勾選框。
     expect(card(html, 1)).toMatch(new RegExp(`<input type="checkbox"[^>]*/>${labels.scenario.acceptAssumptions}`));
+    expect(card(html, 1)).not.toContain('data-testid="scenario-acknowledged"');
     expect(disclaimerSentences(html).length).toBeLessThanOrEqual(3);
   });
 });
@@ -245,6 +258,8 @@ describe("R5-3 relative / absolute input helpers in the form", () => {
     const ctx = absoluteContext(build.context().session.baseline, 4n);
     const plan = card(render(src, build.workspace), 1);
     const equivalent = (field: string) => text(element(plan, `scenario-equivalent-${field}`, "small"));
+    // V3-6（PRD §7.4）：等值換算只在「改成」模式顯示；「增減」模式時仍掛載（hidden），內容是同一個換算。
+    for (const field of ["volume_change_pct", "discount_change_pp", "ad_change_pct"]) expect(isHidden(element(plan, `scenario-equivalent-${field}`, "small")), field).toBe(true);
     expect(equivalent("volume_change_pct")).toBe(relativeToAbsolute("volume_change_pct", "50", ctx));
     expect(equivalent("volume_change_pct")).toBe(fill(labels.scenarioPresets.absolute.equivalentUnits, { value: fill(labels.assist.units.count, { value: "6" }) }));
     expect(equivalent("discount_change_pp")).toBe(relativeToAbsolute("discount_change_pp", "2", ctx));
@@ -253,7 +268,12 @@ describe("R5-3 relative / absolute input helpers in the form", () => {
     expect(absoluteToRelative("volume_change_pct", "6", ctx)).toEqual({ relative: "50", equivalent: fill(labels.scenarioPresets.absolute.equivalentPct, { value: "+50.0" }) });
     expect(absoluteToRelative("ad_change_pct", "135", ctx)).toEqual({ relative: "-50", equivalent: fill(labels.scenarioPresets.absolute.equivalentPct, { value: "−50.0" }) });
     expect(plan).not.toContain('data-testid="scenario-equivalent-fulfillment_change_pct"');
-    expect(plan).not.toContain('data-testid="scenario-range-');
+    // 範圍提示一律掛載（M1）；五格都在範圍內時全部 hidden、沒有文字。
+    for (const field of ["volume_change_pct", "discount_change_pp", "fulfillment_change_pct", "ad_change_pct", "one_time_cost"]) {
+      const range = element(plan, `scenario-range-${field}`, "small");
+      expect(isHidden(range), field).toBe(true);
+      expect(text(range), field).toBe("");
+    }
   });
 
   it("renders the relative / absolute toggle on volume, discount and ad budget only, with a live range hint", async () => {
@@ -266,14 +286,17 @@ describe("R5-3 relative / absolute input helpers in the form", () => {
       const group = element(plan, `scenario-mode-${field}`, "div");
       expect(group).toContain('role="group"');
       expect(group).toContain(`aria-label="${fill(form.modeGroup, { field: label })}"`);
-      expect(group).toContain(`aria-pressed="true">${labels.scenario.modeRelative}</button>`);
-      expect(group).toContain(`aria-pressed="false">${labels.scenario.modeAbsolute}</button>`);
+      expect(group).toContain('class="ui-segmented scenario-mode"');
+      expect(group).toContain(`aria-pressed="true">${pageV3.modeRelative}</button>`);
+      expect(group).toContain(`aria-pressed="false">${pageV3.modeAbsolute}</button>`);
       expect(group).not.toContain("disabled");
     }
     expect(plan).not.toContain('data-testid="scenario-mode-fulfillment_change_pct"');
     expect(plan).not.toContain('data-testid="scenario-mode-one_time_cost"');
     const hint = element(plan, "scenario-range-volume_change_pct", "small");
     expect(hint).toContain('role="status"');
+    expect(isHidden(hint)).toBe(false);
+    expect(plan).toMatch(/aria-describedby="[^"]*-volume_change_pct-range"/);
     expect(text(hint)).toBe(rangeHint("volume_change_pct", "150"));
     expect(text(hint)).toBe(fill(labels.scenarioPresets.range.pct, { min: "−90", max: "+100" }));
   });
@@ -282,7 +305,7 @@ describe("R5-3 relative / absolute input helpers in the form", () => {
     const html = render(await source("zero_ad"));
     const plan = card(html, 1);
     const group = element(plan, "scenario-mode-ad_change_pct", "div");
-    expect(group).toMatch(new RegExp(`aria-pressed="false" disabled="">${labels.scenario.modeAbsolute}</button>`));
+    expect(group).toMatch(new RegExp(`aria-pressed="false" disabled="">${pageV3.modeAbsolute}</button>`));
     expect(text(element(plan, "scenario-unavailable-ad_change_pct", "small"))).toBe(labels.scenarioPresets.absolute.unavailable.ad_change_pct);
   });
 });
@@ -367,7 +390,8 @@ describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", ()
     expect(setState).not.toHaveBeenCalled();
     expect(input(tree, labels.scenario.volume.label).props.value).toBe("4.4");
     expect(textOf(byTestId(tree, "scenario-absolute-note-volume_change_pct"))).toBe(fill(labels.scenarioPresets.absolute.nonIntegerUnits, { units: fill(labels.assist.units.count, { value: "4.4" }) }));
-    expect(findAll(tree, item => item.props["data-testid"] === "scenario-absolute-error-volume_change_pct")).toHaveLength(0);
+    // V3-6（M1）：換算錯誤一律掛載，沒有錯誤時 hidden。
+    expect(byTestId(tree, "scenario-absolute-error-volume_change_pct").props.hidden).toBe(true);
     expect(textOf(byTestId(tree, "scenario-equivalent-volume_change_pct"))).toBe(pct("+10.0"));
   });
 
