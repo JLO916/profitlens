@@ -2183,6 +2183,23 @@ export const empty = {
   steps: [ "匯入資料", "看哪裡賺、哪裡賠", "決定要做什麼" ],
   // ── V3-8 錨點（代理 C：stateV3 全站空狀態、載入骨架與錯誤狀態（§7.10、C10）；收尾時刪除仍為空的物件）
   stateV3: {
+    /** §7.10 首次進入：按鈕列下方的「需要的檔案」（16／600）與三份日報各一句內容說明（TemplateTable layout="guide" 的「內容」欄）。 */
+    filesHeading: "需要的檔案",
+    fileDescriptions: {
+      sales: "每日、每通路、每商品的原價、折扣、退款、成本",
+      costs: "每日、每通路的平台抽成、金流、物流、其他費用",
+      ads: "每日、每通路的廣告投放費",
+    },
+    /** §7.10 錯誤（C10 頁面型）：標題句尾加句號；一行原因沿用載入時的錯誤訊息；第三個動作把焦點移到下方的問題清單。 */
+    errorTitle: "資料無法載入。",
+    viewIssues: "查看問題清單",
+    /** §7.10 區段空狀態（C10 區段型）：標題加句號、說明 ≤ 14 字。 */
+    noPlansTitle: "尚無方案。",
+    noPlansBody: "新增後就能試算。",
+    meetingNoScenarioTitle: "本次沒有選入方案。",
+    meetingNoScenarioBody: "到假設試算選入。",
+    meetingHistoryTitle: "還沒有結束的會議。",
+    meetingHistoryBody: "結束會議後會出現在這裡。",
   },
 } as const;
 
@@ -3060,7 +3077,8 @@ const LEGACY_PREFIXES: readonly (readonly [string, string, string])[] = [
   ["", "format", "units"],
   ["format", "format", "more less spendMore spendLess earnMore earnLess rise fall turnedPositive turnedLoss flat favorable unfavorable emptyWithReason roundingNote"],
   ["", "", "brand"],
-  ["", "", "emptyState:empty"],
+  // V3-8 C：列出 v2 的四個鍵（不整棵對照），empty.stateV3 是 v3 新鍵，不屬於舊路徑。
+  ["emptyState", "empty", "eyebrow title body steps"],
   ["ui", "meeting", "managerSummary reviewWorkbench:review reviewSession:session"],
   ["ui", "overview", "channelTable topThree overview:page"],
   ["ui.workspacePanels", "data.panel", "previewColumns fileGrain meta dateRange datasetCaution mappingsSummary previewNote previewTag rowCount noRows previewRegionAria previewCaption lineNumber " +

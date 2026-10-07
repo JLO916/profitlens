@@ -10,7 +10,6 @@ import { DataWorkspace, Diagnosis } from "./workspace-panels";
 import { AiPanel } from "./ai-panel";
 import { AiCollapse } from "./ai-collapse";
 import { getAiCapability, type AiCapability } from "@/application/ai-client";
-import { IssueList } from "./issue-list";
 import { ImportWizard } from "./import-wizard";
 import { clearWizardMemory } from "@/application/import-wizard";
 import type { RawValuesByFile, TaxConversion } from "@/application/tax-basis";
@@ -52,6 +51,8 @@ import { PageHeader, ShellFooter } from "./shell/page-chrome";
 
 // V3-3 A2 imports（期間列／橫幅／手機期間底部面板的子元件）
 import { NeedsAttention, PeriodBar, presetFilters } from "./shell/period-bar";
+// V3-8 C imports（首次進入／載入中／錯誤的頁面型容器）
+import { ErrorState, FirstRunState, LoadingState } from "./shell/page-states";
 
 
 type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "meeting" | "validation";
@@ -73,7 +74,7 @@ export function Icon({ name, size = 20 }: { name: string; size?: number }) {
     scenarios: "M4 4v16h16 M8 16l4-5 4 2 4-8",
     actions: "M8 5h12 M8 12h12 M8 19h12 M3 5h1 M3 12h1 M3 19h1",
     meeting: "M4 5h16v15H4z M4 10h16 M8 3v4 M16 3v4",
-    arrow: "M5 12h14 M13 6l6 6-6 6", lens: "M4 18V6h5v12 M13 18V3h6v15 M3 21h18",
+    arrow: "M5 12h14 M13 6l6 6-6 6",
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] ?? paths.data} /></svg>;
 }
@@ -560,9 +561,10 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
             busy={status === "loading"} />
           {visible && <NeedsAttention filterError={filterError} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={() => setPanel("data")} yoyReason={presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null} />}
         </div>}
-        {status === "empty" && !showImport && panel !== "validation" && <section className="empty-state"><div className="empty-illustration"><Icon name="lens" size={56} /></div><p className="eyebrow">{labels.emptyState.eyebrow}</p><h2>{labels.emptyState.title}</h2><p>{labels.emptyState.body}</p><button className="button primary large" onClick={() => void load("demo")}>{labels.buttons.loadDemo} <Icon name="arrow" size={18} /></button><div className="empty-steps">{labels.emptyState.steps.map((step, index) => <span key={step}>{index + 1} {step}</span>)}</div></section>}
-        {status === "loading" && !refiltering && <section className="loading-state" aria-busy="true"><div className="spinner" /><h2>{labels.ui.dashboard.loading.heading}</h2><p>{labels.ui.dashboard.loading.body}</p><div className="skeleton-grid">{[0, 1, 2, 3].map(i => <div className="skeleton" key={i} />)}</div></section>}
-        {status === "error" && <section className="error-state"><span className="error-icon">!</span><h2>{labels.status.error}</h2><p role="alert">{error}</p><div className="button-row"><button className="button primary" onClick={() => void load(selected)}>{labels.ui.dashboard.errorState.retry}</button>{active && <button className="button quiet" onClick={() => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); }}>{labels.ui.dashboard.errorState.back}</button>}</div>{issues.length > 0 && <IssueList issues={issues} />}</section>}
+        {/* V3-8 C（§7.10、C10 頁面型）：首次進入、載入中、錯誤共用同一個容器（shell/page-states.tsx，高度＝總覽首屏）；空狀態的「匯入資料」與頁首、資料狀態 popover 走同一個 startImport。 */}
+        {status === "empty" && !showImport && panel !== "validation" && <FirstRunState onLoadDemo={() => void load("demo")} onImport={startImport} />}
+        {status === "loading" && !refiltering && <LoadingState />}
+        {status === "error" && <ErrorState error={error} issues={issues} onRetry={() => void load(selected)} onBack={active ? () => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); } : undefined} />}
         {visible && <div key={active.id} className="view-content" aria-busy={refiltering || undefined} hidden={importing || undefined}>{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} />}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} summaryContext={{ datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, missingItems: issues.length, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiCollapse capability={aiCapability}><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></AiCollapse></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench active={!!visible && panel === "scenarios"} source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}

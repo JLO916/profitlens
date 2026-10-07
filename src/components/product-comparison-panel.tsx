@@ -274,7 +274,8 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
         </details>
         <p className="ui-toolbar-end product-count" aria-live="polite" data-testid="product-count">{fill(page.showing, { n: formatCount(rows.length, "L2"), total: formatCount(comparison.rows.length, "L2") })}</p>
       </div>
-      {rows.length === 0 ? <div className="ui-empty-block product-empty" data-testid="product-empty"><p>{labels.products.panel.noProducts}</p>{filtered && <button type="button" className="ui-btn ui-btn-secondary" data-testid="product-clear-filters" onClick={clearFilters}>{page.clearFilters}</button>}</div> : <div className="table-scroll product-table-scroll" tabIndex={0} role="region" aria-label={copy.tableAria}><table className="table ui-table product-list" data-testid="product-table" role="table">
+      {/* V3-8 C（§7.10 篩選無結果，C10 篩選型）：標題「沒有符合篩選的商品。」＋「清除篩選」（有篩選時）；篩選變更由上方 product-count（aria-live=polite）宣告。 */}
+      {rows.length === 0 ? <div className="ui-empty-block product-empty" data-testid="product-empty"><p className="ui-empty-title">{labels.products.panel.noProducts}</p>{filtered && <button type="button" className="ui-btn ui-btn-secondary" data-testid="product-clear-filters" onClick={clearFilters}>{page.clearFilters}</button>}</div> : <div className="table-scroll product-table-scroll" tabIndex={0} role="region" aria-label={copy.tableAria}><table className="table ui-table product-list" data-testid="product-table" role="table">
         <caption className="sr-only">{copy.tableCaption}</caption>
         <thead role="rowgroup"><tr role="row">{fullColumns.map(headCell)}</tr></thead>
         <tbody role="rowgroup">{rows.map(row => <tr role="row" key={JSON.stringify([row.channel, row.sku])}>{fullColumns.map(column => column.key === "sku" ? rowHeaderCell(column, row, 0) : bodyCell(column, row, 0))}</tr>)}</tbody>
