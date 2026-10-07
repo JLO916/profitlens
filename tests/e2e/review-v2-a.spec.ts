@@ -2,6 +2,7 @@ import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
 import { clearButton, closeStorage, dismissSavePrompt, navigateTo, openMeeting, openStorage, openValidation, selectScenarioChannel, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { acceptAssumptions } from './actions-helpers-v3';
+import { meetingExportButton, openThreshold, summaryAgenda } from './review-helpers-v3';
 import { fill, labels } from '../../src/i18n';
 import { formatAmountL1, formatAmountL3 } from '../../src/application/presentation';
 import { readFileSync } from 'node:fs';
@@ -95,7 +96,8 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  // R6：會議稿在獨立分頁「會議紀錄」（openMeeting 切到該分頁）。
  await openMeeting(page);const summary=page.getByTestId('manager-summary');
  await page.getByLabel(labels.meeting.name,{exact:true}).fill('合成資料月度營運會議');await page.getByLabel(labels.meeting.notes,{exact:true}).fill('待補物流報價，僅為靜態條件比較。');
- await summary.getByLabel(labels.meeting.threshold,{exact:true}).fill('1000');await summary.getByRole('button',{name:labels.buttons.apply,exact:true}).click();
+ // V3-7：會議門檻收在議程 ② 的「調整門檻」（details.meeting-threshold，預設收合）；先展開再填與套用。
+ await openThreshold(page);await summary.getByLabel(labels.meeting.threshold,{exact:true}).fill('1000');await summary.getByRole('button',{name:labels.buttons.apply,exact:true}).click();
  for(const channel of ['DTC','MARKETPLACE']) {
   const choices=page.getByLabel(fill(review.scenarioSelect,{channel}),{exact:true});const option=await choices.locator('option').filter({hasText:templateRe(review.planOption,{name:`${channel} 方案 1`})}).getAttribute('value');await choices.selectOption(option!);
  }
@@ -104,7 +106,8 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  await page.getByLabel(labels.meeting.decision,{exact:true}).selectOption('needs_data');
  // R6：未置頂的五項收在議程 ⑥ 的「其他待辦（5）」（details.meeting-other-actions）；主管摘要不再有方案與待辦區塊。
  await expect(page.getByTestId('meeting-agenda-6').locator('details.meeting-other-actions > summary')).toHaveText(fill(summaryCopy.appendixActions,{n:5}));
- await expect(summary.locator('summary').filter({hasText:fill(summaryCopy.appendixActions,{n:5})})).toHaveCount(0);
+ // V3-7：manager-summary 是整個議程 <ol>（① – ⑥）；「主管摘要沒有方案與待辦區塊」改看議程 ① – ③。
+ await expect(summaryAgenda(summary).locator('summary').filter({hasText:fill(summaryCopy.appendixActions,{n:5})})).toHaveCount(0);
  // 離開會議分頁再回來：總覽只剩一行入口（本期會議狀態＋「前往會議紀錄」），由入口回到會議紀錄。
  await navigateTo(page,'products');await navigateTo(page,'overview');
  const entry=page.getByTestId('overview-meeting-entry');const entryText=fill(labels.overview.snapshotUi.meetingEntry,{state:labels.meeting.decisions.need_data});await expect(entry).toContainText(entryText);await entry.getByRole('button',{name:fill(labels.overview.snapshotUi.meetingGoAria,{text:entryText,go:labels.meetingPage.goToMeeting}),exact:true}).click();await expect(page.getByTestId('meeting-page')).toBeVisible();
@@ -122,7 +125,8 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
  await expect(summary.getByLabel(labels.meeting.threshold,{exact:true})).toHaveValue('1000.00');await expect(page.getByLabel(labels.meeting.decision,{exact:true})).toHaveValue('needs_data');
  // R6：選入方案的試算結果列在議程 ⑤（meeting-agenda-5）。
  const scenarioResults=page.getByTestId('meeting-agenda-5').getByTestId('meeting-scenario-results');await expect(scenarioResults.getByTestId('meeting-scenario-result')).toHaveCount(2);await expect(scenarioResults.getByTestId('meeting-scenario-result').filter({hasText:'DTC 方案 1'})).toContainText(l1('284.00'));await expect(scenarioResults.getByTestId('meeting-scenario-result').filter({hasText:'MARKETPLACE 方案 1'})).toContainText(l1('-6.50'));
- const mdEvent=page.waitForEvent('download');await page.getByTestId('meeting-outputs').getByRole('button',{name:labels.buttons.exportMarkdown,exact:true}).click();const mdDownload=await mdEvent;await mdDownload.saveAs(resolve(`verification/review-v2-a-meeting-${info.project.name}.md`));const md=await readFile((await mdDownload.path())!,'utf8');const[main,appendix]=md.split(`## ${labels.sections.technicalDetails}`);
+ // V3-7：輸出列改成頁首「匯出會議」下拉（export-page-meeting）；先展開再依名稱點。
+ const mdEvent=page.waitForEvent('download');await (await meetingExportButton(page,labels.buttons.exportMarkdown)).click();const mdDownload=await mdEvent;await mdDownload.saveAs(resolve(`verification/review-v2-a-meeting-${info.project.name}.md`));const md=await readFile((await mdDownload.path())!,'utf8');const[main,appendix]=md.split(`## ${labels.sections.technicalDetails}`);
  expect((main.match(/合成行動第/g)||[])).toHaveLength(3);expect((appendix.match(/合成行動第/g)||[])).toHaveLength(5);expect(main).toMatch(templateRe(summaryCopy.mdComparison,{threshold:formatAmountL3('1000.00')},'m')); // V3-2b：門檻在 Markdown 取到分（L3，千分位）
  await page.screenshot({path:resolve(`verification/review-v2-a-meeting-${info.project.name}.png`),fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

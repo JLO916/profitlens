@@ -8,6 +8,7 @@ import { formatAmountL1, formatAmountL2, formatAmountL3, formatDateL1 } from '..
 import { closePeriodSheet, dismissSavePrompt, navigateTo, openMeeting, openPeriodSheet, openStorage, openValidation, ruleHeadline, startChannelContext, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from './import-wizard-helpers';
 import { acceptAssumptions, actionDrawer, closeActionDrawer, decisionExportButton, evidenceDrawer, openActionDrawer, type DecisionFormat } from './actions-helpers-v3';
+import { downloadMeetingExport } from './review-helpers-v3';
 // 每個案例都是長流程（載入 → 健檢／試算 → 行動 → 下載／備份／換檔重核）；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
 test.describe.configure({timeout:90_000});
 const aw=labels.ui.actionsWorkbench, ws=labels.ui.workspaceStorage, ms=labels.ui.managerSummary, pv3=labels.actions.pageV3;
@@ -37,6 +38,8 @@ async function load(page:Page){await page.goto('/');await openValidation(page);a
 async function selectChannel(page:Page,value:string){await openPeriodSheet(page);await page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true}).selectOption(value);await closePeriodSheet(page);}
 async function discardReplacement(page:Page){const dialog=page.getByRole('dialog',{name:labels.ui.replacementDialog.heading,exact:true});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:labels.ui.replacementDialog.discardAndContinue,exact:true}).click();await expect(dialog).not.toBeVisible();}
 async function download(page:Page,label:string){const event=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();return readFile((await(await event).path())!,'utf8');}
+/** V3-7：會議頁的一頁摘要 Markdown（v2 輸出列的「匯出 Markdown」）在頁首「匯出會議」下拉（export-page-meeting → meeting-export-markdown）；按鈕名稱不變。 */
+const meetingMarkdown=(page:Page)=>downloadMeetingExport(page,labels.buttons.exportMarkdown);
 /** V3-6：決策下載（v2 頁面上的三顆按鈕）搬進待辦頁頁首「匯出本頁」（export-page-actions → actions-export-{md|csv|json}）；按鈕文字仍是 labels.downloads.decision*。 */
 async function downloadDecision(page:Page,format:DecisionFormat){const button=await decisionExportButton(page,format);const event=page.waitForEvent('download');await button.click();return readFile((await(await event).path())!,'utf8');}
 /** R5：證據改為可搜尋的 checkbox 清單（fieldset role=group，名稱＝evidencePicker）。 */
@@ -89,13 +92,13 @@ test('A2 會議選定方案與交辦固定來源，切檢視保留且明確更�
  for(const [label,value]of Object.entries({[labels.actions.owner]:'營運主管',[labels.actions.metric]:'履約費用',[labels.actions.due]:'2026-10-15',[labels.actions.stop]:'服務品質下降就停止',[labels.actions.extraData]:'物流報價'}))await action.getByLabel(label,{exact:true}).fill(value);
  await action.getByRole('button',{name:labels.buttons.confirm,exact:true}).click();await expect(action).toContainText(aw.tagConfirmed);
  await navigateTo(page,'overview');await openMeeting(page);const agenda5=page.getByTestId('meeting-agenda-5');const choice=page.getByLabel(fill(labels.ui.reviewWorkbench.scenarioSelect,{channel:'DTC'}),{exact:true});const selected=await choice.locator('option').filter({hasText:fill(labels.ui.reviewWorkbench.planOption,{name:'主管會議履約方案'})}).getAttribute('value');expect(selected).toBeTruthy();await choice.selectOption(selected!);
- const markdown=await download(page,labels.buttons.exportMarkdown);for(const value of ['284.00','14.00','營運主管','服務品質下降就停止','主管會議履約方案'])expect(markdown).toContain(value);
+ const markdown=await meetingMarkdown(page);for(const value of ['284.00','14.00','營運主管','服務品質下降就停止','主管會議履約方案'])expect(markdown).toContain(value);
  // R6：選入方案的試算結果列在議程 ⑤（meeting-scenario-results）；切全站檢視後會議仍保留固定來源的方案。
  await expect(agenda5.getByTestId('meeting-scenario-result')).toHaveCount(1);await expect(agenda5.getByTestId('meeting-scenario-result')).toContainText('主管會議履約方案');await expect(agenda5.getByTestId('meeting-scenario-result')).toHaveAttribute('data-status','current');
  await selectChannel(page,'MARKETPLACE');await expect(agenda5.getByTestId('meeting-scenario-results')).toContainText('主管會議履約方案');
- const retained=await download(page,labels.buttons.exportMarkdown);expect(retained.split(technicalAppendix)[0]).toContain(mdScenarioContribution(formatAmountL2('284.00')));
+ const retained=await meetingMarkdown(page);expect(retained.split(technicalAppendix)[0]).toContain(mdScenarioContribution(formatAmountL2('284.00')));
  await page.getByRole('button',{name:labels.buttons.updateMeetingSource,exact:true}).click();await expect(agenda5.getByTestId('meeting-scenario-results-empty')).toHaveText(ms.noScenario);await expect(agenda5.getByTestId('meeting-scenario-results')).toHaveCount(0);
- const refreshed=await download(page,labels.buttons.exportMarkdown);expect(refreshed.split(technicalAppendix)[0]).not.toContain(mdScenarioContribution(formatAmountL2('284.00')));
+ const refreshed=await meetingMarkdown(page);expect(refreshed.split(technicalAppendix)[0]).not.toContain(mdScenarioContribution(formatAmountL2('284.00')));
 });
 
 
