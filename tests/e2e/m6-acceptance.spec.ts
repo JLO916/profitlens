@@ -1,4 +1,4 @@
-import { clearWorkspace, closePeriodSheet, dismissSavePrompt, navigateTo, openPeriodSheet, ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { clearWorkspace, closePeriodSheet, dismissSavePrompt, isMobile, navigateTo, openPeriodSheet, ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from "./import-wizard-helpers";
 import { acceptAssumptions, decisionExportButton } from "./actions-helpers-v3";
 import { labels, fill } from "../../src/i18n";
@@ -46,7 +46,18 @@ interface DecisionDocument {
 
 async function stage(page: Page, directory: string) {
   await openWizard(page);
-  await expect(wizard(page)).toContainText(wizardCopy.privacyNote);
+  // V3-8（§7.7.2 全版專注模式）：匯入中頁首 h1＝「匯入資料」、描述＝隱私一句（PageHeader .page-heading .subtitle，桌機看得見）；
+  // 手機頁首文字收成 sr-only，改由精靈內一行 p.wizard-privacy（aria-hidden）顯示同一句，桌機這一行隱藏。
+  await expect(page.getByRole("heading", { level: 1, name: wizardCopy.title, exact: true })).toHaveCount(1);
+  const privacy = page.locator(".page-heading .subtitle");
+  await expect(privacy).toHaveText(wizardCopy.privacyNote);
+  const inlinePrivacy = wizard(page).locator(".wizard-privacy");
+  await expect(inlinePrivacy).toHaveText(wizardCopy.privacyNote);
+  if (isMobile(page)) await expect(inlinePrivacy).toBeVisible();
+  else {
+    await expect(privacy).toBeVisible();
+    await expect(inlinePrivacy).toBeHidden();
+  }
   await setWizardFiles(page, directory);
   const manifest = JSON.parse(await readFile(resolve(directory, "manifest.json"), "utf8")) as { dataset_id: string };
   await setWizardManifest(page, resolve(directory, "manifest.json"));

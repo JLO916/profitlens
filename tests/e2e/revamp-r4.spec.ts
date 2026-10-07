@@ -5,6 +5,7 @@ import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { formatAmountL1, formatCount, formatPerUnit, formatRateL1 } from "../../src/application/presentation";
 import { openWizard, setWizardFiles, nextFromFiles, confirmMappingIfShown, chooseBasis, confirmAndCheck, commitWizard } from "./import-wizard-helpers";
 import { choosePreset, clickReplacing, closeDownloads, closeStorage, dismissSavePrompt, isMobile, navigateTo, openDownloads, openStorage, openValidation, periodSummary, periodSummaryText, presetButton } from "./replacement-helpers";
+import { expectIssueRow, issueCells, issueColumns, issueTable, showReasonCodes, versionInfo } from "./data-page-helpers-v3";
 
 // R4：輔助指標橫列、「去年同期」快捷、目標達成率、趨勢檔期區帶、備份 v4 來回。
 // 合成資料（一個通路「官網」、一個商品）：2025-06-01～2026-08-31，2025 年每天原價收入 100.00、2026 年每天 200.00，成本一律 40.00；
@@ -111,16 +112,44 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await expect(periodSummary(page)).toContainText(MONTH_SUMMARY);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("6200.00"));
   await navigateTo(page, "data");
+  // V3-8（§7.7.1 第 8 點）：精靈匯入後「版本與來源資訊」多一列「匯入時間」（還原備份後沒有這一列）。
+  const importedAtRow = versionInfo(page).locator("dt").filter({ hasText: labels.data.pageV3.version.importedAt });
+  await expect(importedAtRow).toHaveCount(1);
   const targetsCsv = ["period_start,period_end,channel,metric,target", "2026-08-01,2026-08-31,ALL,net_revenue,8000.00", "2026-07-01,2026-07-31,ALL,gross_profit,5000.00"].join("\n");
   await page.getByLabel(labels.targets.upload, { exact: true }).setInputFiles({ name: "targets.csv", mimeType: "text/csv", buffer: Buffer.from(targetsCsv) });
   await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(2);
   // 錯誤檔：指標不在白名單 → 問題列出行號，原目標保留。
   await page.getByLabel(labels.targets.upload, { exact: true }).setInputFiles({ name: "bad.csv", mimeType: "text/csv", buffer: Buffer.from("period_start,period_end,channel,metric,target\n2026-08-01,2026-08-31,ALL,profit,1\n") });
-  await expect(page.getByTestId("targets-issues")).toContainText("INVALID_METRIC");
+  // V3-8（§7.7.1 第 6 點）：錯誤清單改成與資料問題同一組欄位的六欄表（檔案｜行號｜欄位｜問題｜修法｜原因碼），外層仍是 role=alert；原因碼欄預設收合。
+  const targetIssues = page.getByTestId("targets-issues");
+  await expect(targetIssues).toHaveAttribute("role", "alert");
+  await expect(targetIssues).toContainText("INVALID_METRIC");
+  await expect(targetIssues.getByRole("region", { name: fill(labels.data.pageV3.issueTable.sideRegionAria, { name: labels.targets.entry }), exact: true })).toBeVisible();
+  await expect(issueTable(targetIssues).locator("thead th")).toHaveText([...issueColumns]);
+  const targetRow = issueTable(targetIssues).locator("tbody tr");
+  await expect(targetRow).toHaveCount(1);
+  const invalidMetric = issueCells(fill(labels.targets.errors.INVALID_METRIC, { line: 2, value: "profit" }));
+  await expectIssueRow(targetRow, { file: "targets.csv", line: 2, field: "metric", ...invalidMetric });
+  await expect(targetRow.locator("td.issue-code")).toBeHidden();
+  await showReasonCodes(targetIssues);
+  await expectIssueRow(targetRow, { file: "targets.csv", line: 2, field: "metric", ...invalidMetric, code: "INVALID_METRIC" });
   await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(2);
+  // 檔期的錯誤檔（迄日早於起日）：同一張六欄表，原檔期不建立；再讀正確檔後錯誤清單消失。
+  await page.getByLabel(labels.events.upload, { exact: true }).setInputFiles({ name: "bad-events.csv", mimeType: "text/csv", buffer: Buffer.from("start,end,label\n2026-08-16,2026-08-10,夏季特賣\n") });
+  const eventIssues = page.getByTestId("events-issues");
+  await expect(eventIssues).toHaveAttribute("role", "alert");
+  await expect(eventIssues.getByRole("region", { name: fill(labels.data.pageV3.issueTable.sideRegionAria, { name: labels.events.entry }), exact: true })).toBeVisible();
+  const eventRow = issueTable(eventIssues).locator("tbody tr");
+  await expect(eventRow).toHaveCount(1);
+  const periodOrder = issueCells(fill(labels.events.errors.PERIOD_ORDER, { line: 2 }));
+  await expectIssueRow(eventRow, { file: "events.csv", line: 2, field: "end", ...periodOrder });
+  await showReasonCodes(eventIssues);
+  await expectIssueRow(eventRow, { file: "events.csv", line: 2, field: "end", ...periodOrder, code: "PERIOD_ORDER" });
+  await expect(page.getByTestId("events-table")).toHaveCount(0);
   const eventsCsv = "start,end,label\n2026-08-10,2026-08-16,夏季特賣\n";
   await page.getByLabel(labels.events.upload, { exact: true }).setInputFiles({ name: "events.csv", mimeType: "text/csv", buffer: Buffer.from(eventsCsv) });
   await expect(page.getByTestId("events-table").locator("tbody tr")).toHaveCount(1);
+  await expect(eventIssues).toHaveCount(0);
   await navigateTo(page, "overview");
   await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: formatAmountL1("8000.00"), rate: formatRateL1("0.775") }));
   await expect(page.getByTestId("kpi-target-gross_profit")).toHaveText(fill(labels.targets.mismatch, { start: "2026-07-01", end: "2026-07-31" }));
@@ -166,6 +195,11 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await closeStorage(page);
   // 資料頁可逐列刪除：刪掉毛利那列後只剩一列。
   await navigateTo(page, "data");
+  // 還原後的資料來源頁：目標與檔期表回來；先前讀檔留下的錯誤清單清空；沒有「匯入時間」列。
+  await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(2);
+  await expect(page.getByTestId("events-table").locator("tbody tr")).toHaveCount(1);
+  await expect(page.getByTestId("targets-issues")).toHaveCount(0);
+  await expect(importedAtRow).toHaveCount(0);
   await page.getByTestId("targets-table").getByRole("button", { name: `${labels.targets.removeRow} 3`, exact: true }).click();
   await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(1);
 });

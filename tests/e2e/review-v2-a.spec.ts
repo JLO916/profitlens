@@ -3,6 +3,7 @@ import { clearButton, closeStorage, dismissSavePrompt, navigateTo, openMeeting, 
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
 import { acceptAssumptions } from './actions-helpers-v3';
 import { meetingExportButton, openThreshold, summaryAgenda } from './review-helpers-v3';
+import { expectHeaderOrder } from './data-page-helpers-v3';
 import { fill, labels } from '../../src/i18n';
 import { formatAmountL1, formatAmountL3 } from '../../src/application/presentation';
 import { readFileSync } from 'node:fs';
@@ -33,11 +34,17 @@ async function golden(p:Page){await p.goto('/');await openValidation(p);await p.
 const storage=(p:Page)=>openStorage(p);
 /** V3-3：下載後收起儲存選單——768–900 寬時 .menu-panel 橫跨整個版面，開著會蓋住下方的匯入精靈。 */
 async function backup(p:Page){const s=await storage(p);const event=p.waitForEvent('download');await s.getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();const text=await readFile((await(await event).path())!,'utf8');await closeStorage(p);return text;}
+/**
+ * V3-8（§7.7.2）：第 4 步頂部 import-status 改成 L1 一行（帶 data-classification）；既有的檢核結果句（labels.importWizard.result.*）移到 import-result-note。
+ */
+const resultNote=(p:Page)=>p.getByTestId('import-result-note');
+async function expectValidCandidate(p:Page){await expect(wizardStatus(p)).toHaveAttribute('data-classification','valid');await expect(resultNote(p)).toHaveText(labels.importWizard.result.valid);}
 /** R3: the alternative fixture + its manifest go through the four-step wizard and stop after the check (not committed), so the guard tests can cancel and retry the commit. */
-async function stageAlternative(p:Page){await openWizard(p);await setWizardFiles(p,resolve('tests/fixtures/alternative'));await setWizardManifest(p,resolve('tests/fixtures/alternative/manifest.json'));await nextFromFiles(p);await confirmMappingIfShown(p);await chooseBasis(p,'exclusive');await confirmAndCheck(p,'valid');await expect(wizardStatus(p)).toContainText(labels.importWizard.result.valid);}
+async function stageAlternative(p:Page){await openWizard(p);await setWizardFiles(p,resolve('tests/fixtures/alternative'));await setWizardManifest(p,resolve('tests/fixtures/alternative/manifest.json'));await nextFromFiles(p);await confirmMappingIfShown(p);await chooseBasis(p,'exclusive');await confirmAndCheck(p,'valid');await expectValidCandidate(p);}
 
 test('A3 示範替換可取消，下載尚未確認不能替換，確認後才繼續',async({page},info)=>{
- await golden(page);await navigateTo(page,'data');await page.getByRole('button',{name:labels.buttons.loadDemo,exact:true}).click();await expect(guard(page)).toBeVisible();
+ // V3-8（§7.7.1 第 1 點）：有資料時資料來源頁頁首「匯入資料」主要在前、「載入示範資料」次要在後（整頁只有這一顆「載入示範資料」）。
+ await golden(page);await navigateTo(page,'data');await expectHeaderOrder(page,true);await expect(page.getByRole('button',{name:labels.buttons.loadDemo,exact:true})).toHaveCount(1);await page.getByRole('button',{name:labels.buttons.loadDemo,exact:true}).click();await expect(guard(page)).toBeVisible();
  await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(status(page)).toContainText('Golden');
  await page.getByRole('button',{name:labels.buttons.loadDemo,exact:true}).click();await guard(page).getByRole('button',{name:dlg.saveFirst,exact:true}).click();
  const event=page.waitForEvent('download');await guard(page).getByRole('button',{name:labels.buttons.downloadBackup,exact:true}).click();const text=await readFile((await(await event).path())!,'utf8');expect(JSON.parse(text).schema_version).toBe(WORKSPACE_VERSION);
@@ -47,7 +54,7 @@ test('A3 示範替換可取消，下載尚未確認不能替換，確認後才�
 });
 test('A3 新CSV套用取消保留預覽，明示繼續後才改金額；恢復取消不丟候選',async({page})=>{
  await golden(page);const original=await backup(page);await stageAlternative(page);
- await commitButton(page).click();await expect(guard(page)).toBeVisible();await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(wizardStatus(page)).toContainText(labels.importWizard.result.valid);await expect(commitButton(page)).toBeVisible();await expect(status(page)).toContainText('Golden');
+ await commitButton(page).click();await expect(guard(page)).toBeVisible();await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expectValidCandidate(page);await expect(commitButton(page)).toBeVisible();await expect(status(page)).toContainText('Golden');
  await commitButton(page).click();await guard(page).getByRole('button',{name:dlg.discardAndContinue,exact:true}).click();await expect(wizard(page)).toHaveCount(0);await expect(status(page)).toContainText('alternative-import');await expect(page.getByTestId('kpi-contribution_after_marketing').locator('.kpi-value')).toHaveText(l1('10.00'));
  const s=await storage(page);await s.getByLabel(store.selectBackupFile,{exact:true}).setInputFiles({name:'review.json',mimeType:'application/json',buffer:Buffer.from(original)});await expect(page.getByRole('region',{name:store.restorePreviewAria})).toBeVisible();
  await s.getByRole('button',{name:store.applyRestore,exact:true}).click();await guard(page).getByRole('button',{name:labels.buttons.cancel,exact:true}).click();await expect(page.getByRole('region',{name:store.restorePreviewAria})).toBeVisible();await expect(status(page)).toContainText('alternative-import');
