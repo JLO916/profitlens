@@ -1,5 +1,16 @@
 # Status
 
+## Revamp v3｜V3-9a P1 新增功能：計算與資料層（完成，未推送、未部署；V3-9 拆批後的前半）
+
+PRD §10.1 F12／F13／F9 落地：損益兩平 MER（`src/application/breakeven-mer.ts`，獨立版本 `breakeven-mer-v1`，D-V3-17＝C；總覽「其他常用指標」之後的獨立段＋結論句＋`?` 說明＋計算與來源；分析 CSV／Excel／主管摘要 Markdown 只新增列；扣廣告前貢獻 ≤ 0 回傳 null 加原因碼）；待辦廣告決策標籤（暫停／調整／加碼，使用者自選；編輯器 select、看板與清單徽章、決策 MD／CSV／JSON）＋備份 v5（`profitlens-workspace-v5`，v1–v4 仍可還原，`backup-schema-v5.json`＋遷移測試；還原 v5 不再出現「這版改了什麼」）；每日／每週管理損益表（`src/application/pnl-table.ts` 只呼叫 domain 既有函式；總覽「進階」details 內收合的報表型表格：日／週切換、顯示零值列、第一欄 sticky、每格可開計算與來源、U+2212；D-V3-19＝A）。labels 新增 `assist.breakevenV3` 23、`actions.adDecisionV3` 7、`overview.pnlV3` 16 鍵；既有鍵不變。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit 117 檔／2,311 測試全過（負載平均降到 3–8 時 17 秒跑完；負載 13–44 時 meeting-backup／meeting-page 的「不同資料集」案例會逾時，見 §5）、`lint:design` exit 0（棘輪與 V3-8 相同）、build pass、E2E 全套 728 passed（21.5m）、0 failed、0 skipped（V3-8：680；本批新增 48 條：breakeven-mer 4、ad-decision 2、pnl-table 5、workspace-storage 的 v4 還原 1，各 ×4 專案）；禁區 diff 空（白名單本批為空，也沒有新增）；`assist-kpi-v1` 輸出不變（`export-numeric` 基準只新增 2 列）；testid 刪除數 0（新增 assist-breakeven-*、action-ad-decision、board-card-{n}-ad-decision、action-{n}-ad-decision、pnl-table、pnl-granularity-*、pnl-show-zero）；`feature-retention.csv` #26、#40–#42、#59、#60 重新核對。
+- 本批驗收重點：手算 golden——損益兩平 MER 本期 2,470 ÷ 705 ＝ 3.503546099291（高於實際 MER 5.49）、上期 2,250 ÷ 870 ＝ 2.586206896552，三種邊界各有案例；管理損益表日欄與週欄加總＝golden 本期 13 個值、demo 42 日欄加總＝computed_summary；備份 v5 key_paths ＝ v4 ＋ 1，v1–v4 還原測試全過。
+- 畫面基準：`verification/revamp-v3/V3-9a/snapshots/{desktop,laptop,tablet,mobile}/01–09.png` 共 36 張（baseline.spec `--update-snapshots` 4 passed），重跑核對 4 passed、0 張差異（總覽截圖的「進階」仍收合，管理損益表與損益兩平段在 01／02-overview 內）；首屏量測：metrics.spec 6 passed（`_meta.batch=V3-9a`）：首屏位置與 V3-8 完全相同（1440 本期一句話頂 192px、KPI 帶底 419px、扣廣告後貢獻值頂 323px、三件事首列底 561px、KPI 前可聚焦 9；390 一句話頂 116px、KPI 帶底 555px、可聚焦 3）；1280 頂欄 48px 一列；各頁到精靈步驟 1 最多 2 次點擊；含稅匯入經資料狀態路徑 6 次（同 V3-8）；First Load JS gzip 509.5 KiB（V3-8 505.5；+4.0 KiB，breakeven-mer 與 pnl-table）；Lighthouse：1440 與 390 各 6 個快照步驟 accessibility 全部 100（與 V3-8 相同）；首頁 performance 1440＝100、390＝94（V3-8：100／97；行動版 timespan TBT：載入示範資料 1146 ms（V3-8 1118）、切到通路健檢 785（726）、切到商品毛利 85（75）、切到會議紀錄 966（918）；CLS 全部與 V3-8 相同：載入示範資料 1440＝0、390＝0.001，390 切到商品毛利 0.054 既有）。失敗審核只剩會議紀錄頁的 `label-content-name-mismatch` 10 個節點（與 V3-7／V3-8 相同；V3-10 連 E2E 一起改名）。流程報告 `verification/revamp-v3/V3-9a/lighthouse/flow-desktop-1440.html`、`flow-mobile-390.html`。
+- 偏離（詳見驗收文件 §5 與 DECISIONS 2026-10-07 V3-9a）：佔淨營收 % 欄是一般文字（D-V3-31）；單日格抽屜沒有階梯、副標「7/20–7/20」（V3-9b）；收合時掛載 559 個按鈕；標籤只進決策匯出與備份、徽章中性色（D-V3-32）；本期超過 92 天只提供每週；高負載時兩個會議測試逾時（單獨跑通過）。
+- 未執行／待人工：H2、H3 依使用者 2026-10-07 指示略過；H1、H4 未執行。
+- 下一批：V3-9b（F8、F10、F14、F22；F15／F16 待使用者提供檔案）。
+
 ## Revamp v3｜V3-8 資料來源、匯入精靈、空狀態（完成，未推送、未部署）
 
 PRD §7.7／§7.10 落地：資料來源頁依 §7.7.1 重排（資料狀態一行 → 問題表第二段（六欄、原因碼欄收合、工具列「下載問題清單 CSV」＝D-V3-28 依 PRD 執行）→ 範圍與金額基準兩欄定義列表 → 前處理表 → 選填資料並列 → 來源預覽三個收合 details → 版本與來源資訊 details → 範本 3×3；頁首沒有資料時「載入示範資料」主要；健檢沒有結果改 C10 空狀態＋「查看健檢規則」）；匯入精靈全版專注模式（匯入中 h1「匯入資料」＋隱私一句、期間列／橫幅／頁面內容 hidden 掛載；步驟名 h2、C20 stepper、取消匯入在版頭、底部 sticky 動作列；步驟 1 拖放區與 C3 檔案列、範本改 TemplateTable；步驟 2 已對照欄收合與 ? 說明；步驟 3 金額基準說明、換算欄位／比較期間／通路收合（含稅時可見控制 12）；步驟 4 L1 狀態一行與前處理表）；全站空狀態（首次進入 h2＋兩顆按鈕＋「需要的檔案」表，無插圖／eyebrow／步驟列；載入骨架與錯誤狀態同容器等高；區段空狀態三要素，會議「前往假設試算」）。labels 新增 `data.pageV3` 41、`importWizard.wizardV3` 32、`empty.stateV3` 13 鍵；既有鍵不變。
