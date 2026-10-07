@@ -118,7 +118,9 @@ async function scenarios(): Promise<Record<string, string>> {
   render("import-step-3-inclusive", createElement(StepBasis, { state: basis, dispatch: noop }));
   const confirmed = wizardReducer(basis, { type: "confirm" });
   const checked = wizardReducer(confirmed, { type: "checked", candidate: runCheck(confirmed) });
-  render("import-step-4-inclusive", createElement(StepReview, { state: checked, filenames: {}, onCommit: noop, busy: false, memoryPersistent: false }));
+  render("import-step-4-inclusive", createElement(StepReview, { state: checked, filenames: {}, memoryPersistent: false }));
+  // V3-8 B（§7.7.2）：「套用這批資料」（import-commit）搬到精靈的底部固定動作列，以 reducer 推進後的狀態渲染整個精靈。
+  render("import-step-4-wizard", createElement(ImportWizard, { onCommit: asyncNoop, onCancel: noop, busy: false, localSaveConsented: false, initialState: checked }));
   const prepared = checked.candidate!;
 
   // 資料來源頁：含稅換算、目標／檔期與其錯誤、資料問題表。

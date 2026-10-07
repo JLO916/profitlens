@@ -1776,6 +1776,38 @@ export const importWizard = {
   },
   // ── V3-8 錨點（代理 B：wizardV3 匯入精靈全版模式——stepper、步驟標題句型、檔案槽、對照收合、金額基準說明、檢核狀態一行；收尾時刪除仍為空的物件）
   wizardV3: {
+    /** 版頭 h2 前的 sr-only 前綴（§7.7.2：h2 只寫目前步驟名）。 */
+    stepOf: "第 {n} 步，共 {total} 步：",
+    /** 步驟 1 檔案槽 C3 列的欄頭（視覺用；每格內容本身可讀）。 */
+    fileColumns: { role: "檔案", name: "檔名", encoding: "編碼", rows: "列數", status: "狀態" },
+    /** 檔案槽狀態標籤（C8）；「還沒選檔」「讀取中…」沿用 fileEmpty／fileReading。 */
+    fileState: { ready: "已讀取", failed: "錯誤" },
+    fileSize: "{size} · {columns} 欄",
+    removeAria: "移除{file}",
+    /** 步驟 2 每份檔的區段標題（§7.7.2 表格第 2 列）。 */
+    mappingTitle: "{file} · 已對照 {mapped}／{total} 欄 · {pending} 欄需要確認",
+    mappedSummary: "已對照的 {n} 欄",
+    mappedRegionAria: "{file} 已對照的欄位",
+    fieldHelpAria: "{label}的定義",
+    /** 步驟 3 金額基準三個選項下的一行說明。 */
+    basisHelp: {
+      exclusive: "金額不含營業稅，直接使用，不換算。",
+      inclusive: "金額含營業稅，依下方稅率逐列換算成未稅。",
+      unsure: "先看報表的欄位說明或發票，確認後再選。",
+    },
+    convertCount: "將換算 {n} 個欄位",
+    adjustConvert: "調整換算欄位",
+    periodsSummary: "{mode}：上期 {previous} · 本期 {current}",
+    periodsUnset: "上期與本期還沒設定。",
+    adjustPeriods: "調整比較期間",
+    channelsSelected: "已選 {n} 個通路：{channels}",
+    adjustChannels: "調整通路",
+    /** 步驟 4 頂部狀態一行（L1）。 */
+    statusReady: "可以套用：{files} 份檔案、{rows} 列、{errors} 項錯誤、{warnings} 項提醒",
+    statusPartial: "可套用已有範圍：{files} 份檔案、{rows} 列、{pending} 項待補、{warnings} 項提醒",
+    statusBlocked: "無法套用：{errors} 項錯誤",
+    preprocessingHead: { field: "欄位", raw: "含稅合計（元）", converted: "未稅合計（元）", rate: "稅率" },
+    preprocessingTableAria: "各欄位的含稅與未稅合計",
   },
 } as const;
 
