@@ -80,14 +80,14 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     expect(editor(rest)).toBe(editor(props(workspace, 0, { variant: "list" })));
   });
 
-  it("內容段：範圍一行 → 7 欄（C11：label 在上、for 指到輸入）→ 狀態 select＋狀態更新日 → 進度紀錄；fieldset 與 sr-only legend 保留", () => {
+  it("內容段：範圍一行 → 7 欄（C11：label 在上、for 指到輸入）→ 狀態 select＋狀態更新日 → 廣告決策 select（V3-9a F13）→ 進度紀錄；fieldset 與 sr-only legend 保留", () => {
     const w = editActionManagement(editBoundAction(workspace, "cited", { owner_role: "營運", deadline: "2026-10-20" }), "cited", { execution_status: "blocked" }, "2026-10-02");
     const html = editor(props(w, 0));
     const content = section(html, copy.content);
     expect(content.indexOf('<p class="action-editor-scope">')).toBeGreaterThan(content.indexOf('class="action-editor-heading"'));
     expect(content).toContain(`<legend class="sr-only">${fill(ui.editLegend, { n: 1 })}</legend>`);
     const fieldLabels = [...content.matchAll(/<label class="ui-field-label" for="([^"]+)">([^<]*)<\/label>/g)];
-    expect(fieldLabels.map(match => match[2])).toEqual([labels.actions.problem, labels.actions.step, labels.actions.owner, labels.actions.metric, labels.actions.due, labels.actions.stop, labels.actions.extraData, labels.actions.status, labels.actions.progress]);
+    expect(fieldLabels.map(match => match[2])).toEqual([labels.actions.problem, labels.actions.step, labels.actions.owner, labels.actions.metric, labels.actions.due, labels.actions.stop, labels.actions.extraData, labels.actions.status, labels.actions.adDecisionV3.field, labels.actions.progress]);
     const ids = idCounts(html);
     for (const [, id, label] of fieldLabels) {
       expect(ids.get(id), label).toBe(1);

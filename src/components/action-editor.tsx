@@ -1,7 +1,7 @@
 "use client";
 import { useId } from 'react';
 import type { Fact } from '@/domain/types';
-import { ACTION_EXECUTION_STATUSES, actionDocuments, contextFor, editActionManagement, editBoundAction, evidenceAllowed, filterEvidenceChoices, moveActionUp, pinAction, removeBoundAction, toggleEvidenceId, type ActionContext, type ActionWorkspace, type ActionRebindPreview, type ActionExecutionStatus, type BoundAction } from '@/application/action-workspace';
+import { ACTION_EXECUTION_STATUSES, AD_DECISIONS, actionDocuments, contextFor, editActionManagement, editBoundAction, evidenceAllowed, filterEvidenceChoices, moveActionUp, pinAction, removeBoundAction, setAdDecision, toggleEvidenceId, type ActionContext, type ActionWorkspace, type ActionRebindPreview, type ActionExecutionStatus, type AdDecision, type BoundAction } from '@/application/action-workspace';
 import { formatMetric, metricDefinitions, type Layer } from '@/application/presentation';
 import { channelsLabel, demoAlias, scopeLabel } from '@/application/copy';
 import { fill, labels } from '@/i18n';
@@ -11,6 +11,7 @@ import { fill, labels } from '@/i18n';
 const ui = labels.ui.actionsWorkbench;
 const board = labels.actionBoard;
 const copy = labels.actions.drawerV3;
+const adCopy = labels.actions.adDecisionV3;
 export type ActionDocument = ReturnType<typeof actionDocuments>[number];
 const fields = [['problem', labels.actions.problem], ['action', labels.actions.step], ['owner_role', labels.actions.owner], ['validation_metric', labels.actions.metric], ['deadline', labels.actions.due], ['stop_condition', labels.actions.stop], ['required_data', labels.actions.extraData]] as const;
 type FieldKey = typeof fields[number][0];
@@ -22,6 +23,10 @@ export function factLabel(f: Fact, alias: boolean) { const def = metricDefinitio
 /** HTML ids cannot carry whitespace; every card shares the same owner list, so a sanitized collision is harmless. */
 function ownersListId(id: string) { return `action-owners-${id.replace(/[^A-Za-z0-9_-]/g, '_')}`; }
 export function evidenceTag(document: ActionDocument, confirmed: boolean) { return document.evidence_review_required ? ui.tagReviewRequired : confirmed ? ui.tagConfirmed : ui.tagDraft; }
+/** V3-9a（PRD §10.1 F13、§7.5 第 7 點）：C8 廣告決策徽章（看板卡與清單項的狀態標籤旁）；沒有標就不渲染。中性色：只是使用者自選的分類，不是好壞。 */
+export function AdDecisionBadge({ value, testId }: { value: AdDecision | undefined; testId: string }) {
+  return value === undefined ? null : <span className="ui-lozenge action-ad-decision-badge" data-testid={testId}>{fill(adCopy.badge, { decision: adCopy.options[value] })}</span>;
+}
 
 export interface EditorProps {
   /** V3-6：'list'＝清單檢視的內嵌編輯器（三段之後保留置頂、往上移、移除的按鈕列）；'drawer'＝待辦編輯抽屜（底部動作列由 ActionDrawer 提供，本元件不渲染按鈕列）。未傳入時同 'list'。 */
@@ -55,6 +60,8 @@ export function ActionEditor({ variant = 'list', workspace, item, index, documen
         </div>)}</div>
         <div className="action-editor-grid action-editor-status">
           <div className="ui-field"><label className="ui-field-label" htmlFor={controlId('status')}>{labels.actions.status}</label><select id={controlId('status')} className="ui-field-control action-status-select" aria-label={labels.actions.status} aria-describedby={item.status_updated_at ? controlId('status-updated') : undefined} value={item.execution_status ?? 'not_started'} onChange={e => onStatus(e.target.value as ActionExecutionStatus)}>{statuses.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{item.status_updated_at && <small id={controlId('status-updated')} className="ui-field-hint">{fill(board.statusUpdated, { date: item.status_updated_at })}</small>}</div>
+          {/* V3-9a（PRD §10.1 F13）：狀態之後的「廣告決策」select（不標／暫停／調整／加碼），使用者自選、即時生效；「不標」＝清除。 */}
+          <div className="ui-field action-editor-ad-decision"><label className="ui-field-label" htmlFor={controlId('ad-decision')}>{adCopy.field}</label><select id={controlId('ad-decision')} className="ui-field-control action-ad-decision-select" aria-label={adCopy.field} data-testid="action-ad-decision" value={item.ad_decision ?? ''} onChange={e => change(() => setAdDecision(workspace, card.id, e.target.value === '' ? undefined : e.target.value as AdDecision))}><option value="">{adCopy.none}</option>{AD_DECISIONS.map(value => <option key={value} value={value}>{adCopy.options[value]}</option>)}</select></div>
           <div className="ui-field action-editor-progress"><label className="ui-field-label" htmlFor={controlId('progress')}>{labels.actions.progress}</label><textarea id={controlId('progress')} className="ui-field-control" aria-label={labels.actions.progress} rows={3} maxLength={2000} value={item.progress_notes ?? ''} onChange={e => change(() => editActionManagement(workspace, card.id, { progress_notes: e.target.value }))} /></div>
         </div>
       </fieldset>

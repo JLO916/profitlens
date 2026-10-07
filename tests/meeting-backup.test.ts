@@ -10,7 +10,7 @@ import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction }
 import { appendMeeting, exportMeetingMarkdown, finalizeMeeting, freezeMeeting, MAX_MEETING_HISTORY, type Meeting } from "@/application/meeting";
 import { fill, labels } from "@/i18n";
 import { formatAmountL2, formatSignedDelta } from "@/application/presentation";
-import { exportWorkspaceBackup, restoreWorkspaceBackup, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
+import { exportWorkspaceBackup, restoreWorkspaceBackup, WORKSPACE_VERSION, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
 
 const inputs = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
 async function source(name = "golden", filters: AnalysisFilters = {}) {
@@ -63,7 +63,8 @@ describe("R6-1 backup v4 carries meeting_history (additive, same version string)
     const { backup, history } = await workspace();
     const text = await exportWorkspaceBackup(backup);
     const wire = JSON.parse(text);
-    expect(wire.schema_version).toBe("profitlens-workspace-v4");
+    // V3-9a 起寫出 v5（v4＋待辦 ad_decision）；meeting_history 的形狀不變。
+    expect(wire.schema_version).toBe(WORKSPACE_VERSION);
     expect(wire.payload.meeting_history).toEqual(JSON.parse(JSON.stringify(history)));
     const restored = await restoreWorkspaceBackup(text);
     expect(restored.meeting_history).toEqual(history);

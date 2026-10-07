@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blankScenarioInputs, blankSensitivity, createDecisionSession, decisionSignature, emptyDecisionWorkspace, saveScenario, type SensitivityInputs } from "@/application/decision";
-import { exportWorkspaceBackup, restoreWorkspaceBackup, type WorkspaceBackupSource } from "@/application/workspace-backup";
+import { exportWorkspaceBackup, restoreWorkspaceBackup, WORKSPACE_VERSION, type WorkspaceBackupSource } from "@/application/workspace-backup";
 import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, updateScenarioContext, type ScenarioWorkspace } from "@/application/scenario-workspace";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import { validateDataset } from "@/domain/validation";
@@ -45,7 +45,8 @@ describe("R5-4 sensitivity inputs travel with scenario plans in backup v4 (addit
     const original = await setup();
     const text = await exportWorkspaceBackup(original);
     const wire = JSON.parse(text);
-    expect(wire.schema_version).toBe("profitlens-workspace-v4");
+    // V3-9a 起寫出 v5（v4＋待辦 ad_decision）；敏感度欄位的形狀不變。
+    expect(wire.schema_version).toBe(WORKSPACE_VERSION);
     const [p, q, r] = wire.payload.scenario_workspace.contexts[0].plans;
     expect(p.sensitivity).toEqual({ volumes: ["-10", "0", "10"] });
     expect(q.sensitivity).toEqual({ volumes: ["5", "", ""] });

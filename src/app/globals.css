@@ -2478,7 +2478,10 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 
 /* ── V3-9a 錨點（代理 B：廣告決策標籤的編輯器欄位與卡片徽章（C8 lozenge）；只用 token） ── */
-
+/* F13：編輯器「內容」段的廣告決策 select 接在狀態之後（兩欄格線的第二格；窄版一欄），高度與字級沿用 .action-editor-section select.ui-field-control。 */
+.action-editor-section select.action-ad-decision-select { appearance: auto; white-space: nowrap; }
+/* F13：清單項標題列多一個徽章時，標題吃掉剩餘空間，兩個標籤一起靠右（只有一個標籤時與原本相同）。 */
+.action-card > .section-heading > h3 { margin-right: auto; }
 
 /* ── V3-9a 錨點（代理 C：管理損益表（報表型表格：費用列「減：」、小計列 600／1px、合計列 600／2px、數字右對齊 tabular、第一欄 sticky、零值列切換）；只用 token） ── */
 
