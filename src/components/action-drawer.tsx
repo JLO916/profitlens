@@ -4,6 +4,7 @@ import { taipeiToday, type BoundAction } from "@/application/action-workspace";
 import { formatDateL1 } from "@/application/presentation";
 import { fill, labels } from "@/i18n";
 import { statusLabels } from "./action-editor";
+import { trapTabKey } from "./shell/focus-trap";
 import { ShellIcon } from "./shell/shell-icon";
 
 const copy = labels.actions.drawerV3;
@@ -13,7 +14,7 @@ const board = labels.actionBoard;
  * V3-6（PRD §7.5 第 4 點、§6.3 #41、§9.4 C6）：待辦編輯抽屜。B 代理在 actions-workbench.tsx 以
  * `<ActionDrawer item index title … >{<ActionEditor … variant="drawer" showPin={false} />}</ActionDrawer>` 接線。
  * 右側 560／≥1440 640／768–1279 480／<768 全螢幕；固定標題列 56px（h2＋副標＋關閉 icon 鈕）→ 可捲動內容（三段，不用分頁）→ 固定底部動作列 64px
- * （關閉、置頂、往上移；移除是危險文字按鈕放最右）。modal dialog（showModal：頁面其他部分 inert，焦點圈在抽屜內）；Esc（cancel）與關閉都交給 onClose，
+ * （關閉、置頂、往上移；移除是危險文字按鈕放最右）。modal dialog（showModal 讓頁面其他部分 inert；焦點圈由 shell/focus-trap.ts 的 trapTabKey 處理：Tab 在最後一個控制繞回第一個、Shift+Tab 反向）；Esc（cancel）與關閉都交給 onClose，
  * 卸載時回焦到開啟它的元素，不存在時（例如移除後）用 fallbackFocus。props 名稱是 B／C 的介面契約，只能新增選填 props。
  */
 export interface ActionDrawerProps {
@@ -54,7 +55,7 @@ export function ActionDrawer({ item, index, title, onClose, pinned, onPin, canMo
     if (dialog && !dialog.open && typeof dialog.showModal === "function") dialog.showModal();
     return () => { if (dialog?.open) dialog.close(); const target = opener.current; if (target?.isConnected) target.focus(); else fallback.current?.(); };
   }, []);
-  return <dialog ref={dialogRef} className="action-drawer" data-testid="action-drawer" aria-labelledby={titleId} aria-describedby={subtitleId} onCancel={event => { event.preventDefault(); onClose(); }} onClose={onClose} data-action-id={item.card.id} data-index={index + 1}>
+  return <dialog ref={dialogRef} className="action-drawer" data-testid="action-drawer" aria-labelledby={titleId} aria-describedby={subtitleId} onCancel={event => { event.preventDefault(); onClose(); }} onClose={onClose} onKeyDown={trapTabKey} data-action-id={item.card.id} data-index={index + 1}>
     <div className="action-drawer-head">
       <div className="action-drawer-head-text"><h2 id={titleId}>{title}</h2><p id={subtitleId} className="action-drawer-sub">{actionDrawerSubtitle(item)}</p></div>
       <button type="button" className="ui-btn ui-btn-icon action-drawer-close" aria-label={labels.buttons.close} data-testid="action-drawer-close" onClick={onClose} autoFocus><ShellIcon name="close" size={20} /></button>

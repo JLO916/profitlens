@@ -222,7 +222,9 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
     setCaptured(next.session); setScenarios(next.scenarios);
     setNotice(ui.noticeRebuilt);
   }
-  function download(format: "md" | "csv" | "json") {
+  function download(format: "md" | "csv" | "json", menu?: HTMLDetailsElement | null) {
+    // 與待辦頁的「匯出本頁」一致：點完項目就關閉選單、焦點回到 summary（E2E 代理 E1 回報的不一致）；hooks harness 沒有 DOM 時 menu 為空。
+    if (menu?.open) { menu.open = false; menu.querySelector<HTMLElement>(":scope > summary")?.focus(); }
     try {
       if (onExport) { onExport(format); setNotice(ui.noticeDownloadedActions); return; }
       const record = refreshDecisionSession(session, snapshot, revision);
@@ -241,7 +243,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
   // V3-6（PRD §7.4 頁首、§6.3 #39）：「匯出本頁」頁內下拉，三項呼叫 v2「匯出」區的同一個 download(format)；Esc／點外面關閉沿用 Dashboard 的 `.topbar-menu.auto-close`。
   const exportMenu = <details className="topbar-menu auto-close export-page scenario-export" data-testid="scenario-export-menu">
     <summary className="ui-btn ui-btn-secondary" data-testid="export-page-scenarios">{labels.products.pageV3.exportPage}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
-    <div className="menu-panel ui-menu">{EXPORT_FORMATS.map(([format, label]) => <button key={format} type="button" className="ui-menu-item" data-testid={`scenario-export-${format}`} onClick={() => download(format)}>{label}</button>)}</div>
+    <div className="menu-panel ui-menu">{EXPORT_FORMATS.map(([format, label]) => <button key={format} type="button" className="ui-menu-item" data-testid={`scenario-export-${format}`} onClick={event => download(format, event?.currentTarget?.closest("details") ?? null)}>{label}</button>)}</div>
   </details>;
   return <div className="decision-workbench" data-testid="decision-workbench">
     <ScenarioPageActions active={active}>{exportMenu}</ScenarioPageActions>

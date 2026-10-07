@@ -353,10 +353,12 @@ describe('R5-5 ActionsWorkbench markup (board default, list on request)', () => 
   it('shows the empty note and no board when there are no actions', async () => {
     const s = await source();
     const html = render({ workspace: emptyActionWorkspace(), source: s });
-    // V3-6（§7.5 第 6 點）：頁面型空狀態，工具列與看板都不渲染。
+    // V3-6（§7.5 第 6 點）：頁面型空狀態，看板不渲染；工具列仍在（同 v2，可先選看板／清單）；「新增待辦」只在空狀態區（頁首此時不放）。
     expect(html).toContain('data-testid="actions-empty"');
     expect(html).toContain(`<h2>${labels.actions.pageV3.emptyTitle}</h2><p>${labels.actions.pageV3.emptyBody}</p>`);
     expect(html).not.toContain('data-testid="action-board"');
-    expect(html).not.toContain('data-testid="actions-view-board"');
+    expect(html).toContain('data-testid="actions-view-board"');
+    expect(html).not.toContain('data-testid="actions-add"');
+    expect(html).toContain('data-testid="actions-empty-add"');
   });
 });

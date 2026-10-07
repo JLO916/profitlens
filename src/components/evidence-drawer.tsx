@@ -8,6 +8,7 @@ import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS } from "@/domain/types";
 import type { Dataset, FileName, Metric, MetricName, Metrics, Period, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
+import { trapTabKey } from "./shell/focus-trap";
 import { ShellIcon } from "./shell/shell-icon";
 
 export interface EvidenceSelection {
@@ -197,6 +198,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       onCancel={(event) => { event.preventDefault(); onClose(); }}
+      onKeyDown={trapTabKey}
     >
       <header className="evidence-head">
         <div className="evidence-head-text">
