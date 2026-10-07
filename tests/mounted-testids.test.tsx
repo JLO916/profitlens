@@ -996,6 +996,27 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-9b B（匯出變體）的 M1 掛載測試在此之後新增（選單內變體選擇器一份、三個格式項目不變）──
+    it("V3-9b B 匯出變體（F14）：各頁狀態的頂欄匯出選單（收合的 details）內，「一頁摘要」分組標題之後有一列版本切換；三顆 download-variant-* 各一份、預設標準版，PDF／Excel／PPT／會議紀錄 Markdown 四項不變", () => {
+      for (const { name, html } of loaded()) {
+        expect(openTag(html, 'data-testid="download-menu"'), name).not.toMatch(/\sopen=""/);
+        const menu = element(html, 'data-testid="download-menu"')!;
+        const group = element(menu, 'data-testid="download-group-summary"')!;
+        expect(testIdCounts(html).get("download-variant-picker"), name).toBe(1);
+        expect(openTag(group, 'data-testid="download-variant-picker"'), name).toMatch(/^<div class="ui-segmented export-variant-picker" role="group" aria-label="[^"]+" data-testid="download-variant-picker">$/);
+        expect(group.indexOf('data-testid="download-meeting-section"'), name).toBeLessThan(group.indexOf('data-testid="download-variant-picker"'));
+        expect(group.indexOf('data-testid="download-variant-picker"'), name).toBeLessThan(group.indexOf('aria-labelledby="download-pdf-name"'));
+        for (const variant of ["standard", "boss", "client"]) {
+          expect(testIdCounts(html).get(`download-variant-${variant}`), `${name} ${variant}`).toBe(1);
+          expect(openTag(group, `data-testid="download-variant-${variant}"`), `${name} ${variant}`).toContain(`aria-pressed="${variant === "standard"}"`);
+          for (const id of [`download-variant-${variant}-name`, `download-variant-${variant}-hint`]) expect(idCounts(html).get(id), `${name} #${id}`).toBe(1);
+        }
+        const names = [...group.matchAll(/class="export-item-name">([^<]+)<\/span>/g)].map(match => match[1]);
+        expect(names, name).toEqual([labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown].map(escapeAttr));
+      }
+      // 空工作區（沒有可看的資料）沒有一頁摘要分組，也就沒有版本切換。
+      const { html } = states.find(state => state.name === "shell-empty")!;
+      expect(html).not.toContain("download-variant");
+    });
 
 
     // ── V3-9b C（投影模式）的 M1 掛載測試在此之後新增（present-toggle 只在總覽與會議頁各一份、投影中內容仍掛載）──

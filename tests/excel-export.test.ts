@@ -18,6 +18,9 @@ import { fill, labels } from "@/i18n";
 
 const copy = labels.excelExport;
 const SHEET_KEYS = ["summary", "channels", "bridge", "products", "actions", "basis"] as const;
+/** V3-9b（D-V3-8、PRD §9.6）：六張既有工作表之後多一張管理損益表；待辦工作表最後多一欄廣告決策（F13）。 */
+const SHEET_NAMES = [...SHEET_KEYS.map(key => copy.sheets[key]), labels.exports.variantsV3.pnlSheet];
+const AD_DECISION = labels.actions.adDecisionV3.csvColumn;
 const HYPERLINK = '=HYPERLINK("x")';
 const HTML = "<b>注意</b>";
 
@@ -64,15 +67,16 @@ const col = Object.fromEntries(Object.entries(copy.columns).map(([sheet, columns
 
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated results", () => {
-  it("has the six sheets in order, with sheet names and headers taken from labels", async () => {
+describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated results (V3-9b: plus the management P&L sheet)", () => {
+  it("has the six sheets in order, with sheet names and headers taken from labels; V3-9b adds the management P&L last and the ad-decision column last on the actions sheet", async () => {
     const workbook = buildExcelWorkbook(await golden());
-    expect(workbook.sheets.map(sheet => sheet.name)).toEqual(SHEET_KEYS.map(key => copy.sheets[key]));
-    expect(new Set(workbook.sheets.map(sheet => sheet.name)).size).toBe(6);
+    expect(workbook.sheets.map(sheet => sheet.name)).toEqual(SHEET_NAMES);
+    expect(new Set(workbook.sheets.map(sheet => sheet.name)).size).toBe(7);
     for (const key of SHEET_KEYS) {
       const sheet = sheetOf(workbook, key);
-      expect(sheet.header, key).toEqual(Object.values(col[key]));
-      expect(sheet.header, key).toEqual(Object.values(copy.columns[key]).map((label, index) => excelHeader(label, sheet.formats![index])));
+      const extra = key === "actions" ? [AD_DECISION] : [];
+      expect(sheet.header, key).toEqual([...Object.values(col[key]), ...extra]);
+      expect(sheet.header, key).toEqual([...Object.values(copy.columns[key]), ...extra].map((label, index) => excelHeader(label, sheet.formats![index])));
       expect(sheet.formats, key).toHaveLength(sheet.header.length);
       for (const row of sheet.rows) expect(row, key).toHaveLength(sheet.header.length);
     }
@@ -208,8 +212,8 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const rows = records(sheetOf(buildExcelWorkbook(input), "actions"));
     const c = col.actions;
     expect(rows).toEqual([
-      { [c.priority]: 1, [c.problem]: HTML, [c.step]: input.diagnosticStep, [c.owner]: labels.actionBoard.unassigned, [c.due]: labels.actionBoard.noDeadline, [c.status]: labels.actions.statuses.done, [c.status_updated_at]: "2026-10-03", [c.pinned]: copy.actions.pinned, [c.evidence_count]: input.diagnosticFacts, [c.scope]: input.diagnosticScope, [c.caution]: null },
-      { [c.priority]: 2, [c.problem]: HYPERLINK, [c.step]: "+加碼廣告", [c.owner]: "@行銷", [c.due]: "2026-10-10", [c.status]: labels.actions.statuses.not_started, [c.status_updated_at]: null, [c.pinned]: copy.actions.notPinned, [c.evidence_count]: 0, [c.scope]: `${labels.sections.total}（DTC、MARKETPLACE）`, [c.caution]: null },
+      { [c.priority]: 1, [c.problem]: HTML, [c.step]: input.diagnosticStep, [c.owner]: labels.actionBoard.unassigned, [c.due]: labels.actionBoard.noDeadline, [c.status]: labels.actions.statuses.done, [c.status_updated_at]: "2026-10-03", [c.pinned]: copy.actions.pinned, [c.evidence_count]: input.diagnosticFacts, [c.scope]: input.diagnosticScope, [c.caution]: null, [AD_DECISION]: null },
+      { [c.priority]: 2, [c.problem]: HYPERLINK, [c.step]: "+加碼廣告", [c.owner]: "@行銷", [c.due]: "2026-10-10", [c.status]: labels.actions.statuses.not_started, [c.status_updated_at]: null, [c.pinned]: copy.actions.notPinned, [c.evidence_count]: 0, [c.scope]: `${labels.sections.total}（DTC、MARKETPLACE）`, [c.caution]: null, [AD_DECISION]: null },
     ]);
     expect(input.diagnosticFacts).toBeGreaterThan(0);
   });
@@ -242,10 +246,10 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     expect(fromSummary.find(row => row[col.basis.section] === b.sections.preprocessing)![col.basis.detail]).toBe(conversionSentence(conversion));
   });
 
-  it("no products and no actions still yields six sheets, the two lists with headers only", async () => {
+  it("no products and no actions still yields six sheets (V3-9b: plus the management P&L), the two lists with headers only", async () => {
     const input = await golden();
     const workbook = buildExcelWorkbook({ ...input, products: undefined, actions: emptyActionWorkspace(), meeting: undefined });
-    expect(workbook.sheets).toHaveLength(6);
+    expect(workbook.sheets).toHaveLength(7);
     expect(sheetOf(workbook, "products").rows).toEqual([]);
     expect(sheetOf(workbook, "actions").rows).toEqual([]);
     expect(sheetOf(buildExcelWorkbook({ ...input, products: [] }), "products").rows).toEqual([]);
@@ -390,7 +394,7 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
     expect([...bytes.slice(0, 2)]).toEqual([0x50, 0x4b]);
     const { book, sheetXml } = parse(bytes);
     expect(book.SheetNames).toEqual(workbook.sheets.map(sheet => sheet.name));
-    expect(sheetXml).toHaveLength(6);
+    expect(sheetXml).toHaveLength(7);
     for (const xml of sheetXml) expect(xml).not.toMatch(/<f[\s>]/);
     const all = book.SheetNames.flatMap(name => cellsOf(book.Sheets[name]));
     for (const { address, cell } of all) {
@@ -426,10 +430,10 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
   it("writes header-only sheets when there are no products or actions, and empty cells for unknown values", async () => {
     const input = await golden();
     const { book } = parse(await writeExcel(buildExcelWorkbook({ ...input, products: undefined, actions: emptyActionWorkspace() })));
-    expect(book.SheetNames).toEqual(SHEET_KEYS.map(key => copy.sheets[key]));
+    expect(book.SheetNames).toEqual(SHEET_NAMES);
     for (const key of ["products", "actions"] as const) {
       const rows = XLSX.utils.sheet_to_json<unknown[]>(book.Sheets[copy.sheets[key]], { header: 1 });
-      expect(rows).toEqual([Object.values(col[key])]);
+      expect(rows).toEqual([[...Object.values(col[key]), ...(key === "actions" ? [AD_DECISION] : [])]]);
     }
     const missing = await load(fixture("errors/missing_cogs"));
     const parsed = parse(await writeExcel(buildExcelWorkbook({ summary: buildManagerSummary(missing.snapshot), ...missing, actions: emptyActionWorkspace() })));
@@ -518,7 +522,7 @@ describe("R6-4 downloadBinary and exportExcel (local download only)", () => {
     expect(link.download).toBe("profitlens.xlsx");
     expect(blobs[0].type).toBe(EXCEL_MIME);
     const { book } = parse(new Uint8Array(await blobs[0].arrayBuffer()));
-    expect(book.SheetNames).toEqual(SHEET_KEYS.map(key => copy.sheets[key]));
+    expect(book.SheetNames).toEqual(SHEET_NAMES);
     await exportExcel(input, "週會.xlsx");
     expect(link.download).toBe("週會.xlsx");
   });

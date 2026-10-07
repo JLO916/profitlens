@@ -2220,6 +2220,27 @@ export const exportLabels = {
   },
   // ── V3-9b 錨點（代理 B：variantsV3 匯出範本變體（F14）——選單選擇器、老闆一頁版／客戶報告版的版頭與段落標題、管理損益表工作表；收尾時刪除仍為空的物件）
   variantsV3: {
+    /** 匯出選單「一頁摘要（目前檢視）」分組內的版本切換（role=group 的可及名稱）；只影響 PDF、Excel、PPT 三項。 */
+    pickerAria: "一頁摘要的版本",
+    /** 三個 aria-pressed 按鈕的名稱（標籤，不加句號）。 */
+    names: { standard: "標準版", boss: "老闆一頁版", client: "客戶報告版" },
+    /** 每個按鈕名稱下方一行 12px 說明（標籤，不加句號）。 */
+    descriptions: { standard: "完整內容與附錄", boss: "一頁看完重點", client: "不含內部備註" },
+    /** 客戶報告版：版頭第 1 行之後一行（{client}＝資料集名稱，{brand}＝labels.brand.name）。 */
+    clientLine: "客戶：{client} · 製表：{brand}",
+    /** 老闆一頁版與客戶報告版的決議一行（不含備註）。 */
+    printDecisionLine: "會議：{name}；決議：{state}",
+    /** 客戶報告版的待辦狀態一行（不含進度紀錄）。 */
+    actionStatus: "狀態：{status}",
+    /** 每週管理損益表（D-V3-8）：列印附錄的標題與說明、Excel 工作表名（§8.3 改名記在 RELEASES）。 */
+    pnlHeading: "每週管理損益表",
+    pnlSheet: "管理損益表",
+    pnlNote: "金額單位：元。負數用括號表示；佔淨營收 % 是該列合計 ÷ 淨營收合計。",
+    /** 週欄名：{label}＝本期第 n 週，{range}＝起訖日（ISO）。 */
+    pnlWeekColumn: "{label} {range}",
+    pnlWeekRange: "{start} 至 {end}",
+    /** D-V3-8：列印、PDF 的管理損益表負數用括號，例如 (1,234.00)；其他地方仍是 U+2212。 */
+    negativeParen: "({value})",
   },
 } as const;
 

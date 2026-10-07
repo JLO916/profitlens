@@ -14,7 +14,7 @@ import { fill, labels } from "@/i18n";
 import { COPY_STATUS_MS } from "../overview/weekly-snapshot";
 import { ShellIcon } from "./shell-icon";
 import { TemplateTable } from "./template-table";
-import type { ExportVariant } from "@/application/export-variants";
+import { DEFAULT_EXPORT_VARIANT, EXPORT_VARIANTS, type ExportVariant } from "@/application/export-variants";
 
 export interface ExportMenuSource {
   dataset: Dataset;
@@ -63,6 +63,19 @@ function ExportGroup({ id, title, testId, summarySection, children }: { id: stri
 }
 
 /**
+ * V3-9b F14（PRD §10.1 F14、§7.9）：「一頁摘要（目前檢視）」分組標題下的版本切換——標準版／老闆一頁版／客戶報告版三個 aria-pressed 按鈕，
+ * 各自一行 12px 說明（aria-describedby）；只影響同一分組的 PDF、Excel、PPT 三項，會議紀錄 Markdown 不受影響。每個按鈕在 DOM 只有一份（M6）。
+ */
+function VariantPicker({ value, onChange }: { value: ExportVariant; onChange: (variant: ExportVariant) => void }) {
+  const copy = labels.exports.variantsV3;
+  return <div className="ui-segmented export-variant-picker" role="group" aria-label={copy.pickerAria} data-testid="download-variant-picker">
+    {EXPORT_VARIANTS.map(variant => <button key={variant} type="button" className="export-variant" aria-pressed={value === variant} data-testid={`download-variant-${variant}`} aria-labelledby={`download-variant-${variant}-name`} aria-describedby={`download-variant-${variant}-hint`} onClick={() => onChange(variant)}>
+      <span id={`download-variant-${variant}-name`} className="export-variant-name">{copy.names[variant]}</span><small id={`download-variant-${variant}-hint`}>{copy.descriptions[variant]}</small>
+    </button>)}
+  </div>;
+}
+
+/**
  * V3-7 頂欄「匯出」選單（v2「下載」，§6.3 #16、§6.5、§7.9；選單寬 400px）：目前檢視／一頁摘要（目前檢視）／決策工作稿／會議／匯入範本（3×3 表）。
  * 每項 14px 名稱＋12px 說明（範圍差異寫在說明行，取代 v2 的 menuNote 與 menuViewNote）；handler、檔名、條件項（資料問題 CSV）與 testid 都和 v2 相同。
  * 處理中：該項右側 16px spinner，三個非同步項目 aria-disabled；失敗：該項下方一行錯誤（role=alert），焦點回到該項。開啟選單時照常預載 Excel writer。
@@ -79,6 +92,8 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
     (errorItem === "md" ? mdRef : errorItem === "pptx" ? pptxRef : excelRef).current?.focus();
   }, [errorItem]);
   const runAsync = (item: AsyncItem, run: () => void) => { if (busy) return; setLastAsync(item); run(); };
+  // V3-9b F14：一頁摘要的版本（預設標準版）；選單是常駐掛載的 details，關閉再開會維持上次選擇（元件 state，不存）。
+  const [variant, setVariant] = useState<ExportVariant>(DEFAULT_EXPORT_VARIANT);
   const errorText = (item: AsyncItem) => errorItem !== item ? null : error === "markdown" ? labels.meetingPage.markdownError : labels.meetingPage.exportError;
 
   // 會議分組「複製週會摘要」：成功在 role=status 顯示一句（2 秒後清空，同總覽）；剪貼簿不可用時在項目下方放唯讀文字框（已全選）。
@@ -119,9 +134,10 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
       </ExportGroup>
       <hr className="ui-menu-divider" />
       <ExportGroup id="download-group-summary" testId="download-group-summary" summarySection title={labels.sections.meetingSummary}>
-        <ExportItem id="download-pdf" name={labels.buttons.exportPdf} description={fill(describe.exportPdf, { hint: labels.meetingPage.pdfHint })} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); onPrint(); }} />
-        <ExportItem id="download-excel" buttonRef={excelRef} name={labels.buttons.exportExcel} description={describe.exportExcel} disabled={busy !== null} busy={busy === "excel"} error={errorText("excel")} onClick={() => runAsync("excel", () => onExport("excel"))} />
-        <ExportItem id="download-pptx" buttonRef={pptxRef} name={labels.buttons.exportPptx} description={describe.exportPptx} disabled={busy !== null} busy={busy === "pptx"} error={errorText("pptx")} onClick={() => runAsync("pptx", () => onExport("pptx"))} />
+        <VariantPicker value={variant} onChange={setVariant} />
+        <ExportItem id="download-pdf" name={labels.buttons.exportPdf} description={fill(describe.exportPdf, { hint: labels.meetingPage.pdfHint })} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); onPrint(variant); }} />
+        <ExportItem id="download-excel" buttonRef={excelRef} name={labels.buttons.exportExcel} description={describe.exportExcel} disabled={busy !== null} busy={busy === "excel"} error={errorText("excel")} onClick={() => runAsync("excel", () => onExport("excel", variant))} />
+        <ExportItem id="download-pptx" buttonRef={pptxRef} name={labels.buttons.exportPptx} description={describe.exportPptx} disabled={busy !== null} busy={busy === "pptx"} error={errorText("pptx")} onClick={() => runAsync("pptx", () => onExport("pptx", variant))} />
         <ExportItem id="download-meeting-md" buttonRef={mdRef} name={labels.meetingPage.menuMarkdown} description={describe.menuMarkdown} disabled={busy !== null} busy={busy === "md"} error={errorText("md")} onClick={() => runAsync("md", onMeetingNotes)} />
         {/* 處理中的文字只給輔助科技（畫面上是項目右側的 spinner）；live region 常駐，內容隨 busy 換。 */}
         <p className="sr-only" role="status">{busy ? labels.meetingPage.exporting : ""}</p>
