@@ -1,5 +1,6 @@
 import { clickReplacing, closePeriodSheet, dismissSavePrompt, isMobile, navControl, navigateTo, openMobileMore, openPeriodSheet, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { fill, labels } from "../../src/i18n";
+import { expectIssueRow, issueCells, issueTable } from "./data-page-helpers-v3";
 import { formatAmountL1 } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
 import { appendFile, mkdir } from "node:fs/promises";
@@ -107,7 +108,20 @@ test("PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不�
   await loadVerificationDataset(page, "duplicate", labels.status.error);
   // The blocking message is domain text (src/domain/validation.ts, financial core — not in labels); only its keyword is asserted.
   await expect(page.getByRole("main")).toContainText("重複");
+  // V3-8（§7.10 錯誤）：頁面型錯誤容器——「重新載入」主要、「回到上次成功的資料」次要（先前已載入 missing-ad）、「查看問題清單」把焦點移到下方問題清單的 region。
+  const errorState = page.getByTestId("error-state");
+  await expect(errorState).toBeVisible();
+  await expect(errorState.getByRole("heading", { level: 2, name: labels.empty.stateV3.errorTitle, exact: true })).toBeVisible();
+  await expect(page.getByTestId("error-retry")).toHaveText(labels.ui.dashboard.errorState.retry);
+  await expect(page.getByTestId("error-back")).toHaveText(labels.ui.dashboard.errorState.back);
+  await page.getByTestId("error-view-issues").click();
+  const issueList = page.getByTestId("error-issues");
+  await expect(issueList.getByRole("region", { name: labels.ui.issueList.regionAria, exact: true })).toBeFocused();
+  // 「重複」這個關鍵字也出現在開發者驗證頁的資料集說明裡；阻擋原因本身改看問題清單：sales_daily.csv 第 10 行（fixtures/errors/duplicate_sales_key）的 labels.importErrors 樣板。
+  const duplicate = issueCells(fill(labels.importErrors.DUPLICATE_SALES_KEY, { file: "sales_daily.csv", line: 10 }));
+  await expectIssueRow(issueTable(issueList).locator("tbody tr").filter({ hasText: duplicate.problem }), { file: "sales_daily.csv", line: 10, field: "$key", ...duplicate, severity: "blocking" });
   await page.getByRole("button", { name: labels.ui.dashboard.errorState.back, exact: true }).click();
+  await expect(errorState).toHaveCount(0);
   await navigateTo(page, "overview");
   await expect(page.getByLabel(channelFilter, { exact: true })).toHaveValue("DTC");
   await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));

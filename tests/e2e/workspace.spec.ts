@@ -2,6 +2,8 @@ import { applyCustomPeriod, clearWorkspace, clickReplacing, closePeriodSheet, di
 import { fill, labels } from "../../src/i18n";
 import { MINUS, deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatGrowth, formatPeriodL1, formatPointsValue, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { formatHeadlineAmount } from "../../src/application/copy";
+import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
+import { expectIssueRow, issueCells, issueTable, openPreview, openVersionInfo, previewDetails, previewFiles, previewTable, versionInfo } from "./data-page-helpers-v3";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -385,19 +387,34 @@ test("資料工作區展示三份原始檔案、行號、口徑與未縮減預�
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
   await navigateTo(page, "data");
   await expect(page.getByRole("heading", { name: labels.sections.dataScope, exact: true })).toBeVisible();
-  await expect(page.getByRole("main")).toContainText(labels.ui.workspacePanels.previewNote);
-  const sales = page.getByRole("table", { name: fill(labels.ui.workspacePanels.previewCaption, { fileName: "sales_daily.csv" }), exact: true });
+  // V3-8（§7.7.1 第 7 點）：來源檔案預覽改成三個預設收合的 <details>（data-preview-{file}）；說明句在區塊標題下，表格要先展開才看得見。
+  await expect(page.getByTestId("data-preview")).toContainText(labels.ui.workspacePanels.previewNote);
+  for (const file of previewFiles) {
+    await expect(previewDetails(page, file)).not.toHaveAttribute("open", "");
+    await expect(previewTable(page, file)).toBeHidden();
+  }
+  await openPreview(page, "sales_daily.csv");
+  const sales = previewTable(page, "sales_daily.csv");
+  await expect(sales).toBeVisible();
   await expect(sales.locator("tbody tr")).toHaveCount(8);
   await expect(sales.locator("tbody tr").first().getByRole("rowheader")).toHaveText("2");
   // 原始預覽保留 CSV 原字串（不套三層格式）。
   await expect(sales.locator("tbody tr").first()).toContainText("1000.00");
   // Golden keeps raw channel codes; the 官網／平台 alias applies only to the demo dataset.
   await expect(sales).toContainText("MARKETPLACE");
-  for (const file of ["channel_costs_daily.csv", "ad_spend_daily.csv"]) {
-    await expect(page.getByRole("table", { name: fill(labels.ui.workspacePanels.previewCaption, { fileName: file }), exact: true }).locator("tbody tr")).toHaveCount(4);
+  for (const file of ["channel_costs_daily.csv", "ad_spend_daily.csv"] as const) {
+    await openPreview(page, file);
+    await expect(previewTable(page, file)).toBeVisible();
+    await expect(previewTable(page, file).locator("tbody tr")).toHaveCount(4);
   }
-  await expect(page.getByRole("main")).toContainText("Asia/Taipei");
-  await expect(page.getByRole("main")).toContainText("contribution-v1");
+  // V3-8（§7.7.1 第 4 點）：時區在「範圍與金額基準」兩欄 dl；指標版本在「版本與來源資訊」（預設收合，先展開）。
+  await expect(page.getByTestId("data-scope")).toContainText("Asia/Taipei");
+  const version = versionInfo(page);
+  await expect(version.locator("dl")).toBeHidden();
+  await openVersionInfo(page);
+  await expect(version.locator("dl")).toBeVisible();
+  await expect(version).toContainText("contribution-v1");
+  await expect(version).toContainText(ASSIST_KPI_VERSION);
 });
 
 for (const scenario of [
@@ -422,7 +439,22 @@ test("blocking 資料集載入失敗仍保留先前成功資料", async ({ page 
   await loadGolden(page);
   await requestDataset(page, "duplicate");
   await expect(failed(page)).toBeVisible();
-  await page.getByRole("button", { name: dashboard.errorState.back, exact: true }).click();
+  // V3-8（§7.10 錯誤）：頁面型錯誤容器 error-state——標題、一行原因（role=alert）、動作列「重新載入」（主要）＋「回到上次成功的資料」（有上次資料才有）＋「查看問題清單」。
+  const errorState = page.getByTestId("error-state");
+  await expect(errorState.getByRole("heading", { level: 2, name: labels.empty.stateV3.errorTitle, exact: true })).toBeVisible();
+  await expect(errorState.getByRole("alert")).toHaveText(dashboard.errors.validationFailed);
+  await expect(page.getByTestId("error-retry")).toHaveText(dashboard.errorState.retry);
+  await expect(page.getByTestId("error-retry")).toHaveClass(/\bui-btn-primary\b/);
+  await expect(page.getByTestId("error-back")).toHaveText(dashboard.errorState.back);
+  // 「查看問題清單」把焦點移到下方問題清單的 region（IssueList 的 role=region「資料問題清單」）；duplicate 是 sales_daily.csv 第 10 行重複（fixtures/errors/duplicate_sales_key）。
+  await page.getByTestId("error-view-issues").click();
+  const issues = page.getByTestId("error-issues");
+  await expect(issues.getByRole("region", { name: labels.ui.issueList.regionAria, exact: true })).toBeFocused();
+  const duplicate = issueCells(fill(labels.importErrors.DUPLICATE_SALES_KEY, { file: "sales_daily.csv", line: 10 }));
+  await expect(issueTable(issues).locator("tbody tr").filter({ hasText: duplicate.problem })).toHaveCount(1);
+  await expectIssueRow(issueTable(issues).locator("tbody tr").filter({ hasText: duplicate.problem }), { file: "sales_daily.csv", line: 10, field: "$key", ...duplicate, severity: "blocking" });
+  await errorState.getByRole("button", { name: dashboard.errorState.back, exact: true }).click();
+  await expect(page.getByTestId("error-state")).toHaveCount(0);
   await expect(ready(page, "golden")).toBeVisible();
   await navigateTo(page, "overview");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
@@ -439,11 +471,31 @@ test("載入中與 HTTP 故障均有明確狀態", async ({ page, browserAudit }
   try {
     await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
     await expect(page.getByTestId("workspace-status")).toContainText(loadingStatus);
+    // V3-8（§7.10）：載入中是同一個頁面型容器（aria-busy），首次進入的空狀態已收起。
+    await expect(page.getByTestId("loading-state")).toBeVisible();
+    await expect(page.getByTestId("loading-state")).toHaveAttribute("aria-busy", "true");
+    await expect(page.getByTestId("empty-state")).toHaveCount(0);
   } finally {
     gate.release();
   }
   await expect(failed(page)).toBeVisible();
   await expect(contribution(page)).toHaveCount(0);
+  // 錯誤容器：原因是 HTTP 失敗的一行；沒有上次成功的資料 →「回到上次成功的資料」不出現；沒有問題清單 →「查看問題清單」不出現。
+  const errorState = page.getByTestId("error-state");
+  await expect(page.getByTestId("loading-state")).toHaveCount(0);
+  await expect(errorState.getByRole("alert")).toHaveText(dashboard.errors.fetchFailed);
+  await expect(page.getByTestId("error-retry")).toBeVisible();
+  await expect(page.getByTestId("error-back")).toHaveCount(0);
+  await expect(page.getByTestId("error-view-issues")).toHaveCount(0);
+  await expect(page.getByTestId("error-issues")).toHaveCount(0);
+  // 「重新載入」再要一次同一份資料：服務恢復後就載入成功。
+  await page.unroute("**/api/datasets/demo");
+  await page.getByTestId("error-retry").click();
+  await expect(ready(page, "demo")).toBeVisible();
+  await expect(page.getByTestId("error-state")).toHaveCount(0);
+  await dismissSavePrompt(page);
+  await navigateTo(page, "overview");
+  await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("1269792.73"));
 });
 
 test("較慢的舊資料請求不可覆寫較新的 golden 選擇", async ({ page }) => {
