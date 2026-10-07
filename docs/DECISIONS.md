@@ -292,6 +292,18 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-08｜Revamp v3 V3-9b：三線趨勢、下鑽、匯出變體與投影模式的取捨
+
+**去年同期（F8）：** 彙總放在 `createSnapshot`（application）：用 `periodPresets` 的 yoy preset 判斷可用性與期間，可用時以既有 `aggregatePeriod` 切週，不改 domain；`snapshot.yoy` 不進 hash 也不進備份。去年第 i 週對齊本期第 i 週，對不到的週不畫；缺資料斷線並另標「去年同期無資料」。圖例第三項用 inline SVG 虛線段（Chrome 把 12px 的虛線邊框畫成實線）。示範與 golden 只有一年資料，第三線永遠不可用，原因照 PRD 寫在圖下（期間列的既有提示也在，D-V3-35 待拍板）。
+
+**下鑽（F10）：** 篩選邏輯只在 `src/application/evidence-filter.ts`；`EvidenceSelection.filter` 由週的點、資料表、通路長條與通路表共用同一個 builder 帶入，鍵盤使用者走資料表得到同樣的抽屜；抽屜的「清除篩選」不移除片語列，而是同一顆按鈕切換「清除／套用」，焦點不會消失。因為週與通路的來源本來就只含該範圍的列，篩選主要是標示。
+
+**匯出變體（F14）：** 規則只在 `variantSpec()` 一處，三個管線都讀；數值一律同一份 `ManagerSummary` 與 snapshot，只改版面。老闆一頁版只留 L1（版頭、一句話、4 個 KPI、三件事標題與影響金額、決議），PDF 1 頁、Excel 2 個工作表、PPT 1 張；客戶報告版去掉決策備註、待辦進度、引用歷史與技術細節，版頭加客戶行與製表行。管理損益表進 Excel（所有變體，最後一個工作表，`#,##0.00;(#,##0.00)`）與列印附錄（標準版與客戶版；負數半形括號、每表最多 5 個資料欄；佔淨營收 % 不用括號）。標準版去掉新增內容後與 V3-7 基準逐字相同。廣告決策標籤依 PRD F13「寫入匯出」進 Excel 待辦工作表（D-V3-32 待拍板的色調與 PPT 不動）。
+
+**投影模式（F22，§9.7）：** 只重新對應 token 的值（四個字級、兩個行高、`--content-max`），不新增字級種類；只顯示 L1，其餘區塊 CSS 隱藏但保持掛載（M1）；Esc 只在沒有其他浮層開著時離開（M3），離開後焦點回按鈕；切頁或資料清空自動退出，不會回到可用頁時自己再進入；≤ 767px 隱藏按鈕但掛載；列印不套用。按鈕同時 aria-pressed 又改字（D-V3-33 待拍板）。
+
+**影響文件：** `docs/revamp-v3/06_BATCHES.md`、`docs/revamp-v3/09_DECISIONS_PENDING.md`（D-V3-33–35）、`docs/RELEASES.md`（v3.0.0 開發中段）、`verification/revamp-v3-V3-9b-acceptance.md`。**驗收：** `tests/trend-yoy.test.tsx`、`tests/evidence-filter.test.ts`、`tests/export-variants.test.ts`、`tests/present-mode.test.tsx`、`tests/e2e/trend-yoy.spec.ts`、`tests/e2e/export-variants.spec.ts`、`tests/e2e/present-mode.spec.ts`。
+
 ## 2026-10-07｜Revamp v3 V3-9a：損益兩平 MER、廣告決策標籤與管理損益表的取捨
 
 **批次拆分：** V3-9 原列 L，依 CLAUDE.md 在開工前拆成 V3-9a（需要新增計算、新增資料欄位與備份升版的 F12、F13、F9）與 V3-9b（純呈現的 F8、F10、F14、F22；F15／F16 需使用者提供檔案）。
