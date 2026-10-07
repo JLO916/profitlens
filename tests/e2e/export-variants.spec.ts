@@ -366,7 +366,7 @@ test("d2. refund_only（匯入）：管理損益表的負數在 Excel 與列印�
   await closeDownloads(page);
 });
 
-test("e. 會議頁「匯出會議」一律是標準版：頂欄選了老闆一頁版後，會議頁的 Excel 工作表與標準版相同、PDF 有附錄與技術細節、PPT 有資料版本", async ({ page }) => {
+test("e. 會議頁「匯出會議」一律是標準版：頂欄選了老闆一頁版後，會議頁的 Excel 工作表與標準版相同、PDF 有技術細節但沒有管理損益表附錄（會議頁數不增加）、PPT 有資料版本", async ({ page }) => {
   test.setTimeout(90_000);
   await stubPrint(page);
   await loadValidationDataset(page, "golden");
@@ -391,7 +391,8 @@ test("e. 會議頁「匯出會議」一律是標準版：頂欄選了老闆一�
   await expect(print).not.toHaveAttribute("data-variant", /.*/);
   await expect(print.getByTestId("print-header-client")).toHaveCount(0);
   await expect(print.getByTestId("print-kpis")).toHaveCount(0);
-  await expect(print.getByTestId("print-appendix-pnl")).toHaveCount(1);
+  // V3-9b 收尾：會議範圍的列印維持 V3-7 版面、不加每週管理損益表附錄（PRD §7.6 會議 PDF 頁數不增加）。
+  await expect(print.getByTestId("print-appendix-pnl")).toHaveCount(0);
   await expect(printHeading(print, labels.sections.technicalDetails)).toHaveCount(1);
   await expect(print).toContainText(fill(headerV3.printScopeMeeting, { state: labels.meeting.decisions.draft, channels: channelsLabel(GOLDEN_CHANNELS, false), mode: labels.periods.sameDays }));
   await endPrint(page);
