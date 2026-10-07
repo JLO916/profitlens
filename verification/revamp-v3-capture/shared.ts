@@ -43,7 +43,10 @@ export async function calculateKeepPreset(page: Page) {
   await card.waitFor({ state: "visible" });
   await card.getByTestId("scenario-preset").selectOption("keep");
   await card.getByTestId("scenario-preset-apply").click();
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  // V3-6（D-V3-12＝B）：聲明勾一次就記住；checkbox 勾完即卸載（改顯示 scenario-acknowledged），所以用 click() 而不是 check()。
+  const consent = card.getByTestId("scenario-accept");
+  if (await consent.count()) await consent.click();
+  await expect(card.getByTestId("scenario-acknowledged")).toBeVisible();
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toBeVisible();
 }

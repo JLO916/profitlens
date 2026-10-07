@@ -1,5 +1,16 @@
 # Status
 
+## Revamp v3｜V3-6 假設試算與待辦（完成，未推送、未部署）
+
+PRD §7.4／§7.5 落地：試算頁頁首「試算的通路」select＋`?` 說明與「匯出本頁」下拉（portal 進頁首）、基準列改定義列表（新鮮度同列）、方案並排成欄（不用分頁；≥ 1280 三欄、1 個方案 8/12＋新增區）、精簡表單（placeholder、單位後綴、分段鈕「增減／改成」、範圍提示 hidden 掛載、範本說明 `?` popover 保持掛載）、D-V3-12＝B 聲明勾一次就記住並寫入備份 v4 選填欄位、結果區（24px 金額、差額上色、版本／草稿標籤、每方案「選入會議」）、敏感度每方案一份不變；待辦頁頁首計數徽章與 `?` 說明、「新增待辦」唯一主要鈕、「匯出本頁」下拉、看板｜清單分段鈕、四欄看板（計數徽章、空欄區段型空狀態）、C13 卡片（置頂 icon、標題鈕、到期／更新／逾期、狀態與引用標籤、「移到：」文字按鈕列、編輯）、待辦編輯抽屜（C6 三段、底部動作列、focus trap、Esc 回焦）、清單檢視維持內嵌編輯器、空狀態。`ActionEditor` 搬出成 `action-editor.tsx`，新增 `action-drawer.tsx`、`shell/page-slot.ts`、頁首 `#page-title-addon` 插槽。
+
+- 最終驗收：typecheck pass、lint 0 warnings、unit 104 檔／2,094 全過、`lint:design` exit 0（hex 0、圓角 4、字級 13、字距 0、箭頭 3、eyebrow 0）、build pass、E2E 全套 628／628（18.5m，四專案；新增 16 條）；禁區 diff 空；testid 刪除數 0（新增 scenario-columns／add／accept／acknowledged／select-{n}／export-*、actions-add／count／help／export-*／toolbar／empty、board-card-{n}-edit、action-drawer-*、page-title-addon）；`feature-retention.csv` V3-6 的 12 列打勾（#37–#42、D20–D25）。
+- 本批驗收重點：方案表單可見控制 14（整頁 23）；範本到結果 3 個動作（記住聲明後）；鍵盤 ≤ 12 步**未達**（首次 35，殼層 tab stop 佔 10；待 D-V3-27）；golden 270／284／264／19.70 不變；卡片一行 96px、兩行 116px（待 D-V3-26）；抽屜 560／640／480／全螢幕；E2E 新增：試算頁範本→套用→試算、聲明只勾一次、匯出本頁下拉、增減／改成與等值、範本 ? popover 回焦；待辦抽屜焦點、Esc 回焦、移除回看板、focus trap（補 `shell/focus-trap.ts` 後通過）、備份含 `assumptions_acknowledged_at`。
+- 畫面基準：`verification/revamp-v3/V3-6/snapshots/` 四尺寸 36 張，重跑 0 差異；首屏量測與 V3-5 相同（1440 一句話 192px、KPI 帶底 419px、可聚焦 9）；Lighthouse 1440／390 六個步驟 accessibility 全 100、首頁 performance 100／97；假設試算頁 0 失敗審核，會議紀錄頁仍有 `label-content-name-mismatch`（V3-7 範圍）。
+- 偏離（詳見驗收文件 §5 與 DECISIONS 2026-10-07 V3-6）：可見 label 沿用「試算的通路」；單位後綴依模式；D-V3-12 跟著整個工作區；備份 v4 多一個選填欄位；舊 CSS 與舊鍵留到 V3-10。
+- 未執行／待人工：H2、H3 依使用者 2026-10-07 指示略過；H1、H4 未執行。
+- 下一批：V3-7 會議紀錄與匯出。
+
 ## Revamp v3｜V3-5 通路健檢、商品毛利、計算與來源抽屜（完成，未推送、未部署）
 
 PRD §7.2／§7.3／§7.8 落地：健檢頁改 C9 清單型警示列（健檢結果在前、計數徽章資料待補／不利／有利、範圍只標一次、chips 與更多範圍 popover 留在列內、技術細節 12px 等寬）、通路寬表健檢變體（台灣報表欄序、兩層表頭、可排序 aria-sort、備註欄轉負與健檢連結、手機清單）、AI 區收合一列（內容保持掛載）；商品頁頁首「匯出本頁」下拉（兩個 CSV 零改動）、範圍副標、前 10 名 C3 表、工具列 5 控制（合併排序、欄位 popover 含密度切換 F18 記 localStorage）、完整表 sticky 表頭、篩選空狀態、手機清單；抽屜依 §7.8 重排（h2 只放標題、副標、組成表、指標定義與算法、原始明細 檔案:行號、寬度 560／640／480／全螢幕）。`src/domain`、`fixtures`、`docs/METRICS.md` 零改動；無新依賴。

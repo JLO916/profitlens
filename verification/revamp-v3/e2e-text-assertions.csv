@@ -3,92 +3,92 @@ tests/e2e/action-workspace.spec.ts,23,getByRole,"page.getByRole('button',{name:l
 tests/e2e/action-workspace.spec.ts,23,other,"page.getByLabel(labels.ui.dashboard.validation.datasetLabel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,24,getByRole,"page.getByRole('dialog',{name:labels.ui.replacementDialog.heading,exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,24,getByRole,"dialog.getByRole('button',{name:labels.ui.replacementDialog.discardAndContinue,exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,25,getByRole,"page.getByRole('button',{name:label,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,27,getByRole,"card.getByRole('group',{name:aw.evidencePicker,exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,25,getByRole,"page.getByRole('button',{name:label,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,27,getByRole,"card.getByRole('group',{name:aw.evidencePicker,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,28,locator-css,…const checkedEvidence=(card:Locator)=>evidenceList(card)locator('input[type=checkbox]:checked'),V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,30,getByRole,"…-row-${code}`);await expect(row.locator(':scope > summary').getByRole('heading',{name:ruleHeadline(code)})",V3-6,,
-tests/e2e/action-workspace.spec.ts,30,locator-css,row.locator(':scope > summary'),V3-6,,
-tests/e2e/action-workspace.spec.ts,30,locator-css,row.locator(':scope > summary h3'),V3-6,,
-tests/e2e/action-workspace.spec.ts,32,other,"plan.getByLabel(label,{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,30,getByRole,"…-row-${code}`);await expect(row.locator(':scope > summary').getByRole('heading',{name:ruleHeadline(code)})",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,30,locator-css,row.locator(':scope > summary'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,30,locator-css,row.locator(':scope > summary h3'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,32,other,"plan.getByLabel(label,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,35,getByRole,"page.getByRole('button',{name:labels.nav.diagnosis.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,37,locator-css,diagnostic.locator('details.diagnosis-technical li code'),V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,38,getByRole,"diagnostic.getByRole('button',{name:labels.buttons.addToActions,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,44,getByRole,"page.getByRole('heading',{name:labels.sections.scenarioAssumptions,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,46,locator-css,…expect(await evidenceList(first)locator('label.evidence-option'),V3-6,,
+tests/e2e/action-workspace.spec.ts,38,getByRole,"diagnostic.getByRole('button',{name:labels.buttons.addToActions,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,44,getByRole,"page.getByRole('heading',{name:labels.sections.scenarioAssumptions,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,46,locator-css,…expect(await evidenceList(first)locator('label.evidence-option'),V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,48,other,"page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,48,other,"first.getByLabel(labels.actions.owner,{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,48,other,"first.getByLabel(labels.actions.owner,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,49,getByRole,"first.getByRole('button',{name:evidenceButton(aw.viewEvidenceItem,'2026-08-02',cmAfter)})",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,50,getByRole,page.getByRole('dialog'),V3-6,,
-tests/e2e/action-workspace.spec.ts,50,getByRole,page.getByRole('dialog'),V3-6,,
-tests/e2e/action-workspace.spec.ts,50,locator-css,…await expect(page.getByRole('dialog')locator('p.number'),V3-6,,
-tests/e2e/action-workspace.spec.ts,51,getByRole,"page.getByRole('button',{name:labels.buttons.addAction,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,52,getByRole,"page.getByTestId(`action-${n}`).getByRole('button',{name:labels.buttons.pin,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,53,getByRole,"page.getByTestId('action-4').getByRole('button',{name:labels.buttons.pin,exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,50,getByRole,page.getByRole('dialog'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,50,getByRole,page.getByRole('dialog'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,50,locator-css,…await expect(page.getByRole('dialog')locator('p.number'),V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,51,getByRole,"page.getByRole('button',{name:labels.buttons.addAction,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,52,getByRole,"page.getByTestId(`action-${n}`).getByRole('button',{name:labels.buttons.pin,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,53,getByRole,"page.getByTestId('action-4').getByRole('button',{name:labels.buttons.pin,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,55,locator-css,storage.locator(':scope > summary'),V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,56,locator-css,storage.locator(':scope > summary'),V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,57,other,"storage.getByLabel(ws.selectBackupFile,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,58,getByRole,"page.getByRole('region',{name:ws.restorePreviewAria})",V3-7,,
-tests/e2e/action-workspace.spec.ts,58,getByRole,"page.getByRole('button',{name:ws.applyRestore,exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,58,getByRole,"page.getByRole('button',{name:ws.applyRestore,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,61,getByRole,"page.getByRole('button',{name:labels.nav.actions.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,61,other,"first.getByLabel(labels.actions.owner,{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,61,other,"first.getByLabel(labels.actions.owner,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,68,getByRole,"page.getByRole('button',{name:labels.nav.scenarios.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,68,other,"page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,69,getByRole,"plan.getByRole('button',{name:labels.buttons.calculate,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,69,other,"plan.getByLabel(labels.ui.decisionWorkbench.planName,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,69,other,"plan.getByLabel(labels.scenario.fulfillmentUnit.label,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,69,other,"plan.getByLabel(labels.scenario.acceptAssumptions,{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,69,getByRole,"plan.getByRole('button',{name:labels.buttons.calculate,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,69,other,"plan.getByLabel(labels.ui.decisionWorkbench.planName,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,69,other,"plan.getByLabel(labels.scenario.fulfillmentUnit.label,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,69,other,"plan.getByLabel(labels.scenario.acceptAssumptions,{exact:true})",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,70,getByRole,"page.getByRole('button',{name:labels.nav.diagnosis.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,70,getByRole,"…('diagnosis-list').locator('details.diagnosis-row').first().getByRole('button',{name:labels.buttons.addToActions,exact:true})",V3-5,diagnosis-row-{rule},V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,70,locator-css,page.getByTestId('diagnosis-list').locator('details.diagnosis-row'),V3-5,diagnosis-row-{rule},V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,71,other,"action.getByLabel(label,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,72,getByRole,"action.getByRole('button',{name:labels.buttons.confirm,exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,71,other,"action.getByLabel(label,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,72,getByRole,"action.getByRole('button',{name:labels.buttons.confirm,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,73,getByRole,"page.getByRole('button',{name:labels.nav.overview.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,73,locator-css,choice.locator('option'),V3-6,,
+tests/e2e/action-workspace.spec.ts,73,locator-css,choice.locator('option'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,73,other,"page.getByLabel(fill(labels.ui.reviewWorkbench.scenarioSelect,{channel:'DTC'}),{exact:true})",V3-7,meeting-scenario-select-{channel},
 tests/e2e/action-workspace.spec.ts,77,other,"page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,79,getByRole,"page.getByRole('button',{name:labels.buttons.updateMeetingSource,exact:true})",V3-7,,
 tests/e2e/action-workspace.spec.ts,85,other,"page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,86,getByRole,"page.getByRole('button',{name:labels.nav.actions.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,86,getByRole,"page.getByRole('button',{name:labels.buttons.addAction,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,87,other,"card.getByLabel(labels.actions.problem,{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,86,getByRole,"page.getByRole('button',{name:labels.buttons.addAction,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,87,other,"card.getByLabel(labels.actions.problem,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,89,getByRole,evidence.getByRole('checkbox'),V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,90,getByRole,"evidence.getByRole('searchbox',{name:labels.actions.searchEvidence,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,91,locator-css,evidence.locator('label.evidence-option'),V3-6,,
+tests/e2e/action-workspace.spec.ts,90,getByRole,"evidence.getByRole('searchbox',{name:labels.actions.searchEvidence,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,91,locator-css,evidence.locator('label.evidence-option'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,93,getByRole,"evidence.getByRole('checkbox',{name:factText('2026-08-02','2026-08-02',cmAfter,'DTC','270.00'),exact:true})",V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,95,getByRole,"evidence.getByRole('searchbox',{name:labels.actions.searchEvidence,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,96,getByRole,"card.getByRole('button',{name:labels.buttons.confirm,exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,95,getByRole,"evidence.getByRole('searchbox',{name:labels.actions.searchEvidence,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,96,getByRole,"card.getByRole('button',{name:labels.buttons.confirm,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,103,other,"page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,104,other,"card.getByLabel(label,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,105,other,"card.getByLabel(labels.actions.status,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,106,other,"card.getByLabel(labels.actions.progress,{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,104,other,"card.getByLabel(label,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,105,other,"card.getByLabel(labels.actions.status,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,106,other,"card.getByLabel(labels.actions.progress,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,108,other,"page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,109,other,"card.getByLabel(labels.actions.status,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,110,other,"card.getByLabel(labels.actions.progress,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,113,other,"card.getByLabel(labels.actions.status,{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,109,other,"card.getByLabel(labels.actions.status,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,110,other,"card.getByLabel(labels.actions.progress,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,113,other,"card.getByLabel(labels.actions.status,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,136,other,"…await expect(wizard(page).getByLabel(labels.importWizard.datasetName,{exact:true})",V3-8,,
 tests/e2e/action-workspace.spec.ts,141,getByRole,"page.getByRole('button',{name:labels.nav.actions.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,142,other,"card.getByLabel(labels.actions.status,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,142,other,"card.getByLabel(labels.actions.progress,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,143,getByRole,"card.getByRole('button',{name:labels.buttons.rebind,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,143,getByRole,"card.getByRole('region',{name:aw.rebindRegion,exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,142,other,"card.getByLabel(labels.actions.status,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,142,other,"card.getByLabel(labels.actions.progress,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,143,getByRole,"card.getByRole('button',{name:labels.buttons.rebind,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,143,getByRole,"card.getByRole('region',{name:aw.rebindRegion,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,144,locator-css,preview.locator('tbody tr'),V3-7,,
 tests/e2e/action-workspace.spec.ts,144,locator-css,preview.locator('tbody'),V3-7,,
 tests/e2e/action-workspace.spec.ts,144,locator-css,preview.locator('tbody'),V3-7,,
 tests/e2e/action-workspace.spec.ts,145,getByRole,"preview.getByRole('button',{name:labels.buttons.cancel,exact:true})",V3-7,,
-tests/e2e/action-workspace.spec.ts,147,getByRole,"card.getByRole('button',{name:labels.buttons.rebind,exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,147,getByRole,"card.getByRole('button',{name:labels.buttons.rebind,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,147,getByRole,"preview.getByRole('button',{name:aw.rebindCommit,exact:true})",V3-7,,
 tests/e2e/action-workspace.spec.ts,152,getByRole,"card.getByRole('button',{name:evidenceButton(aw.viewHistoryEvidence)})",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,152,getByRole,page.getByRole('dialog'),V3-6,,
-tests/e2e/action-workspace.spec.ts,152,getByText,"card.getByText(fill(aw.historySummary,{n:2}),{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,152,getByRole,page.getByRole('dialog'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,152,getByText,"card.getByText(fill(aw.historySummary,{n:2}),{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,152,locator-css,…oryEvidence)}).click();await expect(page.getByRole('dialog')locator('p.number'),V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,160,other,"page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/action-workspace.spec.ts,161,getByRole,"page.getByRole('button',{name:labels.nav.actions.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,162,getByRole,"page.getByRole('heading',{name:labels.sections.actionBoard,exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,163,getByRole,"page.getByRole('button',{name:labels.buttons.addAction,exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,162,getByRole,"page.getByRole('heading',{name:labels.sections.actionBoard,exact:true})",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,163,getByRole,"page.getByRole('button',{name:labels.buttons.addAction,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/action-workspace.spec.ts,166,getByRole,"card.getByRole('heading',{name:'看板改狀態',exact:true})",V3-2,,V3-2 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/action-workspace.spec.ts,166,other,"card.getByLabel(labels.actions.problem,{exact:true})",V3-6,,
-tests/e2e/action-workspace.spec.ts,172,getByRole,"page.getByTestId('board-column-in_progress').getByRole('heading',{level:3})",V3-6,,
-tests/e2e/action-workspace.spec.ts,180,other,"page.getByTestId('action-1').getByLabel(labels.actions.status,{exact:true})",V3-6,,
+tests/e2e/action-workspace.spec.ts,166,other,"card.getByLabel(labels.actions.problem,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,172,getByRole,"page.getByTestId('board-column-in_progress').getByRole('heading',{level:3})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/action-workspace.spec.ts,180,other,"page.getByTestId('action-1').getByLabel(labels.actions.status,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/ai.spec.ts,67,other,"…const consent = (page: Page) => panel(page).getByLabel(ai.consentLabel, { exact: true })",V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/ai.spec.ts,68,getByRole,"…const send = (page: Page) => panel(page).getByRole(""button"", { name: ai.sendButton, exact: true })",V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/ai.spec.ts,70,locator-css,"page.getByTestId(`kpi-${metric}`).locator("".kpi-value"")",V3-4,kpi-{metric},V3-4b 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
@@ -102,7 +102,7 @@ tests/e2e/ai.spec.ts,95,locator-css,"summary.locator("".."")",V3-5,,V3-5 核對�
 tests/e2e/ai.spec.ts,136,getByRole,"page.getByRole(""button"", { name: labels.nav.overview.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/ai.spec.ts,210,getByRole,"page.getByRole(""button"", { name: labels.nav.scenarios.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/ai.spec.ts,216,other,"card.getByLabel(label, { exact: true })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/ai.spec.ts,217,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
+tests/e2e/ai.spec.ts,217,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/ai.spec.ts,218,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/ai.spec.ts,228,locator-css,"page.getByTestId(""ai-facts-preview"").locator(""tbody tr"")",V3-7,,
 tests/e2e/ai.spec.ts,264,getByRole,"page.getByTestId(""ai-live-result"").getByRole(""button"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
@@ -121,8 +121,8 @@ tests/e2e/ai.spec.ts,418,getByRole,"page.getByRole(""button"", { name: labels.bu
 tests/e2e/ai.spec.ts,442,getByRole,"…await panel(page).getByRole(""button"", { name: ai.cancelButton, exact: true })",V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/import-guidance.spec.ts,26,getByRole,"form.getByRole(""button"", { name: copy.confirmAndCheck, exact: true })",V3-8,,
 tests/e2e/import-guidance.spec.ts,27,other,"form.getByLabel(copy.datasetName, { exact: true })",V3-8,,
-tests/e2e/import-guidance.spec.ts,30,locator-css,"form.locator("".confirm-list"")",V3-6,,
-tests/e2e/import-guidance.spec.ts,31,locator-css,"form.locator("".confirm-list"")",V3-6,,
+tests/e2e/import-guidance.spec.ts,30,locator-css,"form.locator("".confirm-list"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/import-guidance.spec.ts,31,locator-css,"form.locator("".confirm-list"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/import-guidance.spec.ts,32,getByRole,"form.getByRole(""checkbox"", { name: copy.amountConfirm, exact: true })",V3-8,,
 tests/e2e/import-guidance.spec.ts,36,locator-css,"form.locator(""details"", { has: page.locator(""summary"", { hasText: copy.noFiles }) })",V3-8,,
 tests/e2e/import-guidance.spec.ts,36,locator-css,"page.locator(""summary"", { hasText: copy.noFiles })",V3-8,,
@@ -236,8 +236,8 @@ tests/e2e/import.spec.ts,209,other,"…await expect(wizard(page).getByLabel(copy
 tests/e2e/import.spec.ts,210,other,"…await expect(wizard(page).getByLabel(copy.coverageEnd, { exact: true })",V3-8,,
 tests/e2e/import.spec.ts,226,getByRole,"…await expect(wizard(page).getByRole(""checkbox"", { name: copy.coverageConfirm })",V3-8,,
 tests/e2e/import.spec.ts,227,getByRole,"…await expect(wizard(page).getByRole(""checkbox"", { name: copy.amountConfirm })",V3-8,,
-tests/e2e/import.spec.ts,228,locator-css,"…await expect(wizard(page)locator("".confirm-list"")",V3-6,,
-tests/e2e/import.spec.ts,229,locator-css,"…await expect(wizard(page)locator("".confirm-list"")",V3-6,,
+tests/e2e/import.spec.ts,228,locator-css,"…await expect(wizard(page)locator("".confirm-list"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/import.spec.ts,229,locator-css,"…await expect(wizard(page)locator("".confirm-list"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/import.spec.ts,233,getByRole,"….parse(await downloadText(page, (await openDownloads(page)).getByRole(""button"", { name: labels.downloads.manifestJson, exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/import.spec.ts,251,getByRole,"…const content = await downloadText(page, wizard(page).getByRole(""button"", { name: labels.downloads.issuesCsv, exact: true })",V3-8,,
 tests/e2e/import.spec.ts,276,getByRole,"…ecords(await downloadText(page, (await openDownloads(page)).getByRole(""button"", { name: labels.downloads.analysisCsv, exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
@@ -273,21 +273,21 @@ tests/e2e/m6-acceptance.spec.ts,47,getByText,"step.getByText(wizardCopy.amountCo
 tests/e2e/m6-acceptance.spec.ts,48,getByRole,"step.getByRole(""checkbox"", { name: wizardCopy.amountConfirm })",V3-8,,
 tests/e2e/m6-acceptance.spec.ts,49,getByRole,"…const confirm = wizard(page).getByRole(""button"", { name: wizardCopy.confirmAndCheck, exact: true })",V3-8,,
 tests/e2e/m6-acceptance.spec.ts,69,getByRole,"page.getByRole(""button"", { name: labels.nav.scenarios.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/m6-acceptance.spec.ts,73,other,"card.getByLabel(scenarioCopy.planName, { exact: true })",V3-6,,
+tests/e2e/m6-acceptance.spec.ts,73,other,"card.getByLabel(scenarioCopy.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/m6-acceptance.spec.ts,74,other,"card.getByLabel(inputLabels[index], { exact: true })",V3-4,,V3-4b 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/m6-acceptance.spec.ts,75,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
+tests/e2e/m6-acceptance.spec.ts,75,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/m6-acceptance.spec.ts,76,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-4,,V3-4b 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/m6-acceptance.spec.ts,80,getByRole,"page.getByRole(""button"", { name: decisionDownloadLabels[format], exact: true })",V3-6,,
+tests/e2e/m6-acceptance.spec.ts,80,getByRole,"page.getByRole(""button"", { name: decisionDownloadLabels[format], exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/m6-acceptance.spec.ts,141,other,"page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/m6-acceptance.spec.ts,144,getByRole,"page.getByRole(""button"", { name: labels.nav.diagnosis.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/m6-acceptance.spec.ts,146,getByRole,"page.getByTestId(""diagnosis-row-REV_UP_CM_DOWN"").getByRole(""heading"", { name: ruleHeadline(""REV_UP_CM_DOWN"") })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/m6-acceptance.spec.ts,147,getByRole,"page.getByTestId(""diagnosis-row-MARKETING_BURDEN_UP"").getByRole(""heading"", { name: ruleHeadline(""MARKETING_BURDEN_UP"") })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/m6-acceptance.spec.ts,154,getByRole,"page.getByRole(""button"", { name: labels.nav.actions.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/m6-acceptance.spec.ts,157,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,
-tests/e2e/m6-acceptance.spec.ts,160,other,"action.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/m6-acceptance.spec.ts,162,getByRole,"action.getByTestId(""evidence-checklist"").getByRole(""checkbox"", { name: fill(actionCopy.factLabel, { start: ""2026-09-03"", end: ""2026-09-04"", metric: labels.metrics.contribution_after_marketing.label, scope: ""DTC"", scopeKind: labels.csvColumns.channel, value: ""40.00"" }), exact: true })",V3-6,,
-tests/e2e/m6-acceptance.spec.ts,167,locator-css,"action.getByTestId(""evidence-checklist"").locator(""input[type=checkbox]:checked"")",V3-6,,
-tests/e2e/m6-acceptance.spec.ts,168,getByRole,"action.getByRole(""button"", { name: labels.buttons.confirm, exact: true })",V3-6,,
+tests/e2e/m6-acceptance.spec.ts,157,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/m6-acceptance.spec.ts,160,other,"action.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/m6-acceptance.spec.ts,162,getByRole,"action.getByTestId(""evidence-checklist"").getByRole(""checkbox"", { name: fill(actionCopy.factLabel, { start: ""2026-09-03"", end: ""2026-09-04"", metric: labels.metrics.contribution_after_marketing.label, scope: ""DTC"", scopeKind: labels.csvColumns.channel, value: ""40.00"" }), exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/m6-acceptance.spec.ts,167,locator-css,"action.getByTestId(""evidence-checklist"").locator(""input[type=checkbox]:checked"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/m6-acceptance.spec.ts,168,getByRole,"action.getByRole(""button"", { name: labels.buttons.confirm, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/m6-acceptance.spec.ts,200,locator-css,"page.locator(""img[src='x']"")",V3-4,,V3-4b 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/m6-acceptance.spec.ts,213,other,"page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/m6-acceptance.spec.ts,225,other,"other.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
@@ -330,20 +330,20 @@ tests/e2e/manager-presentation.spec.ts,83,getByRole,"page.getByRole(""button"", 
 tests/e2e/manager-presentation.spec.ts,84,getByRole,"page.getByRole(""button"", { name: nav.overview.label, exact: true })",V3-4,,V3-4b 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/manager-presentation.spec.ts,85,other,"page.getByLabel(channelFilter, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/manager-presentation.spec.ts,92,other,"page.getByLabel(channelFilter, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/manager-presentation.spec.ts,93,getByRole,"page.getByRole(""button"", { name: nav.scenarios.label, exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,97,other,"scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,98,other,"scenario.getByLabel(labels.scenario.volume.label, { exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,99,getByRole,"page.getByRole(""button"", { name: nav.actions.label, exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,102,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,104,other,"action.getByLabel(labels.actions.problem, { exact: true })",V3-6,,
+tests/e2e/manager-presentation.spec.ts,93,getByRole,"page.getByRole(""button"", { name: nav.scenarios.label, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,97,other,"scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,98,other,"scenario.getByLabel(labels.scenario.volume.label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,99,getByRole,"page.getByRole(""button"", { name: nav.actions.label, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,102,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,104,other,"action.getByLabel(labels.actions.problem, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/manager-presentation.spec.ts,108,other,"page.getByLabel(validation.datasetLabel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/manager-presentation.spec.ts,109,getByRole,"page.getByRole(""button"", { name: nav.actions.label, exact: true })",V3-6,,
+tests/e2e/manager-presentation.spec.ts,109,getByRole,"page.getByRole(""button"", { name: nav.actions.label, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/manager-presentation.spec.ts,110,other,"page.getByLabel(channelFilter, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/manager-presentation.spec.ts,111,other,"action.getByLabel(labels.actions.problem, { exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,113,getByRole,"page.getByRole(""button"", { name: nav.scenarios.label, exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,114,other,"scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,115,other,"scenario.getByLabel(labels.scenario.volume.label, { exact: true })",V3-6,,
-tests/e2e/manager-presentation.spec.ts,116,other,"scenario.getByLabel(labels.scenario.discount.label, { exact: true })",V3-6,,
+tests/e2e/manager-presentation.spec.ts,111,other,"action.getByLabel(labels.actions.problem, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,113,getByRole,"page.getByRole(""button"", { name: nav.scenarios.label, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,114,other,"scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,115,other,"scenario.getByLabel(labels.scenario.volume.label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/manager-presentation.spec.ts,116,other,"scenario.getByLabel(labels.scenario.discount.label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/manager-presentation.spec.ts,123,getByRole,"page.getByRole(""button"", { name: nav.diagnosis.label, exact: true })",V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/manager-presentation.spec.ts,125,locator-css,"page.getByTestId(""diagnosis-list"").locator(""details.diagnosis-row"")",V3-5,diagnosis-row-{rule},V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/manager-presentation.spec.ts,126,locator-css,"diagnostic.locator(""details.diagnosis-technical"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
@@ -487,7 +487,7 @@ tests/e2e/replacement-helpers.ts,55,getByRole,"prompt.getByRole('button', { name
 tests/e2e/replacement-helpers.ts,60,getByRole,"prompt.getByRole('button', { name: labels.autoSave.accept, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/revamp-r1-layout.spec.ts,13,getByRole,"page.getByRole(""button"", { name: labels.buttons.loadDemo, exact: true })",V3-8,,
 tests/e2e/revamp-r1-layout.spec.ts,20,locator-css,page.locator(selector),V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/revamp-r1-layout.spec.ts,46,locator-css,"page.locator("".view-content .export-actions"")",V3-6,,
+tests/e2e/revamp-r1-layout.spec.ts,46,locator-css,"page.locator("".view-content .export-actions"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r1-layout.spec.ts,47,locator-css,"page.locator("".view-content .ai-availability"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r1-layout.spec.ts,52,getByRole,"entry.getByRole(""button"")",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/revamp-r1-layout.spec.ts,54,getByRole,"entry.getByRole(""button"", { name: labels.meetingPage.goToMeeting })",V3-7,,
@@ -618,63 +618,63 @@ tests/e2e/revamp-r5.spec.ts,41,locator-css,"page.locator("".filter-bar"")",V3-3,
 tests/e2e/revamp-r5.spec.ts,41,other,"…globalChannel = (page: Page) => page.locator("".filter-bar"").getByLabel(dash.filter.channel, { exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,46,other,"page.getByLabel(dash.validation.datasetLabel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,47,getByRole,"page.getByRole(""button"", { name: dash.validation.loadButton, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/revamp-r5.spec.ts,51,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,55,getByRole,"card.getByTestId(`scenario-mode-${field}`).getByRole(""button"", { name: mode === ""relative"" ? labels.scenario.modeRelative : labels.scenario.modeAbsolute, exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,66,other,"card.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,71,locator-css,"page.getByTestId(""scenario-assumptions"").locator("":scope > summary"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,73,other,"card.getByLabel(label, { exact: true })",V3-6,,
+tests/e2e/revamp-r5.spec.ts,51,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,55,getByRole,"card.getByTestId(`scenario-mode-${field}`).getByRole(""button"", { name: mode === ""relative"" ? labels.scenario.modeRelative : labels.scenario.modeAbsolute, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,66,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,71,locator-css,"page.getByTestId(""scenario-assumptions"").locator("":scope > summary"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,73,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r5.spec.ts,77,locator-css,"preset.locator(""option"")",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/revamp-r5.spec.ts,82,other,"card.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,83,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,88,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,93,other,"card.getByLabel(fulfillment, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,102,other,"card.getByLabel(oneOff, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,110,other,"card.getByLabel(volume, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,114,other,"card.getByLabel(volume, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,117,other,"card.getByLabel(volume, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,120,other,"card.getByLabel(volume, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,124,other,"card.getByLabel(volume, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,126,other,"card.getByLabel(volume, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,128,other,"card.getByLabel(volume, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,140,locator-css,"page.getByTestId(""scenario-channel"").locator(""option"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,143,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,151,other,"marketplace.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,153,other,"marketplace.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,155,other,"marketplace.getByLabel(adSpend, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,157,other,"marketplace.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
+tests/e2e/revamp-r5.spec.ts,82,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,83,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,88,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,93,other,"card.getByLabel(fulfillment, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,102,other,"card.getByLabel(oneOff, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,110,other,"card.getByLabel(volume, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,114,other,"card.getByLabel(volume, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,117,other,"card.getByLabel(volume, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,120,other,"card.getByLabel(volume, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,124,other,"card.getByLabel(volume, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,126,other,"card.getByLabel(volume, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,128,other,"card.getByLabel(volume, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,140,locator-css,"page.getByTestId(""scenario-channel"").locator(""option"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,143,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,151,other,"marketplace.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,153,other,"marketplace.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,155,other,"marketplace.getByLabel(adSpend, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,157,other,"marketplace.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r5.spec.ts,176,locator-css,"page.locator(""section[aria-labelledby='channel-table-heading']"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,179,locator-css,"page.getByTestId(""diagnosis-list"").locator("":scope > li > details.diagnosis-row"")",V3-5,diagnosis-row-{rule},V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,184,locator-css,"rows.locator("":scope > summary .diagnosis-impact .impact-amount"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/revamp-r5.spec.ts,185,locator-css,"page.locator("".diagnostic-card"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,191,locator-css,"…await rows.nth(3)locator("":scope > summary"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,193,getByRole,"…await expect(rows.nth(3).getByRole(""button"", { name: labels.buttons.addToActions, exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,196,locator-css,"first.locator("":scope > summary .scope-tag"")",V3-6,,
+tests/e2e/revamp-r5.spec.ts,185,locator-css,"page.locator("".diagnostic-card"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,191,locator-css,"…await rows.nth(3)locator("":scope > summary"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,193,getByRole,"…await expect(rows.nth(3).getByRole(""button"", { name: labels.buttons.addToActions, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,196,locator-css,"first.locator("":scope > summary .scope-tag"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r5.spec.ts,197,getByRole,"first.getByRole(""group"", { name: labels.diagnosisList.scopeSwitch })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/revamp-r5.spec.ts,198,getByRole,"chips.getByRole(""button"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,199,getByRole,"chips.getByRole(""button"", { name: labels.sections.total, exact: true })",V3-6,,
+tests/e2e/revamp-r5.spec.ts,198,getByRole,"chips.getByRole(""button"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,199,getByRole,"chips.getByRole(""button"", { name: labels.sections.total, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r5.spec.ts,200,locator-css,"first.locator("".impact-line .impact-amount"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/revamp-r5.spec.ts,201,locator-css,"first.locator("".fact-list .number-link"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,207,getByRole,"chips.getByRole(""button"", { name: ""MARKETPLACE"", exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,208,getByRole,"chips.getByRole(""button"", { name: ""MARKETPLACE"", exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,209,getByRole,"chips.getByRole(""button"", { name: labels.sections.total, exact: true })",V3-6,,
+tests/e2e/revamp-r5.spec.ts,201,locator-css,"first.locator("".fact-list .number-link"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,207,getByRole,"chips.getByRole(""button"", { name: ""MARKETPLACE"", exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,208,getByRole,"chips.getByRole(""button"", { name: ""MARKETPLACE"", exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,209,getByRole,"chips.getByRole(""button"", { name: labels.sections.total, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r5.spec.ts,210,locator-css,"first.locator("".impact-line .impact-amount"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,211,locator-css,"first.locator("".diagnosis-body > h4"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,212,locator-css,"first.locator("".diagnosis-scope-headline"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,214,locator-css,"first.locator("":scope > summary .impact-amount"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,216,locator-css,"first.locator(""details.diagnosis-technical"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/revamp-r5.spec.ts,218,locator-css,"technical.locator("":scope > summary"")",V3-6,,
+tests/e2e/revamp-r5.spec.ts,218,locator-css,"technical.locator("":scope > summary"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r5.spec.ts,227,locator-css,"page.getByTestId(""diagnosis-list"").locator("":scope > li > details.diagnosis-row"")",V3-5,diagnosis-row-{rule},V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/revamp-r5.spec.ts,231,getByRole,"first.getByRole(""button"", { name: labels.buttons.addToActions, exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,238,getByRole,"card.getByRole(""heading"", { level: 4 })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,241,locator-css,"page.getByTestId(""board-column-not_started"").locator(""h3"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,242,locator-css,"page.getByTestId(""board-column-in_progress"").locator(""h3"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,251,locator-css,"page.getByTestId(""board-column-in_progress"").locator(""h3"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,257,other,"item.getByLabel(labels.actions.status, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,259,locator-css,"checklist.locator(""input[type=checkbox]:checked"")",V3-6,,
-tests/e2e/revamp-r5.spec.ts,260,other,"item.getByLabel(labels.actions.due, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,261,other,"item.getByLabel(labels.actions.owner, { exact: true })",V3-6,,
-tests/e2e/revamp-r5.spec.ts,263,locator-css,"page.locator(`datalist[id=""${listId}""]`)",V3-6,,
-tests/e2e/revamp-r5.spec.ts,265,other,"item.getByLabel(labels.actions.status, { exact: true })",V3-6,,
+tests/e2e/revamp-r5.spec.ts,231,getByRole,"first.getByRole(""button"", { name: labels.buttons.addToActions, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,238,getByRole,"card.getByRole(""heading"", { level: 4 })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,241,locator-css,"page.getByTestId(""board-column-not_started"").locator(""h3"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,242,locator-css,"page.getByTestId(""board-column-in_progress"").locator(""h3"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,251,locator-css,"page.getByTestId(""board-column-in_progress"").locator(""h3"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,257,other,"item.getByLabel(labels.actions.status, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,259,locator-css,"checklist.locator(""input[type=checkbox]:checked"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,260,other,"item.getByLabel(labels.actions.due, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,261,other,"item.getByLabel(labels.actions.owner, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,263,locator-css,"page.locator(`datalist[id=""${listId}""]`)",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r5.spec.ts,265,other,"item.getByLabel(labels.actions.status, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r5.spec.ts,274,locator-css,"page.locator(""#product-highlights-heading"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,276,locator-css,"root.locator(""tbody tr th"")",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,278,locator-css,"worst.locator(""tbody tr td:nth-of-type(2)"")",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
@@ -682,7 +682,7 @@ tests/e2e/revamp-r5.spec.ts,280,locator-css,"best.locator(""tbody tr td:nth-of-t
 tests/e2e/revamp-r5.spec.ts,282,other,"page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,283,locator-css,"table.locator(""tbody tr"")",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/revamp-r5.spec.ts,286,locator-css,"page.locator(""#product-full-heading"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/revamp-r5.spec.ts,287,locator-css,"table.locator(""thead th"")",V3-6,,
+tests/e2e/revamp-r5.spec.ts,287,locator-css,"table.locator(""thead th"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r5.spec.ts,288,locator-css,"table.locator(""tbody tr td:last-child"")",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/revamp-r6.spec.ts,47,getByRole,"page.getByRole(""button"", { name: labels.nav[id].label, exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/revamp-r6.spec.ts,69,other,"page.getByLabel(dash.validation.datasetLabel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
@@ -690,12 +690,12 @@ tests/e2e/revamp-r6.spec.ts,70,getByRole,"page.getByRole(""button"", { name: das
 tests/e2e/revamp-r6.spec.ts,77,getByRole,"prompt.getByRole(""button"", { name: auto.decline, exact: true })",V3-7,,
 tests/e2e/revamp-r6.spec.ts,82,locator-css,"menu.locator("":scope > summary"")",V3-7,,
 tests/e2e/revamp-r6.spec.ts,88,locator-css,"menu.locator("":scope > summary"")",V3-7,,
-tests/e2e/revamp-r6.spec.ts,105,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
+tests/e2e/revamp-r6.spec.ts,105,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r6.spec.ts,106,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-7,,
-tests/e2e/revamp-r6.spec.ts,114,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,
-tests/e2e/revamp-r6.spec.ts,116,other,"card.getByLabel(labels.actions.problem, { exact: true })",V3-6,,
-tests/e2e/revamp-r6.spec.ts,117,getByRole,"card.getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,
-tests/e2e/revamp-r6.spec.ts,118,getByRole,"card.getByRole(""button"", { name: labels.ui.actionsWorkbench.unpin, exact: true })",V3-6,,
+tests/e2e/revamp-r6.spec.ts,114,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r6.spec.ts,116,other,"card.getByLabel(labels.actions.problem, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r6.spec.ts,117,getByRole,"card.getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/revamp-r6.spec.ts,118,getByRole,"card.getByRole(""button"", { name: labels.ui.actionsWorkbench.unpin, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r6.spec.ts,119,getByRole,"card.getByRole(""heading"", { level: 4 })",V3-7,,
 tests/e2e/revamp-r6.spec.ts,138,locator-css,"same.getByTestId(""meeting-compare-kpis"").locator(""tbody tr"")",V3-7,,
 tests/e2e/revamp-r6.spec.ts,140,locator-css,"rows.locator(""th"")",V3-7,,
@@ -716,7 +716,7 @@ tests/e2e/revamp-r6.spec.ts,181,other,"meeting.getByTestId(""meeting-agenda-5"")
 tests/e2e/revamp-r6.spec.ts,182,locator-css,"meeting.getByTestId(""meeting-agenda-5"").locator(""select"")",V3-7,,
 tests/e2e/revamp-r6.spec.ts,184,locator-css,"dtcSelect.locator(""option:checked"")",V3-7,,
 tests/e2e/revamp-r6.spec.ts,186,other,"meeting.getByTestId(""meeting-decision"").getByLabel(labels.meeting.decision, { exact: true })",V3-7,,
-tests/e2e/revamp-r6.spec.ts,188,locator-css,"decision.locator(""option:checked"")",V3-6,,
+tests/e2e/revamp-r6.spec.ts,188,locator-css,"decision.locator(""option:checked"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/revamp-r6.spec.ts,196,getByRole,"confirm.getByRole(""heading"", { name: meetingPage.confirmTitle, exact: true })",V3-7,,
 tests/e2e/revamp-r6.spec.ts,206,locator-css,"…await expect(items.first()locator(""summary"")",V3-7,,
 tests/e2e/revamp-r6.spec.ts,207,getByRole,"…await expect(items.first().getByRole(""button"", { name: `${labels.buttons.exportMarkdown} · ${await items.first().locator(""summary"").innerText()}`, exact: true })",V3-7,,
@@ -808,31 +808,31 @@ tests/e2e/review-v2-a-export.spec.ts,85,locator-css,"print.locator("":scope > ul
 tests/e2e/review-v2-a-export.spec.ts,86,getByRole,"page.getByRole(""heading"", { name: summaryCopy.appendixHeading, exact: true })",V3-7,,
 tests/e2e/review-v2-a-export.spec.ts,86,locator-css,"print.locator("":scope > section"")",V3-7,,
 tests/e2e/review-v2-a-export.spec.ts,88,locator-css,"appendix.locator("":scope > ul > li"")",V3-7,,
-tests/e2e/review-v2-a-export.spec.ts,89,getByText,"…ex++) await expect((pinned && index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })",V3-6,,
+tests/e2e/review-v2-a-export.spec.ts,89,getByText,"…ex++) await expect((pinned && index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a-export.spec.ts,110,other,"page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/review-v2-a-export.spec.ts,111,getByRole,"page.getByRole(""button"", { name: labels.ui.dashboard.validation.loadButton, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/review-v2-a-export.spec.ts,114,getByRole,"page.getByRole(""button"", { name: labels.nav.actions.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/review-v2-a-export.spec.ts,118,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,
-tests/e2e/review-v2-a-export.spec.ts,120,other,"card.getByLabel(labels.actions.problem, { exact: true })",V3-6,,
-tests/e2e/review-v2-a-export.spec.ts,121,other,"card.getByLabel(labels.actions.step, { exact: true })",V3-6,,
-tests/e2e/review-v2-a-export.spec.ts,122,other,"card.getByLabel(labels.actions.owner, { exact: true })",V3-6,,
-tests/e2e/review-v2-a-export.spec.ts,124,getByRole,"card.getByTestId(""evidence-checklist"").getByRole(""checkbox"", { name: goldenFactLabel, exact: true })",V3-6,,
-tests/e2e/review-v2-a-export.spec.ts,128,locator-css,"card.getByTestId(""evidence-checklist"").locator(""input[type=checkbox]:checked"")",V3-6,,
-tests/e2e/review-v2-a-export.spec.ts,129,getByRole,"card.getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,
+tests/e2e/review-v2-a-export.spec.ts,118,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a-export.spec.ts,120,other,"card.getByLabel(labels.actions.problem, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a-export.spec.ts,121,other,"card.getByLabel(labels.actions.step, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a-export.spec.ts,122,other,"card.getByLabel(labels.actions.owner, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a-export.spec.ts,124,getByRole,"card.getByTestId(""evidence-checklist"").getByRole(""checkbox"", { name: goldenFactLabel, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a-export.spec.ts,128,locator-css,"card.getByTestId(""evidence-checklist"").locator(""input[type=checkbox]:checked"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a-export.spec.ts,129,getByRole,"card.getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a-export.spec.ts,132,getByRole,"page.getByRole(""button"", { name: refreshActionRef })",V3-7,,
 tests/e2e/review-v2-a-export.spec.ts,135,other,"summary.getByLabel(labels.meeting.threshold, { exact: true })",V3-7,threshold-form-overview／threshold-form-meeting,
 tests/e2e/review-v2-a-export.spec.ts,136,getByRole,"summary.getByRole(""button"", { name: labels.buttons.apply, exact: true })",V3-7,,
 tests/e2e/review-v2-a-export.spec.ts,137,other,"summary.getByLabel(labels.meeting.threshold, { exact: true })",V3-7,threshold-form-overview／threshold-form-meeting,
-tests/e2e/review-v2-a-export.spec.ts,138,getByRole,"summary.getByRole(""heading"", { name: summaryCopy.decisionsHeading, exact: true })",V3-6,,
+tests/e2e/review-v2-a-export.spec.ts,138,getByRole,"summary.getByRole(""heading"", { name: summaryCopy.decisionsHeading, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a-export.spec.ts,139,locator-css,".getByTestId(""meeting-pinned-actions"").locator("":scope > ul > li"")",V3-7,,
 tests/e2e/review-v2-a-export.spec.ts,144,locator-css,"appendix.locator("":scope > summary"")",V3-7,,
 tests/e2e/review-v2-a-export.spec.ts,145,locator-css,"appendix.locator("":scope > ul > li"")",V3-7,,
-tests/e2e/review-v2-a-export.spec.ts,146,getByText,"… <= 8; index++) await expect((index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })",V3-6,,
+tests/e2e/review-v2-a-export.spec.ts,146,getByText,"… <= 8; index++) await expect((index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a-export.spec.ts,160,getByRole,"page.getByRole(""button"", { name: labels.nav.actions.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/review-v2-a-export.spec.ts,161,getByRole,"page.getByRole(""button"", { name: labels.downloads.decisionJson, exact: true })",V3-7,"actions-export-{md,csv,json}／export-page-{page}",
 tests/e2e/review-v2-a-export.spec.ts,162,getByRole,"page.getByRole(""button"", { name: labels.downloads.decisionCsv, exact: true })",V3-7,"actions-export-{md,csv,json}／export-page-{page}",
-tests/e2e/review-v2-a-export.spec.ts,186,getByRole,"page.getByRole(""button"", { name: labels.ui.actionsWorkbench.unpin, exact: true })",V3-6,,
-tests/e2e/review-v2-a-export.spec.ts,187,getByRole,"page.getByRole(""button"", { name: labels.ui.actionsWorkbench.unpin, exact: true })",V3-6,,
+tests/e2e/review-v2-a-export.spec.ts,186,getByRole,"page.getByRole(""button"", { name: labels.ui.actionsWorkbench.unpin, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a-export.spec.ts,187,getByRole,"page.getByRole(""button"", { name: labels.ui.actionsWorkbench.unpin, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a-export.spec.ts,198,locator-css,"allAppendix.locator("":scope > summary"")",V3-7,,
 tests/e2e/review-v2-a-export.spec.ts,199,locator-css,"allAppendix.locator("":scope > ul > li"")",V3-7,,
 tests/e2e/review-v2-a.spec.ts,22,getByRole,"p.getByRole('dialog',{name:dlg.heading})",V3-7,,
@@ -865,24 +865,24 @@ tests/e2e/review-v2-a.spec.ts,49,getByRole,"…el(dlg.localConsent,{exact:true})
 tests/e2e/review-v2-a.spec.ts,49,getByRole,"…alAndContinue,exact:true}).click();await expect(guard(page).getByRole('alert')",V3-7,,
 tests/e2e/review-v2-a.spec.ts,49,other,"…await guard(page).getByLabel(dlg.localConsent,{exact:true})",V3-7,,
 tests/e2e/review-v2-a.spec.ts,57,getByRole,"page.getByRole('button',{name:labels.nav.scenarios.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/review-v2-a.spec.ts,61,getByRole,"page.getByRole('button',{name:labels.buttons.addScenario,exact:true})",V3-6,,
-tests/e2e/review-v2-a.spec.ts,62,other,"card.getByLabel(labels.ui.decisionWorkbench.planName,{exact:true})",V3-6,,
+tests/e2e/review-v2-a.spec.ts,61,getByRole,"page.getByRole('button',{name:labels.buttons.addScenario,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,62,other,"card.getByLabel(labels.ui.decisionWorkbench.planName,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a.spec.ts,63,other,"card.getByLabel(label,{exact:true})",V3-7,,
 tests/e2e/review-v2-a.spec.ts,64,getByRole,"card.getByRole('button',{name:labels.buttons.calculate,exact:true})",V3-7,,
-tests/e2e/review-v2-a.spec.ts,64,other,"card.getByLabel(labels.scenario.acceptAssumptions,{exact:true})",V3-6,,
-tests/e2e/review-v2-a.spec.ts,67,getByRole,"page.getByRole('button',{name:labels.buttons.addScenario,exact:true})",V3-6,,
-tests/e2e/review-v2-a.spec.ts,70,other,"page.getByTestId('scenario-1').getByLabel(labels.ui.decisionWorkbench.planName,{exact:true})",V3-6,,
+tests/e2e/review-v2-a.spec.ts,64,other,"card.getByLabel(labels.scenario.acceptAssumptions,{exact:true})",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,67,getByRole,"page.getByRole('button',{name:labels.buttons.addScenario,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,70,other,"page.getByTestId('scenario-1').getByLabel(labels.ui.decisionWorkbench.planName,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a.spec.ts,72,other,"page.getByLabel(labels.ui.dashboard.filter.channel,{exact:true})",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/review-v2-a.spec.ts,73,getByRole,"page.getByRole('button',{name:labels.nav.actions.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/review-v2-a.spec.ts,77,getByRole,"page.getByRole('button',{name:labels.buttons.addAction,exact:true})",V3-6,,
-tests/e2e/review-v2-a.spec.ts,78,other,"card.getByLabel(labels.actions.problem,{exact:true})",V3-6,,
-tests/e2e/review-v2-a.spec.ts,78,other,"card.getByLabel(labels.actions.step,{exact:true})",V3-6,,
-tests/e2e/review-v2-a.spec.ts,79,other,"card.getByLabel(labels.actions.owner,{exact:true})",V3-6,,
-tests/e2e/review-v2-a.spec.ts,79,other,"card.getByLabel(labels.actions.due,{exact:true})",V3-6,,
+tests/e2e/review-v2-a.spec.ts,77,getByRole,"page.getByRole('button',{name:labels.buttons.addAction,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,78,other,"card.getByLabel(labels.actions.problem,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,78,other,"card.getByLabel(labels.actions.step,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,79,other,"card.getByLabel(labels.actions.owner,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,79,other,"card.getByLabel(labels.actions.due,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a.spec.ts,80,getByRole,"card.getByRole('button',{name:labels.buttons.confirm,exact:true})",V3-7,,
-tests/e2e/review-v2-a.spec.ts,80,locator-css,card.getByTestId('evidence-checklist').locator('input[type=checkbox]'),V3-6,,
-tests/e2e/review-v2-a.spec.ts,80,locator-css,card.getByTestId('evidence-checklist').locator('input[type=checkbox]:checked'),V3-6,,
-tests/e2e/review-v2-a.spec.ts,81,getByRole,"card.getByRole('button',{name:labels.buttons.pin,exact:true})",V3-6,,
+tests/e2e/review-v2-a.spec.ts,80,locator-css,card.getByTestId('evidence-checklist').locator('input[type=checkbox]'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,80,locator-css,card.getByTestId('evidence-checklist').locator('input[type=checkbox]:checked'),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/review-v2-a.spec.ts,81,getByRole,"card.getByRole('button',{name:labels.buttons.pin,exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a.spec.ts,85,other,"page.getByLabel(labels.meeting.name,{exact:true})",V3-7,,
 tests/e2e/review-v2-a.spec.ts,85,other,"page.getByLabel(labels.meeting.notes,{exact:true})",V3-7,,
 tests/e2e/review-v2-a.spec.ts,86,getByRole,"summary.getByRole('button',{name:labels.buttons.apply,exact:true})",V3-7,,
@@ -907,59 +907,59 @@ tests/e2e/review-v2-a.spec.ts,109,other,"summary.getByLabel(labels.meeting.thres
 tests/e2e/review-v2-a.spec.ts,109,other,"page.getByLabel(labels.meeting.decision,{exact:true})",V3-7,,
 tests/e2e/review-v2-a.spec.ts,112,getByRole,"page.getByTestId('meeting-outputs').getByRole('button',{name:labels.buttons.exportMarkdown,exact:true})",V3-7,,
 tests/e2e/review-v2-a.spec.ts,116,getByRole,"page.getByRole('button',{name:labels.nav.scenarios.label,exact:true})",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/review-v2-a.spec.ts,117,other,"plan.getByLabel(labels.scenario.oneOff.label,{exact:true})",V3-6,,
+tests/e2e/review-v2-a.spec.ts,117,other,"plan.getByLabel(labels.scenario.oneOff.label,{exact:true})",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/review-v2-a.spec.ts,119,other,"page.getByLabel(labels.meeting.decision,{exact:true})",V3-7,,
-tests/e2e/scenario-sensitivity.spec.ts,21,other,"sensitivity.getByLabel(sensitivityInput(index), { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,24,other,"sensitivity.getByLabel(sensitivityInput(index), { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,27,locator-css,"sensitivity.locator("":scope > summary"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,28,other,"sensitivity.getByLabel(sensitivityInput(0), { exact: true })",V3-6,,
+tests/e2e/scenario-sensitivity.spec.ts,21,other,"sensitivity.getByLabel(sensitivityInput(index), { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,24,other,"sensitivity.getByLabel(sensitivityInput(index), { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,27,locator-css,"sensitivity.locator("":scope > summary"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,28,other,"sensitivity.getByLabel(sensitivityInput(0), { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenario-sensitivity.spec.ts,37,other,"page.getByLabel(validation.datasetLabel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/scenario-sensitivity.spec.ts,38,getByRole,"page.getByRole(""button"", { name: validation.loadButton, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/scenario-sensitivity.spec.ts,42,other,"page.getByLabel(channelField, { exact: true })",V3-6,,
+tests/e2e/scenario-sensitivity.spec.ts,42,other,"page.getByLabel(channelField, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenario-sensitivity.spec.ts,44,getByRole,"page.getByRole(""button"", { name: labels.nav.scenarios.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/scenario-sensitivity.spec.ts,49,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,53,other,"card.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,55,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,56,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,59,locator-css,"sensitivity.locator("":scope > summary"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,74,locator-css,"sensitivity.locator("":scope > p.note"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,78,getByRole,"sensitivity.getByRole(""button"", { name: copy.recalc, exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,80,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,82,getByRole,"sensitivity.getByRole(""button"", { name: copy.recalc, exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,83,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,84,getByRole,"table.getByRole(""row"", { name: sensitivityRow(0) })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,85,getByRole,"table.getByRole(""row"", { name: sensitivityRow(1) })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,86,getByRole,"table.getByRole(""row"", { name: sensitivityRow(2) })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,89,getByRole,"sensitivity.getByRole(""region"", { name: copy.tableAria })",V3-6,,
+tests/e2e/scenario-sensitivity.spec.ts,49,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,53,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,55,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,56,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,59,locator-css,"sensitivity.locator("":scope > summary"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,74,locator-css,"sensitivity.locator("":scope > p.note"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,78,getByRole,"sensitivity.getByRole(""button"", { name: copy.recalc, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,80,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,82,getByRole,"sensitivity.getByRole(""button"", { name: copy.recalc, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,83,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,84,getByRole,"table.getByRole(""row"", { name: sensitivityRow(0) })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,85,getByRole,"table.getByRole(""row"", { name: sensitivityRow(1) })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,86,getByRole,"table.getByRole(""row"", { name: sensitivityRow(2) })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,89,getByRole,"sensitivity.getByRole(""region"", { name: copy.tableAria })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenario-sensitivity.spec.ts,91,locator-css,"page.locator(""body"")",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/scenario-sensitivity.spec.ts,91,locator-css,"page.locator(""body"")",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/scenario-sensitivity.spec.ts,95,getByRole,"page.getByRole(""button"", { name: labels.downloads.decisionJson, exact: true })",V3-7,"actions-export-{md,csv,json}／export-page-{page}",
-tests/e2e/scenario-sensitivity.spec.ts,112,other,"sensitivity.getByLabel(sensitivityInput(index), { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,113,getByRole,"sensitivity.getByRole(""button"", { name: copy.recalc, exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,114,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,115,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,116,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,117,other,"sensitivity.getByLabel(sensitivityInput(1), { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,118,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,119,getByRole,"sensitivity.getByRole(""button"", { name: copy.recalc, exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,122,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,129,other,"card.getByLabel(labels.scenario.volume.label, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,131,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,134,other,"card.getByLabel(labels.scenario.volume.label, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,135,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,136,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,140,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,141,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,146,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,146,getByRole,"…await expect(sensitivity.getByRole(""table"").getByRole(""row"", { name: sensitivityRow(0) })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,148,other,"page.getByLabel(channelField, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,152,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,155,other,"page.getByLabel(channelField, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,161,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,161,getByRole,"…await expect(sensitivity.getByRole(""table"").getByRole(""row"", { name: sensitivityRow(2) })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,164,other,"page.getByLabel(channelField, { exact: true })",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,172,getByRole,"sensitivity.getByRole(""table"")",V3-6,,
-tests/e2e/scenario-sensitivity.spec.ts,172,getByRole,"…await expect(sensitivity.getByRole(""table"").getByRole(""row"", { name: sensitivityRow(1) })",V3-6,,
+tests/e2e/scenario-sensitivity.spec.ts,112,other,"sensitivity.getByLabel(sensitivityInput(index), { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,113,getByRole,"sensitivity.getByRole(""button"", { name: copy.recalc, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,114,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,115,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,116,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,117,other,"sensitivity.getByLabel(sensitivityInput(1), { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,118,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,119,getByRole,"sensitivity.getByRole(""button"", { name: copy.recalc, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,122,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,129,other,"card.getByLabel(labels.scenario.volume.label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,131,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,134,other,"card.getByLabel(labels.scenario.volume.label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,135,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,136,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,140,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,141,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,146,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,146,getByRole,"…await expect(sensitivity.getByRole(""table"").getByRole(""row"", { name: sensitivityRow(0) })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,148,other,"page.getByLabel(channelField, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,152,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,155,other,"page.getByLabel(channelField, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,161,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,161,getByRole,"…await expect(sensitivity.getByRole(""table"").getByRole(""row"", { name: sensitivityRow(2) })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,164,other,"page.getByLabel(channelField, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,172,getByRole,"sensitivity.getByRole(""table"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenario-sensitivity.spec.ts,172,getByRole,"…await expect(sensitivity.getByRole(""table"").getByRole(""row"", { name: sensitivityRow(1) })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,23,getByRole,"dialog.getByRole(""button"", { name: new RegExp(`^${escapeRegExp(labels.evidence.sourceTabs[tab])}（\\d+）$`) })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
 tests/e2e/scenarios.spec.ts,41,locator-css,"page.getByTestId(`kpi-${metric}`).locator("".kpi-value"")",V3-4,kpi-{metric},V3-4b 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/scenarios.spec.ts,71,other,"page.getByLabel(dash.validation.datasetLabel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
@@ -968,100 +968,100 @@ tests/e2e/scenarios.spec.ts,74,getByRole,"page.getByRole(""dialog"", { name: lab
 tests/e2e/scenarios.spec.ts,76,getByRole,"replacement.getByRole(""button"", { name: labels.ui.replacementDialog.discardAndContinue, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/scenarios.spec.ts,85,other,"page.getByLabel(dash.filter.channel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/scenarios.spec.ts,90,getByRole,"page.getByRole(""button"", { name: labels.nav.scenarios.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,105,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,106,other,"card.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,107,other,card.getByLabel(consentLabel),V3-6,,
-tests/e2e/scenarios.spec.ts,115,getByRole,"page.getByRole(""button"", { name: labels.buttons.addScenario, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,118,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,123,other,"card.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,124,other,"card.getByLabel(consentLabel, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,127,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,
+tests/e2e/scenarios.spec.ts,105,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,106,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,107,other,card.getByLabel(consentLabel),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,115,getByRole,"page.getByRole(""button"", { name: labels.buttons.addScenario, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,118,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,123,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,124,other,"card.getByLabel(consentLabel, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,127,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,133,getByRole,"page.getByRole(""button"", { name: labels.nav.actions.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,139,getByRole,"card.getByRole(""group"", { name: aw.evidencePicker, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,142,other,…await expect(actionsWorkbench(page).getByLabel(consentLabel),V3-6,,
-tests/e2e/scenarios.spec.ts,143,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,150,other,"card.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,151,other,"card.getByLabel(labels.actions.due, { exact: true })",V3-6,,
+tests/e2e/scenarios.spec.ts,139,getByRole,"card.getByRole(""group"", { name: aw.evidencePicker, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,142,other,…await expect(actionsWorkbench(page).getByLabel(consentLabel),V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,143,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,150,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,151,other,"card.getByLabel(labels.actions.due, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,154,getByRole,"evidence.getByRole(""checkbox"", { name: factText(""2026-08-02"", ""2026-08-02"", cmAfter, ""DTC"", ""270.00""), exact: true })",V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/scenarios.spec.ts,160,locator-css,"evidence.locator(""input[type=checkbox]:checked"")",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,161,getByRole,"card.getByRole(""button"", { name: labels.buttons.confirm, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,169,getByRole,"page.getByRole(""button"", { name: buttonName, exact: true })",V3-6,,
+tests/e2e/scenarios.spec.ts,161,getByRole,"card.getByRole(""button"", { name: labels.buttons.confirm, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,169,getByRole,"page.getByRole(""button"", { name: buttonName, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,231,getByRole,"page.getByRole(""button"", { name: labels.nav.scenarios.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,233,other,"…await expect(scenario(page).getByLabel(inputLabels[0], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,236,locator-css,"channelSelect.locator(""option"")",V3-6,,
-tests/e2e/scenarios.spec.ts,237,locator-css,"channelSelect.locator(""option"")",V3-6,,
+tests/e2e/scenarios.spec.ts,233,other,"…await expect(scenario(page).getByLabel(inputLabels[0], { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,236,locator-css,"channelSelect.locator(""option"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,237,locator-css,"channelSelect.locator(""option"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,239,other,"page.getByLabel(dash.filter.channel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,240,getByRole,"page.getByRole(""button"", { name: startButtonPrefix })",V3-6,,
-tests/e2e/scenarios.spec.ts,246,getByRole,"page.getByRole(""button"", { name: labels.buttons.fillZero, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,247,other,"card.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,248,other,"card.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,249,other,card.getByLabel(consentLabel),V3-6,,
-tests/e2e/scenarios.spec.ts,250,other,card.getByLabel(consentLabel),V3-6,,
+tests/e2e/scenarios.spec.ts,240,getByRole,"page.getByRole(""button"", { name: startButtonPrefix })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,246,getByRole,"page.getByRole(""button"", { name: labels.buttons.fillZero, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,247,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,248,other,"card.getByLabel(label, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,249,other,card.getByLabel(consentLabel),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,250,other,card.getByLabel(consentLabel),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,257,getByRole,"page.getByRole(""dialog"", { name: evidenceDialogName(fill(dw.baselineEvidenceTitle, { metric: cmAfter })), exact: true })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,259,locator-css,"dialog.locator(""p.number"")",V3-6,,
-tests/e2e/scenarios.spec.ts,288,getByRole,"page.getByRole(""button"", { name: labels.buttons.addScenario, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,290,locator-css,"page.getByTestId(""scenario-comparison"").locator(""tbody tr"")",V3-6,,
-tests/e2e/scenarios.spec.ts,290,locator-css,"page.locator(""th"")",V3-6,,
-tests/e2e/scenarios.spec.ts,291,getByRole,"total.getByRole(""cell"")",V3-6,,
-tests/e2e/scenarios.spec.ts,296,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,304,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,308,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,312,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,316,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,332,other,"card.getByLabel(inputLabels[0], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,334,other,card.getByLabel(consentLabel),V3-6,,
-tests/e2e/scenarios.spec.ts,350,other,"card.getByLabel(inputLabels[index], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,354,other,"card.getByLabel(inputLabels[index], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,373,locator-css,"page.getByTestId(""scenario-comparison"").locator(""tbody tr"")",V3-6,,
-tests/e2e/scenarios.spec.ts,373,locator-css,"page.locator(""th"")",V3-6,,
-tests/e2e/scenarios.spec.ts,374,getByRole,"row.getByRole(""cell"")",V3-6,,
-tests/e2e/scenarios.spec.ts,397,getByRole,"page.getByRole(""button"", { name: labels.buttons.addScenario, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,400,getByRole,"…await expect(scenario(page).getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,401,other,"…or (const label of inputLabels) await expect(scenario(page).getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,421,locator-css,"others.locator("":scope > summary"")",V3-6,,
+tests/e2e/scenarios.spec.ts,259,locator-css,"dialog.locator(""p.number"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,288,getByRole,"page.getByRole(""button"", { name: labels.buttons.addScenario, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,290,locator-css,"page.getByTestId(""scenario-comparison"").locator(""tbody tr"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,290,locator-css,"page.locator(""th"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,291,getByRole,"total.getByRole(""cell"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,296,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,304,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,308,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,312,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,316,other,"…await scenario(page, 2).getByLabel(inputLabels[2], { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,332,other,"card.getByLabel(inputLabels[0], { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,334,other,card.getByLabel(consentLabel),V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,350,other,"card.getByLabel(inputLabels[index], { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,354,other,"card.getByLabel(inputLabels[index], { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,373,locator-css,"page.getByTestId(""scenario-comparison"").locator(""tbody tr"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,373,locator-css,"page.locator(""th"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,374,getByRole,"row.getByRole(""cell"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,397,getByRole,"page.getByRole(""button"", { name: labels.buttons.addScenario, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,400,getByRole,"…await expect(scenario(page).getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,401,other,"…or (const label of inputLabels) await expect(scenario(page).getByLabel(label, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,421,locator-css,"others.locator("":scope > summary"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,425,other,"page.getByLabel(dash.filter.channel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,433,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,435,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,436,other,"card.getByLabel(inputLabels[2], { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,445,locator-css,"…const checked = evidenceChecklist(action(page))locator(""input[type=checkbox]:checked"")",V3-6,,
-tests/e2e/scenarios.spec.ts,449,other,"…await action(page).getByLabel(labels.actions.owner, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,452,other,"…await action(page).getByLabel(labels.actions.status, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,453,other,"…await action(page).getByLabel(labels.actions.progress, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,455,getByRole,"…await action(page).getByRole(""button"", { name: new RegExp(`^${escapeRegExp(aw.viewEvidenceItem.split(""{fact}"")[0])}`) })",V3-6,,
-tests/e2e/scenarios.spec.ts,456,getByRole,"page.getByRole(""dialog"")",V3-6,,
-tests/e2e/scenarios.spec.ts,456,locator-css,"…await expect(page.getByRole(""dialog"")locator(""p.number"")",V3-6,,
-tests/e2e/scenarios.spec.ts,457,getByRole,"page.getByRole(""dialog"")",V3-6,,
-tests/e2e/scenarios.spec.ts,457,getByRole,"…await page.getByRole(""dialog"").getByRole(""button"", { name: labels.buttons.close, exact: true })",V3-6,,
+tests/e2e/scenarios.spec.ts,433,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,435,other,"card.getByLabel(dw.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,436,other,"card.getByLabel(inputLabels[2], { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,445,locator-css,"…const checked = evidenceChecklist(action(page))locator(""input[type=checkbox]:checked"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,449,other,"…await action(page).getByLabel(labels.actions.owner, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,452,other,"…await action(page).getByLabel(labels.actions.status, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,453,other,"…await action(page).getByLabel(labels.actions.progress, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,455,getByRole,"…await action(page).getByRole(""button"", { name: new RegExp(`^${escapeRegExp(aw.viewEvidenceItem.split(""{fact}"")[0])}`) })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,456,getByRole,"page.getByRole(""dialog"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,456,locator-css,"…await expect(page.getByRole(""dialog"")locator(""p.number"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,457,getByRole,"page.getByRole(""dialog"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,457,getByRole,"…await page.getByRole(""dialog"").getByRole(""button"", { name: labels.buttons.close, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,470,other,"page.getByLabel(dash.filter.channel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,489,getByText,"page.getByText(msw.historyHeading, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,499,locator-css,"page.getByTestId(""multi-scenario-workbench"").locator(""details"")",V3-6,,
-tests/e2e/scenarios.spec.ts,499,locator-css,"page.locator(""summary"")",V3-6,,
-tests/e2e/scenarios.spec.ts,500,locator-css,"history.locator(""summary"")",V3-6,,
-tests/e2e/scenarios.spec.ts,501,getByRole,"page.getByRole(""button"", { name: msw.copyToCurrent, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,502,other,"…await expect(scenario(page).getByLabel(dw.planName, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,503,other,"…or (const label of inputLabels) await expect(scenario(page).getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,504,other,…await expect(scenario(page).getByLabel(consentLabel),V3-6,,
-tests/e2e/scenarios.spec.ts,527,other,"page.getByLabel(label, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,528,getByRole,"page.getByRole(""button"", { name: labels.buttons.apply, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,546,getByRole,"…for (const index of [1, 2, 3]) await action(page, index).getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,547,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,549,getByRole,"…await action(page, 4).getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,551,getByRole,"…await expect(action(page, 4).getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,552,getByRole,"…await expect(actionsWorkbench(page).getByRole(""button"", { name: aw.unpin, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,554,getByRole,"…await expect(action(page, 1).getByRole(""button"", { name: labels.buttons.moveUp, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,555,getByRole,"…await action(page, 2).getByRole(""button"", { name: labels.buttons.moveUp, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,557,other,"…await expect(action(page, 1).getByLabel(labels.actions.problem, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,558,other,"…await expect(action(page, 2).getByLabel(labels.actions.problem, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,559,other,"…await action(page, 1).getByLabel(labels.actions.step, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,561,getByRole,"…const opener = action(page, 2).getByRole(""button"", { name: fill(aw.viewEvidenceItem, { fact: factText(""2026-08-02"", ""2026-08-02"", cmAfter, ""DTC"", ""270.00"") }), exact: true })",V3-6,,
+tests/e2e/scenarios.spec.ts,489,getByText,"page.getByText(msw.historyHeading, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,499,locator-css,"page.getByTestId(""multi-scenario-workbench"").locator(""details"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,499,locator-css,"page.locator(""summary"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,500,locator-css,"history.locator(""summary"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,501,getByRole,"page.getByRole(""button"", { name: msw.copyToCurrent, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,502,other,"…await expect(scenario(page).getByLabel(dw.planName, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,503,other,"…or (const label of inputLabels) await expect(scenario(page).getByLabel(label, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,504,other,…await expect(scenario(page).getByLabel(consentLabel),V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,527,other,"page.getByLabel(label, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,528,getByRole,"page.getByRole(""button"", { name: labels.buttons.apply, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,546,getByRole,"…for (const index of [1, 2, 3]) await action(page, index).getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,547,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,549,getByRole,"…await action(page, 4).getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,551,getByRole,"…await expect(action(page, 4).getByRole(""button"", { name: labels.buttons.pin, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,552,getByRole,"…await expect(actionsWorkbench(page).getByRole(""button"", { name: aw.unpin, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,554,getByRole,"…await expect(action(page, 1).getByRole(""button"", { name: labels.buttons.moveUp, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,555,getByRole,"…await action(page, 2).getByRole(""button"", { name: labels.buttons.moveUp, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,557,other,"…await expect(action(page, 1).getByLabel(labels.actions.problem, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,558,other,"…await expect(action(page, 2).getByLabel(labels.actions.problem, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,559,other,"…await action(page, 1).getByLabel(labels.actions.step, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,561,getByRole,"…const opener = action(page, 2).getByRole(""button"", { name: fill(aw.viewEvidenceItem, { fact: factText(""2026-08-02"", ""2026-08-02"", cmAfter, ""DTC"", ""270.00"") }), exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,565,getByRole,"page.getByRole(""dialog"", { name: evidenceDialogName(fill(aw.evidenceTitle, { metric: cmAfter })), exact: true })",V3-5,,V3-5 核對：定位器未變、仍有效（2026-10-07 E2E 全套通過）
-tests/e2e/scenarios.spec.ts,567,locator-css,"dialog.locator(""p.number"")",V3-6,,
-tests/e2e/scenarios.spec.ts,585,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,586,locator-css,"…await expect(evidenceChecklist(action(page))locator(""input[type=checkbox]:checked"")",V3-6,,
-tests/e2e/scenarios.spec.ts,587,other,"…await action(page).getByLabel(labels.actions.problem, { exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,588,getByRole,"…await action(page).getByRole(""button"", { name: labels.buttons.confirm, exact: true })",V3-6,,
-tests/e2e/scenarios.spec.ts,648,locator-css,"page.locator(""img[src='x']"")",V3-6,,
-tests/e2e/scenarios.spec.ts,649,locator-css,"page.locator(""a[href^='javascript:']"")",V3-6,,
+tests/e2e/scenarios.spec.ts,567,locator-css,"dialog.locator(""p.number"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,585,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,586,locator-css,"…await expect(evidenceChecklist(action(page))locator(""input[type=checkbox]:checked"")",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,587,other,"…await action(page).getByLabel(labels.actions.problem, { exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,588,getByRole,"…await action(page).getByRole(""button"", { name: labels.buttons.confirm, exact: true })",V3-6,,V3-6 已改寫（原片段已不在檔中；2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,648,locator-css,"page.locator(""img[src='x']"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/scenarios.spec.ts,649,locator-css,"page.locator(""a[href^='javascript:']"")",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/scenarios.spec.ts,669,getByRole,"savePrompt.getByRole(""button"", { name: labels.autoSave.decline, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,18,getByRole,"page.getByRole(""dialog"", { name: replacementCopy.heading })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,19,getByRole,"page.getByRole(""region"", { name: storageCopy.restorePreviewAria })",V3-7,,
@@ -1075,17 +1075,17 @@ tests/e2e/workspace-storage.spec.ts,81,getByRole,"page.getByRole(""button"", { n
 tests/e2e/workspace-storage.spec.ts,83,other,"page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,84,locator-css,"page.getByTestId(""kpi-contribution_after_marketing"").locator("".kpi-value"")",V3-4,kpi-{metric},V3-4b 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,88,getByRole,"page.getByRole(""button"", { name: labels.nav.scenarios.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/workspace-storage.spec.ts,91,getByRole,"page.getByRole(""button"", { name: labels.buttons.addScenario, exact: true })",V3-6,,
-tests/e2e/workspace-storage.spec.ts,93,other,"card.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })",V3-6,,
+tests/e2e/workspace-storage.spec.ts,91,getByRole,"page.getByRole(""button"", { name: labels.buttons.addScenario, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/workspace-storage.spec.ts,93,other,"card.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/workspace-storage.spec.ts,95,other,"card.getByLabel(label, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/workspace-storage.spec.ts,96,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,
+tests/e2e/workspace-storage.spec.ts,96,other,"card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/workspace-storage.spec.ts,97,getByRole,"card.getByRole(""button"", { name: labels.buttons.calculate, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,101,getByRole,"page.getByRole(""button"", { name: labels.nav.actions.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/workspace-storage.spec.ts,103,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,
+tests/e2e/workspace-storage.spec.ts,103,getByRole,"page.getByRole(""button"", { name: labels.buttons.addAction, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/workspace-storage.spec.ts,106,other,"card.getByLabel(label, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,109,getByRole,"…const box = evidenceList(card).getByRole(""checkbox"", { name: factText, exact: true })",V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,113,getByRole,"card.getByRole(""button"", { name: labels.buttons.confirm, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
-tests/e2e/workspace-storage.spec.ts,117,getByRole,"card.getByRole(""group"", { name: labels.ui.actionsWorkbench.evidencePicker, exact: true })",V3-6,,
+tests/e2e/workspace-storage.spec.ts,117,getByRole,"card.getByRole(""group"", { name: labels.ui.actionsWorkbench.evidencePicker, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/workspace-storage.spec.ts,118,locator-css,"…onst checkedEvidence = (card: Locator) => evidenceList(card)locator(""input[type=checkbox]:checked"")",V3-5,,V3-5 已改寫（原片段已不在檔中；2026-10-07 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,121,getByRole,"…t Promise.all([page.waitForEvent(""download""), storage(page).getByRole(""button"", { name: labels.buttons.downloadBackup, exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,127,other,"…await storage(page).getByLabel(storageCopy.selectBackupFile, { exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
@@ -1097,7 +1097,7 @@ tests/e2e/workspace-storage.spec.ts,185,other,"page.getByLabel(labels.ui.dashboa
 tests/e2e/workspace-storage.spec.ts,186,other,"…await expect(storage(page).getByLabel(storageCopy.consent, { exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,194,getByRole,"page.getByRole(""button"", { name: labels.nav.scenarios.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,198,getByRole,"page.getByRole(""button"", { name: labels.nav.actions.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/workspace-storage.spec.ts,202,other,"page.getByTestId(""action-1"").getByLabel(labels.actions.problem, { exact: true })",V3-6,,
+tests/e2e/workspace-storage.spec.ts,202,other,"page.getByTestId(""action-1"").getByLabel(labels.actions.problem, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/workspace-storage.spec.ts,206,getByRole,"…await storage(page).getByRole(""button"", { name: labels.buttons.deleteLocal, exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,221,getByRole,"…await expect(storage(page).getByRole(""alert"")",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,222,locator-css,"page.getByTestId(""kpi-contribution_after_marketing"").locator("".kpi-value"")",V3-4,kpi-{metric},V3-4b 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
@@ -1119,9 +1119,9 @@ tests/e2e/workspace-storage.spec.ts,265,getByRole,"page.getByRole(""button"", { 
 tests/e2e/workspace-storage.spec.ts,266,getByRole,"dialog.getByRole(""button"", { name: replacementCopy.discardAndContinue, exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,269,getByRole,"…await storage(page).getByRole(""button"", { name: storageCopy.applyRestore, exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,274,getByRole,"page.getByRole(""button"", { name: labels.nav.scenarios.label, exact: true })",V3-3,nav-group-{id}／mobile-tabbar（V3-3 新增）,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
-tests/e2e/workspace-storage.spec.ts,278,other,"draft.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })",V3-6,,
-tests/e2e/workspace-storage.spec.ts,282,getByText,"page.getByText(scenarioCopy.historyHeading, { exact: true })",V3-6,,
-tests/e2e/workspace-storage.spec.ts,285,getByRole,"page.getByRole(""button"", { name: scenarioCopy.copyToCurrent, exact: true })",V3-6,,
+tests/e2e/workspace-storage.spec.ts,278,other,"draft.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/workspace-storage.spec.ts,282,getByText,"page.getByText(scenarioCopy.historyHeading, { exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
+tests/e2e/workspace-storage.spec.ts,285,getByRole,"page.getByRole(""button"", { name: scenarioCopy.copyToCurrent, exact: true })",V3-6,,V3-6 核對：定位器未變、仍有效（2026-10-07 E2E 全套 628／628 通過）
 tests/e2e/workspace-storage.spec.ts,298,other,"page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })",V3-3,,V3-3 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,299,locator-css,"page.getByTestId(""kpi-contribution_after_marketing"").locator("".kpi-value"")",V3-4,kpi-{metric},V3-4b 核對：定位器未變、仍有效（2026-10-06 E2E 全套通過）
 tests/e2e/workspace-storage.spec.ts,306,getByRole,"…await expect(storage(page).getByRole(""button"", { name: storageCopy.confirmDownloaded, exact: true })",V3-3,,V3-3 已改寫（原片段已不在檔中；2026-10-06 E2E 全套通過）
