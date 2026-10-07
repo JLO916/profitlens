@@ -1,12 +1,13 @@
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
-import { formatAmountL1 } from "../../src/application/presentation";
+import { formatAmountL1, formatPeriodExport } from "../../src/application/presentation";
 import { formatSavedDateTime, formatSavedTime } from "../../src/application/auto-save";
 import { appendFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { acceptSavePrompt, clearWorkspace, closePeriodSheet, closeStorage, closeTopbarMore, dismissSavePrompt, isMobile, navigateTo, openPeriodSheet, openStorage, openTopbarMore, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptSavePrompt, clearWorkspace, closePeriodSheet, closeStorage, closeTopbarMore, dismissSavePrompt, isMobile, navigateTo, openMeeting, openPeriodSheet, openStorage, openTopbarMore, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { acceptScenarioAssumptions } from "./misc-helpers-v3";
+import { openMeetingExport, type MeetingExportKind } from "./review-helpers-v3";
 
 // R2: every visible string comes from labels; machine values (dataset ids, channel codes, amounts, testids) stay literal.
 // 長流程（兩方案＋行動＋保存／重整／恢復）在平板曾跑到 40 秒；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
@@ -583,4 +584,57 @@ test("R6 首次保存提示開著時，捲到頁尾的「口徑說明」仍可�
   await expect(dialog).toBeHidden();
   // 提示仍在（點頁尾不算回答）。
   await expect(prompt).toBeVisible();
+});
+
+test("V3-7 結束會議後備份的 meeting_history 每筆帶 copy_version v3；還原後會議頁仍有「匯出會議」下拉五項，歷史紀錄與其 Markdown 沒有 v2 加註", async ({ page }) => {
+  const headerV3 = labels.exports.headerV3, pageV3 = labels.meeting.pageV3;
+  await golden(page);
+  await dismissSavePrompt(page);
+  const meeting = await openMeeting(page);
+  await expect(meeting.getByTestId("manager-summary")).toBeVisible();
+  // 結束一場會議（頁首「結束會議」→ 確認區「確定」）：歷史多一筆。
+  await meeting.getByTestId("meeting-finalize").click();
+  await meeting.getByTestId("meeting-finalize-confirm").getByTestId("meeting-finalize-confirm-button").click();
+  await expect(meeting.getByTestId("meeting-status")).toHaveText(labels.meetingPage.finalized);
+  await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
+  const text = await backup(page);
+  const wire = JSON.parse(text);
+  expect(wire.schema_version).toBe(WORKSPACE_VERSION);
+  expect(wire.payload.meeting_history).toHaveLength(1);
+  // V3-7（D-V3-22）：v3 結束的紀錄帶 copy_version "v3"；沒有這個欄位的是 v2 的紀錄（畫面與 Markdown 加註 pageV3.v2Note）。
+  expect(wire.payload.meeting_history.map((row: { copy_version?: string }) => row.copy_version)).toEqual(["v3"]);
+  const record = wire.payload.meeting_history[0] as { finalized_at: string; source_fixed: { metric_version: string; periods: Record<"previous" | "current", { start: string; end: string }> } };
+  // 重新整理（工作區清空）後從備份檔還原。
+  await page.reload();
+  await expect(status(page)).toContainText(labels.status.empty);
+  await restoreFile(page, text);
+  await expect(restorePreview(page)).toBeVisible();
+  await storage(page).getByRole("button", { name: storageCopy.applyRestore, exact: true }).click();
+  await expect(status(page)).toContainText(goldenReady);
+  // 先收起儲存選單（桌機的選單面板會蓋住會議頁頁首的「匯出會議」），再回答還原後再出現的保存提示。
+  await closeStorage(page);
+  await dismissSavePrompt(page);
+  const restored = await openMeeting(page);
+  await expect(restored.getByTestId("manager-summary")).toBeVisible();
+  // 還原後的會議頁：頁首「匯出會議」下拉（details meeting-outputs，summary export-page-meeting）仍在，展開後五項都可用；再點 summary 收起。
+  await expect(restored.getByTestId("meeting-outputs")).toHaveCount(1);
+  await expect(restored.getByTestId("export-page-meeting")).toHaveText(pageV3.exportMenu);
+  const menu = await openMeetingExport(page);
+  const kinds: MeetingExportKind[] = ["pdf", "markdown", "csv", "excel", "pptx"];
+  for (const kind of kinds) await expect(menu.getByTestId(`meeting-export-${kind}`)).toBeEnabled();
+  await restored.getByTestId("export-page-meeting").click();
+  await expect(menu).not.toHaveAttribute("open", "");
+  // 還原的歷史紀錄：展開後有結束標示（meeting-snapshot-note），v3 紀錄沒有 v2 加註（meeting-v2-note）。
+  const item = restored.getByTestId("meeting-history-item");
+  await expect(item).toHaveCount(1);
+  await item.locator(":scope > details > summary").click();
+  await expect(item.getByTestId("meeting-snapshot-note")).toBeVisible();
+  await expect(item.getByTestId("meeting-v2-note")).toHaveCount(0);
+  // 該筆的會議紀錄 Markdown：版頭第 1 行是畫面上的資料集名稱（與目前資料同一版本），兩期取會議固定範圍、產出時間＝結束時間；之後沒有 v2 加註。
+  const [file] = await Promise.all([page.waitForEvent("download"), item.getByRole("button", { name: new RegExp(`^${escapeRegExp(`${labels.buttons.exportMarkdown} · `)}`) }).click()]);
+  const markdown = await readFile((await file.path())!, "utf8");
+  const periods = record.source_fixed.periods;
+  const periodLine = fill(headerV3.periodLine, { current: formatPeriodExport(periods.current.start, periods.current.end), previous: formatPeriodExport(periods.previous.start, periods.previous.end) });
+  expect(markdown.split("\n").slice(1, 7)).toEqual(["", `${labels.ui.dashboard.datasets.golden}  `, `${fill(headerV3.reportTitle, { metric: contributionLabel })}  `, `${fill(headerV3.periodUnitLine, { period: periodLine, unit: headerV3.unitExclusive })}  `, fill(headerV3.versionLine, { version: record.source_fixed.metric_version, time: formatSavedDateTime(new Date(record.finalized_at)) }), ""]);
+  expect(markdown).not.toContain(pageV3.v2Note);
 });

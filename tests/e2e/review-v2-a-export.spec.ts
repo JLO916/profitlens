@@ -1,7 +1,9 @@
 import { dismissSavePrompt, navigateTo, openMeeting, openValidation, switchActionsView } from "./replacement-helpers";
 import { decisionExportButton } from "./actions-helpers-v3";
+import { meetingExportButton, openThreshold } from "./review-helpers-v3";
+import { channelsLabel } from "../../src/application/copy";
 import { fill, labels } from "../../src/i18n";
-import { formatAmountL1, formatAmountL2, formatAmountL3, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL2, formatAmountL3, formatPeriodExport, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -45,6 +47,25 @@ const goldenFactLabel = fill(labels.ui.actionsWorkbench.factLabel, { start: "202
 const printHeadline = (previous: string, current: string, change: string) => fill(summaryCopy.printHeadline, { prev: formatAmountL1(previous), cur: formatAmountL1(current), change: formatSignedDelta(change, "L1") });
 /** V3-2b：一頁摘要 Markdown 主文是 L2（整數元、千分位、U+2212，正差額加「+」）。 */
 const mdHeadline = (metric: string, previous: string, current: string, change: string) => fill(summaryCopy.mdHeadlineRow, { metric, previous: formatAmountL2(previous), current: formatAmountL2(current), change: formatSignedDelta(change, "L2") });
+/**
+ * V3-7（PRD §7.9）：PDF／Markdown 開頭的台灣報表版頭四行。資料集名稱是畫面上的名稱（golden＝labels.ui.dashboard.datasets.golden，會議用的資料與目前相同），
+ * 報表名、兩期（golden 本期 2026-08-02、上期 2026-08-01，formatPeriodExport）與單位（未稅）、指標版本＋產出時間（台北時間，下載當下，只比格式）。
+ */
+const headerV3 = labels.exports.headerV3;
+const goldenDatasetName = labels.ui.dashboard.datasets.golden;
+const reportTitle = fill(headerV3.reportTitle, { metric: contributionLabel });
+const headerPeriod = fill(headerV3.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") });
+const headerPeriodUnit = fill(headerV3.periodUnitLine, { period: headerPeriod, unit: headerV3.unitExclusive });
+const headerVersion = new RegExp(`^${escapeRegExp(headerV3.versionLine).replace("\\{version\\}", "contribution-v1").replace("\\{time\\}", "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}")}$`);
+/** Markdown：「# 標題」、空行之後是版頭四行（前三行行尾兩個空白＝硬換行），再一個空行接 v2 的資料範圍。 */
+function expectMarkdownHeader(markdown: string) {
+  const lines = markdown.split("\n");
+  expect(lines[0]).toMatch(/^# /);
+  expect(lines[1]).toBe("");
+  expect(lines.slice(2, 5)).toEqual([`${goldenDatasetName}  `, `${reportTitle}  `, `${headerPeriodUnit}  `]);
+  expect(lines[5]).toMatch(headerVersion);
+  expect(lines[6]).toBe("");
+}
 
 async function saveDownload(page: Page, button: Locator, path: string) {
   const pending = page.waitForEvent("download");
@@ -78,18 +99,30 @@ function csvRecords(text: string): Record<string, string>[] {
   return rows.map(values => { expect(values).toHaveLength(headers.length); return Object.fromEntries(headers.map((key, index) => [key, values[index]])); });
 }
 
-/** R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）；主管摘要在會議頁不再有自己的列印／Markdown 鈕。 */
-const meetingOutput = (page: Page, name: string) => page.getByTestId("meeting-outputs").getByRole("button", { name, exact: true });
+/**
+ * R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）；主管摘要在會議頁不再有自己的列印／Markdown 鈕。
+ * V3-7：輸出列改成頁首「匯出會議」下拉（details meeting-outputs，summary export-page-meeting）；每次先展開，點完選單會關閉。按鈕名稱不變。
+ */
+const meetingOutput = (page: Page, name: string) => meetingExportButton(page, name);
 
-async function checkPrint(page: Page, info: TestInfo, pinned: boolean) {
+/** meeting：會議名稱與日期（頁首欄位的值）＋資料到，填 labels.meetingPage.printHeader。 */
+async function checkPrint(page: Page, info: TestInfo, pinned: boolean, meeting: { name: string; date: string; asOf: string }) {
   const summary = page.getByTestId("manager-summary");
   // R6：列印改由輸出列的「匯出 PDF」（同一個 PrintSummaryPortal → window.print()）。
-  await meetingOutput(page, labels.buttons.exportPdf).click();
+  await (await meetingOutput(page, labels.buttons.exportPdf)).click();
   await expect(page.locator("html")).toHaveAttribute("data-print-invoked", "true");
   await page.emulateMedia({ media: "print" });
   const print = page.getByTestId("manager-summary-print");
   await expect(print).toBeVisible();
   await expect(summary).toBeHidden();
+  // V3-7（§7.9）：列印版頭四行（print-header-dataset／h1／print-header-period／print-header-version），接會議一行（有會議時）與範圍一行。
+  const header = print.getByTestId("print-report-header");
+  await expect(header.getByTestId("print-header-dataset")).toHaveText(goldenDatasetName);
+  await expect(header.getByRole("heading", { level: 1 })).toHaveText(reportTitle);
+  await expect(header.getByTestId("print-header-period").locator(":scope > span")).toHaveText([headerPeriod, headerV3.unitExclusive]);
+  await expect(header.getByTestId("print-header-version")).toHaveText(headerVersion);
+  await expect(header.getByTestId("print-header-meeting")).toHaveText(fill(labels.meetingPage.printHeader, meeting));
+  await expect(header.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.periods.sameDays }));
   // 門檻是使用者輸入的設定值，列印版沿用到分（L3）。
   await expect(print).toContainText(fill(summaryCopy.printThresholdLine, { amount: formatAmountL3("1000.00") }));
   await expect(print).toContainText(printHeadline("570.00", "255.00", "-315.00"));
@@ -144,6 +177,8 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   const updates = page.getByRole("button", { name: refreshActionRef });
   while (await updates.count()) await updates.first().click();
   const summary = page.getByTestId("manager-summary");
+  // V3-7：會議門檻收在議程 ② 的「調整門檻」（details.meeting-threshold，預設收合）；先展開再填與套用。
+  await openThreshold(page);
   await summary.getByLabel(labels.meeting.threshold, { exact: true }).fill("1000");
   await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
   await expect(summary.getByLabel(labels.meeting.threshold, { exact: true })).toHaveValue("1000.00");
@@ -158,7 +193,8 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   for (let index = 1; index <= 8; index++) await expect((index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })).toBeVisible();
 
   const prefix = `verification/review-v2-a-decision-${info.project.name}`;
-  const markdown = await saveDownload(page, meetingOutput(page, labels.buttons.exportMarkdown), `${prefix}.md`);
+  const markdown = await saveDownload(page, await meetingOutput(page, labels.buttons.exportMarkdown), `${prefix}.md`);
+  expectMarkdownHeader(markdown);
   const [body, technical] = markdown.split(technicalHeading);
   expect(body.match(/匯出驗收行動第/g)).toHaveLength(3);
   expect(technical.match(/匯出驗收行動第/g)).toHaveLength(5);
@@ -168,7 +204,10 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   expect(body).toContain(mdHeadline(contributionLabel, "570.00", "255.00", "-315.00"));
   expect(body).toContain(mdHeadline(netRevenueLabel, "2250.00", "2470.00", "220.00"));
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-ui-pinned-${info.project.name}.png`), fullPage: true });
-  await checkPrint(page, info, true);
+  // 列印版的會議一行：頁首的會議名稱與日期欄（V3-7 meeting-head）＋golden 的資料到。
+  const head = page.getByTestId("review-workbench");
+  const meeting = { name: await head.getByLabel(labels.meeting.name, { exact: true }).inputValue(), date: await head.getByLabel(labels.meeting.date, { exact: true }).inputValue(), asOf: "2026-08-03" };
+  await checkPrint(page, info, true, meeting);
 
   await navigateTo(page, "actions");
   // V3-6：決策 JSON／CSV（按鈕名稱 labels.downloads.decisionJson／decisionCsv）在待辦頁頁首「匯出本頁」選單（export-page-actions → actions-export-json／csv）。
@@ -211,11 +250,12 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await expect(allAppendix).toHaveCount(1);
   await allAppendix.locator(":scope > summary").click();
   await expect(allAppendix.locator(":scope > ul > li")).toHaveCount(8);
-  const unpinned = await saveDownload(page, meetingOutput(page, labels.buttons.exportMarkdown), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);
+  const unpinned = await saveDownload(page, await meetingOutput(page, labels.buttons.exportMarkdown), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);
+  expectMarkdownHeader(unpinned);
   const [unpinnedBody, unpinnedAppendix] = unpinned.split(technicalHeading);
   expect(unpinnedBody).toContain(notice);
   expect(unpinnedBody).not.toMatch(new RegExp(`${escapeRegExp(noActions)}|匯出驗收行動第`));
   expect(unpinnedAppendix.match(/匯出驗收行動第/g)).toHaveLength(8);
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-ui-unpinned-${info.project.name}.png`), fullPage: true });
-  await checkPrint(page, info, false);
+  await checkPrint(page, info, false, meeting);
 });
