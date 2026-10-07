@@ -2540,6 +2540,46 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 
 /* ── V3-9b 錨點（代理 C：:root[data-mode="present"] 的 token 重新對應（--text-14 → 16px、--text-16 → 20px、--num-28 → 40px、--num-32 → 48px）、隱藏側欄與期間列、內容最大寬 1280px、只顯示 L1；.page-present 按鈕位置；只用 token） ── */
+/* F22 投影模式（PRD §9.7、D-V3-23＝A）。按鈕在頁首、本頁動作之前（只有總覽與會議頁）；手機（≤ 767px）不顯示——投影是會議室桌機的閱讀方式，按鈕保持掛載（M1），投影中仍顯示以便離開。
+   投影中 h1 下方一行期間文字（.present-period，期間列隱藏時只剩這一行）。 */
+.page-present { display: flex; flex: none; align-items: center; }
+.present-period { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+@media (max-width: 767px) { .page-present { display: none; } }
+
+/* 投影中的規則只在螢幕上生效（@media screen）：列印與 PDF 不受影響。不加任何動畫（prefers-reduced-motion 不需另外處理）。 */
+@media screen {
+  /* 只重新對應 token 的值、不新增字級種類（§9.7）；行高 token 跟著字級（與 :root 的成對關係同：16px／24、20px／28）；內容最大寬 1280px。 */
+  :root[data-mode="present"] { --text-14: 16px; --text-16: 20px; --num-28: 40px; --num-32: 48px; --leading-14: 24px; --leading-16: 28px; --content-max: 1280px; }
+  /* KPI 帶的數字行高跟著 --kpi-num（40／48px 的數字不被 --leading-28／32 截掉）。 */
+  :root[data-mode="present"] .kpi { --kpi-num-leading: calc(var(--kpi-num) + var(--space-2)); }
+
+  /* 殼層：隱藏側欄、手機底部分頁列、期間列與去年同期不可用的提示（部分資料待補、篩選錯誤的橫幅照常顯示）；頂欄保留。主內容置中、最大 1280px。 */
+  :root[data-mode="present"] .app-shell { grid-template-columns: minmax(0, 1fr); }
+  :root[data-mode="present"] .app-shell > .main-shell { grid-column: 1; }
+  :root[data-mode="present"] .app-shell main { margin: 0 auto; }
+  :root[data-mode="present"] .app-shell > .sidebar, :root[data-mode="present"] .mobile-tabbar, :root[data-mode="present"] .period-bar, :root[data-mode="present"] .period-banner-note, :root[data-mode="present"] .whats-new, :root[data-mode="present"] .page-heading .subtitle { display: none; }
+
+  /* 只顯示 L1（§9.7）：總覽＝本期一句話、KPI 帶、三件事標題、本期利潤結構瀑布圖；其餘區塊 display: none（仍掛載，M1）。會議紀錄頁整頁留著，下面再挑。 */
+  :root[data-mode="present"] .view-content > :not(.snapshot, .kpi-section, .top-three, .profit-section, .meeting-page) { display: none; }
+  :root[data-mode="present"] .snapshot-meta, :root[data-mode="present"] .snapshot-actions { display: none; }
+  /* 三件事與會議的本期重點：每列只留標題與影響金額；展開內容、展開指示、L2 解讀與列上的按鈕、門檻與排序說明都隱藏。 */
+  :root[data-mode="present"] .top-three .sec-tools, :root[data-mode="present"] .top-three .list-foot, :root[data-mode="present"] .alert-actions, :root[data-mode="present"] .alert-explain, :root[data-mode="present"] .alert-chev, :root[data-mode="present"] .alert-body { display: none; }
+  :root[data-mode="present"] .profit-section .data-alternative { display: none; }
+
+  /* 會議紀錄：頁首動作列只留標題與決議（決議＋結束會議）；議程 1 關鍵數字＋本期一句話、議程 2 本期重點的標題列；目錄、範圍行、議程 3–6、備註、與上次比較、會議歷史都隱藏。 */
+  :root[data-mode="present"] .meeting-page { --meeting-sticky-top: var(--topbar-h); --meeting-main-max: none; }
+  :root[data-mode="present"] .meeting-head-field, :root[data-mode="present"] .meeting-head-actions > :not(.meeting-decision), :root[data-mode="present"] .meeting-info, :root[data-mode="present"] .meeting-toc { display: none; }
+  :root[data-mode="present"] .meeting-agenda-head .meeting-agenda-note, :root[data-mode="present"] .meeting-kpis ~ .meeting-agenda-note, :root[data-mode="present"] .meeting-threshold, :root[data-mode="present"] .meeting-threshold ~ .meeting-agenda-note:not([role="status"]) { display: none; }
+  :root[data-mode="present"] .meeting-agenda-list > .meeting-agenda-entry:nth-child(n+3), :root[data-mode="present"] .meeting-notes-block, :root[data-mode="present"] .meeting-compare, :root[data-mode="present"] .meeting-history { display: none; }
+}
+@media screen and (min-width: 1280px) {
+  :root[data-mode="present"] .meeting-layout { grid-template-columns: minmax(0, 1fr); }
+}
+/* 手機寬度下投影：頁首文字（平常讓位給期間按鈕）改回可見，期間文字才看得到；按鈕顯示以便離開。 */
+@media screen and (max-width: 767px) {
+  :root[data-mode="present"] .page-heading .page-heading-text { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; }
+  :root[data-mode="present"] .page-present { display: flex; }
+}
 
 
 /* ── V3-9b 錨點結束 ── */

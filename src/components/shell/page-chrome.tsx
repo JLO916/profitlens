@@ -9,10 +9,11 @@ import { ShellIcon } from "./shell-icon";
  * V3-5：右側固定一個動作插槽 #page-actions（每頁都渲染；沒有內容時不佔高度）。各頁的「匯出本頁」由頁面元件以 portal 放進來（例如商品毛利），
  * 也可以直接用 actions 傳入。
  * V3-6：h1 旁再加一個插槽 #page-title-addon（每頁都渲染；空時不佔位），待辦頁的計數徽章「12 · 置頂 3」與 ? 說明由頁面元件 portal 放進來（或用 titleAddon 傳入）。
+ * V3-9b C（F22，PRD §9.7）：「投影模式」按鈕（總覽與會議頁才有）在本頁動作之前；投影中 h1 下方多一行期間文字（期間列隱藏時只剩這一行），不在投影中時不渲染。
  */
-export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon, hasData = true, importing, presentToggle }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode; /** V3-8（§7.7.1 第 1 點）：資料來源頁已有資料時「匯入資料」主要、「載入示範資料」次要；沒有資料時對調。省略時視為已有資料（v2 的排法）。 */ hasData?: boolean; /** V3-8 開工錨點（§7.7.2）：匯入中「匯入資料／載入示範資料」保持掛載但 hidden（M1；page-import testid 不消失）。 */ importing?: boolean; /** V3-9b 開工錨點（F22）：總覽與會議頁的「投影模式」按鈕（C 代理實作樣式與行為細節）。 */ presentToggle?: ReactNode }) {
+export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon, hasData = true, importing, presentToggle, presentPeriod }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode; /** V3-8（§7.7.1 第 1 點）：資料來源頁已有資料時「匯入資料」主要、「載入示範資料」次要；沒有資料時對調。省略時視為已有資料（v2 的排法）。 */ hasData?: boolean; /** V3-8 開工錨點（§7.7.2）：匯入中「匯入資料／載入示範資料」保持掛載但 hidden（M1；page-import testid 不消失）。 */ importing?: boolean; /** V3-9b 開工錨點（F22）：總覽與會議頁的「投影模式」按鈕（C 代理實作樣式與行為細節）。 */ presentToggle?: ReactNode; /** V3-9b C（F22）：投影中的一行期間文字（dashboard 依 presentPeriodText 傳入；不在投影中時不傳）。 */ presentPeriod?: string }) {
   return <div className="page-heading">
-    <div className="page-heading-text"><h1>{title}</h1>{description && <p className="subtitle">{description}</p>}</div>
+    <div className="page-heading-text"><h1>{title}</h1>{description && <p className="subtitle">{description}</p>}{presentPeriod && <p className="present-period" data-testid="present-period">{presentPeriod}</p>}</div>
     <div className="page-title-addon" id="page-title-addon" data-testid="page-title-addon">{titleAddon}</div>
     {/* V3-8（§7.7.1 第 1 點）：已有資料時「匯入資料」主要在前、「載入示範資料」次要在後；沒有資料時對調（主要按鈕永遠在最前）。page-import 永遠在「匯入資料」上。 */}
     {isData && <div className="load-controls" hidden={importing || undefined}>

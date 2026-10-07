@@ -125,7 +125,7 @@ function shellPage(state: ShellState): ReactElement {
       exportMenu={<ExportMenu source={active} busy={null} error={null} summaryRef={{ current: null }} onCopySummary={copySummaryNoop} onDecision={noop} onPrint={noop} onExport={noop} onMeetingNotes={noop} />} />
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
-        <PageHeader title={panelCopy(panel).label} description={panelCopy(panel).description} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} />
+        <PageHeader title={panelCopy(panel).label} description={panelCopy(panel).description} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} presentToggle={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed={false} onClick={noop}>{labels.shell.presentV3.enter}</button> : undefined} />
         {state.showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={asyncNoop} onCancel={noop} busy={false} localSaveConsented={state.consent ?? true} /></div>}
         <PeriodBar
           channel={{ value: report.scope.channels.length > 1 ? "" : report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, alias) })), onChange: noop }}
@@ -1064,6 +1064,39 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-9b C（投影模式）的 M1 掛載測試在此之後新增（present-toggle 只在總覽與會議頁各一份、投影中內容仍掛載）──
+    it("V3-9b C 投影模式（F22）：present-toggle 只在總覽與會議頁、各一份、在頁首 .page-present、aria-pressed=false；SSR 不在投影中，沒有 present-period", () => {
+      for (const { name, html, state } of states) {
+        const allowed = state !== null && (state.panel === "overview" || state.panel === "meeting");
+        expect(testIdCounts(html).get("present-toggle") ?? 0, name).toBe(allowed ? 1 : 0);
+        expect(testIdCounts(html).has("present-period"), name).toBe(false);
+        if (!allowed) continue;
+        expect(element(html, 'class="page-heading"'), name).toContain('<div class="page-present"><button type="button" class="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed="false">');
+        expect(element(html, 'data-testid="present-toggle"'), name).toContain(`>${labels.shell.presentV3.enter}</button>`);
+      }
+    });
+
+    it("V3-9b C 投影模式只靠 CSS 隱藏（M1）：總覽的 L2／L3 區塊與會議頁的議程 3–6、備註、比較、歷史都還在 markup 裡；CSS 用到的容器與 class 都在", () => {
+      const overview = states.find(state => state.name === "overview")!.html;
+      // 投影中只顯示的 L1 是 .view-content 的直接子元素（CSS 用 .view-content > :not(...) 隱藏其餘區塊）。
+      const view = element(overview, 'class="view-content"')!;
+      const children: string[] = [];
+      let depth = 0;
+      for (const match of view.slice(view.indexOf(">") + 1).matchAll(/<(\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?)>/g)) {
+        if (match[1]) { depth--; continue; }
+        if (depth === 0) children.push(/\sclass="([^"]*)"/.exec(match[3])?.[1] ?? match[2]);
+        if (!match[4] && !["input", "br", "img", "hr", "meta", "link", "col", "source", "wbr"].includes(match[2])) depth++;
+      }
+      const l1 = ["snapshot", "kpi-section", "top-three", "profit-section"];
+      for (const name of l1) expect(children.some(item => item.split(/\s+/).includes(name)), `L1 ${name}`).toBe(true);
+      for (const id of ["weekly-snapshot", "kpi-band", "top-three", "profit-waterfall", "bridge-section", "assist-kpis", "overview-advanced", "pnl-table"]) expect(testIdCounts(overview).get(id), id).toBe(1);
+      expect(children.filter(item => !l1.some(name => item.split(/\s+/).includes(name))).length, "投影中隱藏的區塊").toBeGreaterThanOrEqual(4);
+      for (const part of ["snapshot-meta", "snapshot-actions", "alert-body", "alert-actions", "alert-explain", "alert-chev", "sec-tools", "data-alternative"]) expect(overview, part).toContain(part);
+      const meeting = states.find(state => state.name === "meeting")!.html;
+      for (const id of ["meeting-agenda-1", "meeting-agenda-2", "meeting-agenda-3", "meeting-agenda-4", "meeting-agenda-5", "meeting-agenda-6", "meeting-compare", "meeting-history", "meeting-decision", "meeting-finalize"]) expect(testIdCounts(meeting).get(id), id).toBe(1);
+      for (const part of ["meeting-head-field", "meeting-head-actions", "meeting-info", "meeting-toc", "meeting-notes-block", "meeting-threshold", "meeting-kpis", "meeting-agenda-head", "meeting-agenda-entry"]) expect(meeting, part).toContain(`class="${part}`);
+      expect(occurrences(element(meeting, 'class="meeting-agenda-list"')!, 'class="meeting-agenda-entry"')).toBe(6);
+    });
+
 
   });
 
@@ -1184,6 +1217,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(source).toMatch(/<BasisDialog open=\{basisOpen\}/);
       // V3-4a：會議入口搬進總覽的本期一句話區塊（Overview 的 meetingEntry），不再在 Overview 外渲染。
       expect(source).toMatch(/meetingEntry=\{<MeetingEntry /);
+      // V3-9b C（F22）：投影模式按鈕只在總覽與會議頁、有資料時（與 shellPage() 的 presentToggle 相同）；期間文字只在投影中傳入。
+      expect(source).toMatch(/const presentToggle = visible && \(panel === "overview" \|\| panel === "meeting"\) \? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed=\{present\.active\}/);
+      expect(source).toMatch(/presentPeriod=\{present\.active && visible \? presentPeriodText\(/);
     });
   });
 });

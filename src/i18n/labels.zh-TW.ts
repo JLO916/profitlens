@@ -424,6 +424,8 @@ export const shell = {
   presentV3: {
     enter: "投影模式",
     exit: "離開投影",
+    /** 投影中頁首的一行期間文字（期間列隱藏時只剩這一行）：{period} 是期間列的期間摘要（本期與上期、天數），{channels} 是範圍內的通路。 */
+    period: "{period} · {channels}",
   },
 } as const;
 
