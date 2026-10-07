@@ -1,14 +1,15 @@
 import { fill, labels } from "../../src/i18n";
-import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL3, formatCount } from "../../src/application/presentation";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, wizard, wizardStatus } from "./import-wizard-helpers";
+import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, openWizardChannels, setWizardFiles, wizard, wizardStatus } from "./import-wizard-helpers";
 import { navigateTo } from "./replacement-helpers";
 // R3：舊的單頁匯入面板（import-panel）已由四步匯入精靈取代；本檔改由精靈操作，產品行為的斷言照舊保留。
 // V3-3：空狀態從頂欄資料狀態 →「匯入新資料」開精靈（openWizard 處理）；切頁走 navigateTo（手機用底部分頁列）。
 const panel = labels.ui.importPanel;
 const copy = labels.importWizard;
+const v3 = copy.wizardV3;
 /** R2 labels with placeholders (e.g. "已有的部分小計 {subtotal}，不是完整總額") are matched by template shape, like ruleHeadline. */
 function templateText(template: string): RegExp {
   return new RegExp(template.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\{\w+\\\}/g, ".+?"));
@@ -36,10 +37,11 @@ async function setupWithoutManifest(page: Page) {
 }
 test("PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後才套用（R3：提議自動帶入第 3 步）", async ({ page }) => {
   const form = await stage(page, "fixtures/golden");
-  const templates = form.locator("details", { has: page.locator("summary", { hasText: copy.noFiles }) });
+  // V3-8（§7.7.2 步驟 1）：範本改用與頂欄匯出選單相同的 3×3 TemplateTable（可及名稱相同），定位限定在步驟 1 的「還沒有檔案？」<details> 內。
+  const templates = page.getByTestId("import-step-1").locator("details", { has: page.locator(":scope > summary", { hasText: copy.noFiles }) });
   await templates.locator(":scope > summary").click();
   const downloaded = page.waitForEvent("download");
-  await templates.locator(".template-grid > div", { hasText: copy.files.sales }).getByRole("button", { name: copy.templatesBlank, exact: true }).click();
+  await templates.getByRole("button", { name: fill(labels.downloads.blankTemplate, { file: copy.files.sales }), exact: true }).click();
   const download = await downloaded;
   expect(download.suggestedFilename()).toBe("sales_daily.csv");
   expect((await readFile((await download.path())!, "utf8")).trim()).toBe("date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency");
@@ -52,6 +54,10 @@ test("PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後�
   await expect(form.getByLabel(copy.coverageEnd, { exact: true })).toHaveValue("2026-08-02");
   await expect(form.getByLabel("DTC", { exact: true })).toBeChecked();
   await expect(form.getByLabel("MARKETPLACE", { exact: true })).toBeChecked();
+  // V3-8（§7.7.2 步驟 3）：通路多於 1 個時勾選框收在「調整通路」<details>，可見的是一行「已選 2 個通路：DTC、MARKETPLACE」；展開後才是 2 個勾選框。
+  await expect(proposal).toContainText(fill(v3.channelsSelected, { n: formatCount(2, "L2"), channels: ["DTC", "MARKETPLACE"].join("、") }));
+  await expect(proposal.getByRole("checkbox")).toHaveCount(0);
+  await openWizardChannels(page);
   await expect(proposal.getByRole("checkbox")).toHaveCount(2);
   // 回第 1 步會經過自動完成的第 2 步（可回看，顯示「欄名全部符合標準」）。
   await form.getByRole("button", { name: copy.back, exact: true }).click();
@@ -116,7 +122,16 @@ test("PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列"
   await setupWithoutManifest(page);
   await confirmAndCheck(page, "blocking");
   await expect(form).toContainText(panel.duplicateAlert);
-  await expect(form).toContainText("DUPLICATE_SALES_KEY");
+  // V3-8（§7.7.1 第 3 段）：原因碼欄預設收合；按問題表工具列的「顯示原因碼」（aria-pressed）後才看得到。
+  const issues = form.getByRole("region", { name: labels.ui.issueList.regionAria });
+  const codeCell = issues.locator("td.issue-code").filter({ hasText: "DUPLICATE_SALES_KEY" }).first();
+  await expect(codeCell).toBeHidden();
+  const showCodes = form.getByRole("button", { name: labels.data.pageV3.issueTable.showCodes, exact: true });
+  await expect(showCodes).toHaveAttribute("aria-pressed", "false");
+  await showCodes.click();
+  await expect(showCodes).toHaveAttribute("aria-pressed", "true");
+  await expect(codeCell).toBeVisible();
+  await expect(codeCell.locator("code")).toHaveText("DUPLICATE_SALES_KEY");
   await expect(commitButton(page)).toHaveCount(0);
 });
 
