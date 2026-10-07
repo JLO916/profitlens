@@ -375,9 +375,10 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
             {/* 4 上次決議追蹤（C3 列）：即時比較用 compareWithLastMeeting。 */}
             <AgendaItem n={4} title={record.agenda.followUp}>{comparison ? comparison.last ? <FollowUp name={comparison.last.name} date={comparison.last.date} decisions={comparison.decisions} actions={comparison.actions} testId="meeting-followup" /> : <p className="meeting-agenda-note">{record.noLastMeeting}</p> : failed ? <p className="meeting-agenda-note">{copy.sourceRebuildError}</p> : <p role="status">{copy.rebuilding}</p>}</AgendaItem>
             {/* 5 選入方案：每通路一列＋試算結果（與一頁摘要同一份 buildReviewDecisionContext）；過期方案標示、不列入決議。 */}
+            {/* V3-8 C（§7.10 會議沒有選入方案，C10 區段型）：標題＋說明；會議頁沒有切換頁面的 prop，「前往假設試算」暫不放（每通路的選入 select 就在上方）。 */}
             <AgendaItem n={5} title={record.agenda.scenarios}>
               <p className="meeting-agenda-note">{page.scenariosNote}</p>
-              {context.scenarios.length ? <div className="meeting-scenarios" data-testid="meeting-scenario-results">{scenarioRows}<p className="meeting-agenda-note">{summaryCopy.scenarioNote}</p></div> : <div className="meeting-scenarios">{scenarioRows}<p className="meeting-agenda-note" data-testid="meeting-scenario-results-empty">{summaryCopy.noScenario}</p></div>}
+              {context.scenarios.length ? <div className="meeting-scenarios" data-testid="meeting-scenario-results">{scenarioRows}<p className="meeting-agenda-note">{summaryCopy.scenarioNote}</p></div> : <div className="meeting-scenarios">{scenarioRows}<div className="ui-empty-block meeting-scenarios-empty" data-testid="meeting-scenario-results-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingNoScenarioTitle}</p><p>{labels.empty.stateV3.meetingNoScenarioBody}</p></div></div>}
               {alertFor("scenarios")}
             </AgendaItem>
             {/* 6 置頂待辦：列表；其他待辦收合。 */}
@@ -522,6 +523,6 @@ export function MeetingHistory({ history, onRemove, datasetNameFor }: { history:
         <p id={warningId} ref={warningRef} tabIndex={-1}>{page.removeWarning}</p>
         <div className="button-row"><button type="button" className="button primary" data-testid="meeting-history-remove-confirm" onClick={() => confirm(meeting)}>{page.removeConfirm}</button><button type="button" className="button quiet" onClick={cancel}>{labels.buttons.cancel}</button></div>
       </div>}</li>;
-    })}</ul></> : <p className="note">{page.historyEmpty}</p>}
+    })}</ul></> : <div className="ui-empty-block meeting-history-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingHistoryTitle}</p><p>{labels.empty.stateV3.meetingHistoryBody}</p></div>}
   </section>;
 }

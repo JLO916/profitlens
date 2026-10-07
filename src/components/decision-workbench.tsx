@@ -269,7 +269,6 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
       </details>
       <details className="scenario-technical"><summary>{labels.sections.technicalDetails}</summary><dl className="decision-metadata"><dt>{labels.csvColumns.dataset_id}</dt><dd>{session.dataset_id}</dd><dt>{ui.techVersions}</dt><dd>{session.schema_version} / {session.scenario_version} / {session.metric_version}</dd><dt>{labels.csvColumns.dataset_hash}</dt><dd>{session.dataset_hash}</dd><dt>{labels.csvColumns.filter_hash}</dt><dd>{session.filter_hash}</dd><dt>{labels.csvColumns.revision}</dt><dd>{session.revision}</dd></dl>{calculated.length > 0 && <p className="scenario-technical-plans">{technicalPlanLine(calculated)}</p>}</details>
     </section>
-    {!plans.length && <p className="empty-note">{ui.emptyPlans}</p>}
     {/* V3-6（PRD §7.4 方案欄）：≥ 1280 最多 3 欄並排，1 個方案時 8/12＋右側 4/12 的新增區；< 1280 單欄。不用分頁，每個方案都保持掛載（M2）。 */}
     <div className="scenario-columns" data-testid="scenario-columns" data-count={plans.length}>{plans.map((plan, index) => {
       const n = index + 1, base = `${fieldId}-${n}`;
@@ -346,7 +345,8 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
         </div>
       </article>;
     })}
-      {plans.length < 3 && <div className="scenario-add ui-empty-block"><button type="button" className="ui-btn ui-btn-secondary" data-testid="scenario-add" disabled={stale || !session.baseline.eligible} onClick={addPlan}>{labels.buttons.addScenario}</button><p>{page.addNote}</p></div>}
+      {/* V3-8 C（§7.10 沒有方案，C10 區段型）：0 個方案時這一格就是空狀態——標題「尚無方案。」＋說明＋「新增方案」；有方案時維持「新增方案」＋最多 3 個的說明。 */}
+      {plans.length < 3 && <div className={plans.length ? "scenario-add ui-empty-block" : "scenario-add ui-empty-block scenario-add-empty"}>{!plans.length && <><p className="ui-empty-title">{labels.empty.stateV3.noPlansTitle}</p><p>{labels.empty.stateV3.noPlansBody}</p></>}<button type="button" className="ui-btn ui-btn-secondary" data-testid="scenario-add" disabled={stale || !session.baseline.eligible} onClick={addPlan}>{labels.buttons.addScenario}</button>{plans.length > 0 && <p>{page.addNote}</p>}</div>}
     </div>
     {/* V3-6（PRD §7.4 方案欄之後）：方案比較表（預設展開）→ 其他通路的方案 → 之前的試算 → 通知。 */}
     {plans.length > 0 && <section className="ui-section scenario-compare" aria-labelledby={ids.compare}>

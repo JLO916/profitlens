@@ -147,7 +147,10 @@ describe("R6-2 meeting page without a draft", () => {
     const state = await setup();
     const html = render(props(state, { review: null }));
     expect(block(html, "review-workbench")).toContain(labels.ui.reviewWorkbench.createButton);
-    expect(block(html, "meeting-history")).toContain(page.historyEmpty);
+    // V3-8 C（§7.10 會議歷史為空，C10 區段型）：標題＋說明兩句（合起來仍是 v2 的 historyEmpty）。
+    const emptyHistory = labels.empty.stateV3;
+    expect(block(html, "meeting-history")).toContain(`<div class="ui-empty-block meeting-history-empty"><p class="ui-empty-title">${emptyHistory.meetingHistoryTitle}</p><p>${emptyHistory.meetingHistoryBody}</p></div>`);
+    expect(text(block(html, "meeting-history"))).toContain(page.historyEmpty);
     expect(html).not.toContain('data-testid="meeting-agenda"');
     expect(html).not.toContain('data-testid="meeting-finalize"');
   });
@@ -465,9 +468,12 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
     const six = block(html, "meeting-agenda-6");
     expect(text(block(six, "meeting-pinned-actions-empty"))).toBe(record.noPinnedActions);
     expect(text(six)).toContain(fill(summaryCopy.appendixActions, { n: 2 }));
-    // 沒有選入方案：⑤ 顯示一句說明。
+    // 沒有選入方案：⑤ 是 C10 區段型空狀態（V3-8 C，§7.10）：「本次沒有選入方案。」＋「到假設試算選入。」；每通路的選入 select 仍在上方。
     const none = render(props(state, { review: selectReviewScenario(updateReviewSession(state.review, { decision_state: "draft" }), state.scenarios, null, "DTC") }));
-    expect(text(block(none, "meeting-scenario-results-empty"))).toBe(summaryCopy.noScenario);
+    const noneEmpty = block(none, "meeting-scenario-results-empty");
+    expect(noneEmpty).toMatch(/^<div class="ui-empty-block meeting-scenarios-empty"/);
+    expect(text(noneEmpty)).toBe(`${labels.empty.stateV3.meetingNoScenarioTitle}${labels.empty.stateV3.meetingNoScenarioBody}`);
+    expect(noneEmpty).toContain(`<p class="ui-empty-title">${labels.empty.stateV3.meetingNoScenarioTitle}</p>`);
   });
 });
 

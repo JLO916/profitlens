@@ -25,6 +25,7 @@ import { Dashboard } from "@/components/dashboard";
 import { ShellFrame, type ShellPanel } from "@/components/shell/shell-frame";
 import { ExportMenu } from "@/components/shell/export-menu";
 import { PageHeader, ShellFooter } from "@/components/shell/page-chrome";
+import { ErrorState, FirstRunState } from "@/components/shell/page-states";
 import { NeedsAttention, PeriodBar } from "@/components/shell/period-bar";
 import { Overview } from "@/components/overview";
 import { Diagnosis, DataWorkspace } from "@/components/workspace-panels";
@@ -230,11 +231,45 @@ async function pageStates(): Promise<StateMarkup[]> {
     // ── V3-8 B 新增的頁面狀態在此之後（例如 import-step-2／3／4 的 SSR 狀態）──
 
     // ── V3-8 C 新增的頁面狀態在此之後（例如 error 狀態）──
+    // 沒有資料（空工作區停在資料來源頁）與載入失敗的整頁不是 ShellState（它需要資料），由下方 statusShells() 依 dashboard.tsx 的 return 另外組，state 為 null（同 shell-empty）。
 
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];
   for (const [name, state] of Object.entries(states)) out.push({ name, html: renderToStaticMarkup(shellPage(state)), state });
+  out.push(...statusShells());
   return out;
+}
+
+/**
+ * V3-8 C（PRD §7.10、C10 頁面型）：沒有資料時的整頁（status empty／error，沒有期間列與頁面內容），依 dashboard.tsx 的 return 組：
+ * 殼層（資料狀態沒有資料、匯出選單只剩範本、儲存選單未同意）＋頁首＋同一個頁面型容器（FirstRunState／ErrorState）＋頁尾＋指標定義 dialog（關著）。
+ * - shell-empty-data：空工作區停在資料來源頁——頁首的「匯入資料」（page-import）與空狀態的「匯入資料」（empty-import）是兩個入口，各一份。
+ * - shell-error：第一次載入就失敗（沒有上次成功的資料，所以沒有「回到上次成功的資料」），有一筆阻擋問題（重複的銷售鍵）。
+ */
+function statusShells(): StateMarkup[] {
+  const issues = validateDataset(fixture("errors/duplicate_sales_key")).issues;
+  const shell = (status: "empty" | "error", panel: ShellPanel, body: ReactElement) => <div className="app-shell">
+    <a className="skip-link" href="#main-content">{labels.ui.dashboard.skipLink}</a>
+    <ShellFrame panel={panel} showValidation={false} onNavigate={noop}
+      dataStatus={{ state: status, data: null, statusText: labels.status[status], statusDetail: null, publicDemo: true, onGoData: noop, onImport: noop }}
+      ai={{ headline: labels.status.aiOff, detail: labels.ui.dashboard.aiDetail.publicDemo, open: false, onToggle: noop }} aiContainerRef={{ current: null }} aiButtonRef={{ current: null }}
+      onBasis={noop}
+      badges={{ snapshot: null, issues: 0, meetingDraft: false }}
+      storage={<WorkspaceStorage source={null} version={0} dirty={false} onRestore={noop} onSaved={noop} onDeleted={noop} consent={false} onConsentChange={noop} onClear={noop} />}
+      exportMenu={<ExportMenu source={null} busy={null} error={null} summaryRef={{ current: null }} onCopySummary={copySummaryNoop} onDecision={noop} onPrint={noop} onExport={noop} onMeetingNotes={noop} />} />
+    <div className="main-shell">
+      <main id="main-content" tabIndex={-1}>
+        <PageHeader title={panelCopy(panel).label} description={panelCopy(panel).description} isData={panel === "data"} importing={false} hasData={status !== "empty"} showLoadDemo={status !== "empty"} onLoadDemo={noop} onImport={noop} />
+        {body}
+        <ShellFooter analytics onBasis={noop} />
+      </main>
+    </div>
+    <BasisDialog open={false} onClose={noop} />
+  </div>;
+  return [
+    { name: "shell-empty-data", html: renderToStaticMarkup(shell("empty", "data", <FirstRunState onLoadDemo={noop} onImport={noop} />)), state: null },
+    { name: "shell-error", html: renderToStaticMarkup(shell("error", "overview", <ErrorState error={labels.ui.dashboard.errors.validationFailed} issues={issues} onRetry={noop} />)), state: null },
+  ];
 }
 
 /* ---------- markup 工具（renderToStaticMarkup 的輸出是良構的；只需要成對的同名標籤）。 ---------- */
@@ -784,6 +819,46 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-8 C（空狀態）的 M1 掛載測試在此之後新增（空狀態的需要的檔案表、四種狀態等高容器）──
+    it("V3-8 C：首次進入與錯誤共用同一個頁面型容器；空狀態兩個動作與「需要的檔案」表各一份，錯誤狀態的動作列與問題清單保持掛載", () => {
+      for (const name of ["shell-empty", "shell-empty-data"]) {
+        const { html } = states.find(state => state.name === name)!;
+        const ids = testIdCounts(html);
+        for (const id of ["empty-state", "empty-load-demo", "empty-import"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        for (const id of ["loading-state", "error-state", "error-retry"]) expect(ids.has(id), `${name} ${id}`).toBe(false);
+        const section = element(html, 'data-testid="empty-state"')!;
+        expect(section, name).toMatch(/^<section class="ui-empty-page state-page first-run-state" data-testid="empty-state" aria-labelledby="empty-state-title">/);
+        expect(idCounts(html).get("empty-state-title"), name).toBe(1);
+        // 「需要的檔案」表（TemplateTable guide）：表頭＋三列；空白範本與範例檔的可及名稱與頂欄匯出選單相同（頂欄那份在收合的 details 裡）。
+        const table = element(section, 'aria-labelledby="empty-state-files"')!;
+        expect(table, name).toMatch(/^<table class="template-table template-guide"/);
+        expect(occurrences(table, "<tr>"), name).toBe(4);
+        for (const file of [labels.importWizard.files.sales, labels.importWizard.files.costs, labels.importWizard.files.ads]) {
+          expect(occurrences(table, `aria-label="${escapeAttr(fill(labels.downloads.blankTemplate, { file }))}"`), `${name} ${file}`).toBe(1);
+          expect(occurrences(table, `aria-label="${escapeAttr(fill(labels.downloads.exampleTemplate, { file }))}"`), `${name} ${file}`).toBe(1);
+        }
+        // 頁面只有一個 h1（頁首），空狀態標題是 h2（M6）。
+        expect(occurrences(html, "<h1"), name).toBe(1);
+        expect(section, name).toContain(`<h2 id="empty-state-title">${escapeAttr(labels.emptyState.title)}</h2>`);
+      }
+      // 頁首「匯入資料」（page-import）仍只在資料來源頁的頁首；空狀態的「匯入資料」是另一個 testid（empty-import）。
+      expect(testIdCounts(states.find(state => state.name === "shell-empty-data")!.html).get("page-import")).toBe(1);
+      expect(testIdCounts(states.find(state => state.name === "shell-empty")!.html).get("page-import") ?? 0).toBe(0);
+
+      const { html } = states.find(state => state.name === "shell-error")!;
+      const ids = testIdCounts(html);
+      for (const id of ["error-state", "error-retry", "error-view-issues", "error-issues"]) expect(ids.get(id), id).toBe(1);
+      // 沒有上次成功的資料時不出現「回到上次成功的資料」；不再有 v2 的「!」圖示。
+      expect(ids.has("error-back")).toBe(false);
+      const section = element(html, 'data-testid="error-state"')!;
+      expect(section).toMatch(/^<section class="ui-empty-page state-page error-state" data-testid="error-state" aria-labelledby="error-state-title">/);
+      expect(section).not.toContain("error-icon");
+      expect(section).toContain(`<p role="alert">${escapeAttr(labels.ui.dashboard.errors.validationFailed)}</p>`);
+      // 問題清單（IssueList 的 region）掛在錯誤容器的動作列之後。
+      const issues = element(section, 'data-testid="error-issues"')!;
+      expect(issues).toContain(`role="region" aria-label="${escapeAttr(labels.ui.issueList.regionAria)}"`);
+      expect(section.indexOf('data-testid="error-issues"')).toBeGreaterThan(section.indexOf('data-testid="error-view-issues"'));
+      for (const name of ["shell-empty", "shell-empty-data", "shell-error"]) expect(testIdCounts(states.find(state => state.name === name)!.html).has("period-bar"), name).toBe(false);
+    });
 
   });
 

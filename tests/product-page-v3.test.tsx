@@ -196,7 +196,8 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
       const { html } = await render("golden", { initial });
       const empty = element(html, 'data-testid="product-empty"')!;
       expect(openTag(empty, "<div")).toContain("ui-empty-block");
-      expect(empty).toContain(`<p>${labels.products.panel.noProducts}</p>`);
+      // V3-8 C（§7.10、C10）：標題是 p.ui-empty-title（句尾句號）。
+      expect(empty).toContain(`<p class="ui-empty-title">${labels.products.panel.noProducts}</p>`);
       expect(empty).toContain(`data-testid="product-clear-filters">${page.clearFilters}</button>`);
       expect(html).not.toContain('data-testid="product-table"');
       expect(html).toContain(`>${fill(page.showing, { n: formatCount(0, "L2"), total: formatCount(4, "L2") })}</p>`);
