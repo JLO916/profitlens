@@ -3,6 +3,7 @@ import { applyCustomPeriod, choosePreset, clickReplacing, dismissSavePrompt, isM
 import { fill, labels } from "../../src/i18n";
 import { MINUS, deltaTone, formatAmountL1, formatAmountL3, formatDateL1, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { AMOUNT_FIELDS } from "../../src/domain/types";
+import { yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
 
 const aiLabelPrefix = labels.ui.dashboard.aiLabel.replace("{ai}", "");
 // V3-3：示範資料（fixtures/demo/manifest.json）的「資料到」；頂欄資料狀態按鈕寫「示範資料 · 資料到 8/24」。
@@ -356,6 +357,9 @@ test.describe("V3-4b charts", () => {
     await expect(page.locator("main .chart-frame")).toHaveCount(CHART_FRAMES.length);
     const before = await chartFrameHeights(page);
     expect(before.every(height => height > 0), "四個圖表框都有高度").toBe(true);
+    // V3-9b F8：示範資料的去年同期不可用，趨勢圖下方多一行原因（trend-yoy-note）；切到近 7 天原因不變（同一句、不出現也不消失），不造成位移。
+    const yoyReason = yoyTooShortNote("2026-06-01");
+    await expect(yoyNote(page)).toHaveText(yoyReason);
     // 只累加非使用者輸入造成的位移（hadRecentInput 為 false，與 CLS 的定義相同）；另記錄含輸入後 500ms 內的全部位移，只供參考。
     await page.evaluate(() => {
       const holder = window as unknown as { __v34bShift: ShiftState };
@@ -371,6 +375,7 @@ test.describe("V3-4b charts", () => {
     await expect.poll(() => periodSummaryVisibleText(page)).toBe(LAST7_SUMMARY);
     await expect(page.getByTestId("period-bar")).not.toHaveAttribute("aria-busy", "true");
     expect(await chartFrameHeights(page), "近 7 天：四個圖表框高度不變").toEqual(before);
+    await expect(yoyNote(page)).toHaveText(yoyReason);
     // 示範資料載入時的預設範圍（各 42 天）不是任何一個快捷：用自訂期間套回原範圍。
     await applyCustomPeriod(page, { previousStart: "2026-06-01", previousEnd: "2026-07-12", currentStart: "2026-07-13", currentEnd: "2026-08-23" });
     await expect.poll(() => periodSummaryVisibleText(page)).toBe(DEFAULT_SUMMARY);
@@ -401,6 +406,8 @@ test.describe("V3-4b charts", () => {
     await bridgeLink.click();
     await expect(dialog).toBeVisible();
     await expect(heading).toHaveText(bridgeTitle);
+    // V3-9b F10 的篩選列只在趨勢週與通路的下鑽出現；拆解與利潤結構的抽屜沒有。
+    await expect(dialog.getByTestId("evidence-filter")).toHaveCount(0);
     const bridgePrecise = (await dialog.getByTestId("evidence-precise-value").textContent())!.trim();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
@@ -422,6 +429,7 @@ test.describe("V3-4b charts", () => {
     await resultLink.click();
     await expect(dialog).toBeVisible();
     await expect(heading).toContainText(metricDefinitions.contribution_after_marketing.label);
+    await expect(dialog.getByTestId("evidence-filter")).toHaveCount(0);
     await expect(heading).toHaveText(profitTitle);
     await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(profitPrecise);
     await page.keyboard.press("Escape");

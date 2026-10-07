@@ -2,6 +2,7 @@ import { closeDownloads, dismissSavePrompt, openCustomPeriod, openDownloads, ope
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardManifest, wizard } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatPeriodL1, formatSignedDelta } from "../../src/application/presentation";
+import { trendLines, yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
@@ -128,6 +129,9 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
   await expect(currentContribution(page)).toHaveText(formatAmountL1("750.00"));
   await expect(page.locator(".bridge-total")).toContainText(formatSignedDelta("-25.00", "L3"));
   await expect(comparison(page)).toContainText(fill(ui.periodDays, { previousDays: 31, currentDays: 30 }));
+  // V3-9b F8：整月比較的去年同期是 2025-09，早於資料起日 2026-08-01，趨勢圖不畫第三線並在圖下方寫原因。
+  await expect(yoyNote(page)).toHaveText(yoyTooShortNote("2026-08-01"));
+  await expect(trendLines(page)).toHaveCount(4);
   await expect(revenueRow(page).getByRole("cell")).toHaveText(periodCells("3100.00", "3000.00", "100.00", "100.00", "0.00"));
   await expect(contributionRow(page).getByRole("cell")).toHaveText(periodCells("775.00", "750.00", "25.00", "25.00", "0.00"));
   await contributionRow(page).getByRole("cell").nth(3).getByRole("button").click();

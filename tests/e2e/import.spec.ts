@@ -5,6 +5,7 @@ import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
 import { BREAKEVEN_MER_VERSION } from "../../src/application/breakeven-mer";
 import { issueMessageParts, issueTemplate } from "../../src/application/import";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
+import { TREND_TABLE_HEADERS, YOY_EMPTY, yoyCells, yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -203,6 +204,10 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   const weekly = page.locator("details").filter({ has: page.locator("summary", { hasText: fill(labels.ui.overview.dataTable, { title: labels.sections.trend }) }) });
   await weekly.locator("summary").click();
   await expect(weekly.locator("tbody tr")).toHaveCount(2);
+  // V3-9b F8：週趨勢表多兩欄去年同期（共 7 欄，原本 5 欄的位置不變）；這份資料從 2026-09-01 開始，去年同期不可用，兩欄都是「無資料」，圖下方寫原因。
+  await expect(weekly.locator("thead th")).toHaveText(TREND_TABLE_HEADERS);
+  for (const row of await weekly.locator("tbody tr").all()) await expect(yoyCells(row)).toHaveText([YOY_EMPTY, YOY_EMPTY]);
+  await expect(yoyNote(page)).toHaveText(yoyTooShortNote("2026-09-01"));
   // 週趨勢表：第 3 欄是淨營收（L2）。
   await expect(weekly.locator("tbody tr").first().locator("td").nth(2)).toHaveText(formatAmountL2("464.00"));
   await expect(weekly.locator("tbody tr").last().locator("td").nth(2)).toHaveText(formatAmountL2("600.00"));

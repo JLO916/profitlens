@@ -6,6 +6,7 @@ import { formatAmountL1, formatCount, formatPerUnit, formatRateL1 } from "../../
 import { openWizard, setWizardFiles, nextFromFiles, confirmMappingIfShown, chooseBasis, confirmAndCheck, commitWizard } from "./import-wizard-helpers";
 import { choosePreset, clickReplacing, closeDownloads, closeStorage, dismissSavePrompt, isMobile, navigateTo, openDownloads, openStorage, openValidation, periodSummary, periodSummaryText, presetButton } from "./replacement-helpers";
 import { expectIssueRow, issueCells, issueColumns, issueTable, showReasonCodes, versionInfo } from "./data-page-helpers-v3";
+import { pointHits, pointStarts, trendLines, trendTakeaways, yoyCurves, yoyLegend, yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
 
 // R4：輔助指標橫列、「去年同期」快捷、目標達成率、趨勢檔期區帶、備份 v4 來回。
 // 合成資料（一個通路「官網」、一個商品）：2025-06-01～2026-08-31，2025 年每天原價收入 100.00、2026 年每天 200.00，成本一律 40.00；
@@ -90,12 +91,29 @@ test("去年同期快捷：本月 vs 上月套用後，上期各減一年；超�
   await expect(page.locator("#preset-reason-yoy")).toContainText("2025-06-01");
   // 理由也要看得見（不只 title／sr-only）。
   await expect(page.getByTestId("preset-reason-visible-yoy")).toContainText("2025-06-01");
+  // V3-9b F8：趨勢圖同樣沒有去年同期線——圖例第三項標「無資料」、圖下方寫同一個原因、只有 4 條線、沒有去年同期的點。
+  await expect(yoyLegend(page).locator("small")).toHaveText(labels.overview.chartFrame.noData);
+  await expect(yoyNote(page)).toHaveText(yoyTooShortNote("2025-06-01"));
+  await expect(trendLines(page)).toHaveCount(4);
+  await expect(pointHits(page, "revenueYoy")).toHaveCount(0);
   await choosePreset(page, "monthVsPrev");
   await expect(periodSummary(page)).toContainText(MONTH_SUMMARY);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("6200.00"));
   await expect(yoy).not.toHaveAttribute("aria-disabled", "true");
   // 理由橫幅在去年同期可用後消失。
   await expect(page.getByTestId("preset-reason-visible-yoy")).toHaveCount(0);
+  // V3-9b F8 ready：去年同期＝2025-08-01～08-31。原因列消失、圖例不標「無資料」；多兩條 --chart-yoy 虛線（共 6 條）；
+  // 去年同期的點與本期週數相同（2026-08 切成 7、7、7、7、3 天共 5 週），data-start 是去年那一週的起日；第三格提示列是去年同期淨營收合計 31 × 100.00 ＝ 3100.00。
+  await expect(yoyNote(page)).toHaveCount(0);
+  await expect(yoyLegend(page).locator("small")).toHaveCount(0);
+  await expect(trendLines(page)).toHaveCount(6);
+  await expect(yoyCurves(page)).toHaveCount(2);
+  await expect(pointHits(page, "revenueCurrent")).toHaveCount(5);
+  await expect(pointHits(page, "revenueYoy")).toHaveCount(await pointHits(page, "revenueCurrent").count());
+  expect(await pointStarts(pointHits(page, "revenueYoy"))).toEqual(["2025-08-01", "2025-08-08", "2025-08-15", "2025-08-22", "2025-08-29"]);
+  await expect(trendTakeaways(page)).toHaveCount(3);
+  await expect(trendTakeaways(page).nth(2).locator("dt")).toHaveText(labels.overview.trendYoyV3.takeawayTotal);
+  await expect(trendTakeaways(page).nth(2).getByRole("button", { name: fill(labels.overview.trendV3.takeawayAria, { label: labels.overview.trendYoyV3.takeawayTotal, value: formatAmountL1("3100.00") }), exact: true })).toBeVisible();
   await choosePreset(page, "yoy");
   await expect(page.locator("#previous-start")).toHaveValue("2025-08-01");
   await expect(page.locator("#previous-end")).toHaveValue("2025-08-31");
@@ -104,6 +122,11 @@ test("去年同期快捷：本月 vs 上月套用後，上期各減一年；超�
   await expect(yoy).toHaveAttribute("aria-pressed", "true");
   await expect(periodSummary(page)).toContainText(YOY_SUMMARY);
   await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-prev")).toContainText(formatAmountL1("3100.00"));
+  // 上期就是去年同期：去年同期線仍在（6 條），去年同期的點與上期的點是同一組週起日；提示列第三格與上期淨營收同為 3100.00。
+  await expect(yoyNote(page)).toHaveCount(0);
+  await expect(trendLines(page)).toHaveCount(6);
+  expect(await pointStarts(pointHits(page, "revenueYoy"))).toEqual(await pointStarts(pointHits(page, "revenuePrevious")));
+  await expect(trendTakeaways(page).nth(2).getByRole("button")).toHaveText(formatAmountL1("3100.00"));
   await expect(page.getByTestId("assist-units_sold")).toContainText(formatCount("62", "L1"));
   await expect(page.getByTestId("assist-net_revenue_per_unit")).toContainText(formatPerUnit("100.00", "L1"));
 });

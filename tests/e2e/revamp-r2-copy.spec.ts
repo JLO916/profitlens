@@ -74,12 +74,15 @@ test.describe("R2 口徑說明與怎麼算的", () => {
     await expect(drawer(page).locator(".evidence-body > :is(section, details)").last()).toHaveClass(/evidence-technical/);
     await expect(drawer(page).getByRole("group", { name: labels.ui.evidenceDrawer.sourceTabsAria })).toBeVisible();
     await expect(drawer(page).locator("details.evidence-technical")).not.toHaveAttribute("open", /.*/);
+    // V3-9b F10：篩選列（evidence-filter）只在趨勢週與通路的下鑽出現，KPI 抽屜沒有；原始明細段仍直接接分段與搜尋。
+    await expect(drawer(page).getByTestId("evidence-filter")).toHaveCount(0);
     await page.keyboard.press("Escape");
     await navigateTo(page, "products");
     const table = page.getByTestId("product-table");
     await table.locator("tbody tr").first().getByRole("button").first().click();
     await expect(drawer(page)).toBeVisible();
     await expect(drawer(page).locator(".ladder-table")).toHaveCount(0);
+    await expect(drawer(page).getByTestId("evidence-filter")).toHaveCount(0);
     await page.keyboard.press("Escape");
   });
 

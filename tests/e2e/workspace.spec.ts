@@ -4,6 +4,7 @@ import { MINUS, deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, forma
 import { formatHeadlineAmount } from "../../src/application/copy";
 import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
 import { expectIssueRow, issueCells, issueTable, openPreview, openVersionInfo, previewDetails, previewFiles, previewTable, versionInfo } from "./data-page-helpers-v3";
+import { TREND_TABLE_HEADERS, YOY_EMPTY, evidenceFilterText, filterPhrase, weekLabel, weekScope, yoyCells, yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -368,6 +369,20 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
   await expect(weekly.locator("tbody tr")).toHaveCount(2);
   await expect(weekly).toContainText("2026-06-01 — 2026-06-07");
   await expect(weekly).toContainText("2026-06-08 — 2026-06-14");
+  // V3-9b F8：週資料表 7 欄（多兩欄去年同期）；本期 6/8–6/14 減一年早於示範資料起日 2026-06-01，去年同期不可用。
+  await expect(weekly.locator("thead th")).toHaveText(TREND_TABLE_HEADERS);
+  for (const row of await weekly.locator("tbody tr").all()) await expect(yoyCells(row)).toHaveText([YOY_EMPTY, YOY_EMPTY]);
+  await expect(yoyNote(page)).toHaveText(yoyTooShortNote("2026-06-01"));
+  // V3-9b F10：週資料表的本期淨營收（第 3 欄）開該週的抽屜；這一週就是整個本期，所以副標寫「本期 6/8–6/14」、精確值與 KPI 相同，篩選片語是本期第 1 週。
+  const weekLink = weekly.locator("tbody tr").nth(1).locator("td").nth(2).getByRole("button");
+  await weekLink.click();
+  const weekDialog = evidenceDialog(page);
+  await expect(weekDialog).toHaveAccessibleDescription(drawerSubtitle("current", "2026-06-08", "2026-06-14", dataAsOf.demo));
+  await expect(drawerPrecise(weekDialog)).toHaveText(preciseMoney("1032680.09"));
+  await expect(evidenceFilterText(weekDialog)).toHaveText(filterPhrase(weekScope(weekLabel("current", 1), "2026-06-08", "2026-06-14", dataAsOf.demo)));
+  await page.keyboard.press("Escape");
+  await expect(weekDialog).not.toBeVisible();
+  await expect(weekLink).toBeFocused();
   await kpiValue(contribution(page)).getByRole("button", { name: fill(labels.overview.kpiBand.valueAria, { metric: metricDefinitions.contribution_after_marketing.label, value: formatAmountL1("316379.67") }), exact: true }).click();
   const dialog = evidenceDialog(page);
   await expect(dialog).toHaveAccessibleDescription(drawerSubtitle("current", "2026-06-08", "2026-06-14", dataAsOf.demo));

@@ -208,6 +208,8 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await expect(dialog).toContainText(fileLine(5));
   await expect(dialog).toContainText(fileLine(9));
   await expect(dialog).not.toContainText("ad_spend_daily.csv");
+  // V3-9b F10：商品證據不是下鑽，沒有篩選列（evidence-filter 只在趨勢週與通路的抽屜出現）。
+  await expect(dialog.getByTestId("evidence-filter")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   await sortSelect(page).selectOption({ label: pageV3.sortOptions.grossProfitChangeDescending });
