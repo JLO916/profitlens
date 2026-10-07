@@ -8,6 +8,9 @@ import { createSnapshot, hashInput, type WorkspaceSnapshot } from './workspace';
 export const MAX_PINNED_ACTIONS = 3;
 export const ACTION_EXECUTION_STATUSES = ['not_started', 'in_progress', 'blocked', 'completed'] as const;
 export type ActionExecutionStatus = typeof ACTION_EXECUTION_STATUSES[number];
+/** V3-9a（PRD §10.1 F13、§7.5 第 7 點）：待辦的廣告決策標籤——暫停／調整／加碼；由使用者自選，系統不自動判斷；沒有值＝不標。 */
+export const AD_DECISIONS = ['pause', 'adjust', 'increase'] as const;
+export type AdDecision = typeof AD_DECISIONS[number];
 export interface ActionContext { id: string; session: DecisionSession; diagnostics: Diagnostic[]; source_input: DatasetInput; source_mappings?: ColumnMappings }
 export interface ActionBindingRecord { revision: number; context_id: string; scope: Scope; fact_ids: string[]; evidence_confirmed: boolean; legacy_review_required: boolean; diagnostic_id?: string }
 export interface BoundAction {
@@ -16,6 +19,8 @@ export interface BoundAction {
   binding_history?: ActionBindingRecord[]; legacy_review_required?: boolean;
   /** R5：執行狀態最後一次改變的日期（YYYY-MM-DD）；舊資料沒有就是 undefined，不補值。 */
   status_updated_at?: string;
+  /** V3-9a F13：廣告決策標籤（選填，備份 v5 起）；舊資料與 v1–v4 備份沒有就是 undefined，不補值、不自動判斷。 */
+  ad_decision?: AdDecision;
 }
 export interface ActionWorkspace { contexts: ActionContext[]; items: BoundAction[]; active_dataset_hash?: string }
 export interface ActionSource { dataset: Dataset; input: DatasetInput; snapshot: WorkspaceSnapshot; revision: number; filenames?: FilenameMap; mappings?: ColumnMappings }
@@ -79,6 +84,7 @@ function validateManagement(item: BoundAction) {
   if (item.card.deadline && !isBusinessDate(item.card.deadline)) throw new Error('INVALID_ACTION_DEADLINE');
   if (item.execution_status !== undefined && !ACTION_EXECUTION_STATUSES.includes(item.execution_status) || item.progress_notes !== undefined && (typeof item.progress_notes !== 'string' || item.progress_notes.length > 2000)) throw new Error('INVALID_ACTION_FIELD');
   if (item.status_updated_at !== undefined && !isBusinessDate(item.status_updated_at)) throw new Error('INVALID_ACTION_FIELD');
+  if (item.ad_decision !== undefined && !(AD_DECISIONS as readonly string[]).includes(item.ad_decision)) throw new Error('INVALID_ACTION_FIELD');
   if (typeof item.card.evidence_confirmed !== 'boolean' || item.legacy_review_required !== undefined && typeof item.legacy_review_required !== 'boolean') throw new Error('INVALID_ACTION_CONFIRMATION');
 }
 function edit(workspace: ActionWorkspace, id: string, change: (item: BoundAction, context: ActionContext) => BoundAction): ActionWorkspace {
@@ -112,6 +118,15 @@ export function editActionManagement(workspace: ActionWorkspace, id: string, pat
     if (Object.keys(patch).some(key => !['execution_status', 'progress_notes'].includes(key))) throw new Error('INVALID_ACTION_FIELD');
     const statusChanged = patch.execution_status !== undefined && patch.execution_status !== item.execution_status;
     const next = { ...item, ...structuredClone(patch), ...(statusChanged ? { status_updated_at: today } : {}) }; validateManagement(next); return next;
+  });
+}
+/** V3-9a（PRD §10.1 F13）：設定或清除（undefined＝不標）廣告決策標籤；只改這一欄，不動引用、綁定、置頂、執行狀態與狀態更新日。 */
+export function setAdDecision(workspace: ActionWorkspace, id: string, value: AdDecision | undefined): ActionWorkspace {
+  return edit(workspace, id, item => {
+    if (value !== undefined && !(AD_DECISIONS as readonly string[]).includes(value)) throw new Error('INVALID_ACTION_FIELD');
+    const { ad_decision: _previous, ...rest } = item; void _previous;
+    const next: BoundAction = value === undefined ? rest : { ...rest, ad_decision: value };
+    validateManagement(next); return next;
   });
 }
 export function confirmBoundAction(workspace: ActionWorkspace, id: string): ActionWorkspace {
@@ -213,7 +228,9 @@ export function actionDocuments(workspace: ActionWorkspace) {
       diagnostic_id: item.diagnostic_id ?? null, evidence: item.card.fact_ids.map(id => structuredClone(s.facts.find(fact => fact.id === id)!)),
       binding_revision: binding.revision, binding_history: history.map(entry => bindingDocument(workspace, entry)),
       binding: { context_id: context.id, status: legacy ? 'stale' as const : 'current' as const, dataset_id: s.dataset_id, dataset_hash: s.dataset_hash, filter_hash: s.filter_hash, metric_version: s.metric_version,
-        data_as_of: s.data_as_of, revision: s.revision, period: s.period, scope: structuredClone(item.scope), analysis_scope: s.scope, comparison: s.comparison, filenames: s.filenames, stale_reasons: legacy ? s.stale_reasons : [] } };
+        data_as_of: s.data_as_of, revision: s.revision, period: s.period, scope: structuredClone(item.scope), analysis_scope: s.scope, comparison: s.comparison, filenames: s.filenames, stale_reasons: legacy ? s.stale_reasons : [] },
+      // V3-9a F13：廣告決策標籤放在最後；沒有值就不出現這個欄位（既有欄位與順序不變）。
+      ...(item.ad_decision !== undefined ? { ad_decision: item.ad_decision } : {}) };
   });
 }
 /** R5 看板：所有待辦用過的負責人（trim 後非空、去重）；越後面的待辦越前面，當作「最近用過」。 */

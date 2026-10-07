@@ -193,10 +193,11 @@ const sideData = () => ({
 });
 
 describe("R4-6 workspace backup schema v4", () => {
-  it("exports profitlens-workspace-v4 with null side data and an empty reserved meeting history", async () => {
+  it("exports the current schema (v5 since V3-9a) with null side data and an empty reserved meeting history", async () => {
     const parsed = JSON.parse(await exportWorkspaceBackup(await source()));
-    expect(WORKSPACE_VERSION).toBe("profitlens-workspace-v4");
-    expect(parsed.schema_version).toBe("profitlens-workspace-v4");
+    // V3-9a（F13）：v5＝v4＋待辦的選填 ad_decision；v4 的側邊資料形狀不變。
+    expect(WORKSPACE_VERSION).toBe("profitlens-workspace-v5");
+    expect(parsed.schema_version).toBe(WORKSPACE_VERSION);
     expect(parsed.payload).toMatchObject({ preprocessing: null, targets: null, events: null, meeting_history: [], ui_prefs: {} });
   });
   it("v3 → v4 → v3-shape: CSV bytes, scenarios, actions and meeting stay identical; v4 fields default to empty", async () => {
@@ -206,7 +207,7 @@ describe("R4-6 workspace backup schema v4", () => {
     const fromV3 = await restoreWorkspaceBackup(v3Text);
     expect(fromV3).toMatchObject({ preprocessing: null, targets: null, events: null, ui_prefs: {} });
     const v4Text = await exportWorkspaceBackup(again(fromV3));
-    expect(JSON.parse(v4Text).schema_version).toBe("profitlens-workspace-v4");
+    expect(JSON.parse(v4Text).schema_version).toBe(WORKSPACE_VERSION);
     const fromV4 = await restoreWorkspaceBackup(v4Text);
     const v3AgainText = await asV3(await exportWorkspaceBackup(again(fromV4)));
     const fromV3Again = await restoreWorkspaceBackup(v3AgainText);

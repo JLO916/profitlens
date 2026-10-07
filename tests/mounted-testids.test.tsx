@@ -10,7 +10,7 @@ import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application
 import { emptyDecisionWorkspace, saveScenario } from "@/application/decision";
 import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, updateScenarioContext, scenarioSelectionRef, type ScenarioWorkspace } from "@/application/scenario-workspace";
 import { createReviewSession, selectReviewScenario, syncReviewPins, updateReviewSession, type ReviewSession } from "@/application/review-session";
-import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction, type ActionWorkspace } from "@/application/action-workspace";
+import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction, setAdDecision, type ActionWorkspace } from "@/application/action-workspace";
 import type { Meeting } from "@/application/meeting";
 import { parseTargets, type TargetSet } from "@/application/targets";
 import { parseEvents, type EventSet } from "@/application/events";
@@ -235,6 +235,9 @@ async function pageStates(): Promise<StateMarkup[]> {
     // ── V3-9a A 新增的頁面狀態在此之後（例如損益兩平 MER 不適用的資料集）──
 
     // ── V3-9a B 新增的頁面狀態在此之後（例如帶廣告決策標籤的待辦）──
+    // F13：第 1 項待辦標了「加碼」、第 2 項沒標；看板與清單各一個狀態。
+    "actions-ad-decision": { panel: "actions", active: golden, status: "ready", actionWorkspace: setAdDecision(actions, "a1", "increase"), scenarioWorkspace: scenarios },
+    "actions-ad-decision-list": { panel: "actions", active: golden, status: "ready", actionWorkspace: setAdDecision(actions, "a1", "increase"), scenarioWorkspace: scenarios, actionsView: "list" },
 
     // ── V3-9a C 新增的頁面狀態在此之後（例如進階區展開、週檢視）──
     // 沒有資料（空工作區停在資料來源頁）與載入失敗的整頁不是 ShellState（它需要資料），由下方 statusShells() 依 dashboard.tsx 的 return 另外組，state 為 null（同 shell-empty）。
@@ -874,6 +877,59 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-9a B（廣告決策標籤）的 M1 掛載測試在此之後新增（編輯器 select 在抽屜與清單各一份、卡片徽章）──
+    it("V3-9a B 廣告決策（F13）：看板卡的徽章只在有標的卡、各一份；看板沒有編輯器 select；清單每項一份 select（不標／暫停／調整／加碼）、徽章只在有標的項目", () => {
+      const ad = labels.actions.adDecisionV3;
+      const badgeText = fill(ad.badge, { decision: ad.options.increase });
+      const board = states.find(state => state.name === "actions-ad-decision")!.html;
+      const boardIds = testIdCounts(board);
+      expect(boardIds.get("board-card-1-ad-decision")).toBe(1);
+      expect(boardIds.has("board-card-2-ad-decision"), "沒標的卡不渲染徽章").toBe(false);
+      expect(boardIds.has("action-ad-decision"), "看板沒有內嵌編輯器（抽屜是條件渲染）").toBe(false);
+      const card = element(board, 'data-testid="board-card-1"')!;
+      const badge = element(card, 'data-testid="board-card-1-ad-decision"')!;
+      expect(badge).toMatch(/^<span class="ui-lozenge action-ad-decision-badge"/);
+      expect(badge).toContain(`>${badgeText}</span>`);
+      // 在狀態標籤旁：同一個 board-card-tags 段落、緊接在狀態標籤之後。
+      const tags = element(card, 'class="board-card-tags"')!;
+      expect(tags.indexOf(labels.actions.statuses.in_progress)).toBeLessThan(tags.indexOf('data-testid="board-card-1-ad-decision"'));
+      expect(testIdCounts(states.find(state => state.name === "actions")!.html).has("board-card-1-ad-decision"), "沒有標時不渲染").toBe(false);
+
+      const list = states.find(state => state.name === "actions-ad-decision-list")!.html;
+      const listIds = testIdCounts(list);
+      expect(listIds.get("action-ad-decision"), "每個 action-{n} 一份").toBe(2);
+      expect(listIds.get("action-1-ad-decision")).toBe(1);
+      expect(listIds.has("action-2-ad-decision")).toBe(false);
+      expect(element(element(list, 'data-testid="action-1"')!, 'class="section-heading"')).toContain(`data-testid="action-1-ad-decision">${badgeText}</span>`);
+      for (const [n, selected] of [[1, "increase"], [2, ""]] as const) {
+        const item = element(list, `data-testid="action-${n}"`)!;
+        const select = element(item, 'data-testid="action-ad-decision"')!;
+        expect(testIdCounts(item).get("action-ad-decision"), `action-${n}`).toBe(1);
+        expect([...select.matchAll(/<option value="([^"]*)"[^>]*>([^<]*)<\/option>/g)].map(match => [match[1], match[2]]), `action-${n}`).toEqual([["", ad.none], ["pause", ad.options.pause], ["adjust", ad.options.adjust], ["increase", ad.options.increase]]);
+        expect(select, `action-${n}`).toMatch(new RegExp(`<option value="${selected}" selected=""`));
+        const id = /\sid="([^"]+)"/.exec(openTag(item, 'data-testid="action-ad-decision"')!)![1];
+        expect(occurrences(item, `for="${id}"`), `action-${n} label for`).toBe(1);
+        expect(idCounts(list).get(id), `action-${n} id`).toBe(1);
+        expect(openTag(item, 'data-testid="action-ad-decision"'), `action-${n}`).toContain(`aria-label="${escapeAttr(ad.field)}"`);
+        // 「內容」段的狀態 select 之後、進度紀錄之前。
+        const content = element(item, `aria-label="${escapeAttr(labels.actions.drawerV3.content)}"`)!;
+        const order = [`aria-label="${escapeAttr(labels.actions.status)}"`, 'data-testid="action-ad-decision"', `aria-label="${escapeAttr(labels.actions.progress)}"`].map(attr => content.indexOf(attr));
+        expect(order.every(at => at >= 0) && order[0] < order[1] && order[1] < order[2], `action-${n} 欄位順序 ${order.join(",")}`).toBe(true);
+      }
+    });
+
+    it("V3-9a B 抽屜：看板檢視開著待辦編輯抽屜時，廣告決策 select 只在抽屜裡一份（M6），徽章仍在卡片上一份", async () => {
+      const golden = await load("golden", "golden");
+      const workspace = setAdDecision(addActionDraft(addActionDraft(emptyActionWorkspace(), golden, "a1"), golden, "a2"), "a2", "pause");
+      const html = renderToStaticMarkup(<ActionsWorkbench workspace={workspace} onChange={noop} source={golden} onEvidence={noop} onExport={noop} view="board" onViewChange={noop} initial={{ editing: "a2" }} />);
+      const ids = testIdCounts(html);
+      expect(ids.get("action-drawer")).toBe(1);
+      expect(ids.get("action-ad-decision")).toBe(1);
+      expect(element(html, 'data-testid="action-drawer"')).toContain('data-testid="action-ad-decision"');
+      expect(element(element(html, 'data-testid="action-drawer"')!, 'data-testid="action-ad-decision"')).toMatch(/<option value="pause" selected=""/);
+      expect(ids.get("board-card-2-ad-decision")).toBe(1);
+      expect(ids.has("board-card-1-ad-decision")).toBe(false);
+      expect([...idCounts(html)].filter(([, count]) => count > 1), "id 不重複").toEqual([]);
+    });
 
 
     // ── V3-9a C（管理損益表）的 M1 掛載測試在此之後新增（進階區收合時表格掛載、日／週切換只一份、零值列 hidden 掛載）──

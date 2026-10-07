@@ -23,7 +23,7 @@ spec/                       # AI JSON schema
 
 ## State and freshness
 Raw CSV 預設僅在使用者瀏覽器記憶體內，不預設持久化。第一批管理者改善新增明確同意後的 IndexedDB 保存與獨立工作區 JSON 備份；不自動保存、讀取或跨分頁同步。重新整理清空目前分頁，必須由使用者預覽並確認恢復。未保存變更有清空／離頁提醒（瀏覽器原生提醒是否顯示受瀏覽器限制）。示範合成資料可作靜態檔案。
-`profitlens-workspace-v4`（R4 起；新增 preprocessing／targets／events／meeting_history／ui_prefs；R5 加方案敏感度與行動 status_updated_at，R6 讓 meeting_history 真正存入已結束的會議（`meeting-v1`，上限 100 筆）並加 review_session.meeting_date——皆為欄位加法；先依原格式驗 checksum，可讀取有效 v1／v2／v3 並遷移）保存標準輸入 CSV、manifest、欄位對照、已套用分析範圍、版本、多通路方案與修訂、行動引用歷史／進度及固定會議。恢復先檢查大小／schema／checksum，再重新驗證 CSV、建立快照及重算方案；不信任序列化結果。過期決策保留其歷史輸入、範圍與 stale 標記。格式不包含 AI 回應、傳送同意、金鑰或未套用的匯入／日期草稿。checksum 只檢查一致性，不是簽章或身分認證。
+目前寫出 `profitlens-workspace-v5`（V3-9a 起；v4 信封加上待辦 items[].ad_decision 選填欄位——廣告決策標籤 pause／adjust／increase，使用者自選、不自動判斷；先依原格式驗 checksum，可讀取有效 v1／v2／v3／v4 並遷移，舊檔沒有此欄位＝不標，v1–v4 信封帶此欄位即拒絕；欄位清單見 `verification/revamp-v3/backup-schema-v5.json`）；它與歷史版本 `profitlens-workspace-v4`（R4 起；新增 preprocessing／targets／events／meeting_history／ui_prefs；R5 加方案敏感度與行動 status_updated_at，R6 讓 meeting_history 真正存入已結束的會議（`meeting-v1`，上限 100 筆）並加 review_session.meeting_date——皆為欄位加法；先依原格式驗 checksum，可讀取有效 v1／v2／v3 並遷移）保存標準輸入 CSV、manifest、欄位對照、已套用分析範圍、版本、多通路方案與修訂、行動引用歷史／進度及固定會議。恢復先檢查大小／schema／checksum，再重新驗證 CSV、建立快照及重算方案；不信任序列化結果。過期決策保留其歷史輸入、範圍與 stale 標記。格式不包含 AI 回應、傳送同意、金鑰或未套用的匯入／日期草稿。checksum 只檢查一致性，不是簽章或身分認證。
 本機保存未做應用程式層加密，同一瀏覽器設定檔與 origin 可由使用者手動讀取保存檔。可刪除本工具 IndexedDB；不刪除其他分頁目前的記憶體或使用者已下載的檔案。沒有伺服器儲存、帳號同步或自動回復。
 所有快照帶 dataset hash、filter hash、metric_version、data_as_of。AI 結果與情境綁定此 snapshot，來源變動後舊結果立即失效；不要讓較早的非同步回應覆蓋新期間。
 不使用 server module singleton 儲存使用者資料，不做跨使用者共用快取。

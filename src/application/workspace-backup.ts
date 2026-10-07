@@ -5,7 +5,7 @@ import type { AnalysisFilters, Dataset, DatasetInput, ValidationResult } from "@
 import { createDecisionSession, decisionSignature, emptyDecisionWorkspace, refreshDecisionSession, validateActionContent, validateActionEvidence, validateScenarioName, type ColumnMappings, type DecisionWorkspaceState } from "./decision";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "./workspace";
 import type { FilenameMap } from "./export";
-import { actionContextId, actionDocuments, emptyActionWorkspace, normalizeActionWorkspace, type ActionWorkspace } from "./action-workspace";
+import { actionContextId, actionDocuments, AD_DECISIONS, emptyActionWorkspace, normalizeActionWorkspace, type ActionWorkspace } from "./action-workspace";
 import { emptyScenarioWorkspace, migrateLegacyDecisionWorkspace, validateScenarioWorkspace, type ScenarioWorkspace } from "./scenario-workspace";
 import { validateReviewSession, type ReviewSession } from "./review-session";
 import { freezeMeeting, MAX_MEETING_HISTORY, meetingAgendaFromSnapshot, meetingSchema, validateMeeting, type Meeting } from "./meeting";
@@ -16,7 +16,10 @@ import { MAX_EVENT_ROWS, eventRowIssues, type EventSet } from "./events";
 import { convertInclusiveAmount } from "./tax-basis";
 import { formatCents } from "@/domain/money";
 
-export const WORKSPACE_VERSION = "profitlens-workspace-v4";
+/** V3-9a（PRD §10.1 F13、§6.3 #60、§11.8）：目前寫出 v5＝v4＋待辦的選填 ad_decision；v1–v4 仍可還原（舊檔沒有此欄位＝不標）。 */
+export const WORKSPACE_VERSION = "profitlens-workspace-v5";
+/** R4–V3-8 寫出的版本；V3-9a 起是歷史版本，只讀。 */
+export const WORKSPACE_V4 = "profitlens-workspace-v4";
 const WORKSPACE_V3 = "profitlens-workspace-v3";
 /** R4 前處理（含稅換算）：換算摘要＋被換算格子的含稅原值（檔案 → 原始行號 → 標準欄位 → 原值）。 */
 export interface WorkspacePreprocessing { conversion: TaxConversion; raw_values: RawValuesByFile }
@@ -165,19 +168,30 @@ const scenarioContextV4 = scenarioContext.extend({ plans: z.array(scenarioV4.ext
 // V3-6（D-V3-12＝B）：記住「我了解這是試算」的時間（選填，只在 v4 信封；舊 v4 沒有 → undefined；v1–v3 帶此欄位一律 INVALID_WORKSPACE_FORMAT）。
 const referencedScenarioWorkspaceV4 = referencedScenarioWorkspace.extend({ contexts: z.array(scenarioContextV4), assumptions_acknowledged_at: z.iso.datetime().optional() });
 const v4CorePayload = z.strictObject({ ...v3PayloadShape, decision: referencedDecisionV4.nullable(), action_workspace: referencedActionWorkspaceV4, scenario_workspace: referencedScenarioWorkspaceV4 });
-/** restoreV3 讀的 payload：v4 核心（v3 是它的子集，只是沒有 R5 的選填欄位）。 */
-type CorePayload = z.infer<typeof v4CorePayload>;
+// V3-9a（F13）v5 加法：待辦 items[] 的廣告決策標籤（選填，只在 v5 信封）；v4 沒有 → 讀回 undefined；v1–v4 信封帶此欄位一律 INVALID_WORKSPACE_FORMAT（v4 的 savedActionV4 仍是 strict）。
+const savedActionV5 = savedActionV4.extend({ ad_decision: z.enum(AD_DECISIONS).optional() });
+const referencedActionWorkspaceV5 = referencedActionWorkspaceV4.extend({ items: z.array(savedActionV5) });
+const v5CorePayload = v4CorePayload.extend({ action_workspace: referencedActionWorkspaceV5 });
+/** restoreV3 讀的 payload：v5 核心（v3／v4 是它的子集，只是沒有 R5、V3-9a 的選填欄位）。 */
+type CorePayload = z.infer<typeof v5CorePayload>;
 /** restoreDecision 讀的方案：v1–v3 沒有 sensitivity（型別上是選填，讀取時仍以 "sensitivity" in plan 守衛）。 */
 type SavedDecision = z.infer<typeof savedDecisionV4>;
+const v4SideData = {
+  preprocessing: preprocessing.nullable(), targets: targets.nullable(), events: events.nullable(),
+  // R6 會議紀錄：每筆是完整的 meeting-v1（strict），最多 MAX_MEETING_HISTORY 筆；語意檢查在 restoreV4。
+  meeting_history: z.array(meetingSchema).max(MAX_MEETING_HISTORY),
+  ui_prefs: uiPrefs,
+};
+/** v4 信封（歷史版本，只讀）：與 R4–V3-8 寫出的格式完全相同。 */
+const v4EnvelopeSchema = z.strictObject({
+  schema_version: z.literal(WORKSPACE_V4), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION), saved_at: z.iso.datetime(), checksum: hash,
+  // .extend keeps the strict (no unknown keys) object config.
+  payload: v4CorePayload.extend(v4SideData),
+});
+/** V3-9a v5 信封（目前寫出）：v4 信封＋items[].ad_decision（選填）；側邊資料、checksum、上限與完整性檢查都與 v4 相同。 */
 const envelopeSchema = z.strictObject({
   schema_version: z.literal(WORKSPACE_VERSION), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION), saved_at: z.iso.datetime(), checksum: hash,
-  // .extend keeps the strict (no unknown keys) object config.
-  payload: v4CorePayload.extend({
-    preprocessing: preprocessing.nullable(), targets: targets.nullable(), events: events.nullable(),
-    // R6 會議紀錄：每筆是完整的 meeting-v1（strict），最多 MAX_MEETING_HISTORY 筆；語意檢查在 restoreV4。
-    meeting_history: z.array(meetingSchema).max(MAX_MEETING_HISTORY),
-    ui_prefs: uiPrefs,
-  }),
+  payload: v5CorePayload.extend(v4SideData),
 });
 
 async function checksum(value: unknown): Promise<string> {
@@ -331,10 +345,10 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
   assertSafeStructure(parsed);
   if (parsed && typeof parsed === "object") {
     const versions = parsed as Record<string, unknown>;
-    if (![WORKSPACE_VERSION, WORKSPACE_V3, "profitlens-workspace-v2", "profitlens-workspace-v1"].includes(String(versions.schema_version)) || versions.metric_version !== "contribution-v1" || versions.scenario_version !== SCENARIO_VERSION) throw new Error("WORKSPACE_VERSION_UNSUPPORTED");
+    if (![WORKSPACE_VERSION, WORKSPACE_V4, WORKSPACE_V3, "profitlens-workspace-v2", "profitlens-workspace-v1"].includes(String(versions.schema_version)) || versions.metric_version !== "contribution-v1" || versions.scenario_version !== SCENARIO_VERSION) throw new Error("WORKSPACE_VERSION_UNSUPPORTED");
   }
   const version = (parsed as { schema_version?: string } | null)?.schema_version;
-  const schema = version === WORKSPACE_VERSION ? envelopeSchema : version === WORKSPACE_V3 ? v3EnvelopeSchema : legacyEnvelopeSchema;
+  const schema = version === WORKSPACE_VERSION ? envelopeSchema : version === WORKSPACE_V4 ? v4EnvelopeSchema : version === WORKSPACE_V3 ? v3EnvelopeSchema : legacyEnvelopeSchema;
   const result = schema.safeParse(parsed);
   if (!result.success) throw new Error("INVALID_WORKSPACE_FORMAT");
   // Checksum the wire representation of whichever version was read, before any migration defaults.
@@ -342,7 +356,8 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
   let actual: string;
   try { actual = await checksum(body); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
   if (actual !== expected) throw new Error("WORKSPACE_CHECKSUM_MISMATCH");
-  if (body.schema_version === WORKSPACE_VERSION) return restoreV4(body as Omit<z.infer<typeof envelopeSchema>, "checksum">);
+  // v5 與 v4 走同一條還原路徑（v5 只多 items[].ad_decision）；v4 檔沒有此欄位，讀回 undefined（不標）。
+  if (body.schema_version === WORKSPACE_VERSION || body.schema_version === WORKSPACE_V4) return restoreV4((body as Omit<z.infer<typeof envelopeSchema>, "checksum">).payload);
   if (body.schema_version === WORKSPACE_V3) return { ...await restoreV3((body as Omit<z.infer<typeof v3EnvelopeSchema>, "checksum">).payload), ...EMPTY_V4_FIELDS() };
   return { ...await restoreLegacy(body as Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">), ...EMPTY_V4_FIELDS() };
 }
@@ -350,8 +365,9 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
 type V4Fields = Pick<RestoredWorkspace, "preprocessing" | "targets" | "events" | "ui_prefs" | "meeting_history">;
 const EMPTY_V4_FIELDS = (): V4Fields => ({ preprocessing: null, targets: null, events: null, ui_prefs: {}, meeting_history: [] });
 
-async function restoreV4(body: Omit<z.infer<typeof envelopeSchema>, "checksum">): Promise<RestoredWorkspace> {
-  const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: savedMeetings, ...payload } = body.payload;
+/** v4 與 v5 的 payload（v5 只多 items[].ad_decision 選填）。 */
+async function restoreV4(wire: z.infer<typeof envelopeSchema>["payload"]): Promise<RestoredWorkspace> {
+  const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: savedMeetings, ...payload } = wire;
   // 會議紀錄逐筆語意檢查、id 不可重複；來源還在備份裡的會議另在 restoreV3 之後重算核對金額（verifyMeetingHistory）。
   const meetingHistory = savedMeetings.map(saved => {
     try { validateMeeting(saved); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }

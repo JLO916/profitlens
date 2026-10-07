@@ -2927,6 +2927,22 @@ export const buttons = {
   close: shell.buttons.close,
 } as const;
 export const scenario = scenarios.inputs;
+/**
+ * V3-9a（PRD §10.1 F13、§7.5 第 7 點）：廣告決策標籤的字串，掛在下方 actions.adDecisionV3 錨點。
+ * 字串常值放在這裡，是因為 actions 是 v2 舊鍵的展開區，只能放參照（tests/labels-structure.test.ts (iii)）。
+ */
+const actionsAdDecisionV3 = {
+  /** 待辦編輯器「內容」段的欄位名（狀態之後），也是決策 Markdown 的欄位名。 */
+  field: "廣告決策",
+  /** select 的第一個選項：沒有標籤。 */
+  none: "不標",
+  /** 使用者自選，系統不自動判斷。 */
+  options: { pause: "暫停", adjust: "調整", increase: "加碼" },
+  /** C8 卡片徽章（看板卡與清單項的狀態標籤旁，只在有標時）：「廣告加碼」。 */
+  badge: "廣告{decision}",
+  /** 決策 CSV 的最後一欄 ad_decision 的中文欄名。 */
+  csvColumn: "廣告決策",
+} as const;
 /** v2 actions：展開新分組，再補上舊鍵。 */
 export const actions = {
   ...actionsStore,
@@ -2944,8 +2960,7 @@ export const actions = {
   staleBadge: actionsStore.form.staleBadge,
   confirmedNote: actionsStore.form.confirmedNote,
   // ── V3-9a 錨點（代理 B：廣告決策標籤（F13）——暫停／調整／加碼與「不標」、編輯器欄位名、卡片徽章、匯出欄名、備份 v5 說明；收尾時刪除仍為空的物件）
-  adDecisionV3: {
-  },
+  adDecisionV3: actionsAdDecisionV3,
 } as const;
 /** v2 meeting：展開新分組，再補上舊鍵。 */
 export const meeting = {

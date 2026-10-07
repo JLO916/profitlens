@@ -113,7 +113,11 @@ const SCENARIO_FIELD_LABELS: Record<string, string> = {
 const ACTION_FIELD_LABELS: Record<string, string> = {
   problem: labels.actions.problem, action: labels.actions.step, owner_role: labels.actions.owner, validation_metric: labels.actions.metric,
   deadline: labels.actions.due, stop_condition: labels.actions.stop, required_data: labels.actions.extraData, status: labels.actions.status,
+  // V3-9a F13：廣告決策標籤（只有使用者有標時才出現在文件裡）。
+  ad_decision: labels.actions.adDecisionV3.field,
 };
+/** V3-9a（PRD §10.1 F13）：廣告決策的白話名稱（暫停／調整／加碼）；不認得的值原樣輸出（交給驗證處理）。 */
+const adDecisionText = (value: unknown): unknown => typeof value === "string" && Object.hasOwn(labels.actions.adDecisionV3.options, value) ? labels.actions.adDecisionV3.options[value as keyof typeof labels.actions.adDecisionV3.options] : value;
 const OTHER_FIELD_LABELS: Record<string, string> = {
   id: labels.csvColumns.item_id, fact_id: labels.csvColumns.fact_ids, reasons: labels.csvColumns.reason_codes, sources: labels.csvColumns.source_refs,
   coverage_confirmed: labels.csvColumns.sales_coverage_confirmed, filenames: labels.csvColumns.file,
@@ -218,7 +222,7 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   lines.push(`## ${labels.sections.actionList}`, "");
   if (actionWorkspace !== undefined) lines.push(copy.actionsNote, "");
   for (const action of document.actions) {
-    const main = Object.fromEntries(Object.entries(action).filter(([key]) => key in ACTION_FIELD_LABELS));
+    const main = Object.fromEntries(Object.entries(action).filter(([key]) => key in ACTION_FIELD_LABELS).map(([key, value]) => [key, key === "ad_decision" ? adDecisionText(value) : value]));
     const technical = Object.fromEntries(Object.entries(action).filter(([key]) => !(key in ACTION_FIELD_LABELS)));
     lines.push(`### ${fill(copy.actionHeading, { priority: action.priority, problem: md(action.problem) })}`, "", ...mdFields(main), "", ...mdTechnical(mdFields(technical, false)), "");
   }
@@ -230,7 +234,10 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   return lines.join("\n");
 }
 
-const HEADERS = ["schema_version", "scenario_version", "metric_version", "dataset_id", "dataset_hash", "filter_hash", "as_of", "currency", "timezone", "amount_basis", "revision", "snapshot_status", "period", "scope", "comparison_mode", "previous_days", "current_days", "row_type", "item_id", "item_name", "status", "field", "value", "reason_codes", "fact_ids", "source_refs", "analysis_scope", "context_id", "plan_revision", "analysis_epoch"] as const;
+// V3-9a F13：ad_decision 是新增的最後一欄（D11：既有欄名與欄序不變，只能新增欄）；只在有標的待辦列（manual_action、action_fact）有值。
+const HEADERS = ["schema_version", "scenario_version", "metric_version", "dataset_id", "dataset_hash", "filter_hash", "as_of", "currency", "timezone", "amount_basis", "revision", "snapshot_status", "period", "scope", "comparison_mode", "previous_days", "current_days", "row_type", "item_id", "item_name", "status", "field", "value", "reason_codes", "fact_ids", "source_refs", "analysis_scope", "context_id", "plan_revision", "analysis_epoch", "ad_decision"] as const;
+/** 欄名沿用 csvHeader 的「中文 (english_key)」；ad_decision 的中文取自 labels.actions.adDecisionV3（labels.csvColumns 沒有這一欄）。 */
+const headerText = (header: typeof HEADERS[number]): string => header === "ad_decision" ? `${labels.actions.adDecisionV3.csvColumn} (${header})` : csvHeader(header);
 const text = (value: unknown): CsvCell => ({ kind: "text", value: typeof value === "string" ? value : JSON.stringify(value) });
 const numeric = (value: string): CsvCell => ({ kind: "number", value });
 const empty: CsvCell = { kind: "null" };
@@ -297,9 +304,11 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
       ...sessionMetadata(captured), item_id: text(action.id), item_name: text(action.problem), status: text(action.status), fact_ids: text(action.fact_ids),
       ...(binding ? { scope: text(binding.scope), analysis_scope: text(binding.analysis_scope), context_id: text(binding.context_id) } : {}),
       source_refs: sourceRefs(action.evidence.flatMap(fact => fact.sources), filenames),
+      ...(action.ad_decision !== undefined ? { ad_decision: text(action.ad_decision) } : {}),
     };
     for (const [key, value] of Object.entries(action)) {
-      if (key === "evidence") continue;
+      // 廣告決策放在 ad_decision 欄（同一待辦的每一列都帶），不另成一列 field。
+      if (key === "evidence" || key === "ad_decision") continue;
       push("manual_action", key, key === "priority" ? numeric(String(value)) : text(value), actionMeta);
     }
     if (binding) for (const fact of action.evidence) push("action_fact", fact.metric, fact.value === null ? empty : numeric(fact.value), {
@@ -310,5 +319,5 @@ export function exportDecisionCsv(session: DecisionSession, scenarios: readonly 
   for (const fact of session.facts) push("fact", fact.metric, fact.value === null ? empty : numeric(fact.value), {
     item_id: text(fact.id), fact_ids: text([fact.id]), period: text(fact.period), scope: text(fact.scope), reason_codes: text(fact.value === null && !fact.reason_codes.length ? ["MISSING_VALUE"] : fact.reason_codes), source_refs: sourceRefs(fact.sources),
   });
-  return encodeCsv([HEADERS.map(header => text(csvHeader(header))), ...records.map(record => HEADERS.map(header => record[header] ?? metadata[header] ?? empty))]);
+  return encodeCsv([HEADERS.map(header => text(headerText(header))), ...records.map(record => HEADERS.map(header => record[header] ?? metadata[header] ?? empty))]);
 }

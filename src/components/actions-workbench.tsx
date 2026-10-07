@@ -7,7 +7,7 @@ import { formatDateL1, metricDefinitions } from '@/application/presentation';
 import { channelsLabel, demoAlias } from '@/application/copy';
 import { fill, labels } from '@/i18n';
 import type { EvidenceSelection } from './evidence-drawer';
-import { ActionEditor, evidenceTag, statusLabels, statuses, type ActionDocument } from './action-editor';
+import { ActionEditor, AdDecisionBadge, evidenceTag, statusLabels, statuses, type ActionDocument } from './action-editor';
 import { ActionDrawer } from './action-drawer';
 import { ShellIcon } from './shell/shell-icon';
 import { usePageSlot } from './shell/page-slot';
@@ -150,6 +150,8 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
       </p>
       <p className="board-card-tags">
         <span className="ui-lozenge" data-tone={statusTone[status]}>{status === 'completed' && <ShellIcon name="check" size={12} />}{statusLabels[status]}</span>
+        {/* V3-9a（PRD §7.5 第 7 點、F13）：狀態標籤旁的廣告決策徽章，只在有標時。 */}
+        <AdDecisionBadge value={item.ad_decision} testId={`board-card-${n}-ad-decision`} />
         <span className="board-card-evidence">{fill(page.evidenceCount, { n: card.fact_ids.length, state: card.evidence_confirmed ? page.evidenceConfirmed : page.evidenceDraft })}</span>
         {badge && <span className="ui-lozenge" data-tone="warning">{badge}</span>}
       </p>
@@ -196,7 +198,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
       {current === 'list' && workspace.items.map((item, index) => {
         const card = item.card; const document = documents[index];
         return <article key={card.id} className="panel action-card" data-testid={`action-${index + 1}`} aria-labelledby={`action-${index + 1}-title`}>
-          <div className="section-heading"><h3 id={`action-${index + 1}-title`}>{fill(ui.itemHeading, { kind: item.pinned ? labels.buttons.pin : ui.item, n: index + 1 })}</h3><span className="ui-lozenge" data-tone={document.evidence_review_required ? 'warning' : undefined}>{evidenceTag(document, card.evidence_confirmed)}</span></div>
+          <div className="section-heading"><h3 id={`action-${index + 1}-title`}>{fill(ui.itemHeading, { kind: item.pinned ? labels.buttons.pin : ui.item, n: index + 1 })}</h3><span className="ui-lozenge" data-tone={document.evidence_review_required ? 'warning' : undefined}>{evidenceTag(document, card.evidence_confirmed)}</span><AdDecisionBadge value={item.ad_decision} testId={`action-${index + 1}-ad-decision`} /></div>
           {editor(item, index, 'list')}
         </article>;
       })}
