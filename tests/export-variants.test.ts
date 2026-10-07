@@ -367,9 +367,10 @@ describe("列印／PDF（SSR）", () => {
     for (const [name, rich] of [["golden", false], ["golden", true], ["demo", false], ["demo", true], ["refund_only", false], ["refund_only", true]] as const) {
       const source = rich ? await load(name, TAX) : { golden, demo, refund_only: refundOnly }[name];
       const html = stable(render(source, "standard", { rich }));
-      const pnl = element(html, 'data-testid="print-appendix-pnl"')!;
-      expect(pnl, name).not.toBeNull();
-      const stripped = html.replace(pnl, "");
+      // V3-9b 收尾：會議範圍的列印（rich＝有會議）維持 V3-7 版面、不加管理損益表附錄（PRD §7.6 會議 PDF 頁數不增加）；一頁摘要（沒有會議）才加。
+      const pnl = element(html, 'data-testid="print-appendix-pnl"');
+      if (rich) expect(pnl, name).toBeNull(); else expect(pnl, name).not.toBeNull();
+      const stripped = pnl ? html.replace(pnl, "") : html;
       expect({ sha256: sha(stripped), chars: stripped.length }, `${name}${rich ? "-rich" : ""}`).toEqual(BASELINE[`${name}${rich ? "-rich" : ""}`]);
       // 沒給 variant＝標準版；只拿得到 report（沒有 weeks）時不放管理損益表，其餘相同。
       expect(stable(render(source, undefined, { rich }))).toBe(html);
@@ -444,7 +445,9 @@ describe("列印／PDF（SSR）", () => {
     expect(textOf(byTestId(html, "print-decision-line"))).toBe(fill(variants.printDecisionLine, { name: "十月例會", state: labels.meeting.decisions.adopted }));
     for (const absent of ["print-appendix-notes", "備註備註", "內部進度", labels.actions.staleBadge, labels.ui.managerSummary.actionConfirmed, labels.sections.technicalDetails, "dataset_hash", golden.summary.dataset_hash]) expect(html, absent).not.toContain(absent);
     expect(html).toContain(fill(variants.actionStatus, { status: "進行中" }));
-    expect(html).toContain('data-testid="print-appendix-pnl"');
+    // V3-9b 收尾：有會議（rich）的客戶版列印不加管理損益表附錄（會議 PDF 頁數不增加）；沒有會議的客戶版才有。
+    expect(html).not.toContain('data-testid="print-appendix-pnl"');
+    expect(render(golden, "client")).toContain('data-testid="print-appendix-pnl"');
     expect(html).toContain('data-testid="print-appendix-assumptions"');
     // 第一頁與標準版相同的部分：關鍵數字、三件事（含下一步）、通路表、方案與待辦、頁尾。
     const standard = render(golden, "standard", { rich: true });

@@ -157,8 +157,9 @@ export function TrendSection({ snapshot, events = null, onEvidence }: TrendSecti
         {bands.map(band => <ReferenceArea key={`${band.event.line}-${band.x1}`} x1={band.x1} x2={band.x2} ifOverflow="visible" fill={chartColors.band} fillOpacity={1} strokeOpacity={0} label={{ value: band.event.label, position: "insideTop", fontSize: chartFontSize, fill: chartColors.axis }} />)}
         {missingWeeks.map(row => <ReferenceLine key={`missing-${row.index}`} x={row.index} stroke={chartColors.grid} strokeDasharray="2 4" label={{ value: frame.noData, position: "insideBottom", fontSize: chartFontSize, fill: chartColors.axis }} />)}
         {missingYoy.map(row => <ReferenceLine key={`missing-yoy-${row.index}`} x={row.index} stroke={chartColors.grid} strokeDasharray="2 4" label={{ value: yoyCopy.missingPoint, position: "insideBottom", fontSize: chartFontSize, fill: chartColors.axis }} />)}
-        {yoy?.status === "ready" && YOY_SERIES.map(series => <Line key={series.key} dataKey={series.key} {...YOY_LINE} dot={yoyPointDot(series)} activeDot={{ r: 3, fill: chartColors.yoy }} />)}
         {SERIES.map(series => <Line key={series.key} dataKey={series.key} stroke={series.period === "current" ? chartColors.current : chartColors.previous} strokeWidth={series.period === "current" ? 2 : 1.5} dot={lastPointDot(series)} activeDot={{ r: 4, fill: series.period === "current" ? chartColors.current : chartColors.previous }} isAnimationActive={false} connectNulls={false} />)}
+        {/* V3-9b 收尾：去年同期線排在本期與上期之後，讓它的熱區畫在上層；兩值相近時點去年同期的點才不會被本期的熱區接走（E2E 代理回報）。 */}
+        {yoy?.status === "ready" && YOY_SERIES.map(series => <Line key={series.key} dataKey={series.key} {...YOY_LINE} dot={yoyPointDot(series)} activeDot={{ r: 3, fill: chartColors.yoy }} />)}
       </LineChart>
     </ResponsiveContainer>
   </ChartFrame>;
