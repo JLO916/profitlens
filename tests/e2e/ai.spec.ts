@@ -1,5 +1,6 @@
 import { clickReplacing, closePeriodSheet, dismissSavePrompt, isMobile, navigateTo, openAiSection, openCustomPeriod, openPeriodSheet, openValidation, startChannelContext } from "./replacement-helpers";
 import { chooseBasis, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from "./import-wizard-helpers";
+import { acceptScenarioAssumptions } from "./misc-helpers-v3";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
 import { evidenceSubtitle } from "../../src/components/evidence-drawer";
@@ -256,7 +257,8 @@ test("真實本機未啟用端點 GET／POST 降級，未同意不傳送，核�
   await card.getByTestId("scenario-preset").selectOption("keep");
   await card.getByTestId("scenario-preset-apply").click();
   for (const label of [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label]) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  // V3-6（D-V3-12＝B）：新工作區第一次勾聲明；勾完勾選框換成「已了解」說明、焦點到「試算」（helper 說明為何不用 check()）。
+  await acceptScenarioAssumptions(card, "first");
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   // V3-2b：試算結果大字是 L1。
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("270.00"));
@@ -330,7 +332,12 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await navigateTo(page, "actions");
   await expect(page.getByTestId("action-1")).toHaveCount(0);
-  await expect(page.getByTestId("actions-workbench")).toContainText(labels.ui.actionsWorkbench.empty);
+  // V3-6（§7.5 第 6 點）：空工作區是頁面型空狀態（標題＋說明＋全頁唯一的「新增待辦」），不渲染看板。
+  const empty = page.getByTestId("actions-empty");
+  await expect(empty.getByRole("heading", { level: 2 })).toHaveText(labels.actions.pageV3.emptyTitle);
+  await expect(empty).toContainText(labels.actions.pageV3.emptyBody);
+  await expect(empty.getByTestId("actions-empty-add")).toHaveText(labels.buttons.addAction);
+  await expect(page.getByTestId("action-board")).toHaveCount(0);
 });
 
 for (const unsafe of ["fabricated-fact", "literal-money", "causal-claim", "wrong-snapshot"] as const) {
