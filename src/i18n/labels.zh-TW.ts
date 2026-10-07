@@ -686,6 +686,8 @@ export const overview = {
   pnlV3: {
     /** V3-9a 收尾（PRD §7.1 區塊 10）：總覽「進階」details 的 summary，多了管理損益表；既有 advanced.summary 保留。 */
     advancedSummary: "進階：期間合計與日均、管理損益表",
+    /** V3-9a 收尾（E2E 代理回報）：週欄標題原本寫死在 src/application/workspace.ts（WeeklyRow.label），只在管理損益表顯示；改從這裡取（上期用名詞表的「上期」，不再寫「前期」）。 */
+    weekLabel: { current: "本期第 {n} 週", previous: "上期第 {n} 週" },
     /** 總覽「進階」內的 <details> 標題（summary；PRD §7.1 區塊 10）。 */
     summary: "每日／每週管理損益表",
     /** 日／週分段按鈕（aria-pressed）；aria 是按鈕群組的可及名稱。 */

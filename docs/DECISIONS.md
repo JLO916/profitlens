@@ -292,6 +292,18 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-07｜Revamp v3 V3-9a：損益兩平 MER、廣告決策標籤與管理損益表的取捨
+
+**批次拆分：** V3-9 原列 L，依 CLAUDE.md 在開工前拆成 V3-9a（需要新增計算、新增資料欄位與備份升版的 F12、F13、F9）與 V3-9b（純呈現的 F8、F10、F14、F22；F15／F16 需使用者提供檔案）。
+
+**損益兩平 MER（F12，D-V3-17＝C）：** 實作在 `src/application/breakeven-mer.ts`，獨立版本 `breakeven-mer-v1`，`ASSIST_KPI_VERSION` 與 7 個輔助指標不動；精度與既有 MER 相同（12 位、HALF_UP）；扣廣告前貢獻 ≤ 0 回傳 null 加原因碼（不顯示 0 或無限大），淨營收 = 0 另加 `ZERO_NET_REVENUE`，廣告費 = 0 照算但「無法比較」；高於／低於用精確的分比較扣廣告前貢獻與廣告費（等於扣廣告後貢獻的正負），不拿取位後的字串比。顯示在「其他常用指標」之後的獨立段（不混進 assist-kpi-v1 的七列），結論句不上色（D-V3-7）。抽屜不列組成項（組成項目表以指標單位格式化每格，倍數指標會把金額顯示成「倍」），改把兩個輸入的 L3 金額寫進公式行，並以 `components: []` 讓 MER 的比率表不出現；收尾加 `EvidenceSelection.definition` 讓抽屜顯示自己的定義。匯出只新增列：分析 CSV 每期一列、Excel 摘要表一列（L3 文字格）＋技術一列、主管摘要 Markdown 一列＋一行；既有列與數值不變，V3-7 的正規化基準去掉新增列後逐字相同。
+
+**廣告決策標籤（F13）與備份 v5：** `BoundAction.ad_decision` 選填、使用者自選，絕不自動判斷；徽章一律 C8 中性色（D-V3-32 待拍板）。備份升到 `profitlens-workspace-v5`：v5 信封＝v4＋`items[].ad_decision` 選填；v1–v4 仍可還原，v4 檔讀回 undefined；v1–v4 信封若帶此欄位一律拒絕（與 V3-6 的 `assumptions_acknowledged_at` 前例一致）。會議紀錄的置頂待辦快照（meeting-v1）不帶標籤，避免改會議紀錄格式。「這版改了什麼」改用還原來源的 schema_version 判斷，v5 不再提示。
+
+**管理損益表（F9，D-V3-19＝A）：** 計算在 `src/application/pnl-table.ts`，只呼叫 domain 既有函式（同一天各通路 totals 相加後算四層；週欄沿用 `snapshot.weeks`；合計欄直接用 `report.current.metrics`），缺的日子整欄「無資料」而不是 0；佔淨營收 % 存精確 12 位比率、呈現端取位（避免雙重取位），淨營收 ≤ 0 時不適用；零值列只藏費用列，小計與合計一律顯示；本期超過 92 天時只提供每週（避免總覽掛載上萬個按鈕）；佔淨營收 % 欄暫為一般文字（D-V3-31 待拍板）；螢幕負數一律 U+2212，括號負數留給 V3-9b 進匯出時（D-V3-8）。總覽「進階」summary 改新鍵「進階：期間合計與日均、管理損益表」（PRD §7.1 區塊 10 的寫法）。
+
+**影響文件：** `docs/revamp-v3/06_BATCHES.md`（V3-9a／V3-9b）、`docs/revamp-v3/09_DECISIONS_PENDING.md`（D-V3-31、D-V3-32）、`docs/ARCHITECTURE.md`、`docs/ENGINEERING.md`、`verification/revamp-v3/backup-schema-v5.json`、`verification/revamp-v3-V3-9a-acceptance.md`。**驗收：** `tests/breakeven-mer.test.ts`、`tests/pnl-table.test.ts`、`tests/pnl-table-ui.test.tsx`、`tests/backup-schema-v5.test.ts`、`tests/action-ad-decision.test.ts`、`tests/e2e/breakeven-mer.spec.ts`、`tests/e2e/ad-decision.spec.ts`、`tests/e2e/pnl-table.spec.ts`。
+
 ## 2026-10-07｜Revamp v3 V3-8：資料來源頁、匯入精靈與空狀態的取捨
 
 **資料來源頁（§7.7.1）：** 問題表搬到第二段，六欄（檔案｜行號｜欄位｜問題｜修法｜原因碼）；「問題」只放 V3-2a 的 L1 去掉「{file} 第 {line} 行：」前綴（檔案與行號已是獨立欄；含 {date}、{channel} 的前綴保留整句），「修法」放 L2，原因碼整欄預設 hidden 掛載、表頭工具列「顯示原因碼」用 aria-pressed（APG toggle button 不隨狀態改字）。D-V3-28 直接依 PRD §7.7.1 第 3 段實作：工具列「下載問題清單 CSV」（`data-issues-download`，檔名與頂欄相同）。前處理改表格並沿用步驟 4 的 formatAmountL3／formatRateL2（值不變，只多千分位）。「版本與來源資訊」details 是既有資料的彙整（指標版本取自 snapshot 與 `ASSIST_KPI_VERSION`，不寫死）；匯入時間只在本次工作階段由精靈套用時記下（D-V3-30：是否寫進備份 v5 待拍板）。頁首沒有資料時「載入示範資料」主要、「匯入資料」次要（`page-import` 永遠在「匯入資料」上）。健檢「沒有結果」的「查看健檢規則」因為沒有既有的規則說明區塊，改成就地展開 8 條規則的白話說明（新文案，需下次文案審稿）。

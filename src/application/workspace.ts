@@ -1,4 +1,5 @@
 import { assertSupportedAnalysisChannels, assertSupportedAnalysisPeriods } from "./limits";
+import { fill, labels } from "@/i18n";
 import { aggregatePeriod } from "../domain/aggregation";
 import { analyzeDataset, analyzeProducts } from "../domain/analysis";
 import { dayCount } from "../domain/date";
@@ -60,7 +61,8 @@ export async function createSnapshot(dataset: Dataset, filters: AnalysisFilters,
       const start = dateAt(offset);
       const end = dateAt(Math.min(offset + 6, count - 1));
       const summary = aggregatePeriod(dataset, { start, end }, report.scope.channels);
-      weeks.push({ label: `${period === "previous" ? "前期" : "本期"}第 ${offset / 7 + 1} 週`, start, end, period, metrics: summary.metrics, sources: summary.sources });
+      // V3-9a 收尾：週欄標題改從 labels 取（只在管理損益表的週欄、格子的可及名稱與抽屜標題顯示）。
+      weeks.push({ label: fill(labels.overview.pnlV3.weekLabel[period], { n: offset / 7 + 1 }), start, end, period, metrics: summary.metrics, sources: summary.sources });
     }
   }
   return {
