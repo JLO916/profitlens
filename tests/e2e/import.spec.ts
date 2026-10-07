@@ -1,7 +1,8 @@
 import { closeDownloads, closePeriodSheet, dismissSavePrompt, navigateTo, openDownloads, openPeriodSheet, openProductExport, ruleHeadline } from "./replacement-helpers";
-import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardFileLabels, wizardRoles, type Classification, type FilePayload, type WizardRole } from "./import-wizard-helpers";
+import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, fillWizardSettings, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardFileLabels, wizardResultNote, wizardRoles, type Classification, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
+import { issueMessageParts, issueTemplate } from "../../src/application/import";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -9,7 +10,33 @@ import { test as base, expect, type Locator, type Page } from "@playwright/test"
 
 // R3：單頁匯入面板改為四步匯入精靈（選檔 → 對照欄位 → 口徑與期間 → 檢核與套用）；所有畫面字串由 labels 取字。
 const copy = labels.importWizard;
+const v3 = copy.wizardV3;
 const panel = labels.ui.importPanel;
+/** V3-8（§7.7.1 第 3 段）：問題表欄位 檔案｜行號｜欄位｜問題｜修法｜原因碼；原因碼欄預設收合，工具列「顯示原因碼」切換。 */
+const issueTable = labels.data.pageV3.issueTable;
+const issueColumns = [issueTable.columns.file, issueTable.columns.line, issueTable.columns.field, issueTable.columns.problem, issueTable.columns.fix, issueTable.columns.code];
+const issueRegion = (root: Locator) => root.getByRole("region", { name: labels.ui.issueList.regionAria, exact: true });
+/** 問題表裡原因碼是 code 的列（原因碼欄 hidden 時 hasText 仍比對 textContent）。 */
+const issueRow = (root: Locator, code: string) => issueRegion(root).locator("tbody tr").filter({ has: root.page().locator("td.issue-code code", { hasText: code }) });
+/** 按「顯示原因碼」（aria-pressed false → true），原因碼欄由 hidden 變成可見。 */
+async function showReasonCodes(root: Locator, code: string) {
+  const toggle = root.getByRole("button", { name: issueTable.showCodes, exact: true });
+  const codeCell = issueRow(root, code).first().locator("td.issue-code");
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await expect(codeCell).toBeHidden();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(codeCell).toBeVisible();
+  await expect(codeCell.locator("code")).toHaveText(code);
+}
+/** 樣板 L1 冒號後段（位置前綴「{file} 第 {line} 行：」之後；占位符以外的文字）與 L2。 */
+function templateParts(code: string) {
+  const template = issueTemplate(code)!;
+  return { problem: template.headline.slice(template.headline.indexOf("：") + 1), fix: template.explain };
+}
+/** V3-8（§7.7.2）：第 4 步頂部狀態一行（L1）的開頭（「可以套用：」「可套用已有範圍：」「無法套用：」）。 */
+const statusTemplates: Record<Classification, string> = { valid: v3.statusReady, partial: v3.statusPartial, blocking: v3.statusBlocked };
+const statusPrefix = (classification: Classification) => new RegExp(`^${statusTemplates[classification].slice(0, statusTemplates[classification].indexOf("：") + 1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
 const channelFilter = (page: Page) => page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true });
 /** V3-3：通路下拉在期間列；手機期間列收成 period-toggle，先開底部面板、選完按「完成」（桌機兩步不動）。 */
 async function selectChannel(page: Page, option: Parameters<Locator["selectOption"]>[0]) {
@@ -87,7 +114,9 @@ async function stage(page: Page, directory: string, overrides: Partial<Record<Wi
 }
 async function check(page: Page, classification: Classification) {
   await confirmAndCheck(page, classification);
-  await expect(importStatus(page)).toHaveText(copy.result[classification]);
+  // V3-8：import-status 是 L1 狀態一行（data-classification 已由 confirmAndCheck 斷言），既有的檢核結果句在 import-result-note。
+  await expect(importStatus(page)).toHaveText(statusPrefix(classification));
+  await expect(wizardResultNote(page)).toHaveText(copy.result[classification]);
 }
 async function commit(page: Page, dataAsOf: string, classification: "valid" | "partial" = "valid") {
   await check(page, classification);
@@ -202,7 +231,8 @@ test("不讀 JSON 也能手填 manifest，金額口徑須明確確認（R3：第
     [copy.datasetName]: "alternative-manual-v1", [copy.dataAsOf]: "2026-09-05", [copy.coverageStart]: "2026-09-01", [copy.coverageEnd]: "2026-09-04",
     [labels.csvColumns.previous_start]: "2026-09-01", [labels.csvColumns.previous_end]: "2026-09-02", [labels.csvColumns.current_start]: "2026-09-03", [labels.csvColumns.current_end]: "2026-09-04",
   };
-  for (const [label, value] of Object.entries(settings)) await wizard(page).getByLabel(label, { exact: true }).fill(value);
+  // V3-8（§7.7.2 步驟 3）：上期／本期起訖收在「調整比較期間」<details>；fillWizardSettings 先展開再填。
+  await fillWizardSettings(page, settings);
   for (const [label, value] of Object.entries(settings)) await expect(wizard(page).getByLabel(label, { exact: true })).toHaveValue(value);
   // 金額口徑沒有預設：沒選就不能確認、不能檢核，也沒有套用按鈕。
   for (const basis of ["exclusive", "inclusive", "unsure"] as const) await expect(wizard(page).getByLabel(copy.basis[basis], { exact: true })).not.toBeChecked();
@@ -269,6 +299,22 @@ for (const invalid of [
     await expect(wizard(page)).toContainText(invalid.reason);
     await expect(wizard(page)).toContainText("=uploaded-sales.csv");
     await expect(commitButton(page)).toHaveCount(0);
+    // V3-8（§7.7.2 步驟 4、§7.7.1 第 3 段）：問題表六欄；問題欄只放 L1 冒號後段（位置在檔案／行號欄），修法欄放 L2；原因碼要先按「顯示原因碼」。
+    const issues = issueRegion(wizard(page));
+    await expect(issues.locator("thead th")).toHaveText(issueColumns);
+    const parts = issueMessageParts({ file: "sales_daily.csv", line: Number(invalid.line), field: invalid.field, reason_code: invalid.reason });
+    const row = issueRow(wizard(page), invalid.reason).filter({ has: page.locator("td.num", { hasText: new RegExp(`^${invalid.line}$`) }) });
+    await expect(row).toHaveCount(1);
+    const cells = row.locator("td");
+    await expect(cells.nth(0)).toContainText("=uploaded-sales.csv");
+    await expect(cells.nth(1)).toHaveText(invalid.line);
+    await expect(cells.nth(2)).toHaveText(invalid.field);
+    await expect(cells.nth(3)).toContainText(parts.headline.slice(parts.headline.indexOf("：") + 1));
+    await expect(cells.nth(3)).not.toContainText(parts.headline);
+    await expect(cells.nth(4)).toHaveText(parts.explain);
+    await showReasonCodes(wizard(page), invalid.reason);
+    // 步驟 4 只有一顆「下載問題清單 CSV」（IssueList 的工具列不再放第二顆）。
+    await expect(wizard(page).getByRole("button", { name: labels.downloads.issuesCsv, exact: true })).toHaveCount(1);
     const content = await downloadText(page, wizard(page).getByRole("button", { name: labels.downloads.issuesCsv, exact: true }), "profitlens-import-issues.csv");
     const rows = csvRecords(content);
     const issue = rows.find(row => row.reason_code === invalid.reason);
@@ -303,6 +349,33 @@ for (const incomplete of [
     expect(JSON.parse(current!.reason_codes)).toContain(incomplete.reason);
     await selectChannel(page, incomplete.unaffected);
     await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1(incomplete.expected));
+    // V3-8（§7.7.1）：套用後的資料來源頁——問題表（六欄、原因碼收合、下載）、前處理（未稅一句）、來源預覽（收合 details）、版本與來源資訊（收合 details）。
+    await navigateTo(page, "data");
+    const dataIssues = page.getByTestId("data-issues");
+    await expect(issueRegion(dataIssues).locator("thead th")).toHaveText(issueColumns);
+    const expected = templateParts(incomplete.reason);
+    const row = issueRow(dataIssues, incomplete.reason).first();
+    await expect(row.locator("td").nth(3)).toContainText(expected.problem);
+    await expect(row.locator("td").nth(4)).toHaveText(expected.fix);
+    await showReasonCodes(dataIssues, incomplete.reason);
+    await expect(page.getByTestId("data-issues-download")).toHaveText(labels.downloads.issuesCsv);
+    await expect(page.getByTestId("data-preprocessing")).toContainText(copy.noConversion);
+    await expect(page.getByTestId("data-preprocessing").locator("table")).toHaveCount(0);
+    const preview = page.getByTestId("data-preview-sales_daily.csv");
+    const previewTable = preview.getByRole("table", { name: fill(labels.ui.workspacePanels.previewCaption, { fileName: "sales_daily.csv" }), includeHidden: true });
+    await expect(preview).not.toHaveAttribute("open", "");
+    await expect(previewTable).toBeHidden();
+    await preview.locator(":scope > summary").click();
+    await expect(previewTable).toBeVisible();
+    await expect(previewTable.locator("tbody tr")).toHaveCount(8);
+    const version = page.getByTestId("data-version-info");
+    await expect(version).not.toHaveAttribute("open", "");
+    await version.locator(":scope > summary").click();
+    await expect(version).toHaveAttribute("open", "");
+    await expect(version).toContainText("contribution-v1");
+    await expect(version).toContainText(ASSIST_KPI_VERSION);
+    // 精靈套用後記下匯入時間（示範／golden 載入與還原備份沒有這一列）。
+    await expect(version.getByText(labels.data.pageV3.version.importedAt, { exact: true })).toBeVisible();
   });
 }
 

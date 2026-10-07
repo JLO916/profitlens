@@ -2,17 +2,27 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
-import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, importViaWizard, nextFromFiles, openWizard, setWizardFiles, wizard, wizardFileLabels, wizardStatus } from "./import-wizard-helpers";
+import { formatAmountL1, formatAmountL3, formatCount, formatRateL2 } from "../../src/application/presentation";
+import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, importViaWizard, nextFromFiles, openWizard, setWizardFiles, wizard, wizardFileLabels, wizardResultNote, wizardRoles, wizardStatus } from "./import-wizard-helpers";
 import { closeDownloads, dismissSavePrompt, navigateTo, openDownloads, sidebarNav } from "./replacement-helpers";
 
 // R3 匯入精靈：≤ 5 次點擊、對照記憶提示、含稅換算後 KPI＝手算、超限拒絕、訂單級偵測、「我不確定」停下。
 const copy = labels.importWizard;
+const v3 = copy.wizardV3;
 const alternative = resolve("tests/fixtures/alternative");
 const inclusive = resolve("tests/fixtures/inclusive_tax");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 // V3-2b（PRD §8.5）：KPI 卡是 L1；golden／手算精確值交給 formatAmountL1 轉成畫面文字。
 const drawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+/** 測試自己數 CSV 資料列（非空行減表頭），不呼叫 application 的 parser。 */
+async function fixtureRows(directory: string) {
+  const counts = await Promise.all(wizardRoles.map(async role => (await readFile(resolve(directory, role), "utf8")).split(/\r?\n/).filter(line => line.trim()).length - 1));
+  return counts.reduce((sum, n) => sum + n, 0);
+}
+/** §7.7.2 步驟 4 頂部狀態一行（L1）「可以套用：…」；數字一律經 formatCount（L2 整數千分位）。 */
+const statusReady = (files: number, rows: number, errors = 0, warnings = 0) => fill(v3.statusReady, { files: formatCount(files, "L2"), rows: formatCount(rows, "L2"), errors: formatCount(errors, "L2"), warnings: formatCount(warnings, "L2") });
+/** V3-8：版頭 h2 是 sr-only 的「第 n 步，共 4 步：」＋步驟名（不再「匯入資料｜…」拼接）。 */
+const stepHeading = (n: number) => `${fill(v3.stepOf, { n, total: copy.steps.length })}${copy.steps[n - 1]}`;
 
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
@@ -47,7 +57,10 @@ test("標準三檔從「匯入資料」到總覽 KPI 最多 5 次點擊", async 
   await expect(wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true })).toBeDisabled();
   await count(() => wizard(page).getByLabel(copy.basis.exclusive, { exact: true }).check());
   await count(() => wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true }).click());
-  await expect(wizardStatus(page)).toHaveText(copy.result.valid);
+  // V3-8（§7.7.2）：頂部狀態一行改成 L1 樣板，既有的檢核結果句移到 import-result-note。
+  await expect(wizardStatus(page)).toHaveAttribute("data-classification", "valid");
+  await expect(wizardStatus(page)).toHaveText(statusReady(wizardRoles.length, await fixtureRows(alternative)));
+  await expect(wizardResultNote(page)).toHaveText(copy.result.valid);
   await expect(page.getByTestId("import-preprocessing")).toContainText(copy.noConversion);
   // 未勾選本機保存同意：對照記憶只留在分頁，摘要要講清楚。
   await expect(page.getByTestId("import-memory-note")).toHaveText(copy.memorySessionOnly);
@@ -92,7 +105,14 @@ test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算
   await expect(sourceTable.locator(".converted-value").first()).toContainText("→");
   await page.keyboard.press("Escape");
   await navigateTo(page, "data");
-  await expect(page.getByTestId("data-preprocessing")).toContainText("5%");
+  const preprocessing = page.getByTestId("data-preprocessing");
+  await expect(preprocessing).toContainText("5%");
+  // V3-8（§7.7.1 第 5 點）：前處理改成表格，一列一個換算欄位：含稅合計（元）｜未稅合計（元）｜稅率（L3 金額、L2 稅率）。
+  const grossSales = preprocessing.locator("tr[data-field=gross_sales]");
+  await expect(grossSales.locator("th")).toHaveText(labels.metrics.gross_sales.label);
+  await expect(grossSales.locator("td")).toHaveText([formatAmountL3("4725.00"), formatAmountL3("4500.00"), formatRateL2("0.05")]);
+  // cogs_net 已是未稅（預設不勾），不在換算表裡。
+  await expect(preprocessing.locator("tr[data-field=cogs_net]")).toHaveCount(0);
   const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).click()]);
   const text = await readFile((await download.path())!, "utf8");
   expect(text).toContain("5%");
@@ -198,4 +218,110 @@ test("拖放三份檔案或一次選三份會依檔名自動歸位；看不出�
   await confirmAndCheck(page, "valid");
   await commitWizard(page);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
+});
+
+// V3-8（PRD §7.7.2 驗收）：含稅匯入從「匯入資料」到「套用」≤ 5 次點擊。入口是空的總覽空狀態「匯入資料」（empty-import，1 次點擊開精靈）；
+// setInputFiles 不算點擊；欄名全符合標準時第 2 步自動完成；稅率 5% 與 8 個換算欄位用預設，不必展開「調整換算欄位」。
+test("含稅匯入從「匯入資料」到「套用」最多 5 次點擊（inclusive_tax）", async ({ page }) => {
+  let clicks = 0;
+  const count = async (action: () => Promise<void>) => { clicks += 1; await action(); };
+  const importButton = page.getByTestId("empty-import");
+  await expect(importButton).toHaveText(labels.buttons.importData);
+  // 剛 goto 時按鈕可能還沒 hydrate：toPass 只為等互動就緒而重試（精靈出現就停），使用者只點 1 次。
+  await count(() => expect(async () => {
+    if (!(await wizard(page).isVisible())) await importButton.click();
+    await expect(wizard(page)).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 }));
+  await setWizardFiles(page, inclusive);
+  await count(() => wizard(page).getByRole("button", { name: copy.next, exact: true }).click());
+  await expect(page.getByTestId("import-step-3")).toBeVisible();
+  await expect(page.getByTestId("import-stepper").locator("li").nth(1)).toHaveClass(/skipped/);
+  await count(() => wizard(page).getByLabel(copy.basis.inclusive, { exact: true }).check());
+  await expect(page.getByTestId("import-conversion").getByLabel(copy.rateLabel, { exact: true })).toHaveValue("5");
+  await count(() => wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true }).click());
+  await expect(wizardStatus(page)).toHaveAttribute("data-classification", "valid", { timeout: 20_000 });
+  await expect(wizardStatus(page)).toHaveText(statusReady(wizardRoles.length, await fixtureRows(inclusive)));
+  await expect(wizardResultNote(page)).toHaveText(copy.result.valid);
+  await count(() => commitButton(page).click());
+  await expect(wizard(page)).toHaveCount(0);
+  // tests/fixtures/inclusive_tax/README.md 的手算：本期淨營收 2150.00、扣廣告後貢獻 518.05。
+  await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2150.00"));
+  await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("518.05"));
+  expect(clicks, "含稅匯入：「匯入資料」到「套用」的點擊數").toBeLessThanOrEqual(5);
+});
+
+// V3-8（§7.7.1／§7.7.2 驗收）：步驟 3 選「含稅」後，精靈裡可見且可操作的控制 ≤ 12（不含底部動作列與 stepper）。
+// 收合的 <details> 內容（換算欄位、比較期間、通路）不算可見；summary 本身算一個控制。
+test("步驟 3 選含稅後可見且可操作的控制最多 12 個（不含底部動作列與 stepper）", async ({ page }) => {
+  await openWizard(page);
+  await setWizardFiles(page, inclusive);
+  await nextFromFiles(page);
+  await confirmMappingIfShown(page);
+  await chooseBasis(page, "inclusive");
+  await expect(page.getByTestId("import-conversion")).toBeVisible();
+  const controls = await wizard(page).evaluate(root => Array.from(root.querySelectorAll<HTMLElement>("a[href], button, input:not([type=hidden]), select, textarea, summary, [role=button], [role=checkbox], [role=radio], [role=switch], [role=combobox], [contenteditable=true]"))
+    .filter(element => !element.closest(".wizard-footer, [data-testid=import-stepper]"))
+    .filter(element => element.checkVisibility({ visibilityProperty: true }) && !element.matches(":disabled"))
+    .map(element => element.getAttribute("aria-label") || element.textContent?.trim() || element.tagName));
+  // 金額基準 3 個 radio、稅率、取消匯入與兩個收合區的 summary 一定在可見控制裡（確認計數真的掃到第 3 步）。
+  expect(controls).toEqual(expect.arrayContaining([copy.basis.exclusive, copy.basis.inclusive, copy.basis.unsure, copy.rateLabel, copy.cancel, v3.adjustConvert, v3.adjustPeriods]));
+  // 換算欄位 checkbox 收在「調整換算欄位」裡，不可見。
+  expect(controls).not.toContain(`${copy.files.sales} ${labels.metrics.gross_sales.label}`);
+  expect(controls.length, `步驟 3（含稅）可見且可操作的控制：${controls.join("、")}`).toBeLessThanOrEqual(12);
+});
+
+// V3-8（§7.7.2）：版頭 h2#import-heading 四步都只寫「第 n 步，共 4 步：{步驟名}」，沒有「匯入資料｜…」拼接；stepper 只有一個 aria-current=step。
+test("精靈四步的 h2#import-heading 都沒有「｜」，stepper 只有一個 aria-current=step", async ({ page }) => {
+  // 欄名改成中文（字典對照，需要確認），第 2 步不會自動完成，四步都會走到。
+  const sales = (await readFile(resolve(alternative, "sales_daily.csv"), "utf8")).replace(/^date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency/, "結帳日,通路,商品貨號,品類,件數,商品金額,折扣,退款,成本,幣別");
+  const heading = page.locator("h2#import-heading");
+  const stepper = page.getByTestId("import-stepper");
+  const expectStep = async (n: number) => {
+    await expect(heading).toHaveText(stepHeading(n));
+    await expect(heading).not.toContainText("｜");
+    await expect(stepper.locator("li[aria-current=step]")).toHaveCount(1);
+    await expect(stepper.locator("li").nth(n - 1)).toHaveAttribute("aria-current", "step");
+    // 頁首 h1 在匯入中是「匯入資料」（PageHeader 提供），精靈裡沒有第二個 h1。
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(copy.title);
+    await expect(wizard(page).getByRole("heading", { level: 1 })).toHaveCount(0);
+  };
+  await openWizard(page);
+  await expectStep(1);
+  await setWizardFiles(page, alternative, { "sales_daily.csv": { name: "shop-sales.csv", mimeType: "text/csv", buffer: Buffer.from(sales) } });
+  await nextFromFiles(page);
+  await expect(page.getByTestId("import-step-2")).toBeVisible();
+  await expectStep(2);
+  await confirmMappingIfShown(page);
+  await expectStep(3);
+  await chooseBasis(page, "exclusive");
+  await confirmAndCheck(page, "valid");
+  await expectStep(4);
+  for (const n of [0, 1, 2]) await expect(stepper.locator("li").nth(n)).toHaveClass(/done/);
+});
+
+// V3-8（§7.7.2 全版專注模式）：匯入中期間列（period-bar）與頁面內容（.view-content）保持掛載但 hidden，頂欄仍在；取消匯入後恢復。
+test("匯入中期間列與頁面內容 hidden、頂欄仍在，取消匯入後恢復", async ({ page }) => {
+  await page.getByTestId("empty-load-demo").click();
+  await expect(kpi(page, "net_revenue")).toBeVisible();
+  await dismissSavePrompt(page);
+  const periodBar = page.getByTestId("period-bar");
+  const viewContent = page.locator(".view-content");
+  await expect(periodBar).toBeVisible();
+  await expect(viewContent).toBeVisible();
+  await openWizard(page);
+  await expect(periodBar).toHaveCount(1);
+  await expect(periodBar).toBeHidden();
+  await expect(viewContent).toHaveCount(1);
+  await expect(viewContent).toBeHidden();
+  await expect(page.locator("header.topbar")).toBeVisible();
+  await expect(page.getByTestId("data-status")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(copy.title);
+  await expect(page.locator(".page-heading .subtitle")).toHaveText(copy.privacyNote);
+  // 頁首的「匯入資料／載入示範資料」保持掛載但 hidden（page-import 不消失）。
+  await expect(page.getByTestId("page-import")).toHaveCount(1);
+  await expect(page.getByTestId("page-import")).toBeHidden();
+  await wizard(page).getByRole("button", { name: copy.cancel, exact: true }).click();
+  await expect(wizard(page)).toHaveCount(0);
+  await expect(periodBar).toBeVisible();
+  await expect(viewContent).toBeVisible();
 });
