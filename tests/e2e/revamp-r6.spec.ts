@@ -12,6 +12,7 @@ import { decisionSignature } from "../../src/application/decision";
 import { acceptSavePrompt, clearButton, clickReplacing, closeDownloads, closeStorage as closeStorageMenu, closeTopbarMore, dismissSavePrompt, isMobile, navControl, navigateTo, openDownloads, openMeeting, openMobileMore, openStorage as openStorageMenu, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { acceptAssumptions, actionDrawer } from "./actions-helpers-v3";
 import { exportPeriodLine, exportReportTitle, exportVersionLineRe, expectExportHeader, MEETING_EXPORTS, meetingExportItem, openCompare, openMeetingExport, type ExportHeaderExpectation } from "./meeting-helpers-v3";
+import { expectMeetingHistoryEmpty, expectMeetingNoScenario, goToScenariosFromMeeting } from "./misc-helpers-v38";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -211,7 +212,8 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await expect(meeting.getByTestId("manager-summary").getByRole("button", { name: labels.buttons.print, exact: true })).toHaveCount(0);
   await expect(meeting.getByTestId("meeting-agenda-4")).toContainText(record.noLastMeeting);
   await expect(meeting.getByTestId("meeting-compare")).toContainText(record.noLastMeeting);
-  await expect(meeting.getByTestId("meeting-history")).toContainText(meetingPage.historyEmpty);
+  // V3-8 C：會議歷史為空是兩句（標題＋說明），取代 v2 一整句 historyEmpty。
+  await expectMeetingHistoryEmpty(meeting.getByTestId("meeting-history"));
   // ⑤ 每個通路一個下拉：DTC 選入「方案 1」（270.00）。
   const dtcSelect = meeting.getByTestId("meeting-agenda-5").getByLabel(fill(review.scenarioSelect, { channel: "DTC" }), { exact: true });
   await expect(meeting.getByTestId("meeting-agenda-5").locator("select")).toHaveCount(2);
@@ -683,7 +685,10 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   await calculateKeepPlan(page);
   const meeting = await openMeeting(page);
   const agenda5 = meeting.getByTestId("meeting-agenda-5");
-  await expect(agenda5.getByTestId("meeting-scenario-results-empty")).toHaveText(summaryCopy.noScenario);
+  // V3-8 C（§7.10 區段空狀態）：⑤ 沒有選入方案是兩句＋「前往假設試算」；點了切到假設試算頁，再回會議頁繼續。
+  await expectMeetingNoScenario(agenda5);
+  await goToScenariosFromMeeting(page, agenda5);
+  await openMeeting(page);
   await agenda5.getByLabel(fill(review.scenarioSelect, { channel: "DTC" }), { exact: true }).selectOption({ label: fill(review.planOption, { name: firstPlanName }) });
   const results = agenda5.getByTestId("meeting-scenario-results").getByTestId("meeting-scenario-result");
   await expect(results).toHaveCount(1);
@@ -1025,7 +1030,7 @@ test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文�
   await region.getByTestId("meeting-history-remove-confirm").click();
   await expect(items).toHaveCount(0);
   await expect(region).toHaveCount(0);
-  await expect(meeting.getByTestId("meeting-history")).toContainText(meetingPage.historyEmpty);
+  await expectMeetingHistoryEmpty(meeting.getByTestId("meeting-history"));
   await expect(meeting.getByTestId("meeting-history-status")).toHaveText(fill(meetingPage.removed, { name: defaultMeetingName, date: today }));
   await expect(meeting.getByTestId("meeting-history").getByRole("heading", { name: meetingPage.history, exact: true })).toBeFocused();
   await expect(meeting.getByTestId("meeting-agenda-4")).toContainText(record.noLastMeeting);

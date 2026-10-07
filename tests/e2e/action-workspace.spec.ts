@@ -9,6 +9,7 @@ import { closePeriodSheet, dismissSavePrompt, navigateTo, openMeeting, openPerio
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from './import-wizard-helpers';
 import { acceptAssumptions, actionDrawer, closeActionDrawer, decisionExportButton, evidenceDrawer, openActionDrawer, type DecisionFormat } from './actions-helpers-v3';
 import { downloadMeetingExport } from './review-helpers-v3';
+import { expectMeetingNoScenario, goToScenariosFromMeeting } from './misc-helpers-v38';
 // 每個案例都是長流程（載入 → 健檢／試算 → 行動 → 下載／備份／換檔重核）；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
 test.describe.configure({timeout:90_000});
 const aw=labels.ui.actionsWorkbench, ws=labels.ui.workspaceStorage, ms=labels.ui.managerSummary, pv3=labels.actions.pageV3;
@@ -97,8 +98,12 @@ test('A2 會議選定方案與交辦固定來源，切檢視保留且明確更�
  await expect(agenda5.getByTestId('meeting-scenario-result')).toHaveCount(1);await expect(agenda5.getByTestId('meeting-scenario-result')).toContainText('主管會議履約方案');await expect(agenda5.getByTestId('meeting-scenario-result')).toHaveAttribute('data-status','current');
  await selectChannel(page,'MARKETPLACE');await expect(agenda5.getByTestId('meeting-scenario-results')).toContainText('主管會議履約方案');
  const retained=await meetingMarkdown(page);expect(retained.split(technicalAppendix)[0]).toContain(mdScenarioContribution(formatAmountL2('284.00')));
- await page.getByRole('button',{name:labels.buttons.updateMeetingSource,exact:true}).click();await expect(agenda5.getByTestId('meeting-scenario-results-empty')).toHaveText(ms.noScenario);await expect(agenda5.getByTestId('meeting-scenario-results')).toHaveCount(0);
+ await page.getByRole('button',{name:labels.buttons.updateMeetingSource,exact:true}).click();
+ // V3-8 C（§7.10 區段空狀態）：議程 ⑤ 的空狀態是兩句（標題＋說明）＋「前往假設試算」文字按鈕（取代 v2 一整句 noScenario）。
+ await expectMeetingNoScenario(agenda5);await expect(agenda5.getByTestId('meeting-scenario-results')).toHaveCount(0);
  const refreshed=await meetingMarkdown(page);expect(refreshed.split(technicalAppendix)[0]).not.toContain(mdScenarioContribution(formatAmountL2('284.00')));
+ // 「前往假設試算」切到假設試算頁。
+ await goToScenariosFromMeeting(page,agenda5);
 });
 
 
