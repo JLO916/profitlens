@@ -2,6 +2,7 @@ import { closeDownloads, closePeriodSheet, dismissSavePrompt, navigateTo, openDo
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, fillWizardSettings, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardFileLabels, wizardResultNote, wizardRoles, type Classification, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
+import { BREAKEVEN_MER_VERSION } from "../../src/application/breakeven-mer";
 import { issueMessageParts, issueTemplate } from "../../src/application/import";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -498,9 +499,10 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   expect(current!.current_period_end).toBe("2026-09-04");
   expect(JSON.parse(current!.filter_scope).channels).toEqual(["DTC"]);
   expect(analysis.filter(row => row.row_type === "channel").every(row => row.channel === "DTC")).toBe(true);
-  // R4：assist_kpi 列的版本是 assist-kpi-v1；其餘列仍是 contribution-v1。
-  expect(analysis.every(row => row.metric_version === (row.row_type === "assist_kpi" ? ASSIST_KPI_VERSION : "contribution-v1") && row.as_of === "2026-09-05")).toBe(true);
+  // R4：assist_kpi 列的版本是 assist-kpi-v1；V3-9a F12：每期一列 breakeven_mer，版本 breakeven-mer-v1；其餘列仍是 contribution-v1。
+  expect(analysis.every(row => row.metric_version === (row.row_type === "assist_kpi" ? ASSIST_KPI_VERSION : row.row_type === "breakeven_mer" ? BREAKEVEN_MER_VERSION : "contribution-v1") && row.as_of === "2026-09-05")).toBe(true);
   expect(analysis.filter(row => row.row_type === "assist_kpi")).toHaveLength(14);
+  expect(analysis.filter(row => row.row_type === "breakeven_mer")).toHaveLength(2);
   await selectChannel(page, { label: labels.ui.dashboard.filter.allChannels });
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
   await navigateTo(page, "products");

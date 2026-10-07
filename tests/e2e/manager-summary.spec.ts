@@ -1,5 +1,6 @@
 import { clickReplacing, closePeriodSheet, dismissSavePrompt, openDownloads, openMeeting, openPeriodSheet, openValidation } from "./replacement-helpers";
 import { meetingExportItem, openThreshold, openWideTable, type MeetingExportKind } from "./meeting-helpers-v3";
+import { be, markdownAssistSection, markdownBreakevenVersion, markdownTechnicalLines } from "./breakeven-helpers-v39";
 import { fill, labels } from "../../src/i18n";
 import { deltaWord, formatAmountL1, formatAmountL2, formatGrowth, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -122,6 +123,9 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   // V3-2b：Markdown 主文是 L2（整數元、U+2212）。
   const topThree = markdown.split(`## ${labels.sections.topThree}`)[1].split(copy.mdDecisions)[0];
   expect(topThree.split("\n").filter(line => /^\d+\. /.test(line)).map(line => line.split(prioritySep).at(-1))).toEqual(["-130.00", "-130.00", "-70.00"].map(value => formatSignedDelta(value, "L2")));
+  // V3-9a F12：「其他常用指標」表的最後一列是損益兩平 MER（倍數另由 breakeven-mer.spec 以 golden 合計驗），技術細節多一行 breakeven_mer_version。
+  expect(markdownAssistSection(markdown).filter(line => line.startsWith("| ")).at(-1)).toMatch(new RegExp(`^\\| ${escapeRe(be.label)} \\| `));
+  expect(markdownTechnicalLines(markdown)).toContain(markdownBreakevenVersion);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-summary-${testInfo.project.name}.png`), fullPage: true });
 });
 

@@ -62,7 +62,10 @@ test("golden 的輔助指標橫列：七格、件數 8 件、件均 308.75 元�
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
   const row = page.getByTestId("assist-kpis");
   // V3-4a：七格改成 C2 兩欄緊湊表（7 列；本期、上期兩欄都是 number-link）。
+  // V3-9a F12：兩欄表之後多一段損益兩平 MER（assist-breakeven-mer，一列、tr 沒有 testid），所以 assist- 開頭的 tr 仍是 7 列、兩欄表仍是兩張。
   await expect(row.locator("tr[data-testid^='assist-']")).toHaveCount(7);
+  await expect(row.locator(".assist-grid > table.kv")).toHaveCount(2);
+  await expect(row.getByTestId("assist-breakeven-mer").locator("tbody tr")).toHaveCount(1);
   await expect(page.getByTestId("assist-units_sold").locator("td.num:not(.prev)")).toHaveText(formatCount("8", "L1"));
   await expect(page.getByTestId("assist-units_sold").locator("td.prev")).toHaveText(formatCount("6", "L1"));
   // 輔助指標橫列是 L1（件均取整元）；抽屜下一行是到分的精確值（L3）。

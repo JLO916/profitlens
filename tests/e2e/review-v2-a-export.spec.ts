@@ -1,6 +1,7 @@
 import { dismissSavePrompt, navigateTo, openMeeting, openValidation, switchActionsView } from "./replacement-helpers";
 import { decisionExportButton } from "./actions-helpers-v3";
 import { meetingExportButton, openThreshold } from "./review-helpers-v3";
+import { GOLDEN_BREAKEVEN, markdownAssistSection, markdownBreakevenRow, markdownBreakevenVersion } from "./breakeven-helpers-v39";
 import { channelsLabel } from "../../src/application/copy";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatPeriodExport, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
@@ -203,6 +204,9 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   expect(body).toContain(fill(summaryCopy.mdComparison.split("{mode}")[1], { threshold: formatAmountL3("1000.00") }));
   expect(body).toContain(mdHeadline(contributionLabel, "570.00", "255.00", "-315.00"));
   expect(body).toContain(mdHeadline(netRevenueLabel, "2250.00", "2470.00", "220.00"));
+  // V3-9a F12：「其他常用指標」表最後一列是損益兩平 MER（golden 上期 2.6 倍、本期 3.5 倍，L1）；技術細節多一行 breakeven_mer_version。
+  expect(markdownAssistSection(body).filter(line => line.startsWith("| ")).at(-1)).toBe(markdownBreakevenRow(GOLDEN_BREAKEVEN.previous, GOLDEN_BREAKEVEN.current));
+  expect(technical.split("\n")).toContain(markdownBreakevenVersion);
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-ui-pinned-${info.project.name}.png`), fullPage: true });
   // 列印版的會議一行：頁首的會議名稱與日期欄（V3-7 meeting-head）＋golden 的資料到。
   const head = page.getByTestId("review-workbench");
