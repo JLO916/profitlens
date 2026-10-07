@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { acceptSavePrompt, clearWorkspace, closePeriodSheet, closeStorage, closeTopbarMore, dismissSavePrompt, isMobile, navigateTo, openPeriodSheet, openStorage, openTopbarMore, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptScenarioAssumptions } from "./misc-helpers-v3";
 
 // R2: every visible string comes from labels; machine values (dataset ids, channel codes, amounts, testids) stay literal.
 // 長流程（兩方案＋行動＋保存／重整／恢復）在平板曾跑到 40 秒；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
@@ -101,7 +102,10 @@ async function golden(page: Page) {
   await selectChannel(page, "DTC");
   await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
 }
-/** R5：試算頁進頁即表單（方案 1 是本地草稿），第二個方案起才按「新增方案」；通路預設＝全站單一通路 DTC。 */
+/**
+ * R5：試算頁進頁即表單（方案 1 是本地草稿），第二個方案起才按「新增方案」；通路預設＝全站單一通路 DTC。
+ * V3-6（D-V3-12＝B）：本檔每個案例都從新工作區開始，方案 1 第一次勾聲明；之後的方案已記住，沒有勾選框、只有「已了解」說明。
+ */
 async function makeScenario(page: Page, index: number, cost: string, expected: string) {
   await navigateTo(page, "scenarios");
   await startChannelContext(page);
@@ -111,7 +115,7 @@ async function makeScenario(page: Page, index: number, cost: string, expected: s
   await card.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true }).fill(`保存方案 ${index}`);
   const values = { [labels.scenario.volume.label]: "0", [labels.scenario.discount.label]: "0", [labels.scenario.fulfillmentUnit.label]: "-10", [labels.scenario.adSpend.label]: "0", [labels.scenario.oneOff.label]: cost };
   for (const [label, value] of Object.entries(values)) await card.getByLabel(label, { exact: true }).fill(value);
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  await acceptScenarioAssumptions(card, index === 1 ? "first" : "remembered");
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(expected));
 }
@@ -131,6 +135,19 @@ async function makeAction(page: Page) {
   await card.getByRole("button", { name: labels.buttons.confirm, exact: true }).click();
   await expect(card).toContainText(labels.ui.actionsWorkbench.tagConfirmed);
   return value;
+}
+/** V3-6（D-V3-12＝B）：備份 v4 的 scenario_workspace.assumptions_acknowledged_at＝第一次勾聲明的時間（App 以 toISOString() 寫入，ISO datetime）。 */
+function expectAcknowledgedAt(value: unknown, after: number) {
+  expect(typeof value).toBe("string");
+  expect(new Date(value as string).toISOString()).toBe(value);
+  expect(Date.parse(value as string)).toBeGreaterThanOrEqual(after);
+  expect(Date.parse(value as string)).toBeLessThanOrEqual(Date.now());
+}
+/** 還原後試算頁：聲明已記住，方案卡沒有勾選框，只有「已了解」說明。 */
+async function expectAssumptionsRemembered(card: Locator) {
+  await expect(card.getByTestId("scenario-accept")).toHaveCount(0);
+  await expect(card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })).toHaveCount(0);
+  await expect(card.getByTestId("scenario-acknowledged")).toHaveText(labels.scenarios.pageV3.acknowledged);
 }
 const evidenceList = (card: Locator) => card.getByRole("group", { name: labels.ui.actionsWorkbench.evidencePicker, exact: true });
 const checkedEvidence = (card: Locator) => evidenceList(card).locator("input[type=checkbox]:checked").evaluateAll(inputs => inputs.map(input => (input as HTMLInputElement).value));
@@ -169,6 +186,7 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await expect(savePrompt(page)).toBeVisible();
   await dismissSavePrompt(page);
   await expect(savePrompt(page)).toHaveCount(0);
+  const beforeAcknowledge = Date.now();
   await makeScenario(page, 1, "0", "284.00");
   await makeScenario(page, 2, "20", "264.00");
   const factId = await makeAction(page);
@@ -185,7 +203,10 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   expect(exported.payload.scenario_workspace.contexts[0].plans[0]).not.toHaveProperty("result");
   expect(exported.payload.scenario_workspace.contexts[0]).not.toHaveProperty("baseline");
   expect(exported.payload.scenario_workspace.contexts[0].source_hash).toBe(exported.payload.active.source_hash);
+  // V3-6（D-V3-12＝B）：勾過聲明後，備份記下第一次勾選的時間。
+  expectAcknowledgedAt(exported.payload.scenario_workspace.assumptions_acknowledged_at, beforeAcknowledge);
   const saved = await saveLocal(page);
+  expect(JSON.parse(saved.text).payload.scenario_workspace.assumptions_acknowledged_at).toBe(exported.payload.scenario_workspace.assumptions_acknowledged_at);
   const other = await context.newPage();
   await other.goto(page.url());
   await expect(status(other)).toContainText(labels.status.empty);
@@ -213,6 +234,9 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await expect(page.getByTestId("decision-freshness")).toContainText(labels.ui.decisionWorkbench.freshTitle);
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
   await expect(page.getByTestId("scenario-2").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("264.00"));
+  // V3-6：恢復的工作區帶回「已了解」聲明，兩個方案都沒有勾選框。
+  await expectAssumptionsRemembered(page.getByTestId("scenario-1"));
+  await expectAssumptionsRemembered(page.getByTestId("scenario-2"));
   await navigateTo(page, "actions");
   // 備份 ui_prefs.view 記住了清單檢視（R5），恢復後直接是清單。
   await expect(page.getByTestId("actions-view-list")).toHaveAttribute("aria-pressed", "true");
@@ -266,7 +290,9 @@ test("PL01 portable備份驗證後才套用；篡改／舊格式不取代目前�
 });
 
 test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復活", async ({ page }) => {
-  await golden(page); await dismissSavePrompt(page); await makeScenario(page, 1, "0", "284.00");
+  await golden(page); await dismissSavePrompt(page);
+  const beforeAcknowledge = Date.now();
+  await makeScenario(page, 1, "0", "284.00");
   // V3-3：「清空」搬進頂欄儲存選單的危險區（手機先開頂欄「更多」）。
   const dialog = await clearWorkspace(page);
   await expect(dialog).toBeVisible();
@@ -285,6 +311,8 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   await selectChannel(page, "DTC");
   const saved = await backup(page);
   expect(JSON.parse(saved).payload.scenario_workspace.contexts[0].status).toBe("historical");
+  // V3-6（D-V3-12＝B）：取代資料不清除聲明；備份仍帶第一次勾選的時間。
+  expectAcknowledgedAt(JSON.parse(saved).payload.scenario_workspace.assumptions_acknowledged_at, beforeAcknowledge);
   await clearWorkspace(page);
   await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
   await expect(status(page)).toContainText(labels.status.empty);
@@ -302,6 +330,8 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   await expect(draft.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
   await expect(draft.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(page.getByTestId("scenario-2")).toHaveCount(0);
+  // V3-6：清空後再從備份檔恢復，聲明跟著備份回來：草稿方案沒有勾選框，只有「已了解」說明。
+  await expectAssumptionsRemembered(draft);
   await page.getByText(scenarioCopy.historyHeading, { exact: true }).click();
   await expect(page.getByTestId("multi-scenario-workbench")).toContainText(fill(scenarioTemplate(scenarioCopy.historyPlanSummary), { plan: "保存方案 1", resultLabel: labels.scenario.resultTitle, amount: formatAmountL1("284.00") }));
   // 要沿用只能明確按「複製到目前方案」。
