@@ -1,4 +1,4 @@
-import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
+import { WORKSPACE_V4, WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { formatAmountL1, formatPeriodExport } from "../../src/application/presentation";
 import { formatSavedDateTime, formatSavedTime } from "../../src/application/auto-save";
 import { appendFile, readFile } from "node:fs/promises";
@@ -8,6 +8,7 @@ import { fill, labels } from "../../src/i18n";
 import { acceptSavePrompt, clearWorkspace, closePeriodSheet, closeStorage, closeTopbarMore, dismissSavePrompt, isMobile, navigateTo, openMeeting, openPeriodSheet, openStorage, openTopbarMore, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { acceptScenarioAssumptions } from "./misc-helpers-v3";
 import { openMeetingExport, type MeetingExportKind } from "./review-helpers-v3";
+import { adDecisionBadge, adDecisionSelect, boardBadge, listBadge, reenvelope, whatsNew } from "./ad-decision-helpers-v39";
 
 // R2: every visible string comes from labels; machine values (dataset ids, channel codes, amounts, testids) stay literal.
 // 長流程（兩方案＋行動＋保存／重整／恢復）在平板曾跑到 40 秒；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
@@ -137,7 +138,7 @@ async function makeAction(page: Page) {
   await expect(card).toContainText(labels.ui.actionsWorkbench.tagConfirmed);
   return value;
 }
-/** V3-6（D-V3-12＝B）：備份 v4 的 scenario_workspace.assumptions_acknowledged_at＝第一次勾聲明的時間（App 以 toISOString() 寫入，ISO datetime）。 */
+/** V3-6（D-V3-12＝B）：備份（v4 起；V3-9a 起寫 v5）的 scenario_workspace.assumptions_acknowledged_at＝第一次勾聲明的時間（App 以 toISOString() 寫入，ISO datetime）。 */
 function expectAcknowledgedAt(value: unknown, after: number) {
   expect(typeof value).toBe("string");
   expect(new Date(value as string).toISOString()).toBe(value);
@@ -427,7 +428,7 @@ test("R6 首次保存提示：先不要維持手動保存、不建立本機資�
   expect(await localDatabases(page)).toEqual([]);
 });
 
-test("R6 自動保存：按「存在這台電腦」3 秒內寫入 v4 備份，再修改一次 3 秒內更新；頂欄顯示已保存 hh:mm，刪除本機資料即停止", async ({ page }) => {
+test("R6 自動保存：按「存在這台電腦」3 秒內寫入目前版本的備份（V3-9a 起 v5），再修改一次 3 秒內更新；頂欄顯示已保存 hh:mm，刪除本機資料即停止", async ({ page }) => {
   const posts: string[] = [];
   page.on("request", request => { if (request.method() === "POST") posts.push(request.url()); });
   await golden(page);
@@ -637,4 +638,60 @@ test("V3-7 結束會議後備份的 meeting_history 每筆帶 copy_version v3；
   const periodLine = fill(headerV3.periodLine, { current: formatPeriodExport(periods.current.start, periods.current.end), previous: formatPeriodExport(periods.previous.start, periods.previous.end) });
   expect(markdown.split("\n").slice(1, 7)).toEqual(["", `${labels.ui.dashboard.datasets.golden}  `, `${fill(headerV3.reportTitle, { metric: contributionLabel })}  `, `${fill(headerV3.periodUnitLine, { period: periodLine, unit: headerV3.unitExclusive })}  `, fill(headerV3.versionLine, { version: record.source_fixed.metric_version, time: formatSavedDateTime(new Date(record.finalized_at)) }), ""]);
   expect(markdown).not.toContain(pageV3.v2Note);
+});
+
+test("V3-9a v4 備份仍可還原：沒有 ad_decision＝不標（select 空白、沒有徽章，再下載寫 v5 也不補值）並出現「這版改了什麼」；v4 信封帶 ad_decision 一律拒絕", async ({ page }) => {
+  await golden(page);
+  await dismissSavePrompt(page);
+  const factId = await makeAction(page);
+  const v5 = await backup(page);
+  const wire = JSON.parse(v5);
+  expect(wire.schema_version).toBe(WORKSPACE_VERSION);
+  expect(wire.payload.action_workspace.items).toHaveLength(1);
+  expect(wire.payload.action_workspace.items[0]).not.toHaveProperty("ad_decision");
+  // 自組 v4 信封（R4–V3-8 寫出的格式＝同一份 payload、沒有 ad_decision），同 App 以 decisionSignature 正規化後重算 SHA-256 checksum。
+  const v4 = reenvelope(v5, WORKSPACE_V4).toString("utf8");
+  // v4 信封帶 v5 才有的 ad_decision：格式不符，不出現預覽、不取代目前資料。
+  const v4WithDecision = reenvelope(v5, WORKSPACE_V4, envelope => { envelope.payload.action_workspace.items[0].ad_decision = "increase"; }).toString("utf8");
+  await restoreFile(page, v4WithDecision);
+  await expect(storage(page).getByRole("alert")).toContainText(storageCopy.invalidBackupError);
+  await expect(restorePreview(page)).toHaveCount(0);
+  await expect(status(page)).toContainText(goldenReady);
+  // 清空（有未保存的待辦 → 明確捨棄）→ 讀回 v4。
+  const dialog = await clearWorkspace(page);
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
+  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(whatsNew(page)).toHaveCount(0);
+  await restoreFile(page, v4);
+  await expect(restorePreview(page)).toContainText(fill(storageCopy.restoreCounts, { plans: 0, actions: 1 }));
+  await storage(page).getByRole("button", { name: storageCopy.applyRestore, exact: true }).click();
+  await expect(status(page)).toContainText(goldenReady);
+  // v4 是 V3-9a 之前（v2 與 V3-0–V3-8）寫的備份：還原後出現「這版改了什麼」（這個瀏覽器還沒關過提示）；還原 v5 則不會（見 ad-decision.spec）。
+  await expect(whatsNew(page)).toBeVisible();
+  await closeStorage(page);
+  await dismissSavePrompt(page);
+  // 待辦照原樣回來（備份 ui_prefs.view＝清單）；沒有 ad_decision＝不標：select 空白、清單與看板都沒有徽章。
+  await navigateTo(page, "actions");
+  await expect(page.getByTestId("actions-view-list")).toHaveAttribute("aria-pressed", "true");
+  const card = page.getByTestId("action-1");
+  await expect(card).toContainText(labels.ui.actionsWorkbench.tagConfirmed);
+  expect(await checkedEvidence(card)).toEqual([factId!]);
+  await expect(adDecisionSelect(card)).toHaveValue("");
+  await expect(listBadge(page, 1)).toHaveCount(0);
+  await switchActionsView(page, "board");
+  await expect(boardBadge(page, 1)).toHaveCount(0);
+  await switchActionsView(page, "list");
+  // 再下載：寫出 v5，items[0] 仍沒有 ad_decision（不補值），引用不變。
+  const again = JSON.parse(await backup(page));
+  expect(again.schema_version).toBe(WORKSPACE_VERSION);
+  expect(again.payload.action_workspace.items[0]).not.toHaveProperty("ad_decision");
+  expect(again.payload.action_workspace.items[0].card.fact_ids).toEqual([factId]);
+  // 從 v4 還原的待辦一樣可以標：選「暫停」後徽章出現，下一份備份帶 pause。
+  await closeStorage(page);
+  await adDecisionSelect(card).selectOption("pause");
+  await expect(listBadge(page, 1)).toHaveText(adDecisionBadge("pause"));
+  const labelled = JSON.parse(await backup(page));
+  expect(labelled.schema_version).toBe(WORKSPACE_VERSION);
+  expect(labelled.payload.action_workspace.items[0].ad_decision).toBe("pause");
 });

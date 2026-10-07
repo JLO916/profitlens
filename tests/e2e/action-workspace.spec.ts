@@ -313,10 +313,11 @@ test('V3-6 待辦抽屜 focus trap：Tab 一路走都留在抽屜裡，最後一
  const drawer=await openActionDrawer(page,2);
  const first=drawer.getByTestId('action-drawer-close'), last=drawer.getByTestId('action-drawer-remove');
  const focusState=()=>page.evaluate(()=>{const active=document.activeElement;return {inside:!!active?.closest('dialog[data-testid=action-drawer]'),testid:active?.getAttribute('data-testid')??null,tag:active?.tagName??null};});
- // 從關閉鈕一路 Tab 到最後一個控制（移除）：每一步焦點都在抽屜裡的控制上。
- let reachedLast=false;
- for(let step=0;step<300&&!reachedLast;step++){await page.keyboard.press('Tab');const state=await focusState();expect(state.inside,`第 ${step+1} 次 Tab 後焦點仍在抽屜內（目前 ${state.tag}）`).toBe(true);reachedLast=state.testid==='action-drawer-remove';}
+ // 從關閉鈕一路 Tab 到最後一個控制（移除）：每一步焦點都在抽屜裡的控制上。V3-9a（F13）：「內容」段新增的廣告決策 select 也在這一圈裡（走過一次）。
+ let reachedLast=false;const visited:(string|null)[]=[];
+ for(let step=0;step<300&&!reachedLast;step++){await page.keyboard.press('Tab');const state=await focusState();expect(state.inside,`第 ${step+1} 次 Tab 後焦點仍在抽屜內（目前 ${state.tag}）`).toBe(true);visited.push(state.testid);reachedLast=state.testid==='action-drawer-remove';}
  expect(reachedLast).toBe(true);await expect(last).toBeFocused();
+ expect(visited.filter(testid=>testid==='action-ad-decision'),'Tab 一圈會經過廣告決策 select 一次').toHaveLength(1);
  // 最後一個控制按 Tab 回到第一個（不經過頁面 body 或抽屜外）；第一個按 Shift+Tab 回到最後一個。
  await page.keyboard.press('Tab');expect(await focusState(),'最後一個控制按 Tab 應回到第一個（關閉 icon 鈕）').toMatchObject({inside:true,testid:'action-drawer-close'});await expect(first).toBeFocused();
  await page.keyboard.press('Shift+Tab');expect(await focusState(),'第一個控制按 Shift+Tab 應回到最後一個（移除）').toMatchObject({inside:true,testid:'action-drawer-remove'});await expect(last).toBeFocused();
