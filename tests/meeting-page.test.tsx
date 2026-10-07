@@ -14,7 +14,7 @@ import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction, 
 import { exportMeetingMarkdown, finalizeMeeting, freezeMeeting, MAX_MEETING_HISTORY, removeMeeting, validateMeeting, type Meeting } from "@/application/meeting";
 import { buildManagerSummary } from "@/application/manager-summary";
 import { channelsLabel, formatHeadlineAmount } from "@/application/copy";
-import { formatAmountL1, formatAmountL2, formatGrowth, formatSignedDelta } from "@/application/presentation";
+import { formatAmountL1, formatAmountL2, formatDateL1, formatGrowth, formatPeriodL1, formatSignedDelta } from "@/application/presentation";
 import { exportWorkspaceBackup, restoreWorkspaceBackup } from "@/application/workspace-backup";
 import { currentViewDecisionContext, DECISION_LABEL_KEY, finalizeErrorText, MeetingEntry, MeetingHistory, MeetingPage, meetingExportInfo, meetingMarkdownFilename, reviewDatasetId, type MeetingPageProps } from "../src/components/meeting-page";
 import { PrintSummary } from "../src/components/print-summary";
@@ -24,9 +24,10 @@ import { fill, labels } from "../src/i18n";
 import { formatPercentNumber } from "../src/application/presentation";
 
 /*
- * R6-2 會議紀錄分頁的 DOM 契約（主流程 E2E 會依這些 testid 重寫）：
- * meeting-page > review-workbench（會議基本）→ meeting-agenda（①②③ 在會議摘要內、④⑤⑥ 在下方）→ meeting-decision（決議＋結束會議）
- * → meeting-compare → meeting-history → meeting-outputs。數字一律來自 golden fixture 的手算值。
+ * R6-2 會議紀錄分頁的 DOM 契約；V3-7（PRD §7.6）改成文件式版面：
+ * meeting-page > review-workbench（頁首動作列：meeting-title、名稱、日期、meeting-decision〔決議＋meeting-finalize〕、複製週會摘要、meeting-outputs〔匯出會議下拉〕）
+ * → 固定範圍一行／review-view-difference 橫幅 → 議程目錄＋meeting-agenda（<ol>：1–3 是會議模式的一頁摘要、4–6 在會議頁）→ 決議備註 → meeting-compare（收合）→ meeting-history。
+ * 數字一律來自 golden fixture 的手算值。
  */
 const hooks = vi.hoisted(() => ({ active: false, states: [] as unknown[], refs: [] as { current: unknown }[], cursor: 0, refCursor: 0, dirty: false }));
 vi.mock("react", async importOriginal => {
@@ -86,7 +87,7 @@ function findAll(node: ReactNode, match: (element: TreeElement) => boolean, foun
 const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 const byTestId = (tree: ReactNode, id: string) => findAll(tree, element => element.props["data-testid"] === id);
 
-const page = labels.meetingPage, record = labels.meetingRecord, copy = labels.ui.reviewWorkbench, summaryCopy = labels.ui.managerSummary;
+const page = labels.meetingPage, record = labels.meetingRecord, copy = labels.ui.reviewWorkbench, summaryCopy = labels.ui.managerSummary, pageV3 = labels.meeting.pageV3;
 /** V3-4a：總覽會議入口的字串搬到本期一句話區塊（labels.overview.snapshotUi）。 */
 const entryUi = labels.overview.snapshotUi;
 const NOW = "2026-10-03T06:00:00.000Z";
@@ -153,23 +154,28 @@ describe("R6-2 meeting page without a draft", () => {
 });
 
 describe("R6-2 meeting page with a draft", () => {
-  it("renders basics, the six agenda items, the decision controls and the finalize button in 02 §8 order", async () => {
+  it("renders the head action bar, the six agenda items, notes, comparison and history in §7.6 order", async () => {
     const state = await setup();
     const html = render(props(state));
-    const order = ["review-workbench", "meeting-agenda", "meeting-agenda-1", "meeting-agenda-2", "meeting-agenda-3", "meeting-agenda-4", "meeting-agenda-5", "meeting-agenda-6", "meeting-decision", "meeting-finalize", "meeting-compare", "meeting-history", "meeting-outputs"];
+    // V3-7：頁首動作列（標題、決議＋結束會議、匯出會議）→ 議程 1–6 → 比較 → 歷史（最底）。
+    const order = ["review-workbench", "meeting-title", "meeting-decision", "meeting-finalize", "meeting-outputs", "meeting-agenda", "meeting-agenda-1", "meeting-agenda-2", "meeting-agenda-3", "meeting-agenda-4", "meeting-agenda-5", "meeting-agenda-6", "meeting-compare", "meeting-history"];
     const positions = order.map(id => html.indexOf(`data-testid="${id}"`));
     expect(positions.every(position => position > -1), order.join()).toBe(true);
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
     for (const [id, title] of [["meeting-agenda-1", record.agenda.kpis], ["meeting-agenda-2", record.agenda.priorities], ["meeting-agenda-3", record.agenda.channels], ["meeting-agenda-4", record.agenda.followUp], ["meeting-agenda-5", record.agenda.scenarios], ["meeting-agenda-6", record.agenda.actions]] as const) expect(text(block(html, id)), id).toContain(title);
-    // 會議基本：名稱、日期（存 review.meeting_date）、固定範圍一行（來源、通路、兩期）。
+    // 頁首動作列：名稱、日期（存 review.meeting_date），可及名稱沿用 labels.meeting.name／date。
     const basics = block(html, "review-workbench");
+    expect(text(block(basics, "meeting-title"))).toBe(pageV3.title);
     expect(basics).toContain(`value="十月例會"`);
-    expect(basics).toMatch(/<input type="date" required="" value="2026-10-03"/);
-    expect(text(basics)).toContain(fill(page.periodsLine, { previousStart: "2026-08-01", previousEnd: "2026-08-01", currentStart: "2026-08-02", currentEnd: "2026-08-02" }));
-    expect(text(basics)).toContain(labels.buttons.updateMeetingSource);
-    expect(basics).not.toContain('data-testid="review-view-difference"');
+    expect(basics).toMatch(/<input class="ui-field-control" type="date" required="" value="2026-10-03"/);
+    for (const name of [labels.meeting.name, labels.meeting.date]) expect(basics).toContain(`<span class="sr-only">${name}</span>`);
+    // 固定範圍一行（動作列下方）：來源狀態與通路、兩期（M/D）、資料到。
+    const scopeLine = text(html.slice(html.indexOf('<p class="meeting-scope-line">')));
+    expect(scopeLine).toContain(`${fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(["DTC", "MARKETPLACE"], false) })} · ${fill(pageV3.scopeLine, { previous: formatPeriodL1("2026-08-01", "2026-08-01", { anchor: "2026-08-03" }), current: formatPeriodL1("2026-08-02", "2026-08-02", { anchor: "2026-08-03" }), asOf: formatDateL1("2026-08-03", { anchor: "2026-08-03" }) })}`);
+    expect(scopeLine).toContain(labels.buttons.updateMeetingSource);
+    expect(html).not.toContain('data-testid="review-view-difference"');
     // ①②③ 由會議摘要（固定範圍）提供：淨營收 +220.00、扣廣告後貢獻 −315.00（golden 手算）；V3-2b 起主層用 L1 方向詞＋成長率。
-    const summary = block(html, "manager-summary");
+    const summary = ["meeting-agenda-1", "meeting-agenda-2", "meeting-agenda-3"].map(id => block(html, id)).join("");
     const golden = expected();
     expect(text(summary)).toContain(fill(summaryCopy.changePhraseGrowth, { word: labels.format.more, amount: formatHeadlineAmount("220.00"), growth: formatGrowth(golden.current.net_revenue, golden.previous.net_revenue, "L1")! }));
     expect(text(summary)).toContain(fill(summaryCopy.changePhraseGrowth, { word: labels.format.earnLess, amount: formatHeadlineAmount("-315.00"), growth: formatGrowth(golden.current.contribution_after_marketing, golden.previous.contribution_after_marketing, "L1")! }));
@@ -178,13 +184,18 @@ describe("R6-2 meeting page with a draft", () => {
     const scenarios = block(html, "meeting-agenda-5");
     expect(scenarios).toContain(`aria-label="${fill(labels.ui.reviewWorkbench.scenarioSelect, { channel: "DTC" })}"`);
     expect(scenarios).toContain(`aria-label="${fill(labels.ui.reviewWorkbench.scenarioSelect, { channel: "MARKETPLACE" })}"`);
-    // 決議：四個選項，目前為「採用」；備註；結束會議按鈕（還沒有確認區）。
+    // 決議：四個選項，目前為「採用」；結束會議按鈕（還沒有確認區）；備註在議程之後（textarea，標籤「備註」）。
     const decision = block(html, "meeting-decision");
     expect(decision).toContain(`aria-label="${labels.meeting.decision}"`);
     for (const key of ["draft", "adopted", "need_data", "rejected"] as const) expect(text(decision)).toContain(labels.meeting.decisions[key]);
     expect(decision).toMatch(/<option value="adopted" selected="">/);
-    expect(text(decision)).toContain("照做");
     expect(text(block(html, "meeting-finalize"))).toBe(labels.buttons.finalizeMeeting);
+    const notesAt = html.indexOf('<div class="meeting-notes-block">');
+    expect(notesAt).toBeGreaterThan(html.indexOf('data-testid="meeting-agenda-6"'));
+    expect(notesAt).toBeLessThan(html.indexOf('data-testid="meeting-compare"'));
+    expect(html).toContain(`<label class="meeting-notes-label" for="meeting-notes-input">${labels.meeting.notes}</label>`);
+    expect(html).toMatch(/<textarea id="meeting-notes-input"[^>]*>照做<\/textarea>/);
+    expect(text(html.slice(notesAt))).toContain(labels.meeting.decisionNote);
     expect(html).not.toContain('data-testid="meeting-finalize-confirm"');
     // 沒有上次會議：④ 與比較區都顯示同一句。
     expect(text(block(html, "meeting-agenda-4"))).toContain(record.noLastMeeting);
@@ -199,24 +210,45 @@ describe("R6-2 meeting page with a draft", () => {
     expect(block(render(props(state, { review })), "review-workbench")).toContain(`value="${taipeiToday()}"`);
   });
 
-  it("shows the view-difference notice when the meeting scope differs from the current view", async () => {
+  it("shows the view-difference banner (C22) when the meeting scope differs from the current view", async () => {
     const state = await setup();
     const dtc = await source("golden", { channels: ["DTC"] });
     const html = render(props(state, { source: dtc }));
     // 會議固定在兩個通路；畫面目前只看 DTC。快照用會議保存的來源重建（SSR 不執行 effect，先顯示「正在載入」）。
-    expect(text(block(html, "review-view-difference"))).toContain(labels.ui.reviewWorkbench.viewDifferenceScope);
+    const banner = block(html, "review-view-difference");
+    expect(banner).toMatch(/^<div class="ui-banner meeting-banner"/);
+    expect(text(banner)).toContain(pageV3.viewDifferenceBanner);
+    expect(text(banner)).toContain(labels.ui.reviewWorkbench.viewDifferenceScope);
+    // 「檢視差異」是收合的 details（內容保持掛載）；「用目前資料更新會議」在橫幅裡，固定範圍一行不再重複這顆按鈕。
+    expect(banner).toMatch(new RegExp(`<details class="topbar-menu auto-close meeting-banner-detail"><summary class="ui-btn ui-btn-text">${pageV3.viewDifferenceToggle}</summary>`));
+    expect(buttons(banner)).toEqual([labels.buttons.updateMeetingSource]);
+    expect(html.split(`>${labels.buttons.updateMeetingSource}</button>`)).toHaveLength(2);
     expect(html).toContain(labels.ui.reviewWorkbench.rebuilding);
-    expect(buttons(block(html, "meeting-outputs")).length).toBe(5);
-    expect(block(html, "meeting-outputs")).toContain(page.notReady);
+    // 資料還沒載入：匯出會議的五項停用，說明行改寫 notReady。
+    const outputs = block(html, "meeting-outputs");
+    expect(buttons(outputs).length).toBe(5);
+    expect(outputs.match(/<button[^>]*\sdisabled=""/g)).toHaveLength(5);
+    expect(outputs.split(page.notReady)).toHaveLength(6);
   });
 
-  it("has an output row with five buttons whose text all comes from labels, plus the PDF hint", async () => {
+  it("has a 匯出會議 page menu (collapsed <details>) with five two-line items whose names and hints all come from labels", async () => {
     const state = await setup();
     const outputs = block(render(props(state)), "meeting-outputs");
-    expect(buttons(outputs)).toEqual([labels.buttons.exportPdf, labels.buttons.exportMarkdown, labels.downloads.channelTableCsv, labels.buttons.exportExcel, labels.buttons.exportPptx]);
+    expect(outputs).toMatch(/^<details class="topbar-menu auto-close export-page meeting-outputs" data-testid="meeting-outputs">/);
+    expect(text(block(outputs, "export-page-meeting"))).toBe(pageV3.exportMenu);
+    const names = [labels.buttons.exportPdf, labels.buttons.exportMarkdown, labels.downloads.channelTableCsv, labels.buttons.exportExcel, labels.buttons.exportPptx];
+    const hints = [page.pdfHint, pageV3.exportHints.markdown, pageV3.exportHints.channelCsv, pageV3.exportHints.excel, pageV3.exportHints.pptx];
+    // 可及名稱只用名稱（aria-label，E2E 以名稱定位）；說明行是 aria-describedby 指到的 <small>。
+    const items = [...outputs.matchAll(/<button type="button" class="ui-menu-item" data-lines="2" data-testid="([^"]+)"[^>]*aria-label="([^"]+)" aria-describedby="([^"]+)"[^>]*><span>([^<]+)<\/span><small id="([^"]+)">([^<]+)<\/small><\/button>/g)].map(match => ({ testId: match[1], aria: match[2], describedBy: match[3], name: match[4], hintId: match[5], hint: match[6] }));
+    expect(items.map(item => item.testId)).toEqual(["meeting-export-pdf", "meeting-export-markdown", "meeting-export-csv", "meeting-export-excel", "meeting-export-pptx"]);
+    expect(items.map(item => item.aria)).toEqual(names.map(name => name.replace(/"/g, "&quot;")));
+    expect(items.map(item => item.name)).toEqual(names);
+    expect(items.map(item => text(item.hint))).toEqual(hints);
+    for (const item of items) expect(item.describedBy).toBe(item.hintId);
     expect(outputs).not.toContain("disabled");
-    expect(text(outputs)).toContain(page.pdfHint);
-    expect(text(outputs)).toContain(page.outputs);
+    // v2 的「匯出」h2 與 notReady 一句已移進下拉；「結束列印」只在列印模式出現（在下拉旁）。
+    expect(outputs).not.toContain("<h2");
+    expect(text(outputs)).not.toContain(summaryCopy.exitPrint);
   });
 });
 
@@ -384,7 +416,6 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
     const html = render(props(state));
     const five = block(html, "meeting-agenda-5");
     const results = block(five, "meeting-scenario-results");
-    expect(text(results)).toContain(page.scenarioResults);
     expect(results.match(/data-testid="meeting-scenario-result"/g)).toHaveLength(1);
     expect(results).toContain('data-status="current"');
     // DTC 方案 p（物流費 −10%）：現況 270.00 → 試算後 284.00，差額 +14.00（golden 手算）。
@@ -392,8 +423,12 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
     expect(text(results)).toContain(fill(summaryCopy.scenarioLine, { name: "履約", scope: DTC_SCOPE, baseline: formatAmountL1("270.00"), contribution: formatAmountL1("284.00"), delta: formatSignedDelta("14.00", "L1") }));
     expect(text(results)).toContain(FULFILLMENT_10);
     expect(text(results)).not.toContain(copy.staleScenarios);
-    // select 在結果之前。
-    expect(five.indexOf("<select")).toBeLessThan(five.indexOf('data-testid="meeting-scenario-results"'));
+    // V3-7：每通路一列——DTC 的 select 之後就是它的試算結果；MARKETPLACE 沒有選入，只有 select。
+    const rows = [...five.matchAll(/<li class="meeting-scenario-row">([\s\S]*?)<\/li>(?=<li class="meeting-scenario-row">|<\/ul>)/g)].map(match => match[1]);
+    expect(rows).toHaveLength(2);
+    expect(rows[0].indexOf('data-testid="meeting-scenario-select-DTC"')).toBeLessThan(rows[0].indexOf('data-testid="meeting-scenario-result"'));
+    expect(rows[1]).toContain('data-testid="meeting-scenario-select-MARKETPLACE"');
+    expect(rows[1]).not.toContain('data-testid="meeting-scenario-result"');
     // ⑥：a1 置頂（進行中）；a2 未置頂 → 收在「其他待辦（1）」。
     const context = buildReviewDecisionContext(state.review, state.scenarios, state.actions);
     const [a1, a2] = ["a1", "a2"].map(id => context.actions.find(row => row.id === id)!);
@@ -405,15 +440,14 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
     expect(text(six)).toContain(fill(summaryCopy.appendixActions, { n: 1 }));
     expect(text(six).split(fill(summaryCopy.appendixActions, { n: 1 }))[1]).toContain(a2.problem);
     expect(six).not.toContain('data-testid="meeting-pinned-actions-empty"');
-    // 會議摘要（①②③）：不再有「方案與待辦」、指標名是 h4、③ 的收合標題不重複「通路表」。
-    const summary = block(html, "manager-summary");
+    // 會議摘要（①②③）：不再有「方案與待辦」；① 的指標名是定義列表的 dt（C1 精簡版）；③ 的完整寬表收在「完整通路寬表」。
+    const summary = ["meeting-agenda-1", "meeting-agenda-2", "meeting-agenda-3"].map(id => block(html, id)).join("");
     expect(text(summary)).not.toContain(summaryCopy.decisionsHeading);
     expect(text(summary)).not.toContain(a1.problem);
-    expect(summary).toContain(`<h4>${labels.metrics.net_revenue.label}</h4>`);
+    expect(summary).toContain(`<dt>${labels.metrics.net_revenue.label}</dt>`);
     expect(summary).not.toContain(`<h3>${labels.metrics.net_revenue.label}</h3>`);
-    expect(text(summary)).toContain(page.channelTableSummary);
+    expect(summary).toContain(`<details class="meeting-wide-table"><summary>${pageV3.fullChannelTable}</summary>`);
     expect(text(summary)).not.toContain(summaryCopy.channelTableSummary);
-    expect(page.channelTableSummary).not.toContain(labels.sections.channelTable);
   });
 
   it("⑤ marks a superseded plan as stale; ⑥ says there is no pinned action when nothing is pinned", async () => {
@@ -588,7 +622,7 @@ describe("R6-F2 busy buttons keep focus (aria-disabled + guard)", () => {
     expect(byTestId(tree, "meeting-finalize-error")).toHaveLength(0);
   });
 
-  it("output row: Excel/PPT are aria-disabled (not disabled) while exporting, ignore extra clicks, and return focus to the trigger after success or failure", async () => {
+  it("匯出會議: Excel/PPT are aria-disabled (not disabled) while exporting, ignore extra clicks, close the menu and return focus to its summary after success or failure", async () => {
     const state = await setup();
     exportsMock.excel.mockReset(); exportsMock.pptx.mockReset();
     const pending = deferred();
@@ -596,30 +630,37 @@ describe("R6-F2 busy buttons keep focus (aria-disabled + guard)", () => {
     const view = mount(MeetingPage);
     const value = props(state);
     let tree = view(value);
-    const click = (id: string, focus: () => void) => (byTestId(tree, id)[0].props.onClick as (event: unknown) => void)({ currentTarget: { focus } });
-    const excelFocus = vi.fn();
-    click("meeting-export-excel", excelFocus);
+    // V3-7：點完一項就關閉「匯出會議」下拉並回焦到它的 summary；匯出完成或失敗後同樣回到 summary（選單裡的按鈕此時是隱藏的）。
+    const summaryFocus = vi.fn();
+    const menu = { open: true, querySelector: (selector: string) => selector === ":scope > summary" ? { focus: summaryFocus } : null };
+    (byTestId(tree, "meeting-outputs")[0].props.ref as { current: unknown }).current = menu;
+    const click = (id: string) => (byTestId(tree, id)[0].props.onClick as (event: unknown) => void)({});
+    click("meeting-export-excel");
+    expect(menu.open).toBe(false);
+    expect(summaryFocus).toHaveBeenCalledTimes(1);
     tree = view(value);
     for (const id of ["meeting-export-excel", "meeting-export-pptx"]) {
       expect(byTestId(tree, id)[0].props["aria-disabled"], id).toBe(true);
       expect(byTestId(tree, id)[0].props.disabled, id).toBe(false);
     }
     expect(findAll(tree, element => element.props.role === "status").map(element => element.props.children)).toContain(page.exporting);
-    click("meeting-export-pptx", vi.fn());
+    menu.open = true;
+    click("meeting-export-pptx");
     expect(exportsMock.pptx).not.toHaveBeenCalled();
+    expect(menu.open).toBe(true);
     pending.resolve();
     await settle();
     tree = view(value);
-    expect(excelFocus).toHaveBeenCalledTimes(1);
+    expect(summaryFocus).toHaveBeenCalledTimes(2);
     expect(byTestId(tree, "meeting-export-excel")[0].props["aria-disabled"]).toBeUndefined();
     // 會議頁的輸出列帶會議資訊（下載選單才是純目前檢視）。
     expect(exportsMock.excel.mock.calls[0][0].meeting).toEqual(meetingExportInfo(state.review));
     exportsMock.pptx.mockImplementationOnce(async () => { throw new Error("PPTX_SOURCE_MISMATCH"); });
-    const pptxFocus = vi.fn();
-    click("meeting-export-pptx", pptxFocus);
+    click("meeting-export-pptx");
+    expect(menu.open).toBe(false);
     await settle();
     tree = view(value);
-    expect(pptxFocus).toHaveBeenCalledTimes(1);
+    expect(summaryFocus).toHaveBeenCalledTimes(4);
     expect(findAll(tree, element => element.props.role === "alert").map(element => element.props.children)).toContain(page.exportError);
     expect(page.exportError).not.toContain("請重新整理後再試");
   });
@@ -631,13 +672,14 @@ describe("R6-F2 channel aliases follow the meeting's own data", () => {
     const demo = await source("demo");
     expect(reviewDatasetId(state.review)).toBe(state.s.snapshot.report.dataset_id);
     const html = render(props(state, { source: demo }));
-    const basics = block(html, "review-workbench");
     const channels = ["DTC", "MARKETPLACE"];
-    expect(text(block(basics, "review-view-difference"))).toBe(fill(copy.viewDifference, {
+    // V3-7：差異的完整句子在橫幅「檢視差異」的 popover 裡（C22＋C14）。
+    const banner = block(html, "review-view-difference");
+    expect(text(banner.slice(banner.indexOf('<div class="ui-popover meeting-banner-popover">'), banner.indexOf("</details>")))).toBe(fill(copy.viewDifference, {
       meetingChannels: channelsLabel(channels, false), meetingStart: "2026-08-02", meetingEnd: "2026-08-02",
       viewChannels: channelsLabel(demo.snapshot.report.scope.channels, true), viewStart: demo.snapshot.report.current.period.start, viewEnd: demo.snapshot.report.current.period.end, datasetNote: copy.viewDifferenceDataset,
     }));
-    expect(text(basics)).toContain(fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(channels, false) }));
+    expect(text(html)).toContain(fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(channels, false) }));
     const agenda = block(html, "meeting-agenda");
     for (const channel of channels) expect(agenda).toContain(`aria-label="${fill(copy.scenarioSelect, { channel })}"`);
     expect(text(agenda)).not.toContain(labels.demoChannelAlias.DTC);

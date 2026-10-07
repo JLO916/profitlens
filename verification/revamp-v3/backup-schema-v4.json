@@ -123,7 +123,7 @@
       "type": "array<meeting-v1>",
       "v4_addition": true,
       "max_items": 100,
-      "note": "已結束的會議（R6，只讀快照）；每筆是 strict 的 meeting-v1（src/application/meeting.ts meetingSchema），還原時逐筆 validateMeeting 並深層凍結。"
+      "note": "已結束的會議（R6，只讀快照）；每筆是 strict 的 meeting-v1（src/application/meeting.ts meetingSchema），還原時逐筆 validateMeeting 並深層凍結。V3-7 選填 copy_version（見 meeting_copy_version）。"
     },
     "ui_prefs": {
       "type": "object",
@@ -180,6 +180,13 @@
     "optional": true,
     "v3_6_addition": true,
     "note": "D-V3-12＝B：同一工作區第一次勾「我了解這是試算，不是預測」的時間；有值時每個方案不再顯示勾選框，新增、複製與試算時聲明直接視為已勾。只在 v4 信封；沒有此欄位的舊 v4 讀回 undefined；v1–v3 信封帶此欄位即拒絕。"
+  },
+  "meeting_copy_version": {
+    "path": "payload.meeting_history[].copy_version",
+    "type": "literal \"v3\"",
+    "optional": true,
+    "v3_7_addition": true,
+    "note": "D-V3-22＝A：v3 結束的會議（finalizeMeeting）寫 \"v3\"；v2 結束的紀錄與舊備份沒有此欄位（讀回 undefined），會議紀錄頁照紀錄顯示數字、決議與備註，欄名用新名詞，頂部加註「本紀錄建立於 v2，部分名稱已更新」。meetingSchema（strict）只接受 \"v3\" 或缺欄位；schema_version 仍是 meeting-v1。"
   },
   "opaque_records": {
     "manifest": "DatasetInput.manifest（z.record，內容即資料集 manifest）",
@@ -335,6 +342,7 @@
     "payload.meeting_history[].agenda.scenarios[].name",
     "payload.meeting_history[].agenda.scenarios[].plan_id",
     "payload.meeting_history[].agenda.scenarios[].revision",
+    "payload.meeting_history[].copy_version",
     "payload.meeting_history[].created_at",
     "payload.meeting_history[].date",
     "payload.meeting_history[].decisions",

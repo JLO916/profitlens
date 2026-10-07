@@ -89,8 +89,8 @@ export function WeeklySnapshot({ snapshot, datasetName, missingItems, actionsSum
   </section>;
 }
 
-/** 剪貼簿不可用時的對話框：textarea 唯讀、開啟時全選；Esc 或「關閉」關閉後回焦到開啟它的按鈕。 */
-function CopyFallback({ text, onClose }: { text: string; onClose: () => void }) {
+/** 剪貼簿不可用時的對話框：textarea 唯讀、開啟時全選；Esc 或「關閉」關閉後回焦到開啟它的按鈕。V3-7：會議頁頁首的「複製週會摘要」共用。 */
+export function CopyFallback({ text, onClose }: { text: string; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const area = useRef<HTMLTextAreaElement>(null);
   const titleId = useId(), bodyId = useId();

@@ -209,6 +209,15 @@ async function pageStates(): Promise<StateMarkup[]> {
     "actions-list": { panel: "actions", active: golden, status: "ready", actionWorkspace: actions, scenarioWorkspace: scenarios, actionsView: "list" },
 
     // ── V3-7 A 新增的頁面狀態在此之後（例如 meeting-finalized、meeting-v2-record）──
+    // 會議紀錄頁＋一筆 v2 結束的紀錄（沒有 copy_version，D-V3-22）：歷史項目多結束標示與 v2 加註兩行。
+    "meeting-v2-record": { panel: "meeting", active: golden, status: "ready", review, actionWorkspace: actions, scenarioWorkspace: scenarios, history: [await (async () => {
+      const { finalizeMeeting, freezeMeeting } = await import("@/application/meeting");
+      const { rebuildReviewSnapshot } = await import("@/application/review-session");
+      const finished = finalizeMeeting({ review, snapshot: await rebuildReviewSnapshot(review), scenarios, actions, date: "2026-10-03", now: "2026-10-03T06:00:00.000Z" });
+      const { copy_version: _version, ...v2 } = structuredClone(finished);
+      void _version;
+      return freezeMeeting(v2);
+    })()] },
 
     // ── V3-7 C 新增的頁面狀態在此之後（例如匯出選單處理中）──
 
@@ -579,6 +588,46 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V3-7 A（會議紀錄頁）的 M1 掛載測試在此之後新增（頁首「匯出會議」下拉五項在收合 details 內、議程目錄 <ol>、與上次會議比較 details、歷史在最底）──
+    it("V3-7 A：會議紀錄頁的「匯出會議」五項在收合的 details 內、議程目錄 6 個連結各一份、與上次會議比較收合、門檻表單收合、歷史在最底", () => {
+      const pageV3 = labels.meeting.pageV3;
+      for (const name of ["meeting", "meeting-v2-record"]) {
+        const html = states.find(state => state.name === name)!.html;
+        // 頁首動作列（review-workbench）只有一份；「匯出會議」是收合的 <details class="topbar-menu auto-close">，五項保持掛載、各一份。
+        expect(testIdCounts(html).get("review-workbench"), name).toBe(1);
+        const menuTag = openTag(html, 'data-testid="meeting-outputs"')!;
+        expect(menuTag, name).toMatch(/^<details\s/);
+        expect(menuTag, name).not.toMatch(/\sopen=""/);
+        expect(menuTag, name).toContain("topbar-menu auto-close");
+        const menu = element(html, 'data-testid="meeting-outputs"')!;
+        expect(openTag(menu, 'data-testid="export-page-meeting"'), name).toMatch(/^<summary\s/);
+        for (const id of ["meeting-export-pdf", "meeting-export-markdown", "meeting-export-csv", "meeting-export-excel", "meeting-export-pptx"]) {
+          expect(menu, `${name} ${id}`).toContain(`data-testid="${id}"`);
+          expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+        }
+        // 議程目錄：nav（議程目錄）> ol，6 個錨點連結各一份、每個目標 id 各一份；SSR 沒有 aria-current。
+        const toc = element(html, `aria-label="${escapeAttr(pageV3.tocAria)}"`)!;
+        expect(toc, name).toMatch(/^<nav class="meeting-toc"[^>]*><ol>/);
+        expect(toc, name).not.toContain("aria-current");
+        for (let n = 1; n <= 6; n++) {
+          expect(occurrences(html, `href="#meeting-agenda-${n}"`), `${name} 連結 ${n}`).toBe(1);
+          expect(idCounts(html).get(`meeting-agenda-${n}`), `${name} #meeting-agenda-${n}`).toBe(1);
+          expect(testIdCounts(html).get(`meeting-agenda-${n}`), `${name} meeting-agenda-${n}`).toBe(1);
+        }
+        // 議程是 <ol>；議程 2 的門檻表單在收合的「調整門檻」details 內；與上次會議比較是收合的 details。
+        expect(openTag(html, 'class="meeting-agenda-list"'), name).toMatch(/^<ol\s/);
+        expect(openTag(html, 'class="meeting-threshold"'), name).toBe('<details class="meeting-threshold">');
+        expect(element(html, 'class="meeting-threshold"'), name).toContain('data-testid="threshold-form-meeting"');
+        expect(openTag(html, 'data-testid="meeting-compare"'), name).toBe('<details class="meeting-compare" data-testid="meeting-compare">');
+        // 會議歷史在最底：比較之後，而且只有一份。
+        expect(html.indexOf('data-testid="meeting-history"'), name).toBeGreaterThan(html.indexOf('data-testid="meeting-compare"'));
+        expect(testIdCounts(html).get("meeting-history"), name).toBe(1);
+      }
+      const v2 = element(states.find(state => state.name === "meeting-v2-record")!.html, 'data-testid="meeting-history-item"')!;
+      expect(testIdCounts(v2).get("meeting-snapshot-note")).toBe(1);
+      expect(testIdCounts(v2).get("meeting-v2-note")).toBe(1);
+      expect(v2).toContain(escapeAttr(pageV3.v2Note));
+    });
+
 
 
     // ── V3-7 C（頂欄匯出選單）的 M1 掛載測試在此之後新增（分組與每項說明、會議分組「複製週會摘要」、3×3 範本表）──

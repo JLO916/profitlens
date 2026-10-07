@@ -2052,6 +2052,195 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-6 錨點結束 ── */
 
 /* ── V3-7 錨點（代理 A：會議紀錄頁——文件式版面：左側議程目錄、頁首動作列、結束標示、議程精簡摘要、決議備註；只用 token；在本註解之後、下一個錨點之前新增） ── */
+/* §7.6 版面尺寸：議程目錄 200px、主內容最大 880px、頁首動作列 48px（--space-7）；sticky 的頂端＝頂欄＋期間列。 */
+.meeting-page { --meeting-toc-w: 200px; --meeting-main-max: 880px; --meeting-head-h: var(--space-7); --meeting-sticky-top: calc(var(--topbar-h) + var(--period-bar-h)); min-width: 0; }
+
+/* §7.6 第 1 點 頁首動作列：標題（h2 16／600）、會議名稱與日期（行內編輯，C11 32px）、右側動作（決議＋結束會議、複製週會摘要、匯出會議）。
+   ≥ 1280 sticky 在期間列之下（期間列此時一定是一列 48px）；較窄時期間列可能兩列，動作列改成一般流動、自動換行。 */
+.meeting-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); min-height: var(--meeting-head-h); padding: var(--space-2) 0; margin-bottom: var(--space-3); background: var(--bg-page); border-bottom: var(--border-w) solid var(--border-subtle); }
+.meeting-title { flex: none; margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); white-space: nowrap; }
+.meeting-head-field { display: inline-flex; flex-direction: row; gap: 0; min-width: 0; }
+.meeting-head-name { flex: 1 1 160px; max-width: 280px; }
+.meeting-head-name .ui-field-control { width: 100%; }
+.meeting-head-date .ui-field-control { width: auto; }
+.meeting-head-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-left: auto; }
+.meeting-decision { display: inline-flex; align-items: center; gap: var(--space-2); }
+.meeting-decision select.ui-field-control { width: auto; }
+.meeting-head .ui-btn svg { flex: none; }
+/* 「已複製週會摘要。」的 live region 一直留在無障礙樹（空的時候不隱藏），只是沒有寬度。 */
+.meeting-copy-status:empty { margin-left: calc(-1 * var(--space-2)); }
+@media (min-width: 1280px) {
+  .meeting-head { position: sticky; top: var(--meeting-sticky-top); z-index: calc(var(--z-sticky) - 1); padding: var(--space-1) 0; }
+}
+/* 手機（≤ 767px）動作列換成多列，「匯出會議」可能在左側：選單改成相對整個動作列展開（左右對齊動作列，不超出畫面）。 */
+@media (max-width: 767px) {
+  .meeting-head { position: relative; }
+  .meeting-head-actions { margin-left: 0; }
+  .meeting-head .meeting-outputs { position: static; }
+  .meeting-head .meeting-outputs > .menu-panel { left: 0; right: 0; width: auto; }
+}
+
+/* 「匯出會議」頁內下拉：沿用 .export-page 的選單位置；項目是 C14 兩行項（14px 名稱＋12px 說明，52px），處理中 aria-disabled 半透明。 */
+.meeting-export-menu .ui-menu-item[data-lines="2"] { min-height: var(--menu-item-h-2); padding: var(--space-1) var(--space-2); }
+.meeting-export-menu .ui-menu-item + .ui-menu-item { margin-top: var(--space-1); }
+.meeting-export-menu .ui-menu-item[aria-disabled="true"], .meeting-export-menu .ui-menu-item:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 動作列下方：結束會議確認區、錯誤與匯出狀態（沒有內容時不佔高度）。 */
+.meeting-head-messages { display: grid; gap: var(--space-2); }
+.meeting-head-messages:empty { display: none; }
+.meeting-head-messages > p { margin: 0 0 var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); }
+.meeting-page .meeting-confirm { margin: 0 0 var(--space-3); border-left-width: var(--rule-notice); }
+
+/* §7.6 第 3 點 固定範圍一行（13px 次要色）＋「用目前資料更新會議」文字按鈕；範圍不同時是 C22 橫幅，「檢視差異」展開成 popover（C14，內容保持掛載）。 */
+.meeting-info { display: grid; gap: var(--space-2); margin-bottom: var(--space-5); }
+.meeting-scope-line { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); overflow-wrap: anywhere; }
+.meeting-scope-line .ui-btn-text { font-size: var(--text-13); line-height: var(--leading-13); }
+.meeting-banner { position: relative; }
+.meeting-banner > .ui-btn-text { margin-left: auto; }
+.meeting-banner-detail { position: relative; display: inline-block; }
+.meeting-banner .meeting-banner-detail > summary { list-style: none; display: inline-flex; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--accent); font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-medium); }
+.meeting-banner .meeting-banner-detail > summary::-webkit-details-marker { display: none; }
+.meeting-banner .meeting-banner-detail[open] > summary { background: transparent; text-decoration: underline; text-underline-offset: 3px; }
+.meeting-banner-popover { position: absolute; top: calc(100% + var(--space-2)); left: 0; font-size: var(--text-13); line-height: var(--leading-13); overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .meeting-banner .meeting-banner-detail { position: static; }
+  .meeting-banner-popover { left: 0; right: 0; width: auto; }
+}
+.meeting-technical > summary { cursor: pointer; }
+.meeting-technical p, .meeting-technical ul { margin: var(--space-1) 0 0; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.meeting-drift { display: grid; gap: var(--space-2); justify-items: start; }
+.meeting-drift p { margin: 0; }
+
+/* §7.6 版面：≥ 1280 左側議程目錄 200px（sticky）＋主內容（最大 880px）；< 1280 目錄收成頁首下方一列可水平捲動的錨點。 */
+.meeting-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-items: start; }
+.meeting-main { min-width: 0; max-width: var(--meeting-main-max); }
+.meeting-toc { min-width: 0; }
+.meeting-toc ol { display: flex; gap: var(--space-1); margin: 0; padding: 0 0 var(--space-1); list-style: none; overflow-x: auto; border-bottom: var(--border-w) solid var(--border-subtle); }
+.meeting-toc li { flex: none; }
+.meeting-toc a { display: flex; align-items: center; min-height: var(--control-h); padding: 0 var(--space-3); border-bottom: var(--rule-accent) solid transparent; color: var(--text-secondary); font-size: var(--text-13); line-height: var(--leading-13); white-space: nowrap; }
+.meeting-toc a:hover { color: var(--text-primary); background: var(--bg-hover); }
+.meeting-toc a[aria-current] { border-bottom-color: var(--accent); color: var(--text-primary); font-weight: var(--weight-medium); }
+@media (min-width: 1280px) {
+  .meeting-layout { grid-template-columns: var(--meeting-toc-w) minmax(0, 1fr); gap: var(--space-6); }
+  .meeting-toc { position: sticky; top: calc(var(--meeting-sticky-top) + var(--meeting-head-h) + var(--space-4)); }
+  .meeting-toc ol { flex-direction: column; gap: 0; padding: 0; overflow: visible; border-bottom: 0; border-left: var(--border-w) solid var(--border-subtle); }
+  .meeting-toc a { min-height: var(--control-h); padding: 0 var(--space-3); border-bottom: 0; border-left: var(--rule-accent) solid transparent; margin-left: calc(-1 * var(--border-w)); white-space: normal; }
+  .meeting-toc a[aria-current] { border-left-color: var(--accent); }
+}
+
+/* §7.6 第 4 點 議程：<ol>（不用圈數字；Tailwind preflight 清掉 list-style，用 CSS counter 顯示 1–6）。每項是 C4 區段（不是卡片），區段之間 1px 分隔線。 */
+.meeting-page .meeting-agenda { margin: 0 0 var(--space-6); }
+.meeting-page .meeting-agenda-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); margin: 0 0 var(--space-3); }
+.meeting-agenda-head h2 { font-size: var(--text-16); line-height: var(--leading-16); }
+.meeting-agenda-note { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.meeting-agenda-list { counter-reset: meeting-agenda; margin: 0; padding: 0; list-style: none; }
+.meeting-agenda-entry { counter-increment: meeting-agenda; padding: var(--space-5) 0; border-top: var(--border-w) solid var(--border-subtle); }
+.meeting-agenda-item { min-width: 0; display: grid; gap: var(--space-3); scroll-margin-top: calc(var(--meeting-sticky-top) + var(--meeting-head-h) + var(--space-3)); }
+.meeting-agenda-title { display: flex; align-items: baseline; gap: var(--space-2); margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.meeting-agenda-title::before { content: counter(meeting-agenda) "."; min-width: var(--space-4); color: var(--text-tertiary); font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; }
+
+/* 議程 1 關鍵數字（C1 精簡版：2 格並排、--num-24；差額行 13px、上期 12px）；下方一行本期一句話。 */
+.meeting-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-surface); }
+.meeting-kpi { display: grid; align-content: start; gap: var(--space-1); min-width: 0; padding: var(--space-4) var(--space-5); }
+.meeting-kpi + .meeting-kpi { border-left: var(--border-w) solid var(--border-subtle); }
+.meeting-kpi dt { font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.meeting-kpi dd { margin: 0; min-width: 0; }
+.meeting-kpi-value { font-size: var(--text-24); line-height: var(--leading-24); font-weight: var(--weight-semibold); }
+.meeting-kpi-change { font-size: var(--text-13); line-height: var(--leading-13); }
+.meeting-kpi-change .number-link { white-space: normal; overflow-wrap: anywhere; }
+.meeting-kpi-previous { font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.meeting-sentence { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+@media (max-width: 767px) {
+  .meeting-kpis { grid-template-columns: minmax(0, 1fr); }
+  .meeting-kpi { padding: var(--space-3) var(--space-4); }
+  .meeting-kpi + .meeting-kpi { border-left: 0; border-top: var(--border-w) solid var(--border-subtle); }
+}
+
+/* 議程 2 本期重點：「調整門檻」收合（文字按鈕）＋C9 清單型警示列（summary 一行 ≥ 48px：展開指示｜狀態標籤｜L1 標題｜影響金額 160px 右對齊）。
+   全域 .alert（v2 通知列）的 flex、padding、margin、圓角與 12px 字級在這裡歸零。 */
+.meeting-threshold > summary { list-style: none; justify-self: start; }
+.meeting-threshold > summary::-webkit-details-marker { display: none; }
+.meeting-threshold-body { display: grid; gap: var(--space-2); margin-top: var(--space-2); padding: var(--space-3) var(--space-4); border-left: var(--rule-notice) solid var(--border-subtle); background: var(--bg-subtle); }
+.meeting-threshold-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2); }
+.meeting-threshold-form .ui-field { flex-direction: column; }
+.meeting-threshold-form .ui-field-control { width: 12rem; max-width: 100%; }
+.meeting-priorities { --alert-chev-w: 16px; --alert-impact-w: 160px; margin: 0; padding: 0; list-style: none; border-top: var(--border-w) solid var(--border-subtle); }
+.meeting-priority { min-width: 0; border-bottom: var(--border-w) solid var(--border-subtle); }
+.meeting-page .meeting-priority-row { display: block; min-width: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; font-size: inherit; color: var(--text-primary); }
+.meeting-priority-row > summary { list-style: none; display: grid; grid-template-columns: var(--alert-chev-w) auto minmax(0, 1fr) var(--alert-impact-w); grid-template-areas: "chev loz title impact"; column-gap: var(--space-3); align-items: center; min-height: var(--space-7); padding: var(--space-3) 0; cursor: pointer; color: var(--text-primary); font-size: var(--text-14); line-height: var(--leading-14); }
+.meeting-priority-row > summary::-webkit-details-marker { display: none; }
+.meeting-priority-row > summary:hover .alert-title { text-decoration: underline; text-underline-offset: 3px; }
+.meeting-priority-row .alert-chev { grid-area: chev; color: var(--text-tertiary); transition: rotate var(--dur-fast) var(--ease); }
+.meeting-priority-row[open] > summary .alert-chev { rotate: 90deg; }
+.meeting-priority-row .alert-loz { grid-area: loz; display: inline-flex; }
+.meeting-priority-row .alert-title { grid-area: title; min-width: 0; margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.meeting-priority-impact { grid-area: impact; justify-self: end; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); text-align: right; white-space: nowrap; }
+.meeting-priority-impact.neutral { font-size: var(--text-14); font-weight: var(--weight-regular); }
+.meeting-priority-body { display: grid; gap: var(--space-2); min-width: 0; padding: 0 0 var(--space-4) calc(var(--alert-chev-w) + var(--space-3)); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.meeting-priority-body .top-three-impact { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); }
+.meeting-priority-body .top-three-impact .impact-amount { font-size: var(--text-16); line-height: var(--leading-16); }
+.meeting-priority-copy { display: grid; gap: var(--space-1); margin: 0; }
+.meeting-priority-copy > div { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); }
+.meeting-priority-copy dt { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-tertiary); }
+.meeting-priority-copy dd { margin: 0; min-width: 0; }
+.meeting-priority-scopes > summary { cursor: pointer; font-size: var(--text-13); line-height: var(--leading-13); }
+.meeting-priority-scopes ul { margin: var(--space-1) 0; padding-left: var(--space-4); font-size: var(--text-13); line-height: var(--leading-13); }
+.meeting-priority-scopes .impact-amount { font-size: var(--text-13); }
+.meeting-priority-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+@media (max-width: 767px) {
+  .meeting-priority-row > summary { grid-template-columns: var(--alert-chev-w) minmax(0, 1fr) auto; grid-template-areas: "chev title impact" ". loz loz"; row-gap: var(--space-1); }
+  .meeting-priority-row .alert-loz { justify-self: start; }
+  .meeting-priority-body { padding-left: 0; }
+}
+
+/* 議程 3 各通路表現：C3 精簡表（列高 32px、數字欄右對齊、單位只在表頭）＋「完整通路寬表」收合。 */
+.meeting-channel-table { --table-row-h: var(--row-h-compact); }
+.meeting-channel-table caption { caption-side: top; padding: 0 0 var(--space-1); text-align: left; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.meeting-channel-table .number-link { min-height: 24px; }
+.meeting-wide-table > summary, .meeting-scenario-assumptions > summary { cursor: pointer; font-size: var(--text-13); line-height: var(--leading-13); }
+.meeting-wide-table[open] > summary { margin-bottom: var(--space-2); }
+
+/* 議程 4 上次決議追蹤（C3 列）。 */
+.meeting-agenda-item .meeting-followup .ui-table th, .meeting-agenda-item .meeting-followup .ui-table td { padding: 0 var(--cell-px); }
+
+/* 議程 5 選入方案：每通路一列（選入 select＋試算結果與過期標示；假設收合）。 */
+.meeting-scenarios { display: grid; gap: var(--space-2); }
+.meeting-scenario-rows { margin: 0; padding: 0; list-style: none; border-top: var(--border-w) solid var(--border-subtle); }
+.meeting-scenario-row { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: var(--space-2) var(--space-4); align-items: start; padding: var(--space-3) 0; border-bottom: var(--border-w) solid var(--border-subtle); }
+.meeting-scenario-field select.ui-field-control { width: 100%; }
+.meeting-scenario-result { display: grid; gap: var(--space-1); justify-items: start; min-width: 0; font-size: var(--text-14); line-height: var(--leading-14); overflow-wrap: anywhere; }
+.meeting-scenario-result p { margin: 0; }
+.meeting-scenario-assumptions ul { margin: var(--space-1) 0 0; padding-left: var(--space-4); font-size: var(--text-13); line-height: var(--leading-13); list-style: disc; }
+@media (max-width: 767px) { .meeting-scenario-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* 議程 6 置頂待辦：沿用 v2 清單樣式；其他待辦收合。 */
+.meeting-agenda-item .meeting-pinned-actions ul, .meeting-agenda-item .meeting-other-actions ul { margin: 0; }
+
+/* §7.6 第 5 點 決議備註：議程之後；標籤 16／600，下方一句限制 13px 次要色。 */
+.meeting-notes-block { display: grid; gap: var(--space-2); margin: 0 0 var(--space-6); }
+.meeting-notes-label { display: block; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.meeting-notes-input { width: 100%; }
+.meeting-notes-hint { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+
+/* §7.6 第 6 點 與上次會議比較：預設收合的 <details>（標題在 summary 內）。 */
+.meeting-page .meeting-compare { margin: 0 0 var(--space-6); padding: var(--space-4) 0; border-top: var(--border-w) solid var(--border-subtle); border-bottom: var(--border-w) solid var(--border-subtle); }
+.meeting-compare-summary { list-style: none; display: flex; align-items: center; gap: var(--space-2); padding: 0; cursor: pointer; color: var(--text-primary); }
+.meeting-compare-summary::-webkit-details-marker { display: none; }
+.meeting-compare-summary h2 { margin: 0; font-size: var(--text-16); line-height: var(--leading-16); }
+.meeting-compare-summary:hover h2 { text-decoration: underline; text-underline-offset: 3px; }
+.meeting-compare[open] > .meeting-compare-summary { margin-bottom: var(--space-3); }
+
+/* §7.6 第 2 點、D-V3-22：會議歷史每筆展開內容頂部的結束標示（13px、--bg-subtle 底）與 v2 紀錄加註。 */
+.meeting-snapshot-note { margin: 0 0 var(--space-2); padding: var(--space-1) var(--space-2); background: var(--bg-subtle); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+
+/* C10 頁面型空狀態（沒有會議稿）。 */
+.meeting-empty { margin-bottom: var(--space-6); }
+
+/* 列印（瀏覽器直接列印本頁時）：拿掉議程目錄與動作列的控制；正式的一頁摘要走 PrintSummaryPortal。 */
+@media print {
+  .meeting-toc, .meeting-head-actions, .meeting-copy-status, .meeting-banner-detail { display: none !important; }
+  .meeting-head { position: static; }
+}
 
 
 /* ── V3-7 錨點（代理 B：匯出與列印——列印 token 的螢幕側補充（@media print 本體在 manager-summary.module.css 與上方既有 @media print 區塊）；只用 token） ── */
