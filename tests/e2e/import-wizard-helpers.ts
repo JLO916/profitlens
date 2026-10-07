@@ -8,9 +8,12 @@ export const wizardRoles = ["sales_daily.csv", "channel_costs_daily.csv", "ad_sp
 export type WizardRole = typeof wizardRoles[number];
 export type FilePayload = { name: string; mimeType: string; buffer: Buffer };
 const copy = labels.importWizard;
+const v3 = copy.wizardV3;
 export const wizardFileLabels: Record<WizardRole, string> = { "sales_daily.csv": copy.files.sales, "channel_costs_daily.csv": copy.files.costs, "ad_spend_daily.csv": copy.files.ads };
 export const wizard = (page: Page) => page.getByTestId("import-wizard");
 export const wizardStatus = (page: Page) => page.getByTestId("import-status");
+/** V3-8：第 4 步既有的檢核結果句（copy.result[x]），檢核中不出現。 */
+export const wizardResultNote = (page: Page) => page.getByTestId("import-result-note");
 export const commitButton = (page: Page) => wizard(page).getByRole("button", { name: copy.commit, exact: true });
 export type Classification = "valid" | "partial" | "blocking";
 
@@ -56,12 +59,40 @@ export async function confirmMappingIfShown(page: Page) {
 export async function chooseBasis(page: Page, basis: "exclusive" | "inclusive" | "unsure" = "exclusive") {
   await wizard(page).getByLabel(copy.basis[basis], { exact: true }).check();
 }
+/**
+ * V3-8（§7.7.2）：第 3 步的收合區（內容保持掛載）——「調整比較期間」（比較方式、上期／本期 4 個日期、整月捷徑）、
+ * 「調整換算欄位」（含稅時 9 個換算 checkbox）、「調整通路」（通路多於 1 個時）。找 summary 是該文字的直屬 <details>。
+ */
+export const wizardDetails = (page: Page, summary: string) => wizard(page).locator("details", { has: page.locator(":scope > summary", { hasText: summary }) });
+/** 展開第 3 步的收合區（已展開就不點，不會把它關掉）；回傳該 <details>。 */
+export async function openWizardDetails(page: Page, summary: string) {
+  const details = wizardDetails(page, summary);
+  if (await details.getAttribute("open") === null) {
+    const toggle = details.locator(":scope > summary");
+    // 底部動作列是 sticky：先把 summary 捲到畫面中間，避免被動作列蓋住。
+    await toggle.evaluate(element => element.scrollIntoView({ block: "center" }));
+    await toggle.click();
+  }
+  await expect(details).toHaveAttribute("open", "");
+  return details;
+}
+export const openWizardPeriods = (page: Page) => openWizardDetails(page, v3.adjustPeriods);
+export const openWizardChannels = (page: Page) => openWizardDetails(page, v3.adjustChannels);
+export const openWizardConversion = (page: Page) => openWizardDetails(page, v3.adjustConvert);
+/** 比較方式與上期／本期起訖收在「調整比較期間」裡：要填這些欄位時先展開。資料集名稱、資料到、涵蓋起訖仍直接可見。 */
+const periodLabels = new Set<string>([copy.comparisonMode, labels.csvColumns.previous_start, labels.csvColumns.previous_end, labels.csvColumns.current_start, labels.csvColumns.current_end]);
 export async function fillWizardSettings(page: Page, settings: Record<string, string>) {
+  if (Object.keys(settings).some(label => periodLabels.has(label))) await openWizardPeriods(page);
   for (const [label, value] of Object.entries(settings)) await wizard(page).getByLabel(label, { exact: true }).fill(value);
 }
+/**
+ * V3-8（§7.7.2）：第 4 步頂部 import-status 改成 L1 一行（「可以套用：…」），並帶 data-classification（檢核中是 checking）；
+ * 既有的檢核結果句（copy.result[x]）移到 import-result-note。兩者都斷言。
+ */
 export async function confirmAndCheck(page: Page, classification: Classification) {
   await wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true }).click();
-  await expect(wizardStatus(page)).toHaveText(copy.result[classification], { timeout: 20_000 });
+  await expect(wizardStatus(page)).toHaveAttribute("data-classification", classification, { timeout: 20_000 });
+  await expect(wizardResultNote(page)).toHaveText(copy.result[classification]);
 }
 export async function commitWizard(page: Page) {
   await clickReplacing(page, commitButton(page));
