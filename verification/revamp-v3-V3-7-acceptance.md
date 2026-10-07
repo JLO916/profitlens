@@ -86,7 +86,8 @@
 ## 4. 瀏覽器驗收
 
 - 方式：示範資料（`APP_MODE=PUBLIC_DEMO`）的 production 伺服器，Playwright `baseline.spec.ts` 依 `CAPTURE_BATCH=V3-7` 逐頁截圖（01 空狀態、02 總覽、03 抽屜、04 待辦看板、05 健檢、06 商品、07 試算、08 會議、09 資料），四尺寸 1440×1000、1280×900、768×1024、390×844；寫入後重跑核對 0 差異。
-- 截圖路徑：`verification/revamp-v3/V3-7/snapshots/desktop/08-meeting.png`；`laptop/`、`tablet/`、`mobile/` 同名各一張（共 36 張）；Excel／PPT 開檔截圖見 §1 與 `office/`。
+- 截圖路徑：`verification/revamp-v3/V3-7/snapshots/desktop/08-meeting.png`；`laptop/`、`tablet/`、`mobile/` 同名各一張（共 36 張）。
+- Excel／PPT 開檔截圖（匯出檔人工檢查）：`verification/revamp-v3/V3-7/office/demo-current-view-xlsx.png`、`demo-current-view-pptx.png`（示範資料、目前檢視、一筆置頂待辦）與 `golden-meeting-xlsx.png`、`golden-meeting-pptx.png`（golden、會議版：十月例會、採用、備註）——以 writeExcel／writePptx（與 app 下載同一條路徑）產出後用 Microsoft Excel／PowerPoint 開啟整頁截圖（產出時間固定 2026-10-07 16:30）；E2E 全套產出的 golden 目前檢視版也開檔核對過，內容相同、未另存截圖。人工檢視：PPT 一張 16:9，白底、4pt 深綠頂線、標題 28pt「扣廣告後貢獻兩期比較（管理報表）」、副標三行＝資料集名稱／期間與單位／指標版本與產出時間、關鍵數字 36pt（不利差額紅色）、各通路表現表（表頭淺灰底）、本期三件事、決議、置頂待辦、頁尾資料版本；Excel 摘要工作表前四列「版頭」、表頭粗體淺灰底、凍結表頭列、會議版多四列會議紀錄、六張工作表（摘要、通路、貢獻變化拆解、商品比較、待辦、指標定義）。
 - 人工檢視（1440 與 390 的 08）：頁首動作列「本次會議（草稿）」＋名稱／日期行內編輯＋決議 select＋「結束會議」（主要）＋「複製週會摘要」＋「匯出會議」下拉；固定範圍一行與「用目前資料更新會議」；左側議程目錄六項（390 改成一列）；議程 1 關鍵數字兩個 24px 數字（扣廣告後貢獻「少賺 59.9 萬（−32.0%）」不利色）＋本期一句話；2 本期重點三列 C9（調整門檻收合）；3 各通路表現精簡表＋「完整通路寬表」收合；4–6 依序；備註；與上次會議比較收合；會議歷史在最底。390：頁首換成多列、不 sticky；議程目錄可水平捲動；沒有水平溢出。
 - 本機 production 伺服器（1440）另手動開過會議頁與頂欄「匯出」選單：五組分組、每項名稱＋說明一行。
 - Lighthouse 流程報告：`verification/revamp-v3/V3-7/lighthouse/flow-desktop-1440.html`、`flow-mobile-390.html`。

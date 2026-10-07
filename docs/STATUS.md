@@ -6,7 +6,7 @@ PRD §7.6／§7.9／§9.6 落地：會議紀錄頁改文件式版面（左側議
 
 - 最終驗收：typecheck pass、lint 0 warnings、unit 108 檔／2,158 全過、`lint:design` exit 0（hex 0、圓角 4、字級 11（13 → 11）、字距 0、箭頭 3、eyebrow 0）、build pass、E2E 全套 644／644（19.5m，四專案；新增 16 條）；禁區 diff 空；testid 刪除數 0（新增 meeting-title、export-page-meeting、meeting-export-*、meeting-snapshot-note、meeting-v2-note、print-header-*、download-group-*、download-copy-summary…）；`feature-retention.csv` V3-7 的 20 列打勾（#43–#50、D26–D32、D38–D41）。
 - 本批驗收重點：PDF 頁數 golden／demo 選單版與會議版 2 → 2；§6.5 正規化比對與 71e9f5f 的 sha256 相同；D01–D41 下載入口逐列有入口；會議門檻與總覽門檻兩份 state；E2E 新增：頂欄匯出選單五組與說明、失敗路徑回焦、複製週會摘要（備案與剪貼簿）、議程目錄、比較收合、v2 紀錄還原加註、PDF 頁數 ≤ 2、備份 copy_version。
-- 畫面基準：`verification/revamp-v3/V3-7/snapshots/` 四尺寸 36 張，重跑 0 差異；首屏量測與 V3-6 相同；Lighthouse 1440／390 六個步驟 accessibility 全 100、首頁 performance 99／97；會議紀錄頁 `label-content-name-mismatch` 18 → 10 個節點（V3-10 連 E2E 一起改名）；Excel／PPT 開檔截圖 `verification/revamp-v3/V3-7/office/`（golden 目前檢視、示範資料目前檢視、golden 會議版的 Excel 與 PPT 各一張）。
+- 畫面基準：`verification/revamp-v3/V3-7/snapshots/` 四尺寸 36 張，重跑 0 差異；首屏量測與 V3-6 相同；Lighthouse 1440／390 六個步驟 accessibility 全 100、首頁 performance 99／97；會議紀錄頁 `label-content-name-mismatch` 18 → 10 個節點（V3-10 連 E2E 一起改名）；Excel／PPT 開檔截圖 `verification/revamp-v3/V3-7/office/`（示範資料目前檢視、golden 會議版的 Excel 與 PPT 各一張）。
 - 偏離（詳見驗收文件 §5 與 DECISIONS 2026-10-07 V3-7）：頁首動作列只在 ≥ 1280 sticky；h2 固定「本次會議（草稿）」；版頭第 1 行在資料不同時退回 dataset_id；會議紀錄 Markdown 產出時間＝結束時間；Markdown 既有期間行保留；Excel 樣式靠改 zip；資料問題 CSV 的資料來源頁入口留 V3-8（D-V3-28）。
 - 未執行／待人工：H2、H3 依使用者 2026-10-07 指示略過；H1、H4 未執行。
 - 下一批：V3-8 資料來源、匯入精靈、空狀態。
