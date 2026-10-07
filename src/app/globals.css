@@ -2512,3 +2512,14 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 
 /* ── V3-9a 錨點結束 ── */
+
+/* ── V3-9b 錨點（代理 A：趨勢圖第三線（--chart-yoy 虛線）、不可用提示、抽屜的篩選片語列；只用 token） ── */
+
+
+/* ── V3-9b 錨點（代理 B：匯出選單的變體選擇器；列印變體的版面規則寫在既有 @media print 區塊之後的本區段；只用 token，列印字級用 --print-*） ── */
+
+
+/* ── V3-9b 錨點（代理 C：:root[data-mode="present"] 的 token 重新對應（--text-14 → 16px、--text-16 → 20px、--num-28 → 40px、--num-32 → 48px）、隱藏側欄與期間列、內容最大寬 1280px、只顯示 L1；.page-present 按鈕位置；只用 token） ── */
+
+
+/* ── V3-9b 錨點結束 ── */

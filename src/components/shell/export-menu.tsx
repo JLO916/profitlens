@@ -14,6 +14,7 @@ import { fill, labels } from "@/i18n";
 import { COPY_STATUS_MS } from "../overview/weekly-snapshot";
 import { ShellIcon } from "./shell-icon";
 import { TemplateTable } from "./template-table";
+import type { ExportVariant } from "@/application/export-variants";
 
 export interface ExportMenuSource {
   dataset: Dataset;
@@ -29,8 +30,9 @@ export interface ExportMenuProps {
   error: "export" | "markdown" | null;
   summaryRef: RefObject<HTMLElement | null>;
   onDecision: (format: "md" | "csv" | "json") => void;
-  onPrint: () => void;
-  onExport: (kind: "excel" | "pptx") => void;
+  /** V3-9b 開工錨點（F14）：變體由選單內的選擇器決定，由 B 代理實作；沒給＝standard。 */
+  onPrint: (variant?: ExportVariant) => void;
+  onExport: (kind: "excel" | "pptx", variant?: ExportVariant) => void;
   onMeetingNotes: () => void;
   /** V3-7（§6.5 新分組「會議」）：複製週會摘要到剪貼簿（與總覽同一份文字；回傳 copied=false 時在項目下方顯示可選取文字的備案）。沒有給就不渲染「會議」分組。 */
   onCopySummary?: () => Promise<{ copied: boolean; text: string }>;

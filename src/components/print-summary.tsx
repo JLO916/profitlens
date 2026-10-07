@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import type { ExportVariant } from "@/application/export-variants";
 import { createPortal } from "react-dom";
 import { summaryDecisionState, summaryExportHeader, type ManagerSummary as SummaryData, type SummaryDecisionContext } from "@/application/manager-summary";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
@@ -20,6 +21,8 @@ export interface PrintSummaryProps {
   datasetName?: string;
   /** V3-7 版頭的產出時間；預設掛上列印版面的當下（測試注入固定時間）。 */
   generatedAt?: Date;
+  /** V3-9b 開工錨點（F14）：列印／PDF 的範本變體；B 代理實作版面差異，預設 standard。 */
+  variant?: ExportVariant;
 }
 
 /**

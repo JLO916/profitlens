@@ -10,7 +10,7 @@ import { ShellIcon } from "./shell-icon";
  * 也可以直接用 actions 傳入。
  * V3-6：h1 旁再加一個插槽 #page-title-addon（每頁都渲染；空時不佔位），待辦頁的計數徽章「12 · 置頂 3」與 ? 說明由頁面元件 portal 放進來（或用 titleAddon 傳入）。
  */
-export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon, hasData = true, importing }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode; /** V3-8（§7.7.1 第 1 點）：資料來源頁已有資料時「匯入資料」主要、「載入示範資料」次要；沒有資料時對調。省略時視為已有資料（v2 的排法）。 */ hasData?: boolean; /** V3-8 開工錨點（§7.7.2）：匯入中「匯入資料／載入示範資料」保持掛載但 hidden（M1；page-import testid 不消失）。 */ importing?: boolean }) {
+export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon, hasData = true, importing, presentToggle }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode; /** V3-8（§7.7.1 第 1 點）：資料來源頁已有資料時「匯入資料」主要、「載入示範資料」次要；沒有資料時對調。省略時視為已有資料（v2 的排法）。 */ hasData?: boolean; /** V3-8 開工錨點（§7.7.2）：匯入中「匯入資料／載入示範資料」保持掛載但 hidden（M1；page-import testid 不消失）。 */ importing?: boolean; /** V3-9b 開工錨點（F22）：總覽與會議頁的「投影模式」按鈕（C 代理實作樣式與行為細節）。 */ presentToggle?: ReactNode }) {
   return <div className="page-heading">
     <div className="page-heading-text"><h1>{title}</h1>{description && <p className="subtitle">{description}</p>}</div>
     <div className="page-title-addon" id="page-title-addon" data-testid="page-title-addon">{titleAddon}</div>
@@ -20,6 +20,7 @@ export function PageHeader({ title, description, isData, showLoadDemo, onLoadDem
       <button type="button" className={`ui-btn ${hasData ? "ui-btn-primary" : "ui-btn-secondary"}`} data-testid="page-import" onClick={onImport}><ShellIcon name="import" size={16} />{labels.buttons.importData}</button>
       {hasData && showLoadDemo && <button type="button" className="ui-btn ui-btn-secondary" onClick={onLoadDemo}>{labels.buttons.loadDemo}</button>}
     </div>}
+    {presentToggle && <div className="page-present">{presentToggle}</div>}
     <div className="page-actions" id="page-actions" data-testid="page-actions">{actions}</div>
   </div>;
 }

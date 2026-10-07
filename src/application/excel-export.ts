@@ -5,6 +5,7 @@ import { AMOUNT_FIELDS, type Dataset, type Metric, type Period } from "../domain
 import { fill, labels } from "../i18n";
 import { actionDocuments, type ActionExecutionStatus, type ActionWorkspace } from "./action-workspace";
 import { ASSIST_KPI_VERSION } from "./assist-kpi";
+import type { ExportVariant } from "./export-variants";
 import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, scopeLabel } from "./copy";
 import { downloadBinary } from "./download";
@@ -35,6 +36,8 @@ export interface ExcelSheet {
 export interface ExcelWorkbook { sheets: ExcelSheet[] }
 export interface ExcelMeeting { name: string; date: string; decision: string; notes: string }
 export interface ExcelExportInput {
+  /** V3-9b 開工錨點（F14）：匯出範本變體；B 代理實作版面差異，預設 standard。 */
+  variant?: ExportVariant;
   /** buildManagerSummary(snapshot, …) 的結果；必須來自同一個 snapshot（資料版本與範圍版本相同）。 */
   summary: ManagerSummary;
   snapshot: WorkspaceSnapshot;

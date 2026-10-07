@@ -1,4 +1,5 @@
 import type { Metric } from "../domain/types";
+import type { ExportVariant } from "./export-variants";
 import { fill, labels } from "../i18n";
 import { MAX_PINNED_ACTIONS, type ActionWorkspace } from "./action-workspace";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "./copy";
@@ -30,6 +31,8 @@ export const PPTX_TEXT_LIMITS = {
 
 export interface PptxMeetingInput { name: string; date: string; decision: string; notes: string }
 export interface PptxOnePagerInput {
+  /** V3-9b 開工錨點（F14）：匯出範本變體；B 代理實作版面差異，預設 standard。 */
+  variant?: ExportVariant;
   summary: ManagerSummary; snapshot: WorkspaceSnapshot; actions: ActionWorkspace; meeting?: PptxMeetingInput | null;
   /** V3-7 版頭的產出時間（預設現在；測試注入固定時間）。 */
   generatedAt?: Date;

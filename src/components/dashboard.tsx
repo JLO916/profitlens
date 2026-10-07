@@ -31,6 +31,8 @@ import { buildReviewDecisionContext, createReviewSession, refreshReviewScenarioR
 import { appendMeeting, finalizeMeeting, lastMeeting, removeMeeting, type Meeting } from "@/application/meeting";
 import { exportExcel } from "@/application/excel-export";
 import { exportPptx } from "@/application/pptx-export";
+import { DEFAULT_EXPORT_VARIANT, type ExportVariant } from "@/application/export-variants";
+import { usePresentMode } from "./shell/present-mode";
 import { compareProducts } from "@/domain/product-comparison";
 import { exportWorkspaceDecision } from "@/application/workspace-decision-export";
 import { decisionSignature, emptyDecisionWorkspace } from "@/application/decision";
@@ -413,14 +415,15 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   // V3-7 §7.9：匯出版頭第 1 行用畫面上的資料集名稱（示範資料／golden／使用者檔名），不用 dataset_id。
   const activeDatasetName = (current: Active) => datasetLabels[current.id] ?? current.dataset.manifest.dataset_id;
   const viewSummary = (current: Active) => buildManagerSummary(current.snapshot, { conversion: current.conversion, targets: { set: current.targets ?? null, allChannels: current.dataset.manifest.channels } });
-  async function exportCurrentView(kind: "excel" | "pptx") {
+  // V3-9b 開工錨點（F14）：變體由匯出選單帶入，預設 standard；各管線的版面差異由 B 代理在 builder 實作。
+  async function exportCurrentView(kind: "excel" | "pptx", variant: ExportVariant = DEFAULT_EXPORT_VARIANT) {
     if (!active || menuBusy.current) return;
     menuBusy.current = true;
     setMenuExport({ busy: kind, error: null });
     try {
       const summary = viewSummary(active);
-      if (kind === "excel") await exportExcel({ summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null, datasetName: activeDatasetName(active) });
-      else await exportPptx({ summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null, datasetName: activeDatasetName(active) });
+      if (kind === "excel") await exportExcel({ variant, summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null, datasetName: activeDatasetName(active) });
+      else await exportPptx({ variant, summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null, datasetName: activeDatasetName(active) });
       track(kind === "excel" ? "export_excel" : "export_pptx");
       setMenuExport({ busy: null, error: null });
     } catch { setMenuExport({ busy: null, error: "export" }); } finally { menuBusy.current = false; downloadSummaryRef.current?.focus(); }
@@ -444,11 +447,11 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     } catch { setMenuExport({ busy: null, error: "markdown" }); } finally { menuBusy.current = false; downloadSummaryRef.current?.focus(); }
   }
   /** 「匯出 PDF」：在 body 放列印版面後 window.print()（與會議頁、會議摘要的列印同一流程）；只帶目前待辦，不帶會議。 */
-  function printCurrentView() {
+  function printCurrentView(variant: ExportVariant = DEFAULT_EXPORT_VARIANT) {
     if (!active) return;
     let decisionContext: PrintSummaryProps["decisionContext"];
     try { decisionContext = currentViewDecisionContext(active.snapshot, actionRef.current); } catch { decisionContext = undefined; }
-    setMenuPrint({ summary: viewSummary(active), decisionContext, snapshot: active.snapshot, meeting: null, datasetName: activeDatasetName(active) });
+    setMenuPrint({ variant, summary: viewSummary(active), decisionContext, snapshot: active.snapshot, meeting: null, datasetName: activeDatasetName(active) });
     track("export_pdf");
   }
   function reviewEvidence(selection: EvidenceSelection, review: ReviewSession) {
@@ -510,6 +513,9 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   }
   const visible = active && (status === "ready" || status === "partial" || (status === "loading" && refiltering));
   const importing = showImport && panel === "data";
+  // V3-9b 開工錨點（F22）：投影模式只在總覽與會議頁、有資料時可用；按鈕放在 PageHeader，Esc 離開（hook 內）。
+  const present = usePresentMode(!!visible && (panel === "overview" || panel === "meeting"));
+  const presentToggle = visible && (panel === "overview" || panel === "meeting") ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed={present.active} onClick={present.active ? present.exit : present.enter}>{present.active ? labels.shell.presentV3.exit : labels.shell.presentV3.enter}</button> : undefined;
   const local = active?.dataset.manifest.source_type === "user_provided";
   const currentContext = scenarioWorkspace.contexts.find(context => context.status === "current" && context.session.filter_hash === active?.snapshot.filter_hash);
   const decision = currentContext ? scenarioContextDecision(currentContext) : emptyDecisionWorkspace();
@@ -543,7 +549,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
         {/* V3-8 開工錨點（§7.7.2 全版專注模式）：匯入中頁首改「匯入資料」＋隱私一句，期間列、橫幅與頁面內容保持掛載但 hidden；頂欄保留。 */}
-        <PageHeader title={importing ? labels.importWizard.title : currentPanel.label} description={importing ? labels.importWizard.privacyNote : panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} importing={importing} hasData={status !== "empty"} showLoadDemo onLoadDemo={() => void load("demo")} onImport={startImport} />
+        <PageHeader title={importing ? labels.importWizard.title : currentPanel.label} description={importing ? labels.importWizard.privacyNote : panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} importing={importing} hasData={status !== "empty"} presentToggle={presentToggle} showLoadDemo onLoadDemo={() => void load("demo")} onImport={startImport} />
         {whatsNew.visible && <WhatsNewNote onOpenGlossary={() => { whatsNew.markRead(); setBasisSection("v2-names"); setBasisOpen(true); }} onDismiss={whatsNew.dismiss} />}
         {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
           <h2 id="validation-heading">{labels.ui.dashboard.validation.heading}</h2>

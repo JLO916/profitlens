@@ -243,6 +243,12 @@ async function pageStates(): Promise<StateMarkup[]> {
     "actions-ad-decision-list": { panel: "actions", active: golden, status: "ready", actionWorkspace: setAdDecision(actions, "a1", "increase"), scenarioWorkspace: scenarios, actionsView: "list" },
 
     // ── V3-9a C 新增的頁面狀態在此之後（例如進階區展開、週檢視）──
+
+    // ── V3-9b A 新增的頁面狀態在此之後（例如去年同期不可用的資料集）──
+
+    // ── V3-9b B 新增的頁面狀態在此之後（例如匯出選單選了變體）──
+
+    // ── V3-9b C 新增的頁面狀態在此之後（投影模式是 html 屬性，SSR 狀態可不加）──
     // 總覽：淨營收為負、零值列多的資料集（refund_only）——管理損益表 7 列零值列 hidden 但掛載，佔淨營收 % 不適用。
     // 沒有資料（空工作區停在資料來源頁）與載入失敗的整頁不是 ShellState（它需要資料），由下方 statusShells() 依 dashboard.tsx 的 return 另外組，state 為 null（同 shell-empty）。
 
@@ -985,6 +991,14 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(hidden).toEqual(["gross_sales", "discounts", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "ad_spend"]);
       expect(openTag(states.find(state => state.name === "overview-refund-only")!.html, 'data-testid="pnl-show-zero"')).toMatch(/aria-pressed="false"/);
     });
+
+    // ── V3-9b A（三線趨勢與下鑽）的 M1 掛載測試在此之後新增（第三線圖例、不可用原因、抽屜篩選片語各一份）──
+
+
+    // ── V3-9b B（匯出變體）的 M1 掛載測試在此之後新增（選單內變體選擇器一份、三個格式項目不變）──
+
+
+    // ── V3-9b C（投影模式）的 M1 掛載測試在此之後新增（present-toggle 只在總覽與會議頁各一份、投影中內容仍掛載）──
 
   });
 
