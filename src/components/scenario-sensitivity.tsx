@@ -37,7 +37,8 @@ export function ScenarioSensitivity({ baseline, inputs, stale = false, value, on
   const analysis = useMemo(() => analyzeScenarioSensitivity(baseline, inputs, submitted ?? ["", "", ""], { stale }), [baseline, inputs, submitted, stale]);
   return <details className="scenario-sensitivity" data-testid="scenario-sensitivity">
     <summary>{labels.sections.scenarioBreakeven}</summary>
-    <p className="note">{labels.sections.caution}：{labels.basis.items[6]}</p>
+    {/* V3-6（PRD §7.4、§6.3 #38）：限制一句改成 13px 次要色，不加前綴。 */}
+    <p className="scenario-caution">{labels.basis.items[6]}</p>
     {analysis.status !== "valid" ? <div className="alert" role="status">{analysis.reasons.map(reason => <p key={`${reason.code}-${reason.field ?? ""}`}>{reasonText(reason)}</p>)}</div> : <>
       <h4>{copy.targetsHeading}</h4>
       {analysis.targets.map(target => <section className="threshold-target" data-testid={`threshold-${target.id}`} key={target.id}>
@@ -57,7 +58,7 @@ export function ScenarioSensitivity({ baseline, inputs, stale = false, value, on
       <p className="note">{copy.inputsHint}</p>
       <fieldset disabled={stale}><legend className="sr-only">{copy.inputsLegend}</legend>
         <div className="sensitivity-inputs">{volumes.map((entry, index) => <label key={index}>{fill(copy.inputLabel, { letter: letter(index) })}<input type="text" inputMode="decimal" maxLength={MAX_SENSITIVITY_INPUT_LENGTH} value={entry} onChange={event => { onChange({ volumes: volumes.map((item, position) => position === index ? event.target.value : item) as SensitivityInputs["volumes"] }); setSubmitted(null); }} /></label>)}</div>
-        <button className="button quiet" onClick={() => setSubmitted([...volumes])}>{copy.recalc}</button>
+        <button type="button" className="ui-btn ui-btn-secondary" onClick={() => setSubmitted([...volumes])}>{copy.recalc}</button>
       </fieldset>
       <div aria-live="polite" data-testid="sensitivity-result">
         {analysis.sensitivity.status !== "valid" ? <p className={analysis.sensitivity.status === "invalid" ? "alert" : "note"}>{analysis.sensitivity.reasons.map(reasonText).join(" ")}</p> : <div className="table-scroll" role="region" aria-label={copy.tableAria} tabIndex={0}><table>

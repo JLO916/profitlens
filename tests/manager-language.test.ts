@@ -111,7 +111,8 @@ describe("PL-10 manager language keeps technical evidence available on demand", 
     expect(labels.scenarioForm.assumptionsSummary).toContain(labels.sections.scenarioAssumptions);
     expect(refundAssumption).toContain("同批訂單");
     expect(block).toContain(refundAssumption);
-    expect(main).toContain(labels.ui.decisionWorkbench.baselineTagFixed);
+    // V3-6（PRD §7.4 基準列）：v2 的「固定不變」標籤改成同一列右側的新鮮度狀態（不過期時只寫「使用目前資料」）。
+    expect(main).toContain(labels.ui.decisionWorkbench.freshTitle);
     expect(main).toContain(`從${labels.sections.scenarioBaseline}算起`);
     expect(main.replace(/<[^>]*>/g, "")).not.toMatch(/BASELINE|baseline|cohort|fact IDs/);
     expect(html).toContain("scenario-v1");

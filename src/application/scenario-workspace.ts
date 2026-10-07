@@ -13,8 +13,17 @@ export interface ScenarioContext {
   session: DecisionSession; source_input: DatasetInput; source_mappings?: ColumnMappings;
   plans: VersionedScenarioPlan[]; versions: ScenarioPlanVersion[];
 }
-export interface ScenarioWorkspace { schema_version: 'scenario-workspace-v1'; active_epoch: string; contexts: ScenarioContext[] }
+/**
+ * V3-6（D-V3-12＝B）：assumptions_acknowledged_at＝同一工作區第一次勾「我了解這是試算，不是預測」的時間（ISO datetime，選填）。
+ * 有值之後每個方案都不再顯示勾選框；新增、複製與試算時 assumptions_accepted 直接視為 true。寫入備份 v4（選填，舊檔沒有＝undefined）。
+ */
+export interface ScenarioWorkspace { schema_version: 'scenario-workspace-v1'; active_epoch: string; contexts: ScenarioContext[]; assumptions_acknowledged_at?: string }
 export function emptyScenarioWorkspace(epoch = 'initial'): ScenarioWorkspace { return { schema_version: 'scenario-workspace-v1', active_epoch: epoch, contexts: [] }; }
+/** V3-6（D-V3-12＝B）：記住聲明。只設 assumptions_acknowledged_at，不改 contexts；已經記住時回傳原物件（記住就是記住，沒有取消）。 */
+export function acknowledgeScenarioAssumptions(workspace: ScenarioWorkspace, at: string): ScenarioWorkspace {
+  if (workspace.assumptions_acknowledged_at) return workspace;
+  return { ...workspace, assumptions_acknowledged_at: at };
+}
 export function scenarioContextId(epoch: string, session: DecisionSession): string { return `scenario-${epoch}-${session.dataset_hash}-${session.filter_hash}`; }
 const equal = (a: unknown, b: unknown) => decisionSignature(a) === decisionSignature(b);
 const validRevision = (n: number) => Number.isSafeInteger(n) && n > 0;
@@ -84,8 +93,8 @@ export function copyHistoricalScenario(workspace: ScenarioWorkspace, source: Sce
   const id = scenarioContextId(next.active_epoch, createDecisionSession(source.dataset, source.snapshot, source.revision, source.filenames));
   const target = next.contexts.find(context => context.id === id)!;
   const decision = scenarioContextDecision(target);
-  // 只沿用名稱：假設、結果與敏感度三組輸入都清空（不帶 sensitivity）。
-  decision.scenarios.push({ id: newId, name: original.name, inputs: blankScenarioInputs(), result: null });
+  // 只沿用名稱：假設、結果與敏感度三組輸入都清空（不帶 sensitivity）。V3-6（D-V3-12＝B）：已記住聲明時，聲明直接視為已勾。
+  decision.scenarios.push({ id: newId, name: original.name, inputs: { ...blankScenarioInputs(), assumptions_accepted: !!next.assumptions_acknowledged_at }, result: null });
   return updateScenarioContext(next, id, decision);
 }
 export function resolveScenarioReference(workspace: ScenarioWorkspace, reference: ScenarioSelectionRef) {

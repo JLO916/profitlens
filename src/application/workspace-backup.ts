@@ -162,7 +162,8 @@ const savedDecisionV4 = savedDecision.extend({ scenarios: z.array(scenarioV4).ma
 const referencedDecisionV4 = savedDecisionV4.omit({ source_input: true }).extend({ source_hash: hash });
 const referencedActionWorkspaceV4 = referencedActionWorkspace.extend({ contexts: z.array(referencedDecisionV4.extend({ id: name })), items: z.array(savedActionV4) });
 const scenarioContextV4 = scenarioContext.extend({ plans: z.array(scenarioV4.extend({ revision: revision.min(1) })).max(3) });
-const referencedScenarioWorkspaceV4 = referencedScenarioWorkspace.extend({ contexts: z.array(scenarioContextV4) });
+// V3-6（D-V3-12＝B）：記住「我了解這是試算」的時間（選填，只在 v4 信封；舊 v4 沒有 → undefined；v1–v3 帶此欄位一律 INVALID_WORKSPACE_FORMAT）。
+const referencedScenarioWorkspaceV4 = referencedScenarioWorkspace.extend({ contexts: z.array(scenarioContextV4), assumptions_acknowledged_at: z.iso.datetime().optional() });
 const v4CorePayload = z.strictObject({ ...v3PayloadShape, decision: referencedDecisionV4.nullable(), action_workspace: referencedActionWorkspaceV4, scenario_workspace: referencedScenarioWorkspaceV4 });
 /** restoreV3 讀的 payload：v4 核心（v3 是它的子集，只是沒有 R5 的選填欄位）。 */
 type CorePayload = z.infer<typeof v4CorePayload>;
@@ -292,6 +293,7 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
       plans: context.plans.map(plan => ({ id: plan.id, revision: plan.revision, name: plan.name, inputs: plan.inputs, calculated: plan.result !== null, ...(plan.sensitivity ? { sensitivity: plan.sensitivity } : {}) })),
       versions: context.versions.map(plan => ({ plan_id: plan.plan_id, revision: plan.revision, name: plan.name, inputs: plan.inputs, calculated: true })),
     }))),
+    ...(scenarioState.assumptions_acknowledged_at ? { assumptions_acknowledged_at: scenarioState.assumptions_acknowledged_at } : {}),
   };
   let reviewSession: unknown = null;
   if (source.review_session) {
@@ -512,6 +514,7 @@ async function restoreV3(payload: CorePayload): Promise<Omit<RestoredWorkspace, 
     });
     scenarioWorkspace.contexts.push({ id: saved.id, epoch: saved.epoch, status: saved.status, historical_reasons: saved.historical_reasons, session, source_input: structuredClone(resolve(saved.source_hash).input), source_mappings: saved.source_mappings, plans, versions });
   }
+  if (payload.scenario_workspace.assumptions_acknowledged_at) scenarioWorkspace.assumptions_acknowledged_at = payload.scenario_workspace.assumptions_acknowledged_at;
   validateScenarioWorkspace(scenarioWorkspace);
   let reviewSession: ReviewSession | null = null;
   if (payload.review_session) {

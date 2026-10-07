@@ -83,9 +83,10 @@
       "keys": [
         "schema_version",
         "active_epoch",
-        "contexts"
+        "contexts",
+        "assumptions_acknowledged_at"
       ],
-      "note": "schema_version = scenario-workspace-v1；contexts[].plans[] 最多 3 個、帶 revision 與選填 sensitivity；versions[] 不存敏感度。"
+      "note": "schema_version = scenario-workspace-v1；contexts[].plans[] 最多 3 個、帶 revision 與選填 sensitivity；versions[] 不存敏感度。V3-6 選填 assumptions_acknowledged_at（D-V3-12，見 scenario_assumptions_acknowledged）。"
     },
     "review_session": {
       "type": "object | null",
@@ -172,6 +173,13 @@
     "type": "YYYY-MM-DD",
     "optional": true,
     "note": "R5：狀態改變的日期；舊 v4 沒有時讀回 undefined。"
+  },
+  "scenario_assumptions_acknowledged": {
+    "path": "payload.scenario_workspace.assumptions_acknowledged_at",
+    "type": "ISO datetime",
+    "optional": true,
+    "v3_6_addition": true,
+    "note": "D-V3-12＝B：同一工作區第一次勾「我了解這是試算，不是預測」的時間；有值時每個方案不再顯示勾選框，新增、複製與試算時聲明直接視為已勾。只在 v4 信封；沒有此欄位的舊 v4 讀回 undefined；v1–v3 信封帶此欄位即拒絕。"
   },
   "opaque_records": {
     "manifest": "DatasetInput.manifest（z.record，內容即資料集 manifest）",
@@ -424,6 +432,7 @@
     "payload.review_session.target_version",
     "payload.scenario_workspace",
     "payload.scenario_workspace.active_epoch",
+    "payload.scenario_workspace.assumptions_acknowledged_at",
     "payload.scenario_workspace.contexts",
     "payload.scenario_workspace.contexts[].dataset_hash",
     "payload.scenario_workspace.contexts[].epoch",
