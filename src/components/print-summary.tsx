@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { summaryDecisionState, type ManagerSummary as SummaryData, type SummaryDecisionContext } from "@/application/manager-summary";
+import { summaryDecisionState, summaryExportHeader, type ManagerSummary as SummaryData, type SummaryDecisionContext } from "@/application/manager-summary";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -12,8 +12,15 @@ import styles from "./manager-summary.module.css";
 // V3-7 開工錨點：A4 列印版（「列印」與「匯出 PDF」共用）自 manager-summary.tsx 原樣搬出（markup 不變）。
 // B 代理在此檔落實 §7.9 的台灣報表版頭四行與 §9.6 的列印 token（manager-summary.module.css 的 @media print）；A 代理不改本檔。
 const copy = labels.ui.managerSummary;
+const scopeCopy = labels.exports.headerV3;
 
-export interface PrintSummaryProps { summary: SummaryData; decisionContext?: SummaryDecisionContext; snapshot?: Pick<WorkspaceSnapshot, "report">; meeting?: PrintMeeting | null }
+export interface PrintSummaryProps {
+  summary: SummaryData; decisionContext?: SummaryDecisionContext; snapshot?: Pick<WorkspaceSnapshot, "report">; meeting?: PrintMeeting | null;
+  /** V3-7 版頭第 1 行；預設 dataset_id（V3-10 可由呼叫端傳畫面上的資料集名稱）。 */
+  datasetName?: string;
+  /** V3-7 版頭的產出時間；預設掛上列印版面的當下（測試注入固定時間）。 */
+  generatedAt?: Date;
+}
 
 /**
  * R6-3「列印」與「匯出 PDF」共用同一流程：把 PrintSummary 放到 body 後呼叫 window.print()（使用者在列印對話框選「另存為 PDF」）；
@@ -36,7 +43,10 @@ export function PrintSummaryPortal({ onDone, ...props }: PrintSummaryProps & { o
  * A4 直式：第一頁＝標題、關鍵差額、決議與備註一行、三件事、通路表、選入方案（每個一行）與置頂行動；
  * 附錄（方案的完整假設、超過 200 字的備註全文、未置頂待辦、技術資訊）從新的一頁開始。
  */
-export function PrintSummary({ summary, decisionContext, snapshot, meeting = null }: PrintSummaryProps) {
+export function PrintSummary({ summary, decisionContext, snapshot, meeting = null, datasetName, generatedAt }: PrintSummaryProps) {
+  // 產出時間在掛上時決定一次（重新渲染不變）。
+  const [printedAt] = useState(() => generatedAt ?? new Date());
+  const header = summaryExportHeader(summary, { generatedAt: generatedAt ?? printedAt, datasetName });
   const decisions = summaryDecisionState(summary, decisionContext);
   const alias = demoAlias(summary.dataset_id);
   const page = labels.meetingPage;
@@ -49,7 +59,8 @@ export function PrintSummary({ summary, decisionContext, snapshot, meeting = nul
   const firstPageNotes = notesTruncated ? fill(page.printNotesTruncated, { text: noteChars.slice(0, PRINT_NOTES_LIMIT).join("") }) : notes;
   const assumptions = decisions.selectedScenarios.filter(plan => plan.assumptions.length > 0);
   return <article className={styles.printSurface} data-testid="manager-summary-print">
-    <header>{meeting && <p className={styles.printMeta}>{fill(page.printHeader, { name: meeting.name, date: meeting.date, asOf: summary.data_as_of })}</p>}<h1>{copy.printTitle}</h1><p>{fill(copy.printContext, { state: decisionContext?.decisionState ?? copy.draftDecision, asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, alias) })}</p><p>{fill(copy.printPeriodLine, periodValues(summary))}</p></header>
+    {/* V3-7 §7.9／§6.3 #50：版頭改成台灣報表格式四行（資料集、報表名、兩期與單位、指標版本與產出時間；8pt 附註字級，報表名是 14pt 標題），之後是會議名稱與日期一行（有會議時）與範圍一行；其後內容順序不變。 */}
+    <header className={styles.printHeader} data-testid="print-report-header"><p className={styles.printNote} data-testid="print-header-dataset">{header.datasetName}</p><h1>{header.title}</h1><p className={styles.printPeriod} data-testid="print-header-period"><span>{header.periodLine}</span><span>{header.unitLine}</span></p><p className={styles.printNote} data-testid="print-header-version">{header.versionLine}</p>{meeting && <p className={styles.printMeta} data-testid="print-header-meeting">{fill(page.printHeader, { name: meeting.name, date: meeting.date, asOf: summary.data_as_of })}</p>}<p className={styles.printScope} data-testid="print-header-scope">{fill(meeting ? scopeCopy.printScopeMeeting : scopeCopy.printScope, { state: decisionContext?.decisionState ?? copy.draftDecision, asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, alias), mode: periodValues(summary).mode })}</p></header>
     <div className={styles.printHeadlines}>{summary.headlines.map(row => <p key={row.metric}><strong>{metricDefinitions[row.metric].label}</strong><br />{fill(copy.printHeadline, { prev: formatAmountL1(row.previous.value), cur: formatAmountL1(row.current.value), change: signedL1(row.change.value) })}</p>)}</div>
     {decisionContext?.reviewName && <p className={styles.printDecision} data-testid="print-decision-line">{fill(copy.printMeetingLine, { name: decisionContext.reviewName, state: decisionContext.decisionState ?? copy.draftDecision, notes: firstPageNotes })}</p>}
     <h2>{labels.sections.topThree}</h2><p>{fill(copy.printThresholdLine, { amount: formatAmountL3(summary.importance_threshold) })}</p>

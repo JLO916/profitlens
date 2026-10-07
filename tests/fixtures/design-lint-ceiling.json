@@ -1,9 +1,9 @@
 {
-  "_說明": "tests/design-lint.test.ts 的棘輪上限（PRD §5.4）。V3-0（2026-10-05）以 scripts/ui-audit.mjs 實測的 v2 數值初始化；V3-1（2026-10-05）token 化後調低至實測值（hex 0、圓角 4、字級 13＝螢幕 8 種＋列印 5 種 pt 值，列印 token 於 V3-7 處理）。V3-2a（2026-10-05）元件中文全部移到 labels，jsxCjkTextNodes、cjkStringLiterals 調為 0。V3-3（2026-10-06）殼層改版刪除側欄箭頭、`.nav-dot`／`.green-dot` 與兩個 `::after ▾` 後調低：jsxArrowTextNodes 4、jsxDecorativeChars 0、cssDecorativeContent 0。V3-4b（2026-10-06）總覽趨勢與各通路改 ChartFrame、刪除 v2 圖表區的 eyebrow（TREND／CONTRIBUTION BRIDGE／CHANNEL MIX）與橋接摘要的「→」後調低：jsxAllCapsEyebrow 0、jsxArrowTextNodes 3。之後每批只能調低，不得調高。量測口徑見 scripts/lib/ui-scan.mjs。",
+  "_說明": "tests/design-lint.test.ts 的棘輪上限（PRD §5.4）。V3-0（2026-10-05）以 scripts/ui-audit.mjs 實測的 v2 數值初始化；V3-1（2026-10-05）token 化後調低至實測值（hex 0、圓角 4、字級 13＝螢幕 8 種＋列印 5 種 pt 值，列印 token 於 V3-7 處理）。V3-2a（2026-10-05）元件中文全部移到 labels，jsxCjkTextNodes、cjkStringLiterals 調為 0。V3-3（2026-10-06）殼層改版刪除側欄箭頭、`.nav-dot`／`.green-dot` 與兩個 `::after ▾` 後調低：jsxArrowTextNodes 4、jsxDecorativeChars 0、cssDecorativeContent 0。V3-4b（2026-10-06）總覽趨勢與各通路改 ChartFrame、刪除 v2 圖表區的 eyebrow（TREND／CONTRIBUTION BRIDGE／CHANNEL MIX）與橋接摘要的「→」後調低：jsxAllCapsEyebrow 0、jsxArrowTextNodes 3。V3-7（2026-10-07）列印字級改用 --print-title／--print-body／--print-note 三個 token（manager-summary.module.css 的 8／8.5／9.5／11／16pt 原值移除）後調低：fontSizeValues 11（螢幕 8 種＋列印 token 3 種）。之後每批只能調低，不得調高。量測口徑見 scripts/lib/ui-scan.mjs。",
   "ceilings": {
     "hexOutsideRoot": 0,
     "borderRadiusValues": 4,
-    "fontSizeValues": 13,
+    "fontSizeValues": 11,
     "letterSpacingNonZero": 0,
     "decorativeRotate": 0,
     "jsxArrowTextNodes": 3,

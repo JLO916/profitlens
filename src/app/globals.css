@@ -180,6 +180,11 @@
   --z-drawer: 50;
   --z-toast: 60;
 
+  /* 列印字級（V3-7 §9.6：A4 列印與 PDF；只在 @media print 使用）*/
+  --print-title: 14pt;
+  --print-body: 10pt;
+  --print-note: 8pt;
+
   background: var(--bg-page);
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -923,6 +928,8 @@ details.assumptions-panel[open] > summary { margin-bottom: 4px; }
 @media print {
   .sidebar, .topbar, .skip-link, .main-footer, .meeting-outputs, .meeting-finalize, .meeting-confirm, .meeting-history-buttons, .meeting-history-remove { display: none !important; }
   .main-shell { margin-left: 0 !important; }
+  /* V3-7 §9.6：列印白底、不印任何底色（頁面底色 --bg-page 不延伸到 PDF 的空白處）。 */
+  html, body { background: none !important; }
 }
 
 

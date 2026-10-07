@@ -6,6 +6,7 @@ import { fill, labels } from "../i18n";
 import { MAX_ACTIONS, MAX_SCENARIOS, decisionSignature, hasSensitivityInputs, validateActionContent, validateActionEvidence, validateScenarioName, validateSensitivityInputs, type ActionCard, type DecisionSession, type ScenarioPlan, type SensitivityInputs } from "./decision";
 import { encodeCsv, type CsvCell } from "./export";
 import { actionDocuments, type ActionWorkspace } from "./action-workspace";
+import { buildExportHeader, markdownExportHeader } from "./export-header";
 import { formatAmount, formatMetric, formatPeriodExport, formatRateL2, formatSignedDelta, type Layer } from "./presentation";
 
 const copy = labels.ui.decisionExport;
@@ -179,12 +180,23 @@ function mdSensitivity(sensitivity: SensitivityExport): string[] {
   else if (sensitivityStatus(sensitivity) !== "valid") lines.push("", md([...new Set(sensitivity.analysis.reasons.map(scenarioReasonText))].join(" ")));
   return lines;
 }
-export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = []): string {
+/**
+ * V3-7 options：generatedAt 是版頭的產出時間（預設現在）；datasetName 預設 dataset_id；amountBasis 沒給時，
+ * 有 extraLimitations（目前只會是含稅換算一句，見 workspace-decision-export.ts 的 extraFor）就當作「已換算為未稅」。
+ */
+export interface DecisionMarkdownOptions { generatedAt?: Date; datasetName?: string; amountBasis?: "exclusive" | "inclusive" }
+export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = [], options: DecisionMarkdownOptions = {}): string {
   const document = decisionDocument(session, scenarios, actions, actionWorkspace, extraLimitations);
   const alias = demoAlias(session.dataset_id);
   const periodText = (period: Period) => `${period.start}～${period.end}`;
   const comparisonMode = session.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays;
-  const lines = [`# ${copy.title}`, "", fill(copy.statusLine, { status: session.stale ? copy.statusStale : copy.statusCurrent }), "", `## ${copy.sectionSource}`, "",
+  // V3-7 §7.9：「# 標題」之後緊接版頭四行（兩期取這份試算建立時的範圍），其後各段順序與數值不變。
+  const header = buildExportHeader({
+    datasetName: options.datasetName ?? session.dataset_id, metricVersion: session.metric_version, generatedAt: options.generatedAt ?? new Date(),
+    amountBasis: options.amountBasis ?? (extraLimitations.length ? "inclusive" : "exclusive"),
+    scope: { previous: session.scope.previous_period, current: session.scope.current_period, previousDays: session.comparison.previous_days, currentDays: session.comparison.current_days },
+  });
+  const lines = [`# ${copy.title}`, "", ...markdownExportHeader(header), "", fill(copy.statusLine, { status: session.stale ? copy.statusStale : copy.statusCurrent }), "", `## ${copy.sectionSource}`, "",
     ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: formatPeriodExport(session.period.start, session.period.end), scope: channelsLabel(session.scope.channels, alias), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
     "", ...mdTechnical(mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, comparison: session.comparison, sources: session.sources, stale_reasons: session.stale_reasons }, false)),
     "", `## ${labels.sections.scenarioBaseline}`, "", labels.ui.export.amountUnitNote, "", ...mdFields(amountFields(session.baseline.amounts)), "", ...mdFields(rateFields({ ...session.baseline.rates })),
