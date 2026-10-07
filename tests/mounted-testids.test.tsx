@@ -208,6 +208,10 @@ async function pageStates(): Promise<StateMarkup[]> {
     "actions-empty": { panel: "actions", active: golden, status: "ready", actionWorkspace: emptyActionWorkspace(), scenarioWorkspace: scenarios },
     "actions-list": { panel: "actions", active: golden, status: "ready", actionWorkspace: actions, scenarioWorkspace: scenarios, actionsView: "list" },
 
+    // ── V3-7 A 新增的頁面狀態在此之後（例如 meeting-finalized、meeting-v2-record）──
+
+    // ── V3-7 C 新增的頁面狀態在此之後（例如匯出選單處理中）──
+
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];
   for (const [name, state] of Object.entries(states)) out.push({ name, html: renderToStaticMarkup(shellPage(state)), state });
@@ -573,6 +577,11 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect([...idCounts(html)].filter(([, count]) => count > 1)).toEqual([]);
       expect(duplicateTestIds(html)).toEqual([]);
     });
+
+    // ── V3-7 A（會議紀錄頁）的 M1 掛載測試在此之後新增（頁首「匯出會議」下拉五項在收合 details 內、議程目錄 <ol>、與上次會議比較 details、歷史在最底）──
+
+
+    // ── V3-7 C（頂欄匯出選單）的 M1 掛載測試在此之後新增（分組與每項說明、會議分組「複製週會摘要」、3×3 範本表）──
 
   });
 

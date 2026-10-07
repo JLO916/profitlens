@@ -31,6 +31,8 @@ export interface ExportMenuProps {
   onPrint: () => void;
   onExport: (kind: "excel" | "pptx") => void;
   onMeetingNotes: () => void;
+  /** V3-7 開工錨點（§6.5 新分組「會議」）：複製週會摘要到剪貼簿（與總覽同一份文字；回傳 copied=false 時顯示可選取文字的備案）。C 代理接線。 */
+  onCopySummary?: () => Promise<{ copied: boolean; text: string }>;
 }
 
 const fileLabel = (role: (typeof FILE_ROLES)[number]) => labels.importWizard.files[role === "sales_daily.csv" ? "sales" : role === "channel_costs_daily.csv" ? "costs" : "ads"];

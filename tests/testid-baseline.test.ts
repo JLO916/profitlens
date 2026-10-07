@@ -28,7 +28,7 @@ import { MultiScenarioWorkbench } from "@/components/multi-scenario-workbench";
 import { DecisionWorkbench } from "@/components/decision-workbench";
 import { ActionsWorkbench } from "@/components/actions-workbench";
 import { MeetingEntry, MeetingHistory, MeetingPage, type MeetingPageProps } from "@/components/meeting-page";
-import { PrintSummary } from "@/components/manager-summary";
+import { PrintSummary } from "@/components/print-summary";
 import { ImportWizard } from "@/components/import-wizard";
 import { StepFiles } from "@/components/import-wizard/step-files";
 import { StepMapping } from "@/components/import-wizard/step-mapping";

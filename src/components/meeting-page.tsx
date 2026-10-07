@@ -19,7 +19,9 @@ import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
 import { fill, labels } from "@/i18n";
 import { scenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from "@/application/scenario-workspace";
 import { buildReviewDecisionContext, createReviewSession, refreshReviewActionReferences, REVIEW_DECISION_LABELS, reviewScenarioId, selectReviewScenario, syncReviewPins, updateReviewSession, validateReviewSession, type ReviewDecisionState, type ReviewSession } from "@/application/review-session";
-import { ActionSummaryList, ManagerSummary, PrintSummaryPortal, toneClass } from "./manager-summary";
+import { ManagerSummary, toneClass } from "./manager-summary";
+import { PrintSummaryPortal } from "./print-summary";
+import { ActionSummaryList } from "./summary-shared";
 import type { EvidenceSelection } from "./evidence-drawer";
 
 // R6-2 會議紀錄分頁（02 §8）：會議基本 → 議程 ①–⑥ → 決議與結束會議 → 上次會議比較 → 會議歷史 → 輸出。承接原 ReviewWorkbench 的全部控制項。
@@ -139,6 +141,8 @@ export interface MeetingPageProps {
   onFinalize: () => Promise<void>;
   /** 從會議歷史移除一筆（歷史滿 100 筆時騰出空間）；沒給就不顯示移除按鈕。 */
   onRemoveMeeting?: (id: string) => void;
+  /** V3-7 開工錨點（§7.6 頁首「複製週會摘要」）：組週會摘要要用的資料集名稱、缺資料項數與全部通路（A 代理接線；用會議固定的 snapshot 與 copyWeeklySummary）。 */
+  summaryContext?: { datasetName: string; missingItems: number; allChannels: readonly string[] };
   /** 目前資料的含稅換算與目標；只在會議用的資料與目前資料相同時帶進摘要與匯出。 */
   conversion?: TaxConversion | null;
   targets?: Targets;

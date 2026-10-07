@@ -1450,6 +1450,9 @@ const meetingStore = {
     actionScope: "{channels} · {start}–{end}",
     actionScopeUnavailable: "引用的數字已不在目前資料裡",
   },
+  // ── V3-7 錨點（代理 A：pageV3 會議頁——文件式版面：頁首動作列（草稿／已結束標題、匯出會議下拉、複製週會摘要）、結束標示、議程目錄、議程 1–6 精簡摘要、v2 紀錄加註 D-V3-22；收尾時刪除仍為空的物件）
+  pageV3: {
+  },
 } as const;
 
 // ── data：資料來源：資料頁、問題清單、示範資料別名
@@ -2017,6 +2020,12 @@ export const exportLabels = {
   },
   workspaceDecision: { appendixHeading: "# 各通路試算附錄", appendixNote: "各通路有自己的基準與期間，試算差額不能相加。" },
   productComparison: { limitations: "通路費與廣告不分到商品，這裡只看商品毛利；差額＝本期 − 上期。比率原值為分子／分母。沒有銷售列不代表新品或停售，要先確認銷售完整性。缺值不補零；退款按結帳日；商品成本依來源已入帳淨額。" },
+  // ── V3-7 錨點（代理 B：headerV3 匯出版頭四行（PDF／PPT／Excel 首頁／Markdown）與列印版；收尾時刪除仍為空的物件）
+  headerV3: {
+  },
+  // ── V3-7 錨點（代理 C：menuV3 頂欄「匯出」選單——每項 14px 名稱＋12px 說明、分組標題、會議分組「複製週會摘要」、處理中與失敗；收尾時刪除仍為空的物件）
+  menuV3: {
+  },
 } as const;
 
 // ── storage：保存：自動保存、本機保存與備份、替換前確認
