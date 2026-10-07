@@ -2462,6 +2462,19 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-8 錨點結束 ── */
 
 /* ── V3-9a 錨點（代理 A：損益兩平 MER 在其他常用指標的獨立列／段與說明；只用 token；在本註解之後、下一個錨點之前新增） ── */
+/* F12 損益兩平 MER：其他常用指標兩欄表下方的獨立段（上框線分隔）；桌機左欄是單列表（欄寬同上方左表）、右欄是一句結論，手機單欄。
+   `?` 說明就地展開成整列（不浮動，避免被面板裁切）；關著時 hidden 保持掛載（M1）。結論不上色（D-V3-7）。 */
+.assist-breakeven { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--space-6); align-items: end; margin-top: var(--space-3); padding-top: var(--space-3); border-top: var(--border-w) solid var(--border-subtle); }
+.assist-breakeven-name { display: inline-flex; align-items: center; gap: var(--space-1); white-space: nowrap; }
+.assist-breakeven-name .ui-help-trigger { width: var(--space-5); height: var(--space-5); }
+.assist-breakeven-note { display: flex; align-items: center; min-height: var(--row-h-compact); margin: 0; padding: 0 var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-primary); }
+.assist-breakeven-help:not([hidden]) { display: grid; grid-column: 1 / -1; gap: var(--space-1); width: auto; max-width: none; margin-top: var(--space-2); padding: var(--space-3); box-shadow: none; }
+.assist-breakeven-help[hidden] { display: none; }
+.assist-breakeven-help p { margin: 0; }
+@media (max-width: 767px) {
+  .assist-breakeven { grid-template-columns: minmax(0, 1fr); }
+  .assist-breakeven-note { padding: var(--space-2); }
+}
 
 
 /* ── V3-9a 錨點（代理 B：廣告決策標籤的編輯器欄位與卡片徽章（C8 lozenge）；只用 token） ── */

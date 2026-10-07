@@ -1280,6 +1280,22 @@
    "current_days": "1",
    "bridge_reconciled": ""
   },
+  "breakeven_mer|previous||breakeven_mer|2026-08-01|2026-08-01": {
+   "unit": "multiple",
+   "value": "2.586206896552",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
+  "breakeven_mer|current||breakeven_mer|2026-08-02|2026-08-02": {
+   "unit": "multiple",
+   "value": "3.503546099291",
+   "reason_codes": "[]",
+   "previous_days": "1",
+   "current_days": "1",
+   "bridge_reconciled": ""
+  },
   "weekly|previous||gross_sales|2026-08-01|2026-08-01": {
    "unit": "TWD",
    "value": "2500.00",

@@ -3,6 +3,7 @@ import { AMOUNT_FIELDS, COST_FIELDS, MONEY_METRICS, PRODUCT_METRICS, SALES_FIELD
 import { fill, labels } from "../i18n";
 import Decimal from "decimal.js";
 import { ASSIST_KPI_VERSION, assistKpis, type AssistKpi } from "./assist-kpi";
+import { BREAKEVEN_MER_ID, BREAKEVEN_MER_VERSION, breakevenMer } from "./breakeven-mer";
 import { achievement, matchTargets, TARGET_METRICS, type TargetSet } from "./targets";
 import { conversionSentence, csvHeader, plainIssueMessage } from "./copy";
 import type { TaxConversion } from "./tax-basis";
@@ -110,6 +111,12 @@ export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
       const sources = kpi.metric ? metricSources(kpi.metric, kpi.sources) : kpi.sources.filter(source => source.file === "sales_daily.csv" || source.file === "manifest.json");
       records.push({ row_type: text("assist_kpi"), metric_version: text(ASSIST_KPI_VERSION), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), metric: text(kpi.id), metric_label: text(kpi.label), unit: text(assistUnit[kpi.unit]), value: kpi.value === null ? empty : numeric(kpi.value), reason_codes: text(JSON.stringify(kpi.reason_codes)), source_refs: sourceRefs(sources, filenameMap) });
     }
+  }
+  // V3-9a F12 損益兩平 MER（breakeven-mer-v1，D-V3-17＝C）：每期一列，接在輔助指標之後；既有列與順序不變。value 是 12 位小數比率，null 時空字串＋原因碼。
+  for (const period of ["previous", "current"] as const) {
+    const summary = snapshot.report[period];
+    const item = breakevenMer(summary);
+    records.push({ row_type: text(BREAKEVEN_MER_ID), metric_version: text(BREAKEVEN_MER_VERSION), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), metric: text(item.id), metric_label: text(item.label), unit: text(item.unit), value: item.value === null ? empty : numeric(item.value), reason_codes: text(JSON.stringify(item.reason_codes)), source_refs: sourceRefs(item.sources, filenameMap) });
   }
   // R4 目標達成：只有與本期完全相同的目標才列（target 金額一列、達成率一列）。
   if (targets) {

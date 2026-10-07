@@ -153,9 +153,16 @@ describe("V3-7 §6.5 正規化比對：去掉版頭、負號換回 ASCII 後，�
       // 新版確實多了版頭（正規化有拿掉東西）。
       expect(exports[key].length, key).toBeGreaterThan(normalized.length);
     }
+    // V3-9a F12：兩種一頁摘要 Markdown 確實多了損益兩平 MER 一列與版本一行（正規化時拿掉，見 tests/helpers/export-normalize.ts）。
+    for (const key of ["managerSummaryMd", "managerSummaryContextMd"] as const) {
+      expect(exports[key], key).toContain(`\n| ${labels.assist.breakevenV3.label} |`);
+      expect(exports[key], key).toContain(`\n- ${labels.assist.breakevenV3.technicalVersion}：breakeven-mer-v1\n`);
+    }
     const workbook = normalizeWorkbook(exports.excel);
     expect({ sha256: sha(JSON.stringify(workbook)), chars: JSON.stringify(workbook).length }).toEqual(BASELINE.excel);
-    expect(exports.excel.sheets[0].rows.length - workbook.sheets[0].rows.length).toBe(4);
+    // 摘要工作表拿掉四列版頭與 V3-9a 損益兩平 MER 一列（新增列）；指標定義表拿掉損益兩平 MER 版本一列。
+    expect(exports.excel.sheets[0].rows.length - workbook.sheets[0].rows.length).toBe(4 + 1);
+    expect(exports.excel.sheets[5].rows.length - workbook.sheets[5].rows.length).toBe(1);
   });
 
   it("normalizeMarkdown 去掉每一段版頭（工作稿 Markdown 的附錄各有一段），也把 U+2212 與括號負數換成 ASCII「-」", async () => {

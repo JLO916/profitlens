@@ -5,6 +5,7 @@ import { AMOUNT_FIELDS, type Dataset, type Metric, type Period } from "../domain
 import { fill, labels } from "../i18n";
 import { actionDocuments, type ActionExecutionStatus, type ActionWorkspace } from "./action-workspace";
 import { ASSIST_KPI_VERSION } from "./assist-kpi";
+import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, scopeLabel } from "./copy";
 import { downloadBinary } from "./download";
 import { buildExportHeader } from "./export-header";
@@ -12,7 +13,7 @@ import { argb, EXPORT_THEME } from "./export-theme";
 import type { ManagerSummary, SummaryMetric } from "./manager-summary";
 import { dataStatus } from "./product-highlights";
 import type { TaxConversion } from "./tax-basis";
-import { formatPeriodExport } from "./presentation";
+import { formatEmpty, formatMultiple, formatPeriodExport } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R6-4 Excel 匯出（D4＝A：SheetJS xlsx 0.18.5）。
@@ -151,6 +152,11 @@ function summarySheet(input: ExcelExportInput): ExcelSheet {
     section: text(s.sections.keyDeltas), item: text(labels.metrics[row.metric].label), scope: text(total),
     previous: moneyCell(row.previous.value), current: moneyCell(row.current.value), change: moneyCell(row.change.value), detail: missing([row.previous, row.current, row.change]),
   });
+  // V3-9a F12：損益兩平 MER 一列（區塊「其他常用指標」，接在關鍵差額之後；既有各列與數值不變）。摘要表的本期／上期欄是金額格式（money_l2），
+  // 倍數寫成文字格「3.50 倍」（L3），不套金額格式；12 位小數的系統原值在分析 CSV。不適用／資料待補附原因碼。
+  const breakeven = summary.breakeven ?? { version: BREAKEVEN_MER_VERSION, previous: breakevenMer(input.snapshot.report.previous), current: breakevenMer(input.snapshot.report.current) };
+  const multiple = (item: BreakevenMer) => text(item.value === null ? formatEmpty(item.status === "not_applicable" ? "notApplicable" : "missing", { layer: "L3", reasonCodes: item.reason_codes }) : formatMultiple(item.value, "L3"));
+  records.push({ section: text(labels.overview.sections.assistKpis), item: text(breakeven.current.label), scope: text(total), previous: multiple(breakeven.previous), current: multiple(breakeven.current), detail: text(fill(labels.assist.breakevenV3.excelDetail, { version: breakeven.version })) });
   if (!summary.priorities.length) records.push({ section: text(s.sections.topThree), detail: text(labels.notes.noPriorities) });
   for (const [index, item] of summary.priorities.entries()) {
     const impact = item.impact ?? item.ranking_amount;
@@ -250,6 +256,8 @@ function basisSheet(input: ExcelExportInput): ExcelSheet {
     row(b.sections.technical, csvHeader("filter_hash"), snapshot.filter_hash),
     row(b.sections.technical, csvHeader("metric_version"), snapshot.metric_version),
     row(b.sections.technical, b.assistVersion, ASSIST_KPI_VERSION),
+    // V3-9a F12：損益兩平 MER 的版本（breakeven-mer-v1）接在輔助指標版本之後。
+    row(b.sections.technical, labels.assist.breakevenV3.excelVersion, BREAKEVEN_MER_VERSION),
     row(b.sections.technical, csvHeader("currency"), dataset.manifest.currency),
     row(b.sections.technical, csvHeader("timezone"), dataset.manifest.timezone),
   ];
