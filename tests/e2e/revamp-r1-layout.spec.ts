@@ -54,6 +54,9 @@ test.describe("R1 overview first screen", () => {
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     await expect(page.getByTestId("overview-advanced")).not.toHaveAttribute("open", /.*/);
     await expect(page.getByTestId("period-comparison")).not.toHaveAttribute("open", /.*/);
+    // V3-9a：「進階」的 summary 改成新鍵（多了管理損益表）；管理損益表也是收合的，在期間合計與日均之後。
+    await expect(page.getByTestId("overview-advanced").locator(":scope > summary")).toHaveText(labels.overview.pnlV3.advancedSummary);
+    await expect(page.getByTestId("pnl-table")).not.toHaveAttribute("open", /.*/);
     await expect(page.getByTestId("weekly-snapshot").getByTestId("overview-meeting-entry")).toHaveCount(1);
     await expect(page.locator(".view-content .export-actions")).toHaveCount(0);
     await expect(page.locator(".view-content .ai-availability")).toHaveCount(0);
