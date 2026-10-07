@@ -2283,6 +2283,7 @@ export const empty = {
     noPlansBody: "新增後就能試算。",
     meetingNoScenarioTitle: "本次沒有選入方案。",
     meetingNoScenarioBody: "到假設試算選入。",
+    meetingGoToScenarios: "前往假設試算",
     meetingHistoryTitle: "還沒有結束的會議。",
     meetingHistoryBody: "結束會議後會出現在這裡。",
   },

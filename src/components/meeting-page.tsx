@@ -158,10 +158,12 @@ export interface MeetingPageProps {
   /** 目前資料的含稅換算與目標；只在會議用的資料與目前資料相同時帶進摘要與匯出。 */
   conversion?: TaxConversion | null;
   targets?: Targets;
+  /** V3-8（§7.10 表「會議沒有選入方案」）：「前往假設試算」切頁；沒給就只顯示標題與說明。 */
+  onGoToScenarios?: () => void;
 }
 type FocusTarget = { focus: () => void } | null;
 
-export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review, history, onChange, onEvidence, onCreateAction, onRefreshSource, onFinalize, onRemoveMeeting, summaryContext, conversion = null, targets = null }: MeetingPageProps) {
+export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review, history, onChange, onEvidence, onCreateAction, onRefreshSource, onFinalize, onRemoveMeeting, summaryContext, conversion = null, targets = null, onGoToScenarios }: MeetingPageProps) {
   const [error, setError] = useState<{ at: "basics" | "scenarios" | "decision"; text: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
@@ -378,7 +380,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
             {/* V3-8 C（§7.10 會議沒有選入方案，C10 區段型）：標題＋說明；會議頁沒有切換頁面的 prop，「前往假設試算」暫不放（每通路的選入 select 就在上方）。 */}
             <AgendaItem n={5} title={record.agenda.scenarios}>
               <p className="meeting-agenda-note">{page.scenariosNote}</p>
-              {context.scenarios.length ? <div className="meeting-scenarios" data-testid="meeting-scenario-results">{scenarioRows}<p className="meeting-agenda-note">{summaryCopy.scenarioNote}</p></div> : <div className="meeting-scenarios">{scenarioRows}<div className="ui-empty-block meeting-scenarios-empty" data-testid="meeting-scenario-results-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingNoScenarioTitle}</p><p>{labels.empty.stateV3.meetingNoScenarioBody}</p></div></div>}
+              {context.scenarios.length ? <div className="meeting-scenarios" data-testid="meeting-scenario-results">{scenarioRows}<p className="meeting-agenda-note">{summaryCopy.scenarioNote}</p></div> : <div className="meeting-scenarios">{scenarioRows}<div className="ui-empty-block meeting-scenarios-empty" data-testid="meeting-scenario-results-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingNoScenarioTitle}</p><p>{labels.empty.stateV3.meetingNoScenarioBody}</p>{onGoToScenarios && <button type="button" className="ui-btn ui-btn-text" data-testid="meeting-go-scenarios" onClick={onGoToScenarios}>{labels.empty.stateV3.meetingGoToScenarios}</button>}</div></div>}
               {alertFor("scenarios")}
             </AgendaItem>
             {/* 6 置頂待辦：列表；其他待辦收合。 */}

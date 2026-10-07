@@ -223,7 +223,8 @@ describe("V3-8 C Dashboard 接線（真正的 Dashboard SSR 與原始碼）", ()
 
   it("三種狀態各由一個元件實例化一次，掛載條件不變（空狀態在匯入中與開發者驗證頁不出現、載入中排除套用篩選、錯誤狀態有資料才給 onBack）", () => {
     for (const component of ["FirstRunState", "LoadingState", "ErrorState"]) expect(source.match(new RegExp(`<${component}[\\s/>]`, "g"))?.length ?? 0, component).toBe(1);
-    expect(source).toContain('{status === "empty" && !showImport && panel !== "validation" && <FirstRunState onLoadDemo={() => void load("demo")} onImport={startImport} />}');
+    // V3-8 收尾（M6）：資料來源頁的頁首已有「載入示範資料／匯入資料」（§7.7.1 主次對調），該頁的空狀態不重複按鈕列。
+    expect(source).toContain('{status === "empty" && !showImport && panel !== "validation" && <FirstRunState onLoadDemo={() => void load("demo")} onImport={startImport} showActions={panel !== "data"} />}');
     expect(source).toContain('{status === "loading" && !refiltering && <LoadingState />}');
     expect(source).toMatch(/\{status === "error" && <ErrorState error=\{error\} issues=\{issues\} onRetry=\{\(\) => void load\(selected\)\} onBack=\{active \? \(\) => \{ setStatus\(/);
     // v2 的三段 inline JSX 與 lens 圖形已移除；問題清單由 ErrorState 掛載。

@@ -259,7 +259,7 @@ function statusShells(): StateMarkup[] {
       exportMenu={<ExportMenu source={null} busy={null} error={null} summaryRef={{ current: null }} onCopySummary={copySummaryNoop} onDecision={noop} onPrint={noop} onExport={noop} onMeetingNotes={noop} />} />
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
-        <PageHeader title={panelCopy(panel).label} description={panelCopy(panel).description} isData={panel === "data"} importing={false} hasData={status !== "empty"} showLoadDemo={status !== "empty"} onLoadDemo={noop} onImport={noop} />
+        <PageHeader title={panelCopy(panel).label} description={panelCopy(panel).description} isData={panel === "data"} importing={false} hasData={status !== "empty"} showLoadDemo onLoadDemo={noop} onImport={noop} />
         {body}
         <ShellFooter analytics onBasis={noop} />
       </main>
@@ -267,7 +267,7 @@ function statusShells(): StateMarkup[] {
     <BasisDialog open={false} onClose={noop} />
   </div>;
   return [
-    { name: "shell-empty-data", html: renderToStaticMarkup(shell("empty", "data", <FirstRunState onLoadDemo={noop} onImport={noop} />)), state: null },
+    { name: "shell-empty-data", html: renderToStaticMarkup(shell("empty", "data", <FirstRunState onLoadDemo={noop} onImport={noop} showActions={false} />)), state: null },
     { name: "shell-error", html: renderToStaticMarkup(shell("error", "overview", <ErrorState error={labels.ui.dashboard.errors.validationFailed} issues={issues} onRetry={noop} />)), state: null },
   ];
 }
@@ -823,7 +823,11 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       for (const name of ["shell-empty", "shell-empty-data"]) {
         const { html } = states.find(state => state.name === name)!;
         const ids = testIdCounts(html);
-        for (const id of ["empty-state", "empty-load-demo", "empty-import"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        expect(ids.get("empty-state"), `${name} empty-state`).toBe(1);
+        // V3-8 收尾（M6）：總覽的空狀態有兩顆動作；資料來源頁的頁首已有「載入示範資料／匯入資料」（page-import），空狀態不重複按鈕列。
+        for (const id of ["empty-load-demo", "empty-import"]) expect(ids.get(id), `${name} ${id}`).toBe(name === "shell-empty" ? 1 : undefined);
+        expect(occurrences(html, `>${labels.buttons.loadDemo}<`), `${name} 載入示範資料只有一顆`).toBe(1);
+        expect(ids.get("page-import"), `${name} page-import`).toBe(name === "shell-empty-data" ? 1 : undefined);
         for (const id of ["loading-state", "error-state", "error-retry"]) expect(ids.has(id), `${name} ${id}`).toBe(false);
         const section = element(html, 'data-testid="empty-state"')!;
         expect(section, name).toMatch(/^<section class="ui-empty-page state-page first-run-state" data-testid="empty-state" aria-labelledby="empty-state-title">/);

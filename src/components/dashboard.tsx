@@ -102,6 +102,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [localConsent, setLocalConsent] = useState(false);
   const [active, setActive] = useState<Active | null>(null);
   const [issues, setIssues] = useState<ValidationIssue[]>([]);
+  /** V3-8（§7.7.1 第 8 點「匯入時間」）：只記這次工作階段由精靈套用的時間；示範／golden 載入、還原備份沒有這個值（備份不存，V3-9 再議）。 */
+  const [importedAt, setImportedAt] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [filterError, setFilterError] = useState("");
   const [scenarioWorkspace, setScenarioWorkspaceState] = useState<ScenarioWorkspace>(emptyScenarioWorkspace);
@@ -239,7 +241,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     const ticket = ++requestId.current;
     controller.current?.abort();
     const abort = new AbortController(); controller.current = abort;
-    setShowImport(false); setSelected(id); setStatus("loading"); setRefiltering(false); setError(""); setFilterError(""); setIssues([]); setEvidence(null);
+    setShowImport(false); setSelected(id); setStatus("loading"); setRefiltering(false); setError(""); setFilterError(""); setIssues([]); setImportedAt(null); setEvidence(null);
     try {
       const response = await fetch(`/api/datasets/${encodeURIComponent(id)}`, { signal: abort.signal, cache: "no-store" });
       if (!response.ok) throw new Error(labels.ui.dashboard.errors.fetchFailed);
@@ -315,7 +317,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       activate({ input: prepared.input, dataset, snapshot, id: `import-${snapshot.dataset_hash}`, revision: ++revision.current, mappings: prepared.columnMappings, filenames: { ...prepared.originalNames, ...(manifestName ? { "manifest.json": manifestName } : {}) }, conversion: prepared.conversion, raw_values: prepared.raw_values });
       setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
-      setIssues(prepared.validation.issues);
+      setIssues(prepared.validation.issues); setImportedAt(new Date().toISOString());
       setStatus(prepared.validation.classification === "partial" ? "partial" : "ready");
       setShowImport(false); setPanel("overview");
       track("import_committed");
@@ -368,7 +370,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     storeScenarios(emptyScenarioWorkspace()); storeReview(null); storeActions(emptyActionWorkspace()); storeMeetingHistory([]); setSavedVersion(versionRef.current);
     // 清空工作區也重設本機保存同意（與 R2 以前儲存面板自己重掛載的行為一致）；對照記憶的 IndexedDB 寫入隨之停止。
     setStorageResetEpoch(value => value + 1); setLocalConsent(false);
-    requestId.current++; controller.current?.abort(); setActive(null); setIssues([]); setEvidence(null);
+    requestId.current++; controller.current?.abort(); setActive(null); setIssues([]); setImportedAt(null); setEvidence(null);
     setStatus("empty"); setError(""); setFilterError(""); setShowImport(false);
   }
   function restore(workspace: RestoredWorkspace, accepted?: () => void) {
@@ -383,7 +385,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     setComparisonMode(workspace.snapshot.report.scope.comparison_mode);
     setDates({ previousStart: workspace.snapshot.report.previous.period.start, previousEnd: workspace.snapshot.report.previous.period.end, currentStart: workspace.snapshot.report.current.period.start, currentEnd: workspace.snapshot.report.current.period.end });
     const next = ++versionRef.current; setVersion(next); setSavedVersion(next);
-    setRestoreEpoch(value => value + 1); setShowImport(false); setError(""); setFilterError(""); setPanel("overview");
+    setRestoreEpoch(value => value + 1); setShowImport(false); setImportedAt(null); setError(""); setFilterError(""); setPanel("overview");
     setStatus(workspace.classification === "partial" ? "partial" : "ready");
     whatsNew.onRestore();
   }
@@ -541,7 +543,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
         {/* V3-8 開工錨點（§7.7.2 全版專注模式）：匯入中頁首改「匯入資料」＋隱私一句，期間列、橫幅與頁面內容保持掛載但 hidden；頂欄保留。 */}
-        <PageHeader title={importing ? labels.importWizard.title : currentPanel.label} description={importing ? labels.importWizard.privacyNote : panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} importing={importing} hasData={status !== "empty"} showLoadDemo={status !== "empty" || showImport} onLoadDemo={() => void load("demo")} onImport={startImport} />
+        <PageHeader title={importing ? labels.importWizard.title : currentPanel.label} description={importing ? labels.importWizard.privacyNote : panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} importing={importing} hasData={status !== "empty"} showLoadDemo onLoadDemo={() => void load("demo")} onImport={startImport} />
         {whatsNew.visible && <WhatsNewNote onOpenGlossary={() => { whatsNew.markRead(); setBasisSection("v2-names"); setBasisOpen(true); }} onDismiss={whatsNew.dismiss} />}
         {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
           <h2 id="validation-heading">{labels.ui.dashboard.validation.heading}</h2>
@@ -562,10 +564,10 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
           {visible && <NeedsAttention filterError={filterError} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={() => setPanel("data")} yoyReason={presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null} />}
         </div>}
         {/* V3-8 C（§7.10、C10 頁面型）：首次進入、載入中、錯誤共用同一個容器（shell/page-states.tsx，高度＝總覽首屏）；空狀態的「匯入資料」與頁首、資料狀態 popover 走同一個 startImport。 */}
-        {status === "empty" && !showImport && panel !== "validation" && <FirstRunState onLoadDemo={() => void load("demo")} onImport={startImport} />}
+        {status === "empty" && !showImport && panel !== "validation" && <FirstRunState onLoadDemo={() => void load("demo")} onImport={startImport} showActions={panel !== "data"} />}
         {status === "loading" && !refiltering && <LoadingState />}
         {status === "error" && <ErrorState error={error} issues={issues} onRetry={() => void load(selected)} onBack={active ? () => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); } : undefined} />}
-        {visible && <div key={active.id} className="view-content" aria-busy={refiltering || undefined} hidden={importing || undefined}>{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} />}{panel === "meeting" && <MeetingPage source={active} conversion={active.conversion} targets={meetingTargets} summaryContext={{ datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, missingItems: issues.length, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiCollapse capability={aiCapability}><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></AiCollapse></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
+        {visible && <div key={active.id} className="view-content" aria-busy={refiltering || undefined} hidden={importing || undefined}>{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} />}{panel === "meeting" && <MeetingPage onGoToScenarios={() => { setPanel("scenarios"); setEvidence(null); }} source={active} conversion={active.conversion} targets={meetingTargets} summaryContext={{ datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, missingItems: issues.length, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiCollapse capability={aiCapability}><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></AiCollapse></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace importedAt={importedAt} dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench active={!!visible && panel === "scenarios"} source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
         {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
         <ShellFooter analytics={analytics} onBasis={() => setBasisOpen(true)} />

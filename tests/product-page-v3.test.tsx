@@ -72,7 +72,8 @@ describe("V3-5 頁首動作插槽（shell/page-chrome.tsx）", () => {
   it("Dashboard 的商品頁頁首描述用 pageV3.description（取代 v2 的 eyebrow 與「元，未稅」標籤）；其他頁維持導覽描述", () => {
     const source = readFileSync(resolve("src/components/dashboard.tsx"), "utf8");
     const line = source.split("\n").find(text => text.includes("<PageHeader "))!;
-    expect(line).toContain('description={panel === "products" ? labels.products.pageV3.description : currentPanel.description}');
+    // V3-8：匯入中（importing）頁首描述改成隱私一句，所以只比對商品頁那一段三元式。
+    expect(line).toContain('panel === "products" ? labels.products.pageV3.description : currentPanel.description}');
     expect(page.description.length).toBeLessThanOrEqual(24);
   });
 });
