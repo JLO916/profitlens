@@ -94,7 +94,7 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
 
     <AssistTable snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} budget={targetLine("ad_spend", true)} />
 
-    <details className="advanced" data-testid="overview-advanced" open={advancedOpen} onToggle={event => setAdvancedOpen(event.currentTarget.open)}><summary>{labels.overview.advanced.summary}</summary>
+    <details className="advanced" data-testid="overview-advanced" open={advancedOpen} onToggle={event => setAdvancedOpen(event.currentTarget.open)}><summary>{labels.overview.pnlV3.advancedSummary}</summary>
     <details className="panel period-comparison" aria-labelledby="daily-average-title" data-testid="period-comparison" open={periodOpen} onToggle={event => onPeriodToggle?.(event.currentTarget.open)}>
       <summary><span className="section-title">{labels.sections.periodTotals}</span><span className="tag">{report.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays}</span></summary>
       <h2 id="daily-average-title" className="sr-only">{labels.sections.periodTotals}</h2>

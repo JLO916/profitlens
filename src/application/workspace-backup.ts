@@ -50,6 +50,8 @@ export interface RestoredWorkspace extends Omit<WorkspaceBackupSource, "filters"
   meeting_history: Meeting[];
   dataset: Dataset; snapshot: WorkspaceSnapshot; filenames: FilenameMap; mappings: ColumnMappings;
   issues: ValidationResult["issues"]; classification: "valid" | "partial";
+  /** V3-9a 收尾：來源信封的 schema_version（v1–v5），給「這版改了什麼」判斷用（v5 是 v3 寫的，不再提示）。 */
+  restored_schema_version?: string;
 }
 const name = z.string().min(1).max(500);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -357,9 +359,10 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
   try { actual = await checksum(body); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
   if (actual !== expected) throw new Error("WORKSPACE_CHECKSUM_MISMATCH");
   // v5 與 v4 走同一條還原路徑（v5 只多 items[].ad_decision）；v4 檔沒有此欄位，讀回 undefined（不標）。
-  if (body.schema_version === WORKSPACE_VERSION || body.schema_version === WORKSPACE_V4) return restoreV4((body as Omit<z.infer<typeof envelopeSchema>, "checksum">).payload);
-  if (body.schema_version === WORKSPACE_V3) return { ...await restoreV3((body as Omit<z.infer<typeof v3EnvelopeSchema>, "checksum">).payload), ...EMPTY_V4_FIELDS() };
-  return { ...await restoreLegacy(body as Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">), ...EMPTY_V4_FIELDS() };
+  const restored_schema_version = body.schema_version;
+  if (body.schema_version === WORKSPACE_VERSION || body.schema_version === WORKSPACE_V4) return { ...await restoreV4((body as Omit<z.infer<typeof envelopeSchema>, "checksum">).payload), restored_schema_version };
+  if (body.schema_version === WORKSPACE_V3) return { ...await restoreV3((body as Omit<z.infer<typeof v3EnvelopeSchema>, "checksum">).payload), ...EMPTY_V4_FIELDS(), restored_schema_version };
+  return { ...await restoreLegacy(body as Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">), ...EMPTY_V4_FIELDS(), restored_schema_version };
 }
 
 type V4Fields = Pick<RestoredWorkspace, "preprocessing" | "targets" | "events" | "ui_prefs" | "meeting_history">;

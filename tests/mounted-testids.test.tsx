@@ -244,7 +244,6 @@ async function pageStates(): Promise<StateMarkup[]> {
 
     // ── V3-9a C 新增的頁面狀態在此之後（例如進階區展開、週檢視）──
     // 總覽：淨營收為負、零值列多的資料集（refund_only）——管理損益表 7 列零值列 hidden 但掛載，佔淨營收 % 不適用。
-    "overview-refund-only": { panel: "overview", active: await load("refund-only", "refund_only"), status: "ready" },
     // 沒有資料（空工作區停在資料來源頁）與載入失敗的整頁不是 ShellState（它需要資料），由下方 statusShells() 依 dashboard.tsx 的 return 另外組，state 為 null（同 shell-empty）。
 
   };

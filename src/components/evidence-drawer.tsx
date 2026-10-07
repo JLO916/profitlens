@@ -25,6 +25,8 @@ export interface EvidenceSelection {
   unitOverride?: "percentage-point" | "count" | "money_per_unit";
   /** R4：非 domain 指標（輔助指標、目標）自帶技術公式與版本；null 值的顯示字（例如「不適用」）。 */
   formulaTechnical?: string;
+  /** V3-9a 收尾：非 domain 指標（例如損益兩平 MER）自帶的白話定義；沒給時用 metricDefinitions[name].plain。 */
+  definition?: string;
   metricVersion?: string;
   nullDisplay?: string;
   /** 商品層級證據：不畫四層階梯（商品只看毛利）。 */
@@ -174,7 +176,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const currentComponent = components.find(component => component.label === labels.periods.current);
   const periodPair = components.length === 2 && previousComponent && currentComponent ? { previous: previousComponent.metric, current: currentComponent.metric } : null;
   // 指標定義與算法：domain 指標用指標定義；件數、件均這類非 domain 指標用證據自帶的公式說明。版本與技術細節同源。
-  const definitionText = evidence.unitOverride === "count" || evidence.unitOverride === "money_per_unit" ? evidence.formula ?? definition.plain : definition.plain;
+  const definitionText = evidence.definition ?? (evidence.unitOverride === "count" || evidence.unitOverride === "money_per_unit" ? evidence.formula ?? definition.plain : definition.plain);
   const metricVersion = evidence.metricVersion ?? "contribution-v1";
   const subtitle = evidenceSubtitle(evidence, { alias, anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot?.report });
   const column = v3.sourceColumns;

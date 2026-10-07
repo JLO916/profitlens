@@ -271,7 +271,7 @@ describe("V3-4a 進階（收合）：期間合計與日均", () => {
     const html = render({ periodOpen: false });
     const advanced = byTestId(html, "overview-advanced");
     expect(openTag(html, 'data-testid="overview-advanced"')).toBe('<details class="advanced" data-testid="overview-advanced">');
-    expect(advanced).toMatch(new RegExp(`^<details class="advanced" data-testid="overview-advanced"><summary>${labels.overview.advanced.summary}</summary>`));
+    expect(advanced).toMatch(new RegExp(`^<details class="advanced" data-testid="overview-advanced"><summary>${labels.overview.pnlV3.advancedSummary}</summary>`));
     expect(advanced).toContain('data-testid="period-comparison"');
     expect(advanced).toContain('<h2 id="daily-average-title" class="sr-only">');
     expect(openTag(html, 'data-testid="period-comparison"')).not.toMatch(/\sopen=""/);

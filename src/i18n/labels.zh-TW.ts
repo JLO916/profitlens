@@ -684,6 +684,8 @@ export const overview = {
   },
   // ── V3-9a 錨點（代理 C：每日／每週管理損益表（F9）——details 標題、日／週切換、列名與「減：」前綴、合計與佔淨營收 %、顯示零值列、抽屜標題；收尾時刪除仍為空的物件）
   pnlV3: {
+    /** V3-9a 收尾（PRD §7.1 區塊 10）：總覽「進階」details 的 summary，多了管理損益表；既有 advanced.summary 保留。 */
+    advancedSummary: "進階：期間合計與日均、管理損益表",
     /** 總覽「進階」內的 <details> 標題（summary；PRD §7.1 區塊 10）。 */
     summary: "每日／每週管理損益表",
     /** 日／週分段按鈕（aria-pressed）；aria 是按鈕群組的可及名稱。 */

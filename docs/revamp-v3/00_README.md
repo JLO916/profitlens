@@ -91,6 +91,7 @@ git diff --stat 82b70df -- src/domain fixtures/golden fixtures/demo fixtures/err
 | `verification/revamp-v3/testids-v2.txt` | testid 基準（靜態＋運算式＋`testId` 屬性，樣板展開成實際渲染值） |
 | `verification/revamp-v3/feature-retention.csv` | 功能保留表（PRD §6.3 的 62 列＋完整下載入口清單） |
 | `verification/revamp-v3/backup-schema-v4.json` | 備份 v4 欄位清單（含 `ui_prefs`） |
+| `verification/revamp-v3/backup-schema-v5.json` | 備份 v5 欄位清單（V3-9a：v4 加 `items[].ad_decision`；v4 的清單保留為歷史） |
 | `verification/revamp-v3/e2e-text-assertions.csv` | E2E 非 testid 定位器清單（`getByText`／`getByRole`／`locator()`） |
 | `verification/revamp-v3/V3-{n}/` | 每批四尺寸截圖 |
 | `verification/revamp-v3-V3-{n}-acceptance.md` | 每批驗收文件（命令、真實結果、禁區 diff、未執行項目） |

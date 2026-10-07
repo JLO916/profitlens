@@ -387,7 +387,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     const next = ++versionRef.current; setVersion(next); setSavedVersion(next);
     setRestoreEpoch(value => value + 1); setShowImport(false); setImportedAt(null); setError(""); setFilterError(""); setPanel("overview");
     setStatus(workspace.classification === "partial" ? "partial" : "ready");
-    whatsNew.onRestore();
+    whatsNew.onRestore(workspace.restored_schema_version);
   }
   function draftFromDiagnostic(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) {
     if (!active) return;

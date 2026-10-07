@@ -64,7 +64,7 @@ export function AssistTable({ snapshot, onEvidence, onBasis, budget = null }: As
  * 兩個輸入金額（L3）寫在公式行；技術公式與版本 breakeven-mer-v1 自帶；不適用時大數字寫「不適用」。來源是銷售檔與通路費用檔（不含廣告檔）。
  */
 export function breakevenEvidence(item: BreakevenMer, period: Period, channels: string[]): EvidenceSelection {
-  return { title: item.label, name: "mer", metric: { value: item.value, reason_codes: [...item.reason_codes] }, period, channels, sources: item.sources, formula: breakevenEvidenceFormula(item), formulaTechnical: item.formulaTechnical, metricVersion: BREAKEVEN_MER_VERSION, components: [], nullDisplay: item.status === "not_applicable" ? labels.assist.notApplicable : undefined };
+  return { title: item.label, name: "mer", metric: { value: item.value, reason_codes: [...item.reason_codes] }, period, channels, sources: item.sources, formula: breakevenEvidenceFormula(item), formulaTechnical: item.formulaTechnical, definition: item.plain, metricVersion: BREAKEVEN_MER_VERSION, components: [], nullDisplay: item.status === "not_applicable" ? labels.assist.notApplicable : undefined };
 }
 
 /**

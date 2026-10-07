@@ -16,7 +16,8 @@ export function useWhatsNew() {
     void shouldShowWhatsNewOnLoad().then(show => { if (live && show) setVisible(true); });
     return () => { live = false; };
   }, []);
-  const onRestore = useCallback(() => { if (shouldShowWhatsNewAfterRestore()) setVisible(true); }, []);
+  // V3-9a 收尾：帶入還原來源的 schema_version（v5 是 v3 寫的備份，不再提示；沒給時沿用預設＝v4）。
+  const onRestore = useCallback((schema?: string) => { if (shouldShowWhatsNewAfterRestore(schema)) setVisible(true); }, []);
   const markRead = useCallback(() => { writeWhatsNewMark("dismissed"); }, []);
   const dismiss = useCallback(() => { writeWhatsNewMark("dismissed"); setVisible(false); }, []);
   return { visible, onRestore, markRead, dismiss };
