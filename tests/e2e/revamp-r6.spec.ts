@@ -5,14 +5,16 @@ import * as XLSX from "xlsx";
 import { expect, test as base, type Download, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
+import { BREAKEVEN_MER_VERSION } from "../../src/application/breakeven-mer";
 import { channelsLabel } from "../../src/application/copy";
 import { formatSavedDateTime } from "../../src/application/auto-save";
-import { formatAmountL1, formatAmountL2, formatDateL1, formatPeriodExport, formatSignedDelta } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL2, formatDateL1, formatMultiple, formatPeriodExport, formatSignedDelta } from "../../src/application/presentation";
 import { decisionSignature } from "../../src/application/decision";
 import { acceptSavePrompt, clearButton, clickReplacing, closeDownloads, closeStorage as closeStorageMenu, closeTopbarMore, dismissSavePrompt, isMobile, navControl, navigateTo, openDownloads, openMeeting, openMobileMore, openStorage as openStorageMenu, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { acceptAssumptions, actionDrawer } from "./actions-helpers-v3";
 import { exportPeriodLine, exportReportTitle, exportVersionLineRe, expectExportHeader, MEETING_EXPORTS, meetingExportItem, openCompare, openMeetingExport, type ExportHeaderExpectation } from "./meeting-helpers-v3";
 import { expectMeetingHistoryEmpty, expectMeetingNoScenario, goToScenariosFromMeeting } from "./misc-helpers-v38";
+import { GOLDEN_BREAKEVEN, markdownAssistSection, markdownBreakevenRow, markdownBreakevenVersion, markdownTechnicalLines } from "./breakeven-helpers-v39";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -75,6 +77,14 @@ const ready = (id: keyof typeof DATA_AS_OF) => fill(labels.status.ready, { date:
 const GOLDEN_HEADER: ExportHeaderExpectation = { datasetName: dash.datasets.golden, previous: { start: "2026-08-01", end: "2026-08-01" }, current: { start: "2026-08-02", end: "2026-08-02" } };
 /** Markdown 開頭：第 1 行「# 標題」、第 2 行空白，第 3–6 行是版頭四行，第 7 行空白。 */
 const markdownHeader = (markdown: string) => markdown.split("\n").slice(2, 6);
+/** Excel 工作表表頭列裡某欄的位置：金額欄的表頭是「{label}（元）」（labels.ui.export.moneyColumn），其他欄就是 label。 */
+const excelColumn = (header: unknown[], label: string) => header.findIndex(cell => cell === label || cell === fill(labels.ui.export.moneyColumn, { label }));
+/** V3-9a F12：Markdown「其他常用指標」表最後一列是損益兩平 MER（golden L1），技術細節緊接在輔助指標版本之後是 breakeven_mer_version。 */
+function expectMarkdownBreakeven(markdown: string) {
+  expect(markdownAssistSection(markdown).filter(line => line.startsWith("| ")).at(-1)).toBe(markdownBreakevenRow(GOLDEN_BREAKEVEN.previous, GOLDEN_BREAKEVEN.current));
+  const technical = markdownTechnicalLines(markdown);
+  expect(technical[technical.findIndex(line => line.startsWith(`- ${labels.assist.technicalVersion}：`)) + 1]).toBe(markdownBreakevenVersion);
+}
 /** A4 PDF 的頁數（/Type /Page，不含 /Pages）。 */
 const pdfPages = (pdf: Buffer) => (pdf.toString("latin1").match(/\/Type\s*\/Page(?!s)/g) ?? []).length;
 /** 「採用（第 n 版確認）」：版號是會議稿的修訂次數，只要求是數字。 */
@@ -270,13 +280,12 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await expect(entry).not.toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 
-  // 備份 v4：meeting_history 一筆（凍結的議程：選入方案 270.00、置頂待辦一項）。
+  // 備份（V3-9a 起寫 v5，WORKSPACE_VERSION）：meeting_history 一筆（凍結的議程：選入方案 270.00、置頂待辦一項）。
   const storage = await openStorage(page);
   const backup = await downloadFrom(page, storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true }));
   expect(backup.download.suggestedFilename()).toBe("profitlens-workspace.json");
   const text = backup.bytes.toString("utf8");
   const wire = JSON.parse(text);
-  expect(wire.schema_version).toBe("profitlens-workspace-v4");
   expect(wire.schema_version).toBe(WORKSPACE_VERSION);
   expect(wire.payload.meeting_history).toHaveLength(1);
   const saved = wire.payload.meeting_history[0];
@@ -456,6 +465,28 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   expect(headerRows.map(row => row[0])).toEqual(Array(4).fill(headerV3.excelSection));
   expectExportHeader(headerRows.map(row => String(row[detailColumn])), GOLDEN_HEADER);
   expect(summaryRows.slice(5).map(row => row[0])).not.toContain(headerV3.excelSection);
+  // V3-9a F12：摘要工作表在兩列關鍵差額之後、三件事之前多一列損益兩平 MER（區塊＝其他常用指標；上期／本期是 L3 文字格；內容欄寫版本 breakeven-mer-v1）。
+  const summaryItem = excelColumn(summaryRows[0], labels.excelExport.columns.summary.item);
+  const breakevenAt = summaryRows.findIndex(row => row[summaryItem] === labels.assist.breakevenV3.label);
+  expect(breakevenAt).toBeGreaterThan(0);
+  expect(summaryRows.filter(row => row[summaryItem] === labels.assist.breakevenV3.label)).toHaveLength(1);
+  const breakevenRow = summaryRows[breakevenAt];
+  expect(breakevenRow[0]).toBe(labels.overview.sections.assistKpis);
+  expect(breakevenRow[excelColumn(summaryRows[0], labels.excelExport.columns.summary.previous)]).toBe(formatMultiple(GOLDEN_BREAKEVEN.previous, "L3"));
+  expect(breakevenRow[excelColumn(summaryRows[0], labels.excelExport.columns.summary.current)]).toBe(formatMultiple(GOLDEN_BREAKEVEN.current, "L3"));
+  expect(breakevenRow[detailColumn]).toBe(fill(labels.assist.breakevenV3.excelDetail, { version: BREAKEVEN_MER_VERSION }));
+  expect(summaryRows.filter(row => row[0] === labels.excelExport.summary.sections.keyDeltas)).toHaveLength(2);
+  expect(summaryRows[breakevenAt - 1][0]).toBe(labels.excelExport.summary.sections.keyDeltas);
+  expect(summaryRows[breakevenAt + 1][0]).toBe(labels.excelExport.summary.sections.topThree);
+  // 指標定義工作表：技術區在輔助指標版本（assist-kpi-v1）之後多一列損益兩平 MER 版本。
+  const basisRows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[labels.excelExport.sheets.basis], { header: 1, raw: false });
+  const basisItem = excelColumn(basisRows[0], labels.excelExport.columns.basis.item);
+  const assistVersionAt = basisRows.findIndex(row => row[basisItem] === labels.excelExport.basis.assistVersion);
+  expect(assistVersionAt).toBeGreaterThan(0);
+  const basisVersionRow = basisRows[assistVersionAt + 1];
+  expect(basisVersionRow[excelColumn(basisRows[0], labels.excelExport.columns.basis.section)]).toBe(labels.excelExport.basis.sections.technical);
+  expect(basisVersionRow[basisItem]).toBe(labels.assist.breakevenV3.excelVersion);
+  expect(basisVersionRow[excelColumn(basisRows[0], labels.excelExport.columns.basis.detail)]).toBe(BREAKEVEN_MER_VERSION);
   await excel.download.saveAs(outputDir("artifacts", `${project}-profitlens.xlsx`));
   await expect(menu).toHaveAttribute("open", "");
   // 完成後焦點回到「下載」選單的 summary（不掉到 body）。
@@ -486,6 +517,7 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   const menuMarkdownText = menuMarkdown.bytes.toString("utf8");
   expectExportHeader(markdownHeader(menuMarkdownText), GOLDEN_HEADER, { hardBreaks: true });
   expect(menuMarkdownText.split("\n")[6]).toBe("");
+  expectMarkdownBreakeven(menuMarkdownText);
   await expect(downloadSummary).toBeFocused();
   await closeDownloads(page);
 
@@ -502,6 +534,7 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   const meetingMarkdown = await downloadFrom(page, await meetingExportItem(page, "markdown"));
   expect(meetingMarkdown.download.suggestedFilename()).toBe("profitlens-manager-summary.md");
   expectExportHeader(markdownHeader(meetingMarkdown.bytes.toString("utf8")), GOLDEN_HEADER, { hardBreaks: true });
+  expectMarkdownBreakeven(meetingMarkdown.bytes.toString("utf8"));
   await expect(outputs).not.toHaveAttribute("open", "");
   await expect(page.getByTestId("export-page-meeting")).toBeFocused();
   const hostile = '=HYPERLINK("x") <會議>&';
