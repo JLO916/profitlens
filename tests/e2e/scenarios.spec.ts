@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs";
-import { appendFile, mkdir, readFile } from "node:fs/promises";
+import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { AUTO_SAVE_DELAY_MS } from "../../src/application/auto-save";
 import { MINUS, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatMetric, formatPeriodL1, formatSignedDelta } from "../../src/application/presentation";
 import { closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptAssumptions, consentBox, decisionExportLabel, downloadDecision, downloadScenario, expectAcknowledged, expectConsentPending, modeButton, openScenarioExport, openTemplateHelp } from "./scenario-helpers-v3";
 
 const dw = labels.ui.decisionWorkbench, aw = labels.ui.actionsWorkbench, msw = labels.ui.multiScenarioWorkbench, dash = labels.ui.dashboard;
 const cmAfter = labels.metrics.contribution_after_marketing.label;
@@ -132,12 +133,16 @@ async function openGolden(page: Page, channel = "DTC") {
   await expect(page.getByTestId("scenario-channel")).toHaveValue(channel);
   await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1(channel === "DTC" ? "270.00" : "-15.00"));
 }
-/** 進頁草稿「方案 1」：預設名稱、五格空白、未勾同意、沒有結果與版本號。 */
-async function expectFreshDraft(page: Page) {
+/**
+ * 進頁草稿「方案 1」：預設名稱、五格空白、沒有結果與版本號。聲明：工作區還沒記住時是未勾的勾選框；
+ * V3-6（D-V3-12＝B）同一工作區勾過一次（含換通路、換期間、換資料集）之後沒有勾選框，只有「已了解」一行（acknowledged）。
+ */
+async function expectFreshDraft(page: Page, { acknowledged }: { acknowledged: boolean }) {
   const card = scenario(page);
   await expect(card.getByLabel(dw.planName, { exact: true })).toHaveValue(fill(dw.defaultPlanName, { n: 1 }));
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("");
-  await expect(card.getByLabel(consentLabel)).not.toBeChecked();
+  if (acknowledged) await expectAcknowledged(card);
+  else await expectConsentPending(card);
   await expect(card.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(card.getByTestId("scenario-version")).toHaveCount(0);
@@ -151,10 +156,18 @@ async function addScenario(page: Page, index = 1, name = `獨立方案 ${index}`
   await card.getByLabel(dw.planName, { exact: true }).fill(name);
   return card;
 }
+/**
+ * 填五格並處理聲明。accepted（預設）：經 acceptAssumptions——工作區第一次就勾，之後（D-V3-12＝B 已記住）斷言「已了解」一行。
+ * accepted=false：只在還沒記住時可行（勾選框在、保持不勾）；記住之後沒有「不同意」的操作。
+ */
 async function fillScenario(card: Locator, values: readonly string[], accepted = true) {
   expect(values).toHaveLength(inputLabels.length);
   for (const [index, label] of inputLabels.entries()) await card.getByLabel(label, { exact: true }).fill(values[index]);
-  await card.getByLabel(consentLabel, { exact: true }).setChecked(accepted);
+  if (accepted) await acceptAssumptions(card);
+  else {
+    await expect(consentBox(card), "D-V3-12：工作區記住聲明之後就沒有「不同意」可選").toHaveCount(1);
+    await card.getByLabel(consentLabel, { exact: true }).setChecked(false);
+  }
 }
 async function calculate(card: Locator, contribution?: string, delta?: string) {
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
@@ -195,16 +208,12 @@ async function addConfirmedAction(page: Page, index = 1, problem = `待驗證問
   await expect(card).toContainText(aw.tagConfirmed);
   return { card, factId: factId! };
 }
+/**
+ * V3-6：v2 試算頁與待辦頁底部的三顆決策下載鈕，改成兩頁頁首（#page-actions）的「匯出本頁」下拉；項目名稱不變（labels.downloads.decision*）。
+ * downloadDecision 依目前頁開對應的下拉（待辦頁 actions-export-*，試算頁 scenario-export-*），檢查檔名 profitlens-decision.{md|csv|json} 後回傳內容。
+ */
 async function downloadText(page: Page, format: "Markdown" | "CSV" | "JSON") {
-  const extension = { Markdown: "md", CSV: "csv", JSON: "json" }[format];
-  const buttonName = { Markdown: labels.downloads.decisionMd, CSV: labels.downloads.decisionCsv, JSON: labels.downloads.decisionJson }[format];
-  const [download] = await Promise.all([
-    page.waitForEvent("download"), page.getByRole("button", { name: buttonName, exact: true }).click(),
-  ]);
-  expect(download.suggestedFilename()).toBe(`profitlens-decision.${extension}`);
-  const path = await download.path();
-  expect(path).not.toBeNull();
-  return readFile(path!, "utf8");
+  return downloadDecision(page, ({ Markdown: "md", CSV: "csv", JSON: "json" } as const)[format]);
 }
 interface DecisionDocument {
   status: string;
@@ -273,14 +282,15 @@ test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看
   await expect(page.getByRole("button", { name: startButtonPrefix })).toHaveCount(0);
   await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("270.00"));
   await expect(page.getByTestId("scenario-unavailable")).toHaveCount(0);
-  await expectFreshDraft(page);
+  await expectFreshDraft(page, { acknowledged: false });
   const card = await addScenario(page);
   // 「全部填 0」已依規格移除：零變動要逐格明填 0。
   await expect(page.getByRole("button", { name: labels.buttons.fillZero, exact: true })).toHaveCount(0);
   for (const label of inputLabels) await card.getByLabel(label, { exact: true }).fill("0");
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
   await expect(card.getByLabel(consentLabel)).not.toBeChecked();
-  await card.getByLabel(consentLabel).check();
+  // V3-6（D-V3-12＝B）：勾下去後勾選框換成「已了解」一行、焦點到「試算」（acceptAssumptions 驗證）。
+  await acceptAssumptions(card);
   await calculate(card, amountL1("270.00"), deltaL1("0.00"));
   await expect(card.getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
   await expect(card.getByTestId("scenario-draft")).toHaveCount(0);
@@ -315,11 +325,15 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
   ];
   for (const [index, item] of cases.entries()) {
     const card = await addScenario(page, index + 1);
+    // D-V3-12＝B：方案 1 勾一次聲明；方案 2、3 不再有勾選框（fillScenario → acceptAssumptions 斷言「已了解」一行）。
     await fillScenario(card, item.values);
     await calculate(card, amountL1(item.contribution), deltaL1(item.delta));
     await expect(card.getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
   }
-  await expect(page.getByRole("button", { name: labels.buttons.addScenario, exact: true })).toBeDisabled();
+  // V3-6（PRD §7.4 方案欄）：3 個方案時不再渲染「新增方案」（v2 是停用的按鈕）。
+  await expect(page.getByTestId("scenario-columns")).toHaveAttribute("data-count", "3");
+  await expect(page.getByTestId("scenario-add")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: labels.buttons.addScenario, exact: true })).toHaveCount(0);
   await expect(page.getByTestId("scenario-4")).toHaveCount(0);
   const total = page.getByTestId("scenario-comparison").locator("tbody tr").filter({ has: page.locator("th").filter({ hasText: new RegExp(`^${escapeRegExp(cmAfter)}$`) }) });
   // V3-2b：方案比較表是 L2（整數元，表頭「（元）」）。
@@ -359,6 +373,18 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
 test("減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益", async ({ page }) => {
   await openGolden(page);
   const card = await addScenario(page);
+  // V3-6（D-V3-12＝B）：同一工作區勾一次聲明就記住、之後沒有勾選框，所以「拒絕固定假設」要在第一次勾選之前測：
+  // 五格都填好、不勾聲明就試算 →「這個方案不適用」，沒有精確增益；匯出記下 assumptions_accepted=false 與空結果。
+  await fillScenario(card, ["0", "0", "0", "-20", "0"], false);
+  await calculate(card);
+  await expect(card.getByTestId("scenario-result")).toContainText(dw.planUnavailable);
+  await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
+  await expect(card.getByTestId("scenario-delta")).toHaveCount(0);
+  const refused = await downloadJson(page);
+  expect(refused.scenarios[0].inputs.assumptions_accepted).toBe(false);
+  expect(refused.scenarios[0].result?.contribution).toBeNull();
+  expect(refused.scenarios[0].result?.delta).toBeNull();
+  // 同意之後：減少廣告仍必須明填銷量（銷量空白 → 不能試算，原因點名銷量）。
   await fillScenario(card, ["", "0", "0", "-20", "0"]);
   await calculate(card);
   await expect(card.getByTestId("scenario-result")).toContainText(dw.cannotCalculate);
@@ -367,15 +393,11 @@ test("減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確�
   await expect(card.getByTestId("scenario-delta")).toHaveCount(0);
   await card.getByLabel(inputLabels[0], { exact: true }).fill("0");
   await calculate(card, amountL1("324.00"), deltaL1("+54.00"));
-  await card.getByLabel(consentLabel).uncheck();
-  await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
-  await calculate(card);
-  await expect(card.getByTestId("scenario-result")).toContainText(dw.planUnavailable);
-  await expect(card.getByTestId("scenario-delta")).toHaveCount(0);
+  // 記住之後不再有「不同意」：沒有勾選框，只有「已了解」一行；匯出的聲明是 true。
+  await expectAcknowledged(card);
   const document = await downloadJson(page);
-  expect(document.scenarios[0].inputs.assumptions_accepted).toBe(false);
-  expect(document.scenarios[0].result?.contribution).toBeNull();
-  expect(document.scenarios[0].result?.delta).toBeNull();
+  expect(document.scenarios[0].inputs.assumptions_accepted).toBe(true);
+  expect(document.scenarios[0].result).toMatchObject({ contribution: "324.00", delta: "54.00" });
 });
 
 test("輸入超界、負投入與過度精度不得默默修正為可用試算", async ({ page }) => {
@@ -452,8 +474,8 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await showScenarios(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("MARKETPLACE");
   await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("-15.00"));
-  // R5-3：MARKETPLACE 只有進頁草稿「方案 1」，DTC 的方案不帶過來，而是列在「其他通路的方案」。
-  await expectFreshDraft(page);
+  // R5-3：MARKETPLACE 只有進頁草稿「方案 1」，DTC 的方案不帶過來，而是列在「其他通路的方案」。D-V3-12：DTC 已勾過聲明，換通路仍記住。
+  await expectFreshDraft(page, { acknowledged: true });
   const others = page.getByTestId("scenario-other-channels");
   await others.locator(":scope > summary").click();
   await expect(others).toContainText(fill(msw.planSummary, { plan: "保留名稱的履約測試", resultLabel: labels.scenario.resultTitle, amount: amountL1("264.00") }));
@@ -462,7 +484,7 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await expect(page.getByLabel(dash.filter.channel, { exact: true })).toHaveValue("MARKETPLACE");
   await expect(card.getByTestId("scenario-contribution")).toHaveText(amountL1("264.00"));
   await selectScenarioChannel(page, "MARKETPLACE");
-  await expectFreshDraft(page);
+  await expectFreshDraft(page, { acknowledged: true });
   await selectChannel(page, "DTC");
   await showScenarios(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
@@ -528,17 +550,19 @@ test("資料集切換再回相同 golden，舊方案仍為歷史；複製只保�
   await loadDataset(page);
   await selectChannel(page, "DTC");
   await showScenarios(page);
-  // R5-3：同一 golden 回來只有新的進頁草稿，舊方案不復活。
-  await expectFreshDraft(page);
+  // R5-3：同一 golden 回來只有新的進頁草稿，舊方案不復活。D-V3-12：換資料集（取代資料）不清掉「已了解」，直到清空目前資料。
+  await expectFreshDraft(page, { acknowledged: true });
   const historical = (await downloadJson(page)).scenario_contexts.find(context => context.context_id === oldContext)!;
   expect(historical).toMatchObject({ context_status: "historical", status: "stale" });
   expect(historical.scenarios[0].result?.contribution).toBe("284.00");
+  // V3-6：「之前的試算」<details> 內每筆歷史另有收合的「技術細節」<details>；只點外層自己的 summary。
   const history = page.getByTestId("multi-scenario-workbench").locator("details").filter({ has: page.locator("summary").filter({ hasText: new RegExp(`^${escapeRegExp(msw.historyHeading)}$`) }) });
-  if (await history.getAttribute("open") === null) await history.locator("summary").click();
+  if (await history.getAttribute("open") === null) await history.locator(":scope > summary").click();
   await page.getByRole("button", { name: msw.copyToCurrent, exact: true }).click();
   await expect(scenario(page).getByLabel(dw.planName, { exact: true })).toHaveValue("歷史履約方案");
   for (const label of inputLabels) await expect(scenario(page).getByLabel(label, { exact: true })).toHaveValue("");
-  await expect(scenario(page).getByLabel(consentLabel)).not.toBeChecked();
+  // 複製只帶名稱：五格空白、沒有結果；聲明由工作區記住（D-V3-12），卡上沒有勾選框。
+  await expectAcknowledged(scenario(page));
   await expect(scenario(page).getByTestId("scenario-contribution")).toHaveCount(0);
   expect((await downloadJson(page)).scenarios[0]).toMatchObject({ status: "draft", result: null });
 });
@@ -569,8 +593,8 @@ test("有效期間切換再回原期間，歷史結果不復活或自動沿用�
     await expect(periodSummary(page)).toContainText(periodSummaryText(values[2], values[3], values[0], values[1]));
     await expect(workspaceStatus(page)).toContainText(ready("demo"));
     await showScenarios(page);
-    // R5-3：新期間只有進頁草稿，原期間的結果與假設不沿用。
-    await expectFreshDraft(page);
+    // R5-3：新期間只有進頁草稿，原期間的結果與假設不沿用。D-V3-12：換期間仍記住聲明。
+    await expectFreshDraft(page, { acknowledged: true });
     const document = await downloadJson(page);
     const historical = document.scenario_contexts.find(context => context.context_id === original.context_id)!;
     expect(historical).toMatchObject({ context_status: "historical", status: "stale" });
@@ -746,4 +770,108 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   expect(browserAudit.filter(event => event.kind === "unsaved-changes-warning")).toEqual([{ kind: "unsaved-changes-warning", type: "beforeunload" }]);
   await expect(workspaceStatus(page)).toContainText(labels.status.empty);
   await expect(workbench(page)).toHaveCount(0);
+});
+
+test("V3-6 試算頁：範本→套用→試算三個動作得到結果、聲明只勾一次、匯出本頁三項可下載、增減／改成等值顯示、範本 ? 說明 Esc 回焦", async ({ page }) => {
+  const pageV3 = labels.scenarios.pageV3, presets = labels.scenarioPresets;
+  await loadDataset(page);
+  await selectChannel(page, "DTC");
+  // 桌機點側欄；手機（390）由 navigateTo 走「更多」→「假設試算」。
+  await showScenarios(page);
+  // PRD §7.4 頁首：「試算通路」與「匯出本頁」在 #page-actions（四個尺寸都一樣），全頁各只有一份（M6）。
+  const head = page.locator("#page-actions");
+  await expect(head.getByTestId("scenario-channel")).toHaveValue("DTC");
+  await expect(head.getByTestId("scenario-export-menu")).toHaveCount(1);
+  await expect(page.getByTestId("scenario-channel")).toHaveCount(1);
+  await expect(page.getByTestId("scenario-export-menu")).toHaveCount(1);
+  await expect(page.getByTestId("scenario-columns")).toHaveAttribute("data-count", "1");
+  const first = scenario(page, 1);
+  await expectConsentPending(first);
+
+  // 範本的 ? 說明（C14／M1）：平時 hidden 掛載；點開看得到「只是起點」與用途，Esc 關閉、焦點回到 ? 鈕。
+  const { trigger, panel } = await openTemplateHelp(first);
+  await expect(panel.getByTestId("scenario-template-note")).toHaveText(labels.scenario.templateNote);
+  await expect(panel.getByTestId("scenario-preset-purpose")).toHaveText(pageV3.templatePurposeEmpty);
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).toBeFocused();
+
+  // 方案 1（工作區第一次）：選範本、套用、勾聲明、試算 → 270.00（keep：五格 0）。
+  await first.getByTestId("scenario-preset").selectOption("keep");
+  await first.getByTestId("scenario-preset-apply").click();
+  for (const label of inputLabels) await expect(first.getByLabel(label, { exact: true })).toHaveValue("0");
+  await acceptAssumptions(first);
+  await calculate(first, amountL1("270.00"), deltaL1("0.00"));
+  // 「試算」是 type=submit：在任一輸入框按 Enter 也會試算（docs/SCENARIOS.md 錨點 f＝−10% → 284.00）。
+  await first.getByLabel(inputLabels[2], { exact: true }).fill("-10");
+  await expect(first.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await first.getByLabel(inputLabels[2], { exact: true }).press("Enter");
+  await expect(first.getByTestId("scenario-contribution")).toHaveText(amountL1("284.00"));
+  await expect(first.getByTestId("scenario-delta")).toHaveText(deltaL1("+14.00"));
+
+  // 方案 2：聲明已記住（D-V3-12＝B），新方案沒有勾選框；從選範本到看到結果只要 3 個動作（選範本、套用、試算；PRD §7.4 驗收）。
+  await page.getByTestId("scenario-add").click();
+  const second = scenario(page, 2);
+  await expect(second).toBeVisible();
+  await expect(page.getByTestId("scenario-columns")).toHaveAttribute("data-count", "2");
+  await expectAcknowledged(second);
+  await expectAcknowledged(first);
+  await second.getByTestId("scenario-preset").selectOption("keep");
+  await second.getByTestId("scenario-preset-apply").click();
+  await second.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await expect(second.getByTestId("scenario-contribution")).toHaveText(amountL1("270.00"));
+  await expect(second.getByTestId("scenario-delta")).toHaveText(deltaL1("0.00"));
+  await expect(second.getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
+  // 套用後的用途也寫在 ? 說明裡（hidden 掛載；先打開再看）。
+  const secondHelp = await openTemplateHelp(second);
+  await expect(secondHelp.panel.getByTestId("scenario-preset-purpose")).toHaveText(fill(labels.scenarioForm.presetApplied, { name: presets.items.keep.name, purpose: presets.items.keep.purpose }));
+  await page.keyboard.press("Escape");
+  await expect(secondHelp.panel).toBeHidden();
+  await expect(secondHelp.trigger).toBeFocused();
+
+  // 匯出本頁：頁首下拉三項（決策 Markdown／CSV／JSON）都能下載，內容含兩個方案、聲明都是已同意。
+  const menu = await openScenarioExport(page);
+  await expect(menu.locator(".menu-panel button")).toHaveText([decisionExportLabel.md, decisionExportLabel.csv, decisionExportLabel.json]);
+  await page.keyboard.press("Escape");
+  await expect(menu).not.toHaveAttribute("open", "");
+  const markdown = await downloadScenario(page, "md");
+  expect(markdown).toContain(`# ${labels.ui.decisionExport.title}`);
+  const csv = await downloadScenario(page, "csv");
+  expect(csv.charCodeAt(0)).toBe(0xfeff);
+  expect(csvRecords(csv).filter(row => row.row_type === "scenario_result" && row.field === "contribution").map(row => row.value)).toEqual(["284.00", "270.00"]);
+  const decision = JSON.parse(await downloadScenario(page, "json")) as DecisionDocument;
+  expect(decision.scenarios.map(plan => [plan.status, plan.inputs.assumptions_accepted, plan.result?.contribution])).toEqual([["valid", true, "284.00"], ["valid", true, "270.00"]]);
+  await expect(page.getByTestId("decision-notice")).toHaveText(dw.noticeDownloadedActions);
+
+  // 分段鈕「增減｜改成」：預設「增減」、等值換算 hidden；切到「改成」預填本期件數（golden DTC 本期 4 件），改填 6 件 → 等值「＝ 相對 +50.0%」；切回「增減」看到等值相對值 50。
+  const volumeField = "volume_change_pct";
+  const volumeInput = second.getByLabel(inputLabels[0], { exact: true });
+  const unit = second.getByTestId(`scenario-mode-${volumeField}`).locator("xpath=preceding-sibling::span[contains(concat(' ', @class, ' '), ' scenario-unit ')]");
+  await expect(second.getByTestId(`scenario-mode-${volumeField}`)).toHaveAttribute("role", "group");
+  await expect(modeButton(second, volumeField, "relative")).toHaveAttribute("aria-pressed", "true");
+  await expect(modeButton(second, volumeField, "absolute")).toHaveAttribute("aria-pressed", "false");
+  await expect(second.getByTestId(`scenario-equivalent-${volumeField}`)).toBeHidden();
+  await expect(unit).toHaveText(pageV3.unitPercent);
+  await expect(volumeInput).toHaveAttribute("placeholder", dw.volumeHelp);
+  await modeButton(second, volumeField, "absolute").click();
+  await expect(modeButton(second, volumeField, "absolute")).toHaveAttribute("aria-pressed", "true");
+  await expect(modeButton(second, volumeField, "relative")).toHaveAttribute("aria-pressed", "false");
+  await expect(volumeInput).toHaveValue("4");
+  await expect(unit).toHaveText(pageV3.unitCount);
+  await expect(volumeInput).toHaveAttribute("placeholder", fill(labels.scenario.volume.absoluteHint, { units: fill(labels.assist.units.count, { value: "4" }) }));
+  await volumeInput.fill("6");
+  await expect(second.getByTestId(`scenario-equivalent-${volumeField}`)).toBeVisible();
+  await expect(second.getByTestId(`scenario-equivalent-${volumeField}`)).toHaveText(fill(presets.absolute.equivalentPct, { value: "+50.0" }));
+  await expect(second.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await modeButton(second, volumeField, "relative").click();
+  await expect(modeButton(second, volumeField, "relative")).toHaveAttribute("aria-pressed", "true");
+  await expect(volumeInput).toHaveValue("50");
+  await expect(unit).toHaveText(pageV3.unitPercent);
+  await expect(second.getByTestId(`scenario-equivalent-${volumeField}`)).toBeHidden();
+  // v2 的「相對 %／絕對值」分段字樣不再渲染。
+  for (const name of [labels.scenario.modeRelative, labels.scenario.modeAbsolute]) await expect(workbench(page).getByRole("button", { name, exact: true })).toHaveCount(0);
+  // 方案 1 不受方案 2 的編輯影響；頁面本身不可橫向溢出。
+  await expect(first.getByTestId("scenario-contribution")).toHaveText(amountL1("284.00"));
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });

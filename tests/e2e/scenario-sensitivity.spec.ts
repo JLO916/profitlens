@@ -1,8 +1,9 @@
 import { clickReplacing, closePeriodSheet, dismissSavePrompt, navigateTo, openPeriodSheet, openValidation, selectScenarioChannel, startChannelContext } from "./replacement-helpers";
+import { acceptAssumptions, downloadScenario, expectAcknowledged, expectConsentPending } from "./scenario-helpers-v3";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatPercentNumber, formatSignedDelta } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
-import { appendFile, mkdir, readFile } from "node:fs/promises";
+import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
@@ -13,8 +14,8 @@ const channelField = labels.ui.dashboard.filter.channel;
 const letter = (index: number) => String.fromCharCode(65 + index);
 const sensitivityInput = (index: number) => fill(copy.inputLabel, { letter: letter(index) });
 const sensitivityRow = (index: number) => new RegExp(fill(copy.rowLabel, { letter: letter(index) }));
-/** Main-layer caution is the single "注意：…" sentence (03_GLOSSARY_COPY §8); the rest moved into 技術細節. */
-const mainCaution = `${labels.sections.caution}：${labels.basis.items[6]}`;
+/** Main-layer caution is a single sentence (03_GLOSSARY_COPY §8); the rest moved into 技術細節. V3-6（PRD §7.4、§6.3 #38）：p.scenario-caution，13px 次要色，不加「注意：」前綴。 */
+const mainCaution = labels.basis.items[6];
 const dw = labels.ui.decisionWorkbench;
 /** V3-2a：狀態列「資料到 {date}」，日期取 golden manifest 的 data_as_of（不在測試內另寫日期）。 */
 const goldenReady = fill(labels.status.ready, { date: (JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")) as { data_as_of: string }).data_as_of });
@@ -65,7 +66,12 @@ async function selectGlobalChannel(page: Page, channel: string) {
   await closePeriodSheet(page);
 }
 
-async function openPlan(page: Page, investment = "0") {
+/**
+ * 載入 golden、DTC 方案 1 填 f＝−10%（一次性投入 investment）、同意聲明、試算，展開「要賣到多少才划算」。
+ * refuseFirst：V3-6（D-V3-12＝B）同一工作區勾一次聲明就記住、之後沒有勾選框，「未同意」只能在第一次勾選前測——先不勾就試算，
+ * 必須是「這個方案不適用」、沒有結果也沒有衍生分析，再同意後重算。
+ */
+async function openPlan(page: Page, investment = "0", { refuseFirst = false }: { refuseFirst?: boolean } = {}) {
   await page.goto("/");
   await openValidation(page);
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption("golden");
@@ -86,7 +92,14 @@ async function openPlan(page: Page, investment = "0") {
     [labels.scenario.adSpend.label]: "0", [labels.scenario.oneOff.label]: investment,
   })) await card.getByLabel(label, { exact: true }).fill(value);
   await expect(card.getByTestId("scenario-sensitivity")).toHaveCount(0);
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  if (refuseFirst) {
+    await expectConsentPending(card);
+    await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+    await expect(card.getByTestId("scenario-result")).toContainText(dw.planUnavailable);
+    await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
+    await expect(card.getByTestId("scenario-sensitivity")).toHaveCount(0);
+  }
+  await acceptAssumptions(card);
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   // V3-2b：試算結果大字是 L1（formatAmountL1）。
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(investment === "0" ? "284.00" : "264.00"));
@@ -105,8 +118,8 @@ test("PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立�
   await expect(sensitivity.getByTestId("threshold-zero_contribution").getByTestId("threshold-pct")).toHaveText(thresholdPct("-51.263537906137"));
   await expect(sensitivity.getByTestId("threshold-maintain_baseline").getByTestId("threshold-pct")).toHaveText(thresholdPct("-2.527075812274"));
   await expect(sensitivity.getByTestId("threshold-maintain_baseline")).toContainText(fill(copy.thresholdExact, { direction: copy.directionAtOrAbove }));
-  // 主層只留一句「注意：…」（§8）；「不是公司淨利」「不提供成功機率」等免責已集中到口徑說明或刪除。
-  await expect(sensitivity.locator(":scope > p.note").first()).toHaveText(mainCaution);
+  // 主層只留一句限制（§8；V3-6 起是 p.scenario-caution、沒有「注意：」前綴）；「不是公司淨利」「不提供成功機率」等免責已集中到口徑說明或刪除。
+  await expect(sensitivity.locator(":scope > p.scenario-caution")).toHaveText(mainCaution);
   await expect(sensitivity).toContainText(copy.fixedAssumptionsTechnical);
   await expect(sensitivity).toContainText(copy.inputsHint);
   await expectSensitivityValues(sensitivity, ["", "", ""]);
@@ -124,11 +137,8 @@ test("PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立�
   await mkdir(resolve("verification"), { recursive: true });
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-sensitivity-${testInfo.project.name}.png`), fullPage: true });
   // R5-4：三組輸入跟著方案保存，決策 JSON 匯出帶出 plan.sensitivity.volumes 與 analysis.rows（以原基準重算，與畫面一致）。
-  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: labels.downloads.decisionJson, exact: true }).click()]);
-  expect(download.suggestedFilename()).toBe("profitlens-decision.json");
-  const path = await download.path();
-  expect(path).not.toBeNull();
-  const document = JSON.parse(await readFile(path!, "utf8")) as { scenarios: { name: string; sensitivity: null | { volumes: string[]; analysis: null | { status: string; sensitivity_status: string; rows: { volume_change_pct: string; contribution: string; delta: string }[] } } }[] };
+  // V3-6：決策下載在頁首「匯出本頁」下拉（export-page-scenarios → scenario-export-json；helper 檢查檔名 profitlens-decision.json）。
+  const document = JSON.parse(await downloadScenario(page, "json")) as { scenarios: { name: string; sensitivity: null | { volumes: string[]; analysis: null | { status: string; sensitivity_status: string; rows: { volume_change_pct: string; contribution: string; delta: string }[] } } }[] };
   expect(document.scenarios).toHaveLength(1);
   expect(document.scenarios[0].name).toBe("履約改善條件檢核");
   expect(document.scenarios[0].sensitivity?.volumes).toEqual([...inputValues]);
@@ -155,7 +165,8 @@ test("PL-08 一次性投入門檻跨越原貢獻，非法 v 保留未知而不�
 });
 
 test("PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意仍無衍生分析", async ({ page }) => {
-  const { card, sensitivity } = await openPlan(page);
+  // 未同意：openPlan 在第一次勾選前先不勾就試算（不適用、沒有結果與衍生分析），再同意重算。
+  const { card, sensitivity } = await openPlan(page, "0", { refuseFirst: true });
   // R5-4：三格受控並跟著方案保存。
   await fillSensitivity(sensitivity, inputValues);
   await card.getByLabel(labels.scenario.volume.label, { exact: true }).fill("");
@@ -164,12 +175,8 @@ test("PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意�
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(sensitivity).toHaveCount(0);
   await card.getByLabel(labels.scenario.volume.label, { exact: true }).fill("0");
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).uncheck();
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
-  await expect(card.getByTestId("scenario-result")).toContainText(dw.planUnavailable);
-  await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
-  await expect(sensitivity).toHaveCount(0);
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  // D-V3-12＝B：聲明已記住，卡上只有「已了解」一行、沒有可取消的勾選框（未同意的情況在 openPlan 第一次勾選前已測）。
+  await expectAcknowledged(card);
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
   // 重算後預填：三格帶回保存的值，三格都有值時直接顯示結果。
