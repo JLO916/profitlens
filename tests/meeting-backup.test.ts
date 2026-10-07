@@ -121,7 +121,7 @@ describe("R6-1 backup v4 carries meeting_history (additive, same version string)
     await expect(restoreWorkspaceBackup(await resign(body))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
   });
   /** 備份檔裡一筆會議的可竄改形狀（只列測試會改到的欄位）。 */
-  type WireMeeting = { id: string; date: string; name: string; extra?: unknown; agenda: { kpis: { current: unknown; change: unknown }[]; channels: { current_net_revenue: unknown; current_contribution: unknown }[] } };
+  type WireMeeting = { id: string; date: string; name: string; extra?: unknown; copy_version?: unknown; agenda: { kpis: { current: unknown; change: unknown }[]; channels: { current_net_revenue: unknown; current_contribution: unknown }[] } };
   it.each<[string, (history: WireMeeting[]) => void]>([
     ["an amount with three decimals", history => { history[0].agenda.kpis[0].current = "2470.001"; }],
     ["a float amount", history => { history[1].agenda.channels[0].current_net_revenue = 1480; }],
@@ -132,6 +132,8 @@ describe("R6-1 backup v4 carries meeting_history (additive, same version string)
     ["an invalid meeting date", history => { history[0].date = "2026-02-30"; }],
     ["a name over 200 characters", history => { history[0].name = "會".repeat(201); }],
     ["a meeting that is not an object", history => { history.push("meeting" as unknown as WireMeeting); }],
+    // V3-7（D-V3-22）：copy_version 只接受 "v3"（或沒有這個欄位）。
+    ["a copy_version other than v3", history => { history[0].copy_version = "v2"; }],
   ])("rejects %s with INVALID_WORKSPACE_FORMAT even after re-signing", async (_label, mutate) => {
     const { backup } = await workspace();
     const body = JSON.parse(await exportWorkspaceBackup(backup));
@@ -156,6 +158,15 @@ describe("R6-1 backup v4 carries meeting_history (additive, same version string)
     const body = JSON.parse(await exportWorkspaceBackup(backup));
     mutate(body.payload.meeting_history[0]);
     await expect(restoreWorkspaceBackup(await resign(body))).rejects.toThrow("INVALID_WORKSPACE_FORMAT");
+  });
+  it("V3-7（D-V3-22）：v2 結束的紀錄（沒有 copy_version）照樣還原，讀回 undefined；v3 結束的紀錄讀回 \"v3\"", async () => {
+    const { backup } = await workspace();
+    const body = JSON.parse(await exportWorkspaceBackup(backup));
+    expect(body.payload.meeting_history.map((row: { copy_version?: string }) => row.copy_version)).toEqual(["v3", "v3"]);
+    delete body.payload.meeting_history[0].copy_version;
+    const restored = await restoreWorkspaceBackup(await resign(body));
+    expect(restored.meeting_history.map(row => row.copy_version)).toEqual([undefined, "v3"]);
+    expect(Object.hasOwn(restored.meeting_history[0], "copy_version")).toBe(false);
   });
   it("does not compare priority wording (label copy may change between releases), only rules and impact amounts", async () => {
     const { backup } = await workspace();

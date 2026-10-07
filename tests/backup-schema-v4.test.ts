@@ -97,4 +97,12 @@ describe("V3-0 備份 v4 欄位清單（backup-schema-v4.json）", () => {
     expect(restored.action_workspace.items[0].status_updated_at).toBe("2026-10-01");
     expect(restored.meeting_history).toHaveLength(1);
   }, 60_000);
+
+  it("V3-7（D-V3-22）：會議紀錄的 copy_version 是選填的 \"v3\"，finalizeMeeting 寫入、還原後讀回", async () => {
+    const schema = JSON.parse(readFileSync(SCHEMA, "utf8"));
+    expect(schema.meeting_copy_version).toMatchObject({ path: "payload.meeting_history[].copy_version", optional: true, v3_7_addition: true });
+    expect(schema.key_paths).toContain(schema.meeting_copy_version.path);
+    const restored = await restoreWorkspaceBackup(await fullBackup());
+    expect(restored.meeting_history[0].copy_version).toBe("v3");
+  }, 60_000);
 });

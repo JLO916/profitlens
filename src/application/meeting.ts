@@ -55,6 +55,8 @@ export interface Meeting {
   /** ISO；呼叫端給的建立時間，否則取會議稿（review）的建立時間，都沒有才等於 finalized_at。 */
   created_at: string;
   finalized_at: string;
+  /** V3-7（D-V3-22＝A）：v3 結束的紀錄寫 "v3"；v2 結束的紀錄（含還原的舊備份）沒有這個欄位，畫面頂部加註「本紀錄建立於 v2」。 */
+  copy_version?: "v3";
 }
 export type MeetingComparisonKind = "none" | "same_scope" | "different_periods" | "different_dataset";
 /** 結束會議時由 compareWithLastMeeting 凍結的比較結果；沒有上次會議時 kind 為 "none"、其餘欄位為 null 或空陣列。 */
@@ -161,6 +163,8 @@ export const meetingSchema = z.strictObject({
     actions: z.array(z.strictObject({ action_id: identifier, problem: z.string().max(2000), last_status: executionStatus, current_status: executionStatus.nullable(), status_updated_at: isoDate.nullable() })).max(3),
   }),
   created_at: z.iso.datetime(), finalized_at: z.iso.datetime(),
+  // V3-7（D-V3-22）：選填；舊紀錄沒有這個欄位時讀回 undefined。
+  copy_version: z.literal("v3").optional(),
 });
 
 function invalid(): never { throw new Error("INVALID_MEETING"); }
@@ -299,6 +303,7 @@ export function finalizeMeeting(input: FinalizeMeetingInput): Meeting {
     pinned_action_ids: review.pinned_action_ids, selected_scenarios: selected.map(({ ref }) => ref), notes: review.notes, thresholds: { importance: review.importance_threshold },
     follow_up: frozenFollowUp(comparison),
     created_at: input.created_at ?? reviewCreated, finalized_at: input.now,
+    copy_version: "v3",
   };
   const frozen = freezeMeeting(meeting);
   validateMeeting(frozen);
