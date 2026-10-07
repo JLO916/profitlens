@@ -55,10 +55,21 @@ export function normalizeMarkdown(text: string): string {
   }
   return out.join("\n").replaceAll(MINUS, "-").replace(/（(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+)）/g, "-$1");
 }
-/** Excel 正規化：摘要工作表拿掉「版頭」區塊的列；V3-9a 起另拿掉損益兩平 MER 的新增列（isBreakevenExcelRow）；其餘工作表、表頭、每一格原樣保留。 */
+/**
+ * V3-9b F14／F13 是新增的內容：活頁簿最後多一張「管理損益表」工作表（D-V3-8），待辦工作表最後多一欄「廣告決策」。
+ * 正規化時拿掉這張工作表與這一欄（表頭、格式與每列的最後一格），其餘仍須與 V3-7 開工前逐字相同。
+ */
+const isPnlSheet = (sheet: ExcelWorkbook["sheets"][number]) => sheet.name === labels.exports.variantsV3.pnlSheet;
+function withoutAdDecisionColumn(sheet: ExcelWorkbook["sheets"][number]): ExcelWorkbook["sheets"][number] {
+  const at = sheet.name === labels.excelExport.sheets.actions ? sheet.header.indexOf(labels.actions.adDecisionV3.csvColumn) : -1;
+  if (at < 0) return sheet;
+  const drop = <T,>(list: readonly T[]) => list.filter((_, index) => index !== at);
+  return { ...sheet, header: drop(sheet.header), rows: sheet.rows.map(drop), ...(sheet.formats ? { formats: drop(sheet.formats) } : {}) };
+}
+/** Excel 正規化：摘要工作表拿掉「版頭」區塊的列；V3-9a 起另拿掉損益兩平 MER 的新增列（isBreakevenExcelRow）；V3-9b 起拿掉管理損益表工作表與待辦工作表的廣告決策欄；其餘工作表、表頭、每一格原樣保留。 */
 export function normalizeWorkbook(workbook: ExcelWorkbook): ExcelWorkbook {
   const section = labels.exports.headerV3.excelSection;
-  return { sheets: workbook.sheets.map(sheet => ({ ...sheet, rows: sheet.rows.filter(row => !(row[0]?.kind === "text" && row[0].value === section) && !isBreakevenExcelRow(row)) })) };
+  return { sheets: workbook.sheets.filter(sheet => !isPnlSheet(sheet)).map(withoutAdDecisionColumn).map(sheet => ({ ...sheet, rows: sheet.rows.filter(row => !(row[0]?.kind === "text" && row[0].value === section) && !isBreakevenExcelRow(row)) })) };
 }
 
 async function source(filters: AnalysisFilters = {}) {

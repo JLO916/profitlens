@@ -2529,6 +2529,14 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 
 /* ── V3-9b 錨點（代理 B：匯出選單的變體選擇器；列印變體的版面規則寫在既有 @media print 區塊之後的本區段；只用 token，列印字級用 --print-*） ── */
+/* F14 §7.9：「一頁摘要（目前檢視）」分組標題下的版本切換——.ui-segmented 撐滿選單寬、三格等寬；每格 13px 名稱＋一行 12px 說明（兩行高 --menu-item-h-2）。
+   蓋過 V3-3／V3-7 的 .topbar .download-menu .menu-list button（單行 36px、圓角）；選中沿用 .ui-segmented 的 aria-pressed 底色與框線。列印版面在 manager-summary.module.css 的 @media print。 */
+.download-menu .export-variant-picker { display: flex; width: calc(100% - 2 * var(--space-2)); margin: 0 var(--space-2) var(--space-2); }
+.topbar .download-menu .menu-list .export-variant-picker > button, .download-menu .export-variant-picker > button { display: grid; flex: 1 1 0; align-content: center; justify-items: start; gap: 0; min-width: 0; height: auto; min-height: var(--menu-item-h-2); padding: var(--space-1) var(--space-2); border-radius: 0; color: var(--text-primary); font-size: var(--text-13); line-height: var(--leading-13); text-align: left; white-space: normal; }
+.topbar .download-menu .menu-list .export-variant-picker > button[aria-pressed="true"], .download-menu .export-variant-picker > button[aria-pressed="true"] { background: var(--accent-subtle); color: var(--accent); font-weight: var(--weight-medium); }
+/* .ui-segmented 是 overflow: hidden，全站 2px 外推的焦點框會被裁掉：版本按鈕的焦點框改畫在按鈕內側（同 .seg）。 */
+.download-menu .export-variant-picker > button:focus-visible { outline: var(--rule-accent) solid var(--focus-ring); outline-offset: calc(-1 * var(--rule-accent)); }
+.download-menu .export-variant-picker small { padding: 0; font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); color: var(--text-tertiary); overflow-wrap: anywhere; }
 
 
 /* ── V3-9b 錨點（代理 C：:root[data-mode="present"] 的 token 重新對應（--text-14 → 16px、--text-16 → 20px、--num-28 → 40px、--num-32 → 48px）、隱藏側欄與期間列、內容最大寬 1280px、只顯示 L1；.page-present 按鈕位置；只用 token） ── */

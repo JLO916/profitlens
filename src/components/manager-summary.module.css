@@ -72,4 +72,10 @@
   .printAppendix { break-before: page; }
   .printAppendix + .printAppendix { break-before: auto; margin-top: 5mm; }
   .printAppendix ul { font-size: var(--print-note); overflow-wrap: anywhere; }
+  /* V3-9b F14 老闆一頁版：本期一句話（內文字級加粗，在版頭與四個關鍵數字之間）。 */
+  .printOneLiner { margin: 2mm 0 !important; font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+  /* V3-9b F14 附錄的每週管理損益表（D-V3-8）：沿用列印表格（--print-note、0.5pt --border-strong、數字靠右）；小計與扣廣告後貢獻加粗；週欄名兩行。 */
+  .printPnl thead th { vertical-align: bottom; }
+  .printSurface .printPnlStrong th, .printSurface .printPnlStrong td { font-weight: var(--weight-semibold); }
+  .printPnlNote { font-size: var(--print-note); }
 }

@@ -163,6 +163,11 @@ describe("V3-7 §6.5 正規化比對：去掉版頭、負號換回 ASCII 後，�
     // 摘要工作表拿掉四列版頭與 V3-9a 損益兩平 MER 一列（新增列）；指標定義表拿掉損益兩平 MER 版本一列。
     expect(exports.excel.sheets[0].rows.length - workbook.sheets[0].rows.length).toBe(4 + 1);
     expect(exports.excel.sheets[5].rows.length - workbook.sheets[5].rows.length).toBe(1);
+    // V3-9b F14／F13：活頁簿最後多一張管理損益表、待辦工作表最後多一欄廣告決策（正規化時拿掉，見 tests/helpers/export-normalize.ts）。
+    expect(exports.excel.sheets.map(sheet => sheet.name)).toEqual([...workbook.sheets.map(sheet => sheet.name), labels.exports.variantsV3.pnlSheet]);
+    const actionsSheet = (book: typeof workbook) => book.sheets.find(sheet => sheet.name === labels.excelExport.sheets.actions)!;
+    expect(actionsSheet(exports.excel).header).toEqual([...actionsSheet(workbook).header, labels.actions.adDecisionV3.csvColumn]);
+    expect(actionsSheet(exports.excel).rows.map(row => row.length)).toEqual(actionsSheet(workbook).rows.map(row => row.length + 1));
   });
 
   it("normalizeMarkdown 去掉每一段版頭（工作稿 Markdown 的附錄各有一段），也把 U+2212 與括號負數換成 ASCII「-」", async () => {
@@ -216,7 +221,8 @@ describe("V3-7 Excel：摘要工作表最前面是版頭四列；表頭粗體、
     expect(/<fonts count="(\d+)">/.exec(styles)![1]).toBe(String(fonts.length));
     expect(/<fills count="(\d+)">/.exec(styles)![1]).toBe(String(fills.length));
     const sheets = (zip.FullPaths as string[]).map(path => path.replace(/^Root Entry/, "")).filter(path => /^\/xl\/worksheets\/sheet\d+\.xml$/.test(path));
-    expect(sheets).toHaveLength(6);
+    // V3-9b：六張既有工作表＋管理損益表（D-V3-8），表頭樣式與凍結列相同。
+    expect(sheets).toHaveLength(7);
     for (const path of sheets) {
       const sheet = xml(path);
       expect(sheet, path).toContain('<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>');

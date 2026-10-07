@@ -54,6 +54,11 @@ export function buildExportHeader(input: ExportHeaderInput): ExportHeader {
   return { lines: [datasetName, title, fill(copy.periodUnitLine, { period: periodLine, unit: unitLine }), versionLine], datasetName, title, periodLine, unitLine, versionLine };
 }
 
+/** V3-9b F14 客戶報告版（PRD §10.1 F14、§7.9）：版頭第 1 行之後的一行「客戶：{資料集名稱} · 製表：EC ProfitLens」；四行版頭本身不變。 */
+export function clientHeaderLine(header: Pick<ExportHeader, "datasetName">): string {
+  return fill(labels.exports.variantsV3.clientLine, { client: header.datasetName, brand: labels.brand.name });
+}
+
 /**
  * 資料集名稱可能來自使用者輸入：Markdown 裡當純文字。HTML 字元轉成實體、Markdown 標記字元加反斜線、換行收成空白、
  * 頭尾空白去掉（避免縮排成程式碼區塊），開頭的「-」「=」與「1.」不讓它變成清單或分隔線。

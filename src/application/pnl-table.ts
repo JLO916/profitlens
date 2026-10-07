@@ -3,6 +3,8 @@ import { dateRange } from "../domain/date";
 import { calculateMetrics } from "../domain/metrics";
 import { parseCents, ratioMetric } from "../domain/money";
 import type { Amount, DailyChannel, Metric, MONEY_METRICS, Period, SourceRef } from "../domain/types";
+import { fill, labels } from "../i18n";
+import { emptyKindOf, formatAmountL3, formatEmpty, formatRateL3, metricDefinitions, MINUS } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
 /*
@@ -113,4 +115,25 @@ export function buildPnlTable(snapshot: WorkspaceSnapshot, granularity: PnlGranu
     return { metric, kind, deduct, cells, total, share, isZero };
   });
   return { granularity, period: { ...current.period }, columns, rows };
+}
+
+/** V3-9b F14（PRD §9.6、D-V3-8）：匯出用的每週管理損益表——buildPnlTable(snapshot, "week") 原樣，加上列名（費用列「減：」前綴）與週欄名（週名＋起訖日）。Excel 工作表與列印附錄共用；不改 buildPnlTable 的輸出。 */
+export interface PnlExportTable { table: PnlTable; rowLabels: string[]; columnLabels: string[] }
+export function pnlExportTable(snapshot: Pick<WorkspaceSnapshot, "report" | "weeks">): PnlExportTable {
+  // 每週欄只讀 report.current 與 weeks（weekColumns），所以列印版拿到的 Pick 也能用；buildPnlTable 本身不改。
+  const table = buildPnlTable(snapshot as WorkspaceSnapshot, "week");
+  const copy = labels.overview.pnlV3, variants = labels.exports.variantsV3;
+  const rowLabels = table.rows.map(row => row.deduct ? fill(copy.rowDeduct, { label: metricDefinitions[row.metric].label }) : metricDefinitions[row.metric].label);
+  const columnLabels = table.columns.map(column => fill(variants.pnlWeekColumn, { label: column.label, range: fill(variants.pnlWeekRange, { start: column.period.start, end: column.period.end }) }));
+  return { table, rowLabels, columnLabels };
+}
+/** V3-9b F14（D-V3-8）：列印、PDF 管理損益表的金額——L3 到分（formatAmountL3），負數改成括號 (1,234.00)；缺值依原因碼寫資料待補／不適用。畫面上仍是 U+2212。 */
+export function pnlExportAmount(metric: Metric): string {
+  if (metric.value === null) return formatEmpty(emptyKindOf(metric.reason_codes));
+  const text = formatAmountL3(metric.value);
+  return text.startsWith(MINUS) ? fill(labels.exports.variantsV3.negativeParen, { value: text.slice(MINUS.length) }) : text;
+}
+/** V3-9b F14：列印、PDF 管理損益表的佔淨營收 %（L3 兩位小數，與 Excel 的 0.00% 相同；淨營收 ≤ 0 寫不適用）。 */
+export function pnlExportShare(row: Pick<PnlRow, "share">): string {
+  return formatRateL3(row.share.value, emptyKindOf(row.share.reason_codes));
 }

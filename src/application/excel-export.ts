@@ -5,13 +5,14 @@ import { AMOUNT_FIELDS, type Dataset, type Metric, type Period } from "../domain
 import { fill, labels } from "../i18n";
 import { actionDocuments, type ActionExecutionStatus, type ActionWorkspace } from "./action-workspace";
 import { ASSIST_KPI_VERSION } from "./assist-kpi";
-import type { ExportVariant } from "./export-variants";
+import { variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExcelSheetKey, type ExportVariant, type ExportVariantSpec } from "./export-variants";
 import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, scopeLabel } from "./copy";
 import { downloadBinary } from "./download";
 import { buildExportHeader } from "./export-header";
 import { argb, EXPORT_THEME } from "./export-theme";
 import type { ManagerSummary, SummaryMetric } from "./manager-summary";
+import { pnlExportTable } from "./pnl-table";
 import { dataStatus } from "./product-highlights";
 import type { TaxConversion } from "./tax-basis";
 import { formatEmpty, formatMultiple, formatPeriodExport } from "./presentation";
@@ -26,8 +27,9 @@ export type ExcelCell = { kind: "text"; value: string } | { kind: "number"; valu
  * 數字格的顯示格式（只影響 Excel 顯示，不改數值；格子仍是數字，可加總、可排序）。V3-2b §3.3：Excel 有 L2 與 L3。
  * money_l2：摘要、通路表用整數元（L2）；money：拆解、商品明細到分（L3）；ratio：百分比兩位小數（L3）；count：件數整數。
  * 負號一律用 U+2212（Excel 是給人看的文件；CSV／JSON 才保留 ASCII「-」）。金額欄的表頭加「（元）」，儲存格內不帶單位。
+ * V3-9b money_paren：只用在管理損益表工作表（D-V3-8，PRD §9.6）——到分、負數用括號 (1,234.00)。
  */
-export type ExcelNumberFormat = "money" | "money_l2" | "ratio" | "count";
+export type ExcelNumberFormat = "money" | "money_l2" | "money_paren" | "ratio" | "count";
 export interface ExcelSheet {
   name: string; header: string[]; rows: ExcelCell[][];
   /** 每欄的數字格式（與 header 等長）；沒有就是一般格式。只套在 number 格。 */
@@ -65,11 +67,12 @@ export const EXCEL_SHEET_NAME_LIMIT = 31;
 export const EXCEL_NUMBER_FORMATS: Record<ExcelNumberFormat, string> = {
   money: '#,##0.00;"−"#,##0.00;0.00',
   money_l2: '[>=0.5]#,##0;[<=-0.5]"−"#,##0;0',
+  money_paren: "#,##0.00;(#,##0.00)",
   ratio: '0.00%;"−"0.00%;0.00%',
   count: '#,##0;"−"#,##0;0',
 };
 const NUMBER_FORMATS = EXCEL_NUMBER_FORMATS;
-const isMoneyFormat = (format: ExcelNumberFormat | null | undefined): boolean => format === "money" || format === "money_l2";
+const isMoneyFormat = (format: ExcelNumberFormat | null | undefined): boolean => format === "money" || format === "money_l2" || format === "money_paren";
 
 const text = (value: string): ExcelCell => ({ kind: "text", value });
 const EMPTY: ExcelCell = { kind: "null" };
@@ -123,7 +126,7 @@ const EXECUTION_STATUS: Record<ActionExecutionStatus, string> = {
   not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done,
 };
 
-function summarySheet(input: ExcelExportInput): ExcelSheet {
+function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSheet {
   const { summary, dataset, meeting } = input;
   const alias = demoAlias(summary.dataset_id);
   const s = copy.summary;
@@ -140,8 +143,22 @@ function summarySheet(input: ExcelExportInput): ExcelSheet {
     amountBasis: input.conversion || summary.conversion_note ? "inclusive" : "exclusive",
     scope: { previous: summary.scope.previous_period, current: summary.scope.current_period, previousDays: summary.previous_days, currentDays: summary.current_days },
   });
-  const records: SheetRecord<typeof copy.columns.summary>[] = [
-    ...header.lines.map(line => ({ section: text(labels.exports.headerV3.excelSection), detail: text(line) })),
+  // V3-9b F14：客戶報告版在版頭第 1 行之後多一列客戶行（variantHeaderLines）；標準版與老闆一頁版是原本四列。
+  const records: SheetRecord<typeof copy.columns.summary>[] = variantHeaderLines(header, spec).map(line => ({ section: text(labels.exports.headerV3.excelSection), detail: text(line) }));
+  const total = scopeLabel({ kind: "all", channels: summary.scope.channels }, alias);
+  // V3-9b F14 老闆一頁版：只留 L1——本期一句話、四個關鍵數字、三件事的標題與影響金額、決議一列；數字與標準版同一個 summary／snapshot。
+  if (spec.sections.kpis === "four") {
+    if (spec.sections.oneLiner) records.push({ section: text(labels.overview.snapshotUi.heading), detail: text(variantOneLiner(summary, input.snapshot)) });
+    for (const row of variantKpis(summary, input.snapshot.report)) records.push({
+      section: text(s.sections.keyDeltas), item: text(labels.metrics[row.metric].label), scope: text(total),
+      previous: moneyCell(row.previous.value), current: moneyCell(row.current.value), change: moneyCell(row.change.value), detail: missing([row.previous, row.current, row.change]),
+    });
+    if (!summary.priorities.length) records.push({ section: text(s.sections.topThree), detail: text(labels.notes.noPriorities) });
+    for (const [index, item] of summary.priorities.entries()) records.push({ section: text(s.sections.topThree), item: text(fill(s.priorityItem, { n: index + 1, headline: item.title })), impact: moneyCell((item.impact ?? item.ranking_amount).value) });
+    if (meeting) records.push(info(s.sections.meeting, s.items.decision, lookup(labels.meeting.decisions, meeting.decision)));
+    return sheet(copy.sheets.summary, copy.columns.summary, records, { previous: "money_l2", current: "money_l2", change: "money_l2", impact: "money_l2" });
+  }
+  records.push(
     info(s.sections.scope, s.items.dataset, dataset.manifest.dataset_id),
     info(s.sections.scope, s.items.source, lookup(s.sourceTypes, dataset.manifest.source_type)),
     info(s.sections.scope, s.items.asOf, summary.data_as_of),
@@ -149,8 +166,7 @@ function summarySheet(input: ExcelExportInput): ExcelSheet {
     info(s.sections.scope, s.items.current, period(summary.scope.current_period)),
     info(s.sections.scope, s.items.comparison, summary.scope.comparison_mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays),
     info(s.sections.scope, s.items.channels, channelsLabel(summary.scope.channels, alias)),
-  ];
-  const total = scopeLabel({ kind: "all", channels: summary.scope.channels }, alias);
+  );
   for (const row of summary.headlines) records.push({
     section: text(s.sections.keyDeltas), item: text(labels.metrics[row.metric].label), scope: text(total),
     previous: moneyCell(row.previous.value), current: moneyCell(row.current.value), change: moneyCell(row.change.value), detail: missing([row.previous, row.current, row.change]),
@@ -172,7 +188,8 @@ function summarySheet(input: ExcelExportInput): ExcelSheet {
     info(s.sections.meeting, s.items.meetingName, meeting.name),
     info(s.sections.meeting, s.items.meetingDate, meeting.date),
     info(s.sections.meeting, s.items.decision, lookup(labels.meeting.decisions, meeting.decision)),
-    info(s.sections.meeting, s.items.notes, meeting.notes),
+    // V3-9b F14：決策備註是內部備註，客戶報告版不放。
+    ...(spec.internal.decisionNotes ? [info(s.sections.meeting, s.items.notes, meeting.notes)] : []),
   );
   return sheet(copy.sheets.summary, copy.columns.summary, records, { previous: "money_l2", current: "money_l2", change: "money_l2", impact: "money_l2" });
 }
@@ -231,7 +248,9 @@ function productSheet(rows: readonly ProductComparisonRow[], alias: boolean): Ex
   });
 }
 
-function actionSheet(workspace: ActionWorkspace): ExcelSheet {
+/** V3-9b F13／F14：待辦工作表最後一欄「廣告決策」（使用者自選的暫停／調整／加碼；沒標是空格）；列數與既有欄位不變。 */
+const AD_DECISION_COLUMN = { ad_decision: labels.actions.adDecisionV3.csvColumn } as const;
+function actionSheet(workspace: ActionWorkspace, spec: ExportVariantSpec): ExcelSheet {
   const board = labels.actionBoard;
   const records = actionDocuments(workspace).map(doc => ({
     priority: numeric(doc.priority), problem: text(doc.problem), step: text(doc.action),
@@ -241,37 +260,65 @@ function actionSheet(workspace: ActionWorkspace): ExcelSheet {
     scope: text(scopeLabel(doc.binding.scope, demoAlias(doc.binding.dataset_id))),
     // 引用的是較早的資料（或舊資料待重新核對）時提醒，與待辦頁的「引用較早資料」同一句。
     caution: doc.status === "stale" || doc.evidence_relation === "historical" ? text(labels.actions.staleBadge) : EMPTY,
+    ad_decision: doc.ad_decision ? text(lookup(labels.actions.adDecisionV3.options, doc.ad_decision)) : EMPTY,
   }));
-  return sheet(copy.sheets.actions, copy.columns.actions, records, { priority: "count", evidence_count: "count" });
+  // 客戶報告版拿掉內部備註：狀態更新日（待辦進度紀錄）與「引用較早資料」（引用歷史）兩欄；其他欄與列不變，廣告決策一律在最後。
+  const hidden = new Set<string>([...(spec.internal.actionProgress ? [] : ["status_updated_at"]), ...(spec.internal.citationHistory ? [] : ["caution"])]);
+  const columns: Columns = Object.fromEntries([...Object.entries(copy.columns.actions).filter(([key]) => !hidden.has(key)), ...Object.entries(AD_DECISION_COLUMN)]);
+  return sheet(copy.sheets.actions, columns, records, { priority: "count", evidence_count: "count" });
 }
 
-function basisSheet(input: ExcelExportInput): ExcelSheet {
+function basisSheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSheet {
   const { summary, snapshot, dataset } = input;
   const b = copy.basis;
   const row = (section: string, item: string | null, detail: string) => ({ section: text(section), item: item === null ? EMPTY : text(item), detail: text(detail) });
   const converted = conversionSentence(input.conversion) ?? summary.conversion_note;
+  // V3-9b F14：技術細節（版本與雜湊）只在 spec.appendix.technical 時放；客戶報告版的版本字串在版頭第 4 行。
+  const technical = (item: string, detail: string) => spec.appendix.technical ? [row(b.sections.technical, item, detail)] : [];
   const records = [
     ...labels.basis.items.map(item => row(b.sections.basis, null, item)),
     row(b.sections.basis, b.alias, labels.basis.aliasNote),
     ...(converted ? [row(b.sections.preprocessing, b.conversion, converted)] : []),
-    row(b.sections.technical, csvHeader("dataset_id"), snapshot.report.dataset_id),
-    row(b.sections.technical, csvHeader("dataset_hash"), snapshot.dataset_hash),
-    row(b.sections.technical, csvHeader("filter_hash"), snapshot.filter_hash),
-    row(b.sections.technical, csvHeader("metric_version"), snapshot.metric_version),
-    row(b.sections.technical, b.assistVersion, ASSIST_KPI_VERSION),
+    ...technical(csvHeader("dataset_id"), snapshot.report.dataset_id),
+    ...technical(csvHeader("dataset_hash"), snapshot.dataset_hash),
+    ...technical(csvHeader("filter_hash"), snapshot.filter_hash),
+    ...technical(csvHeader("metric_version"), snapshot.metric_version),
+    ...technical(b.assistVersion, ASSIST_KPI_VERSION),
     // V3-9a F12：損益兩平 MER 的版本（breakeven-mer-v1）接在輔助指標版本之後。
-    row(b.sections.technical, labels.assist.breakevenV3.excelVersion, BREAKEVEN_MER_VERSION),
-    row(b.sections.technical, csvHeader("currency"), dataset.manifest.currency),
-    row(b.sections.technical, csvHeader("timezone"), dataset.manifest.timezone),
+    ...technical(labels.assist.breakevenV3.excelVersion, BREAKEVEN_MER_VERSION),
+    ...technical(csvHeader("currency"), dataset.manifest.currency),
+    ...technical(csvHeader("timezone"), dataset.manifest.timezone),
   ];
   return sheet(copy.sheets.basis, copy.columns.basis, records);
 }
 
-/** 六個工作表：摘要、通路、貢獻變化拆解、商品比較、行動、口徑。只讀既有計算結果；摘要必須來自同一個 snapshot。 */
+/**
+ * V3-9b F9／F14（D-V3-8，PRD §9.6）：管理損益表工作表——buildPnlTable(snapshot, "week") 的值原樣寫成數字格。
+ * 列＝13 列（PNL_ROWS 的固定順序，費用列「減：」前綴，零值列也列出）；欄＝項目、本期每週、合計、佔淨營收 %。
+ * 金額格式 #,##0.00;(#,##0.00)（負數括號），比率 0.00%（精確比率小數）；缺值是空格。表頭樣式與凍結列同其他工作表（styleHeaderRows）。
+ */
+function pnlSheet(snapshot: WorkspaceSnapshot): ExcelSheet {
+  const { table, rowLabels, columnLabels } = pnlExportTable(snapshot);
+  const pnl = labels.overview.pnlV3.columns;
+  const formats: (ExcelNumberFormat | null)[] = [null, ...table.columns.map(() => "money_paren" as const), "money_paren", "ratio"];
+  const header = [pnl.item, ...columnLabels, pnl.total, pnl.share].map((label, index) => excelHeader(label, formats[index]));
+  const rows = table.rows.map((row, index) => [text(rowLabels[index]), ...row.cells.map(cell => moneyCell(cell.metric.value)), moneyCell(row.total.metric.value), ratioCell(row.share.value)]);
+  return { name: labels.exports.variantsV3.pnlSheet, header, rows, formats };
+}
+
+/**
+ * 工作表：摘要、通路、貢獻變化拆解、商品比較、待辦、指標定義，V3-9b 起最後加管理損益表；老闆一頁版只有摘要與管理損益表（variantSpec）。
+ * 只讀既有計算結果；摘要必須來自同一個 snapshot。三個變體的數字都來自同一個 summary／snapshot。
+ */
 export function buildExcelWorkbook(input: ExcelExportInput): ExcelWorkbook {
   const { summary, snapshot, dataset } = input;
   if (summary.dataset_hash !== snapshot.dataset_hash || summary.filter_hash !== snapshot.filter_hash || snapshot.report.dataset_id !== dataset.manifest.dataset_id) throw new Error("EXCEL_SOURCE_MISMATCH");
-  return { sheets: [summarySheet(input), channelSheet(summary), bridgeSheet(snapshot), productSheet(input.products ?? [], demoAlias(dataset.manifest.dataset_id)), actionSheet(input.actions), basisSheet(input)] };
+  const spec = variantSpec(input.variant);
+  const build: Record<ExcelSheetKey, () => ExcelSheet> = {
+    summary: () => summarySheet(input, spec), channels: () => channelSheet(summary), bridge: () => bridgeSheet(snapshot),
+    products: () => productSheet(input.products ?? [], demoAlias(dataset.manifest.dataset_id)), actions: () => actionSheet(input.actions, spec), basis: () => basisSheet(input, spec), pnl: () => pnlSheet(snapshot),
+  };
+  return { sheets: spec.excelSheets.map(key => build[key]()) };
 }
 
 /** 與 export.ts encodeCsv 同一條防注入規則：開頭是 = + - @、空白或控制／零寬／方向字元時前面加 '。 */
