@@ -1,5 +1,6 @@
 import { clearWorkspace, closePeriodSheet, dismissSavePrompt, navigateTo, openPeriodSheet, ruleHeadline, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from "./import-wizard-helpers";
+import { acceptAssumptions, decisionExportButton } from "./actions-helpers-v3";
 import { labels, fill } from "../../src/i18n";
 import { formatAmountL1, formatMetric, formatSignedDelta } from "../../src/application/presentation";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
@@ -24,7 +25,8 @@ async function selectChannel(page: Page, channel: string) {
   await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
   await closePeriodSheet(page);
 }
-const decisionDownloadLabels = { JSON: labels.downloads.decisionJson, CSV: labels.downloads.decisionCsv, Markdown: labels.downloads.decisionMd } as const;
+/** V3-6：決策下載的三顆按鈕（名稱 labels.downloads.decision*）搬進待辦頁／假設試算頁頁首的「匯出本頁」選單（export-page-actions／export-page-scenarios）。 */
+const decisionFormats = { JSON: "json", CSV: "csv", Markdown: "md" } as const;
 
 interface DecisionDocument {
   scenario_contexts: (DecisionDocument & {context_status:string})[];
@@ -83,12 +85,14 @@ async function scenario(page: Page, name: string, fulfillment: string, investmen
   const card = page.getByTestId("scenario-1");
   await card.getByLabel(scenarioCopy.planName, { exact: true }).fill(name);
   for (const [index, value] of ["0", "0", fulfillment, "0", investment].entries()) await card.getByLabel(inputLabels[index], { exact: true }).fill(value);
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  // V3-6（D-V3-12＝B）：本流程每個工作區只試算一次，這裡一定是第一次勾聲明；勾下去就記住、checkbox 換成「已了解」。
+  await acceptAssumptions(card, "first");
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(expected));
 }
 async function download(page: Page, format: "JSON" | "CSV" | "Markdown") {
-  const [file] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: decisionDownloadLabels[format], exact: true }).click()]);
+  const button = await decisionExportButton(page, decisionFormats[format]);
+  const [file] = await Promise.all([page.waitForEvent("download"), button.click()]);
   expect(file.suggestedFilename()).toBe(`profitlens-decision.${{ JSON: "json", CSV: "csv", Markdown: "md" }[format]}`);
   const path = await file.path();
   expect(path).not.toBeNull();
@@ -161,7 +165,9 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   // v=0, delta=0, f=-50%, a=0, K=3 => 400-200-10-6-7-0-130-3=44.
   await scenario(page, "M6 合成履約條件方案", "-50", "3", "44.00");
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-delta")).toHaveText(formatSignedDelta("4.00", "L1"));
-  await expect(page.getByTestId("decision-workbench")).toContainText(labels.scenario.acceptAssumptions);
+  // V3-6（D-V3-12＝B）：勾過的聲明記住後，方案改顯示「已了解這是試算，不是預測。」（不再有 checkbox）。
+  await expect(page.getByTestId("decision-workbench")).toContainText(labels.scenarios.pageV3.acknowledged);
+  await expect(page.getByTestId("scenario-1").getByTestId("scenario-accept")).toHaveCount(0);
   await navigateTo(page, "actions");
   // R5: the actions page opens on the board; the full edit form is filled in the list view.
   await switchActionsView(page, "list");

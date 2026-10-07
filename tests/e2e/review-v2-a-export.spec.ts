@@ -1,4 +1,5 @@
 import { dismissSavePrompt, navigateTo, openMeeting, openValidation, switchActionsView } from "./replacement-helpers";
+import { decisionExportButton } from "./actions-helpers-v3";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
@@ -60,7 +61,7 @@ const csvKey = (header: string) => /\(([^()]+)\)\s*$/.exec(header)?.[1] ?? heade
 /** Independent quote-aware reader; inspect downloaded cells rather than substring matches. */
 function csvRecords(text: string): Record<string, string>[] {
   const rows: string[][] = []; let row: string[] = [], cell = "", quoted = false;
-  const value = text.replace(/^﻿/, "");
+  const value = text.replace(/^\uFEFF/, "");
   for (let index = 0; index < value.length; index++) {
     const character = value[index];
     if (character === '"') {
@@ -170,8 +171,9 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await checkPrint(page, info, true);
 
   await navigateTo(page, "actions");
-  const json = JSON.parse(await saveDownload(page, page.getByRole("button", { name: labels.downloads.decisionJson, exact: true }), `${prefix}.json`));
-  const csv = csvRecords(await saveDownload(page, page.getByRole("button", { name: labels.downloads.decisionCsv, exact: true }), `${prefix}.csv`));
+  // V3-6：決策 JSON／CSV（按鈕名稱 labels.downloads.decisionJson／decisionCsv）在待辦頁頁首「匯出本頁」選單（export-page-actions → actions-export-json／csv）。
+  const json = JSON.parse(await saveDownload(page, await decisionExportButton(page, "json"), `${prefix}.json`));
+  const csv = csvRecords(await saveDownload(page, await decisionExportButton(page, "csv"), `${prefix}.csv`));
   expect(json.export_version).toBe("workspace-decision-v2");
   expect(json.session).toMatchObject({ dataset_id: "golden-v1", metric_version: "contribution-v1", data_as_of: "2026-08-03", period: { start: "2026-08-02", end: "2026-08-02" } });
   expect(json.session.dataset_hash).toMatch(/^[a-f0-9]{64}$/);

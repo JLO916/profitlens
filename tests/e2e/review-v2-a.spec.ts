@@ -1,6 +1,7 @@
 import { WORKSPACE_VERSION } from '../../src/application/workspace-backup';
 import { clearButton, closeStorage, dismissSavePrompt, navigateTo, openMeeting, openStorage, openValidation, selectScenarioChannel, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardStatus } from './import-wizard-helpers';
+import { acceptAssumptions } from './actions-helpers-v3';
 import { fill, labels } from '../../src/i18n';
 import { formatAmountL1, formatAmountL3 } from '../../src/application/presentation';
 import { readFileSync } from 'node:fs';
@@ -70,10 +71,12 @@ test('A1–A3 多通路各三案、三置頂五附錄，會議離頁與v3恢复�
    if(i>1)await page.getByRole('button',{name:labels.buttons.addScenario,exact:true}).click();const card=page.getByTestId(`scenario-${i}`);
    await card.getByLabel(labels.ui.decisionWorkbench.planName,{exact:true}).fill(`${channel} 方案 ${i}`);
    for(const[label,value]of Object.entries({[labels.scenario.volume.label]:'0',[labels.scenario.discount.label]:'0',[labels.scenario.fulfillmentUnit.label]:'-10',[labels.scenario.adSpend.label]:'0',[labels.scenario.oneOff.label]:i===1?'0':'20'}))await card.getByLabel(label,{exact:true}).fill(value);
-   await card.getByLabel(labels.scenario.acceptAssumptions,{exact:true}).check();await card.getByRole('button',{name:labels.buttons.calculate,exact:true}).click();
+   // V3-6（D-V3-12＝B）：同一工作區只有第一個方案（DTC 方案 1）要勾聲明；之後切通路、加方案都顯示「已了解」，不再有 checkbox。
+   await acceptAssumptions(card,channel==='DTC'&&i===1?'first':'acknowledged');await card.getByRole('button',{name:labels.buttons.calculate,exact:true}).click();
    await expect(card.getByTestId('scenario-contribution')).toHaveText(l1(channel==='DTC'?(i===1?'284.00':'264.00'):(i===1?'-6.50':'-26.50')));
   }
-  await expect(page.getByRole('button',{name:labels.buttons.addScenario,exact:true})).toBeDisabled();
+  // V3-6：三個方案時不再渲染「新增方案」（v2 是 disabled）。
+  await expect(page.getByTestId('scenario-add')).toHaveCount(0);await expect(page.getByRole('button',{name:labels.buttons.addScenario,exact:true})).toHaveCount(0);
  }
  await selectScenarioChannel(page,'DTC');
  await expect(page.getByTestId('scenario-1').getByLabel(labels.ui.decisionWorkbench.planName,{exact:true})).toHaveValue('DTC 方案 1');

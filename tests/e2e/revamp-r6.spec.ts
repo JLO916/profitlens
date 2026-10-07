@@ -8,6 +8,7 @@ import { channelsLabel } from "../../src/application/copy";
 import { formatSavedDateTime } from "../../src/application/auto-save";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
 import { acceptSavePrompt, clearButton, clickReplacing, closeDownloads, closeStorage as closeStorageMenu, closeTopbarMore, dismissSavePrompt, isMobile, navControl, navigateTo, openDownloads, openMeeting, openMobileMore, openStorage as openStorageMenu, openValidation, sidebarNav, startChannelContext, switchActionsView } from "./replacement-helpers";
+import { acceptAssumptions, actionDrawer } from "./actions-helpers-v3";
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -112,19 +113,25 @@ async function calculateKeepPlan(page: Page) {
   const card = page.getByTestId("scenario-1");
   await card.getByTestId("scenario-preset").selectOption("keep");
   await card.getByTestId("scenario-preset-apply").click();
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
+  // V3-6（D-V3-12＝B）：每個測試只試算一次，這裡是工作區第一次勾聲明；勾下去就記住、checkbox 換成「已了解」。
+  await acceptAssumptions(card, "first");
   await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
   // V3-2b：試算結果是 L1（< 1 萬顯示整數元＋「元」；差額為零不帶符號）。
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("270.00"));
   await expect(card.getByTestId("scenario-delta")).toHaveText(formatSignedDelta("0.00", "L1"));
 }
-/** 行動頁（看板）：新增一張待辦、填問題、按星號置頂。 */
+/** 行動頁（看板）：新增一張待辦、填問題、按星號置頂。V3-6：看板新增後立刻開待辦編輯抽屜（modal），問題在抽屜裡填；Esc 關閉後焦點回到新卡片，再按卡片上的星號。 */
 async function addPinnedAction(page: Page, problem: string) {
   await navigateTo(page, "actions");
   await switchActionsView(page, "board");
   await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
   const card = page.getByTestId("board-card-1");
-  await card.getByLabel(labels.actions.problem, { exact: true }).fill(problem);
+  const drawer = actionDrawer(page);
+  await expect(drawer).toBeVisible();
+  await drawer.getByLabel(labels.actions.problem, { exact: true }).fill(problem);
+  await page.keyboard.press("Escape");
+  await expect(drawer).toHaveCount(0);
+  await expect(card).toBeFocused();
   await card.getByRole("button", { name: labels.buttons.pin, exact: true }).click();
   await expect(card.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(card.getByRole("heading", { level: 4 })).toHaveText(problem);
