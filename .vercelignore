@@ -2,6 +2,7 @@ node_modules/
 .next/
 .git/
 .vercel/
+.claude/
 .agents/
 .codex/
 .env*
