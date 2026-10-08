@@ -1,6 +1,6 @@
 # Revamp v3 V3-10 驗收：上線檢查（2026-10-08）
 
-依 `docs/revamp-v3/06_BATCHES.md` V3-10 與 PRD §2.3 A／B／C、§11.3（隱私）、§11.5（標籤單一來源）、§11.7（testid）、§11.8（備份相容）、`docs/revamp/08_RELAUNCH.md` §4（R7 的上線檢查清單）。H2／H3 依使用者 2026-10-07 指示略過；**H4（5 人可用性複測與外部盲評）未執行、待人工**；**正式站**：使用者 2026-10-08 指示「推送正式站」後，推送 `revamp/v2` 並以 `vercel deploy --prod` 部署（deployment `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`，https://profitlens-tau.vercel.app），正式站檢查通過（§3c）；`v3.0.0` 的 git tag 等 H4 後再打。
+依 `docs/revamp-v3/06_BATCHES.md` V3-10 與 PRD §2.3 A／B／C、§11.3（隱私）、§11.5（標籤單一來源）、§11.7（testid）、§11.8（備份相容）、`docs/revamp/08_RELAUNCH.md` §4（R7 的上線檢查清單）。H2／H3 依使用者 2026-10-07 指示略過；**H4（5 人可用性複測與外部盲評）未執行、待人工**；**正式站**：使用者 2026-10-08 指示「推送正式站」後，推送 `revamp/v2` 並以 `vercel deploy --prod` 部署（deployment `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`，https://profitlens-tau.vercel.app），正式站檢查通過（§3c）；同日使用者拍板 `main` fast-forward 合併並推送、Git 整合重建正式站並複檢通過（§3d）、tag `v3.0.0` 已打（指向 625bfa5）。
 
 工作方式：開工錨點 `418f307` → 三個 worktree 代理並行（A labels 舊 key alias 移除 `1f87f4d`、B 版本 3.0.0／會議頁可及名稱／RELEASES／README `89b22d9`、C 上線檢查工具／匯出大小調查 `d427581`）→ 合併 → 接線 `8493723` → E2E 代理對共用伺服器驗證全部 spec 並執行新檢查 → 全套 E2E → 本機 production 的 13 項 HTTP、網路紀錄、鍵盤走查、axe、備份矩陣、四尺寸截圖、Lighthouse → 本文件。
 
@@ -10,7 +10,7 @@
 |---|---|---|
 | 移除 labels 舊 key alias（§11.5；V3-2c 的 alias 本批移除） | 完成 | labels 頂層從 52 個區段變成 24 個新分組（LABEL_GROUPS）；v2 舊鍵 alias 區段、`ui` 物件、`LEGACY_SECTIONS`、`LEGACY_PREFIXES`、`legacyAliases` 全部移除；對照表留在 `tests/fixtures/labels-legacy-map.json`（2,094 個葉路徑：搬家 1,585、同路徑 509；65 個整棵子樹）。消費端以 AST codemod 改路徑（186 檔 3,213 處＋歷史 spec 8 檔 76 處，註解 84 處；手動處理物件層級用法 24 處；src 70 檔、單元測試 72 檔、E2E 44 檔、量測 spec 11 檔、scripts 8 檔）；刪 alias 後 tsc 138 個錯誤收斂到 0。字串不變的證明：移除前後 24 個分組攤平後 2,578 個葉節點逐位元組相同；copy-scan 指標逐項相同；`labels-unused.mjs` 輸出逐位元組相同。`tests/labels-structure.test.ts` 改成「V3-2b 快照經對照表對到新路徑，一對一相同」。grep 驗收：`labels.ui／emptyState／sections／buttons／status／downloads／nav／notes／csvColumns…` 舊路徑在 src、tests、verification 為 0 |
 | 版本 3.0.0 | 完成 | `package.json`／`package-lock.json` 3.0.0；README「最新」改 v3.0.0（尚未發布）；ENGINEERING 版本與備份版本敘述對齊 |
-| RELEASES（含破壞性變更：Excel 工作表改名）、README | 完成 | `docs/RELEASES.md` v3.0.0 段（給使用者／不變的事／破壞性變更：Excel 工作表改名（行動→待辦、口徑→指標定義、新增管理損益表）、備份 v5、分析 CSV 的 breakeven_mer 列、決策 CSV 的 ad_decision 欄、匯出版頭四行、名詞改名／已知限制／驗收連結；日期「尚未發布（待 H4 與正式站檢查）」）；README「最新」改 v3.0.0（正式站仍是 v2.0.0）、功能一覽與 30 秒試用對齊 v3、新截圖 `docs/images/overview-1440-v3.png`；`docs/ENGINEERING.md` 版本與備份 v5；`tests/release-notes.test.ts`（13 條） |
+| RELEASES（含破壞性變更：Excel 工作表改名）、README | 完成 | `docs/RELEASES.md` v3.0.0 段（給使用者／不變的事／破壞性變更：Excel 工作表改名（行動→待辦、口徑→指標定義、新增管理損益表）、備份 v5、分析 CSV 的 breakeven_mer 列、決策 CSV 的 ad_decision 欄、匯出版頭四行、名詞改名／已知限制／驗收連結；日期「尚未發布（待 H4 與正式站檢查）」，正式站部署後改為 2026-10-08）；README「最新」改 v3.0.0（正式站當時仍是 v2.0.0，部署後改寫）、功能一覽與 30 秒試用對齊 v3、新截圖 `docs/images/overview-1440-v3.png`；`docs/ENGINEERING.md` 版本與備份 v5；`tests/release-notes.test.ts`（13 條） |
 | 會議紀錄頁 Lighthouse `label-content-name-mismatch`（V3-7 起 10 個節點） | 完成（10 → 0） | 議程 1 的六個 number-link 與精簡通路表的格子，可及名稱改成 `fill(labels.meeting.pageV3.linkAria, { title, value })`＝「{抽屜標題} {可見文字}，看明細」；收尾再把完整通路寬表（`overview.channelsV3.wideAmountAria`）與三件事影響金額（`overview.alerts.impactAria`）改成同句型；代理 B 以 axe 與 Lighthouse 13.5.0（dev）量會議紀錄頁 label-content-name-mismatch 0 個節點、accessibility 100 |
 | Lighthouse（本機 production 與正式站，1440 與 390） | 完成（本機與正式站） | 1440 與 390 各 6 個快照步驟 accessibility 全部 100；**失敗審核 0**（會議紀錄頁的 `label-content-name-mismatch` 從 10 個節點降到 0）；首頁 performance 1440＝100、390＝92（V3-9b 100／94；v2 基準 100／93，目標 ≥ 90 且 ≥ 基準−3；390 的 TBT 1,667 ms（V3-9b 972）受本機負載影響，CLS 不變：載入示範資料 1440＝0、390＝0.001）。流程報告 `verification/revamp-v3/V3-10/lighthouse/` |
 | 四尺寸走查 | 完成（截圖＋E2E 四專案） | 四尺寸截圖 36 張（`verification/revamp-v3/V3-10/snapshots/`）＋ E2E 四專案（revamp-r1-layout、present-mode 四尺寸全跑；其餘 desktop 與 mobile）＋ 08 §4 第 4 條的操作路徑由 `network-log.spec`（首頁 → 示範 → 抽屜 → 匯入 golden → 匯出 CSV／Excel／PPT／PDF／決策 JSON／備份 → 會議紀錄）與既有 spec 覆蓋 |
@@ -91,6 +91,16 @@
 | 四尺寸走查截圖（正式站） | `production/shots/{1440x1000,1280x900,768x1024,390x844}/01-home-empty…08-data.png`（1440 另有 09-present-mode）共 33 張，全部示範資料；流程：首頁空狀態 → 載入示範資料（首次保存提示）→ 總覽 → 計算與來源抽屜 → 通路健檢 → 假設試算 → 會議紀錄 → 資料來源；`production/walkthrough.json` |
 | 備份相容（R0 前的 v3 備份檔在正式站還原） | 在正式站用儲存選單還原 R0 前拍的四個 v3 備份檔（`verification/review-v2-a-workspace-{desktop,laptop,tablet,mobile}.json`，schema profitlens-workspace-v3）：四個尺寸都還原成功、沒有錯誤，總覽扣廣告後貢獻顯示「255 元」（抽屜精確值 255.00 元）、差額 −315 元、上期 570 元；`production/backup-restore.json` |
 
+### 3d. `main` 合併、Git 整合重建與 tag（2026-10-08，使用者拍板）
+
+| 項目 | 結果 |
+|---|---|
+| `main` | `git merge --ff-only revamp/v2`：5771104 → 625bfa5（286 個 commit），`git push origin main` 成功；`revamp/v2` 與 `main` 指向同一個 commit |
+| Git 整合重建正式站 | Vercel 專案 link：GitHub `JLO916/profitlens`、production branch `main`。推送後自動建置 `dpl_DuA7X3dfyvCU7bddKm3caZKjarwz`（source git、commit 625bfa5、建置 96 秒）READY，接管 https://profitlens-tau.vercel.app、https://profitlens-jlo916s-projects.vercel.app、https://profitlens-git-main-jlo916s-projects.vercel.app；之前 CLI 部署的 `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa` 不再是 production alias；證據 `production/deployment-proof-main.txt` |
+| 13 項 HTTP 複檢（接管後） | `scripts/launch-check.mjs --base https://profitlens-tau.vercel.app`：13／13 通過＋補充 10／10（GET /api/insights 200、POST 403、/.env 與 /.git/config 404、no-store、nosniff）；`production/launch-check-after-main.json` |
+| tag | `git tag -a v3.0.0 625bfa5 -m "EC ProfitLens v3.0.0（2026-10-08 正式站）"`，`git push origin v3.0.0` 成功（`git ls-remote --tags origin` 有 `refs/tags/v3.0.0`，`git describe --tags main` = `v3.0.0`）；本機的 `v2.0.0`（82b70df）仍只在本機，未推送 |
+| 未做 | Lighthouse、axe、走查截圖沒有對重建後的部署重跑：同一個 commit、同一組 production 環境變數，只重跑 HTTP 檢查確認接管成功 |
+
 ## 4. 瀏覽器驗收方式與截圖
 
 - 四尺寸截圖：`verification/revamp-v3/V3-10/snapshots/{desktop(1440×1000),laptop(1280×900),tablet(768×1024),mobile(390×844)}/01-overview-top、02-overview-full、03-evidence-drawer、04-actions-board、05-diagnosis、06-products、07-scenarios、08-meeting、09-data.png`（示範資料 production、`APP_MODE=PUBLIC_DEMO`）。
@@ -101,8 +111,8 @@
 ## 5. 已知限制與風險
 
 - **labels 文案違規未到 0**：同義詞黑名單仍有 12 筆、禁用詞 0 筆（V3-2a 起的棘輪），本批列出每一筆（§5a）；它們都是既有字串，依規則本批不改字（H3 已略過；改字需拍板，D-V3-37）。
-- **H4 未執行**：§2.3 A 全部指標待人工；`v3.0.0` 正式上線與 git tag 等 H4。
-- **正式站已部署、`main` 未動**：正式站是用 Vercel CLI 從本機 `cf9c225` 部署，GitHub 的 `main` 仍是舊內容；若 Vercel 的 Git 整合以 `main` 為 production branch，之後任何推到 `main` 的提交都會覆蓋正式站。建議把 `revamp/v2` 合併進 `main`（需您指示）。
+- **H4 未執行**：§2.3 A 全部指標待人工；正式站與 tag `v3.0.0` 已依使用者 2026-10-08 拍板先行（§3c、§3d），H4 的結果之後只寫回 STATUS 與 §3b，不再另打 tag。
+- **正式站現在跟著 `main`**：`main` 已 fast-forward 到 `revamp/v2`（625bfa5）並由 Git 整合重建正式站（§3d）。之後任何推到 `main` 的提交都會直接更新正式站，所以修正請從 `main` 開分支、推 `main` 前先取得當次同意（D-V3-24）。
 - **決策匯出在示範資料下很大**（V3-9a 已知）：決策 CSV 84.1 MB、JSON 33.2 MB、Markdown 18.7 MB（示範資料加 1 個待辦）；本批只調查，不改輸出（D-V3-36）。
 - 待拍板：D-V3-26、27、29、30、31、32、33、34、35 仍待；新增 D-V3-36（決策匯出縮減方案）、D-V3-37（同義詞黑名單剩餘字串是否改寫）。
 - F15／F16 延後；H1 未執行（V3-10 的前後對照只有工程指標，沒有可用性指標）。
@@ -131,6 +141,6 @@
 ## 6. 下一步、人工關卡與待拍板
 
 - 人工關卡 H4：用 `docs/revamp-v3/usability-test.md` 的腳本做 5 人複測與 3 位外部盲評，結果寫回 `docs/STATUS.md` 與本文件 §3b。
-- 正式站：已部署（2026-10-08）並通過檢查（§3c）；H4 後打 tag `v3.0.0`。
-- 推送：`revamp/v2` 已推送到 origin（cf9c225）；`main` 未合併（需您指示）。
+- 正式站：已部署（2026-10-08）並通過檢查（§3c）；`main` 合併後 Git 整合重建並複檢通過（§3d）。
+- 推送與 tag：`revamp/v2` 與 `main` 都在 625bfa5；tag `v3.0.0` 已打並推送；H4 之後不再另打 tag。
 - 待拍板：見 §5。

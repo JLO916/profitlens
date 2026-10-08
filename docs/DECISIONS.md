@@ -308,6 +308,8 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **正式站部署（2026-10-08）：** 使用者指示「推送正式站」後，推送 `revamp/v2`（f61e8cc → cf9c225）並以 Vercel CLI 從本機 cf9c225 部署正式站（deployment `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`）；不經 GitHub `main`（`main` 仍是舊內容，Git 整合若以 `main` 為 production branch，之後推 `main` 會覆蓋正式站——是否合併 `revamp/v2` 進 `main` 待使用者指示）。`v3.0.0` tag 等 H4。
 
+**`main` 合併與 tag（2026-10-08，使用者拍板）：** 使用者回覆「合併並推送 main」「現在打 tag 並推送」「H4 執行包暫不需要」。做法：先補 STATUS 的正式站驗證摘要（625bfa5），`main` 以 `--ff-only` 合併 `revamp/v2`（5771104 → 625bfa5）並推送；Vercel Git 整合（production branch `main`）自動建置 `dpl_DuA7X3dfyvCU7bddKm3caZKjarwz` 並接管 https://profitlens-tau.vercel.app，取代 CLI 從本機部署的 `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`（同一份程式碼，環境變數同為專案的 production 設定），接管後再跑 13 項 HTTP 13／13＋補充 10／10（`verification/revamp-v3/V3-10/production/launch-check-after-main.json`）。annotated tag `v3.0.0` 指向 625bfa5（＝`main` HEAD）並推送；H4 之後不再另打 tag，H4 的結果只寫回 STATUS 與驗收 §3b。之後的修正一律從 `main` 開分支，推 `main` 就會更新正式站（D-V3-24 的「每次部署要使用者當次同意」仍適用：推 `main` 本身就是部署）。
+
 **上線檢查的範圍：** 本批先對本機 production 伺服器執行（13 項 HTTP、網路紀錄、鍵盤走查、axe 四尺寸、備份 v1–v5 矩陣、Lighthouse）；正式站部署與正式站 Lighthouse 需使用者當次同意（D-V3-24），H4 待人工，都在 STATUS 寫「未執行」。
 
 **影響文件：** `docs/revamp-v3/06_BATCHES.md`、`docs/revamp-v3/09_DECISIONS_PENDING.md`（D-V3-36、37）、`docs/RELEASES.md`、`README.md`、`docs/ENGINEERING.md`、`verification/revamp-v3/V3-10/`、`verification/revamp-v3-V3-10-acceptance.md`。**驗收：** `tests/labels-structure.test.ts`、`tests/release-notes.test.ts`、`tests/backup-restore-matrix.test.ts`、`tests/e2e/network-log.spec.ts`、`tests/e2e/keyboard-walk.spec.ts`、`tests/e2e/axe-sweep.spec.ts`、`scripts/launch-check.mjs`。

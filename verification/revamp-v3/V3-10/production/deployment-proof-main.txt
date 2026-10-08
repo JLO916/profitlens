@@ -1,0 +1,41 @@
+# Git 觸發的正式站部署（推送 main 後自動建置）— 擷取時間 2026-10-08 12:26:43 CST
+
+<claude-code-hint v="1" type="plugin" value="vercel@claude-plugins-official" />
+Fetching deployment "profitlens-bhgz4m0ci-jlo916s-projects.vercel.app" in jlo916s-projects
+> Fetched deployment "profitlens-bhgz4m0ci-jlo916s-projects.vercel.app" in jlo916s-projects [447ms]
+  General
+    id		dpl_DuA7X3dfyvCU7bddKm3caZKjarwz
+    name	profitlens
+    target	production
+    status	● Ready
+    url		https://profitlens-bhgz4m0ci-jlo916s-projects.vercel.app
+    created	Thu Oct 08 2026 12:18:36 GMT+0800 (Taiwan Standard Time) [8m ago]
+  Aliases
+    ╶ https://profitlens-tau.vercel.app
+    ╶ https://profitlens-jlo916s-projects.vercel.app
+    ╶ https://profitlens-git-main-jlo916s-projects.vercel.app
+  Builds
+    ┌ .        [0ms]
+    ├── λ index (1.29MB) [iad1]
+    ├── λ _global-error (1.29MB) [iad1]
+    ├── λ _global-error.rsc (1.29MB) [iad1]
+    ├── λ _global-error.segments/_full.segment.rsc (1.29MB) [iad1]
+    ├── λ _global-error.segments/_global-error/__PAGE__.segment.rsc (1.29MB) [iad1]
+    └── 11 output items hidden
+
+## 來源
+id: dpl_DuA7X3dfyvCU7bddKm3caZKjarwz
+readyState: READY
+target: production
+source: git
+githubCommitSha: 625bfa5b205a65658caaf6e4e84e429a61d460e5
+githubCommitRef: main
+githubCommitMessage: docs(V3-10): STATUS 補正式站驗證摘要（network-log 與 axe 四尺寸、走查截圖 33 張、v3 備份還原、分析 POST 說明）
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+alias: ['profitlens-tau.vercel.app', 'profitlens-jlo916s-projects.vercel.app', 'profitlens-git-main-jlo916s-projects.vercel.app']
+createdAt: 1791433116555
+ready: 1791433212553
+
+## 之前 CLI 部署的正式站
+dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa（cf9c225，revamp/v2，vercel deploy --prod）— 已被上面的 Git 部署接管 production alias

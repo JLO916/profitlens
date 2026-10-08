@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／另需的人工時間。
 >
-> **目前進度：V3-10 完成（2026-10-08；驗收見 `verification/revamp-v3-V3-10-acceptance.md`）；正式站已部署 v3.0.0（使用者 2026-10-08 同意）並通過正式站檢查；H4 待人工，`v3.0.0` tag 等 H4。V3-9b 完成（2026-10-08；F15／F16 待檔案）。V3-6 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-6-acceptance.md`；使用者同日指示略過 H2 設計稿審查與 H3 文案補審，以 `copy-rewrite.csv` 現稿為準）。V3-5 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-5-acceptance.md`）；MVP preview 已於 2026-10-06 依使用者當次同意部署（`revamp/v2` 分支）。V3-3 完成（2026-10-06；H2 後補；驗收見 `verification/revamp-v3-V3-3-acceptance.md`）。** V3-2 全部完成（驗收見 `verification/revamp-v3-V3-2{a,b,c}-acceptance.md`）。使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，審稿後再修」，H3 審稿改為落地後補做；H2 同樣改為 V3-3 落地後補審（2026-10-06）。V3-2 依 §12.1 在開工前拆成 a／b／c（見下表）。** D-V3-1–24 已於 2026-10-05 全部依建議值拍板（見 `09_DECISIONS_PENDING.md`），所以下表「依賴」欄的拍板項目都已滿足；尚未滿足的只剩前一批與人工關卡 H1–H4。
+> **目前進度：V3-10 完成（2026-10-08；驗收見 `verification/revamp-v3-V3-10-acceptance.md`）；正式站已部署 v3.0.0（使用者 2026-10-08 同意）並通過正式站檢查；同日使用者拍板 `main` fast-forward 到 `revamp/v2`（625bfa5）並推送、Git 整合重建正式站並複檢通過、tag `v3.0.0` 已打並推送；H4 待人工。V3-9b 完成（2026-10-08；F15／F16 待檔案）。V3-6 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-6-acceptance.md`；使用者同日指示略過 H2 設計稿審查與 H3 文案補審，以 `copy-rewrite.csv` 現稿為準）。V3-5 完成（2026-10-07；驗收見 `verification/revamp-v3-V3-5-acceptance.md`）；MVP preview 已於 2026-10-06 依使用者當次同意部署（`revamp/v2` 分支）。V3-3 完成（2026-10-06；H2 後補；驗收見 `verification/revamp-v3-V3-3-acceptance.md`）。** V3-2 全部完成（驗收見 `verification/revamp-v3-V3-2{a,b,c}-acceptance.md`）。使用者 2026-10-05 指示「先依 copy-rewrite.csv 現稿落地，審稿後再修」，H3 審稿改為落地後補做；H2 同樣改為 V3-3 落地後補審（2026-10-06）。V3-2 依 §12.1 在開工前拆成 a／b／c（見下表）。** D-V3-1–24 已於 2026-10-05 全部依建議值拍板（見 `09_DECISIONS_PENDING.md`），所以下表「依賴」欄的拍板項目都已滿足；尚未滿足的只剩前一批與人工關卡 H1–H4。
 
 ---
 
@@ -239,7 +239,7 @@
 
 ## V3-10 上線檢查（M；2026-10-08 開工）
 
-> 執行方式（2026-10-08）：程式面（labels 舊 key alias 移除、版本 3.0.0、會議頁 number-link 可及名稱、RELEASES／README）與檢查工具（13 項 HTTP、網路紀錄、備份 v1–v5 還原矩陣、鍵盤走查、axe 四尺寸）由代理並行完成；檢查本身對本機 production build 執行。**H4 待人工**；**正式站部署與正式站 Lighthouse 需使用者當次明確同意（D-V3-24），沒有同意就寫「未執行」**；`v3.0.0` 的 git tag 等 H4 與正式站檢查後再打。
+> 執行方式（2026-10-08）：程式面（labels 舊 key alias 移除、版本 3.0.0、會議頁 number-link 可及名稱、RELEASES／README）與檢查工具（13 項 HTTP、網路紀錄、備份 v1–v5 還原矩陣、鍵盤走查、axe 四尺寸）由代理並行完成；檢查本身對本機 production build 執行。**H4 待人工**；**正式站部署與正式站 Lighthouse 需使用者當次明確同意（D-V3-24），沒有同意就寫「未執行」**；`v3.0.0` 的 git tag 原定等 H4 與正式站檢查後再打；實際：正式站檢查通過後，使用者 2026-10-08 拍板現在打（指向 625bfa5，與 `main` 同步），H4 之後不再另打。
 
 **範圍**：整理人工關卡 H4（5 人可用性複測與外部盲評，同 H1 腳本）的結果；Lighthouse（正式站 1440、390）；四尺寸走查與鍵盤走查；v1–v5 備份還原；網路紀錄（確認沒有資料外送）；沿用 R7 的 13 項 HTTP 上線檢查；移除 labels 舊 key alias；版本 3.0.0；RELEASES（含破壞性變更：Excel 工作表改名）、README、`docs/STATUS.md` 收尾。
 
