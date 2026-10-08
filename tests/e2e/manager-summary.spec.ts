@@ -14,6 +14,8 @@ const netRevenue = labels.metrics.net_revenue.headline;
 /** metricComparison(): all-channel scope is `${sections.total}（${channelsLabel(...)}）`; golden keeps raw channel codes. */
 const totalScope = (channels: string[]) => `${labels.overview.sections.total}（${channels.join("、")}）`;
 const changeTitle = (channels: string[], metric: string) => fill(copy.evidenceChange, { scope: totalScope(channels), metric });
+/** V3-10（WCAG 2.5.3）：會議頁 number-link 的可及名稱＝「{抽屜標題} {可見文字}，看明細」（meeting.pageV3.linkAria）；抽屜標題不變。 */
+const changeLink = (channels: string[], metric: string, value: string) => fill(labels.meeting.pageV3.linkAria, { title: changeTitle(channels, metric), value });
 /** V3-2a：狀態列「資料到 {date}」— 以模板組 RegExp，{date} 對應 YYYY-MM-DD（各驗證資料集的 data_as_of 不同）。 */
 const escapeRe = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const readyRe = escapeRe(labels.shell.status.ready).replace(escapeRe("{date}"), "\\d{4}-\\d{2}-\\d{2}");
@@ -68,8 +70,8 @@ async function load(page: Page, name = "golden") {
 test("PL06 golden management summary, drilldown, threshold, scope and wide export", async ({ page }, testInfo) => {
   await load(page);
   const summary = page.getByTestId("manager-summary");
-  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], netRevenue), exact: true })).toHaveText(headlineChange("net_revenue", "2250.00", "2470.00", "220.00"));
-  const cm = summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true });
+  await expect(summary.getByRole("button", { name: changeLink(["DTC", "MARKETPLACE"], netRevenue, headlineChange("net_revenue", "2250.00", "2470.00", "220.00")), exact: true })).toHaveText(headlineChange("net_revenue", "2250.00", "2470.00", "220.00"));
+  const cm = summary.getByRole("button", { name: changeLink(["DTC", "MARKETPLACE"], contribution, headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00")), exact: true });
   await expect(cm).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
   // V3-7（§7.6 第 4 點 3）：議程 3 先是精簡表（本期扣廣告後貢獻、差額），完整通路寬表收在「完整通路寬表」details（預設收合、保持掛載）。
   const compact = summary.getByTestId("meeting-agenda-3").locator("table.meeting-channel-table").getByRole("row").filter({ has: page.getByRole("rowheader", { name: /^MARKETPLACE/ }) });
@@ -108,9 +110,9 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   await openPeriodSheet(page);
   await page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true }).selectOption("DTC");
   await closePeriodSheet(page);
-  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
+  await expect(summary.getByRole("button", { name: changeLink(["DTC", "MARKETPLACE"], contribution, headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00")), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
   await page.getByRole("button", { name: labels.meeting.buttons.updateMeetingSource, exact: true }).click();
-  await expect(summary.getByRole("button", { name: changeTitle(["DTC"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "400.00", "270.00", "-130.00"));
+  await expect(summary.getByRole("button", { name: changeLink(["DTC"], contribution, headlineChange("contribution_after_marketing", "400.00", "270.00", "-130.00")), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "400.00", "270.00", "-130.00"));
   // 更新會議來源後議程重新掛載（完整通路寬表回到收合）：展開後再確認精簡表與完整寬表都沒有 MARKETPLACE。
   await openWideTable(summary);
   await expect(summary.getByRole("rowheader", { name: /MARKETPLACE/ })).toHaveCount(0);
@@ -136,7 +138,7 @@ test("PL06 unknown priorities survive a high threshold without zero contribution
   await summary.getByLabel(labels.meeting.form.threshold).fill("99999999");
   await summary.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
   await expect(summary.getByTestId("manager-priority-MISSING_CRITICAL_DATA")).toBeVisible();
-  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText(labels.shell.status.missing);
+  await expect(summary.getByRole("button", { name: changeLink(["DTC", "MARKETPLACE"], contribution, labels.shell.status.missing), exact: true })).toHaveText(labels.shell.status.missing);
   await expect(summary.getByTestId("manager-priority-MISSING_CRITICAL_DATA")).toContainText(copy.missingDataNote);
 });
 
