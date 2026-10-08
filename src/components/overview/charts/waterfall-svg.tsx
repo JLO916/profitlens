@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { chartColors, chartFontSize } from "@/application/chart-theme";
-import { formatAmountL1, MINUS } from "@/application/presentation";
+import { formatAxisWan, MINUS } from "@/application/presentation";
 import { waterfallToneColor, type WaterfallBar } from "@/application/waterfall";
-import { fill, labels } from "@/i18n";
 
 // V3-4b 代理 B1：純 inline SVG 的瀑布圖（C17；PRD §7.1 第 5 點、§9.5、§10.3）。不加套件。
 // 金額一律來自 waterfall.ts 組好的 WaterfallBar：柱上標值用 bar.display，Number() 只用來換算圖形座標。
 // 整張圖是 aria-hidden 的視覺層；鍵盤與螢幕報讀走旁邊表格的 number-link（同一個開抽屜的 handler）。
+// V4-1 代理 A（PRD §6.2 C17、§7.2；CHART_CATALOG G1、G2）：加 bare（不再自己輸出 .chart-frame.waterfall 外框，外框由 ChartFrame 的
+// frameClassName="waterfall" 提供，每張圖只有一個 .chart-frame）與選填 domain（總覽兩張瀑布同尺度）；刻度改呼叫 presentation.ts 的 formatAxisWan。
 
 /**
  * SVG 的預設最小寬（px）：容器比這個窄時（手機、平板）改成水平捲動。幾何也至少用這個寬度計算，CSS min-width 與它相同，
@@ -31,8 +32,6 @@ const X_LABEL_LINE = 13;
 const MISSING_MIN = 24;
 /** 柱寬佔每格的比例（約 60% 柱、40% 間距）。 */
 const BAR_RATIO = 0.6;
-const TEN_THOUSAND = 10_000;
-const HUNDRED_MILLION = 100_000_000;
 
 export type WaterfallValueTone = "strong" | "neg" | "muted" | "missing";
 export interface WaterfallBarShape {
@@ -79,22 +78,12 @@ export function waterfallTextWidth(text: string): number {
   }, 0);
 }
 
-/** 千分位（整數部分）。 */
-const grouped = (fixed: string) => { const [integer, fraction] = fixed.split("."); const withCommas = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ","); return fraction === undefined ? withCommas : `${withCommas}.${fraction}`; };
-
 /**
- * Y 軸刻度文字（§9.5：整數萬元「0、50 萬、100 萬」）。刻度只是座標，不是金額：
+ * Y 軸刻度文字（§9.5：整數萬元「0、50 萬、100 萬」）。V4-1 起是 formatAxisWan（presentation.ts）的薄包裝，輸出與 V3 相同：
  * 最大刻度 ≥ 1 萬時全部用萬（間距是整萬時不帶小數），< 1 萬或 ≥ 1 億時交給 formatAmountL1（元／億）；0 只寫「0」。
  */
 export function waterfallTickLabels(ticks: readonly number[], step: number): string[] {
-  const top = Math.max(0, ...ticks.map(value => Math.abs(value)));
-  const wan = top >= TEN_THOUSAND && top < HUNDRED_MILLION;
-  const digits = step % TEN_THOUSAND === 0 ? 0 : step % 1000 === 0 ? 1 : 2;
-  return ticks.map(value => {
-    if (value === 0) return "0";
-    if (!wan) return formatAmountL1(value.toFixed(2));
-    return `${value < 0 ? MINUS : ""}${fill(labels.format.units.wan, { value: grouped((Math.abs(value) / TEN_THOUSAND).toFixed(digits)) })}`;
-  });
+  return formatAxisWan(ticks, step);
 }
 
 /** x 標籤：放不下一行（12px 字估寬）時從中間拆成兩行，寫法同設計稿（商品／成本、其他／變動費）。 */
@@ -108,11 +97,15 @@ export function splitWaterfallLabel(text: string, room: number): string[] {
 /**
  * 瀑布幾何（純函式，單元測試用）：Y 軸含 0（§9.5「長條與瀑布從 0 開始」），水位為負時往下畫；
  * total／subtotal／result 從 0 畫到 value，delta 從 start 畫到 end；value 缺值畫虛線框，value 有值但 start／end 為 null 不畫柱。
+ * V4-1 domain（選填，[最低, 最高] 的圖形座標）：與自己的水位一起決定刻度間距與上下界，給同頁同尺度用（PRD §7.2；
+ * 總覽兩張瀑布傳 waterfall.ts 的 overviewWaterfallDomain）。上下界取刻度間距的整數倍，所以範圍含負值時下界延伸到下一個刻度（D-V4-41 註記）。
+ * 兩張圖的 domain 涵蓋各自全部的水位時，刻度間距、上下界與刻度完全相同。
  */
-export function waterfallGeometry(bars: readonly WaterfallBar[], width: number, height: number): WaterfallGeometry {
+export function waterfallGeometry(bars: readonly WaterfallBar[], width: number, height: number, domain?: readonly [number, number]): WaterfallGeometry {
   const plot = { left: MARGIN.left, right: Math.max(width - MARGIN.right, MARGIN.left + 1), top: MARGIN.top, bottom: Math.max(height - MARGIN.bottom, MARGIN.top + 1) };
   const levels = [0];
   for (const bar of bars) for (const value of [bar.start, bar.end]) { const n = coordinate(value); if (n !== null) levels.push(n); }
+  if (domain) for (const value of domain) if (Number.isFinite(value)) levels.push(value);
   const min = Math.min(...levels), max = Math.max(...levels);
   let lo = 0, hi = 1, step = 1, tickValues = [0];
   if (min !== 0 || max !== 0) {
@@ -194,10 +187,20 @@ export interface WaterfallSvgProps {
   minWidth?: number;
   /** 點柱子：與表格列的 number-link 呼叫同一個開抽屜的 handler。 */
   onBarClick?: (bar: WaterfallBar) => void;
+  /**
+   * V4-1：放在 ChartFrame（frameClassName="waterfall"）內時傳 true。不輸出 .chart-frame.waterfall 外框，只輸出量寬用的
+   * div.waterfall-measure（沒有 chart-frame class、沒有 aria-hidden）與 aria-hidden 的 svg；固定高與水平捲動由 ChartFrame 的外框負責。
+   */
+  bare?: boolean;
+  /** V4-1：同頁同尺度的共同範圍（圖形座標 [最低, 最高]），見 waterfallGeometry。 */
+  domain?: readonly [number, number];
 }
 
-/** 瀑布圖：外框 .chart-frame.waterfall 固定高、aria-hidden；容器寬度不足 minWidth 時水平捲動（手機、平板）。 */
-export function WaterfallSvg({ bars, height, width, testId, testIdPrefix, minWidth = WATERFALL_MIN_WIDTH, onBarClick }: WaterfallSvgProps) {
+/**
+ * 瀑布圖：容器寬度不足 minWidth 時水平捲動（手機、平板）。
+ * 預設（V3）自己輸出 .chart-frame.waterfall 外框（固定高、aria-hidden）；bare（V4-1）只輸出量寬容器與 aria-hidden 的 svg，外框交給 ChartFrame。
+ */
+export function WaterfallSvg({ bars, height, width, testId, testIdPrefix, minWidth = WATERFALL_MIN_WIDTH, onBarClick, bare = false, domain }: WaterfallSvgProps) {
   const frame = useRef<HTMLDivElement>(null);
   const [measured, setMeasured] = useState<number | null>(null);
   useEffect(() => {
@@ -211,28 +214,29 @@ export function WaterfallSvg({ bars, height, width, testId, testIdPrefix, minWid
     return () => observer.disconnect();
   }, []);
   const drawWidth = Math.max(Math.round(width ?? measured ?? WATERFALL_SSR_WIDTH), minWidth);
-  const geometry = useMemo(() => waterfallGeometry(bars, drawWidth, height), [bars, drawWidth, height]);
+  const lo = domain?.[0], hi = domain?.[1];
+  const geometry = useMemo(() => waterfallGeometry(bars, drawWidth, height, lo === undefined || hi === undefined ? undefined : [lo, hi]), [bars, drawWidth, height, lo, hi]);
   const { plot, ticks, shapes, connectors, zeroY } = geometry;
 
-  return <div ref={frame} className="chart-frame waterfall" aria-hidden="true" style={{ height }}>
-    <svg className="waterfall-svg" viewBox={`0 0 ${drawWidth} ${height}`} width="100%" height={height} aria-hidden="true" focusable="false" fontSize={chartFontSize} style={{ "--wf-min-w": `${minWidth}px` } as CSSProperties} data-testid={testId}>
-      <g className="wf-grid">{ticks.map(tick => <line key={tick.value} x1={plot.left} x2={plot.right} y1={tick.y} y2={tick.y} stroke={chartColors.grid} strokeWidth={1} shapeRendering="crispEdges" />)}</g>
-      <g className="wf-axis">{ticks.map(tick => <text key={tick.value} x={plot.left - 8} y={tick.y + 4} textAnchor="end">{tick.label}</text>)}</g>
-      <g className="wf-connectors">{connectors.map(line => <line key={line.key} x1={line.x1} x2={line.x2} y1={line.y} y2={line.y} stroke={chartColors.connector} strokeWidth={1} shapeRendering="crispEdges" />)}</g>
-      <g className="wf-bars">{shapes.map(shape => shape.rect && <rect
-        key={shape.bar.id}
-        className={`wf-bar is-${shape.bar.tone}${onBarClick ? " is-clickable" : ""}`}
-        data-testid={testIdPrefix ? `${testIdPrefix}${shape.bar.metric}` : undefined}
-        x={shape.x} y={shape.rect.y} width={shape.width} height={shape.rect.height}
-        fill={shape.rect.dashed ? "none" : waterfallToneColor[shape.bar.tone]}
-        stroke={shape.rect.dashed ? chartColors.axis : undefined}
-        strokeWidth={shape.rect.dashed ? 1 : undefined}
-        strokeDasharray={shape.rect.dashed ? "4 3" : undefined}
-        onClick={onBarClick ? () => onBarClick(shape.bar) : undefined}
-      />)}</g>
-      <g className="wf-values">{shapes.map(shape => shape.value && <text key={shape.bar.id} className={`wf-value is-${shape.value.tone}`} x={shape.cx} y={shape.value.y} textAnchor="middle">{shape.bar.display}</text>)}</g>
-      <g className="wf-x">{shapes.map(shape => <text key={shape.bar.id} x={shape.cx} y={plot.bottom + X_LABEL_FIRST} textAnchor="middle">{shape.xLabel.map((line, index) => <tspan key={index} x={shape.cx} dy={index === 0 ? 0 : X_LABEL_LINE}>{line}</tspan>)}</text>)}</g>
-      <line className="wf-zero" x1={plot.left} x2={plot.right} y1={zeroY} y2={zeroY} stroke={chartColors.connector} strokeWidth={1} shapeRendering="crispEdges" />
-    </svg>
-  </div>;
+  const svg = <svg className="waterfall-svg" viewBox={`0 0 ${drawWidth} ${height}`} width="100%" height={height} aria-hidden="true" focusable="false" fontSize={chartFontSize} style={{ "--wf-min-w": `${minWidth}px` } as CSSProperties} data-testid={testId}>
+    <g className="wf-grid">{ticks.map(tick => <line key={tick.value} x1={plot.left} x2={plot.right} y1={tick.y} y2={tick.y} stroke={chartColors.grid} strokeWidth={1} shapeRendering="crispEdges" />)}</g>
+    <g className="wf-axis">{ticks.map(tick => <text key={tick.value} x={plot.left - 8} y={tick.y + 4} textAnchor="end">{tick.label}</text>)}</g>
+    <g className="wf-connectors">{connectors.map(line => <line key={line.key} x1={line.x1} x2={line.x2} y1={line.y} y2={line.y} stroke={chartColors.connector} strokeWidth={1} shapeRendering="crispEdges" />)}</g>
+    <g className="wf-bars">{shapes.map(shape => shape.rect && <rect
+      key={shape.bar.id}
+      className={`wf-bar is-${shape.bar.tone}${onBarClick ? " is-clickable" : ""}`}
+      data-testid={testIdPrefix ? `${testIdPrefix}${shape.bar.metric}` : undefined}
+      x={shape.x} y={shape.rect.y} width={shape.width} height={shape.rect.height}
+      fill={shape.rect.dashed ? "none" : waterfallToneColor[shape.bar.tone]}
+      stroke={shape.rect.dashed ? chartColors.axis : undefined}
+      strokeWidth={shape.rect.dashed ? 1 : undefined}
+      strokeDasharray={shape.rect.dashed ? "4 3" : undefined}
+      onClick={onBarClick ? () => onBarClick(shape.bar) : undefined}
+    />)}</g>
+    <g className="wf-values">{shapes.map(shape => shape.value && <text key={shape.bar.id} className={`wf-value is-${shape.value.tone}`} x={shape.cx} y={shape.value.y} textAnchor="middle">{shape.bar.display}</text>)}</g>
+    <g className="wf-x">{shapes.map(shape => <text key={shape.bar.id} x={shape.cx} y={plot.bottom + X_LABEL_FIRST} textAnchor="middle">{shape.xLabel.map((line, index) => <tspan key={index} x={shape.cx} dy={index === 0 ? 0 : X_LABEL_LINE}>{line}</tspan>)}</text>)}</g>
+    <line className="wf-zero" x1={plot.left} x2={plot.right} y1={zeroY} y2={zeroY} stroke={chartColors.connector} strokeWidth={1} shapeRendering="crispEdges" />
+  </svg>;
+  if (bare) return <div ref={frame} className="waterfall-measure">{svg}</div>;
+  return <div ref={frame} className="chart-frame waterfall" aria-hidden="true" style={{ height }}>{svg}</div>;
 }

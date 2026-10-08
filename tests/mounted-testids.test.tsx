@@ -849,6 +849,50 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V4-1 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-1 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    it("V4-1 A 總覽：G1、G2 搬進 ChartFrame——各恰好 1 個 .chart-frame（瀑布外框不帶 aria-hidden、svg 自己 aria-hidden）；橋接表在 aside、DOM 在圖之前；兩個資料表 <details> 收合但表格掛載", () => {
+      const { html } = states.find(state => state.name === "overview")!;
+      const bridge = element(html, 'data-testid="bridge-section"')!, profit = element(html, 'data-testid="profit-waterfall"')!;
+      for (const [name, section] of [["bridge-section", bridge], ["profit-waterfall", profit]] as const) {
+        expect(occurrences(section, 'class="chart-frame '), name).toBe(1);
+        const frame = openTag(section, 'class="chart-frame lg waterfall"')!;
+        expect(frame, name).toContain('role="region"');
+        expect(frame, name).not.toContain("aria-hidden");
+        expect(openTag(section, 'class="waterfall-svg"'), name).toContain('aria-hidden="true"');
+        const details = element(section, 'class="data-alternative"')!;
+        expect(details, name).toMatch(/^<details class="data-alternative">/);
+        expect(details, name).toContain("<table");
+      }
+      const aside = element(bridge, 'class="frame-aside"')!;
+      for (const id of ["bridge-table", "bridge-balance-check"]) expect(aside, id).toContain(`data-testid="${id}"`);
+      expect(bridge.indexOf('data-testid="bridge-table"')).toBeLessThan(bridge.indexOf('data-testid="bridge-waterfall"'));
+      for (const id of ["bridge-section", "bridge-waterfall", "bridge-table", "bridge-balance-check", "profit-waterfall", "profit-waterfall-scope"]) expect(testIdCounts(html).get(id), id).toBe(1);
+      expect(occurrences(bridge, 'class="unit-note"')).toBe(1);
+    });
+
+    it("V4-1 C 總覽：G6 九條（chart-overview-bridge-bar-{field}）在 1440 隱藏但掛載——每個總覽狀態都有（缺值列除外）、各在 bridge-table 的 tr[data-row={field}] 內、全頁恰好一次（M6）；隱藏只靠 globals.css 的 display: none，不卸載、不帶 hidden", () => {
+      const overviews = loaded().filter(({ state }) => state!.panel === "overview");
+      expect(overviews.length).toBeGreaterThanOrEqual(4);
+      for (const { name, html, state } of overviews) {
+        const { components } = state!.active.snapshot.report.bridge;
+        const fields = (Object.keys(components) as (keyof typeof components)[]).filter(field => components[field].value !== null);
+        const table = element(html, 'data-testid="bridge-table"')!;
+        expect(occurrences(html, 'data-testid="chart-overview-bridge-bar-'), name).toBe(fields.length);
+        for (const field of fields) {
+          const id = `chart-overview-bridge-bar-${field}`;
+          expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+          expect(element(table, `data-row="${field}"`), `${name} ${id}`).toContain(`data-testid="${id}"`);
+          const svg = openTag(html, `data-testid="${id}"`)!;
+          expect(svg, `${name} ${id}`).toContain('aria-hidden="true"');
+          expect(svg, `${name} ${id}`).not.toMatch(/\shidden=""|tabindex/);
+        }
+        // 橋接表（含 G6）在旁欄、不在任何 hidden 或 aria-hidden 的祖先內（1440 只靠 CSS 隱藏條本身）。
+        expect(openTag(html, 'class="frame-aside"'), name).not.toMatch(/\shidden=""|aria-hidden/);
+        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-overview-bridge-bar-")), name).toEqual([]);
+      }
+      const css = readFileSync(resolve("src/app/globals.css"), "utf8");
+      const block = css.slice(css.indexOf("/* ── V4-1 C："), css.indexOf("/* ── V4-1 C 錨點結束 ── */"));
+      expect(block.replace(/\/\*[\s\S]*?\*\//g, "").trim()).toBe("@media print, (min-width: 768px) {\n  .bridge-table .bar-cell { display: none; }\n}");
+    });
 
     // ── V4-2 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-2 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
