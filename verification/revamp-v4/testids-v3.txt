@@ -1,0 +1,434 @@
+# EC ProfitLens v3.0.0 data-testid 基準（V4-0a，PRD v4 §8.6、06_BATCHES V4-0a 第 3 項；產生日 2026-10-08，基準 v3.0.0＝625bfa5）
+# 格式：testid<TAB>來源<TAB>說明（原始碼位置；收集到它的 SSR 情境或瀏覽器步驟）。以 # 開頭的是註解。與 verification/revamp-v3/testids-v2.txt 相同。
+# 來源：
+#   ssr  = tests/testid-baseline.test.ts 以 renderToStaticMarkup 渲染各頁狀態後實際出現（嚴格比對，少一個即失敗）；V4-0a 起 SSR 情境含 tests/helpers/page-states.tsx 的整頁狀態（情境名 page:{狀態名}）。
+#   e2e  = 只在瀏覽器互動後出現（確認區、抽屜、備案對話框、列印版、載入中與錯誤、本機副本等），由 verification/revamp-v4/collect-testids.spec.ts
+#          （設定檔 verification/revamp-v4.config.ts，production build、PUBLIC_DEMO 模式）實際收集；結果在 collect-testids.json。
+#   cond = 條件項（失敗狀態、live AI、非整數件數等），SSR 與收集流程都不進入；說明欄列出覆蓋它的既有測試。
+#   e2e／cond 在 vitest 另做原始碼檢查（字面值或樣板字首仍存在）；真正的渲染比對在 Playwright。
+# 統計（實測）：共 416 列（ssr 366、e2e 43、cond 7）。原始碼字面值 testid 266 個、樣板 40 種（全部展開成實際渲染值收錄）。
+#   v2 基準（verification/revamp-v3/testids-v2.txt）的 228 列全部在本清單（v3 對 v2 刪除 0）；帶 crypto.randomUUID() 的 meeting-history-remove-meeting-{uuid} 不收錄（同 v2，SSR 的固定 id 版本已收錄）。
+#   沒有任何實例的樣板：無（以 cond 列的實例代表）。
+#   audit:ui 的「靜態 testid 253」是原始碼字面值的另一種計數，和本清單是不同的量。
+# 產生方式（三步）：
+#   1. TESTID_BASELINE_DUMP=<ssr.json> npx vitest run tests/testid-baseline.test.ts（ssr 列）
+#   2. NEXT_TELEMETRY_DISABLED=1 npm run build；APP_MODE=PUBLIC_DEMO PUBLIC_DEMO=true ENABLE_LIVE_AI=false npm start -- --port <埠>；
+#      PROFITLENS_PORT=<埠> npx playwright test --config verification/revamp-v4.config.ts（e2e 列：瀏覽器收集到、SSR 沒有的 id）
+#   3. cond 列沿用 testids-v2.txt 的 cond 列，並補 v3 新增的條件項（verification/revamp-v4/make-testids-v3.mjs 的 V3_COND）
+#   合成：node verification/revamp-v4/make-testids-v3.mjs --ssr <ssr.json>
+action-1	ssr	樣板 `action-${index + 1}` src/components/actions-workbench.tsx:200；SSR 情境：actions-list、page:actions-list、page:actions-ad-decision-list
+action-1-ad-decision	ssr	樣板 `action-${index + 1}-ad-decision` src/components/actions-workbench.tsx:201；SSR 情境：page:actions-ad-decision-list
+action-2	ssr	樣板 `action-${index + 1}` src/components/actions-workbench.tsx:200；SSR 情境：actions-list、page:actions-list、page:actions-ad-decision-list
+action-ad-decision	ssr	字面值 src/components/action-editor.tsx:64；SSR 情境：actions-list、page:actions-list、page:actions-ad-decision-list
+action-board	ssr	字面值 src/components/actions-workbench.tsx:189；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+action-drawer	e2e	字面值 src/components/action-drawer.tsx:58；瀏覽器步驟：待辦：新增第一張（編輯抽屜）、待辦：新增第二張（編輯抽屜） 等 3 個
+action-drawer-close	e2e	字面值 src/components/action-drawer.tsx:61；瀏覽器步驟：待辦：新增第一張（編輯抽屜）、待辦：新增第二張（編輯抽屜） 等 3 個
+action-drawer-dismiss	e2e	字面值 src/components/action-drawer.tsx:66；瀏覽器步驟：待辦：新增第一張（編輯抽屜）、待辦：新增第二張（編輯抽屜） 等 3 個
+action-drawer-move-up	e2e	字面值 src/components/action-drawer.tsx:68；瀏覽器步驟：待辦：新增第一張（編輯抽屜）、待辦：新增第二張（編輯抽屜） 等 3 個
+action-drawer-pin	e2e	字面值 src/components/action-drawer.tsx:67；瀏覽器步驟：待辦：新增第一張（編輯抽屜）、待辦：新增第二張（編輯抽屜） 等 3 個
+action-drawer-remove	e2e	字面值 src/components/action-drawer.tsx:69；瀏覽器步驟：待辦：新增第一張（編輯抽屜）、待辦：新增第二張（編輯抽屜） 等 3 個
+action-notice	e2e	字面值 src/components/actions-workbench.tsx:177；瀏覽器步驟：待辦：新增兩張並移動卡片、待辦：編輯抽屜 等 4 個
+actions-add	ssr	字面值 src/components/actions-workbench.tsx:127；SSR 情境：actions-board、actions-list、page:actions、page:actions-list 等 6 個
+actions-count	ssr	字面值 src/components/actions-workbench.tsx:119；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-empty	ssr	字面值 src/components/actions-workbench.tsx:183；SSR 情境：page:actions-empty
+actions-empty-add	ssr	字面值 src/components/actions-workbench.tsx:186；SSR 情境：page:actions-empty
+actions-export-csv	ssr	樣板 `actions-export-${format}` src/components/actions-workbench.tsx:130；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-export-json	ssr	樣板 `actions-export-${format}` src/components/actions-workbench.tsx:130；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-export-md	ssr	樣板 `actions-export-${format}` src/components/actions-workbench.tsx:130；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-export-menu	ssr	字面值 src/components/actions-workbench.tsx:128；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-help	ssr	字面值 src/components/actions-workbench.tsx:122；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-toolbar	ssr	字面值 src/components/actions-workbench.tsx:179；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-view-board	ssr	字面值 src/components/actions-workbench.tsx:180；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-view-list	ssr	字面值 src/components/actions-workbench.tsx:180；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+actions-workbench	ssr	字面值 src/components/actions-workbench.tsx:173；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+ai-advanced	ssr	字面值 src/components/ai-panel.tsx:99；SSR 情境：diagnosis-ai-available
+ai-availability	ssr	字面值 src/components/shell/shell-frame.tsx:107；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+ai-collapsed	ssr	字面值 src/components/ai-collapse.tsx:21；SSR 情境：page:diagnosis
+ai-facts-preview	ssr	字面值 src/components/ai-panel.tsx:97；SSR 情境：diagnosis-ai-available
+ai-live-result	cond	字面值 src/components/ai-panel.tsx:112；live AI 回覆：公開示範站 ENABLE_LIVE_AI=false 不會出現；tests/e2e/ai.spec.ts（假 AI 伺服器）覆蓋
+ai-local-mapping	ssr	字面值 src/components/ai-panel.tsx:103；SSR 情境：diagnosis-ai-available
+ai-mode	ssr	字面值 src/components/ai-panel.tsx:88；SSR 情境：diagnosis-ai、diagnosis-ai-available、page:diagnosis
+ai-panel	ssr	字面值 src/components/ai-panel.tsx:87；SSR 情境：diagnosis-ai、diagnosis-ai-available、page:diagnosis
+ai-payload-preview	ssr	字面值 src/components/ai-panel.tsx:101；SSR 情境：diagnosis-ai-available
+ai-readable-preview	ssr	字面值 src/components/ai-panel.tsx:93；SSR 情境：diagnosis-ai-available
+ai-request-preview	ssr	字面值 src/components/ai-panel.tsx:102；SSR 情境：diagnosis-ai-available
+ai-response-details	cond	字面值 src/components/ai-panel.tsx:115；live AI 回覆的技術細節；同上 tests/e2e/ai.spec.ts
+ai-status	ssr	字面值 src/components/ai-panel.tsx:89；SSR 情境：diagnosis-ai、diagnosis-ai-available、page:diagnosis
+analytics-note	ssr	字面值 src/components/shell/page-chrome.tsx:31；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+assist-breakeven-current	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-breakeven-help	ssr	字面值 src/components/overview/assist-table.tsx:102；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-breakeven-help-trigger	ssr	字面值 src/components/overview/assist-table.tsx:96；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-breakeven-mer	ssr	字面值 src/components/overview/assist-table.tsx:92；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-breakeven-note	ssr	字面值 src/components/overview/assist-table.tsx:101；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-breakeven-previous	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-fulfillment_burden	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-gross_margin	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-kpis	ssr	字面值 src/components/overview/assist-table.tsx:41；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-marketing_burden	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-mer	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-net_revenue_per_unit	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-refund_ratio	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+assist-units_sold	ssr	樣板 `assist-${kpi.id}` src/components/overview/assist-table.tsx:48；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+autosave-confirm-replace	e2e	字面值 src/components/workspace-storage.tsx:232；瀏覽器步驟：儲存選單：同意後待確認覆寫、儲存選單：讀取本機副本預覽 等 3 個
+autosave-error	cond	字面值 src/components/workspace-storage.tsx:282；自動保存寫入 IndexedDB 失敗；tests/workspace-storage-autosave.test.tsx（hooks 驅動的元素樹）覆蓋
+autosave-replace-warning	e2e	字面值 src/components/workspace-storage.tsx:231；瀏覽器步驟：儲存選單：同意後待確認覆寫、儲存選單：讀取本機副本預覽 等 3 個
+autosave-status	ssr	字面值 src/components/workspace-storage.tsx:234；SSR 情境：shell-empty、storage、page:shell-empty、page:overview 等 25 個
+autosave-toggle	ssr	字面值 src/components/workspace-storage.tsx:228；SSR 情境：storage、page:overview、page:diagnosis、page:products 等 20 個
+banner-filter-error	ssr	字面值 src/components/shell/period-bar.tsx:157；SSR 情境：page:diagnosis
+banner-partial	ssr	字面值 src/components/shell/period-bar.tsx:158；SSR 情境：page:data-partial、page:data-with-issues
+baseline-contribution_after_marketing	ssr	樣板 `baseline-${name}` src/components/decision-workbench.tsx:255；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+baseline-net_revenue	ssr	樣板 `baseline-${name}` src/components/decision-workbench.tsx:255；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+basis-dialog	ssr	字面值 src/components/basis-dialog.tsx:35；SSR 情境：basis-dialog
+board-card-1	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:141；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-1-ad-decision	ssr	樣板 `board-card-${n}-ad-decision` src/components/actions-workbench.tsx:154；SSR 情境：page:actions-ad-decision
+board-card-1-edit	ssr	樣板 `board-card-${n}-edit` src/components/actions-workbench.tsx:163；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-1-move-blocked	ssr	樣板 `board-card-${n}-move-${value}` src/components/actions-workbench.tsx:161；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-1-move-completed	ssr	樣板 `board-card-${n}-move-${value}` src/components/actions-workbench.tsx:161；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-1-move-in_progress	e2e	樣板 `board-card-${n}-move-${value}` src/components/actions-workbench.tsx:161；瀏覽器步驟：待辦：新增第一張（編輯抽屜）、待辦：新增第二張（編輯抽屜）
+board-card-1-move-not_started	ssr	樣板 `board-card-${n}-move-${value}` src/components/actions-workbench.tsx:161；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-2	ssr	樣板 `board-card-${n}` src/components/actions-workbench.tsx:141；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-2-edit	ssr	樣板 `board-card-${n}-edit` src/components/actions-workbench.tsx:163；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-2-move-blocked	ssr	樣板 `board-card-${n}-move-${value}` src/components/actions-workbench.tsx:161；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-2-move-completed	ssr	樣板 `board-card-${n}-move-${value}` src/components/actions-workbench.tsx:161；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-card-2-move-in_progress	ssr	樣板 `board-card-${n}-move-${value}` src/components/actions-workbench.tsx:161；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-column-blocked	ssr	樣板 `board-column-${status}` src/components/actions-workbench.tsx:191；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-column-completed	ssr	樣板 `board-column-${status}` src/components/actions-workbench.tsx:191；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-column-in_progress	ssr	樣板 `board-column-${status}` src/components/actions-workbench.tsx:191；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+board-column-not_started	ssr	樣板 `board-column-${status}` src/components/actions-workbench.tsx:191；SSR 情境：actions-board、page:actions、page:actions-ad-decision
+bridge-balance-check	ssr	字面值 src/components/overview/charts/bridge-section.tsx:100；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+bridge-section	ssr	字面值 src/components/overview/charts/bridge-section.tsx:80；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+bridge-table	ssr	字面值 src/components/overview/charts/bridge-section.tsx:88；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+bridge-waterfall	ssr	字面值 src/components/overview/charts/bridge-section.tsx:86；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+channel-compare	ssr	字面值 src/components/workspace-panels.tsx:189；SSR 情境：diagnosis、page:diagnosis
+channel-mix	ssr	字面值 src/components/overview/charts/channel-section.tsx:88；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+copy-summary	ssr	字面值 src/components/overview/weekly-snapshot.tsx:84；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+copy-summary-fallback	e2e	字面值 src/components/overview/weekly-snapshot.tsx:106；瀏覽器步驟：總覽：複製週會摘要備案對話框、會議：複製週會摘要備案對話框
+copy-summary-status	ssr	字面值 src/components/overview/weekly-snapshot.tsx:86；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+data-issues	ssr	字面值 src/components/workspace-panels.tsx:87；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-issues-download	ssr	字面值 src/components/workspace-panels.tsx:89；SSR 情境：page:data-partial、page:data-with-issues
+data-optional	ssr	字面值 src/components/workspace-panels.tsx:120；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-preprocessing	ssr	字面值 src/components/workspace-panels.tsx:111；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-preview	ssr	字面值 src/components/workspace-panels.tsx:150；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-preview-ad_spend_daily.csv	ssr	樣板 `data-preview-${file.name}` src/components/workspace-panels.tsx:155；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-preview-channel_costs_daily.csv	ssr	樣板 `data-preview-${file.name}` src/components/workspace-panels.tsx:155；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-preview-sales_daily.csv	ssr	樣板 `data-preview-${file.name}` src/components/workspace-panels.tsx:155；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-scope	ssr	字面值 src/components/workspace-panels.tsx:92；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-status	ssr	字面值 src/components/shell/data-status.tsx:61；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+data-status-go-data	ssr	字面值 src/components/shell/data-status.tsx:72；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+data-status-import	ssr	字面值 src/components/shell/data-status.tsx:75；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+data-status-line	ssr	字面值 src/components/workspace-panels.tsx:85；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-status-popover	ssr	字面值 src/components/shell/data-status.tsx:66；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+data-templates	ssr	字面值 src/components/workspace-panels.tsx:176；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+data-version-info	ssr	字面值 src/components/workspace-panels.tsx:165；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+decision-freshness	ssr	字面值 src/components/decision-workbench.tsx:259；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+decision-notice	ssr	字面值 src/components/decision-workbench.tsx:363；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+decision-workbench	ssr	字面值 src/components/decision-workbench.tsx:248；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+diagnosis-count-favorable	cond	樣板 `diagnosis-count-${item.kind}` src/components/diagnosis-list.tsx:143；健檢列有「有利」方向的規則時才出現的計數徽章（示範資料、golden、missing_cogs 都沒有）；tests/diagnosis-v3.test.tsx（合成健檢結果的 SSR）覆蓋
+diagnosis-count-missing	e2e	樣板 `diagnosis-count-${item.kind}` src/components/diagnosis-list.tsx:143；瀏覽器步驟：通路健檢：部分資料待補
+diagnosis-count-unfavorable	ssr	樣板 `diagnosis-count-${item.kind}` src/components/diagnosis-list.tsx:143；SSR 情境：diagnosis、page:diagnosis
+diagnosis-empty	e2e	字面值 src/components/diagnosis-empty.tsx:23；瀏覽器步驟：通路健檢：規則都沒觸發（空狀態）
+diagnosis-list	ssr	字面值 src/components/diagnosis-list.tsx:147；SSR 情境：diagnosis、page:diagnosis
+diagnosis-panel	ssr	字面值 src/components/diagnosis-list.tsx:141；SSR 情境：diagnosis、page:diagnosis
+diagnosis-row-DISCOUNT_BURDEN_UP	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:172；SSR 情境：diagnosis、page:diagnosis
+diagnosis-row-FULFILLMENT_BURDEN_UP	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:172；SSR 情境：diagnosis、page:diagnosis
+diagnosis-row-MARKETING_BURDEN_UP	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:172；SSR 情境：diagnosis、page:diagnosis
+diagnosis-row-MISSING_CRITICAL_DATA	e2e	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:172；瀏覽器步驟：通路健檢：部分資料待補
+diagnosis-row-NEGATIVE_CHANNEL_CM	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:172；SSR 情境：diagnosis、page:diagnosis
+diagnosis-row-REFUND_BURDEN_UP	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:172；SSR 情境：diagnosis、page:diagnosis
+diagnosis-row-REV_UP_CM_DOWN	ssr	樣板 `diagnosis-row-${group.rule}` src/components/diagnosis-list.tsx:172；SSR 情境：diagnosis、page:diagnosis
+download-copy-summary	ssr	字面值 src/components/shell/export-menu.tsx:154；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-copy-summary-fallback	e2e	字面值 src/components/shell/export-menu.tsx:156；瀏覽器步驟：頂欄匯出選單：複製週會摘要備案、總覽：投影模式
+download-copy-summary-status	ssr	字面值 src/components/shell/export-menu.tsx:155；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-group-current	ssr	字面值 src/components/shell/export-menu.tsx:129；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-group-decision	ssr	字面值 src/components/shell/export-menu.tsx:146；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-group-meeting	ssr	字面值 src/components/shell/export-menu.tsx:153；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-group-summary	ssr	字面值 src/components/shell/export-menu.tsx:136；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-group-templates	ssr	字面值 src/components/shell/export-menu.tsx:163；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+download-meeting-section	ssr	運算式 src/components/shell/export-menu.tsx:60；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-menu	ssr	字面值 src/components/shell/export-menu.tsx:126；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+download-templates	ssr	字面值 src/components/shell/export-menu.tsx:164；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+download-variant-boss	ssr	樣板 `download-variant-${variant}` src/components/shell/export-menu.tsx:72；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-variant-client	ssr	樣板 `download-variant-${variant}` src/components/shell/export-menu.tsx:72；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-variant-picker	ssr	字面值 src/components/shell/export-menu.tsx:71；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+download-variant-standard	ssr	樣板 `download-variant-${variant}` src/components/shell/export-menu.tsx:72；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+empty-import	ssr	字面值 src/components/shell/page-states.tsx:23；SSR 情境：shell-empty、page:shell-empty
+empty-load-demo	ssr	字面值 src/components/shell/page-states.tsx:22；SSR 情境：shell-empty、page:shell-empty
+empty-state	ssr	字面值 src/components/shell/page-states.tsx:18；SSR 情境：shell-empty、page:shell-empty、page:shell-empty-data
+error-back	e2e	字面值 src/components/shell/page-states.tsx:58；瀏覽器步驟：載入失敗（有上次成功的資料）
+error-issues	ssr	字面值 src/components/shell/page-states.tsx:61；SSR 情境：page:shell-error
+error-retry	ssr	字面值 src/components/shell/page-states.tsx:57；SSR 情境：page:shell-error
+error-state	ssr	字面值 src/components/shell/page-states.tsx:53；SSR 情境：page:shell-error
+error-view-issues	ssr	字面值 src/components/shell/page-states.tsx:59；SSR 情境：page:shell-error
+events-entry	ssr	字面值 src/components/workspace-panels.tsx:135；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+events-issues	ssr	字面值 src/components/workspace-panels.tsx:144；SSR 情境：data
+events-table	ssr	字面值 src/components/workspace-panels.tsx:145；SSR 情境：data、page:data、page:data-with-issues
+evidence-checklist	ssr	字面值 src/components/action-editor.tsx:75；SSR 情境：actions-list、page:actions-list、page:actions-ad-decision-list
+evidence-conversion-note	ssr	字面值 src/components/evidence-drawer.tsx:268；SSR 情境：evidence-drawer
+evidence-filter	e2e	字面值 src/components/evidence-drawer.tsx:270；瀏覽器步驟：計算與來源：通路下鑽（篩選中）、計算與來源：通路下鑽（清除篩選後）
+evidence-filter-apply	e2e	運算式 src/components/evidence-drawer.tsx:270；瀏覽器步驟：計算與來源：通路下鑽（清除篩選後）
+evidence-filter-clear	e2e	運算式 src/components/evidence-drawer.tsx:270；瀏覽器步驟：計算與來源：通路下鑽（篩選中）
+evidence-precise-value	ssr	字面值 src/components/evidence-drawer.tsx:228；SSR 情境：evidence-drawer
+evidence-rounding-note	e2e	字面值 src/components/evidence-drawer.tsx:324；瀏覽器步驟：計算與來源：橋接差額
+export-page-actions	ssr	字面值 src/components/actions-workbench.tsx:129；SSR 情境：actions-board、actions-list、page:actions、page:actions-empty 等 7 個
+export-page-meeting	ssr	字面值 src/components/meeting-page.tsx:289；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+export-page-products	ssr	字面值 src/components/product-comparison-panel.tsx:246；SSR 情境：products、page:products
+export-page-scenarios	ssr	字面值 src/components/decision-workbench.tsx:245；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+glossary-search	ssr	字面值 src/components/basis-dialog.tsx:59；SSR 情境：basis-dialog
+glossary-v2-names	ssr	字面值 src/components/basis-dialog.tsx:72；SSR 情境：basis-dialog
+import-commit	ssr	字面值 src/components/import-wizard/index.tsx:123；SSR 情境：import-step-4-wizard
+import-conversion	ssr	字面值 src/components/import-wizard/step-basis.tsx:60；SSR 情境：import-step-3-inclusive
+import-file-ad_spend_daily.csv	ssr	樣板 `import-file-${role}` src/components/import-wizard/step-files.tsx:52；SSR 情境：import-step-1、import-step-1-order-level、page:import-step-1
+import-file-channel_costs_daily.csv	ssr	樣板 `import-file-${role}` src/components/import-wizard/step-files.tsx:52；SSR 情境：import-step-1、import-step-1-order-level、page:import-step-1
+import-file-sales_daily.csv	ssr	樣板 `import-file-${role}` src/components/import-wizard/step-files.tsx:52；SSR 情境：import-step-1、import-step-1-order-level、page:import-step-1
+import-mapping-ad_spend_daily.csv	ssr	樣板 `import-mapping-${role}` src/components/import-wizard/step-mapping.tsx:74；SSR 情境：import-step-2-order-level、import-step-2-preset、import-step-2-memory
+import-mapping-channel_costs_daily.csv	ssr	樣板 `import-mapping-${role}` src/components/import-wizard/step-mapping.tsx:74；SSR 情境：import-step-2-order-level、import-step-2-preset、import-step-2-memory
+import-mapping-sales_daily.csv	ssr	樣板 `import-mapping-${role}` src/components/import-wizard/step-mapping.tsx:74；SSR 情境：import-step-2-order-level、import-step-2-preset、import-step-2-memory
+import-memory-hint	ssr	字面值 src/components/import-wizard/step-mapping.tsx:79；SSR 情境：import-step-2-memory
+import-memory-note	ssr	字面值 src/components/import-wizard/step-review.tsx:82；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+import-order-level	ssr	字面值 src/components/import-wizard/step-mapping.tsx:82；SSR 情境：import-step-2-order-level
+import-order-level-sales_daily.csv	ssr	樣板 `import-order-level-${role}` src/components/import-wizard/step-files.tsx:64；SSR 情境：import-step-1-order-level
+import-preprocessing	ssr	字面值 src/components/import-wizard/step-review.tsx:58；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+import-preset-hint	ssr	字面值 src/components/import-wizard/step-mapping.tsx:80；SSR 情境：import-step-2-preset
+import-reconciliation	ssr	字面值 src/components/import-wizard/step-review.tsx:76；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+import-result-note	ssr	字面值 src/components/import-wizard/step-review.tsx:54；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+import-settings-proposal	ssr	字面值 src/components/import-wizard/step-basis.tsx:73；SSR 情境：import-step-3-inclusive
+import-status	ssr	字面值 src/components/import-wizard/step-review.tsx:53；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+import-step-1	ssr	字面值 src/components/import-wizard/step-files.tsx:35；SSR 情境：import-step-1、import-step-1-order-level、page:import-step-1
+import-step-2	ssr	字面值 src/components/import-wizard/step-mapping.tsx:39；SSR 情境：import-step-2-order-level、import-step-2-preset、import-step-2-memory
+import-step-3	ssr	字面值 src/components/import-wizard/step-basis.tsx:50；SSR 情境：import-step-3-inclusive
+import-step-4	ssr	字面值 src/components/import-wizard/step-review.tsx:50；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+import-stepper	ssr	字面值 src/components/import-wizard/index.tsx:107；SSR 情境：import-step-1、import-step-4-wizard、page:import-step-1
+import-wizard	ssr	字面值 src/components/import-wizard/index.tsx:101；SSR 情境：import-step-1、import-step-4-wizard、page:import-step-1
+kpi-band	ssr	字面值 src/components/overview/kpi-band.tsx:75；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+kpi-contribution_after_marketing	ssr	樣板 `kpi-${name}` src/components/overview/kpi-band.tsx:90；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+kpi-contribution_before_marketing	ssr	樣板 `kpi-${name}` src/components/overview/kpi-band.tsx:90；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+kpi-contribution_margin	ssr	樣板 `kpi-${name}` src/components/overview/kpi-band.tsx:90；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+kpi-gross_profit	ssr	樣板 `kpi-${name}` src/components/overview/kpi-band.tsx:90；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+kpi-net_revenue	ssr	樣板 `kpi-${name}` src/components/overview/kpi-band.tsx:90；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+kpi-target-ad_spend	ssr	樣板 `kpi-target-${name}` src/components/overview.tsx:69；SSR 情境：overview、page:overview
+kpi-target-contribution_after_marketing	ssr	樣板 `kpi-target-${name}` src/components/overview.tsx:69；SSR 情境：overview、page:overview
+kpi-target-gross_profit	ssr	樣板 `kpi-target-${name}` src/components/overview.tsx:69；SSR 情境：overview、page:overview
+kpi-target-net_revenue	ssr	樣板 `kpi-target-${name}` src/components/overview.tsx:69；SSR 情境：overview、page:overview
+loading-state	e2e	字面值 src/components/shell/page-states.tsx:32；瀏覽器步驟：載入中
+local-save-announce	ssr	字面值 src/components/workspace-storage.tsx:281；SSR 情境：shell-empty、storage、page:shell-empty、page:overview 等 25 個
+local-save-prompt	e2e	字面值 src/components/workspace-storage.tsx:271；瀏覽器步驟：載入示範資料＋首次保存提示、重新整理後載入：提示附覆蓋提醒
+local-save-replace-warning	e2e	字面值 src/components/workspace-storage.tsx:274；瀏覽器步驟：重新整理後載入：提示附覆蓋提醒
+manager-priority-DISCOUNT_BURDEN_UP	ssr	樣板 `manager-priority-${item.code}` src/components/manager-summary.tsx:102；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset 等 6 個
+manager-priority-MARKETING_BURDEN_UP	ssr	樣板 `manager-priority-${item.code}` src/components/manager-summary.tsx:102；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset 等 6 個
+manager-priority-REV_UP_CM_DOWN	ssr	樣板 `manager-priority-${item.code}` src/components/manager-summary.tsx:102；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset 等 6 個
+manager-summary	ssr	字面值 src/components/manager-summary.tsx:93；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset 等 6 個
+manager-summary-print	ssr	字面值 src/components/print-summary.tsx:99；SSR 情境：print-summary
+meeting-agenda	ssr	字面值 src/components/meeting-page.tsx:372；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-agenda-1	ssr	變數傳入（元件以 data-testid={變數} 或 testId 屬性輸出）；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-agenda-2	ssr	變數傳入（元件以 data-testid={變數} 或 testId 屬性輸出）；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-agenda-3	ssr	變數傳入（元件以 data-testid={變數} 或 testId 屬性輸出）；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-agenda-4	ssr	變數傳入（元件以 data-testid={變數} 或 testId 屬性輸出）；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-agenda-5	ssr	變數傳入（元件以 data-testid={變數} 或 testId 屬性輸出）；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-agenda-6	ssr	變數傳入（元件以 data-testid={變數} 或 testId 屬性輸出）；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-compare	ssr	字面值 src/components/meeting-page.tsx:404；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-compare-different_dataset	ssr	樣板 `meeting-compare-${comparison.kind}` src/components/meeting-page.tsx:463；SSR 情境：meeting-different-dataset
+meeting-compare-different_periods	cond	樣板 `meeting-compare-${comparison.kind}` src/components/meeting-page.tsx:463；與上次會議比較時兩場的期間不同才出現（同一份資料、同一組通路）；比較種類的判定由 tests/meeting.test.ts 覆蓋，收集流程改期間後會議草稿跟著目前檢視，仍是 same_scope
+meeting-compare-kpis	ssr	字面值 src/components/meeting-page.tsx:467；SSR 情境：meeting-with-history、page:meeting-v2-record
+meeting-compare-note	ssr	字面值 src/components/meeting-page.tsx:465；SSR 情境：meeting-with-history、meeting-different-dataset、page:meeting-v2-record
+meeting-compare-same_scope	ssr	樣板 `meeting-compare-${comparison.kind}` src/components/meeting-page.tsx:463；SSR 情境：meeting-with-history、page:meeting-v2-record
+meeting-compare-see-followup	ssr	字面值 src/components/meeting-page.tsx:466；SSR 情境：meeting-different-dataset
+meeting-copy-summary	e2e	字面值 src/components/meeting-page.tsx:331；瀏覽器步驟：會議紀錄頁、會議：複製週會摘要備案對話框 等 9 個
+meeting-copy-summary-status	e2e	字面值 src/components/meeting-page.tsx:332；瀏覽器步驟：會議紀錄頁、會議：複製週會摘要備案對話框 等 9 個
+meeting-create	ssr	字面值 src/components/meeting-page.tsx:209；SSR 情境：meeting-none
+meeting-decision	ssr	字面值 src/components/meeting-page.tsx:325；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-export-csv	ssr	字面值 src/components/meeting-page.tsx:293；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-export-excel	ssr	字面值 src/components/meeting-page.tsx:294；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-export-markdown	ssr	字面值 src/components/meeting-page.tsx:292；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-export-pdf	ssr	字面值 src/components/meeting-page.tsx:291；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-export-pptx	ssr	字面值 src/components/meeting-page.tsx:295；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-finalize	ssr	字面值 src/components/meeting-page.tsx:327；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-finalize-confirm	e2e	字面值 src/components/meeting-page.tsx:340；瀏覽器步驟：會議：結束會議確認區
+meeting-finalize-confirm-button	e2e	字面值 src/components/meeting-page.tsx:344；瀏覽器步驟：會議：結束會議確認區
+meeting-finalize-error	cond	字面值 src/components/meeting-page.tsx:343；結束會議失敗；tests/meeting-page.test.tsx（hooks 驅動的元素樹）覆蓋
+meeting-followup	ssr	字面值 src/components/meeting-page.tsx:378；SSR 情境：meeting-with-history、meeting-different-dataset、page:meeting-v2-record
+meeting-go-scenarios	e2e	字面值 src/components/meeting-page.tsx:383；瀏覽器步驟：會議紀錄頁、會議：複製週會摘要備案對話框 等 9 個
+meeting-history	ssr	字面值 src/components/meeting-page.tsx:508；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none 等 9 個
+meeting-history-followup	ssr	字面值 src/components/meeting-page.tsx:479；SSR 情境：meeting-history
+meeting-history-item	ssr	字面值 src/components/meeting-page.tsx:514；SSR 情境：meeting-with-history、meeting-none、meeting-history、meeting-different-dataset 等 5 個
+meeting-history-kpis	ssr	字面值 src/components/meeting-page.tsx:482；SSR 情境：meeting-history
+meeting-history-remove-confirm	e2e	字面值 src/components/meeting-page.tsx:526；瀏覽器步驟：會議：歷史移除確認區
+meeting-history-remove-confirm-region	e2e	字面值 src/components/meeting-page.tsx:524；瀏覽器步驟：會議：歷史移除確認區
+meeting-history-remove-meeting-rev-1-r4	ssr	樣板 `meeting-history-remove-${meeting.id}` src/components/meeting-page.tsx:522；SSR 情境：meeting-with-history、meeting-none、meeting-history、page:meeting-v2-record
+meeting-history-remove-meeting-rev-2-r2	ssr	樣板 `meeting-history-remove-${meeting.id}` src/components/meeting-page.tsx:522；SSR 情境：meeting-history
+meeting-history-remove-meeting-rev-demo-r2	ssr	樣板 `meeting-history-remove-${meeting.id}` src/components/meeting-page.tsx:522；SSR 情境：meeting-different-dataset
+meeting-history-status	ssr	字面值 src/components/meeting-page.tsx:510；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none 等 9 個
+meeting-outputs	ssr	字面值 src/components/meeting-page.tsx:288；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-page	ssr	字面值 src/components/meeting-page.tsx:209；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none 等 8 個
+meeting-pinned-actions	ssr	字面值 src/components/meeting-page.tsx:389；SSR 情境：meeting-draft、meeting-with-history、meeting-view-differs、meeting-different-dataset 等 6 個
+meeting-pinned-actions-empty	ssr	字面值 src/components/meeting-page.tsx:389；SSR 情境：meeting-empty-draft
+meeting-scenario-result	ssr	字面值 src/components/meeting-page.tsx:309；SSR 情境：meeting-draft、meeting-with-history、meeting-view-differs、meeting-different-dataset 等 6 個
+meeting-scenario-results	ssr	字面值 src/components/meeting-page.tsx:383；SSR 情境：meeting-draft、meeting-with-history、meeting-view-differs、meeting-different-dataset 等 6 個
+meeting-scenario-results-empty	ssr	字面值 src/components/meeting-page.tsx:383；SSR 情境：meeting-empty-draft
+meeting-scenario-select-DTC	ssr	樣板 `meeting-scenario-select-${channel}` src/components/meeting-page.tsx:308；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-scenario-select-MARKETPLACE	ssr	樣板 `meeting-scenario-select-${channel}` src/components/meeting-page.tsx:308；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-sentence	ssr	字面值 src/components/manager-summary.tsx:145；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset 等 6 個
+meeting-snapshot-note	ssr	字面值 src/components/meeting-page.tsx:515；SSR 情境：meeting-with-history、meeting-none、meeting-history、meeting-different-dataset 等 5 個
+meeting-status	ssr	字面值 src/components/meeting-page.tsx:205；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none 等 8 個
+meeting-title	ssr	字面值 src/components/meeting-page.tsx:321；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-view-differs 等 7 個
+meeting-v2-note	ssr	字面值 src/components/meeting-page.tsx:516；SSR 情境：page:meeting-v2-record
+mobile-more	ssr	字面值 src/components/shell/shell-frame.tsx:127；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+mobile-tabbar	ssr	字面值 src/components/shell/shell-frame.tsx:124；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+mobile-tabbar-more	ssr	字面值 src/components/shell/shell-frame.tsx:126；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+multi-scenario-workbench	ssr	字面值 src/components/multi-scenario-workbench.tsx:103；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、page:overview 等 23 個
+nav-group-causes	ssr	樣板 `nav-group-${group.id}` src/components/shell/shell-frame.tsx:120；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+nav-group-data	ssr	樣板 `nav-group-${group.id}` src/components/shell/shell-frame.tsx:120；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+nav-group-decisions	ssr	樣板 `nav-group-${group.id}` src/components/shell/shell-frame.tsx:120；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+nav-group-developer	ssr	字面值 src/components/shell/shell-frame.tsx:121；SSR 情境：page:validation
+nav-group-results	ssr	樣板 `nav-group-${group.id}` src/components/shell/shell-frame.tsx:120；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+nav-mark-data	ssr	樣板 `nav-mark-${id}` src/components/shell/shell-frame.tsx:95；SSR 情境：page:data-partial、page:data-with-issues
+nav-mark-diagnosis	ssr	樣板 `nav-mark-${id}` src/components/shell/shell-frame.tsx:95；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 19 個
+nav-mark-meeting	ssr	樣板 `nav-mark-${id}` src/components/shell/shell-frame.tsx:95；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+needs-attention	ssr	字面值 src/components/shell/period-bar.tsx:156；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 19 個
+overview-advanced	ssr	字面值 src/components/overview.tsx:97；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+overview-meeting-entry	ssr	字面值 src/components/meeting-page.tsx:111；SSR 情境：overview-meeting-entry、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+overview-priority-DISCOUNT_BURDEN_UP	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:134；SSR 情境：overview、page:overview、page:overview-zero-ad
+overview-priority-MARKETING_BURDEN_UP	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:134；SSR 情境：overview、page:overview
+overview-priority-NEGATIVE_CHANNEL_CM	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:134；SSR 情境：page:overview-refund-only
+overview-priority-REFUND_BURDEN_UP	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:134；SSR 情境：page:overview-zero-ad
+overview-priority-REV_UP_CM_DOWN	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:134；SSR 情境：overview、page:overview、page:overview-zero-ad
+overview-priority-SKU_NEGATIVE_GP	ssr	樣板 `overview-priority-${item.rule}` src/components/top-three.tsx:134；SSR 情境：page:overview-refund-only
+page-actions	ssr	字面值 src/components/shell/page-chrome.tsx:25；SSR 情境：shell-empty、shell-data-header、page:shell-empty、page:overview 等 25 個
+page-import	ssr	字面值 src/components/shell/page-chrome.tsx:21；SSR 情境：shell-data-header、page:data、page:import-step-1、page:data-partial 等 6 個
+page-title-addon	ssr	字面值 src/components/shell/page-chrome.tsx:17；SSR 情境：shell-empty、shell-data-header、page:shell-empty、page:overview 等 25 個
+period-bar	ssr	字面值 src/components/shell/period-bar.tsx:111；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+period-comparison	ssr	字面值 src/components/overview.tsx:98；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+period-custom	ssr	字面值 src/components/shell/period-bar.tsx:123；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+period-custom-panel	ssr	字面值 src/components/shell/period-bar.tsx:124；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+period-presets	ssr	字面值 src/components/shell/period-bar.tsx:117；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+period-summary	ssr	字面值 src/components/shell/period-bar.tsx:121；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+period-toggle	ssr	字面值 src/components/shell/period-bar.tsx:112；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 20 個
+pnl-granularity-day	ssr	字面值 src/components/overview/pnl-table.tsx:57；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+pnl-granularity-week	ssr	字面值 src/components/overview/pnl-table.tsx:58；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+pnl-show-zero	ssr	字面值 src/components/overview/pnl-table.tsx:60；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+pnl-table	ssr	字面值 src/components/overview/pnl-table.tsx:52；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+present-period	e2e	字面值 src/components/shell/page-chrome.tsx:16；瀏覽器步驟：總覽：投影模式、會議：投影模式
+present-toggle	ssr	字面值 src/components/dashboard.tsx:518；SSR 情境：page:overview、page:meeting、page:meeting-v2-record、page:overview-zero-ad 等 6 個
+preset-reason-visible-yoy	ssr	字面值 src/components/shell/period-bar.tsx:159；SSR 情境：page:overview、page:diagnosis、page:products、page:scenarios 等 19 個
+print-appendix-assumptions	ssr	字面值 src/components/print-summary.tsx:115；SSR 情境：print-summary
+print-appendix-notes	ssr	字面值 src/components/print-summary.tsx:116；SSR 情境：print-summary
+print-appendix-pnl	e2e	字面值 src/components/print-summary.tsx:64；瀏覽器步驟：列印版：標準版、列印版：客戶報告版
+print-decision-line	ssr	字面值 src/components/print-summary.tsx:105；SSR 情境：print-summary
+print-header-client	e2e	字面值 src/components/print-summary.tsx:101；瀏覽器步驟：列印版：客戶報告版
+print-header-dataset	ssr	字面值 src/components/print-summary.tsx:101；SSR 情境：print-summary
+print-header-meeting	ssr	字面值 src/components/print-summary.tsx:101；SSR 情境：print-summary
+print-header-period	ssr	字面值 src/components/print-summary.tsx:101；SSR 情境：print-summary
+print-header-scope	ssr	字面值 src/components/print-summary.tsx:101；SSR 情境：print-summary
+print-header-version	ssr	字面值 src/components/print-summary.tsx:101；SSR 情境：print-summary
+print-kpis	e2e	運算式 src/components/print-summary.tsx:103；瀏覽器步驟：列印版：老闆一頁版
+print-one-liner	e2e	字面值 src/components/print-summary.tsx:102；瀏覽器步驟：列印版：老闆一頁版
+print-pnl-table	e2e	字面值 src/components/print-summary.tsx:65；瀏覽器步驟：列印版：標準版、列印版：客戶報告版
+print-report-header	ssr	字面值 src/components/print-summary.tsx:101；SSR 情境：print-summary
+print-scenario-line	ssr	字面值 src/components/print-summary.tsx:112；SSR 情境：print-summary
+print-top-three	e2e	字面值 src/components/print-summary.tsx:108；瀏覽器步驟：列印版：老闆一頁版
+product-best	ssr	樣板 `product-${kind}` src/components/product-comparison-panel.tsx:214；SSR 情境：products、page:products
+product-clear-filters	e2e	字面值 src/components/product-comparison-panel.tsx:278；瀏覽器步驟：商品毛利：只看負毛利（篩選後沒有商品）
+product-count	ssr	字面值 src/components/product-comparison-panel.tsx:275；SSR 情境：products、page:products
+product-density	ssr	字面值 src/components/product-comparison-panel.tsx:270；SSR 情境：products、page:products
+product-empty	e2e	字面值 src/components/product-comparison-panel.tsx:278；瀏覽器步驟：商品毛利：只看負毛利（篩選後沒有商品）
+product-export-comparison	ssr	字面值 src/components/product-comparison-panel.tsx:248；SSR 情境：products、page:products
+product-export-menu	ssr	字面值 src/components/product-comparison-panel.tsx:245；SSR 情境：products、page:products
+product-export-products	ssr	字面值 src/components/product-comparison-panel.tsx:249；SSR 情境：products、page:products
+product-more-columns	ssr	字面值 src/components/product-comparison-panel.tsx:268；SSR 情境：products、page:products
+product-scope	ssr	字面值 src/components/product-comparison-panel.tsx:255；SSR 情境：products、page:products
+product-table	ssr	字面值 src/components/product-comparison-panel.tsx:278；SSR 情境：products、products-legacy、page:products
+product-toolbar	ssr	字面值 src/components/product-comparison-panel.tsx:260；SSR 情境：products、page:products
+product-worst	ssr	樣板 `product-${kind}` src/components/product-comparison-panel.tsx:214；SSR 情境：products、page:products
+profit-waterfall	ssr	字面值 src/components/overview/charts/profit-section.tsx:70；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-ad_spend	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-cogs_net	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-contribution_after_marketing	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-contribution_before_marketing	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-fulfillment_costs	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-gross_profit	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-net_revenue	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-other_variable_costs	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-payment_fees	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-bar-platform_fees	ssr	樣板 profit-waterfall-bar-{metric} src/components/overview/charts/profit-section.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+profit-waterfall-scope	ssr	字面值 src/components/overview/charts/profit-section.tsx:73；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+reconciliation-ad_spend	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-cogs_net	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-discounts	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-fulfillment_costs	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-gross_sales	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-metric-contribution_after_marketing	ssr	樣板 `reconciliation-metric-${metric}` src/components/import-wizard/step-review.tsx:78；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-metric-contribution_before_marketing	ssr	樣板 `reconciliation-metric-${metric}` src/components/import-wizard/step-review.tsx:78；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-metric-gross_profit	ssr	樣板 `reconciliation-metric-${metric}` src/components/import-wizard/step-review.tsx:78；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-metric-net_revenue	ssr	樣板 `reconciliation-metric-${metric}` src/components/import-wizard/step-review.tsx:78；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-other_variable_costs	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-payment_fees	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-platform_fees	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+reconciliation-refunds	ssr	樣板 `reconciliation-${row.field}` src/components/import-wizard/step-review.tsx:77；SSR 情境：import-step-4-inclusive、import-step-4-wizard
+review-view-difference	ssr	字面值 src/components/meeting-page.tsx:354；SSR 情境：meeting-view-differs
+review-workbench	ssr	字面值 src/components/meeting-page.tsx:209；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-none 等 8 個
+scenario-1	ssr	樣板 `scenario-${n}` src/components/decision-workbench.tsx:281；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-2	ssr	樣板 `scenario-${n}` src/components/decision-workbench.tsx:281；SSR 情境：scenarios、page:scenarios
+scenario-absolute-error-ad_change_pct	ssr	樣板 `scenario-absolute-error-${field.key}` src/components/decision-workbench.tsx:323；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-absolute-error-discount_change_pp	ssr	樣板 `scenario-absolute-error-${field.key}` src/components/decision-workbench.tsx:323；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-absolute-error-volume_change_pct	ssr	樣板 `scenario-absolute-error-${field.key}` src/components/decision-workbench.tsx:323；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-absolute-note-volume_change_pct	cond	樣板 `scenario-absolute-note-${field.key}` src/components/decision-workbench.tsx:322；絕對值預填遇到非整數件數（示範／golden 件數皆為整數）；tests/scenario-form.test.tsx 覆蓋
+scenario-accept	ssr	字面值 src/components/decision-workbench.tsx:329；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-acknowledged	e2e	字面值 src/components/decision-workbench.tsx:328；瀏覽器步驟：試算：方案 1 計算後、試算：展開要賣到多少才划算 等 4 個
+scenario-add	ssr	字面值 src/components/decision-workbench.tsx:349；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-assumptions	ssr	字面值 src/components/decision-workbench.tsx:264；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-channel	ssr	字面值 src/components/multi-scenario-workbench.tsx:95；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、page:overview 等 23 個
+scenario-columns	ssr	字面值 src/components/decision-workbench.tsx:273；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-comparison	ssr	字面值 src/components/decision-workbench.tsx:354；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-contribution	ssr	字面值 src/components/decision-workbench.tsx:337；SSR 情境：scenarios、page:scenarios
+scenario-delta	ssr	字面值 src/components/decision-workbench.tsx:337；SSR 情境：scenarios、page:scenarios
+scenario-draft	ssr	字面值 src/components/decision-workbench.tsx:341；SSR 情境：scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible、page:data 等 6 個
+scenario-equivalent-ad_change_pct	ssr	樣板 `scenario-equivalent-${field.key}` src/components/decision-workbench.tsx:321；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-equivalent-discount_change_pp	ssr	樣板 `scenario-equivalent-${field.key}` src/components/decision-workbench.tsx:321；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-equivalent-volume_change_pct	ssr	樣板 `scenario-equivalent-${field.key}` src/components/decision-workbench.tsx:321；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-export-csv	ssr	樣板 `scenario-export-${format}` src/components/decision-workbench.tsx:246；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-export-json	ssr	樣板 `scenario-export-${format}` src/components/decision-workbench.tsx:246；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-export-md	ssr	樣板 `scenario-export-${format}` src/components/decision-workbench.tsx:246；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-export-menu	ssr	字面值 src/components/decision-workbench.tsx:244；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-mode-ad_change_pct	ssr	樣板 `scenario-mode-${absField}` src/components/decision-workbench.tsx:316；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-mode-discount_change_pp	ssr	樣板 `scenario-mode-${absField}` src/components/decision-workbench.tsx:316；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-mode-volume_change_pct	ssr	樣板 `scenario-mode-${absField}` src/components/decision-workbench.tsx:316；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-other-channels	ssr	字面值 src/components/multi-scenario-workbench.tsx:100；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、page:overview 等 21 個
+scenario-preset	ssr	字面值 src/components/decision-workbench.tsx:290；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-preset-apply	ssr	字面值 src/components/decision-workbench.tsx:291；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-preset-overwrite	ssr	字面值 src/components/decision-workbench.tsx:294；SSR 情境：scenarios、page:scenarios
+scenario-preset-purpose	ssr	字面值 src/components/decision-workbench.tsx:292；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-range-ad_change_pct	ssr	樣板 `scenario-range-${field.key}` src/components/decision-workbench.tsx:324；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-range-discount_change_pp	ssr	樣板 `scenario-range-${field.key}` src/components/decision-workbench.tsx:324；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-range-fulfillment_change_pct	ssr	樣板 `scenario-range-${field.key}` src/components/decision-workbench.tsx:324；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-range-one_time_cost	ssr	樣板 `scenario-range-${field.key}` src/components/decision-workbench.tsx:324；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-range-volume_change_pct	ssr	樣板 `scenario-range-${field.key}` src/components/decision-workbench.tsx:324；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-result	ssr	字面值 src/components/decision-workbench.tsx:335；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-select-1	ssr	樣板 `scenario-select-${n}` src/components/decision-workbench.tsx:343；SSR 情境：scenarios、page:scenarios
+scenario-sensitivity	ssr	字面值 src/components/scenario-sensitivity.tsx:38；SSR 情境：scenarios、page:scenarios
+scenario-template-note	ssr	字面值 src/components/decision-workbench.tsx:292；SSR 情境：scenarios、scenarios-first-visit、scenarios-zero-ad、scenarios-ineligible 等 8 個
+scenario-unavailable	ssr	字面值 src/components/decision-workbench.tsx:263；SSR 情境：scenarios-ineligible、page:overview-refund-only
+scenario-unavailable-ad_change_pct	ssr	樣板 `scenario-unavailable-${field.key}` src/components/decision-workbench.tsx:320；SSR 情境：scenarios-zero-ad、page:overview-refund-only
+scenario-unavailable-discount_change_pp	ssr	樣板 `scenario-unavailable-${field.key}` src/components/decision-workbench.tsx:320；SSR 情境：page:overview-refund-only
+scenario-unavailable-volume_change_pct	ssr	樣板 `scenario-unavailable-${field.key}` src/components/decision-workbench.tsx:320；SSR 情境：scenarios-ineligible、page:overview-refund-only
+scenario-version	ssr	字面值 src/components/decision-workbench.tsx:340；SSR 情境：scenarios、page:scenarios
+sensitivity-result	ssr	字面值 src/components/scenario-sensitivity.tsx:63；SSR 情境：scenarios、page:scenarios
+snapshot-sentence	ssr	字面值 src/components/overview/weekly-snapshot.tsx:80；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+storage-notice	e2e	字面值 src/components/workspace-storage.tsx:258；瀏覽器步驟：儲存選單：讀取本機副本預覽、儲存選單：備份還原預覽 等 3 個
+targets-entry	ssr	字面值 src/components/workspace-panels.tsx:123；SSR 情境：data、page:data、page:import-step-1、page:data-partial 等 5 個
+targets-issues	ssr	字面值 src/components/workspace-panels.tsx:132；SSR 情境：data
+targets-table	ssr	字面值 src/components/workspace-panels.tsx:133；SSR 情境：data、page:data、page:data-with-issues
+threshold-form-meeting	ssr	字面值 src/components/manager-summary.tsx:153；SSR 情境：meeting-draft、meeting-with-history、meeting-empty-draft、meeting-different-dataset 等 6 個
+threshold-form-overview	ssr	字面值 src/components/top-three.tsx:154；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+threshold-maintain_baseline	ssr	樣板 `threshold-${target.id}` src/components/scenario-sensitivity.tsx:44；SSR 情境：scenarios、page:scenarios
+threshold-pct	ssr	字面值 src/components/scenario-sensitivity.tsx:46；SSR 情境：scenarios、page:scenarios
+threshold-zero_contribution	ssr	樣板 `threshold-${target.id}` src/components/scenario-sensitivity.tsx:44；SSR 情境：scenarios、page:scenarios
+top-three	ssr	字面值 src/components/top-three.tsx:147；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+topbar-more	ssr	字面值 src/components/shell/shell-frame.tsx:115；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+trend	ssr	字面值 src/components/overview/charts/trend-section.tsx:149；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+trend-events	ssr	字面值 src/components/overview/charts/trend-section.tsx:145；SSR 情境：overview、page:overview
+trend-legend-yoy	ssr	字面值 src/components/overview/charts/trend-section.tsx:104；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+trend-yoy-note	ssr	字面值 src/components/overview/charts/trend-section.tsx:144；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only
+validation-panel	e2e	字面值 src/components/dashboard.tsx:554；瀏覽器步驟：#validation 開發者驗證、載入失敗（有上次成功的資料）
+weekly-snapshot	ssr	字面值 src/components/overview/weekly-snapshot.tsx:77；SSR 情境：overview、page:overview、page:overview-zero-ad、page:overview-refund-only 等 5 個
+whats-new	e2e	字面值 src/components/whats-new-note.tsx:28；瀏覽器步驟：還原 v4 備份後：這版改了什麼
+workspace-status	ssr	字面值 src/components/shell/data-status.tsx:65；SSR 情境：shell-empty、page:shell-empty、page:overview、page:diagnosis 等 24 個
+workspace-storage	ssr	字面值 src/components/workspace-storage.tsx:219；SSR 情境：shell-empty、storage、page:shell-empty、page:overview 等 25 個
