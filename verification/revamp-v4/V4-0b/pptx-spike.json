@@ -1,0 +1,573 @@
+{
+  "spike": "V4-0b item 1: pptxgenjs addChart waterfall (D-V4-10) and slide placement trial (D-V4-34)",
+  "command": "PPTX_SPIKE_OUT=verification/revamp-v4/V4-0b/pptx-spike.json npx vitest run tests/pptx-chart-spike.test.ts",
+  "library": "pptxgenjs 4.0.1 (addChart bar, barGrouping stacked); parsed with xlsx 0.18.5 XLSX.CFB.read and XLSX.read",
+  "decks": {
+    "A": "pptx-spike-A.pptx",
+    "B": "pptx-spike-B.pptx",
+    "synthetic": "pptx-spike-synthetic.pptx"
+  },
+  "seriesNames": {
+    "base": "Base offset (for drawing, not an amount)",
+    "level": "Start, subtotal and end (amount)",
+    "favorable": "Favorable change (abs, for drawing)",
+    "unfavorable": "Unfavorable change (abs, for drawing)",
+    "favorableBelowZero": "Favorable part below 0 (for drawing, not an amount)",
+    "unfavorableBelowZero": "Unfavorable part below 0 (for drawing, not an amount)"
+  },
+  "seriesColors": {
+    "base": "noFill",
+    "level": "EXPORT_THEME.muted",
+    "favorable": "EXPORT_THEME.lineStrong",
+    "unfavorable": "EXPORT_THEME.unfavorable",
+    "favorableBelowZero": "EXPORT_THEME.lineStrong",
+    "unfavorableBelowZero": "EXPORT_THEME.unfavorable"
+  },
+  "dataLabelFormatCode": "#,##0.00;\"−\"#,##0.00;",
+  "valueAxisFormatCode": "#,##0;\"−\"#,##0",
+  "demo": {
+    "dataset": "synthetic-demo-12w-v1",
+    "bars": 11,
+    "labelWorkaroundProbe": {
+      "options": "showValue false, layout { x: 0.08, y: 0.04, w: 0.9, h: 0.84 }",
+      "allSeriesLabelsOff": true,
+      "manualInnerPlotLayout": true
+    },
+    "crossesZero": false,
+    "negativeCurrent": false,
+    "chartParts": [
+      "ppt/charts/chart1.xml"
+    ],
+    "embeddings": [
+      "ppt/embeddings/Microsoft_Excel_Worksheet1.xlsx"
+    ],
+    "seriesNames": [
+      "Base offset (for drawing, not an amount)",
+      "Start, subtotal and end (amount)",
+      "Favorable change (abs, for drawing)",
+      "Unfavorable change (abs, for drawing)"
+    ],
+    "axis": {
+      "min": 0,
+      "max": 6000000,
+      "step": 2000000,
+      "dataMin": "0.00",
+      "dataMax": "5030596.68"
+    },
+    "checks": {
+      "stackedBarChart": {
+        "pass": true,
+        "evidence": "c:barChart barDir=col grouping=stacked overlap=100"
+      },
+      "baseSeriesNoFill": {
+        "pass": true,
+        "evidence": "base series spPr=<a:noFill/><a:effectLst/>"
+      },
+      "seriesColorsInExportTheme": {
+        "pass": true,
+        "evidence": "level=4A5558, favorable=A9B1B1, unfavorable=B03A2E"
+      },
+      "valueAxisFromDataWithZero": {
+        "pass": true,
+        "evidence": "c:valAx min=0 max=6000000 step=2000000; data range 0.00..5030596.68"
+      },
+      "negativeNotClipped": {
+        "pass": true,
+        "evidence": "stack extent 0..5030596.68; negative cached values 0; axis 0..6000000"
+      },
+      "noMediaParts": {
+        "pass": true,
+        "evidence": "ppt/media files=0; image relationships=0"
+      },
+      "embeddedWorkbookHasAuxiliaryNames": {
+        "pass": true,
+        "evidence": "ppt/embeddings/Microsoft_Excel_Worksheet1.xlsx sheet header=[\"\",\"Base offset (for drawing, not an amount)\",\"Start, subtotal and end (amount)\",\"Favorable change (abs, for drawing)\",\"Unfavorable change (abs, for drawing)\"]"
+      },
+      "favorableUnfavorableNamedAbsolute": {
+        "pass": true,
+        "evidence": "Edit Data shows cogs_net in \"Unfavorable change (abs, for drawing)\" = 1575080.55; bridge component = -1575080.55"
+      },
+      "dataLabelFormatHasMinus": {
+        "pass": true,
+        "evidence": "dataLabelFormatCode set=\"#,##0.00;\\\"−\\\"#,##0.00;\"; c:numFmt formatCode in XML=[\"#,##0.00;\\\"−\\\"#,##0.00;\"] (U+2212 kept=true)"
+      },
+      "valuesMatchBarsExactly": {
+        "pass": true,
+        "evidence": "11 bars rebuilt from chart cache equal bars[].start/end"
+      },
+      "embeddedValuesMatchChartCache": {
+        "pass": true,
+        "evidence": "all cells equal the chart cache; 24 zero values are blank cells"
+      },
+      "fontsAtLeast10pt": {
+        "pass": true,
+        "evidence": "chart sz (pt)=[10]"
+      }
+    },
+    "labelScope": {
+      "formatCodeScope": "one dataLabelFormatCode for all 4 series (per-series c:dLbls all carry [\"#,##0.00;\\\"−\\\"#,##0.00;\"])",
+      "baseSeriesLabelsShown": true,
+      "unfavorableLabelsShowMinus": false,
+      "unfavorableLabelEvidence": "unfavorable cached values are positive heights [\"1188365.1\",\"264522.72\",\"1575080.55\"]; positive section of the format has no minus"
+    },
+    "perBar": [
+      {
+        "id": "previous",
+        "start": "1868626.68",
+        "end": "1868626.68",
+        "fromChart": "1868626.68..1868626.68",
+        "series": "level",
+        "pass": true
+      },
+      {
+        "id": "gross_sales",
+        "start": "1868626.68",
+        "end": "5030596.68",
+        "fromChart": "1868626.68..5030596.68",
+        "series": "favorable",
+        "pass": true
+      },
+      {
+        "id": "discounts",
+        "start": "5030596.68",
+        "end": "3842231.58",
+        "fromChart": "5030596.68..3842231.58",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "refunds",
+        "start": "3842231.58",
+        "end": "3577708.86",
+        "fromChart": "3842231.58..3577708.86",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "cogs_net",
+        "start": "3577708.86",
+        "end": "2002628.31",
+        "fromChart": "3577708.86..2002628.31",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "platform_fees",
+        "start": "2002628.31",
+        "end": "1749210.78",
+        "fromChart": "2002628.31..1749210.78",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "payment_fees",
+        "start": "1749210.78",
+        "end": "1715029.15",
+        "fromChart": "1749210.78..1715029.15",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "fulfillment_costs",
+        "start": "1715029.15",
+        "end": "1639238.15",
+        "fromChart": "1715029.15..1639238.15",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "other_variable_costs",
+        "start": "1639238.15",
+        "end": "1630692.73",
+        "fromChart": "1639238.15..1630692.73",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "ad_spend",
+        "start": "1630692.73",
+        "end": "1269792.73",
+        "fromChart": "1630692.73..1269792.73",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "current",
+        "start": "1269792.73",
+        "end": "1269792.73",
+        "fromChart": "1269792.73..1269792.73",
+        "series": "level",
+        "pass": true
+      }
+    ]
+  },
+  "synthetic": {
+    "previous": "80000.00",
+    "components": {
+      "gross_sales": "25000.00",
+      "discounts": "-60000.00",
+      "refunds": "-75500.50",
+      "cogs_net": "-12000.00",
+      "platform_fees": "8000.25",
+      "payment_fees": "50000.00",
+      "fulfillment_costs": "-20000.00",
+      "other_variable_costs": "0.00",
+      "ad_spend": "-10000.00"
+    },
+    "current": "-14500.25",
+    "crossesZero": [
+      "refunds",
+      "payment_fees",
+      "fulfillment_costs"
+    ],
+    "negativeCurrent": true,
+    "chartParts": [
+      "ppt/charts/chart3.xml"
+    ],
+    "embeddings": [
+      "ppt/embeddings/Microsoft_Excel_Worksheet3.xlsx"
+    ],
+    "seriesNames": [
+      "Base offset (for drawing, not an amount)",
+      "Start, subtotal and end (amount)",
+      "Favorable change (abs, for drawing)",
+      "Unfavorable change (abs, for drawing)",
+      "Favorable part below 0 (for drawing, not an amount)",
+      "Unfavorable part below 0 (for drawing, not an amount)"
+    ],
+    "axis": {
+      "min": -50000,
+      "max": 150000,
+      "step": 50000,
+      "dataMin": "-42500.50",
+      "dataMax": "105000.00"
+    },
+    "checks": {
+      "stackedBarChart": {
+        "pass": true,
+        "evidence": "c:barChart barDir=col grouping=stacked overlap=100"
+      },
+      "baseSeriesNoFill": {
+        "pass": true,
+        "evidence": "base series spPr=<a:noFill/><a:effectLst/>"
+      },
+      "seriesColorsInExportTheme": {
+        "pass": true,
+        "evidence": "level=4A5558, favorable=A9B1B1, unfavorable=B03A2E, favorableBelowZero=A9B1B1, unfavorableBelowZero=B03A2E"
+      },
+      "valueAxisFromDataWithZero": {
+        "pass": true,
+        "evidence": "c:valAx min=-50000 max=150000 step=50000; data range -42500.50..105000.00"
+      },
+      "negativeNotClipped": {
+        "pass": true,
+        "evidence": "stack extent -42500.5..105000; negative cached values 10; axis -50000..150000"
+      },
+      "noMediaParts": {
+        "pass": true,
+        "evidence": "ppt/media files=0; image relationships=0"
+      },
+      "embeddedWorkbookHasAuxiliaryNames": {
+        "pass": true,
+        "evidence": "ppt/embeddings/Microsoft_Excel_Worksheet3.xlsx sheet header=[\"\",\"Base offset (for drawing, not an amount)\",\"Start, subtotal and end (amount)\",\"Favorable change (abs, for drawing)\",\"Unfavorable change (abs, for drawing)\",\"Favorable part below 0 (for drawing, not an amount)\",\"Unfavorable part below 0 (for drawing, not an amount)\"]"
+      },
+      "favorableUnfavorableNamedAbsolute": {
+        "pass": true,
+        "evidence": "Edit Data shows discounts in \"Unfavorable change (abs, for drawing)\" = 60000; bridge component = -60000.00"
+      },
+      "dataLabelFormatHasMinus": {
+        "pass": true,
+        "evidence": "dataLabelFormatCode set=\"#,##0.00;\\\"−\\\"#,##0.00;\"; c:numFmt formatCode in XML=[\"#,##0.00;\\\"−\\\"#,##0.00;\"] (U+2212 kept=true)"
+      },
+      "valuesMatchBarsExactly": {
+        "pass": true,
+        "evidence": "11 bars rebuilt from chart cache equal bars[].start/end"
+      },
+      "embeddedValuesMatchChartCache": {
+        "pass": true,
+        "evidence": "all cells equal the chart cache; 48 zero values are blank cells"
+      },
+      "fontsAtLeast10pt": {
+        "pass": true,
+        "evidence": "chart sz (pt)=[10]"
+      }
+    },
+    "labelScope": {
+      "formatCodeScope": "one dataLabelFormatCode for all 6 series (per-series c:dLbls all carry [\"#,##0.00;\\\"−\\\"#,##0.00;\"])",
+      "baseSeriesLabelsShown": true,
+      "unfavorableLabelsShowMinus": false,
+      "unfavorableLabelEvidence": "unfavorable cached values are positive heights [\"60000\",\"45000\",\"15499.75\"]; positive section of the format has no minus"
+    },
+    "perBar": [
+      {
+        "id": "previous",
+        "start": "80000.00",
+        "end": "80000.00",
+        "fromChart": "80000.00..80000.00",
+        "series": "level",
+        "pass": true
+      },
+      {
+        "id": "gross_sales",
+        "start": "80000.00",
+        "end": "105000.00",
+        "fromChart": "80000.00..105000.00",
+        "series": "favorable",
+        "pass": true
+      },
+      {
+        "id": "discounts",
+        "start": "105000.00",
+        "end": "45000.00",
+        "fromChart": "105000.00..45000.00",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "refunds",
+        "start": "45000.00",
+        "end": "-30500.50",
+        "fromChart": "45000.00..-30500.50",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "cogs_net",
+        "start": "-30500.50",
+        "end": "-42500.50",
+        "fromChart": "-30500.50..-42500.50",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "platform_fees",
+        "start": "-42500.50",
+        "end": "-34500.25",
+        "fromChart": "-42500.50..-34500.25",
+        "series": "favorable",
+        "pass": true
+      },
+      {
+        "id": "payment_fees",
+        "start": "-34500.25",
+        "end": "15499.75",
+        "fromChart": "-34500.25..15499.75",
+        "series": "favorable",
+        "pass": true
+      },
+      {
+        "id": "fulfillment_costs",
+        "start": "15499.75",
+        "end": "-4500.25",
+        "fromChart": "15499.75..-4500.25",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "other_variable_costs",
+        "start": "-4500.25",
+        "end": "-4500.25",
+        "fromChart": "-4500.25..-4500.25",
+        "series": "none (zero change, nothing drawn)",
+        "pass": true
+      },
+      {
+        "id": "ad_spend",
+        "start": "-4500.25",
+        "end": "-14500.25",
+        "fromChart": "-4500.25..-14500.25",
+        "series": "unfavorable",
+        "pass": true
+      },
+      {
+        "id": "current",
+        "start": "-14500.25",
+        "end": "-14500.25",
+        "fromChart": "-14500.25..-14500.25",
+        "series": "level",
+        "pass": true
+      }
+    ]
+  },
+  "layoutA": {
+    "file": "pptx-spike-A.pptx",
+    "slide2": {
+      "chart": {
+        "x": 0.4,
+        "y": 0.9,
+        "w": 9.2,
+        "h": 4.25
+      },
+      "categoryPitchIn": 0.84
+    },
+    "variants": {
+      "standard": {
+        "twoSlides": {
+          "pass": true,
+          "evidence": "slides=[\"ppt/slides/slide1.xml\",\"ppt/slides/slide2.xml\"]"
+        },
+        "slide1Unchanged": {
+          "pass": true,
+          "evidence": "slide1.xml 43204 chars; identical to writePptx() without the second slide=true"
+        },
+        "slide1BlocksPresent": {
+          "pass": true,
+          "evidence": "kpi:ok, topThree:ok, decision:ok, channels:ok, pinned:ok"
+        },
+        "slide2OnlyWaterfall": {
+          "pass": true,
+          "evidence": "line:A2|rule|line, text:A2|title|text, text:A2|subtitle|text, chart:A2|waterfall|chart"
+        },
+        "slide2UnitAndPeriod": {
+          "pass": true,
+          "evidence": "slide2 runs=[\"少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）\",\"貢獻變化拆解 · 上期 6/1–7/12 到本期 7/13–8/23 · 單位：新台幣元，未稅\"]"
+        },
+        "noMediaParts": {
+          "pass": true,
+          "evidence": "ppt/media files=0"
+        },
+        "fontsAtLeast10pt": {
+          "pass": true,
+          "evidence": "min sz=10pt over slide1, slide2 and chart"
+        }
+      },
+      "boss": {
+        "twoSlides": {
+          "pass": true,
+          "evidence": "slides=[\"ppt/slides/slide1.xml\",\"ppt/slides/slide2.xml\"]"
+        },
+        "slide1Unchanged": {
+          "pass": true,
+          "evidence": "slide1.xml 21627 chars; identical to writePptx() without the second slide=true"
+        },
+        "slide1BlocksPresent": {
+          "pass": true,
+          "evidence": "kpi:ok, topThree:ok, decision:ok, oneLiner:ok"
+        },
+        "slide2OnlyWaterfall": {
+          "pass": true,
+          "evidence": "line:A2|rule|line, text:A2|title|text, text:A2|subtitle|text, chart:A2|waterfall|chart"
+        },
+        "slide2UnitAndPeriod": {
+          "pass": true,
+          "evidence": "slide2 runs=[\"少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）\",\"貢獻變化拆解 · 上期 6/1–7/12 到本期 7/13–8/23 · 單位：新台幣元，未稅\"]"
+        },
+        "noMediaParts": {
+          "pass": true,
+          "evidence": "ppt/media files=0"
+        },
+        "fontsAtLeast10pt": {
+          "pass": true,
+          "evidence": "min sz=10pt over slide1, slide2 and chart"
+        }
+      },
+      "client": {
+        "twoSlides": {
+          "pass": true,
+          "evidence": "slides=[\"ppt/slides/slide1.xml\",\"ppt/slides/slide2.xml\"]"
+        },
+        "slide1Unchanged": {
+          "pass": true,
+          "evidence": "slide1.xml 43423 chars; identical to writePptx() without the second slide=true"
+        },
+        "slide1BlocksPresent": {
+          "pass": true,
+          "evidence": "kpi:ok, topThree:ok, decision:ok, channels:ok, pinned:ok"
+        },
+        "slide2OnlyWaterfall": {
+          "pass": true,
+          "evidence": "line:A2|rule|line, text:A2|title|text, text:A2|subtitle|text, chart:A2|waterfall|chart"
+        },
+        "slide2UnitAndPeriod": {
+          "pass": true,
+          "evidence": "slide2 runs=[\"少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）\",\"貢獻變化拆解 · 上期 6/1–7/12 到本期 7/13–8/23 · 單位：新台幣元，未稅\"]"
+        },
+        "noMediaParts": {
+          "pass": true,
+          "evidence": "ppt/media files=0"
+        },
+        "fontsAtLeast10pt": {
+          "pass": true,
+          "evidence": "min sz=10pt over slide1, slide2 and chart"
+        }
+      }
+    }
+  },
+  "layoutB": {
+    "file": "pptx-spike-B.pptx",
+    "base": "standard variant blocks plus the boss one-liner (union of all six blocks)",
+    "checks": {
+      "singleSlide": {
+        "pass": true,
+        "evidence": "slides=1"
+      },
+      "allBlocksPresent": {
+        "pass": true,
+        "evidence": "oneLiner 1/1, kpi 10/10, topThree 6/9, channels 8/8, decision 1/1, pinned 11/12; waterfall chart=true"
+      },
+      "allBlockTextKeptInFull": {
+        "pass": false,
+        "evidence": "topThree lost 3: [\"先列出本期的促銷檔期，核對折扣有沒有換到足夠的銷...\",\"先看貢獻變化拆解中扣最多的兩項，再到通路健檢確認...\",\"比對各媒體的 ROAS，先縮減表現最差的活動，再...\"]; pinned lost 1: [\"2026-10-14\"]"
+      },
+      "blocksDoNotOverlap": {
+        "pass": true,
+        "evidence": "9 block rectangles from slide XML, pairwise disjoint"
+      },
+      "blocksInsideBody": {
+        "pass": true,
+        "evidence": "every block bottom <= 5.18in (footer excluded)"
+      },
+      "fontsAtLeast10pt": {
+        "pass": true,
+        "evidence": "min sz=10pt over slide and chart"
+      },
+      "estimatedTextFitsBoxes": {
+        "pass": false,
+        "evidence": "B|header|lines needs 0.55in > 0.51in; B|kpi|card1 needs 1.00in > 0.82in; B|kpi|card2 needs 1.00in > 0.82in"
+      }
+    },
+    "compressionRules": [
+      "title 18pt (v3 PRD 9.6 spec 28pt)",
+      "one-liner 11pt bold, at most 2 lines (boss variant uses 16pt)",
+      "KPI change 24pt number + 14pt unit (spec 36pt / 20pt)",
+      "three things: one line per item (headline, impact and next step joined, cut at the box width)",
+      "channel table: at most 2 rows plus a remainder row (standard layout allows 4)",
+      "decision: one line; pinned actions: one line per item (problem, owner, due, status joined, cut at the box width)",
+      "waterfall: full-width band below both columns, height = space left above the 5.18in body bottom"
+    ],
+    "measured": {
+      "truncatedBoxes": [
+        "B|topThree|item1",
+        "B|topThree|item2",
+        "B|topThree|item3",
+        "B|pinned|item3"
+      ],
+      "chartHeightIn": 0.64,
+      "layoutAChartHeightIn": 4.25,
+      "chartHeightVsLayoutA": 0.15,
+      "chartTopIn": 4.54,
+      "categoryPitchIn": 0.84,
+      "longestDataLabelChars": 12,
+      "dataLabelWidthIn10pt": 0.93,
+      "columnBottomsIn": {
+        "left": 3.24,
+        "right": 4.26
+      },
+      "alternativeLeftColumnChart": {
+        "wIn": 4.4,
+        "hIn": 1.66,
+        "categoryPitchIn": 0.4
+      },
+      "deviationsFromV3Spec": [
+        "title 18pt < 28pt",
+        "KPI 24pt < 36pt"
+      ],
+      "estimateOnCurrentOnePager": {
+        "headerNeedsIn": 0.55,
+        "headerBoxIn": 0.51,
+        "kpiCardNeedsIn": 1.22,
+        "kpiCardBoxIn": 1
+      }
+    }
+  }
+}
