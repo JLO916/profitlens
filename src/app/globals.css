@@ -2645,6 +2645,14 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-2 A 錨點結束 ── */
 
 /* ── V4-2 B：G3 趨勢刻度、G4 各通路緊湊表差額條 ── */
+/* G3 只改刻度文字（formatAxisWan），沒有新樣式。
+   G4（PRD §4.6 G4、§7.6；CHART_CATALOG G4）：緊湊表 table.channel-kv 的差額欄（td.channel-change）。≥ 768 時 C24 差額條沿用「V4-1 B」的規則：
+   寬 96px、貼齊金額格左緣、與數字同一行（各列零線對齊）。≤ 767 時條改成獨立一行、靠右對齊在數字上方（寬 64px 沿用「V4-1 B」），
+   讓四欄表在 390 不必橫向捲動；這一格上下各留 --space-1。只改排版，條與 number-link 的 DOM 順序不變（條不可聚焦，Tab 順序不受影響）。 */
+@media (max-width: 767px) {
+  .chart-section .channel-kv td.channel-change { padding-top: var(--space-1); padding-bottom: var(--space-1); }
+  .chart-section .channel-kv td.channel-change > .bar-cell { display: block; float: none; margin: 0 0 var(--space-1) auto; }
+}
 /* ── V4-2 B 錨點結束 ── */
 
 /* ── V4-2 C：C18 Bullet 共用元件、損益兩平 MER 列的 bullet ── */

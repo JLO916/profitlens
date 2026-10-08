@@ -84,7 +84,11 @@ const decisionLabel = (state: string | undefined): string => (labels.meeting.for
 export function summaryScopeLabel(scope: Scope, alias = false): string {
   return scopeLabel(scope, alias);
 }
-function metricComparison(snapshot: WorkspaceSnapshot, name: SummaryMetric["metric"], channel?: string): SummaryMetric {
+/**
+ * 兩期比較（整體或單一通路）：上期、本期、差額（domain compareMoney 的 absolute_change）與三份抽屜內容。
+ * V4-2（CHART_CATALOG G4、PRD §4.3 G4）改為匯出：總覽各通路緊湊表的差額欄與差額條沿用 evidence.change（channel-section.tsx 的 channelChangeEvidence），邏輯不改。
+ */
+export function metricComparison(snapshot: WorkspaceSnapshot, name: SummaryMetric["metric"], channel?: string): SummaryMetric {
   const { report } = snapshot;
   const alias = demoAlias(report.dataset_id);
   const previous = channel ? report.previous.channels[channel] : report.previous;
