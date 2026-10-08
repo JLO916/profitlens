@@ -351,3 +351,129 @@ main { max-width: var(--content-max); padding: 0 var(--gutter) var(--space-6); }
 .index-table { margin-top: var(--space-5); background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); }
 .index-table th, .index-table td { height: auto; padding: var(--space-2) var(--space-3); white-space: normal; vertical-align: top; }
 .index-table a, .mockup-index li a { color: var(--accent); }
+
+/* ── 代理 C2：商品毛利（G13、G14）與資料來源（G20、G21、G22）兩頁 ── */
+/* 共用：ChartFrame 標題層級（G13、G14 用 h4，G21 用 h3，外觀同 h2）、inline 變體、C25 柱標籤、通用工具列與按鈕。 */
+.sec-title h3, .sec-title h4 { font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.chart-section.is-inline { margin: 0 0 var(--space-4); padding: 0; }
+.chart-frame .chart-label { fill: var(--text-secondary); }
+.ui-btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.ui-btn-text { height: auto; min-height: 0; padding: 0; border: 0; background: transparent; color: var(--accent); font-size: var(--text-13); line-height: var(--leading-13); }
+.ui-toolbar { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-2); min-height: var(--toolbar-h, 40px); min-width: 0; }
+.ui-toolbar-end { display: inline-flex; align-items: center; gap: var(--space-2); margin-left: auto; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); white-space: nowrap; }
+.ui-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.input-like { display: inline-flex; align-items: center; width: 200px; max-width: 100%; height: var(--control-h); padding: 0 var(--space-2); border: var(--border-w) solid var(--border-input); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-tertiary); font-size: var(--text-14); white-space: nowrap; overflow: hidden; }
+.page-actions { display: inline-flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* 商品毛利（v3 外觀沿用 globals.css 的 product-*；G13、G14 是 .product-highlight-grid 內的 ChartFrame） */
+.product-page { min-width: 0; }
+.product-scope { margin: 0 0 var(--space-5); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.product-highlights { margin: 0 0 var(--space-6); }
+.product-highlights > h3, .product-full-heading { margin: 0 0 var(--space-3); font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); }
+.product-highlight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); align-items: start; }
+.product-highlight-grid > .panel { margin-bottom: 0; }
+.product-highlight { min-width: 0; }
+.chart-section > .product-highlight { margin-top: var(--space-4); padding-top: var(--space-3); border-top: var(--border-w) solid var(--border-subtle); }
+.product-highlight h4 { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.product-highlight > .note { margin: var(--space-1) 0 var(--space-2); }
+.product-highlight .product-highlight-empty { margin: 0; padding: var(--space-4); border: var(--border-w) dashed var(--border-default); border-radius: var(--radius-md); font-size: var(--text-13); color: var(--text-secondary); }
+.product-rank-table .rank { width: 1%; white-space: nowrap; color: var(--text-secondary); }
+.product-channel { font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); color: var(--text-secondary); white-space: nowrap; }
+.product-page .ui-table tbody th { white-space: nowrap; font-weight: var(--weight-regular); }
+.product-page .ui-table td .note { display: block; margin: 0; }
+.product-toolbar { flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
+.product-toolbar .select-like { min-width: 0; }
+.product-count { margin: 0; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.product-status { white-space: nowrap; }
+.product-status.cost_unknown, .product-status.coverage_unknown { color: var(--warning); }
+.product-technical { margin-top: var(--space-3); font-size: var(--text-13); }
+@media (max-width: 900px) { .product-highlight-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (min-width: 768px) { .product-page .ui-table td { white-space: nowrap; } }
+
+/* 資料來源（v3 外觀沿用 globals.css 的 data-*、ui-section-*、issue-*；G21 熱表 matrix、G22 成對條是 v4 新增） */
+.data-status-line { margin: 0 0 var(--space-4); font-size: var(--text-14); line-height: var(--leading-14); overflow-wrap: anywhere; }
+.ui-section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-1) var(--space-4); min-height: var(--control-h); margin-bottom: var(--space-3); }
+.ui-section-title { display: inline-flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); }
+.ui-section-subtitle { order: 3; flex-basis: 100%; margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.ui-section-end { display: inline-flex; align-items: center; gap: var(--space-2); margin-left: auto; }
+.ui-count-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 var(--space-1); border-radius: var(--radius-full); background: var(--bg-subtle); color: var(--text-secondary); font-size: var(--text-12); line-height: 1; font-weight: var(--weight-medium); }
+.data-section-title { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.data-section-empty { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+.ui-dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-6); margin: 0; }
+.ui-dl > div { min-width: 0; padding-bottom: var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); }
+.ui-dl dt { margin: 0 0 var(--space-1); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.ui-dl dd { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); overflow-wrap: anywhere; }
+.issue-toolbar { flex-wrap: wrap; margin-bottom: var(--space-2); }
+.issue-unit { font-size: var(--text-12); color: var(--text-tertiary); }
+.issue-table tbody td { height: auto; padding-top: var(--space-2); padding-bottom: var(--space-2); vertical-align: top; }
+.issue-table small { display: block; margin-top: var(--space-1); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); }
+.issue-table .ui-lozenge { margin-right: var(--space-2); }
+.issue-table .issue-file, .issue-table .issue-field, .issue-table td.num { white-space: nowrap; }
+.issue-table .issue-problem, .issue-table .issue-fix { min-width: 12em; white-space: normal; }
+.issue-filter { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin: 0 0 var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--bg-subtle); }
+.issue-filter-phrase { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-medium); }
+.data-optional-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
+@media (min-width: 1024px) { .data-optional-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.side-entry-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-3); }
+.side-entry-head h3 { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); }
+.side-entry-state, .side-entry-intro { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.side-entry-intro { margin: var(--space-1) 0 var(--space-2); }
+.side-entry-controls { flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-3); }
+.data-preview-file { border-top: var(--border-w) solid var(--border-subtle); }
+.data-preview-file > summary { padding: var(--space-2) 0; font-size: var(--text-14); line-height: var(--leading-14); }
+.data-version > summary .ui-section-title { display: inline; }
+.template-table { border-collapse: collapse; font-size: var(--text-13); line-height: var(--leading-13); }
+.template-table th, .template-table td { height: var(--row-h-compact); padding: 0 var(--space-6) 0 var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); text-align: left; font-weight: var(--weight-regular); }
+.template-table thead th { font-size: var(--text-12); font-weight: var(--weight-medium); color: var(--text-tertiary); }
+/* G20 涵蓋時間軸（C30）：svg 在 .chart-frame.sm 內；幾何由產生器依四個寬度各畫一份。 */
+.timeline-svg rect[data-kind="missing"] { shape-rendering: crispEdges; }
+/* G21 問題分布表（C28 matrix）：原生 table；有問題的格 --chart-heat-1，該檔最多的原因格 --chart-heat-2 加 2px --chart-unfavorable 框線；0 格留白；格內是篩選按鈕。 */
+.matrix-scroll { max-height: 100%; overflow-y: auto; border: 0; border-radius: 0; }
+.heat-matrix { border-collapse: separate; border-spacing: 0; font-size: var(--text-13); line-height: var(--leading-13); }
+.heat-matrix caption { caption-side: top; padding: 0 0 var(--space-1); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); text-align: left; }
+.heat-matrix th { height: 32px; padding: 0 var(--space-3); font-size: var(--text-12); font-weight: var(--weight-medium); color: var(--text-secondary); text-align: left; white-space: nowrap; }
+.heat-matrix thead th { border-bottom: var(--border-w) solid var(--border-subtle); }
+.heat-matrix tbody th { font-size: var(--text-13); font-weight: var(--weight-regular); color: var(--text-primary); }
+.heat-matrix td { width: 96px; height: 36px; padding: 0; border: 2px solid var(--bg-surface); text-align: center; }
+.heat-matrix td[data-tier="1"] { background: var(--chart-heat-1); }
+.heat-matrix td[data-tier="2"] { background: var(--chart-heat-2); box-shadow: inset 0 0 0 2px var(--chart-unfavorable); }
+.matrix-count { width: 100%; height: 100%; padding: 0; border: 0; background: transparent; color: var(--text-primary); font-size: var(--text-14); font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; text-decoration: underline dotted 1px var(--border-input); text-underline-offset: 3px; }
+/* G22 前處理表「未稅合計」格內的成對條（C24 pair）。 */
+.pair-cell-inner { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+@media (max-width: 767px) {
+  .ui-dl { grid-template-columns: minmax(0, 1fr); }
+  .page-heading .page-actions { display: none; }
+  .product-scope { margin-bottom: var(--space-4); }
+  .product-toolbar .select-like, .product-toolbar .input-like { flex: 1 1 100%; width: auto; }
+  .product-toolbar > .product-count { flex: 1 1 100%; margin-left: 0; }
+  .product-list thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .product-list, .product-list tbody { display: block; }
+  .product-list tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: var(--border-w) solid var(--border-subtle); }
+  .product-list tr:last-child { border-bottom: 0; }
+  .product-list th, .product-list td { display: block; height: auto; padding: 0; border: 0; text-align: left; white-space: normal; }
+  .product-list .num { text-align: left; }
+  .product-rank-table .rank { width: auto; }
+  .product-list [data-list-role="primary"] { font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-primary); }
+  .product-list th[data-list-role="primary"] { order: -1; min-width: 0; overflow-wrap: anywhere; }
+  .product-list td[data-list-role="primary"]:not(.num) { order: 0; font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); color: var(--text-secondary); }
+  .product-list td.num[data-list-role="primary"] { order: 1; margin-left: auto; text-align: right; }
+  .product-list tr::after, .product-list tr::before { content: ""; flex-basis: 100%; height: 0; }
+  .product-list tr::after { order: 2; }
+  .product-list [data-list-role="secondary"] { order: 4; font-size: var(--text-12); line-height: var(--leading-12); }
+  .product-list [data-list-role="secondary"].list-lead { order: 3; }
+  .product-list tr::before { order: 5; }
+  .product-list [data-list-role="labeled"] { order: 6; flex: 1 1 calc(50% - var(--space-3)); min-width: 0; font-size: var(--text-12); line-height: var(--leading-12); }
+  .product-list [data-list-role="secondary"]::before, .product-list [data-list-role="labeled"]::before { content: attr(data-label); margin-right: var(--space-1); font-weight: var(--weight-regular); color: var(--text-tertiary); }
+  .product-list td .note { display: inline; margin-left: var(--space-1); }
+  .issue-table thead th:first-child, .issue-table tbody td:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg-surface); }
+  /* G21 在 ≤ 767 改清單式（沿用 C3 的 data-label）：每個檔案一列，只列有問題的原因與列數。 */
+  .heat-matrix, .heat-matrix tbody, .heat-matrix tr { display: block; width: 100%; }
+  .heat-matrix thead { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .heat-matrix caption { display: block; }
+  .heat-matrix tr { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); min-height: 40px; padding: var(--space-1) 0; border-bottom: var(--border-w) solid var(--border-subtle); }
+  .heat-matrix tbody th { flex: 1 1 auto; height: auto; padding: 0; font-weight: var(--weight-semibold); }
+  .heat-matrix td { display: flex; align-items: center; width: auto; height: 32px; padding: 0 var(--space-2); }
+  .heat-matrix td[data-tier="0"] { display: none; }
+  .heat-matrix td::before { content: attr(data-label); margin-right: var(--space-2); font-size: var(--text-12); color: var(--text-primary); }
+  .matrix-count { width: auto; min-width: 32px; }
+}

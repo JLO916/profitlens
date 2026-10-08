@@ -76,6 +76,10 @@ export interface FrameOptions {
   /** 固定高容器的行內樣式（例如 G10 依通路數選 sm 或 lg 之外的狀態）；只放 token。 */
   frameStyle?: string;
   v4Note?: string;
+  /** 標題層級（CHART_CATALOG §1.1 headingLevel）：預設 2；G13、G14 用 4，G21 用 3。 */
+  headingLevel?: 2 | 3 | 4;
+  /** panel（預設，section.panel.chart-section）或 inline（section.chart-section.is-inline，放在既有 .panel 內，例如 G21）。 */
+  variant?: "panel" | "inline";
   body: string;
 }
 
@@ -87,8 +91,10 @@ export function chartFrame(options: FrameOptions): string {
   const frame = `<div class="chart-frame ${height}${options.frameClassName ? ` ${options.frameClassName}` : ""}"${mode === "chart" ? ` aria-hidden="true"` : ""} data-mode="${mode}"${options.frameStyle ? ` style="${options.frameStyle}"` : ""}>${options.body}</div>`;
   const grid = options.aside ? `<div class="frame-grid has-aside"><div class="frame-aside">${options.aside}</div><div class="frame-main">${frame}</div></div>` : frame;
   const table = options.dataTable ? `<details class="data-alternative"${options.dataTable.open ? " open" : ""}><summary>${esc(fill(labels.overview.page.dataTable, { title: options.dataTable.title }))}</summary>${options.dataTable.content}</details>` : "";
-  return `<section class="panel chart-section${options.className ? ` ${options.className}` : ""}" id="${options.id}" aria-labelledby="${options.id}-title" aria-describedby="${options.id}-sub" data-testid="${options.testId}"${options.v4Note ? v4(options.v4Note) : ""}>
-<div class="sec-head"><div class="sec-title"><h2 id="${options.id}-title">${options.title}</h2><p class="sub" id="${options.id}-sub">${options.subtitle}</p></div>${end ? `<div class="sec-end">${end}</div>` : ""}</div>
+  const heading = `h${options.headingLevel ?? 2}`;
+  const sectionClass = options.variant === "inline" ? "chart-section is-inline" : "panel chart-section";
+  return `<section class="${sectionClass}${options.className ? ` ${options.className}` : ""}" id="${options.id}" aria-labelledby="${options.id}-title" aria-describedby="${options.id}-sub" data-testid="${options.testId}"${options.v4Note ? v4(options.v4Note) : ""}>
+<div class="sec-head"><div class="sec-title"><${heading} id="${options.id}-title">${options.title}</${heading}><p class="sub" id="${options.id}-sub">${options.subtitle}</p></div>${end ? `<div class="sec-end">${end}</div>` : ""}</div>
 ${options.takeaways ?? ""}${grid}${options.after ?? ""}${table}
 </section>`;
 }

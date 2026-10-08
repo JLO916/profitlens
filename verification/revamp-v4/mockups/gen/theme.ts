@@ -13,5 +13,8 @@ export const colors = {
   missing: "var(--chart-missing)",
 } as const;
 
-/** 依列計高的常數（PRD §6.5 的 chartRowHeights；V4-1 或 V4-2 才進 chart-theme.ts）。 */
-export const rowHeights = { cell: 6, row16: 16, row24: 24 } as const;
+/**
+ * 依列計高的常數（PRD §6.5 的 chartRowHeights；V4-1 或 V4-2 才進 chart-theme.ts）。
+ * axis 是 C30 涵蓋時間軸（G20）的日期軸列高，V4-7a 才宣告（PRD §6.5）；設計稿取 24。
+ */
+export const rowHeights = { cell: 6, row16: 16, row24: 24, axis: 24 } as const;

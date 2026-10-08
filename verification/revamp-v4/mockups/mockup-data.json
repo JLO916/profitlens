@@ -1015,5 +1015,1640 @@
     "chart": "G7b"
    }
   ]
+ },
+ "products.html": {
+  "source": "demo",
+  "variant": "demo",
+  "g13": {
+   "decrease": [
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-020",
+     "previous": "86616.58",
+     "current": "56417.62",
+     "change": "-30198.96",
+     "shown": true
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-015",
+     "previous": "73628.36",
+     "current": "47361.03",
+     "change": "-26267.33",
+     "shown": true
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-010",
+     "previous": "59219.51",
+     "current": "36076.11",
+     "change": "-23143.40",
+     "shown": true
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-014",
+     "previous": "85850.25",
+     "current": "62742.41",
+     "change": "-23107.84",
+     "shown": true
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-007",
+     "previous": "61603.84",
+     "current": "51433.15",
+     "change": "-10170.69",
+     "shown": true
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-009",
+     "previous": "49139.91",
+     "current": "42811.42",
+     "change": "-6328.49",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-011",
+     "previous": "88730.78",
+     "current": "83570.07",
+     "change": "-5160.71",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-005",
+     "previous": "28289.51",
+     "current": "23782.70",
+     "change": "-4506.81",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-002",
+     "previous": "36449.31",
+     "current": "32912.04",
+     "change": "-3537.27",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-009",
+     "previous": "69869.72",
+     "current": "66725.34",
+     "change": "-3144.38",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-019",
+     "previous": "89863.23",
+     "current": "87342.20",
+     "change": "-2521.03",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-003",
+     "previous": "30560.32",
+     "current": "28505.71",
+     "change": "-2054.61",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-008",
+     "previous": "55072.39",
+     "current": "53113.41",
+     "change": "-1958.98",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-001",
+     "previous": "24729.55",
+     "current": "22815.83",
+     "change": "-1913.72",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-008",
+     "previous": "61524.22",
+     "current": "60987.02",
+     "change": "-537.20",
+     "shown": false
+    }
+   ],
+   "increase": [
+    {
+     "channel": "DTC",
+     "sku": "SKU-017",
+     "previous": "109523.76",
+     "current": "141467.95",
+     "change": "31944.19",
+     "shown": true
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-011",
+     "previous": "87434.23",
+     "current": "117322.57",
+     "change": "29888.34",
+     "shown": true
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-018",
+     "previous": "97017.63",
+     "current": "123009.55",
+     "change": "25991.92",
+     "shown": true
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-019",
+     "previous": "100887.19",
+     "current": "126782.07",
+     "change": "25894.88",
+     "shown": true
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-013",
+     "previous": "83603.92",
+     "current": "103895.99",
+     "change": "20292.07",
+     "shown": true
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-010",
+     "previous": "51072.35",
+     "current": "69047.72",
+     "change": "17975.37",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-014",
+     "previous": "75602.31",
+     "current": "92111.21",
+     "change": "16508.90",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-012",
+     "previous": "90764.28",
+     "current": "106541.67",
+     "change": "15777.39",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-015",
+     "previous": "65960.75",
+     "current": "80608.78",
+     "change": "14648.03",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-005",
+     "previous": "32803.68",
+     "current": "42644.90",
+     "change": "9841.22",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-016",
+     "previous": "113221.80",
+     "current": "122196.44",
+     "change": "8974.64",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-001",
+     "previous": "21159.44",
+     "current": "30067.46",
+     "change": "8908.02",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-017",
+     "previous": "106269.52",
+     "current": "115013.84",
+     "change": "8744.32",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-016",
+     "previous": "133536.24",
+     "current": "141693.66",
+     "change": "8157.42",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-020",
+     "previous": "111132.99",
+     "current": "117591.14",
+     "change": "6458.15",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-007",
+     "previous": "63220.49",
+     "current": "68830.59",
+     "change": "5610.10",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-003",
+     "previous": "32988.22",
+     "current": "38306.79",
+     "change": "5318.57",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-004",
+     "previous": "34946.14",
+     "current": "38898.22",
+     "change": "3952.08",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-018",
+     "previous": "97037.76",
+     "current": "100582.71",
+     "change": "3544.95",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-012",
+     "previous": "84109.25",
+     "current": "87008.25",
+     "change": "2899.00",
+     "shown": false
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-006",
+     "previous": "63145.25",
+     "current": "65323.65",
+     "change": "2178.40",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-013",
+     "previous": "63278.38",
+     "current": "65085.86",
+     "change": "1807.48",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-002",
+     "previous": "25228.01",
+     "current": "26667.38",
+     "change": "1439.37",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-004",
+     "previous": "23328.86",
+     "current": "24370.98",
+     "change": "1042.12",
+     "shown": false
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-006",
+     "previous": "55711.69",
+     "current": "56467.81",
+     "change": "756.12",
+     "shown": false
+    }
+   ],
+   "zeroRows": 0,
+   "nullRows": 0,
+   "max": 31944.19,
+   "geometry": {
+    "prd": {
+     "xl": {
+      "width": 524,
+      "layout": "side",
+      "columnWidth": 254,
+      "labelWidth": 193,
+      "valueWidth": 46,
+      "extraWidth": 0,
+      "plotWidth": 15,
+      "barMaxPx": 15,
+      "height": 80,
+      "rows": 5
+     },
+     "lg": {
+      "width": 444,
+      "layout": "side",
+      "columnWidth": 214,
+      "labelWidth": 193,
+      "valueWidth": 46,
+      "extraWidth": 0,
+      "plotWidth": 0,
+      "barMaxPx": 1,
+      "height": 80,
+      "rows": 5
+     },
+     "md": {
+      "width": 450,
+      "layout": "side",
+      "columnWidth": 217,
+      "labelWidth": 193,
+      "valueWidth": 46,
+      "extraWidth": 0,
+      "plotWidth": 0,
+      "barMaxPx": 1,
+      "height": 80,
+      "rows": 5
+     },
+     "sm": {
+      "width": 324,
+      "layout": "stack",
+      "columnWidth": 324,
+      "labelWidth": 193,
+      "valueWidth": 46,
+      "extraWidth": 0,
+      "plotWidth": 85,
+      "barMaxPx": 85,
+      "height": 160,
+      "rows": 10
+     }
+    },
+    "stacked": {
+     "xl": {
+      "width": 524,
+      "layout": "stack",
+      "columnWidth": 524,
+      "labelWidth": 193,
+      "valueWidth": 46,
+      "extraWidth": 0,
+      "plotWidth": 285,
+      "barMaxPx": 285,
+      "height": 160,
+      "rows": 10
+     },
+     "lg": {
+      "width": 444,
+      "layout": "stack",
+      "columnWidth": 444,
+      "labelWidth": 193,
+      "valueWidth": 46,
+      "extraWidth": 0,
+      "plotWidth": 205,
+      "barMaxPx": 205,
+      "height": 160,
+      "rows": 10
+     },
+     "md": {
+      "width": 450,
+      "layout": "stack",
+      "columnWidth": 450,
+      "labelWidth": 193,
+      "valueWidth": 46,
+      "extraWidth": 0,
+      "plotWidth": 211,
+      "barMaxPx": 211,
+      "height": 160,
+      "rows": 10
+     },
+     "sm": {
+      "width": 324,
+      "layout": "stack",
+      "columnWidth": 324,
+      "labelWidth": 193,
+      "valueWidth": 46,
+      "extraWidth": 0,
+      "plotWidth": 85,
+      "barMaxPx": 85,
+      "height": 160,
+      "rows": 10
+     }
+    }
+   }
+  },
+  "g14": {
+   "count": 0,
+   "note": "本期沒有商品毛利為負的商品：不渲染 G14，第一格照 v3 原樣放 product-worst"
+  },
+  "breakpoints": [
+   "xl",
+   "lg",
+   "md",
+   "sm"
+  ],
+  "proposals": [
+   {
+    "key": "products.chartsV4.variance.columns.decrease",
+    "text": "減少最多",
+    "chart": "G13",
+    "note": "欄名不放在 svg 內，用 ChartFrame legend（line）"
+   },
+   {
+    "key": "products.chartsV4.variance.columns.increase",
+    "text": "增加最多",
+    "chart": "G13"
+   },
+   {
+    "key": "products.chartsV4.variance.title.decrease",
+    "text": "SKU-020 · 平台 · MARKETPLACE 商品毛利少 3.0 萬，減少最多",
+    "chart": "G13",
+    "note": "取減少最多的一列；SKU 與通路不計入 14 字"
+   },
+   {
+    "key": "products.chartsV4.variance.title.increase",
+    "text": "{SKU} · {通路} 商品毛利多 {amount}，增加最多",
+    "chart": "G13",
+    "note": "模板；沒有減少時才用（本資料未觸發）"
+   },
+   {
+    "key": "products.chartsV4.variance.section",
+    "text": "商品毛利兩期差額",
+    "chart": "G13",
+    "note": "區塊標準名（v4 GLOSSARY §3），副標第一段、資料表 summary 與 caption 用"
+   },
+   {
+    "key": "products.chartsV4.variance.subtitle",
+    "text": "商品毛利兩期差額 · 本期 7/13–8/23 對比 上期 6/1–7/12 · 全部通路",
+    "chart": "G13"
+   },
+   {
+    "key": "products.chartsV4.variance.table.zeroNote",
+    "text": "差額為 0 的 0 列、差額待補的 0 列不列入",
+    "chart": "G13",
+    "note": "資料表 tfoot（限制句只放在 <details> 內）"
+   }
+  ]
+ },
+ "products-synthetic.html": {
+  "source": "synthetic",
+  "variant": "synthetic",
+  "g13": {
+   "decrease": [
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-203",
+     "previous": "6800.00",
+     "current": "-1800.00",
+     "change": "-8600.00",
+     "shown": true
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-101",
+     "previous": "34000.00",
+     "current": "25500.00",
+     "change": "-8500.00",
+     "shown": true
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-201",
+     "previous": "0.00",
+     "current": "-3400.00",
+     "change": "-3400.00",
+     "shown": true
+    },
+    {
+     "channel": "SOCIAL",
+     "sku": "SKU-301",
+     "previous": "1020.00",
+     "current": "-2040.00",
+     "change": "-3060.00",
+     "shown": true
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-202",
+     "previous": "850.00",
+     "current": "-850.00",
+     "change": "-1700.00",
+     "shown": true
+    },
+    {
+     "channel": "SOCIAL",
+     "sku": "SKU-302",
+     "previous": "510.00",
+     "current": "-850.00",
+     "change": "-1360.00",
+     "shown": false
+    }
+   ],
+   "increase": [
+    {
+     "channel": "DTC",
+     "sku": "SKU-101",
+     "previous": "28050.00",
+     "current": "37400.00",
+     "change": "9350.00",
+     "shown": true
+    },
+    {
+     "channel": "LIVE",
+     "sku": "SKU-401",
+     "previous": "13600.00",
+     "current": "20400.00",
+     "change": "6800.00",
+     "shown": true
+    },
+    {
+     "channel": "DTC",
+     "sku": "SKU-103",
+     "previous": "12240.00",
+     "current": "15300.00",
+     "change": "3060.00",
+     "shown": true
+    },
+    {
+     "channel": "SOCIAL",
+     "sku": "SKU-103",
+     "previous": "12750.00",
+     "current": "15300.00",
+     "change": "2550.00",
+     "shown": true
+    }
+   ],
+   "zeroRows": 2,
+   "nullRows": 0,
+   "max": 9350,
+   "geometry": {
+    "prd": {
+     "xl": {
+      "width": 524,
+      "layout": "side",
+      "columnWidth": 254,
+      "labelWidth": 158,
+      "valueWidth": 59,
+      "extraWidth": 0,
+      "plotWidth": 37,
+      "barMaxPx": 37,
+      "height": 80,
+      "rows": 5
+     },
+     "lg": {
+      "width": 444,
+      "layout": "side",
+      "columnWidth": 214,
+      "labelWidth": 158,
+      "valueWidth": 59,
+      "extraWidth": 0,
+      "plotWidth": 0,
+      "barMaxPx": 1,
+      "height": 80,
+      "rows": 5
+     },
+     "md": {
+      "width": 450,
+      "layout": "side",
+      "columnWidth": 217,
+      "labelWidth": 158,
+      "valueWidth": 59,
+      "extraWidth": 0,
+      "plotWidth": 0,
+      "barMaxPx": 1,
+      "height": 80,
+      "rows": 5
+     },
+     "sm": {
+      "width": 324,
+      "layout": "stack",
+      "columnWidth": 324,
+      "labelWidth": 158,
+      "valueWidth": 59,
+      "extraWidth": 0,
+      "plotWidth": 107,
+      "barMaxPx": 107,
+      "height": 144,
+      "rows": 9
+     }
+    },
+    "stacked": {
+     "xl": {
+      "width": 524,
+      "layout": "stack",
+      "columnWidth": 524,
+      "labelWidth": 158,
+      "valueWidth": 59,
+      "extraWidth": 0,
+      "plotWidth": 307,
+      "barMaxPx": 307,
+      "height": 144,
+      "rows": 9
+     },
+     "lg": {
+      "width": 444,
+      "layout": "stack",
+      "columnWidth": 444,
+      "labelWidth": 158,
+      "valueWidth": 59,
+      "extraWidth": 0,
+      "plotWidth": 227,
+      "barMaxPx": 227,
+      "height": 144,
+      "rows": 9
+     },
+     "md": {
+      "width": 450,
+      "layout": "stack",
+      "columnWidth": 450,
+      "labelWidth": 158,
+      "valueWidth": 59,
+      "extraWidth": 0,
+      "plotWidth": 233,
+      "barMaxPx": 233,
+      "height": 144,
+      "rows": 9
+     },
+     "sm": {
+      "width": 324,
+      "layout": "stack",
+      "columnWidth": 324,
+      "labelWidth": 158,
+      "valueWidth": 59,
+      "extraWidth": 0,
+      "plotWidth": 107,
+      "barMaxPx": 107,
+      "height": 144,
+      "rows": 9
+     }
+    }
+   }
+  },
+  "g14": {
+   "count": 5,
+   "total": "-8940.00",
+   "more": 0,
+   "max": 3400,
+   "rows": [
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-201",
+     "value": "-3400.00",
+     "cumulative": "-3400.00",
+     "share": "0.380313199105"
+    },
+    {
+     "channel": "SOCIAL",
+     "sku": "SKU-301",
+     "value": "-2040.00",
+     "cumulative": "-5440.00",
+     "share": "0.608501118568"
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-203",
+     "value": "-1800.00",
+     "cumulative": "-7240.00",
+     "share": "0.809843400447"
+    },
+    {
+     "channel": "MARKETPLACE",
+     "sku": "SKU-202",
+     "value": "-850.00",
+     "cumulative": "-8090.00",
+     "share": "0.904921700224"
+    },
+    {
+     "channel": "SOCIAL",
+     "sku": "SKU-302",
+     "value": "-850.00",
+     "cumulative": "-8940.00",
+     "share": "1.000000000000"
+    }
+   ],
+   "title": {
+    "n": 5,
+    "k": 3,
+    "pct": "0.809843400447"
+   },
+   "geometry": {
+    "xl": {
+     "width": 524,
+     "layout": "stack",
+     "columnWidth": 524,
+     "labelWidth": 158,
+     "valueWidth": 59,
+     "extraWidth": 75,
+     "plotWidth": 232,
+     "barMaxPx": 232,
+     "height": 80,
+     "rows": 5
+    },
+    "lg": {
+     "width": 444,
+     "layout": "stack",
+     "columnWidth": 444,
+     "labelWidth": 158,
+     "valueWidth": 59,
+     "extraWidth": 75,
+     "plotWidth": 152,
+     "barMaxPx": 152,
+     "height": 80,
+     "rows": 5
+    },
+    "md": {
+     "width": 450,
+     "layout": "stack",
+     "columnWidth": 450,
+     "labelWidth": 158,
+     "valueWidth": 59,
+     "extraWidth": 75,
+     "plotWidth": 158,
+     "barMaxPx": 158,
+     "height": 80,
+     "rows": 5
+    },
+    "sm": {
+     "width": 324,
+     "layout": "stack",
+     "columnWidth": 324,
+     "labelWidth": 158,
+     "valueWidth": 59,
+     "extraWidth": 75,
+     "plotWidth": 32,
+     "barMaxPx": 32,
+     "height": 80,
+     "rows": 5
+    }
+   }
+  },
+  "breakpoints": [
+   "xl",
+   "lg",
+   "md",
+   "sm"
+  ],
+  "proposals": [
+   {
+    "key": "products.chartsV4.variance.columns.decrease",
+    "text": "減少最多",
+    "chart": "G13",
+    "note": "欄名不放在 svg 內，用 ChartFrame legend（line）"
+   },
+   {
+    "key": "products.chartsV4.variance.columns.increase",
+    "text": "增加最多",
+    "chart": "G13"
+   },
+   {
+    "key": "products.chartsV4.variance.title.decrease",
+    "text": "SKU-203 · MARKETPLACE 商品毛利少 8,600 元，減少最多",
+    "chart": "G13",
+    "note": "取減少最多的一列；SKU 與通路不計入 14 字"
+   },
+   {
+    "key": "products.chartsV4.variance.title.increase",
+    "text": "{SKU} · {通路} 商品毛利多 {amount}，增加最多",
+    "chart": "G13",
+    "note": "模板；沒有減少時才用（本資料未觸發）"
+   },
+   {
+    "key": "products.chartsV4.variance.section",
+    "text": "商品毛利兩期差額",
+    "chart": "G13",
+    "note": "區塊標準名（v4 GLOSSARY §3），副標第一段、資料表 summary 與 caption 用"
+   },
+   {
+    "key": "products.chartsV4.variance.subtitle",
+    "text": "商品毛利兩期差額 · 本期 9/7–9/23 對比 上期 8/21–9/6 · 全部通路",
+    "chart": "G13"
+   },
+   {
+    "key": "products.chartsV4.variance.table.zeroNote",
+    "text": "差額為 0 的 2 列、差額待補的 0 列不列入",
+    "chart": "G13",
+    "note": "資料表 tfoot（限制句只放在 <details> 內）"
+   },
+   {
+    "key": "products.chartsV4.pareto.cumulative",
+    "text": "累計 38.0%",
+    "chart": "G14",
+    "note": "柱右側的累計佔比標值"
+   },
+   {
+    "key": "products.chartsV4.pareto.more",
+    "text": "另 0 個",
+    "chart": "G14",
+    "note": "模板；柱 ≤ 10，其餘寫文字（本資料 5 個，未觸發）"
+   },
+   {
+    "key": "products.chartsV4.pareto.title",
+    "text": "5 個商品毛利為負，前 3 個佔 81.0%",
+    "chart": "G14",
+    "note": "k＝min(3, n)；pct＝累計佔比（佔商品毛利為負合計）；不用 v4 GLOSSARY #13 的禁用同義詞"
+   },
+   {
+    "key": "products.chartsV4.pareto.section",
+    "text": "商品毛利為負的商品累計",
+    "chart": "G14",
+    "note": "區塊標準名（v4 GLOSSARY §3）"
+   },
+   {
+    "key": "products.chartsV4.pareto.subtitle",
+    "text": "商品毛利為負的商品累計 · 本期 9/7–9/23 · 全部通路",
+    "chart": "G14"
+   },
+   {
+    "key": "products.chartsV4.pareto.columns.cumulative",
+    "text": "累計（元）",
+    "chart": "G14",
+    "note": "水準值，抽屜大數字不帶正負號（valueKind: level）"
+   },
+   {
+    "key": "products.chartsV4.pareto.columns.share",
+    "text": "累計佔比",
+    "chart": "G14",
+    "note": "佔商品毛利為負合計；D-V4-32＝A 生效前是純文字（需 D-V3-31＝B）"
+   },
+   {
+    "key": "products.chartsV4.pareto.table.note",
+    "text": "商品毛利只扣商品成本，不含通路費用與廣告；退款依入帳日扣除。累計佔比＝前幾個的商品毛利為負額合計 ÷ 全部商品毛利為負額合計。",
+    "chart": "G14",
+    "note": "資料表 tfoot（限制句只放在 <details> 內）；copy-scan 對 products.chartsV4.* 擋 v4 GLOSSARY #13 的禁用同義詞"
+   }
+  ]
+ },
+ "data.html": {
+  "source": "synthetic",
+  "g20": {
+   "segments": [
+    {
+     "file": "channel_costs_daily.csv",
+     "channel": "LIVE",
+     "reason": "MISSING_CHANNEL_COST_DAY",
+     "start": "2026-09-14",
+     "end": "2026-09-19",
+     "days": 6
+    },
+    {
+     "file": "ad_spend_daily.csv",
+     "channel": "LIVE",
+     "reason": "MISSING_AD_DAY",
+     "start": "2026-08-30",
+     "end": "2026-09-02",
+     "days": 4
+    },
+    {
+     "file": "ad_spend_daily.csv",
+     "channel": "LIVE",
+     "reason": "MISSING_AD_DAY",
+     "start": "2026-09-22",
+     "end": "2026-09-22",
+     "days": 1
+    }
+   ],
+   "salesNoRows": [
+    {
+     "start": "2026-08-20",
+     "end": "2026-08-20"
+    }
+   ],
+   "longest": {
+    "file": "channel_costs_daily.csv",
+    "channel": "LIVE",
+    "reason": "MISSING_CHANNEL_COST_DAY",
+    "start": "2026-09-14",
+    "end": "2026-09-19",
+    "days": 6
+   },
+   "events": [
+    {
+     "start": "2026-09-11",
+     "end": "2026-09-13",
+     "label": "秋季檔期一",
+     "line": 2
+    },
+    {
+     "start": "2026-09-18",
+     "end": "2026-09-20",
+     "label": "秋季檔期二",
+     "line": 3
+    }
+   ],
+   "bands": [
+    {
+     "start": "2026-08-21",
+     "end": "2026-09-06",
+     "label": "上期"
+    },
+    {
+     "start": "2026-09-07",
+     "end": "2026-09-23",
+     "label": "本期"
+    }
+   ],
+   "yoyMock": {
+    "coverageStart": "2025-09-01",
+    "yoy": {
+     "start": "2025-09-07",
+     "end": "2025-09-23",
+     "label": "去年同期"
+    }
+   },
+   "geometry": {
+    "actual": {
+     "xl": {
+      "width": 1122,
+      "height": 144,
+      "plotLeft": 72,
+      "plotWidth": 978,
+      "dayWidth": 27.943,
+      "days": 35,
+      "ticksAll": [
+       "9/1"
+      ],
+      "ticksShown": [
+       "9/1"
+      ],
+      "bandLabelsShown": [
+       "上期",
+       "本期"
+      ],
+      "yoyDrawn": false,
+      "yoyWidth": null,
+      "segments": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 770.6,
+        "width": 167.7
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 351.4,
+        "width": 111.8
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 994.1,
+        "width": 27.9
+       }
+      ],
+      "noRowsLabelled": 1,
+      "eventLabelsShown": [
+       "秋季檔期一",
+       "秋季檔期二"
+      ]
+     },
+     "lg": {
+      "width": 962,
+      "height": 144,
+      "plotLeft": 72,
+      "plotWidth": 818,
+      "dayWidth": 23.371,
+      "days": 35,
+      "ticksAll": [
+       "9/1"
+      ],
+      "ticksShown": [
+       "9/1"
+      ],
+      "bandLabelsShown": [
+       "上期",
+       "本期"
+      ],
+      "yoyDrawn": false,
+      "yoyWidth": null,
+      "segments": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 656.3,
+        "width": 140.2
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 305.7,
+        "width": 93.5
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 843.3,
+        "width": 23.4
+       }
+      ],
+      "noRowsLabelled": 0,
+      "eventLabelsShown": [
+       "秋季檔期一",
+       "秋季檔期二"
+      ]
+     },
+     "md": {
+      "width": 450,
+      "height": 144,
+      "plotLeft": 64,
+      "plotWidth": 322,
+      "dayWidth": 9.2,
+      "days": 35,
+      "ticksAll": [
+       "9/1"
+      ],
+      "ticksShown": [
+       "9/1"
+      ],
+      "bandLabelsShown": [
+       "上期",
+       "本期"
+      ],
+      "yoyDrawn": false,
+      "yoyWidth": null,
+      "segments": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 294,
+        "width": 55.2
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 156,
+        "width": 36.8
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 367.6,
+        "width": 9.2
+       }
+      ],
+      "noRowsLabelled": 0,
+      "eventLabelsShown": []
+     },
+     "sm": {
+      "width": 324,
+      "height": 144,
+      "plotLeft": 60,
+      "plotWidth": 204,
+      "dayWidth": 5.829,
+      "days": 35,
+      "ticksAll": [
+       "9/1"
+      ],
+      "ticksShown": [
+       "9/1"
+      ],
+      "bandLabelsShown": [
+       "上期",
+       "本期"
+      ],
+      "yoyDrawn": false,
+      "yoyWidth": null,
+      "segments": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 205.7,
+        "width": 35
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 118.3,
+        "width": 23.3
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 252.3,
+        "width": 5.8
+       }
+      ],
+      "noRowsLabelled": 0,
+      "eventLabelsShown": []
+     }
+    },
+    "yoy": {
+     "xl": {
+      "width": 1122,
+      "height": 144,
+      "plotLeft": 72,
+      "plotWidth": 978,
+      "dayWidth": 2.521,
+      "days": 388,
+      "ticksAll": [
+       "2025/10/1",
+       "2025/11/1",
+       "2025/12/1",
+       "1/1",
+       "2/1",
+       "3/1",
+       "4/1",
+       "5/1",
+       "6/1",
+       "7/1",
+       "8/1",
+       "9/1"
+      ],
+      "ticksShown": [
+       "2025/11/1",
+       "2025/12/1",
+       "1/1",
+       "2/1",
+       "3/1",
+       "4/1",
+       "5/1",
+       "6/1",
+       "7/1",
+       "8/1",
+       "9/1"
+      ],
+      "bandLabelsShown": [
+       "上期",
+       "本期"
+      ],
+      "yoyDrawn": true,
+      "yoyWidth": 42.9,
+      "segments": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 1024.8,
+        "width": 15.1
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 987,
+        "width": 10.1
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 1045,
+        "width": 2.5
+       }
+      ],
+      "noRowsLabelled": 0,
+      "eventLabelsShown": []
+     },
+     "lg": {
+      "width": 962,
+      "height": 144,
+      "plotLeft": 72,
+      "plotWidth": 818,
+      "dayWidth": 2.108,
+      "days": 388,
+      "ticksAll": [
+       "2025/10/1",
+       "2025/11/1",
+       "2025/12/1",
+       "1/1",
+       "2/1",
+       "3/1",
+       "4/1",
+       "5/1",
+       "6/1",
+       "7/1",
+       "8/1",
+       "9/1"
+      ],
+      "ticksShown": [
+       "2025/11/1",
+       "2025/12/1",
+       "1/1",
+       "2/1",
+       "3/1",
+       "4/1",
+       "5/1",
+       "6/1",
+       "7/1",
+       "8/1",
+       "9/1"
+      ],
+      "bandLabelsShown": [
+       "上期",
+       "本期"
+      ],
+      "yoyDrawn": true,
+      "yoyWidth": 35.8,
+      "segments": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 868.9,
+        "width": 12.6
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 837.3,
+        "width": 8.4
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 885.8,
+        "width": 2.1
+       }
+      ],
+      "noRowsLabelled": 0,
+      "eventLabelsShown": []
+     },
+     "md": {
+      "width": 450,
+      "height": 144,
+      "plotLeft": 64,
+      "plotWidth": 322,
+      "dayWidth": 0.83,
+      "days": 388,
+      "ticksAll": [
+       "2025/10/1",
+       "2025/11/1",
+       "2025/12/1",
+       "1/1",
+       "2/1",
+       "3/1",
+       "4/1",
+       "5/1",
+       "6/1",
+       "7/1",
+       "8/1",
+       "9/1"
+      ],
+      "ticksShown": [
+       "1/1",
+       "2/1",
+       "4/1",
+       "6/1",
+       "8/1"
+      ],
+      "bandLabelsShown": [],
+      "yoyDrawn": true,
+      "yoyWidth": 14.1,
+      "segments": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 377.7,
+        "width": 5
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 365.3,
+        "width": 3.3
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 384.3,
+        "width": 1
+       }
+      ],
+      "noRowsLabelled": 0,
+      "eventLabelsShown": []
+     },
+     "sm": {
+      "width": 324,
+      "height": 144,
+      "plotLeft": 60,
+      "plotWidth": 204,
+      "dayWidth": 0.526,
+      "days": 388,
+      "ticksAll": [
+       "2025/10/1",
+       "2025/11/1",
+       "2025/12/1",
+       "1/1",
+       "2/1",
+       "3/1",
+       "4/1",
+       "5/1",
+       "6/1",
+       "7/1",
+       "8/1",
+       "9/1"
+      ],
+      "ticksShown": [
+       "1/1",
+       "3/1",
+       "5/1",
+       "7/1"
+      ],
+      "bandLabelsShown": [],
+      "yoyDrawn": true,
+      "yoyWidth": 8.9,
+      "segments": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 258.7,
+        "width": 3.2
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 250.9,
+        "width": 2.1
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 262.9,
+        "width": 1
+       }
+      ],
+      "noRowsLabelled": 0,
+      "eventLabelsShown": []
+     }
+    }
+   }
+  },
+  "g21": {
+   "reasons": [
+    "MISSING_CHANNEL_COST_DAY",
+    "MISSING_AD_DAY"
+   ],
+   "cells": {
+    "sales_daily.csv": {
+     "MISSING_CHANNEL_COST_DAY": 0,
+     "MISSING_AD_DAY": 0
+    },
+    "channel_costs_daily.csv": {
+     "MISSING_CHANNEL_COST_DAY": 6,
+     "MISSING_AD_DAY": 0
+    },
+    "ad_spend_daily.csv": {
+     "MISSING_CHANNEL_COST_DAY": 0,
+     "MISSING_AD_DAY": 5
+    }
+   },
+   "maxReason": {
+    "sales_daily.csv": null,
+    "channel_costs_daily.csv": "MISSING_CHANNEL_COST_DAY",
+    "ad_spend_daily.csv": "MISSING_AD_DAY"
+   },
+   "rowLevel": 11,
+   "rangeLevel": 0,
+   "title": {
+    "file": "channel_costs_daily.csv",
+    "reason": "MISSING_CHANNEL_COST_DAY",
+    "n": 6
+   },
+   "filters": [
+    {
+     "key": "seg:costs:MISSING_CHANNEL_COST_DAY:LIVE",
+     "rows": 6
+    },
+    {
+     "key": "seg:ads:MISSING_AD_DAY:LIVE",
+     "rows": 5
+    },
+    {
+     "key": "cell:costs:MISSING_CHANNEL_COST_DAY:",
+     "rows": 6
+    },
+    {
+     "key": "cell:ads:MISSING_AD_DAY:",
+     "rows": 5
+    }
+   ]
+  },
+  "g22": {
+   "rate": "0.05",
+   "fields": [
+    "gross_sales",
+    "discounts",
+    "refunds",
+    "platform_fees",
+    "payment_fees",
+    "fulfillment_costs",
+    "other_variable_costs",
+    "ad_spend"
+   ],
+   "totals": {
+    "gross_sales": {
+     "raw": "656200.00",
+     "converted": "624951.79"
+    },
+    "discounts": {
+     "raw": "61030.00",
+     "converted": "58123.85"
+    },
+    "refunds": {
+     "raw": "5200.00",
+     "converted": "4952.45"
+    },
+    "platform_fees": {
+     "raw": "21640.00",
+     "converted": "20609.44"
+    },
+    "payment_fees": {
+     "raw": "11735.00",
+     "converted": "11176.13"
+    },
+    "fulfillment_costs": {
+     "raw": "33350.00",
+     "converted": "31762.03"
+    },
+    "other_variable_costs": {
+     "raw": "3560.00",
+     "converted": "3390.76"
+    },
+    "ad_spend": {
+     "raw": "87660.00",
+     "converted": "83485.86"
+    }
+   },
+   "maxRaw": "656200.00",
+   "rowsConverted": 663
+  },
+  "proposals": [
+   {
+    "key": "data.chartsV4.coverage.noRows",
+    "text": "無列",
+    "chart": "G20",
+    "note": "銷售檔那一天沒有任何一列；不等於零銷售（v4 GLOSSARY #5）"
+   },
+   {
+    "key": "data.chartsV4.coverage.tracks.events",
+    "text": "檔期",
+    "chart": "G20",
+    "note": "軌名；labels.events.entry 是「檔期（選填）」，不能直接沿用"
+   },
+   {
+    "key": "data.chartsV4.coverage.tracks.sales",
+    "text": "商品銷售",
+    "chart": "G20",
+    "note": "沿用 importWizard.files.sales 的字，不另立新字"
+   },
+   {
+    "key": "data.chartsV4.coverage.noRowsDays",
+    "text": "無列 1 天",
+    "chart": "G20",
+    "note": "銷售軌右端"
+   },
+   {
+    "key": "data.chartsV4.coverage.tracks.costs",
+    "text": "通路費用",
+    "chart": "G20",
+    "note": "沿用 importWizard.files.costs 的字，不另立新字"
+   },
+   {
+    "key": "data.chartsV4.coverage.gapDays",
+    "text": "缺 6 天",
+    "chart": "G20",
+    "note": "軌道右端：該檔缺列天數合計（檔 × 通路 × 日）"
+   },
+   {
+    "key": "data.chartsV4.coverage.tracks.ads",
+    "text": "廣告投放",
+    "chart": "G20",
+    "note": "沿用 importWizard.files.ads 的字，不另立新字"
+   },
+   {
+    "key": "data.chartsV4.coverage.title.missing",
+    "text": "通路費用缺 9/14 到 9/19 共 6 天（LIVE）",
+    "chart": "G20",
+    "note": "取最長的缺列區段；只有 1 天時用 title.missingOneDay"
+   },
+   {
+    "key": "data.chartsV4.coverage.title.missingOneDay",
+    "text": "{檔案}缺 {date} 1 天（{通路}）",
+    "chart": "G20",
+    "note": "模板；最長缺列只有 1 天時（fixtures/errors/missing_ad_day）"
+   },
+   {
+    "key": "data.chartsV4.coverage.title.none",
+    "text": "三份檔案涵蓋 {start} 到 {end}，沒有缺列",
+    "chart": "G20",
+    "note": "模板；示範資料"
+   },
+   {
+    "key": "data.chartsV4.coverage.section",
+    "text": "涵蓋時間軸",
+    "chart": "G20",
+    "note": "區塊標準名（v4 GLOSSARY #3）"
+   },
+   {
+    "key": "data.chartsV4.coverage.legend.rows",
+    "text": "有列",
+    "chart": "G20",
+    "note": "圖例 line；期間區帶與去年同期改為直接標字"
+   },
+   {
+    "key": "data.chartsV4.coverage.legend.missing",
+    "text": "缺列",
+    "chart": "G20",
+    "note": "圖例 dash（--chart-missing）"
+   },
+   {
+    "key": "data.chartsV4.coverage.filterButton",
+    "text": "篩選問題表",
+    "chart": "G20",
+    "note": "資料表每列一個按鈕"
+   },
+   {
+    "key": "data.chartsV4.coverage.columns.file",
+    "text": "檔案",
+    "chart": "G20",
+    "note": "沿用 data.pageV3.issueTable.columns.file"
+   },
+   {
+    "key": "data.chartsV4.coverage.columns.channel",
+    "text": "通路",
+    "chart": "G20",
+    "note": "沿用 overview.page.colChannel"
+   },
+   {
+    "key": "data.chartsV4.coverage.columns.start",
+    "text": "缺列起日",
+    "chart": "G20"
+   },
+   {
+    "key": "data.chartsV4.coverage.columns.end",
+    "text": "缺列訖日",
+    "chart": "G20"
+   },
+   {
+    "key": "data.chartsV4.coverage.columns.days",
+    "text": "天數",
+    "chart": "G20"
+   },
+   {
+    "key": "data.chartsV4.coverage.columns.action",
+    "text": "篩選",
+    "chart": "G20"
+   },
+   {
+    "key": "data.chartsV4.coverage.filterAria",
+    "text": "篩選問題表：通路費用 · LIVE",
+    "chart": "G20",
+    "note": "按鈕可及名稱帶檔案與通路"
+   },
+   {
+    "key": "data.chartsV4.coverage.subtitle",
+    "text": "涵蓋時間軸 · 檔案涵蓋 8/20–9/23（35 天） · DTC、LIVE、MARKETPLACE、SOCIAL",
+    "chart": "G20"
+   },
+   {
+    "key": "data.chartsV4.issues.reasons.MISSING_CHANNEL_COST_DAY",
+    "text": "缺費用列",
+    "chart": "G21",
+    "note": "既有原因碼沒有短名稱（labels.errors.import 是整句），G21 欄名與標題需要新鍵"
+   },
+   {
+    "key": "data.chartsV4.issues.title.most",
+    "text": "通路費用的缺費用列最多，6 列",
+    "chart": "G21",
+    "note": "全表最多的一格；同值依檔案順序"
+   },
+   {
+    "key": "data.chartsV4.issues.title.single",
+    "text": "{檔案}有 {n} 列{原因}",
+    "chart": "G21",
+    "note": "模板；只有一格時（fixtures/errors/missing_ad_day），不寫「最多」"
+   },
+   {
+    "key": "data.chartsV4.issues.section",
+    "text": "問題分布（檔案 × 原因）",
+    "chart": "G21",
+    "note": "區塊標準名（v4 GLOSSARY §3）"
+   },
+   {
+    "key": "data.chartsV4.issues.subtitle",
+    "text": "問題分布（檔案 × 原因） · 列級問題 11 項 · 有底色的格可篩選問題表，加框的是各檔最多的原因",
+    "chart": "G21",
+    "note": "顏色只輔助，格內永遠有數字"
+   },
+   {
+    "key": "data.chartsV4.issues.caption",
+    "text": "問題分布（檔案 × 原因），格內是列數",
+    "chart": "G21"
+   },
+   {
+    "key": "data.chartsV4.issues.reasons.MISSING_AD_DAY",
+    "text": "缺廣告列",
+    "chart": "G21"
+   },
+   {
+    "key": "data.chartsV4.issues.cellAria",
+    "text": "通路費用有 6 列缺費用列，篩選問題表",
+    "chart": "G21",
+    "note": "格內按鈕的可及名稱"
+   },
+   {
+    "key": "data.chartsV4.issues.rangeRow",
+    "text": "範圍級問題",
+    "chart": "G21",
+    "note": "模板；範圍級問題另列一行，不混進格（本資料 0 筆，不顯示）"
+   },
+   {
+    "key": "data.chartsV4.filter.clear",
+    "text": "清除篩選",
+    "chart": "G20、G21",
+    "note": "與 products.pageV3.clearFilters 同字，可沿用"
+   },
+   {
+    "key": "data.chartsV4.filter.phrase",
+    "text": "篩選：通路費用 · LIVE · 缺費用列（6 項）",
+    "chart": "G20、G21",
+    "note": "role=status；按下篩選按鈕後焦點移到這裡"
+   }
+  ]
  }
 }

@@ -12,11 +12,13 @@
 | [`index.html`](index.html) | 設計稿目錄：每頁的資料來源、狀態、圖、截圖連結 | 產生器 |
 | [`overview.html`](overview.html) | 經營總覽（示範資料＋目標檔）：G1、G2、G3、G4、G5、G6（≤ 767）、G7a | 產生器（代理 C1） |
 | [`diagnosis.html`](diagnosis.html) | 通路健檢（示範資料）：G9、G10、G11、G12（`<details>` 畫展開狀態）、G7b | 產生器（代理 C1） |
-| `products.html`、`data.html` | 商品毛利（示範與合成資料兩種狀態）、資料來源（合成資料） | 待代理 C2 |
+| [`products.html`](products.html) | 商品毛利，狀態 1（示範資料：本期沒有商品毛利為負）：第一格照 v3 原樣放 `product-worst`（不渲染 G14），第二格 G13（`after`＝`product-best`） | 產生器（代理 C2） |
+| [`products-synthetic.html`](products-synthetic.html) | 商品毛利，狀態 2（4 通路合成資料：5 個商品毛利為負）：第一格 G14（`after`＝`product-worst`），第二格 G13 | 產生器（代理 C2） |
+| [`data.html`](data.html) | 資料來源（4 通路合成資料，畫面當作經匯入精靈匯入）：G20、G21（在 `data-issues` 內）、問題表篩選片語與清除鈕、前處理表 G22（示意狀態） | 產生器（代理 C2） |
 | [`tokens.css`](tokens.css) | 第一段從 `src/app/globals.css` 的 `:root` 原樣複製全部 token；第二段是設計稿用、尚未進 `:root` 的 PRD §6.5 新 token 提案值（各行註明宣告批次） | 產生器（每次重跑都重新複製） |
 | [`mockups.css`](mockups.css) | 頁面骨架與圖表樣式（只用 token，不寫死色碼） | 手寫 |
 | `mockup-data.json` | 每頁用到的數字（柱的起訖、共同尺度、G6 條長比例、G9 條長、G10 七段、G11 分階、G12 刻度、新字串清單），供審查與實作對照 | 產生器 |
-| `gen/` | 產生器（TypeScript，以 vitest 執行） | 手寫 |
+| `gen/` | 產生器（TypeScript，以 vitest 執行）；代理 C2 新增 `products.ts`、`data-source.ts`、`charts-c2.ts`（C25 RankedBars、C24 pair、C30 Timeline），並擴充 `html.ts` 的 `chartFrame`（`headingLevel`、`variant`）、`chrome.ts`（`description`、匯入資料的頂欄字）、`source.ts`（`synthetic`）、`theme.ts`（`rowHeights.axis`） | 手寫 |
 | `shoot.mjs` | 截圖與實測（Playwright，`file://` 開檔） | 手寫 |
 | `../V4-0b/mockups-shots/*.png`、`measure.json` | 截圖與實測結果 | `shoot.mjs` |
 
@@ -25,17 +27,23 @@
 - 直接用瀏覽器開 HTML（`tokens.css`、`mockups.css` 要在同一個資料夾）；不載入任何外部資源、不需要伺服器。
 - 把視窗縮到 390 寬就是手機版（底部分頁列、期間按鈕、KPI 清單、G6 變異條、通路寬表清單式）；768、1280、1440 各有對應的版面。圖依 1440、1280、768、390 四個寬度各畫一份，CSS 只顯示對應的那一份，字級維持 12px。
 - 頁面最上方的黃色橫幅不屬於產品：勾「標示 v4 變更」會框出 v4 新增或改變的區塊並寫明代號；勾「標示新字串（H5 待審）」會標出將放進 `{group}.chartsV4.*` 的新字串。頁尾「本頁新字串」有清單（模板代入示範資料後的例句）。
-- 少量 inline JS 只用於切換狀態：總覽 G2 的範圍分段按鈕（合計、官網 · DTC、平台 · MARKETPLACE），健檢 G9 的「設計稿狀態」（門檻 0.00 與 300,000.00 示意）。
+- 少量 inline JS 只用於切換狀態：總覽 G2 的範圍分段按鈕（合計、官網 · DTC、平台 · MARKETPLACE），健檢 G9 的「設計稿狀態」（門檻 0.00 與 300,000.00 示意）；商品毛利 G13 的「設計稿狀態」（PRD 版：≥ 768 兩欄並排；建議版：各寬度都上下）；資料來源 G20 的「設計稿狀態」（合成資料；示意：假設檔案從 2025/9/1 起都有列，看去年同期細線）、前處理表的「設計稿狀態」（合成資料未稅；示意：同一份檔案以含稅 5% 匯入，看 G22 成對條），以及 G21 格內按鈕、G20 資料表「篩選問題表」按鈕切換問題表的篩選狀態（篩選片語、清除篩選）。
+- 商品毛利有兩個檔：`products.html`（示範資料，沒有商品毛利為負）與 `products-synthetic.html`（合成資料，有 G14），頁首橫幅寫明是哪一種狀態。
 - 標「設計稿試算」的段落：B 級整理函式（加總、佔比、累計、分階）尚不存在，設計稿以產生器內的一次性計算代替；正式數字由該批的 B 級函式產生。
 
 ## 3 重新產生、截圖與實測
 
 ```bash
-# 1. 產生（寫 overview.html、diagnosis.html、index.html、tokens.css、mockup-data.json）
+# 1. 產生（寫 overview.html、diagnosis.html、products.html、products-synthetic.html、data.html、index.html、tokens.css、mockup-data.json）
 MOCKUP_WRITE=1 npx vitest run --config verification/revamp-v4/mockups/gen/vitest.mockups.config.mts
-# 2. 截圖與實測（寫 verification/revamp-v4/V4-0b/mockups-shots/*.png 與 measure.json）
+# 2. 截圖與實測（寫 verification/revamp-v4/V4-0b/mockups-shots/*.png 與 measure.json；23 張）
 node verification/revamp-v4/mockups/shoot.mjs
+# 只想先看結果、不動已提交的截圖時，寫到別的資料夾（shoot.mjs 讀 SHOTS_OUT）：
+SHOTS_OUT=/tmp/mockup-shots node verification/revamp-v4/mockups/shoot.mjs
 ```
+
+- 代理 C2 重跑時確認過：總覽、健檢兩頁的 8 張截圖與 `measure.json` 的 `overview`、`diagnosis` 兩段和代理 C1 提交的版本逐位元相同（`cmp`），所以只有商品毛利、資料來源的檔案是新的。
+- `shoot.mjs` 的 `SHOTS` 每列可帶 `clicks`（拍照前依序點的元素，例如設計稿狀態切換、篩選按鈕）與 `element`（只拍該元素）；商品毛利與資料來源另跑 `measureC2`（寫進 `measure.json` 各頁各寬度的 `c2`），顏色對比用 `scripts/contrast-check.mjs` 匯出的 `contrastRatio`（同一套 WCAG 算法）。
 
 - 根目錄 `vitest.config.mts` 的 `include` 只有 `src/**`、`tests/**` 的 `*.test.*`，產生器檔名是 `*.mockup.ts`，所以預設的 `npm test` 不會執行它，也不會改寫產物（`npx vitest list` 列出 2,459 項，沒有一項是產生器）。
 - 不給 `MOCKUP_WRITE=1` 時只計算與自我檢查、不寫檔。自我檢查包括：頁面沒有寫死色碼、箭頭字元、全形驚嘆號、「注意：」、外部資源；`aria-hidden` 的圖容器內沒有可聚焦元素；設計稿試算的核對（逐週件數加總＝期間件數 7,420；各通路逐週扣廣告後貢獻加總＝通路期間合計；G10 每列商品成本＋通路費用合計＋廣告費＋扣廣告後貢獻＝淨營收；G1、G2 共同尺度涵蓋所有範圍的柱；G11 每通路逐日加總＝通路期間合計）。
@@ -60,6 +68,20 @@ node verification/revamp-v4/mockups/shoot.mjs
 | G12 | `snapshot.weeks` 的五項比率 | 比率軸的範圍（只是座標） |
 | G7b | `buildManagerSummary().channels`、`diagnosisGroups` | 每通路逐週呼叫 `aggregatePeriod`（V4-3a 的 `channelWeeks`／`channel-weeks-v1`） |
 
+商品毛利與資料來源（代理 C2）另用 4 通路合成資料 `tests/fixtures/synthetic-4-channel`（D-V4-31，代理 B 建立；`dataset_id` 不以 `synthetic-demo` 開頭，通路顯示原代碼），同樣經 `validateDataset` 與 `createSnapshot`：
+
+| 區塊 | 呼叫的既有函式 | 設計稿試算或假設（B 級函式到位前） |
+|---|---|---|
+| 商品範圍一行、前 10 名兩表、完整表 | `compareProducts(dataset, report.scope)`、`productHighlights`（`worstCurrent`、`bestChange`）、`selectProductComparisonRows`、`dataStatus`、`rateAvailability` | — |
+| G13 | 同上；增加欄＝`productHighlights().bestChange` | 減少欄的挑選（差額 < 0、由小到大、同值依通路與 SKU）照 CHART_CATALOG G13 寫在產生器（V4-4 的 `worstChange`，只挑列，A 級） |
+| G14 | `compareProducts` 的本期 `gross_profit`；`parseCents`、`sumAmounts`、`subtractAmounts`、`ratioMetric`、`formatCents` | 只取商品毛利 < 0 的列、累計、累計佔比＝取反後的累計 ÷ 取反後的負值合計（V4-4 的 `productPareto`／`product-pareto-v1`） |
+| G20 | `dataset.issues`（`MISSING_CHANNEL_COST_DAY`、`MISSING_AD_DAY`）、`dataset.sales`、`parseEvents`、`periodPresets`（示意狀態的去年同期期間） | 缺列依檔 × 通路合併成連續區段、銷售有列與無列、通路費用與廣告的有列日（V4-7a 的 `coverageTimeline`／`coverage-timeline-v1`）。假設：檔期軌依廣告檔 MARKETPLACE 加碼日假設兩段（合成資料不帶 events.csv）；去年同期示意假設檔案從 2025-09-01 起都有列 |
+| G21 | `dataset.issues` | 檔案 × 原因碼計數、各檔最多的原因（V4-7a 的 `issueDistribution`／`issue-distribution-v1`） |
+| 問題表 | `issueMessageParts`（L1、L2、原因碼） | 篩選狀態（全部、G20 每個檔 × 通路 × 原因、G21 每格）各畫一份 |
+| G22 | `inspectImportFile`、`prepareImport`（含稅 5%、預設換算欄位）的 `TaxConversion.totals`、`conversionSentence` | 假設：合成資料是未稅匯入，前處理表在 v3 只有一句；示意狀態把同一份檔案當成含稅 5% 匯入 |
+
+產生器的自我檢查另核對代理 B 的手算值（`tests/fixtures/synthetic-4-channel/README.md` 第 3、5 節）：G14 逐筆累計 −3,400／−5,440／−7,240／−8,090／−8,940、末筆累計＝負值合計、末筆累計佔比 `1.000000000000`、佔比約 38.0／60.9／81.0／90.5／100.0%；G13 減少 6 列、增加 4 列、差額 0 的 2 列；示範資料沒有商品毛利為負、減少 15 列且最多是 SKU-020 · MARKETPLACE −30,198.96；G20 三段缺列（通路費用 LIVE 9/14–9/19 6 天、廣告 LIVE 8/30–9/02 4 天與 9/22 1 天）的天數＝缺列問題筆數、銷售只有 8/20 無列；G21 格加總＝列級問題 11 筆、沒有範圍級問題；G22 原價收入原值合計 656,200.00；G13、G14、G20 的 svg 高都 ≤ sm 180。
+
 ## 5 設計稿實測（`../V4-0b/mockups-shots/measure.json`）
 
 Chromium（Playwright 1.63.0，headless，macOS），`deviceScaleFactor` 1，字型堆疊同 `--font-sans`（數字為 Arial）。
@@ -80,6 +102,61 @@ Chromium（Playwright 1.63.0，headless，macOS），`deviceScaleFactor` 1，字
 | G1 瀑布：框寬／svg 寬／框內水平捲動 | 641／640／否 | 547／547／否 | 450／520／是 | 324／520／是 |
 | G6 可見條數（掛載 9） | 0 | 0 | 0 | 9（寬 64） |
 
+### 5.1 商品毛利（代理 C2；`measure.json` 的 `products`、`products-synthetic` 各寬度的 `c2`）
+
+`.product-highlight-grid` 在 > 900px 兩欄、≤ 900 單欄（v3 既有），所以每格 ChartFrame 內寬 1440 為 524、1280 為 444、768 為 450、390 為 324；框高都是 sm 180。標籤實測：示範資料最長「SKU-020 · 平台 · MARKETPLACE」183.38px，合成資料最長「SKU-203 · MARKETPLACE」148.72px；標值最長示範「−3.0 萬」39.03px、合成「−8,600 元」52.38px。
+
+| 項目 | 1440 | 1280 | 768 | 390 |
+|---|---|---|---|---|
+| G13 PRD 版（≥ 768 兩欄並排）最長柱 px：示範／合成 | 15／37 | 0／0（只剩 1px 記號） | 0／0 | 85／107（上下） |
+| G13 PRD 版標籤與標值、柱重疊處：示範／合成 | 0／0 | 10／0 | 10／0 | 0／0 |
+| G13 建議版（各寬度上下）最長柱 px：示範／合成 | 285／307 | 205／227 | 211／233 | 85／107 |
+| G13 svg 高（框高 180）：PRD 版並排／上下 | 80／160（示範 10 列）、144（合成 9 列） | 同左 | 同左 | 160／144 |
+| G13 上下排列時減少欄在上（減少欄 y＝0、增加欄 y＝80） | 是 | 是 | 是 | 是 |
+| G14 最長柱 px（合成資料，5 根，svg 高 80） | 232 | 152 | 158 | 32 |
+| G14 標籤與標值、柱重疊處 | 0 | 0 | 0 | 0 |
+| `product-best` 表頂與 `product-worst` 表頂的落差 px：示範（第一格是 v3 原樣、第二格多一張圖）／合成 | 493／96 | 513／60 | 單欄，不適用 | 單欄，不適用 |
+| 頁面橫向捲動 | 無 | 無 | 無 | 無 |
+
+落差含設計稿專用的「設計稿狀態」切換列與「設計稿試算」註記（約 110px）；扣掉後示範資料兩張前 10 名表仍差約 380px（第二格多了 G13 的標題、副標與 180 高的框）。
+
+### 5.2 資料來源（代理 C2；`measure.json` 的 `data` 各寬度的 `c2`）
+
+G20 框高 180、svg 高 144（區帶與去年同期列 24＋4 軌 × 24＋日期軸 24）；四種寬度都沒有文字互相重疊。區帶、缺列框、細線的顏色由瀏覽器算出後，用 `scripts/contrast-check.mjs` 的 `contrastRatio` 算 WCAG 對比。
+
+| 項目 | 1440 | 1280 | 768 | 390 |
+|---|---|---|---|---|
+| G20 合成資料（35 天）一天寬 px | 27.94 | 23.37 | 9.20 | 5.83 |
+| 缺列框寬 px：通路費用 6 天／廣告 4 天／廣告 1 天 | 166.7／110.8／26.9 | 139.2／92.5／22.4 | 54.2／35.8／8.2 | 34.0／22.3／4.8 |
+| 缺列框上緣看得到幾段完整虛線（1px、3 2） | 33／22／5 | 27／18／4 | 10／7／1 | 6／4／0 |
+| 區帶內直接標「上期」「本期」 | 兩個都標 | 兩個都標 | 兩個都標 | 兩個都標 |
+| 上期與本期區帶之間的白縫 px | 2 | 2 | 2 | 2 |
+| 銷售 8/20「無列」直接標在圖上（否則只在右端「無列 1 天」） | 是 | 否 | 否 | 否 |
+| 檔期線寬 px（3 天）／檔期名稱標在線上 | 81.9／是 | 68.1／是 | 25.6／否 | 15.5／否 |
+| G20 去年同期示意（假設 2025-09-01 起，388 天）一天寬 px | 2.52 | 2.11 | 0.83 | 0.53 |
+| 示意狀態缺列框寬 px：6 天／4 天／1 天 | 14.1／9.1／1.5 | 11.6／7.4／1.1 | 4.0／2.3／0.5 | 2.2／1.1／0.5 |
+| 示意狀態去年同期細線寬 px（1px 高）、區帶寬 px | 42.9、41.9 | 35.9、34.8 | 14.1、13.1 | 8.9、7.9 |
+| 示意狀態區帶內標「上期」「本期」 | 是 | 是 | 否（區帶 13px） | 否（區帶 8px） |
+| G21 框高／表高 px（390 為清單式） | 180／160 | 180／160 | 180／160 | 180／142 |
+| G21 格 px（階 2 兩格） | 96 × 36 | 96 × 36 | 96 × 36 | 108 × 32（清單式） |
+
+| 顏色配對（四種寬度相同） | 對比 | 說明 |
+|---|---|---|
+| 缺列虛線（`--chart-missing`＝gray-400）對區帶底（`--chart-band`＝bg-subtle） | 3.22 | ≥ 3（非文字）；合成資料三段缺列都落在區帶內 |
+| 缺列虛線對白底 | 3.58 | 區帶外（例如 8/20）時 |
+| 去年同期細線（`--chart-yoy`＝gray-400）對白底 | 3.58 | ≥ 3 |
+| 去年同期細線對缺列虛線 | 1.00 | 同色；靠形狀（1px 實線 vs 13px 高的 3 2 虛線框）、位置（細線在軌道上方的區帶列，離最近的缺列框頂 42px）與直接標字「去年同期」區分 |
+| 區帶底對白底 | 1.11 | 遠低於 3；區帶靠直接標字「上期」「本期」與兩段之間 2px 白縫辨識，顏色只是輔助 |
+| 有列細條（`--chart-total`＝gray-700）對區帶底／白底 | 6.90／7.68 | — |
+| 檔期線（`--chart-axis`＝gray-500）對白底 | 5.57 | — |
+| G21 階 2 底（設計稿 `--red-100` #ebcecb）上的格內文字 `--text-primary` | 10.71 | — |
+| G21 階 2 框線（`--chart-unfavorable`）對階 2 底／白底 | 4.07／6.01 | 格底對白底只有 1.47，由框線與格內數字承擔 |
+| G22 成對條上條（`--chart-previous`）／下條（`--chart-total`）對白底；上下條互比 | 3.58／7.68；2.14 | 上下兩條還靠粗細（4px、6px）區分 |
+
+G20 日期軸：合成資料 35 天只有一個月初（9/1），四種寬度都標起訖兩端與 9/1；示意狀態 388 天有 12 個月初，標在軸上的 1440 與 1280 各 11 個（2025/10/1 與起點「2025/9/1」重疊略過）、768 為 5 個（重疊略過）、390 依「月份刻度減半」再略過重疊後 4 個。
+
+G22 示意狀態（含稅 5%，共用尺度＝原值最大值 656,200）各欄條長（96px 寬）：原價收入 96.0／91.4、折扣 8.9／8.5、退款 0.8／0.7、平台抽成 3.2／3.0、金流手續費 1.7／1.6、物流與包材費 4.9／4.6、其他變動費用 0.5／0.5、廣告投放費 12.8／12.2（含稅原值／換算值）；原值與換算值的差恆為 1 − 1 ÷ 1.05＝4.76%，96px 寬時最多 4.6px、390（64px）時最多 3.0px。
+
 ## 6 設計稿與 PRD 的差異（請審查者與下一批實作者特別看）
 
 1. **G1、G2 共同尺度把 G1 壓扁約 40%，還多一個「−200 萬」刻度。** 共同 `[lo, hi]` 取 G1 與 G2 全部範圍的柱，示範資料 G2 合計淨營收 785.1 萬、MARKETPLACE 終點 −6.1 萬，刻度間距 200 萬時範圍是 −200 萬到 800 萬。1440 寬 G1 最高的柱由各自尺度的 134.9px 降到 80.9px。PRD §7.2 寫「不向外延伸」，但 V4-1 驗收要求「切到 MARKETPLACE 時刻度含負值」，兩者同時成立只能把下界延伸到一個步長（設計稿就是這樣畫）。請 H5 判斷 G1 變扁是否可接受。
@@ -96,6 +173,25 @@ Chromium（Playwright 1.63.0，headless，macOS），`deviceScaleFactor` 1，字
 12. **G11 副標**把分階說明寫進副標（「有底色的是虧的日子，加框的是各通路最差 3 天」），不用彩色方塊圖例（X32）。
 13. **設計稿的 `--red-100`** 取 V4-0-baseline §13 試算表的 t＝0.25（`#ebcecb`：`--text-primary` 文字 10.71、框線 4.07、對 `--red-50` ΔE2000 8.6）；正式值在 V4-3b 以 contrast-check 定案。
 
+以下是代理 C2（商品毛利、資料來源）的發現，數字見 §5.1、§5.2。
+
+14. **G13 的「1440 兩欄並排」放不下（PRD §4.4、§4.6，CHART_CATALOG G13）。** 商品頁 `.product-highlight-grid` 在 > 900px 是兩欄，G13 只有半寬（1440 內寬 524、1280 內寬 444），兩欄並排後每欄 254／214px；「SKU · 通路」標籤（示範 183px、合成 149px）加柱端標值（39–52px）就佔掉整欄，最長柱只剩 1440 示範 15px、合成 37px，1280 與 768 是 0（只剩 1px 記號，示範資料的標值壓到標籤上，10 處重疊）。建議 G13 在各寬度都上下排列（減少在上）：10 × 16＝160 仍 ≤ sm 180，最長柱 1440 為 285–307px、390 為 85–107px。設計稿用「設計稿狀態」切換兩種畫法；截圖 `products-synthetic-1440-full.png`、`products-1440-full.png` 是 PRD 版，`*-1440-g13-stacked.png` 是建議版。
+15. **上下排列時兩欄的零線不在同一個位置。** 照「兩欄各從 0、共用尺度」畫：減少欄的零線在右端、柱往左，增加欄的零線在標籤欄右側、柱往右。改成同一條零線的分歧長條時，390 每半邊只剩約 24px（324 − 標籤 158 − 兩側標值 118，再除以 2），所以設計稿維持兩條零線；請 H5 看會不會誤讀。
+16. **示範資料的商品頁兩張前 10 名表上下錯開。** 沒有商品毛利為負時第一格照 v3 原樣只放 `product-worst`，第二格是 G13 ChartFrame（標題、副標、180 框）再接 `product-best`；1440 兩張表的表頂差 493px（扣掉設計稿專用的切換列與註記仍約 380px），PRD §5.3 寫的「兩格等高」在這個狀態做不到。第一格是無框的 `section.product-highlight`、第二格是 `section.panel.chart-section`，外框也不一致。合成資料兩格都有圖時落差 60–96px（同樣含設計稿專用列）。請 H5 判斷是否接受，或改成兩格頂端對齊、表格各自往下長。
+17. **G14 在 390 的柱只剩 32px。** PRD §4.6 寫 G14 在 390「維持」；標籤 149px、柱端標值、右側「累計 100.0%」（約 68px）就佔掉 324px 的大部分（1440 為 232px、1280 為 152px、768 為 158px）。降級建議擇一（設計稿未畫）：390 只寫百分比、去掉「累計」兩字（柱約 +27px）；或 390 不畫右側累計，只留資料表的累計與累計佔比欄（柱約 107px）。
+18. **G13、G14 在 sm 180 框只用到 80–160px。** G14 合成資料 5 根＝80px，框內下方 100px 空白；G13 PRD 版並排時也只有 80px。情況同 §6 第 8 點的 G10。
+19. **去年同期可用時，G20 在 390 幾乎看不到缺列。** 合成資料與示範資料都沒有一年前的資料，設計稿另畫示意狀態（假設檔案從 2025-09-01 起都有列，去年同期期間由既有 `periodPresets` 算出）：X 軸變成 388 天後，一天只剩 2.52px（1440）到 0.53px（390）；6 天的缺列框在 390 只有 2.2px、1 天的 0.5px，區帶窄到標不下「上期」「本期」（768、390），檔期線只剩 0.5px。只有兩期的 35 天軸（合成資料原樣）四種寬度都分得清楚。建議擇一，由 V4-7a 開工前定：(a) X 軸固定為「上期起日到涵蓋訖日」（再往前延伸到最早的缺列區段），去年同期不畫在同一條軸上，改成圖上方一行直接寫「去年同期 2025/9/7–9/23」與其有列或缺列天數；(b) 缺列框給最小寬（例如 6px），日期與天數由右端與資料表承擔。
+20. **去年同期細線與缺列虛線框同色（對比 1.00），靠形狀與位置分。** 細線是 1px 實線、在軌道上方的區帶列（離最近的缺列框頂 42px）並直接標「去年同期」；缺列框是 13px 高、1px 的 3 2 虛線框，在軌道內。兩者在 35 天軸上分得出來；388 天軸的問題見第 19 點。
+21. **G20 的 1 天缺列在 390 只有 4.8px。** 合成資料 9/22 的廣告缺列在 390 寬只剩 4.8px，框上緣連一段完整的 3 2 虛線都放不下（看起來像一個小方框），768 是 8.2px；天數與日期由右端「缺 5 天」與資料表承擔。可考慮缺列框最小寬 6px。
+22. **區帶對白底只有 1.11:1。** `--chart-band`（bg-subtle）本來就是淡底；上期與本期相鄰，設計稿在兩段之間留 2px 白縫並在區帶內直接標字。8/20 在兩期之外，沒有區帶；缺列虛線對區帶底 3.22、對白底 3.58，都 ≥ 3。
+23. **G20 檔期軌是假設的。** 合成資料不帶 events.csv；設計稿依廣告檔 MARKETPLACE 加碼日假設兩段（9/11–9/13、9/18–9/20，「秋季檔期一、二」），選填資料區也照這個假設寫「已讀取 2 個檔期」。768 以下檔期線只有 25.6／15.5px，名稱只在 1440、1280 標得下。
+24. **G21 的欄名需要新字串。** CHART_CATALOG G21 寫「名稱取既有原因碼標籤」，但既有原因碼只有整句的 `labels.errors.import.*`（「{date} {channel}：沒有費用列。沒費用請填 0，不要留空。」），沒有短名稱；設計稿提案 `data.chartsV4.issues.reasons.MISSING_CHANNEL_COST_DAY`「缺費用列」、`…MISSING_AD_DAY`「缺廣告列」，標題照模板是「通路費用的缺費用列最多，6 列」。代理 B 交接寫的「通路費用的缺列最多，6 列」要把兩種原因都叫「缺列」，那樣矩陣兩欄同名；請 H5 選。
+25. **G21 兩格都是階 2，沒有階 1 與範圍級的例子。** 合成資料每個檔只有一種原因，兩格都是各檔最多（heat-2 加框線）；沒有範圍級問題，「範圍級問題」那一列沒有畫（提案字串已登記）；商品銷售整列留白。390 改清單式時只列有問題的原因（表高 142 ≤ 180）。
+26. **問題表的篩選是設計稿的假互動。** 點 G21 的格或 G20 資料表的「篩選問題表」，會切到預先畫好的篩選狀態（`role="status"` 的篩選片語與「清除篩選」）；產品裡 G20 圖上的缺列段也可點，設計稿的圖在 `aria-hidden` 內，沒有接點擊。下載問題清單 CSV 仍是全部。截圖 `data-1440-issues-filtered.png`。
+27. **G22 成對條幾乎看不出差別。** 共用「原值最大值」一把尺時，原價收入以外的欄位條長只有 0.5–12.8px；換算前後的差恆為 4.76%（96px 寬最多 4.6px、390 最多 3.0px），而且條沒有圖例（`data.chartsV4.preprocess.*` 預計 0 個新字串）。合成資料是未稅匯入，前處理表在 v3 只寫一句「未稅，沒有換算。」，所以設計稿另畫「同一份檔案以含稅 5% 匯入」的示意狀態（`data-1440-g22.png`）。請 H5 判斷這組條是否值得留。
+28. **合成資料在頂欄與資料狀態寫「本機匯入」。** 合成資料的 manifest `source_type` 是 synthetic（直接載入時產品寫「示範資料」），但 E2E 與實際使用都經匯入精靈（`prepareImport` 改成 user_provided），所以設計稿照匯入後寫「本機匯入」。
+29. **G20 標題取最長的缺列區段**（通路費用 LIVE 9/14–9/19，6 天）；同樣長時設計稿依檔案順序（銷售、通路費用、廣告）取前者，由 V4-7a 的 `coverageTimeline` 定。
+
 ## 7 審查問題（經營總覽、通路健檢；1–5 分）
 
 | # | 頁面 | 問題 | 1 分 | 3 分 | 5 分 |
@@ -111,10 +207,26 @@ Chromium（Playwright 1.63.0，headless，macOS），`deviceScaleFactor` 1，字
 | V9 | 兩頁 | 新字串（勾「標示新字串」或看頁尾清單）有沒有看不懂、和你平常叫法衝突的？ | 多數看不懂 | 1–2 個要想（寫出是哪個） | 都懂 |
 | V10 | 兩頁 | 顏色只有不利上色、有利不用綠；新圖的灰階分段（商品成本、通路費用合計、廣告費）分得出來嗎？ | 分不出來 | 要對照圖例 | 一眼分得出 |
 
-評分表與具體問題表沿用 `verification/revamp-v3/mockups/README.md` §6 的格式；商品毛利、資料來源兩頁的問題由代理 C2 補在本節之後。
+評分表與具體問題表沿用 `verification/revamp-v3/mockups/README.md` §6 的格式。
 
-## 8 擴充（給代理 C2）
+### 7.1 審查問題（商品毛利、資料來源；1–5 分）
 
-- 資料來源：在 `gen/source.ts` 的 `SOURCES` 加 `synthetic`（`dir: "tests/fixtures/synthetic-4-channel"`）；`gen/build.ts` 的 `LoadedSources` 加同名欄位，`buildAll` 多載入一份。
-- 頁面：新增 `gen/products.ts`、`gen/data-source.ts`，各匯出一個回傳 `PageOutput` 的 build 函式（照 `gen/diagnosis.ts` 的寫法：`ProposalBook` 收新字串、`chartFrame` 組 C16、`responsive` 依四個斷點各畫一份、`trialNote` 標設計稿試算、`pageDocument` 包殼層），再把 `gen/build.ts` 的 `PAGES` 對應那一筆的 `build: null` 改成 build 函式、填 `shots`。
-- 截圖：在 `shoot.mjs` 的 `SHOTS` 加列（1440 與 390 整頁）；實測的頁面清單由 `SHOTS` 自動帶出。
+| # | 頁面 | 問題 | 1 分 | 3 分 | 5 分 |
+|---|---|---|---|---|---|
+| V11 | 商品 | 示範資料（`products-1440-full.png`）：第一格維持 v3 的「本期商品毛利最差 10 個」，第二格多了「商品毛利兩期差額」圖，兩張表因此上下錯開（§6 第 16 點）。比對兩張表時會不會不方便？ | 很不方便 | 可以接受 | 沒影響 |
+| V12 | 商品 | 「商品毛利兩期差額」的兩種畫法：PRD 版（1440 減少、增加兩欄並排，`products-synthetic-1440-full.png`）與建議版（上下排列，`products-synthetic-1440-g13-stacked.png`），哪一個讀得出「哪個商品少最多、多最多」？ | PRD 版好 | 差不多 | 建議版好 |
+| V13 | 商品 | 合成資料「5 個商品毛利為負，前 3 個佔 81.0%」：看得出負值集中在哪幾個商品嗎？「商品毛利為負」和「這個商品賠錢」的差別清楚嗎（商品毛利不含通路費用與廣告）？ | 看不出／會混淆 | 看得出但會混淆 | 都清楚 |
+| V14 | 商品 | 手機版（`products-synthetic-390-full.png`）商品毛利為負的長條只剩約 32px，右側還有「累計 n%」。需要右側的累計嗎？還是只看資料表就好？ | 圖沒用 | 圖有用、累計可拿掉 | 都要留 |
+| V15 | 資料來源 | 涵蓋時間軸（`data-1440-full.png`）：能不能 10 秒內說出哪個檔、哪個通路、哪幾天缺列？虛線框、有列細條、上期與本期的淡底分得出來嗎？ | 說不出來 | 要對照右端與資料表 | 一眼看出 |
+| V16 | 資料來源 | 「去年同期」示意（`data-1440-g20-yoy.png`、`data-390-g20-yoy.png`）：軸拉長到一年以上後，去年同期細線和缺列框分得出來嗎？手機版還看得到缺列嗎（§6 第 19 點）？ | 都看不到 | 寬螢幕看得到、手機看不到 | 都看得到 |
+| V17 | 資料來源 | 問題分布表（檔案 × 原因）加「點格篩選問題表」（`data-1440-issues-filtered.png`），比直接看 11 列的問題表快嗎？欄名「缺費用列」「缺廣告列」與標題「通路費用的缺費用列最多，6 列」順不順（§6 第 24 點）？ | 沒比較快／不順 | 快一點、用詞要改（寫出怎麼改） | 快、用詞順 |
+| V18 | 資料來源 | 前處理表的成對條（`data-1440-g22.png`，假設含稅 5% 匯入）看得出換算前後差多少嗎？值得留嗎？ | 看不出、不用留 | 看得出一點 | 看得出、要留 |
+| V19 | 兩頁 | 新字串（勾「標示新字串」或看頁尾清單：商品示範 7 個、商品合成 15 個、資料來源 33 個）有沒有看不懂、和你平常叫法衝突的？ | 多數看不懂 | 1–2 個要想（寫出是哪個） | 都懂 |
+
+## 8 擴充
+
+代理 C2 已完成商品毛利（兩種狀態）與資料來源兩頁：`gen/source.ts` 的 `SOURCES` 有 `synthetic`（`imported: true`，頂欄與資料狀態寫「本機匯入」），`gen/build.ts` 的 `PAGES` 有 `products.html`、`products-synthetic.html`、`data.html` 三筆，`shoot.mjs` 的 `SHOTS` 有 15 列（含 `clicks`、`element` 的局部截圖）。之後再加頁或狀態時：
+
+- 頁面：新增 `gen/<page>.ts`，匯出回傳 `PageOutput` 的 build 函式（`ProposalBook` 收新字串、`chartFrame` 組 C16（可給 `headingLevel`、`variant: "inline"`、`mode: "table"`）、`responsive` 依四個斷點各畫一份、`trialNote` 標設計稿試算、`pageDocument` 包殼層（`description` 可覆寫頁首說明）），在 `PAGES` 加一筆並填 `shots`。
+- 圖形：C25 RankedBars、C24 pair、C30 Timeline 在 `gen/charts-c2.ts`；依列計高一律用 `rowHeights`（`theme.ts`，含設計稿的 `axis: 24`）。
+- 截圖：在 `shoot.mjs` 的 `SHOTS` 加列；需要量圖時在 `measureC2` 或 `measureInPage` 加項目，對比一律用 `scripts/contrast-check.mjs` 的 `contrastRatio`。

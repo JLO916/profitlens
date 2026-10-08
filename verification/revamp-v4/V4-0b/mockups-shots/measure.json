@@ -358,5 +358,2012 @@
     "perRow": 5
    }
   }
+ },
+ "products": {
+  "390": {
+   "viewport": 390,
+   "pageScrollWidth": 390,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-products-variance",
+     "frameHeight": 180,
+     "frameWidth": 324
+    }
+   ],
+   "c2": {
+    "g13": {
+     "prd": {
+      "frameWidth": 324,
+      "frameHeight": 180,
+      "svgWidth": 324,
+      "svgHeight": 160,
+      "bars": 10,
+      "maxBarPx": 85,
+      "minBarPx": 27.1,
+      "labelMaxPx": 183.38,
+      "valueMaxPx": 39.03,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     },
+     "stacked": {
+      "frameWidth": 324,
+      "frameHeight": 180,
+      "svgWidth": 324,
+      "svgHeight": 160,
+      "bars": 10,
+      "maxBarPx": 85,
+      "minBarPx": 27.1,
+      "labelMaxPx": 183.38,
+      "valueMaxPx": 39.03,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     }
+    },
+    "rankTablesTopOffset": 1398,
+    "productWorstInPareto": false
+   }
+  },
+  "768": {
+   "viewport": 768,
+   "pageScrollWidth": 768,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-products-variance",
+     "frameHeight": 180,
+     "frameWidth": 450
+    }
+   ],
+   "c2": {
+    "g13": {
+     "prd": {
+      "frameWidth": 450,
+      "frameHeight": 180,
+      "svgWidth": 450,
+      "svgHeight": 80,
+      "bars": 10,
+      "maxBarPx": 1,
+      "minBarPx": 1,
+      "labelMaxPx": 183.38,
+      "valueMaxPx": 39.03,
+      "textOverlaps": 10,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 0,
+        "left": 233
+       }
+      ],
+      "svgFitsFrame": true
+     },
+     "stacked": {
+      "frameWidth": 450,
+      "frameHeight": 180,
+      "svgWidth": 450,
+      "svgHeight": 160,
+      "bars": 10,
+      "maxBarPx": 211,
+      "minBarPx": 67.2,
+      "labelMaxPx": 183.38,
+      "valueMaxPx": 39.03,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     }
+    },
+    "rankTablesTopOffset": 940,
+    "productWorstInPareto": false
+   }
+  },
+  "1280": {
+   "viewport": 1280,
+   "pageScrollWidth": 1280,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-products-variance",
+     "frameHeight": 180,
+     "frameWidth": 444
+    }
+   ],
+   "c2": {
+    "g13": {
+     "prd": {
+      "frameWidth": 444,
+      "frameHeight": 180,
+      "svgWidth": 444,
+      "svgHeight": 80,
+      "bars": 10,
+      "maxBarPx": 1,
+      "minBarPx": 1,
+      "labelMaxPx": 183.38,
+      "valueMaxPx": 39.03,
+      "textOverlaps": 10,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 0,
+        "left": 230
+       }
+      ],
+      "svgFitsFrame": true
+     },
+     "stacked": {
+      "frameWidth": 444,
+      "frameHeight": 180,
+      "svgWidth": 444,
+      "svgHeight": 160,
+      "bars": 10,
+      "maxBarPx": 205,
+      "minBarPx": 65.3,
+      "labelMaxPx": 183.38,
+      "valueMaxPx": 39.03,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     }
+    },
+    "rankTablesTopOffset": 513,
+    "productWorstInPareto": false
+   }
+  },
+  "1440": {
+   "viewport": 1440,
+   "pageScrollWidth": 1440,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-products-variance",
+     "frameHeight": 180,
+     "frameWidth": 524
+    }
+   ],
+   "c2": {
+    "g13": {
+     "prd": {
+      "frameWidth": 524,
+      "frameHeight": 180,
+      "svgWidth": 524,
+      "svgHeight": 80,
+      "bars": 10,
+      "maxBarPx": 15,
+      "minBarPx": 4.8,
+      "labelMaxPx": 183.38,
+      "valueMaxPx": 39.03,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 0,
+        "left": 270
+       }
+      ],
+      "svgFitsFrame": true
+     },
+     "stacked": {
+      "frameWidth": 524,
+      "frameHeight": 180,
+      "svgWidth": 524,
+      "svgHeight": 160,
+      "bars": 10,
+      "maxBarPx": 285,
+      "minBarPx": 90.7,
+      "labelMaxPx": 183.38,
+      "valueMaxPx": 39.03,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     }
+    },
+    "rankTablesTopOffset": 493,
+    "productWorstInPareto": false
+   }
+  }
+ },
+ "products-synthetic": {
+  "390": {
+   "viewport": 390,
+   "pageScrollWidth": 390,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-products-pareto",
+     "frameHeight": 180,
+     "frameWidth": 324
+    },
+    {
+     "testId": "chart-products-variance",
+     "frameHeight": 180,
+     "frameWidth": 324
+    }
+   ],
+   "c2": {
+    "g13": {
+     "prd": {
+      "frameWidth": 324,
+      "frameHeight": 180,
+      "svgWidth": 324,
+      "svgHeight": 144,
+      "bars": 9,
+      "maxBarPx": 107,
+      "minBarPx": 19.5,
+      "labelMaxPx": 148.72,
+      "valueMaxPx": 52.38,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     },
+     "stacked": {
+      "frameWidth": 324,
+      "frameHeight": 180,
+      "svgWidth": 324,
+      "svgHeight": 144,
+      "bars": 9,
+      "maxBarPx": 107,
+      "minBarPx": 19.5,
+      "labelMaxPx": 148.72,
+      "valueMaxPx": 52.38,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     }
+    },
+    "rankTablesTopOffset": 1462,
+    "g14": {
+     "frameWidth": 324,
+     "frameHeight": 180,
+     "svgWidth": 324,
+     "svgHeight": 80,
+     "bars": 5,
+     "maxBarPx": 32,
+     "minBarPx": 8,
+     "labelMaxPx": 148.72,
+     "valueMaxPx": 68.05,
+     "textOverlaps": 0,
+     "columns": [
+      {
+       "id": "pareto",
+       "top": 0,
+       "left": 0
+      }
+     ],
+     "svgFitsFrame": true
+    },
+    "productWorstInPareto": true
+   }
+  },
+  "768": {
+   "viewport": 768,
+   "pageScrollWidth": 768,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-products-pareto",
+     "frameHeight": 180,
+     "frameWidth": 450
+    },
+    {
+     "testId": "chart-products-variance",
+     "frameHeight": 180,
+     "frameWidth": 450
+    }
+   ],
+   "c2": {
+    "g13": {
+     "prd": {
+      "frameWidth": 450,
+      "frameHeight": 180,
+      "svgWidth": 450,
+      "svgHeight": 80,
+      "bars": 9,
+      "maxBarPx": 1,
+      "minBarPx": 1,
+      "labelMaxPx": 148.72,
+      "valueMaxPx": 52.38,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 0,
+        "left": 233
+       }
+      ],
+      "svgFitsFrame": true
+     },
+     "stacked": {
+      "frameWidth": 450,
+      "frameHeight": 180,
+      "svgWidth": 450,
+      "svgHeight": 144,
+      "bars": 9,
+      "maxBarPx": 233,
+      "minBarPx": 42.4,
+      "labelMaxPx": 148.72,
+      "valueMaxPx": 52.38,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     }
+    },
+    "rankTablesTopOffset": 988,
+    "g14": {
+     "frameWidth": 450,
+     "frameHeight": 180,
+     "svgWidth": 450,
+     "svgHeight": 80,
+     "bars": 5,
+     "maxBarPx": 158,
+     "minBarPx": 39.5,
+     "labelMaxPx": 148.72,
+     "valueMaxPx": 68.05,
+     "textOverlaps": 0,
+     "columns": [
+      {
+       "id": "pareto",
+       "top": 0,
+       "left": 0
+      }
+     ],
+     "svgFitsFrame": true
+    },
+    "productWorstInPareto": true
+   }
+  },
+  "1280": {
+   "viewport": 1280,
+   "pageScrollWidth": 1280,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-products-pareto",
+     "frameHeight": 180,
+     "frameWidth": 444
+    },
+    {
+     "testId": "chart-products-variance",
+     "frameHeight": 180,
+     "frameWidth": 444
+    }
+   ],
+   "c2": {
+    "g13": {
+     "prd": {
+      "frameWidth": 444,
+      "frameHeight": 180,
+      "svgWidth": 444,
+      "svgHeight": 80,
+      "bars": 9,
+      "maxBarPx": 1,
+      "minBarPx": 1,
+      "labelMaxPx": 148.72,
+      "valueMaxPx": 52.38,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 0,
+        "left": 230
+       }
+      ],
+      "svgFitsFrame": true
+     },
+     "stacked": {
+      "frameWidth": 444,
+      "frameHeight": 180,
+      "svgWidth": 444,
+      "svgHeight": 144,
+      "bars": 9,
+      "maxBarPx": 227,
+      "minBarPx": 41.3,
+      "labelMaxPx": 148.72,
+      "valueMaxPx": 52.38,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     }
+    },
+    "rankTablesTopOffset": 60,
+    "g14": {
+     "frameWidth": 444,
+     "frameHeight": 180,
+     "svgWidth": 444,
+     "svgHeight": 80,
+     "bars": 5,
+     "maxBarPx": 152,
+     "minBarPx": 38,
+     "labelMaxPx": 148.72,
+     "valueMaxPx": 68.05,
+     "textOverlaps": 0,
+     "columns": [
+      {
+       "id": "pareto",
+       "top": 0,
+       "left": 0
+      }
+     ],
+     "svgFitsFrame": true
+    },
+    "productWorstInPareto": true
+   }
+  },
+  "1440": {
+   "viewport": 1440,
+   "pageScrollWidth": 1440,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-products-pareto",
+     "frameHeight": 180,
+     "frameWidth": 524
+    },
+    {
+     "testId": "chart-products-variance",
+     "frameHeight": 180,
+     "frameWidth": 524
+    }
+   ],
+   "c2": {
+    "g13": {
+     "prd": {
+      "frameWidth": 524,
+      "frameHeight": 180,
+      "svgWidth": 524,
+      "svgHeight": 80,
+      "bars": 9,
+      "maxBarPx": 37,
+      "minBarPx": 6.7,
+      "labelMaxPx": 148.72,
+      "valueMaxPx": 52.38,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 0,
+        "left": 270
+       }
+      ],
+      "svgFitsFrame": true
+     },
+     "stacked": {
+      "frameWidth": 524,
+      "frameHeight": 180,
+      "svgWidth": 524,
+      "svgHeight": 144,
+      "bars": 9,
+      "maxBarPx": 307,
+      "minBarPx": 55.8,
+      "labelMaxPx": 148.72,
+      "valueMaxPx": 52.38,
+      "textOverlaps": 0,
+      "columns": [
+       {
+        "id": "decrease",
+        "top": 0,
+        "left": 0
+       },
+       {
+        "id": "increase",
+        "top": 80,
+        "left": 0
+       }
+      ],
+      "svgFitsFrame": true
+     }
+    },
+    "rankTablesTopOffset": 96,
+    "g14": {
+     "frameWidth": 524,
+     "frameHeight": 180,
+     "svgWidth": 524,
+     "svgHeight": 80,
+     "bars": 5,
+     "maxBarPx": 232,
+     "minBarPx": 58,
+     "labelMaxPx": 148.72,
+     "valueMaxPx": 68.05,
+     "textOverlaps": 0,
+     "columns": [
+      {
+       "id": "pareto",
+       "top": 0,
+       "left": 0
+      }
+     ],
+     "svgFitsFrame": true
+    },
+    "productWorstInPareto": true
+   }
+  }
+ },
+ "data": {
+  "390": {
+   "viewport": 390,
+   "pageScrollWidth": 390,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-data-coverage",
+     "frameHeight": 180,
+     "frameWidth": 324
+    },
+    {
+     "testId": "chart-data-issues",
+     "frameHeight": 180,
+     "frameWidth": 324
+    }
+   ],
+   "c2": {
+    "g20": {
+     "actual": {
+      "frameWidth": 324,
+      "frameHeight": 180,
+      "svgWidth": 324,
+      "svgHeight": 144,
+      "bands": [
+       {
+        "x": 65.8,
+        "width": 98.1,
+        "fill": "rgb(241, 243, 243)"
+       },
+       {
+        "x": 165.9,
+        "width": 98.1,
+        "fill": "rgb(241, 243, 243)"
+       }
+      ],
+      "bandGap": 2,
+      "bandLabels": [
+       "上期",
+       "本期"
+      ],
+      "missing": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 206.2,
+        "y": 53.5,
+        "width": 34,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 6
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 118.8,
+        "y": 77.5,
+        "width": 22.3,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 4
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 252.8,
+        "y": 77.5,
+        "width": 4.8,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       }
+      ],
+      "yoy": null,
+      "rowsFill": "rgb(74, 85, 88)",
+      "rowsHeight": 6,
+      "events": [
+       {
+        "width": 15.5,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       },
+       {
+        "width": 15.5,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       }
+      ],
+      "surface": "rgb(255, 255, 255)",
+      "textOverlaps": 0,
+      "axisLabels": [
+       "8/20",
+       "9/23",
+       "9/1"
+      ],
+      "contrast": {
+       "missingStrokeOnBackground": [
+        {
+         "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+         "insideBand": true,
+         "ratio": 3.22
+        }
+       ],
+       "yoyOnSurface": null,
+       "yoyVsMissingStroke": null,
+       "bandOnSurface": 1.11,
+       "rowsOnBand": 6.9,
+       "rowsOnSurface": 7.68,
+       "eventOnSurface": 5.57
+      }
+     },
+     "yoy": {
+      "frameWidth": 324,
+      "frameHeight": 180,
+      "svgWidth": 324,
+      "svgHeight": 144,
+      "bands": [
+       {
+        "x": 246.1,
+        "width": 7.9,
+        "fill": "rgb(241, 243, 243)"
+       },
+       {
+        "x": 256.1,
+        "width": 7.9,
+        "fill": "rgb(241, 243, 243)"
+       }
+      ],
+      "bandGap": 2.1,
+      "bandLabels": [],
+      "missing": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 259.2,
+        "y": 53.5,
+        "width": 2.2,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 251.4,
+        "y": 77.5,
+        "width": 1.1,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 263.4,
+        "y": 77.5,
+        "width": 0.5,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       }
+      ],
+      "yoy": {
+       "x": 63.2,
+       "y": 11.5,
+       "width": 8.9,
+       "stroke": "rgb(127, 137, 139)",
+       "strokeWidth": "1px",
+       "dasharray": "none",
+       "background": "rgb(255, 255, 255)",
+       "gapToNearestMissingTop": 42
+      },
+      "rowsFill": "rgb(74, 85, 88)",
+      "rowsHeight": 6,
+      "events": [
+       {
+        "width": 0.5,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       },
+       {
+        "width": 0.5,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       }
+      ],
+      "surface": "rgb(255, 255, 255)",
+      "textOverlaps": 0,
+      "axisLabels": [
+       "2025/9/1",
+       "9/23",
+       "1/1",
+       "3/1",
+       "5/1",
+       "7/1"
+      ],
+      "contrast": {
+       "missingStrokeOnBackground": [
+        {
+         "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+         "insideBand": true,
+         "ratio": 3.22
+        }
+       ],
+       "yoyOnSurface": 3.58,
+       "yoyVsMissingStroke": 1,
+       "bandOnSurface": 1.11,
+       "rowsOnBand": 6.9,
+       "rowsOnSurface": 7.68,
+       "eventOnSurface": 5.57
+      }
+     }
+    },
+    "g21": {
+     "frameHeight": 180,
+     "tableHeight": 142,
+     "listMode": true,
+     "cells": [
+      {
+       "testId": "chart-data-issues-cell-costs-MISSING_CHANNEL_COST_DAY",
+       "tier": "2",
+       "text": "6",
+       "background": "rgb(235, 206, 203)",
+       "boxShadow": "rgb(176, 58, 46) 0px 0px 0px 2px inset",
+       "color": "rgb(27, 36, 38)",
+       "width": 108,
+       "height": 32,
+       "contrast": {
+        "textOnCell": 10.71,
+        "cellOnSurface": 1.47,
+        "borderOnCell": 4.07,
+        "borderOnSurface": 6.01
+       }
+      },
+      {
+       "testId": "chart-data-issues-cell-ads-MISSING_AD_DAY",
+       "tier": "2",
+       "text": "5",
+       "background": "rgb(235, 206, 203)",
+       "boxShadow": "rgb(176, 58, 46) 0px 0px 0px 2px inset",
+       "color": "rgb(27, 36, 38)",
+       "width": 108,
+       "height": 32,
+       "contrast": {
+        "textOnCell": 10.71,
+        "cellOnSurface": 1.47,
+        "borderOnCell": 4.07,
+        "borderOnSurface": 6.01
+       }
+      }
+     ],
+     "buttons": 2,
+     "surface": "rgb(255, 255, 255)"
+    },
+    "g22": {
+     "cells": 8,
+     "top": "rgb(127, 137, 139)",
+     "bottom": "rgb(74, 85, 88)",
+     "surface": "rgb(255, 255, 255)",
+     "contrast": {
+      "topOnSurface": 3.58,
+      "bottomOnSurface": 7.68,
+      "topVsBottom": 2.14
+     }
+    }
+   }
+  },
+  "768": {
+   "viewport": 768,
+   "pageScrollWidth": 768,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-data-coverage",
+     "frameHeight": 180,
+     "frameWidth": 450
+    },
+    {
+     "testId": "chart-data-issues",
+     "frameHeight": 180,
+     "frameWidth": 454
+    }
+   ],
+   "c2": {
+    "g20": {
+     "actual": {
+      "frameWidth": 450,
+      "frameHeight": 180,
+      "svgWidth": 450,
+      "svgHeight": 144,
+      "bands": [
+       {
+        "x": 73.2,
+        "width": 155.4,
+        "fill": "rgb(241, 243, 243)"
+       },
+       {
+        "x": 230.6,
+        "width": 155.4,
+        "fill": "rgb(241, 243, 243)"
+       }
+      ],
+      "bandGap": 2,
+      "bandLabels": [
+       "上期",
+       "本期"
+      ],
+      "missing": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 294.5,
+        "y": 53.5,
+        "width": 54.2,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 10
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 156.5,
+        "y": 77.5,
+        "width": 35.8,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 7
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 368.1,
+        "y": 77.5,
+        "width": 8.2,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 1
+       }
+      ],
+      "yoy": null,
+      "rowsFill": "rgb(74, 85, 88)",
+      "rowsHeight": 6,
+      "events": [
+       {
+        "width": 25.6,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       },
+       {
+        "width": 25.6,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       }
+      ],
+      "surface": "rgb(255, 255, 255)",
+      "textOverlaps": 0,
+      "axisLabels": [
+       "8/20",
+       "9/23",
+       "9/1"
+      ],
+      "contrast": {
+       "missingStrokeOnBackground": [
+        {
+         "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+         "insideBand": true,
+         "ratio": 3.22
+        }
+       ],
+       "yoyOnSurface": null,
+       "yoyVsMissingStroke": null,
+       "bandOnSurface": 1.11,
+       "rowsOnBand": 6.9,
+       "rowsOnSurface": 7.68,
+       "eventOnSurface": 5.57
+      }
+     },
+     "yoy": {
+      "frameWidth": 450,
+      "frameHeight": 180,
+      "svgWidth": 450,
+      "svgHeight": 144,
+      "bands": [
+       {
+        "x": 357.8,
+        "width": 13.1,
+        "fill": "rgb(241, 243, 243)"
+       },
+       {
+        "x": 372.9,
+        "width": 13.1,
+        "fill": "rgb(241, 243, 243)"
+       }
+      ],
+      "bandGap": 2,
+      "bandLabels": [],
+      "missing": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 378.2,
+        "y": 53.5,
+        "width": 4,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 365.8,
+        "y": 77.5,
+        "width": 2.3,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 384.8,
+        "y": 77.5,
+        "width": 0.5,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       }
+      ],
+      "yoy": {
+       "x": 69,
+       "y": 11.5,
+       "width": 14.1,
+       "stroke": "rgb(127, 137, 139)",
+       "strokeWidth": "1px",
+       "dasharray": "none",
+       "background": "rgb(255, 255, 255)",
+       "gapToNearestMissingTop": 42
+      },
+      "rowsFill": "rgb(74, 85, 88)",
+      "rowsHeight": 6,
+      "events": [
+       {
+        "width": 0.5,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       },
+       {
+        "width": 0.5,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       }
+      ],
+      "surface": "rgb(255, 255, 255)",
+      "textOverlaps": 0,
+      "axisLabels": [
+       "2025/9/1",
+       "9/23",
+       "1/1",
+       "2/1",
+       "4/1",
+       "6/1",
+       "8/1"
+      ],
+      "contrast": {
+       "missingStrokeOnBackground": [
+        {
+         "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+         "insideBand": true,
+         "ratio": 3.22
+        }
+       ],
+       "yoyOnSurface": 3.58,
+       "yoyVsMissingStroke": 1,
+       "bandOnSurface": 1.11,
+       "rowsOnBand": 6.9,
+       "rowsOnSurface": 7.68,
+       "eventOnSurface": 5.57
+      }
+     }
+    },
+    "g21": {
+     "frameHeight": 180,
+     "tableHeight": 160,
+     "listMode": false,
+     "cells": [
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": "chart-data-issues-cell-costs-MISSING_CHANNEL_COST_DAY",
+       "tier": "2",
+       "text": "6",
+       "background": "rgb(235, 206, 203)",
+       "boxShadow": "rgb(176, 58, 46) 0px 0px 0px 2px inset",
+       "color": "rgb(27, 36, 38)",
+       "width": 96,
+       "height": 36,
+       "contrast": {
+        "textOnCell": 10.71,
+        "cellOnSurface": 1.47,
+        "borderOnCell": 4.07,
+        "borderOnSurface": 6.01
+       }
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": "chart-data-issues-cell-ads-MISSING_AD_DAY",
+       "tier": "2",
+       "text": "5",
+       "background": "rgb(235, 206, 203)",
+       "boxShadow": "rgb(176, 58, 46) 0px 0px 0px 2px inset",
+       "color": "rgb(27, 36, 38)",
+       "width": 96,
+       "height": 36,
+       "contrast": {
+        "textOnCell": 10.71,
+        "cellOnSurface": 1.47,
+        "borderOnCell": 4.07,
+        "borderOnSurface": 6.01
+       }
+      }
+     ],
+     "buttons": 2,
+     "surface": "rgb(255, 255, 255)"
+    },
+    "g22": {
+     "cells": 8,
+     "top": "rgb(127, 137, 139)",
+     "bottom": "rgb(74, 85, 88)",
+     "surface": "rgb(255, 255, 255)",
+     "contrast": {
+      "topOnSurface": 3.58,
+      "bottomOnSurface": 7.68,
+      "topVsBottom": 2.14
+     }
+    }
+   }
+  },
+  "1280": {
+   "viewport": 1280,
+   "pageScrollWidth": 1280,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-data-coverage",
+     "frameHeight": 180,
+     "frameWidth": 962
+    },
+    {
+     "testId": "chart-data-issues",
+     "frameHeight": 180,
+     "frameWidth": 966
+    }
+   ],
+   "c2": {
+    "g20": {
+     "actual": {
+      "frameWidth": 962,
+      "frameHeight": 180,
+      "svgWidth": 962,
+      "svgHeight": 144,
+      "bands": [
+       {
+        "x": 95.4,
+        "width": 396.3,
+        "fill": "rgb(241, 243, 243)"
+       },
+       {
+        "x": 493.7,
+        "width": 396.3,
+        "fill": "rgb(241, 243, 243)"
+       }
+      ],
+      "bandGap": 2,
+      "bandLabels": [
+       "上期",
+       "本期"
+      ],
+      "missing": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 656.8,
+        "y": 53.5,
+        "width": 139.2,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 27
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 306.2,
+        "y": 77.5,
+        "width": 92.5,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 18
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 843.8,
+        "y": 77.5,
+        "width": 22.4,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 4
+       }
+      ],
+      "yoy": null,
+      "rowsFill": "rgb(74, 85, 88)",
+      "rowsHeight": 6,
+      "events": [
+       {
+        "width": 68.1,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       },
+       {
+        "width": 68.1,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       }
+      ],
+      "surface": "rgb(255, 255, 255)",
+      "textOverlaps": 0,
+      "axisLabels": [
+       "8/20",
+       "9/23",
+       "9/1"
+      ],
+      "contrast": {
+       "missingStrokeOnBackground": [
+        {
+         "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+         "insideBand": true,
+         "ratio": 3.22
+        }
+       ],
+       "yoyOnSurface": null,
+       "yoyVsMissingStroke": null,
+       "bandOnSurface": 1.11,
+       "rowsOnBand": 6.9,
+       "rowsOnSurface": 7.68,
+       "eventOnSurface": 5.57
+      }
+     },
+     "yoy": {
+      "frameWidth": 962,
+      "frameHeight": 180,
+      "svgWidth": 962,
+      "svgHeight": 144,
+      "bands": [
+       {
+        "x": 818.3,
+        "width": 34.8,
+        "fill": "rgb(241, 243, 243)"
+       },
+       {
+        "x": 855.2,
+        "width": 34.8,
+        "fill": "rgb(241, 243, 243)"
+       }
+      ],
+      "bandGap": 2.1,
+      "bandLabels": [
+       "上期",
+       "本期"
+      ],
+      "missing": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 869.4,
+        "y": 53.5,
+        "width": 11.6,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 2
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 837.8,
+        "y": 77.5,
+        "width": 7.4,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 1
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 886.3,
+        "y": 77.5,
+        "width": 1.1,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       }
+      ],
+      "yoy": {
+       "x": 84.6,
+       "y": 11.5,
+       "width": 35.9,
+       "stroke": "rgb(127, 137, 139)",
+       "strokeWidth": "1px",
+       "dasharray": "none",
+       "background": "rgb(255, 255, 255)",
+       "gapToNearestMissingTop": 42
+      },
+      "rowsFill": "rgb(74, 85, 88)",
+      "rowsHeight": 6,
+      "events": [
+       {
+        "width": 4.3,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       },
+       {
+        "width": 4.3,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       }
+      ],
+      "surface": "rgb(255, 255, 255)",
+      "textOverlaps": 0,
+      "axisLabels": [
+       "2025/9/1",
+       "9/23",
+       "2025/11/1",
+       "2025/12/1",
+       "1/1",
+       "2/1",
+       "3/1",
+       "4/1",
+       "5/1",
+       "6/1",
+       "7/1",
+       "8/1",
+       "9/1"
+      ],
+      "contrast": {
+       "missingStrokeOnBackground": [
+        {
+         "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+         "insideBand": true,
+         "ratio": 3.22
+        }
+       ],
+       "yoyOnSurface": 3.58,
+       "yoyVsMissingStroke": 1,
+       "bandOnSurface": 1.11,
+       "rowsOnBand": 6.9,
+       "rowsOnSurface": 7.68,
+       "eventOnSurface": 5.57
+      }
+     }
+    },
+    "g21": {
+     "frameHeight": 180,
+     "tableHeight": 160,
+     "listMode": false,
+     "cells": [
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": "chart-data-issues-cell-costs-MISSING_CHANNEL_COST_DAY",
+       "tier": "2",
+       "text": "6",
+       "background": "rgb(235, 206, 203)",
+       "boxShadow": "rgb(176, 58, 46) 0px 0px 0px 2px inset",
+       "color": "rgb(27, 36, 38)",
+       "width": 96,
+       "height": 36,
+       "contrast": {
+        "textOnCell": 10.71,
+        "cellOnSurface": 1.47,
+        "borderOnCell": 4.07,
+        "borderOnSurface": 6.01
+       }
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": "chart-data-issues-cell-ads-MISSING_AD_DAY",
+       "tier": "2",
+       "text": "5",
+       "background": "rgb(235, 206, 203)",
+       "boxShadow": "rgb(176, 58, 46) 0px 0px 0px 2px inset",
+       "color": "rgb(27, 36, 38)",
+       "width": 96,
+       "height": 36,
+       "contrast": {
+        "textOnCell": 10.71,
+        "cellOnSurface": 1.47,
+        "borderOnCell": 4.07,
+        "borderOnSurface": 6.01
+       }
+      }
+     ],
+     "buttons": 2,
+     "surface": "rgb(255, 255, 255)"
+    },
+    "g22": {
+     "cells": 8,
+     "top": "rgb(127, 137, 139)",
+     "bottom": "rgb(74, 85, 88)",
+     "surface": "rgb(255, 255, 255)",
+     "contrast": {
+      "topOnSurface": 3.58,
+      "bottomOnSurface": 7.68,
+      "topVsBottom": 2.14
+     }
+    }
+   }
+  },
+  "1440": {
+   "viewport": 1440,
+   "pageScrollWidth": 1440,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "chart-data-coverage",
+     "frameHeight": 180,
+     "frameWidth": 1122
+    },
+    {
+     "testId": "chart-data-issues",
+     "frameHeight": 180,
+     "frameWidth": 1126
+    }
+   ],
+   "c2": {
+    "g20": {
+     "actual": {
+      "frameWidth": 1122,
+      "frameHeight": 180,
+      "svgWidth": 1122,
+      "svgHeight": 144,
+      "bands": [
+       {
+        "x": 99.9,
+        "width": 474,
+        "fill": "rgb(241, 243, 243)"
+       },
+       {
+        "x": 576,
+        "width": 474,
+        "fill": "rgb(241, 243, 243)"
+       }
+      ],
+      "bandGap": 2.1,
+      "bandLabels": [
+       "上期",
+       "本期"
+      ],
+      "missing": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 771.1,
+        "y": 53.5,
+        "width": 166.7,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 33
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 351.9,
+        "y": 77.5,
+        "width": 110.8,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 22
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 994.6,
+        "y": 77.5,
+        "width": 26.9,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 5
+       }
+      ],
+      "yoy": null,
+      "rowsFill": "rgb(74, 85, 88)",
+      "rowsHeight": 6,
+      "events": [
+       {
+        "width": 81.9,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       },
+       {
+        "width": 81.9,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       }
+      ],
+      "surface": "rgb(255, 255, 255)",
+      "textOverlaps": 0,
+      "axisLabels": [
+       "8/20",
+       "9/23",
+       "9/1"
+      ],
+      "contrast": {
+       "missingStrokeOnBackground": [
+        {
+         "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+         "insideBand": true,
+         "ratio": 3.22
+        }
+       ],
+       "yoyOnSurface": null,
+       "yoyVsMissingStroke": null,
+       "bandOnSurface": 1.11,
+       "rowsOnBand": 6.9,
+       "rowsOnSurface": 7.68,
+       "eventOnSurface": 5.57
+      }
+     },
+     "yoy": {
+      "frameWidth": 1122,
+      "frameHeight": 180,
+      "svgWidth": 1122,
+      "svgHeight": 144,
+      "bands": [
+       {
+        "x": 964.3,
+        "width": 41.9,
+        "fill": "rgb(241, 243, 243)"
+       },
+       {
+        "x": 1008.1,
+        "width": 41.9,
+        "fill": "rgb(241, 243, 243)"
+       }
+      ],
+      "bandGap": 1.9,
+      "bandLabels": [
+       "上期",
+       "本期"
+      ],
+      "missing": [
+       {
+        "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+        "x": 1025.3,
+        "y": 53.5,
+        "width": 14.1,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 2
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+        "x": 987.5,
+        "y": 77.5,
+        "width": 9.1,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 1
+       },
+       {
+        "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+        "x": 1045.5,
+        "y": 77.5,
+        "width": 1.5,
+        "height": 13,
+        "stroke": "rgb(127, 137, 139)",
+        "strokeWidth": "1px",
+        "dasharray": "3px, 2px",
+        "background": "rgb(241, 243, 243)",
+        "insideBand": true,
+        "dashCyclesOnTop": 0
+       }
+      ],
+      "yoy": {
+       "x": 87.1,
+       "y": 11.5,
+       "width": 42.9,
+       "stroke": "rgb(127, 137, 139)",
+       "strokeWidth": "1px",
+       "dasharray": "none",
+       "background": "rgb(255, 255, 255)",
+       "gapToNearestMissingTop": 42
+      },
+      "rowsFill": "rgb(74, 85, 88)",
+      "rowsHeight": 6,
+      "events": [
+       {
+        "width": 5.6,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       },
+       {
+        "width": 5.5,
+        "stroke": "rgb(95, 106, 109)",
+        "strokeWidth": "2px"
+       }
+      ],
+      "surface": "rgb(255, 255, 255)",
+      "textOverlaps": 0,
+      "axisLabels": [
+       "2025/9/1",
+       "9/23",
+       "2025/11/1",
+       "2025/12/1",
+       "1/1",
+       "2/1",
+       "3/1",
+       "4/1",
+       "5/1",
+       "6/1",
+       "7/1",
+       "8/1",
+       "9/1"
+      ],
+      "contrast": {
+       "missingStrokeOnBackground": [
+        {
+         "testId": "chart-data-coverage-seg-costs-LIVE-2026-09-14",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-08-30",
+         "insideBand": true,
+         "ratio": 3.22
+        },
+        {
+         "testId": "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+         "insideBand": true,
+         "ratio": 3.22
+        }
+       ],
+       "yoyOnSurface": 3.58,
+       "yoyVsMissingStroke": 1,
+       "bandOnSurface": 1.11,
+       "rowsOnBand": 6.9,
+       "rowsOnSurface": 7.68,
+       "eventOnSurface": 5.57
+      }
+     }
+    },
+    "g21": {
+     "frameHeight": 180,
+     "tableHeight": 160,
+     "listMode": false,
+     "cells": [
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": "chart-data-issues-cell-costs-MISSING_CHANNEL_COST_DAY",
+       "tier": "2",
+       "text": "6",
+       "background": "rgb(235, 206, 203)",
+       "boxShadow": "rgb(176, 58, 46) 0px 0px 0px 2px inset",
+       "color": "rgb(27, 36, 38)",
+       "width": 96,
+       "height": 36,
+       "contrast": {
+        "textOnCell": 10.71,
+        "cellOnSurface": 1.47,
+        "borderOnCell": 4.07,
+        "borderOnSurface": 6.01
+       }
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": null,
+       "tier": "0",
+       "text": "",
+       "background": "rgba(0, 0, 0, 0)",
+       "boxShadow": "none",
+       "color": null,
+       "width": 96,
+       "height": 36
+      },
+      {
+       "testId": "chart-data-issues-cell-ads-MISSING_AD_DAY",
+       "tier": "2",
+       "text": "5",
+       "background": "rgb(235, 206, 203)",
+       "boxShadow": "rgb(176, 58, 46) 0px 0px 0px 2px inset",
+       "color": "rgb(27, 36, 38)",
+       "width": 96,
+       "height": 36,
+       "contrast": {
+        "textOnCell": 10.71,
+        "cellOnSurface": 1.47,
+        "borderOnCell": 4.07,
+        "borderOnSurface": 6.01
+       }
+      }
+     ],
+     "buttons": 2,
+     "surface": "rgb(255, 255, 255)"
+    },
+    "g22": {
+     "cells": 8,
+     "top": "rgb(127, 137, 139)",
+     "bottom": "rgb(74, 85, 88)",
+     "surface": "rgb(255, 255, 255)",
+     "contrast": {
+      "topOnSurface": 3.58,
+      "bottomOnSurface": 7.68,
+      "topVsBottom": 2.14
+     }
+    }
+   }
+  }
  }
 }
