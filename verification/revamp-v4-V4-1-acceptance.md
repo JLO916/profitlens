@@ -46,7 +46,7 @@
 | `git diff --stat 82b70df -- src/domain fixtures/golden fixtures/demo fixtures/errors fixtures/refund_only fixtures/zero_ad docs/METRICS.md` | 空 |
 | `git diff --stat 625bfa5 -- src/application/assist-kpi.ts src/application/breakeven-mer.ts tests/assist-kpi.test.ts tests/breakeven-mer.test.ts` | 空 |
 | `git status --porcelain -- （同上全部禁區路徑）` | 空 |
-| commit 之後的禁區 diff | 收尾提交後執行，結果補在本表下一版 |
+| commit 之後 `git diff --stat 625bfa5 HEAD -- src/domain fixtures docs/METRICS.md src/application/assist-kpi.ts src/application/breakeven-mer.ts tests/assist-kpi.test.ts tests/breakeven-mer.test.ts` | 空（收尾 commit `0462ce5`） |
 | 合併後隱藏字元掃描 | 0 |
 
 **棘輪與基準數值**
