@@ -24,6 +24,12 @@ export const chartCategoryColors = ["var(--chart-cat-1)", "var(--chart-cat-2)", 
 
 /** 圖高（px），對應 --chart-h-sm（總覽並列圖）與 --chart-h-lg（瀑布、詳圖）；同一列等高，四種狀態等高。 */
 export const chartHeights = { sm: 180, lg: 320 } as const;
+/**
+ * V4-1 依列計高的 inline SVG 列高（px；PRD §6.5）：cell＝C24 表格內嵌條的條高，row16、row24＝C25、C27、C30 每列的高。
+ * 不是 CSS token；依列計高的 svg 高度一律寫成它的整數倍或其和（例如 rows * chartRowHeights.row24），不得寫數字常值（CL-10、X34）。
+ * C30 的日期軸高 axis 在 V4-7a 加；C35 啞鈴的 row28 只在 D-V4-16 選 B 時加。
+ */
+export const chartRowHeights = { cell: 6, row16: 16, row24: 24 } as const;
 /** 軸標與柱上標值的字級（12px）。 */
 export const chartFontSize = "var(--text-12)";
 

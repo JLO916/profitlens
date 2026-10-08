@@ -2616,6 +2616,15 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V4-1 A 錨點結束 ── */
 
 /* ── V4-1 B：C24 BarCell（variance）與 chartRowHeights ── */
+/* C24 表格內嵌條（PRD §6.3）：根 svg.bar-cell 的 width、height 屬性是座標系（96 × 12；高＝chartRowHeights.cell 兩倍，條高 6px 置中），
+   這裡只決定顯示寬：≥ 768 用屬性的 96px，≤ 767 縮成 64px（preserveAspectRatio="none" 讓條等比縮放，零線 non-scaling-stroke 維持 1px）。
+   條在同列數字之前，右側留 --space-2。要不要顯示（G6 只在 ≤ 767 顯示、≥ 768 隱藏但掛載）由各圖自己的錨點決定，本段不藏；條本身 aria-hidden、不可聚焦。 */
+.bar-cell { display: inline-block; flex: none; margin-right: var(--space-2); vertical-align: middle; }
+.bar-cell.is-clickable { cursor: pointer; }
+/* 放在靠右對齊的金額格（td.num）內時，條貼齊格的左緣：各列數字寬度不同，零線仍在同一條直線上（同一張表共用尺度與零線，PRD §7.2）。
+   margin-top 讓 12px 的盒（BAR_CELL_HEIGHT）與該格一行文字垂直置中（1lh＝該格行高；不支援 lh 的瀏覽器退回 0，只高幾 px）。 */
+td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
+@media (max-width: 767px) { .bar-cell { width: 64px; } }
 /* ── V4-1 B 錨點結束 ── */
 
 /* ── V4-1 C：G6 橋接表內嵌變異條（≤ 767px 顯示，≥ 768 隱藏但掛載） ── */
