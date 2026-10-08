@@ -16,6 +16,7 @@ import { formatAmountL1, formatAmountL2, formatDateL1, formatSignedDelta } from 
 import { MeetingHistory, MeetingPage, type MeetingPageProps } from "@/components/meeting-page";
 import { TopThree } from "@/components/top-three";
 import { PrintSummary } from "@/components/print-summary";
+import { headlineChangeText } from "@/components/manager-summary";
 import styles from "@/components/manager-summary.module.css";
 import { fill, labels } from "@/i18n";
 
@@ -264,6 +265,37 @@ describe("V3-7 §7.6 第 4 點：議程 2、3、5 的精簡呈現", () => {
     const wide = element(three, 'class="meeting-wide-table"');
     expect(wide).toMatch(new RegExp(`^<details class="meeting-wide-table"><summary>${pageV3.fullChannelTable}</summary>`));
     expect(wide).toContain(`role="region" aria-label="${labels.overview.sections.channelTableAria}"`);
+  });
+
+  it("V3-10 可及名稱（WCAG 2.5.3、Lighthouse label-content-name-mismatch）：議程 1 的 6 個與精簡表的 4 個 number-link，名稱＝抽屜標題＋可見文字（meeting.pageV3.linkAria）", async () => {
+    const state = await setup();
+    const html = render(props(state));
+    const summary = buildManagerSummary(state.s.snapshot);
+    /** 一段 markup 內每個 number-link 的可及名稱（aria-label）與可見文字（都解開 HTML 跳脫）。 */
+    const links = (part: string) => [...part.matchAll(/<button type="button" class="number-link[^"]*" aria-label="([^"]*)">([\s\S]*?)<\/button>/g)].map(match => ({ name: text(match[1]), shown: text(match[2]) }));
+    const link = (title: string, value: string) => ({ name: fill(pageV3.linkAria, { title, value }), shown: value });
+    const kpis = links(element(block(html, "meeting-agenda-1"), 'class="meeting-kpis"'));
+    const table = links(element(block(html, "meeting-agenda-3"), 'class="ui-table meeting-channel-table"'));
+    // 議程 1：每個指標依序是本期（L1）、差額行（headlineChangeText）、上期（L1）；抽屜標題（evidence.title）不變。
+    expect(kpis).toEqual(summary.headlines.flatMap(row => [
+      link(row.evidence.current.title, formatAmountL1(row.current.value)),
+      link(row.evidence.change.title, headlineChangeText(row)),
+      link(row.evidence.previous.title, formatAmountL1(row.previous.value)),
+    ]));
+    // 精簡表：每通路的本期與差額（L2 整數元、U+2212）。
+    expect(table).toEqual(summary.channels.flatMap(row => [
+      link(row.contribution.evidence.current.title, formatAmountL2(row.contribution.current.value)),
+      link(row.contribution.evidence.change.title, formatSignedDelta(row.contribution.change.value, "L2")),
+    ]));
+    // golden 手算：本期扣廣告後貢獻 255.00；抽屜標題是「一頁摘要 · 全部（DTC、MARKETPLACE） 本期扣廣告後貢獻」。
+    const metric = labels.metrics.contribution_after_marketing.headline;
+    const title = fill(labels.meeting.managerSummary.evidenceCurrent, { scope: `${labels.overview.sections.total}（DTC、MARKETPLACE）`, metric });
+    expect(kpis[3]).toEqual({ name: fill(pageV3.linkAria, { title, value: formatAmountL1("255.00") }), shown: formatAmountL1("255.00") });
+    expect(table[3]).toEqual(link(fill(labels.meeting.managerSummary.evidenceChange, { scope: "MARKETPLACE", metric }), formatSignedDelta("-185.00", "L2")));
+    // Lighthouse 的 10 個節點：每個名稱都逐字包含可見文字（含 U+2212），也仍包含抽屜標題（E2E 用非 exact 的名稱子字串定位仍可用）。
+    expect(kpis.length + table.length).toBe(10);
+    for (const entry of [...kpis, ...table]) expect(entry.name, entry.shown).toContain(entry.shown);
+    expect([...kpis, ...table].filter(entry => entry.shown.includes("\u2212")).length).toBeGreaterThan(0);
   });
 
   it("選入方案：每通路一列；已選入的列有試算後扣廣告後貢獻與差額，假設收合；過期方案有 warning 狀態標籤", async () => {

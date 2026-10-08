@@ -85,7 +85,8 @@ export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreate
   const effectiveContext = selectionManaged ? decisionContext : withSummaryScenarioSelection(decisionContext, selected);
   const decisions = summaryDecisionState(summary, effectiveContext);
   // V3-2b：主層金額一律 L1（萬／億）；精確值在「計算與來源」抽屜。
-  const amount = (evidence: SummaryEvidence, signed = false, text?: string, tone: DeltaTone = "neutral") => <button type="button" className={tone === "neutral" ? "number-link" : `number-link ${toneClass(tone)}`} onClick={() => onEvidence(evidence)} aria-label={evidence.title}>{text ?? (signed ? formatSignedDelta(evidence.metric.value, "L1", emptyKindOf(evidence.metric.reason_codes)) : formatAmountL1(evidence.metric.value, emptyKindOf(evidence.metric.reason_codes)))}</button>;
+  // V3-10（WCAG 2.5.3）：可及名稱＝抽屜標題＋可見文字（meeting.pageV3.linkAria），可見文字逐字包含在名稱裡。
+  const amount = (evidence: SummaryEvidence, signed = false, text?: string, tone: DeltaTone = "neutral") => { const shown = text ?? (signed ? formatSignedDelta(evidence.metric.value, "L1", emptyKindOf(evidence.metric.reason_codes)) : formatAmountL1(evidence.metric.value, emptyKindOf(evidence.metric.reason_codes))); return <button type="button" className={tone === "neutral" ? "number-link" : `number-link ${toneClass(tone)}`} onClick={() => onEvidence(evidence)} aria-label={fill(labels.meeting.pageV3.linkAria, { title: evidence.title, value: shown })}>{shown}</button>; };
   // 門檻表單（總覽三件事的門檻是另一份 state，兩者不共用；會議門檻經 reviewControls 存進會議稿的 importance_threshold）。
   const submitThreshold = (event: { preventDefault: () => void }) => { event.preventDefault(); try { const checked = buildManagerSummary(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); reviewControls?.onThresholdChange(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.overview.notes.thresholdInvalid); } };
   if (agenda) return <AgendaSummary summary={summary} snapshot={snapshot} agenda={agenda} threshold={thresholdInput} onThresholdInput={setThresholdInput} onThresholdSubmit={submitThreshold} error={error} persistNote={reviewControls ? copy.persistNoteManaged : copy.persistNoteLocal} amount={amount} onEvidence={onEvidence} onCreateAction={onCreateAction} />;
@@ -130,8 +131,8 @@ function AgendaSummary({ summary, snapshot, agenda, threshold, onThresholdInput,
   const sentence = snapshotSentence(snapshot, { importanceThreshold: summary.importance_threshold, missingItems: agenda.missingItems });
   const alerts = labels.overview.alerts;
   const contribution = metricDefinitions.contribution_after_marketing.label;
-  // 精簡表的數字（L2 整數元、單位只在表頭）；可及名稱與完整通路寬表相同（同一份計算與來源）。
-  const tableLink = (evidence: SummaryEvidence, signed: boolean, tone: DeltaTone = "neutral") => <button type="button" className={tone === "neutral" ? "number-link" : `number-link ${toneClass(tone)}`} onClick={() => onEvidence(evidence)} aria-label={evidence.title}>{evidence.metric.value === null ? formatEmpty(emptyKindOf(evidence.metric.reason_codes)) : signed ? formatSignedDelta(evidence.metric.value, "L2") : formatAmountL2(evidence.metric.value)}</button>;
+  // 精簡表的數字（L2 整數元、單位只在表頭）；開同一份計算與來源，可及名稱＝抽屜標題＋可見文字（V3-10，同 amount）。
+  const tableLink = (evidence: SummaryEvidence, signed: boolean, tone: DeltaTone = "neutral") => { const shown = evidence.metric.value === null ? formatEmpty(emptyKindOf(evidence.metric.reason_codes)) : signed ? formatSignedDelta(evidence.metric.value, "L2") : formatAmountL2(evidence.metric.value); return <button type="button" className={tone === "neutral" ? "number-link" : `number-link ${toneClass(tone)}`} onClick={() => onEvidence(evidence)} aria-label={fill(labels.meeting.pageV3.linkAria, { title: evidence.title, value: shown })}>{shown}</button>; };
   return <>
     {/* 議程 1 關鍵數字（C1 精簡版）：名稱 → 本期（24px number-link）→ 差額行 13px → 上期 12px；下方一行本期一句話。 */}
     <AgendaItem n={1} title={agenda.kpis}>
