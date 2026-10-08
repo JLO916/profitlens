@@ -295,18 +295,13 @@ export function waterfallLevelRange(bars: readonly WaterfallBar[]): [number, num
   return [lo, hi];
 }
 
-const overviewDomainCache = new WeakMap<WorkspaceSnapshot, [number, number]>();
 /**
  * 總覽 G1（貢獻變化拆解）與 G2（本期利潤結構）的共同範圍：G1 的 bars，加上 profitWaterfallScopes 列出的全部範圍（合計與每個通路）的 G2 bars。
  * 兩張圖都把它傳給 waterfallGeometry 的 domain，所以刻度相同；G2 切到虧損通路（示範資料 MARKETPLACE 終點 −61,169.93、golden −15.00）時，
  * 負值柱仍在範圍內、刻度含負值（只用合計範圍算時下界是 0，負值柱會落在圖外）。
- * 同一個 snapshot 只算一次（兩張圖共用；snapshot 是不可變的，期間或通路篩選改變時是新物件）。
+ * 不做模組層級快取（AGENTS.md：不得用模組全域變數保存使用者資料）；兩個 section 各自以 useMemo 依 snapshot 計算，成本只是幾組柱的最小與最大值。
  */
 export function overviewWaterfallDomain(snapshot: WorkspaceSnapshot): [number, number] {
-  const cached = overviewDomainCache.get(snapshot);
-  if (cached) return [cached[0], cached[1]];
   const bars = [...bridgeWaterfall(snapshot).bars, ...profitWaterfallScopes(snapshot).flatMap(scope => profitWaterfall(snapshot, scope.id).bars)];
-  const range = waterfallLevelRange(bars);
-  overviewDomainCache.set(snapshot, range);
-  return [range[0], range[1]];
+  return waterfallLevelRange(bars);
 }
