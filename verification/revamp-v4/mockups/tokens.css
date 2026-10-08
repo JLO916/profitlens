@@ -1,0 +1,201 @@
+/*
+ * v4 設計稿的 token（由 gen/build.ts 產生，請勿手改）。
+ * 第一段：從 src/app/globals.css 的 :root 原樣複製（產品的單一來源；每次重跑產生器都重新複製）。
+ * 第二段：設計稿用、尚未進 :root 的 PRD §6.5 新 token 提案值；正式宣告批次寫在各行註解，值以該批的 contrast-check 為準。
+ */
+:root {
+  color-scheme: light;
+
+  /* 原始色階：中性灰（略帶綠，降低飽和）*/
+  --gray-0: #ffffff;
+  --gray-25: #f6f7f7;
+  --gray-50: #f1f3f3;
+  --gray-75: #eef1f0;
+  --gray-100: #e8ecec;
+  --gray-150: #e4e7e7;
+  --gray-200: #d3d8d8;
+  --gray-300: #a9b1b1;
+  --gray-400: #7f898b;
+  --gray-500: #5f6a6d;
+  --gray-700: #4a5558;
+  --gray-900: #1b2426;
+  /* 原始色階：品牌深綠 */
+  --green-50: #e7f0ee;
+  --green-200: #9cc1b8;
+  --green-600: #1f5a4f;
+  --green-700: #17483f;
+  /* 原始色階：狀態 */
+  --red-50: #fbeeec;
+  --red-600: #b03a2e;
+  --amber-50: #fdf3dc;
+  --amber-700: #8a5a00;
+
+  /* 語意別名：底色 */
+  --bg-page: var(--gray-25);
+  --bg-surface: var(--gray-0);
+  --bg-subtle: var(--gray-50);
+  --bg-sidebar: var(--gray-75);
+  --bg-hover: var(--gray-100);
+  /* 語意別名：邊框 */
+  --border-subtle: var(--gray-150);
+  --border-default: var(--gray-200);
+  --border-input: var(--gray-400);
+  --border-strong: var(--gray-300);
+  /* 語意別名：文字 */
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-700);
+  --text-tertiary: var(--gray-500);
+  --text-disabled: var(--gray-300);
+  /* 語意別名：強調與狀態 */
+  --accent: var(--green-600);
+  --accent-hover: var(--green-700);
+  --accent-subtle: var(--green-50);
+  --accent-border: var(--green-200);
+  --on-accent: var(--gray-0);
+  --unfavorable: var(--red-600);
+  --unfavorable-subtle: var(--red-50);
+  --warning: var(--amber-700);
+  --warning-subtle: var(--amber-50);
+  --favorable: var(--text-primary);
+  --favorable-subtle: var(--bg-subtle);
+  --scrim: rgba(16,24,26,.32);
+  --focus-ring: var(--accent);
+
+  /* 圖表色（元件經由 chart-theme 讀取；V3-1 先只宣告）*/
+  --chart-current: var(--accent);
+  --chart-previous: var(--gray-400);
+  --chart-yoy: var(--gray-400);
+  --chart-total: var(--text-secondary);
+  --chart-unfavorable: var(--unfavorable);
+  --chart-favorable: var(--gray-400);
+  --chart-cat-1: var(--green-600);
+  --chart-cat-2: #4f7cac;
+  --chart-cat-3: #c07a3a;
+  --chart-cat-4: #7a6aa8;
+  --chart-other: var(--gray-500);
+  --chart-grid: var(--border-subtle);
+  --chart-axis: var(--text-tertiary);
+  --chart-band: var(--bg-subtle);
+
+  /* 字體（§9.2：不換字型、不載入網路字型）*/
+  --font-sans: Arial, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* 字級：全站只有 8 級 */
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-20: 20px;
+  --text-24: 24px;
+  --text-28: 28px;
+  --text-32: 32px;
+  --num-24: var(--text-24);
+  --num-28: var(--text-28);
+  --num-32: var(--text-32);
+  /* 行高（與字級成對）*/
+  --leading-12: 16px;
+  --leading-13: 20px;
+  --leading-14: 22px;
+  --leading-16: 24px;
+  --leading-20: 28px;
+  --leading-24: 32px;
+  --leading-28: 36px;
+  --leading-32: 40px;
+  /* 三層語言 */
+  --type-l1-title: var(--text-16);
+  --type-l2: var(--text-14);
+  --type-l3: var(--text-13);
+  /* 字重：只用 400、500、600 */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* 間距（4px 網格）*/
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* 圓角：只有三種（外加 0）*/
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-full: 999px;
+
+  /* 邊框 */
+  --border-w: 1px;
+  --rule-accent: 2px;
+  --rule-total: 2px;
+  --rule-notice: 3px;
+
+  /* 陰影：只給浮層（選單、popover、抽屜、對話框、toast）*/
+  --shadow-overlay: 0 8px 24px rgba(16,24,26,.12), 0 1px 2px rgba(16,24,26,.08);
+
+  /* 版面尺寸 */
+  --topbar-h: 48px;
+  --period-bar-h: 48px;
+  --page-header-h: 56px;
+  --sidebar-w: 220px;
+  --content-max: 1440px;
+  --gutter: 24px;
+  --drawer-w: 560px;
+  --drawer-w-wide: 640px;
+  --drawer-w-narrow: 480px;
+  --popover-w: 320px;
+  --menu-w: 400px;
+  --help-w: 280px;
+
+  /* 控制項、表格、工具列 */
+  --control-h: 32px;
+  --control-h-sm: 28px;
+  --control-h-touch: 40px;
+  --row-h: 40px;
+  --row-h-compact: 32px;
+  --cell-px: 12px;
+  --toolbar-h: 40px;
+  --banner-h: 40px;
+  --menu-item-h: 36px;
+  --menu-item-h-2: 52px;
+  --lozenge-h: 20px;
+  --badge-h: 18px;
+
+  /* 圖表高度（骨架、空、錯誤、有資料四種狀態共用）*/
+  --chart-h-sm: 180px;
+  --chart-h-lg: 320px;
+
+  /* 動態 */
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --ease: cubic-bezier(.2,0,0,1);
+
+  /* 層級 */
+  --z-sticky: 20;
+  --z-overlay: 40;
+  --z-drawer: 50;
+  --z-toast: 60;
+
+  /* 列印字級（V3-7 §9.6：A4 列印與 PDF；只在 @media print 使用）*/
+  --print-title: 14pt;
+  --print-body: 10pt;
+  --print-note: 8pt;
+
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+@media (max-width: 767px) { :root { --gutter: 16px; } }
+
+/* ── 設計稿用、尚未進 :root（PRD §6.5 新 token 提案值） ── */
+:root {
+  --red-100: #ebcecb; /* V4-3b：原始色階新增一階紅色（提案 t＝0.25，V4-0-baseline §13） */
+  --chart-target: var(--text-primary); /* V4-2：目標刻度、門檻點、目標線 */
+  --chart-seg-1: var(--gray-700); /* V4-3a：G10 商品成本 */
+  --chart-seg-2: var(--gray-500); /* V4-3a：G10 通路費用合計 */
+  --chart-seg-3: var(--gray-400); /* V4-3a：G10 廣告費 */
+  --chart-heat-1: var(--unfavorable-subtle); /* V4-3b：熱表階 1（即 --red-50） */
+  --chart-heat-2: var(--red-100); /* V4-3b：熱表階 2（另加 2px --chart-unfavorable 框線） */
+  --chart-missing: var(--gray-400); /* V4-3b：新圖的資料待補虛線框 */
+  --chart-h-xs: 16px; /* V4-2：sparkline 高 */
+}

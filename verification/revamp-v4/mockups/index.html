@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v4 設計稿目錄 · H5 審查用</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mockups.css">
+</head>
+<body class="mockup mockup-index">
+<main class="index-main">
+<h1>EC ProfitLens v4 設計稿（人工關卡 H5 審查用）</h1>
+<p class="index-lead"><strong>靜態設計稿，不是產品畫面。</strong>數字取自示範資料或合成資料，由既有的 domain／application 函式算出，不是手打的；B 級整理函式（加總、佔比、累計、分階）尚不存在的地方，頁面上標「設計稿試算」，正式數字由 V4-n 的 B 級函式產生。</p>
+<p class="index-lead">各頁新增的字串（將放在 <code>{group}.chartsV4.*</code>）都是 <strong>H5 待審提案</strong>：頁面上方可勾「標示新字串（H5 待審）」，頁尾有本頁新字串清單；既有字串一字不改。勾「標示 v4 變更」會框出 v4 新增或改變的區塊。</p>
+<table class="ui-table index-table">
+<caption>設計稿與狀態</caption>
+<thead><tr><th scope="col">頁面</th><th scope="col">資料來源</th><th scope="col">狀態</th><th scope="col">圖</th><th scope="col">產出</th><th scope="col">截圖</th></tr></thead>
+<tbody><tr><th scope="row"><a href="overview.html">經營總覽</a><br><code>overview.html</code></th><td>示範資料（fixtures/demo）＋目標檔 verification/revamp-v4-capture/targets.csv</td><td>示範資料；G2 範圍可切換（合計、官網 · DTC、平台 · MARKETPLACE）</td><td>G1、G2、G3、G4、G5、G6（≤ 767）、G7a</td><td>已產出（代理 C1）</td><td><a href="../V4-0b/mockups-shots/overview-1440-full.png">overview-1440-full.png</a><br><a href="../V4-0b/mockups-shots/overview-390-full.png">overview-390-full.png</a><br><a href="../V4-0b/mockups-shots/overview-1440-annotated.png">overview-1440-annotated.png</a></td></tr><tr><th scope="row"><a href="diagnosis.html">通路健檢</a><br><code>diagnosis.html</code></th><td>示範資料（fixtures/demo）</td><td>示範資料；G9 門檻刻度可切換（0.00 與 300,000.00 示意）；G12 畫展開狀態</td><td>G9、G10、G11、G12、G7b</td><td>已產出（代理 C1）</td><td><a href="../V4-0b/mockups-shots/diagnosis-1440-full.png">diagnosis-1440-full.png</a><br><a href="../V4-0b/mockups-shots/diagnosis-1280-full.png">diagnosis-1280-full.png</a><br><a href="../V4-0b/mockups-shots/diagnosis-768-full.png">diagnosis-768-full.png</a><br><a href="../V4-0b/mockups-shots/diagnosis-390-full.png">diagnosis-390-full.png</a><br><a href="../V4-0b/mockups-shots/diagnosis-1440-annotated.png">diagnosis-1440-annotated.png</a></td></tr><tr><th scope="row">商品毛利<br><code>products.html</code></th><td>示範資料（沒有商品毛利為負，第一格維持 v3 的 product-worst）與 4 通路合成資料（tests/fixtures/synthetic-4-channel，有 G14）</td><td>兩種狀態</td><td>G13、G14</td><td>待產出（代理 C2）</td><td>—</td></tr><tr><th scope="row">資料來源<br><code>data.html</code></th><td>4 通路合成資料（tests/fixtures/synthetic-4-channel；示範資料沒有缺列與問題）</td><td>合成資料</td><td>G20、G21、G22</td><td>待產出（代理 C2）</td><td>—</td></tr></tbody>
+</table>
+<h2>怎麼看</h2>
+<ul>
+<li>直接用瀏覽器開 HTML（<code>tokens.css</code>、<code>mockups.css</code> 要在同一個資料夾）；不載入任何外部資源，不需要伺服器。</li>
+<li>把視窗縮到 390 寬就是手機版（底部分頁列、期間按鈕、清單式表格）；768、1280、1440 各有對應的版面。</li>
+<li>重新產生、截圖與實測的命令見 <a href="README.md">README.md</a>。</li>
+</ul>
+</main>
+</body>
+</html>

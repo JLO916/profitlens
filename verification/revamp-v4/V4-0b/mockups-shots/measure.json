@@ -1,0 +1,362 @@
+{
+ "overview": {
+  "390": {
+   "viewport": 390,
+   "pageScrollWidth": 390,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "bridge-section",
+     "frameHeight": 320,
+     "frameWidth": 324
+    },
+    {
+     "testId": "profit-waterfall",
+     "frameHeight": 320,
+     "frameWidth": 324
+    },
+    {
+     "testId": "trend",
+     "frameHeight": 180,
+     "frameWidth": 324
+    },
+    {
+     "testId": "channel-mix",
+     "frameHeight": 180,
+     "frameWidth": 324
+    }
+   ],
+   "bridge": {
+    "tableAboveWaterfall": true,
+    "tableLeftOfWaterfall": false,
+    "waterfallFrameWidth": 324,
+    "waterfallSvgWidth": 520,
+    "waterfallScrollsX": true,
+    "g6Visible": 9,
+    "g6Mounted": 9,
+    "g6Width": 64
+   }
+  },
+  "768": {
+   "viewport": 768,
+   "pageScrollWidth": 768,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "bridge-section",
+     "frameHeight": 320,
+     "frameWidth": 450
+    },
+    {
+     "testId": "profit-waterfall",
+     "frameHeight": 320,
+     "frameWidth": 450
+    },
+    {
+     "testId": "trend",
+     "frameHeight": 180,
+     "frameWidth": 450
+    },
+    {
+     "testId": "channel-mix",
+     "frameHeight": 180,
+     "frameWidth": 450
+    }
+   ],
+   "bridge": {
+    "tableAboveWaterfall": true,
+    "tableLeftOfWaterfall": false,
+    "waterfallFrameWidth": 450,
+    "waterfallSvgWidth": 520,
+    "waterfallScrollsX": true,
+    "g6Visible": 0,
+    "g6Mounted": 9,
+    "g6Width": null
+   }
+  },
+  "1280": {
+   "viewport": 1280,
+   "pageScrollWidth": 1280,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "bridge-section",
+     "frameHeight": 320,
+     "frameWidth": 547
+    },
+    {
+     "testId": "profit-waterfall",
+     "frameHeight": 320,
+     "frameWidth": 962
+    },
+    {
+     "testId": "trend",
+     "frameHeight": 180,
+     "frameWidth": 962
+    },
+    {
+     "testId": "channel-mix",
+     "frameHeight": 180,
+     "frameWidth": 962
+    }
+   ],
+   "bridge": {
+    "tableAboveWaterfall": false,
+    "tableLeftOfWaterfall": true,
+    "waterfallFrameWidth": 547,
+    "waterfallSvgWidth": 547,
+    "waterfallScrollsX": false,
+    "g6Visible": 0,
+    "g6Mounted": 9,
+    "g6Width": null
+   }
+  },
+  "1440": {
+   "viewport": 1440,
+   "pageScrollWidth": 1440,
+   "pageScrollsX": false,
+   "frames": [
+    {
+     "testId": "bridge-section",
+     "frameHeight": 320,
+     "frameWidth": 641
+    },
+    {
+     "testId": "profit-waterfall",
+     "frameHeight": 320,
+     "frameWidth": 1122
+    },
+    {
+     "testId": "trend",
+     "frameHeight": 180,
+     "frameWidth": 524
+    },
+    {
+     "testId": "channel-mix",
+     "frameHeight": 180,
+     "frameWidth": 524
+    }
+   ],
+   "bridge": {
+    "tableAboveWaterfall": false,
+    "tableLeftOfWaterfall": true,
+    "waterfallFrameWidth": 641,
+    "waterfallSvgWidth": 640,
+    "waterfallScrollsX": false,
+    "g6Visible": 0,
+    "g6Mounted": 9,
+    "g6Width": null
+   }
+  }
+ },
+ "diagnosis": {
+  "390": {
+   "viewport": 390,
+   "pageScrollWidth": 390,
+   "pageScrollsX": false,
+   "heat": {
+    "frameInnerWidth": 324,
+    "gridColumns": 1,
+    "gridTemplateColumns": "324px",
+    "calendarsInFirstRow": 1,
+    "calendars": 2,
+    "tableWidths": [
+     320,
+     320
+    ],
+    "tableFitsFrame": true,
+    "heatScrollsX": false,
+    "heatScrollsY": true,
+    "cellWidth": 40,
+    "cellInnerWidth": 38,
+    "widestCellText": {
+     "text": "−0.21",
+     "width": 29.38
+    },
+    "probeMinus045": 29.38,
+    "probeMinus1025": 35.84,
+    "firstCaption": "平台 · MARKETPLACE（萬元）",
+    "firstCalendarVisibleInFrame": true,
+    "scrollNoteVisible": true
+   },
+   "frames": [
+    {
+     "testId": "chart-diagnosis-share",
+     "frameHeight": 180,
+     "frameWidth": 324
+    },
+    {
+     "testId": "chart-diagnosis-heat",
+     "frameHeight": 320,
+     "frameWidth": 324
+    },
+    {
+     "testId": "chart-diagnosis-rates",
+     "frameHeight": 900,
+     "frameWidth": 324
+    }
+   ],
+   "rates": {
+    "frameHeight": 900,
+    "subchartWidth": 324,
+    "perRow": 1
+   }
+  },
+  "768": {
+   "viewport": 768,
+   "pageScrollWidth": 768,
+   "pageScrollsX": false,
+   "heat": {
+    "frameInnerWidth": 450,
+    "gridColumns": 1,
+    "gridTemplateColumns": "450px",
+    "calendarsInFirstRow": 1,
+    "calendars": 2,
+    "tableWidths": [
+     320,
+     320
+    ],
+    "tableFitsFrame": true,
+    "heatScrollsX": false,
+    "heatScrollsY": true,
+    "cellWidth": 40,
+    "cellInnerWidth": 38,
+    "widestCellText": {
+     "text": "−0.21",
+     "width": 29.38
+    },
+    "probeMinus045": 29.38,
+    "probeMinus1025": 35.84,
+    "firstCaption": "平台 · MARKETPLACE（萬元）",
+    "firstCalendarVisibleInFrame": true,
+    "scrollNoteVisible": true
+   },
+   "frames": [
+    {
+     "testId": "chart-diagnosis-share",
+     "frameHeight": 180,
+     "frameWidth": 450
+    },
+    {
+     "testId": "chart-diagnosis-heat",
+     "frameHeight": 320,
+     "frameWidth": 450
+    },
+    {
+     "testId": "chart-diagnosis-rates",
+     "frameHeight": 180,
+     "frameWidth": 450
+    }
+   ],
+   "rates": {
+    "frameHeight": 180,
+    "subchartWidth": 80,
+    "perRow": 5
+   }
+  },
+  "1280": {
+   "viewport": 1280,
+   "pageScrollWidth": 1280,
+   "pageScrollsX": false,
+   "heat": {
+    "frameInnerWidth": 962,
+    "gridColumns": 2,
+    "gridTemplateColumns": "469px 469px",
+    "calendarsInFirstRow": 2,
+    "calendars": 2,
+    "tableWidths": [
+     348,
+     348
+    ],
+    "tableFitsFrame": true,
+    "heatScrollsX": false,
+    "heatScrollsY": false,
+    "cellWidth": 44,
+    "cellInnerWidth": 42,
+    "widestCellText": {
+     "text": "−0.21",
+     "width": 29.38
+    },
+    "probeMinus045": 29.38,
+    "probeMinus1025": 35.84,
+    "firstCaption": "平台 · MARKETPLACE（萬元）",
+    "firstCalendarVisibleInFrame": true,
+    "scrollNoteVisible": false
+   },
+   "frames": [
+    {
+     "testId": "chart-diagnosis-share",
+     "frameHeight": 180,
+     "frameWidth": 962
+    },
+    {
+     "testId": "chart-diagnosis-heat",
+     "frameHeight": 320,
+     "frameWidth": 962
+    },
+    {
+     "testId": "chart-diagnosis-rates",
+     "frameHeight": 180,
+     "frameWidth": 962
+    }
+   ],
+   "rates": {
+    "frameHeight": 180,
+    "subchartWidth": 180,
+    "perRow": 5
+   }
+  },
+  "1440": {
+   "viewport": 1440,
+   "pageScrollWidth": 1440,
+   "pageScrollsX": false,
+   "heat": {
+    "frameInnerWidth": 1122,
+    "gridColumns": 3,
+    "gridTemplateColumns": "358px 358px 358px",
+    "calendarsInFirstRow": 2,
+    "calendars": 2,
+    "tableWidths": [
+     348,
+     348
+    ],
+    "tableFitsFrame": true,
+    "heatScrollsX": false,
+    "heatScrollsY": false,
+    "cellWidth": 44,
+    "cellInnerWidth": 42,
+    "widestCellText": {
+     "text": "−0.21",
+     "width": 29.38
+    },
+    "probeMinus045": 29.38,
+    "probeMinus1025": 35.84,
+    "firstCaption": "平台 · MARKETPLACE（萬元）",
+    "firstCalendarVisibleInFrame": true,
+    "scrollNoteVisible": false
+   },
+   "frames": [
+    {
+     "testId": "chart-diagnosis-share",
+     "frameHeight": 180,
+     "frameWidth": 1122
+    },
+    {
+     "testId": "chart-diagnosis-heat",
+     "frameHeight": 320,
+     "frameWidth": 1122
+    },
+    {
+     "testId": "chart-diagnosis-rates",
+     "frameHeight": 180,
+     "frameWidth": 1122
+    }
+   ],
+   "rates": {
+    "frameHeight": 180,
+    "subchartWidth": 212,
+    "perRow": 5
+   }
+  }
+ }
+}
