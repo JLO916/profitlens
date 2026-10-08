@@ -3,6 +3,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ASSIST_KPI_VERSION, assistKpis, type AssistKpi } from "@/application/assist-kpi";
 import { BREAKEVEN_MER_VERSION, breakevenEvidenceFormula, breakevenMer, breakevenNote, type BreakevenMer } from "@/application/breakeven-mer";
+import { favorableDirectionOf, formatMultiple } from "@/application/presentation";
+import { Bullet, bulletGeometry } from "./charts/bullet";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Period } from "@/domain/types";
 import { fill, labels } from "@/i18n";
@@ -67,10 +69,26 @@ export function breakevenEvidence(item: BreakevenMer, period: Period, channels: 
   return { title: item.label, name: "mer", metric: { value: item.value, reason_codes: [...item.reason_codes] }, period, channels, sources: item.sources, formula: breakevenEvidenceFormula(item), formulaTechnical: item.formulaTechnical, definition: item.plain, metricVersion: BREAKEVEN_MER_VERSION, components: [], nullDisplay: item.status === "not_applicable" ? labels.assist.notApplicable : undefined };
 }
 
+/** G5（V4-2，PRD §4.4、CHART_CATALOG G5）：損益兩平段的 C18 bullet——本期實際 MER（既有 summary.metrics.mer）對損益兩平 MER（breakevenMer 的 value），有利方向同 MER。 */
+const MER_DIRECTION = favorableDirectionOf("mer");
+const MER_BULLET_TESTID = "chart-overview-bullet-bar-mer";
+
+/**
+ * G5 bullet 旁一行「實際 {mer}，損益兩平 {breakeven}」（overview.chartsV4.bullet.merLine）；畫不出 bullet（實際 MER 或損益兩平不適用、資料待補）時回傳 null，整行不出現。
+ * 倍數用 formatMultiple L1；兩個 L1 相同但精確值不同時改 L3（與 breakevenNote 同一規則，避免兩個數字一樣卻畫成落後）。只取 breakevenMer 的既有結果，不新算。
+ */
+export function breakevenBulletLine(item: BreakevenMer): string | null {
+  if (bulletGeometry(item.actual.value, item.value, MER_DIRECTION) === null) return null;
+  const layer = item.comparison !== "equal" && formatMultiple(item.actual.value, "L1") === formatMultiple(item.value, "L1") ? "L3" : "L1";
+  return fill(labels.overview.chartsV4.bullet.merLine, { mer: formatMultiple(item.actual.value, layer), breakeven: formatMultiple(item.value, layer) });
+}
+
 /**
  * F12 損益兩平 MER（PRD §10.1 F12、D-V3-17＝C）：其他常用指標兩欄表下方的獨立段，版本 breakeven-mer-v1（不屬於 assist-kpi-v1）。
  * 一列「損益兩平 MER」本期／上期各一個 number-link（不適用／資料待補用第三色，同上方各列）＋一句 L1 結論（不上色，D-V3-7）＋`?` 說明（M1：hidden 保持掛載；M3：Esc 關閉回焦）。
  * 數字可開「計算與來源」（breakevenEvidence）。
+ * V4-2 G5：一句結論之後加一行 C18 bullet（本期實際 MER 對損益兩平 MER，寬＝比值夾在 0 到 1、損益兩平刻度在右端，aria-hidden）＋「實際…，損益兩平…」；
+ * 這一行在表格之外（表格仍是一列，tbody 不多列），桌機排在表格下方的左欄；畫不出 bullet 時整行不出現。
  */
 function BreakevenRow({ breakeven, report, onEvidence }: { breakeven: { previous: BreakevenMer; current: BreakevenMer }; report: AssistTableProps["snapshot"]["report"]; onEvidence: AssistTableProps["onEvidence"] }) {
   const [helpOpen, setHelpOpen] = useState(false);
@@ -89,6 +107,7 @@ function BreakevenRow({ breakeven, report, onEvidence }: { breakeven: { previous
   const open = (item: BreakevenMer, period: Period) => () => onEvidence(breakevenEvidence(item, period, report.scope.channels));
   const cell = (item: BreakevenMer, period: Period, periodLabel: string, testId: string) => <button type="button" className="number-link" data-testid={testId} aria-label={fill(ui.cellAria, { metric: item.label, period: periodLabel, value: item.display })} onClick={open(item, period)}>{item.display}</button>;
   const helpLabel = fill(be.helpAria, { metric: current.label });
+  const merLine = breakevenBulletLine(current);
   return <div className="assist-breakeven" data-testid="assist-breakeven-mer">
     <table className="kv assist-breakeven-table" aria-labelledby="assist-breakeven-name">
       <thead><tr><th scope="col">{ui.columns.metric}</th><th scope="col" className="num">{ui.columns.current}</th><th scope="col" className="num">{ui.columns.previous}</th></tr></thead>
@@ -99,6 +118,7 @@ function BreakevenRow({ breakeven, report, onEvidence }: { breakeven: { previous
       </tr></tbody>
     </table>
     <p className="assist-breakeven-note" data-testid="assist-breakeven-note">{breakevenNote(current)}</p>
+    {merLine !== null && <p className="assist-breakeven-bullet"><Bullet actual={current.actual.value} target={current.value} favorableDirection={MER_DIRECTION} testId={MER_BULLET_TESTID} />{merLine}</p>}
     <div id={BREAKEVEN_HELP_ID} role="region" aria-label={helpLabel} className="ui-popover ui-help-content assist-breakeven-help" data-testid="assist-breakeven-help" hidden={!helpOpen}><p>{be.help.definition}</p><p>{fill(be.help.version, { version: BREAKEVEN_MER_VERSION })}</p></div>
   </div>;
 }
