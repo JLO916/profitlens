@@ -1,7 +1,10 @@
+import { resolve } from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
 import type { AnalyticsEvent } from "../../src/application/analytics";
-import { openDetails } from "./replacement-helpers";
+import { SYNTHETIC_4_CHANNEL_DIR } from "../helpers/synthetic-4-channel";
+import { importViaWizard } from "./import-wizard-helpers";
+import { dismissSavePrompt, navigateTo, openDetails } from "./replacement-helpers";
 
 // V4-1 代理 E（CHART_CATALOG §1.6；06_BATCHES V4-1「同批 labels 與測試」）：v4 圖表 E2E 的共用小工具。
 // 每頁一支 charts-*.spec.ts 共用；字串一律由 labels 組出、定位一律用 testid 或 class（PRD §4.7、§8.6），不寫死中文。
@@ -116,4 +119,97 @@ export function signedAmount(text: string): number {
   if (!match) return Number.NaN;
   const value = Number(match[2].replace(/,/g, ""));
   return match[1] === "−" || match[1] === "-" ? -value : value;
+}
+
+// ── 總覽 G3 趨勢、G4 各通路差額條、G5 MER bullet、G7a sparkline 與「各指標每週」（V4-2） ──
+/**
+ * Recharts 3 把刻度文字放在另一個圖層（g.recharts-{x|y}Axis-tick-labels），不在 .recharts-{x|y}Axis 內。
+ * G3 的數值軸是 Y 軸（X 軸是週的起日），G4 的數值軸是 X 軸（Y 軸是通路名）。圖在 ResponsiveContainer 量到寬後才畫刻度，所以先等到至少 2 個刻度。
+ */
+export async function axisTickTexts(frame: Locator, axis: "x" | "y"): Promise<string[]> {
+  const ticks = frame.locator(`.recharts-${axis}Axis-tick-labels text`);
+  await expect.poll(() => ticks.count(), { message: `${axis} 軸刻度畫出來` }).toBeGreaterThan(1);
+  return ticks.allTextContents();
+}
+/** 刻度文字（「0」「50 萬」「−5 萬」）轉成元；只用來比大小與步長，不用於金額斷言。單位由 labels.format.units.wan 組出（WAN）。 */
+export function axisTickValue(text: string): number {
+  const trimmed = text.trim();
+  const wan = trimmed.endsWith(WAN);
+  const body = (wan ? trimmed.slice(0, -WAN.length) : trimmed).trim();
+  const match = /^([−-]?)(\d+(?:\.\d+)?)$/.exec(body);
+  if (!match) return Number.NaN;
+  const value = Number(match[2]) * (wan ? 10_000 : 1);
+  return match[1] ? -value : value;
+}
+
+/** G4 各通路緊湊表（table.channel-kv，第四欄是 V4-2 的差額欄 td.channel-change）。 */
+export const channelKv = (page: Page) => page.getByTestId("channel-mix").locator("table.channel-kv");
+/** G4 差額條：chart-overview-channels-bar-{channel}（C24 根 svg.bar-cell，在 td.channel-change 內、差額 number-link 之前）。 */
+export const channelBar = (page: Page, channel: string) => page.getByTestId(`chart-overview-channels-bar-${channel}`);
+export const channelBars = (page: Page) => page.getByTestId("channel-mix").locator("[data-testid^='chart-overview-channels-bar-']");
+/** 某通路差額格的 number-link（以格內的差額條定位）。 */
+export const channelChangeLink = (page: Page, channel: string) => channelKv(page).locator("td.channel-change").filter({ has: channelBar(page, channel) }).locator("button.number-link");
+/** 差額缺值、沒有條的通路：以列頭文字定位該列的差額格。 */
+export const channelChangeCellByRow = (page: Page, rowHeader: string) => channelKv(page).locator("tbody tr").filter({ has: page.locator("th", { hasText: rowHeader }) }).locator("td.channel-change");
+
+/** 一條 G4 差額條的屬性與位置（rect 的 fill、所在格、下一個兄弟是否為 number-link、條與 number-link 的 bounding box）。 */
+export interface ChannelBarInfo { channel: string; tone: string | null; fill: string | null; inChangeCell: boolean; beforeLink: boolean; linkText: string; ariaHidden: string | null; focusable: string | null; tabIndex: string | null; box: { x: number; y: number; width: number; height: number }; linkBox: { x: number; y: number; width: number; height: number } }
+export function channelBarInfo(page: Page): Promise<ChannelBarInfo[]> {
+  return channelBars(page).evaluateAll(nodes => nodes.map(node => {
+    const link = node.nextElementSibling;
+    const rect = (element: Element | null) => { const r = element?.getBoundingClientRect(); return { x: Math.round((r?.x ?? 0) * 10) / 10, y: Math.round((r?.y ?? 0) * 10) / 10, width: Math.round((r?.width ?? 0) * 10) / 10, height: Math.round((r?.height ?? 0) * 10) / 10 }; };
+    return {
+      channel: (node.getAttribute("data-testid") ?? "").replace("chart-overview-channels-bar-", ""),
+      tone: node.getAttribute("data-tone"),
+      fill: node.querySelector("rect.bar-cell-bar")?.getAttribute("fill") ?? null,
+      inChangeCell: node.parentElement?.matches("td.num.channel-change") ?? false,
+      beforeLink: !!link && link.matches("button.number-link") && link.parentElement === node.parentElement,
+      linkText: (link?.textContent ?? "").trim(),
+      ariaHidden: node.getAttribute("aria-hidden"), focusable: node.getAttribute("focusable"), tabIndex: node.getAttribute("tabindex"),
+      box: rect(node), linkBox: rect(link),
+    };
+  }));
+}
+
+/** G5：損益兩平 MER 段的 C18 bullet（span.kpi-bullet，aria-hidden）與它所在的一行 p.assist-breakeven-bullet。 */
+export const merBullet = (page: Page) => page.getByTestId("chart-overview-bullet-bar-mer");
+export const merBulletLine = (page: Page) => page.getByTestId("assist-breakeven-mer").locator("p.assist-breakeven-bullet");
+
+/** G7a：其他常用指標區塊、sparkline、「近 {n} 週」欄頭與「各指標每週」<details>（.assist-panel 最後一個 details.data-alternative，details 沒有 testid）。 */
+export const assistKpis = (page: Page) => page.getByTestId("assist-kpis");
+export const assistSpark = (page: Page, id: string) => page.getByTestId(`chart-overview-assist-spark-${id}`);
+export const assistSparks = (page: Page) => assistKpis(page).locator("[data-testid^='chart-overview-assist-spark-']");
+export const assistSparkHeads = (page: Page) => assistKpis(page).locator("th.spark-head");
+export const assistWeeksDetails = (page: Page) => assistKpis(page).locator(".assist-panel > details.data-alternative");
+export const assistWeeksTable = (page: Page) => page.getByTestId("chart-overview-assist-table");
+/** 其他常用指標某列的本期或上期 number-link（tr[data-testid=assist-{id}]；本期是 td.num:not(.prev)）。 */
+export const assistCell = (page: Page, id: string, period: "current" | "previous") => page.getByTestId(`assist-${id}`).locator(period === "current" ? "td.num:not(.prev) button.number-link" : "td.num.prev button.number-link");
+
+/** 抽屜技術細節（details.evidence-technical）：展開後回傳 dl 內每一行 {testId, dt, dd}（順序＝DOM 順序）。 */
+export async function evidenceTechnicalRows(drawer: Locator): Promise<{ testId: string | null; dt: string; dd: string }[]> {
+  const technical = drawer.locator("details.evidence-technical");
+  await openDetails(technical);
+  await expect(technical).toHaveAttribute("open", "");
+  return technical.locator(":scope > dl > div").evaluateAll(rows => rows.map(row => ({ testId: row.getAttribute("data-testid"), dt: (row.querySelector("dt")?.textContent ?? "").trim(), dd: (row.querySelector("dd")?.textContent ?? "").trim() })));
+}
+
+/** 畫面 13 用的目標檔（三個 ALL 目標：兩格達成、一格落後）；與 verification/revamp-v4-capture 的 readTargets 讀同一個檔、同一個流程。 */
+export const CAPTURE_TARGETS_CSV = resolve("verification/revamp-v4-capture/targets.csv");
+/** 在資料來源頁讀入目標檔，再回總覽（等 KPI 帶）。 */
+export async function readTargetsCsv(page: Page, file = CAPTURE_TARGETS_CSV) {
+  await navigateTo(page, "data");
+  await expect(page.getByTestId("targets-entry")).toBeVisible();
+  await page.getByLabel(labels.targets.upload, { exact: true }).setInputFiles(file);
+  await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(3);
+  await expect(page.getByTestId("targets-issues")).toHaveCount(0);
+  await navigateTo(page, "overview");
+  await expect(page.getByTestId("kpi-band")).toBeVisible();
+}
+
+/** 經四步精靈匯入 4 通路合成資料（tests/fixtures/synthetic-4-channel，D-V4-31；帶 manifest 取兩期；LIVE 有缺列，檢核結果是 partial），關掉首次保存提示。 */
+export async function importSynthetic(page: Page) {
+  await importViaWizard(page, SYNTHETIC_4_CHANNEL_DIR, { manifest: true, classification: "partial" });
+  await dismissSavePrompt(page);
+  await expect(page.getByTestId("local-save-prompt")).toHaveCount(0);
+  await expect(page.getByTestId("kpi-band")).toBeVisible();
 }

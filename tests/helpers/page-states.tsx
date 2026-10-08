@@ -39,6 +39,7 @@ import { EvidenceDrawer } from "@/components/evidence-drawer";
 import { BasisDialog } from "@/components/basis-dialog";
 import { WorkspaceStorage } from "@/components/workspace-storage";
 import { yoyInput } from "./yoy-dataset";
+import { synthetic4ChannelInput } from "./synthetic-4-channel";
 
 /*
  * 頁面狀態（V4-0a 由 tests/mounted-testids.test.tsx 原樣搬出並匯出；PRD §7.9、§8.6、06_BATCHES V4-0a 第 7 項）。
@@ -255,6 +256,9 @@ export async function pageStates(): Promise<StateMarkup[]> {
     // ── V4-1 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-1 新增 M1 測試」錨點後加對應測試）──
 
     // ── V4-2 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-2 新增 M1 測試」錨點後加對應測試）──
+    // 總覽＋4 通路合成資料（tests/fixtures/synthetic-4-channel，D-V4-31；期間取 manifest：本期 9/07–9/23，最後一週 9/21–9/23 未滿 7 天）：
+    // G7a 件數 sparkline 最後一點空心（X40）、廣告佔比等本期資料待補的列不畫；G4 的 LIVE 兩期扣廣告後貢獻資料待補，差額條只畫 3 條；本期實際 MER 資料待補，G5 bullet 整行不出現。
+    "overview-synthetic": { panel: "overview", active: await (async () => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "synthetic", revision: 1 }; })(), status: "partial" },
 
     // ── V4-3a 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-3a 新增 M1 測試」錨點後加對應測試）──
 

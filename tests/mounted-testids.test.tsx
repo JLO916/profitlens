@@ -15,7 +15,7 @@ import { AiCollapse } from "@/components/ai-collapse";
 import { ActionsWorkbench } from "@/components/actions-workbench";
 import { ImportWizard } from "@/components/import-wizard";
 import { EvidenceDrawer } from "@/components/evidence-drawer";
-import { channelEvidence } from "@/components/overview/charts/channel-section";
+import { channelChangeEvidence, channelEvidence } from "@/components/overview/charts/channel-section";
 import { asyncNoop, bytes, load, noop, pageStates, roles, wizardFiles, type StateMarkup } from "./helpers/page-states";
 
 /*
@@ -642,8 +642,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const { BREAKEVEN_MER_VERSION, breakevenMer, breakevenNote } = await import("@/application/breakeven-mer");
       const copy = labels.assist.breakevenV3;
       const overviews = loaded().filter(({ state }) => state!.panel === "overview");
-      // V3-9b A 加了 overview-yoy（兩年合成資料）狀態，同樣檢查。
-      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy"]);
+      // V3-9b A 加了 overview-yoy（兩年合成資料）狀態，V4-2 加了 overview-synthetic（4 通路合成資料），同樣檢查。
+      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy", "overview-synthetic"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         for (const id of ["assist-breakeven-mer", "assist-breakeven-current", "assist-breakeven-previous", "assist-breakeven-note", "assist-breakeven-help", "assist-breakeven-help-trigger"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
@@ -750,7 +750,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V3-9b A（三線趨勢與下鑽）的 M1 掛載測試在此之後新增（第三線圖例、不可用原因、抽屜篩選片語各一份）──
     it("V3-9b A 總覽：趨勢圖的去年同期圖例項每個狀態一份；不可用時原因句一份（在趨勢區塊內），可用時沒有原因句、資料表多兩欄", () => {
       const overviews = states.filter(entry => entry.state?.panel === "overview");
-      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-refund-only", "overview-yoy", "overview-zero-ad"]);
+      // V4-2 加了 overview-synthetic（4 通路合成資料，去年同期不可用），同樣檢查。
+      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-refund-only", "overview-synthetic", "overview-yoy", "overview-zero-ad"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         expect(ids.get("trend-legend-yoy"), name).toBe(1);
@@ -895,6 +896,111 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-2 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-2 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    it("V4-2 A 總覽：G7a sparkline（chart-overview-assist-spark-{kpiId}）在該列 td.spark-cell 內、aria-hidden、不可聚焦、全頁各一份；「各指標每週」<details> 收合但表格掛載（.assist-panel 最後、損益兩平段之後），表格全頁一份；合成資料的件數最後一週未滿 7 天畫空心點", async () => {
+      const { assistKpis } = await import("@/application/assist-kpi");
+      const { assistWeeks } = await import("@/application/chart-assist-weeks");
+      const { chartColors } = await import("@/application/chart-theme");
+      const spark = labels.overview.chartsV4.assistSpark;
+      const overviews = loaded().filter(({ state }) => state!.panel === "overview");
+      expect(overviews.map(({ name }) => name)).toContain("overview-synthetic");
+      for (const { name, html, state } of overviews) {
+        const { snapshot } = state!.active;
+        const weekly = assistWeeks({ weeks: snapshot.weeks });
+        expect(weekly.weeks.length, name).toBeGreaterThan(0);
+        // 本期值缺漏或整列沒有週值時不畫（代理 A 偏差 2）；其餘每列一條。
+        const drawn = assistKpis(snapshot.report.current).filter(kpi => kpi.value !== null && weekly.series.find(series => series.id === kpi.id)!.values.some(value => value.value !== null)).map(kpi => kpi.id);
+        expect(occurrences(html, 'data-testid="chart-overview-assist-spark-'), name).toBe(drawn.length);
+        for (const id of drawn) {
+          const testId = `chart-overview-assist-spark-${id}`;
+          expect(testIdCounts(html).get(testId), `${name} ${testId}`).toBe(1);
+          expect(element(element(html, `data-testid="assist-${id}"`)!, 'class="spark-cell"'), `${name} ${testId}`).toContain(`data-testid="${testId}"`);
+          const svg = openTag(html, `data-testid="${testId}"`)!;
+          expect(svg, `${name} ${testId}`).toContain('aria-hidden="true"');
+          expect(svg, `${name} ${testId}`).toContain('focusable="false"');
+          expect(element(html, `data-testid="${testId}"`), `${name} ${testId}`).not.toMatch(/tabindex|<button|\shidden=""/);
+        }
+        // 兩張緊湊表的欄名「近 {n} 週」各一個。
+        expect(occurrences(html, `<th scope="col" class="spark-head">${escapeAttr(fill(spark.head, { n: weekly.weeks.length }))}</th>`), name).toBe(2);
+        // 「各指標每週」：.assist-panel 的最後一個子元素、在損益兩平段之後；收合（沒有 open）但表格掛載，表格全頁一份、7 列。
+        const panel = element(html, 'class="panel assist-panel"')!;
+        const details = element(panel, '<details class="data-alternative"')!;
+        expect(panel.endsWith(`${details}</div>`), `${name}：資料表是 .assist-panel 最後一個子元素`).toBe(true);
+        expect(panel.indexOf('data-testid="assist-breakeven-mer"'), name).toBeLessThan(panel.indexOf(details));
+        expect(openTag(details, "<details"), name).not.toMatch(/\sopen=""/);
+        expect(details, name).toContain(`<summary>${escapeAttr(fill(labels.overview.page.dataTable, { title: spark.tableTitle }))}</summary>`);
+        expect(testIdCounts(html).get("chart-overview-assist-table"), name).toBe(1);
+        const table = element(details, 'data-testid="chart-overview-assist-table"')!;
+        expect(element(table, "<tbody>")!.match(/<tr>/g), name).toHaveLength(7);
+        expect(occurrences(html, 'class="data-alternative"'), `${name}：其他常用指標只有這一個資料表`).toBe(occurrences(html.replace(element(html, 'data-testid="assist-kpis"')!, ""), 'class="data-alternative"') + 1);
+        // 未滿 7 天的週：件數畫空心點（X40）；示範資料本期 6 個完整週，沒有空心點。
+        const units = element(html, 'data-testid="chart-overview-assist-spark-units_sold"')!;
+        if (weekly.weeks.every(week => week.full)) expect(units, name).not.toContain('data-kind="hollow"');
+      }
+      const synthetic = overviews.find(({ name }) => name === "overview-synthetic")!.html;
+      const units = element(synthetic, 'data-testid="chart-overview-assist-spark-units_sold"')!;
+      expect(openTag(units, "<svg"), "合成資料本期 3 週").toContain('data-points="3"');
+      const dots = [...units.matchAll(/<circle [^>]*>/g)].map(match => match[0]);
+      expect(dots, "件數只有最後一週一個空心點（不另畫實心的最後一點）").toHaveLength(1);
+      expect(dots[0]).toContain('data-kind="hollow"');
+      expect(dots[0]).toContain(`fill="${chartColors.surface}"`);
+      expect(dots[0]).toContain(`stroke="${chartColors.current}"`);
+      expect(element(overviews.find(({ name }) => name === "overview")!.html, 'data-testid="chart-overview-assist-spark-units_sold"')).toContain(`data-kind="last"`);
+    });
+
+    it("V4-2 B 總覽：G4 差額條（chart-overview-channels-bar-{channel}）在各通路緊湊表的 td.channel-change 內、同格差額 number-link 之前，aria-hidden、不可聚焦、全頁各一份；差額缺值的通路不畫條但差額格照樣有 number-link", () => {
+      const overviews = loaded().filter(({ state }) => state!.panel === "overview");
+      for (const { name, html, state } of overviews) {
+        const { snapshot } = state!.active;
+        const kv = element(element(html, 'data-testid="channel-mix"')!, 'class="kv channel-kv"')!;
+        const rows = element(kv, "<tbody>")!.match(/<tr>/g)!.length;
+        expect(occurrences(kv, '<td class="num channel-change'), `${name}：每個通路一格差額`).toBe(rows);
+        expect(kv.match(/<td class="num channel-change[^"]*">(?:<svg [^>]*>[\s\S]*?<\/svg>)?<button type="button" class="number-link"/g), `${name}：每格一個 number-link（條在它之前）`).toHaveLength(rows);
+        const withChange = snapshot.report.scope.channels.filter(channel => channelChangeEvidence(snapshot, channel).metric.value !== null);
+        expect(occurrences(html, 'data-testid="chart-overview-channels-bar-'), name).toBe(withChange.length);
+        for (const channel of withChange) {
+          const testId = `chart-overview-channels-bar-${channel}`;
+          expect(testIdCounts(html).get(testId), `${name} ${testId}`).toBe(1);
+          expect(kv, `${name} ${testId}`).toMatch(new RegExp(`<td class="num channel-change[^"]*"><svg [^>]*data-testid="${testId}"[^>]*>[\\s\\S]*?</svg><button type="button" class="number-link"`));
+          const svg = openTag(html, `data-testid="${testId}"`)!;
+          expect(svg, `${name} ${testId}`).toContain('aria-hidden="true"');
+          expect(svg, `${name} ${testId}`).toContain('focusable="false"');
+          expect(svg, `${name} ${testId}`).not.toMatch(/tabindex|\shidden=""/);
+        }
+      }
+      // 合成資料：LIVE 兩期扣廣告後貢獻資料待補，差額缺值不畫條；其餘三個通路各一條。
+      const synthetic = overviews.find(({ name }) => name === "overview-synthetic")!.html;
+      expect([...synthetic.matchAll(/data-testid="chart-overview-channels-bar-([^"]+)"/g)].map(match => match[1])).toEqual(["DTC", "MARKETPLACE", "SOCIAL"]);
+      expect([...overviews.find(({ name }) => name === "overview")!.html.matchAll(/data-testid="chart-overview-channels-bar-([^"]+)"/g)].map(match => match[1])).toEqual(["DTC", "MARKETPLACE"]);
+    });
+
+    it("V4-2 C 總覽：G5 chart-overview-bullet-bar-mer 在損益兩平段（表格之外、一句結論之後、說明之前）、aria-hidden、全頁一份；畫不出來時整行不出現；KPI 帶內沒有 chart- testid 與 data-chart-kind（細條沿用 v3 markup）", async () => {
+      const { breakevenMer } = await import("@/application/breakeven-mer");
+      const { favorableDirectionOf } = await import("@/application/presentation");
+      const { bulletGeometry } = await import("@/components/overview/charts/bullet");
+      const overviews = loaded().filter(({ state }) => state!.panel === "overview");
+      const withBullet: string[] = [];
+      for (const { name, html, state } of overviews) {
+        const current = breakevenMer(state!.active.snapshot.report.current);
+        const drawn = bulletGeometry(current.actual.value, current.value, favorableDirectionOf("mer")) !== null;
+        expect(testIdCounts(html).get("chart-overview-bullet-bar-mer") ?? 0, name).toBe(drawn ? 1 : 0);
+        expect(occurrences(html, 'class="assist-breakeven-bullet"'), name).toBe(drawn ? 1 : 0);
+        const band = element(html, 'data-testid="kpi-band"')!;
+        expect(band, `${name}：KPI 帶沒有 chart- testid`).not.toContain('data-testid="chart-');
+        expect(band, `${name}：KPI 帶沒有 data-chart-kind`).not.toContain("data-chart-kind");
+        if (!drawn) continue;
+        withBullet.push(name);
+        const section = element(html, 'data-testid="assist-breakeven-mer"')!;
+        expect(element(section, 'class="kv assist-breakeven-table"'), name).not.toContain("chart-overview-bullet-bar-mer");
+        const line = element(section, 'class="assist-breakeven-bullet"')!;
+        expect(line, name).toContain('data-testid="chart-overview-bullet-bar-mer"');
+        expect(section.indexOf('data-testid="assist-breakeven-note"'), name).toBeLessThan(section.indexOf(line));
+        expect(section.indexOf(line), name).toBeLessThan(section.indexOf('data-testid="assist-breakeven-help"'));
+        const bullet = openTag(section, 'data-testid="chart-overview-bullet-bar-mer"')!;
+        expect(bullet, name).toContain('aria-hidden="true"');
+        expect(element(section, 'data-testid="chart-overview-bullet-bar-mer"'), name).not.toMatch(/tabindex|<button/);
+      }
+      expect(withBullet, "示範資料與兩年合成資料畫 bullet；廣告費為 0、淨營收為負與 4 通路合成資料（本期實際 MER 資料待補）不畫").toEqual(["overview", "overview-yoy"]);
+    });
 
     // ── V4-3a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
