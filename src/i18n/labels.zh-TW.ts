@@ -774,7 +774,13 @@ export const overview = {
       changeAria: "{channel} {metric}差額 {value} 元，看明細",
       changeEmptyAria: "{channel} {metric}差額 {value}，看明細",
     },
-    bullet: {},
+    bullet: {
+      /**
+       * G5 損益兩平 MER 段的 C18 bullet 旁一行（其他常用指標下方，只畫本期；實際或損益兩平不適用、資料待補時整行不出現）：
+       * {mer}＝本期實際 MER、{breakeven}＝本期損益兩平 MER，都用 formatMultiple（L1；兩個 L1 相同但精確值不同時改 L3，同一句結論的規則）。
+       */
+      merLine: "實際 {mer}，損益兩平 {breakeven}",
+    },
   },
 } as const;
 
