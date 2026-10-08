@@ -24,6 +24,8 @@ export interface DocumentOptions {
   proposals: ProposalBook;
   /** 設計稿橫幅的補充說明（例如「設計稿試算的範圍」）。 */
   bannerNote?: string;
+  /** 頁首說明；沒給時用 labels.shell.nav[page].explain（商品毛利頁在 v3 用 products.pageV3.description）。 */
+  description?: string;
 }
 
 /** 下拉提示的 chevron（inline SVG，不用箭頭字元）。 */
@@ -37,7 +39,7 @@ const NAV_GROUPS: readonly { key: keyof typeof labels.shell.sidebarV3.groups; it
 ];
 
 function topbar(source: MockupSource): string {
-  const status = fill(labels.shell.dataStatus.button, { source: labels.shell.status.demo, date: md(source.dataset.manifest.data_as_of) });
+  const status = fill(labels.shell.dataStatus.button, { source: source.spec.imported ? labels.shell.status.local : labels.shell.status.demo, date: md(source.dataset.manifest.data_as_of) });
   return `<header class="topbar">
 <span class="brand"><span class="brand-mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="7" width="3" height="6" fill="var(--on-accent)"/><rect x="5.5" y="4" width="3" height="9" fill="var(--on-accent)"/><rect x="10" y="1" width="3" height="12" fill="var(--on-accent)"/></svg></span>EC ProfitLens</span>
 <span class="topbar-chip"><i class="status-dot" aria-hidden="true"></i>${esc(status)}</span>
@@ -116,7 +118,7 @@ export function pageDocument(options: DocumentOptions): string {
 ${topbar(source)}
 ${sidebar(page, options.diagnosisBadge)}
 <div class="main-shell"><main id="main-content">
-<div class="page-heading"><div class="page-heading-text"><h1>${esc(nav.headline)}</h1><p>${esc(nav.explain)}</p></div>${options.headerAction ?? ""}</div>
+<div class="page-heading"><div class="page-heading-text"><h1>${esc(nav.headline)}</h1><p>${esc(options.description ?? nav.explain)}</p></div>${options.headerAction ?? ""}</div>
 ${periodBar(source)}
 <div class="view-content">
 ${options.content}

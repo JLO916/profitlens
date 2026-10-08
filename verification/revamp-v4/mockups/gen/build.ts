@@ -1,12 +1,14 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { buildDataSource } from "./data-source";
 import { buildDiagnosis } from "./diagnosis";
 import { esc } from "./format";
 import { buildOverview, type PageOutput } from "./overview";
+import { buildProducts } from "./products";
 import { loadSource, SOURCES, type MockupSource } from "./source";
 
 // 設計稿產生器的登記處：每一頁一筆（檔名、資料來源、狀態、圖）。index.html 與 mockup-data.json 都由這裡產生。
-// 代理 C2 擴充商品毛利與資料來源兩頁時：在 PAGES 把對應的一筆改成 build 函式（並在 SOURCES 加合成資料），其餘不用動。
+// 代理 C2 已加上商品毛利（兩種狀態各一個檔）與資料來源兩頁；之後要加頁時在 PAGES 加一筆（build 函式＋截圖檔名）即可。
 
 export const OUT_DIR = "verification/revamp-v4/mockups";
 export const SHOTS_DIR = "verification/revamp-v4/V4-0b/mockups-shots";
@@ -27,19 +29,20 @@ export interface PageEntry {
   build: ((sources: LoadedSources) => PageOutput) | null;
 }
 
-export type LoadedSources = { demo: MockupSource };
+export type LoadedSources = { demo: MockupSource; synthetic: MockupSource };
 
 export const PAGES: readonly PageEntry[] = [
   { file: "overview.html", title: "經營總覽", sourceNote: "示範資料（fixtures/demo）＋目標檔 verification/revamp-v4-capture/targets.csv", states: "示範資料；G2 範圍可切換（合計、官網 · DTC、平台 · MARKETPLACE）", charts: "G1、G2、G3、G4、G5、G6（≤ 767）、G7a", owner: "代理 C1", shots: ["overview-1440-full.png", "overview-390-full.png", "overview-1440-annotated.png"], build: sources => buildOverview(sources.demo) },
   { file: "diagnosis.html", title: "通路健檢", sourceNote: "示範資料（fixtures/demo）", states: "示範資料；G9 門檻刻度可切換（0.00 與 300,000.00 示意）；G12 畫展開狀態", charts: "G9、G10、G11、G12、G7b", owner: "代理 C1", shots: ["diagnosis-1440-full.png", "diagnosis-1280-full.png", "diagnosis-768-full.png", "diagnosis-390-full.png", "diagnosis-1440-annotated.png"], build: sources => buildDiagnosis(sources.demo) },
-  { file: "products.html", title: "商品毛利", sourceNote: "示範資料（沒有商品毛利為負，第一格維持 v3 的 product-worst）與 4 通路合成資料（tests/fixtures/synthetic-4-channel，有 G14）", states: "兩種狀態", charts: "G13、G14", owner: "代理 C2", shots: [], build: null },
-  { file: "data.html", title: "資料來源", sourceNote: "4 通路合成資料（tests/fixtures/synthetic-4-channel；示範資料沒有缺列與問題）", states: "合成資料", charts: "G20、G21、G22", owner: "代理 C2", shots: [], build: null },
+  { file: "products.html", title: "商品毛利（狀態 1：示範資料）", sourceNote: "示範資料（fixtures/demo）：本期沒有商品毛利為負的商品", states: "第一格照 v3 原樣放 product-worst（不渲染 G14）；G13 可切換 PRD 版（≥ 768 兩欄並排）與建議版（各寬度都上下）", charts: "G13", owner: "代理 C2", shots: ["products-1440-full.png", "products-390-full.png", "products-1440-g13-stacked.png"], build: sources => buildProducts(sources.demo, "demo") },
+  { file: "products-synthetic.html", title: "商品毛利（狀態 2：合成資料）", sourceNote: "4 通路合成資料（tests/fixtures/synthetic-4-channel）：5 個商品毛利為負，跨 MARKETPLACE、SOCIAL", states: "第一格 G14（after＝product-worst）；G13 可切換 PRD 版與建議版", charts: "G14、G13", owner: "代理 C2", shots: ["products-synthetic-1440-full.png", "products-synthetic-390-full.png", "products-synthetic-1440-annotated.png", "products-synthetic-1440-g13-stacked.png"], build: sources => buildProducts(sources.synthetic, "synthetic") },
+  { file: "data.html", title: "資料來源", sourceNote: "4 通路合成資料（tests/fixtures/synthetic-4-channel；示範資料沒有缺列與問題），畫面當作經匯入精靈匯入", states: "合成資料；G20 可切換「去年同期」示意（假設檔案從 2025/9/1 起）；G21 格與 G20 資料表的篩選按鈕會篩問題表；前處理表可切換「含稅 5%」示意（G22）", charts: "G20、G21、G22", owner: "代理 C2", shots: ["data-1440-full.png", "data-390-full.png", "data-1440-annotated.png", "data-1440-g20-yoy.png", "data-390-g20-yoy.png", "data-1440-issues-filtered.png", "data-390-issues.png", "data-1440-g22.png"], build: sources => buildDataSource(sources.synthetic) },
 ];
 
 export interface BuildResult { pages: { entry: PageEntry; output: PageOutput }[]; index: string; tokens: string; data: Record<string, unknown> }
 
 export async function buildAll(): Promise<BuildResult> {
-  const sources: LoadedSources = { demo: await loadSource(SOURCES.demo) };
+  const sources: LoadedSources = { demo: await loadSource(SOURCES.demo), synthetic: await loadSource(SOURCES.synthetic) };
   const pages = PAGES.flatMap(entry => entry.build ? [{ entry, output: entry.build(sources) }] : []);
   const data = Object.fromEntries(pages.map(({ entry, output }) => [entry.file, output.data]));
   return { pages, index: indexHtml(), tokens: tokensCss(), data };

@@ -20,6 +20,8 @@ export interface SourceSpec {
   dir: string;
   /** 選填：目標檔（targets.csv 格式），給 KPI 帶的目標細條（G5）用。 */
   targetsFile?: string;
+  /** 選填：畫面上當作經匯入精靈匯入（prepareImport 會把 source_type 改成 user_provided，頂欄與資料狀態一行寫「本機匯入」）；沒給時寫「示範資料」。 */
+  imported?: boolean;
 }
 
 export interface MockupSource {
@@ -32,9 +34,10 @@ export interface MockupSource {
   targets: TargetSet | null;
 }
 
-/** 設計稿用到的資料來源；代理 C2 在這裡加 `synthetic`（dir：tests/fixtures/synthetic-4-channel）。 */
+/** 設計稿用到的資料來源：示範資料（總覽、健檢、商品頁示範狀態）與 4 通路合成資料（商品頁合成狀態、資料來源頁；D-V4-31，V4-0b 代理 B 建立）。 */
 export const SOURCES = {
   demo: { id: "demo", label: "示範資料（fixtures/demo）", dir: "fixtures/demo", targetsFile: "verification/revamp-v4-capture/targets.csv" },
+  synthetic: { id: "synthetic", label: "4 通路合成資料（tests/fixtures/synthetic-4-channel）", dir: "tests/fixtures/synthetic-4-channel", imported: true },
 } satisfies Record<string, SourceSpec>;
 
 export async function loadSource(spec: SourceSpec): Promise<MockupSource> {
