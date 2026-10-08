@@ -1,0 +1,252 @@
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { gzipSync } from "node:zlib";
+import { expect, test, type Page } from "@playwright/test";
+import { labels } from "../../src/i18n";
+import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type SevenPage } from "./shared";
+
+// V4-0a 第 9 項：PRD §2.2 B 的 v3.0.0 基準量測（metrics.spec v4；量法沿用 verification/revamp-v3-capture/metrics.spec.ts）。
+// 寫入 verification/revamp-v4/${CAPTURE_BATCH}/metrics.json（Lighthouse 腳本也合併寫同一個檔的 lighthouse 鍵）與 first-load-modules.json。
+// 量測狀態（PRD §2.2 B）：新訪客、示範資料 ready、拒絕本機保存提示後。
+// 硬斷言（V4-0a 起每批）：
+//   B2 首屏：1440 一句話頂 ≤ 192、KPI 帶底 ≤ 420、三件事首列底 ≤ 561；1280 KPI 帶底 ≤ 420；390 扣廣告後貢獻值頂 ≤ 295。
+//      1280 的一句話頂與三件事首列底 v3 沒有量過，V4-0a 只量不斷言（V4-1 起以 V4-0a 實測為門檻，改 B2_LAPTOP_RECORDED 為斷言）。
+//   B3 七頁在 390 寬 document.scrollingElement.scrollWidth ≤ 390（頁面不橫向捲動；.chart-frame.waterfall 與 .table-scroll 內部捲動不影響這個值）。
+//   B5 First Load JS gzip ≤ 545,397 bytes（v3.0.0 的 519,426 × 1.05，D-V4-24）；首載 chunk 中 Treemap、Sankey、Funnel、PieChart、RadarChart 字串出現 0 次。
+// 只記錄（V4-1 起依 06_BATCHES 護欄表的時程改成斷言）：
+//   B1 參考位置（總覽第一張 .chart-frame 頂、健檢清單第一列頂與 G10 插入處頂、試算方案比較表區塊頂、資料來源狀態列底）、健檢首列底；
+//   B8 各頁主層否定句數；B9 七頁載入示範資料後的 document.querySelectorAll('*').length；首頁 HTML 每個 chunk 的檔名與 gzip 大小。
+// 執行 desktop（1440×1000）、laptop（1280×900）、mobile（390×844）三個 project；tablet 略過。所有位置是文件座標（已捲回頂端），單位 CSS px，取到 0.1。
+const batch = process.env.CAPTURE_BATCH ?? "V4-0a";
+const OUT = resolve(process.env.METRICS_OUT ?? `verification/revamp-v4/${batch}/metrics.json`);
+const MODULES_OUT = resolve(process.env.FIRST_LOAD_MODULES_OUT ?? `verification/revamp-v4/${batch}/first-load-modules.json`);
+/** KPI 帶的五格（C1）。v3 的「KPI 帶底 419」是五格底邊的最大值（verification/revamp-v3/V3-10/metrics.json 的 kpiCardsBottom），v4 沿用同一口徑斷言，另記 kpi-band 元素本身的底。 */
+const KPI_CARDS = ".kpi-band [data-testid^='kpi-']";
+
+/** PRD §2.2 B2 的門檻（CSS px）。 */
+const B2 = {
+  desktop: { snapshotSentenceTop: 192, kpiCardsBottom: 420, topThreeFirstRowBottom: 561 },
+  laptop: { kpiCardsBottom: 420 },
+  mobile: { contributionAfterMarketingValueTop: 295 },
+} as const;
+/** 1280 只量不斷言的兩項（V4-0a）。 */
+const B2_LAPTOP_RECORDED = ["snapshotSentenceTop", "topThreeFirstRowBottom"] as const;
+/** B3：390 寬頁面不橫向捲動。 */
+const B3_MAX_SCROLL_WIDTH = 390;
+/** B5（D-V4-24）。 */
+const B5_GZIP_MAX = 545_397;
+/** 首載 chunk 必須為 0 的符號（PRD §8.2）；另記 v3.0.0 已存在、不斷言的符號。 */
+const FORBIDDEN_SYMBOLS = ["Treemap", "Sankey", "Funnel", "PieChart", "RadarChart"] as const;
+const RECORDED_SYMBOLS = ["ScatterChart", "AreaChart", "Brush", "ComposedChart", "LineChart", "BarChart"] as const;
+
+/** 七頁切過去後要等的區塊（與 tests/e2e、Lighthouse 腳本相同的 testid）。 */
+const ANCHORS: Record<SevenPage, string> = {
+  overview: "[data-testid='kpi-band']",
+  diagnosis: "[data-testid='diagnosis-panel']",
+  products: "[data-testid='product-table']",
+  scenarios: "[data-testid='scenario-1']",
+  actions: "[data-testid='actions-workbench']",
+  meeting: "[data-testid='meeting-page']",
+  data: "[data-testid='data-status-line']",
+};
+
+/** 依路徑合併寫入（Lighthouse 腳本也寫同一個檔的 lighthouse 鍵）。 */
+async function record(path: string[], value: unknown) {
+  let json: Record<string, unknown> = {};
+  try { json = JSON.parse(await readFile(OUT, "utf8")); } catch { json = {}; }
+  let node = json;
+  for (const key of path.slice(0, -1)) node = (node[key] ??= {}) as Record<string, unknown>;
+  node[path.at(-1)!] = value;
+  json._meta = { batch, note: "PRD §2.2 B 的 v3.0.0 基準與各批量測（EC ProfitLens，revamp/v4）。由 verification/revamp-v4-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v4/V4-0-baseline.md。", clock: FIXED_NOW.toISOString(), server: "本機 production（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）" };
+  await mkdir(dirname(OUT), { recursive: true });
+  await writeFile(OUT, `${JSON.stringify(json, null, 2)}\n`);
+}
+
+const round = (value: number) => Math.round(value * 10) / 10;
+/** 第一個符合的元素的文件座標（已含捲動量）。找不到時回傳 null（只記錄的項目用）。 */
+async function boxOrNull(page: Page, selector: string) {
+  const locator = page.locator(selector).first();
+  if (!(await locator.count())) return null;
+  const rect = await locator.evaluate(element => { const r = element.getBoundingClientRect(); return { top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, height: r.height }; });
+  return { top: round(rect.top), bottom: round(rect.bottom), height: round(rect.height) };
+}
+async function box(page: Page, selector: string) {
+  const rect = await boxOrNull(page, selector);
+  if (!rect) throw new Error(`${selector} 沒有 boundingBox`);
+  return rect;
+}
+
+/** main 內、第一張 KPI 卡之前、可見且可聚焦的元素（元素數，不是 Tab 停駐點；type=date 的年月日分段算 1 個）。與 v3 metrics.spec 相同。 */
+function focusableBeforeFirstKpi(page: Page) {
+  return page.evaluate(selector => {
+    const main = document.querySelector("main")!;
+    const first = main.querySelector(selector)!;
+    const candidates = main.querySelectorAll<HTMLElement>("a[href], button, input, select, textarea, summary, iframe, [tabindex], [contenteditable='true']");
+    const items: { tag: string; text: string }[] = [];
+    for (const element of candidates) {
+      if (element === main) continue;
+      if (!(first.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_PRECEDING)) continue;
+      if ((element as HTMLButtonElement).disabled || element.tabIndex < 0 || element.closest("[inert]")) continue;
+      if (element instanceof HTMLInputElement && element.type === "hidden") continue;
+      if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) continue;
+      const rect = element.getBoundingClientRect();
+      if (rect.width <= 1 || rect.height <= 1) continue;
+      const text = (element.getAttribute("aria-label") ?? element.textContent ?? (element as HTMLInputElement).value ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
+      items.push({ tag: element instanceof HTMLInputElement ? `input[type=${element.type}]` : element.tagName.toLowerCase(), text: text || (element as HTMLInputElement).id || "" });
+    }
+    return items;
+  }, KPI_CARDS);
+}
+
+/** 規則卡的「注意」句（labels.rules[*].caution）不算免責樣板（與 tests/copy-density.test.ts 相同）。 */
+const RULE_CAUTIONS = Object.values(labels.rules).map(rule => rule.caution.replace(/[。；]$/, ""));
+/**
+ * B8：main 主層（拿掉沒有 open 屬性的 <details> 與其內容，含 summary；展開的 <details> 算主層）含「不是／不代表／不等於／不可」的句子（去重）。
+ * 口徑對齊 tests/copy-density.test.ts 的 disclaimerSentences（以文字節點為單位，再以句號、分號、換行切句；去掉句首到「注意」加冒號為止的前綴；規則卡注意句不算），
+ * 差別：這裡是瀏覽器裡的示範資料畫面（copy-density 是 SSR 的 golden），而且只算畫面上渲染的文字（checkVisibility：不算 hidden 的其他頁與
+ * display:none 的另一種尺寸版面；main 內常駐的期間列算進每一頁）。數字只當參考基準。
+ */
+function mainLayerNegations(page: Page) {
+  return page.evaluate(cautions => {
+    const skip = new Set(cautions);
+    const main = document.querySelector("main");
+    if (!main) return [];
+    const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+    const texts: string[] = [];
+    while (walker.nextNode()) {
+      const parent = walker.currentNode.parentElement;
+      if (!parent || parent.closest("script, style, template, details:not([open])")) continue;
+      if (!parent.checkVisibility({ checkVisibilityCSS: true })) continue;
+      texts.push(walker.currentNode.nodeValue ?? "");
+    }
+    const sentences = texts.flatMap(text => text.split(/[。；;\n]/)).map(sentence => sentence.replace(/\s+/g, " ").trim()).filter(sentence => /不是|不代表|不等於|不可/.test(sentence));
+    return [...new Set(sentences.map(sentence => sentence.replace(/^.*?注意[:：]\s*/, "")).filter(sentence => !skip.has(sentence)))];
+  }, RULE_CAUTIONS);
+}
+
+/** DOM 節點數：Recharts 的 ResponsiveContainer 量到尺寸後才畫圖，連續兩次（間隔 200 ms）相同才記錄，最多等 4 秒。 */
+async function stableDomCount(page: Page) {
+  let previous = -1;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const count = await page.evaluate(() => document.querySelectorAll("*").length);
+    if (count === previous) return count;
+    previous = count;
+    await page.waitForTimeout(200);
+  }
+  return previous;
+}
+
+async function goToPage(page: Page, id: SevenPage) {
+  await navigateTo(page, id);
+  await expect(page.locator("main h1")).toHaveText(labels.shell.nav[id].headline);
+  await expect(page.locator(ANCHORS[id]).first()).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.mouse.move(0, 0);
+}
+
+test.beforeEach(() => { test.skip(!["desktop", "laptop", "mobile"].includes(test.info().project.name), "§2.2 B 只量 1440、1280 與 390"); });
+
+test("B2 首屏位置（1440、1280、390）與內容前控制項數", async ({ page }, testInfo) => {
+  const project = testInfo.project.name as "desktop" | "laptop" | "mobile";
+  await loadDemo(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const cards = await page.locator(KPI_CARDS).evaluateAll(elements => elements.map(element => { const rect = element.getBoundingClientRect(); return { id: element.getAttribute("data-testid"), top: rect.top + window.scrollY, bottom: rect.bottom + window.scrollY }; }));
+  expect(cards).toHaveLength(5);
+  const band = await box(page, "[data-testid='kpi-band']");
+  const sentence = await box(page, "[data-testid='snapshot-sentence']");
+  // V3-4a：三件事是警示列（.alert-list > li.alert-row），標題是列內的 h3。
+  const firstRow = await box(page, "[data-testid='top-three'] .alert-list > li:first-child");
+  const firstRowTitle = await box(page, "[data-testid='top-three'] .alert-list > li:first-child h3");
+  const contribution = await box(page, "[data-testid='kpi-contribution_after_marketing'] .kpi-value");
+  const focusable = await focusableBeforeFirstKpi(page);
+  const measured = {
+    snapshotSentenceTop: sentence.top,
+    firstKpiTop: round(Math.min(...cards.map(card => card.top))),
+    kpiCardsBottom: round(Math.max(...cards.map(card => card.bottom))),
+    kpiBandTop: band.top,
+    kpiBandBottom: band.bottom,
+    contributionAfterMarketingValueTop: contribution.top,
+    contributionAfterMarketingValueBottom: contribution.bottom,
+    topThreeFirstRowTitleBottom: firstRowTitle.bottom,
+    topThreeFirstRowBottom: firstRow.bottom,
+  };
+  const thresholds: Record<string, number> = { ...B2[project] };
+  await record([project, "firstScreen"], {
+    viewport: page.viewportSize(),
+    ...measured,
+    kpiCards: cards.map(card => ({ id: card.id, top: round(card.top), bottom: round(card.bottom) })),
+    viewportHeight: page.viewportSize()!.height,
+    numbersVisibleInFirstScreen: contribution.top < page.viewportSize()!.height,
+    b2: { asserted: thresholds, recordedOnly: project === "laptop" ? Object.fromEntries(B2_LAPTOP_RECORDED.map(key => [key, measured[key]])) : {}, kpiBandBottomNote: "KPI 帶底以五格底邊最大值（kpiCardsBottom，與 v3 基準 419 同口徑）斷言；kpiBandBottom 是 kpi-band 元素本身的底，只記錄" },
+  });
+  await record([project, "focusableBeforeFirstKpi"], { count: focusable.length, method: "main 內、文件順序在第一張 KPI 卡之前、checkVisibility 可見、未 disabled、tabIndex ≥ 0、大於 1×1 px 的 a[href]／button／input／select／textarea／summary／[tabindex]；以元素計（與 v3 metrics.spec 相同）", elements: focusable });
+  for (const [key, max] of Object.entries(thresholds)) expect.soft(measured[key as keyof typeof measured], `B2 ${project} ${key} ≤ ${max}`).toBeLessThanOrEqual(max);
+});
+
+test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM 節點數", async ({ page }, testInfo) => {
+  test.setTimeout(240_000);
+  const project = testInfo.project.name as "desktop" | "laptop" | "mobile";
+  await loadDemo(page);
+  const pages: Record<string, unknown> = {};
+  const scrollWidths: Record<string, number> = {};
+  const b1: Record<string, unknown> = {};
+  for (const id of SEVEN_PAGES) {
+    await goToPage(page, id);
+    const domNodes = await stableDomCount(page);
+    const scroll = await page.evaluate(() => ({ scrollWidth: document.scrollingElement!.scrollWidth, clientWidth: document.scrollingElement!.clientWidth }));
+    const negations = await mainLayerNegations(page);
+    scrollWidths[id] = scroll.scrollWidth;
+    pages[id] = { domNodes, ...scroll, mainLayerNegations: { count: negations.length, sentences: negations } };
+    if (id === "overview") b1.overview = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame"))?.top ?? null };
+    if (id === "diagnosis") {
+      const row = await boxOrNull(page, "[data-testid^='diagnosis-row-']");
+      const summary = await boxOrNull(page, "[data-testid^='diagnosis-row-'] > summary");
+      b1.diagnosis = {
+        firstRowTop: row?.top ?? null, firstRowBottom: row?.bottom ?? null, firstRowSummaryBottom: summary?.bottom ?? null,
+        diagnosisListBottom: (await boxOrNull(page, "[data-testid='diagnosis-list']"))?.bottom ?? null,
+        diagnosisPanelBottom: (await boxOrNull(page, "[data-testid='diagnosis-panel']"))?.bottom ?? null,
+        g10InsertTop: (await boxOrNull(page, "[data-testid='channel-compare']"))?.top ?? null,
+        note: "健檢清單第一列＝第一個 diagnosis-row-*（<details>，預設展開；firstRowBottom 含展開內容，firstRowSummaryBottom 是收合列本身的底）；G10 插入處頂＝目前 channel-compare 的頂（G10、G11、G12 插在 diagnosis-panel 與 channel-compare 之間）",
+      };
+    }
+    if (id === "products") b1.products = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame"))?.top ?? null, productHighlightsTop: (await boxOrNull(page, "section.product-highlights"))?.top ?? null, note: "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內" };
+    if (id === "scenarios") b1.scenarios = { scenarioCompareTop: (await boxOrNull(page, "section.scenario-compare"))?.top ?? null, note: "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算" };
+    if (id === "data") b1.data = { dataStatusLineBottom: (await boxOrNull(page, "[data-testid='data-status-line']"))?.bottom ?? null };
+  }
+  // 試算頁另量「維持現況」計算後的方案比較表區塊頂（G15 只在有結果時出現，V4-5 的 B1 門檻以這個狀態比較）；放在七頁量完之後，計算結果不影響其他頁的 DOM 節點數。
+  await navigateTo(page, "scenarios");
+  await calculateKeepPreset(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  (b1.scenarios as Record<string, unknown>).scenarioCompareTopAfterCalculate = (await boxOrNull(page, "section.scenario-compare"))?.top ?? null;
+  (b1.scenarios as Record<string, unknown>).afterCalculateNote = "方案 1 套用「維持現況」範本、同意假設、計算之後（與畫面基準 07 相同的狀態）";
+
+  await record([project, "pages"], { ...pages, method: "載入示範資料後依側欄順序切到七頁（navigateTo；手機走底部分頁列或「更多」），等 h1 與該頁區塊出現、捲回頂端；domNodes＝document.querySelectorAll('*').length（連續兩次相同才記錄）；scrollWidth／clientWidth＝document.scrollingElement；mainLayerNegations＝main 主層（拿掉收合的 <details>）含「不是／不代表／不等於／不可」的句子（去重，口徑同 tests/copy-density.test.ts）" });
+  await record([project, "b1"], b1);
+  if (project === "mobile") for (const id of SEVEN_PAGES) expect.soft(scrollWidths[id], `B3 ${id}：390 寬 scrollWidth ≤ ${B3_MAX_SCROLL_WIDTH}`).toBeLessThanOrEqual(B3_MAX_SCROLL_WIDTH);
+});
+
+test("B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首載 chunk 符號", async ({ request }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "與尺寸無關");
+  const html = await (await request.get("/")).text();
+  const tags = [...html.matchAll(/<script([^>]*)\ssrc="([^"]+)"([^>]*)>/g)].map(match => ({ src: match[2], nomodule: /\snoModule|\snomodule/i.test(`${match[1]} ${match[3]}`) })).filter(tag => tag.src.includes("/_next/static/"));
+  const sources = [...new Map(tags.map(tag => [tag.src, tag])).values()];
+  expect(sources.length).toBeGreaterThan(0);
+  const count = (text: string, symbol: string) => text.split(symbol).length - 1;
+  const files: { src: string; nomodule: boolean; bytes: number; gzip: number; symbols: Record<string, number> }[] = [];
+  for (const { src, nomodule } of sources) {
+    const body = await (await request.get(src)).body();
+    const text = body.toString("utf8");
+    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS].map(symbol => [symbol, count(text, symbol)])) });
+  }
+  const sum = (key: "bytes" | "gzip", list = files) => list.reduce((total, file) => total + file[key], 0);
+  const modern = files.filter(file => !file.nomodule);
+  const symbolTotals = (list: typeof files, symbols: readonly string[]) => Object.fromEntries(symbols.map(symbol => [symbol, list.reduce((total, file) => total + file.symbols[symbol], 0)]));
+  const forbidden = symbolTotals(modern, FORBIDDEN_SYMBOLS);
+  const recorded = symbolTotals(modern, RECORDED_SYMBOLS);
+  const method = "GET / 的 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重）；主數字排除 nomodule（polyfills，現代瀏覽器不下載），allScripts 為含 nomodule 的總和；bytes＝未壓縮大小，gzip＝Node zlib gzipSync 預設等級；符號＝檔案內容中該字串出現的次數（子字串計數，含 displayName 與型別名稱）";
+  await record(["firstLoadJs"], { scripts: modern.length, bytes: sum("bytes", modern), kib: round(sum("bytes", modern) / 1024), gzipBytes: sum("gzip", modern), gzipKiB: round(sum("gzip", modern) / 1024), gzipMax: B5_GZIP_MAX, forbiddenSymbols: forbidden, recordedSymbols: recorded, nomoduleExcluded: files.filter(file => file.nomodule).map(file => ({ src: file.src, bytes: file.bytes, gzip: file.gzip })), allScripts: { scripts: files.length, bytes: sum("bytes"), gzipBytes: sum("gzip") }, files: files.map(({ src, nomodule, bytes, gzip }) => ({ src, nomodule, bytes, gzip })), method });
+  await mkdir(dirname(MODULES_OUT), { recursive: true });
+  await writeFile(MODULES_OUT, `${JSON.stringify({ batch, generatedAt: new Date().toISOString(), note: "首頁 HTML 列出的每個 chunk 檔名與 gzip 大小（供人工比對；檔名帶雜湊，每次 build 都變，不逐一斷言）。B5 門檻只看 modern 的 gzip 總和。", method, totals: { modernScripts: modern.length, modernGzipBytes: sum("gzip", modern), gzipMax: B5_GZIP_MAX, allScripts: files.length, allGzipBytes: sum("gzip") }, forbiddenSymbols: forbidden, recordedSymbols: recorded, chunks: files.map(file => ({ file: file.src.split("/").pop(), ...file })) }, null, 2)}\n`);
+  expect.soft(sum("gzip", modern), `B5 First Load JS gzip ≤ ${B5_GZIP_MAX}`).toBeLessThanOrEqual(B5_GZIP_MAX);
+  for (const symbol of FORBIDDEN_SYMBOLS) expect.soft(forbidden[symbol], `B5 首載 chunk 的 ${symbol} 必須為 0`).toBe(0);
+});
