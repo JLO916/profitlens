@@ -8,6 +8,7 @@ import { bridgeWaterfall, overviewWaterfallDomain, type BridgeRow, type Waterfal
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, type AmountField, type Metric, type MetricName } from "@/domain/types";
 import { fill, labels } from "@/i18n";
+import { BarCell, barCellScale } from "../../charts/bar-cell";
 import type { EvidenceSelection } from "../../evidence-drawer";
 import { ShellIcon } from "../../shell/shell-icon";
 import { toneClass } from "../../top-three";
@@ -22,6 +23,10 @@ import { WaterfallSvg } from "./waterfall-svg";
 // 既有 testid、.bridge-total、.unit-note（改由 unitNote 輸出）、bridge-balance-check 不變；橋接表＋平衡檢核放 aside（外層沿用 .bridge-table-wrap，
 // DOM 在圖之前：390 表在前、瀑布在後，≥ 1024 以 grid-template-areas 放回右欄）；瀑布用 bare＋frameClassName="waterfall"，每張圖只有一個 .chart-frame；
 // 與 G2 共用 overviewWaterfallDomain 的尺度；外框不帶 aria-hidden（scrollLabel，390 鍵盤修正）。
+// V4-1 代理 C（PRD §4.1–4.7 G6、§7.7；CHART_CATALOG G6；D-V4-33＝B）：橋接表九個差額列的金額格內、number-link 之前各加一個 C24 變異條
+// （chart-overview-bridge-bar-{field}；共同尺度＝九項 |值| 最大值；色依 deltaTone，與同列 number-link 的有利／不利相同；缺值列不畫）。
+// 條 aria-hidden、不可聚焦，鍵盤經同列 number-link；點條記 chart_clicked（D-V4-14）並開同一個抽屜（經 bridgeRowTarget 與 bridgeEvidence，同列 number-link 也是）。
+// 只在螢幕 ≤ 767px 顯示，≥ 768 與列印以 globals.css「V4-1 C」錨點的 display: none 隱藏，元素保持掛載（M1）。
 
 const CM: MetricName = "contribution_after_marketing";
 const copy = labels.overview.bridgeV3;
@@ -83,6 +88,9 @@ export function BridgeSection({ snapshot, onEvidence, domain }: BridgeSectionPro
   const sharedDomain = useMemo(() => domain ?? overviewWaterfallDomain(snapshot), [domain, snapshot]);
   const open = (target: BridgeEvidenceTarget) => onEvidence(bridgeEvidence(snapshot, target));
   const onBar = (bar: WaterfallBar) => { track("waterfall_clicked"); open(bridgeBarTarget(bar)); };
+  // G6：九項差額共用一把尺（PRD §7.2：同一張表的內嵌條共用最大值）；點條與點同列 number-link 開同一個抽屜，另記 chart_clicked。
+  const barScale = useMemo(() => barCellScale(data.rows.filter(row => row.kind === "delta").map(row => row.metric.value)), [data.rows]);
+  const onCell = (row: BridgeRow) => { track("chart_clicked"); open(bridgeRowTarget(row)); };
   const number = (name: MetricName, metric: Metric, period: "previous" | "current") => <button className="number-link" onClick={() => onEvidence({ name, metric, period: report[period].period, sources: report[period].sources, channels: [...report.scope.channels], title: metricDefinitions[name].label })}>{metricText(name, metric, "L3")}</button>;
 
   const aside = <div className="bridge-table-wrap">
@@ -92,10 +100,11 @@ export function BridgeSection({ snapshot, onEvidence, domain }: BridgeSectionPro
       <tbody>
         {data.rows.map(row => {
           const signed = row.kind === "delta" || row.kind === "total";
-          const tone = signed && row.metric.value !== null ? ` ${toneClass(deltaTone(CM, row.metric.value, "L3"))}` : "";
+          const rowTone = signed && row.metric.value !== null ? deltaTone(CM, row.metric.value, "L3") : null;
+          const tone = rowTone ? ` ${toneClass(rowTone)}` : "";
           return <tr key={row.id} className={row.kind === "end" ? "is-total" : row.kind === "total" ? "is-sum" : undefined} data-row={row.id}>
             <th scope="row">{row.label}</th>
-            <td className="num"><button type="button" className={`number-link${tone}${row.kind === "total" ? " bridge-total" : ""}`} onClick={() => open(bridgeRowTarget(row))}>{bridgeRowText(row)}</button></td>
+            <td className="num">{row.kind === "delta" && row.field && row.metric.value !== null && rowTone && <BarCell mode="variance" value={row.metric.value} max={barScale} tone={rowTone} testId={`chart-overview-bridge-bar-${row.field}`} onClick={() => onCell(row)} />}<button type="button" className={`number-link${tone}${row.kind === "total" ? " bridge-total" : ""}`} onClick={() => open(bridgeRowTarget(row))}>{bridgeRowText(row)}</button></td>
           </tr>;
         })}
         <tr className="bridge-balance-row" data-testid="bridge-balance-check">
