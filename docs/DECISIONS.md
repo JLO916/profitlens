@@ -292,6 +292,14 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-08｜Revamp v4 開工：拍板全部依建議值
+
+**依據：** 使用者 2026-10-08 指示「改版：將全站加入更多專業視覺化元素，以專業圖表的方式呈現為主要」，套件 `docs/revamp-v4/`（PRD、CHART_CATALOG、06_BATCHES、09、README）完成後回覆「都依建議值，開工」。
+
+**拍板（D-V4-1 到 D-V4-35 全部依建議值）：** 目標版本 v4.0.0（D-V4-1＝B）；工作分支 `revamp/v4`，自 `main`＝`21d621c` 開（D-V4-2＝A）；禁區四條命令以 `625bfa5` 為主並保留 `82b70df`（D-V4-3＝A）；B 級整理函式各一個版本常數（D-V4-15＝B）；X26–X40 與 chart-lint 自動檢查（D-V4-23＝A）；First Load JS gzip ≤ 545,397 bytes（D-V4-24＝A）；testid 命名 `chart-{page}-{id}`（D-V4-25＝A）；`V4_NEW_KEY_PREFIXES` 與 v3.0.0 全部葉節點快照（D-V4-26＝A）；人工關卡 H5（擋 V4-1，可比照 v3 略過）與 H6（擋正式上線）（D-V4-27＝A，使用者尚未表示略過 H5）；4 通路合成測試資料放 `tests/fixtures/synthetic-4-channel/`（D-V4-31＝A）；PPT 依 D-V4-10「A，spike 不成立時 B」，V4-0b 回報 spike 結果；其餘各項見 `docs/revamp-v4/09_DECISIONS_PENDING.md` 決定欄。
+
+**做法：** CLAUDE.md 依 `docs/revamp-v4/00_README.md` 末節的草案整份取代（填入版本、日期與「全部依建議值」）；v3 的 CLAUDE.md 內容仍可在 git 歷史（tag `v3.0.0`）查到。部署策略（D-V4-28）只定 MVP 後可部署 preview，每次實際部署仍須使用者當次明確同意。
+
 ## 2026-10-08｜Revamp v3 V3-10：上線檢查的取捨
 
 **labels 舊 key alias 移除：** labels 頂層只剩 24 個新分組（LABEL_GROUPS），v2 的 52 個區段與 legacyAliases 全部移除；對照表留在 `tests/fixtures/labels-legacy-map.json`（2,094 個葉路徑、65 個整棵子樹），`tests/labels-structure.test.ts` 改成「V3-2b 快照經對照表對到新路徑，字串一對一相同」。消費端（src 70 檔、單元測試 72 檔、E2E 44 檔、量測 spec 11 檔、scripts 8 檔）以 AST codemod 改路徑，不改斷言語意；`metricDefinitions` 與 `ruleCopy` 的輸出欄位名（label／plain／formula）不變，只改讀取來源。字串不變的證明：移除前後 24 個分組攤平後 2,578 個葉節點逐位元組相同，copy-scan 指標逐項相同。
