@@ -44,7 +44,7 @@
 | `git diff --stat 82b70df -- src/domain fixtures/golden fixtures/demo fixtures/errors fixtures/refund_only fixtures/zero_ad docs/METRICS.md` | 空 |
 | `git diff --stat 625bfa5 -- src/application/assist-kpi.ts src/application/breakeven-mer.ts tests/assist-kpi.test.ts tests/breakeven-mer.test.ts` | 空 |
 | `git status --porcelain -- src/domain fixtures docs/METRICS.md src/application/assist-kpi.ts src/application/breakeven-mer.ts tests/assist-kpi.test.ts tests/breakeven-mer.test.ts` | 空 |
-| commit 之後 `git diff --stat 625bfa5 HEAD -- （同上第一條與第三條的路徑）` | 收尾提交後執行，結果與 hash 補在本列下方的 STATUS 段 |
+| commit 之後 `git diff --stat 625bfa5 HEAD -- src/domain fixtures docs/METRICS.md src/application/assist-kpi.ts src/application/breakeven-mer.ts tests/assist-kpi.test.ts tests/breakeven-mer.test.ts` | 空（收尾 commit `998d3e1`） |
 | 合併後隱藏字元掃描 | 0 |
 
 **棘輪與基準數值（與 V4-0a 比較）**
