@@ -1,0 +1,10 @@
+# EC ProfitLens v4 新增 data-testid 清單（V4-0a 建立，PRD v4 §8.6、06_BATCHES V4-0a 第 3 項；建立日 2026-10-08，基準 v3.0.0＝625bfa5，建立時沒有任何列）
+# 格式：testid<TAB>來源<TAB>批次<TAB>說明（原始碼位置；收集到它的 SSR 情境或瀏覽器步驟）。以 # 開頭的是註解。與 verification/revamp-v3/testids-v2.txt 相同，只多一個批次欄（第三欄）。
+# 來源：
+#   ssr  = tests/testid-baseline.test.ts 以 renderToStaticMarkup 渲染各頁狀態（含 tests/helpers/page-states.tsx 的整頁狀態）後實際出現（嚴格比對，少一個即失敗）。
+#   e2e  = 只在瀏覽器互動後出現，由 verification/revamp-v4/collect-testids.spec.ts（設定檔 verification/revamp-v4.config.ts）實際收集；本檔在 vitest 只做原始碼檢查。
+#   cond = 條件項（失敗狀態、live AI 等），SSR 與收集流程都不進入；說明欄列出覆蓋它的既有測試；在 vitest 只做原始碼檢查。
+# 批次：新增這個 testid 的批次（V4-1、V4-2、V4-3a、V4-3b、V4-4、V4-5、V4-6、V4-7a、V4-7b、V4-8、V4-9a、V4-9b、V4-10、V4-11）。
+# 規則：V4-1 起每批把本批新增的 testid 追加到本檔最後（不排序、不刪列），之後批次刪掉或改名 v4 新 testid 時 tests/testid-baseline.test.ts 會失敗。
+#   新 testid 依 PRD §4.7：chart-{page}-{id}、chart-{page}-{id}-{bar|point|seg|cell|spark}-{語意 key}、chart-{page}-{id}-table；不用陣列索引、不以 kpi- 開頭。
+#   已在 verification/revamp-v4/testids-v3.txt 的 testid 不重複列入（testid-baseline 斷言）。
