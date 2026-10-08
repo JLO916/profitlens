@@ -7,11 +7,11 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { trendTakeaways } from "../src/application/chart-takeaways";
 import { chartColors } from "../src/application/chart-theme";
 import { periodPresets } from "../src/application/period-presets";
-import { formatAmountL1, formatAmountL2, formatPeriodL1, metricDefinitions } from "../src/application/presentation";
+import { formatAmountL1, formatAmountL2, formatAxisWan, formatPeriodL1, MINUS, metricDefinitions } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import type { EvidenceSelection } from "../src/components/evidence-drawer";
 import { Overview } from "../src/components/overview";
-import { lastPoints, TrendSection, trendRows, weekEvidence, YOY_LINE, YOY_SERIES } from "../src/components/overview/charts/trend-section";
+import { lastPoints, trendAxis, TrendSection, trendRows, weekEvidence, YOY_LINE, YOY_SERIES } from "../src/components/overview/charts/trend-section";
 import { aggregatePeriod } from "../src/domain/aggregation";
 import type { Dataset } from "../src/domain/types";
 import { validateDataset } from "../src/domain/validation";
@@ -288,5 +288,72 @@ describe("F10 週的抽屜（圖上的點與資料表共用）", () => {
     expect(weekEvidence(week, "net_revenue", channels)).toEqual(expected);
     const yoyWeek = ready(twoYear.snapshot).weeks[0];
     expect(weekEvidence(yoyWeek, "contribution_after_marketing", channels)).toMatchObject({ metric: yoyWeek.metrics.contribution_after_marketing, period: { start: "2025-07-13", end: "2025-07-19" }, filter: { week: { label: fill(copy.weekLabel, { n: 1 }) } } });
+  });
+});
+
+// V4-2 代理 B（G3；PRD §4.1、§4.4 G3、§6.4、§7.2；CHART_CATALOG G3）：Y 軸刻度改由 trendAxis 算（含 0、整齊步長、上下界取步長的整數倍），
+// 文字是 formatAxisWan（整數萬，不再出現「50.0 萬」）。Recharts 在伺服器端不繪製軸，這裡斷言 trendAxis 與原始碼接線；實際刻度文字由 E2E 檢查。
+// 上面「趨勢圖第三線的呈現」的三項圖例斷言不變（去年同期線在任何寬度都畫）。
+describe("V4-2 G3 Y 軸刻度：trendAxis＋formatAxisWan", () => {
+  /** 圖上所有線的座標（本期、上期與去年同期的淨營收、扣廣告後貢獻）。 */
+  const values = (snapshot: WorkspaceSnapshot) => {
+    const yoy = snapshot.yoy?.status === "ready" ? snapshot.yoy.weeks : [];
+    return trendRows(snapshot.weeks, yoy).flatMap(row => [row.revenuePrevious, row.contributionPrevious, row.revenueCurrent, row.contributionCurrent, ...YOY_SERIES.map(series => row[series.key])]);
+  };
+  const finite = (list: readonly (number | null)[]) => list.filter((value): value is number => value !== null);
+
+  it("demo：刻度含 0、範圍涵蓋每一條線；文字＝formatAxisWan(ticks, step)，步長是整萬，沒有「.0 萬」也沒有小數", () => {
+    const list = values(demo.snapshot);
+    const axis = trendAxis(list);
+    expect(axis.labels).toEqual(formatAxisWan(axis.ticks, axis.step));
+    expect(axis.ticks).toContain(0);
+    expect(axis.labels[axis.ticks.indexOf(0)]).toBe("0");
+    expect(axis.domain).toEqual([axis.ticks[0], axis.ticks.at(-1)]);
+    expect(axis.domain[0]).toBeLessThanOrEqual(Math.min(0, ...finite(list)));
+    expect(axis.domain[1]).toBeGreaterThanOrEqual(Math.max(...finite(list)));
+    expect(axis.step % 10_000).toBe(0);
+    for (const [index, tick] of axis.ticks.entries()) expect(tick, String(index)).toBe(axis.ticks[0] + index * axis.step);
+    for (const text of axis.labels) { expect(text).not.toMatch(/\.0\s*萬/); expect(text).not.toContain("."); }
+    // 刻度約 4 條（與 V3 的 tickCount 相同），最高刻度不超過資料最大值一個步長。
+    expect(axis.ticks.length).toBeGreaterThanOrEqual(3);
+    expect(axis.ticks.length).toBeLessThanOrEqual(6);
+    expect(axis.domain[1] - Math.max(...finite(list))).toBeLessThan(axis.step);
+  });
+
+  it("兩年合成資料（去年同期可用）：範圍也涵蓋去年同期兩條線；golden 不到 1 萬時 formatAxisWan 寫元（不出現「萬」）", () => {
+    const list = values(twoYear.snapshot);
+    const yoyOnly = finite(trendRows(twoYear.snapshot.weeks, ready(twoYear.snapshot).weeks).flatMap(row => YOY_SERIES.map(series => row[series.key])));
+    expect(yoyOnly.length).toBeGreaterThan(0);
+    const axis = trendAxis(list);
+    expect(axis.domain[1]).toBeGreaterThanOrEqual(Math.max(...yoyOnly));
+    expect(axis.domain[0]).toBeLessThanOrEqual(Math.min(0, ...yoyOnly));
+    expect(axis.labels).toEqual(formatAxisWan(axis.ticks, axis.step));
+    const goldenAxis = trendAxis(values(golden.snapshot));
+    expect(goldenAxis.labels).toEqual(formatAxisWan(goldenAxis.ticks, goldenAxis.step));
+    expect(Math.max(...goldenAxis.ticks.map(Math.abs))).toBeLessThan(10_000);
+    for (const [index, tick] of goldenAxis.ticks.entries()) if (tick !== 0) expect(goldenAxis.labels[index]).toBe(formatAmountL1(tick.toFixed(2)));
+  });
+
+  it("負值：下界延伸到步長的整數倍、負刻度帶 U+2212；沒有任何有值的點時只有刻度 0", () => {
+    const axis = trendAxis([-61169.93, 1330962.66, null]);
+    expect(axis.domain[0]).toBeLessThanOrEqual(-61169.93);
+    expect(Number.isInteger(axis.domain[0] / axis.step)).toBe(true);
+    expect(axis.ticks).toContain(0);
+    expect(axis.labels[0].startsWith(MINUS)).toBe(true);
+    expect(axis.labels).toEqual(formatAxisWan(axis.ticks, axis.step));
+    expect(trendAxis([null, null])).toEqual({ domain: [0, 1], ticks: [0], step: 1, labels: ["0"] });
+    expect(trendAxis([])).toEqual({ domain: [0, 1], ticks: [0], step: 1, labels: ["0"] });
+  });
+
+  it("原始碼接線：YAxis 用 trendAxis 的 domain 與 ticks、刻度文字查 formatAxisWan 的結果；不再交給 Recharts 的 tickCount／niceTicks，也不再用 L1 的 axis 函式", () => {
+    const source = readFileSync(resolve("src/components/overview/charts/trend-section.tsx"), "utf8");
+    expect(source).toContain("<YAxis domain={yAxis.domain} ticks={yAxis.ticks}");
+    expect(source).toContain("labels: formatAxisWan(ticks, step)");
+    const yAxisTag = source.slice(source.indexOf("<YAxis "), source.indexOf("/>", source.indexOf("<YAxis ")));
+    expect(yAxisTag).not.toMatch(/niceTicks|tickCount/);
+    expect(source).not.toContain("formatAmountL1(String(value))");
+    // 去年同期線照畫（沒有依寬度隱藏的程式），樣式仍是 YOY_LINE。
+    expect(source).not.toMatch(/matchMedia|innerWidth|useMediaQuery/);
+    expect(source).toContain("YOY_SERIES.map(series => <Line key={series.key} dataKey={series.key} {...YOY_LINE}");
   });
 });

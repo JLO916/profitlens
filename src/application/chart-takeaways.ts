@@ -50,7 +50,8 @@ const MISSING_METRIC: Metric = { value: null, reason_codes: ["MISSING_VALUE"] };
 const NUMERIC = /^[+-]?\d+(?:\.\d+)?$/;
 const exact = (value: string | null | undefined): Decimal | null => value !== null && value !== undefined && NUMERIC.test(value.trim()) ? new Decimal(value.trim()) : null;
 const periodText = (snapshot: WorkspaceSnapshot, period: { start: string; end: string }) => formatPeriodL1(period.start, period.end, { days: false, anchor: snapshot.data_as_of });
-const isFullWeek = (week: WeeklyRow) => periodDays(week.start, week.end) === 7;
+/** 7 天整週（V4-2 起匯出，邏輯不改；PRD §6.4）：G7 sparkline 的未滿 7 天的週畫空心點（X40）也用它。 */
+export const isFullWeek = (week: Pick<WeeklyRow, "start" | "end">) => periodDays(week.start, week.end) === 7;
 
 /** 每週趨勢的 takeaway 列：「淨營收期間合計」與「最近完整週淨營收」（PRD §7.1 第 7 點）；最後一週不滿 7 天時附註。 */
 export function trendTakeaways(snapshot: WorkspaceSnapshot): TrendTakeaways {

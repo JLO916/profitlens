@@ -746,9 +746,41 @@ export const overview = {
   },
   // ── V4-2 錨點：總覽圖表字串（代理 A：assistSpark；代理 B：channels；代理 C：bullet）
   chartsV4: {
-    assistSpark: {},
-    channels: {},
-    bullet: {},
+    /**
+     * V4-2 代理 A：G7a 其他常用指標表「近 {n} 週」與「各指標每週」資料表（PRD §4.1–§4.7 G7；CHART_CATALOG G7；GLOSSARY v4 #6、#7、#9）。
+     * sparkline 本身 aria-hidden、沒有標題，語意由同列的本期、上期數字承擔；損益兩平 MER 那一段不畫（D-V4-6）。
+     */
+    assistSpark: {
+      /** 兩張緊湊表新增欄的欄名：{n}＝實際週數（本期最後幾週，上限 8；示範資料是 6）。 */
+      head: "近 {n} 週",
+      /** 資料表名稱；summary 以 overview.page.dataTable 組成「表格 · 各指標每週」，不另立 summary 字串。 */
+      tableTitle: "各指標每週",
+      /** 資料表 caption（同時是捲動區的可及名稱）：{n} 同 head。 */
+      caption: "各指標每週（本期最後 {n} 週）",
+      /**
+       * 有未滿 7 天的週時，資料表之後的一句說明（在收合的 <details> 內，不進主層；X40）。欄頭另沿用 overview.trendV3.incompleteShort。
+       * 件數是期間合計，天數少就變小，所以只連完整週；件均與比率、倍數是比值，照畫。
+       */
+      incompleteNote: "未滿 7 天的週：售出件數畫空心點，折線只連到完整週；其餘指標照畫。",
+      /** 資料表的列名加單位（單位只寫在列名，格內不重複，§8.5 規則 5）：{label}＝指標名（labels.assist.items）。比率與倍數的格本身帶 % 與倍。 */
+      rowUnit: { count: "{label}（件）", perUnit: "{label}（元／件）" },
+    },
+    /**
+     * 代理 B（G4，PRD §4.1–4.7 G4、CHART_CATALOG G4）：各通路緊湊表新增的差額欄。欄頭沿用 channelsV3.dataTable.change「差額（元）」（設計稿提案的 changeHead 同字，不另立鍵）。
+     * 差額 number-link 的可及名稱（比照 channelsV3.amountAria，含畫面上的 L2 帶號值）；{channel}＝通路名稱（示範資料用 alias），{metric}＝扣廣告後貢獻的標準名，
+     * {value}＝畫面上的值（「+183,437」）；缺值時用 changeEmptyAria（{value}＝「資料待補」或「不適用」，不加「元」）。
+     */
+    channels: {
+      changeAria: "{channel} {metric}差額 {value} 元，看明細",
+      changeEmptyAria: "{channel} {metric}差額 {value}，看明細",
+    },
+    bullet: {
+      /**
+       * G5 損益兩平 MER 段的 C18 bullet 旁一行（其他常用指標下方，只畫本期；實際或損益兩平不適用、資料待補時整行不出現）：
+       * {mer}＝本期實際 MER、{breakeven}＝本期損益兩平 MER，都用 formatMultiple（L1；兩個 L1 相同但精確值不同時改 L3，同一句結論的規則）。
+       */
+      merLine: "實際 {mer}，損益兩平 {breakeven}",
+    },
   },
 } as const;
 
@@ -1971,6 +2003,14 @@ export const evidence = {
     /** 原始明細表欄名（手機清單也用作每格的 data-label）。 */
     sourceColumns: { fileLine: "檔案:行號", date: "日期", channel: "通路", values: "欄位與數值" },
     fileLine: "{file}:{line}",
+  },
+  // ── V4-2 錨點：抽屜技術細節（代理 A：整理函式版本 arrangeVersion 的那一行）
+  chartsV4: {
+    /**
+     * 技術細節在 metric_version 之後另列一行（只在證據帶 arrangeVersion 時顯示，PRD §8.7）：值直接取自 domain、只經圖表的整理函式排列時，
+     * 那個整理函式的版本（例如 assist-weeks-v1）；指標本身的算法版本仍看 metric_version（contribution-v1 或 assist-kpi-v1）。
+     */
+    arrangeVersion: "圖表整理版本",
   },
 } as const;
 

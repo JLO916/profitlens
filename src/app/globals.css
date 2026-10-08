@@ -1140,11 +1140,12 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 .kpi-prev { margin: 0; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
 .kpi-target { margin: var(--space-1) 0 0; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); overflow-wrap: anywhere; }
 .kpi-target.mismatch { color: var(--warning); }
-/* C18 目標細條：高 6px、底色 --bg-hover；實際值長條 --text-secondary（落後時 --unfavorable）；目標刻度 2×12px --text-primary。 */
+/* C18 目標細條（V4-2 起是共用 Bullet，src/components/overview/charts/bullet.tsx）：高 6px、底色 --bg-hover；實際值長條 --chart-total（落後時 --chart-unfavorable）；目標刻度 2×12px --chart-target。
+   三個圖表 token 的值與 v3 的 --text-secondary、--unfavorable、--text-primary 相同，外觀零差異。 */
 .kpi-bullet { position: relative; display: block; height: 6px; margin: var(--space-1) 0; background: var(--bg-hover); }
-.kpi-bullet-bar { position: absolute; top: 0; bottom: 0; left: 0; background: var(--text-secondary); }
-.kpi-bullet.is-behind .kpi-bullet-bar { background: var(--unfavorable); }
-.kpi-bullet-target { position: absolute; top: -3px; right: 0; width: 2px; height: 12px; background: var(--text-primary); }
+.kpi-bullet-bar { position: absolute; top: 0; bottom: 0; left: 0; background: var(--chart-total); }
+.kpi-bullet.is-behind .kpi-bullet-bar { background: var(--chart-unfavorable); }
+.kpi-bullet-target { position: absolute; top: -3px; right: 0; width: 2px; height: 12px; background: var(--chart-target); }
 
 /* 區塊 9 其他常用指標（C2 兩欄緊湊表）：列高 32px、13px、名稱靠左、數值靠右 tabular；不加差額欄。 */
 .assist { margin: var(--space-5) 0; }
@@ -2642,10 +2643,45 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-1 C 錨點結束 ── */
 
 /* ── V4-2 A：C19 Sparkline、C33 ChartDataTable、G7a 其他常用指標表「近 {n} 週」 ── */
+/* C19 Sparkline（PRD §6.2、§4.4 G7）：根 svg 的 width、height 屬性就是顯示尺寸（64 × --chart-h-xs），不縮放；放在表格格內垂直置中。
+   線與點的色由元件經 chartColors 給（只引用 token）；aria-hidden、不可聚焦，所以這裡沒有 hover、focus 樣式。 */
+.spark { display: block; flex: none; overflow: visible; }
+/* G7a 兩張緊湊表的「近 {n} 週」欄：欄頭與格靠右、不換行；列高沿用 .kv（sparkline 高 16 放在列內，列高不變，PRD §5.1 第 8 列）。 */
+.kv th.spark-head { text-align: right; white-space: nowrap; }
+.kv td.spark-cell { width: 1%; white-space: nowrap; }
+.kv td.spark-cell .spark { margin-left: auto; }
+/* 多了一欄 64px 的 sparkline，兩張表並排需要約 700px：面板較窄的 768–1099px 改成上下一欄（同手機，第二張表不重複表頭），避免左表溢出到右表。 */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .assist-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .assist-grid .kv + .kv thead { display: none; }
+}
+/* ≤ 767px：sparkline 欄只留左側 4px 間距（右側貼齊表格邊），390 寬的表格不超出面板內容區。 */
+@media (max-width: 767px) {
+  .kv th.spark-head, .kv td.spark-cell { padding-right: 0; padding-left: var(--space-1); }
+}
+/* C33 資料表（PRD §6.3、CHART_CATALOG §1.4）：沿用 .table-scroll＋.ui-table（compact 列高、數字欄靠右 tabular）；欄頭第二行以後（起訖、「未滿 7 天」）是小字。
+   caption 在表格上方、靠左，同 V3 匯入精靈的資料表；表格之後的說明句沿用 .note。 */
+.chart-data-table caption { caption-side: top; padding: var(--space-2) var(--cell-px); text-align: left; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.chart-data-table thead th small { display: block; font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); color: var(--text-tertiary); }
+.chart-data-table thead th { height: auto; padding-top: var(--space-1); padding-bottom: var(--space-1); }
+.chart-data-table tbody th { white-space: nowrap; }
+.chart-data-table td.is-empty { color: var(--text-tertiary); }
+.chart-data-scroll + .note { margin: var(--space-2) 0 0; }
 /* ── V4-2 A 錨點結束 ── */
 
 /* ── V4-2 B：G3 趨勢刻度、G4 各通路緊湊表差額條 ── */
+/* G3 只改刻度文字（formatAxisWan），沒有新樣式。
+   G4（PRD §4.6 G4、§7.6；CHART_CATALOG G4）：緊湊表 table.channel-kv 的差額欄（td.channel-change）。≥ 768 時 C24 差額條沿用「V4-1 B」的規則：
+   寬 96px、貼齊金額格左緣、與數字同一行（各列零線對齊）。≤ 767 時條改成獨立一行、靠右對齊在數字上方（寬 64px 沿用「V4-1 B」），
+   讓四欄表在 390 不必橫向捲動；這一格上下各留 --space-1。只改排版，條與 number-link 的 DOM 順序不變（條不可聚焦，Tab 順序不受影響）。 */
+@media (max-width: 767px) {
+  .chart-section .channel-kv td.channel-change { padding-top: var(--space-1); padding-bottom: var(--space-1); }
+  .chart-section .channel-kv td.channel-change > .bar-cell { display: block; float: none; margin: 0 0 var(--space-1) auto; }
+}
 /* ── V4-2 B 錨點結束 ── */
 
 /* ── V4-2 C：C18 Bullet 共用元件、損益兩平 MER 列的 bullet ── */
+/* G5 損益兩平段的 bullet 行（.assist-breakeven 的第三個子元素，DOM 在一句結論之後）：桌機固定在左欄、表格正下方（第二列），右欄留空；
+   ≤ 767 單欄時接在一句結論之後。字級、行高、顏色與內距沿用預算列（.kv-target td＋.kpi-target），細條本身沿用 .kpi-bullet。 */
+.assist-breakeven-bullet { grid-column: 1; margin: 0; padding: var(--space-1) var(--space-2) var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); overflow-wrap: anywhere; }
 /* ── V4-2 C 錨點結束 ── */

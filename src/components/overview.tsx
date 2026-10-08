@@ -5,7 +5,7 @@ import { useState, type ReactNode } from "react";
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
 import type { EventSet } from "@/application/events";
 import { achievement, achievementText, matchTargets, mismatchText, targetDisplay, TARGET_METRICS, type TargetMetric, type TargetSet } from "@/application/targets";
-import { favorableDirectionOf, formatAmount, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, MINUS, type Layer } from "@/application/presentation";
+import { favorableDirectionOf, formatAmount, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Metric, MetricName, Period, SourceRef } from "@/domain/types";
 import type { Diagnostic } from "@/domain/types";
@@ -14,6 +14,7 @@ import { TopThree } from "./top-three";
 import { fill, labels } from "@/i18n";
 import { AssistTable } from "./overview/assist-table";
 import { BridgeSection } from "./overview/charts/bridge-section";
+import { Bullet } from "./overview/charts/bullet";
 import { ChannelSection } from "./overview/charts/channel-section";
 import { ProfitSection } from "./overview/charts/profit-section";
 import { TrendSection } from "./overview/charts/trend-section";
@@ -36,20 +37,6 @@ function text(name: MetricName, metric: Metric, layer: Layer) {
   if (metric.value === null) return nullLabel(metric);
   return formatMetric(name, metric, layer);
 }
-/**
- * C18 目標細條（V3-4a；只是視覺，aria-hidden）：實際值長條寬＝達成率（targets.ts achievement 的同一個數字）夾在 0–1，目標刻度在 100%；
- * 落後（收入、毛利、貢獻低於目標；廣告費高於預算）時長條改不利色。數字本身仍是旁邊的 number-link 文字。
- */
-function targetBar(metric: TargetMetric, actual: Metric, target: string): ReactNode {
-  const result = achievement(actual, target);
-  if (result.status !== "ok" || result.rate === null) return null;
-  const ratio = Number(result.rate.replace(MINUS, "-").replace(/[%,]/g, "")) / 100;
-  if (!Number.isFinite(ratio)) return null;
-  const behind = favorableDirectionOf(metric) === "up" ? ratio < 1 : ratio > 1;
-  const width = Math.min(Math.max(ratio, 0), 1);
-  return <span className={`kpi-bullet${behind ? " is-behind" : ""}`} aria-hidden="true"><span className="kpi-bullet-bar" style={{ width: `${(width * 100).toFixed(1)}%` }} /><span className="kpi-bullet-target" /></span>;
-}
-
 export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = false, onPeriodToggle, targets = null, events = null, allChannels, onBasis, onNavigate, datasetName, missingItems, actionsSummary, meetingEntry }: Props) {
   const { report } = snapshot;
   // 進階（收合）：重新進入總覽時，若期間合計與日均原本是展開的，外層一起展開；之後各自開關。
@@ -66,7 +53,8 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
     const row = match.status === "matched" ? match.row : match.nearest;
     // 目標數字可追溯：抽屜列出實際與目標、公式「實際 ÷ 目標」、targets.csv 檔名與行號。
     const openTarget = () => onEvidence({ title: fill(labels.targets.evidenceTitle, { metric: metricDefinitions[metric].label }), name: metric, metric: actual, period: report.current.period, channels, sources: report.current.sources, formula: labels.targets.formula, formulaTechnical: `${labels.targets.formula}：${actual.value ?? labels.shell.status.missing} ÷ ${row.target}`, metricVersion: ASSIST_KPI_VERSION, components: [{ label: labels.targets.actual, metric: actual }, { label: labels.targets.columns.target, metric: { value: row.target, reason_codes: [] } }], scopeLabel: fill(labels.targets.sourceLine, { file: targets?.filename ?? "targets.csv", line: row.line }) });
-    return <p className={`kpi-target ${match.status}`} data-testid={`kpi-target-${name}`}>{match.status === "matched" && targetBar(metric, actual, match.row.target)}<button className="number-link" onClick={openTarget}>{text}</button></p>;
+    // C18 目標細條（V4-2 抽成共用 Bullet，markup 與 v3 相同）：寬＝達成率夾在 0 到 1、落後（收入、毛利、貢獻低於目標；廣告費高於預算）改不利色；數字仍是旁邊的 number-link。
+    return <p className={`kpi-target ${match.status}`} data-testid={`kpi-target-${name}`}>{match.status === "matched" && <Bullet actual={actual.value} target={match.row.target} favorableDirection={favorableDirectionOf(metric)} />}<button className="number-link" onClick={openTarget}>{text}</button></p>;
   };
   const channels = report.scope.channels;
   const open = (name: MetricName, metric: Metric, period: Period, sources: SourceRef[], title?: string, selectedChannels = channels) => onEvidence({ name, metric, period, sources, channels: selectedChannels, title: title ?? metricDefinitions[name].label });
