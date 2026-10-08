@@ -4,16 +4,19 @@ import { useMemo, useState } from "react";
 import { track } from "@/application/analytics";
 import { chartHeights } from "@/application/chart-theme";
 import { formatAmountL3, formatEmpty, formatRateL2, metricDefinitions } from "@/application/presentation";
-import { profitWaterfall, profitWaterfallScopes, type ProfitRow, type WaterfallBar } from "@/application/waterfall";
+import { overviewWaterfallDomain, profitWaterfall, profitWaterfallScopes, type ProfitRow, type WaterfallBar } from "@/application/waterfall";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Metric, MetricName } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "../../evidence-drawer";
+import { ChartFrame } from "./chart-frame";
 import { WaterfallSvg } from "./waterfall-svg";
 
 // V3-4b 代理 B1：總覽區塊 6「本期利潤結構」（F2，PRD §10.3）。
 // 四層瀑布：淨營收 → 商品成本 → 商品毛利 → 四項費用 → 扣廣告前貢獻 → 廣告投放費 → 扣廣告後貢獻（10 根）。
 // 分段按鈕切換合計或單一通路，只影響本圖（本地 state，不改全站通路篩選）；點柱與點資料表列呼叫同一個 handler（profitEvidence）。
+// V4-1 代理 A（PRD §6.1；CHART_CATALOG G2）：搬進 ChartFrame（C16）。className profit-section、id profit、既有 testid 不變；分段按鈕走 extra；
+// 瀑布用 bare＋frameClassName="waterfall"；與 G1 共用 overviewWaterfallDomain（含每個通路範圍的柱），切換範圍時尺度不變、虧損通路的負值柱在範圍內。
 
 const copy = labels.overview.profit;
 const NET_REVENUE: MetricName = "net_revenue";
@@ -50,15 +53,18 @@ export interface ProfitSectionProps {
   onEvidence: (evidence: EvidenceSelection) => void;
   /** 資料集的全部通路（Overview 的 allChannels）；目前範圍涵蓋全部時，合計的副標寫「全部通路」。 */
   allChannels?: readonly string[];
+  /** V4-1：總覽兩張瀑布的共同尺度；不給時用 overviewWaterfallDomain(snapshot)（與 BridgeSection 相同）。 */
+  domain?: readonly [number, number];
 }
 
 /** 總覽區塊 6：本期利潤結構（四層瀑布＋範圍分段按鈕＋資料表替代）。 */
-export function ProfitSection({ snapshot, onEvidence, allChannels }: ProfitSectionProps) {
+export function ProfitSection({ snapshot, onEvidence, allChannels, domain }: ProfitSectionProps) {
   const [scope, setScope] = useState<"all" | string>("all");
   const scopes = useMemo(() => profitWaterfallScopes(snapshot), [snapshot]);
   // 期間或通路篩選改變後，原本選的通路可能不在範圍內：退回合計（不另存 state）。
   const active = scopes.some(item => item.id === scope) ? scope : "all";
   const data = useMemo(() => profitWaterfall(snapshot, active, { allChannels }), [snapshot, active, allChannels]);
+  const sharedDomain = useMemo(() => domain ?? overviewWaterfallDomain(snapshot), [domain, snapshot]);
   const open = (row: Pick<ProfitRow, "metric" | "value">) => onEvidence(profitEvidence(snapshot, active, row));
   const onBar = (bar: WaterfallBar) => {
     track("waterfall_clicked");
@@ -67,25 +73,23 @@ export function ProfitSection({ snapshot, onEvidence, allChannels }: ProfitSecti
   };
   const netRevenue: Metric = data.rows.find(row => row.metric === NET_REVENUE)?.value ?? { value: null, reason_codes: ["MISSING_VALUE"] };
 
-  return <section className="panel chart-section profit-section" aria-labelledby="profit-title" aria-describedby="profit-sub" data-testid="profit-waterfall">
-    <div className="sec-head">
-      <div className="sec-title"><h2 id="profit-title">{data.title}</h2><p className="sub" id="profit-sub">{data.subtitle}</p></div>
-      <div className="seg" role="group" aria-label={copy.scope.aria} data-testid="profit-waterfall-scope">
-        {scopes.map(item => <button type="button" key={item.id} aria-pressed={item.id === active} data-scope={item.id} onClick={() => setScope(item.id)}>{item.label}</button>)}
-      </div>
-    </div>
-    <WaterfallSvg bars={data.bars} height={chartHeights.lg} testIdPrefix="profit-waterfall-bar-" minWidth={PROFIT_MIN_WIDTH} onBarClick={onBar} />
-    <details className="data-alternative"><summary>{fill(labels.overview.page.dataTable, { title: copy.section })}</summary>
-      <div className="table-scroll" tabIndex={0} role="region" aria-label={copy.table.aria}>
-        <table className="kv l3 profit-table">
-          <thead><tr><th scope="col">{copy.table.item}</th><th scope="col" className="num">{copy.table.amount}</th><th scope="col" className="num">{copy.table.share}</th></tr></thead>
-          <tbody>{data.rows.map(row => <tr key={row.id} className={row.kind === "result" ? "is-total" : row.kind === "subtotal" ? "is-subtotal" : undefined} data-row={row.metric}>
-            <th scope="row">{profitRowLabel(row)}</th>
-            <td className="num"><button type="button" className="number-link" onClick={() => open(row)}>{profitRowAmount(row)}</button></td>
-            <td className="num">{profitRowShare(row, netRevenue)}</td>
-          </tr>)}</tbody>
-        </table>
-      </div>
-    </details>
-  </section>;
+  const scopeGroup = <div className="seg" role="group" aria-label={copy.scope.aria} data-testid="profit-waterfall-scope">
+    {scopes.map(item => <button type="button" key={item.id} aria-pressed={item.id === active} data-scope={item.id} onClick={() => setScope(item.id)}>{item.label}</button>)}
+  </div>;
+  const dataTable = <div className="table-scroll" tabIndex={0} role="region" aria-label={copy.table.aria}>
+    <table className="kv l3 profit-table">
+      <thead><tr><th scope="col">{copy.table.item}</th><th scope="col" className="num">{copy.table.amount}</th><th scope="col" className="num">{copy.table.share}</th></tr></thead>
+      <tbody>{data.rows.map(row => <tr key={row.id} className={row.kind === "result" ? "is-total" : row.kind === "subtotal" ? "is-subtotal" : undefined} data-row={row.metric}>
+        <th scope="row">{profitRowLabel(row)}</th>
+        <td className="num"><button type="button" className="number-link" onClick={() => open(row)}>{profitRowAmount(row)}</button></td>
+        <td className="num">{profitRowShare(row, netRevenue)}</td>
+      </tr>)}</tbody>
+    </table>
+  </div>;
+
+  return <ChartFrame id="profit" testId="profit-waterfall" className="profit-section" title={data.title} subtitle={data.subtitle} extra={scopeGroup}
+    height="lg" frameClassName="waterfall" scrollLabel={fill(labels.shell.chartsV4.common.chartRegion, { title: copy.section })}
+    dataTable={{ summary: fill(labels.overview.page.dataTable, { title: copy.section }), content: dataTable }}>
+    <WaterfallSvg bare bars={data.bars} height={chartHeights.lg} testIdPrefix="profit-waterfall-bar-" minWidth={PROFIT_MIN_WIDTH} domain={sharedDomain} onBarClick={onBar} />
+  </ChartFrame>;
 }

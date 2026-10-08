@@ -849,6 +849,25 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V4-1 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-1 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    it("V4-1 A 總覽：G1、G2 搬進 ChartFrame——各恰好 1 個 .chart-frame（瀑布外框不帶 aria-hidden、svg 自己 aria-hidden）；橋接表在 aside、DOM 在圖之前；兩個資料表 <details> 收合但表格掛載", () => {
+      const { html } = states.find(state => state.name === "overview")!;
+      const bridge = element(html, 'data-testid="bridge-section"')!, profit = element(html, 'data-testid="profit-waterfall"')!;
+      for (const [name, section] of [["bridge-section", bridge], ["profit-waterfall", profit]] as const) {
+        expect(occurrences(section, 'class="chart-frame '), name).toBe(1);
+        const frame = openTag(section, 'class="chart-frame lg waterfall"')!;
+        expect(frame, name).toContain('role="region"');
+        expect(frame, name).not.toContain("aria-hidden");
+        expect(openTag(section, 'class="waterfall-svg"'), name).toContain('aria-hidden="true"');
+        const details = element(section, 'class="data-alternative"')!;
+        expect(details, name).toMatch(/^<details class="data-alternative">/);
+        expect(details, name).toContain("<table");
+      }
+      const aside = element(bridge, 'class="frame-aside"')!;
+      for (const id of ["bridge-table", "bridge-balance-check"]) expect(aside, id).toContain(`data-testid="${id}"`);
+      expect(bridge.indexOf('data-testid="bridge-table"')).toBeLessThan(bridge.indexOf('data-testid="bridge-waterfall"'));
+      for (const id of ["bridge-section", "bridge-waterfall", "bridge-table", "bridge-balance-check", "profit-waterfall", "profit-waterfall-scope"]) expect(testIdCounts(html).get(id), id).toBe(1);
+      expect(occurrences(bridge, 'class="unit-note"')).toBe(1);
+    });
 
     // ── V4-2 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-2 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 

@@ -412,6 +412,16 @@ export const shell = {
     /** 投影中頁首的一行期間文字（期間列隱藏時只剩這一行）：{period} 是期間列的期間摘要（本期與上期、天數），{channels} 是範圍內的通路。 */
     period: "{period} · {channels}",
   },
+  // ── V4-1 錨點：圖表共通字串（代理 A：C16 ChartFrame 可水平捲動的圖區）
+  chartsV4: {
+    common: {
+      /**
+       * 可水平捲動的圖區（瀑布外框 .chart-frame.waterfall，role=region）的可及名稱：{title}＝區塊的標準名稱（例如「貢獻變化拆解」）。
+       * 圖本身 aria-hidden，數字在旁邊的表格；窄螢幕圖比框寬時這一區可用 Tab 停留、方向鍵左右捲動。
+       */
+      chartRegion: "{title}（圖）",
+    },
+  },
 } as const;
 
 // ── overview：經營總覽：KPI、三件事、趨勢、拆解、通路比較、期間合計

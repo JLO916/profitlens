@@ -2597,6 +2597,22 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-10 錨點結束 ── */
 
 /* ── V4-1 A：C16 ChartFrame 擴充、C17 瀑布 bare 與共同尺度、390 瀑布外框的鍵盤可及性 ── */
+/* C16 aside（PRD §6.1、§5.1 第 5 列）：DOM 旁欄在前、圖在後。≥ 1024px 兩欄 7fr／5fr（沿用 V3 .bridge-grid 的比例、間距與斷點），
+   以 grid-template-areas 把旁欄放回右欄、與圖頂對齊；≤ 1023px 單欄，旁欄在上、圖在下（390 橋接表在前、瀑布在後）。不用 CSS order，Tab 順序就是 DOM 順序。 */
+.chart-section .frame-grid.has-aside { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-areas: "main aside"; gap: var(--space-5); align-items: start; }
+.chart-section .frame-aside { grid-area: aside; min-width: 0; }
+.chart-section .frame-main { grid-area: main; min-width: 0; }
+@media (max-width: 1023px) {
+  .chart-section .frame-grid.has-aside { grid-template-columns: minmax(0, 1fr); grid-template-areas: "aside" "main"; }
+}
+/* C16 標題列右側（單位註記、圖例、分段按鈕）：不超出區塊寬；通路多時分段按鈕在自己的框內水平捲動（.seg 既有 max-width: 100%）。 */
+.chart-section .sec-end { max-width: 100%; min-width: 0; }
+/* 圖例新記號（tick、ring、rect；X32 不用實心點與方塊）：svg 不縮放，與文字垂直置中。 */
+.chart-section .legend .legend-mark { display: block; flex: none; }
+/* C17 bare：量寬容器（ResizeObserver）只是區塊、不固定高；固定高與水平捲動由外框 .chart-frame.lg.waterfall 負責（V3 規則）。 */
+.chart-frame.waterfall > .waterfall-measure { display: block; width: 100%; }
+/* 390、768 鍵盤修正：瀑布比外框寬時外框是 Tab 停留點（role=region、tabIndex=0，方向鍵左右捲動）；焦點框畫在框內側，不被面板邊界裁掉。 */
+.chart-frame.waterfall:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
 /* ── V4-1 A 錨點結束 ── */
 
 /* ── V4-1 B：C24 BarCell（variance）與 chartRowHeights ── */
