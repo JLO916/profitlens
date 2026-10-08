@@ -25,6 +25,19 @@ const LEGACY_SECTIONS = ["ui", "units", "format", "brand", "downloads", "notes",
 /** V3-3 起新增的鍵（沒有 v2 舊路徑）：只放在各分組的 V3 錨點物件內；快照比對略過，但 copy-scan 指標仍須與快照相同（新字串不得新增違規）。 */
 const V3_NEW_KEY_PREFIXES = ["shell.topbarV3.", "shell.sidebarV3.", "shell.dataStatus.", "shell.mobileNav.", "shell.periodBarV3.", "shell.banner.", "overview.snapshot.", "overview.snapshotUi.", "overview.kpiBand.", "overview.alerts.", "overview.assistTable.", "overview.advanced.", "summary.weekly.", "overview.chartFrame.", "overview.bridgeV3.", "overview.profit.", "overview.trendV3.", "overview.channelsV3.", "diagnosis.listV3.", "diagnosis.tableV3.", "diagnosis.aiCollapse.", "products.pageV3.", "evidence.drawerV3.", "scenarios.pageV3.", "actions.pageV3.", "actions.drawerV3.", "meeting.pageV3.", "exports.headerV3.", "exports.menuV3.", "data.pageV3.", "importWizard.wizardV3.", "empty.stateV3.", "assist.breakevenV3.", "actions.adDecisionV3.", "overview.pnlV3.", "overview.trendYoyV3.", "exports.variantsV3.", "shell.presentV3."];
 const isV3NewKey = (path: string) => V3_NEW_KEY_PREFIXES.some(prefix => path.startsWith(prefix));
+/**
+ * V4-0a（PRD §8.5、D-V4-26）：v4 新增的鍵只放在這 11 個分組的 `chartsV4` 錨點物件內（labels 檔以「── V4-n 錨點」註解標出每批新增的位置）；
+ * 都在既有 LABEL_GROUPS（24 組）內，不新增頂層分組。V4-0a 本身不新增任何鍵。
+ */
+const V4_NEW_KEY_PREFIXES = ["overview.chartsV4.", "diagnosis.chartsV4.", "products.chartsV4.", "scenarios.chartsV4.", "actions.chartsV4.", "meeting.chartsV4.", "data.chartsV4.", "importWizard.chartsV4.", "evidence.chartsV4.", "exports.chartsV4.", "shell.chartsV4."];
+const isV4NewKey = (path: string) => V4_NEW_KEY_PREFIXES.some(prefix => path.startsWith(prefix));
+/** 沒有 v2 舊路徑的鍵：V3 錨點或 V4 錨點任一符合。 */
+const isNewKey = (path: string) => isV3NewKey(path) || isV4NewKey(path);
+/**
+ * V4-0a：v3.0.0（tag v3.0.0＝625bfa5）labels 全部字串葉節點的快照（鍵依碼位排序；產生方式見 verification/revamp-v4/V4-0-baseline.md）。
+ * labels-v3-2b.flat.json 只涵蓋 v2 來的字串，V3 錨點下的字串被 isV3NewKey 略過、沒有凍結值，所以 v4 另以這份快照逐鍵逐字比對。
+ */
+const V3_FLAT = JSON.parse(readFileSync(resolve("verification/revamp-v4/labels-v3.flat.json"), "utf8")) as Record<string, string>;
 
 const get = (path: string): unknown => path.split(".").reduce<unknown>((node, key) => (node !== null && typeof node === "object" && Object.hasOwn(node, key) ? (node as Record<string, unknown>)[key] : undefined), labels);
 function unflatten(flat: Record<string, string>): Record<string, unknown> {
@@ -56,14 +69,14 @@ describe("V3-10 labels：舊 key alias 已移除，字串與 V3-2b 快照一對�
     expect(new Set(targets).size).toBe(targets.length);
   });
 
-  it("(ii) labels 的每個字串不是對照表的目標，就是 V3 新鍵（沒有多也沒有少）", () => {
+  it("(ii) labels 的每個字串不是對照表的目標，就是 V3 或 V4 新鍵（沒有多也沒有少）", () => {
     const targets = new Set(Object.values(LEGACY_MAP.leaves));
-    const extra = ENTRIES.map(([path]) => path).filter(path => !targets.has(path) && !isV3NewKey(path));
+    const extra = ENTRIES.map(([path]) => path).filter(path => !targets.has(path) && !isNewKey(path));
     expect(extra).toEqual([]);
     const fromSnapshot = ENTRIES.filter(([path]) => targets.has(path));
     expect(fromSnapshot).toHaveLength(targets.size);
-    // V3 新鍵沒有舊路徑：對照表不得指到 V3 錨點物件。
-    expect([...targets].filter(isV3NewKey)).toEqual([]);
+    // V3、V4 新鍵沒有舊路徑：對照表不得指到 V3 或 V4 錨點物件。
+    expect([...targets].filter(isNewKey)).toEqual([]);
   });
 
   it("(iii) 整棵對應的前綴與葉節點對照一致（prefixes 底下每個舊葉路徑都對到 新前綴＋同一段相對路徑）", () => {
@@ -127,5 +140,33 @@ describe("V3-10 labels：舊 key alias 已移除，字串與 V3-2b 快照一對�
     const text = readFileSync(LABELS_FILE, "utf8");
     expect(text).not.toContain("由盤點產生");
     expect(text).not.toMatch(/^\s*"[A-Za-z_$][\w$]*":/m);
+  });
+});
+
+describe("V4-0a labels 護欄：v3.0.0 既有字串逐鍵逐字不變，新葉節點只在 V4_NEW_KEY_PREFIXES 下", () => {
+  it("快照是 v3.0.0 的全部 2,581 個字串葉節點（鍵已排序）；V4 前綴 11 個、都在 LABEL_GROUPS 內，快照裡沒有任何 V4 錨點的鍵", () => {
+    const keys = Object.keys(V3_FLAT);
+    expect(keys).toHaveLength(2581);
+    expect(keys).toEqual([...keys].sort());
+    expect(V4_NEW_KEY_PREFIXES).toHaveLength(11);
+    expect(new Set(V4_NEW_KEY_PREFIXES).size).toBe(11);
+    for (const prefix of V4_NEW_KEY_PREFIXES) {
+      expect(prefix, prefix).toMatch(/^[A-Za-z]+\.chartsV4\.$/);
+      expect(GROUPS, prefix).toContain(prefix.split(".")[0]);
+    }
+    expect(keys.filter(isV4NewKey)).toEqual([]);
+    // V3 與 V4 的錨點不重疊：任一路徑不會同時算成兩種新鍵。
+    expect(V4_NEW_KEY_PREFIXES.filter(prefix => V3_NEW_KEY_PREFIXES.some(v3 => v3.startsWith(prefix) || prefix.startsWith(v3)))).toEqual([]);
+  });
+
+  it("快照的每個鍵都還在，字串逐字相同（v4 不改既有字串）", () => {
+    const changed = Object.entries(V3_FLAT).filter(([path, value]) => get(path) !== value).map(([path, value]) => `${path}：快照 ${JSON.stringify(value)}，現在 ${JSON.stringify(get(path))}`);
+    expect(changed).toEqual([]);
+  });
+
+  it("快照以外的新葉節點只能在 V4_NEW_KEY_PREFIXES 下", () => {
+    const extra = ENTRIES.map(([path]) => path).filter(path => !Object.hasOwn(V3_FLAT, path) && !isV4NewKey(path));
+    expect(extra).toEqual([]);
+    expect(new Set(ENTRIES.map(([path]) => path)).size).toBe(ENTRIES.length);
   });
 });

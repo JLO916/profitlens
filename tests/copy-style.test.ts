@@ -64,6 +64,22 @@ describe("copy-scan 口徑（合成輸入）", () => {
     expect(metrics).toMatchObject({ noticePrefix: 1, arrows: 1, circledNumbers: 1, exclamations: 1, allCaps: 1, pipes: 1, blacklistSynonym: 2, blacklistTone: 1, placeholderMalformed: 1, placeholderVariantMismatch: 1, l1ClauseOverLimit: 1 });
   });
 
+  it("V4-0a：<分組>.chartsV4.<圖>.title（含子鍵）計入 L1 子句長度，副標不計；products.chartsV4.* 的「賠錢」「虧損」計入同義詞，其他路徑不計", () => {
+    const long = "這是一個超過十四個中文字的很長很長的圖表標題結論";
+    const sample = {
+      overview: { chartsV4: { bridge: { title: { decrease: long }, subtitle: long } } },
+      diagnosis: { chartsV4: { share: { title: long, table: { title: long } } } },
+      products: { chartsV4: { pareto: { title: "{n} 個商品賠錢", subtitle: "虧損商品", columns: { note: "賠錢、虧損" }, technical: "賠錢" } }, sections: { lossNote: "商品虧損" } },
+      format: { turnedLoss: "轉為虧損" },
+    };
+    const { metrics, details } = scanLabels(sample);
+    // L1：只有 overview.chartsV4.bridge.title.decrease 與 diagnosis.chartsV4.share.title；subtitle、table.title 不是圖表標題。
+    expect(metrics.l1ClauseOverLimit).toBe(2);
+    // 同義詞：products.chartsV4 下 title 1、subtitle 1、columns.note 2；technical 子樹在白名單、products.sections 與 format 不在範圍內。
+    expect(metrics.blacklistSynonym).toBe(4);
+    expect((details.blacklist as Record<string, string[]>).synonym.every(line => line.includes("products.chartsV4."))).toBe(true);
+  });
+
   it("L1 字數不計數字、單位、正負號、占位符與通路 alias", () => {
     expect(l1ClauseLengths("官網 · DTC 扣完廣告虧 6.1 萬", ["DTC", "官網"])).toEqual([5]);
     expect(l1ClauseLengths("扣廣告後少賺 {amount}，折扣率 +14.3 個百分點")).toEqual([6, 3]);

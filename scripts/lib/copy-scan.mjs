@@ -81,6 +81,18 @@ export const BLACKLIST = {
 const JARGON_EXEMPT = { JSON: path => path.startsWith("exports.downloads.") };
 
 /**
+ * 只在特定路徑下計入的黑名單詞（與 JARGON_EXEMPT 相反：那是在範圍內不計，這裡是只在範圍內計），格式同 BLACKLIST 的 [顯示名, 正規式]，再加範圍。
+ * V4-0a（docs/revamp-v4/GLOSSARY.md、PRD §8.6）：商品頁只寫「商品毛利為負」，「賠錢」「虧損」在 products.chartsV4.* 計入同義詞（blacklistSynonym）。
+ * 不放進 BLACKLIST：BLACKLIST 的詞全站都算（tests/data-workspace-v3.test.tsx 直接拿它掃新鍵），而「虧損」在 format.turnedLoss 等既有字串是正確用詞。
+ */
+const SCOPED_BLACKLIST = {
+  synonym: [
+    ["賠錢（商品頁）", /賠錢/g, path => path.startsWith("products.chartsV4.")],
+    ["虧損（商品頁）", /虧損/g, path => path.startsWith("products.chartsV4.")],
+  ],
+};
+
+/**
  * 同一句話的呈現變體必須使用同一組占位符：同一父物件內 `base` 與 `base + 後綴` 兩個鍵，後綴在下列清單中。
  * 表示「不同資料情境」的後綴（例如 WithYear、UnknownTime、Unavailable）本來就該有不同占位符，不列入。
  */
@@ -90,8 +102,9 @@ export const PLACEHOLDER_VARIANT_SUFFIXES = ["Aria", "Short", "Long", "Approx", 
  * L1 子句長度（§3.2、§8.1）：去掉占位符、數字、單位、正負號與通路 alias 後，每個子句的 CJK 字數 ≤ 14。
  * PRD 只寫「頁面、區塊、列的標題」，沒有對應到 labels 鍵；V3-0 先限定在標題型字串（v2 的 rules.*.title、sections.*、nav.*.label、buttons.*），
  * V3-2c 起的位置：rules.*.headline、<分組>.sections.*、shell.nav.*.headline、<分組>.buttons.*（V3-10 移除 v2 舊鍵後只比對這四種）。
+ * V4-0a（PRD §4.0、§8.6）：加上圖表標題 <分組>.chartsV4.<圖>.title（含 title.<情境> 的子鍵），每個子句 ≤ 14 字；副標、欄名、資料表不算標題。
  */
-export const L1_KEY_PATTERNS = [/^rules\.[^.]+\.headline$/, /^[^.]+\.sections\.[^.]+$/, /^shell\.nav\.[^.]+\.headline$/, /^[^.]+\.buttons\.[^.]+$/];
+export const L1_KEY_PATTERNS = [/^rules\.[^.]+\.headline$/, /^[^.]+\.sections\.[^.]+$/, /^shell\.nav\.[^.]+\.headline$/, /^[^.]+\.buttons\.[^.]+$/, /^[^.]+\.chartsV4\.[^.]+\.title(\.|$)/];
 export const L1_MAX_CJK = 14;
 
 const ARROW_RE = /[→↗▸▾]/g;
@@ -152,6 +165,11 @@ export function scanLabels(labels, meta) {
     for (const [category, terms] of Object.entries(BLACKLIST)) for (const [name, re, options] of terms) {
       if (JARGON_EXEMPT[name] && matches(path, JARGON_EXEMPT[name])) continue;
       const n = count(options?.raw ? value : visible, re);
+      if (n > 0) { metrics[`blacklist${category[0].toUpperCase()}${category.slice(1)}`] += n; details.blacklist[category].push(`${name} ×${n} ${path}: ${value}`); }
+    }
+    for (const [category, terms] of Object.entries(SCOPED_BLACKLIST)) for (const [name, re, scope] of terms) {
+      if (!matches(path, scope)) continue;
+      const n = count(visible, re);
       if (n > 0) { metrics[`blacklist${category[0].toUpperCase()}${category.slice(1)}`] += n; details.blacklist[category].push(`${name} ×${n} ${path}: ${value}`); }
     }
     if (/[{}｛｝]/.test(value.replace(/\{\w+\}/g, "")) || value.includes("${")) add("placeholderMalformed", path, value);
