@@ -6,8 +6,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
 import { scanCssText, scanTsxText } from "../scripts/lib/ui-scan.mjs";
 import { chartColors, chartHeights } from "../src/application/chart-theme";
-import { deltaTone, formatAmountL1, formatAmountL3, formatEmpty, formatMetric, formatRateL2, formatSignedDelta, metricDefinitions, MINUS } from "../src/application/presentation";
-import { bridgeWaterfall, PROFIT_WATERFALL_METRICS, profitWaterfall, profitWaterfallScopes, waterfallToneColor, type WaterfallBar } from "../src/application/waterfall";
+import { deltaTone, formatAmountL1, formatAmountL3, formatAxisWan, formatEmpty, formatMetric, formatRateL2, formatSignedDelta, metricDefinitions, MINUS } from "../src/application/presentation";
+import { bridgeWaterfall, overviewWaterfallDomain, PROFIT_WATERFALL_METRICS, profitWaterfall, profitWaterfallScopes, waterfallLevelRange, waterfallToneColor, type WaterfallBar } from "../src/application/waterfall";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { BridgeSection, bridgeBarTarget, bridgeEvidence, bridgeRowTarget, bridgeRowText, bridgeUnitNote } from "../src/components/overview/charts/bridge-section";
 import { ProfitSection, profitEvidence, profitRowAmount, profitRowLabel, profitRowShare } from "../src/components/overview/charts/profit-section";
@@ -22,6 +22,8 @@ import { byTestId, element, openTag, textOf } from "./helpers/markup";
 // V3-4b 代理 B1：總覽區塊 5「貢獻變化拆解」（C17）與區塊 6「本期利潤結構」（F2，§10.3）的 SSR 結構測試，以及瀑布 SVG 的幾何。
 // 期待值一律由 labels、fill、presentation 的格式化函式與 waterfall.ts 的資料組裝從 snapshot 的精確字串組出，不寫死數字
 // （golden：上期扣廣告後貢獻 570.00、本期 255.00、差額 −315.00）。加總檢查用 decimal.js 到分。
+// V4-1 代理 A：G1、G2 搬進 ChartFrame（C16）——每個區塊恰好 1 個 .chart-frame（.chart-frame.lg.waterfall，不帶 aria-hidden、role=region，svg 自己 aria-hidden）、
+// 橋接表在 aside（DOM 在圖之前）；兩張瀑布用 overviewWaterfallDomain 的共同尺度（G2 切到虧損通路時負值柱在範圍內、刻度含負值，D-V4-41 註記）。
 
 const CM: MetricName = "contribution_after_marketing";
 const bridgeCopy = labels.overview.bridgeV3;
@@ -54,6 +56,11 @@ const valueTexts = (svg: string) => [...svg.matchAll(/<text class="wf-value[^"]*
 /** 每個 <rect> 的屬性（依出現順序）。 */
 const rects = (svg: string) => [...svg.matchAll(/<rect\b([^>]*)>/g)].map(match => Object.fromEntries([...match[1].matchAll(/([\w-]+)="([^"]*)"/g)].map(attr => [attr[1], attr[2]])));
 const rowsOf = (table: string) => { const body = element(table, "<tbody")!; return [...body.matchAll(/<tr\b[\s\S]*?<\/tr>/g)].map(match => match[0]); };
+/** 瀑布 Y 軸刻度文字（依出現順序）。 */
+const axisTexts = (html: string) => [...element(html, 'class="wf-axis"')!.matchAll(/<text\b[^>]*>([^<]*)<\/text>/g)].map(match => match[1]);
+/** V4-1 瀑布外框（ChartFrame 的固定高容器）。 */
+const WATERFALL_FRAME = 'class="chart-frame lg waterfall"';
+const regionLabel = (title: string) => fill(labels.shell.chartsV4.common.chartRegion, { title });
 
 describe("BridgeSection：貢獻變化拆解（C17，§7.1 第 5 點）", () => {
   it("golden／demo：標題是結論句、副標是標準名稱＋期間＋L2 說明（aria 描述）、右側單位說明", () => {
@@ -73,7 +80,7 @@ describe("BridgeSection：貢獻變化拆解（C17，§7.1 第 5 點）", () => 
     expect(bridgeUnitNote(bridgeWaterfall(demo.snapshot).bars)).toBe(bridgeCopy.unitNote);
   });
 
-  it("瀑布：11 根（上期 → 九項 → 本期），圖與外框 aria-hidden、外框固定 320px；柱色是 chart-theme token、柱上標值是 bar.display", () => {
+  it("瀑布：11 根（上期 → 九項 → 本期），svg aria-hidden、外框（ChartFrame）固定 320px、不帶 aria-hidden；柱色是 chart-theme token、柱上標值是 bar.display", () => {
     for (const { snapshot } of both()) {
       const html = renderBridge(snapshot);
       const data = bridgeWaterfall(snapshot);
@@ -82,8 +89,11 @@ describe("BridgeSection：貢獻變化拆解（C17，§7.1 第 5 點）", () => 
       expect(svgTag).toContain('aria-hidden="true"');
       expect(svgTag).toContain('focusable="false"');
       expect(svgTag).toContain(`viewBox="0 0 800 ${chartHeights.lg}"`);
-      const frame = openTag(html, 'class="chart-frame waterfall"')!;
-      expect(frame).toContain('aria-hidden="true"');
+      // V4-1：外框是 ChartFrame 的 .chart-frame.lg.waterfall——不帶 aria-hidden（390 寬時是捲動容器、可停留），role=region＋aria-label；SSR 不帶 tabindex。
+      const frame = openTag(html, WATERFALL_FRAME)!;
+      expect(frame).not.toContain("aria-hidden");
+      expect(frame).toContain(`role="region" aria-label="${regionLabel(labels.overview.sections.bridge)}"`);
+      expect(frame).not.toContain("tabindex");
       expect(frame).toContain(`style="height:${chartHeights.lg}px"`);
       expect(count(svg, /<rect\b/g)).toBe(11);
       const fills = rects(svg).map(rect => rect.fill);
@@ -94,9 +104,10 @@ describe("BridgeSection：貢獻變化拆解（C17，§7.1 第 5 點）", () => 
       // x 標籤是柱的短名（放不下時拆兩行，拼回來相同）。
       const xGroup = element(svg, 'class="wf-x"')!;
       expect([...xGroup.matchAll(/<text\b[\s\S]*?<\/text>/g)].map(match => textOf(match[0]))).toEqual(data.bars.map(bar => bar.shortLabel));
-      // 只有水平格線（y1＝y2）；第一條刻度是 0。
+      // 只有水平格線（y1＝y2）；V4-1 刻度＝共同尺度（overviewWaterfallDomain）的幾何，含 0。
       for (const line of element(svg, 'class="wf-grid"')!.matchAll(/<line\b([^>]*)>/g)) expect(/y1="([^"]+)"/.exec(line[1])![1]).toBe(/y2="([^"]+)"/.exec(line[1])![1]);
-      expect(textOf(element(svg, 'class="wf-axis"')!).startsWith("0")).toBe(true);
+      expect(axisTexts(svg)).toEqual(waterfallGeometry(data.bars, 800, chartHeights.lg, overviewWaterfallDomain(snapshot)).ticks.map(tick => tick.label));
+      expect(axisTexts(svg)).toContain("0");
     }
   });
 
@@ -208,7 +219,7 @@ describe("BridgeSection：貢獻變化拆解（C17，§7.1 第 5 點）", () => 
     expect(drawn.slice(0, 4).every(rect => rect.fill !== "none" && rect["stroke-dasharray"] === undefined)).toBe(true);
     expect(valueTexts(svg)).toEqual([...data.bars.slice(0, 4).map(bar => bar.display), formatEmpty("missing")]);
     expect(count(element(svg, 'class="wf-x"')!, /<text\b/g)).toBe(11);
-    expect(openTag(html, 'class="chart-frame waterfall"')).toContain(`style="height:${chartHeights.lg}px"`);
+    expect(openTag(html, WATERFALL_FRAME)).toContain(`style="height:${chartHeights.lg}px"`);
     const texts = buttonTexts(byTestId(html, "bridge-table"));
     expect(texts[4]).toBe(formatEmpty("missing"));
     expect(texts[11]).toBe(formatEmpty("missing"));
@@ -257,7 +268,8 @@ describe("ProfitSection：本期利潤結構（F2，§10.3）", () => {
       const html = renderProfit(snapshot);
       const data = profitWaterfall(snapshot, "all");
       const svg = element(html, 'class="waterfall-svg"')!;
-      expect(openTag(html, 'class="chart-frame waterfall"')).toContain('aria-hidden="true"');
+      expect(openTag(html, WATERFALL_FRAME)).not.toContain("aria-hidden");
+      expect(openTag(html, WATERFALL_FRAME)).toContain(`role="region" aria-label="${regionLabel(profitCopy.section)}"`);
       expect(svg.slice(0, svg.indexOf(">"))).toContain('aria-hidden="true"');
       const drawn = rects(svg);
       expect(drawn.map(rect => rect["data-testid"])).toEqual(PROFIT_WATERFALL_METRICS.map(item => `profit-waterfall-bar-${item.metric}`));
@@ -267,7 +279,7 @@ describe("ProfitSection：本期利潤結構（F2，§10.3）", () => {
       expect(fillOf(CM)).toBe(chartColors.current);
       for (const metric of ["cogs_net", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "ad_spend"] as const) expect(fillOf(metric), metric).toBe(chartColors.unfavorable);
       expect(valueTexts(svg)).toEqual(data.bars.map(bar => bar.display));
-      expect(openTag(html, 'class="chart-frame waterfall"')).toContain(`style="height:${chartHeights.lg}px"`);
+      expect(openTag(html, WATERFALL_FRAME)).toContain(`style="height:${chartHeights.lg}px"`);
     }
   });
 
@@ -344,7 +356,7 @@ describe("ProfitSection：本期利潤結構（F2，§10.3）", () => {
     expect(drawn[0]).toMatchObject({ fill: chartColors.total });
     for (const rect of drawn.slice(1)) expect(rect).toMatchObject({ class: "wf-bar is-missing is-clickable", fill: "none", stroke: chartColors.axis, "stroke-dasharray": "4 3" });
     expect(valueTexts(svg)).toEqual([formatAmountL1(metrics.net_revenue.value), ...Array.from({ length: 4 }, () => formatEmpty("missing"))]);
-    expect(openTag(html, 'class="chart-frame waterfall"')).toContain(`style="height:${chartHeights.lg}px"`);
+    expect(openTag(html, WATERFALL_FRAME)).toContain(`style="height:${chartHeights.lg}px"`);
     const rows = rowsOf(element(html, 'class="data-alternative"')!);
     const netRevenue = data.rows[0].value;
     expect(buttonTexts(rows[1])).toEqual([formatEmpty("missing")]);
@@ -459,6 +471,145 @@ describe("WaterfallSvg 幾何（C17、§9.5）", () => {
     expect(waterfallTickLabels([-1_000_000, 0, 1_000_000], 1_000_000)).toEqual([`${MINUS}${fill(labels.format.units.wan, { value: "100" })}`, "0", fill(labels.format.units.wan, { value: "100" })]);
     expect(waterfallTickLabels([0, 5_000, 10_000], 5_000)).toEqual(["0", fill(labels.format.units.wan, { value: "0.5" }), fill(labels.format.units.wan, { value: "1.0" })]);
     expect(waterfallTickLabels([0, 500, 1_000], 500)).toEqual(["0", formatAmountL1("500.00"), formatAmountL1("1000.00")]);
+    // V4-1：waterfallTickLabels 改呼叫 presentation.ts 的 formatAxisWan，輸出不變。
+    for (const [ticks, step] of [[[0, 500_000, 1_000_000], 500_000], [[-1_000_000, 0, 1_000_000], 1_000_000], [[0, 5_000, 10_000], 5_000], [[0, 500, 1_000], 500], [[-2_000_000, 0, 2_000_000, 4_000_000, 6_000_000, 8_000_000], 2_000_000]] as const) {
+      expect(waterfallTickLabels(ticks, step)).toEqual(formatAxisWan(ticks, step));
+    }
+  });
+});
+
+describe("V4-1 G1、G2 搬進 ChartFrame（C16，PRD §6.1；CHART_CATALOG G1、G2）", () => {
+  it("bridge-section：恰好 1 個 .chart-frame；單位註記在標題列右側；橋接表（aside，外層 .bridge-table-wrap）在固定高容器之前、不在 aria-hidden 內；v2 四欄表在最後", () => {
+    for (const { snapshot } of both()) {
+      const html = renderBridge(snapshot);
+      const data = bridgeWaterfall(snapshot);
+      expect(count(html, /class="chart-frame[ "]/g)).toBe(1);
+      expect(element(html, 'class="sec-end"')).toBe(`<div class="sec-end"><span class="unit-note">${bridgeUnitNote(data.bars)}</span></div>`);
+      const grid = element(html, 'class="frame-grid has-aside"')!;
+      expect(grid.startsWith('<div class="frame-grid has-aside"><div class="frame-aside"><div class="bridge-table-wrap"><table class="kv l3 bridge-table" data-testid="bridge-table">')).toBe(true);
+      const aside = element(grid, 'class="frame-aside"')!;
+      // 旁欄在圖之前（390 表在前、瀑布在後；≥ 1024 以 grid-template-areas 放回右欄）；圖的容器在 .frame-main 內。
+      expect(grid.indexOf('data-testid="bridge-table"')).toBeLessThan(grid.indexOf('data-testid="bridge-waterfall"'));
+      expect(element(grid, 'class="frame-main"')!.startsWith(`<div class="frame-main"><div ${WATERFALL_FRAME}`)).toBe(true);
+      expect(aside).toContain('data-testid="bridge-balance-check"');
+      for (const tag of [openTag(html, 'class="frame-grid'), openTag(html, 'class="frame-aside"'), openTag(html, 'class="bridge-table-wrap"'), openTag(html, 'data-testid="bridge-table"')]) expect(tag).not.toContain("aria-hidden");
+      // 瀑布 svg 與量寬容器：svg aria-hidden、量寬容器沒有 chart-frame class。
+      expect(openTag(html, 'class="waterfall-measure"')).toBe('<div class="waterfall-measure">');
+      // v2 四欄表 <details> 在區塊最後（收合）。
+      expect(html.indexOf('class="data-alternative"')).toBeGreaterThan(html.indexOf('class="frame-grid'));
+      expect(count(html, /class="data-alternative"/g)).toBe(1);
+      expect(html.endsWith("</details></section>")).toBe(true);
+      // aria-describedby 指到存在的副標（CL-11）。
+      expect(html).toContain('id="bridge-sub"');
+    }
+  });
+
+  it("profit-waterfall：恰好 1 個 .chart-frame；分段按鈕在標題列右側（.sec-end）；沒有 aside；資料表 <details> 在最後", () => {
+    for (const { snapshot } of both()) {
+      const html = renderProfit(snapshot);
+      expect(count(html, /class="chart-frame[ "]/g)).toBe(1);
+      expect(html).not.toContain("frame-grid");
+      expect(element(html, 'class="sec-end"')!.startsWith('<div class="sec-end"><div class="seg" role="group"')).toBe(true);
+      expect(html.indexOf('data-testid="profit-waterfall-scope"')).toBeLessThan(html.indexOf(WATERFALL_FRAME));
+      expect(html.indexOf(WATERFALL_FRAME)).toBeLessThan(html.indexOf('class="data-alternative"'));
+      expect(html).toContain('id="profit-sub"');
+    }
+  });
+
+  it("WaterfallSvg bare：只輸出量寬容器（沒有 chart-frame class、沒有 aria-hidden、沒有固定高）與 aria-hidden 的 svg；預設（V3）仍輸出自己的外框", () => {
+    const bars = bridgeWaterfall(demo.snapshot).bars;
+    const bare = renderToStaticMarkup(createElement(WaterfallSvg, { bars, height: chartHeights.lg, bare: true, testId: "bridge-waterfall" }));
+    expect(bare.startsWith('<div class="waterfall-measure"><svg class="waterfall-svg"')).toBe(true);
+    expect(bare).not.toContain("chart-frame");
+    expect(openTag(bare, 'class="waterfall-measure"')).toBe('<div class="waterfall-measure">');
+    expect(openTag(bare, 'class="waterfall-svg"')).toContain('aria-hidden="true" focusable="false"');
+    const legacy = renderToStaticMarkup(createElement(WaterfallSvg, { bars, height: chartHeights.lg }));
+    expect(openTag(legacy, 'class="chart-frame waterfall"')).toBe(`<div class="chart-frame waterfall" aria-hidden="true" style="height:${chartHeights.lg}px">`);
+  });
+});
+
+describe("V4-1 兩張瀑布同尺度（PRD §7.2、§4.4 G1／G2；D-V4-41 註記）", () => {
+  it("overviewWaterfallDomain＝G1 的 bars 加上 profitWaterfallScopes 全部範圍（合計與每個通路）的 G2 bars 的水位範圍；只用合計範圍時下界是 0", () => {
+    for (const { snapshot } of both()) {
+      const all = [...bridgeWaterfall(snapshot).bars, ...profitWaterfallScopes(snapshot).flatMap(scope => profitWaterfall(snapshot, scope.id).bars)];
+      const levels = [0, ...all.flatMap(bar => [bar.start, bar.end]).filter((value): value is string => value !== null).map(Number)];
+      expect(overviewWaterfallDomain(snapshot)).toEqual([Math.min(...levels), Math.max(...levels)]);
+      expect(overviewWaterfallDomain(snapshot)).toEqual(waterfallLevelRange(all));
+      // 同一個 snapshot 再算一次結果相同（兩張圖共用）。
+      expect(overviewWaterfallDomain(snapshot)).toEqual(overviewWaterfallDomain(snapshot));
+      // 下界是虧損通路的扣廣告後貢獻（示範 MARKETPLACE −61,169.93；golden −15.00）；只用 G1 與合計範圍時下界是 0，負值柱會落在圖外。
+      const marketplace = snapshot.report.current.channels.MARKETPLACE.metrics[CM].value!;
+      expect(new Decimal(marketplace).isNegative()).toBe(true);
+      expect(overviewWaterfallDomain(snapshot)[0]).toBe(Number(marketplace));
+      expect(waterfallLevelRange([...bridgeWaterfall(snapshot).bars, ...profitWaterfall(snapshot, "all").bars])[0]).toBe(0);
+    }
+    expect(formatAmountL3(String(overviewWaterfallDomain(demo.snapshot)[0]))).toBe(formatAmountL3("-61169.93"));
+    expect(formatAmountL3(String(overviewWaterfallDomain(golden.snapshot)[0]))).toBe(formatAmountL3("-15.00"));
+  });
+
+  it("兩張瀑布刻度相同：G2 每個範圍的刻度（值、位置、文字）都等於 G1；SSR 的 Y 軸文字也相同", () => {
+    for (const { snapshot } of both()) {
+      const domain = overviewWaterfallDomain(snapshot);
+      const g1 = waterfallGeometry(bridgeWaterfall(snapshot).bars, 800, chartHeights.lg, domain).ticks;
+      for (const scope of profitWaterfallScopes(snapshot)) expect(waterfallGeometry(profitWaterfall(snapshot, scope.id).bars, 800, chartHeights.lg, domain).ticks, scope.id).toEqual(g1);
+      // 1440 與 390 的實際寬度不同時，刻度的值與文字仍相同（y 只跟圖高有關）。
+      expect(waterfallGeometry(profitWaterfall(snapshot, "all").bars, 600, chartHeights.lg, domain).ticks).toEqual(waterfallGeometry(bridgeWaterfall(snapshot).bars, 520, chartHeights.lg, domain).ticks);
+      expect(axisTexts(renderProfit(snapshot))).toEqual(axisTexts(renderBridge(snapshot)));
+      expect(axisTexts(renderBridge(snapshot))).toEqual(g1.map(tick => tick.label));
+    }
+  });
+
+  it("示範資料 G2 切到 MARKETPLACE：終點柱（−61,169.93）在 domain 內、從 0 往下畫；刻度含負值，下界只延伸一個刻度間距", () => {
+    for (const { snapshot } of both()) {
+      const domain = overviewWaterfallDomain(snapshot);
+      const bars = profitWaterfall(snapshot, "MARKETPLACE").bars;
+      const end = Number(bars.at(-1)!.end);
+      expect(end).toBeLessThan(0);
+      expect(end).toBeGreaterThanOrEqual(domain[0]);
+      const geometry = waterfallGeometry(bars, 800, chartHeights.lg, domain);
+      const step = geometry.ticks[1].value - geometry.ticks[0].value;
+      // 刻度含負值（U+2212），而且只有一個負刻度＝−1 個間距（D-V4-41：下界需要容納負值時延伸一個步長）。
+      expect(geometry.ticks.filter(tick => tick.value < 0).map(tick => tick.value)).toEqual([-step]);
+      expect(geometry.ticks[0].label.startsWith(MINUS)).toBe(true);
+      expect(geometry.ticks[0].value).toBeLessThanOrEqual(end);
+      // 終點柱從 0 往下畫，整根在繪圖區內。
+      const result = geometry.shapes.at(-1)!;
+      expect(result.rect!.y).toBe(geometry.zeroY);
+      expect(result.rect!.y + result.rect!.height).toBeLessThanOrEqual(geometry.plot.bottom);
+      expect(result.rect!.height).toBeGreaterThan(0);
+      for (const shape of geometry.shapes) {
+        expect(shape.rect!.y, shape.bar.id).toBeGreaterThanOrEqual(geometry.plot.top);
+        expect(shape.rect!.y + shape.rect!.height, shape.bar.id).toBeLessThanOrEqual(geometry.plot.bottom + 0.05);
+      }
+      // 長條從 0 起：0 是刻度之一，零線在繪圖區內。
+      expect(geometry.ticks.some(tick => tick.value === 0)).toBe(true);
+      expect(geometry.zeroY).toBeGreaterThan(geometry.plot.top);
+      expect(geometry.zeroY).toBeLessThan(geometry.plot.bottom);
+    }
+  });
+
+  it("刻度用 formatAxisWan：示範資料兩張瀑布都是整數萬，沒有「.0 萬」；golden 不到 1 萬寫元", () => {
+    const demoTicks = waterfallGeometry(bridgeWaterfall(demo.snapshot).bars, 800, chartHeights.lg, overviewWaterfallDomain(demo.snapshot)).ticks;
+    const demoStep = demoTicks[1].value - demoTicks[0].value;
+    expect(demoStep % 10_000).toBe(0);
+    for (const html of [renderBridge(demo.snapshot), renderProfit(demo.snapshot)]) {
+      const texts = axisTexts(html);
+      for (const text of texts) expect(text, text).not.toMatch(/\.\d\s*萬/);
+      expect(texts).toEqual(formatAxisWan(demoTicks.map(tick => tick.value), demoStep));
+    }
+    const goldenTicks = waterfallGeometry(bridgeWaterfall(golden.snapshot).bars, 800, chartHeights.lg, overviewWaterfallDomain(golden.snapshot)).ticks;
+    for (const tick of goldenTicks) expect(tick.label).toBe(tick.value === 0 ? "0" : formatAmountL1(tick.value.toFixed(2)));
+  });
+
+  it("domain 只會擴大範圍：比自己的水位窄或沒給時刻度與 V3 相同；全部是正值時下界仍是 0", () => {
+    for (const { snapshot } of both()) {
+      const bars = bridgeWaterfall(snapshot).bars;
+      expect(waterfallGeometry(bars, 800, chartHeights.lg, [0, 1]).ticks).toEqual(waterfallGeometry(bars, 800, chartHeights.lg).ticks);
+      const positive = waterfallLevelRange(bars);
+      expect(positive[0]).toBe(0);
+      expect(waterfallGeometry(bars, 800, chartHeights.lg, positive).ticks[0].value).toBe(0);
+    }
+    expect(waterfallLevelRange([])).toEqual([0, 0]);
   });
 });
 

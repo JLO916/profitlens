@@ -278,3 +278,35 @@ export function profitWaterfall(snapshot: WorkspaceSnapshot, scope: "all" | stri
     rows,
   };
 }
+
+// ── V4-1 代理 A：總覽兩張瀑布的共同尺度（PRD §7.2、§4.4 G1／G2；CHART_CATALOG G2；D-V4-41 註記） ──
+// 純呈現：只把既有柱的起點、終點精確字串換成圖形座標（Number）取最低與最高，不產生任何金額，所以不加版本常數（A 級）。
+
+/** 一組柱的水位範圍 [最低, 最高]（圖形座標，含 0）：每根柱的 start、end（缺值或無法定位的 null 略過）。 */
+export function waterfallLevelRange(bars: readonly WaterfallBar[]): [number, number] {
+  let lo = 0, hi = 0;
+  for (const bar of bars) for (const value of [bar.start, bar.end]) {
+    if (value === null) continue;
+    const n = Number(value);
+    if (!Number.isFinite(n)) continue;
+    if (n < lo) lo = n;
+    if (n > hi) hi = n;
+  }
+  return [lo, hi];
+}
+
+const overviewDomainCache = new WeakMap<WorkspaceSnapshot, [number, number]>();
+/**
+ * 總覽 G1（貢獻變化拆解）與 G2（本期利潤結構）的共同範圍：G1 的 bars，加上 profitWaterfallScopes 列出的全部範圍（合計與每個通路）的 G2 bars。
+ * 兩張圖都把它傳給 waterfallGeometry 的 domain，所以刻度相同；G2 切到虧損通路（示範資料 MARKETPLACE 終點 −61,169.93、golden −15.00）時，
+ * 負值柱仍在範圍內、刻度含負值（只用合計範圍算時下界是 0，負值柱會落在圖外）。
+ * 同一個 snapshot 只算一次（兩張圖共用；snapshot 是不可變的，期間或通路篩選改變時是新物件）。
+ */
+export function overviewWaterfallDomain(snapshot: WorkspaceSnapshot): [number, number] {
+  const cached = overviewDomainCache.get(snapshot);
+  if (cached) return [cached[0], cached[1]];
+  const bars = [...bridgeWaterfall(snapshot).bars, ...profitWaterfallScopes(snapshot).flatMap(scope => profitWaterfall(snapshot, scope.id).bars)];
+  const range = waterfallLevelRange(bars);
+  overviewDomainCache.set(snapshot, range);
+  return [range[0], range[1]];
+}

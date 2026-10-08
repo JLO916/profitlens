@@ -2,7 +2,7 @@ import Decimal from "decimal.js";
 import { describe, expect, it } from "vitest";
 import { formatHeadlineAmount } from "@/application/copy";
 import {
-  MINUS, asciiMinus, deltaTone, deltaToneLabel, deltaWord, emptyKindOf, favorableDirectionOf, formatAmount, formatAmountL1, formatAmountL2, formatAmountL3, formatCount, formatDateL1, formatEmpty, formatGrowth,
+  MINUS, asciiMinus, deltaTone, deltaToneLabel, deltaWord, emptyKindOf, favorableDirectionOf, formatAmount, formatAmountL1, formatAmountL2, formatAmountL3, formatAxisWan, formatCount, formatDateL1, formatEmpty, formatGrowth,
   formatMetric, formatMetricDelta, formatMultiple, formatPerUnit, formatPeriodExport, formatPeriodL1, formatRateChange, formatRateL1, formatRateL2, formatRateL3, formatRateLayer, formatRatePoints, formatSignedDelta,
   formatSignedRate, metricDefinitions, periodDays, type DirectionalMetric, type FavorableDirection, type Layer,
 } from "@/application/presentation";
@@ -345,5 +345,38 @@ describe("§8.5 規則 8：favorableDirection 與方向詞（呈現層）", () =
     // PRD §8.3：「折扣多花 118.8 萬」「比上期少賺 59.9 萬（−32.0%）」
     expect(`${metricDefinitions.discounts.shortLabel}${deltaWord("discounts", "1188365.10")} ${formatHeadlineAmount("1188365.10")}`).toBe("折扣多花 118.8 萬");
     expect(`${deltaWord("contribution_after_marketing", ΔCM)} ${formatHeadlineAmount(ΔCM)}（${formatGrowth(cur.contribution_after_marketing, prev.contribution_after_marketing, "L1")}）`).toBe(`少賺 59.9 萬（${MINUS}32.0%）`);
+  });
+});
+
+describe("V4-1 formatAxisWan：金額軸刻度（PRD §6.4、§7.2；只在呈現層）", () => {
+  const wan = (value: string) => fill(labels.format.units.wan, { value });
+
+  it("步長是整萬時寫整數萬，不出現「.0 萬」；0 只寫「0」；整數部分千分位", () => {
+    expect(formatAxisWan([0, 500_000, 1_000_000, 1_500_000], 500_000)).toEqual(["0", wan("50"), wan("100"), wan("150")]);
+    expect(formatAxisWan([0, 2_000_000, 4_000_000, 6_000_000, 8_000_000], 2_000_000)).toEqual(["0", wan("200"), wan("400"), wan("600"), wan("800")]);
+    expect(formatAxisWan([0, 50_000_000], 10_000_000)).toEqual(["0", wan("5,000")]);
+    expect(formatAxisWan([0], 1)).toEqual(["0"]);
+    for (const [ticks, step] of [[[0, 500_000, 1_000_000], 500_000], [[0, 100_000, 200_000, 300_000], 100_000], [[0, 20_000, 40_000], 20_000]] as const) {
+      for (const text of formatAxisWan(ticks, step)) expect(text, text).not.toMatch(/\.\d+\s*萬/);
+    }
+  });
+
+  it("負值用 U+2212（不出現 ASCII「-」），與正值同一個尺度：示範資料兩張瀑布的共同刻度 −200 萬到 800 萬", () => {
+    const texts = formatAxisWan([-2_000_000, 0, 2_000_000, 4_000_000, 6_000_000, 8_000_000], 2_000_000);
+    expect(texts).toEqual([`${MINUS}${wan("200")}`, "0", wan("200"), wan("400"), wan("600"), wan("800")]);
+    for (const text of texts) expect(text, text).not.toContain("-");
+    expect(formatAxisWan([-1_000_000, 0, 1_000_000], 1_000_000)).toEqual([`${MINUS}${wan("100")}`, "0", wan("100")]);
+  });
+
+  it("步長不是整萬時保留 1 位（整千）或 2 位小數，同一軸位數一致（與 V3 waterfallTickLabels 相同）", () => {
+    expect(formatAxisWan([0, 5_000, 10_000], 5_000)).toEqual(["0", wan("0.5"), wan("1.0")]);
+    expect(formatAxisWan([0, 2_500, 5_000, 7_500, 10_000], 2_500)).toEqual(["0", wan("0.25"), wan("0.50"), wan("0.75"), wan("1.00")]);
+  });
+
+  it("最大刻度 < 1 萬時寫元、≥ 1 億時寫億（交給 formatAmountL1）", () => {
+    expect(formatAxisWan([0, 500, 1_000], 500)).toEqual(["0", formatAmountL1("500.00"), formatAmountL1("1000.00")]);
+    expect(formatAxisWan([-500, 0, 500, 1_000, 1_500, 2_000, 2_500], 500)).toEqual([formatAmountL1("-500.00"), "0", ...["500.00", "1000.00", "1500.00", "2000.00", "2500.00"].map(value => formatAmountL1(value))]);
+    expect(formatAxisWan([-500, 0], 500)[0].startsWith(MINUS)).toBe(true);
+    expect(formatAxisWan([0, 100_000_000, 200_000_000], 100_000_000)).toEqual(["0", formatAmountL1("100000000.00"), formatAmountL1("200000000.00")]);
   });
 });
