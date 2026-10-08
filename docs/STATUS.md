@@ -1,5 +1,17 @@
 # Status
 
+## Revamp v3｜V3-10 上線檢查（工程面完成；H4 未執行／待人工；正式站未部署、未推送）
+
+06_BATCHES V3-10 的工程面全部完成：labels 舊 key alias 移除（頂層只剩 24 個新分組，字串逐位元組不變，對照表 `tests/fixtures/labels-legacy-map.json`）；版本 3.0.0；`docs/RELEASES.md` v3.0.0 段（含破壞性變更：Excel 工作表改名、備份 v5、匯出欄位）、README、ENGINEERING；會議頁與通路寬表、三件事的 number-link 可及名稱含可見文字（Lighthouse label-content-name-mismatch 10 → 0）；KPI 卡 target-size；上線檢查工具（13 項 HTTP、網路紀錄、鍵盤走查、axe 四尺寸、備份 v1–v5 矩陣）對本機 production 執行，證據在 `verification/revamp-v3/V3-10/`。
+
+- 最終驗收：typecheck pass、lint 0 warnings、`npm ci` 14 秒、unit 123 檔／2,418 全過、`lint:design` exit 0（hex 0、圓角 4、字級 11、字距 0、箭頭 3；copy-style 同義詞 12／禁用詞 0）、build pass、E2E 全套 791 passed／0 failed／9 skipped（34.5m；CSS 範圍調整後三支 spec 四尺寸重跑 79／79）；禁區 diff 空；testid 刪除數 0；First Load JS gzip 507.3 KiB（V3-9b 514.7）；四尺寸截圖 36 張 0 差異；首屏量測與 V3-9b 相同。
+- PRD §2.3 B：1440 一句話頂 192px（目標 176，V3-4 起的已知差距）、KPI 底 419 ≤ 420、三件事首列底 561；1280 頂欄 1 列 48px；390 扣廣告後貢獻值頂 295 ≤ 360；KPI 前可見控制 10 ≤ 10；匯入路徑 ≤ 2；hex 0（token 定義區 23）；圓角 4；字級 8（＋3 列印 token）；字距 0；labels 違規：同義詞 12 未到 0（既有字串，D-V3-37），其餘 0；JSX 中文 0；testid 刪除 0；M1／M6 全過；CLS 載入示範資料 1440＝0、390＝0.001。
+- PRD §2.3 C：Lighthouse accessibility 1440 與 390 六頁全 100、失敗審核 0（會議頁 label-content-name-mismatch 10 → 0）；performance 1440 100、390 92（≥ 90）；axe 四尺寸 serious／critical 0；對比 75／75；golden 255.00／−315.00／284.00 不變；禁區 diff 空；匯出與分享使用率要上線 4 週後才能量。
+- 上線檢查（本機 production）：13 項 HTTP 13／13（PUBLIC_DEMO，含 /api/insights POST 403）＋補充 10／10；網路紀錄 desktop／mobile 各 15 個請求、外部來源 0、非 GET 0、原始 CSV 探針命中 0；鍵盤走查無焦點陷阱、Esc 回焦（抽屜、匯出選單、投影模式）、PRD §11.1 只用鍵盤流程完成；備份 v1–v5 矩陣 16／16；證據 `verification/revamp-v3/V3-10/`。
+- 未執行／待人工：H4（5 人複測與盲評）未執行；正式站部署、正式站 Lighthouse 與 HTTP 檢查需使用者當次同意；`v3.0.0` tag 等 H4；匯出與分享使用率要上線 4 週後才能量；F15／F16 待檔案；H1、H2、H3 未執行或略過。
+- 待拍板：D-V3-26、27、29–35 仍待；新增 D-V3-36（決策匯出縮減）、D-V3-37（同義詞黑名單剩餘字串）。
+- 下一步：使用者同意後部署正式站並重測；H4；推送 `revamp/v2`（領先 origin 110 個 commit）。
+
 ## Revamp v3｜V3-9b P1 新增功能：圖表與呈現（完成，未推送、未部署；V3-9 拆批後的後半；F15／F16 延後）
 
 PRD §10.1 F8／F10／F14／F22 落地：趨勢圖去年同期第三線（`snapshot.yoy` 用既有 domain 函式多算一段；虛線 `--chart-yoy`、對不到的週不畫、缺資料斷線；不可用時圖例保留並寫原因——示範與 golden 只有一年資料，一律不可用）；圖表點擊下鑽（每個點可點、通路長條與資料表共用 builder，`src/application/evidence-filter.ts` 過濾原始列，抽屜片語列與清除／套用切換）；匯出範本變體（`variantSpec()` 一處定義；標準版／老闆一頁版（PDF 1 頁、Excel 2 表、PPT 1 張）／客戶報告版（客戶行、去掉內部備註與技術細節）；管理損益表進 Excel 所有變體與列印附錄，負數括號 D-V3-8；廣告決策欄進 Excel 待辦工作表；標準版去掉新增內容後與 V3-7 基準逐字相同）；投影模式（`html[data-mode=present]` 重新對應四個字級 token，隱藏側欄與期間列，只留 L1，Esc 離開回焦，切頁自動退出；D-V3-23＝A）。labels 新增 `overview.trendYoyV3` 12、`exports.variantsV3` 16、`shell.presentV3` 3 鍵；既有鍵不變。F15 台灣化示範資料、F16 來源預設實檔驗證：使用者尚未提供檔案，延後。

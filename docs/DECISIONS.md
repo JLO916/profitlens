@@ -292,6 +292,24 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-08｜Revamp v3 V3-10：上線檢查的取捨
+
+**labels 舊 key alias 移除：** labels 頂層只剩 24 個新分組（LABEL_GROUPS），v2 的 52 個區段與 legacyAliases 全部移除；對照表留在 `tests/fixtures/labels-legacy-map.json`（2,094 個葉路徑、65 個整棵子樹），`tests/labels-structure.test.ts` 改成「V3-2b 快照經對照表對到新路徑，字串一對一相同」。消費端（src 70 檔、單元測試 72 檔、E2E 44 檔、量測 spec 11 檔、scripts 8 檔）以 AST codemod 改路徑，不改斷言語意；`metricDefinitions` 與 `ruleCopy` 的輸出欄位名（label／plain／formula）不變，只改讀取來源。字串不變的證明：移除前後 24 個分組攤平後 2,578 個葉節點逐位元組相同，copy-scan 指標逐項相同。
+
+**版本與發布說明：** `package.json` 3.0.0；`docs/RELEASES.md` 的 v3.0.0 段寫完整（給使用者／不變的事／破壞性變更／已知限制／驗收），日期寫「尚未發布（待 H4 與正式站檢查）」；git tag `v3.0.0` 等 H4 與正式站檢查後再打；README 的「最新」改 v3.0.0 並註明正式站仍是 v2.0.0。
+
+**可及名稱：** 會議頁議程 1 與精簡通路表的 number-link（Lighthouse `label-content-name-mismatch` 10 個節點）、完整通路寬表每格、三件事「對貢獻影響」金額，可及名稱一律改成「{抽屜標題} {可見文字}，看明細」（句型同 kpiBand.valueAria）；抽屜標題本身不變，E2E 以非 exact 子字串仍可定位。
+
+**axe target-size：** 總覽 KPI 卡的「差額」與「上期」兩個 number-link 中心只距 20px，24px 目標圓相交（貢獻率卡兩行等寬時）；改成上期行多 4px 上距、卡片底距少 4px，卡片高度與首屏位置不變。沒有把 number-link 加高到 24px，那會讓兩個目標的方框重疊。
+
+**copy-scan 白名單：** `glossary.basis.aliasNote`（舊名對照的說明句，本來就要寫出舊名「通路貢獻」）與 AI 面板的三個 JSON 預覽標籤（描述的是技術預覽本身）列入白名單，上限降到同義詞 12／禁用詞 0；剩下 12 筆同義詞是既有字串，改字屬文案審稿（D-V3-37）。
+
+**決策匯出大小（D-V3-36）：** v3.0.0 不改匯出位元組（V3-10 不改格式，基準不動），列為已知限制；v3.1 再升 export_version 改成行號區間。
+
+**上線檢查的範圍：** 本批只對本機 production 伺服器執行（13 項 HTTP、網路紀錄、鍵盤走查、axe 四尺寸、備份 v1–v5 矩陣、Lighthouse）；正式站部署與正式站 Lighthouse 需使用者當次同意（D-V3-24），H4 待人工，都在 STATUS 寫「未執行」。
+
+**影響文件：** `docs/revamp-v3/06_BATCHES.md`、`docs/revamp-v3/09_DECISIONS_PENDING.md`（D-V3-36、37）、`docs/RELEASES.md`、`README.md`、`docs/ENGINEERING.md`、`verification/revamp-v3/V3-10/`、`verification/revamp-v3-V3-10-acceptance.md`。**驗收：** `tests/labels-structure.test.ts`、`tests/release-notes.test.ts`、`tests/backup-restore-matrix.test.ts`、`tests/e2e/network-log.spec.ts`、`tests/e2e/keyboard-walk.spec.ts`、`tests/e2e/axe-sweep.spec.ts`、`scripts/launch-check.mjs`。
+
 ## 2026-10-08｜Revamp v3 V3-9b：三線趨勢、下鑽、匯出變體與投影模式的取捨
 
 **去年同期（F8）：** 彙總放在 `createSnapshot`（application）：用 `periodPresets` 的 yoy preset 判斷可用性與期間，可用時以既有 `aggregatePeriod` 切週，不改 domain；`snapshot.yoy` 不進 hash 也不進備份。去年第 i 週對齊本期第 i 週，對不到的週不畫；缺資料斷線並另標「去年同期無資料」。圖例第三項用 inline SVG 虛線段（Chrome 把 12px 的虛線邊框畫成實線）。示範與 golden 只有一年資料，第三線永遠不可用，原因照 PRD 寫在圖下（期間列的既有提示也在，D-V3-35 待拍板）。
