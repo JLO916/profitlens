@@ -292,6 +292,10 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-08｜D-V4-36 拍板與 V4-0b 開工
+
+使用者回覆「全都依建議，並下一批 V4-0b」：D-V4-36 定為 A，390 五個 timespan 的 TBT 門檻＝max(V4-0a 中位數 × 1.1, 中位數＋50 ms)（載入示範資料 1,109.1、通路健檢 832.3、商品毛利 129.9、會議紀錄 1,071.2、資料來源 50.0 ms），已同步到 00_README、PRD、06_BATCHES 與基準文件。H5 是人工關卡，不是拍板：使用者沒有表示略過，V4-0b 照 D-V4-27＝A 產出設計稿，H5 仍擋 V4-1。
+
 ## 2026-10-08｜Revamp v4 V4-0a：基準與護欄的取捨
 
 **keyboard-walk 的 `aria-hidden` 停留點：** 06_BATCHES 預期 v3.0.0 為 0，實測 390 寬有 2 個（總覽 G1、G2 瀑布外框 `div.chart-frame.waterfall` 在 390 寬是水平捲動容器，外框帶 `aria-hidden`，Chromium 讓可捲動容器可聚焦；axe 的 aria-hidden-focus 不計這種隱含可聚焦）。V4-0a 不能改 `src`，依「上限＝實測並逐條列出」寫進 `KNOWN_ARIA_HIDDEN_STOPS`，修正併入 V4-1（搬 G1、G2 進 ChartFrame 時外框不帶 `aria-hidden`）。

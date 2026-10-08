@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／相關拍板／另需的人工時間。
 >
-> **目前進度：V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）；下一批 V4-0b。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
+> **目前進度：V4-0b 進行中（2026-10-08 開工）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
 >
 > 本套件寫「V4-0」時指 V4-0a、V4-0b 兩批合稱；「V4-0 實測」「V4-0 基準」都是 V4-0a 量到的 v3.0.0 值。原本的 V4-0（13 項，含 AST 掃描器、capture 與 metrics、PPT spike、合成資料、四頁兩尺寸設計稿與全套基準量測）與 V4-7（4 張圖、跨資料來源、匯入精靈、抽屜三個介面）在開工前依工作量拆成 a／b（CLAUDE.md：批次太大要在開工前拆；v3 的設計稿放在 L 級的 V3-1，不在 V3-0）。
 
@@ -29,7 +29,7 @@
   2. `NETWORK_LOG_OUT=verification/revamp-v4/V4-{n}/network-log.json KEYBOARD_WALK_OUT=verification/revamp-v4/V4-{n}/keyboard-walk.json AXE_OUT=verification/revamp-v4/V4-{n}/axe.json npm run test:e2e`（四個視窗；含 keyboard-walk、axe-sweep、network-log；三支 spec 各自讀這三個環境變數，`tests/e2e/network-log.spec.ts:127`、`keyboard-walk.spec.ts:205`、`axe-sweep.spec.ts:84`，沒給時只寫到 test-results，第 7 步的產物就不存在，也無法和 V4-0a 比里程碑 Tab 數；v3 的作法見 `verification/revamp-v3/V3-10/README.md:68`）。它用自己的 webServer 在 3100 埠起 LOCAL 模式的伺服器（`playwright.config.ts`，`reuseExistingServer: false`），所以必須在第 3 步的 PUBLIC_DEMO 伺服器啟動前跑完，否則撞埠。
   3. 起 PUBLIC_DEMO 伺服器：`NEXT_TELEMETRY_DISABLED=1 npm run build`，再 `APP_MODE=PUBLIC_DEMO PUBLIC_DEMO=true ENABLE_LIVE_AI=false npm start -- --port 3100 &`。
   4. `CAPTURE_BATCH=V4-{n} npx playwright test --config verification/revamp-v4.capture.config.ts`：52 張畫面基準（12 畫面 × 4 尺寸＋KPI 帶元素截圖 4 張，依上面的比對流程）與 `metrics.spec` v4（V4-0a：B2、B3、B5 硬斷言，B1、B9 只記錄；V4-1 起 B9、各頁 B1 依護欄表的時程硬斷言）；capture 設定 `reuseExistingServer: true`，沿用第 3 步的伺服器。
-  5. Lighthouse：第一次先執行 `npx -y lighthouse@13.5.0 --version` 建立 npx 快取（`scripts/lighthouse-pages.mjs:7-8`）；再 `node --no-warnings scripts/lighthouse-pages.mjs --base http://127.0.0.1:3100 --out verification/revamp-v4/V4-{n}`（腳本不會自己起伺服器）。門檻：Accessibility 不低於同頁基準（v3 六頁 1440 與 390 全 100；資料來源、待辦兩頁以 V4-0a 基準為準）且 ≥ 95；Performance 分數＝空狀態首頁（navigation）那一步，只反映首載 bundle（`scripts/lighthouse-pages.mjs:79-80`：有圖的頁是 timespan 或 snapshot，沒有 0–100 分數），1440 ≥ 97、390 ≥ 90；圖頁的效能由 TBT 把關：390 的「載入示範資料」與「切到通路健檢、商品毛利、會議紀錄、資料來源」五個 timespan 的 TBT 各 ≤ V4-0a 中位數 × 1.1（記錄 loadavg；超過且當時負載高時重跑，低負載重跑仍超過才算未通過）。
+  5. Lighthouse：第一次先執行 `npx -y lighthouse@13.5.0 --version` 建立 npx 快取（`scripts/lighthouse-pages.mjs:7-8`）；再 `node --no-warnings scripts/lighthouse-pages.mjs --base http://127.0.0.1:3100 --out verification/revamp-v4/V4-{n}`（腳本不會自己起伺服器）。門檻：Accessibility 不低於同頁基準（v3 六頁 1440 與 390 全 100；資料來源、待辦兩頁以 V4-0a 基準為準）且 ≥ 95；Performance 分數＝空狀態首頁（navigation）那一步，只反映首載 bundle（`scripts/lighthouse-pages.mjs:79-80`：有圖的頁是 timespan 或 snapshot，沒有 0–100 分數），1440 ≥ 97、390 ≥ 90；圖頁的效能由 TBT 把關：390 的「載入示範資料」與「切到通路健檢、商品毛利、會議紀錄、資料來源」五個 timespan 的 TBT 各 ≤ V4-0a 中位數 × 1.1（與中位數＋50 ms 取較大者，D-V4-36）（記錄 loadavg；超過且當時負載高時重跑，低負載重跑仍超過才算未通過）。
   6. 停掉第 3 步的伺服器：`lsof -ti tcp:3100 | xargs kill`，再確認 `lsof -ti tcp:3100` 沒有輸出（Claude Code 每次 Bash 呼叫都是新 shell，取不到背景伺服器的 `$!`；3100 埠殘留時，下一批的 `npm run test:e2e`（`reuseExistingServer: false`）會撞埠）。
   7. 四尺寸截圖（1440×1000、1280×900、768×1024、390×844）各至少一張，存到 `verification/revamp-v4/V4-{n}/`；`ui-audit.json`、`metrics.json`、Lighthouse、axe、keyboard-walk、network-log 的輸出也放這裡。
   8. 禁區檢查（依 D-V4-3，四條都必須為空，結果寫進驗收文件；**不可用 `main` 比對**）：
@@ -60,7 +60,7 @@
 | 批次 | 主題 | 大小 | 依賴（批次、拍板、人工關卡） | 另需的人工時間 | 狀態 |
 |---|---|---|---|---|---|
 | V4-0a | 基準與護欄（不改 UI） | M | 拍板 D-V4-1、2、3、15、23、24、25、26、27 | — | **完成（2026-10-08）** |
-| V4-0b | 設計稿、PPT spike 與合成資料（不改 UI） | M | V4-0a；D-V4-31（D-V4-10、34 的 spike 結果回報後確認；D-V4-27＝B 時不產出設計稿） | H5 設計稿在本批產出 | 未開工 |
+| V4-0b | 設計稿、PPT spike 與合成資料（不改 UI） | M | V4-0a；D-V4-31（D-V4-10、34 的 spike 結果回報後確認；D-V4-27＝B 時不產出設計稿） | H5 設計稿在本批產出 | 進行中（2026-10-08 開工） |
 | V4-1 | 總覽拆解與圖表框（G1、G2、G6） | M | V4-0b；**H5**；D-V4-4、5、7、14、30；G6 另依 D-V4-33；D-V4-35 只在回覆 B 時 | — | 未開工 |
 | V4-2 | 總覽其他圖（G3、G4、G5、G7a） | M | V4-1；D-V4-6、16、18；D-V3-35（只在回覆 A 後） | — | 未開工 |
 | **MVP 切線** | V4-0a 到 V4-2，總覽改版完整 | — | 經使用者當次明確同意才部署 Vercel preview，不切正式站（依 D-V4-28） | 老闆試用 | — |
@@ -399,7 +399,7 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 | 每頁主層獨立圖區塊（CL-9，`section.chart-section`） | 總覽 4、其餘 0 | 上限 3（總覽 4）；各批進入值見 `CHART_CATALOG.md` §9.4 |
 | `.chart-frame` 等高與 CLS | 總覽 4 框等高、CLS < 0.05 | 每批：所有頁 `main .chart-frame:visible` 切換期間高度差 0（G14、G21 只在前後都渲染時比較；G8、G12 只在展開狀態下比較；以 `hidden` 藏起來的試算工作台內的框不收）、CLS < 0.05；可見數量：總覽 4（V4-10 起展開進階後 5），V4-5 起總覽仍是 4 |
 | 390 頁面橫向捲動 | 通過 | 每批七頁 `scrollWidth ≤ 390`；只允許 `.chart-frame.waterfall` 與 `.table-scroll` 內部捲動 |
-| Lighthouse | Accessibility：v3 六頁 1440 與 390 全 100；資料來源、待辦兩頁 V4-0a 新量。Performance（只有空狀態首頁的 navigation 有分數，只反映首載 bundle）：1440 100、390 92。390 TBT：載入示範資料 v3.0.0 驗收 1,667 ms（loadavg 4.73；V3-9b 為 972 ms），切到通路健檢 1,330 ms、切到會議紀錄 1,718 ms（V3-10 只記錄、沒有門檻）；V4-0a 對五個 timespan（載入示範資料、切到健檢、商品、會議、資料來源）在低負載下各連跑 3 次取中位數 | 每批 a11y 不低於同頁基準且 ≥ 95；Performance 1440 ≥ 97、390 ≥ 90（只代表首載）；五個 TBT 各 ≤ V4-0a 中位數 × 1.1（超過且負載高時重跑，低負載重跑仍超過才算未通過） |
+| Lighthouse | Accessibility：v3 六頁 1440 與 390 全 100；資料來源、待辦兩頁 V4-0a 新量。Performance（只有空狀態首頁的 navigation 有分數，只反映首載 bundle）：1440 100、390 92。390 TBT：載入示範資料 v3.0.0 驗收 1,667 ms（loadavg 4.73；V3-9b 為 972 ms），切到通路健檢 1,330 ms、切到會議紀錄 1,718 ms（V3-10 只記錄、沒有門檻）；V4-0a 對五個 timespan（載入示範資料、切到健檢、商品、會議、資料來源）在低負載下各連跑 3 次取中位數 | 每批 a11y 不低於同頁基準且 ≥ 95；Performance 1440 ≥ 97、390 ≥ 90（只代表首載）；五個 TBT 各 ≤ V4-0a 中位數 × 1.1（與中位數＋50 ms 取較大者，D-V4-36）（超過且負載高時重跑，低負載重跑仍超過才算未通過） |
 | axe 四尺寸 | desktop、laptop、tablet 各 11 個狀態、mobile 10 個（mobile 沒有投影模式），0 serious | 每批 0 serious／critical；狀態數（desktop、laptop、tablet／mobile）：V4-3b 起 14／13（資料表展開、從圖下鑽的抽屜、合成資料健檢頁）、V4-4 起 15／14（合成資料商品頁）、V4-5 起 16／15（試算後展開 `scenario-sensitivity`）、V4-7a 起 17／16（`missing_ad_day` 資料來源頁）、V4-10 起 18／17（待辦頁一張卡）；示範資料下 G14、G16、G17、G20 缺列段、G21 都不渲染，不加這些狀態就掃不到 |
 | keyboard-walk | 各頁里程碑 Tab 數（V4-0a 記錄）；KPI 前可聚焦 10；`[aria-hidden=true]` 內停留點 0 | 每批不晚於 V4-0a；KPI 前 ≤ 10；`aria-hidden` 內停留點 0（V4-0a 起）；健檢頁經過熱表 ≤ 3（V4-3b 起）；「第一張圖的資料表 summary」里程碑：商品頁 V4-4 起，其餘頁由各頁批次或 V4-8 補齊 |
 | network-log 下載集合 | `analysis_csv`、`backup`、`decision_json`、`excel`、`pptx` | 每批恰好這 5 種；無 POST |

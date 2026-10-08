@@ -119,7 +119,7 @@ git diff --stat 625bfa5 HEAD -- src/domain fixtures docs/METRICS.md src/applicat
 - **labels**：`verification/revamp-v4/labels-v3.flat.json`（v3.0.0 全部 2,581 個葉節點）逐鍵逐字相同，新葉節點只在 `V4_NEW_KEY_PREFIXES` 下。
 - **功能保留**：`verification/revamp-v4/feature-retention.csv`（延續 v3 的 113 列再加圖表列）：`batch` 欄等於本批的列全部打勾，該批才算完成，V4-11 全表打勾；`verification/revamp-v4/e2e-text-assertions.csv` 每批勾銷。
 - **畫面基準**：每批開跑前先複製前一批的 `snapshots/`、不帶 `--update-snapshots` 比對，只允許該批「允許變動畫面」有差異（`06_BATCHES.md`）。
-- **Lighthouse**：Accessibility 不低於同頁基準（v3 六頁 1440 與 390 全 100；資料來源、待辦兩頁以 V4-0a 基準為準）且 ≥ 95；Performance 分數＝空狀態首頁（navigation），只反映首載 bundle（`scripts/lighthouse-pages.mjs:79-80`），1440 ≥ 97、390 ≥ 90；圖頁的效能由 TBT 把關：390 的載入示範資料與切到通路健檢、商品毛利、會議紀錄、資料來源五個 timespan 的 TBT 各 ≤ V4-0a 中位數 × 1.1（v3.0.0 驗收的載入示範資料 1,667 ms 是在 loadavg 4.73 下量的，V4-0a 低負載各連跑 3 次取中位數）；四尺寸 axe 0 個 serious（狀態數依 PRD §2.2 C3 逐批增加）。
+- **Lighthouse**：Accessibility 不低於同頁基準（v3 六頁 1440 與 390 全 100；資料來源、待辦兩頁以 V4-0a 基準為準）且 ≥ 95；Performance 分數＝空狀態首頁（navigation），只反映首載 bundle（`scripts/lighthouse-pages.mjs:79-80`），1440 ≥ 97、390 ≥ 90；圖頁的效能由 TBT 把關：390 的載入示範資料與切到通路健檢、商品毛利、會議紀錄、資料來源五個 timespan 的 TBT 各 ≤ V4-0a 中位數 × 1.1（與中位數＋50 ms 取較大者，D-V4-36）（v3.0.0 驗收的載入示範資料 1,667 ms 是在 loadavg 4.73 下量的，V4-0a 低負載各連跑 3 次取中位數）；四尺寸 axe 0 個 serious（狀態數依 PRD §2.2 C3 逐批增加）。
 - **Golden 不變**：本期 255.00、差額 −315.00、試算 284.00／264.00／19.70。
 - 本機預覽：`npm run dev`，網址 http://127.0.0.1:3000 。
 
