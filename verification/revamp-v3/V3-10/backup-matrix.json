@@ -1,0 +1,528 @@
+{
+  "checked_at": "2026-10-08T02:49:26.744Z",
+  "restore_accepts": [
+    "profitlens-workspace-v5",
+    "profitlens-workspace-v4",
+    "profitlens-workspace-v3",
+    "profitlens-workspace-v2",
+    "profitlens-workspace-v1"
+  ],
+  "rows": [
+    {
+      "dataset": "golden",
+      "version": "v1",
+      "source": "generated",
+      "envelope_bytes": 4725,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v1",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": false,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 6303
+      },
+      "ms": 78
+    },
+    {
+      "dataset": "golden",
+      "version": "v2",
+      "source": "generated",
+      "envelope_bytes": 7457,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v2",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": false,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 6287
+      },
+      "ms": 67
+    },
+    {
+      "dataset": "golden",
+      "version": "v3",
+      "source": "generated",
+      "envelope_bytes": 7799,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 7884
+      },
+      "ms": 216
+    },
+    {
+      "dataset": "golden",
+      "version": "v4",
+      "source": "generated",
+      "envelope_bytes": 13491,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v4",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 13491
+      },
+      "ms": 101
+    },
+    {
+      "dataset": "golden",
+      "version": "v5",
+      "source": "generated",
+      "envelope_bytes": 13513,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v5",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        "pause"
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 13513
+      },
+      "ms": 130
+    },
+    {
+      "dataset": "demo",
+      "version": "v1",
+      "source": "generated",
+      "envelope_bytes": 526087,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v1",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": false,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 266983
+      },
+      "ms": 7298
+    },
+    {
+      "dataset": "demo",
+      "version": "v2",
+      "source": "generated",
+      "envelope_bytes": 789501,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v2",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": false,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 266967
+      },
+      "ms": 4332
+    },
+    {
+      "dataset": "demo",
+      "version": "v3",
+      "source": "generated",
+      "envelope_bytes": 268718,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 268803
+      },
+      "ms": 3557
+    },
+    {
+      "dataset": "demo",
+      "version": "v4",
+      "source": "generated",
+      "envelope_bytes": 274490,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v4",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 274490
+      },
+      "ms": 3272
+    },
+    {
+      "dataset": "demo",
+      "version": "v5",
+      "source": "generated",
+      "envelope_bytes": 274512,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v5",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        "pause"
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 274512
+      },
+      "ms": 3799
+    },
+    {
+      "dataset": "golden",
+      "version": "v3 (desktop)",
+      "source": "real-file",
+      "envelope_bytes": 19988,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": null,
+      "actions": 8,
+      "ad_decisions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 20073
+      },
+      "ms": 113
+    },
+    {
+      "dataset": "golden",
+      "version": "v3 (laptop)",
+      "source": "real-file",
+      "envelope_bytes": 19988,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": null,
+      "actions": 8,
+      "ad_decisions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 20073
+      },
+      "ms": 103
+    },
+    {
+      "dataset": "golden",
+      "version": "v3 (tablet)",
+      "source": "real-file",
+      "envelope_bytes": 19988,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": null,
+      "actions": 8,
+      "ad_decisions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 20073
+      },
+      "ms": 132
+    },
+    {
+      "dataset": "golden",
+      "version": "v3 (mobile)",
+      "source": "real-file",
+      "envelope_bytes": 19988,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": null,
+      "actions": 8,
+      "ad_decisions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "envelope_bytes": 20073
+      },
+      "ms": 104
+    }
+  ]
+}

@@ -88,3 +88,100 @@ export default defineConfig({ ...base, testDir: "../../../tests/e2e", reporter: 
 - axe：mobile 0 serious；desktop、laptop、tablet 各 **2 個 serious（同一個問題）**：`target-size`（WCAG 2.5.8）在總覽 KPI「扣廣告後貢獻率」卡的差額連結「降 14.3 個百分點」（`button.number-link`，97.5×20 px），總覽與投影模式各出現一次。原因：差額（高 20）與下一行「上期 30.4%」（高 16）兩個 number-link 都小於 24 px、中心垂直距離 20 px，而這張卡兩者剛好水平置中重疊，24 px 圓相交；其他 KPI 卡因為兩行左右錯開而通過。這是目前產品版面的問題（代理 C 沒有改 src），spec 會失敗到修正為止；修法例：讓兩個連結的中心距離 ≥ 24 px（例如 `.kpi-prev` 上邊距再加 4 px 以上），或讓兩個 number-link 的點擊區 ≥ 24 px 高（`min-height: 24px`，不改字級）；由收尾者決定（注意 design-lint 棘輪）。
 - 備份矩陣：16/16 通過（見 §5）。
 - 13 項 HTTP：見 §1。
+
+## 8. production（`next start`，127.0.0.1:3100）的實際結果（代理 E3，2026-10-08，反映 8493723）
+
+**LOCAL 模式；PUBLIC_DEMO 的 403 由收尾者另外跑。** 這一段對的是共用的 production 伺服器（`next build` 後 `next start`，`APP_MODE=LOCAL`、`ENABLE_LIVE_AI=false`），不是正式站設定（PUBLIC_DEMO）。E2E 用 `verification/revamp-R3-shared.config.ts`（沿用 3100、不啟動伺服器、只有 list 報表、`workers: 1`），三支 spec 的最後一次完整執行：
+
+```sh
+NETWORK_LOG_OUT=verification/revamp-v3/V3-10/network-log.json KEYBOARD_WALK_OUT=verification/revamp-v3/V3-10/keyboard-walk.json AXE_OUT=verification/revamp-v3/V3-10/axe.json \
+  npx playwright test --config verification/revamp-R3-shared.config.ts --project=desktop --project=laptop --project=tablet --project=mobile --output test-results-e3 --timeout 90000 --reporter=list \
+  tests/e2e/network-log.spec.ts tests/e2e/keyboard-walk.spec.ts tests/e2e/axe-sweep.spec.ts
+# → 12 個測試：8 passed、4 skipped（網路紀錄與鍵盤走查在 laptop、tablet 依設計略過）、0 failed，1.8 分鐘
+BACKUP_MATRIX_OUT=verification/revamp-v3/V3-10/backup-matrix.json npx vitest run tests/backup-restore-matrix.test.ts
+# → 16 passed、0 failed（28.8 秒）
+node scripts/launch-check.mjs --base http://127.0.0.1:3100 --out verification/revamp-v3/V3-10/launch-check-local.json
+# → 13 項 11/13、補充 10/10，結束碼 1（第 7、8 項是 PUBLIC_DEMO 專屬，見 8.5）
+```
+
+| spec | desktop | laptop | tablet | mobile |
+|---|---|---|---|---|
+| `network-log.spec.ts` | 通過 | 略過（設計） | 略過（設計） | 通過 |
+| `keyboard-walk.spec.ts` | 通過 | 略過（設計） | 略過（設計） | 通過 |
+| `axe-sweep.spec.ts` | 通過 | 通過 | 通過 | 通過 |
+
+各 spec 在合併執行之前也各單獨跑過一次四個專案，結果相同（網路紀錄 2 passed／2 skipped；鍵盤走查 2 passed／2 skipped；axe 4 passed）。
+
+### 8.1 網路紀錄（`network-log.json`）
+
+| 項目 | desktop | mobile |
+|---|---|---|
+| 請求數（全部 http(s)） | 15 | 15 |
+| 依類型 | document 1、stylesheet 2、script 10、fetch 2 | 同左 |
+| 依步驟 | 首頁 10（含 `/api/insights` GET）、載入示範 1（`/api/datasets/demo`）、匯出分析 CSV 2（SheetJS／xlsx 的動態 chunk 在這一步載入，之後的 Excel 不再請求）、匯出 PPT 2（PptxGenJS 的動態 chunk）；開抽屜、匯入 golden、Excel、PDF、決策 JSON、備份、會議紀錄 0 | 同左 |
+| 外部來源數（origin ≠ `http://127.0.0.1:3100`） | 0 | 0 |
+| 非 GET 數（POST／PUT／PATCH／DELETE） | 0 | 0 |
+| 探針命中數（golden 三份 CSV 任何一行或 `MARKETPLACE` 出現在請求本文或網址） | 0 | 0 |
+| 4xx／5xx 或失敗的資源 | 0 | 0 |
+| console error／pageerror | 0 | 0 |
+| dev 專用請求 | 0 | 0 |
+| 瀏覽器內的 `/api/insights` | 只有 GET 200（available=false、reason DISABLED） | 同左 |
+| 直接 POST `/api/insights`（空 JSON） | 200、`status: fallback`、reason DISABLED（LOCAL 模式；JSON 的 `mode` 記 `non-public (DISABLED)`） | 同左 |
+
+下載：分析 CSV 356,738 bytes、Excel 22,913、PPT 85,016、決策 JSON 204,397、備份 266,782（大小與 §7 dev 試跑相同）；PDF 以 `window.print` 替身記到 1 次，列印版面（`manager-summary-print`）出現後於 `afterprint` 移除。匯入 golden（三份 CSV＋資料集設定檔）全程 0 個請求：原始 CSV 只在瀏覽器內讀取。紀錄只存網址、方法、資源類型、postData 長度與前 80 字元 SHA-256、狀態與步驟，不含任何請求內容。
+
+### 8.2 鍵盤走查（`keyboard-walk.json`）
+
+到第一個主要結果的 Tab 數（從 `main` 開始；只記錄、不斷言）與 main 內整頁停留點：
+
+| 頁 | 里程碑 | desktop 1440 | mobile 390 | 整頁停留點 desktop／mobile |
+|---|---|---|---|---|
+| 經營總覽 | 第一張 KPI | 11 | 4 | 90／77 |
+| 通路健檢 | 健檢第一列 | 8 | 2 | 69／59 |
+| 商品毛利 | 最差商品（第一個結果） | 9 | 3 | 378／372 |
+| 商品毛利 | 商品表第一列 | 57 | 51 | （同上） |
+| 假設試算 | 第一個結果數字（基準） | 11 | 5 | 34／28 |
+| 假設試算 | 範本 | 16 | 10 | （同上） |
+| 假設試算 | 「試算」按鈕 | 30 | 24 | （同上） |
+| 待辦 | 第一張待辦卡或新增 | 12 | 6 | 13／7 |
+| 會議紀錄 | 議程 1 | 26 | 19 | 47／40 |
+| 資料來源 | 問題表或範圍列表（越過） | 10 | 4 | 25／19 |
+
+- PRD §2.3 B「main 內第一個 KPI 之前的可見控制項數」：desktop 10、mobile 3（目標 ≤ 12）。
+- 試算頁從範本到「試算」desktop 與 mobile 都是 14 步（含未勾的試算聲明 checkbox；D-V3-27＝C「記住聲明後從範本起 ≤ 12 步」仍待拍板，本表只記錄）。會議日期是原生日期欄位，月／日／年／日曆按鈕占 4 步。
+- 硬規則（兩個尺寸、七頁全部）：焦點看不到的停留點 0、回到停過的元素（焦點陷阱）0、焦點掉回 body 0；每頁都從 `main` 開始並走到文件結尾離開 main；所有里程碑都到達。
+- Esc：計算與來源抽屜（Enter 開、焦點進到「關閉」）→ Esc 關閉後焦點回到 KPI 數字（可及名稱「扣廣告後貢獻 127.0 萬，看明細」）；頂欄「匯出」選單 → Esc 關閉後焦點留在 summary（mobile 先展開「更多」；選單關閉後「更多」仍展開，再按一次 Esc 收起，`aria-expanded` 變 false）；投影模式 → Esc 離開後焦點回到「投影模式」按鈕（desktop；≤ 767px 沒有投影按鈕，mobile 略過）。
+- PRD §11.1 只用鍵盤（總覽 → 開抽屜 → 關閉回焦 → 加入待辦 → 改狀態 → 匯出）：desktop Tab 24 到 KPI 數字、12 到「加入待辦」、15 到改狀態、Shift+Tab 10 回到匯出選單、Tab 2 到 CSV；mobile 11／10／9／4／2；兩個尺寸都下載 `profitlens-decision.csv`。page error 0。
+
+### 8.3 axe 四尺寸（`axe.json`，axe-core 4.13.0，wcag2a／2aa／21a／21aa／22aa）
+
+| 尺寸 | 狀態數 | critical | serious | moderate | minor |
+|---|---|---|---|---|---|
+| desktop 1440×1000 | 11 | 0 | 0 | 0 | 0 |
+| laptop 1280×900 | 11 | 0 | 0 | 0 | 0 |
+| tablet 768×1024 | 11 | 0 | 0 | 0 | 0 |
+| mobile 390×844 | 10（投影模式略過：≤ 767px 沒有投影按鈕） | 0 | 0 | 0 | 0 |
+
+§7 dev 試跑時 desktop／laptop／tablet 各 2 個 serious（總覽 KPI「扣廣告後貢獻率」差額連結的 `target-size`，總覽與投影模式各一次）已由 8493723 的 `.kpi-prev` 上距修正，四尺寸皆 0。純 DOM 參考檢查（不斷言）：每個狀態都剛好一個看得到的 h1，heading 跳級 0、沒有可及名稱的控制 0、重複 id 0、缺 alt 的 img 0，`:focus-visible` 規則存在。
+
+### 8.4 備份 v1–v5 還原矩陣（`backup-matrix.json`）
+
+16 個測試全過（2 個基準檢視＋10 個產生的信封＋4 個 R0 前實際 v3 檔），矩陣 14 列全部還原成功、classification 皆為 valid：
+
+| 資料集 | 版本 | 扣廣告後貢獻（本期／差額） | 試算方案 | `ad_decision` | 側邊資料（targets／events／meeting_history／ui_prefs） | 再匯出 |
+|---|---|---|---|---|---|---|
+| golden | v1、v2、v3 | 255.00／−315.00 | 284.00 | 無 | 皆空 | v5，金額相同 |
+| golden | v4 | 255.00／−315.00 | 284.00 | 無 | 1／1／1／讀回原值 | v5，金額相同 |
+| golden | v5 | 255.00／−315.00 | 284.00 | pause | 1／1／1／讀回原值 | v5，金額相同 |
+| demo | v1、v2、v3 | 1,269,792.73／−598,833.95 | 1,336,239.46 | 無 | 皆空 | v5，金額相同 |
+| demo | v4 | 1,269,792.73／−598,833.95 | 1,336,239.46 | 無 | 1／1／1／讀回原值 | v5，金額相同 |
+| demo | v5 | 1,269,792.73／−598,833.95 | 1,336,239.46 | pause | 1／1／1／讀回原值 | v5，金額相同 |
+| golden（實際 v3 檔） | desktop、laptop、tablet、mobile | 255.00／−315.00 | （檔內沒有方案） | 無 | 皆空 | v5，金額相同 |
+
+`preprocessing` 在 14 列都是 false（矩陣的信封沒有前處理）。執行時間 28.8 秒（§5 的「約 11 秒」是單獨跑時；這次與其他代理共用機器）。
+
+### 8.5 13 項 HTTP（`launch-check-local.json`）
+
+- 13 項：**11/13 通過**（LOCAL 模式）。第 1–6 項（首頁 200 含 ProfitLens；五個資料集 200、synthetic、manifest 與 `fixtures/` 相等、三份 CSV 位元組全等）與第 9–13 項（五個非公開路徑 404）全部通過。
+- 第 7、8 項是 PUBLIC_DEMO 設定專屬的檢查，LOCAL 模式下依設計不通過：第 7 項 GET `/api/insights` 回 200、available=false，但 reason 是 DISABLED（要求 PUBLIC_DEMO）；第 8 項 POST 空 JSON 回 200 fallback（reason DISABLED，要求 403＋PUBLIC_DEMO）。兩項都沒有呼叫 provider。**PUBLIC_DEMO 的 403 與 reason 由收尾者對 §0 的 PUBLIC_DEMO 伺服器另外跑**。
+- 補充：**10/10 通過**，含 production 才算數的 `static-asset`（`/_next/static` 腳本 200 且 `immutable`）、所有 `/api/*` 的 `Cache-Control: no-store`、`/api/insights` 的 `nosniff`、沒有 `X-Powered-By`；安全標頭只記錄現值。
