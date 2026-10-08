@@ -5,7 +5,7 @@ import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, Responsiv
 import { trendTakeaways } from "@/application/chart-takeaways";
 import { chartColors, chartFontSize, chartHeights } from "@/application/chart-theme";
 import { eventBands as computeEventBands, type EventSet } from "@/application/events";
-import { formatAmountL1, metricDefinitions, type Layer } from "@/application/presentation";
+import { formatAmountL1, formatAxisWan, metricDefinitions, type Layer } from "@/application/presentation";
 import type { PeriodWeeklyRow, WeeklyRow, WorkspaceSnapshot, YoyWeeklyRow } from "@/application/workspace";
 import type { Metric, MetricName, Period, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
@@ -17,6 +17,8 @@ import { ChartFrame, coordinate, metricText, type ChartLegendItem, type ChartTak
 // 折線：本期 --chart-current 2px、上期 --chart-previous 1.5px，只在最後一點畫 3px 圓點並直接標值；缺資料的週斷線並標「無資料」；檔期區帶沿用 events.ts。
 // V3-9b F8（PRD §10.1 F8、§9.5）：第三線「去年同期」--chart-yoy 1.5px 虛線、不畫圓點，去年同期第 i 週對齊本期第 i 週；不可用時圖例項保留並標「無資料」，圖下方寫原因（trend-yoy-note）。
 // V3-9b F10：每一週的點都可點（透明熱區），開該週該指標的抽屜並篩到該週；鍵盤經由資料表的同一個抽屜（weekEvidence）。
+// V4-2 代理 B（G3；PRD §4.1、§4.4、§7.2；CHART_CATALOG G3）：只改 Y 軸刻度。刻度由 trendAxis 自己算（1／2／2.5／5 × 10ⁿ 的整齊步長、含 0、上下界取步長的整數倍），
+// 文字改呼叫 presentation.ts 的 formatAxisWan（整數萬，不再出現「50.0 萬」）；本期、上期末點標值、三項圖例、去年同期線（390 不隱藏）都沿用 V3，不新增 labels。
 
 const ui = labels.overview.page;
 const copy = labels.overview.trendV3;
@@ -41,8 +43,28 @@ type SeriesKey = typeof SERIES[number]["key"];
 type YoySeriesKey = typeof YOY_SERIES[number]["key"];
 type TrendRow = PeriodWeeklyRow & { index: number; tick: string; yoy: YoyWeeklyRow | null } & Record<SeriesKey | YoySeriesKey, number | null>;
 
-// 圖軸刻度只是座標（Recharts 給的整齊數字），用 L1 尺度（萬／億、U+2212）顯示；金額本身一律來自 domain 字串。
-const axis = (value: number) => Number.isFinite(value) ? formatAmountL1(String(value)) : "";
+/** 刻度約幾條（與 V3 的 tickCount 相同）。 */
+const AXIS_TICK_COUNT = 4;
+/** 整齊步長的係數（與 V3 的 niceTicks="snap125" 及 chart-frame.tsx 的 axisTicks 相同：1、2、2.5、5 × 10ⁿ）。 */
+const AXIS_STEPS = [1, 2, 2.5, 5, 10] as const;
+export interface TrendAxis { domain: [number, number]; ticks: number[]; step: number; labels: string[] }
+/**
+ * V4-2 G3：Y 軸的範圍、刻度與刻度文字（只是圖形座標；金額本身一律來自 domain 字串）。
+ * 範圍含 0（與 V3 的 Recharts 預設相同），上下界取步長的整數倍，所以最高與最低的線一定落在刻度內；刻度文字＝formatAxisWan(ticks, step)。
+ * 沒有任何有值的點時回傳 [0, 1] 與單一刻度 0。
+ */
+export function trendAxis(values: readonly (number | null)[], count = AXIS_TICK_COUNT): TrendAxis {
+  const finite = values.filter((value): value is number => value !== null && Number.isFinite(value));
+  const min = Math.min(0, ...finite), max = Math.max(0, ...finite);
+  if (max - min <= 0) return { domain: [0, 1], ticks: [0], step: 1, labels: formatAxisWan([0], 1) };
+  const raw = (max - min) / Math.max(count - 1, 1);
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const step = Number((AXIS_STEPS.map(factor => factor * magnitude).find(candidate => candidate >= raw) ?? 10 * magnitude).toPrecision(12));
+  const lo = Math.floor(min / step), hi = Math.ceil(max / step);
+  const ticks: number[] = [];
+  for (let k = lo; k <= hi; k++) ticks.push(Number((k * step).toPrecision(12)) || 0);
+  return { domain: [ticks[0], ticks[ticks.length - 1]], ticks, step, labels: formatAxisWan(ticks, step) };
+}
 // 「{指標} {數值}」提示列（與 v2 tooltip 相同的組合）。
 const metricValue = (metric: string, value: string) => `${metric} ${value}`;
 
@@ -107,6 +129,9 @@ export function TrendSection({ snapshot, events = null, onEvidence }: TrendSecti
   const bands = computeEventBands(events, weeks).map(band => ({ event: band.event, x1: band.from - 0.5, x2: band.to - 0.5 }));
   const rows = trendRows(weeks, yoyWeeks);
   const last = lastPoints(rows);
+  // V4-2 G3：刻度涵蓋圖上所有的線（本期、上期與去年同期）；Recharts 只照這組刻度畫格線與文字。
+  const yAxis = trendAxis(rows.flatMap(row => [...SERIES, ...YOY_SERIES].map(series => row[series.key])));
+  const yTickText = new Map(yAxis.ticks.map((tick, index) => [tick, yAxis.labels[index]]));
   const missingWeeks = rows.filter(row => row.metrics.net_revenue.value === null);
   // 去年同期某週淨營收缺值（本週自己有值）：斷線並在該週標「去年同期無資料」。
   const missingYoy = rows.filter(row => row.yoy !== null && row.yoy.metrics.net_revenue.value === null && row.metrics.net_revenue.value !== null);
@@ -152,7 +177,7 @@ export function TrendSection({ snapshot, events = null, onEvidence }: TrendSecti
       <LineChart data={rows} margin={{ top: 22, right: 12, bottom: 4, left: 4 }} accessibilityLayer={false}>
         <CartesianGrid vertical={false} stroke={chartColors.grid} />
         <XAxis dataKey="index" type="number" domain={[-0.5, Math.max(rows.length - 0.5, 0.5)]} ticks={rows.map(row => row.index)} tickFormatter={(value: number) => rows[value]?.tick ?? ""} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: chartFontSize, fill: chartColors.axis }} minTickGap={26} />
-        <YAxis tickFormatter={axis} tickCount={4} niceTicks="snap125" allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: chartFontSize, fill: chartColors.axis }} width={56} />
+        <YAxis domain={yAxis.domain} ticks={yAxis.ticks} tickFormatter={(value: number) => yTickText.get(value) ?? ""} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: chartFontSize, fill: chartColors.axis }} width={56} />
         <Tooltip content={({ active, payload }) => { const row = payload?.[0]?.payload as TrendRow | undefined; return active && row ? <div className="chart-tooltip"><strong>{row.start} — {row.end}</strong><p>{labels.shell.periods[row.period]}</p><p>{metricValue(metricDefinitions.net_revenue.shortLabel, metricText("net_revenue", row.metrics.net_revenue, "L1"))}</p><p>{metricValue(metricDefinitions.contribution_after_marketing.shortLabel, metricText("contribution_after_marketing", row.metrics.contribution_after_marketing, "L1"))}</p>{row.yoy !== null && <p>{metricValue(fill(yoyCopy.tableColumn, { metric: metricDefinitions.net_revenue.shortLabel }), metricText("net_revenue", row.yoy.metrics.net_revenue, "L1"))}</p>}</div> : null; }} />
         {bands.map(band => <ReferenceArea key={`${band.event.line}-${band.x1}`} x1={band.x1} x2={band.x2} ifOverflow="visible" fill={chartColors.band} fillOpacity={1} strokeOpacity={0} label={{ value: band.event.label, position: "insideTop", fontSize: chartFontSize, fill: chartColors.axis }} />)}
         {missingWeeks.map(row => <ReferenceLine key={`missing-${row.index}`} x={row.index} stroke={chartColors.grid} strokeDasharray="2 4" label={{ value: frame.noData, position: "insideBottom", fontSize: chartFontSize, fill: chartColors.axis }} />)}

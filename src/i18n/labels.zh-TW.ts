@@ -765,7 +765,15 @@ export const overview = {
       /** 資料表的列名加單位（單位只寫在列名，格內不重複，§8.5 規則 5）：{label}＝指標名（labels.assist.items）。比率與倍數的格本身帶 % 與倍。 */
       rowUnit: { count: "{label}（件）", perUnit: "{label}（元／件）" },
     },
-    channels: {},
+    /**
+     * 代理 B（G4，PRD §4.1–4.7 G4、CHART_CATALOG G4）：各通路緊湊表新增的差額欄。欄頭沿用 channelsV3.dataTable.change「差額（元）」（設計稿提案的 changeHead 同字，不另立鍵）。
+     * 差額 number-link 的可及名稱（比照 channelsV3.amountAria，含畫面上的 L2 帶號值）；{channel}＝通路名稱（示範資料用 alias），{metric}＝扣廣告後貢獻的標準名，
+     * {value}＝畫面上的值（「+183,437」）；缺值時用 changeEmptyAria（{value}＝「資料待補」或「不適用」，不加「元」）。
+     */
+    channels: {
+      changeAria: "{channel} {metric}差額 {value} 元，看明細",
+      changeEmptyAria: "{channel} {metric}差額 {value}，看明細",
+    },
     bullet: {},
   },
 } as const;

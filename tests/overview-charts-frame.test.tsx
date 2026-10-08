@@ -177,7 +177,8 @@ describe("區塊 8 各通路扣廣告後貢獻（ChartFrame id=channel）", () =
     const section = byTestId(overview(demo), "channel-mix");
     const kv = element(section, 'class="kv channel-kv"')!;
     const conclusion = channelConclusion(demo);
-    expect(kv).toContain(`<thead><tr><th scope="col">${channelCopy.table.channel}</th><th scope="col" class="num">${channelCopy.table.current}</th><th scope="col" class="num">${channelCopy.table.margin}</th></tr></thead>`);
+    // V4-2 G4：表頭多第四欄「差額（元）」（沿用 channelsV3.dataTable.change）；差額欄的內容見 tests/overview-g4.test.tsx。
+    expect(kv).toContain(`<thead><tr><th scope="col">${channelCopy.table.channel}</th><th scope="col" class="num">${channelCopy.table.current}</th><th scope="col" class="num">${channelCopy.table.margin}</th><th scope="col" class="num">${channelCopy.dataTable.change}</th></tr></thead>`);
     const rows = kv.match(/<tr>[\s\S]*?<\/tr>/g)!.slice(1);
     expect(rows).toHaveLength(demo.report.scope.channels.length);
     expect(rows).toHaveLength(conclusion.rows.length);
