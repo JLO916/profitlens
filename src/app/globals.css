@@ -2595,3 +2595,12 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 }
 
 /* ── V3-10 錨點結束 ── */
+
+/* ── V4-1 A：C16 ChartFrame 擴充、C17 瀑布 bare 與共同尺度、390 瀑布外框的鍵盤可及性 ── */
+/* ── V4-1 A 錨點結束 ── */
+
+/* ── V4-1 B：C24 BarCell（variance）與 chartRowHeights ── */
+/* ── V4-1 B 錨點結束 ── */
+
+/* ── V4-1 C：G6 橋接表內嵌變異條（≤ 767px 顯示，≥ 768 隱藏但掛載） ── */
+/* ── V4-1 C 錨點結束 ── */

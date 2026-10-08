@@ -6,7 +6,8 @@
 
 - 最終驗收：typecheck、lint、contrast（75／75）exit 0；audit:ui 與 V4-0a 相同；unit 126 檔／2,474 全過（新增 15）；build pass（設計稿不在 `.next`）；E2E 791 passed／0 failed／9 skipped（23.4m）；畫面基準 52 張與 V4-0a 0 差異（逐位元相同）；First Load JS 519,426 bytes、B2、B3、B9、keyboard-walk、axe、network-log 全部與 V4-0a 相同；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94；390 TBT 中位數都在 D-V4-36 門檻內（載入示範資料 1,059.9／1,109.1、通路健檢 762.1／832.3、商品毛利 82.1／129.9、會議紀錄 1,020.1／1,071.2、資料來源 6.0／50.0 ms）；禁區四條命令皆空；收尾 commit `998d3e1` 之後的禁區 diff 也為空。
 - 設計稿實測：G11 在 390 放得下（320 ≤ 324），768 寬一列只放得下 1 張月曆（PRD 估 2 張，已改寫進 06 V4-3b），`formatHeatCell`「−0.45」放得下；G13 兩欄並排放不下、G14 在 390 只剩 32px、去年同期可用時 G20 在 390 看不到缺列、G1 與 G2 共同尺度讓 G1 變扁約 40%（設計稿與 PRD 的差異共 29 點，`verification/revamp-v4/mockups/README.md` §6）。
-- 未執行／待人工：**H5 設計稿審查（擋 V4-1，使用者可略過）**；PPT 三個 spike 檔的人工開檔檢查（Quick Look 不畫 pptxgenjs 圖表）；H6。
+- H5 設計稿審查：**使用者 2026-10-08 回報「H5 設計稿審查通過」**（審查者名單、分數與意見沒有提供給本工作階段，不另記）；V4-1 解除擋批。
+- 未執行／待人工：PPT 三個 spike 檔的人工開檔檢查（Quick Look 不畫 pptxgenjs 圖表）；H6。
 - 待拍板（本批新增）：D-V4-37（PPT 資料標籤，擋 V4-9a）、D-V4-38（G13 版面，擋 V4-4）、D-V4-39（G14 在 390，擋 V4-4）、D-V4-40（G20 軸範圍，擋 V4-7a）、D-V4-41（G1、G2 共同尺度，擋 V4-1）；建議值都在 `docs/revamp-v4/09_DECISIONS_PENDING.md`。
 - 驗收：`verification/revamp-v4-V4-0b-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-0b/`。下一批：V4-1（總覽拆解與圖表框），開工前需要 H5（或使用者表示略過）與 D-V4-41。
 
