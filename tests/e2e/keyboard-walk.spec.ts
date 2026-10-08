@@ -13,6 +13,8 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  *      Esc：抽屜回到開它的按鈕、頂欄匯出選單回到 summary、投影模式回到按鈕（只有桌機有投影按鈕）。
  *   C. PRD §11.1：總覽 → 開抽屜 → 關閉回焦 → 加入待辦 → 改狀態 → 匯出，全程只用 Tab／Shift+Tab／Enter／Esc。
  * 結果寫到 KEYBOARD_WALK_OUT（例如 verification/revamp-v3/V3-10/keyboard-walk.json，以專案名為鍵）；沒給就寫到 test-results。
+ * V4-0a（06_BATCHES V4-0a 第 8 項、PRD §2.2 B6、§8.1）：通用斷言「任何 Tab 停留點都不在 [aria-hidden=true] 內」。七頁整頁走查的每一步（含離開 main 的那一步）
+ *   與 C 段 tabTo 經過的每一步，都檢查焦點元素本身或祖先有沒有 aria-hidden="true"；v3.0.0 應為 0，之後每批都跑（v4 的圖容器 aria-hidden，圖內不得有可聚焦元素）。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -39,12 +41,44 @@ const positionOf = (page: Page, selector: string) => page.evaluate(sel => {
 }, selector) as Promise<Position>;
 
 const describe = (stop: FocusStop) => `${stop.tag}${stop.testid ? `[${stop.testid}]` : ""} ${stop.name}`.trim();
+/** V4-0a：目前焦點元素本身或祖先帶 aria-hidden="true" 時，回傳最近那個祖先的描述（tag、testid、class，以及它所在、帶 testid 的區塊）；沒有就回傳 null。 */
+const ariaHiddenAncestor = (page: Page) => page.evaluate(() => {
+  const active = document.activeElement;
+  const hidden = active && active !== document.body ? active.closest("[aria-hidden='true']") : null;
+  if (!hidden) return null;
+  const testid = (hidden as HTMLElement).dataset?.testid;
+  const className = typeof hidden.className === "string" ? hidden.className.trim().split(/\s+/).filter(Boolean).join(".") : "";
+  const block = (hidden.parentElement?.closest("[data-testid]") as HTMLElement | null)?.dataset.testid;
+  return `${hidden.tagName.toLowerCase()}${testid ? `[${testid}]` : ""}${className ? `.${className}` : ""}${block ? `，所在區塊 ${block}` : ""}`;
+});
+/**
+ * V4-0a 在 v3.0.0 實測到的既有違規（06_BATCHES 的規定：上限＝實測並逐條列出，之後只降不升；以 Playwright 專案名與頁面為鍵，內容是去掉步數的停留點描述）。
+ * 390 寬時，總覽 G1（貢獻變化拆解，bridge-section）與 G2（本期利潤結構，profit-waterfall）的瀑布外框 div.chart-frame.waterfall 帶 aria-hidden，
+ * 內容比框寬而成為水平捲動容器；Chromium 讓沒有可聚焦子元素的捲動容器可以用 Tab 停留（keyboard-focusable scrollers），所以各多 1 個停留點落在 aria-hidden 內。
+ * axe 的 aria-hidden-focus 不把這種隱含可聚焦的捲動容器算進去，V3-10 的 axe 掃描沒有抓到。修正要改 src（例如外框不帶 aria-hidden、只讓 svg aria-hidden，
+ * 或外框 tabIndex={-1}），本批不改畫面；排在 V4-1（G1、G2 搬進 ChartFrame）修正，修好後刪掉這裡對應的列。
+ */
+const KNOWN_ARIA_HIDDEN_STOPS: Partial<Record<string, Partial<Record<LaunchPage, string[]>>>> = {
+  mobile: {
+    overview: ["div（div.chart-frame.waterfall，所在區塊 bridge-section）", "div（div.chart-frame.waterfall，所在區塊 profit-waterfall）"],
+  },
+};
+/** 實測的 aria-hidden 停留點中，不在 KNOWN_ARIA_HIDDEN_STOPS 清單內（或超出清單次數）的部分。 */
+function unexpectedAriaHiddenStops(project: string, id: LaunchPage, actual: string[]) {
+  const remaining = [...(KNOWN_ARIA_HIDDEN_STOPS[project]?.[id] ?? [])];
+  return actual.filter(stop => {
+    const index = remaining.indexOf(stop.replace(/^\d+\. /, ""));
+    if (index < 0) return true;
+    remaining.splice(index, 1);
+    return false;
+  });
+}
 async function focusMain(page: Page) {
   await page.evaluate(() => { window.scrollTo(0, 0); (document.querySelector("main") as HTMLElement | null)?.focus(); });
   return page.evaluate(() => document.activeElement?.tagName.toLowerCase() === "main");
 }
 
-interface Walk { page: LaunchPage; startedOnMain: boolean; milestones: { name: string; tabs: number | null; reachedBy: Position | null }[]; stopsInMain: number; leftMainAt: number | null; leftMainTo: string | null; stops: string[]; invisibleStops: string[]; repeatedStops: string[]; lostFocus: number; controlsBeforeFirstKpi?: number }
+interface Walk { page: LaunchPage; startedOnMain: boolean; milestones: { name: string; tabs: number | null; reachedBy: Position | null }[]; stopsInMain: number; leftMainAt: number | null; leftMainTo: string | null; stops: string[]; invisibleStops: string[]; repeatedStops: string[]; ariaHiddenStops: string[]; lostFocus: number; controlsBeforeFirstKpi?: number }
 
 /** 從 main 開始按 Tab，一路走到焦點離開 main（或掉回 body、或到上限）；途中記錄各里程碑第一次到達的步數。 */
 async function walk(page: Page, id: LaunchPage): Promise<Walk> {
@@ -53,7 +87,7 @@ async function walk(page: Page, id: LaunchPage): Promise<Walk> {
   if (id === "scenarios") await page.getByTestId("scenario-1").getByRole("button", { name: copy.calculate, exact: true }).evaluate(el => el.setAttribute("data-v310-calculate", ""));
   const startedOnMain = await focusMain(page);
   const milestones = MILESTONES[id].map(item => ({ name: item.name, selector: item.selector, tabs: null as number | null, reachedBy: null as Position | null }));
-  const stops: string[] = [], invisibleStops: string[] = [], repeatedStops: string[] = [];
+  const stops: string[] = [], invisibleStops: string[] = [], repeatedStops: string[] = [], ariaHiddenStops: string[] = [];
   const seen = new Set<string>();
   let lostFocus = 0, leftMainAt: number | null = null, leftMainTo: string | null = null, previousKey = "";
   for (let tab = 1; tab <= MAX_WALK; tab++) {
@@ -71,6 +105,9 @@ async function walk(page: Page, id: LaunchPage): Promise<Walk> {
       else { lostFocus++; stops.push(`${tab}. body（之後還有 ${remaining} 個可 Tab 的元素）`); }
       break;
     }
+    // V4-0a：每個停留點（含離開 main 的那一步）都不可在 [aria-hidden=true] 內。
+    const hiddenBy = await ariaHiddenAncestor(page);
+    if (hiddenBy) ariaHiddenStops.push(`${tab}. ${describe(stop)}（${hiddenBy}）`);
     if (!stop.inMain) { leftMainAt = tab; leftMainTo = describe(stop); break; }
     stops.push(`${tab}. ${describe(stop)}`);
     if (!stop.focusVisible) invisibleStops.push(`${tab}. ${describe(stop)}（${stop.focusRing}）`);
@@ -87,7 +124,7 @@ async function walk(page: Page, id: LaunchPage): Promise<Walk> {
       if (position === "inside" || position === "after") { item.tabs = tab; item.reachedBy = position; }
     }
   }
-  const result: Walk = { page: id, startedOnMain, milestones: milestones.map(({ name, tabs, reachedBy }) => ({ name, tabs, reachedBy })), stopsInMain: stops.length, leftMainAt, leftMainTo, stops, invisibleStops, repeatedStops, lostFocus };
+  const result: Walk = { page: id, startedOnMain, milestones: milestones.map(({ name, tabs, reachedBy }) => ({ name, tabs, reachedBy })), stopsInMain: stops.length, leftMainAt, leftMainTo, stops, invisibleStops, repeatedStops, ariaHiddenStops, lostFocus };
   if (id === "overview") {
     // PRD §2.3 B：main 內、第一個 kpi-* 之前、可見且可聚焦的元素數（期間列計入）。
     result.controlsBeforeFirstKpi = await page.evaluate(() => {
@@ -101,11 +138,15 @@ async function walk(page: Page, id: LaunchPage): Promise<Walk> {
   return result;
 }
 
-/** 依方向一直按 Tab（或 Shift+Tab）直到 target 取得焦點；遇到收合的 <details> 而目標在裡面時按 Enter 展開。回傳按鍵數。 */
-async function tabTo(page: Page, target: Locator, direction: "forward" | "backward" = "forward", max = MAX_TABS): Promise<number> {
+/** 依方向一直按 Tab（或 Shift+Tab）直到 target 取得焦點；遇到收合的 <details> 而目標在裡面時按 Enter 展開。回傳按鍵數。V4-0a：經過的停留點在 [aria-hidden=true] 內時記到 ariaHiddenStops。 */
+async function tabTo(page: Page, target: Locator, direction: "forward" | "backward" = "forward", max = MAX_TABS, ariaHiddenStops?: string[]): Promise<number> {
   const handle = await target.elementHandle();
   for (let count = 1; count <= max; count++) {
     await page.keyboard.press(direction === "forward" ? "Tab" : "Shift+Tab");
+    if (ariaHiddenStops) {
+      const hiddenBy = await ariaHiddenAncestor(page);
+      if (hiddenBy) ariaHiddenStops.push(`${direction === "forward" ? "Tab" : "Shift+Tab"} ${count}. ${describe(await activeStop(page))}（${hiddenBy}）`);
+    }
     const state = await page.evaluate(el => {
       const active = document.activeElement;
       if (active === el) return "reached";
@@ -176,32 +217,35 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
 
   // C：PRD §11.1 只用鍵盤：總覽 → 開抽屜 → 關閉回焦 → 加入待辦 → 改狀態 → 匯出。
   const flow: Record<string, number | string> = {};
+  const flowAriaHiddenStops: string[] = [];
   await gotoPage(page, "overview");
   await focusMain(page);
-  flow.tabsToKpi = await tabTo(page, kpiLink(page));
+  flow.tabsToKpi = await tabTo(page, kpiLink(page), "forward", MAX_TABS, flowAriaHiddenStops);
   await page.keyboard.press("Enter");
   await expect(evidenceDrawer(page)).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(kpiLink(page)).toBeFocused();
   const addToActions = page.getByTestId("top-three").getByRole("button", { name: labels.actions.buttons.addToActions, exact: true, includeHidden: true }).first();
-  flow.tabsToAddAction = await tabTo(page, addToActions);
+  flow.tabsToAddAction = await tabTo(page, addToActions, "forward", MAX_TABS, flowAriaHiddenStops);
   await page.keyboard.press("Enter");
   await expect(page.locator("main h1")).toHaveText(pageName("actions"));
   const move = page.getByTestId("board-card-1-move-in_progress");
   await focusMain(page);
-  flow.tabsToStatus = await tabTo(page, move);
+  flow.tabsToStatus = await tabTo(page, move, "forward", MAX_TABS, flowAriaHiddenStops);
   await page.keyboard.press("Enter");
   await expect(page.getByTestId("board-card-1-move-in_progress")).toHaveCount(0);
   flow.statusAfter = describe(await activeStop(page));
   const exportSummary = page.getByTestId("export-page-actions");
-  flow.shiftTabsToExport = await tabTo(page, exportSummary, "backward");
+  flow.shiftTabsToExport = await tabTo(page, exportSummary, "backward", MAX_TABS, flowAriaHiddenStops);
   await page.keyboard.press("Enter");
   await expect(page.getByTestId("actions-export-menu")).toHaveAttribute("open", "");
-  flow.tabsToCsv = await tabTo(page, page.getByTestId("actions-export-csv"));
+  flow.tabsToCsv = await tabTo(page, page.getByTestId("actions-export-csv"), "forward", MAX_TABS, flowAriaHiddenStops);
   const [file] = await Promise.all([page.waitForEvent("download"), page.keyboard.press("Enter")]);
   flow.downloaded = file.suggestedFilename();
 
-  const result = { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, walks, esc, keyboardOnlyFlow: flow, pageErrors: errors };
+  const ariaHiddenTotal = walks.reduce((total, item) => total + item.ariaHiddenStops.length, 0) + flowAriaHiddenStops.length;
+  const knownAriaHiddenStops = KNOWN_ARIA_HIDDEN_STOPS[testInfo.project.name] ?? {};
+  const result = { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, walks, esc, keyboardOnlyFlow: flow, flowAriaHiddenStops, ariaHiddenStopsTotal: ariaHiddenTotal, knownAriaHiddenStops, pageErrors: errors };
   const written = await writeLaunchJson("KEYBOARD_WALK_OUT", "keyboard-walk.json", testInfo, result);
   testInfo.annotations.push({ type: "keyboard-walk", description: written });
 
@@ -211,9 +255,12 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
     expect(item.invisibleStops, `${item.page}：每個停留點都要看得到焦點`).toEqual([]);
     expect(item.repeatedStops, `${item.page}：Tab 不可回到停過的元素（焦點陷阱）`).toEqual([]);
     expect(item.lostFocus, `${item.page}：Tab 不可讓焦點掉回 body`).toBe(0);
+    // V4-0a：任何 Tab 停留點都不在 [aria-hidden=true] 內；KNOWN_ARIA_HIDDEN_STOPS 逐條列出的既有違規以外，一個都不可以多。
+    expect(unexpectedAriaHiddenStops(testInfo.project.name, item.page, item.ariaHiddenStops), `${item.page}：任何 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a；已知既有違規見 KNOWN_ARIA_HIDDEN_STOPS）`).toEqual([]);
     expect(item.leftMainAt, `${item.page}：一路按 Tab 最後要離開 main（沒有困在頁內）`).not.toBeNull();
     for (const milestone of item.milestones) expect(milestone.tabs, `${item.page}：Tab 要能到達「${milestone.name}」`).not.toBeNull();
   }
+  expect(flowAriaHiddenStops, "§11.1 只用鍵盤的流程：經過的 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a）").toEqual([]);
   expect(flow.downloaded).toMatch(/\.csv$/);
   expect(errors).toEqual([]);
 });

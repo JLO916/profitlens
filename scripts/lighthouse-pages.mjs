@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // V3-0 ⑦：Lighthouse 基準（Accessibility＋Performance），示範資料已載入的 5 頁（總覽、通路健檢、商品毛利、假設試算、會議紀錄），1440×1000 與 390×844。
+// V4-0a 第 11 項：再加資料來源、待辦兩頁（連同空狀態首頁共 8 頁；每頁一個「切到…」timespan 與一個 snapshot），其餘行為不變。
 // 用 Lighthouse user-flow（startFlow）：一個流程內 navigate（空狀態首頁，唯一能算 0–100 Performance 分數的模式）
 // → timespan（載入示範資料、拒絕本機保存提示）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot。
 // 示範資料只存在記憶體（v2 沒有自動還原），所以「已載入資料的頁面」不能用 navigation 模式；這些頁的 Performance 以 timespan 的 TBT／CLS／INP 記錄。
@@ -49,6 +50,10 @@ const pages = [
   { id: "products", anchor: "[data-testid='product-table']" },
   { id: "scenarios", anchor: "[data-testid='scenario-1']" },
   { id: "meeting", anchor: "[data-testid='meeting-page']" },
+  // V4-0a 第 11 項：加資料來源與待辦兩頁（PRD §2.2 C1、C2）。接在會議紀錄之後，v3 既有四步的切頁前後頁不變；
+  // 資料來源的 anchor 是頁首下的資料狀態一行（DataWorkspace 的 data-status-line），待辦是 ActionsWorkbench 的根（actions-workbench）。
+  { id: "data", anchor: "[data-testid='data-status-line']" },
+  { id: "actions", anchor: "[data-testid='actions-workbench']" },
 ];
 const sizes = [
   { name: "desktop-1440", config: desktopConfig, flags: { formFactor: "desktop", screenEmulation: { mobile: false, width: 1440, height: 1000, deviceScaleFactor: 1, disabled: false } } },
