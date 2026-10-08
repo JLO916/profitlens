@@ -2,7 +2,7 @@ import { labels } from "@/i18n";
 
 /**
  * V3-2a（F5／F23，PRD §6.3 #12、§8.9）：名詞小辭典的資料與搜尋。
- * 資料只來自 labels.glossary.terms（名詞表 GLOSSARY.md §1）與 labels.basis.aliases；這裡不寫任何使用者看得到的字串。
+ * 資料只來自 labels.glossary.terms（名詞表 GLOSSARY.md §1）與 labels.glossary.aliases；這裡不寫任何使用者看得到的字串。
  */
 export interface GlossaryTerm {
   term: string;
@@ -24,7 +24,7 @@ export const GLOSSARY_V2_SECTION_ID = "glossary-v2-names";
 
 /** basis.aliases 的形狀可能由 V3-2 其他工作調整；只取「englishKey → 字串陣列」的部分，其他形狀一律忽略。 */
 function basisAliases(): Record<string, readonly string[]> {
-  const raw: unknown = labels.basis.aliases;
+  const raw: unknown = labels.glossary.aliases;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
   const out: Record<string, readonly string[]> = {};
   for (const [key, value] of Object.entries(raw as Record<string, unknown>)) if (Array.isArray(value)) out[key] = value.filter((item): item is string => typeof item === "string");

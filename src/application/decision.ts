@@ -95,7 +95,7 @@ export function createDecisionSession(dataset: Dataset, snapshot: WorkspaceSnaps
   const baseline = buildScenarioBaseline(summary, dataset.manifest.sales_coverage_confirmed);
   if (channels.length !== 1) {
     baseline.eligible = false;
-    baseline.reasons.unshift({ code: "SINGLE_CHANNEL_REQUIRED", message: labels.ui.decision.singleChannelRequired });
+    baseline.reasons.unshift({ code: "SINGLE_CHANNEL_REQUIRED", message: labels.scenarios.checks.singleChannelRequired });
   }
   const session: DecisionSession = structuredClone({
     schema_version: "decision-v1", scenario_version: SCENARIO_VERSION, metric_version: snapshot.metric_version,

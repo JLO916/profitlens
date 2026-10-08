@@ -63,7 +63,7 @@ test("golden 總覽：其他常用指標下方的損益兩平 MER（本期 3.5 �
   await current.click();
   const dialog = evidenceDialog(page, be.label);
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("heading", { level: 2 })).toHaveText(`${be.label} · ${labels.sections.evidence}`);
+  await expect(dialog.getByRole("heading", { level: 2 })).toHaveText(`${be.label} · ${labels.evidence.sections.evidence}`);
   await expect(dialog.locator(".evidence-body > p.number")).toHaveText(formatMultiple(GOLDEN_BREAKEVEN.current, "L1"));
   await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(formatMultiple(GOLDEN_BREAKEVEN.current, "L3"));
   await expect(dialog.locator(".evidence-formula")).toHaveText(breakevenFormulaLine(golden.current.net_revenue, golden.current.contribution_before_marketing));
@@ -74,10 +74,10 @@ test("golden 總覽：其他常用指標下方的損益兩平 MER（本期 3.5 �
   expect(await definition.locator("p").evaluate(element => element.firstChild?.textContent ?? "")).toBe(be.plain);
   await expect(definition).not.toContainText(metricDefinitions.mer.plain);
   // 來源只有銷售檔與通路費用檔（本期 golden：銷售 4 列、通路費用 2 列），沒有廣告檔。
-  const tabs = dialog.getByRole("group", { name: labels.ui.evidenceDrawer.sourceTabsAria, exact: true }).getByRole("button");
+  const tabs = dialog.getByRole("group", { name: labels.evidence.drawer.sourceTabsAria, exact: true }).getByRole("button");
   await expect(tabs).toHaveText([
-    fill(labels.ui.evidenceDrawer.tabWithCount, { tab: labels.evidence.sourceTabs.sales, n: 4 }),
-    fill(labels.ui.evidenceDrawer.tabWithCount, { tab: labels.evidence.sourceTabs.costs, n: 2 }),
+    fill(labels.evidence.drawer.tabWithCount, { tab: labels.evidence.sourceTabs.sales, n: 4 }),
+    fill(labels.evidence.drawer.tabWithCount, { tab: labels.evidence.sourceTabs.costs, n: 2 }),
   ]);
   await expect(dialog).not.toContainText("ad_spend_daily.csv");
   // 技術細節的系統原值是 12 位小數比率。

@@ -30,9 +30,9 @@ describe("名詞小辭典資料（labels.glossary.terms）", () => {
     expect(isWhitelisted("glossary.terms.2.oldNames.0")).toBe(true);
     expect(isWhitelisted("glossary.terms.2.oldNames")).toBe(true);
     expect(isWhitelisted("glossary.terms.2.definition")).toBe(false);
-    // V3-2c：glossary 分組另外收了指標定義（basis，原 labels.basis）與舊名對照（aliases），這兩塊原本就不屬於小辭典，掃描時排除，範圍與 V3-2b 相同。
+    // V3-2c：glossary 分組另外收了指標定義（basis，v2 的 basis 區段）與舊名對照（aliases），這兩塊原本就不屬於小辭典，掃描時排除，範圍與 V3-2b 相同。
     const dictionary = Object.fromEntries(Object.entries(labels.glossary).filter(([key]) => key !== "basis" && key !== "aliases"));
-    const { metrics } = scanLabels({ glossary: dictionary, whatsNew: labels.whatsNew });
+    const { metrics } = scanLabels({ glossary: dictionary, whatsNew: labels.shell.whatsNew });
     expect(metrics.blacklistSynonym).toBe(0);
     expect(metrics.blacklistJargon).toBe(0);
     expect(metrics.placeholderMalformed).toBe(0);
@@ -114,12 +114,12 @@ describe("名詞小辭典畫面（SSR）", () => {
     expect(labels.glossary.industryRows.find(row => row.ours === "扣廣告後貢獻")?.difference).toContain("不是淨利");
   });
 
-  it("對話框標題取 labels.basis.title，保留 basis-dialog testid，並內含搜尋框", () => {
+  it("對話框標題取 labels.glossary.basis.title，保留 basis-dialog testid，並內含搜尋框", () => {
     const markup = renderToStaticMarkup(createElement(BasisDialog, { open: true, onClose: () => undefined }));
     expect(markup).toContain('data-testid="basis-dialog"');
-    expect(markup).toContain(`>${escape(labels.basis.title)}</h2>`);
+    expect(markup).toContain(`>${escape(labels.glossary.basis.title)}</h2>`);
     expect(markup).toContain('data-testid="glossary-search"');
-    for (const item of labels.basis.items) expect(markup).toContain(escape(item));
+    for (const item of labels.glossary.basis.items) expect(markup).toContain(escape(item));
     expect(renderToStaticMarkup(createElement(BasisDialog, { open: false, onClose: () => undefined }))).toBe("");
   });
 });

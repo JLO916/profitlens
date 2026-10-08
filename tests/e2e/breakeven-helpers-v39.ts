@@ -55,14 +55,14 @@ export const breakevenComparisonNote = (kind: "above" | "below", actualMer: stri
 /** 抽屜公式行：兩個輸入金額是 L3（到分）＋「元」。 */
 export const breakevenFormulaLine = (netRevenue: string, contributionBefore: string) => fill(be.evidenceFormula, { revenue: fill(labels.format.units.yuan, { value: formatAmountL3(netRevenue) }), contribution: fill(labels.format.units.yuan, { value: formatAmountL3(contributionBefore) }) });
 /** 「計算與來源」抽屜：標題「{指標} · 計算與來源」（後半是 sr-only）。 */
-export const evidenceDialog = (page: Page, title: string) => page.getByRole("dialog", { name: `${title} · ${labels.sections.evidence}`, exact: true });
+export const evidenceDialog = (page: Page, title: string) => page.getByRole("dialog", { name: `${title} · ${labels.evidence.sections.evidence}`, exact: true });
 
 /** 開發者驗證頁載入內建資料集（golden／demo），關掉首次保存提示，回到總覽。 */
 export async function loadValidationDataset(page: Page, id: "golden" | "demo") {
   await page.goto("/");
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(id);
-  await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
   await expect(page.getByTestId("kpi-net_revenue")).toBeVisible();
   await dismissSavePrompt(page);
   await navigateTo(page, "overview");
@@ -73,7 +73,7 @@ export async function importFixtureDirectory(page: Page, directory: string) {
   const manifest = JSON.parse(await readFile(resolve(directory, "manifest.json"), "utf8")) as { data_as_of: string };
   await page.goto("/");
   await importViaWizard(page, resolve(directory), { manifest: true });
-  await expect(page.getByTestId("workspace-status")).toContainText(fill(labels.status.ready, { date: manifest.data_as_of }));
+  await expect(page.getByTestId("workspace-status")).toContainText(fill(labels.shell.status.ready, { date: manifest.data_as_of }));
   await dismissSavePrompt(page);
   await navigateTo(page, "overview");
 }
@@ -90,7 +90,7 @@ export async function downloadText(page: Page, button: Locator, expectedName: st
 /** 頂欄「匯出」→ 分析 CSV（profitlens-analysis.csv），讀成以英文 key 為欄名的列。 */
 export async function downloadAnalysisRows(page: Page) {
   const menu = await openDownloads(page);
-  const text = await downloadText(page, menu.getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv");
+  const text = await downloadText(page, menu.getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv");
   await closeDownloads(page);
   return csvRecords(text);
 }
@@ -98,7 +98,7 @@ export async function downloadAnalysisRows(page: Page) {
 /** 頂欄「匯出」→ 一頁摘要 Markdown（profitlens-manager-summary.md，exportManagerSummaryMarkdown）。 */
 export async function downloadSummaryMarkdown(page: Page) {
   const menu = await openDownloads(page);
-  const text = await downloadText(page, menu.getByRole("button", { name: labels.meetingPage.menuMarkdown, exact: true }), "profitlens-manager-summary.md");
+  const text = await downloadText(page, menu.getByRole("button", { name: labels.meeting.page.menuMarkdown, exact: true }), "profitlens-manager-summary.md");
   await closeDownloads(page);
   return text;
 }
@@ -110,14 +110,14 @@ export const markdownBreakevenVersion = `- ${be.technicalVersion}：${BREAKEVEN_
 /** Markdown 的「## 其他常用指標」段（到下一個 ## 為止）的各行。 */
 export function markdownAssistSection(markdown: string): string[] {
   const lines = markdown.split("\n");
-  const start = lines.indexOf(`## ${labels.sections.assistKpis}`);
+  const start = lines.indexOf(`## ${labels.overview.sections.assistKpis}`);
   expect(start, "Markdown 要有其他常用指標段").toBeGreaterThanOrEqual(0);
   const end = lines.findIndex((line, index) => index > start && line.startsWith("## "));
   return lines.slice(start + 1, end === -1 ? undefined : end);
 }
 /** Markdown 技術細節段（「## 技術細節」之後）的各行。 */
 export function markdownTechnicalLines(markdown: string): string[] {
-  const parts = markdown.split(`## ${labels.sections.technicalDetails}`);
+  const parts = markdown.split(`## ${labels.evidence.sections.technicalDetails}`);
   expect(parts.length, "Markdown 要有技術細節段").toBeGreaterThanOrEqual(2);
   return parts.slice(1).join("").split("\n");
 }

@@ -17,9 +17,9 @@ export function PageHeader({ title, description, isData, showLoadDemo, onLoadDem
     <div className="page-title-addon" id="page-title-addon" data-testid="page-title-addon">{titleAddon}</div>
     {/* V3-8（§7.7.1 第 1 點）：已有資料時「匯入資料」主要在前、「載入示範資料」次要在後；沒有資料時對調（主要按鈕永遠在最前）。page-import 永遠在「匯入資料」上。 */}
     {isData && <div className="load-controls" hidden={importing || undefined}>
-      {!hasData && showLoadDemo && <button type="button" className="ui-btn ui-btn-primary" onClick={onLoadDemo}>{labels.buttons.loadDemo}</button>}
-      <button type="button" className={`ui-btn ${hasData ? "ui-btn-primary" : "ui-btn-secondary"}`} data-testid="page-import" onClick={onImport}><ShellIcon name="import" size={16} />{labels.buttons.importData}</button>
-      {hasData && showLoadDemo && <button type="button" className="ui-btn ui-btn-secondary" onClick={onLoadDemo}>{labels.buttons.loadDemo}</button>}
+      {!hasData && showLoadDemo && <button type="button" className="ui-btn ui-btn-primary" onClick={onLoadDemo}>{labels.shell.buttons.loadDemo}</button>}
+      <button type="button" className={`ui-btn ${hasData ? "ui-btn-primary" : "ui-btn-secondary"}`} data-testid="page-import" onClick={onImport}><ShellIcon name="import" size={16} />{labels.shell.buttons.importData}</button>
+      {hasData && showLoadDemo && <button type="button" className="ui-btn ui-btn-secondary" onClick={onLoadDemo}>{labels.shell.buttons.loadDemo}</button>}
     </div>}
     {presentToggle && <div className="page-present">{presentToggle}</div>}
     <div className="page-actions" id="page-actions" data-testid="page-actions">{actions}</div>
@@ -28,5 +28,5 @@ export function PageHeader({ title, description, isData, showLoadDemo, onLoadDem
 
 /** V3-3 A1 頁尾（§7.0）：「扣廣告後貢獻不含固定費與稅。［指標定義］ · 新台幣 · 台北時間」，正式站再加使用分析揭露（D9）。 */
 export function ShellFooter({ analytics, onBasis }: { analytics: boolean; onBasis: () => void }) {
-  return <footer className="main-footer"><p>{labels.basis.footer}<button type="button" className="ui-btn ui-btn-text footer-basis" onClick={onBasis}>{labels.buttons.basis}</button><span aria-hidden="true"> · </span>{labels.ui.dashboard.sidebarFooter}</p>{analytics && <p className="analytics-note" data-testid="analytics-note">{labels.relaunch.analyticsNote}</p>}</footer>;
+  return <footer className="main-footer"><p>{labels.glossary.basis.footer}<button type="button" className="ui-btn ui-btn-text footer-basis" onClick={onBasis}>{labels.shell.buttons.basis}</button><span aria-hidden="true"> · </span>{labels.shell.sidebar.sidebarFooter}</p>{analytics && <p className="analytics-note" data-testid="analytics-note">{labels.relaunch.analyticsNote}</p>}</footer>;
 }

@@ -61,7 +61,7 @@ export function normalizeMarkdown(text: string): string {
  */
 const isPnlSheet = (sheet: ExcelWorkbook["sheets"][number]) => sheet.name === labels.exports.variantsV3.pnlSheet;
 function withoutAdDecisionColumn(sheet: ExcelWorkbook["sheets"][number]): ExcelWorkbook["sheets"][number] {
-  const at = sheet.name === labels.excelExport.sheets.actions ? sheet.header.indexOf(labels.actions.adDecisionV3.csvColumn) : -1;
+  const at = sheet.name === labels.exports.excel.sheets.actions ? sheet.header.indexOf(labels.actions.adDecisionV3.csvColumn) : -1;
   if (at < 0) return sheet;
   const drop = <T,>(list: readonly T[]) => list.filter((_, index) => index !== at);
   return { ...sheet, header: drop(sheet.header), rows: sheet.rows.map(drop), ...(sheet.formats ? { formats: drop(sheet.formats) } : {}) };

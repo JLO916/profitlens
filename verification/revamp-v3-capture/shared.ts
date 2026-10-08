@@ -18,11 +18,11 @@ export { navigateTo };
 export async function loadDemo(page: Page) {
   await page.clock.setFixedTime(FIXED_NOW);
   await page.goto("/");
-  await page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }).first().click();
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready.replace("{date}", ""));
+  await page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }).first().click();
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.shell.status.ready.replace("{date}", ""));
   const prompt = page.getByTestId("local-save-prompt");
   await expect(prompt).toBeVisible();
-  await prompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
+  await prompt.getByRole("button", { name: labels.storage.autoSave.decline, exact: true }).click();
   await expect(prompt).toHaveCount(0);
   await expect(page.getByTestId("top-three")).toBeVisible();
   // V3-4a：KPI 帶（C1）取代五張卡；五格仍帶 kpi-* testid。
@@ -47,8 +47,8 @@ export async function calculateKeepPreset(page: Page) {
   const consent = card.getByTestId("scenario-accept");
   if (await consent.count()) await consent.click();
   await expect(card.getByTestId("scenario-acknowledged")).toBeVisible();
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toBeVisible();
 }
 
-export const evidenceDrawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+export const evidenceDrawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });

@@ -82,7 +82,7 @@ describe("R6-1 backup v4 carries meeting_history (additive, same version string)
     const text = await exportWorkspaceBackup(backup);
     const wire = JSON.parse(text);
     expect(wire.payload.meeting_history[1].follow_up).toEqual(JSON.parse(JSON.stringify(second.follow_up)));
-    expect(wire.payload.meeting_history[1].source_fixed.basis).toEqual([...labels.basis.items]);
+    expect(wire.payload.meeting_history[1].source_fixed.basis).toEqual([...labels.glossary.basis.items]);
     expect(wire.payload.review_session.created_at).toBe("2026-10-10T01:00:00.000Z");
     const restored = await restoreWorkspaceBackup(text);
     expect(restored.meeting_history[0].follow_up.kind).toBe("none");
@@ -91,11 +91,11 @@ describe("R6-1 backup v4 carries meeting_history (additive, same version string)
     expect(restored.review_session?.created_at).toBe("2026-10-10T01:00:00.000Z");
     // ④：上次會議名稱、上次決議、上次待辦「進行中」→ 第二次會議時「已完成」。
     const markdown = exportMeetingMarkdown(restored.meeting_history[1]);
-    expect(markdown).toContain(fill(labels.meetingRecord.mdLastMeeting, { name: "十月第一週", date: "2026-10-03" }));
-    expect(markdown).toContain(fill(labels.meetingRecord.mdFollowUpRow, { problem: first.agenda.pinned_actions[0].problem, last: labels.actions.statuses.in_progress, current: labels.actions.statuses.done, updated: fill(labels.meetingRecord.statusUpdatedAt, { date: "2026-10-08" }) }));
+    expect(markdown).toContain(fill(labels.meeting.record.mdLastMeeting, { name: "十月第一週", date: "2026-10-03" }));
+    expect(markdown).toContain(fill(labels.meeting.record.mdFollowUpRow, { problem: first.agenda.pinned_actions[0].problem, last: labels.actions.form.statuses.in_progress, current: labels.actions.form.statuses.done, updated: fill(labels.meeting.record.statusUpdatedAt, { date: "2026-10-08" }) }));
     // V3-2b：會議紀錄 Markdown 主文是 L2 整數元。
-    expect(markdown).toContain(`| ${labels.metrics.contribution_after_marketing.label} | ${formatAmountL2("255.00")} | ${formatAmountL2("255.00")} | ${formatSignedDelta("0.00", "L2")} |`);
-    expect(markdown).not.toContain(labels.meetingRecord.noLastMeeting);
+    expect(markdown).toContain(`| ${labels.metrics.contribution_after_marketing.headline} | ${formatAmountL2("255.00")} | ${formatAmountL2("255.00")} | ${formatSignedDelta("0.00", "L2")} |`);
+    expect(markdown).not.toContain(labels.meeting.record.noLastMeeting);
     // 會議稿沒有建立時間（舊資料）也照常備份與還原。
     const { created_at: _created, ...legacyReview } = backup.review_session!;
     void _created;

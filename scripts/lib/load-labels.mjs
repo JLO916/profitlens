@@ -7,8 +7,8 @@ import ts from "typescript";
 export const LABELS_SOURCE = "src/i18n/labels.zh-TW.ts";
 
 /**
- * 載入整個 labels 模組（labels、LABEL_GROUPS、LEGACY_SECTIONS、legacyAliases…）。
- * V3-2c 起掃描器要用 LABEL_GROUPS／legacyAliases 略過 v2 alias，見 scripts/lib/copy-scan.mjs labelScope。
+ * 載入整個 labels 模組（labels、LABEL_GROUPS…）。
+ * 掃描器用 LABEL_GROUPS 確認 labels 頂層沒有多出別的區段（V3-10 已移除 v2 舊鍵 alias），見 scripts/lib/copy-scan.mjs labelScope。
  * @param {{ root?: string }} [options]
  */
 export async function loadLabelsModule({ root = process.cwd() } = {}) {

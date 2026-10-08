@@ -75,7 +75,7 @@ export function breakevenMer(summary: Summary): BreakevenMer {
   const n = cents(net), c = cents(before);
   if (n === null || c === null) {
     const missing = reasons(n === null ? net.reason_codes : [], c === null ? before.reason_codes : []);
-    return { ...base, value: null, display: labels.status.missing, status: "missing", reason_codes: missing.length ? missing : ["MISSING_VALUE"], comparison: "not_applicable" };
+    return { ...base, value: null, display: labels.shell.status.missing, status: "missing", reason_codes: missing.length ? missing : ["MISSING_VALUE"], comparison: "not_applicable" };
   }
   const notApplicable: string[] = [];
   if (n === 0n) notApplicable.push("ZERO_NET_REVENUE");
@@ -105,7 +105,7 @@ export function breakevenNote(item: BreakevenMer): string {
 
 /** F12「計算與來源」抽屜的公式行：兩個輸入帶 L3 金額（到分、U+2212、含單位）；缺值寫「資料待補」。 */
 export function breakevenEvidenceFormula(item: BreakevenMer): string {
-  const amount = (metric: Metric) => metric.value === null ? labels.status.missing : fill(labels.format.units.yuan, { value: formatAmountL3(metric.value) });
+  const amount = (metric: Metric) => metric.value === null ? labels.shell.status.missing : fill(labels.format.units.yuan, { value: formatAmountL3(metric.value) });
   return fill(copy.evidenceFormula, { revenue: amount(item.inputs.net_revenue), contribution: amount(item.inputs.contribution_before_marketing) });
 }
 

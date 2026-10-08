@@ -7,7 +7,7 @@ import { isWhitelisted, l1ClauseLengths, scanLabels, type CopyScanMetrics } from
 
 // V3-0 護欄（PRD §5.4、§8.4）：只掃 labels 的字串值，不渲染頁面。量測與 scripts/ui-audit.mjs 共用 scripts/lib/copy-scan.mjs。
 // 白名單：鍵名為 technical（或以 technical 開頭／Technical 結尾）的子樹、glossary.aliases（v2 basis.aliases）。
-// V3-2c 起只掃新分組（LABEL_GROUPS），略過 v2 舊鍵 alias，同一個字串只算一次（scripts/lib/copy-scan.mjs labelScope）。
+// V3-2c 起只掃新分組（LABEL_GROUPS），同一個字串只算一次；V3-10 移除 v2 舊鍵 alias 後，labels 頂層就是 LABEL_GROUPS（scripts/lib/copy-scan.mjs labelScope 會擋下其他區段）。
 // 頁面層的否定句計數由 tests/copy-density.test.ts 負責，這裡不重複（§5.4）。
 // L1 子句長度：PRD 沒有把「頁面、區塊、列的標題」對應到 labels 鍵，V3-0 先限定 rules.*.title、sections.*、nav.*.label、buttons.*（V3-2c 新位置 rules.*.headline、<分組>.sections.*、shell.nav.*.headline、<分組>.buttons.*）。
 
@@ -41,22 +41,24 @@ describe("copy-style 棘輪（labels 值）", () => {
 });
 
 describe("copy-scan 口徑（合成輸入）", () => {
-  it("technical 子樹與 glossary.aliases／basis.aliases 列入白名單，其他不列", () => {
-    expect(isWhitelisted("pptxExport.technical")).toBe(true);
-    expect(isWhitelisted("metrics.mer.formulaTechnical")).toBe(true);
-    expect(isWhitelisted("basis.aliases.contribution_after_marketing.0")).toBe(true);
+  it("technical 子樹與 glossary.aliases 列入白名單，其他不列", () => {
+    expect(isWhitelisted("exports.pptx.technical")).toBe(true);
+    expect(isWhitelisted("data.panel.meta.formatVersionTechnical")).toBe(true);
+    expect(isWhitelisted("assist.technicalVersion")).toBe(true);
     expect(isWhitelisted("glossary.aliases.contribution_after_marketing.0")).toBe(true);
     expect(isWhitelisted("metrics.mer.technical.formula")).toBe(true);
-    expect(isWhitelisted("basis.items.1")).toBe(false);
+    expect(isWhitelisted("glossary.basis.items.1")).toBe(false);
+    // V3-10：v2 舊鍵 basis.aliases 已移除，不再列入白名單。
+    expect(isWhitelisted("basis.aliases.contribution_after_marketing.0")).toBe(false);
   });
 
   it("逐項計數：注意：、箭頭、圈數字、驚嘆號、全大寫、｜、黑名單、占位符、L1 子句", () => {
     const sample = {
       a: "注意：資料到 {date}", b: "看 3 項資料問題 →", c: "① 兩個關鍵差額", d: "立即體驗！", e: "CHANNEL MIX", f: "資料版本｜{hash}",
       g: "這是數據變化", h: "缺 {name", i: { title: "{n} 筆", titleAria: "{count} 筆" },
-      technical: "注意：→ ｜ ① ！", basis: { aliases: { x: ["數據"] } },
-      sections: { long: "這是一個超過十四個中文字的很長很長的區塊標題，第二句短" },
-      demoChannelAlias: { DTC: "官網 · DTC" },
+      technical: "注意：→ ｜ ① ！", glossary: { aliases: { x: ["數據"] } },
+      overview: { sections: { long: "這是一個超過十四個中文字的很長很長的區塊標題，第二句短" } },
+      data: { demoChannelAlias: { DTC: "官網 · DTC" } },
     };
     const { metrics } = scanLabels(sample);
     expect(metrics).toMatchObject({ noticePrefix: 1, arrows: 1, circledNumbers: 1, exclamations: 1, allCaps: 1, pipes: 1, blacklistSynonym: 2, blacklistTone: 1, placeholderMalformed: 1, placeholderVariantMismatch: 1, l1ClauseOverLimit: 1 });

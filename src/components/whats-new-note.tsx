@@ -26,7 +26,7 @@ export function useWhatsNew() {
 /** 頁首下方一行（40px）：說明文字、「查看名詞對照」連結（開啟指標定義並捲到 v2 舊名）、關閉。 */
 export function WhatsNewNote({ onOpenGlossary, onDismiss }: { onOpenGlossary: () => void; onDismiss: () => void }) {
   return <div className="whats-new" role="status" data-testid="whats-new">
-    <p>{whatsNewText()} <button type="button" className="text-button" aria-haspopup="dialog" onClick={onOpenGlossary}>{labels.whatsNew.link}</button></p>
-    <button type="button" className="button quiet whats-new-dismiss" aria-label={labels.whatsNew.dismissAria} onClick={() => { onDismiss(); document.getElementById("main-content")?.focus({ preventScroll: true }); }}>{labels.whatsNew.dismiss}</button>
+    <p>{whatsNewText()} <button type="button" className="text-button" aria-haspopup="dialog" onClick={onOpenGlossary}>{labels.shell.whatsNew.link}</button></p>
+    <button type="button" className="button quiet whats-new-dismiss" aria-label={labels.shell.whatsNew.dismissAria} onClick={() => { onDismiss(); document.getElementById("main-content")?.focus({ preventScroll: true }); }}>{labels.shell.whatsNew.dismiss}</button>
   </div>;
 }

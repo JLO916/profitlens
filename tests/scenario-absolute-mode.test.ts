@@ -7,7 +7,7 @@ import { ABSOLUTE_FIELDS, SCENARIO_INPUT_BOUNDS, absoluteAvailability, absoluteC
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
 
-const copy = labels.scenarioPresets;
+const copy = labels.scenarios.presets;
 const ctx = (patch: Partial<AbsoluteContext> = {}): AbsoluteContext => ({ units_sold: 8n, discount_rate: "0.100000000000", ad_spend: "1000.00", ...patch });
 const pct = (value: string) => fill(copy.absolute.equivalentPct, { value });
 const points = (value: string) => fill(copy.absolute.equivalentPoints, { value });

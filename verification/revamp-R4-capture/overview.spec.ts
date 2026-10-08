@@ -26,7 +26,7 @@ async function shoot(page: Page, dir: string, name: string) {
   await page.screenshot({ path: `${dir}/${name}-viewport.png` });
   await page.screenshot({ path: `${dir}/${name}-full.jpg`, fullPage: true, type: "jpeg", quality: 70 });
 }
-const preset = (page: Page, name: string) => page.getByRole("group", { name: labels.sections.presetGroup }).getByRole("button", { name, exact: true });
+const preset = (page: Page, name: string) => page.getByRole("group", { name: labels.shell.sections.presetGroup }).getByRole("button", { name, exact: true });
 
 test("R4 截圖", async ({ page }, testInfo) => {
   const dir = resolve("verification/revamp-R4");
@@ -40,20 +40,20 @@ test("R4 截圖", async ({ page }, testInfo) => {
   await chooseBasis(page, "exclusive");
   await confirmAndCheck(page, "valid");
   await commitWizard(page);
-  await preset(page, labels.periods.presets.monthVsPrev).click();
-  await page.locator("form.period-form").getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await preset(page, labels.shell.periods.presets.monthVsPrev).click();
+  await page.locator("form.period-form").getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
   await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-value")).toHaveText("6,200.00");
-  await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();
+  await page.getByRole("button", { name: labels.shell.nav.data.headline, exact: true }).click();
   await page.getByLabel(labels.targets.upload, { exact: true }).setInputFiles({ name: "targets.csv", mimeType: "text/csv", buffer: Buffer.from("period_start,period_end,channel,metric,target\n2026-08-01,2026-08-31,ALL,net_revenue,8000.00\n2026-08-01,2026-08-31,ALL,contribution_after_marketing,4000.00\n2026-07-01,2026-07-31,ALL,gross_profit,5000.00\n") });
   await page.getByLabel(labels.events.upload, { exact: true }).setInputFiles({ name: "events.csv", mimeType: "text/csv", buffer: Buffer.from("start,end,label\n2026-08-10,2026-08-16,夏季特賣\n2026-07-01,2026-07-07,七月慶\n") });
   await expect(page.getByTestId("events-table").locator("tbody tr")).toHaveCount(2);
   await shoot(page, dir, `3-data-targets-events-${suffix}`);
-  await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
+  await page.getByRole("button", { name: labels.shell.nav.overview.headline, exact: true }).click();
   await expect(page.getByTestId("kpi-target-net_revenue")).toBeVisible();
   await shoot(page, dir, `1-overview-assist-targets-${suffix}`);
-  await preset(page, labels.periods.presets.yoy).click();
+  await preset(page, labels.shell.periods.presets.yoy).click();
   await expect(page.locator("#previous-start")).toHaveValue("2025-08-01");
-  await page.locator("form.period-form").getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await page.locator("form.period-form").getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
   await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-previous")).toContainText("3,100.00");
   await shoot(page, dir, `2-overview-yoy-${suffix}`);
 });

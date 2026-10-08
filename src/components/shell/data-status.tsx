@@ -49,10 +49,10 @@ export function DataStatus({ state, data, statusText, statusDetail, publicDemo, 
   }, [open]);
 
   const date = data ? formatDateL1(data.dataAsOf, { anchor: data.dataAsOf }) : "";
-  const source = data?.local ? labels.status.local : labels.status.demo;
+  const source = data?.local ? labels.shell.status.local : labels.shell.status.demo;
   const buttonText = state === "ready" && data ? fill(copy.button, { source, date })
-    : state === "partial" && data ? fill(copy.button, { source: labels.status.partial, date })
-      : labels.status[state];
+    : state === "partial" && data ? fill(copy.button, { source: labels.shell.status.partial, date })
+      : labels.shell.status[state];
   const dot = state === "loading" ? "loading" : state;
   // §7.0 範例「資料到：2026-08-24（85 天）」：天數從資料起日算到「資料到」那天（含頭尾），與按鈕上的「資料到」同一個日期。
   const days = data ? periodDays(data.coverageStart, data.dataAsOf) : null;
@@ -64,14 +64,14 @@ export function DataStatus({ state, data, statusText, statusDetail, publicDemo, 
     {/* §6.3 #9：v2 的 role=status 狀態列改成 sr-only 鏡像（文字與 v2 相同），按鈕本身只放精簡文字。 */}
     <span className="sr-only" role="status" aria-live="polite" data-testid="workspace-status">{statusText}{statusDetail && <> · {statusDetail}</>}</span>
     <div id="data-status-popover" className="ui-popover data-status-popover" role="dialog" aria-label={copy.popoverAria} data-testid="data-status-popover" hidden={!open}>
-      <p className="data-status-title">{data ? data.local ? copy.localTitle : copy.demoTitle : labels.status.empty}</p>
-      {data && <p className="data-status-note">{data.local ? labels.ui.dashboard.sidebarNote.local : labels.ui.dashboard.sidebarNote.demo}</p>}
+      <p className="data-status-title">{data ? data.local ? copy.localTitle : copy.demoTitle : labels.shell.status.empty}</p>
+      {data && <p className="data-status-note">{data.local ? labels.shell.sidebar.sidebarNote.local : labels.shell.sidebar.sidebarNote.demo}</p>}
       {data && <dl className="data-status-facts">
         <div><dt>{copy.dataset}</dt><dd>{data.datasetName}</dd></div>
         <div><dt>{copy.dataAsOf}</dt><dd>{days === null ? data.dataAsOf : fill(copy.dataAsOfValue, { date: data.dataAsOf, days })}</dd></div>
         <div><dt>{copy.issues}</dt><dd>{fill(copy.issuesValue, { n: data.issueCount })}<button type="button" className="ui-btn ui-btn-text" data-testid="data-status-go-data" onClick={() => { close(); onGoData(); }}>{copy.goToData}</button></dd></div>
       </dl>}
-      {publicDemo && <p className="data-status-note">{labels.ui.dashboard.aiDetail.publicDemo}</p>}
+      {publicDemo && <p className="data-status-note">{labels.shell.topbar.aiDetail.publicDemo}</p>}
       <button type="button" className="ui-btn ui-btn-secondary data-status-import" data-testid="data-status-import" onClick={() => { close(); onImport(); }}><ShellIcon name="import" size={16} />{copy.importNew}</button>
     </div>
   </div>;

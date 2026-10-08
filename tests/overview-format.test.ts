@@ -41,13 +41,13 @@ describe("V3-2b overview KPI band uses L1 (萬／億, U+2212, growth only when p
       const body = card(html, `kpi-${name}`);
       const shown = formatMetric(name, current, "L1"), previousShown = formatMetric(name, before, "L1");
       expect(body, name).toContain(`<div class="kpi-value">${link(fill(band.valueAria, { metric: label, value: shown }), shown)}</div>`);
-      expect(body, name).toContain(`<p class="kpi-prev">${labels.periods.previous} ${link(fill(band.previousAria, { metric: label, value: previousShown }), previousShown)}</p>`);
+      expect(body, name).toContain(`<p class="kpi-prev">${labels.shell.periods.previous} ${link(fill(band.previousAria, { metric: label, value: previousShown }), previousShown)}</p>`);
       const delta = compareMoney(before, current).absolute_change.value;
       const deltaText = fill(band.deltaLine, { word: deltaWord(name, delta, { previous: before.value, layer: "L1" }), amount: formatHeadlineAmount(delta) });
       expect(body, name).toContain(`<span class="dl-long">${band.vsPrevious}</span>${link(fill(band.deltaAria, { metric: label, delta: deltaText }), deltaText)}`);
       const growth = formatGrowth(current.value, before.value, "L1");
       if (growth === null) expect(body, name).not.toContain('class="pct"');
-      else expect(body, name).toContain(`<span class="pct">${fill(labels.ui.overview.growthInline, { value: growth })}</span>`);
+      else expect(body, name).toContain(`<span class="pct">${fill(labels.overview.page.growthInline, { value: growth })}</span>`);
       // 只有不利上色（D-V3-7＝A），依 favorableDirection；有利或持平是無色的 positive。
       expect(body, name).toContain(`<div class="kpi-delta ${toneClass(deltaTone(name, delta, "L1"))}">`);
     }
@@ -113,7 +113,7 @@ describe("V3-2b overview tables: period totals L2; channel mix L2 (bridge L3 mov
     // 單位只在緊湊表表頭寫一次（「本期（元）」）；KPI 帶右上的單位說明不重複出現在本區塊。
     expect(panel.split(copy.table.current)).toHaveLength(2);
     expect(panel).toContain(`<th scope="col" class="num">${copy.table.current}</th>`);
-    expect(panel).not.toContain(labels.ui.overview.kpiHint);
+    expect(panel).not.toContain(labels.overview.page.kpiHint);
     expect(panel).not.toContain("TWD");
     const kv = panel.slice(panel.indexOf('<table class="kv channel-kv"'), panel.indexOf("</table>", panel.indexOf('<table class="kv channel-kv"')));
     for (const [channel, row] of Object.entries(snap.report.current.channels)) {
@@ -129,8 +129,8 @@ describe("V3-2b channel wide table (健檢、會議摘要) is L2", () => {
   it("integer yuan, signed deltas, unit once in the caption, only unfavourable deltas coloured", async () => {
     const snap = await snapshot();
     const summary = buildManagerSummary(snap);
-    const html = renderToStaticMarkup(createElement(ChannelWideTable, { summary, onEvidence: noop, ariaLabel: labels.sections.channelTableAria, caption: labels.sections.channelTableCaption }));
-    expect(html).toContain(`<caption>${fill(labels.ui.channelTable.unitCaption, { caption: labels.sections.channelTableCaption })}</caption>`);
+    const html = renderToStaticMarkup(createElement(ChannelWideTable, { summary, onEvidence: noop, ariaLabel: labels.overview.sections.channelTableAria, caption: labels.overview.sections.channelTableCaption }));
+    expect(html).toContain(`<caption>${fill(labels.overview.channelTable.unitCaption, { caption: labels.overview.sections.channelTableCaption })}</caption>`);
     for (const row of summary.channels) for (const metric of [row.revenue, row.contribution]) {
       expect(html).toContain(`>${formatAmountL2(metric.evidence.previous.metric.value)}</button>`);
       expect(html).toContain(`>${formatAmountL2(metric.evidence.current.metric.value)}</button>`);

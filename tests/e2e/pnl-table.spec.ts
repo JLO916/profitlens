@@ -25,16 +25,16 @@ const REFUND_ONLY_ZERO_ROWS = ["gross_sales", "discounts", "platform_fees", "pay
 const RESULT_METRIC = "contribution_after_marketing";
 const resultLabel = metricDefinitions[RESULT_METRIC].label;
 const dialogOf = (page: Page) => page.locator("dialog.evidence-drawer");
-const yuan = (value: string) => fill(labels.units.yuan, { value: formatAmountL3(value) });
+const yuan = (value: string) => fill(labels.format.units.yuan, { value: formatAmountL3(value) });
 /** 抽屜精確值行（「{value} 元」）→ 到分的 ASCII 十進位字串，交回 formatAmountL2 與格子比對。 */
 function preciseToDecimal(text: string): string {
-  const [prefix, suffix] = labels.units.yuan.split("{value}");
+  const [prefix, suffix] = labels.format.units.yuan.split("{value}");
   return text.trim().slice(prefix.length, text.trim().length - suffix.length).replaceAll(",", "").replaceAll(MINUS, "-");
 }
 
 async function loadDemo(page: Page) {
   await page.goto("/");
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(formatAmountL1(DEMO_RESULT));
   await expect(page.getByTestId("local-save-prompt")).toBeVisible();
   await dismissSavePrompt(page);

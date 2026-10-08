@@ -128,9 +128,9 @@ describe("PL-02 explicit period comparison contract", () => {
   it("AI catalog labels full-month totals and rejects relabeling them as daily facts", async () => {
     const payload = prepareAiSnapshot((await monthlySnapshot()).snapshot, 1).payload;
     const item = observationCatalog(payload).find(entry => entry.kind === "value")!;
-    // R2：整月合計提醒改由 labels.ui.grounding.calendarMonthNote 供字，仍須出現在每則整月觀察裡。
-    expect(labels.ui.grounding.calendarMonthNote).not.toBe("");
-    expect(item.observation).toContain(labels.ui.grounding.calendarMonthNote);
+    // R2：整月合計提醒改由 labels.shell.ai.grounding.calendarMonthNote 供字，仍須出現在每則整月觀察裡。
+    expect(labels.shell.ai.grounding.calendarMonthNote).not.toBe("");
+    expect(item.observation).toContain(labels.shell.ai.grounding.calendarMonthNote);
     const output = {
       snapshot_id: payload.snapshot_id,
       insights: [{ fact_ids: item.fact_ids, observation: item.observation.replace("所選通路合計", "所選通路日均"), hypotheses: ["待驗證假說：來源時點可能不同。"], recommended_action: "核對來源帳務。", owner_role: "營運", verification_metric: "商品淨營收", stop_condition: "資料口徑不一致則停止。", additional_data_needed: [], limitations: ["不是因果分析。"] }],

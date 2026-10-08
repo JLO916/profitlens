@@ -19,42 +19,42 @@ const test = base.extend<{ audit: string[] }>({
 });
 
 /** R2: every visible string comes from the label dictionary; compose the same way the panel does. */
-const panel = labels.ui.productComparisonPanel;
-const validation = labels.ui.dashboard.validation;
+const panel = labels.products.comparison;
+const validation = labels.shell.devValidation.validation;
 /** 「商品毛利差額」= metric label + change suffix, as product-comparison-panel.tsx's changeLabel(). */
-const grossProfitChange = `${labels.metrics.gross_profit.label}${labels.csvSuffix.change}`;
+const grossProfitChange = `${labels.metrics.gross_profit.headline}${labels.exports.csv.suffix.change}`;
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /**
  * V3-2b（§7.8、§8.5）：抽屜標題下的大數字是 L1（差額帶號「−55 元」），下一行 evidence-precise-value 是到分的精確值「−55.00 元」；
  * 組成項目一律 L3 到分、不帶單位（單位在小標「組成（元）」）。
  */
 const drawerHeadlineDelta = (delta: string) => formatSignedDelta(delta, "L1");
-const drawerPreciseDelta = (delta: string) => fill(labels.units.yuan, { value: formatSignedDelta(delta, "L3") });
+const drawerPreciseDelta = (delta: string) => fill(labels.format.units.yuan, { value: formatSignedDelta(delta, "L3") });
 /** V3-2b：商品表與小表是 L2——金額整數元（單位只在表頭「（元）」）、差額帶正負號（U+2212）、毛利率一位小數。 */
 const deltaL2 = (value: string) => formatSignedDelta(value, "L2");
 /** 毛利率 = 毛利 ÷ 淨營收（golden 手算的分子、分母；顯示取位交給 formatRateL2）。 */
 const marginL2 = (grossProfit: string, netRevenue: string) => formatRateL2(String(Number(grossProfit) / Number(netRevenue)));
 /** V3-2a：狀態列「資料到 {date}」— 以模板組 RegExp，{date} 對應 YYYY-MM-DD（各驗證資料集的 data_as_of 不同）。 */
-const readyRe = escape(labels.status.ready).replace(escape("{date}"), "\\d{4}-\\d{2}-\\d{2}");
+const readyRe = escape(labels.shell.status.ready).replace(escape("{date}"), "\\d{4}-\\d{2}-\\d{2}");
 /** Evidence dialog is titled `${title}｜怎麼算的`; match by its suffix. */
-const evidenceDialog = new RegExp(`${escape(labels.sections.evidence)}$`);
+const evidenceDialog = new RegExp(`${escape(labels.evidence.sections.evidence)}$`);
 /** Two-period delta trigger `查看 {channel} {sku} {label}兩期怎麼算的，{value}`, matched from {label} onward so channel/sku stay open. */
 const deltaTrigger = (value: string) => new RegExp(`${escape(fill(panel.deltaEvidenceAria.slice(panel.deltaEvidenceAria.indexOf("{label}")), { label: grossProfitChange, value }))}$`);
 /** R2 evidence drawer lists source rows per file in tabs labelled `${sourceTabs[file]}（count）`; switch before asserting rows from that file. */
 const sourceTab = (dialog: ReturnType<Page["getByRole"]>, file: keyof typeof labels.evidence.sourceTabs) => dialog.getByRole("button", { name: new RegExp(`^${escape(labels.evidence.sourceTabs[file])}（\\d+）$`) });
 /** R5-6（02 §5）：全表與小表的欄名，由 labels 依 product-comparison-panel.tsx 的組字方式組出（期間短名＋指標短名／差額後綴）。 */
-const highlight = labels.productHighlights;
-const current = (label: string) => `${labels.periods.current}${label}`;
-const previous = (label: string) => `${labels.periods.previous}${label}`;
-const netRevenueChange = `${labels.metrics.net_revenue.label}${labels.csvSuffix.change}`;
+const highlight = labels.products.highlights;
+const current = (label: string) => `${labels.shell.periods.current}${label}`;
+const previous = (label: string) => `${labels.shell.periods.previous}${label}`;
+const netRevenueChange = `${labels.metrics.net_revenue.headline}${labels.exports.csv.suffix.change}`;
 const unitsLabel = labels.assist.items.units_sold.label;
-/** V3-2b（§8.5 規則 5）：金額欄的表頭標一次「（元）」（labels.units.yuanColumn），比率與件數欄不標。 */
-const yuan = (label: string) => fill(labels.units.yuanColumn, { label });
+/** V3-2b（§8.5 規則 5）：金額欄的表頭標一次「（元）」（labels.format.units.yuanColumn），比率與件數欄不標。 */
+const yuan = (label: string) => fill(labels.format.units.yuanColumn, { label });
 /** 通路｜SKU｜品類｜本期售出件數｜本期淨營收｜本期商品毛利｜本期毛利率｜商品毛利差額｜淨營收差額｜上期淨營收｜上期商品毛利｜資料狀態 */
 const mainColumns = [
-  labels.csvColumns.channel, "SKU", labels.csvColumns.category, current(unitsLabel),
+  labels.exports.csv.columns.channel, "SKU", labels.exports.csv.columns.category, current(unitsLabel),
   yuan(current(labels.metrics.net_revenue.short)), yuan(current(labels.metrics.gross_profit.short)), current(labels.metrics.gross_margin.short),
-  yuan(grossProfitChange), yuan(netRevenueChange), yuan(previous(labels.metrics.net_revenue.label)), yuan(previous(labels.metrics.gross_profit.label)), highlight.columns.dataStatus,
+  yuan(grossProfitChange), yuan(netRevenueChange), yuan(previous(labels.metrics.net_revenue.headline)), yuan(previous(labels.metrics.gross_profit.headline)), highlight.columns.dataStatus,
 ];
 /** 「更多欄位」：本期商品成本／折扣／退款，上期售出件數／商品成本／毛利率／折扣／退款。 */
 const moreColumns = [
@@ -85,7 +85,7 @@ async function load(page: Page, id = "golden") {
   await openValidation(page);
   await page.getByLabel(validation.datasetLabel, { exact: true }).selectOption(id);
   await clickReplacing(page, page.getByRole("button", { name: validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${readyRe}|${escape(labels.status.partial)}`));
+  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${readyRe}|${escape(labels.shell.status.partial)}`));
   // R6：載入資料後右下角（手機底部滿版）出現非 modal 的首次保存提示，會擋住頁尾附近的按鈕；本流程不測自動保存，先按「先不要」。
   await dismissSavePrompt(page);
   // V3-3：切頁走 navigateTo（桌機側欄；手機底部分頁列「更多」→ 商品毛利）。
@@ -129,7 +129,7 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await load(page);
   const table = page.getByTestId("product-table");
   // V3-5 頁首：描述（取代 v2 eyebrow／「元，未稅」）、範圍副標（golden 本期 8/2、上期 8/1，全部通路，金額未稅）、筆數句。
-  await expect(page.getByRole("heading", { level: 1, name: labels.nav.products.label, exact: true }).locator("xpath=following-sibling::p[1]")).toHaveText(pageV3.description);
+  await expect(page.getByRole("heading", { level: 1, name: labels.shell.nav.products.headline, exact: true }).locator("xpath=following-sibling::p[1]")).toHaveText(pageV3.description);
   const asOf = "2026-08-03";
   await expect(page.getByTestId("product-scope")).toHaveText(fill(pageV3.scope, { current: formatPeriodL1("2026-08-02", "2026-08-02", { days: false, anchor: asOf }), previous: formatPeriodL1("2026-08-01", "2026-08-01", { days: false, anchor: asOf }), channels: labels.shell.periodBar.filter.allChannels }));
   const count = page.getByTestId("product-count");
@@ -216,7 +216,7 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await expect(sortSelect(page)).toHaveValue("gross_profit_change.descending");
   await expect(table.locator("tbody tr").first()).toContainText("DTC");
   await expect(table.locator("tbody tr").first().getByRole("rowheader")).toHaveText("A");
-  await page.getByLabel(labels.csvColumns.category, { exact: true }).selectOption("HOME");
+  await page.getByLabel(labels.exports.csv.columns.category, { exact: true }).selectOption("HOME");
   await page.getByLabel(panel.searchSku, { exact: true }).fill("a");
   await expect(table.locator("tbody tr")).toHaveCount(2);
   await expect(count).toHaveText(showing(2, 4));
@@ -238,7 +238,7 @@ test("PL-07 golden 按毛利下降排序，兩期證據可鍵盤開啟，匯出�
   await page.getByTestId("product-clear-filters").click();
   await expect(table.locator("tbody tr")).toHaveCount(4);
   await expect(count).toHaveText(showing(4, 4));
-  await expect(page.getByLabel(labels.csvColumns.category, { exact: true })).toHaveValue("");
+  await expect(page.getByLabel(labels.exports.csv.columns.category, { exact: true })).toHaveValue("");
   await expect(page.getByLabel(panel.searchSku, { exact: true })).toHaveValue("");
   await expect(page.getByLabel(panel.searchSku, { exact: true })).toBeFocused();
   await expect(page.getByRole("button", { name: panel.negativeOnly, exact: true })).toHaveAttribute("aria-pressed", "false");
@@ -260,11 +260,11 @@ test("PL-07 缺成本差額不補零，正反排序皆最後，可開缺漏來�
   expect((await rowTexts(page.getByTestId("product-best"))).map(row => [row[1], row[3]])).toEqual([[productHead("A", "MARKETPLACE"), deltaL2("10.00")]]);
   await sortSelect(page).selectOption({ label: pageV3.sortOptions.grossProfitChangeDescending });
   await expect(last).toContainText(panel.costMissing);
-  await last.getByRole("button", { name: deltaTrigger(labels.status.missing) }).click();
+  await last.getByRole("button", { name: deltaTrigger(labels.shell.status.missing) }).click();
   const dialog = page.getByRole("dialog", { name: evidenceDialog });
   await expect(dialog).toContainText("MISSING_COGS");
   await expect(dialog).toContainText(labels.evidence.missingValue);
-  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await dialog.getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
   const rows = await downloadComparison(page);
   expect(rows.at(-1)).toMatchObject({ gross_profit_change: "", current_gross_profit: "" });
   expect(rows.at(-1)!.gross_profit_change_reasons).toContain("MISSING_COGS");
@@ -320,7 +320,7 @@ test("PL-07 真正匯入新進退出零與純退款列，負毛利匯出防公�
   await expect(dialog).toContainText(panel.presence.noRowsConfirmed);
   await sourceTab(dialog, "manifest").click();
   await expect(dialog).toContainText("manifest.json");
-  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await dialog.getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
   await page.getByRole("button", { name: panel.negativeOnly, exact: true }).click();
   await expect(table.locator("tbody tr")).toHaveCount(1);
   await expect(table).toContainText("=1+1");

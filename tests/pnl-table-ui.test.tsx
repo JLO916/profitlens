@@ -79,7 +79,7 @@ function overview(source: Loaded): string {
   const review = createReviewSession({ ...source, revision: 1 }, "e", "rev-pnl");
   return renderToStaticMarkup(createElement(Overview, {
     snapshot: source.snapshot, onEvidence: noop, onCreateAction: noop, periodOpen: false, onPeriodToggle: noop, targets: null, events: null, allChannels: source.dataset.manifest.channels,
-    onBasis: noop, onNavigate: noop, datasetName: labels.ui.dashboard.datasets.golden, missingItems: 0, actionsSummary: { pending: 0, pinned: [] },
+    onBasis: noop, onNavigate: noop, datasetName: labels.shell.devValidation.datasets.golden, missingItems: 0, actionsSummary: { pending: 0, pinned: [] },
     meetingEntry: createElement(MeetingEntry, { review, history: [], datasetHash: source.snapshot.dataset_hash, onOpen: noop }),
   }));
 }
@@ -127,7 +127,7 @@ describe("F9 位置與掛載（§7.1 區塊 10、M1）", () => {
     expect(pnl).toContain(`<div class="table-scroll" tabindex="0" role="region" aria-label="${escapeAttr(copy.tableAria)}">`);
     expect(pnl).toContain(`<caption class="sr-only">${escapeAttr(fill(copy.caption, { granularity: copy.granularity.day }))}</caption>`);
     // 技術細節收合在面板最下方。
-    expect(pnl).toContain(`<details class="data-alternative"><summary>${labels.sections.technicalDetails}</summary><p class="note">${escapeAttr(copy.noteTechnical)}</p></details>`);
+    expect(pnl).toContain(`<details class="data-alternative"><summary>${labels.evidence.sections.technicalDetails}</summary><p class="note">${escapeAttr(copy.noteTechnical)}</p></details>`);
   });
 });
 
@@ -184,7 +184,7 @@ describe("F9 表格內容（§9.3 報表型表格）", () => {
     expect(row("cogs_net")).toContain(`>${MINUS}40</button>`);
     expect(row("contribution_after_marketing")).toContain(`>${MINUS}60</button>`);
     expect(html).not.toMatch(/>-\d/);
-    for (const item of rowsOf(html)) expect(item).toContain(`<td class="num" data-col="share">${labels.status.notApplicable}</td>`);
+    for (const item of rowsOf(html)) expect(item).toContain(`<td class="num" data-col="share">${labels.shell.status.notApplicable}</td>`);
     expect(html).not.toMatch(/favorable|unfavorable/);
   });
 
@@ -218,7 +218,7 @@ describe("F9 表格內容（§9.3 報表型表格）", () => {
     const missing = await load("errors/missing_ad_day");
     const html = table(missing.snapshot);
     const ad = rowsOf(html).find(item => item.includes('data-row="ad_spend"'))!;
-    expect(ad).toContain(`>${labels.status.missing}</button>`);
+    expect(ad).toContain(`>${labels.shell.status.missing}</button>`);
     expect(ad).not.toMatch(/\shidden=""/);
   });
 

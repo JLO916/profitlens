@@ -80,7 +80,7 @@ export const openWizardPeriods = (page: Page) => openWizardDetails(page, v3.adju
 export const openWizardChannels = (page: Page) => openWizardDetails(page, v3.adjustChannels);
 export const openWizardConversion = (page: Page) => openWizardDetails(page, v3.adjustConvert);
 /** 比較方式與上期／本期起訖收在「調整比較期間」裡：要填這些欄位時先展開。資料集名稱、資料到、涵蓋起訖仍直接可見。 */
-const periodLabels = new Set<string>([copy.comparisonMode, labels.csvColumns.previous_start, labels.csvColumns.previous_end, labels.csvColumns.current_start, labels.csvColumns.current_end]);
+const periodLabels = new Set<string>([copy.comparisonMode, labels.exports.csv.columns.previous_start, labels.exports.csv.columns.previous_end, labels.exports.csv.columns.current_start, labels.exports.csv.columns.current_end]);
 export async function fillWizardSettings(page: Page, settings: Record<string, string>) {
   if (Object.keys(settings).some(label => periodLabels.has(label))) await openWizardPeriods(page);
   for (const [label, value] of Object.entries(settings)) await wizard(page).getByLabel(label, { exact: true }).fill(value);

@@ -45,7 +45,7 @@ describe("trendTakeaways：每週趨勢的 takeaway 列", () => {
     expect(result.lastCompleteWeek).toEqual({ label: trendCopy.takeaways.lastCompleteWeek, week: last, display: formatAmountL1(last.metrics.net_revenue.value), range: span(demo, last) });
     expect(result.lastWeekIncomplete).toBe(false);
     expect(result.incompleteNote).toBeNull();
-    expect(result.subtitle).toBe(labels.ui.overview.trendNote);
+    expect(result.subtitle).toBe(labels.overview.page.trendNote);
   });
 
   it("golden：本期只有 1 天，沒有完整週 → 不適用；最後一週未滿 7 天要加註", () => {

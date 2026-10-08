@@ -8,22 +8,22 @@ import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
 
 // R2: every visible string comes from labels; compose evidence titles the way manager-summary.ts does.
-const copy = labels.ui.managerSummary;
-const contribution = labels.metrics.contribution_after_marketing.label;
-const netRevenue = labels.metrics.net_revenue.label;
+const copy = labels.meeting.managerSummary;
+const contribution = labels.metrics.contribution_after_marketing.headline;
+const netRevenue = labels.metrics.net_revenue.headline;
 /** metricComparison(): all-channel scope is `${sections.total}（${channelsLabel(...)}）`; golden keeps raw channel codes. */
-const totalScope = (channels: string[]) => `${labels.sections.total}（${channels.join("、")}）`;
+const totalScope = (channels: string[]) => `${labels.overview.sections.total}（${channels.join("、")}）`;
 const changeTitle = (channels: string[], metric: string) => fill(copy.evidenceChange, { scope: totalScope(channels), metric });
 /** V3-2a：狀態列「資料到 {date}」— 以模板組 RegExp，{date} 對應 YYYY-MM-DD（各驗證資料集的 data_as_of 不同）。 */
 const escapeRe = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const readyRe = escapeRe(labels.status.ready).replace(escapeRe("{date}"), "\\d{4}-\\d{2}-\\d{2}");
-const technicalHeading = `## ${labels.sections.technicalDetails}`;
+const readyRe = escapeRe(labels.shell.status.ready).replace(escapeRe("{date}"), "\\d{4}-\\d{2}-\\d{2}");
+const technicalHeading = `## ${labels.evidence.sections.technicalDetails}`;
 /** 三件事一列「標題 · 範圍 · 金額」的分隔符（取自 mdPriorityRow 模板 {scope} 與 {amount} 之間；列印版用同一個分隔符，§8.4 第 5 點）。 */
 const prioritySep = copy.mdPriorityRow.split("{scope}")[1].split("{amount}")[0];
 /** Markdown meta line is mdMeta（V3-2a 分隔符改「 · 」，與 prioritySep 相同）; assert only the segment that carries {channels}. */
 const mdScope = (channels: string) => fill(copy.mdMeta.split(prioritySep).find(part => part.includes("{channels}"))!, { channels });
-// R5 修正後列印列是「 · 影響金額 -315.00」：分隔符後接影響標籤（labels.sections.impact）再接金額。
-const endsWithAmount = (amount: string) => new RegExp(`${escapeRe(prioritySep)}${escapeRe(labels.sections.impact)}\\s*${escapeRe(amount)}`);
+// R5 修正後列印列是「 · 影響金額 -315.00」：分隔符後接影響標籤（labels.overview.sections.impact）再接金額。
+const endsWithAmount = (amount: string) => new RegExp(`${escapeRe(prioritySep)}${escapeRe(labels.overview.sections.impact)}\\s*${escapeRe(amount)}`);
 /**
  * R6：會議紀錄頁的匯出集中在「輸出」列（meeting-outputs）：匯出 PDF、Markdown、通路寬表 CSV、Excel、PPT。
  * V3-7（§7.6 第 1 點）：輸出列改成頁首的「匯出會議」下拉（summary export-page-meeting）；每次先打開選單，再點該項（可及名稱不變）。
@@ -56,9 +56,9 @@ const test = base.extend<{ audit: string[] }>({
 async function load(page: Page, name = "golden") {
   await page.goto("/");
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(name);
-  await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${readyRe}|${escapeRe(labels.status.partial)}`));
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(name);
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
+  await expect(page.getByTestId("workspace-status")).toContainText(new RegExp(`${readyRe}|${escapeRe(labels.shell.status.partial)}`));
   await dismissSavePrompt(page);
   // R6：主管摘要（會議稿）在獨立分頁「會議紀錄」。
   await openMeeting(page);
@@ -85,18 +85,18 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   await cm.click();
   await expect(page.getByRole("dialog")).toContainText(fill(copy.changeFormula, { metric: contribution }));
   await expect(page.getByRole("dialog")).toContainText("sales_daily.csv");
-  await page.getByRole("dialog").getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
   // V3-7：門檻表單收在議程 2 的「調整門檻」details；先展開（錯誤訊息 role=alert 在 details 外、仍在議程內）。
   await openThreshold(summary);
-  await summary.getByLabel(labels.meeting.threshold).fill("315.01");
-  await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await summary.getByLabel(labels.meeting.form.threshold).fill("315.01");
+  await summary.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
   await expect(summary.getByTestId("manager-priority-REV_UP_CM_DOWN")).toHaveCount(0);
-  await expect(summary).toContainText(labels.notes.noPriorities);
-  await summary.getByLabel(labels.meeting.threshold).fill("-1");
-  await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
-  await expect(summary.getByRole("alert")).toContainText(labels.notes.thresholdInvalid);
-  await summary.getByLabel(labels.meeting.threshold).fill("0");
-  await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await expect(summary).toContainText(labels.overview.notes.noPriorities);
+  await summary.getByLabel(labels.meeting.form.threshold).fill("-1");
+  await summary.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
+  await expect(summary.getByRole("alert")).toContainText(labels.overview.notes.thresholdInvalid);
+  await summary.getByLabel(labels.meeting.form.threshold).fill("0");
+  await summary.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
   await expect(summary.getByTestId("manager-priority-REV_UP_CM_DOWN")).toBeVisible();
   const csvEvent = page.waitForEvent("download");
   await (await meetingOutput(page, "csv")).click();
@@ -106,10 +106,10 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   expect(csv).toContain('"400.00","270.00","-130.00"');
   // V3-3：全站通路下拉在期間列；手機期間列收成 period-toggle，先開底部面板再選，選完按「完成」收起（桌機兩者都不動）。
   await openPeriodSheet(page);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption("DTC");
+  await page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true }).selectOption("DTC");
   await closePeriodSheet(page);
   await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "570.00", "255.00", "-315.00"));
-  await page.getByRole("button", { name: labels.buttons.updateMeetingSource, exact: true }).click();
+  await page.getByRole("button", { name: labels.meeting.buttons.updateMeetingSource, exact: true }).click();
   await expect(summary.getByRole("button", { name: changeTitle(["DTC"], contribution), exact: true })).toHaveText(headlineChange("contribution_after_marketing", "400.00", "270.00", "-130.00"));
   // 更新會議來源後議程重新掛載（完整通路寬表回到收合）：展開後再確認精簡表與完整寬表都沒有 MARKETPLACE。
   await openWideTable(summary);
@@ -121,7 +121,7 @@ test("PL06 golden management summary, drilldown, threshold, scope and wide expor
   expect(markdown.split(technicalHeading)[0]).not.toContain("MARKETPLACE");
   // R5（05 §7）：Markdown 三件事的金額是「對貢獻影響」；golden DTC：折扣 -130.00、營收增貢獻減 -130.00（同值依規則代號）、廣告 -70.00。
   // V3-2b：Markdown 主文是 L2（整數元、U+2212）。
-  const topThree = markdown.split(`## ${labels.sections.topThree}`)[1].split(copy.mdDecisions)[0];
+  const topThree = markdown.split(`## ${labels.overview.sections.topThree}`)[1].split(copy.mdDecisions)[0];
   expect(topThree.split("\n").filter(line => /^\d+\. /.test(line)).map(line => line.split(prioritySep).at(-1))).toEqual(["-130.00", "-130.00", "-70.00"].map(value => formatSignedDelta(value, "L2")));
   // V3-9a F12：「其他常用指標」表的最後一列是損益兩平 MER（倍數另由 breakeven-mer.spec 以 golden 合計驗），技術細節多一行 breakeven_mer_version。
   expect(markdownAssistSection(markdown).filter(line => line.startsWith("| ")).at(-1)).toMatch(new RegExp(`^\\| ${escapeRe(be.label)} \\| `));
@@ -133,10 +133,10 @@ test("PL06 unknown priorities survive a high threshold without zero contribution
   await load(page, "missing-cogs");
   const summary = page.getByTestId("manager-summary");
   await openThreshold(summary);
-  await summary.getByLabel(labels.meeting.threshold).fill("99999999");
-  await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await summary.getByLabel(labels.meeting.form.threshold).fill("99999999");
+  await summary.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
   await expect(summary.getByTestId("manager-priority-MISSING_CRITICAL_DATA")).toBeVisible();
-  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText(labels.status.missing);
+  await expect(summary.getByRole("button", { name: changeTitle(["DTC", "MARKETPLACE"], contribution), exact: true })).toHaveText(labels.shell.status.missing);
   await expect(summary.getByTestId("manager-priority-MISSING_CRITICAL_DATA")).toContainText(copy.missingDataNote);
 });
 
@@ -151,7 +151,7 @@ test("PL09 print uses a dedicated manager draft and retains technical audit down
   const print = page.getByTestId("manager-summary-print");
   await expect(print).toBeVisible();
   // Print context shows either the meeting decision state or copy.draftDecision; both contain the draft label.
-  await expect(print).toContainText(labels.meeting.decisions.draft);
+  await expect(print).toContainText(labels.meeting.form.decisions.draft);
   // V3-2b：列印版的句子用 L1（萬／元、U+2212）。
   await expect(print).toContainText(printHeadline("2250.00", "2470.00", "220.00"));
   await expect(print).toContainText(printHeadline("570.00", "255.00", "-315.00"));
@@ -169,5 +169,5 @@ test("PL09 print uses a dedicated manager draft and retains technical audit down
   await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
   await expect(page.getByTestId("manager-summary-print")).toHaveCount(0);
   await openDownloads(page);
-  await expect(page.getByRole("button", { name: labels.downloads.analysisCsv, exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true })).toBeVisible();
 });

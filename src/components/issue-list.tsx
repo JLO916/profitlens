@@ -7,7 +7,7 @@ import { issueMessageParts, issueTemplate, renderIssueTemplate, sideFileIssueMes
 import type { SourceRef, ValidationIssue } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 
-const copy = labels.ui.issueList;
+const copy = labels.data.issues;
 const v3 = labels.data.pageV3.issueTable;
 const PAGE_SIZE = 50;
 /** 樣板的位置前綴以全形冒號結束（「{file} 第 {line} 行：」「{file}：」）。 */
@@ -92,7 +92,7 @@ function IssueTable<T>({ items, toRow, regionLabel, onDownload, downloadTestId }
   return <div className="issue-list">
     <div className="ui-toolbar issue-toolbar">
       <button type="button" className="ui-btn ui-btn-text issue-codes-toggle" aria-pressed={showCodes} aria-controls={tableId} onClick={() => setShowCodes(value => !value)}>{v3.showCodes}</button>
-      <span className="ui-toolbar-end"><span className="issue-unit">{v3.unit}</span>{onDownload && <button type="button" className="ui-btn ui-btn-secondary" data-testid={downloadTestId} onClick={onDownload}>{labels.downloads.issuesCsv}</button>}</span>
+      <span className="ui-toolbar-end"><span className="issue-unit">{v3.unit}</span>{onDownload && <button type="button" className="ui-btn ui-btn-secondary" data-testid={downloadTestId} onClick={onDownload}>{labels.exports.downloads.issuesCsv}</button>}</span>
     </div>
     <div className="table-scroll" tabIndex={0} role="region" aria-label={regionLabel}><table className="ui-table issue-table" id={tableId}>
       <caption className="sr-only">{fill(copy.caption, { n: items.length })}</caption>

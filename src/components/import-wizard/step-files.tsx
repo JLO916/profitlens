@@ -12,7 +12,7 @@ import { TemplateTable } from "../shell/template-table";
 
 const copy = labels.importWizard;
 const v3 = copy.wizardV3;
-const panel = labels.ui.importPanel;
+const panel = labels.importWizard.panel;
 export const fileLabels: Record<FileName, string> = { "sales_daily.csv": copy.files.sales, "channel_costs_daily.csv": copy.files.costs, "ad_spend_daily.csv": copy.files.ads };
 const fileHints: Record<FileName, string> = { "sales_daily.csv": copy.fileHints.sales, "channel_costs_daily.csv": copy.fileHints.costs, "ad_spend_daily.csv": copy.fileHints.ads };
 type SlotState = "empty" | "reading" | "ready" | "failed";
@@ -69,7 +69,7 @@ export function StepFiles({ state, onPick, onDrop, onRemove, onManifest, onManif
     {/* §7.7.2 步驟 1：範本、欄位說明、進階設定檔各收進 <details>（內容保持掛載，M1）。範本用與頂欄匯出選單相同的 3×3 表（§6.5）。 */}
     <details className="wizard-details"><summary>{copy.noFiles}</summary>
       <TemplateTable />
-      <p className="wizard-note"><a className="ui-btn ui-btn-text" href={exampleTemplateUrl("manifest.json")} download="manifest.json">{labels.downloads.exampleManifest}</a></p>
+      <p className="wizard-note"><a className="ui-btn ui-btn-text" href={exampleTemplateUrl("manifest.json")} download="manifest.json">{labels.exports.downloads.exampleManifest}</a></p>
     </details>
     <details className="wizard-details"><summary>{copy.howTo}</summary>
       <p className="wizard-note">{copy.howToIntro}</p>

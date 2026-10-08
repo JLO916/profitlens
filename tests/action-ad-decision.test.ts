@@ -126,10 +126,10 @@ describe("V3-9a F13 決策匯出（Markdown／CSV／JSON）：有標才出現，
     const { session, plain, marked } = await exported();
     const at = new Date("2026-10-07T00:00:00.000Z");
     const before = exportDecisionMarkdown(session, [], [], plain, [], { generatedAt: at }), after = exportDecisionMarkdown(session, [], [], marked, [], { generatedAt: at });
-    const line = fill(labels.ui.decisionExport.fieldLine, { label: ad.field, value: ad.options.increase });
+    const line = fill(labels.exports.decision.fieldLine, { label: ad.field, value: ad.options.increase });
     expect(line).toBe("- 廣告決策：加碼");
     expect(after.split("\n").filter(text => text === line)).toHaveLength(1);
-    const sectionB = after.slice(after.indexOf(fill(labels.ui.decisionExport.actionHeading, { priority: 2, problem: "檢討市集廣告" })));
+    const sectionB = after.slice(after.indexOf(fill(labels.exports.decision.actionHeading, { priority: 2, problem: "檢討市集廣告" })));
     expect(sectionB.slice(0, sectionB.indexOf("<details>"))).toContain(line);
     expect(after.split("\n").filter(text => text !== line)).toEqual(before.split("\n"));
     expect(before).not.toContain(ad.field);
@@ -171,7 +171,7 @@ describe("V3-9a F13 介面（SSR）：編輯器 select 與卡片徽章", () => {
       const select = item.slice(item.indexOf('data-testid="action-ad-decision"'), item.indexOf("</select>", item.indexOf('data-testid="action-ad-decision"')) + 9);
       expect(options(select), `action-${n}`).toEqual([["", ad.none], ["pause", ad.options.pause], ["adjust", ad.options.adjust], ["increase", ad.options.increase]]);
       expect(select).toContain(`<option value="${selected}" selected="">`);
-      expect(item.indexOf(`aria-label="${labels.actions.status}"`)).toBeLessThan(item.indexOf('data-testid="action-ad-decision"'));
+      expect(item.indexOf(`aria-label="${labels.actions.form.status}"`)).toBeLessThan(item.indexOf('data-testid="action-ad-decision"'));
       expect(item).toContain(`>${ad.field}</label>`);
     }
     expect(html).toContain(`data-testid="action-1-ad-decision">${fill(ad.badge, { decision: ad.options.adjust })}</span>`);
@@ -186,7 +186,7 @@ describe("V3-9a F13 介面（SSR）：編輯器 select 與卡片徽章", () => {
     expect(html).not.toContain('data-testid="board-card-1-ad-decision"');
     expect(html).not.toContain('data-testid="action-ad-decision"');
     const card = html.slice(html.indexOf('data-testid="board-card-2"'));
-    expect(card.indexOf(labels.actions.statuses.not_started)).toBeLessThan(card.indexOf(badge));
+    expect(card.indexOf(labels.actions.form.statuses.not_started)).toBeLessThan(card.indexOf(badge));
     expect(card.indexOf(badge)).toBeLessThan(card.indexOf('class="board-card-evidence"'));
     expect(render({ workspace: base, source: s, view: "board" })).not.toContain("action-ad-decision-badge");
   });

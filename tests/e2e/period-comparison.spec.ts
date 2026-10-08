@@ -8,10 +8,10 @@ import { resolve } from "node:path";
 import { expect, test as base, type Page } from "@playwright/test";
 
 /** R2: every user-visible string is read from the label dictionary; composed strings mirror the component exactly. */
-const ui = labels.ui.overview;
-const metric = (name: keyof typeof labels.metrics) => labels.metrics[name].label;
+const ui = labels.overview.page;
+const metric = (name: keyof typeof labels.metrics) => labels.metrics[name].headline;
 /** dashboard.tsx periodFieldLabel: sr-only date labels such as 「上期開始」. */
-const periodField = (edge: "start" | "end", period: "previous" | "current") => fill((edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd).split(" → ")[0], { period: labels.periods[period] });
+const periodField = (edge: "start" | "end", period: "previous" | "current") => fill((edge === "start" ? labels.shell.periodBar.filter.periodStart : labels.shell.periodBar.filter.periodEnd).split(" → ")[0], { period: labels.shell.periods[period] });
 /**
  * V3-3：自訂期間的四個日期欄與比較方式收在 period-custom popover（手機是期間底部面板）裡，關著時看不到；開面板 → 填欄位 → 按面板裡的「套用」。
  * 只填有給的欄位（沒給的沿用表單目前的值，與 v2 直接改欄位相同）。套用後面板收起（成功或被擋都一樣）。
@@ -19,7 +19,7 @@ const periodField = (edge: "start" | "end", period: "previous" | "current") => f
 async function applyDates(page: Page, values: Record<string, string>) {
   const panel = await openCustomPeriod(page);
   for (const [label, value] of Object.entries(values)) await page.getByLabel(label, { exact: true }).fill(value);
-  await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await panel.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
 }
 /**
  * V3-5（§7.8）：抽屜標題列副標（dialog 的 aria-describedby）。範圍說明沒寫出通路時用 evidence.drawerV3.subtitleChannels「{scope} · {period} · 通路：{channels}」；
@@ -27,9 +27,9 @@ async function applyDates(page: Page, values: Record<string, string>) {
  */
 const drawerSubtitle = (scope: string, period: "current" | "previous", start: string, end: string, anchor: string, channels: string) => fill(labels.evidence.drawerV3.subtitleChannels, {
   scope, channels,
-  period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.periods[period], range: formatPeriodL1(start, end, { anchor, days: false }) }),
+  period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.shell.periods[period], range: formatPeriodL1(start, end, { anchor, days: false }) }),
 });
-const sourceTab = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.ui.evidenceDrawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
+const sourceTab = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.evidence.drawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
 /** Synthetic input only. Fixed expected answers below do not call domain calculations. */
 function monthlyFiles(kind: "complete" | "zero" | "missing" = "complete") {
   const dates = [...Array.from({ length: 31 }, (_, index) => `2026-08-${String(index + 1).padStart(2, "0")}`), ...Array.from({ length: 30 }, (_, index) => `2026-09-${String(index + 1).padStart(2, "0")}`)];
@@ -79,10 +79,10 @@ async function importMonthly(page: Page, kind: "complete" | "zero" | "missing" =
   // Step 3 settings are prefilled from the manifest JSON read in step 1.
   await expect(root.getByLabel(labels.importWizard.datasetName, { exact: true })).toHaveValue(input.manifest.dataset_id);
   await expect(root.getByLabel(labels.importWizard.comparisonMode, { exact: true })).toHaveValue("calendar_months");
-  await expect(root.getByLabel(labels.csvColumns.previous_start, { exact: true })).toHaveValue("2026-08-01");
-  await expect(root.getByLabel(labels.csvColumns.previous_end, { exact: true })).toHaveValue("2026-08-31");
-  await expect(root.getByLabel(labels.csvColumns.current_start, { exact: true })).toHaveValue("2026-09-01");
-  await expect(root.getByLabel(labels.csvColumns.current_end, { exact: true })).toHaveValue("2026-09-30");
+  await expect(root.getByLabel(labels.exports.csv.columns.previous_start, { exact: true })).toHaveValue("2026-08-01");
+  await expect(root.getByLabel(labels.exports.csv.columns.previous_end, { exact: true })).toHaveValue("2026-08-31");
+  await expect(root.getByLabel(labels.exports.csv.columns.current_start, { exact: true })).toHaveValue("2026-09-01");
+  await expect(root.getByLabel(labels.exports.csv.columns.current_end, { exact: true })).toHaveValue("2026-09-30");
   await expect(root.getByLabel("DTC", { exact: true })).toBeChecked();
   // The former amount-basis checkbox is now the explicit basis choice plus the single confirm button.
   await chooseBasis(page, "exclusive");
@@ -92,7 +92,7 @@ async function importMonthly(page: Page, kind: "complete" | "zero" | "missing" =
   await dismissSavePrompt(page);
   await openPeriodComparison(page);
   await expect(comparison(page)).toBeVisible();
-  await expect(page.getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true })).toHaveValue("calendar_months");
+  await expect(page.getByLabel(labels.shell.periodBar.filter.comparisonMode, { exact: true })).toHaveValue("calendar_months");
 }
 /** Independent reader for exported quoted CSV, with no production parser/expected generator. */
 function records(csv: string): Record<string, string>[] {
@@ -117,7 +117,7 @@ function records(csv: string): Record<string, string>[] {
   });
 }
 async function downloadAnalysis(page: Page) {
-  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).click()]);
+  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true }).click()]);
   await closeDownloads(page);
   expect(download.suggestedFilename()).toBe("profitlens-analysis.csv");
   return records(await readFile((await download.path())!, "utf8"));
@@ -135,7 +135,7 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
   await expect(revenueRow(page).getByRole("cell")).toHaveText(periodCells("3100.00", "3000.00", "100.00", "100.00", "0.00"));
   await expect(contributionRow(page).getByRole("cell")).toHaveText(periodCells("775.00", "750.00", "25.00", "25.00", "0.00"));
   await contributionRow(page).getByRole("cell").nth(3).getByRole("button").click();
-  const dialog = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+  const dialog = page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });
   await expect(dialog).toContainText(`${metric("contribution_after_marketing")}${ui.periodTotal} ÷ 30 天`);
   await expect(dialog).toContainText(ui.dailyAverageScope);
   // 合成資料只有 DTC 一個通路：證據涵蓋資料集全部通路，通路寫「全部通路」；9/1–9/30 就是報表本期。
@@ -148,7 +148,7 @@ test("PL-02 匯入完整八九月，合計與日均分開，公式來源與下�
   await dialog.getByRole("button", { name: sourceTab("ads", 30), exact: true }).click();
   await expect(dialog).toContainText("ad_spend_daily.csv");
   await expect(dialog).toContainText(fill(labels.evidence.showing, { from: 1, to: 30, n: 30 }));
-  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await dialog.getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
   const rows = await downloadAnalysis(page);
   expect(rows.every(row => row.comparison_mode === "calendar_months" && row.previous_days === "31" && row.current_days === "30")).toBe(true);
   expect(rows.find(row => row.row_type === "period_summary" && row.period === "current" && row.metric === "contribution_after_marketing")).toMatchObject({ value: "750.00" });
@@ -161,22 +161,22 @@ test("PL-02 反向、未完整自然月與未套用模式不取代目前有效�
   await importMonthly(page);
   await applyDates(page, { [periodField("start", "previous")]: "2026-09-01", [periodField("end", "previous")]: "2026-09-30", [periodField("start", "current")]: "2026-08-01", [periodField("end", "current")]: "2026-08-31" });
   // V3-3：套用失敗的訊息在期間列下方的「需要處理」橫幅（banner-filter-error，role=alert）。
-  await expect(page.getByRole("alert").filter({ hasText: labels.ui.dashboard.errors.periodNotApplied })).toBeVisible();
-  await expect(page.getByTestId("banner-filter-error")).toContainText(labels.ui.dashboard.errors.periodNotApplied);
+  await expect(page.getByRole("alert").filter({ hasText: labels.shell.state.errors.periodNotApplied })).toBeVisible();
+  await expect(page.getByTestId("banner-filter-error")).toContainText(labels.shell.state.errors.periodNotApplied);
   await expect(currentContribution(page)).toHaveText(formatAmountL1("750.00"));
   // V3-3：v2 的 .scope-note 改為期間摘要（period-summary）；仍是 9 月對比 8 月（30／31 天）。
   await expect(periodSummary(page)).toContainText(periodSummaryText("2026-09-01", "2026-09-30", "2026-08-01", "2026-08-31"));
   await applyDates(page, { [periodField("start", "previous")]: "2026-08-01", [periodField("end", "previous")]: "2026-08-31", [periodField("start", "current")]: "2026-09-01", [periodField("end", "current")]: "2026-09-29" });
-  await expect(page.getByRole("alert").filter({ hasText: labels.periods.calendarMonths })).toBeVisible();
+  await expect(page.getByRole("alert").filter({ hasText: labels.shell.periods.calendarMonths })).toBeVisible();
   await expect(periodSummary(page)).toContainText(periodSummaryText("2026-09-01", "2026-09-30", "2026-08-01", "2026-08-31"));
   await expect(currentContribution(page)).toHaveText(formatAmountL1("750.00"));
   const unchanged = await downloadAnalysis(page);
   expect(unchanged.every(row => row.comparison_mode === "calendar_months" && row.current_period_end === "2026-09-30")).toBe(true);
   // 比較方式只在自訂期間面板裡改；改了還沒套用時，期間比較表仍是已套用的自然月。
-  await (await openCustomPeriod(page)).getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true }).selectOption("same_days");
-  await expect(comparison(page)).toContainText(labels.periods.calendarMonths);
+  await (await openCustomPeriod(page)).getByLabel(labels.shell.periodBar.filter.comparisonMode, { exact: true }).selectOption("same_days");
+  await expect(comparison(page)).toContainText(labels.shell.periods.calendarMonths);
   await applyDates(page, { [periodField("end", "previous")]: "2026-08-30", [periodField("end", "current")]: "2026-09-30" });
-  await expect(page.getByRole("alert").filter({ hasText: labels.ui.dashboard.errors.periodNotApplied })).toHaveCount(0);
+  await expect(page.getByRole("alert").filter({ hasText: labels.shell.state.errors.periodNotApplied })).toHaveCount(0);
   await expect(comparison(page)).toContainText(fill(ui.periodDays, { previousDays: 30, currentDays: 30 }));
   await expect(periodSummary(page)).toContainText(periodSummaryText("2026-09-01", "2026-09-30", "2026-08-01", "2026-08-30"));
   await expect(contributionRow(page).getByRole("cell")).toHaveText(periodCells("750.00", "750.00", "25.00", "25.00", "0.00"));
@@ -186,10 +186,10 @@ test("PL-02 反向、未完整自然月與未套用模式不取代目前有效�
 for (const kind of ["zero", "missing"] as const) test(`PL-02 ${kind} 月合計與日均保留零及未知邊界`, async ({ page }) => {
   await importMonthly(page, kind);
   // V3-2b（§8.5 規則 3）：真正的零顯示「0 元」（L1）／「0」（L2），不帶正負號；缺值只寫「資料待補」。
-  await expect(currentContribution(page)).toHaveText(kind === "zero" ? formatAmountL1("0.00") : labels.status.missing);
+  await expect(currentContribution(page)).toHaveText(kind === "zero" ? formatAmountL1("0.00") : labels.shell.status.missing);
   await expect(revenueRow(page).getByRole("cell").nth(3)).toHaveText(formatAmountL2(kind === "zero" ? "0.00" : "100.00"));
-  await expect(contributionRow(page).getByRole("cell").nth(3)).toHaveText(kind === "zero" ? formatAmountL2("0.00") : labels.status.missing);
-  await expect(contributionRow(page).getByRole("cell").nth(4)).toHaveText(kind === "zero" ? formatSignedDelta("0.00", "L2") : labels.status.missing);
+  await expect(contributionRow(page).getByRole("cell").nth(3)).toHaveText(kind === "zero" ? formatAmountL2("0.00") : labels.shell.status.missing);
+  await expect(contributionRow(page).getByRole("cell").nth(4)).toHaveText(kind === "zero" ? formatSignedDelta("0.00", "L2") : labels.shell.status.missing);
   const row = (await downloadAnalysis(page)).find(row => row.row_type === "daily_average" && row.period === "current" && row.metric === "contribution_after_marketing")!;
   expect(row.value).toBe(kind === "zero" ? "0.00" : "");
   if (kind === "missing") expect(JSON.parse(row.reason_codes)).toContain("MISSING_COGS");

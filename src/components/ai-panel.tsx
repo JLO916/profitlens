@@ -12,7 +12,7 @@ import type { EvidenceSelection } from "./evidence-drawer";
 
 export interface AiPanelProps { snapshot: WorkspaceSnapshot; revision: number; onEvidence: (selection: EvidenceSelection) => void; capability?: AiCapability | null }
 
-const copy = labels.ui.aiPanel;
+const copy = labels.shell.ai.panel;
 
 /** Remount before paint on every successful data reload/scope change, including identical bytes. */
 export function AiPanel(props: AiPanelProps) {
@@ -79,22 +79,22 @@ function BoundAiPanel({ snapshot, revision, onEvidence, capability: sharedCapabi
   const requestAvailable = prepared !== null && capability?.available === true;
   function evidenceLabel(factAlias: string) {
     const fact = prepared?.localFacts[factAlias];
-    return fact ? fill(copy.evidenceLabel, { metric: metricDefinitions[fact.metric].label, start: fact.period.start, end: fact.period.end }) : labels.buttons.viewEvidence;
+    return fact ? fill(copy.evidenceLabel, { metric: metricDefinitions[fact.metric].label, start: fact.period.start, end: fact.period.end }) : labels.evidence.buttons.viewEvidence;
   }
-  const periodLabel = (period: "previous" | "current") => period === "previous" ? labels.periods.previous : labels.periods.current;
-  const factValue = (value: string | null, unit: string) => value === null ? labels.status.missing : fill(unit === "money" ? copy.unitMoney : unit === "percent" ? copy.unitPercent : copy.unitRatio, { value });
+  const periodLabel = (period: "previous" | "current") => period === "previous" ? labels.shell.periods.previous : labels.shell.periods.current;
+  const factValue = (value: string | null, unit: string) => value === null ? labels.shell.status.missing : fill(unit === "money" ? copy.unitMoney : unit === "percent" ? copy.unitPercent : copy.unitRatio, { value });
 
   return <section className="panel ai-panel" data-testid="ai-panel" aria-labelledby="ai-panel-heading">
-    <div className="section-heading"><div><h2 id="ai-panel-heading">{labels.sections.aiExplain}</h2><p className="note">{copy.intro}</p></div><span className={`tag ${live ? "ready" : ""}`} data-testid="ai-mode">{mode}</span></div>
+    <div className="section-heading"><div><h2 id="ai-panel-heading">{labels.shell.sections.aiExplain}</h2><p className="note">{copy.intro}</p></div><span className={`tag ${live ? "ready" : ""}`} data-testid="ai-mode">{mode}</span></div>
     <p className="ai-status" role="status" aria-live="polite" data-testid="ai-status">{statusMessage}</p>
     <p className="note"><strong>{copy.rulesAvailable}</strong>{copy.rulesAvailableNote}{!capability ? copy.liveChecking : !capability.available ? capability.reason === "STATUS_UNAVAILABLE" ? copy.liveStatusUnknown : copy.liveOff : copy.liveConsentOnly}</p>
     {requestAvailable && prepared && <>
       <div className="ai-privacy"><h3>{copy.privacyHeading}</h3><p>{copy.privacyRecipient}</p><p>{copy.privacyExcluded}</p><p>{copy.privacyRetention}</p></div>
       <div className="ai-readable-preview" data-testid="ai-readable-preview"><h3>{copy.previewHeading}</h3>
         <p>{fill(copy.previewScope, { n: prepared.payload.filters.channels.length })}</p>
-        <p>{fill(copy.previewPeriods, { asOf: prepared.payload.data_as_of, prevStart: prepared.payload.periods.previous.start, prevEnd: prepared.payload.periods.previous.end, prevDays: prepared.payload.comparison.previous_days, curStart: prepared.payload.periods.current.start, curEnd: prepared.payload.periods.current.end, curDays: prepared.payload.comparison.current_days, mode: prepared.payload.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays })}</p>
+        <p>{fill(copy.previewPeriods, { asOf: prepared.payload.data_as_of, prevStart: prepared.payload.periods.previous.start, prevEnd: prepared.payload.periods.previous.end, prevDays: prepared.payload.comparison.previous_days, curStart: prepared.payload.periods.current.start, curEnd: prepared.payload.periods.current.end, curDays: prepared.payload.comparison.current_days, mode: prepared.payload.comparison.mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays })}</p>
         <p>{copy.previewValuesNote}</p>
-        <div className="table-wrap" tabIndex={0} role="region" aria-label={copy.previewTableAria}><table data-testid="ai-facts-preview"><caption>{copy.previewTableCaption}</caption><thead><tr><th scope="col">{labels.csvColumns.period}</th><th scope="col">{labels.csvColumns.metric}</th><th scope="col">{copy.colValue}</th><th scope="col">{copy.colSource}</th></tr></thead><tbody>{prepared.payload.facts.map(fact => <tr key={fact.id}><th scope="row">{periodLabel(fact.period)}</th><td>{metricDefinitions[fact.metric].label}</td><td className="number">{factValue(fact.value, metricDefinitions[fact.metric].unit)}</td><td><button className="text-button" onClick={() => evidence(fact.id)} aria-label={fill(copy.viewSourceAria, { period: periodLabel(fact.period), metric: metricDefinitions[fact.metric].label })}>{labels.buttons.viewEvidence}</button></td></tr>)}</tbody></table></div>
+        <div className="table-wrap" tabIndex={0} role="region" aria-label={copy.previewTableAria}><table data-testid="ai-facts-preview"><caption>{copy.previewTableCaption}</caption><thead><tr><th scope="col">{labels.exports.csv.columns.period}</th><th scope="col">{labels.exports.csv.columns.metric}</th><th scope="col">{copy.colValue}</th><th scope="col">{copy.colSource}</th></tr></thead><tbody>{prepared.payload.facts.map(fact => <tr key={fact.id}><th scope="row">{periodLabel(fact.period)}</th><td>{metricDefinitions[fact.metric].label}</td><td className="number">{factValue(fact.value, metricDefinitions[fact.metric].unit)}</td><td><button className="text-button" onClick={() => evidence(fact.id)} aria-label={fill(copy.viewSourceAria, { period: periodLabel(fact.period), metric: metricDefinitions[fact.metric].label })}>{labels.evidence.buttons.viewEvidence}</button></td></tr>)}</tbody></table></div>
       </div>
       <details className="ai-preview" data-testid="ai-advanced"><summary>{copy.advancedSummary}</summary>
       <p className="note">{copy.advancedNote}</p>
@@ -118,8 +118,8 @@ function BoundAiPanel({ snapshot, revision, onEvidence, capability: sharedCapabi
         <div className="ai-evidence-links">{insight.fact_ids.map(factAlias => <button key={factAlias} className="text-button" onClick={() => evidence(factAlias)}>{fill(copy.viewEvidenceLink, { label: evidenceLabel(factAlias) })}</button>)}</div>
         <h4>{copy.insightHypotheses}</h4>{insight.hypotheses.length ? <ul>{insight.hypotheses.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul> : <p>{copy.noHypotheses}</p>}
         <h4>{copy.insightAction}</h4><p>{insight.recommended_action}</p>
-        <dl><div><dt>{labels.actions.owner}</dt><dd>{insight.owner_role}</dd></div><div><dt>{labels.actions.metric}</dt><dd>{insight.verification_metric}</dd></div><div><dt>{labels.actions.stop}</dt><dd>{insight.stop_condition}</dd></div></dl>
-        <h4>{labels.actions.extraData}</h4><ul>{insight.additional_data_needed.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul>
+        <dl><div><dt>{labels.actions.form.owner}</dt><dd>{insight.owner_role}</dd></div><div><dt>{labels.actions.form.metric}</dt><dd>{insight.verification_metric}</dd></div><div><dt>{labels.actions.form.stop}</dt><dd>{insight.stop_condition}</dd></div></dl>
+        <h4>{labels.actions.form.extraData}</h4><ul>{insight.additional_data_needed.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul>
         <h4>{copy.insightLimitations}</h4><ul>{insight.limitations.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul>
       </article>)}</div>
       {live.output.limitations.length > 0 && <div className="ai-result-limitations"><h4>{copy.overallLimitations}</h4><ul>{live.output.limitations.map((item, index) => <li key={index}>{item}</li>)}</ul></div>}

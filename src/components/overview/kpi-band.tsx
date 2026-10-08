@@ -18,7 +18,7 @@ export type KpiBandMetric = typeof KPI_BAND_METRICS[number];
 export const KPI_KEY_METRIC: KpiBandMetric = "contribution_after_marketing";
 
 const ui = labels.overview.kpiBand;
-const page = labels.ui.overview;
+const page = labels.overview.page;
 /** KPI 的主值與上期：L1（萬／億、U+2212）；空值依原因碼寫「資料待補」或「不適用」。 */
 const valueText = (name: KpiBandMetric, metric: Metric) => formatMetric(name, metric, "L1");
 
@@ -85,7 +85,7 @@ export function KpiBand({ snapshot, onEvidence, onBasis, onNavigate, missingItem
         const openPrevious = () => onEvidence({ name, metric: before, period: report.previous.period, sources: report.previous.sources, channels, title: label });
         const openDelta = () => {
           const metric = rate ? percentagePointChange(before, current) : compareMoney(before, current).absolute_change;
-          onEvidence({ title: fill(page.changeTitle, { metric: label }), unitOverride: rate ? "percentage-point" : undefined, name, metric, period: periodBoth, channels, sources: sourcesBoth, formula: rate ? page.ratePointFormula : page.amountDeltaFormula, scopeLabel: rate ? page.ratePointScope : page.amountDeltaScope, components: rate ? undefined : [{ label: labels.periods.previous, metric: before }, { label: labels.periods.current, metric: current }] });
+          onEvidence({ title: fill(page.changeTitle, { metric: label }), unitOverride: rate ? "percentage-point" : undefined, name, metric, period: periodBoth, channels, sources: sourcesBoth, formula: rate ? page.ratePointFormula : page.amountDeltaFormula, scopeLabel: rate ? page.ratePointScope : page.amountDeltaScope, components: rate ? undefined : [{ label: labels.shell.periods.previous, metric: before }, { label: labels.shell.periods.current, metric: current }] });
         };
         return <div className={`kpi${name === KPI_KEY_METRIC ? " is-key" : ""}${missing ? " is-missing" : ""}`} key={name} data-testid={`kpi-${name}`}>
           <div className="kpi-name"><span>{label}</span><button type="button" className="btn-help" aria-label={fill(ui.helpAria, { metric: label })} title={metricDefinitions[name].plain} onClick={onBasis}><ShellIcon name="help" size={16} /></button></div>
@@ -95,7 +95,7 @@ export function KpiBand({ snapshot, onEvidence, onBasis, onNavigate, missingItem
               ? missingItems > 0 && onNavigate ? <button type="button" className="text-button" onClick={() => onNavigate("data")}>{fill(ui.fillMissing, { n: missingItems })}</button> : <span>{page.changePending}</span>
               : <>{change.long && <span className="dl-long">{ui.vsPrevious}</span>}<button type="button" className="number-link" aria-label={fill(ui.deltaAria, { metric: label, delta: change.text })} onClick={openDelta}>{change.text}</button>{change.growth !== null && <span className="pct">{change.growth}</span>}</>}
           </div>
-          <p className="kpi-prev">{labels.periods.previous} <button type="button" className="number-link" aria-label={fill(ui.previousAria, { metric: label, value: previousShown })} onClick={openPrevious}>{previousShown}</button></p>
+          <p className="kpi-prev">{labels.shell.periods.previous} <button type="button" className="number-link" aria-label={fill(ui.previousAria, { metric: label, value: previousShown })} onClick={openPrevious}>{previousShown}</button></p>
           {targets[name]}
         </div>;
       })}

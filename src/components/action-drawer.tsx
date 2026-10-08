@@ -8,7 +8,7 @@ import { trapTabKey } from "./shell/focus-trap";
 import { ShellIcon } from "./shell/shell-icon";
 
 const copy = labels.actions.drawerV3;
-const board = labels.actionBoard;
+const board = labels.actions.board;
 
 /**
  * V3-6（PRD §7.5 第 4 點、§6.3 #41、§9.4 C6）：待辦編輯抽屜。B 代理在 actions-workbench.tsx 以
@@ -58,15 +58,15 @@ export function ActionDrawer({ item, index, title, onClose, pinned, onPin, canMo
   return <dialog ref={dialogRef} className="action-drawer" data-testid="action-drawer" aria-labelledby={titleId} aria-describedby={subtitleId} onCancel={event => { event.preventDefault(); onClose(); }} onClose={onClose} onKeyDown={trapTabKey} data-action-id={item.card.id} data-index={index + 1}>
     <div className="action-drawer-head">
       <div className="action-drawer-head-text"><h2 id={titleId}>{title}</h2><p id={subtitleId} className="action-drawer-sub">{actionDrawerSubtitle(item)}</p></div>
-      <button type="button" className="ui-btn ui-btn-icon action-drawer-close" aria-label={labels.buttons.close} data-testid="action-drawer-close" onClick={onClose} autoFocus><ShellIcon name="close" size={20} /></button>
+      <button type="button" className="ui-btn ui-btn-icon action-drawer-close" aria-label={labels.shell.buttons.close} data-testid="action-drawer-close" onClick={onClose} autoFocus><ShellIcon name="close" size={20} /></button>
     </div>
     <div className="action-drawer-body">{notice ? <p role="status" className="ui-notice action-drawer-notice">{notice}</p> : null}{children}</div>
     {/* C6 底部動作列（固定、靠右）：關閉、置頂、往上移（次要）→ 移除（危險文字按鈕，放最右）。 */}
     <div className="action-drawer-foot">
-      <button type="button" className="ui-btn ui-btn-secondary" data-testid="action-drawer-dismiss" onClick={onClose}>{labels.buttons.close}</button>
-      <button type="button" className="ui-btn ui-btn-secondary" data-testid="action-drawer-pin" aria-pressed={pinned} onClick={onPin}>{pinned ? labels.ui.actionsWorkbench.unpin : labels.buttons.pin}</button>
-      <button type="button" className="ui-btn ui-btn-secondary" data-testid="action-drawer-move-up" disabled={!canMoveUp} onClick={onMoveUp}>{labels.buttons.moveUp}</button>
-      <button type="button" className="ui-btn ui-btn-text ui-btn-danger" data-testid="action-drawer-remove" onClick={onRemove}>{labels.buttons.remove}</button>
+      <button type="button" className="ui-btn ui-btn-secondary" data-testid="action-drawer-dismiss" onClick={onClose}>{labels.shell.buttons.close}</button>
+      <button type="button" className="ui-btn ui-btn-secondary" data-testid="action-drawer-pin" aria-pressed={pinned} onClick={onPin}>{pinned ? labels.actions.workbench.unpin : labels.actions.buttons.pin}</button>
+      <button type="button" className="ui-btn ui-btn-secondary" data-testid="action-drawer-move-up" disabled={!canMoveUp} onClick={onMoveUp}>{labels.actions.buttons.moveUp}</button>
+      <button type="button" className="ui-btn ui-btn-text ui-btn-danger" data-testid="action-drawer-remove" onClick={onRemove}>{labels.actions.buttons.remove}</button>
     </div>
   </dialog>;
 }

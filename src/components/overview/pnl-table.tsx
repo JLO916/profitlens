@@ -78,6 +78,6 @@ export function PnlTable({ snapshot, onEvidence }: PnlTableProps) {
         </tr>)}</tbody>
       </table>
     </div>
-    <details className="data-alternative"><summary>{labels.sections.technicalDetails}</summary><p className="note">{copy.noteTechnical}</p></details>
+    <details className="data-alternative"><summary>{labels.evidence.sections.technicalDetails}</summary><p className="note">{copy.noteTechnical}</p></details>
   </details>;
 }

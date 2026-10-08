@@ -2,11 +2,11 @@
 import { labels } from "./labels.zh-TW";
 
 export { labels };
-export type { Labels, MetricLabel, MetricUnit, RuleLabel, RuleUnit } from "./labels.zh-TW";
+export type { Labels, MetricUnit, RuleUnit } from "./labels.zh-TW";
 
 type Join<K extends string, P extends string> = `${K}.${P}`;
 
-/** 字典中所有字串葉節點的點分路徑，例如 "metrics.net_revenue.label"。 */
+/** 字典中所有字串葉節點的點分路徑，例如 "metrics.net_revenue.headline"。 */
 export type LabelPath<T = typeof labels> = {
   [K in keyof T & string]: T[K] extends string ? K : T[K] extends readonly unknown[] ? never : T[K] extends object ? Join<K, LabelPath<T[K]>> : never;
 }[keyof T & string];

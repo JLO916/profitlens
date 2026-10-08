@@ -103,7 +103,7 @@ function yoySummary(dataset: Dataset, report: WorkspaceSnapshot["report"]): YoyS
     // 資料集的涵蓋日期不合法時 periodPresets 會拋錯（驗證已擋下，這裡只是防呆）：去年同期當作無法取得，不讓整個快照中斷。
     preset = undefined;
   }
-  if (!preset) return { status: "unavailable", reason: labels.periods.yoyInvalidCurrent };
+  if (!preset) return { status: "unavailable", reason: labels.shell.periods.yoyInvalidCurrent };
   if (preset.status !== "ready") return { status: "unavailable", reason: preset.reason };
   const period = { start: preset.previous.start, end: preset.previous.end };
   const summary = aggregatePeriod(dataset, period, scope.channels);

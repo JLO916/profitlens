@@ -6,7 +6,7 @@ export interface AllowedObservation { fact_ids: string[]; observation: string; k
 export interface GroundingIssue { code: string; path: string; message: string }
 export type GroundingResult = { ok: true; output: InsightOutput } | { ok: false; issues: GroundingIssue[] };
 const token = (fact: AiFact) => `{{fact:${fact.id}:${fact.metric}}}`;
-const copy = labels.ui.grounding;
+const copy = labels.shell.ai.grounding;
 const suffix = (fact: AiFact) => fact.metric === "refund_ratio" || fact.metric === "refunds" ? copy.refundCaution : fact.metric === "mer" ? copy.merCaution : "";
 /** Null facts split into two user-facing states: data still to be supplied, or a ratio whose denominator does not hold. */
 const isMissing = (fact: AiFact) => fact.reason_codes.some(code => code.startsWith("MISSING_") || code === "SALES_COVERAGE_UNCONFIRMED" || code === "INVALID_OR_MISSING_METRIC");
@@ -16,7 +16,7 @@ export function observationCatalog(snapshot: AiSnapshot): AllowedObservation[] {
   const parsed = AiSnapshotSchema.parse(snapshot);
   const periodCaution = parsed.comparison.mode === "calendar_months" ? copy.calendarMonthNote : "";
   const entries: AllowedObservation[] = parsed.facts.map(fact => {
-    const subject = fill(copy.subject, { period: fact.period === "previous" ? labels.periods.previous : labels.periods.current, metric: metricDefinitions[fact.metric].label });
+    const subject = fill(copy.subject, { period: fact.period === "previous" ? labels.shell.periods.previous : labels.shell.periods.current, metric: metricDefinitions[fact.metric].label });
     if (fact.value === null) {
       const missing = isMissing(fact);
       return { fact_ids: [fact.id], kind: "missing", observation: `${fill(missing ? copy.observationMissing : copy.observationNotApplicable, { subject, value: token(fact) })}${suffix(fact)}${periodCaution}` };
@@ -97,7 +97,7 @@ export function validateInsightOutput(raw: unknown, snapshot: AiSnapshot): Groun
 
 function formatFact(fact: AiFact): string {
   const unit = metricDefinitions[fact.metric].unit;
-  if (fact.value === null) return unit === "money" || isMissing(fact) ? labels.status.missing : fill(copy.factUnavailable, { state: labels.status.notApplicable });
+  if (fact.value === null) return unit === "money" || isMissing(fact) ? labels.shell.status.missing : fill(copy.factUnavailable, { state: labels.shell.status.notApplicable });
   // AI 事實維持 ASCII 負號、到分（L3）。
   if (unit === "money") return `TWD ${asciiMinus(formatAmountL3(fact.value))}`;
   if (unit === "percent") return asciiMinus(formatRateL3(fact.value));

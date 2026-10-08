@@ -69,13 +69,13 @@ const textOf = (node: ReactNode): string => Array.isArray(node) ? node.map(textO
 const call = (element: TreeElement, handler: "onClick" | "onChange", value?: string) => (element.props[handler] as (event?: unknown) => void)(value === undefined ? undefined : { target: { value } });
 
 // R5-3 試算頁 DOM 契約（SSR，不需任何點擊）：進頁即表單、範本選單、收合的固定假設、版本徽章／草稿、絕對值等值文字。
-const form = labels.scenarioForm;
-const dw = labels.ui.decisionWorkbench;
+const form = labels.scenarios.form;
+const dw = labels.scenarios.decision;
 const pageV3 = labels.scenarios.pageV3;
 /** V3-6（M1）：開始標籤帶 hidden（關著的 ? 說明、沒有內容的範圍提示）。 */
 const isHidden = (html: string) => /^<[^>]*\shidden=""/.test(html);
-const msw = labels.ui.multiScenarioWorkbench;
-const FIELDS = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
+const msw = labels.scenarios.workbench;
+const FIELDS = [labels.scenarios.inputs.volume.label, labels.scenarios.inputs.discount.label, labels.scenarios.inputs.fulfillmentUnit.label, labels.scenarios.inputs.adSpend.label, labels.scenarios.inputs.oneOff.label];
 const noop = () => undefined;
 
 async function source(name = "golden", filters: AnalysisFilters = { channels: ["DTC"] }): Promise<ScenarioSource> {
@@ -142,12 +142,12 @@ describe("R5-3 scenario page opens straight onto the form", () => {
     const plan = card(html, 1);
     expect(plan).toContain(`value="${fill(dw.defaultPlanName, { n: 1 })}"`);
     for (const label of FIELDS) expect(plan, label).toMatch(new RegExp(`<input id="[^"]+" aria-label="${label.replace(/[()（）]/g, ".")}"`));
-    expect(plan).toContain(labels.scenario.acceptAssumptions);
-    expect(plan).toContain(`>${labels.buttons.calculate}</button>`);
+    expect(plan).toContain(labels.scenarios.inputs.acceptAssumptions);
+    expect(plan).toContain(`>${labels.scenarios.buttons.calculate}</button>`);
     // 尚未寫入的草稿方案不給「移除」；也不再有「開始試算」「全部填 0」這兩層／兩種入口。
-    expect(plan).not.toContain(`>${labels.buttons.removeScenario}</button>`);
+    expect(plan).not.toContain(`>${labels.scenarios.buttons.removeScenario}</button>`);
     expect(html).not.toContain(fill(msw.startButton, { channel: "DTC" }));
-    expect(html).not.toContain(labels.buttons.fillZero);
+    expect(html).not.toContain(labels.scenarios.buttons.fillZero);
     expect(card(html, 1)).toContain('data-testid="scenario-draft"');
     expect(html).not.toContain('data-testid="scenario-version"');
     expect(html).not.toContain('data-testid="scenario-2"');
@@ -156,8 +156,8 @@ describe("R5-3 scenario page opens straight onto the form", () => {
   it("demo data shows channel aliases and defaults to the first channel when the site scope has several channels", async () => {
     const demo = await source("demo", { channels: ["MARKETPLACE"] });
     const single = element(render(demo), "scenario-channel", "select");
-    expect(single).toContain(`<option value="MARKETPLACE" selected="">${labels.demoChannelAlias.MARKETPLACE}</option>`);
-    expect(single).toContain(`<option value="DTC">${labels.demoChannelAlias.DTC}</option>`);
+    expect(single).toContain(`<option value="MARKETPLACE" selected="">${labels.data.demoChannelAlias.MARKETPLACE}</option>`);
+    expect(single).toContain(`<option value="DTC">${labels.data.demoChannelAlias.DTC}</option>`);
     const all = render(await source("golden", {}));
     expect(element(all, "scenario-channel", "select")).toMatch(/<option value="DTC" selected="">DTC<\/option>/);
     // 多通路範圍要先另建單通路基準（非同步），SSR 時顯示重算中；選通路只改本頁，不呼叫全站篩選。
@@ -170,15 +170,15 @@ describe("R5-3 scenario page opens straight onto the form", () => {
     const select = element(plan, "scenario-preset", "select");
     expect(select).toContain(`aria-label="${form.presetSelect}"`);
     const options = [...select.matchAll(/<option value="([^"]*)"[^>]*>([^<]*)<\/option>/g)].map(match => [match[1], match[2]]);
-    expect(options).toEqual([["", labels.scenarioPresets.menuPlaceholder], ...SCENARIO_PRESET_IDS.map(id => [id, labels.scenarioPresets.items[id].name])]);
+    expect(options).toEqual([["", labels.scenarios.presets.menuPlaceholder], ...SCENARIO_PRESET_IDS.map(id => [id, labels.scenarios.presets.items[id].name])]);
     expect(options).toHaveLength(7);
-    expect(plan).toContain(labels.scenario.templateNote);
+    expect(plan).toContain(labels.scenarios.inputs.templateNote);
     // 兩步：選單旁的「套用範本」按鈕，未選範本時停用；五格都空白時不顯示覆寫提醒。
-    expect(element(plan, "scenario-preset-apply", "button")).toMatch(new RegExp(`^<button type="button"[^>]*disabled=""[^>]*>${labels.buttons.applyTemplate}</button>$`));
+    expect(element(plan, "scenario-preset-apply", "button")).toMatch(new RegExp(`^<button type="button"[^>]*disabled=""[^>]*>${labels.scenarios.buttons.applyTemplate}</button>$`));
     expect(plan).not.toContain('data-testid="scenario-preset-overwrite"');
     // V3-6（PRD §7.4、M1）：「只是起點」與用途收進範本旁的 ? 說明，關著時 hidden 但仍掛載；還沒選範本時用途寫提示句。
     const help = element(plan, "scenario-template-note", "p");
-    expect(text(help)).toBe(labels.scenario.templateNote);
+    expect(text(help)).toBe(labels.scenarios.inputs.templateNote);
     const popover = plan.slice(plan.lastIndexOf("<div", plan.indexOf('data-testid="scenario-template-note"')));
     expect(isHidden(popover)).toBe(true);
     expect(popover).toMatch(new RegExp(`^<div id="([^"]+)" role="region" aria-label="${pageV3.templateHelpAria}"`));
@@ -201,9 +201,9 @@ describe("R5-3 scenario page opens straight onto the form", () => {
     expect(block).toMatch(/^<details(?![^>]*\sopen)[^>]*data-testid="scenario-assumptions"/);
     expect(block).toContain(`>${form.assumptionsSummary}</summary>`);
     expect(block.match(/<li>/g)).toHaveLength((JSON.parse(dw.assumptions) as string[]).length);
-    expect(block).not.toContain(labels.scenario.acceptAssumptions);
+    expect(block).not.toContain(labels.scenarios.inputs.acceptAssumptions);
     // D-V3-12＝B：工作區還沒記住聲明時，每個方案都有勾選框。
-    expect(card(html, 1)).toMatch(new RegExp(`<input type="checkbox"[^>]*/>${labels.scenario.acceptAssumptions}`));
+    expect(card(html, 1)).toMatch(new RegExp(`<input type="checkbox"[^>]*/>${labels.scenarios.inputs.acceptAssumptions}`));
     expect(card(html, 1)).not.toContain('data-testid="scenario-acknowledged"');
     expect(disclaimerSentences(html).length).toBeLessThanOrEqual(3);
   });
@@ -224,13 +224,13 @@ describe("R5-3 version badge, draft tag and sensitivity on stored plans", () => 
     expect(text(element(a, "scenario-version", "span"))).toBe(fill(form.version, { n: 2 }));
     expect(text(element(a, "scenario-contribution", "strong"))).toBe(formatAmountL1("284.00"));
     expect(a).not.toContain('data-testid="scenario-draft"');
-    expect(text(element(b, "scenario-draft", "span"))).toBe(labels.scenario.draft);
+    expect(text(element(b, "scenario-draft", "span"))).toBe(labels.scenarios.inputs.draft);
     expect(b).not.toContain('data-testid="scenario-version"');
     expect(b).not.toContain('data-testid="scenario-contribution"');
     expect(c).not.toContain('data-testid="scenario-version"');
     expect(c).not.toContain('data-testid="scenario-draft"');
     // 已寫入的方案才有「移除」；比較表沿用 scenario-comparison。
-    expect(a).toContain(`>${labels.buttons.removeScenario}</button>`);
+    expect(a).toContain(`>${labels.scenarios.buttons.removeScenario}</button>`);
     expect(html).toContain('data-testid="scenario-comparison"');
   });
 
@@ -261,12 +261,12 @@ describe("R5-3 relative / absolute input helpers in the form", () => {
     // V3-6（PRD §7.4）：等值換算只在「改成」模式顯示；「增減」模式時仍掛載（hidden），內容是同一個換算。
     for (const field of ["volume_change_pct", "discount_change_pp", "ad_change_pct"]) expect(isHidden(element(plan, `scenario-equivalent-${field}`, "small")), field).toBe(true);
     expect(equivalent("volume_change_pct")).toBe(relativeToAbsolute("volume_change_pct", "50", ctx));
-    expect(equivalent("volume_change_pct")).toBe(fill(labels.scenarioPresets.absolute.equivalentUnits, { value: fill(labels.assist.units.count, { value: "6" }) }));
+    expect(equivalent("volume_change_pct")).toBe(fill(labels.scenarios.presets.absolute.equivalentUnits, { value: fill(labels.assist.units.count, { value: "6" }) }));
     expect(equivalent("discount_change_pp")).toBe(relativeToAbsolute("discount_change_pp", "2", ctx));
-    expect(equivalent("ad_change_pct")).toBe(fill(labels.scenarioPresets.absolute.equivalentBudget, { value: "135.00" }));
+    expect(equivalent("ad_change_pct")).toBe(fill(labels.scenarios.presets.absolute.equivalentBudget, { value: "135.00" }));
     // 反向：在絕對值模式填 6 件／135 元，送進引擎的相對值就是畫面上這兩格的 50／−50。
-    expect(absoluteToRelative("volume_change_pct", "6", ctx)).toEqual({ relative: "50", equivalent: fill(labels.scenarioPresets.absolute.equivalentPct, { value: "+50.0" }) });
-    expect(absoluteToRelative("ad_change_pct", "135", ctx)).toEqual({ relative: "-50", equivalent: fill(labels.scenarioPresets.absolute.equivalentPct, { value: "−50.0" }) });
+    expect(absoluteToRelative("volume_change_pct", "6", ctx)).toEqual({ relative: "50", equivalent: fill(labels.scenarios.presets.absolute.equivalentPct, { value: "+50.0" }) });
+    expect(absoluteToRelative("ad_change_pct", "135", ctx)).toEqual({ relative: "-50", equivalent: fill(labels.scenarios.presets.absolute.equivalentPct, { value: "−50.0" }) });
     expect(plan).not.toContain('data-testid="scenario-equivalent-fulfillment_change_pct"');
     // 範圍提示一律掛載（M1）；五格都在範圍內時全部 hidden、沒有文字。
     for (const field of ["volume_change_pct", "discount_change_pp", "fulfillment_change_pct", "ad_change_pct", "one_time_cost"]) {
@@ -282,7 +282,7 @@ describe("R5-3 relative / absolute input helpers in the form", () => {
     build.calculate({ id: "p", name: "P", inputs: accepted() });
     build.edit("p", { inputs: accepted({ volume_change_pct: "150" }) });
     const plan = card(render(src, build.workspace), 1);
-    for (const [field, label] of [["volume_change_pct", labels.scenario.volume.label], ["discount_change_pp", labels.scenario.discount.label], ["ad_change_pct", labels.scenario.adSpend.label]] as const) {
+    for (const [field, label] of [["volume_change_pct", labels.scenarios.inputs.volume.label], ["discount_change_pp", labels.scenarios.inputs.discount.label], ["ad_change_pct", labels.scenarios.inputs.adSpend.label]] as const) {
       const group = element(plan, `scenario-mode-${field}`, "div");
       expect(group).toContain('role="group"');
       expect(group).toContain(`aria-label="${fill(form.modeGroup, { field: label })}"`);
@@ -298,7 +298,7 @@ describe("R5-3 relative / absolute input helpers in the form", () => {
     expect(isHidden(hint)).toBe(false);
     expect(plan).toMatch(/aria-describedby="[^"]*-volume_change_pct-range"/);
     expect(text(hint)).toBe(rangeHint("volume_change_pct", "150"));
-    expect(text(hint)).toBe(fill(labels.scenarioPresets.range.pct, { min: "−90", max: "+100" }));
+    expect(text(hint)).toBe(fill(labels.scenarios.presets.range.pct, { min: "−90", max: "+100" }));
   });
 
   it("disables the absolute toggle with a reason when the current value is missing (zero_ad: ad spend 0)", async () => {
@@ -306,7 +306,7 @@ describe("R5-3 relative / absolute input helpers in the form", () => {
     const plan = card(html, 1);
     const group = element(plan, "scenario-mode-ad_change_pct", "div");
     expect(group).toMatch(new RegExp(`aria-pressed="false" disabled="">${pageV3.modeAbsolute}</button>`));
-    expect(text(element(plan, "scenario-unavailable-ad_change_pct", "small"))).toBe(labels.scenarioPresets.absolute.unavailable.ad_change_pct);
+    expect(text(element(plan, "scenario-unavailable-ad_change_pct", "small"))).toBe(labels.scenarios.presets.absolute.unavailable.ad_change_pct);
   });
 });
 
@@ -322,8 +322,8 @@ describe("R5-3 other channels stay reachable below the form", () => {
     expect(others).toMatch(/^<details(?![^>]*\sopen)/);
     expect(others).toContain(`<summary>${form.otherChannels}</summary>`);
     expect(others).toContain(fill(msw.editChannelPlans, { channel: "MARKETPLACE" }));
-    expect(others).toContain(fill(msw.planSummary, { plan: "M", resultLabel: labels.scenario.resultTitle, amount: formatAmountL1("19.70") }));
-    expect(others).toContain(fill(msw.selectPlanForMeeting, { selectForMeeting: labels.buttons.selectForMeeting, channel: "MARKETPLACE", plan: "M" }));
+    expect(others).toContain(fill(msw.planSummary, { plan: "M", resultLabel: labels.scenarios.inputs.resultTitle, amount: formatAmountL1("19.70") }));
+    expect(others).toContain(fill(msw.selectPlanForMeeting, { selectForMeeting: labels.meeting.buttons.selectForMeeting, channel: "MARKETPLACE", plan: "M" }));
     // DTC 本身還沒有方案：表單仍是草稿方案 1，不受其他通路影響。
     expect(card(html, 1)).toContain(`value="${fill(dw.defaultPlanName, { n: 1 })}"`);
   });
@@ -343,18 +343,18 @@ describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", ()
   }
   const input = (tree: ReactNode, label: string) => findAll(tree, item => item.type === "input" && item.props["aria-label"] === label)[0];
   const mode = (tree: ReactNode, field: string, which: "relative" | "absolute") => findAll(byTestId(tree, `scenario-mode-${field}`), item => item.type === "button")[which === "relative" ? 0 : 1];
-  const pct = (value: string) => fill(labels.scenarioPresets.absolute.equivalentPct, { value });
+  const pct = (value: string) => fill(labels.scenarios.presets.absolute.equivalentPct, { value });
 
   it("switching to absolute prefills from the current relative value and changes neither inputs nor the result; editing writes back", async () => {
     const { props, state, setState, render } = await calculatedPlan();
     let tree = render(props);
-    expect(input(tree, labels.scenario.volume.label).props.value).toBe("0");
+    expect(input(tree, labels.scenarios.inputs.volume.label).props.value).toBe("0");
     call(mode(tree, "volume_change_pct", "absolute"), "onClick");
     tree = render(props);
     // 切換只換輸入框：預填本期 4 件，相對值 0、結果 284.00、版本 1 都還在，沒有寫入方案。
     expect(setState).not.toHaveBeenCalled();
     expect(mode(tree, "volume_change_pct", "absolute").props["aria-pressed"]).toBe(true);
-    expect(input(tree, labels.scenario.volume.label).props.value).toBe("4");
+    expect(input(tree, labels.scenarios.inputs.volume.label).props.value).toBe("4");
     expect(textOf(byTestId(tree, "scenario-equivalent-volume_change_pct"))).toBe(pct("0.0"));
     expect(textOf(byTestId(tree, "scenario-contribution"))).toBe(formatAmountL1("284.00"));
     expect(textOf(byTestId(tree, "scenario-version"))).toBe(fill(form.version, { n: 1 }));
@@ -362,17 +362,17 @@ describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", ()
     // 廣告也一樣：預填 270.00。
     call(mode(tree, "ad_change_pct", "absolute"), "onClick");
     tree = render(props);
-    expect(input(tree, labels.scenario.adSpend.label).props.value).toBe("270.00");
+    expect(input(tree, labels.scenarios.inputs.adSpend.label).props.value).toBe("270.00");
     // 切回相對：保留目前的相對值，仍不寫入。
     call(mode(tree, "volume_change_pct", "relative"), "onClick");
     tree = render(props);
     expect(setState).not.toHaveBeenCalled();
-    expect(input(tree, labels.scenario.volume.label).props.value).toBe("0");
+    expect(input(tree, labels.scenarios.inputs.volume.label).props.value).toBe("0");
     expect(textOf(byTestId(tree, "scenario-contribution"))).toBe(formatAmountL1("284.00"));
     // 真的改了絕對值才寫回：目標 6 件 → 相對 50，結果清空（變草稿），其他假設不動。
     call(mode(tree, "volume_change_pct", "absolute"), "onClick");
     tree = render(props);
-    call(input(tree, labels.scenario.volume.label), "onChange", "6");
+    call(input(tree, labels.scenarios.inputs.volume.label), "onChange", "6");
     expect(setState).toHaveBeenCalledTimes(1);
     const next = (setState.mock.calls[0][0] as (previous: typeof state) => typeof state)(state);
     expect(next.scenarios[0].inputs).toEqual(accepted({ volume_change_pct: "50", fulfillment_change_pct: "-10" }));
@@ -388,8 +388,8 @@ describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", ()
     call(mode(tree, "volume_change_pct", "absolute"), "onClick");
     tree = render(props);
     expect(setState).not.toHaveBeenCalled();
-    expect(input(tree, labels.scenario.volume.label).props.value).toBe("4.4");
-    expect(textOf(byTestId(tree, "scenario-absolute-note-volume_change_pct"))).toBe(fill(labels.scenarioPresets.absolute.nonIntegerUnits, { units: fill(labels.assist.units.count, { value: "4.4" }) }));
+    expect(input(tree, labels.scenarios.inputs.volume.label).props.value).toBe("4.4");
+    expect(textOf(byTestId(tree, "scenario-absolute-note-volume_change_pct"))).toBe(fill(labels.scenarios.presets.absolute.nonIntegerUnits, { units: fill(labels.assist.units.count, { value: "4.4" }) }));
     // V3-6（M1）：換算錯誤一律掛載，沒有錯誤時 hidden。
     expect(byTestId(tree, "scenario-absolute-error-volume_change_pct").props.hidden).toBe(true);
     expect(textOf(byTestId(tree, "scenario-equivalent-volume_change_pct"))).toBe(pct("+10.0"));
@@ -405,7 +405,7 @@ describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", ()
     // 只選不套：方案不動，顯示該範本的用途，按鈕可按。
     expect(setState).not.toHaveBeenCalled();
     expect(byTestId(tree, "scenario-preset").props.value).toBe("double11");
-    expect(textOf(byTestId(tree, "scenario-preset-purpose"))).toBe(labels.scenarioPresets.items.double11.purpose);
+    expect(textOf(byTestId(tree, "scenario-preset-purpose"))).toBe(labels.scenarios.presets.items.double11.purpose);
     expect(byTestId(tree, "scenario-preset-apply").props.disabled).toBe(false);
     // 改選回提示列：按鈕再停用。
     call(byTestId(tree, "scenario-preset"), "onChange", "");
@@ -420,7 +420,7 @@ describe("R5 fix: interactions on the scenario form (hooks harness, no DOM)", ()
     expect(next.scenarios[0].result).toBeNull();
     tree = render(props);
     expect(byTestId(tree, "scenario-preset").props.value).toBe("");
-    expect(textOf(byTestId(tree, "scenario-preset-purpose"))).toBe(fill(form.presetApplied, { name: labels.scenarioPresets.items.double11.name, purpose: labels.scenarioPresets.items.double11.purpose }));
+    expect(textOf(byTestId(tree, "scenario-preset-purpose"))).toBe(fill(form.presetApplied, { name: labels.scenarios.presets.items.double11.name, purpose: labels.scenarios.presets.items.double11.purpose }));
   });
 
   it("the page's own channel choice is dropped when the site scope changes (A→B→A does not revive it)", async () => {

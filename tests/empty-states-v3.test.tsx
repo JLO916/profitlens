@@ -80,9 +80,9 @@ const FORBIDDEN = /[?？!！→←⇒⇐▸▾▶◀]/;
 describe("V3-8 C 首次進入（§7.10，C10 頁面型）", () => {
   const html = renderToStaticMarkup(<FirstRunState onLoadDemo={noop} onImport={noop} />);
 
-  it("同一個頁面型容器：section.ui-empty-page.state-page[data-testid=empty-state]，h2 是 labels.emptyState.title，下一句是 body", () => {
+  it("同一個頁面型容器：section.ui-empty-page.state-page[data-testid=empty-state]，h2 是 labels.empty.title，下一句是 body", () => {
     expect(html).toMatch(/^<section class="ui-empty-page state-page first-run-state" data-testid="empty-state" aria-labelledby="empty-state-title"><h2 id="empty-state-title">/);
-    expect(html).toContain(`<h2 id="empty-state-title">${labels.emptyState.title}</h2><p>${labels.emptyState.body}</p>`);
+    expect(html).toContain(`<h2 id="empty-state-title">${labels.empty.title}</h2><p>${labels.empty.body}</p>`);
     // 頁面 h1 由 PageHeader 提供（M6 一個 h1）；這裡只有 h2 與「需要的檔案」h3。
     expect(html).not.toContain("<h1");
     expect(occurrences(html, "<h2")).toBe(1);
@@ -92,14 +92,14 @@ describe("V3-8 C 首次進入（§7.10，C10 頁面型）", () => {
   it("不放插圖、eyebrow、步驟列、箭頭 icon 與問句（§7.10）", () => {
     for (const banned of ["empty-illustration", "eyebrow", "empty-steps", "<svg", "button primary large"]) expect(html, banned).not.toContain(banned);
     expect(text(html)).not.toMatch(FORBIDDEN);
-    for (const step of labels.emptyState.steps) expect(text(html), step).not.toContain(`1 ${step}`);
-    expect(text(html)).not.toContain(labels.emptyState.eyebrow);
+    for (const step of labels.empty.steps) expect(text(html), step).not.toContain(`1 ${step}`);
+    expect(text(html)).not.toContain(labels.empty.eyebrow);
   });
 
   it("按鈕列：「載入示範資料」主要在前、「匯入資料」次要在後（C12：主要按鈕放最前面、每個容器最多 1 顆主要）", () => {
     const actions = element(html, 'class="state-actions"');
     const list = buttonsIn(actions);
-    expect(list.map(item => item.text)).toEqual([labels.buttons.loadDemo, labels.buttons.importData]);
+    expect(list.map(item => item.text)).toEqual([labels.shell.buttons.loadDemo, labels.shell.buttons.importData]);
     expect(list[0].attrs).toContain('class="ui-btn ui-btn-primary" data-testid="empty-load-demo"');
     expect(list[1].attrs).toContain('class="ui-btn ui-btn-secondary" data-testid="empty-import"');
     expect(occurrences(html, "ui-btn-primary")).toBe(1);
@@ -107,11 +107,11 @@ describe("V3-8 C 首次進入（§7.10，C10 頁面型）", () => {
     expect(html).not.toContain('data-testid="page-import"');
   });
 
-  it("「需要的檔案」表：檔案｜內容｜匯入範本，三列的內容說明＝stateV3.fileDescriptions，空白範本與範例檔的可及名稱沿用 labels.downloads", () => {
+  it("「需要的檔案」表：檔案｜內容｜匯入範本，三列的內容說明＝stateV3.fileDescriptions，空白範本與範例檔的可及名稱沿用 labels.exports.downloads", () => {
     const table = element(html, 'aria-labelledby="empty-state-files"');
     expect(table).toMatch(/^<table class="template-table template-guide" aria-labelledby="empty-state-files">/);
     const head = [...element(table, "<thead").matchAll(/<th scope="col">([^<]*)<\/th>/g)].map(match => match[1]);
-    expect(head).toEqual([labels.shell.topbarV3.templateColumns.file, labels.exports.excel.columns.summary.detail, labels.downloads.templatesHeading]);
+    expect(head).toEqual([labels.shell.topbarV3.templateColumns.file, labels.exports.excel.columns.summary.detail, labels.exports.downloads.templatesHeading]);
     const rows = [...element(table, "<tbody").matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(match => match[1]);
     expect(rows).toHaveLength(3);
     const files = [labels.importWizard.files.sales, labels.importWizard.files.costs, labels.importWizard.files.ads];
@@ -123,10 +123,10 @@ describe("V3-8 C 首次進入（§7.10，C10 頁面型）", () => {
       const links = buttonsIn(row);
       expect(links.map(link => link.text)).toEqual([labels.shell.topbarV3.templateColumns.blank, labels.shell.topbarV3.templateColumns.example]);
       expect(links[0].tag).toBe("button");
-      expect(links[0].attrs).toContain(`aria-label="${escapeAttr(fill(labels.downloads.blankTemplate, { file }))}"`);
+      expect(links[0].attrs).toContain(`aria-label="${escapeAttr(fill(labels.exports.downloads.blankTemplate, { file }))}"`);
       expect(links[1].tag).toBe("a");
       expect(links[1].attrs).toContain(`download="${roles[index]}"`);
-      expect(links[1].attrs).toContain(`aria-label="${escapeAttr(fill(labels.downloads.exampleTemplate, { file }))}"`);
+      expect(links[1].attrs).toContain(`aria-label="${escapeAttr(fill(labels.exports.downloads.exampleTemplate, { file }))}"`);
       expect(row).toContain('<span class="template-links">');
     });
   });
@@ -154,7 +154,7 @@ describe("V3-8 C 載入中與錯誤（同一個容器）", () => {
   it("載入中：section.ui-empty-page.state-page.loading-state[aria-busy]，spinner＋標題＋說明＋骨架（一行＋四格），沒有 pulse 動畫 class", () => {
     const html = renderToStaticMarkup(<LoadingState />);
     expect(html).toMatch(/^<section class="ui-empty-page state-page loading-state" data-testid="loading-state" aria-busy="true"><div class="spinner" aria-hidden="true"><\/div>/);
-    expect(html).toContain(`<h2>${labels.ui.dashboard.loading.heading}</h2><p>${labels.ui.dashboard.loading.body}</p>`);
+    expect(html).toContain(`<h2>${labels.shell.state.loading.heading}</h2><p>${labels.shell.state.loading.body}</p>`);
     const skeleton = element(html, 'class="state-skeleton"');
     expect(skeleton).toMatch(/^<div class="state-skeleton" aria-hidden="true">/);
     expect(occurrences(skeleton, 'class="ui-skeleton-line state-skeleton-line"')).toBe(1);
@@ -165,20 +165,20 @@ describe("V3-8 C 載入中與錯誤（同一個容器）", () => {
   it("錯誤：h2「資料無法載入。」＋原因 p[role=alert]＋「重新載入」主要；有上次成功的資料才有「回到上次成功的資料」、有問題才有「查看問題清單」與問題清單；沒有「!」圖示", async () => {
     const issues = validateDataset(fixture("errors/duplicate_sales_key")).issues;
     expect(issues.length).toBeGreaterThan(0);
-    const reason = labels.ui.dashboard.errors.validationFailed;
+    const reason = labels.shell.state.errors.validationFailed;
     const full = renderToStaticMarkup(<ErrorState error={reason} issues={issues} onRetry={noop} onBack={noop} />);
     expect(full).toMatch(/^<section class="ui-empty-page state-page error-state" data-testid="error-state" aria-labelledby="error-state-title"><h2 id="error-state-title">/);
     expect(full).toContain(`<h2 id="error-state-title">${copy.errorTitle}</h2><p role="alert">${reason}</p>`);
     const actions = buttonsIn(element(full, 'class="state-actions"'));
-    expect(actions.map(item => item.text)).toEqual([labels.ui.dashboard.errorState.retry, labels.ui.dashboard.errorState.back, copy.viewIssues]);
+    expect(actions.map(item => item.text)).toEqual([labels.shell.state.errorState.retry, labels.shell.state.errorState.back, copy.viewIssues]);
     expect(actions.map(item => /class="ui-btn ([^"]+)"/.exec(item.attrs)![1])).toEqual(["ui-btn-primary", "ui-btn-secondary", "ui-btn-text"]);
-    expect(element(full, 'data-testid="error-issues"')).toContain(`role="region" aria-label="${escapeAttr(labels.ui.issueList.regionAria)}"`);
+    expect(element(full, 'data-testid="error-issues"')).toContain(`role="region" aria-label="${escapeAttr(labels.data.issues.regionAria)}"`);
     for (const banned of ["error-icon", ">!<", "button quiet"]) expect(full, banned).not.toContain(banned);
 
     const firstLoad = renderToStaticMarkup(<ErrorState error={reason} issues={issues} onRetry={noop} />);
-    expect(buttonsIn(element(firstLoad, 'class="state-actions"')).map(item => item.text)).toEqual([labels.ui.dashboard.errorState.retry, copy.viewIssues]);
-    const noIssues = renderToStaticMarkup(<ErrorState error={labels.ui.dashboard.errors.fetchFailed} issues={[]} onRetry={noop} onBack={noop} />);
-    expect(buttonsIn(element(noIssues, 'class="state-actions"')).map(item => item.text)).toEqual([labels.ui.dashboard.errorState.retry, labels.ui.dashboard.errorState.back]);
+    expect(buttonsIn(element(firstLoad, 'class="state-actions"')).map(item => item.text)).toEqual([labels.shell.state.errorState.retry, copy.viewIssues]);
+    const noIssues = renderToStaticMarkup(<ErrorState error={labels.shell.state.errors.fetchFailed} issues={[]} onRetry={noop} onBack={noop} />);
+    expect(buttonsIn(element(noIssues, 'class="state-actions"')).map(item => item.text)).toEqual([labels.shell.state.errorState.retry, labels.shell.state.errorState.back]);
     expect(noIssues).not.toContain('data-testid="error-issues"');
     expect(noIssues).not.toContain('role="region"');
   });
@@ -277,12 +277,12 @@ describe("V3-8 C 樣式（globals.css）", () => {
 describe("V3-8 C 區段空狀態（§7.10 表、C10）", () => {
   /** §7.10 表（本代理負責的列＋錯誤列；「健檢沒有結果」由代理 A 在通路健檢實作）。動作為 null 表示表中寫「—」或會議頁沒有切頁的 prop（見回報 notes）。 */
   const rows = [
-    { name: "尚無待辦", title: labels.actions.pageV3.emptyTitle, body: labels.actions.pageV3.emptyBody, actions: [labels.buttons.addAction] },
+    { name: "尚無待辦", title: labels.actions.pageV3.emptyTitle, body: labels.actions.pageV3.emptyBody, actions: [labels.actions.buttons.addAction] },
     { name: "篩選無結果", title: labels.products.panel.noProducts, body: null, actions: [labels.products.pageV3.clearFilters] },
-    { name: "沒有方案", title: copy.noPlansTitle, body: copy.noPlansBody, actions: [labels.buttons.addScenario] },
+    { name: "沒有方案", title: copy.noPlansTitle, body: copy.noPlansBody, actions: [labels.scenarios.buttons.addScenario] },
     { name: "會議沒有選入方案", title: copy.meetingNoScenarioTitle, body: copy.meetingNoScenarioBody, actions: [] },
     { name: "會議歷史為空", title: copy.meetingHistoryTitle, body: copy.meetingHistoryBody, actions: [] },
-    { name: "錯誤", title: copy.errorTitle, body: null, actions: [labels.ui.dashboard.errorState.retry, labels.ui.dashboard.errorState.back, copy.viewIssues] },
+    { name: "錯誤", title: copy.errorTitle, body: null, actions: [labels.shell.state.errorState.retry, labels.shell.state.errorState.back, copy.viewIssues] },
   ];
   /** 動作「動詞＋名詞」：動詞白名單＋後面還有名詞（「重新載入」是 PRD 指定的動作，受詞是資料本身）。 */
   const VERBS = ["新增", "清除", "前往", "回到", "查看", "載入", "匯入", "重新載入"];
@@ -304,10 +304,10 @@ describe("V3-8 C 區段空狀態（§7.10 表、C10）", () => {
   });
 
   it("首次進入的標題沿用 v2 鍵（V3-10 前不改字），說明句含「示範資料（虛構）」——§7.10 允許「（虛構）」出現的第二處", () => {
-    expect(labels.emptyState.title).toBe("還沒有資料");
-    expect(labels.emptyState.body).toContain("示範資料（虛構）");
+    expect(labels.empty.title).toBe("還沒有資料");
+    expect(labels.empty.body).toContain("示範資料（虛構）");
     expect(labels.shell.dataStatus.demoTitle).toBe("示範資料（虛構）");
-    expect(labels.status.demo).toBe("示範資料");
+    expect(labels.shell.status.demo).toBe("示範資料");
   });
 
   it("沒有方案：0 個方案時（基準已過期、沒有寫入的方案）新增格就是空狀態（標題＋說明＋「新增方案」），有方案時才顯示最多 3 個的說明；v2 的 empty-note 移除", async () => {
@@ -319,9 +319,9 @@ describe("V3-8 C 區段空狀態（§7.10 表、C10）", () => {
     const html = renderToStaticMarkup(createElement(DecisionWorkbench, { dataset, snapshot, revision: 2, input, state, setState: noop, onEvidence: noop }));
     expect(element(html, 'data-testid="scenario-columns"')).toMatch(/^<div class="scenario-columns" data-testid="scenario-columns" data-count="0">/);
     const block = element(html, 'class="scenario-add ui-empty-block scenario-add-empty"');
-    expect(block).toMatch(new RegExp(`^<div class="scenario-add ui-empty-block scenario-add-empty"><p class="ui-empty-title">${copy.noPlansTitle}</p><p>${copy.noPlansBody}</p><button type="button" class="ui-btn ui-btn-secondary" data-testid="scenario-add"[^>]*>${labels.buttons.addScenario}</button></div>$`));
+    expect(block).toMatch(new RegExp(`^<div class="scenario-add ui-empty-block scenario-add-empty"><p class="ui-empty-title">${copy.noPlansTitle}</p><p>${copy.noPlansBody}</p><button type="button" class="ui-btn ui-btn-secondary" data-testid="scenario-add"[^>]*>${labels.scenarios.buttons.addScenario}</button></div>$`));
     expect(html).not.toContain("empty-note");
-    expect(html).not.toContain(labels.ui.decisionWorkbench.emptyPlans);
+    expect(html).not.toContain(labels.scenarios.decision.emptyPlans);
     expect(html).not.toContain(labels.scenarios.pageV3.addNote);
   });
 
@@ -340,13 +340,13 @@ describe("V3-8 C 區段空狀態（§7.10 表、C10）", () => {
     const golden = { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), revision: 1 };
     const html = renderToStaticMarkup(createElement(ActionsWorkbench, { workspace: emptyActionWorkspace(), onChange: noop, source: golden, onEvidence: noop, onExport: noop, view: "board", onViewChange: noop }));
     const block = element(html, 'data-testid="actions-empty"');
-    expect(text(block)).toBe(`${labels.actions.pageV3.emptyTitle}${labels.actions.pageV3.emptyBody}${labels.buttons.addAction}`);
+    expect(text(block)).toBe(`${labels.actions.pageV3.emptyTitle}${labels.actions.pageV3.emptyBody}${labels.actions.buttons.addAction}`);
   });
 
   it("會議歷史為空：.ui-empty-block（區段型、與內容同高）＝標題＋說明；合起來仍是 v2 的 historyEmpty", () => {
     const html = renderToStaticMarkup(createElement(MeetingHistory, { history: [] }));
     expect(html).toContain(`<div class="ui-empty-block meeting-history-empty"><p class="ui-empty-title">${copy.meetingHistoryTitle}</p><p>${copy.meetingHistoryBody}</p></div>`);
-    expect(`${copy.meetingHistoryTitle}${copy.meetingHistoryBody}`).toBe(labels.meetingPage.historyEmpty);
+    expect(`${copy.meetingHistoryTitle}${copy.meetingHistoryBody}`).toBe(labels.meeting.page.historyEmpty);
   });
 });
 

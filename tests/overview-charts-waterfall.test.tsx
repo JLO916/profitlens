@@ -278,7 +278,7 @@ describe("ProfitSection：本期利潤結構（F2，§10.3）", () => {
       const data = profitWaterfall(snapshot, "all");
       const details = element(html, 'class="data-alternative"')!;
       expect(details).not.toMatch(/^<details[^>]*\sopen/);
-      expect(textOf(element(details, "<summary")!)).toBe(fill(labels.ui.overview.dataTable, { title: profitCopy.section }));
+      expect(textOf(element(details, "<summary")!)).toBe(fill(labels.overview.page.dataTable, { title: profitCopy.section }));
       expect(openTag(details, 'role="region"')).toContain(`aria-label="${profitCopy.table.aria}"`);
       expect(textOf(element(details, "<thead")!)).toBe(`${profitCopy.table.item}${profitCopy.table.amount}${profitCopy.table.share}`);
       const rows = rowsOf(details);
@@ -392,7 +392,7 @@ describe("WaterfallSvg 幾何（C17、§9.5）", () => {
       });
     }
     const demoTicks = waterfallGeometry(bridgeWaterfall(demo.snapshot).bars, 800, chartHeights.lg).ticks;
-    expect(demoTicks.slice(1).every(tick => tick.value % 10_000 === 0 && tick.label === fill(labels.units.wan, { value: String(tick.value / 10_000) }))).toBe(true);
+    expect(demoTicks.slice(1).every(tick => tick.value % 10_000 === 0 && tick.label === fill(labels.format.units.wan, { value: String(tick.value / 10_000) }))).toBe(true);
   });
 
   it("負水位往下畫：起點與終點都為負時，柱從 start 畫到 end、起訖柱從 0 往下", () => {
@@ -455,9 +455,9 @@ describe("WaterfallSvg 幾何（C17、§9.5）", () => {
   });
 
   it("刻度文字：0 只寫「0」、萬元整數、負值 U+2212、不到 1 萬交給 formatAmountL1", () => {
-    expect(waterfallTickLabels([0, 500_000, 1_000_000], 500_000)).toEqual(["0", fill(labels.units.wan, { value: "50" }), fill(labels.units.wan, { value: "100" })]);
-    expect(waterfallTickLabels([-1_000_000, 0, 1_000_000], 1_000_000)).toEqual([`${MINUS}${fill(labels.units.wan, { value: "100" })}`, "0", fill(labels.units.wan, { value: "100" })]);
-    expect(waterfallTickLabels([0, 5_000, 10_000], 5_000)).toEqual(["0", fill(labels.units.wan, { value: "0.5" }), fill(labels.units.wan, { value: "1.0" })]);
+    expect(waterfallTickLabels([0, 500_000, 1_000_000], 500_000)).toEqual(["0", fill(labels.format.units.wan, { value: "50" }), fill(labels.format.units.wan, { value: "100" })]);
+    expect(waterfallTickLabels([-1_000_000, 0, 1_000_000], 1_000_000)).toEqual([`${MINUS}${fill(labels.format.units.wan, { value: "100" })}`, "0", fill(labels.format.units.wan, { value: "100" })]);
+    expect(waterfallTickLabels([0, 5_000, 10_000], 5_000)).toEqual(["0", fill(labels.format.units.wan, { value: "0.5" }), fill(labels.format.units.wan, { value: "1.0" })]);
     expect(waterfallTickLabels([0, 500, 1_000], 500)).toEqual(["0", formatAmountL1("500.00"), formatAmountL1("1000.00")]);
   });
 });

@@ -33,10 +33,10 @@ function OpenBasisDialog({ onClose, section }: { onClose: () => void; section: B
     return () => { if (dialog.open) dialog.close(); if (opener?.isConnected) opener.focus(); };
   }, []);
   return <dialog ref={ref} className="basis-dialog" aria-labelledby={titleId} data-testid="basis-dialog" onCancel={event => { event.preventDefault(); onClose(); }}>
-    <header className="evidence-header"><h2 id={titleId}>{labels.basis.title}</h2><button type="button" className="button quiet" onClick={onClose} autoFocus>{labels.buttons.close}</button></header>
+    <header className="evidence-header"><h2 id={titleId}>{labels.glossary.basis.title}</h2><button type="button" className="button quiet" onClick={onClose} autoFocus>{labels.shell.buttons.close}</button></header>
     <div className="evidence-body">
-      <ol className="basis-list">{labels.basis.items.map(item => <li key={item}>{item}</li>)}</ol>
-      <p className="note">{labels.basis.aliasNote}</p>
+      <ol className="basis-list">{labels.glossary.basis.items.map(item => <li key={item}>{item}</li>)}</ol>
+      <p className="note">{labels.glossary.basis.aliasNote}</p>
       <GlossarySection query={query} onQuery={setQuery} v2HeadingRef={v2HeadingRef} />
     </div>
   </dialog>;

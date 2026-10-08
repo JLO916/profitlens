@@ -18,7 +18,7 @@ describe("一頁摘要的關鍵差額（L1 方向詞＋成長率）", () => {
   it("PRD §8.5 規則 1 的例子：−598,833.95 ÷ 1,868,626.68 →「少賺 59.9 萬（−32.0%）」，成長率從精確值一次取位", () => {
     const row = { metric: "contribution_after_marketing" as const, previous: metric("1868626.68"), current: metric("1269792.73"), change: metric("-598833.95") };
     expect(headlineChangeText(row)).toBe(`${labels.format.earnLess} 59.9 萬（${MINUS}32.0%）`);
-    expect(headlineChangeText(row)).toBe(fill(labels.ui.managerSummary.changePhraseGrowth, { word: labels.format.earnLess, amount: formatHeadlineAmount("-598833.95"), growth: formatGrowth("1269792.73", "1868626.68", "L1")! }));
+    expect(headlineChangeText(row)).toBe(fill(labels.meeting.managerSummary.changePhraseGrowth, { word: labels.format.earnLess, amount: formatHeadlineAmount("-598833.95"), growth: formatGrowth("1269792.73", "1868626.68", "L1")! }));
   });
 
   it("golden 合計：淨營收多 220 元（+9.8%）、扣廣告後貢獻少賺 315 元（−55.3%）", () => {
@@ -34,7 +34,7 @@ describe("一頁摘要的關鍵差額（L1 方向詞＋成長率）", () => {
   it("上期 ≤ 0 不附成長率、差額為零只寫持平、缺值依原因碼寫資料待補", () => {
     expect(headlineChangeText({ metric: "contribution_after_marketing", previous: metric("-15.00"), current: metric("270.00"), change: metric("285.00") })).toBe(`${labels.format.turnedPositive} 285 元`);
     expect(headlineChangeText({ metric: "net_revenue", previous: metric("2470.00"), current: metric("2470.00"), change: metric("0.00") })).toBe(labels.format.flat);
-    expect(headlineChangeText({ metric: "net_revenue", previous: metric(null, ["MISSING_COGS"]), current: metric("1.00"), change: metric(null, ["MISSING_COGS"]) })).toBe(labels.status.missing);
+    expect(headlineChangeText({ metric: "net_revenue", previous: metric(null, ["MISSING_COGS"]), current: metric("1.00"), change: metric(null, ["MISSING_COGS"]) })).toBe(labels.shell.status.missing);
   });
 
   it("顏色依有利／不利：貢獻減少是 negative，費用減少不是", () => {
@@ -50,14 +50,14 @@ describe("已經是百分數／百分點的值", () => {
     expect(formatPercentNumber("-90", "L2", { signed: true })).toBe(`${MINUS}90.0%`);
     expect(formatPercentNumber("0.000000000000", "L1", { signed: true })).toBe("0.0%");
     expect(formatPercentNumber("12.345", "L3")).toBe("12.35%");
-    expect(formatPercentNumber(null, "L1")).toBe(labels.status.missing);
+    expect(formatPercentNumber(null, "L1")).toBe(labels.shell.status.missing);
   });
 
   it("總覽貢獻率差（百分點）：先精確除以 100，再依層取位", () => {
     // 手算：16.17% − 30.42% 的精確差 −14.251… 個百分點。
-    expect(formatPointsValue("-14.251234", "L1")).toBe(fill(labels.units.pointsDown, { value: "14.3" }));
-    expect(formatPointsValue("-14.251234", "L3")).toBe(fill(labels.units.points, { value: `${MINUS}14.25` }));
-    expect(formatPointsValue("2.05", "L2")).toBe(fill(labels.units.points, { value: "+2.1" }));
+    expect(formatPointsValue("-14.251234", "L1")).toBe(fill(labels.format.units.pointsDown, { value: "14.3" }));
+    expect(formatPointsValue("-14.251234", "L3")).toBe(fill(labels.format.units.points, { value: `${MINUS}14.25` }));
+    expect(formatPointsValue("2.05", "L2")).toBe(fill(labels.format.units.points, { value: "+2.1" }));
   });
 });
 
@@ -72,7 +72,7 @@ describe("計算與來源抽屜（§7.8）：L1 大數字＋到分的精確值�
     const html = render({ title: "t", name: "contribution_after_marketing", metric: metric("1269792.73"), period, channels: ["DTC"], sources: [] });
     expect(big(html)).toBe(formatAmountL1("1269792.73"));
     expect(big(html)).toBe("127.0 萬");
-    expect(precise(html)).toBe(fill(labels.units.yuan, { value: formatAmountL3("1269792.73") }));
+    expect(precise(html)).toBe(fill(labels.format.units.yuan, { value: formatAmountL3("1269792.73") }));
     expect(precise(html)).toBe("1,269,792.73 元");
     expect(html).not.toContain('data-testid="evidence-rounding-note"');
   });
@@ -86,11 +86,11 @@ describe("計算與來源抽屜（§7.8）：L1 大數字＋到分的精確值�
 
   it("差額：大字帶正負號（golden −315.00），組成到分、表頭標（元），技術細節附取位說明", () => {
     const html = render({ title: "t", name: "contribution_after_marketing", metric: metric("-315.00"), period, channels: ["DTC"], sources: [],
-      formula: "f", components: [{ label: labels.periods.previous, metric: metric("570.00") }, { label: labels.periods.current, metric: metric("255.00") }] });
+      formula: "f", components: [{ label: labels.shell.periods.previous, metric: metric("570.00") }, { label: labels.shell.periods.current, metric: metric("255.00") }] });
     expect(big(html)).toBe(`${MINUS}315 元`);
     expect(precise(html)).toBe(`${MINUS}315.00 元`);
     // V3-5（§7.8）：組成項目改成 14px 表格，「（元）」只標在欄頭（上期（元）／本期（元）／差額（元）），儲存格到分不帶單位。
-    expect(html).toContain(`<th scope="col" class="num">${fill(labels.units.yuanColumn, { label: labels.periods.current })}</th>`);
+    expect(html).toContain(`<th scope="col" class="num">${fill(labels.format.units.yuanColumn, { label: labels.shell.periods.current })}</th>`);
     expect(html).toContain(`<td class="num">${formatAmountL3("255.00")}</td>`);
     expect(html).toContain(`<td class="num">${formatSignedDelta("-315.00", "L3")}</td>`);
     expect(html).toContain(labels.format.roundingNote);
@@ -98,7 +98,7 @@ describe("計算與來源抽屜（§7.8）：L1 大數字＋到分的精確值�
 
   it("空值：大字依原因碼寫不適用，不顯示精確值行", () => {
     const html = render({ title: "t", name: "mer", metric: metric(null, ["NON_POSITIVE_DENOMINATOR"]), period, channels: ["DTC"], sources: [] });
-    expect(big(html)).toBe(labels.status.notApplicable);
+    expect(big(html)).toBe(labels.shell.status.notApplicable);
     expect(precise(html)).toBeUndefined();
   });
 });

@@ -13,8 +13,8 @@ const status = (page: Page) => page.getByTestId("workspace-status");
 /** 開發者驗證頁載入一份 fixtures 資料集（missing-cogs＝fixtures/errors/missing_cogs，partial）。 */
 async function loadFixture(page: Page, id: string, state: string) {
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(id);
-  await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
   await expect(status(page)).toContainText(state);
   await dismissSavePrompt(page);
 }
@@ -38,7 +38,7 @@ function flatDataset(): Record<WizardRole, FilePayload> {
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
 test("V3-8 資料來源頁：區塊依序、問題表六欄與原因碼切換、下載問題清單、頁首主次隨有無資料對調", async ({ page }) => {
-  await loadFixture(page, "missing-cogs", labels.status.partial);
+  await loadFixture(page, "missing-cogs", labels.shell.status.partial);
   await navigateTo(page, "data");
   // §7.7.1 順序：狀態一行 → 問題 → 範圍與金額基準 → 前處理 → 選填資料 → 來源預覽 → 版本與來源資訊 → 範本。DOM 順序與由上到下的位置都要一致。
   const { domOrdered, tops } = await blockPositions(page, dataPageBlocks);
@@ -50,7 +50,7 @@ test("V3-8 資料來源頁：區塊依序、問題表六欄與原因碼切換、
   await expectHeaderOrder(page, true);
 
   const issues = page.getByTestId("data-issues");
-  await expect(issues.getByRole("heading", { level: 2, name: labels.sections.dataIssues })).toBeVisible();
+  await expect(issues.getByRole("heading", { level: 2, name: labels.data.sections.dataIssues })).toBeVisible();
   const table = issueTable(issues);
   // 六欄表頭（textContent 含預設 hidden 的原因碼欄）；可及表頭只有前五欄，原因碼欄預設看不見。
   await expect(table.locator("thead th")).toHaveText([...issueColumns]);
@@ -60,8 +60,8 @@ test("V3-8 資料來源頁：區塊依序、問題表六欄與原因碼切換、
   await expect(toggle).toHaveAttribute("aria-pressed", "false");
   const row = table.locator("tbody tr");
   await expect(row).toHaveCount(1);
-  // 「問題」欄只放 L1 冒號後段、「修法」欄放 L2（labels.importErrors 樣板帶入檔名與行號後拆開）。
-  const missing = issueCells(fill(labels.importErrors.MISSING_COGS, { file: "sales_daily.csv", line: 6 }));
+  // 「問題」欄只放 L1 冒號後段、「修法」欄放 L2（labels.errors.import 樣板帶入檔名與行號後拆開）。
+  const missing = issueCells(fill(labels.errors.import.MISSING_COGS, { file: "sales_daily.csv", line: 6 }));
   await expectIssueRow(row, { file: "sales_daily.csv", line: 6, field: "cogs_net", ...missing, severity: "partial" });
   await expect(row.locator("td.issue-code")).toBeHidden();
   // 按「顯示原因碼」：aria-pressed=true，原因碼欄（表頭與每列）看得見。
@@ -76,7 +76,7 @@ test("V3-8 資料來源頁：區塊依序、問題表六欄與原因碼切換、
 
   // 工具列「下載問題清單 CSV」：檔名與頂欄匯出選單相同。
   const download = page.getByTestId("data-issues-download");
-  await expect(download).toHaveText(labels.downloads.issuesCsv);
+  await expect(download).toHaveText(labels.exports.downloads.issuesCsv);
   const [file] = await Promise.all([page.waitForEvent("download"), download.click()]);
   expect(file.suggestedFilename()).toBe("profitlens-issues.csv");
   const csv = await readFile((await file.path())!, "utf8");
@@ -85,19 +85,19 @@ test("V3-8 資料來源頁：區塊依序、問題表六欄與原因碼切換、
 
   // 清空後仍停在資料來源頁：頁首「載入示範資料」主要在前、「匯入資料」次要在後；空狀態不重複按鈕列（M6），整頁只有一顆「載入示範資料」。
   const replacement = await clearWorkspace(page);
-  await replacement.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
-  await expect(status(page)).toContainText(labels.status.empty);
+  await replacement.getByRole("button", { name: labels.storage.replacement.discardAndContinue, exact: true }).click();
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await closeStorage(page);
   await expect(page.getByTestId("data-issues")).toHaveCount(0);
   await expect(page.getByTestId("empty-state")).toBeVisible();
   await expect(page.getByTestId("empty-load-demo")).toHaveCount(0);
   await expect(page.getByTestId("empty-import")).toHaveCount(0);
   await expectHeaderOrder(page, false);
-  await expect(page.getByRole("button", { name: labels.buttons.loadDemo, exact: true })).toHaveCount(1);
-  await expect(page.getByRole("button", { name: labels.buttons.importData, exact: true })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: labels.shell.buttons.importData, exact: true })).toHaveCount(1);
   // 主要按鈕真的會載入示範資料。
   await clickReplacing(page, page.locator(".page-heading .load-controls .ui-btn-primary"));
-  await expect(status(page)).toContainText(fill(labels.status.ready, { date: "2026-08-24" }));
+  await expect(status(page)).toContainText(fill(labels.shell.status.ready, { date: "2026-08-24" }));
   await dismissSavePrompt(page);
   await navigateTo(page, "data");
   await expectHeaderOrder(page, true);
@@ -133,7 +133,7 @@ test("V3-8 通路健檢空狀態：8 條規則都沒觸發時顯示標題、說�
   // 同一份資料的資料來源頁：沒有問題（沒有問題表與下載鈕）、未稅匯入沒有前處理、版本與來源資訊多一列「匯入時間」。
   await navigateTo(page, "data");
   await expect(page.getByTestId("data-status-line")).toContainText(v3.statusLine.noIssues);
-  await expect(page.getByTestId("data-issues")).toContainText(labels.ui.workspacePanels.noIssues);
+  await expect(page.getByTestId("data-issues")).toContainText(labels.data.panel.noIssues);
   await expect(issueTable(page.getByTestId("data-issues"))).toHaveCount(0);
   await expect(page.getByTestId("data-issues-download")).toHaveCount(0);
   await expect(page.getByTestId("data-preprocessing")).toContainText(labels.importWizard.noConversion);

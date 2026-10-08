@@ -56,7 +56,7 @@ function metadata(dataset: Dataset, snapshot: WorkspaceSnapshot, conversion?: Ta
     comparison_mode: text(snapshot.report.comparison.mode), previous_days: numeric(String(snapshot.report.comparison.previous_days)), current_days: numeric(String(snapshot.report.comparison.current_days)),
     previous_period_start: text(snapshot.report.previous.period.start), previous_period_end: text(snapshot.report.previous.period.end),
     current_period_start: text(snapshot.report.current.period.start), current_period_end: text(snapshot.report.current.period.end),
-    limitations: text(converted ? `${labels.ui.export.limitationsSnapshot} ${converted}` : labels.ui.export.limitationsSnapshot),
+    limitations: text(converted ? `${labels.exports.common.limitationsSnapshot} ${converted}` : labels.exports.common.limitationsSnapshot),
   };
 }
 function sourceRefs(sources: readonly SourceRef[], filenameMap: FilenameMap): CsvCell {
@@ -96,7 +96,7 @@ export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
     const summary = snapshot.report[period];
     for (const name of metricNames) records.push({ row_type: text("period_summary"), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), ...metricRecord(name, summary.metrics[name], summary.sources, filenameMap) });
     const dailyAverages = snapshot.report.comparison[period === "previous" ? "previous_daily_average" : "current_daily_average"];
-    for (const name of MONEY_METRICS) records.push({ row_type: text("daily_average"), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), ...metricRecord(name, dailyAverages[name], summary.sources, filenameMap), metric_label: text(fill(labels.ui.export.dailyAverageLabel, { metric: metricDefinitions[name].label })), unit: text("TWD/day") });
+    for (const name of MONEY_METRICS) records.push({ row_type: text("daily_average"), ...recordScope("all", snapshot.report.scope.channels, period, summary.period), ...metricRecord(name, dailyAverages[name], summary.sources, filenameMap), metric_label: text(fill(labels.exports.common.dailyAverageLabel, { metric: metricDefinitions[name].label })), unit: text("TWD/day") });
     for (const channel of snapshot.report.scope.channels) {
       const channelSummary = summary.channels[channel];
       for (const name of metricNames) records.push({ row_type: text("channel"), channel: text(channel), ...recordScope("channel", [channel], period, summary.period), ...metricRecord(name, channelSummary.metrics[name], channelSummary.sources, filenameMap) });
@@ -144,14 +144,14 @@ export function exportSnapshotCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
     end: [snapshot.report.previous.period.end, snapshot.report.current.period.end].sort()[1],
   };
   const bridgeSources = [...snapshot.report.previous.sources, ...snapshot.report.current.sources];
-  for (const name of MONEY_METRICS) records.push({ row_type: text("daily_average_change"), ...recordScope("all", snapshot.report.scope.channels, "comparison", comparison), ...metricRecord(name, snapshot.report.comparison.daily_average_changes[name], [...snapshot.report.previous.sources, ...snapshot.report.current.sources], filenameMap), metric_label: text(fill(labels.ui.export.dailyAverageChangeLabel, { metric: metricDefinitions[name].label })), unit: text("TWD/day") });
+  for (const name of MONEY_METRICS) records.push({ row_type: text("daily_average_change"), ...recordScope("all", snapshot.report.scope.channels, "comparison", comparison), ...metricRecord(name, snapshot.report.comparison.daily_average_changes[name], [...snapshot.report.previous.sources, ...snapshot.report.current.sources], filenameMap), metric_label: text(fill(labels.exports.common.dailyAverageChangeLabel, { metric: metricDefinitions[name].label })), unit: text("TWD/day") });
   const bridgeMetadata: ExportRecord = {
     row_type: text("bridge"), ...recordScope("all", snapshot.report.scope.channels, "comparison", comparison), unit: text("TWD"),
     bridge_reconciled: snapshot.report.bridge.reconciled === null ? empty : text(String(snapshot.report.bridge.reconciled)),
   };
-  for (const name of AMOUNT_FIELDS) records.push({ ...bridgeMetadata, metric: text(name), metric_label: text(`${metricDefinitions[name].label}${labels.csvSuffix.change}`), ...valueFields(snapshot.report.bridge.components[name]), source_refs: sourceRefs(metricSources(name, bridgeSources), filenameMap) });
-  records.push({ ...bridgeMetadata, metric: text("sum"), metric_label: text(labels.ui.export.bridgeSumLabel), ...valueFields(snapshot.report.bridge.sum), source_refs: sourceRefs(bridgeSources, filenameMap) });
-  records.push({ ...bridgeMetadata, metric: text("contribution_change"), metric_label: text(fill(labels.ui.export.contributionChangeLabel, { metric: metricDefinitions.contribution_after_marketing.label })), ...valueFields(snapshot.report.bridge.contribution_change), source_refs: sourceRefs(bridgeSources, filenameMap) });
+  for (const name of AMOUNT_FIELDS) records.push({ ...bridgeMetadata, metric: text(name), metric_label: text(`${metricDefinitions[name].label}${labels.exports.csv.suffix.change}`), ...valueFields(snapshot.report.bridge.components[name]), source_refs: sourceRefs(metricSources(name, bridgeSources), filenameMap) });
+  records.push({ ...bridgeMetadata, metric: text("sum"), metric_label: text(labels.exports.common.bridgeSumLabel), ...valueFields(snapshot.report.bridge.sum), source_refs: sourceRefs(bridgeSources, filenameMap) });
+  records.push({ ...bridgeMetadata, metric: text("contribution_change"), metric_label: text(fill(labels.exports.common.contributionChangeLabel, { metric: metricDefinitions.contribution_after_marketing.label })), ...valueFields(snapshot.report.bridge.contribution_change), source_refs: sourceRefs(bridgeSources, filenameMap) });
   return renderRecords(metadata(dataset, snapshot, conversion), records);
 }
 
@@ -164,7 +164,7 @@ export function exportProductsCsv(dataset: Dataset, snapshot: WorkspaceSnapshot,
       row_type: text("product"), ...recordScope("sku", [row.channel], "current", snapshot.report.current.period),
       scope: text(JSON.stringify({ kind: "sku", channels: [row.channel], sku: row.sku, category: row.category, product_category: productScope.category ?? "", product_query: productScope.query ?? "" })),
       channel: text(row.channel), sku: text(row.sku), category: text(row.category), ...metricRecord(name, row.metrics[name], row.sources, filenameMap),
-      limitations: text(labels.ui.export.limitationsProducts),
+      limitations: text(labels.exports.common.limitationsProducts),
     });
   }
   if (!rows.length) records.push({ row_type: text("selection"), ...recordScope("sku", snapshot.report.scope.channels, "current", snapshot.report.current.period), value: empty, reason_codes: text(JSON.stringify(["NO_MATCHING_PRODUCTS"])), source_refs: text("[]") });

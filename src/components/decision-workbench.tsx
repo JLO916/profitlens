@@ -23,7 +23,7 @@ import { toneClass } from "./manager-summary";
 import { usePageSlot } from "./shell/page-slot";
 import { ShellIcon } from "./shell/shell-icon";
 
-const ui = labels.ui.decisionWorkbench;
+const ui = labels.scenarios.decision;
 const page = labels.scenarios.pageV3;
 /** 基準不能試算的原因：依 code 取 labels 文案（不顯示 domain 訊息）；逐欄位的原因碼前面加上指標名稱，才分得出是哪一項。 */
 const FIELD_REASON_CODES = new Set(["BASELINE_MISSING_AMOUNT", "BASELINE_NEGATIVE_COST"]);
@@ -32,11 +32,11 @@ function baselineReasonText(reason: { code: string; message: string; field?: str
   return reason.field && FIELD_REASON_CODES.has(reason.code) && Object.hasOwn(metricDefinitions, reason.field) ? fill(ui.baselineReasonField, { field: metricDefinitions[reason.field as MetricName].label, reason: text }) : text;
 }
 const inputFields: { key: Exclude<keyof ScenarioInputs, "assumptions_accepted">; label: string; help: string; note?: string }[] = [
-  { key: "volume_change_pct", label: labels.scenario.volume.label, help: ui.volumeHelp },
-  { key: "discount_change_pp", label: labels.scenario.discount.label, help: ui.discountHelp },
-  { key: "fulfillment_change_pct", label: labels.scenario.fulfillmentUnit.label, help: ui.fulfillmentHelp },
-  { key: "ad_change_pct", label: labels.scenario.adSpend.label, help: ui.adHelp, note: ui.adVolumeNote },
-  { key: "one_time_cost", label: labels.scenario.oneOff.label, help: labels.scenario.oneOff.hint },
+  { key: "volume_change_pct", label: labels.scenarios.inputs.volume.label, help: ui.volumeHelp },
+  { key: "discount_change_pp", label: labels.scenarios.inputs.discount.label, help: ui.discountHelp },
+  { key: "fulfillment_change_pct", label: labels.scenarios.inputs.fulfillmentUnit.label, help: ui.fulfillmentHelp },
+  { key: "ad_change_pct", label: labels.scenarios.inputs.adSpend.label, help: ui.adHelp, note: ui.adVolumeNote },
+  { key: "one_time_cost", label: labels.scenarios.inputs.oneOff.label, help: labels.scenarios.inputs.oneOff.hint },
 ];
 // 呈現層九條白話假設（labels 以 JSON 陣列字串保存）；匯出仍用 domain 的 SCENARIO_ASSUMPTIONS 原文。
 const assumptionCopy: string[] = JSON.parse(ui.assumptions) as string[];
@@ -45,16 +45,16 @@ const staleSuffix = `（${ui.baselineTagStale}）`;
 const amountL1 = (value: string | null | undefined) => formatAmountL1(value ?? null);
 /** 方案比較表的一格：方案還沒有有效結果時寫「尚未試算」，有結果才用 L2（取位調整列只有幾分錢，用 L3 才看得到）。 */
 const planCell = (plan: ScenarioPlan, value: string | null | undefined, format: (value: string | null) => string = formatAmountL2) => plan.result?.status === "valid" ? format(value ?? null) : ui.notCalculated;
-const form = labels.scenarioForm;
+const form = labels.scenarios.form;
 const isAbsoluteField = (key: ScenarioNumericField): key is AbsoluteField => (ABSOLUTE_FIELDS as readonly string[]).includes(key);
 /** 方案若來自 scenario workspace 會帶版本號（VersionedScenarioPlan）；單獨使用時沒有版本號就不顯示徽章。 */
 const revisionOf = (plan: ScenarioPlan) => (plan as Partial<VersionedScenarioPlan>).revision;
 const groupDigits = (integer: string) => integer.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 /** 絕對值模式下輸入框的說明：帶出本期值（件數／折扣率／廣告費），讓使用者知道從哪裡改起。 */
 function absoluteHelp(field: AbsoluteField, ctx: AbsoluteContext): string {
-  if (field === "volume_change_pct") return fill(labels.scenario.volume.absoluteHint, { units: fill(labels.assist.units.count, { value: groupDigits(ctx.units_sold?.toString() ?? "") }) });
+  if (field === "volume_change_pct") return fill(labels.scenarios.inputs.volume.absoluteHint, { units: fill(labels.assist.units.count, { value: groupDigits(ctx.units_sold?.toString() ?? "") }) });
   if (field === "discount_change_pp") return fill(form.discountAbsoluteHint, { rate: formatRateL3(ctx.discount_rate) });
-  return fill(labels.scenario.adSpend.absoluteHint, { ad: formatAmountL3(ctx.ad_spend) });
+  return fill(labels.scenarios.inputs.adSpend.absoluteHint, { ad: formatAmountL3(ctx.ad_spend) });
 }
 /**
  * 每個方案、每個欄位各自的絕對值輸入；有這個鍵就代表該格在絕對值模式（本頁暫存，不寫入方案）。
@@ -75,7 +75,7 @@ function unitOf(key: ScenarioNumericField, absolute: boolean): string {
 /** V3-6（D-V3-12＝B）：勾選後勾選框會換成一行說明；焦點移到同一方案的「試算」，鍵盤使用者不會掉到頁首。 */
 const focusById = (id: string) => { if (typeof document !== "undefined") document.getElementById(id)?.focus(); };
 /** V3-6（PRD §7.4 頁首「匯出本頁」）：三項決策輸出，名稱與 handler 同 v2 的「匯出」區。 */
-const EXPORT_FORMATS = [["md", labels.downloads.decisionMd], ["csv", labels.downloads.decisionCsv], ["json", labels.downloads.decisionJson]] as const;
+const EXPORT_FORMATS = [["md", labels.exports.downloads.decisionMd], ["csv", labels.exports.downloads.decisionCsv], ["json", labels.exports.downloads.decisionJson]] as const;
 
 /** C14／M3：彈出層開著時，Esc 關閉（焦點在裡面時回到觸發器）、點外面關閉；在 modal dialog（抽屜、對話框）裡的操作不算外面（同 product-comparison-panel.tsx）。 */
 function useDismiss(open: boolean, close: () => void, rootRef: RefObject<HTMLElement | null>, triggerRef: RefObject<HTMLElement | null>) {
@@ -267,7 +267,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
         <p className="scenario-assumptions-caution">{ui.assumptionsCaution}</p>
         <details><summary>{ui.techFormulasSummary}</summary><dl className="formula-list">{Object.entries(SCENARIO_FORMULAS).map(([key, formula]) => <div key={key}><dt>{key}</dt><dd>{formula}</dd></div>)}</dl><p className="note">{ui.roundingTechnical}</p></details>
       </details>
-      <details className="scenario-technical"><summary>{labels.sections.technicalDetails}</summary><dl className="decision-metadata"><dt>{labels.csvColumns.dataset_id}</dt><dd>{session.dataset_id}</dd><dt>{ui.techVersions}</dt><dd>{session.schema_version} / {session.scenario_version} / {session.metric_version}</dd><dt>{labels.csvColumns.dataset_hash}</dt><dd>{session.dataset_hash}</dd><dt>{labels.csvColumns.filter_hash}</dt><dd>{session.filter_hash}</dd><dt>{labels.csvColumns.revision}</dt><dd>{session.revision}</dd></dl>{calculated.length > 0 && <p className="scenario-technical-plans">{technicalPlanLine(calculated)}</p>}</details>
+      <details className="scenario-technical"><summary>{labels.evidence.sections.technicalDetails}</summary><dl className="decision-metadata"><dt>{labels.exports.csv.columns.dataset_id}</dt><dd>{session.dataset_id}</dd><dt>{ui.techVersions}</dt><dd>{session.schema_version} / {session.scenario_version} / {session.metric_version}</dd><dt>{labels.exports.csv.columns.dataset_hash}</dt><dd>{session.dataset_hash}</dd><dt>{labels.exports.csv.columns.filter_hash}</dt><dd>{session.filter_hash}</dd><dt>{labels.exports.csv.columns.revision}</dt><dd>{session.revision}</dd></dl>{calculated.length > 0 && <p className="scenario-technical-plans">{technicalPlanLine(calculated)}</p>}</details>
     </section>
     {/* V3-6（PRD §7.4 方案欄）：≥ 1280 最多 3 欄並排，1 個方案時 8/12＋右側 4/12 的新增區；< 1280 單欄。不用分頁，每個方案都保持掛載（M2）。 */}
     <div className="scenario-columns" data-testid="scenario-columns" data-count={plans.length}>{plans.map((plan, index) => {
@@ -287,9 +287,9 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
           <div className="ui-field scenario-template">
             <label className="ui-field-label" htmlFor={`${base}-preset`}>{form.presetSelect}</label>
             <div className="scenario-template-row">
-              <select id={`${base}-preset`} className="ui-field-control" data-testid="scenario-preset" aria-label={form.presetSelect} value={pickedPreset?.id ?? ""} onChange={e => pickTemplate(plan, e.target.value)}><option value="">{labels.scenarioPresets.menuPlaceholder}</option>{SCENARIO_PRESETS.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-              <button type="button" className="ui-btn ui-btn-secondary" data-testid="scenario-preset-apply" disabled={!pickedPreset} onClick={() => { if (pickedPreset) applyTemplate(plan, pickedPreset.id); }}>{labels.buttons.applyTemplate}</button>
-              <HelpPopover id={`${base}-template-help`} label={page.templateHelpAria}><p data-testid="scenario-template-note">{labels.scenario.templateNote}</p><p className="scenario-preset-purpose" data-testid="scenario-preset-purpose">{purpose ?? page.templatePurposeEmpty}</p></HelpPopover>
+              <select id={`${base}-preset`} className="ui-field-control" data-testid="scenario-preset" aria-label={form.presetSelect} value={pickedPreset?.id ?? ""} onChange={e => pickTemplate(plan, e.target.value)}><option value="">{labels.scenarios.presets.menuPlaceholder}</option>{SCENARIO_PRESETS.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+              <button type="button" className="ui-btn ui-btn-secondary" data-testid="scenario-preset-apply" disabled={!pickedPreset} onClick={() => { if (pickedPreset) applyTemplate(plan, pickedPreset.id); }}>{labels.scenarios.buttons.applyTemplate}</button>
+              <HelpPopover id={`${base}-template-help`} label={page.templateHelpAria}><p data-testid="scenario-template-note">{labels.scenarios.inputs.templateNote}</p><p className="scenario-preset-purpose" data-testid="scenario-preset-purpose">{purpose ?? page.templatePurposeEmpty}</p></HelpPopover>
             </div>
             {filled && <span className="ui-field-error scenario-preset-overwrite" data-testid="scenario-preset-overwrite">{form.presetOverwrite}</span>}
           </div>
@@ -301,7 +301,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
             // 絕對值模式：改過才換算；預填值還沒改時，等值文字直接取方案目前的相對值。
             const conversion = absField && entry?.edited ? absoluteToRelative(absField, entry.text, ctx) : null;
             const equivalent = conversion ? conversion.equivalent : absField ? (entry ? relativeEquivalent(absField, plan.inputs[absField]) : relativeToAbsolute(absField, plan.inputs[absField], ctx)) : null;
-            const prefillNote = absField === "volume_change_pct" && entry && !entry.edited && entry.text !== "" && !/^\d+$/.test(entry.text) ? fill(labels.scenarioPresets.absolute.nonIntegerUnits, { units: fill(labels.assist.units.count, { value: entry.text }) }) : null;
+            const prefillNote = absField === "volume_change_pct" && entry && !entry.edited && entry.text !== "" && !/^\d+$/.test(entry.text) ? fill(labels.scenarios.presets.absolute.nonIntegerUnits, { units: fill(labels.assist.units.count, { value: entry.text }) }) : null;
             const hint = rangeHint(field.key, plan.inputs[field.key], ctx);
             const error = conversion?.error ?? null;
             // 等值換算只在「改成」模式顯示；範圍提示與換算錯誤一律掛載，沒有內容時 hidden（M1）。aria-describedby 只列看得到（或給輔助科技）的說明。
@@ -326,35 +326,35 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
           })}</div>
           {/* 聲明（D-V3-12＝B）：同一工作區勾一次就記住；記住之前每個方案都顯示勾選框，記住之後只留一行說明。 */}
           {acknowledged ? <p className="scenario-acknowledged" data-testid="scenario-acknowledged">{page.acknowledged}</p>
-            : <label className="ui-check-label scenario-accept"><input type="checkbox" className="ui-check" data-testid="scenario-accept" checked={plan.inputs.assumptions_accepted} onChange={e => { editScenario(plan.id, { inputs: { ...plan.inputs, assumptions_accepted: e.target.checked } }); if (e.target.checked && onAcknowledge) { onAcknowledge(); focusById(`${base}-calculate`); } }} />{labels.scenario.acceptAssumptions}</label>}
-          <div className="ui-actions scenario-actions"><button id={`${base}-calculate`} type="submit" className="ui-btn ui-btn-primary" onClick={event => { event?.preventDefault(); calculate(plan); }}>{labels.buttons.calculate}</button>{persisted && <button type="button" className="ui-btn ui-btn-text" onClick={() => remove(plan.id)}>{labels.buttons.removeScenario}</button>}</div>
+            : <label className="ui-check-label scenario-accept"><input type="checkbox" className="ui-check" data-testid="scenario-accept" checked={plan.inputs.assumptions_accepted} onChange={e => { editScenario(plan.id, { inputs: { ...plan.inputs, assumptions_accepted: e.target.checked } }); if (e.target.checked && onAcknowledge) { onAcknowledge(); focusById(`${base}-calculate`); } }} />{labels.scenarios.inputs.acceptAssumptions}</label>}
+          <div className="ui-actions scenario-actions"><button id={`${base}-calculate`} type="submit" className="ui-btn ui-btn-primary" onClick={event => { event?.preventDefault(); calculate(plan); }}>{labels.scenarios.buttons.calculate}</button>{persisted && <button type="button" className="ui-btn ui-btn-text" onClick={() => remove(plan.id)}>{labels.scenarios.buttons.removeScenario}</button>}</div>
         </fieldset>
         </form>
         {/* 結果（PRD §7.4，每欄底部對齊）：試算後扣廣告後貢獻（24px）、與現況相比（依方向上色並加符號）、版本或草稿、「選入會議」；下方是該方案自己的「要賣到多少才划算」。 */}
         <div className="scenario-outcome">
           <div aria-live="polite" className="scenario-result" data-testid="scenario-result">
             {stale && <p><span className="ui-lozenge" data-tone="warning">{ui.staleResultTag}</span></p>}
-            {valid && plan.result && <><p className="scenario-result-label">{labels.scenario.resultTitle}</p><strong className="scenario-result-value" data-testid="scenario-contribution">{amountL1(plan.result.contribution)}</strong><p className="scenario-result-delta">{labels.scenario.vsBaseline} <b data-testid="scenario-delta" className={toneClass(deltaTone("contribution_after_marketing", plan.result.delta, "L1"))}>{formatSignedDelta(plan.result.delta, "L1")}</b></p></>}
+            {valid && plan.result && <><p className="scenario-result-label">{labels.scenarios.inputs.resultTitle}</p><strong className="scenario-result-value" data-testid="scenario-contribution">{amountL1(plan.result.contribution)}</strong><p className="scenario-result-delta">{labels.scenarios.inputs.vsBaseline} <b data-testid="scenario-delta" className={toneClass(deltaTone("contribution_after_marketing", plan.result.delta, "L1"))}>{formatSignedDelta(plan.result.delta, "L1")}</b></p></>}
             {!plan.result && <p className="scenario-result-empty">{ui.noResult}</p>}
             {plan.result && !valid && <div className="scenario-result-reasons"><strong>{plan.inputs.assumptions_accepted ? ui.cannotCalculate : ui.planUnavailable}</strong><ul>{plan.result.reasons.map((reason, i) => <li key={i}>{inputFields.find(field => field.key === reason.field)?.label}{reason.field ? "：" : ""}{scenarioReasonText(reason)}</li>)}</ul></div>}
             {valid && planRevision !== undefined && <p className="scenario-result-tag"><span className="ui-lozenge" data-tone="accent" data-testid="scenario-version">{fill(form.version, { n: planRevision })}</span></p>}
-            {!plan.result && <p className="scenario-result-tag"><span className="ui-lozenge" data-tone="warning" data-testid="scenario-draft">{labels.scenario.draft}</span></p>}
+            {!plan.result && <p className="scenario-result-tag"><span className="ui-lozenge" data-tone="warning" data-testid="scenario-draft">{labels.scenarios.inputs.draft}</span></p>}
           </div>
-          {valid && onSelectPlan && <button type="button" className="ui-btn ui-btn-secondary scenario-select" data-testid={`scenario-select-${n}`} aria-label={fill(labels.ui.multiScenarioWorkbench.selectPlanButton, { selectForMeeting: labels.buttons.selectForMeeting, plan: plan.name })} onClick={() => onSelectPlan(plan.id)}>{labels.buttons.selectForMeeting}</button>}
+          {valid && onSelectPlan && <button type="button" className="ui-btn ui-btn-secondary scenario-select" data-testid={`scenario-select-${n}`} aria-label={fill(labels.scenarios.workbench.selectPlanButton, { selectForMeeting: labels.meeting.buttons.selectForMeeting, plan: plan.name })} onClick={() => onSelectPlan(plan.id)}>{labels.meeting.buttons.selectForMeeting}</button>}
           {valid && <ScenarioSensitivity baseline={session.baseline} inputs={plan.inputs} stale={stale} value={plan.sensitivity} onChange={next => setSensitivity(plan.id, next)} />}
         </div>
       </article>;
     })}
       {/* V3-8 C（§7.10 沒有方案，C10 區段型）：0 個方案時這一格就是空狀態——標題「尚無方案。」＋說明＋「新增方案」；有方案時維持「新增方案」＋最多 3 個的說明。 */}
-      {plans.length < 3 && <div className={plans.length ? "scenario-add ui-empty-block" : "scenario-add ui-empty-block scenario-add-empty"}>{!plans.length && <><p className="ui-empty-title">{labels.empty.stateV3.noPlansTitle}</p><p>{labels.empty.stateV3.noPlansBody}</p></>}<button type="button" className="ui-btn ui-btn-secondary" data-testid="scenario-add" disabled={stale || !session.baseline.eligible} onClick={addPlan}>{labels.buttons.addScenario}</button>{plans.length > 0 && <p>{page.addNote}</p>}</div>}
+      {plans.length < 3 && <div className={plans.length ? "scenario-add ui-empty-block" : "scenario-add ui-empty-block scenario-add-empty"}>{!plans.length && <><p className="ui-empty-title">{labels.empty.stateV3.noPlansTitle}</p><p>{labels.empty.stateV3.noPlansBody}</p></>}<button type="button" className="ui-btn ui-btn-secondary" data-testid="scenario-add" disabled={stale || !session.baseline.eligible} onClick={addPlan}>{labels.scenarios.buttons.addScenario}</button>{plans.length > 0 && <p>{page.addNote}</p>}</div>}
     </div>
     {/* V3-6（PRD §7.4 方案欄之後）：方案比較表（預設展開）→ 其他通路的方案 → 之前的試算 → 通知。 */}
     {plans.length > 0 && <section className="ui-section scenario-compare" aria-labelledby={ids.compare}>
       <div className="ui-section-head"><h2 className="ui-section-title" id={ids.compare}>{fill(ui.compareTableHeading, { staleSuffix: stale ? staleSuffix : "" })}</h2><p className="ui-section-subtitle">{ui.compareNote}</p></div>
-      <div className="table-scroll" role="region" aria-label={ui.compareTableAria} tabIndex={0}><table className="ui-table scenario-compare-table" data-testid="scenario-comparison"><caption>{ui.compareTableCaption}</caption><thead><tr><th>{fill(labels.units.yuanColumn, { label: ui.compareColItem })}</th><th className="num">{ui.compareColBaseline}</th>{plans.map(plan => <th className="num" key={plan.id}>{plan.name}</th>)}</tr></thead><tbody>
+      <div className="table-scroll" role="region" aria-label={ui.compareTableAria} tabIndex={0}><table className="ui-table scenario-compare-table" data-testid="scenario-comparison"><caption>{ui.compareTableCaption}</caption><thead><tr><th>{fill(labels.format.units.yuanColumn, { label: ui.compareColItem })}</th><th className="num">{ui.compareColBaseline}</th>{plans.map(plan => <th className="num" key={plan.id}>{plan.name}</th>)}</tr></thead><tbody>
         {AMOUNT_FIELDS.map(field => <tr key={field}><th>{metricDefinitions[field].label}</th><td className="num">{formatAmountL2(session.baseline.amounts[field])}</td>{plans.map(plan => <td className="num" key={plan.id}>{planCell(plan, plan.result?.amounts?.[field])}</td>)}</tr>)}
-        <tr><th>{labels.scenario.oneOff.label}</th><td className="num">{labels.status.notApplicable}</td>{plans.map(plan => <td className="num" key={plan.id}>{planCell(plan, plan.result?.amounts?.one_time_cost)}</td>)}</tr>
-        <tr><th>{ui.roundingAdjustment}</th><td className="num">{labels.status.notApplicable}</td>{plans.map(plan => <td className="num" key={plan.id}>{planCell(plan, plan.result?.rounding_adjustment, formatAmountL3)}</td>)}</tr>
+        <tr><th>{labels.scenarios.inputs.oneOff.label}</th><td className="num">{labels.shell.status.notApplicable}</td>{plans.map(plan => <td className="num" key={plan.id}>{planCell(plan, plan.result?.amounts?.one_time_cost)}</td>)}</tr>
+        <tr><th>{ui.roundingAdjustment}</th><td className="num">{labels.shell.status.notApplicable}</td>{plans.map(plan => <td className="num" key={plan.id}>{planCell(plan, plan.result?.rounding_adjustment, formatAmountL3)}</td>)}</tr>
         <tr className="scenario-total total"><th>{metricDefinitions.contribution_after_marketing.label}</th><td className="num">{formatAmountL2(session.baseline.amounts.contribution_after_marketing)}</td>{plans.map(plan => <td className="num" key={plan.id}>{planCell(plan, plan.result?.contribution)}</td>)}</tr>
         <tr><th>{fill(ui.netRevenueSummaryRow, { metric: metricDefinitions.net_revenue.label })}</th><td className="num">{formatAmountL2(session.baseline.amounts.net_revenue)}</td>{plans.map(plan => <td className="num" key={plan.id}>{planCell(plan, plan.result?.amounts?.net_revenue)}</td>)}</tr>
       </tbody></table></div>

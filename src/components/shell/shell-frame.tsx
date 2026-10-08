@@ -39,7 +39,7 @@ export interface ShellFrameProps {
   badges: { snapshot: Pick<WorkspaceSnapshot, "report"> | null; issues: number; meetingDraft: boolean };
 }
 
-const navLabel = (id: ShellPanel) => labels.nav[id].label;
+const navLabel = (id: ShellPanel) => labels.shell.nav[id].headline;
 
 /**
  * V3-3 A1 殼層：頂欄（48px 單列）、側欄（220px，四組）、手機底部分頁列與「更多」面板。
@@ -105,10 +105,10 @@ export function ShellFrame({ panel, showValidation, onNavigate, dataStatus, ai, 
         <DataStatus {...dataStatus} />
         <div className="topbar-cluster" id="topbar-cluster" ref={clusterRef} role="group" aria-label={labels.shell.topbarV3.clusterAria}>
           <div className="ai-availability" data-testid="ai-availability" role="status" aria-live="polite" ref={aiContainerRef}>
-            <button ref={aiButtonRef} type="button" className="ai-label" aria-label={ai.headline} aria-expanded={ai.open} aria-controls="ai-availability-detail" onClick={ai.onToggle}><ShellIcon name="ai" size={18} className="ai-icon" /><strong className="ai-text">{fill(labels.ui.dashboard.aiLabel, { ai: ai.headline })}</strong></button>
-            <div id="ai-availability-detail" className="ai-popover ui-popover" role="region" aria-label={labels.sections.aiDetail} hidden={!ai.open}><p>{ai.detail}</p></div>
+            <button ref={aiButtonRef} type="button" className="ai-label" aria-label={ai.headline} aria-expanded={ai.open} aria-controls="ai-availability-detail" onClick={ai.onToggle}><ShellIcon name="ai" size={18} className="ai-icon" /><strong className="ai-text">{fill(labels.shell.topbar.aiLabel, { ai: ai.headline })}</strong></button>
+            <div id="ai-availability-detail" className="ai-popover ui-popover" role="region" aria-label={labels.shell.sections.aiDetail} hidden={!ai.open}><p>{ai.detail}</p></div>
           </div>
-          <button type="button" className="ui-btn ui-btn-secondary ui-btn-icon basis-button" onClick={onBasis} aria-haspopup="dialog" aria-label={labels.buttons.basis}><ShellIcon name="book" size={18} /></button>
+          <button type="button" className="ui-btn ui-btn-secondary ui-btn-icon basis-button" onClick={onBasis} aria-haspopup="dialog" aria-label={labels.shell.buttons.basis}><ShellIcon name="book" size={18} /></button>
           {storage}
           {exportMenu}
         </div>
@@ -116,7 +116,7 @@ export function ShellFrame({ panel, showValidation, onNavigate, dataStatus, ai, 
       </div>
     </header>
     <aside className="sidebar">
-      <nav aria-label={labels.ui.dashboard.mainNavAria}>
+      <nav aria-label={labels.shell.sidebar.mainNavAria}>
         {NAV_GROUPS.map(group => <div key={group.id} className="nav-group" role="group" aria-labelledby={`nav-group-title-${group.id}`} data-testid={`nav-group-${group.id}`}><p className="nav-group-title" id={`nav-group-title-${group.id}`}>{groups[group.id]}</p>{group.items.map(navItem)}</div>)}
         {showValidation && <div className="nav-group nav-group-developer" role="group" aria-labelledby="nav-group-title-developer" data-testid="nav-group-developer"><p className="nav-group-title" id="nav-group-title-developer">{groups.developer}</p>{navItem("validation")}</div>}
       </nav>

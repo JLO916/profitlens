@@ -49,7 +49,7 @@ async function declineSavePromptOnMobile(page: Page) {
   if (!isMobile(page)) return;
   const prompt = page.getByTestId("local-save-prompt");
   await expect(prompt).toBeVisible();
-  await prompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
+  await prompt.getByRole("button", { name: labels.storage.autoSave.decline, exact: true }).click();
   await expect(prompt).toHaveCount(0);
 }
 
@@ -57,8 +57,8 @@ test.beforeEach(async ({ page }) => { await page.goto("/"); });
 
 test("golden 的輔助指標橫列：七格、件數 8 件、件均 308.75 元／件，可開「怎麼算的」", async ({ page }) => {
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
-  await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption("golden");
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
   // V3-2b：KPI 卡大數字是 L1（< 1 萬顯示整數元＋「元」）。
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
   const row = page.getByTestId("assist-kpis");
@@ -73,7 +73,7 @@ test("golden 的輔助指標橫列：七格、件數 8 件、件均 308.75 元�
   await expect(page.getByTestId("assist-net_revenue_per_unit")).toContainText(formatPerUnit("308.75", "L1"));
   // 本期值與上期值都是按鈕；點本期的。
   await page.getByTestId("assist-net_revenue_per_unit").locator("td.num:not(.prev) button").click();
-  const drawer = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+  const drawer = page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });
   await expect(drawer).toBeVisible();
   await expect(drawer).toContainText(formatPerUnit("308.75", "L1"));
   await expect(drawer.getByTestId("evidence-precise-value")).toHaveText(formatPerUnit("308.75", "L3"));
@@ -181,7 +181,7 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await expect(page.getByTestId("kpi-target-gross_profit")).toHaveText(fill(labels.targets.mismatch, { start: "2026-07-01", end: "2026-07-31" }));
   // 目標數字可追溯：抽屜列出實際、目標與 targets.csv 行號。
   await page.getByTestId("kpi-target-net_revenue").getByRole("button").click();
-  const targetDrawer = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+  const targetDrawer = page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });
   await expect(targetDrawer).toContainText(fill(labels.targets.sourceLine, { file: "targets.csv", line: 2 }));
   await expect(targetDrawer).toContainText(labels.targets.formula);
   await page.keyboard.press("Escape");
@@ -193,7 +193,7 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   const firstPriority = topThree.locator("[data-testid^='overview-priority-']").first();
   if (await firstPriority.count()) await expect(firstPriority.locator(".alert-body")).toContainText(`${labels.overview.alerts.eventPeriod}${fill(labels.overview.alerts.eventValue, { label: "夏季特賣" })}`);
   // 匯出：分析 CSV 有 target／achievement 列；主管摘要 Markdown 有「目標達成」。
-  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).click()]);
+  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true }).click()]);
   const csv = await readFile((await download.path())!, "utf8");
   expect(csv).toContain("target_net_revenue");
   expect(csv).toContain("achievement_net_revenue");
@@ -202,7 +202,7 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   // 備份 v4：下載 → 檢查 → 清空 → 恢復 → 目標與檔期都回來。
   // V3-3：儲存選單（手機收在頂欄「更多」）。
   const storage = await openStorage(page);
-  const [backup] = await Promise.all([page.waitForEvent("download"), storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true }).click()]);
+  const [backup] = await Promise.all([page.waitForEvent("download"), storage.getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true }).click()]);
   const text = await readFile((await backup.path())!, "utf8");
   const wire = JSON.parse(text) as { schema_version: string; payload: { targets: { rows: unknown[] } | null; events: { rows: unknown[] } | null; preprocessing: unknown; meeting_history: unknown[]; ui_prefs: Record<string, unknown> } };
   expect(wire.schema_version).toBe(WORKSPACE_VERSION);
@@ -211,9 +211,9 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   expect(wire.payload.preprocessing).toBeNull();
   expect(wire.payload.meeting_history).toEqual([]);
   expect(wire.payload.ui_prefs).toEqual({ last_preset: "monthVsPrev" });
-  await storage.getByLabel(labels.ui.workspaceStorage.selectBackupFile, { exact: true }).setInputFiles({ name: "r4.json", mimeType: "application/json", buffer: Buffer.from(text) });
-  await expect(page.getByRole("region", { name: labels.ui.workspaceStorage.restorePreviewAria })).toBeVisible();
-  await clickReplacing(page, storage.getByRole("button", { name: labels.ui.workspaceStorage.applyRestore, exact: true }));
+  await storage.getByLabel(labels.storage.workspace.selectBackupFile, { exact: true }).setInputFiles({ name: "r4.json", mimeType: "application/json", buffer: Buffer.from(text) });
+  await expect(page.getByRole("region", { name: labels.storage.workspace.restorePreviewAria })).toBeVisible();
+  await clickReplacing(page, storage.getByRole("button", { name: labels.storage.workspace.applyRestore, exact: true }));
   await expect(page.getByTestId("kpi-target-net_revenue")).toHaveText(fill(labels.targets.achieved, { target: formatAmountL1("8000.00"), rate: formatRateL1("0.775") }));
   await expect(page.getByTestId("trend").getByTestId("trend-events")).toContainText("夏季特賣");
   // 若恢復後又出現保存提示，先按「先不要」（手機上才點得到頂欄「更多」裡的儲存選單）。

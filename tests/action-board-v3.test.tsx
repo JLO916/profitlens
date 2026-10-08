@@ -26,9 +26,9 @@ vi.mock("@/components/action-drawer", async () => {
 });
 
 const page = labels.actions.pageV3;
-const board = labels.actionBoard;
-const ui = labels.ui.actionsWorkbench;
-const statusName = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done } as const;
+const board = labels.actions.board;
+const ui = labels.actions.workbench;
+const statusName = { not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done } as const;
 type Status = keyof typeof statusName;
 const STATUSES = Object.keys(statusName) as Status[];
 
@@ -95,9 +95,9 @@ describe("V3-6 B 頁首：計數徽章、? 說明、新增待辦、匯出本頁�
       expect(inline, id).toContain(`data-testid="${id}"`);
       expect(occurrences(html, `data-testid="${id}"`), id).toBe(1);
     }
-    expect(openTag(html, 'data-testid="actions-workbench"')).toContain(`aria-label="${labels.nav.actions.label}"`);
+    expect(openTag(html, 'data-testid="actions-workbench"')).toContain(`aria-label="${labels.shell.nav.actions.headline}"`);
     // v2 的 h2、說明段落、計數段落、看板說明、底部匯出區都移除（舊鍵保留不用）。
-    for (const gone of [labels.sections.actionBoard, ui.intro, board.boardIntro, `<h2>${ui.exportHeading}</h2>`, ui.exportNote, fill(ui.countSummary, { total: 2, pinned: 1 }) + "</p>"]) expect(html, gone).not.toContain(gone);
+    for (const gone of [labels.actions.sections.actionBoard, ui.intro, board.boardIntro, `<h2>${ui.exportHeading}</h2>`, ui.exportNote, fill(ui.countSummary, { total: 2, pinned: 1 }) + "</p>"]) expect(html, gone).not.toContain(gone);
   });
 
   it("計數徽章：可見「2 · 置頂 1」，aria-label 寫完整意思", () => {
@@ -126,13 +126,13 @@ describe("V3-6 B 頁首：計數徽章、? 說明、新增待辦、匯出本頁�
     const html = render(actions);
     expect(occurrences(html, "ui-btn-primary")).toBe(1);
     expect(openTag(html, 'data-testid="actions-add"')).toBe('<button type="button" class="ui-btn ui-btn-primary" data-testid="actions-add">');
-    expect(text(element(html, 'data-testid="actions-add"')!)).toBe(labels.buttons.addAction);
+    expect(text(element(html, 'data-testid="actions-add"')!)).toBe(labels.actions.buttons.addAction);
     const menu = element(html, 'data-testid="actions-export-menu"')!;
     expect(menu).toMatch(/^<details class="topbar-menu auto-close export-page"/);
     expect(openTag(html, 'data-testid="actions-export-menu"')).not.toMatch(/\sopen=""/);
     expect(openTag(menu, "<summary")).toBe('<summary class="ui-btn ui-btn-secondary" data-testid="export-page-actions">');
     expect(text(element(menu, "<summary")!)).toBe(labels.products.pageV3.exportPage);
-    const names = { md: labels.downloads.decisionMd, csv: labels.downloads.decisionCsv, json: labels.downloads.decisionJson };
+    const names = { md: labels.exports.downloads.decisionMd, csv: labels.exports.downloads.decisionCsv, json: labels.exports.downloads.decisionJson };
     for (const [format, name] of Object.entries(names)) expect(menu, format).toContain(`<button type="button" class="ui-menu-item" data-testid="actions-export-${format}">${escapeAttr(name)}</button>`);
   });
 });
@@ -170,7 +170,7 @@ describe("V3-6 B 工具列與看板（§7.5 第 2–3 點、C15）", () => {
     // 清單檢視：v2 的每項 article＋內嵌編輯器；標題列的引用狀態改成 ui-lozenge。
     const first = element(listHtml, 'data-testid="action-1"')!;
     expect(openTag(listHtml, 'data-testid="action-1"')).toContain('class="panel action-card"');
-    expect(first).toContain(`<h3 id="action-1-title">${fill(ui.itemHeading, { kind: labels.buttons.pin, n: 1 })}</h3><span class="ui-lozenge">${ui.tagDraft}</span>`);
+    expect(first).toContain(`<h3 id="action-1-title">${fill(ui.itemHeading, { kind: labels.actions.buttons.pin, n: 1 })}</h3><span class="ui-lozenge">${ui.tagDraft}</span>`);
     expect(openTag(listHtml, 'data-testid="action-1"')).toContain('aria-labelledby="action-1-title"');
     expect(first).toContain('data-testid="evidence-checklist"');
     expect(occurrences(listHtml, 'data-testid="evidence-checklist"')).toBe(2);
@@ -205,7 +205,7 @@ describe("V3-6 B C13 看板卡（§7.5 第 4 點）", () => {
     expect(a1.card.fact_ids.length).toBeGreaterThan(0);
     // 卡 2（a2）：未置頂（線框星）、未開始（中性）、沒有更新日、引用 0 個數字。
     const card2 = element(html, 'data-testid="board-card-2"')!;
-    expect(card2).toContain(`aria-pressed="false" aria-label="${labels.buttons.pin}"`);
+    expect(card2).toContain(`aria-pressed="false" aria-label="${labels.actions.buttons.pin}"`);
     expect(card2).not.toContain("icon-filled");
     expect(text(element(card2, 'class="board-card-title"')!)).toBe(board.untitled);
     expect(text(element(card2, 'class="board-card-meta"')!)).toBe(`${board.unassigned} · ${board.noDeadline}`);
@@ -310,8 +310,8 @@ describe("V3-6 B 待辦編輯抽屜接線（§7.5 第 4 點；ActionDrawer 的 p
   });
 
   it("清單檢視的內嵌編輯器顯示置頂（showPin，同 v2）；看板卡的置頂只有卡片上的 icon 按鈕", () => {
-    expect(element(render(actions, "list"), 'data-testid="action-2"')).toContain(`>${labels.buttons.pin}</button>`);
-    expect(element(render(actions), 'data-testid="action-board"')).not.toContain(`>${labels.buttons.pin}</button>`);
+    expect(element(render(actions, "list"), 'data-testid="action-2"')).toContain(`>${labels.actions.buttons.pin}</button>`);
+    expect(element(render(actions), 'data-testid="action-board"')).not.toContain(`>${labels.actions.buttons.pin}</button>`);
   });
 });
 
@@ -320,7 +320,7 @@ describe("V3-6 B 空狀態（§7.5 第 6 點、C10 頁面型）", () => {
     const html = render(emptyActionWorkspace());
     const empty = element(html, 'data-testid="actions-empty"')!;
     expect(openTag(html, 'data-testid="actions-empty"')).toBe('<div class="ui-empty-page actions-empty" data-testid="actions-empty">');
-    expect(empty).toBe(`<div class="ui-empty-page actions-empty" data-testid="actions-empty"><h2>${page.emptyTitle}</h2><p>${page.emptyBody}</p><button type="button" class="ui-btn ui-btn-primary" data-testid="actions-empty-add">${labels.buttons.addAction}</button></div>`);
+    expect(empty).toBe(`<div class="ui-empty-page actions-empty" data-testid="actions-empty"><h2>${page.emptyTitle}</h2><p>${page.emptyBody}</p><button type="button" class="ui-btn ui-btn-primary" data-testid="actions-empty-add">${labels.actions.buttons.addAction}</button></div>`);
     for (const id of ["action-board", "actions-add"]) expect(html, id).not.toContain(`data-testid="${id}"`);
     for (const id of ["actions-toolbar", "actions-view-board", "actions-view-list", "actions-count", "actions-help", "actions-export-md", "actions-export-csv", "actions-export-json"]) expect(occurrences(html, `data-testid="${id}"`), id).toBe(1);
     expect(occurrences(element(html, 'data-testid="actions-workbench"')!, "ui-btn-primary"), "空狀態只有一顆主要按鈕").toBe(1);

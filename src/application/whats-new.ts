@@ -70,5 +70,5 @@ export function shouldShowWhatsNewAfterRestore(schema: unknown = V2_BACKUP_SCHEM
 /** 提示文字：例子取名詞表的「扣廣告前貢獻」與它的第一個舊名（舊名只放在 labels 白名單的 oldNames）。 */
 export function whatsNewText(): string {
   const example = labels.glossary.terms.find(term => term.englishKey === "contribution_before_marketing");
-  return fill(labels.whatsNew.text, { oldName: example?.oldNames[0] ?? "", newName: example?.term ?? "" });
+  return fill(labels.shell.whatsNew.text, { oldName: example?.oldNames[0] ?? "", newName: example?.term ?? "" });
 }

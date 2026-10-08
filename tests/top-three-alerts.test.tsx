@@ -82,13 +82,13 @@ describe("V3-4a 本期三件事：C9 摘要型警示列（golden，門檻 0.00�
     expect(priorities.map(group => group.impact_cents)).toEqual(["-315.00", "-250.00", "-150.00"]);
     for (const group of priorities) {
       const outside = outsideDetails(rowOf(html, group.rule));
-      expect(outside, group.rule).toMatch(new RegExp(`^</details><p class="alert-impact"><span class="k">${labels.sections.impact}</span><button type="button" class="number-link impact-amount negative" aria-label="[^"]+">${formatSignedDelta(group.impact_cents, "L1")}</button></p>`));
-      expect(outside, group.rule).toContain(`<div class="alert-actions"><button type="button" class="ui-btn ui-btn-secondary">${labels.buttons.viewEvidence}</button><button type="button" class="ui-btn ui-btn-secondary">${labels.buttons.addToActions}</button></div>`);
+      expect(outside, group.rule).toMatch(new RegExp(`^</details><p class="alert-impact"><span class="k">${labels.overview.sections.impact}</span><button type="button" class="number-link impact-amount negative" aria-label="[^"]+">${formatSignedDelta(group.impact_cents, "L1")}</button></p>`));
+      expect(outside, group.rule).toContain(`<div class="alert-actions"><button type="button" class="ui-btn ui-btn-secondary">${labels.evidence.buttons.viewEvidence}</button><button type="button" class="ui-btn ui-btn-secondary">${labels.actions.buttons.addToActions}</button></div>`);
     }
     // 沒有 onCreateAction 時只有「看明細」。
     const readOnly = renderToStaticMarkup(createElement(TopThree, { snapshot: snap, onEvidence: noop }));
-    expect(readOnly).not.toContain(labels.buttons.addToActions);
-    expect(readOnly.split(`>${labels.buttons.viewEvidence}</button>`)).toHaveLength(priorities.length + 1);
+    expect(readOnly).not.toContain(labels.actions.buttons.addToActions);
+    expect(readOnly.split(`>${labels.evidence.buttons.viewEvidence}</button>`)).toHaveLength(priorities.length + 1);
   });
 
   it("展開內容：限制句、其餘範圍（每個範圍一個 L2 影響金額）；沒有檔期時不出現檔期一行", async () => {
@@ -103,7 +103,7 @@ describe("V3-4a 本期三件事：C9 摘要型警示列（golden，門檻 0.00�
         expect(body, group.rule).toContain(`<dt>${alerts.relatedScopes}</dt>`);
         const others = group.scopes.slice(1);
         expect(body.match(/class="number-link impact-amount /g), group.rule).toHaveLength(others.length);
-        for (const scope of others) expect(text(body), `${group.rule} ${scope.label}`).toContain(`${fill(labels.ui.topThree.memberRow, { scope: scopeLabel(scope.scope, alias), amount: "" })}${formatSignedDelta(scope.impact?.value ?? null, "L2")}`);
+        for (const scope of others) expect(text(body), `${group.rule} ${scope.label}`).toContain(`${fill(labels.overview.topThree.memberRow, { scope: scopeLabel(scope.scope, alias), amount: "" })}${formatSignedDelta(scope.impact?.value ?? null, "L2")}`);
       } else expect(body, group.rule).not.toContain(`<dt>${alerts.relatedScopes}</dt>`);
     }
   });
@@ -112,19 +112,19 @@ describe("V3-4a 本期三件事：C9 摘要型警示列（golden，門檻 0.00�
     const snap = await snapshot();
     const html = render(snap);
     const scope = channelsLabel(snap.report.scope.channels, demoAlias(snap.report.dataset_id));
-    expect(html).toContain(`<h2 id="top-three-title">${labels.sections.topThree}</h2><span class="sec-scope">${scope}</span>`);
+    expect(html).toContain(`<h2 id="top-three-title">${labels.overview.sections.topThree}</h2><span class="sec-scope">${scope}</span>`);
     expect(text(element(html, 'class="sec-head"', "div")).split(scope)).toHaveLength(2);
-    expect(html).toContain(`${labels.sections.impactLegend}<button type="button" class="ui-help-trigger" title="${labels.sections.impactLegendHelp}" aria-label="${alerts.sortHelpAria}" aria-expanded="false" aria-controls="top-three-sort-help">`);
-    expect(html).toMatch(new RegExp(`<span id="top-three-sort-help" class="sort-help ui-popover ui-help-content" hidden="">${labels.sections.impactLegendHelp}</span>`));
+    expect(html).toContain(`${labels.overview.sections.impactLegend}<button type="button" class="ui-help-trigger" title="${labels.overview.sections.impactLegendHelp}" aria-label="${alerts.sortHelpAria}" aria-expanded="false" aria-controls="top-three-sort-help">`);
+    expect(html).toMatch(new RegExp(`<span id="top-three-sort-help" class="sort-help ui-popover ui-help-content" hidden="">${labels.overview.sections.impactLegendHelp}</span>`));
     // 門檻 popover：<details> 沒有 open，表單、說明與 testid 都在 markup 裡（M1）。
     const popover = element(html, 'class="threshold-popover"', "details");
     expect(popover).toMatch(/^<details class="threshold-popover"><summary class="ui-btn ui-btn-text">/);
-    expect(popover).toContain(`>${labels.sections.adjustThreshold}</summary>`);
+    expect(popover).toContain(`>${labels.overview.sections.adjustThreshold}</summary>`);
     expect(popover).toContain('data-testid="threshold-form-overview"');
     expect(popover).toContain('aria-describedby="top-three-threshold-help"');
-    expect(popover).toContain(`<p class="note" id="top-three-threshold-help">${fill(labels.diagnosisList.thresholdHelp, { amount: formatAmountL3("0.00") })}</p>`);
-    expect(popover).toContain(`>${labels.meeting.threshold}<input`);
-    expect(popover).toContain(`>${labels.buttons.apply}</button>`);
+    expect(popover).toContain(`<p class="note" id="top-three-threshold-help">${fill(labels.diagnosis.list.thresholdHelp, { amount: formatAmountL3("0.00") })}</p>`);
+    expect(popover).toContain(`>${labels.meeting.form.threshold}<input`);
+    expect(popover).toContain(`>${labels.shell.buttons.apply}</button>`);
     expect(html.match(/id="top-three-threshold-help"/g)).toHaveLength(1);
   });
 
@@ -137,8 +137,8 @@ describe("V3-4a 本期三件事：C9 摘要型警示列（golden，門檻 0.00�
     expect(render(snap, { onOpenDiagnosis: noop })).toContain(`<p class="list-foot"><button type="button" class="ui-btn ui-btn-text">${viewAll}</button></p>`);
     // v2 的「另有 n 組未列出」與「沒有要先查的項目」不再出現在總覽三件事。
     const html = render(snap);
-    expect(html).not.toContain(fill(labels.notes.omittedGroups, { n: result.omitted_group_count }));
-    expect(html).not.toContain(labels.notes.noPriorities);
+    expect(html).not.toContain(fill(labels.overview.notes.omittedGroups, { n: result.omitted_group_count }));
+    expect(html).not.toContain(labels.overview.notes.noPriorities);
   });
 });
 
@@ -151,12 +151,12 @@ describe("V3-4a 本期三件事：不足 3 件與 0 件的句型（以門檻初�
       expect(result.priorities.length, threshold).toBeLessThan(3);
       const html = render(snap, { initialThreshold: threshold });
       expect(html, threshold).toContain(`<h2 id="top-three-title">${fill(alerts.titleCount, { n: result.priorities.length })}</h2>`);
-      expect(html, threshold).not.toContain(`<h2 id="top-three-title">${labels.sections.topThree}</h2>`);
+      expect(html, threshold).not.toContain(`<h2 id="top-three-title">${labels.overview.sections.topThree}</h2>`);
       expect([...html.matchAll(/data-testid="overview-priority-([A-Z_]+)"/g)].map(match => match[1]), threshold).toEqual(result.priorities.map(group => group.rule));
       expect(html, threshold).toContain(fill(alerts.viewAll, { n: result.groups.length }));
       // 表單顯示目前套用的門檻（到分）。
       expect(html, threshold).toContain(`value="${result.importance_threshold}"`);
-      expect(html, threshold).toContain(fill(labels.diagnosisList.thresholdHelp, { amount: formatAmountL3(result.importance_threshold) }));
+      expect(html, threshold).toContain(fill(labels.diagnosis.list.thresholdHelp, { amount: formatAmountL3(result.importance_threshold) }));
     }
   });
 
@@ -166,7 +166,7 @@ describe("V3-4a 本期三件事：不足 3 件與 0 件的句型（以門檻初�
     expect(result.priorities).toHaveLength(0);
     const html = render(snap, { initialThreshold: "100000.00", onOpenDiagnosis: noop });
     expect(html).toContain(`<div class="alert-empty"><p role="status">${alerts.empty}</p><button type="button" class="ui-btn ui-btn-text">${alerts.goDiagnosis}</button></div>`);
-    expect(html).toContain(`<h2 id="top-three-title">${labels.sections.topThree}</h2>`);
+    expect(html).toContain(`<h2 id="top-three-title">${labels.overview.sections.topThree}</h2>`);
     expect(html).not.toContain('class="alert-list"');
     expect(html).not.toContain('class="list-foot"');
     expect(html).toContain('data-testid="threshold-form-overview"');
@@ -190,8 +190,8 @@ describe("V3-4a 本期三件事：狀態標籤與檔期", () => {
     const missing = diagnosisGroups(snap).priorities[0];
     expect(missing.rule).toBe("MISSING_CRITICAL_DATA");
     const row = rowOf(html, missing.rule);
-    expect(summaryOf(row)).toContain(`<span class="ui-lozenge" data-tone="warning">${labels.status.missing}</span>`);
-    expect(outsideDetails(row)).toContain(`<p class="alert-impact"><span class="k">${labels.sections.impact}</span><span class="impact-amount neutral">${labels.status.missing}</span></p>`);
+    expect(summaryOf(row)).toContain(`<span class="ui-lozenge" data-tone="warning">${labels.shell.status.missing}</span>`);
+    expect(outsideDetails(row)).toContain(`<p class="alert-impact"><span class="k">${labels.overview.sections.impact}</span><span class="impact-amount neutral">${labels.shell.status.missing}</span></p>`);
   });
 
   it("alertStatus：有利依 favorableDirection 顯示「有利」；金額未知或為 0 不顯示標籤", () => {
@@ -200,7 +200,7 @@ describe("V3-4a 本期三件事：狀態標籤與檔期", () => {
     expect(alertStatus(group("-120.00"))).toEqual({ tone: "unfavorable", text: labels.format.unfavorable });
     expect(alertStatus(group(null))).toBeNull();
     expect(alertStatus(group("0.00"))).toBeNull();
-    expect(alertStatus(group(null, true))).toEqual({ tone: "warning", text: labels.status.missing });
+    expect(alertStatus(group(null, true))).toEqual({ tone: "warning", text: labels.shell.status.missing });
   });
 
   it("本期與檔期重疊時，每列展開內容多一行「檔期」（去掉括號）；不重疊時沒有", async () => {

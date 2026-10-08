@@ -33,13 +33,13 @@ const test = base.extend<{ audit: string[] }>({
   }, { auto: true }],
 });
 
-const summaryCopy = labels.ui.managerSummary;
-const excelSummary = labels.excelExport.summary;
-const summaryColumns = labels.excelExport.columns.summary;
-const actionColumns = labels.excelExport.columns.actions;
+const summaryCopy = labels.meeting.managerSummary;
+const excelSummary = labels.exports.excel.summary;
+const summaryColumns = labels.exports.excel.columns.summary;
+const actionColumns = labels.exports.excel.columns.actions;
 const pnlCopy = labels.overview.pnlV3;
 const headerV3 = labels.exports.headerV3;
-const GOLDEN_NAME = labels.ui.dashboard.datasets.golden;
+const GOLDEN_NAME = labels.shell.devValidation.datasets.golden;
 const GOLDEN_CHANNELS = ["DTC", "MARKETPLACE"];
 /** golden 本期只有一週（2026-08-02）：管理損益表的週欄 id 是週起日。 */
 const GOLDEN_WEEK = { start: "2026-08-02", end: "2026-08-02" };
@@ -113,7 +113,7 @@ test("a. 版本切換：一頁摘要分組內三顆 aria-pressed 按鈕（預設
   // 預設標準版。
   await expectPressed(menu, "standard");
   // 版本切換不是匯出項目：分組裡的四個匯出項目照舊（PDF、Excel、PPT、會議紀錄 Markdown）。
-  await expect(summaryExportItems(menu).locator(".export-item-name")).toHaveText([labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown]);
+  await expect(summaryExportItems(menu).locator(".export-item-name")).toHaveText([labels.exports.buttons.exportPdf, labels.exports.buttons.exportExcel, labels.exports.buttons.exportPptx, labels.meeting.page.menuMarkdown]);
 
   // Tab 順序：目前檢視分組的最後一項 → 標準版 → 老闆一頁版 → 客戶報告版 → 匯出 PDF。
   await menu.getByTestId("download-group-current").locator("button.export-item").last().focus();
@@ -122,7 +122,7 @@ test("a. 版本切換：一頁摘要分組內三顆 aria-pressed 按鈕（預設
     await expect(variantButton(menu, variant)).toBeFocused();
   }
   await page.keyboard.press("Tab");
-  await expect(menu.getByRole("button", { name: labels.buttons.exportPdf, exact: true })).toBeFocused();
+  await expect(menu.getByRole("button", { name: labels.exports.buttons.exportPdf, exact: true })).toBeFocused();
   // 鍵盤也能切換（按鈕的 Enter／Space）：Shift+Tab 回到客戶報告版按 Space，再回到老闆一頁版按 Enter。
   await page.keyboard.press("Shift+Tab");
   await expect(variantButton(menu, "client")).toBeFocused();
@@ -174,7 +174,7 @@ test("b. 老闆一頁版：PDF 只留 L1（一句話、四個關鍵數字、三�
   // 三件事只留標題與影響金額（沒有範圍、下一步與門檻一行）。
   const topThree = print.getByTestId("print-top-three").locator(":scope > li");
   await expect(topThree).toHaveCount(3);
-  for (const [index, amount] of GOLDEN_PRIORITY_IMPACTS.entries()) await expect(topThree.nth(index)).toContainText(`${labels.sections.impact} ${formatSignedDelta(amount, "L1")}`);
+  for (const [index, amount] of GOLDEN_PRIORITY_IMPACTS.entries()) await expect(topThree.nth(index)).toContainText(`${labels.overview.sections.impact} ${formatSignedDelta(amount, "L1")}`);
   await expect(topThree.locator("p")).toHaveCount(0);
   await expect(print).not.toContainText(fill(summaryCopy.printThresholdLine, { amount: formatAmountL3("0.00") }));
   // 沒有通路表、方案與待辦、口徑頁尾，也沒有任何附錄（含每週管理損益表與技術細節）。
@@ -182,7 +182,7 @@ test("b. 老闆一頁版：PDF 只留 L1（一句話、四個關鍵數字、三�
   await expect(print.locator(":scope > footer")).toHaveCount(0);
   await expect(print.locator(":scope > section")).toHaveCount(0);
   await expect(print.getByTestId("print-appendix-pnl")).toHaveCount(0);
-  await expect(printHeading(print, labels.sections.technicalDetails)).toHaveCount(0);
+  await expect(printHeading(print, labels.evidence.sections.technicalDetails)).toHaveCount(0);
   await expect(printHeading(print, summaryCopy.printDecisionsHeading)).toHaveCount(0);
   await expect(print).not.toContainText("dataset_hash");
   // A4 剛好一頁。
@@ -192,14 +192,14 @@ test("b. 老闆一頁版：PDF 只留 L1（一句話、四個關鍵數字、三�
   // Excel：工作表只有摘要與管理損益表；摘要是版頭四列 → 本期一句話 → 四個關鍵數字 → 三件事（沒有資料範圍與其他常用指標）。
   const book = await downloadVariantExcel(page, "boss");
   expect(book.SheetNames).toEqual(BOSS_SHEETS);
-  const rows = sheetRows(book, labels.excelExport.sheets.summary, true);
+  const rows = sheetRows(book, labels.exports.excel.sheets.summary, true);
   const section = columnIndex(rows[0], summaryColumns.section), detail = columnIndex(rows[0], summaryColumns.detail);
   expect(rows.slice(1, 5).map(row => row[section])).toEqual(Array(4).fill(headerV3.excelSection));
   expect(rows[5][section]).toBe(labels.overview.snapshotUi.heading);
   expect(rows[5][detail]).toBe(sentence);
   const previousColumn = columnIndex(rows[0], summaryColumns.previous, true), currentColumn = columnIndex(rows[0], summaryColumns.current, true), changeColumn = columnIndex(rows[0], summaryColumns.change, true);
   for (const metric of VARIANT_KPI_METRICS) {
-    const row = summaryRow(rows, labels.metrics[metric].label);
+    const row = summaryRow(rows, labels.metrics[metric].headline);
     expect(row[section]).toBe(excelSummary.sections.keyDeltas);
     expect([row[previousColumn], row[currentColumn], row[changeColumn]]).toEqual([Number(expected.previous[metric]), Number(expected.current[metric]), Number(minus(expected.current[metric], expected.previous[metric]))]);
   }
@@ -215,8 +215,8 @@ test("b. 老闆一頁版：PDF 只留 L1（一句話、四個關鍵數字、三�
   const texts = slideTexts(slides[0]);
   expect(texts).toContain(sentence);
   for (const metric of VARIANT_KPI_METRICS) expect(texts).toContain(metricDefinitions[metric].label);
-  expect(texts).not.toContain(labels.csvColumns.channel);
-  expect(texts).not.toContain(labels.pptxExport.pinnedTitle);
+  expect(texts).not.toContain(labels.exports.csv.columns.channel);
+  expect(texts).not.toContain(labels.exports.pptx.pinnedTitle);
   expect(texts.join("")).not.toContain(fill(headerV3.pptxDataVersion, { datasetHash: "" }));
   await closeDownloads(page);
 });
@@ -236,7 +236,7 @@ test("c. 客戶報告版：PDF 版頭多客戶行、沒有技術細節、有每�
   await expect(print.getByTestId("print-header-scope")).toHaveCount(1);
   await expect(print.locator(":scope > ol > li")).toHaveCount(3);
   await expect(print.locator(":scope > table")).toHaveCount(1);
-  await expect(printHeading(print, labels.sections.technicalDetails)).toHaveCount(0);
+  await expect(printHeading(print, labels.evidence.sections.technicalDetails)).toHaveCount(0);
   await expect(print).not.toContainText("dataset_hash");
   await expect(print.getByTestId("print-appendix-pnl")).toHaveCount(1);
   await expect(print.getByTestId("print-appendix-pnl").getByTestId("print-pnl-table")).toHaveCount(1);
@@ -247,19 +247,19 @@ test("c. 客戶報告版：PDF 版頭多客戶行、沒有技術細節、有每�
   // Excel：七張工作表（同標準版）；摘要版頭五列（第 2 列是客戶行）；沒有會議備註列；待辦沒有「狀態更新日」與「限制」（引用較早資料）兩欄，最後一欄是廣告決策；指標定義沒有技術區。
   const book = await downloadVariantExcel(page, "client");
   expect(book.SheetNames).toEqual(STANDARD_SHEETS);
-  const rows = sheetRows(book, labels.excelExport.sheets.summary);
+  const rows = sheetRows(book, labels.exports.excel.sheets.summary);
   const section = columnIndex(rows[0], summaryColumns.section), detail = columnIndex(rows[0], summaryColumns.detail), item = columnIndex(rows[0], summaryColumns.item);
   const headerRows = rows.filter(row => row[section] === headerV3.excelSection);
   expect(headerRows).toHaveLength(5);
   expect(headerRows.map(row => row[detail]).slice(0, 2)).toEqual([GOLDEN_NAME, goldenClientLine]);
   expect(rows.map(row => row[item])).not.toContain(excelSummary.items.notes);
-  const actionHeader = sheetRows(book, labels.excelExport.sheets.actions)[0];
+  const actionHeader = sheetRows(book, labels.exports.excel.sheets.actions)[0];
   expect(actionHeader).not.toContain(actionColumns.status_updated_at);
   expect(actionHeader).not.toContain(actionColumns.caution);
   expect(actionHeader.at(-1)).toBe(labels.actions.adDecisionV3.csvColumn);
-  expect(sheetRows(book, labels.excelExport.sheets.actions).flat()).not.toContain(labels.actions.staleBadge);
-  const basis = sheetRows(book, labels.excelExport.sheets.basis);
-  expect(basis.map(row => row[columnIndex(basis[0], labels.excelExport.columns.basis.section)])).not.toContain(labels.excelExport.basis.sections.technical);
+  expect(sheetRows(book, labels.exports.excel.sheets.actions).flat()).not.toContain(labels.actions.form.staleBadge);
+  const basis = sheetRows(book, labels.exports.excel.sheets.basis);
+  expect(basis.map(row => row[columnIndex(basis[0], labels.exports.excel.columns.basis.section)])).not.toContain(labels.exports.excel.basis.sections.technical);
   expect(sheetRows(book, variantCopy.pnlSheet)).toHaveLength(PNL_ROWS.length + 1);
 
   // PPT：一張；版頭（標題之後）第 1 行是資料集、第 2 行是客戶行；頁尾沒有資料版本（技術細節）。
@@ -284,7 +284,7 @@ test("d. 標準版：Excel 七張（最後是管理損益表 13 列、golden 淨
   const pnl = sheetRows(book, variantCopy.pnlSheet);
   expect(pnl).toHaveLength(PNL_ROWS.length + 1);
   const weekColumn = fill(variantCopy.pnlWeekColumn, { label: fill(pnlCopy.weekLabel.current, { n: 1 }), range: fill(variantCopy.pnlWeekRange, GOLDEN_WEEK) });
-  expect(pnl[0]).toEqual([pnlCopy.columns.item, fill(labels.ui.export.moneyColumn, { label: weekColumn }), fill(labels.ui.export.moneyColumn, { label: pnlCopy.columns.total }), pnlCopy.columns.share]);
+  expect(pnl[0]).toEqual([pnlCopy.columns.item, fill(labels.exports.common.moneyColumn, { label: weekColumn }), fill(labels.exports.common.moneyColumn, { label: pnlCopy.columns.total }), pnlCopy.columns.share]);
   expect(pnl.slice(1).map(row => row[0])).toEqual(PNL_ROW_LABELS);
   // 金額格是數字格（可加總）、格式 #,##0.00;(#,##0.00)；顯示到分。
   const totalColumn = 2;
@@ -299,7 +299,7 @@ test("d. 標準版：Excel 七張（最後是管理損益表 13 列、golden 淨
     }
   }
   // 待辦工作表：v2 的欄位（含狀態更新日與限制）之後，最後一欄是廣告決策。
-  const actionHeader = sheetRows(book, labels.excelExport.sheets.actions)[0];
+  const actionHeader = sheetRows(book, labels.exports.excel.sheets.actions)[0];
   expect(actionHeader).toEqual([...Object.values(actionColumns), labels.actions.adDecisionV3.csvColumn]);
   expect(actionHeader.at(-1)).toBe(labels.actions.adDecisionV3.csvColumn);
   await expect(page.getByTestId("download-menu").locator(":scope > summary")).toBeFocused();
@@ -321,7 +321,7 @@ test("d. 標準版：Excel 七張（最後是管理損益表 13 列、golden 淨
     for (const column of [GOLDEN_WEEK.start, "total"]) await expect(tables.locator(`tr[data-row=${metric}] > td[data-col="${column}"]`)).toHaveText(formatAmountL3(value));
   }
   await expect(appendix).toContainText(variantCopy.pnlNote);
-  await expect(printHeading(print, labels.sections.technicalDetails)).toHaveCount(1);
+  await expect(printHeading(print, labels.evidence.sections.technicalDetails)).toHaveCount(1);
   expect(await print.locator(":scope > section").evaluateAll(sections => sections.map(section => section.getAttribute("data-testid")))).toEqual(["print-appendix-pnl", null]);
   await endPrint(page);
 
@@ -381,7 +381,7 @@ test("e. 會議頁「匯出會議」一律是標準版：頂欄選了老闆一�
   const pptx = await downloadFrom(page, await meetingExportItem(page, "pptx"));
   const [slide] = slideXml(pptx.bytes);
   expect(slide).toContain(fill(headerV3.pptxDataVersion, { datasetHash: "" }));
-  expect(slideTexts(slide)).toContain(labels.csvColumns.channel);
+  expect(slideTexts(slide)).toContain(labels.exports.csv.columns.channel);
 
   await (await meetingExportItem(page, "pdf")).click();
   const print = printSurface(page);
@@ -393,8 +393,8 @@ test("e. 會議頁「匯出會議」一律是標準版：頂欄選了老闆一�
   await expect(print.getByTestId("print-kpis")).toHaveCount(0);
   // V3-9b 收尾：會議範圍的列印維持 V3-7 版面、不加每週管理損益表附錄（PRD §7.6 會議 PDF 頁數不增加）。
   await expect(print.getByTestId("print-appendix-pnl")).toHaveCount(0);
-  await expect(printHeading(print, labels.sections.technicalDetails)).toHaveCount(1);
-  await expect(print).toContainText(fill(headerV3.printScopeMeeting, { state: labels.meeting.decisions.draft, channels: channelsLabel(GOLDEN_CHANNELS, false), mode: labels.periods.sameDays }));
+  await expect(printHeading(print, labels.evidence.sections.technicalDetails)).toHaveCount(1);
+  await expect(print).toContainText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(GOLDEN_CHANNELS, false), mode: labels.shell.periods.sameDays }));
   await endPrint(page);
 
   // 頂欄的選擇沒有被會議頁改掉：仍是老闆一頁版。

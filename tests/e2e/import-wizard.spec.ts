@@ -13,7 +13,7 @@ const alternative = resolve("tests/fixtures/alternative");
 const inclusive = resolve("tests/fixtures/inclusive_tax");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 // V3-2b（PRD §8.5）：KPI 卡是 L1；golden／手算精確值交給 formatAmountL1 轉成畫面文字。
-const drawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+const drawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });
 /** 測試自己數 CSV 資料列（非空行減表頭），不呼叫 application 的 parser。 */
 async function fixtureRows(directory: string) {
   const counts = await Promise.all(wizardRoles.map(async role => (await readFile(resolve(directory, role), "utf8")).split(/\r?\n/).filter(line => line.trim()).length - 1));
@@ -51,7 +51,7 @@ test("標準三檔從「匯入資料」到總覽 KPI 最多 5 次點擊", async 
   await expect(page.getByTestId("import-stepper").locator("li").nth(1)).toHaveClass(/skipped/);
   await expect(wizard(page).getByLabel(copy.coverageStart, { exact: true })).toHaveValue("2026-09-01");
   await expect(wizard(page).getByLabel(copy.dataAsOf, { exact: true })).toHaveValue("2026-09-05");
-  await expect(wizard(page).getByLabel(labels.csvColumns.current_end, { exact: true })).toHaveValue("2026-09-04");
+  await expect(wizard(page).getByLabel(labels.exports.csv.columns.current_end, { exact: true })).toHaveValue("2026-09-04");
   await expect(wizard(page).getByLabel("DTC", { exact: true })).toBeChecked();
   await expect(wizard(page).getByLabel("MARKETPLACE", { exact: true })).toBeChecked();
   await expect(wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true })).toBeDisabled();
@@ -80,8 +80,8 @@ test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算
   await chooseBasis(page, "inclusive");
   const conversion = page.getByTestId("import-conversion");
   await expect(conversion.getByLabel(copy.rateLabel, { exact: true })).toHaveValue("5");
-  await expect(conversion.getByLabel(`${copy.files.sales} ${labels.metrics.cogs_net.label}`, { exact: true })).not.toBeChecked();
-  await expect(conversion.getByLabel(`${copy.files.ads} ${labels.metrics.ad_spend.label}`, { exact: true })).toBeChecked();
+  await expect(conversion.getByLabel(`${copy.files.sales} ${labels.metrics.cogs_net.headline}`, { exact: true })).not.toBeChecked();
+  await expect(conversion.getByLabel(`${copy.files.ads} ${labels.metrics.ad_spend.headline}`, { exact: true })).toBeChecked();
   await confirmAndCheck(page, "valid");
   // tests/fixtures/inclusive_tax/README.md 的手算：原價收入含稅合計 4725.00 → 4500.00；共 12 列。
   const summary = page.getByTestId("import-preprocessing");
@@ -99,7 +99,7 @@ test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算
   await page.getByTestId("kpi-net_revenue").locator(".kpi-value button").click();
   await expect(drawer(page)).toBeVisible();
   await expect(page.getByTestId("evidence-conversion-note")).toContainText("5%");
-  const sourceTable = drawer(page).getByRole("region", { name: labels.ui.evidenceDrawer.sourceTableAria });
+  const sourceTable = drawer(page).getByRole("region", { name: labels.evidence.drawer.sourceTableAria });
   await expect(sourceTable).toContainText("840.00");
   await expect(sourceTable).toContainText("800.00");
   await expect(sourceTable.locator(".converted-value").first()).toContainText("→");
@@ -109,14 +109,14 @@ test("含稅來源逐列換算後 KPI 等於手算，抽屜顯示原值→換算
   await expect(preprocessing).toContainText("5%");
   // V3-8（§7.7.1 第 5 點）：前處理改成表格，一列一個換算欄位：含稅合計（元）｜未稅合計（元）｜稅率（L3 金額、L2 稅率）。
   const grossSales = preprocessing.locator("tr[data-field=gross_sales]");
-  await expect(grossSales.locator("th")).toHaveText(labels.metrics.gross_sales.label);
+  await expect(grossSales.locator("th")).toHaveText(labels.metrics.gross_sales.headline);
   await expect(grossSales.locator("td")).toHaveText([formatAmountL3("4725.00"), formatAmountL3("4500.00"), formatRateL2("0.05")]);
   // cogs_net 已是未稅（預設不勾），不在換算表裡。
   await expect(preprocessing.locator("tr[data-field=cogs_net]")).toHaveCount(0);
-  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).click()]);
+  const [download] = await Promise.all([page.waitForEvent("download"), (await openDownloads(page)).getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true }).click()]);
   const text = await readFile((await download.path())!, "utf8");
   expect(text).toContain("5%");
-  expect(text).toContain(labels.metrics.gross_sales.label);
+  expect(text).toContain(labels.metrics.gross_sales.headline);
 });
 
 test("同一組非標準欄名第二次匯入會顯示記憶提示並帶入對照", async ({ page }) => {
@@ -152,7 +152,7 @@ test("超過 5 MiB 或 50,000 列在第 1 步直接拒絕，不能下一步", as
   await wizard(page).getByLabel(wizardFileLabels["sales_daily.csv"], { exact: true }).setInputFiles(huge);
   const slot = page.getByTestId("import-file-sales_daily.csv");
   // V3-2a：{file} 由 application 帶入標準檔名（SourceRef.file），不是使用者上傳的檔名。
-  await expect(slot.getByRole("alert")).toContainText(fill(labels.importErrors.FILE_TOO_LARGE, { file: "sales_daily.csv" }));
+  await expect(slot.getByRole("alert")).toContainText(fill(labels.errors.import.FILE_TOO_LARGE, { file: "sales_daily.csv" }));
   await expect(wizard(page).getByRole("button", { name: copy.next, exact: true })).toBeDisabled();
   const rows = ["date,channel,ad_spend,currency", ...Array.from({ length: 50_001 }, (_, index) => `2026-01-01,C${index},1.00,TWD`)].join("\n");
   await wizard(page).getByLabel(wizardFileLabels["ad_spend_daily.csv"], { exact: true }).setInputFiles({ name: "too-many-rows.csv", mimeType: "text/csv", buffer: Buffer.from(rows) });
@@ -184,13 +184,13 @@ test("訂單級匯出檔會被指出並導向整理工具；「我不確定」�
 test("下載選單提供空白範本與含三列範例的範本", async ({ page }) => {
   const menu = await openDownloads(page);
   const templates = menu.getByTestId("download-templates");
-  await expect(templates).toContainText(labels.downloads.templatesHeading);
-  const [example] = await Promise.all([page.waitForEvent("download"), templates.getByRole("link", { name: labels.downloads.exampleTemplate.replace("{file}", copy.files.sales), exact: true }).click()]);
+  await expect(templates).toContainText(labels.exports.downloads.templatesHeading);
+  const [example] = await Promise.all([page.waitForEvent("download"), templates.getByRole("link", { name: labels.exports.downloads.exampleTemplate.replace("{file}", copy.files.sales), exact: true }).click()]);
   expect(example.suggestedFilename()).toBe("sales_daily.csv");
   const text = (await readFile((await example.path())!, "utf8")).replace(/^﻿/, "");
   expect(text.split(/\r?\n/).filter(Boolean)).toHaveLength(4);
   expect(text.split(/\r?\n/)[0]).toBe("date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency");
-  const [blank] = await Promise.all([page.waitForEvent("download"), templates.getByRole("button", { name: labels.downloads.blankTemplate.replace("{file}", copy.files.costs), exact: true }).click()]);
+  const [blank] = await Promise.all([page.waitForEvent("download"), templates.getByRole("button", { name: labels.exports.downloads.blankTemplate.replace("{file}", copy.files.costs), exact: true }).click()]);
   expect((await readFile((await blank.path())!, "utf8")).replace(/^﻿/, "").trim().split(/\r?\n/)).toHaveLength(1);
   // 範例三檔可直接匯入（先收起下載選單，免得遮住「匯入資料」）。
   await closeDownloads(page);
@@ -226,7 +226,7 @@ test("含稅匯入從「匯入資料」到「套用」最多 5 次點擊（inclu
   let clicks = 0;
   const count = async (action: () => Promise<void>) => { clicks += 1; await action(); };
   const importButton = page.getByTestId("empty-import");
-  await expect(importButton).toHaveText(labels.buttons.importData);
+  await expect(importButton).toHaveText(labels.shell.buttons.importData);
   // 剛 goto 時按鈕可能還沒 hydrate：toPass 只為等互動就緒而重試（精靈出現就停），使用者只點 1 次。
   await count(() => expect(async () => {
     if (!(await wizard(page).isVisible())) await importButton.click();
@@ -266,7 +266,7 @@ test("步驟 3 選含稅後可見且可操作的控制最多 12 個（不含底�
   // 金額基準 3 個 radio、稅率、取消匯入與兩個收合區的 summary 一定在可見控制裡（確認計數真的掃到第 3 步）。
   expect(controls).toEqual(expect.arrayContaining([copy.basis.exclusive, copy.basis.inclusive, copy.basis.unsure, copy.rateLabel, copy.cancel, v3.adjustConvert, v3.adjustPeriods]));
   // 換算欄位 checkbox 收在「調整換算欄位」裡，不可見。
-  expect(controls).not.toContain(`${copy.files.sales} ${labels.metrics.gross_sales.label}`);
+  expect(controls).not.toContain(`${copy.files.sales} ${labels.metrics.gross_sales.headline}`);
   expect(controls.length, `步驟 3（含稅）可見且可操作的控制：${controls.join("、")}`).toBeLessThanOrEqual(12);
 });
 

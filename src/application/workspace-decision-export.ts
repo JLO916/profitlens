@@ -38,11 +38,11 @@ export function exportWorkspaceDecision(format: 'json' | 'md' | 'csv', source: S
     }, null, 2)+'\n';
   }
   if (format === 'md') {
-    const pieces = [exportDecisionMarkdown(current, currentPlans, [], actions, extraFor(current), nameFor(current)), `\n${labels.ui.workspaceDecisionExport.appendixHeading}\n\n${labels.ui.workspaceDecisionExport.appendixNote}\n`];
+    const pieces = [exportDecisionMarkdown(current, currentPlans, [], actions, extraFor(current), nameFor(current)), `\n${labels.exports.workspaceDecision.appendixHeading}\n\n${labels.exports.workspaceDecision.appendixNote}\n`];
     for (const context of scenarios.contexts) {
       pieces.push(exportDecisionMarkdown({ ...context.session, stale: context.status === 'historical' || context.session.stale }, context.plans, [], undefined, extraFor(context.session), nameFor(context.session)));
       // Context and plan ids are audit text; reuse the inert JSON formatter in a fenced block.
-      pieces.push(`\n<details>\n<summary>${labels.sections.technicalDetails}</summary>\n\n`+'```json\n'+JSON.stringify({context_id:context.id,epoch:context.epoch,plan_revisions:planRevisions(context.plans),draft_plan_ids:draftPlanIds(context.plans)}).replaceAll('`','\\u0060').replaceAll('<','\\u003c')+'\n```\n\n</details>\n');
+      pieces.push(`\n<details>\n<summary>${labels.evidence.sections.technicalDetails}</summary>\n\n`+'```json\n'+JSON.stringify({context_id:context.id,epoch:context.epoch,plan_revisions:planRevisions(context.plans),draft_plan_ids:draftPlanIds(context.plans)}).replaceAll('`','\\u0060').replaceAll('<','\\u003c')+'\n```\n\n</details>\n');
     }
     return pieces.join('\n');
   }

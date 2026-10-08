@@ -9,6 +9,9 @@ import type { MetricName, RuleCode } from "../src/domain/types";
 const METRICS: MetricName[] = Object.keys(metricDefinitions) as MetricName[];
 const RULES: RuleCode[] = ["REV_UP_CM_DOWN", "NEGATIVE_CHANNEL_CM", "DISCOUNT_BURDEN_UP", "REFUND_BURDEN_UP", "FULFILLMENT_BURDEN_UP", "MARKETING_BURDEN_UP", "SKU_NEGATIVE_GP", "MISSING_CRITICAL_DATA"];
 const NAV = ["overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "validation"] as const;
+/** V3-10：v2 舊鍵 label／plain／formula／formulaTechnical 與 title／cause／nextStep 已移除，改讀新鍵（headline、explain、technical.*、explain.*）。 */
+const metricFields = (name: MetricName) => { const entry = labels.metrics[name]; return { headline: entry.headline, short: entry.short, explain: entry.explain, formula: entry.technical.formula, formulaTechnical: entry.technical.formulaTechnical }; };
+const ruleFields = (code: RuleCode) => { const entry = labels.rules[code]; return { headline: entry.headline, cause: entry.explain.cause, nextStep: entry.explain.nextStep, caution: entry.caution }; };
 /** 03 §1-5：主層 UI 不得出現的舊名詞／工程用語。技術細節區由 labels 以外的字串負責，這裡只檢查元件原始碼。 */
 const OLD_TERMS = ["行銷後貢獻", "行銷前貢獻", "已入帳退款", "履約費用", "取分調整", "稽核資訊", "建立行動草稿"];
 
@@ -23,15 +26,15 @@ const withoutDetails = (text: string) => text.replace(/<details[\s\S]*?<\/detail
 describe("R2 labels are the single source of user-visible copy", () => {
   it("has a complete, non-empty entry for every metric, rule and navigation id", () => {
     for (const name of METRICS) {
-      const entry = labels.metrics[name];
-      for (const field of ["label", "short", "plain", "formula", "formulaTechnical"] as const) expect(entry[field], `${name}.${field}`).toMatch(/\S/);
-      expect(metricDefinitions[name].label).toBe(entry.label);
+      const entry = metricFields(name);
+      for (const field of ["headline", "short", "explain", "formula", "formulaTechnical"] as const) expect(entry[field], `${name}.${field}`).toMatch(/\S/);
+      expect(metricDefinitions[name].label).toBe(entry.headline);
       expect(metricDefinitions[name].shortLabel).toBe(entry.short);
       expect(metricDefinitions[name].formulaTechnical).toBe(entry.formulaTechnical);
     }
-    for (const code of RULES) for (const field of ["title", "cause", "nextStep", "caution"] as const) expect(labels.rules[code][field], `${code}.${field}`).toMatch(/\S/);
-    for (const id of NAV) { expect(labels.nav[id].label).toMatch(/\S/); expect(labels.nav[id].description).toMatch(/\S/); }
-    expect(labels.basis.items).toHaveLength(9);
+    for (const code of RULES) for (const field of ["headline", "cause", "nextStep", "caution"] as const) expect(ruleFields(code)[field], `${code}.${field}`).toMatch(/\S/);
+    for (const id of NAV) { expect(labels.shell.nav[id].headline).toMatch(/\S/); expect(labels.shell.nav[id].explain).toMatch(/\S/); }
+    expect(labels.glossary.basis.items).toHaveLength(9);
   });
 
   it("keeps the old accounting/engineering terms out of component JSX outside technical details", () => {
@@ -75,8 +78,8 @@ describe("R2 labels are the single source of user-visible copy", () => {
 
   it("does not leak forbidden jargon through metric or rule copy", () => {
     const forbidden = /取分|快照|稽核|\bfact\b|\bhash\b|revision|schema|metric_version|contribution-v1|cohort|blocking|partial|\bnull\b/i;
-    for (const name of METRICS) for (const field of ["label", "short", "plain", "formula"] as const) expect(labels.metrics[name][field], `${name}.${field}`).not.toMatch(forbidden);
-    for (const code of RULES) for (const field of ["title", "cause", "nextStep", "caution"] as const) expect(labels.rules[code][field], `${code}.${field}`).not.toMatch(forbidden);
-    for (const item of labels.basis.items) expect(item).not.toMatch(forbidden);
+    for (const name of METRICS) for (const field of ["headline", "short", "explain", "formula"] as const) expect(metricFields(name)[field], `${name}.${field}`).not.toMatch(forbidden);
+    for (const code of RULES) for (const field of ["headline", "cause", "nextStep", "caution"] as const) expect(ruleFields(code)[field], `${code}.${field}`).not.toMatch(forbidden);
+    for (const item of labels.glossary.basis.items) expect(item).not.toMatch(forbidden);
   });
 });

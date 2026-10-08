@@ -68,8 +68,8 @@ const button = (tree: ReactNode, name: string) => { const [element] = findAll(tr
 const input = (tree: ReactNode, label: string) => { const [element] = findAll(tree, item => item.type === "input" && item.props["aria-label"] === label); expect(element, label).toBeDefined(); return element; };
 
 const page = labels.scenarios.pageV3;
-const dw = labels.ui.decisionWorkbench;
-const form = labels.scenarioForm;
+const dw = labels.scenarios.decision;
+const form = labels.scenarios.form;
 const noop = () => undefined;
 const FIELDS = ["volume_change_pct", "discount_change_pp", "fulfillment_change_pct", "ad_change_pct", "one_time_cost"] as const;
 const ABSOLUTE = ["volume_change_pct", "discount_change_pp", "ad_change_pct"] as const;
@@ -193,11 +193,11 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     expect(element(valid, 'data-testid="scenario-1"')).toContain('data-testid="scenario-select-1"');
     expect(element(valid, 'data-testid="scenario-2"')).not.toContain("scenario-select-");
     expect(text(openTag(valid, 'data-testid="scenario-select-1"'))).toBe("");
-    expect(openTag(valid, 'data-testid="scenario-select-1"')).toContain(`aria-label="${fill(labels.ui.multiScenarioWorkbench.selectPlanButton, { selectForMeeting: labels.buttons.selectForMeeting, plan: "履約" })}"`);
-    expect(text(element(valid, 'data-testid="scenario-select-1"'))).toBe(labels.buttons.selectForMeeting);
+    expect(openTag(valid, 'data-testid="scenario-select-1"')).toContain(`aria-label="${fill(labels.scenarios.workbench.selectPlanButton, { selectForMeeting: labels.meeting.buttons.selectForMeeting, plan: "履約" })}"`);
+    expect(text(element(valid, 'data-testid="scenario-select-1"'))).toBe(labels.meeting.buttons.selectForMeeting);
     // v2 的獨立「選入會議」區、「本通路的試算」標題與說明、決策輸出區都不在了。
-    expect(valid).not.toContain(labels.ui.multiScenarioWorkbench.heading);
-    expect(valid).not.toContain(labels.ui.multiScenarioWorkbench.selectHint);
+    expect(valid).not.toContain(labels.scenarios.workbench.heading);
+    expect(valid).not.toContain(labels.scenarios.workbench.selectHint);
     expect(valid).not.toContain(form.channelHint);
     expect(valid).not.toContain("decision-export");
   }, 30_000);
@@ -212,23 +212,23 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     // 1. 選範本
     (byTestId(tree, "scenario-preset").props.onChange as (event: unknown) => void)({ target: { value: "keep" } });
     tree = run(props());
-    expect(textOf(byTestId(tree, "scenario-preset-purpose"))).toBe(labels.scenarioPresets.items.keep.purpose);
+    expect(textOf(byTestId(tree, "scenario-preset-purpose"))).toBe(labels.scenarios.presets.items.keep.purpose);
     // 2. 套用
     (byTestId(tree, "scenario-preset-apply").props.onClick as () => void)();
     tree = run(props());
     expect(state.scenarios[0].inputs).toMatchObject({ volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "0", ad_change_pct: "0", one_time_cost: "0" });
     // 3. 試算（工作區已記住聲明：不用再勾，試算時聲明以 true 計算並寫回方案）
-    (button(tree, labels.buttons.calculate).props.onClick as (event?: unknown) => void)();
+    (button(tree, labels.scenarios.buttons.calculate).props.onClick as (event?: unknown) => void)();
     tree = run(props());
     expect(state.scenarios[0].result).toMatchObject({ status: "valid", contribution: "270.00", delta: "0.00" });
     expect(state.scenarios[0].inputs.assumptions_accepted).toBe(true);
     expect(textOf(byTestId(tree, "scenario-contribution"))).toBe(formatAmountL1("270.00"));
     expect(textOf(byTestId(tree, "scenario-delta"))).toBe(formatSignedDelta("0.00", "L1"));
     // 手填物流費 −10，再按一次試算 → 284.00（比現況多 14.00）。
-    (input(tree, labels.scenario.fulfillmentUnit.label).props.onChange as (event: unknown) => void)({ target: { value: "-10" } });
+    (input(tree, labels.scenarios.inputs.fulfillmentUnit.label).props.onChange as (event: unknown) => void)({ target: { value: "-10" } });
     tree = run(props());
-    expect(textOf(byTestId(tree, "scenario-draft"))).toBe(labels.scenario.draft);
-    (button(tree, labels.buttons.calculate).props.onClick as (event?: unknown) => void)();
+    expect(textOf(byTestId(tree, "scenario-draft"))).toBe(labels.scenarios.inputs.draft);
+    (button(tree, labels.scenarios.buttons.calculate).props.onClick as (event?: unknown) => void)();
     tree = run(props());
     expect(state.scenarios[0].result?.contribution).toBe("284.00");
     expect(formatAmountL3(state.scenarios[0].result?.contribution)).toBe(formatAmountL3("284.00"));
@@ -244,11 +244,11 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     tree = run(props());
     (byTestId(byTestId(tree, "scenario-2"), "scenario-preset-apply").props.onClick as () => void)();
     tree = run(props());
-    (input(byTestId(tree, "scenario-2"), labels.scenario.fulfillmentUnit.label).props.onChange as (event: unknown) => void)({ target: { value: "-10" } });
+    (input(byTestId(tree, "scenario-2"), labels.scenarios.inputs.fulfillmentUnit.label).props.onChange as (event: unknown) => void)({ target: { value: "-10" } });
     tree = run(props());
-    (input(byTestId(tree, "scenario-2"), labels.scenario.oneOff.label).props.onChange as (event: unknown) => void)({ target: { value: "20" } });
+    (input(byTestId(tree, "scenario-2"), labels.scenarios.inputs.oneOff.label).props.onChange as (event: unknown) => void)({ target: { value: "20" } });
     tree = run(props());
-    (button(byTestId(tree, "scenario-2"), labels.buttons.calculate).props.onClick as (event?: unknown) => void)();
+    (button(byTestId(tree, "scenario-2"), labels.scenarios.buttons.calculate).props.onClick as (event?: unknown) => void)();
     tree = run(props());
     expect(state.scenarios.map(plan => plan.result?.contribution)).toEqual(["284.00", "264.00"]);
   });
@@ -265,11 +265,11 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     const rows = [...table.matchAll(/<tr[^>]*><th>([^<]*)<\/th>((?:<td[^>]*>[^<]*<\/td>)+)<\/tr>/g)].map(match => [match[1], [...match[2].matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(cell => cell[1].replace(/&amp;/g, "&"))]);
     const baseline = ws.contexts[0].session.baseline.amounts;
     const expected = [
-      ...AMOUNT_FIELDS.map(field => [labels.metrics[field].label, [formatAmountL2(baseline[field]), formatAmountL2(plan.result?.amounts?.[field] ?? null)]]),
-      [labels.scenario.oneOff.label, [labels.status.notApplicable, formatAmountL2(plan.result?.amounts?.one_time_cost ?? null)]],
-      [dw.roundingAdjustment, [labels.status.notApplicable, formatAmountL3(plan.result?.rounding_adjustment ?? null)]],
-      [labels.metrics.contribution_after_marketing.label, [formatAmountL2(baseline.contribution_after_marketing), formatAmountL2("19.70")]],
-      [fill(dw.netRevenueSummaryRow, { metric: labels.metrics.net_revenue.label }), [formatAmountL2(baseline.net_revenue), formatAmountL2(plan.result?.amounts?.net_revenue ?? null)]],
+      ...AMOUNT_FIELDS.map(field => [labels.metrics[field].headline, [formatAmountL2(baseline[field]), formatAmountL2(plan.result?.amounts?.[field] ?? null)]]),
+      [labels.scenarios.inputs.oneOff.label, [labels.shell.status.notApplicable, formatAmountL2(plan.result?.amounts?.one_time_cost ?? null)]],
+      [dw.roundingAdjustment, [labels.shell.status.notApplicable, formatAmountL3(plan.result?.rounding_adjustment ?? null)]],
+      [labels.metrics.contribution_after_marketing.headline, [formatAmountL2(baseline.contribution_after_marketing), formatAmountL2("19.70")]],
+      [fill(dw.netRevenueSummaryRow, { metric: labels.metrics.net_revenue.headline }), [formatAmountL2(baseline.net_revenue), formatAmountL2(plan.result?.amounts?.net_revenue ?? null)]],
     ];
     expect(rows).toEqual(expected);
     // 比較表預設展開（不在 <details> 內），數字欄右對齊。
@@ -277,7 +277,7 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     expect(table).toContain('<td class="num">');
     // DTC 頁看 MARKETPLACE 的方案：在「其他通路的方案」<details> 內，金額 L1。
     const dtc = render(await source(), ws);
-    expect(element(dtc, 'data-testid="scenario-other-channels"')).toContain(fill(labels.ui.multiScenarioWorkbench.planSummary, { plan: "M", resultLabel: labels.scenario.resultTitle, amount: formatAmountL1("19.70") }));
+    expect(element(dtc, 'data-testid="scenario-other-channels"')).toContain(fill(labels.scenarios.workbench.planSummary, { plan: "M", resultLabel: labels.scenarios.inputs.resultTitle, amount: formatAmountL1("19.70") }));
   }, 30_000);
 
   it("(e) 聲明（D-V3-12＝B）：沒記住時每個方案都有勾選框；記住後沒有勾選框而有一行說明；第一次勾選呼叫 onAcknowledge 一次", async () => {
@@ -286,7 +286,7 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     const before = render(src, ws);
     for (const n of [1, 2]) {
       const plan = element(before, `data-testid="scenario-${n}"`);
-      expect(plan).toMatch(new RegExp(`<input type="checkbox" class="ui-check" data-testid="scenario-accept"[^>]*/>${labels.scenario.acceptAssumptions}</label>`));
+      expect(plan).toMatch(new RegExp(`<input type="checkbox" class="ui-check" data-testid="scenario-accept"[^>]*/>${labels.scenarios.inputs.acceptAssumptions}</label>`));
       expect(plan).not.toContain('data-testid="scenario-acknowledged"');
     }
     const after = render(src, acknowledgeScenarioAssumptions(ws, "2026-10-07T00:00:00.000Z"));
@@ -353,7 +353,7 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     expect(openTag(html, 'data-testid="scenario-export-menu"')).toMatch(/^<details class="topbar-menu auto-close export-page scenario-export"/);
     expect(openTag(html, 'data-testid="scenario-export-menu"')).not.toMatch(/\sopen=""/);
     expect(text(element(menu, 'data-testid="export-page-scenarios"'))).toBe(labels.products.pageV3.exportPage);
-    for (const [format, label] of [["md", labels.downloads.decisionMd], ["csv", labels.downloads.decisionCsv], ["json", labels.downloads.decisionJson]] as const) {
+    for (const [format, label] of [["md", labels.exports.downloads.decisionMd], ["csv", labels.exports.downloads.decisionCsv], ["json", labels.exports.downloads.decisionJson]] as const) {
       expect(text(element(menu, `data-testid="scenario-export-${format}"`))).toBe(label);
       expect(count(html, `data-testid="scenario-export-${format}"`)).toBe(1);
     }
@@ -388,7 +388,7 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
       expect([...group.matchAll(/<button type="button" aria-pressed="(true|false)"[^>]*>([^<]*)<\/button>/g)].map(match => [match[1], match[2]])).toEqual([["true", page.modeRelative], ["false", page.modeAbsolute]]);
     }
     const units: Record<(typeof FIELDS)[number], string> = { volume_change_pct: page.unitPercent, discount_change_pp: page.unitPoints, fulfillment_change_pct: page.unitPercent, ad_change_pct: page.unitPercent, one_time_cost: page.unitYuan };
-    const helps: Record<(typeof FIELDS)[number], string> = { volume_change_pct: dw.volumeHelp, discount_change_pp: dw.discountHelp, fulfillment_change_pct: dw.fulfillmentHelp, ad_change_pct: dw.adHelp, one_time_cost: labels.scenario.oneOff.hint };
+    const helps: Record<(typeof FIELDS)[number], string> = { volume_change_pct: dw.volumeHelp, discount_change_pp: dw.discountHelp, fulfillment_change_pct: dw.fulfillmentHelp, ad_change_pct: dw.adHelp, one_time_cost: labels.scenarios.inputs.oneOff.hint };
     for (const field of FIELDS) {
       const row = element(plan, `id="${/id="([^"]+)-volume_change_pct"/.exec(plan)![1]}-${field}"`);
       expect(row).toContain(`placeholder="${helps[field]}"`);
@@ -417,8 +417,8 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     expect(equivalent().props.hidden).toBe(false);
     const field = findAll(tree, item => item.props.className === "scenario-unit");
     expect(textOf(field[0])).toBe(page.unitCount);
-    expect(input(tree, labels.scenario.volume.label).props.value).toBe("6");
-    const describedby = String(input(tree, labels.scenario.volume.label).props["aria-describedby"]);
+    expect(input(tree, labels.scenarios.inputs.volume.label).props.value).toBe("6");
+    const describedby = String(input(tree, labels.scenarios.inputs.volume.label).props["aria-describedby"]);
     expect(describedby.split(" ")).toEqual([":test:-1-volume_change_pct-help", ":test:-1-volume_change_pct-equivalent"]);
   });
 });

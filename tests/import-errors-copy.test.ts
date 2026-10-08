@@ -10,7 +10,7 @@ import type { FileName, ValidationIssue } from "@/domain/types";
 import { parseCsv } from "@/lib/csv";
 
 // V3-2a §7.7.3：匯入錯誤句型「{file} 第 {line} 行：{問題}。{修法}。」；原因碼只放 L3。
-// 同一組檢查跑兩次：docs/revamp-v3/copy-rewrite.csv 的 v3_text（期望的現稿），以及執行期的 labels.importErrors。
+// 同一組檢查跑兩次：docs/revamp-v3/copy-rewrite.csv 的 v3_text（期望的現稿），以及執行期的 labels.errors.import。
 // labels 還是 v2 文案時，執行期那一組會失敗——那是文案尚未落地，不是放寬測試的理由。
 
 /** 檔案層級（沒有行號）：L1 是「{file}：…」。 */
@@ -67,7 +67,7 @@ describe("原因碼分類（文件化的例外）", () => {
 
 describe.each([
   ["copy-rewrite.csv 的 v3_text", csvTemplates],
-  ["執行期的 labels.importErrors", runtimeTemplates],
+  ["執行期的 labels.errors.import", runtimeTemplates],
 ])("importErrors 句型（%s）", (_source, load) => {
   const templates = load();
 

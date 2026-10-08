@@ -28,7 +28,7 @@ import { fixture } from "./helpers/fixtures";
 // V3-7 PRD §7.9「匯出版頭」（台灣報表格式四行）、§9.6 列印與匯出、§6.5 正規化比對、§6.3 #50 A4 列印版。
 
 const copy = labels.exports.headerV3;
-const REPORT_TITLE = fill(copy.reportTitle, { metric: labels.metrics.contribution_after_marketing.label });
+const REPORT_TITLE = fill(copy.reportTitle, { metric: labels.metrics.contribution_after_marketing.headline });
 /** FIXED_GENERATED_AT＝2026-10-05 06:32Z＝台北 14:32。 */
 const FIXED_TIME = "2026-10-05 14:32";
 const periodUnit = (current: [string, string], previous: [string, string], unit: string = copy.unitExclusive) =>
@@ -51,12 +51,12 @@ describe("V3-7 buildExportHeader：四行（資料集、報表名、兩期與單
   it("PRD §7.9 範例：本期在前、上期在後，都寫出天數；單位未稅；版本字串與台北時間在第 4 行", () => {
     const header = buildExportHeader({ datasetName: "demo-store", scope, metricVersion: "contribution-v1", generatedAt: FIXED_GENERATED_AT });
     expect(header.lines).toEqual(["demo-store", REPORT_TITLE, periodUnit(["2026-07-13", "2026-08-23"], ["2026-06-01", "2026-07-12"]), versionLine(FIXED_TIME)]);
-    expect(formatPeriodExport("2026-07-13", "2026-08-23")).toBe(fill(labels.units.exportRange, { start: "2026-07-13", end: "2026-08-23", days: 42 }));
+    expect(formatPeriodExport("2026-07-13", "2026-08-23")).toBe(fill(labels.format.units.exportRange, { start: "2026-07-13", end: "2026-08-23", days: 42 }));
     expect(header).toMatchObject({ datasetName: "demo-store", title: REPORT_TITLE, unitLine: copy.unitExclusive, versionLine: versionLine(FIXED_TIME) });
     expect(header.periodLine).toBe(fill(copy.periodLine, { current: formatPeriodExport("2026-07-13", "2026-08-23"), previous: formatPeriodExport("2026-06-01", "2026-07-12") }));
     expect(header.lines[2]).toBe(fill(copy.periodUnitLine, { period: header.periodLine, unit: header.unitLine }));
     // 報表名的指標名取 metricDefinitions（GLOSSARY：扣廣告後貢獻）。
-    expect(REPORT_TITLE.startsWith(labels.metrics.contribution_after_marketing.label)).toBe(true);
+    expect(REPORT_TITLE.startsWith(labels.metrics.contribution_after_marketing.headline)).toBe(true);
   });
 
   it("含稅換算過：單位寫「已換算為未稅」；D-V3-6 新台幣、台北時間都用「台」", () => {
@@ -71,15 +71,15 @@ describe("V3-7 buildExportHeader：四行（資料集、報表名、兩期與單
     expect(at("2026-10-05T06:32:00Z")).toBe(versionLine("2026-10-05 14:32"));
     expect(at("2026-10-05T16:30:00Z")).toBe(versionLine("2026-10-06 00:30"));
     expect(formatSavedDateTime(new Date("2026-10-05T16:30:00Z"))).toBe("2026-10-06 00:30");
-    expect(buildExportHeader({ datasetName: "x", scope, metricVersion: "v", generatedAt: new Date(Number.NaN) }).versionLine).toBe(versionLine(labels.status.missing, "v"));
+    expect(buildExportHeader({ datasetName: "x", scope, metricVersion: "v", generatedAt: new Date(Number.NaN) }).versionLine).toBe(versionLine(labels.shell.status.missing, "v"));
   });
 
   it("天數：呼叫端（domain）給的天數優先；與起訖日一致時就是 formatPeriodExport；資料集名稱空白時寫「資料待補」", () => {
     const same = buildExportHeader({ datasetName: "x", scope: { ...scope, previousDays: 42, currentDays: 42 }, metricVersion: "v", generatedAt: FIXED_GENERATED_AT });
     expect(same.periodLine).toBe(fill(copy.periodLine, { current: formatPeriodExport("2026-07-13", "2026-08-23"), previous: formatPeriodExport("2026-06-01", "2026-07-12") }));
     const given = buildExportHeader({ datasetName: "x", scope: { ...scope, previousDays: 41 }, metricVersion: "v", generatedAt: FIXED_GENERATED_AT });
-    expect(given.periodLine).toContain(fill(labels.units.exportRange, { start: "2026-06-01", end: "2026-07-12", days: 41 }));
-    expect(buildExportHeader({ datasetName: "   ", scope, metricVersion: "v", generatedAt: FIXED_GENERATED_AT }).lines[0]).toBe(labels.status.missing);
+    expect(given.periodLine).toContain(fill(labels.format.units.exportRange, { start: "2026-06-01", end: "2026-07-12", days: 41 }));
+    expect(buildExportHeader({ datasetName: "   ", scope, metricVersion: "v", generatedAt: FIXED_GENERATED_AT }).lines[0]).toBe(labels.shell.status.missing);
   });
 
   it("Markdown 版頭：四行各自一行（前三行行尾兩個空白＝硬換行），資料集名稱當純文字逸出", () => {
@@ -100,12 +100,12 @@ describe("V3-7 Markdown：「# 標題」之後緊接版頭四行，其後內容�
     const { snapshot } = await golden();
     const summary = buildManagerSummary(snapshot);
     const lines = exportManagerSummaryMarkdown(summary, undefined, { generatedAt: FIXED_GENERATED_AT }).split("\n");
-    expect(lines[0]).toBe(fill(labels.ui.managerSummary.mdTitle, { brand: labels.brand.name, decision: labels.meeting.decisions.draft }));
+    expect(lines[0]).toBe(fill(labels.meeting.managerSummary.mdTitle, { brand: labels.brand.name, decision: labels.meeting.form.decisions.draft }));
     expect(lines[1]).toBe("");
     expect(lines.slice(2, 6).map(line => line.trimEnd())).toEqual(["golden-v1", REPORT_TITLE, GOLDEN_PERIOD_UNIT, versionLine(FIXED_TIME)]);
     expect(lines.slice(2, 6)).toEqual(markdownExportHeader(summaryExportHeader(summary, { generatedAt: FIXED_GENERATED_AT })));
     expect(lines[6]).toBe("");
-    expect(lines[7]).toBe(fill(labels.ui.managerSummary.mdMeta, { asOf: "2026-08-03", channels: "DTC、MARKETPLACE" }));
+    expect(lines[7]).toBe(fill(labels.meeting.managerSummary.mdMeta, { asOf: "2026-08-03", channels: "DTC、MARKETPLACE" }));
     // 含稅換算過：單位寫「已換算為未稅」；資料集名稱可由呼叫端給。
     const converted = exportManagerSummaryMarkdown(buildManagerSummary(snapshot, { conversion: TAX }), undefined, { generatedAt: FIXED_GENERATED_AT, datasetName: "store" }).split("\n");
     expect(converted.slice(2, 6).map(line => line.trimEnd())).toEqual(["store", REPORT_TITLE, periodUnit(["2026-08-02", "2026-08-02"], ["2026-08-01", "2026-08-01"], copy.unitConverted), versionLine(FIXED_TIME)]);
@@ -115,8 +115,8 @@ describe("V3-7 Markdown：「# 標題」之後緊接版頭四行，其後內容�
     const { dataset, snapshot } = await golden({ channels: ["DTC"] });
     const session = createDecisionSession(dataset, snapshot, 1);
     const lines = exportDecisionMarkdown(session, [], [], undefined, [], { generatedAt: FIXED_GENERATED_AT }).split("\n");
-    expect(lines.slice(0, 7).map(line => line.trimEnd())).toEqual([`# ${labels.ui.decisionExport.title}`, "", "golden-v1", REPORT_TITLE, GOLDEN_PERIOD_UNIT, versionLine(FIXED_TIME), ""]);
-    expect(lines[7]).toBe(fill(labels.ui.decisionExport.statusLine, { status: labels.ui.decisionExport.statusCurrent }));
+    expect(lines.slice(0, 7).map(line => line.trimEnd())).toEqual([`# ${labels.exports.decision.title}`, "", "golden-v1", REPORT_TITLE, GOLDEN_PERIOD_UNIT, versionLine(FIXED_TIME), ""]);
+    expect(lines[7]).toBe(fill(labels.exports.decision.statusLine, { status: labels.exports.decision.statusCurrent }));
     const converted = exportDecisionMarkdown(session, [], [], undefined, [conversionSentence(TAX)!], { generatedAt: FIXED_GENERATED_AT }).split("\n");
     expect(converted[4].trimEnd()).toBe(periodUnit(["2026-08-02", "2026-08-02"], ["2026-08-01", "2026-08-01"], copy.unitConverted));
   });
@@ -124,10 +124,10 @@ describe("V3-7 Markdown：「# 標題」之後緊接版頭四行，其後內容�
   it("會議紀錄：版頭的產出時間預設是結束時間（同一筆紀錄每次下載都相同），也可以指定", async () => {
     const { meetingMd, meeting } = await goldenFormattedExports();
     const lines = meetingMd.split("\n");
-    expect(lines[0]).toBe(fill(labels.meetingRecord.mdTitle, { brand: labels.brand.name, name: "golden" }));
+    expect(lines[0]).toBe(fill(labels.meeting.record.mdTitle, { brand: labels.brand.name, name: "golden" }));
     // finalizeMeeting 的 now＝2026-10-03T06:00Z＝台北 14:00。
     expect(lines.slice(1, 7).map(line => line.trimEnd())).toEqual(["", "golden-v1", REPORT_TITLE, GOLDEN_PERIOD_UNIT, versionLine("2026-10-03 14:00"), ""]);
-    expect(lines[7].startsWith(fill(labels.meetingRecord.mdMeta, { date: labels.meeting.date, value: "2026-10-03", decision: labels.meeting.decision, state: "" }).split(" · ")[0])).toBe(true);
+    expect(lines[7].startsWith(fill(labels.meeting.record.mdMeta, { date: labels.meeting.form.date, value: "2026-10-03", decision: labels.meeting.form.decision, state: "" }).split(" · ")[0])).toBe(true);
     expect(exportMeetingMarkdown(meeting)).toBe(meetingMd);
     const custom = exportMeetingMarkdown(meeting, undefined, { generatedAt: FIXED_GENERATED_AT, datasetName: "store" }).split("\n");
     expect(custom.slice(2, 6).map(line => line.trimEnd())).toEqual(["store", REPORT_TITLE, GOLDEN_PERIOD_UNIT, versionLine(FIXED_TIME)]);
@@ -165,7 +165,7 @@ describe("V3-7 §6.5 正規化比對：去掉版頭、負號換回 ASCII 後，�
     expect(exports.excel.sheets[5].rows.length - workbook.sheets[5].rows.length).toBe(1);
     // V3-9b F14／F13：活頁簿最後多一張管理損益表、待辦工作表最後多一欄廣告決策（正規化時拿掉，見 tests/helpers/export-normalize.ts）。
     expect(exports.excel.sheets.map(sheet => sheet.name)).toEqual([...workbook.sheets.map(sheet => sheet.name), labels.exports.variantsV3.pnlSheet]);
-    const actionsSheet = (book: typeof workbook) => book.sheets.find(sheet => sheet.name === labels.excelExport.sheets.actions)!;
+    const actionsSheet = (book: typeof workbook) => book.sheets.find(sheet => sheet.name === labels.exports.excel.sheets.actions)!;
     expect(actionsSheet(exports.excel).header).toEqual([...actionsSheet(workbook).header, labels.actions.adDecisionV3.csvColumn]);
     expect(actionsSheet(exports.excel).rows.map(row => row.length)).toEqual(actionsSheet(workbook).rows.map(row => row.length + 1));
   });
@@ -184,13 +184,13 @@ describe("V3-7 Excel：摘要工作表最前面是版頭四列；表頭粗體、
     const { dataset, snapshot } = await golden();
     const summary = buildManagerSummary(snapshot);
     const sheet = buildExcelWorkbook({ summary, snapshot, dataset, actions: emptyActionWorkspace(), generatedAt: FIXED_GENERATED_AT }).sheets[0];
-    const columns = labels.excelExport.columns.summary;
+    const columns = labels.exports.excel.columns.summary;
     const sectionAt = Object.keys(columns).indexOf("section"), detailAt = Object.keys(columns).indexOf("detail");
     const cellText = (row: number, column: number) => { const cell = sheet.rows[row][column]; return cell.kind === "text" ? cell.value : null; };
     expect([0, 1, 2, 3].map(row => cellText(row, sectionAt))).toEqual(Array(4).fill(copy.excelSection));
     expect([0, 1, 2, 3].map(row => cellText(row, detailAt))).toEqual(["golden-v1", REPORT_TITLE, GOLDEN_PERIOD_UNIT, versionLine(FIXED_TIME)]);
     expect(sheet.rows.slice(0, 4).every(row => row.every((cell, column) => column === sectionAt || column === detailAt ? cell.kind === "text" : cell.kind === "null"))).toBe(true);
-    expect([cellText(4, sectionAt), cellText(4, detailAt)]).toEqual([labels.excelExport.summary.sections.scope, "golden-v1"]);
+    expect([cellText(4, sectionAt), cellText(4, detailAt)]).toEqual([labels.exports.excel.summary.sections.scope, "golden-v1"]);
     // 含稅換算（conversion 或 summary 的換算一句）：單位寫「已換算為未稅」。
     const converted = buildExcelWorkbook({ summary, snapshot, dataset, actions: emptyActionWorkspace(), conversion: TAX, generatedAt: FIXED_GENERATED_AT }).sheets[0];
     expect(converted.rows[2][detailAt]).toEqual({ kind: "text", value: periodUnit(["2026-08-02", "2026-08-02"], ["2026-08-01", "2026-08-01"], copy.unitConverted) });
@@ -235,10 +235,10 @@ describe("V3-7 Excel：摘要工作表最前面是版頭四列；表頭粗體、
     }
     // 讀回：表頭文字、版頭四列、金額格與數字格式都和模型相同。
     const book = XLSX.read(bytes, { type: "array", cellNF: true });
-    const rows = XLSX.utils.sheet_to_json<unknown[]>(book.Sheets[labels.excelExport.sheets.summary], { header: 1, defval: null });
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(book.Sheets[labels.exports.excel.sheets.summary], { header: 1, defval: null });
     expect(rows[0]).toEqual(workbook.sheets[0].header);
     expect(rows.slice(1, 5).map(row => row.at(-1))).toEqual(["golden-v1", REPORT_TITLE, GOLDEN_PERIOD_UNIT, versionLine(FIXED_TIME)]);
-    const minus = Object.values(book.Sheets[labels.excelExport.sheets.summary]).find(cell => typeof cell === "object" && cell !== null && (cell as XLSX.CellObject).v === -315) as XLSX.CellObject;
+    const minus = Object.values(book.Sheets[labels.exports.excel.sheets.summary]).find(cell => typeof cell === "object" && cell !== null && (cell as XLSX.CellObject).v === -315) as XLSX.CellObject;
     expect([minus.t, minus.z, minus.w]).toEqual(["n", EXCEL_NUMBER_FORMATS.money_l2, `${MINUS}315`]);
   });
 });
@@ -248,7 +248,7 @@ describe("V3-7 §6.3 #50 A4 列印版：版頭四行＋會議一行（有會議�
   async function render(meeting: { name: string; date: string } | null, conversion: TaxConversion | null = null) {
     const { snapshot } = await golden();
     const summary = buildManagerSummary(snapshot, { conversion });
-    return renderToStaticMarkup(createElement(PrintSummary, { summary, snapshot, meeting, generatedAt: FIXED_GENERATED_AT, decisionContext: { dataset_hash: summary.dataset_hash, filter_hash: summary.filter_hash, scenarios: [], actions: [], decisionState: labels.meetingPage.printViewState } }));
+    return renderToStaticMarkup(createElement(PrintSummary, { summary, snapshot, meeting, generatedAt: FIXED_GENERATED_AT, decisionContext: { dataset_hash: summary.dataset_hash, filter_hash: summary.filter_hash, scenarios: [], actions: [], decisionState: labels.meeting.page.printViewState } }));
   }
   const header = (html: string) => /<header[^>]*data-testid="print-report-header"[^>]*>([\s\S]*?)<\/header>/.exec(html)![1];
   const pieces = (html: string) => [...header(html).matchAll(/<(p|h1)[^>]*>([\s\S]*?)<\/\1>/g)].map(match => ({ tag: match[1], text: text(match[2]), html: match[0] }));
@@ -257,7 +257,7 @@ describe("V3-7 §6.3 #50 A4 列印版：版頭四行＋會議一行（有會議�
     const html = await render(null);
     expect(pieces(html).map(piece => [piece.tag, piece.text])).toEqual([
       ["p", "golden-v1"], ["h1", REPORT_TITLE], ["p", `${fill(copy.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") })}${copy.unitExclusive}`],
-      ["p", versionLine(FIXED_TIME)], ["p", fill(copy.printScope, { state: labels.meetingPage.printViewState, asOf: "2026-08-03", channels: "DTC、MARKETPLACE", mode: labels.periods.sameDays })],
+      ["p", versionLine(FIXED_TIME)], ["p", fill(copy.printScope, { state: labels.meeting.page.printViewState, asOf: "2026-08-03", channels: "DTC、MARKETPLACE", mode: labels.shell.periods.sameDays })],
     ]);
     // 期間與單位同一行、各自一段（單位靠右）。
     expect(pieces(html)[2].html).toMatch(/<p[^>]*data-testid="print-header-period"[^>]*><span>[^<]+<\/span><span>[^<]+<\/span><\/p>/);
@@ -273,8 +273,8 @@ describe("V3-7 §6.3 #50 A4 列印版：版頭四行＋會議一行（有會議�
     const list = pieces(html);
     expect(list.map(piece => piece.text)).toEqual([
       "golden-v1", REPORT_TITLE, `${fill(copy.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") })}${copy.unitConverted}`, versionLine(FIXED_TIME),
-      fill(labels.meetingPage.printHeader, { name: "十月例會", date: "2026-10-03", asOf: "2026-08-03" }),
-      fill(copy.printScopeMeeting, { state: labels.meetingPage.printViewState, channels: "DTC、MARKETPLACE", mode: labels.periods.sameDays }),
+      fill(labels.meeting.page.printHeader, { name: "十月例會", date: "2026-10-03", asOf: "2026-08-03" }),
+      fill(copy.printScopeMeeting, { state: labels.meeting.page.printViewState, channels: "DTC、MARKETPLACE", mode: labels.shell.periods.sameDays }),
     ]);
     expect(list[4].html).toContain('data-testid="print-header-meeting"');
     expect(header(await render(null))).not.toContain('data-testid="print-header-meeting"');

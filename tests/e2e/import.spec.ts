@@ -13,11 +13,11 @@ import { test as base, expect, type Locator, type Page } from "@playwright/test"
 // R3：單頁匯入面板改為四步匯入精靈（選檔 → 對照欄位 → 口徑與期間 → 檢核與套用）；所有畫面字串由 labels 取字。
 const copy = labels.importWizard;
 const v3 = copy.wizardV3;
-const panel = labels.ui.importPanel;
+const panel = labels.importWizard.panel;
 /** V3-8（§7.7.1 第 3 段）：問題表欄位 檔案｜行號｜欄位｜問題｜修法｜原因碼；原因碼欄預設收合，工具列「顯示原因碼」切換。 */
 const issueTable = labels.data.pageV3.issueTable;
 const issueColumns = [issueTable.columns.file, issueTable.columns.line, issueTable.columns.field, issueTable.columns.problem, issueTable.columns.fix, issueTable.columns.code];
-const issueRegion = (root: Locator) => root.getByRole("region", { name: labels.ui.issueList.regionAria, exact: true });
+const issueRegion = (root: Locator) => root.getByRole("region", { name: labels.data.issues.regionAria, exact: true });
 /** 問題表裡原因碼是 code 的列（原因碼欄 hidden 時 hasText 仍比對 textContent）。 */
 const issueRow = (root: Locator, code: string) => issueRegion(root).locator("tbody tr").filter({ has: root.page().locator("td.issue-code code", { hasText: code }) });
 /** 按「顯示原因碼」（aria-pressed false → true），原因碼欄由 hidden 變成可見。 */
@@ -39,7 +39,7 @@ function templateParts(code: string) {
 /** V3-8（§7.7.2）：第 4 步頂部狀態一行（L1）的開頭（「可以套用：」「可套用已有範圍：」「無法套用：」）。 */
 const statusTemplates: Record<Classification, string> = { valid: v3.statusReady, partial: v3.statusPartial, blocking: v3.statusBlocked };
 const statusPrefix = (classification: Classification) => new RegExp(`^${statusTemplates[classification].slice(0, statusTemplates[classification].indexOf("：") + 1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
-const channelFilter = (page: Page) => page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true });
+const channelFilter = (page: Page) => page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true });
 /** V3-3：通路下拉在期間列；手機期間列收成 period-toggle，先開底部面板、選完按「完成」（桌機兩步不動）。 */
 async function selectChannel(page: Page, option: Parameters<Locator["selectOption"]>[0]) {
   await openPeriodSheet(page);
@@ -59,11 +59,11 @@ const nextButton = (page: Page) => wizard(page).getByRole("button", { name: copy
 const confirmButton = (page: Page) => wizard(page).getByRole("button", { name: copy.confirmAndCheck, exact: true });
 const confirmMappingButton = (page: Page) => wizard(page).getByRole("button", { name: copy.confirmMapping, exact: true });
 /** V3-2a：「資料到 {date}」由套用資料集的 data_as_of 填入。 */
-const ready = (dataAsOf: string) => fill(labels.status.ready, { date: dataAsOf });
+const ready = (dataAsOf: string) => fill(labels.shell.status.ready, { date: dataAsOf });
 const alternativeAsOf = "2026-09-05";
 const goldenAsOf = "2026-08-03";
 /** importErrors 的白話訊息含 {line} 等占位符；比對時以任意文字代入。 */
-const plainMessage = (code: string) => new RegExp(labels.importErrors[code].replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\{\w+\\\}/g, ".+?"));
+const plainMessage = (code: string) => new RegExp(labels.errors.import[code].replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\{\w+\\\}/g, ".+?"));
 
 interface AuditEvent { kind: string; errorName?: string; type?: string }
 const test = base.extend<{ browserAudit: AuditEvent[] }>({
@@ -123,7 +123,7 @@ async function check(page: Page, classification: Classification) {
 async function commit(page: Page, dataAsOf: string, classification: "valid" | "partial" = "valid") {
   await check(page, classification);
   await commitWizard(page);
-  await expect(status(page)).toContainText(classification === "valid" ? ready(dataAsOf) : labels.status.partial);
+  await expect(status(page)).toContainText(classification === "valid" ? ready(dataAsOf) : labels.shell.status.partial);
   await expect(wizard(page)).toHaveCount(0);
   // R6：首次載入資料後出現非 modal 的「自動保存？」提示；V3-3 手機它疊在底部分頁列上方，會擋住「更多」面板與頂欄「更多」的匯出選單。本檔不測自動保存，先按「暫時不要」。
   await dismissSavePrompt(page);
@@ -142,7 +142,7 @@ async function returnToGolden(page: Page) {
 }
 /** V3-5：「下載商品明細 CSV」搬進商品毛利頁頁首「匯出本頁」下拉（product-export-menu）；每次下載前先展開，再依原按鈕名稱取得。 */
 async function productsCsvButton(page: Page) {
-  const button = (await openProductExport(page)).getByRole("button", { name: labels.downloads.productsCsv, exact: true });
+  const button = (await openProductExport(page)).getByRole("button", { name: labels.exports.downloads.productsCsv, exact: true });
   await expect(button).toHaveAttribute("data-testid", "product-export-products");
   return button;
 }
@@ -201,7 +201,7 @@ test("真正選取兩套本機檔案會更新 KPI、圖表表格、商品與診�
   await expect(kpi(page, "gross_profit")).toHaveText(formatAmountL1("260.00"));
   await expect(kpi(page, "contribution_before_marketing")).toHaveText(formatAmountL1("200.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  const weekly = page.locator("details").filter({ has: page.locator("summary", { hasText: fill(labels.ui.overview.dataTable, { title: labels.sections.trend }) }) });
+  const weekly = page.locator("details").filter({ has: page.locator("summary", { hasText: fill(labels.overview.page.dataTable, { title: labels.overview.sections.trend }) }) });
   await weekly.locator("summary").click();
   await expect(weekly.locator("tbody tr")).toHaveCount(2);
   // V3-9b F8：週趨勢表多兩欄去年同期（共 7 欄，原本 5 欄的位置不變）；這份資料從 2026-09-01 開始，去年同期不可用，兩欄都是「無資料」，圖下方寫原因。
@@ -235,7 +235,7 @@ test("不讀 JSON 也能手填 manifest，金額口徑須明確確認（R3：第
   await expect(wizard(page).getByLabel("MARKETPLACE", { exact: true })).toBeChecked();
   const settings: Record<string, string> = {
     [copy.datasetName]: "alternative-manual-v1", [copy.dataAsOf]: "2026-09-05", [copy.coverageStart]: "2026-09-01", [copy.coverageEnd]: "2026-09-04",
-    [labels.csvColumns.previous_start]: "2026-09-01", [labels.csvColumns.previous_end]: "2026-09-02", [labels.csvColumns.current_start]: "2026-09-03", [labels.csvColumns.current_end]: "2026-09-04",
+    [labels.exports.csv.columns.previous_start]: "2026-09-01", [labels.exports.csv.columns.previous_end]: "2026-09-02", [labels.exports.csv.columns.current_start]: "2026-09-03", [labels.exports.csv.columns.current_end]: "2026-09-04",
   };
   // V3-8（§7.7.2 步驟 3）：上期／本期起訖收在「調整比較期間」<details>；fillWizardSettings 先展開再填。
   await fillWizardSettings(page, settings);
@@ -248,7 +248,7 @@ test("不讀 JSON 也能手填 manifest，金額口徑須明確確認（R3：第
   await chooseBasis(page, "exclusive");
   await commit(page, settings[copy.dataAsOf]);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  const manifest = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.manifestJson, exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
+  const manifest = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.exports.downloads.manifestJson, exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
   await closeDownloads(page);
   expect(manifest).toMatchObject({ dataset_id: "alternative-manual-v1", source_type: "user_provided", currency: "TWD", timezone: "Asia/Taipei", sales_coverage_confirmed: true, amount_basis: "product_amounts_excluding_tax_and_customer_shipping_income" });
 });
@@ -287,7 +287,7 @@ test("JSON 未確認銷售涵蓋範圍可在表單確認後重新檢核成功", 
   await commit(page, goldenAsOf);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("255.00"));
-  const exported = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.manifestJson, exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
+  const exported = JSON.parse(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.exports.downloads.manifestJson, exact: true }), "profitlens-manifest.json")) as Record<string, unknown>;
   await closeDownloads(page);
   expect(exported).toMatchObject({ dataset_id: "coverage-confirmed-in-form-synthetic", sales_coverage_confirmed: true });
 });
@@ -320,8 +320,8 @@ for (const invalid of [
     await expect(cells.nth(4)).toHaveText(parts.explain);
     await showReasonCodes(wizard(page), invalid.reason);
     // 步驟 4 只有一顆「下載問題清單 CSV」（IssueList 的工具列不再放第二顆）。
-    await expect(wizard(page).getByRole("button", { name: labels.downloads.issuesCsv, exact: true })).toHaveCount(1);
-    const content = await downloadText(page, wizard(page).getByRole("button", { name: labels.downloads.issuesCsv, exact: true }), "profitlens-import-issues.csv");
+    await expect(wizard(page).getByRole("button", { name: labels.exports.downloads.issuesCsv, exact: true })).toHaveCount(1);
+    const content = await downloadText(page, wizard(page).getByRole("button", { name: labels.exports.downloads.issuesCsv, exact: true }), "profitlens-import-issues.csv");
     const rows = csvRecords(content);
     const issue = rows.find(row => row.reason_code === invalid.reason);
     expect(issue).toBeDefined();
@@ -342,12 +342,12 @@ for (const incomplete of [
     await check(page, "partial");
     await expect(wizard(page)).toContainText(incomplete.reason);
     await commitWizard(page);
-    await expect(status(page)).toContainText(labels.status.partial);
+    await expect(status(page)).toContainText(labels.shell.status.partial);
     await dismissSavePrompt(page);
     await navigateTo(page, "overview");
     await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
-    await expect(kpi(page, "contribution_after_marketing")).toHaveText(labels.status.missing);
-    const rows = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv"));
+    await expect(kpi(page, "contribution_after_marketing")).toHaveText(labels.shell.status.missing);
+    const rows = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv"));
     await closeDownloads(page);
     const current = rows.find(row => row.row_type === "period_summary" && row.period === "current" && row.metric === "contribution_after_marketing");
     expect(current).toBeDefined();
@@ -364,11 +364,11 @@ for (const incomplete of [
     await expect(row.locator("td").nth(3)).toContainText(expected.problem);
     await expect(row.locator("td").nth(4)).toHaveText(expected.fix);
     await showReasonCodes(dataIssues, incomplete.reason);
-    await expect(page.getByTestId("data-issues-download")).toHaveText(labels.downloads.issuesCsv);
+    await expect(page.getByTestId("data-issues-download")).toHaveText(labels.exports.downloads.issuesCsv);
     await expect(page.getByTestId("data-preprocessing")).toContainText(copy.noConversion);
     await expect(page.getByTestId("data-preprocessing").locator("table")).toHaveCount(0);
     const preview = page.getByTestId("data-preview-sales_daily.csv");
-    const previewTable = preview.getByRole("table", { name: fill(labels.ui.workspacePanels.previewCaption, { fileName: "sales_daily.csv" }), includeHidden: true });
+    const previewTable = preview.getByRole("table", { name: fill(labels.data.panel.previewCaption, { fileName: "sales_daily.csv" }), includeHidden: true });
     await expect(preview).not.toHaveAttribute("open", "");
     await expect(previewTable).toBeHidden();
     await preview.locator(":scope > summary").click();
@@ -453,7 +453,7 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
   await navigateTo(page, "overview");
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
-  const text = await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv");
+  const text = await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv");
   await closeDownloads(page);
   expect(text).not.toContain("private_note");
   expect(text).not.toContain("SYNTHETIC_UNKNOWN_MARKER");
@@ -482,12 +482,12 @@ test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文�
   await page.unroute("**/*");
   const other = await context.newPage();
   await other.goto("/");
-  await expect(status(other)).toContainText(labels.status.empty);
+  await expect(status(other)).toContainText(labels.shell.status.empty);
   await expect(other.getByTestId("product-table")).toHaveCount(0);
   await other.close();
   await page.reload();
   expect(browserAudit.filter(event => event.kind === "unsaved-changes-warning")).toEqual([{ kind: "unsaved-changes-warning", type: "beforeunload" }]);
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await expect(page.getByTestId("kpi-net_revenue")).toHaveCount(0);
 });
 
@@ -495,7 +495,7 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   await importFixture(page);
   await selectChannel(page, "DTC");
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("40.00"));
-  const analysis = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv"));
+  const analysis = csvRecords(await downloadText(page, (await openDownloads(page)).getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true }), "profitlens-analysis.csv"));
   await closeDownloads(page);
   const current = analysis.find(row => row.row_type === "period_summary" && row.period === "current" && row.metric === "contribution_after_marketing");
   expect(current).toBeDefined();
@@ -508,7 +508,7 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   expect(analysis.every(row => row.metric_version === (row.row_type === "assist_kpi" ? ASSIST_KPI_VERSION : row.row_type === "breakeven_mer" ? BREAKEVEN_MER_VERSION : "contribution-v1") && row.as_of === "2026-09-05")).toBe(true);
   expect(analysis.filter(row => row.row_type === "assist_kpi")).toHaveLength(14);
   expect(analysis.filter(row => row.row_type === "breakeven_mer")).toHaveLength(2);
-  await selectChannel(page, { label: labels.ui.dashboard.filter.allChannels });
+  await selectChannel(page, { label: labels.shell.periodBar.filter.allChannels });
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
   await navigateTo(page, "products");
   const allProducts = csvRecords(await downloadText(page, await productsCsvButton(page), "profitlens-products.csv"));
@@ -518,8 +518,8 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   expect(allProducts.some(row => row.metric === "gross_profit" && row.value === "-100.00")).toBe(true);
   expect(allProducts.every(row => !["ad_spend", "contribution_after_marketing", "contribution_before_marketing"].includes(row.metric))).toBe(true);
   await selectChannel(page, "MARKETPLACE");
-  await page.getByLabel(labels.csvColumns.category, { exact: true }).selectOption("\t=FORMULA()");
-  await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("-TEST()");
+  await page.getByLabel(labels.exports.csv.columns.category, { exact: true }).selectOption("\t=FORMULA()");
+  await page.getByLabel(labels.products.comparison.searchSku, { exact: true }).fill("-TEST()");
   await expect(page.getByTestId("product-table").locator("tbody tr")).toHaveCount(1);
   const selectedProducts = csvRecords(await downloadText(page, await productsCsvButton(page), "profitlens-products.csv"));
   expect(selectedProducts.length).toBeGreaterThan(0);
@@ -553,19 +553,19 @@ test("空白品類商品仍可搜尋匯出，合法 all 通路與全部通路各
   await selectChannel(page, { label: "all" });
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("400.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("40.00"));
-  await selectChannel(page, { label: labels.ui.dashboard.filter.allChannels });
+  await selectChannel(page, { label: labels.shell.periodBar.filter.allChannels });
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("600.00"));
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
   await navigateTo(page, "products");
   const table = page.getByTestId("product-table");
   await expect(table.locator("tbody tr")).toHaveCount(4);
   const blankCategoryRow = table.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "+TEST()", exact: true }) });
-  await expect(blankCategoryRow).toContainText(labels.ui.workspacePanels.uncategorized);
-  const optionLabels = await page.getByLabel(labels.csvColumns.category, { exact: true }).locator("option").allTextContents();
+  await expect(blankCategoryRow).toContainText(labels.products.panel.uncategorized);
+  const optionLabels = await page.getByLabel(labels.exports.csv.columns.category, { exact: true }).locator("option").allTextContents();
   expect(optionLabels.every(label => label.trim().length > 0), "品類下拉不得出現無名稱的空白選項").toBe(true);
-  await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("+TEST()");
+  await page.getByLabel(labels.products.comparison.searchSku, { exact: true }).fill("+TEST()");
   await expect(table.locator("tbody tr")).toHaveCount(1);
-  await expect(table).toContainText(labels.ui.workspacePanels.uncategorized);
+  await expect(table).toContainText(labels.products.panel.uncategorized);
   await expect(table).toContainText(formatAmountL2("120.00"));
   await expect(table).toContainText(formatAmountL2("80.00"));
   const exported = csvRecords(await downloadText(page, await productsCsvButton(page), "profitlens-products.csv"));

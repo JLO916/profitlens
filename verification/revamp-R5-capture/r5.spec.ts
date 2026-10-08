@@ -13,15 +13,15 @@ async function shoot(page: Page, dir: string, name: string, anchor?: Locator) {
   await page.screenshot({ path: `${dir}/${name}-viewport.png` });
   await page.screenshot({ path: `${dir}/${name}-full.jpg`, fullPage: true, type: "jpeg", quality: 70 });
 }
-const nav = (page: Page, id: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[id].label, exact: true });
+const nav = (page: Page, id: keyof typeof labels.shell.nav) => page.getByRole("button", { name: labels.shell.nav[id].headline, exact: true });
 async function load(page: Page, id: "golden" | "demo") {
   await page.goto("/");
   await nav(page, "validation").click();
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(id);
-  await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.shell.status.ready);
 }
-const modeButton = (card: Locator, field: string) => card.getByTestId(`scenario-mode-${field}`).getByRole("button", { name: labels.scenario.modeAbsolute, exact: true });
+const modeButton = (card: Locator, field: string) => card.getByTestId(`scenario-mode-${field}`).getByRole("button", { name: labels.scenarios.inputs.modeAbsolute, exact: true });
 
 test("R5 截圖", async ({ page }, testInfo) => {
   // R5_CAPTURE_DIR 只供試跑時把圖輸出到別處（不覆寫證據檔）；正式流程不設，輸出到 verification/revamp-R5。
@@ -41,7 +41,7 @@ test("R5 截圖", async ({ page }, testInfo) => {
   await card.getByTestId("scenario-preset-apply").click();
   await expect(card.getByTestId("scenario-preset-purpose")).toBeVisible();
   // 切到絕對值時該格預填反推值；改填接近範本的絕對值（DTC 本期 4 件 → 6 件、廣告 270 → 540 元），畫面顯示等值相對值。
-  for (const [field, label, value] of [["volume_change_pct", labels.scenario.volume.label, "6"], ["ad_change_pct", labels.scenario.adSpend.label, "540"]] as const) {
+  for (const [field, label, value] of [["volume_change_pct", labels.scenarios.inputs.volume.label, "6"], ["ad_change_pct", labels.scenarios.inputs.adSpend.label, "540"]] as const) {
     await modeButton(card, field).click();
     await card.getByLabel(label, { exact: true }).fill(value);
     await expect(card.getByTestId(`scenario-equivalent-${field}`)).toBeVisible();
@@ -56,7 +56,7 @@ test("R5 截圖", async ({ page }, testInfo) => {
   for (const index of [0, 1]) {
     await nav(page, "diagnosis").click();
     const row = page.getByTestId("diagnosis-list").locator(":scope > li > details.diagnosis-row").nth(index);
-    await row.getByRole("button", { name: labels.buttons.addToActions, exact: true }).click();
+    await row.getByRole("button", { name: labels.actions.buttons.addToActions, exact: true }).click();
     await expect(page.getByTestId(`board-card-${index + 1}`)).toBeVisible();
   }
   await page.getByTestId("board-card-1-move-in_progress").click();

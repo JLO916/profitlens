@@ -139,8 +139,8 @@ describe("R5-6 dataStatus：資料狀態五種", () => {
   });
 
   it("每個狀態都有中文標籤；「涵蓋未確認」沿用既有「銷售完整性待確認」語意", () => {
-    for (const status of ["both", "current_only", "previous_only", "cost_unknown", "coverage_unknown"] as const) expect(labels.productHighlights.status[status]).toMatch(/\S/);
-    expect(labels.productHighlights.status.coverage_unknown).toBe(labels.ui.productComparisonPanel.activity.coverageUnknown);
+    for (const status of ["both", "current_only", "previous_only", "cost_unknown", "coverage_unknown"] as const) expect(labels.products.highlights.status[status]).toMatch(/\S/);
+    expect(labels.products.highlights.status.coverage_unknown).toBe(labels.products.comparison.activity.coverageUnknown);
   });
 });
 
@@ -172,10 +172,10 @@ describe("R5-6 商品毛利頁版面（伺服器端渲染）", () => {
   /** V3-5（C3 手機清單）：表頭與列標頭明確帶 role＋data-label／data-list-role，屬性不固定，取文字即可。 */
   const headers = (html: string) => [...html.matchAll(/<th scope="col"[^>]*>([^<]*)<\/th>/g)].map(match => match[1]);
   const rowHeaders = (html: string) => [...html.matchAll(/<th scope="row"[^>]*>([^<]*)/g)].map(match => match[1].trim());
-  const per = (period: "previous" | "current", label: string) => `${labels.periods[period]}${label}`;
-  const change = (name: "gross_profit" | "net_revenue") => `${metricDefinitions[name].label}${labels.csvSuffix.change}`;
+  const per = (period: "previous" | "current", label: string) => `${labels.shell.periods[period]}${label}`;
+  const change = (name: "gross_profit" | "net_revenue") => `${metricDefinitions[name].label}${labels.exports.csv.suffix.change}`;
   /** V3-2b：表格是 L2，金額欄表頭標一次「（元）」。 */
-  const yuan = (label: string) => fill(labels.units.yuanColumn, { label });
+  const yuan = (label: string) => fill(labels.format.units.yuanColumn, { label });
   /** 依序出現的格式化字串（中間可夾任何標記）。 */
   const inOrder = (...parts: string[]) => new RegExp(parts.map(part => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[\\s\\S]*"));
 
@@ -184,11 +184,11 @@ describe("R5-6 商品毛利頁版面（伺服器端渲染）", () => {
     expect(html.indexOf('data-testid="product-worst"')).toBeGreaterThan(-1);
     expect(html.indexOf('data-testid="product-worst"')).toBeLessThan(html.indexOf('data-testid="product-best"'));
     expect(html.indexOf('data-testid="product-best"')).toBeLessThan(html.indexOf('data-testid="product-table"'));
-    expect(html).toContain(labels.sections.productTopBottom);
+    expect(html).toContain(labels.products.sections.productTopBottom);
     const worst = between(html, 'data-testid="product-worst"', "</section>");
     const best = between(html, 'data-testid="product-best"', "</section>");
-    expect(worst).toContain(fill(labels.productHighlights.worstTitle, { n: 10 }));
-    expect(best).toContain(fill(labels.productHighlights.bestTitle, { n: 10 }));
+    expect(worst).toContain(fill(labels.products.highlights.worstTitle, { n: 10 }));
+    expect(best).toContain(fill(labels.products.highlights.bestTitle, { n: 10 }));
     const page = labels.products.pageV3;
     const expected = [page.columns.rank, page.columns.product, yuan(per("current", metricDefinitions.gross_profit.shortLabel)), yuan(page.columns.change)];
     expect(headers(worst)).toEqual(expected);
@@ -210,7 +210,7 @@ describe("R5-6 商品毛利頁版面（伺服器端渲染）", () => {
   it("沒有毛利增加的商品時顯示一句說明", async () => {
     const html = await render(withSales([sale(aug1, "DOWN", "100", "40"), sale(aug2, "DOWN", "80", "40")]));
     const best = between(html, 'data-testid="product-best"', "</section>");
-    expect(best).toContain(labels.productHighlights.bestEmpty);
+    expect(best).toContain(labels.products.highlights.bestEmpty);
     expect(best).not.toContain("<table");
   });
 
@@ -218,27 +218,27 @@ describe("R5-6 商品毛利頁版面（伺服器端渲染）", () => {
     const html = await render();
     const table = between(html, 'data-testid="product-table"', "</table>");
     expect(headers(table)).toEqual([
-      labels.csvColumns.channel, "SKU", labels.csvColumns.category, per("current", labels.assist.items.units_sold.label),
+      labels.exports.csv.columns.channel, "SKU", labels.exports.csv.columns.category, per("current", labels.assist.items.units_sold.label),
       yuan(per("current", metricDefinitions.net_revenue.shortLabel)), yuan(per("current", metricDefinitions.gross_profit.shortLabel)), per("current", metricDefinitions.gross_margin.shortLabel),
-      yuan(change("gross_profit")), yuan(change("net_revenue")), yuan(per("previous", metricDefinitions.net_revenue.label)), yuan(per("previous", metricDefinitions.gross_profit.label)), labels.productHighlights.columns.dataStatus,
+      yuan(change("gross_profit")), yuan(change("net_revenue")), yuan(per("previous", metricDefinitions.net_revenue.label)), yuan(per("previous", metricDefinitions.gross_profit.label)), labels.products.highlights.columns.dataStatus,
     ]);
     // 預設排序：商品毛利差額由小到大（MARKETPLACE/B −55 → DTC/B −50 → MARKETPLACE/A +10 → DTC/A +40）
     expect(rowHeaders(table)).toEqual(["B", "B", "A", "A"]);
     // V3-2b：件數欄是 L2（只有數字，單位在表頭「售出件數」）。
     expect(table).toContain(`>${formatCount("3", "L2")}</button>`);
-    expect(table).toContain(labels.productHighlights.status.both);
+    expect(table).toContain(labels.products.highlights.status.both);
     expect(html).toMatch(/aria-pressed="false" data-testid="product-more-columns"/);
     // V3-5：說明改由頁首描述承擔（labels.products.pageV3.description，見 product-page-v3.test.tsx）；面板內不再有 eyebrow、「元，未稅」標籤與兩段說明。
-    for (const old of [labels.productHighlights.intro, labels.ui.productComparisonPanel.intro, labels.ui.productComparisonPanel.eyebrow, labels.ui.productComparisonPanel.basisTag]) expect(html).not.toContain(old);
+    for (const old of [labels.products.highlights.intro, labels.products.comparison.intro, labels.products.comparison.eyebrow, labels.products.comparison.basisTag]) expect(html).not.toContain(old);
     expect(html).toContain('aria-live="polite"');
-    expect(html).toContain(labels.ui.productComparisonPanel.tableCaption);
+    expect(html).toContain(labels.products.comparison.tableCaption);
   });
 
   it("缺成本列顯示「成本未知」與「資料待補」；淨營收 ≤ 0 的毛利率顯示「不適用」", async () => {
     const missing = between(await render(fixture("errors/missing_cogs")), 'data-testid="product-table"', "</table>");
-    expect(missing).toContain(labels.productHighlights.status.cost_unknown);
-    expect(missing).toContain(labels.ui.productComparisonPanel.costMissing);
+    expect(missing).toContain(labels.products.highlights.status.cost_unknown);
+    expect(missing).toContain(labels.products.comparison.costMissing);
     const refund = between(await render(withSales([sale(aug1, "REFUND", "100", "40"), sale(aug2, "REFUND", "0", "-40", "DTC", "100")])), 'data-testid="product-table"', "</table>");
-    expect(refund).toContain(labels.status.notApplicable);
+    expect(refund).toContain(labels.shell.status.notApplicable);
   });
 });

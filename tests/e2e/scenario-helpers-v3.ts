@@ -6,10 +6,10 @@ import { sidebarNav } from "./replacement-helpers";
 // V3-6（PRD §7.4、§7.5；代理 E1）：假設試算頁與待辦頁的 E2E 共用 helper。replacement-helpers.ts 是三個代理共用的檔，不在這裡改。
 const pageV3 = labels.scenarios.pageV3;
 export type DecisionFormat = "md" | "csv" | "json";
-/** 三項決策輸出（Markdown／CSV／JSON）的項目名稱：頂欄、試算頁「匯出本頁」、待辦頁「匯出本頁」都用 labels.downloads 這三個字。 */
-export const decisionExportLabel: Record<DecisionFormat, string> = { md: labels.downloads.decisionMd, csv: labels.downloads.decisionCsv, json: labels.downloads.decisionJson };
+/** 三項決策輸出（Markdown／CSV／JSON）的項目名稱：頂欄、試算頁「匯出本頁」、待辦頁「匯出本頁」都用 labels.exports.downloads 這三個字。 */
+export const decisionExportLabel: Record<DecisionFormat, string> = { md: labels.exports.downloads.decisionMd, csv: labels.exports.downloads.decisionCsv, json: labels.exports.downloads.decisionJson };
 
-/** 方案卡的聲明勾選框（D-V3-12 記住之前每張卡都有；名稱＝labels.scenario.acceptAssumptions）。 */
+/** 方案卡的聲明勾選框（D-V3-12 記住之前每張卡都有；名稱＝labels.scenarios.inputs.acceptAssumptions）。 */
 export const consentBox = (card: Locator) => card.getByTestId("scenario-accept");
 /** D-V3-12＝B：同一工作區勾過一次後，每張卡改成一行說明，沒有勾選框。 */
 export async function expectAcknowledged(card: Locator) {
@@ -18,7 +18,7 @@ export async function expectAcknowledged(card: Locator) {
 }
 /** 還沒記住聲明：勾選框在、沒有勾，也沒有「已了解」那一行。 */
 export async function expectConsentPending(card: Locator) {
-  await expect(consentBox(card)).toHaveAccessibleName(labels.scenario.acceptAssumptions);
+  await expect(consentBox(card)).toHaveAccessibleName(labels.scenarios.inputs.acceptAssumptions);
   await expect(consentBox(card)).not.toBeChecked();
   await expect(card.getByTestId("scenario-acknowledged")).toHaveCount(0);
 }
@@ -33,7 +33,7 @@ export async function acceptAssumptions(card: Locator): Promise<boolean> {
   if (first) {
     await expectConsentPending(card);
     await box.click();
-    await expect(card.getByRole("button", { name: labels.buttons.calculate, exact: true })).toBeFocused();
+    await expect(card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true })).toBeFocused();
   }
   await expectAcknowledged(card);
   return first;

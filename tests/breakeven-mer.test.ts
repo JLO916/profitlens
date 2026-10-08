@@ -94,10 +94,10 @@ describe("F12 手算 golden（本期 2,470 ÷ 705、上期 2,250 ÷ 870）", () 
   });
 
   it("顯示取位：本期 3.5 倍（L1）／3.50 倍（L3），上期 2.6 倍／2.59 倍", () => {
-    expect(formatMultiple(GOLDEN.current.value, "L1")).toBe(fill(labels.units.multiple, { value: "3.5" }));
-    expect(formatMultiple(GOLDEN.current.value, "L3")).toBe(fill(labels.units.multiple, { value: "3.50" }));
-    expect(formatMultiple(GOLDEN.previous.value, "L1")).toBe(fill(labels.units.multiple, { value: "2.6" }));
-    expect(formatMultiple(GOLDEN.previous.value, "L3")).toBe(fill(labels.units.multiple, { value: "2.59" }));
+    expect(formatMultiple(GOLDEN.current.value, "L1")).toBe(fill(labels.format.units.multiple, { value: "3.5" }));
+    expect(formatMultiple(GOLDEN.current.value, "L3")).toBe(fill(labels.format.units.multiple, { value: "3.50" }));
+    expect(formatMultiple(GOLDEN.previous.value, "L1")).toBe(fill(labels.format.units.multiple, { value: "2.6" }));
+    expect(formatMultiple(GOLDEN.previous.value, "L3")).toBe(fill(labels.format.units.multiple, { value: "2.59" }));
   });
 
   it("來源：淨營收與扣廣告前貢獻的來源（銷售檔、通路費用檔），不含廣告檔；每一列都在該期間摘要的來源中", () => {
@@ -111,12 +111,12 @@ describe("F12 手算 golden（本期 2,470 ÷ 705、上期 2,250 ÷ 870）", () 
   it("一句 L1 結論：本期廣告效率（MER）5.5 倍，高於損益兩平（3.5 倍）；不上色、≤ 20 字", () => {
     const note = breakevenNote(breakevenMer(snapshot.report.current));
     expect(note).toBe(fill(copy.note.above, { mer: metricDefinitions.mer.label, actual: formatMultiple(GOLDEN.current.actual, "L1"), breakeven: formatMultiple(GOLDEN.current.value, "L1") }));
-    expect(note).toBe(`本期${metricDefinitions.mer.label}${fill(labels.units.multiple, { value: "5.5" })}，高於損益兩平（${fill(labels.units.multiple, { value: "3.5" })}）。`);
+    expect(note).toBe(`本期${metricDefinitions.mer.label}${fill(labels.format.units.multiple, { value: "5.5" })}，高於損益兩平（${fill(labels.format.units.multiple, { value: "3.5" })}）。`);
   });
 
   it("抽屜公式行帶兩個輸入的 L3 金額", () => {
-    expect(breakevenEvidenceFormula(breakevenMer(snapshot.report.current))).toBe(fill(copy.evidenceFormula, { revenue: fill(labels.units.yuan, { value: formatAmountL3("2470.00") }), contribution: fill(labels.units.yuan, { value: formatAmountL3("705.00") }) }));
-    expect(breakevenEvidenceFormula(breakevenMer(snapshot.report.previous))).toContain(fill(labels.units.yuan, { value: "2,250.00" }));
+    expect(breakevenEvidenceFormula(breakevenMer(snapshot.report.current))).toBe(fill(copy.evidenceFormula, { revenue: fill(labels.format.units.yuan, { value: formatAmountL3("2470.00") }), contribution: fill(labels.format.units.yuan, { value: formatAmountL3("705.00") }) }));
+    expect(breakevenEvidenceFormula(breakevenMer(snapshot.report.previous))).toContain(fill(labels.format.units.yuan, { value: "2,250.00" }));
   });
 });
 
@@ -128,7 +128,7 @@ describe("F12 三種邊界與缺漏（不顯示 0 或無限大）", () => {
       expect(breakevenNote(item), value).toBe(copy.note.nonPositiveContribution);
     }
     // 金額 −10.00 帶 U+2212 寫進抽屜公式行。
-    expect(breakevenEvidenceFormula(breakevenMer(withMetrics({ contribution_before_marketing: metric("-10.00") })))).toContain(fill(labels.units.yuan, { value: formatAmountL3("-10.00") }));
+    expect(breakevenEvidenceFormula(breakevenMer(withMetrics({ contribution_before_marketing: metric("-10.00") })))).toContain(fill(labels.format.units.yuan, { value: formatAmountL3("-10.00") }));
   });
 
   it("廣告費 = 0（自組與 fixtures/zero_ad）：損益兩平 MER 照算，實際 MER 不適用，比較 not_applicable", () => {
@@ -171,11 +171,11 @@ describe("F12 三種邊界與缺漏（不顯示 0 或無限大）", () => {
     const before = partial.current.metrics.contribution_before_marketing;
     expect(before.value).toBeNull();
     const item = breakevenMer(partial.current);
-    expect(item).toMatchObject({ value: null, status: "missing", display: labels.status.missing, comparison: "not_applicable" });
+    expect(item).toMatchObject({ value: null, status: "missing", display: labels.shell.status.missing, comparison: "not_applicable" });
     expect(item.reason_codes).toEqual([...new Set(before.reason_codes)].sort());
     expect(item.reason_codes.some(code => code.startsWith("MISSING"))).toBe(true);
     expect(breakevenNote(item)).toBe(copy.note.missing);
-    expect(breakevenEvidenceFormula(item)).toContain(labels.status.missing);
+    expect(breakevenEvidenceFormula(item)).toContain(labels.shell.status.missing);
     // 自組：兩個都缺時原因碼合併排序；沒有原因碼時補 MISSING_VALUE。
     expect(breakevenMer(withMetrics({ net_revenue: metric(null, ["MISSING_REFUNDS"]), contribution_before_marketing: metric(null, ["MISSING_COGS", "MISSING_REFUNDS"]) })).reason_codes).toEqual(["MISSING_COGS", "MISSING_REFUNDS"]);
     expect(breakevenMer(withMetrics({ net_revenue: metric(null) })).reason_codes).toEqual(["MISSING_VALUE"]);
@@ -253,7 +253,7 @@ describe("F12 匯出：分析 CSV、Excel、主管摘要 Markdown（既有列不
     const summary = buildManagerSummary(snapshot);
     const workbook = buildExcelWorkbook({ summary, snapshot, dataset, actions: emptyActionWorkspace() });
     const sheet = workbook.sheets[0];
-    const columns = Object.keys(labels.excelExport.columns.summary);
+    const columns = Object.keys(labels.exports.excel.columns.summary);
     const rows = sheet.rows.map(row => Object.fromEntries(columns.map((key, index) => [key, row[index]])));
     const row = rows.find(row => row.item.kind === "text" && row.item.value === copy.label)!;
     expect(row.section).toEqual({ kind: "text", value: labels.overview.sections.assistKpis });
@@ -262,10 +262,10 @@ describe("F12 匯出：分析 CSV、Excel、主管摘要 Markdown（既有列不
     expect(row.detail).toEqual({ kind: "text", value: fill(copy.excelDetail, { version: BREAKEVEN_MER_VERSION }) });
     // 接在關鍵差額兩列之後、三件事之前。
     const index = rows.indexOf(row);
-    expect(rows[index - 1].section).toEqual({ kind: "text", value: labels.excelExport.summary.sections.keyDeltas });
-    expect(rows[index + 1].section).toEqual({ kind: "text", value: labels.excelExport.summary.sections.topThree });
+    expect(rows[index - 1].section).toEqual({ kind: "text", value: labels.exports.excel.summary.sections.keyDeltas });
+    expect(rows[index + 1].section).toEqual({ kind: "text", value: labels.exports.excel.summary.sections.topThree });
     const basis = workbook.sheets[5];
-    const technical = basis.rows.filter(cells => cells[0].kind === "text" && cells[0].value === labels.excelExport.basis.sections.technical).map(cells => [cells[1], cells[2]].map(cell => cell.kind === "text" ? cell.value : null));
+    const technical = basis.rows.filter(cells => cells[0].kind === "text" && cells[0].value === labels.exports.excel.basis.sections.technical).map(cells => [cells[1], cells[2]].map(cell => cell.kind === "text" ? cell.value : null));
     expect(technical.map(([, detail]) => detail)).toEqual(["golden-v1", snapshot.dataset_hash, snapshot.filter_hash, "contribution-v1", "assist-kpi-v1", "breakeven-mer-v1", "TWD", "Asia/Taipei"]);
     expect(technical.find(([, detail]) => detail === "breakeven-mer-v1")![0]).toBe(copy.excelVersion);
   });
@@ -276,7 +276,7 @@ describe("F12 匯出：分析 CSV、Excel、主管摘要 Markdown（既有列不
     const refund = await createSnapshot(refundDataset, {}, await hashInput(input));
     const item = breakevenMer(refund.report.current);
     const workbook = buildExcelWorkbook({ summary: buildManagerSummary(refund), snapshot: refund, dataset: refundDataset, actions: emptyActionWorkspace() });
-    const columns = Object.keys(labels.excelExport.columns.summary);
+    const columns = Object.keys(labels.exports.excel.columns.summary);
     const row = workbook.sheets[0].rows.map(cells => Object.fromEntries(columns.map((key, index) => [key, cells[index]]))).find(row => row.item.kind === "text" && row.item.value === copy.label)!;
     expect(row.current).toEqual({ kind: "text", value: formatEmpty("notApplicable", { layer: "L3", reasonCodes: item.reason_codes }) });
   });
@@ -355,14 +355,14 @@ describe("F12 畫面：其他常用指標的獨立段（SSR）與計算與來源
     expect(html).toContain(`<p class="evidence-formula">${breakevenEvidenceFormula(item)}</p>`);
     expect(html).not.toContain("ladder-table");
     expect(html).not.toContain("evidence-components");
-    expect(html).not.toContain(fill(labels.units.multiple, { value: "2,470.00" }));
+    expect(html).not.toContain(fill(labels.format.units.multiple, { value: "2,470.00" }));
     expect(html).toContain(fill(labels.evidence.drawerV3.version, { version: BREAKEVEN_MER_VERSION }));
     expect(html).toContain(`<code>${GOLDEN.current.value}</code>`);
     expect(html).toContain(`<code>${escapeAttr(copy.formulaTechnical)}</code>`);
     expect(html).toContain(`<dd><code>${BREAKEVEN_MER_VERSION}</code></dd>`);
     const tabs = labels.evidence.sourceTabs;
-    expect(html).toContain(`>${fill(labels.ui.evidenceDrawer.tabWithCount, { tab: tabs.sales, n: item.sources.filter(source => source.file === "sales_daily.csv").length })}<`);
-    expect(html).not.toContain(`>${fill(labels.ui.evidenceDrawer.tabWithCount, { tab: tabs.ads, n: 4 })}<`);
+    expect(html).toContain(`>${fill(labels.evidence.drawer.tabWithCount, { tab: tabs.sales, n: item.sources.filter(source => source.file === "sales_daily.csv").length })}<`);
+    expect(html).not.toContain(`>${fill(labels.evidence.drawer.tabWithCount, { tab: tabs.ads, n: 4 })}<`);
     expect(html).not.toMatch(new RegExp(`>${tabs.ads}（`));
   });
 

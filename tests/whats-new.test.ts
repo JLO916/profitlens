@@ -87,8 +87,8 @@ describe("whats-new 文案", () => {
     expect(example.term).toBe("扣廣告前貢獻");
     expect(example.oldNames[0]).toBe("通路貢獻");
     expect(whatsNewText()).toBe("這一版改了部分名稱，例如『通路貢獻』改為『扣廣告前貢獻』。");
-    expect(labels.whatsNew.link).toBe("查看名詞對照");
-    expect(labels.whatsNew.dismissAria).toContain(labels.whatsNew.dismiss);
+    expect(labels.shell.whatsNew.link).toBe("查看名詞對照");
+    expect(labels.shell.whatsNew.dismissAria).toContain(labels.shell.whatsNew.dismiss);
   });
 
   it("glossary_opened 是合法的分析事件名，沒有 window.va 時 track 不做任何事", () => {

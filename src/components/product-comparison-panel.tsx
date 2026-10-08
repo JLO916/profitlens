@@ -19,8 +19,8 @@ import type { EvidenceSelection } from "./evidence-drawer";
 import { toneClass } from "./manager-summary";
 import { ShellIcon } from "./shell/shell-icon";
 
-const copy = labels.ui.productComparisonPanel;
-const highlight = labels.productHighlights;
+const copy = labels.products.comparison;
+const highlight = labels.products.highlights;
 const page = labels.products.pageV3;
 /** R4：ProductMetrics 多了件數（非金額）；金額／比率欄另列，件數欄單獨處理。 */
 type ProductMoneyMetric = Exclude<keyof ProductMetrics, "units_sold">;
@@ -31,15 +31,15 @@ const presenceLabels: Record<ProductComparisonRow["previous"]["presence"], strin
   observed: copy.presence.observed, no_rows_confirmed: copy.presence.noRowsConfirmed, unknown_coverage: copy.presence.unknownCoverage,
 };
 /** 「淨營收差額」「商品毛利差額」：指標名＋差額後綴，與 CSV 標題同源。 */
-const changeLabel = (name: ProductMoneyMetric) => `${metricDefinitions[name].label}${labels.csvSuffix.change}`;
+const changeLabel = (name: ProductMoneyMetric) => `${metricDefinitions[name].label}${labels.exports.csv.suffix.change}`;
 /** 「上期淨營收」「本期毛利率」：期間短名＋指標名。 */
-const periodMetric = (period: "previous" | "current", label: string) => `${labels.periods[period]}${label}`;
+const periodMetric = (period: "previous" | "current", label: string) => `${labels.shell.periods[period]}${label}`;
 /** V3-2b：表格是 L2（整數元），金額欄的表頭標一次「（元）」，儲存格不帶單位；比率欄維持 %。 */
-const withUnit = (name: ProductMoneyMetric, label: string) => metricDefinitions[name].unit === "money" ? fill(labels.units.yuanColumn, { label }) : label;
+const withUnit = (name: ProductMoneyMetric, label: string) => metricDefinitions[name].unit === "money" ? fill(labels.format.units.yuanColumn, { label }) : label;
 /** 比率欄的 null 分兩種：缺資料顯示「資料待補」，淨營收 ≤ 0 等顯示「不適用」。 */
 const notApplicable = (name: ProductMoneyMetric, metric: Metric) => metricDefinitions[name].unit === "percent" && rateAvailability(metric) === "not_applicable";
 function display(name: ProductMoneyMetric, metric: Metric): string {
-  return notApplicable(name, metric) ? labels.status.notApplicable : metric.value === null ? labels.status.missing : metricDefinitions[name].unit === "percent" ? formatRateL2(metric.value) : formatAmountL2(metric.value);
+  return notApplicable(name, metric) ? labels.shell.status.notApplicable : metric.value === null ? labels.shell.status.missing : metricDefinitions[name].unit === "percent" ? formatRateL2(metric.value) : formatAmountL2(metric.value);
 }
 const unitsText = (metric: Metric) => formatCount(metric.value, "L2");
 
@@ -163,9 +163,9 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   const metricLink = (row: ProductComparisonRow, period: "previous" | "current", name: ProductMoneyMetric, label: string) => {
     const value = row[period];
     const metric = value.metrics[name];
-    const periodLabel = labels.periods[period];
+    const periodLabel = labels.shell.periods[period];
     return <><button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined}
-      aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, period: period === "previous" ? labels.periods.previous : "", label, value: display(name, metric) })}
+      aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, period: period === "previous" ? labels.shell.periods.previous : "", label, value: display(name, metric) })}
       onClick={() => onEvidence({ sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: periodLabel, label }), name, metric, period: period === "previous" ? previous : current, channels: [row.channel], sources: value.sources, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: categoryText(row.category), presence: presenceLabels[value.presence] }) })}>
       {display(name, metric)}</button>{metric.value === null && !notApplicable(name, metric) && <small className="note">{metric.reason_codes.includes("MISSING_COGS") ? copy.costMissing : copy.notComputable}</small>}</>;
   };
@@ -175,8 +175,8 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     const metric = value.metrics.units_sold;
     const label = labels.assist.items.units_sold.label;
     return <button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined}
-      aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, period: period === "previous" ? labels.periods.previous : "", label, value: unitsText(metric) })}
-      onClick={() => onEvidence({ sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: labels.periods[period], label }), name: "net_revenue", unitOverride: "count", metric, period: period === "previous" ? previous : current, channels: [row.channel], sources: value.sources, formula: labels.assist.items.units_sold.formula, formulaTechnical: labels.assist.items.units_sold.formulaTechnical, metricVersion: ASSIST_KPI_VERSION, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: categoryText(row.category), presence: presenceLabels[value.presence] }) })}>
+      aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, period: period === "previous" ? labels.shell.periods.previous : "", label, value: unitsText(metric) })}
+      onClick={() => onEvidence({ sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: labels.shell.periods[period], label }), name: "net_revenue", unitOverride: "count", metric, period: period === "previous" ? previous : current, channels: [row.channel], sources: value.sources, formula: labels.assist.items.units_sold.formula, formulaTechnical: labels.assist.items.units_sold.formulaTechnical, metricVersion: ASSIST_KPI_VERSION, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: categoryText(row.category), presence: presenceLabels[value.presence] }) })}>
       {unitsText(metric)}</button>;
   };
   const deltaLink = (row: ProductComparisonRow, name: "net_revenue" | "gross_profit") => {
@@ -190,7 +190,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
         sources: uniqueSources([...row.previous.sources, ...row.current.sources]),
         scopeLabel: fill(copy.deltaScopeLabel, { sku: row.sku, category: categoryText(row.category), previousStart: previous.start, previousEnd: previous.end, previousPresence: presenceLabels[row.previous.presence], currentStart: current.start, currentEnd: current.end, currentPresence: presenceLabels[row.current.presence] }),
         formula: fill(copy.deltaFormula, { label, metric: metricDefinitions[name].label, formula: metricDefinitions[name].formula }),
-        components: [{ label: fill(copy.periodRange, { period: labels.periods.previous, start: previous.start, end: previous.end }), metric: row.previous.metrics[name] }, { label: fill(copy.periodRange, { period: labels.periods.current, start: current.start, end: current.end }), metric: row.current.metrics[name] }],
+        components: [{ label: fill(copy.periodRange, { period: labels.shell.periods.previous, start: previous.start, end: previous.end }), metric: row.previous.metrics[name] }, { label: fill(copy.periodRange, { period: labels.shell.periods.current, start: current.start, end: current.end }), metric: row.current.metrics[name] }],
       })}>{value}</button>{metric.value === null && <small className="note">{copy.deltaMissing}</small>}</>;
   };
 
@@ -224,9 +224,9 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
 
   /** 完整表：欄序同 v2（通路｜SKU｜品類｜本期件數｜本期淨營收｜本期商品毛利｜本期毛利率｜商品毛利差額｜淨營收差額｜上期淨營收｜上期商品毛利｜資料狀態），「更多欄位」接在後面。 */
   const fullColumns: Column[] = [
-    { key: "channel", header: labels.csvColumns.channel, num: false, listRole: "primary", render: row => channelLabel(row.channel, alias) },
+    { key: "channel", header: labels.exports.csv.columns.channel, num: false, listRole: "primary", render: row => channelLabel(row.channel, alias) },
     { key: "sku", header: "SKU", num: false, listRole: "primary", render: row => row.sku },
-    { key: "category", header: labels.csvColumns.category, num: false, listRole: "labeled", render: row => row.category.trim() ? categoryLabel(row.category, alias) : copy.blankCategory },
+    { key: "category", header: labels.exports.csv.columns.category, num: false, listRole: "labeled", render: row => row.category.trim() ? categoryLabel(row.category, alias) : copy.blankCategory },
     { key: "current-units_sold", header: periodMetric("current", labels.assist.items.units_sold.label), num: true, listRole: "secondary", render: row => unitsLink(row, "current") },
     ...(["net_revenue", "gross_profit", "gross_margin"] as const).map((name): Column => ({ key: `current-${name}`, header: withUnit(name, periodMetric("current", metricDefinitions[name].shortLabel)), num: true, listRole: name === "gross_profit" ? "primary" : name === "gross_margin" ? "secondary" : "labeled", render: row => metricLink(row, "current", name, metricDefinitions[name].shortLabel) })),
     { key: "change-gross_profit", header: withUnit("gross_profit", changeLabel("gross_profit")), num: true, listRole: "secondary", className: "list-lead", render: row => deltaLink(row, "gross_profit") },
@@ -251,14 +251,14 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   </details>;
 
   return <section className="product-page" aria-labelledby="products-heading" data-density={density}>
-    <h2 id="products-heading" className="sr-only">{labels.sections.productTable}</h2>
+    <h2 id="products-heading" className="sr-only">{labels.products.sections.productTable}</h2>
     <p className="product-scope" data-testid="product-scope">{scopeText}</p>
     {slot ? createPortal(exportMenu, slot) : <div className="product-export-inline">{exportMenu}</div>}
-    <section className="product-highlights" aria-labelledby="product-highlights-heading"><h3 id="product-highlights-heading">{labels.sections.productTopBottom}</h3><div className="product-highlight-grid">{highlightTable("worst", worstCurrent)}{highlightTable("best", bestChange)}</div></section>
+    <section className="product-highlights" aria-labelledby="product-highlights-heading"><h3 id="product-highlights-heading">{labels.products.sections.productTopBottom}</h3><div className="product-highlight-grid">{highlightTable("worst", worstCurrent)}{highlightTable("best", bestChange)}</div></section>
     <section className="product-full" aria-labelledby="product-full-heading">
       <h3 className="product-full-heading" id="product-full-heading">{highlight.fullTable}</h3>
       <div className="ui-toolbar product-toolbar" data-testid="product-toolbar">
-        <select className="ui-field-control" aria-label={labels.csvColumns.category} id="product-category" value={activeCategory} onChange={event => setCategory(event.target.value)}><option value="">{copy.allCategories}</option>{categories.map(value => <option key={value} value={value}>{categoryLabel(value, alias)}</option>)}</select>
+        <select className="ui-field-control" aria-label={labels.exports.csv.columns.category} id="product-category" value={activeCategory} onChange={event => setCategory(event.target.value)}><option value="">{copy.allCategories}</option>{categories.map(value => <option key={value} value={value}>{categoryLabel(value, alias)}</option>)}</select>
         <input ref={searchRef} className="ui-field-control" aria-label={copy.searchSku} id="product-search" type="search" placeholder={copy.searchPlaceholder} value={query} onChange={event => setQuery(event.target.value)} />
         <select className="ui-field-control" aria-label={page.sortLabel} id="product-sort" value={sortValue} onChange={event => chooseSort(event.target.value)}>{PRODUCT_SORT_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
         <button type="button" className="ui-btn ui-btn-secondary product-toggle" aria-pressed={negativeOnly} onClick={() => setNegativeOnly(value => !value)}>{copy.negativeOnly}</button>
@@ -280,7 +280,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
         <thead role="rowgroup"><tr role="row">{fullColumns.map(headCell)}</tr></thead>
         <tbody role="rowgroup">{rows.map(row => <tr role="row" key={JSON.stringify([row.channel, row.sku])}>{fullColumns.map(column => column.key === "sku" ? rowHeaderCell(column, row, 0) : bodyCell(column, row, 0))}</tr>)}</tbody>
       </table></div>}
-      <details className="product-technical"><summary>{labels.sections.technicalDetails}</summary><p className="note">{copy.deltaFormulaNote}</p><p className="note">{fill(copy.negativeNote, { n: unavailable })}</p></details>
+      <details className="product-technical"><summary>{labels.evidence.sections.technicalDetails}</summary><p className="note">{copy.deltaFormulaNote}</p><p className="note">{fill(copy.negativeNote, { n: unavailable })}</p></details>
     </section>
   </section>;
 }

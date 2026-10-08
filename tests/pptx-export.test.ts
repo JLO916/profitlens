@@ -17,11 +17,11 @@ import { readZip, zipText } from "./helpers/zip";
 
 // R6-5 PPT 一頁式：資料層的字串（golden 手算）＋寫出的 .pptx 以測試用最小 zip 讀取器拆開，直接檢查 XML。
 
-const copy = labels.pptxExport;
+const copy = labels.exports.pptx;
 const headerCopy = labels.exports.headerV3;
 /** V3-7：版頭的產出時間固定（2026-10-05 06:32Z＝台北 14:32），輸出可重現。 */
 const GENERATED_AT = new Date("2026-10-05T06:32:00.000Z");
-const REPORT_TITLE = fill(headerCopy.reportTitle, { metric: labels.metrics.contribution_after_marketing.label });
+const REPORT_TITLE = fill(headerCopy.reportTitle, { metric: labels.metrics.contribution_after_marketing.headline });
 /** golden 的版頭第 3、4 行（期間＋單位；版本＋產出時間），用 labels 與 formatPeriodExport 組字。 */
 const PERIOD_UNIT_LINE = fill(headerCopy.periodUnitLine, { period: fill(headerCopy.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") }), unit: headerCopy.unitExclusive });
 const VERSION_LINE = fill(headerCopy.versionLine, { version: "contribution-v1", time: "2026-10-05 14:32" });
@@ -84,21 +84,21 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     expect(model.header).toEqual(["golden-v1", PERIOD_UNIT_LINE, VERSION_LINE]);
     // 檔案屬性（主旨）沿用 V3-2b 的副標：版頭期間用匯出格式「YYYY-MM-DD 至 YYYY-MM-DD（天數）」。
     expect(model.subtitle).toBe(fill(copy.subtitle, { asOf: "2026-08-03", previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
-    expect(formatPeriodExport("2026-08-01", "2026-08-01")).toBe(fill(labels.units.exportRange, { start: "2026-08-01", end: "2026-08-01", days: 1 }));
+    expect(formatPeriodExport("2026-08-01", "2026-08-01")).toBe(fill(labels.format.units.exportRange, { start: "2026-08-01", end: "2026-08-01", days: 1 }));
     // 手算：淨營收 上期 2500−200−50＝2250、本期 3100−450−180＝2470，差 +220；扣廣告後貢獻 570 → 255，差 −315（fixtures/golden/expected.json）。
     // V3-2b §3.3：PPT 關鍵差額卡是 L1（< 1 萬寫「元」、≥ 1 萬寫「萬」；U+2212 負號、正差額加「+」）。
     expect(model.key_deltas).toEqual([
-      { label: labels.metrics.net_revenue.label, previous: formatAmountL1("2250.00"), current: formatAmountL1("2470.00"), change: formatSignedDelta("220.00", "L1") },
-      { label: labels.metrics.contribution_after_marketing.label, previous: formatAmountL1("570.00"), current: formatAmountL1("255.00"), change: formatSignedDelta("-315.00", "L1") },
+      { label: labels.metrics.net_revenue.headline, previous: formatAmountL1("2250.00"), current: formatAmountL1("2470.00"), change: formatSignedDelta("220.00", "L1") },
+      { label: labels.metrics.contribution_after_marketing.headline, previous: formatAmountL1("570.00"), current: formatAmountL1("255.00"), change: formatSignedDelta("-315.00", "L1") },
     ]);
-    expect(model.key_deltas[1]).toEqual({ label: labels.metrics.contribution_after_marketing.label, previous: fill(labels.units.yuan, { value: "570" }), current: fill(labels.units.yuan, { value: "255" }), change: `${MINUS}${fill(labels.units.yuan, { value: "315" })}` });
+    expect(model.key_deltas[1]).toEqual({ label: labels.metrics.contribution_after_marketing.headline, previous: fill(labels.format.units.yuan, { value: "570" }), current: fill(labels.format.units.yuan, { value: "255" }), change: `${MINUS}${fill(labels.format.units.yuan, { value: "315" })}` });
     expect(model.key_deltas.map(row => [row.previous, row.current, row.change])).toEqual(summary.headlines.map(row => [formatAmountL1(row.previous.value), formatAmountL1(row.current.value), formatSignedDelta(row.change.value, "L1")]));
     // 三件事：標題與下一步來自 ruleCopy；影響金額手算——貢獻 −315；折扣 200 → 450 多 250（影響 −250）；廣告 300 → 450 多 150（影響 −150）。
     expect(model.priorities.length).toBeLessThanOrEqual(3);
     expect(model.priorities.map(row => row.headline)).toEqual(summary.priorities.map(item => ruleCopy(snapshot, item.primary, false).headline));
-    expect(model.priorities[0].headline).toBe(fill(labels.rules.REV_UP_CM_DOWN.title, { dNet: fill(labels.units.yuan, { value: "220" }), dCM: fill(labels.units.yuan, { value: "315" }) }));
+    expect(model.priorities[0].headline).toBe(fill(labels.rules.REV_UP_CM_DOWN.headline, { dNet: fill(labels.format.units.yuan, { value: "220" }), dCM: fill(labels.format.units.yuan, { value: "315" }) }));
     expect(model.priorities.map(row => row.impact)).toEqual(["-315.00", "-250.00", "-150.00"].map(value => formatSignedDelta(value, "L1")));
-    expect(model.priorities.map(row => row.next_step)).toEqual([labels.rules.REV_UP_CM_DOWN.nextStep, labels.rules.DISCOUNT_BURDEN_UP.nextStep, labels.rules.MARKETING_BURDEN_UP.nextStep]);
+    expect(model.priorities.map(row => row.next_step)).toEqual([labels.rules.REV_UP_CM_DOWN.explain.nextStep, labels.rules.DISCOUNT_BURDEN_UP.explain.nextStep, labels.rules.MARKETING_BURDEN_UP.explain.nextStep]);
     // 通路（扣廣告後貢獻）手算自 fixtures/golden CSV：
     // DTC 上期 (1500−100−50)−600−(0+40+100+10)−200＝400，本期 (1800−230−90)−740−(0+44+140+16)−270＝270；
     // MARKETPLACE 上期 (1000−100−0)−450−(90+20+60+10)−100＝170，本期 (1300−220−90)−585−(120+22+85+13)−180＝−15。
@@ -110,7 +110,7 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     expect(model.channels[1]).toEqual({ channel: "MARKETPLACE", previous: "170", current: `${MINUS}15`, change: `${MINUS}185` });
     expect(model.channels).toHaveLength(summary.channels.length);
     expect(model.decision).toBe(copy.noMeeting);
-    expect(model.footer).toBe(labels.basis.footer);
+    expect(model.footer).toBe(labels.glossary.basis.footer);
     // V3-7：指標版本已在版頭第 4 行，頁尾只留資料版本（前 12 碼）。
     expect(model.technical).toBe(fill(headerCopy.pptxDataVersion, { datasetHash: summary.dataset_hash.slice(0, 12) }));
   });
@@ -133,16 +133,16 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     const { build, actions } = await setup();
     const model = build();
     expect(model.pinned_actions).toEqual([
-      { problem: SCRIPT, owner: "營運 & 行銷", deadline: "2026-10-08", status: labels.actions.statuses.in_progress },
-      { problem: "A & B", owner: labels.actionBoard.unassigned, deadline: labels.actionBoard.noDeadline, status: fill(copy.statusHistorical, { status: labels.actions.statuses.not_started, badge: labels.actions.staleBadge }) },
-      { problem: labels.actionBoard.untitled, owner: labels.actionBoard.unassigned, deadline: labels.actionBoard.noDeadline, status: labels.actions.statuses.not_started },
+      { problem: SCRIPT, owner: "營運 & 行銷", deadline: "2026-10-08", status: labels.actions.form.statuses.in_progress },
+      { problem: "A & B", owner: labels.actions.board.unassigned, deadline: labels.actions.board.noDeadline, status: fill(copy.statusHistorical, { status: labels.actions.form.statuses.not_started, badge: labels.actions.form.staleBadge }) },
+      { problem: labels.actions.board.untitled, owner: labels.actions.board.unassigned, deadline: labels.actions.board.noDeadline, status: labels.actions.form.statuses.not_started },
     ]);
     expect(JSON.stringify(model)).not.toContain(UNPINNED);
     // 超過三個置頂（直接改資料模擬）、未知執行狀態、找不到引用的資料：只取前三、狀態當未開始、標為引用較早資料。
     const crowded = { ...actions, items: actions.items.map(item => ({ ...item, pinned: true })) };
     expect(build({ actions: crowded }).pinned_actions).toHaveLength(3);
     const odd = { ...actions, items: actions.items.map(item => item.card.id === "script" ? { ...item, execution_status: "weird" as never, context_id: "missing-context" } : item) };
-    expect(build({ actions: odd }).pinned_actions[0].status).toBe(fill(copy.statusHistorical, { status: labels.actions.statuses.not_started, badge: labels.actions.staleBadge }));
+    expect(build({ actions: odd }).pinned_actions[0].status).toBe(fill(copy.statusHistorical, { status: labels.actions.form.statuses.not_started, badge: labels.actions.form.staleBadge }));
     expect(build({ actions: emptyActionWorkspace() }).pinned_actions).toEqual([]);
   });
 
@@ -151,11 +151,11 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     const meeting = { name: "第 40 週 <b>會議</b>", date: "2026-10-03", decision: "adopted", notes: `先砍 MARKETPLACE${ch(10)}第二行 & 確認${ch(0, 7)}` };
     const model = build({ meeting });
     expect(model.title).toBe(fill(copy.titleMeeting, { name: "第 40 週 <b>會議</b>", date: "2026-10-03" }));
-    expect(model.decision).toBe([fill(copy.decision, { decision: labels.meeting.decisions.adopted }), fill(copy.decisionNotes, { notes: "先砍 MARKETPLACE 第二行 & 確認" })].join(copy.separator));
+    expect(model.decision).toBe([fill(copy.decision, { decision: labels.meeting.form.decisions.adopted }), fill(copy.decisionNotes, { notes: "先砍 MARKETPLACE 第二行 & 確認" })].join(copy.separator));
     const cases: [string, string][] = [
-      ["draft", labels.meeting.decisions.draft], ["need_data", labels.meeting.decisions.need_data], ["needs_data", labels.meeting.decisions.need_data],
-      ["rejected", labels.meeting.decisions.rejected], ["not_adopted", labels.meeting.decisions.rejected], ["", labels.meeting.decisions.draft],
-      [labels.meeting.decisions.adopted, labels.meeting.decisions.adopted], ["Custom verdict", "Custom verdict"], ["constructor", "constructor"], ["__proto__", "__proto__"],
+      ["draft", labels.meeting.form.decisions.draft], ["need_data", labels.meeting.form.decisions.need_data], ["needs_data", labels.meeting.form.decisions.need_data],
+      ["rejected", labels.meeting.form.decisions.rejected], ["not_adopted", labels.meeting.form.decisions.rejected], ["", labels.meeting.form.decisions.draft],
+      [labels.meeting.form.decisions.adopted, labels.meeting.form.decisions.adopted], ["Custom verdict", "Custom verdict"], ["constructor", "constructor"], ["__proto__", "__proto__"],
     ];
     for (const [decision, label] of cases) expect(build({ meeting: { ...meeting, decision, notes: "" } }).decision, decision).toBe(fill(copy.decision, { decision: label }));
     expect(build({ meeting: { ...meeting, name: "   ", date: "" } }).title).toBe(REPORT_TITLE);
@@ -177,10 +177,10 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     broken.conversion_note = "TAX-NOTE";
     broken.priorities = [...broken.priorities, broken.priorities[1]];
     const model = build({ summary: broken });
-    expect(model.key_deltas[1].change).toBe(labels.status.missing);
-    expect(model.priorities[0].impact).toBe(labels.status.missing);
-    expect(model.channels[0].current).toBe(labels.status.missing);
-    expect(model.footer).toBe(`${labels.basis.footer} TAX-NOTE`);
+    expect(model.key_deltas[1].change).toBe(labels.shell.status.missing);
+    expect(model.priorities[0].impact).toBe(labels.shell.status.missing);
+    expect(model.channels[0].current).toBe(labels.shell.status.missing);
+    expect(model.footer).toBe(`${labels.glossary.basis.footer} TAX-NOTE`);
     expect(model.priorities).toHaveLength(3);
   });
 
@@ -257,7 +257,7 @@ describe("V3-7 版頭與大字的版面估計", () => {
     expect(wide.map(run => run.text).join("")).toBe(formatSignedDelta("12345678.00", "L1"));
     expect(wide[0].size).toBeLessThan(36);
     expect(wide[0].size).toBeGreaterThanOrEqual(24);
-    expect(pptxKpiRuns(labels.status.missing)).toEqual([{ text: labels.status.missing, size: 36 }]);
+    expect(pptxKpiRuns(labels.shell.status.missing)).toEqual([{ text: labels.shell.status.missing, size: 36 }]);
   });
 
   it("fitLine：截到估計一行放得下，結尾補「…」；本來就一行的不動", () => {
@@ -297,10 +297,10 @@ describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
     const kpi = (value: string) => pptxKpiRuns(value).map(run => run.text);
     expect(kpi(formatSignedDelta("220.00", "L1")).join("")).toBe(formatSignedDelta("220.00", "L1"));
     expect(texts).not.toContain(model.subtitle);
-    for (const value of [model.title, ...model.header, ...kpi(formatSignedDelta("220.00", "L1")), ...kpi(formatSignedDelta("-315.00", "L1")), `${labels.periods.previous} ${formatAmountL1("2250.00")}`, `${labels.periods.current} ${formatAmountL1("2470.00")}`, "DTC", "MARKETPLACE", formatAmountL2("400.00"), formatAmountL2("-15.00"), formatSignedDelta("-185.00", "L2"), copy.noMeeting,
-      labels.sections.keyDeltas, labels.sections.topThree, labels.sections.meetingDecision, copy.pinnedTitle]) expect(texts, value).toContain(value);
+    for (const value of [model.title, ...model.header, ...kpi(formatSignedDelta("220.00", "L1")), ...kpi(formatSignedDelta("-315.00", "L1")), `${labels.shell.periods.previous} ${formatAmountL1("2250.00")}`, `${labels.shell.periods.current} ${formatAmountL1("2470.00")}`, "DTC", "MARKETPLACE", formatAmountL2("400.00"), formatAmountL2("-15.00"), formatSignedDelta("-185.00", "L2"), copy.noMeeting,
+      labels.overview.sections.keyDeltas, labels.overview.sections.topThree, labels.meeting.sections.meetingDecision, copy.pinnedTitle]) expect(texts, value).toContain(value);
     model.priorities.forEach((row, index) => expect(texts).toContain(fill(copy.priorityRow, { n: index + 1, headline: row.headline })));
-    expect(texts.some(value => value.startsWith(labels.basis.footer))).toBe(true);
+    expect(texts.some(value => value.startsWith(labels.glossary.basis.footer))).toBe(true);
     expect(texts).toContain(`${copy.separator}${model.technical}`);
     expect(slide).not.toContain(UNPINNED);
     expect(texts.filter(value => /^-\d/.test(value))).toEqual([]);
@@ -369,7 +369,7 @@ describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
     expect(runOf(slide, formatAmountL2("270.00"))).toMatchObject({ color: EXPORT_THEME.brand });
     expect(runOf(slide, formatAmountL2("400.00"))).toMatchObject({ color: EXPORT_THEME.ink });
     expect(slide).toContain(`<a:solidFill><a:srgbClr val="${EXPORT_THEME.headerFill}"/></a:solidFill>`);
-    expect(runOf(slide, labels.csvColumns.channel)).toMatchObject({ color: EXPORT_THEME.ink });
+    expect(runOf(slide, labels.exports.csv.columns.channel)).toMatchObject({ color: EXPORT_THEME.ink });
     // v2 的色碼（品牌綠 214C45、正色 177F6C、負色 AD533A、白底淺綠字 D7E6DE）都不再出現。
     for (const legacy of ["214C45", "177F6C", "AD533A", "D7E6DE"]) expect(slide).not.toContain(legacy);
   });
@@ -382,7 +382,7 @@ describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
     for (const index of [1, 2, 3]) expect(texts).toContain(`CH-${index}`);
     for (const index of [4, 5, 6, 7, 8, 9]) expect(texts).not.toContain(`CH-${index}`);
     expect(texts).toContain(fill(copy.channelsMore, { n: 6 }));
-    expect(texts).toContain(labels.notes.noPriorities);
+    expect(texts).toContain(labels.overview.notes.noPriorities);
     expect(texts).toContain(copy.pinnedEmpty);
     const morePrefix = copy.channelsMore.split("{n}")[0];
     const four: PptxOnePager = { ...base, channels: many.channels.slice(0, 4) };

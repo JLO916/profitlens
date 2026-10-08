@@ -43,7 +43,7 @@ const html = `<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"
     <p class="lead">${escape(labels.brand.description)}</p>
     <div class="url">${escape(new URL(SITE_URL).host)}</div>
   </div>
-  <div class="frame" role="img" aria-label="${escape(labels.nav.overview.label)}"></div>
+  <div class="frame" role="img" aria-label="${escape(labels.shell.nav.overview.headline)}"></div>
   <div class="note">${escape(labels.relaunch.ogScreenshotNote)}</div>
 </body></html>`;
 

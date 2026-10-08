@@ -5,18 +5,18 @@ import { clickReplacing } from "../../tests/e2e/replacement-helpers";
 import { labels } from "../../src/i18n";
 
 const pages = [
-  { file: "overview", nav: labels.nav.overview.label },
-  { file: "diagnosis", nav: labels.nav.diagnosis.label },
-  { file: "scenarios", nav: labels.nav.scenarios.label },
-  { file: "actions", nav: labels.nav.actions.label },
-  { file: "data", nav: labels.nav.data.label },
+  { file: "overview", nav: labels.shell.nav.overview.headline },
+  { file: "diagnosis", nav: labels.shell.nav.diagnosis.headline },
+  { file: "scenarios", nav: labels.shell.nav.scenarios.headline },
+  { file: "actions", nav: labels.shell.nav.actions.headline },
+  { file: "data", nav: labels.shell.nav.data.headline },
 ] as const;
 
 test("R2 語言層改版後截圖：載入示範後五個頁面", async ({ page }, testInfo) => {
   const dir = resolve("verification/revamp-R2");
   await mkdir(dir, { recursive: true });
   await page.goto("/");
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText("1,269,792.73");
   for (const [index, item] of pages.entries()) {
     await page.getByRole("button", { name: item.nav, exact: true }).click();
@@ -29,13 +29,13 @@ test("R2 語言層改版後截圖：載入示範後五個頁面", async ({ page 
   }
   // 口徑說明與「怎麼算的」抽屜各拍一張（桌面）
   if (testInfo.project.name === "desktop") {
-    await page.getByRole("button", { name: labels.nav.overview.label, exact: true }).click();
-    await page.getByRole("button", { name: new RegExp(labels.buttons.basis) }).first().click();
+    await page.getByRole("button", { name: labels.shell.nav.overview.headline, exact: true }).click();
+    await page.getByRole("button", { name: new RegExp(labels.shell.buttons.basis) }).first().click();
     await expect(page.getByTestId("basis-dialog")).toBeVisible();
     await page.screenshot({ path: `${dir}/6-basis-dialog-desktop.png` });
     await page.keyboard.press("Escape");
     await page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value button").click();
-    await expect(page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) })).toBeVisible();
     await page.screenshot({ path: `${dir}/7-evidence-drawer-desktop.png` });
     await page.keyboard.press("Escape");
   }

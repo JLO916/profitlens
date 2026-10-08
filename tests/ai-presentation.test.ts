@@ -7,7 +7,7 @@ import { validateDataset } from "../src/domain/validation";
 import { fixture } from "./helpers/fixtures";
 import { fill, labels } from "../src/i18n";
 
-const copy = labels.ui.aiPanel;
+const copy = labels.shell.ai.panel;
 // R2 spec moved the "no per-channel breakdown" caveat into the technical <details> (ai-advanced); the sentence is still hardcoded in ai-panel.tsx.
 const noChannelBreakdownNote = "本次不傳個別通路拆解，模型無法指出是哪個通路";
 
@@ -41,7 +41,7 @@ describe("PL-10 AI capability must be confirmed before presenting a request", ()
     const html = renderToStaticMarkup(createElement(AiPanel, { snapshot: await golden(), revision: 1, onEvidence: () => undefined, capability: { available: false, reason, provider: "openai" } }));
     expect(html).toContain(copy.rulesAvailable);
     expect(html).toContain(reason === "STATUS_UNAVAILABLE" ? copy.liveStatusUnknown : copy.liveOff);
-    expect(html).toContain(labels.ui.aiClient.reasons[reason as keyof typeof labels.ui.aiClient.reasons]);
+    expect(html).toContain(labels.shell.ai.client.reasons[reason as keyof typeof labels.shell.ai.client.reasons]);
     expect(html).not.toContain('data-testid="ai-payload-preview"');
     expect(html).not.toContain('type="checkbox"');
     expect(html).not.toContain(`>${copy.sendButton}</button>`);
@@ -55,7 +55,7 @@ describe("PL-10 AI capability must be confirmed before presenting a request", ()
     expect(html).not.toContain(copy.statusChecking);
     expect(html).toContain(copy.statusAvailable);
     expect(html).toContain('data-testid="ai-facts-preview"');
-    expect(html).toContain(`${labels.metrics.contribution_after_marketing.label}`);
+    expect(html).toContain(`${labels.metrics.contribution_after_marketing.headline}`);
     expect(html).toContain("270.00");
     expect(html).toContain("400.00");
     expect(html).toContain(fill(copy.previewScope, { n: 1 }));

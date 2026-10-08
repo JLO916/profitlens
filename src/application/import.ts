@@ -8,7 +8,7 @@ import { fill, labels } from "@/i18n";
 import { metricDefinitions } from "./presentation";
 import { convertInclusiveRows, isValidTaxRate, type RawValues, type RawValuesByFile, type TaxConversion } from "./tax-basis";
 
-const copy = labels.ui.import;
+const copy = labels.errors.importDraft;
 
 export type SourceAmountBasis = "standard" | "including_tax" | "net_after_deductions" | "unknown";
 export interface LocalFilePayload { name: string; size: number; bytes: Uint8Array }
@@ -259,7 +259,7 @@ function mappedCsv(parsed: ParsedCsv, fields: readonly string[], mapping: Record
 
 // —— V3-2a §7.7.3：匯入錯誤句型「{file} 第 {line} 行：{問題}。{修法}。」的 application 端接線 ——
 // domain 的 ValidationIssue（SourceRef、severity、reason_code、field、message）維持不變；
-// 畫面與匯出只用 labels.importErrors 的樣板，不再退回 domain 的中文 message。
+// 畫面與匯出只用 labels.errors.import 的樣板，不再退回 domain 的中文 message。
 
 /** importErrors 樣板可以用的占位符，以及每一個占位符在 application 端的來源。樣板只能用這裡列出的鍵。 */
 export const SUPPORTED_ISSUE_PLACEHOLDERS = {
@@ -274,7 +274,7 @@ export const SUPPORTED_ISSUE_PLACEHOLDERS = {
 export type IssuePlaceholder = keyof typeof SUPPORTED_ISSUE_PLACEHOLDERS;
 
 /**
- * 所有會出現在 ValidationIssue.reason_code 的原因碼（依產生位置分組）；每一個都要有 labels.importErrors 樣板。
+ * 所有會出現在 ValidationIssue.reason_code 的原因碼（依產生位置分組）；每一個都要有 labels.errors.import 樣板。
  * tests/reason-code-labels.test.ts 會掃描產生位置的原始碼，確認這份清單沒有漏列。
  */
 export const IMPORT_ISSUE_REASON_CODES = {
@@ -294,7 +294,7 @@ const SENTENCE_END = "。";
 /** 占位符拿不到值時（例如超過上限的缺列沒有日期與通路）顯示的記號，和問題清單行號欄的「—」一致。 */
 const UNKNOWN_PLACEHOLDER = "—";
 
-/** labels.importErrors 的一筆：現行是一整句字串（L1。L2），也接受拆好的 { headline, explain }。 */
+/** labels.errors.import 的一筆：現行是一整句字串（L1。L2），也接受拆好的 { headline, explain }。 */
 type ImportErrorEntry = string | { headline: string; explain?: string };
 export interface IssueTemplate { headline: string; explain: string; full: string }
 /** 把一筆樣板拆成 L1／L2（都還沒帶入占位符）。L1 不含句號；L2 保留自己的句號；full 是整句。 */
@@ -308,7 +308,7 @@ export function splitIssueTemplate(entry: ImportErrorEntry): IssueTemplate {
 }
 /** 原因碼對應的樣板；labels 沒有這個原因碼時回傳 null。 */
 export function issueTemplate(code: string): IssueTemplate | null {
-  const entries = labels.importErrors as Record<string, ImportErrorEntry | undefined>;
+  const entries = labels.errors.import as Record<string, ImportErrorEntry | undefined>;
   const entry = Object.hasOwn(entries, code) ? entries[code] : undefined;
   return entry === undefined ? null : splitIssueTemplate(entry);
 }
@@ -388,7 +388,7 @@ export interface IssueMessageParts { headline: string; explain: string; message:
 export function issueMessageParts(issue: IssueRef, context: IssueMessageContext = {}): IssueMessageParts {
   const template = issueTemplate(issue.reason_code);
   if (!template) {
-    const headline = `${labels.ui.issueList.reasonCodeSummary} ${issue.reason_code}`;
+    const headline = `${labels.data.issues.reasonCodeSummary} ${issue.reason_code}`;
     return { headline, explain: "", message: headline, code: issue.reason_code, mapped: false };
   }
   const values = issuePlaceholderValues(issue, context);
@@ -400,7 +400,7 @@ export function importIssueMessage(issue: IssueRef, context: IssueMessageContext
 }
 /**
  * 選配檔（targets.csv／events.csv）的問題訊息。該檔自己的原因碼已由 labels.targets.errors／labels.events.errors 樣板產生 message，原樣使用；
- * CSV 讀取錯誤（csv.ts 的 FILE_TOO_LARGE、MALFORMED_CSV 等）的 message 是 lib 的中文，改用 labels.importErrors 樣板帶入檔名與行號。
+ * CSV 讀取錯誤（csv.ts 的 FILE_TOO_LARGE、MALFORMED_CSV 等）的 message 是 lib 的中文，改用 labels.errors.import 樣板帶入檔名與行號。
  */
 export function sideFileIssueMessage(file: "targets.csv" | "events.csv", issue: { line: number | null; field: string; reason_code: string; message: string }): string {
   const own: Readonly<Record<string, string>> = file === "targets.csv" ? labels.targets.errors : labels.events.errors;

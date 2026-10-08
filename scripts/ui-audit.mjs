@@ -15,12 +15,12 @@ if (jsonIndex >= 0 && !jsonPath) { console.error("用法：node scripts/ui-audit
 
 const ui = scanUi();
 const labelModule = await loadLabelsModule();
-// V3-2c：只掃新分組，略過 v2 舊鍵 alias（同一個字串不算兩次）；口徑與 tests/copy-style.test.ts 相同。
+// V3-2c 起只掃新分組（V3-10 移除 v2 舊鍵 alias 後，labels 頂層就是 LABEL_GROUPS，同一個字串只算一次）；口徑與 tests/copy-style.test.ts 相同。
 const copy = scanLabels(labelModule.labels, labelModule);
 
 const report = {
   generatedAt: new Date().toISOString(),
-  scope: { css: ["src/app/globals.css（:root token 定義區另計）", "src/components/**/*.css"], tsx: ["src/components/**/*.tsx"], labels: "src/i18n/labels.zh-TW.ts 新分組（LABEL_GROUPS；v2 舊鍵 alias、technical 子樹與 glossary.aliases／basis.aliases 除外）" },
+  scope: { css: ["src/app/globals.css（:root token 定義區另計）", "src/components/**/*.css"], tsx: ["src/components/**/*.tsx"], labels: "src/i18n/labels.zh-TW.ts 新分組（LABEL_GROUPS；technical 子樹與 glossary.aliases 除外）" },
   design: ui.metrics,
   copy: copy.metrics,
   info: ui.info,

@@ -8,7 +8,7 @@ const stateV3 = labels.empty.stateV3;
  * V3-8 C（§7.10 區段空狀態，C10 區段型）：會議議程 ⑤ 沒有選入方案時，meeting-scenario-results-empty 是
  * div.ui-empty-block > p.ui-empty-title（labels.empty.stateV3.meetingNoScenarioTitle）＋p（meetingNoScenarioBody）＋
  * 文字按鈕「前往假設試算」（data-testid meeting-go-scenarios，labels.empty.stateV3.meetingGoToScenarios）。
- * 取代 v2 的整句 labels.ui.managerSummary.noScenario（toHaveText 會把按鈕文字也算進去，所以分句斷言）。
+ * 取代 v2 的整句 labels.meeting.managerSummary.noScenario（toHaveText 會把按鈕文字也算進去，所以分句斷言）。
  */
 export async function expectMeetingNoScenario(agenda5: Locator) {
   const empty = agenda5.getByTestId("meeting-scenario-results-empty");
@@ -32,7 +32,7 @@ export async function goToScenariosFromMeeting(page: Page, agenda5: Locator) {
 
 /**
  * V3-8 C：會議歷史為空——div.ui-empty-block.meeting-history-empty 裡兩個 p（標題 meetingHistoryTitle＋說明 meetingHistoryBody），
- * 取代 v2 的一整句 labels.meetingPage.historyEmpty。兩句都要看得到。
+ * 取代 v2 的一整句 labels.meeting.page.historyEmpty。兩句都要看得到。
  */
 export async function expectMeetingHistoryEmpty(history: Locator) {
   await expect(history).toContainText(stateV3.meetingHistoryTitle);

@@ -14,7 +14,7 @@ import styles from "./manager-summary.module.css";
 
 // V3-7 開工錨點：A4 列印版（「列印」與「匯出 PDF」共用）自 manager-summary.tsx 原樣搬出（markup 不變）。
 // B 代理在此檔落實 §7.9 的台灣報表版頭四行與 §9.6 的列印 token（manager-summary.module.css 的 @media print）；A 代理不改本檔。
-const copy = labels.ui.managerSummary;
+const copy = labels.meeting.managerSummary;
 const scopeCopy = labels.exports.headerV3;
 const variants = labels.exports.variantsV3;
 /** V3-9b F14：列印附錄的每週管理損益表每張表最多幾個資料欄（週欄＋合計＋佔淨營收 %），超過就分成幾張表，A4 直式放得下到分的金額。 */
@@ -83,7 +83,7 @@ export function PrintSummary({ summary, decisionContext, snapshot, meeting = nul
   const header = summaryExportHeader(summary, { generatedAt: generatedAt ?? printedAt, datasetName });
   const decisions = summaryDecisionState(summary, decisionContext);
   const alias = demoAlias(summary.dataset_id);
-  const page = labels.meetingPage;
+  const page = labels.meeting.page;
   // V3-2b：一頁摘要的句子用 L1（萬），通路表用 L2（整數元）；門檻沿用輸入值到分（L3）。
   const signedL1 = (value: string | null) => formatSignedDelta(value, "L1");
   const priorityCopy = (item: SummaryData["priorities"][number]) => snapshot ? ruleCopy(snapshot, item.primary, alias) : { headline: item.title, nextStep: item.recommendation };
@@ -103,20 +103,20 @@ export function PrintSummary({ summary, decisionContext, snapshot, meeting = nul
     <div className={styles.printHeadlines} data-testid={spec.sections.kpis === "four" ? "print-kpis" : undefined}>{kpis.map(row => <p key={row.metric}><strong>{metricDefinitions[row.metric].label}</strong><br />{fill(copy.printHeadline, { prev: formatAmountL1(row.previous.value), cur: formatAmountL1(row.current.value), change: signedL1(row.change.value) })}</p>)}</div>
     {/* V3-9b F14：決策備註是內部備註——老闆一頁版與客戶報告版的決議一行不帶備註。 */}
     {decisionContext?.reviewName && <p className={styles.printDecision} data-testid="print-decision-line">{spec.internal.decisionNotes ? fill(copy.printMeetingLine, { name: decisionContext.reviewName, state: decisionContext.decisionState ?? copy.draftDecision, notes: firstPageNotes }) : fill(variants.printDecisionLine, { name: decisionContext.reviewName, state: decisionContext.decisionState ?? copy.draftDecision })}</p>}
-    {spec.sections.priorityDetail ? <><h2>{labels.sections.topThree}</h2><p>{fill(copy.printThresholdLine, { amount: formatAmountL3(summary.importance_threshold) })}</p>
-    <ol>{summary.priorities.map(item => { const rule = priorityCopy(item); return <li key={item.code}><strong>{rule.headline}</strong> · {scopeLabel(item.primary.scope, alias)} · <span>{labels.sections.impact}</span> {signedL1(item.impact?.value ?? null)}<p>{rule.nextStep}</p></li>; })}</ol></>
-      : <><h2>{labels.sections.topThree}</h2><ol data-testid="print-top-three">{summary.priorities.map(item => <li key={item.code}><strong>{priorityCopy(item).headline}</strong> · <span>{labels.sections.impact}</span> {signedL1(item.impact?.value ?? null)}</li>)}</ol></>}{!summary.priorities.length && <p>{labels.notes.noPriorities}</p>}
-    {spec.sections.channels && <table><caption>{fill(copy.printChannelCaption, { metric: metricDefinitions.contribution_after_marketing.label })}</caption><thead><tr><th>{copy.channelColumn}</th><th>{fill(labels.units.yuanColumn, { label: labels.periods.previous })}</th><th>{fill(labels.units.yuanColumn, { label: labels.periods.current })}</th><th>{fill(labels.units.yuanColumn, { label: copy.changeColumn })}</th></tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th>{channelLabel(row.channel, alias)}</th><td>{formatAmountL2(row.contribution.previous.value)}</td><td>{formatAmountL2(row.contribution.current.value)}</td><td>{formatSignedDelta(row.contribution.change.value, "L2")}</td></tr>)}</tbody></table>}
+    {spec.sections.priorityDetail ? <><h2>{labels.overview.sections.topThree}</h2><p>{fill(copy.printThresholdLine, { amount: formatAmountL3(summary.importance_threshold) })}</p>
+    <ol>{summary.priorities.map(item => { const rule = priorityCopy(item); return <li key={item.code}><strong>{rule.headline}</strong> · {scopeLabel(item.primary.scope, alias)} · <span>{labels.overview.sections.impact}</span> {signedL1(item.impact?.value ?? null)}<p>{rule.nextStep}</p></li>; })}</ol></>
+      : <><h2>{labels.overview.sections.topThree}</h2><ol data-testid="print-top-three">{summary.priorities.map(item => <li key={item.code}><strong>{priorityCopy(item).headline}</strong> · <span>{labels.overview.sections.impact}</span> {signedL1(item.impact?.value ?? null)}</li>)}</ol></>}{!summary.priorities.length && <p>{labels.overview.notes.noPriorities}</p>}
+    {spec.sections.channels && <table><caption>{fill(copy.printChannelCaption, { metric: metricDefinitions.contribution_after_marketing.label })}</caption><thead><tr><th>{copy.channelColumn}</th><th>{fill(labels.format.units.yuanColumn, { label: labels.shell.periods.previous })}</th><th>{fill(labels.format.units.yuanColumn, { label: labels.shell.periods.current })}</th><th>{fill(labels.format.units.yuanColumn, { label: copy.changeColumn })}</th></tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th>{channelLabel(row.channel, alias)}</th><td>{formatAmountL2(row.contribution.previous.value)}</td><td>{formatAmountL2(row.contribution.current.value)}</td><td>{formatSignedDelta(row.contribution.change.value, "L2")}</td></tr>)}</tbody></table>}
     {spec.sections.decisions && <><h2>{copy.printDecisionsHeading}</h2>
     {/* 第一頁每個選入方案只印一行；完整假設在附錄。 */}
     {decisions.selectedScenarios.length ? decisions.selectedScenarios.map(plan => <div key={plan.id} data-testid="print-scenario-line"><p>{fill(copy.printScenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatAmountL1(plan.baseline ?? null), contribution: formatAmountL1(plan.contribution ?? null), delta: formatSignedDelta(plan.delta ?? null, "L1") })}</p></div>) : <p>{copy.noScenario}</p>}
     {decisions.mainActions.length ? <ActionSummaryList actions={decisions.mainActions} variant={spec.variant} /> : <p>{decisions.appendixActions.length ? copy.unpinnedNotice : copy.noActions}</p>}</>}
-    {spec.sections.footer && <footer><p>{labels.basis.footer}</p></footer>}
+    {spec.sections.footer && <footer><p>{labels.glossary.basis.footer}</p></footer>}
     {spec.appendix.assumptions && assumptions.length > 0 && <section className={styles.printAppendix} data-testid="print-appendix-assumptions"><h2>{page.printAssumptionsHeading}</h2>{assumptions.map(plan => <div key={plan.id}><h3>{fill(page.printAssumptionsItem, { name: plan.name, scope: plan.scopeLabel })}</h3><ul>{plan.assumptions.map((text, index) => <li key={index}>{text}</li>)}</ul></div>)}</section>}
     {spec.appendix.notes && notesTruncated && decisionContext?.reviewName && <section className={styles.printAppendix} data-testid="print-appendix-notes"><h2>{page.printNotesHeading}</h2><p className={styles.printNotes}>{notes}</p></section>}
     {spec.appendix.otherActions && decisions.appendixActions.length > 0 && <section className={styles.printAppendix}><h2>{copy.appendixHeading}</h2><ActionSummaryList actions={decisions.appendixActions} variant={spec.variant} /></section>}
     {pnlSource && <PrintPnlAppendix snapshot={pnlSource} />}
-    {spec.appendix.technical && <section className={styles.printAppendix}><h2>{labels.sections.technicalDetails}</h2><ul>{summary.assumptions.map(item => <li key={item}>{item}</li>)}<li><code>metric_version</code> {summary.metric_version} · <code>dataset_id</code> {summary.dataset_id}</li><li><code>dataset_hash</code> {summary.dataset_hash}</li><li><code>filter_hash</code> {summary.filter_hash}</li></ul></section>}
+    {spec.appendix.technical && <section className={styles.printAppendix}><h2>{labels.evidence.sections.technicalDetails}</h2><ul>{summary.assumptions.map(item => <li key={item}>{item}</li>)}<li><code>metric_version</code> {summary.metric_version} · <code>dataset_id</code> {summary.dataset_id}</li><li><code>dataset_hash</code> {summary.dataset_hash}</li><li><code>filter_hash</code> {summary.filter_hash}</li></ul></section>}
   </article>;
 }
 

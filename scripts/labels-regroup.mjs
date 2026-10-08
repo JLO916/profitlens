@@ -11,10 +11,15 @@
 //   快照仍是 V3-2b 全量，自我檢查略過這些路徑。
 // 用法：node scripts/labels-regroup.mjs [--base <git 版本>] [--check]
 //   --check：只比對產生結果與目前檔案是否相同（不寫檔），不同時結束碼 1。
+// V3-10（06_BATCHES「移除 labels 舊 key alias」、PRD §11.5）：任務已完成——v2 舊鍵 alias 已移除，labels.zh-TW.ts 改為直接手改，不再由本工具產生；
+//   舊路徑 → 新路徑的對照凍結在 tests/fixtures/labels-legacy-map.json。原始碼保留供追溯；直接執行時只印說明並以 0 結束，不讀寫任何檔案。
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import ts from "typescript";
+
+console.log("labels-regroup：V3-10 已移除 v2 舊鍵 alias，labels.zh-TW.ts 不再由本工具產生（V3-2c 一次性產生器，保留供追溯）。對照見 tests/fixtures/labels-legacy-map.json。");
+process.exit(0);
 
 const ROOT = process.cwd();
 const LABELS = "src/i18n/labels.zh-TW.ts";

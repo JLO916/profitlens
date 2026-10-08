@@ -94,7 +94,7 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
   const runAsync = (item: AsyncItem, run: () => void) => { if (busy) return; setLastAsync(item); run(); };
   // V3-9b F14：一頁摘要的版本（預設標準版）；選單是常駐掛載的 details，關閉再開會維持上次選擇（元件 state，不存）。
   const [variant, setVariant] = useState<ExportVariant>(DEFAULT_EXPORT_VARIANT);
-  const errorText = (item: AsyncItem) => errorItem !== item ? null : error === "markdown" ? labels.meetingPage.markdownError : labels.meetingPage.exportError;
+  const errorText = (item: AsyncItem) => errorItem !== item ? null : error === "markdown" ? labels.meeting.page.markdownError : labels.meeting.page.exportError;
 
   // 會議分組「複製週會摘要」：成功在 role=status 顯示一句（2 秒後清空，同總覽）；剪貼簿不可用時在項目下方放唯讀文字框（已全選）。
   const [copyStatus, setCopyStatus] = useState<{ text: string; key: number }>({ text: "", key: 0 });
@@ -126,27 +126,27 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
   return <details className="topbar-menu auto-close download-menu" data-testid="download-menu" onToggle={event => { if (event.currentTarget.open) void preloadExcelWriter(); }}>
     <summary ref={summaryRef} className="topbar-summary">{copy.export}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
     <div className="menu-panel ui-menu export-panel">{source ? <div className="menu-list">
-      <ExportGroup id="download-group-current" testId="download-group-current" title={labels.sections.downloadCurrentView}>
-        <ExportItem id="download-analysis" name={labels.downloads.analysisCsv} description={describe.analysisCsv} onClick={() => downloadText(exportSnapshotCsv(source.dataset, source.snapshot, source.filenames, source.conversion ?? null, source.targets ?? null), "profitlens-analysis.csv")} />
-        <ExportItem id="download-channels" name={labels.downloads.channelTableCsv} description={describe.channelTableCsv} onClick={() => downloadText(exportChannelComparisonCsv(buildManagerSummary(source.snapshot, { conversion: source.conversion, targets: { set: source.targets ?? null, allChannels: source.dataset.manifest.channels } })), "profitlens-channel-comparison.csv")} />
-        <ExportItem id="download-manifest" name={labels.downloads.manifestJson} description={describe.manifestJson} onClick={() => downloadText(JSON.stringify(source.dataset.manifest, null, 2), "profitlens-manifest.json", "application/json;charset=utf-8")} />
-        {source.dataset.issues.length > 0 && <ExportItem id="download-issues" name={labels.downloads.issuesCsv} description={fill(describe.issuesCsv, { n: source.dataset.issues.length })} onClick={() => downloadText(exportIssuesCsv(source.dataset.issues, source.filenames), "profitlens-issues.csv")} />}
+      <ExportGroup id="download-group-current" testId="download-group-current" title={labels.shell.sections.downloadCurrentView}>
+        <ExportItem id="download-analysis" name={labels.exports.downloads.analysisCsv} description={describe.analysisCsv} onClick={() => downloadText(exportSnapshotCsv(source.dataset, source.snapshot, source.filenames, source.conversion ?? null, source.targets ?? null), "profitlens-analysis.csv")} />
+        <ExportItem id="download-channels" name={labels.exports.downloads.channelTableCsv} description={describe.channelTableCsv} onClick={() => downloadText(exportChannelComparisonCsv(buildManagerSummary(source.snapshot, { conversion: source.conversion, targets: { set: source.targets ?? null, allChannels: source.dataset.manifest.channels } })), "profitlens-channel-comparison.csv")} />
+        <ExportItem id="download-manifest" name={labels.exports.downloads.manifestJson} description={describe.manifestJson} onClick={() => downloadText(JSON.stringify(source.dataset.manifest, null, 2), "profitlens-manifest.json", "application/json;charset=utf-8")} />
+        {source.dataset.issues.length > 0 && <ExportItem id="download-issues" name={labels.exports.downloads.issuesCsv} description={fill(describe.issuesCsv, { n: source.dataset.issues.length })} onClick={() => downloadText(exportIssuesCsv(source.dataset.issues, source.filenames), "profitlens-issues.csv")} />}
       </ExportGroup>
       <hr className="ui-menu-divider" />
-      <ExportGroup id="download-group-summary" testId="download-group-summary" summarySection title={labels.sections.meetingSummary}>
+      <ExportGroup id="download-group-summary" testId="download-group-summary" summarySection title={labels.meeting.sections.meetingSummary}>
         <VariantPicker value={variant} onChange={setVariant} />
-        <ExportItem id="download-pdf" name={labels.buttons.exportPdf} description={fill(describe.exportPdf, { hint: labels.meetingPage.pdfHint })} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); onPrint(variant); }} />
-        <ExportItem id="download-excel" buttonRef={excelRef} name={labels.buttons.exportExcel} description={describe.exportExcel} disabled={busy !== null} busy={busy === "excel"} error={errorText("excel")} onClick={() => runAsync("excel", () => onExport("excel", variant))} />
-        <ExportItem id="download-pptx" buttonRef={pptxRef} name={labels.buttons.exportPptx} description={describe.exportPptx} disabled={busy !== null} busy={busy === "pptx"} error={errorText("pptx")} onClick={() => runAsync("pptx", () => onExport("pptx", variant))} />
-        <ExportItem id="download-meeting-md" buttonRef={mdRef} name={labels.meetingPage.menuMarkdown} description={describe.menuMarkdown} disabled={busy !== null} busy={busy === "md"} error={errorText("md")} onClick={() => runAsync("md", onMeetingNotes)} />
+        <ExportItem id="download-pdf" name={labels.exports.buttons.exportPdf} description={fill(describe.exportPdf, { hint: labels.meeting.page.pdfHint })} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); onPrint(variant); }} />
+        <ExportItem id="download-excel" buttonRef={excelRef} name={labels.exports.buttons.exportExcel} description={describe.exportExcel} disabled={busy !== null} busy={busy === "excel"} error={errorText("excel")} onClick={() => runAsync("excel", () => onExport("excel", variant))} />
+        <ExportItem id="download-pptx" buttonRef={pptxRef} name={labels.exports.buttons.exportPptx} description={describe.exportPptx} disabled={busy !== null} busy={busy === "pptx"} error={errorText("pptx")} onClick={() => runAsync("pptx", () => onExport("pptx", variant))} />
+        <ExportItem id="download-meeting-md" buttonRef={mdRef} name={labels.meeting.page.menuMarkdown} description={describe.menuMarkdown} disabled={busy !== null} busy={busy === "md"} error={errorText("md")} onClick={() => runAsync("md", onMeetingNotes)} />
         {/* 處理中的文字只給輔助科技（畫面上是項目右側的 spinner）；live region 常駐，內容隨 busy 換。 */}
-        <p className="sr-only" role="status">{busy ? labels.meetingPage.exporting : ""}</p>
+        <p className="sr-only" role="status">{busy ? labels.meeting.page.exporting : ""}</p>
       </ExportGroup>
       <hr className="ui-menu-divider" />
-      <ExportGroup id="download-group-decision" testId="download-group-decision" title={labels.sections.downloadDecision}>
-        <ExportItem id="download-decision-md" name={labels.downloads.decisionMd} description={describe.decisionMd} onClick={() => onDecision("md")} />
-        <ExportItem id="download-decision-csv" name={labels.downloads.decisionCsv} description={describe.decisionCsv} onClick={() => onDecision("csv")} />
-        <ExportItem id="download-decision-json" name={labels.downloads.decisionJson} description={describe.decisionJson} onClick={() => onDecision("json")} />
+      <ExportGroup id="download-group-decision" testId="download-group-decision" title={labels.shell.sections.downloadDecision}>
+        <ExportItem id="download-decision-md" name={labels.exports.downloads.decisionMd} description={describe.decisionMd} onClick={() => onDecision("md")} />
+        <ExportItem id="download-decision-csv" name={labels.exports.downloads.decisionCsv} description={describe.decisionCsv} onClick={() => onDecision("csv")} />
+        <ExportItem id="download-decision-json" name={labels.exports.downloads.decisionJson} description={describe.decisionJson} onClick={() => onDecision("json")} />
       </ExportGroup>
       {onCopySummary && <><hr className="ui-menu-divider" />
         {/* §6.5 新分組「會議」：複製週會摘要（與總覽本期一句話旁、會議頁頁首同一份文字）。 */}
@@ -158,11 +158,11 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
             <textarea key={fallback.key} ref={fallbackRef} className="ui-field-control export-copy-text" readOnly value={fallback.text} rows={6} aria-label={labels.overview.snapshotUi.fallbackTextAria} aria-describedby="download-copy-summary-fallback-note" onFocus={event => event.currentTarget.select()} />
           </div>}
         </ExportGroup></>}
-    </div> : <p className="menu-note">{labels.status.empty}；{labels.downloads.menuEmpty}</p>}
+    </div> : <p className="menu-note">{labels.shell.status.empty}；{labels.exports.downloads.menuEmpty}</p>}
     <hr className="ui-menu-divider" />
     <div className="menu-group" role="group" aria-labelledby="download-templates-title" data-testid="download-group-templates">
       <div className="menu-section" data-testid="download-templates">
-        <p id="download-templates-title" className="menu-heading ui-menu-group">{labels.downloads.templatesHeading}</p>
+        <p id="download-templates-title" className="menu-heading ui-menu-group">{labels.exports.downloads.templatesHeading}</p>
         {/* §6.5：3×3 表「檔案｜空白範本｜範例檔」，修正 v2 範本列錯位；格內可見「下載」，可及名稱沿用 v2 的完整說法。 */}
         <TemplateTable />
       </div>

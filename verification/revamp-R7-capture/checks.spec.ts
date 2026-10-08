@@ -9,7 +9,7 @@ import { clickReplacing, dismissSavePrompt, openDownloads } from "../../tests/e2
 // R7 上線檢查（08 §4 第 6–10 條）對著本機 production 伺服器（PUBLIC_DEMO 設定）執行，結果寫到 verification/revamp-R7/checks-*.json；
 // 只在 desktop 專案跑一次（--project=desktop）。對應的產品行為斷言在 tests/e2e/*.spec.ts。
 const dir = resolve("verification/revamp-R7");
-const nav = (page: Page, id: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[id].label, exact: true });
+const nav = (page: Page, id: keyof typeof labels.shell.nav) => page.getByRole("button", { name: labels.shell.nav[id].headline, exact: true });
 const describeFocus = (page: Page) => page.evaluate(() => {
   const el = document.activeElement as HTMLElement | null;
   if (!el || el === document.body) return "body";
@@ -31,10 +31,10 @@ test("§4-6 鍵盤走查：Tab 順序、Esc 關閉、焦點回原按鈕", async 
   const afterSkip = await describeFocus(page);
 
   // 載入示範後：看證據抽屜 Enter 開、Esc 關、焦點回「看證據」。
-  await page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }).first().click();
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }).first().click();
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.shell.status.ready);
   await dismissSavePrompt(page);
-  const evidenceButton = page.getByTestId("top-three").getByRole("button", { name: labels.buttons.viewEvidence, exact: true }).first();
+  const evidenceButton = page.getByTestId("top-three").getByRole("button", { name: labels.evidence.buttons.viewEvidence, exact: true }).first();
   await evidenceButton.focus();
   await page.keyboard.press("Enter");
   const drawer = page.getByRole("dialog").filter({ hasNot: page.getByTestId("local-save-prompt") }).first();
@@ -79,7 +79,7 @@ test("§4-8 備份相容：R0 前的 v3 備份檔可恢復", async ({ page }) =>
   const backup = JSON.parse(bytes.toString("utf8"));
   expect(backup.schema_version).toBe("profitlens-workspace-v3");
   await page.goto("/");
-  const store = labels.ui.workspaceStorage;
+  const store = labels.storage.workspace;
   const menu = page.getByTestId("workspace-storage");
   await menu.locator(":scope > summary").click();
   await menu.getByLabel(store.selectBackupFile, { exact: true }).setInputFiles({ name: "review-v2-a-workspace-laptop.json", mimeType: "application/json", buffer: bytes });
@@ -87,7 +87,7 @@ test("§4-8 備份相容：R0 前的 v3 備份檔可恢復", async ({ page }) =>
   await expect(preview).toBeVisible();
   await page.screenshot({ path: resolve(dir, "8-v3-restore-preview-desktop-viewport.png") });
   await clickReplacing(page, menu.getByRole("button", { name: store.applyRestore, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.shell.status.ready);
   await expect(menu.getByTestId("storage-notice")).toHaveText(store.restoredNotice);
   await page.screenshot({ path: resolve(dir, "8-v3-restored-desktop-viewport.png") });
   await menu.locator(":scope > summary").click();
@@ -116,11 +116,11 @@ test("§4-7／§4-9 無主控台錯誤、無 404 資源、沒有 CSV 內容上�
 
   await page.goto("/");
   await importViaWizard(page, fixtures);
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.shell.status.ready);
   await dismissSavePrompt(page);
   for (const id of ["diagnosis", "products", "scenarios", "actions", "meeting", "data", "overview"] as const) { await nav(page, id).click(); await page.waitForTimeout(150); }
   await openDownloads(page);
-  const [csv] = await Promise.all([page.waitForEvent("download"), page.getByTestId("download-menu").getByRole("button", { name: labels.downloads.analysisCsv, exact: true }).first().click()]);
+  const [csv] = await Promise.all([page.waitForEvent("download"), page.getByTestId("download-menu").getByRole("button", { name: labels.exports.downloads.analysisCsv, exact: true }).first().click()]);
   expect(csv.suggestedFilename()).toMatch(/\.csv$/);
   await page.waitForTimeout(500);
 
@@ -165,10 +165,10 @@ test("§4-7 metadata／OG／icon／robots／sitemap 與 D10 #validation", async 
 
   // §4-10：示範站首屏文字與 README「30 秒試用」同一句。
   await page.goto("/");
-  await expect(page.getByText(labels.emptyState.body, { exact: true })).toBeVisible();
+  await expect(page.getByText(labels.empty.body, { exact: true })).toBeVisible();
   const readme = await readFile(resolve("README.md"), "utf8");
   const trial = readme.split("## 30 秒試用")[1]?.split("\n").map(line => line.trim()).find(line => line.length > 0) ?? "";
   const normalise = (text: string) => text.replace(/^開正式站 → /, "").replace(/[（）()]/g, "");
-  expect(normalise(trial)).toBe(normalise(labels.emptyState.body));
-  await writeFile(resolve(dir, "checks-meta.json"), JSON.stringify({ tags, ogImage: ogSize, iconStatus: icon.status(), robots, sitemap, readmeTrialLine: trial, emptyStateBody: labels.emptyState.body }, null, 2));
+  expect(normalise(trial)).toBe(normalise(labels.empty.body));
+  await writeFile(resolve(dir, "checks-meta.json"), JSON.stringify({ tags, ogImage: ogSize, iconStatus: icon.status(), robots, sitemap, readmeTrialLine: trial, emptyStateBody: labels.empty.body }, null, 2));
 });

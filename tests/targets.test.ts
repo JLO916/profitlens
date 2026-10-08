@@ -213,7 +213,7 @@ describe("R4 achievement rate", () => {
   it("is undefined when the target is zero or negative, and missing when actual is unknown", () => {
     expect(achievement(metric("7848000.00"), "0.00")).toEqual({ rate: null, display: labels.targets.undefinedTarget, status: "undefined" });
     expect(achievement(metric("7848000.00"), "-1.00")).toEqual({ rate: null, display: labels.targets.undefinedTarget, status: "undefined" });
-    expect(achievement(metric(null), "8000000.00")).toEqual({ rate: null, display: labels.status.missing, status: "missing" });
+    expect(achievement(metric(null), "8000000.00")).toEqual({ rate: null, display: labels.shell.status.missing, status: "missing" });
   });
 
   it("formats the KPI card line from labels", () => {
@@ -223,7 +223,7 @@ describe("R4 achievement rate", () => {
     expect(targetDisplay(row, "L1")).toBe(formatAmountL1(row.target));
     expect(achievementText(row, metric("7848000.00"))).toBe(fill(labels.targets.achieved, { target: formatAmountL3("8000000.00"), rate: "98.1%" }));
     expect(achievementText(row, metric("7848000.00"), "L1")).toBe(fill(labels.targets.achieved, { target: formatAmountL1("8000000.00"), rate: "98.1%" }));
-    expect(achievementText(row, metric(null))).toBe(labels.status.missing);
+    expect(achievementText(row, metric(null))).toBe(labels.shell.status.missing);
   });
 });
 

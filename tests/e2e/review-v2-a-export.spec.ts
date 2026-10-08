@@ -22,12 +22,12 @@ const test = base.extend<{ audit: string[] }>({
   }, { auto: true }],
 });
 
-const summaryCopy = labels.ui.managerSummary;
+const summaryCopy = labels.meeting.managerSummary;
 /** V3-2a：狀態列「資料到 {date}」的日期取自 golden manifest 的 data_as_of。 */
-const goldenReady = fill(labels.status.ready, { date: JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")).data_as_of });
+const goldenReady = fill(labels.shell.status.ready, { date: JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")).data_as_of });
 const contributionLabel = metricDefinitions.contribution_after_marketing.label;
 const netRevenueLabel = metricDefinitions.net_revenue.label;
-/** R2: the "no pinned actions" notice and the "no actions at all" message both come from labels.ui.managerSummary. */
+/** R2: the "no pinned actions" notice and the "no actions at all" message both come from labels.meeting.managerSummary. */
 const notice = summaryCopy.unpinnedNotice;
 const noActions = summaryCopy.noActions;
 /** R6：會議紀錄頁的議程 ⑥ 列置頂行動（最多 3 項，meeting-pinned-actions）；未置頂收在 details.meeting-other-actions。主管摘要（議程模式）不再有「方案與待辦」區塊。 */
@@ -35,25 +35,25 @@ const agendaActions = (page: Page) => page.getByTestId("meeting-agenda-6");
 const otherActions = (page: Page, n: number) => agendaActions(page).locator("details.meeting-other-actions").filter({ has: page.locator(":scope > summary", { hasText: new RegExp(`^${escapeRegExp(fill(summaryCopy.appendixActions, { n }))}$`) }) });
 const actionName = (index: number) => `匯出驗收行動第${index}項`;
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-/** R2 moved the Markdown technical appendix under labels.sections.technicalDetails ("## 技術細節"). */
-const technicalHeading = `## ${labels.sections.technicalDetails}`;
+/** R2 moved the Markdown technical appendix under labels.evidence.sections.technicalDetails ("## 技術細節"). */
+const technicalHeading = `## ${labels.evidence.sections.technicalDetails}`;
 /** review-workbench renders `改用這個待辦的最新數據：{name}`; match by the template prefix. */
-const refreshActionRef = new RegExp(`^${escapeRegExp(labels.ui.reviewWorkbench.refreshActionRef.split("{name}")[0])}`);
+const refreshActionRef = new RegExp(`^${escapeRegExp(labels.meeting.review.refreshActionRef.split("{name}")[0])}`);
 /**
- * Golden keeps raw channel codes (demo alias applies only to synthetic-demo datasets); scope kind "all" renders as labels.sections.total.
+ * Golden keeps raw channel codes (demo alias applies only to synthetic-demo datasets); scope kind "all" renders as labels.overview.sections.total.
  * V3-2b：待辦引用清單的事實值是 L1（actions-workbench factValue 預設層）。
  */
-const goldenFactLabel = fill(labels.ui.actionsWorkbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC、MARKETPLACE", scopeKind: labels.sections.total, value: formatAmountL1("255.00") });
+const goldenFactLabel = fill(labels.actions.workbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC、MARKETPLACE", scopeKind: labels.overview.sections.total, value: formatAmountL1("255.00") });
 /** V3-2b：列印版關鍵差額一行 printHeadline「上期 {prev}，本期 {cur}，差額 {change}」，三個數字都是 L1（U+2212）。 */
 const printHeadline = (previous: string, current: string, change: string) => fill(summaryCopy.printHeadline, { prev: formatAmountL1(previous), cur: formatAmountL1(current), change: formatSignedDelta(change, "L1") });
 /** V3-2b：一頁摘要 Markdown 主文是 L2（整數元、千分位、U+2212，正差額加「+」）。 */
 const mdHeadline = (metric: string, previous: string, current: string, change: string) => fill(summaryCopy.mdHeadlineRow, { metric, previous: formatAmountL2(previous), current: formatAmountL2(current), change: formatSignedDelta(change, "L2") });
 /**
- * V3-7（PRD §7.9）：PDF／Markdown 開頭的台灣報表版頭四行。資料集名稱是畫面上的名稱（golden＝labels.ui.dashboard.datasets.golden，會議用的資料與目前相同），
+ * V3-7（PRD §7.9）：PDF／Markdown 開頭的台灣報表版頭四行。資料集名稱是畫面上的名稱（golden＝labels.shell.devValidation.datasets.golden，會議用的資料與目前相同），
  * 報表名、兩期（golden 本期 2026-08-02、上期 2026-08-01，formatPeriodExport）與單位（未稅）、指標版本＋產出時間（台北時間，下載當下，只比格式）。
  */
 const headerV3 = labels.exports.headerV3;
-const goldenDatasetName = labels.ui.dashboard.datasets.golden;
+const goldenDatasetName = labels.shell.devValidation.datasets.golden;
 const reportTitle = fill(headerV3.reportTitle, { metric: contributionLabel });
 const headerPeriod = fill(headerV3.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") });
 const headerPeriodUnit = fill(headerV3.periodUnitLine, { period: headerPeriod, unit: headerV3.unitExclusive });
@@ -106,11 +106,11 @@ function csvRecords(text: string): Record<string, string>[] {
  */
 const meetingOutput = (page: Page, name: string) => meetingExportButton(page, name);
 
-/** meeting：會議名稱與日期（頁首欄位的值）＋資料到，填 labels.meetingPage.printHeader。 */
+/** meeting：會議名稱與日期（頁首欄位的值）＋資料到，填 labels.meeting.page.printHeader。 */
 async function checkPrint(page: Page, info: TestInfo, pinned: boolean, meeting: { name: string; date: string; asOf: string }) {
   const summary = page.getByTestId("manager-summary");
   // R6：列印改由輸出列的「匯出 PDF」（同一個 PrintSummaryPortal → window.print()）。
-  await (await meetingOutput(page, labels.buttons.exportPdf)).click();
+  await (await meetingOutput(page, labels.exports.buttons.exportPdf)).click();
   await expect(page.locator("html")).toHaveAttribute("data-print-invoked", "true");
   await page.emulateMedia({ media: "print" });
   const print = page.getByTestId("manager-summary-print");
@@ -122,8 +122,8 @@ async function checkPrint(page: Page, info: TestInfo, pinned: boolean, meeting: 
   await expect(header.getByRole("heading", { level: 1 })).toHaveText(reportTitle);
   await expect(header.getByTestId("print-header-period").locator(":scope > span")).toHaveText([headerPeriod, headerV3.unitExclusive]);
   await expect(header.getByTestId("print-header-version")).toHaveText(headerVersion);
-  await expect(header.getByTestId("print-header-meeting")).toHaveText(fill(labels.meetingPage.printHeader, meeting));
-  await expect(header.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.periods.sameDays }));
+  await expect(header.getByTestId("print-header-meeting")).toHaveText(fill(labels.meeting.page.printHeader, meeting));
+  await expect(header.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.shell.periods.sameDays }));
   // 門檻是使用者輸入的設定值，列印版沿用到分（L3）。
   await expect(print).toContainText(fill(summaryCopy.printThresholdLine, { amount: formatAmountL3("1000.00") }));
   await expect(print).toContainText(printHeadline("570.00", "255.00", "-315.00"));
@@ -153,26 +153,26 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await page.addInitScript(() => { window.print = () => { document.documentElement.dataset.printInvoked = "true"; }; });
   await page.goto("/");
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
-  await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption("golden");
+  await page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }).click();
   await expect(page.getByTestId("workspace-status")).toContainText(goldenReady);
   await dismissSavePrompt(page);
   await navigateTo(page, "actions");
   // R5: the actions page opens on the board; the per-card edit form below uses the list view.
   await switchActionsView(page, "list");
   for (let index = 1; index <= 8; index++) {
-    await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+    await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
     const card = page.getByTestId(`action-${index}`);
-    await card.getByLabel(labels.actions.problem, { exact: true }).fill(actionName(index));
-    await card.getByLabel(labels.actions.step, { exact: true }).fill("核對已入帳費用與來源");
-    await card.getByLabel(labels.actions.owner, { exact: true }).fill("營運主管");
+    await card.getByLabel(labels.actions.form.problem, { exact: true }).fill(actionName(index));
+    await card.getByLabel(labels.actions.form.step, { exact: true }).fill("核對已入帳費用與來源");
+    await card.getByLabel(labels.actions.form.owner, { exact: true }).fill("營運主管");
     // R5: evidence is a checkbox list (fieldset evidence-checklist); each checkbox is named by its fact label and carries the fact id as value.
     const evidence = card.getByTestId("evidence-checklist").getByRole("checkbox", { name: goldenFactLabel, exact: true });
     await expect(evidence).toHaveCount(1);
     expect(await evidence.getAttribute("value")).toBeTruthy();
     await evidence.check();
     await expect(card.getByTestId("evidence-checklist").locator("input[type=checkbox]:checked")).toHaveCount(1);
-    if (index <= 3) await card.getByRole("button", { name: labels.buttons.pin, exact: true }).click();
+    if (index <= 3) await card.getByRole("button", { name: labels.actions.buttons.pin, exact: true }).click();
   }
   await openMeeting(page);
   const updates = page.getByRole("button", { name: refreshActionRef });
@@ -180,9 +180,9 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   const summary = page.getByTestId("manager-summary");
   // V3-7：會議門檻收在議程 ② 的「調整門檻」（details.meeting-threshold，預設收合）；先展開再填與套用。
   await openThreshold(page);
-  await summary.getByLabel(labels.meeting.threshold, { exact: true }).fill("1000");
-  await summary.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
-  await expect(summary.getByLabel(labels.meeting.threshold, { exact: true })).toHaveValue("1000.00");
+  await summary.getByLabel(labels.meeting.form.threshold, { exact: true }).fill("1000");
+  await summary.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
+  await expect(summary.getByLabel(labels.meeting.form.threshold, { exact: true })).toHaveValue("1000.00");
   await expect(summary.getByRole("heading", { name: summaryCopy.decisionsHeading, exact: true })).toHaveCount(0);
   const main = agendaActions(page).getByTestId("meeting-pinned-actions").locator(":scope > ul > li");
   await expect(main).toHaveCount(3);
@@ -194,7 +194,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   for (let index = 1; index <= 8; index++) await expect((index <= 3 ? main : appendix).getByText(actionName(index), { exact: true })).toBeVisible();
 
   const prefix = `verification/review-v2-a-decision-${info.project.name}`;
-  const markdown = await saveDownload(page, await meetingOutput(page, labels.buttons.exportMarkdown), `${prefix}.md`);
+  const markdown = await saveDownload(page, await meetingOutput(page, labels.exports.buttons.exportMarkdown), `${prefix}.md`);
   expectMarkdownHeader(markdown);
   const [body, technical] = markdown.split(technicalHeading);
   expect(body.match(/匯出驗收行動第/g)).toHaveLength(3);
@@ -210,11 +210,11 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await page.screenshot({ path: resolve(`verification/review-v2-a-decision-ui-pinned-${info.project.name}.png`), fullPage: true });
   // 列印版的會議一行：頁首的會議名稱與日期欄（V3-7 meeting-head）＋golden 的資料到。
   const head = page.getByTestId("review-workbench");
-  const meeting = { name: await head.getByLabel(labels.meeting.name, { exact: true }).inputValue(), date: await head.getByLabel(labels.meeting.date, { exact: true }).inputValue(), asOf: "2026-08-03" };
+  const meeting = { name: await head.getByLabel(labels.meeting.form.name, { exact: true }).inputValue(), date: await head.getByLabel(labels.meeting.form.date, { exact: true }).inputValue(), asOf: "2026-08-03" };
   await checkPrint(page, info, true, meeting);
 
   await navigateTo(page, "actions");
-  // V3-6：決策 JSON／CSV（按鈕名稱 labels.downloads.decisionJson／decisionCsv）在待辦頁頁首「匯出本頁」選單（export-page-actions → actions-export-json／csv）。
+  // V3-6：決策 JSON／CSV（按鈕名稱 labels.exports.downloads.decisionJson／decisionCsv）在待辦頁頁首「匯出本頁」選單（export-page-actions → actions-export-json／csv）。
   const json = JSON.parse(await saveDownload(page, await decisionExportButton(page, "json"), `${prefix}.json`));
   const csv = csvRecords(await saveDownload(page, await decisionExportButton(page, "csv"), `${prefix}.csv`));
   expect(json.export_version).toBe("workspace-decision-v2");
@@ -240,13 +240,13 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
     expect(JSON.parse(fact.source_refs).length).toBeGreaterThan(0);
   }
 
-  for (let index = 0; index < 3; index++) await page.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true }).first().click();
-  await expect(page.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true })).toHaveCount(0);
+  for (let index = 0; index < 3; index++) await page.getByRole("button", { name: labels.actions.workbench.unpin, exact: true }).first().click();
+  await expect(page.getByRole("button", { name: labels.actions.workbench.unpin, exact: true })).toHaveCount(0);
   await openMeeting(page);
   await expect(main).toHaveCount(0);
   // 取消全部置頂：⑥ 顯示「本次會議沒有置頂待辦」，八項都在「其他待辦（8）」；主管摘要不再有置頂提示或「沒有待辦」。
   await expect(agendaActions(page).getByTestId("meeting-pinned-actions")).toHaveCount(0);
-  await expect(agendaActions(page).getByTestId("meeting-pinned-actions-empty")).toHaveText(labels.meetingRecord.noPinnedActions);
+  await expect(agendaActions(page).getByTestId("meeting-pinned-actions-empty")).toHaveText(labels.meeting.record.noPinnedActions);
   await expect(summary).not.toContainText(notice);
   await expect(summary).not.toContainText(noActions);
   await expect(agendaActions(page)).not.toContainText(noActions);
@@ -254,7 +254,7 @@ test("A1/A2 三置頂五附錄的實際匯出與列印；取消置頂後不自�
   await expect(allAppendix).toHaveCount(1);
   await allAppendix.locator(":scope > summary").click();
   await expect(allAppendix.locator(":scope > ul > li")).toHaveCount(8);
-  const unpinned = await saveDownload(page, await meetingOutput(page, labels.buttons.exportMarkdown), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);
+  const unpinned = await saveDownload(page, await meetingOutput(page, labels.exports.buttons.exportMarkdown), `verification/review-v2-a-decision-unpinned-${info.project.name}.md`);
   expectMarkdownHeader(unpinned);
   const [unpinnedBody, unpinnedAppendix] = unpinned.split(technicalHeading);
   expect(unpinnedBody).toContain(notice);

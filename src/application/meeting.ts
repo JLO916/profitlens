@@ -45,7 +45,7 @@ export interface Meeting {
     periods: { previous: Period; current: Period; comparison_mode: ComparisonMode }; channels: string[];
     /** 結束會議時的含稅換算一句（conversionSentence）；沒有換算為 null。 */
     preprocessing: string | null;
-    /** 結束會議時的口徑說明（labels.basis.items 快照），日後文案改版也保留當時的口徑。 */
+    /** 結束會議時的口徑說明（labels.glossary.basis.items 快照），日後文案改版也保留當時的口徑。 */
     basis: string[];
   };
   agenda: { kpis: MeetingKpi[]; priorities: MeetingPriority[]; channels: MeetingChannelRow[]; scenarios: MeetingScenario[]; pinned_actions: MeetingPinnedAction[] };
@@ -74,7 +74,7 @@ export interface MeetingFollowUp {
 export interface MeetingActionFollowUp { action_id: string; problem: string; last_status: ActionExecutionStatus; current_status: ActionExecutionStatus | null; status_updated_at: string | null }
 export interface MeetingComparison {
   kind: MeetingComparisonKind; last: Meeting | null;
-  /** labels.meetingRecord 文案；期間不同時含兩次會議的本期（本期相同則改列上期），比較方式不同再加一句。 */
+  /** labels.meeting.record 文案；期間不同時含兩次會議的本期（本期相同則改列上期），比較方式不同再加一句。 */
   note: string;
   /** 只在 same_scope／different_periods 有值：上次會議的本期 vs 本次的本期，change＝本次 − 上次。 */
   kpis: { metric: MeetingKpiMetric; last: string | null; current: string | null; change: string | null }[];
@@ -102,12 +102,12 @@ export interface FinalizeMeetingInput {
 /** 議程的金額部分（兩個關鍵差額、通路表、三件事）只由快照與門檻決定；finalize 與還原核對共用。 */
 export interface MeetingAgendaOptions { importanceThreshold: string; conversion?: TaxConversion | null; targets?: MeetingTargets }
 
-const copy = labels.meetingRecord;
+const copy = labels.meeting.record;
 const KPI_METRICS = ["net_revenue", "contribution_after_marketing"] as const satisfies readonly MeetingKpiMetric[];
 const COMPARISON_KINDS = ["none", "same_scope", "different_periods", "different_dataset"] as const satisfies readonly MeetingComparisonKind[];
 const RULE_CODES = ["REV_UP_CM_DOWN", "NEGATIVE_CHANNEL_CM", "DISCOUNT_BURDEN_UP", "REFUND_BURDEN_UP", "FULFILLMENT_BURDEN_UP", "MARKETING_BURDEN_UP", "SKU_NEGATIVE_GP", "MISSING_CRITICAL_DATA"] as const satisfies readonly RuleCode[];
 const DECISION_STATES = ["draft", "adopted", "needs_data", "not_adopted"] as const satisfies readonly ReviewDecisionState[];
-const EXECUTION_LABELS: Record<ActionExecutionStatus, string> = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done };
+const EXECUTION_LABELS: Record<ActionExecutionStatus, string> = { not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done };
 /** 範圍標籤上限：最多 1,000 個通路 × 500 字（含分隔）再加模板。 */
 const MAX_SCOPE_TEXT = 1000 * 501 + 500;
 /** 比較說明上限：通路不同時含兩次的通路清單，再加模板。 */
@@ -289,7 +289,7 @@ export function finalizeMeeting(input: FinalizeMeetingInput): Meeting {
     source_fixed: {
       dataset_id: snapshot.report.dataset_id, dataset_hash: review.dataset_hash, filter_hash: review.filter_hash, metric_version: review.metric_version, data_as_of: review.data_as_of,
       periods: { previous: scope.previous_period, current: scope.current_period, comparison_mode: scope.comparison_mode }, channels: scope.channels,
-      preprocessing: conversionSentence(input.conversion), basis: [...labels.basis.items],
+      preprocessing: conversionSentence(input.conversion), basis: [...labels.glossary.basis.items],
     },
     agenda: {
       ...agenda,
@@ -341,7 +341,7 @@ function shortRanges(...periods: Period[]): string[] {
   const withYear = new Set(periods.flatMap(value => [value.start, value.end]).map(date => date.slice(0, 4))).size > 1;
   return periods.map(value => fill(copy.dateRange, { start: shortDate(value.start, withYear), end: shortDate(value.end, withYear) }));
 }
-const comparisonModeLabel = (mode: ComparisonMode): string => mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays;
+const comparisonModeLabel = (mode: ComparisonMode): string => mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays;
 /**
  * 期間不同的說明：本期不同時列兩次的本期；本期相同時改列兩次的上期；比較方式不同時再加一句。
  * （samePeriods 為 false 時至少有一項不同；萬一都相同就退回列兩次的本期。）
@@ -379,7 +379,7 @@ export function compareWithLastMeeting(current: { snapshot: WorkspaceSnapshot; r
   const scope = snapshot.report.scope;
   const tracked = { decisions: structuredClone(last.decisions) as MeetingDecision[], actions: followUp(last, current.actions) };
   const notComparable = { kpis: [], priorities: { last: [], current: [] } };
-  if (snapshot.dataset_hash !== last.source_fixed.dataset_hash) return { kind: "different_dataset", last, note: labels.meeting.noComparable, ...notComparable, ...tracked };
+  if (snapshot.dataset_hash !== last.source_fixed.dataset_hash) return { kind: "different_dataset", last, note: labels.meeting.form.noComparable, ...notComparable, ...tracked };
   if (!sameSet(scope.channels, last.source_fixed.channels)) {
     const alias = demoAlias(snapshot.report.dataset_id);
     return { kind: "different_dataset", last, note: fill(copy.differentChannels, { last: channelsLabel(last.source_fixed.channels, alias), current: channelsLabel(scope.channels, alias) }), ...notComparable, ...tracked };
@@ -401,8 +401,8 @@ export function compareWithLastMeeting(current: { snapshot: WorkspaceSnapshot; r
 const md = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
   .replace(/[\\`*_{}\[\]()#+!|~]/g, character => `\\${character}`).replace(/\r\n|\r|\n/g, "&#10;");
 /** V3-2b §3.3：會議紀錄 Markdown 主文用 L2 整數元（U+2212、正的差額加「+」）；單位寫在表頭「（元）」或「金額單位：元」，儲存格內不重複。 */
-const money = (value: string | null, signed = false): string => value === null ? labels.status.missing : signed ? formatSignedDelta(value, "L2") : formatAmount(value, "L2");
-const moneyColumn = (label: string): string => fill(labels.ui.export.moneyColumn, { label });
+const money = (value: string | null, signed = false): string => value === null ? labels.shell.status.missing : signed ? formatSignedDelta(value, "L2") : formatAmount(value, "L2");
+const moneyColumn = (label: string): string => fill(labels.exports.common.moneyColumn, { label });
 const decisionText = (row: MeetingDecision): string => row.confirmed_revision === null
   ? fill(copy.decisionUnconfirmed, { decision: REVIEW_DECISION_LABELS[row.state] })
   : fill(copy.decisionConfirmed, { decision: REVIEW_DECISION_LABELS[row.state], revision: row.confirmed_revision });
@@ -434,33 +434,33 @@ export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComp
     fill(copy.mdTitle, { brand: labels.brand.name, name: md(meeting.name) }), "", ...markdownExportHeader(header), "",
     // D-V3-22＝A：v2 結束的紀錄（沒有 copy_version）在版頭之後加註，數字與決議不動。
     ...(meeting.copy_version === "v3" ? [] : [labels.meeting.pageV3.v2Note, ""]),
-    fill(copy.mdMeta, { date: labels.meeting.date, value: meeting.date, decision: labels.meeting.decision, state: decisionText(latest), finalizedAt }), "",
+    fill(copy.mdMeta, { date: labels.meeting.form.date, value: meeting.date, decision: labels.meeting.form.decision, state: decisionText(latest), finalizedAt }), "",
     copy.mdScope, "",
-    fill(copy.mdField, { field: labels.status.dataAsOf, value: fixed.data_as_of }),
-    fill(copy.mdPeriod, { period: labels.periods.previous, range: formatPeriodExport(fixed.periods.previous.start, fixed.periods.previous.end) }),
-    fill(copy.mdPeriod, { period: labels.periods.current, range: formatPeriodExport(fixed.periods.current.start, fixed.periods.current.end) }),
-    fill(copy.mdField, { field: labels.csvColumns.comparison_mode, value: comparisonModeLabel(fixed.periods.comparison_mode) }),
-    fill(copy.mdField, { field: labels.csvColumns.channels, value: md(channelsLabel(fixed.channels, alias)) }),
+    fill(copy.mdField, { field: labels.shell.status.dataAsOf, value: fixed.data_as_of }),
+    fill(copy.mdPeriod, { period: labels.shell.periods.previous, range: formatPeriodExport(fixed.periods.previous.start, fixed.periods.previous.end) }),
+    fill(copy.mdPeriod, { period: labels.shell.periods.current, range: formatPeriodExport(fixed.periods.current.start, fixed.periods.current.end) }),
+    fill(copy.mdField, { field: labels.exports.csv.columns.comparison_mode, value: comparisonModeLabel(fixed.periods.comparison_mode) }),
+    fill(copy.mdField, { field: labels.exports.csv.columns.channels, value: md(channelsLabel(fixed.channels, alias)) }),
     // 門檻是使用者設定的精確值，取到分（L3）。
-    fill(copy.mdThreshold, { field: labels.meeting.threshold, amount: formatAmount(meeting.thresholds.importance, "L3") }), "",
+    fill(copy.mdThreshold, { field: labels.meeting.form.threshold, amount: formatAmount(meeting.thresholds.importance, "L3") }), "",
     copy.mdBasis, "", ...fixed.basis.map(text => `- ${md(text)}`), ...(fixed.preprocessing ? [`- ${md(fixed.preprocessing)}`] : []), "",
-    `## ${labels.sections.meetingAgenda}`, "", `### ${copy.agenda.kpis}`, "", labels.ui.export.amountUnitNote, "",
+    `## ${labels.meeting.sections.meetingAgenda}`, "", `### ${copy.agenda.kpis}`, "", labels.exports.common.amountUnitNote, "",
   ];
   for (const row of meeting.agenda.kpis) lines.push(fill(copy.mdKpiRow, { metric: metricDefinitions[row.metric].label, previous: money(row.previous), current: money(row.current), change: money(row.change, true) }));
   lines.push("", `### ${copy.agenda.priorities}`, "");
-  if (!meeting.agenda.priorities.length) lines.push(labels.notes.noPriorities);
+  if (!meeting.agenda.priorities.length) lines.push(labels.overview.notes.noPriorities);
   for (const [index, row] of meeting.agenda.priorities.entries()) lines.push(
-    fill(copy.mdPriorityRow, { n: index + 1, headline: md(row.headline), scope: md(row.scope), impact: labels.sections.impact, amount: money(row.impact, true) }),
-    fill(copy.mdNextStep, { label: labels.sections.nextStep, step: md(row.next_step) }));
+    fill(copy.mdPriorityRow, { n: index + 1, headline: md(row.headline), scope: md(row.scope), impact: labels.overview.sections.impact, amount: money(row.impact, true) }),
+    fill(copy.mdNextStep, { label: labels.diagnosis.sections.nextStep, step: md(row.next_step) }));
   lines.push("", `### ${copy.agenda.channels}`, "",
-    `| ${labels.csvColumns.channel} | ${[`${labels.periods.previous}${revenue}`, `${labels.periods.current}${revenue}`, labels.csvSuffix.change, `${labels.periods.previous}${contribution}`, `${labels.periods.current}${contribution}`, labels.csvSuffix.change].map(moneyColumn).join(" | ")} |`,
+    `| ${labels.exports.csv.columns.channel} | ${[`${labels.shell.periods.previous}${revenue}`, `${labels.shell.periods.current}${revenue}`, labels.exports.csv.suffix.change, `${labels.shell.periods.previous}${contribution}`, `${labels.shell.periods.current}${contribution}`, labels.exports.csv.suffix.change].map(moneyColumn).join(" | ")} |`,
     "| --- | ---: | ---: | ---: | ---: | ---: | ---: |");
   for (const row of meeting.agenda.channels) lines.push(`| ${md(channelLabel(row.channel, alias))} | ${money(row.previous_net_revenue)} | ${money(row.current_net_revenue)} | ${money(row.net_revenue_change, true)} | ${money(row.previous_contribution)} | ${money(row.current_contribution)} | ${money(row.contribution_change, true)} |`);
   lines.push("", `### ${copy.agenda.followUp}`, "");
   if (follow.kind === "none" || follow.last_name === null) lines.push(copy.noLastMeeting);
   else {
     lines.push(fill(copy.mdLastMeeting, { name: md(follow.last_name), date: follow.last_date }));
-    for (const row of follow.last_decisions) lines.push(fill(copy.mdLastDecision, { decision: decisionText(row), notes: labels.meeting.notes, text: md(row.notes) }));
+    for (const row of follow.last_decisions) lines.push(fill(copy.mdLastDecision, { decision: decisionText(row), notes: labels.meeting.form.notes, text: md(row.notes) }));
     for (const row of follow.actions) lines.push(fill(copy.mdFollowUpRow, { problem: md(row.problem), last: EXECUTION_LABELS[row.last_status], current: row.current_status ? EXECUTION_LABELS[row.current_status] : copy.actionMissing, updated: updatedText(row.status_updated_at) }));
   }
   lines.push("", `### ${copy.agenda.scenarios}`, "");
@@ -471,11 +471,11 @@ export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComp
   lines.push("", `### ${copy.agenda.actions}`, "");
   if (!meeting.agenda.pinned_actions.length) lines.push(copy.noPinnedActions);
   for (const row of meeting.agenda.pinned_actions) lines.push(fill(copy.mdActionRow, {
-    problem: md(row.problem), action: md(row.action), owner: labels.actions.owner, ownerValue: md(row.owner || labels.ui.managerSummary.ownerUnset), due: labels.actions.due, dueValue: md(row.deadline || labels.ui.managerSummary.dueUnset),
-    status: labels.actions.status, statusValue: EXECUTION_LABELS[row.execution_status], updated: updatedText(row.status_updated_at), scope: md(row.scope),
+    problem: md(row.problem), action: md(row.action), owner: labels.actions.form.owner, ownerValue: md(row.owner || labels.meeting.managerSummary.ownerUnset), due: labels.actions.form.due, dueValue: md(row.deadline || labels.meeting.managerSummary.dueUnset),
+    status: labels.actions.form.status, statusValue: EXECUTION_LABELS[row.execution_status], updated: updatedText(row.status_updated_at), scope: md(row.scope),
   }));
-  lines.push("", `## ${labels.sections.meetingDecision}`, "", ...meeting.decisions.map(row => `- ${decisionText(row)}`), fill(copy.mdField, { field: labels.meeting.notes, value: md(meeting.notes) }), "",
-    `## ${labels.sections.meetingCompare}`, "", md(follow.kind === "none" ? copy.noLastMeeting : follow.note));
+  lines.push("", `## ${labels.meeting.sections.meetingDecision}`, "", ...meeting.decisions.map(row => `- ${decisionText(row)}`), fill(copy.mdField, { field: labels.meeting.form.notes, value: md(meeting.notes) }), "",
+    `## ${labels.meeting.sections.meetingCompare}`, "", md(follow.kind === "none" ? copy.noLastMeeting : follow.note));
   if (follow.kpis.length) {
     const columns = copy.compareColumns;
     lines.push("", `| ${columns.metric} | ${moneyColumn(columns.last)} | ${moneyColumn(columns.current)} | ${moneyColumn(columns.change)} |`, "| --- | ---: | ---: | ---: |");
@@ -486,11 +486,11 @@ export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComp
   if (comparable && (follow.last_priorities.length || meeting.agenda.priorities.length)) {
     for (const [title, rows] of [[copy.lastPriorities, follow.last_priorities], [copy.currentPriorities, meeting.agenda.priorities]] as const) {
       lines.push("", `${title}：`);
-      if (!rows.length) lines.push(labels.notes.noPriorities);
-      for (const [index, row] of rows.entries()) lines.push(fill(copy.mdPriorityRow, { n: index + 1, headline: md(row.headline), scope: md(row.scope), impact: labels.sections.impact, amount: money(row.impact, true) }));
+      if (!rows.length) lines.push(labels.overview.notes.noPriorities);
+      for (const [index, row] of rows.entries()) lines.push(fill(copy.mdPriorityRow, { n: index + 1, headline: md(row.headline), scope: md(row.scope), impact: labels.overview.sections.impact, amount: money(row.impact, true) }));
     }
   }
-  lines.push("", "---", "", `## ${labels.sections.technicalDetails}`, "",
+  lines.push("", "---", "", `## ${labels.evidence.sections.technicalDetails}`, "",
     `- meeting_id：${md(meeting.id)}`, `- schema_version：${meeting.schema_version}`, `- review_id：${md(meeting.review_id)}`, `- review_revision：${meeting.review_revision}`,
     `- dataset_id：${md(fixed.dataset_id)}`, `- dataset_hash：${fixed.dataset_hash}`, `- filter_hash：${fixed.filter_hash}`, `- metric_version：${md(fixed.metric_version)}`,
     `- created_at：${meeting.created_at}`, `- finalized_at：${meeting.finalized_at}`,

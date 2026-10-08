@@ -14,7 +14,7 @@ import { fill, labels } from "@/i18n";
 // 匯入精靈步驟 4、錯誤狀態、目標與促銷檔期的錯誤清單都用這個元件，欄位一起改。
 
 const v3 = labels.data.pageV3.issueTable;
-const copy = labels.ui.issueList;
+const copy = labels.data.issues;
 const escapeRe = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const bytes = (text: string) => new TextEncoder().encode(text);
 const missingCogs = () => validateDataset(fixture("errors/missing_cogs")).dataset!.issues;
@@ -44,7 +44,7 @@ describe("V3-8 資料問題表（IssueList）", () => {
   it("問題欄是 L1 去掉位置前綴、修法欄是 L2、原因碼欄是 L3（issueMessageParts，不另拼句子）；檔名、行號、欄位 key 用等寬字", () => {
     const [issue] = missingCogs();
     const parts = issueMessageParts(issue);
-    const prefix = fill(labels.importErrors.MISSING_COGS.slice(0, labels.importErrors.MISSING_COGS.indexOf("：") + 1), { file: issue.file, line: issue.line });
+    const prefix = fill(labels.errors.import.MISSING_COGS.slice(0, labels.errors.import.MISSING_COGS.indexOf("：") + 1), { file: issue.file, line: issue.line });
     expect(parts.headline.startsWith(prefix)).toBe(true);
     const [row] = rows(render({ issues: [issue] }));
     expect(row[0].html).toContain(`<span class="ui-mono">${issue.file}</span>`);
@@ -78,14 +78,14 @@ describe("V3-8 資料問題表（IssueList）", () => {
     const tableId = /<table class="ui-table issue-table" id="([^"]+)">/.exec(plain)![1];
     expect(plain).toContain(`<button type="button" class="ui-btn ui-btn-text issue-codes-toggle" aria-pressed="false" aria-controls="${tableId}">${v3.showCodes}</button>`);
     expect(plain.split(v3.unit)).toHaveLength(2);
-    expect(plain).not.toContain(labels.downloads.issuesCsv);
+    expect(plain).not.toContain(labels.exports.downloads.issuesCsv);
     const withDownload = render({ issues, download: { filename: "profitlens-issues.csv", testId: "probe-download" } });
-    expect(withDownload).toContain(`<button type="button" class="ui-btn ui-btn-secondary" data-testid="probe-download">${labels.downloads.issuesCsv}</button>`);
-    expect(withDownload.split(labels.downloads.issuesCsv)).toHaveLength(2);
+    expect(withDownload).toContain(`<button type="button" class="ui-btn ui-btn-secondary" data-testid="probe-download">${labels.exports.downloads.issuesCsv}</button>`);
+    expect(withDownload.split(labels.exports.downloads.issuesCsv)).toHaveLength(2);
     // 工具列在表格之前（C15：工具列在表格上方）。
-    expect(withDownload.indexOf(labels.downloads.issuesCsv)).toBeLessThan(withDownload.indexOf("<table"));
+    expect(withDownload.indexOf(labels.exports.downloads.issuesCsv)).toBeLessThan(withDownload.indexOf("<table"));
     // 不給 testId 時不帶 data-testid（M6：同一頁可能同時掛兩份問題表）。
-    expect(render({ issues, download: { filename: "x.csv" } })).toContain(`<button type="button" class="ui-btn ui-btn-secondary">${labels.downloads.issuesCsv}</button>`);
+    expect(render({ issues, download: { filename: "x.csv" } })).toContain(`<button type="button" class="ui-btn ui-btn-secondary">${labels.exports.downloads.issuesCsv}</button>`);
   });
 
   it("實際檔名與標準檔名不同時，檔名下補標準檔名；欄位對照過的欄位補原欄位（既有 props 語意不變）", () => {
@@ -119,6 +119,6 @@ describe("V3-8 資料問題表（IssueList）", () => {
     expect(row.map(cell => cell.html.replace(/<[^>]+>/g, ""))).toEqual(["targets.csv", String(issues[0].line), "metric", headline, rest.join("。"), `${copy.reasonCodeSummary}INVALID_METRIC`]);
     expect(row[5].attrs).toContain('hidden=""');
     expect(html).not.toContain("ui-lozenge");
-    expect(html).not.toContain(labels.downloads.issuesCsv);
+    expect(html).not.toContain(labels.exports.downloads.issuesCsv);
   });
 });

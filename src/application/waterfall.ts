@@ -217,7 +217,7 @@ export function bridgeWaterfall(snapshot: WorkspaceSnapshot): BridgeWaterfall {
   return {
     bars, total: bridge.sum, contributionChange: bridge.contribution_change, balanced: bridge.reconciled, difference, largest, title,
     subtitle: fill(copy.subtitle, { section: labels.overview.sections.bridge, previous: periodText(snapshot, report.previous.period), current: periodText(snapshot, report.current.period) }),
-    note: labels.ui.overview.bridgeNote,
+    note: labels.overview.page.bridgeNote,
     balanceText,
     rows,
   };
@@ -265,7 +265,7 @@ export function profitWaterfall(snapshot: WorkspaceSnapshot, scope: "all" | stri
     : fill(perHundredValue.isNegative() && !perHundredValue.isZero() ? copy.title.negative : copy.title.positive, { n: perHundredValue.abs().toFixed(1) });
 
   const everyChannel = !!options.allChannels && options.allChannels.length > 0 && options.allChannels.every(channel => report.scope.channels.includes(channel));
-  const scopeLabel = scope === "all" ? (everyChannel ? labels.shell.periodBar.filter.allChannels : labels.sections.total) : channelLabel(scope, alias);
+  const scopeLabel = scope === "all" ? (everyChannel ? labels.shell.periodBar.filter.allChannels : labels.overview.sections.total) : channelLabel(scope, alias);
   const rows: ProfitRow[] = PROFIT_WATERFALL_METRICS.map(({ metric, kind }) => {
     const value = metricOf(metric);
     return { id: metric, metric, label: metricDefinitions[metric].label, kind, value, share: ratio(exact(value.value), netRevenue) };

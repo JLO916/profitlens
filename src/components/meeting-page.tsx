@@ -29,18 +29,18 @@ import type { EvidenceSelection } from "./evidence-drawer";
 
 // R6-2 會議紀錄分頁；V3-7（PRD §7.6）改成文件式版面：頁首動作列（sticky）→ 固定範圍一行與差異橫幅 → 左側議程目錄＋議程 1–6（<ol>）
 // → 決議備註 → 與上次會議比較（預設收合）→ 會議歷史（最底）。承接原 ReviewWorkbench 的全部控制項，handler 與 v2 相同。
-const copy = labels.ui.reviewWorkbench;
-const summaryCopy = labels.ui.managerSummary;
-const page = labels.meetingPage;
-const record = labels.meetingRecord;
+const copy = labels.meeting.review;
+const summaryCopy = labels.meeting.managerSummary;
+const page = labels.meeting.page;
+const record = labels.meeting.record;
 const pageV3 = labels.meeting.pageV3;
 const snapshotUi = labels.overview.snapshotUi;
 /** 議程 1–6 的標題（議程目錄與各項 h3 同一組字串，labels.meeting.record.agenda）。 */
 const AGENDA_TITLES = [record.agenda.kpis, record.agenda.priorities, record.agenda.channels, record.agenda.followUp, record.agenda.scenarios, record.agenda.actions] as const;
 type Targets = { set: TargetSet | null; allChannels: readonly string[] } | null;
-/** ReviewDecisionState（needs_data／not_adopted）→ labels.meeting.decisions 的鍵（need_data／rejected）；只做顯示對照，不改機器值。 */
-export const DECISION_LABEL_KEY: Record<ReviewDecisionState, keyof typeof labels.meeting.decisions> = { draft: "draft", adopted: "adopted", needs_data: "need_data", not_adopted: "rejected" };
-const EXECUTION_LABELS: Record<ActionExecutionStatus, string> = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done };
+/** ReviewDecisionState（needs_data／not_adopted）→ labels.meeting.form.decisions 的鍵（need_data／rejected）；只做顯示對照，不改機器值。 */
+export const DECISION_LABEL_KEY: Record<ReviewDecisionState, keyof typeof labels.meeting.form.decisions> = { draft: "draft", adopted: "adopted", needs_data: "need_data", not_adopted: "rejected" };
+const EXECUTION_LABELS: Record<ActionExecutionStatus, string> = { not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done };
 const MARKDOWN_MIME = "text/markdown;charset=utf-8";
 /** 議程 ⑥ 與會議摘要相同：最多列三項置頂行動。 */
 const MAX_AGENDA_ACTIONS = 3;
@@ -60,7 +60,7 @@ const decisionText = (row: MeetingDecision): string => row.confirmed_revision ==
 const latestDecision = (meeting: Meeting): MeetingDecision => meeting.decisions[meeting.decisions.length - 1];
 // V3-2b：會議頁的句子與三件事用 L1（萬），議程表格用 L2（整數元，表頭標「（元）」）。
 const signedL1 = (value: string | null) => formatSignedDelta(value, "L1");
-const yuanColumn = (label: string) => fill(labels.units.yuanColumn, { label });
+const yuanColumn = (label: string) => fill(labels.format.units.yuanColumn, { label });
 /** 會議紀錄 Markdown 的檔名（含會議日期）。 */
 export const meetingMarkdownFilename = (meeting: Meeting): string => `profitlens-meeting-${meeting.date}.md`;
 /** 已結束會議的 Markdown：紀錄本身含結束當時凍結的上次比較（follow_up），還原備份後輸出相同。 */
@@ -80,7 +80,7 @@ export function finalizeErrorText(error: unknown): string {
  * 不帶會議名稱、決議、備註與選入方案。待辦引用的資料與目前檢視不同時標為過期。
  */
 export function currentViewDecisionContext(snapshot: Pick<WorkspaceSnapshot, "dataset_hash" | "filter_hash">, actions: ActionWorkspace): SummaryDecisionContext {
-  const ui = labels.ui.reviewSession;
+  const ui = labels.meeting.session;
   return {
     dataset_hash: snapshot.dataset_hash, filter_hash: snapshot.filter_hash, pinnedOnly: true, scenarios: [], selectedScenarioIds: [], decisionState: page.printViewState,
     actions: actionDocuments(actions).map(doc => ({
@@ -102,7 +102,7 @@ function weeklyActions(actions: ActionWorkspace) {
  * V3-4a：放在本期一句話右側，整句就是唯一的文字按鈕（可及名稱補上「前往會議紀錄」）；上次會議日期是旁邊的註記。
  */
 export function MeetingEntry({ review, history, datasetHash, onOpen }: { review: ReviewSession | null; history: readonly Meeting[]; datasetHash: string; onOpen: () => void }) {
-  const state = review ? labels.meeting.decisions[DECISION_LABEL_KEY[review.decision_state]] : labels.sections.meetingNotCreated;
+  const state = review ? labels.meeting.form.decisions[DECISION_LABEL_KEY[review.decision_state]] : labels.meeting.sections.meetingNotCreated;
   const last = lastMeeting(history);
   const justFinalized = review !== null && last !== null && last.source_fixed.dataset_hash === review.dataset_hash && last.source_fixed.filter_hash === review.filter_hash && review.revision === 1 && review.decision_state === "draft";
   const entry = labels.overview.snapshotUi;
@@ -288,11 +288,11 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
   const exportMenu = <details ref={exportMenuRef} className="topbar-menu auto-close export-page meeting-outputs" data-testid="meeting-outputs">
     <summary className="ui-btn ui-btn-secondary" data-testid="export-page-meeting">{pageV3.exportMenu}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
     <div className="menu-panel ui-menu meeting-export-menu">
-      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-pdf" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.buttons.exportPdf} aria-describedby="meeting-pdf-hint" onClick={startPrint}><span>{labels.buttons.exportPdf}</span><small id="meeting-pdf-hint">{hint(page.pdfHint)}</small></button>
-      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-markdown" disabled={!summary} aria-label={labels.buttons.exportMarkdown} aria-describedby="meeting-markdown-hint" onClick={() => download(() => { if (summary) downloadText(exportManagerSummaryMarkdown(summary, context, exportDatasetName ? { datasetName: exportDatasetName } : {}), "profitlens-manager-summary.md", MARKDOWN_MIME); })}><span>{labels.buttons.exportMarkdown}</span><small id="meeting-markdown-hint">{hint(pageV3.exportHints.markdown)}</small></button>
-      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-csv" disabled={!summary} aria-label={labels.downloads.channelTableCsv} aria-describedby="meeting-csv-hint" onClick={() => download(() => { if (summary) downloadText(exportChannelComparisonCsv(summary), "profitlens-channel-comparison.csv"); })}><span>{labels.downloads.channelTableCsv}</span><small id="meeting-csv-hint">{hint(pageV3.exportHints.channelCsv)}</small></button>
-      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-excel" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.buttons.exportExcel} aria-describedby="meeting-excel-hint" onClick={() => startExport("excel")}><span>{labels.buttons.exportExcel}</span><small id="meeting-excel-hint">{hint(pageV3.exportHints.excel)}</small></button>
-      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-pptx" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.buttons.exportPptx} aria-describedby="meeting-pptx-hint" onClick={() => startExport("pptx")}><span>{labels.buttons.exportPptx}</span><small id="meeting-pptx-hint">{hint(pageV3.exportHints.pptx)}</small></button>
+      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-pdf" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.exports.buttons.exportPdf} aria-describedby="meeting-pdf-hint" onClick={startPrint}><span>{labels.exports.buttons.exportPdf}</span><small id="meeting-pdf-hint">{hint(page.pdfHint)}</small></button>
+      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-markdown" disabled={!summary} aria-label={labels.exports.buttons.exportMarkdown} aria-describedby="meeting-markdown-hint" onClick={() => download(() => { if (summary) downloadText(exportManagerSummaryMarkdown(summary, context, exportDatasetName ? { datasetName: exportDatasetName } : {}), "profitlens-manager-summary.md", MARKDOWN_MIME); })}><span>{labels.exports.buttons.exportMarkdown}</span><small id="meeting-markdown-hint">{hint(pageV3.exportHints.markdown)}</small></button>
+      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-csv" disabled={!summary} aria-label={labels.exports.downloads.channelTableCsv} aria-describedby="meeting-csv-hint" onClick={() => download(() => { if (summary) downloadText(exportChannelComparisonCsv(summary), "profitlens-channel-comparison.csv"); })}><span>{labels.exports.downloads.channelTableCsv}</span><small id="meeting-csv-hint">{hint(pageV3.exportHints.channelCsv)}</small></button>
+      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-excel" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.exports.buttons.exportExcel} aria-describedby="meeting-excel-hint" onClick={() => startExport("excel")}><span>{labels.exports.buttons.exportExcel}</span><small id="meeting-excel-hint">{hint(pageV3.exportHints.excel)}</small></button>
+      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-pptx" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.exports.buttons.exportPptx} aria-describedby="meeting-pptx-hint" onClick={() => startExport("pptx")}><span>{labels.exports.buttons.exportPptx}</span><small id="meeting-pptx-hint">{hint(pageV3.exportHints.pptx)}</small></button>
     </div>
   </details>;
 
@@ -309,7 +309,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
       {plan && <div className="meeting-scenario-result" data-testid="meeting-scenario-result" data-status={plan.status}>
         {plan.status === "stale" && <span className="ui-lozenge" data-tone="warning">{copy.staleScenarios}</span>}
         <p>{fill(summaryCopy.scenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatAmountL1(plan.baseline ?? null), contribution: formatAmountL1(plan.contribution ?? null), delta: signedL1(plan.delta ?? null) })}</p>
-        {plan.assumptions.length > 0 && <details className="meeting-scenario-assumptions"><summary>{labels.sections.scenarioAssumptions}</summary><ul>{plan.assumptions.map((text, position) => <li key={position}>{text}</li>)}</ul></details>}
+        {plan.assumptions.length > 0 && <details className="meeting-scenario-assumptions"><summary>{labels.scenarios.sections.scenarioAssumptions}</summary><ul>{plan.assumptions.map((text, position) => <li key={position}>{text}</li>)}</ul></details>}
       </div>}
     </li>;
   })}</ul>;
@@ -319,12 +319,12 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
     {/* §7.6 第 1 點、§6.3 #43／#46／#49：頁首動作列（≥ 1280 sticky 48px）。順序：標題、會議名稱、會議日期（行內編輯）、決議＋結束會議、複製週會摘要、匯出會議。 */}
     <div className="meeting-head" data-testid="review-workbench">
       <h2 id="meeting-title" className="meeting-title" data-testid="meeting-title" ref={basicsRef} tabIndex={-1}>{pageV3.title}</h2>
-      <label className="meeting-head-field meeting-head-name"><span className="sr-only">{labels.meeting.name}</span><input className="ui-field-control" maxLength={200} value={review.name} onChange={event => apply({ name: event.target.value }, "basics")} /></label>
-      <label className="meeting-head-field meeting-head-date"><span className="sr-only">{labels.meeting.date}</span><input className="ui-field-control" type="date" required value={date} onChange={event => apply({ meeting_date: event.target.value }, "basics")} /></label>
+      <label className="meeting-head-field meeting-head-name"><span className="sr-only">{labels.meeting.form.name}</span><input className="ui-field-control" maxLength={200} value={review.name} onChange={event => apply({ name: event.target.value }, "basics")} /></label>
+      <label className="meeting-head-field meeting-head-date"><span className="sr-only">{labels.meeting.form.date}</span><input className="ui-field-control" type="date" required value={date} onChange={event => apply({ meeting_date: event.target.value }, "basics")} /></label>
       <div className="meeting-head-actions">
         <div className="meeting-decision" data-testid="meeting-decision">
-          <select className="ui-field-control" aria-label={labels.meeting.decision} value={review.decision_state} onChange={event => apply({ decision_state: event.target.value as ReviewDecisionState }, "basics")}>{(Object.keys(REVIEW_DECISION_LABELS) as ReviewDecisionState[]).map(value => <option key={value} value={value}>{labels.meeting.decisions[DECISION_LABEL_KEY[value]]}</option>)}</select>
-          <button ref={finalizeRef} type="button" className="ui-btn ui-btn-primary" data-testid="meeting-finalize" disabled={historical || finalizing || confirming} aria-describedby="meeting-finalize-hint" onClick={() => { setConfirming(true); setFinalizeResult(null); }}>{labels.buttons.finalizeMeeting}</button>
+          <select className="ui-field-control" aria-label={labels.meeting.form.decision} value={review.decision_state} onChange={event => apply({ decision_state: event.target.value as ReviewDecisionState }, "basics")}>{(Object.keys(REVIEW_DECISION_LABELS) as ReviewDecisionState[]).map(value => <option key={value} value={value}>{labels.meeting.form.decisions[DECISION_LABEL_KEY[value]]}</option>)}</select>
+          <button ref={finalizeRef} type="button" className="ui-btn ui-btn-primary" data-testid="meeting-finalize" disabled={historical || finalizing || confirming} aria-describedby="meeting-finalize-hint" onClick={() => { setConfirming(true); setFinalizeResult(null); }}>{labels.meeting.buttons.finalizeMeeting}</button>
           <span className="sr-only" id="meeting-finalize-hint">{historical ? page.historicalNote : page.finalizeHint}</span>
         </div>
         {summaryContext && <>
@@ -333,7 +333,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
         </>}
         {exportMenu}
         {/* 「結束列印」只在列印模式中出現，放在下拉旁（不在下拉內）。 */}
-        {printing && <button type="button" className="ui-btn ui-btn-secondary" onClick={endPrint}>{labels.ui.managerSummary.exitPrint}</button>}
+        {printing && <button type="button" className="ui-btn ui-btn-secondary" onClick={endPrint}>{labels.meeting.managerSummary.exitPrint}</button>}
       </div>
     </div>
     {/* §6.3 #46：結束會議的確認區（非 modal 的 role=dialog、Esc 取消），在動作列下方。 */}
@@ -341,7 +341,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
       <h3 id="meeting-confirm-title" ref={confirmRef} tabIndex={-1}>{page.confirmTitle}</h3>
       <p id="meeting-confirm-body">{page.confirmBody}</p>
       {finalizeResult === "error" && <p role="alert" className="alert error" data-testid="meeting-finalize-error">{finalizeMessage}</p>}
-      <div className="button-row"><button type="button" className="ui-btn ui-btn-primary" data-testid="meeting-finalize-confirm-button" aria-disabled={finalizing || undefined} onClick={() => void confirmFinalize()}>{labels.buttons.confirm}</button><button type="button" className="ui-btn ui-btn-secondary" aria-disabled={finalizing || undefined} onClick={() => { if (!finalizing) cancelConfirm(); }}>{labels.buttons.cancel}</button></div>
+      <div className="button-row"><button type="button" className="ui-btn ui-btn-primary" data-testid="meeting-finalize-confirm-button" aria-disabled={finalizing || undefined} onClick={() => void confirmFinalize()}>{labels.shell.buttons.confirm}</button><button type="button" className="ui-btn ui-btn-secondary" aria-disabled={finalizing || undefined} onClick={() => { if (!finalizing) cancelConfirm(); }}>{labels.shell.buttons.cancel}</button></div>
     </div>}
     <div className="meeting-head-messages">
       {alertFor("basics")}
@@ -350,18 +350,18 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
     </div>
     {/* §7.6 第 3 點：固定範圍一行（13px 次要色）；範圍不同時改成 C22 橫幅（檢視差異、用目前資料更新會議）。技術細節保留。 */}
     <div className="meeting-info">
-      <p className="meeting-scope-line">{fill(copy.sourceLine, { sourceStatus: historical ? copy.sourceHistorical : copy.sourceFixed, channels: channelsLabel(scope.channels, alias) })} · {fill(pageV3.scopeLine, { previous: formatPeriodL1(scope.previous_period.start, scope.previous_period.end, { anchor: review.data_as_of }), current: formatPeriodL1(scope.current_period.start, scope.current_period.end, { anchor: review.data_as_of }), asOf: formatDateL1(review.data_as_of, { anchor: review.data_as_of }) })}{!viewDiffers && <> <button type="button" className="ui-btn ui-btn-text" onClick={refresh}>{labels.buttons.updateMeetingSource}</button></>}</p>
+      <p className="meeting-scope-line">{fill(copy.sourceLine, { sourceStatus: historical ? copy.sourceHistorical : copy.sourceFixed, channels: channelsLabel(scope.channels, alias) })} · {fill(pageV3.scopeLine, { previous: formatPeriodL1(scope.previous_period.start, scope.previous_period.end, { anchor: review.data_as_of }), current: formatPeriodL1(scope.current_period.start, scope.current_period.end, { anchor: review.data_as_of }), asOf: formatDateL1(review.data_as_of, { anchor: review.data_as_of }) })}{!viewDiffers && <> <button type="button" className="ui-btn ui-btn-text" onClick={refresh}>{labels.meeting.buttons.updateMeetingSource}</button></>}</p>
       {viewDiffers && <div className="ui-banner meeting-banner" data-testid="review-view-difference">
         <span>{pageV3.viewDifferenceBanner}</span>
         <details className="topbar-menu auto-close meeting-banner-detail"><summary className="ui-btn ui-btn-text">{pageV3.viewDifferenceToggle}</summary><div className="ui-popover meeting-banner-popover"><p>{fill(copy.viewDifference, { meetingChannels: channelsLabel(scope.channels, alias), meetingStart: scope.current_period.start, meetingEnd: scope.current_period.end, viewChannels: channelsLabel(source.snapshot.report.scope.channels, viewAlias), viewStart: source.snapshot.report.current.period.start, viewEnd: source.snapshot.report.current.period.end, datasetNote: source.snapshot.dataset_hash !== review.dataset_hash ? copy.viewDifferenceDataset : copy.viewDifferenceScope })}</p></div></details>
-        <button type="button" className="ui-btn ui-btn-text" onClick={refresh}>{labels.buttons.updateMeetingSource}</button>
+        <button type="button" className="ui-btn ui-btn-text" onClick={refresh}>{labels.meeting.buttons.updateMeetingSource}</button>
       </div>}
-      <details className="meeting-technical"><summary>{labels.sections.technicalDetails}</summary><p>{copy.refreshHint}</p></details>
+      <details className="meeting-technical"><summary>{labels.evidence.sections.technicalDetails}</summary><p>{copy.refreshHint}</p></details>
       {review.action_bindings.map(binding => {
         const action = actions.find(row => row.id === binding.action_id);
         if (!action || action.binding.context_id === binding.context_id && action.binding_revision === binding.binding_revision) return null;
         const name = action.problem || copy.actionFallback;
-        return <div className="ui-notice meeting-drift" data-tone="warning" key={binding.action_id}><p>{fill(copy.actionDrift, { problem: name })}</p><button type="button" className="ui-btn ui-btn-secondary" disabled={review.status !== "current" || action.binding.dataset_hash !== review.dataset_hash} onClick={() => { try { onChange(refreshReviewActionReferences(review, actionWorkspace, [binding.action_id])); setError(null); } catch { setError({ at: "basics", text: copy.actionDataMismatchError }); } }}>{fill(copy.refreshActionRef, { name })}</button><details><summary>{labels.sections.technicalDetails}</summary><p>action_id: {action.id} · binding_revision: {binding.binding_revision} → {action.binding_revision}</p></details></div>;
+        return <div className="ui-notice meeting-drift" data-tone="warning" key={binding.action_id}><p>{fill(copy.actionDrift, { problem: name })}</p><button type="button" className="ui-btn ui-btn-secondary" disabled={review.status !== "current" || action.binding.dataset_hash !== review.dataset_hash} onClick={() => { try { onChange(refreshReviewActionReferences(review, actionWorkspace, [binding.action_id])); setError(null); } catch { setError({ at: "basics", text: copy.actionDataMismatchError }); } }}>{fill(copy.refreshActionRef, { name })}</button><details><summary>{labels.evidence.sections.technicalDetails}</summary><p>action_id: {action.id} · binding_revision: {binding.binding_revision} → {action.binding_revision}</p></details></div>;
       })}
     </div>
 
@@ -370,7 +370,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
       <div className="meeting-main">
         {/* §7.6 第 4 點、§6.3 #44：議程 <ol>（不用圈數字，CSS counter 顯示 1–6）；1–3 是會議模式的一頁摘要（ManagerSummary agenda），4–6 在這裡。 */}
         <section className="meeting-agenda" data-testid="meeting-agenda" aria-labelledby="meeting-agenda-title">
-          <div className="meeting-agenda-head"><h2 id="meeting-agenda-title">{labels.sections.meetingAgenda}</h2><p className="meeting-agenda-note">{page.agendaNote}</p></div>
+          <div className="meeting-agenda-head"><h2 id="meeting-agenda-title">{labels.meeting.sections.meetingAgenda}</h2><p className="meeting-agenda-note">{page.agendaNote}</p></div>
           <ol className="meeting-agenda-list" data-testid={ready ? "manager-summary" : undefined}>
             {ready ? <ManagerSummary key={`${review.id}-${ready.key}`} snapshot={ready.snapshot} conversion={reviewConversion} targets={reviewTargets} decisionContext={context} selectionManaged outputs={false} decisions={false} agenda={{ kpis: record.agenda.kpis, priorities: record.agenda.priorities, channels: record.agenda.channels, channelSummary: pageV3.fullChannelTable, missingItems: ready.dataset.issues.length }} meeting={{ name: review.name, date }} reviewControls={{ importanceThreshold: review.importance_threshold, onThresholdChange: value => apply({ importance_threshold: value }, "basics") }} onEvidence={selection => onEvidence(selection, review)} onCreateAction={onCreateAction ? diagnostic => onCreateAction(diagnostic, review) : undefined} />
               : AGENDA_TITLES.slice(0, 3).map((title, index) => <AgendaItem key={title} n={index + 1} title={title}>{index > 0 ? <p className="meeting-agenda-note">{failed ? copy.sourceRebuildError : copy.rebuilding}</p> : failed ? <p role="alert">{copy.sourceRebuildError}</p> : <p role="status">{copy.rebuilding}</p>}</AgendaItem>)}
@@ -394,15 +394,15 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
 
         {/* §7.6 第 5 點：決議備註放在議程之後，下方一句限制（次要樣式，不加「注意：」）。 */}
         <div className="meeting-notes-block">
-          <label className="meeting-notes-label" htmlFor="meeting-notes-input">{labels.meeting.notes}</label>
+          <label className="meeting-notes-label" htmlFor="meeting-notes-input">{labels.meeting.form.notes}</label>
           <textarea id="meeting-notes-input" className="ui-field-control meeting-notes-input" maxLength={8000} aria-describedby="meeting-notes-hint" value={review.notes} onChange={event => apply({ notes: event.target.value }, "decision")} />
-          <p className="meeting-notes-hint" id="meeting-notes-hint">{labels.meeting.decisionNote}</p>
+          <p className="meeting-notes-hint" id="meeting-notes-hint">{labels.meeting.form.decisionNote}</p>
           {alertFor("decision")}
         </div>
 
         {/* §7.6 第 6 點、§6.3 #47：與上次會議比較，預設收合（內容保持掛載）。 */}
         <details className="meeting-compare" data-testid="meeting-compare">
-          <summary className="meeting-compare-summary"><h2 id="meeting-compare-title">{labels.sections.meetingCompare}</h2></summary>
+          <summary className="meeting-compare-summary"><h2 id="meeting-compare-title">{labels.meeting.sections.meetingCompare}</h2></summary>
           {comparison ? <MeetingCompare comparison={comparison} /> : <p className="meeting-agenda-note">{failed ? copy.sourceRebuildError : copy.rebuilding}</p>}
         </details>
 
@@ -443,7 +443,7 @@ function AgendaToc({ version }: { version: string }) {
 function FollowUp({ name, date, decisions, actions, testId }: { name: string; date: string; decisions: readonly MeetingDecision[]; actions: readonly MeetingActionFollowUp[]; testId: string }) {
   return <div className="meeting-followup" data-testid={testId}>
     <p>{fill(record.mdLastMeeting, { name, date })}</p>
-    <ul className="meeting-decisions">{decisions.map((row, index) => <li key={index}>{page.lastDecision}：{decisionText(row)}{row.notes && <> · {labels.meeting.notes}：{row.notes}</>}</li>)}</ul>
+    <ul className="meeting-decisions">{decisions.map((row, index) => <li key={index}>{page.lastDecision}：{decisionText(row)}{row.notes && <> · {labels.meeting.form.notes}：{row.notes}</>}</li>)}</ul>
     {actions.length ? <FollowUpTable rows={actions} /> : <p className="note">{page.noLastPinned}</p>}
   </div>;
 }
@@ -470,8 +470,8 @@ function MeetingCompare({ comparison }: { comparison: MeetingComparison }) {
   </div>;
 }
 function PriorityList({ rows }: { rows: readonly MeetingPriority[] }) {
-  if (!rows.length) return <p className="note">{labels.notes.noPriorities}</p>;
-  return <ul>{rows.map((row, index) => <li key={row.rule}>{fill(page.priorityRow, { n: index + 1, headline: row.headline, scope: row.scope, impact: labels.sections.impact, amount: signedL1(row.impact) })}</li>)}</ul>;
+  if (!rows.length) return <p className="note">{labels.overview.notes.noPriorities}</p>;
+  return <ul>{rows.map((row, index) => <li key={row.rule}>{fill(page.priorityRow, { n: index + 1, headline: row.headline, scope: row.scope, impact: labels.overview.sections.impact, amount: signedL1(row.impact) })}</li>)}</ul>;
 }
 /** 歷史項目展開時的上次追蹤：結束當時凍結的 meeting.follow_up（比較方式、說明、KPI、上次決議、待辦狀態）。 */
 function FrozenFollowUp({ follow, title }: { follow: MeetingFollowUp; title: string }) {
@@ -480,7 +480,7 @@ function FrozenFollowUp({ follow, title }: { follow: MeetingFollowUp; title: str
     <p className="meeting-compare-head"><span className="tag">{fill(page.compareKind, { kind: record.kinds[follow.kind] })}</span> {fill(record.mdLastMeeting, { name: follow.last_name, date: follow.last_date })}</p>
     <p>{follow.note}</p>
     {follow.kpis.length > 0 && <KpiCompareTable rows={follow.kpis} testId="meeting-history-kpis" ariaLabel={`${page.compareKpiAria} · ${title}`} />}
-    <ul className="meeting-decisions">{follow.last_decisions.map((row, index) => <li key={index}>{page.lastDecision}：{decisionText(row)}{row.notes && <> · {labels.meeting.notes}：{row.notes}</>}</li>)}</ul>
+    <ul className="meeting-decisions">{follow.last_decisions.map((row, index) => <li key={index}>{page.lastDecision}：{decisionText(row)}{row.notes && <> · {labels.meeting.form.notes}：{row.notes}</>}</li>)}</ul>
     {follow.actions.length ? <FollowUpTable rows={follow.actions} /> : <p className="note">{page.noLastPinned}</p>}
   </div>;
 }
@@ -518,12 +518,12 @@ export function MeetingHistory({ history, onRemove, datasetNameFor }: { history:
         <h3>{page.historyActions}</h3>{meeting.agenda.pinned_actions.length ? <ul>{meeting.agenda.pinned_actions.map(row => <li key={row.action_id}>{fill(page.historyActionRow, { problem: row.problem || copy.actionFallback, status: EXECUTION_LABELS[row.execution_status] })}</li>)}</ul> : <p className="note">{record.noPinnedActions}</p>}
         <h3>{page.historyFollowUp}</h3><FrozenFollowUp follow={meeting.follow_up} title={title} />
       </details><div className="meeting-history-buttons">
-        <button type="button" className="button quiet" aria-label={`${labels.buttons.exportMarkdown} · ${title}`} onClick={() => downloadMeetingMarkdown(meeting, datasetNameFor?.(meeting))}>{labels.buttons.exportMarkdown}</button>
+        <button type="button" className="button quiet" aria-label={`${labels.exports.buttons.exportMarkdown} · ${title}`} onClick={() => downloadMeetingMarkdown(meeting, datasetNameFor?.(meeting))}>{labels.exports.buttons.exportMarkdown}</button>
         {onRemove && <button type="button" className="button quiet" data-testid={`meeting-history-remove-${meeting.id}`} aria-label={`${page.removeMeeting} · ${title}`} aria-expanded={pending === meeting.id} onClick={event => { trigger.current = event.currentTarget; setPending(meeting.id); }}>{page.removeMeeting}</button>}
       </div>
       {onRemove && pending === meeting.id && <div className="meeting-history-remove" role="group" aria-labelledby={warningId} data-testid="meeting-history-remove-confirm-region" onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); cancel(); } }}>
         <p id={warningId} ref={warningRef} tabIndex={-1}>{page.removeWarning}</p>
-        <div className="button-row"><button type="button" className="button primary" data-testid="meeting-history-remove-confirm" onClick={() => confirm(meeting)}>{page.removeConfirm}</button><button type="button" className="button quiet" onClick={cancel}>{labels.buttons.cancel}</button></div>
+        <div className="button-row"><button type="button" className="button primary" data-testid="meeting-history-remove-confirm" onClick={() => confirm(meeting)}>{page.removeConfirm}</button><button type="button" className="button quiet" onClick={cancel}>{labels.shell.buttons.cancel}</button></div>
       </div>}</li>;
     })}</ul></> : <div className="ui-empty-block meeting-history-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingHistoryTitle}</p><p>{labels.empty.stateV3.meetingHistoryBody}</p></div>}
   </section>;

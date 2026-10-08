@@ -9,15 +9,15 @@ import { resolve } from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
 
 // R2: every user-visible string comes from the label dictionary; compose text the same way the components do.
-const ai = labels.ui.aiPanel;
-const aiReason = (reason: string) => labels.ui.aiClient.reasons[reason as keyof typeof labels.ui.aiClient.reasons];
-const cmLabel = labels.metrics.contribution_after_marketing.label;
+const ai = labels.shell.ai.panel;
+const aiReason = (reason: string) => labels.shell.ai.client.reasons[reason as keyof typeof labels.shell.ai.client.reasons];
+const cmLabel = labels.metrics.contribution_after_marketing.headline;
 /** grounding.ts observationCatalog: a live observation must match the catalog template byte-for-byte, so build it from the same labels. */
-const grounding = labels.ui.grounding;
-const valueObservation = (period: "previous" | "current", metricLabel: string, token: string) => fill(grounding.observationValue, { subject: fill(grounding.subject, { period: period === "previous" ? labels.periods.previous : labels.periods.current, metric: metricLabel }), value: token });
+const grounding = labels.shell.ai.grounding;
+const valueObservation = (period: "previous" | "current", metricLabel: string, token: string) => fill(grounding.observationValue, { subject: fill(grounding.subject, { period: period === "previous" ? labels.shell.periods.previous : labels.shell.periods.current, metric: metricLabel }), value: token });
 /** dashboard.tsx periodFieldLabel: the sr-only date labels drop the "→ 範例" tail of the template. */
-const periodFieldLabel = (edge: "start" | "end", period: string) => fill((edge === "start" ? labels.ui.dashboard.filter.periodStart : labels.ui.dashboard.filter.periodEnd).split(" → ")[0], { period });
-const evidenceDialogName = (title: string) => `${title} · ${labels.sections.evidence}`;
+const periodFieldLabel = (edge: "start" | "end", period: string) => fill((edge === "start" ? labels.shell.periodBar.filter.periodStart : labels.shell.periodBar.filter.periodEnd).split(" → ")[0], { period });
+const evidenceDialogName = (title: string) => `${title} · ${labels.evidence.sections.evidence}`;
 
 // These HTTP interceptions are browser-only test mocks. They do not call a model
 // and never establish that the configured live provider integration works.
@@ -70,15 +70,15 @@ const mode = (page: Page) => page.getByTestId("ai-mode");
 const consent = (page: Page) => panel(page).getByLabel(ai.consentLabel, { exact: true });
 const send = (page: Page) => panel(page).getByRole("button", { name: ai.sendButton, exact: true });
 const workspaceStatus = (page: Page) => page.getByTestId("workspace-status");
-// V3-2a：labels.status.ready 改為「資料到 {date}」，日期取該資料集 manifest 的 data_as_of（不在測試裡寫死）。
+// V3-2a：labels.shell.status.ready 改為「資料到 {date}」，日期取該資料集 manifest 的 data_as_of（不在測試裡寫死）。
 const dataAsOf = async (id: string) => (JSON.parse(await readFile(resolve(`fixtures/${id}/manifest.json`), "utf8")) as { data_as_of: string }).data_as_of;
-const ready = async (id: string) => fill(labels.status.ready, { date: await dataAsOf(id) });
+const ready = async (id: string) => fill(labels.shell.status.ready, { date: await dataAsOf(id) });
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 
 /** V3-3：通路選單在期間列裡；手機期間列收成 period-toggle，先開底部面板、選完按「完成」收起（桌機不動）。 */
 async function selectChannel(page: Page, channel: string) {
   await openPeriodSheet(page);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
+  await page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true }).selectOption(channel);
   // V3-3 的期間摘要（period-summary）title／sr-only 帶已套用的通路；等它出現新通路，才算這次篩選真的套用完成
   // （workspace-status 的 ready 文字不含通路，連續切兩次時可能還沒套用第一次就切第二次，工作區 revision 不會前進）。
   await expect(page.getByTestId("period-summary")).toHaveAttribute("title", new RegExp(channelLabelFor(page, channel)));
@@ -87,7 +87,7 @@ async function selectChannel(page: Page, channel: string) {
 }
 /** 期間摘要裡的通路名稱：示範資料套 alias（官網 · DTC），golden 等其他資料集用原始代碼；取正規式安全的字串。 */
 function channelLabelFor(page: Page, channel: string): string {
-  const alias = (labels.demoChannelAlias as Record<string, string>)[channel];
+  const alias = (labels.data.demoChannelAlias as Record<string, string>)[channel];
   const demo = page.url().includes("demo") ? alias : undefined;
   return (demo ?? channel).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -101,10 +101,10 @@ async function showAi(page: Page) {
 }
 async function loadDataset(page: Page, id = "golden", channel = "DTC") {
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(id);
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
   await Promise.all([
     page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.ok()),
-    clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true })),
+    clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true })),
   ]);
   await expect(workspaceStatus(page)).toContainText(await ready(id));
   await selectChannel(page, channel);
@@ -256,10 +256,10 @@ test("真實本機未啟用端點 GET／POST 降級，未同意不傳送，核�
   const card = page.getByTestId("scenario-1");
   await card.getByTestId("scenario-preset").selectOption("keep");
   await card.getByTestId("scenario-preset-apply").click();
-  for (const label of [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label]) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
+  for (const label of [labels.scenarios.inputs.volume.label, labels.scenarios.inputs.discount.label, labels.scenarios.inputs.fulfillmentUnit.label, labels.scenarios.inputs.adSpend.label, labels.scenarios.inputs.oneOff.label]) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
   // V3-6（D-V3-12＝B）：新工作區第一次勾聲明；勾完勾選框換成「已了解」說明、焦點到「試算」（helper 說明為何不用 check()）。
   await acceptScenarioAssumptions(card, "first");
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   // V3-2b：試算結果大字是 L1。
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("270.00"));
 });
@@ -314,7 +314,7 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   await expect(dialog).toBeVisible();
   // V3-2b（§7.8）：抽屜標題下的大數字是 L1，下一行永遠是到分的精確值（L3＋「元」）。
   await expect(dialog.locator("p.number")).toHaveText(formatAmountL1("270.00"));
-  await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatAmountL3("270.00") }));
+  await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(fill(labels.format.units.yuan, { value: formatAmountL3("270.00") }));
   // Golden dataset keeps the raw channel name (demo alias applies only to synthetic-demo).
   // V3-5（§7.8）：範圍行改為標題下的副標「{範圍} · {期間}（· 通路：…）」，期間是 formatPeriodL1（M/D），與報表本期相同時前綴「本期」；
   // 期待值由抽屜同一支 evidenceSubtitle 以 golden manifest（data_as_of、channels、上期／本期）組出，範圍是 AI 引用證據的 scopeLabel。
@@ -336,7 +336,7 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   const empty = page.getByTestId("actions-empty");
   await expect(empty.getByRole("heading", { level: 2 })).toHaveText(labels.actions.pageV3.emptyTitle);
   await expect(empty).toContainText(labels.actions.pageV3.emptyBody);
-  await expect(empty.getByTestId("actions-empty-add")).toHaveText(labels.buttons.addAction);
+  await expect(empty.getByTestId("actions-empty-add")).toHaveText(labels.actions.buttons.addAction);
   await expect(page.getByTestId("action-board")).toHaveCount(0);
 });
 
@@ -411,10 +411,10 @@ test("MOCK：不可信原檔與通路／SKU名稱只留本機，不能進預覽�
   await expect(page.getByTestId("import-reconciliation")).toContainText(`${rawMarker}-sales_daily.csv`);
   await commitWizard(page);
   // 匯入的 manifest 沿用 golden 的 data_as_of。
-  await expect(workspaceStatus(page)).toContainText(fill(labels.status.ready, { date: String(original.data_as_of) }));
+  await expect(workspaceStatus(page)).toContainText(fill(labels.shell.status.ready, { date: String(original.data_as_of) }));
   await dismissSavePrompt(page);
   await selectChannel(page, channel);
-  await expect(workspaceStatus(page)).toContainText(fill(labels.status.ready, { date: String(original.data_as_of) }));
+  await expect(workspaceStatus(page)).toContainText(fill(labels.shell.status.ready, { date: String(original.data_as_of) }));
   await showAi(page);
   await expect(page.getByTestId("ai-local-mapping")).toContainText(channel);
   const approved = await preview(page);
@@ -471,12 +471,12 @@ for (const change of ["channel", "dataset", "period"] as const) {
       await loadDataset(page, "demo");
       await loadDataset(page, "golden");
     } else {
-      const dateLabels = [periodFieldLabel("start", labels.periods.previous), periodFieldLabel("end", labels.periods.previous), periodFieldLabel("start", labels.periods.current), periodFieldLabel("end", labels.periods.current)];
+      const dateLabels = [periodFieldLabel("start", labels.shell.periods.previous), periodFieldLabel("end", labels.shell.periods.previous), periodFieldLabel("start", labels.shell.periods.current), periodFieldLabel("end", labels.shell.periods.current)];
       for (const values of [["2026-06-01", "2026-06-01", "2026-07-13", "2026-07-13"], ["2026-06-01", "2026-07-12", "2026-07-13", "2026-08-23"]]) {
         // V3-3：日期欄在「自訂期間」popover（手機：期間底部面板）裡，開了才填得到；改日期仍要按面板裡的「套用」。
         const custom = await openCustomPeriod(page);
         for (const [index, label] of dateLabels.entries()) await custom.getByLabel(label, { exact: true }).fill(values[index]);
-        await custom.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+        await custom.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
         await expect(page.getByTestId(isMobile(page) ? "period-toggle" : "period-custom")).toHaveAttribute("aria-expanded", "false");
         await expect(page.getByTestId("period-bar")).not.toHaveAttribute("aria-busy", "true");
         await expect(workspaceStatus(page)).toContainText(await ready("demo"));
@@ -532,12 +532,12 @@ test("MOCK：成功回應與同意不持久化，不跨分頁、重整或重新�
   await expect(send(page)).toBeDisabled();
   const other = await context.newPage();
   await other.goto("/");
-  await expect(workspaceStatus(other)).toContainText(labels.status.empty);
+  await expect(workspaceStatus(other)).toContainText(labels.shell.status.empty);
   await expect(other.getByTestId("ai-live-result")).toHaveCount(0);
   await other.close();
   expectedBeforeUnload.add(page);
   await page.reload();
   expect(browserAudit.filter(event => event.kind === "unsaved-changes-warning")).toEqual([{ kind: "unsaved-changes-warning", type: "beforeunload" }]);
-  await expect(workspaceStatus(page)).toContainText(labels.status.empty);
+  await expect(workspaceStatus(page)).toContainText(labels.shell.status.empty);
   await expect(page.getByTestId("ai-live-result")).toHaveCount(0);
 });

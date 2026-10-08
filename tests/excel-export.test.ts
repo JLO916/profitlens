@@ -16,7 +16,7 @@ import { formatPeriodExport, MINUS } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
 import { fill, labels } from "@/i18n";
 
-const copy = labels.excelExport;
+const copy = labels.exports.excel;
 const SHEET_KEYS = ["summary", "channels", "bridge", "products", "actions", "basis"] as const;
 /** V3-9b（D-V3-8、PRD §9.6）：六張既有工作表之後多一張管理損益表；待辦工作表最後多一欄廣告決策（F13）。 */
 const SHEET_NAMES = [...SHEET_KEYS.map(key => copy.sheets[key]), labels.exports.variantsV3.pnlSheet];
@@ -62,7 +62,7 @@ const MONEY_COLUMNS: { [S in keyof typeof copy.columns]?: readonly (keyof typeof
   bridge: ["previous", "current", "impact"],
   products: ["previous_net_revenue", "current_net_revenue", "previous_gross_profit", "current_gross_profit", "gross_profit_change"],
 };
-const moneyHeader = (label: string) => fill(labels.ui.export.moneyColumn, { label });
+const moneyHeader = (label: string) => fill(labels.exports.common.moneyColumn, { label });
 const col = Object.fromEntries(Object.entries(copy.columns).map(([sheet, columns]) => [sheet, Object.fromEntries(Object.entries(columns).map(([key, label]) => [key, (MONEY_COLUMNS[sheet as keyof typeof copy.columns] as readonly string[] | undefined)?.includes(key) ? moneyHeader(label) : label]))])) as { [S in keyof typeof copy.columns]: Record<keyof typeof copy.columns[S], string> };
 
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
@@ -81,9 +81,9 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
       for (const row of sheet.rows) expect(row, key).toHaveLength(sheet.header.length);
     }
     // 03 §6：Excel 用新名稱；拆解表與畫面同名，欄名沿用既有指標字串。
-    expect(copy.sheets.bridge).toBe(labels.sections.bridge);
-    expect(copy.columns.channels.previous_net_revenue).toBe(`${labels.periods.previous}${labels.metrics.net_revenue.label}`);
-    expect(col.channels.previous_net_revenue).toBe(moneyHeader(`${labels.periods.previous}${labels.metrics.net_revenue.label}`));
+    expect(copy.sheets.bridge).toBe(labels.overview.sections.bridge);
+    expect(copy.columns.channels.previous_net_revenue).toBe(`${labels.shell.periods.previous}${labels.metrics.net_revenue.headline}`);
+    expect(col.channels.previous_net_revenue).toBe(moneyHeader(`${labels.shell.periods.previous}${labels.metrics.net_revenue.headline}`));
     // V3-2b §3.3：摘要與通路表是 L2（整數元），拆解與商品明細是 L3（到分）。
     expect(sheetOf(workbook, "summary").formats).toEqual([null, null, null, "money_l2", "money_l2", "money_l2", "money_l2", null]);
     expect(sheetOf(workbook, "channels").formats!.filter(Boolean)).toEqual(Array(6).fill("money_l2"));
@@ -97,17 +97,17 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const s = copy.summary;
     const scope = rows.filter(row => row[col.summary.section] === s.sections.scope);
     expect(scope.map(row => [row[col.summary.item], row[col.summary.detail]])).toEqual([
-      [s.items.dataset, "golden-v1"], [s.items.source, labels.status.demo], [s.items.asOf, "2026-08-03"],
+      [s.items.dataset, "golden-v1"], [s.items.source, labels.shell.status.demo], [s.items.asOf, "2026-08-03"],
       // V3-2b §8.6：版頭期間「YYYY-MM-DD 至 YYYY-MM-DD（天數）」。
       [s.items.previous, formatPeriodExport("2026-08-01", "2026-08-01")],
-      [s.items.current, fill(labels.units.exportRange, { start: "2026-08-02", end: "2026-08-02", days: 1 })],
-      [s.items.comparison, labels.periods.sameDays], [s.items.channels, "DTC、MARKETPLACE"],
+      [s.items.current, fill(labels.format.units.exportRange, { start: "2026-08-02", end: "2026-08-02", days: 1 })],
+      [s.items.comparison, labels.shell.periods.sameDays], [s.items.channels, "DTC、MARKETPLACE"],
     ]);
-    const revenue = rows.find(row => row[col.summary.section] === s.sections.keyDeltas && row[col.summary.item] === labels.metrics.net_revenue.label)!;
+    const revenue = rows.find(row => row[col.summary.section] === s.sections.keyDeltas && row[col.summary.item] === labels.metrics.net_revenue.headline)!;
     expect([revenue[col.summary.previous], revenue[col.summary.current], revenue[col.summary.change]]).toEqual([Number(gold.previous.net_revenue), Number(gold.current.net_revenue), 220]);
-    expect(revenue[col.summary.scope]).toBe(`${labels.sections.total}（DTC、MARKETPLACE）`);
+    expect(revenue[col.summary.scope]).toBe(`${labels.overview.sections.total}（DTC、MARKETPLACE）`);
     expect(revenue[col.summary.detail]).toBeNull();
-    const contribution = rows.find(row => row[col.summary.item] === labels.metrics.contribution_after_marketing.label)!;
+    const contribution = rows.find(row => row[col.summary.item] === labels.metrics.contribution_after_marketing.headline)!;
     expect([contribution[col.summary.previous], contribution[col.summary.current], contribution[col.summary.change]]).toEqual([570, 255, -315]);
     const three = rows.filter(row => row[col.summary.section] === s.sections.topThree);
     expect(three).toHaveLength(input.summary.priorities.length);
@@ -126,7 +126,7 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const input = await golden();
     const meetingRows = (decision: string) => records(sheetOf(buildExcelWorkbook({ ...input, meeting: { name: "=週會", date: "2026-10-03", decision, notes: "@全員 <script>" } }), "summary"))
       .filter(row => row[col.summary.section] === copy.summary.sections.meeting).map(row => [row[col.summary.item], row[col.summary.detail]]);
-    expect(meetingRows("adopted")).toEqual([[copy.summary.items.meetingName, "=週會"], [copy.summary.items.meetingDate, "2026-10-03"], [copy.summary.items.decision, labels.meeting.decisions.adopted], [copy.summary.items.notes, "@全員 <script>"]]);
+    expect(meetingRows("adopted")).toEqual([[copy.summary.items.meetingName, "=週會"], [copy.summary.items.meetingDate, "2026-10-03"], [copy.summary.items.decision, labels.meeting.form.decisions.adopted], [copy.summary.items.notes, "@全員 <script>"]]);
     expect(meetingRows("constructor")[2][1]).toBe("constructor");
     expect(meetingRows("自訂決議")[2][1]).toBe("自訂決議");
     expect(records(sheetOf(buildExcelWorkbook({ ...input, meeting: null }), "summary")).some(row => row[col.summary.section] === copy.summary.sections.meeting)).toBe(false);
@@ -138,11 +138,11 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     expect(rows).toHaveLength(input.summary.channels.length + 1);
     const pick = (row: Record<string, unknown>) => [row[col.channels.channel], row[col.channels.previous_net_revenue], row[col.channels.current_net_revenue], row[col.channels.net_revenue_change], row[col.channels.previous_contribution], row[col.channels.current_contribution], row[col.channels.contribution_change], row[col.channels.data_status]];
     // 手算：DTC 上期 900+450、本期 1120+360；MARKETPLACE 上期 540+360、本期 640+350。
-    const ready = fill(labels.status.ready, { date: input.summary.data_as_of });
+    const ready = fill(labels.shell.status.ready, { date: input.summary.data_as_of });
     expect(rows.map(pick)).toEqual([
       ["DTC", 1350, 1480, 130, 400, 270, -130, ready],
       ["MARKETPLACE", 900, 990, 90, 170, -15, -185, ready],
-      [labels.sections.total, 2250, 2470, 220, 570, 255, -315, ready],
+      [labels.overview.sections.total, 2250, 2470, 220, 570, 255, -315, ready],
     ]);
   });
 
@@ -152,16 +152,16 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const rows = records(sheet);
     const gold = expected("golden").bridge as Record<string, string>;
     expect(rows).toHaveLength(11);
-    expect(rows[0]).toMatchObject({ [col.bridge.item]: labels.metrics.contribution_after_marketing.label, [col.bridge.previous]: 570, [col.bridge.current]: 255, [col.bridge.impact]: -315 });
+    expect(rows[0]).toMatchObject({ [col.bridge.item]: labels.metrics.contribution_after_marketing.headline, [col.bridge.previous]: 570, [col.bridge.current]: 255, [col.bridge.impact]: -315 });
     const components = rows.slice(1, 10);
-    expect(components.map(row => row[col.bridge.item])).toEqual(["gross_sales", "discounts", "refunds", "cogs_net", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "ad_spend"].map(field => labels.metrics[field as keyof typeof labels.metrics].label));
+    expect(components.map(row => row[col.bridge.item])).toEqual(["gross_sales", "discounts", "refunds", "cogs_net", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "ad_spend"].map(field => labels.metrics[field as keyof typeof labels.metrics].headline));
     expect(components.map(row => row[col.bridge.impact])).toEqual(["gross_sales", "discounts", "refunds", "cogs_net", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "ad_spend"].map(field => Number(gold[field])));
     const total = components.reduce((sum, row) => sum + cents(row[col.bridge.impact] as number), 0n);
     expect(total).toBe(-31500n);
     expect(total).toBe(parseCents(input.snapshot.report.bridge.sum.value));
-    expect(rows[1][col.bridge.formula]).toBe(labels.ui.overview.amountDeltaFormula);
-    expect(rows[2][col.bridge.formula]).toBe(labels.ui.overview.costDeltaFormula);
-    expect(rows[10]).toMatchObject({ [col.bridge.item]: labels.ui.export.bridgeSumLabel, [col.bridge.previous]: null, [col.bridge.current]: null, [col.bridge.impact]: Number(gold.sum), [col.bridge.formula]: labels.ui.overview.bridgeReconciled });
+    expect(rows[1][col.bridge.formula]).toBe(labels.overview.page.amountDeltaFormula);
+    expect(rows[2][col.bridge.formula]).toBe(labels.overview.page.costDeltaFormula);
+    expect(rows[10]).toMatchObject({ [col.bridge.item]: labels.exports.common.bridgeSumLabel, [col.bridge.previous]: null, [col.bridge.current]: null, [col.bridge.impact]: Number(gold.sum), [col.bridge.formula]: labels.overview.page.bridgeReconciled });
   });
 
   it("products: one row per compareProducts row, hand-computed golden values, ratio as a decimal", async () => {
@@ -170,10 +170,10 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     expect(rows).toHaveLength(input.products!.length);
     const c = col.products;
     expect(rows.map(row => [row[c.channel], row[c.sku], row[c.category], row[c.current_units], row[c.previous_net_revenue], row[c.current_net_revenue], row[c.previous_gross_profit], row[c.current_gross_profit], row[c.gross_profit_change], row[c.data_status]])).toEqual([
-      ["DTC", "A", "HOME", 3, 900, 1120, 500, 540, 40, labels.productHighlights.status.both],
-      ["DTC", "B", "CARE", 1, 450, 360, 250, 200, -50, labels.productHighlights.status.both],
-      ["MARKETPLACE", "A", "HOME", 3, 540, 640, 270, 280, 10, labels.productHighlights.status.both],
-      ["MARKETPLACE", "B", "CARE", 1, 360, 350, 180, 125, -55, labels.productHighlights.status.both],
+      ["DTC", "A", "HOME", 3, 900, 1120, 500, 540, 40, labels.products.highlights.status.both],
+      ["DTC", "B", "CARE", 1, 450, 360, 250, 200, -50, labels.products.highlights.status.both],
+      ["MARKETPLACE", "A", "HOME", 3, 540, 640, 270, 280, 10, labels.products.highlights.status.both],
+      ["MARKETPLACE", "B", "CARE", 1, 360, 350, 180, 125, -55, labels.products.highlights.status.both],
     ]);
     // 540 ÷ 1120、200 ÷ 360、280 ÷ 640、125 ÷ 350（12 位小數字串轉小數，不是百分比）。
     expect(rows.map(row => row[c.current_gross_margin])).toEqual([0.482142857143, 0.555555555556, 0.4375, 0.357142857143]);
@@ -186,7 +186,7 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const rows = records(sheetOf(buildExcelWorkbook({ summary: buildManagerSummary(changed.snapshot), ...changed, actions: emptyActionWorkspace(), products: compareProducts(changed.dataset, changed.snapshot.report.scope).rows }), "products"));
     const c = col.products;
     const status = Object.fromEntries(rows.map(row => [`${row[c.channel]}/${row[c.sku]}`, row[c.data_status]]));
-    expect(status).toEqual({ "DTC/A": labels.productHighlights.status.both, "DTC/B": labels.productHighlights.status.current_only, "MARKETPLACE/A": labels.productHighlights.status.both, "MARKETPLACE/B": labels.productHighlights.status.previous_only });
+    expect(status).toEqual({ "DTC/A": labels.products.highlights.status.both, "DTC/B": labels.products.highlights.status.current_only, "MARKETPLACE/A": labels.products.highlights.status.both, "MARKETPLACE/B": labels.products.highlights.status.previous_only });
     // 本期沒有銷售列（已確認完整）：件數與淨營收為 0，毛利率分母為 0 → 空格。
     const gone = rows.find(row => row[c.channel] === "MARKETPLACE" && row[c.sku] === "B")!;
     expect([gone[c.current_units], gone[c.current_net_revenue], gone[c.current_gross_margin], gone[c.gross_profit_change]]).toEqual([0, 0, null, -180]);
@@ -195,16 +195,16 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const missingSummary = buildManagerSummary(missing.snapshot);
     const workbook = buildExcelWorkbook({ summary: missingSummary, ...missing, actions: emptyActionWorkspace(), products: compareProducts(missing.dataset, missing.snapshot.report.scope).rows });
     const dtcA = records(sheetOf(workbook, "products")).find(row => row[c.channel] === "DTC" && row[c.sku] === "A")!;
-    expect([dtcA[c.current_net_revenue], dtcA[c.current_gross_profit], dtcA[c.current_gross_margin], dtcA[c.gross_profit_change], dtcA[c.data_status]]).toEqual([1120, null, null, null, labels.productHighlights.status.cost_unknown]);
+    expect([dtcA[c.current_net_revenue], dtcA[c.current_gross_profit], dtcA[c.current_gross_margin], dtcA[c.gross_profit_change], dtcA[c.data_status]]).toEqual([1120, null, null, null, labels.products.highlights.status.cost_unknown]);
     const channelRows = records(sheetOf(workbook, "channels"));
-    expect(channelRows.find(row => row[col.channels.channel] === "DTC")![col.channels.data_status]).toBe(labels.status.partial);
-    expect(channelRows.find(row => row[col.channels.channel] === "MARKETPLACE")![col.channels.data_status]).toBe(fill(labels.status.ready, { date: missingSummary.data_as_of }));
-    const contribution = records(sheetOf(workbook, "summary")).find(row => row[col.summary.item] === labels.metrics.contribution_after_marketing.label)!;
+    expect(channelRows.find(row => row[col.channels.channel] === "DTC")![col.channels.data_status]).toBe(labels.shell.status.partial);
+    expect(channelRows.find(row => row[col.channels.channel] === "MARKETPLACE")![col.channels.data_status]).toBe(fill(labels.shell.status.ready, { date: missingSummary.data_as_of }));
+    const contribution = records(sheetOf(workbook, "summary")).find(row => row[col.summary.item] === labels.metrics.contribution_after_marketing.headline)!;
     expect(contribution[col.summary.current]).toBeNull();
-    expect(contribution[col.summary.detail]).toBe(fill(labels.ui.managerSummary.missingWithReasons, { reasons: "MISSING_COGS" }));
+    expect(contribution[col.summary.detail]).toBe(fill(labels.meeting.managerSummary.missingWithReasons, { reasons: "MISSING_COGS" }));
     const bridge = records(sheetOf(workbook, "bridge"));
-    expect(bridge.find(row => row[col.bridge.item] === labels.metrics.cogs_net.label)![col.bridge.impact]).toBeNull();
-    expect(bridge[10]).toMatchObject({ [col.bridge.impact]: null, [col.bridge.formula]: labels.status.missing });
+    expect(bridge.find(row => row[col.bridge.item] === labels.metrics.cogs_net.headline)![col.bridge.impact]).toBeNull();
+    expect(bridge[10]).toMatchObject({ [col.bridge.impact]: null, [col.bridge.formula]: labels.shell.status.missing });
   });
 
   it("actions: one row per action in priority order; status, pinned and scope text come from labels", async () => {
@@ -212,8 +212,8 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const rows = records(sheetOf(buildExcelWorkbook(input), "actions"));
     const c = col.actions;
     expect(rows).toEqual([
-      { [c.priority]: 1, [c.problem]: HTML, [c.step]: input.diagnosticStep, [c.owner]: labels.actionBoard.unassigned, [c.due]: labels.actionBoard.noDeadline, [c.status]: labels.actions.statuses.done, [c.status_updated_at]: "2026-10-03", [c.pinned]: copy.actions.pinned, [c.evidence_count]: input.diagnosticFacts, [c.scope]: input.diagnosticScope, [c.caution]: null, [AD_DECISION]: null },
-      { [c.priority]: 2, [c.problem]: HYPERLINK, [c.step]: "+加碼廣告", [c.owner]: "@行銷", [c.due]: "2026-10-10", [c.status]: labels.actions.statuses.not_started, [c.status_updated_at]: null, [c.pinned]: copy.actions.notPinned, [c.evidence_count]: 0, [c.scope]: `${labels.sections.total}（DTC、MARKETPLACE）`, [c.caution]: null, [AD_DECISION]: null },
+      { [c.priority]: 1, [c.problem]: HTML, [c.step]: input.diagnosticStep, [c.owner]: labels.actions.board.unassigned, [c.due]: labels.actions.board.noDeadline, [c.status]: labels.actions.form.statuses.done, [c.status_updated_at]: "2026-10-03", [c.pinned]: copy.actions.pinned, [c.evidence_count]: input.diagnosticFacts, [c.scope]: input.diagnosticScope, [c.caution]: null, [AD_DECISION]: null },
+      { [c.priority]: 2, [c.problem]: HYPERLINK, [c.step]: "+加碼廣告", [c.owner]: "@行銷", [c.due]: "2026-10-10", [c.status]: labels.actions.form.statuses.not_started, [c.status_updated_at]: null, [c.pinned]: copy.actions.notPinned, [c.evidence_count]: 0, [c.scope]: `${labels.overview.sections.total}（DTC、MARKETPLACE）`, [c.caution]: null, [AD_DECISION]: null },
     ]);
     expect(input.diagnosticFacts).toBeGreaterThan(0);
   });
@@ -222,14 +222,14 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const input = await golden();
     const older = { ...input.actions, active_dataset_hash: "another-dataset" };
     const rows = records(sheetOf(buildExcelWorkbook({ ...input, actions: older }), "actions"));
-    expect(rows.map(row => row[col.actions.caution])).toEqual([labels.actions.staleBadge, labels.actions.staleBadge]);
+    expect(rows.map(row => row[col.actions.caution])).toEqual([labels.actions.form.staleBadge, labels.actions.form.staleBadge]);
   });
 
   it("basis: every basis item, the alias note, the tax-conversion sentence and the technical versions", async () => {
     const input = await golden();
     const rows = records(sheetOf(buildExcelWorkbook(input), "basis"));
     const b = copy.basis;
-    expect(rows.filter(row => row[col.basis.section] === b.sections.basis && row[col.basis.item] === null).map(row => row[col.basis.detail])).toEqual([...labels.basis.items]);
+    expect(rows.filter(row => row[col.basis.section] === b.sections.basis && row[col.basis.item] === null).map(row => row[col.basis.detail])).toEqual([...labels.glossary.basis.items]);
     expect(rows.some(row => row[col.basis.section] === b.sections.preprocessing)).toBe(false);
     const technical = Object.fromEntries(rows.filter(row => row[col.basis.section] === b.sections.technical).map(row => [row[col.basis.item], row[col.basis.detail]]));
     // V3-9a F12：損益兩平 MER 的版本列接在輔助指標版本之後（D-V3-17＝C，獨立版本 breakeven-mer-v1）。
@@ -406,7 +406,7 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
     expect(actions.map(row => row[col.actions.step])[1]).toBe("'+加碼廣告");
     expect(actions.map(row => row[col.actions.owner])[1]).toBe("'@行銷");
     const summary = XLSX.utils.sheet_to_json<Record<string, unknown>>(book.Sheets[copy.sheets.summary]);
-    const revenue = summary.find(row => row[col.summary.item] === labels.metrics.net_revenue.label)!;
+    const revenue = summary.find(row => row[col.summary.item] === labels.metrics.net_revenue.headline)!;
     expect(revenue[col.summary.change]).toBe(220);
     expect(typeof revenue[col.summary.change]).toBe("number");
     // V3-2b：格子仍是數字（數值本身不變）；顯示格式依層取位，負號 U+2212。摘要 L2 整數元，拆解與商品 L3 到分，比率百分比兩位小數。
@@ -424,7 +424,7 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
     const header = XLSX.utils.sheet_to_json<string[]>(book.Sheets[copy.sheets.channels], { header: 1 })[0];
     expect(header).toEqual(Object.values(col.channels));
     const channelRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(book.Sheets[copy.sheets.channels]);
-    expect(channelRows.at(-1)).toMatchObject({ [col.channels.channel]: labels.sections.total, [col.channels.net_revenue_change]: 220, [col.channels.contribution_change]: -315 });
+    expect(channelRows.at(-1)).toMatchObject({ [col.channels.channel]: labels.overview.sections.total, [col.channels.net_revenue_change]: 220, [col.channels.contribution_change]: -315 });
   });
 
   it("writes header-only sheets when there are no products or actions, and empty cells for unknown values", async () => {
@@ -438,7 +438,7 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
     const missing = await load(fixture("errors/missing_cogs"));
     const parsed = parse(await writeExcel(buildExcelWorkbook({ summary: buildManagerSummary(missing.snapshot), ...missing, actions: emptyActionWorkspace() })));
     const bridge = XLSX.utils.sheet_to_json<unknown[]>(parsed.book.Sheets[copy.sheets.bridge], { header: 1, defval: null });
-    expect(bridge.at(-1)).toEqual([labels.ui.export.bridgeSumLabel, null, null, null, labels.status.missing]);
+    expect(bridge.at(-1)).toEqual([labels.exports.common.bridgeSumLabel, null, null, null, labels.shell.status.missing]);
   });
 
   it("round-trips untrusted text exactly (apart from the leading quote) and keeps every cell within Excel's limit", async () => {

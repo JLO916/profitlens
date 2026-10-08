@@ -5,10 +5,10 @@ import { MINUS, deltaTone, formatAmountL1, formatAmountL3, formatDateL1, formatS
 import { AMOUNT_FIELDS } from "../../src/domain/types";
 import { yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
 
-const aiLabelPrefix = labels.ui.dashboard.aiLabel.replace("{ai}", "");
+const aiLabelPrefix = labels.shell.topbar.aiLabel.replace("{ai}", "");
 // V3-3：示範資料（fixtures/demo/manifest.json）的「資料到」；頂欄資料狀態按鈕寫「示範資料 · 資料到 8/24」。
 const DEMO_AS_OF = "2026-08-24";
-const demoStatusButton = fill(labels.shell.dataStatus.button, { source: labels.status.demo, date: formatDateL1(DEMO_AS_OF, { anchor: DEMO_AS_OF }) });
+const demoStatusButton = fill(labels.shell.dataStatus.button, { source: labels.shell.status.demo, date: formatDateL1(DEMO_AS_OF, { anchor: DEMO_AS_OF }) });
 // V3-3 期間列（period-summary）：示範資料載入後的預設範圍（v2 scopeNote 的「各 42 天」）與「近 7 天」快捷的範圍。
 const DEFAULT_SUMMARY = periodSummaryText("2026-07-13", "2026-08-23", "2026-06-01", "2026-07-12", { anchor: DEMO_AS_OF });
 const LAST7_SUMMARY = periodSummaryText("2026-08-17", "2026-08-23", "2026-08-10", "2026-08-16", { anchor: DEMO_AS_OF });
@@ -16,7 +16,7 @@ const LAST7_SUMMARY = periodSummaryText("2026-08-17", "2026-08-23", "2026-08-10"
 // R1 總覽重排與頁首減負：首屏 KPI、三件事一屏內、切頁歸零、頂欄 AI 標籤與選單、期間快捷（V3-3 起單擊即套用）。
 async function loadDemo(page: Page) {
   await page.goto("/");
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
   // V3-2b：KPI 卡是 L1（萬、一位小數），golden 精確值 1269792.73 經 formatAmountL1 顯示；到分的值改在抽屜的精確值行。
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(formatAmountL1("1269792.73"));
   // R6：首次載入資料時右下角出現非 modal 的保存提示（也是 role=dialog）；本檔不測自動保存，先選「先不要」。
@@ -64,10 +64,10 @@ test.describe("R1 overview first screen", () => {
     // R6：會議稿搬到「會議紀錄」分頁，總覽頁尾只留一行入口（本期會議狀態＋前往按鈕），不再有收合的 overview-meeting。
     await expect(page.getByTestId("overview-meeting")).toHaveCount(0);
     const entry = page.getByTestId("overview-meeting-entry");
-    await expect(entry).toContainText(fill(labels.overview.snapshotUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+    await expect(entry).toContainText(fill(labels.overview.snapshotUi.meetingEntry, { state: labels.meeting.form.decisions.draft }));
     await expect(entry.getByRole("button")).toHaveCount(1);
     await expect(page.getByTestId("manager-summary")).toHaveCount(0);
-    await entry.getByRole("button", { name: labels.meetingPage.goToMeeting }).click();
+    await entry.getByRole("button", { name: labels.meeting.page.goToMeeting }).click();
     await expect(page.getByTestId("meeting-page")).toBeVisible();
     // V3-3：手機側欄隱藏（改用底部分頁列），目前頁面一律讀側欄按鈕的 aria-current（sidebarNav 在手機上仍掛載）。
     await expect(sidebarNav(page, "meeting")).toHaveAttribute("aria-current", "page");
@@ -77,21 +77,21 @@ test.describe("R1 overview first screen", () => {
   test("top three show the contribution impact with unfavourable amounts in red", async ({ page }) => {
     await loadDemo(page);
     const first = page.getByTestId("top-three").locator("li[data-testid^='overview-priority-']").first();
-    await expect(first).toContainText(labels.sections.impact);
+    await expect(first).toContainText(labels.overview.sections.impact);
     // V3-4a（C9 摘要型）：列的影響金額在 .alert-impact；列內收合的「相關範圍」另有各範圍的 L2 金額，不取那些。
     const amount = first.locator(".alert-impact .impact-amount");
     // V3-2b：三件事的影響金額是 L1 帶號差額（「−59.9 萬」，U+2212）；精確值在抽屜的 evidence-precise-value（L3 到分），兩者要同源。
     const shown = (await amount.textContent())!.trim();
     expect(shown).toMatch(new RegExp(`^[+${MINUS}]`));
     await expect(amount).toHaveClass(/negative|positive/);
-    await expect(first.getByRole("button", { name: labels.buttons.viewEvidence, exact: true })).toBeVisible();
-    await expect(first.getByRole("button", { name: labels.buttons.addToActions, exact: true })).toBeVisible();
+    await expect(first.getByRole("button", { name: labels.evidence.buttons.viewEvidence, exact: true })).toBeVisible();
+    await expect(first.getByRole("button", { name: labels.actions.buttons.addToActions, exact: true })).toBeVisible();
     await amount.click();
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByRole("dialog")).toContainText(labels.sections.impact);
+    await expect(page.getByRole("dialog")).toContainText(labels.overview.sections.impact);
     const precise = (await page.getByRole("dialog").getByTestId("evidence-precise-value").textContent())!.trim();
-    const exactValue = precise.replace(fill(labels.units.yuan, { value: "" }).trim(), "").trim().replaceAll(",", "").replace("+", "").replace(MINUS, "-");
-    expect(precise).toBe(fill(labels.units.yuan, { value: formatSignedDelta(exactValue, "L3") }));
+    const exactValue = precise.replace(fill(labels.format.units.yuan, { value: "" }).trim(), "").trim().replaceAll(",", "").replace("+", "").replace(MINUS, "-");
+    expect(precise).toBe(fill(labels.format.units.yuan, { value: formatSignedDelta(exactValue, "L3") }));
     expect(shown).toBe(formatSignedDelta(exactValue, "L1"));
     // 只有不利上色：class 依 deltaTone（對扣廣告後貢獻的影響），不依數學正負號。
     await expect(amount).toHaveClass(deltaTone("contribution_after_marketing", exactValue, "L1") === "unfavorable" ? /negative/ : /positive/);
@@ -107,15 +107,15 @@ test.describe("R1 shell", () => {
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
     // V3-3：桌機點側欄、手機點底部分頁列（navigateTo 依視窗選可見的控制）。
     await navigateTo(page, "diagnosis");
-    await expect(page.getByRole("heading", { name: labels.nav.diagnosis.label, exact: true, level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: labels.shell.nav.diagnosis.headline, exact: true, level: 1 })).toBeVisible();
     await page.waitForTimeout(100);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
     expect(await page.evaluate(() => document.activeElement?.id)).toBe("main-content");
-    await expect(page.getByRole("region", { name: labels.sections.channelTableAria, exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: labels.overview.sections.channelTableAria, exact: true })).toBeVisible();
     // R5-1 健檢清單：一個規則一列（details.diagnosis-row），前三列預設展開，summary 帶「對貢獻影響」。
     const firstRow = page.getByTestId("diagnosis-list").locator("details.diagnosis-row").first();
     await expect(firstRow).toHaveAttribute("open", "");
-    await expect(firstRow.locator(":scope > summary")).toContainText(labels.sections.impact);
+    await expect(firstRow.locator(":scope > summary")).toContainText(labels.overview.sections.impact);
   });
 
   test("AI status is a top-bar label whose explanation opens in a popover", async ({ page }) => {
@@ -145,34 +145,34 @@ test.describe("R1 shell", () => {
     // V3-3：手機的儲存／匯出選單在 topbar-more 裡（收起時 display:none），先展開；桌機不動。
     await openTopbarMore(page);
     const storage = page.getByTestId("workspace-storage");
-    await expect(storage.locator(":scope > summary")).toContainText(labels.status.unsaved);
+    await expect(storage.locator(":scope > summary")).toContainText(labels.shell.status.unsaved);
     await storage.locator(":scope > summary").click();
-    await storage.getByRole("button", { name: labels.buttons.restorePreview, exact: true }).focus();
+    await storage.getByRole("button", { name: labels.storage.buttons.restorePreview, exact: true }).focus();
     await page.keyboard.press("Escape");
     await expect(storage.locator(":scope > summary")).toBeFocused();
-    await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeHidden();
+    await expect(storage.getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true })).toBeHidden();
     await storage.locator(":scope > summary").click();
-    await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeVisible();
+    await expect(storage.getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true })).toBeVisible();
     // V3-3：v2 頂欄的「清空」搬進儲存選單的危險區；全頁只有這一顆。
-    await expect(storage.getByRole("button", { name: labels.buttons.clear, exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: labels.buttons.clear, exact: true })).toHaveCount(1);
+    await expect(storage.getByRole("button", { name: labels.storage.buttons.clear, exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: labels.storage.buttons.clear, exact: true })).toHaveCount(1);
     await page.keyboard.press("Escape");
-    await expect(storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true })).toBeHidden();
+    await expect(storage.getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true })).toBeHidden();
     await openTopbarMore(page);
     const download = page.getByTestId("download-menu");
     // V3-3：選單摘要「下載」改名「匯出」；項目名稱不變。
     await expect(download.locator(":scope > summary")).toContainText(labels.shell.topbarV3.export);
     await download.locator("summary").click();
-    await expect(download.getByRole("button", { name: labels.downloads.analysisCsv })).toBeVisible();
-    const [file] = await Promise.all([page.waitForEvent("download"), download.getByRole("button", { name: labels.downloads.analysisCsv }).click()]);
+    await expect(download.getByRole("button", { name: labels.exports.downloads.analysisCsv })).toBeVisible();
+    const [file] = await Promise.all([page.waitForEvent("download"), download.getByRole("button", { name: labels.exports.downloads.analysisCsv }).click()]);
     expect(file.suggestedFilename()).toBe("profitlens-analysis.csv");
     await page.keyboard.press("Escape");
-    await expect(download.getByRole("button", { name: labels.downloads.analysisCsv })).toBeHidden();
+    await expect(download.getByRole("button", { name: labels.exports.downloads.analysisCsv })).toBeHidden();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     // V3-3：側欄的 .tiny-tag 移除；「示範資料」改由頂欄資料狀態按鈕呈現（v2 狀態文字在 sr-only 的 workspace-status）。
     await expect(page.locator(".sidebar .tiny-tag")).toHaveCount(0);
     await expect(page.getByTestId("data-status")).toHaveText(demoStatusButton);
-    await expect(page.getByTestId("workspace-status")).toContainText(labels.status.demo);
+    await expect(page.getByTestId("workspace-status")).toContainText(labels.shell.status.demo);
     await expect(page).toHaveTitle(labels.brand.title);
   });
 
@@ -198,7 +198,7 @@ test.describe("R1 shell", () => {
     await expect(page.locator("#current-end")).toHaveValue("2026-08-23");
     await expect(presetButton(page, "last7")).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId(isMobile(page) ? "period-toggle" : "period-custom")).toHaveAttribute("aria-expanded", "false");
-    await expect(page.getByRole("button", { name: labels.buttons.apply, exact: true })).toBeHidden();
+    await expect(page.getByRole("button", { name: labels.shell.buttons.apply, exact: true })).toBeHidden();
     if (isMobile(page)) await expect(page.getByTestId("period-toggle")).toHaveText(periodToggleText("last7", "2026-08-17", "2026-08-23", { anchor: DEMO_AS_OF }));
     // 自訂期間：改了日期、按「套用」之前，期間摘要不變；按了才套用，快捷不再 aria-pressed。
     const panel = await openCustomPeriod(page);
@@ -207,7 +207,7 @@ test.describe("R1 shell", () => {
     await page.locator("#current-start").fill("2026-08-10");
     await page.locator("#current-end").fill("2026-08-16");
     expect(await periodSummaryVisibleText(page)).toBe(LAST7_SUMMARY);
-    await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+    await panel.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
     const customSummary = periodSummaryText("2026-08-10", "2026-08-16", "2026-08-03", "2026-08-09", { anchor: DEMO_AS_OF });
     await expect.poll(() => periodSummaryVisibleText(page)).toBe(customSummary);
     await expect(page.getByTestId(isMobile(page) ? "period-toggle" : "period-custom")).toHaveAttribute("aria-expanded", "false");
@@ -239,7 +239,7 @@ test.describe("V3-3 shell acceptance", () => {
     // 單列：頂欄裡每個看得到的控制都落在 48px 之內（沒有折到第二列）。手機右側只剩資料狀態與 topbar-more。
     const controls = isMobile(page)
       ? ["header.topbar .brand", "[data-testid='data-status']", "[data-testid='topbar-more']"]
-      : ["header.topbar .brand", "[data-testid='data-status']", "[data-testid='ai-availability'] button", `header.topbar button[aria-label='${labels.buttons.basis}']`, "[data-testid='workspace-storage'] > summary", "[data-testid='download-menu'] > summary"];
+      : ["header.topbar .brand", "[data-testid='data-status']", "[data-testid='ai-availability'] button", `header.topbar button[aria-label='${labels.shell.buttons.basis}']`, "[data-testid='workspace-storage'] > summary", "[data-testid='download-menu'] > summary"];
     for (const selector of controls) {
       const value = await visibleBox(page, selector);
       expect(value, `${selector} 在頂欄可見`).not.toBeNull();
@@ -259,7 +259,7 @@ test.describe("V3-3 shell acceptance", () => {
       let count = 0;
       for (let node = walker.nextNode(); node; node = walker.nextNode()) if (node.textContent?.includes(text) && node.parentElement && shown(node.parentElement)) count++;
       return count;
-    }, labels.status.demo);
+    }, labels.shell.status.demo);
     expect(visibleDemo, "頂欄可見的「示範資料」只有一處").toBe(1);
     await expect(page.getByTestId("data-status")).toHaveText(demoStatusButton);
   });
@@ -333,9 +333,9 @@ test.describe("V3-3 shell acceptance", () => {
 });
 
 // ── V3-4b 圖表段（PRD §7.1 第 5–8 點、§9.4 C16／C17、§9.5、§10.3）：固定高的圖表框（CLS）、瀑布與表格共用抽屜、平衡檢核 ──
-const evidenceDrawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+const evidenceDrawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });
 /** 抽屜標題：「{title} · 計算與來源」。 */
-const evidenceHeading = (title: string) => `${title} · ${labels.sections.evidence}`;
+const evidenceHeading = (title: string) => `${title} · ${labels.evidence.sections.evidence}`;
 /** 四個圖表框：拆解與利潤結構是瀑布（.chart-frame.waterfall），趨勢與各通路是 C16 的 .chart-frame.sm。 */
 const CHART_FRAMES = ["[data-testid='bridge-section'] .chart-frame", "[data-testid='profit-waterfall'] .chart-frame", "[data-testid='trend'] .chart-frame", "[data-testid='channel-mix'] .chart-frame"] as const;
 const chartFrameHeights = (page: Page) => Promise.all(CHART_FRAMES.map(async selector => (await box(page, selector)).height));
@@ -425,7 +425,7 @@ test.describe("V3-4b charts", () => {
     await openDetails(profit.locator("details.data-alternative"));
     const resultLink = profit.locator("tr[data-row='contribution_after_marketing'] .number-link");
     const profitTitle = evidenceHeading(metricDefinitions.contribution_after_marketing.label);
-    const profitPrecise = fill(labels.units.yuan, { value: formatAmountL3("1269792.73") });
+    const profitPrecise = fill(labels.format.units.yuan, { value: formatAmountL3("1269792.73") });
     await resultLink.click();
     await expect(dialog).toBeVisible();
     await expect(heading).toContainText(metricDefinitions.contribution_after_marketing.label);

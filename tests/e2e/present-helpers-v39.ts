@@ -16,7 +16,7 @@ export const htmlRoot = (page: Page) => page.locator("html");
 /** 載入示範資料（同 pnl-table.spec 的做法）：等 KPI 帶出現本期扣廣告後貢獻，再關掉首次保存提示。 */
 export async function loadDemoForPresent(page: Page) {
   await page.goto("/");
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
   await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value")).toHaveText(formatAmountL1(DEMO_RESULT));
   await expect(page.getByTestId("local-save-prompt")).toBeVisible();
   await dismissSavePrompt(page);

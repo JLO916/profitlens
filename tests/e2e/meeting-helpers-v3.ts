@@ -7,11 +7,11 @@ import { openDetails } from "./replacement-helpers";
 
 /** 會議頁「匯出會議」的五項（testid meeting-export-{kind}）；可及名稱沿用 v2 輸出列的按鈕名稱（aria-label），畫面上另有一行 small 說明。 */
 export const MEETING_EXPORTS = {
-  pdf: labels.buttons.exportPdf,
-  markdown: labels.buttons.exportMarkdown,
-  csv: labels.downloads.channelTableCsv,
-  excel: labels.buttons.exportExcel,
-  pptx: labels.buttons.exportPptx,
+  pdf: labels.exports.buttons.exportPdf,
+  markdown: labels.exports.buttons.exportMarkdown,
+  csv: labels.exports.downloads.channelTableCsv,
+  excel: labels.exports.buttons.exportExcel,
+  pptx: labels.exports.buttons.exportPptx,
 } as const;
 export type MeetingExportKind = keyof typeof MEETING_EXPORTS;
 
@@ -33,16 +33,16 @@ export async function meetingExportItem(page: Page, kind: MeetingExportKind): Pr
   return item;
 }
 
-/** 議程 2 的「調整門檻」收合（details.meeting-threshold，summary＝labels.sections.adjustThreshold）；summary 是議程 ol（data-testid=manager-summary）。已展開就不動。 */
+/** 議程 2 的「調整門檻」收合（details.meeting-threshold，summary＝labels.overview.sections.adjustThreshold）；summary 是議程 ol（data-testid=manager-summary）。已展開就不動。 */
 export async function openThreshold(summary: Locator): Promise<Locator> {
   const details = summary.locator("details.meeting-threshold");
-  await expect(details.locator(":scope > summary")).toHaveText(labels.sections.adjustThreshold);
+  await expect(details.locator(":scope > summary")).toHaveText(labels.overview.sections.adjustThreshold);
   return openDetails(details);
 }
-/** 「與上次會議比較」預設收合（details[data-testid=meeting-compare]，summary 內是 h2 labels.sections.meetingCompare）；展開後回傳 details。 */
+/** 「與上次會議比較」預設收合（details[data-testid=meeting-compare]，summary 內是 h2 labels.meeting.sections.meetingCompare）；展開後回傳 details。 */
 export async function openCompare(meeting: Locator): Promise<Locator> {
   const details = meeting.getByTestId("meeting-compare");
-  await expect(details.locator(":scope > summary").getByRole("heading", { level: 2 })).toHaveText(labels.sections.meetingCompare);
+  await expect(details.locator(":scope > summary").getByRole("heading", { level: 2 })).toHaveText(labels.meeting.sections.meetingCompare);
   return openDetails(details);
 }
 /** 議程 3 的「完整通路寬表」收合（details.meeting-wide-table，summary＝labels.meeting.pageV3.fullChannelTable）；展開後回傳 details。 */
@@ -57,7 +57,7 @@ const escapeRe = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 export const TAIPEI_MINUTE = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}";
 
 export interface ExportHeaderExpectation {
-  /** 版頭第 1 行：畫面上的資料集名稱（labels.ui.dashboard.datasets.*）；會議資料與目前不同時是 dataset_id。 */
+  /** 版頭第 1 行：畫面上的資料集名稱（labels.shell.devValidation.datasets.*）；會議資料與目前不同時是 dataset_id。 */
   datasetName: string;
   /** 兩期起訖（YYYY-MM-DD）；期間字串由 formatPeriodExport 組。 */
   previous: { start: string; end: string };
@@ -70,7 +70,7 @@ export interface ExportHeaderExpectation {
   time?: string;
 }
 /** 版頭第 2 行：報表名（扣廣告後貢獻兩期比較（管理報表））。 */
-export const exportReportTitle = () => fill(labels.exports.headerV3.reportTitle, { metric: labels.metrics.contribution_after_marketing.label });
+export const exportReportTitle = () => fill(labels.exports.headerV3.reportTitle, { metric: labels.metrics.contribution_after_marketing.headline });
 /** 版頭第 3 行前段：「本期 … ；上期 …」。 */
 export const exportPeriodLine = (expected: Pick<ExportHeaderExpectation, "previous" | "current">) => fill(labels.exports.headerV3.periodLine, {
   current: formatPeriodExport(expected.current.start, expected.current.end),

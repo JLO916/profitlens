@@ -23,7 +23,8 @@ import { BLACKLIST, labelEntries } from "../scripts/lib/copy-scan.mjs";
 // 來源預覽三個 details、版本與來源資訊 details（metric_version 取自 snapshot）、範本 3×3、頁首主次依有沒有資料對調、健檢空狀態三要素、新鍵不含黑名單詞。
 
 const v3 = labels.data.pageV3;
-const ui = labels.ui.workspacePanels;
+const dataPanel = labels.data.panel;
+const diagnosisPanel = labels.diagnosis.panel;
 const noop = () => undefined;
 const escapeRe = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const roles: FileName[] = ["sales_daily.csv", "channel_costs_daily.csv", "ad_spend_daily.csv"];
@@ -83,10 +84,10 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
   it("資料狀態一行：來源 · 資料到 · 涵蓋（天數）· 份數 · 金額基準 · 問題數，以「 · 」分隔，日期經 formatDateL1／formatPeriodL1", () => {
     const line = (source: Source) => /<p class="data-status-line" data-testid="data-status-line">([^<]*)<\/p>/.exec(page(source))![1];
     const manifest = importedSource.dataset.manifest, anchor = manifest.data_as_of;
-    expect(line(importedSource)).toBe([labels.status.local, fill(labels.status.ready, { date: formatDateL1(anchor, { anchor }) }), fill(v3.statusLine.coverage, { range: formatPeriodL1(manifest.coverage_start, manifest.coverage_end, { anchor }) }), fill(v3.statusLine.files, { n: 3 }), fill(v3.statusLine.basis, { basis: v3.statusLine.basisConverted }), v3.statusLine.noIssues].join(" · "));
+    expect(line(importedSource)).toBe([labels.shell.status.local, fill(labels.shell.status.ready, { date: formatDateL1(anchor, { anchor }) }), fill(v3.statusLine.coverage, { range: formatPeriodL1(manifest.coverage_start, manifest.coverage_end, { anchor }) }), fill(v3.statusLine.files, { n: 3 }), fill(v3.statusLine.basis, { basis: v3.statusLine.basisConverted }), v3.statusLine.noIssues].join(" · "));
     expect(line(importedSource)).toContain("（4 天）");
     const pm = partial.dataset.manifest;
-    expect(line(partial)).toBe([labels.status.demo, fill(labels.status.ready, { date: formatDateL1(pm.data_as_of, { anchor: pm.data_as_of }) }), fill(v3.statusLine.coverage, { range: formatPeriodL1(pm.coverage_start, pm.coverage_end, { anchor: pm.data_as_of }) }), fill(v3.statusLine.files, { n: 3 }), fill(v3.statusLine.basis, { basis: v3.statusLine.basisExclusive }), fill(v3.statusLine.issues, { n: partial.dataset.issues.length })].join(" · "));
+    expect(line(partial)).toBe([labels.shell.status.demo, fill(labels.shell.status.ready, { date: formatDateL1(pm.data_as_of, { anchor: pm.data_as_of }) }), fill(v3.statusLine.coverage, { range: formatPeriodL1(pm.coverage_start, pm.coverage_end, { anchor: pm.data_as_of }) }), fill(v3.statusLine.files, { n: 3 }), fill(v3.statusLine.basis, { basis: v3.statusLine.basisExclusive }), fill(v3.statusLine.issues, { n: partial.dataset.issues.length })].join(" · "));
     expect(v3.separator).toBe(" · ");
   });
 
@@ -95,27 +96,27 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
     const issues = element(html, 'data-testid="data-issues"');
     expect([...issues.matchAll(/<th scope="col"[^>]*>([^<]*)<\/th>/g)].map(match => match[1])).toEqual(Object.values(v3.issueTable.columns));
     expect(issues).toContain(`<th scope="col" class="issue-code" hidden="">${v3.issueTable.columns.code}</th>`);
-    expect(issues).toContain(`<td class="issue-code" hidden=""><details><summary>${labels.ui.issueList.reasonCodeSummary}</summary><code>MISSING_COGS</code></details></td>`);
-    expect(issues).toContain(`<button type="button" class="ui-btn ui-btn-secondary" data-testid="data-issues-download">${labels.downloads.issuesCsv}</button>`);
+    expect(issues).toContain(`<td class="issue-code" hidden=""><details><summary>${labels.data.issues.reasonCodeSummary}</summary><code>MISSING_COGS</code></details></td>`);
+    expect(issues).toContain(`<button type="button" class="ui-btn ui-btn-secondary" data-testid="data-issues-download">${labels.exports.downloads.issuesCsv}</button>`);
     expect(issues.split(v3.issueTable.unit)).toHaveLength(2);
     expect(issues).toContain(`<span class="ui-count-badge" role="img" aria-label="${fill(v3.statusLine.issues, { n: 1 })}">1</span>`);
     expect(issues).toContain(`<span class="ui-mono">sales_daily.csv</span>`);
     // 沒有問題時寫一句（v2 的 noIssues），沒有表格、沒有下載鈕。
     const clean = element(page(golden), 'data-testid="data-issues"');
-    expect(clean).toContain(`<p class="data-section-empty">${ui.noIssues}</p>`);
+    expect(clean).toContain(`<p class="data-section-empty">${dataPanel.noIssues}</p>`);
     expect(clean).not.toContain("<table");
     expect(clean).not.toContain("ui-count-badge");
   });
 
   it("範圍與金額基準：兩欄定義列表（dl.ui-dl，10 格：v2 的 9 欄＋金額基準），技術細節與欄位對照仍在原處收合", () => {
     const scope = element(page(importedSource), 'data-testid="data-scope"');
-    expect(scope).toContain(`<h2 class="ui-section-title" id="dataset-heading">${labels.sections.dataScope}</h2>`);
+    expect(scope).toContain(`<h2 class="ui-section-title" id="dataset-heading">${labels.data.sections.dataScope}</h2>`);
     const dl = element(scope, 'class="ui-dl"');
-    expect([...dl.matchAll(/<dt>([^<]*)<\/dt>/g)].map(match => match[1])).toEqual([ui.meta.datasetId, labels.status.dataAsOf, ui.meta.coverage, labels.importWizard.basis.label, ui.meta.currencyTimezone, ui.meta.channels, ui.meta.coverageConfirmed, labels.periods.previous, labels.periods.current, ui.meta.scopeChannels]);
+    expect([...dl.matchAll(/<dt>([^<]*)<\/dt>/g)].map(match => match[1])).toEqual([dataPanel.meta.datasetId, labels.shell.status.dataAsOf, dataPanel.meta.coverage, labels.importWizard.basis.label, dataPanel.meta.currencyTimezone, dataPanel.meta.channels, dataPanel.meta.coverageConfirmed, labels.shell.periods.previous, labels.shell.periods.current, dataPanel.meta.scopeChannels]);
     expect(dl).toContain(`<dt>${labels.importWizard.basis.label}</dt><dd>${v3.statusLine.basisConverted}</dd>`);
     expect(scope).not.toContain("metadata-grid");
-    expect(scope).toContain(`<details><summary>${labels.sections.technicalDetails}</summary>`);
-    expect(scope).toContain(`<details><summary>${ui.mappingsSummary}</summary>`);
+    expect(scope).toContain(`<details><summary>${labels.evidence.sections.technicalDetails}</summary>`);
+    expect(scope).toContain(`<details><summary>${dataPanel.mappingsSummary}</summary>`);
     expect(scope).not.toContain("口徑");
   });
 
@@ -128,7 +129,7 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
     expect(body.map(match => match[1])).toEqual(conversion.fields);
     expect(body).toHaveLength(8);
     for (const [, field, label, raw, converted, rate] of body) {
-      expect(label).toBe(labels.metrics[field as keyof typeof labels.metrics].label);
+      expect(label).toBe(labels.metrics[field as keyof typeof labels.metrics].headline);
       expect(raw).toBe(formatAmountL3(conversion.totals![field].raw));
       expect(converted).toBe(formatAmountL3(conversion.totals![field].converted));
       expect(rate).toBe(formatRateL2(conversion.rate));
@@ -168,9 +169,9 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
     expect(preview.match(/<details /g)).toHaveLength(3);
     for (const [role, title, name, count] of files) {
       const details = element(preview, `data-testid="data-preview-${role}"`);
-      expect(details.startsWith(`<details class="data-preview-file" data-testid="data-preview-${role}"><summary>${title} · <span class="ui-mono">${name}</span> · ${fill(ui.rowCount, { n: count })}</summary>`)).toBe(true);
-      expect(details).toContain(`<caption class="sr-only">${fill(ui.previewCaption, { fileName: role })}</caption>`);
-      expect(details).toContain(`aria-label="${fill(ui.previewRegionAria, { title })}"`);
+      expect(details.startsWith(`<details class="data-preview-file" data-testid="data-preview-${role}"><summary>${title} · <span class="ui-mono">${name}</span> · ${fill(dataPanel.rowCount, { n: count })}</summary>`)).toBe(true);
+      expect(details).toContain(`<caption class="sr-only">${fill(dataPanel.previewCaption, { fileName: role })}</caption>`);
+      expect(details).toContain(`aria-label="${fill(dataPanel.previewRegionAria, { title })}"`);
       expect(details).toMatch(/<th scope="row" class="ui-mono">\d+<\/th>/);
       expect(details.match(/<tr><th scope="row"/g)!.length).toBe(Math.min(10, count));
     }
@@ -182,7 +183,7 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
     expect(version.startsWith(`<details class="panel data-section data-version" data-testid="data-version-info"><summary><h2 class="ui-section-title">${v3.version.heading}</h2></summary>`)).toBe(true);
     expect(version).toContain(`<dt>${v3.version.dataVersion}</dt><dd class="ui-mono">${importedSource.snapshot.dataset_hash}</dd>`);
     expect(version).toContain(`<dt>${v3.version.metricVersion}</dt><dd class="ui-mono">${importedSource.snapshot.metric_version} · ${ASSIST_KPI_VERSION}</dd>`);
-    expect(version).toContain(`<dt>${ui.meta.amountBasisTechnical}</dt><dd class="ui-mono">${importedSource.dataset.manifest.amount_basis} · inclusive ${importedSource.conversion!.rate}</dd>`);
+    expect(version).toContain(`<dt>${dataPanel.meta.amountBasisTechnical}</dt><dd class="ui-mono">${importedSource.dataset.manifest.amount_basis} · inclusive ${importedSource.conversion!.rate}</dd>`);
     expect(version).toContain(`<span class="ui-mono">銷售.csv</span> · ${labels.importWizard.mappingSources.exact}`);
     // 匯入時間只在呼叫端給 importedAt 時出現（formatSavedDateTime，台北時間）。
     expect(version).not.toContain(v3.version.importedAt);
@@ -190,36 +191,36 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
     // 欄位對照只列改過名的欄：來源欄名（標準欄位）。
     const renamed = element(page(importedSource, { mappings: { "sales_daily.csv": { gross_sales: "商品折扣前收入", discounts: "discounts" } } }), 'data-testid="data-version-info"');
     expect(renamed).toContain(`<span class="ui-mono">sales_daily.csv</span> · ${fill(v3.version.mappingItem, { original: "商品折扣前收入", standard: "gross_sales" })}</li>`);
-    expect(html).toContain(`<details><summary>${labels.sections.technicalDetails}</summary>`);
+    expect(html).toContain(`<details><summary>${labels.evidence.sections.technicalDetails}</summary>`);
   });
 
   it("範本下載：與頂欄匯出選單同一張 3×3 表（標題沿用 downloads.templatesHeading）", () => {
     const templates = element(page(golden), 'data-testid="data-templates"');
-    expect(templates).toContain(`<h2 class="ui-section-title" id="templates-heading">${labels.downloads.templatesHeading}</h2>`);
+    expect(templates).toContain(`<h2 class="ui-section-title" id="templates-heading">${labels.exports.downloads.templatesHeading}</h2>`);
     expect(templates.match(/<tr>/g)).toHaveLength(4);
     expect([...templates.matchAll(/<th scope="col">([^<]*)<\/th>/g)].map(match => match[1])).toEqual([labels.shell.topbarV3.templateColumns.file, labels.shell.topbarV3.templateColumns.blank, labels.shell.topbarV3.templateColumns.example]);
     for (const file of Object.values(labels.importWizard.files)) {
-      expect(templates).toContain(`aria-label="${fill(labels.downloads.blankTemplate, { file })}"`);
-      expect(templates).toContain(`aria-label="${fill(labels.downloads.exampleTemplate, { file })}"`);
+      expect(templates).toContain(`aria-label="${fill(labels.exports.downloads.blankTemplate, { file })}"`);
+      expect(templates).toContain(`aria-label="${fill(labels.exports.downloads.exampleTemplate, { file })}"`);
     }
   });
 
   it("示範資料（demo）也走同一套版面：狀態一行以「示範資料」開頭、金額基準未稅", () => {
     const html = page(demo);
-    expect(html).toMatch(new RegExp(`^<p class="data-status-line" data-testid="data-status-line">${escapeRe(labels.status.demo)} · `));
+    expect(html).toMatch(new RegExp(`^<p class="data-status-line" data-testid="data-status-line">${escapeRe(labels.shell.status.demo)} · `));
     expect(html).toContain(fill(v3.statusLine.basis, { basis: v3.statusLine.basisExclusive }));
   });
 });
 
 describe("V3-8 頁首主次（PRD §7.7.1 第 1 點）", () => {
-  const header = (hasData: boolean | undefined, showLoadDemo = true) => renderToStaticMarkup(createElement(PageHeader, { title: labels.nav.data.label, description: labels.nav.data.description, isData: true, showLoadDemo, onLoadDemo: noop, onImport: noop, ...(hasData === undefined ? {} : { hasData }) }));
+  const header = (hasData: boolean | undefined, showLoadDemo = true) => renderToStaticMarkup(createElement(PageHeader, { title: labels.shell.nav.data.headline, description: labels.shell.nav.data.explain, isData: true, showLoadDemo, onLoadDemo: noop, onImport: noop, ...(hasData === undefined ? {} : { hasData }) }));
   const controls = (html: string) => [...element(html, 'class="load-controls"').matchAll(/<button type="button" class="ui-btn (ui-btn-primary|ui-btn-secondary)"( data-testid="page-import")?/g)].map(match => `${match[1]}${match[2] ? ":page-import" : ""}`);
 
   it("已有資料：「匯入資料」主要在前、「載入示範資料」次要在後（未傳 hasData 時同此）", () => {
     for (const html of [header(true), header(undefined)]) {
       expect(controls(html)).toEqual(["ui-btn-primary:page-import", "ui-btn-secondary"]);
       const buttons = element(html, 'class="load-controls"');
-      expect(buttons.indexOf(labels.buttons.importData)).toBeLessThan(buttons.indexOf(labels.buttons.loadDemo));
+      expect(buttons.indexOf(labels.shell.buttons.importData)).toBeLessThan(buttons.indexOf(labels.shell.buttons.loadDemo));
     }
   });
 
@@ -227,7 +228,7 @@ describe("V3-8 頁首主次（PRD §7.7.1 第 1 點）", () => {
     const html = header(false);
     expect(controls(html)).toEqual(["ui-btn-primary", "ui-btn-secondary:page-import"]);
     const buttons = element(html, 'class="load-controls"');
-    expect(buttons.indexOf(labels.buttons.loadDemo)).toBeLessThan(buttons.indexOf(labels.buttons.importData));
+    expect(buttons.indexOf(labels.shell.buttons.loadDemo)).toBeLessThan(buttons.indexOf(labels.shell.buttons.importData));
     expect(html.match(/data-testid="page-import"/g)).toHaveLength(1);
     // showLoadDemo 語意不變：沒有資料又不在匯入中時（dashboard 的 showLoadDemo＝false）只剩次要的「匯入資料」，主要動作在空狀態。
     expect(controls(header(false, false))).toEqual(["ui-btn-secondary:page-import"]);
@@ -262,6 +263,6 @@ describe("V3-8 新鍵（data.pageV3）文案", () => {
     expect(v3.diagnosisEmpty.title.endsWith("。")).toBe(true);
     expect(v3.diagnosisEmpty.body.endsWith("。")).toBe(true);
     for (const button of [v3.diagnosisEmpty.action, v3.issueTable.showCodes]) expect(button).toMatch(/^(查看|顯示)/);
-    expect(`${v3.diagnosisEmpty.title}${v3.diagnosisEmpty.body}`).toBe(ui.noDiagnostics);
+    expect(`${v3.diagnosisEmpty.title}${v3.diagnosisEmpty.body}`).toBe(diagnosisPanel.noDiagnostics);
   });
 });
