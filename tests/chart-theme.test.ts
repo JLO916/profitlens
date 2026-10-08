@@ -5,7 +5,7 @@ import { chartCategoryColors, chartColors, chartFontSize, chartHeights, chartRow
 
 // V3-4b 圖表色集中在 chart-theme.ts（PRD §9.5）：值一律是 :root 的 var() token，不寫色碼；瀏覽器端用 getComputedStyle 讀實際值。
 
-const KEYS = ["current", "previous", "yoy", "total", "unfavorable", "favorable", "other", "grid", "axis", "band", "connector", "surface"];
+const KEYS = ["current", "previous", "yoy", "total", "unfavorable", "favorable", "other", "grid", "axis", "band", "target", "connector", "surface"];
 const ROOT_TOKENS = (() => {
   const css = readFileSync(resolve("src/app/globals.css"), "utf8");
   const root = css.slice(css.indexOf(":root {"), css.indexOf("}", css.indexOf(":root {")));
@@ -25,9 +25,10 @@ describe("chart-theme：圖表色 token", () => {
     expect(JSON.stringify(chartColors)).not.toMatch(/#[0-9a-f]{3,8}\b/i);
   });
 
-  it("圖高對應 --chart-h-sm／--chart-h-lg（180／320px）", () => {
+  it("圖高對應 --chart-h-sm／--chart-h-lg／--chart-h-xs（180／320／16px）", () => {
     const css = readFileSync(resolve("src/app/globals.css"), "utf8");
-    expect(chartHeights).toEqual({ sm: 180, lg: 320 });
+    expect(chartHeights).toEqual({ sm: 180, lg: 320, xs: 16 });
+    expect(css).toContain(`--chart-h-xs: ${chartHeights.xs}px;`);
     expect(css).toContain(`--chart-h-sm: ${chartHeights.sm}px;`);
     expect(css).toContain(`--chart-h-lg: ${chartHeights.lg}px;`);
   });

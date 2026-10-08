@@ -6,7 +6,7 @@ H5 使用者 2026-10-08 回報通過後開工。V4-1 依 06_BATCHES 完成：C16
 
 - 最終驗收：typecheck、lint、contrast（75／75）exit 0；audit:ui design 15 項不變；unit 129 檔／2,539 全過；build pass；E2E 813 passed／0 failed／15 skipped（23.9m）；畫面基準 52 張，只有允許的 6 張變動（desktop 01、02、03 與 laptop、tablet、mobile 的 02），更新後重跑全過；First Load JS 520,984 bytes（＋1,558，門檻 545,397）；B2 三尺寸不變且 1280 起硬斷言；B9 總覽 +33；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94–97；390 TBT 中位數都在 D-V4-36 門檻內；axe 四尺寸 0；aria-hidden 內停留點四尺寸 0；功能保留表 V4-1 的 7 列打勾；禁區四條命令皆空，收尾 commit `0462ce5` 之後的禁區 diff 也為空。
 - 已知：B1 總覽第一張圖框頂 1440 為 855，正好等於上限（V4-2 不能讓首屏變高）；共同尺度讓 G1 變扁約 40%、390 切到 MARKETPLACE 時終點柱只有 1.6px（H5 已看過）。
-- 待拍板：D-V4-41（請確認共同尺度維持 A）、D-V4-37（擋 V4-9a）、D-V4-38、39（擋 V4-4）、D-V4-40（擋 V4-7a）。
+- 拍板：使用者 2026-10-08 回覆「都依建議值繼續推進」，D-V4-37–41 全部定為 A（PPT 標值用文字方塊、G13 各寬度上下排列、G14 在 390 不畫右側累計、G20 軸固定兩期範圍、G1／G2 共同尺度可延伸一個步長）。
 - 驗收：`verification/revamp-v4-V4-1-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-1/`。下一批：V4-2（總覽其他圖，MVP 切線）。
 
 ## Revamp v4｜V4-0b 設計稿、PPT spike 與合成資料（完成；不改任何 UI；H5 未執行／待人工）

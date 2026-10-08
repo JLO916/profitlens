@@ -80,6 +80,8 @@
   --chart-grid: var(--border-subtle);
   --chart-axis: var(--text-tertiary);
   --chart-band: var(--bg-subtle);
+  /* V4-2（PRD §6.5，D-V4-18）：目標刻度、門檻點、目標線 */
+  --chart-target: var(--text-primary);
 
   /* 字體（§9.2：不換字型、不載入網路字型）*/
   --font-sans: Arial, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
@@ -168,6 +170,8 @@
   /* 圖表高度（骨架、空、錯誤、有資料四種狀態共用）*/
   --chart-h-sm: 180px;
   --chart-h-lg: 320px;
+  /* V4-2（PRD §6.5）：sparkline 高 */
+  --chart-h-xs: 16px;
 
   /* 動態 */
   --dur-fast: 120ms;
@@ -2636,3 +2640,12 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
   .bridge-table .bar-cell { display: none; }
 }
 /* ── V4-1 C 錨點結束 ── */
+
+/* ── V4-2 A：C19 Sparkline、C33 ChartDataTable、G7a 其他常用指標表「近 {n} 週」 ── */
+/* ── V4-2 A 錨點結束 ── */
+
+/* ── V4-2 B：G3 趨勢刻度、G4 各通路緊湊表差額條 ── */
+/* ── V4-2 B 錨點結束 ── */
+
+/* ── V4-2 C：C18 Bullet 共用元件、損益兩平 MER 列的 bullet ── */
+/* ── V4-2 C 錨點結束 ── */

@@ -64,7 +64,8 @@ describe("C16 ChartFrame：標題列、takeaway 列、固定高度的圖、資�
   it("四種狀態（有資料、載入、空、錯誤）都在同一個固定高度的容器裡；lg 為 320px", () => {
     const tags = (["ready", "loading", "empty", "error"] as ChartFrameState[]).map(state => frameTag(render({ state, children: createElement("svg") }))!);
     for (const tag of tags) expect(tag).toMatch(new RegExp(`^<div class="chart-frame sm" style="height:${chartHeights.sm}px"`));
-    expect(chartHeights).toEqual({ sm: 180, lg: 320 });
+    // V4-2 加 xs（sparkline 16px，PRD §6.5）；ChartFrame 的 height 只用 sm、lg。
+    expect(chartHeights).toEqual({ sm: 180, lg: 320, xs: 16 });
     expect(frameTag(render({ height: "lg", children: createElement("svg") }))).toBe('<div class="chart-frame lg" style="height:320px" aria-hidden="true" data-state="ready">');
 
     const empty = render();

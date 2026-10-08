@@ -292,6 +292,12 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-08｜D-V4-37–41 拍板與 V4-2 開工
+
+使用者回覆「都依建議值繼續推進，並進行下一批 V4-2」：D-V4-37 到 D-V4-41 全部定為 A。D-V4-41＝A 讓 V4-1 已實作的共同尺度正式定案，PRD §7.2 補上「總覽 G1、G2 共同尺度的下界可延伸一個步長」的例外；D-V4-37、38、39、40 的作法寫進 06 的 V4-9a、V4-4、V4-7a 段。v3 的 D-V3-26／27／29–37 不在這次回覆的範圍（最近一次回報只列 D-V4-37–41），依 D-V4-29 仍待使用者回覆，所以 V4-2 不做 D-V3-35（期間列與趨勢圖下兩處都保留去年同期不可用的原因）。
+
+**V4-2 共用 token 先放：** `--chart-target`（`var(--text-primary)`）與 `--chart-h-xs`（16px）、`chartColors.target`、`chartHeights.xs` 與 contrast-check 的 PAIRS 在開工錨點一次加好，三個並行代理都只引用、不改這些檔。D-V4-18 的其他新 token（`--chart-seg-*`、`--chart-heat-*`、`--chart-missing`、`--red-100`）在 V4-3a、V4-3b 隨第一個使用的圖交付。
+
 ## 2026-10-08｜Revamp v4 V4-1：圖表框、共同尺度與 G6 的取捨
 
 **390 鍵盤修正用 `scrollLabel`：** 瀑布外框不帶 `aria-hidden`，改 `role="region"`＋`aria-label`，內容比框寬時才 `tabIndex=0`。不用 `tabIndex=-1`：axe 4.13 的 scrollable-region-focusable（serious）只認在 Tab 順序內的捲動容器，拿掉 `aria-hidden` 後 `-1` 會讓 390 與 768 出現 serious；`-1` 也讓鍵盤無法捲動。只在溢出時加，1440、1280 不多停留點，390 的 Tab 數與 V4-0a 相同。

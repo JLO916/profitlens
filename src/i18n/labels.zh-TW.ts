@@ -744,6 +744,12 @@ export const overview = {
       apply: "套用篩選",
     },
   },
+  // ── V4-2 錨點：總覽圖表字串（代理 A：assistSpark；代理 B：channels；代理 C：bullet）
+  chartsV4: {
+    assistSpark: {},
+    channels: {},
+    bullet: {},
+  },
 } as const;
 
 // ── diagnosis：通路健檢：健檢清單與健檢頁

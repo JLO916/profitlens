@@ -14,6 +14,8 @@ export const chartColors = {
   grid: "var(--chart-grid)",
   axis: "var(--chart-axis)",
   band: "var(--chart-band)",
+  /** V4-2（PRD §6.5）：目標刻度、門檻點、目標線。 */
+  target: "var(--chart-target)",
   connector: "var(--border-strong)",
   surface: "var(--bg-surface)",
 } as const;
@@ -22,8 +24,8 @@ export type ChartColorKey = keyof typeof chartColors;
 /** 通路等類別色（PRD §7.1 第 8 點：最多 4 個類別色，超過的合併成「其他」並用 chartColors.other）。 */
 export const chartCategoryColors = ["var(--chart-cat-1)", "var(--chart-cat-2)", "var(--chart-cat-3)", "var(--chart-cat-4)"] as const;
 
-/** 圖高（px），對應 --chart-h-sm（總覽並列圖）與 --chart-h-lg（瀑布、詳圖）；同一列等高，四種狀態等高。 */
-export const chartHeights = { sm: 180, lg: 320 } as const;
+/** 圖高（px），對應 --chart-h-sm（總覽並列圖）、--chart-h-lg（瀑布、詳圖）與 V4-2 的 --chart-h-xs（sparkline）；同一列等高，四種狀態等高。 */
+export const chartHeights = { sm: 180, lg: 320, xs: 16 } as const;
 /**
  * V4-1 依列計高的 inline SVG 列高（px；PRD §6.5）：cell＝C24 表格內嵌條的條高，row16、row24＝C25、C27、C30 每列的高。
  * 不是 CSS token；依列計高的 svg 高度一律寫成它的整數倍或其和（例如 rows * chartRowHeights.row24），不得寫數字常值（CL-10、X34）。

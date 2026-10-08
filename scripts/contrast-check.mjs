@@ -47,6 +47,7 @@ export const PAIRS = [
   ...nonText("--chart-cat-3", ["--bg-surface"], "通路類別色 3"),
   ...nonText("--chart-cat-4", ["--bg-surface"], "通路類別色 4"),
   ...nonText("--chart-other", ["--bg-surface"], "第 5 個以上通路合併的「其他」"),
+  ...nonText("--chart-target", ["--bg-surface", "--bg-subtle"], "V4-2 目標刻度、門檻點、目標線（PRD §6.5）"),
 ];
 
 export const THRESHOLDS = { text: 4.5, "non-text": 3 };

@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／相關拍板／另需的人工時間。
 >
-> **目前進度：V4-1 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-1-acceptance.md`；D-V4-41 待回覆，共同尺度依已核准驗收實作）；下一批 V4-2（MVP 切線）。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
+> **目前進度：V4-2 進行中（2026-10-08 開工）。V4-1 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-1-acceptance.md`）。D-V4-37–41 定為 A（2026-10-08）。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
 >
 > 本套件寫「V4-0」時指 V4-0a、V4-0b 兩批合稱；「V4-0 實測」「V4-0 基準」都是 V4-0a 量到的 v3.0.0 值。原本的 V4-0（13 項，含 AST 掃描器、capture 與 metrics、PPT spike、合成資料、四頁兩尺寸設計稿與全套基準量測）與 V4-7（4 張圖、跨資料來源、匯入精靈、抽屜三個介面）在開工前依工作量拆成 a／b（CLAUDE.md：批次太大要在開工前拆；v3 的設計稿放在 L 級的 V3-1，不在 V3-0）。
 
@@ -61,18 +61,18 @@
 |---|---|---|---|---|---|
 | V4-0a | 基準與護欄（不改 UI） | M | 拍板 D-V4-1、2、3、15、23、24、25、26、27 | — | **完成（2026-10-08）** |
 | V4-0b | 設計稿、PPT spike 與合成資料（不改 UI） | M | V4-0a；D-V4-31（D-V4-10、34 的 spike 結果回報後確認；D-V4-27＝B 時不產出設計稿） | H5 設計稿在本批產出 | **完成（2026-10-08）**；H5 待人工 |
-| V4-1 | 總覽拆解與圖表框（G1、G2、G6） | M | V4-0b；**H5**；D-V4-4、5、7、14、30；G6 另依 D-V4-33；D-V4-35 只在回覆 B 時；D-V4-41（V4-0b 新增，待回覆） | — | **完成（2026-10-08）** |
-| V4-2 | 總覽其他圖（G3、G4、G5、G7a） | M | V4-1；D-V4-6、16、18；D-V3-35（只在回覆 A 後） | — | 未開工 |
+| V4-1 | 總覽拆解與圖表框（G1、G2、G6） | M | V4-0b；**H5**；D-V4-4、5、7、14、30；G6 另依 D-V4-33；D-V4-35 只在回覆 B 時；D-V4-41（V4-0b 新增，2026-10-08 定為 A） | — | **完成（2026-10-08）** |
+| V4-2 | 總覽其他圖（G3、G4、G5、G7a） | M | V4-1；D-V4-6、16、18；D-V3-35（只在回覆 A 後） | — | 進行中（2026-10-08 開工） |
 | **MVP 切線** | V4-0a 到 V4-2，總覽改版完整 | — | 經使用者當次明確同意才部署 Vercel preview，不切正式站（依 D-V4-28） | 老闆試用 | — |
 | V4-3a | 通路健檢（一）（G9、G10、G7b） | M | V4-2；D-V4-6、18、19、32（與 D-V3-31） | — | 未開工 |
 | V4-3b | 通路健檢（二）（G11、G12；下鑽加日期與 SKU） | M | V4-3a；D-V4-17、18 | — | 未開工 |
-| V4-4 | 商品毛利（G13、G14） | M | V4-3b；D-V4-38、39（V4-0b 新增，待回覆） | — | 未開工 |
+| V4-4 | 商品毛利（G13、G14） | M | V4-3b；D-V4-38、39（V4-0b 新增，2026-10-08 定為 A） | — | 未開工 |
 | V4-5 | 假設試算（G15、G16） | M | V4-4；D-V4-20 | — | 未開工 |
 | V4-6 | 會議紀錄（G19、G15 會議實例；G18 取消） | M | V4-5 | — | 未開工 |
-| V4-7a | 資料來源（G20、G21、問題表篩選） | M | V4-6；D-V4-40（V4-0b 新增，待回覆） | — | 未開工 |
+| V4-7a | 資料來源（G20、G21、問題表篩選） | M | V4-6；D-V4-40（V4-0b 新增，2026-10-08 定為 A） | — | 未開工 |
 | V4-7b | 匯入精靈與抽屜（G22、G23、`ladderMetrics` 搬移） | M | V4-7a | — | 未開工 |
 | V4-8 | 投影與四尺寸總檢 | M | V4-1 到 V4-7b；D-V4-8、9、33；D-V4-35（回覆 B 而 V4-1 時尚未回覆）；D-V3-33、34（回覆後） | — | 未開工 |
-| V4-9a | 匯出（一）PDF 與 PPT | M | V4-8；D-V4-10、11、34；D-V4-37（V4-0b 新增，待回覆） | PPT、PDF 開檔人工檢查半天 | 未開工 |
+| V4-9a | 匯出（一）PDF 與 PPT | M | V4-8；D-V4-10、11、34；D-V4-37（V4-0b 新增，2026-10-08 定為 A） | PPT、PDF 開檔人工檢查半天 | 未開工 |
 | V4-9b | 匯出（二）Excel 與 Markdown | M | V4-9a；D-V4-12、13 | Excel 開檔人工檢查半天 | 未開工 |
 | V4-10 | P2 圖表（G8、G17、G24；可整批延後） | M | V4-9b；D-V4-12、21、22 | — | 未開工 |
 | V4-11 | 收尾與上線 | M | 全部（V4-10 延後時依賴 V4-9b）；D-V4-1、28；**H6**（擋正式上線） | H6 約 1 週 | 未開工 |
@@ -226,6 +226,8 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 
 ## V4-4 商品毛利（M）
 
+> **D-V4-38、39＝A（2026-10-08）**：G13 在各寬度都上下排列（減少在上、增加在下，PRD §4.4、§4.6 的「≥ 768 兩欄並排」不採用）；G14 在 390 不畫右側累計，累計與累計佔比只留在資料表。以 `verification/revamp-v4/mockups/products*.html` 的建議版為準。
+
 **範圍**：C25 RankedBars＋`hbarGeometry`；G14「商品毛利為負的商品累計」（`productPareto`／`product-pareto-v1`；累計佔比（佔商品毛利為負合計）＝取反後的 `ratioMetric`；只在有商品毛利為負時渲染；圖名、副標、資料表不寫「賠錢」「虧損」）；G13（`productHighlights` 同檔新增 `worstChange`；每欄 ≤ 5 根、列高 `row16`，390 上下 10 × 16 ≤ sm 180；欄名用 `legend`；標題「{SKU} · {通路} 商品毛利少 …」）；`product-worst`、`product-best` 改為 ChartFrame 的 `after` 常駐（DOM 與 testid 不變，`h3#product-highlights-heading` 保留；沒有負值時 `product-worst` 照 v3 原樣放在第一格）；ChartFrame `headingLevel`；商品抽屜 builder 由 `product-comparison-panel.tsx` 的 `metricLink`、`deltaLink` 抽成 `src/components/product-evidence.ts`（只搬移）；`filter.sku` 接線；keyboard-walk 加商品頁「第一張圖的資料表 summary」里程碑（這一頁不等 V4-8）；axe 加「合成資料的商品頁」狀態（desktop、laptop、tablet 共 15，mobile 共 14）。實作卡：G13、G14。
 
 **依賴**：V4-3b。
@@ -270,6 +272,8 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 
 ## V4-7a 資料來源（M）
 
+> **D-V4-40＝A（2026-10-08）**：G20 的 X 軸固定為「上期起日到涵蓋訖日」（再往前延伸到最早的缺列區段），去年同期不畫在同一條軸上，改在圖上方一行寫期間與有列或缺列天數。
+
 **範圍**：C30 Timeline＋G20（`coverageTimeline`／`coverage-timeline-v1`；最長缺列區段只有 1 天時用 `title.missingOneDay`；期間區帶直接標「上期」「本期」，去年同期畫成上方細線加文字，不和缺列虛線框同形同色；點缺列段篩問題表）；`chartRowHeights.axis`；`DataWorkspace` 持有 `issueFilter`，`IssueList` 加選填篩選與清除鈕（下載內容不變）；C28（matrix）＋G21（`issueDistribution`／`issue-distribution-v1`，`variant="inline"`、`mode="table"` 放在 `data-issues` 內；列級與範圍級問題都是 0 筆時不渲染；只有一格時用 `title.single`）；axe 加「匯入 `fixtures/errors/missing_ad_day` 後的資料來源頁（含 G20 缺列段、G21 與篩選後的問題表）」狀態（desktop、laptop、tablet 共 17，mobile 共 16）。實作卡：G20、G21。
 
 **依賴**：V4-6。
@@ -313,6 +317,8 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 ---
 
 ## V4-9a 匯出（一）PDF 與 PPT（M）
+
+> **D-V4-37＝A（2026-10-08）**：PPT 瀑布用 `addChart`，`showValue:false` 並以 `layout` 固定繪圖區，標值改用文字方塊、字取 `bars[].display`（`verification/revamp-v4/V4-0b/pptx-spike.json` 的探針）。
 
 **範圍**：C31 PrintChart（G1 三個版本；G2 標準與客戶附錄，依 D-V4-11；灰階：起訖與小計淺灰底加 `ink` 外框、有利 `chartFavorable` 實心、不利 `ink` 實心加「−」，三者兩兩不同）；C32 pptChart（G1 原生瀑布；輔助系列以 `exports.chartsV4.*` 命名為「圖形用，非金額」，有利與不利兩個系列存的是柱高，名稱標明「絕對值，圖形用」，資料標籤用帶「−」的數字格式；數值由 `bridgeWaterfall().bars` 精確字串換算；V4-0b spike 不成立時改 `addShape`；放在哪一張投影片依 D-V4-34，建議 A：新增第二張，既有第一張的一句話、KPI、三件事、通路表、決議、置頂待辦一個都不動，`tests/pptx-export.test.ts:280-289` 的「只有 1 張」斷言同批改為 2 張）；`EXPORT_THEME` 加 `chartCurrent`、`chartPrevious`、`chartTotal`、`chartUnfavorable`、`chartFavorable`、`chartSeg1`–`chartSeg3`；`ExportVariantSpec` 加 `charts` 欄位。
 
