@@ -1,6 +1,6 @@
 // V3-10 上線檢查（06_BATCHES V3-10「四尺寸走查與鍵盤走查」；docs/revamp/08_RELAUNCH.md §4 第 6 條、PRD §2.3 B「內容前的可見控制項數」、§11.1 鍵盤、D-V3-27 待拍板）：七頁 Tab 步數、Esc 回焦、焦點可見、沒有焦點陷阱。
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { labels } from "../../src/i18n";
+import { fill, labels } from "../../src/i18n";
 import { closeTopbarMore, openTopbarMore } from "./replacement-helpers";
 import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverlay, kpiLink, loadDemo, pageName, writeLaunchJson, type FocusStop, type LaunchPage } from "./launch-helpers-v310";
 
@@ -53,16 +53,20 @@ const ariaHiddenAncestor = (page: Page) => page.evaluate(() => {
 });
 /**
  * V4-0a 在 v3.0.0 實測到的既有違規（06_BATCHES 的規定：上限＝實測並逐條列出，之後只降不升；以 Playwright 專案名與頁面為鍵，內容是去掉步數的停留點描述）。
- * 390 寬時，總覽 G1（貢獻變化拆解，bridge-section）與 G2（本期利潤結構，profit-waterfall）的瀑布外框 div.chart-frame.waterfall 帶 aria-hidden，
- * 內容比框寬而成為水平捲動容器；Chromium 讓沒有可聚焦子元素的捲動容器可以用 Tab 停留（keyboard-focusable scrollers），所以各多 1 個停留點落在 aria-hidden 內。
- * axe 的 aria-hidden-focus 不把這種隱含可聚焦的捲動容器算進去，V3-10 的 axe 掃描沒有抓到。修正要改 src（例如外框不帶 aria-hidden、只讓 svg aria-hidden，
- * 或外框 tabIndex={-1}），本批不改畫面；排在 V4-1（G1、G2 搬進 ChartFrame）修正，修好後刪掉這裡對應的列。
+ * V4-0a 列過 390 寬總覽的 2 條：G1（bridge-section）與 G2（profit-waterfall）的瀑布外框 div.chart-frame.waterfall 帶 aria-hidden，內容比框寬而成為水平捲動容器，
+ * Chromium 讓它可用 Tab 停留（keyboard-focusable scrollers），axe 的 aria-hidden-focus 不計這種隱含可聚焦的捲動容器。
+ * V4-1（06_BATCHES V4-1「V4-0a 量到、併入本批的修正」）已修正：G1、G2 搬進 ChartFrame 後外框不帶 aria-hidden、改 role=region＋aria-label
+ * （shell.chartsV4.common.chartRegion），比框寬時 tabIndex=0；只有 svg aria-hidden。兩列已刪除，清單現在是空的：任何頁面、任何尺寸的 aria-hidden 停留點都必須是 0。
+ * 之後若再量到既有違規，依同一規定逐條列在這裡（只降不升）。
  */
-const KNOWN_ARIA_HIDDEN_STOPS: Partial<Record<string, Partial<Record<LaunchPage, string[]>>>> = {
-  mobile: {
-    overview: ["div（div.chart-frame.waterfall，所在區塊 bridge-section）", "div（div.chart-frame.waterfall，所在區塊 profit-waterfall）"],
-  },
-};
+const KNOWN_ARIA_HIDDEN_STOPS: Partial<Record<string, Partial<Record<LaunchPage, string[]>>>> = {};
+/**
+ * V4-1：總覽兩張瀑布外框（role=region）的可及名稱。390、768 寬時瀑布比外框寬，外框是合法的 Tab 停留點（不在 aria-hidden 內、方向鍵捲動）；
+ * 1440 不捲動、沒有 tabIndex，不是停留點。
+ */
+const WATERFALL_REGIONS = [labels.overview.sections.bridge, labels.overview.profit.section].map(title => fill(labels.shell.chartsV4.common.chartRegion, { title }));
+/** 總覽走查的停留點中，名稱是瀑布外框 region 的那幾個（describe＝「div 貢獻變化拆解（圖）」）。 */
+const waterfallRegionStops = (walk: Walk) => WATERFALL_REGIONS.filter(region => walk.stops.some(stop => stop.replace(/^\d+\. /, "") === `div ${region}`));
 /** 實測的 aria-hidden 停留點中，不在 KNOWN_ARIA_HIDDEN_STOPS 清單內（或超出清單次數）的部分。 */
 function unexpectedAriaHiddenStops(project: string, id: LaunchPage, actual: string[]) {
   const remaining = [...(KNOWN_ARIA_HIDDEN_STOPS[project]?.[id] ?? [])];
@@ -261,6 +265,34 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
     for (const milestone of item.milestones) expect(milestone.tabs, `${item.page}：Tab 要能到達「${milestone.name}」`).not.toBeNull();
   }
   expect(flowAriaHiddenStops, "§11.1 只用鍵盤的流程：經過的 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a）").toEqual([]);
+  // V4-1：KNOWN_ARIA_HIDDEN_STOPS 已清空，1440 與 390 七頁走查加上 §11.1 流程的 aria-hidden 停留點合計必須是 0。
+  expect(ariaHiddenTotal, "V4-1：aria-hidden 內的 Tab 停留點合計 0").toBe(0);
+  // V4-1：390 總覽兩張瀑布的外框是合法停留點（region，不在 aria-hidden 內）；1440 不捲動，不是停留點。
+  const overviewWalk = walks.find(item => item.page === "overview")!;
+  expect(waterfallRegionStops(overviewWalk), "V4-1：瀑布外框 region 停留點").toEqual(testInfo.project.name === "mobile" ? WATERFALL_REGIONS : []);
   expect(flow.downloaded).toMatch(/\.csv$/);
+  expect(errors).toEqual([]);
+});
+
+test("V4-1 鍵盤走查（768）：總覽沒有 aria-hidden 內的 Tab 停留點；兩張瀑布外框是 region 停留點", async ({ page }, testInfo) => {
+  // 上面的七頁走查只跑 1440 與 390；06 V4-1 要求 768 寬一併確認瀑布外框的修正（768 的瀑布同樣比外框寬、在框內水平捲動）。
+  test.skip(testInfo.project.name !== "tablet", "只跑 768（tablet）；1440 與 390 由上面的七頁走查涵蓋");
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(`pageerror:${error.message}`));
+  await hideDevOverlay(page);
+  await page.goto("/");
+  await loadDemo(page);
+  const overview = await walk(page, "overview");
+  const written = await writeLaunchJson("KEYBOARD_WALK_OUT", "keyboard-walk.json", testInfo, { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, walks: [overview], ariaHiddenStopsTotal: overview.ariaHiddenStops.length, waterfallRegionStops: waterfallRegionStops(overview), pageErrors: errors, note: "V4-1：只走總覽（瀑布外框的 aria-hidden 修正在 768 的確認）" });
+  testInfo.annotations.push({ type: "keyboard-walk", description: written });
+  expect(overview.startedOnMain).toBe(true);
+  expect(overview.ariaHiddenStops, "768 總覽：任何 Tab 停留點都不在 [aria-hidden=true] 內").toEqual([]);
+  expect(waterfallRegionStops(overview), "768 總覽：兩張瀑布外框都是 region 停留點").toEqual(WATERFALL_REGIONS);
+  expect(overview.invisibleStops).toEqual([]);
+  expect(overview.repeatedStops).toEqual([]);
+  expect(overview.lostFocus).toBe(0);
+  expect(overview.leftMainAt).not.toBeNull();
+  for (const milestone of overview.milestones) expect(milestone.tabs, `Tab 要能到達「${milestone.name}」`).not.toBeNull();
   expect(errors).toEqual([]);
 });

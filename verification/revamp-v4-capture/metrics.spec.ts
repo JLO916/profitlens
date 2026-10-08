@@ -10,12 +10,15 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 // 量測狀態（PRD §2.2 B）：新訪客、示範資料 ready、拒絕本機保存提示後。
 // 硬斷言（V4-0a 起每批）：
 //   B2 首屏：1440 一句話頂 ≤ 192、KPI 帶底 ≤ 420、三件事首列底 ≤ 561；1280 KPI 帶底 ≤ 420；390 扣廣告後貢獻值頂 ≤ 295。
-//      1280 的一句話頂與三件事首列底 v3 沒有量過，V4-0a 只量不斷言（V4-1 起以 V4-0a 實測為門檻，改 B2_LAPTOP_RECORDED 為斷言）。
+//      1280 的一句話頂與三件事首列底 v3 沒有量過，V4-0a 只量不斷言；V4-1 起以 V4-0a 實測（192、583）為門檻斷言（06_BATCHES 護欄表 B2）。
 //   B3 七頁在 390 寬 document.scrollingElement.scrollWidth ≤ 390（頁面不橫向捲動；.chart-frame.waterfall 與 .table-scroll 內部捲動不影響這個值）。
 //   B5 First Load JS gzip ≤ 545,397 bytes（v3.0.0 的 519,426 × 1.05，D-V4-24）；首載 chunk 中 Treemap、Sankey、Funnel、PieChart、RadarChart 字串出現 0 次。
-// 只記錄（V4-1 起依 06_BATCHES 護欄表的時程改成斷言）：
-//   B1 參考位置（總覽第一張 .chart-frame 頂、健檢清單第一列頂與 G10 插入處頂、試算方案比較表區塊頂、資料來源狀態列底）、健檢首列底；
-//   B8 各頁主層否定句數；B9 七頁載入示範資料後的 document.querySelectorAll('*').length；首頁 HTML 每個 chunk 的檔名與 gzip 大小。
+// V4-1 起硬斷言（06_BATCHES 護欄表 B1、B9；PRD §2.2）：
+//   B9 七頁（1440、1280、390）載入示範資料後的 DOM 節點數 ≤ V4-0a 基準＋1,500（B9_BASELINE，取自 verification/revamp-v4/V4-0a/metrics.json）。
+//   B1 依護欄表的時程：總覽第一張 .chart-frame 頂在 1440 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）；健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）、
+//      商品第一張 .chart-frame 頂 ≤ 900（V4-4 起）、試算 G15 頂 ≤ 方案比較表區塊頂（V4-0a）＋24（V4-5 起）、資料來源 G20 頂 ≤ 900（V4-7a 起）由各批加進 B1_ASSERTED。
+// 只記錄：B1 其餘參考位置（健檢清單第一列頂與 G10 插入處頂、試算方案比較表區塊頂、資料來源狀態列底，以及 1280、390 的總覽第一張 .chart-frame 頂）、健檢首列底；
+//   B8 各頁主層否定句數；首頁 HTML 每個 chunk 的檔名與 gzip 大小。
 // 執行 desktop（1440×1000）、laptop（1280×900）、mobile（390×844）三個 project；tablet 略過。所有位置是文件座標（已捲回頂端），單位 CSS px，取到 0.1。
 const batch = process.env.CAPTURE_BATCH ?? "V4-0a";
 const OUT = resolve(process.env.METRICS_OUT ?? `verification/revamp-v4/${batch}/metrics.json`);
@@ -23,14 +26,32 @@ const MODULES_OUT = resolve(process.env.FIRST_LOAD_MODULES_OUT ?? `verification/
 /** KPI 帶的五格（C1）。v3 的「KPI 帶底 419」是五格底邊的最大值（verification/revamp-v3/V3-10/metrics.json 的 kpiCardsBottom），v4 沿用同一口徑斷言，另記 kpi-band 元素本身的底。 */
 const KPI_CARDS = ".kpi-band [data-testid^='kpi-']";
 
-/** PRD §2.2 B2 的門檻（CSS px）。 */
+/**
+ * PRD §2.2 B2 的門檻（CSS px）。1280 的一句話頂 192 與三件事首列底 583 是 V4-0a 實測（verification/revamp-v4/V4-0a/metrics.json 的 laptop.firstScreen），
+ * V4-0a 只記錄（當時的 B2_LAPTOP_RECORDED），V4-1 起改成斷言「不晚於 V4-0a 實測」；metrics.json 的 b2.recordedOnly 因此是空物件。
+ */
 const B2 = {
   desktop: { snapshotSentenceTop: 192, kpiCardsBottom: 420, topThreeFirstRowBottom: 561 },
-  laptop: { kpiCardsBottom: 420 },
+  laptop: { snapshotSentenceTop: 192, kpiCardsBottom: 420, topThreeFirstRowBottom: 583 },
   mobile: { contributionAfterMarketingValueTop: 295 },
 } as const;
-/** 1280 只量不斷言的兩項（V4-0a）。 */
-const B2_LAPTOP_RECORDED = ["snapshotSentenceTop", "topThreeFirstRowBottom"] as const;
+/**
+ * B9（V4-1 起硬斷言）：V4-0a 在三個尺寸、七頁載入示範資料後量到的 DOM 節點數（verification/revamp-v4/V4-0a/metrics.json 的 {project}.pages.{page}.domNodes）。
+ * 各頁 ≤ 基準＋B9_ALLOWANCE。
+ */
+const B9_BASELINE: Record<"desktop" | "laptop" | "mobile", Record<SevenPage, number>> = {
+  desktop: { overview: 3075, diagnosis: 1324, products: 1822, scenarios: 660, actions: 688, meeting: 998, data: 1129 },
+  laptop: { overview: 3099, diagnosis: 1324, products: 1822, scenarios: 660, actions: 688, meeting: 998, data: 1129 },
+  mobile: { overview: 3062, diagnosis: 1324, products: 1822, scenarios: 660, actions: 688, meeting: 998, data: 1129 },
+};
+const B9_ALLOWANCE = 1_500;
+/**
+ * B1（06_BATCHES 護欄表「B1 首屏有圖（1440）」；PRD §2.2 B1）依批次加入的硬斷言（只在 1440）：值是 b1 記錄裡的路徑與上限。
+ * V4-1：總覽第一張 .chart-frame 頂 ≤ min(900, V4-0a 實測 855)。之後的批次在這裡加健檢（V4-3a）、商品（V4-4）、試算（V4-5）、資料來源（V4-7a）。
+ */
+const B1_ASSERTED: { project: "desktop"; page: SevenPage; key: string; max: number; note: string }[] = [
+  { project: "desktop", page: "overview", key: "firstChartFrameTop", max: Math.min(900, 855), note: "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）" },
+];
 /** B3：390 寬頁面不橫向捲動。 */
 const B3_MAX_SCROLL_WIDTH = 390;
 /** B5（D-V4-24）。 */
@@ -177,7 +198,7 @@ test("B2 首屏位置（1440、1280、390）與內容前控制項數", async ({ 
     kpiCards: cards.map(card => ({ id: card.id, top: round(card.top), bottom: round(card.bottom) })),
     viewportHeight: page.viewportSize()!.height,
     numbersVisibleInFirstScreen: contribution.top < page.viewportSize()!.height,
-    b2: { asserted: thresholds, recordedOnly: project === "laptop" ? Object.fromEntries(B2_LAPTOP_RECORDED.map(key => [key, measured[key]])) : {}, kpiBandBottomNote: "KPI 帶底以五格底邊最大值（kpiCardsBottom，與 v3 基準 419 同口徑）斷言；kpiBandBottom 是 kpi-band 元素本身的底，只記錄" },
+    b2: { asserted: thresholds, recordedOnly: {}, kpiBandBottomNote: "KPI 帶底以五格底邊最大值（kpiCardsBottom，與 v3 基準 419 同口徑）斷言；kpiBandBottom 是 kpi-band 元素本身的底，只記錄" },
   });
   await record([project, "focusableBeforeFirstKpi"], { count: focusable.length, method: "main 內、文件順序在第一張 KPI 卡之前、checkVisibility 可見、未 disabled、tabIndex ≥ 0、大於 1×1 px 的 a[href]／button／input／select／textarea／summary／[tabindex]；以元素計（與 v3 metrics.spec 相同）", elements: focusable });
   for (const [key, max] of Object.entries(thresholds)) expect.soft(measured[key as keyof typeof measured], `B2 ${project} ${key} ≤ ${max}`).toBeLessThanOrEqual(max);
@@ -197,7 +218,7 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
     const negations = await mainLayerNegations(page);
     scrollWidths[id] = scroll.scrollWidth;
     pages[id] = { domNodes, ...scroll, mainLayerNegations: { count: negations.length, sentences: negations } };
-    if (id === "overview") b1.overview = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame"))?.top ?? null };
+    if (id === "overview") b1.overview = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame:visible"))?.top ?? null };
     if (id === "diagnosis") {
       const row = await boxOrNull(page, "[data-testid^='diagnosis-row-']");
       const summary = await boxOrNull(page, "[data-testid^='diagnosis-row-'] > summary");
@@ -209,7 +230,7 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
         note: "健檢清單第一列＝第一個 diagnosis-row-*（<details>，預設展開；firstRowBottom 含展開內容，firstRowSummaryBottom 是收合列本身的底）；G10 插入處頂＝目前 channel-compare 的頂（G10、G11、G12 插在 diagnosis-panel 與 channel-compare 之間）",
       };
     }
-    if (id === "products") b1.products = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame"))?.top ?? null, productHighlightsTop: (await boxOrNull(page, "section.product-highlights"))?.top ?? null, note: "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內" };
+    if (id === "products") b1.products = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame:visible"))?.top ?? null, productHighlightsTop: (await boxOrNull(page, "section.product-highlights"))?.top ?? null, note: "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內" };
     if (id === "scenarios") b1.scenarios = { scenarioCompareTop: (await boxOrNull(page, "section.scenario-compare"))?.top ?? null, note: "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算" };
     if (id === "data") b1.data = { dataStatusLineBottom: (await boxOrNull(page, "[data-testid='data-status-line']"))?.bottom ?? null };
   }
@@ -221,8 +242,16 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
   (b1.scenarios as Record<string, unknown>).afterCalculateNote = "方案 1 套用「維持現況」範本、同意假設、計算之後（與畫面基準 07 相同的狀態）";
 
   await record([project, "pages"], { ...pages, method: "載入示範資料後依側欄順序切到七頁（navigateTo；手機走底部分頁列或「更多」），等 h1 與該頁區塊出現、捲回頂端；domNodes＝document.querySelectorAll('*').length（連續兩次相同才記錄）；scrollWidth／clientWidth＝document.scrollingElement；mainLayerNegations＝main 主層（拿掉收合的 <details>）含「不是／不代表／不等於／不可」的句子（去重，口徑同 tests/copy-density.test.ts）" });
-  await record([project, "b1"], b1);
+  const b1Asserted = B1_ASSERTED.filter(item => item.project === project).map(item => ({ ...item, measured: ((b1[item.page] ?? {}) as Record<string, number | null>)[item.key] ?? null }));
+  await record([project, "b1"], { ...b1, asserted: b1Asserted });
+  const b9 = SEVEN_PAGES.map(id => ({ page: id, domNodes: (pages[id] as { domNodes: number }).domNodes, baseline: B9_BASELINE[project][id], max: B9_BASELINE[project][id] + B9_ALLOWANCE }));
+  await record([project, "b9"], { allowance: B9_ALLOWANCE, pages: b9, note: "V4-1 起硬斷言：各頁 DOM 節點數 ≤ V4-0a 基準＋1,500（baseline 取自 verification/revamp-v4/V4-0a/metrics.json）" });
   if (project === "mobile") for (const id of SEVEN_PAGES) expect.soft(scrollWidths[id], `B3 ${id}：390 寬 scrollWidth ≤ ${B3_MAX_SCROLL_WIDTH}`).toBeLessThanOrEqual(B3_MAX_SCROLL_WIDTH);
+  for (const item of b9) expect.soft(item.domNodes, `B9 ${project} ${item.page}：DOM 節點數 ≤ V4-0a ${item.baseline}＋${B9_ALLOWANCE}`).toBeLessThanOrEqual(item.max);
+  for (const item of b1Asserted) {
+    expect.soft(item.measured, `B1 ${project} ${item.page} ${item.key}：有量到`).not.toBeNull();
+    expect.soft(item.measured ?? Number.POSITIVE_INFINITY, `B1 ${project} ${item.note}`).toBeLessThanOrEqual(item.max);
+  }
 });
 
 test("B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首載 chunk 符號", async ({ request }, testInfo) => {
