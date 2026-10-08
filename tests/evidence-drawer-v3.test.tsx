@@ -267,3 +267,36 @@ describe("labels 一致性", () => {
     expect(v3.sourceColumns.fileLine).not.toContain("｜");
   });
 });
+
+// V4-2 代理 A（PRD §8.7、§6.4；CHART_CATALOG §1.2、G7）：EvidenceSelection 加 arrangeVersion（整理函式的版本，例如 G7a 的 assist-weeks-v1）。
+// 技術細節在 metric_version 之後另列一行，只在有給時顯示；metric_version 照舊（直接取自 domain 的值維持 contribution-v1）。
+describe("V4-2 arrangeVersion：技術細節在 metric_version 之後另列一行", () => {
+  const technical = (html: string) => between(html, '<details class="evidence-technical">', "</details>");
+  const metricRow = (version: string) => `<div><dt>metric_version</dt><dd><code>${version}</code></dd></div>`;
+
+  it("沒給 arrangeVersion（既有證據）：不出現這一行，metric_version 仍是 contribution-v1；空字串也不顯示", () => {
+    for (const evidence of [currentContribution(), { ...currentContribution(), arrangeVersion: "" }]) {
+      const html = technical(render(evidence));
+      expect(html).toContain(metricRow("contribution-v1"));
+      expect(html).not.toContain("evidence-arrange-version");
+      expect(html).not.toContain(labels.evidence.chartsV4.arrangeVersion);
+    }
+  });
+
+  it("有給時：metric_version 不被取代（仍是 contribution-v1），緊接著一行「圖表整理版本 assist-weeks-v1」（data-testid=evidence-arrange-version）", () => {
+    const html = technical(render({ ...currentContribution(), arrangeVersion: "assist-weeks-v1" }));
+    const row = `<div data-testid="evidence-arrange-version"><dt>${labels.evidence.chartsV4.arrangeVersion}</dt><dd><code>assist-weeks-v1</code></dd></div>`;
+    expect(html).toContain(`${metricRow("contribution-v1")}${row}`);
+    expect(html.match(/<dt>metric_version<\/dt>/g)).toHaveLength(1);
+    // 指標定義段的「版本 …」仍是 metric_version（整理函式的版本只在技術細節）。
+    expect(render({ ...currentContribution(), arrangeVersion: "assist-weeks-v1" })).toContain(`<span class="evidence-version">${fill(v3.version, { version: "contribution-v1" })}</span>`);
+  });
+
+  it("自帶 metricVersion 的證據（例如件數 assist-kpi-v1）加 arrangeVersion 時，兩個版本各在自己那一行", () => {
+    const units: EvidenceSelection = { ...currentContribution(), title: labels.assist.items.units_sold.label, name: "net_revenue", metric: { value: "8", reason_codes: [] }, unitOverride: "count", metricVersion: "assist-kpi-v1", formula: labels.assist.items.units_sold.formula, arrangeVersion: "assist-weeks-v1" };
+    const html = technical(render(units));
+    expect(html).toContain(metricRow("assist-kpi-v1"));
+    expect(html.indexOf(metricRow("assist-kpi-v1"))).toBeLessThan(html.indexOf('data-testid="evidence-arrange-version"'));
+    expect(html).toContain("<code>assist-weeks-v1</code>");
+  });
+});

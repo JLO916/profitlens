@@ -1,7 +1,9 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ASSIST_KPI_VERSION, assistKpis, type AssistKpi } from "@/application/assist-kpi";
+import { assistKpis, type AssistKpi } from "@/application/assist-kpi";
+import { assistWeeks } from "@/application/chart-assist-weeks";
+import { AssistSparkCell, AssistWeeksDetails, assistEvidence, assistSparkHead } from "./assist-spark";
 import { BREAKEVEN_MER_VERSION, breakevenEvidenceFormula, breakevenMer, breakevenNote, type BreakevenMer } from "@/application/breakeven-mer";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Period } from "@/domain/types";
@@ -27,13 +29,16 @@ export interface AssistTableProps {
 /**
  * 總覽區塊 9「其他常用指標」（C2 兩欄緊湊表，assist-kpi-v1）：本期與上期都是 number-link，抽屜內容同 v2；不加差額欄（PRD §7.1 區塊 9）。
  * 不適用／資料待補的數值用第三色。
+ * V4-2 G7a（assist-spark.tsx）：每列加「近 {n} 週」sparkline 欄（aria-hidden、不可點），面板最後加「各指標每週」資料表（收合、保持掛載）。
  */
 export function AssistTable({ snapshot, onEvidence, onBasis, budget = null }: AssistTableProps) {
   const { report } = snapshot;
   const { previous: previousSummary, current: currentSummary } = report;
   const assist = useMemo(() => ({ previous: assistKpis(previousSummary), current: assistKpis(currentSummary) }), [previousSummary, currentSummary]);
   const channels = report.scope.channels;
-  const open = (item: AssistKpi, period: Period) => () => onEvidence({ title: item.label, name: item.metric ?? "net_revenue", metric: { value: item.value, reason_codes: item.reason_codes }, period, channels, sources: item.sources, formula: item.formula, formulaTechnical: item.formulaTechnical, metricVersion: item.metric ? undefined : ASSIST_KPI_VERSION, nullDisplay: item.status === "not_applicable" ? labels.assist.notApplicable : undefined, unitOverride: item.unit === "count" ? "count" : item.unit === "money_per_unit" ? "money_per_unit" : undefined });
+  const open = (item: AssistKpi, period: Period) => () => onEvidence(assistEvidence(item, period, channels));
+  // V4-2 G7a：本期最後 ≤ 8 週（assist-weeks-v1）——每列的「近 {n} 週」sparkline 與面板最後的「各指標每週」資料表共用。
+  const weekly = useMemo(() => assistWeeks({ weeks: snapshot.weeks }), [snapshot.weeks]);
   const rows = assist.current.map((kpi, index) => ({ kpi, previous: assist.previous[index] }));
   const breakeven = useMemo(() => ({ previous: breakevenMer(previousSummary), current: breakevenMer(currentSummary) }), [previousSummary, currentSummary]);
   const section = labels.overview.sections.assistKpis;
@@ -43,18 +48,20 @@ export function AssistTable({ snapshot, onEvidence, onBasis, budget = null }: As
     <div className="panel assist-panel">
       <div className="assist-grid">
         {[rows.slice(0, SPLIT), rows.slice(SPLIT)].map((group, index) => <table className="kv" key={index} aria-labelledby="assist-title">
-          <thead><tr><th scope="col">{ui.columns.metric}</th><th scope="col" className="num">{ui.columns.current}</th><th scope="col" className="num">{ui.columns.previous}</th></tr></thead>
+          <thead><tr><th scope="col">{ui.columns.metric}</th><th scope="col" className="num">{ui.columns.current}</th><th scope="col" className="num">{ui.columns.previous}</th><th scope="col" className="spark-head">{assistSparkHead(weekly)}</th></tr></thead>
           <tbody>{group.map(({ kpi, previous }) => <Fragment key={kpi.id}>
             <tr data-testid={`assist-${kpi.id}`}>
               <th scope="row" title={kpi.plain}>{kpi.label}</th>
               <td className={`num ${kpi.status}`}>{cell(kpi, report.current.period, ui.columns.current)}</td>
               <td className={`num prev ${previous.status}`}>{cell(previous, report.previous.period, ui.columns.previous)}</td>
+              <td className="spark-cell"><AssistSparkCell data={weekly} kpi={kpi} /></td>
             </tr>
-            {kpi.id === "marketing_burden" && budget !== null && <tr className="kv-target"><td colSpan={3}>{budget}</td></tr>}
+            {kpi.id === "marketing_burden" && budget !== null && <tr className="kv-target"><td colSpan={4}>{budget}</td></tr>}
           </Fragment>)}</tbody>
         </table>)}
       </div>
       <BreakevenRow breakeven={breakeven} report={report} onEvidence={onEvidence} />
+      <AssistWeeksDetails data={weekly} kpis={assist.current} channels={channels} anchor={snapshot.data_as_of} onEvidence={onEvidence} />
     </div>
   </section>;
 }

@@ -29,6 +29,11 @@ export interface EvidenceSelection {
   /** V3-9a 收尾：非 domain 指標（例如損益兩平 MER）自帶的白話定義；沒給時用 metricDefinitions[name].plain。 */
   definition?: string;
   metricVersion?: string;
+  /**
+   * V4-2（PRD §8.7、CHART_CATALOG §1.2）：值直接取自 domain、只經圖表整理函式排列或分段時，那個整理函式的版本（例如 G7a 的 assist-weeks-v1）。
+   * 不取代 metricVersion：metric_version 照舊（domain 值是 contribution-v1，件數、件均是 assist-kpi-v1）；技術細節在 metric_version 之後另列一行，只在有給時顯示。
+   */
+  arrangeVersion?: string;
   nullDisplay?: string;
   /** 商品層級證據：不畫四層階梯（商品只看毛利）。 */
   sku?: string;
@@ -320,6 +325,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
             {evidence.metric.reason_codes.length > 0 && <div><dt>{copy.conditions}</dt><dd><ul>{evidence.metric.reason_codes.map((reason) => <li key={reason}><code>{reason}</code></li>)}</ul></dd></div>}
             {evidence.components?.some(component => component.metric.reason_codes.length > 0) && <div><dt>{copy.components}</dt><dd><ul>{evidence.components.filter(component => component.metric.reason_codes.length > 0).map((component, index) => <li key={index}>{component.label}：<code>{component.metric.reason_codes.join("、")}</code></li>)}</ul></dd></div>}
             <div><dt>metric_version</dt><dd><code>{metricVersion}</code></dd></div>
+            {evidence.arrangeVersion !== undefined && evidence.arrangeVersion !== "" && <div data-testid="evidence-arrange-version"><dt>{labels.evidence.chartsV4.arrangeVersion}</dt><dd><code>{evidence.arrangeVersion}</code></dd></div>}
           </dl>
           {(signed || evidence.unitOverride === "percentage-point") && <p className="note" data-testid="evidence-rounding-note">{labels.format.roundingNote}</p>}
         </details>

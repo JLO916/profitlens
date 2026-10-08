@@ -3,6 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { ASSIST_KPI_IDS, assistKpis } from "../src/application/assist-kpi";
+import { assistWeeks } from "../src/application/chart-assist-weeks";
 import { channelsLabel, formatHeadlineAmount } from "../src/application/copy";
 import { createReviewSession } from "../src/application/review-session";
 import { deltaTone, deltaWord, formatGrowth, formatMetric, formatPeriodL1, formatRatePoints, metricDefinitions } from "../src/application/presentation";
@@ -238,7 +239,8 @@ describe("V3-4a 其他常用指標（C2 兩欄緊湊表）", () => {
     expect(assist).toContain(`<h2 id="assist-title">${section}</h2><button type="button" class="btn-help" aria-label="${escapeAttr(fill(assistUi.helpAria, { section }))}" title="${escapeAttr(labels.assist.intro)}">`);
     const tables = assist.match(/<table class="kv"[^>]*>[\s\S]*?<\/table>/g)!;
     expect(tables).toHaveLength(2);
-    const header = `<thead><tr><th scope="col">${assistUi.columns.metric}</th><th scope="col" class="num">${assistUi.columns.current}</th><th scope="col" class="num">${assistUi.columns.previous}</th></tr></thead>`;
+    // V4-2 G7a：兩張表各多一欄「近 {n} 週」sparkline（golden 本期 1 天＝1 週）；本期、上期兩欄不變。
+    const header = `<thead><tr><th scope="col">${assistUi.columns.metric}</th><th scope="col" class="num">${assistUi.columns.current}</th><th scope="col" class="num">${assistUi.columns.previous}</th><th scope="col" class="spark-head">${fill(labels.overview.chartsV4.assistSpark.head, { n: assistWeeks(golden.snapshot).weeks.length })}</th></tr></thead>`;
     for (const table of tables) expect(table).toContain(header);
     const rows = tables.map(table => [...table.matchAll(/data-testid="assist-([a-z_]+)"/g)].map(match => match[1]));
     expect(rows.map(ids => ids.length)).toEqual([4, 3]);
@@ -250,7 +252,10 @@ describe("V3-4a 其他常用指標（C2 兩欄緊湊表）", () => {
       expect(row.match(/class="number-link"/g), kpi.id).toHaveLength(2);
       expect(row, kpi.id).toContain(`<td class="num ${kpi.status}">${link(fill(assistUi.cellAria, { metric: kpi.label, period: assistUi.columns.current, value: kpi.display }), kpi.display)}</td>`);
       expect(row, kpi.id).toContain(`<td class="num prev ${previous[index].status}">${link(fill(assistUi.cellAria, { metric: previous[index].label, period: assistUi.columns.previous, value: previous[index].display }), previous[index].display)}</td>`);
-      expect(row.match(/<td\b/g), kpi.id).toHaveLength(2);
+      // V4-2 G7a：第三格是 td.spark-cell（sparkline，aria-hidden、不可點），數字格仍是兩格。
+      expect(row.match(/<td\b/g), kpi.id).toHaveLength(3);
+      expect(row.match(/<td class="num/g), kpi.id).toHaveLength(2);
+      expect(row, kpi.id).toContain('<td class="spark-cell">');
     }
   });
 
@@ -259,7 +264,8 @@ describe("V3-4a 其他常用指標（C2 兩欄緊湊表）", () => {
     const assist = byTestId(html, "assist-kpis");
     const burden = byTestId(assist, "assist-marketing_burden");
     const after = assist.slice(assist.indexOf(burden) + burden.length);
-    expect(after).toMatch(/^<tr class="kv-target"><td colSpan="3"><p class="kpi-target matched" data-testid="kpi-target-ad_spend"><span class="kpi-bullet is-behind" aria-hidden="true">/);
+    // V4-2 G7a：表格多一欄 sparkline，目標列跨四欄。
+    expect(after).toMatch(/^<tr class="kv-target"><td colSpan="4"><p class="kpi-target matched" data-testid="kpi-target-ad_spend"><span class="kpi-bullet is-behind" aria-hidden="true">/);
     const budget = byTestId(assist, "kpi-target-ad_spend");
     expect(textOf(budget)).toBe(fill(labels.targets.achievedBudget, { target: targetDisplay(targets.rows[3], "L1"), rate: achievement(golden.snapshot.report.current.metrics.ad_spend, targets.rows[3].target).display }));
     expect(render()).not.toContain('class="kv-target"');
