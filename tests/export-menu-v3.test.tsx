@@ -62,31 +62,31 @@ describe("V3-7 C 頂欄匯出選單（§7.9、§6.5）", () => {
 
   const itemsFor = (source: ExportMenuSource): Record<(typeof GROUPS)[number], Item[]> => ({
     "download-group-current": [
-      ["download-analysis", labels.downloads.analysisCsv, describeCopy.analysisCsv],
-      ["download-channels", labels.downloads.channelTableCsv, describeCopy.channelTableCsv],
-      ["download-manifest", labels.downloads.manifestJson, describeCopy.manifestJson],
-      ...(source.dataset.issues.length > 0 ? [["download-issues", labels.downloads.issuesCsv, fill(describeCopy.issuesCsv, { n: source.dataset.issues.length })] as Item] : []),
+      ["download-analysis", labels.exports.downloads.analysisCsv, describeCopy.analysisCsv],
+      ["download-channels", labels.exports.downloads.channelTableCsv, describeCopy.channelTableCsv],
+      ["download-manifest", labels.exports.downloads.manifestJson, describeCopy.manifestJson],
+      ...(source.dataset.issues.length > 0 ? [["download-issues", labels.exports.downloads.issuesCsv, fill(describeCopy.issuesCsv, { n: source.dataset.issues.length })] as Item] : []),
     ],
     "download-group-summary": [
-      ["download-pdf", labels.buttons.exportPdf, fill(describeCopy.exportPdf, { hint: labels.meetingPage.pdfHint })],
-      ["download-excel", labels.buttons.exportExcel, describeCopy.exportExcel],
-      ["download-pptx", labels.buttons.exportPptx, describeCopy.exportPptx],
-      ["download-meeting-md", labels.meetingPage.menuMarkdown, describeCopy.menuMarkdown],
+      ["download-pdf", labels.exports.buttons.exportPdf, fill(describeCopy.exportPdf, { hint: labels.meeting.page.pdfHint })],
+      ["download-excel", labels.exports.buttons.exportExcel, describeCopy.exportExcel],
+      ["download-pptx", labels.exports.buttons.exportPptx, describeCopy.exportPptx],
+      ["download-meeting-md", labels.meeting.page.menuMarkdown, describeCopy.menuMarkdown],
     ],
     "download-group-decision": [
-      ["download-decision-md", labels.downloads.decisionMd, describeCopy.decisionMd],
-      ["download-decision-csv", labels.downloads.decisionCsv, describeCopy.decisionCsv],
-      ["download-decision-json", labels.downloads.decisionJson, describeCopy.decisionJson],
+      ["download-decision-md", labels.exports.downloads.decisionMd, describeCopy.decisionMd],
+      ["download-decision-csv", labels.exports.downloads.decisionCsv, describeCopy.decisionCsv],
+      ["download-decision-json", labels.exports.downloads.decisionJson, describeCopy.decisionJson],
     ],
     "download-group-meeting": [["download-copy-summary", labels.overview.snapshotUi.copy, describeCopy.copySummary]],
     "download-group-templates": [],
   });
   const titles: Record<(typeof GROUPS)[number], string> = {
-    "download-group-current": labels.sections.downloadCurrentView,
-    "download-group-summary": labels.sections.meetingSummary,
-    "download-group-decision": labels.sections.downloadDecision,
+    "download-group-current": labels.shell.sections.downloadCurrentView,
+    "download-group-summary": labels.meeting.sections.meetingSummary,
+    "download-group-decision": labels.shell.sections.downloadDecision,
     "download-group-meeting": menu.groupMeeting,
-    "download-group-templates": labels.downloads.templatesHeading,
+    "download-group-templates": labels.exports.downloads.templatesHeading,
   };
 
   it("五個分組依序：目前檢視、一頁摘要（目前檢視）、決策工作稿、會議、匯入範本；分組是 role=group，以 aria-labelledby 指到 12px 分組標題（.ui-menu-group）", () => {
@@ -135,7 +135,7 @@ describe("V3-7 C 頂欄匯出選單（§7.9、§6.5）", () => {
         });
       }
       expect(count(html, 'class="export-item-name"')).toBe(Object.values(items).flat().length);
-      expect(html.includes(labels.downloads.issuesCsv)).toBe(source.dataset.issues.length > 0);
+      expect(html.includes(labels.exports.downloads.issuesCsv)).toBe(source.dataset.issues.length > 0);
       // PDF 的說明行帶列印提示；v2 的 aria-describedby id 沿用。
       expect(html).toContain('aria-describedby="download-pdf-hint"');
     });
@@ -144,10 +144,10 @@ describe("V3-7 C 頂欄匯出選單（§7.9、§6.5）", () => {
   it("17 個 v2 下載項的名稱都還在（目前檢視 4、一頁摘要 4、決策工作稿 3、範本 6），加上會議分組的「複製週會摘要」", () => {
     const html = render(withIssues);
     const names = [...html.matchAll(/class="export-item-name">([^<]+)<\/span>/g)].map(match => match[1]);
-    expect(names).toEqual([labels.downloads.analysisCsv, labels.downloads.channelTableCsv, labels.downloads.manifestJson, labels.downloads.issuesCsv, labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown, labels.downloads.decisionMd, labels.downloads.decisionCsv, labels.downloads.decisionJson, labels.overview.snapshotUi.copy].map(escapeText));
+    expect(names).toEqual([labels.exports.downloads.analysisCsv, labels.exports.downloads.channelTableCsv, labels.exports.downloads.manifestJson, labels.exports.downloads.issuesCsv, labels.exports.buttons.exportPdf, labels.exports.buttons.exportExcel, labels.exports.buttons.exportPptx, labels.meeting.page.menuMarkdown, labels.exports.downloads.decisionMd, labels.exports.downloads.decisionCsv, labels.exports.downloads.decisionJson, labels.overview.snapshotUi.copy].map(escapeText));
     const templates = element(html, 'data-testid="download-templates"');
     const controls = [...templates.matchAll(/aria-label="([^"]+)"/g)].map(match => match[1]);
-    expect(controls).toEqual((["sales", "costs", "ads"] as const).flatMap(role => [fill(labels.downloads.blankTemplate, { file: labels.importWizard.files[role] }), fill(labels.downloads.exampleTemplate, { file: labels.importWizard.files[role] })]));
+    expect(controls).toEqual((["sales", "costs", "ads"] as const).flatMap(role => [fill(labels.exports.downloads.blankTemplate, { file: labels.importWizard.files[role] }), fill(labels.exports.downloads.exampleTemplate, { file: labels.importWizard.files[role] })]));
     expect(names.length - 1 + controls.length).toBe(17);
   });
 
@@ -163,8 +163,8 @@ describe("V3-7 C 頂欄匯出選單（§7.9、§6.5）", () => {
 
   it("v2 的 menuNote 與 menuViewNote 兩段說明不再出現；範圍差異寫在每項的說明行（一頁摘要 Excel／PPT：目前畫面、不含會議決議；會議紀錄 Markdown：最近一次已結束會議）", () => {
     for (const html of [render(withIssues), render(clean), render(null)]) {
-      expect(html).not.toContain(escapeText(labels.downloads.menuNote));
-      expect(html).not.toContain(escapeText(labels.meetingPage.menuViewNote));
+      expect(html).not.toContain(escapeText(labels.exports.downloads.menuNote));
+      expect(html).not.toContain(escapeText(labels.meeting.page.menuViewNote));
       expect(html).not.toContain('class="menu-note" role="status"');
     }
     expect(describeCopy.exportExcel).toContain("不含會議決議");
@@ -174,7 +174,7 @@ describe("V3-7 C 頂欄匯出選單（§7.9、§6.5）", () => {
 
   it("沒有可看的資料（source 為 null）：只有匯入範本分組與一句 menuEmpty；即使有 onCopySummary 也不出現會議分組", () => {
     const html = render(null);
-    expect(html).toContain(`${labels.status.empty}；${labels.downloads.menuEmpty}`);
+    expect(html).toContain(`${labels.shell.status.empty}；${labels.exports.downloads.menuEmpty}`);
     for (const id of ["download-menu", "download-group-templates", "download-templates"]) expect(count(html, `data-testid="${id}"`), id).toBe(1);
     for (const id of ["download-group-current", "download-group-summary", "download-group-decision", "download-group-meeting", "download-meeting-section", "download-copy-summary", "download-copy-summary-status"]) expect(html, id).not.toContain(`data-testid="${id}"`);
     expect(html).not.toContain("export-item-name");
@@ -208,7 +208,7 @@ describe("V3-7 C 頂欄匯出選單（§7.9、§6.5）", () => {
       // 同步項目（PDF、目前檢視、決策工作稿）不受影響。
       expect(attrOf(openTag(html, 'aria-labelledby="download-pdf-name"'), "aria-disabled")).toBeNull();
       expect(attrOf(openTag(html, 'aria-labelledby="download-analysis-name"'), "aria-disabled")).toBeNull();
-      expect(summary).toContain(`<p class="sr-only" role="status">${labels.meetingPage.exporting}</p>`);
+      expect(summary).toContain(`<p class="sr-only" role="status">${labels.meeting.page.exporting}</p>`);
       expect(html).not.toContain('role="alert"');
     });
   }
@@ -217,7 +217,7 @@ describe("V3-7 C 頂欄匯出選單（§7.9、§6.5）", () => {
     expect(element(render(clean), 'data-testid="download-group-summary"')).toContain('<p class="sr-only" role="status"></p>');
   });
 
-  for (const [error, id, text] of [["export", "download-excel", labels.meetingPage.exportError], ["markdown", "download-meeting-md", labels.meetingPage.markdownError]] as const) {
+  for (const [error, id, text] of [["export", "download-excel", labels.meeting.page.exportError], ["markdown", "download-meeting-md", labels.meeting.page.markdownError]] as const) {
     it(`失敗（error=${error}）：錯誤一行（role=alert）緊接在該項按鈕下方、同一個 .menu-item 內，按鈕的 aria-describedby 也指到它；其他項目沒有錯誤行`, () => {
       const html = render(clean, { error });
       expect(count(html, 'role="alert"')).toBe(1);

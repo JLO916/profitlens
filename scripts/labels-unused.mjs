@@ -5,8 +5,9 @@
 // 1. 從 `labels`（以及把 labels 子物件存進變數、解構出來的名稱）出發，沿著 a.b.c 取值鏈解析出 labels 路徑。
 // 2. 取值鏈停在字串葉節點 → 只算那一個葉節點有引用；停在物件但之後接的是方法、方括號索引、
 //    當參數傳出去、展開、迭代等任何「整個物件被拿走」的用法 → 整棵子樹都算有引用。
-// 3. 程式碼裡任何字串常值剛好等於某個 labels 路徑（新路徑或 v2 舊路徑，例如 t("metrics.mer.label")）→ 算有引用。
-// 4. 路徑一律經 legacyAliases 換成新路徑後比對，所以元件用舊路徑（labels.ui.dashboard.skipLink）也算新路徑有引用。
+// 3. 程式碼裡任何字串常值剛好等於某個 labels 路徑（新路徑或 v2 舊路徑，例如 t("metrics.mer.headline")）→ 算有引用。
+// 4. V3-10 起 labels 只剩新分組（v2 舊鍵 alias 已移除），程式碼只用新路徑；v2 舊路徑（例如 copy-rewrite.csv 的鍵）經
+//    tests/fixtures/labels-legacy-map.json（移除前凍結的 legacyAliases）換成新路徑後比對。
 // 5. 動態索引的物件（DYNAMIC_PARENTS）與 copy-rewrite.csv 標成 removed、但 V3-2 版面改版前仍顯示的列一律保留。
 //
 // 用法：node scripts/labels-unused.mjs [--json]
@@ -24,8 +25,8 @@ const asJson = args.includes("--json");
 export const DYNAMIC_PARENTS = [
   "rules", // labels.rules[code]
   "metrics", // labels.metrics[name]
-  "errors.import", // labels.importErrors[reason]
-  "scenarios.sensitivity.reasons", // labels.ui.scenarioSensitivity.reasons[code]
+  "errors.import", // labels.errors.import[reason]
+  "scenarios.sensitivity.reasons", // labels.scenarios.sensitivity.reasons[code]
   "glossary.terms",
   "glossary.basis.items",
   "glossary.aliases",
@@ -36,6 +37,8 @@ export const DYNAMIC_PARENTS = [
 ];
 
 const SOURCE_DIRS = { src: ["src"], outside: ["tests", "scripts"] };
+/** V3-10：v2 舊路徑 → 新路徑的凍結對照（leaves）。 */
+const LEGACY_MAP = "tests/fixtures/labels-legacy-map.json";
 const EXCLUDE = [/^src\/i18n\//, /^scripts\/labels-(regroup|unused)\.mjs$/, /node_modules/];
 
 function listFiles(dir) {
@@ -143,11 +146,11 @@ function leavesUnder(node, path, out) {
 
 export async function findUnused() {
   const mod = await loadLabelsModule({ root: ROOT });
-  const { labels, LABEL_GROUPS, legacyAliases } = mod;
+  const { labels, LABEL_GROUPS } = mod;
+  const legacyAliases = JSON.parse(readFileSync(resolve(ROOT, LEGACY_MAP), "utf8")).leaves;
   const toNew = path => legacyAliases[path] ?? path;
-  // 新分組的葉節點（略過同名分組裡指到別處的 v2 舊鍵）。
-  const isAlias = path => Object.hasOwn(legacyAliases, path) && legacyAliases[path] !== path;
-  const newLeaves = LABEL_GROUPS.flatMap(group => leavesUnder(labels[group], group, [])).filter(path => !isAlias(path));
+  // 新分組的葉節點（V3-10 起 labels 頂層就是 LABEL_GROUPS，沒有 alias）。
+  const newLeaves = LABEL_GROUPS.flatMap(group => leavesUnder(labels[group], group, []));
   const oldPathsOf = new Map();
   for (const [from, to] of Object.entries(legacyAliases)) if (from !== to) oldPathsOf.set(to, [...(oldPathsOf.get(to) ?? []), from]);
   const knownPaths = new Set([...newLeaves, ...Object.keys(legacyAliases)]);

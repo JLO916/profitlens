@@ -114,16 +114,16 @@ function sheet<C extends Columns>(name: string, columns: C, records: readonly Sh
 }
 /** 工作表表頭：金額欄加「（元）」，其他欄沿用 labels。 */
 export function excelHeader(label: string, format?: ExcelNumberFormat | null): string {
-  return isMoneyFormat(format) ? fill(labels.ui.export.moneyColumn, { label }) : label;
+  return isMoneyFormat(format) ? fill(labels.exports.common.moneyColumn, { label }) : label;
 }
 /** labels 的對照表只認自己的 key（避免 "constructor" 之類的原型屬性）；查不到就原樣顯示。 */
 function lookup(table: Readonly<Record<string, string>>, key: string): string {
   return Object.hasOwn(table, key) ? table[key] : key;
 }
 
-const copy = labels.excelExport;
+const copy = labels.exports.excel;
 const EXECUTION_STATUS: Record<ActionExecutionStatus, string> = {
-  not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done,
+  not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done,
 };
 
 function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSheet {
@@ -135,7 +135,7 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
   const period = (range: Period) => formatPeriodExport(range.start, range.end);
   const missing = (metrics: Metric[]) => {
     const reasons = [...new Set(metrics.filter(metric => metric.value === null).flatMap(metric => metric.reason_codes))];
-    return metrics.some(metric => metric.value === null) ? text(fill(labels.ui.managerSummary.missingWithReasons, { reasons: reasons.join("、") })) : EMPTY;
+    return metrics.some(metric => metric.value === null) ? text(fill(labels.meeting.managerSummary.missingWithReasons, { reasons: reasons.join("、") })) : EMPTY;
   };
   // V3-7 §7.9／§9.6：摘要工作表最前面是版頭四列（區塊「版頭」，內容欄放各行），之後才是既有的資料範圍與關鍵數字（列與數值不變）。
   const header = buildExportHeader({
@@ -150,12 +150,12 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
   if (spec.sections.kpis === "four") {
     if (spec.sections.oneLiner) records.push({ section: text(labels.overview.snapshotUi.heading), detail: text(variantOneLiner(summary, input.snapshot)) });
     for (const row of variantKpis(summary, input.snapshot.report)) records.push({
-      section: text(s.sections.keyDeltas), item: text(labels.metrics[row.metric].label), scope: text(total),
+      section: text(s.sections.keyDeltas), item: text(labels.metrics[row.metric].headline), scope: text(total),
       previous: moneyCell(row.previous.value), current: moneyCell(row.current.value), change: moneyCell(row.change.value), detail: missing([row.previous, row.current, row.change]),
     });
-    if (!summary.priorities.length) records.push({ section: text(s.sections.topThree), detail: text(labels.notes.noPriorities) });
+    if (!summary.priorities.length) records.push({ section: text(s.sections.topThree), detail: text(labels.overview.notes.noPriorities) });
     for (const [index, item] of summary.priorities.entries()) records.push({ section: text(s.sections.topThree), item: text(fill(s.priorityItem, { n: index + 1, headline: item.title })), impact: moneyCell((item.impact ?? item.ranking_amount).value) });
-    if (meeting) records.push(info(s.sections.meeting, s.items.decision, lookup(labels.meeting.decisions, meeting.decision)));
+    if (meeting) records.push(info(s.sections.meeting, s.items.decision, lookup(labels.meeting.form.decisions, meeting.decision)));
     return sheet(copy.sheets.summary, copy.columns.summary, records, { previous: "money_l2", current: "money_l2", change: "money_l2", impact: "money_l2" });
   }
   records.push(
@@ -164,11 +164,11 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
     info(s.sections.scope, s.items.asOf, summary.data_as_of),
     info(s.sections.scope, s.items.previous, period(summary.scope.previous_period)),
     info(s.sections.scope, s.items.current, period(summary.scope.current_period)),
-    info(s.sections.scope, s.items.comparison, summary.scope.comparison_mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays),
+    info(s.sections.scope, s.items.comparison, summary.scope.comparison_mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays),
     info(s.sections.scope, s.items.channels, channelsLabel(summary.scope.channels, alias)),
   );
   for (const row of summary.headlines) records.push({
-    section: text(s.sections.keyDeltas), item: text(labels.metrics[row.metric].label), scope: text(total),
+    section: text(s.sections.keyDeltas), item: text(labels.metrics[row.metric].headline), scope: text(total),
     previous: moneyCell(row.previous.value), current: moneyCell(row.current.value), change: moneyCell(row.change.value), detail: missing([row.previous, row.current, row.change]),
   });
   // V3-9a F12：損益兩平 MER 一列（區塊「其他常用指標」，接在關鍵差額之後；既有各列與數值不變）。摘要表的本期／上期欄是金額格式（money_l2），
@@ -176,7 +176,7 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
   const breakeven = summary.breakeven ?? { version: BREAKEVEN_MER_VERSION, previous: breakevenMer(input.snapshot.report.previous), current: breakevenMer(input.snapshot.report.current) };
   const multiple = (item: BreakevenMer) => text(item.value === null ? formatEmpty(item.status === "not_applicable" ? "notApplicable" : "missing", { layer: "L3", reasonCodes: item.reason_codes }) : formatMultiple(item.value, "L3"));
   records.push({ section: text(labels.overview.sections.assistKpis), item: text(breakeven.current.label), scope: text(total), previous: multiple(breakeven.previous), current: multiple(breakeven.current), detail: text(fill(labels.assist.breakevenV3.excelDetail, { version: breakeven.version })) });
-  if (!summary.priorities.length) records.push({ section: text(s.sections.topThree), detail: text(labels.notes.noPriorities) });
+  if (!summary.priorities.length) records.push({ section: text(s.sections.topThree), detail: text(labels.overview.notes.noPriorities) });
   for (const [index, item] of summary.priorities.entries()) {
     const impact = item.impact ?? item.ranking_amount;
     records.push({
@@ -187,7 +187,7 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
   if (meeting) records.push(
     info(s.sections.meeting, s.items.meetingName, meeting.name),
     info(s.sections.meeting, s.items.meetingDate, meeting.date),
-    info(s.sections.meeting, s.items.decision, lookup(labels.meeting.decisions, meeting.decision)),
+    info(s.sections.meeting, s.items.decision, lookup(labels.meeting.form.decisions, meeting.decision)),
     // V3-9b F14：決策備註是內部備註，客戶報告版不放。
     ...(spec.internal.decisionNotes ? [info(s.sections.meeting, s.items.notes, meeting.notes)] : []),
   );
@@ -207,11 +207,11 @@ function channelSheet(summary: ManagerSummary): ExcelSheet {
       channel: text(channel),
       previous_net_revenue: moneyCell(revenue.previous.value), current_net_revenue: moneyCell(revenue.current.value), net_revenue_change: moneyCell(revenue.change.value),
       previous_contribution: moneyCell(contribution.previous.value), current_contribution: moneyCell(contribution.current.value), contribution_change: moneyCell(contribution.change.value),
-      data_status: text(metrics.some(metric => metric.value === null) ? labels.status.partial : fill(labels.status.ready, { date: summary.data_as_of })),
+      data_status: text(metrics.some(metric => metric.value === null) ? labels.shell.status.partial : fill(labels.shell.status.ready, { date: summary.data_as_of })),
     };
   };
   // 最後一列合計＝兩個關鍵差額（同一個來源）；各通路差額不能再加總（口徑說明第 5 條）。
-  const records = [...summary.channels.map(row => record(channelLabel(row.channel, alias), row.revenue, row.contribution)), record(labels.sections.total, headline("net_revenue"), headline("contribution_after_marketing"))];
+  const records = [...summary.channels.map(row => record(channelLabel(row.channel, alias), row.revenue, row.contribution)), record(labels.overview.sections.total, headline("net_revenue"), headline("contribution_after_marketing"))];
   // 通路表是摘要層（§3.3 通路寬表 L2）：整數元；到分的值在 CSV 與「貢獻變化拆解」。
   const money = "money_l2" as const;
   return sheet(copy.sheets.channels, copy.columns.channels, records, { previous_net_revenue: money, current_net_revenue: money, net_revenue_change: money, previous_contribution: money, current_contribution: money, contribution_change: money });
@@ -219,29 +219,29 @@ function channelSheet(summary: ManagerSummary): ExcelSheet {
 
 function bridgeSheet(snapshot: WorkspaceSnapshot): ExcelSheet {
   const { bridge, previous, current } = snapshot.report;
-  const contribution = labels.metrics.contribution_after_marketing.label;
-  const overview = labels.ui.overview;
+  const contribution = labels.metrics.contribution_after_marketing.headline;
+  const overview = labels.overview.page;
   const records: SheetRecord<typeof copy.columns.bridge>[] = [
     // 第一列：上期與本期扣廣告後貢獻，以及實際差額；下面九項的對貢獻影響加總應等於這個差額。
-    { item: text(contribution), previous: moneyCell(previous.metrics.contribution_after_marketing.value), current: moneyCell(current.metrics.contribution_after_marketing.value), impact: moneyCell(bridge.contribution_change.value), formula: text(fill(labels.ui.managerSummary.changeFormula, { metric: contribution })) },
+    { item: text(contribution), previous: moneyCell(previous.metrics.contribution_after_marketing.value), current: moneyCell(current.metrics.contribution_after_marketing.value), impact: moneyCell(bridge.contribution_change.value), formula: text(fill(labels.meeting.managerSummary.changeFormula, { metric: contribution })) },
     ...AMOUNT_FIELDS.map(field => ({
-      item: text(labels.metrics[field].label), previous: moneyCell(previous.metrics[field].value), current: moneyCell(current.metrics[field].value),
+      item: text(labels.metrics[field].headline), previous: moneyCell(previous.metrics[field].value), current: moneyCell(current.metrics[field].value),
       impact: moneyCell(bridge.components[field].value), formula: text(field === "gross_sales" ? overview.amountDeltaFormula : overview.costDeltaFormula),
     })),
-    { item: text(labels.ui.export.bridgeSumLabel), impact: moneyCell(bridge.sum.value), formula: text(bridge.reconciled === true ? overview.bridgeReconciled : bridge.reconciled === null ? labels.status.missing : copy.bridge.mismatch) },
+    { item: text(labels.exports.common.bridgeSumLabel), impact: moneyCell(bridge.sum.value), formula: text(bridge.reconciled === true ? overview.bridgeReconciled : bridge.reconciled === null ? labels.shell.status.missing : copy.bridge.mismatch) },
   ];
   return sheet(copy.sheets.bridge, copy.columns.bridge, records, { previous: "money", current: "money", impact: "money" });
 }
 
 function productSheet(rows: readonly ProductComparisonRow[], alias: boolean): ExcelSheet {
-  const blank = labels.ui.productComparisonPanel.blankCategory;
+  const blank = labels.products.comparison.blankCategory;
   const records = rows.map(row => ({
     channel: text(channelLabel(row.channel, alias)), sku: text(row.sku), category: text(row.category.trim() ? categoryLabel(row.category, alias) : blank),
     current_units: countCell(row.current.metrics.units_sold.value),
     previous_net_revenue: moneyCell(row.previous.metrics.net_revenue.value), current_net_revenue: moneyCell(row.current.metrics.net_revenue.value),
     previous_gross_profit: moneyCell(row.previous.metrics.gross_profit.value), current_gross_profit: moneyCell(row.current.metrics.gross_profit.value),
     current_gross_margin: ratioCell(row.current.metrics.gross_margin.value), gross_profit_change: moneyCell(row.changes.gross_profit.value),
-    data_status: text(labels.productHighlights.status[dataStatus(row)]),
+    data_status: text(labels.products.highlights.status[dataStatus(row)]),
   }));
   return sheet(copy.sheets.products, copy.columns.products, records, {
     current_units: "count", previous_net_revenue: "money", current_net_revenue: "money", previous_gross_profit: "money", current_gross_profit: "money", current_gross_margin: "ratio", gross_profit_change: "money",
@@ -251,7 +251,7 @@ function productSheet(rows: readonly ProductComparisonRow[], alias: boolean): Ex
 /** V3-9b F13／F14：待辦工作表最後一欄「廣告決策」（使用者自選的暫停／調整／加碼；沒標是空格）；列數與既有欄位不變。 */
 const AD_DECISION_COLUMN = { ad_decision: labels.actions.adDecisionV3.csvColumn } as const;
 function actionSheet(workspace: ActionWorkspace, spec: ExportVariantSpec): ExcelSheet {
-  const board = labels.actionBoard;
+  const board = labels.actions.board;
   const records = actionDocuments(workspace).map(doc => ({
     priority: numeric(doc.priority), problem: text(doc.problem), step: text(doc.action),
     owner: text(doc.owner_role.trim() || board.unassigned), due: text(doc.deadline || board.noDeadline),
@@ -259,7 +259,7 @@ function actionSheet(workspace: ActionWorkspace, spec: ExportVariantSpec): Excel
     pinned: text(doc.pinned ? copy.actions.pinned : copy.actions.notPinned), evidence_count: numeric(doc.fact_ids.length),
     scope: text(scopeLabel(doc.binding.scope, demoAlias(doc.binding.dataset_id))),
     // 引用的是較早的資料（或舊資料待重新核對）時提醒，與待辦頁的「引用較早資料」同一句。
-    caution: doc.status === "stale" || doc.evidence_relation === "historical" ? text(labels.actions.staleBadge) : EMPTY,
+    caution: doc.status === "stale" || doc.evidence_relation === "historical" ? text(labels.actions.form.staleBadge) : EMPTY,
     ad_decision: doc.ad_decision ? text(lookup(labels.actions.adDecisionV3.options, doc.ad_decision)) : EMPTY,
   }));
   // 客戶報告版拿掉內部備註：狀態更新日（待辦進度紀錄）與「引用較早資料」（引用歷史）兩欄；其他欄與列不變，廣告決策一律在最後。
@@ -276,8 +276,8 @@ function basisSheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelShee
   // V3-9b F14：技術細節（版本與雜湊）只在 spec.appendix.technical 時放；客戶報告版的版本字串在版頭第 4 行。
   const technical = (item: string, detail: string) => spec.appendix.technical ? [row(b.sections.technical, item, detail)] : [];
   const records = [
-    ...labels.basis.items.map(item => row(b.sections.basis, null, item)),
-    row(b.sections.basis, b.alias, labels.basis.aliasNote),
+    ...labels.glossary.basis.items.map(item => row(b.sections.basis, null, item)),
+    row(b.sections.basis, b.alias, labels.glossary.basis.aliasNote),
     ...(converted ? [row(b.sections.preprocessing, b.conversion, converted)] : []),
     ...technical(csvHeader("dataset_id"), snapshot.report.dataset_id),
     ...technical(csvHeader("dataset_hash"), snapshot.dataset_hash),

@@ -35,13 +35,13 @@ test("R3 匯入精靈截圖", async ({ page }, testInfo) => {
   await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-value")).toHaveText("2,150.00");
   await shoot(page, dir, `6-overview-after-${suffix}`);
   await page.getByTestId("kpi-net_revenue").locator(".kpi-value button").click();
-  const drawer = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+  const drawer = page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });
   await expect(drawer).toBeVisible();
   await expect(drawer.locator(".converted-value").first()).toBeVisible();
   await drawer.locator(".converted-value").first().scrollIntoViewIfNeeded();
   await page.screenshot({ path: `${dir}/7-drawer-raw-converted-${suffix}.png` });
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: labels.nav.data.label, exact: true }).click();
+  await page.getByRole("button", { name: labels.shell.nav.data.headline, exact: true }).click();
   await expect(page.getByTestId("data-preprocessing")).toBeVisible();
   await shoot(page, dir, `8-data-preprocessing-${suffix}`);
   // 第二次匯入同一組欄名：記憶提示

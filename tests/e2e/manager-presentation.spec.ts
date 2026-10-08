@@ -20,9 +20,9 @@ const test = base.extend<{ browserAudit: string[] }>({
 });
 
 // R2 renames (03_GLOSSARY_COPY): nav/status/button strings are read from the label dictionary, never retyped.
-const nav = labels.nav;
-const validation = labels.ui.dashboard.validation;
-const channelFilter = labels.ui.dashboard.filter.channel;
+const nav = labels.shell.nav;
+const validation = labels.shell.devValidation.validation;
+const channelFilter = labels.shell.periodBar.filter.channel;
 /** V3-2b（§8.5）：KPI 大數字是 L1（< 1 萬「255 元」、≥ 1 萬「127.0 萬」）；斷言 .kpi-value 整格文字，金額取自 golden／demo 精確值。 */
 const kpiValue = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 /** V3-3：全站通路下拉在期間列裡；手機期間列收成 period-toggle，要先開底部面板才能選，選完按「完成」收起。 */
@@ -33,7 +33,7 @@ async function selectChannel(page: Page, value: string) {
 }
 
 /** V3-2a：狀態列「資料到 {date}」的日期取自 fixtures/{id}/manifest.json 的 data_as_of（本檔只有 golden 用預設狀態）。 */
-const readyFor = (id: string) => fill(labels.status.ready, { date: JSON.parse(readFileSync(resolve(`fixtures/${id}/manifest.json`), "utf8")).data_as_of });
+const readyFor = (id: string) => fill(labels.shell.status.ready, { date: JSON.parse(readFileSync(resolve(`fixtures/${id}/manifest.json`), "utf8")).data_as_of });
 
 async function loadVerificationDataset(page: Page, id: string, state: string = readyFor(id)) {
   await openValidation(page);
@@ -52,7 +52,7 @@ test.beforeEach(async ({ page }) => { await page.goto("/"); });
 test("PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立進階驗證頁", async ({ page }, testInfo) => {
   await expect(page.getByLabel(validation.datasetLabel, { exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: validation.loadButton, exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: labels.buttons.loadDemo, exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true })).toBeVisible();
   // V3-3（§6.3）：頁首「匯入資料」只留在資料來源頁；首頁的匯入入口是頂欄資料狀態（data-status）→「匯入新資料」（2 次點擊）。
   // 剛 goto 時按鈕可能還沒 hydrate：重試到 popover 出現為止（每次先看 aria-expanded，不會把它關掉）。
   const dataStatus = page.getByTestId("data-status");
@@ -69,7 +69,7 @@ test("PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立
   // R7-4（D10＝A）：首頁側欄沒有「開發者驗證」；只有網址 #validation 才出現，出現後切到別頁仍保留（直到重新整理），可用鍵盤切回。
   // V3-3：側欄「開發者」組（手機在「更多」面板）都沒有這一項；sidebarNav 與 includeHidden 連隱藏的也算。
   await expect(sidebarNav(page, "validation")).toHaveCount(0);
-  await expect(page.getByTestId("mobile-more").getByRole("button", { name: nav.validation.label, exact: true, includeHidden: true })).toHaveCount(0);
+  await expect(page.getByTestId("mobile-more").getByRole("button", { name: nav.validation.headline, exact: true, includeHidden: true })).toHaveCount(0);
   await openValidation(page);
   await navigateTo(page, "overview");
   await expect(page.getByTestId("validation-panel")).toHaveCount(0);
@@ -78,7 +78,7 @@ test("PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立
   const validationNav = navControl(page, "validation");
   await validationNav.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: nav.validation.label, exact: true, level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: nav.validation.headline, exact: true, level: 1 })).toBeVisible();
   const datasets = page.getByLabel(validation.datasetLabel, { exact: true });
   await expect(datasets).toBeVisible();
   expect(await datasets.locator("option").evaluateAll(options => options.map(option => (option as HTMLOptionElement).value))).toEqual(["demo", "golden", "missing-cogs", "missing-ad", "duplicate"]);
@@ -88,39 +88,39 @@ test("PL10 主管首頁只提供示範與匯入入口，測試案例位於獨立
   await page.screenshot({ path: resolve(`verification/review-v2-a-advanced-${testInfo.project.name}.png`), fullPage: true });
   await navigateTo(page, "overview");
   await expect(datasets).toHaveCount(0);
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
   await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(formatAmountL1("1269792.73"));
   await expect(datasets).toHaveCount(0);
 });
 
 test("PL10 進階驗證仍可重現 golden、缺費用與 blocking，錯誤不覆寫可用資料", async ({ page }) => {
   await loadVerificationDataset(page, "golden");
-  await expect(page.getByRole("heading", { name: nav.overview.label, exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: nav.overview.headline, exact: true })).toBeVisible();
   await expect(page.getByLabel(validation.datasetLabel, { exact: true })).toHaveCount(0);
   await expect(kpiValue(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
   await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(formatAmountL1("255.00"));
-  await loadVerificationDataset(page, "missing-ad", labels.status.partial);
-  await expect(page.getByRole("heading", { name: nav.overview.label, exact: true })).toBeVisible();
+  await loadVerificationDataset(page, "missing-ad", labels.shell.status.partial);
+  await expect(page.getByRole("heading", { name: nav.overview.headline, exact: true })).toBeVisible();
   await expect(kpiValue(page, "net_revenue")).toHaveText(formatAmountL1("2470.00"));
-  await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(labels.status.missing);
+  await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(labels.shell.status.missing);
   await selectChannel(page, "DTC");
   await expect(kpiValue(page, "contribution_after_marketing")).toHaveText(formatAmountL1("270.00"));
-  await loadVerificationDataset(page, "duplicate", labels.status.error);
+  await loadVerificationDataset(page, "duplicate", labels.shell.status.error);
   // The blocking message is domain text (src/domain/validation.ts, financial core — not in labels); only its keyword is asserted.
   await expect(page.getByRole("main")).toContainText("重複");
   // V3-8（§7.10 錯誤）：頁面型錯誤容器——「重新載入」主要、「回到上次成功的資料」次要（先前已載入 missing-ad）、「查看問題清單」把焦點移到下方問題清單的 region。
   const errorState = page.getByTestId("error-state");
   await expect(errorState).toBeVisible();
   await expect(errorState.getByRole("heading", { level: 2, name: labels.empty.stateV3.errorTitle, exact: true })).toBeVisible();
-  await expect(page.getByTestId("error-retry")).toHaveText(labels.ui.dashboard.errorState.retry);
-  await expect(page.getByTestId("error-back")).toHaveText(labels.ui.dashboard.errorState.back);
+  await expect(page.getByTestId("error-retry")).toHaveText(labels.shell.state.errorState.retry);
+  await expect(page.getByTestId("error-back")).toHaveText(labels.shell.state.errorState.back);
   await page.getByTestId("error-view-issues").click();
   const issueList = page.getByTestId("error-issues");
-  await expect(issueList.getByRole("region", { name: labels.ui.issueList.regionAria, exact: true })).toBeFocused();
-  // 「重複」這個關鍵字也出現在開發者驗證頁的資料集說明裡；阻擋原因本身改看問題清單：sales_daily.csv 第 10 行（fixtures/errors/duplicate_sales_key）的 labels.importErrors 樣板。
-  const duplicate = issueCells(fill(labels.importErrors.DUPLICATE_SALES_KEY, { file: "sales_daily.csv", line: 10 }));
+  await expect(issueList.getByRole("region", { name: labels.data.issues.regionAria, exact: true })).toBeFocused();
+  // 「重複」這個關鍵字也出現在開發者驗證頁的資料集說明裡；阻擋原因本身改看問題清單：sales_daily.csv 第 10 行（fixtures/errors/duplicate_sales_key）的 labels.errors.import 樣板。
+  const duplicate = issueCells(fill(labels.errors.import.DUPLICATE_SALES_KEY, { file: "sales_daily.csv", line: 10 }));
   await expectIssueRow(issueTable(issueList).locator("tbody tr").filter({ hasText: duplicate.problem }), { file: "sales_daily.csv", line: 10, field: "$key", ...duplicate, severity: "blocking" });
-  await page.getByRole("button", { name: labels.ui.dashboard.errorState.back, exact: true }).click();
+  await page.getByRole("button", { name: labels.shell.state.errorState.back, exact: true }).click();
   await expect(errorState).toHaveCount(0);
   await navigateTo(page, "overview");
   await expect(page.getByLabel(channelFilter, { exact: true })).toHaveValue("DTC");
@@ -135,27 +135,27 @@ test("PL10 單純導航進階頁不載入資料、不更改通路，也不清除
   // R5-3 進頁即表單：方案 1 已是本地草稿，不必再按「新增方案」；第一次編輯才寫進工作區。
   await startChannelContext(page);
   const scenario = page.getByTestId("scenario-1");
-  await scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true }).fill("PL10 尚未送算的合成草稿");
-  await scenario.getByLabel(labels.scenario.volume.label, { exact: true }).fill("3");
+  await scenario.getByLabel(labels.scenarios.decision.planName, { exact: true }).fill("PL10 尚未送算的合成草稿");
+  await scenario.getByLabel(labels.scenarios.inputs.volume.label, { exact: true }).fill("3");
   await navigateTo(page, "actions");
   // R5-5 行動頁預設看板；這裡要驗證編輯表單的值，先切到清單檢視（檢視偏好由殼層保存，切頁回來仍是清單）。
   await switchActionsView(page, "list");
-  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+  await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
   const action = page.getByTestId("action-1");
-  await action.getByLabel(labels.actions.problem, { exact: true }).fill("PL10 待人工確認的合成工作稿");
+  await action.getByLabel(labels.actions.form.problem, { exact: true }).fill("PL10 待人工確認的合成工作稿");
   const requests: string[] = [];
   page.on("request", request => { if (request.url().includes("/api/datasets/")) requests.push(request.url()); });
   await openValidation(page);
   await expect(page.getByLabel(validation.datasetLabel, { exact: true })).toBeVisible();
   await navigateTo(page, "actions");
   await expect(page.getByLabel(channelFilter, { exact: true })).toHaveValue("DTC");
-  await expect(action.getByLabel(labels.actions.problem, { exact: true })).toHaveValue("PL10 待人工確認的合成工作稿");
-  await expect(action).not.toContainText(labels.actions.staleBadge);
+  await expect(action.getByLabel(labels.actions.form.problem, { exact: true })).toHaveValue("PL10 待人工確認的合成工作稿");
+  await expect(action).not.toContainText(labels.actions.form.staleBadge);
   await navigateTo(page, "scenarios");
-  await expect(scenario.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })).toHaveValue("PL10 尚未送算的合成草稿");
-  await expect(scenario.getByLabel(labels.scenario.volume.label, { exact: true })).toHaveValue("3");
-  await expect(scenario.getByLabel(labels.scenario.discount.label, { exact: true })).toHaveValue("");
-  await expect(page.getByTestId("decision-freshness")).toContainText(labels.ui.decisionWorkbench.freshTitle);
+  await expect(scenario.getByLabel(labels.scenarios.decision.planName, { exact: true })).toHaveValue("PL10 尚未送算的合成草稿");
+  await expect(scenario.getByLabel(labels.scenarios.inputs.volume.label, { exact: true })).toHaveValue("3");
+  await expect(scenario.getByLabel(labels.scenarios.inputs.discount.label, { exact: true })).toHaveValue("");
+  await expect(page.getByTestId("decision-freshness")).toContainText(labels.scenarios.decision.freshTitle);
   expect(requests).toEqual([]);
 });
 

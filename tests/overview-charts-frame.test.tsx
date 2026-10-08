@@ -25,7 +25,7 @@ import { byTestId, element, escapeAttr, openTag, textOf } from "./helpers/markup
 // Recharts 在伺服器端只輸出容器（圖形由瀏覽器繪製），所以這裡斷言框、標題、takeaway、緊湊表與資料表；圖形與點擊由 E2E 與 channelEvidence 的單元測試涵蓋。
 
 const noop = () => undefined;
-const frameCopy = labels.overview.chartFrame, trendCopy = labels.overview.trendV3, channelCopy = labels.overview.channelsV3, ui = labels.ui.overview;
+const frameCopy = labels.overview.chartFrame, trendCopy = labels.overview.trendV3, channelCopy = labels.overview.channelsV3, ui = labels.overview.page;
 async function load(name: string): Promise<WorkspaceSnapshot> {
   const input = fixture(name);
   const dataset = validateDataset(input).dataset!;
@@ -37,16 +37,16 @@ beforeAll(async () => { golden = await load("golden"); demo = await load("demo")
 
 const overview = (snapshot: WorkspaceSnapshot, events: EventSet | null = null) => renderToStaticMarkup(createElement(Overview, { snapshot, onEvidence: noop, events, datasetName: "demo", missingItems: 0, actionsSummary: { pending: 0, pinned: [] } }));
 const frameTag = (html: string) => openTag(html, 'class="chart-frame ');
-const legendHtml = `<div class="sec-end"><div class="legend"><span><i aria-hidden="true" style="background:${chartColors.current}"></i>${labels.periods.current}</span><span><i aria-hidden="true" style="background:${chartColors.previous}"></i>${labels.periods.previous}</span></div></div>`;
+const legendHtml = `<div class="sec-end"><div class="legend"><span><i aria-hidden="true" style="background:${chartColors.current}"></i>${labels.shell.periods.current}</span><span><i aria-hidden="true" style="background:${chartColors.previous}"></i>${labels.shell.periods.previous}</span></div></div>`;
 /** V3-9b F8：趨勢圖的圖例多第三項「去年同期」（虛線段）；demo 的資料從 2026-06-01 開始，去年同期不可用 → 標「無資料」。 */
-const trendLegendHtml = (ready: boolean) => `<div class="sec-end"><div class="legend"><span><i aria-hidden="true" style="background:${chartColors.current}"></i>${labels.periods.current}</span><span><i aria-hidden="true" style="background:${chartColors.previous}"></i>${labels.periods.previous}</span><span data-testid="trend-legend-yoy"><svg class="legend-dash" width="12" height="2" viewBox="0 0 12 2" aria-hidden="true" focusable="false"><line x1="0" y1="1" x2="12" y2="1" stroke="${chartColors.yoy}" stroke-width="2" stroke-dasharray="4 3"></line></svg>${labels.overview.trendYoyV3.legend}${ready ? "" : `<small>${frameCopy.noData}</small>`}</span></div></div>`;
+const trendLegendHtml = (ready: boolean) => `<div class="sec-end"><div class="legend"><span><i aria-hidden="true" style="background:${chartColors.current}"></i>${labels.shell.periods.current}</span><span><i aria-hidden="true" style="background:${chartColors.previous}"></i>${labels.shell.periods.previous}</span><span data-testid="trend-legend-yoy"><svg class="legend-dash" width="12" height="2" viewBox="0 0 12 2" aria-hidden="true" focusable="false"><line x1="0" y1="1" x2="12" y2="1" stroke="${chartColors.yoy}" stroke-width="2" stroke-dasharray="4 3"></line></svg>${labels.overview.trendYoyV3.legend}${ready ? "" : `<small>${frameCopy.noData}</small>`}</span></div></div>`;
 
 describe("C16 ChartFrame：標題列、takeaway 列、固定高度的圖、資料表", () => {
   const render = (props: Partial<Parameters<typeof ChartFrame>[0]> = {}) => renderToStaticMarkup(createElement(ChartFrame, { id: "demo-chart", testId: "demo-chart", title: "T", subtitle: "S", ...props }));
 
   it("section 以 h2 為名、副標為描述；圖例是線段＋文字；takeaway 是 dl（dd 內可有 small 註記）；資料表是收合的 data-alternative", () => {
     const html = render({
-      legend: [{ key: "current", label: labels.periods.current, color: chartColors.current }, { key: "previous", label: labels.periods.previous, color: chartColors.previous }],
+      legend: [{ key: "current", label: labels.shell.periods.current, color: chartColors.current }, { key: "previous", label: labels.shell.periods.previous, color: chartColors.previous }],
       takeaways: [{ key: "a", label: "A", value: "1" }, { key: "b", label: "B", value: "2", note: "n" }],
       dataTable: { summary: "Sum", content: createElement("table", null) },
       children: createElement("svg"),
@@ -89,7 +89,7 @@ describe("區塊 7 每週淨營收與扣廣告後貢獻（ChartFrame id=trend）
     const trend = byTestId(html, "trend");
     const takeaway = trendTakeaways(demo);
     expect(openTag(html, 'data-testid="trend"')).toBe('<section class="panel chart-section" aria-labelledby="trend-title" aria-describedby="trend-sub" data-testid="trend">');
-    expect(trend).toContain(`<h2 id="trend-title">${labels.sections.trend}</h2><p class="sub" id="trend-sub">${takeaway.subtitle}</p>`);
+    expect(trend).toContain(`<h2 id="trend-title">${labels.overview.sections.trend}</h2><p class="sub" id="trend-sub">${takeaway.subtitle}</p>`);
     expect(takeaway.subtitle).toBe(ui.trendNote);
     expect(trend).toContain(trendLegendHtml(false));
     const dl = element(trend, 'class="takeaways"')!;
@@ -109,10 +109,10 @@ describe("區塊 7 每週淨營收與扣廣告後貢獻（ChartFrame id=trend）
     const trend = byTestId(overview(demo), "trend");
     expect(frameTag(trend)).toBe(`<div class="chart-frame sm" style="height:${chartHeights.sm}px" aria-hidden="true" data-state="ready">`);
     const details = element(trend, 'class="data-alternative"')!;
-    expect(details).toContain(`<summary>${fill(ui.dataTable, { title: labels.sections.trend })}</summary>`);
+    expect(details).toContain(`<summary>${fill(ui.dataTable, { title: labels.overview.sections.trend })}</summary>`);
     expect(details.match(/<tbody>[\s\S]*<\/tbody>/)![0].match(/<tr>/g)).toHaveLength(demo.weeks.length);
     const first = demo.weeks[0];
-    expect(details).toContain(`<td>${labels.periods[first.period]}</td><td>${first.start} — ${first.end}</td><td><button class="number-link">${formatAmountL2(first.metrics.net_revenue.value)}</button></td>`);
+    expect(details).toContain(`<td>${labels.shell.periods[first.period]}</td><td>${first.start} — ${first.end}</td><td><button class="number-link">${formatAmountL2(first.metrics.net_revenue.value)}</button></td>`);
     expect(details).toContain(`<p class="note">${ui.trendTechnical}</p>`);
   });
 
@@ -211,7 +211,7 @@ describe("區塊 8 各通路扣廣告後貢獻（ChartFrame id=channel）", () =
   it("資料表保留 v2 的 5 欄（摘要同 v2），每通路一列、金額 L2 number-link", () => {
     const section = byTestId(overview(demo), "channel-mix");
     const details = element(section, 'class="data-alternative"')!;
-    expect(details).toContain(`<summary>${fill(ui.dataTable, { title: labels.sections.channelMix })}</summary>`);
+    expect(details).toContain(`<summary>${fill(ui.dataTable, { title: labels.overview.sections.channelMix })}</summary>`);
     expect(details.match(/<thead>[\s\S]*<\/thead>/)![0].match(/<th>/g)).toHaveLength(5);
     const alias = demoAlias(demo.report.dataset_id);
     for (const [channel, row] of Object.entries(demo.report.current.channels)) {

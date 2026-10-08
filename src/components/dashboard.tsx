@@ -62,10 +62,10 @@ type Status = "empty" | "loading" | "error" | "partial" | "ready";
 type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; raw_values?: RawValuesByFile; targets?: TargetSet | null; events?: EventSet | null };
 // R2：導覽、資料集名稱與決議標籤都從 labels 取字；id／value 維持機器值。
 const panelIds: Panel[] = ["overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "validation"];
-const panels: { id: Panel; label: string; description: string }[] = panelIds.map(id => ({ id, label: labels.nav[id].label, description: labels.nav[id].description }));
+const panels: { id: Panel; label: string; description: string }[] = panelIds.map(id => ({ id, label: labels.shell.nav[id].headline, description: labels.shell.nav[id].explain }));
 const datasetLabels: Record<string, string> = {
-  demo: labels.ui.dashboard.datasets.demo, golden: labels.ui.dashboard.datasets.golden,
-  "missing-cogs": labels.ui.dashboard.datasets.missingCogs, "missing-ad": labels.ui.dashboard.datasets.missingAd, duplicate: labels.ui.dashboard.datasets.duplicate,
+  demo: labels.shell.devValidation.datasets.demo, golden: labels.shell.devValidation.datasets.golden,
+  "missing-cogs": labels.shell.devValidation.datasets.missingCogs, "missing-ad": labels.shell.devValidation.datasets.missingAd, duplicate: labels.shell.devValidation.datasets.duplicate,
 };
 export function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const paths: Record<string, string> = {
@@ -246,12 +246,12 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     setShowImport(false); setSelected(id); setStatus("loading"); setRefiltering(false); setError(""); setFilterError(""); setIssues([]); setImportedAt(null); setEvidence(null);
     try {
       const response = await fetch(`/api/datasets/${encodeURIComponent(id)}`, { signal: abort.signal, cache: "no-store" });
-      if (!response.ok) throw new Error(labels.ui.dashboard.errors.fetchFailed);
+      if (!response.ok) throw new Error(labels.shell.state.errors.fetchFailed);
       const input: DatasetInput = await response.json();
       await afterPaint();
       if (ticket !== requestId.current) return;
       const validation = validateDataset(input);
-      if (!validation.dataset) { setIssues(validation.issues); throw new Error(labels.ui.dashboard.errors.validationFailed); }
+      if (!validation.dataset) { setIssues(validation.issues); throw new Error(labels.shell.state.errors.validationFailed); }
       const snapshot = await createSnapshot(validation.dataset, {}, await hashInput(input));
       if (ticket !== requestId.current) return;
       activate({ input, dataset: validation.dataset, snapshot, id, revision: ++revision.current }); setIssues(validation.issues);
@@ -261,7 +261,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       if (id === "demo") track("demo_loaded");
     } catch (caught) {
       if (ticket !== requestId.current || abort.signal.aborted) return;
-      setError(caught instanceof Error ? caught.message : labels.ui.dashboard.errors.processingFailed); setStatus("error");
+      setError(caught instanceof Error ? caught.message : labels.shell.state.errors.processingFailed); setStatus("error");
     }
   }
   function startImport() {
@@ -326,7 +326,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       afterCommit?.();
     } catch {
       if (ticket !== requestId.current) return;
-      setError(labels.ui.dashboard.errors.importIncomplete); setStatus("error");
+      setError(labels.shell.state.errors.importIncomplete); setStatus("error");
     }
   }
   async function applyFilters(filters: AnalysisFilters) {
@@ -346,7 +346,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     } catch (caught) {
       if (ticket !== requestId.current) return;
       setRefiltering(false);
-      setFilterError(caught instanceof AnalysisPeriodLimitError || caught instanceof AnalysisChannelLimitError ? caught.message : labels.ui.dashboard.errors.periodNotApplied);
+      setFilterError(caught instanceof AnalysisPeriodLimitError || caught instanceof AnalysisChannelLimitError ? caught.message : labels.shell.state.errors.periodNotApplied);
       setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready");
     }
   }
@@ -469,7 +469,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       const next = addActionDraft(actionRef.current, { input: review.source_input, dataset, snapshot, revision: review.revision, filenames: review.filenames, mappings: review.source_mappings }, crypto.randomUUID(), diagnostic.id, { problem: rule.headline, action: rule.nextStep });
       setActionWorkspace(refreshActionWorkspace(next, active.snapshot, active.revision));
       setPanel("actions"); setEvidence(null);
-    } catch { if (ticket === requestId.current) setFilterError(labels.ui.dashboard.errors.reviewRebuildFailed); }
+    } catch { if (ticket === requestId.current) setFilterError(labels.shell.state.errors.reviewRebuildFailed); }
   }
   function refreshReviewSource() {
     if (!active) return;
@@ -509,7 +509,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   function selectForReview(reference: ScenarioSelectionRef) {
     if (!reviewRef.current) return;
     try { setReview(selectReviewScenario(reviewRef.current, scenarioRef.current, reference)); setFilterError(""); }
-    catch { setFilterError(fill(labels.ui.dashboard.errors.scenarioScopeMismatch, { overview: labels.nav.meeting.label, updateMeeting: labels.buttons.updateMeetingSource })); }
+    catch { setFilterError(fill(labels.shell.state.errors.scenarioScopeMismatch, { overview: labels.shell.nav.meeting.headline, updateMeeting: labels.meeting.buttons.updateMeetingSource })); }
   }
   const visible = active && (status === "ready" || status === "partial" || (status === "loading" && refiltering));
   const importing = showImport && panel === "data";
@@ -526,10 +526,10 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   // 會議頁的目標（同一份資料才帶進摘要）；固定物件身分，避免每次 render 重算會議摘要。
   const meetingTargets = useMemo(() => active ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : null, [active]);
   // V3-2a：「資料就緒」改為「資料到 {date}」（§8.3 #26）；資料到的日期已在狀態文字內，旁邊只留資料集名稱。
-  const statusText = status === "ready" && active ? fill(labels.status.ready, { date: active.dataset.manifest.data_as_of }) : labels.status[status];
-  const aiHeadline = aiCapability === null ? labels.status.aiUnknown : aiCapability.available ? labels.status.aiNeedsConsent : aiCapability.reason === "STATUS_UNAVAILABLE" ? labels.status.aiUnknown : aiCapability.reason === "PUBLIC_DEMO" ? labels.status.aiOff : labels.status.aiDisabled;
+  const statusText = status === "ready" && active ? fill(labels.shell.status.ready, { date: active.dataset.manifest.data_as_of }) : labels.shell.status[status];
+  const aiHeadline = aiCapability === null ? labels.shell.status.aiUnknown : aiCapability.available ? labels.shell.status.aiNeedsConsent : aiCapability.reason === "STATUS_UNAVAILABLE" ? labels.shell.status.aiUnknown : aiCapability.reason === "PUBLIC_DEMO" ? labels.shell.status.aiOff : labels.shell.status.aiDisabled;
   // 03 §9：關閉狀態的說明只留一句（併入 AI popover）。
-  const aiDetail = aiCapability?.available ? labels.ui.dashboard.aiDetail.consent : aiCapability?.reason === "PUBLIC_DEMO" ? labels.ui.dashboard.aiDetail.publicDemo : labels.ui.dashboard.aiDetail.off;
+  const aiDetail = aiCapability?.available ? labels.shell.topbar.aiDetail.consent : aiCapability?.reason === "PUBLIC_DEMO" ? labels.shell.topbar.aiDetail.publicDemo : labels.shell.topbar.aiDetail.off;
   // V3-4a 週會摘要的待辦概況：未完成（執行狀態不是已完成）的數量，與置頂的前 3 項（問題、負責人、期限）。
   const overviewActions = { pending: actionWorkspace.items.filter(item => item.execution_status !== "completed").length, pinned: actionWorkspace.items.filter(item => item.pinned).slice(0, 3).map(item => ({ problem: item.card.problem, owner: item.card.owner_role, deadline: item.card.deadline })) };
   // V3-7 開工錨點（§6.5 匯出選單新分組「會議：複製週會摘要」、§7.6 會議頁頁首）：與總覽同一份週會摘要輸入；選單由 C 代理接線。
@@ -537,10 +537,10 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const backupSource: WorkspaceBackupSource | null = active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession, preprocessing: active.conversion ? { conversion: active.conversion, raw_values: active.raw_values ?? {} } : null, targets: active.targets ?? null, events: active.events ?? null, meeting_history: meetingHistory, ui_prefs: { ...(lastPreset ? { last_preset: lastPreset } : {}), ...(actionsView ? { view: actionsView } : {}) } } : null;
 
   return <div className="app-shell">
-    <a className="skip-link" href="#main-content">{labels.ui.dashboard.skipLink}</a>
+    <a className="skip-link" href="#main-content">{labels.shell.sidebar.skipLink}</a>
     {/* V3-3 A1：頂欄（48px 單列）、側欄四組、手機底部分頁列與「更多」面板（src/components/shell/）。 */}
     <ShellFrame panel={panel} showValidation={showValidation} onNavigate={id => { setPanel(id); setEvidence(null); }}
-      dataStatus={{ state: status, data: active ? { local: !!local, datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, dataAsOf: active.dataset.manifest.data_as_of, coverageStart: active.dataset.manifest.coverage_start, issueCount: active.dataset.issues.length } : null, statusText, statusDetail: active && status !== "empty" ? status === "ready" ? datasetLabels[active.id] ?? active.dataset.manifest.dataset_id : fill(labels.ui.dashboard.statusDataset, { dataset: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, date: active.dataset.manifest.data_as_of }) : null, publicDemo: aiCapability?.reason === "PUBLIC_DEMO", onGoData: () => { setPanel("data"); setEvidence(null); }, onImport: startImport }}
+      dataStatus={{ state: status, data: active ? { local: !!local, datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, dataAsOf: active.dataset.manifest.data_as_of, coverageStart: active.dataset.manifest.coverage_start, issueCount: active.dataset.issues.length } : null, statusText, statusDetail: active && status !== "empty" ? status === "ready" ? datasetLabels[active.id] ?? active.dataset.manifest.dataset_id : fill(labels.shell.topbar.statusDataset, { dataset: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, date: active.dataset.manifest.data_as_of }) : null, publicDemo: aiCapability?.reason === "PUBLIC_DEMO", onGoData: () => { setPanel("data"); setEvidence(null); }, onImport: startImport }}
       ai={{ headline: aiHeadline, detail: aiDetail, open: aiOpen, onToggle: () => setAiOpen(open => !open) }} aiContainerRef={aiRef} aiButtonRef={aiButtonRef}
       onBasis={() => setBasisOpen(true)}
       badges={{ snapshot: visible ? active.snapshot : null, issues: active ? active.dataset.issues.length : 0, meetingDraft: !!visible && reviewSession?.decision_state === "draft" }}
@@ -552,11 +552,11 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
         <PageHeader title={importing ? labels.importWizard.title : currentPanel.label} description={importing ? labels.importWizard.privacyNote : panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} importing={importing} hasData={status !== "empty"} presentToggle={presentToggle} presentPeriod={present.active && visible ? presentPeriodText(active.snapshot, panel === "meeting" ? reviewSession : null, active.dataset.manifest.channels) : undefined} showLoadDemo onLoadDemo={() => void load("demo")} onImport={startImport} />
         {whatsNew.visible && <WhatsNewNote onOpenGlossary={() => { whatsNew.markRead(); setBasisSection("v2-names"); setBasisOpen(true); }} onDismiss={whatsNew.dismiss} />}
         {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
-          <h2 id="validation-heading">{labels.ui.dashboard.validation.heading}</h2>
-          <p>{labels.ui.dashboard.validation.intro}</p>
-          <div className="validation-controls"><label>{labels.ui.dashboard.validation.datasetLabel}<select aria-label={labels.ui.dashboard.validation.datasetLabel} value={selected} onChange={event => setSelected(event.target.value)}>{Object.entries(datasetLabels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label><button className="button primary" onClick={() => void load(selected)}>{labels.ui.dashboard.validation.loadButton} <Icon name="arrow" size={16} /></button></div>
-          <ul className="validation-descriptions"><li>{labels.ui.dashboard.validation.descriptions.demo}</li><li>{labels.ui.dashboard.validation.descriptions.golden}</li><li>{labels.ui.dashboard.validation.descriptions.missing}</li><li>{labels.ui.dashboard.validation.descriptions.duplicate}</li></ul>
-          <p className="note">{labels.ui.dashboard.validation.note}</p>
+          <h2 id="validation-heading">{labels.shell.devValidation.validation.heading}</h2>
+          <p>{labels.shell.devValidation.validation.intro}</p>
+          <div className="validation-controls"><label>{labels.shell.devValidation.validation.datasetLabel}<select aria-label={labels.shell.devValidation.validation.datasetLabel} value={selected} onChange={event => setSelected(event.target.value)}>{Object.entries(datasetLabels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label><button className="button primary" onClick={() => void load(selected)}>{labels.shell.devValidation.validation.loadButton} <Icon name="arrow" size={16} /></button></div>
+          <ul className="validation-descriptions"><li>{labels.shell.devValidation.validation.descriptions.demo}</li><li>{labels.shell.devValidation.validation.descriptions.golden}</li><li>{labels.shell.devValidation.validation.descriptions.missing}</li><li>{labels.shell.devValidation.validation.descriptions.duplicate}</li></ul>
+          <p className="note">{labels.shell.devValidation.validation.note}</p>
         </section>}
         {showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={commitImport} onCancel={cancelImport} busy={status === "loading"} localSaveConsented={localConsent} /></div>}
         {/* V3-3 A2：期間列（C23，sticky）＋需要處理橫幅（C22）。套用中（loading）期間列保持掛載，焦點留在剛按的快捷上；橫幅只在有內容時出現。 */}

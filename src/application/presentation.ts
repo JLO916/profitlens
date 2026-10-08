@@ -50,7 +50,7 @@ const metricShape: Record<MetricName, Pick<MetricDefinition, "unit" | "fields" |
 /** Formula and source dependencies for contribution-v1 evidence views. Names and formulas come from labels (R2). */
 export const metricDefinitions: Record<MetricName, MetricDefinition> = Object.fromEntries((Object.keys(metricShape) as MetricName[]).map(name => {
   const copy = labels.metrics[name];
-  return [name, { label: copy.label, shortLabel: copy.short, plain: copy.plain, formula: copy.formula, formulaTechnical: copy.formulaTechnical, ...metricShape[name] }];
+  return [name, { label: copy.headline, shortLabel: copy.short, plain: copy.explain, formula: copy.technical.formula, formulaTechnical: copy.technical.formulaTechnical, ...metricShape[name] }];
 })) as Record<MetricName, MetricDefinition>;
 
 // ───────────────────────── V3-2b 三層數字格式（PRD §8.5–§8.7） ─────────────────────────
@@ -103,10 +103,10 @@ function amountL1(value: ExactValue): Rounded {
   const abs = value.abs();
   const yuan = rounded(abs, 0);
   const sign: Rounded["sign"] = yuan.sign === 0 ? 0 : value.isNegative() ? -1 : 1;
-  if (abs.toDecimalPlaces(0, Decimal.ROUND_HALF_UP).lt(TEN_THOUSAND)) return { sign, text: withUnit(labels.units.yuan, yuan.text) };
+  if (abs.toDecimalPlaces(0, Decimal.ROUND_HALF_UP).lt(TEN_THOUSAND)) return { sign, text: withUnit(labels.format.units.yuan, yuan.text) };
   const wan = abs.div(TEN_THOUSAND).toDecimalPlaces(1, Decimal.ROUND_HALF_UP);
-  if (wan.lt(TEN_THOUSAND)) return { sign, text: withUnit(labels.units.wan, grouped(wan.toFixed(1))) };
-  return { sign, text: withUnit(labels.units.yi, grouped(abs.div(TEN_THOUSAND).div(TEN_THOUSAND).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2))) };
+  if (wan.lt(TEN_THOUSAND)) return { sign, text: withUnit(labels.format.units.wan, grouped(wan.toFixed(1))) };
+  return { sign, text: withUnit(labels.format.units.yi, grouped(abs.div(TEN_THOUSAND).div(TEN_THOUSAND).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2))) };
 }
 
 /**
@@ -114,7 +114,7 @@ function amountL1(value: ExactValue): Rounded {
  * 零值不用「-」：真正的 0 由各格式化函式顯示為 0（§8.5 規則 3）。
  */
 export function formatEmpty(kind: EmptyKind = "missing", options: { layer?: Layer; reasonCodes?: string | readonly string[] } = {}): string {
-  const state = kind === "notApplicable" ? labels.status.notApplicable : labels.status.missing;
+  const state = kind === "notApplicable" ? labels.shell.status.notApplicable : labels.shell.status.missing;
   const codes = options.reasonCodes === undefined ? [] : typeof options.reasonCodes === "string" ? [options.reasonCodes] : [...options.reasonCodes];
   if (options.layer !== "L3" || codes.length === 0) return state;
   return labels.format.emptyWithReason.replace("{state}", state).replace("{code}", codes.join("、"));
@@ -161,7 +161,7 @@ export function formatSignedDelta(value: string | null | undefined, layer: Layer
 /** 比率（domain 的小數，例如 0.161745…）轉百分比；plus 時正值加「+」。 */
 function percent(value: ExactValue, dp: number, plus: boolean): string {
   const result = rounded(value.times(100), dp);
-  return withUnit(labels.units.percent, `${signPrefix(result.sign, plus)}${result.text}`);
+  return withUnit(labels.format.units.percent, `${signPrefix(result.sign, plus)}${result.text}`);
 }
 /** L1 比率：一位小數「16.2%」。 */
 export function formatRateL1(value: string | null | undefined, empty: EmptyKind = "missing"): string {
@@ -194,7 +194,7 @@ export function formatPercentNumber(value: string | null | undefined, layer: Lay
   const v = exact(value);
   if (v === null) return formatEmpty(options.empty ?? "missing");
   const result = rounded(v, layer === "L3" ? 2 : 1);
-  return withUnit(labels.units.percent, `${signPrefix(result.sign, options.signed ?? false)}${result.text}`);
+  return withUnit(labels.format.units.percent, `${signPrefix(result.sign, options.signed ?? false)}${result.text}`);
 }
 /**
  * 比率差（兩個比率小數的差，例如 −0.14251）：L1「降 14.3 個百分點」／「升 2.1 個百分點」、L2「−14.3 個百分點」、L3「−14.25 個百分點」；零「0.0 個百分點」。
@@ -204,8 +204,8 @@ export function formatRatePoints(value: string | null | undefined, layer: Layer,
   const v = exact(value);
   if (v === null) return formatEmpty(empty);
   const result = rounded(v.times(100), layer === "L3" ? 2 : 1);
-  if (layer === "L1") return withUnit(result.sign < 0 ? labels.units.pointsDown : result.sign > 0 ? labels.units.pointsUp : labels.units.points, result.text);
-  return withUnit(labels.units.points, `${signPrefix(result.sign, true)}${result.text}`);
+  if (layer === "L1") return withUnit(result.sign < 0 ? labels.format.units.pointsDown : result.sign > 0 ? labels.format.units.pointsUp : labels.format.units.points, result.text);
+  return withUnit(labels.format.units.points, `${signPrefix(result.sign, true)}${result.text}`);
 }
 /** 已經以「百分點」為單位的差（例如總覽貢獻率的 percentagePointChange「−14.251…」）：先精確除以 100 再交給 formatRatePoints。 */
 export function formatPointsValue(value: string | null | undefined, layer: Layer, empty: EmptyKind = "missing"): string {
@@ -231,7 +231,7 @@ export function formatMultiple(value: string | null | undefined, layer: Layer, e
   const v = exact(value);
   if (v === null) return formatEmpty(empty);
   const result = rounded(v, layer === "L3" ? 2 : 1);
-  return withUnit(labels.units.multiple, `${signPrefix(result.sign, false)}${result.text}`);
+  return withUnit(labels.format.units.multiple, `${signPrefix(result.sign, false)}${result.text}`);
 }
 /** 件數：L1「7,420 件」、L2／L3「7,420」。接受整數字串、bigint 或安全整數。 */
 export function formatCount(value: string | bigint | number | null | undefined, layer: Layer, empty: EmptyKind = "missing"): string {
@@ -239,7 +239,7 @@ export function formatCount(value: string | bigint | number | null | undefined, 
   if (v === null) return formatEmpty(empty);
   const result = rounded(v, 0);
   const text = `${signPrefix(result.sign, false)}${result.text}`;
-  return layer === "L1" ? withUnit(labels.units.count, text) : text;
+  return layer === "L1" ? withUnit(labels.format.units.count, text) : text;
 }
 /** 件均：L1「1,058 元／件」、L2「1,058」、L3「1,058.04 元／件」。 */
 export function formatPerUnit(value: string | null | undefined, layer: Layer, empty: EmptyKind = "missing"): string {
@@ -247,7 +247,7 @@ export function formatPerUnit(value: string | null | undefined, layer: Layer, em
   if (v === null) return formatEmpty(empty);
   const result = rounded(v, layer === "L3" ? 2 : 0);
   const text = `${signPrefix(result.sign, false)}${result.text}`;
-  return layer === "L2" ? text : withUnit(labels.units.perUnit, text);
+  return layer === "L2" ? text : withUnit(labels.format.units.perUnit, text);
 }
 
 /** 依指標單位格式化 domain Metric（值＋原因碼）；空值依原因碼判斷資料待補或不適用，L3 附原因碼。 */
@@ -266,7 +266,7 @@ export function formatMetricDelta(metric: MetricName, delta: string | null | und
   const v = exact(delta);
   if (v === null) return formatEmpty(empty);
   const result = rounded(v, layer === "L3" ? 2 : 1);
-  return withUnit(labels.units.multiple, `${signPrefix(result.sign, true)}${result.text}`);
+  return withUnit(labels.format.units.multiple, `${signPrefix(result.sign, true)}${result.text}`);
 }
 
 // ── 日期與期間（§8.6）：主層 M/D，跨年 YYYY/M/D，L3 與匯出 ISO ──
@@ -288,7 +288,7 @@ export function periodDays(start: string, end: string): number | null {
 }
 /** 主層日期：與比較基準（anchor 或 today；都沒給時用今天）同一年寫「8/24」，不同年寫「2025/12/29」。格式不對原樣回傳；缺值寫資料待補。 */
 export function formatDateL1(iso: string | null | undefined, options: { today?: string; anchor?: string } = {}): string {
-  if (!iso) return labels.status.missing;
+  if (!iso) return labels.shell.status.missing;
   const parts = isoParts(iso);
   if (!parts) return iso;
   const [year, month, day] = parts;
@@ -303,12 +303,12 @@ export function formatPeriodL1(start: string, end: string, options: { anchor?: s
   if (!a || !b) return `${start}–${end}`;
   const full = a[0] !== b[0] || (options.anchor !== undefined && a[0] !== anchorYear(options.anchor));
   const date = (parts: DateParts) => full ? `${parts[0]}/${parts[1]}/${parts[2]}` : `${parts[1]}/${parts[2]}`;
-  const days = options.days === false ? "" : labels.units.periodDays.replace("{days}", String(periodDays(start, end)));
+  const days = options.days === false ? "" : labels.format.units.periodDays.replace("{days}", String(periodDays(start, end)));
   return `${date(a)}–${date(b)}${days}`;
 }
 /** 匯出版頭期間：「2026-07-13 至 2026-08-23（42 天）」。 */
 export function formatPeriodExport(start: string, end: string): string {
-  return labels.units.exportRange.replace("{start}", start).replace("{end}", end).replace("{days}", String(periodDays(start, end) ?? labels.status.missing));
+  return labels.format.units.exportRange.replace("{start}", start).replace("{end}", end).replace("{days}", String(periodDays(start, end) ?? labels.shell.status.missing));
 }
 
 // ── 有利／不利與方向詞（§8.5 規則 8、GLOSSARY 方向詞的固定用法） ──

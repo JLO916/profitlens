@@ -57,8 +57,8 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     // 每一列是 li.alert-row > details.alert.diagnosis-row，id 與 data-testid 同名（通路寬表備註欄的連結錨點）。
     for (const group of groups) expect(html).toContain(`<li class="alert-row"><details class="alert diagnosis-row" data-testid="diagnosis-row-${group.rule}" id="diagnosis-row-${group.rule}"`);
     // V3-5：刪除「自動健檢」與「n 項」標籤，改成計數徽章；徽章數字＝列內同色調狀態標籤的個數（資料待補／不利／有利，中性不計）。
-    expect(html).not.toContain(labels.sections.autoCheck);
-    expect(html).not.toContain(`>${fill(labels.ui.workspacePanels.itemCount, { n: groups.length })}<`);
+    expect(html).not.toContain(labels.diagnosis.sections.autoCheck);
+    expect(html).not.toContain(`>${fill(labels.data.panel.itemCount, { n: groups.length })}<`);
     expect(html).not.toContain('class="tag');
     const counts = diagnosisCounts(groups);
     const summaries = groups.map(group => summaryOf(row(html, group.rule))).join("");
@@ -77,7 +77,7 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     // 範圍文字只在標題列出現一次（13px，右側）。
     expect(html.match(/class="sec-scope"/g)).toHaveLength(1);
     expect(html).toContain(`<span class="sec-scope">${channelsLabel(snap.report.scope.channels, false)}</span>`);
-    expect(html).toContain(`<p class="sub">${labels.ui.workspacePanels.diagnosisNote}</p>`);
+    expect(html).toContain(`<p class="sub">${labels.diagnosis.panel.diagnosisNote}</p>`);
     expect(html).not.toContain("diagnostic-grid");
     // 每一列的 <summary> 都不含互動元件（summary 本身就是展開鈕）也不含「｜」。
     for (const group of groups) {
@@ -100,12 +100,12 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     expect(summary).not.toContain('class="scope-tag"');
     // summary 不放互動元件（<summary> 內有按鈕是巢狀互動）：影響金額是純文字，色調同可點的金額（−250 元，紅＝不利）；「影響金額」字樣只給輔助科技。
     expect(summary).not.toMatch(/<button|<a\s|<input|<select|tabindex/i);
-    expect(summary).toContain(`<span class="diagnosis-impact"><span class="sr-only">${labels.sections.impact}</span><span class="impact-amount negative">${impactL1("-250.00")}</span></span>`);
-    expect(summary).not.toContain(labels.buttons.viewEvidence);
-    expect(summary).not.toContain(labels.buttons.addToActions);
+    expect(summary).toContain(`<span class="diagnosis-impact"><span class="sr-only">${labels.overview.sections.impact}</span><span class="impact-amount negative">${impactL1("-250.00")}</span></span>`);
+    expect(summary).not.toContain(labels.evidence.buttons.viewEvidence);
+    expect(summary).not.toContain(labels.actions.buttons.addToActions);
     // 展開內容第一行：「影響金額 · 目前範圍」＋可點的影響金額。
     const body = html.slice(html.indexOf("</summary>"));
-    expect(body).toMatch(new RegExp(`^</summary><div class="alert-body diagnosis-body"><p class="impact-line"><span>${fill(labels.diagnosisList.scopeImpact, { impact: labels.sections.impact, scope: labels.sections.total })}</span><button type="button" class="number-link impact-amount negative" aria-label="[^"]+">${impactL1("-250.00")}</button></p>`));
+    expect(body).toMatch(new RegExp(`^</summary><div class="alert-body diagnosis-body"><p class="impact-line"><span>${fill(labels.diagnosis.list.scopeImpact, { impact: labels.overview.sections.impact, scope: labels.overview.sections.total })}</span><button type="button" class="number-link impact-amount negative" aria-label="[^"]+">${impactL1("-250.00")}</button></p>`));
     // 每列只有一個可點的影響金額（E2E 以 .impact-line .impact-amount 取值）。
     expect(html.match(/class="impact-line"/g)).toHaveLength(1);
     // 段落順序：影響金額 → 範圍切換 → 相關數字 → 原因／下一步／限制 → 動作列（靠左）→ 技術細節。
@@ -113,20 +113,20 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     expect(order.every(index => index > -1)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     const actions = body.slice(body.indexOf('<div class="diagnosis-actions">'), body.indexOf('<details class="diagnosis-technical">'));
-    expect(text(actions)).toBe(`${labels.buttons.viewEvidence}${labels.buttons.addToActions}`);
+    expect(text(actions)).toBe(`${labels.evidence.buttons.viewEvidence}${labels.actions.buttons.addToActions}`);
     expect(actions.match(/<button type="button" class="ui-btn ui-btn-secondary">/g)).toHaveLength(2);
     // 範圍切換：合計預設按下，其他通路 aria-pressed=false。
-    expect([...body.matchAll(/<button type="button" class="scope-chip" aria-pressed="(true|false)">([^<]*)<\/button>/g)].map(match => [match[2], match[1]])).toEqual([[labels.sections.total, "true"], ["DTC", "false"], ["MARKETPLACE", "false"]]);
-    expect(body).toContain(`role="group" aria-label="${labels.diagnosisList.scopeSwitch}"`);
+    expect([...body.matchAll(/<button type="button" class="scope-chip" aria-pressed="(true|false)">([^<]*)<\/button>/g)].map(match => [match[2], match[1]])).toEqual([[labels.overview.sections.total, "true"], ["DTC", "false"], ["MARKETPLACE", "false"]]);
+    expect(body).toContain(`role="group" aria-label="${labels.diagnosis.list.scopeSwitch}"`);
     expect(body).not.toContain('class="scope-more');
     // 相關數字（兩欄定義列表）：左「上期／本期 · 指標 · 範圍」，右整數元（L2）number-link，可開抽屜。
-    const all = fill(labels.ui.workspacePanels.scopeAllWith, { channels: "DTC、MARKETPLACE" });
-    expect(body).toContain(`<h4 class="kv-heading">${fill(labels.diagnosisList.dataFor, { data: labels.sections.data, scope: labels.sections.total })}</h4>`);
-    expect(body).toContain(`<div><dt>${fill(labels.ui.workspacePanels.factLine, { period: labels.periods.previous, metric: labels.metrics.discounts.label, scope: all })}</dt><dd><button type="button" class="number-link"`);
-    expect(body).toContain(fill(labels.ui.workspacePanels.factLine, { period: labels.periods.current, metric: labels.metrics.discounts.label, scope: all }));
+    const all = fill(labels.diagnosis.panel.scopeAllWith, { channels: "DTC、MARKETPLACE" });
+    expect(body).toContain(`<h4 class="kv-heading">${fill(labels.diagnosis.list.dataFor, { data: labels.diagnosis.sections.data, scope: labels.overview.sections.total })}</h4>`);
+    expect(body).toContain(`<div><dt>${fill(labels.diagnosis.panel.factLine, { period: labels.shell.periods.previous, metric: labels.metrics.discounts.headline, scope: all })}</dt><dd><button type="button" class="number-link"`);
+    expect(body).toContain(fill(labels.diagnosis.panel.factLine, { period: labels.shell.periods.current, metric: labels.metrics.discounts.headline, scope: all }));
     expect(body).toContain(`>${formatAmountL2("200.00")}</button></dd>`);
     expect(body).toContain(`>${formatAmountL2("450.00")}</button></dd>`);
-    for (const heading of [labels.sections.cause, labels.sections.nextStep, labels.overview.alerts.limitation]) expect(body).toContain(`<dt>${heading}</dt>`);
+    for (const heading of [labels.diagnosis.sections.cause, labels.diagnosis.sections.nextStep, labels.overview.alerts.limitation]) expect(body).toContain(`<dt>${heading}</dt>`);
     expect(body).toContain(`<div class="diagnosis-limit"><dt>${labels.overview.alerts.limitation}</dt><dd>${labels.rules.DISCOUNT_BURDEN_UP.caution}</dd></div>`);
     // 限制句不加「注意：」。
     expect(text(body)).not.toContain("注意：");
@@ -146,16 +146,16 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     const snap = await snapshot();
     const html = row(render(snap), "DISCOUNT_BURDEN_UP");
     const technical = html.slice(html.indexOf('<details class="diagnosis-technical">'));
-    expect(technical).toMatch(new RegExp(`^<details class="diagnosis-technical"><summary>${labels.sections.technicalDetails}</summary>`));
+    expect(technical).toMatch(new RegExp(`^<details class="diagnosis-technical"><summary>${labels.evidence.sections.technicalDetails}</summary>`));
     expect(technical).toContain("<code>DISCOUNT_BURDEN_UP</code>");
-    expect(technical).toContain(`<dt>${labels.sections.rankingAmount}</dt>`);
+    expect(technical).toContain(`<dt>${labels.overview.sections.rankingAmount}</dt>`);
     const group = diagnosisGroups(snap).groups.find(item => item.rule === "DISCOUNT_BURDEN_UP")!;
-    const ranking = fill(labels.units.yuan, { value: formatSignedDelta("250.00", "L3") });
-    expect(technical).toContain(`aria-label="${fill(labels.ui.workspacePanels.rankingAria, { title: group.headline, amount: ranking })}">${ranking}</button>`);
+    const ranking = fill(labels.format.units.yuan, { value: formatSignedDelta("250.00", "L3") });
+    expect(technical).toContain(`aria-label="${fill(labels.diagnosis.panel.rankingAria, { title: group.headline, amount: ranking })}">${ranking}</button>`);
     expect(technical).toContain("<code>contribution-v1</code>");
     // 快照版本：資料版本與範圍版本（與匯出、備份同一組雜湊）。
-    expect(technical).toContain(`<div><dt>${labels.csvColumns.dataset_hash}</dt><dd><code>${snap.dataset_hash}</code></dd></div>`);
-    expect(technical).toContain(`<div><dt>${labels.csvColumns.filter_hash}</dt><dd><code>${snap.filter_hash}</code></dd></div>`);
+    expect(technical).toContain(`<div><dt>${labels.exports.csv.columns.dataset_hash}</dt><dd><code>${snap.dataset_hash}</code></dd></div>`);
+    expect(technical).toContain(`<div><dt>${labels.exports.csv.columns.filter_hash}</dt><dd><code>${snap.filter_hash}</code></dd></div>`);
     expect(snap.dataset_hash).toMatch(/^[a-f0-9]{64}$/);
     expect(snap.filter_hash).toMatch(/^[a-f0-9]{64}$/);
     for (const id of group.primary.fact_ids) expect(technical).toContain(`<li><code>${id.replaceAll('"', "&quot;")}</code></li>`);
@@ -168,24 +168,24 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     expect(rows[0]).toBe("MISSING_CRITICAL_DATA");
     const summary = summaryOf(row(html, "MISSING_CRITICAL_DATA"));
     // V3-5：v2 的「先補資料」標籤改成 C8 狀態標籤「資料待補」（warning），計數徽章同步計入。
-    expect(summary).toContain(`<span class="ui-lozenge" data-tone="warning">${labels.status.missing}</span>`);
-    expect(summary).toContain(`<span class="impact-amount neutral">${labels.status.missing}</span>`);
+    expect(summary).toContain(`<span class="ui-lozenge" data-tone="warning">${labels.shell.status.missing}</span>`);
+    expect(summary).toContain(`<span class="impact-amount neutral">${labels.shell.status.missing}</span>`);
     expect(summary).not.toContain("<button");
     expect(html).toContain(`<span class="ui-count-badge" role="img" aria-label="${fill(labels.diagnosis.listV3.countMissing, { n: 1 })}">1</span>`);
     expect(row(html, "MISSING_CRITICAL_DATA")).toMatch(/^<details class="alert diagnosis-row missing"/);
     // 展開內容第一行同樣顯示「資料待補」（沒有金額可開）。
-    expect(row(html, "MISSING_CRITICAL_DATA")).toMatch(new RegExp(`<p class="impact-line"><span>[^<]*</span><span class="impact-amount neutral">${labels.status.missing}</span></p>`));
+    expect(row(html, "MISSING_CRITICAL_DATA")).toMatch(new RegExp(`<p class="impact-line"><span>[^<]*</span><span class="impact-amount neutral">${labels.shell.status.missing}</span></p>`));
     // 本期合計商品成本未知：數據列顯示「資料待補」（不是 0，也不是「不適用」）。
-    const metric = labels.metrics.cogs_net.label;
-    const scope = fill(labels.ui.workspacePanels.scopeAllWith, { channels: "DTC、MARKETPLACE" });
-    expect(row(html, "MISSING_CRITICAL_DATA")).toContain(`aria-label="${fill(labels.ui.workspacePanels.factAria, { period: labels.periods.current, metric, value: labels.status.missing, scope })}">${labels.status.missing}</button>`);
+    const metric = labels.metrics.cogs_net.headline;
+    const scope = fill(labels.diagnosis.panel.scopeAllWith, { channels: "DTC、MARKETPLACE" });
+    expect(row(html, "MISSING_CRITICAL_DATA")).toContain(`aria-label="${fill(labels.diagnosis.panel.factAria, { period: labels.shell.periods.current, metric, value: labels.shell.status.missing, scope })}">${labels.shell.status.missing}</button>`);
   });
 
   it("displayMetric: unknown is 資料待補 unless the only reason is a non-positive denominator", () => {
-    expect(displayMetric("cogs_net", { value: null, reason_codes: ["MISSING_VALUE"] })).toBe(labels.status.missing);
-    expect(displayMetric("cogs_net", { value: null, reason_codes: [] })).toBe(labels.status.missing);
-    expect(displayMetric("discount_rate", { value: null, reason_codes: ["NON_POSITIVE_DENOMINATOR"] })).toBe(labels.status.notApplicable);
-    expect(displayMetric("discount_rate", { value: null, reason_codes: ["MISSING_VALUE", "NON_POSITIVE_DENOMINATOR"] })).toBe(labels.status.missing);
+    expect(displayMetric("cogs_net", { value: null, reason_codes: ["MISSING_VALUE"] })).toBe(labels.shell.status.missing);
+    expect(displayMetric("cogs_net", { value: null, reason_codes: [] })).toBe(labels.shell.status.missing);
+    expect(displayMetric("discount_rate", { value: null, reason_codes: ["NON_POSITIVE_DENOMINATOR"] })).toBe(labels.shell.status.notApplicable);
+    expect(displayMetric("discount_rate", { value: null, reason_codes: ["MISSING_VALUE", "NON_POSITIVE_DENOMINATOR"] })).toBe(labels.shell.status.missing);
     // 預設 L2（展開列的相關數字）：整數元、一位小數的比率與倍數；指定 L3 時到分。
     expect(displayMetric("net_revenue", { value: "-1234.50", reason_codes: [] })).toBe(formatAmountL2("-1234.50"));
     expect(displayMetric("net_revenue", { value: "-1234.50", reason_codes: [] }, "L3")).toBe(formatAmountL3("-1234.50"));
@@ -202,20 +202,20 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     const sku = row(html, "SKU_NEGATIVE_GP");
     const summary = summaryOf(sku);
     // 列的範圍（|影響| 最大的 SKU）和頁面範圍不同 → summary 顯示一個範圍標籤；其他範圍不在 summary。
-    expect([...summary.matchAll(/<span class="scope-tag">([^<]*)<\/span>/g)].map(match => match[1])).toEqual([fill(labels.ui.managerSummary.skuScope, { channels: "DTC", sku: "S10" })]);
-    expect(summary).not.toContain(fill(labels.diagnosisList.moreScopes, { n: 3 }));
+    expect([...summary.matchAll(/<span class="scope-tag">([^<]*)<\/span>/g)].map(match => match[1])).toEqual([fill(labels.meeting.managerSummary.skuScope, { channels: "DTC", sku: "S10" })]);
+    expect(summary).not.toContain(fill(labels.diagnosis.list.moreScopes, { n: 3 }));
     // 11 個範圍都能選：前 4 個直接顯示，其餘 7 個收進「更多範圍」popover（<details> 收合時仍掛載，同樣是 role=group 的 chips）。
     expect(DIAGNOSIS_SCOPE_CHIPS).toBe(4);
     expect(sku.match(/class="scope-chip"/g)).toHaveLength(11);
     const more = sku.slice(sku.indexOf('<details class="scope-more'), sku.indexOf("</details>", sku.indexOf('<details class="scope-more')) + "</details>".length);
-    expect(more).toMatch(new RegExp(`^<details class="scope-more ui-popover-host"><summary class="scope-chip scope-more-trigger">${escapeRegExp(fill(labels.diagnosis.listV3.moreScopes, { n: 7 }))}</summary><div class="ui-popover scope-more-panel"><div class="scope-chips" role="group" aria-label="${labels.diagnosisList.scopeSwitch}">`));
+    expect(more).toMatch(new RegExp(`^<details class="scope-more ui-popover-host"><summary class="scope-chip scope-more-trigger">${escapeRegExp(fill(labels.diagnosis.listV3.moreScopes, { n: 7 }))}</summary><div class="ui-popover scope-more-panel"><div class="scope-chips" role="group" aria-label="${labels.diagnosis.list.scopeSwitch}">`));
     expect(more.match(/<button type="button" class="scope-chip" aria-pressed="false">/g)).toHaveLength(7);
     const inline = sku.slice(sku.indexOf('<div class="scope-switch">'), sku.indexOf('<details class="scope-more'));
     expect(inline.match(/<button type="button" class="scope-chip"/g)).toHaveLength(4);
     expect(inline).toContain('<button type="button" class="scope-chip" aria-pressed="true">');
     // summary 裡沒有 popover（summary 不放互動元件）。
     expect(summary).not.toContain("scope-more");
-    expect(rankingLabel("SKU_NEGATIVE_GP")).toBe(labels.diagnosisList.skuRanking);
+    expect(rankingLabel("SKU_NEGATIVE_GP")).toBe(labels.diagnosis.list.skuRanking);
   });
 
   it("an empty diagnosis shows the no-signal status instead of an empty list (and no count badges)", async () => {
@@ -224,7 +224,7 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     // V3-8（PRD §7.10「健檢沒有結果」、C10 區段型）：標題＋說明（role=status 沿用 v2，兩句合起來就是 v2 的 noDiagnostics）＋「查看健檢規則」文字按鈕；
     // 按鈕展開的 8 條規則說明保持掛載（hidden，M1），aria-controls 指到它。
     const empty = labels.data.pageV3.diagnosisEmpty;
-    expect(`${empty.title}${empty.body}`).toBe(labels.ui.workspacePanels.noDiagnostics);
+    expect(`${empty.title}${empty.body}`).toBe(labels.diagnosis.panel.noDiagnostics);
     expect(html).toContain(`<div class="ui-empty-block diagnosis-empty" data-testid="diagnosis-empty"><div role="status"><p class="diagnosis-empty-title">${empty.title}</p><p>${empty.body}</p></div>`);
     const button = new RegExp(`<button type="button" class="ui-btn ui-btn-text" aria-expanded="false" aria-controls="([^"]+)">${escapeRegExp(empty.action)}</button>`).exec(html);
     expect(button).not.toBeNull();
@@ -258,16 +258,16 @@ describe("rankingSelection keeps the R1 evidence behaviour", () => {
     const groups = diagnosisGroups(snap).groups;
     const discount = rankingSelection(snap, groups.find(item => item.rule === "DISCOUNT_BURDEN_UP")!.scopes[0], false)!;
     expect(discount.metric.value).toBe("250.00");
-    expect(discount.formula).toBe(fill(labels.ui.workspacePanels.deltaFormula, { metric: labels.metrics.discounts.label }));
-    expect(discount.components?.map(item => [item.label, item.metric.value])).toEqual([[labels.periods.previous, "200.00"], [labels.periods.current, "450.00"]]);
+    expect(discount.formula).toBe(fill(labels.diagnosis.panel.deltaFormula, { metric: labels.metrics.discounts.headline }));
+    expect(discount.components?.map(item => [item.label, item.metric.value])).toEqual([[labels.shell.periods.previous, "200.00"], [labels.shell.periods.current, "450.00"]]);
     expect(discount.period).toEqual({ start: "2026-08-01", end: "2026-08-02" });
-    expect(discount.scopeLabel).toBe(labels.ui.workspacePanels.scopeAll);
+    expect(discount.scopeLabel).toBe(labels.diagnosis.panel.scopeAll);
     const negative = rankingSelection(snap, groups.find(item => item.rule === "NEGATIVE_CHANNEL_CM")!.scopes[0], false)!;
     expect(negative.metric.value).toBe("-15.00");
     expect(negative.formula).toBeUndefined();
     expect(negative.period).toEqual({ start: "2026-08-02", end: "2026-08-02" });
-    expect(rankingLabel("NEGATIVE_CHANNEL_CM")).toBe(labels.ui.workspacePanels.rankingCurrent);
-    expect(rankingLabel("REV_UP_CM_DOWN")).toBe(labels.sections.rankingAmount);
+    expect(rankingLabel("NEGATIVE_CHANNEL_CM")).toBe(labels.diagnosis.panel.rankingCurrent);
+    expect(rankingLabel("REV_UP_CM_DOWN")).toBe(labels.overview.sections.rankingAmount);
     const missing = diagnosisGroups(await snapshot("errors/missing_cogs")).groups[0];
     expect(rankingSelection(snap, missing.scopes[0], false)).toBeNull();
   });
@@ -280,9 +280,9 @@ describe("Diagnosis page and TopThree share the same groups", () => {
     expect(html.indexOf('data-testid="diagnosis-list"')).toBeGreaterThan(-1);
     expect(html.indexOf('data-testid="diagnosis-list"')).toBeLessThan(html.indexOf('aria-labelledby="channel-table-heading"'));
     expect(html).toContain(`<h2 id="channel-table-heading">${labels.diagnosis.tableV3.heading}</h2>`);
-    expect(html).toContain(`aria-label="${labels.sections.channelTableAria}"`);
+    expect(html).toContain(`aria-label="${labels.overview.sections.channelTableAria}"`);
     // 沒有 onCreateAction 時不顯示加入待辦。
-    expect(html).not.toContain(labels.buttons.addToActions);
+    expect(html).not.toContain(labels.actions.buttons.addToActions);
   });
 
   it("TopThree lists the first three groups with the same headline and impact, and keeps its anchors", async () => {
@@ -296,7 +296,7 @@ describe("Diagnosis page and TopThree share the same groups", () => {
     for (const group of priorities) expect(html).toContain(`<h3 class="alert-title">${group.headline}</h3>`);
     expect(html).toContain('data-testid="top-three"');
     expect(html).toContain('aria-describedby="top-three-threshold-help"');
-    expect(html).toContain(fill(labels.diagnosisList.thresholdHelp, { amount: formatAmountL3("0.00") }));
+    expect(html).toContain(fill(labels.diagnosis.list.thresholdHelp, { amount: formatAmountL3("0.00") }));
     const firstScopes = html.slice(html.indexOf('<ul class="alert-scopes">'), html.indexOf("</ul>", html.indexOf('<ul class="alert-scopes">')));
     expect(html).toContain(`<dt>${labels.overview.alerts.relatedScopes}</dt>`);
     expect(firstScopes.match(/class="number-link impact-amount /g)).toHaveLength(priorities[0].scopes.length - 1);

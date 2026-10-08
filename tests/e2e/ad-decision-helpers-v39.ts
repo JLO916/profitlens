@@ -15,7 +15,7 @@ export const adDecisionBadge = (value: AdDecision) => fill(adCopy.badge, { decis
 export const boardBadge = (page: Page, n: number) => page.getByTestId(`board-card-${n}-ad-decision`);
 export const listBadge = (page: Page, n: number) => page.getByTestId(`action-${n}-ad-decision`);
 /** 決策 Markdown 有標的待辦多一行「- 廣告決策：加碼」（fieldLine 模板；沒標不印）。 */
-export const adDecisionMarkdownLine = (value: AdDecision) => fill(labels.ui.decisionExport.fieldLine, { label: adCopy.field, value: adCopy.options[value] });
+export const adDecisionMarkdownLine = (value: AdDecision) => fill(labels.exports.decision.fieldLine, { label: adCopy.field, value: adCopy.options[value] });
 /** 決策 CSV 最後一欄的欄名（「中文 (english_key)」）。 */
 export const adDecisionCsvHeader = `${adCopy.csvColumn} (ad_decision)`;
 

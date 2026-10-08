@@ -7,7 +7,7 @@ import { backToFiles, chooseBasis, commitButton, commitWizard, confirmAndCheck, 
 import { navigateTo } from "./replacement-helpers";
 // R3：舊的單頁匯入面板（import-panel）已由四步匯入精靈取代；本檔改由精靈操作，產品行為的斷言照舊保留。
 // V3-3：空狀態從頂欄資料狀態 →「匯入新資料」開精靈（openWizard 處理）；切頁走 navigateTo（手機用底部分頁列）。
-const panel = labels.ui.importPanel;
+const panel = labels.importWizard.panel;
 const copy = labels.importWizard;
 const v3 = copy.wizardV3;
 /** R2 labels with placeholders (e.g. "已有的部分小計 {subtotal}，不是完整總額") are matched by template shape, like ruleHeadline. */
@@ -41,7 +41,7 @@ test("PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後�
   const templates = page.getByTestId("import-step-1").locator("details", { has: page.locator(":scope > summary", { hasText: copy.noFiles }) });
   await templates.locator(":scope > summary").click();
   const downloaded = page.waitForEvent("download");
-  await templates.getByRole("button", { name: fill(labels.downloads.blankTemplate, { file: copy.files.sales }), exact: true }).click();
+  await templates.getByRole("button", { name: fill(labels.exports.downloads.blankTemplate, { file: copy.files.sales }), exact: true }).click();
   const download = await downloaded;
   expect(download.suggestedFilename()).toBe("sales_daily.csv");
   expect((await readFile((await download.path())!, "utf8")).trim()).toBe("date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency");
@@ -72,7 +72,7 @@ test("PL03 三檔提議需確認、範本可下载，PL04完整涵蓋對帳後�
   await expect(form.getByTestId("reconciliation-ad_spend")).toContainText(formatAmountL3("750.00"));
   await expect(form.getByTestId("reconciliation-metric-net_revenue")).toContainText(formatAmountL3("4720.00"));
   await expect(form.getByTestId("reconciliation-metric-contribution_after_marketing")).toContainText(formatAmountL3("825.00"));
-  await expect(form.getByTestId("import-reconciliation")).toContainText(labels.ui.importGuidance.excluded.platformSubsidy);
+  await expect(form.getByTestId("import-reconciliation")).toContainText(labels.importWizard.guidance.excluded.platformSubsidy);
   await commitWizard(page);
   await navigateTo(page, "overview");
   // V3-2b：KPI 大數字是 L1；golden 本期 255.00 < 1 萬，顯示為整數元。
@@ -123,7 +123,7 @@ test("PL03訂單級重複鍵說明先整理與對帳，不自行彙總或刪列"
   await confirmAndCheck(page, "blocking");
   await expect(form).toContainText(panel.duplicateAlert);
   // V3-8（§7.7.1 第 3 段）：原因碼欄預設收合；按問題表工具列的「顯示原因碼」（aria-pressed）後才看得到。
-  const issues = form.getByRole("region", { name: labels.ui.issueList.regionAria });
+  const issues = form.getByRole("region", { name: labels.data.issues.regionAria });
   const codeCell = issues.locator("td.issue-code").filter({ hasText: "DUPLICATE_SALES_KEY" }).first();
   await expect(codeCell).toBeHidden();
   const showCodes = form.getByRole("button", { name: labels.data.pageV3.issueTable.showCodes, exact: true });

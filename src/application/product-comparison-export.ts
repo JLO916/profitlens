@@ -24,7 +24,7 @@ export function exportProductComparisonCsv(dataset: Dataset, snapshot: Workspace
     text(snapshot.report.comparison.mode), numeric(String(snapshot.report.comparison.previous_days)), numeric(String(snapshot.report.comparison.current_days)),
     text(snapshot.report.previous.period.start), text(snapshot.report.previous.period.end), text(snapshot.report.current.period.start), text(snapshot.report.current.period.end), text(JSON.stringify(snapshot.report.scope.channels)),
     text(selection.category ?? ""), text(selection.query ?? ""), text(String(selection.negativeOnly ?? false)), text(selection.sort ?? "gross_profit_change"), text(selection.direction ?? "ascending"),
-    text(labels.ui.productComparisonExport.limitations),
+    text(labels.exports.productComparison.limitations),
   ];
   const contents = rows.map(row => [
     text("product_comparison"), text(row.channel), text(row.sku), text(row.category), text(row.activity), text(row.previous.presence), text(row.current.presence),

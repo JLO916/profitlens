@@ -63,14 +63,14 @@ describe("diagnosisGroups merges all/channel signals into one row per rule", () 
     const copy = ruleCopy(base, group.primary, false);
     expect([group.headline, group.cause, group.next_step, group.caution]).toEqual([copy.headline, copy.cause, copy.nextStep, copy.caution]);
     // 折扣率 200/2500=8.00% → 450/3100=14.52%（golden 手算），V3-2a 起寫在 cause。
-    expect(group.cause).toBe(fill(labels.rules.DISCOUNT_BURDEN_UP.cause, { prevRate: "8.00%", curRate: "14.52%" }));
+    expect(group.cause).toBe(fill(labels.rules.DISCOUNT_BURDEN_UP.explain.cause, { prevRate: "8.00%", curRate: "14.52%" }));
     // 排序用已觀察金額差（技術細節）仍是 +250.00；對貢獻影響是它的負值。
     expect(group.ranking_amount.value).toBe("250.00");
     expect(group.impact).toEqual({ value: "-250.00", reason_codes: [] });
     expect(group.missing).toBe(false);
     expect(group.fact_ids).toEqual([...new Set(group.scopes.flatMap(row => row.diagnostic.fact_ids))]);
     for (const row of group.scopes) expect(row.facts.map(fact => fact.id)).toEqual(row.diagnostic.fact_ids);
-    expect(group.scopes.map(row => row.label)).toEqual([labels.sections.total, "DTC", "MARKETPLACE"]);
+    expect(group.scopes.map(row => row.label)).toEqual([labels.overview.sections.total, "DTC", "MARKETPLACE"]);
   });
 
   it("a single selected channel collapses 合計 and the channel into one 合計 scope", async () => {
@@ -122,7 +122,7 @@ describe("diagnosisGroups merges all/channel signals into one row per rule", () 
   it("SKU group: one row, scopes labelled 通路／SKU, no 合計 so primary is the largest |impact|", async () => {
     const refund = diagnosisGroups(await snapshot("refund_only"));
     const sku = find(refund.groups, "SKU_NEGATIVE_GP");
-    expect(sku.scopes.map(row => row.label)).toEqual([fill(labels.ui.managerSummary.skuScope, { channels: "DTC", sku: "A" })]);
+    expect(sku.scopes.map(row => row.label)).toEqual([fill(labels.meeting.managerSummary.skuScope, { channels: "DTC", sku: "A" })]);
     // NEGATIVE_CHANNEL_CM −60.00 與 SKU_NEGATIVE_GP −60.00 同值 → 依規則代號。
     expect(refund.groups.map(group => [group.rule, group.impact_cents])).toEqual([["NEGATIVE_CHANNEL_CM", "-60.00"], ["SKU_NEGATIVE_GP", "-60.00"]]);
     const base = await snapshot();
@@ -132,7 +132,7 @@ describe("diagnosisGroups merges all/channel signals into one row per rule", () 
     expect(group.scopes).toHaveLength(10);
     expect(group.primary.scope.sku).toBe("S10");
     expect(group.impact_cents).toBe("-10.00");
-    expect(group.scopes[0].label).toBe(fill(labels.ui.managerSummary.skuScope, { channels: "MARKETPLACE", sku: "S10" }));
+    expect(group.scopes[0].label).toBe(fill(labels.meeting.managerSummary.skuScope, { channels: "MARKETPLACE", sku: "S10" }));
     expect(group.scopes.map(row => row.scope.sku)).toEqual([...skus].reverse());
     const { shown, more } = summaryScopes(group);
     expect(shown.map(row => row.scope.sku)).toEqual(["S10", "S09", "S08", "S07", "S06", "S05", "S04", "S03"]);
@@ -225,10 +225,10 @@ describe("threshold, priorities and omitted count", () => {
   });
 
   it("diagnosisScopeLabel: 合計 / channel / 通路／SKU, with the demo alias only on the demo dataset", () => {
-    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC"] }, false)).toBe(labels.sections.total);
+    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC"] }, false)).toBe(labels.overview.sections.total);
     expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, false)).toBe("DTC");
-    expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, true)).toBe(labels.demoChannelAlias.DTC);
-    expect(diagnosisScopeLabel({ kind: "sku", channels: ["MARKETPLACE"], sku: "B" }, false)).toBe(fill(labels.ui.managerSummary.skuScope, { channels: "MARKETPLACE", sku: "B" }));
+    expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, true)).toBe(labels.data.demoChannelAlias.DTC);
+    expect(diagnosisScopeLabel({ kind: "sku", channels: ["MARKETPLACE"], sku: "B" }, false)).toBe(fill(labels.meeting.managerSummary.skuScope, { channels: "MARKETPLACE", sku: "B" }));
   });
 });
 
@@ -256,15 +256,15 @@ describe("single source with buildManagerSummary (三件事 and Markdown follow 
   it("Markdown 三件事 lists the same headlines, scopes and 對貢獻影響 amounts in TopThree order", async () => {
     const base = await snapshot();
     const summary = buildManagerSummary(base);
-    const body = exportManagerSummaryMarkdown(summary).split(`## ${labels.sections.technicalDetails}`)[0];
-    const section = body.split(`## ${labels.sections.topThree}`)[1];
-    const expected = diagnosisGroups(base).priorities.map((group, index) => fill(labels.ui.managerSummary.mdPriorityRow, { n: index + 1, headline: group.headline, scope: `${labels.sections.total}（DTC、MARKETPLACE）`, amount: formatSignedDelta(group.impact_cents!, "L2") }));
+    const body = exportManagerSummaryMarkdown(summary).split(`## ${labels.evidence.sections.technicalDetails}`)[0];
+    const section = body.split(`## ${labels.overview.sections.topThree}`)[1];
+    const expected = diagnosisGroups(base).priorities.map((group, index) => fill(labels.meeting.managerSummary.mdPriorityRow, { n: index + 1, headline: group.headline, scope: `${labels.overview.sections.total}（DTC、MARKETPLACE）`, amount: formatSignedDelta(group.impact_cents!, "L2") }));
     const rows = section.split("\n").filter(line => /^\d+\. /.test(line));
     expect(rows).toEqual(expected);
     // V3-2b：Markdown 主文是 L2 整數元、U+2212 負號。
     expect(rows.join("\n")).toContain(`${MINUS}250`);
     expect(rows.join("\n")).not.toContain("+250");
-    expect(exportManagerSummaryMarkdown(summary)).toContain(labels.diagnosisList.techPriorityNote);
+    expect(exportManagerSummaryMarkdown(summary)).toContain(labels.diagnosis.list.techPriorityNote);
   });
 });
 

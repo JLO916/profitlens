@@ -17,7 +17,7 @@ import { formatAmountL2 as l2, formatPeriodExport, formatSignedDelta, MINUS } fr
 
 /** V3-2b：會議紀錄 Markdown 主文是 L2（整數元、U+2212、正差額加「+」），表頭加「（元）」。 */
 const signed = (value: string) => formatSignedDelta(value, "L2");
-const moneyColumn = (label: string) => fill(labels.ui.export.moneyColumn, { label });
+const moneyColumn = (label: string) => fill(labels.exports.common.moneyColumn, { label });
 
 const NOW = "2026-10-03T06:00:00.000Z";
 /** 會議稿（review）的建立時間：早於 NOW，結束會議時成為 Meeting.created_at。 */
@@ -54,7 +54,7 @@ async function finalized(reviewId = "rev-1", now = NOW, patch?: Parameters<typeo
 const mutable = (meeting: Meeting): Meeting => structuredClone(meeting);
 /** 內部一致的同範圍 follow_up（上次與本次的本期相同，差額 0.00）：竄改測試的基準。 */
 const comparableFollowUp = (meeting: Meeting): Meeting["follow_up"] => ({
-  last_meeting_id: "meeting-prev", last_name: "上次例會", last_date: "2026-09-26", kind: "same_scope", note: labels.meetingRecord.sameScope,
+  last_meeting_id: "meeting-prev", last_name: "上次例會", last_date: "2026-09-26", kind: "same_scope", note: labels.meeting.record.sameScope,
   kpis: meeting.agenda.kpis.map(row => ({ metric: row.metric, last: row.current, current: row.current, change: "0.00" })),
   last_priorities: structuredClone(meeting.agenda.priorities) as Meeting["agenda"]["priorities"], last_decisions: structuredClone(meeting.decisions) as Meeting["decisions"], actions: [],
 });
@@ -68,12 +68,12 @@ describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed s
     expect(meeting.id).toBe(`meeting-${review.id}-r${review.revision}`);
     // created_at 取會議稿的建立時間（早於結束時間）。
     expect(meeting).toMatchObject({ review_id: "rev-1", review_revision: review.revision, name: "十月例會", date: "2026-10-03", created_at: CREATED, finalized_at: NOW, notes: "照做", thresholds: { importance: "0.00" } });
-    // 口徑是結束當時 labels.basis.items 的快照；沒有含稅換算時 preprocessing 為 null。
+    // 口徑是結束當時 labels.glossary.basis.items 的快照；沒有含稅換算時 preprocessing 為 null。
     expect(meeting.source_fixed).toEqual({ dataset_id: "golden-v1", dataset_hash: review.dataset_hash, filter_hash: review.filter_hash, metric_version: "contribution-v1", data_as_of: "2026-08-03",
       periods: { previous: { start: "2026-08-01", end: "2026-08-01" }, current: { start: "2026-08-02", end: "2026-08-02" }, comparison_mode: "same_days" }, channels: ["DTC", "MARKETPLACE"],
-      preprocessing: null, basis: [...labels.basis.items] });
+      preprocessing: null, basis: [...labels.glossary.basis.items] });
     // 沒有傳 history：沒有上次會議。
-    expect(meeting.follow_up).toEqual({ last_meeting_id: null, last_name: null, last_date: null, kind: "none", note: labels.meetingRecord.noLastMeeting, kpis: [], last_priorities: [], last_decisions: [], actions: [] });
+    expect(meeting.follow_up).toEqual({ last_meeting_id: null, last_name: null, last_date: null, kind: "none", note: labels.meeting.record.noLastMeeting, kpis: [], last_priorities: [], last_decisions: [], actions: [] });
     // 淨營收 2,250.00 → 2,470.00：差額 +220.00；扣廣告後貢獻 570.00 → 255.00：差額 −315.00（expected.json 的 bridge.sum）。
     expect(meeting.agenda.kpis).toEqual([
       { metric: "net_revenue", previous: golden.previous.net_revenue, current: golden.current.net_revenue, change: "220.00" },
@@ -87,15 +87,15 @@ describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed s
     ]);
     // 三件事＝對貢獻影響 |ΔCM| 315 > |−Δ折扣| (450 − 200) 250 > |−Δ廣告| (450 − 300) 150；與 summary.priorities 同源。
     const summary = buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold });
-    expect(meeting.agenda.priorities.map(row => [row.rule, row.impact, row.scope])).toEqual([["REV_UP_CM_DOWN", "-315.00", labels.sections.total], ["DISCOUNT_BURDEN_UP", "-250.00", labels.sections.total], ["MARKETING_BURDEN_UP", "-150.00", labels.sections.total]]);
+    expect(meeting.agenda.priorities.map(row => [row.rule, row.impact, row.scope])).toEqual([["REV_UP_CM_DOWN", "-315.00", labels.overview.sections.total], ["DISCOUNT_BURDEN_UP", "-250.00", labels.overview.sections.total], ["MARKETING_BURDEN_UP", "-150.00", labels.overview.sections.total]]);
     expect(meeting.agenda.priorities.map(row => [row.headline, row.next_step])).toEqual(summary.priorities.map(row => [row.title, row.recommendation]));
-    expect(meeting.agenda.priorities[0].next_step).toBe(labels.rules.REV_UP_CM_DOWN.nextStep);
+    expect(meeting.agenda.priorities[0].next_step).toBe(labels.rules.REV_UP_CM_DOWN.explain.nextStep);
     // 金額部分與還原核對共用 meetingAgendaFromSnapshot。
     expect(meetingAgendaFromSnapshot(snapshot, { importanceThreshold: review.importance_threshold })).toEqual({ kpis: meeting.agenda.kpis, priorities: meeting.agenda.priorities, channels: meeting.agenda.channels });
     // 方案：DTC 基準 270.00，試算後 284.00（golden），差 284 − 270 = 14.00。
     expect(meeting.agenda.scenarios).toHaveLength(1);
     expect(meeting.agenda.scenarios[0]).toMatchObject({ channel: "DTC", plan_id: "p", revision: 1, name: "履約", baseline: golden.current_channels.DTC.contribution_after_marketing, contribution: golden.scenario_dtc_fulfillment_reduction.expected_contribution, delta: "14.00" });
-    expect(meeting.agenda.scenarios[0].assumptions[0]).toBe(fill(labels.ui.reviewSession.assumptionVolume, { value: formatPercentNumber("0", "L2", { signed: true }) }));
+    expect(meeting.agenda.scenarios[0].assumptions[0]).toBe(fill(labels.meeting.session.assumptionVolume, { value: formatPercentNumber("0", "L2", { signed: true }) }));
     expect(meeting.selected_scenarios).toEqual(review.selected_scenarios);
     // 只取置頂待辦；執行狀態與更新日來自 actionDocuments。
     expect(meeting.pinned_action_ids).toEqual(["a1"]);
@@ -125,13 +125,13 @@ describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed s
     const conversion: TaxConversion = { basis: "inclusive", rate: "0.05", fields: ["gross_sales", "discounts"], rows_converted: 12 };
     const meeting = finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, conversion, date: "2026-10-03", now: NOW });
     expect(meeting.source_fixed.preprocessing).toBe(conversionSentence(conversion));
-    expect(meeting.source_fixed.basis).toEqual([...labels.basis.items]);
+    expect(meeting.source_fixed.basis).toEqual([...labels.glossary.basis.items]);
     expect(Object.isFrozen(meeting.source_fixed.basis)).toBe(true);
     const text = exportMeetingMarkdown(meeting);
     // 「## 口徑」在固定範圍之後、議程之前：口徑逐列，再加換算一句。
-    expect(text).toContain([labels.meetingRecord.mdBasis, "", ...labels.basis.items.map(item => `- ${item}`), `- ${conversionSentence(conversion)}`, ""].join("\n"));
-    expect(text.indexOf(labels.meetingRecord.mdScope)).toBeLessThan(text.indexOf(labels.meetingRecord.mdBasis));
-    expect(text.indexOf(labels.meetingRecord.mdBasis)).toBeLessThan(text.indexOf(`## ${labels.sections.meetingAgenda}`));
+    expect(text).toContain([labels.meeting.record.mdBasis, "", ...labels.glossary.basis.items.map(item => `- ${item}`), `- ${conversionSentence(conversion)}`, ""].join("\n"));
+    expect(text.indexOf(labels.meeting.record.mdScope)).toBeLessThan(text.indexOf(labels.meeting.record.mdBasis));
+    expect(text.indexOf(labels.meeting.record.mdBasis)).toBeLessThan(text.indexOf(`## ${labels.meeting.sections.meetingAgenda}`));
     expect(exportMeetingMarkdown(finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios: state.scenarios, actions: state.actions, date: "2026-10-03", now: NOW }))).not.toContain(conversionSentence(conversion)!);
   });
   it("freezes only scenarios that are still the current version (a superseded plan is dropped with its reference)", async () => {
@@ -144,7 +144,7 @@ describe("R6-1 finalizeMeeting builds a frozen meeting from the review's fixed s
     const meeting = finalizeMeeting({ review: state.review, snapshot: state.snapshot, scenarios, actions: state.actions, date: "2026-10-03", now: NOW });
     expect(meeting.agenda.scenarios).toEqual([]);
     expect(meeting.selected_scenarios).toEqual([]);
-    expect(exportMeetingMarkdown(meeting)).toContain(labels.meetingRecord.noScenarios);
+    expect(exportMeetingMarkdown(meeting)).toContain(labels.meeting.record.noScenarios);
     // 已採用的決議：先由 refreshReviewScenarioReferences 退回草稿（與「結束會議」流程相同），結束後同樣不帶已取代的方案。
     const adopted = updateReviewSession(state.review, { decision_state: "adopted" });
     expect(() => finalizeMeeting({ review: adopted, snapshot: state.snapshot, scenarios, actions: state.actions, date: "2026-10-03", now: NOW })).toThrow("REVIEW_ADOPTED_STALE_SCENARIO");
@@ -295,7 +295,7 @@ describe("R6-1 follow_up is frozen at finalize (④ and the comparison survive a
     const second = await finalized("rev-2", "2026-10-10T06:00:00.000Z", { name: "下週例會" }, appendMeeting([], first.meeting));
     const follow = second.meeting.follow_up;
     expect(follow.kind).toBe("same_scope");
-    expect(follow).toMatchObject({ last_meeting_id: first.meeting.id, last_name: "十月例會", last_date: "2026-10-03", note: labels.meetingRecord.sameScope });
+    expect(follow).toMatchObject({ last_meeting_id: first.meeting.id, last_name: "十月例會", last_date: "2026-10-03", note: labels.meeting.record.sameScope });
     // 同一份資料同一期間：本期對本期 2,470.00 − 2,470.00、255.00 − 255.00，差額都是 0.00。
     expect(follow.kpis).toEqual([
       { metric: "net_revenue", last: "2470.00", current: "2470.00", change: "0.00" },
@@ -313,14 +313,14 @@ describe("R6-1 follow_up is frozen at finalize (④ and the comparison survive a
     const restored = JSON.parse(JSON.stringify(second.meeting)) as Meeting;
     validateMeeting(restored);
     const text = exportMeetingMarkdown(restored);
-    expect(text).toContain(fill(labels.meetingRecord.mdLastMeeting, { name: "十月例會", date: "2026-10-03" }));
-    expect(text).toContain(fill(labels.meetingRecord.mdFollowUpRow, { problem: first.meeting.agenda.pinned_actions[0].problem, last: labels.actions.statuses.in_progress, current: labels.actions.statuses.in_progress, updated: fill(labels.meetingRecord.statusUpdatedAt, { date: "2026-10-01" }) }));
-    expect(text).toContain(labels.meetingRecord.sameScope);
-    expect(text).toContain(`| ${labels.metrics.net_revenue.label} | ${l2("2470.00")} | ${l2("2470.00")} | ${signed("0.00")} |`);
-    expect(text).toContain(`| ${labels.metrics.net_revenue.label} | 2,470 | 2,470 | 0 |`);
-    expect(text).toContain(`${labels.meetingRecord.lastPriorities}：`);
+    expect(text).toContain(fill(labels.meeting.record.mdLastMeeting, { name: "十月例會", date: "2026-10-03" }));
+    expect(text).toContain(fill(labels.meeting.record.mdFollowUpRow, { problem: first.meeting.agenda.pinned_actions[0].problem, last: labels.actions.form.statuses.in_progress, current: labels.actions.form.statuses.in_progress, updated: fill(labels.meeting.record.statusUpdatedAt, { date: "2026-10-01" }) }));
+    expect(text).toContain(labels.meeting.record.sameScope);
+    expect(text).toContain(`| ${labels.metrics.net_revenue.headline} | ${l2("2470.00")} | ${l2("2470.00")} | ${signed("0.00")} |`);
+    expect(text).toContain(`| ${labels.metrics.net_revenue.headline} | 2,470 | 2,470 | 0 |`);
+    expect(text).toContain(`${labels.meeting.record.lastPriorities}：`);
     expect(text).toContain(`- comparison：same_scope；last_meeting_id：${first.meeting.id}`);
-    expect(text).not.toContain(labels.meetingRecord.noLastMeeting);
+    expect(text).not.toContain(labels.meeting.record.noLastMeeting);
   });
   it("uses the latest meeting in history and freezes a different-dataset follow-up without KPI rows", async () => {
     const { meeting: golden, actions } = await finalized();
@@ -329,7 +329,7 @@ describe("R6-1 follow_up is frozen at finalize (④ and the comparison survive a
     const older = withId(golden, "older", "2026-09-01T00:00:00.000Z");
     const current = finalizeMeeting({ review, snapshot: await rebuildReviewSnapshot(review), scenarios: emptyScenarioWorkspace("d"), actions, date: "2026-10-10", now: "2026-10-10T06:00:00.000Z", history: [golden, older] });
     expect(current.follow_up).toEqual({
-      last_meeting_id: golden.id, last_name: golden.name, last_date: golden.date, kind: "different_dataset", note: labels.meeting.noComparable, kpis: [], last_priorities: [], last_decisions: golden.decisions,
+      last_meeting_id: golden.id, last_name: golden.name, last_date: golden.date, kind: "different_dataset", note: labels.meeting.form.noComparable, kpis: [], last_priorities: [], last_decisions: golden.decisions,
       actions: [{ action_id: "a1", problem: golden.agenda.pinned_actions[0].problem, last_status: "in_progress", current_status: "in_progress", status_updated_at: "2026-10-01" }],
     });
   });
@@ -339,7 +339,7 @@ describe("R6-1 compareWithLastMeeting (05 §10)", () => {
   it("none: no previous meeting", async () => {
     const { snapshot, review, actions } = await setup();
     const result = compareWithLastMeeting({ snapshot, review, actions }, null);
-    expect(result).toEqual({ kind: "none", last: null, note: labels.meetingRecord.noLastMeeting, kpis: [], priorities: { last: [], current: [] }, decisions: [], actions: [] });
+    expect(result).toEqual({ kind: "none", last: null, note: labels.meeting.record.noLastMeeting, kpis: [], priorities: { last: [], current: [] }, decisions: [], actions: [] });
   });
   it("same_scope: two meetings from different reviews on the same snapshot compare KPI and track actions", async () => {
     const first = await finalized("rev-1");
@@ -349,7 +349,7 @@ describe("R6-1 compareWithLastMeeting (05 §10)", () => {
     const result = compareWithLastMeeting({ snapshot: second.snapshot, review: second.review, actions }, lastMeeting(history));
     expect(result.kind).toBe("same_scope");
     expect(result.last).toBe(first.meeting);
-    expect(result.note).toBe(labels.meetingRecord.sameScope);
+    expect(result.note).toBe(labels.meeting.record.sameScope);
     // 同一份資料同一期間：本期對本期差額為 0.00。
     expect(result.kpis).toEqual([
       { metric: "net_revenue", last: "2470.00", current: "2470.00", change: "0.00" },
@@ -372,7 +372,7 @@ describe("R6-1 compareWithLastMeeting (05 §10)", () => {
     const moved = await source("demo", { previous_period: { start: "2026-06-29", end: "2026-07-26" }, current_period: { start: "2026-07-27", end: "2026-08-23" } });
     const result = compareWithLastMeeting({ snapshot: moved.snapshot, review: null, actions: emptyActionWorkspace() }, last);
     expect(result.kind).toBe("different_periods");
-    expect(result.note).toBe(fill(labels.meetingRecord.differentPeriods, { last: "7/13–8/23", current: "7/27–8/23" }));
+    expect(result.note).toBe(fill(labels.meeting.record.differentPeriods, { last: "7/13–8/23", current: "7/27–8/23" }));
     const cents = (value: string) => BigInt(value.replace(".", ""));
     for (const [index, metric] of (["net_revenue", "contribution_after_marketing"] as const).entries()) {
       const current = moved.snapshot.report.current.metrics[metric].value!;
@@ -388,7 +388,7 @@ describe("R6-1 compareWithLastMeeting (05 §10)", () => {
     const older = freezeMeeting({ ...mutable(meeting), source_fixed: { ...mutable(meeting).source_fixed, periods: { previous: { start: "2025-12-01", end: "2025-12-01" }, current: { start: "2025-12-02", end: "2025-12-02" }, comparison_mode: "same_days" } } });
     const result = compareWithLastMeeting({ snapshot, review, actions }, older);
     expect(result.kind).toBe("different_periods");
-    expect(result.note).toBe(fill(labels.meetingRecord.differentPeriods, { last: "2025/12/2–2025/12/2", current: "2026/8/2–2026/8/2" }));
+    expect(result.note).toBe(fill(labels.meeting.record.differentPeriods, { last: "2025/12/2–2025/12/2", current: "2026/8/2–2026/8/2" }));
   });
   it("same current period: the note names the two previous periods instead of two identical current periods", async () => {
     const { meeting, snapshot, review, actions } = await finalized();
@@ -397,25 +397,25 @@ describe("R6-1 compareWithLastMeeting (05 §10)", () => {
     // 上次：上期 7/31、本期 8/2；本次：上期 8/1、本期 8/2（本期相同，只有上期不同）。
     const previousOnly = compareWithLastMeeting({ snapshot, review, actions }, withPeriods({ previous: { start: "2026-07-31", end: "2026-07-31" }, current, comparison_mode: "same_days" }));
     expect(previousOnly.kind).toBe("different_periods");
-    expect(previousOnly.note).toBe(fill(labels.meetingRecord.differentPreviousPeriods, { current: "8/2–8/2", lastPrevious: "7/31–7/31", currentPrevious: "8/1–8/1" }));
-    expect(previousOnly.note).not.toBe(fill(labels.meetingRecord.differentPeriods, { last: "8/2–8/2", current: "8/2–8/2" }));
+    expect(previousOnly.note).toBe(fill(labels.meeting.record.differentPreviousPeriods, { current: "8/2–8/2", lastPrevious: "7/31–7/31", currentPrevious: "8/1–8/1" }));
+    expect(previousOnly.note).not.toBe(fill(labels.meeting.record.differentPeriods, { last: "8/2–8/2", current: "8/2–8/2" }));
     // 兩期都相同、只有比較方式不同。
     const modeOnly = compareWithLastMeeting({ snapshot, review, actions }, withPeriods({ previous: { start: "2026-08-01", end: "2026-08-01" }, current, comparison_mode: "calendar_months" }));
     expect(modeOnly.kind).toBe("different_periods");
-    expect(modeOnly.note).toBe(fill(labels.meetingRecord.differentComparisonMode, { last: labels.periods.calendarMonths, current: labels.periods.sameDays }));
+    expect(modeOnly.note).toBe(fill(labels.meeting.record.differentComparisonMode, { last: labels.shell.periods.calendarMonths, current: labels.shell.periods.sameDays }));
     // 上期與比較方式都不同：兩句以分隔符號接起來。
     const both = compareWithLastMeeting({ snapshot, review, actions }, withPeriods({ previous: { start: "2026-07-31", end: "2026-07-31" }, current, comparison_mode: "calendar_months" }));
-    expect(both.note).toBe([fill(labels.meetingRecord.differentPreviousPeriods, { current: "8/2–8/2", lastPrevious: "7/31–7/31", currentPrevious: "8/1–8/1" }), fill(labels.meetingRecord.differentComparisonMode, { last: labels.periods.calendarMonths, current: labels.periods.sameDays })].join(labels.meetingRecord.noteSeparator));
+    expect(both.note).toBe([fill(labels.meeting.record.differentPreviousPeriods, { current: "8/2–8/2", lastPrevious: "7/31–7/31", currentPrevious: "8/1–8/1" }), fill(labels.meeting.record.differentComparisonMode, { last: labels.shell.periods.calendarMonths, current: labels.shell.periods.sameDays })].join(labels.meeting.record.noteSeparator));
     // 本期不同且比較方式不同：本期的句子＋比較方式。
     const currentAndMode = compareWithLastMeeting({ snapshot, review, actions }, withPeriods({ previous: { start: "2026-07-30", end: "2026-07-30" }, current: { start: "2026-07-31", end: "2026-07-31" }, comparison_mode: "calendar_months" }));
-    expect(currentAndMode.note).toBe([fill(labels.meetingRecord.differentPeriods, { last: "7/31–7/31", current: "8/2–8/2" }), fill(labels.meetingRecord.differentComparisonMode, { last: labels.periods.calendarMonths, current: labels.periods.sameDays })].join(labels.meetingRecord.noteSeparator));
+    expect(currentAndMode.note).toBe([fill(labels.meeting.record.differentPeriods, { last: "7/31–7/31", current: "8/2–8/2" }), fill(labels.meeting.record.differentComparisonMode, { last: labels.shell.periods.calendarMonths, current: labels.shell.periods.sameDays })].join(labels.meeting.record.noteSeparator));
   });
   it("different_dataset: another dataset only lists the last decisions and action statuses", async () => {
     const { meeting, actions } = await finalized();
     const demo = await source("demo");
     const result = compareWithLastMeeting({ snapshot: demo.snapshot, review: null, actions }, meeting);
     expect(result).toEqual({
-      kind: "different_dataset", last: meeting, note: labels.meeting.noComparable, kpis: [], priorities: { last: [], current: [] }, decisions: meeting.decisions,
+      kind: "different_dataset", last: meeting, note: labels.meeting.form.noComparable, kpis: [], priorities: { last: [], current: [] }, decisions: meeting.decisions,
       actions: [{ action_id: "a1", problem: meeting.agenda.pinned_actions[0].problem, last_status: "in_progress", current_status: "in_progress", status_updated_at: "2026-10-01" }],
     });
   });
@@ -424,7 +424,7 @@ describe("R6-1 compareWithLastMeeting (05 §10)", () => {
     const dtc = await source("golden", { channels: ["DTC"] });
     const result = compareWithLastMeeting({ snapshot: dtc.snapshot, review: null, actions }, meeting);
     expect(result.kind).toBe("different_dataset");
-    expect(result.note).toBe(fill(labels.meetingRecord.differentChannels, { last: "DTC、MARKETPLACE", current: "DTC" }));
+    expect(result.note).toBe(fill(labels.meeting.record.differentChannels, { last: "DTC、MARKETPLACE", current: "DTC" }));
     expect(result.kpis).toEqual([]);
     expect(result.priorities).toEqual({ last: [], current: [] });
     expect(result.decisions).toEqual(meeting.decisions);
@@ -438,29 +438,29 @@ describe("R6-1 exportMeetingMarkdown", () => {
     const comparison = compareWithLastMeeting({ snapshot: second.snapshot, review: second.review, actions: second.actions }, first.meeting);
     const text = exportMeetingMarkdown(second.meeting, comparison);
     // 傳不傳舊的比較參數，主文都一樣（都讀凍結的 follow_up）；參數只在技術細節補上上次的 dataset_hash。
-    expect(exportMeetingMarkdown(second.meeting).split(`## ${labels.sections.technicalDetails}`)[0]).toBe(text.split(`## ${labels.sections.technicalDetails}`)[0]);
+    expect(exportMeetingMarkdown(second.meeting).split(`## ${labels.evidence.sections.technicalDetails}`)[0]).toBe(text.split(`## ${labels.evidence.sections.technicalDetails}`)[0]);
     expect(text).toContain(`；last_dataset_hash：${first.meeting.source_fixed.dataset_hash}`);
     expect(exportMeetingMarkdown(second.meeting)).not.toContain("last_dataset_hash");
     // 結束時間：主文用臺北時間（06:00Z → 14:00），ISO 原值只在技術細節。
-    const [main, technical] = text.split(`## ${labels.sections.technicalDetails}`);
-    expect(main).toContain(fill(labels.meetingRecord.mdMeta, { date: labels.meeting.date, value: "2026-10-03", decision: labels.meeting.decision, state: fill(labels.meetingRecord.decisionUnconfirmed, { decision: labels.meeting.decisions.draft }), finalizedAt: "2026-10-10 14:00" }));
+    const [main, technical] = text.split(`## ${labels.evidence.sections.technicalDetails}`);
+    expect(main).toContain(fill(labels.meeting.record.mdMeta, { date: labels.meeting.form.date, value: "2026-10-03", decision: labels.meeting.form.decision, state: fill(labels.meeting.record.decisionUnconfirmed, { decision: labels.meeting.form.decisions.draft }), finalizedAt: "2026-10-10 14:00" }));
     expect(main).not.toContain("2026-10-10T06:00:00Z");
     expect(technical).toContain("- finalized_at：2026-10-10T06:00:00Z");
-    expect(text.startsWith(fill(labels.meetingRecord.mdTitle, { brand: labels.brand.name, name: "下週例會" }))).toBe(true);
-    for (const heading of Object.values(labels.meetingRecord.agenda)) expect(text).toContain(`### ${heading}`);
-    for (const heading of [labels.meetingRecord.mdScope, `## ${labels.sections.meetingAgenda}`, `## ${labels.sections.meetingDecision}`, `## ${labels.sections.meetingCompare}`, `## ${labels.sections.technicalDetails}`]) expect(text).toContain(heading);
-    expect(text.indexOf(labels.meetingRecord.agenda.kpis)).toBeLessThan(text.indexOf(labels.meetingRecord.agenda.actions));
-    expect(text).toContain(fill(labels.meetingRecord.mdKpiRow, { metric: labels.metrics.contribution_after_marketing.label, previous: l2("570.00"), current: l2("255.00"), change: signed("-315.00") }));
-    expect(text).toContain(fill(labels.meetingRecord.mdKpiRow, { metric: labels.metrics.net_revenue.label, previous: l2("2250.00"), current: l2("2470.00"), change: signed("220.00") }));
+    expect(text.startsWith(fill(labels.meeting.record.mdTitle, { brand: labels.brand.name, name: "下週例會" }))).toBe(true);
+    for (const heading of Object.values(labels.meeting.record.agenda)) expect(text).toContain(`### ${heading}`);
+    for (const heading of [labels.meeting.record.mdScope, `## ${labels.meeting.sections.meetingAgenda}`, `## ${labels.meeting.sections.meetingDecision}`, `## ${labels.meeting.sections.meetingCompare}`, `## ${labels.evidence.sections.technicalDetails}`]) expect(text).toContain(heading);
+    expect(text.indexOf(labels.meeting.record.agenda.kpis)).toBeLessThan(text.indexOf(labels.meeting.record.agenda.actions));
+    expect(text).toContain(fill(labels.meeting.record.mdKpiRow, { metric: labels.metrics.contribution_after_marketing.headline, previous: l2("570.00"), current: l2("255.00"), change: signed("-315.00") }));
+    expect(text).toContain(fill(labels.meeting.record.mdKpiRow, { metric: labels.metrics.net_revenue.headline, previous: l2("2250.00"), current: l2("2470.00"), change: signed("220.00") }));
     expect(text).toContain(`| MARKETPLACE | ${l2("900.00")} | ${l2("990.00")} | ${signed("90.00")} | ${l2("170.00")} | ${l2("-15.00")} | ${signed("-185.00")} |`);
     expect(text).toContain(`| MARKETPLACE | 900 | 990 | +90 | 170 | ${MINUS}15 | ${MINUS}185 |`);
-    expect(text).toContain(labels.ui.export.amountUnitNote);
-    expect(text).toContain(fill(labels.meetingRecord.mdPeriod, { period: labels.periods.current, range: formatPeriodExport("2026-08-02", "2026-08-02") }));
-    expect(text).toContain(fill(labels.meetingRecord.mdLastMeeting, { name: "十月例會", date: "2026-10-03" }));
-    expect(text).toContain(labels.meetingRecord.sameScope);
-    const columns = labels.meetingRecord.compareColumns;
+    expect(text).toContain(labels.exports.common.amountUnitNote);
+    expect(text).toContain(fill(labels.meeting.record.mdPeriod, { period: labels.shell.periods.current, range: formatPeriodExport("2026-08-02", "2026-08-02") }));
+    expect(text).toContain(fill(labels.meeting.record.mdLastMeeting, { name: "十月例會", date: "2026-10-03" }));
+    expect(text).toContain(labels.meeting.record.sameScope);
+    const columns = labels.meeting.record.compareColumns;
     expect(text).toContain(`| ${columns.metric} | ${moneyColumn(columns.last)} | ${moneyColumn(columns.current)} | ${moneyColumn(columns.change)} |`);
-    expect(text).toContain(`| ${labels.metrics.contribution_after_marketing.label} | ${l2("255.00")} | ${l2("255.00")} | ${signed("0.00")} |`);
+    expect(text).toContain(`| ${labels.metrics.contribution_after_marketing.headline} | ${l2("255.00")} | ${l2("255.00")} | ${signed("0.00")} |`);
     expect(text).toContain(`- meeting_id：meeting-rev-2-r${second.review.revision}`);
     expect(text).toContain(`- comparison：same_scope；last_meeting_id：meeting-rev-1-r${first.review.revision}`);
   });
@@ -477,8 +477,8 @@ describe("R6-1 exportMeetingMarkdown", () => {
     expect(text).toContain("退款 \\| &lt;b&gt;粗&lt;/b&gt;&#10;下一行");
     expect(text).not.toContain("[老闆](javascript:x)");
     expect(text).toContain("\\[老闆\\]\\(javascript:x\\)");
-    expect(text).toContain(labels.meetingRecord.noLastMeeting);
-    expect(text).toContain(fill(labels.meetingRecord.decisionConfirmed, { decision: labels.meeting.decisions.need_data, revision: meeting.decisions[0].confirmed_revision }));
+    expect(text).toContain(labels.meeting.record.noLastMeeting);
+    expect(text).toContain(fill(labels.meeting.record.decisionConfirmed, { decision: labels.meeting.form.decisions.need_data, revision: meeting.decisions[0].confirmed_revision }));
   });
   it("a different-dataset comparison only shows the reason, decisions and action statuses", async () => {
     const { meeting, actions } = await finalized();
@@ -488,11 +488,11 @@ describe("R6-1 exportMeetingMarkdown", () => {
     const current = finalizeMeeting({ review, snapshot: await rebuildReviewSnapshot(review), scenarios: emptyScenarioWorkspace("d"), actions, date: "2026-10-10", now: "2026-10-10T06:00:00Z", history: [meeting] });
     expect(current.agenda.pinned_actions).toEqual([]);
     const text = exportMeetingMarkdown(current);
-    expect(text).toContain(labels.meeting.noComparable);
-    expect(text).not.toContain(`| ${labels.meetingRecord.compareColumns.metric} | ${labels.meetingRecord.compareColumns.last} |`);
-    expect(text).not.toContain(`${labels.meetingRecord.lastPriorities}：`);
-    expect(text).toContain(fill(labels.meetingRecord.mdFollowUpRow, { problem: meeting.agenda.pinned_actions[0].problem, last: labels.actions.statuses.in_progress, current: labels.actions.statuses.in_progress, updated: fill(labels.meetingRecord.statusUpdatedAt, { date: "2026-10-01" }) }));
-    expect(text).toContain(labels.meetingRecord.noScenarios);
-    expect(text).toContain(labels.meetingRecord.noPinnedActions);
+    expect(text).toContain(labels.meeting.form.noComparable);
+    expect(text).not.toContain(`| ${labels.meeting.record.compareColumns.metric} | ${labels.meeting.record.compareColumns.last} |`);
+    expect(text).not.toContain(`${labels.meeting.record.lastPriorities}：`);
+    expect(text).toContain(fill(labels.meeting.record.mdFollowUpRow, { problem: meeting.agenda.pinned_actions[0].problem, last: labels.actions.form.statuses.in_progress, current: labels.actions.form.statuses.in_progress, updated: fill(labels.meeting.record.statusUpdatedAt, { date: "2026-10-01" }) }));
+    expect(text).toContain(labels.meeting.record.noScenarios);
+    expect(text).toContain(labels.meeting.record.noPinnedActions);
   });
 });

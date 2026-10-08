@@ -30,29 +30,28 @@ const test = base.extend<{ audit: string[] }>({
   }, { auto: true }],
 });
 
-const dash = labels.ui.dashboard;
-const form = labels.scenarioForm;
-const board = labels.actionBoard;
-const presets = labels.scenarioPresets;
-const highlight = labels.productHighlights;
+const form = labels.scenarios.form;
+const board = labels.actions.board;
+const presets = labels.scenarios.presets;
+const highlight = labels.products.highlights;
 const productPage = labels.products.pageV3;
-const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label] as const;
+const inputLabels = [labels.scenarios.inputs.volume.label, labels.scenarios.inputs.discount.label, labels.scenarios.inputs.fulfillmentUnit.label, labels.scenarios.inputs.adSpend.label, labels.scenarios.inputs.oneOff.label] as const;
 const [volume, discount, fulfillment, adSpend, oneOff] = inputLabels;
-const statusLabel = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done } as const;
+const statusLabel = { not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done } as const;
 
 const clicks = (page: Page) => page.evaluate(() => (window as unknown as { __r5Clicks: number }).__r5Clicks);
 const resetClicks = (page: Page) => page.evaluate(() => { (window as unknown as { __r5Clicks: number }).__r5Clicks = 0; });
 // V3-3：切頁走 navigateTo（桌機側欄；手機底部分頁列或「更多」面板）。全站通路篩選在期間列（period-bar）裡；手機收在期間底部面板，值仍可讀。
-const globalChannel = (page: Page) => page.getByTestId("period-bar").getByLabel(dash.filter.channel, { exact: true });
+const globalChannel = (page: Page) => page.getByTestId("period-bar").getByLabel(labels.shell.periodBar.filter.channel, { exact: true });
 
 // V3-2a：status.ready 帶 {date}＝資料集 manifest 的 data_as_of（golden 2026-08-03、demo 2026-08-24）。
 const dataAsOf = (id: "golden" | "demo") => (JSON.parse(readFileSync(resolve("fixtures", id, "manifest.json"), "utf8")) as { data_as_of: string }).data_as_of;
 async function loadDataset(page: Page, id: "golden" | "demo") {
   await page.goto("/");
   await openValidation(page);
-  await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
-  await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(fill(labels.status.ready, { date: dataAsOf(id) }));
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
+  await expect(page.getByTestId("workspace-status")).toContainText(fill(labels.shell.status.ready, { date: dataAsOf(id) }));
   await declineSavePromptOnMobile(page);
 }
 /**
@@ -63,12 +62,12 @@ async function declineSavePromptOnMobile(page: Page) {
   if (!isMobile(page)) return;
   const prompt = page.getByTestId("local-save-prompt");
   await expect(prompt).toBeVisible();
-  await prompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
+  await prompt.getByRole("button", { name: labels.storage.autoSave.decline, exact: true }).click();
   await expect(prompt).toHaveCount(0);
 }
 // V3-2b：試算結果是 L1（< 1 萬顯示整數元＋「元」，差額帶 +／U+2212）；參數是 golden 的精確值，由格式化函式轉成畫面字串。
 async function calculate(card: Locator, contribution: string, delta: string) {
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(contribution));
   await expect(card.getByTestId("scenario-delta")).toHaveText(formatSignedDelta(delta, "L1"));
 }
@@ -77,7 +76,7 @@ const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&
 /** 臺北日曆日（YYYY-MM-DD），與 action-workspace.ts 的 taipeiToday 同一個時區；狀態更新日期以它為準。 */
 const taipeiDay = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
 /**
- * V3-6（PRD §7.5 第 3 點）：看板欄標題＝狀態名＋計數徽章。徽章是 span.ui-count-badge[role=img]，可見文字只有數字，aria-label「{n} 項」（labels.actionBoard.columnCount）；
+ * V3-6（PRD §7.5 第 3 點）：看板欄標題＝狀態名＋計數徽章。徽章是 span.ui-count-badge[role=img]，可見文字只有數字，aria-label「{n} 項」（labels.actions.board.columnCount）；
  * 欄標題的可及名稱因此是「{狀態} {n} 項」。
  */
 async function expectColumnCount(page: Page, status: keyof typeof statusLabel, n: number) {
@@ -106,7 +105,7 @@ test("試算：側欄一次點擊就到表單；範本只填數字不代勾、�
   await expect(page.getByTestId("scenario-assumptions").locator(":scope > summary")).toHaveText(form.assumptionsSummary);
   // V3-6：範本提示收進範本旁的 ? 說明（hidden 掛載，M1／M4）：先點開再看；Esc 收起。
   const templateHelp = await openTemplateHelp(card);
-  await expect(templateHelp.panel.getByTestId("scenario-template-note")).toHaveText(labels.scenario.templateNote);
+  await expect(templateHelp.panel.getByTestId("scenario-template-note")).toHaveText(labels.scenarios.inputs.templateNote);
   await page.keyboard.press("Escape");
   await expect(templateHelp.panel).toBeHidden();
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("");
@@ -119,7 +118,7 @@ test("試算：側欄一次點擊就到表單；範本只填數字不代勾、�
   await expect(card.getByTestId("scenario-preset-apply")).toBeEnabled();
   await card.getByTestId("scenario-preset-apply").click();
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
-  await expect(card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })).not.toBeChecked();
+  await expect(card.getByLabel(labels.scenarios.inputs.acceptAssumptions, { exact: true })).not.toBeChecked();
   await expectConsentPending(card);
   // 套用後的用途也在 ? 說明裡：先點開再看。
   const appliedHelp = await openTemplateHelp(card);
@@ -135,7 +134,7 @@ test("試算：側欄一次點擊就到表單；範本只填數字不代勾、�
   await expect(card.getByTestId("scenario-draft")).toHaveCount(0);
   // 改一格 → 草稿，結果與版本都撤下。
   await card.getByLabel(fulfillment, { exact: true }).fill("-10");
-  await expect(card.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await expect(card.getByTestId("scenario-draft")).toHaveText(labels.scenarios.inputs.draft);
   await expect(card.getByTestId("scenario-version")).toHaveCount(0);
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await calculate(card, "284.00", "+14.00");
@@ -242,15 +241,15 @@ test("健檢清單：健檢結果在前、通路寬表在後、同規則合併�
   }
   await rows.nth(3).locator(":scope > summary").click();
   await expect(rows.nth(3)).toHaveAttribute("open", "");
-  await expect(rows.nth(3).getByRole("button", { name: labels.buttons.addToActions, exact: true })).toBeVisible();
+  await expect(rows.nth(3).getByRole("button", { name: labels.actions.buttons.addToActions, exact: true })).toBeVisible();
   // 第一列：合計／MARKETPLACE／DTC 三個範圍合併（展開內容的範圍 chips）；預設看合計。
   // V3-5：summary 的範圍標籤只在該列範圍與頁面範圍不同時才有——合計列沒有；只有 MARKETPLACE 觸發的「通路貢獻為負」列標 MARKETPLACE。
   const first = rows.first();
   await expect(first.locator(":scope > summary .scope-tag")).toHaveCount(0);
   await expect(rows.last().locator(":scope > summary .scope-tag")).toHaveText(["MARKETPLACE"]);
-  const chips = first.getByRole("group", { name: labels.diagnosisList.scopeSwitch });
-  await expect(chips.getByRole("button")).toHaveText([labels.sections.total, "MARKETPLACE", "DTC"]);
-  await expect(chips.getByRole("button", { name: labels.sections.total, exact: true })).toHaveAttribute("aria-pressed", "true");
+  const chips = first.getByRole("group", { name: labels.diagnosis.list.scopeSwitch });
+  await expect(chips.getByRole("button")).toHaveText([labels.overview.sections.total, "MARKETPLACE", "DTC"]);
+  await expect(chips.getByRole("button", { name: labels.overview.sections.total, exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(first.locator(".impact-line .impact-amount")).toHaveText(formatSignedDelta("-315.00", "L1"));
   const factButtons = first.locator(".fact-list .number-link");
   // 合計：扣廣告後貢獻 570.00 → 255.00；淨營收 2,250.00 → 2,470.00。
@@ -261,19 +260,19 @@ test("健檢清單：健檢結果在前、通路寬表在後、同規則合併�
   // 切到 MARKETPLACE：數據換成該通路（貢獻 170.00 → −15.00、淨營收 900.00 → 990.00），影響 −185.00；合計列的標題仍在 summary。
   await chips.getByRole("button", { name: "MARKETPLACE", exact: true }).click();
   await expect(chips.getByRole("button", { name: "MARKETPLACE", exact: true })).toHaveAttribute("aria-pressed", "true");
-  await expect(chips.getByRole("button", { name: labels.sections.total, exact: true })).toHaveAttribute("aria-pressed", "false");
+  await expect(chips.getByRole("button", { name: labels.overview.sections.total, exact: true })).toHaveAttribute("aria-pressed", "false");
   await expect(first.locator(".impact-line .impact-amount")).toHaveText(formatSignedDelta("-185.00", "L1"));
-  await expect(first.locator(".diagnosis-body > h4")).toHaveText(fill(labels.diagnosisList.dataFor, { data: labels.sections.data, scope: "MARKETPLACE" }));
+  await expect(first.locator(".diagnosis-body > h4")).toHaveText(fill(labels.diagnosis.list.dataFor, { data: labels.diagnosis.sections.data, scope: "MARKETPLACE" }));
   await expect(first.locator(".diagnosis-scope-headline")).toBeVisible();
   expect(await factButtons.allTextContents()).toEqual(expect.arrayContaining(["170.00", "-15.00", "900.00", "990.00"].map(value => formatAmountL2(value))));
   await expect(first.locator(":scope > summary .impact-amount")).toHaveText(formatSignedDelta("-315.00", "L1"));
   // V3-5：「看明細」在展開內容的動作列，開的是目前所選範圍（MARKETPLACE）的影響金額；抽屜以 icon 關閉鈕（aria-label＝關閉）收起，焦點回到按鈕。
-  const viewEvidence = first.getByRole("button", { name: labels.buttons.viewEvidence, exact: true });
+  const viewEvidence = first.getByRole("button", { name: labels.evidence.buttons.viewEvidence, exact: true });
   await viewEvidence.click();
-  const drawer = page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence}$`) });
+  const drawer = page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });
   await expect(drawer).toBeVisible();
-  await expect(drawer.getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatSignedDelta("-185.00", "L3") }));
-  await drawer.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await expect(drawer.getByTestId("evidence-precise-value")).toHaveText(fill(labels.format.units.yuan, { value: formatSignedDelta("-185.00", "L3") }));
+  await drawer.getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
   await expect(drawer).toHaveCount(0);
   await expect(viewEvidence).toBeFocused();
   // 技術細節預設收合；展開後才看到規則代號與指標版本。
@@ -295,18 +294,18 @@ test("健檢頁通路寬表（diagnosis 變體）：台灣報表欄序、預設�
   const tableV3 = labels.diagnosis.tableV3;
   const groups = ["net_revenue", "contribution_after_marketing"] as const;
   // 表頭兩列：通路｜淨營收（元）｜扣廣告後貢獻（元）｜備註；第二列每組 本期｜上期｜差額。
-  await expect(table.locator("thead tr.group-row th")).toHaveText([labels.ui.channelTable.channelHeader, ...groups.map(name => fill(labels.format.units.yuanColumn, { label: metricDefinitions[name].label })), tableV3.note]);
-  await expect(table.locator("thead tr.column-row th")).toHaveText(groups.flatMap(() => [labels.periods.current, labels.periods.previous, tableV3.change]));
+  await expect(table.locator("thead tr.group-row th")).toHaveText([labels.overview.channelTable.channelHeader, ...groups.map(name => fill(labels.format.units.yuanColumn, { label: metricDefinitions[name].label })), tableV3.note]);
+  await expect(table.locator("thead tr.column-row th")).toHaveText(groups.flatMap(() => [labels.shell.periods.current, labels.shell.periods.previous, tableV3.change]));
   const rowHeads = table.locator("tbody tr th[role=rowheader]");
-  const sortButton = (name: typeof groups[number], period: "current" | "change") => table.getByRole("button", { name: period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.periods.current, metric: metricDefinitions[name].label }), exact: true });
+  const sortButton = (name: typeof groups[number], period: "current" | "change") => table.getByRole("button", { name: period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.shell.periods.current, metric: metricDefinitions[name].label }), exact: true });
   const sortedHeader = table.locator("thead th[aria-sort]");
   // 預設：本期扣廣告後貢獻由低到高（MARKETPLACE −15 在前）。
   await expect(rowHeads).toHaveText(["MARKETPLACE", "DTC"]);
   await expect(sortedHeader).toHaveCount(1);
   await expect(sortedHeader).toHaveAttribute("aria-sort", "ascending");
-  await expect(sortedHeader.getByRole("button")).toHaveAccessibleName(fill(tableV3.cellLabel, { period: labels.periods.current, metric: metricDefinitions.contribution_after_marketing.label }));
+  await expect(sortedHeader.getByRole("button")).toHaveAccessibleName(fill(tableV3.cellLabel, { period: labels.shell.periods.current, metric: metricDefinitions.contribution_after_marketing.label }));
   // 每格數字可開「計算與來源」，可及名稱「{通路} {指標} {值} 元，看明細」；差額帶正負號。手機清單（≤ 767px）不顯示上期欄（td.prev），所以上期只驗 DOM（includeHidden）。
-  const cell = (channel: string, name: typeof groups[number], period: "current" | "previous" | "change", value: string) => table.getByRole("button", { name: fill(labels.overview.channelsV3.amountAria, { channel, metric: period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.periods[period], metric: metricDefinitions[name].label }), value: period === "change" ? formatSignedDelta(value, "L2") : formatAmountL2(value) }), exact: true, includeHidden: period === "previous" });
+  const cell = (channel: string, name: typeof groups[number], period: "current" | "previous" | "change", value: string) => table.getByRole("button", { name: fill(labels.overview.channelsV3.amountAria, { channel, metric: period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.shell.periods[period], metric: metricDefinitions[name].label }), value: period === "change" ? formatSignedDelta(value, "L2") : formatAmountL2(value) }), exact: true, includeHidden: period === "previous" });
   for (const [channel, values] of [["DTC", { net_revenue: ["1480.00", "1350.00", "130.00"], contribution_after_marketing: ["270.00", "400.00", "-130.00"] }], ["MARKETPLACE", { net_revenue: ["990.00", "900.00", "90.00"], contribution_after_marketing: ["-15.00", "170.00", "-185.00"] }]] as const) {
     for (const name of groups) for (const [index, period] of (["current", "previous", "change"] as const).entries()) await expect(cell(channel, name, period, values[name][index])).toHaveCount(1);
   }
@@ -340,7 +339,7 @@ test("加入待辦一次點擊就到看板；看板按鈕改狀態、焦點留�
   await expect(first).toHaveAttribute("open", "");
   await expect(first).toHaveAttribute("data-testid", "diagnosis-row-REV_UP_CM_DOWN");
   await resetClicks(page);
-  await first.getByRole("button", { name: labels.buttons.addToActions, exact: true }).click();
+  await first.getByRole("button", { name: labels.actions.buttons.addToActions, exact: true }).click();
   // 自動切到行動頁（預設看板），新卡在「未開始」欄：從健檢頁算只有 1 次點擊（≤ 2）。
   const card = page.getByTestId("board-card-1");
   await expect(card).toBeVisible();
@@ -379,7 +378,7 @@ test("加入待辦一次點擊就到看板；看板按鈕改狀態、焦點留�
   await expect(drawer).toBeVisible();
   await expect(page.getByRole("dialog", { name: (await card.getByRole("heading", { level: 4 }).textContent())!.trim(), exact: true })).toBeVisible();
   await expect(drawer.getByTestId("action-drawer-close")).toBeFocused();
-  await expect(drawer.getByLabel(labels.actions.status, { exact: true })).toHaveValue("in_progress");
+  await expect(drawer.getByLabel(labels.actions.form.status, { exact: true })).toHaveValue("in_progress");
   await page.keyboard.press("Escape");
   await expect(drawer).toHaveCount(0);
   await expect(edit).toBeFocused();
@@ -387,15 +386,15 @@ test("加入待辦一次點擊就到看板；看板按鈕改狀態、焦點留�
   // 清單檢視：同一項的狀態下拉是「進行中」；草稿帶入健檢第一列合計的 4 個數據（證據勾選清單）。
   await switchActionsView(page, "list");
   const item = page.getByTestId("action-1");
-  await expect(item.getByLabel(labels.actions.status, { exact: true })).toHaveValue("in_progress");
+  await expect(item.getByLabel(labels.actions.form.status, { exact: true })).toHaveValue("in_progress");
   const checklist = item.getByTestId("evidence-checklist");
   await expect(checklist.locator("input[type=checkbox]:checked")).toHaveCount(4);
-  await expect(item.getByLabel(labels.actions.due, { exact: true })).toHaveAttribute("type", "date");
-  const listId = await item.getByLabel(labels.actions.owner, { exact: true }).getAttribute("list");
+  await expect(item.getByLabel(labels.actions.form.due, { exact: true })).toHaveAttribute("type", "date");
+  const listId = await item.getByLabel(labels.actions.form.owner, { exact: true }).getAttribute("list");
   expect(listId).toBeTruthy();
   await expect(page.locator(`datalist[id="${listId}"]`)).toHaveCount(1);
   // 清單改回「未開始」，回看板卡片也回到第一欄。
-  await item.getByLabel(labels.actions.status, { exact: true }).selectOption("not_started");
+  await item.getByLabel(labels.actions.form.status, { exact: true }).selectOption("not_started");
   await switchActionsView(page, "board");
   await expect(page.getByTestId("board-column-not_started").getByTestId("board-card-1")).toBeVisible();
 });
@@ -404,10 +403,10 @@ test("商品頁：Top／Bottom 小表看整個範圍、不跟著篩選；資料�
   await loadDataset(page, "golden");
   await navigateTo(page, "products");
   const worst = page.getByTestId("product-worst"), best = page.getByTestId("product-best"), table = page.getByTestId("product-table");
-  await expect(page.locator("#product-highlights-heading")).toHaveText(labels.sections.productTopBottom);
+  await expect(page.locator("#product-highlights-heading")).toHaveText(labels.products.sections.productTopBottom);
   // 本期商品毛利由低到高：MARKETPLACE/B 125、DTC/B 200、MARKETPLACE/A 280、DTC/A 540；毛利增加：DTC/A +40、MARKETPLACE/A +10。
   // V3-5（C3）：小表欄序＝排名｜商品（列標頭「SKU · 通路」）｜本期商品毛利（元）｜差額（元）；td 依序是排名、本期商品毛利、差額。
-  const rankHeaders = [productPage.columns.rank, productPage.columns.product, fill(labels.units.yuanColumn, { label: `${labels.periods.current}${metricDefinitions.gross_profit.shortLabel}` }), fill(labels.units.yuanColumn, { label: productPage.columns.change })];
+  const rankHeaders = [productPage.columns.rank, productPage.columns.product, fill(labels.format.units.yuanColumn, { label: `${labels.shell.periods.current}${metricDefinitions.gross_profit.shortLabel}` }), fill(labels.format.units.yuanColumn, { label: productPage.columns.change })];
   for (const root of [worst, best]) await expect(root.locator("thead th")).toHaveText(rankHeaders);
   const rowHeads = (root: Locator) => root.locator("tbody tr th").evaluateAll(cells => cells.map(cell => (cell.textContent ?? "").replace(/\s+/g, " ").trim()));
   expect(await rowHeads(worst)).toEqual(["B · MARKETPLACE", "B · DTC", "A · MARKETPLACE", "A · DTC"]);
@@ -415,7 +414,7 @@ test("商品頁：Top／Bottom 小表看整個範圍、不跟著篩選；資料�
   expect(await rowHeads(best)).toEqual(["A · DTC", "A · MARKETPLACE"]);
   await expect(best.locator("tbody tr td:nth-of-type(3)")).toHaveText(["40.00", "10.00"].map(value => formatSignedDelta(value, "L2")));
   // 小表不跟著下方篩選。
-  await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("a");
+  await page.getByLabel(labels.products.comparison.searchSku, { exact: true }).fill("a");
   await expect(table.locator("tbody tr")).toHaveCount(2);
   expect(await rowHeads(worst)).toEqual(["B · MARKETPLACE", "B · DTC", "A · MARKETPLACE", "A · DTC"]);
   // 「全部商品」標題在篩選列之前（V3-5：篩選列是 .ui-toolbar.product-toolbar，data-testid="product-toolbar"）；資料狀態欄用新文案。

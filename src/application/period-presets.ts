@@ -37,17 +37,17 @@ function sameDays(id: PeriodPresetId, label: string, manifest: PresetManifest, d
   const anchor = presetAnchor(manifest);
   const current = { start: shift(anchor, -(days - 1)), end: anchor };
   const previous = { start: shift(current.start, -days), end: shift(current.start, -1) };
-  if (previous.start < manifest.coverage_start) return { id, label, status: "unavailable", anchor, reason: fill(labels.periods.presetTooShort, { date: manifest.coverage_start, preset: label }) };
+  if (previous.start < manifest.coverage_start) return { id, label, status: "unavailable", anchor, reason: fill(labels.shell.periods.presetTooShort, { date: manifest.coverage_start, preset: label }) };
   return { id, label, status: "ready", comparison_mode: "same_days", previous, current, anchor };
 }
 
 function monthVsPrevious(manifest: PresetManifest): PeriodPreset {
-  const id = "monthVsPrev", label = labels.periods.presets.monthVsPrev, anchor = presetAnchor(manifest);
+  const id = "monthVsPrev", label = labels.shell.periods.presets.monthVsPrev, anchor = presetAnchor(manifest);
   const current = { start: monthStart(anchor), end: anchor };
-  if (!isCompleteCalendarMonth(current)) return { id, label, status: "unavailable", anchor, reason: fill(labels.periods.monthIncomplete, { date: anchor }) };
+  if (!isCompleteCalendarMonth(current)) return { id, label, status: "unavailable", anchor, reason: fill(labels.shell.periods.monthIncomplete, { date: anchor }) };
   const last = previousMonth(anchor);
   const previous = { start: `${last}-01`, end: monthEnd(last) };
-  if (previous.start < manifest.coverage_start) return { id, label, status: "unavailable", anchor, reason: fill(labels.periods.presetTooShort, { date: manifest.coverage_start, preset: label }) };
+  if (previous.start < manifest.coverage_start) return { id, label, status: "unavailable", anchor, reason: fill(labels.shell.periods.presetTooShort, { date: manifest.coverage_start, preset: label }) };
   return { id, label, status: "ready", comparison_mode: "calendar_months", previous, current, anchor };
 }
 
@@ -61,23 +61,23 @@ export function shiftYear(date: string): string {
 export type PresetView = { previous: Period; current: Period; comparison_mode: ComparisonMode };
 
 function yearOverYear(manifest: PresetManifest, view: PresetView): PeriodPreset {
-  const id = "yoy", label = labels.periods.presets.yoy, anchor = presetAnchor(manifest);
+  const id = "yoy", label = labels.shell.periods.presets.yoy, anchor = presetAnchor(manifest);
   const { current, comparison_mode } = view;
-  if (!isBusinessDate(current.start) || !isBusinessDate(current.end) || current.start > current.end) return { id, label, status: "unavailable", anchor, reason: labels.periods.yoyInvalidCurrent };
-  if (current.end > anchor) return { id, label, status: "unavailable", anchor, reason: fill(labels.periods.presetUnavailable, { date: anchor, preset: label }) };
+  if (!isBusinessDate(current.start) || !isBusinessDate(current.end) || current.start > current.end) return { id, label, status: "unavailable", anchor, reason: labels.shell.periods.yoyInvalidCurrent };
+  if (current.end > anchor) return { id, label, status: "unavailable", anchor, reason: fill(labels.shell.periods.presetUnavailable, { date: anchor, preset: label }) };
   // 整月模式的本期必須是完整月份，否則 validatePeriods 會拒絕（INCOMPLETE_CALENDAR_MONTH）。
-  if (comparison_mode === "calendar_months" && !isCompleteCalendarMonth(current)) return { id, label, status: "unavailable", anchor, reason: fill(labels.periods.monthIncomplete, { date: current.end }) };
+  if (comparison_mode === "calendar_months" && !isCompleteCalendarMonth(current)) return { id, label, status: "unavailable", anchor, reason: fill(labels.shell.periods.monthIncomplete, { date: current.end }) };
   const end = comparison_mode === "calendar_months" && isMonthEnd(current.end) ? monthEnd(shiftYear(current.end).slice(0, 7)) : shiftYear(current.end);
   const start = comparison_mode === "same_days" ? shift(end, -(dayCount(current) - 1)) : shiftYear(current.start);
   const previous = { start, end };
-  if (previous.end >= current.start) return { id, label, status: "unavailable", anchor, reason: labels.periods.yoyOverlap };
-  if (previous.start < manifest.coverage_start) return { id, label, status: "unavailable", anchor, reason: fill(labels.periods.presetTooShort, { date: manifest.coverage_start, preset: label }) };
+  if (previous.end >= current.start) return { id, label, status: "unavailable", anchor, reason: labels.shell.periods.yoyOverlap };
+  if (previous.start < manifest.coverage_start) return { id, label, status: "unavailable", anchor, reason: fill(labels.shell.periods.presetTooShort, { date: manifest.coverage_start, preset: label }) };
   return { id, label, status: "ready", comparison_mode, previous, current: { start: current.start, end: current.end }, anchor };
 }
 
 export function periodPresets(manifest: PresetManifest, view?: PresetView): PeriodPreset[] {
   if (![manifest.data_as_of, manifest.coverage_start, manifest.coverage_end].every(isBusinessDate) || manifest.coverage_start > manifest.coverage_end) throw new RangeError("INVALID_PERIOD");
-  const presets = labels.periods.presets;
+  const presets = labels.shell.periods.presets;
   const result = [sameDays("last7", presets.last7, manifest, 7), sameDays("last4w", presets.last4w, manifest, 28), sameDays("last12w", presets.last12w, manifest, 84), monthVsPrevious(manifest)];
   if (view) result.push(yearOverYear(manifest, view));
   for (const preset of result) if (preset.status === "ready" && (dayCount(preset.previous) < 1 || dayCount(preset.current) < 1)) throw new RangeError("INVALID_PERIOD");

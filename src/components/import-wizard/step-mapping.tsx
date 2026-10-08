@@ -14,7 +14,7 @@ import { fileLabels } from "./step-files";
 
 const copy = labels.importWizard;
 const v3 = copy.wizardV3;
-const panel = labels.ui.importPanel;
+const panel = labels.importWizard.panel;
 const shortDate = (iso: string) => /^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}` : iso;
 
 /**

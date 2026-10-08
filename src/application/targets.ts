@@ -182,7 +182,7 @@ export function matchTargets(set: TargetSet | null, scope: TargetScope): Record<
 export function achievement(actual: Metric, target: string): Achievement {
   const targetCents = MONEY_PATTERN.test(target) ? parseCents(target) : null;
   if (targetCents === null || targetCents <= 0n) return { rate: null, display: labels.targets.undefinedTarget, status: "undefined" };
-  if (actual.value === null || !/^-?\d+(?:\.\d+)?$/.test(actual.value)) return { rate: null, display: labels.status.missing, status: "missing" };
+  if (actual.value === null || !/^-?\d+(?:\.\d+)?$/.test(actual.value)) return { rate: null, display: labels.shell.status.missing, status: "missing" };
   const ExactDecimal = Decimal.clone({ precision: actual.value.length + targetCents.toString().length + 40, rounding: Decimal.ROUND_HALF_UP });
   // 目標以分為單位：actual ÷ (cents / 100) = actual × 100 ÷ cents（比率小數，formatRateL1 再 × 100 成百分比）。
   const ratio = new ExactDecimal(actual.value).times(100).div(targetCents.toString()).toFixed();

@@ -17,8 +17,8 @@ import { scanLabels } from "../scripts/lib/copy-scan.mjs";
 // golden 資料：一項由健檢 REV_UP_CM_DOWN（合計）建立、帶引用數字的待辦，加一項手動待辦。期待值一律由 labels／fill 與格式化函式組出，不新增任何計算。
 
 const copy = labels.actions.drawerV3;
-const ui = labels.ui.actionsWorkbench;
-const board = labels.actionBoard;
+const ui = labels.actions.workbench;
+const board = labels.actions.board;
 const noop = () => undefined;
 let source: ActionSource;
 let workspace: ActionWorkspace;
@@ -87,7 +87,7 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     expect(content.indexOf('<p class="action-editor-scope">')).toBeGreaterThan(content.indexOf('class="action-editor-heading"'));
     expect(content).toContain(`<legend class="sr-only">${fill(ui.editLegend, { n: 1 })}</legend>`);
     const fieldLabels = [...content.matchAll(/<label class="ui-field-label" for="([^"]+)">([^<]*)<\/label>/g)];
-    expect(fieldLabels.map(match => match[2])).toEqual([labels.actions.problem, labels.actions.step, labels.actions.owner, labels.actions.metric, labels.actions.due, labels.actions.stop, labels.actions.extraData, labels.actions.status, labels.actions.adDecisionV3.field, labels.actions.progress]);
+    expect(fieldLabels.map(match => match[2])).toEqual([labels.actions.form.problem, labels.actions.form.step, labels.actions.form.owner, labels.actions.form.metric, labels.actions.form.due, labels.actions.form.stop, labels.actions.form.extraData, labels.actions.form.status, labels.actions.adDecisionV3.field, labels.actions.form.progress]);
     const ids = idCounts(html);
     for (const [, id, label] of fieldLabels) {
       expect(ids.get(id), label).toBe(1);
@@ -100,12 +100,12 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     expect(content).toContain('list="action-owners-cited"');
     expect(content).toContain('<datalist id="action-owners-cited"><option value="營運"></option></datalist>');
     expect(content).toContain(`class="ui-field-hint">${board.ownerListHint}</small>`);
-    const select = new RegExp(`<select id="[^"]+" class="ui-field-control action-status-select" aria-label="${escapeRe(labels.actions.status)}" aria-describedby="([^"]+)">`).exec(content)!;
+    const select = new RegExp(`<select id="[^"]+" class="ui-field-control action-status-select" aria-label="${escapeRe(labels.actions.form.status)}" aria-describedby="([^"]+)">`).exec(content)!;
     expect(content).toContain(`<option value="blocked" selected="">${statusLabels.blocked}</option>`);
     expect(content).toContain(`<small id="${select[1]}" class="ui-field-hint">${fill(board.statusUpdated, { date: "2026-10-02" })}</small>`);
     expect(ids.get(select[1])).toBe(1);
     // 狀態沒改過時沒有狀態更新日，也不帶 aria-describedby。
-    expect(section(editor(props(workspace, 1)), copy.content)).toMatch(new RegExp(`class="ui-field-control action-status-select" aria-label="${escapeRe(labels.actions.status)}">`));
+    expect(section(editor(props(workspace, 1)), copy.content)).toMatch(new RegExp(`class="ui-field-control action-status-select" aria-label="${escapeRe(labels.actions.form.status)}">`));
     // 引用的數字、確認、重新核對都不在內容段。
     expect(content).not.toContain('data-testid="evidence-checklist"');
     expect(content).not.toContain("<button");
@@ -114,18 +114,18 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
   it("引用的數字段：確認的意思一行（不加「注意：」前綴）→ 搜尋與勾選（evidence-checklist、搜尋框 aria-label 不變）→ 確認（唯一主要按鈕）→ 看明細 → 重新核對（次要）→ 限制", () => {
     const html = editor(props(workspace, 0));
     const evidence = section(html, copy.evidence);
-    expect(evidence).toContain(`<p class="action-editor-note">${labels.actions.confirmedNote}${ui.evidenceChangeNote}</p>`);
-    expect(html).not.toContain(`${labels.sections.caution}：`);
+    expect(evidence).toContain(`<p class="action-editor-note">${labels.actions.form.confirmedNote}${ui.evidenceChangeNote}</p>`);
+    expect(html).not.toContain(`${labels.diagnosis.sections.caution}：`);
     expect(html).not.toContain(`class="alert"`);
     const checklist = element(evidence, 'data-testid="evidence-checklist"')!;
     expect(checklist).toMatch(new RegExp(`^<fieldset class="evidence-checklist" aria-label="${escapeRe(ui.evidencePicker)}" data-testid="evidence-checklist">`));
     expect(checklist).toContain(`<legend class="sr-only">${ui.evidencePicker}</legend>`);
-    expect(checklist).toMatch(new RegExp(`<input id="[^"]+" class="ui-field-control" aria-label="${escapeRe(labels.actions.searchEvidence)}" aria-describedby="[^"]+" type="search"`));
+    expect(checklist).toMatch(new RegExp(`<input id="[^"]+" class="ui-field-control" aria-label="${escapeRe(labels.actions.form.searchEvidence)}" aria-describedby="[^"]+" type="search"`));
     expect(checklist).toContain(fill(board.evidenceSelected, { n: workspace.items[0].card.fact_ids.length }));
     expect(occurrences(checklist, '<label class="evidence-option ui-check-label"><input type="checkbox" class="ui-check"')).toBeGreaterThan(0);
     // 確認是整個編輯器唯一的主要按鈕（C12：每個容器最多 1 顆）。
     const primary = buttons(html).filter(button => button.attrs.includes("ui-btn-primary"));
-    expect(primary.map(button => button.text)).toEqual([labels.buttons.confirm]);
+    expect(primary.map(button => button.text)).toEqual([labels.shell.buttons.confirm]);
     // 看明細：每個引用的數字一顆文字按鈕，名稱沿用「看明細 · …」。
     const context = contextFor(workspace, workspace.items[0]);
     const facts = workspace.items[0].card.fact_ids.map(id => context.session.facts.find(fact => fact.id === id)!);
@@ -133,10 +133,10 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     const links = element(evidence, 'class="action-evidence"')!;
     expect(buttons(links).map(button => button.text)).toEqual(facts.map(fact => escapeText(fill(ui.viewEvidenceItem, { fact: factLabel(fact, demoAlias(context.session.dataset_id)) }))));
     expect(buttons(links).every(button => button.attrs.includes('class="ui-btn ui-btn-text"'))).toBe(true);
-    const rebind = buttons(evidence).find(button => button.text === labels.buttons.rebind)!;
+    const rebind = buttons(evidence).find(button => button.text === labels.actions.buttons.rebind)!;
     expect(rebind.attrs).toContain('class="ui-btn ui-btn-secondary"');
     expect(rebind.attrs).not.toContain("disabled");
-    const order = ['data-testid="evidence-checklist"', `>${labels.buttons.confirm}</button>`, 'class="action-evidence"', `>${labels.buttons.rebind}</button>`].map(text => evidence.indexOf(text));
+    const order = ['data-testid="evidence-checklist"', `>${labels.shell.buttons.confirm}</button>`, 'class="action-evidence"', `>${labels.actions.buttons.rebind}</button>`].map(text => evidence.indexOf(text));
     expect(order.every(index => index > -1)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     const limitations = actionDocuments(workspace)[0].data_limitations;
@@ -144,8 +144,8 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     // 手動待辦沒有引用：沒有看明細列，重新核對停用，仍有確認。
     const manual = section(editor(props(workspace, 1)), copy.evidence);
     expect(manual).not.toContain('class="action-evidence"');
-    expect(buttons(manual).find(button => button.text === labels.buttons.rebind)!.attrs).toContain('disabled=""');
-    expect(manual).toContain(`>${labels.buttons.confirm}</button>`);
+    expect(buttons(manual).find(button => button.text === labels.actions.buttons.rebind)!.attrs).toContain('disabled=""');
+    expect(manual).toContain(`>${labels.shell.buttons.confirm}</button>`);
   });
 
   it("較早資料與待重新確認的警示是 inline notice（ui-notice、warning），放在引用的數字段開頭；核對中是 role=status", () => {
@@ -158,7 +158,7 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     expect(section(editor(props(workspace, 0)), copy.evidence)).not.toContain("ui-notice");
     const checking = section(editor(props(workspace, 0, { busy: "cited" })), copy.evidence);
     expect(checking).toContain(`<p role="status" class="action-editor-note">${ui.rebindChecking}</p>`);
-    expect(buttons(checking).find(button => button.text === labels.buttons.rebind)!.attrs).toContain('disabled=""');
+    expect(buttons(checking).find(button => button.text === labels.actions.buttons.rebind)!.attrs).toContain('disabled=""');
   });
 
   it("用目前資料重新核對的預覽：region 名稱不變、表格是 ui-table，預覽區自己的主要按鈕「改用目前資料」與取消；預覽外仍只有「確認」一顆主要按鈕", async () => {
@@ -170,9 +170,9 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     expect(section(html, copy.evidence)).toContain(region);
     expect(region).toContain('<table class="ui-table">');
     expect(region).not.toContain('class="panel"');
-    expect(buttons(region).map(button => [button.text, button.attrs.match(/class="([^"]+)"/)![1]])).toEqual([[ui.rebindCommit, "ui-btn ui-btn-primary"], [labels.buttons.cancel, "ui-btn ui-btn-secondary"]]);
+    expect(buttons(region).map(button => [button.text, button.attrs.match(/class="([^"]+)"/)![1]])).toEqual([[ui.rebindCommit, "ui-btn ui-btn-primary"], [labels.shell.buttons.cancel, "ui-btn ui-btn-secondary"]]);
     const outside = html.replace(region, "");
-    expect(buttons(outside).filter(button => button.attrs.includes("ui-btn-primary")).map(button => button.text)).toEqual([labels.buttons.confirm]);
+    expect(buttons(outside).filter(button => button.attrs.includes("ui-btn-primary")).map(button => button.text)).toEqual([labels.shell.buttons.confirm]);
   });
 
   it("歷史段：引用歷史（較早的引用）與技術細節都是預設收合、仍然掛著的 <details>（M1）", async () => {
@@ -180,13 +180,13 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     const rebound = await commitActionRebind(confirmed, "cited", await previewActionRebind(confirmed, "cited", source), source, true);
     const history = section(editor(props(rebound, 0)), copy.history);
     const summaries = [...history.matchAll(/<details class="action-editor-details"><summary>([^<]*)<\/summary>/g)].map(match => match[1]);
-    expect(summaries).toEqual([fill(ui.historySummary, { n: 1 }), labels.sections.technicalDetails]);
+    expect(summaries).toEqual([fill(ui.historySummary, { n: 1 }), labels.evidence.sections.technicalDetails]);
     expect(history).not.toMatch(/<details[^>]*\sopen/);
     expect(history).toContain('class="action-history-entry"');
     expect(history).toMatch(/<button type="button" class="ui-btn ui-btn-text">/);
     // 沒有引用歷史時只剩技術細節；技術細節仍列出引用的數字代號（收合）。
     const fresh = section(editor(props(workspace, 0)), copy.history);
-    expect([...fresh.matchAll(/<summary>([^<]*)<\/summary>/g)].map(match => match[1])).toEqual([labels.sections.technicalDetails]);
+    expect([...fresh.matchAll(/<summary>([^<]*)<\/summary>/g)].map(match => match[1])).toEqual([labels.evidence.sections.technicalDetails]);
     for (const id of workspace.items[0].card.fact_ids) expect(fresh).toContain(`<code>${escapeAttr(id)}</code>`);
   });
 
@@ -194,17 +194,17 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     const list = editor(props(workspace, 1));
     const row = element(list, 'class="button-row ui-actions action-editor-actions"')!;
     expect(list.indexOf(row)).toBeGreaterThan(list.indexOf(section(list, copy.history)));
-    expect(buttons(row).map(button => button.text)).toEqual([labels.buttons.pin, labels.buttons.moveUp, labels.buttons.remove]);
+    expect(buttons(row).map(button => button.text)).toEqual([labels.actions.buttons.pin, labels.actions.buttons.moveUp, labels.actions.buttons.remove]);
     expect(buttons(row).map(button => button.attrs.match(/class="([^"]+)"/)![1])).toEqual(["ui-btn ui-btn-secondary", "ui-btn ui-btn-secondary", "ui-btn ui-btn-text"]);
     expect(buttons(row)[0].attrs).toContain('aria-pressed="false"');
-    expect(row).not.toContain(labels.buttons.rebind);
-    expect(occurrences(list, `>${labels.buttons.rebind}</button>`)).toBe(1);
+    expect(row).not.toContain(labels.actions.buttons.rebind);
+    expect(occurrences(list, `>${labels.actions.buttons.rebind}</button>`)).toBe(1);
     // 第一項不能往上移；showPin=false 時沒有置頂。
     expect(buttons(element(editor(props(workspace, 0)), 'class="button-row ui-actions action-editor-actions"')!)[1].attrs).toContain('disabled=""');
-    expect(buttons(element(editor(props(workspace, 1, { showPin: false })), 'class="button-row ui-actions action-editor-actions"')!).map(button => button.text)).toEqual([labels.buttons.moveUp, labels.buttons.remove]);
+    expect(buttons(element(editor(props(workspace, 1, { showPin: false })), 'class="button-row ui-actions action-editor-actions"')!).map(button => button.text)).toEqual([labels.actions.buttons.moveUp, labels.actions.buttons.remove]);
     const inDrawer = editor(props(workspace, 1, { variant: "drawer" }));
     expect(inDrawer).not.toContain("action-editor-actions");
-    for (const text of [labels.buttons.pin, ui.unpin, labels.buttons.moveUp, labels.buttons.remove]) expect(inDrawer, text).not.toContain(`>${text}</button>`);
+    for (const text of [labels.actions.buttons.pin, ui.unpin, labels.actions.buttons.moveUp, labels.actions.buttons.remove]) expect(inDrawer, text).not.toContain(`>${text}</button>`);
   });
 
   it("M6：同一份編輯器內每個 id 唯一，label for 與 aria-describedby 都指到存在的元素；兩份編輯器並列時 id 也不重複", () => {
@@ -249,7 +249,7 @@ describe("ActionDrawer（C6 待辦編輯抽屜）", () => {
     const html = drawer(workspace, 0);
     const first = /<(button|input|select|textarea|summary|a)\b[^>]*>/.exec(html)![0];
     expect(first).toContain('class="ui-btn ui-btn-icon action-drawer-close"');
-    expect(first).toContain(`aria-label="${labels.buttons.close}"`);
+    expect(first).toContain(`aria-label="${labels.shell.buttons.close}"`);
     expect(first).toContain('data-testid="action-drawer-close"');
     expect(first).toContain("autofocus");
     expect(element(html, 'class="action-drawer-head"')).toContain("<svg");
@@ -258,7 +258,7 @@ describe("ActionDrawer（C6 待辦編輯抽屜）", () => {
   it("底部動作列：關閉、置頂（aria-pressed）、往上移（不能移時停用）是次要按鈕；移除是危險文字按鈕放最右", () => {
     const foot = element(drawer(workspace, 1), 'class="action-drawer-foot"')!;
     const list = buttons(foot);
-    expect(list.map(button => button.text)).toEqual([labels.buttons.close, labels.buttons.pin, labels.buttons.moveUp, labels.buttons.remove]);
+    expect(list.map(button => button.text)).toEqual([labels.shell.buttons.close, labels.actions.buttons.pin, labels.actions.buttons.moveUp, labels.actions.buttons.remove]);
     expect(list.map(button => button.attrs.match(/class="([^"]+)"/)![1])).toEqual(["ui-btn ui-btn-secondary", "ui-btn ui-btn-secondary", "ui-btn ui-btn-secondary", "ui-btn ui-btn-text ui-btn-danger"]);
     expect(list.map(button => button.attrs.match(/data-testid="([^"]+)"/)![1])).toEqual(["action-drawer-dismiss", "action-drawer-pin", "action-drawer-move-up", "action-drawer-remove"]);
     expect(list[1].attrs).toContain('aria-pressed="false"');
@@ -274,7 +274,7 @@ describe("ActionDrawer（C6 待辦編輯抽屜）", () => {
     const body = element(html, 'class="action-drawer-body"')!;
     expect(regionNames(body)).toEqual([copy.content, copy.evidence, copy.history]);
     expect(body).toContain('data-testid="evidence-checklist"');
-    for (const text of [labels.buttons.pin, labels.buttons.moveUp, labels.buttons.remove]) expect(occurrences(html, `>${text}</button>`), text).toBe(1);
+    for (const text of [labels.actions.buttons.pin, labels.actions.buttons.moveUp, labels.actions.buttons.remove]) expect(occurrences(html, `>${text}</button>`), text).toBe(1);
     expect(html.indexOf('class="action-drawer-head"')).toBeLessThan(html.indexOf('class="action-drawer-body"'));
     expect(html.indexOf('class="action-drawer-body"')).toBeLessThan(html.indexOf('class="action-drawer-foot"'));
     expect([...idCounts(html)].filter(([, count]) => count > 1)).toEqual([]);

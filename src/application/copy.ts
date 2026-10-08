@@ -14,18 +14,18 @@ export function demoAlias(datasetId: string): boolean {
   return datasetId.startsWith("synthetic-demo");
 }
 export function channelLabel(channel: string, alias: boolean): string {
-  return (alias && labels.demoChannelAlias[channel]) || channel;
+  return (alias && labels.data.demoChannelAlias[channel]) || channel;
 }
 export function channelsLabel(channels: readonly string[], alias: boolean): string {
   return channels.map(channel => channelLabel(channel, alias)).join("、");
 }
 export function categoryLabel(category: string, alias: boolean): string {
-  return (alias && labels.demoCategoryAlias[category]) || category;
+  return (alias && labels.data.demoCategoryAlias[category]) || category;
 }
 /** 「合計（官網 · DTC、平台 · MARKETPLACE）」／「官網 · DTC」／「官網 · DTC／SKU-001」 */
 export function scopeLabel(scope: Scope, alias: boolean): string {
   const channels = channelsLabel(scope.channels, alias);
-  if (scope.kind === "all") return `${labels.sections.total}（${channels}）`;
+  if (scope.kind === "all") return `${labels.overview.sections.total}（${channels}）`;
   return scope.sku ? `${channels}／${scope.sku}` : channels;
 }
 
@@ -39,7 +39,7 @@ export function formatHeadlineAmount(value: string | null, signed = false): stri
 }
 
 export interface RuleCopy { headline: string; cause: string; nextStep: string; caution: string }
-const fill = (template: string, values: Record<string, string>) => template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? labels.status.missing);
+const fill = (template: string, values: Record<string, string>) => template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? labels.shell.status.missing);
 
 /** 規則卡文案：labels.rules 模板 ＋ 由事實算出的占位符；排序、門檻與公式抽屜仍用原始 ranking_amount。 */
 export function ruleCopy(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic: Pick<Diagnostic, "code" | "scope" | "fact_ids" | "ranking_amount">, alias: boolean): RuleCopy {
@@ -47,13 +47,13 @@ export function ruleCopy(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic
   const facts = report.facts.filter(fact => diagnostic.fact_ids.includes(fact.id));
   const isPrevious = (fact: Fact) => fact.period.start === report.previous.period.start && fact.period.end === report.previous.period.end;
   const find = (metric: MetricName, period: "previous" | "current") => facts.find(fact => fact.metric === metric && (period === "previous" ? isPrevious(fact) : !isPrevious(fact)));
-  const rate = (metric: MetricName, period: "previous" | "current") => { const fact = find(metric, period); return fact && fact.value !== null ? asciiMinus(formatRateL3(fact.value)) : labels.status.missing; };
+  const rate = (metric: MetricName, period: "previous" | "current") => { const fact = find(metric, period); return fact && fact.value !== null ? asciiMinus(formatRateL3(fact.value)) : labels.shell.status.missing; };
   const difference = (metric: MetricName) => {
     const before = parseCents(find(metric, "previous")?.value ?? null), after = parseCents(find(metric, "current")?.value ?? null);
     return before === null || after === null ? null : formatCents(after - before);
   };
   const ranking = diagnostic.ranking_amount?.value ?? null;
-  const channel = diagnostic.scope.kind === "all" ? labels.sections.total : channelsLabel(diagnostic.scope.channels, alias);
+  const channel = diagnostic.scope.kind === "all" ? labels.overview.sections.total : channelsLabel(diagnostic.scope.channels, alias);
   const values: Record<string, string> = { channel, sku: diagnostic.scope.sku ?? "" };
   const code: RuleCode = diagnostic.code;
   switch (code) {
@@ -64,26 +64,26 @@ export function ruleCopy(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic
     case "REFUND_BURDEN_UP": values.prevRate = rate("refund_ratio", "previous"); values.curRate = rate("refund_ratio", "current"); values.dAmount = formatHeadlineAmount(ranking); break;
     case "FULFILLMENT_BURDEN_UP": values.prevRate = rate("fulfillment_burden", "previous"); values.curRate = rate("fulfillment_burden", "current"); values.dAmount = formatHeadlineAmount(ranking); break;
     case "MARKETING_BURDEN_UP": values.prevRate = rate("marketing_burden", "previous"); values.curRate = rate("marketing_burden", "current"); values.dAmount = formatHeadlineAmount(ranking); break;
-    case "MISSING_CRITICAL_DATA": values.missing = [...new Set(facts.filter(fact => fact.value === null).map(fact => metricDefinitions[fact.metric].shortLabel))].join("、") || labels.status.missing; break;
+    case "MISSING_CRITICAL_DATA": values.missing = [...new Set(facts.filter(fact => fact.value === null).map(fact => metricDefinitions[fact.metric].shortLabel))].join("、") || labels.shell.status.missing; break;
   }
   const copy = labels.rules[code];
   // V3-2a：比率（{prevRate}{curRate}）從標題移到 cause（PRD §8.8 #3），四段都用同一組占位符值填入。
-  return { headline: fill(copy.title, values), cause: fill(copy.cause, values), nextStep: fill(copy.nextStep, values), caution: fill(copy.caution, values) };
+  return { headline: fill(copy.headline, values), cause: fill(copy.explain.cause, values), nextStep: fill(copy.explain.nextStep, values), caution: fill(copy.caution, values) };
 }
 
 /** CSV 標題列「中文名稱 (english_key)」；欄位 key 維持英文，機器可讀。 */
 export function csvHeader(key: string): string {
-  const columns: Record<string, string> = labels.csvColumns;
-  const metric = (name: string): string | null => name in labels.metrics ? labels.metrics[name as MetricName].label : null;
+  const columns: Record<string, string> = labels.exports.csv.columns;
+  const metric = (name: string): string | null => name in labels.metrics ? labels.metrics[name as MetricName].headline : null;
   const derive = (): string | null => {
     if (columns[key]) return columns[key];
     const direct = metric(key); if (direct) return direct;
     let match = /^(previous|current)_(.+?)(_reasons)?$/.exec(key);
-    if (match) { const base = metric(match[2]) ?? columns[match[2]]; if (base) return `${match[1] === "previous" ? labels.periods.previous : labels.periods.current}${base}${match[3] ? labels.csvSuffix.reasons : ""}`; }
+    if (match) { const base = metric(match[2]) ?? columns[match[2]]; if (base) return `${match[1] === "previous" ? labels.shell.periods.previous : labels.shell.periods.current}${base}${match[3] ? labels.exports.csv.suffix.reasons : ""}`; }
     match = /^(.+?)_change(_reasons)?$/.exec(key);
-    if (match) { const base = metric(match[1]); if (base) return `${base}${labels.csvSuffix.change}${match[2] ? labels.csvSuffix.reasons : ""}`; }
+    if (match) { const base = metric(match[1]); if (base) return `${base}${labels.exports.csv.suffix.change}${match[2] ? labels.exports.csv.suffix.reasons : ""}`; }
     match = /^(.+?)_reasons$/.exec(key);
-    if (match) { const base = metric(match[1]) ?? columns[match[1]]; if (base) return `${base}${labels.csvSuffix.reasons}`; }
+    if (match) { const base = metric(match[1]) ?? columns[match[1]]; if (base) return `${base}${labels.exports.csv.suffix.reasons}`; }
     return null;
   };
   const label = derive();
@@ -96,7 +96,7 @@ export function csvHeaderKey(header: string): string {
 }
 
 /**
- * 白話錯誤（V3-2a §7.7.3）：以 reason code 查 labels.importErrors 樣板，帶入 {file}{line}{value}{column} 等占位符；
+ * 白話錯誤（V3-2a §7.7.3）：以 reason code 查 labels.errors.import 樣板，帶入 {file}{line}{value}{column} 等占位符；
  * 一律不退回 domain 的中文 message。實作在 import.ts（importIssueMessage）；這裡保留舊入口給既有呼叫端。
  */
 export function plainIssueMessage(issue: IssueRef & Partial<Pick<ValidationIssue, "message">>, context?: IssueMessageContext): string {
@@ -106,6 +106,6 @@ export function plainIssueMessage(issue: IssueRef & Partial<Pick<ValidationIssue
 export function conversionSentence(conversion: TaxConversion | null | undefined): string | null {
   if (!conversion) return null;
   const percent = new Decimal(conversion.rate).mul(100).toFixed(0);
-  const fields = conversion.fields.map(field => field in labels.metrics ? labels.metrics[field as MetricName].label : field).join("、");
+  const fields = conversion.fields.map(field => field in labels.metrics ? labels.metrics[field as MetricName].headline : field).join("、");
   return fillTemplate(labels.importWizard.conversionSummary, { percent, fields, n: conversion.rows_converted });
 }

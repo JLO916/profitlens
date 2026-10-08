@@ -59,8 +59,8 @@ describe("withoutDetails keeps what is visible at first glance", () => {
   it("the diagnosis page's open rows count as the main layer, their technical details do not", async () => {
     const { snapshot } = await context();
     const main = withoutDetails(renderToStaticMarkup(createElement(Diagnosis, { snapshot, onEvidence: () => undefined })));
-    expect(main).toContain(`<dt>${labels.sections.nextStep}</dt>`);
-    expect(main).not.toContain(`<summary>${labels.sections.technicalDetails}</summary>`);
+    expect(main).toContain(`<dt>${labels.diagnosis.sections.nextStep}</dt>`);
+    expect(main).not.toContain(`<summary>${labels.evidence.sections.technicalDetails}</summary>`);
   });
 });
 

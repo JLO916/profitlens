@@ -44,7 +44,7 @@ describe("R3 wizard: file slots", () => {
     expect(canLeaveFiles(state)).toBe(true);
     const broken = wizardReducer(state, { type: "fileFailed", role: "sales_daily.csv", issues: [{ file: "sales_daily.csv", field: "$file", line: null, severity: "blocking", reason_code: "FILE_TOO_LARGE", message: "x" }] });
     expect(canLeaveFiles(broken)).toBe(false);
-    expect(plainIssueMessage(broken.readIssues["sales_daily.csv"]![0])).toBe(fill(labels.importErrors.FILE_TOO_LARGE, { file: "sales_daily.csv" }));
+    expect(plainIssueMessage(broken.readIssues["sales_daily.csv"]![0])).toBe(fill(labels.errors.import.FILE_TOO_LARGE, { file: "sales_daily.csv" }));
   });
 });
 
@@ -191,11 +191,11 @@ describe("R3 review follow-ups", () => {
     expect(daily.files["sales_daily.csv"]!.preset).toBeNull();
   });
   it("fills placeholders the issue lacks with 「—」 instead of falling back to the technical message", () => {
-    // V3-2a §7.7.3：一律用 labels.importErrors 樣板，不退回 domain 的中文 message；拿不到的占位符顯示「—」。
+    // V3-2a §7.7.3：一律用 labels.errors.import 樣板，不退回 domain 的中文 message；拿不到的占位符顯示「—」。
     const rangeLevel = { file: "ad_spend_daily.csv" as const, field: "$coverage", line: null, severity: "partial" as const, reason_code: "MISSING_AD_DAY", message: "涵蓋日期與通路所需列數超過每檔上限" };
-    expect(plainIssueMessage(rangeLevel)).toBe(fill(labels.importErrors.MISSING_AD_DAY, { date: "—", channel: "—" }));
+    expect(plainIssueMessage(rangeLevel)).toBe(fill(labels.errors.import.MISSING_AD_DAY, { date: "—", channel: "—" }));
     expect(plainIssueMessage(rangeLevel)).not.toContain(rangeLevel.message);
-    expect(plainIssueMessage({ ...rangeLevel, date: "2026-08-01", channel: "官網" })).toBe(fill(labels.importErrors.MISSING_AD_DAY, { date: "2026-08-01", channel: "官網" }));
+    expect(plainIssueMessage({ ...rangeLevel, date: "2026-08-01", channel: "官網" })).toBe(fill(labels.errors.import.MISSING_AD_DAY, { date: "2026-08-01", channel: "官網" }));
   });
   it("reads previously persisted memory without the consent box when a local database already exists, but never writes without consent", async () => {
     const memory = new MemoryMappingStore(), persistent = new MemoryMappingStore();

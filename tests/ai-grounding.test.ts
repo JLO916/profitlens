@@ -136,7 +136,7 @@ describe("M5 semantic evaluation E01–E24 (mock validation, not live model qual
     const good = output(p, selected);
     expect(validateInsightOutput(good, p).ok).toBe(true);
     const observation = renderInsightOutput(good, p).insights[0].observation;
-    expect(observation).toContain(labels.status.missing);
+    expect(observation).toContain(labels.shell.status.missing);
     expect(observation).not.toMatch(/TWD|0\.00/);
     reject(p, output(p, entry(p, "net_revenue", "change")), "MISSING_DATA_PRIORITY");
     good.insights[0].recommended_action = "減少廣告投放，再補齊資料。";
@@ -154,8 +154,8 @@ describe("M5 semantic evaluation E01–E24 (mock validation, not live model qual
   it("E05 refund observations retain booked-date limitation without cohort claims", () => {
     const p = payload(), good = output(p, entry(p, "refund_ratio", "change"));
     expect(validateInsightOutput(good, p).ok).toBe(true);
-    expect(good.insights[0].observation).toContain(labels.ui.grounding.refundCaution);
-    expect(labels.ui.grounding.refundCaution).toMatch(/結帳日|入帳日|cohort/);
+    expect(good.insights[0].observation).toContain(labels.shell.ai.grounding.refundCaution);
+    expect(labels.shell.ai.grounding.refundCaution).toMatch(/結帳日|入帳日|cohort/);
   });
   it("E06 aggregate discount ratio is the core value, not averaged row ratios", () => {
     const p = payload(), f = p.facts.find(fact => fact.period === "current" && fact.metric === "discount_rate")!;
@@ -186,7 +186,7 @@ describe("M5 semantic evaluation E01–E24 (mock validation, not live model qual
     reject(p, bad, "INVALID_PLACEHOLDER");
   });
   it("E11 correct ID with reversed periods is not a supported observation", () => {
-    const p = payload(), bad = output(p); bad.insights[0].observation = bad.insights[0].observation.replace(labels.periods.current, labels.periods.previous); reject(p, bad, "UNSUPPORTED_OBSERVATION");
+    const p = payload(), bad = output(p); bad.insights[0].observation = bad.insights[0].observation.replace(labels.shell.periods.current, labels.shell.periods.previous); reject(p, bad, "UNSUPPORTED_OBSERVATION");
   });
   it("E12 correct ID with false channel scope is rejected", () => {
     const p = payload(), bad = output(p); bad.insights[0].observation = bad.insights[0].observation.replace("所選通路合計", "其他通路"); reject(p, bad, "UNSUPPORTED_OBSERVATION");

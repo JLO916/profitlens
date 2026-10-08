@@ -9,10 +9,10 @@ import { actionDocuments, type ActionWorkspace } from "./action-workspace";
 import { buildExportHeader, markdownExportHeader } from "./export-header";
 import { formatAmount, formatMetric, formatPeriodExport, formatRateL2, formatSignedDelta, type Layer } from "./presentation";
 
-const copy = labels.ui.decisionExport;
+const copy = labels.exports.decision;
 /** 主層只留一句「注意」；其餘限制併入技術細節（Markdown），JSON／CSV 仍完整輸出。 */
-const CAUTION = labels.basis.items[6];
-const TECHNICAL_LIMITATIONS = [copy.limitations.scenarioScope, copy.limitations.adSpendNoVolume, copy.limitations.manualActions, labels.basis.items[5], labels.basis.items[2]];
+const CAUTION = labels.glossary.basis.items[6];
+const TECHNICAL_LIMITATIONS = [copy.limitations.scenarioScope, copy.limitations.adSpendNoVolume, copy.limitations.manualActions, labels.glossary.basis.items[5], labels.glossary.basis.items[2]];
 const LIMITATIONS = [CAUTION, ...TECHNICAL_LIMITATIONS];
 const ROUNDING = copy.roundingNote;
 
@@ -106,35 +106,35 @@ function md(value: unknown): string {
 }
 /** Markdown 主層欄位名稱：指標 → CSV 欄位 → 試算欄位 → 待辦欄位 → 其他；都沒有就留英文 key（只會出現在技術細節）。 */
 const SCENARIO_FIELD_LABELS: Record<string, string> = {
-  volume_change_pct: labels.scenario.volume.label, discount_change_pp: labels.scenario.discount.label, fulfillment_change_pct: labels.scenario.fulfillmentUnit.label,
-  ad_change_pct: labels.scenario.adSpend.label, one_time_cost: labels.scenario.oneOff.label, assumptions_accepted: labels.scenario.acceptAssumptions,
-  contribution: labels.scenario.resultTitle, delta: labels.scenario.vsBaseline,
+  volume_change_pct: labels.scenarios.inputs.volume.label, discount_change_pp: labels.scenarios.inputs.discount.label, fulfillment_change_pct: labels.scenarios.inputs.fulfillmentUnit.label,
+  ad_change_pct: labels.scenarios.inputs.adSpend.label, one_time_cost: labels.scenarios.inputs.oneOff.label, assumptions_accepted: labels.scenarios.inputs.acceptAssumptions,
+  contribution: labels.scenarios.inputs.resultTitle, delta: labels.scenarios.inputs.vsBaseline,
 };
 const ACTION_FIELD_LABELS: Record<string, string> = {
-  problem: labels.actions.problem, action: labels.actions.step, owner_role: labels.actions.owner, validation_metric: labels.actions.metric,
-  deadline: labels.actions.due, stop_condition: labels.actions.stop, required_data: labels.actions.extraData, status: labels.actions.status,
+  problem: labels.actions.form.problem, action: labels.actions.form.step, owner_role: labels.actions.form.owner, validation_metric: labels.actions.form.metric,
+  deadline: labels.actions.form.due, stop_condition: labels.actions.form.stop, required_data: labels.actions.form.extraData, status: labels.actions.form.status,
   // V3-9a F13：廣告決策標籤（只有使用者有標時才出現在文件裡）。
   ad_decision: labels.actions.adDecisionV3.field,
 };
 /** V3-9a（PRD §10.1 F13）：廣告決策的白話名稱（暫停／調整／加碼）；不認得的值原樣輸出（交給驗證處理）。 */
 const adDecisionText = (value: unknown): unknown => typeof value === "string" && Object.hasOwn(labels.actions.adDecisionV3.options, value) ? labels.actions.adDecisionV3.options[value as keyof typeof labels.actions.adDecisionV3.options] : value;
 const OTHER_FIELD_LABELS: Record<string, string> = {
-  id: labels.csvColumns.item_id, fact_id: labels.csvColumns.fact_ids, reasons: labels.csvColumns.reason_codes, sources: labels.csvColumns.source_refs,
-  coverage_confirmed: labels.csvColumns.sales_coverage_confirmed, filenames: labels.csvColumns.file,
+  id: labels.exports.csv.columns.item_id, fact_id: labels.exports.csv.columns.fact_ids, reasons: labels.exports.csv.columns.reason_codes, sources: labels.exports.csv.columns.source_refs,
+  coverage_confirmed: labels.exports.csv.columns.sales_coverage_confirmed, filenames: labels.exports.csv.columns.file,
 };
-const metricLabel = (name: string): string | null => name in labels.metrics ? labels.metrics[name as MetricName].label : null;
+const metricLabel = (name: string): string | null => name in labels.metrics ? labels.metrics[name as MetricName].headline : null;
 function fieldLabel(key: string): string {
-  return metricLabel(key) ?? labels.csvColumns[key] ?? SCENARIO_FIELD_LABELS[key] ?? ACTION_FIELD_LABELS[key] ?? OTHER_FIELD_LABELS[key] ?? key;
+  return metricLabel(key) ?? labels.exports.csv.columns[key] ?? SCENARIO_FIELD_LABELS[key] ?? ACTION_FIELD_LABELS[key] ?? OTHER_FIELD_LABELS[key] ?? key;
 }
 const ACTION_STATUS: Record<string, string> = { ...copy.actionStatus, ...copy.scenarioStatus };
 function mdFields(values: Record<string, unknown>, labelled = true): string[] {
   return Object.entries(values).map(([key, value]) => fill(copy.fieldLine, { label: md(labelled ? fieldLabel(key) : key), value: md(value === null ? copy.nullValue : labelled && key === "status" && typeof value === "string" && ACTION_STATUS[value] ? ACTION_STATUS[value] : value) }));
 }
 /** 技術細節區塊：Markdown 內的 `<details>`，保留原始 key、代碼與公式。 */
-function mdTechnical(lines: readonly string[], summary: string = labels.sections.technicalDetails): string[] {
+function mdTechnical(lines: readonly string[], summary: string = labels.evidence.sections.technicalDetails): string[] {
   return ["<details>", `<summary>${summary}</summary>`, "", ...lines, "", "</details>"];
 }
-const sensitivityCopy = labels.ui.scenarioSensitivity;
+const sensitivityCopy = labels.scenarios.sensitivity;
 /**
  * V3-2b §3.3：Markdown 主文用 L2（整數元、比率一位小數），技術細節用 L3（到分）；負號 U+2212、正的差額加「+」。
  * JSON／CSV 不經過這裡，維持 domain 的精確字串（ASCII 負號、到分）。
@@ -142,10 +142,10 @@ const sensitivityCopy = labels.ui.scenarioSensitivity;
 const amountText = (value: string | null | undefined, layer: Layer = "L2", signed = false): string => value === null || value === undefined ? copy.nullValue : signed ? formatSignedDelta(value, layer) : formatAmount(value, layer);
 const amountFields = (values: Readonly<Record<string, string | null>>, layer: Layer = "L2"): Record<string, string> => Object.fromEntries(Object.entries(values).map(([key, value]) => [key, amountText(value, layer)]));
 const rateFields = (values: Readonly<Record<string, string | null>>): Record<string, string> => Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value === null ? copy.nullValue : formatRateL2(value)]));
-const moneyColumn = (label: string): string => fill(labels.ui.export.moneyColumn, { label });
+const moneyColumn = (label: string): string => fill(labels.exports.common.moneyColumn, { label });
 /**
  * V3-2a §7.7.3：domain 的試算原因碼（src/domain/scenarios.ts 的 eligibility／calculateScenario，與 scenario-sensitivity.ts）。
- * 每一個都要在 labels.ui.scenarioSensitivity.reasons 有白話文案（別名見 SCENARIO_REASON_ALIASES）；tests/reason-code-labels.test.ts 檢查。
+ * 每一個都要在 labels.scenarios.sensitivity.reasons 有白話文案（別名見 SCENARIO_REASON_ALIASES）；tests/reason-code-labels.test.ts 檢查。
  */
 export const SCENARIO_REASON_CODES = [
   "BASELINE_COVERAGE_UNCONFIRMED", "BASELINE_MISSING_AMOUNT", "BASELINE_NEGATIVE_COST", "BASELINE_NON_POSITIVE_GROSS", "BASELINE_NON_POSITIVE_NET", "BASELINE_DISCOUNT_RATE_OUT_OF_RANGE", "BASELINE_REFUND_RATIO_OUT_OF_RANGE",
@@ -167,20 +167,20 @@ const SENSITIVITY_ROW_PREFIX = /^\S+ (\d+)：/u;
  * reason-code-labels 測試保證每個原因碼都有文案。
  */
 export function scenarioReasonText(reason: { code: string; message: string }): string {
-  const text = scenarioReasonLabel(reason.code) ?? `${labels.ui.issueList.reasonCodeSummary} ${reason.code}`;
+  const text = scenarioReasonLabel(reason.code) ?? `${labels.data.issues.reasonCodeSummary} ${reason.code}`;
   const row = SENSITIVITY_ROW_PREFIX.exec(reason.message);
   return row ? `${fill(sensitivityCopy.rowLabel, { letter: String.fromCharCode(64 + Number(row[1])) })}：${text}` : text;
 }
 /** 每個方案下的小表：假設／銷量變化 %／試算後貢獻／與現況相比；未算出的格子寫「資料待補／不適用」並附原因一句。 */
 function mdSensitivity(sensitivity: SensitivityExport): string[] {
   const row = (cells: readonly string[]) => `| ${cells.join(" | ")} |`;
-  const lines = [`#### ${md(labels.sections.scenarioBreakeven)}`, "",
-    row([sensitivityCopy.colAssumption, `${labels.scenario.volume.label}（%）`, moneyColumn(labels.scenario.resultTitle), moneyColumn(labels.scenario.vsBaseline)].map(md)), row(["---", "---:", "---:", "---:"])];
+  const lines = [`#### ${md(labels.scenarios.sections.scenarioBreakeven)}`, "",
+    row([sensitivityCopy.colAssumption, `${labels.scenarios.inputs.volume.label}（%）`, moneyColumn(labels.scenarios.inputs.resultTitle), moneyColumn(labels.scenarios.inputs.vsBaseline)].map(md)), row(["---", "---:", "---:", "---:"])];
   sensitivity.volumes.forEach((volume, index) => {
     const result = sensitivity.analysis?.rows[index];
     lines.push(row([md(fill(sensitivityCopy.rowLabel, { letter: String.fromCharCode(65 + index) })), md(volume.trim() === "" ? copy.nullValue : volume), md(amountText(result?.contribution)), md(amountText(result?.delta, "L2", true))]));
   });
-  if (sensitivity.analysis === null) lines.push("", md(labels.scenario.draft));
+  if (sensitivity.analysis === null) lines.push("", md(labels.scenarios.inputs.draft));
   else if (sensitivityStatus(sensitivity) !== "valid") lines.push("", md([...new Set(sensitivity.analysis.reasons.map(scenarioReasonText))].join(" ")));
   return lines;
 }
@@ -193,7 +193,7 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   const document = decisionDocument(session, scenarios, actions, actionWorkspace, extraLimitations);
   const alias = demoAlias(session.dataset_id);
   const periodText = (period: Period) => `${period.start}～${period.end}`;
-  const comparisonMode = session.comparison.mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays;
+  const comparisonMode = session.comparison.mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays;
   // V3-7 §7.9：「# 標題」之後緊接版頭四行（兩期取這份試算建立時的範圍），其後各段順序與數值不變。
   const header = buildExportHeader({
     datasetName: options.datasetName ?? session.dataset_id, metricVersion: session.metric_version, generatedAt: options.generatedAt ?? new Date(),
@@ -203,14 +203,14 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   const lines = [`# ${copy.title}`, "", ...markdownExportHeader(header), "", fill(copy.statusLine, { status: session.stale ? copy.statusStale : copy.statusCurrent }), "", `## ${copy.sectionSource}`, "",
     ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: formatPeriodExport(session.period.start, session.period.end), scope: channelsLabel(session.scope.channels, alias), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
     "", ...mdTechnical(mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, comparison: session.comparison, sources: session.sources, stale_reasons: session.stale_reasons }, false)),
-    "", `## ${labels.sections.scenarioBaseline}`, "", labels.ui.export.amountUnitNote, "", ...mdFields(amountFields(session.baseline.amounts)), "", ...mdFields(rateFields({ ...session.baseline.rates })),
+    "", `## ${labels.scenarios.sections.scenarioBaseline}`, "", labels.exports.common.amountUnitNote, "", ...mdFields(amountFields(session.baseline.amounts)), "", ...mdFields(rateFields({ ...session.baseline.rates })),
     "", ...mdTechnical([...mdFields({ version: session.baseline.version, eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons }, false), "", ...mdFields(amountFields(session.baseline.amounts, "L3"), false)]),
-    "", `## ${labels.sections.scenarioAssumptions}`, "", ...document.fixed_assumptions.map(assumption => `- ${md(assumption)}`),
-    "", `## ${labels.nav.scenarios.label}`, "",
+    "", `## ${labels.scenarios.sections.scenarioAssumptions}`, "", ...document.fixed_assumptions.map(assumption => `- ${md(assumption)}`),
+    "", `## ${labels.shell.nav.scenarios.headline}`, "",
   ];
   for (const plan of document.scenarios) {
     lines.push(`### ${md(plan.name)}`, "", ...mdFields({ id: plan.id, status: plan.status }), "", ...mdFields({ ...plan.inputs }));
-    if (plan.result === null) lines.push("", labels.scenario.draft, "");
+    if (plan.result === null) lines.push("", labels.scenarios.inputs.draft, "");
     else {
       lines.push("", ...mdFields({ contribution: amountText(plan.result.contribution), delta: amountText(plan.result.delta, "L2", true) }), "");
       if (plan.result.amounts) lines.push(...mdFields(amountFields(plan.result.amounts)), "", ...mdFields(rateFields(plan.result.rates)), "");
@@ -219,7 +219,7 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
     }
     if (plan.sensitivity) lines.push(...mdSensitivity(plan.sensitivity), "");
   }
-  lines.push(`## ${labels.sections.actionList}`, "");
+  lines.push(`## ${labels.actions.sections.actionList}`, "");
   if (actionWorkspace !== undefined) lines.push(copy.actionsNote, "");
   for (const action of document.actions) {
     const main = Object.fromEntries(Object.entries(action).filter(([key]) => key in ACTION_FIELD_LABELS).map(([key, value]) => [key, key === "ad_decision" ? adDecisionText(value) : value]));
@@ -229,14 +229,14 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   lines.push(`## ${copy.sectionFacts}`, "");
   // 引用的數字是依據（L3）：到分、比率兩位小數。
   for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: metricLabel(fact.metric) ?? fact.metric, value: fact.value === null ? null : formatMetric(fact.metric, fact, "L3"), reason_codes: fact.reason_codes, period: periodText(fact.period), scope: scopeLabel(fact.scope, alias), sources: fact.sources }), "");
-  lines.push(`## ${labels.sections.caution}`, "", `${labels.sections.caution}：${md(CAUTION)}`, "");
+  lines.push(`## ${labels.diagnosis.sections.caution}`, "", `${labels.diagnosis.sections.caution}：${md(CAUTION)}`, "");
   lines.push(...mdTechnical([...mdFields(document.formulas, false), "", md(document.rounding), "", ...document.limitations.slice(1).map(limitation => `- ${md(limitation)}`)], copy.sectionFormulas), "");
   return lines.join("\n");
 }
 
 // V3-9a F13：ad_decision 是新增的最後一欄（D11：既有欄名與欄序不變，只能新增欄）；只在有標的待辦列（manual_action、action_fact）有值。
 const HEADERS = ["schema_version", "scenario_version", "metric_version", "dataset_id", "dataset_hash", "filter_hash", "as_of", "currency", "timezone", "amount_basis", "revision", "snapshot_status", "period", "scope", "comparison_mode", "previous_days", "current_days", "row_type", "item_id", "item_name", "status", "field", "value", "reason_codes", "fact_ids", "source_refs", "analysis_scope", "context_id", "plan_revision", "analysis_epoch", "ad_decision"] as const;
-/** 欄名沿用 csvHeader 的「中文 (english_key)」；ad_decision 的中文取自 labels.actions.adDecisionV3（labels.csvColumns 沒有這一欄）。 */
+/** 欄名沿用 csvHeader 的「中文 (english_key)」；ad_decision 的中文取自 labels.actions.adDecisionV3（labels.exports.csv.columns 沒有這一欄）。 */
 const headerText = (header: typeof HEADERS[number]): string => header === "ad_decision" ? `${labels.actions.adDecisionV3.csvColumn} (${header})` : csvHeader(header);
 const text = (value: unknown): CsvCell => ({ kind: "text", value: typeof value === "string" ? value : JSON.stringify(value) });
 const numeric = (value: string): CsvCell => ({ kind: "number", value });

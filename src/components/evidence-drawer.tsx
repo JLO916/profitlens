@@ -108,7 +108,7 @@ export function evidenceSubtitle(evidence: Pick<EvidenceSelection, "period" | "c
   const range = formatPeriodL1(evidence.period.start, evidence.period.end, { anchor: options.anchor, days: false });
   const same = (period: Period | undefined) => period !== undefined && period.start === evidence.period.start && period.end === evidence.period.end;
   // V3-9b F8：與去年同期整段相同時寫「去年同期」（本期、上期優先）。
-  const name = same(options.report?.current.period) ? labels.periods.current : same(options.report?.previous.period) ? labels.periods.previous : same(options.yoy) ? labels.periods.presets.yoy : null;
+  const name = same(options.report?.current.period) ? labels.shell.periods.current : same(options.report?.previous.period) ? labels.shell.periods.previous : same(options.yoy) ? labels.shell.periods.presets.yoy : null;
   const period = name ? fill(v3.periodNamed, { name, range }) : range;
   if (!evidence.scopeLabel) return fill(v3.subtitle, { scope: channels, period });
   const named = evidence.scopeLabel.includes(listed) || (all && evidence.scopeLabel.includes(copy.allChannels));
@@ -127,7 +127,7 @@ export function EvidenceDrawer({ dataset, snapshot, evidence, onClose, onBasis, 
 }
 
 function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenames, mappings, rawValues, conversion }: Omit<EvidenceDrawerProps, "evidence"> & { evidence: EvidenceSelection }) {
-  const conversionNote = conversion ? fill(copy.conversionNote, { percent: rateToPercent(conversion.rate), fields: conversion.fields.map(field => field in labels.metrics ? labels.metrics[field as MetricName].label : field).join("、") }) : null;
+  const conversionNote = conversion ? fill(copy.conversionNote, { percent: rateToPercent(conversion.rate), fields: conversion.fields.map(field => field in labels.metrics ? labels.metrics[field as MetricName].headline : field).join("、") }) : null;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -171,7 +171,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
     if (evidence.unitOverride === "percentage-point") return formatPointsValue(metric.value, layer);
     if (definition.unit === "money") {
       if (layer === "L1") return signed ? formatSignedDelta(metric.value, "L1") : formatAmountL1(metric.value);
-      return fill(labels.units.yuan, { value: signed ? formatSignedDelta(metric.value, "L3") : formatAmountL3(metric.value) });
+      return fill(labels.format.units.yuan, { value: signed ? formatSignedDelta(metric.value, "L3") : formatAmountL3(metric.value) });
     }
     if (definition.unit === "percent") return formatRateLayer(metric.value, layer);
     return formatMultiple(metric.value, layer);
@@ -179,13 +179,13 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   /** 精確值行：件數沒有取位，不重複顯示；空值不顯示（原因碼在技術細節）。 */
   const preciseValue = evidence.metric.value === null || evidence.unitOverride === "count" ? null : displayValue(evidence.metric, "L3");
   const emptyL3 = (metric: Metric) => formatEmpty(emptyKindOf(metric.reason_codes), { layer: "L3", reasonCodes: metric.reason_codes });
-  const money = (metric: Metric) => metric.value === null ? emptyL3(metric) : fill(labels.units.yuan, { value: formatAmountL3(metric.value) });
+  const money = (metric: Metric) => metric.value === null ? emptyL3(metric) : fill(labels.format.units.yuan, { value: formatAmountL3(metric.value) });
   // V3-5 組成項目表（14px）：單位只寫在表頭；上期／本期兩項時一列三欄加差額（差額＝這筆證據的值），其他情況兩欄。
   const components = evidence.components ?? [];
   const moneyUnit = !evidence.unitOverride && definition.unit === "money";
   const componentValue = (metric: Metric) => metric.value === null ? emptyL3(metric) : moneyUnit ? formatAmountL3(metric.value) : displayValue(metric);
-  const previousComponent = components.find(component => component.label === labels.periods.previous);
-  const currentComponent = components.find(component => component.label === labels.periods.current);
+  const previousComponent = components.find(component => component.label === labels.shell.periods.previous);
+  const currentComponent = components.find(component => component.label === labels.shell.periods.current);
   const periodPair = components.length === 2 && previousComponent && currentComponent ? { previous: previousComponent.metric, current: currentComponent.metric } : null;
   // 指標定義與算法：domain 指標用指標定義；件數、件均這類非 domain 指標用證據自帶的公式說明。版本與技術細節同源。
   const definitionText = evidence.definition ?? (evidence.unitOverride === "count" || evidence.unitOverride === "money_per_unit" ? evidence.formula ?? definition.plain : definition.plain);
@@ -218,10 +218,10 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
     >
       <header className="evidence-head">
         <div className="evidence-head-text">
-          <h2 id={titleId}>{evidence.title}<span className="sr-only">{" · "}{labels.sections.evidence}</span></h2>
+          <h2 id={titleId}>{evidence.title}<span className="sr-only">{" · "}{labels.evidence.sections.evidence}</span></h2>
           <p id={descriptionId} className="sub">{subtitle}</p>
         </div>
-        <button type="button" className="ui-btn ui-btn-icon evidence-close" aria-label={labels.buttons.close} onClick={onClose} autoFocus><ShellIcon name="close" size={20} /></button>
+        <button type="button" className="ui-btn ui-btn-icon evidence-close" aria-label={labels.shell.buttons.close} onClick={onClose} autoFocus><ShellIcon name="close" size={20} /></button>
       </header>
       <div className="evidence-body">
         <p className="number">{displayValue(evidence.metric, "L1")}</p>
@@ -260,7 +260,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
         )}
         <section className="evidence-section evidence-definition" aria-label={v3.definitionTitle}>
           <h3>{v3.definitionTitle}</h3>
-          <p>{definitionText}<span className="evidence-version">{fill(v3.version, { version: metricVersion })}</span>{onBasis && <button type="button" className="ui-btn ui-btn-text evidence-basis" onClick={onBasis}>{labels.buttons.basis}</button>}</p>
+          <p>{definitionText}<span className="evidence-version">{fill(v3.version, { version: metricVersion })}</span>{onBasis && <button type="button" className="ui-btn ui-btn-text evidence-basis" onClick={onBasis}>{labels.shell.buttons.basis}</button>}</p>
         </section>
         <section aria-label={copy.sourcesTitle} className="evidence-section evidence-sources">
           <h3>{v3.sourcesTitle}</h3>
@@ -270,12 +270,12 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
           {filterText !== null && <div className="evidence-filter" data-testid="evidence-filter"><span>{filterOn ? filterText : filterCopy.all}</span><button type="button" className="ui-btn ui-btn-text" data-testid={filterOn ? "evidence-filter-clear" : "evidence-filter-apply"} onClick={() => { setFilterOn(!filterOn); setPage(0); }}>{filterOn ? filterCopy.clear : filterCopy.apply}</button></div>}
           {rows.length === 0 ? <p>{copy.none}</p> : (<>
             <div className="source-controls">
-              <div className="source-tabs ui-segmented" role="group" aria-label={labels.ui.evidenceDrawer.sourceTabsAria}>{tabs.map(item => <button key={item} type="button" className="preset" aria-pressed={item === activeTab} onClick={() => { setTab(item); setPage(0); }}>{fill(labels.ui.evidenceDrawer.tabWithCount, { tab: copy.sourceTabs[item], n: counts[item] })}</button>)}</div>
+              <div className="source-tabs ui-segmented" role="group" aria-label={labels.evidence.drawer.sourceTabsAria}>{tabs.map(item => <button key={item} type="button" className="preset" aria-pressed={item === activeTab} onClick={() => { setTab(item); setPage(0); }}>{fill(labels.evidence.drawer.tabWithCount, { tab: copy.sourceTabs[item], n: counts[item] })}</button>)}</div>
               <label className="source-search">{copy.searchLabel}<input type="search" value={query} placeholder={copy.searchPlaceholder} onChange={event => { setQuery(event.target.value); setPage(0); }} /></label>
             </div>
             <p className="note" aria-live="polite">{fill(copy.showing, { from: filtered.length === 0 ? 0 : start + 1, to: end, n: filtered.length })}</p>
             {filtered.length === 0 ? <p>{copy.none}</p> : (
-            <div className="table-scroll" tabIndex={0} role="region" aria-label={labels.ui.evidenceDrawer.sourceTableAria}>
+            <div className="table-scroll" tabIndex={0} role="region" aria-label={labels.evidence.drawer.sourceTableAria}>
               {/* C3 手機清單：保留 <table>，≤ 767px 以 CSS 重排；明確的 role 讓 display 改變後仍是表格語意，data-label 是每格的欄名。 */}
               <table className="source-table" role="table">
                 <caption className="sr-only">{evidence.title} · {copy.sourcesTitle}，{fill(copy.pageOf, { page: currentPage + 1, pages: lastPage + 1 })}</caption>
@@ -296,7 +296,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
                           {row.missing && <span className="tag">{copy.missingTag}</span>}
                         </th>
                         <td role="cell" className="evidence-date" data-label={column.date} data-list-role="secondary">{row.date ?? copy.wholeDataset}</td>
-                        <td role="cell" data-label={column.channel} data-list-role="secondary">{row.channel ? channelLabel(row.channel, alias) : copy.allChannels}{row.sku ? <small>{fill(labels.ui.evidenceDrawer.skuLine, { sku: row.sku })}</small> : null}</td>
+                        <td role="cell" data-label={column.channel} data-list-role="secondary">{row.channel ? channelLabel(row.channel, alias) : copy.allChannels}{row.sku ? <small>{fill(labels.evidence.drawer.skuLine, { sku: row.sku })}</small> : null}</td>
                         <td role="cell" data-label={column.values} data-list-role="labeled"><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : rawValues?.[row.file as FileName]?.[row.line ?? -1]?.[field] !== undefined ? <span className="converted-value" title={copy.rawToConverted}><s>{sourceValue(field, rawValues[row.file as FileName]![row.line!][field])}</s> → <strong>{sourceValue(field, value)}</strong><span className="sr-only">（{copy.rawToConverted}）</span></span> : sourceValue(field, value)}</dd></div>)}</dl></td>
                       </tr>
                     );
@@ -304,7 +304,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
                 </tbody>
               </table>
             </div>)}
-            {lastPage > 0 && <nav aria-label={labels.ui.evidenceDrawer.sourcePagerAria}>
+            {lastPage > 0 && <nav aria-label={labels.evidence.drawer.sourcePagerAria}>
               <button type="button" className="button quiet" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{copy.prev}</button>
               <span>{fill(copy.pageOf, { page: currentPage + 1, pages: lastPage + 1 })}</span>
               <button type="button" className="button quiet" disabled={currentPage >= lastPage} onClick={() => setPage(currentPage + 1)}>{copy.next}</button>
@@ -313,7 +313,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
         </section>
         {evidence.metric.reason_codes.length > 0 && <p className="evidence-limit" role="status">{copy.conditionsNote}</p>}
         <details className="evidence-technical">
-          <summary>{labels.sections.technicalDetails}</summary>
+          <summary>{labels.evidence.sections.technicalDetails}</summary>
           <dl>
             <div><dt>{copy.technicalFormula}</dt><dd><code>{evidence.formulaTechnical ?? definition.formulaTechnical}</code></dd></div>
             {(evidence.unitOverride || definition.unit !== "money") && evidence.metric.value !== null && <div><dt>{copy.exactValue}</dt><dd><code>{evidence.metric.value}</code>{evidence.unitOverride === "percentage-point" ? `（${copy.pointNote}）` : definition.unit === "percent" ? `（${copy.ratioNote}）` : ""}</dd></div>}

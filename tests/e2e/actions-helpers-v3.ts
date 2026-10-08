@@ -29,7 +29,7 @@ export async function closeActionDrawer(page: Page) {
 }
 
 export type DecisionFormat = 'md' | 'csv' | 'json';
-const decisionLabels: Record<DecisionFormat, string> = { md: labels.downloads.decisionMd, csv: labels.downloads.decisionCsv, json: labels.downloads.decisionJson };
+const decisionLabels: Record<DecisionFormat, string> = { md: labels.exports.downloads.decisionMd, csv: labels.exports.downloads.decisionCsv, json: labels.exports.downloads.decisionJson };
 
 /** 頁首 #page-actions 的「匯出本頁」頁內下拉：沒展開就點 summary（已展開時再點會把它收起，所以先看 open）。回傳展開後的 details。 */
 async function openPageExport(page: Page, menuId: string, summaryId: string) {
@@ -45,7 +45,7 @@ export const openScenarioExport = (page: Page) => openPageExport(page, 'scenario
 
 /**
  * V3-6：v2 頁面上的「下載決策 Markdown／CSV／JSON」三顆按鈕搬進頁首「匯出本頁」。依目前所在頁（側欄 aria-current，手機也掛載）
- * 開待辦頁或假設試算頁的選單，回傳該格式的按鈕（可見文字仍是 v2 的按鈕名稱 labels.downloads.decision*，先斷言）。呼叫端自己點擊並等下載。
+ * 開待辦頁或假設試算頁的選單，回傳該格式的按鈕（可見文字仍是 v2 的按鈕名稱 labels.exports.downloads.decision*，先斷言）。呼叫端自己點擊並等下載。
  */
 export async function decisionExportButton(page: Page, format: DecisionFormat) {
   const onActions = await sidebarNav(page, 'actions').getAttribute('aria-current') === 'page';
@@ -69,9 +69,9 @@ export async function acceptAssumptions(card: Locator, expected?: 'first' | 'ack
   if (first) {
     await expect(box).toBeVisible();
     await expect(box).not.toBeChecked();
-    await expect(card.locator('label.scenario-accept')).toHaveText(labels.scenario.acceptAssumptions);
+    await expect(card.locator('label.scenario-accept')).toHaveText(labels.scenarios.inputs.acceptAssumptions);
     await box.click();
-    await expect(card.getByRole('button', { name: labels.buttons.calculate, exact: true })).toBeFocused();
+    await expect(card.getByRole('button', { name: labels.scenarios.buttons.calculate, exact: true })).toBeFocused();
   }
   await expect(box).toHaveCount(0);
   await expect(card.getByTestId('scenario-acknowledged')).toHaveText(labels.scenarios.pageV3.acknowledged);

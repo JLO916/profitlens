@@ -76,11 +76,11 @@ export interface ManagerSummary {
   targets: { metric: TargetMetric; text: string; status: "matched" | "mismatch" }[];
 }
 
-/** 口徑說明（R2）：摘要的固定口徑直接沿用 labels.basis.items，與口徑說明對話框同一來源。 */
-const LIMITATIONS: string[] = [...labels.basis.items];
-const copy = labels.ui.managerSummary;
+/** 口徑說明（R2）：摘要的固定口徑直接沿用 labels.glossary.basis.items，與口徑說明對話框同一來源。 */
+const LIMITATIONS: string[] = [...labels.glossary.basis.items];
+const copy = labels.meeting.managerSummary;
 /** 會議決議狀態的顯示文字；未知的原始值原樣顯示。 */
-const decisionLabel = (state: string | undefined): string => (labels.meeting.decisions as Record<string, string>)[state ?? "draft"] ?? state ?? labels.meeting.decisions.draft;
+const decisionLabel = (state: string | undefined): string => (labels.meeting.form.decisions as Record<string, string>)[state ?? "draft"] ?? state ?? labels.meeting.form.decisions.draft;
 export function summaryScopeLabel(scope: Scope, alias = false): string {
   return scopeLabel(scope, alias);
 }
@@ -90,7 +90,7 @@ function metricComparison(snapshot: WorkspaceSnapshot, name: SummaryMetric["metr
   const previous = channel ? report.previous.channels[channel] : report.previous;
   const current = channel ? report.current.channels[channel] : report.current;
   const channels = channel ? [channel] : report.scope.channels;
-  const scope = channel ? channelLabel(channel, alias) : `${labels.sections.total}（${channelsLabel(channels, alias)}）`;
+  const scope = channel ? channelLabel(channel, alias) : `${labels.overview.sections.total}（${channelsLabel(channels, alias)}）`;
   const metric = metricDefinitions[name].label;
   const comparison = compareMoney(previous.metrics[name], current.metrics[name]);
   return {
@@ -100,7 +100,7 @@ function metricComparison(snapshot: WorkspaceSnapshot, name: SummaryMetric["metr
       current: { title: fill(copy.evidenceCurrent, { scope, metric }), name, metric: current.metrics[name], period: report.current.period, channels, sources: current.sources },
       change: { title: fill(copy.evidenceChange, { scope, metric }), name, metric: comparison.absolute_change,
         period: { start: report.previous.period.start, end: report.current.period.end }, channels, sources: uniqueSources([...previous.sources, ...current.sources]),
-        formula: fill(copy.changeFormula, { metric }), components: [{ label: labels.periods.previous, metric: previous.metrics[name] }, { label: labels.periods.current, metric: current.metrics[name] }],
+        formula: fill(copy.changeFormula, { metric }), components: [{ label: labels.shell.periods.previous, metric: previous.metrics[name] }, { label: labels.shell.periods.current, metric: current.metrics[name] }],
       },
     },
   };
@@ -128,7 +128,7 @@ export function priorityEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, di
     channels: diagnostic.scope.channels, scopeLabel, sources: uniqueSources(metricFacts.flatMap(fact => fact.sources)),
     ...(isCurrent ? {} : {
       formula: fill(copy.changeFormula, { metric: metricDefinitions[name].label }),
-      components: metricFacts.map(fact => ({ label: fact.period.start === report.previous.period.start ? labels.periods.previous : labels.periods.current, metric: fact })),
+      components: metricFacts.map(fact => ({ label: fact.period.start === report.previous.period.start ? labels.shell.periods.previous : labels.shell.periods.current, metric: fact })),
     }),
   };
 }
@@ -181,7 +181,7 @@ export function summaryDecisionState(summary: ManagerSummary, context?: SummaryD
   return { scenarios, actions, selected: selectedScenarios[0] ?? null, selectedScenarios, mainActions, appendixActions };
 }
 
-const scenarioStatusLabel = (status: string) => (labels.ui.decisionExport.scenarioStatus as Record<string, string>)[status] ?? status;
+const scenarioStatusLabel = (status: string) => (labels.exports.decision.scenarioStatus as Record<string, string>)[status] ?? status;
 export const UNPINNED_ACTIONS_NOTICE: string = copy.unpinnedNotice;
 
 /** Neutralize user-controlled Markdown/HTML, including links and embedded line breaks. */
@@ -193,8 +193,8 @@ const md = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<
  */
 const amount = (metric: Metric, signed = false, layer: Layer = "L2"): string => metric.value === null ? fill(copy.missingWithReasons, { reasons: metric.reason_codes.join("、") }) : signed ? formatSignedDelta(metric.value, layer) : formatAmount(metric.value, layer);
 const plainAmount = (value: string | null | undefined, signed = false, layer: Layer = "L2"): string => signed ? formatSignedDelta(value, layer) : formatAmount(value, layer);
-const moneyColumn = (label: string): string => fill(labels.ui.export.moneyColumn, { label });
-const actionStatusLabel = (status: SummaryAction["status"]): string => status === "current" ? copy.actionStatus.current : status === "stale" ? labels.actions.staleBadge : copy.actionStatus.draft;
+const moneyColumn = (label: string): string => fill(labels.exports.common.moneyColumn, { label });
+const actionStatusLabel = (status: SummaryAction["status"]): string => status === "current" ? copy.actionStatus.current : status === "stale" ? labels.actions.form.staleBadge : copy.actionStatus.draft;
 /** 待辦列：沒有進度時省略模板尾段（「{stop}」之後的進度欄）。 */
 const actionRow = (action: SummaryAction, status: string): string => {
   const template = action.executionStatus ? copy.mdActionRow : copy.mdActionRowNoProgress;
@@ -218,14 +218,14 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   const contributionShort = metricDefinitions.contribution_after_marketing.shortLabel;
   // V3-7 §7.9：「# 標題」之後緊接版頭四行，其後的資料範圍、期間、門檻與各段順序、數值都不變。
   const lines = [fill(copy.mdTitle, { brand: labels.brand.name, decision: md(decisionLabel(context?.decisionState)) }), "", ...markdownExportHeader(summaryExportHeader(summary, options)), "", fill(copy.mdMeta, { asOf: summary.data_as_of, channels: md(channelsLabel(summary.scope.channels, alias)) }),
-    fill(copy.mdPeriod, { period: labels.periods.previous, range: formatPeriodExport(summary.scope.previous_period.start, summary.scope.previous_period.end) }),
-    fill(copy.mdPeriod, { period: labels.periods.current, range: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end) }),
+    fill(copy.mdPeriod, { period: labels.shell.periods.previous, range: formatPeriodExport(summary.scope.previous_period.start, summary.scope.previous_period.end) }),
+    fill(copy.mdPeriod, { period: labels.shell.periods.current, range: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end) }),
     // 門檻是使用者設定的精確值，取到分（L3）。
-    fill(copy.mdComparison, { mode: summary.scope.comparison_mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays, threshold: formatAmount(summary.importance_threshold, "L3") }), "", copy.mdHeadlines, "", labels.ui.export.amountUnitNote, ""];
+    fill(copy.mdComparison, { mode: summary.scope.comparison_mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays, threshold: formatAmount(summary.importance_threshold, "L3") }), "", copy.mdHeadlines, "", labels.exports.common.amountUnitNote, ""];
   for (const row of summary.headlines) lines.push(fill(copy.mdHeadlineRow, { metric: metricDefinitions[row.metric].label, previous: amount(row.previous), current: amount(row.current), change: amount(row.change, true) }));
-  lines.push("", `| ${labels.csvColumns.channel} | ${moneyColumn(`${labels.periods.previous}${contributionShort}`)} | ${moneyColumn(`${labels.periods.current}${contributionShort}`)} | ${moneyColumn(labels.csvSuffix.change)} |`, "| --- | ---: | ---: | ---: |");
+  lines.push("", `| ${labels.exports.csv.columns.channel} | ${moneyColumn(`${labels.shell.periods.previous}${contributionShort}`)} | ${moneyColumn(`${labels.shell.periods.current}${contributionShort}`)} | ${moneyColumn(labels.exports.csv.suffix.change)} |`, "| --- | ---: | ---: | ---: |");
   for (const row of summary.channels) lines.push(`| ${md(channelLabel(row.channel, alias))} | ${amount(row.contribution.previous)} | ${amount(row.contribution.current)} | ${amount(row.contribution.change, true)} |`);
-  lines.push("", `## ${labels.sections.assistKpis}`, "", labels.assist.intro, "", `| ${labels.csvColumns.metric} | ${labels.periods.previous} | ${labels.periods.current} |`, "| --- | ---: | ---: |");
+  lines.push("", `## ${labels.overview.sections.assistKpis}`, "", labels.assist.intro, "", `| ${labels.exports.csv.columns.metric} | ${labels.shell.periods.previous} | ${labels.shell.periods.current} |`, "| --- | ---: | ---: |");
   for (const [index, kpi] of summary.assist.current.entries()) lines.push(`| ${md(kpi.label)} | ${md(summary.assist.previous[index].display)} | ${md(kpi.display)} |`);
   // V3-9a F12：損益兩平 MER 接在其他常用指標表的最後一列（版本 breakeven-mer-v1 寫在技術細節）；既有各列不變。
   if (summary.breakeven) lines.push(`| ${md(summary.breakeven.current.label)} | ${md(summary.breakeven.previous.display)} | ${md(summary.breakeven.current.display)} |`);
@@ -233,37 +233,37 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
     lines.push("", `## ${labels.targets.section}`, "");
     for (const row of summary.targets) lines.push(`- ${metricDefinitions[row.metric].label}：${md(row.text)}`);
   }
-  lines.push("", `## ${labels.sections.topThree}`, "");
-  if (!summary.priorities.length) lines.push(labels.notes.noPriorities);
+  lines.push("", `## ${labels.overview.sections.topThree}`, "");
+  if (!summary.priorities.length) lines.push(labels.overview.notes.noPriorities);
   for (const [index, item] of summary.priorities.entries()) {
-    lines.push(fill(copy.mdPriorityRow, { n: index + 1, headline: md(item.title), scope: md(summaryScopeLabel(item.primary.scope, alias)), amount: amount(item.impact ?? item.ranking_amount, true) }), `   ${labels.sections.nextStep}：${md(item.recommendation)}`);
-    if (item.members.length > 1) lines.push(fill(copy.mdRelatedScopes, { scopes: item.members.slice(1, 4).map(member => md(summaryScopeLabel(member.scope, alias))).join("、"), more: item.members.length > 4 ? `等（${labels.sections.technicalDetails}）` : "" }));
+    lines.push(fill(copy.mdPriorityRow, { n: index + 1, headline: md(item.title), scope: md(summaryScopeLabel(item.primary.scope, alias)), amount: amount(item.impact ?? item.ranking_amount, true) }), `   ${labels.diagnosis.sections.nextStep}：${md(item.recommendation)}`);
+    if (item.members.length > 1) lines.push(fill(copy.mdRelatedScopes, { scopes: item.members.slice(1, 4).map(member => md(summaryScopeLabel(member.scope, alias))).join("、"), more: item.members.length > 4 ? `等（${labels.evidence.sections.technicalDetails}）` : "" }));
   }
   lines.push("", copy.mdDecisions, "");
   if (decisions.selectedScenarios.length) {
     for (const plan of decisions.selectedScenarios) {
-    lines.push(fill(copy.mdSelectedScenario, { name: md(plan.name), scope: md(plan.scopeLabel), baseline: plan.baseline !== undefined ? plan.baseline === null ? labels.status.missing : plainAmount(plan.baseline) : labels.status.notApplicable, contribution: plainAmount(plan.contribution), delta: plainAmount(plan.delta, true) }), ...plan.assumptions.map(item => fill(copy.assumptionPrefix, { text: md(item) })));
+    lines.push(fill(copy.mdSelectedScenario, { name: md(plan.name), scope: md(plan.scopeLabel), baseline: plan.baseline !== undefined ? plan.baseline === null ? labels.shell.status.missing : plainAmount(plan.baseline) : labels.shell.status.notApplicable, contribution: plainAmount(plan.contribution), delta: plainAmount(plan.delta, true) }), ...plan.assumptions.map(item => fill(copy.assumptionPrefix, { text: md(item) })));
     }
     lines.push(copy.scenarioCaution);
   } else lines.push(copy.noSelectedScenario);
   if (!decisions.mainActions.length) lines.push(decisions.appendixActions.length ? UNPINNED_ACTIONS_NOTICE : copy.noActions);
   for (const action of decisions.mainActions) lines.push(actionRow(action, actionStatusLabel(action.status)));
-  if (context?.reviewName) lines.push("", fill(copy.mdMeeting, { name: md(context.reviewName), decision: md(decisionLabel(context.decisionState)) }), `${labels.meeting.notes}：${md(context.notes ?? "")}`);
-  lines.push("", `## ${labels.basis.title}`, "", ...summary.assumptions.map(item => `- ${md(item)}`), "", "---", "", `## ${labels.sections.technicalDetails}`, "",
+  if (context?.reviewName) lines.push("", fill(copy.mdMeeting, { name: md(context.reviewName), decision: md(decisionLabel(context.decisionState)) }), `${labels.meeting.form.notes}：${md(context.notes ?? "")}`);
+  lines.push("", `## ${labels.glossary.basis.title}`, "", ...summary.assumptions.map(item => `- ${md(item)}`), "", "---", "", `## ${labels.evidence.sections.technicalDetails}`, "",
     `- dataset_id：${md(summary.dataset_id)}`, `- dataset_hash：${summary.dataset_hash}`, `- filter_hash：${summary.filter_hash}`, `- metric_version：${summary.metric_version}`, `- ${labels.assist.technicalVersion}：${summary.assist.version}`,
     ...(summary.breakeven ? [`- ${labels.assist.breakevenV3.technicalVersion}：${summary.breakeven.version}`] : []),
-    labels.diagnosisList.techPriorityNote, copy.techFactsNote, "");
+    labels.diagnosis.list.techPriorityNote, copy.techFactsNote, "");
   if (decisions.appendixActions.length) lines.push(copy.otherActions, ...decisions.appendixActions.map(action => actionRow(action, actionStatusLabel(action.status))), "");
   for (const group of summary.groups) {
-    lines.push(`### ${group.code}`, fill(copy.techThresholdAmount, { amount: group.importance_amount === null ? labels.status.missing : plainAmount(group.importance_amount, false, "L3") }));
-    for (const member of group.members) lines.push(`- ${md(summaryScopeLabel(member.scope, alias))}：${member.ranking_amount ? amount(member.ranking_amount, false, "L3") : labels.status.missing}；${md(JSON.stringify(member.fact_ids))}`);
+    lines.push(`### ${group.code}`, fill(copy.techThresholdAmount, { amount: group.importance_amount === null ? labels.shell.status.missing : plainAmount(group.importance_amount, false, "L3") }));
+    for (const member of group.members) lines.push(`- ${md(summaryScopeLabel(member.scope, alias))}：${member.ranking_amount ? amount(member.ranking_amount, false, "L3") : labels.shell.status.missing}；${md(JSON.stringify(member.fact_ids))}`);
   }
   const ids = new Set([
     ...summary.groups.flatMap(group => group.fact_ids),
     ...summary.facts.filter(fact => fact.scope.kind !== "sku" && (fact.metric === "net_revenue" || fact.metric === "contribution_after_marketing")).map(fact => fact.id),
   ]);
-  for (const fact of summary.facts.filter(fact => ids.has(fact.id))) lines.push("", `- fact_id：${md(fact.id)}`, `- ${md(metricDefinitions[fact.metric].label)}：${fact.value === null ? labels.status.missing : formatMetric(fact.metric, fact, "L3")}；${md(JSON.stringify({ metric: fact.metric, reason_codes: fact.reason_codes, period: fact.period, scope: fact.scope, sources: fact.sources }))}`);
-  if (decisions.scenarios.length) lines.push("", copy.techScenarioStatus, ...decisions.scenarios.flatMap(plan => [`- ${md(plan.name)}：${scenarioStatusLabel(plan.status)}；${md(plan.scopeLabel)}；${labels.sections.scenarioBaseline} ${plainAmount(plan.baseline, false, "L3")}；${labels.scenario.resultTitle} ${plainAmount(plan.contribution, false, "L3")}；${labels.csvSuffix.change} ${plainAmount(plan.delta, true, "L3")}。`, ...plan.assumptions.map(value => `  ${fill(copy.assumptionPrefix, { text: md(value) })}`), ...(plan.binding ? [`  - 原方案來源：${md(JSON.stringify(plan.binding))}`] : [])]));
+  for (const fact of summary.facts.filter(fact => ids.has(fact.id))) lines.push("", `- fact_id：${md(fact.id)}`, `- ${md(metricDefinitions[fact.metric].label)}：${fact.value === null ? labels.shell.status.missing : formatMetric(fact.metric, fact, "L3")}；${md(JSON.stringify({ metric: fact.metric, reason_codes: fact.reason_codes, period: fact.period, scope: fact.scope, sources: fact.sources }))}`);
+  if (decisions.scenarios.length) lines.push("", copy.techScenarioStatus, ...decisions.scenarios.flatMap(plan => [`- ${md(plan.name)}：${scenarioStatusLabel(plan.status)}；${md(plan.scopeLabel)}；${labels.scenarios.sections.scenarioBaseline} ${plainAmount(plan.baseline, false, "L3")}；${labels.scenarios.inputs.resultTitle} ${plainAmount(plan.contribution, false, "L3")}；${labels.exports.csv.suffix.change} ${plainAmount(plan.delta, true, "L3")}。`, ...plan.assumptions.map(value => `  ${fill(copy.assumptionPrefix, { text: md(value) })}`), ...(plan.binding ? [`  - 原方案來源：${md(JSON.stringify(plan.binding))}`] : [])]));
   return `${lines.join("\n")}\n`;
 }
 
@@ -274,6 +274,6 @@ export function exportChannelComparisonCsv(summary: ManagerSummary): string {
   return encodeCsv([headers.map(header => text(csvHeader(header))), ...summary.channels.map(row => {
     const metrics = [row.revenue.previous, row.revenue.current, row.revenue.change, row.contribution.previous, row.contribution.current, row.contribution.change];
     const missing = metrics.filter(metric => metric.value === null);
-    return [text(row.channel), ...metrics.map(metric => number(metric.value)), text(summary.data_as_of), text(summary.scope.previous_period.start), text(summary.scope.previous_period.end), text(summary.scope.current_period.start), text(summary.scope.current_period.end), number(String(summary.previous_days)), number(String(summary.current_days)), text(summary.scope.comparison_mode), text(missing.length ? labels.status.partial : fill(labels.status.ready, { date: summary.data_as_of })), text([...new Set(missing.flatMap(metric => metric.reason_codes))].join("；")), text(summary.conversion_note ? `${labels.basis.footer} ${summary.conversion_note}` : labels.basis.footer), text(summary.metric_version), text(summary.dataset_hash), text(summary.filter_hash)];
+    return [text(row.channel), ...metrics.map(metric => number(metric.value)), text(summary.data_as_of), text(summary.scope.previous_period.start), text(summary.scope.previous_period.end), text(summary.scope.current_period.start), text(summary.scope.current_period.end), number(String(summary.previous_days)), number(String(summary.current_days)), text(summary.scope.comparison_mode), text(missing.length ? labels.shell.status.partial : fill(labels.shell.status.ready, { date: summary.data_as_of })), text([...new Set(missing.flatMap(metric => metric.reason_codes))].join("；")), text(summary.conversion_note ? `${labels.glossary.basis.footer} ${summary.conversion_note}` : labels.glossary.basis.footer), text(summary.metric_version), text(summary.dataset_hash), text(summary.filter_hash)];
   })]);
 }

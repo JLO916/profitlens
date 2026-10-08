@@ -11,21 +11,21 @@ import { test, expect, type Page } from "@playwright/test";
 const alternative = resolve("tests/fixtures/alternative");
 const golden = resolve("fixtures/golden");
 const wizardCopy = labels.importWizard;
-const scenarioCopy = labels.ui.decisionWorkbench;
-const actionCopy = labels.ui.actionsWorkbench;
+const scenarioCopy = labels.scenarios.decision;
+const actionCopy = labels.actions.workbench;
 const status = (page: Page) => page.getByTestId("workspace-status");
 const kpi = (page: Page, metric: string) => page.getByTestId(`kpi-${metric}`).locator(".kpi-value");
 // V3-2b（PRD §8.5）：KPI 卡與試算結果是 L1；手算精確值交給格式化函式轉成畫面文字。
-const inputLabels = [labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label, labels.scenario.adSpend.label, labels.scenario.oneOff.label];
+const inputLabels = [labels.scenarios.inputs.volume.label, labels.scenarios.inputs.discount.label, labels.scenarios.inputs.fulfillmentUnit.label, labels.scenarios.inputs.adSpend.label, labels.scenarios.inputs.oneOff.label];
 /** V3-2a：「資料到 {date}」由套用資料集的 data_as_of 填入。 */
-const ready = (dataAsOf: string) => fill(labels.status.ready, { date: dataAsOf });
+const ready = (dataAsOf: string) => fill(labels.shell.status.ready, { date: dataAsOf });
 /** V3-3：通路下拉在期間列裡；手機期間列收成 period-toggle，要先開底部面板、選完按「完成」收起（桌機兩步都不動）。 */
 async function selectChannel(page: Page, channel: string) {
   await openPeriodSheet(page);
-  await page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true }).selectOption(channel);
+  await page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true }).selectOption(channel);
   await closePeriodSheet(page);
 }
-/** V3-6：決策下載的三顆按鈕（名稱 labels.downloads.decision*）搬進待辦頁／假設試算頁頁首的「匯出本頁」選單（export-page-actions／export-page-scenarios）。 */
+/** V3-6：決策下載的三顆按鈕（名稱 labels.exports.downloads.decision*）搬進待辦頁／假設試算頁頁首的「匯出本頁」選單（export-page-actions／export-page-scenarios）。 */
 const decisionFormats = { JSON: "json", CSV: "csv", Markdown: "md" } as const;
 
 interface DecisionDocument {
@@ -98,7 +98,7 @@ async function scenario(page: Page, name: string, fulfillment: string, investmen
   for (const [index, value] of ["0", "0", fulfillment, "0", investment].entries()) await card.getByLabel(inputLabels[index], { exact: true }).fill(value);
   // V3-6（D-V3-12＝B）：本流程每個工作區只試算一次，這裡一定是第一次勾聲明；勾下去就記住、checkbox 換成「已了解」。
   await acceptAssumptions(card, "first");
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(expected));
 }
 async function download(page: Page, format: "JSON" | "CSV" | "Markdown") {
@@ -182,18 +182,18 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   await navigateTo(page, "actions");
   // R5: the actions page opens on the board; the full edit form is filled in the list view.
   await switchActionsView(page, "list");
-  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+  await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
   const action = page.getByTestId("action-1");
-  const fields = { [labels.actions.problem]: "營收上升但行銷後貢獻下降，需核對成本", [labels.actions.step]: "核對履約計價條款並設計有限範圍測試", [labels.actions.owner]: "營運主管", [labels.actions.metric]: "同範圍履約費用與行銷後貢獻", [labels.actions.due]: "2026-10-15", [labels.actions.stop]: "若服務品質下降即停止測試", [labels.actions.extraData]: "物流實際報價與服務品質資料" };
+  const fields = { [labels.actions.form.problem]: "營收上升但行銷後貢獻下降，需核對成本", [labels.actions.form.step]: "核對履約計價條款並設計有限範圍測試", [labels.actions.form.owner]: "營運主管", [labels.actions.form.metric]: "同範圍履約費用與行銷後貢獻", [labels.actions.form.due]: "2026-10-15", [labels.actions.form.stop]: "若服務品質下降即停止測試", [labels.actions.form.extraData]: "物流實際報價與服務品質資料" };
   for (const [label, value] of Object.entries(fields)) await action.getByLabel(label, { exact: true }).fill(value);
   // R5: evidence is a checkbox list; each checkbox is named by its fact label and carries the fact id as value.
-  const evidence = action.getByTestId("evidence-checklist").getByRole("checkbox", { name: fill(actionCopy.factLabel, { start: "2026-09-03", end: "2026-09-04", metric: labels.metrics.contribution_after_marketing.label, scope: "DTC", scopeKind: labels.csvColumns.channel, value: formatMetric("contribution_after_marketing", { value: "40.00" }, "L1") }), exact: true });
+  const evidence = action.getByTestId("evidence-checklist").getByRole("checkbox", { name: fill(actionCopy.factLabel, { start: "2026-09-03", end: "2026-09-04", metric: labels.metrics.contribution_after_marketing.headline, scope: "DTC", scopeKind: labels.exports.csv.columns.channel, value: formatMetric("contribution_after_marketing", { value: "40.00" }, "L1") }), exact: true });
   await expect(evidence).toHaveCount(1);
   const factId = await evidence.getAttribute("value");
   expect(factId).toBeTruthy();
   await evidence.check();
   await expect(action.getByTestId("evidence-checklist").locator("input[type=checkbox]:checked")).toHaveCount(1);
-  await action.getByRole("button", { name: labels.buttons.confirm, exact: true }).click();
+  await action.getByRole("button", { name: labels.shell.buttons.confirm, exact: true }).click();
   await expect(action).toContainText(actionCopy.tagConfirmed);
 
   const document = await decision(page);
@@ -224,7 +224,7 @@ test("M6 alternative 真匯入、診斷、44.00 條件試算、行動及三格�
   const markdown = await download(page, "Markdown");
   // Markdown escapes punctuation; decode only for test assertions, never render input HTML.
   const readableMarkdown = markdown.replace(/\\([\\`*_{}[\]()#+.!|~:\-])/g, "$1");
-  for (const value of [document.session.dataset_hash, document.session.filter_hash, "contribution-v1", "2026-09-05", "2026-09-03", "2026-09-04", "DTC", "44.00", "4.00", labels.sections.scenarioAssumptions, `${labels.scenario.fulfillmentUnit.label}：-50`, `${labels.scenario.oneOff.label}：3`, fields[labels.actions.problem]]) expect(readableMarkdown).toContain(value);
+  for (const value of [document.session.dataset_hash, document.session.filter_hash, "contribution-v1", "2026-09-05", "2026-09-03", "2026-09-04", "DTC", "44.00", "4.00", labels.scenarios.sections.scenarioAssumptions, `${labels.scenarios.inputs.fulfillmentUnit.label}：-50`, `${labels.scenarios.inputs.oneOff.label}：3`, fields[labels.actions.form.problem]]) expect(readableMarkdown).toContain(value);
   await expect(page.locator("img[src='x']")).toHaveCount(0);
   expect(errors).toEqual([]);
   await mkdir(resolve("verification"), { recursive: true });
@@ -247,7 +247,7 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
   try {
     const other = await otherContext.newPage();
     await other.goto(page.url());
-    await expect(status(other)).toContainText(labels.status.empty);
+    await expect(status(other)).toContainText(labels.shell.status.empty);
     await expect(other.getByTestId("decision-workbench")).toHaveCount(0);
     await importDataset(other, golden);
     await selectChannel(other, "DTC");
@@ -261,14 +261,14 @@ test("M6 獨立 browser context 各自匯入與操作，清空或重新整理不
     expect(await decision(page)).toEqual(first);
     // V3-3：v2 頂欄的「清空」搬進儲存選單的「危險區」；有未保存的試算，一定會出現取代確認對話框。
     const replaceDialog = await clearWorkspace(other);
-    await replaceDialog.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
-    await expect(status(other)).toContainText(labels.status.empty);
+    await replaceDialog.getByRole("button", { name: labels.storage.replacement.discardAndContinue, exact: true }).click();
+    await expect(status(other)).toContainText(labels.shell.status.empty);
     expect(await decision(page)).toEqual(first);
     await importDataset(other, golden);
     expectedBeforeUnload.add(page);
     await page.reload();
     expect(dialogEvents.get(page)).toEqual(["unsaved-changes-warning:beforeunload"]);
-    await expect(status(page)).toContainText(labels.status.empty);
+    await expect(status(page)).toContainText(labels.shell.status.empty);
     await expect(page.getByTestId("decision-workbench")).toHaveCount(0);
     await expect(kpi(other, "contribution_after_marketing")).toHaveText(formatAmountL1("255.00"));
     expect(await otherContext.storageState()).toEqual({ cookies: [], origins: [] });
@@ -306,7 +306,7 @@ test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留�
   const salesSlot = page.getByTestId("import-file-sales_daily.csv");
   await expect(salesSlot).toContainText("m6-malformed.csv");
   // V3-2a：{file} 由 application 帶入標準檔名（SourceRef.file），不是上傳的檔名。
-  await expect(salesSlot.getByRole("alert")).toContainText(fill(labels.importErrors.MALFORMED_CSV, { file: "sales_daily.csv", line: 2 }));
+  await expect(salesSlot.getByRole("alert")).toContainText(fill(labels.errors.import.MALFORMED_CSV, { file: "sales_daily.csv", line: 2 }));
   await expect(salesSlot.getByRole("alert").locator("code")).toHaveText("MALFORMED_CSV");
   await expect(wizard(page).getByRole("button", { name: wizardCopy.next, exact: true })).toBeDisabled();
   await expect(wizard(page).getByRole("button", { name: wizardCopy.confirmAndCheck, exact: true })).toHaveCount(0);
@@ -320,7 +320,7 @@ test("M6 檢核後改設定與換錯檔均撤銷可提交候選，取消保留�
   expect(await decision(page)).toEqual(before);
   await importDataset(page, alternative);
   await navigateTo(page, "scenarios");
-  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(labels.ui.multiScenarioWorkbench.historyHeading);
+  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(labels.scenarios.workbench.historyHeading);
   const exported = await decision(page);
   const historical = exported.scenario_contexts.find(context => context.context_status === "historical")!;
   expect(historical.status).toBe("stale");

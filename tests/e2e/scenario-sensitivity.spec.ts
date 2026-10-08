@@ -7,18 +7,18 @@ import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
-const validation = labels.ui.dashboard.validation;
-const copy = labels.ui.scenarioSensitivity;
-const channelField = labels.ui.dashboard.filter.channel;
+const validation = labels.shell.devValidation.validation;
+const copy = labels.scenarios.sensitivity;
+const channelField = labels.shell.periodBar.filter.channel;
 /** R2 renamed the per-letter sensitivity inputs/rows; A／B／C are plain labels, built from the same templates the component uses. */
 const letter = (index: number) => String.fromCharCode(65 + index);
 const sensitivityInput = (index: number) => fill(copy.inputLabel, { letter: letter(index) });
 const sensitivityRow = (index: number) => new RegExp(fill(copy.rowLabel, { letter: letter(index) }));
 /** Main-layer caution is a single sentence (03_GLOSSARY_COPY §8); the rest moved into 技術細節. V3-6（PRD §7.4、§6.3 #38）：p.scenario-caution，13px 次要色，不加「注意：」前綴。 */
-const mainCaution = labels.basis.items[6];
-const dw = labels.ui.decisionWorkbench;
+const mainCaution = labels.glossary.basis.items[6];
+const dw = labels.scenarios.decision;
 /** V3-2a：狀態列「資料到 {date}」，日期取 golden manifest 的 data_as_of（不在測試內另寫日期）。 */
-const goldenReady = fill(labels.status.ready, { date: (JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")) as { data_as_of: string }).data_as_of });
+const goldenReady = fill(labels.shell.status.ready, { date: (JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")) as { data_as_of: string }).data_as_of });
 const inputValues = ["-3", "-2.5", "0"] as const;
 /**
  * V3-2b：三個假設的比較表是 L2（銷量增減一位小數帶號、試算結果整數元、與現況相比帶號整數元，表頭「（元）」）；
@@ -85,22 +85,22 @@ async function openPlan(page: Page, investment = "0", { refuseFirst = false }: {
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   const card = page.getByTestId("scenario-1");
-  await expect(card.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await expect(card.getByTestId("scenario-draft")).toHaveText(labels.scenarios.inputs.draft);
   await card.getByLabel(dw.planName, { exact: true }).fill("履約改善條件檢核");
   for (const [label, value] of Object.entries({
-    [labels.scenario.volume.label]: "0", [labels.scenario.discount.label]: "0", [labels.scenario.fulfillmentUnit.label]: "-10",
-    [labels.scenario.adSpend.label]: "0", [labels.scenario.oneOff.label]: investment,
+    [labels.scenarios.inputs.volume.label]: "0", [labels.scenarios.inputs.discount.label]: "0", [labels.scenarios.inputs.fulfillmentUnit.label]: "-10",
+    [labels.scenarios.inputs.adSpend.label]: "0", [labels.scenarios.inputs.oneOff.label]: investment,
   })) await card.getByLabel(label, { exact: true }).fill(value);
   await expect(card.getByTestId("scenario-sensitivity")).toHaveCount(0);
   if (refuseFirst) {
     await expectConsentPending(card);
-    await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+    await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
     await expect(card.getByTestId("scenario-result")).toContainText(dw.planUnavailable);
     await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
     await expect(card.getByTestId("scenario-sensitivity")).toHaveCount(0);
   }
   await acceptAssumptions(card);
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   // V3-2b：試算結果大字是 L1（formatAmountL1）。
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(investment === "0" ? "284.00" : "264.00"));
   const sensitivity = card.getByTestId("scenario-sensitivity");
@@ -130,7 +130,7 @@ test("PL-08 分開零貢獻與維持 baseline 目標，三組 v 明填後獨立�
   await sensitivity.getByRole("button", { name: copy.recalc, exact: true }).click();
   for (const [index, row] of golden.base.entries()) await expectSensitivityRow(sensitivity, index, row);
   // 「不可相加」改由口徑說明第 7 條（主層注意句）承載。
-  await expect(sensitivity).toContainText(labels.basis.items[6]);
+  await expect(sensitivity).toContainText(labels.glossary.basis.items[6]);
   const region = sensitivity.getByRole("region", { name: copy.tableAria });
   await region.focus(); await expect(region).toBeFocused();
   await expect(page.locator("body")).toHaveJSProperty("scrollWidth", await page.locator("body").evaluate(element => element.clientWidth));
@@ -169,15 +169,15 @@ test("PL-08 換通路後不顯示可用的舊門檻，未填銷量或未同意�
   const { card, sensitivity } = await openPlan(page, "0", { refuseFirst: true });
   // R5-4：三格受控並跟著方案保存。
   await fillSensitivity(sensitivity, inputValues);
-  await card.getByLabel(labels.scenario.volume.label, { exact: true }).fill("");
+  await card.getByLabel(labels.scenarios.inputs.volume.label, { exact: true }).fill("");
   await expect(sensitivity).toHaveCount(0);
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(sensitivity).toHaveCount(0);
-  await card.getByLabel(labels.scenario.volume.label, { exact: true }).fill("0");
+  await card.getByLabel(labels.scenarios.inputs.volume.label, { exact: true }).fill("0");
   // D-V3-12＝B：聲明已記住，卡上只有「已了解」一行、沒有可取消的勾選框（未同意的情況在 openPlan 第一次勾選前已測）。
   await expectAcknowledged(card);
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
   // 重算後預填：三格帶回保存的值，三格都有值時直接顯示結果。
   await openSensitivity(sensitivity);

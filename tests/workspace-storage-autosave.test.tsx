@@ -99,7 +99,7 @@ const button = (tree: ReactNode, text: string) => {
 const click = (element: TreeElement) => (element.props.onClick as () => void)();
 const summaryTag = (tree: ReactNode) => textOf(findAll(tree, element => element.type === "summary")[0].props.children as ReactNode);
 
-const auto = labels.autoSave;
+const auto = labels.storage.autoSave;
 const AT = new Date("2026-10-03T06:32:00.000Z");
 const source = (tag: string) => ({ tag }) as unknown as WorkspaceBackupSource;
 
@@ -146,13 +146,13 @@ describe("R6-6 首次同意對話框（D7＝A：問一次，同意後自動保�
     expect(textOf(heading.props.children as ReactNode)).toBe(auto.promptTitle);
     const body = findAll(prompt, element => element.props.id === prompt.props["aria-describedby"])[0];
     expect(textOf(body.props.children as ReactNode)).toBe(auto.promptBody);
-    expect(textOf(prompt)).toContain(labels.ui.workspaceStorage.caution);
+    expect(textOf(prompt)).toContain(labels.storage.workspace.caution);
     for (const text of [auto.accept, auto.decline]) expect(button(prompt, text).props.autoFocus).toBeUndefined();
     // 對話框在 <details> 之外：儲存選單收合時仍看得到。
     const details = findAll(tree, element => element.type === "details")[0];
     expect(findAll(details, element => element.props["data-testid"] === "local-save-prompt")).toEqual([]);
     // 共享電腦提醒「移到」對話框內：儲存選單內不再重複。
-    expect(textOf(details)).not.toContain(labels.ui.workspaceStorage.caution);
+    expect(textOf(details)).not.toContain(labels.storage.workspace.caution);
     // 對話框包在 portal 元件裡（渲染到 <body> 最後，Tab 順序在主內容之後）；沒有副本時 aria-describedby 只指向說明。
     const portal = findAll(tree, element => typeof element.type === "function" && findAll(element.props.children as ReactNode, child => child === prompt).length > 0);
     expect(portal).toHaveLength(1);
@@ -188,7 +188,7 @@ describe("R6-6 首次同意對話框（D7＝A：問一次，同意後自動保�
     tree = view.render();
     expect(store.save).not.toHaveBeenCalled();
     expect(byTestId(tree, "local-save-prompt")).toBeUndefined();
-    expect(summaryTag(tree)).toContain(labels.status.unsaved);
+    expect(summaryTag(tree)).toContain(labels.shell.status.unsaved);
     expect(textOf(byTestId(tree, "autosave-status"))).toBe(auto.statusOff);
   });
 
@@ -236,7 +236,7 @@ describe("R6-6 首次同意對話框（D7＝A：問一次，同意後自動保�
     expect(view.onSaved).toHaveBeenCalledWith(1);
     const tree = view.render();
     expect(byTestId(tree, "local-save-prompt")).toBeUndefined();
-    expect(summaryTag(tree)).toContain(fill(labels.status.savedAt, { time: "14:32" }));
+    expect(summaryTag(tree)).toContain(fill(labels.shell.status.savedAt, { time: "14:32" }));
     expect(textOf(byTestId(tree, "autosave-status"))).toBe(`${auto.statusOn} · ${fill(auto.lastSaved, { time: "14:32" })}`);
     // 立即保存後不會在 2 秒後再存同一版。
     await vi.advanceTimersByTimeAsync(10_000);
@@ -295,8 +295,8 @@ describe("R6-6 自動保存（同意後每次變更 2 秒內）", () => {
     expect(store.save.mock.calls).toEqual([["backup:v3"]]);
     expect(view.onSaved).toHaveBeenCalledWith(3);
     tree = view.render();
-    expect(summaryTag(tree)).toContain(fill(labels.status.savedAt, { time: "14:32" }));
-    expect(summaryTag(tree)).not.toContain(labels.status.unsaved);
+    expect(summaryTag(tree)).toContain(fill(labels.shell.status.savedAt, { time: "14:32" }));
+    expect(summaryTag(tree)).not.toContain(labels.shell.status.unsaved);
   });
 
   it("每次自動保存都經過 exportWorkspaceBackup（重新序列化目前的工作區）", async () => {
@@ -315,7 +315,7 @@ describe("R6-6 自動保存（同意後每次變更 2 秒內）", () => {
     const tree = view.render();
     await vi.advanceTimersByTimeAsync(10_000);
     expect(store.save).not.toHaveBeenCalled();
-    expect(summaryTag(tree)).toContain(labels.status.savedVersion);
+    expect(summaryTag(tree)).toContain(labels.shell.status.savedVersion);
   });
 
   it("失敗：role=alert 顯示說明、不重試；下次變更再試，成功後警示消失", async () => {
@@ -328,7 +328,7 @@ describe("R6-6 自動保存（同意後每次變更 2 秒內）", () => {
     expect(alert).toBeDefined();
     const message = findAll(alert, element => element.props.role === "alert")[0];
     expect(textOf(message)).toBe(auto.failed);
-    expect(summaryTag(tree)).toContain(labels.status.unsaved);
+    expect(summaryTag(tree)).toContain(labels.shell.status.unsaved);
     await vi.advanceTimersByTimeAsync(60_000);
     expect(store.save).toHaveBeenCalledTimes(1);
     view.change();
@@ -390,7 +390,7 @@ describe("R6-6 自動保存（同意後每次變更 2 秒內）", () => {
     await vi.advanceTimersByTimeAsync(2000);
     expect(store.save).toHaveBeenCalledTimes(1);
     view.change();
-    click(button(view.render(), labels.buttons.deleteLocal));
+    click(button(view.render(), labels.storage.buttons.deleteLocal));
     expect(view.onConsentChange).toHaveBeenCalledWith(false);
     await settle();
     expect(store.remove).not.toHaveBeenCalled();
@@ -402,18 +402,18 @@ describe("R6-6 自動保存（同意後每次變更 2 秒內）", () => {
     await vi.advanceTimersByTimeAsync(10_000);
     expect(store.save).toHaveBeenCalledTimes(1);
     expect(byTestId(tree, "local-save-prompt")).toBeUndefined();
-    expect(textOf(byTestId(tree, "storage-notice"))).toBe(labels.ui.workspaceStorage.deletedNotice);
+    expect(textOf(byTestId(tree, "storage-notice"))).toBe(labels.storage.workspace.deletedNotice);
   });
 
   it("手動「存在這台電腦」仍可立即保存：顯示新的提示句並更新保存時間", async () => {
     const view = track(host({ consent: true }));
     const details = findAll(view.render(), element => element.type === "details")[0];
-    click(button(details, labels.buttons.saveLocal));
+    click(button(details, labels.storage.buttons.saveLocal));
     await settle();
     expect(store.save.mock.calls).toEqual([["backup:v1"]]);
     const tree = view.render();
     expect(textOf(byTestId(tree, "storage-notice"))).toBe(auto.savedLocalNotice);
-    expect(summaryTag(tree)).toContain(fill(labels.status.savedAt, { time: "14:32" }));
+    expect(summaryTag(tree)).toContain(fill(labels.shell.status.savedAt, { time: "14:32" }));
     await vi.advanceTimersByTimeAsync(10_000);
     expect(store.save).toHaveBeenCalledTimes(1);
   });
@@ -422,7 +422,7 @@ describe("R6-6 自動保存（同意後每次變更 2 秒內）", () => {
 const consentBox = (tree: ReactNode) => findAll(tree, element => element.type === "input" && element.props.type === "checkbox")[0];
 const toggle = (tree: ReactNode) => byTestId(tree, "autosave-toggle");
 const check = (element: TreeElement, checked: boolean) => (element.props.onChange as (event: unknown) => void)({ target: { checked } });
-const saveLocalButton = (tree: ReactNode) => button(findAll(tree, element => element.type === "details")[0], labels.buttons.saveLocal);
+const saveLocalButton = (tree: ReactNode) => button(findAll(tree, element => element.type === "details")[0], labels.storage.buttons.saveLocal);
 
 describe("R6 修正：本機保存同意與自動保存分開（不同意或關閉＝每次手動）", () => {
   it("未同意時沒有自動保存開關；同意後出現且預設開啟", () => {
@@ -444,7 +444,7 @@ describe("R6 修正：本機保存同意與自動保存分開（不同意或關�
     expect(textOf(byTestId(tree, "autosave-status"))).toBe(auto.statusOff);
     await vi.advanceTimersByTimeAsync(10_000);
     expect(store.save).not.toHaveBeenCalled();
-    expect(summaryTag(view.render())).toContain(labels.status.unsaved);
+    expect(summaryTag(view.render())).toContain(labels.shell.status.unsaved);
     const manual = saveLocalButton(view.render());
     expect(manual.props.disabled).toBe(false);
     click(manual);
@@ -627,7 +627,7 @@ describe("R6 修正：在儲存選單勾選同意時，這台電腦已有副本�
     store.existing.mockResolvedValue({ exists: true, savedAt: OLD });
     const view = track(host());
     await tickConsent(view);
-    click(button(view.render(), labels.buttons.deleteLocal));
+    click(button(view.render(), labels.storage.buttons.deleteLocal));
     await settle();
     const tree = view.render();
     expect(byTestId(tree, "autosave-replace-warning")).toBeUndefined();
@@ -643,15 +643,15 @@ describe("R6-6 SSR：既有 testid 與同意文案保留", () => {
   it("沒有資料：不出現對話框，保留 workspace-storage、同意勾選文字與自動保存狀態", () => {
     const html = renderToStaticMarkup(createElement(WorkspaceStorage, { ...base, source: null, dirty: false, consent: false }));
     expect(html).toContain('data-testid="workspace-storage"');
-    expect(html).toContain(labels.ui.workspaceStorage.consent);
+    expect(html).toContain(labels.storage.workspace.consent);
     expect(html).toContain(auto.consentNote);
     expect(html).toContain('data-testid="autosave-status"');
     expect(html).toContain(auto.statusOff);
-    expect(html).toContain(labels.status.noWorkspace);
+    expect(html).toContain(labels.shell.status.noWorkspace);
     expect(html).not.toContain("local-save-prompt");
     expect(html).not.toContain('role="alert"');
     // 共享電腦提醒只在首次提示內；未同意時沒有自動保存開關與覆寫確認。
-    expect(html).not.toContain(labels.ui.workspaceStorage.caution);
+    expect(html).not.toContain(labels.storage.workspace.caution);
     expect(html).not.toContain("autosave-toggle");
     expect(html).not.toContain("autosave-confirm-replace");
     // 宣告提示的 live region 一直存在（沒有提示時是空的）。
@@ -663,7 +663,7 @@ describe("R6-6 SSR：既有 testid 與同意文案保留", () => {
     expect(html).not.toContain('data-testid="local-save-prompt"');
     expect(html).not.toContain('role="dialog"');
     expect(html).not.toMatch(/autofocus/i);
-    expect(html).toContain(labels.status.unsaved);
+    expect(html).toContain(labels.shell.status.unsaved);
   });
 
   it("已同意：不出現對話框，狀態顯示已開啟自動保存，並有預設開啟的自動保存開關", () => {

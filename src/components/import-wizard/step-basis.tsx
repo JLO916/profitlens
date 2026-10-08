@@ -11,12 +11,12 @@ import { fileLabels } from "./step-files";
 
 const copy = labels.importWizard;
 const v3 = copy.wizardV3;
-const panel = labels.ui.importPanel;
+const panel = labels.importWizard.panel;
 type DateKey = Exclude<keyof WizardSettings, "channels" | "sales_coverage_confirmed" | "comparison_mode" | "dataset_id">;
 const coverageFields: { key: DateKey; label: string }[] = [{ key: "coverage_start", label: copy.coverageStart }, { key: "coverage_end", label: copy.coverageEnd }];
 const periodFields: { key: DateKey; label: string }[] = [
-  { key: "previous_start", label: labels.csvColumns.previous_start }, { key: "previous_end", label: labels.csvColumns.previous_end },
-  { key: "current_start", label: labels.csvColumns.current_start }, { key: "current_end", label: labels.csvColumns.current_end },
+  { key: "previous_start", label: labels.exports.csv.columns.previous_start }, { key: "previous_end", label: labels.exports.csv.columns.previous_end },
+  { key: "current_start", label: labels.exports.csv.columns.current_start }, { key: "current_end", label: labels.exports.csv.columns.current_end },
 ];
 const basisOptions: { value: AmountBasisChoice; label: string; help: string }[] = [
   { value: "exclusive", label: copy.basis.exclusive, help: v3.basisHelp.exclusive },
@@ -79,10 +79,10 @@ export function StepBasis({ state, dispatch }: { state: WizardState; dispatch: (
         {coverageFields.map(dateField)}
       </div>
       <div className="wizard-group">
-        <p className="wizard-line">{periodsSet ? fill(v3.periodsSummary, { mode: settings.comparison_mode === "calendar_months" ? labels.periods.calendarMonths : labels.periods.sameDays, previous: formatPeriodL1(settings.previous_start, settings.previous_end, { anchor: settings.current_end }), current: formatPeriodL1(settings.current_start, settings.current_end, { anchor: settings.current_end }) }) : v3.periodsUnset}</p>
+        <p className="wizard-line">{periodsSet ? fill(v3.periodsSummary, { mode: settings.comparison_mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays, previous: formatPeriodL1(settings.previous_start, settings.previous_end, { anchor: settings.current_end }), current: formatPeriodL1(settings.current_start, settings.current_end, { anchor: settings.current_end }) }) : v3.periodsUnset}</p>
         <details className="wizard-details" open={periodsOpen || undefined}><summary>{v3.adjustPeriods}</summary>
           <div className="ui-form-grid">
-            <label className="ui-field"><span className="ui-field-label">{copy.comparisonMode}</span><select className="ui-field-control" aria-label={copy.comparisonMode} value={settings.comparison_mode} onChange={event => setting("comparison_mode", event.target.value)}><option value="same_days">{labels.periods.sameDays}</option><option value="calendar_months">{labels.periods.calendarMonths}</option></select></label>
+            <label className="ui-field"><span className="ui-field-label">{copy.comparisonMode}</span><select className="ui-field-control" aria-label={copy.comparisonMode} value={settings.comparison_mode} onChange={event => setting("comparison_mode", event.target.value)}><option value="same_days">{labels.shell.periods.sameDays}</option><option value="calendar_months">{labels.shell.periods.calendarMonths}</option></select></label>
             <div className="ui-field month-shortcut">{months ? <button type="button" className="ui-btn ui-btn-secondary" onClick={() => dispatch({ type: "monthShortcut" })}>{fill(copy.monthShortcut, { previous: months.previous.start.slice(0, 7), current: months.current.start.slice(0, 7) })}</button> : <p className="wizard-note">{copy.monthShortcutUnavailable}</p>}</div>
             {periodFields.map(dateField)}
           </div>

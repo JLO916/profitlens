@@ -11,8 +11,8 @@ import { channelsLabel, demoAlias } from "@/application/copy";
 import { fill, labels } from "@/i18n";
 import { ShellIcon } from "./shell/shell-icon";
 
-const copy = labels.ui.workspaceStorage;
-const auto = labels.autoSave;
+const copy = labels.storage.workspace;
+const auto = labels.storage.autoSave;
 const groupCopy = labels.shell.topbarV3.storageGroups;
 
 const subscribeNever = () => () => undefined;
@@ -209,7 +209,7 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   // R1-2: the whole panel lives in the top-bar「儲存」menu; R2: every visible string comes from labels. Testids are unchanged.
   const alias = candidate ? demoAlias(candidate.dataset.manifest.dataset_id) : false;
   // R6-6：已保存時顯示「已保存 hh:mm」（這一版由自動或手動存在這台電腦）；下載備份確認的版本沿用「此版本已保存」。
-  const savedTag = !source ? labels.status.noWorkspace : dirty ? labels.status.unsaved : lastSaved && lastSaved.version === version ? fill(labels.status.savedAt, { time: formatSavedTime(lastSaved.at) }) : labels.status.savedVersion;
+  const savedTag = !source ? labels.shell.status.noWorkspace : dirty ? labels.shell.status.unsaved : lastSaved && lastSaved.version === version ? fill(labels.shell.status.savedAt, { time: formatSavedTime(lastSaved.at) }) : labels.shell.status.savedVersion;
   const savedAtText = existing?.savedAt ? formatSavedDateTime(new Date(existing.savedAt)) : null;
   const promptWarning = existing?.exists ? savedAtText ? fill(auto.replaceWarning, { time: savedAtText }) : auto.replaceWarningUnknownTime : null;
   const replacePending = consent && autoSaveEnabled && gate === "confirm";
@@ -217,7 +217,7 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   const autoStatus = !consent || !autoSaveEnabled ? auto.statusOff : gate === "confirm" ? auto.statusPendingReplace : auto.statusOn;
   return <>
   <details className="topbar-menu storage-menu workspace-storage" data-testid="workspace-storage">
-    <summary ref={summaryRef} className="topbar-summary">{labels.buttons.save}<ShellIcon name="chevron" size={16} className="chevron" /><span className={`tag save-state ${source && dirty ? "unsaved" : ""}`}>{savedTag}</span></summary>
+    <summary ref={summaryRef} className="topbar-summary">{labels.shell.buttons.save}<ShellIcon name="chevron" size={16} className="chevron" /><span className={`tag save-state ${source && dirty ? "unsaved" : ""}`}>{savedTag}</span></summary>
     {/* V3-3（§6.3 #14）：依序分三段——本機保存／備份檔／危險區；控制、testid 與行為都和 v2 相同，只重排。 */}
     <div className="menu-panel ui-menu storage-panel">
     <p className="storage-intro">{copy.intro}</p>
@@ -233,14 +233,14 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
       </>}</div>
       <p className="note autosave-status" data-testid="autosave-status">{autoStatus}{consent && lastSaved && <span> · {fill(auto.lastSaved, { time: formatSavedTime(lastSaved.at) })}</span>}</p>
       <div className="button-row">
-        <button className="button primary" disabled={!source || !consent || busy} onClick={() => void save(true)}>{labels.buttons.saveLocal}</button>
-        <button className="button quiet" disabled={busy} onClick={() => void loadLocal()}>{labels.buttons.restorePreview}</button>
+        <button className="button primary" disabled={!source || !consent || busy} onClick={() => void save(true)}>{labels.storage.buttons.saveLocal}</button>
+        <button className="button quiet" disabled={busy} onClick={() => void loadLocal()}>{labels.storage.buttons.restorePreview}</button>
       </div>
     </section>
     <section className="storage-group" aria-labelledby={`${promptId}-backup`}>
       <h3 className="ui-menu-group" id={`${promptId}-backup`}>{groupCopy.backup}</h3>
       <div className="button-row">
-        <button className="button quiet" disabled={!source || busy} onClick={() => void save(false)}>{labels.buttons.downloadBackup}</button>
+        <button className="button quiet" disabled={!source || busy} onClick={() => void save(false)}>{labels.storage.buttons.downloadBackup}</button>
         <label className="backup-file-label">{copy.selectBackupFile}<input aria-label={copy.selectBackupFile} type="file" accept=".json,application/json" disabled={busy} onChange={event => void selectBackup(event)} /></label>
         {downloadVersion !== null && <button className="button quiet" onClick={() => { onSaved(downloadVersion); setDownloadVersion(null); setNotice(copy.downloadConfirmedNotice); }}>{copy.confirmDownloaded}</button>}
       </div>
@@ -250,9 +250,9 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
         <p>{fill(copy.restorePeriods, { prevStart: candidate.snapshot.report.previous.period.start, prevEnd: candidate.snapshot.report.previous.period.end, curStart: candidate.snapshot.report.current.period.start, curEnd: candidate.snapshot.report.current.period.end })}</p>
         <p>{fill(copy.restoreCounts, { plans: candidate.scenario_workspace.contexts.reduce((sum, context) => sum + context.plans.length, 0), actions: candidate.action_workspace.items.length })}</p>
         {dirty && <p className="alert partial">{copy.unsavedWarning}</p>}
-        <div className="button-row"><button className="button primary" onClick={() => { onRestore(candidate, () => { setConsent(false); openGate(); setCandidate(null); setDownloadVersion(null); setNotice(copy.restoredNotice); }); }}>{copy.applyRestore}</button><button className="button quiet" onClick={() => setCandidate(null)}>{labels.buttons.cancel}</button></div>
+        <div className="button-row"><button className="button primary" onClick={() => { onRestore(candidate, () => { setConsent(false); openGate(); setCandidate(null); setDownloadVersion(null); setNotice(copy.restoredNotice); }); }}>{copy.applyRestore}</button><button className="button quiet" onClick={() => setCandidate(null)}>{labels.shell.buttons.cancel}</button></div>
       </section>}
-      <details className="note"><summary>{labels.sections.technicalDetails}</summary><p>{copy.backupContents}</p></details>
+      <details className="note"><summary>{labels.evidence.sections.technicalDetails}</summary><p>{copy.backupContents}</p></details>
     </section>
     {busy && <p aria-live="polite">{copy.busy}</p>}
     {notice && <p className="note" data-testid="storage-notice" aria-live="polite">{notice}</p>}
@@ -260,8 +260,8 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
     <section className="storage-group storage-danger" aria-labelledby={`${promptId}-danger`}>
       <h3 className="ui-menu-group" id={`${promptId}-danger`}>{groupCopy.danger}</h3>
       <div className="button-row">
-        <button className="button quiet danger" disabled={busy} onClick={() => void removeLocal()}>{labels.buttons.deleteLocal}</button>
-        {onClear && <button type="button" className="button quiet danger clear-button" onClick={onClear}>{labels.buttons.clear}</button>}
+        <button className="button quiet danger" disabled={busy} onClick={() => void removeLocal()}>{labels.storage.buttons.deleteLocal}</button>
+        {onClear && <button type="button" className="button quiet danger clear-button" onClick={onClear}>{labels.storage.buttons.clear}</button>}
       </div>
     </section>
     </div>

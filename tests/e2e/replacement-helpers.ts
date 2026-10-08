@@ -4,8 +4,8 @@ import { expect, type Locator, type Page } from '@playwright/test';
 /** Legacy workflows explicitly choose to discard; guard behavior has its own dedicated tests. */
 export async function clickReplacing(page: Page, button: Locator) {
   await button.click();
-  const dialog = page.getByRole('dialog', { name: labels.ui.replacementDialog.heading });
-  if (await dialog.isVisible()) await dialog.getByRole('button', { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: labels.storage.replacement.heading });
+  if (await dialog.isVisible()) await dialog.getByRole('button', { name: labels.storage.replacement.discardAndContinue, exact: true }).click();
 }
 /** R5：試算頁進頁即表單（沒有「開始試算」按鈕）；全站多通路時先等單通路基準重算完成，方案 1 的表單出現即可。 */
 export async function startChannelContext(page: Page) {
@@ -33,7 +33,7 @@ export async function closeDetails(root: Locator) {
 }
 
 // ── V3-3 殼層：頂欄單列、側欄分組、手機底部分頁列與「更多」 ──
-export type NavId = keyof typeof labels.nav;
+export type NavId = keyof typeof labels.shell.nav;
 /** V3-3：寬度 ≤ 767px 是手機殼層（側欄隱藏、底部分頁列、頂欄「更多」、期間按鈕＋底部面板）；768 起是桌機殼層。 */
 export const isMobile = (page: Page) => page.viewportSize()!.width < 768;
 /** 手機底部分頁列直接有的四頁；其餘（商品毛利／假設試算／資料來源／開發者驗證）在「更多」面板。 */
@@ -42,11 +42,11 @@ const TAB_IDS: readonly NavId[] = ['overview', 'diagnosis', 'actions', 'meeting'
  * 側欄（主要導覽）裡的頁面按鈕；手機上側欄是 display:none 但仍掛載，用來讀 aria-current（目前在哪一頁）。
  * 不用 getByRole({ includeHidden })：那會把 aria-hidden 的徽章（CSS attr 畫的「3」）算進名稱；改以按鈕內的頁名文字定位。
  */
-export const sidebarNav = (page: Page, id: NavId) => page.locator('aside.sidebar nav button.nav-item').filter({ has: page.getByText(labels.nav[id].label, { exact: true }) });
+export const sidebarNav = (page: Page, id: NavId) => page.locator('aside.sidebar nav button.nav-item').filter({ has: page.getByText(labels.shell.nav[id].headline, { exact: true }) });
 /** 目前看得到的導覽控制：桌機是側欄按鈕；手機是底部分頁（四頁）或「更多」面板裡的項目（面板要先開，見 openMobileMore）。 */
 export function navControl(page: Page, id: NavId): Locator {
-  if (!isMobile(page)) return page.getByRole('navigation', { name: labels.ui.dashboard.mainNavAria, exact: true }).getByRole('button', { name: labels.nav[id].label, exact: true });
-  return (TAB_IDS.includes(id) ? page.getByTestId('mobile-tabbar') : page.getByTestId('mobile-more')).getByRole('button', { name: labels.nav[id].label, exact: true });
+  if (!isMobile(page)) return page.getByRole('navigation', { name: labels.shell.sidebar.mainNavAria, exact: true }).getByRole('button', { name: labels.shell.nav[id].headline, exact: true });
+  return (TAB_IDS.includes(id) ? page.getByTestId('mobile-tabbar') : page.getByTestId('mobile-more')).getByRole('button', { name: labels.shell.nav[id].headline, exact: true });
 }
 /** 手機「更多」（底部分頁列第 5 格 mobile-tabbar-more）：面板還沒開就點開。 */
 export async function openMobileMore(page: Page) {
@@ -90,13 +90,13 @@ async function settleMoreBeforePrompt(page: Page) {
 }
 export async function dismissSavePrompt(page: Page) {
   const prompt = page.getByTestId('local-save-prompt');
-  if (await prompt.count() && await prompt.isVisible()) { await settleMoreBeforePrompt(page); await prompt.getByRole('button', { name: labels.autoSave.decline, exact: true }).click(); }
+  if (await prompt.count() && await prompt.isVisible()) { await settleMoreBeforePrompt(page); await prompt.getByRole('button', { name: labels.storage.autoSave.decline, exact: true }).click(); }
 }
 export async function acceptSavePrompt(page: Page) {
   const prompt = page.getByTestId('local-save-prompt');
   await prompt.waitFor({ state: 'visible' });
   await settleMoreBeforePrompt(page);
-  await prompt.getByRole('button', { name: labels.autoSave.accept, exact: true }).click();
+  await prompt.getByRole('button', { name: labels.storage.autoSave.accept, exact: true }).click();
 }
 /** V3-4a：期間合計與日均收在總覽的「進階」<details> 裡；先展開外層再展開本身。 */
 export async function openPeriodComparison(page: Page) {
@@ -128,7 +128,7 @@ export async function closeDownloads(page: Page) {
 }
 /**
  * V3-5：商品毛利頁頁首（#page-actions）的「匯出本頁」頁內下拉（details data-testid="product-export-menu"，summary testid export-page-products）。
- * 兩個項目沿用 v2 按鈕名稱（labels.ui.productComparisonPanel.downloadComparisonCsv／labels.downloads.productsCsv；testid product-export-comparison／product-export-products）。
+ * 兩個項目沿用 v2 按鈕名稱（labels.products.comparison.downloadComparisonCsv／labels.exports.downloads.productsCsv；testid product-export-comparison／product-export-products）。
  * 沒展開就點 summary 展開；回傳展開後的 details（在裡面依按鈕名稱點下載）。
  */
 export async function openProductExport(page: Page) {
@@ -153,12 +153,12 @@ export async function closeStorage(page: Page) {
   await closeDetails(page.getByTestId('workspace-storage'));
   await closeTopbarMore(page);
 }
-/** 頂欄「指標定義」（icon 按鈕，aria-label＝labels.buttons.basis）：手機先展開 topbar-more；點開口徑說明對話框，回傳頂欄按鈕（Esc 關閉後焦點應回到它）。 */
+/** 頂欄「指標定義」（icon 按鈕，aria-label＝labels.shell.buttons.basis）：手機先展開 topbar-more；點開口徑說明對話框，回傳頂欄按鈕（Esc 關閉後焦點應回到它）。 */
 export async function openBasis(page: Page) {
   await openTopbarMore(page);
-  const button = page.locator('header.topbar').getByRole('button', { name: labels.buttons.basis, exact: true });
+  const button = page.locator('header.topbar').getByRole('button', { name: labels.shell.buttons.basis, exact: true });
   await button.click();
-  await expect(page.getByRole('dialog', { name: labels.basis.title })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: labels.glossary.basis.title })).toBeVisible();
   return button;
 }
 /** 頂欄 AI 狀態（ai-availability 裡的文字按鈕）：手機先展開 topbar-more；說明 popover 沒開就點開，回傳 ai-availability 區塊。 */
@@ -173,16 +173,16 @@ export async function openAiStatus(page: Page) {
 /** V3-3：v2 頂欄的「清空」搬進儲存選單的「危險區」。開好選單後回傳該按鈕（可直接交給 clickReplacing）。 */
 export async function clearButton(page: Page) {
   const storage = await openStorage(page);
-  return storage.getByRole('button', { name: labels.buttons.clear, exact: true });
+  return storage.getByRole('button', { name: labels.storage.buttons.clear, exact: true });
 }
 /** 開儲存選單 → 點危險區的「清空」；取代確認對話框交給呼叫端處理（回傳該 dialog locator；沒有未保存內容時不會出現）。 */
 export async function clearWorkspace(page: Page) {
   await (await clearButton(page)).click();
-  return page.getByRole('dialog', { name: labels.ui.replacementDialog.heading });
+  return page.getByRole('dialog', { name: labels.storage.replacement.heading });
 }
 
 // ── V3-3 期間列（D-V3-10＝A：快捷單擊就套用；只有在自訂期間裡改日期才要按「套用」） ──
-export type PresetId = keyof typeof labels.periods.presets;
+export type PresetId = keyof typeof labels.shell.periods.presets;
 export const periodSummary = (page: Page) => page.getByTestId('period-summary');
 /** 期間摘要「看得到」的文字：去掉 sr-only 的範圍說明（通路、比較方式、資料到只在 title 與 sr-only）。 */
 export const periodSummaryVisibleText = (page: Page) => periodSummary(page).evaluate(element => [...element.childNodes].filter(node => !(node instanceof Element && node.classList.contains('sr-only'))).map(node => node.textContent ?? '').join(''));
@@ -201,7 +201,7 @@ export async function closePeriodSheet(page: Page) {
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 }
 /** 期間快捷按鈕（period-presets 群組內，依名稱；includeHidden：手機面板收起時仍可讀 aria-pressed）。手機上要先 openPeriodSheet 才點得到。 */
-export const presetButton = (page: Page, id: PresetId) => page.getByTestId('period-presets').getByRole('button', { name: labels.periods.presets[id], exact: true, includeHidden: true });
+export const presetButton = (page: Page, id: PresetId) => page.getByTestId('period-presets').getByRole('button', { name: labels.shell.periods.presets[id], exact: true, includeHidden: true });
 /**
  * 點快捷（單擊即套用）：手機先開期間面板（選了之後面板自動關閉）。點之前不是 aria-pressed 時，等期間摘要換成新的文字；
  * 最後等快捷 aria-pressed="true"、期間列不再 aria-busy。回傳新的期間摘要 textContent（含 sr-only 的範圍說明）。
@@ -236,12 +236,12 @@ export async function openCustomPeriod(page: Page) {
  */
 export async function applyCustomPeriod(page: Page, period: CustomPeriod) {
   const panel = await openCustomPeriod(page);
-  if (period.mode) await panel.getByLabel(labels.ui.dashboard.filter.comparisonMode, { exact: true }).selectOption(period.mode);
+  if (period.mode) await panel.getByLabel(labels.shell.periodBar.filter.comparisonMode, { exact: true }).selectOption(period.mode);
   await page.locator('#previous-start').fill(period.previousStart);
   await page.locator('#previous-end').fill(period.previousEnd);
   await page.locator('#current-start').fill(period.currentStart);
   await page.locator('#current-end').fill(period.currentEnd);
-  await panel.getByRole('button', { name: labels.buttons.apply, exact: true }).click();
+  await panel.getByRole('button', { name: labels.shell.buttons.apply, exact: true }).click();
   await expect(page.getByTestId(isMobile(page) ? 'period-toggle' : 'period-custom')).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByTestId('period-bar')).not.toHaveAttribute('aria-busy', 'true');
 }
@@ -259,7 +259,7 @@ export function periodSummaryText(start: string, end: string, prevStart: string,
 }
 /** 手機期間按鈕（period-toggle）的可見文字：「近 4 週 · 7/27–8/23」；沒有對到快捷時 preset 傳 null →「自訂期間 · …」。 */
 export function periodToggleText(preset: PresetId | null, start: string, end: string, options: { anchor?: string } = {}) {
-  return fill(labels.shell.periodBarV3.toggle, { preset: preset ? labels.periods.presets[preset] : labels.shell.periodBarV3.custom, range: formatPeriodL1(start, end, { anchor: options.anchor ?? end, days: false }) });
+  return fill(labels.shell.periodBarV3.toggle, { preset: preset ? labels.shell.periods.presets[preset] : labels.shell.periodBarV3.custom, range: formatPeriodL1(start, end, { anchor: options.anchor ?? end, days: false }) });
 }
 
 /**
@@ -274,6 +274,6 @@ export async function openAiSection(page: Page) {
 
 /** R2 rule-card headlines are glossary templates with numbers filled in; match them by template shape. */
 export function ruleHeadline(code: keyof typeof labels.rules): RegExp {
-  const template = labels.rules[code].title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{\w+\\\}/g, '.+?');
+  const template = labels.rules[code].headline.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{\w+\\\}/g, '.+?');
   return new RegExp(`^${template}$`);
 }

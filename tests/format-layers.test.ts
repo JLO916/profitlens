@@ -72,7 +72,7 @@ describe("§8.5 表格：每一列的 L1／L2／L3", () => {
 
   it("比率差：降 14.3 個百分點／−14.3 個百分點／−14.25 個百分點", () => {
     const diff = new Decimal(cmMarginCur).minus(cmMarginPrev).toFixed();
-    expect(formatRatePoints(diff, "L1")).toBe(fill(labels.units.pointsDown, { value: "14.3" }));
+    expect(formatRatePoints(diff, "L1")).toBe(fill(labels.format.units.pointsDown, { value: "14.3" }));
     expect(formatRatePoints(diff, "L1")).toBe("降 14.3 個百分點");
     expect(formatRatePoints(diff, "L2")).toBe(`${MINUS}14.3 個百分點`);
     expect(formatRatePoints(diff, "L3")).toBe(`${MINUS}14.25 個百分點`);
@@ -103,7 +103,7 @@ describe("§8.5 表格：每一列的 L1／L2／L3", () => {
     expect(formatCount(UNITS, "L1")).toBe("7,420 件");
     expect(formatCount(7420n, "L2")).toBe("7,420");
     expect(formatCount(7420, "L3")).toBe("7,420");
-    expect(formatCount(7420.5, "L1")).toBe(labels.status.missing); // 不是整數就不當成件數
+    expect(formatCount(7420.5, "L1")).toBe(labels.shell.status.missing); // 不是整數就不當成件數
   });
 
   it("件均：1,058 元／件／1,058／1,058.04 元／件", () => {
@@ -113,18 +113,18 @@ describe("§8.5 表格：每一列的 L1／L2／L3", () => {
   });
 
   it("缺資料：資料待補（L3 附原因碼）", () => {
-    for (const text of [formatAmountL1(null), formatAmountL2(null), formatAmountL3(null), formatSignedDelta(null, "L1"), formatRateL1(null), formatRateL3(null), formatRatePoints(null, "L1"), formatMultiple(null, "L1"), formatCount(null, "L1"), formatPerUnit(null, "L3")]) expect(text).toBe(labels.status.missing);
+    for (const text of [formatAmountL1(null), formatAmountL2(null), formatAmountL3(null), formatSignedDelta(null, "L1"), formatRateL1(null), formatRateL3(null), formatRatePoints(null, "L1"), formatMultiple(null, "L1"), formatCount(null, "L1"), formatPerUnit(null, "L3")]) expect(text).toBe(labels.shell.status.missing);
     expect(formatEmpty()).toBe("資料待補");
     expect(formatEmpty("missing", { layer: "L3", reasonCodes: ["MISSING_VALUE"] })).toBe("資料待補（MISSING_VALUE）");
     expect(formatEmpty("missing", { layer: "L1", reasonCodes: ["MISSING_VALUE"] })).toBe("資料待補");
     expect(formatMetric("net_revenue", { value: null, reason_codes: ["MISSING_VALUE"] }, "L3")).toBe("資料待補（MISSING_VALUE）");
     expect(formatMetric("net_revenue", null, "L1")).toBe("資料待補");
     // 非十進位字串一律視為缺值，不做 Number 轉換
-    for (const bad of ["abc", "1e5", "NaN", "", "1,000"]) expect(formatAmountL3(bad), bad).toBe(labels.status.missing);
+    for (const bad of ["abc", "1e5", "NaN", "", "1,000"]) expect(formatAmountL3(bad), bad).toBe(labels.shell.status.missing);
   });
 
   it("分母 ≤ 0：不適用（L3 附原因碼，例如 zeroAds）", () => {
-    expect(formatEmpty("notApplicable")).toBe(labels.status.notApplicable);
+    expect(formatEmpty("notApplicable")).toBe(labels.shell.status.notApplicable);
     expect(formatEmpty("notApplicable", { layer: "L3", reasonCodes: "zeroAds" })).toBe("不適用（zeroAds）");
     expect(formatMultiple(null, "L1", "notApplicable")).toBe("不適用");
     expect(emptyKindOf(["NON_POSITIVE_DENOMINATOR"])).toBe("notApplicable");
@@ -246,7 +246,7 @@ describe("§8.6 日期與期間", () => {
     expect(formatDateL1("2026-08-24", { today: "2026-10-06" })).toBe("8/24");
     expect(formatDateL1("2025-12-29", { today: "2026-10-06" })).toBe("2025/12/29");
     expect(formatDateL1("2026-01-05", { anchor: "2026-08-23" })).toBe("1/5");
-    expect(formatDateL1(null)).toBe(labels.status.missing);
+    expect(formatDateL1(null)).toBe(labels.shell.status.missing);
     expect(formatDateL1("not-a-date")).toBe("not-a-date");
   });
 
@@ -268,7 +268,7 @@ describe("§8.6 日期與期間", () => {
 
   it("匯出版頭：YYYY-MM-DD 至 YYYY-MM-DD（天數）", () => {
     expect(formatPeriodExport("2026-07-13", "2026-08-23")).toBe("2026-07-13 至 2026-08-23（42 天）");
-    expect(formatPeriodExport("2026-07-13", "2026-08-23")).toBe(fill(labels.units.exportRange, { start: "2026-07-13", end: "2026-08-23", days: 42 }));
+    expect(formatPeriodExport("2026-07-13", "2026-08-23")).toBe(fill(labels.format.units.exportRange, { start: "2026-07-13", end: "2026-08-23", days: 42 }));
   });
 });
 

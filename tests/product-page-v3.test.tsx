@@ -20,7 +20,7 @@ import { fixture } from "./helpers/fixtures";
  */
 
 const page = labels.products.pageV3;
-const panelCopy = labels.ui.productComparisonPanel;
+const panelCopy = labels.products.comparison;
 const noop = () => undefined;
 
 async function render(name = "golden", options: { filters?: AnalysisFilters; initial?: ProductPanelInitial; allChannels?: readonly string[]; conversion?: Parameters<typeof ProductComparisonPanel>[0]["conversion"] } = {}) {
@@ -60,11 +60,11 @@ afterEach(() => { Reflect.deleteProperty(globalThis, "window"); });
 
 describe("V3-5 頁首動作插槽（shell/page-chrome.tsx）", () => {
   it("每頁都渲染一個 #page-actions（testid page-actions）；沒有內容時是空的，傳入 actions 時放在裡面", () => {
-    const empty = renderToStaticMarkup(createElement(PageHeader, { title: labels.nav.overview.label, description: labels.nav.overview.description, isData: false, showLoadDemo: false, onLoadDemo: noop, onImport: noop }));
+    const empty = renderToStaticMarkup(createElement(PageHeader, { title: labels.shell.nav.overview.headline, description: labels.shell.nav.overview.explain, isData: false, showLoadDemo: false, onLoadDemo: noop, onImport: noop }));
     expect(occurrences(empty, ' id="page-actions"')).toBe(1);
     expect(occurrences(empty, 'data-testid="page-actions"')).toBe(1);
     expect(empty).toContain('<div class="page-actions" id="page-actions" data-testid="page-actions"></div>');
-    const filled = renderToStaticMarkup(createElement(PageHeader, { title: labels.nav.products.label, description: page.description, isData: false, showLoadDemo: false, onLoadDemo: noop, onImport: noop, actions: createElement("span", { "data-testid": "slot-probe" }) }));
+    const filled = renderToStaticMarkup(createElement(PageHeader, { title: labels.shell.nav.products.headline, description: page.description, isData: false, showLoadDemo: false, onLoadDemo: noop, onImport: noop, actions: createElement("span", { "data-testid": "slot-probe" }) }));
     expect(element(filled, 'id="page-actions"')).toContain('data-testid="slot-probe"');
     expect(filled).toContain(`<p class="subtitle">${page.description}</p>`);
   });
@@ -92,17 +92,17 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
     // 不再有 eyebrow 與「元，未稅」標籤；h2 只給輔助科技（頁首已有 h1），小表標題維持 h4。
     expect(html).not.toContain('class="eyebrow"');
     expect(html).not.toContain(panelCopy.basisTag);
-    expect(html).toContain(`<h2 id="products-heading" class="sr-only">${labels.sections.productTable}</h2>`);
+    expect(html).toContain(`<h2 id="products-heading" class="sr-only">${labels.products.sections.productTable}</h2>`);
   });
 
   it("前 10 名兩表：testid、h4、欄位 排名｜商品｜本期商品毛利（元）｜差額（元），商品格是「SKU · 通路」（示範資料用台灣化通路名）", async () => {
     const { html } = await render("demo");
-    const yuan = (label: string) => fill(labels.units.yuanColumn, { label });
+    const yuan = (label: string) => fill(labels.format.units.yuanColumn, { label });
     for (const kind of ["worst", "best"] as const) {
       const section = element(html, `data-testid="product-${kind}"`)!;
       expect(section).toContain(`<h4 id="product-${kind}-heading">`);
       const table = element(section, "<table")!;
-      expect(headerTexts(table)).toEqual([page.columns.rank, page.columns.product, yuan(`${labels.periods.current}${metricDefinitions.gross_profit.shortLabel}`), yuan(page.columns.change)]);
+      expect(headerTexts(table)).toEqual([page.columns.rank, page.columns.product, yuan(`${labels.shell.periods.current}${metricDefinitions.gross_profit.shortLabel}`), yuan(page.columns.change)]);
       const rows = element(table, "<tbody")!.split('<tr role="row">').slice(1).map(cells);
       expect(rows.length).toBeGreaterThan(0);
       expect(rows.length).toBeLessThanOrEqual(10);
@@ -114,7 +114,7 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
       });
       expect(table).toContain(`<caption class="sr-only">${kind === "worst" ? page.worstCaption : page.bestCaption}</caption>`);
     }
-    expect(html).toContain(labels.demoChannelAlias.DTC);
+    expect(html).toContain(labels.data.demoChannelAlias.DTC);
   });
 
   it("工具列（C15）：品類｜搜尋｜排序｜只看負毛利｜欄位，直接子控制 ≤ 5；舊的排序方向 select 已合併", async () => {
@@ -136,7 +136,7 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
     expect(controls.length).toBeLessThanOrEqual(5);
     for (const id of ["product-category", "product-search", "product-sort"]) expect(occurrences(html, `id="${id}"`), id).toBe(1);
     expect(html).not.toContain('id="product-direction"');
-    expect(openTag(toolbar, 'id="product-category"')).toContain(`aria-label="${labels.csvColumns.category}"`);
+    expect(openTag(toolbar, 'id="product-category"')).toContain(`aria-label="${labels.exports.csv.columns.category}"`);
     expect(openTag(toolbar, 'id="product-search"')).toContain(`aria-label="${panelCopy.searchSku}"`);
     expect(openTag(toolbar, 'id="product-sort"')).toContain(`aria-label="${page.sortLabel}"`);
     expect(toolbar).toContain(`aria-pressed="false">${panelCopy.negativeOnly}</button>`);
@@ -161,7 +161,7 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
     expect(summary).not.toMatch(/<(button|input|select|a)\b/);
     expect(host).toMatch(/aria-pressed="false" data-testid="product-more-columns"/);
     const hintId = attr(openTag(host, 'data-testid="product-more-columns"')!, "aria-describedby")!;
-    expect(host).toContain(`id="${hintId}" class="product-columns-hint">${labels.productHighlights.moreColumnsHint}</p>`);
+    expect(host).toContain(`id="${hintId}" class="product-columns-hint">${labels.products.highlights.moreColumnsHint}</p>`);
     const density = element(host, 'data-testid="product-density"')!;
     expect(density).toContain(page.densityLegend);
     const radios = [...density.matchAll(/<input type="radio"[^>]*>/g)].map(match => match[0]);
@@ -214,7 +214,7 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
     const technical = element(html, 'class="product-technical"')!;
     expect(html.indexOf('data-testid="product-table"')).toBeLessThan(html.indexOf('class="product-technical"'));
     expect(openTag(technical, "<details")).not.toMatch(/\sopen=""/);
-    expect(technical).toContain(labels.sections.technicalDetails);
+    expect(technical).toContain(labels.evidence.sections.technicalDetails);
     expect(technical).toContain(panelCopy.deltaFormulaNote);
     expect(technical).toContain(fill(panelCopy.negativeNote, { n: 1 }));
   });
@@ -283,11 +283,11 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
     const first = bodyRows(full)[0];
     const headers = headerTexts(full);
     const byRole = (role: string) => first.flatMap((tag, index) => attr(tag, "data-list-role") === role ? [headers[index]] : []);
-    const yuan = (label: string) => fill(labels.units.yuanColumn, { label });
-    expect(byRole("primary")).toEqual([labels.csvColumns.channel, "SKU", yuan(`${labels.periods.current}${metricDefinitions.gross_profit.shortLabel}`)]);
-    expect(byRole("secondary")).toEqual([`${labels.periods.current}${labels.assist.items.units_sold.label}`, `${labels.periods.current}${metricDefinitions.gross_margin.shortLabel}`, yuan(`${metricDefinitions.gross_profit.label}${labels.csvSuffix.change}`)]);
+    const yuan = (label: string) => fill(labels.format.units.yuanColumn, { label });
+    expect(byRole("primary")).toEqual([labels.exports.csv.columns.channel, "SKU", yuan(`${labels.shell.periods.current}${metricDefinitions.gross_profit.shortLabel}`)]);
+    expect(byRole("secondary")).toEqual([`${labels.shell.periods.current}${labels.assist.items.units_sold.label}`, `${labels.shell.periods.current}${metricDefinitions.gross_margin.shortLabel}`, yuan(`${metricDefinitions.gross_profit.label}${labels.exports.csv.suffix.change}`)]);
     // 次行把商品毛利差額排第一（CSS order，.list-lead）。
-    expect(first.filter(tag => /\bclass="[^"]*\blist-lead\b/.test(tag)).map(tag => attr(tag, "data-label"))).toEqual([yuan(`${metricDefinitions.gross_profit.label}${labels.csvSuffix.change}`)]);
+    expect(first.filter(tag => /\bclass="[^"]*\blist-lead\b/.test(tag)).map(tag => attr(tag, "data-label"))).toEqual([yuan(`${metricDefinitions.gross_profit.label}${labels.exports.csv.suffix.change}`)]);
     const worst = element(element(html, 'data-testid="product-worst"')!, "<table")!;
     const worstHeaders = headerTexts(worst);
     expect(bodyRows(worst)[0].map(tag => attr(tag, "data-list-role"))).toEqual(["secondary", "primary", "primary", "secondary"]);

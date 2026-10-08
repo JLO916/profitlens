@@ -6,7 +6,7 @@ import { importColumns, type ImportFileDraft, type PreparedImport } from "./impo
 import { convertInclusiveAmount } from "./tax-basis";
 import { fill, labels } from "@/i18n";
 
-const { importGuidance: guide } = labels.ui;
+const { guidance: guide } = labels.importWizard;
 const { fields: fieldLabels } = labels.evidence;
 export const columnGuidance: Record<string, { label: string; meaning: string }> = {
   date: { label: fieldLabels.date, meaning: guide.columnMeaning.date },
@@ -14,15 +14,15 @@ export const columnGuidance: Record<string, { label: string; meaning: string }> 
   sku: { label: fieldLabels.sku, meaning: guide.columnMeaning.sku },
   category: { label: fieldLabels.category, meaning: guide.columnMeaning.category },
   units_sold: { label: fieldLabels.units_sold, meaning: guide.columnMeaning.unitsSold },
-  gross_sales: { label: labels.metrics.gross_sales.label, meaning: guide.columnMeaning.grossSales },
-  discounts: { label: labels.metrics.discounts.label, meaning: guide.columnMeaning.discounts },
-  refunds: { label: labels.metrics.refunds.label, meaning: guide.columnMeaning.refunds },
-  cogs_net: { label: labels.metrics.cogs_net.label, meaning: guide.columnMeaning.cogsNet },
-  platform_fees: { label: labels.metrics.platform_fees.label, meaning: guide.columnMeaning.platformFees },
-  payment_fees: { label: labels.metrics.payment_fees.label, meaning: guide.columnMeaning.paymentFees },
-  fulfillment_costs: { label: labels.metrics.fulfillment_costs.label, meaning: guide.columnMeaning.fulfillmentCosts },
-  other_variable_costs: { label: labels.metrics.other_variable_costs.label, meaning: guide.columnMeaning.otherVariableCosts },
-  ad_spend: { label: labels.metrics.ad_spend.label, meaning: guide.columnMeaning.adSpend },
+  gross_sales: { label: labels.metrics.gross_sales.headline, meaning: guide.columnMeaning.grossSales },
+  discounts: { label: labels.metrics.discounts.headline, meaning: guide.columnMeaning.discounts },
+  refunds: { label: labels.metrics.refunds.headline, meaning: guide.columnMeaning.refunds },
+  cogs_net: { label: labels.metrics.cogs_net.headline, meaning: guide.columnMeaning.cogsNet },
+  platform_fees: { label: labels.metrics.platform_fees.headline, meaning: guide.columnMeaning.platformFees },
+  payment_fees: { label: labels.metrics.payment_fees.headline, meaning: guide.columnMeaning.paymentFees },
+  fulfillment_costs: { label: labels.metrics.fulfillment_costs.headline, meaning: guide.columnMeaning.fulfillmentCosts },
+  other_variable_costs: { label: labels.metrics.other_variable_costs.headline, meaning: guide.columnMeaning.otherVariableCosts },
+  ad_spend: { label: labels.metrics.ad_spend.headline, meaning: guide.columnMeaning.adSpend },
   currency: { label: fieldLabels.currency, meaning: guide.columnMeaning.currency },
 };
 export const roleGuidance: Record<FileName, string> = {

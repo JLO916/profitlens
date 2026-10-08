@@ -22,7 +22,7 @@ import { scanLabels } from "../scripts/lib/copy-scan.mjs";
  */
 const copy = labels.importWizard;
 const v3 = copy.wizardV3;
-const panel = labels.ui.importPanel;
+const panel = labels.importWizard.panel;
 const roles: FileName[] = ["sales_daily.csv", "channel_costs_daily.csv", "ad_spend_daily.csv"];
 const fileLabel: Record<FileName, string> = { "sales_daily.csv": copy.files.sales, "channel_costs_daily.csv": copy.files.costs, "ad_spend_daily.csv": copy.files.ads };
 const alternative = resolve("tests/fixtures/alternative"), inclusive = resolve("tests/fixtures/inclusive_tax");
@@ -202,8 +202,8 @@ describe("V3-8 B 匯入精靈全版模式（§7.7.2）", () => {
     const [templatesBlock, howToBlock, advancedBlock] = html.split('<details class="wizard-details">').slice(1).map(part => part.slice(0, part.indexOf("</details>")));
     expect(templatesBlock).toContain('<table class="template-table">');
     expect(occurrences(templatesBlock, "<tr><th scope=\"row\">")).toBe(3);
-    for (const role of roles) expect(templatesBlock).toContain(`aria-label="${fill(labels.downloads.blankTemplate, { file: fileLabel[role] })}"`);
-    expect(templatesBlock).toContain(`href="${exampleTemplateUrl("manifest.json")}" download="manifest.json">${labels.downloads.exampleManifest}</a>`);
+    for (const role of roles) expect(templatesBlock).toContain(`aria-label="${fill(labels.exports.downloads.blankTemplate, { file: fileLabel[role] })}"`);
+    expect(templatesBlock).toContain(`href="${exampleTemplateUrl("manifest.json")}" download="manifest.json">${labels.exports.downloads.exampleManifest}</a>`);
     expect(howToBlock).toContain(`<summary>${copy.howTo}</summary>`);
     expect(howToBlock).toContain(copy.howToIntro);
     expect(howToBlock).toContain(copy.howToDoc);
@@ -286,17 +286,17 @@ describe("V3-8 B 匯入精靈全版模式（§7.7.2）", () => {
     expect(conversion).toContain(`<p class="wizard-line">${fill(v3.convertCount, { n: formatCount(defaults, "L2") })}</p>`);
     expect(conversion).toContain(`<summary>${v3.adjustConvert}</summary>`);
     expect(visibleMarkup(conversion)).toContain(`aria-label="${copy.rateLabel}"`);
-    expect(conversion).toContain(`aria-label="${copy.files.sales} ${labels.metrics.cogs_net.label}"`);
+    expect(conversion).toContain(`aria-label="${copy.files.sales} ${labels.metrics.cogs_net.headline}"`);
     // 設定提案：兩欄表單（資料集名稱、資料到、涵蓋起訖），比較方式與兩期日期收在「調整比較期間」。
     const proposal = element(html, 'data-testid="import-settings-proposal"')!;
     const grid = element(proposal, 'class="ui-form-grid"')!;
     for (const label of [copy.datasetName, copy.dataAsOf, copy.coverageStart, copy.coverageEnd]) expect(grid).toContain(`aria-label="${label}"`);
     expect(proposal).toContain(copy.proposedBy);
     const { settings } = step3Inclusive;
-    expect(proposal).toContain(`<p class="wizard-line">${fill(v3.periodsSummary, { mode: labels.periods.sameDays, previous: formatPeriodL1(settings.previous_start, settings.previous_end, { anchor: settings.current_end }), current: formatPeriodL1(settings.current_start, settings.current_end, { anchor: settings.current_end }) })}</p>`);
+    expect(proposal).toContain(`<p class="wizard-line">${fill(v3.periodsSummary, { mode: labels.shell.periods.sameDays, previous: formatPeriodL1(settings.previous_start, settings.previous_end, { anchor: settings.current_end }), current: formatPeriodL1(settings.current_start, settings.current_end, { anchor: settings.current_end }) })}</p>`);
     expect(proposal).toContain(`<summary>${v3.adjustPeriods}</summary>`);
     const hidden = proposal.slice(proposal.indexOf(`<summary>${v3.adjustPeriods}</summary>`));
-    for (const label of [copy.comparisonMode, labels.csvColumns.previous_start, labels.csvColumns.previous_end, labels.csvColumns.current_start, labels.csvColumns.current_end]) {
+    for (const label of [copy.comparisonMode, labels.exports.csv.columns.previous_start, labels.exports.csv.columns.previous_end, labels.exports.csv.columns.current_start, labels.exports.csv.columns.current_end]) {
       expect(hidden).toContain(`aria-label="${label}"`);
       expect(visibleMarkup(proposal)).not.toContain(`aria-label="${label}"`);
     }
@@ -361,7 +361,7 @@ describe("V3-8 B 匯入精靈全版模式（§7.7.2）", () => {
     const blockedIssues = step4Blocked.candidate!.validation.issues;
     expect(textOf(element(blocked, 'data-testid="import-status"')!)).toBe(fill(v3.statusBlocked, { errors: formatCount(blockedIssues.filter(issue => issue.severity === "blocking").length, "L2") }));
     expect(element(blocked, 'data-testid="import-result-note"')).toContain(copy.result.blocking);
-    expect(blocked).toContain(`>${labels.downloads.issuesCsv}</button>`);
+    expect(blocked).toContain(`>${labels.exports.downloads.issuesCsv}</button>`);
     expect(blocked).toContain(panel.duplicateAlert);
     const checking = render(step4Checking);
     expect(textOf(element(checking, 'data-testid="import-status"')!)).toBe(copy.checking);

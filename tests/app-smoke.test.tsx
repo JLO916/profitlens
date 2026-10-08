@@ -11,16 +11,16 @@ describe("M4 工作台初始畫面 smoke test", () => {
 
     expect(html).toContain("ProfitLens");
     for (const label of [
-      labels.nav.overview.label,
-      labels.nav.diagnosis.label,
-      labels.nav.products.label,
-      labels.nav.data.label,
-      labels.nav.scenarios.label,
-      labels.nav.actions.label,
-      labels.status.empty,
-      labels.buttons.loadDemo,
+      labels.shell.nav.overview.headline,
+      labels.shell.nav.diagnosis.headline,
+      labels.shell.nav.products.headline,
+      labels.shell.nav.data.headline,
+      labels.shell.nav.scenarios.headline,
+      labels.shell.nav.actions.headline,
+      labels.shell.status.empty,
+      labels.shell.buttons.loadDemo,
     ]) expect(html).toContain(label);
-    expect(html).toContain(labels.basis.footer);
+    expect(html).toContain(labels.glossary.basis.footer);
     expect(html).not.toContain("1,269,792.73");
     expect(html).not.toContain("kpi-contribution_after_marketing");
   });

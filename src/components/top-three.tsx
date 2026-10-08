@@ -21,11 +21,11 @@ export function impactEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, diag
   if (!impact) return null;
   const alias = demoAlias(snapshot.report.dataset_id);
   const base = priorityEvidence(snapshot, diagnostic);
-  const values = { impact: labels.sections.impact, metric: metricDefinitions[base.name].label };
-  const formula = BURDEN.has(diagnostic.code) ? fill(labels.notes.impactFormulaBurden, values) : base.formula ?? fill(labels.notes.impactFormulaDefault, values);
+  const values = { impact: labels.overview.sections.impact, metric: metricDefinitions[base.name].label };
+  const formula = BURDEN.has(diagnostic.code) ? fill(labels.overview.notes.impactFormulaBurden, values) : base.formula ?? fill(labels.overview.notes.impactFormulaDefault, values);
   // V3-2a：抽屜標題只留結論句；影響金額與範圍放副標（抽屜的範圍行，§8.8 #15）。
-  const title = fill(labels.ui.topThree.impactEvidenceTitle, { title: ruleCopy(snapshot, diagnostic, alias).headline });
-  return { ...base, title, scopeLabel: fill(labels.ui.topThree.impactEvidenceSubtitle, { impact: labels.sections.impact, scope: scopeLabel(diagnostic.scope, alias) }), metric: impact, formula };
+  const title = fill(labels.overview.topThree.impactEvidenceTitle, { title: ruleCopy(snapshot, diagnostic, alias).headline });
+  return { ...base, title, scopeLabel: fill(labels.overview.topThree.impactEvidenceSubtitle, { impact: labels.overview.sections.impact, scope: scopeLabel(diagnostic.scope, alias) }), metric: impact, formula };
 }
 
 /** 紅＝不利、綠＝有利；零與未知為中性（以分為單位比較，不看字串正負號）。V3-2b 起本檔與總覽、健檢改用 toneClass(deltaTone(...))；會議頁仍沿用。 */
@@ -45,10 +45,10 @@ export function toneClass(tone: DeltaTone): "negative" | "positive" {
 /** 影響金額（對扣廣告後貢獻的影響，費用類已取負）：預設 L1「−118.8 萬」；展開列內的相關範圍傳 "L2"。 */
 export function ImpactAmount({ snapshot, diagnostic, onEvidence, layer = "L1" }: { snapshot: Pick<WorkspaceSnapshot, "report">; diagnostic: Diagnostic; onEvidence: (evidence: EvidenceSelection) => void; layer?: Layer }) {
   const evidence = impactEvidence(snapshot, diagnostic);
-  if (!evidence) return <span className="impact-amount neutral">{diagnostic.code === "MISSING_CRITICAL_DATA" ? labels.status.missing : labels.status.notApplicable}</span>;
+  if (!evidence) return <span className="impact-amount neutral">{diagnostic.code === "MISSING_CRITICAL_DATA" ? labels.shell.status.missing : labels.shell.status.notApplicable}</span>;
   const value = evidence.metric.value;
   const tone = value === null ? "neutral" : toneClass(deltaTone("contribution_after_marketing", value, layer));
-  return <button type="button" className={`number-link impact-amount ${tone}`} aria-label={evidence.title} onClick={() => onEvidence(evidence)}>{value === null ? labels.status.missing : formatSignedDelta(value, layer)}</button>;
+  return <button type="button" className={`number-link impact-amount ${tone}`} aria-label={evidence.title} onClick={() => onEvidence(evidence)}>{value === null ? labels.shell.status.missing : formatSignedDelta(value, layer)}</button>;
 }
 
 /**
@@ -56,7 +56,7 @@ export function ImpactAmount({ snapshot, diagnostic, onEvidence, layer = "L1" }:
  * 金額未知或取位後為 0 時沒有方向，不顯示標籤。
  */
 export function alertStatus(group: Pick<DiagnosisGroup, "missing" | "impact_cents">): { tone: "warning" | DeltaTone; text: string } | null {
-  if (group.missing) return { tone: "warning", text: labels.status.missing };
+  if (group.missing) return { tone: "warning", text: labels.shell.status.missing };
   const tone = deltaTone("contribution_after_marketing", group.impact_cents, "L1");
   const text = deltaToneLabel(tone);
   return text ? { tone, text } : null;
@@ -122,11 +122,11 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, onOpenDiagnosis
   const summary = useMemo(() => diagnosisGroups(snapshot, { importanceThreshold: threshold }), [snapshot, threshold]);
   const alias = demoAlias(snapshot.report.dataset_id);
   const count = summary.priorities.length;
-  const title = count > 0 && count < TOP_PRIORITY_COUNT ? fill(alerts.titleCount, { n: count }) : labels.sections.topThree;
+  const title = count > 0 && count < TOP_PRIORITY_COUNT ? fill(alerts.titleCount, { n: count }) : labels.overview.sections.topThree;
   // R4 檔期提示：本期與檔期重疊時，列內展開內容多一行「檔期」；不改任何數字。
   const eventNames = [...new Set(overlapping(events, snapshot.report.current.period).map(row => row.label))];
   const eventText = eventNames.length ? fill(alerts.eventValue, { label: eventNames.join(labels.events.joiner) }) : "";
-  const member = (row: DiagnosisScope) => <li key={row.diagnostic.id}>{fill(labels.ui.topThree.memberRow, { scope: scopeLabel(row.scope, alias), amount: "" })}<ImpactAmount snapshot={snapshot} diagnostic={row.diagnostic} onEvidence={onEvidence} layer="L2" /></li>;
+  const member = (row: DiagnosisScope) => <li key={row.diagnostic.id}>{fill(labels.overview.topThree.memberRow, { scope: scopeLabel(row.scope, alias), amount: "" })}<ImpactAmount snapshot={snapshot} diagnostic={row.diagnostic} onEvidence={onEvidence} layer="L2" /></li>;
   const row = (item: DiagnosisGroup) => {
     const status = alertStatus(item);
     return <li key={item.rule} className="alert-row" data-testid={`overview-priority-${item.rule}`}>
@@ -138,21 +138,21 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, onOpenDiagnosis
           {eventText && <><dt>{alerts.eventPeriod}</dt><dd>{eventText}</dd></>}
         </dl></div>
       </details>
-      <p className="alert-impact"><span className="k">{labels.sections.impact}</span><ImpactAmount snapshot={snapshot} diagnostic={item.primary} onEvidence={onEvidence} /></p>
-      <div className="alert-actions"><button type="button" className="ui-btn ui-btn-secondary" onClick={() => onEvidence(impactEvidence(snapshot, item.primary) ?? priorityEvidence(snapshot, item.primary))}>{labels.buttons.viewEvidence}</button>{onCreateAction && <button type="button" className="ui-btn ui-btn-secondary" onClick={() => onCreateAction(item.primary)}>{labels.buttons.addToActions}</button>}</div>
+      <p className="alert-impact"><span className="k">{labels.overview.sections.impact}</span><ImpactAmount snapshot={snapshot} diagnostic={item.primary} onEvidence={onEvidence} /></p>
+      <div className="alert-actions"><button type="button" className="ui-btn ui-btn-secondary" onClick={() => onEvidence(impactEvidence(snapshot, item.primary) ?? priorityEvidence(snapshot, item.primary))}>{labels.evidence.buttons.viewEvidence}</button>{onCreateAction && <button type="button" className="ui-btn ui-btn-secondary" onClick={() => onCreateAction(item.primary)}>{labels.actions.buttons.addToActions}</button>}</div>
     </li>;
   };
   return <section className="top-three" aria-labelledby="top-three-title" data-testid="top-three">
     <div className="sec-head">
       <div className="sec-title"><h2 id="top-three-title">{title}</h2><span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, alias)}</span></div>
       <div className="sec-tools">
-        <span className="sort-legend" ref={helpRef}>{labels.sections.impactLegend}<button ref={helpButtonRef} type="button" className="ui-help-trigger" title={labels.sections.impactLegendHelp} aria-label={alerts.sortHelpAria} aria-expanded={helpOpen} aria-controls="top-three-sort-help" onClick={() => setHelpOpen(open => !open)}><ShellIcon name="help" size={16} /></button><span id="top-three-sort-help" className="sort-help ui-popover ui-help-content" hidden={!helpOpen}>{labels.sections.impactLegendHelp}</span></span>
-        <details ref={thresholdRef} className="threshold-popover" onToggle={event => setThresholdOpen(event.currentTarget.open)}><summary ref={thresholdSummaryRef} className="ui-btn ui-btn-text">{labels.sections.adjustThreshold}</summary>
+        <span className="sort-legend" ref={helpRef}>{labels.overview.sections.impactLegend}<button ref={helpButtonRef} type="button" className="ui-help-trigger" title={labels.overview.sections.impactLegendHelp} aria-label={alerts.sortHelpAria} aria-expanded={helpOpen} aria-controls="top-three-sort-help" onClick={() => setHelpOpen(open => !open)}><ShellIcon name="help" size={16} /></button><span id="top-three-sort-help" className="sort-help ui-popover ui-help-content" hidden={!helpOpen}>{labels.overview.sections.impactLegendHelp}</span></span>
+        <details ref={thresholdRef} className="threshold-popover" onToggle={event => setThresholdOpen(event.currentTarget.open)}><summary ref={thresholdSummaryRef} className="ui-btn ui-btn-text">{labels.overview.sections.adjustThreshold}</summary>
           <div className="popover ui-popover">
-            <form className="threshold-form" data-testid="threshold-form-overview" onSubmit={event => { event.preventDefault(); try { const checked = diagnosisGroups(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.notes.thresholdInvalid); } }}>
-              <label>{labels.meeting.threshold}<input aria-describedby="top-three-threshold-help" aria-invalid={error ? true : undefined} value={thresholdInput} onChange={event => setThresholdInput(event.target.value)} inputMode="decimal" maxLength={30} /></label><button type="submit" className="ui-btn ui-btn-secondary">{labels.buttons.apply}</button>
+            <form className="threshold-form" data-testid="threshold-form-overview" onSubmit={event => { event.preventDefault(); try { const checked = diagnosisGroups(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.overview.notes.thresholdInvalid); } }}>
+              <label>{labels.meeting.form.threshold}<input aria-describedby="top-three-threshold-help" aria-invalid={error ? true : undefined} value={thresholdInput} onChange={event => setThresholdInput(event.target.value)} inputMode="decimal" maxLength={30} /></label><button type="submit" className="ui-btn ui-btn-secondary">{labels.shell.buttons.apply}</button>
             </form>
-            <p className="note" id="top-three-threshold-help">{fill(labels.diagnosisList.thresholdHelp, { amount: formatAmountL3(summary.importance_threshold) })}</p>
+            <p className="note" id="top-three-threshold-help">{fill(labels.diagnosis.list.thresholdHelp, { amount: formatAmountL3(summary.importance_threshold) })}</p>
             {error && <p role="alert">{error}</p>}
           </div>
         </details>

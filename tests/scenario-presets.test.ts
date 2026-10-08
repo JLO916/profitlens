@@ -51,15 +51,15 @@ describe("R5-3 scenario presets (05 §8)", () => {
       for (const field of fields) expect(preset.inputs[field]).toMatch(/^-?\d+$/);
     }
   });
-  it("names and purposes come from labels.scenarioPresets and avoid disclaimer boilerplate", () => {
+  it("names and purposes come from labels.scenarios.presets and avoid disclaimer boilerplate", () => {
     for (const preset of SCENARIO_PRESETS) {
-      expect(preset.name).toBe(labels.scenarioPresets.items[preset.id].name);
-      expect(preset.purpose).toBe(labels.scenarioPresets.items[preset.id].purpose);
+      expect(preset.name).toBe(labels.scenarios.presets.items[preset.id].name);
+      expect(preset.purpose).toBe(labels.scenarios.presets.items[preset.id].purpose);
       expect(preset.name).toMatch(/\S/);
       expect(preset.purpose).toMatch(/\S/);
       expect(preset.purpose).not.toMatch(/不是|不代表|不等於|不可/);
     }
-    expect(labels.scenario.templateNote).toMatch(/\S/);
+    expect(labels.scenarios.inputs.templateNote).toMatch(/\S/);
   });
   it("is frozen so a caller cannot rewrite the shared table", () => {
     expect(Object.isFrozen(SCENARIO_PRESETS)).toBe(true);
@@ -93,6 +93,6 @@ describe("R5-3 scenario presets (05 §8)", () => {
   });
   it("漲價 5% (−5 points) is out of range for a baseline whose discount rate is below 5%, and rangeHint says so first", () => {
     // 折扣率 3%：3% − 5 點 = −2% < 0 → 引擎 SCENARIO_DISCOUNT_RATE_OUT_OF_RANGE；提示同步標出。
-    expect(rangeHint("discount_change_pp", "-5", { discount_rate: "0.030000000000" })).toBe(fill(labels.scenarioPresets.range.discount, { rate: "−2.0" }));
+    expect(rangeHint("discount_change_pp", "-5", { discount_rate: "0.030000000000" })).toBe(fill(labels.scenarios.presets.range.discount, { rate: "−2.0" }));
   });
 });

@@ -79,8 +79,8 @@ type ShellState = {
   actionsView?: "board" | "list";
 };
 
-const datasetNames: Record<string, string> = { demo: labels.ui.dashboard.datasets.demo, golden: labels.ui.dashboard.datasets.golden, "missing-cogs": labels.ui.dashboard.datasets.missingCogs };
-const panelCopy = (panel: ShellPanel) => labels.nav[panel];
+const datasetNames: Record<string, string> = { demo: labels.shell.devValidation.datasets.demo, golden: labels.shell.devValidation.datasets.golden, "missing-cogs": labels.shell.devValidation.datasets.missingCogs };
+const panelCopy = (panel: ShellPanel) => labels.shell.nav[panel];
 
 /** 依 dashboard.tsx 的 return 組出「已載入資料」的整頁（殼層＋期間列＋橫幅＋頁面內容＋頁尾＋抽屜／dialog 的關閉狀態）。 */
 function shellPage(state: ShellState): ReactElement {
@@ -99,7 +99,7 @@ function shellPage(state: ShellState): ReactElement {
   const presets = periodPresets(active.dataset.manifest, { previous: { start: dates.previousStart, end: dates.previousEnd }, current: { start: dates.currentStart, end: dates.currentEnd }, comparison_mode: comparisonMode });
   const presetMatches = (preset: PeriodPreset) => preset.status === "ready" && preset.comparison_mode === comparisonMode && preset.previous.start === dates.previousStart && preset.previous.end === dates.previousEnd && preset.current.start === dates.currentStart && preset.current.end === dates.currentEnd;
   const datasetName = datasetNames[active.id] ?? active.dataset.manifest.dataset_id;
-  const statusText = status === "ready" ? fill(labels.status.ready, { date: active.dataset.manifest.data_as_of }) : labels.status[status];
+  const statusText = status === "ready" ? fill(labels.shell.status.ready, { date: active.dataset.manifest.data_as_of }) : labels.shell.status[status];
   const currentContext = scenarioWorkspace.contexts.find(context => context.status === "current" && context.session.filter_hash === active.snapshot.filter_hash);
   const decision = currentContext ? scenarioContextDecision(currentContext) : emptyDecisionWorkspace();
   const backupSource: WorkspaceBackupSource = { input: active.input, filters: report.scope, id: active.id, revision: active.revision, filenames: active.filenames, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: review, preprocessing: null, targets: active.targets ?? null, events: active.events ?? null, meeting_history: history, ui_prefs: {} };
@@ -115,17 +115,17 @@ function shellPage(state: ShellState): ReactElement {
     }
   })();
   return <div className="app-shell">
-    <a className="skip-link" href="#main-content">{labels.ui.dashboard.skipLink}</a>
+    <a className="skip-link" href="#main-content">{labels.shell.sidebar.skipLink}</a>
     <ShellFrame panel={panel} showValidation={!!state.showValidation} onNavigate={noop}
-      dataStatus={{ state: status, data: { local, datasetName, dataAsOf: active.dataset.manifest.data_as_of, coverageStart: active.dataset.manifest.coverage_start, issueCount: active.dataset.issues.length }, statusText, statusDetail: status === "ready" ? datasetName : fill(labels.ui.dashboard.statusDataset, { dataset: datasetName, date: active.dataset.manifest.data_as_of }), publicDemo: true, onGoData: noop, onImport: noop }}
-      ai={{ headline: labels.status.aiOff, detail: labels.ui.dashboard.aiDetail.publicDemo, open: false, onToggle: noop }} aiContainerRef={{ current: null }} aiButtonRef={{ current: null }}
+      dataStatus={{ state: status, data: { local, datasetName, dataAsOf: active.dataset.manifest.data_as_of, coverageStart: active.dataset.manifest.coverage_start, issueCount: active.dataset.issues.length }, statusText, statusDetail: status === "ready" ? datasetName : fill(labels.shell.topbar.statusDataset, { dataset: datasetName, date: active.dataset.manifest.data_as_of }), publicDemo: true, onGoData: noop, onImport: noop }}
+      ai={{ headline: labels.shell.status.aiOff, detail: labels.shell.topbar.aiDetail.publicDemo, open: false, onToggle: noop }} aiContainerRef={{ current: null }} aiButtonRef={{ current: null }}
       onBasis={noop}
       badges={{ snapshot: active.snapshot, issues: active.dataset.issues.length, meetingDraft: review?.decision_state === "draft" }}
       storage={<WorkspaceStorage source={backupSource} version={1} dirty={false} onRestore={noop} onSaved={noop} onDeleted={noop} consent={state.consent ?? true} onConsentChange={noop} onClear={noop} />}
       exportMenu={<ExportMenu source={active} busy={null} error={null} summaryRef={{ current: null }} onCopySummary={copySummaryNoop} onDecision={noop} onPrint={noop} onExport={noop} onMeetingNotes={noop} />} />
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
-        <PageHeader title={panelCopy(panel).label} description={panelCopy(panel).description} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} presentToggle={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed={false} onClick={noop}>{labels.shell.presentV3.enter}</button> : undefined} />
+        <PageHeader title={panelCopy(panel).headline} description={panelCopy(panel).explain} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} presentToggle={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed={false} onClick={noop}>{labels.shell.presentV3.enter}</button> : undefined} />
         {state.showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={asyncNoop} onCancel={noop} busy={false} localSaveConsented={state.consent ?? true} /></div>}
         <PeriodBar
           channel={{ value: report.scope.channels.length > 1 ? "" : report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, alias) })), onChange: noop }}
@@ -197,7 +197,7 @@ async function pageStates(): Promise<StateMarkup[]> {
 
   const states: Record<string, ShellState> = {
     overview: { panel: "overview", active: demoWithSides, status: "ready" },
-    diagnosis: { panel: "diagnosis", active: demo, status: "ready", filterError: labels.ui.dashboard.errors.processingFailed },
+    diagnosis: { panel: "diagnosis", active: demo, status: "ready", filterError: labels.shell.state.errors.processingFailed },
     products: { panel: "products", active: demo, status: "ready" },
     scenarios: { panel: "scenarios", active: goldenDtc, status: "ready", scenarioWorkspace: scenarios },
     actions: { panel: "actions", active: golden, status: "ready", actionWorkspace: actions, scenarioWorkspace: scenarios },
@@ -272,17 +272,17 @@ async function pageStates(): Promise<StateMarkup[]> {
 function statusShells(): StateMarkup[] {
   const issues = validateDataset(fixture("errors/duplicate_sales_key")).issues;
   const shell = (status: "empty" | "error", panel: ShellPanel, body: ReactElement) => <div className="app-shell">
-    <a className="skip-link" href="#main-content">{labels.ui.dashboard.skipLink}</a>
+    <a className="skip-link" href="#main-content">{labels.shell.sidebar.skipLink}</a>
     <ShellFrame panel={panel} showValidation={false} onNavigate={noop}
-      dataStatus={{ state: status, data: null, statusText: labels.status[status], statusDetail: null, publicDemo: true, onGoData: noop, onImport: noop }}
-      ai={{ headline: labels.status.aiOff, detail: labels.ui.dashboard.aiDetail.publicDemo, open: false, onToggle: noop }} aiContainerRef={{ current: null }} aiButtonRef={{ current: null }}
+      dataStatus={{ state: status, data: null, statusText: labels.shell.status[status], statusDetail: null, publicDemo: true, onGoData: noop, onImport: noop }}
+      ai={{ headline: labels.shell.status.aiOff, detail: labels.shell.topbar.aiDetail.publicDemo, open: false, onToggle: noop }} aiContainerRef={{ current: null }} aiButtonRef={{ current: null }}
       onBasis={noop}
       badges={{ snapshot: null, issues: 0, meetingDraft: false }}
       storage={<WorkspaceStorage source={null} version={0} dirty={false} onRestore={noop} onSaved={noop} onDeleted={noop} consent={false} onConsentChange={noop} onClear={noop} />}
       exportMenu={<ExportMenu source={null} busy={null} error={null} summaryRef={{ current: null }} onCopySummary={copySummaryNoop} onDecision={noop} onPrint={noop} onExport={noop} onMeetingNotes={noop} />} />
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
-        <PageHeader title={panelCopy(panel).label} description={panelCopy(panel).description} isData={panel === "data"} importing={false} hasData={status !== "empty"} showLoadDemo onLoadDemo={noop} onImport={noop} />
+        <PageHeader title={panelCopy(panel).headline} description={panelCopy(panel).explain} isData={panel === "data"} importing={false} hasData={status !== "empty"} showLoadDemo onLoadDemo={noop} onImport={noop} />
         {body}
         <ShellFooter analytics onBasis={noop} />
       </main>
@@ -291,7 +291,7 @@ function statusShells(): StateMarkup[] {
   </div>;
   return [
     { name: "shell-empty-data", html: renderToStaticMarkup(shell("empty", "data", <FirstRunState onLoadDemo={noop} onImport={noop} showActions={false} />)), state: null },
-    { name: "shell-error", html: renderToStaticMarkup(shell("error", "overview", <ErrorState error={labels.ui.dashboard.errors.validationFailed} issues={issues} onRetry={noop} />)), state: null },
+    { name: "shell-error", html: renderToStaticMarkup(shell("error", "overview", <ErrorState error={labels.shell.state.errors.validationFailed} issues={issues} onRetry={noop} />)), state: null },
   ];
 }
 
@@ -409,17 +409,17 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       for (const { name, html, state } of loaded()) {
         const custom = element(html, 'data-testid="period-custom-panel"')!;
         for (const id of ["previous-start", "previous-end", "current-start", "current-end"]) expect(custom, `${name} #${id}`).toContain(`id="${id}"`);
-        expect(custom, name).toContain(`aria-label="${escapeAttr(labels.ui.dashboard.filter.comparisonMode)}"`);
+        expect(custom, name).toContain(`aria-label="${escapeAttr(labels.shell.periodBar.filter.comparisonMode)}"`);
         expect(custom, name).toContain('type="submit"');
         const popover = element(html, 'data-testid="data-status-popover"')!;
         for (const id of ["data-status-go-data", "data-status-import"]) expect(popover, `${name} ${id}`).toContain(`data-testid="${id}"`);
         const more = element(html, 'data-testid="mobile-more"')!;
-        const moreItems = [labels.nav.products.label, labels.nav.scenarios.label, labels.nav.data.label, ...(state!.showValidation ? [labels.nav.validation.label] : [])];
+        const moreItems = [labels.shell.nav.products.headline, labels.shell.nav.scenarios.headline, labels.shell.nav.data.headline, ...(state!.showValidation ? [labels.shell.nav.validation.headline] : [])];
         expect([...more.matchAll(/<button[^>]*class="more-item"[^>]*>.*?<span>([^<]+)<\/span><\/button>/g)].map(match => match[1]), name).toEqual(moreItems);
         const menu = element(html, 'data-testid="download-menu"')!;
         for (const id of ["download-meeting-section", "download-templates"]) expect(menu, `${name} ${id}`).toContain(`data-testid="${id}"`);
         // V3-7 C：每項是 button.ui-menu-item[data-lines="2"]，可見名稱在 .export-item-name（可及名稱以 aria-labelledby 指到它，名稱不變）。
-        for (const text of [labels.downloads.analysisCsv, labels.downloads.channelTableCsv, labels.downloads.manifestJson, labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown, labels.downloads.decisionMd, labels.downloads.decisionCsv, labels.downloads.decisionJson]) expect(menu, `${name} 匯出：${text}`).toContain(`class="export-item-name">${escapeAttr(text)}</span>`);
+        for (const text of [labels.exports.downloads.analysisCsv, labels.exports.downloads.channelTableCsv, labels.exports.downloads.manifestJson, labels.exports.buttons.exportPdf, labels.exports.buttons.exportExcel, labels.exports.buttons.exportPptx, labels.meeting.page.menuMarkdown, labels.exports.downloads.decisionMd, labels.exports.downloads.decisionCsv, labels.exports.downloads.decisionJson]) expect(menu, `${name} 匯出：${text}`).toContain(`class="export-item-name">${escapeAttr(text)}</span>`);
         const storage = element(html, 'data-testid="workspace-storage"')!;
         expect(storage, `${name} 清空目前資料在儲存選單的危險區`).toMatch(/storage-danger[\s\S]*clear-button/);
         for (const id of ["autosave-status", ...(state!.consent ?? true ? ["autosave-toggle"] : [])]) expect(storage, `${name} ${id}`).toContain(`data-testid="${id}"`);
@@ -513,7 +513,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(more).toContain(`>${fill(labels.diagnosis.listV3.moreScopes, { n: 5 })}</summary>`);
       expect(more.match(/class="scope-chip" aria-pressed=/g)).toHaveLength(5);
       expect(row.match(/class="scope-chip" aria-pressed=/g)).toHaveLength(9);
-      expect(occurrences(row, `role="group" aria-label="${escapeAttr(labels.diagnosisList.scopeSwitch)}"`)).toBe(2);
+      expect(occurrences(row, `role="group" aria-label="${escapeAttr(labels.diagnosis.list.scopeSwitch)}"`)).toBe(2);
       const duplicates = [...idCounts(html)].filter(([, count]) => count > 1);
       expect(duplicates).toEqual([]);
     });
@@ -600,12 +600,12 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const { html } = states.find(state => state.name === "actions")!;
       const ids = testIdCounts(html);
       const moves: Record<string, string[]> = { "board-card-1": ["not_started", "blocked", "completed"], "board-card-2": ["in_progress", "blocked", "completed"] };
-      const statusName: Record<string, string> = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done };
+      const statusName: Record<string, string> = { not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done };
       for (const [card, statuses] of Object.entries(moves)) {
         const body = element(html, `data-testid="${card}"`)!;
         for (const status of statuses) {
           expect(ids.get(`${card}-move-${status}`), `${card}-move-${status}`).toBe(1);
-          expect(openTag(body, `data-testid="${card}-move-${status}"`), status).toContain(`aria-label="${escapeAttr(fill(labels.actionBoard.moveTo, { status: statusName[status] }))}"`);
+          expect(openTag(body, `data-testid="${card}-move-${status}"`), status).toContain(`aria-label="${escapeAttr(fill(labels.actions.board.moveTo, { status: statusName[status] }))}"`);
         }
         expect(ids.get(`${card}-edit`), `${card}-edit`).toBe(1);
         expect(body, card).not.toMatch(/<details|<dl/);
@@ -647,10 +647,10 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect(regions.map(region => item.indexOf(region!)), `action-${n}`).toEqual([...regions.map(region => item.indexOf(region!))].sort((a, b) => a - b));
         expect(testIdCounts(item).get("evidence-checklist"), `action-${n}`).toBe(1);
         expect(regions[1], `action-${n}`).toContain('data-testid="evidence-checklist"');
-        expect(regions[2], `action-${n}`).toContain(`<summary>${labels.sections.technicalDetails}</summary>`);
+        expect(regions[2], `action-${n}`).toContain(`<summary>${labels.evidence.sections.technicalDetails}</summary>`);
         for (const region of regions) expect(region, `action-${n}`).not.toMatch(/<details[^>]*\sopen=""/);
       }
-      expect(element(html, `data-testid="action-1"`)).toContain(`<summary>${labels.ui.actionsWorkbench.limitations}</summary>`);
+      expect(element(html, `data-testid="action-1"`)).toContain(`<summary>${labels.actions.workbench.limitations}</summary>`);
       expect(testIdCounts(html).get("action-drawer") ?? 0).toBe(0);
       expect([...idCounts(html)].filter(([, count]) => count > 1)).toEqual([]);
       expect(duplicateTestIds(html)).toEqual([]);
@@ -709,9 +709,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect(at.every(index => index >= 0), `${name} 五個分組`).toBe(true);
         expect([...at].sort((a, b) => a - b), `${name} 分組順序`).toEqual(at);
         const names = (id: string) => [...element(menu, `data-testid="${id}"`)!.matchAll(/class="export-item-name">([^<]+)<\/span>/g)].map(match => match[1]);
-        expect(names("download-group-current"), name).toEqual([labels.downloads.analysisCsv, labels.downloads.channelTableCsv, labels.downloads.manifestJson, ...(state!.active.dataset.issues.length > 0 ? [labels.downloads.issuesCsv] : [])].map(escapeAttr));
-        expect(names("download-group-summary"), name).toEqual([labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown].map(escapeAttr));
-        expect(names("download-group-decision"), name).toEqual([labels.downloads.decisionMd, labels.downloads.decisionCsv, labels.downloads.decisionJson].map(escapeAttr));
+        expect(names("download-group-current"), name).toEqual([labels.exports.downloads.analysisCsv, labels.exports.downloads.channelTableCsv, labels.exports.downloads.manifestJson, ...(state!.active.dataset.issues.length > 0 ? [labels.exports.downloads.issuesCsv] : [])].map(escapeAttr));
+        expect(names("download-group-summary"), name).toEqual([labels.exports.buttons.exportPdf, labels.exports.buttons.exportExcel, labels.exports.buttons.exportPptx, labels.meeting.page.menuMarkdown].map(escapeAttr));
+        expect(names("download-group-decision"), name).toEqual([labels.exports.downloads.decisionMd, labels.exports.downloads.decisionCsv, labels.exports.downloads.decisionJson].map(escapeAttr));
         expect(names("download-group-meeting"), name).toEqual([escapeAttr(labels.overview.snapshotUi.copy)]);
         expect(element(menu, 'data-testid="download-group-summary"'), name).toContain('data-testid="download-meeting-section"');
         const meeting = element(menu, 'data-testid="download-group-meeting"')!;
@@ -724,7 +724,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
           const refs = [/aria-labelledby="([^"]+)"/.exec(button[0])![1], ...(/aria-describedby="([^"]+)"/.exec(button[0])![1].split(/\s+/))];
           for (const ref of refs) expect(ids.get(ref), `${name} ${ref}`).toBe(1);
         }
-        for (const text of [labels.downloads.menuNote, labels.meetingPage.menuViewNote]) expect(menu, `${name} v2 說明已拿掉`).not.toContain(escapeAttr(text));
+        for (const text of [labels.exports.downloads.menuNote, labels.meeting.page.menuViewNote]) expect(menu, `${name} v2 說明已拿掉`).not.toContain(escapeAttr(text));
       }
     });
 
@@ -733,7 +733,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const menu = element(html, 'data-testid="download-menu"')!;
       for (const id of ["download-group-templates", "download-templates"]) expect(testIdCounts(menu).get(id), id).toBe(1);
       for (const id of ["download-group-current", "download-group-summary", "download-group-decision", "download-group-meeting", "download-meeting-section", "download-copy-summary"]) expect(testIdCounts(menu).has(id), id).toBe(false);
-      expect(menu).toContain(escapeAttr(labels.downloads.menuEmpty));
+      expect(menu).toContain(escapeAttr(labels.exports.downloads.menuEmpty));
     });
 
     // ── V3-8 A（資料來源頁）的 M1 掛載測試在此之後新增（問題表在第二段、版本與來源資訊 details、來源預覽三個 details、範本 3×3）──
@@ -754,7 +754,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         // 來源檔案預覽：三個收合的 details，前 10 列表格（caption、region）保持掛載。
         for (const role of ["sales_daily.csv", "channel_costs_daily.csv", "ad_spend_daily.csv"]) {
           expect(openTag(view, `data-testid="data-preview-${role}"`), `${name} ${role}`).toBe(`<details class="data-preview-file" data-testid="data-preview-${role}">`);
-          expect(element(view, `data-testid="data-preview-${role}"`), `${name} ${role}`).toContain(escapeAttr(fill(labels.ui.workspacePanels.previewCaption, { fileName: role })));
+          expect(element(view, `data-testid="data-preview-${role}"`), `${name} ${role}`).toContain(escapeAttr(fill(labels.data.panel.previewCaption, { fileName: role })));
         }
         // 範本下載：資料來源頁一份 3×3（含表頭 4 列），頂欄匯出選單的 download-templates 仍只有一份（M6：兩處是不同容器，沒有共用 testid）。
         const templates = element(view, 'data-testid="data-templates"')!;
@@ -836,7 +836,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(occurrences(convertDetails, 'type="checkbox"')).toBe(9);
       const proposal = element(pages["import-step-3"], 'data-testid="import-settings-proposal"')!;
       const closed = proposal.split('<details class="wizard-details">').slice(1).map(part => part.split("</details>")[0]);
-      expect(closed.some(part => part.includes(`aria-label="${escapeAttr(labels.importWizard.comparisonMode)}"`) && part.includes(`aria-label="${escapeAttr(labels.csvColumns.current_end)}"`))).toBe(true);
+      expect(closed.some(part => part.includes(`aria-label="${escapeAttr(labels.importWizard.comparisonMode)}"`) && part.includes(`aria-label="${escapeAttr(labels.exports.csv.columns.current_end)}"`))).toBe(true);
       expect(closed.some(part => part.includes('aria-label="DTC"') && part.includes('aria-label="MARKETPLACE"'))).toBe(true);
     });
 
@@ -849,7 +849,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect(ids.get("empty-state"), `${name} empty-state`).toBe(1);
         // V3-8 收尾（M6）：總覽的空狀態有兩顆動作；資料來源頁的頁首已有「載入示範資料／匯入資料」（page-import），空狀態不重複按鈕列。
         for (const id of ["empty-load-demo", "empty-import"]) expect(ids.get(id), `${name} ${id}`).toBe(name === "shell-empty" ? 1 : undefined);
-        expect(occurrences(html, `>${labels.buttons.loadDemo}<`), `${name} 載入示範資料只有一顆`).toBe(1);
+        expect(occurrences(html, `>${labels.shell.buttons.loadDemo}<`), `${name} 載入示範資料只有一顆`).toBe(1);
         expect(ids.get("page-import"), `${name} page-import`).toBe(name === "shell-empty-data" ? 1 : undefined);
         for (const id of ["loading-state", "error-state", "error-retry"]) expect(ids.has(id), `${name} ${id}`).toBe(false);
         const section = element(html, 'data-testid="empty-state"')!;
@@ -860,12 +860,12 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect(table, name).toMatch(/^<table class="template-table template-guide"/);
         expect(occurrences(table, "<tr>"), name).toBe(4);
         for (const file of [labels.importWizard.files.sales, labels.importWizard.files.costs, labels.importWizard.files.ads]) {
-          expect(occurrences(table, `aria-label="${escapeAttr(fill(labels.downloads.blankTemplate, { file }))}"`), `${name} ${file}`).toBe(1);
-          expect(occurrences(table, `aria-label="${escapeAttr(fill(labels.downloads.exampleTemplate, { file }))}"`), `${name} ${file}`).toBe(1);
+          expect(occurrences(table, `aria-label="${escapeAttr(fill(labels.exports.downloads.blankTemplate, { file }))}"`), `${name} ${file}`).toBe(1);
+          expect(occurrences(table, `aria-label="${escapeAttr(fill(labels.exports.downloads.exampleTemplate, { file }))}"`), `${name} ${file}`).toBe(1);
         }
         // 頁面只有一個 h1（頁首），空狀態標題是 h2（M6）。
         expect(occurrences(html, "<h1"), name).toBe(1);
-        expect(section, name).toContain(`<h2 id="empty-state-title">${escapeAttr(labels.emptyState.title)}</h2>`);
+        expect(section, name).toContain(`<h2 id="empty-state-title">${escapeAttr(labels.empty.title)}</h2>`);
       }
       // 頁首「匯入資料」（page-import）仍只在資料來源頁的頁首；空狀態的「匯入資料」是另一個 testid（empty-import）。
       expect(testIdCounts(states.find(state => state.name === "shell-empty-data")!.html).get("page-import")).toBe(1);
@@ -879,10 +879,10 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const section = element(html, 'data-testid="error-state"')!;
       expect(section).toMatch(/^<section class="ui-empty-page state-page error-state" data-testid="error-state" aria-labelledby="error-state-title">/);
       expect(section).not.toContain("error-icon");
-      expect(section).toContain(`<p role="alert">${escapeAttr(labels.ui.dashboard.errors.validationFailed)}</p>`);
+      expect(section).toContain(`<p role="alert">${escapeAttr(labels.shell.state.errors.validationFailed)}</p>`);
       // 問題清單（IssueList 的 region）掛在錯誤容器的動作列之後。
       const issues = element(section, 'data-testid="error-issues"')!;
-      expect(issues).toContain(`role="region" aria-label="${escapeAttr(labels.ui.issueList.regionAria)}"`);
+      expect(issues).toContain(`role="region" aria-label="${escapeAttr(labels.data.issues.regionAria)}"`);
       expect(section.indexOf('data-testid="error-issues"')).toBeGreaterThan(section.indexOf('data-testid="error-view-issues"'));
       for (const name of ["shell-empty", "shell-empty-data", "shell-error"]) expect(testIdCounts(states.find(state => state.name === name)!.html).has("period-bar"), name).toBe(false);
     });
@@ -931,7 +931,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(badge).toContain(`>${badgeText}</span>`);
       // 在狀態標籤旁：同一個 board-card-tags 段落、緊接在狀態標籤之後。
       const tags = element(card, 'class="board-card-tags"')!;
-      expect(tags.indexOf(labels.actions.statuses.in_progress)).toBeLessThan(tags.indexOf('data-testid="board-card-1-ad-decision"'));
+      expect(tags.indexOf(labels.actions.form.statuses.in_progress)).toBeLessThan(tags.indexOf('data-testid="board-card-1-ad-decision"'));
       expect(testIdCounts(states.find(state => state.name === "actions")!.html).has("board-card-1-ad-decision"), "沒有標時不渲染").toBe(false);
 
       const list = states.find(state => state.name === "actions-ad-decision-list")!.html;
@@ -952,7 +952,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect(openTag(item, 'data-testid="action-ad-decision"'), `action-${n}`).toContain(`aria-label="${escapeAttr(ad.field)}"`);
         // 「內容」段的狀態 select 之後、進度紀錄之前。
         const content = element(item, `aria-label="${escapeAttr(labels.actions.drawerV3.content)}"`)!;
-        const order = [`aria-label="${escapeAttr(labels.actions.status)}"`, 'data-testid="action-ad-decision"', `aria-label="${escapeAttr(labels.actions.progress)}"`].map(attr => content.indexOf(attr));
+        const order = [`aria-label="${escapeAttr(labels.actions.form.status)}"`, 'data-testid="action-ad-decision"', `aria-label="${escapeAttr(labels.actions.form.progress)}"`].map(attr => content.indexOf(attr));
         expect(order.every(at => at >= 0) && order[0] < order[1] && order[1] < order[2], `action-${n} 欄位順序 ${order.join(",")}`).toBe(true);
       }
     });
@@ -1055,7 +1055,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
           for (const id of [`download-variant-${variant}-name`, `download-variant-${variant}-hint`]) expect(idCounts(html).get(id), `${name} #${id}`).toBe(1);
         }
         const names = [...group.matchAll(/class="export-item-name">([^<]+)<\/span>/g)].map(match => match[1]);
-        expect(names, name).toEqual([labels.buttons.exportPdf, labels.buttons.exportExcel, labels.buttons.exportPptx, labels.meetingPage.menuMarkdown].map(escapeAttr));
+        expect(names, name).toEqual([labels.exports.buttons.exportPdf, labels.exports.buttons.exportExcel, labels.exports.buttons.exportPptx, labels.meeting.page.menuMarkdown].map(escapeAttr));
       }
       // 空工作區（沒有可看的資料）沒有一頁摘要分組，也就沒有版本切換。
       const { html } = states.find(state => state.name === "shell-empty")!;
@@ -1139,7 +1139,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     it("期間列的通路 select、比較方式 select、4 個日期欄位各只有一份（桌機 popover 與手機底部面板共用 #period-bar-panel）", () => {
       for (const { name, html } of loaded()) {
         const bar = element(html, 'data-testid="period-bar"')!;
-        expect(occurrences(html, `aria-label="${escapeAttr(labels.ui.dashboard.filter.channel)}"`), `${name} 通路 select`).toBe(1);
+        expect(occurrences(html, `aria-label="${escapeAttr(labels.shell.periodBar.filter.channel)}"`), `${name} 通路 select`).toBe(1);
         expect(occurrences(bar, "<select"), `${name} 期間列 select 數`).toBe(2);
         expect(occurrences(bar, 'type="date"'), `${name} 期間列日期欄位數`).toBe(4);
         expect(occurrences(html, 'id="period-bar-panel"'), name).toBe(1);
@@ -1163,7 +1163,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     it("兩個 nav 各一個，aria-label 不同（桌機「主要導覽」、手機「手機導覽」）", () => {
       for (const { name, html } of states) {
         const navs = [...html.matchAll(/<nav\b[^>]*>/g)].map(match => /aria-label="([^"]*)"/.exec(match[0])?.[1] ?? "");
-        const main = escapeAttr(labels.ui.dashboard.mainNavAria), mobile = escapeAttr(labels.shell.mobileNav.aria);
+        const main = escapeAttr(labels.shell.sidebar.mainNavAria), mobile = escapeAttr(labels.shell.mobileNav.aria);
         expect(main, name).not.toBe(mobile);
         expect(navs.filter(label => label === main).length, `${name} 主要導覽`).toBe(1);
         expect(navs.filter(label => label === mobile).length, `${name} 手機導覽`).toBe(1);
@@ -1187,7 +1187,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         }
         // 指標定義（icon 按鈕）只有頂欄一個；頁尾的「指標定義」是另一個入口（§6.3 #12 三個入口都保留）。
         expect(occurrences(html, "basis-button"), `${name} 頂欄指標定義`).toBe(1);
-        expect(cluster, name).toContain(`aria-label="${escapeAttr(labels.buttons.basis)}"`);
+        expect(cluster, name).toContain(`aria-label="${escapeAttr(labels.shell.buttons.basis)}"`);
         expect(occurrences(html, "footer-basis"), `${name} 頁尾指標定義`).toBe(1);
         // 「更多」面板只放頁面導覽，不放頂欄的控制；topbar-more 同時控制兩者。
         expect(more, name).not.toMatch(/topbar-menu|ai-availability|basis-button/);

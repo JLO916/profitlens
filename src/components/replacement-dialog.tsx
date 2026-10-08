@@ -9,7 +9,7 @@ import { downloadText } from '@/application/download';
 import { fill, labels } from '@/i18n';
 
 export interface PendingReplacement { kind: ReplacementKind; version: number; run: () => void | Promise<void> }
-const ui = labels.ui.replacementDialog;
+const ui = labels.storage.replacement;
 const descriptions: Record<ReplacementKind, string> = ui.descriptions;
 export function ReplacementDialog({ intent, source, currentVersion, onSaved, onCancel, onProceed }: {
   intent: PendingReplacement; source: WorkspaceBackupSource | null; currentVersion: () => number;
@@ -58,15 +58,15 @@ export function ReplacementDialog({ intent, source, currentVersion, onSaved, onC
     <div className="evidence-body">
       <h2 id="replacement-heading">{ui.heading}</h2>
       <p>{fill(ui.unsavedIntro, { description: descriptions[intent.kind] })}</p>
-      <details><summary>{labels.sections.technicalDetails}</summary><p className="note">{ui.backupScopeNote}</p></details>
+      <details><summary>{labels.evidence.sections.technicalDetails}</summary><p className="note">{ui.backupScopeNote}</p></details>
       <div className="button-row">
         <button className="button primary" autoFocus disabled={!source || busy || state.stage === 'invalidated'} onClick={() => setSavingOptions(true)}>{ui.saveFirst}</button>
         <button className="button quiet" disabled={busy || state.stage === 'invalidated'} onClick={() => apply(chooseReplacement(state, 'discard', currentVersion()))}>{ui.discardAndContinue}</button>
-        <button className="button quiet" disabled={busy} onClick={onCancel}>{labels.buttons.cancel}</button>
+        <button className="button quiet" disabled={busy} onClick={onCancel}>{labels.shell.buttons.cancel}</button>
       </div>
       {savingOptions && <section aria-label={ui.saveOptionsAria}>
         <p>{ui.saveOptionsCaution}</p>
-        <button className="button quiet" disabled={busy || state.stage === 'invalidated'} onClick={() => void save(false)}>{labels.buttons.downloadBackup}</button>
+        <button className="button quiet" disabled={busy || state.stage === 'invalidated'} onClick={() => void save(false)}>{labels.storage.buttons.downloadBackup}</button>
         <label className="local-save-consent"><input type="checkbox" checked={consent} disabled={busy} onChange={e => setConsent(e.target.checked)} />{ui.localConsent}</label>
         <button className="button primary" disabled={!consent || busy || state.stage === 'invalidated'} onClick={() => void save(true)}>{ui.saveLocalAndContinue}</button>
       </section>}

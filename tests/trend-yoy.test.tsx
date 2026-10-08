@@ -27,7 +27,7 @@ import { YOY_EXPECTED_PERIOD, yoyDailySales, yoyInput } from "./helpers/yoy-data
 // Recharts 在伺服器端不繪製圖形，第三線的樣式直接斷言 YOY_LINE（stroke＝chartColors.yoy、虛線、connectNulls=false）；實際 DOM 由 E2E 檢查。
 
 const noop = () => undefined;
-const copy = labels.overview.trendYoyV3, frame = labels.overview.chartFrame, ui = labels.ui.overview;
+const copy = labels.overview.trendYoyV3, frame = labels.overview.chartFrame, ui = labels.overview.page;
 const DAY_MS = 86_400_000;
 const shift = (date: string, days: number) => new Date(Date.parse(`${date}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
 
@@ -58,11 +58,11 @@ function handNetRevenue(input: ReturnType<typeof yoyInput>, start: string, end: 
 describe("snapshot.yoy：去年同期彙總（application）", () => {
   it("demo、golden 的資料都從今年開始，去年同期不可用；原因就是期間快捷的文案（presetTooShort＋涵蓋起日＋「去年同期」）", () => {
     for (const { dataset, snapshot } of [demo, golden]) {
-      expect(snapshot.yoy).toEqual({ status: "unavailable", reason: fill(labels.periods.presetTooShort, { date: dataset.manifest.coverage_start, preset: labels.periods.presets.yoy }) });
+      expect(snapshot.yoy).toEqual({ status: "unavailable", reason: fill(labels.shell.periods.presetTooShort, { date: dataset.manifest.coverage_start, preset: labels.shell.periods.presets.yoy }) });
       const preset = periodPresets(dataset.manifest, { previous: snapshot.report.scope.previous_period, current: snapshot.report.scope.current_period, comparison_mode: snapshot.report.scope.comparison_mode }).find(item => item.id === "yoy")!;
       expect(preset.status === "unavailable" && preset.reason).toBe((snapshot.yoy as { reason: string }).reason);
     }
-    expect((demo.snapshot.yoy as { reason: string }).reason).toBe(fill(labels.periods.presetTooShort, { date: "2026-06-01", preset: labels.periods.presets.yoy }));
+    expect((demo.snapshot.yoy as { reason: string }).reason).toBe(fill(labels.shell.periods.presetTooShort, { date: "2026-06-01", preset: labels.shell.periods.presets.yoy }));
   });
 
   it("既有 weeks 只放上期與本期、數量與起訖不變（demo 12 週）；yoy 不進 filter_hash", async () => {
@@ -137,9 +137,9 @@ describe("snapshot.yoy：去年同期彙總（application）", () => {
   it("不可用的原因直接取自快捷：本期往前一年超出涵蓋 → presetTooShort（涵蓋起日）；本期超過一年 → yoyOverlap", async () => {
     // 兩年合成資料改看 2026-06-20–08-23（65 天）：去年同期從 2025-06-20 起，早於涵蓋起日 2025-07-01。
     const snapshot = await createSnapshot(twoYear.dataset, { previous_period: { start: "2026-04-16", end: "2026-06-19" }, current_period: { start: "2026-06-20", end: "2026-08-23" }, comparison_mode: "same_days" }, twoYear.snapshot.dataset_hash);
-    expect(snapshot.yoy).toEqual({ status: "unavailable", reason: fill(labels.periods.presetTooShort, { date: "2025-07-01", preset: labels.periods.presets.yoy }) });
+    expect(snapshot.yoy).toEqual({ status: "unavailable", reason: fill(labels.shell.periods.presetTooShort, { date: "2025-07-01", preset: labels.shell.periods.presets.yoy }) });
     const overlap = periodPresets(twoYear.dataset.manifest, { previous: { start: "2025-07-01", end: "2025-07-01" }, current: { start: "2025-07-02", end: "2026-08-23" }, comparison_mode: "same_days" }).find(item => item.id === "yoy")!;
-    expect(overlap).toMatchObject({ status: "unavailable", reason: labels.periods.yoyOverlap });
+    expect(overlap).toMatchObject({ status: "unavailable", reason: labels.shell.periods.yoyOverlap });
   });
 });
 
@@ -202,11 +202,11 @@ describe("趨勢圖第三線的呈現（SSR）", () => {
   it("可用：圖例三項，第三項是虛線段（12×2 SVG，stroke＝chartColors.yoy、dasharray 與第三線相同）、沒有「無資料」；沒有原因句", () => {
     const html = overview(twoYear.snapshot);
     expect(legendItems(html)).toEqual([
-      { testId: null, line: `background:${chartColors.current}`, label: labels.periods.current, note: null },
-      { testId: null, line: `background:${chartColors.previous}`, label: labels.periods.previous, note: null },
+      { testId: null, line: `background:${chartColors.current}`, label: labels.shell.periods.current, note: null },
+      { testId: null, line: `background:${chartColors.previous}`, label: labels.shell.periods.previous, note: null },
       { testId: "trend-legend-yoy", line: `stroke:${chartColors.yoy};dash:${YOY_LINE.strokeDasharray}`, label: copy.legend, note: null },
     ]);
-    expect(copy.legend).toBe(labels.periods.presets.yoy);
+    expect(copy.legend).toBe(labels.shell.periods.presets.yoy);
     expect(html).not.toContain('data-testid="trend-yoy-note"');
   });
 
@@ -266,7 +266,7 @@ describe("趨勢圖第三線的呈現（SSR）", () => {
     const demoDetails = element(byTestId(overview(demo.snapshot), "trend"), 'class="data-alternative"')!;
     expect(demoDetails.split(empty)).toHaveLength(demo.snapshot.weeks.length * 2 + 1);
     const first = demo.snapshot.weeks[0];
-    expect(demoDetails).toContain(`<td>${labels.periods[first.period]}</td><td>${first.start} — ${first.end}</td><td><button class="number-link">${formatAmountL2(first.metrics.net_revenue.value)}</button></td>`);
+    expect(demoDetails).toContain(`<td>${labels.shell.periods[first.period]}</td><td>${first.start} — ${first.end}</td><td><button class="number-link">${formatAmountL2(first.metrics.net_revenue.value)}</button></td>`);
   });
 
   it("既有系列與 testid 不變：trend、trend-events（有檔期時）各一份；本期／上期的資料表 number-link 數不變", () => {

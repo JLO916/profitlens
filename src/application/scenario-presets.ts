@@ -24,7 +24,7 @@ const PRESET_INPUTS: Record<ScenarioPresetId, ScenarioPresetInputs> = {
 };
 export const SCENARIO_PRESET_IDS: readonly ScenarioPresetId[] = Object.freeze(["keep", "double11", "cut_ads_half", "cancel_free_shipping", "price_up_5", "kol"]);
 export const SCENARIO_PRESETS: readonly ScenarioPreset[] = Object.freeze(SCENARIO_PRESET_IDS.map(id => Object.freeze({
-  id, name: labels.scenarioPresets.items[id].name, purpose: labels.scenarioPresets.items[id].purpose, inputs: Object.freeze({ ...PRESET_INPUTS[id] }),
+  id, name: labels.scenarios.presets.items[id].name, purpose: labels.scenarios.presets.items[id].purpose, inputs: Object.freeze({ ...PRESET_INPUTS[id] }),
 })));
 
 /** 只覆寫五個輸入欄位；assumptions_accepted 保持原值（範本不代替使用者勾選假設）。 */
@@ -138,7 +138,7 @@ function boundText(value: number): string {
 
 /** 這一格能不能用絕對值輸入：件數缺或 ≤ 0、本期廣告費缺或 ≤ 0、本期折扣率缺或不在 [0, 100%) 時停用，reason 是給畫面的一句話。 */
 export function absoluteAvailability(field: AbsoluteField, ctx: AbsoluteContext): { available: boolean; reason?: string } {
-  const reason = labels.scenarioPresets.absolute.unavailable[field];
+  const reason = labels.scenarios.presets.absolute.unavailable[field];
   if (field === "volume_change_pct") return ctx.units_sold !== null && ctx.units_sold > 0n ? { available: true } : { available: false, reason };
   if (field === "discount_change_pp") return discountBase(exact(ctx.discount_rate, ctx.gross_sales, ctx.discounts), ctx) !== null ? { available: true } : { available: false, reason };
   const ad = decimalOrNull(exact(ctx.ad_spend), ctx.ad_spend);
@@ -161,7 +161,7 @@ export function absoluteToRelative(field: AbsoluteField, absoluteText: string, c
   if (!availability.available) return { relative: null, equivalent: "", error: availability.reason };
   const text = typeof absoluteText === "string" ? absoluteText.trim() : "";
   if (text === "") return { relative: null, equivalent: "" };
-  const copy = labels.scenarioPresets.absolute;
+  const copy = labels.scenarios.presets.absolute;
   const invalid = (): AbsoluteConversion => ({ relative: null, equivalent: "", error: copy.errors[field] });
   const Exact = contextExact(ctx, text);
   let relative: Decimal;
@@ -185,7 +185,7 @@ export function absoluteToRelative(field: AbsoluteField, absoluteText: string, c
   // 只有遠超引擎界限的目標（例如幾十位數的件數）才會超過 100 字；不寫進方案，直接提示界限。
   if (value.length > MAX_RELATIVE_LENGTH) {
     const bounds = field === "discount_change_pp" ? null : SCENARIO_INPUT_BOUNDS[field];
-    return { relative: null, equivalent: "", error: bounds ? fill(labels.scenarioPresets.range.pct, { min: boundText(bounds.min), max: boundText(bounds.max) }) : copy.errors[field] };
+    return { relative: null, equivalent: "", error: bounds ? fill(labels.scenarios.presets.range.pct, { min: boundText(bounds.min), max: boundText(bounds.max) }) : copy.errors[field] };
   }
   const template = field === "discount_change_pp" ? copy.equivalentPoints : copy.equivalentPct;
   return { relative: value, equivalent: fill(template, { value: signedOneDecimal(relative) }) };
@@ -227,7 +227,7 @@ function reverse(field: AbsoluteField, relativeTextValue: string, ctx: AbsoluteC
 export function relativeToAbsolute(field: AbsoluteField, relativeTextValue: string, ctx: AbsoluteContext): string | null {
   const result = reverse(field, relativeTextValue, ctx);
   if (result === null) return null;
-  const copy = labels.scenarioPresets.absolute;
+  const copy = labels.scenarios.presets.absolute;
   if (result.field === "volume_change_pct") {
     const rounded = (result.integer ?? result.target).toFixed(0, Decimal.ROUND_HALF_UP);
     const units = fill(labels.assist.units.count, { value: groupDigits(rounded) });
@@ -254,7 +254,7 @@ export function relativeToAbsoluteValue(field: AbsoluteField, relativeTextValue:
 export function relativeEquivalent(field: AbsoluteField, relativeTextValue: string): string | null {
   const text = typeof relativeTextValue === "string" ? relativeTextValue.trim() : "";
   if (!RELATIVE_PATTERN.test(text)) return null;
-  const copy = labels.scenarioPresets.absolute;
+  const copy = labels.scenarios.presets.absolute;
   return fill(field === "discount_change_pp" ? copy.equivalentPoints : copy.equivalentPct, { value: signedOneDecimal(new (exact(text))(text)) });
 }
 
@@ -263,7 +263,7 @@ export function relativeEquivalent(field: AbsoluteField, relativeTextValue: stri
  * （與引擎相同；需 ctx 的 gross_sales／discounts，沒有時退回 discount_rate）、一次性為負或超過兩位小數。空白或在範圍內回傳 null。
  */
 export function rangeHint(field: ScenarioNumericField, relativeTextValue: string, ctx?: Pick<AbsoluteContext, "discount_rate" | "gross_sales" | "discounts">): string | null {
-  const copy = labels.scenarioPresets.range;
+  const copy = labels.scenarios.presets.range;
   const text = typeof relativeTextValue === "string" ? relativeTextValue.trim() : "";
   if (text === "") return null;
   if (field === "one_time_cost") {

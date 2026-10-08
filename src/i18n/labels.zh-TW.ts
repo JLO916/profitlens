@@ -3,27 +3,12 @@
 // V3-2c 結構（由 scripts/labels-regroup.mjs 依 scripts/labels-regroup.map.json 產生，文字與 V3-2b 逐字相同；沒有引用而刪除的鍵見 verification/revamp-v3/labels-removed-v3-2c.txt）：
 //   第 1 部分：被其他字串引用的共用字串（具名常數）；
 //   第 2 部分：新分組（頁面 › 區塊 › 元件）。字串常值只寫在這裡；改字、加字都改這一部分；
-//   第 3 部分：v2 舊鍵 alias（只放參照，不放字串；V3-10 移除）；
-//   第 4 部分：labels 匯出、LABEL_GROUPS／LEGACY_SECTIONS／legacyAliases（給掃描器與 tests/labels-structure.test.ts）。
+//   第 3 部分：labels 匯出與 LABEL_GROUPS（給掃描器與 tests/labels-structure.test.ts）。
+// V3-10（06_BATCHES「移除 labels 舊 key alias」、PRD §11.5）：v2 舊鍵 alias 已移除，舊路徑 → 新路徑的對照凍結在 tests/fixtures/labels-legacy-map.json。
 // 規則：元件、匯出、AI 預覽都從這裡取字；技術代號（L3）只放在 technical／*Technical 鍵或 glossary.aliases 內；模板用 fill() 填值。
 import type { MetricName, RuleCode } from "@/domain/types";
 
-export interface MetricLabel {
-  label: string;           // 主名稱（頁面、匯出）
-  short: string;           // 短名（卡片、表頭）
-  plain: string;           // 白話一句（tooltip）
-  formula: string;         // 中文階梯公式
-  formulaTechnical: string; // 技術公式（技術細節區）
-}
-
-export interface RuleLabel {
-  title: string;      // 標題模板，占位符：{dNet} {dCM} {cm} {prevRate} {curRate} {dAmount} {channel} {sku} {missing}
-  cause: string;      // 可能原因（待確認）；V3-2a 起可含 {prevRate} {curRate}（比率從標題移來）
-  nextStep: string;   // 下一步
-  caution: string;    // 注意（限制一句）
-}
-
-/** V3-2c 指標單元（PRD §3.2 規則 4、§8.10）：headline＝主名稱，explain＝白話一句，technical＝計算方式（L3）。舊鍵 label／plain／formula／formulaTechnical 是 alias。 */
+/** V3-2c 指標單元（PRD §3.2 規則 4、§8.10）：headline＝主名稱，explain＝白話一句，technical＝計算方式（L3）。v2 舊鍵 label／plain／formula／formulaTechnical 已於 V3-10 移除。 */
 export interface MetricUnit {
   headline: string;
   short: string;
@@ -31,7 +16,7 @@ export interface MetricUnit {
   technical: { formula: string; formulaTechnical: string };
 }
 
-/** V3-2c 規則卡單元：title → headline，cause／nextStep → explain.cause／explain.nextStep（分兩行顯示，不合併），caution 不變。 */
+/** V3-2c 規則卡單元：v2 title → headline，cause／nextStep → explain.cause／explain.nextStep（分兩行顯示，不合併），caution 不變。 */
 export interface RuleUnit {
   headline: string;
   explain: { cause: string; nextStep: string };
@@ -726,7 +711,7 @@ export const overview = {
     legend: shell.periods.presets.yoy,
     /** 去年同期的週（snapshot.yoy.weeks 的 label；抽屜篩選片語與標題用）：{n}＝第幾週。 */
     weekLabel: "去年同期第 {n} 週",
-    /** 去年同期不可用：圖下方一行 13px 次要色；{reason}＝期間快捷的不可用原因（labels.periods.*）。 */
+    /** 去年同期不可用：圖下方一行 13px 次要色；{reason}＝期間快捷的不可用原因（labels.shell.periods.*）。 */
     unavailable: "沒有去年同期線：{reason}",
     /** 提示列第三格：去年同期整段的淨營收合計（number-link 開抽屜）。 */
     takeawayTotal: "去年同期淨營收合計",
@@ -950,8 +935,8 @@ export const scenarios = {
     templateNote: "範本數字只是起點，請改成你的假設",
   },
   /** R5-B 情境範本與絕對值輸入（scenario-presets.ts）。
- * 選單標題用 labels.buttons.applyTemplate；「只是起點」提示用 labels.scenario.templateNote；
- * 絕對值欄位提示用 labels.scenario.{volume,discount,adSpend}.absoluteHint；切換鈕用 labels.scenario.modeRelative／modeAbsolute。 */
+ * 選單標題用 labels.scenarios.buttons.applyTemplate；「只是起點」提示用 labels.scenarios.inputs.templateNote；
+ * 絕對值欄位提示用 labels.scenarios.inputs.{volume,discount,adSpend}.absoluteHint；切換鈕用 labels.scenarios.inputs.modeRelative／modeAbsolute。 */
   presets: {
     menuPlaceholder: "選一個範本…",
     items: {
@@ -1261,6 +1246,19 @@ const actionsStore = {
     subtitle: "{owner} · {due} · {status}",
     due: "{date} 到期",
   },
+  // ── V3-9a 錨點（代理 B：廣告決策標籤（F13）——暫停／調整／加碼與「不標」、編輯器欄位名、卡片徽章、匯出欄名；PRD §10.1 F13、§7.5 第 7 點）
+  adDecisionV3: {
+    /** 待辦編輯器「內容」段的欄位名（狀態之後），也是決策 Markdown 的欄位名。 */
+    field: "廣告決策",
+    /** select 的第一個選項：沒有標籤。 */
+    none: "不標",
+    /** 使用者自選，系統不自動判斷。 */
+    options: { pause: "暫停", adjust: "調整", increase: "加碼" },
+    /** C8 卡片徽章（看板卡與清單項的狀態標籤旁，只在有標時）：「廣告加碼」。 */
+    badge: "廣告{decision}",
+    /** 決策 CSV 的最後一欄 ad_decision 的中文欄名。 */
+    csvColumn: "廣告決策",
+  },
 } as const;
 
 // ── meeting：會議紀錄：會議欄位、會議頁、會議紀錄輸出、一頁摘要、會議設定與決策
@@ -1379,7 +1377,7 @@ const meetingStore = {
     mdTitle: "# {brand} 會議紀錄：{name}",
     mdMeta: "{date}：{value} · {decision}：{state} · 結束時間：{finalizedAt}（台北時間）",
     mdScope: "## 固定範圍",
-    /** 結束會議當時的口徑（labels.basis.items 快照）與含稅換算一句。 */
+    /** 結束會議當時的口徑（labels.glossary.basis.items 快照）與含稅換算一句。 */
     mdBasis: "## 指標定義",
     mdField: "- {field}：{value}",
     mdPeriod: "- {period}：{range}",
@@ -2868,494 +2866,10 @@ export const relaunch = {
   ogScreenshotNote: "畫面為合成資料",
 } as const;
 
-// ═════════════════════════════════════════════ 第 3 部分：v2 舊鍵 alias（V3-10 移除）
-// 每個值都是指向第 2 部分的參照（整棵子樹相同時直接參照子樹），型別與 V3-2b 相同；不要在這裡寫字串。
-// 與新分組同名且鍵沒有改的區段直接就是新分組：importWizard、evidence、format、brand、assist、targets、events、relaunch、glossary。
+// ═════════════════════════════════════════════ 第 3 部分：匯出
 
-/** v2 metrics：展開新分組，再補上舊鍵。 */
-export const metrics = {
-  ...metricsStore,
-  gross_sales: { ...metricsStore.gross_sales, label: metricsStore.gross_sales.headline, plain: metricsStore.gross_sales.explain, formula: metricsStore.gross_sales.technical.formula, formulaTechnical: metricsStore.gross_sales.technical.formulaTechnical },
-  discounts: { ...metricsStore.discounts, label: metricsStore.discounts.headline, plain: metricsStore.discounts.explain, formula: metricsStore.discounts.technical.formula, formulaTechnical: metricsStore.discounts.technical.formulaTechnical },
-  refunds: { ...metricsStore.refunds, label: metricsStore.refunds.headline, plain: metricsStore.refunds.explain, formula: metricsStore.refunds.technical.formula, formulaTechnical: metricsStore.refunds.technical.formulaTechnical },
-  cogs_net: { ...metricsStore.cogs_net, label: metricsStore.cogs_net.headline, plain: metricsStore.cogs_net.explain, formula: metricsStore.cogs_net.technical.formula, formulaTechnical: metricsStore.cogs_net.technical.formulaTechnical },
-  platform_fees: { ...metricsStore.platform_fees, label: metricsStore.platform_fees.headline, plain: metricsStore.platform_fees.explain, formula: metricsStore.platform_fees.technical.formula, formulaTechnical: metricsStore.platform_fees.technical.formulaTechnical },
-  payment_fees: { ...metricsStore.payment_fees, label: metricsStore.payment_fees.headline, plain: metricsStore.payment_fees.explain, formula: metricsStore.payment_fees.technical.formula, formulaTechnical: metricsStore.payment_fees.technical.formulaTechnical },
-  fulfillment_costs: {
-    ...metricsStore.fulfillment_costs,
-    label: metricsStore.fulfillment_costs.headline,
-    plain: metricsStore.fulfillment_costs.explain,
-    formula: metricsStore.fulfillment_costs.technical.formula,
-    formulaTechnical: metricsStore.fulfillment_costs.technical.formulaTechnical,
-  },
-  other_variable_costs: {
-    ...metricsStore.other_variable_costs,
-    label: metricsStore.other_variable_costs.headline,
-    plain: metricsStore.other_variable_costs.explain,
-    formula: metricsStore.other_variable_costs.technical.formula,
-    formulaTechnical: metricsStore.other_variable_costs.technical.formulaTechnical,
-  },
-  ad_spend: { ...metricsStore.ad_spend, label: metricsStore.ad_spend.headline, plain: metricsStore.ad_spend.explain, formula: metricsStore.ad_spend.technical.formula, formulaTechnical: metricsStore.ad_spend.technical.formulaTechnical },
-  net_revenue: { ...metricsStore.net_revenue, label: metricsStore.net_revenue.headline, plain: metricsStore.net_revenue.explain, formula: metricsStore.net_revenue.technical.formula, formulaTechnical: metricsStore.net_revenue.technical.formulaTechnical },
-  gross_profit: { ...metricsStore.gross_profit, label: metricsStore.gross_profit.headline, plain: metricsStore.gross_profit.explain, formula: metricsStore.gross_profit.technical.formula, formulaTechnical: metricsStore.gross_profit.technical.formulaTechnical },
-  contribution_before_marketing: {
-    ...metricsStore.contribution_before_marketing,
-    label: metricsStore.contribution_before_marketing.headline,
-    plain: metricsStore.contribution_before_marketing.explain,
-    formula: metricsStore.contribution_before_marketing.technical.formula,
-    formulaTechnical: metricsStore.contribution_before_marketing.technical.formulaTechnical,
-  },
-  contribution_after_marketing: {
-    ...metricsStore.contribution_after_marketing,
-    label: metricsStore.contribution_after_marketing.headline,
-    plain: metricsStore.contribution_after_marketing.explain,
-    formula: metricsStore.contribution_after_marketing.technical.formula,
-    formulaTechnical: metricsStore.contribution_after_marketing.technical.formulaTechnical,
-  },
-  gross_margin: { ...metricsStore.gross_margin, label: metricsStore.gross_margin.headline, plain: metricsStore.gross_margin.explain, formula: metricsStore.gross_margin.technical.formula, formulaTechnical: metricsStore.gross_margin.technical.formulaTechnical },
-  contribution_margin: {
-    ...metricsStore.contribution_margin,
-    label: metricsStore.contribution_margin.headline,
-    plain: metricsStore.contribution_margin.explain,
-    formula: metricsStore.contribution_margin.technical.formula,
-    formulaTechnical: metricsStore.contribution_margin.technical.formulaTechnical,
-  },
-  discount_rate: { ...metricsStore.discount_rate, label: metricsStore.discount_rate.headline, plain: metricsStore.discount_rate.explain, formula: metricsStore.discount_rate.technical.formula, formulaTechnical: metricsStore.discount_rate.technical.formulaTechnical },
-  refund_ratio: { ...metricsStore.refund_ratio, label: metricsStore.refund_ratio.headline, plain: metricsStore.refund_ratio.explain, formula: metricsStore.refund_ratio.technical.formula, formulaTechnical: metricsStore.refund_ratio.technical.formulaTechnical },
-  mer: { ...metricsStore.mer, label: metricsStore.mer.headline, plain: metricsStore.mer.explain, formula: metricsStore.mer.technical.formula, formulaTechnical: metricsStore.mer.technical.formulaTechnical },
-  fulfillment_burden: {
-    ...metricsStore.fulfillment_burden,
-    label: metricsStore.fulfillment_burden.headline,
-    plain: metricsStore.fulfillment_burden.explain,
-    formula: metricsStore.fulfillment_burden.technical.formula,
-    formulaTechnical: metricsStore.fulfillment_burden.technical.formulaTechnical,
-  },
-  marketing_burden: {
-    ...metricsStore.marketing_burden,
-    label: metricsStore.marketing_burden.headline,
-    plain: metricsStore.marketing_burden.explain,
-    formula: metricsStore.marketing_burden.technical.formula,
-    formulaTechnical: metricsStore.marketing_burden.technical.formulaTechnical,
-  },
-} satisfies Record<MetricName, MetricLabel & MetricUnit>;
-/** v2 rules：展開新分組，再補上舊鍵。 */
-export const rules = {
-  ...rulesStore,
-  REV_UP_CM_DOWN: { ...rulesStore.REV_UP_CM_DOWN, title: rulesStore.REV_UP_CM_DOWN.headline, cause: rulesStore.REV_UP_CM_DOWN.explain.cause, nextStep: rulesStore.REV_UP_CM_DOWN.explain.nextStep },
-  NEGATIVE_CHANNEL_CM: { ...rulesStore.NEGATIVE_CHANNEL_CM, title: rulesStore.NEGATIVE_CHANNEL_CM.headline, cause: rulesStore.NEGATIVE_CHANNEL_CM.explain.cause, nextStep: rulesStore.NEGATIVE_CHANNEL_CM.explain.nextStep },
-  DISCOUNT_BURDEN_UP: { ...rulesStore.DISCOUNT_BURDEN_UP, title: rulesStore.DISCOUNT_BURDEN_UP.headline, cause: rulesStore.DISCOUNT_BURDEN_UP.explain.cause, nextStep: rulesStore.DISCOUNT_BURDEN_UP.explain.nextStep },
-  REFUND_BURDEN_UP: { ...rulesStore.REFUND_BURDEN_UP, title: rulesStore.REFUND_BURDEN_UP.headline, cause: rulesStore.REFUND_BURDEN_UP.explain.cause, nextStep: rulesStore.REFUND_BURDEN_UP.explain.nextStep },
-  FULFILLMENT_BURDEN_UP: { ...rulesStore.FULFILLMENT_BURDEN_UP, title: rulesStore.FULFILLMENT_BURDEN_UP.headline, cause: rulesStore.FULFILLMENT_BURDEN_UP.explain.cause, nextStep: rulesStore.FULFILLMENT_BURDEN_UP.explain.nextStep },
-  MARKETING_BURDEN_UP: { ...rulesStore.MARKETING_BURDEN_UP, title: rulesStore.MARKETING_BURDEN_UP.headline, cause: rulesStore.MARKETING_BURDEN_UP.explain.cause, nextStep: rulesStore.MARKETING_BURDEN_UP.explain.nextStep },
-  SKU_NEGATIVE_GP: { ...rulesStore.SKU_NEGATIVE_GP, title: rulesStore.SKU_NEGATIVE_GP.headline, cause: rulesStore.SKU_NEGATIVE_GP.explain.cause, nextStep: rulesStore.SKU_NEGATIVE_GP.explain.nextStep },
-  MISSING_CRITICAL_DATA: { ...rulesStore.MISSING_CRITICAL_DATA, title: rulesStore.MISSING_CRITICAL_DATA.headline, cause: rulesStore.MISSING_CRITICAL_DATA.explain.cause, nextStep: rulesStore.MISSING_CRITICAL_DATA.explain.nextStep },
-} satisfies Record<RuleCode, RuleLabel & RuleUnit>;
-export const nav = {
-  overview: { label: shell.nav.overview.headline, description: shell.nav.overview.explain },
-  diagnosis: { label: shell.nav.diagnosis.headline, description: shell.nav.diagnosis.explain },
-  products: { label: shell.nav.products.headline, description: shell.nav.products.explain },
-  scenarios: { label: shell.nav.scenarios.headline, description: shell.nav.scenarios.explain },
-  actions: { label: shell.nav.actions.headline, description: shell.nav.actions.explain },
-  meeting: { label: shell.nav.meeting.headline, description: shell.nav.meeting.explain },
-  data: { label: shell.nav.data.headline, description: shell.nav.data.explain },
-  validation: { label: shell.nav.validation.headline, description: shell.nav.validation.explain },
-} as const;
-export const sections = {
-  kpis: overview.sections.kpis,
-  assistKpis: overview.sections.assistKpis,
-  topThree: overview.sections.topThree,
-  keyDeltas: overview.sections.keyDeltas,
-  trend: overview.sections.trend,
-  bridge: overview.sections.bridge,
-  channelMix: overview.sections.channelMix,
-  periodTotals: overview.sections.periodTotals,
-  channelTable: overview.sections.channelTable,
-  diagnosisList: diagnosis.sections.diagnosisList,
-  productTopBottom: products.sections.productTopBottom,
-  productTable: products.sections.productTable,
-  scenarioBaseline: scenarios.sections.scenarioBaseline,
-  scenarioCompare: scenarios.sections.scenarioCompare,
-  scenarioAssumptions: scenarios.sections.scenarioAssumptions,
-  scenarioBreakeven: scenarios.sections.scenarioBreakeven,
-  actionBoard: actionsStore.sections.actionBoard,
-  actionList: actionsStore.sections.actionList,
-  meetingAgenda: meetingStore.sections.meetingAgenda,
-  meetingDecision: meetingStore.sections.meetingDecision,
-  meetingCompare: meetingStore.sections.meetingCompare,
-  dataScope: data.sections.dataScope,
-  dataPreprocessing: data.sections.dataPreprocessing,
-  dataPreview: data.sections.dataPreview,
-  dataIssues: data.sections.dataIssues,
-  evidence: evidence.sections.evidence,
-  technicalDetails: evidence.sections.technicalDetails,
-  impact: overview.sections.impact,
-  impactLegend: overview.sections.impactLegend,
-  impactLegendHelp: overview.sections.impactLegendHelp,
-  adjustThreshold: overview.sections.adjustThreshold,
-  rankingAmount: overview.sections.rankingAmount,
-  meetingNotCreated: meetingStore.sections.meetingNotCreated,
-  downloadCurrentView: shell.sections.downloadCurrentView,
-  downloadDecision: shell.sections.downloadDecision,
-  presetGroup: shell.sections.presetGroup,
-  aiDetail: shell.sections.aiDetail,
-  channelTableAria: overview.sections.channelTableAria,
-  channelTableCaption: overview.sections.channelTableCaption,
-  total: overview.sections.total,
-  caution: diagnosis.sections.caution,
-  data: diagnosis.sections.data,
-  cause: diagnosis.sections.cause,
-  nextStep: diagnosis.sections.nextStep,
-  autoCheck: diagnosis.sections.autoCheck,
-  meetingSummary: meetingStore.sections.meetingSummary,
-  aiExplain: shell.sections.aiExplain,
-} as const;
-export const buttons = {
-  loadDemo: shell.buttons.loadDemo,
-  importData: shell.buttons.importData,
-  apply: shell.buttons.apply,
-  calculate: scenarios.buttons.calculate,
-  addScenario: scenarios.buttons.addScenario,
-  removeScenario: scenarios.buttons.removeScenario,
-  addAction: actionsStore.buttons.addAction,
-  addToActions: actionsStore.buttons.addToActions,
-  viewEvidence: evidence.buttons.viewEvidence,
-  confirm: shell.buttons.confirm,
-  pin: actionsStore.buttons.pin,
-  moveUp: actionsStore.buttons.moveUp,
-  remove: actionsStore.buttons.remove,
-  rebind: actionsStore.buttons.rebind,
-  selectForMeeting: meetingStore.buttons.selectForMeeting,
-  updateMeetingSource: meetingStore.buttons.updateMeetingSource,
-  finalizeMeeting: meetingStore.buttons.finalizeMeeting,
-  save: shell.buttons.save,
-  download: shell.buttons.download,
-  downloadBackup: storage.buttons.downloadBackup,
-  saveLocal: storage.buttons.saveLocal,
-  deleteLocal: storage.buttons.deleteLocal,
-  restorePreview: storage.buttons.restorePreview,
-  clear: storage.buttons.clear,
-  basis: shell.buttons.basis,
-  exportPdf: exportLabels.buttons.exportPdf,
-  exportExcel: exportLabels.buttons.exportExcel,
-  exportPptx: exportLabels.buttons.exportPptx,
-  exportMarkdown: exportLabels.buttons.exportMarkdown,
-  print: shell.buttons.print,
-  fillZero: scenarios.buttons.fillZero,
-  applyTemplate: scenarios.buttons.applyTemplate,
-  cancel: shell.buttons.cancel,
-  close: shell.buttons.close,
-} as const;
-export const scenario = scenarios.inputs;
-/**
- * V3-9a（PRD §10.1 F13、§7.5 第 7 點）：廣告決策標籤的字串，掛在下方 actions.adDecisionV3 錨點。
- * 字串常值放在這裡，是因為 actions 是 v2 舊鍵的展開區，只能放參照（tests/labels-structure.test.ts (iii)）。
- */
-const actionsAdDecisionV3 = {
-  /** 待辦編輯器「內容」段的欄位名（狀態之後），也是決策 Markdown 的欄位名。 */
-  field: "廣告決策",
-  /** select 的第一個選項：沒有標籤。 */
-  none: "不標",
-  /** 使用者自選，系統不自動判斷。 */
-  options: { pause: "暫停", adjust: "調整", increase: "加碼" },
-  /** C8 卡片徽章（看板卡與清單項的狀態標籤旁，只在有標時）：「廣告加碼」。 */
-  badge: "廣告{decision}",
-  /** 決策 CSV 的最後一欄 ad_decision 的中文欄名。 */
-  csvColumn: "廣告決策",
-} as const;
-/** v2 actions：展開新分組，再補上舊鍵。 */
-export const actions = {
-  ...actionsStore,
-  problem: actionsStore.form.problem,
-  step: actionsStore.form.step,
-  owner: actionsStore.form.owner,
-  metric: actionsStore.form.metric,
-  due: actionsStore.form.due,
-  stop: actionsStore.form.stop,
-  extraData: actionsStore.form.extraData,
-  status: actionsStore.form.status,
-  progress: actionsStore.form.progress,
-  searchEvidence: actionsStore.form.searchEvidence,
-  statuses: actionsStore.form.statuses,
-  staleBadge: actionsStore.form.staleBadge,
-  confirmedNote: actionsStore.form.confirmedNote,
-  // ── V3-9a 錨點（代理 B：廣告決策標籤（F13）——暫停／調整／加碼與「不標」、編輯器欄位名、卡片徽章、匯出欄名、備份 v5 說明；收尾時刪除仍為空的物件）
-  adDecisionV3: actionsAdDecisionV3,
-} as const;
-/** v2 meeting：展開新分組，再補上舊鍵。 */
-export const meeting = {
-  ...meetingStore,
-  name: meetingStore.form.name,
-  date: meetingStore.form.date,
-  notes: meetingStore.form.notes,
-  decision: meetingStore.form.decision,
-  decisions: meetingStore.form.decisions,
-  decisionNote: meetingStore.form.decisionNote,
-  threshold: meetingStore.form.threshold,
-  noComparable: meetingStore.form.noComparable,
-} as const;
-export const status = shell.status;
-export const periods = shell.periods;
-export const importErrors: Record<string, string> = errors.import;
-export const basis = { title: glossary.basis.title, items: glossary.basis.items, footer: glossary.basis.footer, aliases: glossary.aliases, aliasNote: glossary.basis.aliasNote } as const;
-export const demoChannelAlias: Record<string, string> = data.demoChannelAlias;
-export const demoCategoryAlias: Record<string, string> = data.demoCategoryAlias;
-export const downloads = exportLabels.downloads;
-export const notes = overview.notes;
-export const csvColumns: Record<string, string> = exportLabels.csv.columns;
-export const csvSuffix = exportLabels.csv.suffix;
-export const units = format.units;
-export const emptyState = empty;
-export const ui = {
-  managerSummary: meetingStore.managerSummary,
-  channelTable: overview.channelTable,
-  topThree: overview.topThree,
-  workspacePanels: {
-    previewColumns: data.panel.previewColumns,
-    fileGrain: data.panel.fileGrain,
-    meta: data.panel.meta,
-    dateRange: data.panel.dateRange,
-    datasetCaution: data.panel.datasetCaution,
-    mappingsSummary: data.panel.mappingsSummary,
-    previewNote: data.panel.previewNote,
-    previewTag: data.panel.previewTag,
-    rowCount: data.panel.rowCount,
-    noRows: data.panel.noRows,
-    previewRegionAria: data.panel.previewRegionAria,
-    previewCaption: data.panel.previewCaption,
-    lineNumber: data.panel.lineNumber,
-    issuesNote: data.panel.issuesNote,
-    itemCount: data.panel.itemCount,
-    noIssues: data.panel.noIssues,
-    scopeAll: diagnosis.panel.scopeAll,
-    channelTableHeading: diagnosis.panel.channelTableHeading,
-    channelTableCaution: diagnosis.panel.channelTableCaution,
-    diagnosisNote: diagnosis.panel.diagnosisNote,
-    noDiagnostics: diagnosis.panel.noDiagnostics,
-    tagMissingData: diagnosis.panel.tagMissingData,
-    factNotFound: diagnosis.panel.factNotFound,
-    scopeAllWith: diagnosis.panel.scopeAllWith,
-    factLine: diagnosis.panel.factLine,
-    factAria: diagnosis.panel.factAria,
-    rankingCurrent: diagnosis.panel.rankingCurrent,
-    metricDelta: diagnosis.panel.metricDelta,
-    deltaFormula: diagnosis.panel.deltaFormula,
-    rankingAria: diagnosis.panel.rankingAria,
-    productsCaution: products.panel.productsCaution,
-    tagTwdExclusive: products.panel.tagTwdExclusive,
-    filterCategory: products.panel.filterCategory,
-    allCategories: products.panel.allCategories,
-    searchSku: products.panel.searchSku,
-    searchSkuPlaceholder: products.panel.searchSkuPlaceholder,
-    productsCsvHint: products.panel.productsCsvHint,
-    productCount: products.panel.productCount,
-    productScope: products.panel.productScope,
-    noProducts: products.panel.noProducts,
-    productTableAria: products.panel.productTableAria,
-    productTableCaption: products.panel.productTableCaption,
-    uncategorized: products.panel.uncategorized,
-    productCellAria: products.panel.productCellAria,
-    productEvidenceTitle: products.panel.productEvidenceTitle,
-    productScopeLabel: products.panel.productScopeLabel,
-  },
-  overview: overview.page,
-  multiScenarioWorkbench: scenarios.workbench,
-  reviewWorkbench: meetingStore.review,
-  dashboard: {
-    datasets: shell.devValidation.datasets,
-    errors: shell.state.errors,
-    aiDetail: shell.topbar.aiDetail,
-    skipLink: shell.sidebar.skipLink,
-    workspaceLabel: shell.sidebar.workspaceLabel,
-    mainNavAria: shell.sidebar.mainNavAria,
-    sidebarNote: shell.sidebar.sidebarNote,
-    sidebarFooter: shell.sidebar.sidebarFooter,
-    breadcrumbRoot: shell.sidebar.breadcrumbRoot,
-    statusDataset: shell.topbar.statusDataset,
-    modeBadge: shell.topbar.modeBadge,
-    aiLabel: shell.topbar.aiLabel,
-    validation: shell.devValidation.validation,
-    filter: shell.periodBar.filter,
-    partialNote: shell.periodBar.partialNote,
-    viewIssues: shell.periodBar.viewIssues,
-    scopeNote: shell.periodBar.scopeNote,
-    loading: shell.state.loading,
-    errorState: shell.state.errorState,
-  },
-  scenarioSensitivity: scenarios.sensitivity,
-  workspaceStorage: storage.workspace,
-  decisionWorkbench: scenarios.decision,
-  issueList: data.issues,
-  actionsWorkbench: actionsStore.workbench,
-  aiPanel: shell.ai.panel,
-  importPanel: importWizard.panel,
-  replacementDialog: storage.replacement,
-  workspaceDecisionExport: exportLabels.workspaceDecision,
-  productComparisonPanel: products.comparison,
-  export: exportLabels.common,
-  evidenceDrawer: evidence.drawer,
-  decisionExport: exportLabels.decision,
-  productComparisonExport: exportLabels.productComparison,
-  decision: scenarios.checks,
-  reviewSession: meetingStore.session,
-  importGuidance: importWizard.guidance,
-  aiClient: shell.ai.client,
-  import: errors.importDraft,
-  grounding: shell.ai.grounding,
-} as const;
-export const diagnosisList = diagnosis.list;
-export const scenarioPresets = scenarios.presets;
-export const scenarioForm = scenarios.form;
-export const actionBoard = actionsStore.board;
-export const productHighlights = products.highlights;
-export const meetingRecord = meetingStore.record;
-export const meetingPage = meetingStore.page;
-export const excelExport = exportLabels.excel;
-export const pptxExport = exportLabels.pptx;
-export const autoSave = storage.autoSave;
-export const whatsNew = shell.whatsNew;
-
-// ═════════════════════════════════════════════ 第 4 部分：匯出與遷移對照
-
-export const labels = { shell, overview, diagnosis, products, scenarios, actions, meeting, data, importWizard, evidence, exports: exportLabels, storage, empty, errors, glossary, format, summary, metrics, rules, assist, targets, events, brand, relaunch, ui, units, downloads, notes, csvColumns, csvSuffix, nav, sections, buttons, scenario, status, periods, importErrors, basis, demoChannelAlias, demoCategoryAlias, emptyState, diagnosisList, scenarioPresets, scenarioForm, actionBoard, productHighlights, meetingRecord, meetingPage, excelExport, pptxExport, autoSave, whatsNew };
+export const labels = { shell, overview, diagnosis, products, scenarios, actions: actionsStore, meeting: meetingStore, data, importWizard, evidence, exports: exportLabels, storage, empty, errors, glossary, format, summary, metrics: metricsStore, rules: rulesStore, assist, targets, events, brand, relaunch };
 export type Labels = typeof labels;
 
-/** 新分組（V3-2c）。掃描器只掃這些分組，略過下面的舊區段與 legacyAliases 指到別處的舊鍵，同一個字串不會算兩次。 */
+/** labels 的頂層分組（V3-2c；V3-10 移除 v2 舊鍵 alias 後，labels 頂層就是這些分組）。掃描器與 tests/labels-structure.test.ts 用它檢查沒有多出別的區段。 */
 export const LABEL_GROUPS = ["shell", "overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "importWizard", "evidence", "exports", "storage", "empty", "errors", "glossary", "format", "summary", "metrics", "rules", "assist", "targets", "events", "brand", "relaunch"] as const;
-/** v2 的 42 個頂層區段名（V3-10 移除 alias 後刪除）。與新分組同名者（例如 metrics、importWizard）同時是新分組。 */
-export const LEGACY_SECTIONS = ["ui", "units", "format", "brand", "downloads", "notes", "csvColumns", "csvSuffix", "evidence", "metrics", "rules", "nav", "sections", "buttons", "scenario", "actions", "meeting", "status", "periods", "importWizard", "importErrors", "basis", "demoChannelAlias", "demoCategoryAlias", "emptyState", "assist", "targets", "events", "diagnosisList", "scenarioPresets", "scenarioForm", "actionBoard", "productHighlights", "meetingRecord", "meetingPage", "excelExport", "pptxExport", "autoSave", "relaunch", "whatsNew", "glossary"] as const;
-
-/**
- * 舊路徑 → 新路徑的前綴對照（產生器輸出；整棵子樹相同時只列子樹）。legacyAliases 由此展開到每個葉節點。
- * 每列 [舊的上層, 新的上層, 鍵]：鍵以空白分隔；「舊鍵:新的相對路徑」表示改名或搬到更深一層，只寫一個名字表示同名。
- */
-const LEGACY_PREFIXES: readonly (readonly [string, string, string])[] = [
-  ["metrics.gross_sales", "metrics.gross_sales", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.discounts", "metrics.discounts", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.refunds", "metrics.refunds", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.cogs_net", "metrics.cogs_net", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.platform_fees", "metrics.platform_fees", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.payment_fees", "metrics.payment_fees", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.fulfillment_costs", "metrics.fulfillment_costs", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.other_variable_costs", "metrics.other_variable_costs", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.ad_spend", "metrics.ad_spend", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.net_revenue", "metrics.net_revenue", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.gross_profit", "metrics.gross_profit", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.contribution_before_marketing", "metrics.contribution_before_marketing", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.contribution_after_marketing", "metrics.contribution_after_marketing", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.gross_margin", "metrics.gross_margin", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.contribution_margin", "metrics.contribution_margin", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.discount_rate", "metrics.discount_rate", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.refund_ratio", "metrics.refund_ratio", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.mer", "metrics.mer", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.fulfillment_burden", "metrics.fulfillment_burden", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["metrics.marketing_burden", "metrics.marketing_burden", "label:headline short plain:explain formula:technical.formula formulaTechnical:technical.formulaTechnical"],
-  ["rules.REV_UP_CM_DOWN", "rules.REV_UP_CM_DOWN", "title:headline cause:explain.cause nextStep:explain.nextStep caution"],
-  ["rules.NEGATIVE_CHANNEL_CM", "rules.NEGATIVE_CHANNEL_CM", "title:headline cause:explain.cause nextStep:explain.nextStep caution"],
-  ["rules.DISCOUNT_BURDEN_UP", "rules.DISCOUNT_BURDEN_UP", "title:headline cause:explain.cause nextStep:explain.nextStep caution"],
-  ["rules.REFUND_BURDEN_UP", "rules.REFUND_BURDEN_UP", "title:headline cause:explain.cause nextStep:explain.nextStep caution"],
-  ["rules.FULFILLMENT_BURDEN_UP", "rules.FULFILLMENT_BURDEN_UP", "title:headline cause:explain.cause nextStep:explain.nextStep caution"],
-  ["rules.MARKETING_BURDEN_UP", "rules.MARKETING_BURDEN_UP", "title:headline cause:explain.cause nextStep:explain.nextStep caution"],
-  ["rules.SKU_NEGATIVE_GP", "rules.SKU_NEGATIVE_GP", "title:headline cause:explain.cause nextStep:explain.nextStep caution"],
-  ["rules.MISSING_CRITICAL_DATA", "rules.MISSING_CRITICAL_DATA", "title:headline cause:explain.cause nextStep:explain.nextStep caution"],
-  ["nav.overview", "shell.nav.overview", "label:headline description:explain"],
-  ["nav.diagnosis", "shell.nav.diagnosis", "label:headline description:explain"],
-  ["nav.products", "shell.nav.products", "label:headline description:explain"],
-  ["nav.scenarios", "shell.nav.scenarios", "label:headline description:explain"],
-  ["nav.actions", "shell.nav.actions", "label:headline description:explain"],
-  ["nav.meeting", "shell.nav.meeting", "label:headline description:explain"],
-  ["nav.data", "shell.nav.data", "label:headline description:explain"],
-  ["nav.validation", "shell.nav.validation", "label:headline description:explain"],
-  ["sections", "overview.sections", "kpis assistKpis topThree keyDeltas trend bridge channelMix periodTotals channelTable impact impactLegend impactLegendHelp adjustThreshold rankingAmount " +
-    "channelTableAria channelTableCaption total"],
-  ["sections", "diagnosis.sections", "diagnosisList caution data cause nextStep autoCheck"],
-  ["sections", "products.sections", "productTopBottom productTable"],
-  ["sections", "scenarios.sections", "scenarioBaseline scenarioCompare scenarioAssumptions scenarioBreakeven"],
-  ["sections", "actions.sections", "actionBoard actionList"],
-  ["sections", "meeting.sections", "meetingAgenda meetingDecision meetingCompare meetingNotCreated meetingSummary"],
-  ["sections", "data.sections", "dataScope dataPreprocessing dataPreview dataIssues"],
-  ["sections", "evidence.sections", "evidence technicalDetails"],
-  ["sections", "shell.sections", "downloadCurrentView downloadDecision presetGroup aiDetail aiExplain"],
-  ["buttons", "shell.buttons", "loadDemo importData apply confirm save download basis print cancel close"],
-  ["buttons", "scenarios.buttons", "calculate addScenario removeScenario fillZero applyTemplate"],
-  ["buttons", "actions.buttons", "addAction addToActions pin moveUp remove rebind"],
-  ["buttons", "evidence.buttons", "viewEvidence"],
-  ["buttons", "meeting.buttons", "selectForMeeting updateMeetingSource finalizeMeeting"],
-  ["buttons", "storage.buttons", "downloadBackup saveLocal deleteLocal restorePreview clear"],
-  ["buttons", "exports.buttons", "exportPdf exportExcel exportPptx exportMarkdown"],
-  ["", "scenarios", "scenario:inputs scenarioPresets:presets scenarioForm:form"],
-  ["", "actions", "actions:form actionBoard:board"],
-  ["", "meeting", "meeting:form meetingRecord:record meetingPage:page"],
-  ["", "shell", "status periods whatsNew"],
-  ["importWizard", "importWizard", "title steps stepperAria stepState files fileHints dropHint dropAllHint dropzoneAria dropped droppedUnassigned fileMeta encoding fileEmpty pickFile pickMany " +
-    "fileReading replaceFile removeFile limitsNote noFiles templatesBlank templatesExample howTo howToIntro howToDoc advanced manifestLabel manifestHint " +
-    "manifestLoaded mappingIntro mappingHead mappingStatus selectColumn noSamples ignoredColumns noIgnored allExact confirmMapping mappingIncomplete basis " +
-    "basisRequired basisUnsureHelp basisUnsureStop basisNote rateLabel rateNote rateInvalid convertFields convertFieldHints conversionExample settingsTitle " +
-    "proposedBy settingsFromManifest proposalUnavailable channelsRequired convertFieldsRequired reconciliationConverted datasetName dataAsOf dataAsOfNote " +
-    "coverageStart coverageEnd comparisonMode monthShortcut monthShortcutUnavailable channelsTitle channelsNone channelsNote coverageConfirm amountConfirm " +
-    "confirmAndCheck confirmHint checking result resultNote preprocessingTitle conversionSummary conversionTotals noConversion mappingSourceSummary mappingSources " +
-    "commit commitHint issuesTitle next back cancel privacyNote memoryHint memorySessionOnly memoryPersistent presetHint presetUnverified presetVerified " +
-    "presetInclusiveHint presetNames ignoreConfirm orderLevelDetected orderLevelLink campaignLevelDetected readFailed"],
-  ["", "errors", "importErrors:import"],
-  ["basis", "glossary", "title:basis.title items:basis.items footer:basis.footer aliases aliasNote:basis.aliasNote"],
-  ["", "data", "demoChannelAlias demoCategoryAlias"],
-  ["", "exports", "downloads csvColumns:csv.columns csvSuffix:csv.suffix excelExport:excel pptxExport:pptx"],
-  ["", "overview", "notes"],
-  ["evidence", "evidence", "scopeFallback noChannels percentagePoint times ladderTitle ladderNote components conditions conditionsNote sourcesTitle sourcesNote sourceTabs searchPlaceholder " +
-    "searchLabel showing none prev next pageOf lineN missingRow manifestRow missingValue missingTag originalColumn standardRole wholeDataset allChannels " +
-    "technicalFormula exactValue rawToConverted conversionNote ratioNote pointNote fields"],
-  ["", "format", "units"],
-  ["format", "format", "more less spendMore spendLess earnMore earnLess rise fall turnedPositive turnedLoss flat favorable unfavorable emptyWithReason roundingNote"],
-  ["", "", "brand"],
-  // V3-8 C：列出 v2 的四個鍵（不整棵對照），empty.stateV3 是 v3 新鍵，不屬於舊路徑。
-  ["emptyState", "empty", "eyebrow title body steps"],
-  ["ui", "meeting", "managerSummary reviewWorkbench:review reviewSession:session"],
-  ["ui", "overview", "channelTable topThree overview:page"],
-  ["ui.workspacePanels", "data.panel", "previewColumns fileGrain meta dateRange datasetCaution mappingsSummary previewNote previewTag rowCount noRows previewRegionAria previewCaption lineNumber " +
-    "issuesNote itemCount noIssues"],
-  ["ui.workspacePanels", "diagnosis.panel", "scopeAll channelTableHeading channelTableCaution diagnosisNote noDiagnostics tagMissingData factNotFound scopeAllWith factLine factAria rankingCurrent " +
-    "metricDelta deltaFormula rankingAria"],
-  ["ui.workspacePanels", "products.panel", "productsCaution tagTwdExclusive filterCategory allCategories searchSku searchSkuPlaceholder productsCsvHint productCount productScope noProducts " +
-    "productTableAria productTableCaption uncategorized productCellAria productEvidenceTitle productScopeLabel"],
-  ["ui", "scenarios", "multiScenarioWorkbench:workbench scenarioSensitivity:sensitivity decisionWorkbench:decision decision:checks"],
-  ["ui.dashboard", "shell", "datasets:devValidation.datasets errors:state.errors aiDetail:topbar.aiDetail skipLink:sidebar.skipLink workspaceLabel:sidebar.workspaceLabel " +
-    "mainNavAria:sidebar.mainNavAria sidebarNote:sidebar.sidebarNote sidebarFooter:sidebar.sidebarFooter breadcrumbRoot:sidebar.breadcrumbRoot " +
-    "statusDataset:topbar.statusDataset modeBadge:topbar.modeBadge aiLabel:topbar.aiLabel validation:devValidation.validation filter:periodBar.filter " +
-    "partialNote:periodBar.partialNote viewIssues:periodBar.viewIssues scopeNote:periodBar.scopeNote loading:state.loading errorState:state.errorState"],
-  ["ui", "storage", "workspaceStorage:workspace replacementDialog:replacement"],
-  ["ui", "data", "issueList:issues"],
-  ["ui", "actions", "actionsWorkbench:workbench"],
-  ["ui", "shell.ai", "aiPanel:panel aiClient:client grounding"],
-  ["ui", "importWizard", "importPanel:panel importGuidance:guidance"],
-  ["ui", "exports", "workspaceDecisionExport:workspaceDecision export:common decisionExport:decision productComparisonExport:productComparison"],
-  ["ui", "products", "productComparisonPanel:comparison"],
-  ["ui", "evidence", "evidenceDrawer:drawer"],
-  ["ui", "errors", "import:importDraft"],
-  // V3-9a A：列出 v2 的五個鍵（不整棵對照，同 V3-8 C 的 emptyState），assist.breakevenV3 是 v3 新鍵，不屬於舊路徑。
-  ["assist", "assist", "intro items notApplicable units technicalVersion"],
-  ["", "", "targets"],
-  ["", "", "events"],
-  ["", "diagnosis", "diagnosisList:list"],
-  ["", "products", "productHighlights:highlights"],
-  ["", "storage", "autoSave"],
-  ["", "", "relaunch"],
-  ["glossary", "glossary", "heading intro searchLabel searchPlaceholder resultCount noResult shortLine oldNamesLine englishKeyLine listSeparator industryHeading industryIntro " +
-    "industryColumns industryRows industrySource industrySourceUrl v2Heading v2Intro v2Columns terms"],
-];
-
-function expandLegacyPrefixes(): Record<string, string> {
-  const out: Record<string, string> = {};
-  const get = (path: string): unknown => path.split(".").reduce<unknown>((node, key) => (node as Record<string, unknown>)[key], labels);
-  const walk = (node: unknown, from: string, to: string): void => {
-    if (typeof node === "string") { out[from] = to; return; }
-    for (const [key, value] of Object.entries(node as Record<string, unknown>)) walk(value, `${from}.${key}`, `${to}.${key}`);
-  };
-  const join = (parent: string, rest: string): string => (parent ? `${parent}.${rest}` : rest);
-  for (const [fromParent, toParent, keys] of LEGACY_PREFIXES) for (const entry of keys.split(" ")) {
-    const [key, rest = key] = entry.split(":");
-    walk(get(join(toParent, rest)), join(fromParent, key), join(toParent, rest));
-  }
-  return out;
-}
-
-/** v2 舊路徑 → V3-2c 新路徑（每個字串葉節點一筆；舊路徑與新路徑相同者代表沒有搬）。V3-10 移除舊鍵時一起刪除。 */
-export const legacyAliases: Readonly<Record<string, string>> = expandLegacyPrefixes();

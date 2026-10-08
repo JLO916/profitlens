@@ -35,10 +35,10 @@ const render = (evidence: EvidenceSelection, extra: Partial<Parameters<typeof Ev
 const currentContribution = (): EvidenceSelection => ({ title: metricDefinitions.contribution_after_marketing.label, name: "contribution_after_marketing", metric: snapshot.report.current.metrics.contribution_after_marketing, period: snapshot.report.current.period, channels: snapshot.report.scope.channels, sources: snapshot.report.current.sources });
 /** 兩期差額（golden 570.00 → 255.00，−315.00），組成恰為上期／本期兩項。 */
 const deltaContribution = (): EvidenceSelection => ({
-  title: fill(labels.ui.overview.changeTitle, { metric: metricDefinitions.contribution_after_marketing.label }), name: "contribution_after_marketing", metric: { value: "-315.00", reason_codes: [] },
+  title: fill(labels.overview.page.changeTitle, { metric: metricDefinitions.contribution_after_marketing.label }), name: "contribution_after_marketing", metric: { value: "-315.00", reason_codes: [] },
   period: { start: snapshot.report.previous.period.start, end: snapshot.report.current.period.end }, channels: snapshot.report.scope.channels,
-  sources: [...snapshot.report.previous.sources, ...snapshot.report.current.sources], formula: labels.ui.overview.amountDeltaFormula, scopeLabel: labels.ui.overview.amountDeltaScope,
-  components: [{ label: labels.periods.previous, metric: snapshot.report.previous.metrics.contribution_after_marketing }, { label: labels.periods.current, metric: snapshot.report.current.metrics.contribution_after_marketing }],
+  sources: [...snapshot.report.previous.sources, ...snapshot.report.current.sources], formula: labels.overview.page.amountDeltaFormula, scopeLabel: labels.overview.page.amountDeltaScope,
+  components: [{ label: labels.shell.periods.previous, metric: snapshot.report.previous.metrics.contribution_after_marketing }, { label: labels.shell.periods.current, metric: snapshot.report.current.metrics.contribution_after_marketing }],
 });
 const range = (start: string, end: string) => formatPeriodL1(start, end, { days: false, anchor: dataset.manifest.data_as_of });
 const between = (html: string, from: string, to: string) => { const start = html.indexOf(from); return html.slice(start, html.indexOf(to, start)); };
@@ -50,7 +50,7 @@ describe("固定標題列（§7.8、C6）", () => {
     const html = render(currentContribution());
     const [, id, inner] = h2(html);
     expect(visible(inner)).toBe(metricDefinitions.contribution_after_marketing.label);
-    expect(/<span class="sr-only">(.*?)<\/span>/.exec(inner)![1]).toBe(` · ${labels.sections.evidence}`);
+    expect(/<span class="sr-only">(.*?)<\/span>/.exec(inner)![1]).toBe(` · ${labels.evidence.sections.evidence}`);
     expect(inner).not.toContain("｜");
     expect(inner).not.toContain("怎麼算的");
     expect(html).toMatch(new RegExp(`<dialog class="evidence-dialog evidence-drawer" aria-labelledby="${id}"`));
@@ -65,15 +65,15 @@ describe("固定標題列（§7.8、C6）", () => {
     const [, id, text] = /<p id="([^"]+)" class="sub">([^<]*)<\/p>/.exec(html)!;
     expect(id).toBe(describedBy);
     const { start, end } = snapshot.report.current.period;
-    expect(text).toBe(fill(v3.subtitle, { scope: labels.evidence.allChannels, period: fill(v3.periodNamed, { name: labels.periods.current, range: range(start, end) }) }));
-    expect(text).toBe(`${labels.evidence.allChannels} · ${labels.periods.current} 8/2–8/2`);
+    expect(text).toBe(fill(v3.subtitle, { scope: labels.evidence.allChannels, period: fill(v3.periodNamed, { name: labels.shell.periods.current, range: range(start, end) }) }));
+    expect(text).toBe(`${labels.evidence.allChannels} · ${labels.shell.periods.current} 8/2–8/2`);
   });
 
   it("關閉是標題列右側的 icon 按鈕（aria-label＝關閉、autofocus），也是抽屜裡第一個可聚焦的控制", () => {
     const html = render(currentContribution());
     const firstButton = /<button[^>]*>/.exec(html)![0];
     expect(firstButton).toContain('class="ui-btn ui-btn-icon evidence-close"');
-    expect(firstButton).toContain(`aria-label="${labels.buttons.close}"`);
+    expect(firstButton).toContain(`aria-label="${labels.shell.buttons.close}"`);
     expect(firstButton).toContain("autofocus");
     expect(between(html, '<header class="evidence-head">', "</header>")).toContain("<svg");
   });
@@ -85,27 +85,27 @@ describe("副標組字（evidenceSubtitle）", () => {
   /** 規格：期間與報表本期／上期相同時加名稱，否則只寫 M/D 範圍。 */
   const periodText = (period: { start: string; end: string }) => {
     const same = (other: { start: string; end: string }) => other.start === period.start && other.end === period.end;
-    const name = same(snapshot.report.current.period) ? labels.periods.current : same(snapshot.report.previous.period) ? labels.periods.previous : null;
+    const name = same(snapshot.report.current.period) ? labels.shell.periods.current : same(snapshot.report.previous.period) ? labels.shell.periods.previous : null;
     return name ? fill(v3.periodNamed, { name, range: range(period.start, period.end) }) : range(period.start, period.end);
   };
 
   it("影響類抽屜：scopeLabel「影響金額 · 合計（…）」已寫出通路，副標只加期間", () => {
     const diagnostic = snapshot.report.diagnostics.find(item => item.scope.kind === "all" && impactEvidence(snapshot, item));
     const evidence = impactEvidence(snapshot, diagnostic!)!;
-    expect(evidence.scopeLabel!.startsWith(`${labels.sections.impact} · `)).toBe(true);
+    expect(evidence.scopeLabel!.startsWith(`${labels.overview.sections.impact} · `)).toBe(true);
     expect(evidenceSubtitle(evidence, options())).toBe(fill(v3.subtitle, { scope: evidence.scopeLabel!, period: periodText(evidence.period) }));
   });
 
   it("scopeLabel 已寫出「全部通路」或通路名時不重複；沒寫出時另附「通路：…」；沒有 scopeLabel 時範圍就是通路名", () => {
     const delta = deltaContribution();
-    expect(labels.ui.overview.amountDeltaScope).toContain(labels.evidence.allChannels);
+    expect(labels.overview.page.amountDeltaScope).toContain(labels.evidence.allChannels);
     // 兩期差額的期間跨上期起日到本期迄日，不是本期也不是上期：只寫範圍「8/1–8/2」。
-    expect(evidenceSubtitle(delta, options())).toBe(fill(v3.subtitle, { scope: labels.ui.overview.amountDeltaScope, period: range(delta.period.start, delta.period.end) }));
-    expect(evidenceSubtitle(delta, options())).toBe(`${labels.ui.overview.amountDeltaScope} · 8/1–8/2`);
+    expect(evidenceSubtitle(delta, options())).toBe(fill(v3.subtitle, { scope: labels.overview.page.amountDeltaScope, period: range(delta.period.start, delta.period.end) }));
+    expect(evidenceSubtitle(delta, options())).toBe(`${labels.overview.page.amountDeltaScope} · 8/1–8/2`);
     const dtc = { period: snapshot.report.current.period, channels: ["DTC"], scopeLabel: undefined };
-    expect(evidenceSubtitle(dtc, options())).toBe(fill(v3.subtitle, { scope: "DTC", period: fill(v3.periodNamed, { name: labels.periods.current, range: range(dtc.period.start, dtc.period.end) }) }));
-    const scoped = { period: snapshot.report.previous.period, channels: ["DTC"], scopeLabel: labels.ui.workspacePanels.scopeAll };
-    expect(evidenceSubtitle(scoped, options())).toBe(fill(v3.subtitleChannels, { scope: labels.ui.workspacePanels.scopeAll, period: fill(v3.periodNamed, { name: labels.periods.previous, range: range(scoped.period.start, scoped.period.end) }), channels: "DTC" }));
+    expect(evidenceSubtitle(dtc, options())).toBe(fill(v3.subtitle, { scope: "DTC", period: fill(v3.periodNamed, { name: labels.shell.periods.current, range: range(dtc.period.start, dtc.period.end) }) }));
+    const scoped = { period: snapshot.report.previous.period, channels: ["DTC"], scopeLabel: labels.diagnosis.panel.scopeAll };
+    expect(evidenceSubtitle(scoped, options())).toBe(fill(v3.subtitleChannels, { scope: labels.diagnosis.panel.scopeAll, period: fill(v3.periodNamed, { name: labels.shell.periods.previous, range: range(scoped.period.start, scoped.period.end) }), channels: "DTC" }));
   });
 });
 
@@ -114,12 +114,12 @@ describe("內容區（大數字、精確值、區段順序）", () => {
     const html = render(currentContribution());
     const body = html.slice(html.indexOf('<div class="evidence-body">') + '<div class="evidence-body">'.length);
     expect(body.startsWith('<p class="number">')).toBe(true);
-    expect(body).toMatch(new RegExp(`^<p class="number">[^<]+</p><p class="evidence-precise" data-testid="evidence-precise-value">${fill(labels.units.yuan, { value: formatAmountL3("255.00") })}</p>`));
+    expect(body).toMatch(new RegExp(`^<p class="number">[^<]+</p><p class="evidence-precise" data-testid="evidence-precise-value">${fill(labels.format.units.yuan, { value: formatAmountL3("255.00") })}</p>`));
   });
 
   it("區段順序：計算方式 → 組成項目 → 指標定義與算法 → 原始明細 → 技術細節（技術細節預設收合）", () => {
     const html = render(deltaContribution());
-    const order = [`<h3>${labels.evidence.ladderTitle}</h3>`, `<h3>${labels.evidence.components}</h3>`, `<h3>${v3.definitionTitle}</h3>`, `<h3>${v3.sourcesTitle}</h3>`, `<summary>${labels.sections.technicalDetails}</summary>`].map(marker => html.indexOf(marker));
+    const order = [`<h3>${labels.evidence.ladderTitle}</h3>`, `<h3>${labels.evidence.components}</h3>`, `<h3>${v3.definitionTitle}</h3>`, `<h3>${v3.sourcesTitle}</h3>`, `<summary>${labels.evidence.sections.technicalDetails}</summary>`].map(marker => html.indexOf(marker));
     expect(order.every(index => index > 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(html).toContain('<details class="evidence-technical"><summary>');
@@ -137,11 +137,11 @@ describe("內容區（大數字、精確值、區段順序）", () => {
     const section = between(html, `<h3>${v3.definitionTitle}</h3>`, "</section>");
     expect(section).toContain(metricDefinitions.contribution_after_marketing.plain);
     expect(section).toContain(fill(v3.version, { version: "contribution-v1" }));
-    expect(section).toContain(`>${labels.buttons.basis}</button>`);
+    expect(section).toContain(`>${labels.shell.buttons.basis}</button>`);
     const withoutBasis = renderToStaticMarkup(createElement(EvidenceDrawer, { dataset, snapshot, evidence: currentContribution(), onClose: noop }));
     expect(between(withoutBasis, `<h3>${v3.definitionTitle}</h3>`, "</section>")).not.toContain("<button");
     // 「指標定義」按鈕只在這一段，不再跟在計算方式的公式後面。
-    expect(between(html, `<h3>${labels.evidence.ladderTitle}</h3>`, "</section>")).not.toContain(labels.buttons.basis);
+    expect(between(html, `<h3>${labels.evidence.ladderTitle}</h3>`, "</section>")).not.toContain(labels.shell.buttons.basis);
   });
 
   it("件數這類非 domain 指標：定義段用證據自帶的公式說明與版本（assist-kpi-v1）", () => {
@@ -156,7 +156,7 @@ describe("內容區（大數字、精確值、區段順序）", () => {
     const evidence: EvidenceSelection = { ...currentContribution(), name: "mer", metric: { value: null, reason_codes: ["NON_POSITIVE_DENOMINATOR"] } };
     const html = render(evidence);
     expect(html).toContain(`<p class="evidence-limit" role="status">${labels.evidence.conditionsNote}</p>`);
-    expect(html).not.toContain(`${labels.sections.caution}：`);
+    expect(html).not.toContain(`${labels.diagnosis.sections.caution}：`);
     expect(html.indexOf('class="evidence-limit"')).toBeLessThan(html.indexOf('<details class="evidence-technical">'));
     expect(html.indexOf('class="evidence-limit"')).toBeGreaterThan(html.indexOf(`<h3>${v3.sourcesTitle}</h3>`));
   });
@@ -215,10 +215,10 @@ describe("原始明細（檔案:行號、手機清單）", () => {
     expect(body.match(new RegExp(`<td role="cell" data-label="${v3.sourceColumns.values}" data-list-role="labeled">`, "g"))).toHaveLength(rows);
     expect(body.match(/<td(?![^>]*role="cell")/g)).toBeNull();
     // 既有互動保留：分段按鈕（aria-pressed）、搜尋、筆數、捲動容器。
-    expect(html).toContain(`role="group" aria-label="${labels.ui.evidenceDrawer.sourceTabsAria}"`);
+    expect(html).toContain(`role="group" aria-label="${labels.evidence.drawer.sourceTabsAria}"`);
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain('type="search"');
-    expect(html).toContain(`role="region" aria-label="${labels.ui.evidenceDrawer.sourceTableAria}"`);
+    expect(html).toContain(`role="region" aria-label="${labels.evidence.drawer.sourceTableAria}"`);
   });
 
   it("日期、通路、商品已有自己的欄：欄位與數值不重複列出；匯入時改過欄名的仍列出並附「原欄位」", () => {
@@ -261,8 +261,8 @@ describe("原始明細（檔案:行號、手機清單）", () => {
 
 describe("labels 一致性", () => {
   it("組成表欄頭與「{label}（元）」模板一致；檔案:行號模板只有 file、line 兩個占位符", () => {
-    expect(v3.componentsColumns.previous).toBe(fill(labels.units.yuanColumn, { label: labels.periods.previous }));
-    expect(v3.componentsColumns.current).toBe(fill(labels.units.yuanColumn, { label: labels.periods.current }));
+    expect(v3.componentsColumns.previous).toBe(fill(labels.format.units.yuanColumn, { label: labels.shell.periods.previous }));
+    expect(v3.componentsColumns.current).toBe(fill(labels.format.units.yuanColumn, { label: labels.shell.periods.current }));
     expect(fill(v3.fileLine, { file: "sales_daily.csv", line: 128 })).toBe("sales_daily.csv:128");
     expect(v3.sourceColumns.fileLine).not.toContain("｜");
   });

@@ -58,11 +58,11 @@ export interface PptxOnePager {
   priorities: { headline: string; impact: string; next_step: string }[];
   /** 扣廣告後貢獻（全部通路；畫面最多 PPTX_MAX_CHANNEL_ROWS 列） */
   channels: { channel: string; previous: string; current: string; change: string }[];
-  /** 決議狀態＋備註；沒有會議時用 labels.pptxExport.noMeeting。V3-9b 老闆一頁版與客戶報告版不帶備註；老闆一頁版沒有會議時是空字串（不畫） */
+  /** 決議狀態＋備註；沒有會議時用 labels.exports.pptx.noMeeting。V3-9b 老闆一頁版與客戶報告版不帶備註；老闆一頁版沒有會議時是空字串（不畫） */
   decision: string;
   /** ≤ 3 */
   pinned_actions: { problem: string; owner: string; deadline: string; status: string }[];
-  /** labels.basis.footer（有含稅換算時加上換算一句） */
+  /** labels.glossary.basis.footer（有含稅換算時加上換算一句） */
   footer: string;
   /** 資料版本（可追溯性；小字）。指標版本已在版頭第 4 行。V3-9b 老闆一頁版與客戶報告版不放技術細節（空字串）。 */
   technical: string;
@@ -78,7 +78,7 @@ export function pptxText(value: unknown, max: number = PPTX_TEXT_LIMITS.footer):
   const text = (typeof value === "string" ? value : value === null || value === undefined ? "" : String(value)).replace(UNSAFE_TEXT, "").replace(/\s+/g, " ").trim();
   const characters = Array.from(text);
   const limit = Math.max(1, Math.floor(max));
-  return characters.length > limit ? `${characters.slice(0, limit - 1).join("")}${labels.pptxExport.ellipsis}` : text;
+  return characters.length > limit ? `${characters.slice(0, limit - 1).join("")}${labels.exports.pptx.ellipsis}` : text;
 }
 
 /**
@@ -86,15 +86,15 @@ export function pptxText(value: unknown, max: number = PPTX_TEXT_LIMITS.footer):
  * 通路表用 L2 整數元（單位寫在表格標題「（元）」）。負號 U+2212，正的差額加「+」。
  */
 const money = (metric: Metric | null | undefined, layer: Layer, signed = false): string =>
-  !metric || metric.value === null ? labels.status.missing : signed ? formatSignedDelta(metric.value, layer) : formatAmount(metric.value, layer);
+  !metric || metric.value === null ? labels.shell.status.missing : signed ? formatSignedDelta(metric.value, layer) : formatAmount(metric.value, layer);
 
-/** 會議決議：接受狀態代碼（labels.meeting.decisions 與 review-session 的舊代碼）或已翻好的文字；未知值原樣顯示。 */
-const DECISION_LABELS: Record<string, string> = { ...labels.meeting.decisions, needs_data: labels.meeting.decisions.need_data, not_adopted: labels.meeting.decisions.rejected };
+/** 會議決議：接受狀態代碼（labels.meeting.form.decisions 與 review-session 的舊代碼）或已翻好的文字；未知值原樣顯示。 */
+const DECISION_LABELS: Record<string, string> = { ...labels.meeting.form.decisions, needs_data: labels.meeting.form.decisions.need_data, not_adopted: labels.meeting.form.decisions.rejected };
 function decisionLabel(value: string): string {
   const key = pptxText(value, PPTX_TEXT_LIMITS.decision);
-  return Object.hasOwn(DECISION_LABELS, key) ? DECISION_LABELS[key] : key || labels.meeting.decisions.draft;
+  return Object.hasOwn(DECISION_LABELS, key) ? DECISION_LABELS[key] : key || labels.meeting.form.decisions.draft;
 }
-const EXECUTION_LABELS: Record<string, string> = { not_started: labels.actions.statuses.not_started, in_progress: labels.actions.statuses.in_progress, blocked: labels.actions.statuses.blocked, completed: labels.actions.statuses.done };
+const EXECUTION_LABELS: Record<string, string> = { not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done };
 
 /** 純資料層：ManagerSummary＋快照＋待辦（＋會議）→ 一頁式的字串模型。summary 與 snapshot 必須是同一份資料與範圍。 */
 export function buildPptxOnePager(input: PptxOnePagerInput): PptxOnePager {
@@ -102,7 +102,7 @@ export function buildPptxOnePager(input: PptxOnePagerInput): PptxOnePager {
   if (snapshot.dataset_hash !== summary.dataset_hash || snapshot.filter_hash !== summary.filter_hash) throw new Error("PPTX_SOURCE_MISMATCH");
   // V3-9b F14：版面依 variantSpec；數字都來自同一個 summary／snapshot。
   const spec = variantSpec(input.variant);
-  const copy = labels.pptxExport;
+  const copy = labels.exports.pptx;
   const limit = PPTX_TEXT_LIMITS;
   const alias = demoAlias(summary.dataset_id);
   const name = meeting ? pptxText(meeting.name, limit.title) : "";
@@ -138,14 +138,14 @@ export function buildPptxOnePager(input: PptxOnePagerInput): PptxOnePager {
     const historical = !context || context.session.dataset_hash !== snapshot.dataset_hash;
     const execution = item.execution_status && Object.hasOwn(EXECUTION_LABELS, item.execution_status) ? EXECUTION_LABELS[item.execution_status] : EXECUTION_LABELS.not_started;
     return {
-      problem: pptxText(item.card.problem, limit.problem) || labels.actionBoard.untitled,
-      owner: pptxText(item.card.owner_role, limit.owner) || labels.actionBoard.unassigned,
-      deadline: pptxText(item.card.deadline, limit.deadline) || labels.actionBoard.noDeadline,
+      problem: pptxText(item.card.problem, limit.problem) || labels.actions.board.untitled,
+      owner: pptxText(item.card.owner_role, limit.owner) || labels.actions.board.unassigned,
+      deadline: pptxText(item.card.deadline, limit.deadline) || labels.actions.board.noDeadline,
       // 「引用較早資料」是引用歷史（內部備註）：客戶報告版不加。
-      status: historical && spec.internal.citationHistory ? fill(copy.statusHistorical, { status: execution, badge: labels.actions.staleBadge }) : execution,
+      status: historical && spec.internal.citationHistory ? fill(copy.statusHistorical, { status: execution, badge: labels.actions.form.staleBadge }) : execution,
     };
   });
-  const footer = spec.sections.footer ? pptxText(summary.conversion_note ? `${labels.basis.footer} ${summary.conversion_note}` : labels.basis.footer, limit.footer) : "";
+  const footer = spec.sections.footer ? pptxText(summary.conversion_note ? `${labels.glossary.basis.footer} ${summary.conversion_note}` : labels.glossary.basis.footer, limit.footer) : "";
   const technical = spec.appendix.technical ? pptxText(fill(labels.exports.headerV3.pptxDataVersion, { datasetHash: summary.dataset_hash.slice(0, 12) }), limit.technical) : "";
   const model: PptxOnePager = { title, header, subtitle, key_deltas, priorities, channels, decision, pinned_actions, footer, technical };
   if (spec.variant === "standard") return model;
@@ -277,7 +277,7 @@ function toBytes(data: unknown): Uint8Array {
 export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
   const PptxGenJS = await loadPptxGenJS();
   const pptx = new PptxGenJS();
-  const copy = labels.pptxExport;
+  const copy = labels.exports.pptx;
   const limit = PPTX_TEXT_LIMITS;
   const text = pptxText;
   pptx.layout = "LAYOUT_16x9";
@@ -311,7 +311,7 @@ export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
   }
 
   // 左欄上：兩個關鍵差額（差額 36pt；上期、本期同一行，本期用強調色）。不畫卡片底色與外框。
-  heading(labels.sections.keyDeltas, LEFT.x, BODY_TOP, LEFT.w);
+  heading(labels.overview.sections.keyDeltas, LEFT.x, BODY_TOP, LEFT.w);
   const kpiY = BODY_TOP + 0.26;
   model.key_deltas.slice(0, 2).forEach((row, index) => {
     const x = LEFT.x + index * (KPI_CARD.w + KPI_CARD.gap);
@@ -319,29 +319,29 @@ export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
     slide.addText([
       { text: text(row.label, limit.keyLabel), options: { fontSize: 10, color: COLOR.muted, breakLine: true } },
       ...pptxKpiRuns(change).map((run, part, runs): PptxRun => ({ text: run.text, options: { fontSize: run.size, bold: true, color: changeColor(change), ...(part === runs.length - 1 ? { breakLine: true } : {}) } })),
-      { text: `${labels.periods.previous} ${text(row.previous, limit.money)}`, options: { fontSize: 10, color: COLOR.muted } },
+      { text: `${labels.shell.periods.previous} ${text(row.previous, limit.money)}`, options: { fontSize: 10, color: COLOR.muted } },
       { text: copy.separator, options: { fontSize: 10, color: COLOR.muted } },
-      { text: `${labels.periods.current} ${text(row.current, limit.money)}`, options: { fontSize: 10, color: COLOR.brand } },
+      { text: `${labels.shell.periods.current} ${text(row.current, limit.money)}`, options: { fontSize: 10, color: COLOR.brand } },
     ], { ...base, x, y: kpiY, w: KPI_CARD.w, h: KPI_CARD.h, margin: 2, valign: "top" });
   });
 
   // 左欄下：本期三件事（同一個文字方塊，依內容自然換行，不互相重疊）
   const topThreeY = kpiY + KPI_CARD.h + 0.1;
-  heading(labels.sections.topThree, LEFT.x, topThreeY, LEFT.w);
+  heading(labels.overview.sections.topThree, LEFT.x, topThreeY, LEFT.w);
   const priorities = model.priorities.slice(0, PPTX_MAX_PRIORITIES);
-  if (!priorities.length) note(labels.notes.noPriorities, LEFT.x, topThreeY + 0.26, LEFT.w, 0.5);
+  if (!priorities.length) note(labels.overview.notes.noPriorities, LEFT.x, topThreeY + 0.26, LEFT.w, 0.5);
   else slide.addText(priorities.flatMap((row, index): PptxRun[] => [
     { text: fill(copy.priorityRow, { n: index + 1, headline: text(row.headline, limit.headline) }), options: { fontSize: 11, bold: true, color: COLOR.ink, breakLine: true } },
-    { text: fill(copy.priorityDetail, { impactLabel: labels.sections.impact, nextStepLabel: labels.sections.nextStep, impact: text(row.impact, limit.impact), nextStep: text(row.next_step, limit.nextStep) }), options: { fontSize: 10, color: COLOR.muted, paraSpaceAfter: 6, ...(index < priorities.length - 1 ? { breakLine: true } : {}) } },
+    { text: fill(copy.priorityDetail, { impactLabel: labels.overview.sections.impact, nextStepLabel: labels.diagnosis.sections.nextStep, impact: text(row.impact, limit.impact), nextStep: text(row.next_step, limit.nextStep) }), options: { fontSize: 10, color: COLOR.muted, paraSpaceAfter: 6, ...(index < priorities.length - 1 ? { breakLine: true } : {}) } },
   ]), { ...base, x: LEFT.x, y: topThreeY + 0.26, w: LEFT.w, h: Math.max(0.5, PAGE_BODY_BOTTOM - topThreeY - 0.26), valign: "top" });
 
   // 右欄上：通路表（扣廣告後貢獻）；本期欄是本期資料（強調色），差額欄只有不利上色。之後的區塊依估計的表格高度往下排。
-  heading(fill(copy.channelTitle, { table: labels.sections.channelTable, metric: metricDefinitions.contribution_after_marketing.label }), RIGHT.x, BODY_TOP, RIGHT.w);
+  heading(fill(copy.channelTitle, { table: labels.overview.sections.channelTable, metric: metricDefinitions.contribution_after_marketing.label }), RIGHT.x, BODY_TOP, RIGHT.w);
   const channels = model.channels.map(row => ({ ...row, channel: text(row.channel, limit.channel) }));
   const { shown, omitted, height } = pptxChannelRows(channels);
   let y = BODY_TOP + 0.28;
   slide.addTable([
-    [headerCell(labels.csvColumns.channel), headerCell(labels.periods.previous, "right"), headerCell(labels.periods.current, "right"), headerCell(labels.csvSuffix.change, "right")],
+    [headerCell(labels.exports.csv.columns.channel), headerCell(labels.shell.periods.previous, "right"), headerCell(labels.shell.periods.current, "right"), headerCell(labels.exports.csv.suffix.change, "right")],
     ...shown.map(row => {
       const change = text(row.change, limit.money);
       return [cell(row.channel), amountCell(text(row.previous, limit.money)), amountCell(text(row.current, limit.money), COLOR.brand), amountCell(change, changeColor(change))];
@@ -351,7 +351,7 @@ export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
   y += height + CHANNEL_TABLE_GAP;
 
   // 右欄中：決議（狀態＋備註，最多兩行；一行時下面的區塊跟著上移）
-  heading(labels.sections.meetingDecision, RIGHT.x, y, RIGHT.w);
+  heading(labels.meeting.sections.meetingDecision, RIGHT.x, y, RIGHT.w);
   const decision = text(model.decision, limit.decision);
   const decisionHeight = 0.06 + Math.min(2, estimatedLines(decision, RIGHT_TEXT_CAPACITY)) * 0.19;
   slide.addText(decision, { ...base, x: RIGHT.x, y: y + 0.26, w: RIGHT.w, h: decisionHeight, fontSize: 10, valign: "top" });
@@ -364,7 +364,7 @@ export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
   if (!pinned.length) note(copy.pinnedEmpty, RIGHT.x, y, RIGHT.w);
   else slide.addText(pinned.flatMap((row, index): PptxRun[] => [
     { text: fill(copy.pinnedRow, { n: index + 1, problem: text(row.problem, limit.problem) }), options: { fontSize: 10, bold: true, color: COLOR.ink, breakLine: true } },
-    { text: fill(copy.pinnedMeta, { ownerLabel: labels.actions.owner, owner: text(row.owner, limit.owner), dueLabel: labels.actions.due, deadline: text(row.deadline, limit.deadline), status: text(row.status, limit.status) }),
+    { text: fill(copy.pinnedMeta, { ownerLabel: labels.actions.form.owner, owner: text(row.owner, limit.owner), dueLabel: labels.actions.form.due, deadline: text(row.deadline, limit.deadline), status: text(row.status, limit.status) }),
       options: { fontSize: 10, color: COLOR.muted, paraSpaceAfter: 3, ...(index < pinned.length - 1 ? { breakLine: true } : {}) } },
   ]), { ...base, x: RIGHT.x, y, w: RIGHT.w, h: Math.max(0.3, PAGE_BODY_BOTTOM - y), valign: "top" });
 
@@ -384,7 +384,7 @@ type PptxTextBase = { fontFace: string; color: string; margin: number };
  * → 本期三件事的標題與影響金額（不放下一步）→ 決議一行（有會議時）。不放通路表、置頂待辦、口徑與資料版本。
  */
 function writeBossBody(model: PptxOnePager, { slide, base, heading, note }: { slide: PptxSlide; base: PptxTextBase; heading: (value: string, x: number, y: number, w: number) => unknown; note: (value: string, x: number, y: number, w: number, h?: number) => unknown }) {
-  const copy = labels.pptxExport;
+  const copy = labels.exports.pptx;
   const limit = PPTX_TEXT_LIMITS;
   const text = pptxText;
   let y = BODY_TOP;
@@ -394,7 +394,7 @@ function writeBossBody(model: PptxOnePager, { slide, base, heading, note }: { sl
     slide.addText(sentence, { ...base, x: FULL.x, y, w: FULL.w, h: 0.08 + lines * 0.3, fontSize: BOSS_ONE_LINER_SIZE, bold: true, color: COLOR.ink, valign: "top" });
     y += 0.08 + lines * 0.3 + 0.08;
   }
-  heading(labels.sections.keyDeltas, FULL.x, y, FULL.w);
+  heading(labels.overview.sections.keyDeltas, FULL.x, y, FULL.w);
   y += 0.26;
   model.key_deltas.slice(0, BOSS_KPI_CARD.count).forEach((row, index) => {
     const x = FULL.x + index * (BOSS_KPI_CARD.w + BOSS_KPI_CARD.gap);
@@ -402,23 +402,23 @@ function writeBossBody(model: PptxOnePager, { slide, base, heading, note }: { sl
     slide.addText([
       { text: text(row.label, limit.keyLabel), options: { fontSize: 10, color: COLOR.muted, breakLine: true } },
       ...pptxKpiRuns(change).map((run, part, runs): PptxRun => ({ text: run.text, options: { fontSize: run.size, bold: true, color: changeColor(change), ...(part === runs.length - 1 ? { breakLine: true } : {}) } })),
-      { text: `${labels.periods.previous} ${text(row.previous, limit.money)}`, options: { fontSize: 10, color: COLOR.muted } },
+      { text: `${labels.shell.periods.previous} ${text(row.previous, limit.money)}`, options: { fontSize: 10, color: COLOR.muted } },
       { text: copy.separator, options: { fontSize: 10, color: COLOR.muted } },
-      { text: `${labels.periods.current} ${text(row.current, limit.money)}`, options: { fontSize: 10, color: COLOR.brand } },
+      { text: `${labels.shell.periods.current} ${text(row.current, limit.money)}`, options: { fontSize: 10, color: COLOR.brand } },
     ], { ...base, x, y, w: BOSS_KPI_CARD.w, h: KPI_CARD.h, margin: 2, valign: "top" });
   });
   y += KPI_CARD.h + 0.2;
-  heading(labels.sections.topThree, FULL.x, y, FULL.w);
+  heading(labels.overview.sections.topThree, FULL.x, y, FULL.w);
   y += 0.26;
   const priorities = model.priorities.slice(0, PPTX_MAX_PRIORITIES);
-  if (!priorities.length) { note(labels.notes.noPriorities, FULL.x, y, FULL.w, 0.3); y += 0.34; }
+  if (!priorities.length) { note(labels.overview.notes.noPriorities, FULL.x, y, FULL.w, 0.3); y += 0.34; }
   else {
-    slide.addText(priorities.map((row, index): PptxRun => ({ text: `${fill(copy.priorityRow, { n: index + 1, headline: text(row.headline, limit.headline) })}${copy.separator}${labels.sections.impact} ${text(row.impact, limit.impact)}`, options: { fontSize: 12, bold: index === 0, color: COLOR.ink, paraSpaceAfter: 4, ...(index < priorities.length - 1 ? { breakLine: true } : {}) } })),
+    slide.addText(priorities.map((row, index): PptxRun => ({ text: `${fill(copy.priorityRow, { n: index + 1, headline: text(row.headline, limit.headline) })}${copy.separator}${labels.overview.sections.impact} ${text(row.impact, limit.impact)}`, options: { fontSize: 12, bold: index === 0, color: COLOR.ink, paraSpaceAfter: 4, ...(index < priorities.length - 1 ? { breakLine: true } : {}) } })),
       { ...base, x: FULL.x, y, w: FULL.w, h: 0.08 + priorities.length * 0.26, valign: "top" });
     y += 0.08 + priorities.length * 0.26 + 0.1;
   }
   if (model.decision) {
-    heading(labels.sections.meetingDecision, FULL.x, y, FULL.w);
+    heading(labels.meeting.sections.meetingDecision, FULL.x, y, FULL.w);
     slide.addText(text(model.decision, limit.decision), { ...base, x: FULL.x, y: y + 0.26, w: FULL.w, h: 0.25, fontSize: 12, valign: "top" });
   }
 }

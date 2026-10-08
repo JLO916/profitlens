@@ -13,13 +13,13 @@ async function shoot(page: Page, dir: string, name: string, anchor?: Locator) {
   await page.screenshot({ path: `${dir}/${name}-viewport.png` });
   await page.screenshot({ path: `${dir}/${name}-full.jpg`, fullPage: true, type: "jpeg", quality: 70 });
 }
-const nav = (page: Page, id: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[id].label, exact: true });
+const nav = (page: Page, id: keyof typeof labels.shell.nav) => page.getByRole("button", { name: labels.shell.nav[id].headline, exact: true });
 async function load(page: Page, id: "golden" | "demo") {
   await page.goto("/");
   await nav(page, "validation").click();
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption(id);
-  await clickReplacing(page, page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }));
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.shell.status.ready);
 }
 
 test("R6 截圖", async ({ page }, testInfo) => {
@@ -39,9 +39,9 @@ test("R6 截圖", async ({ page }, testInfo) => {
   // 2. 按「存在這台電腦」→ 頂欄「已保存 hh:mm」；打開儲存選單看自動保存狀態。
   await acceptSavePrompt(page);
   const storage = page.getByTestId("workspace-storage");
-  await expect(storage.locator(":scope > summary")).toContainText(labels.status.savedAt.split("{time}")[0].trim());
+  await expect(storage.locator(":scope > summary")).toContainText(labels.shell.status.savedAt.split("{time}")[0].trim());
   await storage.locator(":scope > summary").click();
-  await expect(storage.getByTestId("autosave-status")).toContainText(labels.autoSave.statusOn);
+  await expect(storage.getByTestId("autosave-status")).toContainText(labels.storage.autoSave.statusOn);
   await shoot(page, dir, `2-saved-time-${suffix}`);
   await storage.locator(":scope > summary").click();
   await expect(storage).not.toHaveAttribute("open", "");
@@ -52,22 +52,22 @@ test("R6 截圖", async ({ page }, testInfo) => {
   const card = page.getByTestId("scenario-1");
   await card.getByTestId("scenario-preset").selectOption("keep");
   await card.getByTestId("scenario-preset-apply").click();
-  await card.getByLabel(labels.scenario.acceptAssumptions, { exact: true }).check();
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByLabel(labels.scenarios.inputs.acceptAssumptions, { exact: true }).check();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toBeVisible();
   await nav(page, "actions").click();
   await switchActionsView(page, "board");
-  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+  await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
   const action = page.getByTestId("board-card-1");
-  await action.getByLabel(labels.actions.problem, { exact: true }).fill("核對 DTC 物流報價");
-  await action.getByRole("button", { name: labels.buttons.pin, exact: true }).click();
+  await action.getByLabel(labels.actions.form.problem, { exact: true }).fill("核對 DTC 物流報價");
+  await action.getByRole("button", { name: labels.actions.buttons.pin, exact: true }).click();
   const meeting = await openMeeting(page);
-  await meeting.getByTestId("review-workbench").getByLabel(labels.meeting.name, { exact: true }).fill("10 月第一週營運會議");
-  await meeting.getByTestId("meeting-agenda-5").getByLabel(fill(labels.ui.reviewWorkbench.scenarioSelect, { channel: "DTC" }), { exact: true }).selectOption({ label: fill(labels.ui.reviewWorkbench.planOption, { name: fill(labels.ui.decisionWorkbench.defaultPlanName, { n: 1 }) }) });
-  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.decision, { exact: true }).selectOption("adopted");
+  await meeting.getByTestId("review-workbench").getByLabel(labels.meeting.form.name, { exact: true }).fill("10 月第一週營運會議");
+  await meeting.getByTestId("meeting-agenda-5").getByLabel(fill(labels.meeting.review.scenarioSelect, { channel: "DTC" }), { exact: true }).selectOption({ label: fill(labels.meeting.review.planOption, { name: fill(labels.scenarios.decision.defaultPlanName, { n: 1 }) }) });
+  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.form.decision, { exact: true }).selectOption("adopted");
   await meeting.getByTestId("meeting-finalize").click();
   await meeting.getByTestId("meeting-finalize-confirm-button").click();
-  await expect(meeting.getByTestId("meeting-status")).toHaveText(labels.meetingPage.finalized);
+  await expect(meeting.getByTestId("meeting-status")).toHaveText(labels.meeting.page.finalized);
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
   await expect(meeting.getByTestId("meeting-compare-same_scope")).toBeVisible();
   await meeting.getByTestId("meeting-history-item").first().locator("summary").click();
@@ -81,7 +81,7 @@ test("R6 截圖", async ({ page }, testInfo) => {
   await shoot(page, dir, `4-download-menu-${suffix}`, section);
 
   // 5. 「匯出 PDF」→ 列印版面（print media）全頁。
-  await menu.getByRole("button", { name: labels.buttons.exportPdf, exact: true }).click();
+  await menu.getByRole("button", { name: labels.exports.buttons.exportPdf, exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-print-invoked", "true");
   await page.emulateMedia({ media: "print" });
   await expect(page.getByTestId("manager-summary-print")).toBeVisible();

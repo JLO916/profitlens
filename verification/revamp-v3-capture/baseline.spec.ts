@@ -20,14 +20,14 @@ test("V3-0 四尺寸畫面基準", async ({ page }) => {
   await expect.soft(page).toHaveScreenshot("02-overview-full.png", { fullPage: true });
 
   // 公式與來源抽屜：三件事第 1 列「看證據」。
-  await page.getByTestId("top-three").getByRole("button", { name: labels.buttons.viewEvidence, exact: true }).first().click();
+  await page.getByTestId("top-three").getByRole("button", { name: labels.evidence.buttons.viewEvidence, exact: true }).first().click();
   await expect(evidenceDrawer(page)).toBeVisible();
   await expect.soft(page).toHaveScreenshot("03-evidence-drawer.png");
   await page.keyboard.press("Escape");
   await expect(evidenceDrawer(page)).toHaveCount(0);
 
   // 行動看板：三件事第 1 列「加入待辦」會切到待辦頁並新增一張卡。
-  await page.getByTestId("top-three").getByRole("button", { name: labels.buttons.addToActions, exact: true }).first().click();
+  await page.getByTestId("top-three").getByRole("button", { name: labels.actions.buttons.addToActions, exact: true }).first().click();
   await expect(page.getByTestId("board-card-1")).toBeVisible();
   await top(page);
   await expect.soft(page).toHaveScreenshot("04-actions-board.png", { fullPage: true });

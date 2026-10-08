@@ -16,14 +16,14 @@ describe("R1 period presets compute dates (pure; V3-3 期間列按快捷即套�
     const presets = byId(demo);
     expect(presets.last7).toMatchObject({ status: "ready", comparison_mode: "same_days", previous: { start: "2026-08-10", end: "2026-08-16" }, current: { start: "2026-08-17", end: "2026-08-23" } });
     expect(presets.last4w).toMatchObject({ status: "ready", comparison_mode: "same_days", previous: { start: "2026-06-29", end: "2026-07-26" }, current: { start: "2026-07-27", end: "2026-08-23" } });
-    expect(presets.last7.label).toBe(labels.periods.presets.last7);
-    expect(presets.last4w.label).toBe(labels.periods.presets.last4w);
+    expect(presets.last7.label).toBe(labels.shell.periods.presets.last7);
+    expect(presets.last4w.label).toBe(labels.shell.periods.presets.last4w);
   });
 
   it("refuses 12-week and month presets that would leave coverage, naming the reason", () => {
     const presets = byId(demo);
-    expect(presets.last12w).toMatchObject({ status: "unavailable", reason: fill(labels.periods.presetTooShort, { date: "2026-06-01", preset: labels.periods.presets.last12w }) });
-    expect(presets.monthVsPrev).toMatchObject({ status: "unavailable", reason: fill(labels.periods.monthIncomplete, { date: "2026-08-23" }) });
+    expect(presets.last12w).toMatchObject({ status: "unavailable", reason: fill(labels.shell.periods.presetTooShort, { date: "2026-06-01", preset: labels.shell.periods.presets.last12w }) });
+    expect(presets.monthVsPrev).toMatchObject({ status: "unavailable", reason: fill(labels.shell.periods.monthIncomplete, { date: "2026-08-23" }) });
   });
 
   it("marks every preset unavailable for a two-day golden coverage", () => {
@@ -36,7 +36,7 @@ describe("R1 period presets compute dates (pure; V3-3 期間列按快捷即套�
     const january = byId({ data_as_of: "2025-02-10", coverage_start: "2024-12-01", coverage_end: "2025-01-31" });
     expect(january.monthVsPrev).toMatchObject({ status: "ready", previous: { start: "2024-12-01", end: "2024-12-31" }, current: { start: "2025-01-01", end: "2025-01-31" } });
     const shortMonth = byId({ data_as_of: "2025-01-31", coverage_start: "2025-01-01", coverage_end: "2025-01-31" });
-    expect(shortMonth.monthVsPrev).toMatchObject({ status: "unavailable", reason: fill(labels.periods.presetTooShort, { date: "2025-01-01", preset: labels.periods.presets.monthVsPrev }) });
+    expect(shortMonth.monthVsPrev).toMatchObject({ status: "unavailable", reason: fill(labels.shell.periods.presetTooShort, { date: "2025-01-01", preset: labels.shell.periods.presets.monthVsPrev }) });
   });
 
   it("rejects malformed manifests instead of guessing", () => {
@@ -65,7 +65,7 @@ describe("R4 去年同期 (yoy): current unchanged, previous = current shifted b
     const withView = periodPresets(demo, sameDaysView("2026-08-17", "2026-08-23"));
     expect(withView.slice(0, 4)).toEqual(plain);
     expect(withView.map(preset => preset.id)).toEqual(["last7", "last4w", "last12w", "monthVsPrev", "yoy"]);
-    expect(withView[4].label).toBe(labels.periods.presets.yoy);
+    expect(withView[4].label).toBe(labels.shell.periods.presets.yoy);
   });
 
   it("shifts same_days month-end windows by one calendar year (hand-computed)", () => {
@@ -94,7 +94,7 @@ describe("R4 去年同期 (yoy): current unchanged, previous = current shifted b
     const edge = { data_as_of: "2026-08-24", coverage_start: "2025-08-17", coverage_end: "2026-08-23" };
     expect(yoy(edge, sameDaysView("2026-08-17", "2026-08-23"))).toMatchObject({ status: "ready", previous: { start: "2025-08-17", end: "2025-08-23" } });
     const short = { ...edge, coverage_start: "2025-08-18" };
-    expect(yoy(short, sameDaysView("2026-08-17", "2026-08-23"))).toEqual({ id: "yoy", label: labels.periods.presets.yoy, status: "unavailable", anchor: "2026-08-23", reason: "資料從 2025-08-18 開始，不足去年同期所需天數" });
+    expect(yoy(short, sameDaysView("2026-08-17", "2026-08-23"))).toEqual({ id: "yoy", label: labels.shell.periods.presets.yoy, status: "unavailable", anchor: "2026-08-23", reason: "資料從 2025-08-18 開始，不足去年同期所需天數" });
   });
 
   it("is unavailable when the current period runs past the anchor, naming the anchor date", () => {
@@ -106,8 +106,8 @@ describe("R4 去年同期 (yoy): current unchanged, previous = current shifted b
   });
 
   it("degrades to unavailable (never throws) for an invalid or over-long current period", () => {
-    expect(yoy(wide, sameDaysView("2026-02-30", "2026-03-05"))).toMatchObject({ status: "unavailable", reason: labels.periods.yoyInvalidCurrent });
-    expect(yoy(wide, sameDaysView("2026-03-05", "2026-03-01"))).toMatchObject({ status: "unavailable", reason: labels.periods.yoyInvalidCurrent });
-    expect(yoy(wide, sameDaysView("2025-01-01", "2026-01-01"))).toMatchObject({ status: "unavailable", reason: labels.periods.yoyOverlap });
+    expect(yoy(wide, sameDaysView("2026-02-30", "2026-03-05"))).toMatchObject({ status: "unavailable", reason: labels.shell.periods.yoyInvalidCurrent });
+    expect(yoy(wide, sameDaysView("2026-03-05", "2026-03-01"))).toMatchObject({ status: "unavailable", reason: labels.shell.periods.yoyInvalidCurrent });
+    expect(yoy(wide, sameDaysView("2025-01-01", "2026-01-01"))).toMatchObject({ status: "unavailable", reason: labels.shell.periods.yoyOverlap });
   });
 });

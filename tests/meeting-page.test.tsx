@@ -87,7 +87,7 @@ function findAll(node: ReactNode, match: (element: TreeElement) => boolean, foun
 const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 const byTestId = (tree: ReactNode, id: string) => findAll(tree, element => element.props["data-testid"] === id);
 
-const page = labels.meetingPage, record = labels.meetingRecord, copy = labels.ui.reviewWorkbench, summaryCopy = labels.ui.managerSummary, pageV3 = labels.meeting.pageV3;
+const page = labels.meeting.page, record = labels.meeting.record, copy = labels.meeting.review, summaryCopy = labels.meeting.managerSummary, pageV3 = labels.meeting.pageV3;
 /** V3-4a：總覽會議入口的字串搬到本期一句話區塊（labels.overview.snapshotUi）。 */
 const entryUi = labels.overview.snapshotUi;
 const NOW = "2026-10-03T06:00:00.000Z";
@@ -146,7 +146,7 @@ describe("R6-2 meeting page without a draft", () => {
   it("offers the create button and still lists the (empty) history", async () => {
     const state = await setup();
     const html = render(props(state, { review: null }));
-    expect(block(html, "review-workbench")).toContain(labels.ui.reviewWorkbench.createButton);
+    expect(block(html, "review-workbench")).toContain(labels.meeting.review.createButton);
     // V3-8 C（§7.10 會議歷史為空，C10 區段型）：標題＋說明兩句（合起來仍是 v2 的 historyEmpty）。
     const emptyHistory = labels.empty.stateV3;
     expect(block(html, "meeting-history")).toContain(`<div class="ui-empty-block meeting-history-empty"><p class="ui-empty-title">${emptyHistory.meetingHistoryTitle}</p><p>${emptyHistory.meetingHistoryBody}</p></div>`);
@@ -166,39 +166,39 @@ describe("R6-2 meeting page with a draft", () => {
     expect(positions.every(position => position > -1), order.join()).toBe(true);
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
     for (const [id, title] of [["meeting-agenda-1", record.agenda.kpis], ["meeting-agenda-2", record.agenda.priorities], ["meeting-agenda-3", record.agenda.channels], ["meeting-agenda-4", record.agenda.followUp], ["meeting-agenda-5", record.agenda.scenarios], ["meeting-agenda-6", record.agenda.actions]] as const) expect(text(block(html, id)), id).toContain(title);
-    // 頁首動作列：名稱、日期（存 review.meeting_date），可及名稱沿用 labels.meeting.name／date。
+    // 頁首動作列：名稱、日期（存 review.meeting_date），可及名稱沿用 labels.meeting.form.name／date。
     const basics = block(html, "review-workbench");
     expect(text(block(basics, "meeting-title"))).toBe(pageV3.title);
     expect(basics).toContain(`value="十月例會"`);
     expect(basics).toMatch(/<input class="ui-field-control" type="date" required="" value="2026-10-03"/);
-    for (const name of [labels.meeting.name, labels.meeting.date]) expect(basics).toContain(`<span class="sr-only">${name}</span>`);
+    for (const name of [labels.meeting.form.name, labels.meeting.form.date]) expect(basics).toContain(`<span class="sr-only">${name}</span>`);
     // 固定範圍一行（動作列下方）：來源狀態與通路、兩期（M/D）、資料到。
     const scopeLine = text(html.slice(html.indexOf('<p class="meeting-scope-line">')));
     expect(scopeLine).toContain(`${fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(["DTC", "MARKETPLACE"], false) })} · ${fill(pageV3.scopeLine, { previous: formatPeriodL1("2026-08-01", "2026-08-01", { anchor: "2026-08-03" }), current: formatPeriodL1("2026-08-02", "2026-08-02", { anchor: "2026-08-03" }), asOf: formatDateL1("2026-08-03", { anchor: "2026-08-03" }) })}`);
-    expect(scopeLine).toContain(labels.buttons.updateMeetingSource);
+    expect(scopeLine).toContain(labels.meeting.buttons.updateMeetingSource);
     expect(html).not.toContain('data-testid="review-view-difference"');
     // ①②③ 由會議摘要（固定範圍）提供：淨營收 +220.00、扣廣告後貢獻 −315.00（golden 手算）；V3-2b 起主層用 L1 方向詞＋成長率。
     const summary = ["meeting-agenda-1", "meeting-agenda-2", "meeting-agenda-3"].map(id => block(html, id)).join("");
     const golden = expected();
     expect(text(summary)).toContain(fill(summaryCopy.changePhraseGrowth, { word: labels.format.more, amount: formatHeadlineAmount("220.00"), growth: formatGrowth(golden.current.net_revenue, golden.previous.net_revenue, "L1")! }));
     expect(text(summary)).toContain(fill(summaryCopy.changePhraseGrowth, { word: labels.format.earnLess, amount: formatHeadlineAmount("-315.00"), growth: formatGrowth(golden.current.contribution_after_marketing, golden.previous.contribution_after_marketing, "L1")! }));
-    expect(summary).not.toContain(labels.buttons.print);
+    expect(summary).not.toContain(labels.shell.buttons.print);
     // ⑤ 每個通路一個「選入會議的方案」；DTC 已選 p 第 1 版。
     const scenarios = block(html, "meeting-agenda-5");
-    expect(scenarios).toContain(`aria-label="${fill(labels.ui.reviewWorkbench.scenarioSelect, { channel: "DTC" })}"`);
-    expect(scenarios).toContain(`aria-label="${fill(labels.ui.reviewWorkbench.scenarioSelect, { channel: "MARKETPLACE" })}"`);
+    expect(scenarios).toContain(`aria-label="${fill(labels.meeting.review.scenarioSelect, { channel: "DTC" })}"`);
+    expect(scenarios).toContain(`aria-label="${fill(labels.meeting.review.scenarioSelect, { channel: "MARKETPLACE" })}"`);
     // 決議：四個選項，目前為「採用」；結束會議按鈕（還沒有確認區）；備註在議程之後（textarea，標籤「備註」）。
     const decision = block(html, "meeting-decision");
-    expect(decision).toContain(`aria-label="${labels.meeting.decision}"`);
-    for (const key of ["draft", "adopted", "need_data", "rejected"] as const) expect(text(decision)).toContain(labels.meeting.decisions[key]);
+    expect(decision).toContain(`aria-label="${labels.meeting.form.decision}"`);
+    for (const key of ["draft", "adopted", "need_data", "rejected"] as const) expect(text(decision)).toContain(labels.meeting.form.decisions[key]);
     expect(decision).toMatch(/<option value="adopted" selected="">/);
-    expect(text(block(html, "meeting-finalize"))).toBe(labels.buttons.finalizeMeeting);
+    expect(text(block(html, "meeting-finalize"))).toBe(labels.meeting.buttons.finalizeMeeting);
     const notesAt = html.indexOf('<div class="meeting-notes-block">');
     expect(notesAt).toBeGreaterThan(html.indexOf('data-testid="meeting-agenda-6"'));
     expect(notesAt).toBeLessThan(html.indexOf('data-testid="meeting-compare"'));
-    expect(html).toContain(`<label class="meeting-notes-label" for="meeting-notes-input">${labels.meeting.notes}</label>`);
+    expect(html).toContain(`<label class="meeting-notes-label" for="meeting-notes-input">${labels.meeting.form.notes}</label>`);
     expect(html).toMatch(/<textarea id="meeting-notes-input"[^>]*>照做<\/textarea>/);
-    expect(text(html.slice(notesAt))).toContain(labels.meeting.decisionNote);
+    expect(text(html.slice(notesAt))).toContain(labels.meeting.form.decisionNote);
     expect(html).not.toContain('data-testid="meeting-finalize-confirm"');
     // 沒有上次會議：④ 與比較區都顯示同一句。
     expect(text(block(html, "meeting-agenda-4"))).toContain(record.noLastMeeting);
@@ -221,12 +221,12 @@ describe("R6-2 meeting page with a draft", () => {
     const banner = block(html, "review-view-difference");
     expect(banner).toMatch(/^<div class="ui-banner meeting-banner"/);
     expect(text(banner)).toContain(pageV3.viewDifferenceBanner);
-    expect(text(banner)).toContain(labels.ui.reviewWorkbench.viewDifferenceScope);
+    expect(text(banner)).toContain(labels.meeting.review.viewDifferenceScope);
     // 「檢視差異」是收合的 details（內容保持掛載）；「用目前資料更新會議」在橫幅裡，固定範圍一行不再重複這顆按鈕。
     expect(banner).toMatch(new RegExp(`<details class="topbar-menu auto-close meeting-banner-detail"><summary class="ui-btn ui-btn-text">${pageV3.viewDifferenceToggle}</summary>`));
-    expect(buttons(banner)).toEqual([labels.buttons.updateMeetingSource]);
-    expect(html.split(`>${labels.buttons.updateMeetingSource}</button>`)).toHaveLength(2);
-    expect(html).toContain(labels.ui.reviewWorkbench.rebuilding);
+    expect(buttons(banner)).toEqual([labels.meeting.buttons.updateMeetingSource]);
+    expect(html.split(`>${labels.meeting.buttons.updateMeetingSource}</button>`)).toHaveLength(2);
+    expect(html).toContain(labels.meeting.review.rebuilding);
     // 資料還沒載入：匯出會議的五項停用，說明行改寫 notReady。
     const outputs = block(html, "meeting-outputs");
     expect(buttons(outputs).length).toBe(5);
@@ -239,7 +239,7 @@ describe("R6-2 meeting page with a draft", () => {
     const outputs = block(render(props(state)), "meeting-outputs");
     expect(outputs).toMatch(/^<details class="topbar-menu auto-close export-page meeting-outputs" data-testid="meeting-outputs">/);
     expect(text(block(outputs, "export-page-meeting"))).toBe(pageV3.exportMenu);
-    const names = [labels.buttons.exportPdf, labels.buttons.exportMarkdown, labels.downloads.channelTableCsv, labels.buttons.exportExcel, labels.buttons.exportPptx];
+    const names = [labels.exports.buttons.exportPdf, labels.exports.buttons.exportMarkdown, labels.exports.downloads.channelTableCsv, labels.exports.buttons.exportExcel, labels.exports.buttons.exportPptx];
     const hints = [page.pdfHint, pageV3.exportHints.markdown, pageV3.exportHints.channelCsv, pageV3.exportHints.excel, pageV3.exportHints.pptx];
     // 可及名稱只用名稱（aria-label，E2E 以名稱定位）；說明行是 aria-describedby 指到的 <small>。
     const items = [...outputs.matchAll(/<button type="button" class="ui-menu-item" data-lines="2" data-testid="([^"]+)"[^>]*aria-label="([^"]+)" aria-describedby="([^"]+)"[^>]*><span>([^<]+)<\/span><small id="([^"]+)">([^<]+)<\/small><\/button>/g)].map(match => ({ testId: match[1], aria: match[2], describedBy: match[3], name: match[4], hintId: match[5], hint: match[6] }));
@@ -277,24 +277,24 @@ describe("R6-2 comparison with the last meeting (05 §10)", () => {
     expect(golden.current.contribution_after_marketing).toBe("255.00");
     // V3-2b：議程表格是 L2（整數元，表頭標「（元）」）；顏色依有利／不利。
     expect(rows).toEqual([
-      [labels.metrics.net_revenue.label, formatAmountL2("2470.00"), formatAmountL2("2470.00"), formatSignedDelta("0.00", "L2")],
-      [labels.metrics.contribution_after_marketing.label, formatAmountL2("300.00"), formatAmountL2("255.00"), formatSignedDelta("-45.00", "L2")],
+      [labels.metrics.net_revenue.headline, formatAmountL2("2470.00"), formatAmountL2("2470.00"), formatSignedDelta("0.00", "L2")],
+      [labels.metrics.contribution_after_marketing.headline, formatAmountL2("300.00"), formatAmountL2("255.00"), formatSignedDelta("-45.00", "L2")],
     ]);
     expect(kpis).toContain(`<td class="negative">${formatSignedDelta("-45.00", "L2")}</td>`);
     expect(text(compare)).toContain(record.lastPriorities);
     expect(text(compare)).toContain(record.currentPriorities);
-    expect(text(compare)).toContain(fill(page.priorityRow, { n: 1, headline: last.agenda.priorities[0].headline, scope: labels.sections.total, impact: labels.sections.impact, amount: formatSignedDelta("-315.00", "L1") }));
+    expect(text(compare)).toContain(fill(page.priorityRow, { n: 1, headline: last.agenda.priorities[0].headline, scope: labels.overview.sections.total, impact: labels.overview.sections.impact, amount: formatSignedDelta("-315.00", "L1") }));
     // ④ 上次決議追蹤：上次「採用」（已確認）；a1 上次與目前都是進行中，更新日 2026-10-01。
     const followUp = block(html, "meeting-followup");
-    expect(text(followUp)).toContain(fill(record.decisionConfirmed, { decision: labels.meeting.decisions.adopted, revision: state.review.revision }));
+    expect(text(followUp)).toContain(fill(record.decisionConfirmed, { decision: labels.meeting.form.decisions.adopted, revision: state.review.revision }));
     for (const column of Object.values(page.followUpColumns)) expect(text(followUp)).toContain(column);
-    expect(text(followUp)).toContain(`${labels.actions.statuses.in_progress}${labels.actions.statuses.in_progress}2026-10-01`);
+    expect(text(followUp)).toContain(`${labels.actions.form.statuses.in_progress}${labels.actions.form.statuses.in_progress}2026-10-01`);
     // 歷史一筆：名稱 · 日期 · 決議，可下載 Markdown。
     const history = block(html, "meeting-history");
     expect(history.match(/data-testid="meeting-history-item"/g)).toHaveLength(1);
-    expect(text(history)).toContain(fill(page.historyItem, { name: "十月例會", date: "2026-10-03", decision: fill(record.decisionConfirmed, { decision: labels.meeting.decisions.adopted, revision: state.review.revision }) }));
-    expect(text(history)).toContain(fill(page.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.label, previous: formatAmountL1("570.00"), current: formatAmountL1("300.00"), change: formatSignedDelta("-270.00", "L1") }));
-    expect(buttons(history)).toEqual([labels.buttons.exportMarkdown]);
+    expect(text(history)).toContain(fill(page.historyItem, { name: "十月例會", date: "2026-10-03", decision: fill(record.decisionConfirmed, { decision: labels.meeting.form.decisions.adopted, revision: state.review.revision }) }));
+    expect(text(history)).toContain(fill(page.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.headline, previous: formatAmountL1("570.00"), current: formatAmountL1("300.00"), change: formatSignedDelta("-270.00", "L1") }));
+    expect(buttons(history)).toEqual([labels.exports.buttons.exportMarkdown]);
   });
 
   it("different dataset: no KPI comparison; the last decisions and the pinned-action status table appear once, in ④", async () => {
@@ -307,7 +307,7 @@ describe("R6-2 comparison with the last meeting (05 §10)", () => {
     const html = render(props(state, { history: [last] }));
     const compare = block(html, "meeting-compare");
     expect(compare).toContain('data-testid="meeting-compare-different_dataset"');
-    expect(text(block(compare, "meeting-compare-note"))).toBe(labels.meeting.noComparable);
+    expect(text(block(compare, "meeting-compare-note"))).toBe(labels.meeting.form.noComparable);
     expect(compare).not.toContain('data-testid="meeting-compare-kpis"');
     // 比較區不再重複 ④ 的表：只留一句指向 ④。
     expect(compare).not.toContain('data-testid="meeting-compare-followup"');
@@ -317,9 +317,9 @@ describe("R6-2 comparison with the last meeting (05 §10)", () => {
     expect(html.match(/data-testid="meeting-followup"/g)).toHaveLength(1);
     const followUp = block(block(html, "meeting-agenda-4"), "meeting-followup");
     expect(text(followUp)).toContain(fill(record.mdLastMeeting, { name: "九月例會", date: "2026-09-30" }));
-    expect(text(followUp)).toContain(fill(record.decisionConfirmed, { decision: labels.meeting.decisions.need_data, revision: demoReview.revision }));
+    expect(text(followUp)).toContain(fill(record.decisionConfirmed, { decision: labels.meeting.form.decisions.need_data, revision: demoReview.revision }));
     // d1 不在目前（golden）的待辦工作區：上次「受阻」→ 目前找不到；更新日沿用目前工作區（沒有）。
-    expect(text(followUp)).toContain(`${labels.actions.statuses.blocked}${record.actionMissing}${record.statusNotUpdated}`);
+    expect(text(followUp)).toContain(`${labels.actions.form.statuses.blocked}${record.actionMissing}${record.statusNotUpdated}`);
     // 總覽入口：上次會議用的是另一份資料，不顯示「上次會議 日期」。
     const entry = renderToStaticMarkup(createElement(MeetingEntry, { review: state.review, history: [last], datasetHash: state.s.snapshot.dataset_hash, onOpen: noop }));
     expect(text(entry)).not.toContain(fill(page.entryLast, { date: "2026-09-30" }));
@@ -332,13 +332,13 @@ describe("R6-2 overview keeps a one-line entry (05 §10)", () => {
     const html = renderToStaticMarkup(createElement(MeetingEntry, { review: state.review, history: [state.meeting], datasetHash: state.s.snapshot.dataset_hash, onOpen: noop }));
     expect(html).toMatch(/^<p class="meeting-entry" data-testid="overview-meeting-entry">/);
     // V3-4a：入口放在本期一句話右側，整句「會議：{狀態}」就是唯一的文字按鈕；可及名稱補上「前往會議紀錄」，上次會議日期是旁邊的註記。
-    const adopted = fill(entryUi.meetingEntry, { state: labels.meeting.decisions.adopted });
+    const adopted = fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.adopted });
     expect(text(html)).toContain(adopted);
     expect(text(html)).toContain(fill(page.entryLast, { date: "2026-10-03" }));
     expect(buttons(html)).toEqual([adopted]); // V3-2a：裝飾箭頭已移除（PRD §5.2 X5）
     expect(html).toContain(`<button type="button" class="text-button" aria-label="${fill(entryUi.meetingGoAria, { text: adopted, go: page.goToMeeting })}">${adopted}</button>`);
     const empty = renderToStaticMarkup(createElement(MeetingEntry, { review: null, history: [], datasetHash: state.s.snapshot.dataset_hash, onOpen: noop }));
-    expect(text(empty)).toContain(fill(entryUi.meetingEntry, { state: labels.sections.meetingNotCreated }));
+    expect(text(empty)).toContain(fill(entryUi.meetingEntry, { state: labels.meeting.sections.meetingNotCreated }));
   });
 });
 
@@ -409,8 +409,8 @@ describe("R6-2 meeting date and export info", () => {
  * R6-F2 對抗式審查後修正：議程 ⑤⑥、總覽入口「已結束」、比較區不重複 ④、歷史凍結的追蹤與移除、
  * 結束會議的錯誤碼文案、處理中按鈕的焦點、通路別名看會議自己的資料、列印第一頁＋附錄規則。
  * ------------------------------------------------------------------------------------------- */
-const DTC_SCOPE = fill(labels.ui.reviewSession.scenarioScope, { channel: "DTC", start: "2026-08-02", end: "2026-08-02" });
-const FULFILLMENT_10 = fill(labels.ui.reviewSession.assumptionFulfillment, { value: formatPercentNumber("-10", "L2", { signed: true }) });
+const DTC_SCOPE = fill(labels.meeting.session.scenarioScope, { channel: "DTC", start: "2026-08-02", end: "2026-08-02" });
+const FULFILLMENT_10 = fill(labels.meeting.session.assumptionFulfillment, { value: formatPercentNumber("-10", "L2", { signed: true }) });
 
 describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () => {
   it("⑤ lists the selected plan's result under the selects; ⑥ lists the pinned action; the summary no longer repeats 方案與待辦", async () => {
@@ -438,7 +438,7 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
     const six = block(html, "meeting-agenda-6");
     const pinned = block(six, "meeting-pinned-actions");
     expect(text(pinned)).toContain(a1.problem);
-    expect(text(pinned)).toContain(fill(summaryCopy.actionExecution, { status: labels.actions.statuses.in_progress, notes: "" }));
+    expect(text(pinned)).toContain(fill(summaryCopy.actionExecution, { status: labels.actions.form.statuses.in_progress, notes: "" }));
     expect(pinned.match(/<li>/g)).toHaveLength(1);
     expect(text(six)).toContain(fill(summaryCopy.appendixActions, { n: 1 }));
     expect(text(six).split(fill(summaryCopy.appendixActions, { n: 1 }))[1]).toContain(a2.problem);
@@ -447,8 +447,8 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
     const summary = ["meeting-agenda-1", "meeting-agenda-2", "meeting-agenda-3"].map(id => block(html, id)).join("");
     expect(text(summary)).not.toContain(summaryCopy.decisionsHeading);
     expect(text(summary)).not.toContain(a1.problem);
-    expect(summary).toContain(`<dt>${labels.metrics.net_revenue.label}</dt>`);
-    expect(summary).not.toContain(`<h3>${labels.metrics.net_revenue.label}</h3>`);
+    expect(summary).toContain(`<dt>${labels.metrics.net_revenue.headline}</dt>`);
+    expect(summary).not.toContain(`<h3>${labels.metrics.net_revenue.headline}</h3>`);
     expect(summary).toContain(`<details class="meeting-wide-table"><summary>${pageV3.fullChannelTable}</summary>`);
     expect(text(summary)).not.toContain(summaryCopy.channelTableSummary);
   });
@@ -486,14 +486,14 @@ describe("R6-F2 overview entry after finalizing", () => {
     expect(fresh).toMatchObject({ revision: 1, decision_state: "draft" });
     const finalizedText = fill(entryUi.meetingEntryFinalized, { date: "2026-10-03" });
     expect(entry(fresh)).toContain(finalizedText);
-    expect(entry(fresh)).not.toContain(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+    expect(entry(fresh)).not.toContain(fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.draft }));
     expect(markup(fresh)).toContain(`aria-label="${fill(entryUi.meetingGoAria, { text: finalizedText, go: page.goToMeeting })}"`);
     const edited = updateReviewSession(fresh, { name: "改過的會議" });
     expect(entry(edited)).not.toContain(finalizedText);
-    expect(entry(edited)).toContain(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+    expect(entry(edited)).toContain(fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.draft }));
     expect(entry(edited)).toContain(fill(page.entryLast, { date: "2026-10-03" }));
     const dtc = createReviewSession(await source("golden", { channels: ["DTC"] }), "e", "rev-3");
-    expect(entry(dtc)).toContain(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+    expect(entry(dtc)).toContain(fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.draft }));
     expect(entry(dtc)).not.toContain(finalizedText);
   });
 });
@@ -517,17 +517,17 @@ describe("R6-F2 meeting history reads the record itself", () => {
     const rows = [...kpis.matchAll(/<tr><th scope="row">([\s\S]*?)<\/th>([\s\S]*?)<\/tr>/g)].map(match => [text(match[1]), ...[...match[2].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(cell => text(cell[1]))]);
     // 同一份資料同範圍：上次本期 = 本次本期（2,470.00；255.00），差額 0.00。
     expect(rows).toEqual([
-      [labels.metrics.net_revenue.label, formatAmountL2("2470.00"), formatAmountL2("2470.00"), formatSignedDelta("0.00", "L2")],
-      [labels.metrics.contribution_after_marketing.label, formatAmountL2("255.00"), formatAmountL2("255.00"), formatSignedDelta("0.00", "L2")],
+      [labels.metrics.net_revenue.headline, formatAmountL2("2470.00"), formatAmountL2("2470.00"), formatSignedDelta("0.00", "L2")],
+      [labels.metrics.contribution_after_marketing.headline, formatAmountL2("255.00"), formatAmountL2("255.00"), formatSignedDelta("0.00", "L2")],
     ]);
-    expect(text(followUp)).toContain(`${page.lastDecision}：${fill(record.decisionConfirmed, { decision: labels.meeting.decisions.adopted, revision: state.review.revision })}`);
-    expect(text(followUp)).toContain(`${labels.actions.statuses.in_progress}${labels.actions.statuses.in_progress}2026-10-01`);
+    expect(text(followUp)).toContain(`${page.lastDecision}：${fill(record.decisionConfirmed, { decision: labels.meeting.form.decisions.adopted, revision: state.review.revision })}`);
+    expect(text(followUp)).toContain(`${labels.actions.form.statuses.in_progress}${labels.actions.form.statuses.in_progress}2026-10-01`);
     expect(text(history)).toContain(page.historyFollowUp);
     expect(text(history)).toContain(record.noLastMeeting);
     // 每筆：下載 Markdown（aria-label 含名稱與日期）＋移除。
-    expect(buttons(history)).toEqual([labels.buttons.exportMarkdown, page.removeMeeting, labels.buttons.exportMarkdown, page.removeMeeting]);
-    const title = fill(page.historyItem, { name: "十一月例會", date: "2026-11-03", decision: fill(record.decisionConfirmed, { decision: labels.meeting.decisions.adopted, revision: next.revision }) });
-    expect(history).toContain(`aria-label="${labels.buttons.exportMarkdown} · ${title}"`);
+    expect(buttons(history)).toEqual([labels.exports.buttons.exportMarkdown, page.removeMeeting, labels.exports.buttons.exportMarkdown, page.removeMeeting]);
+    const title = fill(page.historyItem, { name: "十一月例會", date: "2026-11-03", decision: fill(record.decisionConfirmed, { decision: labels.meeting.form.decisions.adopted, revision: next.revision }) });
+    expect(history).toContain(`aria-label="${labels.exports.buttons.exportMarkdown} · ${title}"`);
     expect(history).toContain(`aria-label="${page.removeMeeting} · ${title}"`);
     expect(history).toContain(`data-testid="meeting-history-remove-${second.id}"`);
     expect(meetingMarkdownFilename(second)).toBe("profitlens-meeting-2026-11-03.md");
@@ -553,7 +553,7 @@ describe("R6-F2 meeting history reads the record itself", () => {
     expect(region.props.role).toBe("group");
     expect(findAll(region, element => element.type === "p")[0].props.children).toBe(page.removeWarning);
     expect(byTestId(tree, "meeting-history-remove-confirm")[0].props.children).toBe(page.removeConfirm);
-    expect(findAll(region, element => element.type === "button").map(element => element.props.children)).toEqual([page.removeConfirm, labels.buttons.cancel]);
+    expect(findAll(region, element => element.type === "button").map(element => element.props.children)).toEqual([page.removeConfirm, labels.shell.buttons.cancel]);
     (region.props.onKeyDown as (event: unknown) => void)({ key: "Escape", stopPropagation: noop });
     tree = view(value);
     expect(byTestId(tree, "meeting-history-remove-confirm")).toHaveLength(0);
@@ -604,7 +604,7 @@ describe("R6-F2 busy buttons keep focus (aria-disabled + guard)", () => {
     const button = byTestId(tree, "meeting-finalize-confirm-button")[0];
     expect(button.props.disabled).toBeUndefined();
     expect(button.props["aria-disabled"]).toBe(true);
-    const cancel = findAll(byTestId(tree, "meeting-finalize-confirm")[0], element => element.type === "button" && element.props.children === labels.buttons.cancel)[0];
+    const cancel = findAll(byTestId(tree, "meeting-finalize-confirm")[0], element => element.type === "button" && element.props.children === labels.shell.buttons.cancel)[0];
     expect(cancel.props.disabled).toBeUndefined();
     expect(cancel.props["aria-disabled"]).toBe(true);
     expect(byTestId(tree, "meeting-status")[0].props.children).toBe(page.finalizing);
@@ -688,7 +688,7 @@ describe("R6-F2 channel aliases follow the meeting's own data", () => {
     expect(text(html)).toContain(fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(channels, false) }));
     const agenda = block(html, "meeting-agenda");
     for (const channel of channels) expect(agenda).toContain(`aria-label="${fill(copy.scenarioSelect, { channel })}"`);
-    expect(text(agenda)).not.toContain(labels.demoChannelAlias.DTC);
+    expect(text(agenda)).not.toContain(labels.data.demoChannelAlias.DTC);
   });
 
   it("「用目前資料更新會議」 keeps the draft's created_at and meeting date", async () => {
@@ -697,7 +697,7 @@ describe("R6-F2 channel aliases follow the meeting's own data", () => {
     const onChange = vi.fn();
     const view = mount(MeetingPage);
     const tree = view(props(state, { review, onChange }));
-    const refresh = findAll(tree, element => element.type === "button" && element.props.children === labels.buttons.updateMeetingSource)[0];
+    const refresh = findAll(tree, element => element.type === "button" && element.props.children === labels.meeting.buttons.updateMeetingSource)[0];
     (refresh.props.onClick as () => void)();
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange.mock.calls[0][0]).toMatchObject({ id: review.id, name: "十月例會", created_at: "2026-09-01T00:00:00.000Z", meeting_date: "2026-10-03", decision_state: "draft" });
@@ -737,7 +737,7 @@ describe("R6-F2 print: one-page summary plus appendix (A4)", () => {
     for (const line of lines) expect(line.match(/<p>/g)).toHaveLength(1);
     expect(text(lines[0])).toBe(fill(summaryCopy.printScenarioLine, { name: "官網履約", scope: DTC_SCOPE, baseline: formatAmountL1("270.00"), contribution: formatAmountL1("284.00"), delta: formatSignedDelta("14.00", "L1") }));
     expect(firstPage).not.toContain(FULFILLMENT_10);
-    expect(firstPage).not.toContain(fill(labels.ui.reviewSession.assumptionVolume, { value: formatPercentNumber("0", "L2", { signed: true }) }));
+    expect(firstPage).not.toContain(fill(labels.meeting.session.assumptionVolume, { value: formatPercentNumber("0", "L2", { signed: true }) }));
     // 附錄：兩個方案的完整假設。
     const assumptions = block(appendix, "print-appendix-assumptions");
     expect(assumptions.startsWith(appendixTag)).toBe(true);
@@ -748,9 +748,9 @@ describe("R6-F2 print: one-page summary plus appendix (A4)", () => {
     // 決議行：在兩個關鍵差額之後、三件事之前；備註截在 200 字，全文在附錄。
     const decision = block(firstPage, "print-decision-line");
     const shortNotes = fill(page.printNotesTruncated, { text: Array.from(notes).slice(0, PRINT_NOTES_LIMIT).join("") });
-    expect(text(decision)).toBe(fill(summaryCopy.printMeetingLine, { name: "列印例會", state: labels.meeting.decisions.adopted, notes: shortNotes }));
+    expect(text(decision)).toBe(fill(summaryCopy.printMeetingLine, { name: "列印例會", state: labels.meeting.form.decisions.adopted, notes: shortNotes }));
     expect(firstPage.indexOf(`class="${styles.printHeadlines}"`)).toBeLessThan(firstPage.indexOf('data-testid="print-decision-line"'));
-    expect(firstPage.indexOf('data-testid="print-decision-line"')).toBeLessThan(firstPage.indexOf(`<h2>${labels.sections.topThree}</h2>`));
+    expect(firstPage.indexOf('data-testid="print-decision-line"')).toBeLessThan(firstPage.indexOf(`<h2>${labels.overview.sections.topThree}</h2>`));
     expect(firstPage).not.toContain(tail);
     expect(text(block(appendix, "print-appendix-notes"))).toContain(notes);
     // 三件事仍是第一頁唯一的 <ol>；列印樣式恢復編號（Tailwind preflight 會清掉 list-style）。
@@ -760,7 +760,7 @@ describe("R6-F2 print: one-page summary plus appendix (A4)", () => {
 
   it("short notes stay on page one without a notes appendix", async () => {
     const html = await printable("照做");
-    expect(text(block(html, "print-decision-line"))).toBe(fill(summaryCopy.printMeetingLine, { name: "列印例會", state: labels.meeting.decisions.adopted, notes: "照做" }));
+    expect(text(block(html, "print-decision-line"))).toBe(fill(summaryCopy.printMeetingLine, { name: "列印例會", state: labels.meeting.form.decisions.adopted, notes: "照做" }));
     expect(html).not.toContain('data-testid="print-appendix-notes"');
   });
 

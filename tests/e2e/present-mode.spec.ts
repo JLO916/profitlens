@@ -19,7 +19,7 @@ test.describe("V3-9b F22 投影模式", () => {
   test("(a) 只有總覽與會議頁有投影按鈕：預設 aria-pressed=false、文字「投影模式」；手機寬度掛載但不可見", async ({ page }) => {
     // 沒有資料時（空狀態）總覽也沒有按鈕。
     await page.goto("/");
-    await expect(page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }).first()).toBeVisible();
     await expect(presentToggle(page)).toHaveCount(0);
 
     await loadDemoForPresent(page);
@@ -37,7 +37,7 @@ test.describe("V3-9b F22 投影模式", () => {
 
     for (const id of OTHER_PAGES) {
       await navigateTo(page, id);
-      await expect(page.getByRole("heading", { level: 1, name: labels.nav[id].label, exact: true })).toBeAttached();
+      await expect(page.getByRole("heading", { level: 1, name: labels.shell.nav[id].headline, exact: true })).toBeAttached();
       await expect(presentToggle(page)).toHaveCount(0);
     }
 
@@ -65,7 +65,7 @@ test.describe("V3-9b F22 投影模式", () => {
 
       // 可見：本期一句話、KPI 帶、三件事各列（標題與影響金額）、本期利潤結構、頁首期間一行。
       for (const id of ["snapshot-sentence", "kpi-band", "profit-waterfall", "present-period", "present-toggle"]) await expect(page.getByTestId(id)).toBeVisible();
-      await expect(page.getByRole("heading", { level: 1, name: labels.nav.overview.label, exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: labels.shell.nav.overview.headline, exact: true })).toBeVisible();
       const priorities = page.locator("[data-testid^='overview-priority-']");
       const priorityCount = await priorities.count();
       expect(priorityCount).toBeGreaterThan(0);
@@ -155,7 +155,7 @@ test.describe("V3-9b F22 投影模式", () => {
       await expect(page.getByTestId("present-period")).toHaveText(expectedPeriod);
       for (const id of ["meeting-title", "meeting-decision", "meeting-agenda-1", "meeting-agenda-2", "meeting-finalize"]) await expect(meeting.getByTestId(id)).toBeVisible();
       await expect(page.getByTestId("present-period")).toBeVisible();
-      await expect(meeting.getByTestId("meeting-decision").getByRole("combobox", { name: labels.meeting.decision, exact: true })).toBeVisible();
+      await expect(meeting.getByTestId("meeting-decision").getByRole("combobox", { name: labels.meeting.form.decision, exact: true })).toBeVisible();
 
       await expectMountedHidden(meeting.locator(".meeting-toc"));
       for (const n of [3, 4, 5, 6]) await expectMountedHidden(meeting.getByTestId(`meeting-agenda-${n}`));

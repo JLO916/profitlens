@@ -35,14 +35,13 @@ const test = base.extend<{ audit: string[] }>({
   }, { auto: true }],
 });
 
-const dash = labels.ui.dashboard;
-const meetingPage = labels.meetingPage;
+const meetingPage = labels.meeting.page;
 /** V3-4a：總覽會議入口的字串搬到本期一句話區塊（labels.overview.snapshotUi）。 */
 const entryUi = labels.overview.snapshotUi;
-const record = labels.meetingRecord;
-const review = labels.ui.reviewWorkbench;
-const store = labels.ui.workspaceStorage;
-const auto = labels.autoSave;
+const record = labels.meeting.record;
+const review = labels.meeting.review;
+const store = labels.storage.workspace;
+const auto = labels.storage.autoSave;
 const DATABASE = "profitlens-opt-in-workspace-v1";
 const navIds = ["overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "validation"] as const;
 
@@ -62,9 +61,9 @@ const tabIds = ["overview", "diagnosis", "actions", "meeting"] as const;
 const moreIds = ["products", "scenarios", "data", "validation"] as const;
 const status = (page: Page) => page.getByTestId("workspace-status");
 const outputDir = (...parts: string[]) => resolve("verification/revamp-R6", ...parts);
-const defaultMeetingName = labels.ui.reviewSession.defaultName;
-const firstPlanName = fill(labels.ui.decisionWorkbench.defaultPlanName, { n: 1 });
-const summaryCopy = labels.ui.managerSummary;
+const defaultMeetingName = labels.meeting.session.defaultName;
+const firstPlanName = fill(labels.scenarios.decision.defaultPlanName, { n: 1 });
+const summaryCopy = labels.meeting.managerSummary;
 /** V3-7：會議頁文件式版面（labels.meeting.pageV3）、匯出版頭四行（labels.exports.headerV3）、頂欄「匯出」選單的說明行（labels.exports.menuV3）。 */
 const pageV3 = labels.meeting.pageV3;
 const headerV3 = labels.exports.headerV3;
@@ -73,13 +72,13 @@ const menuV3 = labels.exports.menuV3;
 const GOLDEN_AS_OF = "2026-08-03";
 /** V3-2a：status.ready 帶 {date}＝資料集 manifest 的 data_as_of（demo 為 2026-08-24）。 */
 const DATA_AS_OF = { golden: GOLDEN_AS_OF, demo: "2026-08-24" } as const;
-const ready = (id: keyof typeof DATA_AS_OF) => fill(labels.status.ready, { date: DATA_AS_OF[id] });
+const ready = (id: keyof typeof DATA_AS_OF) => fill(labels.shell.status.ready, { date: DATA_AS_OF[id] });
 /** V3-7 §7.9 匯出版頭（golden）：第 1 行是畫面上的資料集名稱（不是 dataset_id golden-v1）；上期 2026-08-01、本期 2026-08-02（各 1 天），未稅。 */
-const GOLDEN_HEADER: ExportHeaderExpectation = { datasetName: dash.datasets.golden, previous: { start: "2026-08-01", end: "2026-08-01" }, current: { start: "2026-08-02", end: "2026-08-02" } };
+const GOLDEN_HEADER: ExportHeaderExpectation = { datasetName: labels.shell.devValidation.datasets.golden, previous: { start: "2026-08-01", end: "2026-08-01" }, current: { start: "2026-08-02", end: "2026-08-02" } };
 /** Markdown 開頭：第 1 行「# 標題」、第 2 行空白，第 3–6 行是版頭四行，第 7 行空白。 */
 const markdownHeader = (markdown: string) => markdown.split("\n").slice(2, 6);
-/** Excel 工作表表頭列裡某欄的位置：金額欄的表頭是「{label}（元）」（labels.ui.export.moneyColumn），其他欄就是 label。 */
-const excelColumn = (header: unknown[], label: string) => header.findIndex(cell => cell === label || cell === fill(labels.ui.export.moneyColumn, { label }));
+/** Excel 工作表表頭列裡某欄的位置：金額欄的表頭是「{label}（元）」（labels.exports.common.moneyColumn），其他欄就是 label。 */
+const excelColumn = (header: unknown[], label: string) => header.findIndex(cell => cell === label || cell === fill(labels.exports.common.moneyColumn, { label }));
 /** V3-9a F12：Markdown「其他常用指標」表最後一列是損益兩平 MER（golden L1），技術細節緊接在輔助指標版本之後是 breakeven_mer_version。 */
 function expectMarkdownBreakeven(markdown: string) {
   expect(markdownAssistSection(markdown).filter(line => line.startsWith("| ")).at(-1)).toBe(markdownBreakevenRow(GOLDEN_BREAKEVEN.previous, GOLDEN_BREAKEVEN.current));
@@ -89,8 +88,8 @@ function expectMarkdownBreakeven(markdown: string) {
 /** A4 PDF 的頁數（/Type /Page，不含 /Pages）。 */
 const pdfPages = (pdf: Buffer) => (pdf.toString("latin1").match(/\/Type\s*\/Page(?!s)/g) ?? []).length;
 /** 「採用（第 n 版確認）」：版號是會議稿的修訂次數，只要求是數字。 */
-const confirmedRe = (decision: keyof typeof labels.meeting.decisions) => escapeRe(fill(record.decisionConfirmed, { decision: labels.meeting.decisions[decision], revision: "§" })).replace("§", "\\d+");
-const historyTitle = (name: string, date: string, decision: keyof typeof labels.meeting.decisions) => templateRe(meetingPage.historyItem, { name, date }, { decision: confirmedRe(decision) });
+const confirmedRe = (decision: keyof typeof labels.meeting.form.decisions) => escapeRe(fill(record.decisionConfirmed, { decision: labels.meeting.form.decisions[decision], revision: "§" })).replace("§", "\\d+");
+const historyTitle = (name: string, date: string, decision: keyof typeof labels.meeting.form.decisions) => templateRe(meetingPage.historyItem, { name, date }, { decision: confirmedRe(decision) });
 /** pptx 是 zip；SheetJS 內建的 CFB 也能讀 zip（只用來解析下載的產物）。回傳每張投影片的 XML。 */
 type Zip = { FullPaths: string[] };
 const zip = XLSX.CFB as { read(data: Buffer, options: { type: "buffer" }): Zip; find(container: Zip, path: string): { content: Uint8Array | number[] } | null };
@@ -102,8 +101,8 @@ function slideXml(bytes: Buffer): string[] {
 async function loadDataset(page: Page, id: "golden" | "demo") {
   if (page.url() === "about:blank") await page.goto("/");
   await openValidation(page);
-  await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
-  await clickReplacing(page, page.getByRole("button", { name: dash.validation.loadButton, exact: true }));
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
   await expect(status(page)).toContainText(ready(id));
 }
 /** 首次載入（或清空、從備份恢復）後一定會出現保存提示：等它出現再按「先不要」。V3-3 手機：展開中的「更多」（頂欄工具列＋底部頁面面板）疊在非 modal 的提示之上，先收起再回應。 */
@@ -140,7 +139,7 @@ async function calculateKeepPlan(page: Page) {
   await card.getByTestId("scenario-preset-apply").click();
   // V3-6（D-V3-12＝B）：每個測試只試算一次，這裡是工作區第一次勾聲明；勾下去就記住、checkbox 換成「已了解」。
   await acceptAssumptions(card, "first");
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   // V3-2b：試算結果是 L1（< 1 萬顯示整數元＋「元」；差額為零不帶符號）。
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1("270.00"));
   await expect(card.getByTestId("scenario-delta")).toHaveText(formatSignedDelta("0.00", "L1"));
@@ -149,16 +148,16 @@ async function calculateKeepPlan(page: Page) {
 async function addPinnedAction(page: Page, problem: string) {
   await navigateTo(page, "actions");
   await switchActionsView(page, "board");
-  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+  await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
   const card = page.getByTestId("board-card-1");
   const drawer = actionDrawer(page);
   await expect(drawer).toBeVisible();
-  await drawer.getByLabel(labels.actions.problem, { exact: true }).fill(problem);
+  await drawer.getByLabel(labels.actions.form.problem, { exact: true }).fill(problem);
   await page.keyboard.press("Escape");
   await expect(drawer).toHaveCount(0);
   await expect(card).toBeFocused();
-  await card.getByRole("button", { name: labels.buttons.pin, exact: true }).click();
-  await expect(card.getByRole("button", { name: labels.ui.actionsWorkbench.unpin, exact: true })).toHaveAttribute("aria-pressed", "true");
+  await card.getByRole("button", { name: labels.actions.buttons.pin, exact: true }).click();
+  await expect(card.getByRole("button", { name: labels.actions.workbench.unpin, exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(card.getByRole("heading", { level: 4 })).toHaveText(problem);
 }
 /** 決議區按「結束會議」→ 確認區（非 modal）→ 確認；成功後狀態列顯示「已結束」。 */
@@ -182,7 +181,7 @@ async function expectSameScopeCompare(meeting: Locator) {
   await expect(same).toContainText(fill(meetingPage.compareKind, { kind: record.kinds.same_scope }));
   const rows = same.getByTestId("meeting-compare-kpis").locator("tbody tr");
   await expect(rows).toHaveCount(2);
-  await expect(rows.locator("th")).toHaveText([labels.metrics.net_revenue.label, labels.metrics.contribution_after_marketing.label]);
+  await expect(rows.locator("th")).toHaveText([labels.metrics.net_revenue.headline, labels.metrics.contribution_after_marketing.headline]);
   // 議程表格是 L2（整數元，表頭標「（元）」）；差額取位後為零不帶符號。
   await expect(rows.nth(0).locator("td")).toHaveText([formatAmountL2("2470.00"), formatAmountL2("2470.00"), formatSignedDelta("0.00", "L2")]);
   await expect(rows.nth(1).locator("td")).toHaveText([formatAmountL2("255.00"), formatAmountL2("255.00"), formatSignedDelta("0.00", "L2")]);
@@ -210,17 +209,17 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await expect(sidebarNav(page, "meeting")).toHaveAttribute("aria-current", "page");
   // 載入資料時已自動建立會議稿；沒有的話按「建立這次的會議紀錄」。
   if (await meeting.getByRole("button", { name: review.createButton, exact: true }).count()) await meeting.getByRole("button", { name: review.createButton, exact: true }).click();
-  await expect(basics(meeting).getByLabel(labels.meeting.name, { exact: true })).toHaveValue(defaultMeetingName);
+  await expect(basics(meeting).getByLabel(labels.meeting.form.name, { exact: true })).toHaveValue(defaultMeetingName);
   // 會議日期預設臺北今天，input[type=date]。
-  const dateInput = basics(meeting).getByLabel(labels.meeting.date, { exact: true });
+  const dateInput = basics(meeting).getByLabel(labels.meeting.form.date, { exact: true });
   await expect(dateInput).toHaveAttribute("type", "date");
   await expect(dateInput).toHaveValue(today);
-  await basics(meeting).getByLabel(labels.meeting.name, { exact: true }).fill(name);
-  await expect(basics(meeting).getByLabel(labels.meeting.name, { exact: true })).toHaveValue(name);
+  await basics(meeting).getByLabel(labels.meeting.form.name, { exact: true }).fill(name);
+  await expect(basics(meeting).getByLabel(labels.meeting.form.name, { exact: true })).toHaveValue(name);
   // 議程 ①–⑥：①–③ 是會議模式的主管摘要（② 標題「② 本期三件事」），④ 還沒有上次會議。
   await expect(meeting.getByTestId("meeting-agenda").getByTestId("manager-summary")).toBeVisible();
   await expect(meeting.getByTestId("meeting-agenda").getByRole("heading", { name: record.agenda.priorities, exact: true })).toBeVisible();
-  await expect(meeting.getByTestId("manager-summary").getByRole("button", { name: labels.buttons.print, exact: true })).toHaveCount(0);
+  await expect(meeting.getByTestId("manager-summary").getByRole("button", { name: labels.shell.buttons.print, exact: true })).toHaveCount(0);
   await expect(meeting.getByTestId("meeting-agenda-4")).toContainText(record.noLastMeeting);
   await expect(meeting.getByTestId("meeting-compare")).toContainText(record.noLastMeeting);
   // V3-8 C：會議歷史為空是兩句（標題＋說明），取代 v2 一整句 historyEmpty。
@@ -231,9 +230,9 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await dtcSelect.selectOption({ label: fill(review.planOption, { name: firstPlanName }) });
   await expect(dtcSelect.locator("option:checked")).toHaveText(fill(review.planOption, { name: firstPlanName }));
   // 決議「採用」。
-  const decision = meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.decision, { exact: true });
+  const decision = meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.form.decision, { exact: true });
   await decision.selectOption("adopted");
-  await expect(decision.locator("option:checked")).toHaveText(labels.meeting.decisions.adopted);
+  await expect(decision.locator("option:checked")).toHaveText(labels.meeting.form.decisions.adopted);
 
   // 結束會議的確認區：Esc 取消、焦點回到「結束會議」；再按一次才確認。
   await meeting.getByTestId("meeting-finalize").click();
@@ -252,8 +251,8 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   const items = meeting.getByTestId("meeting-history-item");
   await expect(items).toHaveCount(1);
   await expect(items.first().locator("summary")).toHaveText(historyTitle(name, today, "adopted"));
-  await expect(items.first().getByRole("button", { name: `${labels.buttons.exportMarkdown} · ${await items.first().locator("summary").innerText()}`, exact: true })).toBeVisible();
-  await expect(basics(meeting).getByLabel(labels.meeting.name, { exact: true })).toHaveValue(defaultMeetingName);
+  await expect(items.first().getByRole("button", { name: `${labels.exports.buttons.exportMarkdown} · ${await items.first().locator("summary").innerText()}`, exact: true })).toBeVisible();
+  await expect(basics(meeting).getByLabel(labels.meeting.form.name, { exact: true })).toHaveValue(defaultMeetingName);
   await expect(decision).toHaveValue("draft");
   await expect(dateInput).toHaveValue(today);
   // 結束成功後焦點移到新會議的標題（V3-7：頁首動作列的「本次會議（草稿）」，取代 v2 的「會議基本」）。
@@ -272,18 +271,18 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
   await expect(followUp.locator("thead th")).toHaveText(Object.values(meetingPage.followUpColumns));
   await expect(followUp.locator("tbody tr")).toHaveCount(1);
   await expect(followUp.locator("tbody tr th")).toHaveText(problem);
-  await expect(followUp.locator("tbody tr td")).toHaveText([labels.actions.statuses.not_started, labels.actions.statuses.not_started, record.statusNotUpdated]);
+  await expect(followUp.locator("tbody tr td")).toHaveText([labels.actions.form.statuses.not_started, labels.actions.form.statuses.not_started, record.statusNotUpdated]);
 
   // 總覽只留一行入口：剛結束會議、新會議稿還沒動過 → 「本期會議：已結束（日期）· 新會議稿：草稿」（不再另列「上次會議 日期」）。
   await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
   await expect(entry).toContainText(fill(entryUi.meetingEntryFinalized, { date: today }));
-  await expect(entry).not.toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).not.toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.draft }));
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 
   // 備份（V3-9a 起寫 v5，WORKSPACE_VERSION）：meeting_history 一筆（凍結的議程：選入方案 270.00、置頂待辦一項）。
   const storage = await openStorage(page);
-  const backup = await downloadFrom(page, storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true }));
+  const backup = await downloadFrom(page, storage.getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true }));
   expect(backup.download.suggestedFilename()).toBe("profitlens-workspace.json");
   const text = backup.bytes.toString("utf8");
   const wire = JSON.parse(text);
@@ -305,7 +304,7 @@ test("a. 會議流程：選入方案與置頂待辦 → 決議採用 → 結束�
 
   // 清空 → 讀回備份：會議歷史仍一筆，比較仍是 same_scope（差額 0.00）。V3-3：「清空」在儲存選單的危險區。
   await clickReplacing(page, await clearButton(page));
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   const fresh = await openStorage(page);
   await fresh.getByLabel(store.selectBackupFile, { exact: true }).setInputFiles({ name: "r6-meeting.json", mimeType: "application/json", buffer: backup.bytes });
   await expect(page.getByRole("region", { name: store.restorePreviewAria })).toBeVisible();
@@ -335,7 +334,7 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   await declineSavePrompt(page);
   await addPinnedAction(page, problem);
   let meeting = await openMeeting(page);
-  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.decision, { exact: true }).selectOption("needs_data");
+  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.form.decision, { exact: true }).selectOption("needs_data");
   await finalizeMeeting(meeting);
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
   await expect(meeting.getByTestId("meeting-history-item").first().locator("summary")).toHaveText(historyTitle(defaultMeetingName, today, "need_data"));
@@ -353,7 +352,7 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   const banner = meeting.getByTestId("review-view-difference");
   await expect(banner).toBeVisible();
   await expect(meeting.getByTestId("meeting-finalize")).toBeDisabled();
-  await banner.getByRole("button", { name: labels.buttons.updateMeetingSource, exact: true }).click();
+  await banner.getByRole("button", { name: labels.meeting.buttons.updateMeetingSource, exact: true }).click();
   await expect(banner).toHaveCount(0);
   await expect(meeting.getByTestId("meeting-finalize")).toBeEnabled();
 
@@ -362,7 +361,7 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   await expect(different).toBeVisible();
   await expect(compare.getByTestId("meeting-compare-same_scope")).toHaveCount(0);
   await expect(compare.getByTestId("meeting-compare-different_periods")).toHaveCount(0);
-  await expect(different.getByTestId("meeting-compare-note")).toHaveText(labels.meeting.noComparable);
+  await expect(different.getByTestId("meeting-compare-note")).toHaveText(labels.meeting.form.noComparable);
   await expect(different.getByTestId("meeting-compare-kpis")).toHaveCount(0);
   await expect(different).toContainText(fill(meetingPage.compareKind, { kind: record.kinds.different_dataset }));
   // 比較區只留一句「上次決議與置頂待辦的狀態列在議程 ④」；決議與待辦表只在 ④（meeting-agenda-4）出現一次。
@@ -376,12 +375,12 @@ test("b. 不同資料的降級：golden 結束會議後換成示範資料，會�
   await expect(followUp.locator("ul > li")).toHaveText([new RegExp(`^${escapeRe(`${meetingPage.lastDecision}：`)}${confirmedRe("need_data")}$`)]);
   await expect(followUp.locator("tbody tr")).toHaveCount(1);
   await expect(followUp.locator("tbody tr th")).toHaveText(problem);
-  await expect(followUp.locator("tbody tr td")).toHaveText([labels.actions.statuses.not_started, labels.actions.statuses.in_progress, today]);
+  await expect(followUp.locator("tbody tr td")).toHaveText([labels.actions.form.statuses.not_started, labels.actions.form.statuses.in_progress, today]);
   // 會議歷史換資料後仍保留；總覽入口不顯示別份資料的上次會議日期。
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
   await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
-  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.draft }));
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 });
 
@@ -420,16 +419,16 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
 
   const menu = await openDownloads(page);
   const section = menu.getByTestId("download-meeting-section");
-  await expect(section).toHaveText(labels.sections.meetingSummary);
+  await expect(section).toHaveText(labels.meeting.sections.meetingSummary);
   // V3-7（§6.5、§7.9）：「摘要匯出（目前檢視）」是 role=group 的分組（以小標為名），依序四項；每項 14px 名稱＋一行 12px 說明。
   const group = menu.getByTestId("download-group-summary");
   await expect(group).toHaveAttribute("role", "group");
-  await expect(menu.getByRole("group", { name: labels.sections.meetingSummary, exact: true })).toBeVisible();
+  await expect(menu.getByRole("group", { name: labels.meeting.sections.meetingSummary, exact: true })).toBeVisible();
   const summaryItems = [
-    [labels.buttons.exportPdf, fill(menuV3.descriptions.exportPdf, { hint: labels.meetingPage.pdfHint })],
-    [labels.buttons.exportExcel, menuV3.descriptions.exportExcel],
-    [labels.buttons.exportPptx, menuV3.descriptions.exportPptx],
-    [labels.meetingPage.menuMarkdown, menuV3.descriptions.menuMarkdown],
+    [labels.exports.buttons.exportPdf, fill(menuV3.descriptions.exportPdf, { hint: labels.meeting.page.pdfHint })],
+    [labels.exports.buttons.exportExcel, menuV3.descriptions.exportExcel],
+    [labels.exports.buttons.exportPptx, menuV3.descriptions.exportPptx],
+    [labels.meeting.page.menuMarkdown, menuV3.descriptions.menuMarkdown],
   ] as const;
   await expect(group.locator(".export-item-name")).toHaveText(summaryItems.map(([name]) => name));
   // V3-9b F14：分組標題下先是版本切換（三顆 aria-pressed 按鈕，class export-variant），之後才是四個匯出項目（button.export-item）。
@@ -443,54 +442,54 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
     await expect(item).toHaveAccessibleDescription(description);
     await expect(item.locator("small")).toHaveText(description);
   }
-  await expect(menu).not.toContainText(labels.meetingPage.menuViewNote);
-  await expect(menu).not.toContainText(labels.downloads.menuNote);
+  await expect(menu).not.toContainText(labels.meeting.page.menuViewNote);
+  await expect(menu).not.toContainText(labels.exports.downloads.menuNote);
 
   // Excel：profitlens.xlsx、zip（PK）、> 5 KB、六張工作表＋V3-9b 最後一張管理損益表（預設標準版）；選單版只依目前檢視：摘要沒有會議名稱／日期列，也不帶會議稿的名稱。
   const downloadSummary = page.getByTestId("download-menu").locator(":scope > summary");
-  const excel = await downloadFrom(page, menu.getByRole("button", { name: labels.buttons.exportExcel, exact: true }));
+  const excel = await downloadFrom(page, menu.getByRole("button", { name: labels.exports.buttons.exportExcel, exact: true }));
   expect(excel.download.suggestedFilename()).toBe("profitlens.xlsx");
   expect(excel.bytes.subarray(0, 2).toString("latin1")).toBe("PK");
   expect(excel.bytes.length).toBeGreaterThan(5 * 1024);
   const workbook = XLSX.read(excel.bytes, { type: "buffer" });
   expect(workbook.SheetNames).toEqual(STANDARD_SHEETS);
-  const summaryCells = (book: XLSX.WorkBook) => XLSX.utils.sheet_to_json<unknown[]>(book.Sheets[labels.excelExport.sheets.summary], { header: 1, raw: false }).flat().map(String);
+  const summaryCells = (book: XLSX.WorkBook) => XLSX.utils.sheet_to_json<unknown[]>(book.Sheets[labels.exports.excel.sheets.summary], { header: 1, raw: false }).flat().map(String);
   const viewCells = summaryCells(workbook);
-  expect(viewCells).toEqual(expect.arrayContaining([labels.excelExport.summary.items.dataset, "golden-v1"]));
-  expect(viewCells).not.toContain(labels.excelExport.summary.items.meetingName);
-  expect(viewCells).not.toContain(labels.excelExport.summary.items.meetingDate);
-  expect(viewCells).not.toContain(labels.excelExport.summary.sections.meeting);
+  expect(viewCells).toEqual(expect.arrayContaining([labels.exports.excel.summary.items.dataset, "golden-v1"]));
+  expect(viewCells).not.toContain(labels.exports.excel.summary.items.meetingName);
+  expect(viewCells).not.toContain(labels.exports.excel.summary.items.meetingDate);
+  expect(viewCells).not.toContain(labels.exports.excel.summary.sections.meeting);
   expect(viewCells).not.toContain(defaultMeetingName);
   // V3-7 §7.9：摘要工作表在表頭列之後先放版頭四列（A 欄＝「版頭」、「內容」欄＝四行），資料集是畫面上的名稱。
-  const summaryRows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[labels.excelExport.sheets.summary], { header: 1, raw: false });
-  const detailColumn = summaryRows[0].indexOf(labels.excelExport.columns.summary.detail);
+  const summaryRows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[labels.exports.excel.sheets.summary], { header: 1, raw: false });
+  const detailColumn = summaryRows[0].indexOf(labels.exports.excel.columns.summary.detail);
   expect(detailColumn).toBeGreaterThan(0);
   const headerRows = summaryRows.slice(1, 5);
   expect(headerRows.map(row => row[0])).toEqual(Array(4).fill(headerV3.excelSection));
   expectExportHeader(headerRows.map(row => String(row[detailColumn])), GOLDEN_HEADER);
   expect(summaryRows.slice(5).map(row => row[0])).not.toContain(headerV3.excelSection);
   // V3-9a F12：摘要工作表在兩列關鍵差額之後、三件事之前多一列損益兩平 MER（區塊＝其他常用指標；上期／本期是 L3 文字格；內容欄寫版本 breakeven-mer-v1）。
-  const summaryItem = excelColumn(summaryRows[0], labels.excelExport.columns.summary.item);
+  const summaryItem = excelColumn(summaryRows[0], labels.exports.excel.columns.summary.item);
   const breakevenAt = summaryRows.findIndex(row => row[summaryItem] === labels.assist.breakevenV3.label);
   expect(breakevenAt).toBeGreaterThan(0);
   expect(summaryRows.filter(row => row[summaryItem] === labels.assist.breakevenV3.label)).toHaveLength(1);
   const breakevenRow = summaryRows[breakevenAt];
   expect(breakevenRow[0]).toBe(labels.overview.sections.assistKpis);
-  expect(breakevenRow[excelColumn(summaryRows[0], labels.excelExport.columns.summary.previous)]).toBe(formatMultiple(GOLDEN_BREAKEVEN.previous, "L3"));
-  expect(breakevenRow[excelColumn(summaryRows[0], labels.excelExport.columns.summary.current)]).toBe(formatMultiple(GOLDEN_BREAKEVEN.current, "L3"));
+  expect(breakevenRow[excelColumn(summaryRows[0], labels.exports.excel.columns.summary.previous)]).toBe(formatMultiple(GOLDEN_BREAKEVEN.previous, "L3"));
+  expect(breakevenRow[excelColumn(summaryRows[0], labels.exports.excel.columns.summary.current)]).toBe(formatMultiple(GOLDEN_BREAKEVEN.current, "L3"));
   expect(breakevenRow[detailColumn]).toBe(fill(labels.assist.breakevenV3.excelDetail, { version: BREAKEVEN_MER_VERSION }));
-  expect(summaryRows.filter(row => row[0] === labels.excelExport.summary.sections.keyDeltas)).toHaveLength(2);
-  expect(summaryRows[breakevenAt - 1][0]).toBe(labels.excelExport.summary.sections.keyDeltas);
-  expect(summaryRows[breakevenAt + 1][0]).toBe(labels.excelExport.summary.sections.topThree);
+  expect(summaryRows.filter(row => row[0] === labels.exports.excel.summary.sections.keyDeltas)).toHaveLength(2);
+  expect(summaryRows[breakevenAt - 1][0]).toBe(labels.exports.excel.summary.sections.keyDeltas);
+  expect(summaryRows[breakevenAt + 1][0]).toBe(labels.exports.excel.summary.sections.topThree);
   // 指標定義工作表：技術區在輔助指標版本（assist-kpi-v1）之後多一列損益兩平 MER 版本。
-  const basisRows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[labels.excelExport.sheets.basis], { header: 1, raw: false });
-  const basisItem = excelColumn(basisRows[0], labels.excelExport.columns.basis.item);
-  const assistVersionAt = basisRows.findIndex(row => row[basisItem] === labels.excelExport.basis.assistVersion);
+  const basisRows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[labels.exports.excel.sheets.basis], { header: 1, raw: false });
+  const basisItem = excelColumn(basisRows[0], labels.exports.excel.columns.basis.item);
+  const assistVersionAt = basisRows.findIndex(row => row[basisItem] === labels.exports.excel.basis.assistVersion);
   expect(assistVersionAt).toBeGreaterThan(0);
   const basisVersionRow = basisRows[assistVersionAt + 1];
-  expect(basisVersionRow[excelColumn(basisRows[0], labels.excelExport.columns.basis.section)]).toBe(labels.excelExport.basis.sections.technical);
+  expect(basisVersionRow[excelColumn(basisRows[0], labels.exports.excel.columns.basis.section)]).toBe(labels.exports.excel.basis.sections.technical);
   expect(basisVersionRow[basisItem]).toBe(labels.assist.breakevenV3.excelVersion);
-  expect(basisVersionRow[excelColumn(basisRows[0], labels.excelExport.columns.basis.detail)]).toBe(BREAKEVEN_MER_VERSION);
+  expect(basisVersionRow[excelColumn(basisRows[0], labels.exports.excel.columns.basis.detail)]).toBe(BREAKEVEN_MER_VERSION);
   await excel.download.saveAs(outputDir("artifacts", `${project}-profitlens.xlsx`));
   await expect(menu).toHaveAttribute("open", "");
   // 完成後焦點回到「下載」選單的 summary（不掉到 body）。
@@ -498,7 +497,7 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
 
   // PPT 一頁式：profitlens-onepager.pptx、zip（PK）、只有一張投影片；選單版並註明目前檢視、不含會議決議。
   // V3-7 §7.9：選單版標題是版頭第 2 行（報表名），副標是版頭其他三行；不再畫 v2 的「EC ProfitLens 一頁摘要」與「資料到／通路」副標（副標只寫進檔案屬性）。
-  const pptx = await downloadFrom(page, menu.getByRole("button", { name: labels.buttons.exportPptx, exact: true }));
+  const pptx = await downloadFrom(page, menu.getByRole("button", { name: labels.exports.buttons.exportPptx, exact: true }));
   expect(pptx.download.suggestedFilename()).toBe("profitlens-onepager.pptx");
   expect(pptx.bytes.subarray(0, 2).toString("latin1")).toBe("PK");
   const slides = slideXml(pptx.bytes);
@@ -507,10 +506,10 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   expect(slides[0]).toContain(`>${GOLDEN_HEADER.datasetName}<`);
   expect(slides[0]).toMatch(new RegExp(`>${exportVersionLineRe().source.slice(1, -1)}<`));
   expect(slides[0]).toContain(fill(headerV3.pptxDataVersion, { datasetHash: "" }));
-  expect(slides[0]).not.toContain(fill(labels.pptxExport.title, { brand: labels.brand.name }));
-  expect(slides[0]).not.toContain(fill(labels.pptxExport.subtitle, { asOf: GOLDEN_AS_OF, previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
-  expect(slides[0]).toContain(labels.pptxExport.noMeeting);
-  expect(slides[0]).not.toContain(fill(labels.pptxExport.titleMeeting, { name: defaultMeetingName, date: today }));
+  expect(slides[0]).not.toContain(fill(labels.exports.pptx.title, { brand: labels.brand.name }));
+  expect(slides[0]).not.toContain(fill(labels.exports.pptx.subtitle, { asOf: GOLDEN_AS_OF, previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
+  expect(slides[0]).toContain(labels.exports.pptx.noMeeting);
+  expect(slides[0]).not.toContain(fill(labels.exports.pptx.titleMeeting, { name: defaultMeetingName, date: today }));
   expect(slides[0]).not.toContain(defaultMeetingName);
   await pptx.download.saveAs(outputDir("artifacts", `${project}-profitlens-onepager.pptx`));
   await expect(downloadSummary).toBeFocused();
@@ -542,8 +541,8 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   await expect(outputs).not.toHaveAttribute("open", "");
   await expect(page.getByTestId("export-page-meeting")).toBeFocused();
   const hostile = '=HYPERLINK("x") <會議>&';
-  await basics(meeting).getByLabel(labels.meeting.name, { exact: true }).fill(hostile);
-  await expect(basics(meeting).getByLabel(labels.meeting.name, { exact: true })).toHaveValue(hostile);
+  await basics(meeting).getByLabel(labels.meeting.form.name, { exact: true }).fill(hostile);
+  await expect(basics(meeting).getByLabel(labels.meeting.form.name, { exact: true })).toHaveValue(hostile);
   await expect(await meetingExportItem(page, "excel")).toBeEnabled();
   const meetingExcel = await downloadFrom(page, await meetingExportItem(page, "excel"));
   expect(meetingExcel.download.suggestedFilename()).toBe("profitlens.xlsx");
@@ -551,7 +550,7 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   const meetingBook = XLSX.read(meetingExcel.bytes, { type: "buffer", cellFormula: true });
   // V3-9b：會議頁的匯出會議是標準版（六張＋管理損益表）。
   expect(meetingBook.SheetNames).toEqual(STANDARD_SHEETS);
-  const sheet = meetingBook.Sheets[labels.excelExport.sheets.summary];
+  const sheet = meetingBook.Sheets[labels.exports.excel.sheets.summary];
   const nameCell = Object.entries(sheet).find(([address, cell]) => !address.startsWith("!") && (cell as XLSX.CellObject).v === `'${hostile}`);
   expect(nameCell, "會議名稱以文字（前置 '）寫入摘要工作表").toBeTruthy();
   expect((nameCell![1] as XLSX.CellObject).t).toBe("s");
@@ -575,9 +574,9 @@ test("c2. 頂欄「匯出」選單：五個分組（role=group）與每項一行
   const describe = menuV3.descriptions;
   // V3-7（§6.5、§7.9）：分組依序是目前檢視／一頁摘要（目前檢視）／決策工作稿／會議／匯入範本；每組 role=group，以分組標題為可及名稱。
   const groups = [
-    ["download-group-current", labels.sections.downloadCurrentView, [[labels.downloads.analysisCsv, describe.analysisCsv], [labels.downloads.channelTableCsv, describe.channelTableCsv], [labels.downloads.manifestJson, describe.manifestJson]]],
-    ["download-group-summary", labels.sections.meetingSummary, [[labels.buttons.exportPdf, fill(describe.exportPdf, { hint: labels.meetingPage.pdfHint })], [labels.buttons.exportExcel, describe.exportExcel], [labels.buttons.exportPptx, describe.exportPptx], [labels.meetingPage.menuMarkdown, describe.menuMarkdown]]],
-    ["download-group-decision", labels.sections.downloadDecision, [[labels.downloads.decisionMd, describe.decisionMd], [labels.downloads.decisionCsv, describe.decisionCsv], [labels.downloads.decisionJson, describe.decisionJson]]],
+    ["download-group-current", labels.shell.sections.downloadCurrentView, [[labels.exports.downloads.analysisCsv, describe.analysisCsv], [labels.exports.downloads.channelTableCsv, describe.channelTableCsv], [labels.exports.downloads.manifestJson, describe.manifestJson]]],
+    ["download-group-summary", labels.meeting.sections.meetingSummary, [[labels.exports.buttons.exportPdf, fill(describe.exportPdf, { hint: labels.meeting.page.pdfHint })], [labels.exports.buttons.exportExcel, describe.exportExcel], [labels.exports.buttons.exportPptx, describe.exportPptx], [labels.meeting.page.menuMarkdown, describe.menuMarkdown]]],
+    ["download-group-decision", labels.shell.sections.downloadDecision, [[labels.exports.downloads.decisionMd, describe.decisionMd], [labels.exports.downloads.decisionCsv, describe.decisionCsv], [labels.exports.downloads.decisionJson, describe.decisionJson]]],
     ["download-group-meeting", menuV3.groupMeeting, [[entryUi.copy, describe.copySummary]]],
   ] as const;
   // V3-9b F14：「一頁摘要」分組內另有版本切換（div.ui-segmented[role=group]，以 pickerAria 為名）；分組本身仍是五個。
@@ -599,14 +598,14 @@ test("c2. 頂欄「匯出」選單：五個分組（role=group）與每項一行
     }
   }
   await expect(menu.getByTestId("download-group-templates")).toHaveAttribute("role", "group");
-  await expect(menu.getByTestId("download-group-templates")).toHaveAccessibleName(labels.downloads.templatesHeading);
+  await expect(menu.getByTestId("download-group-templates")).toHaveAccessibleName(labels.exports.downloads.templatesHeading);
   // 範圍差異寫在各項說明裡：v2 選單底部的兩句說明不再出現。
-  await expect(menu).not.toContainText(labels.meetingPage.menuViewNote);
-  await expect(menu).not.toContainText(labels.downloads.menuNote);
+  await expect(menu).not.toContainText(labels.meeting.page.menuViewNote);
+  await expect(menu).not.toContainText(labels.exports.downloads.menuNote);
   await expect(menu.getByRole("alert")).toHaveCount(0);
 
   // 失敗路徑：讓瀏覽器建立下載網址時丟錯（Excel 產生後存檔失敗）→ 錯誤一行（role=alert）在 Excel 項目下方、焦點回到 Excel、aria-describedby 連到錯誤。
-  const excel = menu.getByRole("button", { name: labels.buttons.exportExcel, exact: true });
+  const excel = menu.getByRole("button", { name: labels.exports.buttons.exportExcel, exact: true });
   await expect(excel).toHaveAttribute("aria-describedby", "download-excel-hint");
   await page.evaluate(() => {
     const w = window as unknown as { __e1CreateObjectURL?: typeof URL.createObjectURL };
@@ -618,13 +617,13 @@ test("c2. 頂欄「匯出」選單：五個分組（role=group）與每項一行
   await expect(error).toHaveCount(1);
   await expect(error).toHaveAttribute("role", "alert");
   await expect(error).toHaveAttribute("id", "download-excel-error");
-  await expect(error).toHaveText(labels.meetingPage.exportError);
+  await expect(error).toHaveText(labels.meeting.page.exportError);
   await expect(menu.getByRole("alert")).toHaveCount(1);
   // 錯誤行與 Excel 按鈕在同一個項目（div.menu-item）內，緊接在按鈕之後。
   expect(await error.evaluate(element => ({ parent: element.parentElement?.className ?? "", previous: element.previousElementSibling?.getAttribute("aria-labelledby") ?? "" }))).toEqual({ parent: "menu-item", previous: "download-excel-name" });
   await expect(excel).toBeFocused();
   await expect(excel).toHaveAttribute("aria-describedby", "download-excel-hint download-excel-error");
-  await expect(excel).toHaveAccessibleDescription(`${describe.exportExcel} ${labels.meetingPage.exportError}`);
+  await expect(excel).toHaveAccessibleDescription(`${describe.exportExcel} ${labels.meeting.page.exportError}`);
   await expect(excel).not.toHaveAttribute("data-busy", "true");
   await expect(excel).not.toHaveAttribute("aria-disabled", "true");
   await expect(menu).toHaveAttribute("open", "");
@@ -660,8 +659,8 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
 
   const menu = await openDownloads(page);
   // V3-7（§7.9）：PDF 項目的說明行＝「A4 一頁 · {pdfHint}」（small#download-pdf-hint，也是按鈕的可及描述）。
-  const pdfItem = menu.getByRole("button", { name: labels.buttons.exportPdf, exact: true });
-  const pdfDescription = fill(menuV3.descriptions.exportPdf, { hint: labels.meetingPage.pdfHint });
+  const pdfItem = menu.getByRole("button", { name: labels.exports.buttons.exportPdf, exact: true });
+  const pdfDescription = fill(menuV3.descriptions.exportPdf, { hint: labels.meeting.page.pdfHint });
   await expect(menu.getByText(pdfDescription, { exact: true })).toBeVisible();
   await expect(pdfItem).toHaveAccessibleDescription(pdfDescription);
   await pdfItem.click();
@@ -684,10 +683,10 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   const priorities = print.locator(":scope > ol > li");
   await expect(priorities).toHaveCount(3);
   // 一頁摘要的三件事影響金額是 L1（U+2212 負號）。
-  for (const [index, amount] of ["-315.00", "-250.00", "-150.00"].entries()) await expect(priorities.nth(index)).toContainText(`${labels.sections.impact} ${formatSignedDelta(amount, "L1")}`);
+  for (const [index, amount] of ["-315.00", "-250.00", "-150.00"].entries()) await expect(priorities.nth(index)).toContainText(`${labels.overview.sections.impact} ${formatSignedDelta(amount, "L1")}`);
   // 附錄（技術資訊）是獨立的 section。V3-9b F14：標準版的附錄依序是（方案假設 → 備註 → 其他待辦 →）每週管理損益表 → 技術細節；
   // 附錄從新的一頁開始＝第一個附錄（選單版沒有假設、備註與其他待辦，所以是管理損益表）break-before: page，之後的附錄接著排（.printAppendix + .printAppendix 是 auto）。
-  const appendix = print.locator(":scope > section").filter({ has: page.getByRole("heading", { name: labels.sections.technicalDetails, exact: true }) });
+  const appendix = print.locator(":scope > section").filter({ has: page.getByRole("heading", { name: labels.evidence.sections.technicalDetails, exact: true }) });
   await expect(appendix).toHaveCount(1);
   await expect(appendix).toContainText("contribution-v1");
   const pnlAppendix = print.getByTestId("print-appendix-pnl");
@@ -698,7 +697,7 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   // 三件事的 ol 有 1. 2. 3. 編號。
   expect(await print.locator(":scope > ol").evaluate(element => getComputedStyle(element).listStyleType)).toBe("decimal");
   // 選單版只依目前檢視：版頭之後的範圍一行（狀態＝「目前檢視（不含會議決議）」· 資料到 · 通路 · 比較方式），沒有會議名稱頁首、決議行與選入方案。
-  await expect(print.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScope, { state: meetingPage.printViewState, asOf: GOLDEN_AS_OF, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.periods.sameDays }));
+  await expect(print.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScope, { state: meetingPage.printViewState, asOf: GOLDEN_AS_OF, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.shell.periods.sameDays }));
   await expect(print.getByTestId("print-header-meeting")).toHaveCount(0);
   await expect(print.locator(":scope > header")).not.toContainText(defaultMeetingName);
   await expect(print.getByTestId("print-decision-line")).toHaveCount(0);
@@ -719,7 +718,7 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   await expect(status(page)).toBeVisible();
   // 再從選單列印一次（不產 PDF）：畫面模式下的 afterprint 後列印版面移除、焦點回到「下載」選單的 summary。
   const again = await openDownloads(page);
-  await again.getByRole("button", { name: labels.buttons.exportPdf, exact: true }).click();
+  await again.getByRole("button", { name: labels.exports.buttons.exportPdf, exact: true }).click();
   await expect(again).not.toHaveAttribute("open", "");
   await expect.poll(printCalls).toBe(2);
   await expect(print).toHaveCount(1);
@@ -746,28 +745,28 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   // V3-7（§7.6 第 1 點）：會議頁的「匯出 PDF」在頁首「匯出會議」下拉裡，說明行是 pdfHint；點了選單關閉。
   const outputs = meeting.getByTestId("meeting-outputs");
   const meetingPdf = await meetingExportItem(page, "pdf");
-  await expect(outputs.getByText(labels.meetingPage.pdfHint, { exact: true })).toBeVisible();
-  await expect(meetingPdf).toHaveAccessibleDescription(labels.meetingPage.pdfHint);
+  await expect(outputs.getByText(labels.meeting.page.pdfHint, { exact: true })).toBeVisible();
+  await expect(meetingPdf).toHaveAccessibleDescription(labels.meeting.page.pdfHint);
   await meetingPdf.click();
   await expect(outputs).not.toHaveAttribute("open", "");
   await expect.poll(printCalls).toBe(3);
   await expect(print).toHaveCount(1);
   // 有會議稿：版頭四行（資料集名稱是畫面上的名稱）之後是會議名稱、日期與資料日一行（print-header-meeting），範圍一行不再重複資料日。
-  const printMeta = templateRe(labels.meetingPage.printHeader, { name: defaultMeetingName, date: today, asOf: GOLDEN_AS_OF });
+  const printMeta = templateRe(labels.meeting.page.printHeader, { name: defaultMeetingName, date: today, asOf: GOLDEN_AS_OF });
   // 畫面模式下列印版面是隱藏的（getByRole 不含隱藏元素），版頭以 testid／標籤定位。
   await expect(print.getByTestId("print-header-dataset")).toHaveText(GOLDEN_HEADER.datasetName);
   await expect(print.getByTestId("print-report-header").locator(":scope > h1")).toHaveText(exportReportTitle());
   await expect(print.getByTestId("print-header-period").locator("span")).toHaveText([exportPeriodLine(GOLDEN_HEADER), headerV3.unitExclusive]);
   await expect(print.getByTestId("print-header-version")).toHaveText(exportVersionLineRe());
   await expect(print.getByTestId("print-header-meeting")).toHaveText(printMeta);
-  await expect(print.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.periods.sameDays }));
+  await expect(print.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.shell.periods.sameDays }));
   await expect(print.locator(":scope > ol > li")).toHaveCount(3);
   // 第一頁的決議行在關鍵差額之後、三件事（h2）之前。
   const decisionLine = print.getByTestId("print-decision-line");
-  await expect(decisionLine).toHaveText(fill(summaryCopy.printMeetingLine, { name: defaultMeetingName, state: labels.meeting.decisions.draft, notes: "" }));
+  await expect(decisionLine).toHaveText(fill(summaryCopy.printMeetingLine, { name: defaultMeetingName, state: labels.meeting.form.decisions.draft, notes: "" }));
   const neighbours = await decisionLine.evaluate(element => ({ previous: element.previousElementSibling?.textContent ?? "", nextTag: element.nextElementSibling?.tagName ?? "", next: element.nextElementSibling?.textContent ?? "" }));
-  expect(neighbours.previous).toContain(labels.metrics.contribution_after_marketing.label);
-  expect(neighbours).toMatchObject({ nextTag: "H2", next: labels.sections.topThree });
+  expect(neighbours.previous).toContain(labels.metrics.contribution_after_marketing.headline);
+  expect(neighbours).toMatchObject({ nextTag: "H2", next: labels.overview.sections.topThree });
   // 選入方案在第一頁只有一行；五項假設（數量、折扣、履約、廣告、一次性成本）在附錄。
   await expect(print.getByTestId("print-scenario-line")).toHaveCount(1);
   await expect(print.getByTestId("print-scenario-line")).toContainText(formatAmountL1("270.00"));
@@ -776,7 +775,7 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   await expect(assumptions).toContainText(firstPlanName);
   expect(await assumptions.locator("li").count()).toBeGreaterThanOrEqual(5);
   // V3-7：「結束列印」不在下拉內，是頁首動作列（review-workbench）裡、下拉旁的按鈕。
-  const exit = basics(meeting).getByRole("button", { name: labels.ui.managerSummary.exitPrint, exact: true });
+  const exit = basics(meeting).getByRole("button", { name: labels.meeting.managerSummary.exitPrint, exact: true });
   await expect(exit).toBeVisible();
   // 會議版的 A4 PDF 同樣剛好 2 頁（第一頁＋附錄）；page.pdf() 觸發 afterprint，列印版面與「結束列印」一起移除（afterprint 再送一次只是保險）。
   await page.emulateMedia({ media: "print" });
@@ -821,9 +820,9 @@ test("e. 總覽一行入口切到會議紀錄；導覽：桌機側欄四組＋�
   const entry = page.getByTestId("overview-meeting-entry");
   await expect(entry).toBeVisible();
   expect(await entry.evaluate(element => element.tagName)).toBe("P");
-  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.draft }));
   await expect(entry).not.toContainText(meetingPage.entryLast.split("{date}")[0].trim());
-  const go = entry.getByRole("button", { name: fill(entryUi.meetingGoAria, { text: fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }), go: meetingPage.goToMeeting }), exact: true });
+  const go = entry.getByRole("button", { name: fill(entryUi.meetingGoAria, { text: fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.draft }), go: meetingPage.goToMeeting }), exact: true });
   await expect(go).toBeVisible();
   // 一行：入口內的文字與按鈕垂直置中在同一列（手機寬度允許換行，只檢查高度不超過兩行）。
   const rows = await entry.evaluate(element => new Set(Array.from(element.children).map(child => { const box = child.getBoundingClientRect(); return Math.round((box.top + box.height / 2) / 8); })).size);
@@ -832,19 +831,19 @@ test("e. 總覽一行入口切到會議紀錄；導覽：桌機側欄四組＋�
   await go.click();
   await expect(page.getByTestId("meeting-page")).toBeVisible();
   await expect(sidebarNav(page, "meeting")).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(labels.nav.meeting.label);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(labels.shell.nav.meeting.headline);
 
   // 側欄（主要導覽）：八個頁面按鈕、順序固定（D-V3-14＝A 維持 v2 順序），分在「看結果／找原因／做決定／管資料」四組＋「開發者」組。
   // R7-4：本案例經 #validation 載入，「開發者驗證」顯示到重新整理為止，故開發者組在。手機上側欄隱藏但仍掛載（同一份 DOM）。
   const sidebarButtons = page.locator("aside.sidebar nav button.nav-item");
   await expect(sidebarButtons).toHaveCount(navIds.length);
-  await expect(sidebarButtons).toHaveText(navIds.map(id => labels.nav[id].label));
+  await expect(sidebarButtons).toHaveText(navIds.map(id => labels.shell.nav[id].headline));
   expect(navGroups.flatMap(([, ids]) => ids)).toEqual([...navIds]);
   for (const [group, ids] of navGroups) {
     const root = page.getByTestId(`nav-group-${group}`);
     await expect(root).toHaveAttribute("role", "group");
     await expect(root.locator(".nav-group-title")).toHaveText(labels.shell.sidebarV3.groups[group]);
-    await expect(root.locator("button.nav-item")).toHaveText(ids.map(id => labels.nav[id].label));
+    await expect(root.locator("button.nav-item")).toHaveText(ids.map(id => labels.shell.nav[id].headline));
   }
   const width = await page.evaluate(() => window.innerWidth);
   const inViewport = async (buttons: Locator) => {
@@ -857,7 +856,7 @@ test("e. 總覽一行入口切到會議紀錄；導覽：桌機側欄四組＋�
   const tabbar = page.getByTestId("mobile-tabbar");
   if (!isMobile(page)) {
     // 桌機（含平板 768）：側欄看得到，組名是 role=group 的可及名稱；手機底部分頁列不顯示。
-    await expect(page.getByRole("navigation", { name: dash.mainNavAria, exact: true })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: labels.shell.sidebar.mainNavAria, exact: true })).toBeVisible();
     for (const [group] of navGroups) await expect(page.getByRole("group", { name: labels.shell.sidebarV3.groups[group], exact: true })).toBeVisible();
     await expect(tabbar).toBeHidden();
   } else {
@@ -867,14 +866,14 @@ test("e. 總覽一行入口切到會議紀錄；導覽：桌機側欄四組＋�
     const tabs = tabbar.locator(":scope > button");
     await expect(tabs).toHaveCount(5);
     await expect(tabs).toHaveText([...tabIds.map(id => labels.shell.mobileNav.tabs[id]), labels.shell.mobileNav.more]);
-    for (const [index, id] of tabIds.entries()) await expect(tabs.nth(index)).toHaveAccessibleName(labels.nav[id].label);
+    for (const [index, id] of tabIds.entries()) await expect(tabs.nth(index)).toHaveAccessibleName(labels.shell.nav[id].headline);
     const tops = await tabs.evaluateAll(list => list.map(button => Math.round(button.getBoundingClientRect().top)));
     expect(new Set(tops).size).toBe(1);
     await inViewport(tabs);
     // 「更多」面板：商品毛利／假設試算／資料來源／開發者驗證，每項都在視窗寬度內。
     await openMobileMore(page);
     const moreItems = page.getByTestId("mobile-more").getByRole("button");
-    await expect(moreItems).toHaveText(moreIds.map(id => labels.nav[id].label));
+    await expect(moreItems).toHaveText(moreIds.map(id => labels.shell.nav[id].headline));
     await inViewport(moreItems);
   }
 
@@ -896,7 +895,7 @@ test("e. 總覽一行入口切到會議紀錄；導覽：桌機側欄四組＋�
 
 test("f. 首次保存提示與自動保存：同意後立即保存、頂欄「已保存 hh:mm」、變更 2 秒內自動保存；刪除本機資料後停止；拒絕則維持手動", async ({ page }) => {
   test.setTimeout(90_000);
-  const savedAtRe = templateIn(labels.status.savedAt, {}, { time: "\\d{2}:\\d{2}" });
+  const savedAtRe = templateIn(labels.shell.status.savedAt, {}, { time: "\\d{2}:\\d{2}" });
   const hasDatabase = () => page.evaluate(async name => (await indexedDB.databases()).some(row => row.name === name), DATABASE);
   /** 只在資料庫已存在時開啟（不帶版本開啟不存在的資料庫會建立空資料庫，干擾 app 的升版）。 */
   const readSaved = () => page.evaluate(async name => {
@@ -924,7 +923,7 @@ test("f. 首次保存提示與自動保存：同意後立即保存、頂欄「�
   await expect(prompt).toContainText(auto.promptBody);
   expect(await hasDatabase()).toBe(false);
   const tag = page.getByTestId("workspace-storage").locator(":scope > summary");
-  await expect(tag).toContainText(labels.status.unsaved);
+  await expect(tag).toContainText(labels.shell.status.unsaved);
 
   await acceptSavePrompt(page);
   await expect(prompt).toHaveCount(0);
@@ -941,8 +940,8 @@ test("f. 首次保存提示與自動保存：同意後立即保存、頂欄「�
   // 變更（改會議名稱）→ 頂欄先顯示未保存，2 秒內自動保存，資料庫內容跟著更新。
   const meeting = await openMeeting(page);
   const renamed = "R6 自動保存測試會議";
-  await basics(meeting).getByLabel(labels.meeting.name, { exact: true }).fill(renamed);
-  await expect(tag).toContainText(labels.status.unsaved);
+  await basics(meeting).getByLabel(labels.meeting.form.name, { exact: true }).fill(renamed);
+  await expect(tag).toContainText(labels.shell.status.unsaved);
   // 沒有任何手動操作就自動保存：等待上限＝2 秒排程＋匯出、重新驗證與寫入 IndexedDB（機器負載高時較慢）。
   await expect(tag).toContainText(savedAtRe, { timeout: 8_000 });
   await expect.poll(readSaved, { timeout: 8_000 }).toMatchObject({ meetingName: renamed });
@@ -951,18 +950,18 @@ test("f. 首次保存提示與自動保存：同意後立即保存、頂欄「�
 
   // 刪除本機資料：資料庫移除、同意取消、改回手動；之後的變更不再寫入。
   const storage = await openStorage(page);
-  await storage.getByRole("button", { name: labels.buttons.deleteLocal, exact: true }).click();
+  await storage.getByRole("button", { name: labels.storage.buttons.deleteLocal, exact: true }).click();
   await expect(storage.getByTestId("storage-notice")).toHaveText(store.deletedNotice);
   await expect(storage.getByTestId("autosave-status")).toContainText(auto.statusOff);
   await expect(storage.getByRole("checkbox", { name: store.consent, exact: true })).not.toBeChecked();
   expect(await hasDatabase()).toBe(false);
   await closeStorage(page);
-  await basics(meeting).getByLabel(labels.meeting.name, { exact: true }).fill("R6 刪除後的修改");
-  await expect(tag).toContainText(labels.status.unsaved);
+  await basics(meeting).getByLabel(labels.meeting.form.name, { exact: true }).fill("R6 刪除後的修改");
+  await expect(tag).toContainText(labels.shell.status.unsaved);
   // 超過 2 秒排程後仍沒有寫入（等 4 秒，涵蓋排程＋寫入時間）。
   await page.waitForTimeout(4_000);
   expect(await hasDatabase()).toBe(false);
-  await expect(tag).toContainText(labels.status.unsaved);
+  await expect(tag).toContainText(labels.shell.status.unsaved);
   await expect(page.getByTestId("local-save-prompt")).toHaveCount(0);
 });
 
@@ -974,17 +973,17 @@ test("f2. 首次保存提示選「先不要」：維持手動、不建立本機�
   const menu = await openStorage(page);
   await expect(menu.getByTestId("autosave-status")).toHaveText(auto.statusOff);
   await expect(menu.getByRole("checkbox", { name: store.consent, exact: true })).not.toBeChecked();
-  await expect(menu.getByRole("button", { name: labels.buttons.saveLocal, exact: true })).toBeDisabled();
+  await expect(menu.getByRole("button", { name: labels.storage.buttons.saveLocal, exact: true })).toBeDisabled();
   await closeStorage(page);
   const meeting = await openMeeting(page);
-  await basics(meeting).getByLabel(labels.meeting.name, { exact: true }).fill("R6 手動保存");
+  await basics(meeting).getByLabel(labels.meeting.form.name, { exact: true }).fill("R6 手動保存");
   await page.waitForTimeout(4_000);
   expect(await hasDatabase()).toBe(false);
-  await expect(page.getByTestId("workspace-storage").locator(":scope > summary")).toContainText(labels.status.unsaved);
+  await expect(page.getByTestId("workspace-storage").locator(":scope > summary")).toContainText(labels.shell.status.unsaved);
   await expect(page.getByTestId("local-save-prompt")).toHaveCount(0);
   // Escape 等於「先不要」：清空後再載入，提示再出現；在提示內按 Escape 關閉。V3-3：「清空」在儲存選單的危險區。
   await clickReplacing(page, await clearButton(page));
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await closeStorage(page);
   await loadDataset(page, "golden");
   const prompt = page.getByTestId("local-save-prompt");
@@ -1003,11 +1002,11 @@ test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文�
   await declineSavePrompt(page);
   const meeting = await openMeeting(page);
   // 先填備註再選決議（改備註會讓已選的決議回到草稿，要重新確認）。V3-7（§7.6 第 5 點）：備註在議程之後（#meeting-notes-input），不在頁首的決議區。
-  const notesInput = meeting.getByLabel(labels.meeting.notes, { exact: true });
+  const notesInput = meeting.getByLabel(labels.meeting.form.notes, { exact: true });
   await expect(notesInput).toHaveAttribute("id", "meeting-notes-input");
-  await expect(meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.notes, { exact: true })).toHaveCount(0);
+  await expect(meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.form.notes, { exact: true })).toHaveCount(0);
   await notesInput.fill(notes);
-  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.decision, { exact: true }).selectOption("needs_data");
+  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.form.decision, { exact: true }).selectOption("needs_data");
   const before = Date.now();
   await finalizeMeeting(meeting);
   const after = Date.now();
@@ -1018,17 +1017,17 @@ test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文�
   const title = await summary.innerText();
 
   // 歷史項目的 Markdown：檔名帶會議日期；主文的結束時間是臺北時間 YYYY-MM-DD hh:mm（ISO 原值只在技術細節）；有「## 口徑」段；④ 從紀錄本身讀（第一次會議沒有上次）。
-  const history = await downloadFrom(page, items.first().getByRole("button", { name: `${labels.buttons.exportMarkdown} · ${title}`, exact: true }));
+  const history = await downloadFrom(page, items.first().getByRole("button", { name: `${labels.exports.buttons.exportMarkdown} · ${title}`, exact: true }));
   expect(history.download.suggestedFilename()).toBe(`profitlens-meeting-${today}.md`);
   const markdown = history.bytes.toString("utf8");
-  const [body, technical] = markdown.split(`## ${labels.sections.technicalDetails}`);
+  const [body, technical] = markdown.split(`## ${labels.evidence.sections.technicalDetails}`);
   expect(body.split("\n")[0]).toBe(fill(record.mdTitle, { brand: labels.brand.name, name: defaultMeetingName }));
   const finalizedTimes = [...new Set([formatSavedDateTime(new Date(before)), formatSavedDateTime(new Date(after))])];
   // V3-7 §7.9：標題與空行之後是版頭四行（資料集＝畫面上的名稱；會議紀錄的產出時間＝結束時間），再一行空白；v3 結束的紀錄沒有「本紀錄建立於 v2」加註。
   expectExportHeader(markdownHeader(markdown), { ...GOLDEN_HEADER, time: `(?:${finalizedTimes.map(escapeRe).join("|")})` }, { hardBreaks: true });
   expect(body.split("\n")[6]).toBe("");
   expect(markdown).not.toContain(pageV3.v2Note);
-  expect(body).toMatch(templateIn(record.mdMeta, { date: labels.meeting.date, value: today, decision: labels.meeting.decision }, { state: confirmedRe("need_data"), finalizedAt: `(?:${finalizedTimes.map(escapeRe).join("|")})` }));
+  expect(body).toMatch(templateIn(record.mdMeta, { date: labels.meeting.form.date, value: today, decision: labels.meeting.form.decision }, { state: confirmedRe("need_data"), finalizedAt: `(?:${finalizedTimes.map(escapeRe).join("|")})` }));
   expect(body).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
   expect(technical).toMatch(/- finalized_at：\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
   const lines = body.split("\n");
@@ -1036,7 +1035,7 @@ test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文�
   expect(basisAt, "主文有「## 口徑」段").toBeGreaterThan(lines.indexOf(record.mdScope));
   expect(lines[basisAt + 2]).toMatch(/^- \S/);
   expect(body).toContain(`### ${record.agenda.followUp}\n\n${record.noLastMeeting}\n`);
-  expect(body).toContain(fill(record.mdField, { field: labels.meeting.notes, value: notes }));
+  expect(body).toContain(fill(record.mdField, { field: labels.meeting.form.notes, value: notes }));
 
   // 「下載 ▾」的「下載會議紀錄 Markdown」：有已結束的會議就下載最近一筆，內容與歷史項目相同；完成後焦點回到「下載」。
   const menu = await openDownloads(page);
@@ -1059,7 +1058,7 @@ test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文�
   await expect(region).toHaveAttribute("role", "group");
   await expect(region.getByText(meetingPage.removeWarning, { exact: true })).toBeFocused();
   await expect(page.getByRole("group", { name: meetingPage.removeWarning, exact: true })).toBeVisible();
-  await region.getByRole("button", { name: labels.buttons.cancel, exact: true }).click();
+  await region.getByRole("button", { name: labels.shell.buttons.cancel, exact: true }).click();
   await expect(region).toHaveCount(0);
   await expect(remove).toBeFocused();
   await expect(remove).toHaveAttribute("aria-expanded", "false");
@@ -1085,7 +1084,7 @@ test("g. 會議歷史：Markdown 檔名 profitlens-meeting-<日期>.md、主文�
   // 總覽入口回到「本期會議：草稿」，不再顯示已結束或上次會議日期。
   await navigateTo(page, "overview");
   const entry = page.getByTestId("overview-meeting-entry");
-  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.decisions.draft }));
+  await expect(entry).toContainText(fill(entryUi.meetingEntry, { state: labels.meeting.form.decisions.draft }));
   await expect(entry).not.toContainText(fill(entryUi.meetingEntryFinalized, { date: today }));
   await expect(entry).not.toContainText(fill(meetingPage.entryLast, { date: today }));
 });
@@ -1099,8 +1098,8 @@ test("h. 會議頁頁首與議程目錄：複製週會摘要（沒有剪貼簿�
   // V3-7（§7.6 第 1 點）：頁首動作列＝標題、會議名稱、日期、決議＋結束會議、複製週會摘要、匯出會議。
   await expect(head.getByTestId("meeting-title")).toHaveText(pageV3.title);
   await expect(head.getByTestId("meeting-title")).toHaveJSProperty("tagName", "H2");
-  await expect(head.getByLabel(labels.meeting.name, { exact: true })).toHaveValue(defaultMeetingName);
-  await expect(head.getByTestId("meeting-decision").getByLabel(labels.meeting.decision, { exact: true })).toHaveValue("draft");
+  await expect(head.getByLabel(labels.meeting.form.name, { exact: true })).toHaveValue(defaultMeetingName);
+  await expect(head.getByTestId("meeting-decision").getByLabel(labels.meeting.form.decision, { exact: true })).toHaveValue("draft");
   await expect(head.getByTestId("export-page-meeting")).toHaveText(pageV3.exportMenu);
   const copyButton = head.getByTestId("meeting-copy-summary");
   await expect(copyButton).toHaveText(entryUi.copy);
@@ -1108,7 +1107,7 @@ test("h. 會議頁頁首與議程目錄：複製週會摘要（沒有剪貼簿�
   await expect(copyStatus).toHaveAttribute("role", "status");
   await expect(copyStatus).toHaveText("");
   // 週會摘要純文字：第 1 行「週會摘要」、第 2 行畫面上的資料集名稱。
-  const weeklyStart = new RegExp(`^${escapeRe(`${labels.summary.weekly.title}\n${dash.datasets.golden}\n`)}`);
+  const weeklyStart = new RegExp(`^${escapeRe(`${labels.summary.weekly.title}\n${labels.shell.devValidation.datasets.golden}\n`)}`);
 
   // 沒有剪貼簿權限：開備案對話框（modal，唯讀文字框已聚焦、內容是週會摘要）；「關閉」後焦點回到按鈕，狀態列不顯示成功。
   await copyButton.click();
@@ -1179,14 +1178,14 @@ test("i. v2 結束的會議紀錄（D-V3-22）：還原含 v2 紀錄（沒有 co
   await loadDataset(page, "golden");
   await declineSavePrompt(page);
   let meeting = await openMeeting(page);
-  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.decision, { exact: true }).selectOption("adopted");
+  await meeting.getByTestId("meeting-decision").getByLabel(labels.meeting.form.decision, { exact: true }).selectOption("adopted");
   await finalizeMeeting(meeting);
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
   await expect(meeting.getByTestId("meeting-v2-note")).toHaveCount(0);
 
   // 備份 v4：v3 結束的紀錄帶 copy_version "v3"。把它拿掉（＝v2 結束的紀錄），重算備份的 SHA-256 checksum（同 app：decisionSignature 正規化後雜湊）。
   const storage = await openStorage(page);
-  const backup = await downloadFrom(page, storage.getByRole("button", { name: labels.buttons.downloadBackup, exact: true }));
+  const backup = await downloadFrom(page, storage.getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true }));
   await storage.getByRole("button", { name: store.confirmDownloaded, exact: true }).click();
   await closeStorage(page);
   const wire = JSON.parse(backup.bytes.toString("utf8"));
@@ -1200,7 +1199,7 @@ test("i. v2 結束的會議紀錄（D-V3-22）：還原含 v2 紀錄（沒有 co
 
   // 清空 → 讀回改過的備份（V3-3：「清空」在儲存選單的危險區）。
   await clickReplacing(page, await clearButton(page));
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   const fresh = await openStorage(page);
   await fresh.getByLabel(store.selectBackupFile, { exact: true }).setInputFiles({ name: "v3-7-v2-meeting.json", mimeType: "application/json", buffer: v2Backup });
   await expect(page.getByRole("region", { name: store.restorePreviewAria })).toBeVisible();
@@ -1223,13 +1222,13 @@ test("i. v2 結束的會議紀錄（D-V3-22）：還原含 v2 紀錄（沒有 co
   await expect(items.first().getByTestId("meeting-v2-note")).toBeVisible();
   await expect(items.first().getByTestId("meeting-v2-note")).toHaveText(pageV3.v2Note);
   await expect(items.first().locator("details > ul").first().locator("li")).toHaveText([
-    fill(meetingPage.historyKpiRow, { metric: labels.metrics.net_revenue.label, previous: formatAmountL1("2250.00"), current: formatAmountL1("2470.00"), change: formatSignedDelta("220.00", "L1") }),
-    fill(meetingPage.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.label, previous: formatAmountL1("570.00"), current: formatAmountL1("255.00"), change: formatSignedDelta("-315.00", "L1") }),
+    fill(meetingPage.historyKpiRow, { metric: labels.metrics.net_revenue.headline, previous: formatAmountL1("2250.00"), current: formatAmountL1("2470.00"), change: formatSignedDelta("220.00", "L1") }),
+    fill(meetingPage.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.headline, previous: formatAmountL1("570.00"), current: formatAmountL1("255.00"), change: formatSignedDelta("-315.00", "L1") }),
   ]);
 
   // 會議紀錄 Markdown：「# 標題」、空行、版頭四行（產出時間＝結束時間）、空行，接著 v2 加註與空行，再來才是會議資訊。
   const title = await summary.innerText();
-  const history = await downloadFrom(page, items.first().getByRole("button", { name: `${labels.buttons.exportMarkdown} · ${title}`, exact: true }));
+  const history = await downloadFrom(page, items.first().getByRole("button", { name: `${labels.exports.buttons.exportMarkdown} · ${title}`, exact: true }));
   expect(history.download.suggestedFilename()).toBe(`profitlens-meeting-${today}.md`);
   const markdown = history.bytes.toString("utf8");
   const lines = markdown.split("\n");
@@ -1237,7 +1236,7 @@ test("i. v2 結束的會議紀錄（D-V3-22）：還原含 v2 紀錄（沒有 co
   expect(lines[0]).toBe(fill(record.mdTitle, { brand: labels.brand.name, name: defaultMeetingName }));
   expectExportHeader(markdownHeader(markdown), { ...GOLDEN_HEADER, time: finalizedAt }, { hardBreaks: true });
   expect(lines.slice(6, 9)).toEqual(["", pageV3.v2Note, ""]);
-  expect(lines[9]).toMatch(templateRe(record.mdMeta, { date: labels.meeting.date, value: today, decision: labels.meeting.decision }, { state: confirmedRe("adopted"), finalizedAt }));
+  expect(lines[9]).toMatch(templateRe(record.mdMeta, { date: labels.meeting.form.date, value: today, decision: labels.meeting.form.decision }, { state: confirmedRe("adopted"), finalizedAt }));
   expect(markdown.split(pageV3.v2Note)).toHaveLength(2);
   // 頂欄「會議紀錄 Markdown」下載最近一筆（同一份紀錄）：內容相同。
   const fromMenu = await downloadFrom(page, (await openDownloads(page)).getByRole("button", { name: meetingPage.menuMarkdown, exact: true }));

@@ -10,7 +10,7 @@ import { fill, labels } from "../src/i18n";
 // V3-3 A2 期間列（C23）、自訂期間 popover（C14）、需要處理橫幅（C22）、手機期間底部面板（PRD §6.3 #18–#20、§6.4 M1／M6、§7.0、D-V3-10＝A）。
 
 const demo = { data_as_of: "2026-08-24", coverage_start: "2026-06-01", coverage_end: "2026-08-23" };
-const demoScope: AppliedPeriodScope = { previous: { start: "2026-06-01", end: "2026-07-12" }, current: { start: "2026-07-13", end: "2026-08-23" }, previousDays: 42, currentDays: 42, comparisonMode: "same_days", channelsText: labels.ui.dashboard.filter.allChannels, dataAsOf: "2026-08-24" };
+const demoScope: AppliedPeriodScope = { previous: { start: "2026-06-01", end: "2026-07-12" }, current: { start: "2026-07-13", end: "2026-08-23" }, previousDays: 42, currentDays: 42, comparisonMode: "same_days", channelsText: labels.shell.periodBar.filter.allChannels, dataAsOf: "2026-08-24" };
 const presetsFor = (scope: AppliedPeriodScope) => periodPresets(demo, { previous: scope.previous, current: scope.current, comparison_mode: scope.comparisonMode });
 const noop = () => undefined;
 const props = (overrides: Partial<PeriodBarProps> = {}): PeriodBarProps => ({
@@ -43,9 +43,9 @@ describe("期間摘要（formatPeriodL1，§7.0、§8.6）", () => {
 
   it("v2 整行範圍說明的其餘資訊（通路、比較方式、資料到）在 title 與 sr-only（§6.3 #19 是合併不是移除）", () => {
     const { detail } = periodSummary({ ...demoScope, channelsText: "DTC" });
-    expect(detail).toBe(fill(labels.shell.periodBarV3.summaryDetail, { channels: "DTC", mode: labels.periods.sameDays, dataAsOf: "2026-08-24" }));
+    expect(detail).toBe(fill(labels.shell.periodBarV3.summaryDetail, { channels: "DTC", mode: labels.shell.periods.sameDays, dataAsOf: "2026-08-24" }));
     const html = render();
-    expect(html).toMatch(new RegExp(`<p class="period-summary" data-testid="period-summary" title="[^"]*${labels.periods.sameDays}[^"]*">本期 7/13–8/23 對比 上期 6/1–7/12（各 42 天）<span class="sr-only">`));
+    expect(html).toMatch(new RegExp(`<p class="period-summary" data-testid="period-summary" title="[^"]*${labels.shell.periods.sameDays}[^"]*">本期 7/13–8/23 對比 上期 6/1–7/12（各 42 天）<span class="sr-only">`));
   });
 });
 
@@ -55,9 +55,9 @@ describe("期間列 SSR 結構（M1 保持掛載、M6 單一實例）", () => {
   it("四個日期欄位、比較方式、套用各只有一份；自訂期間 popover 與手機面板都在 markup 中", () => {
     for (const id of ["previous-start", "previous-end", "current-start", "current-end", "period-custom-panel", "period-bar-panel"]) expect(count(html, ` id="${id}"`), id).toBe(1);
     for (const id of ["period-bar", "period-presets", "period-summary", "period-custom", "period-custom-panel", "period-toggle"]) expect(count(html, `data-testid="${id}"`), id).toBe(1);
-    expect(count(html, `aria-label="${labels.ui.dashboard.filter.comparisonMode}"`)).toBe(1);
-    expect(count(html, `aria-label="${labels.ui.dashboard.filter.channel}"`)).toBe(1);
-    expect(count(html, `>${labels.buttons.apply}</button>`)).toBe(1);
+    expect(count(html, `aria-label="${labels.shell.periodBar.filter.comparisonMode}"`)).toBe(1);
+    expect(count(html, `aria-label="${labels.shell.periodBar.filter.channel}"`)).toBe(1);
+    expect(count(html, `>${labels.shell.buttons.apply}</button>`)).toBe(1);
     expect(html).toContain(`<form class="period-form">`);
   });
 
@@ -72,14 +72,14 @@ describe("期間列 SSR 結構（M1 保持掛載、M6 單一實例）", () => {
   it("快捷是分段鈕：aria-pressed；不可用時 aria-disabled＋title＋sr-only 理由（#preset-reason-{id}）", () => {
     const presets = presetsFor(demoScope);
     const pressed = render({ isPressed: preset => preset.id === "last7" });
-    expect(pressed).toMatch(new RegExp(`role="group" aria-label="${labels.sections.presetGroup}" data-testid="period-presets"`));
-    expect(pressed).toMatch(new RegExp(`aria-pressed="true">${labels.periods.presets.last7}</button>`));
+    expect(pressed).toMatch(new RegExp(`role="group" aria-label="${labels.shell.sections.presetGroup}" data-testid="period-presets"`));
+    expect(pressed).toMatch(new RegExp(`aria-pressed="true">${labels.shell.periods.presets.last7}</button>`));
     for (const preset of presets.filter(item => item.status === "unavailable")) {
       expect(html).toContain(`aria-describedby="preset-reason-${preset.id}"`);
       expect(html).toContain(`id="preset-reason-${preset.id}" class="sr-only"`);
     }
     expect(presets.find(preset => preset.id === "yoy")?.status).toBe("unavailable");
-    expect(html).not.toContain(labels.periods.presetHint);
+    expect(html).not.toContain(labels.shell.periods.presetHint);
     expect(html).toContain(labels.shell.periodBarV3.customHint);
   });
 
@@ -123,13 +123,13 @@ describe("需要處理橫幅（C22）", () => {
   });
 
   it("篩選錯誤：不利色、role=alert", () => {
-    expect(banner({ filterError: labels.ui.dashboard.errors.periodNotApplied })).toContain(`<p role="alert" class="ui-banner period-banner" data-tone="unfavorable" data-testid="banner-filter-error">${labels.ui.dashboard.errors.periodNotApplied}</p>`);
+    expect(banner({ filterError: labels.shell.state.errors.periodNotApplied })).toContain(`<p role="alert" class="ui-banner period-banner" data-tone="unfavorable" data-testid="banner-filter-error">${labels.shell.state.errors.periodNotApplied}</p>`);
   });
 
   it("部分資料待補：一行文字＋一個文字連結「查看 n 項資料問題」", () => {
     const html = banner({ partialIssues: 3 });
     expect(html).toContain(`data-tone="warning" data-testid="banner-partial"><span>${labels.shell.banner.partial}</span>`);
-    expect(html).toContain(`<button type="button" class="ui-btn ui-btn-text">${fill(labels.ui.dashboard.viewIssues, { n: 3 })}</button>`);
+    expect(html).toContain(`<button type="button" class="ui-btn ui-btn-text">${fill(labels.shell.periodBar.viewIssues, { n: 3 })}</button>`);
     expect(count(html, "<button")).toBe(1);
   });
 

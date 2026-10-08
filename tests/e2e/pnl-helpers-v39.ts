@@ -38,7 +38,7 @@ export async function setPnlGranularity(page: Page, granularity: PnlGranularityN
 /** 每格 number-link 的可及名稱：fill(cellAria, { date: 欄名, metric: 指標名, value: 畫面上的 L2 值 })。 */
 export const pnlCellAria = (date: string, metric: string, value: string) => fill(copy.cellAria, { date, metric, value });
 /** 抽屜 h2 的文字：fill(evidenceTitle, { metric, date }) 加上 sr-only 的「 · 計算與來源」。 */
-export const pnlEvidenceHeading = (metric: string, date: string) => `${fill(copy.evidenceTitle, { metric, date })} · ${labels.sections.evidence}`;
+export const pnlEvidenceHeading = (metric: string, date: string) => `${fill(copy.evidenceTitle, { metric, date })} · ${labels.evidence.sections.evidence}`;
 /** 一列中各格的 data-col（依 DOM 順序）。 */
 export const pnlRowColumns = (page: Page, row: string) => pnlRow(page, row).locator("td[data-col]").evaluateAll(cells => cells.map(cell => cell.getAttribute("data-col")));
 /** 表頭各欄的 data-col（第一欄「項目」沒有 data-col）。 */

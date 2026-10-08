@@ -8,7 +8,7 @@ import { splitIssueTemplate } from "../../src/application/import";
  * 收合的內容保持掛載（M1），要「看得見」再斷言時先展開 summary。
  */
 const v3 = labels.data.pageV3;
-const issueCopy = labels.ui.issueList;
+const issueCopy = labels.data.issues;
 /** 問題表「問題」欄去掉的位置前綴以全形冒號結尾（「{file} 第 {line} 行：」）。 */
 const COLON = "：";
 
@@ -33,7 +33,7 @@ export const previewDetails = (page: Page, file: PreviewFile) => page.getByTestI
 /** 展開某一份檔案的來源預覽，回傳該 <details>。 */
 export const openPreview = (page: Page, file: PreviewFile) => expand(previewDetails(page, file));
 /** 來源預覽的表格：caption（sr-only）＝ fill(ui.workspacePanels.previewCaption, { fileName })。 */
-export const previewTable = (page: Page, file: PreviewFile) => previewDetails(page, file).getByRole("table", { name: fill(labels.ui.workspacePanels.previewCaption, { fileName: file }), exact: true });
+export const previewTable = (page: Page, file: PreviewFile) => previewDetails(page, file).getByRole("table", { name: fill(labels.data.panel.previewCaption, { fileName: file }), exact: true });
 /** 「版本與來源資訊」<details>（data-version-info，預設收合）。 */
 export const versionInfo = (page: Page) => page.getByTestId("data-version-info");
 export const openVersionInfo = (page: Page) => expand(versionInfo(page));
@@ -54,7 +54,7 @@ export async function showReasonCodes(scope: Locator) {
 
 /**
  * 一句「L1。L2」拆成問題表的兩欄：「問題」只放 L1 去掉位置前綴（「{file} 第 {line} 行：」）之後的部分，「修法」放 L2。
- * 句子由 labels 樣板帶入（labels.importErrors、labels.targets.errors、labels.events.errors），拆句沿用 application 的 splitIssueTemplate。
+ * 句子由 labels 樣板帶入（labels.errors.import、labels.targets.errors、labels.events.errors），拆句沿用 application 的 splitIssueTemplate。
  */
 export function issueCells(message: string): { problem: string; fix: string } {
   const { headline, explain } = splitIssueTemplate(message);
@@ -68,7 +68,7 @@ export interface ExpectedIssueRow {
   field: string;
   problem: string;
   fix: string;
-  /** 核心三份 CSV 的問題有嚴重程度標籤（ui-lozenge，labels.ui.issueList.severity）；選填檔沒有。 */
+  /** 核心三份 CSV 的問題有嚴重程度標籤（ui-lozenge，labels.data.issues.severity）；選填檔沒有。 */
   severity?: keyof typeof issueCopy.severity;
   /** 有給時，順便斷言原因碼格的文字（要先 showReasonCodes 才看得見）。 */
   code?: string;
@@ -104,12 +104,12 @@ export const pageLoadControls = (page: Page) => page.locator(".page-heading .loa
 export async function expectHeaderOrder(page: Page, hasData: boolean) {
   const buttons = pageLoadControls(page);
   await expect(buttons).toHaveCount(2);
-  const [primary, secondary] = hasData ? [labels.buttons.importData, labels.buttons.loadDemo] : [labels.buttons.loadDemo, labels.buttons.importData];
+  const [primary, secondary] = hasData ? [labels.shell.buttons.importData, labels.shell.buttons.loadDemo] : [labels.shell.buttons.loadDemo, labels.shell.buttons.importData];
   await expect(buttons).toHaveText([primary, secondary]);
   await expect(buttons.nth(0)).toHaveClass(/\bui-btn-primary\b/);
   await expect(buttons.nth(1)).toHaveClass(/\bui-btn-secondary\b/);
   await expect(page.locator(".page-heading .load-controls .ui-btn-primary")).toHaveCount(1);
-  await expect(page.getByTestId("page-import")).toHaveText(labels.buttons.importData);
+  await expect(page.getByTestId("page-import")).toHaveText(labels.shell.buttons.importData);
   await expect(page.getByTestId("page-import")).toHaveClass(hasData ? /\bui-btn-primary\b/ : /\bui-btn-secondary\b/);
 }
 

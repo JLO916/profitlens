@@ -70,7 +70,7 @@ export function trendTakeaways(snapshot: WorkspaceSnapshot): TrendTakeaways {
     },
     lastWeekIncomplete,
     incompleteNote: lastWeekIncomplete ? copy.incompleteNote : null,
-    subtitle: labels.ui.overview.trendNote,
+    subtitle: labels.overview.page.trendNote,
     yoy: yoyTakeaway(snapshot),
   };
 }

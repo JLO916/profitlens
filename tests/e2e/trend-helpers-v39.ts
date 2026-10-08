@@ -9,7 +9,7 @@ import { openDetails } from "./replacement-helpers";
 // 字串一律由 labels 依元件的組字方式組出（trend-section.tsx、evidence-drawer.tsx、src/application/evidence-filter.ts），不寫死中文。
 const yoyCopy = labels.overview.trendYoyV3;
 const frame = labels.overview.chartFrame;
-const overviewUi = labels.ui.overview;
+const overviewUi = labels.overview.page;
 
 // ── 趨勢圖（section data-testid="trend"） ──
 export const trend = (page: Page) => page.getByTestId("trend");
@@ -53,7 +53,7 @@ export const YOY_EMPTY = frame.noData;
 
 // ── 期待字串 ──
 /** 去年同期不可用：「沒有去年同期線：{期間快捷的原因}」；資料起日太晚時原因是 periods.presetTooShort。 */
-export const yoyTooShortNote = (coverageStart: string) => fill(yoyCopy.unavailable, { reason: fill(labels.periods.presetTooShort, { date: coverageStart, preset: labels.periods.presets.yoy }) });
+export const yoyTooShortNote = (coverageStart: string) => fill(yoyCopy.unavailable, { reason: fill(labels.shell.periods.presetTooShort, { date: coverageStart, preset: labels.shell.periods.presets.yoy }) });
 /** 抽屜篩選片語「篩選：{scope}」；scope 由週與通路以 joiner 相接。 */
 export const filterPhrase = (...scope: string[]) => fill(yoyCopy.filter.phrase, { scope: scope.join(yoyCopy.filter.joiner) });
 /** 週的篩選範圍「{週名}（{M/D–M/D}）」；日期用主層期間（anchor＝資料到，跨年寫年份）。 */
@@ -66,17 +66,17 @@ export function drawerSubtitle(scope: string, start: string, end: string, anchor
   return fill(labels.evidence.drawerV3.subtitle, { scope, period: name === undefined ? range : fill(labels.evidence.drawerV3.periodNamed, { name, range }) });
 }
 /** 原始明細分段按鈕「{分段}（{筆數}）」。 */
-export const sourceTabName = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.ui.evidenceDrawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
+export const sourceTabName = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.evidence.drawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
 
 // ── 計算與來源抽屜 ──
-export const evidenceDialog = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.sections.evidence.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`) });
+export const evidenceDialog = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`) });
 export const evidenceHeading = (dialog: Locator) => dialog.getByRole("heading", { level: 2 });
 /** F10：下鑽時才有的篩選列（div.evidence-filter）：span 是片語或「全部來源」，按鈕是清除／套用（同一顆按鈕切換）。 */
 export const evidenceFilter = (dialog: Locator) => dialog.getByTestId("evidence-filter");
 export const evidenceFilterText = (dialog: Locator) => evidenceFilter(dialog).locator(":scope > span");
 export const filterClear = (dialog: Locator) => dialog.getByTestId("evidence-filter-clear");
 export const filterApply = (dialog: Locator) => dialog.getByTestId("evidence-filter-apply");
-export const sourceTabs = (dialog: Locator) => dialog.getByRole("group", { name: labels.ui.evidenceDrawer.sourceTabsAria, exact: true }).getByRole("button");
+export const sourceTabs = (dialog: Locator) => dialog.getByRole("group", { name: labels.evidence.drawer.sourceTabsAria, exact: true }).getByRole("button");
 /** 目前分頁的原始明細日期欄（td.evidence-date）。 */
 export const sourceDates = (dialog: Locator) => dialog.locator("table.source-table td.evidence-date").allTextContents();
 /** 目前分頁的原始明細通路欄：只取通路名（商品另起一行 <small>，不算）。 */

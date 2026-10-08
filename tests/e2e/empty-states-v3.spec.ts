@@ -24,12 +24,12 @@ test.describe("V3-8 空狀態（§7.10）", () => {
     const state = emptyState(page);
     await expect(state).toBeVisible();
     await expect(sidebarNav(page, "overview")).toHaveAttribute("aria-current", "page");
-    // 標題是 h2（頁面 h1 由頁首提供，M6 一個 h1），文字＝labels.emptyState.title；說明一句。
+    // 標題是 h2（頁面 h1 由頁首提供，M6 一個 h1），文字＝labels.empty.title；說明一句。
     const heading = state.getByRole("heading", { level: 2 });
     await expect(heading).toHaveCount(1);
-    await expect(heading).toHaveText(labels.emptyState.title);
+    await expect(heading).toHaveText(labels.empty.title);
     await expect(state).toHaveAttribute("aria-labelledby", (await heading.getAttribute("id"))!);
-    await expect(state.getByText(labels.emptyState.body, { exact: true })).toBeVisible();
+    await expect(state.getByText(labels.empty.body, { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
 
     // 按鈕列：載入示範資料（主要）在前、匯入資料（次要）在後；首頁只有空狀態這一組（頁首在總覽不渲染 load-controls）。
@@ -37,13 +37,13 @@ test.describe("V3-8 空狀態（§7.10）", () => {
     const importButton = page.getByTestId("empty-import");
     await expect(demo).toBeVisible();
     await expect(importButton).toBeVisible();
-    await expect(demo).toHaveText(labels.buttons.loadDemo);
-    await expect(importButton).toHaveText(labels.buttons.importData);
+    await expect(demo).toHaveText(labels.shell.buttons.loadDemo);
+    await expect(importButton).toHaveText(labels.shell.buttons.importData);
     await expect(demo).toHaveClass(/(^|\s)ui-btn-primary(\s|$)/);
     await expect(importButton).toHaveClass(/(^|\s)ui-btn-secondary(\s|$)/);
     expect(await precedes(demo, importButton), "載入示範資料在匯入資料之前").toBe(true);
-    await expect(page.getByRole("button", { name: labels.buttons.loadDemo, exact: true })).toHaveCount(1);
-    await expect(page.getByRole("button", { name: labels.buttons.importData, exact: true })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: labels.shell.buttons.importData, exact: true })).toHaveCount(1);
 
     // 「需要的檔案」表：3 列（三份日報），每列有檔名與一句內容說明。
     await expect(state.getByRole("heading", { level: 3, name: stateV3.filesHeading, exact: true })).toBeVisible();
@@ -55,17 +55,17 @@ test.describe("V3-8 空狀態（§7.10）", () => {
     for (const [index, row] of (await files.locator("tbody tr").all()).entries()) {
       await expect(row.getByRole("rowheader")).toContainText(fileNames[index]);
       await expect(row).toContainText(descriptions[index]);
-      await expect(row.getByRole("button", { name: fill(labels.downloads.blankTemplate, { file: fileNames[index] }), exact: true })).toBeVisible();
-      await expect(row.getByRole("link", { name: fill(labels.downloads.exampleTemplate, { file: fileNames[index] }), exact: true })).toBeVisible();
+      await expect(row.getByRole("button", { name: fill(labels.exports.downloads.blankTemplate, { file: fileNames[index] }), exact: true })).toBeVisible();
+      await expect(row.getByRole("link", { name: fill(labels.exports.downloads.exampleTemplate, { file: fileNames[index] }), exact: true })).toBeVisible();
     }
 
     // 不放插圖、eyebrow、步驟列（v2 的 .empty-illustration／.eyebrow／.empty-steps 與其文字都不再出現）。
     const main = page.locator("#main-content");
     await expect(main.locator(".empty-illustration, .eyebrow, .empty-steps")).toHaveCount(0);
-    await expect(state).not.toContainText(labels.emptyState.eyebrow);
+    await expect(state).not.toContainText(labels.empty.eyebrow);
     // 步驟列（v2 的 ol.empty-steps）不存在：空狀態裡沒有清單；第一步「匯入資料」與按鈕同字，其餘兩步的文字也不出現。
     await expect(state.getByRole("list")).toHaveCount(0);
-    for (const step of labels.emptyState.steps.filter(step => step !== labels.buttons.importData)) await expect(state.getByText(step, { exact: true })).toHaveCount(0);
+    for (const step of labels.empty.steps.filter(step => step !== labels.shell.buttons.importData)) await expect(state.getByText(step, { exact: true })).toHaveCount(0);
   });
 
   test("點空狀態的「匯入資料」一次就開精靈（全版專注），取消匯入回到資料來源頁空狀態（頁首載入示範資料為主要）", async ({ page }) => {
@@ -90,24 +90,24 @@ test.describe("V3-8 空狀態（§7.10）", () => {
     await cancel.click();
     await expect(wizard(page)).toHaveCount(0);
     await expect(sidebarNav(page, "data")).toHaveAttribute("aria-current", "page");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(labels.nav.data.label);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(labels.shell.nav.data.headline);
     const state = emptyState(page);
     await expect(state).toBeVisible();
-    await expect(state.getByRole("heading", { level: 2 })).toHaveText(labels.emptyState.title);
+    await expect(state.getByRole("heading", { level: 2 })).toHaveText(labels.empty.title);
     // 資料來源頁的空狀態沒有按鈕列（頁首已有，M6 同一控制只有一個實例）；「需要的檔案」表仍在。
     await expect(page.getByTestId("empty-load-demo")).toHaveCount(0);
     await expect(page.getByTestId("empty-import")).toHaveCount(0);
-    await expect(state.getByRole("button", { name: labels.buttons.loadDemo, exact: true })).toHaveCount(0);
-    await expect(state.getByRole("button", { name: labels.buttons.importData, exact: true })).toHaveCount(0);
+    await expect(state.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true })).toHaveCount(0);
+    await expect(state.getByRole("button", { name: labels.shell.buttons.importData, exact: true })).toHaveCount(0);
     await expect(state.getByRole("table", { name: stateV3.filesHeading, exact: true }).locator("tbody tr")).toHaveCount(3);
     // 頁首：沒有資料時「載入示範資料」主要在前、「匯入資料」（page-import）次要在後；全頁各只有一顆。
-    const headerDemo = page.getByRole("button", { name: labels.buttons.loadDemo, exact: true });
+    const headerDemo = page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true });
     const headerImport = page.getByTestId("page-import");
     await expect(headerDemo).toHaveCount(1);
-    await expect(page.getByRole("button", { name: labels.buttons.importData, exact: true })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: labels.shell.buttons.importData, exact: true })).toHaveCount(1);
     await expect(headerDemo).toBeVisible();
     await expect(headerImport).toBeVisible();
-    await expect(headerImport).toHaveText(labels.buttons.importData);
+    await expect(headerImport).toHaveText(labels.shell.buttons.importData);
     await expect(headerDemo).toHaveClass(/(^|\s)ui-btn-primary(\s|$)/);
     await expect(headerImport).toHaveClass(/(^|\s)ui-btn-secondary(\s|$)/);
     expect(await precedes(headerDemo, headerImport), "頁首載入示範資料在匯入資料之前").toBe(true);

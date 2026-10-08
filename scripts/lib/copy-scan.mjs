@@ -5,47 +5,32 @@
  * 白名單（L3 技術字串與舊名，PRD §5.4、§8.4）：
  * - 路徑中任一段鍵名為 `technical`，或以 `technical` 開頭、以 `Technical` 結尾（例如 formulaTechnical、technicalVersion）的整個子樹；
  *   V3-2c 起指標的計算方式放在 `metrics.<名>.technical.{formula,formulaTechnical}`，同一條規則涵蓋；
- * - 舊名對照：`glossary.aliases`（V3-2c 新位置）與 v2 舊鍵 `basis.aliases`；
+ * - 舊名對照：`glossary.aliases`（v2 舊鍵 `basis.aliases` 已於 V3-10 移除）；
  * - `glossary.terms.<n>.oldNames`（V3-2a 名詞小辭典的 v2 舊名，PRD §8.9；和舊名對照同性質，本來就要寫出舊名）。
  */
 export function isWhitelisted(path) {
   const segments = path.split(".");
   if (segments.some(segment => segment === "technical" || /^technical[A-Z]/.test(segment) || /Technical$/.test(segment))) return true;
   if (/^glossary\.terms\.\d+\.oldNames(\.|$)/.test(path)) return true;
-  return ["basis.aliases", "glossary.aliases"].some(prefix => path === prefix || path.startsWith(`${prefix}.`));
+  return path === "glossary.aliases" || path.startsWith("glossary.aliases.");
 }
 
 /**
- * V3-2c：labels 同時有新分組（LABEL_GROUPS，字串常值只在這裡）與 v2 舊鍵 alias（LEGACY_SECTIONS 與 legacyAliases，只是參照）。
- * 傳入 meta（labels 模組本身即可）時：
- * - view 只含新分組，並拿掉 legacyAliases 指到別處的舊鍵（例如 metrics.<名>.label），同一個字串只算一次；
- * - matches(path, 規則) 同時比對新路徑與指到它的所有舊路徑，白名單、JSON 例外與 L1 鍵的口徑與 V3-2b 相同。
- * 不傳 meta（合成輸入）時照舊掃整棵樹。
+ * V3-10（06_BATCHES「移除 labels 舊 key alias」）：labels 頂層就是新分組（LABEL_GROUPS），v2 舊鍵 alias 已移除，每個字串只有一條路徑。
+ * 傳入 meta（labels 模組本身即可）時，先確認 labels 頂層沒有 LABEL_GROUPS 以外的區段（舊區段不得回來），view 只含這些分組；
+ * 不傳 meta（合成輸入）時照舊掃整棵樹。matches(path, 規則) 只比對這一條路徑。
  * @param {Record<string, unknown>} labels
- * @param {{ LABEL_GROUPS: readonly string[], LEGACY_SECTIONS: readonly string[], legacyAliases: Readonly<Record<string, string>> }} [meta]
+ * @param {{ LABEL_GROUPS: readonly string[] }} [meta]
  */
 export function labelScope(labels, meta) {
-  if (!meta) return { view: labels, oldPathsOf: () => [], matches: (path, predicate) => predicate(path) };
+  const matches = (path, predicate) => predicate(path);
+  if (!meta) return { view: labels, matches };
   const groups = new Set(meta.LABEL_GROUPS);
-  const known = new Set([...meta.LABEL_GROUPS, ...meta.LEGACY_SECTIONS]);
-  const unknown = Object.keys(labels).filter(key => !known.has(key));
-  if (unknown.length) throw new Error(`labels 有不在 LABEL_GROUPS／LEGACY_SECTIONS 的區段：${unknown.join("、")}`);
-  const aliases = meta.legacyAliases;
-  const oldPaths = new Map();
-  for (const [from, to] of Object.entries(aliases)) { if (!oldPaths.has(to)) oldPaths.set(to, []); oldPaths.get(to).push(from); }
-  const isAlias = path => Object.hasOwn(aliases, path) && aliases[path] !== path;
-  const prune = (node, path) => {
-    if (typeof node === "string") return isAlias(path) ? undefined : node;
-    if (Array.isArray(node)) return node.map((item, index) => prune(item, `${path}.${index}`));
-    if (!node || typeof node !== "object") return node;
-    const out = {};
-    for (const [key, value] of Object.entries(node)) { const kept = prune(value, `${path}.${key}`); if (kept !== undefined) out[key] = kept; }
-    return out;
-  };
+  const unknown = Object.keys(labels).filter(key => !groups.has(key));
+  if (unknown.length) throw new Error(`labels 有不在 LABEL_GROUPS 的區段：${unknown.join("、")}`);
   const view = {};
-  for (const key of Object.keys(labels)) if (groups.has(key)) view[key] = prune(labels[key], key);
-  const oldPathsOf = path => oldPaths.get(path) ?? [];
-  return { view, oldPathsOf, matches: (path, predicate) => predicate(path) || oldPathsOf(path).some(predicate) };
+  for (const key of Object.keys(labels)) view[key] = labels[key];
+  return { view, matches };
 }
 
 /** 遍歷 labels（含陣列），回傳 [點分路徑, 字串值]。 */
@@ -78,7 +63,7 @@ export const BLACKLIST = {
     ["資料就緒", /資料就緒/g],
     ["營收（指淨營收）", /(?<!淨)營收/g], // 前面沒有「淨」的「營收」。
   ],
-  /** R2 禁用詞（主層不得出現；JSON 只在下載選單 downloads.* 例外）。 */
+  /** R2 禁用詞（主層不得出現；JSON 只在下載選單 exports.downloads.* 例外）。 */
   jargon: [
     ["取分", /取分/g], ["快照", /快照/g], ["稽核", /稽核/g], ["fact／facts", /\bfacts?\b/gi], ["ID", /\bID\b/g], ["hash", /\bhash\b/gi], ["revision", /\brevision\b/gi], ["schema", /\bschema\b/gi],
     ["metric_version", /metric_version/gi], ["contribution-v1", /contribution-v1/gi], ["cohort", /\bcohort\b/gi], ["blocking", /\bblocking\b/gi], ["partial", /\bpartial\b/gi], ["null", /\bnull\b/gi], ["JSON", /\bJSON\b/g],
@@ -89,8 +74,8 @@ export const BLACKLIST = {
   emotion: [["惡化", /惡化/g], ["爆量", /爆量/g], ["暴跌", /暴跌/g], ["警告", /警告/g], ["危險（危險區以外）", /危險(?!區)/g]],
 };
 
-/** JSON 在匯出選單（V3-2c 起 exports.downloads.*；v2 舊鍵 downloads.*）允許。 */
-const JARGON_EXEMPT = { JSON: path => path.startsWith("exports.downloads.") || path.startsWith("downloads.") };
+/** JSON 在匯出選單（exports.downloads.*；v2 舊鍵 downloads.* 已於 V3-10 移除）允許。 */
+const JARGON_EXEMPT = { JSON: path => path.startsWith("exports.downloads.") };
 
 /**
  * 同一句話的呈現變體必須使用同一組占位符：同一父物件內 `base` 與 `base + 後綴` 兩個鍵，後綴在下列清單中。
@@ -100,13 +85,10 @@ export const PLACEHOLDER_VARIANT_SUFFIXES = ["Aria", "Short", "Long", "Approx", 
 
 /**
  * L1 子句長度（§3.2、§8.1）：去掉占位符、數字、單位、正負號與通路 alias 後，每個子句的 CJK 字數 ≤ 14。
- * PRD 只寫「頁面、區塊、列的標題」，沒有對應到 labels 鍵；V3-0 先限定在下列鍵（標題型字串）。
- * V3-2c 新位置：rules.*.headline、<分組>.sections.*、shell.nav.*.headline、<分組>.buttons.*（v2 舊鍵經 legacyAliases 也會比對）。
+ * PRD 只寫「頁面、區塊、列的標題」，沒有對應到 labels 鍵；V3-0 先限定在標題型字串（v2 的 rules.*.title、sections.*、nav.*.label、buttons.*），
+ * V3-2c 起的位置：rules.*.headline、<分組>.sections.*、shell.nav.*.headline、<分組>.buttons.*（V3-10 移除 v2 舊鍵後只比對這四種）。
  */
-export const L1_KEY_PATTERNS = [
-  /^rules\.[^.]+\.title$/, /^sections\.[^.]+$/, /^nav\.[^.]+\.label$/, /^buttons\.[^.]+$/,
-  /^rules\.[^.]+\.headline$/, /^[^.]+\.sections\.[^.]+$/, /^shell\.nav\.[^.]+\.headline$/, /^[^.]+\.buttons\.[^.]+$/,
-];
+export const L1_KEY_PATTERNS = [/^rules\.[^.]+\.headline$/, /^[^.]+\.sections\.[^.]+$/, /^shell\.nav\.[^.]+\.headline$/, /^[^.]+\.buttons\.[^.]+$/];
 export const L1_MAX_CJK = 14;
 
 const ARROW_RE = /[→↗▸▾]/g;
@@ -125,7 +107,7 @@ const placeholders = text => [...new Set([...text.matchAll(/\{(\w+)\}/g)].map(ma
 
 /** 通路 alias 的各段（例如「官網 · DTC」→ 官網、DTC），L1 計字時剔除。 */
 export function channelAliasTerms(labels) {
-  const alias = labels.data?.demoChannelAlias ?? labels.demoChannelAlias ?? {};
+  const alias = labels.data?.demoChannelAlias ?? {};
   return [...new Set([...Object.keys(alias), ...Object.values(alias).flatMap(value => value.split(/\s*·\s*/))])].filter(Boolean).sort((a, b) => b.length - a.length);
 }
 
@@ -139,7 +121,7 @@ export function l1ClauseLengths(text, aliasTerms = []) {
 
 /**
  * 掃描 labels。metrics 為棘輪指標（copy-style 逐項比上限；V3-2 目標全部為 0），details 列出每一筆，方便改寫。
- * 傳入 meta（labels 模組）時只掃新分組、略過 v2 alias，見 labelScope。
+ * 傳入 meta（labels 模組）時先確認頂層只有 LABEL_GROUPS，見 labelScope。
  * @param {Record<string, unknown>} labels
  * @param {Parameters<typeof labelScope>[1]} [meta]
  */

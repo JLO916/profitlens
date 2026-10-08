@@ -263,7 +263,7 @@ describe("presentPeriodText（投影中頁首的一行期間文字）", () => {
 describe("PageHeader（SSR）：投影模式按鈕與一行期間文字", () => {
   const noop = () => undefined;
   const toggle = createElement("button", { type: "button", "data-testid": "present-toggle", "aria-pressed": false }, labels.shell.presentV3.enter);
-  const base = { title: labels.nav.overview.label, description: labels.nav.overview.description, isData: false, showLoadDemo: true, onLoadDemo: noop, onImport: noop };
+  const base = { title: labels.shell.nav.overview.headline, description: labels.shell.nav.overview.explain, isData: false, showLoadDemo: true, onLoadDemo: noop, onImport: noop };
 
   it("不在投影中：按鈕在 .page-present、本頁動作之前；沒有 present-period", () => {
     const html = renderToStaticMarkup(createElement(PageHeader, { ...base, presentToggle: toggle }));

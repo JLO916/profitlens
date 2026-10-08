@@ -11,8 +11,8 @@ import { ActionEditor, AdDecisionBadge, evidenceTag, statusLabels, statuses, typ
 import { ActionDrawer } from './action-drawer';
 import { ShellIcon } from './shell/shell-icon';
 import { usePageSlot } from './shell/page-slot';
-const ui = labels.ui.actionsWorkbench;
-const board = labels.actionBoard;
+const ui = labels.actions.workbench;
+const board = labels.actions.board;
 const page = labels.actions.pageV3;
 export type ActionsView = 'board' | 'list';
 /** C8 狀態標籤：進行中 accent、受阻 warning、未開始／已完成中性（已完成加 check icon）。 */
@@ -124,10 +124,10 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
   </>;
   // §7.5 第 1 點、§6.3 #42：「新增待辦」＋「匯出本頁」頁內下拉（handler、通知同 v2；Esc／點外面關閉沿用 Dashboard 的 `.topbar-menu.auto-close`）。
   const headActions = <>
-    {total > 0 && <button ref={addButtonRef} type="button" className="ui-btn ui-btn-primary" data-testid="actions-add" onClick={addDraft}>{labels.buttons.addAction}</button>}
+    {total > 0 && <button ref={addButtonRef} type="button" className="ui-btn ui-btn-primary" data-testid="actions-add" onClick={addDraft}>{labels.actions.buttons.addAction}</button>}
     <details ref={exportRef} className="topbar-menu auto-close export-page" data-testid="actions-export-menu">
       <summary className="ui-btn ui-btn-secondary" data-testid="export-page-actions">{labels.products.pageV3.exportPage}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
-      <div className="menu-panel ui-menu">{(['md', 'csv', 'json'] as const).map(format => <div key={format} className="menu-item"><button type="button" className="ui-menu-item" data-testid={`actions-export-${format}`} onClick={() => exportAs(format)}>{format === 'md' ? labels.downloads.decisionMd : format === 'csv' ? labels.downloads.decisionCsv : labels.downloads.decisionJson}</button></div>)}</div>
+      <div className="menu-panel ui-menu">{(['md', 'csv', 'json'] as const).map(format => <div key={format} className="menu-item"><button type="button" className="ui-menu-item" data-testid={`actions-export-${format}`} onClick={() => exportAs(format)}>{format === 'md' ? labels.exports.downloads.decisionMd : format === 'csv' ? labels.exports.downloads.decisionCsv : labels.exports.downloads.decisionJson}</button></div>)}</div>
     </details>
   </>;
 
@@ -140,7 +140,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
     const openEditor = () => setEditing(card.id);
     return <article key={card.id} className="board-card" data-testid={`board-card-${n}`} aria-labelledby={titleId} tabIndex={-1} ref={element => { if (element) cardRefs.current.set(card.id, element); else cardRefs.current.delete(card.id); }}>
       <div className="board-card-head">
-        <button type="button" className="ui-btn ui-btn-icon board-pin" aria-pressed={item.pinned} aria-label={item.pinned ? ui.unpin : labels.buttons.pin} onClick={() => change(() => pinAction(workspace, card.id, !item.pinned))}><ShellIcon name={item.pinned ? 'star-filled' : 'star'} size={16} className={item.pinned ? 'icon-filled' : undefined} /></button>
+        <button type="button" className="ui-btn ui-btn-icon board-pin" aria-pressed={item.pinned} aria-label={item.pinned ? ui.unpin : labels.actions.buttons.pin} onClick={() => change(() => pinAction(workspace, card.id, !item.pinned))}><ShellIcon name={item.pinned ? 'star-filled' : 'star'} size={16} className={item.pinned ? 'icon-filled' : undefined} /></button>
         <h4 className="board-card-heading"><button type="button" className="board-card-title" id={titleId} onClick={openEditor}><span className="board-card-title-text">{card.problem.trim() || board.untitled}</span></button></h4>
       </div>
       <p className="board-card-meta">
@@ -170,7 +170,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
   const editingItem = editingIndex === undefined ? undefined : workspace.items[editingIndex];
   function focusAfterDrawer(id: string) { (cardRefs.current.get(id) ?? addButtonRef.current)?.focus(); }
 
-  return <section data-testid="actions-workbench" className="actions-page" aria-label={labels.nav.actions.label}>
+  return <section data-testid="actions-workbench" className="actions-page" aria-label={labels.shell.nav.actions.headline}>
     {titleSlot && createPortal(titleAddon, titleSlot)}
     {actionsSlot && createPortal(headActions, actionsSlot)}
     {(!titleSlot || !actionsSlot) && <div className="actions-page-head-inline">{!titleSlot && <div className="actions-head-title">{titleAddon}</div>}{!actionsSlot && <div className="actions-head-actions">{headActions}</div>}</div>}
@@ -183,7 +183,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
     {total === 0 ? <div className="ui-empty-page actions-empty" data-testid="actions-empty">
       <h2>{page.emptyTitle}</h2>
       <p>{page.emptyBody}</p>
-      <button ref={addButtonRef} type="button" className="ui-btn ui-btn-primary" data-testid="actions-empty-add" onClick={addDraft}>{labels.buttons.addAction}</button>
+      <button ref={addButtonRef} type="button" className="ui-btn ui-btn-primary" data-testid="actions-empty-add" onClick={addDraft}>{labels.actions.buttons.addAction}</button>
     </div> : <>
       {/* §7.5 第 3 點：四欄，欄標題＝狀態名＋計數徽章；空欄是 C10 區段型空狀態。 */}
       {current === 'board' && <div className="action-board" data-testid="action-board">{ACTION_EXECUTION_STATUSES.map(status => {
@@ -198,7 +198,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
       {current === 'list' && workspace.items.map((item, index) => {
         const card = item.card; const document = documents[index];
         return <article key={card.id} className="panel action-card" data-testid={`action-${index + 1}`} aria-labelledby={`action-${index + 1}-title`}>
-          <div className="section-heading"><h3 id={`action-${index + 1}-title`}>{fill(ui.itemHeading, { kind: item.pinned ? labels.buttons.pin : ui.item, n: index + 1 })}</h3><span className="ui-lozenge" data-tone={document.evidence_review_required ? 'warning' : undefined}>{evidenceTag(document, card.evidence_confirmed)}</span><AdDecisionBadge value={item.ad_decision} testId={`action-${index + 1}-ad-decision`} /></div>
+          <div className="section-heading"><h3 id={`action-${index + 1}-title`}>{fill(ui.itemHeading, { kind: item.pinned ? labels.actions.buttons.pin : ui.item, n: index + 1 })}</h3><span className="ui-lozenge" data-tone={document.evidence_review_required ? 'warning' : undefined}>{evidenceTag(document, card.evidence_confirmed)}</span><AdDecisionBadge value={item.ad_decision} testId={`action-${index + 1}-ad-decision`} /></div>
           {editor(item, index, 'list')}
         </article>;
       })}

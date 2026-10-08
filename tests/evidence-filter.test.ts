@@ -123,7 +123,7 @@ describe("抽屜（SSR）：下鑽的篩選片語與清除", () => {
     expect(sources.indexOf('data-testid="evidence-filter"')).toBeGreaterThan(sources.indexOf(`<p class="note">${labels.evidence.sourcesNote}</p>`));
     expect(sources.indexOf('data-testid="evidence-filter"')).toBeLessThan(sources.indexOf('class="source-controls"'));
     const sourceTabs = labels.evidence.sourceTabs;
-    expect(tabs(html)).toEqual([fill(labels.ui.evidenceDrawer.tabWithCount, { tab: sourceTabs.sales, n: 2 }), fill(labels.ui.evidenceDrawer.tabWithCount, { tab: sourceTabs.costs, n: 1 }), fill(labels.ui.evidenceDrawer.tabWithCount, { tab: sourceTabs.ads, n: 1 })]);
+    expect(tabs(html)).toEqual([fill(labels.evidence.drawer.tabWithCount, { tab: sourceTabs.sales, n: 2 }), fill(labels.evidence.drawer.tabWithCount, { tab: sourceTabs.costs, n: 1 }), fill(labels.evidence.drawer.tabWithCount, { tab: sourceTabs.ads, n: 1 })]);
     expect(html).toContain(fill(labels.evidence.showing, { from: 1, to: 2, n: 2 }));
     // 篩選後的表格只有 DTC 的列。
     expect(element(html, 'class="source-table"')!.match(/<tr role="row">/g)).toHaveLength(1 + 2);
@@ -133,7 +133,7 @@ describe("抽屜（SSR）：下鑽的篩選片語與清除", () => {
     const html = render(golden.dataset, golden.snapshot, contribution(golden.snapshot));
     expect(html).not.toContain("evidence-filter");
     const sourceTabs = labels.evidence.sourceTabs;
-    expect(tabs(html)).toEqual([fill(labels.ui.evidenceDrawer.tabWithCount, { tab: sourceTabs.sales, n: 4 }), fill(labels.ui.evidenceDrawer.tabWithCount, { tab: sourceTabs.costs, n: 2 }), fill(labels.ui.evidenceDrawer.tabWithCount, { tab: sourceTabs.ads, n: 2 })]);
+    expect(tabs(html)).toEqual([fill(labels.evidence.drawer.tabWithCount, { tab: sourceTabs.sales, n: 4 }), fill(labels.evidence.drawer.tabWithCount, { tab: sourceTabs.costs, n: 2 }), fill(labels.evidence.drawer.tabWithCount, { tab: sourceTabs.ads, n: 2 })]);
   });
 
   it("通路長條（channelEvidence）與週的點（weekEvidence）開的抽屜都有片語；週的抽屜副標是該週期間、片語寫週名與起訖", () => {
@@ -152,10 +152,10 @@ describe("抽屜（SSR）：下鑽的篩選片語與清除", () => {
     const channels = twoYear.snapshot.report.scope.channels;
     const week = render(twoYear.dataset, twoYear.snapshot, weekEvidence(yoy.weeks[0], "contribution_after_marketing", channels));
     expect(week).toContain('class="ladder-table"');
-    expect(week).toContain(fill(labels.units.yuan, { value: "518.00" }));
+    expect(week).toContain(fill(labels.format.units.yuan, { value: "518.00" }));
     const whole = render(twoYear.dataset, twoYear.snapshot, { name: "net_revenue", metric: yoy.metrics.net_revenue, period: yoy.period, sources: yoy.sources, channels, title: metricDefinitions.net_revenue.label });
     expect(whole).toContain('class="ladder-table"');
     const range = formatPeriodL1(yoy.period.start, yoy.period.end, { anchor: twoYear.dataset.manifest.data_as_of, days: false });
-    expect(whole).toContain(`class="sub">${escapeAttr(fill(labels.evidence.drawerV3.subtitle, { scope: labels.evidence.allChannels, period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.periods.presets.yoy, range }) }))}</p>`);
+    expect(whole).toContain(`class="sub">${escapeAttr(fill(labels.evidence.drawerV3.subtitle, { scope: labels.evidence.allChannels, period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.shell.periods.presets.yoy, range }) }))}</p>`);
   });
 });

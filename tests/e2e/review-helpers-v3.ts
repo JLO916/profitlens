@@ -32,7 +32,7 @@ export async function downloadMeetingExport(page: Page, name: string) {
 }
 
 /**
- * V3-7：會議門檻表單（threshold-form-meeting）收在議程 ② 的 details.meeting-threshold（summary＝labels.sections.adjustThreshold，預設收合、內容保持掛載）。
+ * V3-7：會議門檻表單（threshold-form-meeting）收在議程 ② 的 details.meeting-threshold（summary＝labels.overview.sections.adjustThreshold，預設收合、內容保持掛載）。
  * 沒展開就展開；回傳 details。收合時 toHaveValue 仍可讀，但 fill 與「套用」要先展開。
  */
 export async function openThreshold(page: Page) {

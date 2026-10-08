@@ -29,11 +29,11 @@ const DEMO_AS_OF = "2026-08-24";
 const yoyCopy = labels.overview.trendYoyV3;
 const frame = labels.overview.chartFrame;
 const allChannels = labels.evidence.allChannels;
-const preciseMoney = (amount: string) => fill(labels.units.yuan, { value: formatAmountL3(amount) });
+const preciseMoney = (amount: string) => fill(labels.format.units.yuan, { value: formatAmountL3(amount) });
 
 async function loadDemo(page: Page) {
   await page.goto("/");
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
   // 示範資料本期扣廣告後貢獻 1269792.73（KPI 卡 L1）。
   await expect(page.getByTestId("kpi-contribution_after_marketing")).toContainText(formatAmountL1("1269792.73"));
   await dismissSavePrompt(page);
@@ -48,7 +48,7 @@ test("(a) 示範資料：去年同期不可用時圖例保留第三項並標無�
   await expect(yoyLegend(page).locator("svg.legend-dash line")).toHaveAttribute("stroke", chartColors.yoy);
   await expect(yoyLegend(page).locator("svg.legend-dash line")).toHaveAttribute("stroke-dasharray", YOY_DASH);
   // 圖下方一行原因（與期間列「去年同期」快捷停用的原因同一句）。
-  await expect(yoyNote(page)).toHaveText(fill(yoyCopy.unavailable, { reason: fill(labels.periods.presetTooShort, { date: "2026-06-01", preset: labels.periods.presets.yoy }) }));
+  await expect(yoyNote(page)).toHaveText(fill(yoyCopy.unavailable, { reason: fill(labels.shell.periods.presetTooShort, { date: "2026-06-01", preset: labels.shell.periods.presets.yoy }) }));
   // 不畫去年同期線（缺資料不畫成 0）：只有本期、上期 × 淨營收、扣廣告後貢獻 4 條。
   await expect(trendLines(page)).toHaveCount(4);
   await expect(yoyCurves(page)).toHaveCount(0);
@@ -112,8 +112,8 @@ test("(b) 兩年資料：去年同期可用時多兩條虛線、第三格提示�
   await yoyTotalButton.click();
   const dialog = evidenceDialog(page);
   await expect(dialog).toBeVisible();
-  await expect(evidenceHeading(dialog)).toHaveText(`${metricDefinitions.net_revenue.label} · ${labels.sections.evidence}`);
-  await expect(dialog).toHaveAccessibleDescription(drawerSubtitle(allChannels, "2025-08-01", "2025-08-31", anchor, labels.periods.presets.yoy));
+  await expect(evidenceHeading(dialog)).toHaveText(`${metricDefinitions.net_revenue.label} · ${labels.evidence.sections.evidence}`);
+  await expect(dialog).toHaveAccessibleDescription(drawerSubtitle(allChannels, "2025-08-01", "2025-08-31", anchor, labels.shell.periods.presets.yoy));
   await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(preciseMoney("1550.00"));
   await expect(evidenceFilter(dialog)).toHaveCount(0);
   await page.keyboard.press("Escape");
@@ -125,8 +125,8 @@ test("(b) 兩年資料：去年同期可用時多兩條虛線、第三格提示�
   await expect(table.locator("thead th")).toHaveText(TREND_TABLE_HEADERS);
   const rows = table.locator("tbody tr");
   await expect(rows).toHaveCount(10);
-  const previousRows = rows.filter({ has: page.locator("td:first-child", { hasText: labels.periods.previous }) });
-  const currentRows = rows.filter({ has: page.locator("td:first-child", { hasText: labels.periods.current }) });
+  const previousRows = rows.filter({ has: page.locator("td:first-child", { hasText: labels.shell.periods.previous }) });
+  const currentRows = rows.filter({ has: page.locator("td:first-child", { hasText: labels.shell.periods.current }) });
   await expect(previousRows).toHaveCount(5);
   await expect(currentRows).toHaveCount(5);
   for (const row of await previousRows.all()) await expect(yoyCells(row).locator("span.trend-yoy-empty")).toHaveText([YOY_EMPTY, YOY_EMPTY]);
@@ -144,7 +144,7 @@ test("(b) 兩年資料：去年同期可用時多兩條虛線、第三格提示�
   await expect(dialog.locator(".evidence-body > .number")).toHaveText(formatAmountL1("350.00"));
   await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(preciseMoney("350.00"));
   await expect(evidenceFilterText(dialog)).toHaveText(filterPhrase(yoyScope));
-  await expect(evidenceFilterText(dialog)).toContainText(labels.periods.presets.yoy);
+  await expect(evidenceFilterText(dialog)).toContainText(labels.shell.periods.presets.yoy);
   await expect(filterClear(dialog)).toHaveText(yoyCopy.filter.clear);
   // 原始明細只有銷售分段：該週 7 天 × 1 列，日期都在 2025-08-01～08-07。
   await expect(sourceTabs(dialog)).toHaveText([sourceTabName("sales", 7)]);
@@ -171,7 +171,7 @@ test("(c) 示範資料下鑽：點本期第 2 週篩到該週、清除與套用�
   // 週：本期第 2 週（2026-07-20～07-26）的淨營收點。
   await pointHits(page, "revenueCurrent", "2026-07-20").click();
   await expect(dialog).toBeVisible();
-  await expect(evidenceHeading(dialog)).toHaveText(`${metricDefinitions.net_revenue.label} · ${labels.sections.evidence}`);
+  await expect(evidenceHeading(dialog)).toHaveText(`${metricDefinitions.net_revenue.label} · ${labels.evidence.sections.evidence}`);
   await expect(dialog).toHaveAccessibleDescription(drawerSubtitle(allChannels, "2026-07-20", "2026-07-26", DEMO_AS_OF));
   const weekPhrase = filterPhrase(weekScope(weekLabel("current", 2), "2026-07-20", "2026-07-26", DEMO_AS_OF));
   await expect(evidenceFilterText(dialog)).toHaveText(weekPhrase);
@@ -195,12 +195,12 @@ test("(c) 示範資料下鑽：點本期第 2 週篩到該週、清除與套用�
 
   // 通路長條：第一根本期粗條是官網（通路緊湊表第一列）→ 扣廣告後貢獻抽屜，篩選片語是通路別名，原始明細都是該通路。
   const channelMix = page.getByTestId("channel-mix");
-  const dtc = labels.demoChannelAlias.DTC, marketplace = labels.demoChannelAlias.MARKETPLACE;
+  const dtc = labels.data.demoChannelAlias.DTC, marketplace = labels.data.demoChannelAlias.MARKETPLACE;
   await expect(channelMix.locator("table.channel-kv tbody th").first()).toContainText(dtc);
   await channelMix.locator(`path.chart-bar-link:not([fill='${chartColors.previous}'])`).first().click();
   await expect(dialog).toBeVisible();
-  await expect(evidenceHeading(dialog)).toHaveText(`${metricDefinitions.contribution_after_marketing.label} · ${labels.sections.evidence}`);
-  await expect(dialog).toHaveAccessibleDescription(drawerSubtitle(dtc, "2026-07-13", "2026-08-23", DEMO_AS_OF, labels.periods.current));
+  await expect(evidenceHeading(dialog)).toHaveText(`${metricDefinitions.contribution_after_marketing.label} · ${labels.evidence.sections.evidence}`);
+  await expect(dialog).toHaveAccessibleDescription(drawerSubtitle(dtc, "2026-07-13", "2026-08-23", DEMO_AS_OF, labels.shell.periods.current));
   await expect(evidenceFilterText(dialog)).toHaveText(filterPhrase(dtc));
   // 官網本期 42 天：銷售 20 商品 × 42 天＝840 列、通路費用 42 列、廣告 42 列。
   await expect(sourceTabs(dialog)).toHaveText([sourceTabName("sales", 840), sourceTabName("costs", 42), sourceTabName("ads", 42)]);

@@ -79,7 +79,7 @@ describe("bridgeWaterfall：貢獻變化拆解（C17）", () => {
       expect(result.balanced).toBe(true);
       expect(result.difference).toBe("0.00");
       expect(result.balanceText).toBe(fill(bridgeCopy.balance.balanced, { difference: formatAmountL3("0.00") }));
-      expect(result.note).toBe(labels.ui.overview.bridgeNote);
+      expect(result.note).toBe(labels.overview.page.bridgeNote);
       expect(result.subtitle).toBe(fill(bridgeCopy.subtitle, { section: labels.overview.sections.bridge, previous: period(snap, "previous"), current: period(snap, "current") }));
     }
   });
@@ -236,7 +236,7 @@ describe("profitWaterfall：本期利潤結構（F2）", () => {
     for (const snap of [golden, demo]) for (const scope of scopesOf(snap)) {
       const item = profitWaterfall(snap, scope);
       const margin = metricsOf(snap, scope).contribution_margin.value;
-      expect(fill(labels.units.percent, { value: item.perHundred }), `${snap.report.dataset_id} ${scope}`).toBe(asciiMinus(formatRateL1(margin)));
+      expect(fill(labels.format.units.percent, { value: item.perHundred }), `${snap.report.dataset_id} ${scope}`).toBe(asciiMinus(formatRateL1(margin)));
       const negative = dec(item.perHundred).isNegative();
       expect(item.title).toBe(fill(negative ? profitCopy.title.negative : profitCopy.title.positive, { n: dec(item.perHundred).abs().toFixed(1) }));
     }
@@ -250,9 +250,9 @@ describe("profitWaterfall：本期利潤結構（F2）", () => {
     const anchor = demo.data_as_of;
     const span = formatPeriodL1(demo.report.current.period.start, demo.report.current.period.end, { days: false, anchor });
     const alias = demoAlias(demo.report.dataset_id);
-    expect(profitWaterfall(demo, "all").subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: span, scope: labels.sections.total }));
+    expect(profitWaterfall(demo, "all").subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: span, scope: labels.overview.sections.total }));
     expect(profitWaterfall(demo, "all", { allChannels: ["DTC", "MARKETPLACE"] }).subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: span, scope: labels.shell.periodBar.filter.allChannels }));
-    expect(profitWaterfall(demo, "all", { allChannels: ["DTC", "MARKETPLACE", "LINE"] }).scopeLabel).toBe(labels.sections.total);
+    expect(profitWaterfall(demo, "all", { allChannels: ["DTC", "MARKETPLACE", "LINE"] }).scopeLabel).toBe(labels.overview.sections.total);
     const channel = profitWaterfall(demo, "MARKETPLACE");
     expect(channel.scopeLabel).toBe(channelLabel("MARKETPLACE", alias));
     expect(channel.subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: span, scope: channelLabel("MARKETPLACE", alias) }));

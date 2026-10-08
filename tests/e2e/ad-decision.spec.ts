@@ -14,17 +14,17 @@ import { adCopy, adDecisionBadge, adDecisionCsvHeader, adDecisionMarkdownLine, a
 // 示範資料（fixtures/demo）：載入後總覽 KPI 本期扣廣告後貢獻 1,269,792.73（L1 顯示）；健檢第一列「加入待辦」帶入它的引用數字。
 // 長流程（載入 → 健檢 → 待辦 → 三種決策匯出 → 備份 → 清空 → 還原 → 再匯出）；比照 action-workspace.spec 放寬單一案例的時間上限，斷言不變。
 test.describe.configure({ timeout: 90_000 });
-const ws = labels.ui.workspaceStorage;
+const ws = labels.storage.workspace;
 const asOf = (id: 'demo' | 'golden') => (JSON.parse(readFileSync(resolve('fixtures', id, 'manifest.json'), 'utf8')) as { data_as_of: string }).data_as_of;
-const demoReady = fill(labels.status.ready, { date: asOf('demo') });
-const goldenReady = fill(labels.status.ready, { date: asOf('golden') });
+const demoReady = fill(labels.shell.status.ready, { date: asOf('demo') });
+const goldenReady = fill(labels.shell.status.ready, { date: asOf('golden') });
 const status = (page: Page) => page.getByTestId('workspace-status');
 const savePrompt = (page: Page) => page.getByTestId('local-save-prompt');
 
 /** 頁首「載入示範資料」→ KPI 帶出現示範資料的扣廣告後貢獻 → 首次保存提示按「先不要」（本檔不測保存）。 */
 async function loadDemo(page: Page) {
   await page.goto('/');
-  await clickReplacing(page, page.getByRole('button', { name: labels.buttons.loadDemo, exact: true }));
+  await clickReplacing(page, page.getByRole('button', { name: labels.shell.buttons.loadDemo, exact: true }));
   await expect(status(page)).toContainText(demoReady);
   await expect(page.getByTestId('kpi-contribution_after_marketing')).toContainText(formatAmountL1('1269792.73'));
   await expect(savePrompt(page)).toBeVisible();
@@ -35,8 +35,8 @@ async function loadDemo(page: Page) {
 async function loadGolden(page: Page) {
   await page.goto('/');
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption('golden');
-  await clickReplacing(page, page.getByRole('button', { name: labels.ui.dashboard.validation.loadButton, exact: true }));
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption('golden');
+  await clickReplacing(page, page.getByRole('button', { name: labels.shell.devValidation.validation.loadButton, exact: true }));
   await expect(status(page)).toContainText(goldenReady);
   await expect(savePrompt(page)).toBeVisible();
   await dismissSavePrompt(page);
@@ -47,12 +47,12 @@ async function addFromDiagnosis(page: Page) {
   await navigateTo(page, 'diagnosis');
   const row = page.getByTestId('diagnosis-list').locator(':scope > li > details.diagnosis-row').first();
   await expect(row).toHaveAttribute('open', '');
-  await row.getByRole('button', { name: labels.buttons.addToActions, exact: true }).click();
+  await row.getByRole('button', { name: labels.actions.buttons.addToActions, exact: true }).click();
   await expect(sidebarNav(page, 'actions')).toHaveAttribute('aria-current', 'page');
   await expect(page.getByTestId('actions-view-board')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('board-column-not_started').getByTestId('board-card-1')).toBeVisible();
 }
-/** 待辦頁頁首「匯出本頁」的決策 Markdown／CSV／JSON（按鈕名稱仍是 labels.downloads.decision*）。 */
+/** 待辦頁頁首「匯出本頁」的決策 Markdown／CSV／JSON（按鈕名稱仍是 labels.exports.downloads.decision*）。 */
 async function downloadDecision(page: Page, format: DecisionFormat) {
   const button = await decisionExportButton(page, format);
   const [file] = await Promise.all([page.waitForEvent('download'), button.click()]);
@@ -61,7 +61,7 @@ async function downloadDecision(page: Page, format: DecisionFormat) {
 /** 頂欄儲存選單「下載備份檔」（手機先展開頂欄「更多」）；下載完收起選單。 */
 async function downloadBackup(page: Page) {
   const storage = await openStorage(page);
-  const [file] = await Promise.all([page.waitForEvent('download'), storage.getByRole('button', { name: labels.buttons.downloadBackup, exact: true }).click()]);
+  const [file] = await Promise.all([page.waitForEvent('download'), storage.getByRole('button', { name: labels.storage.buttons.downloadBackup, exact: true }).click()]);
   expect(file.suggestedFilename()).toBe('profitlens-workspace.json');
   const text = await readFile((await file.path())!, 'utf8');
   await closeStorage(page);
@@ -150,7 +150,7 @@ test('V3-9a F13 廣告決策：抽屜選「加碼」→ 看板與清單徽章、
 
   // 清空 → 讀回剛下載的 v5 備份：標籤還在，而且不出現「這版改了什麼」（v5 是 v3 自己寫的備份）。
   await clickReplacing(page, await clearButton(page));
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await expect(page.getByTestId('action-1')).toHaveCount(0);
   await restoreBackup(page, Buffer.from(backupText, 'utf8'));
   await expect(whatsNew(page)).toHaveCount(0);
@@ -202,8 +202,8 @@ test('V3-9a F13 廣告決策 select 的鍵盤：Tab 依序到達、改值後焦�
   expect(at, 'Tab 走得到廣告決策 select').toBeGreaterThan(0);
   expect(trail.filter(step => step.testid === 'action-ad-decision')).toHaveLength(1);
   expect(trail[at]).toMatchObject({ tag: 'SELECT', label: adCopy.field });
-  expect(trail[at - 1]).toMatchObject({ tag: 'SELECT', label: labels.actions.status });
-  expect(trail[at + 1]).toMatchObject({ tag: 'TEXTAREA', label: labels.actions.progress });
+  expect(trail[at - 1]).toMatchObject({ tag: 'SELECT', label: labels.actions.form.status });
+  expect(trail[at + 1]).toMatchObject({ tag: 'TEXTAREA', label: labels.actions.form.progress });
   // focus trap：最後一個控制按 Tab 回到第一個；第一個按 Shift+Tab 回到最後一個。
   await expect(last).toBeFocused();
   await page.keyboard.press('Tab'); await expect(first).toBeFocused();
@@ -218,7 +218,7 @@ test('V3-9a F13 廣告決策 select 的鍵盤：Tab 依序到達、改值後焦�
   await expect(select).toBeFocused();
   await expect(boardBadge(page, 1)).toHaveText(adDecisionBadge('adjust'));
   await page.keyboard.press('Tab');
-  await expect(drawer.getByLabel(labels.actions.progress, { exact: true })).toBeFocused();
+  await expect(drawer.getByLabel(labels.actions.form.progress, { exact: true })).toBeFocused();
   // Esc 關閉抽屜，焦點回到開啟它的「編輯」；徽章留在卡片上。
   await page.keyboard.press('Escape');
   await expect(actionDrawer(page)).toHaveCount(0);

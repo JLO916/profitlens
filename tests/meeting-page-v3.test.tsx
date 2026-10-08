@@ -24,7 +24,7 @@ import { fill, labels } from "@/i18n";
  * golden fixture 的手算值：淨營收 2,250.00 → 2,470.00（+220.00）、扣廣告後貢獻 570.00 → 255.00（−315.00）；
  * DTC 270.00（差額 −130.00）、MARKETPLACE −15.00（差額 −185.00）；DTC 方案 p（物流費 −10%）試算後 284.00（+14.00）。
  */
-const pageV3 = labels.meeting.pageV3, page = labels.meetingPage, record = labels.meetingRecord, copy = labels.ui.reviewWorkbench, summaryCopy = labels.ui.managerSummary;
+const pageV3 = labels.meeting.pageV3, page = labels.meeting.page, record = labels.meeting.record, copy = labels.meeting.review, summaryCopy = labels.meeting.managerSummary;
 const NOW = "2026-10-03T06:00:00.000Z";
 const inputs = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
 const noop = () => undefined;
@@ -101,8 +101,8 @@ describe("V3-7 §7.6 會議紀錄頁：不再有第二套 KPI 大卡，議程是
     expect(golden.current.net_revenue).toBe("2470.00");
     expect(golden.current.contribution_after_marketing).toBe("255.00");
     expect(cells.map(row => [row[0], row[1], row[3]])).toEqual([
-      [labels.metrics.net_revenue.label, formatAmountL1("2470.00"), `${labels.periods.previous} ${formatAmountL1("2250.00")}`],
-      [labels.metrics.contribution_after_marketing.label, formatAmountL1("255.00"), `${labels.periods.previous} ${formatAmountL1("570.00")}`],
+      [labels.metrics.net_revenue.headline, formatAmountL1("2470.00"), `${labels.shell.periods.previous} ${formatAmountL1("2250.00")}`],
+      [labels.metrics.contribution_after_marketing.headline, formatAmountL1("255.00"), `${labels.shell.periods.previous} ${formatAmountL1("570.00")}`],
     ]);
     // 差額行沿用 headlineChangeText（方向詞＋萬＋成長率）；數字都是 number-link，可開「計算與來源」。
     expect(cells[1][2]).toContain(formatAmountL1("315.00"));
@@ -154,7 +154,7 @@ describe("V3-7 §7.6 第 1 點：頁首動作列", () => {
     const html = render(props(state, { summaryContext }));
     const head = block(html, "review-workbench");
     expect(head).toMatch(/^<div class="meeting-head" data-testid="review-workbench">/);
-    const marks = ['data-testid="meeting-title"', 'value="十月例會"', 'type="date"', `aria-label="${labels.meeting.decision}"`, 'data-testid="meeting-finalize"', 'data-testid="meeting-copy-summary"', 'data-testid="export-page-meeting"'];
+    const marks = ['data-testid="meeting-title"', 'value="十月例會"', 'type="date"', `aria-label="${labels.meeting.form.decision}"`, 'data-testid="meeting-finalize"', 'data-testid="meeting-copy-summary"', 'data-testid="export-page-meeting"'];
     const positions = marks.map(mark => head.indexOf(mark));
     expect(positions.every(position => position > -1), marks.join()).toBe(true);
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
@@ -202,7 +202,7 @@ describe("V3-7 §7.6 第 3 點：固定範圍與差異橫幅", () => {
     expect(banner.startsWith('<div class="ui-banner meeting-banner" data-testid="review-view-difference">')).toBe(true);
     expect(text(banner)).toMatch(new RegExp(`^${pageV3.viewDifferenceBanner}${pageV3.viewDifferenceToggle}`));
     expect(openTag(banner, 'class="topbar-menu auto-close meeting-banner-detail"')).not.toMatch(/\sopen=""/);
-    expect(text(element(html, 'class="meeting-technical"'))).toBe(`${labels.sections.technicalDetails}${copy.refreshHint}`);
+    expect(text(element(html, 'class="meeting-technical"'))).toBe(`${labels.evidence.sections.technicalDetails}${copy.refreshHint}`);
     expect(render(props(state))).not.toContain("review-view-difference");
   });
 });
@@ -222,11 +222,11 @@ describe("V3-7 §7.6 第 4 點：議程 2、3、5 的精簡呈現", () => {
       expect(head).toContain('class="ui-lozenge" data-tone="unfavorable"');
       expect(text(head)).toContain(formatSignedDelta(impact, "L1"));
       const body = row.slice(row.indexOf("</summary>"));
-      for (const label of [labels.sections.cause, labels.sections.nextStep, labels.overview.alerts.limitation]) expect(text(body)).toContain(label);
-      expect(body).toContain(`>${labels.buttons.viewEvidence}</button>`);
-      expect(body).toContain(`>${labels.buttons.addToActions}</button>`);
+      for (const label of [labels.diagnosis.sections.cause, labels.diagnosis.sections.nextStep, labels.overview.alerts.limitation]) expect(text(body)).toContain(label);
+      expect(body).toContain(`>${labels.evidence.buttons.viewEvidence}</button>`);
+      expect(body).toContain(`>${labels.actions.buttons.addToActions}</button>`);
     }
-    expect(text(two)).toContain(fill(labels.notes.omittedGroups, { n: summary.omitted_group_count }));
+    expect(text(two)).toContain(fill(labels.overview.notes.omittedGroups, { n: summary.omitted_group_count }));
   });
 
   it("會議門檻與總覽門檻互不影響：會議稿的 importance_threshold 只改會議議程 2，總覽三件事（TopThree）仍用自己的 state", async () => {
@@ -236,7 +236,7 @@ describe("V3-7 §7.6 第 4 點：議程 2、3、5 的精簡呈現", () => {
     const html = render(props(state, { review }));
     const two = block(html, "meeting-agenda-2");
     expect(two).not.toContain("manager-priority-");
-    expect(text(two)).toContain(labels.notes.noPriorities);
+    expect(text(two)).toContain(labels.overview.notes.noPriorities);
     // 門檻表單在收合的「調整門檻」裡，值是會議稿自己的門檻。
     const threshold = element(two, 'class="meeting-threshold"');
     expect(openTag(two, 'class="meeting-threshold"')).toBe('<details class="meeting-threshold">');
@@ -257,13 +257,13 @@ describe("V3-7 §7.6 第 4 點：議程 2、3、5 的精簡呈現", () => {
     const state = await setup();
     const three = block(render(props(state)), "meeting-agenda-3");
     const table = element(three, 'class="ui-table meeting-channel-table"');
-    expect(text(element(table, "<thead>"))).toBe([summaryCopy.channelColumn, fill(labels.units.yuanColumn, { label: labels.periods.current }), fill(labels.units.yuanColumn, { label: summaryCopy.changeColumn })].join(""));
+    expect(text(element(table, "<thead>"))).toBe([summaryCopy.channelColumn, fill(labels.format.units.yuanColumn, { label: labels.shell.periods.current }), fill(labels.format.units.yuanColumn, { label: summaryCopy.changeColumn })].join(""));
     const rows = [...table.matchAll(/<tr><th scope="row">([^<]+)<\/th><td class="num">([\s\S]*?)<\/td><td class="num">([\s\S]*?)<\/td><\/tr>/g)].map(match => match.slice(1).map(text));
     expect(rows).toEqual([["DTC", formatAmountL2("270.00"), formatSignedDelta("-130.00", "L2")], ["MARKETPLACE", formatAmountL2("-15.00"), formatSignedDelta("-185.00", "L2")]]);
     expect(table.match(/class="number-link/g)).toHaveLength(4);
     const wide = element(three, 'class="meeting-wide-table"');
     expect(wide).toMatch(new RegExp(`^<details class="meeting-wide-table"><summary>${pageV3.fullChannelTable}</summary>`));
-    expect(wide).toContain(`role="region" aria-label="${labels.sections.channelTableAria}"`);
+    expect(wide).toContain(`role="region" aria-label="${labels.overview.sections.channelTableAria}"`);
   });
 
   it("選入方案：每通路一列；已選入的列有試算後扣廣告後貢獻與差額，假設收合；過期方案有 warning 狀態標籤", async () => {
@@ -289,7 +289,7 @@ describe("V3-7 §7.6 第 5–7 點：備註、比較收合、歷史在最底", (
     expect(openTag(html, 'data-testid="meeting-compare"')).toBe('<details class="meeting-compare" data-testid="meeting-compare">');
     const compare = block(html, "meeting-compare");
     for (const id of ["meeting-compare-same_scope", "meeting-compare-note", "meeting-compare-kpis"]) expect(compare).toContain(`data-testid="${id}"`);
-    expect(text(element(compare, "<summary"))).toBe(labels.sections.meetingCompare);
+    expect(text(element(compare, "<summary"))).toBe(labels.meeting.sections.meetingCompare);
     const order = ['data-testid="meeting-agenda"', 'class="meeting-notes-block"', 'data-testid="meeting-compare"', 'data-testid="meeting-history"'].map(mark => html.indexOf(mark));
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(html.lastIndexOf("</section>", html.lastIndexOf("</section>") - 1)).toBeGreaterThan(html.indexOf('data-testid="meeting-history"'));
@@ -328,7 +328,7 @@ describe("V3-7 §7.6 第 2 點、D-V3-22：已結束會議的結束標示與 v2 
     const afterSummary = item.slice(item.indexOf("</summary>") + "</summary>".length);
     expect(afterSummary.startsWith(`<p class="meeting-snapshot-note" data-testid="meeting-snapshot-note">${note}</p><p class="meeting-snapshot-note" data-testid="meeting-v2-note">${pageV3.v2Note}</p>`)).toBe(true);
     expect(text(element(item, "<summary>"))).toBe(text(element(v3, "<summary>")));
-    expect(text(item)).toContain(fill(page.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.label, previous: formatAmountL1("570.00"), current: formatAmountL1("255.00"), change: formatSignedDelta("-315.00", "L1") }));
+    expect(text(item)).toContain(fill(page.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.headline, previous: formatAmountL1("570.00"), current: formatAmountL1("255.00"), change: formatSignedDelta("-315.00", "L1") }));
     // 主層不出現版本字串（metric_version、schema）。
     expect(text(item)).not.toMatch(/contribution-v1|meeting-v1|copy_version/);
   });

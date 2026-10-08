@@ -49,7 +49,7 @@ function render(options: { periodOpen?: boolean; withTargets?: boolean; snapshot
   const review = createReviewSession(golden, "e", "rev-structure");
   return renderToStaticMarkup(createElement(Overview, {
     snapshot, onEvidence: noop, onCreateAction: noop, periodOpen: options.periodOpen ?? false, onPeriodToggle: noop, targets: options.withTargets ? targets : null, events: null, allChannels: golden.dataset.manifest.channels,
-    onBasis: noop, onNavigate: noop, datasetName: labels.ui.dashboard.datasets.golden, missingItems: options.missingItems ?? 0, actionsSummary,
+    onBasis: noop, onNavigate: noop, datasetName: labels.shell.devValidation.datasets.golden, missingItems: options.missingItems ?? 0, actionsSummary,
     meetingEntry: createElement(MeetingEntry, { review, history: [], datasetHash: snapshot.dataset_hash, onOpen: noop }),
   }));
 }
@@ -119,7 +119,7 @@ describe("V3-4a 本期一句話（區塊 2）", () => {
   });
 
   it("copyWeeklySummary：寫入 buildWeeklySummary 的純文字版（資料集名、資料待補項數、待辦概況照傳）；失敗時回傳全文給對話框", async () => {
-    const input = { snapshot: golden.snapshot, datasetName: labels.ui.dashboard.datasets.golden, missingItems: 0, actions: actionsSummary };
+    const input = { snapshot: golden.snapshot, datasetName: labels.shell.devValidation.datasets.golden, missingItems: 0, actions: actionsSummary };
     const expected = buildWeeklySummary(input).text;
     const writeText = vi.fn(async () => undefined);
     expect(await copyWeeklySummary(input, { writeText })).toEqual({ copied: true, text: expected });
@@ -133,7 +133,7 @@ describe("V3-4a KPI 帶（C1）", () => {
     const html = render();
     const section = element(html, 'aria-labelledby="kpi-title"')!;
     expect(section).toMatch(/^<section class="kpi-section" aria-labelledby="kpi-title">/);
-    expect(section).toContain(`<div class="kpi-head"><h2 id="kpi-title" class="sr-only">${labels.overview.sections.kpis}</h2><span class="unit-note">${labels.ui.overview.kpiHint}</span></div>`);
+    expect(section).toContain(`<div class="kpi-head"><h2 id="kpi-title" class="sr-only">${labels.overview.sections.kpis}</h2><span class="unit-note">${labels.overview.page.kpiHint}</span></div>`);
     const kpiBand = byTestId(html, "kpi-band");
     const cells = [...kpiBand.matchAll(/<div class="kpi(?: [^"]*)?" data-testid="kpi-([a-z_]+)">/g)].map(match => match[1]);
     expect(cells).toEqual([...KPI_BAND_METRICS]);
@@ -153,7 +153,7 @@ describe("V3-4a KPI 帶（C1）", () => {
       const valueAria = fill(band.valueAria, { metric: label, value: shown });
       expect(valueAria, name).toContain(shown);
       expect(cell, name).toContain(`<div class="kpi-value">${link(valueAria, shown)}</div>`);
-      expect(cell, name).toContain(`<p class="kpi-prev">${labels.periods.previous} ${link(fill(band.previousAria, { metric: label, value: previousShown }), previousShown)}</p>`);
+      expect(cell, name).toContain(`<p class="kpi-prev">${labels.shell.periods.previous} ${link(fill(band.previousAria, { metric: label, value: previousShown }), previousShown)}</p>`);
       // 顏色只有不利上色（toneClass(deltaTone(...))）。
       const change = kpiDelta(name, before, current);
       expect(cell, name).toContain(`<div class="kpi-delta ${toneClass(deltaTone(name, change.delta, "L1"))}">`);
@@ -174,7 +174,7 @@ describe("V3-4a KPI 帶（C1）", () => {
       expect(textOf(deltaLine), name).toContain(`${band.vsPrevious}${expected}`);
       const growth = formatGrowth(current.value, before.value, "L1");
       if (growth === null) expect(deltaLine, name).not.toContain('class="pct"');
-      else expect(deltaLine, name).toContain(`<span class="pct">${fill(labels.ui.overview.growthInline, { value: growth })}</span>`);
+      else expect(deltaLine, name).toContain(`<span class="pct">${fill(labels.overview.page.growthInline, { value: growth })}</span>`);
     }
     // golden 本期扣廣告後貢獻 255.00、差額 −315.00：少賺＋不利色。
     const key = element(byTestId(html, "kpi-contribution_after_marketing"), 'class="kpi-delta')!;

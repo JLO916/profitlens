@@ -93,7 +93,7 @@ export function waterfallTickLabels(ticks: readonly number[], step: number): str
   return ticks.map(value => {
     if (value === 0) return "0";
     if (!wan) return formatAmountL1(value.toFixed(2));
-    return `${value < 0 ? MINUS : ""}${fill(labels.units.wan, { value: grouped((Math.abs(value) / TEN_THOUSAND).toFixed(digits)) })}`;
+    return `${value < 0 ? MINUS : ""}${fill(labels.format.units.wan, { value: grouped((Math.abs(value) / TEN_THOUSAND).toFixed(digits)) })}`;
   });
 }
 

@@ -45,16 +45,16 @@ function scannedScenarioCodes(): string[] {
   return [...new Set(codes)].sort();
 }
 
-describe("ValidationIssue 原因碼都有 labels.importErrors 文案", () => {
+describe("ValidationIssue 原因碼都有 labels.errors.import 文案", () => {
   it("application 的原因碼清單涵蓋所有產生位置（沒有漏列，也沒有多列）", () => {
     expect([...ALL_IMPORT_ISSUE_REASON_CODES].sort()).toEqual(scannedIssueCodes());
   });
-  it.each(ALL_IMPORT_ISSUE_REASON_CODES)("%s 有 labels.importErrors 樣板", code => {
-    expect(issueTemplate(code), `labels.importErrors.${code} 缺文案`).not.toBeNull();
+  it.each(ALL_IMPORT_ISSUE_REASON_CODES)("%s 有 labels.errors.import 樣板", code => {
+    expect(issueTemplate(code), `labels.errors.import.${code} 缺文案`).not.toBeNull();
   });
 });
 
-describe("試算原因碼都有 labels.ui.scenarioSensitivity.reasons 文案", () => {
+describe("試算原因碼都有 labels.scenarios.sensitivity.reasons 文案", () => {
   it("試算原因碼清單涵蓋 domain 的每一個 code", () => {
     expect([...SCENARIO_REASON_CODES].sort()).toEqual(scannedScenarioCodes());
     for (const [code, target] of Object.entries(SCENARIO_REASON_ALIASES)) {
@@ -64,7 +64,7 @@ describe("試算原因碼都有 labels.ui.scenarioSensitivity.reasons 文案", (
   });
   it("沒有缺文案的試算原因碼", () => {
     const missing = SCENARIO_REASON_CODES.filter(code => scenarioReasonLabel(code) === null);
-    expect(missing, `labels.ui.scenarioSensitivity.reasons 缺：${missing.join("、")}`).toEqual([]);
+    expect(missing, `labels.scenarios.sensitivity.reasons 缺：${missing.join("、")}`).toEqual([]);
   });
 });
 
@@ -74,10 +74,10 @@ describe("試算頁與匯出不退回 domain 訊息", () => {
 
   it("快照過期與三格未填：用 labels 的白話句", () => {
     const stale = analyzeScenarioSensitivity(baseline(), zero, ["0", "0", "0"], { stale: true });
-    expect(stale.reasons.map(scenarioReasonText)).toEqual([labels.ui.scenarioSensitivity.reasons.STALE_SCENARIO]);
+    expect(stale.reasons.map(scenarioReasonText)).toEqual([labels.scenarios.sensitivity.reasons.STALE_SCENARIO]);
     const blank = analyzeScenarioSensitivity(baseline(), zero, ["", "0", "0"]);
-    expect(blank.sensitivity.reasons.map(scenarioReasonText)).toEqual([labels.ui.scenarioSensitivity.reasons.SENSITIVITY_VOLUME_REQUIRED]);
-    expect(analyzeScenarioSensitivity(baseline(), zero, ["0", "0"]).sensitivity.reasons.map(scenarioReasonText)).toEqual([labels.ui.scenarioSensitivity.reasons.SENSITIVITY_VOLUME_REQUIRED]);
+    expect(blank.sensitivity.reasons.map(scenarioReasonText)).toEqual([labels.scenarios.sensitivity.reasons.SENSITIVITY_VOLUME_REQUIRED]);
+    expect(analyzeScenarioSensitivity(baseline(), zero, ["0", "0"]).sensitivity.reasons.map(scenarioReasonText)).toEqual([labels.scenarios.sensitivity.reasons.SENSITIVITY_VOLUME_REQUIRED]);
   });
 
   it("逐列原因改用畫面上的 A／B／C 編號，且不含 domain 的 message", () => {
@@ -85,8 +85,8 @@ describe("試算頁與匯出不退回 domain 訊息", () => {
     const reasons = result.sensitivity.reasons;
     expect(reasons.map(reason => reason.code)).toEqual(["INVALID_NUMBER", "INPUT_OUT_OF_RANGE"]);
     const texts = reasons.map(scenarioReasonText);
-    expect(texts[0].startsWith(fill(labels.ui.scenarioSensitivity.rowLabel, { letter: "A" }))).toBe(true);
-    expect(texts[1].startsWith(fill(labels.ui.scenarioSensitivity.rowLabel, { letter: "C" }))).toBe(true);
+    expect(texts[0].startsWith(fill(labels.scenarios.sensitivity.rowLabel, { letter: "A" }))).toBe(true);
+    expect(texts[1].startsWith(fill(labels.scenarios.sensitivity.rowLabel, { letter: "C" }))).toBe(true);
     reasons.forEach((reason, index) => {
       expect(texts[index]).not.toContain(reason.message);
       expect(texts[index]).not.toContain(reason.message.replace(/^\S+ \d+：/u, ""));
@@ -96,7 +96,7 @@ describe("試算頁與匯出不退回 domain 訊息", () => {
   it("試算基準不能試算的原因也用 labels（試算頁的「這個範圍不能試算」清單）", () => {
     const unconfirmed = buildScenarioBaseline(analyzeDataset(validateDataset(fixture()).dataset!).current.channels.DTC, false);
     expect(unconfirmed.reasons.map(reason => reason.code)).toEqual(["BASELINE_COVERAGE_UNCONFIRMED"]);
-    expect(unconfirmed.reasons.map(scenarioReasonText)).toEqual([labels.ui.scenarioSensitivity.reasons.BASELINE_COVERAGE_UNCONFIRMED]);
+    expect(unconfirmed.reasons.map(scenarioReasonText)).toEqual([labels.scenarios.sensitivity.reasons.BASELINE_COVERAGE_UNCONFIRMED]);
     expect(scenarioReasonText(unconfirmed.reasons[0])).not.toContain(unconfirmed.reasons[0].message);
   });
 });
@@ -106,11 +106,11 @@ describe("選配檔（targets.csv／events.csv）的 CSV 讀取錯誤不顯示 l
   it.each([
     ["targets.csv", () => parseTargets({ name: "targets.csv", bytes: malformed }, ["DTC"]).issues],
     ["events.csv", () => parseEvents({ name: "events.csv", bytes: malformed }).issues],
-  ] as const)("%s 用 labels.importErrors 樣板帶入檔名", (file, parse) => {
+  ] as const)("%s 用 labels.errors.import 樣板帶入檔名", (file, parse) => {
     const [issue] = parse();
     const template = issueTemplate(issue.reason_code);
     expect(template, issue.reason_code).not.toBeNull();
-    expect(sideFileIssueMessage(file, issue)).toBe(fill(labels.importErrors[issue.reason_code], { file, line: issue.line ?? "—", field: issue.field }));
+    expect(sideFileIssueMessage(file, issue)).toBe(fill(labels.errors.import[issue.reason_code], { file, line: issue.line ?? "—", field: issue.field }));
     expect(sideFileIssueMessage(file, issue)).not.toContain(issue.message);
   });
   it("該檔自己的原因碼沿用 labels.targets.errors／labels.events.errors 產生的訊息", () => {

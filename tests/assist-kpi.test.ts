@@ -62,7 +62,7 @@ describe("R4 assist-kpi-v1 derives manager-facing helper numbers without touchin
     expect(zeroUnits.units_sold).toMatchObject({ status: "ok", value: "0", display: formatCount("0", "L1") });
     expect(zeroUnits.net_revenue_per_unit).toMatchObject({ status: "not_applicable", value: null, display: labels.assist.notApplicable, reason_codes: ["ZERO_UNITS"] });
     const missingUnits = Object.fromEntries(assistKpis({ ...report.current, units_sold: count(null, ["MISSING_UNITS_SOLD"]) }).map(kpi => [kpi.id, kpi]));
-    expect(missingUnits.units_sold).toMatchObject({ status: "missing", value: null, display: labels.status.missing, reason_codes: ["MISSING_UNITS_SOLD"] });
+    expect(missingUnits.units_sold).toMatchObject({ status: "missing", value: null, display: labels.shell.status.missing, reason_codes: ["MISSING_UNITS_SOLD"] });
     expect(missingUnits.net_revenue_per_unit).toMatchObject({ status: "missing", value: null, reason_codes: ["MISSING_UNITS_SOLD"] });
     expect(netRevenuePerUnit(metric(null, ["MISSING_COGS"]), count(5n))).toEqual({ value: null, reason_codes: ["MISSING_COGS"] });
     expect(netRevenuePerUnit(metric("100.00"), count(-1n))).toEqual({ value: null, reason_codes: ["ZERO_UNITS"] });
@@ -90,7 +90,7 @@ describe("R4 assist KPIs reach the analysis CSV and the manager summary Markdown
     expect(assist.find(row => row.period === "current" && row.metric === "net_revenue_per_unit")).toMatchObject({ value: "308.75", unit: "TWD/unit" });
     expect(assist.find(row => row.period === "previous" && row.metric === "net_revenue_per_unit")!.value).toBe("375.00");
     const markdown = exportManagerSummaryMarkdown(buildManagerSummary(snapshot));
-    expect(markdown).toContain(`## ${labels.sections.assistKpis}`);
+    expect(markdown).toContain(`## ${labels.overview.sections.assistKpis}`);
     expect(markdown).toContain(`| ${labels.assist.items.net_revenue_per_unit.label} | ${formatPerUnit("375.00", "L1")} | ${formatPerUnit("308.75", "L1")} |`);
     expect(markdown).toContain("assist_kpi_version：assist-kpi-v1");
   });

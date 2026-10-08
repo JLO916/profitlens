@@ -64,7 +64,7 @@ export function ImportWizard({ onCommit, onCancel, busy, localSaveConsented, ini
     } catch (error) {
       if (!mounted.current || sequence.current[role] !== ticket) return;
       const tooLarge = error instanceof Error && error.message === "FILE_TOO_LARGE";
-      const issue: ValidationIssue = { file: role, field: "$file", line: null, severity: "blocking", reason_code: tooLarge ? "FILE_TOO_LARGE" : "FILE_READ_FAILED", message: tooLarge ? labels.importErrors.FILE_TOO_LARGE : copy.readFailed };
+      const issue: ValidationIssue = { file: role, field: "$file", line: null, severity: "blocking", reason_code: tooLarge ? "FILE_TOO_LARGE" : "FILE_READ_FAILED", message: tooLarge ? labels.errors.import.FILE_TOO_LARGE : copy.readFailed };
       dispatch({ type: "fileFailed", role, issues: [issue] });
     }
   }

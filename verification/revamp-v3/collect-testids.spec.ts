@@ -9,7 +9,7 @@ import { acceptSavePrompt, dismissSavePrompt, openDetails, openDownloads, closeD
 // 來源為 ssr 的列由 tests/testid-baseline.test.ts 以 SSR 比對；cond 列（失敗、live AI 等）兩邊都不進入，見 txt 說明欄。
 const BASELINE = resolve("verification/revamp-v3/testids-v2.txt");
 const OUTPUT = resolve("verification/revamp-v3/collect-testids.json");
-const nav = (page: Page, id: keyof typeof labels.nav) => page.getByRole("button", { name: labels.nav[id].label, exact: true });
+const nav = (page: Page, id: keyof typeof labels.shell.nav) => page.getByRole("button", { name: labels.shell.nav[id].headline, exact: true });
 
 test("收集互動後才出現的 data-testid", async ({ page }) => {
   const seen = new Map<string, Set<string>>();
@@ -24,8 +24,8 @@ test("收集互動後才出現的 data-testid", async ({ page }) => {
   await openValidation(page);
   await collect("#validation 開發者驗證");
   // 從驗證頁載入示範資料（預設選項）；首次載入出現「存在這台電腦？」提示。
-  await page.getByTestId("validation-panel").getByRole("button", { name: labels.ui.dashboard.validation.loadButton }).click();
-  await expect(page.getByTestId("workspace-status")).toContainText(labels.status.ready);
+  await page.getByTestId("validation-panel").getByRole("button", { name: labels.shell.devValidation.validation.loadButton }).click();
+  await expect(page.getByTestId("workspace-status")).toContainText(labels.shell.status.ready);
   await expect(page.getByTestId("local-save-prompt")).toBeVisible();
   await collect("載入示範資料＋首次保存提示");
   await acceptSavePrompt(page);
@@ -35,7 +35,7 @@ test("收集互動後才出現的 data-testid", async ({ page }) => {
   await openDownloads(page);
   await collect("下載選單（有資料）");
   await closeDownloads(page);
-  for (const id of ["diagnosis", "products", "data"] as const) { await nav(page, id).click(); await collect(`${labels.nav[id].label}頁`); }
+  for (const id of ["diagnosis", "products", "data"] as const) { await nav(page, id).click(); await collect(`${labels.shell.nav[id].headline}頁`); }
 
   // 試算：選範本（顯示用途說明）、數量改用絕對值並輸入非整數（格式錯誤提示）。
   await nav(page, "scenarios").click();
@@ -43,14 +43,14 @@ test("收集互動後才出現的 data-testid", async ({ page }) => {
   const card = page.getByTestId("scenario-1");
   await card.getByTestId("scenario-preset").selectOption({ index: 1 });
   await expect(card.getByTestId("scenario-preset-purpose")).toBeVisible();
-  await card.getByTestId("scenario-mode-volume_change_pct").getByRole("button", { name: labels.scenario.modeAbsolute, exact: true }).click();
-  await card.getByLabel(labels.scenario.volume.label, { exact: true }).fill("6.5");
+  await card.getByTestId("scenario-mode-volume_change_pct").getByRole("button", { name: labels.scenarios.inputs.modeAbsolute, exact: true }).click();
+  await card.getByLabel(labels.scenarios.inputs.volume.label, { exact: true }).fill("6.5");
   await expect(card.getByTestId("scenario-absolute-error-volume_change_pct")).toBeVisible();
   await collect("試算：範本＋絕對值格式錯誤");
 
   // 待辦：新增一張卡並移到「進行中」（看板通知）。
   await nav(page, "actions").click();
-  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+  await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
   await page.getByTestId("board-card-1-move-in_progress").click();
   await expect(page.getByTestId("action-notice")).toBeVisible();
   await collect("待辦：新增並移動卡片");
@@ -69,15 +69,15 @@ test("收集互動後才出現的 data-testid", async ({ page }) => {
 
   // 重新整理：這台電腦已有副本 → 首次保存提示附「會覆蓋」提醒；勾選同意 → 自動保存待確認覆寫；讀取本機副本預覽 → 儲存通知。
   await page.goto("/");
-  await page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }).first().click();
+  await page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }).first().click();
   await expect(page.getByTestId("local-save-replace-warning")).toBeVisible();
   await collect("重新整理後載入：提示附覆蓋提醒");
   await dismissSavePrompt(page);
   const storage = await openDetails(page.getByTestId("workspace-storage"));
-  await storage.getByRole("checkbox", { name: labels.ui.workspaceStorage.consent, exact: true }).check();
+  await storage.getByRole("checkbox", { name: labels.storage.workspace.consent, exact: true }).check();
   await expect(storage.getByTestId("autosave-replace-warning")).toBeVisible();
   await collect("儲存選單：同意後待確認覆寫");
-  await storage.getByRole("button", { name: labels.buttons.restorePreview, exact: true }).click();
+  await storage.getByRole("button", { name: labels.storage.buttons.restorePreview, exact: true }).click();
   await expect(storage.getByTestId("storage-notice")).toBeVisible();
   await collect("儲存選單：讀取本機副本預覽");
 

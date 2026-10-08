@@ -9,12 +9,12 @@ import { csvHeader } from "../src/application/copy";
 import { formatAmountL2, formatAmountL3, formatPeriodExport, formatSignedDelta, MINUS } from "../src/application/presentation";
 
 // R2：Markdown 標題與附錄分隔都走 labels，避免硬編碼中文。
-const copy = labels.ui.managerSummary;
-const TECH_APPENDIX = `## ${labels.sections.technicalDetails}`;
-const DRAFT_TITLE = `${labels.brand.name} ${copy.title}（${labels.meeting.decisions.draft}）`;
+const copy = labels.meeting.managerSummary;
+const TECH_APPENDIX = `## ${labels.evidence.sections.technicalDetails}`;
+const DRAFT_TITLE = `${labels.brand.name} ${copy.title}（${labels.meeting.form.decisions.draft}）`;
 const basisItem = (fragment: string): string => {
-  const item = labels.basis.items.find(row => row.includes(fragment));
-  if (!item) throw new Error(`labels.basis.items 缺少含「${fragment}」的口徑說明`);
+  const item = labels.glossary.basis.items.find(row => row.includes(fragment));
+  if (!item) throw new Error(`labels.glossary.basis.items 缺少含「${fragment}」的口徑說明`);
   return item;
 };
 
@@ -92,7 +92,7 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     const csv = exportChannelComparisonCsv(summary);
     const header = ["channel", "previous_net_revenue", "current_net_revenue", "net_revenue_change"].map(key => `"${csvHeader(key)}"`).join(",");
     expect(csv).toContain(header);
-    expect(csvHeader("previous_net_revenue")).toBe(`${labels.periods.previous}${labels.metrics.net_revenue.label} (previous_net_revenue)`);
+    expect(csvHeader("previous_net_revenue")).toBe(`${labels.shell.periods.previous}${labels.metrics.net_revenue.headline} (previous_net_revenue)`);
     expect(csv).toContain('"170.00","-15.00","-185.00"');
     expect(csv).toContain('"\'=HYPERLINK(');
     expect(csv).not.toContain('"\'-15.00"');
@@ -109,12 +109,12 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     const body = result.split(TECH_APPENDIX)[0];
     expect(body).toContain(DRAFT_TITLE);
     // V3-2b：主文 L2 整數元（U+2212、正的差額加「+」），單位寫一次；到分的值只在技術細節與 CSV。
-    expect(body).toContain(fill(copy.mdHeadlineRow, { metric: labels.metrics.net_revenue.label, previous: formatAmountL2("2250.00"), current: formatAmountL2("2470.00"), change: formatSignedDelta("220.00", "L2") }));
-    expect(body).toContain(fill(copy.mdHeadlineRow, { metric: labels.metrics.contribution_after_marketing.label, previous: formatAmountL2("570.00"), current: formatAmountL2("255.00"), change: formatSignedDelta("-315.00", "L2") }));
+    expect(body).toContain(fill(copy.mdHeadlineRow, { metric: labels.metrics.net_revenue.headline, previous: formatAmountL2("2250.00"), current: formatAmountL2("2470.00"), change: formatSignedDelta("220.00", "L2") }));
+    expect(body).toContain(fill(copy.mdHeadlineRow, { metric: labels.metrics.contribution_after_marketing.headline, previous: formatAmountL2("570.00"), current: formatAmountL2("255.00"), change: formatSignedDelta("-315.00", "L2") }));
     expect(formatSignedDelta("-315.00", "L2")).toBe(`${MINUS}315`);
-    expect(body).toContain(labels.ui.export.amountUnitNote);
-    expect(body).toContain(fill(copy.mdPeriod, { period: labels.periods.current, range: formatPeriodExport("2026-08-02", "2026-08-02") }));
-    expect(body).toContain(`| ${fill(labels.ui.export.moneyColumn, { label: labels.csvSuffix.change })} |`);
+    expect(body).toContain(labels.exports.common.amountUnitNote);
+    expect(body).toContain(fill(copy.mdPeriod, { period: labels.shell.periods.current, range: formatPeriodExport("2026-08-02", "2026-08-02") }));
+    expect(body).toContain(`| ${fill(labels.exports.common.moneyColumn, { label: labels.exports.csv.suffix.change })} |`);
     expect(body).toContain(`| ${formatAmountL2("170.00")} | ${formatAmountL2("-15.00")} | ${formatSignedDelta("-185.00", "L2")} |`);
     expect(body).not.toContain("-315");
     expect(body).not.toContain("315.00");
@@ -124,8 +124,8 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     expect(body).not.toContain("dataset_hash");
     expect(body).not.toContain('["fact"');
     expect(result).toContain(summary.dataset_hash);
-    // R2 §8：免責集中到「口徑說明」清單（labels.basis.items），舊句「各範圍不可相加」「非改善收益」改為以下兩條。
-    expect(result).toContain(`## ${labels.basis.title}`);
+    // R2 §8：免責集中到「口徑說明」清單（labels.glossary.basis.items），舊句「各範圍不可相加」「非改善收益」改為以下兩條。
+    expect(result).toContain(`## ${labels.glossary.basis.title}`);
     expect(result).toContain(basisItem("各通路的差額不能再相加"));
     expect(result).toContain(basisItem("不是可以省下的錢"));
   });
@@ -170,20 +170,20 @@ describe("PL-06/09 manager summary: fixed references and independent display pol
     expect(summary.priorities).toEqual([]);
     const [body, appendix] = exportManagerSummaryMarkdown(summary).split(TECH_APPENDIX);
     expect(body).not.toContain("fact_id");
-    expect(appendix).toContain(`${labels.metrics.net_revenue.label}：${formatAmountL3("2250.00")}`);
-    expect(appendix).toContain(`${labels.metrics.net_revenue.label}：${formatAmountL3("2470.00")}`);
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("570.00")}`);
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("255.00")}`);
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("170.00")}`);
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("-15.00")}`);
+    expect(appendix).toContain(`${labels.metrics.net_revenue.headline}：${formatAmountL3("2250.00")}`);
+    expect(appendix).toContain(`${labels.metrics.net_revenue.headline}：${formatAmountL3("2470.00")}`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.headline}：${formatAmountL3("570.00")}`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.headline}：${formatAmountL3("255.00")}`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.headline}：${formatAmountL3("170.00")}`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.headline}：${formatAmountL3("-15.00")}`);
     // V3-2b：技術細節是 L3（到分、千分位、U+2212）。
     expect(formatAmountL3("2250.00")).toBe("2,250.00");
-    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.label}：${MINUS}15.00`);
+    expect(appendix).toContain(`${labels.metrics.contribution_after_marketing.headline}：${MINUS}15.00`);
     expect(appendix).toContain("sales\\_daily.csv");
     expect(appendix).toContain("channel\\_costs\\_daily.csv");
     expect(appendix).toContain("ad\\_spend\\_daily.csv");
     // R2：前期→上期；差額公式句改由 labels 的技術細節備註提供。
-    expect(copy.techFactsNote).toContain(`差額＝${labels.periods.current} − ${labels.periods.previous}`);
+    expect(copy.techFactsNote).toContain(`差額＝${labels.shell.periods.current} − ${labels.shell.periods.previous}`);
     expect(appendix).toContain(copy.techFactsNote);
   });
 

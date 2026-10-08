@@ -42,7 +42,7 @@ import { readZip, zipText } from "./helpers/zip";
  */
 
 const variants = labels.exports.variantsV3;
-const sheetNames = labels.excelExport.sheets;
+const sheetNames = labels.exports.excel.sheets;
 const STANDARD_SHEETS = [sheetNames.summary, sheetNames.channels, sheetNames.bridge, sheetNames.products, sheetNames.actions, sheetNames.basis, variants.pnlSheet];
 const sha = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
 const cellValue = (cell: ExcelCell) => cell.kind === "null" ? null : cell.value;
@@ -131,18 +131,18 @@ describe("Excel：三個變體的工作表與列", () => {
     expect(workbook(golden, undefined)).toEqual(standard);
     const normalized = normalizeWorkbook(standard);
     expect(normalized.sheets.map(sheet => sheet.name)).toEqual(STANDARD_SHEETS.slice(0, -1));
-    expect(sheetNamed(normalized, sheetNames.actions).header).toEqual(Object.values(labels.excelExport.columns.actions).map((label, index) => excelHeader(label, sheetNamed(normalized, sheetNames.actions).formats![index])));
+    expect(sheetNamed(normalized, sheetNames.actions).header).toEqual(Object.values(labels.exports.excel.columns.actions).map((label, index) => excelHeader(label, sheetNamed(normalized, sheetNames.actions).formats![index])));
     // 摘要：版頭四列、資料範圍、兩個關鍵數字、其他常用指標、三件事、會議四列（含備註）。
     const summary = records(sheetNamed(standard, sheetNames.summary));
     expect(summary).toHaveLength(4 + 7 + 2 + 1 + 3 + 4);
-    expect(summary.some(row => row[labels.excelExport.columns.summary.detail] === MEETING.notes)).toBe(true);
+    expect(summary.some(row => row[labels.exports.excel.columns.summary.detail] === MEETING.notes)).toBe(true);
   });
 
   it("老闆一頁版：只有摘要與管理損益表；摘要＝版頭四列、本期一句話、四個關鍵數字、三件事（標題與影響金額）、決議一列", () => {
     const boss = workbook(golden, "boss");
     expect(boss.sheets.map(sheet => sheet.name)).toEqual([sheetNames.summary, variants.pnlSheet]);
-    const columns = labels.excelExport.columns.summary;
-    const s = labels.excelExport.summary;
+    const columns = labels.exports.excel.columns.summary;
+    const s = labels.exports.excel.summary;
     const sheet = sheetNamed(boss, sheetNames.summary);
     expect(sheet.header).toEqual(sheetNamed(workbook(golden, "standard"), sheetNames.summary).header);
     const rows = records(sheet);
@@ -153,12 +153,12 @@ describe("Excel：三個變體的工作表與列", () => {
     // 金額欄的表頭加「（元）」（excelHeader）。
     const money = (label: string) => excelHeader(label, "money_l2");
     expect(rows.slice(5, 9).map(row => [row[columns.item], row[money(columns.previous)], row[money(columns.current)], row[money(columns.change)]])).toEqual([
-      [labels.metrics.net_revenue.label, 2250, 2470, 220], [labels.metrics.gross_profit.label, 1200, 1145, -55],
-      [labels.metrics.contribution_before_marketing.label, 870, 705, -165], [labels.metrics.contribution_after_marketing.label, 570, 255, -315],
+      [labels.metrics.net_revenue.headline, 2250, 2470, 220], [labels.metrics.gross_profit.headline, 1200, 1145, -55],
+      [labels.metrics.contribution_before_marketing.headline, 870, 705, -165], [labels.metrics.contribution_after_marketing.headline, 570, 255, -315],
     ]);
     // 三件事只有標題與影響金額，沒有範圍與下一步。
     expect(rows.slice(9, 12).map(row => [row[columns.item], row[money(columns.impact)], row[columns.scope], row[columns.detail]])).toEqual(golden.summary.priorities.map((item, index) => [fill(s.priorityItem, { n: index + 1, headline: item.title }), Number(item.impact!.value), null, null]));
-    expect(rows[12]).toMatchObject({ [columns.item]: s.items.decision, [columns.detail]: labels.meeting.decisions.adopted });
+    expect(rows[12]).toMatchObject({ [columns.item]: s.items.decision, [columns.detail]: labels.meeting.form.decisions.adopted });
     // 不放資料範圍、其他常用指標（損益兩平 MER）、會議名稱與備註。
     const all = JSON.stringify(rows);
     for (const text of [s.sections.scope, labels.overview.sections.assistKpis, labels.assist.breakevenV3.label, MEETING.notes, MEETING.name]) expect(all, text).not.toContain(text);
@@ -169,19 +169,19 @@ describe("Excel：三個變體的工作表與列", () => {
   it("客戶報告版：版頭第 2 列是客戶行；會議不列備註；待辦拿掉狀態更新日與引用較早資料兩欄（廣告決策仍在最後）；指標定義不放技術細節", () => {
     const client = workbook(golden, "client");
     expect(client.sheets.map(sheet => sheet.name)).toEqual(STANDARD_SHEETS);
-    const columns = labels.excelExport.columns.summary;
+    const columns = labels.exports.excel.columns.summary;
     const summary = records(sheetNamed(client, sheetNames.summary));
     expect(summary.slice(0, 5).map(row => row[columns.detail])).toEqual(["店", fill(variants.clientLine, { client: "店", brand: labels.brand.name }), fill(labels.exports.headerV3.reportTitle, { metric: metricDefinitions.contribution_after_marketing.label }), expect.any(String), expect.any(String)]);
     expect(summary).toHaveLength(5 + 7 + 2 + 1 + 3 + 3);
     expect(JSON.stringify(summary)).not.toContain(MEETING.notes);
     const actionsSheet = sheetNamed(client, sheetNames.actions);
-    const actionColumns = labels.excelExport.columns.actions;
+    const actionColumns = labels.exports.excel.columns.actions;
     expect(actionsSheet.header).toEqual([...Object.entries(actionColumns).filter(([key]) => key !== "status_updated_at" && key !== "caution").map(([, label]) => label), labels.actions.adDecisionV3.csvColumn]);
     expect(actionsSheet.rows).toHaveLength(2);
     const basis = records(sheetNamed(client, sheetNames.basis));
-    expect(basis.some(row => row[labels.excelExport.columns.basis.section] === labels.excelExport.basis.sections.technical)).toBe(false);
+    expect(basis.some(row => row[labels.exports.excel.columns.basis.section] === labels.exports.excel.basis.sections.technical)).toBe(false);
     expect(JSON.stringify(basis)).not.toContain(golden.snapshot.dataset_hash);
-    expect(basis.filter(row => row[labels.excelExport.columns.basis.section] === labels.excelExport.basis.sections.basis)).toHaveLength(labels.basis.items.length + 1);
+    expect(basis.filter(row => row[labels.exports.excel.columns.basis.section] === labels.exports.excel.basis.sections.basis)).toHaveLength(labels.glossary.basis.items.length + 1);
     // 其餘工作表（通路、拆解、商品、管理損益表）與標準版逐格相同。
     const standard = workbook(golden, "standard");
     for (const name of [sheetNames.channels, sheetNames.bridge, sheetNames.products, variants.pnlSheet]) expect(sheetNamed(client, name), name).toEqual(sheetNamed(standard, name));
@@ -195,12 +195,12 @@ describe("Excel：三個變體的工作表與列", () => {
       for (const key of Object.keys(numbers).filter(key => key in standard)) expect(numbers[key], `${variant} ${key}`).toBe(standard[key]);
       if (variant === "client") expect(extra).toEqual([]);
       else {
-        expect(extra.sort()).toEqual([labels.metrics.gross_profit.label, labels.metrics.contribution_before_marketing.label].flatMap(metric => [labels.periods.previous, labels.periods.current, labels.excelExport.columns.summary.change].map(column => `${sheetNames.summary}|${labels.excelExport.summary.sections.keyDeltas}|${metric}|${excelHeader(column, "money_l2")}`)).sort());
+        expect(extra.sort()).toEqual([labels.metrics.gross_profit.headline, labels.metrics.contribution_before_marketing.headline].flatMap(metric => [labels.shell.periods.previous, labels.shell.periods.current, labels.exports.excel.columns.summary.change].map(column => `${sheetNames.summary}|${labels.exports.excel.summary.sections.keyDeltas}|${metric}|${excelHeader(column, "money_l2")}`)).sort());
         const csv = baseline.snapshot_csv as Record<string, { value: string }>;
         for (const metric of ["gross_profit", "contribution_before_marketing"] as const) {
-          const key = (column: string) => numbers[`${sheetNames.summary}|${labels.excelExport.summary.sections.keyDeltas}|${labels.metrics[metric].label}|${excelHeader(column, "money_l2")}`];
-          expect(key(labels.periods.previous), metric).toBe(String(Number(csv[`period_summary|previous||${metric}|2026-08-01|2026-08-01`].value)));
-          expect(key(labels.periods.current), metric).toBe(String(Number(csv[`period_summary|current||${metric}|2026-08-02|2026-08-02`].value)));
+          const key = (column: string) => numbers[`${sheetNames.summary}|${labels.exports.excel.summary.sections.keyDeltas}|${labels.metrics[metric].headline}|${excelHeader(column, "money_l2")}`];
+          expect(key(labels.shell.periods.previous), metric).toBe(String(Number(csv[`period_summary|previous||${metric}|2026-08-01|2026-08-01`].value)));
+          expect(key(labels.shell.periods.current), metric).toBe(String(Number(csv[`period_summary|current||${metric}|2026-08-02|2026-08-02`].value)));
         }
       }
     }
@@ -216,7 +216,7 @@ describe("Excel：管理損益表工作表（D-V3-8：#,##0.00;(#,##0.00)、0.00
     const pnl = labels.overview.pnlV3;
     const week = table.columns[0];
     expect(table.columns).toHaveLength(1);
-    expect(sheet.header).toEqual([pnl.columns.item, fill(labels.ui.export.moneyColumn, { label: fill(variants.pnlWeekColumn, { label: week.label, range: fill(variants.pnlWeekRange, { start: week.period.start, end: week.period.end }) }) }), fill(labels.ui.export.moneyColumn, { label: pnl.columns.total }), pnl.columns.share]);
+    expect(sheet.header).toEqual([pnl.columns.item, fill(labels.exports.common.moneyColumn, { label: fill(variants.pnlWeekColumn, { label: week.label, range: fill(variants.pnlWeekRange, { start: week.period.start, end: week.period.end }) }) }), fill(labels.exports.common.moneyColumn, { label: pnl.columns.total }), pnl.columns.share]);
     expect(sheet.formats).toEqual([null, "money_paren", "money_paren", "ratio"]);
     expect(sheet.rows).toHaveLength(13);
     expect(sheet.rows.map(row => cellValue(row[0]))).toEqual(PNL_ROWS.map(row => row.deduct ? fill(pnl.rowDeduct, { label: metricDefinitions[row.metric].label }) : metricDefinitions[row.metric].label));
@@ -245,7 +245,7 @@ describe("Excel：管理損益表工作表（D-V3-8：#,##0.00;(#,##0.00)、0.00
     const book = workbook(refundOnly, "standard");
     const sheet = sheetNamed(book, variants.pnlSheet);
     const net = sheet.rows[PNL_ROWS.findIndex(row => row.metric === "net_revenue")];
-    expect(net.map(cellValue)).toEqual([labels.metrics.net_revenue.label, -100, -100, null]);
+    expect(net.map(cellValue)).toEqual([labels.metrics.net_revenue.headline, -100, -100, null]);
     expect(EXCEL_NUMBER_FORMATS.money_paren).toBe("#,##0.00;(#,##0.00)");
     expect(XLSX.SSF.format(EXCEL_NUMBER_FORMATS.money_paren, -100)).toBe("(100.00)");
     expect(XLSX.SSF.format(EXCEL_NUMBER_FORMATS.money_paren, 2470)).toBe("2,470.00");
@@ -276,7 +276,7 @@ describe("Excel：待辦工作表最後一欄「廣告決策」（F13）", () =>
     const sheet = sheetNamed(standard, sheetNames.actions);
     const column = labels.actions.adDecisionV3.csvColumn;
     expect(sheet.header.at(-1)).toBe(column);
-    expect(sheet.header.slice(0, -1)).toEqual(Object.values(labels.excelExport.columns.actions).map((label, index) => excelHeader(label, sheet.formats![index])));
+    expect(sheet.header.slice(0, -1)).toEqual(Object.values(labels.exports.excel.columns.actions).map((label, index) => excelHeader(label, sheet.formats![index])));
     expect(sheet.rows).toHaveLength(2);
     expect(records(sheet).map(row => row[column])).toEqual([labels.actions.adDecisionV3.options.increase, null]);
     const all = setAdDecision(setAdDecision(actions, "a1", "pause"), "a2", "adjust");
@@ -307,12 +307,12 @@ describe("PPT：老闆一頁版一張、客戶報告版多客戶行", () => {
     expect([boss.channels, boss.pinned_actions, boss.footer, boss.technical, boss.decision]).toEqual([[], [], "", "", ""]);
     expect(boss.header).toEqual(model("standard").header);
     const withMeeting = model("boss", MEETING);
-    expect(withMeeting.decision).toBe(fill(labels.pptxExport.decision, { decision: labels.meeting.decisions.adopted }));
+    expect(withMeeting.decision).toBe(fill(labels.exports.pptx.decision, { decision: labels.meeting.form.decisions.adopted }));
     expect(withMeeting.decision).not.toContain(MEETING.notes);
     const { names, texts } = await slides(withMeeting);
     expect(names).toEqual(["ppt/slides/slide1.xml"]);
-    for (const text of [boss.one_liner!, ...boss.key_deltas.map(row => row.label), labels.sections.keyDeltas, labels.sections.topThree, labels.sections.meetingDecision, withMeeting.decision]) expect(texts, text).toContain(text);
-    for (const text of [labels.csvColumns.channel, labels.pptxExport.pinnedTitle, labels.basis.footer, labels.rules.REV_UP_CM_DOWN.nextStep]) expect(texts.join("\n"), text).not.toContain(text);
+    for (const text of [boss.one_liner!, ...boss.key_deltas.map(row => row.label), labels.overview.sections.keyDeltas, labels.overview.sections.topThree, labels.meeting.sections.meetingDecision, withMeeting.decision]) expect(texts, text).toContain(text);
+    for (const text of [labels.exports.csv.columns.channel, labels.exports.pptx.pinnedTitle, labels.glossary.basis.footer, labels.rules.REV_UP_CM_DOWN.explain.nextStep]) expect(texts.join("\n"), text).not.toContain(text);
     expect(texts.some(text => text.startsWith(fill(labels.exports.headerV3.pptxDataVersion, { datasetHash: "" })))).toBe(false);
     expect(texts.filter(text => /^-\d/.test(text))).toEqual([]);
     expect(texts).toContain(`${MINUS}315`);
@@ -325,9 +325,9 @@ describe("PPT：老闆一頁版一張、客戶報告版多客戶行", () => {
     expect(client.variant).toBe("client");
     expect(client.header).toEqual([standard.header[0], fill(variants.clientLine, { client: "店", brand: labels.brand.name }), ...standard.header.slice(1)]);
     expect(standard.decision).toContain(MEETING.notes);
-    expect(client.decision).toBe(fill(labels.pptxExport.decision, { decision: labels.meeting.decisions.adopted }));
-    expect(standard.pinned_actions[0].status).toContain(labels.actions.staleBadge);
-    expect(client.pinned_actions[0].status).not.toContain(labels.actions.staleBadge);
+    expect(client.decision).toBe(fill(labels.exports.pptx.decision, { decision: labels.meeting.form.decisions.adopted }));
+    expect(standard.pinned_actions[0].status).toContain(labels.actions.form.staleBadge);
+    expect(client.pinned_actions[0].status).not.toContain(labels.actions.form.staleBadge);
     expect(client.technical).toBe("");
     expect({ ...client, variant: undefined, header: undefined, decision: undefined, pinned_actions: undefined, technical: undefined }).toEqual({ ...standard, variant: undefined, header: undefined, decision: undefined, pinned_actions: undefined, technical: undefined });
     const { names, texts } = await slides(client);
@@ -339,7 +339,7 @@ describe("PPT：老闆一頁版一張、客戶報告版多客戶行", () => {
 
 describe("列印／PDF（SSR）", () => {
   const decisionContext = (summary: ManagerSummary, notes = "備註".repeat(120)): SummaryDecisionContext => ({
-    dataset_hash: summary.dataset_hash, filter_hash: summary.filter_hash, selectedScenarioIds: ["p1"], pinnedOnly: true, reviewName: "十月例會", decisionState: labels.meeting.decisions.adopted, notes,
+    dataset_hash: summary.dataset_hash, filter_hash: summary.filter_hash, selectedScenarioIds: ["p1"], pinnedOnly: true, reviewName: "十月例會", decisionState: labels.meeting.form.decisions.adopted, notes,
     scenarios: [{ id: "p1", name: "方案一", status: "current", scopeLabel: "DTC", baseline: "270.00", contribution: "284.00", delta: "14.00", assumptions: ["假設一", "假設二"] }],
     actions: [
       { id: "a1", problem: "問題一", action: "做法一", owner: "行銷", deadline: "2026-10-20", risk: "喊停", status: "current", scopeLabel: "DTC", pinned: true, executionStatus: "進行中", executionNotes: "內部進度" },
@@ -348,7 +348,7 @@ describe("列印／PDF（SSR）", () => {
   });
   const render = (source: Loaded, variant: ExportVariant | undefined, options: { rich?: boolean; snapshot?: Partial<WorkspaceSnapshot> | null } = {}) => renderToStaticMarkup(createElement(PrintSummary, {
     variant, summary: source.summary, snapshot: options.snapshot === null ? undefined : (options.snapshot ?? source.snapshot) as WorkspaceSnapshot, generatedAt: FIXED_GENERATED_AT, datasetName: "店",
-    decisionContext: options.rich ? decisionContext(source.summary) : { dataset_hash: source.summary.dataset_hash, filter_hash: source.summary.filter_hash, scenarios: [], actions: [], decisionState: labels.meetingPage.printViewState },
+    decisionContext: options.rich ? decisionContext(source.summary) : { dataset_hash: source.summary.dataset_hash, filter_hash: source.summary.filter_hash, scenarios: [], actions: [], decisionState: labels.meeting.page.printViewState },
     meeting: options.rich ? { name: "十月例會", date: "2026-10-03" } : null,
   }));
   /** vitest 的 CSS module class 名稱帶檔案雜湊；比對時拿掉。 */
@@ -381,7 +381,7 @@ describe("列印／PDF（SSR）", () => {
   it("附錄的每週管理損益表：在技術細節之前；13 列、金額到分、負數括號（只有這張表），佔淨營收 % 兩位小數；golden 一張表、demo 6 週分成兩張", () => {
     const html = render(golden, "standard");
     const pnl = byTestId(html, "print-appendix-pnl");
-    expect(html.indexOf('data-testid="print-appendix-pnl"')).toBeLessThan(html.indexOf(`<h2>${labels.sections.technicalDetails}</h2>`));
+    expect(html.indexOf('data-testid="print-appendix-pnl"')).toBeLessThan(html.indexOf(`<h2>${labels.evidence.sections.technicalDetails}</h2>`));
     expect(pnl).toContain(`<h2>${escapeAttr(variants.pnlHeading)}</h2>`);
     expect(pnl.split('data-testid="print-pnl-table"').length - 1).toBe(1);
     const rowsOf = (table: string) => [...table.matchAll(/<tr data-row="([a-z_]+)"[^>]*><th scope="row">([^<]+)<\/th>(.*?)<\/tr>/g)].map(match => ({ metric: match[1], label: match[2], cells: [...match[3].matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(cell => cell[1]) }));
@@ -409,12 +409,12 @@ describe("列印／PDF（SSR）", () => {
   it("refund_only：管理損益表的負數是括號 (100.00)、佔淨營收 % 不適用；缺值依原因碼", () => {
     const pnl = byTestId(render(refundOnly, "standard"), "print-appendix-pnl");
     const net = /<tr data-row="net_revenue"[^>]*>(.*?)<\/tr>/.exec(pnl)![1];
-    expect([...net.matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(match => match[1])).toEqual(["(100.00)", "(100.00)", labels.status.notApplicable]);
+    expect([...net.matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(match => match[1])).toEqual(["(100.00)", "(100.00)", labels.shell.status.notApplicable]);
     expect(pnl).not.toContain(MINUS);
     expect(pnlExportAmount({ value: "-100.00", reason_codes: [] })).toBe(fill(variants.negativeParen, { value: "100.00" }));
     expect(pnlExportAmount({ value: "0.00", reason_codes: [] })).toBe("0.00");
-    expect(pnlExportAmount({ value: null, reason_codes: ["MISSING_COGS"] })).toBe(labels.status.missing);
-    expect(pnlExportShare({ share: { value: null, reason_codes: ["NON_POSITIVE_DENOMINATOR"] } })).toBe(labels.status.notApplicable);
+    expect(pnlExportAmount({ value: null, reason_codes: ["MISSING_COGS"] })).toBe(labels.shell.status.missing);
+    expect(pnlExportShare({ share: { value: null, reason_codes: ["NON_POSITIVE_DENOMINATOR"] } })).toBe(labels.shell.status.notApplicable);
   });
 
   it("老闆一頁版：版頭四行、本期一句話、四個關鍵數字、三件事標題與影響金額、決議一行（不帶備註）；沒有通路表、方案與待辦、頁尾、附錄", () => {
@@ -425,14 +425,14 @@ describe("列印／PDF（SSR）", () => {
     for (const id of ["print-header-client", "print-header-meeting", "print-header-scope"]) expect(header).not.toContain(`data-testid="${id}"`);
     expect(textOf(byTestId(html, "print-one-liner"))).toBe(variantOneLiner(golden.summary, golden.snapshot));
     const kpis = [...byTestId(html, "print-kpis").matchAll(/<p><strong>([^<]+)<\/strong><br\/>([^<]+)<\/p>/g)].map(match => [match[1], match[2]]);
-    expect(kpis).toEqual(variantKpis(golden.summary, golden.snapshot.report).map(row => [metricDefinitions[row.metric].label, fill(labels.ui.managerSummary.printHeadline, { prev: formatAmountL1(row.previous.value), cur: formatAmountL1(row.current.value), change: formatSignedDelta(row.change.value, "L1") })]));
+    expect(kpis).toEqual(variantKpis(golden.summary, golden.snapshot.report).map(row => [metricDefinitions[row.metric].label, fill(labels.meeting.managerSummary.printHeadline, { prev: formatAmountL1(row.previous.value), cur: formatAmountL1(row.current.value), change: formatSignedDelta(row.change.value, "L1") })]));
     const three = byTestId(html, "print-top-three");
     expect((three.match(/<li>/g) ?? []).length).toBe(3);
     expect(three).not.toContain("<p>");
-    expect(textOf(three)).toContain(`${labels.sections.impact} ${formatSignedDelta("-315.00", "L1")}`);
-    expect(textOf(byTestId(html, "print-decision-line"))).toBe(fill(variants.printDecisionLine, { name: "十月例會", state: labels.meeting.decisions.adopted }));
-    for (const absent of ["<table", "<footer", "print-appendix", "print-scenario-line", labels.sections.technicalDetails, labels.ui.managerSummary.printDecisionsHeading, "內部進度", "備註備註", labels.assist.breakevenV3.label]) expect(html, absent).not.toContain(absent);
-    expect(html).not.toContain(escapeAttr(fill(labels.ui.managerSummary.printThresholdLine, { amount: formatAmountL3(golden.summary.importance_threshold) })));
+    expect(textOf(three)).toContain(`${labels.overview.sections.impact} ${formatSignedDelta("-315.00", "L1")}`);
+    expect(textOf(byTestId(html, "print-decision-line"))).toBe(fill(variants.printDecisionLine, { name: "十月例會", state: labels.meeting.form.decisions.adopted }));
+    for (const absent of ["<table", "<footer", "print-appendix", "print-scenario-line", labels.evidence.sections.technicalDetails, labels.meeting.managerSummary.printDecisionsHeading, "內部進度", "備註備註", labels.assist.breakevenV3.label]) expect(html, absent).not.toContain(absent);
+    expect(html).not.toContain(escapeAttr(fill(labels.meeting.managerSummary.printThresholdLine, { amount: formatAmountL3(golden.summary.importance_threshold) })));
   });
 
   it("客戶報告版：版頭第 1 行之後是客戶行；決議不帶備註、沒有備註全文附錄；待辦不列確認狀態、引用較早資料與進度紀錄；沒有技術細節；有每週管理損益表", () => {
@@ -442,8 +442,8 @@ describe("列印／PDF（SSR）", () => {
     expect(header.indexOf('data-testid="print-header-dataset"')).toBeLessThan(header.indexOf('data-testid="print-header-client"'));
     expect(header.indexOf('data-testid="print-header-client"')).toBeLessThan(header.indexOf("<h1>"));
     expect(textOf(byTestId(html, "print-header-client"))).toBe(fill(variants.clientLine, { client: "店", brand: labels.brand.name }));
-    expect(textOf(byTestId(html, "print-decision-line"))).toBe(fill(variants.printDecisionLine, { name: "十月例會", state: labels.meeting.decisions.adopted }));
-    for (const absent of ["print-appendix-notes", "備註備註", "內部進度", labels.actions.staleBadge, labels.ui.managerSummary.actionConfirmed, labels.sections.technicalDetails, "dataset_hash", golden.summary.dataset_hash]) expect(html, absent).not.toContain(absent);
+    expect(textOf(byTestId(html, "print-decision-line"))).toBe(fill(variants.printDecisionLine, { name: "十月例會", state: labels.meeting.form.decisions.adopted }));
+    for (const absent of ["print-appendix-notes", "備註備註", "內部進度", labels.actions.form.staleBadge, labels.meeting.managerSummary.actionConfirmed, labels.evidence.sections.technicalDetails, "dataset_hash", golden.summary.dataset_hash]) expect(html, absent).not.toContain(absent);
     expect(html).toContain(fill(variants.actionStatus, { status: "進行中" }));
     // V3-9b 收尾：有會議（rich）的客戶版列印不加管理損益表附錄（會議 PDF 頁數不增加）；沒有會議的客戶版才有。
     expect(html).not.toContain('data-testid="print-appendix-pnl"');

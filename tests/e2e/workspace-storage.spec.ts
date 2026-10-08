@@ -13,10 +13,10 @@ import { adDecisionBadge, adDecisionSelect, boardBadge, listBadge, reenvelope, w
 // R2: every visible string comes from labels; machine values (dataset ids, channel codes, amounts, testids) stay literal.
 // 長流程（兩方案＋行動＋保存／重整／恢復）在平板曾跑到 40 秒；比照 scenarios.spec 放寬單一案例的時間上限，斷言不變。
 test.describe.configure({ timeout: 90_000 });
-const storageCopy = labels.ui.workspaceStorage;
-const replacementCopy = labels.ui.replacementDialog;
-const scenarioCopy = labels.ui.multiScenarioWorkbench;
-const contributionLabel = labels.metrics.contribution_after_marketing.label;
+const storageCopy = labels.storage.workspace;
+const replacementCopy = labels.storage.replacement;
+const scenarioCopy = labels.scenarios.workbench;
+const contributionLabel = labels.metrics.contribution_after_marketing.headline;
 /** Mirrors multi-scenario-workbench's template(): only the body before a full-width parenthesis is used. */
 const scenarioTemplate = (text: string) => text.split("（")[0];
 const replacementDialog = (page: Page) => page.getByRole("dialog", { name: replacementCopy.heading });
@@ -25,8 +25,8 @@ const restorePreview = (page: Page) => page.getByRole("region", { name: storageC
 const storage = (page: Page) => page.getByTestId("workspace-storage");
 const status = (page: Page) => page.getByTestId("workspace-status");
 /** Ready status reads fill(status.ready, { date: manifest.data_as_of }) (dashboard.tsx statusText); every flow here uses golden (fixtures/golden/manifest.json data_as_of). */
-const goldenReady = fill(labels.status.ready, { date: "2026-08-03" });
-const autoCopy = labels.autoSave;
+const goldenReady = fill(labels.shell.status.ready, { date: "2026-08-03" });
+const autoCopy = labels.storage.autoSave;
 // R6（D7＝A）：首次載入資料時的非 modal 保存提示、儲存選單內的自動保存狀態、頂欄「儲存」tag。
 const savePrompt = (page: Page) => page.getByTestId("local-save-prompt");
 const autoStatus = (page: Page) => storage(page).getByTestId("autosave-status");
@@ -44,7 +44,7 @@ const kpiContribution = (page: Page) => page.getByTestId("kpi-contribution_after
  */
 const DTC_CONTRIBUTION = formatAmountL1("270.00");
 const MARKETPLACE_CONTRIBUTION = formatAmountL1("-15.00");
-const channelFilter = (page: Page) => page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true });
+const channelFilter = (page: Page) => page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true });
 /** 還原預覽摘要的通路片段（labels 模板「… · 通路 {channels}」最後一段）。 */
 const restoreChannels = (channels: string) => fill(storageCopy.restoreSummary.split(" · ").at(-1)!, { channels });
 const LOCAL_DB = "profitlens-opt-in-workspace-v1";
@@ -82,7 +82,7 @@ function savedTimes(savedAt: string) {
   const at = Date.parse(savedAt);
   return [...new Set([formatSavedTime(new Date(at)), formatSavedTime(new Date(at + 5_000))])];
 }
-const savedTagPattern = (savedAt: string) => new RegExp(`^(${savedTimes(savedAt).map(time => escapeRegExp(fill(labels.status.savedAt, { time }))).join("|")})$`);
+const savedTagPattern = (savedAt: string) => new RegExp(`^(${savedTimes(savedAt).map(time => escapeRegExp(fill(labels.shell.status.savedAt, { time }))).join("|")})$`);
 const lastSavedPattern = (savedAt: string) => new RegExp(`(${savedTimes(savedAt).map(time => escapeRegExp(fill(autoCopy.lastSaved, { time }))).join("|")})`);
 /**
  * V3-3：通路下拉在期間列裡；手機期間列收成 period-toggle，先開底部面板，選完按「完成」收起（桌機不動）。
@@ -98,8 +98,8 @@ async function selectChannel(page: Page, channel: string) {
 }
 async function golden(page: Page) {
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
-  await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption("golden");
+  await page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }).click();
   await expect(status(page)).toContainText(goldenReady);
   await selectChannel(page, "DTC");
   await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
@@ -112,30 +112,30 @@ async function makeScenario(page: Page, index: number, cost: string, expected: s
   await navigateTo(page, "scenarios");
   await startChannelContext(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
-  if (index > 1) await page.getByRole("button", { name: labels.buttons.addScenario, exact: true }).click();
+  if (index > 1) await page.getByRole("button", { name: labels.scenarios.buttons.addScenario, exact: true }).click();
   const card = page.getByTestId(`scenario-${index}`);
-  await card.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true }).fill(`保存方案 ${index}`);
-  const values = { [labels.scenario.volume.label]: "0", [labels.scenario.discount.label]: "0", [labels.scenario.fulfillmentUnit.label]: "-10", [labels.scenario.adSpend.label]: "0", [labels.scenario.oneOff.label]: cost };
+  await card.getByLabel(labels.scenarios.decision.planName, { exact: true }).fill(`保存方案 ${index}`);
+  const values = { [labels.scenarios.inputs.volume.label]: "0", [labels.scenarios.inputs.discount.label]: "0", [labels.scenarios.inputs.fulfillmentUnit.label]: "-10", [labels.scenarios.inputs.adSpend.label]: "0", [labels.scenarios.inputs.oneOff.label]: cost };
   for (const [label, value] of Object.entries(values)) await card.getByLabel(label, { exact: true }).fill(value);
   await acceptScenarioAssumptions(card, index === 1 ? "first" : "remembered");
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(formatAmountL1(expected));
 }
 async function makeAction(page: Page) {
   await navigateTo(page, "actions");
   await switchActionsView(page, "list");
-  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+  await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
   const card = page.getByTestId("action-1");
-  const fields = { [labels.actions.problem]: "核對履約成本", [labels.actions.step]: "取得物流報價與服務條款", [labels.actions.owner]: "營運主管", [labels.actions.metric]: "本期履約費用", [labels.actions.due]: "2026-10-15", [labels.actions.stop]: "服務品質下降即停止", [labels.actions.extraData]: "物流合約" };
+  const fields = { [labels.actions.form.problem]: "核對履約成本", [labels.actions.form.step]: "取得物流報價與服務條款", [labels.actions.form.owner]: "營運主管", [labels.actions.form.metric]: "本期履約費用", [labels.actions.form.due]: "2026-10-15", [labels.actions.form.stop]: "服務品質下降即停止", [labels.actions.form.extraData]: "物流合約" };
   for (const [label, value] of Object.entries(fields)) await card.getByLabel(label, { exact: true }).fill(value);
   // R5：證據改為 checkbox 清單（fieldset role=group）。
-  const factText = fill(labels.ui.actionsWorkbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC", scopeKind: labels.csvColumns.channel, value: DTC_CONTRIBUTION });
+  const factText = fill(labels.actions.workbench.factLabel, { start: "2026-08-02", end: "2026-08-02", metric: contributionLabel, scope: "DTC", scopeKind: labels.exports.csv.columns.channel, value: DTC_CONTRIBUTION });
   const box = evidenceList(card).getByRole("checkbox", { name: factText, exact: true });
   const value = await box.getAttribute("value");
   expect(value).toBeTruthy();
   await box.check();
-  await card.getByRole("button", { name: labels.buttons.confirm, exact: true }).click();
-  await expect(card).toContainText(labels.ui.actionsWorkbench.tagConfirmed);
+  await card.getByRole("button", { name: labels.shell.buttons.confirm, exact: true }).click();
+  await expect(card).toContainText(labels.actions.workbench.tagConfirmed);
   return value;
 }
 /** V3-6（D-V3-12＝B）：備份（v4 起；V3-9a 起寫 v5）的 scenario_workspace.assumptions_acknowledged_at＝第一次勾聲明的時間（App 以 toISOString() 寫入，ISO datetime）。 */
@@ -148,14 +148,14 @@ function expectAcknowledgedAt(value: unknown, after: number) {
 /** 還原後試算頁：聲明已記住，方案卡沒有勾選框，只有「已了解」說明。 */
 async function expectAssumptionsRemembered(card: Locator) {
   await expect(card.getByTestId("scenario-accept")).toHaveCount(0);
-  await expect(card.getByLabel(labels.scenario.acceptAssumptions, { exact: true })).toHaveCount(0);
+  await expect(card.getByLabel(labels.scenarios.inputs.acceptAssumptions, { exact: true })).toHaveCount(0);
   await expect(card.getByTestId("scenario-acknowledged")).toHaveText(labels.scenarios.pageV3.acknowledged);
 }
-const evidenceList = (card: Locator) => card.getByRole("group", { name: labels.ui.actionsWorkbench.evidencePicker, exact: true });
+const evidenceList = (card: Locator) => card.getByRole("group", { name: labels.actions.workbench.evidencePicker, exact: true });
 const checkedEvidence = (card: Locator) => evidenceList(card).locator("input[type=checkbox]:checked").evaluateAll(inputs => inputs.map(input => (input as HTMLInputElement).value));
 async function backup(page: Page) {
   await openStorage(page);
-  const [file] = await Promise.all([page.waitForEvent("download"), storage(page).getByRole("button", { name: labels.buttons.downloadBackup, exact: true }).click()]);
+  const [file] = await Promise.all([page.waitForEvent("download"), storage(page).getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true }).click()]);
   expect(file.suggestedFilename()).toBe("profitlens-workspace.json");
   return readFile((await file.path())!, "utf8");
 }
@@ -163,11 +163,11 @@ async function restoreFile(page: Page, text: string) {
   await openStorage(page);
   await storage(page).getByLabel(storageCopy.selectBackupFile, { exact: true }).setInputFiles({ name: "workspace.json", mimeType: "application/json", buffer: Buffer.from(text) });
 }
-/** 勾選同意並手動「存在這台電腦」；R6 起手動保存的通知改為 labels.autoSave.savedLocalNotice（勾選後之後的修改會自動保存）。 */
+/** 勾選同意並手動「存在這台電腦」；R6 起手動保存的通知改為 labels.storage.autoSave.savedLocalNotice（勾選後之後的修改會自動保存）。 */
 async function saveLocal(page: Page) {
   await openStorage(page);
   await consentBox(page).check();
-  await storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true }).click();
+  await storage(page).getByRole("button", { name: labels.storage.buttons.saveLocal, exact: true }).click();
   await expect(storage(page).getByTestId("storage-notice")).toContainText(autoCopy.savedLocalNotice);
   const saved = (await readLocalCopy(page))!;
   expect(saved).not.toBeNull();
@@ -193,7 +193,7 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await makeScenario(page, 2, "20", "264.00");
   const factId = await makeAction(page);
   await openStorage(page);
-  await expect(storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true })).toBeDisabled();
+  await expect(storage(page).getByRole("button", { name: labels.storage.buttons.saveLocal, exact: true })).toBeDisabled();
   const exported = JSON.parse(await backup(page));
   expect(exported.schema_version).toBe(WORKSPACE_VERSION);
   expect(Object.keys(exported.payload.sources)).toEqual([exported.payload.active.source_hash]);
@@ -211,19 +211,19 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   expect(JSON.parse(saved.text).payload.scenario_workspace.assumptions_acknowledged_at).toBe(exported.payload.scenario_workspace.assumptions_acknowledged_at);
   const other = await context.newPage();
   await other.goto(page.url());
-  await expect(status(other)).toContainText(labels.status.empty);
+  await expect(status(other)).toContainText(labels.shell.status.empty);
   await expect(savePrompt(other)).toHaveCount(0);
   await page.reload();
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   // 沒有資料時不問；重整後也不會自動讀回本機副本。
   await expect(savePrompt(page)).toHaveCount(0);
   await openStorage(page);
-  await storage(page).getByRole("button", { name: labels.buttons.restorePreview, exact: true }).click();
+  await storage(page).getByRole("button", { name: labels.storage.buttons.restorePreview, exact: true }).click();
   await expect(restorePreview(page)).toContainText(fill(storageCopy.restoreCounts, { plans: 2, actions: 1 }));
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await storage(page).getByRole("button", { name: storageCopy.applyRestore, exact: true }).click();
   await expect(status(page)).toContainText(goldenReady);
-  await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })).toHaveValue("DTC");
+  await expect(page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true })).toHaveValue("DTC");
   await expect(storage(page).getByLabel(storageCopy.consent, { exact: true })).not.toBeChecked();
   // R6：恢復後同意重設為未勾選（自動保存關閉），保存提示再出現，並提醒這台電腦已有保存的工作區。
   await expect(autoStatus(page)).toHaveText(autoCopy.statusOff);
@@ -233,7 +233,7 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await expect(savePrompt(page)).toHaveCount(0);
   expect((await readLocalCopy(page))!.savedAt).toBe(saved.savedAt);
   await navigateTo(page, "scenarios");
-  await expect(page.getByTestId("decision-freshness")).toContainText(labels.ui.decisionWorkbench.freshTitle);
+  await expect(page.getByTestId("decision-freshness")).toContainText(labels.scenarios.decision.freshTitle);
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
   await expect(page.getByTestId("scenario-2").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("264.00"));
   // V3-6：恢復的工作區帶回「已了解」聲明，兩個方案都沒有勾選框。
@@ -242,12 +242,12 @@ test("PL01 主動保存兩方案與已確認行動，重整後手動恢復；其
   await navigateTo(page, "actions");
   // 備份 ui_prefs.view 記住了清單檢視（R5），恢復後直接是清單。
   await expect(page.getByTestId("actions-view-list")).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByTestId("action-1")).toContainText(labels.ui.actionsWorkbench.tagConfirmed);
-  await expect(page.getByTestId("action-1").getByLabel(labels.actions.problem, { exact: true })).toHaveValue("核對履約成本");
+  await expect(page.getByTestId("action-1")).toContainText(labels.actions.workbench.tagConfirmed);
+  await expect(page.getByTestId("action-1").getByLabel(labels.actions.form.problem, { exact: true })).toHaveValue("核對履約成本");
   expect(await checkedEvidence(page.getByTestId("action-1"))).toEqual([factId!]);
-  await expect(status(other)).toContainText(labels.status.empty);
+  await expect(status(other)).toContainText(labels.shell.status.empty);
   await openStorage(page);
-  await storage(page).getByRole("button", { name: labels.buttons.deleteLocal, exact: true }).click();
+  await storage(page).getByRole("button", { name: labels.storage.buttons.deleteLocal, exact: true }).click();
   await expect(storage(page).getByTestId("storage-notice")).toContainText(storageCopy.deletedNotice);
   expect(await localDatabases(page)).toEqual([]);
   await expect(status(page)).toContainText(goldenReady);
@@ -280,9 +280,9 @@ test("PL01 portable備份驗證後才套用；篡改／舊格式不取代目前�
   await restoreFile(page, original);
   await expect(restorePreview(page)).toBeVisible();
   await expect(restorePreview(page)).not.toContainText(storageCopy.unsavedWarning);
-  await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })).toHaveValue("MARKETPLACE");
+  await expect(page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true })).toHaveValue("MARKETPLACE");
   await storage(page).getByRole("button", { name: storageCopy.applyRestore, exact: true }).click();
-  await expect(page.getByLabel(labels.ui.dashboard.filter.channel, { exact: true })).toHaveValue("DTC");
+  await expect(page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true })).toHaveValue("DTC");
   await expect(replacementDialog(page)).toHaveCount(0);
   await expect(storage(page).getByLabel(storageCopy.consent, { exact: true })).not.toBeChecked();
   await expect(autoStatus(page)).toHaveText(autoCopy.statusOff);
@@ -298,13 +298,13 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   // V3-3：「清空」搬進頂欄儲存選單的危險區（手機先開頂欄「更多」）。
   const dialog = await clearWorkspace(page);
   await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: labels.buttons.cancel, exact: true }).click();
+  await dialog.getByRole("button", { name: labels.shell.buttons.cancel, exact: true }).click();
   await expect(page.getByTestId("scenario-1").getByTestId("scenario-contribution")).toHaveText(formatAmountL1("284.00"));
   // 取消後儲存選單仍開著（同 v2 的選單行為）；768–900 寬時面板橫跨版面會蓋住驗證頁的「載入資料集」，先收起。
   await closeStorage(page);
   await openValidation(page);
-  await page.getByLabel(labels.ui.dashboard.validation.datasetLabel, { exact: true }).selectOption("golden");
-  await page.getByRole("button", { name: labels.ui.dashboard.validation.loadButton, exact: true }).click();
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption("golden");
+  await page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }).click();
   await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
   // V3-3：期間列在載入中仍掛載（v2 載入中隱藏，選通路會自然等到載入完成）；重新載入同一份 golden 時狀態文字前後相同，
   // 改等「載入成功後回到經營總覽」再選通路，避免在載入途中改通路（見回報：載入途中改通路會中斷載入）。
@@ -317,7 +317,7 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   expectAcknowledgedAt(JSON.parse(saved).payload.scenario_workspace.assumptions_acknowledged_at, beforeAcknowledge);
   await clearWorkspace(page);
   await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await restoreFile(page, saved);
   await storage(page).getByRole("button", { name: storageCopy.applyRestore, exact: true }).click();
   await expect(status(page)).toContainText(goldenReady);
@@ -328,14 +328,14 @@ test("PL01 清空提醒可取消；替換資料後歷史方案保存恢復不復
   // R5 進頁即表單：目前通路只有一個未計算的本地草稿「方案 1」，歷史方案不會被復活成目前方案。
   await startChannelContext(page);
   const draft = page.getByTestId("scenario-1");
-  await expect(draft.getByLabel(labels.ui.decisionWorkbench.planName, { exact: true })).toHaveValue(fill(labels.ui.decisionWorkbench.defaultPlanName, { n: 1 }));
-  await expect(draft.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await expect(draft.getByLabel(labels.scenarios.decision.planName, { exact: true })).toHaveValue(fill(labels.scenarios.decision.defaultPlanName, { n: 1 }));
+  await expect(draft.getByTestId("scenario-draft")).toHaveText(labels.scenarios.inputs.draft);
   await expect(draft.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(page.getByTestId("scenario-2")).toHaveCount(0);
   // V3-6：清空後再從備份檔恢復，聲明跟著備份回來：草稿方案沒有勾選框，只有「已了解」說明。
   await expectAssumptionsRemembered(draft);
   await page.getByText(scenarioCopy.historyHeading, { exact: true }).click();
-  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(fill(scenarioTemplate(scenarioCopy.historyPlanSummary), { plan: "保存方案 1", resultLabel: labels.scenario.resultTitle, amount: formatAmountL1("284.00") }));
+  await expect(page.getByTestId("multi-scenario-workbench")).toContainText(fill(scenarioTemplate(scenarioCopy.historyPlanSummary), { plan: "保存方案 1", resultLabel: labels.scenarios.inputs.resultTitle, amount: formatAmountL1("284.00") }));
   // 要沿用只能明確按「複製到目前方案」。
   await expect(page.getByRole("button", { name: scenarioCopy.copyToCurrent, exact: true })).toBeVisible();
   // 只是打開試算頁不會寫入新的方案範圍：備份仍只有那一個歷史範圍。
@@ -362,20 +362,20 @@ test("PL01 清空移除備份預覽、下載確認與本機保存同意；已保
   await expect(storage(page).getByLabel(storageCopy.consent, { exact: true })).toBeChecked();
   // R6：修改已自動保存（沒有未保存的變更），清空不再跳「替換前先儲存」提醒，直接清空。
   await clearWorkspace(page);
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await expect(replacementDialog(page)).toHaveCount(0);
   await openStorage(page);
   await expect(restorePreview(page)).toHaveCount(0);
   await expect(storage(page).getByRole("button", { name: storageCopy.confirmDownloaded, exact: true })).toHaveCount(0);
   await expect(storage(page).getByLabel(storageCopy.consent, { exact: true })).not.toBeChecked();
-  await expect(storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true })).toBeDisabled();
+  await expect(storage(page).getByRole("button", { name: labels.storage.buttons.saveLocal, exact: true })).toBeDisabled();
   await expect(autoStatus(page)).toHaveText(autoCopy.statusOff);
   // 清空不刪除也不改寫本機副本；只能手動重讀，讀到的是自動保存的最後一版（MARKETPLACE）。
   expect((await readLocalCopy(page))!.savedAt).toBe(autosaved.savedAt);
-  await storage(page).getByRole("button", { name: labels.buttons.restorePreview, exact: true }).click();
+  await storage(page).getByRole("button", { name: labels.storage.buttons.restorePreview, exact: true }).click();
   await expect(restorePreview(page)).toContainText("golden-v1");
   await expect(restorePreview(page)).toContainText(restoreChannels("MARKETPLACE"));
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await expect(savePrompt(page)).toHaveCount(0);
 });
 
@@ -404,17 +404,17 @@ test("R6 首次保存提示：先不要維持手動保存、不建立本機資�
   await expect(autoStatus(page)).toHaveText(autoCopy.statusOff);
   // 沒同意就沒有自動保存開關。
   await expect(autoToggle(page)).toHaveCount(0);
-  await expect(storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true })).toBeDisabled();
+  await expect(storage(page).getByRole("button", { name: labels.storage.buttons.saveLocal, exact: true })).toBeDisabled();
   await selectChannel(page, "MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
   // 超過 2 秒的自動保存間隔：維持手動，不建立資料庫、不標已保存，也不再問一次。
   await page.waitForTimeout(3_000);
   expect(await localDatabases(page)).toEqual([]);
-  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  await expect(savedTag(page)).toHaveText(labels.shell.status.unsaved);
   await expect(prompt).toHaveCount(0);
   // 清空工作區後（儲存面板重掛）再載入資料會再問；在提示內按 Esc 等於「先不要」。
   await (await clearWorkspace(page)).getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await expect(prompt).toHaveCount(0);
   await golden(page);
   await expect(prompt).toBeVisible();
@@ -433,7 +433,7 @@ test("R6 自動保存：按「存在這台電腦」3 秒內寫入目前版本的
   page.on("request", request => { if (request.method() === "POST") posts.push(request.url()); });
   await golden(page);
   expect(await localDatabases(page)).toEqual([]);
-  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  await expect(savedTag(page)).toHaveText(labels.shell.status.unsaved);
   // 「存在這台電腦」同時是提示框按鈕與儲存選單內的手動按鈕：acceptSavePrompt 只在提示框內找。
   const acceptedAt = await page.evaluate(() => Date.now());
   await acceptSavePrompt(page);
@@ -464,7 +464,7 @@ test("R6 自動保存：按「存在這台電腦」3 秒內寫入目前版本的
   await expect(savedTag(page)).toHaveText(savedTagPattern(second.savedAt));
   await expect(autoStatus(page)).toContainText(lastSavedPattern(second.savedAt));
   // 「刪除本機資料」保留：刪掉資料庫並關閉自動保存，之後的修改不會再寫回。
-  await storage(page).getByRole("button", { name: labels.buttons.deleteLocal, exact: true }).click();
+  await storage(page).getByRole("button", { name: labels.storage.buttons.deleteLocal, exact: true }).click();
   await expect(storage(page).getByTestId("storage-notice")).toContainText(storageCopy.deletedNotice);
   expect(await localDatabases(page)).toEqual([]);
   await expect(consentBox(page)).not.toBeChecked();
@@ -473,7 +473,7 @@ test("R6 自動保存：按「存在這台電腦」3 秒內寫入目前版本的
   await expect(kpiContribution(page)).toHaveText(DTC_CONTRIBUTION);
   await page.waitForTimeout(3_000);
   expect(await localDatabases(page)).toEqual([]);
-  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  await expect(savedTag(page)).toHaveText(labels.shell.status.unsaved);
   expect(posts).toEqual([]);
 });
 
@@ -494,15 +494,15 @@ test("R6 自動保存開關：同意後預設開啟，取消後修改不再自�
   await expect(consentBox(page)).toBeChecked();
   await selectChannel(page, "MARKETPLACE");
   await expect(kpiContribution(page)).toHaveText(MARKETPLACE_CONTRIBUTION);
-  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  await expect(savedTag(page)).toHaveText(labels.shell.status.unsaved);
   // 超過 2 秒的自動保存間隔（等 3 秒）：本機副本不更新。
   await page.waitForTimeout(3_000);
   expect((await readLocalCopy(page))!.savedAt).toBe(first.savedAt);
   expect(await savedChannels(page)).toEqual(["DTC"]);
-  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  await expect(savedTag(page)).toHaveText(labels.shell.status.unsaved);
   // 手動「存在這台電腦」：寫入目前這一版，通知說明自動保存已關閉。
   await openStorage(page);
-  await storage(page).getByRole("button", { name: labels.buttons.saveLocal, exact: true }).click();
+  await storage(page).getByRole("button", { name: labels.storage.buttons.saveLocal, exact: true }).click();
   await expect(storage(page).getByTestId("storage-notice")).toHaveText(autoCopy.savedLocalManualNotice);
   const manual = await waitForLocalSave(page, first.savedAt);
   expect(JSON.parse(manual.text).payload.active.filters.channels).toEqual(["MARKETPLACE"]);
@@ -529,7 +529,7 @@ test("R6 在儲存選單勾選同意而這台電腦已有副本：先顯示覆�
   expect(JSON.parse(first.text).payload.active.filters.channels).toEqual(["DTC"]);
   // 重新整理：工作區清空、同意重設；再載入資料時提示提醒這台電腦已有副本，這次選「先不要」。
   await page.reload();
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await golden(page);
   await expect(savePrompt(page)).toBeVisible();
   await expect(savePrompt(page).getByTestId("local-save-replace-warning")).toHaveText(fill(autoCopy.replaceWarning, { time: formatSavedDateTime(new Date(first.savedAt)) }));
@@ -550,7 +550,7 @@ test("R6 在儲存選單勾選同意而這台電腦已有副本：先顯示覆�
   await page.waitForTimeout(3_000);
   expect((await readLocalCopy(page))!.savedAt).toBe(first.savedAt);
   expect(await savedChannels(page)).toEqual(["DTC"]);
-  await expect(savedTag(page)).toHaveText(labels.status.unsaved);
+  await expect(savedTag(page)).toHaveText(labels.shell.status.unsaved);
   // 確認改存：立即寫入目前的工作區（MARKETPLACE），提醒消失、狀態改為已開啟。
   await confirm.click();
   const replaced = await waitForLocalSave(page, first.savedAt);
@@ -574,13 +574,13 @@ test("R6 首次保存提示開著時，捲到頁尾的「口徑說明」仍可�
   await expect(announce(page)).toHaveText(autoCopy.announce);
   // 捲到最底：頁尾按鈕在畫面上的位置已是最高，按鈕中心點命中的是按鈕本身（不是提示框）。
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  const basis = page.locator("footer.main-footer").getByRole("button", { name: labels.buttons.basis, exact: true });
+  const basis = page.locator("footer.main-footer").getByRole("button", { name: labels.shell.buttons.basis, exact: true });
   await expect(basis).toBeInViewport();
   expect(await basis.evaluate(element => { const box = element.getBoundingClientRect(); const target = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2); return target !== null && (target === element || element.contains(target)); })).toBe(true);
   await basis.click();
   const dialog = page.getByTestId("basis-dialog");
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("heading", { name: labels.basis.title, exact: true })).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: labels.glossary.basis.title, exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   // 提示仍在（點頁尾不算回答）。
@@ -596,7 +596,7 @@ test("V3-7 結束會議後備份的 meeting_history 每筆帶 copy_version v3；
   // 結束一場會議（頁首「結束會議」→ 確認區「確定」）：歷史多一筆。
   await meeting.getByTestId("meeting-finalize").click();
   await meeting.getByTestId("meeting-finalize-confirm").getByTestId("meeting-finalize-confirm-button").click();
-  await expect(meeting.getByTestId("meeting-status")).toHaveText(labels.meetingPage.finalized);
+  await expect(meeting.getByTestId("meeting-status")).toHaveText(labels.meeting.page.finalized);
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
   const text = await backup(page);
   const wire = JSON.parse(text);
@@ -607,7 +607,7 @@ test("V3-7 結束會議後備份的 meeting_history 每筆帶 copy_version v3；
   const record = wire.payload.meeting_history[0] as { finalized_at: string; source_fixed: { metric_version: string; periods: Record<"previous" | "current", { start: string; end: string }> } };
   // 重新整理（工作區清空）後從備份檔還原。
   await page.reload();
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await restoreFile(page, text);
   await expect(restorePreview(page)).toBeVisible();
   await storage(page).getByRole("button", { name: storageCopy.applyRestore, exact: true }).click();
@@ -632,11 +632,11 @@ test("V3-7 結束會議後備份的 meeting_history 每筆帶 copy_version v3；
   await expect(item.getByTestId("meeting-snapshot-note")).toBeVisible();
   await expect(item.getByTestId("meeting-v2-note")).toHaveCount(0);
   // 該筆的會議紀錄 Markdown：版頭第 1 行是畫面上的資料集名稱（與目前資料同一版本），兩期取會議固定範圍、產出時間＝結束時間；之後沒有 v2 加註。
-  const [file] = await Promise.all([page.waitForEvent("download"), item.getByRole("button", { name: new RegExp(`^${escapeRegExp(`${labels.buttons.exportMarkdown} · `)}`) }).click()]);
+  const [file] = await Promise.all([page.waitForEvent("download"), item.getByRole("button", { name: new RegExp(`^${escapeRegExp(`${labels.exports.buttons.exportMarkdown} · `)}`) }).click()]);
   const markdown = await readFile((await file.path())!, "utf8");
   const periods = record.source_fixed.periods;
   const periodLine = fill(headerV3.periodLine, { current: formatPeriodExport(periods.current.start, periods.current.end), previous: formatPeriodExport(periods.previous.start, periods.previous.end) });
-  expect(markdown.split("\n").slice(1, 7)).toEqual(["", `${labels.ui.dashboard.datasets.golden}  `, `${fill(headerV3.reportTitle, { metric: contributionLabel })}  `, `${fill(headerV3.periodUnitLine, { period: periodLine, unit: headerV3.unitExclusive })}  `, fill(headerV3.versionLine, { version: record.source_fixed.metric_version, time: formatSavedDateTime(new Date(record.finalized_at)) }), ""]);
+  expect(markdown.split("\n").slice(1, 7)).toEqual(["", `${labels.shell.devValidation.datasets.golden}  `, `${fill(headerV3.reportTitle, { metric: contributionLabel })}  `, `${fill(headerV3.periodUnitLine, { period: periodLine, unit: headerV3.unitExclusive })}  `, fill(headerV3.versionLine, { version: record.source_fixed.metric_version, time: formatSavedDateTime(new Date(record.finalized_at)) }), ""]);
   expect(markdown).not.toContain(pageV3.v2Note);
 });
 
@@ -661,7 +661,7 @@ test("V3-9a v4 備份仍可還原：沒有 ad_decision＝不標（select 空白�
   const dialog = await clearWorkspace(page);
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: replacementCopy.discardAndContinue, exact: true }).click();
-  await expect(status(page)).toContainText(labels.status.empty);
+  await expect(status(page)).toContainText(labels.shell.status.empty);
   await expect(whatsNew(page)).toHaveCount(0);
   await restoreFile(page, v4);
   await expect(restorePreview(page)).toContainText(fill(storageCopy.restoreCounts, { plans: 0, actions: 1 }));
@@ -675,7 +675,7 @@ test("V3-9a v4 備份仍可還原：沒有 ad_decision＝不標（select 空白�
   await navigateTo(page, "actions");
   await expect(page.getByTestId("actions-view-list")).toHaveAttribute("aria-pressed", "true");
   const card = page.getByTestId("action-1");
-  await expect(card).toContainText(labels.ui.actionsWorkbench.tagConfirmed);
+  await expect(card).toContainText(labels.actions.workbench.tagConfirmed);
   expect(await checkedEvidence(card)).toEqual([factId!]);
   await expect(adDecisionSelect(card)).toHaveValue("");
   await expect(listBadge(page, 1)).toHaveCount(0);

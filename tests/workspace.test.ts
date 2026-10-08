@@ -104,7 +104,7 @@ describe("M2 exact presentation and source evidence", () => {
     expect(formatAmountL3("9007199254740993.01")).toBe("9,007,199,254,740,993.01");
     expect(asciiMinus(formatAmountL3("-1234.5"))).toBe("-1,234.50");
     expect(formatAmountL3("0.00")).toBe("0.00");
-    expect(formatAmountL3(null)).toBe(labels.status.missing);
+    expect(formatAmountL3(null)).toBe(labels.shell.status.missing);
     expect(formatSignedDelta("315.00", "L3")).toBe("+315.00");
     expect(asciiMinus(formatSignedDelta("-315.00", "L3"))).toBe("-315.00");
     expect(formatSignedDelta("0.00", "L3")).toBe("0.00");
@@ -114,7 +114,7 @@ describe("M2 exact presentation and source evidence", () => {
     expect(formatRateL3("0.12345")).toBe("12.35%");
     expect(asciiMinus(formatRateL3("-0.1"))).toBe("-10.00%");
     expect(formatRateL3("0")).toBe("0.00%");
-    expect(formatRateL3(null, "notApplicable")).toBe(labels.status.notApplicable);
+    expect(formatRateL3(null, "notApplicable")).toBe(labels.shell.status.notApplicable);
     expect(formatRateL3("-0.00000001")).toBe("0.00%");
   });
 
@@ -123,7 +123,7 @@ describe("M2 exact presentation and source evidence", () => {
     expect(metricDefinitions.gross_profit.fields).toEqual(["gross_sales", "discounts", "refunds", "cogs_net"]);
     expect(metricDefinitions.mer.unit).toBe("multiple");
     expect(metricDefinitions.mer.formula).toContain("> 0");
-    expect(metricDefinitions.mer.formulaTechnical).toBe(labels.metrics.mer.formulaTechnical);
+    expect(metricDefinitions.mer.formulaTechnical).toBe(labels.metrics.mer.technical.formulaTechnical);
     for (const definition of Object.values(metricDefinitions)) {
       expect(definition.label).toBeTruthy();
       expect(definition.formula).toBeTruthy();

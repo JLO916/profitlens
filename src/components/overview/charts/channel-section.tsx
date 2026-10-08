@@ -16,7 +16,7 @@ import { axisTicks, ChartFrame, coordinate, metricText, type ChartLegendItem } f
 // 標題是結論句（chart-takeaways.ts channelConclusion），副標是標準名稱與本期期間；水平長條從 0 開始：上期細條 8px、本期粗條 18px，負值往左並用不利色，
 // 數值直接印在長條末端；長條可點開抽屜，鍵盤經由下方緊湊表（本期金額、貢獻率）與收合的資料表。
 
-const ui = labels.ui.overview;
+const ui = labels.overview.page;
 const copy = labels.overview.channelsV3;
 const frame = labels.overview.chartFrame;
 
@@ -83,17 +83,17 @@ export function ChannelSection({ snapshot, onEvidence }: ChannelSectionProps) {
     })}</tbody>
   </table>;
 
-  const table = <div className="table-scroll" tabIndex={0} role="region" aria-label={ui.channelTableAria}><table><caption>{fill(ui.captionWithUnit, { caption: ui.channelCaption })}</caption><thead><tr><th>{ui.colChannel}</th><th>{labels.periods.current}{metricDefinitions.net_revenue.label}</th><th>{labels.periods.previous}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.periods.current}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.periods.current}{metricDefinitions.contribution_margin.shortLabel}</th></tr></thead><tbody>{Object.keys(report.current.channels).map(channel => <tr key={channel}><th>{channelLabel(channel, alias)}</th><td>{number(channel, "current", "net_revenue")}</td><td>{number(channel, "previous", "contribution_after_marketing")}</td><td>{number(channel, "current", "contribution_after_marketing")}</td><td>{number(channel, "current", "contribution_margin")}</td></tr>)}</tbody></table></div>;
+  const table = <div className="table-scroll" tabIndex={0} role="region" aria-label={ui.channelTableAria}><table><caption>{fill(ui.captionWithUnit, { caption: ui.channelCaption })}</caption><thead><tr><th>{ui.colChannel}</th><th>{labels.shell.periods.current}{metricDefinitions.net_revenue.label}</th><th>{labels.shell.periods.previous}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.shell.periods.current}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.shell.periods.current}{metricDefinitions.contribution_margin.shortLabel}</th></tr></thead><tbody>{Object.keys(report.current.channels).map(channel => <tr key={channel}><th>{channelLabel(channel, alias)}</th><td>{number(channel, "current", "net_revenue")}</td><td>{number(channel, "previous", "contribution_after_marketing")}</td><td>{number(channel, "current", "contribution_after_marketing")}</td><td>{number(channel, "current", "contribution_margin")}</td></tr>)}</tbody></table></div>;
 
   return <ChartFrame id="channel" testId="channel-mix" title={conclusion.title} subtitle={conclusion.subtitle} legend={legend} height="sm" state={rows.length === 0 ? "empty" : "ready"} after={kv}
-    dataTable={{ summary: fill(ui.dataTable, { title: labels.sections.channelMix }), content: table }}>
+    dataTable={{ summary: fill(ui.dataTable, { title: labels.overview.sections.channelMix }), content: table }}>
     <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 520, height: chartHeights.sm }}>
       <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 88, bottom: 4, left: 0 }} barGap={4} accessibilityLayer={false}>
         <CartesianGrid horizontal={false} stroke={chartColors.grid} />
         <XAxis type="number" domain={scale.domain} ticks={scale.ticks} tickFormatter={axis} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: chartFontSize, fill: chartColors.axis }} />
         <YAxis type="category" dataKey="label" width={136} tickLine={false} axisLine={false} tick={{ fontSize: chartFontSize, fill: chartColors.axis }} />
         <ReferenceLine x={0} stroke={chartColors.connector} />
-        <Tooltip cursor={false} content={({ active, payload }) => { const row = payload?.[0]?.payload as ChannelRow | undefined; return active && row ? <div className="chart-tooltip"><strong>{row.label}</strong><p>{metricValue(labels.periods.previous, metricText("contribution_after_marketing", row.previous, "L1"))}</p><p>{metricValue(labels.periods.current, metricText("contribution_after_marketing", row.current, "L1"))}</p></div> : null; }} />
+        <Tooltip cursor={false} content={({ active, payload }) => { const row = payload?.[0]?.payload as ChannelRow | undefined; return active && row ? <div className="chart-tooltip"><strong>{row.label}</strong><p>{metricValue(labels.shell.periods.previous, metricText("contribution_after_marketing", row.previous, "L1"))}</p><p>{metricValue(labels.shell.periods.current, metricText("contribution_after_marketing", row.current, "L1"))}</p></div> : null; }} />
         <Bar dataKey="previousValue" className="chart-bar-link" barSize={8} fill={chartColors.previous} isAnimationActive={false} onClick={item => { const row = barRow(item); if (row) openChannel(row.channel, "previous"); }}>
           <LabelList dataKey="previousValue" content={endLabel("previous")} />
         </Bar>

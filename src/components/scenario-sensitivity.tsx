@@ -8,7 +8,7 @@ import { MAX_SENSITIVITY_INPUT_LENGTH, blankSensitivity, type SensitivityInputs 
 import { scenarioReasonText } from "@/application/decision-export";
 import { fill, labels } from "@/i18n";
 
-const copy = labels.ui.scenarioSensitivity;
+const copy = labels.scenarios.sensitivity;
 
 /** 主層文案：門檻說明一句話；精確分數與取分說明移到技術細節。 */
 function thresholdDescription(target: ContributionThreshold): string {
@@ -36,9 +36,9 @@ export function ScenarioSensitivity({ baseline, inputs, stale = false, value, on
   const [submitted, setSubmitted] = useState<readonly string[] | null>(() => volumes.every(entry => entry.trim() !== "") ? [...volumes] : null);
   const analysis = useMemo(() => analyzeScenarioSensitivity(baseline, inputs, submitted ?? ["", "", ""], { stale }), [baseline, inputs, submitted, stale]);
   return <details className="scenario-sensitivity" data-testid="scenario-sensitivity">
-    <summary>{labels.sections.scenarioBreakeven}</summary>
+    <summary>{labels.scenarios.sections.scenarioBreakeven}</summary>
     {/* V3-6（PRD §7.4、§6.3 #38）：限制一句改成 13px 次要色，不加前綴。 */}
-    <p className="scenario-caution">{labels.basis.items[6]}</p>
+    <p className="scenario-caution">{labels.glossary.basis.items[6]}</p>
     {analysis.status !== "valid" ? <div className="alert" role="status">{analysis.reasons.map(reason => <p key={`${reason.code}-${reason.field ?? ""}`}>{reasonText(reason)}</p>)}</div> : <>
       <h4>{copy.targetsHeading}</h4>
       {analysis.targets.map(target => <section className="threshold-target" data-testid={`threshold-${target.id}`} key={target.id}>
@@ -47,7 +47,7 @@ export function ScenarioSensitivity({ baseline, inputs, stale = false, value, on
         <p>{thresholdDescription(target)}</p>
         {target.threshold_fraction && <details><summary>{copy.exactFractionSummary}</summary><p className="formula">{fill(copy.exactFractionTechnical, { numerator: target.threshold_fraction.numerator, denominator: target.threshold_fraction.denominator })}</p></details>}
       </section>)}
-      <details className="sensitivity-formula"><summary>{labels.sections.technicalDetails}</summary>
+      <details className="sensitivity-formula"><summary>{labels.evidence.sections.technicalDetails}</summary>
         <p className="formula">{analysis.formula}</p>
         <p>{fill(copy.coefficientsTechnical, { volume: formatAmountL3(analysis.coefficients!.volume_coefficient), fixed: formatAmountL3(analysis.coefficients!.fixed_outflow), numerator: analysis.coefficients!.volume_coefficient_fraction.numerator, denominator: analysis.coefficients!.volume_coefficient_fraction.denominator })}</p>
         <p>{analysis.coefficients!.slope === "positive" ? copy.slopePositiveTechnical : analysis.coefficients!.slope === "negative" ? copy.slopeNegativeTechnical : copy.slopeZeroTechnical}</p>
@@ -63,7 +63,7 @@ export function ScenarioSensitivity({ baseline, inputs, stale = false, value, on
       <div aria-live="polite" data-testid="sensitivity-result">
         {analysis.sensitivity.status !== "valid" ? <p className={analysis.sensitivity.status === "invalid" ? "alert" : "note"}>{analysis.sensitivity.reasons.map(reasonText).join(" ")}</p> : <div className="table-scroll" role="region" aria-label={copy.tableAria} tabIndex={0}><table>
           <caption>{copy.tableCaption}</caption>
-          <thead><tr><th>{copy.colAssumption}</th><th>{labels.scenario.volume.label}（%）</th><th>{fill(labels.units.yuanColumn, { label: labels.scenario.resultTitle })}</th><th>{fill(labels.units.yuanColumn, { label: labels.scenario.vsBaseline })}</th></tr></thead>
+          <thead><tr><th>{copy.colAssumption}</th><th>{labels.scenarios.inputs.volume.label}（%）</th><th>{fill(labels.format.units.yuanColumn, { label: labels.scenarios.inputs.resultTitle })}</th><th>{fill(labels.format.units.yuanColumn, { label: labels.scenarios.inputs.vsBaseline })}</th></tr></thead>
           <tbody>{analysis.sensitivity.rows.map((row, index) => <tr key={index}><th>{fill(copy.rowLabel, { letter: letter(index) })}</th><td>{formatPercentNumber(row.volume_change_pct, "L2", { signed: true })}</td><td>{formatAmountL2(row.result.contribution)}</td><td>{formatSignedDelta(row.result.delta, "L2")}</td></tr>)}</tbody>
         </table></div>}
       </div>

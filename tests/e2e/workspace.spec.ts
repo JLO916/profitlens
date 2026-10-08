@@ -54,19 +54,18 @@ const test = base.extend<{ browserAudit: BrowserAudit }>({
   }, { auto: true }],
 });
 
-const dashboard = labels.ui.dashboard;
 /** Ready status reads fill(status.ready, { date: manifest.data_as_of }) (dashboard.tsx statusText); fixtures/{golden,demo}/manifest.json. */
 const dataAsOf = { golden: "2026-08-03", demo: "2026-08-24" } as const;
-const ready = (page: Page, dataset: keyof typeof dataAsOf) => page.getByTestId("workspace-status").filter({ hasText: fill(labels.status.ready, { date: dataAsOf[dataset] }) });
-const partial = (page: Page) => page.getByTestId("workspace-status").filter({ hasText: labels.status.partial });
-const failed = (page: Page) => page.getByTestId("workspace-status").filter({ hasText: labels.status.error });
+const ready = (page: Page, dataset: keyof typeof dataAsOf) => page.getByTestId("workspace-status").filter({ hasText: fill(labels.shell.status.ready, { date: dataAsOf[dataset] }) });
+const partial = (page: Page) => page.getByTestId("workspace-status").filter({ hasText: labels.shell.status.partial });
+const failed = (page: Page) => page.getByTestId("workspace-status").filter({ hasText: labels.shell.status.error });
 const contribution = (page: Page) => page.getByTestId("kpi-contribution_after_marketing");
 const revenue = (page: Page) => page.getByTestId("kpi-net_revenue");
-/** The empty workspace status line shows labels.status.empty; the loading one shows labels.status.loading. */
-const emptyStatus = labels.status.empty;
-const loadingStatus = labels.status.loading;
-/** Evidence dialog: h2 可見文字只有標題，sr-only 後綴「 · 計算與來源」讓可及名稱仍是 `${title} · ${labels.sections.evidence}`（evidence-drawer.tsx）。 */
-const evidenceDialog = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${escapeRegExp(labels.sections.evidence)}$`) });
+/** The empty workspace status line shows labels.shell.status.empty; the loading one shows labels.shell.status.loading. */
+const emptyStatus = labels.shell.status.empty;
+const loadingStatus = labels.shell.status.loading;
+/** Evidence dialog: h2 可見文字只有標題，sr-only 後綴「 · 計算與來源」讓可及名稱仍是 `${title} · ${labels.evidence.sections.evidence}`（evidence-drawer.tsx）。 */
+const evidenceDialog = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${escapeRegExp(labels.evidence.sections.evidence)}$`) });
 /**
  * V3-2b 三層數字（PRD §8.5）：KPI 卡主數字與上期是 L1（萬／元），表格 L2，抽屜標題下的精確值行與橋接是 L3（到分）。
  * 金額一律由 golden／獨立手算的到分字串經 presentation 格式化函式產生，不手寫顯示字串。
@@ -75,43 +74,43 @@ const kpiValue = (card: Locator) => card.locator(".kpi-value");
 const kpiPrevious = (card: Locator) => card.locator(".kpi-prev");
 /** V3-4a KPI 帶：上期 number-link 的可及名稱「{指標}上期 {L1}，看明細」（可見文字包含在內）。 */
 const previousLinkName = (metric: keyof typeof metricDefinitions, amount: string) => fill(labels.overview.kpiBand.previousAria, { metric: metricDefinitions[metric].label, value: formatAmountL1(amount) });
-/** KPI 卡「上期 {L1}」（overview.tsx：`{labels.periods.previous} {number(...)}`）。 */
-const previousLine = (amount: string) => `${labels.periods.previous} ${formatAmountL1(amount)}`;
+/** KPI 卡「上期 {L1}」（overview.tsx：`{labels.shell.periods.previous} {number(...)}`）。 */
+const previousLine = (amount: string) => `${labels.shell.periods.previous} ${formatAmountL1(amount)}`;
 /** 抽屜大數字（L1）與下一行精確值（L3＋元，evidence-drawer.tsx data-testid="evidence-precise-value"）。 */
 const drawerNumber = (dialog: Locator) => dialog.locator(".evidence-body > .number");
 const drawerPrecise = (dialog: Locator) => dialog.getByTestId("evidence-precise-value");
-const preciseMoney = (amount: string) => fill(labels.units.yuan, { value: formatAmountL3(amount) });
-const preciseSignedMoney = (amount: string) => fill(labels.units.yuan, { value: formatSignedDelta(amount, "L3") });
+const preciseMoney = (amount: string) => fill(labels.format.units.yuan, { value: formatAmountL3(amount) });
+const preciseSignedMoney = (amount: string) => fill(labels.format.units.yuan, { value: formatSignedDelta(amount, "L3") });
 /**
  * V3-5（§7.8）：抽屜標題列副標（dialog 的 aria-describedby）evidence.drawerV3.subtitle「{範圍} · {期間}」。KPI 證據沒有另寫範圍，
  * 涵蓋資料集全部通路時範圍寫「全部通路」；期間用 formatPeriodL1（不附天數，anchor＝manifest.data_as_of），與報表本期／上期相同時前綴「本期／上期」（drawerV3.periodNamed）。
  */
 const drawerSubtitle = (period: "current" | "previous", start: string, end: string, anchor: string) => fill(labels.evidence.drawerV3.subtitle, {
   scope: labels.evidence.allChannels,
-  period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.periods[period], range: formatPeriodL1(start, end, { anchor, days: false }) }),
+  period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.shell.periods[period], range: formatPeriodL1(start, end, { anchor, days: false }) }),
 });
 /** R2 evidence drawer lists source rows per file behind tabs: `${labels.evidence.sourceTabs[x]}（count）` buttons inside role="group" (evidence-drawer.tsx). */
 async function openSourceTab(dialog: ReturnType<Page["getByRole"]>, tab: keyof typeof labels.evidence.sourceTabs) {
-  await dialog.getByRole("group", { name: labels.ui.evidenceDrawer.sourceTabsAria, exact: true })
+  await dialog.getByRole("group", { name: labels.evidence.drawer.sourceTabsAria, exact: true })
     .getByRole("button", { name: new RegExp(`^${escapeRegExp(labels.evidence.sourceTabs[tab])}（\\d+）$`) }).click();
 }
 /** Period date inputs: sr-only labels are fill(filter.periodStart/End, { period }) (dashboard.tsx periodFieldLabel). */
-const periodField = (edge: "start" | "end", period: "previous" | "current") => fill((edge === "start" ? dashboard.filter.periodStart : dashboard.filter.periodEnd).split(" → ")[0], { period: labels.periods[period] });
+const periodField = (edge: "start" | "end", period: "previous" | "current") => fill((edge === "start" ? labels.shell.periodBar.filter.periodStart : labels.shell.periodBar.filter.periodEnd).split(" → ")[0], { period: labels.shell.periods[period] });
 /** Overview data-table summaries: fill(ui.overview.dataTable, { title }). */
-const dataTable = (title: string) => fill(labels.ui.overview.dataTable, { title });
+const dataTable = (title: string) => fill(labels.overview.page.dataTable, { title });
 const dataTablePrefix = dataTable("").trim();
 /** Diagnosis ranking button aria-label: fill(ui.workspacePanels.rankingAria, { title: headline, amount }). */
 function rankingButtonName(code: Parameters<typeof ruleHeadline>[0], amountPattern: string): RegExp {
   const headline = ruleHeadline(code).source.replace(/^\^/, "").replace(/\$$/, "");
-  const template = escapeRegExp(fill(labels.ui.workspacePanels.rankingAria, { title: "\u0000", amount: "\u0001" }));
+  const template = escapeRegExp(fill(labels.diagnosis.panel.rankingAria, { title: "\u0000", amount: "\u0001" }));
   return new RegExp(`^${template.replace("\u0000", headline).replace("\u0001", amountPattern)}$`);
 }
 function escapeRegExp(value: string): string { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
 async function requestDataset(page: Page, id: string) {
   await openValidation(page);
-  await page.getByLabel(dashboard.validation.datasetLabel, { exact: true }).selectOption(id);
-  await clickReplacing(page, page.getByRole("button", { name: dashboard.validation.loadButton, exact: true }));
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }));
 }
 async function loadGolden(page: Page) {
   await requestDataset(page, "golden");
@@ -124,7 +123,7 @@ async function loadGolden(page: Page) {
 /** V3-3：通路下拉在期間列裡；手機期間列收成 period-toggle，先開底部面板，選完按「完成」收起（桌機不動）。 */
 async function selectChannel(page: Page, channel: string) {
   await openPeriodSheet(page);
-  await page.getByLabel(dashboard.filter.channel, { exact: true }).selectOption(channel);
+  await page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true }).selectOption(channel);
   await closePeriodSheet(page);
 }
 function deferred() {
@@ -139,14 +138,14 @@ test.beforeEach(async ({ page }) => {
 
 test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", async ({ page }, testInfo) => {
   await page.keyboard.press("Tab");
-  const skip = page.getByRole("link", { name: dashboard.skipLink, exact: true });
+  const skip = page.getByRole("link", { name: labels.shell.sidebar.skipLink, exact: true });
   await expect(skip).toBeFocused();
   await expect(skip).toHaveCSS("clip-path", "none");
   await page.keyboard.press("Enter");
   await expect(page.locator("#main-content")).toBeFocused();
   await expect(skip).not.toHaveCSS("clip-path", "none");
   await expect(page.getByTestId("workspace-status")).toContainText(emptyStatus);
-  await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
   await expect(ready(page, "demo")).toBeVisible();
   await dismissSavePrompt(page);
   await navigateTo(page, "overview");
@@ -159,7 +158,7 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
     const dialog = evidenceDialog(page);
     await expect(drawerNumber(dialog)).toHaveText(formatAmountL1(amount));
     await expect(drawerPrecise(dialog)).toHaveText(preciseMoney(amount));
-    await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+    await dialog.getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
     await expect(dialog).not.toBeVisible();
   }
   const alternatives = page.locator("details").filter({ has: page.locator("summary", { hasText: dataTablePrefix }) });
@@ -186,7 +185,7 @@ test("切換 golden 與 demo 會重算同一組 KPI", async ({ page }) => {
   const change = contribution(page).locator(".kpi-delta");
   const deltaText = fill(labels.overview.kpiBand.deltaLine, { word: labels.format.earnLess, amount: formatHeadlineAmount("-315.00") });
   await expect(change.getByRole("button", { name: fill(labels.overview.kpiBand.deltaAria, { metric: metricDefinitions.contribution_after_marketing.label, delta: deltaText }), exact: true })).toHaveText(deltaText);
-  await expect(change.locator(".pct")).toHaveText(fill(labels.ui.overview.growthInline, { value: formatGrowth("255.00", "570.00", "L1")! }));
+  await expect(change.locator(".pct")).toHaveText(fill(labels.overview.page.growthInline, { value: formatGrowth("255.00", "570.00", "L1")! }));
   expect(deltaTone("contribution_after_marketing", "-315.00", "L1")).toBe("unfavorable");
   await expect(change).toHaveClass(/\bnegative\b/);
   await requestDataset(page, "demo");
@@ -226,10 +225,10 @@ test("通路篩選共用，金額證據可用鍵盤開啟與返回", async ({ pa
   await expect(dialog).not.toBeVisible();
   await expect(trigger).toBeFocused();
   await trigger.click();
-  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await dialog.getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await navigateTo(page, "diagnosis");
-  await expect(page.getByLabel(dashboard.filter.channel, { exact: true })).toHaveValue("DTC");
+  await expect(page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true })).toHaveValue("DTC");
   await navigateTo(page, "overview");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
 });
@@ -249,7 +248,7 @@ test("貢獻率差額的證據保留百分點單位，不再乘以 100", async (
   // R2 moved the exact system value into the technical <details>: `系統原值 <code>…</code>（百分點差值）`.
   await expect(dialog.locator(".evidence-technical")).toContainText(labels.evidence.exactValue);
   await expect(dialog.locator(".evidence-technical")).toContainText(`（${labels.evidence.pointNote}）`);
-  await expect(dialog).toContainText(labels.ui.overview.ratePointFormula);
+  await expect(dialog).toContainText(labels.overview.page.ratePointFormula);
   await expect(dialog).not.toContainText("-1,501.13%");
   await expect(dialog).not.toContainText(`${MINUS}1,501.13%`);
   await expect(drawerNumber(dialog)).not.toContainText("%");
@@ -263,8 +262,8 @@ test("診斷排序金額使用兩期已觀察差額，證據方向與來源一�
   const card = page.getByTestId("diagnosis-row-DISCOUNT_BURDEN_UP");
   await expect(card.getByRole("heading", { level: 3, name: ruleHeadline("DISCOUNT_BURDEN_UP") })).toBeVisible();
   if (await card.getAttribute("open") === null) await card.locator(":scope > summary h3").click();
-  await expect(card.getByRole("group", { name: labels.diagnosisList.scopeSwitch, exact: true }).getByRole("button", { name: labels.sections.total, exact: true })).toHaveAttribute("aria-pressed", "true");
-  await expect(card.locator(".fact-list")).toContainText(labels.ui.workspacePanels.scopeAll);
+  await expect(card.getByRole("group", { name: labels.diagnosis.list.scopeSwitch, exact: true }).getByRole("button", { name: labels.overview.sections.total, exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(card.locator(".fact-list")).toContainText(labels.diagnosis.panel.scopeAll);
   // The summary shows the contribution impact (cost up => -250.00); the ranking amount stays the observed delta.
   // V3-2b：列摘要的影響金額是 L1（U+2212）；技術細節的排序金額是 L3 帶號＋元（diagnosis-list.tsx rankingText）。
   await expect(card.locator(":scope > summary .impact-amount")).toHaveText(formatSignedDelta("-250.00", "L1"));
@@ -274,7 +273,7 @@ test("診斷排序金額使用兩期已觀察差額，證據方向與來源一�
   // This is the observed increase, whereas the contribution bridge is -250.00.
   // R1/R5 keep the ranking amount under the technical details of the row.
   await expect(ranking).toBeHidden();
-  await card.locator("details.diagnosis-technical > summary", { hasText: labels.sections.technicalDetails }).click();
+  await card.locator("details.diagnosis-technical > summary", { hasText: labels.evidence.sections.technicalDetails }).click();
   await expect(ranking).toHaveText(rankingAmount);
   await ranking.click();
   const dialog = evidenceDialog(page);
@@ -282,7 +281,7 @@ test("診斷排序金額使用兩期已觀察差額，證據方向與來源一�
   await expect(drawerNumber(dialog)).toHaveText(formatSignedDelta("250.00", "L1"));
   await expect(drawerPrecise(dialog)).toHaveText(preciseSignedMoney("250.00"));
   // R2 glossary formula: 「差額 = 本期折扣 − 上期折扣（這是實際差額，不是可以省下的錢）」 replaces the 改善收益估計 wording.
-  await expect(dialog).toContainText(fill(labels.ui.workspacePanels.deltaFormula, { metric: metricDefinitions.discounts.label }));
+  await expect(dialog).toContainText(fill(labels.diagnosis.panel.deltaFormula, { metric: metricDefinitions.discounts.label }));
   const components = dialog.getByRole("region", { name: labels.evidence.components, exact: true });
   // V3-5 組成項目表（table.kv.l3）：小標只寫「組成項目」，單位「（元）」標在欄頭；上期／本期兩項時一列「指標｜上期｜本期｜差額」，儲存格是 L3 不帶單位。
   await expect(components.getByRole("heading", { level: 3, name: labels.evidence.components, exact: true })).toBeVisible();
@@ -312,12 +311,12 @@ test("商品篩選只影響毛利明細，不帶入通路廣告與貢獻", async
   const channelOnlyMetrics = (["ad_spend", "mer", "marketing_burden", "contribution_before_marketing", "contribution_after_marketing", "contribution_margin"] as const)
     .flatMap(name => [metricDefinitions[name].label, metricDefinitions[name].shortLabel]);
   expect((await table.getByRole("columnheader").allTextContents()).join(" ")).not.toMatch(new RegExp(channelOnlyMetrics.map(escapeRegExp).join("|")));
-  await page.getByLabel(labels.csvColumns.category, { exact: true }).selectOption("HOME");
-  await page.getByLabel(labels.ui.productComparisonPanel.searchSku, { exact: true }).fill("A");
+  await page.getByLabel(labels.exports.csv.columns.category, { exact: true }).selectOption("HOME");
+  await page.getByLabel(labels.products.comparison.searchSku, { exact: true }).fill("A");
   await expect(table.locator("tbody tr")).toHaveCount(1);
   await expect(table.getByRole("rowheader", { name: "A", exact: true })).toBeVisible();
   // DTC／A 本期商品毛利 = (1400.00 − 210.00 − 70.00) − 580.00 = 540.00；表格是 L2 整數元（表頭帶「（元）」）。
-  const grossProfit = table.getByRole("button", { name: fill(labels.ui.productComparisonPanel.evidenceAria, { channel: "DTC", sku: "A", period: "", label: metricDefinitions.gross_profit.shortLabel, value: formatAmountL2("540.00") }), exact: true });
+  const grossProfit = table.getByRole("button", { name: fill(labels.products.comparison.evidenceAria, { channel: "DTC", sku: "A", period: "", label: metricDefinitions.gross_profit.shortLabel, value: formatAmountL2("540.00") }), exact: true });
   await expect(grossProfit).toHaveText(formatAmountL2("540.00"));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-workspace-regression-${testInfo.project.name}-products.png`), fullPage: true });
@@ -333,14 +332,14 @@ test("無效期間不覆寫已套用的分析範圍", async ({ page }) => {
   await expect(periodSummary(page)).toContainText(applied);
   let panel = await openCustomPeriod(page);
   await page.getByLabel(periodField("start", "current"), { exact: true }).fill("2026-08-01");
-  await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText(dashboard.errors.periodNotApplied);
-  await expect(page.getByTestId("banner-filter-error")).toHaveText(dashboard.errors.periodNotApplied);
+  await panel.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
+  await expect(page.getByRole("main").getByRole("alert")).toContainText(labels.shell.state.errors.periodNotApplied);
+  await expect(page.getByTestId("banner-filter-error")).toHaveText(labels.shell.state.errors.periodNotApplied);
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
   await expect(periodSummary(page)).toContainText(applied);
   panel = await openCustomPeriod(page);
   await page.getByLabel(periodField("start", "current"), { exact: true }).fill("2026-08-02");
-  await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+  await panel.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("255.00"));
   await expect(page.getByTestId("banner-filter-error")).toHaveCount(0);
   await expect(periodSummary(page)).toContainText(applied);
@@ -364,7 +363,7 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("316379.67"));
   await expect(kpiPrevious(revenue(page))).toHaveText(previousLine("1069415.21"));
   await expect(kpiPrevious(contribution(page))).toHaveText(previousLine("327100.88"));
-  const weekly = page.locator("details").filter({ has: page.locator("summary", { hasText: dataTable(labels.sections.trend) }) });
+  const weekly = page.locator("details").filter({ has: page.locator("summary", { hasText: dataTable(labels.overview.sections.trend) }) });
   await weekly.locator("summary").click();
   await expect(weekly.locator("tbody tr")).toHaveCount(2);
   await expect(weekly).toContainText("2026-06-01 — 2026-06-07");
@@ -388,7 +387,7 @@ test("有效自訂期間會同步更新 KPI、週資料及來源期間", async (
   await expect(dialog).toHaveAccessibleDescription(drawerSubtitle("current", "2026-06-08", "2026-06-14", dataAsOf.demo));
   await expect(drawerNumber(dialog)).toHaveText(formatAmountL1("316379.67"));
   await expect(drawerPrecise(dialog)).toHaveText(preciseMoney("316379.67"));
-  await dialog.getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await dialog.getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
   // V3-4a 390 寬：非強調格是單行「名稱｜數值｜差額」，「上期」連結只在扣廣告後貢獻（強調格）可見；手機改點它，上期範圍與精確值的檢查相同。
   const [previousCard, previousMetric, previousAmount] = isMobile(page) ? [contribution(page), "contribution_after_marketing", "327100.88"] as const : [revenue(page), "net_revenue", "1069415.21"] as const;
   await kpiPrevious(previousCard).getByRole("button", { name: previousLinkName(previousMetric, previousAmount), exact: true }).click();
@@ -401,9 +400,9 @@ test("資料工作區展示三份原始檔案、行號、口徑與未縮減預�
   await selectChannel(page, "DTC");
   await expect(kpiValue(contribution(page))).toHaveText(formatAmountL1("270.00"));
   await navigateTo(page, "data");
-  await expect(page.getByRole("heading", { name: labels.sections.dataScope, exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: labels.data.sections.dataScope, exact: true })).toBeVisible();
   // V3-8（§7.7.1 第 7 點）：來源檔案預覽改成三個預設收合的 <details>（data-preview-{file}）；說明句在區塊標題下，表格要先展開才看得見。
-  await expect(page.getByTestId("data-preview")).toContainText(labels.ui.workspacePanels.previewNote);
+  await expect(page.getByTestId("data-preview")).toContainText(labels.data.panel.previewNote);
   for (const file of previewFiles) {
     await expect(previewDetails(page, file)).not.toHaveAttribute("open", "");
     await expect(previewTable(page, file)).toBeHidden();
@@ -442,7 +441,7 @@ for (const scenario of [
     await dismissSavePrompt(page);
     await navigateTo(page, "overview");
     // 缺值寫「資料待補」（不是「—」）；金額為 L1。
-    await expect(kpiValue(contribution(page))).toHaveText(labels.status.missing);
+    await expect(kpiValue(contribution(page))).toHaveText(labels.shell.status.missing);
     await expect(contribution(page)).not.toContainText("—");
     await expect(kpiValue(revenue(page))).toHaveText(formatAmountL1("2470.00"));
     await selectChannel(page, scenario.unaffectedChannel);
@@ -457,18 +456,18 @@ test("blocking 資料集載入失敗仍保留先前成功資料", async ({ page 
   // V3-8（§7.10 錯誤）：頁面型錯誤容器 error-state——標題、一行原因（role=alert）、動作列「重新載入」（主要）＋「回到上次成功的資料」（有上次資料才有）＋「查看問題清單」。
   const errorState = page.getByTestId("error-state");
   await expect(errorState.getByRole("heading", { level: 2, name: labels.empty.stateV3.errorTitle, exact: true })).toBeVisible();
-  await expect(errorState.getByRole("alert")).toHaveText(dashboard.errors.validationFailed);
-  await expect(page.getByTestId("error-retry")).toHaveText(dashboard.errorState.retry);
+  await expect(errorState.getByRole("alert")).toHaveText(labels.shell.state.errors.validationFailed);
+  await expect(page.getByTestId("error-retry")).toHaveText(labels.shell.state.errorState.retry);
   await expect(page.getByTestId("error-retry")).toHaveClass(/\bui-btn-primary\b/);
-  await expect(page.getByTestId("error-back")).toHaveText(dashboard.errorState.back);
+  await expect(page.getByTestId("error-back")).toHaveText(labels.shell.state.errorState.back);
   // 「查看問題清單」把焦點移到下方問題清單的 region（IssueList 的 role=region「資料問題清單」）；duplicate 是 sales_daily.csv 第 10 行重複（fixtures/errors/duplicate_sales_key）。
   await page.getByTestId("error-view-issues").click();
   const issues = page.getByTestId("error-issues");
-  await expect(issues.getByRole("region", { name: labels.ui.issueList.regionAria, exact: true })).toBeFocused();
-  const duplicate = issueCells(fill(labels.importErrors.DUPLICATE_SALES_KEY, { file: "sales_daily.csv", line: 10 }));
+  await expect(issues.getByRole("region", { name: labels.data.issues.regionAria, exact: true })).toBeFocused();
+  const duplicate = issueCells(fill(labels.errors.import.DUPLICATE_SALES_KEY, { file: "sales_daily.csv", line: 10 }));
   await expect(issueTable(issues).locator("tbody tr").filter({ hasText: duplicate.problem })).toHaveCount(1);
   await expectIssueRow(issueTable(issues).locator("tbody tr").filter({ hasText: duplicate.problem }), { file: "sales_daily.csv", line: 10, field: "$key", ...duplicate, severity: "blocking" });
-  await errorState.getByRole("button", { name: dashboard.errorState.back, exact: true }).click();
+  await errorState.getByRole("button", { name: labels.shell.state.errorState.back, exact: true }).click();
   await expect(page.getByTestId("error-state")).toHaveCount(0);
   await expect(ready(page, "golden")).toBeVisible();
   await navigateTo(page, "overview");
@@ -484,7 +483,7 @@ test("載入中與 HTTP 故障均有明確狀態", async ({ page, browserAudit }
     await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "合成測試：暫時無法載入資料" }) });
   });
   try {
-    await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+    await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
     await expect(page.getByTestId("workspace-status")).toContainText(loadingStatus);
     // V3-8（§7.10）：載入中是同一個頁面型容器（aria-busy），首次進入的空狀態已收起。
     await expect(page.getByTestId("loading-state")).toBeVisible();
@@ -498,7 +497,7 @@ test("載入中與 HTTP 故障均有明確狀態", async ({ page, browserAudit }
   // 錯誤容器：原因是 HTTP 失敗的一行；沒有上次成功的資料 →「回到上次成功的資料」不出現；沒有問題清單 →「查看問題清單」不出現。
   const errorState = page.getByTestId("error-state");
   await expect(page.getByTestId("loading-state")).toHaveCount(0);
-  await expect(errorState.getByRole("alert")).toHaveText(dashboard.errors.fetchFailed);
+  await expect(errorState.getByRole("alert")).toHaveText(labels.shell.state.errors.fetchFailed);
   await expect(page.getByTestId("error-retry")).toBeVisible();
   await expect(page.getByTestId("error-back")).toHaveCount(0);
   await expect(page.getByTestId("error-view-issues")).toHaveCount(0);
@@ -532,7 +531,7 @@ test("較慢的舊資料請求不可覆寫較新的 golden 選擇", async ({ pag
     finally { finished.release(); }
   });
   try {
-    await clickReplacing(page, page.getByRole("button", { name: labels.buttons.loadDemo, exact: true }));
+    await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }));
     await received.promise;
     await expect(page.getByTestId("workspace-status")).toContainText(loadingStatus);
     await loadGolden(page);
@@ -560,7 +559,7 @@ test("清空與重新整理回到空狀態，另一個頁面沒有共用資料",
   await otherPage.close();
   // V3-3：「清空」搬進頂欄儲存選單的危險區（手機先開頂欄「更多」）。
   const replacement = await clearWorkspace(page);
-  await replacement.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
+  await replacement.getByRole("button", { name: labels.storage.replacement.discardAndContinue, exact: true }).click();
   await expect(contribution(page)).toHaveCount(0);
   await expect(page.getByTestId("workspace-status")).toContainText(emptyStatus);
   await loadGolden(page);

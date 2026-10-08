@@ -110,12 +110,12 @@ describe('R5-4 sensitivity in decision exports', () => {
   const { session, plans } = await dtc();
   const markdown = exportDecisionMarkdown(session, plans, []);
   // V3-2b：小表是 L2（整數元、U+2212、正差額加「+」），金額欄表頭加「（元）」；到分的值在技術細節。
-  const money = (label: string) => fill(labels.ui.export.moneyColumn, { label });
-  const header = `| ${[labels.ui.scenarioSensitivity.colAssumption, `${labels.scenario.volume.label}（%）`, money(labels.scenario.resultTitle), money(labels.scenario.vsBaseline)].join(' | ')} |`;
+  const money = (label: string) => fill(labels.exports.common.moneyColumn, { label });
+  const header = `| ${[labels.scenarios.sensitivity.colAssumption, `${labels.scenarios.inputs.volume.label}（%）`, money(labels.scenarios.inputs.resultTitle), money(labels.scenarios.inputs.vsBaseline)].join(' | ')} |`;
   const cells = (contribution: string, delta: string) => `${mdEscape(formatAmountL2(contribution))} | ${mdEscape(formatSignedDelta(delta, 'L2'))}`;
-  const letter = (value: string) => fill(labels.ui.scenarioSensitivity.rowLabel, { letter: value });
-  const empty = labels.ui.decisionExport.nullValue;
-  expect(markdown.split(`#### ${labels.sections.scenarioBreakeven}`)).toHaveLength(3);
+  const letter = (value: string) => fill(labels.scenarios.sensitivity.rowLabel, { letter: value });
+  const empty = labels.exports.decision.nullValue;
+  expect(markdown.split(`#### ${labels.scenarios.sections.scenarioBreakeven}`)).toHaveLength(3);
   expect(markdown).toContain(header);
   expect(markdown).toContain(`| ${letter('A')} | \\-10 | ${cells('228.60', '-41.40')} |`);
   expect(markdown).toContain(`| ${letter('B')} | 0 | ${cells('284.00', '14.00')} |`);
@@ -126,8 +126,8 @@ describe('R5-4 sensitivity in decision exports', () => {
   const draftSection = markdown.slice(markdown.indexOf('### 草稿'), markdown.indexOf('### 空白'));
   expect(draftSection).toContain(`| ${letter('A')} | 5 | ${empty} | ${empty} |`);
   expect(draftSection).toContain(`| ${letter('B')} | ${empty} | ${empty} | ${empty} |`);
-  expect(draftSection.split(labels.scenario.draft).length).toBeGreaterThan(2);
-  expect(markdown.slice(markdown.indexOf('### 空白'))).not.toContain(labels.sections.scenarioBreakeven);
+  expect(draftSection.split(labels.scenarios.inputs.draft).length).toBeGreaterThan(2);
+  expect(markdown.slice(markdown.indexOf('### 空白'))).not.toContain(labels.scenarios.sections.scenarioBreakeven);
  });
  it('marks unfilled, out-of-range and stale analyses without inventing results', async () => {
   const { session, plans } = await dtc();
@@ -136,14 +136,14 @@ describe('R5-4 sensitivity in decision exports', () => {
   expect(json.scenarios[0].sensitivity.analysis).toMatchObject({ status: 'valid', sensitivity_status: 'unfilled', rows: [], reasons: [{ code: 'SENSITIVITY_VOLUME_REQUIRED' }] });
   const unfilled = ['', 'unfilled', ['SENSITIVITY_VOLUME_REQUIRED']];
   expect(records(exportDecisionCsv(session, partial, [])).filter(row => row.row_type === 'scenario_sensitivity_result').map(row => [row.value, row.status, JSON.parse(row.reason_codes)])).toEqual([unfilled, unfilled, unfilled]);
-  expect(exportDecisionMarkdown(session, partial, [])).toContain(labels.ui.scenarioSensitivity.reasons.SENSITIVITY_VOLUME_REQUIRED.replaceAll('.', '\\.'));
+  expect(exportDecisionMarkdown(session, partial, [])).toContain(labels.scenarios.sensitivity.reasons.SENSITIVITY_VOLUME_REQUIRED.replaceAll('.', '\\.'));
   const outside = saveScenario(session, [], { id: 'p', name: '履約', inputs: golden, sensitivity: { volumes: ['-10', '101', '10'] } });
   expect(JSON.parse(exportDecisionJson(session, outside, [])).scenarios[0].sensitivity.analysis).toMatchObject({ sensitivity_status: 'invalid', rows: [], reasons: [{ code: 'INPUT_OUT_OF_RANGE' }] });
   const stale = { ...session, stale: true };
   expect(JSON.parse(exportDecisionJson(stale, plans, [])).scenarios[0].sensitivity.analysis).toMatchObject({ status: 'stale', targets: [], rows: [], reasons: [{ code: 'STALE_SCENARIO' }] });
   const staleRow = records(exportDecisionCsv(stale, plans, [])).find(row => row.row_type === 'scenario_sensitivity_result' && row.item_id === 'p')!;
   expect([staleRow.status, staleRow.reason_codes]).toEqual(['stale', JSON.stringify(['STALE_SCENARIO'])]);
-  expect(exportDecisionMarkdown(stale, plans, [])).toContain(labels.ui.scenarioSensitivity.reasons.STALE_SCENARIO);
+  expect(exportDecisionMarkdown(stale, plans, [])).toContain(labels.scenarios.sensitivity.reasons.STALE_SCENARIO);
   expect(() => exportDecisionJson(session, [{ ...plans[0], sensitivity: { volumes: ['1', '2'] } as never }], [])).toThrow('INVALID_SENSITIVITY_INPUT');
  });
  it('workspace export carries each context plan sensitivity; historical contexts are stale', async () => {
@@ -188,11 +188,11 @@ describe('R5 fix: workspace export follows the scenario page context', () => {
   expect(json.scenarios[0].result.contribution).toBe('284.00');
   expect(json.session.scope.channels).toEqual(['DTC']);
   const markdown = exportWorkspaceDecision('md', allSource, workspace, emptyActionWorkspace(), null, null, contextId);
-  const main = markdown.slice(0, markdown.indexOf(labels.ui.workspaceDecisionExport.appendixHeading));
+  const main = markdown.slice(0, markdown.indexOf(labels.exports.workspaceDecision.appendixHeading));
   expect(main).toContain('### 履約試算');
   // 主文 L2「284」、技術細節 L3「284.00」（md 跳脫後是 284\.00）。
   expect(main).toContain(mdEscape(formatAmountL3('284.00')));
-  expect(main).toContain(`${mdEscape(labels.scenario.resultTitle)}：${formatAmountL2('284.00')}`);
+  expect(main).toContain(`${mdEscape(labels.scenarios.inputs.resultTitle)}：${formatAmountL2('284.00')}`);
   const csv = records(exportWorkspaceDecision('csv', allSource, workspace, emptyActionWorkspace(), null, null, contextId));
   const contributions = csv.filter(row => row.row_type === 'scenario_result' && row.field === 'contribution' && row.item_id === 'p');
   // 主段已含這個 context，附錄不重複輸出。

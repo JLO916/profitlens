@@ -109,6 +109,6 @@ export async function sendAiRequest(options: AiRequestOptions): Promise<AiClient
 }
 
 export function aiReasonMessage(reason: string): string {
-  const messages: Record<string, string> = labels.ui.aiClient.reasons;
-  return (Object.hasOwn(messages, reason) ? messages[reason] : undefined) ?? labels.ui.aiClient.reasonFallback;
+  const messages: Record<string, string> = labels.shell.ai.client.reasons;
+  return (Object.hasOwn(messages, reason) ? messages[reason] : undefined) ?? labels.shell.ai.client.reasonFallback;
 }

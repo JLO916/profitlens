@@ -43,7 +43,7 @@ function status(value: string | null, reason_codes: readonly string[]): AssistKp
 }
 /** 畫面值一律 L1（§8.5）：「7,420 件」「1,058 元／件」「8.8%」「11.4 倍」；精確值留在 value，抽屜與匯出用 value。 */
 function display(unit: AssistUnit, value: string | null, state: AssistKpi["status"]): string {
-  if (value === null) return state === "not_applicable" ? labels.assist.notApplicable : labels.status.missing;
+  if (value === null) return state === "not_applicable" ? labels.assist.notApplicable : labels.shell.status.missing;
   switch (unit) {
     case "count": return formatCount(value, "L1");
     case "money_per_unit": return formatPerUnit(value, "L1");

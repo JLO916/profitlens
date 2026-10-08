@@ -85,7 +85,7 @@ function groupOrder(a: DiagnosisGroup, b: DiagnosisGroup): number {
 
 /** 畫面範圍標籤：合計顯示「合計」，通路顯示通路名，SKU 顯示「通路／SKU」（示範資料套 alias）。 */
 export function diagnosisScopeLabel(scope: Scope, alias: boolean): string {
-  return scope.kind === "all" ? labels.sections.total : scopeLabel(scope, alias);
+  return scope.kind === "all" ? labels.overview.sections.total : scopeLabel(scope, alias);
 }
 
 /** summary 只列前 limit 個範圍標籤；more＝其餘個數（0 表示全部列出）。 */

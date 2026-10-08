@@ -21,7 +21,7 @@ async function snapshot(name = "golden", filters: AnalysisFilters = {}) {
 const noop = () => undefined;
 const text = (html: string) => html.replace(/<[^>]*>/g, "");
 const tableV3 = labels.diagnosis.tableV3;
-const renderTable = (snap: WorkspaceSnapshot, variant?: "default" | "diagnosis") => renderToStaticMarkup(<ChannelWideTable summary={buildManagerSummary(snap)} onEvidence={noop} ariaLabel={labels.sections.channelTableAria} caption={labels.sections.channelTableCaption} variant={variant} />);
+const renderTable = (snap: WorkspaceSnapshot, variant?: "default" | "diagnosis") => renderToStaticMarkup(<ChannelWideTable summary={buildManagerSummary(snap)} onEvidence={noop} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} variant={variant} />);
 const rowsOf = (html: string, part: "thead" | "tbody") => {
   const body = html.slice(html.indexOf(`<${part}`), html.indexOf(`</${part}>`));
   return [...body.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)].map(match => match[1]);
@@ -32,18 +32,18 @@ const attr = (attrs: string, name: string) => new RegExp(`\\s${name}="([^"]*)"`)
 describe("通路寬表 diagnosis 變體（各通路兩期比較）", () => {
   it("欄序：通路｜本期淨營收｜上期淨營收｜差額｜本期扣廣告後貢獻｜上期｜差額｜備註；兩層表頭，欄群組標單位一次，caption 不再寫單位", async () => {
     const html = renderTable(await snapshot(), "diagnosis");
-    expect(html).toMatch(new RegExp(`^<div class="table-scroll channel-table-scroll" tabindex="0" role="region" aria-label="${labels.sections.channelTableAria}"><table class="ui-table channel-table-v3" role="table">`));
-    expect(html).toContain(`<caption>${labels.sections.channelTableCaption}</caption>`);
-    expect(html).not.toContain(fill(labels.ui.channelTable.unitCaption, { caption: labels.sections.channelTableCaption }));
+    expect(html).toMatch(new RegExp(`^<div class="table-scroll channel-table-scroll" tabindex="0" role="region" aria-label="${labels.overview.sections.channelTableAria}"><table class="ui-table channel-table-v3" role="table">`));
+    expect(html).toContain(`<caption>${labels.overview.sections.channelTableCaption}</caption>`);
+    expect(html).not.toContain(fill(labels.overview.channelTable.unitCaption, { caption: labels.overview.sections.channelTableCaption }));
     const [groupRow, columnRow] = rowsOf(html, "thead");
     const groups = cells(groupRow);
-    expect(groups.map(cell => cell.text)).toEqual([labels.ui.channelTable.channelHeader, fill(labels.format.units.yuanColumn, { label: metricDefinitions.net_revenue.label }), fill(labels.format.units.yuanColumn, { label: metricDefinitions.contribution_after_marketing.label }), tableV3.note]);
+    expect(groups.map(cell => cell.text)).toEqual([labels.overview.channelTable.channelHeader, fill(labels.format.units.yuanColumn, { label: metricDefinitions.net_revenue.label }), fill(labels.format.units.yuanColumn, { label: metricDefinitions.contribution_after_marketing.label }), tableV3.note]);
     expect(groups.map(cell => [attr(cell.attrs, "rowSpan"), attr(cell.attrs, "colSpan"), attr(cell.attrs, "scope")])).toEqual([["2", null, "col"], [null, "3", "colgroup"], [null, "3", "colgroup"], ["2", null, "col"]]);
-    expect(cells(columnRow).map(cell => cell.text)).toEqual([labels.periods.current, labels.periods.previous, tableV3.change, labels.periods.current, labels.periods.previous, tableV3.change]);
+    expect(cells(columnRow).map(cell => cell.text)).toEqual([labels.shell.periods.current, labels.shell.periods.previous, tableV3.change, labels.shell.periods.current, labels.shell.periods.previous, tableV3.change]);
     // 單位「（元）」只在兩個欄群組標題出現；儲存格內不重複單位。
     const unit = fill(labels.format.units.yuanColumn, { label: "" });
     expect(html.split(unit)).toHaveLength(3);
-    const yuan = fill(labels.units.yuan, { value: "" }).trim();
+    const yuan = fill(labels.format.units.yuan, { value: "" }).trim();
     for (const row of rowsOf(html, "tbody")) for (const cell of cells(row).slice(1, 7)) expect(cell.text).not.toContain(yuan);
   });
 
@@ -52,7 +52,7 @@ describe("通路寬表 diagnosis 變體（各通路兩期比較）", () => {
     const html = renderTable(snap, "diagnosis");
     const columnRow = cells(rowsOf(html, "thead")[1]);
     const buttons = columnRow.map(cell => /<button type="button" class="sort-button" data-label="[^"]*" aria-label="([^"]*)">/.exec(cell.html)?.[1] ?? null);
-    const full = (name: "net_revenue" | "contribution_after_marketing", period: "current" | "change") => period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.periods.current, metric: metricDefinitions[name].label });
+    const full = (name: "net_revenue" | "contribution_after_marketing", period: "current" | "change") => period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.shell.periods.current, metric: metricDefinitions[name].label });
     expect(buttons).toEqual([full("net_revenue", "current"), null, full("net_revenue", "change"), full("contribution_after_marketing", "current"), null, full("contribution_after_marketing", "change")]);
     for (const cell of columnRow) if (attr(cell.attrs, "class")!.includes("sortable")) expect(cell.html).toMatch(/<svg class="sort-icon"[^>]*aria-hidden="true"/);
     expect(columnRow.map(cell => attr(cell.attrs, "aria-sort"))).toEqual([null, null, null, "ascending", null, null]);
@@ -73,9 +73,9 @@ describe("通路寬表 diagnosis 變體（各通路兩期比較）", () => {
     for (const row of rowsOf(html, "tbody")) {
       const [name, ...rest] = cells(row);
       const channel = summary.channels.find(item => item.channel === name.text)!;
-      expect([name.tag, attr(name.attrs, "role"), attr(name.attrs, "scope"), attr(name.attrs, "data-list-role"), attr(name.attrs, "data-label")]).toEqual(["th", "rowheader", "row", "primary", labels.ui.channelTable.channelHeader]);
+      expect([name.tag, attr(name.attrs, "role"), attr(name.attrs, "scope"), attr(name.attrs, "data-list-role"), attr(name.attrs, "data-label")]).toEqual(["th", "rowheader", "row", "primary", labels.overview.channelTable.channelHeader]);
       expect(rest.every(cell => cell.tag === "td" && attr(cell.attrs, "role") === "cell")).toBe(true);
-      const short = (metric: "net_revenue" | "contribution_after_marketing", period: "current" | "previous" | "change") => period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[metric].shortLabel }) : fill(tableV3.cellLabel, { period: labels.periods[period], metric: metricDefinitions[metric].shortLabel });
+      const short = (metric: "net_revenue" | "contribution_after_marketing", period: "current" | "previous" | "change") => period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[metric].shortLabel }) : fill(tableV3.cellLabel, { period: labels.shell.periods[period], metric: metricDefinitions[metric].shortLabel });
       expect(rest.map(cell => [attr(cell.attrs, "data-label"), attr(cell.attrs, "data-list-role")])).toEqual([
         [short("net_revenue", "current"), "secondary"], [short("net_revenue", "previous"), "secondary"], [short("net_revenue", "change"), "secondary"],
         [short("contribution_after_marketing", "current"), "labeled"], [short("contribution_after_marketing", "previous"), "secondary"], [short("contribution_after_marketing", "change"), "labeled"],
@@ -135,11 +135,11 @@ describe("通路寬表 diagnosis 變體（各通路兩期比較）", () => {
     expect(html).not.toContain("channel-table-v3");
     expect(html).not.toContain("aria-sort");
     expect(html).not.toContain("data-list-role");
-    expect(html).toContain(`<caption>${fill(labels.ui.channelTable.unitCaption, { caption: labels.sections.channelTableCaption })}</caption>`);
+    expect(html).toContain(`<caption>${fill(labels.overview.channelTable.unitCaption, { caption: labels.overview.sections.channelTableCaption })}</caption>`);
     const headers = cells(rowsOf(html, "thead")[0]).map(cell => cell.text);
-    expect(headers).toEqual([labels.ui.channelTable.channelHeader, ...(["net_revenue", "contribution_after_marketing"] as const).flatMap(name => [`${labels.periods.previous}${metricDefinitions[name].shortLabel}`, `${labels.periods.current}${metricDefinitions[name].shortLabel}`, `${metricDefinitions[name].shortLabel}${labels.csvSuffix.change}`])]);
-    expect(rowsOf(html, "tbody").map(row => cells(row)[0].text.replace(labels.ui.channelTable.turnedNegative, ""))).toEqual(["DTC", "MARKETPLACE"]);
-    expect(html).toContain(labels.ui.channelTable.turnedNegative);
+    expect(headers).toEqual([labels.overview.channelTable.channelHeader, ...(["net_revenue", "contribution_after_marketing"] as const).flatMap(name => [`${labels.shell.periods.previous}${metricDefinitions[name].shortLabel}`, `${labels.shell.periods.current}${metricDefinitions[name].shortLabel}`, `${metricDefinitions[name].shortLabel}${labels.exports.csv.suffix.change}`])]);
+    expect(rowsOf(html, "tbody").map(row => cells(row)[0].text.replace(labels.overview.channelTable.turnedNegative, ""))).toEqual(["DTC", "MARKETPLACE"]);
+    expect(html).toContain(labels.overview.channelTable.turnedNegative);
   });
 });
 

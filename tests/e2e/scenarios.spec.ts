@@ -8,16 +8,16 @@ import { MINUS, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, for
 import { closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { acceptAssumptions, consentBox, decisionExportLabel, downloadDecision, downloadScenario, expectAcknowledged, expectConsentPending, modeButton, openScenarioExport, openTemplateHelp } from "./scenario-helpers-v3";
 
-const dw = labels.ui.decisionWorkbench, aw = labels.ui.actionsWorkbench, msw = labels.ui.multiScenarioWorkbench, dash = labels.ui.dashboard;
-const cmAfter = labels.metrics.contribution_after_marketing.label;
+const dw = labels.scenarios.decision, aw = labels.actions.workbench, msw = labels.scenarios.workbench;
+const cmAfter = labels.metrics.contribution_after_marketing.headline;
 const inputLabels = [
-  labels.scenario.volume.label, labels.scenario.discount.label, labels.scenario.fulfillmentUnit.label,
-  labels.scenario.adSpend.label, labels.scenario.oneOff.label,
+  labels.scenarios.inputs.volume.label, labels.scenarios.inputs.discount.label, labels.scenarios.inputs.fulfillmentUnit.label,
+  labels.scenarios.inputs.adSpend.label, labels.scenarios.inputs.oneOff.label,
 ] as const;
-const consentLabel = labels.scenario.acceptAssumptions;
+const consentLabel = labels.scenarios.inputs.acceptAssumptions;
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-/** evidence-drawer.tsx names the dialog `${title} · ${labels.sections.evidence}`（V3-2a：分隔符改「 · 」）. */
-const evidenceDialogName = (title: string) => `${title} · ${labels.sections.evidence}`;
+/** evidence-drawer.tsx names the dialog `${title} · ${labels.evidence.sections.evidence}`（V3-2a：分隔符改「 · 」）. */
+const evidenceDialogName = (title: string) => `${title} · ${labels.evidence.sections.evidence}`;
 /**
  * V3-5（§7.8）：抽屜標題列副標（dialog 的 aria-describedby）＝labels.evidence.drawerV3.subtitle「{範圍} · {期間}」。
  * 範圍：沒有 scopeLabel 時就是通路；scopeLabel 已寫出通路時直接用它。期間：formatPeriodL1（M/D，不附天數，以資料到為錨），
@@ -26,7 +26,7 @@ const evidenceDialogName = (title: string) => `${title} · ${labels.sections.evi
 const goldenAsOf = (JSON.parse(readFileSync(resolve("fixtures/golden/manifest.json"), "utf8")) as { data_as_of: string }).data_as_of;
 const evidenceSubtitle = (start: string, end: string, scope: string, period?: "current" | "previous") => {
   const range = formatPeriodL1(start, end, { anchor: goldenAsOf, days: false });
-  return fill(labels.evidence.drawerV3.subtitle, { scope, period: period ? fill(labels.evidence.drawerV3.periodNamed, { name: labels.periods[period], range }) : range });
+  return fill(labels.evidence.drawerV3.subtitle, { scope, period: period ? fill(labels.evidence.drawerV3.periodNamed, { name: labels.shell.periods[period], range }) : range });
 };
 /** V3-5：原始明細每列的「檔名:行號」（labels.evidence.drawerV3.fileLine）。 */
 const evidenceFileLine = (file: string, line: number) => fill(labels.evidence.drawerV3.fileLine, { file, line });
@@ -40,21 +40,21 @@ async function showSourceTab(dialog: Locator, tab: keyof typeof sourceTabFiles) 
   return button;
 }
 /** actions-workbench.tsx factLabel for a channel-scoped fact. */
-const factText = (start: string, end: string, metric: string, scope: string, value: string) => fill(aw.factLabel, { start, end, metric, scope, scopeKind: labels.csvColumns.channel, value });
+const factText = (start: string, end: string, metric: string, scope: string, value: string) => fill(aw.factLabel, { start, end, metric, scope, scopeKind: labels.exports.csv.columns.channel, value });
 /** multi-scenario-workbench.tsx strips the inventory tail after a full-width paren before filling history templates. */
 /** 「開始試算 {channel}」按鈕已依規格移除（R5-3），用模板開頭比對確認不存在。 */
 const startButtonPrefix = new RegExp(`^${escapeRegExp(msw.startButton.split("{channel}")[0])}`);
-const historyPlanLine = (plan: string, amount: string) => fill(msw.historyPlanSummary.split("（")[0], { plan, resultLabel: labels.scenario.resultTitle, amount });
-const periodFieldLabel = (edge: "start" | "end", period: string) => fill(edge === "start" ? dash.filter.periodStart : dash.filter.periodEnd, { period });
+const historyPlanLine = (plan: string, amount: string) => fill(msw.historyPlanSummary.split("（")[0], { plan, resultLabel: labels.scenarios.inputs.resultTitle, amount });
+const periodFieldLabel = (edge: "start" | "end", period: string) => fill(edge === "start" ? labels.shell.periodBar.filter.periodStart : labels.shell.periodBar.filter.periodEnd, { period });
 /** V3-2a：狀態列「資料到 {date}」，日期取各資料集 manifest 的 data_as_of（不在測試內另寫日期）。 */
-const ready = (id: "golden" | "demo" = "golden") => fill(labels.status.ready, { date: (JSON.parse(readFileSync(resolve(`fixtures/${id}/manifest.json`), "utf8")) as { data_as_of: string }).data_as_of });
+const ready = (id: "golden" | "demo" = "golden") => fill(labels.shell.status.ready, { date: (JSON.parse(readFileSync(resolve(`fixtures/${id}/manifest.json`), "utf8")) as { data_as_of: string }).data_as_of });
 /**
  * V3-2b（§7.8）：計算與來源抽屜標題下的大數字是 L1（萬／元），下一行 evidence-precise-value 永遠顯示到分的精確值（L3＋「元」）。
  * 傳入的是 golden 的精確字串（例如 "270.00"），顯示文字一律由呈現層格式化函式產生。
  */
 async function expectDrawerAmount(dialog: Locator, value: string) {
   await expect(dialog.locator("p.number")).toHaveText(formatAmountL1(value));
-  await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(fill(labels.units.yuan, { value: formatAmountL3(value) }));
+  await expect(dialog.getByTestId("evidence-precise-value")).toHaveText(fill(labels.format.units.yuan, { value: formatAmountL3(value) }));
 }
 /** V3-2b：試算卡的結果大字與本期基準是 L1（formatAmountL1），與現況相比是帶號 L1（formatSignedDelta）。 */
 const amountL1 = (value: string) => formatAmountL1(value);
@@ -96,12 +96,12 @@ const test = base.extend<{ browserAudit: AuditEvent[] }>({
 
 async function loadDataset(page: Page, id = "golden", classification: string = id === "demo" ? ready("demo") : ready(), keepSavePrompt = false) {
   await openValidation(page);
-  await page.getByLabel(dash.validation.datasetLabel, { exact: true }).selectOption(id);
+  await page.getByLabel(labels.shell.devValidation.validation.datasetLabel, { exact: true }).selectOption(id);
   const response = page.waitForResponse(response => response.url().endsWith(`/api/datasets/${id}`) && response.status() === 200);
-  await page.getByRole("button", { name: dash.validation.loadButton, exact: true }).click();
-  const replacement = page.getByRole("dialog", { name: labels.ui.replacementDialog.heading });
+  await page.getByRole("button", { name: labels.shell.devValidation.validation.loadButton, exact: true }).click();
+  const replacement = page.getByRole("dialog", { name: labels.storage.replacement.heading });
   if (await Promise.race([response.then(() => false), replacement.waitFor({ state: "visible" }).then(() => true)])) {
-    await replacement.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click();
+    await replacement.getByRole("button", { name: labels.storage.replacement.discardAndContinue, exact: true }).click();
   }
   await response;
   await expect(workspaceStatus(page)).toContainText(classification);
@@ -112,7 +112,7 @@ async function loadDataset(page: Page, id = "golden", classification: string = i
 /** V3-3：全站通路選單在期間列（手機收在期間底部面板，先開面板、選完按「完成」）。 */
 async function selectGlobalChannel(page: Page, channel: string) {
   await openPeriodSheet(page);
-  await page.getByLabel(dash.filter.channel, { exact: true }).selectOption(channel);
+  await page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true }).selectOption(channel);
   await closePeriodSheet(page);
 }
 async function selectChannel(page: Page, channel: string, classification: string = ready()) {
@@ -143,14 +143,14 @@ async function expectFreshDraft(page: Page, { acknowledged }: { acknowledged: bo
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("");
   if (acknowledged) await expectAcknowledged(card);
   else await expectConsentPending(card);
-  await expect(card.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await expect(card.getByTestId("scenario-draft")).toHaveText(labels.scenarios.inputs.draft);
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(card.getByTestId("scenario-version")).toHaveCount(0);
   await expect(scenario(page, 2)).toHaveCount(0);
 }
 /** R5-3：方案 1 是進頁就有的草稿（不必按「新增方案」）；第 2、3 個方案才按「新增方案」。 */
 async function addScenario(page: Page, index = 1, name = `獨立方案 ${index}`) {
-  if (index > 1) await page.getByRole("button", { name: labels.buttons.addScenario, exact: true }).click();
+  if (index > 1) await page.getByRole("button", { name: labels.scenarios.buttons.addScenario, exact: true }).click();
   const card = scenario(page, index);
   await expect(card).toBeVisible();
   await card.getByLabel(dw.planName, { exact: true }).fill(name);
@@ -170,7 +170,7 @@ async function fillScenario(card: Locator, values: readonly string[], accepted =
   }
 }
 async function calculate(card: Locator, contribution?: string, delta?: string) {
-  await card.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   if (contribution !== undefined) await expect(card.getByTestId("scenario-contribution")).toHaveText(contribution);
   if (delta !== undefined) await expect(card.getByTestId("scenario-delta")).toHaveText(delta);
 }
@@ -186,15 +186,15 @@ const evidenceChecklist = (card: Locator) => card.getByRole("group", { name: aw.
 async function addConfirmedAction(page: Page, index = 1, problem = `待驗證問題 ${index}`) {
   await showActionList(page);
   await expect(actionsWorkbench(page).getByLabel(consentLabel)).toHaveCount(0);
-  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+  await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
   const card = action(page, index);
   const fields: Record<string, string> = {
-    [labels.actions.problem]: problem, [labels.actions.step]: `檢查履約流程 ${index}`, [labels.actions.owner]: "營運負責人",
-    [labels.actions.metric]: "同期間履約費用與行銷後貢獻", [labels.actions.due]: "2026-09-15",
-    [labels.actions.stop]: "若服務品質下降立即停止", [labels.actions.extraData]: "訂單件數與物流計價條款",
+    [labels.actions.form.problem]: problem, [labels.actions.form.step]: `檢查履約流程 ${index}`, [labels.actions.form.owner]: "營運負責人",
+    [labels.actions.form.metric]: "同期間履約費用與行銷後貢獻", [labels.actions.form.due]: "2026-09-15",
+    [labels.actions.form.stop]: "若服務品質下降立即停止", [labels.actions.form.extraData]: "訂單件數與物流計價條款",
   };
   for (const [label, value] of Object.entries(fields)) await card.getByLabel(label, { exact: true }).fill(value);
-  await expect(card.getByLabel(labels.actions.due, { exact: true })).toHaveAttribute("type", "date");
+  await expect(card.getByLabel(labels.actions.form.due, { exact: true })).toHaveAttribute("type", "date");
   const evidence = evidenceChecklist(card);
   await expect(evidence).toHaveAttribute("data-testid", "evidence-checklist");
   const option = evidence.getByRole("checkbox", { name: factText("2026-08-02", "2026-08-02", cmAfter, "DTC", cmAfterFact("270.00")), exact: true });
@@ -204,12 +204,12 @@ async function addConfirmedAction(page: Page, index = 1, problem = `待驗證問
   await expect(evidence).not.toContainText('["fact"');
   await option.check();
   await expect(evidence.locator("input[type=checkbox]:checked")).toHaveCount(1);
-  await card.getByRole("button", { name: labels.buttons.confirm, exact: true }).click();
+  await card.getByRole("button", { name: labels.shell.buttons.confirm, exact: true }).click();
   await expect(card).toContainText(aw.tagConfirmed);
   return { card, factId: factId! };
 }
 /**
- * V3-6：v2 試算頁與待辦頁底部的三顆決策下載鈕，改成兩頁頁首（#page-actions）的「匯出本頁」下拉；項目名稱不變（labels.downloads.decision*）。
+ * V3-6：v2 試算頁與待辦頁底部的三顆決策下載鈕，改成兩頁頁首（#page-actions）的「匯出本頁」下拉；項目名稱不變（labels.exports.downloads.decision*）。
  * downloadDecision 依目前頁開對應的下拉（待辦頁 actions-export-*，試算頁 scenario-export-*），檢查檔名 profitlens-decision.{md|csv|json} 後回傳內容。
  */
 async function downloadText(page: Page, format: "Markdown" | "CSV" | "JSON") {
@@ -274,25 +274,25 @@ test("僅單一通路可試算，明填零變動重現 270.00 並可鍵盤查看
   await startChannelContext(page);
   await expect(scenario(page).getByLabel(inputLabels[0], { exact: true })).toBeEditable();
   const channelSelect = page.getByTestId("scenario-channel");
-  await expect(channelSelect).toHaveAccessibleName(labels.scenarioForm.channel);
+  await expect(channelSelect).toHaveAccessibleName(labels.scenarios.form.channel);
   await expect(channelSelect.locator("option")).toHaveText(["DTC", "MARKETPLACE"]);
   await expect(channelSelect.locator("option")).not.toContainText([labels.evidence.allChannels]);
   await expect(channelSelect).toHaveValue("DTC");
-  await expect(page.getByLabel(dash.filter.channel, { exact: true })).toHaveValue("");
+  await expect(page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true })).toHaveValue("");
   await expect(page.getByRole("button", { name: startButtonPrefix })).toHaveCount(0);
   await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("270.00"));
   await expect(page.getByTestId("scenario-unavailable")).toHaveCount(0);
   await expectFreshDraft(page, { acknowledged: false });
   const card = await addScenario(page);
   // 「全部填 0」已依規格移除：零變動要逐格明填 0。
-  await expect(page.getByRole("button", { name: labels.buttons.fillZero, exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: labels.scenarios.buttons.fillZero, exact: true })).toHaveCount(0);
   for (const label of inputLabels) await card.getByLabel(label, { exact: true }).fill("0");
   for (const label of inputLabels) await expect(card.getByLabel(label, { exact: true })).toHaveValue("0");
   await expect(card.getByLabel(consentLabel)).not.toBeChecked();
   // V3-6（D-V3-12＝B）：勾下去後勾選框換成「已了解」一行、焦點到「試算」（acceptAssumptions 驗證）。
   await acceptAssumptions(card);
   await calculate(card, amountL1("270.00"), deltaL1("0.00"));
-  await expect(card.getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
+  await expect(card.getByTestId("scenario-version")).toHaveText(fill(labels.scenarios.form.version, { n: 1 }));
   await expect(card.getByTestId("scenario-draft")).toHaveCount(0);
   const opener = page.getByTestId("baseline-contribution_after_marketing");
   await opener.focus();
@@ -328,17 +328,17 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
     // D-V3-12＝B：方案 1 勾一次聲明；方案 2、3 不再有勾選框（fillScenario → acceptAssumptions 斷言「已了解」一行）。
     await fillScenario(card, item.values);
     await calculate(card, amountL1(item.contribution), deltaL1(item.delta));
-    await expect(card.getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
+    await expect(card.getByTestId("scenario-version")).toHaveText(fill(labels.scenarios.form.version, { n: 1 }));
   }
   // V3-6（PRD §7.4 方案欄）：3 個方案時不再渲染「新增方案」（v2 是停用的按鈕）。
   await expect(page.getByTestId("scenario-columns")).toHaveAttribute("data-count", "3");
   await expect(page.getByTestId("scenario-add")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: labels.buttons.addScenario, exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: labels.scenarios.buttons.addScenario, exact: true })).toHaveCount(0);
   await expect(page.getByTestId("scenario-4")).toHaveCount(0);
   const total = page.getByTestId("scenario-comparison").locator("tbody tr").filter({ has: page.locator("th").filter({ hasText: new RegExp(`^${escapeRegExp(cmAfter)}$`) }) });
   // V3-2b：方案比較表是 L2（整數元，表頭「（元）」）。
   await expect(total.getByRole("cell")).toHaveText(["270.00", "270.00", "284.00", "264.00"].map(value => formatAmountL2(value)));
-  await expect(page.getByTestId("scenario-comparison").locator("thead th").first()).toHaveText(fill(labels.units.yuanColumn, { label: dw.compareColItem }));
+  await expect(page.getByTestId("scenario-comparison").locator("thead th").first()).toHaveText(fill(labels.format.units.yuanColumn, { label: dw.compareColItem }));
   await expect(page.getByTestId("scenario-comparison")).toContainText(dw.compareTableCaption);
   await mkdir(resolve("verification"), { recursive: true });
   await page.screenshot({ path: resolve(`verification/review-v2-a-regression-regression-m6-regression-${testInfo.project.name}-scenarios.png`), fullPage: true });
@@ -346,18 +346,18 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-5");
   await expect(scenario(page, 2).getByTestId("scenario-contribution")).toHaveCount(0);
   // R5-3：修改後顯示「草稿（未重新計算）」，版本徽章只在結果有效時出現。
-  await expect(scenario(page, 2).getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await expect(scenario(page, 2).getByTestId("scenario-draft")).toHaveText(labels.scenarios.inputs.draft);
   await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveCount(0);
   await expect(scenario(page, 1).getByTestId("scenario-contribution")).toHaveText(amountL1("270.00"));
   await expect(scenario(page, 3).getByTestId("scenario-contribution")).toHaveText(amountL1("264.00"));
   // 版本號只在計算成功時前進：改回與最新版本相同的假設再算 → 維持版本 1；
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-10");
   await calculate(scenario(page, 2), amountL1("284.00"), deltaL1("+14.00"));
-  await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
+  await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarios.form.version, { n: 1 }));
   // 假設不同 → 版本 2。手算：DTC 本期物流費 140.00（−10% 省 14.00），−5% 省 7.00 → 270.00 + 7.00 = 277.00；
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-5");
   await calculate(scenario(page, 2), amountL1("277.00"), deltaL1("+7.00"));
-  await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 2 }));
+  await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarios.form.version, { n: 2 }));
   // 未通過檢核的計算不前進版本號、也不顯示版本徽章；同樣假設重算仍是版本 2。
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-101");
   await calculate(scenario(page, 2));
@@ -365,9 +365,9 @@ test("三個方案各自從 270.00 重算為 270／284／264，不串接或相�
   await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveCount(0);
   await scenario(page, 2).getByLabel(inputLabels[2], { exact: true }).fill("-5");
   await calculate(scenario(page, 2), amountL1("277.00"), deltaL1("+7.00"));
-  await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 2 }));
-  await expect(scenario(page, 1).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
-  await expect(scenario(page, 3).getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
+  await expect(scenario(page, 2).getByTestId("scenario-version")).toHaveText(fill(labels.scenarios.form.version, { n: 2 }));
+  await expect(scenario(page, 1).getByTestId("scenario-version")).toHaveText(fill(labels.scenarios.form.version, { n: 1 }));
+  await expect(scenario(page, 3).getByTestId("scenario-version")).toHaveText(fill(labels.scenarios.form.version, { n: 1 }));
 });
 
 test("減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確增益", async ({ page }) => {
@@ -388,7 +388,7 @@ test("減少廣告仍必須明填銷量，拒絕固定假設不得顯示精確�
   await fillScenario(card, ["", "0", "0", "-20", "0"]);
   await calculate(card);
   await expect(card.getByTestId("scenario-result")).toContainText(dw.cannotCalculate);
-  await expect(card.getByTestId("scenario-result")).toContainText(labels.scenario.volume.label);
+  await expect(card.getByTestId("scenario-result")).toContainText(labels.scenarios.inputs.volume.label);
   await expect(card.getByTestId("scenario-contribution")).toHaveCount(0);
   await expect(card.getByTestId("scenario-delta")).toHaveCount(0);
   await card.getByLabel(inputLabels[0], { exact: true }).fill("0");
@@ -423,10 +423,10 @@ test("百分點、各成本與取分閉合：負基準 MARKETPLACE 可得 19.70 
   // V3-2b：比較表的金額列是 L2（整數元，表頭「（元）」）；取位調整列只有幾分錢，維持 L3（到分、U+2212）才看得到。
   const m = labels.metrics;
   const expected: Record<string, string> = {
-    [m.gross_sales.label]: "1560.00", [m.discounts.label]: "295.20", [m.refunds.label]: "105.40",
-    [m.cogs_net.label]: "702.00", [m.platform_fees.label]: "140.53", [m.payment_fees.label]: "25.76",
-    [m.fulfillment_costs.label]: "91.80", [m.other_variable_costs.label]: "15.60", [m.ad_spend.label]: "144.00",
-    [labels.scenario.oneOff.label]: "20.00", [fill(dw.netRevenueSummaryRow, { metric: m.net_revenue.label })]: "1159.40",
+    [m.gross_sales.headline]: "1560.00", [m.discounts.headline]: "295.20", [m.refunds.headline]: "105.40",
+    [m.cogs_net.headline]: "702.00", [m.platform_fees.headline]: "140.53", [m.payment_fees.headline]: "25.76",
+    [m.fulfillment_costs.headline]: "91.80", [m.other_variable_costs.headline]: "15.60", [m.ad_spend.headline]: "144.00",
+    [labels.scenarios.inputs.oneOff.label]: "20.00", [fill(dw.netRevenueSummaryRow, { metric: m.net_revenue.headline })]: "1159.40",
   };
   const comparisonRow = (label: string) => page.getByTestId("scenario-comparison").locator("tbody tr").filter({ has: page.locator("th").filter({ hasText: new RegExp(`^${escapeRegExp(label)}`) }) });
   for (const [label, amount] of Object.entries(expected)) await expect(comparisonRow(label).getByRole("cell").last()).toHaveText(formatAmountL2(amount));
@@ -444,8 +444,8 @@ for (const incomplete of [
   { dataset: "missing-ad", channel: "MARKETPLACE", revenue: "990.00" },
 ]) {
   test(`${incomplete.dataset} 缺漏通路保留營收，禁止情境補零或顯示 NaN`, async ({ page }) => {
-    await loadDataset(page, incomplete.dataset, labels.status.partial);
-    await selectChannel(page, incomplete.channel, labels.status.partial);
+    await loadDataset(page, incomplete.dataset, labels.shell.status.partial);
+    await selectChannel(page, incomplete.channel, labels.shell.status.partial);
     // V3-2b：KPI 卡與試算基準大字都是 L1；缺值顯示「資料待補」（formatEmpty），不用「—」。
     await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1(incomplete.revenue));
     await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatEmpty("missing"));
@@ -453,10 +453,10 @@ for (const incomplete of [
     await expect(page.getByTestId("scenario-unavailable")).toBeVisible();
     await expect(page.getByTestId("baseline-net_revenue")).toHaveText(formatAmountL1(incomplete.revenue));
     await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(formatEmpty("missing"));
-    await expect(page.getByRole("button", { name: labels.buttons.addScenario, exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: labels.scenarios.buttons.addScenario, exact: true })).toBeDisabled();
     // R5-3：進頁草稿仍顯示，但整張表單停用，不能補零計算。
     await expect(page.getByTestId("scenario-channel")).toHaveValue(incomplete.channel);
-    await expect(scenario(page).getByRole("button", { name: labels.buttons.calculate, exact: true })).toBeDisabled();
+    await expect(scenario(page).getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true })).toBeDisabled();
     for (const label of inputLabels) await expect(scenario(page).getByLabel(label, { exact: true })).toBeDisabled();
     await expect(scenario(page).getByTestId("scenario-contribution")).toHaveCount(0);
     await expect(workbench(page)).not.toContainText(/NaN|Infinity/);
@@ -478,10 +478,10 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await expectFreshDraft(page, { acknowledged: true });
   const others = page.getByTestId("scenario-other-channels");
   await others.locator(":scope > summary").click();
-  await expect(others).toContainText(fill(msw.planSummary, { plan: "保留名稱的履約測試", resultLabel: labels.scenario.resultTitle, amount: amountL1("264.00") }));
+  await expect(others).toContainText(fill(msw.planSummary, { plan: "保留名稱的履約測試", resultLabel: labels.scenarios.inputs.resultTitle, amount: amountL1("264.00") }));
   // 本頁通路單選只換本頁：切到 DTC 看得到原方案，全站篩選仍是 MARKETPLACE；再切回 MARKETPLACE 仍是草稿。
   await selectScenarioChannel(page, "DTC");
-  await expect(page.getByLabel(dash.filter.channel, { exact: true })).toHaveValue("MARKETPLACE");
+  await expect(page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true })).toHaveValue("MARKETPLACE");
   await expect(card.getByTestId("scenario-contribution")).toHaveText(amountL1("264.00"));
   await selectScenarioChannel(page, "MARKETPLACE");
   await expectFreshDraft(page, { acknowledged: true });
@@ -489,7 +489,7 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await showScenarios(page);
   await expect(page.getByTestId("scenario-channel")).toHaveValue("DTC");
   await expect(page.getByTestId("decision-freshness")).toContainText(dw.freshTitle);
-  await expect(card.getByRole("button", { name: labels.buttons.calculate, exact: true })).toBeEnabled();
+  await expect(card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true })).toBeEnabled();
   await expect(card.getByTestId("scenario-contribution")).toHaveText(amountL1("264.00"));
   await expect(card.getByLabel(dw.planName, { exact: true })).toHaveValue("保留名稱的履約測試");
   await expect(card.getByLabel(inputLabels[2], { exact: true })).toHaveValue("-10");
@@ -505,15 +505,15 @@ test("切換通路保留個別方案與行動原始引用，管理欄位更新�
   await expect(checked).toHaveCount(1);
   await expect(checked).toHaveAttribute("value", original.factId);
   await expect(action(page)).toContainText(aw.tagConfirmed);
-  await action(page).getByLabel(labels.actions.owner, { exact: true }).fill("物流主管");
+  await action(page).getByLabel(labels.actions.form.owner, { exact: true }).fill("物流主管");
   const taipeiDay = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
   const statusDay = taipeiDay();
-  await action(page).getByLabel(labels.actions.status, { exact: true }).selectOption("in_progress");
-  await action(page).getByLabel(labels.actions.progress, { exact: true }).fill("已索取報價，尚待核對");
+  await action(page).getByLabel(labels.actions.form.status, { exact: true }).selectOption("in_progress");
+  await action(page).getByLabel(labels.actions.form.progress, { exact: true }).fill("已索取報價，尚待核對");
   await expect(action(page)).toContainText(aw.tagConfirmed);
   await action(page).getByRole("button", { name: new RegExp(`^${escapeRegExp(aw.viewEvidenceItem.split("{fact}")[0])}`) }).click();
   await expectDrawerAmount(page.getByRole("dialog"), "270.00");
-  await page.getByRole("dialog").getByRole("button", { name: labels.buttons.close, exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: labels.shell.buttons.close, exact: true }).click();
   const document = await downloadJson(page);
   expect(document.actions[0]).toMatchObject({ status: "confirmed", owner_role: "物流主管", evidence_confirmed: true, fact_ids: [original.factId], execution_status: "in_progress", progress_notes: "已索取報價，尚待核對" });
   // R5-5：狀態改變記下 status_updated_at（臺北日曆日；跨午夜時容許前後一天）。
@@ -526,7 +526,7 @@ test("試算頁自選通路後，全站通路範圍改變再改回，本頁回�
   // 現在全站範圍一改變就回到新範圍的預設通路（02 §6）。
   await openGolden(page);
   await selectScenarioChannel(page, "MARKETPLACE");
-  await expect(page.getByLabel(dash.filter.channel, { exact: true })).toHaveValue("DTC");
+  await expect(page.getByLabel(labels.shell.periodBar.filter.channel, { exact: true })).toHaveValue("DTC");
   await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("-15.00"));
   await selectChannel(page, "MARKETPLACE");
   await startChannelContext(page);
@@ -581,14 +581,14 @@ test("有效期間切換再回原期間，歷史結果不復活或自動沿用�
     ["2026-06-01", "2026-07-12", "2026-07-13", "2026-08-23"],
   ];
   const dateLabels = [
-    periodFieldLabel("start", labels.periods.previous), periodFieldLabel("end", labels.periods.previous),
-    periodFieldLabel("start", labels.periods.current), periodFieldLabel("end", labels.periods.current),
+    periodFieldLabel("start", labels.shell.periods.previous), periodFieldLabel("end", labels.shell.periods.previous),
+    periodFieldLabel("start", labels.shell.periods.current), periodFieldLabel("end", labels.shell.periods.current),
   ];
   for (const values of ranges) {
     // V3-3：四個日期欄在「自訂期間」popover（手機在期間底部面板）裡，欄位標籤不變；在這裡改日期仍要按「套用」。
     const panel = await openCustomPeriod(page);
     for (const [index, label] of dateLabels.entries()) await panel.getByLabel(label, { exact: true }).fill(values[index]);
-    await panel.getByRole("button", { name: labels.buttons.apply, exact: true }).click();
+    await panel.getByRole("button", { name: labels.shell.buttons.apply, exact: true }).click();
     await expect(page.getByTestId("period-bar")).not.toHaveAttribute("aria-busy", "true");
     await expect(periodSummary(page)).toContainText(periodSummaryText(values[2], values[3], values[0], values[1]));
     await expect(workspaceStatus(page)).toContainText(ready("demo"));
@@ -608,20 +608,20 @@ test("四項人工行動可新增但僅三項置頂，鍵盤排序及人類可�
   const first = await addConfirmedAction(page, 1, "第一個人工問題");
   await addConfirmedAction(page, 2, "第二個人工問題");
   await addConfirmedAction(page, 3, "第三個人工問題");
-  for (const index of [1, 2, 3]) await action(page, index).getByRole("button", { name: labels.buttons.pin, exact: true }).click();
-  await expect(page.getByRole("button", { name: labels.buttons.addAction, exact: true })).toBeEnabled();
+  for (const index of [1, 2, 3]) await action(page, index).getByRole("button", { name: labels.actions.buttons.pin, exact: true }).click();
+  await expect(page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true })).toBeEnabled();
   await addConfirmedAction(page, 4, "第四個人工問題");
-  await action(page, 4).getByRole("button", { name: labels.buttons.pin, exact: true }).click();
+  await action(page, 4).getByRole("button", { name: labels.actions.buttons.pin, exact: true }).click();
   await expect(page.getByTestId("action-notice")).toContainText(aw.maxPinned);
-  await expect(action(page, 4).getByRole("button", { name: labels.buttons.pin, exact: true })).toHaveAttribute("aria-pressed", "false");
+  await expect(action(page, 4).getByRole("button", { name: labels.actions.buttons.pin, exact: true })).toHaveAttribute("aria-pressed", "false");
   await expect(actionsWorkbench(page).getByRole("button", { name: aw.unpin, exact: true })).toHaveCount(3);
   await expect(page.getByTestId("action-4")).toBeVisible();
-  await expect(action(page, 1).getByRole("button", { name: labels.buttons.moveUp, exact: true })).toBeDisabled();
-  await action(page, 2).getByRole("button", { name: labels.buttons.moveUp, exact: true }).focus();
+  await expect(action(page, 1).getByRole("button", { name: labels.actions.buttons.moveUp, exact: true })).toBeDisabled();
+  await action(page, 2).getByRole("button", { name: labels.actions.buttons.moveUp, exact: true }).focus();
   await page.keyboard.press("Enter");
-  await expect(action(page, 1).getByLabel(labels.actions.problem, { exact: true })).toHaveValue("第二個人工問題");
-  await expect(action(page, 2).getByLabel(labels.actions.problem, { exact: true })).toHaveValue("第一個人工問題");
-  await action(page, 1).getByLabel(labels.actions.step, { exact: true }).fill("修改後先核對單位履約成本");
+  await expect(action(page, 1).getByLabel(labels.actions.form.problem, { exact: true })).toHaveValue("第二個人工問題");
+  await expect(action(page, 2).getByLabel(labels.actions.form.problem, { exact: true })).toHaveValue("第一個人工問題");
+  await action(page, 1).getByLabel(labels.actions.form.step, { exact: true }).fill("修改後先核對單位履約成本");
   await expect(action(page, 1)).toContainText(aw.tagConfirmed);
   const opener = action(page, 2).getByRole("button", { name: fill(aw.viewEvidenceItem, { fact: factText("2026-08-02", "2026-08-02", cmAfter, "DTC", cmAfterFact("270.00")) }), exact: true });
   await expect(opener).not.toContainText(first.factId);
@@ -648,10 +648,10 @@ test("四項人工行動可新增但僅三項置頂，鍵盤排序及人類可�
 test("未選 fact 的行動只能保持引用待確認", async ({ page }) => {
   await openGolden(page);
   await showActionList(page);
-  await page.getByRole("button", { name: labels.buttons.addAction, exact: true }).click();
+  await page.getByRole("button", { name: labels.actions.buttons.addAction, exact: true }).click();
   await expect(evidenceChecklist(action(page)).locator("input[type=checkbox]:checked")).toHaveCount(0);
-  await action(page).getByLabel(labels.actions.problem, { exact: true }).fill("尚未確認的問題");
-  await action(page).getByRole("button", { name: labels.buttons.confirm, exact: true }).click();
+  await action(page).getByLabel(labels.actions.form.problem, { exact: true }).fill("尚未確認的問題");
+  await action(page).getByRole("button", { name: labels.shell.buttons.confirm, exact: true }).click();
   await expect(page.getByTestId("action-notice")).toContainText(aw.confirmFailed);
   await expect(action(page)).toContainText(aw.tagDraft);
   const document = await downloadJson(page);
@@ -700,9 +700,9 @@ test("三種本機匯出保存固定基準、五項輸入、公式、版本、�
   expect(rows.some(row => row.row_type === "manual_action" && row.fact_ids === JSON.stringify([factId]))).toBe(true);
   expect(rows.some(row => row.source_refs.includes('"actual_filename":"sales_daily.csv"'))).toBe(true);
   const markdown = await downloadText(page, "Markdown");
-  const de = labels.ui.decisionExport;
+  const de = labels.exports.decision;
   // V3-2b §3.3：Markdown 主文 L2（整數元、U+2212、正差額加「+」），技術細節 L3（到分；Markdown 會把「.」跳脫成「\.」，先去掉跳脫再比對）。
-  for (const text of [`# ${de.title}`, de.statusCurrent, formatAmountL2("264.00"), formatSignedDelta("-6.00", "L2"), "DTC", "HALF", labels.sections.scenarioAssumptions, de.sectionFormulas, labels.sections.actionList, de.sectionFacts]) expect(markdown).toContain(text);
+  for (const text of [`# ${de.title}`, de.statusCurrent, formatAmountL2("264.00"), formatSignedDelta("-6.00", "L2"), "DTC", "HALF", labels.scenarios.sections.scenarioAssumptions, de.sectionFormulas, labels.actions.sections.actionList, de.sectionFacts]) expect(markdown).toContain(text);
   for (const text of [formatAmountL3("264.00"), formatSignedDelta("-6.00", "L3")]) expect(markdown.replaceAll("\\", "")).toContain(text);
   await expect(page.getByTestId("action-notice")).toContainText(aw.exportDone);
 });
@@ -736,7 +736,7 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   // R6（D7＝A）：載入資料後出現非 modal 的首次保存提示；按「先不要」維持手動保存，之後任何變更都不得建立本機資料庫。
   const savePrompt = page.getByTestId("local-save-prompt");
   await expect(savePrompt).toBeVisible();
-  await savePrompt.getByRole("button", { name: labels.autoSave.decline, exact: true }).click();
+  await savePrompt.getByRole("button", { name: labels.storage.autoSave.decline, exact: true }).click();
   await expect(savePrompt).toHaveCount(0);
   await selectChannel(page, "DTC");
   await showScenarios(page);
@@ -762,18 +762,18 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   await page.unroute("**/*");
   const other = await context.newPage();
   await other.goto("/");
-  await expect(workspaceStatus(other)).toContainText(labels.status.empty);
+  await expect(workspaceStatus(other)).toContainText(labels.shell.status.empty);
   await expect(workbench(other)).toHaveCount(0);
   await other.close();
   expectedBeforeUnload.add(page);
   await page.reload();
   expect(browserAudit.filter(event => event.kind === "unsaved-changes-warning")).toEqual([{ kind: "unsaved-changes-warning", type: "beforeunload" }]);
-  await expect(workspaceStatus(page)).toContainText(labels.status.empty);
+  await expect(workspaceStatus(page)).toContainText(labels.shell.status.empty);
   await expect(workbench(page)).toHaveCount(0);
 });
 
 test("V3-6 試算頁：範本→套用→試算三個動作得到結果、聲明只勾一次、匯出本頁三項可下載、增減／改成等值顯示、範本 ? 說明 Esc 回焦", async ({ page }) => {
-  const pageV3 = labels.scenarios.pageV3, presets = labels.scenarioPresets;
+  const pageV3 = labels.scenarios.pageV3, presets = labels.scenarios.presets;
   await loadDataset(page);
   await selectChannel(page, "DTC");
   // 桌機點側欄；手機（390）由 navigateTo 走「更多」→「假設試算」。
@@ -790,7 +790,7 @@ test("V3-6 試算頁：範本→套用→試算三個動作得到結果、聲明
 
   // 範本的 ? 說明（C14／M1）：平時 hidden 掛載；點開看得到「只是起點」與用途，Esc 關閉、焦點回到 ? 鈕。
   const { trigger, panel } = await openTemplateHelp(first);
-  await expect(panel.getByTestId("scenario-template-note")).toHaveText(labels.scenario.templateNote);
+  await expect(panel.getByTestId("scenario-template-note")).toHaveText(labels.scenarios.inputs.templateNote);
   await expect(panel.getByTestId("scenario-preset-purpose")).toHaveText(pageV3.templatePurposeEmpty);
   await page.keyboard.press("Escape");
   await expect(panel).toBeHidden();
@@ -805,7 +805,7 @@ test("V3-6 試算頁：範本→套用→試算三個動作得到結果、聲明
   await calculate(first, amountL1("270.00"), deltaL1("0.00"));
   // 「試算」是 type=submit：在任一輸入框按 Enter 也會試算（docs/SCENARIOS.md 錨點 f＝−10% → 284.00）。
   await first.getByLabel(inputLabels[2], { exact: true }).fill("-10");
-  await expect(first.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await expect(first.getByTestId("scenario-draft")).toHaveText(labels.scenarios.inputs.draft);
   await first.getByLabel(inputLabels[2], { exact: true }).press("Enter");
   await expect(first.getByTestId("scenario-contribution")).toHaveText(amountL1("284.00"));
   await expect(first.getByTestId("scenario-delta")).toHaveText(deltaL1("+14.00"));
@@ -819,13 +819,13 @@ test("V3-6 試算頁：範本→套用→試算三個動作得到結果、聲明
   await expectAcknowledged(first);
   await second.getByTestId("scenario-preset").selectOption("keep");
   await second.getByTestId("scenario-preset-apply").click();
-  await second.getByRole("button", { name: labels.buttons.calculate, exact: true }).click();
+  await second.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
   await expect(second.getByTestId("scenario-contribution")).toHaveText(amountL1("270.00"));
   await expect(second.getByTestId("scenario-delta")).toHaveText(deltaL1("0.00"));
-  await expect(second.getByTestId("scenario-version")).toHaveText(fill(labels.scenarioForm.version, { n: 1 }));
+  await expect(second.getByTestId("scenario-version")).toHaveText(fill(labels.scenarios.form.version, { n: 1 }));
   // 套用後的用途也寫在 ? 說明裡（hidden 掛載；先打開再看）。
   const secondHelp = await openTemplateHelp(second);
-  await expect(secondHelp.panel.getByTestId("scenario-preset-purpose")).toHaveText(fill(labels.scenarioForm.presetApplied, { name: presets.items.keep.name, purpose: presets.items.keep.purpose }));
+  await expect(secondHelp.panel.getByTestId("scenario-preset-purpose")).toHaveText(fill(labels.scenarios.form.presetApplied, { name: presets.items.keep.name, purpose: presets.items.keep.purpose }));
   await page.keyboard.press("Escape");
   await expect(secondHelp.panel).toBeHidden();
   await expect(secondHelp.trigger).toBeFocused();
@@ -836,7 +836,7 @@ test("V3-6 試算頁：範本→套用→試算三個動作得到結果、聲明
   await page.keyboard.press("Escape");
   await expect(menu).not.toHaveAttribute("open", "");
   const markdown = await downloadScenario(page, "md");
-  expect(markdown).toContain(`# ${labels.ui.decisionExport.title}`);
+  expect(markdown).toContain(`# ${labels.exports.decision.title}`);
   const csv = await downloadScenario(page, "csv");
   expect(csv.charCodeAt(0)).toBe(0xfeff);
   expect(csvRecords(csv).filter(row => row.row_type === "scenario_result" && row.field === "contribution").map(row => row.value)).toEqual(["284.00", "270.00"]);
@@ -859,18 +859,18 @@ test("V3-6 試算頁：範本→套用→試算三個動作得到結果、聲明
   await expect(modeButton(second, volumeField, "relative")).toHaveAttribute("aria-pressed", "false");
   await expect(volumeInput).toHaveValue("4");
   await expect(unit).toHaveText(pageV3.unitCount);
-  await expect(volumeInput).toHaveAttribute("placeholder", fill(labels.scenario.volume.absoluteHint, { units: fill(labels.assist.units.count, { value: "4" }) }));
+  await expect(volumeInput).toHaveAttribute("placeholder", fill(labels.scenarios.inputs.volume.absoluteHint, { units: fill(labels.assist.units.count, { value: "4" }) }));
   await volumeInput.fill("6");
   await expect(second.getByTestId(`scenario-equivalent-${volumeField}`)).toBeVisible();
   await expect(second.getByTestId(`scenario-equivalent-${volumeField}`)).toHaveText(fill(presets.absolute.equivalentPct, { value: "+50.0" }));
-  await expect(second.getByTestId("scenario-draft")).toHaveText(labels.scenario.draft);
+  await expect(second.getByTestId("scenario-draft")).toHaveText(labels.scenarios.inputs.draft);
   await modeButton(second, volumeField, "relative").click();
   await expect(modeButton(second, volumeField, "relative")).toHaveAttribute("aria-pressed", "true");
   await expect(volumeInput).toHaveValue("50");
   await expect(unit).toHaveText(pageV3.unitPercent);
   await expect(second.getByTestId(`scenario-equivalent-${volumeField}`)).toBeHidden();
   // v2 的「相對 %／絕對值」分段字樣不再渲染。
-  for (const name of [labels.scenario.modeRelative, labels.scenario.modeAbsolute]) await expect(workbench(page).getByRole("button", { name, exact: true })).toHaveCount(0);
+  for (const name of [labels.scenarios.inputs.modeRelative, labels.scenarios.inputs.modeAbsolute]) await expect(workbench(page).getByRole("button", { name, exact: true })).toHaveCount(0);
   // 方案 1 不受方案 2 的編輯影響；頁面本身不可橫向溢出。
   await expect(first.getByTestId("scenario-contribution")).toHaveText(amountL1("284.00"));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);

@@ -75,7 +75,7 @@ export function ProfitSection({ snapshot, onEvidence, allChannels }: ProfitSecti
       </div>
     </div>
     <WaterfallSvg bars={data.bars} height={chartHeights.lg} testIdPrefix="profit-waterfall-bar-" minWidth={PROFIT_MIN_WIDTH} onBarClick={onBar} />
-    <details className="data-alternative"><summary>{fill(labels.ui.overview.dataTable, { title: copy.section })}</summary>
+    <details className="data-alternative"><summary>{fill(labels.overview.page.dataTable, { title: copy.section })}</summary>
       <div className="table-scroll" tabIndex={0} role="region" aria-label={copy.table.aria}>
         <table className="kv l3 profit-table">
           <thead><tr><th scope="col">{copy.table.item}</th><th scope="col" className="num">{copy.table.amount}</th><th scope="col" className="num">{copy.table.share}</th></tr></thead>

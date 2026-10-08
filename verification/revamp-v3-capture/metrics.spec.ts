@@ -126,7 +126,7 @@ test("各頁頁首到匯入精靈步驟 1 的點擊數", async ({ page }, testIn
   const result: Record<string, number> = {};
   for (const id of pages) {
     await nav(page, id).click();
-    await expect(page.getByRole("heading", { level: 1, name: labels.nav[id].label, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: labels.shell.nav[id].headline, exact: true })).toBeVisible();
     let clicks = 0;
     // V3-3（§6.3 #23）：「匯入資料」只留在資料來源頁首（page-import）；其他頁走頂欄資料狀態 → popover 的「匯入新資料」（data-status → data-status-import）。
     if (await page.getByTestId("page-import").count()) { clicks += 1; await page.getByTestId("page-import").click(); }
@@ -159,8 +159,8 @@ test("含稅匯入（tests/fixtures/inclusive_tax）經精靈完成的最少點�
   await expect(wizardStatus(page)).toHaveAttribute("data-classification", "valid", { timeout: 20_000 });
   await expect(page.getByTestId("import-result-note")).toHaveText(copy.result.valid);
   await click("套用", () => commitButton(page).click());
-  const replacement = page.getByRole("dialog", { name: labels.ui.replacementDialog.heading });
-  if (await replacement.isVisible()) await click("取代確認", () => replacement.getByRole("button", { name: labels.ui.replacementDialog.discardAndContinue, exact: true }).click());
+  const replacement = page.getByRole("dialog", { name: labels.storage.replacement.heading });
+  if (await replacement.isVisible()) await click("取代確認", () => replacement.getByRole("button", { name: labels.storage.replacement.discardAndContinue, exact: true }).click());
   await expect(wizard(page)).toHaveCount(0);
   // V3-2b 起 KPI 大數字是 L1（< 1 萬寫整數元）；golden 精確值仍是真相來源。
   await expect(page.getByTestId("kpi-net_revenue").locator(".kpi-value")).toHaveText(formatAmountL1("2150.00"));

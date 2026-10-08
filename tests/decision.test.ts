@@ -153,8 +153,8 @@ describe("M4 decision exports", () => {
     expect(content.actions[0]).toMatchObject({ origin: "manual", evidence_confirmed: true });
     expect(content.actions[0].evidence[0].id).toBe(content.actions[0].fact_ids[0]);
     // R2：主層只留一句「注意」（口徑說明第 7 條：不是預測、方案不能相加）；其餘限制併入技術細節，JSON 仍完整列出。
-    expect(content.limitations).toContain(labels.basis.items[6]);
-    expect(content.limitations).toEqual(expect.arrayContaining([labels.ui.decisionExport.limitations.scenarioScope, labels.ui.decisionExport.limitations.adSpendNoVolume]));
+    expect(content.limitations).toContain(labels.glossary.basis.items[6]);
+    expect(content.limitations).toEqual(expect.arrayContaining([labels.exports.decision.limitations.scenarioScope, labels.exports.decision.limitations.adSpendNoVolume]));
   });
   it("keeps null draft results and unconfirmed manual text labeled", () => {
     const s = session();
@@ -212,8 +212,8 @@ describe("M4 decision exports", () => {
     expect(md).not.toContain("\n# forged");
     expect(md).toContain("&lt;script&gt;");
     // R2：人工來源不再用主層句子標示，改在待辦的「技術細節」收合區列出 origin：manual（§8 併入技術 details）。
-    const actionSection = md.slice(md.indexOf(`## ${labels.sections.actionList}`), md.indexOf(`## ${labels.ui.decisionExport.sectionFacts}`));
-    expect(actionSection).toContain(`<summary>${labels.sections.technicalDetails}</summary>`);
+    const actionSection = md.slice(md.indexOf(`## ${labels.actions.sections.actionList}`), md.indexOf(`## ${labels.exports.decision.sectionFacts}`));
+    expect(actionSection).toContain(`<summary>${labels.evidence.sections.technicalDetails}</summary>`);
     expect(actionSection).toContain("- origin：manual");
   });
   it("CSV protects every untrusted metadata/manual text cell but retains real negative numeric values", () => {

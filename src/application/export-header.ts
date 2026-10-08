@@ -40,17 +40,17 @@ const copy = labels.exports.headerV3;
 /** 匯出格式「YYYY-MM-DD 至 YYYY-MM-DD（天數）」；呼叫端給的天數與起訖日算出的不同時，以呼叫端（domain）為準。 */
 function range(period: Period, days?: number): string {
   if (days === undefined || days === periodDays(period.start, period.end)) return formatPeriodExport(period.start, period.end);
-  return fill(labels.units.exportRange, { start: period.start, end: period.end, days });
+  return fill(labels.format.units.exportRange, { start: period.start, end: period.end, days });
 }
 
 /** §7.9 版頭四行。 */
 export function buildExportHeader(input: ExportHeaderInput): ExportHeader {
   // 名稱是空白時寫「資料待補」，版頭仍是完整四行。
-  const datasetName = input.datasetName.trim() || labels.status.missing;
+  const datasetName = input.datasetName.trim() || labels.shell.status.missing;
   const title = fill(copy.reportTitle, { metric: metricDefinitions.contribution_after_marketing.label });
   const periodLine = fill(copy.periodLine, { current: range(input.scope.current, input.scope.currentDays), previous: range(input.scope.previous, input.scope.previousDays) });
   const unitLine = input.amountBasis === "inclusive" ? copy.unitConverted : copy.unitExclusive;
-  const versionLine = fill(copy.versionLine, { version: input.metricVersion, time: formatSavedDateTime(input.generatedAt) || labels.status.missing });
+  const versionLine = fill(copy.versionLine, { version: input.metricVersion, time: formatSavedDateTime(input.generatedAt) || labels.shell.status.missing });
   return { lines: [datasetName, title, fill(copy.periodUnitLine, { period: periodLine, unit: unitLine }), versionLine], datasetName, title, periodLine, unitLine, versionLine };
 }
 
@@ -73,5 +73,5 @@ function markdownInline(text: string): string {
  */
 export function markdownExportHeader(header: ExportHeader): string[] {
   const [, title, periodUnit, version] = header.lines;
-  return [`${markdownInline(header.datasetName) || labels.status.missing}  `, `${title}  `, `${periodUnit}  `, version];
+  return [`${markdownInline(header.datasetName) || labels.shell.status.missing}  `, `${title}  `, `${periodUnit}  `, version];
 }

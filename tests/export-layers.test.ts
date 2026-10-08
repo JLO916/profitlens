@@ -19,7 +19,7 @@ import { SCENARIO_GOLDEN } from "./helpers/export-numeric";
 // Excel：摘要與通路表 L2、拆解與商品明細 L3；格子仍是數字，顯示格式負號 U+2212。
 // PPT：關鍵差額卡與三件事 L1（萬／億），通路表 L2；版頭期間「YYYY-MM-DD 至 YYYY-MM-DD（天數）」。
 
-const TECH = `## ${labels.sections.technicalDetails}`;
+const TECH = `## ${labels.evidence.sections.technicalDetails}`;
 const mdEscape = (text: string) => text.replace(/[\\`*_{}\[\]()#+.!|~:-]/g, character => `\\${character}`);
 /** 「-」緊接數字的 ASCII 負號金額（排除 ISO 日期 2026-08-02 這種前面是數字的情況）。 */
 const ASCII_NEGATIVE = /(?<![\d\\])-\d/;
@@ -42,23 +42,23 @@ describe("V3-2b manager summary Markdown: L2 body, L3 technical details", () => 
     const [body, technical] = exportManagerSummaryMarkdown(summary, context).split(TECH);
     expect(body).not.toMatch(ASCII_NEGATIVE);
     expect(body).not.toMatch(/(?<!\d)(?:255|315|570|2,?470|2,?250)\.00/);
-    expect(body).toContain(fill(labels.ui.managerSummary.mdComparison, { mode: labels.periods.sameDays, threshold: formatAmountL3("0.10") }));
-    expect(body).toContain(fill(labels.ui.managerSummary.mdSelectedScenario, { name: "plan", scope: "DTC", baseline: formatAmountL2("270.00"), contribution: formatAmountL2("284.00"), delta: formatSignedDelta("14.00", "L2") }));
+    expect(body).toContain(fill(labels.meeting.managerSummary.mdComparison, { mode: labels.shell.periods.sameDays, threshold: formatAmountL3("0.10") }));
+    expect(body).toContain(fill(labels.meeting.managerSummary.mdSelectedScenario, { name: "plan", scope: "DTC", baseline: formatAmountL2("270.00"), contribution: formatAmountL2("284.00"), delta: formatSignedDelta("14.00", "L2") }));
     expect(formatSignedDelta("14.00", "L2")).toBe("+14");
     // 三件事：影響金額 L2、帶號。
     expect(body).toContain(`${MINUS}315`);
     // 技術細節：門檻比較金額、事實值、方案狀態都到分（L3），負號 U+2212。
-    expect(technical).toContain(fill(labels.ui.managerSummary.techThresholdAmount, { amount: formatAmountL3("315.00") }));
-    expect(technical).toContain(`${labels.metrics.contribution_after_marketing.label}：${formatAmountL3("-15.00")}`);
-    expect(technical).toContain(`${labels.scenario.resultTitle} ${formatAmountL3("284.00")}；${labels.csvSuffix.change} ${formatSignedDelta("14.00", "L3")}`);
+    expect(technical).toContain(fill(labels.meeting.managerSummary.techThresholdAmount, { amount: formatAmountL3("315.00") }));
+    expect(technical).toContain(`${labels.metrics.contribution_after_marketing.headline}：${formatAmountL3("-15.00")}`);
+    expect(technical).toContain(`${labels.scenarios.inputs.resultTitle} ${formatAmountL3("284.00")}；${labels.exports.csv.suffix.change} ${formatSignedDelta("14.00", "L3")}`);
     expect(technical).not.toMatch(/：-\d/);
   });
 
   it("period lines use the export header format with days", async () => {
     const { snapshot } = await golden();
     const text = exportManagerSummaryMarkdown(buildManagerSummary(snapshot));
-    expect(text).toContain(fill(labels.ui.managerSummary.mdPeriod, { period: labels.periods.previous, range: formatPeriodExport("2026-08-01", "2026-08-01") }));
-    expect(formatPeriodExport("2026-07-13", "2026-08-23")).toBe(fill(labels.units.exportRange, { start: "2026-07-13", end: "2026-08-23", days: 42 }));
+    expect(text).toContain(fill(labels.meeting.managerSummary.mdPeriod, { period: labels.shell.periods.previous, range: formatPeriodExport("2026-08-01", "2026-08-01") }));
+    expect(formatPeriodExport("2026-07-13", "2026-08-23")).toBe(fill(labels.format.units.exportRange, { start: "2026-07-13", end: "2026-08-23", days: 42 }));
   });
 });
 
@@ -68,24 +68,24 @@ describe("V3-2b decision Markdown: L2 body, L3 technical details and cited facts
     const session = createDecisionSession(dataset, snapshot, 1);
     const plans = saveScenario(session, [], { id: "p", name: "p", inputs: SCENARIO_GOLDEN });
     const markdown = exportDecisionMarkdown(session, plans, []);
-    const fieldLine = (label: string, value: string) => fill(labels.ui.decisionExport.fieldLine, { label: mdEscape(label), value: mdEscape(value) });
-    expect(markdown).toContain(labels.ui.export.amountUnitNote);
+    const fieldLine = (label: string, value: string) => fill(labels.exports.decision.fieldLine, { label: mdEscape(label), value: mdEscape(value) });
+    expect(markdown).toContain(labels.exports.common.amountUnitNote);
     // 版頭（資料版本與來源）的期間用匯出格式。
-    expect(markdown).toContain(fieldLine(labels.csvColumns.period, formatPeriodExport("2026-08-02", "2026-08-02")));
+    expect(markdown).toContain(fieldLine(labels.exports.csv.columns.period, formatPeriodExport("2026-08-02", "2026-08-02")));
     // 現況：扣廣告後貢獻 270.00 → 主文「270」、技術細節「270.00」。
-    expect(markdown).toContain(fieldLine(labels.metrics.contribution_after_marketing.label, formatAmountL2("270.00")));
-    expect(markdown).toContain(fill(labels.ui.decisionExport.fieldLine, { label: mdEscape("contribution_after_marketing"), value: mdEscape(formatAmountL3("270.00")) }));
+    expect(markdown).toContain(fieldLine(labels.metrics.contribution_after_marketing.headline, formatAmountL2("270.00")));
+    expect(markdown).toContain(fill(labels.exports.decision.fieldLine, { label: mdEscape("contribution_after_marketing"), value: mdEscape(formatAmountL3("270.00")) }));
     // 比率：主文一位小數的百分比（不是 12 位小數）。
     const rate = session.baseline.rates.discount_rate!;
     expect(markdown).toContain(mdEscape(formatRateL2(rate)));
     expect(markdown).not.toContain(mdEscape(rate));
     // 試算結果：284.00、差額 +14.00。
-    expect(markdown).toContain(fieldLine(labels.scenario.resultTitle, formatAmountL2("284.00")));
-    expect(markdown).toContain(fieldLine(labels.scenario.vsBaseline, formatSignedDelta("14.00", "L2")));
-    expect(markdown).toContain(fill(labels.ui.decisionExport.fieldLine, { label: "contribution", value: mdEscape(formatAmountL3("284.00")) }));
-    expect(markdown).toContain(fill(labels.ui.decisionExport.fieldLine, { label: "delta", value: mdEscape(formatSignedDelta("14.00", "L3")) }));
+    expect(markdown).toContain(fieldLine(labels.scenarios.inputs.resultTitle, formatAmountL2("284.00")));
+    expect(markdown).toContain(fieldLine(labels.scenarios.inputs.vsBaseline, formatSignedDelta("14.00", "L2")));
+    expect(markdown).toContain(fill(labels.exports.decision.fieldLine, { label: "contribution", value: mdEscape(formatAmountL3("284.00")) }));
+    expect(markdown).toContain(fill(labels.exports.decision.fieldLine, { label: "delta", value: mdEscape(formatSignedDelta("14.00", "L3")) }));
     // ASCII「-」只留在使用者輸入的原字串（每件物流費增減 -10），系統算出的金額都用 U+2212。
-    expect(markdown.split("\n").filter(line => /：\\-\d/.test(line))).toEqual([fieldLine(labels.scenario.fulfillmentUnit.label, "-10")]);
+    expect(markdown.split("\n").filter(line => /：\\-\d/.test(line))).toEqual([fieldLine(labels.scenarios.inputs.fulfillmentUnit.label, "-10")]);
   });
 });
 
@@ -122,7 +122,7 @@ describe("V3-2b PPT one-pager: L1 cards with 萬, L2 channel table", () => {
     const model = buildPptxOnePager({ summary, snapshot, actions: emptyActionWorkspace() });
     // 扣廣告後貢獻 570.00 → 5,700,000.00；255.00 → 2,550,000.00；差額 −3,150,000.00。
     expect(model.key_deltas[1]).toMatchObject({ previous: formatAmountL1("5700000.00"), current: formatAmountL1("2550000.00"), change: formatSignedDelta("-3150000.00", "L1") });
-    expect(model.key_deltas[1].change).toBe(`${MINUS}${fill(labels.units.wan, { value: "315.0" })}`);
+    expect(model.key_deltas[1].change).toBe(`${MINUS}${fill(labels.format.units.wan, { value: "315.0" })}`);
     expect(model.channels[1]).toMatchObject({ previous: "1,700,000", current: `${MINUS}150,000`, change: `${MINUS}1,850,000` });
     expect(model.subtitle).toContain(formatPeriodExport("2026-08-02", "2026-08-02"));
   });

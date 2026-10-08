@@ -98,14 +98,14 @@ try {
     const flow = await startFlow(page, { name: `EC ProfitLens v2 基準 ${size.name}`, config: size.config, flags: { ...size.flags, onlyCategories: both } });
     await flow.navigate(`${base}/`, { name: "首頁（空狀態，navigation）" });
     await flow.startTimespan({ name: "載入示範資料（timespan）", ...perfOnly });
-    await clickButton(page, labels.buttons.loadDemo);
+    await clickButton(page, labels.shell.buttons.loadDemo);
     await page.waitForSelector("[data-testid='local-save-prompt']", { visible: true, timeout: 30_000 });
-    await clickButton(page, labels.autoSave.decline, "[data-testid='local-save-prompt']");
+    await clickButton(page, labels.storage.autoSave.decline, "[data-testid='local-save-prompt']");
     await page.waitForSelector("[data-testid='top-three']", { visible: true, timeout: 30_000 });
     await flow.endTimespan();
-    await flow.snapshot({ name: `${labels.nav.overview.label}（snapshot）` });
+    await flow.snapshot({ name: `${labels.shell.nav.overview.headline}（snapshot）` });
     for (const target of pages) {
-      const label = labels.nav[target.id].label;
+      const label = labels.shell.nav[target.id].headline;
       await flow.startTimespan({ name: `切到${label}（timespan）`, ...perfOnly });
       await navigateTo(page, label);
       await page.waitForSelector(target.anchor, { visible: true, timeout: 30_000 });
