@@ -42,6 +42,30 @@ Revamp v2（`docs/revamp/`，R0–R7）把產品從稽核員工具改成經理�
 
 R3 的來源預設查證另見 [revamp-R3-preset-verification.md](../verification/revamp-R3-preset-verification.md)。R7（README、示範資料、上線）的上線檢查紀錄寫在 `verification/revamp-R7-acceptance.md`，並由 [RELEASES](RELEASES.md) 的 v2.0.0 段落連結。
 
+## Revamp v3 批次驗收紀錄
+
+Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。目前版本 `package.json` 為 **3.0.0**（V3-10；版本標籤 `v3.0.0` 等人工關卡 H4 與正式站檢查後再打）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
+
+| 批次 | 內容 | 單元／整合 | E2E（四尺寸） | 驗收紀錄 |
+|---|---|---|---|---|
+| V3-0 | 基準與護欄（棘輪、testid 基準、畫面基準） | 77 檔／1,509 | 576 | [revamp-v3-V3-0-acceptance.md](../verification/revamp-v3-V3-0-acceptance.md) |
+| V3-1 | Token 與基礎元件 | 77 檔／1,509 | 576 | [revamp-v3-V3-1-acceptance.md](../verification/revamp-v3-V3-1-acceptance.md) |
+| V3-2a | 語言落地（名詞表、錯誤訊息句型、名詞小辭典） | 81 檔／1,763 | 576 | [revamp-v3-V3-2a-acceptance.md](../verification/revamp-v3-V3-2a-acceptance.md) |
+| V3-2b | 數字格式（三層尺度、HALF_UP、U+2212） | 86 檔／1,820 | 576 | [revamp-v3-V3-2b-acceptance.md](../verification/revamp-v3-V3-2b-acceptance.md) |
+| V3-2c | labels 結構重整（舊鍵 alias 到 V3-10） | 87 檔／1,829 | 576 | [revamp-v3-V3-2c-acceptance.md](../verification/revamp-v3-V3-2c-acceptance.md) |
+| V3-3 | 殼層與導覽 | 90 檔／1,879 | 596 | [revamp-v3-V3-3-acceptance.md](../verification/revamp-v3-V3-3-acceptance.md) |
+| V3-4a | 經營總覽首屏與結構 | 93 檔／1,925 | 596 | [revamp-v3-V3-4a-acceptance.md](../verification/revamp-v3-V3-4a-acceptance.md) |
+| V3-4b | 經營總覽圖表 | 98 檔／1,996 | 608 | [revamp-v3-V3-4b-acceptance.md](../verification/revamp-v3-V3-4b-acceptance.md) |
+| V3-5 | 通路健檢、商品毛利、計算與來源抽屜 | 101 檔／2,042 | 612 | [revamp-v3-V3-5-acceptance.md](../verification/revamp-v3-V3-5-acceptance.md) |
+| V3-6 | 假設試算與待辦 | 104 檔／2,094 | 628 | [revamp-v3-V3-6-acceptance.md](../verification/revamp-v3-V3-6-acceptance.md) |
+| V3-7 | 會議紀錄與匯出 | 108 檔／2,158 | 644 | [revamp-v3-V3-7-acceptance.md](../verification/revamp-v3-V3-7-acceptance.md) |
+| V3-8 | 資料來源、匯入精靈、空狀態 | 112 檔／2,222 | 680 | [revamp-v3-V3-8-acceptance.md](../verification/revamp-v3-V3-8-acceptance.md) |
+| V3-9a | 損益兩平 MER、廣告決策標籤、管理損益表、備份 v5 | 117 檔／2,311 | 728 | [revamp-v3-V3-9a-acceptance.md](../verification/revamp-v3-V3-9a-acceptance.md) |
+| V3-9b | 去年同期線、下鑽、匯出變體、投影模式 | 121 檔／2,388 | 783（5 項以理由略過） | [revamp-v3-V3-9b-acceptance.md](../verification/revamp-v3-V3-9b-acceptance.md) |
+| V3-10 | 上線檢查（移除 labels 舊鍵 alias、版本 3.0.0、RELEASES／README、13 項 HTTP、網路紀錄、v1–v5 備份還原、鍵盤與四尺寸走查、Lighthouse） | 見驗收文件 | 見驗收文件 | [revamp-v3-V3-10-acceptance.md](../verification/revamp-v3-V3-10-acceptance.md) |
+
+人工關卡 H1（v2 基準測試）與 H4（v3 複測）未執行，H2、H3 由使用者指示略過；正式站部署與正式站 Lighthouse 需使用者當次同意（D-V3-24）。v3 的發布說明、破壞性變更（Excel 工作表改名、備份 v5）與已知限制見 [RELEASES](RELEASES.md) 的 v3.0.0 段落。
+
 ## 文件地圖
 
 | 文件 | 內容 |
@@ -57,7 +81,8 @@ R3 的來源預設查證另見 [revamp-R3-preset-verification.md](../verificatio
 | [AI_CONTRACT.md](AI_CONTRACT.md)、[M5_EVALUATION.md](M5_EVALUATION.md) | 選配 AI 的契約與評估 |
 | [PRD.md](PRD.md)、[ACCEPTANCE.md](ACCEPTANCE.md)、[TASKS.md](TASKS.md) | 原始產品規格、驗收條件與 M0–M6 關卡 |
 | [PILOT_PLAN.md](PILOT_PLAN.md)、[PILOT_WORKSHEET.md](PILOT_WORKSHEET.md) | 真實使用者試用計畫與工作表 |
-| [RELEASES.md](RELEASES.md) | 發布紀錄（v2.0.0 與更早的發布） |
+| [RELEASES.md](RELEASES.md) | 發布紀錄（v3.0.0 尚未發布；v2.0.0 與更早的發布） |
+| [revamp-v3/](revamp-v3/) | Revamp v3 規格套件：`00_README`、`01_PRD`、`06_BATCHES`、`09_DECISIONS_PENDING`、`GLOSSARY`、`copy-rewrite.csv`、`usability-test` |
 | 使用者可見文字 | `src/i18n/labels.zh-TW.ts`（單一來源；元件、匯出、AI 預覽都從這裡取字） |
 
 ### 名詞對照（閱讀下方歷史原文用）

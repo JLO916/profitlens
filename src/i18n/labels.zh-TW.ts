@@ -1535,6 +1535,8 @@ const meetingStore = {
     snapshotNote: "這份紀錄在 {date} 結束，之後的資料變動不會影響內容。",
     /** D-V3-22＝A：v2 結束的紀錄（沒有 copy_version）數字、決議與備註不動，欄名用新名詞，頂部加註這一句。 */
     v2Note: "本紀錄建立於 v2，部分名稱已更新。",
+    /** V3-10（PRD §2.3 C、WCAG 2.5.3 可及名稱含可見文字）：議程 1 關鍵數字與議程 3 精簡表的 number-link 可及名稱。{title}＝「計算與來源」抽屜標題（evidence.title，不改）；{value}＝按鈕的可見文字（L1／L2 格式化後、含 U+2212），逐字放進名稱；句型同 overview.kpiBand.valueAria。 */
+    linkAria: "{title} {value}，看明細",
   },
 } as const;
 
