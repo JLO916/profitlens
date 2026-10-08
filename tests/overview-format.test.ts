@@ -135,7 +135,8 @@ describe("V3-2b channel wide table (健檢、會議摘要) is L2", () => {
       expect(html).toContain(`>${formatAmountL2(metric.evidence.previous.metric.value)}</button>`);
       expect(html).toContain(`>${formatAmountL2(metric.evidence.current.metric.value)}</button>`);
       const change = metric.evidence.change.metric.value;
-      expect(html).toContain(`<td class="${toneClass(deltaTone(metric.metric, change, "L2"))}"><button type="button" class="number-link" aria-label="${metric.evidence.change.title}">${formatSignedDelta(change, "L2")}</button></td>`);
+      // V3-10：可及名稱含可見數字（labels.overview.channelsV3.wideAmountAria），抽屜標題仍在名稱裡。
+      expect(html).toContain(`<td class="${toneClass(deltaTone(metric.metric, change, "L2"))}"><button type="button" class="number-link" aria-label="${escapeAttr(fill(labels.overview.channelsV3.wideAmountAria, { title: metric.evidence.change.title, value: formatSignedDelta(change, "L2") }))}">${formatSignedDelta(change, "L2")}</button></td>`);
     }
     expect(text(html)).not.toMatch(/-\d/);
   });

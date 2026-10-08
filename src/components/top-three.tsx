@@ -48,7 +48,9 @@ export function ImpactAmount({ snapshot, diagnostic, onEvidence, layer = "L1" }:
   if (!evidence) return <span className="impact-amount neutral">{diagnostic.code === "MISSING_CRITICAL_DATA" ? labels.shell.status.missing : labels.shell.status.notApplicable}</span>;
   const value = evidence.metric.value;
   const tone = value === null ? "neutral" : toneClass(deltaTone("contribution_after_marketing", value, layer));
-  return <button type="button" className={`number-link impact-amount ${tone}`} aria-label={evidence.title} onClick={() => onEvidence(evidence)}>{value === null ? labels.shell.status.missing : formatSignedDelta(value, layer)}</button>;
+  // V3-10 收尾：可及名稱含可見數字（抽屜標題 evidence.title 不變）。
+  const shown = value === null ? labels.shell.status.missing : formatSignedDelta(value, layer);
+  return <button type="button" className={`number-link impact-amount ${tone}`} aria-label={fill(labels.overview.alerts.impactAria, { title: evidence.title, value: shown })} onClick={() => onEvidence(evidence)}>{shown}</button>;
 }
 
 /**

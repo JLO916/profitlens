@@ -1,5 +1,5 @@
 {
-  "_說明": "tests/copy-style.test.ts 的棘輪上限（PRD §5.4、§8.4）。V3-0（2026-10-05）以 labels 實測的 v2 數值初始化；之後每批只能調低，不得調高；V3-2 目標全部為 0。V3-2a（2026-10-05）調低至實測值（同義詞 13、禁用詞 4，其餘 0）；V3-2c 刪除沒有引用的 exports.buttons.exportJson 後禁用詞降為 3。量測口徑見 scripts/lib/copy-scan.mjs。",
+  "_說明": "tests/copy-style.test.ts 的棘輪上限（PRD §5.4、§8.4）。V3-0（2026-10-05）以 labels 實測的 v2 數值初始化；之後每批只能調低，不得調高；V3-2 目標全部為 0。V3-2a（2026-10-05）調低至實測值（同義詞 13、禁用詞 4，其餘 0）；V3-2c 刪除沒有引用的 exports.buttons.exportJson 後禁用詞降為 3。量測口徑見 scripts/lib/copy-scan.mjs。 V3-10（2026-10-08）：glossary.basis.aliasNote（舊名對照說明）與 shell.ai.panel 的三個 JSON 預覽標籤（技術預覽）列入 copy-scan 白名單後調低：blacklistSynonym 12、blacklistJargon 0；剩下 12 筆同義詞是既有字串，列在 D-V3-37 待拍板。",
   "ceilings": {
     "noticePrefix": 0,
     "noticeAnywhere": 0,
@@ -10,8 +10,8 @@
     "emoji": 0,
     "allCaps": 0,
     "pipes": 0,
-    "blacklistSynonym": 13,
-    "blacklistJargon": 3,
+    "blacklistSynonym": 12,
+    "blacklistJargon": 0,
     "blacklistTone": 0,
     "blacklistEmotion": 0,
     "placeholderMalformed": 0,

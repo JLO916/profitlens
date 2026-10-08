@@ -12,6 +12,9 @@ export function isWhitelisted(path) {
   const segments = path.split(".");
   if (segments.some(segment => segment === "technical" || /^technical[A-Z]/.test(segment) || /Technical$/.test(segment))) return true;
   if (/^glossary\.terms\.\d+\.oldNames(\.|$)/.test(path)) return true;
+  // V3-10：舊名對照的說明句本身列出舊名（通路貢獻＝扣廣告前貢獻的別名），與 glossary.aliases 同性質；
+  // AI 面板的三個 JSON 預覽標籤描述的是技術預覽本身（實際傳送的 JSON），屬 technical 性質。
+  if (path === "glossary.basis.aliasNote" || /^shell\.ai\.panel\.(payloadSummary|payloadAria|requestAria)$/.test(path)) return true;
   return path === "glossary.aliases" || path.startsWith("glossary.aliases.");
 }
 

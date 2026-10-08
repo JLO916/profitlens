@@ -542,6 +542,8 @@ export const overview = {
 
   /** V3-4a 代理 C：本期三件事警示列（C9 摘要型，PRD §7.1 第 4 點、§8.2）。3 件時標題沿用 sections.topThree。 */
   alerts: {
+    /** V3-10 收尾：三件事「對貢獻影響」金額的可及名稱含可見數字。 */
+    impactAria: "{title} {value}，看明細",
     /** 不足 3 件（1–2 件）時的區塊標題。 */
     titleCount: "本期要先看的事（{n} 件）",
     /** 0 件（門檻濾掉全部或沒有健檢結果）。 */
@@ -656,6 +658,8 @@ export const overview = {
 
   /** V3-4b 各通路扣廣告後貢獻（C16，PRD §7.1 第 8 點；chart-takeaways.ts 的 channelConclusion 使用）。 */
   channelsV3: {
+    /** V3-10 收尾（Lighthouse label-content-name-mismatch）：完整通路寬表每格 number-link 的可及名稱含可見數字；句型同 kpiBand.valueAria。 */
+    wideAmountAria: "{title} {value}，看明細",
     /** {channel}＝通路名稱（示範資料用 alias），{amount}＝L1 金額（虧損時為絕對值）。 */
     title: { negative: "{channel} 扣完廣告虧 {amount}", best: "{channel} 扣廣告後貢獻最高，{amount}" },
     /** {section}＝overview.sections.channelMix。 */
