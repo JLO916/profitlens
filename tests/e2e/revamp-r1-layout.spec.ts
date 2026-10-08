@@ -4,6 +4,7 @@ import { fill, labels } from "../../src/i18n";
 import { MINUS, deltaTone, formatAmountL1, formatAmountL3, formatDateL1, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { AMOUNT_FIELDS } from "../../src/domain/types";
 import { yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
+import { VISIBLE_CHART_FRAMES, frameHeights } from "./chart-helpers-v4";
 
 const aiLabelPrefix = labels.shell.topbar.aiLabel.replace("{ai}", "");
 // V3-3：示範資料（fixtures/demo/manifest.json）的「資料到」；頂欄資料狀態按鈕寫「示範資料 · 資料到 8/24」。
@@ -336,9 +337,13 @@ test.describe("V3-3 shell acceptance", () => {
 const evidenceDrawer = (page: Page) => page.getByRole("dialog", { name: new RegExp(`${labels.evidence.sections.evidence}$`) });
 /** 抽屜標題：「{title} · 計算與來源」。 */
 const evidenceHeading = (title: string) => `${title} · ${labels.evidence.sections.evidence}`;
-/** 四個圖表框：拆解與利潤結構是瀑布（.chart-frame.waterfall），趨勢與各通路是 C16 的 .chart-frame.sm。 */
-const CHART_FRAMES = ["[data-testid='bridge-section'] .chart-frame", "[data-testid='profit-waterfall'] .chart-frame", "[data-testid='trend'] .chart-frame", "[data-testid='channel-mix'] .chart-frame"] as const;
-const chartFrameHeights = (page: Page) => Promise.all(CHART_FRAMES.map(async selector => (await box(page, selector)).height));
+/**
+ * 圖表框：V4-1（06_BATCHES V4-1、護欄表「.chart-frame 等高與 CLS」、PRD §2.2 B4）起自動收集 main 內看得到的 .chart-frame（chart-helpers-v4 的 frameHeights：
+ * main .chart-frame:visible，不收 hidden 祖先內與未展開 <details> 內的框；不限 .view-content），以所在區塊的 testid 為鍵比較高度。
+ * 總覽可見的是四個：拆解與利潤結構是瀑布（.chart-frame.lg.waterfall），趨勢與各通路是 C16 的 .chart-frame.sm。
+ */
+const OVERVIEW_VISIBLE_FRAMES = 4;
+const chartFrameHeights = (page: Page) => frameHeights(page);
 /** 含 {占位符} 的標籤模板 → 正規式片段（占位符換成非空字串）。 */
 const templateSource = (template: string) => template.split(/\{[^}]+\}/).map(part => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".+?");
 const profitTitlePattern = new RegExp(`^(?:${templateSource(labels.overview.profit.title.positive)}|${templateSource(labels.overview.profit.title.negative)})$`);
@@ -354,9 +359,10 @@ type ShiftState = { cls: number; all: number; observer: PerformanceObserver };
 test.describe("V3-4b charts", () => {
   test("切換期間前後圖表容器等高、CLS < 0.05", async ({ page }, testInfo) => {
     await loadDemo(page);
-    await expect(page.locator("main .chart-frame")).toHaveCount(CHART_FRAMES.length);
+    await expect(page.locator(VISIBLE_CHART_FRAMES)).toHaveCount(OVERVIEW_VISIBLE_FRAMES);
     const before = await chartFrameHeights(page);
-    expect(before.every(height => height > 0), "四個圖表框都有高度").toBe(true);
+    expect(Object.keys(before), "總覽可見的圖表框是拆解、利潤結構、趨勢、各通路").toEqual(["bridge-section", "profit-waterfall", "trend", "channel-mix"]);
+    expect(Object.values(before).every(height => height > 0), "四個圖表框都有高度").toBe(true);
     // V3-9b F8：示範資料的去年同期不可用，趨勢圖下方多一行原因（trend-yoy-note）；切到近 7 天原因不變（同一句、不出現也不消失），不造成位移。
     const yoyReason = yoyTooShortNote("2026-06-01");
     await expect(yoyNote(page)).toHaveText(yoyReason);
