@@ -869,6 +869,31 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(occurrences(bridge, 'class="unit-note"')).toBe(1);
     });
 
+    it("V4-1 C 總覽：G6 九條（chart-overview-bridge-bar-{field}）在 1440 隱藏但掛載——每個總覽狀態都有（缺值列除外）、各在 bridge-table 的 tr[data-row={field}] 內、全頁恰好一次（M6）；隱藏只靠 globals.css 的 display: none，不卸載、不帶 hidden", () => {
+      const overviews = loaded().filter(({ state }) => state!.panel === "overview");
+      expect(overviews.length).toBeGreaterThanOrEqual(4);
+      for (const { name, html, state } of overviews) {
+        const { components } = state!.active.snapshot.report.bridge;
+        const fields = (Object.keys(components) as (keyof typeof components)[]).filter(field => components[field].value !== null);
+        const table = element(html, 'data-testid="bridge-table"')!;
+        expect(occurrences(html, 'data-testid="chart-overview-bridge-bar-'), name).toBe(fields.length);
+        for (const field of fields) {
+          const id = `chart-overview-bridge-bar-${field}`;
+          expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+          expect(element(table, `data-row="${field}"`), `${name} ${id}`).toContain(`data-testid="${id}"`);
+          const svg = openTag(html, `data-testid="${id}"`)!;
+          expect(svg, `${name} ${id}`).toContain('aria-hidden="true"');
+          expect(svg, `${name} ${id}`).not.toMatch(/\shidden=""|tabindex/);
+        }
+        // 橋接表（含 G6）在旁欄、不在任何 hidden 或 aria-hidden 的祖先內（1440 只靠 CSS 隱藏條本身）。
+        expect(openTag(html, 'class="frame-aside"'), name).not.toMatch(/\shidden=""|aria-hidden/);
+        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-overview-bridge-bar-")), name).toEqual([]);
+      }
+      const css = readFileSync(resolve("src/app/globals.css"), "utf8");
+      const block = css.slice(css.indexOf("/* ── V4-1 C："), css.indexOf("/* ── V4-1 C 錨點結束 ── */"));
+      expect(block.replace(/\/\*[\s\S]*?\*\//g, "").trim()).toBe("@media print, (min-width: 768px) {\n  .bridge-table .bar-cell { display: none; }\n}");
+    });
+
     // ── V4-2 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-2 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
     // ── V4-3a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──

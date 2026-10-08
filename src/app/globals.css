@@ -2628,4 +2628,11 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-1 B 錨點結束 ── */
 
 /* ── V4-1 C：G6 橋接表內嵌變異條（≤ 767px 顯示，≥ 768 隱藏但掛載） ── */
+/* G6（PRD §4.4、§4.6、§7.7；CHART_CATALOG G6；D-V4-33＝B）：橋接表九個差額列的 C24 變異條只在螢幕 ≤ 767px 顯示——390 的瀑布要在框內水平捲動、看不到全貌，
+   條長讓橋接表本身就能比大小與方向。≥ 768 不重複畫同一組九個值，列印也不印（瀑布已是橋接主圖，X18、X39）；兩者一律只用 display: none，
+   元素保持掛載（M1；E2E 在隱藏時也能比對 rect 的 width 與 fill）。條寬（≤ 767 為 64px）、貼齊金額格左緣與垂直置中沿用「V4-1 B」的 .bar-cell 規則；
+   本段選擇器 .bridge-table .bar-cell（0,2,0）蓋過 .bar-cell 的 display；之後要改 float 或 margin 時選擇器至少寫成 .bridge-table td.num > .bar-cell。 */
+@media print, (min-width: 768px) {
+  .bridge-table .bar-cell { display: none; }
+}
 /* ── V4-1 C 錨點結束 ── */
