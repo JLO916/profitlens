@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "synthetic-4-channel-v1",
+  "source_type": "synthetic",
+  "currency": "TWD",
+  "timezone": "Asia/Taipei",
+  "data_as_of": "2026-09-24",
+  "coverage_start": "2026-08-20",
+  "coverage_end": "2026-09-23",
+  "channels": [
+    "DTC",
+    "LIVE",
+    "MARKETPLACE",
+    "SOCIAL"
+  ],
+  "comparison_mode": "same_days",
+  "previous_period": {
+    "start": "2026-08-21",
+    "end": "2026-09-06"
+  },
+  "current_period": {
+    "start": "2026-09-07",
+    "end": "2026-09-23"
+  },
+  "sales_coverage_confirmed": true,
+  "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+  "note": "All entities and values are synthetic. Not real business outcomes. Test-only (D-V4-31); hand-calculated expectations live in tests/synthetic-4-channel.test.ts and README.md."
+}
