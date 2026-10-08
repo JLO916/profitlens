@@ -4,7 +4,7 @@
 
 使用者 2026-10-08 回覆「都依建議值繼續推進，並進行下一批 V4-2」：D-V4-37–41 定為 A。V4-2 依 06_BATCHES 完成：G3 趨勢刻度改整數萬（`trendAxis`＋`formatAxisWan`）；G4 各通路緊湊表加差額欄與差額條（有利 `--chart-total`，差額抽屜帶兩期組成，長條抽屜不變）；C18 Bullet 抽成共用元件（KPI 帶 markup 與 v3 逐字相同、畫面 13 零差異）並在損益兩平段加 MER bullet；C19 Sparkline＋G7a「近 6 週」（`assistWeeks`／`assist-weeks-v1`，示範逐週件數合計 7,420＝期間件數；未滿 7 天的週畫空心點）；C33 ChartDataTable 與「各指標每週」<details>；抽屜技術細節加「圖表整理版本」（`arrangeVersion`）；新 token `--chart-target`、`--chart-h-xs`。D-V3-35 沒有回覆，不做。
 
-- 最終驗收：typecheck、lint、contrast（77／77）exit 0；audit:ui design 15 項不變；unit 134 檔／2,629 全過；build pass；E2E 841 passed／0 failed／15 skipped（25.0m）；畫面基準 52 張只有四個尺寸的 02 變動（01、03、13 逐像素不變），更新後重跑全過；First Load JS 524,280 bytes（V4-0a＋4,854，門檻 545,397）；B2、B1、B3 不變；B9 總覽＋197；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94–97；390 TBT 中位數都在門檻內；axe 四尺寸 0；aria-hidden 內停留點 0；功能保留表 V4-2 的 11 列打勾；禁區四條命令皆空。
+- 最終驗收：typecheck、lint、contrast（77／77）exit 0；audit:ui design 15 項不變；unit 134 檔／2,629 全過；build pass；E2E 841 passed／0 failed／15 skipped（25.0m）；畫面基準 52 張只有四個尺寸的 02 變動（01、03、13 逐像素不變），更新後重跑全過；First Load JS 524,280 bytes（V4-0a＋4,854，門檻 545,397）；B2、B1、B3 不變；B9 總覽＋197；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94–97；390 TBT 中位數都在門檻內；axe 四尺寸 0；aria-hidden 內停留點 0；功能保留表 V4-2 的 11 列打勾；禁區四條命令皆空，收尾 commit `0b980fc` 之後的禁區 diff 也為空。
 - 已知：MER bullet 在示範資料滿格（實際是損益兩平的 2.84 倍）；B1 仍等於上限 855。
 - **MVP 切線已到**：總覽改版完整。依 D-V4-28，部署 Vercel preview 需要使用者當次明確同意；未同意不部署。
 - 驗收：`verification/revamp-v4-V4-2-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-2/`。下一批：V4-3a（通路健檢一：G9、G10、G7b）。

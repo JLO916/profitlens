@@ -44,7 +44,7 @@
 | Lighthouse × 3（開跑前 1 分鐘負載 3.25、3.97、3.75） | 三次都 exit 0 |
 | `lsof -ti tcp:3100 \| xargs kill`；`lsof -ti tcp:3100` | 已停，沒有輸出 |
 | 禁區四條命令（`625bfa5`、`82b70df`、assist-kpi／breakeven-mer 四檔、`git status --porcelain`） | 四條都空 |
-| commit 之後的禁區 diff | 收尾提交後執行，結果補在 `docs/STATUS.md` 的 V4-2 段 |
+| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區與 assist-kpi、breakeven-mer 路徑）` | 空（收尾 commit `0b980fc`） |
 | 合併後隱藏字元掃描 | 0 |
 
 **棘輪與基準數值**
