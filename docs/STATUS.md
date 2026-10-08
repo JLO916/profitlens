@@ -1,5 +1,15 @@
 # Status
 
+## Revamp v4｜V4-0b 設計稿、PPT spike 與合成資料（完成；不改任何 UI；H5 未執行／待人工）
+
+使用者 2026-10-08 回覆「全都依建議，並下一批 V4-0b」：D-V4-36 定為 A。V4-0b 依 06_BATCHES 第 1–4 項完成：pptxgenjs `addChart` spike（`tests/pptx-chart-spike.test.ts`，10 個檢查項在示範資料與跨 0 的合成橋接都成立；資料標籤設定整張圖只有一份，改用文字方塊標值，列為 D-V4-37；D-V4-34 試排 A 版成立、B 版截字與縮字，維持 A）；4 通路合成資料（`tests/fixtures/synthetic-4-channel/`，10 項手算核對）；H5 設計稿（`verification/revamp-v4/mockups/`：總覽、健檢、商品兩種狀態、資料來源，數字由產生器呼叫既有函式算出，截圖 23 張與實測）。`src/` 與 `fixtures/` 零改動。
+
+- 最終驗收：typecheck、lint、contrast（75／75）exit 0；audit:ui 與 V4-0a 相同；unit 126 檔／2,474 全過（新增 15）；build pass（設計稿不在 `.next`）；E2E 791 passed／0 failed／9 skipped（23.4m）；畫面基準 52 張與 V4-0a 0 差異（逐位元相同）；First Load JS 519,426 bytes、B2、B3、B9、keyboard-walk、axe、network-log 全部與 V4-0a 相同；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94；390 TBT 中位數都在 D-V4-36 門檻內（載入示範資料 1,059.9／1,109.1、通路健檢 762.1／832.3、商品毛利 82.1／129.9、會議紀錄 1,020.1／1,071.2、資料來源 6.0／50.0 ms）；禁區四條命令皆空。
+- 設計稿實測：G11 在 390 放得下（320 ≤ 324），768 寬一列只放得下 1 張月曆（PRD 估 2 張，已改寫進 06 V4-3b），`formatHeatCell`「−0.45」放得下；G13 兩欄並排放不下、G14 在 390 只剩 32px、去年同期可用時 G20 在 390 看不到缺列、G1 與 G2 共同尺度讓 G1 變扁約 40%（設計稿與 PRD 的差異共 29 點，`verification/revamp-v4/mockups/README.md` §6）。
+- 未執行／待人工：**H5 設計稿審查（擋 V4-1，使用者可略過）**；PPT 三個 spike 檔的人工開檔檢查（Quick Look 不畫 pptxgenjs 圖表）；H6。
+- 待拍板（本批新增）：D-V4-37（PPT 資料標籤，擋 V4-9a）、D-V4-38（G13 版面，擋 V4-4）、D-V4-39（G14 在 390，擋 V4-4）、D-V4-40（G20 軸範圍，擋 V4-7a）、D-V4-41（G1、G2 共同尺度，擋 V4-1）；建議值都在 `docs/revamp-v4/09_DECISIONS_PENDING.md`。
+- 驗收：`verification/revamp-v4-V4-0b-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-0b/`。下一批：V4-1（總覽拆解與圖表框），開工前需要 H5（或使用者表示略過）與 D-V4-41。
+
 ## Revamp v4｜V4-0a 基準與護欄（完成；不改任何 UI；H5、H6 未執行／待人工）
 
 使用者 2026-10-08 指示「改版：將全站加入更多專業視覺化元素，以專業圖表的方式呈現為主要」，套件 `docs/revamp-v4/` 完成後回覆「都依建議值，開工」：D-V4-1–35 全部依建議值（目標 v4.0.0、分支 `revamp/v4` 自 `main`＝`21d621c`、禁區四條命令以 `625bfa5` 為主並保留 `82b70df`）；CLAUDE.md 整份換成 v4 版。V4-0a 依 06_BATCHES 第 1–12 項完成：labels 快照（2,581 個葉節點逐字）與 `V4_NEW_KEY_PREFIXES`、copy-scan 的 chartsV4 規則（計數不變）、copy-density 七頁上限＝實測、頁面狀態搬到 `tests/helpers/page-states.tsx`（mounted-testids 44 前後相同，加 `chart-` 唯一性後 46）、chart-lint CL-1–CL-11（v3.0.0 全 0）、testid 三份基準（v2 228、v3 416、v4 新增 0，刪除 0）、capture config 與 52 張畫面基準、metrics v4（B2、B3、B5 硬斷言）、keyboard-walk 的 `aria-hidden` 停留點斷言、Lighthouse 加資料來源與待辦兩頁、GLOSSARY v4 增補與 H6 用的 usability-test（答案鍵經程式驗證）。`src/` 零改動。

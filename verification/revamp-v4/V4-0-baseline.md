@@ -227,9 +227,65 @@ B9 七頁 DOM 節點數（載入示範資料後，`document.querySelectorAll('*'
 參考：--red-50 對白的 ΔE2000 6.4、對 --bg-subtle 6.8。表內所有候選的 --text-primary 都 ≥ 4.5；--text-secondary 在 t ≤ 0.33 時 ≥ 4.5；--unfavorable 文字在 t ≤ 0.18 時 ≥ 4.5；框線對候選底在 t ≤ 0.40 時都 ≥ 3。是否「肉眼可分」只附 ΔE2000 參考，不下結論。
 
 ## 14 V4-0b 補記（PPT spike 與設計稿）
+V4-0b（2026-10-08）完成；本批不改 `src/`、不改畫面。檔案：`tests/pptx-chart-spike.test.ts`、`tests/fixtures/synthetic-4-channel/`、`tests/synthetic-4-channel.test.ts`、`tests/helpers/synthetic-4-channel.ts`、`verification/revamp-v4/mockups/`、`verification/revamp-v4/V4-0b/`。
 
-（待 V4-0b）
+### 14.1 PPT 原生瀑布 spike（D-V4-10、D-V4-34）
 
-- PPT 原生瀑布 spike（D-V4-10、D-V4-34 兩種版面的試排）：（待 V4-0b）
-- 4 通路合成資料手算值摘要（D-V4-31）：（待 V4-0b）
-- H5 設計稿實測（G11 在 390 的格寬、768 與 1280 每列月曆張數、`formatHeatCell` 放不放得下、G20 的缺列虛線框與去年同期細線分不分得出來）：（待 V4-0b）
+命令：`PPTX_SPIKE_OUT=verification/revamp-v4/V4-0b/pptx-spike.json npx vitest run tests/pptx-chart-spike.test.ts`（5 個測試通過；只在給環境變數時寫 `pptx-spike.json` 與 `pptx-spike-A.pptx`、`pptx-spike-B.pptx`、`pptx-spike-synthetic.pptx`；不給時 `npm test` 不寫任何檔，重跑 JSON 逐字相同）。堆疊直條四系列（透明底段 `a:noFill`、起訖與小計 `EXPORT_THEME.muted`、有利差額暫用 `EXPORT_THEME.lineStrong`、不利差額 `EXPORT_THEME.unfavorable`）；柱段落在 0 以下時另加「有利 0 以下」「不利 0 以下」兩個輔助系列（合成橋接用到 6 個系列）。
+
+| 檢查項 | 示範資料 | 合成橋接（跨 0、整段在 0 以下、負的本期） |
+|---|---|---|
+| `c:barChart` 為 stacked（grouping stacked、overlap 100） | 成立 | 成立 |
+| 底段 `a:noFill` | 成立 | 成立 |
+| 系列色屬於 `EXPORT_THEME` | 成立 | 成立 |
+| `c:valAx` 依資料且含 0 | 成立（0 到 6,000,000，步長 2,000,000） | 成立（−50,000 到 150,000，步長 50,000） |
+| 負值不被切 | 成立（沒有負值） | 成立（堆疊最低 −42,500.5 ＞ 軸下界 −50,000） |
+| `ppt/media/` 為空 | 成立 | 成立 |
+| 內嵌活頁簿看得到輔助系列名 | 成立 | 成立 |
+| 有利、不利系列名標明「絕對值，圖形用」 | 成立（「編輯資料」裡商品成本 1,575,080.55，橋接表 −1,575,080.55） | 成立 |
+| 資料標籤格式帶 U+2212 | 成立（`dataLabelFormatCode` 原樣寫進每個系列的 `c:numFmt`） | 成立 |
+| 系列數值等於 `bridgeWaterfall().bars` 起訖精確字串 | 成立（11／11） | 成立（11／11，零差額不畫） |
+
+**限制**：pptxgenjs 4.0.1 的 `showValue` 與 `dataLabelFormatCode` 整張圖只有一份。透明底段也會顯示標籤，不利系列存的是正的柱高所以標籤不帶「−」，跨 0 的柱會出現兩段部分高度的標籤。探針：`showValue:false` 加 `layout`（`c:manualLayout`）可以關掉全部系列標籤並固定繪圖區，改用文字方塊標 `bars[].display`。另外 pptxgenjs 以模組層級計數器命名 chart part，V4-9a 的測試不要寫死 `chart1.xml`。macOS Quick Look 不畫任何 pptxgenjs 圖表，圖形外觀要人工在 PowerPoint 或 Keynote 開檔確認（**未執行／待人工**）。
+
+**判讀**：圖形本身成立，D-V4-10 走 A（`addChart`）；資料標籤的作法列為新的待拍板 D-V4-37（建議：`showValue:false`＋固定繪圖區＋文字方塊標值）。
+
+**D-V4-34 試排**：A（現有一頁式加第二張只放瀑布）三個變體檢查全部成立，第一張與現行 `writePptx` 輸出逐字相同，第二張瀑布 9.2 × 4.25 英吋；B（單張放六個區塊與瀑布）區塊都在、框不重疊，但三件事的下一步與置頂待辦第 3 項的期限被截斷、標題 18pt（規格 28）、KPI 24pt（規格 36）、通路表最多 2 列、瀑布只剩 9.2 × 0.64 英吋（A 的 15%）。D-V4-34 維持 A。V4-9a 原生產生第二張時，`tests/pptx-export.test.ts` 的「只有 1 張」要同批改成 2 張。
+
+### 14.2 4 通路合成資料（D-V4-31）
+
+`tests/fixtures/synthetic-4-channel/`（`dataset_id` `synthetic-4-channel-v1`，`source_type` synthetic；設計與手算摘要在同目錄 README.md）；`tests/synthetic-4-channel.test.ts` 10 項手算核對全部通過，手算值以常數寫在測試檔，實際值由既有函式算出。
+
+| 項目 | 內容 |
+|---|---|
+| 期間 | 涵蓋 2026-08-20 到 09-23（35 天）；上期 8/21–9/06、本期 9/07（一）到 9/23（三），各 17 天；本期第 3 週 9/21–9/23 只有 3 天（上期最後一週也是 3 天）；8/20 在兩期之外，費用與廣告有 0.00 列、銷售無列 |
+| 通路角色 | DTC 健康對照；LIVE 缺列通路；MARKETPLACE 扣廣告後虧損（本期 −5,200.00）、3 個商品毛利為負的 SKU、零貢獻門檻超界；SOCIAL 平台抽成沖回（9/15 −6,000.00，本期平台抽成合計 −2,160.00）但淨營收 40,290.00 為正 |
+| 缺列 | 全在 LIVE：通路費用 9/14–9/19（6 天）；廣告 8/30–9/02（4 天，跨月）與 9/22（1 天）；`validateDataset` 為 partial，11 筆問題（MISSING_CHANNEL_COST_DAY 6、MISSING_AD_DAY 5） |
+| 每通路本期四層（淨營收／商品毛利／扣廣告前／扣廣告後） | DTC 134,300.00／76,500.00／66,300.00／40,800.00；LIVE 59,670.00／33,150.00／null／null；MARKETPLACE 61,100.00／19,450.00／5,000.00／−5,200.00；SOCIAL 40,290.00／12,410.00／10,830.00／7,430.00 |
+| 商品毛利為負（本期 5 個，跨 2 通路） | SKU-201·MARKETPLACE −3,400.00、SKU-301·SOCIAL −2,040.00、SKU-203·MARKETPLACE −1,800.00（只退款）、SKU-202·MARKETPLACE −850.00、SKU-302·SOCIAL −850.00；累計 −8,940.00，前 3 個佔 81.0% |
+| 零貢獻門檻 | MARKETPLACE 零變動門檻 104.0%、方案「廣告加碼 20%、銷量 +10%」門檻 144.8%，都在 [−90%, +100%] 以外（試算輸入只在測試內） |
+| 三通路橋接（排除 LIVE） | 九項合計 −6,185.00，reconciled；全通路橋接因 LIVE 缺列為 null |
+
+### 14.3 H5 設計稿（D-V4-27＝A）
+
+`verification/revamp-v4/mockups/`：`index.html`、`overview.html`、`diagnosis.html`、`products.html`（示範資料）、`products-synthetic.html`（合成資料）、`data.html`（合成資料），共用 `tokens.css`（由產生器從 `src/app/globals.css` 的 `:root` 複製，另附 PRD §6.5 新 token 提案值）與 `mockups.css`。數字全部由產生器 `gen/` 呼叫既有 domain／application 函式算出（B 級整理在頁面標「設計稿試算」），重跑命令在 `mockups/README.md` §3（`MOCKUP_WRITE=1`，預設 `npm test` 不含）。截圖 23 張在 `verification/revamp-v4/V4-0b/mockups-shots/`，實測在同目錄 `measure.json`。設計稿不在 build 產物中（`.next` 內 0 個參照）。H5 待審新字串：總覽 5、健檢 29、商品 7＋15、資料來源 33（頁尾清單與 `mockup-data.json`）。
+
+| 實測 | 1440 | 1280 | 768 | 390 |
+|---|---|---|---|---|
+| 面板內寬 | 1,122 | 962 | 450 | 324 |
+| G11 格寬（可用寬） | 44（42） | 44（42） | 40（38） | 40（38） |
+| G11 每列月曆張數（`auto-fill`） | 3 | 2 | **1**（PRD §4.4 估 2；768 時側欄仍在，內寬 450） | 1 |
+| G11 月曆寬 ≤ 內寬、框內不水平捲動 | 是 | 是 | 是 | 是（320 ≤ 324） |
+| `formatHeatCell`「−0.45」文字寬 | 29.38px，放得下（「−10.25」35.84px 也放得下） | 同 | 同 | 同 |
+| G12 子圖寬 | 212 | 180 | 80 | 324（單欄） |
+| G1 瀑布框內水平捲動 | 否 | 否 | 是 | 是 |
+| G13 PRD 版（兩欄並排）最長柱，示範／合成 | 15／37px | 0／0 | 0／0 | 85／107（上下） |
+| G13 各寬度上下排列的最長柱，示範／合成 | 285／307px | 205／227 | 211／233 | 85／107 |
+| G14 最長柱（合成 5 根） | 232px | 152 | 158 | **32** |
+| G20 一天寬（合成 35 天） | 27.94px | 23.37 | 9.20 | 5.83 |
+| G20 去年同期示意（388 天）的 6 天缺列框寬 | 14.1px | 11.6 | 4.0 | **2.2** |
+| 頁面橫向捲動 | 無 | 無 | 無 | 無 |
+
+對比：G20 缺列虛線對區帶底 3.22、對白 3.58；去年同期細線與缺列虛線同色（1.00，靠形狀與位置區分）；區帶對白 1.11（靠直接標字與 2px 白縫）；G21 階 2 底（設計稿 `--red-100` 提案 `#ebcecb`）上的主文字 10.71、框線 4.07。
+
+設計稿與 PRD 的差異共 29 點，列在 `mockups/README.md` §6；影響規格、需要拍板的列為 D-V4-37 到 D-V4-41（`docs/revamp-v4/09_DECISIONS_PENDING.md`），其餘交 H5 判斷。
