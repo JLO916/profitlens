@@ -292,6 +292,20 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-09｜Revamp v4 V4-2：總覽其他圖的取捨
+
+**G3 刻度自算：** `formatAxisWan` 需要整組刻度與步長，Recharts 的 tickFormatter 只拿得到單一值，所以 G3 的刻度改由 `trendAxis` 自算（同樣 1／2／2.5／5 × 10ⁿ、含 0）；示範資料的刻度位置與 v3 相同。
+
+**G4 不新增欄頭字串：** 差額欄表頭沿用既有「差額（元）」（H5 設計稿的附註），只新增可及名稱 `changeAria` 與差額缺值時的 `changeEmptyAria`；緊湊表的 aria-label 沿用既有字串。G4 長條與 G3 週點的點擊維持 v3，只有新的差額條記 `chart_clicked`。
+
+**C18 改引用 token 的方式：** `.kpi-bullet*` 三個背景色原地改成 `--chart-total`、`--chart-unfavorable`、`--chart-target`（三者在 `:root` 的值就是原本的 `--text-secondary`、`--unfavorable`、`--text-primary`），畫面 13 逐像素相同。落後判斷沿用 v3 取到 0.1% 的比值，是 KPI 帶逐字相同的必要條件。
+
+**MER bullet 放在表格外：** `revamp-r4`、`breakeven-mer` 兩支 E2E 斷言損益兩平表格 tbody 只有 1 列，`overview-structure` 斷言沒有目標檔時不出現 `kv-target`；bullet 改放一句結論之後的 `p.assist-breakeven-bullet`，桌機上仍在表格正下方。
+
+**G7a 的範圍：** 本期值資料待補或不適用時那一格不畫 sparkline（CL-1 要求同列有數字）；空心點只用在件數（PRD G7a：件數只畫完整週，比率照畫）；`weeklyRows` 的 `units_sold` 是選填欄位，只給 `assistWeeks` 用，不進匯出、備份與 hash（4 組資料的既有匯出逐位元組相同）；「各指標每週」放在面板最後、損益兩平段之後（插在兩表之間會讓 `breakeven-mer.spec` 的相鄰選擇器失敗）；768 到 1099px 兩張緊湊表改上下一欄（實測 768 時左表溢出）。
+
+**新頁面狀態 `overview-synthetic`：** 示範資料測不到未滿 7 天的週、差額缺值的通路與 MER bullet 不出現，所以在 `tests/helpers/page-states.tsx` 加 4 通路合成資料的總覽狀態；兩條寫死總覽狀態名單的 mounted-testids 既有測試加入這個名稱（檢查內容不變）。
+
 ## 2026-10-08｜D-V4-37–41 拍板與 V4-2 開工
 
 使用者回覆「都依建議值繼續推進，並進行下一批 V4-2」：D-V4-37 到 D-V4-41 全部定為 A。D-V4-41＝A 讓 V4-1 已實作的共同尺度正式定案，PRD §7.2 補上「總覽 G1、G2 共同尺度的下界可延伸一個步長」的例外；D-V4-37、38、39、40 的作法寫進 06 的 V4-9a、V4-4、V4-7a 段。v3 的 D-V3-26／27／29–37 不在這次回覆的範圍（最近一次回報只列 D-V4-37–41），依 D-V4-29 仍待使用者回覆，所以 V4-2 不做 D-V3-35（期間列與趨勢圖下兩處都保留去年同期不可用的原因）。

@@ -63,7 +63,7 @@
 
 | 項目 | 規則 |
 |---|---|
-| 輸入 | `columns: {key, label, unit: "money"｜"rate"｜"count"｜"text"｜"date", layer: "L2"｜"L3"}[]`、`rows`、`evidenceOf(row, col)`：回傳 `EvidenceSelection` 或 null |
+| 輸入 | V4-2 實作（`src/components/charts/chart-data-table.tsx`）：`testId`（加在 table，`chart-{page}-{id}-table`）、`caption`（也是捲動區的 aria-label）、`rowHeaderLabel`、`rows`、`rowKey(row)`、`rowHeader(row)`：回傳 `{label, title?}`、`columns: {key, label, notes?, unit?, layer?, data}[]`（unit：money、rate、count、multiple、per_unit、text、date；layer：L2、L3）、`valueOf(row, col)`：回傳 `{value, reasonCodes?, unit?, layer?, emptyText?}`、`evidenceOf(row, col)`：回傳 `EvidenceSelection` 或 null、`onEvidence`、`cellAria?`、`notes?`、`className?`；另匯出 `chartDataCellText`、`chartDataTable({title, ...})`（回傳 ChartFrame 的 `dataTable`）、`ChartDataDetails`（獨立的 `<details class="data-alternative">`，收合時保持掛載，展開記 `chart_table_opened`） |
 | 輸出 | `<div class="table-scroll" role="region" tabindex="0" aria-label={caption}><table data-testid="chart-…-table"><caption>…（元）</caption>`；`th scope` 齊全；數字欄右對齊、tabular、負號 U+2212 |
 | 數字格 | `evidenceOf` 回傳非 null 時是 `<button class="number-link">`，與圖上點擊同一個 builder；回傳 null（例如試算、凍結值）時是純文字 |
 | 列數 | 等於圖的資料長度（含被退回成文字的列，例如「不適用」通路）；SSR 測試斷言 |
@@ -188,7 +188,7 @@
 | 等級與版本 | A |
 | 技術 | 長條沿用 Recharts `BarChart`（`channel-section.tsx:90-104`）；差額條是 C24 variance（不利 `chartColors.unfavorable`、有利 `chartColors.total`：同框的上期長條已用 gray-400，有利不用同色的 `chartColors.favorable`），放在緊湊表 `table.channel-kv`（`:74-84`）新增的「差額」欄格內，數字是新的 number-link（L2 帶號），條在數字前、`aria-hidden`；條長＝\|差額\| ÷ 各通路 \|差額\| 最大值（`barCellGeometry`，只用於長度）；刻度改 `formatAxisWan`（取代 `:45` 等處的 `axis`）。D-V4-16 選 B 時改 C35 啞鈴，並同批改 `tests/e2e/trend-yoy.spec.ts:200` 的 `path.chart-bar-link` 定位器 |
 | ChartFrame | 沿用（`channel-section.tsx:88`）：`id="channel"`、`testId="channel-mix"`、`after={緊湊表}`、`dataTable={五欄表}` |
-| 標題與 labels | 標題沿用 `overview.channelsV3.title.*`（示範「平台 · MARKETPLACE 扣完廣告虧 6.1 萬」）；新 key `overview.chartsV4.channels.changeHead`（差額欄表頭）、`overview.chartsV4.channels.changeAria`（差額 number-link 的可及名稱，比照既有 `copy.amountAria`） |
+| 標題與 labels | 標題沿用 `overview.channelsV3.title.*`（示範「平台 · MARKETPLACE 扣完廣告虧 6.1 萬」）；差額欄表頭沿用既有 `overview.channelsV3.dataTable.change`「差額（元）」（H5 設計稿提案的附註，不另立新鍵）；新 key `overview.chartsV4.channels.changeAria`（差額 number-link 的可及名稱，比照既有 `copy.amountAria`）與 `changeEmptyAria`（差額缺值時的可及名稱，不加「元」）。V4-2 實作同步 |
 | testid | 沿用 `channel-mix`、class `chart-bar-link`；新增 `chart-overview-channels-bar-{channel}` |
 | 資料表 | 緊湊表（通路、本期、貢獻率、新增差額）常駐；五欄表（`channel-section.tsx:86`）不改 |
 | 鍵盤 | 緊湊表 number-link（每列多一個差額）、五欄表 summary |
@@ -207,7 +207,7 @@
 | 資料 | KPI：`achievement(actual, target)`（`src/application/targets.ts:182`）、`matchTargets`（`:157`）。MER 列：`breakevenMer(summary)`（`src/application/breakeven-mer.ts:67`）的 `value`（損益兩平）與 `actual`（實際 MER）、`comparison` |
 | 等級與版本 | A／`assist-kpi-v1`、`breakeven-mer-v1`（都不改） |
 | 技術 | C18 `Bullet`：由 `overview.tsx:43-51` 的 `targetBar` 抽成 `src/components/overview/charts/bullet.tsx`（props `actual`、`target`、`favorableDirection`、`testId`）；畫法沿用 v3（0 到目標：寬度＝達成率夾在 0 到 1，`overview.tsx:49`；目標刻度固定在右端，`.kpi-bullet-target` 的 `right: 0`，`globals.css:1143`；超過目標時條滿格），PRD §4.4 G5 同此；DOM 與 class `.kpi-bullet*`（`globals.css:1140-1143`）不變，色改引用 `--chart-total`、`--chart-unfavorable`、`--chart-target`（值與現況相同：`--chart-total`＝`--text-secondary`、`--chart-target`＝`--text-primary`，外觀零差異）；`--chart-target` 在本批宣告 |
-| ChartFrame | 不用（表格內嵌） |
+| ChartFrame | 不用（表格內嵌）。V4-2 實作：MER bullet 放在損益兩平表格之外、一句結論之後的 `p.assist-breakeven-bullet`（不放進 tbody 第二列：`tests/e2e/revamp-r4.spec.ts:69`、`breakeven-mer.spec.ts` 斷言 tbody 只有 1 列，`overview-structure.test.tsx` 斷言沒有目標檔時不出現 `kv-target`）；只畫本期，實際或損益兩平為 null 時整行不出現 |
 | 標題與 labels | KPI 沿用既有目標句；MER 列新 key `overview.chartsV4.bullet.merLine`「實際 {mer}，損益兩平 {breakeven}」 |
 | testid | 沿用 `kpi-target-*`；新增 `chart-overview-bullet-bar-mer` |
 | 資料表 | 數字本身是 number-link（既有） |
