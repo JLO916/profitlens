@@ -1,5 +1,14 @@
 # Status
 
+## Revamp v4｜V4-1 總覽拆解與圖表框（完成；G1、G2、G6）
+
+H5 使用者 2026-10-08 回報通過後開工。V4-1 依 06_BATCHES 完成：C16 ChartFrame 擴充（aside、unitNote、frameClassName、legend 形狀、mode 型別、page、scrollLabel；資料表展開記 `chart_table_opened`）；G1、G2 瀑布搬進 ChartFrame 並共用尺度（示範資料 −200 萬到 800 萬，G2 切到 MARKETPLACE 時負值柱在範圍內）；`formatAxisWan`；G6 橋接表內嵌變異條（D-V4-33＝B：≤ 767 顯示、≥ 768 與列印隱藏但掛載，點條記 `chart_clicked` 並開同列抽屜）；390 瀑布外框改 role=region（V4-0a 量到的 2 個 aria-hidden 內停留點歸 0）。D-V4-41 未回覆，共同尺度依已核准的 V4-1 驗收與 H5 設計稿實作（等同 A）。主流程審查時拿掉共同尺度的模組層級 WeakMap 快取（AGENTS.md）。
+
+- 最終驗收：typecheck、lint、contrast（75／75）exit 0；audit:ui design 15 項不變；unit 129 檔／2,539 全過；build pass；E2E 813 passed／0 failed／15 skipped（23.9m）；畫面基準 52 張，只有允許的 6 張變動（desktop 01、02、03 與 laptop、tablet、mobile 的 02），更新後重跑全過；First Load JS 520,984 bytes（＋1,558，門檻 545,397）；B2 三尺寸不變且 1280 起硬斷言；B9 總覽 +33；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94–97；390 TBT 中位數都在 D-V4-36 門檻內；axe 四尺寸 0；aria-hidden 內停留點四尺寸 0；功能保留表 V4-1 的 7 列打勾；禁區四條命令皆空。
+- 已知：B1 總覽第一張圖框頂 1440 為 855，正好等於上限（V4-2 不能讓首屏變高）；共同尺度讓 G1 變扁約 40%、390 切到 MARKETPLACE 時終點柱只有 1.6px（H5 已看過）。
+- 待拍板：D-V4-41（請確認共同尺度維持 A）、D-V4-37（擋 V4-9a）、D-V4-38、39（擋 V4-4）、D-V4-40（擋 V4-7a）。
+- 驗收：`verification/revamp-v4-V4-1-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-1/`。下一批：V4-2（總覽其他圖，MVP 切線）。
+
 ## Revamp v4｜V4-0b 設計稿、PPT spike 與合成資料（完成；不改任何 UI；H5 未執行／待人工）
 
 使用者 2026-10-08 回覆「全都依建議，並下一批 V4-0b」：D-V4-36 定為 A。V4-0b 依 06_BATCHES 第 1–4 項完成：pptxgenjs `addChart` spike（`tests/pptx-chart-spike.test.ts`，10 個檢查項在示範資料與跨 0 的合成橋接都成立；資料標籤設定整張圖只有一份，改用文字方塊標值，列為 D-V4-37；D-V4-34 試排 A 版成立、B 版截字與縮字，維持 A）；4 通路合成資料（`tests/fixtures/synthetic-4-channel/`，10 項手算核對）；H5 設計稿（`verification/revamp-v4/mockups/`：總覽、健檢、商品兩種狀態、資料來源，數字由產生器呼叫既有函式算出，截圖 23 張與實測）。`src/` 與 `fixtures/` 零改動。

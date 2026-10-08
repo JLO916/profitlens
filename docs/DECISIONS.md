@@ -292,6 +292,18 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-08｜Revamp v4 V4-1：圖表框、共同尺度與 G6 的取捨
+
+**390 鍵盤修正用 `scrollLabel`：** 瀑布外框不帶 `aria-hidden`，改 `role="region"`＋`aria-label`，內容比框寬時才 `tabIndex=0`。不用 `tabIndex=-1`：axe 4.13 的 scrollable-region-focusable（serious）只認在 Tab 順序內的捲動容器，拿掉 `aria-hidden` 後 `-1` 會讓 390 與 768 出現 serious；`-1` 也讓鍵盤無法捲動。只在溢出時加，1440、1280 不多停留點，390 的 Tab 數與 V4-0a 相同。
+
+**共同尺度不做快取：** 代理 A 原本以模組層級 WeakMap 依 snapshot 快取共同範圍。雖然 WeakMap 會隨 snapshot 回收，仍屬「模組全域變數保存使用者資料」（AGENTS.md），主流程改為兩個 section 各自 `useMemo` 計算；成本只是幾組柱的最小與最大值。
+
+**共同尺度在 section 內計算：** CHART_CATALOG 寫 Overview 算好傳入；實作在兩個 section 內計算並留 `domain` 屬性，不動 `overview.tsx`，兩張圖拿到相同範圍（單元與 E2E 斷言）。
+
+**G6 的細節：** 條高 6px、svg 盒高 12（零線上下各多 3px）；非零值最短 1 個座標單位，讓方向看得出來；`td.num > .bar-cell` 靠左浮動，各列零線對齊；有利條用灰色 `chartColors.favorable`（D-V3-7）；列印也隱藏（`@media print, (min-width: 768px)`），避免 A4 列印印出 G6。`barCellGeometry`、`barCellScale` 放在元件檔（比照 `waterfallGeometry`），只算呈現長度，屬 A 級。
+
+**分析事件的 E2E：** 沒有既有的攔截寫法；`stubAnalytics` 在載入前放一個只記事件名的 `window.va`，驗證 `chart_clicked`、`chart_table_opened` 與 `waterfall_clicked` 不重複記。
+
 ## 2026-10-08｜H5 通過與 V4-1 開工
 
 使用者回覆「H5 設計稿審查通過，繼續下一批動工」。H5 擋 V4-1 的條件解除；審查者名單、分數與意見沒有提供給本工作階段，STATUS 只記「使用者回報通過」。設計稿中的新字串提案（PRD：圖表字串在 H5 一併審）視為通過審查，各批實作時加進 labels 的 `{group}.chartsV4.*`。
