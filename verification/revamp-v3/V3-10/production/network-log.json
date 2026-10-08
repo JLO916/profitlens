@@ -1,0 +1,626 @@
+{
+  "desktop": {
+    "checked_at": "2026-10-08T04:05:00.798Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "mode": "PUBLIC_DEMO",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "totals": {
+      "requests": 16,
+      "network": 16,
+      "dev_only": 0,
+      "non_network_urls": 0,
+      "by_step": {
+        "home": 11,
+        "load-demo": 1,
+        "export-analysis-csv": 2,
+        "export-pptx": 2
+      }
+    },
+    "checks": {
+      "foreign_origins": [],
+      "non_get": [],
+      "insights_requests": [
+        "GET 200"
+      ],
+      "insights_get": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "PUBLIC_DEMO",
+          "provider": "openai"
+        }
+      },
+      "insights_direct_post": {
+        "status": 403,
+        "body": {
+          "status": "fallback",
+          "snapshot_id": null,
+          "reason": "PUBLIC_DEMO"
+        }
+      },
+      "csv_content_leaks": [],
+      "failed_resources": [],
+      "console_or_page_errors": []
+    },
+    "downloads": {
+      "analysis_csv": {
+        "filename": "profitlens-analysis.csv",
+        "bytes": 356738
+      },
+      "excel": {
+        "filename": "profitlens.xlsx",
+        "bytes": 22913
+      },
+      "pptx": {
+        "filename": "profitlens-onepager.pptx",
+        "bytes": 85016
+      },
+      "decision_json": {
+        "filename": "profitlens-decision.json",
+        "bytes": 204397
+      },
+      "backup": {
+        "filename": "profitlens-workspace.json",
+        "bytes": 266782
+      }
+    },
+    "non_network": [],
+    "requests": [
+      {
+        "seq": 1,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "document",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 2,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/css/e6108f32870da0bb.css",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "stylesheet",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 3,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/css/b7d6e41518adbaa2.css",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "stylesheet",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 4,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/webpack-9e07cb05cf30e06a.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 5,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/4bd1b696-58970b7b91aecaf4.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 6,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/794-494375f3aeb13625.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 7,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/main-app-2c14669c53cd7066.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 8,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/739-3aee06e40d1c90af.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 9,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/app/page-d3ced323a592f07d.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 10,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_vercel/insights/script.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 11,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/api/insights",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "fetch",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 12,
+        "step": "load-demo",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/api/datasets/demo",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "fetch",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 13,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/2170a4aa.1e373a9656184304.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 14,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/436.bd2deac9a09650b9.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 15,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/e2c5e4d9.044553787354e5aa.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 16,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/453.d29f818372140572.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      }
+    ]
+  },
+  "mobile": {
+    "checked_at": "2026-10-08T04:05:24.941Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "mode": "PUBLIC_DEMO",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "totals": {
+      "requests": 16,
+      "network": 16,
+      "dev_only": 0,
+      "non_network_urls": 0,
+      "by_step": {
+        "home": 11,
+        "load-demo": 1,
+        "export-analysis-csv": 2,
+        "export-pptx": 2
+      }
+    },
+    "checks": {
+      "foreign_origins": [],
+      "non_get": [],
+      "insights_requests": [
+        "GET 200"
+      ],
+      "insights_get": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "PUBLIC_DEMO",
+          "provider": "openai"
+        }
+      },
+      "insights_direct_post": {
+        "status": 403,
+        "body": {
+          "status": "fallback",
+          "snapshot_id": null,
+          "reason": "PUBLIC_DEMO"
+        }
+      },
+      "csv_content_leaks": [],
+      "failed_resources": [],
+      "console_or_page_errors": []
+    },
+    "downloads": {
+      "analysis_csv": {
+        "filename": "profitlens-analysis.csv",
+        "bytes": 356738
+      },
+      "excel": {
+        "filename": "profitlens.xlsx",
+        "bytes": 22913
+      },
+      "pptx": {
+        "filename": "profitlens-onepager.pptx",
+        "bytes": 85016
+      },
+      "decision_json": {
+        "filename": "profitlens-decision.json",
+        "bytes": 204397
+      },
+      "backup": {
+        "filename": "profitlens-workspace.json",
+        "bytes": 266782
+      }
+    },
+    "non_network": [],
+    "requests": [
+      {
+        "seq": 1,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "document",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 2,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/css/e6108f32870da0bb.css",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "stylesheet",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 3,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/css/b7d6e41518adbaa2.css",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "stylesheet",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 4,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/webpack-9e07cb05cf30e06a.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 5,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/4bd1b696-58970b7b91aecaf4.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 6,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/794-494375f3aeb13625.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 7,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/main-app-2c14669c53cd7066.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 8,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/739-3aee06e40d1c90af.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 9,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/app/page-d3ced323a592f07d.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 10,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_vercel/insights/script.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 11,
+        "step": "home",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/api/insights",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "fetch",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 12,
+        "step": "load-demo",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/api/datasets/demo",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "fetch",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 13,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/2170a4aa.1e373a9656184304.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 14,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/436.bd2deac9a09650b9.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 15,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/e2c5e4d9.044553787354e5aa.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 16,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "https://profitlens-tau.vercel.app/_next/static/chunks/453.d29f818372140572.js",
+        "origin": "https://profitlens-tau.vercel.app",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      }
+    ]
+  }
+}

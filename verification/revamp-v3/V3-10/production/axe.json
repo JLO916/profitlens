@@ -1,0 +1,882 @@
+{
+  "desktop": {
+    "checked_at": "2026-10-08T04:05:05.947Z",
+    "engine": "axe-core",
+    "axe_core": "4.13.0",
+    "tags": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa",
+      "wcag22aa"
+    ],
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "skipped": [],
+    "totals": {
+      "states": 11,
+      "serious": 0,
+      "critical": 0,
+      "moderate": 0,
+      "minor": 0
+    },
+    "states": [
+      {
+        "state": "home-empty",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 23,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "import-wizard-step-1",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "匯入資料"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 23,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-overview",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 104,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-diagnosis",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "通路健檢"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 82,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-products",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "商品毛利"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 389,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-scenarios",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "假設試算"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 48,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-actions",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "待辦"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 27,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-meeting",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "會議紀錄"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 58,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-data",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "資料來源"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 39,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "evidence-drawer-open",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 113,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "present-mode-overview",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 38,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      }
+    ]
+  },
+  "laptop": {
+    "checked_at": "2026-10-08T04:05:13.664Z",
+    "engine": "axe-core",
+    "axe_core": "4.13.0",
+    "tags": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa",
+      "wcag22aa"
+    ],
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "skipped": [],
+    "totals": {
+      "states": 11,
+      "serious": 0,
+      "critical": 0,
+      "moderate": 0,
+      "minor": 0
+    },
+    "states": [
+      {
+        "state": "home-empty",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 23,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "import-wizard-step-1",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "匯入資料"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 23,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-overview",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 104,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-diagnosis",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "通路健檢"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 82,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-products",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "商品毛利"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 389,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-scenarios",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "假設試算"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 48,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-actions",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "待辦"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 27,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-meeting",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "會議紀錄"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 58,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-data",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "資料來源"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 39,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "evidence-drawer-open",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 113,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "present-mode-overview",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 38,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      }
+    ]
+  },
+  "tablet": {
+    "checked_at": "2026-10-08T04:05:19.337Z",
+    "engine": "axe-core",
+    "axe_core": "4.13.0",
+    "tags": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa",
+      "wcag22aa"
+    ],
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "skipped": [],
+    "totals": {
+      "states": 11,
+      "serious": 0,
+      "critical": 0,
+      "moderate": 0,
+      "minor": 0
+    },
+    "states": [
+      {
+        "state": "home-empty",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 23,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "import-wizard-step-1",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "匯入資料"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 23,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-overview",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 104,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-diagnosis",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "通路健檢"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 82,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-products",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "商品毛利"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 389,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-scenarios",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "假設試算"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 48,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-actions",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "待辦"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 27,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-meeting",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "會議紀錄"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 58,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-data",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "資料來源"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 39,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "evidence-drawer-open",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 113,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "present-mode-overview",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 38,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      }
+    ]
+  },
+  "mobile": {
+    "checked_at": "2026-10-08T04:05:25.830Z",
+    "engine": "axe-core",
+    "axe_core": "4.13.0",
+    "tags": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa",
+      "wcag22aa"
+    ],
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "skipped": [
+      "present-mode-overview（≤ 767px 沒有投影按鈕，PRD §9.7）"
+    ],
+    "totals": {
+      "states": 10,
+      "serious": 0,
+      "critical": 0,
+      "moderate": 0,
+      "minor": 0
+    },
+    "states": [
+      {
+        "state": "home-empty",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 18,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "import-wizard-step-1",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "匯入資料"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 18,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-overview",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 84,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-diagnosis",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "通路健檢"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 67,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-products",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "商品毛利"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 378,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-scenarios",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "假設試算"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 37,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-actions",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "待辦"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 16,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-meeting",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "會議紀錄"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 46,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "page-data",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "資料來源"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 28,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      },
+      {
+        "state": "evidence-drawer-open",
+        "engine": "axe-core",
+        "violations": [],
+        "serious": 0,
+        "critical": 0,
+        "dom": {
+          "h1": [
+            "經營總覽"
+          ],
+          "headingSkips": [],
+          "unnamedControls": [],
+          "imagesWithoutAlt": [],
+          "focusableCount": 93,
+          "duplicateIds": [],
+          "focusRuleExists": true
+        }
+      }
+    ]
+  }
+}

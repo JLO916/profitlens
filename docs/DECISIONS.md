@@ -306,7 +306,9 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **決策匯出大小（D-V3-36）：** v3.0.0 不改匯出位元組（V3-10 不改格式，基準不動），列為已知限制；v3.1 再升 export_version 改成行號區間。
 
-**上線檢查的範圍：** 本批只對本機 production 伺服器執行（13 項 HTTP、網路紀錄、鍵盤走查、axe 四尺寸、備份 v1–v5 矩陣、Lighthouse）；正式站部署與正式站 Lighthouse 需使用者當次同意（D-V3-24），H4 待人工，都在 STATUS 寫「未執行」。
+**正式站部署（2026-10-08）：** 使用者指示「推送正式站」後，推送 `revamp/v2`（f61e8cc → cf9c225）並以 Vercel CLI 從本機 cf9c225 部署正式站（deployment `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`）；不經 GitHub `main`（`main` 仍是舊內容，Git 整合若以 `main` 為 production branch，之後推 `main` 會覆蓋正式站——是否合併 `revamp/v2` 進 `main` 待使用者指示）。`v3.0.0` tag 等 H4。
+
+**上線檢查的範圍：** 本批先對本機 production 伺服器執行（13 項 HTTP、網路紀錄、鍵盤走查、axe 四尺寸、備份 v1–v5 矩陣、Lighthouse）；正式站部署與正式站 Lighthouse 需使用者當次同意（D-V3-24），H4 待人工，都在 STATUS 寫「未執行」。
 
 **影響文件：** `docs/revamp-v3/06_BATCHES.md`、`docs/revamp-v3/09_DECISIONS_PENDING.md`（D-V3-36、37）、`docs/RELEASES.md`、`README.md`、`docs/ENGINEERING.md`、`verification/revamp-v3/V3-10/`、`verification/revamp-v3-V3-10-acceptance.md`。**驗收：** `tests/labels-structure.test.ts`、`tests/release-notes.test.ts`、`tests/backup-restore-matrix.test.ts`、`tests/e2e/network-log.spec.ts`、`tests/e2e/keyboard-walk.spec.ts`、`tests/e2e/axe-sweep.spec.ts`、`scripts/launch-check.mjs`。
 

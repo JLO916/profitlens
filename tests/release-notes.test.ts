@@ -30,7 +30,9 @@ describe("RELEASES v3.0.0 段落（08_RELAUNCH §5 範本＋破壞性變更）",
   it("在 v2.0.0 之前（新的在上），日期寫尚未發布，五個小節依序是給使用者、不變的事、破壞性變更、已知限制、驗收", () => {
     expect(releases.indexOf("## v3.0.0")).toBeGreaterThan(-1);
     expect(releases.indexOf("## v3.0.0")).toBeLessThan(releases.indexOf("## v2.0.0"));
-    expect(v3).toContain("尚未發布（待 H4 與正式站檢查）");
+    // 2026-10-08 使用者同意後部署正式站；H4 仍未執行，tag 待 H4。
+    expect(v3).toContain("發布日期：2026-10-08");
+    expect(v3).toContain("H4");
     const headings = [...v3.matchAll(/^### (.+)$/gm)].map(match => match[1]);
     const order = ["給使用者", "不變的事", "破壞性變更", "已知限制", "驗收"].map(name => headings.indexOf(name));
     expect(order.every(index => index >= 0)).toBe(true);
@@ -75,10 +77,11 @@ describe("RELEASES v3.0.0 段落（08_RELAUNCH §5 範本＋破壞性變更）",
 });
 
 describe("README（v3.0.0 尚未發布；步驟對齊 V3-8 的空狀態與匯入精靈）", () => {
-  it("發布紀錄寫最新 v3.0.0（尚未發布），不再寫「最新：v2.0.0」；正式站仍是 v2.0.0 的事實另寫一句", () => {
+  it("發布紀錄寫最新 v3.0.0（2026-10-08），不再寫「最新：v2.0.0」；正式站已是 v3.0.0 另寫一句", () => {
     expect(readme).toContain("v3.0.0");
     expect(readme).not.toContain("最新：v2.0.0");
-    expect(readmeSection("發布紀錄")).toContain("最新：v3.0.0（尚未發布");
+    expect(readmeSection("發布紀錄")).toContain("最新：v3.0.0（2026-10-08）");
+    expect(readmeSection("發布紀錄")).toContain("正式站已是 v3.0.0（2026-10-08）");
   });
 
   it("首圖是 v3 示範資料截圖，README 引用的本機圖片都存在", () => {

@@ -1,0 +1,31 @@
+# 正式站部署證明（2026-10-08T04:08:51Z）
+## curl -sI https://profitlens-tau.vercel.app
+HTTP/2 200 
+age: 430
+date: Thu, 08 Oct 2026 04:08:51 GMT
+etag: "d6d02391861fc2587b7eb0441738f112"
+server: Vercel
+x-matched-path: /
+x-vercel-cache: HIT
+x-vercel-id: hkg1::fvl2z-1791432531316-1c67f79754cd
+## Next.js build id（HTML 內 "b"）
+alias      profitlens-tau.vercel.app: \"b\":\"jbvxVAB9XTtMENE_M21BR\"
+deployment profitlens-o1ym5kunk-jlo916s-projects.vercel.app: \"b\":\"jbvxVAB9XTtMENE_M21BR\"
+## vercel inspect profitlens-tau.vercel.app --scope jlo916s-projects（唯讀）
+Fetching deployment "profitlens-tau.vercel.app" in jlo916s-projects
+> Fetched deployment "profitlens-o1ym5kunk-jlo916s-projects.vercel.app" in jlo916s-projects [417ms]
+  General
+    id		dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa
+    name	profitlens
+    target	production
+    status	● Ready
+    url		https://profitlens-o1ym5kunk-jlo916s-projects.vercel.app
+    created	Thu Oct 08 2026 11:58:45 GMT+0800 (Taiwan Standard Time) [10m ago]
+  Aliases
+    ╶ https://profitlens-tau.vercel.app
+## GET /api/insights
+{"available":false,"reason":"PUBLIC_DEMO","provider":"openai"}
+## GET /_vercel/insights/script.js（Vercel Web Analytics，同源；D9＝B）
+HTTP/2 200 
+content-type: application/javascript; charset=utf-8
+content-length: 4550

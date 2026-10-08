@@ -1,0 +1,277 @@
+{
+  "desktop": {
+    "checked_at": "2026-10-08T04:07:30.569Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "shots": [
+      {
+        "step": "01-home-empty",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/01-home-empty.png",
+        "bytes": 113005,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "02-demo-loaded-save-prompt",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/02-demo-loaded-save-prompt.png",
+        "bytes": 549995,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "03-overview",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/03-overview.png",
+        "bytes": 536103,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "04-evidence-drawer",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/04-evidence-drawer.png",
+        "bytes": 588436,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "05-diagnosis",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/05-diagnosis.png",
+        "bytes": 472266,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "通路健檢"
+      },
+      {
+        "step": "06-scenarios",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/06-scenarios.png",
+        "bytes": 273897,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "假設試算"
+      },
+      {
+        "step": "07-meeting",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/07-meeting.png",
+        "bytes": 298333,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "會議紀錄"
+      },
+      {
+        "step": "08-data",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/08-data.png",
+        "bytes": 266133,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "資料來源"
+      },
+      {
+        "step": "09-present-mode",
+        "file": "verification/revamp-v3/V3-10/production/shots/1440x1000/09-present-mode.png",
+        "bytes": 183570,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      }
+    ],
+    "console_or_page_errors": []
+  },
+  "laptop": {
+    "checked_at": "2026-10-08T04:07:46.151Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "shots": [
+      {
+        "step": "01-home-empty",
+        "file": "verification/revamp-v3/V3-10/production/shots/1280x900/01-home-empty.png",
+        "bytes": 110291,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "02-demo-loaded-save-prompt",
+        "file": "verification/revamp-v3/V3-10/production/shots/1280x900/02-demo-loaded-save-prompt.png",
+        "bytes": 549107,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "03-overview",
+        "file": "verification/revamp-v3/V3-10/production/shots/1280x900/03-overview.png",
+        "bytes": 538465,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "04-evidence-drawer",
+        "file": "verification/revamp-v3/V3-10/production/shots/1280x900/04-evidence-drawer.png",
+        "bytes": 581472,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "05-diagnosis",
+        "file": "verification/revamp-v3/V3-10/production/shots/1280x900/05-diagnosis.png",
+        "bytes": 461722,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "通路健檢"
+      },
+      {
+        "step": "06-scenarios",
+        "file": "verification/revamp-v3/V3-10/production/shots/1280x900/06-scenarios.png",
+        "bytes": 264079,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "假設試算"
+      },
+      {
+        "step": "07-meeting",
+        "file": "verification/revamp-v3/V3-10/production/shots/1280x900/07-meeting.png",
+        "bytes": 292280,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "會議紀錄"
+      },
+      {
+        "step": "08-data",
+        "file": "verification/revamp-v3/V3-10/production/shots/1280x900/08-data.png",
+        "bytes": 262524,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "資料來源"
+      }
+    ],
+    "console_or_page_errors": []
+  },
+  "tablet": {
+    "checked_at": "2026-10-08T04:07:56.871Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "shots": [
+      {
+        "step": "01-home-empty",
+        "file": "verification/revamp-v3/V3-10/production/shots/768x1024/01-home-empty.png",
+        "bytes": 107249,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "02-demo-loaded-save-prompt",
+        "file": "verification/revamp-v3/V3-10/production/shots/768x1024/02-demo-loaded-save-prompt.png",
+        "bytes": 517399,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "03-overview",
+        "file": "verification/revamp-v3/V3-10/production/shots/768x1024/03-overview.png",
+        "bytes": 524799,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "04-evidence-drawer",
+        "file": "verification/revamp-v3/V3-10/production/shots/768x1024/04-evidence-drawer.png",
+        "bytes": 502451,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "05-diagnosis",
+        "file": "verification/revamp-v3/V3-10/production/shots/768x1024/05-diagnosis.png",
+        "bytes": 439688,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "通路健檢"
+      },
+      {
+        "step": "06-scenarios",
+        "file": "verification/revamp-v3/V3-10/production/shots/768x1024/06-scenarios.png",
+        "bytes": 265891,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "假設試算"
+      },
+      {
+        "step": "07-meeting",
+        "file": "verification/revamp-v3/V3-10/production/shots/768x1024/07-meeting.png",
+        "bytes": 283789,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "會議紀錄"
+      },
+      {
+        "step": "08-data",
+        "file": "verification/revamp-v3/V3-10/production/shots/768x1024/08-data.png",
+        "bytes": 261994,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "資料來源"
+      }
+    ],
+    "console_or_page_errors": []
+  },
+  "mobile": {
+    "checked_at": "2026-10-08T04:08:06.685Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "shots": [
+      {
+        "step": "01-home-empty",
+        "file": "verification/revamp-v3/V3-10/production/shots/390x844/01-home-empty.png",
+        "bytes": 72085,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "02-demo-loaded-save-prompt",
+        "file": "verification/revamp-v3/V3-10/production/shots/390x844/02-demo-loaded-save-prompt.png",
+        "bytes": 417850,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "03-overview",
+        "file": "verification/revamp-v3/V3-10/production/shots/390x844/03-overview.png",
+        "bytes": 424247,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "04-evidence-drawer",
+        "file": "verification/revamp-v3/V3-10/production/shots/390x844/04-evidence-drawer.png",
+        "bytes": 410847,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "經營總覽"
+      },
+      {
+        "step": "05-diagnosis",
+        "file": "verification/revamp-v3/V3-10/production/shots/390x844/05-diagnosis.png",
+        "bytes": 392752,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "通路健檢"
+      },
+      {
+        "step": "06-scenarios",
+        "file": "verification/revamp-v3/V3-10/production/shots/390x844/06-scenarios.png",
+        "bytes": 202981,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "假設試算"
+      },
+      {
+        "step": "07-meeting",
+        "file": "verification/revamp-v3/V3-10/production/shots/390x844/07-meeting.png",
+        "bytes": 224268,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "會議紀錄"
+      },
+      {
+        "step": "08-data",
+        "file": "verification/revamp-v3/V3-10/production/shots/390x844/08-data.png",
+        "bytes": 204236,
+        "url": "https://profitlens-tau.vercel.app/",
+        "h1": "資料來源"
+      }
+    ],
+    "console_or_page_errors": []
+  }
+}

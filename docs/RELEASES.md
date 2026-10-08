@@ -2,9 +2,9 @@
 
 > 新的在上。正式站：<https://profitlens-tau.vercel.app>。工程驗收命令與各批驗收紀錄見 [ENGINEERING](ENGINEERING.md)；每批真實執行結果見 [STATUS](STATUS.md)；取捨見 [DECISIONS](DECISIONS.md)。
 
-## v3.0.0（Revamp v3；尚未發布）
+## v3.0.0（2026-10-08，Revamp v3）
 
-發布日期：尚未發布（待 H4 與正式站檢查）。H4（5 人複測與外部盲評）完成、使用者當次同意部署並通過正式站檢查之後，才打 git tag `v3.0.0` 並補上日期。
+發布日期：2026-10-08（使用者當次同意後以 `vercel deploy --prod` 部署到正式站 https://profitlens-tau.vercel.app，deployment `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`，正式站 13 項 HTTP 與 Lighthouse 檢查通過）。H4（5 人複測與外部盲評）尚未執行，git tag `v3.0.0` 等 H4 之後再打。
 
 Revamp v3（`docs/revamp-v3/`，批次 V3-0–V3-10，分支 `revamp/v2`，基準 v2.0.0＝`82b70df`）：把「功能齊全但難讀」的 v2 改成老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對的財務工具。財務口徑不變，也沒有刪掉任何功能（只搬移、合併、收合、改名）；P1 新功能各用獨立版本。產品名稱改為 EC ProfitLens（D-V3-25；package 名 `profitlens`、下載檔名前綴 `profitlens-`、備份格式字串與網址不變）。名詞以 [名詞表](revamp-v3/GLOSSARY.md) 為準。
 

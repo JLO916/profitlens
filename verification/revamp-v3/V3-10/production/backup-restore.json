@@ -1,0 +1,98 @@
+{
+  "desktop": {
+    "checked_at": "2026-10-08T04:07:31.682Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "file": "verification/review-v2-a-workspace-desktop.json",
+    "file_schema_version": "profitlens-workspace-v3",
+    "file_metric_version": "contribution-v1",
+    "file_saved_at": "2026-10-02T01:52:06.972Z",
+    "file_bytes": 19988,
+    "restore_preview": "確認要讀入的備份 golden-v1 · 資料到 2026-08-03 · 通路 DTC、MARKETPLACE 上期 2026-08-01–2026-08-01；本期 2026-08-02–2026-08-02 方案 6 個、待辦 8 項，已重新計算。 讀入這份備份 取消",
+    "status_after": "資料到 2026-08-03 · Golden · 小型對帳資料",
+    "kpi_contribution_after_marketing": "255 元",
+    "kpi_card_text": "扣廣告後貢獻 255 元 比上期 少賺 315 元 （−55.3%） 上期 570 元",
+    "expected_kpi_l1": "255 元",
+    "evidence_drawer_head": "扣廣告後貢獻 · 計算與來源 全部通路 · 本期 8/2–8/2 255 元 255.00 元 計算方式 扣廣告前貢獻 − 廣告投放費 每一行都是同一期間、同一通路範圍的合計。點「原始明細」看逐列資料。 商品原價收入 3,100.00 元 − 折扣 450.00 元 − 退款金額 180.00 元 ＝ 淨營收 2,470.00 元 − 商品成本 1,325.00 元 ＝ 商品毛利 1,145.00 元 − 平台抽成 120.00 元 − 金流手續費 66.00 元 − 物流與",
+    "whats_new_visible": true,
+    "requests": 11,
+    "foreign_origins": [],
+    "non_get": [],
+    "console_or_page_errors": []
+  },
+  "laptop": {
+    "checked_at": "2026-10-08T04:07:47.638Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "file": "verification/review-v2-a-workspace-laptop.json",
+    "file_schema_version": "profitlens-workspace-v3",
+    "file_metric_version": "contribution-v1",
+    "file_saved_at": "2026-10-02T01:56:55.631Z",
+    "file_bytes": 19988,
+    "restore_preview": "確認要讀入的備份 golden-v1 · 資料到 2026-08-03 · 通路 DTC、MARKETPLACE 上期 2026-08-01–2026-08-01；本期 2026-08-02–2026-08-02 方案 6 個、待辦 8 項，已重新計算。 讀入這份備份 取消",
+    "status_after": "資料到 2026-08-03 · Golden · 小型對帳資料",
+    "kpi_contribution_after_marketing": "255 元",
+    "kpi_card_text": "扣廣告後貢獻 255 元 比上期 少賺 315 元 （−55.3%） 上期 570 元",
+    "expected_kpi_l1": "255 元",
+    "evidence_drawer_head": "扣廣告後貢獻 · 計算與來源 全部通路 · 本期 8/2–8/2 255 元 255.00 元 計算方式 扣廣告前貢獻 − 廣告投放費 每一行都是同一期間、同一通路範圍的合計。點「原始明細」看逐列資料。 商品原價收入 3,100.00 元 − 折扣 450.00 元 − 退款金額 180.00 元 ＝ 淨營收 2,470.00 元 − 商品成本 1,325.00 元 ＝ 商品毛利 1,145.00 元 − 平台抽成 120.00 元 − 金流手續費 66.00 元 − 物流與",
+    "whats_new_visible": true,
+    "requests": 11,
+    "foreign_origins": [],
+    "non_get": [],
+    "console_or_page_errors": []
+  },
+  "tablet": {
+    "checked_at": "2026-10-08T04:07:57.869Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "file": "verification/review-v2-a-workspace-tablet.json",
+    "file_schema_version": "profitlens-workspace-v3",
+    "file_metric_version": "contribution-v1",
+    "file_saved_at": "2026-10-02T02:00:14.715Z",
+    "file_bytes": 19988,
+    "restore_preview": "確認要讀入的備份 golden-v1 · 資料到 2026-08-03 · 通路 DTC、MARKETPLACE 上期 2026-08-01–2026-08-01；本期 2026-08-02–2026-08-02 方案 6 個、待辦 8 項，已重新計算。 讀入這份備份 取消",
+    "status_after": "資料到 2026-08-03 · Golden · 小型對帳資料",
+    "kpi_contribution_after_marketing": "255 元",
+    "kpi_card_text": "扣廣告後貢獻 255 元 比上期 少賺 315 元 （−55.3%） 上期 570 元",
+    "expected_kpi_l1": "255 元",
+    "evidence_drawer_head": "扣廣告後貢獻 · 計算與來源 全部通路 · 本期 8/2–8/2 255 元 255.00 元 計算方式 扣廣告前貢獻 − 廣告投放費 每一行都是同一期間、同一通路範圍的合計。點「原始明細」看逐列資料。 商品原價收入 3,100.00 元 − 折扣 450.00 元 − 退款金額 180.00 元 ＝ 淨營收 2,470.00 元 − 商品成本 1,325.00 元 ＝ 商品毛利 1,145.00 元 − 平台抽成 120.00 元 − 金流手續費 66.00 元 − 物流與",
+    "whats_new_visible": true,
+    "requests": 11,
+    "foreign_origins": [],
+    "non_get": [],
+    "console_or_page_errors": []
+  },
+  "mobile": {
+    "checked_at": "2026-10-08T04:08:07.829Z",
+    "base_url": "https://profitlens-tau.vercel.app",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "file": "verification/review-v2-a-workspace-mobile.json",
+    "file_schema_version": "profitlens-workspace-v3",
+    "file_metric_version": "contribution-v1",
+    "file_saved_at": "2026-10-02T02:03:11.512Z",
+    "file_bytes": 19988,
+    "restore_preview": "確認要讀入的備份 golden-v1 · 資料到 2026-08-03 · 通路 DTC、MARKETPLACE 上期 2026-08-01–2026-08-01；本期 2026-08-02–2026-08-02 方案 6 個、待辦 8 項，已重新計算。 讀入這份備份 取消",
+    "status_after": "資料到 2026-08-03 · Golden · 小型對帳資料",
+    "kpi_contribution_after_marketing": "255 元",
+    "kpi_card_text": "扣廣告後貢獻 255 元 比上期 少賺 315 元 （−55.3%） 上期 570 元",
+    "expected_kpi_l1": "255 元",
+    "evidence_drawer_head": "扣廣告後貢獻 · 計算與來源 全部通路 · 本期 8/2–8/2 255 元 255.00 元 計算方式 扣廣告前貢獻 − 廣告投放費 每一行都是同一期間、同一通路範圍的合計。點「原始明細」看逐列資料。 商品原價收入 3,100.00 元 − 折扣 450.00 元 − 退款金額 180.00 元 ＝ 淨營收 2,470.00 元 − 商品成本 1,325.00 元 ＝ 商品毛利 1,145.00 元 − 平台抽成 120.00 元 − 金流手續費 66.00 元 − 物流與",
+    "whats_new_visible": true,
+    "requests": 11,
+    "foreign_origins": [],
+    "non_get": [],
+    "console_or_page_errors": []
+  }
+}

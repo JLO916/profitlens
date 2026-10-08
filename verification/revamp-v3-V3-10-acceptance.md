@@ -1,6 +1,6 @@
 # Revamp v3 V3-10 驗收：上線檢查（2026-10-08）
 
-依 `docs/revamp-v3/06_BATCHES.md` V3-10 與 PRD §2.3 A／B／C、§11.3（隱私）、§11.5（標籤單一來源）、§11.7（testid）、§11.8（備份相容）、`docs/revamp/08_RELAUNCH.md` §4（R7 的上線檢查清單）。H2／H3 依使用者 2026-10-07 指示略過；**H4（5 人可用性複測與外部盲評）未執行、待人工**；**正式站部署與正式站 Lighthouse 需使用者當次明確同意（D-V3-24），本批未執行**；`v3.0.0` 的 git tag 等 H4 與正式站檢查後再打。
+依 `docs/revamp-v3/06_BATCHES.md` V3-10 與 PRD §2.3 A／B／C、§11.3（隱私）、§11.5（標籤單一來源）、§11.7（testid）、§11.8（備份相容）、`docs/revamp/08_RELAUNCH.md` §4（R7 的上線檢查清單）。H2／H3 依使用者 2026-10-07 指示略過；**H4（5 人可用性複測與外部盲評）未執行、待人工**；**正式站**：使用者 2026-10-08 指示「推送正式站」後，推送 `revamp/v2` 並以 `vercel deploy --prod` 部署（deployment `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`，https://profitlens-tau.vercel.app），正式站檢查通過（§3c）；`v3.0.0` 的 git tag 等 H4 後再打。
 
 工作方式：開工錨點 `418f307` → 三個 worktree 代理並行（A labels 舊 key alias 移除 `1f87f4d`、B 版本 3.0.0／會議頁可及名稱／RELEASES／README `89b22d9`、C 上線檢查工具／匯出大小調查 `d427581`）→ 合併 → 接線 `8493723` → E2E 代理對共用伺服器驗證全部 spec 並執行新檢查 → 全套 E2E → 本機 production 的 13 項 HTTP、網路紀錄、鍵盤走查、axe、備份矩陣、四尺寸截圖、Lighthouse → 本文件。
 
@@ -12,13 +12,13 @@
 | 版本 3.0.0 | 完成 | `package.json`／`package-lock.json` 3.0.0；README「最新」改 v3.0.0（尚未發布）；ENGINEERING 版本與備份版本敘述對齊 |
 | RELEASES（含破壞性變更：Excel 工作表改名）、README | 完成 | `docs/RELEASES.md` v3.0.0 段（給使用者／不變的事／破壞性變更：Excel 工作表改名（行動→待辦、口徑→指標定義、新增管理損益表）、備份 v5、分析 CSV 的 breakeven_mer 列、決策 CSV 的 ad_decision 欄、匯出版頭四行、名詞改名／已知限制／驗收連結；日期「尚未發布（待 H4 與正式站檢查）」）；README「最新」改 v3.0.0（正式站仍是 v2.0.0）、功能一覽與 30 秒試用對齊 v3、新截圖 `docs/images/overview-1440-v3.png`；`docs/ENGINEERING.md` 版本與備份 v5；`tests/release-notes.test.ts`（13 條） |
 | 會議紀錄頁 Lighthouse `label-content-name-mismatch`（V3-7 起 10 個節點） | 完成（10 → 0） | 議程 1 的六個 number-link 與精簡通路表的格子，可及名稱改成 `fill(labels.meeting.pageV3.linkAria, { title, value })`＝「{抽屜標題} {可見文字}，看明細」；收尾再把完整通路寬表（`overview.channelsV3.wideAmountAria`）與三件事影響金額（`overview.alerts.impactAria`）改成同句型；代理 B 以 axe 與 Lighthouse 13.5.0（dev）量會議紀錄頁 label-content-name-mismatch 0 個節點、accessibility 100 |
-| Lighthouse（本機 production，1440 與 390） | 完成（本機）；正式站未執行（待同意） | 1440 與 390 各 6 個快照步驟 accessibility 全部 100；**失敗審核 0**（會議紀錄頁的 `label-content-name-mismatch` 從 10 個節點降到 0）；首頁 performance 1440＝100、390＝92（V3-9b 100／94；v2 基準 100／93，目標 ≥ 90 且 ≥ 基準−3；390 的 TBT 1,667 ms（V3-9b 972）受本機負載影響，CLS 不變：載入示範資料 1440＝0、390＝0.001）。流程報告 `verification/revamp-v3/V3-10/lighthouse/` |
+| Lighthouse（本機 production 與正式站，1440 與 390） | 完成（本機與正式站） | 1440 與 390 各 6 個快照步驟 accessibility 全部 100；**失敗審核 0**（會議紀錄頁的 `label-content-name-mismatch` 從 10 個節點降到 0）；首頁 performance 1440＝100、390＝92（V3-9b 100／94；v2 基準 100／93，目標 ≥ 90 且 ≥ 基準−3；390 的 TBT 1,667 ms（V3-9b 972）受本機負載影響，CLS 不變：載入示範資料 1440＝0、390＝0.001）。流程報告 `verification/revamp-v3/V3-10/lighthouse/` |
 | 四尺寸走查 | 完成（截圖＋E2E 四專案） | 四尺寸截圖 36 張（`verification/revamp-v3/V3-10/snapshots/`）＋ E2E 四專案（revamp-r1-layout、present-mode 四尺寸全跑；其餘 desktop 與 mobile）＋ 08 §4 第 4 條的操作路徑由 `network-log.spec`（首頁 → 示範 → 抽屜 → 匯入 golden → 匯出 CSV／Excel／PPT／PDF／決策 JSON／備份 → 會議紀錄）與既有 spec 覆蓋 |
 | 鍵盤走查 | 完成 | `keyboard-walk.spec`（desktop 1440、mobile 390；`keyboard-walk.json`）：到第一個主要結果的 Tab 數——總覽 11／4（KPI 前可見控制 10／3）、健檢 8／2、商品最差卡 9／3（商品表第一列 57／51）、試算基準 11／5、範本 16／10、「試算」30／24（範本到試算 14 步；D-V3-27 待拍板）、待辦 12／6、會議議程 1 26／19、資料來源 10／4；整頁停留點 90／77、69／59、378／372、34／28、13／7、47／40、25／19；焦點不可見 0、焦點陷阱 0、掉回 body 0；Esc 回焦（抽屜、匯出選單、投影模式）通過；PRD §11.1 只用鍵盤流程（到 KPI、加入待辦、改狀態、回匯出、下載決策 CSV）desktop 24／12／15／10／2、mobile 11／10／9／4／2，都下載到決策 CSV |
 | axe 四尺寸 | 完成 | axe-core 4.13.0（`axe-sweep.spec`，`axe.json`）：desktop／laptop／tablet 各 11 個畫面狀態、mobile 10 個（含首頁空狀態、7 頁、抽屜、精靈步驟 1、投影模式），serious 0、critical 0、moderate 0、minor 0；純 DOM 檢查每頁一個 h1、標題不跳級、無名控制 0、重複 id 0、缺 alt 0。代理 C 在 dev 上曾量到 KPI 卡差額連結的 target-size serious（desktop／laptop／tablet 各 1），接線修正後 production 為 0 |
 | v1–v5 備份還原 | 完成 | `backup-restore-matrix.test.ts`（`backup-matrix.json`）16／16：golden 與 demo 各 v1–v5 五個信封＋R0 前實際的四個 v3 備份檔，14 列全部還原成功、classification valid；golden 255.00／−315.00、試算 284.00；demo 1,269,792.73／−598,833.95；ad_decision v1–v4 為空、v5 為 pause；v1–v3 的側邊資料為空、v4／v5 讀回；再匯出都是 v5、金額不變 |
 | 網路紀錄（確認沒有資料外送） | 完成 | `network-log.spec`（desktop 與 mobile，`network-log.json`；只記網址、方法、資源類型、本文長度與雜湊、狀態碼）：整個流程各 15 個請求（document 1、stylesheet 2、script 10、fetch 2），外部來源 0、非 GET 0、原始 CSV 探針命中 0、4xx／5xx 0、console error 0；匯入 golden 時 0 個請求；/api/insights 只有 GET（available=false）；下載大小 分析 CSV 356,738、Excel 22,913、PPT 85,016、決策 JSON 204,397、備份 266,782 bytes |
-| 13 項 HTTP 上線檢查（本機 production） | 完成（本機）；正式站未執行（待同意） | `scripts/launch-check.mjs`：LOCAL 伺服器 11／13（第 7、8 項 /api/insights 的 reason 與 403 只在 PUBLIC_DEMO 成立）＋補充檢查 10／10（`launch-check-local.json`）；PUBLIC_DEMO 伺服器 13／13 通過＋補充 10／10（第 7 項 GET /api/insights available=false、reason PUBLIC_DEMO；第 8 項 POST 403；/api/* no-store、nosniff、無 X-Powered-By、靜態資源 immutable；安全標頭只記錄，正式站由 Vercel 補 HSTS）（`launch-check-public-demo.json`） |
+| 13 項 HTTP 上線檢查（本機 production 與正式站） | 完成（本機 13／13；正式站 13／13） | `scripts/launch-check.mjs`：LOCAL 伺服器 11／13（第 7、8 項 /api/insights 的 reason 與 403 只在 PUBLIC_DEMO 成立）＋補充檢查 10／10（`launch-check-local.json`）；PUBLIC_DEMO 伺服器 13／13 通過＋補充 10／10（第 7 項 GET /api/insights available=false、reason PUBLIC_DEMO；第 8 項 POST 403；/api/* no-store、nosniff、無 X-Powered-By、靜態資源 immutable；安全標頭只記錄，正式站由 Vercel 補 HSTS）（`launch-check-public-demo.json`） |
 | 決策匯出大小調查（V3-9a 已知問題） | 完成（調查） | 示範資料加入 1 個待辦後：決策 CSV 84,075,372 bytes（569 列）、JSON 33.2 MB、Markdown 18.7 MB（試算頁開過後 104.6／50.6／27.2 MB）；分析 CSV 39.8 MB。主因是每列都帶完整 `source_refs`（CSV 的 85%：59 列 metadata 列各帶 1,848 個來源；待辦每欄一列各帶 1.44 MB）。不改輸出位元組的優化只省時間與記憶體；行號區間＋不重複可縮到 0.88 MB（−98.9%）但改語意。報告 `verification/revamp-v3/V3-10/export-size.md`；建議 A＋C（D-V3-36） |
 | STATUS 收尾、H4 | H4 未執行／待人工 | `docs/STATUS.md` 寫「未執行／待人工」 |
 | F15／F16 | 未做（延後） | 需使用者提供檔案 |
@@ -77,8 +77,19 @@
 | Golden 測試 | 255.00、−315.00、284.00／264.00／19.70 不變 | 全過（`tests/*golden*`、scenario、export-numeric 基準） | 達標 |
 | 禁區 diff | 空（白名單內新增除外） | 空（V3-9 白名單 `fixtures/demo_tw/**` 未使用） | 達標 |
 | 匯出與分享使用率 | 上線 4 週內 ≥ 25% | 上線後才能量（需 Vercel Web Analytics 事件） | 未執行（上線後） |
-| 正式站 Lighthouse 與 HTTP 檢查 | 同本機門檻 | 未執行（部署需使用者當次同意） | 未執行 |
+| 正式站 Lighthouse 與 HTTP 檢查 | 同本機門檻 | 13 項 HTTP 13／13＋補充 10／10；Lighthouse 1440 accessibility 全 100／performance 100、390 accessibility 全 100／performance 96，失敗審核 0；network-log desktop／mobile 通過（403、外部來源 0）；axe 四尺寸 serious 0 | 達標 |
 | §2.3 A 使用者層（H4） | 5 人複測與盲評 | 未執行／待人工 | 未執行 |
+
+### 3c. 正式站檢查（2026-10-08，deployment `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`）
+
+| 檢查 | 結果 |
+|---|---|
+| 部署 | `vercel deploy --prod --yes --scope jlo916s-projects --logs`（149 秒）READY，alias https://profitlens-tau.vercel.app；建置紀錄 `verification/revamp-v3/V3-10/deployment-build.txt`；上傳排除 `.claude/`（.vercelignore） |
+| 13 項 HTTP（`scripts/launch-check.mjs --base https://profitlens-tau.vercel.app`） | 13／13 通過＋補充 10／10（GET /api/insights available=false、reason PUBLIC_DEMO；POST 403；/.env、/.git/config、fixtures 404；no-store、nosniff、無 X-Powered-By、靜態資源 immutable）；`production/launch-check-production.json` |
+| Lighthouse（`scripts/lighthouse-pages.mjs --base https://profitlens-tau.vercel.app`） | 1440：6 個快照步驟 accessibility 全 100、首頁 performance 100、失敗審核 0；390：accessibility 全 100、首頁 performance 96、失敗審核 0；timespan CLS 同本機（載入示範資料 0／0.001）；`production/lighthouse/`、`production/metrics.json` |
+| 網路紀錄與 axe（正式站） | `network-log.spec` desktop 與 mobile 通過（PUBLIC_DEMO：/api/insights GET available=false、直接 POST 403；外部來源 0、非 GET 0、原始 CSV 探針 0、失敗資源 0、console error 0；五個下載成功）；`axe-sweep.spec` 四尺寸通過（axe-core 4.13.0；desktop／laptop／tablet 各 11 個畫面狀態、mobile 10 個，serious／critical／moderate／minor 全 0）；證據 `production/network-log.json`、`production/axe.json`、`production/playwright-run.txt`、部署證明 `production/deployment-proof.txt`（`vercel inspect` 的 deployment id 與 HTML build id 一致） |
+| 四尺寸走查截圖（正式站） | `production/shots/{1440x1000,1280x900,768x1024,390x844}/01-home-empty…08-data.png`（1440 另有 09-present-mode）共 33 張，全部示範資料；流程：首頁空狀態 → 載入示範資料（首次保存提示）→ 總覽 → 計算與來源抽屜 → 通路健檢 → 假設試算 → 會議紀錄 → 資料來源；`production/walkthrough.json` |
+| 備份相容（R0 前的 v3 備份檔在正式站還原） | 在正式站用儲存選單還原 R0 前拍的四個 v3 備份檔（`verification/review-v2-a-workspace-{desktop,laptop,tablet,mobile}.json`，schema profitlens-workspace-v3）：四個尺寸都還原成功、沒有錯誤，總覽扣廣告後貢獻顯示「255 元」（抽屜精確值 255.00 元）、差額 −315 元、上期 570 元；`production/backup-restore.json` |
 
 ## 4. 瀏覽器驗收方式與截圖
 
@@ -91,10 +102,11 @@
 
 - **labels 文案違規未到 0**：同義詞黑名單仍有 12 筆、禁用詞 0 筆（V3-2a 起的棘輪），本批列出每一筆（§5a）；它們都是既有字串，依規則本批不改字（H3 已略過；改字需拍板，D-V3-37）。
 - **H4 未執行**：§2.3 A 全部指標待人工；`v3.0.0` 正式上線與 git tag 等 H4。
-- **正式站未部署**：Lighthouse 與 13 項 HTTP 檢查只對本機 production 伺服器執行；正式站同門檻待使用者同意部署後重測。
+- **正式站已部署、`main` 未動**：正式站是用 Vercel CLI 從本機 `cf9c225` 部署，GitHub 的 `main` 仍是舊內容；若 Vercel 的 Git 整合以 `main` 為 production branch，之後任何推到 `main` 的提交都會覆蓋正式站。建議把 `revamp/v2` 合併進 `main`（需您指示）。
 - **決策匯出在示範資料下很大**（V3-9a 已知）：決策 CSV 84.1 MB、JSON 33.2 MB、Markdown 18.7 MB（示範資料加 1 個待辦）；本批只調查，不改輸出（D-V3-36）。
 - 待拍板：D-V3-26、27、29、30、31、32、33、34、35 仍待；新增 D-V3-36（決策匯出縮減方案）、D-V3-37（同義詞黑名單剩餘字串是否改寫）。
 - F15／F16 延後；H1 未執行（V3-10 的前後對照只有工程指標，沒有可用性指標）。
+- **網路紀錄的「沒有 POST」在自動化瀏覽器下成立，真實瀏覽器會多三個同源的分析事件 POST**：Vercel Web Analytics 的腳本在 `navigator.webdriver` 或 Headless UA 下不送資料，所以 `network-log.spec` 測不到它；正式站驗證代理另以非自動化 UA 探測（本機攔截、沒有送到 Vercel），真實瀏覽器會送 `POST /_vercel/insights/view` 與 `POST /_vercel/insights/event`（`demo_loaded`、`evidence_opened`），本文只有事件名與頁面網址，沒有通路、金額或檔名，符合 D9 與 D-V3-15（`production/analytics-probe.json`）。
 - 本批產出的 `scripts/launch-check.mjs` 沒有給 `--base` 時預設指向正式站 `https://profitlens-tau.vercel.app`；收尾者查看用法時曾對正式站（目前仍是 v2.0.0）跑過一次 13 項檢查（只讀的 GET 與 /api/insights 的 403 探測 POST，13／13 通過），沒有送出任何資料，也沒有部署。
 
 ### 5a. 同義詞黑名單剩餘 12 筆與禁用詞 0 筆（既有字串，未改）
@@ -119,6 +131,6 @@
 ## 6. 下一步、人工關卡與待拍板
 
 - 人工關卡 H4：用 `docs/revamp-v3/usability-test.md` 的腳本做 5 人複測與 3 位外部盲評，結果寫回 `docs/STATUS.md` 與本文件 §3b。
-- 正式站：使用者同意後 `vercel deploy --prod`（或 preview），再對正式站跑 `scripts/launch-check.mjs`、Lighthouse（1440、390）與 `network-log.spec`；通過後打 tag `v3.0.0` 並更新 RELEASES 的日期。
-- 推送：本機 `revamp/v2` 領先 `origin/revamp/v2` 110 個 commit，未推送（需使用者指示）。
+- 正式站：已部署（2026-10-08）並通過檢查（§3c）；H4 後打 tag `v3.0.0`。
+- 推送：`revamp/v2` 已推送到 origin（cf9c225）；`main` 未合併（需您指示）。
 - 待拍板：見 §5。

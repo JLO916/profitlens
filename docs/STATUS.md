@@ -1,6 +1,6 @@
 # Status
 
-## Revamp v3｜V3-10 上線檢查（工程面完成；H4 未執行／待人工；正式站未部署、未推送）
+## Revamp v3｜V3-10 上線檢查（完成；正式站已部署 v3.0.0；H4 未執行／待人工）
 
 06_BATCHES V3-10 的工程面全部完成：labels 舊 key alias 移除（頂層只剩 24 個新分組，字串逐位元組不變，對照表 `tests/fixtures/labels-legacy-map.json`）；版本 3.0.0；`docs/RELEASES.md` v3.0.0 段（含破壞性變更：Excel 工作表改名、備份 v5、匯出欄位）、README、ENGINEERING；會議頁與通路寬表、三件事的 number-link 可及名稱含可見文字（Lighthouse label-content-name-mismatch 10 → 0）；KPI 卡 target-size；上線檢查工具（13 項 HTTP、網路紀錄、鍵盤走查、axe 四尺寸、備份 v1–v5 矩陣）對本機 production 執行，證據在 `verification/revamp-v3/V3-10/`。
 
@@ -8,9 +8,10 @@
 - PRD §2.3 B：1440 一句話頂 192px（目標 176，V3-4 起的已知差距）、KPI 底 419 ≤ 420、三件事首列底 561；1280 頂欄 1 列 48px；390 扣廣告後貢獻值頂 295 ≤ 360；KPI 前可見控制 10 ≤ 10；匯入路徑 ≤ 2；hex 0（token 定義區 23）；圓角 4；字級 8（＋3 列印 token）；字距 0；labels 違規：同義詞 12 未到 0（既有字串，D-V3-37），其餘 0；JSX 中文 0；testid 刪除 0；M1／M6 全過；CLS 載入示範資料 1440＝0、390＝0.001。
 - PRD §2.3 C：Lighthouse accessibility 1440 與 390 六頁全 100、失敗審核 0（會議頁 label-content-name-mismatch 10 → 0）；performance 1440 100、390 92（≥ 90）；axe 四尺寸 serious／critical 0；對比 75／75；golden 255.00／−315.00／284.00 不變；禁區 diff 空；匯出與分享使用率要上線 4 週後才能量。
 - 上線檢查（本機 production）：13 項 HTTP 13／13（PUBLIC_DEMO，含 /api/insights POST 403）＋補充 10／10；網路紀錄 desktop／mobile 各 15 個請求、外部來源 0、非 GET 0、原始 CSV 探針命中 0；鍵盤走查無焦點陷阱、Esc 回焦（抽屜、匯出選單、投影模式）、PRD §11.1 只用鍵盤流程完成；備份 v1–v5 矩陣 16／16；證據 `verification/revamp-v3/V3-10/`。
-- 未執行／待人工：H4（5 人複測與盲評）未執行；正式站部署、正式站 Lighthouse 與 HTTP 檢查需使用者當次同意；`v3.0.0` tag 等 H4；匯出與分享使用率要上線 4 週後才能量；F15／F16 待檔案；H1、H2、H3 未執行或略過。
+- 正式站（使用者 2026-10-08 指示「推送正式站」）：`git push origin revamp/v2`（f61e8cc → cf9c225，110 個 commit）；`vercel link` 後 `vercel deploy --prod`（149 秒，deployment `dpl_GP2qy7fpFdWdkhQQE7uyYpEuXdAa`，alias https://profitlens-tau.vercel.app，建置紀錄 `verification/revamp-v3/V3-10/deployment-build.txt`）。正式站檢查：13 項 HTTP 13／13＋補充 10／10（`production/launch-check-production.json`）；Lighthouse 1440 accessibility 全 100、performance 100，390 accessibility 全 100、performance 96，失敗審核 0（`production/lighthouse/`、`production/metrics.json`）；{PROD_E2E}。`main` 沒有動（正式站是用 CLI 從本機 cf9c225 部署，Git 整合的 production branch 若指到 main，之後推 main 會覆蓋，見 DECISIONS）。
+- 未執行／待人工：H4（5 人複測與盲評）未執行，`v3.0.0` git tag 等 H4；匯出與分享使用率要上線 4 週後才能量；F15／F16 待檔案；H1、H2、H3 未執行或略過。
 - 待拍板：D-V3-26、27、29–35 仍待；新增 D-V3-36（決策匯出縮減）、D-V3-37（同義詞黑名單剩餘字串）。
-- 下一步：使用者同意後部署正式站並重測；H4；推送 `revamp/v2`（領先 origin 110 個 commit）。
+- 下一步：H4；H4 後打 tag `v3.0.0`；決定 `main` 是否合併 `revamp/v2`（讓 Git 整合與正式站一致）；上線 4 週後量匯出與分享使用率。
 
 ## Revamp v3｜V3-9b P1 新增功能：圖表與呈現（完成，未推送、未部署；V3-9 拆批後的後半；F15／F16 延後）
 

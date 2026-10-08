@@ -1,0 +1,36 @@
+{
+  "desktop": {
+    "checked_at": "2026-10-08T04:07:36.920Z",
+    "note": "一般瀏覽器（navigator.webdriver=false、UA 不含 Headless）時 Vercel Web Analytics 腳本才會送 POST；本探針把 POST 在本機 fulfill，不到達 Vercel。",
+    "intercepted": [
+      {
+        "method": "POST",
+        "url": "https://profitlens-tau.vercel.app/_vercel/insights/view",
+        "body": "{\"o\":\"https://profitlens-tau.vercel.app/\",\"sv\":\"0.1.3\",\"ts\":1791432452065,\"r\":\"\"}"
+      },
+      {
+        "method": "POST",
+        "url": "https://profitlens-tau.vercel.app/_vercel/insights/event",
+        "body": "{\"o\":\"https://profitlens-tau.vercel.app/\",\"sv\":\"0.1.3\",\"ts\":1791432452941,\"r\":\"\",\"en\":\"demo_loaded\"}"
+      },
+      {
+        "method": "POST",
+        "url": "https://profitlens-tau.vercel.app/_vercel/insights/event",
+        "body": "{\"o\":\"https://profitlens-tau.vercel.app/\",\"sv\":\"0.1.3\",\"ts\":1791432453307,\"r\":\"\",\"en\":\"evidence_opened\"}"
+      }
+    ],
+    "probe_tokens": [
+      "DTC",
+      "MARKETPLACE",
+      "1269792",
+      "1,269,792",
+      "126.98",
+      "sales_daily",
+      "channel_costs_daily",
+      "ad_spend_daily"
+    ],
+    "leaks": [],
+    "foreign_origins": [],
+    "all_requests": 15
+  }
+}
