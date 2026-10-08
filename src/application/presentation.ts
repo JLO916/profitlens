@@ -158,6 +158,25 @@ export function formatSignedDelta(value: string | null | undefined, layer: Layer
   return `${signPrefix(result.sign, true)}${result.text}`;
 }
 
+const AXIS_TEN_THOUSAND = 10_000;
+const AXIS_HUNDRED_MILLION = 100_000_000;
+/**
+ * V4-1 金額軸刻度（PRD §6.4、§7.2；CHART_CATALOG G1、G2）：刻度只是圖形座標（Number），不是金額，所以不經 decimal。
+ * 最大刻度的絕對值 ≥ 1 萬且 < 1 億時全部用萬：步長是整萬時寫整數萬（「50 萬」「200 萬」，不出現「.0 萬」），
+ * 步長是整千時保留 1 位、其他保留 2 位（同一軸的小數位數一致）；最大刻度 < 1 萬或 ≥ 1 億時交給 formatAmountL1（元／億）。
+ * 0 只寫「0」；負值帶 U+2212；「萬」取自 labels.format.units.wan。V3 瀑布的 waterfallTickLabels 改呼叫本函式，輸出不變。
+ */
+export function formatAxisWan(ticks: readonly number[], step: number): string[] {
+  const top = Math.max(0, ...ticks.map(value => Math.abs(value)));
+  const wan = top >= AXIS_TEN_THOUSAND && top < AXIS_HUNDRED_MILLION;
+  const digits = step % AXIS_TEN_THOUSAND === 0 ? 0 : step % 1000 === 0 ? 1 : 2;
+  return ticks.map(value => {
+    if (value === 0) return "0";
+    if (!wan) return formatAmountL1(value.toFixed(2));
+    return `${value < 0 ? MINUS : ""}${withUnit(labels.format.units.wan, grouped((Math.abs(value) / AXIS_TEN_THOUSAND).toFixed(digits)))}`;
+  });
+}
+
 /** 比率（domain 的小數，例如 0.161745…）轉百分比；plus 時正值加「+」。 */
 function percent(value: ExactValue, dp: number, plus: boolean): string {
   const result = rounded(value.times(100), dp);

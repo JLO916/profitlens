@@ -17,7 +17,10 @@ export type AnalyticsEvent =
   | "glossary_opened"
   // V3-4（D-V3-15）：總覽「複製週會摘要」與瀑布圖長條點擊；只記事件名。
   | "summary_copied"
-  | "waterfall_clicked";
+  | "waterfall_clicked"
+  // V4-1（D-V4-14）：點圖（瀑布柱維持 waterfall_clicked）與展開圖的資料表 <details>；只記事件名，不帶圖名或任何資料。
+  | "chart_clicked"
+  | "chart_table_opened";
 
 /** Vercel Web Analytics 的腳本路徑（專案在 Vercel 儀表板啟用 Web Analytics 後才會回應）。 */
 export const ANALYTICS_SCRIPT_SRC = "/_vercel/insights/script.js";

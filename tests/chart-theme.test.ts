@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { chartCategoryColors, chartColors, chartFontSize, chartHeights, chartTokenName, readChartColors } from "../src/application/chart-theme";
+import { chartCategoryColors, chartColors, chartFontSize, chartHeights, chartRowHeights, chartTokenName, readChartColors } from "../src/application/chart-theme";
 
 // V3-4b 圖表色集中在 chart-theme.ts（PRD §9.5）：值一律是 :root 的 var() token，不寫色碼；瀏覽器端用 getComputedStyle 讀實際值。
 
@@ -30,6 +30,15 @@ describe("chart-theme：圖表色 token", () => {
     expect(chartHeights).toEqual({ sm: 180, lg: 320 });
     expect(css).toContain(`--chart-h-sm: ${chartHeights.sm}px;`);
     expect(css).toContain(`--chart-h-lg: ${chartHeights.lg}px;`);
+  });
+
+  it("V4-1 列高常數 chartRowHeights（PRD §6.5）：cell 6、row16 16、row24 24，都是正整數；不是 CSS token，:root 沒有對應的 --chart-row-*", () => {
+    // V4-7a 加 axis、D-V4-16 選 B 時加 row28；加鍵時同批改這裡。
+    expect(chartRowHeights).toEqual({ cell: 6, row16: 16, row24: 24 });
+    for (const value of Object.values(chartRowHeights)) expect(Number.isInteger(value) && value > 0, String(value)).toBe(true);
+    expect([...ROOT_TOKENS].filter(token => /^--chart-row/.test(token))).toEqual([]);
+    // 依列計高的圖（C24、C25、C27、C30）要放進固定高的 ChartFrame：最大列高放得進 sm。
+    expect(Math.max(...Object.values(chartRowHeights))).toBeLessThan(chartHeights.sm);
   });
 
   it("沒有 document（伺服器端、單元測試）時 readChartColors 回傳 var() 字串本身", () => {
