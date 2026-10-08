@@ -1,5 +1,16 @@
 # Status
 
+## Revamp v4｜V4-0a 基準與護欄（完成；不改任何 UI；H5、H6 未執行／待人工）
+
+使用者 2026-10-08 指示「改版：將全站加入更多專業視覺化元素，以專業圖表的方式呈現為主要」，套件 `docs/revamp-v4/` 完成後回覆「都依建議值，開工」：D-V4-1–35 全部依建議值（目標 v4.0.0、分支 `revamp/v4` 自 `main`＝`21d621c`、禁區四條命令以 `625bfa5` 為主並保留 `82b70df`）；CLAUDE.md 整份換成 v4 版。V4-0a 依 06_BATCHES 第 1–12 項完成：labels 快照（2,581 個葉節點逐字）與 `V4_NEW_KEY_PREFIXES`、copy-scan 的 chartsV4 規則（計數不變）、copy-density 七頁上限＝實測、頁面狀態搬到 `tests/helpers/page-states.tsx`（mounted-testids 44 前後相同，加 `chart-` 唯一性後 46）、chart-lint CL-1–CL-11（v3.0.0 全 0）、testid 三份基準（v2 228、v3 416、v4 新增 0，刪除 0）、capture config 與 52 張畫面基準、metrics v4（B2、B3、B5 硬斷言）、keyboard-walk 的 `aria-hidden` 停留點斷言、Lighthouse 加資料來源與待辦兩頁、GLOSSARY v4 增補與 H6 用的 usability-test（答案鍵經程式驗證）。`src/` 零改動。
+
+- 最終驗收：typecheck、lint、contrast（75／75）exit 0；audit:ui 數值與 v3.0.0 相同（hex 0、圓角 4、字級 11、箭頭 3、同義詞 12）；unit 124 檔／2,459 全過；build pass；E2E 四視窗 791 passed／0 failed／9 skipped（23.4m）；畫面基準 01–09 × 4 共 36 張 0 差異（與 V3-10 逐位元相同），10–13 × 4 共 16 張新建，第二次 52 張全過；禁區四條命令皆空。
+- 基準（詳見 `verification/revamp-v4/V4-0-baseline.md`）：First Load JS gzip 519,426 bytes（門檻 545,397）；B2 1440 一句話頂 192、KPI 帶底 419、三件事首列底 561，1280 為 192、419、583，390 扣廣告後貢獻值頂 295；B3 七頁 390 寬無橫向捲動；B9 DOM 節點數總覽 3,075（390 為 3,062）；Lighthouse 8 頁 1440 與 390 accessibility 全 100（三次），Performance 1440 100、390 94；390 TBT 中位數（三次、低負載）載入示範資料 1,008.3、通路健檢 756.6、商品 79.9、會議 973.8、資料來源 0 ms；axe 四尺寸 0；network-log 外部來源 0、非 GET 0。
+- 已知差距（v3.0.0 既有，未改）：390 寬總覽 G1、G2 瀑布外框是 `aria-hidden` 內的 Tab 停留點（2 個，列入 `KNOWN_ARIA_HIDDEN_STOPS`，V4-1 修）；CLS 0.053–0.054（390 切到商品、資料來源、待辦，1440 切到待辦）超過 PRD B4 的 0.05。
+- 未執行／待人工：H5（v4 設計稿審查，材料在 V4-0b 產出，擋 V4-1）、H6（v4 複測與盲評，擋正式上線）；H4（v3 複測）仍未執行，由 H6 同場補量。
+- 待拍板：新增 D-V4-36（390 TBT 門檻在基準為 0 時的下限）；D-V3-26／27／29–37 依 D-V4-29 處理。
+- 驗收：`verification/revamp-v4-V4-0a-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-0a/`。下一批：V4-0b（設計稿、PPT spike、4 通路合成資料）。
+
 ## Revamp v3｜V3-10 上線檢查（完成；正式站已部署 v3.0.0；H4 未執行／待人工）
 
 06_BATCHES V3-10 的工程面全部完成：labels 舊 key alias 移除（頂層只剩 24 個新分組，字串逐位元組不變，對照表 `tests/fixtures/labels-legacy-map.json`）；版本 3.0.0；`docs/RELEASES.md` v3.0.0 段（含破壞性變更：Excel 工作表改名、備份 v5、匯出欄位）、README、ENGINEERING；會議頁與通路寬表、三件事的 number-link 可及名稱含可見文字（Lighthouse label-content-name-mismatch 10 → 0）；KPI 卡 target-size；上線檢查工具（13 項 HTTP、網路紀錄、鍵盤走查、axe 四尺寸、備份 v1–v5 矩陣）對本機 production 執行，證據在 `verification/revamp-v3/V3-10/`。

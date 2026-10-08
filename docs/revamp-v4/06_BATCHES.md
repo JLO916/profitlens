@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／相關拍板／另需的人工時間。
 >
-> **目前進度：V4-0a 進行中（2026-10-08 開工）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
+> **目前進度：V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）；下一批 V4-0b。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
 >
 > 本套件寫「V4-0」時指 V4-0a、V4-0b 兩批合稱；「V4-0 實測」「V4-0 基準」都是 V4-0a 量到的 v3.0.0 值。原本的 V4-0（13 項，含 AST 掃描器、capture 與 metrics、PPT spike、合成資料、四頁兩尺寸設計稿與全套基準量測）與 V4-7（4 張圖、跨資料來源、匯入精靈、抽屜三個介面）在開工前依工作量拆成 a／b（CLAUDE.md：批次太大要在開工前拆；v3 的設計稿放在 L 級的 V3-1，不在 V3-0）。
 
@@ -59,7 +59,7 @@
 
 | 批次 | 主題 | 大小 | 依賴（批次、拍板、人工關卡） | 另需的人工時間 | 狀態 |
 |---|---|---|---|---|---|
-| V4-0a | 基準與護欄（不改 UI） | M | 拍板 D-V4-1、2、3、15、23、24、25、26、27 | — | 進行中（2026-10-08 開工） |
+| V4-0a | 基準與護欄（不改 UI） | M | 拍板 D-V4-1、2、3、15、23、24、25、26、27 | — | **完成（2026-10-08）** |
 | V4-0b | 設計稿、PPT spike 與合成資料（不改 UI） | M | V4-0a；D-V4-31（D-V4-10、34 的 spike 結果回報後確認；D-V4-27＝B 時不產出設計稿） | H5 設計稿在本批產出 | 未開工 |
 | V4-1 | 總覽拆解與圖表框（G1、G2、G6） | M | V4-0b；**H5**；D-V4-4、5、7、14、30；G6 另依 D-V4-33；D-V4-35 只在回覆 B 時 | — | 未開工 |
 | V4-2 | 總覽其他圖（G3、G4、G5、G7a） | M | V4-1；D-V4-6、16、18；D-V3-35（只在回覆 A 後） | — | 未開工 |
@@ -157,6 +157,8 @@
 **允許變動畫面**：01、02（總覽）；03（抽屜）只限 desktop、laptop，理由：03 在 1440 是 scrollY＝0 時拍抽屜（`verification/revamp-v3-capture/baseline.spec.ts:22-25`），模糊背景就是總覽首屏，含拆解標題、瀑布柱與刻度（`verification/revamp-v3/V3-10/snapshots/desktop/03-evidence-drawer.png` 的 y 約 770–1000）；本批讓 G1、G2 共用尺度並改刻度，G1 的柱長與刻度一定變，capture 設定是 `maxDiffPixels: 0`。驗收文件寫明 03 的差異只在背景、抽屜本身不變。
 
 **驗收重點**：總覽四個 `.chart-frame` 切期間等高、CLS < 0.05；`bridge-section`、`profit-waterfall` 內各恰好 1 個 `.chart-frame`；G6 九條與表列同一個 evidence（SSR `toEqual`），1440 不可見但掛載；1440 橋接表在圖右欄；390 橋接表在前、捲到 `bridge-waterfall` 後它可見且寬 > 0、頁面無橫向捲動；刻度沒有「.0 萬」；兩張瀑布刻度相同；示範資料 G2 切到 MARKETPLACE 時終點柱（−61,169.93）在 domain 內、刻度含負值；本批新增的 testid 追加到 `testids-v4-added.txt`；B2（1440 三項、1280 KPI 帶底與 V4-0a 實測門檻、390）與 B9 不退；golden 差額 −315.00 不變；只有 01、02 與 desktop、laptop 的 03 有差異（寫理由）。
+
+**V4-0a 量到、併入本批的修正**：v3.0.0 在 390 寬有 2 個 Tab 停留點落在 `aria-hidden` 內：總覽 G1、G2 瀑布外框 `div.chart-frame.waterfall`（`src/components/overview/charts/waterfall-svg.tsx` 的外框帶 `aria-hidden`，390 寬時成為水平捲動容器，Chromium 讓可捲動容器可聚焦；axe 的 aria-hidden-focus 規則不計這種隱含可聚焦，所以 V3-10 的 axe 沒抓到）。V4-0a 依「上限＝實測並逐條列出」把它們寫進 `tests/e2e/keyboard-walk.spec.ts` 的 `KNOWN_ARIA_HIDDEN_STOPS`；本批搬 G1、G2 進 ChartFrame 時修正（外框不帶 `aria-hidden`、只讓 svg `aria-hidden`，外框改 `role="region"`＋`aria-label` 保留鍵盤捲動，或外框 `tabIndex={-1}`），修好後刪掉那兩列，768 寬一併確認。
 
 **同批 labels 與測試**：`overview.chartsV4.{bridge, profit}`、`shell.chartsV4.common`（預計各 0–3 個 key）；`tests/overview-charts-waterfall.test.tsx` 改 ChartFrame 結構；新增 `tests/chart-frame-v4.test.tsx`、`tests/bar-cell.test.ts`（只在做 G6 時）；`overview-charts-waterfall.test` 加「G2 切到 MARKETPLACE 時終點柱在 domain 內、刻度含負值」；`formatAxisWan` 單元測試（`tests/format-layers.test.ts` 擴）；`tests/chart-theme.test.ts` 登記 `chartRowHeights`（做 G6 時）；`tests/e2e/revamp-r1-layout.spec.ts` 的 `CHART_FRAMES`（`:340`）改為自動收集 `main .chart-frame:visible`（不收 `hidden` 祖先內與未展開 `<details>` 內的框，它們沒有 bounding box，`:27` 的 `box()` 與 `:359` 的 `every(height > 0)` 會失敗；不限 `.view-content`，因為試算頁的工作台在 `.view-content` 之外，`src/components/dashboard.tsx:576-577`）；新增 `tests/e2e/charts-overview.spec.ts` 與 `tests/e2e/chart-helpers-v4.ts`；mounted-testids V4-1 錨點。
 
@@ -390,7 +392,7 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 | mounted-testids M6（`chart-` 唯一性） | v3.0.0 沒有 `chart-` 開頭的 testid，違規 0 | 每批：`chart-` 開頭的 testid 在實例容器外恰好 1 次 |
 | First Load JS gzip | 519,426 bytes | 每批 ≤ 545,397（依 D-V4-24）；驗收列出首載 chunk 清單與各自 gzip 大小（人工比對，不逐一斷言） |
 | 首載 chunk 的 `Treemap`、`Sankey`、`Funnel`、`PieChart`、`RadarChart` | 0 | 每批 0 |
-| B2 首屏 | 1440：一句話頂 192、KPI 帶底 419、三件事首列底 561；1280：V4-0a 新量（依 V3-10 截圖估計約 192、418、583）；390：扣廣告後貢獻值頂 295 | 每批硬斷言：1440 ≤ 192、≤ 420、≤ 561；1280 KPI 帶底 ≤ 420，一句話頂與三件事首列底不晚於 V4-0a 實測；390 ≤ 295 |
+| B2 首屏 | 1440：一句話頂 192、KPI 帶底 419、三件事首列底 561；1280：V4-0a 實測一句話頂 192、KPI 帶底 419、三件事首列底 583（`metrics.spec` 的 `B2_LAPTOP_RECORDED`，V4-1 起改成斷言 ≤ 192、≤ 583）；390：扣廣告後貢獻值頂 295 | 每批硬斷言：1440 ≤ 192、≤ 420、≤ 561；1280 KPI 帶底 ≤ 420，一句話頂與三件事首列底不晚於 V4-0a 實測；390 ≤ 295 |
 | B1 首屏有圖（1440） | 總覽第一張 `.chart-frame` 頂（V4-0a 記錄）；健檢 G10 插入處頂（參考，依截圖約 2,225px）；試算方案比較表區塊頂 | 總覽每批不晚於 V4-0a；健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）；商品第一張 `.chart-frame` 頂 ≤ 900（V4-4 起）；試算 G15 頂 ≤ 方案比較表區塊頂（V4-0a）＋24px（V4-5 起）；資料來源 G20 頂 ≤ 900（V4-7a 起） |
 | B8 主層否定句（`tests/copy-density.test.ts`） | 五頁各 ≤ 3（`:67-94`；商品、待辦兩頁沒有測） | V4-0a 把五頁上限改成實測值並加商品、待辦兩頁（七頁），之後只降不升；新圖在主層新增的否定句 0（限制句放 `<details>` 或抽屜） |
 | B9 DOM 節點數 | 七頁在 1440 與 390 載入示範資料後（V4-0a 記錄） | V4-1 起每批各頁 ≤ 基準＋1,500（硬斷言） |

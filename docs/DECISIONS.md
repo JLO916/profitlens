@@ -292,6 +292,22 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-08｜Revamp v4 V4-0a：基準與護欄的取捨
+
+**keyboard-walk 的 `aria-hidden` 停留點：** 06_BATCHES 預期 v3.0.0 為 0，實測 390 寬有 2 個（總覽 G1、G2 瀑布外框 `div.chart-frame.waterfall` 在 390 寬是水平捲動容器，外框帶 `aria-hidden`，Chromium 讓可捲動容器可聚焦；axe 的 aria-hidden-focus 不計這種隱含可聚焦）。V4-0a 不能改 `src`，依「上限＝實測並逐條列出」寫進 `KNOWN_ARIA_HIDDEN_STOPS`，修正併入 V4-1（搬 G1、G2 進 ChartFrame 時外框不帶 `aria-hidden`）。
+
+**畫面 10–13 的拍法：** 元素截圖比視窗高時，sticky 頂欄、期間列、精靈底部動作列與手機分頁列會疊在截圖中間，最後點擊的 hover 底色也會留下，後續批次版面一動就產生假差異。10–13 以 `stylePath` 套 `NO_OVERLAY_STYLE`（sticky 改 static、分頁列隱藏），拍前捲回頂端並把滑鼠移到 (0,0)；01–09 照 v3 拍法不變，所以能和 V3-10 的 36 張逐位元比對。
+
+**B2 KPI 帶底的口徑：** 斷言用五格底邊最大值（419，與 v3 基準同口徑），`kpi-band` 元素本身的底（420）只記錄。1280 的一句話頂 192、三件事首列底 583 是首次實測，V4-1 起改成斷言。
+
+**商品頁黑名單的範圍：** 「賠錢」「虧損」只在 `products.chartsV4.*` 計入（新增 `SCOPED_BLACKLIST`），不放進全站 `BLACKLIST`：「虧損」在 `format.turnedLoss` 等既有字串是正確用詞，而 `BLACKLIST` 也被 `tests/data-workspace-v3.test.tsx` 直接拿來掃新鍵。copy-style 計數改前改後逐筆相同。
+
+**testid 收集：** `testids-v3.txt` 的 SSR 情境加入 `tests/helpers/page-states.tsx` 的整頁狀態，讓有資料時的殼層 testid 走嚴格 SSR 比對（ssr 列 324 增為 366）；collect spec 拆成 9 段獨立流程，任一段失敗不會丟掉其他段。
+
+**First Load JS 的量法：** 代理在 worktree（`node_modules` 是 symlink）量到 520,213 bytes，主 checkout 重建後 519,426 bytes，與 v3.0.0 相同；基準以主 checkout 為準，之後每批也只在主 checkout 量。
+
+**TBT 門檻下限（D-V4-36，待拍板）：** 資料來源的 390 TBT 基準中位數為 0，「中位數 × 1.1」等於 0，會被雜訊判失敗；建議門檻取 max(中位數 × 1.1, 中位數＋50 ms)。拍板前這一項只記錄、不判定，其餘四項照原規則。
+
 ## 2026-10-08｜Revamp v4 開工：拍板全部依建議值
 
 **依據：** 使用者 2026-10-08 指示「改版：將全站加入更多專業視覺化元素，以專業圖表的方式呈現為主要」，套件 `docs/revamp-v4/`（PRD、CHART_CATALOG、06_BATCHES、09、README）完成後回覆「都依建議值，開工」。
