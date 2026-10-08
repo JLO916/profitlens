@@ -1,0 +1,1019 @@
+{
+ "overview.html": {
+  "source": "demo",
+  "period": {
+   "previous": {
+    "start": "2026-06-01",
+    "end": "2026-07-12"
+   },
+   "current": {
+    "start": "2026-07-13",
+    "end": "2026-08-23"
+   }
+  },
+  "sentence": "淨營收多 170.9 萬，扣廣告後貢獻卻少賺 59.9 萬；最大一項是折扣多花 118.8 萬。",
+  "kpiTargets": [
+   {
+    "metric": "net_revenue",
+    "target": "7500000.00",
+    "actual": "7850657.90",
+    "rate": "104.7%",
+    "behind": false
+   },
+   {
+    "metric": "gross_profit",
+    "target": "3000000.00",
+    "actual": "2858133.25",
+    "rate": "95.3%",
+    "behind": true
+   },
+   {
+    "metric": "contribution_after_marketing",
+    "target": "1200000.00",
+    "actual": "1269792.73",
+    "rate": "105.8%",
+    "behind": false
+   }
+  ],
+  "waterfallScale": {
+   "common": {
+    "lo": -2000000,
+    "hi": 8000000,
+    "step": 2000000,
+    "ticks": [
+     -2000000,
+     0,
+     2000000,
+     4000000,
+     6000000,
+     8000000
+    ]
+   },
+   "g1Only": {
+    "lo": 0,
+    "hi": 6000000,
+    "step": 1000000,
+    "ticks": [
+     0,
+     1000000,
+     2000000,
+     3000000,
+     4000000,
+     5000000,
+     6000000
+    ]
+   },
+   "commonTicks": [
+    "−200 萬",
+    "0",
+    "200 萬",
+    "400 萬",
+    "600 萬",
+    "800 萬"
+   ],
+   "g1TallestBarPx1440": {
+    "common": 80.9,
+    "own": 134.9
+   }
+  },
+  "bridge": {
+   "title": "少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）",
+   "bars": [
+    {
+     "id": "previous",
+     "start": "1868626.68",
+     "end": "1868626.68",
+     "display": "186.9 萬"
+    },
+    {
+     "id": "gross_sales",
+     "start": "1868626.68",
+     "end": "5030596.68",
+     "display": "+316.2 萬"
+    },
+    {
+     "id": "discounts",
+     "start": "5030596.68",
+     "end": "3842231.58",
+     "display": "−118.8 萬"
+    },
+    {
+     "id": "refunds",
+     "start": "3842231.58",
+     "end": "3577708.86",
+     "display": "−26.5 萬"
+    },
+    {
+     "id": "cogs_net",
+     "start": "3577708.86",
+     "end": "2002628.31",
+     "display": "−157.5 萬"
+    },
+    {
+     "id": "platform_fees",
+     "start": "2002628.31",
+     "end": "1749210.78",
+     "display": "−25.3 萬"
+    },
+    {
+     "id": "payment_fees",
+     "start": "1749210.78",
+     "end": "1715029.15",
+     "display": "−3.4 萬"
+    },
+    {
+     "id": "fulfillment_costs",
+     "start": "1715029.15",
+     "end": "1639238.15",
+     "display": "−7.6 萬"
+    },
+    {
+     "id": "other_variable_costs",
+     "start": "1639238.15",
+     "end": "1630692.73",
+     "display": "−8,545 元"
+    },
+    {
+     "id": "ad_spend",
+     "start": "1630692.73",
+     "end": "1269792.73",
+     "display": "−36.1 萬"
+    },
+    {
+     "id": "current",
+     "start": "1269792.73",
+     "end": "1269792.73",
+     "display": "127.0 萬"
+    }
+   ],
+   "g6": [
+    {
+     "field": "gross_sales",
+     "value": "3161970.00",
+     "ratio": "1.0000"
+    },
+    {
+     "field": "discounts",
+     "value": "-1188365.10",
+     "ratio": "0.3758"
+    },
+    {
+     "field": "refunds",
+     "value": "-264522.72",
+     "ratio": "0.0837"
+    },
+    {
+     "field": "cogs_net",
+     "value": "-1575080.55",
+     "ratio": "0.4981"
+    },
+    {
+     "field": "platform_fees",
+     "value": "-253417.53",
+     "ratio": "0.0801"
+    },
+    {
+     "field": "payment_fees",
+     "value": "-34181.63",
+     "ratio": "0.0108"
+    },
+    {
+     "field": "fulfillment_costs",
+     "value": "-75791.00",
+     "ratio": "0.0240"
+    },
+    {
+     "field": "other_variable_costs",
+     "value": "-8545.42",
+     "ratio": "0.0027"
+    },
+    {
+     "field": "ad_spend",
+     "value": "-360900.00",
+     "ratio": "0.1141"
+    }
+   ]
+  },
+  "profit": [
+   {
+    "scope": "all",
+    "title": "每 100 元淨營收，扣完廣告剩 16.2 元",
+    "perHundred": "16.2",
+    "bars": [
+     {
+      "id": "net_revenue",
+      "start": "7850657.90",
+      "end": "7850657.90"
+     },
+     {
+      "id": "cogs_net",
+      "start": "7850657.90",
+      "end": "2858133.25"
+     },
+     {
+      "id": "gross_profit",
+      "start": "2858133.25",
+      "end": "2858133.25"
+     },
+     {
+      "id": "platform_fees",
+      "start": "2858133.25",
+      "end": "2302351.22"
+     },
+     {
+      "id": "payment_fees",
+      "start": "2302351.22",
+      "end": "2145338.02"
+     },
+     {
+      "id": "fulfillment_costs",
+      "start": "2145338.02",
+      "end": "1997764.02"
+     },
+     {
+      "id": "other_variable_costs",
+      "start": "1997764.02",
+      "end": "1958510.73"
+     },
+     {
+      "id": "contribution_before_marketing",
+      "start": "1958510.73",
+      "end": "1958510.73"
+     },
+     {
+      "id": "ad_spend",
+      "start": "1958510.73",
+      "end": "1269792.73"
+     },
+     {
+      "id": "contribution_after_marketing",
+      "start": "1269792.73",
+      "end": "1269792.73"
+     }
+    ]
+   },
+   {
+    "scope": "DTC",
+    "title": "每 100 元淨營收，扣完廣告剩 34.3 元",
+    "perHundred": "34.3",
+    "bars": [
+     {
+      "id": "net_revenue",
+      "start": "3880786.47",
+      "end": "3880786.47"
+     },
+     {
+      "id": "cogs_net",
+      "start": "3880786.47",
+      "end": "1664768.32"
+     },
+     {
+      "id": "gross_profit",
+      "start": "1664768.32",
+      "end": "1664768.32"
+     },
+     {
+      "id": "platform_fees",
+      "start": "1664768.32",
+      "end": "1664768.32"
+     },
+     {
+      "id": "payment_fees",
+      "start": "1664768.32",
+      "end": "1587152.59"
+     },
+     {
+      "id": "fulfillment_costs",
+      "start": "1587152.59",
+      "end": "1534384.59"
+     },
+     {
+      "id": "other_variable_costs",
+      "start": "1534384.59",
+      "end": "1514980.66"
+     },
+     {
+      "id": "contribution_before_marketing",
+      "start": "1514980.66",
+      "end": "1514980.66"
+     },
+     {
+      "id": "ad_spend",
+      "start": "1514980.66",
+      "end": "1330962.66"
+     },
+     {
+      "id": "contribution_after_marketing",
+      "start": "1330962.66",
+      "end": "1330962.66"
+     }
+    ]
+   },
+   {
+    "scope": "MARKETPLACE",
+    "title": "每 100 元淨營收，扣完廣告虧 1.5 元",
+    "perHundred": "-1.5",
+    "bars": [
+     {
+      "id": "net_revenue",
+      "start": "3969871.43",
+      "end": "3969871.43"
+     },
+     {
+      "id": "cogs_net",
+      "start": "3969871.43",
+      "end": "1193364.93"
+     },
+     {
+      "id": "gross_profit",
+      "start": "1193364.93",
+      "end": "1193364.93"
+     },
+     {
+      "id": "platform_fees",
+      "start": "1193364.93",
+      "end": "637582.90"
+     },
+     {
+      "id": "payment_fees",
+      "start": "637582.90",
+      "end": "558185.43"
+     },
+     {
+      "id": "fulfillment_costs",
+      "start": "558185.43",
+      "end": "463379.43"
+     },
+     {
+      "id": "other_variable_costs",
+      "start": "463379.43",
+      "end": "443530.07"
+     },
+     {
+      "id": "contribution_before_marketing",
+      "start": "443530.07",
+      "end": "443530.07"
+     },
+     {
+      "id": "ad_spend",
+      "start": "443530.07",
+      "end": "-61169.93"
+     },
+     {
+      "id": "contribution_after_marketing",
+      "start": "-61169.93",
+      "end": "-61169.93"
+     }
+    ]
+   }
+  ],
+  "trend": {
+   "ticks": [
+    "0",
+    "50 萬",
+    "100 萬",
+    "150 萬"
+   ],
+   "weeks": [
+    {
+     "period": "previous",
+     "start": "2026-06-01",
+     "end": "2026-06-07",
+     "net_revenue": "1069415.21",
+     "contribution_after_marketing": "327100.88"
+    },
+    {
+     "period": "previous",
+     "start": "2026-06-08",
+     "end": "2026-06-14",
+     "net_revenue": "1032680.09",
+     "contribution_after_marketing": "316379.67"
+    },
+    {
+     "period": "previous",
+     "start": "2026-06-15",
+     "end": "2026-06-21",
+     "net_revenue": "1062226.88",
+     "contribution_after_marketing": "323372.71"
+    },
+    {
+     "period": "previous",
+     "start": "2026-06-22",
+     "end": "2026-06-28",
+     "net_revenue": "983111.13",
+     "contribution_after_marketing": "291860.65"
+    },
+    {
+     "period": "previous",
+     "start": "2026-06-29",
+     "end": "2026-07-05",
+     "net_revenue": "977607.64",
+     "contribution_after_marketing": "299556.52"
+    },
+    {
+     "period": "previous",
+     "start": "2026-07-06",
+     "end": "2026-07-12",
+     "net_revenue": "1016534.77",
+     "contribution_after_marketing": "310356.25"
+    },
+    {
+     "period": "current",
+     "start": "2026-07-13",
+     "end": "2026-07-19",
+     "net_revenue": "1284690.54",
+     "contribution_after_marketing": "214856.55"
+    },
+    {
+     "period": "current",
+     "start": "2026-07-20",
+     "end": "2026-07-26",
+     "net_revenue": "1214389.42",
+     "contribution_after_marketing": "184084.68"
+    },
+    {
+     "period": "current",
+     "start": "2026-07-27",
+     "end": "2026-08-02",
+     "net_revenue": "1313148.27",
+     "contribution_after_marketing": "208421.62"
+    },
+    {
+     "period": "current",
+     "start": "2026-08-03",
+     "end": "2026-08-09",
+     "net_revenue": "1343611.55",
+     "contribution_after_marketing": "219156.00"
+    },
+    {
+     "period": "current",
+     "start": "2026-08-10",
+     "end": "2026-08-16",
+     "net_revenue": "1359978.03",
+     "contribution_after_marketing": "223991.43"
+    },
+    {
+     "period": "current",
+     "start": "2026-08-17",
+     "end": "2026-08-23",
+     "net_revenue": "1334840.09",
+     "contribution_after_marketing": "219282.45"
+    }
+   ]
+  },
+  "channels": [
+   {
+    "channel": "DTC",
+    "previous": "1147525.80",
+    "current": "1330962.66",
+    "change": "183436.86",
+    "ratio": "0.2345"
+   },
+   {
+    "channel": "MARKETPLACE",
+    "previous": "721100.88",
+    "current": "-61169.93",
+    "change": "-782270.81",
+    "ratio": "1.0000"
+   }
+  ],
+  "assistWeeks": {
+   "weeks": [
+    {
+     "start": "2026-07-13",
+     "end": "2026-07-19",
+     "full": true
+    },
+    {
+     "start": "2026-07-20",
+     "end": "2026-07-26",
+     "full": true
+    },
+    {
+     "start": "2026-07-27",
+     "end": "2026-08-02",
+     "full": true
+    },
+    {
+     "start": "2026-08-03",
+     "end": "2026-08-09",
+     "full": true
+    },
+    {
+     "start": "2026-08-10",
+     "end": "2026-08-16",
+     "full": true
+    },
+    {
+     "start": "2026-08-17",
+     "end": "2026-08-23",
+     "full": true
+    }
+   ],
+   "values": {
+    "units_sold": [
+     "1223",
+     "1173",
+     "1248",
+     "1252",
+     "1260",
+     "1264"
+    ],
+    "net_revenue_per_unit": [
+     "1050.44",
+     "1035.29",
+     "1052.20",
+     "1073.17",
+     "1079.35",
+     "1056.04"
+    ],
+    "marketing_burden": [
+     "0.089570987267",
+     "0.094875661878",
+     "0.087375510155",
+     "0.085829866527",
+     "0.083832236613",
+     "0.085674681826"
+    ],
+    "mer": [
+     "11.164329327111",
+     "10.540110922094",
+     "11.444854493320",
+     "11.650956018800",
+     "11.928585474958",
+     "11.672059687658"
+    ],
+    "gross_margin": [
+     "0.366941707222",
+     "0.365006490257",
+     "0.362666296625",
+     "0.363291272690",
+     "0.363232360452",
+     "0.363430566428"
+    ],
+    "refund_ratio": [
+     "0.045336704466",
+     "0.044816635878",
+     "0.048147622086",
+     "0.046190199369",
+     "0.046312660856",
+     "0.045798720331"
+    ],
+    "fulfillment_burden": [
+     "0.018718904866",
+     "0.019385873767",
+     "0.018975008816",
+     "0.018535119023",
+     "0.018431915404",
+     "0.018800753879"
+    ]
+   },
+   "breakevenMer": {
+    "actual": "11.398943979974",
+    "breakeven": "4.008483476626",
+    "ratio": "2.843705"
+   }
+  },
+  "proposals": [
+   {
+    "key": "overview.chartsV4.channels.changeHead",
+    "text": "差額（元）",
+    "chart": "G4",
+    "note": "可沿用 overview.channelsV3.dataTable.change 的同一字串，不另立新鍵"
+   },
+   {
+    "key": "overview.chartsV4.assistSpark.head",
+    "text": "近 6 週",
+    "chart": "G7a",
+    "note": "n＝實際週數，上限 8"
+   },
+   {
+    "key": "overview.chartsV4.bullet.merLine",
+    "text": "實際 11.4 倍，損益兩平 4.0 倍",
+    "chart": "G5",
+    "note": "與既有的一句結論（breakevenNote）內容重複，見 README 待審問題"
+   },
+   {
+    "key": "overview.chartsV4.assistSpark.tableTitle",
+    "text": "各指標每週",
+    "chart": "G7a"
+   },
+   {
+    "key": "overview.chartsV4.assistSpark.caption",
+    "text": "各指標每週（本期最後 6 週）",
+    "chart": "G7a",
+    "note": "未滿 7 天的週，欄頭加「未滿 7 天」（沿用 overview.trendV3.incompleteShort）"
+   }
+  ]
+ },
+ "diagnosis.html": {
+  "source": "demo",
+  "g9": {
+   "threshold": "0.00",
+   "max": "1188365.10",
+   "rows": [
+    {
+     "rule": "DISCOUNT_BURDEN_UP",
+     "impact": "-1188365.10",
+     "bar": "1.0000",
+     "outline": false
+    },
+    {
+     "rule": "REV_UP_CM_DOWN",
+     "impact": "-598833.95",
+     "bar": "0.5039",
+     "outline": true
+    },
+    {
+     "rule": "MARKETING_BURDEN_UP",
+     "impact": "-360900.00",
+     "bar": "0.3037",
+     "outline": false
+    },
+    {
+     "rule": "REFUND_BURDEN_UP",
+     "impact": "-264522.72",
+     "bar": "0.2226",
+     "outline": false
+    },
+    {
+     "rule": "FULFILLMENT_BURDEN_UP",
+     "impact": "-75791.00",
+     "bar": "0.0638",
+     "outline": false
+    },
+    {
+     "rule": "NEGATIVE_CHANNEL_CM",
+     "impact": "-61169.93",
+     "bar": null,
+     "outline": false
+    }
+   ]
+  },
+  "g10": {
+   "xMax": 101.5408541833,
+   "rows": [
+    {
+     "key": "DTC",
+     "netRevenue": "3880786.47",
+     "cogsShare": "0.571022952984",
+     "feesAmount": "149787.66",
+     "feesShare": "0.038597243409",
+     "adShare": "0.047417708092",
+     "perHundred": "34.3",
+     "applicable": true
+    },
+    {
+     "key": "MARKETPLACE",
+     "netRevenue": "3969871.43",
+     "cogsShare": "0.699394564524",
+     "feesAmount": "749834.86",
+     "feesShare": "0.188881396595",
+     "adShare": "0.127132580714",
+     "perHundred": "-1.5",
+     "applicable": true
+    },
+    {
+     "key": "total",
+     "netRevenue": "7850657.90",
+     "cogsShare": "0.635937104074",
+     "feesAmount": "899622.52",
+     "feesShare": "0.114591991074",
+     "adShare": "0.087727424730",
+     "perHundred": "16.2",
+     "applicable": true
+    }
+   ]
+  },
+  "g11": {
+   "weekCount": 6,
+   "weekdays": [
+    "一",
+    "二",
+    "三",
+    "四",
+    "五",
+    "六",
+    "日"
+   ],
+   "order": [
+    "MARKETPLACE",
+    "DTC"
+   ],
+   "channels": [
+    {
+     "channel": "DTC",
+     "losingDays": 0,
+     "worst3": [],
+     "worst": null
+    },
+    {
+     "channel": "MARKETPLACE",
+     "losingDays": 32,
+     "worst3": [
+      "2026-08-22",
+      "2026-07-19",
+      "2026-08-16"
+     ],
+     "worst": {
+      "date": "2026-08-22",
+      "value": "-4510.74"
+     }
+    }
+   ],
+   "worstDay": {
+    "channel": "MARKETPLACE",
+    "date": "2026-08-22",
+    "value": "-4510.74",
+    "cell": "−0.45"
+   }
+  },
+  "g12": [
+   {
+    "rate": "discount_rate",
+    "lo": 0,
+    "hi": 0.2,
+    "ticks": [
+     0,
+     0.05,
+     0.1,
+     0.15,
+     0.2
+    ]
+   },
+   {
+    "rate": "refund_ratio",
+    "lo": 0,
+    "hi": 0.05,
+    "ticks": [
+     0,
+     0.01,
+     0.02,
+     0.03,
+     0.04,
+     0.05
+    ]
+   },
+   {
+    "rate": "fulfillment_burden",
+    "lo": 0,
+    "hi": 0.02,
+    "ticks": [
+     0,
+     0.01,
+     0.02
+    ]
+   },
+   {
+    "rate": "marketing_burden",
+    "lo": 0,
+    "hi": 0.1,
+    "ticks": [
+     0,
+     0.02,
+     0.04,
+     0.06,
+     0.08,
+     0.1
+    ]
+   },
+   {
+    "rate": "gross_margin",
+    "lo": 0,
+    "hi": 0.45,
+    "ticks": [
+     0,
+     0.1,
+     0.2,
+     0.3,
+     0.4
+    ]
+   }
+  ],
+  "g7b": {
+   "DTC": [
+    {
+     "start": "2026-07-13",
+     "end": "2026-07-19",
+     "value": "234069.74"
+    },
+    {
+     "start": "2026-07-20",
+     "end": "2026-07-26",
+     "value": "191958.46"
+    },
+    {
+     "start": "2026-07-27",
+     "end": "2026-08-02",
+     "value": "215793.44"
+    },
+    {
+     "start": "2026-08-03",
+     "end": "2026-08-09",
+     "value": "227226.38"
+    },
+    {
+     "start": "2026-08-10",
+     "end": "2026-08-16",
+     "value": "230904.81"
+    },
+    {
+     "start": "2026-08-17",
+     "end": "2026-08-23",
+     "value": "231009.83"
+    }
+   ],
+   "MARKETPLACE": [
+    {
+     "start": "2026-07-13",
+     "end": "2026-07-19",
+     "value": "-19213.19"
+    },
+    {
+     "start": "2026-07-20",
+     "end": "2026-07-26",
+     "value": "-7873.78"
+    },
+    {
+     "start": "2026-07-27",
+     "end": "2026-08-02",
+     "value": "-7371.82"
+    },
+    {
+     "start": "2026-08-03",
+     "end": "2026-08-09",
+     "value": "-8070.38"
+    },
+    {
+     "start": "2026-08-10",
+     "end": "2026-08-16",
+     "value": "-6913.38"
+    },
+    {
+     "start": "2026-08-17",
+     "end": "2026-08-23",
+     "value": "-11727.38"
+    }
+   ]
+  },
+  "proposals": [
+   {
+    "key": "diagnosis.chartsV4.impact.totalNote",
+    "text": "空心條是扣廣告後貢獻的總差額，實心條是各項費用的差額",
+    "chart": "G9"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.feesTitle",
+    "text": "通路費用合計",
+    "chart": "G10",
+    "note": "平台抽成、金流手續費、物流與包材費、其他變動費用四項相加（v4 GLOSSARY #16）"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.notApplicableRow",
+    "text": "不適用",
+    "chart": "G10",
+    "note": "沿用 labels.shell.status.notApplicable，不另立新鍵"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.section",
+    "text": "每 100 元淨營收去向",
+    "chart": "G10",
+    "note": "區塊標準名（v4 GLOSSARY #1），資料表 summary 與 caption 用"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.remain",
+    "text": "剩 34.3 元",
+    "chart": "G10"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.loss",
+    "text": "虧 1.5 元",
+    "chart": "G10"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.title.loss",
+    "text": "平台 · MARKETPLACE 每 100 元淨營收，扣完廣告虧 1.5 元",
+    "chart": "G10",
+    "note": "取每 100 元虧最多的通路"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.subtitle",
+    "text": "每 100 元淨營收去向 · 本期 7/13–8/23 · 官網 · DTC、平台 · MARKETPLACE",
+    "chart": "G10"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.segments.remain",
+    "text": "扣完剩下",
+    "chart": "G10",
+    "note": "圖例的空心框；超過 100 的部分沒有圖例，由右端「虧 n 元」與不利色承擔"
+   },
+   {
+    "key": "diagnosis.chartsV4.share.columns.perHundred",
+    "text": "每 100 元剩",
+    "chart": "G10"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.weekdays.mon",
+    "text": "一",
+    "chart": "G11"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.weekdays.tue",
+    "text": "二",
+    "chart": "G11"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.weekdays.wed",
+    "text": "三",
+    "chart": "G11"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.weekdays.thu",
+    "text": "四",
+    "chart": "G11"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.weekdays.fri",
+    "text": "五",
+    "chart": "G11"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.weekdays.sat",
+    "text": "六",
+    "chart": "G11"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.weekdays.sun",
+    "text": "日",
+    "chart": "G11"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.title.loss",
+    "text": "平台 · MARKETPLACE 有 32 天虧，最差 8/22 −4,511 元",
+    "chart": "G11",
+    "note": "「虧」＝取位到元後仍為負"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.subtitle",
+    "text": "各通路每天的扣廣告後貢獻 · 本期 7/13–8/23 · 格內單位萬元；有底色的是虧的日子，加框的是各通路最差 3 天",
+    "chart": "G11",
+    "note": "顏色只輔助，負值由格內 U+2212 承擔"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.scrollNote",
+    "text": "其餘通路在框內捲動",
+    "chart": "G11",
+    "note": "只在一列放不下全部月曆時顯示（390 與 768）"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.weekHead",
+    "text": "週",
+    "chart": "G11",
+    "note": "列頭寫該週起日（M/D）"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.cellAria",
+    "text": "平台 · MARKETPLACE 7/13 扣廣告後貢獻 −2,075 元，看明細",
+    "chart": "G11",
+    "note": "number-link 的可及名稱帶 L2"
+   },
+   {
+    "key": "diagnosis.chartsV4.heat.caption",
+    "text": "平台 · MARKETPLACE（萬元）",
+    "chart": "G11"
+   },
+   {
+    "key": "diagnosis.chartsV4.rates.summary",
+    "text": "五項比率走勢",
+    "chart": "G12",
+    "note": "<details> 的 summary"
+   },
+   {
+    "key": "diagnosis.chartsV4.rates.title",
+    "text": "五項比率每週走勢",
+    "chart": "G12",
+    "note": "區塊名，不寫結論句、不做跨比率排名"
+   },
+   {
+    "key": "diagnosis.chartsV4.rates.subtitle",
+    "text": "本期 7/13–8/23 與上期各 6 週，以第幾週對齊 · 每張圖的刻度各自不同",
+    "chart": "G12"
+   },
+   {
+    "key": "diagnosis.chartsV4.channelsSpark.head",
+    "text": "近 6 週",
+    "chart": "G7b"
+   },
+   {
+    "key": "diagnosis.chartsV4.channelsSpark.tableTitle",
+    "text": "各通路每週",
+    "chart": "G7b"
+   },
+   {
+    "key": "diagnosis.chartsV4.channelsSpark.caption",
+    "text": "各通路每週扣廣告後貢獻（本期最後 6 週，元）",
+    "chart": "G7b"
+   }
+  ]
+ }
+}
