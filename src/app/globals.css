@@ -2588,7 +2588,10 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-9b 錨點結束 ── */
 
 /* ── V3-10 收尾（上線檢查）：axe target-size（WCAG 2.5.8，serious）——KPI 卡「差額」與「上期」兩個 number-link 的中心只距 20px，24px 的目標圓會相交（貢獻率卡兩行等寬時）；上期行多 4px 上距、卡片底距少 4px，卡片高度與首屏位置不變 ── */
-.kpi { padding-bottom: calc(var(--space-4) - var(--space-1)); }
-.kpi-prev { margin-top: var(--space-1); }
+/* 只在 ≥ 768px：手機版 KPI 卡直排、axe 本來就 0 serious，而且手機的卡片底距由較高優先的規則決定（只加上距會讓首屏多 12px） */
+@media (min-width: 768px) {
+  .kpi { padding-bottom: calc(var(--space-4) - var(--space-1)); }
+  .kpi-prev { margin-top: var(--space-1); }
+}
 
 /* ── V3-10 錨點結束 ── */
