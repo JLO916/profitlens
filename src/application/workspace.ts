@@ -4,7 +4,7 @@ import { periodPresets } from "./period-presets";
 import { aggregatePeriod } from "../domain/aggregation";
 import { analyzeDataset, analyzeProducts } from "../domain/analysis";
 import { dayCount } from "../domain/date";
-import type { AnalysisFilters, Dataset, DatasetInput, Metrics, Period, SourceRef } from "../domain/types";
+import type { AnalysisFilters, Count, Dataset, DatasetInput, Metrics, Period, SourceRef } from "../domain/types";
 
 export interface WeeklyRow {
   label: string;
@@ -14,6 +14,11 @@ export interface WeeklyRow {
   period: "previous" | "current" | "yoy";
   metrics: Metrics;
   sources: SourceRef[];
+  /**
+   * V4-2（G7a，PRD §4.3、§8.8）：該週售出件數，直接取 aggregatePeriod 已回傳的 units_sold（domain 的 Count，不另算）。
+   * 選填：只給 assistWeeks（src/application/chart-assist-weeks.ts）用；不進備份、匯出與 filter_hash，載入時隨快照重算；舊程式組出的週列沒有這一欄。
+   */
+  units_sold?: Count;
 }
 /** 既有 snapshot.weeks 的列（上期與本期）；管理損益表、趨勢 takeaway、抽屜的 weeks.find 都只看這兩期。 */
 export type PeriodWeeklyRow = WeeklyRow & { period: "previous" | "current" };
@@ -88,7 +93,7 @@ function weeklyRows<P extends WeeklyRow["period"]>(dataset: Dataset, selected: P
     const start = dateAt(offset);
     const end = dateAt(Math.min(offset + 6, count - 1));
     const summary = aggregatePeriod(dataset, { start, end }, channels);
-    rows.push({ label: label(offset / 7 + 1), start, end, period, metrics: summary.metrics, sources: summary.sources });
+    rows.push({ label: label(offset / 7 + 1), start, end, period, metrics: summary.metrics, sources: summary.sources, units_sold: summary.units_sold });
   }
   return rows;
 }

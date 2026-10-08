@@ -2642,6 +2642,30 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-1 C 錨點結束 ── */
 
 /* ── V4-2 A：C19 Sparkline、C33 ChartDataTable、G7a 其他常用指標表「近 {n} 週」 ── */
+/* C19 Sparkline（PRD §6.2、§4.4 G7）：根 svg 的 width、height 屬性就是顯示尺寸（64 × --chart-h-xs），不縮放；放在表格格內垂直置中。
+   線與點的色由元件經 chartColors 給（只引用 token）；aria-hidden、不可聚焦，所以這裡沒有 hover、focus 樣式。 */
+.spark { display: block; flex: none; overflow: visible; }
+/* G7a 兩張緊湊表的「近 {n} 週」欄：欄頭與格靠右、不換行；列高沿用 .kv（sparkline 高 16 放在列內，列高不變，PRD §5.1 第 8 列）。 */
+.kv th.spark-head { text-align: right; white-space: nowrap; }
+.kv td.spark-cell { width: 1%; white-space: nowrap; }
+.kv td.spark-cell .spark { margin-left: auto; }
+/* 多了一欄 64px 的 sparkline，兩張表並排需要約 700px：面板較窄的 768–1099px 改成上下一欄（同手機，第二張表不重複表頭），避免左表溢出到右表。 */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .assist-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .assist-grid .kv + .kv thead { display: none; }
+}
+/* ≤ 767px：sparkline 欄只留左側 4px 間距（右側貼齊表格邊），390 寬的表格不超出面板內容區。 */
+@media (max-width: 767px) {
+  .kv th.spark-head, .kv td.spark-cell { padding-right: 0; padding-left: var(--space-1); }
+}
+/* C33 資料表（PRD §6.3、CHART_CATALOG §1.4）：沿用 .table-scroll＋.ui-table（compact 列高、數字欄靠右 tabular）；欄頭第二行以後（起訖、「未滿 7 天」）是小字。
+   caption 在表格上方、靠左，同 V3 匯入精靈的資料表；表格之後的說明句沿用 .note。 */
+.chart-data-table caption { caption-side: top; padding: var(--space-2) var(--cell-px); text-align: left; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
+.chart-data-table thead th small { display: block; font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-regular); color: var(--text-tertiary); }
+.chart-data-table thead th { height: auto; padding-top: var(--space-1); padding-bottom: var(--space-1); }
+.chart-data-table tbody th { white-space: nowrap; }
+.chart-data-table td.is-empty { color: var(--text-tertiary); }
+.chart-data-scroll + .note { margin: var(--space-2) 0 0; }
 /* ── V4-2 A 錨點結束 ── */
 
 /* ── V4-2 B：G3 趨勢刻度、G4 各通路緊湊表差額條 ── */

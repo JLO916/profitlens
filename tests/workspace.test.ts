@@ -55,6 +55,28 @@ describe("M2 application snapshot", () => {
     expect(snapshot.weeks.every(week => week.sources.length > 0)).toBe(true);
   });
 
+  it("V4-2 G7a：每週列帶 aggregatePeriod 已回傳的 units_sold（domain Count）；兩期各自逐週加總＝期間件數；其他欄位不變", async () => {
+    const input = fixture("demo");
+    const dataset = load(input);
+    const snapshot = await createSnapshot(dataset, {}, await hashInput(input));
+    for (const period of ["previous", "current"] as const) {
+      const weeks = snapshot.weeks.filter(week => week.period === period);
+      expect(weeks.every(week => week.units_sold !== undefined && typeof week.units_sold.value === "bigint" && week.units_sold.reason_codes.length === 0), period).toBe(true);
+      expect(weeks.reduce((sum, week) => sum + week.units_sold!.value!, 0n), period).toBe(snapshot.report[period].units_sold.value);
+    }
+    // 本期 7,420 件（tests/chart-assist-weeks.test.ts 另以 CSV 逐列加總驗每週）。
+    expect(snapshot.report.current.units_sold.value).toBe(7420n);
+    // 週列的鍵：V3 既有七個＋選填 units_sold；filter_hash 只看 report.scope（不受週列影響）。
+    expect(Object.keys(snapshot.weeks[0]).sort()).toEqual(["end", "label", "metrics", "period", "sources", "start", "units_sold"]);
+    const again = await createSnapshot(dataset, {}, await hashInput(input));
+    expect(again.filter_hash).toBe(snapshot.filter_hash);
+  });
+
+  it("V4-2：短期間的未滿週也帶該週件數；golden 本期 1 天 8 件", async () => {
+    const golden = await createSnapshot(load(fixture("golden")), {}, await hashInput(fixture("golden")));
+    expect(golden.weeks.map(week => [week.period, week.start, week.end, week.units_sold?.value])).toEqual([["previous", "2026-08-01", "2026-08-01", 6n], ["current", "2026-08-02", "2026-08-02", 8n]]);
+  });
+
   it("short custom periods keep final partial weeks and share active channel scope", async () => {
     const input = fixture("demo");
     const snapshot = await createSnapshot(load(input), { channels: ["DTC"], previous_period: { start: "2026-06-02", end: "2026-06-09" }, current_period: { start: "2026-07-14", end: "2026-07-21" } }, await hashInput(input));
