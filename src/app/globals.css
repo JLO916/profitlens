@@ -2691,6 +2691,16 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-2 C 錨點結束 ── */
 
 /* ── V4-3a A：C27 ShareStack、G10 每 100 元淨營收去向、抽屜 percent ── */
+/* C27（PRD §6.3、§4.4 G10）：量寬容器只是區塊；svg 寬 100%、高＝（通路數＋2）× 24（元件給 height 屬性），固定高由外框 .chart-frame.sm／.lg 負責。
+   列名與 x 軸刻度 12px；合計列的列名加粗；不適用、資料待補的列只有文字（次要色）；虧的標值沿用 .chart-frame .chart-value.is-unfavorable。 */
+.share-stack-measure { display: block; width: 100%; }
+.chart-share-stack { display: block; width: 100%; font-family: var(--font-sans); }
+.chart-share-stack text { font-size: var(--text-12); fill: var(--text-secondary); pointer-events: none; }
+.chart-share-stack .share-label.is-strong { fill: var(--text-primary); font-weight: var(--weight-semibold); }
+.chart-share-stack .share-axis text { fill: var(--chart-axis); }
+.chart-share-stack .share-seg.is-clickable { cursor: pointer; }
+/* 資料表最後一欄「每 100 元淨營收」（剩／虧 {n} 元）與金額欄一樣靠右、不換行。 */
+.share-data-table td:last-child { text-align: right; white-space: nowrap; }
 /* ── V4-3a A 錨點結束 ── */
 
 /* ── V4-3a B：G7b 通路寬表「近 {n} 週」與「各通路每週」 ── */

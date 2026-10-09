@@ -4,7 +4,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AST_RULES, checkChartMarkup, scanChartTsx, scanChartVarLiterals } from "../scripts/lib/chart-scan.mjs";
-import { chartColors, chartHeights } from "../src/application/chart-theme";
+import { chartColors, chartHeights, chartRowHeights } from "../src/application/chart-theme";
+import { SHARE_STACK_LABEL_WIDTH, SHARE_STACK_SSR_WIDTH, SHARE_STACK_VALUE_WIDTH, ShareStack, shareStackGeometry, type ShareStackRowInput } from "../src/components/charts/share-stack";
 import { SPARK_DOT_R, SPARK_PAD, SPARK_STROKE, SPARK_WIDTH, Sparkline, sparklineGeometry, type SparklinePoint } from "../src/components/charts/sparkline";
 import { byTestId, openTag } from "./helpers/markup";
 
@@ -140,6 +141,139 @@ describe("Sparkline：SSR 結構（C19；CL-1、CL-3、CL-10、CL-11）", () => 
 
   it("原始碼：AST 規則（CL-2 到 CL-8、CL-10）0 違規；沒有 `var(--chart-` 字串常值（色一律經 chartColors）", () => {
     const file = "src/components/charts/sparkline.tsx";
+    const text = readFileSync(resolve(file), "utf8");
+    const result = scanChartTsx(text, file);
+    for (const rule of AST_RULES) expect(result[rule], rule).toEqual([]);
+    expect(scanChartVarLiterals(text, file)).toEqual([]);
+  });
+});
+
+// V4-3a 代理 A：C27 shareStackGeometry（PRD §6.3 C27、§4.4 G10、§7.2；CHART_CATALOG G10）。輸入是 golden 本期 8/2 的比率字串（與 profitWaterfall、channelStructure 相同的 12 位小數），
+// 只當圖形座標；座標系寬 1122（H5 設計稿 1440 的圖區寬）：列名欄 152、圖 160 到 1034、標值 1042；x 軸上限＝max(100, 扣項合計)＝101.5151515152（MARKETPLACE）。
+describe("shareStackGeometry（C27）：段寬、超過 100、x 軸上限與列高", () => {
+  const GOLDEN: ShareStackRowInput[] = [
+    // DTC：商品成本 740 ÷ 1480、四項費用 200 ÷ 1480、廣告 270 ÷ 1480、剩 270 ÷ 1480
+    { key: "DTC", label: "DTC", status: "ready", cogs: "0.500000000000", fees: "0.135135135135", ad: "0.182432432432", remain: "0.182432432432", over: "0.000000000000", value: "a", tone: "remain" },
+    // MARKETPLACE：585 ÷ 990、240 ÷ 990、180 ÷ 990；扣廣告後貢獻 −15 ÷ 990；超過 100 的部分 15 ÷ 990
+    { key: "MARKETPLACE", label: "MARKETPLACE", status: "ready", cogs: "0.590909090909", fees: "0.242424242424", ad: "0.181818181818", remain: "-0.015151515152", over: "0.015151515152", value: "b", tone: "loss" },
+    // 合計：1325 ÷ 2470、440 ÷ 2470、450 ÷ 2470、255 ÷ 2470
+    { key: "total", label: "total", status: "ready", cogs: "0.536437246964", fees: "0.178137651822", ad: "0.182186234818", remain: "0.103238866397", over: "0.000000000000", value: "c", tone: "remain", total: true },
+  ];
+  const AXIS_MAX = "1.015151515152";
+  const segmentsOf = (result: ReturnType<typeof shareStackGeometry>, key: string) => Object.fromEntries(result.rows.find(row => row.key === key)!.segments.map(segment => [segment.segment, segment]));
+  const end = (segment: { x: number; width: number }) => Math.round((segment.x + segment.width) * 10) / 10;
+
+  it("座標系：寬 1122 時列名欄 152、圖 160 到 1034、標值 1042；高＝（列數＋1）× chartRowHeights.row24（3 列＝96）；刻度 0、25、50、75、100", () => {
+    const result = shareStackGeometry(GOLDEN, { width: 1122, axisMax: AXIS_MAX });
+    expect([result.width, result.height]).toEqual([1122, (GOLDEN.length + 1) * chartRowHeights.row24]);
+    expect(result.height).toBe(96);
+    expect(result.plot).toEqual({ left: SHARE_STACK_LABEL_WIDTH.wide + 8, right: 1122 - SHARE_STACK_VALUE_WIDTH.wide });
+    expect([result.labelX, result.valueX]).toEqual([152, 1042]);
+    expect(result.scaleMax).toBeCloseTo(101.5151515152, 9);
+    // x(v)＝160＋v ÷ 101.5151… × 874：25 → 375.2、50 → 590.5、75 → 805.7、100 → 1021.0。
+    expect(result.ticks).toEqual([{ value: 0, x: 160, label: "0" }, { value: 25, x: 375.2, label: "25" }, { value: 50, x: 590.5, label: "50" }, { value: 75, x: 805.7, label: "75" }, { value: 100, x: 1021, label: "100" }]);
+    expect(result.x100).toBe(1021);
+    expect(result.rows.map(row => row.y)).toEqual([0, 24, 48]);
+    expect(result.separatorY).toBe(48.5);
+    expect(result.axisTextY).toBe(3 * 24 + 16);
+  });
+
+  it("超過 100（MARKETPLACE）：三段從 0 接續、在 100 截斷，over 段從 100 到 x 軸上限（874 × 1.5151… ÷ 101.5151… ≈ 13.0），沒有剩餘段", () => {
+    const result = shareStackGeometry(GOLDEN, { width: 1122, axisMax: AXIS_MAX });
+    const marketplace = segmentsOf(result, "MARKETPLACE");
+    expect(Object.keys(marketplace)).toEqual(["cogs", "fees", "ad", "over"]);
+    expect(marketplace.cogs.x).toBe(160);
+    expect(marketplace.fees.x).toBe(end(marketplace.cogs));
+    expect(marketplace.ad.x).toBe(end(marketplace.fees));
+    expect(end(marketplace.ad)).toBe(result.x100);
+    expect(marketplace.over).toEqual({ segment: "over", x: result.x100, width: 13 });
+    expect(end(marketplace.over)).toBe(result.plot.right);
+  });
+
+  it("沒有超過（DTC、合計）：剩餘段從 100 − 剩往右到 100（DTC 874 × 18.2432… ÷ 101.5151… ≈ 157.1）；沒有 over 段", () => {
+    const result = shareStackGeometry(GOLDEN, { width: 1122, axisMax: AXIS_MAX });
+    const dtc = segmentsOf(result, "DTC");
+    expect(Object.keys(dtc)).toEqual(["cogs", "fees", "ad", "remain"]);
+    expect(dtc.remain.width).toBe(157.1);
+    expect(end(dtc.remain)).toBe(result.x100);
+    expect(dtc.remain.x).toBe(end(dtc.ad));
+    const total = segmentsOf(result, "total");
+    expect(end(total.remain)).toBe(result.x100);
+  });
+
+  it("x 軸上限：沒給 axisMax 時由 over 推回同一個值；扣項都沒超過時是 100（右端就是 100 的位置）", () => {
+    expect(shareStackGeometry(GOLDEN, { width: 1122 }).scaleMax).toBeCloseTo(101.5151515152, 9);
+    const notOver = GOLDEN.filter(row => row.key !== "MARKETPLACE");
+    const result = shareStackGeometry(notOver, { width: 1122, axisMax: "1.000000000000" });
+    expect(result.scaleMax).toBe(100);
+    expect(result.x100).toBe(result.plot.right);
+    expect(shareStackGeometry(notOver, { width: 1122 }).scaleMax).toBe(100);
+  });
+
+  it("zero_ad（廣告 0）：廣告段寬 0；不適用、資料待補的列沒有段（只畫文字）", () => {
+    const zero: ShareStackRowInput = { ...GOLDEN[0], ad: "0.000000000000", remain: "0.364864864865" };
+    expect(segmentsOf(shareStackGeometry([zero], { width: 1122 }), "DTC").ad.width).toBe(0);
+    const text = shareStackGeometry([{ ...GOLDEN[0], status: "notApplicable", tone: "muted" }, { ...GOLDEN[1], key: "LIVE", status: "missing", tone: "muted" }], { width: 1122 });
+    expect(text.rows.map(row => row.segments)).toEqual([[], []]);
+    expect(text.scaleMax).toBe(100);
+  });
+
+  it("390（座標系寬 324）：列名欄 128、標值欄 64；列高與總高不變", () => {
+    const result = shareStackGeometry(GOLDEN, { width: 324, axisMax: AXIS_MAX });
+    expect(result.plot).toEqual({ left: SHARE_STACK_LABEL_WIDTH.narrow + 8, right: 324 - SHARE_STACK_VALUE_WIDTH.narrow });
+    expect([result.labelX, result.valueX]).toEqual([128, 268]);
+    expect(result.height).toBe(96);
+  });
+
+  it("（列數＋2）× 24 ≤ 所選固定高：通路 5 用 sm（7 × 24＝168 ≤ 180）、通路 8 用 lg（10 × 24＝240 ≤ 320）", () => {
+    const rows = (count: number): ShareStackRowInput[] => [...Array.from({ length: count }, (_, index) => ({ ...GOLDEN[0], key: `C${index + 1}` })), GOLDEN[2]];
+    const five = shareStackGeometry(rows(5), { width: 1122 }), eight = shareStackGeometry(rows(8), { width: 1122 });
+    expect(five.height).toBe((5 + 2) * chartRowHeights.row24);
+    expect(five.height).toBeLessThanOrEqual(chartHeights.sm);
+    expect(eight.height).toBe((8 + 2) * chartRowHeights.row24);
+    expect(eight.height).toBeLessThanOrEqual(chartHeights.lg);
+    expect(eight.height).toBeGreaterThan(chartHeights.sm);
+  });
+});
+
+describe("ShareStack：SSR 結構（C27；CL-3、CL-7、CL-10、CL-11）", () => {
+  const rows: ShareStackRowInput[] = [
+    { key: "DTC", label: "DTC", status: "ready", cogs: "0.5", fees: "0.135135135135", ad: "0.182432432432", remain: "0.182432432432", over: "0.000000000000", value: "a", tone: "remain" },
+    { key: "MARKETPLACE", label: "MARKETPLACE", status: "ready", cogs: "0.590909090909", fees: "0.242424242424", ad: "0.181818181818", remain: "-0.015151515152", over: "0.015151515152", value: "b", tone: "loss" },
+  ];
+  const render = () => renderToStaticMarkup(createElement(ShareStack, { rows, axisMax: "1.015151515152", testIdPrefix: "chart-diagnosis-share-seg-" }));
+
+  it("根 svg.chart-share-stack：aria-hidden、focusable=false、高＝（列數＋1）× 24；段帶 testid（前綴＋key＋segment）；沒有 tabindex、按鈕、連結與色碼", () => {
+    const html = render();
+    const root = openTag(html, "<svg")!;
+    expect(root).toContain('class="chart-share-stack"');
+    expect(root).toContain('aria-hidden="true"');
+    expect(root).toContain('focusable="false"');
+    expect(root).toContain(`height="${3 * chartRowHeights.row24}"`);
+    expect(root).toContain(`viewBox="0 0 ${SHARE_STACK_SSR_WIDTH} ${3 * chartRowHeights.row24}"`);
+    expect(html.match(/data-testid="chart-diagnosis-share-seg-[^"]+"/g)!.map(item => item.slice(13, -1))).toEqual([
+      "chart-diagnosis-share-seg-DTC-cogs", "chart-diagnosis-share-seg-DTC-fees", "chart-diagnosis-share-seg-DTC-ad", "chart-diagnosis-share-seg-DTC-remain",
+      "chart-diagnosis-share-seg-MARKETPLACE-cogs", "chart-diagnosis-share-seg-MARKETPLACE-fees", "chart-diagnosis-share-seg-MARKETPLACE-ad", "chart-diagnosis-share-seg-MARKETPLACE-over",
+    ]);
+    expect(html).not.toMatch(/tabindex|<button|<a\b/i);
+    expect(html).not.toMatch(HEX);
+    const check = checkChartMarkup(`<section class="panel chart-section" aria-describedby="s"><p id="s">s</p><div class="chart-frame sm" aria-hidden="true">${html}</div><details class="data-alternative"><summary>t</summary></details></section>`, { page: "diagnosis" });
+    for (const rule of ["CL-1", "CL-2", "CL-11"] as const) expect(check.violations[rule], rule).toEqual([]);
+  });
+
+  it("色：三段 seg1／seg2／seg3、段間 1px chartColors.surface（D-V4-19＝B）；剩餘空心框 chartColors.total；超過 100 的部分 chartColors.unfavorable；100 參考線 chartColors.axis", () => {
+    const html = render();
+    const seg = (id: string) => openTag(html, `data-testid="chart-diagnosis-share-seg-${id}"`)!;
+    expect(seg("DTC-cogs")).toContain(`fill="${chartColors.seg1}" stroke="${chartColors.surface}" stroke-width="1"`);
+    expect(seg("DTC-fees")).toContain(`fill="${chartColors.seg2}"`);
+    expect(seg("DTC-ad")).toContain(`fill="${chartColors.seg3}"`);
+    expect(seg("DTC-remain")).toContain(`fill="none" stroke="${chartColors.total}" stroke-width="1.5"`);
+    expect(seg("MARKETPLACE-over")).toContain(`fill="${chartColors.unfavorable}"`);
+    expect(openTag(html, 'class="share-reference"')).toContain(`stroke="${chartColors.axis}"`);
+  });
+
+  it("原始碼：AST 規則（CL-2 到 CL-8、CL-10）0 違規；沒有 `var(--chart-` 字串常值", () => {
+    const file = "src/components/charts/share-stack.tsx";
     const text = readFileSync(resolve(file), "utf8");
     const result = scanChartTsx(text, file);
     for (const rule of AST_RULES) expect(result[rule], rule).toEqual([]);

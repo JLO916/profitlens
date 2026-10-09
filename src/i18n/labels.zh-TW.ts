@@ -849,7 +849,46 @@ export const diagnosis = {
   // ── V4-3a 錨點：通路健檢圖表字串（代理 A：share；代理 B：channelsSpark；代理 C：impact）
   chartsV4: {
     impact: {},
-    share: {},
+    /**
+     * V4-3a 代理 A：G10 每 100 元淨營收去向（PRD §4.1–§4.7 G10；CHART_CATALOG G10；v4 GLOSSARY #1、#2、#16；H5 設計稿頁尾清單）。
+     * 圖例與資料表欄名的指標名取 metricDefinitions（商品成本、廣告費、各項費用），四項合計用 feesTitle；不適用、資料待補沿用 shell.status。
+     */
+    share: {
+      /** 區塊標準名（GLOSSARY v4 #1）：副標第一段、資料表 summary（「表格 · 每 100 元淨營收去向」）與 caption 都用它。 */
+      section: "每 100 元淨營收去向",
+      /**
+       * 結論標題：有虧損通路時取每 100 元虧最多的通路（loss），否則取剩最少的通路（least），同值依通路代碼；{channel}＝通路名稱（示範資料用 alias），{n}＝一位小數的元數（絕對值）。
+       * 全部通路都不適用（沒有任何一個通路能畫，例如 refund_only）時用 notApplicable，副標說明原因。「扣完廣告」與 G2 的 overview.profit.title 同一寫法。
+       */
+      title: {
+        loss: "{channel} 每 100 元淨營收，扣完廣告虧 {n} 元",
+        least: "{channel} 每 100 元淨營收，扣完廣告剩 {n} 元，最少",
+        notApplicable: "每 100 元淨營收去向，各通路都不適用",
+      },
+      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{period}＝本期起訖（M/D–M/D），{scope}＝範圍內的通路。 */
+      subtitle: "{section} · 本期 {period} · {scope}",
+      /** 有不適用的通路時的副標：{subtitle}＝上一句，{channels}＝不適用的通路（該列改成文字「不適用」）。 */
+      subtitleNote: "{subtitle}。{channels}的扣項有負數，或淨營收為 0 或負數，改以文字列出",
+      /** 圖例：空心框的剩餘段（超過 100 的部分沒有圖例，由列右端「虧 {n} 元」與不利色承擔）。 */
+      segments: { remain: "扣完剩下" },
+      /** 每列右端的標值：{n}＝每 100 元剩下或虧掉的元數（一位小數、絕對值）；資料表「每 100 元淨營收」欄也用同一句。 */
+      remain: "剩 {n} 元",
+      loss: "虧 {n} 元",
+      /** 四項通路費用合計（GLOSSARY v4 #16）：圖例、資料表欄名與四項費用段的抽屜標題。 */
+      feesTitle: "通路費用合計",
+      /** 四項費用段的抽屜「指標定義與算法」（name 只借 platform_fees 的金額單位，不顯示平台抽成的定義）。 */
+      feesDefinition: "平台抽成、金流手續費、物流與包材費、其他變動費用四項相加。",
+      /** 抽屜「計算方式」：四個占位符依序是四項費用的指標名（metricDefinitions）。 */
+      feesFormula: "{platform} ＋ {payment} ＋ {fulfillment} ＋ {other}",
+      /** 抽屜技術細節的算式（版本 channel-structure-v1 另列在 metric_version）。 */
+      feesTechnical: "fees = P + Q + F + O（四項費用逐列相加，到分）",
+      /** 資料表最後一欄（每 100 元淨營收剩或虧幾元，格內用 remain／loss 那一句）。 */
+      columns: { perHundred: "每 100 元淨營收" },
+      /** 資料表 caption（同時是捲動區的可及名稱）：{section}＝區塊標準名，{period}＝本期起訖。 */
+      caption: "{section}（本期 {period}）",
+      /** 通路超過上限時圖區的說明（state="empty"）：{count}＝範圍內通路數，{n}＝上限。 */
+      tooMany: "範圍內有 {count} 個通路，超過 {n} 個時只列資料表；數字見下方資料表與各通路兩期比較",
+    },
     channelsSpark: {},
   },
 } as const;
@@ -2017,6 +2056,15 @@ export const evidence = {
      * 那個整理函式的版本（例如 assist-weeks-v1）；指標本身的算法版本仍看 metric_version（contribution-v1 或 assist-kpi-v1）。
      */
     arrangeVersion: "圖表整理版本",
+    // ── V4-3a 錨點：抽屜的百分比證據（代理 A：unitOverride "percent"，D-V3-31＝B、D-V4-32＝A；管理損益表「佔淨營收 %」欄）
+    percent: {
+      /** 「計算方式」：{numerator}＝該列指標名，{denominator}＝淨營收的指標名。 */
+      formula: "{numerator} ÷ {denominator}",
+      /** 「指標定義與算法」：{metric}＝該列指標名。 */
+      definition: "本期{metric}合計佔本期淨營收合計的比率；淨營收為 0 或負數時不適用。",
+      /** 技術細節的算式：{numerator}、{denominator}＝欄位代碼。 */
+      formulaTechnical: "{numerator} / {denominator}（ratioMetric，12 位小數）",
+    },
   },
 } as const;
 
