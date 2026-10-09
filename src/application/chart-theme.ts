@@ -20,6 +20,10 @@ export const chartColors = {
   seg1: "var(--chart-seg-1)",
   seg2: "var(--chart-seg-2)",
   seg3: "var(--chart-seg-3)",
+  /** V4-3b（PRD §6.5，D-V4-17）：G11 熱表兩階的底色（只有兩階，X33）與新圖的資料待補虛線框。 */
+  heat1: "var(--chart-heat-1)",
+  heat2: "var(--chart-heat-2)",
+  missing: "var(--chart-missing)",
   connector: "var(--border-strong)",
   surface: "var(--bg-surface)",
 } as const;

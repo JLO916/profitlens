@@ -31,6 +31,8 @@
   /* 原始色階：狀態 */
   --red-50: #fbeeec;
   --red-600: #b03a2e;
+  /* V4-3b（D-V4-18；值取 V4-0-baseline §13 試算 t＝0.25，H5 設計稿同值）：熱表階 2 底色 */
+  --red-100: #ebcecb;
   --amber-50: #fdf3dc;
   --amber-700: #8a5a00;
 
@@ -86,6 +88,10 @@
   --chart-seg-1: var(--gray-700);
   --chart-seg-2: var(--gray-500);
   --chart-seg-3: var(--gray-400);
+  /* V4-3b（PRD §6.5，D-V4-17、18）：G11 熱表兩階（階 1＝取位到元後仍為負；階 2＝該通路最差 3 天，加不利色框線）與新圖的資料待補虛線框 */
+  --chart-heat-1: var(--unfavorable-subtle);
+  --chart-heat-2: var(--red-100);
+  --chart-missing: var(--gray-400);
 
   /* 字體（§9.2：不換字型、不載入網路字型）*/
   --font-sans: Arial, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
@@ -2744,3 +2750,9 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
   .diagnosis-panel .diagnosis-list[data-impact-bars] .diagnosis-impact { gap: var(--space-2); }
 }
 /* ── V4-3a C 錨點結束 ── */
+
+/* ── V4-3b A：C28 HeatTable、G11 日 × 通路月曆熱表、ChartFrame mode="table" ── */
+/* ── V4-3b A 錨點結束 ── */
+
+/* ── V4-3b B：C26 SmallMultiples、G12 五項比率每週走勢、抽屜日期與 SKU 片語 ── */
+/* ── V4-3b B 錨點結束 ── */

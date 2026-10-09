@@ -51,6 +51,9 @@ export const PAIRS = [
   ...nonText("--chart-seg-1", ["--bg-surface"], "V4-3a G10 商品成本段"),
   ...nonText("--chart-seg-2", ["--bg-surface"], "V4-3a G10 四項通路費用段"),
   ...nonText("--chart-seg-3", ["--bg-surface"], "V4-3a G10 廣告費段（相鄰段靠 1px 分隔線，D-V4-19＝B）"),
+  ...text("--text-primary", ["--chart-heat-1", "--chart-heat-2"], "V4-3b G11 熱表格內數字（階 1、階 2 底色）"),
+  ...nonText("--chart-unfavorable", ["--chart-heat-2", "--bg-surface"], "V4-3b G11 熱表階 2（最差 3 天）的框線"),
+  ...nonText("--chart-missing", ["--bg-surface"], "V4-3b 新圖的資料待補虛線框"),
 ];
 
 export const THRESHOLDS = { text: 4.5, "non-text": 3 };

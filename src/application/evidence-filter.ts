@@ -10,6 +10,10 @@ import { formatPeriodL1, type EvidenceRow } from "./presentation";
 export interface EvidenceFilter {
   week?: { start: string; end: string; label: string };
   channel?: string;
+  /** V4-3b（G11 熱表格下鑽，PRD §8.7）：單日 YYYY-MM-DD；過濾與片語由代理 B 實作。 */
+  date?: string;
+  /** V4-3b：商品代碼；只和商品層證據一起用，sku 條件下沒有 sku 欄位的通路費用與廣告列一律不列入。過濾與片語由代理 B 實作。 */
+  sku?: string;
 }
 
 /** 有沒有任何一個篩選條件（空物件與 undefined 都當作沒有篩選）。 */

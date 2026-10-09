@@ -189,6 +189,8 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null 
   <DiagnosisList snapshot={snapshot} groups={summary.diagnosis} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} />
   {/* ── V4-3a A：G10 每 100 元淨營收去向插在這裡（健檢清單之後、通路寬表之前；06 V4-0a 第 9 項的畫面 10 範圍） */}
   <ShareSection snapshot={snapshot} onEvidence={onEvidence} />
+  {/* ── V4-3b A：G11 日 × 通路月曆熱表插在這裡（G10 之後） */}
+  {/* ── V4-3b B：G12 五項比率每週走勢（<details>，收合時掛載）插在這裡（G11 之後、通路寬表之前） */}
   <section className="panel channel-compare" aria-labelledby="channel-table-heading" data-testid="channel-compare">
     <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{channelsLabel(summary.scope.channels, alias)}</span></div>
     <p className="sub">{diagnosisPanel.channelTableCaution}</p>

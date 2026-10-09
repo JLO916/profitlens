@@ -5,7 +5,7 @@ import { chartCategoryColors, chartColors, chartFontSize, chartHeights, chartRow
 
 // V3-4b 圖表色集中在 chart-theme.ts（PRD §9.5）：值一律是 :root 的 var() token，不寫色碼；瀏覽器端用 getComputedStyle 讀實際值。
 
-const KEYS = ["current", "previous", "yoy", "total", "unfavorable", "favorable", "other", "grid", "axis", "band", "target", "seg1", "seg2", "seg3", "connector", "surface"];
+const KEYS = ["current", "previous", "yoy", "total", "unfavorable", "favorable", "other", "grid", "axis", "band", "target", "seg1", "seg2", "seg3", "heat1", "heat2", "missing", "connector", "surface"];
 const ROOT_TOKENS = (() => {
   const css = readFileSync(resolve("src/app/globals.css"), "utf8");
   const root = css.slice(css.indexOf(":root {"), css.indexOf("}", css.indexOf(":root {")));
