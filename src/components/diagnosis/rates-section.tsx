@@ -14,6 +14,7 @@ import { multiplesFrameStyle, rateAxis, SmallMultiples, type SmallMultiplePanel,
 import type { EvidenceSelection } from "../evidence-drawer";
 import { ChartFrame, coordinate, type ChartLegendItem } from "../overview/charts/chart-frame";
 import { weekEvidence, YOY_LINE } from "../overview/charts/trend-section";
+import { useDeferredMount } from "../charts/deferred-mount";
 
 // V4-3b 代理 B：G12 五項比率每週走勢（PRD §4.1–§4.7 G12、§5.2 第 5 列、§7.2、§7.4 X40；CHART_CATALOG G12；H5 設計稿 diagnosis.html）。
 // 健檢頁 G11 之後、通路寬表之前的 <details class="chart-more">（summary「五項比率走勢」），收合時保持掛載（M1）；在 <details> 內，不算主層獨立圖（CL-9、X37）。
@@ -116,6 +117,8 @@ export interface RatesSectionProps {
 /** 健檢頁 G12：<details class="chart-more">＋ChartFrame（id rates、testid chart-diagnosis-rates）＋C26 SmallMultiples＋C33 資料表。 */
 export function RatesSection({ snapshot, onEvidence }: RatesSectionProps) {
   const model = useMemo(() => ratesModel(snapshot), [snapshot]);
+  // V4-3b：小倍數延後一拍渲染（390 切到通路健檢的 TBT；<details> 收合時區塊與資料表照常掛載），之前由同高的 loading 骨架佔位；SSR 與單元測試不延後。
+  const ready = useDeferredMount();
   const anchor = snapshot.data_as_of;
   const legend: ChartLegendItem[] = [
     { key: "current", label: frameCopy.legend.current, color: chartColors.current },
@@ -148,8 +151,8 @@ export function RatesSection({ snapshot, onEvidence }: RatesSectionProps) {
   return <details className="chart-more rates-more" style={multiplesFrameStyle(RATE_METRICS.length)}>
     <summary>{copy.summary}</summary>
     <ChartFrame id="rates" page="diagnosis" className="rates-section" title={copy.title} subtitle={model.subtitle} legend={legend} height="sm" frameClassName="multiples"
-      state={model.rows.length === 0 ? "empty" : undefined} dataTable={dataTable}>
-      {model.rows.length === 0 ? null : <SmallMultiples panels={model.panels} xLabels={model.xLabels} onPoint={onPoint} />}
+      state={model.rows.length === 0 ? "empty" : ready ? undefined : "loading"} dataTable={dataTable}>
+      {model.rows.length === 0 || !ready ? null : <SmallMultiples panels={model.panels} xLabels={model.xLabels} onPoint={onPoint} />}
     </ChartFrame>
   </details>;
 }

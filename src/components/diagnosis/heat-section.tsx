@@ -12,6 +12,7 @@ import { fill, labels } from "@/i18n";
 import { HeatTable, type HeatPosition, type HeatTableCell, type HeatTableSpec } from "../charts/heat-table";
 import type { EvidenceSelection } from "../evidence-drawer";
 import { ChartFrame } from "../overview/charts/chart-frame";
+import { useDeferredMount } from "../charts/deferred-mount";
 
 // V4-3b 代理 A：G11 日 × 通路月曆熱表（PRD §4.1–§4.7 G11、§5.2 第 4 列、§7.4–§7.6；CHART_CATALOG G11；D-V4-17＝A）。
 // 健檢頁 G10 之後（src/components/workspace-panels.tsx 的 Diagnosis「V4-3b A」插入點）；主層常駐獨立圖區塊第 2 張（CL-9）。
@@ -151,6 +152,8 @@ export interface HeatSectionProps {
 /** 健檢頁 G11：ChartFrame（id heat、testid chart-diagnosis-heat、mode table、lg）＋C28 HeatTable。 */
 export function HeatSection({ snapshot, onEvidence }: HeatSectionProps) {
   const model = useMemo(() => heatSectionModel(snapshot), [snapshot]);
+  // V4-3b：表格內容延後一拍渲染（390 切到通路健檢的 TBT），之前由同高的 loading 骨架佔位；SSR 與單元測試不延後（deferred-mount.ts）。
+  const ready = useDeferredMount();
   const heatmap = model.result.heatmap;
   const onActivate = (position: HeatPosition) => {
     if (heatmap === null) return;
@@ -163,7 +166,7 @@ export function HeatSection({ snapshot, onEvidence }: HeatSectionProps) {
     ? <>{model.subtitle}<span className="heat-scroll-note" data-columns={model.columnsNeeded}>{fill(copy.scrollNoteJoin, { note: copy.scrollNote })}</span></>
     : model.subtitle;
   return <ChartFrame id="heat" page="diagnosis" className="heat-section" title={model.title} subtitle={subtitle} height="lg" mode="table" frameClassName="heat"
-    state={heatmap === null ? "empty" : undefined} message={model.message ?? undefined}>
-    {heatmap === null ? null : <HeatTable tables={model.tables} layout={heatmap.mode === "weekly" ? "matrix" : "calendar"} onActivate={onActivate} />}
+    state={heatmap === null ? "empty" : ready ? undefined : "loading"} message={model.message ?? undefined}>
+    {heatmap === null || !ready ? null : <HeatTable tables={model.tables} layout={heatmap.mode === "weekly" ? "matrix" : "calendar"} onActivate={onActivate} />}
   </ChartFrame>;
 }
