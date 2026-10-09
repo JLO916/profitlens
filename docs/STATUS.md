@@ -4,7 +4,7 @@
 
 V4-3b 依 06_BATCHES 完成：G11 日 × 通路月曆熱表（`dailyHeatmap`／`daily-heatmap-v1`、C28 HeatTable、ChartFrame `mode="table"`、`formatHeatCell`；整張 1 個 Tab 停留點，Enter 開當日抽屜）；G12 五項比率每週走勢（C26，inline SVG，`<details>` 收合時掛載）；抽屜下鑽加日期與 SKU（SKU 篩選不帶入通路費用與廣告列）；新 token `--red-100`、`--chart-heat-1..2`、`--chart-missing`；axe 加三個狀態、keyboard-walk 加熱表 Tab 數。Lighthouse 量到 390「切到通路健檢」TBT 超過門檻（低負載 853.6 ms），以 `useDeferredMount` 讓 G11、G12 的內容在瀏覽器延後一拍以 transition 渲染修正（815.4 ms）。
 
-- 最終驗收：typecheck、lint、contrast（85／85）exit 0；audit:ui design 15 項不變；unit 141 檔／2,793 全過；build pass；E2E（最終程式）909 passed／0 failed／15 skipped（27.0m）；畫面基準 52 張只有四個尺寸的 05、10 變動，更新後重跑全過（修正後再跑一次也全過）；First Load JS 537,331 bytes（門檻 545,397，剩 8,066）；健檢首列底不變；B9 健檢 2,151；Lighthouse 8 頁 accessibility 全 100、Performance 1440 100、390 94；390 TBT 中位數五項都在門檻內（通路健檢 815.4／832.3）；axe 四尺寸 14／14／14／13 個狀態全 0；熱表 1 個停留點、經過 2 個 Tab；功能保留表 V4-3b 的 3 列打勾；禁區四條命令皆空。
+- 最終驗收：typecheck、lint、contrast（85／85）exit 0；audit:ui design 15 項不變；unit 141 檔／2,793 全過；build pass；E2E（最終程式）909 passed／0 failed／15 skipped（27.0m）；畫面基準 52 張只有四個尺寸的 05、10 變動，更新後重跑全過（修正後再跑一次也全過）；First Load JS 537,331 bytes（門檻 545,397，剩 8,066）；健檢首列底不變；B9 健檢 2,151；Lighthouse 8 頁 accessibility 全 100、Performance 1440 100、390 94；390 TBT 中位數五項都在門檻內（通路健檢 815.4／832.3）；axe 四尺寸 14／14／14／13 個狀態全 0；熱表 1 個停留點、經過 2 個 Tab；功能保留表 V4-3b 的 3 列打勾；禁區四條命令皆空，收尾 commit `926f0a9` 之後的禁區 diff 也為空。
 - **待拍板 D-V4-42（首載 JS 預算）**：只剩 8 KB，建議新增 V4-3c「首載瘦身」（匯出模組按下時載入，會議、健檢與資料來源、商品、待辦、AI 面板隨頁載入；約省 45 KB，畫面不變）。
 - 已知：健檢 TBT 餘裕約 2%；G12 收合列在面板外、靠頁面左緣（V4-8 一併處理）。
 - 驗收：`verification/revamp-v4-V4-3b-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-3b/`。下一批：D-V4-42 回覆 A 時 V4-3c，之後 V4-4。
