@@ -4,7 +4,7 @@
 
 使用者 2026-10-09 回覆「下一批 V4-3a，待拍版的都用建議值」：D-V3-26／27／29–37 依建議值（D-V3-31 併入本批；33、34、35 併入 V4-8；30 新增批次 V4-7c；36 的 C 與 37 的 B 列為 v4 之後）。V4-3a 依 06_BATCHES 完成：G9 健檢清單影響金額條（差額類規則，`REV_UP_CM_DOWN` 空心條；依 PRD 條不可點）；G10 每 100 元淨營收去向（`channelStructure`／`channel-structure-v1`，示範 MARKETPLACE 超過 100 照常畫，合計剩 16.2）；G7b 通路寬表「近 6 週」與「各通路每週」（`channelWeeks`／`channel-weeks-v1`，通路 > 8 改一句說明）；抽屜加 `valueKind`、`unitOverride: "percent"` 並修正 `ladderMetrics`；管理損益表「佔淨營收 %」可開抽屜（D-V3-31）；新 token `--chart-seg-1..3`。
 
-- 最終驗收：typecheck、lint、contrast（80／80）exit 0；audit:ui design 15 項不變；unit 137 檔／2,723 全過；build pass；E2E 885 passed／0 failed／15 skipped（25.7m）；畫面基準 52 張只有四個尺寸的 05、10 變動，更新後重跑全過；First Load JS 530,878 bytes（V4-0a＋11,452，門檻 545,397，剩 14,519）；B2 不變；健檢首列底三尺寸硬斷言（888／888／985）；第一個 G9 條頂 300；B9 健檢＋210；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94–95；390 TBT 中位數都在門檻內（通路健檢 791.0／832.3）；axe 四尺寸 0；aria-hidden 內停留點 0；功能保留表 V4-3a 的 7 列打勾；禁區四條命令皆空。
+- 最終驗收：typecheck、lint、contrast（80／80）exit 0；audit:ui design 15 項不變；unit 137 檔／2,723 全過；build pass；E2E 885 passed／0 failed／15 skipped（25.7m）；畫面基準 52 張只有四個尺寸的 05、10 變動，更新後重跑全過；First Load JS 530,878 bytes（V4-0a＋11,452，門檻 545,397，剩 14,519）；B2 不變；健檢首列底三尺寸硬斷言（888／888／985）；第一個 G9 條頂 300；B9 健檢＋210；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94–95；390 TBT 中位數都在門檻內（通路健檢 791.0／832.3）；axe 四尺寸 0；aria-hidden 內停留點 0；功能保留表 V4-3a 的 7 列打勾；禁區四條命令皆空，收尾 commit `eea57c4` 之後的禁區 diff 也為空。
 - 風險：First Load JS 只剩 14.5 KB、健檢首列底與健檢 TBT 都接近門檻；V4-3b 開工前先評估健檢與商品頁的圖改成隨頁載入。
 - 驗收：`verification/revamp-v4-V4-3a-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-3a/`。下一批：V4-3b（G11 月曆熱表、G12 小倍數、下鑽加日期與 SKU）。
 
