@@ -1,0 +1,170 @@
+{
+  "batch": "V4-3a",
+  "generatedAt": "2026-10-09T06:03:40.071Z",
+  "note": "首頁 HTML 列出的每個 chunk 檔名與 gzip 大小（供人工比對；檔名帶雜湊，每次 build 都變，不逐一斷言）。B5 門檻只看 modern 的 gzip 總和。",
+  "method": "GET / 的 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重）；主數字排除 nomodule（polyfills，現代瀏覽器不下載），allScripts 為含 nomodule 的總和；bytes＝未壓縮大小，gzip＝Node zlib gzipSync 預設等級；符號＝檔案內容中該字串出現的次數（子字串計數，含 displayName 與型別名稱）",
+  "totals": {
+    "modernScripts": 6,
+    "modernGzipBytes": 530878,
+    "gzipMax": 545397,
+    "allScripts": 7,
+    "allGzipBytes": 570351
+  },
+  "forbiddenSymbols": {
+    "Treemap": 0,
+    "Sankey": 0,
+    "Funnel": 0,
+    "PieChart": 0,
+    "RadarChart": 0
+  },
+  "recordedSymbols": {
+    "ScatterChart": 2,
+    "AreaChart": 1,
+    "Brush": 2,
+    "ComposedChart": 1,
+    "LineChart": 2,
+    "BarChart": 2
+  },
+  "chunks": [
+    {
+      "file": "4bd1b696-92152b0f5947070d.js",
+      "src": "/_next/static/chunks/4bd1b696-92152b0f5947070d.js",
+      "nomodule": false,
+      "bytes": 201054,
+      "gzip": 63370,
+      "symbols": {
+        "Treemap": 0,
+        "Sankey": 0,
+        "Funnel": 0,
+        "PieChart": 0,
+        "RadarChart": 0,
+        "ScatterChart": 0,
+        "AreaChart": 0,
+        "Brush": 0,
+        "ComposedChart": 0,
+        "LineChart": 0,
+        "BarChart": 0
+      }
+    },
+    {
+      "file": "794-952c3dd6bb5cffa5.js",
+      "src": "/_next/static/chunks/794-952c3dd6bb5cffa5.js",
+      "nomodule": false,
+      "bytes": 240795,
+      "gzip": 65604,
+      "symbols": {
+        "Treemap": 0,
+        "Sankey": 0,
+        "Funnel": 0,
+        "PieChart": 0,
+        "RadarChart": 0,
+        "ScatterChart": 0,
+        "AreaChart": 0,
+        "Brush": 0,
+        "ComposedChart": 0,
+        "LineChart": 0,
+        "BarChart": 0
+      }
+    },
+    {
+      "file": "main-app-913b565503d0102e.js",
+      "src": "/_next/static/chunks/main-app-913b565503d0102e.js",
+      "nomodule": false,
+      "bytes": 513,
+      "gzip": 224,
+      "symbols": {
+        "Treemap": 0,
+        "Sankey": 0,
+        "Funnel": 0,
+        "PieChart": 0,
+        "RadarChart": 0,
+        "ScatterChart": 0,
+        "AreaChart": 0,
+        "Brush": 0,
+        "ComposedChart": 0,
+        "LineChart": 0,
+        "BarChart": 0
+      }
+    },
+    {
+      "file": "739-7cf3da15ce40ad00.js",
+      "src": "/_next/static/chunks/739-7cf3da15ce40ad00.js",
+      "nomodule": false,
+      "bytes": 530548,
+      "gzip": 158845,
+      "symbols": {
+        "Treemap": 0,
+        "Sankey": 0,
+        "Funnel": 0,
+        "PieChart": 0,
+        "RadarChart": 0,
+        "ScatterChart": 2,
+        "AreaChart": 1,
+        "Brush": 2,
+        "ComposedChart": 1,
+        "LineChart": 2,
+        "BarChart": 2
+      }
+    },
+    {
+      "file": "page-bd0971d3d074994d.js",
+      "src": "/_next/static/chunks/app/page-bd0971d3d074994d.js",
+      "nomodule": false,
+      "bytes": 826063,
+      "gzip": 240988,
+      "symbols": {
+        "Treemap": 0,
+        "Sankey": 0,
+        "Funnel": 0,
+        "PieChart": 0,
+        "RadarChart": 0,
+        "ScatterChart": 0,
+        "AreaChart": 0,
+        "Brush": 0,
+        "ComposedChart": 0,
+        "LineChart": 0,
+        "BarChart": 0
+      }
+    },
+    {
+      "file": "polyfills-42372ed130431b0a.js",
+      "src": "/_next/static/chunks/polyfills-42372ed130431b0a.js",
+      "nomodule": true,
+      "bytes": 112594,
+      "gzip": 39473,
+      "symbols": {
+        "Treemap": 0,
+        "Sankey": 0,
+        "Funnel": 0,
+        "PieChart": 0,
+        "RadarChart": 0,
+        "ScatterChart": 0,
+        "AreaChart": 0,
+        "Brush": 0,
+        "ComposedChart": 0,
+        "LineChart": 0,
+        "BarChart": 0
+      }
+    },
+    {
+      "file": "webpack-ca6ba6d9ab6ef00e.js",
+      "src": "/_next/static/chunks/webpack-ca6ba6d9ab6ef00e.js",
+      "nomodule": false,
+      "bytes": 3562,
+      "gzip": 1847,
+      "symbols": {
+        "Treemap": 0,
+        "Sankey": 0,
+        "Funnel": 0,
+        "PieChart": 0,
+        "RadarChart": 0,
+        "ScatterChart": 0,
+        "AreaChart": 0,
+        "Brush": 0,
+        "ComposedChart": 0,
+        "LineChart": 0,
+        "BarChart": 0
+      }
+    }
+  ]
+}

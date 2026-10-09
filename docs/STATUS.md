@@ -1,5 +1,13 @@
 # Status
 
+## Revamp v4｜V4-3a 通路健檢（一）（完成；G9、G10、G7b）
+
+使用者 2026-10-09 回覆「下一批 V4-3a，待拍版的都用建議值」：D-V3-26／27／29–37 依建議值（D-V3-31 併入本批；33、34、35 併入 V4-8；30 新增批次 V4-7c；36 的 C 與 37 的 B 列為 v4 之後）。V4-3a 依 06_BATCHES 完成：G9 健檢清單影響金額條（差額類規則，`REV_UP_CM_DOWN` 空心條；依 PRD 條不可點）；G10 每 100 元淨營收去向（`channelStructure`／`channel-structure-v1`，示範 MARKETPLACE 超過 100 照常畫，合計剩 16.2）；G7b 通路寬表「近 6 週」與「各通路每週」（`channelWeeks`／`channel-weeks-v1`，通路 > 8 改一句說明）；抽屜加 `valueKind`、`unitOverride: "percent"` 並修正 `ladderMetrics`；管理損益表「佔淨營收 %」可開抽屜（D-V3-31）；新 token `--chart-seg-1..3`。
+
+- 最終驗收：typecheck、lint、contrast（80／80）exit 0；audit:ui design 15 項不變；unit 137 檔／2,723 全過；build pass；E2E 885 passed／0 failed／15 skipped（25.7m）；畫面基準 52 張只有四個尺寸的 05、10 變動，更新後重跑全過；First Load JS 530,878 bytes（V4-0a＋11,452，門檻 545,397，剩 14,519）；B2 不變；健檢首列底三尺寸硬斷言（888／888／985）；第一個 G9 條頂 300；B9 健檢＋210；Lighthouse 8 頁 accessibility 全 100（三次）、Performance 1440 100、390 94–95；390 TBT 中位數都在門檻內（通路健檢 791.0／832.3）；axe 四尺寸 0；aria-hidden 內停留點 0；功能保留表 V4-3a 的 7 列打勾；禁區四條命令皆空。
+- 風險：First Load JS 只剩 14.5 KB、健檢首列底與健檢 TBT 都接近門檻；V4-3b 開工前先評估健檢與商品頁的圖改成隨頁載入。
+- 驗收：`verification/revamp-v4-V4-3a-acceptance.md`；量測與截圖 `verification/revamp-v4/V4-3a/`。下一批：V4-3b（G11 月曆熱表、G12 小倍數、下鑽加日期與 SKU）。
+
 ## Revamp v4｜V4-2 總覽其他圖（完成；G3、G4、G5、G7a；MVP 切線）
 
 使用者 2026-10-08 回覆「都依建議值繼續推進，並進行下一批 V4-2」：D-V4-37–41 定為 A。V4-2 依 06_BATCHES 完成：G3 趨勢刻度改整數萬（`trendAxis`＋`formatAxisWan`）；G4 各通路緊湊表加差額欄與差額條（有利 `--chart-total`，差額抽屜帶兩期組成，長條抽屜不變）；C18 Bullet 抽成共用元件（KPI 帶 markup 與 v3 逐字相同、畫面 13 零差異）並在損益兩平段加 MER bullet；C19 Sparkline＋G7a「近 6 週」（`assistWeeks`／`assist-weeks-v1`，示範逐週件數合計 7,420＝期間件數；未滿 7 天的週畫空心點）；C33 ChartDataTable 與「各指標每週」<details>；抽屜技術細節加「圖表整理版本」（`arrangeVersion`）；新 token `--chart-target`、`--chart-h-xs`。D-V3-35 沒有回覆，不做。

@@ -241,6 +241,8 @@
 
 ### G7 近 {n} 週 sparkline（新增；P1；（a）V4-2、（b）V4-3a）
 
+> **V4-3a 實作補記（G7b）**：`channelWeeks(snapshot)` 回傳本期全部週（逐週加總＝本期合計），sparkline 與資料表只取最後 8 週（`recentChannelWeeks`）；`daily_complete=false` 時回傳 null；本期值缺漏時格保留但不畫；「各通路每週」列序跟寬表目前的排序；寬表 spark 格用新的 `data-list-role="spark"`，390 換到下一行靠右；通路 > 8 的說明句 testid 是 `channel-weeks-too-many`。
+
 | 項目 | 內容 |
 |---|---|
 | 位置與批次 | （a）總覽其他常用指標兩張 `table.kv`（`src/components/overview/assist-table.tsx:45-55`）每列新增「近 {n} 週」欄（n＝實際週數，上限 8；示範資料本期 6 週），V4-2；（b）健檢通路寬表 `table.channel-table-v3`（`src/components/channel-table.tsx:88-108` 的 `DiagnosisChannelTable`）每通路新增「近 {n} 週」欄，V4-3a |
@@ -285,6 +287,8 @@
 
 ### G9 健檢清單內嵌影響金額條（新增；P1；V4-3a）
 
+> **V4-3a 實作補記**：條不可點（列既有的展開與 number-link 不變；條在 `<summary>` 內，點條等於點 summary）；390 的條放在影響金額右側同一行（放在下方會讓每列多 16px、首列底晚於 V4-0 實測）；768–1023 條寬 64px；≥ 1024 有條時影響金額欄改 `minmax(160px, max-content)`；C24 tick 在門檻 0（與零線重疊）、|門檻| 超出共用尺度、值為 0 時不畫；空心條外框最短 3 個座標單位；不加 `impact.thresholdNote`。
+
 | 項目 | 內容 |
 |---|---|
 | 位置與批次 | 健檢清單每列 `<summary>` 的 `span.diagnosis-impact`（`src/components/diagnosis-list.tsx:178`）內、影響金額之後；V4-3a |
@@ -304,6 +308,8 @@
 | E2E 草案 | `diagnosis-list` 內 `[data-testid^='chart-diagnosis-impact-bar-']` 數＝`diagnosisGroups` 中差額類規則有金額的 group 數；`chart-diagnosis-impact-bar-NEGATIVE_CHANNEL_CM` 不存在；`chart-diagnosis-impact-bar-REV_UP_CM_DOWN` 是空心條，寬度＝\|總差額\| ÷ 共用最大值；實心條中最寬的是 \|影響\| 最大的費用負擔規則列；健檢首列底（metrics.spec）不晚於 V4-0 實測 |
 
 ### G10 每 100 元淨營收去向（新增；P1；V4-3a）
+
+> **V4-3a 實作補記**：資料表多一欄「通路費用合計（元）」（四項費用段要有鍵盤可達的對應格，PRD §2.2 C7）；最後一欄欄名「每 100 元淨營收」，格內「剩 {n} 元／虧 {n} 元」；每 100 元抽屜的值是 domain 的 `contribution_margin`（unitOverride "percent"，組成是扣廣告後貢獻與淨營收，contribution-v1）；標題只從可畫（ready）的通路挑；超過 8 通路照算 channelStructure（資料表要用）但不畫段；不加 `segments.over`（超過 100 由右端「虧 n 元」與不利色承擔）。
 
 | 項目 | 內容 |
 |---|---|

@@ -292,6 +292,16 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-09｜Revamp v4 V4-3a：通路健檢（一）的取捨
+
+**G9 條不可點：** PRD §4.5 與 CHART_CATALOG G9 都寫「條不另設點擊」；條在 `<summary>` 內，點條會展開或收合該列。E2E 斷言點條等於點 summary，抽屜由展開內容的影響金額 number-link 開。390 的條放在影響金額右側同一行（放在下方會讓每列多 16px，首列底晚於 V4-0 實測）。
+
+**`channelWeeks(snapshot)`：** 健檢頁元件拿不到 dataset，函式改為從 `report.current.daily`（aggregatePeriod 已算好的日 × 通路列）逐週以 domain 的 `sumTotals`、`calculateMetrics`、`uniqueSources` 加總；單元測試逐格斷言與 `aggregatePeriod(dataset, 週, [通路])` 的 metric 與 sources 相同。回傳本期全部週（逐週加總＝本期合計），sparkline 與資料表只取最後 8 週。
+
+**G10 資料表多一欄「通路費用合計」：** 四項費用段點擊開「通路費用合計」抽屜，這一欄讓它有鍵盤可達的對應格（PRD §2.2 C7）。每 100 元抽屜用 domain 的 `contribution_margin`（扣廣告後貢獻率）以 `percent` 呈現，不加版本。
+
+**First Load JS 的餘裕：** 本批加了 6,598 bytes，累計比 v3.0.0 多 11,452 bytes、離門檻 14,519 bytes。後面各批還要加圖，V4-3b 開工前要決定健檢與商品頁的圖是否改成隨頁載入（`next/dynamic`）；這是實作做法，不改 PRD 門檻。
+
 ## 2026-10-09｜D-V3-26／27／29–37 依建議值與 V4-3a 開工
 
 使用者回覆「下一批 V4-3a，待拍版的都用建議值」。v3 尚待的 11 項全部依建議值，依 D-V4-29 對照表排入：
