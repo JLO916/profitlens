@@ -4,7 +4,7 @@ import type { Diagnostic, Fact, MetricName, RuleCode, Scope, ValidationIssue } f
 import { fill as fillTemplate, labels } from "../i18n";
 import type { TaxConversion } from "./tax-basis";
 import { importIssueMessage, type IssueMessageContext, type IssueRef } from "./import";
-import { asciiMinus, formatAmountL1, formatRateL3, formatSignedDelta, metricDefinitions } from "./presentation";
+import { asciiMinus, formatAmountL1, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R2 文案機制：示範通路 alias、標題用「萬」金額、規則卡文案模板、CSV 標題列。全部只做呈現，不碰 domain 數值。
@@ -108,4 +108,17 @@ export function conversionSentence(conversion: TaxConversion | null | undefined)
   const percent = new Decimal(conversion.rate).mul(100).toFixed(0);
   const fields = conversion.fields.map(field => field in labels.metrics ? labels.metrics[field as MetricName].headline : field).join("、");
   return fillTemplate(labels.importWizard.conversionSummary, { percent, fields, n: conversion.rows_converted });
+}
+
+/**
+ * V4-3b 代理 B：比率軸刻度（G12 五項比率每週走勢，C26；PRD §4.4 G12、§7.2「比率軸依範圍取整」）。刻度只是圖形座標（Number 的比率小數，例如 0.05），不是 domain 的值，
+ * 所以不經 decimal；軸的步長是 1 或 5 個百分點的倍數，刻度文字寫整數百分比（「0%」「5%」「−5%」，比照 formatAxisWan 的整數萬，不出現「.0」）；
+ * 步長不是整數百分點時才保留 1 位小數。0 只寫「0%」；負值帶 U+2212；「%」取自 labels.format.units.percent。
+ */
+export function formatAxisPercent(ticks: readonly number[]): string[] {
+  return ticks.map(tick => {
+    const points = Math.round(Math.abs(tick) * 1000) / 10;
+    const text = Number.isInteger(points) ? String(points) : points.toFixed(1);
+    return fillTemplate(labels.format.units.percent, { value: `${tick < 0 && points !== 0 ? MINUS : ""}${text}` });
+  });
 }

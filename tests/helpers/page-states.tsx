@@ -283,6 +283,25 @@ export async function pageStates(): Promise<StateMarkup[]> {
     })(), status: "ready" },
 
     // ── V4-3b 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-3b 新增 M1 測試」錨點後加對應測試）──
+    // 健檢圖區收合（G12「五項比率走勢」<details> 沒有 open）在既有的 diagnosis、diagnosis-synthetic、diagnosis-many-channels 三個狀態都成立，不另立狀態。
+    // 健檢＋本期超過 92 天（記憶體合成資料，2 通路，上期、本期各 98 天＝14 週，不寫檔）：G11 改成週 × 通路的一張矩陣表（data-layout=matrix，
+    // 格的 testid 以週起日為 key），MARKETPLACE 每天扣廣告後貢獻 −215 到 +25 元，多數週虧；SSR 才掃得到矩陣排法的 chart-lint 與 M1／M6。
+    "diagnosis-weekly": { panel: "diagnosis", active: await (async () => {
+      const base = fixture("golden").manifest as Record<string, unknown>, day = (offset: number) => new Date(Date.parse("2026-01-05T00:00:00Z") + offset * 86_400_000).toISOString().slice(0, 10);
+      const channels = ["DTC", "MARKETPLACE"], dates = Array.from({ length: 196 }, (_, index) => day(index));
+      const rows = (make: (date: string, channel: string, index: number, offset: number) => string) => dates.flatMap((date, offset) => channels.map((channel, index) => make(date, channel, index, offset)));
+      const gross = (channel: string, offset: number) => channel === "DTC" ? 1000 + (offset % 5) * 10 : 400 + (offset % 13) * 20;
+      const input: DatasetInput = {
+        manifest: { ...base, dataset_id: "synthetic-weekly-2x98", data_as_of: day(196), coverage_start: day(0), coverage_end: day(195), channels, previous_period: { start: day(0), end: day(97) }, current_period: { start: day(98), end: day(195) } },
+        files: {
+          "sales_daily.csv": ["date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency", ...rows((date, channel, index, offset) => `${date},${channel},SKU-${index + 1},HOME,2,${gross(channel, offset).toFixed(2)},50.00,0.00,400.00,TWD`)].join("\n"),
+          "channel_costs_daily.csv": ["date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency", ...rows((date, channel) => `${date},${channel},30.00,10.00,20.00,5.00,TWD`)].join("\n"),
+          "ad_spend_daily.csv": ["date,channel,ad_spend,currency", ...rows((date, channel) => `${date},${channel},100.00,TWD`)].join("\n"),
+        },
+      };
+      const dataset = validateDataset(input).dataset!;
+      return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "weekly", revision: 1 };
+    })(), status: "ready" },
 
     // ── V4-4 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-4 新增 M1 測試」錨點後加對應測試）──
 

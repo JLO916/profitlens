@@ -4,6 +4,8 @@
 // 四個視窗都跑（1440×1000、1280×900、768×1024、390×844）；示範資料（fixtures/demo），另有 4 通路合成資料與 fixtures/refund_only 各一條。
 // 字串一律由 labels 組出、定位用 testid（PRD §4.7）；期待的數字與文字由 Node 端以同一組 application 函式算（chart-helpers-v4 的 datasetSnapshot），不寫死。
 // G9 的條依 PRD §4.5 與 CHART_CATALOG G9「條不另設點擊」（代理 C 偏差 1）：點條等於點 summary（展開或收合），抽屜由展開內容第一行的影響金額 number-link 開。
+// V4-3b 代理 E（06_BATCHES V4-3b「驗收重點」的瀏覽器部分；CHART_CATALOG G11、G12 的 E2E 草案）：檔尾兩組——G11 日 × 通路月曆熱表（ChartFrame mode="table"、C28 roving tabindex、
+// 格的抽屜帶 filter { channel, date }）與 G12 五項比率每週走勢（<details> 內的 C26 小倍數）。期待的文字與格由 Node 端的 heatSectionModel、ratesModel 算，不寫死。
 import { resolve } from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
@@ -14,17 +16,21 @@ import { channelLabel, channelsLabel, demoAlias } from "../../src/application/co
 import { evidenceFilterText } from "../../src/application/evidence-filter";
 import { buildManagerSummary } from "../../src/application/manager-summary";
 import { buildPnlTable } from "../../src/application/pnl-table";
-import { formatAmountL3, formatPeriodL1, formatRateLayer, metricDefinitions } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL3, formatDateL1, formatHeatCell, formatPeriodL1, formatRateLayer, metricDefinitions } from "../../src/application/presentation";
 import { profitWaterfall } from "../../src/application/waterfall";
 import { CHANNEL_FEE_FIELDS } from "../../src/application/chart-structure";
 import type { RuleCode } from "../../src/domain/types";
 import { IMPACT_BAR_RULES, IMPACT_BAR_TOTAL_RULE, hasImpactBar } from "../../src/components/diagnosis-list";
 import { sharePerHundredText, shareSectionModel, type ShareSectionModel } from "../../src/components/diagnosis/share-section";
+import { DAILY_HEATMAP_VERSION, negativeAfterYuan, type HeatValueCell } from "../../src/application/chart-heatmap";
+import { uniqueSources } from "../../src/domain/aggregation";
+import { heatCellTestId, heatSectionModel, type HeatSectionModel } from "../../src/components/diagnosis/heat-section";
+import { RATE_METRICS, ratesModel } from "../../src/components/diagnosis/rates-section";
 import { evidenceDrawer, loadDemo } from "./launch-helpers-v310";
 import { importViaWizard } from "./import-wizard-helpers";
 import { openPnlTable, pnlEvidenceHeading } from "./pnl-helpers-v39";
 import { choosePreset, dismissSavePrompt, isMobile, navigateTo, openDetails } from "./replacement-helpers";
-import { analyticsCount, channelSpark, channelSparks, channelWeeksDetails, channelWeeksTable, channelWideTable, clickChartShape, datasetSnapshot, diagnosisRuleOrder, evidenceTechnicalRows, expectNoPageScrollX, frameBox, frameHeights, impactBar, impactBarInfo, impactBars, importSynthetic, openDataTable, pnlShare, shareSection, shareSeg, shareSegInfo, shareSegs, shareTable, shareTableLink, stubAnalytics } from "./chart-helpers-v4";
+import { analyticsCount, channelSpark, channelSparks, channelWeeksDetails, channelWeeksTable, channelWideTable, clickChartShape, datasetSnapshot, diagnosisRuleOrder, evidenceTechnicalRows, expectNoPageScrollX, frameBox, frameHeights, heatCell, heatCellInfo, heatFrame, heatGrid, heatLink, heatScroll, heatSection, heatTabStop, heatTables, impactBar, impactBarInfo, impactBars, importSynthetic, openDataTable, openRates, pnlShare, ratesFrame, ratesMore, ratesPanels, ratesSection, ratesTable, ratesYTicks, shareSection, shareSeg, shareSegInfo, shareSegs, shareTable, shareTableLink, stubAnalytics } from "./chart-helpers-v4";
 
 const share = labels.diagnosis.chartsV4.share;
 const spark = labels.diagnosis.chartsV4.channelsSpark;
@@ -149,7 +155,7 @@ test.describe("V4-3a 健檢 G9 健檢清單內嵌影響金額條", () => {
 });
 
 test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
-  test("清單之後、通路寬表之前；標題與副標由 labels 組出；圖例四項；.chart-frame.sm aria-hidden、svg 高＝（列數＋2）× 24 ≤ 固定高；示範資料 12 段（MARKETPLACE 超過 100 照常畫、不利色）；右端標值與合計「剩 16.2 元」；主層獨立圖區塊＝1；切期間框高不變；390 頁面不橫向捲動", async ({ page }, testInfo) => {
+  test("清單之後、通路寬表之前；標題與副標由 labels 組出；圖例四項；.chart-frame.sm aria-hidden、svg 高＝（列數＋2）× 24 ≤ 固定高；示範資料 12 段（MARKETPLACE 超過 100 照常畫、不利色）；右端標值與合計「剩 16.2 元」；主層獨立圖區塊（V4-3b 起＝2：G10、G11）；切期間框高不變；390 頁面不橫向捲動", async ({ page }, testInfo) => {
     const snapshot = await datasetSnapshot("demo");
     const model = shareSectionModel(snapshot);
     await openDiagnosis(page);
@@ -157,7 +163,8 @@ test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
     // DOM 順序：健檢清單 → G10 → 通路寬表。
     const order = await page.evaluate(() => ["diagnosis-panel", "chart-diagnosis-share", "channel-compare"].map(id => document.querySelector(`[data-testid='${id}']`)!).map((node, index, all) => index === 0 || !!(all[index - 1].compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)));
     expect(order, "清單、G10、通路寬表的 DOM 順序").toEqual([true, true, true]);
-    expect(await mainChartSections(page), "健檢頁主層獨立圖區塊只有 G10（CL-9＝1）").toEqual(["chart-diagnosis-share"]);
+    // V4-3b 核對：G11 熱表接在 G10 之後，主層獨立圖區塊＝2（G10、G11；G12 在 <details> 內不計，CL-9）。
+    expect(await mainChartSections(page), "健檢頁主層獨立圖區塊是 G10、G11（V4-3b 起 CL-9＝2）").toEqual(["chart-diagnosis-share", "chart-diagnosis-heat"]);
     await expect(section).toHaveAttribute("aria-describedby", "share-sub");
     await expect(section.locator("#share-title")).toHaveText(model.title);
     expect(model.titleKind, "示範資料有虧損通路").toBe("loss");
@@ -203,7 +210,8 @@ test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
 
     // 切期間（近 7 天）：框高不變（B4）；G10 照樣畫（同一組通路）。
     const before = await frameHeights(page);
-    expect(before).toEqual({ "chart-diagnosis-share": chartHeights.sm });
+    // V4-3b 核對：主層看得到的框多了 G11 熱表（lg）；G12 收在 <details> 內，收合時沒有 bounding box，不列入。
+    expect(before).toEqual({ "chart-diagnosis-share": chartHeights.sm, "chart-diagnosis-heat": chartHeights.lg });
     await choosePreset(page, "last7");
     await expect(shareSegs(page).first()).toBeVisible();
     expect(await frameHeights(page), "近 7 天：G10 框高不變").toEqual(before);
@@ -527,5 +535,362 @@ test.describe("V4-3a 總覽「進階」管理損益表「佔淨營收 %」（D-V
     expect(rows.find(item => item.dt === "metric_version")?.dd).toBe("contribution-v1");
     await closeDrawer(page);
     await expect(link).toBeFocused();
+  });
+});
+
+// ── V4-3b：G11 日 × 通路月曆熱表、G12 五項比率每週走勢 ──
+const heatCopy = labels.diagnosis.chartsV4.heat;
+const ratesCopy = labels.diagnosis.chartsV4.rates;
+const MINUS = "−";
+const TRANSPARENT = "rgba(0, 0, 0, 0)";
+/** heatSectionModel 的格（依 DOM 順序；期間外的格沒有 testid，不列入）。 */
+const modelCells = (model: HeatSectionModel) => model.tables.flatMap(table => table.rows.flatMap(row => row.cells.filter(cell => cell.tier !== "outside")));
+/** 模型裡每一格的通路與 domain 值（testid → 格）。 */
+function modelValueCells(model: HeatSectionModel): Map<string, { channel: string; cell: HeatValueCell }> {
+  const out = new Map<string, { channel: string; cell: HeatValueCell }>();
+  for (const channel of model.result.heatmap!.channels) for (const row of channel.rows) for (const cell of row.cells) if (cell.kind === "value") out.set(heatCellTestId(channel.channel, cell.key), { channel: channel.channel, cell });
+  return out;
+}
+/** CSS 色值（例如 chartColors.heat1＝var(--chart-heat-1)）在頁面上算出來的 rgb()：放一個暫時的 span 讀 computed color 後移除（只在測試的瀏覽器內）。 */
+const resolveColors = (page: Page, values: string[]) => page.evaluate(list => list.map(value => {
+  const probe = document.createElement("span");
+  probe.style.color = value;
+  document.body.append(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+}), values);
+/** 抽屜原始明細：逐一點分段按鈕，讀每段的分段名稱與日期欄（td.evidence-date）。 */
+async function sourceDatesByTab(page: Page): Promise<{ tab: string; dates: string[] }[]> {
+  const buttons = evidenceDrawer(page).getByRole("group", { name: labels.evidence.drawer.sourceTabsAria, exact: true }).getByRole("button");
+  const out: { tab: string; dates: string[] }[] = [];
+  const count = await buttons.count();
+  for (let index = 0; index < count; index++) {
+    const button = buttons.nth(index);
+    await button.click();
+    await expect(button).toHaveAttribute("aria-pressed", "true");
+    out.push({ tab: (await button.textContent())!.trim(), dates: await evidenceDrawer(page).locator("table.source-table td.evidence-date").allTextContents() });
+  }
+  return out;
+}
+/** 一格的來源列依分段的筆數（與抽屜的分段按鈕同一套：uniqueSources 去重、依銷售、通路費用、廣告、資料集設定的順序，筆數 0 的分段不出現）。 */
+const SOURCE_TAB_FILES = { sales: "sales_daily.csv", costs: "channel_costs_daily.csv", ads: "ad_spend_daily.csv", manifest: "manifest.json" } as const;
+function expectedSourceTabs(cell: HeatValueCell): string[] {
+  const unique = uniqueSources(cell.sources);
+  return (Object.keys(SOURCE_TAB_FILES) as (keyof typeof SOURCE_TAB_FILES)[]).map(tab => ({ tab, n: unique.filter(source => source.file === SOURCE_TAB_FILES[tab]).length })).filter(item => item.n > 0).map(item => fill(labels.evidence.drawer.tabWithCount, { tab: labels.evidence.sourceTabs[item.tab], n: item.n }));
+}
+/** 單日格的抽屜：標題、精確值、篩選片語（含日期與通路名）、技術細節的版本；原始明細每段每列的日期都等於該日（資料集設定那段寫「整體資料集」）。 */
+async function expectDayDrawer(page: Page, channel: string, cell: HeatValueCell, alias: boolean, anchor: string) {
+  const drawer = evidenceDrawer(page);
+  await expect(drawer).toBeVisible();
+  await expect(drawerHeading(page)).toHaveText(drawerTitle(metricDefinitions.contribution_after_marketing.label));
+  await expect(preciseValue(page)).toHaveText(yuan(cell.metric.value!));
+  const phrase = evidenceFilterText({ channel, date: cell.key }, { alias, anchor })!;
+  await expect(drawer.getByTestId("evidence-filter").locator("span")).toHaveText(phrase);
+  expect(phrase, "篩選片語含該日期").toContain(fill(labels.evidence.chartsV4.filter.date, { date: formatDateL1(cell.key, { anchor }) }));
+  expect(phrase, "篩選片語含通路名").toContain(channelLabel(channel, alias));
+  const tabs = await sourceDatesByTab(page);
+  expect(tabs.map(item => item.tab), "分段與筆數＝該格自己的來源列（篩選後）").toEqual(expectedSourceTabs(cell));
+  for (const item of tabs) {
+    expect(item.dates.length, `${item.tab}：至少一列`).toBeGreaterThan(0);
+    const expected = item.tab.startsWith(labels.evidence.sourceTabs.manifest) ? labels.evidence.wholeDataset : cell.key;
+    expect(item.dates.filter(date => date !== expected), `${item.tab}：每列日期都等於 ${expected}`).toEqual([]);
+  }
+  const rows = await evidenceTechnicalRows(drawer);
+  const version = rows.findIndex(row => row.dt === "metric_version");
+  expect(rows[version]?.dd, "值直接取自 domain：contribution-v1").toBe("contribution-v1");
+  expect(rows[version + 1], "metric_version 之後另列 daily-heatmap-v1").toEqual({ testId: "evidence-arrange-version", dt: labels.evidence.chartsV4.arrangeVersion, dd: DAILY_HEATMAP_VERSION });
+  await expect(drawer.locator(".ladder-table"), "單日單一通路的證據不畫全通路階梯").toHaveCount(0);
+}
+
+test.describe("V4-3b 健檢 G11 日 × 通路月曆熱表", () => {
+  test("G10 之後、G12 與通路寬表之前；主層獨立圖區塊＝2；mode=table 的框（lg、不設 aria-hidden）與捲動區（region、無 tabindex）；標題所指的通路排第一張；每格文字＝formatHeatCell、負值保留 U+2212；正值不上色、階 1／階 2 底色、階 2 框線；整張 1 個 tabindex=0；390 月曆表寬 ≤ 捲動區、第一張不捲動就在框內；頁面不橫向捲動", async ({ page }, testInfo) => {
+    const snapshot = await datasetSnapshot("demo");
+    const model = heatSectionModel(snapshot);
+    const heatmap = model.result.heatmap!;
+    expect(heatmap.mode).toBe("daily");
+    await openDiagnosis(page);
+    const section = heatSection(page);
+    await expect(section).toBeVisible();
+    const order = await page.evaluate(() => ["[data-testid='diagnosis-panel']", "[data-testid='chart-diagnosis-share']", "[data-testid='chart-diagnosis-heat']", "details.rates-more", "[data-testid='channel-compare']"].map(selector => document.querySelector(selector)!).map((node, index, all) => index === 0 || !!(all[index - 1].compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)));
+    expect(order, "清單、G10、G11、G12、通路寬表的 DOM 順序").toEqual([true, true, true, true, true]);
+    expect(await mainChartSections(page), "健檢頁主層獨立圖區塊＝2（G10、G11）").toEqual(["chart-diagnosis-share", "chart-diagnosis-heat"]);
+    await expect(section).toHaveAttribute("aria-labelledby", "heat-title");
+    await expect(section).toHaveAttribute("aria-describedby", "heat-sub");
+    await expect(section.locator("#heat-title")).toHaveText(model.title);
+    expect(model.title).toBe(fill(heatCopy.title.loss, { channel: channelLabel("MARKETPLACE", demoAlias(snapshot.report.dataset_id)), n: heatmap.headline!.losing, date: formatDateL1(heatmap.headline!.key, { anchor: snapshot.data_as_of }), amount: formatAmountL1(heatmap.headline!.value) }));
+    const sub = await section.locator("#heat-sub").evaluate(node => [...node.childNodes].filter(child => !(child instanceof Element && child.classList.contains("heat-scroll-note"))).map(child => child.textContent ?? "").join(""));
+    expect(sub, "副標（不含捲動說明）").toBe(model.subtitle);
+
+    // 固定高框：table 模式不設 aria-hidden、lg 320；框內是 region 捲動區（以標題命名、不加 tabindex：格本身可聚焦）。
+    const frame = heatFrame(page);
+    await expect(frame).toHaveCount(1);
+    await expect(frame).toHaveClass(/(^|\s)lg(\s|$)/);
+    await expect(frame).toHaveClass(/(^|\s)heat(\s|$)/);
+    await expect(frame).toHaveAttribute("data-mode", "table");
+    expect(await frame.getAttribute("aria-hidden"), "table 模式的框不設 aria-hidden").toBeNull();
+    expect((await boxOf(frame)).height, "框高＝chartHeights.lg").toBe(chartHeights.lg);
+    const scroll = heatScroll(page);
+    await expect(scroll).toHaveAttribute("role", "region");
+    await expect(scroll).toHaveAttribute("aria-labelledby", "heat-title");
+    expect(await scroll.getAttribute("tabindex"), "捲動區不加 tabindex").toBeNull();
+    await expect(section.locator("details"), "表本身就是資料表，不另設 <details>").toHaveCount(0);
+
+    // 月曆：每通路一張 role=grid，caption 依模型順序（標題所指的 MARKETPLACE 第一張），欄頭＝週＋星期。
+    const tables = heatTables(page);
+    await expect(tables).toHaveCount(model.tables.length);
+    await expect(tables.locator("caption")).toHaveText(model.tables.map(table => table.caption));
+    expect(model.tables[0].key, "第一張是標題所指的通路").toBe(heatmap.headline!.channel);
+    for (let index = 0; index < model.tables.length; index++) {
+      await expect(tables.nth(index)).toHaveAttribute("role", "grid");
+      await expect(tables.nth(index).locator("thead th")).toHaveText([model.tables[index].corner, ...model.tables[index].columns.map(column => column.label)]);
+    }
+    await expect(heatGrid(page)).toHaveAttribute("data-layout", "calendar");
+
+    // 格：testid、階、文字逐格同模型；負值（取位到元後仍為負）保留 U+2212；整張 1 個 tabindex=0（第一個有值的格），其餘 −1；沒有格在 aria-hidden 內。
+    const expected = modelCells(model);
+    const values = modelValueCells(model);
+    const info = await heatCellInfo(page);
+    expect(info.map(cell => cell.testId), "格的 testid 與 DOM 順序").toEqual(expected.map(cell => cell.testId));
+    expect(info.map(cell => cell.tier), "格的階").toEqual(expected.map(cell => String(cell.tier)));
+    expect(info.map(cell => cell.text), "格內文字＝formatHeatCell").toEqual(expected.map(cell => cell.text));
+    for (const cell of info) {
+      const { cell: value } = values.get(cell.testId)!;
+      expect(cell.text, `${cell.testId}`).toBe(formatHeatCell(value.metric.value));
+      expect(cell.text.startsWith(MINUS), `${cell.testId}：取位到元後仍為負才帶 U+2212`).toBe(negativeAfterYuan(value.metric.value));
+      expect(cell.ariaHiddenAncestor, `${cell.testId}：不在 aria-hidden 內`).toBe(false);
+    }
+    expect(info.some(cell => cell.text.startsWith(MINUS)), "示範資料有負值格").toBe(true);
+    expect(info.filter(cell => cell.tabIndex === "0").map(cell => cell.testId), "整張熱表 1 個 tabindex=0（第一個有值的格）").toEqual([expected.find(cell => cell.tier !== "missing")!.testId]);
+    expect(info.filter(cell => cell.tabIndex !== "0" && cell.tabIndex !== "-1"), "其餘格 tabindex=-1").toEqual([]);
+    for (const cell of expected) await expect(page.getByTestId(cell.testId!).locator("button.heat-link")).toHaveAccessibleName(cell.aria!);
+
+    // 色：正值與取位到元後為 0 的格不上色（D-V3-7）；階 1、階 2 各自底色；階 2 另有 2px 不利色實線框；每通路階 2 ≤ 3 格。
+    const [heat1, heat2, unfavorable] = await resolveColors(page, [chartColors.heat1, chartColors.heat2, chartColors.unfavorable]);
+    expect(new Set([heat1, heat2, TRANSPARENT]).size, "兩階底色不同、也不是透明").toBe(3);
+    for (const cell of info) {
+      const background = cell.tier === "1" ? heat1 : cell.tier === "2" ? heat2 : TRANSPARENT;
+      expect(cell.background, `${cell.testId}（階 ${cell.tier}）的底色`).toBe(background);
+      if (cell.tier === "2") expect([cell.borderStyle, cell.borderColor], `${cell.testId}：階 2 框線`).toEqual(["solid", unfavorable]);
+    }
+    const positives = info.filter(cell => { const value = values.get(cell.testId)!.cell.metric.value; return value !== null && Number(value) > 0; });
+    expect(positives.length, "示範資料有正值格（DTC 全部為正）").toBeGreaterThan(0);
+    expect(positives.filter(cell => cell.tier !== "0" || cell.background !== TRANSPARENT).map(cell => cell.testId), "正值不上色").toEqual([]);
+    for (const channel of heatmap.channels) expect(info.filter(cell => cell.tier === "2" && cell.testId.startsWith(heatCellTestId(channel.channel, ""))).length, `${channel.channel}：階 2 ≤ 3 格`).toBe(Math.min(3, channel.losing));
+
+    // 捲動說明：框高放不下全部月曆（columnsNeeded > 1）時輸出；一列放得下 columnsNeeded 張時由 container query 隱藏，否則顯示。
+    const note = section.locator("span.heat-scroll-note");
+    await expect(note).toHaveCount(model.columnsNeeded > 1 ? 1 : 0);
+    const perRow = await tables.evaluateAll(nodes => nodes.filter(node => Math.abs((node as HTMLElement).offsetTop - (nodes[0] as HTMLElement).offsetTop) < 1).length);
+    if (model.columnsNeeded > 1) {
+      await expect(note).toHaveAttribute("data-columns", String(model.columnsNeeded));
+      await expect(note).toHaveText(fill(heatCopy.scrollNoteJoin, { note: heatCopy.scrollNote }));
+      if (perRow >= model.columnsNeeded) await expect(note, `一列放得下 ${perRow} 張：不顯示捲動說明`).toBeHidden();
+      else await expect(note, `一列只放得下 ${perRow} 張：顯示捲動說明`).toBeVisible();
+    }
+
+    // 月曆表寬 ≤ 所在捲動區的 clientWidth（390：設計 320）；第一張月曆（標題所指的通路）不捲動就整張在框內。
+    const fit = await scroll.evaluate(node => {
+      const tableWidths = [...node.querySelectorAll("table.heat-table")].map(table => Math.round(table.getBoundingClientRect().width * 10) / 10);
+      const frameRect = node.parentElement!.getBoundingClientRect(), first = node.querySelector("table.heat-table")!.getBoundingClientRect();
+      return { clientWidth: node.clientWidth, scrollTop: node.scrollTop, tableWidths, firstTop: first.top - frameRect.top, firstBottom: first.bottom - frameRect.top, frameHeight: frameRect.height };
+    });
+    for (const width of fit.tableWidths) expect(width, "月曆表寬 ≤ 捲動區 clientWidth").toBeLessThanOrEqual(fit.clientWidth);
+    expect(fit.scrollTop).toBe(0);
+    expect(fit.firstTop, "第一張月曆頂在框內").toBeGreaterThanOrEqual(0);
+    expect(fit.firstBottom, "第一張月曆底在框內（不捲動就看得到整張）").toBeLessThanOrEqual(fit.frameHeight);
+    if (isMobile(page)) expect(fit.tableWidths[0], "390：月曆寬＝週欄 40＋7 × 40").toBe(320);
+    await expectNoPageScrollX(page);
+    testInfo.annotations.push({ type: "v4-3b-g11-layout", description: JSON.stringify({ ...fit, perRow, columnsNeeded: model.columnsNeeded }) });
+  });
+
+  test("鍵盤：從 G10 資料表 summary 按 Tab 進到熱表的停留格；方向鍵、Home／End（加 Ctrl 到整張首尾）移動且 tabindex 跟著走；Enter 開當日抽屜（篩選片語含日期與通路、原始明細每列日期等於該日、daily-heatmap-v1），記 chart_clicked；Esc 回到該格；再 Tab 就離開熱表（經過熱表 2 個 Tab）", async ({ page }, testInfo) => {
+    const snapshot = await datasetSnapshot("demo");
+    const model = heatSectionModel(snapshot);
+    const values = modelValueCells(model);
+    const alias = demoAlias(snapshot.report.dataset_id);
+    const ids = modelCells(model).map(cell => cell.testId!);
+    const first = ids[0];
+    await stubAnalytics(page);
+    await openDiagnosis(page);
+    const before = shareSection(page).locator(":scope > details.data-alternative > summary");
+    await before.focus();
+    await page.keyboard.press("Tab");
+    const focusedCell = () => page.evaluate(() => document.activeElement?.closest("td[data-testid]")?.getAttribute("data-testid") ?? null);
+    expect(await focusedCell(), "Tab 進熱表：第一個有值的格").toBe(first);
+    const tabStop = () => heatTabStop(page).evaluateAll(nodes => nodes.map(node => node.closest("td")!.getAttribute("data-testid")));
+    // 示範資料：MARKETPLACE 月曆第 1 列是 7/13（週一）到 7/19，第 2 列 7/20 起；DTC 是第二張。
+    const marketplace = (date: string) => heatCellTestId("MARKETPLACE", date);
+    const moves: [string, string][] = [["ArrowRight", marketplace("2026-07-14")], ["ArrowDown", marketplace("2026-07-21")], ["End", marketplace("2026-07-26")], ["Home", marketplace("2026-07-20")], ["ArrowLeft", marketplace("2026-07-19")], ["Control+End", ids.at(-1)!], ["Control+Home", first], ["ArrowRight", marketplace("2026-07-14")]];
+    for (const [key, target] of moves) {
+      await page.keyboard.press(key);
+      expect(await focusedCell(), `${key} 之後的格`).toBe(target);
+      expect(await tabStop(), `${key} 之後 tabindex=0 只在這一格`).toEqual([target]);
+    }
+    const target = values.get(marketplace("2026-07-14"))!;
+    await page.keyboard.press("Enter");
+    await expect(evidenceDrawer(page)).toBeVisible();
+    await expect.poll(() => analyticsCount(page, "chart_clicked"), { message: "Enter 開抽屜記 chart_clicked" }).toBe(1);
+    await expect(drawerHeading(page)).toHaveText(drawerTitle(metricDefinitions.contribution_after_marketing.label));
+    await expect(preciseValue(page)).toHaveText(yuan(target.cell.metric.value!));
+    await expect(evidenceDrawer(page).getByTestId("evidence-filter").locator("span")).toHaveText(evidenceFilterText({ channel: "MARKETPLACE", date: target.cell.key }, { alias, anchor: snapshot.data_as_of })!);
+    await closeDrawer(page);
+    await expect(heatLink(page, "MARKETPLACE", "2026-07-14"), "Esc 回到開抽屜的格").toBeFocused();
+    // 經過熱表：前一個停留點（G10 資料表 summary）按 Tab 進熱表、再按 Tab 就到熱表後的第一個停留點（G12 的 summary）——2 個 Tab（≤ 3）。
+    await page.keyboard.press("Tab");
+    await expect(ratesMore(page).locator(":scope > summary"), "熱表之後的停留點是 G12 的 summary").toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(heatLink(page, "MARKETPLACE", "2026-07-14"), "Shift+Tab 回到上次停留的格（roving tabindex 記住位置）").toBeFocused();
+    expect(await analyticsCount(page, "chart_clicked")).toBe(1);
+    testInfo.annotations.push({ type: "v4-3b-g11-keyboard", description: JSON.stringify({ first, moves }) });
+  });
+
+  test("點 DTC 第一個有值日期的格（滑鼠）：開當日抽屜，篩選片語含日期與通路名、原始明細每段每列日期都等於該日；標題所指那一天（MARKETPLACE 8/22）同樣；點過的格成為停留格", async ({ page }) => {
+    const snapshot = await datasetSnapshot("demo");
+    const model = heatSectionModel(snapshot);
+    const values = modelValueCells(model);
+    const alias = demoAlias(snapshot.report.dataset_id);
+    const heatmap = model.result.heatmap!;
+    const dtc = heatmap.channels.find(channel => channel.channel === "DTC")!;
+    const dtcFirst = dtc.rows.flatMap(row => row.cells).find((cell): cell is HeatValueCell => cell.kind === "value" && cell.metric.value !== null)!;
+    await stubAnalytics(page);
+    await openDiagnosis(page);
+    let clicks = 0;
+    for (const [channel, key] of [["DTC", dtcFirst.key], [heatmap.headline!.channel, heatmap.headline!.key]] as const) {
+      const link = heatLink(page, channel, key);
+      await link.click();
+      clicks++;
+      await expect.poll(() => analyticsCount(page, "chart_clicked"), { message: `點 ${channel} ${key} 記 chart_clicked` }).toBe(clicks);
+      await expectDayDrawer(page, channel, values.get(heatCellTestId(channel, key))!.cell, alias, snapshot.data_as_of);
+      await closeDrawer(page);
+      await expect(link).toHaveAttribute("tabindex", "0");
+      await expect(heatTabStop(page)).toHaveCount(1);
+    }
+    expect(heatmap.headline!.key, "標題所指的一天").toBe("2026-08-22");
+    await expect(heatCell(page, heatmap.headline!.channel, heatmap.headline!.key)).toHaveAttribute("data-tier", "2");
+    await expect(heatLink(page, heatmap.headline!.channel, heatmap.headline!.key)).toHaveText(formatHeatCell(heatmap.headline!.value));
+  });
+
+  test("4 通路合成資料：四張月曆、MARKETPLACE（標題所指）第一張；LIVE 缺列的日子是虛線框「資料待補」（data-tier=missing、可及名稱 cellAriaMissing）；第 3 週的期間外格留白、不可聚焦；SOCIAL 沒有上色的格；頁面不橫向捲動", async ({ page }) => {
+    const snapshot = await datasetSnapshot("synthetic");
+    const model = heatSectionModel(snapshot);
+    await page.goto("/");
+    await importSynthetic(page);
+    await navigateTo(page, "diagnosis");
+    const section = heatSection(page);
+    await expect(section).toBeVisible();
+    await expect(section.locator("#heat-title")).toHaveText(model.title);
+    await expect(heatTables(page)).toHaveCount(4);
+    await expect(heatTables(page).locator("caption")).toHaveText(model.tables.map(table => table.caption));
+    expect(model.tables.map(table => table.key)[0]).toBe("MARKETPLACE");
+    const info = await heatCellInfo(page);
+    expect(info.map(cell => cell.testId)).toEqual(modelCells(model).map(cell => cell.testId));
+    const missing = info.filter(cell => cell.tier === "missing");
+    expect(missing.map(cell => cell.testId), "資料待補的格都在 LIVE").toEqual(modelCells(model).filter(cell => cell.tier === "missing").map(cell => cell.testId));
+    expect(missing.length, "LIVE 缺列 7 天").toBe(7);
+    const [missingColor] = await resolveColors(page, [chartColors.missing]);
+    for (const cell of missing) {
+      expect(cell.testId.startsWith(heatCellTestId("LIVE", ""))).toBe(true);
+      expect([cell.text, cell.borderStyle, cell.borderColor, cell.background], `${cell.testId}：虛線框「資料待補」、不上底色`).toEqual([status.missing, "dashed", missingColor, TRANSPARENT]);
+    }
+    const firstMissing = modelCells(model).find(cell => cell.tier === "missing")!;
+    expect(firstMissing.aria).toContain(status.missing);
+    await expect(page.getByTestId(firstMissing.testId!).locator("button.heat-link")).toHaveAccessibleName(firstMissing.aria!);
+    // 期間外（本期 9/07–9/23，第 3 週 9/21–9/23 之後的週四到週日）：每張 4 格留白、沒有按鈕與 testid。
+    const outside = heatGrid(page).locator("td[data-tier='outside']");
+    await expect(outside).toHaveCount(4 * 4);
+    await expect(outside.locator("button")).toHaveCount(0);
+    expect(info.filter(cell => cell.testId.startsWith(heatCellTestId("SOCIAL", "")) && cell.background !== TRANSPARENT), "SOCIAL 全部為正、不上色").toEqual([]);
+    await expect(heatTabStop(page)).toHaveCount(1);
+    await expectNoPageScrollX(page);
+  });
+});
+
+test.describe("V4-3b 健檢 G12 五項比率每週走勢", () => {
+  test("收合時已掛載（M1）、不算主層圖區塊；展開後五張子圖依序、各自的 Y 刻度；圖容器 aria-hidden、裡面沒有 <details> 與按鈕；框高 ≥ 768 為 sm、≤ 767 為 sm × 5；切期間框高不變；頁面不橫向捲動", async ({ page }, testInfo) => {
+    const snapshot = await datasetSnapshot("demo");
+    const model = ratesModel(snapshot);
+    await stubAnalytics(page);
+    await openDiagnosis(page);
+    const details = ratesMore(page);
+    await expect(details).toHaveCount(1);
+    await expect(details).not.toHaveAttribute("open", /.*/);
+    await expect(details.locator(":scope > summary")).toHaveText(ratesCopy.summary);
+    await expect(ratesSection(page), "M1：收合時區塊已在 DOM").toHaveCount(1);
+    await expect(ratesSection(page)).toBeHidden();
+    await expect(ratesTable(page), "M1：收合時資料表已在 DOM").toHaveCount(1);
+    expect(await mainChartSections(page), "G12 在 <details> 內，不算主層獨立圖區塊").not.toContain("chart-diagnosis-rates");
+    expect(await frameHeights(page), "收合時沒有 G12 的框").not.toHaveProperty("chart-diagnosis-rates");
+
+    await openRates(page);
+    const section = ratesSection(page);
+    await expect(section.locator("#rates-title")).toHaveText(ratesCopy.title);
+    await expect(section).toHaveAttribute("aria-describedby", "rates-sub");
+    await expect(section.locator("#rates-sub")).toHaveText(model.subtitle);
+    const frame = ratesFrame(page);
+    await expect(frame).toHaveCount(1);
+    await expect(frame).toHaveClass(/(^|\s)sm(\s|$)/);
+    await expect(frame).toHaveClass(/(^|\s)multiples(\s|$)/);
+    await expect(frame).toHaveAttribute("aria-hidden", "true");
+    await expect(frame.locator("details, button, a, [tabindex]"), "圖容器內沒有 <details>、按鈕、連結、停留點").toHaveCount(0);
+    await expect(ratesPanels(page)).toHaveCount(RATE_METRICS.length);
+    const ticks = await ratesYTicks(page);
+    expect(ticks.map(item => item.panel), "五張子圖的順序").toEqual([...RATE_METRICS]);
+    await expect(frame.locator("svg.chart-multiple text.multiple-title")).toHaveText(RATE_METRICS.map(rate => metricDefinitions[rate].label));
+    expect(ticks.map(item => item.ticks), "每張子圖的 Y 刻度＝該比率自己的軸").toEqual(model.panels.map(panel => [...panel.axis.labels]));
+    expect(new Set(ticks.map(item => item.ticks.join("/"))).size, "不同比率不共用尺度（Y 範圍各自）").toBeGreaterThan(1);
+    const expectedHeight = isMobile(page) ? chartHeights.sm * RATE_METRICS.length : chartHeights.sm;
+    expect((await boxOf(frame)).height, "框高（≤ 767px 單欄 5 張）").toBe(expectedHeight);
+    const panelBoxes = await ratesPanels(page).evaluateAll(nodes => nodes.map(node => { const rect = node.getBoundingClientRect(); return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width) }; }));
+    if (isMobile(page)) expect(new Set(panelBoxes.map(box => box.x)).size, "390：單欄").toBe(1);
+    else expect(new Set(panelBoxes.map(box => box.y)).size, "≥ 768：一列放全部子圖").toBe(1);
+    // B4：展開狀態下切期間（近 7 天），框高不變。
+    const heights = await frameHeights(page);
+    expect(heights["chart-diagnosis-rates"]).toBe(expectedHeight);
+    await choosePreset(page, "last7");
+    await openRates(page);
+    await expect(ratesPanels(page)).toHaveCount(RATE_METRICS.length);
+    expect(await frameHeights(page), "近 7 天：健檢頁看得到的框高度都不變").toEqual(heights);
+    await expectNoPageScrollX(page);
+    testInfo.annotations.push({ type: "v4-3b-g12-layout", description: JSON.stringify({ heights, panelBoxes, ticks }) });
+  });
+
+  test("點子圖上的週點（記 chart_clicked）與資料表同一格開同一個抽屜（帶週篩選）；資料表收合時掛載、展開記 chart_table_opened，列＝上期＋本期各週、欄＝起訖日＋五項比率", async ({ page }) => {
+    const snapshot = await datasetSnapshot("demo");
+    const model = ratesModel(snapshot);
+    const alias = demoAlias(snapshot.report.dataset_id);
+    await stubAnalytics(page);
+    await openDiagnosis(page);
+    await openRates(page);
+    const week = model.weeks.current[0];
+    const rate = "gross_margin" as const;
+    const point = ratesFrame(page).locator(`.multiple[data-panel='${rate}'] circle.chart-point-hit[data-series='current'][data-index='0']`);
+    await expect(point).toHaveAttribute("data-key", week.start);
+    await point.click({ force: true });
+    await expect(evidenceDrawer(page)).toBeVisible();
+    await expect.poll(() => analyticsCount(page, "chart_clicked"), { message: "點週點記 chart_clicked" }).toBe(1);
+    await expect(drawerHeading(page)).toHaveText(drawerTitle(metricDefinitions[rate].label));
+    const filter = evidenceFilterText({ week: { start: week.start, end: week.end, label: week.label } }, { alias, anchor: snapshot.data_as_of })!;
+    await expect(evidenceDrawer(page).getByTestId("evidence-filter").locator("span")).toHaveText(filter);
+    const fromPoint = (await preciseValue(page).textContent())!.trim();
+    await closeDrawer(page);
+
+    const table = ratesTable(page);
+    const dataDetails = await openDataTable(ratesSection(page));
+    await expect.poll(() => analyticsCount(page, "chart_table_opened"), { message: "展開資料表記 chart_table_opened" }).toBe(1);
+    await expect(dataDetails.locator(":scope > summary")).toHaveText(fill(labels.overview.page.dataTable, { title: ratesCopy.title }));
+    await expect(table.locator("caption")).toHaveText(model.caption);
+    await expect(table.locator("thead th")).toHaveCount(2 + RATE_METRICS.length);
+    await expect(table.locator("tbody tr"), "列＝上期各週＋本期各週（去年同期不可用）").toHaveCount(model.rows.length);
+    await expect(table.locator("tbody th")).toHaveText(model.rows.map(row => row.label));
+    const cell = table.locator("tbody tr").filter({ has: page.getByRole("rowheader", { name: week.label, exact: true }) }).locator("td").nth(1 + RATE_METRICS.indexOf(rate)).locator("button.number-link");
+    await cell.click();
+    await expect(drawerHeading(page)).toHaveText(drawerTitle(metricDefinitions[rate].label));
+    await expect(preciseValue(page), "資料表格與週點同一個抽屜").toHaveText(fromPoint);
+    await expect(evidenceDrawer(page).getByTestId("evidence-filter").locator("span")).toHaveText(filter);
+    await closeDrawer(page);
+    await expect(cell).toBeFocused();
+    expect(await analyticsCount(page, "chart_clicked"), "資料表 number-link 不記 chart_clicked").toBe(1);
+    await expectNoPageScrollX(page);
   });
 });

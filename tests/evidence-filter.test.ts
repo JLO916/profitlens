@@ -2,8 +2,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
 import { channelLabel, demoAlias } from "../src/application/copy";
-import { applyEvidenceFilter, evidenceFilterText, hasEvidenceFilter, type EvidenceFilter } from "../src/application/evidence-filter";
-import { evidenceRows, formatPeriodL1, metricDefinitions } from "../src/application/presentation";
+import { applyEvidenceFilter, evidenceFilterError, evidenceFilterText, hasEvidenceFilter, scopedEvidenceFilter, type EvidenceFilter } from "../src/application/evidence-filter";
+import { evidenceRows, formatDateL1, formatPeriodL1, metricDefinitions } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { EvidenceDrawer, evidenceSubtitle, type EvidenceSelection } from "../src/components/evidence-drawer";
 import { channelEvidence } from "../src/components/overview/charts/channel-section";
@@ -157,5 +157,146 @@ describe("抽屜（SSR）：下鑽的篩選片語與清除", () => {
     expect(whole).toContain('class="ladder-table"');
     const range = formatPeriodL1(yoy.period.start, yoy.period.end, { anchor: twoYear.dataset.manifest.data_as_of, days: false });
     expect(whole).toContain(`class="sub">${escapeAttr(fill(labels.evidence.drawerV3.subtitle, { scope: labels.evidence.allChannels, period: fill(labels.evidence.drawerV3.periodNamed, { name: labels.shell.periods.presets.yoy, range }) }))}</p>`);
+  });
+});
+
+// ── V4-3b 代理 B：EvidenceFilter 加 date（G11 熱表格下鑽）與 sku（商品層證據）（PRD §6.4、§8.7；CHART_CATALOG §1.2 filter、G11 抽屜）。
+// 只過濾原始明細、不重算；sku 條件下沒有 sku 欄位的通路費用與廣告列一律不列入（AGENTS.md：SKU 篩選不可帶入全通路費用）；
+// filter.sku 只和同一個商品的商品層證據一起用，其他證據帶 filter.sku 視為錯誤（evidenceFilterError），抽屜以 scopedEvidenceFilter 拿掉 sku 條件。
+const v4 = labels.evidence.chartsV4.filter;
+/** golden 兩期（8/1 上期、8/2 本期）全部的來源列，加一列 manifest。 */
+const goldenAll = () => evidenceRows(golden.dataset, [...golden.snapshot.report.previous.sources, ...golden.snapshot.report.current.sources, { file: "manifest.json", line: null }]);
+const counts = (rows: ReturnType<typeof evidenceRows>) => [count(rows, "sales_daily.csv"), count(rows, "channel_costs_daily.csv"), count(rows, "ad_spend_daily.csv")];
+
+describe("V4-3b applyEvidenceFilter：單日與商品", () => {
+  it("hasEvidenceFilter：只給 date 或只給 sku 也算有篩選", () => {
+    expect(hasEvidenceFilter({ date: "2026-08-01" })).toBe(true);
+    expect(hasEvidenceFilter({ sku: "A" })).toBe(true);
+  });
+
+  it("單日：golden 兩期 8 列銷售、4 列通路費用、4 列廣告，篩 8/1 只剩上期那一天（4、2、2），每列日期等於該日；manifest 列保留", () => {
+    const rows = goldenAll();
+    expect(counts(rows)).toEqual([8, 4, 4]);
+    const day = applyEvidenceFilter(rows, { date: "2026-08-01" });
+    expect(counts(day)).toEqual([4, 2, 2]);
+    expect(day.filter(row => row.file !== "manifest.json").every(row => row.date === "2026-08-01")).toBe(true);
+    expect(count(day, "manifest.json")).toBe(1);
+    // 篩出來的列與上期（就是 8/1 這一天）自己的來源列相同。
+    expect(day.filter(row => row.file !== "manifest.json").map(row => [row.file, row.line])).toEqual(evidenceRows(golden.dataset, golden.snapshot.report.previous.sources).map(row => [row.file, row.line]));
+    // 沒有日期的資料列在單日條件下不列入。
+    expect(applyEvidenceFilter([{ file: "sales_daily.csv", line: null, values: {}, missing: true }], { date: "2026-08-01" })).toEqual([]);
+  });
+
+  it("通路加單日（G11 熱表格的 filter）：demo 本期全部來源列篩到 MARKETPLACE 的一天，與 report.current.daily 該日該通路自己的來源列相同", () => {
+    const { report } = demo.snapshot;
+    const daily = report.current.daily.find(item => item.channel === "MARKETPLACE" && item.date === report.current.period.start)!;
+    expect(daily).toBeDefined();
+    const rows = evidenceRows(demo.dataset, report.current.sources);
+    const filtered = applyEvidenceFilter(rows, { channel: "MARKETPLACE", date: daily.date });
+    expect(filtered.length).toBeGreaterThan(0);
+    expect(filtered.every(row => row.channel === "MARKETPLACE" && row.date === daily.date)).toBe(true);
+    const key = (row: { file: string; line: number | null }) => `${row.file}:${row.line}`;
+    expect(filtered.map(key).sort()).toEqual(evidenceRows(demo.dataset, daily.sources).map(key).sort());
+    // 只篩單日（全部通路）比通路加單日多。
+    expect(applyEvidenceFilter(rows, { date: daily.date }).length).toBeGreaterThan(filtered.length);
+    // 週與單日同時給時兩個條件都成立（單日在週外時一列都不剩）。
+    const week = demo.snapshot.weeks.filter(row => row.period === "current")[1];
+    expect(applyEvidenceFilter(rows, { week: { start: week.start, end: week.end, label: week.label }, date: daily.date })).toEqual([]);
+  });
+
+  it("商品：golden 本期篩 SKU A 只剩兩通路的 A 銷售列，通路費用與廣告列一律不列入；加通路時只剩 DTC 的 A；manifest 列保留", () => {
+    const rows = evidenceRows(golden.dataset, [...golden.snapshot.report.current.sources, { file: "manifest.json", line: null }]);
+    expect(counts(rows)).toEqual([4, 2, 2]);
+    const sku = applyEvidenceFilter(rows, { sku: "A" });
+    expect(counts(sku)).toEqual([2, 0, 0]);
+    expect(sku.filter(row => row.file !== "manifest.json").every(row => row.file === "sales_daily.csv" && row.sku === "A")).toBe(true);
+    expect(count(sku, "manifest.json")).toBe(1);
+    const dtc = applyEvidenceFilter(rows, { channel: "DTC", sku: "A" });
+    expect(counts(dtc)).toEqual([1, 0, 0]);
+    expect(dtc.find(row => row.file === "sales_daily.csv")).toMatchObject({ channel: "DTC", sku: "A", date: "2026-08-02" });
+    // 缺列（line null）帶 sku 的銷售列照 sku 比對；沒有 sku 的通路費用缺列不列入。
+    const missing = evidenceRows(golden.dataset, [{ file: "sales_daily.csv", line: null, date: "2026-08-02", channel: "DTC", sku: "A" }, { file: "channel_costs_daily.csv", line: null, date: "2026-08-02", channel: "DTC" }]);
+    expect(applyEvidenceFilter(missing, { sku: "A" }).map(row => row.file)).toEqual(["sales_daily.csv"]);
+  });
+});
+
+describe("V4-3b filter.sku 只和商品層證據一起用", () => {
+  it("evidenceFilterError：非商品層證據帶 sku 是錯誤；同一個商品的商品層證據不是；不同商品是錯誤；沒有 sku 條件時一律 null", () => {
+    expect(evidenceFilterError({ filter: { sku: "A" } })).toBe("skuWithoutProductEvidence");
+    expect(evidenceFilterError({ filter: { channel: "DTC", sku: "A" } })).toBe("skuWithoutProductEvidence");
+    expect(evidenceFilterError({ sku: "A", filter: { channel: "DTC", sku: "A" } })).toBeNull();
+    expect(evidenceFilterError({ sku: "B", filter: { sku: "A" } })).toBe("skuMismatch");
+    expect(evidenceFilterError({ filter: { channel: "DTC", date: "2026-08-02" } })).toBeNull();
+    expect(evidenceFilterError({ sku: "A" })).toBeNull();
+    expect(evidenceFilterError({})).toBeNull();
+  });
+
+  it("scopedEvidenceFilter：用錯時拿掉 sku、其餘條件照舊（不改原物件）；用法正確或沒有 sku 時原物件回傳", () => {
+    const wrong: EvidenceFilter = { channel: "DTC", date: "2026-08-02", sku: "A" };
+    expect(scopedEvidenceFilter({ filter: wrong })).toEqual({ channel: "DTC", date: "2026-08-02" });
+    expect(wrong.sku).toBe("A");
+    expect(scopedEvidenceFilter({ sku: "B", filter: wrong })).toEqual({ channel: "DTC", date: "2026-08-02" });
+    const right: EvidenceFilter = { channel: "DTC", sku: "A" };
+    expect(scopedEvidenceFilter({ sku: "A", filter: right })).toBe(right);
+    const plain: EvidenceFilter = { channel: "DTC" };
+    expect(scopedEvidenceFilter({ filter: plain })).toBe(plain);
+    expect(scopedEvidenceFilter({})).toBeUndefined();
+    // 只有 sku 一個條件而且用錯：拿掉之後沒有任何篩選。
+    expect(hasEvidenceFilter(scopedEvidenceFilter({ filter: { sku: "A" } }))).toBe(false);
+  });
+});
+
+describe("V4-3b evidenceFilterText：日期與商品片語", () => {
+  const anchor = () => golden.dataset.manifest.data_as_of;
+  it("單日「篩選：日期 8/2」；依週、單日、通路、商品的順序以「 · 」相接；日期與資料到的年份不同時寫年份", () => {
+    expect(evidenceFilterText({ date: "2026-08-02" }, { alias: false, anchor: anchor() })).toBe(fill(copy.phrase, { scope: fill(v4.date, { date: "8/2" }) }));
+    expect(evidenceFilterText({ date: "2026-08-02" }, { alias: false, anchor: anchor() })).toBe("篩選：日期 8/2");
+    expect(evidenceFilterText({ channel: "DTC", date: "2026-08-02" }, { alias: false, anchor: anchor() })).toBe(fill(copy.phrase, { scope: [fill(v4.date, { date: "8/2" }), "DTC"].join(copy.joiner) }));
+    expect(evidenceFilterText({ sku: "A" }, { alias: false })).toBe(fill(copy.phrase, { scope: fill(v4.sku, { sku: "A" }) }));
+    expect(evidenceFilterText({ sku: "A" }, { alias: false })).toBe("篩選：商品 A");
+    const week = { start: "2026-08-02", end: "2026-08-08", label: fill(labels.overview.pnlV3.weekLabel.current, { n: 1 }) };
+    expect(evidenceFilterText({ sku: "A", channel: "DTC", date: "2026-08-02", week }, { alias: false, anchor: anchor() }))
+      .toBe(fill(copy.phrase, { scope: [fill(copy.week, { label: week.label, range: formatPeriodL1(week.start, week.end, { anchor: anchor(), days: false }) }), fill(v4.date, { date: "8/2" }), "DTC", fill(v4.sku, { sku: "A" })].join(copy.joiner) }));
+    expect(formatDateL1("2025-08-02", { anchor: anchor() })).toBe("2025/8/2");
+    expect(evidenceFilterText({ date: "2025-08-02" }, { alias: false, anchor: anchor() })).toBe(fill(copy.phrase, { scope: fill(v4.date, { date: "2025/8/2" }) }));
+  });
+});
+
+describe("V4-3b 抽屜（SSR）：單日與商品的下鑽", () => {
+  const render = (dataset: Dataset, snapshot: WorkspaceSnapshot, evidence: EvidenceSelection) => renderToStaticMarkup(createElement(EvidenceDrawer, { dataset, snapshot, evidence, onClose: noop, onBasis: noop }));
+  const tabs = (html: string) => [...element(html, 'class="source-tabs')!.matchAll(/<button[^>]*>([^<]*)<\/button>/g)].map(match => match[1]);
+  const dates = (html: string) => [...element(html, 'class="source-table"')!.matchAll(/class="evidence-date"[^>]*>([^<]*)<\/td>/g)].map(match => match[1]);
+  const tabText = (tab: keyof typeof labels.evidence.sourceTabs, n: number) => fill(labels.evidence.drawer.tabWithCount, { tab: labels.evidence.sourceTabs[tab], n });
+
+  it("通路加單日（G11 熱表格）：片語含日期與通路名；原始明細每列日期等於該日；分段筆數是篩選後的列", () => {
+    const { report } = demo.snapshot;
+    const date = report.current.period.start;
+    const daily = report.current.daily.find(item => item.channel === "MARKETPLACE" && item.date === date)!;
+    const evidence: EvidenceSelection = { name: "contribution_after_marketing", metric: daily.metrics.contribution_after_marketing, period: { start: date, end: date }, channels: ["MARKETPLACE"], sources: report.current.sources, title: metricDefinitions.contribution_after_marketing.label, filter: { channel: "MARKETPLACE", date } };
+    const html = render(demo.dataset, demo.snapshot, evidence);
+    const alias = demoAlias(demo.snapshot.report.dataset_id);
+    const anchor = demo.dataset.manifest.data_as_of;
+    const phrase = evidenceFilterText({ channel: "MARKETPLACE", date }, { alias, anchor })!;
+    expect(phrase).toBe(fill(copy.phrase, { scope: [fill(v4.date, { date: formatDateL1(date, { anchor }) }), channelLabel("MARKETPLACE", alias)].join(copy.joiner) }));
+    expect(byTestId(html, "evidence-filter")).toContain(`<span>${escapeAttr(phrase)}</span>`);
+    expect(dates(html).length).toBeGreaterThan(0);
+    expect(dates(html).every(value => value === date)).toBe(true);
+    const filtered = applyEvidenceFilter(evidenceRows(demo.dataset, report.current.sources), { channel: "MARKETPLACE", date });
+    expect(tabs(html)).toEqual([tabText("sales", count(filtered, "sales_daily.csv")), tabText("costs", count(filtered, "channel_costs_daily.csv")), tabText("ads", count(filtered, "ad_spend_daily.csv"))]);
+  });
+
+  it("商品層證據帶 filter.sku：片語含「商品 A」，原始明細只有該商品的銷售列（沒有通路費用與廣告分段）", () => {
+    const evidence: EvidenceSelection = { sku: "A", name: "gross_profit", metric: golden.snapshot.report.current.metrics.gross_profit, period: golden.snapshot.report.current.period, channels: ["DTC"], sources: golden.snapshot.report.current.sources, title: metricDefinitions.gross_profit.label, filter: { channel: "DTC", sku: "A" } };
+    const html = render(golden.dataset, golden.snapshot, evidence);
+    expect(byTestId(html, "evidence-filter")).toContain(`<span>${escapeAttr(fill(copy.phrase, { scope: ["DTC", fill(v4.sku, { sku: "A" })].join(copy.joiner) }))}</span>`);
+    expect(tabs(html)).toEqual([tabText("sales", 1)]);
+    expect(element(html, 'class="source-table"')!.match(/<tr role="row">/g)).toHaveLength(1 + 1);
+  });
+
+  it("非商品層證據帶 filter.sku（用錯）：抽屜拿掉 sku 條件，片語沒有商品，通路費用與廣告列照常列出（不把通路金額配上單一商品的明細）", () => {
+    const html = render(golden.dataset, golden.snapshot, contribution(golden.snapshot, { channel: "DTC", sku: "A" }));
+    expect(byTestId(html, "evidence-filter")).toContain(`<span>${escapeAttr(fill(copy.phrase, { scope: "DTC" }))}</span>`);
+    expect(html).not.toContain(escapeAttr(fill(v4.sku, { sku: "A" })));
+    expect(tabs(html)).toEqual([tabText("sales", 2), tabText("costs", 1), tabText("ads", 1)]);
   });
 });

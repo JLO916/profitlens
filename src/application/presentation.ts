@@ -177,6 +177,18 @@ export function formatAxisWan(ticks: readonly number[], step: number): string[] 
   });
 }
 
+/**
+ * V4-3b 熱表格內的金額（PRD §4.4、§6.4 G11；CHART_CATALOG G11；D-V4-17＝A）：以萬為單位、HALF_UP 兩位小數、不帶單位（單位「萬元」寫在 caption）。
+ * 負號與 L1 的「虧」同一規則：取位到元後仍為負才帶 U+2212（萬位取位為 0 也保留，例如 −30 元寫「−0.00」）；取位到元後為 0 寫「0.00」（−0.30 元也是）；正值不加號。
+ * 例：−4,510.74 元寫「−0.45」。1,000 萬以上加千分位。null 或不是十進位字串時回傳空字串，由呼叫端畫虛線框與「資料待補」。
+ */
+export function formatHeatCell(value: string | null | undefined): string {
+  const v = exact(value);
+  if (v === null) return "";
+  const negative = rounded(v, 0).sign < 0;
+  return `${negative ? MINUS : ""}${grouped(v.abs().div(TEN_THOUSAND).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2))}`;
+}
+
 /** 比率（domain 的小數，例如 0.161745…）轉百分比；plus 時正值加「+」。 */
 function percent(value: ExactValue, dp: number, plus: boolean): string {
   const result = rounded(value.times(100), dp);

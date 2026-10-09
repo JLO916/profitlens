@@ -287,3 +287,51 @@ export const channelWeeksTable = (page: Page) => page.getByTestId("chart-diagnos
 
 /** 總覽「進階」管理損益表「佔淨營收 %」格的 number-link（pnl-share-{指標}）。 */
 export const pnlShare = (page: Page, metric: string) => page.getByTestId(`pnl-share-${metric}`);
+
+// ── 健檢 G11 日 × 通路月曆熱表、G12 五項比率每週走勢（V4-3b） ──
+/**
+ * G11：區塊（ChartFrame id heat、mode table）、固定高框（.chart-frame.lg.heat[data-mode=table]，不設 aria-hidden）、框內的捲動區（.table-scroll[role=region]，沒有 tabindex）、
+ * 熱表外層（div.heat-grid[data-layout]，click／keydown／focus 都掛在這裡）、每張月曆（table.heat-table[role=grid]）與格（td[data-testid=chart-diagnosis-heat-cell-{通路}-{ISO 日期或週起日}]，格內 button.heat-link）。
+ */
+export const heatSection = (page: Page) => page.getByTestId("chart-diagnosis-heat");
+export const heatFrame = (page: Page) => heatSection(page).locator(".chart-frame");
+export const heatScroll = (page: Page) => heatFrame(page).locator(":scope > .table-scroll");
+export const heatGrid = (page: Page) => heatSection(page).locator(".heat-grid");
+export const heatTables = (page: Page) => heatGrid(page).locator("table.heat-table");
+export const heatCells = (page: Page) => heatSection(page).locator("[data-testid^='chart-diagnosis-heat-cell-']");
+export const heatCell = (page: Page, channel: string, key: string) => page.getByTestId(`chart-diagnosis-heat-cell-${channel}-${key}`);
+export const heatLink = (page: Page, channel: string, key: string) => heatCell(page, channel, key).locator("button.heat-link");
+/** 熱表內 tabindex=0 的格（整張熱表恰好 1 個；roving tabindex）。 */
+export const heatTabStop = (page: Page) => heatGrid(page).locator("button.heat-link[tabindex='0']");
+
+/** 熱表每一格的屬性（依 DOM 順序）：testid、data-tier、可見文字、按鈕的 tabindex、計算後的底色與框線樣式（只讀，不改元素）。 */
+export interface HeatCellInfo { testId: string; tier: string | null; text: string; tabIndex: string | null; background: string; borderStyle: string; borderColor: string; ariaHiddenAncestor: boolean }
+export function heatCellInfo(page: Page): Promise<HeatCellInfo[]> {
+  return heatCells(page).evaluateAll(nodes => nodes.map(node => {
+    const button = node.querySelector("button.heat-link");
+    const style = button ? getComputedStyle(button) : null;
+    return {
+      testId: node.getAttribute("data-testid") ?? "", tier: node.getAttribute("data-tier"), text: (button?.textContent ?? "").trim(), tabIndex: button?.getAttribute("tabindex") ?? null,
+      background: getComputedStyle(node).backgroundColor, borderStyle: style?.borderTopStyle ?? "", borderColor: style?.borderTopColor ?? "",
+      ariaHiddenAncestor: node.closest("[aria-hidden='true']") !== null,
+    };
+  }));
+}
+
+/** G12：<details class="chart-more rates-more">（summary「五項比率走勢」）、區塊（ChartFrame id rates）、固定高框（.chart-frame.sm.multiples，aria-hidden）、子圖與資料表。 */
+export const ratesMore = (page: Page) => page.locator("details.rates-more");
+export const ratesSection = (page: Page) => page.getByTestId("chart-diagnosis-rates");
+export const ratesFrame = (page: Page) => ratesSection(page).locator(".chart-frame");
+export const ratesPanels = (page: Page) => ratesFrame(page).locator(".multiples-grid > .multiple");
+export const ratesTable = (page: Page) => page.getByTestId("chart-diagnosis-rates-table");
+/** 展開「五項比率走勢」（已展開就不動），等區塊可見。 */
+export async function openRates(page: Page) {
+  const details = ratesMore(page);
+  await openDetails(details);
+  await expect(details).toHaveAttribute("open", "");
+  await expect(ratesSection(page)).toBeVisible();
+}
+/** 每張子圖的 Y 標文字（g.multiple-axis 內 text-anchor=end 的 text；DOM 順序＝刻度由小到大）。 */
+export function ratesYTicks(page: Page): Promise<{ panel: string; ticks: string[] }[]> {
+  return ratesPanels(page).evaluateAll(nodes => nodes.map(node => ({ panel: node.getAttribute("data-panel") ?? "", ticks: [...node.querySelectorAll(".multiple-axis text[text-anchor='end']")].map(text => (text.textContent ?? "").trim()) })));
+}

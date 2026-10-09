@@ -6,6 +6,7 @@ import type { WorkspaceSnapshot } from "@/application/workspace";
 import { analyzeProducts } from "@/domain/analysis";
 import { COST_FIELDS, SALES_FIELDS, type Dataset, type Metric, type MetricName, type ProductMetrics, type SourceRef } from "@/domain/types";
 import type { EvidenceSelection } from "./evidence-drawer";
+import { HeatSection } from "./diagnosis/heat-section";
 import { IssueList, SideFileIssueList } from "./issue-list";
 import { TemplateTable } from "./shell/template-table";
 import { downloadText } from "@/application/download";
@@ -18,6 +19,7 @@ import type { TaxConversion } from "@/application/tax-basis";
 import { exportTargetsCsv, targetDisplay, targetsCsvTemplate, type TargetIssue, type TargetSet } from "@/application/targets";
 import { eventsCsvTemplate, exportEventsCsv, type EventIssue, type EventSet } from "@/application/events";
 import { fill, labels } from "@/i18n";
+import { RatesSection } from "./diagnosis/rates-section";
 import { ChannelWideTable } from "./channel-table";
 import { DiagnosisList } from "./diagnosis-list";
 import { ShareSection } from "./diagnosis/share-section";
@@ -190,7 +192,9 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null 
   {/* ── V4-3a A：G10 每 100 元淨營收去向插在這裡（健檢清單之後、通路寬表之前；06 V4-0a 第 9 項的畫面 10 範圍） */}
   <ShareSection snapshot={snapshot} onEvidence={onEvidence} />
   {/* ── V4-3b A：G11 日 × 通路月曆熱表插在這裡（G10 之後） */}
+  <HeatSection snapshot={snapshot} onEvidence={onEvidence} />
   {/* ── V4-3b B：G12 五項比率每週走勢（<details>，收合時掛載）插在這裡（G11 之後、通路寬表之前） */}
+  <RatesSection snapshot={snapshot} onEvidence={onEvidence} />
   <section className="panel channel-compare" aria-labelledby="channel-table-heading" data-testid="channel-compare">
     <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{channelsLabel(summary.scope.channels, alias)}</span></div>
     <p className="sub">{diagnosisPanel.channelTableCaution}</p>
