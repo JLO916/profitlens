@@ -126,12 +126,27 @@ async function load(name: string, input: DatasetInput): Promise<Loaded> {
   const comparison = compareProducts(dataset, snapshot.report.scope);
   return { name, dataset, snapshot, rows: comparison.rows, ctx: { previous: comparison.scope.previous_period, current: comparison.scope.current_period, alias: demoAlias(dataset.manifest.dataset_id) } };
 }
+/**
+ * 兩期有無資料不同、空品類（上面 5 個資料集每列兩期的 presence 都相同、都有品類，測不到範圍行的 previousPresence／currentPresence 與「未填」品類）：
+ * golden 改銷售檔：DTC/A 兩期都有；DTC/GONE 只在上期；MARKETPLACE/NEW 只在本期且品類空白。confirmed＝false 時沒有列的那一期是「範圍未確認」。
+ */
+function presenceInput(confirmed: boolean): DatasetInput {
+  const input = fixture();
+  input.manifest = { ...(input.manifest as object), sales_coverage_confirmed: confirmed };
+  input.files["sales_daily.csv"] = [
+    "date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency",
+    "2026-08-01,DTC,A,HOME,2,1000.00,100.00,0.00,400.00,TWD", "2026-08-02,DTC,A,HOME,3,1400.00,210.00,70.00,580.00,TWD",
+    "2026-08-01,DTC,GONE,CARE,1,500.00,0.00,50.00,200.00,TWD", "2026-08-02,MARKETPLACE,NEW,,1,500.00,100.00,50.00,225.00,TWD",
+  ].join("\n") + "\n";
+  return input;
+}
 let sets: Loaded[];
 let synthetic: Loaded;
 let refundOnly: Loaded;
 beforeAll(async () => {
   sets = await Promise.all([
     load("demo", fixture("demo")), load("golden", fixture("golden")), load("refund_only", fixture("refund_only")), load("missing_cogs", fixture("errors/missing_cogs")), load("synthetic-4-channel", synthetic4ChannelInput()),
+    load("presence-confirmed", presenceInput(true)), load("presence-unconfirmed", presenceInput(false)),
   ]);
   synthetic = sets.find(set => set.name === "synthetic-4-channel")!;
   refundOnly = sets.find(set => set.name === "refund_only")!;
@@ -141,6 +156,12 @@ describe("V4-4 商品抽屜 builder：只搬移（與凍結的舊閉包逐欄相
   it("示範資料套別名；合成資料不套（ctx.alias 取自 demoAlias）", () => {
     expect(sets.find(set => set.name === "demo")!.ctx.alias).toBe(true);
     expect(synthetic.ctx.alias).toBe(false);
+  });
+
+  it("比對的資料集涵蓋兩期 presence 不同（已確認沒有列、範圍未確認）與空品類，範圍行的上期、本期說明與「未填」品類都被比到", () => {
+    const presence = (name: string) => sets.find(set => set.name === name)!.rows.map(row => `${row.channel}/${row.sku}:${row.previous.presence}>${row.current.presence}:${row.category}`);
+    expect(presence("presence-confirmed")).toEqual(["DTC/A:observed>observed:HOME", "DTC/GONE:observed>no_rows_confirmed:CARE", "MARKETPLACE/NEW:no_rows_confirmed>observed:"]);
+    expect(presence("presence-unconfirmed")).toEqual(["DTC/A:observed>observed:HOME", "DTC/GONE:observed>unknown_coverage:CARE", "MARKETPLACE/NEW:unknown_coverage>observed:"]);
   });
 
   it("productEvidence：每個資料集 × 每列 × 兩期 × 每個金額／比率指標 × 短名與全名，toStrictEqual 舊 metricLink 的 payload", () => {
