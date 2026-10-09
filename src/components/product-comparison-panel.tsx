@@ -11,27 +11,20 @@ import { dataStatus, PRODUCT_HIGHLIGHT_LIMIT, productHighlights, rateAvailabilit
 import { deltaTone, formatAmountL2, formatCount, formatPeriodL1, formatRateL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { TaxConversion } from "@/application/tax-basis";
-import { uniqueSources } from "@/domain/aggregation";
 import { compareProducts, selectProductComparisonRows, type ProductComparisonRow, type ProductComparisonSort } from "@/domain/product-comparison";
-import type { Dataset, Metric, ProductMetrics, SourceRef } from "@/domain/types";
+import type { Dataset, Metric, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
+import { productCategoryText, productChangeLabel, productDeltaEvidence, productEvidence, productPresenceLabels, type ProductEvidenceContext, type ProductMoneyMetric } from "./product-evidence";
 import { toneClass } from "./tone-class";
 import { ShellIcon } from "./shell/shell-icon";
 
 const copy = labels.products.comparison;
 const highlight = labels.products.highlights;
 const page = labels.products.pageV3;
-/** R4：ProductMetrics 多了件數（非金額）；金額／比率欄另列，件數欄單獨處理。 */
-type ProductMoneyMetric = Exclude<keyof ProductMetrics, "units_sold">;
 /** R5-6（02 §5）：主欄之外的欄位，按「更多欄位」才顯示。 */
 const moreCurrentColumns: ProductMoneyMetric[] = ["cogs_net", "discounts", "refunds"];
 const morePreviousColumns: ProductMoneyMetric[] = ["cogs_net", "gross_margin", "discounts", "refunds"];
-const presenceLabels: Record<ProductComparisonRow["previous"]["presence"], string> = {
-  observed: copy.presence.observed, no_rows_confirmed: copy.presence.noRowsConfirmed, unknown_coverage: copy.presence.unknownCoverage,
-};
-/** 「淨營收差額」「商品毛利差額」：指標名＋差額後綴，與 CSV 標題同源。 */
-const changeLabel = (name: ProductMoneyMetric) => `${metricDefinitions[name].label}${labels.exports.csv.suffix.change}`;
 /** 「上期淨營收」「本期毛利率」：期間短名＋指標名。 */
 const periodMetric = (period: "previous" | "current", label: string) => `${labels.shell.periods[period]}${label}`;
 /** V3-2b：表格是 L2（整數元），金額欄的表頭標一次「（元）」，儲存格不帶單位；比率欄維持 %。 */
@@ -140,7 +133,9 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   const unavailable = comparison.rows.filter(row => row.changes.gross_profit.value === null).length;
   const filtered = activeCategory !== "" || query.trim() !== "" || negativeOnly;
   const { previous_period: previous, current_period: current, channels } = comparison.scope;
-  const categoryText = (value: string) => value ? categoryLabel(value, alias) : copy.blankCategoryShort;
+  const categoryText = (value: string) => productCategoryText(value, alias);
+  /** V4-4：商品抽屜 builder（src/components/product-evidence.ts）的頁面範圍；圖、前 10 名表與完整表共用。 */
+  const evidenceContext: ProductEvidenceContext = { previous, current, alias };
   /** 範圍副標：目前範圍涵蓋資料集全部通路時寫「全部通路」（同 overview/weekly-snapshot.tsx 的 snapshotMeta）。 */
   const everyChannel = (allChannels ?? dataset.manifest.channels).length > 0 && (allChannels ?? dataset.manifest.channels).every(channel => channels.includes(channel));
   const scopeText = fill(page.scope, {
@@ -159,14 +154,13 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   const chooseDensity = (value: TableDensity) => { setDensity(value); writeDensity(value); };
   const clearFilters = () => { setCategory(""); setQuery(""); setNegativeOnly(false); searchRef.current?.focus(); };
 
-  /** 金額／比率格的 number-link（抽屜 payload 與可及名稱同 v2）。 */
+  /** 金額／比率格的 number-link（抽屜 payload 與可及名稱同 v2；V4-4 起 payload 由 productEvidence 組成，只搬移）。 */
   const metricLink = (row: ProductComparisonRow, period: "previous" | "current", name: ProductMoneyMetric, label: string) => {
     const value = row[period];
     const metric = value.metrics[name];
-    const periodLabel = labels.shell.periods[period];
     return <><button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined}
       aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, period: period === "previous" ? labels.shell.periods.previous : "", label, value: display(name, metric) })}
-      onClick={() => onEvidence({ sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: periodLabel, label }), name, metric, period: period === "previous" ? previous : current, channels: [row.channel], sources: value.sources, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: categoryText(row.category), presence: presenceLabels[value.presence] }) })}>
+      onClick={() => onEvidence(productEvidence(row, period, name, label, evidenceContext))}>
       {display(name, metric)}</button>{metric.value === null && !notApplicable(name, metric) && <small className="note">{metric.reason_codes.includes("MISSING_COGS") ? copy.costMissing : copy.notComputable}</small>}</>;
   };
   /** 件數不是金額：抽屜以 unitOverride="count" 顯示「n 件」，版本標 assist-kpi-v1（同總覽輔助指標卡）。 */
@@ -176,22 +170,18 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     const label = labels.assist.items.units_sold.label;
     return <button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined}
       aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, period: period === "previous" ? labels.shell.periods.previous : "", label, value: unitsText(metric) })}
-      onClick={() => onEvidence({ sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: labels.shell.periods[period], label }), name: "net_revenue", unitOverride: "count", metric, period: period === "previous" ? previous : current, channels: [row.channel], sources: value.sources, formula: labels.assist.items.units_sold.formula, formulaTechnical: labels.assist.items.units_sold.formulaTechnical, metricVersion: ASSIST_KPI_VERSION, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: categoryText(row.category), presence: presenceLabels[value.presence] }) })}>
+      onClick={() => onEvidence({ sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: labels.shell.periods[period], label }), name: "net_revenue", unitOverride: "count", metric, period: period === "previous" ? previous : current, channels: [row.channel], sources: value.sources, formula: labels.assist.items.units_sold.formula, formulaTechnical: labels.assist.items.units_sold.formulaTechnical, metricVersion: ASSIST_KPI_VERSION, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: categoryText(row.category), presence: productPresenceLabels[value.presence] }) })}>
       {unitsText(metric)}</button>;
   };
+  /** 差額格的 number-link（V4-4 起 payload 由 productDeltaEvidence 組成，只搬移）。 */
   const deltaLink = (row: ProductComparisonRow, name: "net_revenue" | "gross_profit") => {
     const metric = row.changes[name];
-    const label = changeLabel(name);
+    const label = productChangeLabel(name);
     const value = formatSignedDelta(metric.value, "L2");
     const tone = toneClass(deltaTone(name, metric.value, "L2"));
     return <><button type="button" className={tone === "neutral" ? "number-link" : `number-link ${tone}`} title={metric.reason_codes.join("、") || undefined}
       aria-label={fill(copy.deltaEvidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, label, value })}
-      onClick={() => onEvidence({ sku: row.sku, title: fill(copy.deltaEvidenceTitle, { sku: row.sku, label }), name, metric, period: { start: previous.start, end: current.end }, channels: [row.channel],
-        sources: uniqueSources([...row.previous.sources, ...row.current.sources]),
-        scopeLabel: fill(copy.deltaScopeLabel, { sku: row.sku, category: categoryText(row.category), previousStart: previous.start, previousEnd: previous.end, previousPresence: presenceLabels[row.previous.presence], currentStart: current.start, currentEnd: current.end, currentPresence: presenceLabels[row.current.presence] }),
-        formula: fill(copy.deltaFormula, { label, metric: metricDefinitions[name].label, formula: metricDefinitions[name].formula }),
-        components: [{ label: fill(copy.periodRange, { period: labels.shell.periods.previous, start: previous.start, end: previous.end }), metric: row.previous.metrics[name] }, { label: fill(copy.periodRange, { period: labels.shell.periods.current, start: current.start, end: current.end }), metric: row.current.metrics[name] }],
-      })}>{value}</button>{metric.value === null && <small className="note">{copy.deltaMissing}</small>}</>;
+      onClick={() => onEvidence(productDeltaEvidence(row, name, evidenceContext))}>{value}</button>{metric.value === null && <small className="note">{copy.deltaMissing}</small>}</>;
   };
 
   /** C3 欄位：表頭文字同時是手機清單的 data-label；num 欄（金額、比率、件數）右對齊、tabular。 */
@@ -229,8 +219,8 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     { key: "category", header: labels.exports.csv.columns.category, num: false, listRole: "labeled", render: row => row.category.trim() ? categoryLabel(row.category, alias) : copy.blankCategory },
     { key: "current-units_sold", header: periodMetric("current", labels.assist.items.units_sold.label), num: true, listRole: "secondary", render: row => unitsLink(row, "current") },
     ...(["net_revenue", "gross_profit", "gross_margin"] as const).map((name): Column => ({ key: `current-${name}`, header: withUnit(name, periodMetric("current", metricDefinitions[name].shortLabel)), num: true, listRole: name === "gross_profit" ? "primary" : name === "gross_margin" ? "secondary" : "labeled", render: row => metricLink(row, "current", name, metricDefinitions[name].shortLabel) })),
-    { key: "change-gross_profit", header: withUnit("gross_profit", changeLabel("gross_profit")), num: true, listRole: "secondary", className: "list-lead", render: row => deltaLink(row, "gross_profit") },
-    { key: "change-net_revenue", header: withUnit("net_revenue", changeLabel("net_revenue")), num: true, listRole: "labeled", render: row => deltaLink(row, "net_revenue") },
+    { key: "change-gross_profit", header: withUnit("gross_profit", productChangeLabel("gross_profit")), num: true, listRole: "secondary", className: "list-lead", render: row => deltaLink(row, "gross_profit") },
+    { key: "change-net_revenue", header: withUnit("net_revenue", productChangeLabel("net_revenue")), num: true, listRole: "labeled", render: row => deltaLink(row, "net_revenue") },
     { key: "previous-net_revenue", header: withUnit("net_revenue", periodMetric("previous", metricDefinitions.net_revenue.label)), num: true, listRole: "labeled", render: row => metricLink(row, "previous", "net_revenue", metricDefinitions.net_revenue.label) },
     { key: "previous-gross_profit", header: withUnit("gross_profit", periodMetric("previous", metricDefinitions.gross_profit.label)), num: true, listRole: "labeled", render: row => metricLink(row, "previous", "gross_profit", metricDefinitions.gross_profit.label) },
     { key: "status", header: highlight.columns.dataStatus, num: false, listRole: "labeled", render: row => { const status = dataStatus(row); return <span className={`product-status ${status}`}>{highlight.status[status]}</span>; } },

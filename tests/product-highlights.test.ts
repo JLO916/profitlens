@@ -10,6 +10,7 @@ import { validateDataset } from "@/domain/validation";
 import type { Dataset, DatasetInput } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 function dataset(input: DatasetInput = fixture()): Dataset {
   const result = validateDataset(input);
@@ -60,9 +61,9 @@ describe("R5-6 productHighlights：本期毛利最差／毛利增加最多", () 
     expect(PRODUCT_HIGHLIGHT_LIMIT).toBe(10);
     expect(productHighlights(rows, 2).worstCurrent.map(id)).toEqual(["MARKETPLACE/B", "DTC/B"]);
     expect(productHighlights(rows, 1).bestChange.map(id)).toEqual(["DTC/A"]);
-    expect(productHighlights(rows, 0)).toEqual({ worstCurrent: [], bestChange: [] });
+    expect(productHighlights(rows, 0)).toEqual({ worstCurrent: [], bestChange: [], worstChange: [] });
     expect(productHighlights(rows, 999).worstCurrent).toHaveLength(4);
-    expect(productHighlights([])).toEqual({ worstCurrent: [], bestChange: [] });
+    expect(productHighlights([])).toEqual({ worstCurrent: [], bestChange: [], worstChange: [] });
     expect(rows).toEqual(before);
     // 12 個商品時預設只取 10 個：本期毛利 1..12 元，最差 10 個是 1..10。
     const many = compareProducts(dataset(withSales(Array.from({ length: 12 }, (_, index) => sale(aug2, `S${String(index + 1).padStart(2, "0")}`, String(index + 1), "0"))))).rows;
@@ -111,6 +112,69 @@ describe("R5-6 productHighlights：本期毛利最差／毛利增加最多", () 
     const rows = compareProducts(dataset(withSales([sale(aug2, "Z", "9007199254740993.01", "0"), sale(aug2, "A", "9007199254740993.02", "0")]))).rows;
     expect(productHighlights(rows).worstCurrent.map(row => row.sku)).toEqual(["Z", "A"]);
     expect(productHighlights(rows).bestChange.map(row => row.sku)).toEqual(["A", "Z"]);
+  });
+});
+
+// V4-4 代理 A（CHART_CATALOG G13）：worstChange＝商品毛利差額 < 0 的列，由小到大（減少最多在前），同值依通路、SKU；與 bestChange 對稱，只挑列。
+describe("V4-4 productHighlights.worstChange：商品毛利減少最多（G13）", () => {
+  it("golden：差額 DTC/B −50.00、MARKETPLACE/B −55.00 → 由小到大 MARKETPLACE/B、DTC/B；正差額不列入；worstCurrent、bestChange 不變", () => {
+    const rows = compareProducts(dataset()).rows;
+    const { worstCurrent, bestChange, worstChange } = productHighlights(rows);
+    // −55.00 < −50.00；+40.00、+10.00 不列入
+    expect(worstChange.map(id)).toEqual(["MARKETPLACE/B", "DTC/B"]);
+    expect(worstChange.map(row => row.changes.gross_profit.value)).toEqual(["-55.00", "-50.00"]);
+    expect(worstCurrent.map(id)).toEqual(["MARKETPLACE/B", "DTC/B", "MARKETPLACE/A", "DTC/A"]);
+    expect(bestChange.map(id)).toEqual(["DTC/A", "MARKETPLACE/A"]);
+    expect(productHighlights(rows, 1).worstChange.map(id)).toEqual(["MARKETPLACE/B"]);
+    expect(productHighlights(rows, 0).worstChange).toEqual([]);
+  });
+
+  it("同值依通路、SKU 字典序；差額 0 與正差額不列入；沒有負差額時是空陣列", () => {
+    // 差額（本期 − 上期，商品毛利＝收入 − 成本）：DTC/Z 10 − 60＝−50.00；DTC/A、DTC/B、MARKETPLACE/A 各 40 − 60＝−20.00；
+    // DTC/FLAT 60 − 60＝0.00；DTC/UP 70 − 60＝+10.00。
+    const rows = compareProducts(dataset(withSales([
+      sale(aug1, "B", "100", "40"), sale(aug2, "B", "80", "40"), sale(aug1, "A", "100", "40", "MARKETPLACE"), sale(aug2, "A", "80", "40", "MARKETPLACE"),
+      sale(aug1, "A", "100", "40"), sale(aug2, "A", "80", "40"), sale(aug1, "Z", "100", "40"), sale(aug2, "Z", "50", "40"),
+      sale(aug1, "FLAT", "70", "10"), sale(aug2, "FLAT", "70", "10"), sale(aug1, "UP", "100", "40"), sale(aug2, "UP", "110", "40"),
+    ]))).rows;
+    const { worstChange, bestChange } = productHighlights(rows);
+    expect(worstChange.map(id)).toEqual(["DTC/Z", "DTC/A", "DTC/B", "MARKETPLACE/A"]);
+    expect(worstChange.map(row => row.changes.gross_profit.value)).toEqual(["-50.00", "-20.00", "-20.00", "-20.00"]);
+    expect(bestChange.map(id)).toEqual(["DTC/UP"]);
+    const up = compareProducts(dataset(withSales([sale(aug1, "UP", "100", "40"), sale(aug2, "UP", "110", "40"), sale(aug1, "FLAT", "70", "10"), sale(aug2, "FLAT", "70", "10")]))).rows;
+    expect(productHighlights(up).worstChange).toEqual([]);
+  });
+
+  it("差額待補（缺成本，null）不列入，不當成 0 或負數", () => {
+    const rows = compareProducts(dataset(fixture("errors/missing_cogs"))).rows;
+    expect(rows.find(row => id(row) === "DTC/A")!.changes.gross_profit.value).toBeNull();
+    // missing_cogs 只有 DTC/A 缺成本；其餘同 golden：DTC/B −50.00、MARKETPLACE/B −55.00、MARKETPLACE/A +10.00。
+    expect(productHighlights(rows).worstChange.map(id)).toEqual(["MARKETPLACE/B", "DTC/B"]);
+  });
+
+  it("用 bigint 分位比較，超過 Number 精度的負差額仍排對；12 個減少的商品預設只取 10 個", () => {
+    // 只在上期有列（本期確認為 0）：差額＝0 − 上期商品毛利。A −9007199254740993.02 < Z −9007199254740993.01。
+    const big = compareProducts(dataset(withSales([sale(aug1, "Z", "9007199254740993.01", "0"), sale(aug1, "A", "9007199254740993.02", "0")]))).rows;
+    expect(productHighlights(big).worstChange.map(row => row.sku)).toEqual(["A", "Z"]);
+    // 上期商品毛利 1..12 元、本期都沒有列：差額 −1..−12，減少最多的 10 個是 S12..S03。
+    const many = compareProducts(dataset(withSales(Array.from({ length: 12 }, (_, index) => sale(aug1, `S${String(index + 1).padStart(2, "0")}`, String(index + 1), "0"))))).rows;
+    expect(productHighlights(many).worstChange.map(row => row.sku)).toEqual(["S12", "S11", "S10", "S09", "S08", "S07", "S06", "S05", "S04", "S03"]);
+  });
+
+  it("4 通路合成資料：減少欄由小到大（README §5.2）；差額 0 的 2 列兩欄都不列", async () => {
+    const input = synthetic4ChannelInput();
+    const ds = dataset(input);
+    const snapshot = await createSnapshot(ds, {}, await hashInput(input));
+    const rows = compareProducts(ds, snapshot.report.scope).rows;
+    const { worstChange, bestChange } = productHighlights(rows);
+    // SKU-203 · MARKETPLACE −1,800 − 6,800＝−8,600；SKU-101 · MARKETPLACE 25,500 − 34,000＝−8,500；SKU-201 · MARKETPLACE −3,400 − 0＝−3,400；
+    // SKU-301 · SOCIAL −2,040 − 1,020＝−3,060；SKU-202 · MARKETPLACE −850 − 850＝−1,700；SKU-302 · SOCIAL −850 − 510＝−1,360。
+    expect(worstChange.map(row => [id(row), row.changes.gross_profit.value])).toEqual([
+      ["MARKETPLACE/SKU-203", "-8600.00"], ["MARKETPLACE/SKU-101", "-8500.00"], ["MARKETPLACE/SKU-201", "-3400.00"],
+      ["SOCIAL/SKU-301", "-3060.00"], ["MARKETPLACE/SKU-202", "-1700.00"], ["SOCIAL/SKU-302", "-1360.00"],
+    ]);
+    // 增加欄：SKU-101 · DTC +9,350；SKU-401 · LIVE +6,800；SKU-103 · DTC +3,060；SKU-103 · SOCIAL +2,550。
+    expect(bestChange.map(row => [id(row), row.changes.gross_profit.value])).toEqual([["DTC/SKU-101", "9350.00"], ["LIVE/SKU-401", "6800.00"], ["DTC/SKU-103", "3060.00"], ["SOCIAL/SKU-103", "2550.00"]]);
   });
 });
 

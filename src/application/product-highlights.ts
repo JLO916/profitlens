@@ -12,8 +12,8 @@ export type ProductDataStatus = "both" | "current_only" | "previous_only" | "cos
 export type RateAvailability = "value" | "missing" | "not_applicable";
 
 const lexical = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
-/** 與 domain selectProductComparisonRows 相同的固定 tie-break：通路、再 SKU。 */
-const identityOrder = (a: ProductComparisonRow, b: ProductComparisonRow) => lexical(a.channel, b.channel) || lexical(a.sku, b.sku);
+/** 與 domain selectProductComparisonRows 相同的固定 tie-break：通路、再 SKU。V4-4：匯出給 G14 的 productPareto（src/application/chart-pareto.ts）共用。 */
+export const productIdentityOrder = (a: ProductComparisonRow, b: ProductComparisonRow) => lexical(a.channel, b.channel) || lexical(a.sku, b.sku);
 const compareCents = (a: bigint, b: bigint) => a < b ? -1 : a > b ? 1 : 0;
 
 function valued(rows: readonly ProductComparisonRow[], pick: (row: ProductComparisonRow) => Metric) {
@@ -26,18 +26,24 @@ function valued(rows: readonly ProductComparisonRow[], pick: (row: ProductCompar
 /**
  * worstCurrent：本期商品毛利有值的列，由小到大取前 limit（同值依通路、SKU）；毛利待補（null）不列入。
  * bestChange：商品毛利差額有值且 > 0 的列，由大到小取前 limit；沒有正差額時是空陣列。
+ * worstChange（V4-4，G13 減少最多；與 bestChange 對稱）：商品毛利差額有值且 < 0 的列，由小到大（最負的在前）取前 limit，同值依通路、SKU；
+ * 差額 0 與差額待補（null）不列入；沒有負差額時是空陣列。只挑列，不產生新數字。
  * 不改原陣列。limit 必須是 ≥ 0 的整數，否則丟 RangeError。
  */
-export function productHighlights(rows: readonly ProductComparisonRow[], limit = PRODUCT_HIGHLIGHT_LIMIT): { worstCurrent: ProductComparisonRow[]; bestChange: ProductComparisonRow[] } {
+export function productHighlights(rows: readonly ProductComparisonRow[], limit = PRODUCT_HIGHLIGHT_LIMIT): { worstCurrent: ProductComparisonRow[]; bestChange: ProductComparisonRow[]; worstChange: ProductComparisonRow[] } {
   if (!Number.isSafeInteger(limit) || limit < 0) throw new RangeError("INVALID_PRODUCT_HIGHLIGHT_LIMIT");
   const worstCurrent = valued(rows, row => row.current.metrics.gross_profit)
-    .sort((a, b) => compareCents(a.cents, b.cents) || identityOrder(a.row, b.row))
+    .sort((a, b) => compareCents(a.cents, b.cents) || productIdentityOrder(a.row, b.row))
     .slice(0, limit).map(entry => entry.row);
   const bestChange = valued(rows, row => row.changes.gross_profit)
     .filter(entry => entry.cents > 0n)
-    .sort((a, b) => compareCents(b.cents, a.cents) || identityOrder(a.row, b.row))
+    .sort((a, b) => compareCents(b.cents, a.cents) || productIdentityOrder(a.row, b.row))
     .slice(0, limit).map(entry => entry.row);
-  return { worstCurrent, bestChange };
+  const worstChange = valued(rows, row => row.changes.gross_profit)
+    .filter(entry => entry.cents < 0n)
+    .sort((a, b) => compareCents(a.cents, b.cents) || productIdentityOrder(a.row, b.row))
+    .slice(0, limit).map(entry => entry.row);
+  return { worstCurrent, bestChange, worstChange };
 }
 
 /**
