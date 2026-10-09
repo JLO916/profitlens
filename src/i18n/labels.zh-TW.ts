@@ -889,7 +889,26 @@ export const diagnosis = {
       /** 通路超過上限時圖區的說明（state="empty"）：{count}＝範圍內通路數，{n}＝上限。 */
       tooMany: "範圍內有 {count} 個通路，超過 {n} 個時只列資料表；數字見下方資料表與各通路兩期比較",
     },
-    channelsSpark: {},
+    /**
+     * V4-3a 代理 B：G7b 通路寬表「近 {n} 週」與「各通路每週」資料表（PRD §4.1–§4.7 G7；CHART_CATALOG G7（b）；設計稿 diagnosis.html 頁尾 G7b 三列）。
+     * sparkline 本身 aria-hidden、沒有標題，語意由同列的本期扣廣告後貢獻承擔；資料表格的可及名稱沿用 overview.channelsV3.amountAria／marginAria，
+     * {metric} 以 diagnosis.tableV3.cellLabel 組成「{週名}{指標名}」（例如「本期第 1 週扣廣告後貢獻」），不另立字串。
+     */
+    channelsSpark: {
+      /** 通路寬表新增欄的欄名：{n}＝實際週數（本期最後幾週，上限 8；示範資料是 6）。 */
+      head: "近 {n} 週",
+      /** 資料表名稱；summary 以 overview.page.dataTable 組成「表格 · 各通路每週」，不另立 summary 字串。 */
+      tableTitle: "各通路每週",
+      /** 資料表 caption（同時是捲動區的可及名稱）：{metric}＝metricDefinitions 的扣廣告後貢獻標準名，{n} 同 head；單位「元」只在這裡標一次。 */
+      caption: "各通路每週{metric}（本期最後 {n} 週，元）",
+      /**
+       * 有未滿 7 天的週時，資料表之後的一句說明（在收合的 <details> 內，不進主層；X40）。欄頭另沿用 overview.trendV3.incompleteShort。
+       * 金額是那幾天的合計，天數少就變小，所以折線只連完整週；{metric} 同 caption。
+       */
+      incompleteNote: "未滿 7 天的週：{metric}是那幾天的合計，畫空心點，折線只連到完整週。",
+      /** 範圍內通路超過 {max} 個（{max}＝8，G7b、G10、G11 共用的上限）時，取代「近 {n} 週」欄與資料表的一句說明，放在通路寬表之後。 */
+      tooMany: "通路超過 {max} 個時只列兩期合計；要看各通路每週的數字，請把通路範圍縮小到 {max} 個以內。",
+    },
   },
 } as const;
 

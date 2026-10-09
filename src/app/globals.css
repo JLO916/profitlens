@@ -2704,6 +2704,24 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-3a A 錨點結束 ── */
 
 /* ── V4-3a B：G7b 通路寬表「近 {n} 週」與「各通路每週」 ── */
+/* G7b（PRD §4.1 G7、§5.2 第 6 列、§7.6；CHART_CATALOG G7（b））：通路寬表 diagnosis 變體在扣廣告後貢獻欄群組與備註欄之間的「近 {n} 週」欄。
+   欄頭（rowspan 2）貼底、與格一樣靠右、不換行；sparkline 高 16 放在列內，列高不變（PRD §5.2「列高不變」）。
+   ≥ 768 的欄群組直線分隔（V3-5 的 td:nth-child(3n + 2)）落在這一欄的格上，欄頭補同一條線，上下對齊。 */
+.channel-table-v3 thead .spark-head { vertical-align: bottom; white-space: nowrap; }
+.channel-table-v3 td.spark-cell { width: 1%; white-space: nowrap; }
+.channel-table-v3 td.spark-cell .spark { margin-left: auto; }
+@media (min-width: 768px) {
+  .channel-table-v3 thead .spark-head { border-left: var(--border-w) solid var(--border-subtle); }
+}
+/* ≤ 767（C3 清單式）：sparkline 放在主行右側（order 同 labeled，DOM 在兩個關鍵金額之後，所以排在它們右邊），寬 64 不變、不顯示欄名（同列已有數字）；
+   主行放不下時（390：名稱＋兩個關鍵金額已占滿）換到下一行並靠右（margin-left: auto），仍在次行的 key-value 之前。
+   該通路不畫 sparkline 時整格不佔位置（避免主行多一個空的間距）。 */
+@media (max-width: 767px) {
+  .channel-table-v3 td.spark-cell { order: 1; width: auto; margin-left: auto; }
+  .channel-table-v3 td.spark-cell:empty { display: none; }
+}
+/* 通路 > 8 時取代「近 {n} 週」欄與資料表的一句說明（在通路寬表之後），沿用 .note 的字級與色。 */
+.channel-compare > .channel-weeks-note { margin: var(--space-2) 0 0; line-height: var(--leading-12); }
 /* ── V4-3a B 錨點結束 ── */
 
 /* ── V4-3a C：G9 健檢清單內嵌影響金額條（C24 tick、空心條） ── */

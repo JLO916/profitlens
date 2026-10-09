@@ -1,15 +1,24 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
+import { CHANNEL_WEEKS_MAX_CHANNELS, CHANNEL_WEEKS_VERSION, channelWeeks } from "@/application/chart-channel-weeks";
+import { chartColors } from "@/application/chart-theme";
+import { channelLabel, demoAlias } from "@/application/copy";
+import { evidenceFilterText } from "@/application/evidence-filter";
 import { buildManagerSummary } from "@/application/manager-summary";
-import { formatAmountL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
+import { formatAmountL2, formatAmountL3, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { aiCollapseStatus, AiCollapse } from "@/components/ai-collapse";
-import { ChannelWideTable, DEFAULT_CHANNEL_SORT, sortChannelRows } from "@/components/channel-table";
+import { CHANNEL_WEEKS_TABLE_TESTID, CHANNEL_WEEKS_TOO_MANY_TESTID, ChannelWideTable, DEFAULT_CHANNEL_SORT, channelSparkTestId, channelWeekEvidence, channelWeeksState, sortChannelRows } from "@/components/channel-table";
 import { DiagnosisList, diagnosisCounts } from "@/components/diagnosis-list";
+import { EvidenceDrawer } from "@/components/evidence-drawer";
+import { parseCents } from "@/domain/money";
 import { validateDataset } from "@/domain/validation";
 import type { AnalysisFilters, Diagnostic } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
+import { byTestId, element, openTag } from "./helpers/markup";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 // V3-5 代理 A（PRD §7.2、§6.3 #33–#35、§9.4 C3／C8／C9）：通路寬表 diagnosis 變體（欄序、兩層表頭、排序、備註欄、手機清單屬性）、
 // 計數徽章（含有利與中性）、AI 區收合。互動（點排序鈕、更多範圍 popover 的 Esc／點外面）由 E2E 驗；這裡驗 SSR 結構與純函式。
@@ -140,6 +149,177 @@ describe("通路寬表 diagnosis 變體（各通路兩期比較）", () => {
     expect(headers).toEqual([labels.overview.channelTable.channelHeader, ...(["net_revenue", "contribution_after_marketing"] as const).flatMap(name => [`${labels.shell.periods.previous}${metricDefinitions[name].shortLabel}`, `${labels.shell.periods.current}${metricDefinitions[name].shortLabel}`, `${metricDefinitions[name].shortLabel}${labels.exports.csv.suffix.change}`])]);
     expect(rowsOf(html, "tbody").map(row => cells(row)[0].text.replace(labels.overview.channelTable.turnedNegative, ""))).toEqual(["DTC", "MARKETPLACE"]);
     expect(html).toContain(labels.overview.channelTable.turnedNegative);
+  });
+});
+
+// ── V4-3a 代理 B：G7b 通路寬表「近 {n} 週」sparkline 與「各通路每週」資料表（PRD §4.1–§4.7 G7、§5.2 第 6 列、§8.7；CHART_CATALOG G7（b））。
+// 健檢頁傳入 snapshot 時才有（channelWeeks 在元件內 useMemo 計算，不進快照）；上面的 V3-5 斷言不傳 snapshot，結構逐字不變。
+describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）", () => {
+  const spark = labels.diagnosis.chartsV4.channelsSpark;
+  const metricLabel = metricDefinitions.contribution_after_marketing.label;
+  const renderG7b = (snap: WorkspaceSnapshot) => renderToStaticMarkup(<ChannelWideTable summary={buildManagerSummary(snap)} snapshot={snap} onEvidence={noop} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} variant="diagnosis" />);
+  const syntheticSnapshot = async () => { const input = synthetic4ChannelInput(); return createSnapshot(validateDataset(input).dataset!, {}, await hashInput(input)); };
+  const sparkCell = (row: string) => cells(row).find(cell => attr(cell.attrs, "class") === "spark-cell")!;
+  const detailsOf = (html: string) => element(html.slice(html.indexOf('<details class="data-alternative"')), '<details class="data-alternative"')!;
+
+  it("示範資料：扣廣告後貢獻欄群組與備註欄之間多一欄「近 6 週」（rowspan 2、colgroup 一欄）；每通路一格 td.spark-cell（data-list-role=spark），內含 aria-hidden 的 C19 sparkline", async () => {
+    const snap = await snapshot("demo");
+    const html = renderG7b(snap);
+    const head = fill(spark.head, { n: 6 });
+    expect(head).toBe("近 6 週");
+    const groups = cells(rowsOf(html, "thead")[0]);
+    expect(groups.map(cell => cell.text)).toEqual([labels.overview.channelTable.channelHeader, fill(labels.format.units.yuanColumn, { label: metricDefinitions.net_revenue.label }), fill(labels.format.units.yuanColumn, { label: metricLabel }), head, tableV3.note]);
+    expect([attr(groups[3].attrs, "role"), attr(groups[3].attrs, "scope"), attr(groups[3].attrs, "rowSpan"), attr(groups[3].attrs, "class")]).toEqual(["columnheader", "col", "2", "spark-head"]);
+    expect(cells(rowsOf(html, "thead")[1])).toHaveLength(6);
+    expect(html.match(/<colgroup/g)).toHaveLength(5);
+    const data = channelWeeks(snap)!;
+    for (const row of rowsOf(html, "tbody")) {
+      const all = cells(row);
+      expect(all).toHaveLength(9);
+      const channel = snap.report.scope.channels.find(code => all[0].text === channelLabel(code, demoAlias(snap.report.dataset_id)))!;
+      const cell = all[7];
+      expect([cell.tag, attr(cell.attrs, "role"), attr(cell.attrs, "class"), attr(cell.attrs, "data-label"), attr(cell.attrs, "data-list-role")]).toEqual(["td", "cell", "spark-cell", head, "spark"]);
+      const svg = openTag(cell.html, `data-testid="${channelSparkTestId(channel)}"`)!;
+      expect(svg).toMatch(/^<svg class="spark" data-chart-kind="spark" /);
+      expect(svg).toContain('aria-hidden="true"');
+      expect(svg).toContain('focusable="false"');
+      expect(svg).toContain('data-points="6"');
+      expect(cell.html).not.toMatch(/tabindex|<button|<a /i);
+      // 示範資料 6 週都是完整週：一條連續折線，最後一點是本期實心點。
+      expect(cell.html.match(/<polyline /g)).toHaveLength(1);
+      expect(cell.html).toContain(`fill="${chartColors.current}"`);
+      expect(cell.html).not.toContain('data-kind="hollow"');
+      // 圖形座標只用 Number 近似值；數值本身仍是 domain 的精確字串（逐週加總＝本期合計）。
+      const values = data.channels.find(series => series.channel === channel)!.values.map(value => value.metric.value!);
+      expect(values.reduce((sum, value) => sum + parseCents(value)!, 0n)).toBe(parseCents(snap.report.current.channels[channel].metrics.contribution_after_marketing.value));
+    }
+    expect(html.match(/data-chart-kind="spark"/g)).toHaveLength(snap.report.scope.channels.length);
+    // CL-1（sparkline 在 tr 內、同列有數字）、CL-2（命名）、CL-11（aria-hidden）都是 0。
+    const { violations } = checkChartMarkup(html, { page: "diagnosis" });
+    expect([violations["CL-1"], violations["CL-2"], violations["CL-11"]]).toEqual([[], [], []]);
+  });
+
+  it("「各通路每週」：表格之後的收合 <details class=data-alternative>（保持掛載）；列＝通路（順序同寬表目前的排序），欄＝近 6 週，格＝扣廣告後貢獻 L2 number-link", async () => {
+    const snap = await snapshot("demo");
+    const html = renderG7b(snap);
+    const alias = demoAlias(snap.report.dataset_id);
+    expect(html.indexOf('<details class="data-alternative"')).toBeGreaterThan(html.indexOf("</table></div>"));
+    const details = detailsOf(html);
+    expect(openTag(details, '<details class="data-alternative"')).toBe('<details class="data-alternative">');
+    expect(details).toContain(`<summary>${fill(labels.overview.page.dataTable, { title: spark.tableTitle })}</summary>`);
+    const caption = fill(spark.caption, { metric: metricLabel, n: 6 });
+    expect(caption).toBe("各通路每週扣廣告後貢獻（本期最後 6 週，元）");
+    expect(details).toContain(`<div class="table-scroll chart-data-scroll" role="region" tabindex="0" aria-label="${caption}">`);
+    const table = byTestId(details, CHANNEL_WEEKS_TABLE_TESTID);
+    expect(table).toContain(`<caption>${caption}</caption>`);
+    const data = channelWeeks(snap)!;
+    const head = cells(rowsOf(table, "thead")[0]);
+    expect(head.map(cell => cell.text)).toEqual([labels.overview.channelTable.channelHeader, ...data.weeks.map(week => `${week.label}${formatPeriodL1(week.period.start, week.period.end, { anchor: snap.data_as_of, days: false })}`)]);
+    const body = rowsOf(table, "tbody");
+    // 預設排序（本期扣廣告後貢獻由低到高）＝寬表的列序。
+    const order = sortChannelRows(buildManagerSummary(snap).channels, DEFAULT_CHANNEL_SORT).map(row => row.channel);
+    expect(body.map(row => cells(row)[0].text)).toEqual(order.map(channel => channelLabel(channel, alias)));
+    for (const [index, row] of body.entries()) {
+      const series = data.channels.find(item => item.channel === order[index])!;
+      const values = cells(row).slice(1);
+      expect(values).toHaveLength(6);
+      values.forEach((cell, week) => {
+        const text = formatAmountL2(series.values[week].metric.value!);
+        expect(cell.text).toBe(text);
+        expect(cell.html).toBe(`<button type="button" class="number-link" aria-label="${fill(labels.overview.channelsV3.amountAria, { channel: channelLabel(series.channel, alias), metric: fill(tableV3.cellLabel, { period: data.weeks[week].label, metric: metricLabel }), value: text })}">${text}</button>`);
+      });
+    }
+    // 6 週都是完整週：沒有「未滿 7 天」欄註與表後說明。
+    expect(details).not.toContain(labels.overview.trendV3.incompleteShort);
+    expect(details).not.toContain(fill(spark.incompleteNote, { metric: metricLabel }));
+  });
+
+  it("每格的抽屜（channelWeekEvidence）：該通路該週的扣廣告後貢獻；filter 篩到該週與該通路；metric_version 維持 contribution-v1，另列 arrangeVersion channel-weeks-v1；大數字不帶正負號", async () => {
+    const input = fixture("demo");
+    const dataset = validateDataset(input).dataset!;
+    const snap = await createSnapshot(dataset, {}, await hashInput(input));
+    const data = channelWeeks(snap)!;
+    for (const series of data.channels) data.weeks.forEach((week, index) => {
+      const value = series.values[index];
+      expect(channelWeekEvidence(series, week, value)).toEqual({
+        name: "contribution_after_marketing", metric: value.metric, period: week.period, channels: [series.channel], sources: value.sources, title: metricLabel,
+        filter: { week: { start: week.period.start, end: week.period.end, label: week.label }, channel: series.channel }, arrangeVersion: CHANNEL_WEEKS_VERSION,
+      });
+    });
+    // DTC 每週為正：大數字與精確值是水準值，不帶「+」（沒有 components，PRD §8.7 第 3 點）。
+    const dtc = data.channels.find(series => series.channel === "DTC")!;
+    const evidence = channelWeekEvidence(dtc, data.weeks[0], dtc.values[0]);
+    expect(parseCents(evidence.metric.value)! > 0n).toBe(true);
+    expect(evidence).not.toHaveProperty("metricVersion");
+    expect(evidence).not.toHaveProperty("components");
+    const drawer = renderToStaticMarkup(<EvidenceDrawer dataset={dataset} snapshot={snap} evidence={evidence} onClose={noop} />);
+    const technical = element(drawer, 'class="evidence-technical"')!;
+    expect(technical).toContain("<div><dt>metric_version</dt><dd><code>contribution-v1</code></dd></div>");
+    expect(technical).toContain(`<div data-testid="evidence-arrange-version"><dt>${labels.evidence.chartsV4.arrangeVersion}</dt><dd><code>${CHANNEL_WEEKS_VERSION}</code></dd></div>`);
+    expect(drawer).toContain(fill(labels.format.units.yuan, { value: formatAmountL3(evidence.metric.value!) }));
+    expect(drawer).not.toContain(formatSignedDelta(evidence.metric.value!, "L3"));
+    expect(byTestId(drawer, "evidence-filter")).toContain(evidenceFilterText(evidence.filter, { alias: true, anchor: dataset.manifest.data_as_of })!);
+  });
+
+  it("golden（本期 1 天，只有 1 週、未滿 7 天）：欄名「近 1 週」；每條 sparkline 只有 1 個空心點（X40）；資料表欄頭註「未滿 7 天」、表後有說明", async () => {
+    const snap = await snapshot();
+    const html = renderG7b(snap);
+    expect(cells(rowsOf(html, "thead")[0])[3].text).toBe(fill(spark.head, { n: 1 }));
+    for (const channel of ["DTC", "MARKETPLACE"]) {
+      const svg = element(html, `data-testid="${channelSparkTestId(channel)}"`)!;
+      expect(svg).toContain('data-points="1"');
+      expect(svg).not.toContain("<polyline");
+      expect(svg.match(/<circle /g)).toHaveLength(1);
+      expect(svg).toContain('data-kind="hollow"');
+      expect(svg).toContain(`fill="${chartColors.surface}"`);
+    }
+    const details = detailsOf(html);
+    expect(details).toContain(`<small>${labels.overview.trendV3.incompleteShort}</small>`);
+    expect(details).toContain(`<p class="note">${fill(spark.incompleteNote, { metric: metricLabel })}</p>`);
+    const table = byTestId(details, CHANNEL_WEEKS_TABLE_TESTID);
+    expect(rowsOf(table, "tbody").map(row => cells(row).map(cell => cell.text))).toEqual([["MARKETPLACE", formatAmountL2("-15.00")], ["DTC", formatAmountL2("270.00")]]);
+  });
+
+  it("合成資料 4 通路：LIVE 本期扣廣告後貢獻資料待補 → 那一格不畫 sparkline（格仍在）；其餘 3 條各 3 點、最後一週未滿 7 天是空心點、折線只連前兩週；資料表 LIVE 缺列的週寫「資料待補」", async () => {
+    const snap = await syntheticSnapshot();
+    const html = renderG7b(snap);
+    const rows = rowsOf(html, "tbody");
+    const rowOf = (channel: string) => rows.find(row => cells(row)[0].text === channel)!;
+    expect(sparkCell(rowOf("LIVE")).html).toBe("");
+    expect(html).not.toContain(channelSparkTestId("LIVE"));
+    for (const channel of ["DTC", "MARKETPLACE", "SOCIAL"]) {
+      const svg = element(sparkCell(rowOf(channel)).html, `data-testid="${channelSparkTestId(channel)}"`)!;
+      expect(svg, channel).toContain('data-points="3"');
+      expect(svg.match(/<polyline /g), channel).toHaveLength(1);
+      expect(svg, channel).toContain('data-kind="hollow"');
+    }
+    const table = byTestId(detailsOf(html), CHANNEL_WEEKS_TABLE_TESTID);
+    const live = cells(rowsOf(table, "tbody").find(row => cells(row)[0].text === "LIVE")!).slice(1);
+    expect(live.map(cell => cell.text)).toEqual([formatAmountL2("7700.00"), labels.shell.status.missing, labels.shell.status.missing]);
+    const week2 = channelWeeks(snap)!.weeks[1].label;
+    expect(live[1].html).toContain(`aria-label="${fill(labels.overview.channelsV3.marginAria, { channel: "LIVE", metric: fill(tableV3.cellLabel, { period: week2, metric: metricLabel }), value: labels.shell.status.missing })}"`);
+    const social = cells(rowsOf(table, "tbody").find(row => cells(row)[0].text === "SOCIAL")!).slice(1);
+    expect(social.map(cell => cell.text)).toEqual(["490.00", "6730.00", "210.00"].map(value => formatAmountL2(value)));
+  });
+
+  it("通路 > 8：不呼叫 channelWeeks（狀態 tooMany）、沒有「近 {n} 週」欄與資料表，表格之後一句說明；會議摘要（default 變體）傳了 snapshot 也不變", async () => {
+    const snap = await snapshot("demo");
+    const nine = Array.from({ length: CHANNEL_WEEKS_MAX_CHANNELS + 1 }, (_, index) => `CH${index + 1}`);
+    const many = { ...snap, report: { ...snap.report, scope: { ...snap.report.scope, channels: nine } } };
+    expect(channelWeeksState(many)).toEqual({ status: "tooMany" });
+    expect(channelWeeksState(undefined)).toEqual({ status: "off" });
+    expect(channelWeeksState(snap)).toEqual({ status: "ready", data: channelWeeks(snap) });
+    const html = renderToStaticMarkup(<ChannelWideTable summary={buildManagerSummary(snap)} snapshot={many} onEvidence={noop} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} variant="diagnosis" />);
+    expect(html).not.toContain("spark-head");
+    expect(html).not.toContain("spark-cell");
+    expect(html).not.toContain(CHANNEL_WEEKS_TABLE_TESTID);
+    expect(html).not.toContain("<details");
+    expect(html.match(/<colgroup/g)).toHaveLength(4);
+    expect(html.endsWith(`</table></div><p class="note channel-weeks-note" data-testid="${CHANNEL_WEEKS_TOO_MANY_TESTID}">${fill(spark.tooMany, { max: CHANNEL_WEEKS_MAX_CHANNELS })}</p>`)).toBe(true);
+    // 沒傳 snapshot（既有呼叫端）時與 V3-5 相同；default 變體忽略 snapshot。
+    expect(renderTable(snap, "diagnosis")).not.toContain("spark");
+    const meeting = renderToStaticMarkup(<ChannelWideTable summary={buildManagerSummary(snap)} snapshot={snap} onEvidence={noop} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} />);
+    expect(meeting).toBe(renderTable(snap));
   });
 });
 
