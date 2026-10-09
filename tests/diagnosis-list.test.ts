@@ -100,7 +100,8 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     expect(summary).not.toContain('class="scope-tag"');
     // summary 不放互動元件（<summary> 內有按鈕是巢狀互動）：影響金額是純文字，色調同可點的金額（−250 元，紅＝不利）；「影響金額」字樣只給輔助科技。
     expect(summary).not.toMatch(/<button|<a\s|<input|<select|tabindex/i);
-    expect(summary).toContain(`<span class="diagnosis-impact"><span class="sr-only">${labels.overview.sections.impact}</span><span class="impact-amount negative">${impactL1("-250.00")}</span></span>`);
+    // V4-3a G9：差額類規則在影響金額之後多一條 aria-hidden 的內嵌條（svg，不是互動元件；細節見 tests/diagnosis-g9.test.tsx），金額本身的 markup 不變。
+    expect(summary).toContain(`<span class="diagnosis-impact"><span class="sr-only">${labels.overview.sections.impact}</span><span class="impact-amount negative">${impactL1("-250.00")}</span><svg class="bar-cell is-variance impact-bar" data-chart-kind="cell" data-testid="chart-diagnosis-impact-bar-DISCOUNT_BURDEN_UP"`);
     expect(summary).not.toContain(labels.evidence.buttons.viewEvidence);
     expect(summary).not.toContain(labels.actions.buttons.addToActions);
     // 展開內容第一行：「影響金額 · 目前範圍」＋可點的影響金額。

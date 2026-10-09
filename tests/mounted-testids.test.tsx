@@ -1003,6 +1003,149 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-3a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    const diagnosisStates = () => loaded().filter(({ state }) => state!.panel === "diagnosis");
+
+    it("V4-3a A 健檢：G10 chart-diagnosis-share 全頁一份、在 diagnosis-panel 之後與 channel-compare 之前；主層獨立圖區塊只有它（CL-9＝1）；圖框 aria-hidden、svg 高＝（通路數＋2）× 24 ≤ 所選固定高、每個 ready 列 4 段；資料表 <details> 收合但表格掛載；通路 > 8 只留資料表", async () => {
+      const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const { chartHeights, chartRowHeights } = await import("@/application/chart-theme");
+      const { shareSectionModel } = await import("@/components/diagnosis/share-section");
+      const copy = labels.diagnosis.chartsV4.share;
+      const states = diagnosisStates();
+      expect(states.map(({ name }) => name)).toEqual(["diagnosis", "diagnosis-synthetic", "diagnosis-many-channels"]);
+      for (const { name, html, state } of states) {
+        const model = shareSectionModel(state!.active.snapshot);
+        for (const id of ["chart-diagnosis-share", "chart-diagnosis-share-table"]) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+        const order = ['data-testid="diagnosis-panel"', 'data-testid="chart-diagnosis-share"', 'data-testid="channel-compare"'].map(attr => html.indexOf(attr));
+        expect([...order].sort((a, b) => a - b), `${name}：清單、G10、通路寬表的順序`).toEqual(order);
+        expect(checkChartMarkup(html, { page: "diagnosis" }).mainSections, `${name}：健檢頁主層獨立圖區塊只有 G10`).toHaveLength(1);
+        const section = element(html, 'data-testid="chart-diagnosis-share"')!;
+        expect(openTag(section, "<section"), name).toBe('<section class="panel chart-section share-section" aria-labelledby="share-title" aria-describedby="share-sub" data-testid="chart-diagnosis-share">');
+        expect(section, name).toContain(`<h2 id="share-title">${escapeAttr(model.title)}</h2>`);
+        const frame = openTag(section, 'class="chart-frame')!;
+        expect(frame, name).toContain(`class="chart-frame ${model.height}"`);
+        // 有圖時框 aria-hidden（語意在副標與資料表）；通路 > 8 時框內是一句說明（state="empty"），不藏。
+        expect(frame, name).toContain(model.chartable ? 'aria-hidden="true"' : 'data-state="empty"');
+        const details = element(section, '<details class="data-alternative"')!;
+        expect(openTag(details, "<details"), `${name}：資料表收合`).not.toMatch(/\sopen=""/);
+        expect(details, name).toContain(`<summary>${escapeAttr(fill(labels.overview.page.dataTable, { title: copy.section }))}</summary>`);
+        expect(details, `${name}：收合時表格仍掛載`).toContain('data-testid="chart-diagnosis-share-table"');
+        expect(element(element(details, 'data-testid="chart-diagnosis-share-table"')!, "<tbody")!.match(/<tr[\s>]/g), `${name}：資料表列＝通路＋合計`).toHaveLength(state!.active.snapshot.report.scope.channels.length + 1);
+        const segIds = [...section.matchAll(/data-testid="(chart-diagnosis-share-seg-[^"]+)"/g)].map(match => match[1]);
+        if (!model.chartable) {
+          expect(section, `${name}：通路 > 8 不畫圖`).not.toContain("chart-share-stack");
+          expect(segIds, name).toEqual([]);
+          expect(section, name).toContain(escapeAttr(fill(copy.tooMany, { count: state!.active.snapshot.report.scope.channels.length, n: 8 })));
+          continue;
+        }
+        const svg = openTag(section, 'class="chart-share-stack"')!;
+        const height = Number(/\sheight="(\d+)"/.exec(svg)![1]);
+        expect(height, `${name}：svg 高＝（通路數＋2）× row24`).toBe((model.rows.length + 1) * chartRowHeights.row24);
+        expect(height, `${name}：≤ 所選固定高 ${model.height}`).toBeLessThanOrEqual(chartHeights[model.height]);
+        expect(svg, name).toContain('aria-hidden="true"');
+        expect(svg, name).toContain('focusable="false"');
+        expect(element(section, 'class="chart-share-stack"'), `${name}：圖內沒有停留點`).not.toMatch(/tabindex|<button|<a\s/);
+        const ready = model.rows.filter(row => row.structure.status === "ready");
+        expect(segIds, `${name}：每個 ready 列 4 段（cogs、fees、ad，加 remain 或 over）`).toHaveLength(ready.length * 4);
+        for (const id of segIds) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+        for (const row of model.rows.filter(item => item.structure.status !== "ready")) expect(segIds.some(id => id.startsWith(`chart-diagnosis-share-seg-${row.key}-`)), `${name}：${row.key} 不適用或資料待補，沒有段`).toBe(false);
+      }
+      // 示範資料：MARKETPLACE 超過 100（over），DTC 與合計有剩（remain）；合成資料的 SOCIAL（不適用）、LIVE（資料待補）沒有段。
+      expect([...element(states[0].html, 'data-testid="chart-diagnosis-share"')!.matchAll(/data-testid="chart-diagnosis-share-seg-([^"]+)"/g)].map(match => match[1])).toEqual(["DTC-cogs", "DTC-fees", "DTC-ad", "DTC-remain", "MARKETPLACE-cogs", "MARKETPLACE-fees", "MARKETPLACE-ad", "MARKETPLACE-over", "total-cogs", "total-fees", "total-ad", "total-remain"]);
+      const synthetic = element(states[1].html, 'data-testid="chart-diagnosis-share"')!;
+      for (const channel of ["SOCIAL", "LIVE"]) expect(synthetic, channel).not.toContain(`chart-diagnosis-share-seg-${channel}-`);
+    });
+
+    it("V4-3a B 健檢：G7b sparkline（chart-diagnosis-channels-spark-{通路}）在 channel-compare 寬表的 td.spark-cell 內、aria-hidden、不可聚焦、全頁各一份；「各通路每週」<details> 收合但表格掛載（全頁一份，在寬表之後）；通路 > 8 不畫欄、不掛表，改一句說明", async () => {
+      const { channelWeeksState } = await import("@/components/channel-table");
+      const spark = labels.diagnosis.chartsV4.channelsSpark;
+      for (const { name, html, state } of diagnosisStates()) {
+        const { snapshot } = state!.active;
+        const g7b = channelWeeksState(snapshot);
+        const compare = element(html, 'data-testid="channel-compare"')!;
+        if (g7b.status !== "ready") {
+          expect(g7b.status, name).toBe("tooMany");
+          expect(html, name).not.toContain("chart-diagnosis-channels-spark-");
+          expect(html, name).not.toContain('data-testid="chart-diagnosis-channels-table"');
+          expect(compare, name).not.toContain('class="spark-head"');
+          expect(testIdCounts(html).get("channel-weeks-too-many"), name).toBe(1);
+          expect(compare.indexOf('data-testid="channel-weeks-too-many"'), `${name}：說明在寬表之後`).toBeGreaterThan(compare.indexOf("</table>"));
+          expect(element(compare, 'data-testid="channel-weeks-too-many"'), name).toContain(escapeAttr(fill(spark.tooMany, { max: 8 })));
+          continue;
+        }
+        expect(testIdCounts(html).get("channel-weeks-too-many") ?? 0, name).toBe(0);
+        const drawn = snapshot.report.scope.channels.filter(channel => {
+          const series = g7b.data.channels.find(item => item.channel === channel)!;
+          return snapshot.report.current.channels[channel].metrics.contribution_after_marketing.value !== null && series.values.some(value => value.metric.value !== null);
+        });
+        expect([...compare.matchAll(/data-testid="chart-diagnosis-channels-spark-([^"]+)"/g)].map(match => match[1]).sort(), name).toEqual([...drawn].sort());
+        for (const channel of drawn) {
+          const testId = `chart-diagnosis-channels-spark-${channel}`;
+          expect(testIdCounts(html).get(testId), `${name} ${testId}`).toBe(1);
+          expect(compare, `${name} ${testId}`).toMatch(new RegExp(`<td role="cell" class="spark-cell"[^>]*><svg [^>]*data-testid="${testId}"`));
+          const svg = openTag(html, `data-testid="${testId}"`)!;
+          expect(svg, `${name} ${testId}`).toContain('aria-hidden="true"');
+          expect(svg, `${name} ${testId}`).toContain('focusable="false"');
+          expect(element(html, `data-testid="${testId}"`), `${name} ${testId}`).not.toMatch(/tabindex|<button|\shidden=""/);
+        }
+        expect(occurrences(compare, `class="spark-head">${escapeAttr(fill(spark.head, { n: g7b.data.weeks.length }))}</th>`), name).toBe(1);
+        expect(testIdCounts(html).get("chart-diagnosis-channels-table"), name).toBe(1);
+        const details = element(compare, '<details class="data-alternative"')!;
+        expect(compare.indexOf(details), `${name}：資料表在寬表之後`).toBeGreaterThan(compare.indexOf("</table>"));
+        expect(openTag(details, "<details"), `${name}：收合`).not.toMatch(/\sopen=""/);
+        expect(details, name).toContain(`<summary>${escapeAttr(fill(labels.overview.page.dataTable, { title: spark.tableTitle }))}</summary>`);
+        expect(details, `${name}：收合時表格仍掛載`).toContain('data-testid="chart-diagnosis-channels-table"');
+        expect(element(element(details, 'data-testid="chart-diagnosis-channels-table"')!, "<tbody")!.match(/<tr[\s>]/g), name).toHaveLength(snapshot.report.scope.channels.length);
+      }
+    });
+
+    it("V4-3a C 健檢：G9 影響金額條（chart-diagnosis-impact-bar-{規則}）只在差額類規則的 summary 內、影響金額之後，aria-hidden、不可聚焦、全頁各一份；水準類規則沒有條（同寬空位）；空心條只有 REV_UP_CM_DOWN，畫了它才有清單下方的註明", async () => {
+      const { buildManagerSummary } = await import("@/application/manager-summary");
+      const { hasImpactBar, impactBarTestId, IMPACT_BAR_TOTAL_RULE } = await import("@/components/diagnosis-list");
+      const drawnByState: Record<string, string[]> = {};
+      for (const { name, html, state } of diagnosisStates()) {
+        const groups = buildManagerSummary(state!.active.snapshot).diagnosis;
+        const list = element(html, 'data-testid="diagnosis-list"');
+        if (!list) { expect(groups, name).toEqual([]); continue; }
+        const drawn = groups.filter(hasImpactBar).map(group => group.rule);
+        drawnByState[name] = drawn;
+        expect(occurrences(html, 'data-testid="chart-diagnosis-impact-bar-'), name).toBe(drawn.length);
+        expect(openTag(html, 'data-testid="diagnosis-list"'), name).toMatch(drawn.length ? /\sdata-impact-bars=""/ : /^(?![\s\S]*data-impact-bars)/);
+        for (const group of groups) {
+          const summary = element(element(html, `data-testid="diagnosis-row-${group.rule}"`)!, "<summary")!;
+          const impact = element(summary, 'class="diagnosis-impact"')!;
+          if (!hasImpactBar(group)) {
+            expect(summary, `${name} ${group.rule}：沒有條`).not.toContain("chart-diagnosis-impact-bar-");
+            if (drawn.length) expect(impact, `${name} ${group.rule}：同寬空位`).toContain('<span class="impact-bar is-empty" aria-hidden="true"></span>');
+            continue;
+          }
+          const testId = impactBarTestId(group.rule);
+          expect(testIdCounts(html).get(testId), `${name} ${testId}`).toBe(1);
+          expect(impact.indexOf('class="impact-amount"'), `${name} ${testId}：條在影響金額之後`).toBeLessThan(impact.indexOf(`data-testid="${testId}"`));
+          const svg = openTag(impact, `data-testid="${testId}"`)!;
+          expect(svg, `${name} ${testId}`).toContain('aria-hidden="true"');
+          expect(svg, `${name} ${testId}`).toContain('focusable="false"');
+          expect(svg, `${name} ${testId}`).toContain('data-chart-kind="cell"');
+          expect(/\sclass="([^"]+)"/.exec(svg)![1].split(" ").includes("is-outline"), `${name} ${testId}：只有總差額規則是空心條`).toBe(group.rule === IMPACT_BAR_TOTAL_RULE);
+          expect(element(impact, `data-testid="${testId}"`), `${name} ${testId}`).not.toMatch(/tabindex|<button|\shidden=""/);
+        }
+        expect(occurrences(html, 'class="note impact-note"'), `${name}：畫了空心條才有註明`).toBe(drawn.includes(IMPACT_BAR_TOTAL_RULE) ? 1 : 0);
+        for (const rule of ["NEGATIVE_CHANNEL_CM", "SKU_NEGATIVE_GP"]) expect(html, `${name} ${rule}：水準類規則沒有條`).not.toContain(`chart-diagnosis-impact-bar-${rule}`);
+      }
+      expect(drawnByState.diagnosis, "示範資料：差額類五條").toEqual(["DISCOUNT_BURDEN_UP", "REV_UP_CM_DOWN", "MARKETING_BURDEN_UP", "REFUND_BURDEN_UP", "FULFILLMENT_BURDEN_UP"]);
+    });
+
+    it("V4-3a 總覽：管理損益表「佔淨營收 %」13 格都是 number-link（pnl-share-{指標}，全頁各一份），收在 overview-advanced <details> 內、收合時保持掛載", async () => {
+      const { PNL_ROWS } = await import("@/application/pnl-table");
+      for (const { name, html } of loaded().filter(({ state }) => state!.panel === "overview")) {
+        const advanced = element(html, 'data-testid="overview-advanced"')!;
+        expect(openTag(html, 'data-testid="overview-advanced"'), name).not.toMatch(/\sopen=""/);
+        expect(occurrences(html, 'data-testid="pnl-share-'), name).toBe(PNL_ROWS.length);
+        for (const { metric } of PNL_ROWS) {
+          expect(testIdCounts(html).get(`pnl-share-${metric}`), `${name} pnl-share-${metric}`).toBe(1);
+          expect(element(advanced, `data-testid="pnl-row-${metric}"`) ?? element(advanced, `data-row="${metric}"`), `${name} ${metric}`).toMatch(new RegExp(`<td class="num" data-col="share"><button type="button" class="number-link" data-testid="pnl-share-${metric}"`));
+        }
+      }
+    });
 
     // ── V4-3b 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3b 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 

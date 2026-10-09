@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import demoExpected from "../fixtures/demo/computed_summary.json";
 import goldenExpected from "../fixtures/golden/expected.json";
@@ -70,6 +72,19 @@ describe("M2 application snapshot", () => {
     expect(Object.keys(snapshot.weeks[0]).sort()).toEqual(["end", "label", "metrics", "period", "sources", "start", "units_sold"]);
     const again = await createSnapshot(dataset, {}, await hashInput(input));
     expect(again.filter_hash).toBe(snapshot.filter_hash);
+  });
+
+  it("V4-3a G7b：createSnapshot 不計算各通路每週（channelWeeks 不進快照，PRD §8.2、§8.8）：快照與週列都沒有 channelWeeks，也沒有 channel-weeks-v1；workspace.ts 不引用 chart-channel-weeks", async () => {
+    for (const name of ["demo", "golden"]) {
+      const input = fixture(name);
+      const snapshot = await createSnapshot(load(input), {}, await hashInput(input));
+      expect(Object.keys(snapshot).sort(), name).toEqual(["data_as_of", "dataset_hash", "filter_hash", "metric_version", "products", "report", "weeks", "yoy"]);
+      expect(snapshot, name).not.toHaveProperty("channelWeeks");
+      for (const week of snapshot.weeks) expect(week, name).not.toHaveProperty("channelWeeks");
+      expect(JSON.stringify(snapshot, (_key, value: unknown) => typeof value === "bigint" ? value.toString() : value), name).not.toContain("channel-weeks-v1");
+    }
+    // 呼叫關係的靜態檢查（tests/chart-channel-weeks.test.ts 另以 50 通路資料 spy 斷言 createSnapshot 沒呼叫 channelWeeks）。
+    expect(readFileSync(resolve("src/application/workspace.ts"), "utf8")).not.toMatch(/chart-channel-weeks|channelWeeks/);
   });
 
   it("V4-2：短期間的未滿週也帶該週件數；golden 本期 1 天 8 件", async () => {

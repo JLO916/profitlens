@@ -2691,10 +2691,56 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-2 C 錨點結束 ── */
 
 /* ── V4-3a A：C27 ShareStack、G10 每 100 元淨營收去向、抽屜 percent ── */
+/* C27（PRD §6.3、§4.4 G10）：量寬容器只是區塊；svg 寬 100%、高＝（通路數＋2）× 24（元件給 height 屬性），固定高由外框 .chart-frame.sm／.lg 負責。
+   列名與 x 軸刻度 12px；合計列的列名加粗；不適用、資料待補的列只有文字（次要色）；虧的標值沿用 .chart-frame .chart-value.is-unfavorable。 */
+.share-stack-measure { display: block; width: 100%; }
+.chart-share-stack { display: block; width: 100%; font-family: var(--font-sans); }
+.chart-share-stack text { font-size: var(--text-12); fill: var(--text-secondary); pointer-events: none; }
+.chart-share-stack .share-label.is-strong { fill: var(--text-primary); font-weight: var(--weight-semibold); }
+.chart-share-stack .share-axis text { fill: var(--chart-axis); }
+.chart-share-stack .share-seg.is-clickable { cursor: pointer; }
+/* 資料表最後一欄「每 100 元淨營收」（剩／虧 {n} 元）與金額欄一樣靠右、不換行。 */
+.share-data-table td:last-child { text-align: right; white-space: nowrap; }
 /* ── V4-3a A 錨點結束 ── */
 
 /* ── V4-3a B：G7b 通路寬表「近 {n} 週」與「各通路每週」 ── */
+/* G7b（PRD §4.1 G7、§5.2 第 6 列、§7.6；CHART_CATALOG G7（b））：通路寬表 diagnosis 變體在扣廣告後貢獻欄群組與備註欄之間的「近 {n} 週」欄。
+   欄頭（rowspan 2）貼底、與格一樣靠右、不換行；sparkline 高 16 放在列內，列高不變（PRD §5.2「列高不變」）。
+   ≥ 768 的欄群組直線分隔（V3-5 的 td:nth-child(3n + 2)）落在這一欄的格上，欄頭補同一條線，上下對齊。 */
+.channel-table-v3 thead .spark-head { vertical-align: bottom; white-space: nowrap; }
+.channel-table-v3 td.spark-cell { width: 1%; white-space: nowrap; }
+.channel-table-v3 td.spark-cell .spark { margin-left: auto; }
+@media (min-width: 768px) {
+  .channel-table-v3 thead .spark-head { border-left: var(--border-w) solid var(--border-subtle); }
+}
+/* ≤ 767（C3 清單式）：sparkline 放在主行右側（order 同 labeled，DOM 在兩個關鍵金額之後，所以排在它們右邊），寬 64 不變、不顯示欄名（同列已有數字）；
+   主行放不下時（390：名稱＋兩個關鍵金額已占滿）換到下一行並靠右（margin-left: auto），仍在次行的 key-value 之前。
+   該通路不畫 sparkline 時整格不佔位置（避免主行多一個空的間距）。 */
+@media (max-width: 767px) {
+  .channel-table-v3 td.spark-cell { order: 1; width: auto; margin-left: auto; }
+  .channel-table-v3 td.spark-cell:empty { display: none; }
+}
+/* 通路 > 8 時取代「近 {n} 週」欄與資料表的一句說明（在通路寬表之後），沿用 .note 的字級與色。 */
+.channel-compare > .channel-weeks-note { margin: var(--space-2) 0 0; line-height: var(--leading-12); }
 /* ── V4-3a B 錨點結束 ── */
 
 /* ── V4-3a C：G9 健檢清單內嵌影響金額條（C24 tick、空心條） ── */
+/* G9（PRD §4.4、§4.6、§5.2；CHART_CATALOG G9；H5 設計稿）：條在 <summary> 的影響金額之後、與金額同一行，不另起一行（PRD §5.2「列高不變」：1440、1280、390 的健檢列高與首列底不變）。
+   清單有任何一列畫條時（ol[data-impact-bars]），影響金額格是「金額＋條」：金額靠右、條固定寬貼齊列的右緣，各列零線上下對齊；
+   沒有條的列（水準類規則、資料缺漏）留同寬空位 span.impact-bar.is-empty，金額也對齊。每列 summary 各是一個格線，條貼齊右緣，欄寬不必各列相同：
+   ≥ 1024 的影響金額欄由固定 --alert-impact-w 改成「至少 --alert-impact-w、放得下金額＋條」，標題只少掉超出的那一點（1024 起標題都不換行）。
+   ≤ 1023 影響金額欄本來就是 auto 寬、與標題搶寬度，條縮成 64px（PRD §4.6 的窄螢幕寬）；768 時最長的兩個標題會折成兩行（畫面 05 允許變動）；
+   手機第一行只有狀態標籤與金額，右側放得下 64px 的條。條 aria-hidden、不可聚焦、不另設點擊，游標沿用 summary 的 pointer；色與框線由元件經 chartColors 給，這裡不寫色。 */
+.diagnosis-panel .diagnosis-list[data-impact-bars] { --impact-bar-w: 96px; }
+.diagnosis-panel .diagnosis-list[data-impact-bars] .diagnosis-impact { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-3); }
+.diagnosis-panel .diagnosis-impact > .bar-cell { width: var(--impact-bar-w); margin: 0; }
+.diagnosis-panel .diagnosis-impact > .impact-bar.is-empty { display: inline-block; flex: none; width: var(--impact-bar-w); }
+.diagnosis-panel .impact-note { margin: var(--space-3) 0 0; }
+@media (min-width: 1024px) {
+  .diagnosis-panel .diagnosis-list[data-impact-bars] .diagnosis-row > summary { grid-template-columns: var(--alert-chev-w) auto minmax(0, 1fr) auto minmax(var(--alert-impact-w), max-content); }
+}
+@media (max-width: 1023px) {
+  .diagnosis-panel .diagnosis-list[data-impact-bars] { --impact-bar-w: 64px; }
+  .diagnosis-panel .diagnosis-list[data-impact-bars] .diagnosis-impact { gap: var(--space-2); }
+}
 /* ── V4-3a C 錨點結束 ── */

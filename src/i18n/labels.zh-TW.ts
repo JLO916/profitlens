@@ -848,9 +848,73 @@ export const diagnosis = {
   },
   // ── V4-3a 錨點：通路健檢圖表字串（代理 A：share；代理 B：channelsSpark；代理 C：impact）
   chartsV4: {
-    impact: {},
-    share: {},
-    channelsSpark: {},
+    /**
+     * V4-3a 代理 C：G9 健檢清單內嵌影響金額條（PRD §4.1–§4.7 G9；CHART_CATALOG G9；H5 設計稿提案）。條本身 aria-hidden、不另標值，語意由同列的影響金額承擔。
+     * totalNote：清單下方一行（只在畫了 REV_UP_CM_DOWN 的空心條時出現）；不是否定句，不進 copy-density 的上限。
+     */
+    impact: {
+      totalNote: "空心條是扣廣告後貢獻的總差額，實心條是各項費用的差額",
+    },
+    /**
+     * V4-3a 代理 A：G10 每 100 元淨營收去向（PRD §4.1–§4.7 G10；CHART_CATALOG G10；v4 GLOSSARY #1、#2、#16；H5 設計稿頁尾清單）。
+     * 圖例與資料表欄名的指標名取 metricDefinitions（商品成本、廣告費、各項費用），四項合計用 feesTitle；不適用、資料待補沿用 shell.status。
+     */
+    share: {
+      /** 區塊標準名（GLOSSARY v4 #1）：副標第一段、資料表 summary（「表格 · 每 100 元淨營收去向」）與 caption 都用它。 */
+      section: "每 100 元淨營收去向",
+      /**
+       * 結論標題：有虧損通路時取每 100 元虧最多的通路（loss），否則取剩最少的通路（least），同值依通路代碼；{channel}＝通路名稱（示範資料用 alias），{n}＝一位小數的元數（絕對值）。
+       * 全部通路都不適用（沒有任何一個通路能畫，例如 refund_only）時用 notApplicable，副標說明原因。「扣完廣告」與 G2 的 overview.profit.title 同一寫法。
+       */
+      title: {
+        loss: "{channel} 每 100 元淨營收，扣完廣告虧 {n} 元",
+        least: "{channel} 每 100 元淨營收，扣完廣告剩 {n} 元，最少",
+        notApplicable: "每 100 元淨營收去向，各通路都不適用",
+      },
+      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{period}＝本期起訖（M/D–M/D），{scope}＝範圍內的通路。 */
+      subtitle: "{section} · 本期 {period} · {scope}",
+      /** 有不適用的通路時的副標：{subtitle}＝上一句，{channels}＝不適用的通路（該列改成文字「不適用」）。 */
+      subtitleNote: "{subtitle}。{channels}的扣項有負數，或淨營收為 0 或負數，改以文字列出",
+      /** 圖例：空心框的剩餘段（超過 100 的部分沒有圖例，由列右端「虧 {n} 元」與不利色承擔）。 */
+      segments: { remain: "扣完剩下" },
+      /** 每列右端的標值：{n}＝每 100 元剩下或虧掉的元數（一位小數、絕對值）；資料表「每 100 元淨營收」欄也用同一句。 */
+      remain: "剩 {n} 元",
+      loss: "虧 {n} 元",
+      /** 四項通路費用合計（GLOSSARY v4 #16）：圖例、資料表欄名與四項費用段的抽屜標題。 */
+      feesTitle: "通路費用合計",
+      /** 四項費用段的抽屜「指標定義與算法」（name 只借 platform_fees 的金額單位，不顯示平台抽成的定義）。 */
+      feesDefinition: "平台抽成、金流手續費、物流與包材費、其他變動費用四項相加。",
+      /** 抽屜「計算方式」：四個占位符依序是四項費用的指標名（metricDefinitions）。 */
+      feesFormula: "{platform} ＋ {payment} ＋ {fulfillment} ＋ {other}",
+      /** 抽屜技術細節的算式（版本 channel-structure-v1 另列在 metric_version）。 */
+      feesTechnical: "fees = P + Q + F + O（四項費用逐列相加，到分）",
+      /** 資料表最後一欄（每 100 元淨營收剩或虧幾元，格內用 remain／loss 那一句）。 */
+      columns: { perHundred: "每 100 元淨營收" },
+      /** 資料表 caption（同時是捲動區的可及名稱）：{section}＝區塊標準名，{period}＝本期起訖。 */
+      caption: "{section}（本期 {period}）",
+      /** 通路超過上限時圖區的說明（state="empty"）：{count}＝範圍內通路數，{n}＝上限。 */
+      tooMany: "範圍內有 {count} 個通路，超過 {n} 個時只列資料表；數字見下方資料表與各通路兩期比較",
+    },
+    /**
+     * V4-3a 代理 B：G7b 通路寬表「近 {n} 週」與「各通路每週」資料表（PRD §4.1–§4.7 G7；CHART_CATALOG G7（b）；設計稿 diagnosis.html 頁尾 G7b 三列）。
+     * sparkline 本身 aria-hidden、沒有標題，語意由同列的本期扣廣告後貢獻承擔；資料表格的可及名稱沿用 overview.channelsV3.amountAria／marginAria，
+     * {metric} 以 diagnosis.tableV3.cellLabel 組成「{週名}{指標名}」（例如「本期第 1 週扣廣告後貢獻」），不另立字串。
+     */
+    channelsSpark: {
+      /** 通路寬表新增欄的欄名：{n}＝實際週數（本期最後幾週，上限 8；示範資料是 6）。 */
+      head: "近 {n} 週",
+      /** 資料表名稱；summary 以 overview.page.dataTable 組成「表格 · 各通路每週」，不另立 summary 字串。 */
+      tableTitle: "各通路每週",
+      /** 資料表 caption（同時是捲動區的可及名稱）：{metric}＝metricDefinitions 的扣廣告後貢獻標準名，{n} 同 head；單位「元」只在這裡標一次。 */
+      caption: "各通路每週{metric}（本期最後 {n} 週，元）",
+      /**
+       * 有未滿 7 天的週時，資料表之後的一句說明（在收合的 <details> 內，不進主層；X40）。欄頭另沿用 overview.trendV3.incompleteShort。
+       * 金額是那幾天的合計，天數少就變小，所以折線只連完整週；{metric} 同 caption。
+       */
+      incompleteNote: "未滿 7 天的週：{metric}是那幾天的合計，畫空心點，折線只連到完整週。",
+      /** 範圍內通路超過 {max} 個（{max}＝8，G7b、G10、G11 共用的上限）時，取代「近 {n} 週」欄與資料表的一句說明，放在通路寬表之後。 */
+      tooMany: "通路超過 {max} 個時只列兩期合計；要看各通路每週的數字，請把通路範圍縮小到 {max} 個以內。",
+    },
   },
 } as const;
 
@@ -2017,6 +2081,15 @@ export const evidence = {
      * 那個整理函式的版本（例如 assist-weeks-v1）；指標本身的算法版本仍看 metric_version（contribution-v1 或 assist-kpi-v1）。
      */
     arrangeVersion: "圖表整理版本",
+    // ── V4-3a 錨點：抽屜的百分比證據（代理 A：unitOverride "percent"，D-V3-31＝B、D-V4-32＝A；管理損益表「佔淨營收 %」欄）
+    percent: {
+      /** 「計算方式」：{numerator}＝該列指標名，{denominator}＝淨營收的指標名。 */
+      formula: "{numerator} ÷ {denominator}",
+      /** 「指標定義與算法」：{metric}＝該列指標名。 */
+      definition: "本期{metric}合計佔本期淨營收合計的比率；淨營收為 0 或負數時不適用。",
+      /** 技術細節的算式：{numerator}、{denominator}＝欄位代碼。 */
+      formulaTechnical: "{numerator} / {denominator}（ratioMetric，12 位小數）",
+    },
   },
 } as const;
 

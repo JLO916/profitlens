@@ -12,6 +12,7 @@ import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { ShellIcon } from "./shell/shell-icon";
 import { DiagnosisEmpty } from "./diagnosis-empty";
+import { BarCell, barCellScale } from "./charts/bar-cell";
 import { alertStatus, ImpactAmount, impactEvidence, toneClass } from "./top-three";
 
 // V3-5 A 健檢結果（PRD §7.2 第 2 點、§9.4 C9 清單型警示列）：一個規則一列 <li.alert-row> > <details.alert.diagnosis-row>。
@@ -22,6 +23,7 @@ const ui = labels.diagnosis.panel;
 const copy = labels.diagnosis.list;
 const listV3 = labels.diagnosis.listV3;
 const alerts = labels.overview.alerts;
+const impactCopy = labels.diagnosis.chartsV4.impact;
 /** 預設展開前幾列。 */
 export const DIAGNOSIS_DEFAULT_OPEN = 3;
 /** 範圍切換 chips 直接顯示幾個；超過時其餘收進「更多範圍」popover（PRD §7.2）。 */
@@ -35,7 +37,32 @@ export interface DiagnosisListProps {
   groups?: DiagnosisGroup[];
   /** R4 檔期：本期與檔期重疊時，每列展開內容多一行「檔期」（V3-5 起不再接在標題後）。 */
   events?: EventSet | null;
+  /** V4-3a G9：門檻刻度用的重要性門檻（diagnosisGroups 的 importance_threshold，TWD 兩位小數字串）；省略時沿用自行計算的結果（沒給 groups）或 0.00。0 時刻度與零線重疊、不另畫。 */
+  importanceThreshold?: string;
 }
+
+// V4-3a 代理 C：G9 健檢清單內嵌影響金額條（PRD §4.3–§4.7 G9、§7.2；CHART_CATALOG G9；H5 設計稿 verification/revamp-v4/mockups/diagnosis.html）。
+// 只對差額類規則畫：REV_UP_CM_DOWN（ranking_amount＝扣廣告後貢獻兩期差額，src/domain/rules.ts:128）與四個費用負擔規則（兩期金額差，:142）；
+// 水準類 NEGATIVE_CHANNEL_CM、SKU_NEGATIVE_GP 的金額是本期金額，不和差額比長短，不畫條、也不參與共用尺度；資料缺漏與金額未知的列不畫。
+// 共用尺度＝差額類列的 |影響| 最大值（PRD §7.2：G9 只在差額類規則之間共用）；只挑選既有值，屬 A 級呈現，不加總、不做「其他」合併（X38）。
+// 條在 <summary> 的影響金額之後（aria-hidden、不可聚焦、data-chart-kind="cell"）；不另設點擊（PRD §4.5 G9），點它和點這一列其他地方一樣展開或收合，
+// 可點的影響金額仍在展開內容第一行（ImpactAmount），計算與來源由它開。
+/** 畫影響金額條的差額類規則。 */
+export const IMPACT_BAR_RULES: ReadonlySet<RuleCode> = new Set<RuleCode>(["REV_UP_CM_DOWN", "DISCOUNT_BURDEN_UP", "REFUND_BURDEN_UP", "FULFILLMENT_BURDEN_UP", "MARKETING_BURDEN_UP"]);
+/** 總差額規則：它的金額就是扣廣告後貢獻的總差額，費用規則的差額是它的組成，所以畫空心條（同一把尺）。 */
+export const IMPACT_BAR_TOTAL_RULE: RuleCode = "REV_UP_CM_DOWN";
+/** 這一列畫不畫影響金額條：差額類規則、不是資料缺漏、影響金額已知。 */
+export function hasImpactBar(group: Pick<DiagnosisGroup, "rule" | "missing" | "impact_cents">): boolean {
+  return IMPACT_BAR_RULES.has(group.rule) && !group.missing && group.impact_cents !== null;
+}
+/** 共用尺度：只取畫條的列的 |影響| 最大值（精確字串）；沒有可畫的列或全部為 0 時為 null。 */
+export function impactBarScale(groups: readonly Pick<DiagnosisGroup, "rule" | "missing" | "impact_cents">[]): string | null {
+  return barCellScale(groups.filter(hasImpactBar).map(group => group.impact_cents));
+}
+/** 條的 testid（PRD §4.7：chart-diagnosis-impact-bar-{RuleCode}，一個規則一列，整頁唯一）。 */
+export const impactBarTestId = (rule: RuleCode) => `chart-diagnosis-impact-bar-${rule}`;
+/** 一列的條：共用尺度與門檻；null＝整張清單都沒有條（不留空位）。 */
+interface ImpactBarScale { max: string | null; threshold: string }
 
 /**
  * 未知值：比率分母 ≤ 0 是「不適用」，其餘（缺列、空白、未確認完整）是「資料待補」——缺的不是零。
@@ -129,8 +156,13 @@ const BADGES: { kind: CountKind; tone: "warning" | "unfavorable" | "favorable"; 
   { kind: "favorable", tone: "favorable", text: labels.format.favorable, aria: listV3.countFavorable },
 ];
 
-export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, events = null }: DiagnosisListProps) {
-  const rows = useMemo(() => groups ?? diagnosisGroups(snapshot).groups, [groups, snapshot]);
+export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, events = null, importanceThreshold }: DiagnosisListProps) {
+  const computed = useMemo(() => groups ? null : diagnosisGroups(snapshot), [groups, snapshot]);
+  const rows = groups ?? computed!.groups;
+  // G9：有任何一列畫條時，每列都在影響金額之後留同寬的位置（沒有條的列是空位），影響金額與零線才會上下對齊。
+  const barred = rows.some(hasImpactBar);
+  const impactBars: ImpactBarScale | null = barred ? { max: impactBarScale(rows), threshold: importanceThreshold ?? computed?.importance_threshold ?? "0.00" } : null;
+  const totalBar = rows.some(group => group.rule === IMPACT_BAR_TOTAL_RULE && hasImpactBar(group));
   const alias = demoAlias(snapshot.report.dataset_id);
   const counts = diagnosisCounts(rows);
   // R4 檔期提示：本期與檔期重疊時，每列展開內容多一行「檔期」；不改任何數字。
@@ -144,11 +176,18 @@ export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, ev
       <span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, alias)}</span>
     </div>
     <p className="sub">{ui.diagnosisNote}</p>
-    {rows.length ? <ol className="alert-list diagnosis-list" data-testid="diagnosis-list" aria-label={copy.listAria}>{rows.map((group, index) => <DiagnosisRow key={group.rule} group={group} defaultOpen={index < DIAGNOSIS_DEFAULT_OPEN} snapshot={snapshot} eventText={eventText} onEvidence={onEvidence} onCreateAction={onCreateAction} />)}</ol> : <DiagnosisEmpty />}
+    {rows.length ? <ol className="alert-list diagnosis-list" data-testid="diagnosis-list" aria-label={copy.listAria} data-impact-bars={impactBars ? "" : undefined}>{rows.map((group, index) => <DiagnosisRow key={group.rule} group={group} defaultOpen={index < DIAGNOSIS_DEFAULT_OPEN} snapshot={snapshot} eventText={eventText} onEvidence={onEvidence} onCreateAction={onCreateAction} impactBars={impactBars} />)}</ol> : <DiagnosisEmpty />}
+    {totalBar && <p className="note impact-note">{impactCopy.totalNote}</p>}
   </section>;
 }
 
-function DiagnosisRow({ group, defaultOpen, snapshot, eventText, onEvidence, onCreateAction }: { group: DiagnosisGroup; defaultOpen: boolean; snapshot: WorkspaceSnapshot; eventText: string; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void }) {
+/** G9 影響金額條（在 <summary> 的影響金額之後）：差額類規則畫 C24 variance（REV_UP_CM_DOWN 空心）；其餘列在有條的清單裡留同寬空位。色與同列影響金額同一個判斷（L1）。 */
+function ImpactBar({ group, scale }: { group: DiagnosisGroup; scale: ImpactBarScale }) {
+  if (!hasImpactBar(group)) return <span className="impact-bar is-empty" aria-hidden="true" />;
+  return <BarCell mode="variance" value={group.impact_cents} max={scale.max} tick={scale.threshold} outline={group.rule === IMPACT_BAR_TOTAL_RULE} tone={deltaTone("contribution_after_marketing", group.impact_cents, "L1")} testId={impactBarTestId(group.rule)} className="impact-bar" />;
+}
+
+function DiagnosisRow({ group, defaultOpen, snapshot, eventText, onEvidence, onCreateAction, impactBars }: { group: DiagnosisGroup; defaultOpen: boolean; snapshot: WorkspaceSnapshot; eventText: string; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void; impactBars: ImpactBarScale | null }) {
   const [selectedId, setSelectedId] = useState(group.primary.id);
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDetailsElement>(null);
@@ -175,7 +214,7 @@ function DiagnosisRow({ group, defaultOpen, snapshot, eventText, onEvidence, onC
         {status && <span className="alert-loz"><span className="ui-lozenge" data-tone={status.tone}>{status.text}</span></span>}
         <h3 className="alert-title diagnosis-headline">{group.headline}</h3>
         {primaryScope.scope.kind !== "all" && <span className="scope-tag">{primaryScope.label}</span>}
-        <span className="diagnosis-impact"><span className="sr-only">{labels.overview.sections.impact}</span><ImpactText snapshot={snapshot} diagnostic={group.primary} /></span>
+        <span className="diagnosis-impact"><span className="sr-only">{labels.overview.sections.impact}</span><ImpactText snapshot={snapshot} diagnostic={group.primary} />{impactBars && <ImpactBar group={group} scale={impactBars} />}</span>
       </summary>
       <div className="alert-body diagnosis-body">
         <p className="impact-line"><span>{fill(copy.scopeImpact, { impact: labels.overview.sections.impact, scope: selected.label })}</span><ImpactAmount snapshot={snapshot} diagnostic={selected.diagnostic} onEvidence={onEvidence} /></p>

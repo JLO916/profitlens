@@ -21,6 +21,23 @@ export const pnlShareText = (row: Pick<PnlRow, "share">): string => formatRateL1
 export function pnlEvidence(snapshot: WorkspaceSnapshot, row: Pick<PnlRow, "metric">, cell: PnlCell, columnText: string): EvidenceSelection {
   return { title: fill(copy.evidenceTitle, { metric: metricDefinitions[row.metric].label, date: columnText }), name: row.metric, metric: cell.metric, period: cell.period, channels: snapshot.report.scope.channels, sources: cell.sources };
 }
+/**
+ * V4-3a（D-V3-31＝B、D-V4-32＝A；PRD §8.7）：「佔淨營收 %」格的「計算與來源」。值是 buildPnlTable 既有的精確比率（domain 的 ratioMetric，12 位小數），
+ * 不另算、不加版本（metric_version 仍是 contribution-v1）；unitOverride "percent" 讓抽屜顯示百分比，valueKind "level" 不帶正負號；
+ * 組成項目是分子（該列本期合計）與分母（本期淨營收合計），算式、定義與技術算式由證據自帶（name 只借列的指標，不顯示它的定義與技術公式）。
+ */
+export function pnlShareEvidence(snapshot: WorkspaceSnapshot, row: Pick<PnlRow, "metric" | "share" | "total">): EvidenceSelection {
+  const label = metricDefinitions[row.metric].label, net = metricDefinitions.net_revenue.label;
+  const percent = labels.evidence.chartsV4.percent;
+  return {
+    title: fill(copy.evidenceTitle, { metric: label, date: copy.columns.share }), name: row.metric, metric: row.share, period: row.total.period, channels: snapshot.report.scope.channels, sources: row.total.sources,
+    unitOverride: "percent", valueKind: "level",
+    formula: fill(percent.formula, { numerator: label, denominator: net }),
+    components: [{ label, metric: row.total.metric }, { label: net, metric: snapshot.report.current.metrics.net_revenue }],
+    definition: fill(percent.definition, { metric: label }),
+    formulaTechnical: fill(percent.formulaTechnical, { numerator: row.metric, denominator: "net_revenue" }),
+  };
+}
 
 export interface PnlTableProps {
   snapshot: WorkspaceSnapshot;
@@ -30,7 +47,7 @@ export interface PnlTableProps {
 /**
  * 總覽區塊 10「進階」內的每日／每週管理損益表（PRD §10.1 F9、§9.3 報表型表格；D-V3-19＝A、D-V3-8 螢幕用 U+2212）。
  * <details> 預設收合、內容保持掛載（§6.4 M1）；日／週分段與「顯示零值列」各只有一份（M6）；零值列用 hidden 隱藏但掛載。
- * 每格金額是 number-link，開「計算與來源」；佔淨營收 % 是呈現層比率（合計 ÷ 淨營收合計），不另開抽屜。
+ * 每格金額是 number-link，開「計算與來源」；佔淨營收 % 是呈現層比率（合計 ÷ 淨營收合計），V4-3a 起也是 number-link（pnlShareEvidence，D-V3-31＝B）。
  */
 export function PnlTable({ snapshot, onEvidence }: PnlTableProps) {
   const [granularity, setGranularity] = useState<PnlGranularity>("day");
@@ -74,7 +91,7 @@ export function PnlTable({ snapshot, onEvidence }: PnlTableProps) {
           <th scope="row">{pnlRowLabel(row)}</th>
           {row.cells.map((cell, index) => table.columns[index].hasData ? link(row, cell, columnTexts[index], table.columns[index].id) : <td key={table.columns[index].id} className="num pnl-empty" data-col={table.columns[index].id}>{copy.noData}</td>)}
           {link(row, row.total, copy.columns.total, "total")}
-          <td className="num" data-col="share">{pnlShareText(row)}</td>
+          <td className="num" data-col="share"><button type="button" className="number-link" data-testid={`pnl-share-${row.metric}`} aria-label={fill(copy.cellAria, { date: copy.columns.share, metric: metricDefinitions[row.metric].label, value: pnlShareText(row) })} onClick={() => onEvidence(pnlShareEvidence(snapshot, row))}>{pnlShareText(row)}</button></td>
         </tr>)}</tbody>
       </table>
     </div>

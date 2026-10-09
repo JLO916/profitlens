@@ -99,9 +99,9 @@ test.describe("V3-9a F9 管理損益表", () => {
     await expect(pnlTable(page).locator("tbody > tr[data-zero]")).toHaveCount(0);
     await expect(pnlTable(page).locator("tbody > tr[hidden]")).toHaveCount(0);
     await expect(pnlTable(page).locator("td.pnl-empty")).toHaveCount(0);
-    // 每格（日欄＋合計）都是 number-link；佔淨營收 % 不是按鈕。
-    await expect(pnlTable(page).locator("button.number-link")).toHaveCount(PNL_ROWS.length * (DEMO_DAYS.length + 1));
-    await expect(pnlTable(page).locator("td[data-col='share'] button")).toHaveCount(0);
+    // 每格（日欄＋合計）都是 number-link；V4-3a（D-V3-31＝B、D-V4-32＝A）起佔淨營收 % 也是 number-link（每列一個，pnl-share-{指標}），所以每列＋2。
+    await expect(pnlTable(page).locator("button.number-link")).toHaveCount(PNL_ROWS.length * (DEMO_DAYS.length + 2));
+    await expect(pnlTable(page).locator("td[data-col='share'] button")).toHaveCount(PNL_ROWS.length);
     // 合計欄＝本期合計（L2 整數元）；可及名稱 fill(cellAria, { date: 合計, metric, value })。
     await expect(pnlCellButton(page, RESULT_METRIC, "total")).toHaveText(formatAmountL2(DEMO_RESULT));
     await expect(pnlCellButton(page, RESULT_METRIC, "total")).toHaveAccessibleName(pnlCellAria(copy.columns.total, resultLabel, formatAmountL2(DEMO_RESULT)));
@@ -162,7 +162,8 @@ test.describe("V3-9a F9 管理損益表", () => {
     const weekRanges = pnlTable(page).locator("thead th[data-col] .pnl-col-range");
     await expect(weekRanges).toHaveText(DEMO_WEEK_STARTS.map(start => formatPeriodL1(start, dateRange(start, "2026-08-23")[6], { anchor: DEMO_AS_OF, days: false })));
     for (const row of PNL_ROWS) expect(await pnlRowColumns(page, row.metric), row.metric).toEqual([...DEMO_WEEK_STARTS, "total", "share"]);
-    await expect(pnlTable(page).locator("button.number-link")).toHaveCount(PNL_ROWS.length * (DEMO_WEEK_STARTS.length + 1));
+    // V4-3a：週欄＋合計＋佔淨營收 %（number-link）。
+    await expect(pnlTable(page).locator("button.number-link")).toHaveCount(PNL_ROWS.length * (DEMO_WEEK_STARTS.length + 2));
     await expect(pnlCellButton(page, RESULT_METRIC, "total")).toHaveText(formatAmountL2(DEMO_RESULT));
 
     // 週格的抽屜：標題用週欄名（欄頭第一行）。

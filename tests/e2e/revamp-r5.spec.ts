@@ -290,11 +290,12 @@ test("健檢頁通路寬表（diagnosis 變體）：台灣報表欄序、預設�
   //   MARKETPLACE 淨營收 900.00 → 990.00（+90.00）、扣廣告後貢獻 170.00 → −15.00（−185.00，轉負）。
   await loadDataset(page, "golden");
   await navigateTo(page, "diagnosis");
-  const table = page.getByTestId("channel-compare").getByRole("table");
+  // V4-3a：channel-compare 內多了「各通路每週」資料表（<details> 收合時對可及性樹隱藏）；以寬表自己的 class 定位，展開資料表時也只比到寬表。
+  const table = page.getByTestId("channel-compare").locator("table.channel-table-v3");
   const tableV3 = labels.diagnosis.tableV3;
   const groups = ["net_revenue", "contribution_after_marketing"] as const;
-  // 表頭兩列：通路｜淨營收（元）｜扣廣告後貢獻（元）｜備註；第二列每組 本期｜上期｜差額。
-  await expect(table.locator("thead tr.group-row th")).toHaveText([labels.overview.channelTable.channelHeader, ...groups.map(name => fill(labels.format.units.yuanColumn, { label: metricDefinitions[name].label })), tableV3.note]);
+  // 表頭兩列：通路｜淨營收（元）｜扣廣告後貢獻（元）｜近 {n} 週（V4-3a G7b；golden 本期 1 天＝1 週）｜備註；第二列每組 本期｜上期｜差額。
+  await expect(table.locator("thead tr.group-row th")).toHaveText([labels.overview.channelTable.channelHeader, ...groups.map(name => fill(labels.format.units.yuanColumn, { label: metricDefinitions[name].label })), fill(labels.diagnosis.chartsV4.channelsSpark.head, { n: 1 }), tableV3.note]);
   await expect(table.locator("thead tr.column-row th")).toHaveText(groups.flatMap(() => [labels.shell.periods.current, labels.shell.periods.previous, tableV3.change]));
   const rowHeads = table.locator("tbody tr th[role=rowheader]");
   const sortButton = (name: typeof groups[number], period: "current" | "change") => table.getByRole("button", { name: period === "change" ? fill(tableV3.changeLabel, { metric: metricDefinitions[name].label }) : fill(tableV3.cellLabel, { period: labels.shell.periods.current, metric: metricDefinitions[name].label }), exact: true });

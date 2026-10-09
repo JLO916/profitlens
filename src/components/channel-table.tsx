@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useMemo, useState, type MouseEvent } from "react";
 import type { ManagerSummary as SummaryData, SummaryEvidence } from "@/application/manager-summary";
+import { CHANNEL_WEEKS_MAX_CHANNELS, CHANNEL_WEEKS_VERSION, channelWeeks, channelWeeksAvailable, recentChannelWeeks, type ChannelWeek, type ChannelWeeks, type ChannelWeekSeries, type ChannelWeekValue } from "@/application/chart-channel-weeks";
 import { channelLabel, demoAlias } from "@/application/copy";
 import type { WorkspaceSnapshot } from "@/application/workspace";
-import { deltaTone, deltaWord, formatAmountL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
+import { deltaTone, deltaWord, formatAmountL2, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { parseCents } from "@/domain/money";
 import { fill, labels } from "@/i18n";
+import { ChartDataDetails, type ChartDataColumn } from "./charts/chart-data-table";
+import { Sparkline } from "./charts/sparkline";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { ShellIcon } from "./shell/shell-icon";
 import { toneClass } from "./top-three";
@@ -23,9 +26,11 @@ interface ChannelWideTableProps { summary: SummaryData; onEvidence: (evidence: E
  * 通路寬表（上期／本期／差額）。R1 起同時用於通路健檢頁頂與會議摘要；數字一律可開「計算與來源」。欄名由 labels.shell.periods 與 metricDefinitions 組成，示範資料的通路名僅在顯示層套 alias。
  * V3-2b：L2（整數元、千分位、U+2212）；單位「元」只在 caption 標一次；差額欄只有不利上色（依 favorableDirection）。
  * V3-5：variant="diagnosis" 改成台灣報表欄序（本期｜上期｜差額，欄群組標單位）、可排序、備註欄與手機清單；會議摘要仍用 default。
+ * V4-3a G7b：diagnosis 變體在傳入 snapshot 時，扣廣告後貢獻欄群組與備註欄之間多一欄「近 {n} 週」sparkline，表格之後多一個收合的「各通路每週」資料表；
+ * 通路 > 8 時兩者都不渲染（也不計算），改為表格之後一句說明。default 變體（會議摘要）不變。
  */
-export function ChannelWideTable({ summary, onEvidence, ariaLabel, caption, variant = "default" }: ChannelWideTableProps) {
-  if (variant === "diagnosis") return <DiagnosisChannelTable summary={summary} onEvidence={onEvidence} ariaLabel={ariaLabel} caption={caption} />;
+export function ChannelWideTable({ summary, onEvidence, ariaLabel, caption, variant = "default", snapshot }: ChannelWideTableProps) {
+  if (variant === "diagnosis") return <DiagnosisChannelTable summary={summary} onEvidence={onEvidence} ariaLabel={ariaLabel} caption={caption} snapshot={snapshot} />;
   const alias = demoAlias(summary.dataset_id);
   const columnHeaders = (["net_revenue", "contribution_after_marketing"] as const).flatMap(name => [`${labels.shell.periods.previous}${metricDefinitions[name].shortLabel}`, `${labels.shell.periods.current}${metricDefinitions[name].shortLabel}`, `${metricDefinitions[name].shortLabel}${labels.exports.csv.suffix.change}`]);
   // V3-10 收尾：可及名稱含可見數字（Lighthouse label-content-name-mismatch；抽屜標題 evidence.title 不變）。
@@ -88,10 +93,88 @@ function channelDiagnosis(summary: SummaryData, channel: string) {
   return summary.diagnosis.find(group => group.scopes.some(({ scope }) => scope.channels.includes(channel) && (scope.kind !== "all" || scope.channels.length === 1))) ?? null;
 }
 
-function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption }: Omit<ChannelWideTableProps, "variant">) {
+// ── V4-3a B：G7b 通路寬表「近 {n} 週」sparkline 與「各通路每週」資料表（PRD §4.1–§4.7 G7、§5.2 第 6 列、§8.2；CHART_CATALOG G7（b））。
+// 資料由 channelWeeks（channel-weeks-v1，不放進快照）在本元件內以 useMemo 計算，只取本期最後 ≤ 8 週；通路 > 8 時不呼叫。
+// - sparkline（C19）放在扣廣告後貢獻欄群組之後、備註欄之前的新欄，aria-hidden、不可點；testid chart-diagnosis-channels-spark-{通路代碼}；
+//   語意由同列的本期扣廣告後貢獻承擔（CL-1），所以該通路本期扣廣告後貢獻是資料待補或不適用、或整列沒有任何週值時不畫（各週數字仍在資料表裡），同 G7a。
+//   金額是期間合計：未滿 7 天的週畫空心點、不和完整週連線（X40，同 G7a 的件數）。
+// - 「各通路每週」（C33）放在表格之後的收合 <details>，收合時保持掛載（M1）；列＝通路（順序同目前寬表的排序），欄＝近 {n} 週，格＝扣廣告後貢獻 L2，可開抽屜；
+//   表 testid chart-diagnosis-channels-table。
+// - 每格的抽屜：值取自 domain（metric_version 維持 contribution-v1），整理函式的版本放 arrangeVersion: "channel-weeks-v1"；filter 篩到該週、該通路。
+
+const spark = labels.diagnosis.chartsV4.channelsSpark;
+const CHANNEL_METRIC = "contribution_after_marketing" as const;
+/** sparkline 的 testid（PRD §4.7：chart-{page}-{id}-spark-{語意 key}，key＝通路代碼）。 */
+export const channelSparkTestId = (channel: string) => `chart-diagnosis-channels-spark-${channel}`;
+/** 「各通路每週」資料表的 testid（PRD §4.7：chart-{page}-{id}-table）。 */
+export const CHANNEL_WEEKS_TABLE_TESTID = "chart-diagnosis-channels-table";
+/** 通路 > 8 時取代「近 {n} 週」欄與資料表的一句說明（不是圖，不用 chart- 前綴）。 */
+export const CHANNEL_WEEKS_TOO_MANY_TESTID = "channel-weeks-too-many";
+
+/** G7b 的狀態：off＝沒傳快照（會議摘要、既有呼叫端）或逐日列不完整；tooMany＝通路 > 8，不計算；ready＝本期最後 ≤ 8 週。 */
+export type ChannelWeeksState = { status: "off" } | { status: "tooMany" } | { status: "ready"; data: ChannelWeeks };
+/** 只在通路數在上限內時呼叫 channelWeeks（PRD §8.2：通路 > 8 時不呼叫）。純函式，元件以 useMemo 包住。 */
+export function channelWeeksState(snapshot: Pick<WorkspaceSnapshot, "report" | "weeks"> | undefined): ChannelWeeksState {
+  if (!snapshot) return { status: "off" };
+  if (!channelWeeksAvailable(snapshot)) return { status: "tooMany" };
+  const data = channelWeeks(snapshot);
+  return data === null || data.weeks.length === 0 ? { status: "off" } : { status: "ready", data: recentChannelWeeks(data) };
+}
+
+/** 欄名「近 {n} 週」（n＝實際週數，上限 8）。 */
+export const channelSparkHead = (data: ChannelWeeks) => fill(spark.head, { n: data.weeks.length });
+
+/** 資料表一格的「計算與來源」（PRD §8.7、CHART_CATALOG G7（b））：該通路該週的扣廣告後貢獻；不給 metricVersion（domain 值，contribution-v1）。 */
+export function channelWeekEvidence(series: ChannelWeekSeries, week: ChannelWeek, value: ChannelWeekValue): EvidenceSelection {
+  return { name: CHANNEL_METRIC, metric: { value: value.metric.value, reason_codes: [...value.metric.reason_codes] }, period: { ...week.period }, channels: [series.channel], sources: value.sources, title: metricDefinitions[CHANNEL_METRIC].label, filter: { week: { start: week.period.start, end: week.period.end, label: week.label }, channel: series.channel }, arrangeVersion: CHANNEL_WEEKS_VERSION };
+}
+
+/** 一列的 sparkline：圖形座標用 Number 近似值（顯示與抽屜一律用精確字串）；本期值缺漏或整列沒有週值時不畫。 */
+export function ChannelSparkCell({ data, channel, current }: { data: ChannelWeeks; channel: string; current: string | null }) {
+  const series = data.channels.find(item => item.channel === channel);
+  if (!series || current === null || series.values.every(value => value.metric.value === null)) return null;
+  const points = series.values.map((value, index) => ({ value: value.metric.value === null ? null : Number(value.metric.value), incomplete: !data.weeks[index].full }));
+  return <Sparkline points={points} hollowIncomplete testId={channelSparkTestId(channel)} />;
+}
+
+type WeeksRow = { series: ChannelWeekSeries; label: string };
+
+/** 「各通路每週」（C33）：列＝通路，欄＝近 {n} 週（週名＋起訖；未滿 7 天的週欄頭加「未滿 7 天」），格＝扣廣告後貢獻 L2 number-link。 */
+export function ChannelWeeksDetails({ data, channels, alias, anchor, onEvidence }: { data: ChannelWeeks; channels: readonly string[]; alias: boolean; anchor: string; onEvidence: (evidence: EvidenceSelection) => void }) {
+  const metric = metricDefinitions[CHANNEL_METRIC].label;
+  const rows: WeeksRow[] = channels.flatMap(channel => { const series = data.channels.find(item => item.channel === channel); return series ? [{ series, label: channelLabel(channel, alias) }] : []; });
+  const columns: ChartDataColumn<number>[] = data.weeks.map((week, index) => ({
+    key: week.period.start, label: week.label, unit: "money", layer: "L2", data: index,
+    notes: [formatPeriodL1(week.period.start, week.period.end, { anchor, days: false }), ...(week.full ? [] : [labels.overview.trendV3.incompleteShort])],
+  }));
+  const value = (row: WeeksRow, column: ChartDataColumn<number>) => row.series.values[column.data];
+  const incomplete = data.weeks.some(week => !week.full);
+  return <ChartDataDetails<WeeksRow, number>
+    title={spark.tableTitle}
+    testId={CHANNEL_WEEKS_TABLE_TESTID}
+    caption={fill(spark.caption, { metric, n: data.weeks.length })}
+    rowHeaderLabel={labels.overview.channelTable.channelHeader}
+    rows={rows}
+    rowKey={row => row.series.channel}
+    rowHeader={row => ({ label: row.label })}
+    columns={columns}
+    valueOf={(row, column) => { const cell = value(row, column); return { value: cell.metric.value, reasonCodes: cell.metric.reason_codes }; }}
+    evidenceOf={(row, column) => channelWeekEvidence(row.series, data.weeks[column.data], value(row, column))}
+    onEvidence={onEvidence}
+    cellAria={(row, column, text) => fill(value(row, column).metric.value === null ? labels.overview.channelsV3.marginAria : labels.overview.channelsV3.amountAria, { channel: row.label, metric: fill(tableV3.cellLabel, { period: data.weeks[column.data].label, metric }), value: text })}
+    notes={incomplete ? [fill(spark.incompleteNote, { metric })] : []}
+  />;
+}
+// ── V4-3a B 結束
+
+function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption, snapshot }: Omit<ChannelWideTableProps, "variant">) {
   const [sort, setSort] = useState<ChannelSort>(DEFAULT_CHANNEL_SORT);
   const alias = demoAlias(summary.dataset_id);
   const rows = sortChannelRows(summary.channels, sort);
+  // V4-3a G7b：只依快照的報表與週列計算（排序切換不重算）；沒傳快照時（既有呼叫端）不多任何欄。
+  const report = snapshot?.report, weeks = snapshot?.weeks;
+  const g7b = useMemo(() => channelWeeksState(report && weeks ? { report, weeks } : undefined), [report, weeks]);
+  const sparkHead = g7b.status === "ready" ? channelSparkHead(g7b.data) : null;
   const toggle = (key: ChannelSortKey) => setSort(current => current.key === key ? { key, direction: current.direction === "ascending" ? "descending" : "ascending" } : { key, direction: "ascending" });
   // PRD §7 共通規則的可及名稱句型「{通路} {指標} {值} 元，看明細」（labels.overview.channelsV3.amountAria），取代 manager-summary 的「一頁摘要 · …」標題。
   const amount = (evidence: SummaryEvidence, signed: boolean, channel: string, label: string) => {
@@ -107,12 +190,12 @@ function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption }: Omit
       {key ? <button type="button" className="sort-button" data-label={short} aria-label={columnLabel(name, period, false)} onClick={() => toggle(key)}><span className="sort-text">{periodText(period)}</span><ShellIcon name={active ? sort.direction === "ascending" ? "sort-asc" : "sort-desc" : "sort"} size={16} className="sort-icon" /></button> : periodText(period)}
     </th>;
   };
-  return <div className="table-scroll channel-table-scroll" tabIndex={0} role="region" aria-label={ariaLabel}>
+  return <><div className="table-scroll channel-table-scroll" tabIndex={0} role="region" aria-label={ariaLabel}>
     <table className="ui-table channel-table-v3" role="table">
       <caption>{caption}</caption>
-      <colgroup><col /></colgroup>{GROUPS.map(name => <colgroup key={name} span={3} />)}<colgroup><col /></colgroup>
+      <colgroup><col /></colgroup>{GROUPS.map(name => <colgroup key={name} span={3} />)}{sparkHead !== null && <colgroup><col /></colgroup>}<colgroup><col /></colgroup>
       <thead role="rowgroup">
-        <tr role="row" className="group-row"><th role="columnheader" scope="col" rowSpan={2} className="channel-col">{labels.overview.channelTable.channelHeader}</th>{GROUPS.map(name => <th key={name} role="columnheader" scope="colgroup" colSpan={3} className="group-head">{fill(labels.format.units.yuanColumn, { label: metricDefinitions[name].label })}</th>)}<th role="columnheader" scope="col" rowSpan={2} className="note-col">{tableV3.note}</th></tr>
+        <tr role="row" className="group-row"><th role="columnheader" scope="col" rowSpan={2} className="channel-col">{labels.overview.channelTable.channelHeader}</th>{GROUPS.map(name => <th key={name} role="columnheader" scope="colgroup" colSpan={3} className="group-head">{fill(labels.format.units.yuanColumn, { label: metricDefinitions[name].label })}</th>)}{sparkHead !== null && <th role="columnheader" scope="col" rowSpan={2} className="spark-head">{sparkHead}</th>}<th role="columnheader" scope="col" rowSpan={2} className="note-col">{tableV3.note}</th></tr>
         <tr role="row" className="column-row">{GROUPS.flatMap(name => PERIODS.map(period => header(name, period)))}</tr>
       </thead>
       <tbody role="rowgroup">{rows.map(row => {
@@ -127,9 +210,13 @@ function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption }: Omit
             const listRole = period === "previous" ? "secondary" : name === "contribution_after_marketing" ? "labeled" : "secondary";
             return <td key={`${name}-${period}`} role="cell" className={`num${period === "previous" ? " prev" : ""}${tone}`} data-label={columnLabel(name, period, true)} data-list-role={listRole}>{amount(metric.evidence[period], period === "change", channelLabel(row.channel, alias), columnLabel(name, period, false))}</td>;
           }))}
+          {g7b.status === "ready" && <td role="cell" className="spark-cell" data-label={sparkHead ?? undefined} data-list-role="spark"><ChannelSparkCell data={g7b.data} channel={row.channel} current={row.contribution.current.value} /></td>}
           <td role="cell" className="note-cell" data-label={tableV3.note} data-list-role="secondary">{turned === labels.format.turnedLoss && <span className="ui-lozenge" data-tone="unfavorable">{labels.overview.channelsV3.turnedNegative}</span>}{turned === labels.format.turnedPositive && <span className="ui-lozenge">{labels.overview.channelsV3.turnedPositive}</span>}{group && <a className="note-link" href={`#diagnosis-row-${group.rule}`} onClick={event => jumpToRow(event, group.rule)}>{group.headline}</a>}</td>
         </tr>;
       })}</tbody>
     </table>
-  </div>;
+  </div>
+  {g7b.status === "ready" && snapshot && <ChannelWeeksDetails data={g7b.data} channels={rows.map(row => row.channel)} alias={alias} anchor={snapshot.data_as_of} onEvidence={onEvidence} />}
+  {g7b.status === "tooMany" && <p className="note channel-weeks-note" data-testid={CHANNEL_WEEKS_TOO_MANY_TESTID}>{fill(spark.tooMany, { max: CHANNEL_WEEKS_MAX_CHANNELS })}</p>}
+  </>;
 }
