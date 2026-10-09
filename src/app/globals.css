@@ -2829,6 +2829,22 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-3b B 錨點結束 ── */
 
 /* ── V4-4 B：C25 RankedBars（variance、pareto 模式；代理 B） ── */
+/* C16 headingLevel（PRD §6.1）：標題改成 h3、h4 時外觀與 h2 相同（商品頁 G13、G14 在 h3#product-highlights-heading 之下用 h4，標題不跳級）。 */
+.chart-section .sec-title h3, .chart-section .sec-title h4 { margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* C25（PRD §6.3、§4.4 G13、G14）：主圖的量寬容器（ResizeObserver）佔滿剩餘寬；pareto 的累計欄是獨立的 svg（寬＝最長「累計 n%」＋10），排在主圖右側、不縮。
+   svg 寬 100%、高＝列數 × 列高（元件給 height 屬性），固定高由外框 .chart-frame.sm 負責。字 12px、tabular；文字不接指標事件，點擊落在柱或整列的透明熱區。 */
+.ranked-bars { display: flex; align-items: flex-start; width: 100%; min-width: 0; }
+.ranked-bars-main { flex: 1 1 0; min-width: 0; }
+.chart-ranked-bars { display: block; width: 100%; font-family: var(--font-sans); }
+.chart-ranked-extra { display: block; flex: none; font-family: var(--font-sans); }
+.chart-ranked-bars text, .chart-ranked-extra text { font-size: var(--text-12); fill: var(--text-secondary); font-variant-numeric: tabular-nums; pointer-events: none; }
+.chart-ranked-bars .ranked-value.is-unfavorable { fill: var(--unfavorable); font-weight: var(--weight-semibold); }
+.chart-ranked-bars .ranked-more { fill: var(--text-tertiary); }
+.chart-ranked-bars .ranked-hit, .chart-ranked-bars .ranked-bar.is-clickable { cursor: pointer; }
+/* D-V4-39＝A：≤ 767px 不畫右側累計（累計與累計佔比只留在資料表）；隱藏但掛載，主圖的量寬容器隨之變寬、柱變長。 */
+@media (max-width: 767px) {
+  .chart-ranked-extra.is-narrow-hidden { display: none; }
+}
 /* ── V4-4 B 錨點結束 ── */
 
 /* ── V4-4 C：商品頁 G13、G14 版面（.product-highlight-grid 內的 ChartFrame；代理 C） ── */

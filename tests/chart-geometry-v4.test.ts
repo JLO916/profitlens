@@ -1,10 +1,13 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import Decimal from "decimal.js";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AST_RULES, checkChartMarkup, scanChartTsx, scanChartVarLiterals } from "../scripts/lib/chart-scan.mjs";
 import { chartColors, chartHeights, chartRowHeights } from "../src/application/chart-theme";
+import { formatSignedDelta } from "../src/application/presentation";
+import { RANKED_MIN_PLOT, RANKED_SSR_WIDTH, RANKED_TEXT_PAD, RANKED_VALUE_GAP, hbarGeometry, hbarMaxRows, rankedTextWidth, type HbarGeometry, type RankedBarBlock, type RankedBarRow } from "../src/components/charts/ranked-bars";
 import { SHARE_STACK_LABEL_WIDTH, SHARE_STACK_SSR_WIDTH, SHARE_STACK_VALUE_WIDTH, ShareStack, shareStackGeometry, type ShareStackRowInput } from "../src/components/charts/share-stack";
 import { SPARK_DOT_R, SPARK_PAD, SPARK_STROKE, SPARK_WIDTH, Sparkline, sparklineGeometry, type SparklinePoint } from "../src/components/charts/sparkline";
 import { byTestId, openTag } from "./helpers/markup";
@@ -278,5 +281,206 @@ describe("ShareStack：SSR 結構（C27；CL-3、CL-7、CL-10、CL-11）", () =>
     const result = scanChartTsx(text, file);
     for (const rule of AST_RULES) expect(result[rule], rule).toEqual([]);
     expect(scanChartVarLiterals(text, file)).toEqual([]);
+  });
+});
+
+// V4-4 代理 B：C25 hbarGeometry（PRD §6.3 C25、§4.4 G13／G14；CHART_CATALOG G13、G14；D-V4-38＝A、D-V4-39＝A）。
+// 輸入是 4 通路合成資料的差額與商品毛利（H5 設計稿 verification/revamp-v4/mockups/products-synthetic.html 的建議版用同一組數字）：
+// 設計稿的 rankedBarsSvg 與本函式用同一個字寬估計，所以 1440 半格（524）、390（324）的座標要逐點相同。標值一律用 presentation.ts 的 L1 格式化。
+const hbarRow = (key: string, label: string, value: string, extra?: string): RankedBarRow<string> => ({ key, label, value, tone: value.startsWith("-") ? "unfavorable" : "favorable", display: formatSignedDelta(value, "L1"), evidence: `evidence-${key}`, extra });
+const G13_DECREASE = [
+  hbarRow("MARKETPLACE-SKU-203", "SKU-203 · MARKETPLACE", "-8600.00"),
+  hbarRow("MARKETPLACE-SKU-101", "SKU-101 · MARKETPLACE", "-8500.00"),
+  hbarRow("MARKETPLACE-SKU-201", "SKU-201 · MARKETPLACE", "-3400.00"),
+  hbarRow("SOCIAL-SKU-301", "SKU-301 · SOCIAL", "-3060.00"),
+  hbarRow("MARKETPLACE-SKU-202", "SKU-202 · MARKETPLACE", "-1700.00"),
+];
+const G13_INCREASE = [
+  hbarRow("DTC-SKU-101", "SKU-101 · DTC", "9350.00"),
+  hbarRow("LIVE-SKU-401", "SKU-401 · LIVE", "6800.00"),
+  hbarRow("DTC-SKU-103", "SKU-103 · DTC", "3060.00"),
+  hbarRow("SOCIAL-SKU-103", "SKU-103 · SOCIAL", "2550.00"),
+];
+const g13Blocks = (increase = G13_INCREASE): RankedBarBlock<string>[] => [{ key: "decrease", rows: G13_DECREASE }, { key: "increase", rows: increase }];
+/** 累計佔比文字只當排版輸入（G14 的「累計 {pct}」由代理 C 從 labels 組；這裡用百分比本身）。 */
+const G14_ROWS = [
+  hbarRow("MARKETPLACE-SKU-201", "SKU-201 · MARKETPLACE", "-3400.00", "38.0%"),
+  hbarRow("SOCIAL-SKU-301", "SKU-301 · SOCIAL", "-2040.00", "60.9%"),
+  hbarRow("MARKETPLACE-SKU-203", "SKU-203 · MARKETPLACE", "-1800.00", "81.0%"),
+  hbarRow("MARKETPLACE-SKU-202", "SKU-202 · MARKETPLACE", "-850.00", "90.5%"),
+  hbarRow("SOCIAL-SKU-302", "SKU-302 · SOCIAL", "-850.00", "100.0%"),
+];
+const barsOf = (geometry: HbarGeometry<string>, block?: string) => geometry.blocks.filter(item => block === undefined || item.key === block).flatMap(item => item.bars);
+/** 標值不壓標籤欄（往左的柱：標值左緣 ≥ 標籤欄右緣；往右的柱：標值起點 ≥ 標籤欄右緣），也不超出主圖右緣；標籤在標籤欄內。 */
+const expectValuesClear = (geometry: HbarGeometry<string>) => {
+  for (const bar of barsOf(geometry)) {
+    const text = rankedTextWidth(bar.row.display);
+    if (bar.value.anchor === "end") expect(bar.value.x - text, bar.key).toBeGreaterThanOrEqual(geometry.labelWidth);
+    else {
+      expect(bar.value.x, bar.key).toBeGreaterThanOrEqual(geometry.labelWidth);
+      expect(bar.value.x + text, bar.key).toBeLessThanOrEqual(geometry.width);
+    }
+    expect(rankedTextWidth(bar.label), bar.key).toBeLessThanOrEqual(geometry.labelWidth - RANKED_TEXT_PAD);
+  }
+};
+
+describe("hbarGeometry（C25）：G13 兩段上下排列（D-V4-38＝A）、共用尺度、各自從 0", () => {
+  it("1440 半格（主圖 524）：與設計稿建議版逐點相同——標籤欄 158、標值欄 59、繪圖區 307；減少段零線在右緣、增加段在標籤欄右緣；9 列 × 16＝144", () => {
+    const geometry = hbarGeometry(g13Blocks(), 524, "variance");
+    expect([geometry.labelWidth, geometry.valueWidth, geometry.plotWidth, geometry.height, geometry.rowCount]).toEqual([158, 59, 307, 9 * chartRowHeights.row16, 9]);
+    expect(geometry.blocks.map(block => [block.key, block.direction, block.top, block.zeroX])).toEqual([["decrease", "left", 0, 524], ["increase", "right", 80, 158]]);
+    expect(geometry.separators).toEqual([80]);
+    expect(barsOf(geometry, "decrease").map(bar => [bar.bar.x, bar.bar.width, bar.value.x, bar.value.anchor])).toEqual([
+      [241.6, 282.4, 237.6, "end"], [244.9, 279.1, 240.9, "end"], [412.4, 111.6, 408.4, "end"], [423.5, 100.5, 419.5, "end"], [468.2, 55.8, 464.2, "end"],
+    ]);
+    expect(barsOf(geometry, "increase").map(bar => [bar.bar.x, bar.bar.width, bar.value.x, bar.value.anchor])).toEqual([
+      [158, 307, 469, "start"], [158, 223.3, 385.3, "start"], [158, 100.5, 262.5, "start"], [158, 83.7, 245.7, "start"],
+    ]);
+    // 列頂、柱（高 10、上下各 3）與文字基線（列頂＋12）。
+    expect(barsOf(geometry).map(bar => [bar.top, bar.bar.y, bar.bar.height, bar.textY])).toEqual([0, 16, 32, 48, 64, 80, 96, 112, 128].map(top => [top, top + 3, 10, top + 12]));
+    expect(geometry.blocks.map(block => block.zeroLine)).toEqual([{ y1: 0, y2: 80 }, { y1: 80, y2: 144 }]);
+  });
+
+  it("390（主圖 324）：標籤欄不變、繪圖區 107——增加最長 107、減少最長 98.4（設計稿建議版）；減少段在上（y 較小）", () => {
+    const geometry = hbarGeometry(g13Blocks(), 324, "variance");
+    expect([geometry.labelWidth, geometry.plotWidth]).toEqual([158, 107]);
+    expect(barsOf(geometry, "increase").map(bar => bar.bar.width)).toEqual([107, 77.8, 35, 29.2]);
+    expect(barsOf(geometry, "decrease").map(bar => bar.bar.width)).toEqual([98.4, 97.3, 38.9, 35, 19.5]);
+    expect(barsOf(geometry, "decrease").map(bar => bar.bar.x)).toEqual([225.6, 226.7, 285.1, 289, 304.5]);
+    expect(Math.max(...barsOf(geometry, "decrease").map(bar => bar.top))).toBeLessThan(Math.min(...barsOf(geometry, "increase").map(bar => bar.top)));
+  });
+
+  it("共用一把尺：|值| 最大的柱（增加 9,350）用滿繪圖區，減少段同一把尺（8,600 ÷ 9,350 × 307）；各段從自己的零線起", () => {
+    const geometry = hbarGeometry(g13Blocks(), 524, "variance");
+    expect(new Decimal(geometry.scale!).toDecimalPlaces(15).toString()).toBe(new Decimal(307).div(9350).toDecimalPlaces(15).toString());
+    expect(barsOf(geometry, "decrease")[0].bar.width).toBe(new Decimal(8600).times(307).div(9350).toDecimalPlaces(1).toNumber());
+    for (const bar of barsOf(geometry, "decrease")) expect(bar.bar.x + bar.bar.width, bar.key).toBeCloseTo(524, 6);
+    for (const bar of barsOf(geometry, "increase")) expect(bar.bar.x, bar.key).toBe(158);
+    // 只有減少段時（增加段沒有列、不輸出），減少段最長的柱用滿繪圖區；沒有分隔線。
+    const only = hbarGeometry([{ key: "decrease", rows: G13_DECREASE }, { key: "increase", rows: [] }], 524, "variance");
+    expect(only.blocks.map(block => block.key)).toEqual(["decrease"]);
+    expect(barsOf(only)[0].bar.width).toBe(307);
+    expect(only.separators).toEqual([]);
+  });
+
+  it("每段 ≤ 5 列：10 列 × chartRowHeights.row16＝160 ≤ chartHeights.sm（180）；340 到 560 寬每根柱都有正長度、標值不壓標籤", () => {
+    const five = [...G13_INCREASE, hbarRow("LIVE-SKU-402", "SKU-402 · LIVE", "1200.00")];
+    for (const width of [340, 444, 450, 524, RANKED_SSR_WIDTH]) {
+      const geometry = hbarGeometry(g13Blocks(five), width, "variance");
+      expect(geometry.rowCount, String(width)).toBe(10);
+      expect(geometry.height).toBe(10 * chartRowHeights.row16);
+      expect(geometry.height).toBeLessThanOrEqual(chartHeights.sm);
+      for (const bar of barsOf(geometry)) expect(bar.bar.width, `${width} ${bar.key}`).toBeGreaterThan(0);
+      expectValuesClear(geometry);
+    }
+    expect(10 * chartRowHeights.row16).toBe(160);
+  });
+});
+
+describe("hbarGeometry（C25）：G14 pareto 從 0 往左、右側累計欄、「另 n 個」列（D-V4-39＝A）", () => {
+  it("合成資料 5 筆（主圖 449＝1440 半格 524 − 累計欄 75）：與設計稿相同——零線 449、柱 232／139.2／122.8／58／58、標值在柱左端外側", () => {
+    const geometry = hbarGeometry(G14_ROWS, 449, "pareto");
+    expect([geometry.labelWidth, geometry.valueWidth, geometry.plotWidth]).toEqual([158, 59, 232]);
+    expect(geometry.blocks.map(block => [block.direction, block.zeroX])).toEqual([["left", 449]]);
+    expect(barsOf(geometry).map(bar => [bar.bar.x, bar.bar.width, bar.value.x, bar.value.anchor])).toEqual([
+      [217, 232, 213, "end"], [309.8, 139.2, 305.8, "end"], [326.2, 122.8, 322.2, "end"], [391, 58, 387, "end"], [391, 58, 387, "end"],
+    ]);
+    // 累計欄：獨立 svg 的寬＝最長累計文字估寬＋10；每列文字基線與主圖同列相同。
+    expect(geometry.extra).toEqual({ width: Math.ceil(rankedTextWidth("100.0%")) + RANKED_TEXT_PAD + 4, rows: barsOf(geometry).map(bar => ({ key: bar.key, y: bar.textY, text: bar.row.extra })) });
+    expect(geometry.extra!.rows.map(item => item.y)).toEqual([12, 28, 44, 60, 76]);
+    expectValuesClear(geometry);
+  });
+
+  it("390 不畫累計（D-V4-39＝A，CSS 隱藏累計欄、主圖量到整格 324）：繪圖區 107（設計稿 PRD 版只剩 32）", () => {
+    const geometry = hbarGeometry(G14_ROWS, 324, "pareto");
+    expect(geometry.plotWidth).toBe(107);
+    expect(barsOf(geometry)[0].bar).toEqual({ x: 217, y: 3, width: 107, height: 10 });
+    expectValuesClear(geometry);
+  });
+
+  it("柱 ≤ 10＋「另 n 個」1 列＝11 × 16＝176 ≤ chartHeights.sm；「另 n 個」只是文字列（不畫柱、零線只到最後一根柱）", () => {
+    const sku = (rank: number) => `SKU-${String(rank + 1).padStart(3, "0")}`;
+    const rows = Array.from({ length: 10 }, (_, rank) => hbarRow(`DTC-${sku(rank)}`, `${sku(rank)} · DTC`, `-${(10 - rank) * 100}.00`, `${(rank + 1) * 10}.0%`));
+    const geometry = hbarGeometry(rows, 449, "pareto", { more: "+3" });
+    expect(geometry.rowCount).toBe(11);
+    expect(geometry.height).toBe(11 * chartRowHeights.row16);
+    expect(geometry.height).toBeLessThanOrEqual(chartHeights.sm);
+    expect(barsOf(geometry)).toHaveLength(10);
+    expect(geometry.blocks[0].more).toEqual({ y: 10 * chartRowHeights.row16 + 12, text: "+3" });
+    expect(geometry.blocks[0].zeroLine).toEqual({ y1: 0, y2: 10 * chartRowHeights.row16 });
+    expect(geometry.extra!.rows).toHaveLength(10);
+  });
+
+  it("hbarMaxRows：sm／row16 保留 1 列（「另 n 個」）→ 10、不保留 → 11；sm／row24 保留 1 列（軸）→ 6（G15 會議實例上限）", () => {
+    expect(hbarMaxRows("sm", "row16", 1)).toBe(10);
+    expect(hbarMaxRows("sm")).toBe(11);
+    expect(hbarMaxRows("sm", "row24", 1)).toBe(6);
+    expect((hbarMaxRows("sm", "row16", 1) + 1) * chartRowHeights.row16).toBeLessThanOrEqual(chartHeights.sm);
+    expect((hbarMaxRows("sm", "row24", 1) + 1) * chartRowHeights.row24).toBeLessThanOrEqual(chartHeights.sm);
+  });
+
+  it("variance、ranked 不輸出累計欄（只有 pareto 有）；沒有累計文字時也沒有", () => {
+    expect(hbarGeometry(G14_ROWS, 449, "variance").extra).toBeNull();
+    expect(hbarGeometry(G14_ROWS, 449, "ranked").extra).toBeNull();
+    expect(hbarGeometry(G14_ROWS.map(row => ({ ...row, extra: undefined })), 449, "pareto").extra).toBeNull();
+  });
+});
+
+describe("hbarGeometry（C25）：雙向、0 與空、長標籤、row24", () => {
+  it("同一段正負都有（G15 試算的少賺、多賺）：零線在中間、負往左、正往右，都從 0 起；左右各留一欄標值寬", () => {
+    const geometry = hbarGeometry([hbarRow("a", "A", "-100.00"), hbarRow("b", "B", "50.00")], 400, "variance");
+    const [block] = geometry.blocks;
+    expect(block.direction).toBe("both");
+    const plot = 400 - geometry.labelWidth - 2 * geometry.valueWidth;
+    expect(new Decimal(geometry.scale!).toDecimalPlaces(15).toString()).toBe(new Decimal(plot).div(150).toDecimalPlaces(15).toString());
+    expect(block.zeroX).toBe(new Decimal(geometry.labelWidth + geometry.valueWidth).plus(new Decimal(plot).times(100).div(150).toDecimalPlaces(1)).toNumber());
+    const [negative, positive] = barsOf(geometry);
+    expect([negative.side, positive.side]).toEqual(["left", "right"]);
+    expect(negative.bar.x + negative.bar.width).toBeCloseTo(block.zeroX, 6);
+    expect(positive.bar.x).toBe(block.zeroX);
+    expect(negative.bar.width + positive.bar.width).toBeCloseTo(plot, 0);
+    expectValuesClear(geometry);
+  });
+
+  it("空輸入：高 0、沒有段；全部 0 或 null：柱寬 0、scale null、零線在標籤欄右緣、標值在零線右側", () => {
+    const empty = hbarGeometry([], 560, "variance");
+    expect([empty.height, empty.rowCount, empty.blocks.length, empty.extra]).toEqual([0, 0, 0, null]);
+    expect(hbarGeometry([{ key: "decrease", rows: [] }, { key: "increase", rows: [] }], 560, "variance").blocks).toEqual([]);
+    const zero = hbarGeometry([hbarRow("a", "A", "0.00"), { ...hbarRow("b", "B", "0.00"), value: null }, { ...hbarRow("c", "C", "0.00"), value: "not-a-number" }], 560, "variance");
+    expect(zero.scale).toBeNull();
+    expect(zero.blocks[0].zeroX).toBe(zero.labelWidth);
+    for (const bar of barsOf(zero)) {
+      expect(bar.bar.width).toBe(0);
+      expect(bar.value).toEqual({ x: zero.labelWidth + RANKED_VALUE_GAP, anchor: "start" });
+    }
+  });
+
+  it("非零值至少 1px（比例很小時仍看得到）", () => {
+    const geometry = hbarGeometry([hbarRow("a", "A", "-1000000.00"), hbarRow("b", "B", "-0.01")], 340, "ranked");
+    expect(barsOf(geometry).map(bar => bar.bar.width)).toEqual([geometry.plotWidth, 1]);
+  });
+
+  it("長標籤：截斷加「…」，標籤欄 ≤ 寬 − 標值欄 − RANKED_MIN_PLOT；390 與 1440 半格的柱長仍為正、標值不壓標籤", () => {
+    const long = "SKU-VERY-LONG-PRODUCT-IDENTIFIER-0001 · MARKETPLACE-CHANNEL-WITH-LONG-NAME";
+    const rows = [hbarRow("MARKETPLACE-LONG", long, "-12345.67"), hbarRow("DTC-SKU-001", "SKU-001 · DTC", "-2345.67")];
+    for (const width of [324, 340, 524, RANKED_SSR_WIDTH]) {
+      const geometry = hbarGeometry(rows, width, "variance");
+      expect(geometry.labelWidth, String(width)).toBeLessThanOrEqual(width - geometry.valueWidth - RANKED_MIN_PLOT);
+      expect(geometry.plotWidth).toBeGreaterThanOrEqual(RANKED_MIN_PLOT);
+      const [first, second] = barsOf(geometry);
+      expect(first.truncated).toBe(true);
+      expect(first.label.endsWith("…")).toBe(true);
+      expect(long.startsWith(first.label.slice(0, -1))).toBe(true);
+      expect(second.truncated).toBe(false);
+      expect(second.label).toBe("SKU-001 · DTC");
+      for (const bar of barsOf(geometry)) expect(bar.bar.width).toBeGreaterThan(0);
+      expectValuesClear(geometry);
+    }
+  });
+
+  it("row24（G15）：列高 24、柱高 14（上下各 5）、基線在列頂＋16；高＝列數 × 24", () => {
+    const geometry = hbarGeometry([hbarRow("p1", "A", "-20.00"), hbarRow("p2", "B", "19.70")], 560, "variance", { rowHeight: "row24" });
+    expect([geometry.rowHeight, geometry.height]).toEqual([chartRowHeights.row24, 2 * chartRowHeights.row24]);
+    expect(barsOf(geometry).map(bar => [bar.top, bar.bar.y, bar.bar.height, bar.textY])).toEqual([[0, 5, 14, 16], [24, 29, 14, 40]]);
   });
 });

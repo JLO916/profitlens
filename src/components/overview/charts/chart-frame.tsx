@@ -12,6 +12,7 @@ import { labels } from "@/i18n";
 // 有資料時圖本身 aria-hidden；副標是區塊的 aria 描述；可點的長條一定有對應的表格 number-link（鍵盤經由表格）。
 // V4-1 代理 A（PRD §6.1；CHART_CATALOG §1.1）：擴充 aside、unitNote、frameClassName、legend[].shape、mode（型別）、page、scrollLabel，
 // 資料表 <details> 展開時記 track("chart_table_opened")（D-V4-14）。沒有給新 props 時輸出與 V3 逐字相同（向下相容）。
+// V4-4 代理 B：加 headingLevel（2、3、4；預設 2，沒給時輸出與 V4-3 逐字相同）。
 
 const copy = labels.overview.chartFrame;
 
@@ -80,7 +81,15 @@ export interface ChartFrameProps {
    * 有資料時 children（真的 <table>）包在 div.table-scroll[role=region][aria-labelledby={id}-title] 內，框內垂直捲動（不加 tabIndex：表內的格可聚焦）。
    */
   mode?: ChartFrameMode;
+  /**
+   * V4-4（PRD §6.1 headingLevel；CHART_CATALOG §1.1）：標題元素的層級，依所在位置選，避免標題跳級（axe heading-order）。
+   * 2＝h2（預設，與 V4-3 逐字相同）；3、4 改輸出 h3、h4，id（{id}-title）與 aria-labelledby 不變。
+   * 商品頁 G13、G14 在 h3#product-highlights-heading 之下用 4；G16、G15 會議實例用 4；G19、G21 用 3。外觀同 h2（globals.css「V4-4 B」錨點）。
+   */
+  headingLevel?: ChartHeadingLevel;
 }
+/** V4-4 ChartFrame 標題層級（PRD §6.1）。 */
+export type ChartHeadingLevel = 2 | 3 | 4;
 
 /** shape="dash" 沒給 dash 時的虛線樣式（與去年同期線相同）。 */
 const LEGEND_DASH = "4 3";
@@ -129,7 +138,8 @@ function ScrollFrame({ className, size, label, state, children }: { className: s
   return <div ref={ref} className={`chart-frame ${className}`} style={{ height: chartHeights[size] }} role="region" aria-label={label} tabIndex={tabIndex} data-state={state}>{children}</div>;
 }
 
-export function ChartFrame({ id, testId, page, title, subtitle, legend, extra, takeaways, height = "sm", state, message, after, dataTable, className, children, unitNote, aside, frameClassName, scrollLabel, mode }: ChartFrameProps) {
+export function ChartFrame({ id, testId, page, title, subtitle, legend, extra, takeaways, height = "sm", state, message, after, dataTable, className, children, unitNote, aside, frameClassName, scrollLabel, mode, headingLevel = 2 }: ChartFrameProps) {
+  const Heading = headingLevel === 4 ? "h4" : headingLevel === 3 ? "h3" : "h2";
   const resolved: ChartFrameState = state ?? (children === undefined || children === null || children === false ? "empty" : "ready");
   const hasLegend = legend !== undefined && legend.length > 0;
   const hasUnitNote = unitNote !== undefined && unitNote !== "";
@@ -147,7 +157,7 @@ export function ChartFrame({ id, testId, page, title, subtitle, legend, extra, t
       : <div className={`chart-frame ${frameClass}`} style={{ height: chartHeights[height] }} aria-hidden={resolved === "ready" || resolved === "loading" ? true : undefined} data-state={resolved}>{body}</div>;
   return <section className={`panel chart-section${className ? ` ${className}` : ""}`} aria-labelledby={`${id}-title`} aria-describedby={`${id}-sub`} aria-busy={resolved === "loading" ? true : undefined} data-testid={blockTestId}>
     <div className="sec-head">
-      <div className="sec-title"><h2 id={`${id}-title`}>{title}</h2><p className="sub" id={`${id}-sub`}>{subtitle}</p></div>
+      <div className="sec-title"><Heading id={`${id}-title`}>{title}</Heading><p className="sub" id={`${id}-sub`}>{subtitle}</p></div>
       {(hasUnitNote || hasLegend || extra) && <div className="sec-end">{hasUnitNote && <span className="unit-note">{unitNote}</span>}{hasLegend && <ChartLegend items={legend} />}{extra}</div>}
     </div>
     {takeaways !== undefined && takeaways.length > 0 && <dl className="takeaways">{takeaways.map(item => <div className="takeaway" key={item.key}><dt>{item.label}</dt><dd>{item.value}{item.note !== undefined && item.note !== null && <small>{item.note}</small>}</dd></div>)}</dl>}
