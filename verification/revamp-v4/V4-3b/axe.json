@@ -1,6 +1,6 @@
 {
   "desktop": {
-    "checked_at": "2026-10-09T09:38:33.928Z",
+    "checked_at": "2026-10-09T11:16:23.002Z",
     "engine": "axe-core",
     "axe_core": "4.13.0",
     "tags": [
@@ -280,7 +280,7 @@
     ]
   },
   "laptop": {
-    "checked_at": "2026-10-09T09:45:31.749Z",
+    "checked_at": "2026-10-09T11:23:16.894Z",
     "engine": "axe-core",
     "axe_core": "4.13.0",
     "tags": [
@@ -560,7 +560,7 @@
     ]
   },
   "tablet": {
-    "checked_at": "2026-10-09T09:52:16.802Z",
+    "checked_at": "2026-10-09T11:29:43.502Z",
     "engine": "axe-core",
     "axe_core": "4.13.0",
     "tags": [
@@ -840,7 +840,7 @@
     ]
   },
   "mobile": {
-    "checked_at": "2026-10-09T09:58:55.348Z",
+    "checked_at": "2026-10-09T11:36:14.061Z",
     "engine": "axe-core",
     "axe_core": "4.13.0",
     "tags": [

@@ -1,6 +1,6 @@
 {
   "desktop": {
-    "checked_at": "2026-10-09T09:40:45.242Z",
+    "checked_at": "2026-10-09T11:18:34.003Z",
     "base_url": "http://127.0.0.1:3100",
     "mode": "non-public (DISABLED)",
     "viewport": {
@@ -118,7 +118,7 @@
         "seq": 4,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/webpack-c0c5b71f239f12b2.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/webpack-ca6ba6d9ab6ef00e.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -133,7 +133,7 @@
         "seq": 5,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/0937d497-4bac4f7c73c04ac9.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/4bd1b696-92152b0f5947070d.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -148,7 +148,7 @@
         "seq": 6,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/858-0524d61646634654.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/794-952c3dd6bb5cffa5.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -163,7 +163,7 @@
         "seq": 7,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/main-app-e73c7cd4e9dca3d8.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/main-app-913b565503d0102e.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -178,7 +178,7 @@
         "seq": 8,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/679-60888722912c0acd.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/739-7cf3da15ce40ad00.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -193,7 +193,7 @@
         "seq": 9,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-e16717caf934aa90.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-fb09bea0af1aa602.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -238,7 +238,7 @@
         "seq": 12,
         "step": "export-analysis-csv",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/7ea01b32.d6b6401fb5768d74.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/2170a4aa.8d16ea85e18a0c9e.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -253,7 +253,7 @@
         "seq": 13,
         "step": "export-analysis-csv",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/225.0c1a80e41daf1f35.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/436.11bab3cf847df1c0.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -268,7 +268,7 @@
         "seq": 14,
         "step": "export-pptx",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/31333621.3df5f9c9d57a523c.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/e2c5e4d9.a9d0ba0fc9efbe68.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -283,7 +283,7 @@
         "seq": 15,
         "step": "export-pptx",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/735.5de84a71c69183df.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/453.7b9424b673ff59d1.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -297,7 +297,7 @@
     ]
   },
   "mobile": {
-    "checked_at": "2026-10-09T10:01:09.544Z",
+    "checked_at": "2026-10-09T11:38:24.673Z",
     "base_url": "http://127.0.0.1:3100",
     "mode": "non-public (DISABLED)",
     "viewport": {
@@ -349,7 +349,7 @@
       },
       "excel": {
         "filename": "profitlens.xlsx",
-        "bytes": 22912
+        "bytes": 22913
       },
       "pptx": {
         "filename": "profitlens-onepager.pptx",
@@ -415,7 +415,7 @@
         "seq": 4,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/webpack-c0c5b71f239f12b2.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/webpack-ca6ba6d9ab6ef00e.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -430,7 +430,7 @@
         "seq": 5,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/0937d497-4bac4f7c73c04ac9.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/4bd1b696-92152b0f5947070d.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -445,7 +445,7 @@
         "seq": 6,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/858-0524d61646634654.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/794-952c3dd6bb5cffa5.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -460,7 +460,7 @@
         "seq": 7,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/main-app-e73c7cd4e9dca3d8.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/main-app-913b565503d0102e.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -475,7 +475,7 @@
         "seq": 8,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/679-60888722912c0acd.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/739-7cf3da15ce40ad00.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -490,7 +490,7 @@
         "seq": 9,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-e16717caf934aa90.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-fb09bea0af1aa602.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -535,7 +535,7 @@
         "seq": 12,
         "step": "export-analysis-csv",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/7ea01b32.d6b6401fb5768d74.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/2170a4aa.8d16ea85e18a0c9e.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -550,7 +550,7 @@
         "seq": 13,
         "step": "export-analysis-csv",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/225.0c1a80e41daf1f35.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/436.11bab3cf847df1c0.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -565,7 +565,7 @@
         "seq": 14,
         "step": "export-pptx",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/31333621.3df5f9c9d57a523c.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/e2c5e4d9.a9d0ba0fc9efbe68.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -580,7 +580,7 @@
         "seq": 15,
         "step": "export-pptx",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/735.5de84a71c69183df.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/453.7b9424b673ff59d1.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {

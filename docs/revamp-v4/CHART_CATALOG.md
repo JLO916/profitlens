@@ -331,6 +331,8 @@
 
 ### G11 日 × 通路月曆熱表（新增；P1；V4-3b）
 
+> **V4-3b 實作補記**：1440 用 `auto-fill`（3 個以上通路時一列 3 張，示範資料 2 通路為 2 張），768、390 一列 1 張（V4-0b 實測）；「其餘通路在框內捲動」以「框高 lg 放不下全部月曆」判斷（`heatColumnsNeeded`＋container query），不是字面上的一列放不下；抽屜標題用 `metricDefinitions` 的標準名「扣廣告後貢獻」，日期與通路在副標與篩選片語（不加 `cellTitle`）；格的可及名稱含可見的「−0.45」（label-content-name-mismatch）；階 2 框線與資料待補虛線框畫在格內按鈕上（不用 box-shadow）；超過 92 天排成一張週 × 通路矩陣（`layout=matrix`，格的抽屜沿用 G7b 的形狀與 `channel-weeks-v1`），週 × 通路超過 736 格時不渲染（`tooManyCells`）；整張熱表的 click、keydown、focus 只掛在外層 `.heat-grid`（事件代理）。
+
 | 項目 | 內容 |
 |---|---|
 | 位置與批次 | 健檢頁，G10 之後；V4-3b |
@@ -350,6 +352,8 @@
 | E2E 草案 | `chart-diagnosis-heat` 的 `.chart-frame` 沒有 `aria-hidden`；axe 無 `aria-hidden-focus`；點 `chart-diagnosis-heat-cell-DTC-{第一個有值日期}` 開抽屜，篩選片語含該日期與通路名、原始明細每列日期都等於該日；390：第一張月曆的 `caption` 是標題所指的通路，且不捲動就在框內可見（bounding box 頂與底都在 `.chart-frame` 內）；`expectNoPageScrollX`，且每張月曆表寬 ≤ 所在 `.table-scroll` 的 `clientWidth`（設計值 320；V4-0b 實測放不下而改為內部捲動時，只斷言頁面不捲動並記入驗收）；keyboard-walk：健檢頁從熱表前一個停留點到熱表後一個停留點的 Tab 數 ≤ 3；`tests/charts-diagnosis-v4.test.tsx` 用記憶體中的 50 通路 × 92 天合成資料斷言 G11 不輸出任何格 |
 
 ### G12 五項比率走勢小倍數（新增；P1；V4-3b）
+
+> **V4-3b 實作補記**：C26 用 inline SVG（不是 Recharts LineChart），理由是五張 Recharts 會增加切到通路健檢的主執行緒成本（V4-3a 量到 390 TBT 只剩約 5% 餘裕），且 inline SVG 在 SSR 就輸出圖形、單元測試可直接驗 Y 範圍；E2E 用 `circle.chart-point-hit[data-series][data-index][data-key]` 定位點。比率軸刻度用 `copy.ts` 的 `formatAxisPercent`（整數百分比）。768 一列 5 張時線尾標值放不下就不畫、熱區半徑縮成位置寬的一半；去年同期可用時資料表多列去年同期各週。
 
 | 項目 | 內容 |
 |---|---|
