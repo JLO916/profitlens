@@ -120,6 +120,45 @@ describe("mode（型別；V4-3b 的 G11、G21 第一次使用）", () => {
   });
 });
 
+// V4-4 代理 B（PRD §6.1 headingLevel；CHART_CATALOG §1.1）：商品頁 G13、G14 在 h3#product-highlights-heading 之下用 4，標題不跳級（axe heading-order）。
+describe("headingLevel（V4-4）：標題層級 2、3、4", () => {
+  const props: Partial<Props> = { testId: "demo-chart", legend: [legendCurrent], children: svgChild(), dataTable: { summary: "s", content: createElement("table") } };
+  const base = render(props);
+
+  it("沒給或給 2 時與 V4-3 逐字相同：h2#{id}-title", () => {
+    expect(render({ ...props, headingLevel: 2 })).toBe(base);
+    expect(element(base, 'class="sec-title"')).toBe(`<div class="sec-title"><h2 id="demo-chart-title">${TITLE}</h2><p class="sub" id="demo-chart-sub">${SUBTITLE}</p></div>`);
+  });
+
+  it("3、4：標題改成 h3、h4，id（{id}-title）與區塊的 aria-labelledby、aria-describedby 不變；其餘 markup 與 h2 版逐字相同", () => {
+    for (const level of [3, 4] as const) {
+      const html = render({ ...props, headingLevel: level });
+      expect(element(html, 'class="sec-title"')).toBe(`<div class="sec-title"><h${level} id="demo-chart-title">${TITLE}</h${level}><p class="sub" id="demo-chart-sub">${SUBTITLE}</p></div>`);
+      expect(html).not.toContain("<h2");
+      expect(count(html, /<h[1-6]\b/g)).toBe(1);
+      expect(openTag(html, "<section")).toBe('<section class="panel chart-section" aria-labelledby="demo-chart-title" aria-describedby="demo-chart-sub" data-testid="demo-chart">');
+      expect(html.replace(`<h${level} id=`, "<h2 id=").replace(`</h${level}>`, "</h2>")).toBe(base);
+    }
+  });
+
+  it("四態、table 模式、可捲動外框都只換標題元素（固定高容器不受影響）", () => {
+    const label = fill(labels.shell.chartsV4.common.chartRegion, { title: TITLE });
+    for (const state of ["ready", "loading", "empty", "error"] as ChartFrameState[]) {
+      const h2 = render({ state, children: svgChild() }), h4 = render({ state, children: svgChild(), headingLevel: 4 });
+      expect(openTag(h4, 'class="chart-frame ')).toBe(openTag(h2, 'class="chart-frame '));
+      expect(h4).toContain(`<h4 id="demo-chart-title">${TITLE}</h4>`);
+    }
+    expect(render({ mode: "table", children: createElement("table"), headingLevel: 3 })).toContain(`<h3 id="demo-chart-title">${TITLE}</h3>`);
+    expect(render({ height: "lg", frameClassName: "waterfall", scrollLabel: label, children: svgChild(), headingLevel: 3 })).toContain(`<h3 id="demo-chart-title">${TITLE}</h3>`);
+  });
+
+  it("globals.css「V4-4 B」錨點：.chart-section .sec-title 的 h3、h4 與 h2 同字級、行高、字重（只用 token）", () => {
+    const css = readFileSync(resolve("src/app/globals.css"), "utf8");
+    const block = css.slice(css.indexOf("/* ── V4-4 B："), css.indexOf("/* ── V4-4 B 錨點結束 ── */"));
+    expect(block).toContain(".chart-section .sec-title h3, .chart-section .sec-title h4 { margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary);");
+  });
+});
+
 describe("legend[].shape：line、dash、tick、ring、rect（X32：沒有實心圓點或方塊）", () => {
   const items: ChartLegendItem[] = (["line", "dash", "tick", "ring", "rect"] as const).map(shape => ({ key: shape, label: shape, color: chartColors.total, shape }));
   const html = renderToStaticMarkup(createElement(ChartLegend, { items }));
