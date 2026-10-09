@@ -16,6 +16,10 @@ export const chartColors = {
   band: "var(--chart-band)",
   /** V4-2（PRD §6.5）：目標刻度、門檻點、目標線。 */
   target: "var(--chart-target)",
+  /** V4-3a（PRD §6.5）：G10 每 100 元去向的三段（商品成本、四項通路費用、廣告費）。 */
+  seg1: "var(--chart-seg-1)",
+  seg2: "var(--chart-seg-2)",
+  seg3: "var(--chart-seg-3)",
   connector: "var(--border-strong)",
   surface: "var(--bg-surface)",
 } as const;

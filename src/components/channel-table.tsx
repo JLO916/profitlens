@@ -3,6 +3,7 @@
 import { useState, type MouseEvent } from "react";
 import type { ManagerSummary as SummaryData, SummaryEvidence } from "@/application/manager-summary";
 import { channelLabel, demoAlias } from "@/application/copy";
+import type { WorkspaceSnapshot } from "@/application/workspace";
 import { deltaTone, deltaWord, formatAmountL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { parseCents } from "@/domain/money";
 import { fill, labels } from "@/i18n";
@@ -14,7 +15,9 @@ import styles from "./manager-summary.module.css";
 /** default：會議摘要（R1 起的上期／本期／差額欄序，原樣保留）；diagnosis：通路健檢頁（V3-5，PRD §7.2 第 3 點、§9.4 C3）。 */
 export type ChannelTableVariant = "default" | "diagnosis";
 
-interface ChannelWideTableProps { summary: SummaryData; onEvidence: (evidence: EvidenceSelection) => void; ariaLabel: string; caption: string; variant?: ChannelTableVariant }
+interface ChannelWideTableProps { summary: SummaryData; onEvidence: (evidence: EvidenceSelection) => void; ariaLabel: string; caption: string; variant?: ChannelTableVariant;
+  /** V4-3a（G7b，代理 B 接線）：健檢頁傳入快照，通路寬表 diagnosis 變體的「近 {n} 週」由它在元件內 useMemo 計算；會議摘要不傳。 */
+  snapshot?: WorkspaceSnapshot }
 
 /**
  * 通路寬表（上期／本期／差額）。R1 起同時用於通路健檢頁頂與會議摘要；數字一律可開「計算與來源」。欄名由 labels.shell.periods 與 metricDefinitions 組成，示範資料的通路名僅在顯示層套 alias。

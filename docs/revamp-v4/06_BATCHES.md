@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／相關拍板／另需的人工時間。
 >
-> **目前進度：V4-2 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-2-acceptance.md`），MVP 切線已到（preview 部署需使用者當次同意）；下一批 V4-3a。V4-1 完成（2026-10-08）。D-V4-1–41 全部定案。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
+> **目前進度：V4-3a 進行中（2026-10-09 開工）。V4-2 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-2-acceptance.md`），MVP 切線已到（preview 部署需使用者當次同意）。2026-10-09 使用者回覆「待拍版的都用建議值」：D-V3-26／27／29–37 依建議值，新增批次 V4-7c，共 17 批。V4-1 完成（2026-10-08）。D-V4-1–41 全部定案。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
 >
 > 本套件寫「V4-0」時指 V4-0a、V4-0b 兩批合稱；「V4-0 實測」「V4-0 基準」都是 V4-0a 量到的 v3.0.0 值。原本的 V4-0（13 項，含 AST 掃描器、capture 與 metrics、PPT spike、合成資料、四頁兩尺寸設計稿與全套基準量測）與 V4-7（4 張圖、跨資料來源、匯入精靈、抽屜三個介面）在開工前依工作量拆成 a／b（CLAUDE.md：批次太大要在開工前拆；v3 的設計稿放在 L 級的 V3-1，不在 V3-0）。
 
@@ -64,13 +64,14 @@
 | V4-1 | 總覽拆解與圖表框（G1、G2、G6） | M | V4-0b；**H5**；D-V4-4、5、7、14、30；G6 另依 D-V4-33；D-V4-35 只在回覆 B 時；D-V4-41（V4-0b 新增，2026-10-08 定為 A） | — | **完成（2026-10-08）** |
 | V4-2 | 總覽其他圖（G3、G4、G5、G7a） | M | V4-1；D-V4-6、16、18；D-V3-35（只在回覆 A 後） | — | **完成（2026-10-09）** |
 | **MVP 切線** | V4-0a 到 V4-2，總覽改版完整 | — | 經使用者當次明確同意才部署 Vercel preview，不切正式站（依 D-V4-28） | 老闆試用 | — |
-| V4-3a | 通路健檢（一）（G9、G10、G7b） | M | V4-2；D-V4-6、18、19、32（與 D-V3-31） | — | 未開工 |
+| V4-3a | 通路健檢（一）（G9、G10、G7b） | M | V4-2；D-V4-6、18、19、32（與 D-V3-31） | — | 進行中（2026-10-09 開工） |
 | V4-3b | 通路健檢（二）（G11、G12；下鑽加日期與 SKU） | M | V4-3a；D-V4-17、18 | — | 未開工 |
 | V4-4 | 商品毛利（G13、G14） | M | V4-3b；D-V4-38、39（V4-0b 新增，2026-10-08 定為 A） | — | 未開工 |
 | V4-5 | 假設試算（G15、G16） | M | V4-4；D-V4-20 | — | 未開工 |
 | V4-6 | 會議紀錄（G19、G15 會議實例；G18 取消） | M | V4-5 | — | 未開工 |
 | V4-7a | 資料來源（G20、G21、問題表篩選） | M | V4-6；D-V4-40（V4-0b 新增，2026-10-08 定為 A） | — | 未開工 |
 | V4-7b | 匯入精靈與抽屜（G22、G23、`ladderMetrics` 搬移） | M | V4-7a | — | 未開工 |
+| V4-7c | 匯入時間寫進備份（D-V3-30＝A，2026-10-09 新增） | S | V4-7b；D-V3-30 | — | 未開工 |
 | V4-8 | 投影與四尺寸總檢 | M | V4-1 到 V4-7b；D-V4-8、9、33；D-V4-35（回覆 B 而 V4-1 時尚未回覆）；D-V3-33、34（回覆後） | — | 未開工 |
 | V4-9a | 匯出（一）PDF 與 PPT | M | V4-8；D-V4-10、11、34；D-V4-37（V4-0b 新增，2026-10-08 定為 A） | PPT、PDF 開檔人工檢查半天 | 未開工 |
 | V4-9b | 匯出（二）Excel 與 Markdown | M | V4-9a；D-V4-12、13 | Excel 開檔人工檢查半天 | 未開工 |
@@ -192,6 +193,8 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 
 ## V4-3a 通路健檢（一）（M）
 
+> **2026-10-09 補充（D-V3-31＝B、D-V4-32＝A）**：抽屜加 `unitOverride: "percent"` 之外，總覽「進階」管理損益表的「佔淨營收 %」欄（`src/components/overview/pnl-table.tsx` 的 `data-col="share"`）也改成 number-link，開抽屜顯示分子、分母與比率（原 D-V3-31 的範圍）。管理損益表在收合的 `overview-advanced` 內，畫面 02 不變；這一項的 testid 追加到 `testids-v4-added.txt`。
+
 **範圍**：G9 健檢清單內嵌影響金額條（C24 加 tick；只對差額類規則 `REV_UP_CM_DOWN` 與四個費用負擔規則畫，水準類 `NEGATIVE_CHANNEL_CM`、`SKU_NEGATIVE_GP` 不畫，共用尺度只取差額類；`REV_UP_CM_DOWN` 是總差額，畫空心條並在清單下方註明；費用規則影響為正時照有利色往右畫）；C27 ShareStack＋G10（標題寫「每 100 元淨營收，扣完廣告剩／虧」，全部通路不適用時用 `title.notApplicable`；圖例與資料表欄名取 `metricDefinitions`，四項合計寫「通路費用合計」；通路 ≤ 5 用 sm、6 到 8 用 lg、> 8 只留表，svg 高＝（通路數＋2）× `row24`；各通路的剩與段比率直接呼叫 `profitWaterfall(snapshot, channel)`；`channelStructure`／`channel-structure-v1` 只管四項費用合計與超過 100 的幾何；虧損通路超過 100 照常畫，「任一扣項為負或淨營收 ≤ 0」改文字列「不適用」）；`--chart-seg-1..3`；G7b（`channelWeeks`／`channel-weeks-v1`：不放進 `createSnapshot`，在健檢頁元件內 `useMemo` 計算，通路 > 8 時不呼叫並改為一句說明；通路寬表「近 {n} 週」欄與「各通路每週」`<details>`）；`EvidenceSelection` 加 `valueKind`（水準或差額；抽屜大數字與精確值的正負號、取位說明只看它，PRD §8.7）；修正 `ladderMetrics` 的週與去年同期查找（只在 `evidence.channels` 等於 `report.scope.channels` 時成立）；D-V3-31 已回覆 B 且 D-V4-32＝A 時，抽屜加 `unitOverride: "percent"`，每 100 元可開抽屜。實作卡：G7（b）、G9、G10。
 
 **依賴**：V4-2；D-V4-6、18、19、32（與 D-V3-31）。
@@ -300,7 +303,25 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 
 ---
 
+## V4-7c 匯入時間寫進備份（S；D-V3-30＝A）
+
+**範圍**：備份加選填欄位 `imported_at`（匯入精靈套用時記下的時間；示範、golden 載入與還原舊備份時為空），資料來源頁「版本與來源資訊」的匯入時間在還原備份後也能顯示；`profitlens-workspace-v5` 的 v1–v5 還原照舊（舊備份沒有這個欄位時當空值）。開工時先依 `docs/DATA_CONTRACT.md` 與 `src/application/workspace-backup.ts` 決定：v5 加選填欄位，或升 v6（建議前者，新程式讀舊備份不變；舊程式讀新備份的行為寫進驗收）。
+
+**依賴**：V4-7b；D-V3-30＝A。
+
+**允許變動畫面**：09（資料來源，只在還原備份後的狀態；示範資料畫面不變時寫 0 差異）。
+
+**驗收重點**：`tests/backup-restore-matrix.test.ts` v1–v5（或 v6）矩陣全過；匯入後備份再還原，匯入時間逐字相同；示範資料備份沒有 `imported_at`；`verification/revamp-v4/backup-schema-*.json` 更新；既有匯出位元組不變；隱私：時間只記到分、只存在使用者自己的備份檔。
+
+**同批 labels 與測試**：不加字串（沿用 V3-8 的「匯入時間」）；擴 `tests/workspace-backup*.test.ts`、`tests/backup-restore-matrix.test.ts`、`tests/data-workspace-v3.test.tsx`；E2E 匯入後備份還原一條。
+
+**相關拍板**：D-V3-30＝A（2026-10-09）。
+
+---
+
 ## V4-8 投影與四尺寸總檢（M）
+
+> **2026-10-09 補充（D-V3-33＝B、D-V3-34＝A、D-V3-35＝A）**：投影按鈕改字樣（投影模式、離開投影）並拿掉 `aria-pressed`；投影中保留一個「總覽／會議紀錄」互切入口（頁首一行內）；去年同期不可用時只留趨勢圖下 `trend-yoy-note` 一行，期間列只在使用者選了去年同期時才提示（`preset-reason-visible-yoy` 的顯示條件改變，元素保持掛載）。D-V3-35 會讓每一頁 1440 與 1280 的期間列少一行，本批的允許變動畫面因此擴到 01–09 全部尺寸，驗收逐張寫理由；B1、B2 門檻改以本批實測為新基準（只能更早）。
 
 **範圍**：投影白名單（`src/app/globals.css:2563` 的 `:not(...)`）加 `.bridge-section`：只顯示瀑布（柱上標值是 L1），拆解區改單欄，`.bridge-table-wrap`（橋接表，L3，含 G6）、v2 四欄 `<details>` 與 `.data-alternative` 隱藏但掛載（D-V4-8；X39 只要求瀑布可見）；`--text-12` 與 `--text-13` 在投影都對應 14px（D-V4-9，只重新對應 token 的值）；其餘新圖隱藏但掛載（M1）；D-V3-33、34 只在使用者回覆後處理；D-V4-35 回覆 B 而 V4-1 開工時尚未回覆的，本批把本期一句話改用與 G1 同一規則的新字串（`overview.chartsV4.*`，既有字串保留）；七頁 390 總檢；mounted-testids 全頁；keyboard-walk 補齊尚未加的頁的「第一張圖的資料表 summary」里程碑（商品頁 V4-4 已加；`[aria-hidden=true]` 停留點斷言 V4-0a 已加）。
 

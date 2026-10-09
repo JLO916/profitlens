@@ -82,6 +82,10 @@
   --chart-band: var(--bg-subtle);
   /* V4-2（PRD §6.5，D-V4-18）：目標刻度、門檻點、目標線 */
   --chart-target: var(--text-primary);
+  /* V4-3a（PRD §6.5，D-V4-18、D-V4-19＝B）：G10 每 100 元去向的三段（商品成本、四項通路費用、廣告費）；相鄰段靠 1px 分隔線，不靠色差 */
+  --chart-seg-1: var(--gray-700);
+  --chart-seg-2: var(--gray-500);
+  --chart-seg-3: var(--gray-400);
 
   /* 字體（§9.2：不換字型、不載入網路字型）*/
   --font-sans: Arial, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
@@ -2685,3 +2689,12 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
    ≤ 767 單欄時接在一句結論之後。字級、行高、顏色與內距沿用預算列（.kv-target td＋.kpi-target），細條本身沿用 .kpi-bullet。 */
 .assist-breakeven-bullet { grid-column: 1; margin: 0; padding: var(--space-1) var(--space-2) var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-secondary); overflow-wrap: anywhere; }
 /* ── V4-2 C 錨點結束 ── */
+
+/* ── V4-3a A：C27 ShareStack、G10 每 100 元淨營收去向、抽屜 percent ── */
+/* ── V4-3a A 錨點結束 ── */
+
+/* ── V4-3a B：G7b 通路寬表「近 {n} 週」與「各通路每週」 ── */
+/* ── V4-3a B 錨點結束 ── */
+
+/* ── V4-3a C：G9 健檢清單內嵌影響金額條（C24 tick、空心條） ── */
+/* ── V4-3a C 錨點結束 ── */

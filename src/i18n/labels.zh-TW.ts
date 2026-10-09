@@ -846,6 +846,12 @@ export const diagnosis = {
     status: { off: "未啟用", needsConsent: "需先預覽並同意", unknown: "狀態確認中" },
     publicNote: "（公開示範站不送出任何資料）",
   },
+  // ── V4-3a 錨點：通路健檢圖表字串（代理 A：share；代理 B：channelsSpark；代理 C：impact）
+  chartsV4: {
+    impact: {},
+    share: {},
+    channelsSpark: {},
+  },
 } as const;
 
 // ── products：商品毛利：商品頁、最差與增加最多、商品比較

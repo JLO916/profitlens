@@ -186,10 +186,11 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null 
   // V3-5（PRD §7.2）：健檢結果先放（這是結論；一個規則一列，與三件事同一套 diagnosisGroups）→ 各通路兩期比較（通路寬表 diagnosis 變體）；AI 區塊由 dashboard 接在最後（預設收合）。
   return <>
   <DiagnosisList snapshot={snapshot} groups={summary.diagnosis} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} />
+  {/* ── V4-3a A：G10 每 100 元淨營收去向插在這裡（健檢清單之後、通路寬表之前；06 V4-0a 第 9 項的畫面 10 範圍） */}
   <section className="panel channel-compare" aria-labelledby="channel-table-heading" data-testid="channel-compare">
     <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{channelsLabel(summary.scope.channels, alias)}</span></div>
     <p className="sub">{diagnosisPanel.channelTableCaution}</p>
-    <ChannelWideTable variant="diagnosis" summary={summary} onEvidence={onEvidence} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} />
+    <ChannelWideTable variant="diagnosis" summary={summary} snapshot={snapshot} onEvidence={onEvidence} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} />
   </section>
   </>;
 }
