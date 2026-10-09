@@ -2827,3 +2827,9 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* G12 資料表：起訖日欄不換行（未滿 7 天的週在起訖之後註明）。 */
 .rates-data-table td:first-of-type { white-space: nowrap; }
 /* ── V4-3b B 錨點結束 ── */
+
+/* ── V4-4 B：C25 RankedBars（variance、pareto 模式；代理 B） ── */
+/* ── V4-4 B 錨點結束 ── */
+
+/* ── V4-4 C：商品頁 G13、G14 版面（.product-highlight-grid 內的 ChartFrame；代理 C） ── */
+/* ── V4-4 C 錨點結束 ── */

@@ -1108,6 +1108,12 @@ export const products = {
     /** C10 篩選型空狀態的動作（說明句沿用 products.panel.noProducts）。 */
     clearFilters: "清除篩選",
   },
+  // ── V4-4 錨點：商品毛利圖表字串（代理 C：pareto＝G14 商品毛利為負的商品累計、variance＝G13 商品毛利兩期差額）。
+  // 一律寫「商品毛利為負」，不寫「賠錢」「虧損」（CHART_CATALOG G14；copy-scan 擋 products.chartsV4.*）。
+  chartsV4: {
+    pareto: {},
+    variance: {},
+  },
 } as const;
 
 // ── scenarios：假設試算：輸入欄、範本、表單、敏感度、方案並排
