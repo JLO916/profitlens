@@ -1,5 +1,37 @@
 # Status
 
+## Revamp v4｜V4-3c 首載瘦身（驗收通過；待 D-V4-43 回覆後結案；不改畫面）
+
+使用者 2026-10-09 回覆「A」（D-V4-42），新增本批。V4-3c 依 06_BATCHES 完成以下三項：
+
+- 匯出程式按下時才載入：Excel、PPT、決策工作稿、會議頁的 Excel／PPT；下載選單打開時預熱 Excel。
+- 通路健檢、資料來源、AI 解釋、商品毛利、會議紀錄、待辦改成隨頁載入：`lazy-panels.tsx` 匯出同名包裝元件，`dashboard.tsx` 的 JSX 一字未動。
+- 資料就緒 2 秒後，在閒置時預先載入各頁 chunk 與決策匯出程式。
+
+審查修正：
+
+- chunk 還沒到時，切頁等載入完才換頁；等待期間「加入待辦」不重複新增，切頁落地時關掉抽屜，開匯入精靈不必等。
+- chunk 載入失敗時不擲錯，再按一次同一頁就地復原。
+- 新增首載可達性測試與 B5 拆出哨兵。
+
+驗收結果：
+
+- 靜態檢查：typecheck、lint、contrast（85／85）exit 0；audit:ui design 15 項不變。
+- 測試與建置：unit 143 檔／2,817 全過；build pass；E2E（最終程式）929 passed／0 failed／15 skipped（27.4m）。
+- 畫面與量測：52 張畫面基準 **0 差異**；B1、B2、B3、B8、B9 與 V4-3b 相同；**First Load JS 499,443**（−37,888，剩 45,954）。
+- 效能（390 TBT 低負載三次中位數）：載入示範資料 1,082.1、通路健檢 804.6、商品 83.1、會議 1,005.1、資料來源 0，五項都在門檻內；預先載入三次都不在量測區間內。
+- 無障礙與網路：Lighthouse a11y 全 100；axe、keyboard-walk、network-log 的下載集合都與 V4-3b 相同。
+- 禁區四條命令都是空的。
+
+待拍板：
+
+- **D-V4-43**：兩支「零網路」E2E 放行建置產生的程式 chunk，有範圍與數量限制。建議 A；回覆前不結案。
+- **D-V4-44**：第一次切頁的等待與載入失敗時的畫面。建議 B＋C，在 V4-11 上線前做；本批先以 A 結案。
+
+已知：TBT 餘裕約 2–3%；預先載入的時間窗是量出來的（390 比健檢量測區間早約 0.4 s）。
+
+驗收文件：`verification/revamp-v4-V4-3c-acceptance.md`；量測與截圖在 `verification/revamp-v4/V4-3c/`。下一批：V4-4（商品毛利 G13、G14）。
+
 ## Revamp v4｜V4-3b 通路健檢（二）（完成；G11、G12、下鑽加日期與 SKU）
 
 V4-3b 依 06_BATCHES 完成：G11 日 × 通路月曆熱表（`dailyHeatmap`／`daily-heatmap-v1`、C28 HeatTable、ChartFrame `mode="table"`、`formatHeatCell`；整張 1 個 Tab 停留點，Enter 開當日抽屜）；G12 五項比率每週走勢（C26，inline SVG，`<details>` 收合時掛載）；抽屜下鑽加日期與 SKU（SKU 篩選不帶入通路費用與廣告列）；新 token `--red-100`、`--chart-heat-1..2`、`--chart-missing`；axe 加三個狀態、keyboard-walk 加熱表 Tab 數。Lighthouse 量到 390「切到通路健檢」TBT 超過門檻（低負載 853.6 ms），以 `useDeferredMount` 讓 G11、G12 的內容在瀏覽器延後一拍以 transition 渲染修正（815.4 ms）。

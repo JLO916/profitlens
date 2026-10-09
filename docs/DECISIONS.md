@@ -292,6 +292,14 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-09｜Revamp v4 V4-3c：首載瘦身的取捨
+
+- **切頁等 chunk，不先閃空白**：`dashboard.tsx` 的 `setPanel` 包一層 `preparePanel`：有資料而目標頁 chunk 未載入時，先載入再切頁，導覽標示與內容在同一次更新裡換（v3 的時序，E2E 與鍵盤走查依賴它）。這超出範圍原寫的「只改 import 行」，但沒有 JSX 改動、沒有 transition；等待期間的副作用（重複加入待辦、抽屜跨頁）一併處理。等待無提示、失敗空白的畫面列 D-V4-44。
+- **預先載入 2,000 ms 後在閒置時一次全部開始**：量測顯示就緒到「載入示範資料」量測區間結束約 0.6–0.8 s，到「切到通路健檢」區間開始約 4 s；2,000 ms＋閒置讓 7 個 chunk 落在總覽 snapshot 期間。改成一次全部開始，而不是一個閒置回呼載一個，避免頁面忙時拖成好幾個強制逾時。`lighthouse-pages.mjs` 每次記錄 `insideTimespans`。
+- **多搬兩個小函式**：`toneClass`、`diagnosisCounts` 原本把主管摘要與健檢清單拉進首載；搬到小模組後首載多省約 9.4 KB。
+- **不拆 `Overview`、`MultiScenarioWorkbench`、`ImportWizard`、`EvidenceDrawer`**：見 D-V4-42 的紀錄；實際省 37,888 bytes（預估約 45 KB）。
+- **零網路 E2E 的放寬**：建置產生的程式 chunk 不帶使用者資料，放行時限定同源 GET、這次建置的檔、每檔一次、總數 ≤ 12、讀檔期間 0；列 D-V4-43 待使用者確認。
+
 ## 2026-10-09｜D-V4-42＝A：新增 V4-3c 首載瘦身
 
 使用者回覆「A」。V4-3c 只做工程面的拆分，不改畫面：匯出模組按下時載入；會議紀錄、健檢與資料來源、商品比較、待辦、AI 面板隨頁載入（新檔 `lazy-panels.tsx` 匯出同名包裝元件，`dashboard.tsx` 只改 import 行，JSX 原始碼比對測試不動）；資料載入後在閒置時預先載入各頁 chunk，第一次切頁不出現空白，也不落在 Lighthouse「載入示範資料」的量測區間。`MultiScenarioWorkbench`（常駐掛載、掛載時設定試算焦點，匯出會用到）、`ImportWizard`、`EvidenceDrawer`、`Overview` 本批不拆：前者有掛載時的副作用，後兩者在多數頁面都可能出現，`Overview` 拆出去會把 Recharts 的初始化移進「載入示範資料」的量測區間。批次總數變成 18。
