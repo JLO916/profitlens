@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { track } from "@/application/analytics";
-import { productParetoLead, type ProductPareto, type ProductParetoEntry } from "@/application/chart-pareto";
+import { PRODUCT_PARETO_VERSION, productParetoLead, type ProductPareto, type ProductParetoEntry } from "@/application/chart-pareto";
 import { chartColors } from "@/application/chart-theme";
 import { channelLabel, formatHeadlineAmount } from "@/application/copy";
 import { deltaTone, formatAmountL1, formatCount, formatRateL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
@@ -22,6 +22,8 @@ import { productDeltaEvidence, productEvidence, productParetoCumulativeEvidence,
 // - G13「商品毛利兩期差額」：第二格；after＝既有 product-best 表。C25 variance 兩段（減少在上、增加在下，各 ≤ 5 根，共用一把尺、各自從 0；段名用 legend）。
 //   資料表列出全部差額 < 0（由小到大）再接全部差額 > 0（由大到小）的列：上期、本期、差額三格；差額 0 與待補不列（只挑列，不產生新數字）。
 // 點柱與資料表同列的 number-link 呼叫同一個 builder（src/components/product-evidence.ts）；點柱另記 chart_clicked（D-V4-14），資料表展開由 ChartFrame 記 chart_table_opened。
+// 審查修正：兩張資料表的 evidence 在點擊時才組（C33 hasEvidence；G14 的累計、累計佔比格整表預先組是 O(n²)，搜尋框每打一字都會重組）；
+// 不利的金額格上不利色（C33 unfavorable，同 H5 設計稿）；G13 圖例只列有畫出來的段。
 // ChartFrame 帶明確 testId（chart-products-pareto、chart-products-variance）與 id products-pareto、products-variance（標題 id 不和 V4-5 試算頁的圖撞名），標題層級 h4（在 h3#product-highlights-heading 之下）。
 // 使用者看得到的字一律取 labels.products.chartsV4.*；指標名取 metricDefinitions。色只經 chartColors；圖高 sm（固定高由 ChartFrame 負責）。
 // 兩個區塊元件沒有 hook（模型由呼叫端以 useMemo 保存），單元測試可以直接呼叫取得元素樹，比對柱與資料表格的 evidence。
@@ -72,8 +74,11 @@ export interface ParetoSectionModel {
   more: string | undefined;
 }
 
-/** G14 柱的抽屜：與資料表商品毛利格同一個 builder（本期商品毛利，加 filter { channel, sku }）。 */
-export const paretoBarEvidence = (entry: ProductParetoEntry, ctx: ProductEvidenceContext) => productEvidence(entry.row, "current", "gross_profit", SHORT, ctx, { drill: true });
+/**
+ * G14 柱的抽屜：與資料表商品毛利格同一個 builder（本期商品毛利，加 filter { channel, sku }）。
+ * 值直接取自 domain（metric_version 維持 contribution-v1），只經 productPareto 挑出（為負）與排序，所以另帶 arrangeVersion product-pareto-v1（PRD §8.7、C7；CHART_CATALOG §1.2）。
+ */
+export const paretoBarEvidence = (entry: ProductParetoEntry, ctx: ProductEvidenceContext): EvidenceSelection => ({ ...productEvidence(entry.row, "current", "gross_profit", SHORT, ctx, { drill: true }), arrangeVersion: PRODUCT_PARETO_VERSION });
 /** G14 累計格的抽屜（product-pareto-v1，水準值）：index 是 allRows 的 0 起算位置。 */
 export function paretoCumulativeEvidence(pareto: ProductPareto, index: number, ctx: ProductEvidenceContext): EvidenceSelection {
   const n = index + 1;
@@ -126,6 +131,10 @@ export const PARETO_TABLE_COLUMNS: readonly ChartDataColumn<ParetoColumn>[] = [
   { key: "share", label: copy.pareto.columns.share, unit: "rate", layer: "L2", data: "share" },
 ];
 const paretoMetric = (entry: ProductParetoEntry, column: ParetoColumn) => column === "gross_profit" ? entry.value : column === "cumulative" ? entry.cumulative : entry.share;
+/** 不利色（H5 設計稿 products-synthetic.html：商品毛利與累計格為負時 number-link negative；累計佔比不上色）。 */
+const unfavorableMoney = (value: string | null) => deltaTone("gross_profit", value, "L2") === "unfavorable";
+/** 資料表每格都是 number-link；evidence 在點擊時才組（C33 hasEvidence：累計、累計佔比格各要彙整前 i 列或全部列的來源，整表預先組是 O(n²)）。 */
+const everyCellLinked = () => true;
 
 export interface ProductParetoSectionProps {
   pareto: ProductPareto;
@@ -153,8 +162,9 @@ export function ProductParetoSection({ pareto, model, scope, onEvidence, after, 
     rowKey: row => productChartKey(row.entry.row),
     rowHeader: row => ({ label: productChartLabel(row.entry.row, ctx.alias) }),
     columns: PARETO_TABLE_COLUMNS,
-    valueOf: (row, column): ChartDataCell => { const metric = paretoMetric(row.entry, column.data); return { value: metric.value, reasonCodes: metric.reason_codes }; },
+    valueOf: (row, column): ChartDataCell => { const metric = paretoMetric(row.entry, column.data); return { value: metric.value, reasonCodes: metric.reason_codes, unfavorable: column.data !== "share" && unfavorableMoney(metric.value) }; },
     evidenceOf: (row, column) => column.data === "gross_profit" ? paretoBarEvidence(row.entry, ctx) : column.data === "cumulative" ? paretoCumulativeEvidence(pareto, row.index, ctx) : paretoShareEvidence(pareto, row.index, ctx),
+    hasEvidence: everyCellLinked,
     onEvidence,
     cellAria: (row, column, text) => column.data === "gross_profit"
       ? fill(comparison.evidenceAria, { channel: channelLabel(row.entry.row.channel, ctx.alias), sku: row.entry.row.sku, period: "", label: SHORT, value: text })
@@ -220,10 +230,10 @@ export const VARIANCE_TABLE_COLUMNS: readonly ChartDataColumn<VarianceColumn>[] 
   { key: "current", label: yuanColumn(periodMetric("current")), unit: "money", layer: "L2", data: "current" },
   { key: "change", label: yuanColumn(labels.products.pageV3.columns.change), unit: "signed", layer: "L2", data: "change" },
 ];
-/** 格的值（domain 的精確字串）：差額格帶正負號（C33 unit signed，L2，與前 10 名表的差額格相同），上期、本期格不帶號。 */
+/** 格的值（domain 的精確字串）：差額格帶正負號（C33 unit signed，L2，與前 10 名表的差額格相同），上期、本期格不帶號；差額不利時上不利色（H5 設計稿：只有差額格上色）。 */
 function varianceCell(row: ProductComparisonRow, column: VarianceColumn): ChartDataCell {
   const metric = column === "change" ? row.changes.gross_profit : row[column].metrics.gross_profit;
-  return { value: metric.value, reasonCodes: metric.reason_codes };
+  return { value: metric.value, reasonCodes: metric.reason_codes, unfavorable: column === "change" && unfavorableMoney(metric.value) };
 }
 
 export interface ProductVarianceSectionProps {
@@ -241,10 +251,12 @@ export interface ProductVarianceSectionProps {
 export function ProductVarianceSection({ model, scope, onEvidence, after, ready = true }: ProductVarianceSectionProps) {
   const onBar = (evidence: EvidenceSelection) => { track("chart_clicked"); onEvidence(evidence); };
   const { ctx } = scope;
-  const legend: ChartLegendItem[] = [
+  /** 圖例只列有畫出來的段（例如全部商品的差額都 < 0 時沒有「增加最多」段，圖例也不列）。 */
+  const items: ChartLegendItem[] = [
     { key: "decrease", label: copy.variance.columns.decrease, color: chartColors.unfavorable, shape: "line" },
     { key: "increase", label: copy.variance.columns.increase, color: chartColors.favorable, shape: "line" },
   ];
+  const legend = items.filter(item => model.blocks.some(block => block.key === item.key));
   const dataTable = !ready ? deferredTable(model.section) : chartDataTable<ProductComparisonRow, VarianceColumn>({
     title: model.section,
     testId: PRODUCTS_VARIANCE_TABLE_TESTID,
@@ -256,6 +268,7 @@ export function ProductVarianceSection({ model, scope, onEvidence, after, ready 
     columns: VARIANCE_TABLE_COLUMNS,
     valueOf: (row, column) => varianceCell(row, column.data),
     evidenceOf: (row, column) => column.data === "change" ? varianceBarEvidence(row, ctx) : productEvidence(row, column.data, "gross_profit", SHORT, ctx),
+    hasEvidence: everyCellLinked,
     onEvidence,
     cellAria: (row, column, text) => column.data === "change"
       ? fill(comparison.deltaEvidenceAria, { channel: channelLabel(row.channel, ctx.alias), sku: row.sku, label: `${METRIC}${labels.exports.csv.suffix.change}`, value: text })

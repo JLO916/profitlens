@@ -12,6 +12,7 @@ import { onChartTableToggle } from "../overview/charts/chart-frame";
 // 數字格的 evidenceOf 回傳非 null 時是 button.number-link（與圖上點擊同一個 builder），回傳 null 時是純文字（試算、凍結值等）。
 // 列數＝資料長度（含整列缺值的列）；限制句放在表格之後（仍在 <details> 內，不進主層，B8）。
 // 使用者看得到的字一律由呼叫端從 labels 取來傳入；本元件只用 labels.overview.page.dataTable 組 summary（「表格 · {title}」，CHART_CATALOG §1.1）。
+// V4-4（審查修正）：格可帶 unfavorable（.negative 不利色，同 H5 設計稿）；給 hasEvidence 時 evidence 改在點擊時才組（G13、G14 資料表，避免面板每次重繪整表重組）。
 
 /**
  * 格的單位（決定格式化函式）：money 金額、rate 比率（domain 的小數）、count 件數、multiple 倍數、per_unit 件均、text 原樣、date ISO 日期原樣。
@@ -41,6 +42,11 @@ export interface ChartDataCell {
   layer?: ChartDataLayer;
   /** 空值的顯示字（例如輔助指標的「不適用」）；不給時用 formatEmpty(emptyKindOf(reasonCodes))。 */
   emptyText?: string;
+  /**
+   * V4-4（H5 設計稿 products*.html 建議版的 number-link negative）：不利的值上不利色（.negative；D-V3-7 只有不利上色，有利不上色）。
+   * 呼叫端以 deltaTone(...) === "unfavorable" 判斷（同前 10 名表差額格、G4 緊湊表）；number-link 時加在按鈕上，純文字時加在格上。
+   */
+  unfavorable?: boolean;
 }
 /** 列名欄（th scope=row）。 */
 export interface ChartDataRowHeader {
@@ -63,6 +69,12 @@ export interface ChartDataTableProps<R, C = undefined> {
   valueOf: (row: R, column: ChartDataColumn<C>) => ChartDataCell;
   /** 與圖上點擊同一個 builder；回傳 null 的格是純文字。 */
   evidenceOf: (row: R, column: ChartDataColumn<C>) => EvidenceSelection | null;
+  /**
+   * V4-4：給了時改為點擊時才組 evidence（渲染時只用它判斷是不是 number-link，不呼叫 evidenceOf）。
+   * 給每格的 evidence 成本隨列數成長的表用（G14 的累計、累計佔比格各要彙整前 i 列或全部列的來源；每次面板重繪都整表重組會是 O(n²)）。
+   * 回傳 true 的格，evidenceOf 必須回傳非 null。
+   */
+  hasEvidence?: (row: R, column: ChartDataColumn<C>) => boolean;
   onEvidence: (evidence: EvidenceSelection) => void;
   /** number-link 的可及名稱；不給時就是可見文字。 */
   cellAria?: (row: R, column: ChartDataColumn<C>, text: string) => string;
@@ -90,7 +102,7 @@ export function chartDataCellText(cell: ChartDataCell, column: Pick<ChartDataCol
 const isNumeric = (unit: ChartDataUnit | undefined) => unit !== undefined && unit !== "text" && unit !== "date";
 
 /** C33 表格本體（.table-scroll > table）。 */
-export function ChartDataTable<R, C = undefined>({ testId, caption, rowHeaderLabel, rows, rowKey, rowHeader, columns, valueOf, evidenceOf, onEvidence, cellAria, notes, className }: ChartDataTableProps<R, C>) {
+export function ChartDataTable<R, C = undefined>({ testId, caption, rowHeaderLabel, rows, rowKey, rowHeader, columns, valueOf, evidenceOf, hasEvidence, onEvidence, cellAria, notes, className }: ChartDataTableProps<R, C>) {
   return <>
     <div className="table-scroll chart-data-scroll" role="region" tabIndex={0} aria-label={caption}>
       <table className={`ui-table chart-data-table${className ? ` ${className}` : ""}`} data-density="compact" data-testid={testId}>
@@ -106,11 +118,13 @@ export function ChartDataTable<R, C = undefined>({ testId, caption, rowHeaderLab
             {columns.map(column => {
               const cell = valueOf(row, column);
               const text = chartDataCellText(cell, column);
-              const evidence = evidenceOf(row, column);
+              const evidence = hasEvidence ? null : evidenceOf(row, column);
+              const linked = hasEvidence ? hasEvidence(row, column) : evidence !== null;
               const numeric = isNumeric(cell.unit ?? column.unit);
-              const content: ReactNode = evidence === null ? text
-                : <button type="button" className="number-link" aria-label={cellAria ? cellAria(row, column, text) : undefined} onClick={() => onEvidence(evidence)}>{text}</button>;
-              return <td key={column.key} className={`${numeric ? "num" : ""}${cell.value === null ? " is-empty" : ""}`.trim() || undefined}>{content}</td>;
+              const open = () => { const selected = evidence ?? evidenceOf(row, column); if (selected !== null) onEvidence(selected); };
+              const content: ReactNode = !linked ? text
+                : <button type="button" className={cell.unfavorable ? "number-link negative" : "number-link"} aria-label={cellAria ? cellAria(row, column, text) : undefined} onClick={open}>{text}</button>;
+              return <td key={column.key} className={`${numeric ? "num" : ""}${cell.value === null ? " is-empty" : ""}${cell.unfavorable && !linked ? " negative" : ""}`.trim() || undefined}>{content}</td>;
             })}
           </tr>;
         })}</tbody>

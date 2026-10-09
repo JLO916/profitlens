@@ -1,15 +1,16 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createElement, type ReactElement } from "react";
+import { createElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { PRODUCT_PARETO_LIMIT, PRODUCT_PARETO_VERSION, productPareto, type ProductPareto } from "@/application/chart-pareto";
 import { chartHeights, chartRowHeights } from "@/application/chart-theme";
 import { channelsLabel, demoAlias, formatHeadlineAmount } from "@/application/copy";
-import { formatAmountL1, formatAmountL2, formatCount, formatPeriodL1, formatRateL1, formatRateL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
+import { channelAliasTerms, l1ClauseLengths, L1_MAX_CJK } from "../scripts/lib/copy-scan.mjs";
+import { deltaTone, formatAmountL1, formatAmountL2, formatCount, formatPeriodL1, formatRateL1, formatRateL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { productHighlights } from "@/application/product-highlights";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
-import type { ChartDataColumn, ChartDataTableProps } from "@/components/charts/chart-data-table";
+import { ChartDataTable, type ChartDataColumn, type ChartDataTableProps } from "@/components/charts/chart-data-table";
 import type { RankedBarRow, RankedBarsProps } from "@/components/charts/ranked-bars";
 import { EvidenceDrawer, type EvidenceSelection } from "@/components/evidence-drawer";
 import type { ChartFrameProps } from "@/components/overview/charts/chart-frame";
@@ -96,6 +97,15 @@ const barIds = (html: string, prefix: string) => [...html.matchAll(new RegExp(`d
 const tableRows = (table: string) => [...element(table, "<tbody")!.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(match => [...match[1].matchAll(/<(td|th)\b[^>]*>([\s\S]*?)<\/\1>/g)].map(cell => textOf(cell[2])));
 const drawer = (set: Loaded, evidence: EvidenceSelection) => renderToStaticMarkup(createElement(EvidenceDrawer, { dataset: set.dataset, snapshot: set.snapshot, evidence, onClose: () => undefined }));
 const bigNumber = (html: string) => /<p class="number">([^<]*)<\/p>/.exec(html)![1];
+/** 元素樹（沒有 hook 的元件直接展開）裡符合條件的元素。 */
+function findElements(node: ReactNode, match: (element: ReactElement<Record<string, unknown>>) => boolean): ReactElement<Record<string, unknown>>[] {
+  if (Array.isArray(node)) return node.flatMap(child => findElements(child, match));
+  if (!isValidElement<Record<string, unknown>>(node)) return [];
+  if (typeof node.type === "function") return findElements((node.type as (props: unknown) => ReactNode)(node.props), match);
+  return [...(match(node) ? [node] : []), ...findElements(node.props.children as ReactNode, match)];
+}
+/** 資料表每一列各格的 class（td、按鈕）：[td class, button class | null][]。 */
+const cellClasses = (table: string) => [...element(table, "<tbody")!.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(match => [...match[1].matchAll(/<td(?: class="([^"]*)")?>([\s\S]*?)<\/td>/g)].map(cell => [cell[1] ?? "", /<button[^>]*class="([^"]*)"/.exec(cell[2])?.[1] ?? null] as const));
 
 /** 直接呼叫 G14 區塊元件（沒有 hook），取元素樹上的 RankedBars 與 C33 資料表 props。 */
 function paretoTree(set: Loaded, onEvidence: (evidence: EvidenceSelection) => void) {
@@ -189,12 +199,12 @@ describe("V4-4 G14 商品毛利為負的商品累計（有負值時渲染）", (
       const rows = tableRows(table);
       expect(rows, name).toEqual(pareto.allRows.map(entry => [productChartLabel(entry.row, set.ctx.alias), formatAmountL2(entry.value.value), formatAmountL2(entry.cumulative.value), formatRateL2(entry.share.value)]));
       expect(rows.at(-1)!.slice(2), name).toEqual([formatAmountL2(pareto.total.value), formatRateL2("1.000000000000")]);
-      expect(table.match(/class="number-link"/g), name).toHaveLength(pareto.count * 3);
+      expect(table.match(/class="number-link(?: negative)?"/g), name).toHaveLength(pareto.count * 3);
       expect(details, name).toContain(escapeAttr(fill(copy.pareto.tableNote, { metric: METRIC })));
     }
   });
 
-  it("柱與資料表同列的商品毛利格是同一個 builder（productEvidence 本期商品毛利＋filter { channel, sku }）；累計、累計佔比格各自的 builder（product-pareto-v1、水準值）；點柱記 chart_clicked", () => {
+  it("柱與資料表同列的商品毛利格是同一個 builder（productEvidence 本期商品毛利＋filter { channel, sku }＋arrangeVersion product-pareto-v1）；累計、累計佔比格各自的 builder（product-pareto-v1、水準值）；點柱記 chart_clicked", () => {
     for (const name of ["synthetic", "many"] as const) {
       const set = sets[name];
       const onEvidence = vi.fn<(evidence: EvidenceSelection) => void>();
@@ -203,8 +213,9 @@ describe("V4-4 G14 商品毛利為負的商品累計（有負值時渲染）", (
       expect(table.rows.map(row => row.entry)).toEqual(pareto.allRows);
       bars.rows!.forEach((bar, index) => {
         const row = pareto.rows[index].row;
-        const expected = productEvidence(row, "current", "gross_profit", SHORT, set.ctx, { drill: true });
+        const expected = { ...productEvidence(row, "current", "gross_profit", SHORT, set.ctx, { drill: true }), arrangeVersion: PRODUCT_PARETO_VERSION };
         expect(bar.evidence, `${name} ${bar.key}`).toEqual(expected);
+        expect(bar.evidence.metricVersion, `${name} ${bar.key}：值取自 domain，維持 contribution-v1`).toBeUndefined();
         expect(bar.evidence.filter).toEqual({ channel: row.channel, sku: row.sku });
         expect(table.evidenceOf(table.rows[index], column("gross_profit"))).toEqual(expected);
       });
@@ -239,6 +250,35 @@ describe("V4-4 G14 商品毛利為負的商品累計（有負值時渲染）", (
       const share = drawer(set, table.evidenceOf(last, column("share"))!);
       expect(bigNumber(share), name).toBe(formatRateL1("1.000000000000"));
       expect(bigNumber(share), name).not.toContain("+");
+    }
+  });
+
+  it("審查修正：柱（與商品毛利格）的抽屜 metric_version 仍是 contribution-v1，下一行「圖表整理版本 product-pareto-v1」（值取自 domain，只經 productPareto 挑出與排序）", () => {
+    const set = sets.synthetic;
+    const { bars, table } = paretoTree(set, () => undefined);
+    const column = table.columns.find(item => item.key === "gross_profit")! as ChartDataColumn<string>;
+    for (const evidence of [bars.rows![0].evidence, table.evidenceOf(table.rows[0], column)!]) {
+      const technical = element(drawer(set, evidence), 'class="evidence-technical"')!;
+      expect(technical).toContain("<div><dt>metric_version</dt><dd><code>contribution-v1</code></dd></div>");
+      expect(technical).toContain(`<div data-testid="evidence-arrange-version"><dt>${labels.evidence.chartsV4.arrangeVersion}</dt><dd><code>${PRODUCT_PARETO_VERSION}</code></dd></div>`);
+      expect(technical.indexOf("metric_version")).toBeLessThan(technical.indexOf("evidence-arrange-version"));
+    }
+  });
+
+  it("審查修正：資料表 evidence 在點擊時才組（C33 hasEvidence；面板重繪不再整表組累計與累計佔比的來源，O(n²)）；商品毛利與累計格為負時 number-link negative（H5 設計稿），累計佔比不上色", () => {
+    for (const name of ["refund_only", "synthetic", "many"] as const) {
+      const set = sets[name];
+      const { pareto, table } = paretoTree(set, () => undefined);
+      expect(table.hasEvidence, name).toBeTypeOf("function");
+      for (const row of table.rows) for (const column of table.columns) expect(table.hasEvidence!(row, column), `${name} ${column.key}`).toBe(true);
+      const classes = cellClasses(byTestId(byTestId(set.html, PRODUCTS_PARETO_TESTID), PRODUCTS_PARETO_TABLE_TESTID));
+      expect(classes, name).toEqual(pareto.allRows.map(entry => [
+        ["num", deltaTone("gross_profit", entry.value.value, "L2") === "unfavorable" ? "number-link negative" : "number-link"],
+        ["num", deltaTone("gross_profit", entry.cumulative.value, "L2") === "unfavorable" ? "number-link negative" : "number-link"],
+        ["num", "number-link"],
+      ]));
+      // 商品毛利為負的列：前兩欄全部上不利色。
+      expect(classes.every(row => row[0][1] === "number-link negative" && row[1][1] === "number-link negative"), name).toBe(true);
     }
   });
 });
@@ -301,6 +341,28 @@ describe("V4-4 G13 商品毛利兩期差額", () => {
     expect(byTestId(section, "product-best")).toBe(v43c("refund_only")!["product-best"]);
     expect(tableRows(byTestId(section, PRODUCTS_VARIANCE_TABLE_TESTID))).toEqual([]);
   });
+
+  it("審查修正：只有一段時圖例只列那一段（記憶體 13 個 SKU 的差額全部 < 0：只有「減少最多」，沒有增加段與「增加最多」圖例）", () => {
+    const section = byTestId(sets.many.html, PRODUCTS_VARIANCE_TESTID);
+    expect(productHighlights(sets.many.rows).bestChange).toEqual([]);
+    expect(section).toContain('data-block="decrease"');
+    expect(section).not.toContain('data-block="increase"');
+    expect(element(section, 'class="legend"')).toBe(`<div class="legend"><span><i aria-hidden="true" style="background:var(--chart-unfavorable)"></i>${copy.variance.columns.decrease}</span></div>`);
+    expect(element(section, 'class="sec-head"')).not.toContain(copy.variance.columns.increase);
+  });
+
+  it("審查修正：資料表 evidence 在點擊時才組（hasEvidence）；只有差額格不利時 number-link negative（上期、本期格即使為負也不上色，同 H5 設計稿）", () => {
+    for (const name of ["demo", "synthetic", "golden"] as const) {
+      const set = sets[name];
+      const all = productHighlights(set.rows, set.rows.length);
+      const classes = cellClasses(byTestId(byTestId(set.html, PRODUCTS_VARIANCE_TESTID), PRODUCTS_VARIANCE_TABLE_TESTID));
+      expect(classes, name).toEqual([...all.worstChange, ...all.bestChange].map(row => [["num", "number-link"], ["num", "number-link"], ["num", deltaTone("gross_profit", row.changes.gross_profit.value, "L2") === "unfavorable" ? "number-link negative" : "number-link"]]));
+      expect(classes.slice(0, all.worstChange.length).every(row => row[2][1] === "number-link negative"), name).toBe(true);
+      expect(classes.slice(all.worstChange.length).every(row => row[2][1] === "number-link"), name).toBe(true);
+    }
+    // 合成資料有本期商品毛利為負的列（SKU-203 · MARKETPLACE −1,800），本期格照樣不上色。
+    expect(sets.synthetic.rows.some(row => Number(row.current.metrics.gross_profit.value) < 0)).toBe(true);
+  });
 });
 
 describe("V4-4 延後渲染（useDeferredMount；390 切到商品毛利的 TBT）", () => {
@@ -324,5 +386,39 @@ describe("V4-4 延後渲染（useDeferredMount；390 切到商品毛利的 TBT�
     expect(byTestId(html, PRODUCTS_PARETO_TESTID)).toContain('data-testid="after-probe"');
     // 面板本身在伺服器端（沒有 window）不延後：sets 的 markup 都有柱與表（上面各組測試）。
     expect(byTestId(set.html, PRODUCTS_PARETO_TESTID)).toContain(PRODUCTS_PARETO_TABLE_TESTID);
+  });
+});
+
+describe("審查修正：G13、G14 標題字數與 C33 延後組 evidence", () => {
+  it("標題每個子句 ≤ 14 字（{metric} 以 metricDefinitions 的商品毛利填入後計字；SKU、通路名、數字不計）：五組資料的實際標題與 none 樣板", () => {
+    const aliasTerms = channelAliasTerms(labels);
+    const titles = Object.values(sets).flatMap(set => [...set.html.matchAll(/<h4 id="products-(?:variance|pareto)-title">([^<]*)<\/h4>/g)].map(match => textOf(match[1])));
+    expect(titles.length).toBeGreaterThanOrEqual(8);
+    titles.push(fill(copy.variance.title.none, { metric: METRIC }));
+    for (const title of titles) expect(l1ClauseLengths(title, aliasTerms).every(length => length <= L1_MAX_CJK), `${title}：${l1ClauseLengths(title, aliasTerms).join(",")}`).toBe(true);
+    expect(byTestId(sets.refund_only.html, PRODUCTS_VARIANCE_TESTID)).toContain(`<h4 id="products-variance-title">${escapeAttr(fill(copy.variance.title.none, { metric: METRIC }))}</h4>`);
+  });
+
+  it("C33 hasEvidence：渲染時不呼叫 evidenceOf，點擊時才呼叫並交給 onEvidence；沒給 hasEvidence 時照舊在渲染時逐格呼叫；不利格的 .negative 在按鈕上（number-link）或格上（純文字）", () => {
+    type Row = { id: string; value: string };
+    const rows: Row[] = [{ id: "a", value: "-12.00" }, { id: "b", value: "30.00" }];
+    const columns: ChartDataColumn<"v">[] = [{ key: "v", label: "v", unit: "money", layer: "L2", data: "v" }];
+    const evidence = { title: "t", name: "gross_profit", metric: { value: "-12.00", reason_codes: [] }, period: sets.golden.ctx.current, channels: [], sources: [] } as EvidenceSelection;
+    const evidenceOf = vi.fn<(row: Row) => EvidenceSelection>(() => evidence);
+    const onEvidence = vi.fn<(selected: EvidenceSelection) => void>();
+    const props: ChartDataTableProps<Row, "v"> = { testId: "t", caption: "c", rowHeaderLabel: "r", rows, rowKey: row => row.id, rowHeader: row => ({ label: row.id }), columns, valueOf: row => ({ value: row.value, unfavorable: Number(row.value) < 0 }), evidenceOf, onEvidence };
+    const lazy = renderToStaticMarkup(createElement(ChartDataTable<Row, "v">, { ...props, hasEvidence: row => row.id === "a" }));
+    expect(evidenceOf).not.toHaveBeenCalled();
+    expect(cellClasses(lazy)).toEqual([[["num", "number-link negative"]], [["num", null]]]);
+    const buttons = findElements(ChartDataTable({ ...props, hasEvidence: row => row.id === "a" }), item => item.type === "button");
+    expect(buttons).toHaveLength(1);
+    (buttons[0].props.onClick as () => void)();
+    expect(evidenceOf).toHaveBeenCalledTimes(1);
+    expect(evidenceOf.mock.calls[0][0]).toBe(rows[0]);
+    expect(onEvidence).toHaveBeenCalledWith(evidence);
+    evidenceOf.mockClear();
+    const eager = renderToStaticMarkup(createElement(ChartDataTable<Row, "v">, { ...props, evidenceOf: row => { evidenceOf(row); return row.id === "a" ? null : evidence; } }));
+    expect(evidenceOf).toHaveBeenCalledTimes(2);
+    expect(cellClasses(eager)).toEqual([[["num negative", null]], [["num", "number-link"]]]);
   });
 });

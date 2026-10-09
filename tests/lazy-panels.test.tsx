@@ -150,7 +150,9 @@ describe("V4-3c 同名包裝元件與 dashboard 的匯入", () => {
   it("首載模組圖（page.tsx、layout.tsx 起的靜態值匯入，不限單行、含間接匯入）走不到隨頁載入的面板、匯出程式與只有它們用到的模組，也走不到 xlsx、pptxgenjs", () => {
     const graph = firstLoadGraph(["src/app/page.tsx", "src/app/layout.tsx"]);
     for (const file of ["src/components/dashboard.tsx", "src/components/lazy-panels.tsx", "src/components/meeting-entry.tsx", "src/components/overview.tsx", "src/components/multi-scenario-workbench.tsx"]) expect(graph.files.has(file), `${file} 應在首載`).toBe(true);
-    const split = ["src/components/workspace-panels.tsx", "src/components/ai-panel.tsx", "src/components/product-comparison-panel.tsx", "src/components/meeting-page.tsx", "src/components/actions-workbench.tsx", "src/components/diagnosis-list.tsx", "src/components/manager-summary.tsx", "src/components/channel-table.tsx", "src/application/excel-export.ts", "src/application/pptx-export.ts", "src/application/workspace-decision-export.ts"];
+    const split = ["src/components/workspace-panels.tsx", "src/components/ai-panel.tsx", "src/components/product-comparison-panel.tsx", "src/components/meeting-page.tsx", "src/components/actions-workbench.tsx", "src/components/diagnosis-list.tsx", "src/components/manager-summary.tsx", "src/components/channel-table.tsx", "src/application/excel-export.ts", "src/application/pptx-export.ts", "src/application/workspace-decision-export.ts",
+      // V4-4：只有商品頁用到的圖表模組（G13、G14 區塊、productPareto、商品抽屜 builder）。C25 ranked-bars.tsx 不列：V4-5 的 G15 在首載的試算頁使用。
+      "src/components/products/highlight-charts.tsx", "src/application/chart-pareto.ts", "src/components/product-evidence.ts"];
     for (const file of split) {
       expect(existsSync(file), file).toBe(true);
       expect(graph.files.has(file), `${file} 不得在首載`).toBe(false);

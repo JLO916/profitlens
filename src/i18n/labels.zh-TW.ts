@@ -1168,7 +1168,7 @@ export const products = {
       title: {
         decrease: "{product} {metric}少 {amount}，減少最多",
         increase: "{product} {metric}多 {amount}，增加最多",
-        none: "各商品的{metric}兩期持平或待補",
+        none: "各商品的{metric}都持平或待補",
       },
       /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{current}、{previous}＝兩期起訖，{scope}＝範圍內的通路。 */
       subtitle: "{section} · 本期 {current} 對比 上期 {previous} · {scope}",

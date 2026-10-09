@@ -63,7 +63,7 @@
 
 | 項目 | 規則 |
 |---|---|
-| 輸入 | V4-2 實作（`src/components/charts/chart-data-table.tsx`）：`testId`（加在 table，`chart-{page}-{id}-table`）、`caption`（也是捲動區的 aria-label）、`rowHeaderLabel`、`rows`、`rowKey(row)`、`rowHeader(row)`：回傳 `{label, title?}`、`columns: {key, label, notes?, unit?, layer?, data}[]`（unit：money、rate、count、multiple、per_unit、text、date；layer：L2、L3）、`valueOf(row, col)`：回傳 `{value, reasonCodes?, unit?, layer?, emptyText?}`、`evidenceOf(row, col)`：回傳 `EvidenceSelection` 或 null、`onEvidence`、`cellAria?`、`notes?`、`className?`；另匯出 `chartDataCellText`、`chartDataTable({title, ...})`（回傳 ChartFrame 的 `dataTable`）、`ChartDataDetails`（獨立的 `<details class="data-alternative">`，收合時保持掛載，展開記 `chart_table_opened`） |
+| 輸入 | V4-2 實作（`src/components/charts/chart-data-table.tsx`）：`testId`（加在 table，`chart-{page}-{id}-table`）、`caption`（也是捲動區的 aria-label）、`rowHeaderLabel`、`rows`、`rowKey(row)`、`rowHeader(row)`：回傳 `{label, title?}`、`columns: {key, label, notes?, unit?, layer?, data}[]`（unit：money、rate、count、multiple、per_unit、text、date；layer：L2、L3）、`valueOf(row, col)`：回傳 `{value, reasonCodes?, unit?, layer?, emptyText?}`、`evidenceOf(row, col)`：回傳 `EvidenceSelection` 或 null、`onEvidence`、`cellAria?`、`notes?`、`className?`；V4-4 加 `hasEvidence?(row, col)`（給了時渲染只用它決定是不是 number-link，`evidenceOf` 改在點擊時才呼叫；給每格 evidence 成本隨列數成長的表用，例如 G14 的累計、累計佔比）與格的 `unfavorable?`（不利時 number-link 加 `.negative`，純文字格加在 `td`；只有不利上色，D-V3-7）；另匯出 `chartDataCellText`、`chartDataTable({title, ...})`（回傳 ChartFrame 的 `dataTable`）、`ChartDataDetails`（獨立的 `<details class="data-alternative">`，收合時保持掛載，展開記 `chart_table_opened`） |
 | 輸出 | `<div class="table-scroll" role="region" tabindex="0" aria-label={caption}><table data-testid="chart-…-table"><caption>…（元）</caption>`；`th scope` 齊全；數字欄右對齊、tabular、負號 U+2212 |
 | 數字格 | `evidenceOf` 回傳非 null 時是 `<button class="number-link">`，與圖上點擊同一個 builder；回傳 null（例如試算、凍結值）時是純文字 |
 | 列數 | 等於圖的資料長度（含被退回成文字的列，例如「不適用」通路）；SSR 測試斷言 |
@@ -410,7 +410,7 @@
 | testid | `chart-products-pareto`、`chart-products-pareto-bar-{channel}-{sku}`、`chart-products-pareto-table`；既有 `product-worst` 常駐 |
 | 資料表 | SKU · 通路、商品毛利（L2 number-link）、累計（L2 number-link）、累計佔比（L2 百分比；D-V4-32＝A 前為純文字） |
 | 鍵盤 | 標題、`product-worst` 表（鍵盤里程碑「最差商品」，`tests/e2e/keyboard-walk.spec.ts:24`，仍在第一張圖的資料表 summary 之前）、資料表 summary |
-| 抽屜 | 條與商品毛利格：`productEvidence(row, "current", "gross_profit")`＋`filter: { channel, sku }`；累計格：`{ title: 累計, name: "gross_profit", metric: cumulative, period: 本期, channels: 涉及的通路, sources: 各列 sources 聯集, formula: 逐項相加, components: 前 i 個 SKU, valueKind: "level", metricVersion: "product-pareto-v1" }`（抽屜大數字不帶「+」） |
+| 抽屜 | 條與商品毛利格：`productEvidence(row, "current", "gross_profit")`＋`filter: { channel, sku }`＋`arrangeVersion: "product-pareto-v1"`（值取自 domain，`metric_version` 維持 `contribution-v1`；列由 `productPareto` 挑出與排序，依 §1.2 的 `arrangeVersion` 規則；V4-4 審查補記）；累計格：`{ title: 累計, name: "gross_profit", metric: cumulative, period: 本期, channels: 涉及的通路, sources: 各列 sources 聯集, formula: 逐項相加, components: 前 i 個 SKU, valueKind: "level", metricVersion: "product-pareto-v1" }`（抽屜大數字不帶「+」） |
 | 390 | 維持（列高不變） |
 | 投影 | 不適用 |
 | 匯出 | 不印、不放；Excel「圖表資料」：SKU、通路、商品毛利、累計、累計佔比 |
