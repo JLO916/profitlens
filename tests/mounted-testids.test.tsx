@@ -1011,7 +1011,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const { shareSectionModel } = await import("@/components/diagnosis/share-section");
       const copy = labels.diagnosis.chartsV4.share;
       const states = diagnosisStates();
-      expect(states.map(({ name }) => name)).toEqual(["diagnosis", "diagnosis-synthetic", "diagnosis-many-channels"]);
+      // V4-3b 核對：多了本期超過 92 天的 diagnosis-weekly（G11 週 × 通路矩陣）；G10 的斷言對它照常成立（2 通路、sm）。
+      expect(states.map(({ name }) => name)).toEqual(["diagnosis", "diagnosis-synthetic", "diagnosis-many-channels", "diagnosis-weekly"]);
       for (const { name, html, state } of states) {
         const model = shareSectionModel(state!.active.snapshot);
         for (const id of ["chart-diagnosis-share", "chart-diagnosis-share-table"]) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
@@ -1149,6 +1150,69 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-3b 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3b 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    it("V4-3b A 健檢：G11 chart-diagnosis-heat 全頁一份、在 G10 之後與 G12、通路寬表之前；mode=table 的框不設 aria-hidden、熱表內沒有 aria-hidden；整張熱表恰好 1 個 tabindex=0、其餘可聚焦的格 −1；每格 testid 全頁一份；本期超過 92 天是週 × 通路矩陣；通路 > 8 不輸出任何格", async () => {
+      const { heatSectionModel } = await import("@/components/diagnosis/heat-section");
+      const states = diagnosisStates();
+      expect(states.map(({ name }) => name)).toEqual(["diagnosis", "diagnosis-synthetic", "diagnosis-many-channels", "diagnosis-weekly"]);
+      const layouts: Record<string, string | null> = {};
+      for (const { name, html, state } of states) {
+        const model = heatSectionModel(state!.active.snapshot);
+        expect(testIdCounts(html).get("chart-diagnosis-heat"), name).toBe(1);
+        const order = ['data-testid="chart-diagnosis-share"', 'data-testid="chart-diagnosis-heat"', 'class="chart-more rates-more"', 'data-testid="channel-compare"'].map(attr => html.indexOf(attr));
+        expect(order.every(index => index >= 0), name).toBe(true);
+        expect([...order].sort((a, b) => a - b), `${name}：G10、G11、G12、通路寬表的順序`).toEqual(order);
+        const section = element(html, 'data-testid="chart-diagnosis-heat"')!;
+        expect(openTag(section, "<section"), name).toBe('<section class="panel chart-section heat-section" aria-labelledby="heat-title" aria-describedby="heat-sub" data-testid="chart-diagnosis-heat">');
+        const frame = openTag(section, 'class="chart-frame')!;
+        expect(frame, `${name}：table 模式的框`).toContain('data-mode="table"');
+        expect(frame, `${name}：table 模式的框不設 aria-hidden`).not.toContain("aria-hidden");
+        expect(section, `${name}：熱表內沒有 aria-hidden（格是停留點）`).not.toContain('aria-hidden="true"');
+        expect(section, `${name}：表本身就是資料表，不另設 <details>`).not.toContain("<details");
+        const heatmap = model.result.heatmap;
+        layouts[name] = heatmap === null ? null : heatmap.mode;
+        if (heatmap === null) {
+          expect(section, `${name}：不計算時沒有熱表與格`).not.toContain("heat-grid");
+          expect(section, name).not.toContain("chart-diagnosis-heat-cell-");
+          expect(frame, name).toContain('data-state="empty"');
+          expect(section, name).toContain(escapeAttr(model.message!));
+          continue;
+        }
+        expect(openTag(section, 'class="table-scroll"'), `${name}：捲動區以標題命名、不加 tabindex`).toBe('<div class="table-scroll" role="region" aria-labelledby="heat-title">');
+        expect(openTag(section, 'class="heat-grid"'), name).toBe(`<div class="heat-grid" data-layout="${heatmap.mode === "weekly" ? "matrix" : "calendar"}">`);
+        expect(occurrences(section, '<table class="heat-table" role="grid">'), `${name}：每張表 role=grid`).toBe(model.tables.length);
+        const cells = model.tables.flatMap(table => table.rows.flatMap(row => row.cells)).filter(cell => cell.tier !== "outside");
+        expect(occurrences(section, 'tabindex="0"'), `${name}：整張熱表恰好 1 個 tabindex=0`).toBe(1);
+        expect(occurrences(section, 'tabindex="-1"'), `${name}：其餘可聚焦的格 tabindex=-1`).toBe(cells.length - 1);
+        expect(occurrences(section, 'data-tier="outside"'), `${name}：期間外的格留白`).toBe(model.tables.flatMap(table => table.rows.flatMap(row => row.cells)).length - cells.length);
+        for (const cell of cells) expect(testIdCounts(html).get(cell.testId!), `${name} ${cell.testId}`).toBe(1);
+        if (heatmap.mode === "weekly") {
+          expect(model.tables, `${name}：週 × 通路一張表`).toHaveLength(1);
+          expect(cells.map(cell => cell.testId), `${name}：格的 key 是週起日`).toEqual(heatmap.weeks.flatMap(week => heatmap.channels.map(channel => `chart-diagnosis-heat-cell-${channel.channel}-${week.period.start}`)));
+        }
+      }
+      expect(layouts, "示範與合成資料是日月曆、9 通路不計算、本期 98 天改週").toEqual({ diagnosis: "daily", "diagnosis-synthetic": "daily", "diagnosis-many-channels": null, "diagnosis-weekly": "weekly" });
+    });
+
+    it("V4-3b B 健檢圖區收合：G12 的 <details class=\"chart-more rates-more\"> 沒有 open，chart-diagnosis-rates 與 chart-diagnosis-rates-table 仍掛載（全頁各一份）；圖框 aria-hidden、裡面沒有 <details>、按鈕、連結、tabindex；五張子圖依序；≤ 767px 框高變數＝sm × 5", async () => {
+      const { chartHeights } = await import("@/application/chart-theme");
+      const { RATE_METRICS } = await import("@/components/diagnosis/rates-section");
+      for (const { name, html } of diagnosisStates()) {
+        const details = element(html, 'class="chart-more rates-more"')!;
+        expect(details, name).not.toBeNull();
+        const open = openTag(html, 'class="chart-more rates-more"')!;
+        expect(open, `${name}：收合`).not.toMatch(/\sopen=""/);
+        expect(open, `${name}：≤ 767px 的框高變數`).toContain(`--multiples-h:${chartHeights.sm * RATE_METRICS.length}px`);
+        expect(details, name).toContain(`<summary>${escapeAttr(labels.diagnosis.chartsV4.rates.summary)}</summary>`);
+        for (const id of ["chart-diagnosis-rates", "chart-diagnosis-rates-table"]) {
+          expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+          expect(details, `${name}：${id} 收合時仍掛載`).toContain(`data-testid="${id}"`);
+        }
+        const frame = element(element(details, 'data-testid="chart-diagnosis-rates"')!, 'class="chart-frame')!;
+        expect(openTag(frame, 'class="chart-frame')!, name).toContain('aria-hidden="true"');
+        expect(frame, `${name}：圖容器內沒有停留點與收合`).not.toMatch(/<details|<button|<a\s|tabindex/);
+        expect([...frame.matchAll(/class="multiple" data-panel="([^"]+)"/g)].map(match => match[1]), `${name}：五張子圖依序`).toEqual([...RATE_METRICS]);
+      }
+    });
 
     // ── V4-4 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-4 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 

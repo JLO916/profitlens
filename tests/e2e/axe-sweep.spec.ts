@@ -3,9 +3,12 @@ import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { openWizard } from "./import-wizard-helpers";
 import { LAUNCH_PAGES, domA11y, evidenceDrawer, gotoPage, hideDevOverlay, kpiLink, loadDemo, writeLaunchJson, type DomA11y } from "./launch-helpers-v310";
+import { channelWeeksDetails, channelWeeksTable, heatTables, heatTabStop, importSynthetic, openDataTable, openRates, ratesSection, shareSection } from "./chart-helpers-v4";
+import { openDetails } from "./replacement-helpers";
 
 /*
  * 狀態：首頁空狀態、匯入精靈步驟 1、示範資料已載入的 7 頁、計算與來源抽屜開著（總覽）、投影模式（總覽；≤ 767px 沒有投影按鈕，手機略過）。
+ * V4-3b 起另加三個：健檢頁資料表展開（G10、G12、G7b）、從圖下鑽的抽屜（G11 熱表格按 Enter）、4 通路合成資料的健檢頁；desktop、laptop、tablet 共 14，mobile 共 13。
  * axe 來源：專案沒有 @axe-core/playwright（本輪不加依賴），改用 node_modules 已有的 axe-core（eslint-config-next → eslint-plugin-jsx-a11y 的相依套件）
  * 以 page.addScriptTag 注入 axe.min.js 後呼叫 axe.run。找不到 axe-core 時退回純 DOM 檢查（每個控制有可及名稱、每頁一個 h1、img 都有 alt），並在結果標明 engine。
  * 不論 axe 是否可用，每個狀態都另記純 DOM 檢查（heading 跳級、重複 id、:focus-visible 規則是否存在）供參考，不斷言。
@@ -75,6 +78,30 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
     await expect(page.locator("html")).not.toHaveAttribute("data-mode", /.*/);
   }
 
+  // V4-3b（06_BATCHES V4-3b、PRD §2.2 C3）：再加三個狀態，desktop、laptop、tablet 共 14，mobile 共 13。
+  // 1. 資料表展開（健檢頁，示範資料）：G10 的資料表、G12「五項比率走勢」與它的資料表、G7b「各通路每週」都展開（G11 熱表本身就是表，常駐）。
+  await gotoPage(page, "diagnosis");
+  await openDataTable(shareSection(page));
+  await openRates(page);
+  await openDataTable(ratesSection(page));
+  await openDetails(channelWeeksDetails(page));
+  await expect(channelWeeksTable(page)).toBeVisible();
+  results.push(await scan(page, "diagnosis-data-tables-open", engine, path));
+  // 2. 從圖下鑽的抽屜：熱表的停留格按 Enter（G11 格的抽屜帶 filter { channel, date }，篩選片語含日期），抽屜開著時掃。
+  await heatTabStop(page).focus();
+  await page.keyboard.press("Enter");
+  await expect(evidenceDrawer(page)).toBeVisible();
+  await expect(evidenceDrawer(page).getByTestId("evidence-filter")).toBeVisible();
+  results.push(await scan(page, "evidence-drawer-from-chart", engine, path));
+  await page.keyboard.press("Escape");
+  await expect(evidenceDrawer(page)).toHaveCount(0);
+  // 3. 4 通路合成資料的健檢頁（G10 SOCIAL 不適用列、LIVE 資料待補列；G11 四張月曆，LIVE 有資料待補的虛線框格）：重新整理回到空狀態後經精靈匯入。
+  await page.goto("/");
+  await importSynthetic(page);
+  await gotoPage(page, "diagnosis");
+  await expect(heatTables(page)).toHaveCount(4);
+  results.push(await scan(page, "page-diagnosis-synthetic", engine, path));
+
   const summary = {
     checked_at: new Date().toISOString(), engine, axe_core: path ? (JSON.parse(readFileSync(path.replace(/axe\.min\.js$/, "package.json"), "utf8")) as { version: string }).version : null,
     tags: TAGS, viewport: testInfo.project.use.viewport, skipped: (await present.isVisible()) ? [] : ["present-mode-overview（≤ 767px 沒有投影按鈕，PRD §9.7）"],
@@ -83,6 +110,8 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   };
   const written = await writeLaunchJson("AXE_OUT", "axe.json", testInfo, summary);
   testInfo.annotations.push({ type: "axe", description: `${written}（${engine}；serious ${summary.totals.serious}、critical ${summary.totals.critical}）` });
+  // V4-3b：狀態數（06 護欄表）desktop、laptop、tablet 14，mobile 13（mobile 沒有投影模式）。
+  expect(results.length, "axe 狀態數（V4-3b 起 14／13）").toBe(testInfo.project.name === "mobile" ? 13 : 14);
 
   for (const row of results) {
     const blocking = row.violations.filter(item => item.impact === "serious" || item.impact === "critical").map(item => `${item.impact} ${item.id}（${item.nodes}）：${item.targets.join(" ")}`);

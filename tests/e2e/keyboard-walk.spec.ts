@@ -15,6 +15,7 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * 結果寫到 KEYBOARD_WALK_OUT（例如 verification/revamp-v3/V3-10/keyboard-walk.json，以專案名為鍵）；沒給就寫到 test-results。
  * V4-0a（06_BATCHES V4-0a 第 8 項、PRD §2.2 B6、§8.1）：通用斷言「任何 Tab 停留點都不在 [aria-hidden=true] 內」。七頁整頁走查的每一步（含離開 main 的那一步）
  *   與 C 段 tabTo 經過的每一步，都檢查焦點元素本身或祖先有沒有 aria-hidden="true"；v3.0.0 應為 0，之後每批都跑（v4 的圖容器 aria-hidden，圖內不得有可聚焦元素）。
+ * V4-3b：健檢頁另記「經過 G11 熱表」的停留點數與 Tab 數（PASS_REGIONS），斷言經過熱表的 Tab 數 ≤ 3。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -29,6 +30,14 @@ const MILESTONES: Record<LaunchPage, { name: string; selector: string }[]> = {
   actions: [{ name: "第一張待辦卡或新增", selector: "[data-testid^='board-card-'], [data-testid='actions-empty-add'], [data-testid='actions-add']" }],
   meeting: [{ name: "議程 1", selector: "[data-testid='meeting-agenda-1']" }],
   data: [{ name: "問題表或範圍列表", selector: "[data-testid='data-issues'], [data-testid='data-scope']" }],
+};
+/**
+ * V4-3b（06_BATCHES V4-3b、護欄表 keyboard-walk、CHART_CATALOG G11「鍵盤」）：整頁走查時另數「經過某個區塊」的 Tab：
+ * stops＝焦點落在區塊內的步數；across＝從區塊前一個停留點到區塊後一個停留點按的 Tab 數（＝區塊內最後一步 − 區塊內第一步 ＋ 2）。
+ * 健檢頁 G11 熱表是 grid 型 roving tabindex（整張 1 個停留點），所以 stops 應為 1、across 應為 2；斷言 across ≤ 3。
+ */
+const PASS_REGIONS: Partial<Record<LaunchPage, { name: string; selector: string; maxAcross: number }[]>> = {
+  diagnosis: [{ name: "熱表", selector: "[data-testid='chart-diagnosis-heat']", maxAcross: 3 }],
 };
 type Position = "inside" | "after" | "before" | "missing";
 /** 焦點相對於第一個「看得到」的里程碑元素的位置。 */
@@ -82,7 +91,8 @@ async function focusMain(page: Page) {
   return page.evaluate(() => document.activeElement?.tagName.toLowerCase() === "main");
 }
 
-interface Walk { page: LaunchPage; startedOnMain: boolean; milestones: { name: string; tabs: number | null; reachedBy: Position | null }[]; stopsInMain: number; leftMainAt: number | null; leftMainTo: string | null; stops: string[]; invisibleStops: string[]; repeatedStops: string[]; ariaHiddenStops: string[]; lostFocus: number; controlsBeforeFirstKpi?: number }
+interface RegionPass { name: string; stops: number; first: number | null; last: number | null; across: number | null; maxAcross: number }
+interface Walk { page: LaunchPage; startedOnMain: boolean; milestones: { name: string; tabs: number | null; reachedBy: Position | null }[]; stopsInMain: number; leftMainAt: number | null; leftMainTo: string | null; stops: string[]; invisibleStops: string[]; repeatedStops: string[]; ariaHiddenStops: string[]; lostFocus: number; controlsBeforeFirstKpi?: number; regionPasses?: RegionPass[] }
 
 /** 從 main 開始按 Tab，一路走到焦點離開 main（或掉回 body、或到上限）；途中記錄各里程碑第一次到達的步數。 */
 async function walk(page: Page, id: LaunchPage): Promise<Walk> {
@@ -91,6 +101,7 @@ async function walk(page: Page, id: LaunchPage): Promise<Walk> {
   if (id === "scenarios") await page.getByTestId("scenario-1").getByRole("button", { name: copy.calculate, exact: true }).evaluate(el => el.setAttribute("data-v310-calculate", ""));
   const startedOnMain = await focusMain(page);
   const milestones = MILESTONES[id].map(item => ({ name: item.name, selector: item.selector, tabs: null as number | null, reachedBy: null as Position | null }));
+  const passes = (PASS_REGIONS[id] ?? []).map(item => ({ ...item, stops: 0, first: null as number | null, last: null as number | null }));
   const stops: string[] = [], invisibleStops: string[] = [], repeatedStops: string[] = [], ariaHiddenStops: string[] = [];
   const seen = new Set<string>();
   let lostFocus = 0, leftMainAt: number | null = null, leftMainTo: string | null = null, previousKey = "";
@@ -127,8 +138,15 @@ async function walk(page: Page, id: LaunchPage): Promise<Walk> {
       const position = await positionOf(page, item.selector);
       if (position === "inside" || position === "after") { item.tabs = tab; item.reachedBy = position; }
     }
+    for (const item of passes) {
+      if (await positionOf(page, item.selector) !== "inside") continue;
+      item.stops++;
+      item.first ??= tab;
+      item.last = tab;
+    }
   }
   const result: Walk = { page: id, startedOnMain, milestones: milestones.map(({ name, tabs, reachedBy }) => ({ name, tabs, reachedBy })), stopsInMain: stops.length, leftMainAt, leftMainTo, stops, invisibleStops, repeatedStops, ariaHiddenStops, lostFocus };
+  if (passes.length) result.regionPasses = passes.map(({ name, stops: count, first, last, maxAcross }) => ({ name, stops: count, first, last, across: first === null || last === null ? null : last - first + 2, maxAcross }));
   if (id === "overview") {
     // PRD §2.3 B：main 內、第一個 kpi-* 之前、可見且可聚焦的元素數（期間列計入）。
     result.controlsBeforeFirstKpi = await page.evaluate(() => {
@@ -263,6 +281,12 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
     expect(unexpectedAriaHiddenStops(testInfo.project.name, item.page, item.ariaHiddenStops), `${item.page}：任何 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a；已知既有違規見 KNOWN_ARIA_HIDDEN_STOPS）`).toEqual([]);
     expect(item.leftMainAt, `${item.page}：一路按 Tab 最後要離開 main（沒有困在頁內）`).not.toBeNull();
     for (const milestone of item.milestones) expect(milestone.tabs, `${item.page}：Tab 要能到達「${milestone.name}」`).not.toBeNull();
+    // V4-3b：健檢頁經過熱表的 Tab 數 ≤ 3（整張熱表 1 個停留點；區塊內的停留點連續、至少 1 個）。
+    for (const pass of item.regionPasses ?? []) {
+      expect(pass.stops, `${item.page}：Tab 要經過「${pass.name}」至少一次`).toBeGreaterThanOrEqual(1);
+      expect(pass.last! - pass.first! + 1, `${item.page}：「${pass.name}」內的停留點連續`).toBe(pass.stops);
+      expect(pass.across, `${item.page}：經過「${pass.name}」的 Tab 數 ≤ ${pass.maxAcross}`).toBeLessThanOrEqual(pass.maxAcross);
+    }
   }
   expect(flowAriaHiddenStops, "§11.1 只用鍵盤的流程：經過的 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a）").toEqual([]);
   // V4-1：KNOWN_ARIA_HIDDEN_STOPS 已清空，1440 與 390 七頁走查加上 §11.1 流程的 aria-hidden 停留點合計必須是 0。
