@@ -964,7 +964,29 @@ export const diagnosis = {
       /** 逐日資料不完整（只在超長期間出現）時：不把沒有列的日子當成 0。 */
       partialNote: "本期的逐日資料不完整，不畫每天的格；各通路的數字見下方各通路兩期比較",
     },
-    rates: {},
+    /**
+     * V4-3b 代理 B：G12 五項比率每週走勢（PRD §4.1–§4.7 G12、§5.2 第 5 列；CHART_CATALOG G12；H5 設計稿 diagnosis.html 頁尾清單）。
+     * 小標、資料表欄名取 metricDefinitions 的五項比率名；圖例沿用 overview.chartFrame.legend 與 overview.trendYoyV3.legend；資料表列名沿用週名（本期第 n 週等）。
+     * 標題是區塊名，不寫結論句、不做跨比率排名（五項比率的分母不同，PRD §4.2）。
+     */
+    rates: {
+      /** <details> 的 summary（收合時只看到這一列）。 */
+      summary: "五項比率走勢",
+      /** 區塊名（標題，同時是資料表 summary「表格 · 五項比率每週走勢」的 title）。 */
+      title: "五項比率每週走勢",
+      /** 副標（同時是區塊的 aria 描述）：{period}＝本期起訖（M/D–M/D），{n}＝兩期的週數（相同時）。 */
+      subtitle: "本期 {period} 與上期各 {n} 週，以第幾週對齊 · 每張圖的刻度各自不同",
+      /** 兩期週數不同時的副標：{current}、{previous}＝本期與上期的週數。 */
+      subtitleUneven: "本期 {period} {current} 週、上期 {previous} 週，以第幾週對齊 · 每張圖的刻度各自不同",
+      /** 資料表 caption（同時是捲動區的可及名稱）：{title}＝區塊名，{period}＝本期起訖。 */
+      caption: "{title}（本期 {period}）",
+      /** 資料表「起訖日」欄：未滿 7 天的週在起訖之後註明（X40；比率照常畫）。{range}＝M/D–M/D。 */
+      incompleteRange: "{range}（未滿 7 天）",
+      /** 有未滿 7 天的週時，資料表之後的一句說明（在收合的 <details> 內，不進主層）。 */
+      incompleteNote: "標「未滿 7 天」的週只有幾天的資料，比率照常畫在圖上。",
+      /** 資料表格 number-link 的可及名稱：{week}＝週名，{metric}＝比率名，{value}＝L2 百分比。 */
+      cellAria: "{week} {metric} {value}，看明細",
+    },
   },
 } as const;
 
@@ -2139,6 +2161,13 @@ export const evidence = {
       definition: "本期{metric}合計佔本期淨營收合計的比率；淨營收為 0 或負數時不適用。",
       /** 技術細節的算式：{numerator}、{denominator}＝欄位代碼。 */
       formulaTechnical: "{numerator} / {denominator}（ratioMetric，12 位小數）",
+    },
+    // ── V4-3b 錨點：抽屜下鑽篩選片語的日期與商品（代理 B：EvidenceFilter 的 date、sku；片語以 overview.trendYoyV3.filter 的 phrase、joiner 組成）
+    filter: {
+      /** 單日（G11 熱表格下鑽）：{date}＝主層日期（M/D；與資料到的年份不同時寫年份）。 */
+      date: "日期 {date}",
+      /** 商品（只和商品層證據一起用）：{sku}＝商品代碼。 */
+      sku: "商品 {sku}",
     },
   },
 } as const;

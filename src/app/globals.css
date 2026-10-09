@@ -2806,4 +2806,24 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-3b A 錨點結束 ── */
 
 /* ── V4-3b B：C26 SmallMultiples、G12 五項比率每週走勢、抽屜日期與 SKU 片語 ── */
+/* G12 的 <details class="chart-more">（PRD §5.2 第 5 列「收合 40」）：summary 一列高 40（--control-h-touch，含上下 8 的內距），展開後是一個 C16 面板（section.panel.chart-section）。
+   收合時內容保持掛載（M1）；summary 是唯一的停留點，展開後才有資料表 summary 與表內 number-link（圖在 aria-hidden 容器內，沒有停留點）。 */
+.chart-more { min-width: 0; margin: 0 0 var(--space-5); }
+.chart-more > summary { min-height: var(--control-h-touch); padding: var(--space-2) 0; cursor: pointer; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-medium); color: var(--text-primary); }
+.chart-more[open] > summary { margin-bottom: var(--space-2); }
+/* C26（PRD §6.3、§7.6）：一列放全部子圖（G12 五張；欄數＝子圖數），子圖之間 16px（768–1023 為 12px）；每張 svg 高＝chartHeights.sm（元件給 height 屬性），小標畫在 svg 內。
+   ≤ 767px 單欄列出全部子圖，每列 --chart-h-sm；固定高容器的框高改為 --multiples-h（＝chartHeights.sm × 子圖數，元件以 multiplesFrameStyle 放在祖先上），
+   以 !important 蓋過 ChartFrame 的 inline height（四態同高、子圖數不隨期間改變）。 */
+.multiples-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0 var(--space-4); height: 100%; }
+.multiples-grid > .multiple { min-width: 0; }
+.chart-multiple { display: block; width: 100%; font-family: var(--font-sans); }
+.chart-multiple text { font-size: var(--text-12); pointer-events: none; font-variant-numeric: tabular-nums; }
+.chart-multiple .multiple-title { fill: var(--text-secondary); font-weight: var(--weight-medium); }
+@media (min-width: 768px) and (max-width: 1023px) { .multiples-grid { gap: 0 var(--space-3); } }
+@media (max-width: 767px) {
+  .chart-frame.multiples { height: var(--multiples-h, var(--chart-h-sm)) !important; }
+  .multiples-grid { grid-auto-flow: row; grid-template-columns: minmax(0, 1fr); grid-auto-rows: var(--chart-h-sm); }
+}
+/* G12 資料表：起訖日欄不換行（未滿 7 天的週在起訖之後註明）。 */
+.rates-data-table td:first-of-type { white-space: nowrap; }
 /* ── V4-3b B 錨點結束 ── */
