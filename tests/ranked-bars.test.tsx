@@ -82,18 +82,20 @@ describe("RankedBars：G13 兩段（variance）的 SSR 結構", () => {
     expect(html).not.toContain("chart-ranked-extra");
   });
 
-  it("色：不利 chartColors.unfavorable、有利 chartColors.favorable（D-V3-7 不用綠）、total chartColors.total；不利標值加 is-unfavorable；零線 axis、段間分隔線 grid", () => {
+  it("色：不利 chartColors.unfavorable、有利 chartColors.favorable（D-V3-7 不用綠）、total chartColors.total；不利標值加 is-unfavorable；零線 axis；預設沒有段間分隔線（H5 設計稿建議版）", () => {
     expect(openTag(html, `data-testid="${VARIANCE_PREFIX}MARKETPLACE-SKU-203"`)).toContain(`fill="${chartColors.unfavorable}"`);
     expect(openTag(html, `data-testid="${VARIANCE_PREFIX}DTC-SKU-101"`)).toContain(`fill="${chartColors.favorable}"`);
     expect([rankedBarFill("unfavorable"), rankedBarFill("favorable"), rankedBarFill("total")]).toEqual([chartColors.unfavorable, chartColors.favorable, chartColors.total]);
     const values = [...html.matchAll(/<text class="([^"]*ranked-value[^"]*)"[^>]*>([^<]*)<\/text>/g)].map(match => [match[1], match[2]]);
     expect(values).toEqual([...DECREASE.map(item => ["chart-value ranked-value is-unfavorable", item.display]), ...INCREASE.map(item => ["chart-value ranked-value", item.display])]);
     expect(count(html, new RegExp(`<line class="ranked-zero"[^>]*stroke="${chartColors.axis.replace(/[()]/g, "\\$&")}"`, "g"))).toBe(2);
-    expect(openTag(html, 'class="ranked-separator"')).toContain(`stroke="${chartColors.grid}"`);
-    expect(openTag(html, 'class="ranked-separator"')).toContain(`y1="${DECREASE.length * chartRowHeights.row16}"`);
+    expect(html).not.toContain("ranked-separator");
   });
 
-  it("separator={false} 時沒有分隔線；給 width 時用給的寬（390 主圖 324）", () => {
+  it("separator 時段界畫一條 grid 分隔線；給 width 時用給的寬（390 主圖 324）", () => {
+    const separated = renderToStaticMarkup(createElement(RankedBars<Evidence>, { mode: "variance", blocks: BLOCKS, testIdPrefix: VARIANCE_PREFIX, separator: true }));
+    expect(openTag(separated, 'class="ranked-separator"')).toContain(`stroke="${chartColors.grid}"`);
+    expect(openTag(separated, 'class="ranked-separator"')).toContain(`y1="${DECREASE.length * chartRowHeights.row16}"`);
     const plain = renderToStaticMarkup(createElement(RankedBars<Evidence>, { mode: "variance", blocks: BLOCKS, testIdPrefix: VARIANCE_PREFIX, separator: false, width: 324 }));
     expect(plain).not.toContain("ranked-separator");
     expect(openTag(plain, 'class="chart-ranked-bars"')).toContain(`viewBox="0 0 324 ${5 * chartRowHeights.row16}"`);
@@ -222,5 +224,8 @@ describe("原始碼與樣式護欄（CL-2 到 CL-8、CL-10；design-lint）", ()
     expect(scan.boxShadow).toEqual([]);
     expect([...new Set((scan.fontSize as { value: string }[]).map(item => item.value))].sort()).toEqual(["var(--text-12)", "var(--text-16)"]);
     expect(block).toMatch(/@media \(max-width: 767px\) \{\s*\.chart-ranked-extra\.is-narrow-hidden \{ display: none; \}\s*\}/);
+    // 零線、分隔線不接指標事件（1px 柱的中心不被零線蓋住、整列熱區沒有 1px 的縫）；主圖 overflow: visible（pareto 零線在主圖右緣，不被 svg 切掉半條）。
+    expect(block).toContain(".chart-ranked-bars line { pointer-events: none; }");
+    expect(block).toMatch(/\.chart-ranked-bars \{[^}]*overflow: visible;/);
   });
 });

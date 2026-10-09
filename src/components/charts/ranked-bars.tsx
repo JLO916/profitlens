@@ -11,7 +11,7 @@ import { MINUS } from "@/application/presentation";
 //   ranked：單向排序（呼叫端給同號的值），幾何同 variance；
 //   pareto：排序長條（G14 商品毛利為負，從 0 往左）＋右側「累計 {pct}」標值欄（每列的文字由呼叫端組好傳入）＋最後一列「另 {n} 個」文字（不畫「其他」柱，X38）。
 // G13（D-V4-38＝A）：減少、增加兩段在各寬度都上下排列（減少在上），共用一把尺（PRD §7.2：同一指標同尺度）、各自從 0；段名不畫在 svg 內（用 ChartFrame legend），
-// 兩段之間畫一條 1px chartColors.grid 分隔線，並各有自己的零線（減少段在右緣、增加段在標籤欄右緣，H5 設計稿建議版）。
+// 兩段各有自己的零線（減少段在右緣、增加段在標籤欄右緣），以此區分兩段；預設不畫段間分隔線（與 H5 設計稿建議版相同，D-V4-38 以建議版為準），separator 時才在段界畫 1px chartColors.grid。
 // 版面（H5 設計稿 verification/revamp-v4/mockups/gen/charts-c2.ts 的 rankedBarsSvg）：標籤（SKU · 通路）靠左 x＝0；標籤欄寬＝最長標籤估寬＋8；
 // 標值（L1 帶號，呼叫端用 presentation.ts 格式化）緊貼柱端（間隔 4），另保留一欄標值寬，所以標值不會壓到標籤欄；標籤太長時截斷加「…」，繪圖區至少保留 RANKED_MIN_PLOT。
 // pareto 的累計欄是獨立的 svg.chart-ranked-extra（不在主圖的寬度內）：D-V4-39＝A 在 ≤ 767px 以 CSS 隱藏（hideExtraOnNarrow），主圖的量寬容器隨之變寬、柱變長（390 約 107px），
@@ -306,7 +306,7 @@ export interface RankedBarsViewProps<E = unknown> {
   onBarClick?: (evidence: E, row: RankedBarRow<E>) => void;
   /** D-V4-39＝A：pareto 的累計欄在 ≤ 767px 隱藏（CSS；svg 帶 is-narrow-hidden）。 */
   hideExtraOnNarrow?: boolean;
-  /** 段與段之間的分隔線（預設畫）。 */
+  /** 段與段之間的分隔線（預設不畫：H5 設計稿建議版沒有分隔線，兩段靠各自的零線區分）。 */
   separator?: boolean;
   /** 量寬容器（主圖）的 ref；RankedBars 用它接 ResizeObserver。 */
   measureRef?: Ref<HTMLDivElement>;
@@ -315,9 +315,9 @@ export interface RankedBarsViewProps<E = unknown> {
 /**
  * C25 的畫面（沒有 hook，給定幾何就是純輸出；RankedBars 量寬後交給它）。結構：
  * div.ranked-bars > div.ranked-bars-main（量寬）> svg.chart-ranked-bars（aria-hidden）；pareto 有累計文字時另有 svg.chart-ranked-extra（aria-hidden）。
- * 每列：整列寬的透明熱區（在最底層，只有 onBarClick 時輸出）→ 標籤 → 柱（data-testid）→ 標值；每段一條零線；段間一條分隔線。
+ * 每列：整列寬的透明熱區（在最底層，只有 onBarClick 時輸出）→ 標籤 → 柱（data-testid）→ 標值；每段一條零線；separator 時段間一條分隔線。
  */
-export function RankedBarsView<E = unknown>({ geometry, testIdPrefix, onBarClick, hideExtraOnNarrow = false, separator = true, measureRef }: RankedBarsViewProps<E>) {
+export function RankedBarsView<E = unknown>({ geometry, testIdPrefix, onBarClick, hideExtraOnNarrow = false, separator = false, measureRef }: RankedBarsViewProps<E>) {
   const { width, height } = geometry;
   const testIdOf = (row: RankedBarRow<E>) => row.testId ?? (testIdPrefix ? `${testIdPrefix}${row.key}` : undefined);
   const clickOf = (row: RankedBarRow<E>) => onBarClick ? () => onBarClick(row.evidence, row) : undefined;

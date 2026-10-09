@@ -2835,12 +2835,15 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
    svg 寬 100%、高＝列數 × 列高（元件給 height 屬性），固定高由外框 .chart-frame.sm 負責。字 12px、tabular；文字不接指標事件，點擊落在柱或整列的透明熱區。 */
 .ranked-bars { display: flex; align-items: flex-start; width: 100%; min-width: 0; }
 .ranked-bars-main { flex: 1 1 0; min-width: 0; }
-.chart-ranked-bars { display: block; width: 100%; font-family: var(--font-sans); }
+.chart-ranked-bars { display: block; width: 100%; overflow: visible; font-family: var(--font-sans); }
 .chart-ranked-extra { display: block; flex: none; font-family: var(--font-sans); }
 .chart-ranked-bars text, .chart-ranked-extra text { font-size: var(--text-12); fill: var(--text-secondary); font-variant-numeric: tabular-nums; pointer-events: none; }
 .chart-ranked-bars .ranked-value.is-unfavorable { fill: var(--unfavorable); font-weight: var(--weight-semibold); }
 .chart-ranked-bars .ranked-more { fill: var(--text-tertiary); }
 .chart-ranked-bars .ranked-hit, .chart-ranked-bars .ranked-bar.is-clickable { cursor: pointer; }
+/* 零線與段間分隔線只是記號、不接指標事件：零線畫在柱之後，否則 1px 的柱（非零值的最短柱）中心會被零線蓋住（點不到柱），整列熱區上也會留一條點了沒反應的 1px 縫。
+   pareto 的零線在主圖 svg 的右緣（累計欄是另一個 svg），svg 預設 overflow: hidden 會切掉半條；主圖改 overflow: visible，零線與設計稿一樣完整（外框 .chart-frame 仍 overflow: hidden）。 */
+.chart-ranked-bars line { pointer-events: none; }
 /* D-V4-39＝A：≤ 767px 不畫右側累計（累計與累計佔比只留在資料表）；隱藏但掛載，主圖的量寬容器隨之變寬、柱變長。 */
 @media (max-width: 767px) {
   .chart-ranked-extra.is-narrow-hidden { display: none; }
