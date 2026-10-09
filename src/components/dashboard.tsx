@@ -83,15 +83,25 @@ const VALIDATION_HASH = "#validation";
 
 export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [panel, showPanel] = useState<Panel>("overview");
+  // 「計算與來源」抽屜的選取（V4-3c 起宣告在切頁之前：切頁落地時要關掉它）。
+  const [evidence, setEvidenceState] = useState<EvidenceSelection | null>(null);
+  const [evidenceSource, setEvidenceSource] = useState<(Pick<Active, "dataset" | "filenames" | "mappings"> & { dataset_hash?: string }) | null>(null);
   // V4-3c：有資料時切到隨頁載入的頁面，chunk 還沒載入（還沒預先載入）就先載入再切，導覽標示與頁面內容在同一次更新裡換（不先閃一頁空白）；
-  // 已載入時照舊同步切頁（不是 transition）。連續切頁時只有最後一次生效。沒有資料時頁面內容不渲染，不必等。
+  // 已載入時照舊同步切頁（不是 transition）。連續切頁時只有最後一次生效。沒有資料時頁面內容不渲染，不必等；immediate（開匯入精靈）也不等。
+  // 等待期間舊頁仍可操作（v3 按下就切頁，不會有這段時間）：pendingPanel 記著等待中的目標頁（加入待辦據此不重複新增）；
+  // 切頁落地時一併關掉這段時間打開的「計算與來源」抽屜（v3 切頁時抽屜一定是關的），焦點照舊交給切頁後的 main。
   const panelRequest = useRef(0);
+  const pendingPanel = useRef<Panel | null>(null);
   const hasData = useRef(false);
-  const setPanel = useCallback((next: Panel) => {
+  const setPanel = useCallback((next: Panel, immediate = false) => {
     const request = ++panelRequest.current;
-    const pending = hasData.current ? preparePanel(next) : null;
-    if (!pending) { showPanel(next); return; }
-    void pending.then(() => { if (request === panelRequest.current) showPanel(next); });
+    const pending = hasData.current && !immediate ? preparePanel(next) : null;
+    if (!pending) { pendingPanel.current = null; showPanel(next); return; }
+    pendingPanel.current = next;
+    void pending.then(() => {
+      if (request !== panelRequest.current) return;
+      pendingPanel.current = null; setEvidenceSource(null); setEvidenceState(null); showPanel(next);
+    });
   }, []);
   // D10＝A：側欄預設不顯示「開發者驗證」；掛載時或 hashchange 讀到 #validation 才顯示並切過去。
   // 顯示後維持到重新整理（切到其他頁時不消失）；離開驗證頁時清掉 hash（replaceState，不觸發 hashchange），重新整理即回到一般首頁。
@@ -167,8 +177,6 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty, showImport]);
-  const [evidence, setEvidenceState] = useState<EvidenceSelection | null>(null);
-  const [evidenceSource, setEvidenceSource] = useState<(Pick<Active, "dataset" | "filenames" | "mappings"> & { dataset_hash?: string }) | null>(null);
   function setEvidence(selection: EvidenceSelection | null) { setEvidenceSource(null); setEvidenceState(selection); if (selection) track("evidence_opened"); }
   function actionEvidence(selection: EvidenceSelection, context: ActionContext) {
     const historical = validateDataset(context.source_input).dataset;
@@ -280,7 +288,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   function startImport() {
     requestId.current++; controller.current?.abort(); setEvidence(null); setError(""); setFilterError("");
     setStatus(active ? (active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready") : "empty");
-    setPanel("data"); setShowImport(true);
+    // V4-3c：匯入精靈在首載裡，匯入中資料來源頁的內容是 hidden，不必等 chunk：立刻切頁（取消等待中的切頁），精靈與 v3 一樣按下就出現。
+    setPanel("data", true); setShowImport(true);
   }
   function cancelImport() {
     requestId.current++; controller.current?.abort(); setShowImport(false); setError("");
@@ -405,7 +414,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     whatsNew.onRestore(workspace.restored_schema_version);
   }
   function draftFromDiagnostic(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) {
-    if (!active) return;
+    // V4-3c：切到待辦還在等 chunk 時，舊頁的「加入待辦」仍按得到；這段時間再按不重複新增（v3 第一次按下就切頁，按鈕隨即消失）。
+    if (!active || pendingPanel.current === "actions") return;
     // R5：待辦卡的「問題／具體動作」預設用 R2 的規則文案（與健檢列同一句），不用 domain 的舊標題。
     const rule = ruleCopy(active.snapshot, diagnostic, demoAlias(active.snapshot.report.dataset_id));
     setActionWorkspace(addActionDraft(actionWorkspace, active, crypto.randomUUID(), diagnostic.id, { problem: rule.headline, action: rule.nextStep }));
@@ -476,7 +486,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     setEvidenceSource({ dataset, filenames: review.filenames, mappings: review.source_mappings, dataset_hash: review.dataset_hash }); setEvidenceState(selection); track("evidence_opened");
   }
   async function draftFromReview(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number], review: ReviewSession) {
-    if (!active) return;
+    if (!active || pendingPanel.current === "actions") return;
     const ticket = requestId.current;
     try {
       const snapshot = await rebuildReviewSnapshot(review), dataset = validateDataset(review.source_input).dataset;

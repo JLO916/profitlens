@@ -10,6 +10,8 @@
 // 用法（先用正式站設定啟動 production 伺服器，見 verification/revamp-v3/V3-0-baseline.md）：
 //   node --no-warnings scripts/lighthouse-pages.mjs [--base http://127.0.0.1:3100] [--out verification/revamp-v3/V3-0]
 // 輸出：<out>/lighthouse/flow-desktop-1440.html、flow-mobile-390.html（只留 HTML），分數表合併寫入 <out>/metrics.json 的 lighthouse 鍵。
+// V4-3c（D-V4-42＝A）：另記首頁載入之後才下載的程式 chunk（隨頁載入的面板、預先載入）與各 timespan 的時間窗（頁內 performance.now()），
+//   寫進 lighthouse.lazyChunks；insideTimespans 列出落在任何 timespan 內的 chunk——預先載入應全部落在 timespan 之外（切頁時 chunk 已載入），不為空就要檢查。
 import { existsSync, readdirSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir, loadavg } from "node:os";
@@ -91,6 +93,7 @@ function summarize(step) {
 const loadBefore = loadavg().map(value => Math.round(value * 100) / 100);
 const chrome = await chromeLauncher.launch({ chromeFlags: ["--headless=new", "--no-first-run", "--no-default-browser-check", "--disable-extensions"] });
 const results = {};
+const lazyChunks = {};
 // timespan 模式不支援 accessibility 類別，所以 timespan 只跑 performance；navigation 與 snapshot 跑兩類。
 const both = ["performance", "accessibility"];
 const perfOnly = { onlyCategories: ["performance"] };
@@ -102,27 +105,41 @@ try {
     const page = await context.newPage();
     const flow = await startFlow(page, { name: `EC ProfitLens v2 基準 ${size.name}`, config: size.config, flags: { ...size.flags, onlyCategories: both } });
     await flow.navigate(`${base}/`, { name: "首頁（空狀態，navigation）" });
+    // V4-3c：timespan 的時間窗＝startTimespan 之前到 endTimespan 之前（頁內 performance.now()；開頭略寬，寧可多算）。
+    const pageNow = () => page.evaluate(() => performance.now());
+    const windows = [];
+    let windowStart = await pageNow();
     await flow.startTimespan({ name: "載入示範資料（timespan）", ...perfOnly });
     await clickButton(page, labels.shell.buttons.loadDemo);
     await page.waitForSelector("[data-testid='local-save-prompt']", { visible: true, timeout: 30_000 });
     await clickButton(page, labels.storage.autoSave.decline, "[data-testid='local-save-prompt']");
     await page.waitForSelector("[data-testid='top-three']", { visible: true, timeout: 30_000 });
+    windows.push({ step: "載入示範資料", from: windowStart, to: await pageNow() });
     await flow.endTimespan();
     await flow.snapshot({ name: `${labels.shell.nav.overview.headline}（snapshot）` });
     for (const target of pages) {
       const label = labels.shell.nav[target.id].headline;
+      windowStart = await pageNow();
       await flow.startTimespan({ name: `切到${label}（timespan）`, ...perfOnly });
       await navigateTo(page, label);
       await page.waitForSelector(target.anchor, { visible: true, timeout: 30_000 });
+      windows.push({ step: `切到${label}`, from: windowStart, to: await pageNow() });
       await flow.endTimespan();
       await page.evaluate(() => window.scrollTo(0, 0));
       await flow.snapshot({ name: `${label}（snapshot）` });
     }
+    // 首頁載入之後（第一個 timespan 開始之後）才下載的程式 chunk，與落在 timespan 內的那些。
+    const firstWindow = windows[0].from;
+    const chunks = (await page.evaluate(() => performance.getEntriesByType("resource").filter(entry => entry.name.includes("/_next/static/chunks/")).map(entry => ({ file: entry.name.replace(/^.*\/_next\/static\/chunks\//, ""), start: entry.startTime, end: entry.responseEnd })))).filter(chunk => chunk.start >= firstWindow);
+    const round1 = value => Math.round(value * 10) / 10;
+    const insideTimespans = chunks.flatMap(chunk => windows.filter(window => chunk.end >= window.from && chunk.start <= window.to).map(window => ({ file: chunk.file, step: window.step })));
+    lazyChunks[size.name] = { windows: windows.map(window => ({ step: window.step, from: round1(window.from), to: round1(window.to) })), chunks: chunks.map(chunk => ({ file: chunk.file, start: round1(chunk.start), end: round1(chunk.end) })), insideTimespans };
     const result = await flow.createFlowResult();
     await writeFile(join(out, "lighthouse", `flow-${size.name}.html`), await flow.generateReport());
     results[size.name] = result.steps.map(summarize);
     await context.close();
     console.log(size.name, JSON.stringify(results[size.name].map(step => [step.step, step.accessibility, step.performance, step.performanceAudits, step.metrics.tbtMs, step.metrics.cls, step.failedAccessibilityAudits.join(" ")])));
+    console.log(size.name, "lazy chunks", JSON.stringify({ count: lazyChunks[size.name].chunks.length, insideTimespans: lazyChunks[size.name].insideTimespans }));
   }
   await browser.disconnect();
 } finally {
@@ -132,5 +149,5 @@ try {
 const file = join(out, "metrics.json");
 let json = {};
 try { json = JSON.parse(await readFile(file, "utf8")); } catch { json = {}; }
-json.lighthouse = { version: lighthouseVersion, base, generatedAt: new Date().toISOString(), loadAverage: { before: loadBefore, after: loadavg().map(value => Math.round(value * 100) / 100), note: "os.loadavg()（1／5／15 分鐘）；本機負載高時 timespan 的 TBT／INP 會偏高，比較時以同負載重跑為準" }, method: "user-flow：navigate（空狀態首頁）→ timespan（載入示範資料）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot；accessibility 取 snapshot、performance 0–100 只有 navigation 有，timespan 記 TBT／CLS／INP；desktop 用 lighthouse desktopConfig、mobile 用預設（模擬節流）並改成 390×844", ...results };
+json.lighthouse = { version: lighthouseVersion, base, generatedAt: new Date().toISOString(), lazyChunks, loadAverage: { before: loadBefore, after: loadavg().map(value => Math.round(value * 100) / 100), note: "os.loadavg()（1／5／15 分鐘）；本機負載高時 timespan 的 TBT／INP 會偏高，比較時以同負載重跑為準" }, method: "user-flow：navigate（空狀態首頁）→ timespan（載入示範資料）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot；accessibility 取 snapshot、performance 0–100 只有 navigation 有，timespan 記 TBT／CLS／INP；desktop 用 lighthouse desktopConfig、mobile 用預設（模擬節流）並改成 390×844", ...results };
 await writeFile(file, `${JSON.stringify(json, null, 2)}\n`);

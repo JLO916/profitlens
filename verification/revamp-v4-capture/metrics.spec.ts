@@ -12,7 +12,8 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 //   B2 首屏：1440 一句話頂 ≤ 192、KPI 帶底 ≤ 420、三件事首列底 ≤ 561；1280 KPI 帶底 ≤ 420；390 扣廣告後貢獻值頂 ≤ 295。
 //      1280 的一句話頂與三件事首列底 v3 沒有量過，V4-0a 只量不斷言；V4-1 起以 V4-0a 實測（192、583）為門檻斷言（06_BATCHES 護欄表 B2）。
 //   B3 七頁在 390 寬 document.scrollingElement.scrollWidth ≤ 390（頁面不橫向捲動；.chart-frame.waterfall 與 .table-scroll 內部捲動不影響這個值）。
-//   B5 First Load JS gzip ≤ 545,397 bytes（v3.0.0 的 519,426 × 1.05，D-V4-24）；首載 chunk 中 Treemap、Sankey、Funnel、PieChart、RadarChart 字串出現 0 次。
+//   B5 First Load JS gzip ≤ 545,397 bytes（v3.0.0 的 519,426 × 1.05，D-V4-24）；首載 chunk 中 Treemap、Sankey、Funnel、PieChart、RadarChart 字串出現 0 次；
+//      V4-3c 起另驗首載 chunk 不含隨頁載入的面板與匯出程式（SPLIT_SENTINELS 皆為 0），首頁腳本清單寫進 first-load-modules.json。
 // V4-1 起硬斷言（06_BATCHES 護欄表 B1、B9；PRD §2.2）：
 //   B9 七頁（1440、1280、390）載入示範資料後的 DOM 節點數 ≤ V4-0a 基準＋1,500（B9_BASELINE，取自 verification/revamp-v4/V4-0a/metrics.json）。
 //   B1 依護欄表的時程：總覽第一張 .chart-frame 頂在 1440 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）；健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）、
@@ -66,6 +67,11 @@ const B5_GZIP_MAX = 545_397;
 /** 首載 chunk 必須為 0 的符號（PRD §8.2）；另記 v3.0.0 已存在、不斷言的符號。 */
 const FORBIDDEN_SYMBOLS = ["Treemap", "Sankey", "Funnel", "PieChart", "RadarChart"] as const;
 const RECORDED_SYMBOLS = ["ScatterChart", "AreaChart", "Brush", "ComposedChart", "LineChart", "BarChart"] as const;
+/**
+ * V4-3c（D-V4-42＝A，首載瘦身）：拆成隨頁載入的面板與按下時才載入的匯出程式才有的字串（各面板根元素的 testid、SheetJS 的 book_new、pptxgenjs 的 PptxGenJS），
+ * 首載 chunk 必須為 0——任何一個出現，就表示有面板或匯出程式又被靜態匯入首載（tests/lazy-panels.test.tsx 另從原始碼的模組圖檢查）。
+ */
+const SPLIT_SENTINELS = ['"diagnosis-panel"', '"data-status-line"', '"product-table"', '"meeting-outputs"', '"actions-workbench"', '"ai-panel"', "book_new", "PptxGenJS"] as const;
 
 /** 七頁切過去後要等的區塊（與 tests/e2e、Lighthouse 腳本相同的 testid）。 */
 const ANCHORS: Record<SevenPage, string> = {
@@ -275,17 +281,19 @@ test("B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首�
   for (const { src, nomodule } of sources) {
     const body = await (await request.get(src)).body();
     const text = body.toString("utf8");
-    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS].map(symbol => [symbol, count(text, symbol)])) });
+    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...SPLIT_SENTINELS].map(symbol => [symbol, count(text, symbol)])) });
   }
   const sum = (key: "bytes" | "gzip", list = files) => list.reduce((total, file) => total + file[key], 0);
   const modern = files.filter(file => !file.nomodule);
   const symbolTotals = (list: typeof files, symbols: readonly string[]) => Object.fromEntries(symbols.map(symbol => [symbol, list.reduce((total, file) => total + file.symbols[symbol], 0)]));
   const forbidden = symbolTotals(modern, FORBIDDEN_SYMBOLS);
   const recorded = symbolTotals(modern, RECORDED_SYMBOLS);
+  const split = symbolTotals(modern, SPLIT_SENTINELS);
   const method = "GET / 的 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重）；主數字排除 nomodule（polyfills，現代瀏覽器不下載），allScripts 為含 nomodule 的總和；bytes＝未壓縮大小，gzip＝Node zlib gzipSync 預設等級；符號＝檔案內容中該字串出現的次數（子字串計數，含 displayName 與型別名稱）";
-  await record(["firstLoadJs"], { scripts: modern.length, bytes: sum("bytes", modern), kib: round(sum("bytes", modern) / 1024), gzipBytes: sum("gzip", modern), gzipKiB: round(sum("gzip", modern) / 1024), gzipMax: B5_GZIP_MAX, forbiddenSymbols: forbidden, recordedSymbols: recorded, nomoduleExcluded: files.filter(file => file.nomodule).map(file => ({ src: file.src, bytes: file.bytes, gzip: file.gzip })), allScripts: { scripts: files.length, bytes: sum("bytes"), gzipBytes: sum("gzip") }, files: files.map(({ src, nomodule, bytes, gzip }) => ({ src, nomodule, bytes, gzip })), method });
+  await record(["firstLoadJs"], { scripts: modern.length, bytes: sum("bytes", modern), kib: round(sum("bytes", modern) / 1024), gzipBytes: sum("gzip", modern), gzipKiB: round(sum("gzip", modern) / 1024), gzipMax: B5_GZIP_MAX, forbiddenSymbols: forbidden, recordedSymbols: recorded, splitSentinels: split, nomoduleExcluded: files.filter(file => file.nomodule).map(file => ({ src: file.src, bytes: file.bytes, gzip: file.gzip })), allScripts: { scripts: files.length, bytes: sum("bytes"), gzipBytes: sum("gzip") }, files: files.map(({ src, nomodule, bytes, gzip }) => ({ src, nomodule, bytes, gzip })), method });
   await mkdir(dirname(MODULES_OUT), { recursive: true });
-  await writeFile(MODULES_OUT, `${JSON.stringify({ batch, generatedAt: new Date().toISOString(), note: "首頁 HTML 列出的每個 chunk 檔名與 gzip 大小（供人工比對；檔名帶雜湊，每次 build 都變，不逐一斷言）。B5 門檻只看 modern 的 gzip 總和。", method, totals: { modernScripts: modern.length, modernGzipBytes: sum("gzip", modern), gzipMax: B5_GZIP_MAX, allScripts: files.length, allGzipBytes: sum("gzip") }, forbiddenSymbols: forbidden, recordedSymbols: recorded, chunks: files.map(file => ({ file: file.src.split("/").pop(), ...file })) }, null, 2)}\n`);
+  await writeFile(MODULES_OUT, `${JSON.stringify({ batch, generatedAt: new Date().toISOString(), note: "首頁 HTML 列出的每個 chunk 檔名與 gzip 大小（供人工比對；檔名帶雜湊，每次 build 都變，不逐一斷言）。B5 門檻只看 modern 的 gzip 總和。", method, totals: { modernScripts: modern.length, modernGzipBytes: sum("gzip", modern), gzipMax: B5_GZIP_MAX, allScripts: files.length, allGzipBytes: sum("gzip") }, forbiddenSymbols: forbidden, recordedSymbols: recorded, splitSentinels: split, chunks: files.map(file => ({ file: file.src.split("/").pop(), ...file })) }, null, 2)}\n`);
   expect.soft(sum("gzip", modern), `B5 First Load JS gzip ≤ ${B5_GZIP_MAX}`).toBeLessThanOrEqual(B5_GZIP_MAX);
   for (const symbol of FORBIDDEN_SYMBOLS) expect.soft(forbidden[symbol], `B5 首載 chunk 的 ${symbol} 必須為 0`).toBe(0);
+  for (const symbol of SPLIT_SENTINELS) expect.soft(split[symbol], `V4-3c 首載 chunk 不得含隨頁載入的面板或匯出程式（${symbol} 必須為 0）`).toBe(0);
 });

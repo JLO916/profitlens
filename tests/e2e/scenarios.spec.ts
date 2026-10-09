@@ -7,7 +7,7 @@ import { AUTO_SAVE_DELAY_MS } from "../../src/application/auto-save";
 import { MINUS, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatMetric, formatPeriodL1, formatSignedDelta } from "../../src/application/presentation";
 import { closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { acceptAssumptions, consentBox, decisionExportLabel, downloadDecision, downloadScenario, expectAcknowledged, expectConsentPending, modeButton, openScenarioExport, openTemplateHelp } from "./scenario-helpers-v3";
-import { isPageCodeChunk } from "./lazy-chunk-helpers-v43c";
+import { expectOnlyBuiltChunks, guardZeroNetwork } from "./lazy-chunk-helpers-v43c";
 
 const dw = labels.scenarios.decision, aw = labels.actions.workbench, msw = labels.scenarios.workbench;
 const cmAfter = labels.metrics.contribution_after_marketing.headline;
@@ -732,7 +732,7 @@ test("不可信方案與行動文字不執行，CSV 防公式而 Markdown 不產
   expect(markdown).toContain("&#10;");
 });
 
-test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用", async ({ page, context, browserAudit }) => {
+test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新頁不共用", async ({ page, context, browserAudit }, testInfo) => {
   await loadDataset(page, "golden", ready(), true);
   // R6（D7＝A）：載入資料後出現非 modal 的首次保存提示；按「先不要」維持手動保存，之後任何變更都不得建立本機資料庫。
   const savePrompt = page.getByTestId("local-save-prompt");
@@ -744,15 +744,10 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   await expect(page.getByTestId("baseline-contribution_after_marketing")).toHaveText(amountL1("270.00"));
   const before = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   expect(before.databases, "按「先不要」後 IndexedDB 不得有任何資料庫").toEqual([]);
-  const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
-  // V4-3c（D-V4-42＝A）：待辦頁與決策匯出的程式第一次用到時才向同一個網站載入（isPageCodeChunk）；只放行這一種，其餘照舊攔下並記錄。
-  const origin = new URL(page.url()).origin;
-  await page.route("**/*", async route => {
-    const request = route.request();
-    if (isPageCodeChunk(request, origin)) { await route.continue(); return; }
-    requests.push({ method: request.method(), resourceType: request.resourceType(), hasBody: request.postDataBuffer() !== null });
-    await route.abort("blockedbyclient");
-  });
+  // V4-3c（D-V4-42＝A；放寬待 D-V4-43 拍板）：待辦頁與決策匯出的程式第一次用到（或資料就緒後的預先載入）時向同一個網站載入；
+  // 只放行這一種並逐筆記錄（必須是這次建置的程式檔、每檔最多一次、總數有上限），其餘照舊攔下。
+  const network = await guardZeroNetwork(page);
+  const requests = network.blocked;
   const card = await addScenario(page);
   await fillScenario(card, ["0", "0", "-10", "0", "0"]);
   await calculate(card, amountL1("284.00"), deltaL1("+14.00"));
@@ -763,6 +758,7 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   const after = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   expect(after).toEqual(before);
   expect(requests, "計算、行動與本機下載不得呼叫模型或任何 HTTP API").toEqual([]);
+  expectOnlyBuiltChunks(network.chunks, testInfo);
   await page.unroute("**/*");
   const other = await context.newPage();
   await other.goto("/");

@@ -1,19 +1,20 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import ts from "typescript";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { validateDataset } from "@/domain/validation";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import * as meetingPage from "@/components/meeting-page";
 import * as meetingEntry from "@/components/meeting-entry";
-import { createChunkLoader } from "@/components/lazy-panels";
+import { createChunkLoader, recoveringPanel } from "@/components/lazy-panels";
 import { fixture } from "./helpers/fixtures";
 
 // V4-3c（D-V4-42＝A，首載瘦身）：lazy-panels.tsx 的同名包裝元件、dashboard 只改 import 行、預先載入（資料就緒後、只有一次、一個 chunk 一個閒置回呼）。
 
 const PANELS = ["Diagnosis", "DataWorkspace", "AiPanel", "MeetingPage", "ProductComparisonPanel", "ActionsWorkbench"] as const;
-/** 預先載入的順序（lazy-panels.tsx 的 PRELOAD_ORDER）與各模組的同名元件。 */
+/** 隨頁載入的面板模組（lazy-panels.tsx 的 PRELOAD_CHUNKS 前五項）與各模組的同名元件。 */
 const CHUNKS = [
   { path: "@/components/workspace-panels", exports: ["Diagnosis", "DataWorkspace"] },
   { path: "@/components/ai-panel", exports: ["AiPanel"] },
@@ -21,6 +22,9 @@ const CHUNKS = [
   { path: "@/components/meeting-page", exports: ["MeetingPage"] },
   { path: "@/components/actions-workbench", exports: ["ActionsWorkbench"] },
 ] as const;
+/** 預先載入也帶上決策匯出程式（試算頁、待辦頁與下載選單的決策工作稿；離線時與 v3 一樣能匯出）。 */
+const DECISION_EXPORT = { path: "@/application/workspace-decision-export", exports: ["exportWorkspaceDecision"] } as const;
+const PRELOADED = [...CHUNKS, DECISION_EXPORT] as const;
 /** 首載不得靜態匯入的模組：頁面面板與匯出程式（V4-3c 範圍第 1、2 項）。 */
 const SPLIT_FROM_DASHBOARD = ["./workspace-panels", "./meeting-page", "./product-comparison-panel", "./actions-workbench", "./ai-panel", "@/application/excel-export", "@/application/pptx-export", "@/application/workspace-decision-export"];
 
@@ -30,10 +34,10 @@ function staticSpecifiers(text: string): string[] {
   return text.split("\n").filter(line => /^(import|export)\s.*\sfrom\s+"/.test(line) && !/^(import|export)\s+type\s/.test(line)).map(line => /\sfrom\s+"([^"]+)"/.exec(line)![1]);
 }
 
-/** 用 vi.doMock 換掉五個面板模組：被 import() 時記下模組路徑；gate 讓測試控制第一個 chunk 什麼時候載入完。 */
+/** 用 vi.doMock 換掉五個面板模組與決策匯出程式：被 import() 時記下模組路徑；gate 讓測試控制第一個 chunk 什麼時候載入完。 */
 function mockChunks(options: { gate?: Promise<void>; failing?: string } = {}) {
   const calls: string[] = [];
-  for (const chunk of CHUNKS) {
+  for (const chunk of PRELOADED) {
     vi.doMock(chunk.path, async () => {
       calls.push(chunk.path);
       if (chunk.path === options.failing) throw new Error(`CHUNK_LOAD_FAILED ${chunk.path}`);
@@ -45,8 +49,44 @@ function mockChunks(options: { gate?: Promise<void>; failing?: string } = {}) {
 }
 const freshLazyPanels = async () => { vi.resetModules(); return import("@/components/lazy-panels"); };
 
+/**
+ * 首載的模組圖（B-F2）：從 src/app/page.tsx 與 layout.tsx 沿「靜態值匯入與再匯出」走訪（`import type`、只匯入型別的具名匯入、`export type` 不算；
+ * import() 不算——那就是隨頁載入）。只匯入型別卻沒寫 type 的匯入也算進來（寧可多算），所以這裡不可達，打包後的首載就一定沒有。
+ */
+function firstLoadGraph(entries: readonly string[]) {
+  const files = new Set<string>(), packages = new Set<string>();
+  const queue = entries.map(entry => resolve(entry));
+  const resolveSpecifier = (from: string, specifier: string): string | null => {
+    const base = specifier.startsWith("@/") ? resolve("src", specifier.slice(2)) : specifier.startsWith(".") ? resolve(dirname(from), specifier) : null;
+    if (!base) { packages.add(specifier.startsWith("@") ? specifier.split("/").slice(0, 2).join("/") : specifier.split("/")[0]); return null; }
+    for (const candidate of [base, `${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`]) if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+    throw new Error(`解析不到 ${specifier}（${relative(".", from)}）`);
+  };
+  while (queue.length) {
+    const file = queue.shift()!;
+    if (files.has(file)) continue;
+    files.add(file);
+    if (!/\.tsx?$/.test(file)) continue;
+    const source = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, false, file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+    for (const statement of source.statements) {
+      let specifier: string | null = null;
+      if (ts.isImportDeclaration(statement)) {
+        const clause = statement.importClause;
+        const typeOnlyNames = !!clause && !clause.name && !!clause.namedBindings && ts.isNamedImports(clause.namedBindings) && clause.namedBindings.elements.length > 0 && clause.namedBindings.elements.every(element => element.isTypeOnly);
+        if (!clause?.isTypeOnly && !typeOnlyNames) specifier = (statement.moduleSpecifier as ts.StringLiteral).text;
+      } else if (ts.isExportDeclaration(statement) && statement.moduleSpecifier) {
+        const typeOnlyNames = !!statement.exportClause && ts.isNamedExports(statement.exportClause) && statement.exportClause.elements.length > 0 && statement.exportClause.elements.every(element => element.isTypeOnly);
+        if (!statement.isTypeOnly && !typeOnlyNames) specifier = (statement.moduleSpecifier as ts.StringLiteral).text;
+      }
+      const target = specifier === null ? null : resolveSpecifier(file, specifier);
+      if (target) queue.push(target);
+    }
+  }
+  return { files: new Set([...files].map(file => relative(".", file))), packages };
+}
+
 afterEach(() => {
-  for (const chunk of CHUNKS) vi.doUnmock(chunk.path);
+  for (const chunk of PRELOADED) vi.doUnmock(chunk.path);
   vi.resetModules();
   vi.useRealTimers();
 });
@@ -106,6 +146,17 @@ describe("V4-3c 同名包裝元件與 dashboard 的匯入", () => {
       expect(staticSpecifiers(source(file)), file).toContain(allowed);
     }
   });
+
+  it("首載模組圖（page.tsx、layout.tsx 起的靜態值匯入，不限單行、含間接匯入）走不到隨頁載入的面板、匯出程式與只有它們用到的模組，也走不到 xlsx、pptxgenjs", () => {
+    const graph = firstLoadGraph(["src/app/page.tsx", "src/app/layout.tsx"]);
+    for (const file of ["src/components/dashboard.tsx", "src/components/lazy-panels.tsx", "src/components/meeting-entry.tsx", "src/components/overview.tsx", "src/components/multi-scenario-workbench.tsx"]) expect(graph.files.has(file), `${file} 應在首載`).toBe(true);
+    const split = ["src/components/workspace-panels.tsx", "src/components/ai-panel.tsx", "src/components/product-comparison-panel.tsx", "src/components/meeting-page.tsx", "src/components/actions-workbench.tsx", "src/components/diagnosis-list.tsx", "src/components/manager-summary.tsx", "src/components/channel-table.tsx", "src/application/excel-export.ts", "src/application/pptx-export.ts", "src/application/workspace-decision-export.ts"];
+    for (const file of split) {
+      expect(existsSync(file), file).toBe(true);
+      expect(graph.files.has(file), `${file} 不得在首載`).toBe(false);
+    }
+    for (const name of ["xlsx", "pptxgenjs"]) expect(graph.packages.has(name), `${name} 不得在首載`).toBe(false);
+  });
 });
 
 describe("V4-3c 載入與預先載入", () => {
@@ -121,22 +172,23 @@ describe("V4-3c 載入與預先載入", () => {
     expect(renderToStaticMarkup(createElement(lazyPanels.Diagnosis, props))).toBe(direct);
   });
 
-  it("preloadPanels 只跑一次：依序一次載入一個 chunk（前一個載入完才開始下一個），重複呼叫回傳同一個 promise", async () => {
+  it("preloadPanels 只跑一次：各頁的 chunk 與決策匯出程式同時開始載入（不必等前一個），全部載入完才 resolve；重複呼叫回傳同一個 promise、不再 import()", async () => {
     let release!: () => void;
     const gate = new Promise<void>(done => { release = done; });
     const calls = mockChunks({ gate });
     const lazyPanels = await freshLazyPanels();
     const first = lazyPanels.preloadPanels();
     expect(lazyPanels.preloadPanels()).toBe(first);
-    await vi.waitFor(() => expect(calls).toEqual([CHUNKS[0].path]));
+    let settled = false;
+    void first.then(() => { settled = true; });
+    await vi.waitFor(() => expect([...calls].sort()).toEqual(PRELOADED.map(chunk => chunk.path).sort()));
     await new Promise(done => setTimeout(done, 30));
-    expect(calls, "第一個 chunk 還沒載入完，不開始下一個").toEqual([CHUNKS[0].path]);
+    expect(settled, "第一個 chunk 還沒載入完，預先載入還沒結束").toBe(false);
     release();
     await first;
-    expect(calls).toEqual(CHUNKS.map(chunk => chunk.path));
     await lazyPanels.preloadPanels();
     expect(lazyPanels.preloadPanels()).toBe(first);
-    expect(calls).toHaveLength(CHUNKS.length);
+    expect(calls).toHaveLength(PRELOADED.length);
   });
 
   it("一個 chunk 載入失敗：預先載入照樣完成其他 chunk、promise 不 reject、沒有未處理的 rejection", async () => {
@@ -147,7 +199,7 @@ describe("V4-3c 載入與預先載入", () => {
       const calls = mockChunks({ failing: "@/components/ai-panel" });
       const lazyPanels = await freshLazyPanels();
       await expect(lazyPanels.preloadPanels()).resolves.toBeUndefined();
-      expect(calls).toEqual(CHUNKS.map(chunk => chunk.path));
+      expect([...calls].sort()).toEqual(PRELOADED.map(chunk => chunk.path).sort());
       await new Promise(done => setTimeout(done, 10));
       expect(unhandled).toEqual([]);
     } finally { process.off("unhandledRejection", listener); }
@@ -183,12 +235,12 @@ describe("V4-3c 載入與預先載入", () => {
     lazyPanels.schedulePanelPreload();
     await vi.advanceTimersByTimeAsync(lazyPanels.PANEL_PRELOAD_DELAY_MS - 1);
     expect(calls).toEqual([]);
-    await vi.waitFor(() => expect(calls).toEqual(CHUNKS.map(chunk => chunk.path)));
+    await vi.waitFor(() => expect([...calls].sort()).toEqual(PRELOADED.map(chunk => chunk.path).sort()));
     await lazyPanels.preloadPanels();
     const again = lazyPanels.schedulePanelPreload();
     await vi.advanceTimersByTimeAsync(lazyPanels.PANEL_PRELOAD_DELAY_MS * 5);
     again();
-    expect(calls).toHaveLength(CHUNKS.length);
+    expect(calls).toHaveLength(PRELOADED.length);
   });
 
   it("preparePanel：不需要 chunk 或 chunk 已載入時回傳 null（同步切頁）；否則載入該頁的 chunk（健檢連同 AI 解釋），失敗也 resolve", async () => {
@@ -205,15 +257,68 @@ describe("V4-3c 載入與預先載入", () => {
     expect(lazyPanels.preparePanel("meeting"), "失敗不快取：下次切頁再載入").toBeInstanceOf(Promise);
   });
 
-  it("dashboard 的 setPanel：有資料且 chunk 未載入時先 preparePanel 再切頁（同一次更新換導覽標示與內容）；連續切頁只有最後一次生效", () => {
+  it("preparePanel 等這一頁需要的每個 chunk 都有結果才 resolve：AI 解釋先失敗時，仍等健檢的 chunk 載入完（不提早切頁閃空白）", async () => {
+    let release!: () => void;
+    const gate = new Promise<void>(done => { release = done; });
+    mockChunks({ gate, failing: "@/components/ai-panel" });
+    const lazyPanels = await freshLazyPanels();
+    let resolved = false;
+    const pending = lazyPanels.preparePanel("diagnosis")!;
+    void pending.then(() => { resolved = true; });
+    await new Promise(done => setTimeout(done, 30));
+    expect(resolved, "AI 解釋已失敗、健檢的 chunk 還在載入：不切頁").toBe(false);
+    release();
+    await expect(pending).resolves.toBeUndefined();
+    expect(resolved).toBe(true);
+    expect(lazyPanels.preparePanel("data"), "健檢與資料來源的 chunk 已載入").toBeNull();
+  });
+
+  it("載入器的訂閱：載入成功時通知（失敗不通知），取消訂閱後不再通知", async () => {
+    let attempts = 0;
+    const loader = createChunkLoader(async () => { attempts++; if (attempts === 1) throw new Error("CHUNK_LOAD_FAILED"); return { value: attempts }; });
+    const listener = vi.fn(), other = vi.fn();
+    const unsubscribe = loader.subscribe(listener);
+    const unsubscribeOther = loader.subscribe(other);
+    await expect(loader.load()).rejects.toThrow("CHUNK_LOAD_FAILED");
+    expect(listener).not.toHaveBeenCalled();
+    unsubscribeOther();
+    await loader.load();
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(other).not.toHaveBeenCalled();
+    unsubscribe();
+  });
+
+  it("載入失敗的實例（recoveringPanel）先渲染空白；同一個 chunk 之後載入成功（再按一次這一頁、或預先載入）就渲染真正的面板，props 照傳", async () => {
+    let attempts = 0;
+    const Panel = ({ label }: { label: string }) => createElement("p", { "data-testid": "recovered" }, label);
+    const loader = createChunkLoader(async () => { attempts++; if (attempts === 1) throw new Error("CHUNK_LOAD_FAILED"); return { Panel }; });
+    await expect(loader.load()).rejects.toThrow("CHUNK_LOAD_FAILED");
+    const Recovering = recoveringPanel(loader, module => module.Panel);
+    expect(renderToStaticMarkup(createElement(Recovering, { label: "x" }))).toBe("");
+    const notified = vi.fn();
+    loader.subscribe(notified);
+    await loader.load();
+    // useSyncExternalStore 訂閱 loader.subscribe：成功時通知，已掛載的實例就地重新渲染成真正的面板（不必離開再回到這一頁）。
+    expect(notified).toHaveBeenCalledTimes(1);
+    expect(renderToStaticMarkup(createElement(Recovering, { label: "x" }))).toBe('<p data-testid="recovered">x</p>');
+    expect(readFileSync(resolve("src/components/lazy-panels.tsx"), "utf8")).toContain("useSyncExternalStore(loader.subscribe, loader.current, loader.current)");
+  });
+
+  it("dashboard 的 setPanel：有資料且 chunk 未載入時先 preparePanel 再切頁（同一次更新換導覽標示與內容）；連續切頁只有最後一次生效；落地時關掉等待中打開的抽屜", () => {
     const dashboard = source("src/components/dashboard.tsx");
     expect(dashboard).toContain('const [panel, showPanel] = useState<Panel>("overview");');
-    expect(dashboard).toContain("const pending = hasData.current ? preparePanel(next) : null;");
-    expect(dashboard).toContain("if (!pending) { showPanel(next); return; }");
-    expect(dashboard).toContain("void pending.then(() => { if (request === panelRequest.current) showPanel(next); });");
+    expect(dashboard).toContain("const pending = hasData.current && !immediate ? preparePanel(next) : null;");
+    expect(dashboard).toContain("if (!pending) { pendingPanel.current = null; showPanel(next); return; }");
+    expect(dashboard).toContain("if (request !== panelRequest.current) return;");
+    expect(dashboard).toContain("pendingPanel.current = null; setEvidenceSource(null); setEvidenceState(null); showPanel(next);");
     expect(dashboard).not.toMatch(/startTransition/);
     // 其餘地方一律經過 setPanel，不直接呼叫 showPanel。
     expect(dashboard.match(/showPanel\(/g)).toHaveLength(2);
+    // 開匯入精靈不等 chunk（精靈在首載；匯入中資料來源頁的內容是 hidden）。
+    expect(dashboard).toContain('setPanel("data", true); setShowImport(true);');
+    expect(dashboard.match(/setPanel\("[a-z]+", true\)/g)).toHaveLength(1);
+    // 切到待辦還在等 chunk 時，加入待辦不重複新增（總覽／健檢與會議頁兩條路徑）。
+    expect(dashboard.match(/if \(!active \|\| pendingPanel\.current === "actions"\) return;/g)).toHaveLength(2);
   });
 
   it("dashboard 在資料第一次就緒（ready／partial）後才排程，effect 的 cleanup 會取消還沒開始的排程", () => {

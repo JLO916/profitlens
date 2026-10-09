@@ -6,7 +6,7 @@ import { BREAKEVEN_MER_VERSION } from "../../src/application/breakeven-mer";
 import { issueMessageParts, issueTemplate } from "../../src/application/import";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
 import { TREND_TABLE_HEADERS, YOY_EMPTY, yoyCells, yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
-import { isPageCodeChunk } from "./lazy-chunk-helpers-v43c";
+import { expectOnlyBuiltChunks, guardZeroNetwork } from "./lazy-chunk-helpers-v43c";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -461,28 +461,28 @@ test("改名欄位與未知欄須分別確認，不能猜測或把忽略內容�
   expect(text).toContain("renamed-sales.csv");
 });
 
-test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行", async ({ page, context, browserAudit }) => {
+test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文字不執行", async ({ page, context, browserAudit }, testInfo) => {
   await openWizard(page);
   const beforeStorage = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
-  const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
-  // V4-3c（D-V4-42＝A）：商品毛利頁的程式第一次切入時才向同一個網站載入（isPageCodeChunk）；只放行這一種，其餘照舊攔下並記錄。
-  const origin = new URL(page.url()).origin;
-  await page.route("**/*", async route => {
-    const request = route.request();
-    if (isPageCodeChunk(request, origin)) { await route.continue(); return; }
-    requests.push({ method: request.method(), resourceType: request.resourceType(), hasBody: request.postDataBuffer() !== null });
-    await route.abort("blockedbyclient");
-  });
+  // V4-3c（D-V4-42＝A；放寬待 D-V4-43 拍板）：套用之後才可能向同一個網站載入頁面程式（預先載入、商品毛利頁）；只放行這一種並逐筆記錄，其餘照舊攔下。
+  // 讀檔到按下套用之前（匯入精靈全程）一個請求都不放行。
+  const network = await guardZeroNetwork(page);
+  const requests = network.blocked;
+  network.setPhase("wizard");
   await selectCsvs(page, alternative);
   await toSettings(page, await readManifest(page, resolve(alternative, "manifest.json")));
+  network.setPhase("commit");
   await commit(page, alternativeAsOf);
   await expect(kpi(page, "contribution_after_marketing")).toHaveText(formatAmountL1("10.00"));
+  network.setPhase("products");
   await navigateTo(page, "products");
   await expect(page.getByTestId("product-table")).toContainText(maliciousCategory);
   await expect(page.locator("img[src='x']")).toHaveCount(0);
   const afterStorage = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   expect(afterStorage).toEqual(beforeStorage);
   expect(requests, "本機匯入與分析不可傳送任何 HTTP 請求").toEqual([]);
+  expect(network.chunks.filter(chunk => chunk.phase === "wizard"), "匯入精靈讀檔期間不載入任何程式 chunk").toEqual([]);
+  expectOnlyBuiltChunks(network.chunks, testInfo);
   await page.unroute("**/*");
   const other = await context.newPage();
   await other.goto("/");
