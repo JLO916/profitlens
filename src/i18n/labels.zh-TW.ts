@@ -916,7 +916,54 @@ export const diagnosis = {
       tooMany: "通路超過 {max} 個時只列兩期合計；要看各通路每週的數字，請把通路範圍縮小到 {max} 個以內。",
     },
     // ── V4-3b 錨點：G11 日 × 通路月曆熱表（代理 A：heat）、G12 五項比率每週走勢（代理 B：rates）
-    heat: {},
+    /**
+     * V4-3b 代理 A：G11 日 × 通路月曆熱表（PRD §4.1–§4.7 G11、§7.4；CHART_CATALOG G11；D-V4-17＝A；H5 設計稿 diagnosis.html 頁尾清單）。
+     * 指標名取 metricDefinitions（{metric}）；資料待補沿用 shell.status.missing；格內數字由 presentation.ts 的 formatHeatCell 產生（萬元、兩位小數、不帶單位）。
+     * 「虧」＝取位到元後仍為負（與 v3 通路結論句同一規則）。本期超過 92 天時改成週 × 通路（…Weekly 那幾句）。
+     */
+    heat: {
+      /** 區塊標準名（副標第一段；沒有任何有值的格時當標題）：{metric}＝扣廣告後貢獻的標準名。 */
+      section: "各通路每天的{metric}",
+      sectionWeekly: "各通路每週的{metric}",
+      /**
+       * 結論標題：有虧損日時取全部通路中最差的一天（loss；{n}＝該通路取位到元後仍為負的天數），否則取最低的一天（none）；
+       * {channel}＝通路名稱（示範資料用 alias），{date}＝M/D，{week}＝週的起訖，{amount}＝L1 金額。
+       */
+      title: {
+        loss: "{channel} 有 {n} 天虧，最差 {date} {amount}",
+        none: "沒有虧損日，最低 {channel} {date} {amount}",
+        lossWeekly: "{channel} 有 {n} 週虧，最差 {week} {amount}",
+        noneWeekly: "沒有虧損週，最低 {channel} {week} {amount}",
+      },
+      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{period}＝本期起訖，{n}＝每通路加框的格數上限（3）。顏色只輔助，負值由格內 U+2212 承擔。 */
+      subtitle: "{section} · 本期 {period} · 格內單位萬元；有底色的是虧的日子，加框的是各通路最差 {n} 天",
+      /** 本期超過 {days} 天（92）時的副標：每格是一週（與每週趨勢同一組 7 天）。 */
+      subtitleWeekly: "{section} · 本期 {period} 超過 {days} 天，每格是一週 · 格內單位萬元；有底色的是虧的週，加框的是各通路最差 {n} 週",
+      /** 一列放不下全部月曆時（390、768，或通路多於一列可放的張數）接在副標之後，由 CSS 依框寬決定是否顯示。 */
+      scrollNote: "其餘通路在框內捲動",
+      /** scrollNote 接在副標之後的連接（{note}＝scrollNote）；整段放在可由 CSS 隱藏的 span 內。 */
+      scrollNoteJoin: "；{note}",
+      /** 月曆左上角的欄頭（列頭寫該週起日 M/D）。 */
+      weekHead: "週",
+      /** 月曆欄頭的星期（欄的星期跟著期間起日，不一定從週一開始）。 */
+      weekdays: { mon: "一", tue: "二", wed: "三", thu: "四", fri: "五", sat: "六", sun: "日" },
+      /** 每張月曆的 caption（單位寫在這裡）：{channel}＝通路名稱。 */
+      caption: "{channel}（萬元）",
+      /** 週 × 通路矩陣的 caption：{section}＝sectionWeekly。 */
+      captionWeekly: "{section}（萬元）",
+      /**
+       * 格的可及名稱（number-link，含格內可見數字與 L2）：{channel}、{date}（M/D 或週起訖）、{metric}＝扣廣告後貢獻，{cell}＝格內數字（萬元），{value}＝L2 整數元。
+       * cellAriaMissing：值缺漏的格（{status}＝資料待補）。
+       */
+      cellAria: "{channel} {date} {metric} {cell} 萬元，即 {value} 元，看明細",
+      cellAriaMissing: "{channel} {date} {metric}{status}，看明細",
+      /** 範圍內通路超過上限時圖區的說明（state="empty"）：{count}＝範圍內通路數，{n}＝上限 8。 */
+      tooMany: "範圍內有 {count} 個通路，超過 {n} 個時不畫每天的格；各通路的數字見下方各通路兩期比較",
+      /** 本期超過 92 天、週 × 通路的格數仍超過上限時：{weeks}＝週數，{count}＝通路數，{max}＝736。 */
+      tooManyCells: "本期 {weeks} 週 × {count} 個通路超過 {max} 格，不畫每週的格；各通路的數字見下方各通路兩期比較",
+      /** 逐日資料不完整（只在超長期間出現）時：不把沒有列的日子當成 0。 */
+      partialNote: "本期的逐日資料不完整，不畫每天的格；各通路的數字見下方各通路兩期比較",
+    },
     rates: {},
   },
 } as const;

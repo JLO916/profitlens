@@ -75,7 +75,10 @@ export interface ChartFrameProps {
    * 改為 role="region"＋aria-label＝本字串；內容比容器寬（390、768）時才加 tabIndex=0，鍵盤可停留並用方向鍵捲動，寬螢幕不多一個停留點。
    */
   scrollLabel?: string;
-  /** V4-1 只定型別（V4-3b 的 G11、G21 第一次使用）：table 時固定高容器不設 aria-hidden，並帶 data-mode="table"。 */
+  /**
+   * V4-1 定型別、V4-3b 實作（G11 第一次使用，V4-7a 的 G21 沿用）：table 時固定高容器不設 aria-hidden，並帶 data-mode="table"；
+   * 有資料時 children（真的 <table>）包在 div.table-scroll[role=region][aria-labelledby={id}-title] 內，框內垂直捲動（不加 tabIndex：表內的格可聚焦）。
+   */
   mode?: ChartFrameMode;
 }
 
@@ -135,8 +138,10 @@ export function ChartFrame({ id, testId, page, title, subtitle, legend, extra, t
   const body = resolved === "ready" ? children
     : resolved === "loading" ? <div className="chart-frame-skeleton" />
       : <p className="chart-frame-message">{message ?? (resolved === "error" ? copy.error : copy.noData)}</p>;
+  // V4-3b（PRD §6.1 mode；CHART_CATALOG §1.1）：table 模式有資料時，表放在框內的 .table-scroll（role=region、以標題命名、框內垂直捲動）；
+  // 表內的格可聚焦（G11 roving tabindex 整張 1 個停留點、G21 每格是按鈕），所以捲動區不加 tabIndex。其他狀態與 chart 模式的輸出不變。
   const frame = mode === "table"
-    ? <div className={`chart-frame ${frameClass}`} style={{ height: chartHeights[height] }} data-state={resolved} data-mode="table">{body}</div>
+    ? <div className={`chart-frame ${frameClass}`} style={{ height: chartHeights[height] }} data-state={resolved} data-mode="table">{resolved === "ready" ? <div className="table-scroll" role="region" aria-labelledby={`${id}-title`}>{children}</div> : body}</div>
     : scrollLabel !== undefined
       ? <ScrollFrame className={frameClass} size={height} label={scrollLabel} state={resolved}>{body}</ScrollFrame>
       : <div className={`chart-frame ${frameClass}`} style={{ height: chartHeights[height] }} aria-hidden={resolved === "ready" || resolved === "loading" ? true : undefined} data-state={resolved}>{body}</div>;

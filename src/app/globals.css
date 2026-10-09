@@ -2752,6 +2752,57 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-3a C 錨點結束 ── */
 
 /* ── V4-3b A：C28 HeatTable、G11 日 × 通路月曆熱表、ChartFrame mode="table" ── */
+/* ChartFrame mode="table"（PRD §6.1）：表放在固定高框內的 .table-scroll（role=region；只有 table 模式的框直接含 .table-scroll），框內垂直捲動
+   （表比框寬時也可水平捲動，頁面不捲動）；不另畫外框與圓角（格本身有分隔），捲軸用細的。選擇器不用框上的模式屬性（那個屬性名只給投影規則用，tests/present-mode.test.tsx）。 */
+.chart-frame > .table-scroll { height: 100%; overflow: auto; border: 0; border-radius: 0; scrollbar-width: thin; }
+/* G11（PRD §4.4、§7.6；CHART_CATALOG G11；V4-0b 實測 verification/revamp-v4/V4-0-baseline.md §14.3）：格寬 ≥ 1280 為 44、其餘 40；週欄 40；
+   每張月曆寬＝週欄＋7 × 格寬（348／320）。每列張數由 auto-fill 依框寬決定（1440 三張、1280 兩張、768 與 390 一張），欄距 24、列距 16；
+   月曆 DOM 順序就是畫面順序（標題所指的通路第一張），不用 CSS order。區塊是 container（heat），副標尾的捲動說明依框寬顯示。 */
+.heat-section { container: heat / inline-size; }
+.chart-frame.heat { --heat-cell: 40px; --heat-week: 40px; --heat-table-w: calc(var(--heat-week) + 7 * var(--heat-cell)); }
+@media (min-width: 1280px) { .chart-frame.heat { --heat-cell: 44px; } }
+.heat-grid { display: grid; grid-template-columns: repeat(auto-fill, var(--heat-table-w)); gap: var(--space-4) var(--space-5); align-items: start; }
+.heat-table { width: var(--heat-table-w); table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: var(--text-12); line-height: var(--leading-12); }
+.heat-table caption { padding: 0 0 var(--space-1); font-weight: var(--weight-medium); color: var(--text-secondary); text-align: left; white-space: nowrap; }
+.heat-table th { width: var(--heat-cell); height: 24px; padding: 0; border-bottom: 0; background: transparent; vertical-align: middle; font-weight: var(--weight-regular); color: var(--text-tertiary); text-align: center; white-space: nowrap; }
+.heat-table thead th:first-child, .heat-table tbody th { width: var(--heat-week); text-align: left; }
+.heat-table tbody th small { display: block; color: var(--text-tertiary); white-space: normal; }
+/* 格：1px 底色邊當分隔；階 1、階 2 底色（只有兩階，X33）；階 2 另加 2px 不利色框線；值缺漏的格虛線框＋「資料待補」；正值與期間外不上色（D-V3-7）。
+   格內按鈕撐滿整格（點格任何位置都開抽屜）；框線畫在按鈕上，聚焦框往內縮，不壓到相鄰格。 */
+.heat-table tbody td { width: var(--heat-cell); height: 32px; padding: 0; border: var(--border-w) solid var(--bg-surface); vertical-align: middle; text-align: center; }
+.heat-table td[data-tier="1"] { background: var(--chart-heat-1); }
+.heat-table td[data-tier="2"] { background: var(--chart-heat-2); }
+.heat-table .heat-link { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 0; border: 2px solid transparent; border-radius: 0; color: var(--text-primary); }
+.heat-table td[data-tier="2"] .heat-link { border-color: var(--chart-unfavorable); }
+.heat-table td[data-tier="missing"] .heat-link { border: var(--border-w) dashed var(--chart-missing); color: var(--text-tertiary); white-space: normal; }
+.heat-table .heat-link:focus-visible { outline-offset: -4px; }
+/* 「資料待補」限寬 2 字、兩行（行高縮到 1.1），列高與有值的格相同。 */
+.heat-table .heat-missing { display: inline-block; max-width: 2em; line-height: 1.1; }
+/* 週 × 通路（本期超過 92 天）：一張表，欄寬依通路名稱自動，格至少與月曆格同寬。 */
+.heat-grid[data-layout="matrix"] { grid-template-columns: max-content; }
+.heat-grid[data-layout="matrix"] .heat-table { width: auto; table-layout: auto; }
+.heat-grid[data-layout="matrix"] .heat-table tbody td { min-width: var(--heat-cell); }
+.heat-grid[data-layout="matrix"] .heat-table thead th:not(:first-child) { padding: 0 var(--space-1); white-space: normal; }
+/* 副標尾的「其餘通路在框內捲動」：元件算出不必捲動所需的每列張數 n（data-columns；框高 lg 放得下幾列月曆，見 heat-section.tsx 的 heatColumnsNeeded），
+   框寬（heat 容器的內容寬）≥ n × 月曆寬＋(n − 1) × 欄距 24 時一列放得下 n 張、不必捲動，隱藏；格寬 40（< 1280）與 44（≥ 1280）各一組門檻。 */
+@media (max-width: 1279px) {
+  @container heat (min-width: 664px) { .heat-scroll-note[data-columns="2"] { display: none; } }
+  @container heat (min-width: 1008px) { .heat-scroll-note[data-columns="3"] { display: none; } }
+  @container heat (min-width: 1352px) { .heat-scroll-note[data-columns="4"] { display: none; } }
+  @container heat (min-width: 1696px) { .heat-scroll-note[data-columns="5"] { display: none; } }
+  @container heat (min-width: 2040px) { .heat-scroll-note[data-columns="6"] { display: none; } }
+  @container heat (min-width: 2384px) { .heat-scroll-note[data-columns="7"] { display: none; } }
+  @container heat (min-width: 2728px) { .heat-scroll-note[data-columns="8"] { display: none; } }
+}
+@media (min-width: 1280px) {
+  @container heat (min-width: 720px) { .heat-scroll-note[data-columns="2"] { display: none; } }
+  @container heat (min-width: 1092px) { .heat-scroll-note[data-columns="3"] { display: none; } }
+  @container heat (min-width: 1464px) { .heat-scroll-note[data-columns="4"] { display: none; } }
+  @container heat (min-width: 1836px) { .heat-scroll-note[data-columns="5"] { display: none; } }
+  @container heat (min-width: 2208px) { .heat-scroll-note[data-columns="6"] { display: none; } }
+  @container heat (min-width: 2580px) { .heat-scroll-note[data-columns="7"] { display: none; } }
+  @container heat (min-width: 2952px) { .heat-scroll-note[data-columns="8"] { display: none; } }
+}
 /* ── V4-3b A 錨點結束 ── */
 
 /* ── V4-3b B：C26 SmallMultiples、G12 五項比率每週走勢、抽屜日期與 SKU 片語 ── */

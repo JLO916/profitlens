@@ -349,13 +349,14 @@ describe("G10 通路數分支（PRD §4.4：≤ 5 用 sm、6 到 8 用 lg、超�
   });
 });
 
-describe("健檢頁 SSR（CL-1、CL-2、CL-9、CL-11）：G10 在清單之後、通路寬表之前，主層獨立圖區塊＝1", () => {
-  it("示範與 golden：chart-lint SSR 規則 0 違規；主層 section.chart-section 只有 chart-diagnosis-share；DOM 順序 diagnosis-list → G10 → channel-compare", () => {
+describe("健檢頁 SSR（CL-1、CL-2、CL-9、CL-11）：G10 在清單之後、通路寬表之前，主層獨立圖區塊＝2（V4-3b 起加 G11）", () => {
+  it("示範與 golden：chart-lint SSR 規則 0 違規；主層 section.chart-section 是 chart-diagnosis-share、chart-diagnosis-heat；DOM 順序 diagnosis-list → G10 → channel-compare", () => {
     for (const { snapshot } of [demo, golden, refundOnly]) {
       const html = renderToStaticMarkup(createElement(Diagnosis, { snapshot, onEvidence: noop }));
       const result = checkChartMarkup(`<main id="main-content">${html}</main>`, { page: "diagnosis" });
       for (const rule of ["CL-1", "CL-2", "CL-9", "CL-11"] as const) expect(result.violations[rule], rule).toEqual([]);
-      expect(result.mainSections).toHaveLength(1);
+      // V4-3b：G11 熱表（chart-diagnosis-heat）接在 G10 之後，主層獨立圖區塊＝2（G12 在 <details> 內不計）。
+      expect(result.mainSections).toEqual(["chart-diagnosis-share", "chart-diagnosis-heat"]);
       const list = html.indexOf('data-testid="diagnosis-list"'), g10 = html.indexOf('data-testid="chart-diagnosis-share"'), table = html.indexOf('data-testid="channel-compare"');
       expect(list).toBeGreaterThanOrEqual(0);
       expect(g10).toBeGreaterThan(list);
