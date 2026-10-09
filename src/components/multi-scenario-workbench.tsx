@@ -22,7 +22,7 @@ export interface MultiScenarioWorkbenchProps {
   source: ScenarioSource; state: ScenarioWorkspace; setState: Dispatch<SetStateAction<ScenarioWorkspace>>;
   onEvidence: (selection: EvidenceSelection) => void;
   onSelectForReview?: (reference: ScenarioSelectionRef) => void;
-  onExport?: (format: 'md' | 'csv' | 'json') => void;
+  onExport?: (format: 'md' | 'csv' | 'json') => void | Promise<void>;
   /** 回報本頁正在編輯的 scenario context id（尚未寫入 state 時是預計的 id）；決策匯出的「目前」區段以它為準。 */
   onContextChange?: (contextId: string | null) => void;
   /** V3-6：本頁是否正顯示（Dashboard 把試算工作台一直掛著、用 hidden 切換）。只有 active 時才把「試算通路」與「匯出本頁」portal 進頁首 #page-actions。 */

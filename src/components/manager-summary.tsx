@@ -18,6 +18,7 @@ import { ShellIcon } from "./shell/shell-icon";
 import styles from "./manager-summary.module.css";
 import { PrintSummaryPortal } from "./print-summary";
 import { ActionSummaryList, periodValues, type PrintMeeting } from "./summary-shared";
+import { toneClass } from "./tone-class";
 // V3-7 開工錨點：列印版與共用小件搬到 print-summary.tsx／summary-shared.tsx；舊匯入路徑保留。
 export { ActionSummaryList, PRINT_NOTES_LIMIT, periodValues, type PrintMeeting } from "./summary-shared";
 export { PrintSummary, PrintSummaryPortal, type PrintSummaryProps } from "./print-summary";
@@ -48,8 +49,8 @@ export interface ManagerSummaryProps {
   decisions?: boolean;
 }
 
-/** V3-2b：有利／不利的顏色 class（依 favorableDirection，不依數學正負號）；顏色一定搭配正負號或方向詞。 */
-export const toneClass = (tone: DeltaTone): "positive" | "negative" | "neutral" => tone === "favorable" ? "positive" : tone === "unfavorable" ? "negative" : "neutral";
+// V4-3c：toneClass 搬到 tone-class.ts（試算頁在首載只用到它），這裡再匯出，既有的匯入路徑不變。
+export { toneClass };
 /**
  * V3-2b 關鍵差額（L1）：「少賺 59.9 萬（−32.0%）」。方向詞後接絕對值；成長率只在上期 > 0 時附上；差額為零只寫「持平」。
  * 缺值依原因碼寫資料待補或不適用。成長率從精確值一次取位（formatGrowth）。

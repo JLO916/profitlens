@@ -8,11 +8,10 @@ import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application
 import type { TaxConversion } from "@/application/tax-basis";
 import type { TargetSet } from "@/application/targets";
 import { decisionSignature } from "@/application/decision";
-import { actionDocuments, taipeiToday, type ActionExecutionStatus, type ActionWorkspace } from "@/application/action-workspace";
-import { buildManagerSummary, exportChannelComparisonCsv, exportManagerSummaryMarkdown, type SummaryDecisionContext } from "@/application/manager-summary";
-import { compareWithLastMeeting, exportMeetingMarkdown, lastMeeting, type Meeting, type MeetingActionFollowUp, type MeetingComparison, type MeetingDecision, type MeetingFollowUp, type MeetingKpiMetric, type MeetingPriority } from "@/application/meeting";
-import { exportExcel, type ExcelMeeting } from "@/application/excel-export";
-import { exportPptx } from "@/application/pptx-export";
+import { actionDocuments, taipeiToday, type ActionWorkspace } from "@/application/action-workspace";
+import { buildManagerSummary, exportChannelComparisonCsv, exportManagerSummaryMarkdown } from "@/application/manager-summary";
+import { compareWithLastMeeting, lastMeeting, type Meeting, type MeetingActionFollowUp, type MeetingComparison, type MeetingDecision, type MeetingFollowUp, type MeetingKpiMetric, type MeetingPriority } from "@/application/meeting";
+import type { ExcelMeeting } from "@/application/excel-export";
 import { downloadText } from "@/application/download";
 import { track } from "@/application/analytics";
 import { deltaTone, formatAmountL1, formatAmountL2, formatDateL1, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
@@ -26,6 +25,9 @@ import { ActionSummaryList } from "./summary-shared";
 import { COPY_STATUS_MS, CopyFallback, copyWeeklySummary } from "./overview/weekly-snapshot";
 import { ShellIcon } from "./shell/shell-icon";
 import type { EvidenceSelection } from "./evidence-drawer";
+import { DECISION_LABEL_KEY, EXECUTION_LABELS, MARKDOWN_MIME, downloadMeetingMarkdown } from "./meeting-entry";
+// V4-3c：總覽入口、目前檢視的決策脈絡與會議 Markdown 下載搬到 meeting-entry.tsx（首載要用），這裡再匯出，既有的匯入路徑不變。
+export { DECISION_LABEL_KEY, MeetingEntry, currentViewDecisionContext, downloadMeetingMarkdown, meetingMarkdownFilename } from "./meeting-entry";
 
 // R6-2 會議紀錄分頁；V3-7（PRD §7.6）改成文件式版面：頁首動作列（sticky）→ 固定範圍一行與差異橫幅 → 左側議程目錄＋議程 1–6（<ol>）
 // → 決議備註 → 與上次會議比較（預設收合）→ 會議歷史（最底）。承接原 ReviewWorkbench 的全部控制項，handler 與 v2 相同。
@@ -38,10 +40,6 @@ const snapshotUi = labels.overview.snapshotUi;
 /** 議程 1–6 的標題（議程目錄與各項 h3 同一組字串，labels.meeting.record.agenda）。 */
 const AGENDA_TITLES = [record.agenda.kpis, record.agenda.priorities, record.agenda.channels, record.agenda.followUp, record.agenda.scenarios, record.agenda.actions] as const;
 type Targets = { set: TargetSet | null; allChannels: readonly string[] } | null;
-/** ReviewDecisionState（needs_data／not_adopted）→ labels.meeting.form.decisions 的鍵（need_data／rejected）；只做顯示對照，不改機器值。 */
-export const DECISION_LABEL_KEY: Record<ReviewDecisionState, keyof typeof labels.meeting.form.decisions> = { draft: "draft", adopted: "adopted", needs_data: "need_data", not_adopted: "rejected" };
-const EXECUTION_LABELS: Record<ActionExecutionStatus, string> = { not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done };
-const MARKDOWN_MIME = "text/markdown;charset=utf-8";
 /** 議程 ⑥ 與會議摘要相同：最多列三項置頂行動。 */
 const MAX_AGENDA_ACTIONS = 3;
 
@@ -61,12 +59,6 @@ const latestDecision = (meeting: Meeting): MeetingDecision => meeting.decisions[
 // V3-2b：會議頁的句子與三件事用 L1（萬），議程表格用 L2（整數元，表頭標「（元）」）。
 const signedL1 = (value: string | null) => formatSignedDelta(value, "L1");
 const yuanColumn = (label: string) => fill(labels.format.units.yuanColumn, { label });
-/** 會議紀錄 Markdown 的檔名（含會議日期）。 */
-export const meetingMarkdownFilename = (meeting: Meeting): string => `profitlens-meeting-${meeting.date}.md`;
-/** 已結束會議的 Markdown：紀錄本身含結束當時凍結的上次比較（follow_up），還原備份後輸出相同。 */
-export function downloadMeetingMarkdown(meeting: Meeting, datasetName?: string) {
-  downloadText(exportMeetingMarkdown(meeting, undefined, datasetName ? { datasetName } : {}), meetingMarkdownFilename(meeting), MARKDOWN_MIME);
-}
 /** 「結束會議」失敗時依錯誤碼顯示的文案（meeting.ts／review-session.ts 的錯誤碼）；其餘一律 finalizeError。 */
 export function finalizeErrorText(error: unknown): string {
   const code = error instanceof Error ? error.message : "";
@@ -75,40 +67,9 @@ export function finalizeErrorText(error: unknown): string {
   if (code === "REVIEW_ADOPTED_STALE_SCENARIO") return page.staleScenario;
   return page.finalizeError;
 }
-/**
- * 下載選單「目前檢視」列印用的決策脈絡：只帶待辦工作區的待辦（置頂最多三項，其餘進附錄），與 PPT 一頁式的置頂待辦同源；
- * 不帶會議名稱、決議、備註與選入方案。待辦引用的資料與目前檢視不同時標為過期。
- */
-export function currentViewDecisionContext(snapshot: Pick<WorkspaceSnapshot, "dataset_hash" | "filter_hash">, actions: ActionWorkspace): SummaryDecisionContext {
-  const ui = labels.meeting.session;
-  return {
-    dataset_hash: snapshot.dataset_hash, filter_hash: snapshot.filter_hash, pinnedOnly: true, scenarios: [], selectedScenarioIds: [], decisionState: page.printViewState,
-    actions: actionDocuments(actions).map(doc => ({
-      id: doc.id, problem: doc.problem || ui.actionProblemMissing, action: doc.action, owner: doc.owner_role, deadline: doc.deadline, risk: doc.stop_condition, pinned: doc.pinned,
-      executionStatus: EXECUTION_LABELS[doc.execution_status as ActionExecutionStatus] ?? EXECUTION_LABELS.not_started, executionNotes: doc.progress_notes,
-      status: doc.status === "stale" || doc.binding.dataset_hash !== snapshot.dataset_hash ? "stale" as const : doc.status === "confirmed" ? "current" as const : "draft" as const,
-      scopeLabel: fill(ui.actionScope, { channels: channelsLabel(doc.binding.scope.channels, demoAlias(doc.binding.dataset_id)), start: doc.binding.period.start, end: doc.binding.period.end }),
-    })),
-  };
-}
 /** 週會摘要的待辦概況（與 dashboard.tsx 的 overviewActions 同一個算法）：未完成的數量與置頂的前 3 項。 */
 function weeklyActions(actions: ActionWorkspace) {
   return { pending: actions.items.filter(item => item.execution_status !== "completed").length, pinned: actions.items.filter(item => item.pinned).slice(0, 3).map(item => ({ problem: item.card.problem, owner: item.card.owner_role, deadline: item.card.deadline })) };
-}
-
-/**
- * 總覽頁只留一行入口（05 §10）：本期會議的決議狀態（或尚未建立）＋同一份資料的上次會議日期。
- * 剛結束會議、新會議稿還沒動過（同資料同範圍、第 1 版草稿）時改顯示「已結束（日期）· 本次草稿」。
- * V3-4a：放在本期一句話右側，整句就是唯一的文字按鈕（可及名稱補上「前往會議紀錄」）；上次會議日期是旁邊的註記。
- */
-export function MeetingEntry({ review, history, datasetHash, onOpen }: { review: ReviewSession | null; history: readonly Meeting[]; datasetHash: string; onOpen: () => void }) {
-  const state = review ? labels.meeting.form.decisions[DECISION_LABEL_KEY[review.decision_state]] : labels.meeting.sections.meetingNotCreated;
-  const last = lastMeeting(history);
-  const justFinalized = review !== null && last !== null && last.source_fixed.dataset_hash === review.dataset_hash && last.source_fixed.filter_hash === review.filter_hash && review.revision === 1 && review.decision_state === "draft";
-  const entry = labels.overview.snapshotUi;
-  const text = justFinalized ? fill(entry.meetingEntryFinalized, { date: last.date }) : fill(entry.meetingEntry, { state });
-  const showLast = !justFinalized && last !== null && last.source_fixed.dataset_hash === datasetHash;
-  return <p className="meeting-entry" data-testid="overview-meeting-entry"><button type="button" className="text-button" aria-label={fill(entry.meetingGoAria, { text, go: page.goToMeeting })} onClick={onOpen}>{text}</button>{showLast && <span className="note">{fill(page.entryLast, { date: last.date })}</span>}</p>;
 }
 
 type ReviewSource = { key: string; snapshot: WorkspaceSnapshot; dataset: Dataset };
@@ -251,8 +212,9 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
     setExporting(kind); setExportError(false);
     try {
       const meeting = meetingExportInfo(review, date);
-      if (kind === "excel") await exportExcel({ summary, snapshot: ready.snapshot, dataset: ready.dataset, actions: actionWorkspace, products: compareProducts(ready.dataset, ready.snapshot.report.scope).rows, conversion: reviewConversion, meeting, datasetName: exportDatasetName });
-      else await exportPptx({ summary, snapshot: ready.snapshot, actions: actionWorkspace, meeting, datasetName: exportDatasetName });
+      // V4-3c：Excel／PPT 的產生程式按下時才載入（不在首載）；載入失敗與產生失敗走同一個 catch。
+      if (kind === "excel") { const { exportExcel } = await import("@/application/excel-export"); await exportExcel({ summary, snapshot: ready.snapshot, dataset: ready.dataset, actions: actionWorkspace, products: compareProducts(ready.dataset, ready.snapshot.report.scope).rows, conversion: reviewConversion, meeting, datasetName: exportDatasetName }); }
+      else { const { exportPptx } = await import("@/application/pptx-export"); await exportPptx({ summary, snapshot: ready.snapshot, actions: actionWorkspace, meeting, datasetName: exportDatasetName }); }
     } catch { setExportError(true); } finally {
       working.current = false; setExporting(null);
       // 完成或失敗都把焦點留在觸發的地方（V3-7：選單已關閉，觸發點是「匯出會議」的 summary）。

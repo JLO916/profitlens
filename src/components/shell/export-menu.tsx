@@ -9,7 +9,6 @@ import { track } from "@/application/analytics";
 import { downloadText } from "@/application/download";
 import { exportIssuesCsv, exportSnapshotCsv } from "@/application/export";
 import { buildManagerSummary, exportChannelComparisonCsv } from "@/application/manager-summary";
-import { preloadExcelWriter } from "@/application/excel-export";
 import { fill, labels } from "@/i18n";
 import { COPY_STATUS_MS } from "../overview/weekly-snapshot";
 import { ShellIcon } from "./shell-icon";
@@ -29,7 +28,8 @@ export interface ExportMenuProps {
   busy: "excel" | "pptx" | "md" | null;
   error: "export" | "markdown" | null;
   summaryRef: RefObject<HTMLElement | null>;
-  onDecision: (format: "md" | "csv" | "json") => void;
+  /** V4-3c：決策匯出的程式按下時才載入，所以可以回傳 promise（失敗時 reject）。 */
+  onDecision: (format: "md" | "csv" | "json") => void | Promise<void>;
   /** V3-9b 開工錨點（F14）：變體由選單內的選擇器決定，由 B 代理實作；沒給＝standard。 */
   onPrint: (variant?: ExportVariant) => void;
   onExport: (kind: "excel" | "pptx", variant?: ExportVariant) => void;
@@ -41,6 +41,8 @@ export interface ExportMenuProps {
 type AsyncItem = NonNullable<ExportMenuProps["busy"]>;
 
 const menu = labels.exports.menuV3;
+/** V4-3c：選單打開時先載入 Excel 產生程式與 SheetJS（兩者都不在首載）；載入失敗不處理，按下匯出時會再試並顯示錯誤。 */
+function warmExcelWriter() { void import("@/application/excel-export").then(module => module.preloadExcelWriter(), () => undefined); }
 
 // §7.9／C14 匯出項目：14px 名稱＋一行 12px 說明（data-lines="2"）；可及名稱只取名稱（aria-labelledby，E2E 以名稱定位），說明與失敗訊息以 aria-describedby 連結。
 function ExportItem({ id, name, description, onClick, disabled, busy, error, buttonRef, testId }: { id: string; name: string; description: string; onClick: (event: MouseEvent<HTMLButtonElement>) => void; disabled?: boolean; busy?: boolean; error?: string | null; buttonRef?: RefObject<HTMLButtonElement | null>; testId?: string }) {
@@ -92,6 +94,8 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
     (errorItem === "md" ? mdRef : errorItem === "pptx" ? pptxRef : excelRef).current?.focus();
   }, [errorItem]);
   const runAsync = (item: AsyncItem, run: () => void) => { if (busy) return; setLastAsync(item); run(); };
+  // V4-3c：決策匯出可能回傳 promise；失敗時與 v3 在 onClick 同步擲錯相同，交給全域錯誤回報（React 對事件處理的錯誤也是 reportError），不留未處理的 rejection。
+  const decide = (format: "md" | "csv" | "json") => { void Promise.resolve(onDecision(format)).catch((error: unknown) => { if (typeof reportError === "function") reportError(error); }); };
   // V3-9b F14：一頁摘要的版本（預設標準版）；選單是常駐掛載的 details，關閉再開會維持上次選擇（元件 state，不存）。
   const [variant, setVariant] = useState<ExportVariant>(DEFAULT_EXPORT_VARIANT);
   const errorText = (item: AsyncItem) => errorItem !== item ? null : error === "markdown" ? labels.meeting.page.markdownError : labels.meeting.page.exportError;
@@ -123,7 +127,7 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
   };
 
   const describe = menu.descriptions;
-  return <details className="topbar-menu auto-close download-menu" data-testid="download-menu" onToggle={event => { if (event.currentTarget.open) void preloadExcelWriter(); }}>
+  return <details className="topbar-menu auto-close download-menu" data-testid="download-menu" onToggle={event => { if (event.currentTarget.open) warmExcelWriter(); }}>
     <summary ref={summaryRef} className="topbar-summary">{copy.export}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
     <div className="menu-panel ui-menu export-panel">{source ? <div className="menu-list">
       <ExportGroup id="download-group-current" testId="download-group-current" title={labels.shell.sections.downloadCurrentView}>
@@ -144,9 +148,9 @@ export function ExportMenu({ source, busy, error, summaryRef, onDecision, onPrin
       </ExportGroup>
       <hr className="ui-menu-divider" />
       <ExportGroup id="download-group-decision" testId="download-group-decision" title={labels.shell.sections.downloadDecision}>
-        <ExportItem id="download-decision-md" name={labels.exports.downloads.decisionMd} description={describe.decisionMd} onClick={() => onDecision("md")} />
-        <ExportItem id="download-decision-csv" name={labels.exports.downloads.decisionCsv} description={describe.decisionCsv} onClick={() => onDecision("csv")} />
-        <ExportItem id="download-decision-json" name={labels.exports.downloads.decisionJson} description={describe.decisionJson} onClick={() => onDecision("json")} />
+        <ExportItem id="download-decision-md" name={labels.exports.downloads.decisionMd} description={describe.decisionMd} onClick={() => decide("md")} />
+        <ExportItem id="download-decision-csv" name={labels.exports.downloads.decisionCsv} description={describe.decisionCsv} onClick={() => decide("csv")} />
+        <ExportItem id="download-decision-json" name={labels.exports.downloads.decisionJson} description={describe.decisionJson} onClick={() => decide("json")} />
       </ExportGroup>
       {onCopySummary && <><hr className="ui-menu-divider" />
         {/* §6.5 新分組「會議」：複製週會摘要（與總覽本期一句話旁、會議頁頁首同一份文字）。 */}

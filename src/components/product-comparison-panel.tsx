@@ -16,7 +16,7 @@ import { compareProducts, selectProductComparisonRows, type ProductComparisonRow
 import type { Dataset, Metric, ProductMetrics, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
-import { toneClass } from "./manager-summary";
+import { toneClass } from "./tone-class";
 import { ShellIcon } from "./shell/shell-icon";
 
 const copy = labels.products.comparison;

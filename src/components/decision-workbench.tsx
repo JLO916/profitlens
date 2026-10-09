@@ -19,7 +19,7 @@ import { channelsLabel, demoAlias } from "@/application/copy";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { ScenarioSensitivity } from "./scenario-sensitivity";
-import { toneClass } from "./manager-summary";
+import { toneClass } from "./tone-class";
 import { usePageSlot } from "./shell/page-slot";
 import { ShellIcon } from "./shell/shell-icon";
 
@@ -123,7 +123,7 @@ export function ScenarioPageActions({ active, children }: { active?: boolean; ch
 export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEvidence, state, setState, input, mappings, onExport, active, acknowledged = false, onAcknowledge, onSelectPlan, children }: {
   dataset: Dataset; snapshot: WorkspaceSnapshot; revision: number;
   filenames?: Partial<Record<SourceRef["file"], string>>;
-  onExport?: (format: "md" | "csv" | "json") => void;
+  onExport?: (format: "md" | "csv" | "json") => void | Promise<void>;
   onEvidence: (selection: EvidenceSelection) => void;
   state: DecisionWorkspaceState;
   setState: Dispatch<SetStateAction<DecisionWorkspaceState>>;
@@ -226,7 +226,8 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
     // 與待辦頁的「匯出本頁」一致：點完項目就關閉選單、焦點回到 summary（E2E 代理 E1 回報的不一致）；hooks harness 沒有 DOM 時 menu 為空。
     if (menu?.open) { menu.open = false; menu.querySelector<HTMLElement>(":scope > summary")?.focus(); }
     try {
-      if (onExport) { onExport(format); setNotice(ui.noticeDownloadedActions); return; }
+      // V4-3c：onExport 可能回傳 promise（決策匯出按下時才載入）：完成才寫通知、失敗寫 noticeExportFailed；同步的 onExport 照舊。
+      if (onExport) { const pending = onExport(format); if (pending instanceof Promise) void pending.then(() => setNotice(ui.noticeDownloadedActions), () => setNotice(ui.noticeExportFailed)); else setNotice(ui.noticeDownloadedActions); return; }
       const record = refreshDecisionSession(session, snapshot, revision);
       const body = format === "md" ? exportDecisionMarkdown(record, scenarios, actions) : format === "csv" ? exportDecisionCsv(record, scenarios, actions) : exportDecisionJson(record, scenarios, actions);
       downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");

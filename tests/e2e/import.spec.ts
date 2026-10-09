@@ -6,6 +6,7 @@ import { BREAKEVEN_MER_VERSION } from "../../src/application/breakeven-mer";
 import { issueMessageParts, issueTemplate } from "../../src/application/import";
 import { formatAmountL1, formatAmountL2, formatSignedDelta } from "../../src/application/presentation";
 import { TREND_TABLE_HEADERS, YOY_EMPTY, yoyCells, yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
+import { isPageCodeChunk } from "./lazy-chunk-helpers-v43c";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
@@ -464,8 +465,11 @@ test("檔案留在本頁記憶體，匯入期間零網路、零持久化、文�
   await openWizard(page);
   const beforeStorage = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
+  // V4-3c（D-V4-42＝A）：商品毛利頁的程式第一次切入時才向同一個網站載入（isPageCodeChunk）；只放行這一種，其餘照舊攔下並記錄。
+  const origin = new URL(page.url()).origin;
   await page.route("**/*", async route => {
     const request = route.request();
+    if (isPageCodeChunk(request, origin)) { await route.continue(); return; }
     requests.push({ method: request.method(), resourceType: request.resourceType(), hasBody: request.postDataBuffer() !== null });
     await route.abort("blockedbyclient");
   });

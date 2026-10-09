@@ -656,6 +656,8 @@ describe("R6-F2 busy buttons keep focus (aria-disabled + guard)", () => {
     expect(menu.open).toBe(true);
     pending.resolve();
     await settle();
+    // V4-3c：Excel／PPT 的產生程式改成按下時 import()，多等它載入完（斷言不變）。
+    await vi.waitFor(() => expect(summaryFocus).toHaveBeenCalledTimes(2));
     tree = view(value);
     expect(summaryFocus).toHaveBeenCalledTimes(2);
     expect(byTestId(tree, "meeting-export-excel")[0].props["aria-disabled"]).toBeUndefined();
@@ -665,6 +667,7 @@ describe("R6-F2 busy buttons keep focus (aria-disabled + guard)", () => {
     click("meeting-export-pptx");
     expect(menu.open).toBe(false);
     await settle();
+    await vi.waitFor(() => expect(summaryFocus).toHaveBeenCalledTimes(4));
     tree = view(value);
     expect(summaryFocus).toHaveBeenCalledTimes(4);
     expect(findAll(tree, element => element.props.role === "alert").map(element => element.props.children)).toContain(page.exportError);

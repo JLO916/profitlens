@@ -6,8 +6,8 @@ import { validateDataset } from "@/domain/validation";
 import type { AnalysisFilters, ComparisonMode, Dataset, DatasetInput, SourceRef, ValidationIssue } from "@/domain/types";
 import { EvidenceDrawer, type EvidenceSelection } from "./evidence-drawer";
 import { Overview } from "./overview";
-import { DataWorkspace, Diagnosis } from "./workspace-panels";
-import { AiPanel } from "./ai-panel";
+// V4-3c：通路健檢、資料來源、AI 解釋、會議紀錄、商品毛利與待辦改成隨頁載入（lazy-panels.tsx 的同名包裝元件）；會議入口等首載要用的小工具在 meeting-entry.tsx。
+import { ActionsWorkbench, AiPanel, DataWorkspace, Diagnosis, MeetingPage, ProductComparisonPanel, preparePanel, schedulePanelPreload } from "./lazy-panels";
 import { AiCollapse } from "./ai-collapse";
 import { getAiCapability, type AiCapability } from "@/application/ai-client";
 import { ImportWizard } from "./import-wizard";
@@ -23,18 +23,15 @@ import { fill, labels } from "@/i18n";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "@/application/copy";
 import { AnalysisChannelLimitError, AnalysisPeriodLimitError } from "@/application/limits";
 import { MultiScenarioWorkbench } from "./multi-scenario-workbench";
-import { MeetingEntry, MeetingPage, currentViewDecisionContext, downloadMeetingMarkdown } from "./meeting-page";
+import { MeetingEntry, currentViewDecisionContext, downloadMeetingMarkdown } from "./meeting-entry";
 import { PrintSummaryPortal, type PrintSummaryProps } from "./print-summary";
 import { copyWeeklySummary } from "./overview/weekly-snapshot";
 import { activateScenarioEpoch, emptyScenarioWorkspace, scenarioContextDecision, resolveScenarioReference, type ScenarioWorkspace, type ScenarioSelectionRef } from "@/application/scenario-workspace";
 import { buildReviewDecisionContext, createReviewSession, refreshReviewScenarioReferences, refreshReviewSession, syncReviewPins, selectReviewScenario, rebuildReviewSnapshot, updateReviewSession, type ReviewSession } from "@/application/review-session";
 import { appendMeeting, finalizeMeeting, lastMeeting, removeMeeting, type Meeting } from "@/application/meeting";
-import { exportExcel } from "@/application/excel-export";
-import { exportPptx } from "@/application/pptx-export";
 import { DEFAULT_EXPORT_VARIANT, type ExportVariant } from "@/application/export-variants";
 import { presentPeriodText, usePresentMode } from "./shell/present-mode";
 import { compareProducts } from "@/domain/product-comparison";
-import { exportWorkspaceDecision } from "@/application/workspace-decision-export";
 import { decisionSignature, emptyDecisionWorkspace } from "@/application/decision";
 import type { RestoredWorkspace, WorkspaceBackupSource } from "@/application/workspace-backup";
 import { ReplacementDialog, type PendingReplacement } from "./replacement-dialog";
@@ -42,8 +39,6 @@ import { BasisDialog, type BasisDialogSection } from "./basis-dialog";
 import { useWhatsNew, WhatsNewNote } from "./whats-new-note";
 import { beginReplacement, type ReplacementKind } from "@/application/replacement-guard";
 import { WorkspaceStorage } from "./workspace-storage";
-import { ActionsWorkbench } from "./actions-workbench";
-import { ProductComparisonPanel } from "./product-comparison-panel";
 import { emptyActionWorkspace, refreshActionWorkspace, addActionDraft, taipeiToday, type ActionWorkspace, type ActionContext } from "@/application/action-workspace";
 import { track } from "@/application/analytics";
 // V3-3 A1 imports（頂欄／側欄／頁尾／手機底部分頁列的子元件）
@@ -87,7 +82,17 @@ const scenarioVersionCount = (workspace: ScenarioWorkspace) => workspace.context
 const VALIDATION_HASH = "#validation";
 
 export function Dashboard({ analytics = false }: { analytics?: boolean }) {
-  const [panel, setPanel] = useState<Panel>("overview");
+  const [panel, showPanel] = useState<Panel>("overview");
+  // V4-3c：有資料時切到隨頁載入的頁面，chunk 還沒載入（還沒預先載入）就先載入再切，導覽標示與頁面內容在同一次更新裡換（不先閃一頁空白）；
+  // 已載入時照舊同步切頁（不是 transition）。連續切頁時只有最後一次生效。沒有資料時頁面內容不渲染，不必等。
+  const panelRequest = useRef(0);
+  const hasData = useRef(false);
+  const setPanel = useCallback((next: Panel) => {
+    const request = ++panelRequest.current;
+    const pending = hasData.current ? preparePanel(next) : null;
+    if (!pending) { showPanel(next); return; }
+    void pending.then(() => { if (request === panelRequest.current) showPanel(next); });
+  }, []);
   // D10＝A：側欄預設不顯示「開發者驗證」；掛載時或 hashchange 讀到 #validation 才顯示並切過去。
   // 顯示後維持到重新整理（切到其他頁時不消失）；離開驗證頁時清掉 hash（replaceState，不觸發 hashchange），重新整理即回到一般首頁。
   const [showValidation, setShowValidation] = useState(false);
@@ -148,6 +153,14 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     markChanged();
   };
   const dirty = active !== null && version !== savedVersion;
+  // V4-3c：資料第一次就緒（ready／partial）後，等一段時間再於閒置時預先載入各頁的 chunk（lazy-panels.tsx），第一次切頁就不會閃空白；
+  // 等待時間讓預先載入落在「載入示範資料」那一段之後。只排一次（已開始就不再排），卸載或資料又進入載入中時取消還沒開始的排程。
+  const dataReady = status === "ready" || status === "partial";
+  useEffect(() => {
+    if (!dataReady) return;
+    return schedulePanelPreload();
+  }, [dataReady]);
+  useEffect(() => { hasData.current = active !== null; }, [active]);
   useEffect(() => {
     if (!dirty && !showImport) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -171,7 +184,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     sync();
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
-  }, []);
+  }, [setPanel]);
   const previousPanel = useRef<Panel>(panel);
   useEffect(() => {
     if (previousPanel.current === "validation" && panel !== "validation" && window.location.hash === VALIDATION_HASH) window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
@@ -400,8 +413,10 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   }
   // R5 試算頁的通路獨立於全站篩選：決策匯出的「目前」區段跟著試算頁正在編輯的 context。
   const [scenarioFocus, setScenarioFocus] = useState<string | null>(null);
-  function exportDecision(format: "md" | "csv" | "json") {
+  // V4-3c：決策匯出的程式按下時才載入（不在首載）；回傳 promise，失敗時 reject，由呼叫端（試算頁、待辦頁的通知與下載選單）照原本的錯誤路徑處理。
+  async function exportDecision(format: "md" | "csv" | "json"): Promise<void> {
     if (!active) return;
+    const { exportWorkspaceDecision } = await import("@/application/workspace-decision-export");
     const body = exportWorkspaceDecision(format, active, scenarioWorkspace, actionWorkspace, reviewSession, active.conversion ?? null, scenarioFocus, activeDatasetName(active));
     downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");
     if (format === "md") track("export_markdown");
@@ -422,8 +437,9 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     setMenuExport({ busy: kind, error: null });
     try {
       const summary = viewSummary(active);
-      if (kind === "excel") await exportExcel({ variant, summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null, datasetName: activeDatasetName(active) });
-      else await exportPptx({ variant, summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null, datasetName: activeDatasetName(active) });
+      // V4-3c：Excel／PPT 的產生程式按下時才載入；載入失敗與產生失敗走同一個 catch（選單顯示 export 錯誤）。
+      if (kind === "excel") { const { exportExcel } = await import("@/application/excel-export"); await exportExcel({ variant, summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null, datasetName: activeDatasetName(active) }); }
+      else { const { exportPptx } = await import("@/application/pptx-export"); await exportPptx({ variant, summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null, datasetName: activeDatasetName(active) }); }
       track(kind === "excel" ? "export_excel" : "export_pptx");
       setMenuExport({ busy: null, error: null });
     } catch { setMenuExport({ busy: null, error: "export" }); } finally { menuBusy.current = false; downloadSummaryRef.current?.focus(); }

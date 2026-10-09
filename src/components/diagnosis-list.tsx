@@ -14,6 +14,7 @@ import { ShellIcon } from "./shell/shell-icon";
 import { DiagnosisEmpty } from "./diagnosis-empty";
 import { BarCell, barCellScale } from "./charts/bar-cell";
 import { alertStatus, ImpactAmount, impactEvidence, toneClass } from "./top-three";
+import { diagnosisCounts } from "./diagnosis-counts";
 
 // V3-5 A 健檢結果（PRD §7.2 第 2 點、§9.4 C9 清單型警示列）：一個規則一列 <li.alert-row> > <details.alert.diagnosis-row>。
 // <summary>（L1，一行）只放非互動內容：展開指示、狀態標籤、標題、（與頁面範圍不同時的）範圍標籤、影響金額純文字。
@@ -111,14 +112,8 @@ export function rankingSelection(snapshot: Pick<WorkspaceSnapshot, "report">, ro
   };
 }
 
-/**
- * 標題列的計數徽章（PRD §7.2、§9.4 C8）：直接數每列的狀態標籤（alertStatus），不做新的分類；中性（沒有方向）的列不計。
- * 回傳的數字一定等於列內同色調狀態標籤的個數。
- */
-export function diagnosisCounts(groups: readonly Pick<DiagnosisGroup, "missing" | "impact_cents">[]): { missing: number; unfavorable: number; favorable: number } {
-  const tones = groups.map(group => alertStatus(group)?.tone ?? null);
-  return { missing: tones.filter(tone => tone === "warning").length, unfavorable: tones.filter(tone => tone === "unfavorable").length, favorable: tones.filter(tone => tone === "favorable").length };
-}
+// V4-3c：diagnosisCounts 搬到 diagnosis-counts.ts（側欄徽章在首載只用到它），這裡再匯出，既有的匯入路徑不變。
+export { diagnosisCounts };
 
 /** <summary> 內的影響金額：純文字（summary 不放互動元件）；L1（萬）與色調同 ImpactAmount，可點的按鈕在展開內容第一行。 */
 function ImpactText({ snapshot, diagnostic }: { snapshot: Pick<WorkspaceSnapshot, "report">; diagnostic: Diagnostic }) {

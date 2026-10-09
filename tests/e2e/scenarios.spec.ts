@@ -7,6 +7,7 @@ import { AUTO_SAVE_DELAY_MS } from "../../src/application/auto-save";
 import { MINUS, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatMetric, formatPeriodL1, formatSignedDelta } from "../../src/application/presentation";
 import { closePeriodSheet, dismissSavePrompt, navigateTo, openCustomPeriod, openPeriodSheet, openValidation, periodSummary, periodSummaryText, selectScenarioChannel, startChannelContext, switchActionsView } from "./replacement-helpers";
 import { acceptAssumptions, consentBox, decisionExportLabel, downloadDecision, downloadScenario, expectAcknowledged, expectConsentPending, modeButton, openScenarioExport, openTemplateHelp } from "./scenario-helpers-v3";
+import { isPageCodeChunk } from "./lazy-chunk-helpers-v43c";
 
 const dw = labels.scenarios.decision, aw = labels.actions.workbench, msw = labels.scenarios.workbench;
 const cmAfter = labels.metrics.contribution_after_marketing.headline;
@@ -744,8 +745,11 @@ test("試算、人工行動與三種下載零 HTTP、零持久化，重整與新
   const before = await page.evaluate(async () => ({ local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(), databases: (await indexedDB.databases()).map(value => ({ name: value.name, version: value.version })) }));
   expect(before.databases, "按「先不要」後 IndexedDB 不得有任何資料庫").toEqual([]);
   const requests: { method: string; resourceType: string; hasBody: boolean }[] = [];
+  // V4-3c（D-V4-42＝A）：待辦頁與決策匯出的程式第一次用到時才向同一個網站載入（isPageCodeChunk）；只放行這一種，其餘照舊攔下並記錄。
+  const origin = new URL(page.url()).origin;
   await page.route("**/*", async route => {
     const request = route.request();
+    if (isPageCodeChunk(request, origin)) { await route.continue(); return; }
     requests.push({ method: request.method(), resourceType: request.resourceType(), hasBody: request.postDataBuffer() !== null });
     await route.abort("blockedbyclient");
   });

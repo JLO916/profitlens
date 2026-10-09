@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { fill, labels } from "@/i18n";
 import { diagnosisGroups } from "@/application/diagnosis-group";
-import { diagnosisCounts } from "../diagnosis-list";
+import { diagnosisCounts } from "../diagnosis-counts";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { DataStatus, type DataStatusProps } from "./data-status";
 import { ShellIcon } from "./shell-icon";

@@ -46,7 +46,7 @@ function useDismiss(open: boolean, close: () => void, rootRef: RefObject<HTMLEle
  * 工具列（看板｜清單）、看板四欄與 C13 卡片、「移到：」文字按鈕列；看板檢視的編輯改成右側待辦編輯抽屜（ActionDrawer），清單檢視維持 v2 的內嵌編輯器。
  * `initial.editing` 只給測試與日後的深連結用（SSR 直接渲染開著的抽屜）。
  */
-export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onExport, view, onViewChange, initial }: { workspace: ActionWorkspace; onChange: (next: ActionWorkspace) => void; source: ActionSource; onEvidence: (selection: EvidenceSelection, context: ActionContext) => void; onExport: (format: 'md' | 'csv' | 'json') => void; view?: ActionsView; onViewChange?: (view: ActionsView) => void; initial?: { editing?: string | null } }) {
+export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onExport, view, onViewChange, initial }: { workspace: ActionWorkspace; onChange: (next: ActionWorkspace) => void; source: ActionSource; onEvidence: (selection: EvidenceSelection, context: ActionContext) => void; onExport: (format: 'md' | 'csv' | 'json') => void | Promise<void>; view?: ActionsView; onViewChange?: (view: ActionsView) => void; initial?: { editing?: string | null } }) {
   const [notice, setNotice] = useState(''); const [queries, setQueries] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState<ActionRebindPreview | null>(null); const [busy, setBusy] = useState<string | null>(null);
   const [ownView, setOwnView] = useState<ActionsView>('board');
@@ -78,7 +78,8 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
     if (added) { pendingFocus.current = id; if (current === 'board') setEditing(id); }
   }
   function exportAs(format: 'md' | 'csv' | 'json') {
-    try { onExport(format); setNotice(ui.exportDone); } catch { setNotice(ui.exportFailed); }
+    // V4-3c：onExport 可能回傳 promise（決策匯出按下時才載入）：完成才寫「已匯出」、失敗寫 exportFailed；同步的 onExport 照舊。
+    try { const pending = onExport(format); if (pending instanceof Promise) void pending.then(() => setNotice(ui.exportDone), () => setNotice(ui.exportFailed)); else setNotice(ui.exportDone); } catch { setNotice(ui.exportFailed); }
     const menu = exportRef.current; if (menu?.open) { menu.open = false; menu.querySelector<HTMLElement>(':scope > summary')?.focus(); }
   }
   function moveTo(id: string, status: ActionExecutionStatus, n: number) {
