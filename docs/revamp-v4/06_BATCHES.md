@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／相關拍板／另需的人工時間。
 >
-> **目前進度：V4-3b 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3b-acceptance.md`）。First Load JS 剩 8,066 bytes，待拍板 D-V4-42（建議新增 V4-3c 首載瘦身，在 V4-4 之前）。V4-2 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-2-acceptance.md`），MVP 切線已到（preview 部署需使用者當次同意）。2026-10-09 使用者回覆「待拍版的都用建議值」：D-V3-26／27／29–37 依建議值，新增批次 V4-7c，共 17 批。V4-1 完成（2026-10-08）。D-V4-1–41 全部定案。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
+> **目前進度：V4-3c 進行中（2026-10-09 開工；D-V4-42＝A 新增的首載瘦身批次）。V4-3b 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3b-acceptance.md`）。V4-2 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-2-acceptance.md`），MVP 切線已到（preview 部署需使用者當次同意）。2026-10-09 使用者回覆「待拍版的都用建議值」：D-V3-26／27／29–37 依建議值，新增批次 V4-7c，共 17 批。V4-1 完成（2026-10-08）。D-V4-1–41 全部定案。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
 >
 > 本套件寫「V4-0」時指 V4-0a、V4-0b 兩批合稱；「V4-0 實測」「V4-0 基準」都是 V4-0a 量到的 v3.0.0 值。原本的 V4-0（13 項，含 AST 掃描器、capture 與 metrics、PPT spike、合成資料、四頁兩尺寸設計稿與全套基準量測）與 V4-7（4 張圖、跨資料來源、匯入精靈、抽屜三個介面）在開工前依工作量拆成 a／b（CLAUDE.md：批次太大要在開工前拆；v3 的設計稿放在 L 級的 V3-1，不在 V3-0）。
 
@@ -66,7 +66,8 @@
 | **MVP 切線** | V4-0a 到 V4-2，總覽改版完整 | — | 經使用者當次明確同意才部署 Vercel preview，不切正式站（依 D-V4-28） | 老闆試用 | — |
 | V4-3a | 通路健檢（一）（G9、G10、G7b） | M | V4-2；D-V4-6、18、19、32（與 D-V3-31） | — | **完成（2026-10-09）** |
 | V4-3b | 通路健檢（二）（G11、G12；下鑽加日期與 SKU） | M | V4-3a；D-V4-17、18 | — | **完成（2026-10-09）** |
-| V4-4 | 商品毛利（G13、G14） | M | V4-3b；D-V4-38、39（V4-0b 新增，2026-10-08 定為 A） | — | 未開工 |
+| V4-3c | 首載瘦身（D-V4-42＝A，2026-10-09 新增；不改畫面） | M | V4-3b；D-V4-42 | — | 進行中（2026-10-09 開工） |
+| V4-4 | 商品毛利（G13、G14） | M | V4-3c；D-V4-38、39（V4-0b 新增，2026-10-08 定為 A） | — | 未開工 |
 | V4-5 | 假設試算（G15、G16） | M | V4-4；D-V4-20 | — | 未開工 |
 | V4-6 | 會議紀錄（G19、G15 會議實例；G18 取消） | M | V4-5 | — | 未開工 |
 | V4-7a | 資料來源（G20、G21、問題表篩選） | M | V4-6；D-V4-40（V4-0b 新增，2026-10-08 定為 A） | — | 未開工 |
@@ -78,7 +79,7 @@
 | V4-10 | P2 圖表（G8、G17、G24；可整批延後） | M | V4-9b；D-V4-12、21、22 | — | 未開工 |
 | V4-11 | 收尾與上線 | M | 全部（V4-10 延後時依賴 V4-9b）；D-V4-1、28；**H6**（擋正式上線） | H6 約 1 週 | 未開工 |
 
-總計 16 批、至少 16 個工作階段；另需約 1.5–2 週的人工時間（H5、H6、匯出開檔檢查，加上招募與等待）。依賴鏈：V4-0a、V4-0b、（H5）、V4-1、V4-2、V4-3a、V4-3b、V4-4、V4-5、V4-6、V4-7a、V4-7b、V4-8、V4-9a、V4-9b、V4-10、V4-11、（H6）。V4-10 可整批延後，V4-11 改依賴 V4-9b。D-V4-3（禁區 diff 基準）每批都適用，在 V4-0a 回覆即可。
+總計 18 批（原 16 批，加 V4-7c 與 V4-3c）、至少 18 個工作階段；另需約 1.5–2 週的人工時間（H5、H6、匯出開檔檢查，加上招募與等待）。依賴鏈：V4-0a、V4-0b、（H5）、V4-1、V4-2、V4-3a、V4-3b、V4-4、V4-5、V4-6、V4-7a、V4-7b、V4-8、V4-9a、V4-9b、V4-10、V4-11、（H6）。V4-10 可整批延後，V4-11 改依賴 V4-9b。D-V4-3（禁區 diff 基準）每批都適用，在 V4-0a 回覆即可。
 
 畫面基準的編號：01–09 是 v3 的 9 個畫面（`01-overview-top`、`02-overview-full`、`03-evidence-drawer`、`04-actions-board`、`05-diagnosis`、`06-products`、`07-scenarios`、`08-meeting`、`09-data`）；V4-0a 新增 10 健檢圖區、11 商品圖區、12 匯入精靈步驟 4，以及 13 KPI 帶元素截圖；10–13 的拍攝狀態、資料與定位器見 V4-0a 第 9 項。
 
@@ -224,6 +225,26 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 **同批 labels 與測試**：`diagnosis.chartsV4.{heat, rates}`；新增 `tests/chart-heatmap.test.ts`、`tests/charts-diagnosis-v4.test.tsx`；擴 `tests/evidence-filter.test.ts`、`tests/format-layers.test.ts`（`formatHeatCell`）、`tests/chart-theme.test.ts`（heat token 恰好 2 個，X33）、`tests/e2e/axe-sweep.spec.ts`、`tests/e2e/keyboard-walk.spec.ts`、`charts-diagnosis.spec`；mounted-testids V4-3b 錨點（健檢圖區收合狀態）。
 
 **相關拍板**：D-V4-17、18。
+
+---
+
+## V4-3c 首載瘦身（M；D-V4-42＝A，2026-10-09 新增；不改任何畫面）
+
+**範圍**：
+1. 匯出模組改成按下時載入：`src/components/dashboard.tsx` 呼叫 `excel-export`、`pptx-export`、`workspace-decision-export`（與只被它們用到的模組）的地方改成 `await import()`；`src/components/meeting-page.tsx` 的 `exportExcel`、`exportPptx` 同樣改；`src/components/shell/export-menu.tsx` 的 `preloadExcelWriter` 改成 `import(...).then(m => m.preloadExcelWriter())`。匯出檔的位元組不變（既有匯出測試與 E2E 原樣通過）。
+2. 會議紀錄、通路健檢與資料來源（`workspace-panels` 的 `Diagnosis`、`DataWorkspace`、`Products`）、商品比較（`ProductComparisonPanel`）、待辦（`ActionsWorkbench`）、AI 面板（`AiPanel`）改成隨頁載入：新檔 `src/components/lazy-panels.tsx` 匯出**同名**包裝元件（各自帶 `Suspense`，fallback 為空），`dashboard.tsx` 只改 import 行，JSX 字串一字不改（`tests/mounted-testids.test.tsx`、`empty-states-v3.test.tsx`、`product-page-v3.test.tsx`、`period-bar.test.tsx` 的原始碼比對）。`dashboard.tsx` 從 `meeting-page.tsx` 匯入的 `MeetingEntry`、`currentViewDecisionContext`、`downloadMeetingMarkdown` 搬到小模組，`meeting-page.tsx` 再匯出（呼叫端不變）。`MultiScenarioWorkbench`（常駐掛載、掛載時設定試算焦點）、`ImportWizard`、`EvidenceDrawer`、`Overview` 本批不動。
+3. 預先載入：資料載入完成後，在閒置時（`requestIdleCallback`，沒有時 `setTimeout`）預先 `import()` 各頁的 chunk，讓第一次切頁不會出現空白；預先載入的時間點不得落在 Lighthouse「載入示範資料」timespan 內（該 timespan 在三件事出現時結束）。
+4. 單元測試不受影響（資料頁狀態都直接匯入面板，Dashboard 只在空狀態渲染）；若有測試需要等待 lazy 元件，改成直接匯入或等待，不改斷言語意。
+
+**依賴**：V4-3b；D-V4-42＝A。
+
+**允許變動畫面**：無（52 張與 V4-3b 差異 0）。
+
+**驗收重點**：First Load JS gzip 下降（預估約 45 KB；實測寫入驗收，門檻仍是 545,397）；首頁 HTML 的腳本清單不含被拆出去的頁面 chunk；52 張畫面 0 差異；全套單元與 E2E 通過（含 keyboard-walk 里程碑 Tab 數不變、axe 0、network-log 下載集合不變）；390 的五個 TBT 都在 D-V4-36 門檻內（切頁的 chunk 已預先載入）；`dashboard.tsx` 的 JSX 原始碼比對測試原樣通過；匯出檔位元組不變；禁區四條命令皆空。
+
+**同批 labels 與測試**：labels 不動；必要時加 `tests/lazy-panels.test.ts*`（同名包裝元件、預先載入在資料載入後且只有一次）；`metrics.spec.ts` 記錄首頁腳本清單。
+
+**相關拍板**：D-V4-42＝A。
 
 ---
 

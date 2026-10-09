@@ -292,6 +292,10 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-09｜D-V4-42＝A：新增 V4-3c 首載瘦身
+
+使用者回覆「A」。V4-3c 只做工程面的拆分，不改畫面：匯出模組按下時載入；會議紀錄、健檢與資料來源、商品比較、待辦、AI 面板隨頁載入（新檔 `lazy-panels.tsx` 匯出同名包裝元件，`dashboard.tsx` 只改 import 行，JSX 原始碼比對測試不動）；資料載入後在閒置時預先載入各頁 chunk，第一次切頁不出現空白，也不落在 Lighthouse「載入示範資料」的量測區間。`MultiScenarioWorkbench`（常駐掛載、掛載時設定試算焦點，匯出會用到）、`ImportWizard`、`EvidenceDrawer`、`Overview` 本批不拆：前者有掛載時的副作用，後兩者在多數頁面都可能出現，`Overview` 拆出去會把 Recharts 的初始化移進「載入示範資料」的量測區間。批次總數變成 18。
+
 ## 2026-10-09｜Revamp v4 V4-3b：健檢熱表、小倍數與 TBT 修正的取捨
 
 **TBT 修正（`useDeferredMount`）：** 合併版本在低負載下 390「切到通路健檢」TBT 中位數 853.6 ms，超過門檻 832.3（D-V4-36）。G11（約 227 個節點）與 G12（約 390 個節點，`<details>` 收合時也要掛載，M1）讓切頁那一次渲染變長。不採用「收合時不渲染 G12」（違反 M1）與「切頁包 startTransition」（舊頁會多停留一下，是全站行為改變）；改為新 hook 讓兩者的內容在瀏覽器掛載後的下一個 animation frame 以 transition 渲染，之前由 ChartFrame 同高的 loading 骨架佔位。伺服器與單元測試沒有 window，不延後，所以 SSR、M1／M6、chart-lint 與 testid 基準都不變；健檢頁在正式站不做伺服器端渲染，沒有 hydration 不一致。修正後 815.4 ms。
