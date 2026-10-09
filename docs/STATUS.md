@@ -1,5 +1,51 @@
 # Status
 
+## Revamp v4｜V4-4 商品毛利（完成；G13、G14）
+
+使用者 2026-10-10 回覆「V4-4」開工。V4-4 依 06_BATCHES 完成：
+
+- **C25 RankedBars**（`ranked-bars.tsx`、`hbarGeometry`；inline SVG，SSR 輸出每根柱）。
+- **G14 商品毛利為負的商品累計**：
+  - `productPareto`／`product-pareto-v1`；只在有負值時渲染，`after`＝`product-worst`。
+  - 柱 ≤ 10，其餘一列「另 n 個」；資料表列出全部負值列，末筆累計＝負值合計、累計佔比 100%。
+  - 累計格抽屜不帶「+」，佔比格可開抽屜。
+- **G13 商品毛利兩期差額**：`worstChange`；減少段在上、增加段在下，各寬度都一樣（D-V4-38＝A）；每段 ≤ 5，`after`＝`product-best`。
+- **其他**：
+  - ChartFrame `headingLevel`（h4）。
+  - 商品抽屜 builder 抽到 `product-evidence.ts`（只搬移，payload 逐欄位相同）。
+  - `filter.sku` 接線。
+  - keyboard-walk 加商品頁資料表 summary 里程碑；axe 加合成資料商品頁。
+- **審查修正**：
+  - G13 none 標題縮到 14 字。
+  - C33 改成點擊時才組 evidence，避免 O(n²)。
+  - 不利金額上色，G14 的柱帶 `arrangeVersion`，圖例只列有畫的段。
+- **主流程修正**：畫面 11 的截圖改用 fullPage＋clip，原本 1440 下緣超出視窗的部分沒有繪製。
+
+最終驗收：
+
+- **靜態檢查**：typecheck、lint、contrast（85／85）exit 0；audit:ui design 15 項不變。
+- **單元測試與建置**：unit 147 檔／2,898 全過；build pass。
+- **E2E**：最終程式 941 passed／0 failed／15 skipped（28.0m）。
+- **畫面基準**：52 張只有四個尺寸的 06、11 變動（允許），其餘 44 張 0 差異。
+- **量測**：
+  - B1 商品 1440 第一張圖框頂 403（≤ 900）。
+  - B9 商品 DOM 2,225（≤ 3,322）。
+  - First Load JS 500,188（＋745，剩 45,209）。
+  - 390 TBT 低負載三次中位數：載入示範資料 1,037.7、健檢 792.0、**商品 84.0**、會議 986.1、資料來源 13.8，五項通過。
+- **無障礙與網路**：Lighthouse a11y 全 100；axe 15／15／15／14 狀態全 0；keyboard-walk 只有商品頁多一個資料表 summary 停留點；network-log 下載集合不變。
+- **禁區**：四條命令都是空的。
+
+待拍板：
+
+- **D-V4-45（新增）**：健檢頁 G7a、G7b、G10 資料表的不利色。建議 B，排入 V4-8；回覆前維持 A，也就是中性色。
+
+已知：
+
+- G13、G14 的柱與資料表延後一拍渲染（useDeferredMount，商品切頁 TBT）。
+- 示範資料時，第一格是 v3 原樣沒有外框的表，第二格是有外框的圖框，視覺不對稱（設計稿已知）。
+
+驗收文件：`verification/revamp-v4-V4-4-acceptance.md`；量測與截圖在 `verification/revamp-v4/V4-4/`。下一批：V4-5（假設試算 G15、G16）。
+
 ## Revamp v4｜V4-3c 首載瘦身（完成；不改畫面）
 
 使用者 2026-10-09 回覆「A」（D-V4-42），新增本批。V4-3c 依 06_BATCHES 完成以下三項：

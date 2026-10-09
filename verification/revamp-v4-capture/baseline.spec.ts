@@ -98,7 +98,14 @@ test("V4-0a 畫面基準 10 健檢圖區、11 商品圖區", async ({ page }) =>
   await expect(highlights).toHaveCount(1);
   await expect(highlights).toBeVisible();
   await settle(page);
-  await expect.soft(highlights).toHaveScreenshot("11-products-chart-area.png", { stylePath: await noOverlayStylePath() });
+  // V4-4：改用 fullPage＋clip（同畫面 10）。元素截圖會先把 section 捲進視窗，main section 的 scroll-margin-top 120px 讓 G13 加入後變高的 section 下緣超出 1000px 視窗，
+  // 超出的那段（G13 資料表 summary 與圖框下緣）不會繪製；以文件座標取 section 的範圍，畫面與元素截圖相同，只是下緣完整。
+  const highlightsClip = await highlights.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const x = Math.floor(rect.left + window.scrollX), y = Math.floor(rect.top + window.scrollY);
+    return { x, y, width: Math.ceil(rect.right + window.scrollX) - x, height: Math.ceil(rect.bottom + window.scrollY) - y };
+  });
+  await expect.soft(page).toHaveScreenshot("11-products-chart-area.png", { fullPage: true, clip: highlightsClip, stylePath: await noOverlayStylePath() });
 
   expect(errors, `${errors.length} console／page errors`).toEqual([]);
 });

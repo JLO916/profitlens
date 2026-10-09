@@ -292,6 +292,16 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-10｜Revamp v4 V4-4：商品毛利圖的取捨
+
+- **G14 的資料表列出全部負值列，圖只畫前 10**：`productPareto` 同時給 `rows`（前 limit）與 `allRows`；末筆累計＝負值合計、累計佔比 100% 在資料表成立。累計佔比先把累計與負值合計取反再呼叫 `ratioMetric`（分母 ≤ 0 時 `ratioMetric` 一律 null）。
+- **G14 的柱帶 `arrangeVersion: product-pareto-v1`、不帶 `metricVersion`**：值直接取自 domain（`contribution-v1`），只經 `productPareto` 挑出與排序；累計與佔比是新算出的值，帶 `metricVersion: product-pareto-v1` 與 `valueKind: "level"`。
+- **G13 資料表列出全部差額 < 0、再接全部差額 > 0 的列**，差額 0 與待補不列（只挑列）；`product-best` 表維持前 10。
+- **C33 加 `hasEvidence`、`unfavorable`、`signed`**：evidence 改在點擊時才組（G14 累計與佔比格整表預先組是 O(n²)）；只有不利上色（D-V3-7）；差額欄帶正負號。健檢頁既有資料表是否也上色列 D-V4-45。
+- **G13、G14 延後一拍渲染**：沿用 V4-3b 的 `useDeferredMount`；前 10 名表不延後，鍵盤里程碑 `product-worst` 的位置不變。
+- **畫面 11 改用 fullPage＋clip**：元素截圖受 `main section { scroll-margin-top: 120px }` 影響，超出視窗的部分不繪製；改法與畫面 10 相同，畫面範圍不變。
+- **RankedBars 的 pareto 累計欄是另一個 svg**：≤ 767px 以 CSS 隱藏後主圖變寬（390 柱約 107px），不用 JS 判斷視窗寬。
+
 ## 2026-10-09｜D-V4-43＝A、D-V4-44＝B＋C
 
 使用者回覆「43 A、44 B＋C」。
