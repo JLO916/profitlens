@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
-import { applyEvidenceFilter, evidenceFilterText, hasEvidenceFilter, type EvidenceFilter } from "@/application/evidence-filter";
+import { applyEvidenceFilter, evidenceFilterText, hasEvidenceFilter, scopedEvidenceFilter, type EvidenceFilter } from "@/application/evidence-filter";
 import { emptyKindOf, evidenceRows, formatAmountL1, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatPeriodL1, formatPointsValue, formatRateLayer, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import { rateToPercent, type RawValuesByFile, type TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -160,9 +160,11 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   }
   const allRows = useMemo(() => evidenceRows(dataset, evidence.formula ? evidence.sources : evidence.sources.filter((source) => files.has(source.file))), [dataset, evidence]);  // eslint-disable-line react-hooks/exhaustive-deps -- files derives from evidence.name
   // V3-9b F10：下鑽帶入的篩選預設套用，原始明細過濾後再算分段筆數與分頁；清除後回到 sources 的全部列（換一筆證據時抽屜重新掛載，篩選回到預設）。
+  // V4-3b：filter.sku 只和同一個商品的商品層證據一起用；用錯時拿掉 sku 條件（scopedEvidenceFilter），其餘條件（週、單日、通路）照舊。
   const [filterOn, setFilterOn] = useState(true);
-  const filterable = hasEvidenceFilter(evidence.filter);
-  const rows = useMemo(() => filterable && filterOn ? applyEvidenceFilter(allRows, evidence.filter) : allRows, [allRows, evidence.filter, filterable, filterOn]);
+  const filter = useMemo(() => scopedEvidenceFilter(evidence), [evidence]);
+  const filterable = hasEvidenceFilter(filter);
+  const rows = useMemo(() => filterable && filterOn ? applyEvidenceFilter(allRows, filter) : allRows, [allRows, filter, filterable, filterOn]);
   const counts = { sales: 0, costs: 0, ads: 0, manifest: 0 } as Record<SourceTab, number>;
   for (const row of rows) counts[(Object.keys(fileOfTab) as SourceTab[]).find(tab => fileOfTab[tab] === row.file) ?? "manifest"]++;
   const tabs = (Object.keys(fileOfTab) as SourceTab[]).filter(tab => counts[tab] > 0);
@@ -215,7 +217,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const subtitle = evidenceSubtitle(evidence, { alias, anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot?.report, yoy: snapshot?.yoy?.status === "ready" ? snapshot.yoy.period : undefined });
   const column = v3.sourceColumns;
   const filterCopy = labels.overview.trendYoyV3.filter;
-  const filterText = filterable ? evidenceFilterText(evidence.filter, { alias, anchor: dataset.manifest.data_as_of }) : null;
+  const filterText = filterable ? evidenceFilterText(filter, { alias, anchor: dataset.manifest.data_as_of }) : null;
 
   useEffect(() => {
     const dialog = dialogRef.current;
