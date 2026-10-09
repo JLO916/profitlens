@@ -1215,6 +1215,34 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-4 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-4 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    it("V4-4 C 商品：G13 chart-products-variance 每個商品狀態一份（product-best 是它的 after）；G14 chart-products-pareto 只在有商品毛利為負時出現（product-worst 是它的 after），沒有時 product-worst 照 v3 是第一格；兩張圖的資料表 <details> 收合但表格掛載；圖框內沒有停留點；主層獨立圖區塊：示範 1、有負值 2；chart- testid 全頁唯一", async () => {
+      const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const products = states.filter(state => state.state?.panel === "products");
+      expect(products.map(({ name }) => name)).toEqual(["products", "products-synthetic", "products-refund-only"]);
+      const expected: Record<string, string[]> = { products: ["chart-products-variance"], "products-synthetic": ["chart-products-pareto", "chart-products-variance"], "products-refund-only": ["chart-products-pareto", "chart-products-variance"] };
+      for (const { name, html } of products) {
+        const pareto = expected[name].includes("chart-products-pareto");
+        expect(checkChartMarkup(html, { page: "products" }).mainSections, `${name}：主層獨立圖區塊`).toEqual(expected[name]);
+        for (const id of ["chart-products-variance", "chart-products-variance-table", "product-worst", "product-best"]) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+        for (const id of ["chart-products-pareto", "chart-products-pareto-table"]) expect(testIdCounts(html).get(id) ?? 0, `${name} ${id}`).toBe(pareto ? 1 : 0);
+        expect(occurrences(html, 'id="product-highlights-heading"'), name).toBe(1);
+        const grid = element(html, 'class="product-highlight-grid"')!;
+        const firstChild = openTag(grid.slice(grid.indexOf(">") + 1), "<section")!;
+        expect(firstChild, `${name}：第一格`).toContain(pareto ? 'data-testid="chart-products-pareto"' : 'data-testid="product-worst"');
+        expect(element(html, 'data-testid="chart-products-variance"'), `${name}：product-best 是 G13 的 after`).toContain('data-testid="product-best"');
+        if (pareto) expect(element(html, 'data-testid="chart-products-pareto"'), `${name}：product-worst 是 G14 的 after`).toContain('data-testid="product-worst"');
+        for (const [block, table] of [["chart-products-variance", "chart-products-variance-table"], ...(pareto ? [["chart-products-pareto", "chart-products-pareto-table"]] : [])]) {
+          const section = element(html, `data-testid="${block}"`)!;
+          const details = element(section, '<details class="data-alternative"')!;
+          expect(openTag(details, "<details"), `${name} ${block}：收合`).not.toMatch(/\sopen=""/);
+          expect(details, `${name} ${block}：收合時表格仍掛載`).toContain(`data-testid="${table}"`);
+          const frame = element(section, 'class="chart-frame sm"')!;
+          expect(frame, `${name} ${block}：圖框內沒有停留點`).not.toMatch(/tabindex|<button|<a\s|<details/);
+          if (openTag(section, 'class="chart-frame sm"')!.includes('data-state="ready"')) expect(openTag(section, 'class="chart-frame sm"'), `${name} ${block}`).toContain('aria-hidden="true"');
+        }
+        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-products-")), name).toEqual([]);
+      }
+    });
 
     // ── V4-5 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-5 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 

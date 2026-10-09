@@ -2851,4 +2851,10 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-4 B 錨點結束 ── */
 
 /* ── V4-4 C：商品頁 G13、G14 版面（.product-highlight-grid 內的 ChartFrame；代理 C） ── */
+/* PRD §5.3 第 2 列「兩格等高」：兩格拉成同一列高（v3 是 align-items: start）；> 900px 兩欄、≤ 900px 單欄（沿用 v3 的斷點，單欄時各格各自的高）。
+   格內的 ChartFrame（section.panel.chart-section）不另加外距；min-width: 0 讓 C25 的量寬容器隨格寬縮放，390 不撐出頁面橫向捲動。 */
+.product-highlight-grid { align-items: stretch; }
+.product-highlight-grid > .chart-section { min-width: 0; margin: 0; }
+/* ChartFrame after 常駐的前 10 名表（product-worst、product-best；DOM 不變）：與圖之間一條細分隔線（H5 設計稿 products*.html 建議版）。 */
+.product-highlight-grid > .chart-section > .product-highlight { margin-top: var(--space-4); padding-top: var(--space-3); border-top: var(--border-w) solid var(--border-subtle); }
 /* ── V4-4 C 錨點結束 ── */

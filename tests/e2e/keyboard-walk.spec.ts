@@ -16,6 +16,7 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V4-0a（06_BATCHES V4-0a 第 8 項、PRD §2.2 B6、§8.1）：通用斷言「任何 Tab 停留點都不在 [aria-hidden=true] 內」。七頁整頁走查的每一步（含離開 main 的那一步）
  *   與 C 段 tabTo 經過的每一步，都檢查焦點元素本身或祖先有沒有 aria-hidden="true"；v3.0.0 應為 0，之後每批都跑（v4 的圖容器 aria-hidden，圖內不得有可聚焦元素）。
  * V4-3b：健檢頁另記「經過 G11 熱表」的停留點數與 Tab 數（PASS_REGIONS），斷言經過熱表的 Tab 數 ≤ 3。
+ * V4-4：商品頁加「第一張圖的資料表 summary」里程碑（在「最差商品」之後），「最差商品」的 Tab 數不晚於 V4-0a。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -24,7 +25,8 @@ const MAX_WALK = 700;
 const MILESTONES: Record<LaunchPage, { name: string; selector: string }[]> = {
   overview: [{ name: "第一張 KPI", selector: "[data-testid='kpi-band'] [data-testid^='kpi-']" }],
   diagnosis: [{ name: "健檢第一列", selector: "[data-testid^='diagnosis-row-']" }],
-  products: [{ name: "最差商品（第一個結果）", selector: "[data-testid='product-worst']" }, { name: "商品表第一列", selector: "[data-testid='product-table'] tbody tr" }],
+  // V4-4（06_BATCHES V4-4、CHART_CATALOG G14「鍵盤」）：加「第一張圖的資料表 summary」（示範資料是 G13，有商品毛利為負時是 G14），必須在「最差商品」之後。
+  products: [{ name: "最差商品（第一個結果）", selector: "[data-testid='product-worst']" }, { name: "第一張圖的資料表 summary", selector: "section.product-highlights section.chart-section > details.data-alternative > summary" }, { name: "商品表第一列", selector: "[data-testid='product-table'] tbody tr" }],
   // D-V3-27＝C（待拍板）：「記住聲明後從範本起 ≤ 12 步」——另記「範本」的步數，兩者相減即從範本到「試算」的 Tab 數（示範資料剛載入時聲明還沒勾，含聲明 checkbox 一步）。
   scenarios: [{ name: "第一個結果數字（基準）", selector: "[data-testid^='baseline-']" }, { name: "範本", selector: "[data-testid='scenario-preset']" }, { name: "「試算」按鈕", selector: `[data-testid='scenario-1'] button[data-v310-calculate]` }],
   actions: [{ name: "第一張待辦卡或新增", selector: "[data-testid^='board-card-'], [data-testid='actions-empty-add'], [data-testid='actions-add']" }],
@@ -36,6 +38,11 @@ const MILESTONES: Record<LaunchPage, { name: string; selector: string }[]> = {
  * stops＝焦點落在區塊內的步數；across＝從區塊前一個停留點到區塊後一個停留點按的 Tab 數（＝區塊內最後一步 − 區塊內第一步 ＋ 2）。
  * 健檢頁 G11 熱表是 grid 型 roving tabindex（整張 1 個停留點），所以 stops 應為 1、across 應為 2；斷言 across ≤ 3。
  */
+/**
+ * V4-4（06_BATCHES V4-4「驗收重點」）：商品頁「最差商品」的 Tab 數不晚於 V4-0a 實測（verification/revamp-v4/V4-0a/keyboard-walk.json：1440 是 9、390 是 3），
+ * 而且「第一張圖的資料表 summary」在它之後。
+ */
+const V4_0A_PRODUCT_WORST_TABS: Record<string, number> = { desktop: 9, mobile: 3 };
 const PASS_REGIONS: Partial<Record<LaunchPage, { name: string; selector: string; maxAcross: number }[]>> = {
   diagnosis: [{ name: "熱表", selector: "[data-testid='chart-diagnosis-heat']", maxAcross: 3 }],
 };
@@ -288,6 +295,12 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
       expect(pass.across, `${item.page}：經過「${pass.name}」的 Tab 數 ≤ ${pass.maxAcross}`).toBeLessThanOrEqual(pass.maxAcross);
     }
   }
+  // V4-4：商品頁「最差商品」不晚於 V4-0a，「第一張圖的資料表 summary」在它之後。
+  const productMilestones = walks.find(item => item.page === "products")!.milestones;
+  const worstTabs = productMilestones.find(item => item.name === "最差商品（第一個結果）")!.tabs!;
+  const summaryTabs = productMilestones.find(item => item.name === "第一張圖的資料表 summary")!.tabs!;
+  expect(worstTabs, "V4-4：商品頁「最差商品」的 Tab 數不晚於 V4-0a").toBeLessThanOrEqual(V4_0A_PRODUCT_WORST_TABS[testInfo.project.name]);
+  expect(summaryTabs, "V4-4：「第一張圖的資料表 summary」在「最差商品」之後").toBeGreaterThan(worstTabs);
   expect(flowAriaHiddenStops, "§11.1 只用鍵盤的流程：經過的 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a）").toEqual([]);
   // V4-1：KNOWN_ARIA_HIDDEN_STOPS 已清空，1440 與 390 七頁走查加上 §11.1 流程的 aria-hidden 停留點合計必須是 0。
   expect(ariaHiddenTotal, "V4-1：aria-hidden 內的 Tab 停留點合計 0").toBe(0);

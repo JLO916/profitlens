@@ -52,6 +52,7 @@ const B9_ALLOWANCE = 1_500;
  * V4-1：總覽第一張 .chart-frame 頂 ≤ min(900, V4-0a 實測 855)。之後的批次在這裡加健檢（V4-3a）、商品（V4-4）、試算（V4-5）、資料來源（V4-7a）。
  * V4-3a：健檢第一個 G9 內嵌條頂 ≤ 900（1440）；健檢首列底不晚於 V4-0a 實測（PRD §5.2 第 2 列「首列底不晚於 V4-0 實測」，390 同；
  *   verification/revamp-v4/V4-0a/metrics.json 的 {project}.b1.diagnosis.firstRowBottom：1440 與 1280 是 888、390 是 985）。
+ * V4-4：商品第一張 .chart-frame 頂 ≤ 900（1440；示範資料沒有商品毛利為負，第一張是第二格的 G13）。
  */
 const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; key: string; max: number; note: string }[] = [
   { project: "desktop", page: "overview", key: "firstChartFrameTop", max: Math.min(900, 855), note: "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）" },
@@ -59,6 +60,7 @@ const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; 
   { project: "desktop", page: "diagnosis", key: "firstRowBottom", max: 888, note: "健檢首列底不晚於 V4-0a 實測 888（V4-3a 起；G9 條在列內、列高不變）" },
   { project: "laptop", page: "diagnosis", key: "firstRowBottom", max: 888, note: "1280 健檢首列底不晚於 V4-0a 實測 888（V4-3a 起）" },
   { project: "mobile", page: "diagnosis", key: "firstRowBottom", max: 985, note: "390 健檢首列底不晚於 V4-0a 實測 985（V4-3a 起；PRD §5.2「390 同」）" },
+  { project: "desktop", page: "products", key: "firstChartFrameTop", max: 900, note: "商品第一張 .chart-frame 頂 ≤ 900（V4-4 起；示範資料是 G13 的框）" },
 ];
 /** B3：390 寬頁面不橫向捲動。 */
 const B3_MAX_SCROLL_WIDTH = 390;

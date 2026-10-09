@@ -335,3 +335,17 @@ export async function openRates(page: Page) {
 export function ratesYTicks(page: Page): Promise<{ panel: string; ticks: string[] }[]> {
   return ratesPanels(page).evaluateAll(nodes => nodes.map(node => ({ panel: node.getAttribute("data-panel") ?? "", ticks: [...node.querySelectorAll(".multiple-axis text[text-anchor='end']")].map(text => (text.textContent ?? "").trim()) })));
 }
+
+// ── 商品 G13 商品毛利兩期差額、G14 商品毛利為負的商品累計（V4-4） ──
+/** G14 區塊（ChartFrame id products-pareto，只在有商品毛利為負時渲染）、柱、右側累計欄（svg.chart-ranked-extra，≤ 767px 隱藏）與資料表。 */
+export const paretoSection = (page: Page) => page.getByTestId("chart-products-pareto");
+export const paretoBars = (page: Page) => paretoSection(page).locator("[data-testid^='chart-products-pareto-bar-']");
+export const paretoExtra = (page: Page) => paretoSection(page).locator("svg.chart-ranked-extra");
+export const paretoTable = (page: Page) => page.getByTestId("chart-products-pareto-table");
+/** G13 區塊（ChartFrame id products-variance）、兩段（g.ranked-block[data-block=decrease|increase]）、柱與資料表。 */
+export const varianceSection = (page: Page) => page.getByTestId("chart-products-variance");
+export const varianceBlock = (page: Page, block: "decrease" | "increase") => varianceSection(page).locator(`g.ranked-block[data-block='${block}']`);
+export const varianceBars = (page: Page) => varianceSection(page).locator("[data-testid^='chart-products-variance-bar-']");
+export const varianceTable = (page: Page) => page.getByTestId("chart-products-variance-table");
+/** 商品頁 .product-highlight-grid 的直接子元素（第一格、第二格）。 */
+export const productGridCells = (page: Page) => page.locator("section.product-highlights > .product-highlight-grid > *");

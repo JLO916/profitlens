@@ -3,12 +3,13 @@ import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { openWizard } from "./import-wizard-helpers";
 import { LAUNCH_PAGES, domA11y, evidenceDrawer, gotoPage, hideDevOverlay, kpiLink, loadDemo, writeLaunchJson, type DomA11y } from "./launch-helpers-v310";
-import { channelWeeksDetails, channelWeeksTable, heatTables, heatTabStop, importSynthetic, openDataTable, openRates, ratesSection, shareSection } from "./chart-helpers-v4";
+import { channelWeeksDetails, channelWeeksTable, heatTables, heatTabStop, importSynthetic, openDataTable, openRates, paretoSection, ratesSection, shareSection, varianceSection } from "./chart-helpers-v4";
 import { openDetails } from "./replacement-helpers";
 
 /*
  * 狀態：首頁空狀態、匯入精靈步驟 1、示範資料已載入的 7 頁、計算與來源抽屜開著（總覽）、投影模式（總覽；≤ 767px 沒有投影按鈕，手機略過）。
  * V4-3b 起另加三個：健檢頁資料表展開（G10、G12、G7b）、從圖下鑽的抽屜（G11 熱表格按 Enter）、4 通路合成資料的健檢頁；desktop、laptop、tablet 共 14，mobile 共 13。
+ * V4-4 再加一個：4 通路合成資料的商品頁（G14 渲染、product-worst 在 G14 的 after 內；G13、G14 的 h4 在 h3#product-highlights-heading 之下，標題不跳級）；desktop、laptop、tablet 共 15，mobile 共 14。
  * axe 來源：專案沒有 @axe-core/playwright（本輪不加依賴），改用 node_modules 已有的 axe-core（eslint-config-next → eslint-plugin-jsx-a11y 的相依套件）
  * 以 page.addScriptTag 注入 axe.min.js 後呼叫 axe.run。找不到 axe-core 時退回純 DOM 檢查（每個控制有可及名稱、每頁一個 h1、img 都有 alt），並在結果標明 engine。
  * 不論 axe 是否可用，每個狀態都另記純 DOM 檢查（heading 跳級、重複 id、:focus-visible 規則是否存在）供參考，不斷言。
@@ -101,6 +102,11 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   await gotoPage(page, "diagnosis");
   await expect(heatTables(page)).toHaveCount(4);
   results.push(await scan(page, "page-diagnosis-synthetic", engine, path));
+  // V4-4（06_BATCHES V4-4）：4 通路合成資料的商品頁（同一份匯入，接著切頁）：第一格是 G14（5 個商品毛利為負），第二格 G13。
+  await gotoPage(page, "products");
+  await expect(paretoSection(page)).toBeVisible();
+  await expect(varianceSection(page)).toBeVisible();
+  results.push(await scan(page, "page-products-synthetic", engine, path));
 
   const summary = {
     checked_at: new Date().toISOString(), engine, axe_core: path ? (JSON.parse(readFileSync(path.replace(/axe\.min\.js$/, "package.json"), "utf8")) as { version: string }).version : null,
@@ -110,8 +116,8 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   };
   const written = await writeLaunchJson("AXE_OUT", "axe.json", testInfo, summary);
   testInfo.annotations.push({ type: "axe", description: `${written}（${engine}；serious ${summary.totals.serious}、critical ${summary.totals.critical}）` });
-  // V4-3b：狀態數（06 護欄表）desktop、laptop、tablet 14，mobile 13（mobile 沒有投影模式）。
-  expect(results.length, "axe 狀態數（V4-3b 起 14／13）").toBe(testInfo.project.name === "mobile" ? 13 : 14);
+  // V4-3b：狀態數（06 護欄表）desktop、laptop、tablet 14，mobile 13（mobile 沒有投影模式）；V4-4 起 15／14（加合成資料的商品頁）。
+  expect(results.length, "axe 狀態數（V4-4 起 15／14）").toBe(testInfo.project.name === "mobile" ? 14 : 15);
 
   for (const row of results) {
     const blocking = row.violations.filter(item => item.impact === "serious" || item.impact === "critical").map(item => `${item.impact} ${item.id}（${item.nodes}）：${item.targets.join(" ")}`);

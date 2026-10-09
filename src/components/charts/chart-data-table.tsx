@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { emptyKindOf, formatAmountL2, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatRateLayer } from "@/application/presentation";
+import { emptyKindOf, formatAmountL2, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatRateLayer, formatSignedDelta } from "@/application/presentation";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "../evidence-drawer";
 import { onChartTableToggle } from "../overview/charts/chart-frame";
@@ -13,8 +13,11 @@ import { onChartTableToggle } from "../overview/charts/chart-frame";
 // 列數＝資料長度（含整列缺值的列）；限制句放在表格之後（仍在 <details> 內，不進主層，B8）。
 // 使用者看得到的字一律由呼叫端從 labels 取來傳入；本元件只用 labels.overview.page.dataTable 組 summary（「表格 · {title}」，CHART_CATALOG §1.1）。
 
-/** 格的單位（決定格式化函式）：money 金額、rate 比率（domain 的小數）、count 件數、multiple 倍數、per_unit 件均、text 原樣、date ISO 日期原樣。 */
-export type ChartDataUnit = "money" | "rate" | "count" | "multiple" | "per_unit" | "text" | "date";
+/**
+ * 格的單位（決定格式化函式）：money 金額、rate 比率（domain 的小數）、count 件數、multiple 倍數、per_unit 件均、text 原樣、date ISO 日期原樣。
+ * V4-4：signed＝帶正負號的金額差額（formatSignedDelta，L2「+9,350」「−8,600」，同商品前 10 名表的差額格；G13 資料表的差額欄）。
+ */
+export type ChartDataUnit = "money" | "signed" | "rate" | "count" | "multiple" | "per_unit" | "text" | "date";
 /** 金額層：L2 整數元、L3 到分（單位寫在欄頭或 caption，例如「（元）」）；比率、倍數、件均依 presentation.ts 的同層格式。 */
 export type ChartDataLayer = "L2" | "L3";
 
@@ -75,6 +78,7 @@ export function chartDataCellText(cell: ChartDataCell, column: Pick<ChartDataCol
   const layer = cell.layer ?? column.layer ?? "L2";
   switch (unit) {
     case "money": return layer === "L3" ? formatAmountL3(cell.value) : formatAmountL2(cell.value);
+    case "signed": return formatSignedDelta(cell.value, layer);
     case "rate": return formatRateLayer(cell.value, layer);
     case "count": return formatCount(cell.value, layer);
     case "multiple": return formatMultiple(cell.value, layer);

@@ -1111,8 +1111,74 @@ export const products = {
   // ── V4-4 錨點：商品毛利圖表字串（代理 C：pareto＝G14 商品毛利為負的商品累計、variance＝G13 商品毛利兩期差額）。
   // 一律寫「商品毛利為負」，不寫「賠錢」「虧損」（CHART_CATALOG G14；copy-scan 擋 products.chartsV4.*）。
   chartsV4: {
-    pareto: {},
-    variance: {},
+    /**
+     * V4-4 代理 C：圖上的列名、資料表的列名與累計抽屜的組成項目都寫「SKU · 通路」（順序同前 10 名表與完整表的商品格；PRD §4.2 G13）。
+     * {sku}＝商品代碼，{channel}＝通路名稱（示範資料用 alias）。
+     */
+    product: "{sku} · {channel}",
+    /**
+     * V4-4 代理 C：G14 商品毛利為負的商品累計（PRD §4.1–§4.7 G14；CHART_CATALOG G14；D-V4-32＝A、D-V4-39＝A；H5 設計稿 products-synthetic.html）。
+     * {metric}＝metricDefinitions 的商品毛利標準名。資料只有商品毛利（不含通路費用與廣告），所以一律寫「{metric}為負」。只在有商品毛利為負的商品時渲染，沒有 empty 字串。
+     */
+    pareto: {
+      /** 區塊標準名：副標第一段、資料表 summary（「表格 · …」）與 caption。 */
+      section: "{metric}為負的商品累計",
+      /** 結論標題：{n}＝商品毛利為負的列數，{k}＝min(3, n)，{pct}＝前 k 個的累計佔比（L1 百分比）。 */
+      title: "{n} 個{metric}為負，前 {k} 個佔 {pct}",
+      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{period}＝本期起訖（M/D–M/D），{scope}＝範圍內的通路。 */
+      subtitle: "{section} · 本期 {period} · {scope}",
+      /** 每根柱右側的累計佔比（≤ 767px 不畫，D-V4-39＝A）：{pct}＝L1 百分比。 */
+      cumulative: "累計 {pct}",
+      /** 柱只畫前 10 個，其餘一列文字（不畫「其他」柱，X38）：{n}＝沒畫成柱的列數。 */
+      more: "另 {n} 個",
+      /** 資料表欄名（金額欄另以 format.units.yuanColumn 加「（元）」；本期商品毛利欄沿用期間短名＋指標名）。 */
+      columns: { cumulative: "累計", share: "累計佔比" },
+      /** 資料表之後的說明（在收合的 <details> 內）：{metric}＝商品毛利標準名。 */
+      tableNote: "{metric}只扣商品成本，還沒扣通路費用與廣告；退款依入帳日扣除。累計佔比＝前幾個的{metric}為負額合計 ÷ 全部{metric}為負額合計。",
+      /** 累計格、累計佔比格的 number-link 可及名稱：{n}＝第幾個（含），{value}＝格內文字（商品毛利格沿用 products.comparison.evidenceAria）。 */
+      cellAria: {
+        cumulative: "看前 {n} 個{metric}為負的商品累計明細，{value}",
+        share: "看前 {n} 個{metric}為負的商品累計佔比明細，{value}",
+      },
+      /**
+       * 「計算與來源」抽屜（CHART_CATALOG G14 抽屜；product-pareto-v1）：累計是水準值（大數字不帶「+」），組成是前 {n} 個商品的本期商品毛利；
+       * 累計佔比用 unitOverride percent（D-V4-32＝A），組成是分子、分母兩個為負額合計（取絕對值後的正數）。
+       */
+      drawer: {
+        cumulativeTitle: "前 {n} 個{metric}為負的商品累計",
+        cumulativeFormula: "第 1 到第 {n} 個商品的本期{metric}相加",
+        cumulativeDefinition: "本期{metric}為負的商品，依{metric}由低到高排列，從第 1 個加到第 {n} 個。{metric}只扣商品成本，還沒扣通路費用與廣告。",
+        cumulativeFormulaTechnical: "cumulative_n = Σ GP_i（i ≤ n，GP_i < 0；sumAmounts，到分）",
+        shareTitle: "前 {n} 個{metric}為負的商品累計佔比",
+        shareFormula: "{numerator} ÷ {denominator}",
+        shareDefinition: "把{metric}為負的金額取絕對值，前 {n} 個商品佔全部{metric}為負商品的比率；最後一個是 100%。",
+        shareFormulaTechnical: "share_n = (0 − cumulative_n) / (0 − total)（subtractAmounts 取反後 ratioMetric，12 位小數）",
+        numerator: "前 {n} 個的{metric}為負額合計",
+        denominator: "全部{metric}為負額合計",
+      },
+    },
+    /**
+     * V4-4 代理 C：G13 商品毛利兩期差額（PRD §4.1–§4.7 G13；CHART_CATALOG G13；D-V4-38＝A：減少、增加兩段在各寬度都上下排列，減少在上；H5 設計稿 products*.html 建議版）。
+     * {metric}＝metricDefinitions 的商品毛利標準名；{product}＝「SKU · 通路」（上面的 product）；{amount}＝差額的絕對值（L1，方向由「少／多」表達）。
+     */
+    variance: {
+      /** 區塊標準名：副標第一段、資料表 summary 與 caption。 */
+      section: "{metric}兩期差額",
+      /** 結論標題：有減少時取減少最多的一列（decrease），否則取增加最多的一列（increase）；兩者都沒有（差額都是 0 或待補）時用 none，圖區是空狀態。 */
+      title: {
+        decrease: "{product} {metric}少 {amount}，減少最多",
+        increase: "{product} {metric}多 {amount}，增加最多",
+        none: "各商品{metric}兩期持平或待補",
+      },
+      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{current}、{previous}＝兩期起訖，{scope}＝範圍內的通路。 */
+      subtitle: "{section} · 本期 {current} 對比 上期 {previous} · {scope}",
+      /** 兩段的名稱（ChartFrame 圖例兩項 line；不畫在 svg 內）。 */
+      columns: { decrease: "減少最多", increase: "增加最多" },
+      /** 沒有可畫的差額時圖區的說明（state="empty"）。 */
+      empty: "各商品的{metric}差額都是 0 或待補；兩期數字見下方全部商品表",
+      /** 資料表之後的說明（在收合的 <details> 內）：資料表列出全部差額 < 0 與 > 0 的商品。 */
+      tableNote: "先列減少（由少最多起），再列增加（由多最多起）；差額為 0 或待補的商品見下方全部商品表。",
+    },
   },
 } as const;
 

@@ -1,13 +1,21 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createElement } from "react";
+import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { channelsLabel, conversionSentence, demoAlias } from "@/application/copy";
 import { formatCount, formatPeriodL1, metricDefinitions } from "@/application/presentation";
+import { productHighlights } from "@/application/product-highlights";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import { PRODUCT_SORT_OPTIONS, ProductComparisonPanel, TABLE_DENSITY_KEY, type ProductPanelInitial } from "@/components/product-comparison-panel";
 import { PageHeader } from "@/components/shell/page-chrome";
+import type { ChartDataTableProps } from "@/components/charts/chart-data-table";
+import type { RankedBarsProps } from "@/components/charts/ranked-bars";
+import type { EvidenceSelection } from "@/components/evidence-drawer";
+import type { ChartFrameProps } from "@/components/overview/charts/chart-frame";
+import { productDeltaEvidence, productEvidence } from "@/components/product-evidence";
+import { ProductVarianceSection, varianceSectionModel, type ProductChartScope } from "@/components/products/highlight-charts";
+import { compareProducts, type ProductComparisonRow } from "@/domain/product-comparison";
 import type { AnalysisFilters } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
 import { fill, labels } from "@/i18n";
@@ -302,5 +310,67 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
     expect(anchor).toContain(".product-list tr { display: flex;");
     expect(anchor).not.toMatch(/#[0-9a-f]{3,8}\b/i);
     expect(css).toContain('[data-density="compact"] .ui-table');
+  });
+});
+
+/*
+ * V4-4 代理 C（06_BATCHES V4-4「同批 labels 與測試」：擴 product-page-v3；CHART_CATALOG G13 單元測試欄）：
+ * product-best 是 G13（chart-products-variance）的 after 常駐；柱與資料表差額格呼叫同一個 builder（productDeltaEvidence＋filter { channel, sku }），
+ * 上期、本期格是 productEvidence（不帶 filter，與前 10 名表相同）；每段 ≤ 5 根。G14 與「沒有負值時 product-worst 照 v3」見 tests/charts-products-v4.test.tsx。
+ */
+describe("V4-4 商品頁 G13：product-best 在 chart-products-variance 內；柱與差額格同一個 evidence；每段 ≤ 5 根", () => {
+  const SHORT = metricDefinitions.gross_profit.shortLabel;
+  async function varianceTree(name: string) {
+    const { dataset, snapshot, html } = await render(name);
+    const comparison = compareProducts(dataset, snapshot.report.scope);
+    const ctx = { previous: comparison.scope.previous_period, current: comparison.scope.current_period, alias: demoAlias(dataset.manifest.dataset_id) };
+    const scope: ProductChartScope = { ctx, current: "", previous: "", channels: "" };
+    const lists = productHighlights(comparison.rows), all = productHighlights(comparison.rows, comparison.rows.length);
+    const model = varianceSectionModel({ decrease: lists.worstChange, increase: lists.bestChange, allDecrease: all.worstChange, allIncrease: all.bestChange }, scope);
+    const onEvidence = vi.fn<(evidence: EvidenceSelection) => void>();
+    const frame = ProductVarianceSection({ model, scope, onEvidence, after: null }) as ReactElement<ChartFrameProps>;
+    const bars = (frame.props.children as ReactElement<RankedBarsProps<EvidenceSelection>>).props;
+    const table = (frame.props.dataTable!.content as ReactElement<ChartDataTableProps<ProductComparisonRow, string>>).props;
+    return { html, ctx, lists, all, model, bars, table, onEvidence };
+  }
+
+  it("示範資料與 golden：product-best 在 chart-products-variance 內（ChartFrame after，排在圖框之後、資料表之前），h3#product-highlights-heading 仍在、標題不跳級（h3 → h4）", async () => {
+    for (const name of ["demo", "golden"]) {
+      const { html } = await render(name);
+      const section = element(html, 'data-testid="chart-products-variance"')!;
+      expect(section, name).toContain('data-testid="product-best"');
+      const order = ['class="chart-frame sm"', 'data-testid="product-best"', '<details class="data-alternative"'].map(attr => section.indexOf(attr));
+      expect([...order].sort((a, b) => a - b), name).toEqual(order);
+      expect(occurrences(html, 'id="product-highlights-heading"'), name).toBe(1);
+      const headings = [...element(html, 'class="product-highlights"')!.matchAll(/<h(\d)\b/g)].map(match => Number(match[1]));
+      expect(headings[0], name).toBe(3);
+      expect(headings.slice(1).every(level => level === 4), `${name}：${headings.join(",")}`).toBe(true);
+    }
+  });
+
+  it("每段 ≤ 5 根（減少在上、增加在下）；柱與資料表同列差額格的 evidence 相同（productDeltaEvidence＋filter { channel, sku }）；上期、本期格是 productEvidence；點柱開同一個抽屜", async () => {
+    for (const name of ["demo", "golden"]) {
+      const { ctx, lists, all, bars, table, onEvidence } = await varianceTree(name);
+      expect(bars.blocks!.map(block => block.key), name).toEqual(["decrease", "increase"]);
+      for (const block of bars.blocks!) expect(block.rows.length, `${name} ${block.key}`).toBeLessThanOrEqual(5);
+      expect(bars.blocks![0].rows.map(row => row.key), name).toEqual(lists.worstChange.slice(0, 5).map(row => `${row.channel}-${row.sku}`));
+      expect(bars.blocks![1].rows.map(row => row.key), name).toEqual(lists.bestChange.slice(0, 5).map(row => `${row.channel}-${row.sku}`));
+      expect(table.rows, name).toEqual([...all.worstChange, ...all.bestChange]);
+      const column = (key: string) => table.columns.find(item => item.key === key)!;
+      for (const block of bars.blocks!) for (const bar of block.rows) {
+        const row = table.rows.find(item => `${item.channel}-${item.sku}` === bar.key)!;
+        const expected = productDeltaEvidence(row, "gross_profit", ctx, { drill: true });
+        expect(bar.evidence, `${name} ${bar.key}`).toEqual(expected);
+        expect(bar.evidence.filter).toEqual({ channel: row.channel, sku: row.sku });
+        expect(table.evidenceOf(row, column("change")), `${name} ${bar.key} 差額格`).toEqual(expected);
+        bars.onBarClick!(bar.evidence, bar);
+        expect(onEvidence).toHaveBeenLastCalledWith(expected);
+      }
+      for (const row of table.rows) for (const period of ["previous", "current"] as const) {
+        const evidence = table.evidenceOf(row, column(period))!;
+        expect(evidence, `${name} ${row.sku} ${period}`).toEqual(productEvidence(row, period, "gross_profit", SHORT, ctx));
+        expect(evidence.filter).toBeUndefined();
+      }
+    }
   });
 });

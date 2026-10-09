@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
+import { PRODUCT_PARETO_LIMIT, productPareto } from "@/application/chart-pareto";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, demoAlias } from "@/application/copy";
 import { downloadText } from "@/application/download";
 import { exportProductsCsv } from "@/application/export";
@@ -16,6 +17,8 @@ import type { Dataset, Metric, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { productCategoryText, productChangeLabel, productDeltaEvidence, productEvidence, productPresenceLabels, type ProductEvidenceContext, type ProductMoneyMetric } from "./product-evidence";
+import { useDeferredMount } from "./charts/deferred-mount";
+import { ProductParetoSection, ProductVarianceSection, paretoSectionModel, varianceSectionModel, type ProductChartScope } from "./products/highlight-charts";
 import { toneClass } from "./tone-class";
 import { ShellIcon } from "./shell/shell-icon";
 
@@ -124,25 +127,41 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
 
   const alias = demoAlias(dataset.manifest.dataset_id);
   const comparison = useMemo(() => compareProducts(dataset, snapshot.report.scope), [dataset, snapshot.report.scope]);
-  /** 兩張小表看整個分析範圍（期間＋通路），不跟著下方品類／搜尋篩選變動。 */
-  const { worstCurrent, bestChange } = useMemo(() => productHighlights(comparison.rows), [comparison.rows]);
+  /** 兩張小表看整個分析範圍（期間＋通路），不跟著下方品類／搜尋篩選變動。V4-4：G13 的減少段取 worstChange（同樣只挑列）。 */
+  const { worstCurrent, bestChange, worstChange } = useMemo(() => productHighlights(comparison.rows), [comparison.rows]);
+  /** V4-4 G13 資料表：全部差額 < 0、> 0 的列（同一個 productHighlights，上限放到列數；只挑列）。 */
+  const allChanges = useMemo(() => productHighlights(comparison.rows, comparison.rows.length), [comparison.rows]);
+  /** V4-4 G14：商品毛利為負的商品累計（product-pareto-v1）；count＝0 時不渲染 G14，第一格照 v3 原樣只放 product-worst。 */
+  const pareto = useMemo(() => productPareto(comparison.rows, "gross_profit", PRODUCT_PARETO_LIMIT), [comparison.rows]);
   const categories = [...new Set(comparison.rows.map(row => row.category).filter(value => value.trim()))].sort();
   const activeCategory = categories.includes(category) ? category : "";
   const selection = { category: activeCategory, query, negativeOnly, sort, direction };
   const rows = selectProductComparisonRows(comparison.rows, selection);
   const unavailable = comparison.rows.filter(row => row.changes.gross_profit.value === null).length;
   const filtered = activeCategory !== "" || query.trim() !== "" || negativeOnly;
-  const { previous_period: previous, current_period: current, channels } = comparison.scope;
+  const { previous_period: previous, current_period: current } = comparison.scope;
   const categoryText = (value: string) => productCategoryText(value, alias);
   /** V4-4：商品抽屜 builder（src/components/product-evidence.ts）的頁面範圍；圖、前 10 名表與完整表共用。 */
   const evidenceContext: ProductEvidenceContext = { previous, current, alias };
-  /** 範圍副標：目前範圍涵蓋資料集全部通路時寫「全部通路」（同 overview/weekly-snapshot.tsx 的 snapshotMeta）。 */
-  const everyChannel = (allChannels ?? dataset.manifest.channels).length > 0 && (allChannels ?? dataset.manifest.channels).every(channel => channels.includes(channel));
-  const scopeText = fill(page.scope, {
-    current: formatPeriodL1(current.start, current.end, { days: false, anchor: snapshot.data_as_of }),
-    previous: formatPeriodL1(previous.start, previous.end, { days: false, anchor: snapshot.data_as_of }),
-    channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(channels, alias),
-  });
+  /**
+   * 範圍副標：目前範圍涵蓋資料集全部通路時寫「全部通路」（同 overview/weekly-snapshot.tsx 的 snapshotMeta）。
+   * V4-4：兩期起訖與通路範圍字和 G13、G14 共用（chartScope：抽屜 builder 的 ctx＋副標用字），product-scope 那一行由它組成，輸出不變。
+   */
+  const chartScope = useMemo((): ProductChartScope => {
+    const scoped = comparison.scope, every = allChannels ?? dataset.manifest.channels, alias = demoAlias(dataset.manifest.dataset_id);
+    const everyChannel = every.length > 0 && every.every(channel => scoped.channels.includes(channel));
+    return {
+      ctx: { previous: scoped.previous_period, current: scoped.current_period, alias },
+      current: formatPeriodL1(scoped.current_period.start, scoped.current_period.end, { days: false, anchor: snapshot.data_as_of }),
+      previous: formatPeriodL1(scoped.previous_period.start, scoped.previous_period.end, { days: false, anchor: snapshot.data_as_of }),
+      channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scoped.channels, alias),
+    };
+  }, [comparison.scope, allChannels, dataset.manifest.channels, dataset.manifest.dataset_id, snapshot.data_as_of]);
+  const scopeText = fill(page.scope, { current: chartScope.current, previous: chartScope.previous, channels: chartScope.channels });
+  const paretoModel = useMemo(() => paretoSectionModel(pareto, chartScope), [pareto, chartScope]);
+  /** V4-4：G13、G14 的柱與資料表內容延後一拍（390 切到商品毛利的 TBT；同 G11、G12 的 useDeferredMount），前 10 名兩表不延後。 */
+  const chartsReady = useDeferredMount();
+  const varianceModel = useMemo(() => varianceSectionModel({ decrease: worstChange, increase: bestChange, allDecrease: allChanges.worstChange, allIncrease: allChanges.bestChange }, chartScope), [worstChange, bestChange, allChanges, chartScope]);
   const converted = conversionSentence(conversion);
   const sortValue = PRODUCT_SORT_OPTIONS.some(option => option.sort === sort && option.direction === direction) ? `${sort}.${direction}` : PRODUCT_SORT_OPTIONS[0].value;
 
@@ -244,7 +263,8 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     <h2 id="products-heading" className="sr-only">{labels.products.sections.productTable}</h2>
     <p className="product-scope" data-testid="product-scope">{scopeText}</p>
     {slot ? createPortal(exportMenu, slot) : <div className="product-export-inline">{exportMenu}</div>}
-    <section className="product-highlights" aria-labelledby="product-highlights-heading"><h3 id="product-highlights-heading">{labels.products.sections.productTopBottom}</h3><div className="product-highlight-grid">{highlightTable("worst", worstCurrent)}{highlightTable("best", bestChange)}</div></section>
+    {/* V4-4（CHART_CATALOG §5 商品頁）：第一格在有商品毛利為負時是 G14（after＝product-worst），沒有時照 v3 原樣只放 product-worst；第二格是 G13（after＝product-best）。兩張表的 DOM 與 testid 不變。 */}
+    <section className="product-highlights" aria-labelledby="product-highlights-heading"><h3 id="product-highlights-heading">{labels.products.sections.productTopBottom}</h3><div className="product-highlight-grid">{pareto.count > 0 ? <ProductParetoSection pareto={pareto} model={paretoModel} scope={chartScope} onEvidence={onEvidence} after={highlightTable("worst", worstCurrent)} ready={chartsReady} /> : highlightTable("worst", worstCurrent)}<ProductVarianceSection model={varianceModel} scope={chartScope} onEvidence={onEvidence} after={highlightTable("best", bestChange)} ready={chartsReady} /></div></section>
     <section className="product-full" aria-labelledby="product-full-heading">
       <h3 className="product-full-heading" id="product-full-heading">{highlight.fullTable}</h3>
       <div className="ui-toolbar product-toolbar" data-testid="product-toolbar">

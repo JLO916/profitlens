@@ -304,6 +304,11 @@ export async function pageStates(): Promise<StateMarkup[]> {
     })(), status: "ready" },
 
     // ── V4-4 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-4 新增 M1 測試」錨點後加對應測試）──
+    // 商品頁＋4 通路合成資料（D-V4-31）：5 個商品毛利為負，第一格是 G14（after＝product-worst，5 根柱、沒有「另 n 個」）；G13 減少 6 列、增加 4 列（畫 5＋4 根）。
+    // 示範資料的商品頁（既有 products 狀態）沒有商品毛利為負：不渲染 G14，第一格照 v3 原樣是 product-worst。
+    "products-synthetic": { panel: "products", active: await (async () => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "synthetic", revision: 1 }; })(), status: "partial" },
+    // 商品頁＋fixtures/refund_only：1 個商品毛利為負（DTC · A −60.00，前 1 個佔 100%）；唯一一列兩期差額為 0，G13 是空狀態（沒有柱與圖例，資料表 0 列但掛載）。
+    "products-refund-only": { panel: "products", active: await load("refund-only", "refund_only"), status: "ready" },
 
     // ── V4-5 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-5 新增 M1 測試」錨點後加對應測試）──
 
