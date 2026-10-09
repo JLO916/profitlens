@@ -848,7 +848,13 @@ export const diagnosis = {
   },
   // ── V4-3a 錨點：通路健檢圖表字串（代理 A：share；代理 B：channelsSpark；代理 C：impact）
   chartsV4: {
-    impact: {},
+    /**
+     * V4-3a 代理 C：G9 健檢清單內嵌影響金額條（PRD §4.1–§4.7 G9；CHART_CATALOG G9；H5 設計稿提案）。條本身 aria-hidden、不另標值，語意由同列的影響金額承擔。
+     * totalNote：清單下方一行（只在畫了 REV_UP_CM_DOWN 的空心條時出現）；不是否定句，不進 copy-density 的上限。
+     */
+    impact: {
+      totalNote: "空心條是扣廣告後貢獻的總差額，實心條是各項費用的差額",
+    },
     /**
      * V4-3a 代理 A：G10 每 100 元淨營收去向（PRD §4.1–§4.7 G10；CHART_CATALOG G10；v4 GLOSSARY #1、#2、#16；H5 設計稿頁尾清單）。
      * 圖例與資料表欄名的指標名取 metricDefinitions（商品成本、廣告費、各項費用），四項合計用 feesTitle；不適用、資料待補沿用 shell.status。

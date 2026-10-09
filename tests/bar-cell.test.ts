@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AST_RULES, checkChartMarkup, scanChartTsx, scanChartVarLiterals } from "../scripts/lib/chart-scan.mjs";
 import { chartColors, chartRowHeights } from "../src/application/chart-theme";
-import { BAR_CELL_HEIGHT, BAR_CELL_WIDTH, BarCell, barCellFill, barCellGeometry, barCellScale, type BarCellProps } from "../src/components/charts/bar-cell";
+import { BAR_CELL_HEIGHT, BAR_CELL_OUTLINE_STROKE, BAR_CELL_TICK_WIDTH, BAR_CELL_WIDTH, BarCell, barCellFill, barCellGeometry, barCellScale, type BarCellProps } from "../src/components/charts/bar-cell";
 import { labels } from "../src/i18n";
 import { byTestId, openTag } from "./helpers/markup";
 
@@ -213,5 +213,107 @@ describe("chart-lint 口徑（PRD §7.9）：bar-cell.tsx 本身 0 違規，SSR 
     const loose = checkChartMarkup(`<main id="main-content"><div class="kpi">${cell}</div></main>`, { page: "overview" }).violations;
     expect(loose["CL-1"]).toHaveLength(1);
     expect(loose["CL-11"]).toEqual([]);
+  });
+});
+
+// ── V4-3a 代理 C：C24 加 tick（門檻刻度）與 outline（空心條）；G9 健檢清單用（CHART_CATALOG G9、PRD §4.4、§6.3 C24、§7.1）。
+// 示範資料 G9 的數字：差額類規則 |影響| 最大＝DISCOUNT_BURDEN_UP −1,188,365.10（共用尺度），REV_UP_CM_DOWN −598,833.95（空心條）；
+// H5 設計稿的門檻示意 300,000 元：刻度中心＝48 − 300000 ÷ 1188365.10 × 48＝48 − 12.1＝35.9，矩形 x＝34.9（verification/revamp-v4/mockups/diagnosis.html）。
+const G9_MAX = "1188365.10";
+const tickOf = (value: BarCellProps["value"], max: BarCellProps["max"], tick: BarCellProps["tick"]) => barCellGeometry({ mode: "variance", value, max, tick });
+
+describe("V4-3a barCellGeometry：tick（2×12 刻度，畫在條所在那一側的 |tick| 位置）", () => {
+  it("設計稿門檻 300,000：不利（往左）的條，刻度中心 35.9、矩形 x 34.9、寬 2、高＝盒高 12", () => {
+    expect(BAR_CELL_TICK_WIDTH).toBe(2);
+    const geometry = tickOf("-1188365.10", G9_MAX, "300000.00");
+    expect(geometry.tick).toEqual({ x: 34.9, y: 0, width: BAR_CELL_TICK_WIDTH, height: BAR_CELL_HEIGHT });
+    expect(geometry.tickRatio).toBeCloseTo(300000 / 1188365.1, 12);
+    // 刻度不改條本身：與沒給 tick 時同一個 bar、ratio、direction。
+    const plain = variance("-1188365.10", G9_MAX);
+    expect({ ratio: geometry.ratio, direction: geometry.direction, bar: geometry.bar }).toEqual({ ratio: plain.ratio, direction: plain.direction, bar: plain.bar });
+    expect(plain).toMatchObject({ tick: null, tickRatio: null, outline: null });
+  });
+
+  it("有利（往右）的條，刻度畫在右側；tick 取絕對值（負數門檻與正數相同）；精確字串與數值結果相同", () => {
+    expect(tickOf("50", "100", "25").tick).toEqual({ x: HALF + 12 - 1, y: 0, width: 2, height: BAR_CELL_HEIGHT });
+    expect(tickOf("50", "100", "-25")).toEqual(tickOf("50", "100", "25"));
+    expect(tickOf(-50, 100, 25)).toEqual(tickOf("-50", "100", "25.00"));
+    expect(tickOf("-50", "100", "25").tick).toMatchObject({ x: HALF - 12 - 1 });
+  });
+
+  it("tick 0 與零線重疊、不另畫（設計稿「門檻 0 元」狀態）；缺值或無法解析時不畫", () => {
+    for (const tick of ["0.00", "-0.00", 0, null, undefined, "", labels.shell.status.missing, "300,000.00"] as const) {
+      expect(tickOf("-1188365.10", G9_MAX, tick), String(tick)).toMatchObject({ tickRatio: null, tick: null });
+    }
+  });
+
+  it("超出共同尺度不畫（不夾在端點，避免看起來像門檻等於最大值）；剛好等於尺度時畫在端點並夾在座標系內", () => {
+    expect(tickOf("-100", "100", "100.01")).toMatchObject({ tickRatio: null, tick: null });
+    expect(tickOf("-100", "100", "100")).toMatchObject({ tickRatio: 1, tick: { x: 0, width: 2 } });
+    expect(tickOf("100", "100", "100")).toMatchObject({ tickRatio: 1, tick: { x: BAR_CELL_WIDTH - 2, width: 2 } });
+  });
+
+  it("沒有條（值為 0）時沒有「哪一側」，不畫刻度（tickRatio 照算）；值缺或尺度無效時全部為 null", () => {
+    expect(tickOf("0.00", "100", "25")).toMatchObject({ bar: null, direction: null, tickRatio: 0.25, tick: null });
+    expect(tickOf(null, "100", "25")).toMatchObject({ bar: null, tickRatio: null, tick: null });
+    expect(tickOf("-50", null, "25")).toMatchObject({ bar: null, tickRatio: null, tick: null });
+  });
+});
+
+describe("V4-3a barCellGeometry：outline（空心條；外框與實心條同一個盒，同一把尺）", () => {
+  it("示範 REV_UP_CM_DOWN −598,833.95 ÷ 1,188,365.10 × 48＝24.2：外框 x 23.8、寬 24.2；框線矩形內縮 1（x 24.8、y 4、寬 22.2、高 4，同 H5 設計稿）", () => {
+    expect(BAR_CELL_OUTLINE_STROKE).toBe(2);
+    const geometry = barCellGeometry({ mode: "variance", value: "-598833.95", max: G9_MAX, outline: true });
+    expect(geometry.bar).toEqual({ x: 23.8, y: 3, width: 24.2, height: chartRowHeights.cell });
+    expect(geometry.bar).toEqual(variance("-598833.95", G9_MAX).bar);
+    expect(geometry.outline).toEqual({ x: 24.8, y: 4, width: 22.2, height: chartRowHeights.cell - BAR_CELL_OUTLINE_STROKE });
+  });
+
+  it("往右的空心條同樣內縮；比例極小時外框至少 3（框線內至少留 1）", () => {
+    expect(barCellGeometry({ mode: "variance", value: "100", max: "100", outline: true }).outline).toEqual({ x: HALF + 1, y: 4, width: HALF - 2, height: 4 });
+    const tiny = barCellGeometry({ mode: "variance", value: "-0.01", max: G9_MAX, outline: true });
+    expect(tiny.bar).toMatchObject({ x: HALF - 3, width: 3 });
+    expect(tiny.outline).toMatchObject({ x: HALF - 2, width: 1 });
+  });
+
+  it("沒有條時沒有框線矩形；outline: false 與省略相同", () => {
+    for (const value of ["0.00", null]) expect(barCellGeometry({ mode: "variance", value, max: "100", outline: true })).toMatchObject({ bar: null, outline: null });
+    expect(barCellGeometry({ mode: "variance", value: "-50", max: "100", outline: false })).toEqual(variance("-50", "100"));
+  });
+});
+
+describe("V4-3a BarCell：SSR（沒給 tick、outline 時與 V4-2 逐字相同；給了才多 has-tick、is-outline）", () => {
+  it("沒給 tick 與 outline：整段 markup 逐字等於 V4-2 的輸出（G4、G6 不受影響）", () => {
+    expect(render()).toBe(`<svg class="bar-cell is-variance" data-chart-kind="cell" data-testid="chart-overview-bridge-bar-cogs_net" data-tone="unfavorable" viewBox="0 0 96 12" width="96" height="12" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect class="bar-cell-bar" x="24.1" y="3" width="23.9" height="6" fill="${chartColors.unfavorable}"></rect><line class="bar-cell-zero" x1="48" x2="48" y1="0" y2="12" stroke="${chartColors.axis}" stroke-width="1" vector-effect="non-scaling-stroke" shape-rendering="crispEdges"></line></svg>`);
+    expect(render({ tick: undefined, outline: false })).toBe(render());
+  });
+
+  it("空心條：rect 不填色（fill=\"none\"）、2px 框線用條色、non-scaling-stroke；根 svg 加 is-outline", () => {
+    const html = render({ value: "-598833.95", max: G9_MAX, outline: true, testId: "chart-diagnosis-impact-bar-REV_UP_CM_DOWN" });
+    expect(openTag(html, "<svg")).toContain('class="bar-cell is-variance is-outline"');
+    expect(html).toContain(`<rect class="bar-cell-bar" x="24.8" y="4" width="22.2" height="4" fill="none" stroke="${chartColors.unfavorable}" stroke-width="2" vector-effect="non-scaling-stroke"></rect>`);
+    expect(html.match(/<rect/g)).toHaveLength(1);
+    // 有利的空心條框線用有利色（只有不利上色，D-V3-7）。
+    expect(render({ value: "50", max: "100", outline: true, tone: "favorable" })).toContain(`fill="none" stroke="${chartColors.favorable}"`);
+  });
+
+  it("刻度：rect.bar-cell-tick 畫在最上層（零線之後）、色取 chartColors.target；根 svg 加 has-tick；tick 0 時不畫、也不加 has-tick", () => {
+    const html = render({ value: "-1188365.10", max: G9_MAX, tick: "300000.00" });
+    expect(openTag(html, "<svg")).toContain('class="bar-cell is-variance has-tick"');
+    expect(html).toContain(`<rect class="bar-cell-tick" x="34.9" y="0" width="2" height="${BAR_CELL_HEIGHT}" fill="${chartColors.target}"></rect></svg>`);
+    expect(html.indexOf("bar-cell-zero")).toBeLessThan(html.indexOf("bar-cell-tick"));
+    const zero = render({ value: "-1188365.10", max: G9_MAX, tick: "0.00" });
+    expect(zero).not.toContain("bar-cell-tick");
+    expect(openTag(zero, "<svg")).toContain('class="bar-cell is-variance"');
+    expect(zero).toBe(render({ value: "-1188365.10", max: G9_MAX }));
+  });
+
+  it("空心條＋刻度＋呼叫端 class：class 依序 is-variance、is-outline、has-tick、呼叫端；仍 aria-hidden、不可聚焦、沒有色碼", () => {
+    const html = render({ value: "-598833.95", max: G9_MAX, outline: true, tick: "300000.00", className: "impact-bar" });
+    expect(openTag(html, "<svg")).toContain('class="bar-cell is-variance is-outline has-tick impact-bar"');
+    expect(openTag(html, "<svg")).toContain('aria-hidden="true"');
+    expect(html).not.toMatch(/tabindex|<button|<a\s/i);
+    expect(html).not.toMatch(HEX);
+    for (const [, color] of html.matchAll(/(?:fill|stroke)="([^"]+)"/g)) if (color !== "none") expect(Object.values(chartColors)).toContain(color);
   });
 });

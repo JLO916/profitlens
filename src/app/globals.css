@@ -2725,4 +2725,22 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-3a B 錨點結束 ── */
 
 /* ── V4-3a C：G9 健檢清單內嵌影響金額條（C24 tick、空心條） ── */
+/* G9（PRD §4.4、§4.6、§5.2；CHART_CATALOG G9；H5 設計稿）：條在 <summary> 的影響金額之後、與金額同一行，不另起一行（PRD §5.2「列高不變」：1440、1280、390 的健檢列高與首列底不變）。
+   清單有任何一列畫條時（ol[data-impact-bars]），影響金額格是「金額＋條」：金額靠右、條固定寬貼齊列的右緣，各列零線上下對齊；
+   沒有條的列（水準類規則、資料缺漏）留同寬空位 span.impact-bar.is-empty，金額也對齊。每列 summary 各是一個格線，條貼齊右緣，欄寬不必各列相同：
+   ≥ 1024 的影響金額欄由固定 --alert-impact-w 改成「至少 --alert-impact-w、放得下金額＋條」，標題只少掉超出的那一點（1024 起標題都不換行）。
+   ≤ 1023 影響金額欄本來就是 auto 寬、與標題搶寬度，條縮成 64px（PRD §4.6 的窄螢幕寬）；768 時最長的兩個標題會折成兩行（畫面 05 允許變動）；
+   手機第一行只有狀態標籤與金額，右側放得下 64px 的條。條 aria-hidden、不可聚焦、不另設點擊，游標沿用 summary 的 pointer；色與框線由元件經 chartColors 給，這裡不寫色。 */
+.diagnosis-panel .diagnosis-list[data-impact-bars] { --impact-bar-w: 96px; }
+.diagnosis-panel .diagnosis-list[data-impact-bars] .diagnosis-impact { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-3); }
+.diagnosis-panel .diagnosis-impact > .bar-cell { width: var(--impact-bar-w); margin: 0; }
+.diagnosis-panel .diagnosis-impact > .impact-bar.is-empty { display: inline-block; flex: none; width: var(--impact-bar-w); }
+.diagnosis-panel .impact-note { margin: var(--space-3) 0 0; }
+@media (min-width: 1024px) {
+  .diagnosis-panel .diagnosis-list[data-impact-bars] .diagnosis-row > summary { grid-template-columns: var(--alert-chev-w) auto minmax(0, 1fr) auto minmax(var(--alert-impact-w), max-content); }
+}
+@media (max-width: 1023px) {
+  .diagnosis-panel .diagnosis-list[data-impact-bars] { --impact-bar-w: 64px; }
+  .diagnosis-panel .diagnosis-list[data-impact-bars] .diagnosis-impact { gap: var(--space-2); }
+}
 /* ── V4-3a C 錨點結束 ── */
