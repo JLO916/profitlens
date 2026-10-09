@@ -17,7 +17,8 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 //   B9 七頁（1440、1280、390）載入示範資料後的 DOM 節點數 ≤ V4-0a 基準＋1,500（B9_BASELINE，取自 verification/revamp-v4/V4-0a/metrics.json）。
 //   B1 依護欄表的時程：總覽第一張 .chart-frame 頂在 1440 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）；健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）、
 //      商品第一張 .chart-frame 頂 ≤ 900（V4-4 起）、試算 G15 頂 ≤ 方案比較表區塊頂（V4-0a）＋24（V4-5 起）、資料來源 G20 頂 ≤ 900（V4-7a 起）由各批加進 B1_ASSERTED。
-// 只記錄：B1 其餘參考位置（健檢清單第一列頂與 G10 插入處頂、試算方案比較表區塊頂、資料來源狀態列底，以及 1280、390 的總覽第一張 .chart-frame 頂）、健檢首列底；
+//      V4-3a 起另斷言健檢首列底不晚於 V4-0a 實測（1440、1280 為 888，390 為 985；PRD §5.2）。
+// 只記錄：B1 其餘參考位置（健檢清單第一列頂、G10 區塊頂與 channel-compare 頂、試算方案比較表區塊頂、資料來源狀態列底，以及 1280、390 的總覽第一張 .chart-frame 頂）；
 //   B8 各頁主層否定句數；首頁 HTML 每個 chunk 的檔名與 gzip 大小。
 // 執行 desktop（1440×1000）、laptop（1280×900）、mobile（390×844）三個 project；tablet 略過。所有位置是文件座標（已捲回頂端），單位 CSS px，取到 0.1。
 const batch = process.env.CAPTURE_BATCH ?? "V4-0a";
@@ -46,11 +47,17 @@ const B9_BASELINE: Record<"desktop" | "laptop" | "mobile", Record<SevenPage, num
 };
 const B9_ALLOWANCE = 1_500;
 /**
- * B1（06_BATCHES 護欄表「B1 首屏有圖（1440）」；PRD §2.2 B1）依批次加入的硬斷言（只在 1440）：值是 b1 記錄裡的路徑與上限。
+ * B1（06_BATCHES 護欄表「B1 首屏有圖（1440）」；PRD §2.2 B1）依批次加入的硬斷言：值是 b1 記錄裡的路徑與上限。
  * V4-1：總覽第一張 .chart-frame 頂 ≤ min(900, V4-0a 實測 855)。之後的批次在這裡加健檢（V4-3a）、商品（V4-4）、試算（V4-5）、資料來源（V4-7a）。
+ * V4-3a：健檢第一個 G9 內嵌條頂 ≤ 900（1440）；健檢首列底不晚於 V4-0a 實測（PRD §5.2 第 2 列「首列底不晚於 V4-0 實測」，390 同；
+ *   verification/revamp-v4/V4-0a/metrics.json 的 {project}.b1.diagnosis.firstRowBottom：1440 與 1280 是 888、390 是 985）。
  */
-const B1_ASSERTED: { project: "desktop"; page: SevenPage; key: string; max: number; note: string }[] = [
+const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; key: string; max: number; note: string }[] = [
   { project: "desktop", page: "overview", key: "firstChartFrameTop", max: Math.min(900, 855), note: "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）" },
+  { project: "desktop", page: "diagnosis", key: "firstImpactBarTop", max: 900, note: "健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）" },
+  { project: "desktop", page: "diagnosis", key: "firstRowBottom", max: 888, note: "健檢首列底不晚於 V4-0a 實測 888（V4-3a 起；G9 條在列內、列高不變）" },
+  { project: "laptop", page: "diagnosis", key: "firstRowBottom", max: 888, note: "1280 健檢首列底不晚於 V4-0a 實測 888（V4-3a 起）" },
+  { project: "mobile", page: "diagnosis", key: "firstRowBottom", max: 985, note: "390 健檢首列底不晚於 V4-0a 實測 985（V4-3a 起；PRD §5.2「390 同」）" },
 ];
 /** B3：390 寬頁面不橫向捲動。 */
 const B3_MAX_SCROLL_WIDTH = 390;
@@ -227,7 +234,10 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
         diagnosisListBottom: (await boxOrNull(page, "[data-testid='diagnosis-list']"))?.bottom ?? null,
         diagnosisPanelBottom: (await boxOrNull(page, "[data-testid='diagnosis-panel']"))?.bottom ?? null,
         g10InsertTop: (await boxOrNull(page, "[data-testid='channel-compare']"))?.top ?? null,
-        note: "健檢清單第一列＝第一個 diagnosis-row-*（<details>，預設展開；firstRowBottom 含展開內容，firstRowSummaryBottom 是收合列本身的底）；G10 插入處頂＝目前 channel-compare 的頂（G10、G11、G12 插在 diagnosis-panel 與 channel-compare 之間）",
+        firstImpactBarTop: (await boxOrNull(page, "[data-testid='diagnosis-list'] [data-testid^='chart-diagnosis-impact-bar-']"))?.top ?? null,
+        shareTop: (await boxOrNull(page, "[data-testid='chart-diagnosis-share']"))?.top ?? null,
+        shareFrameTop: (await boxOrNull(page, "[data-testid='chart-diagnosis-share'] .chart-frame"))?.top ?? null,
+        note: "健檢清單第一列＝第一個 diagnosis-row-*（<details>，預設展開；firstRowBottom 含展開內容，firstRowSummaryBottom 是收合列本身的底）；g10InsertTop 沿用 V4-0a 的口徑＝channel-compare 的頂（V4-3a 起 G10 插在它之前，所以這個值往下移；G10 本身的頂另記 shareTop、圖框頂 shareFrameTop）；firstImpactBarTop＝第一個 G9 內嵌條（chart-diagnosis-impact-bar-*）的頂（V4-3a 起）",
       };
     }
     if (id === "products") b1.products = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame:visible"))?.top ?? null, productHighlightsTop: (await boxOrNull(page, "section.product-highlights"))?.top ?? null, note: "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內" };

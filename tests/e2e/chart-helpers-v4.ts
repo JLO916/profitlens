@@ -2,7 +2,10 @@ import { resolve } from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
 import type { AnalyticsEvent } from "../../src/application/analytics";
-import { SYNTHETIC_4_CHANNEL_DIR } from "../helpers/synthetic-4-channel";
+import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../../src/application/workspace";
+import { validateDataset } from "../../src/domain/validation";
+import { fixture } from "../helpers/fixtures";
+import { SYNTHETIC_4_CHANNEL_DIR, synthetic4ChannelInput } from "../helpers/synthetic-4-channel";
 import { importViaWizard } from "./import-wizard-helpers";
 import { dismissSavePrompt, navigateTo, openDetails } from "./replacement-helpers";
 
@@ -213,3 +216,74 @@ export async function importSynthetic(page: Page) {
   await expect(page.getByTestId("local-save-prompt")).toHaveCount(0);
   await expect(page.getByTestId("kpi-band")).toBeVisible();
 }
+
+// ── 健檢 G9 影響金額條、G10 每 100 元淨營收去向、G7b 通路寬表 sparkline 與「各通路每週」（V4-3a） ──
+/**
+ * 期待值用的快照（在 Node 端以 domain 與 application 的同一組函式算，不寫死數字）：示範資料（fixtures/demo）、4 通路合成資料、fixtures/refund_only。
+ * 與瀏覽器載入的是同一份檔案（示範資料由「載入示範資料」、其餘經四步精靈），所以數字逐字相同。每個 worker 只算一次。
+ */
+const snapshotCache = new Map<string, Promise<WorkspaceSnapshot>>();
+export function datasetSnapshot(name: "demo" | "synthetic" | "refund_only"): Promise<WorkspaceSnapshot> {
+  if (!snapshotCache.has(name)) snapshotCache.set(name, (async () => {
+    const input = name === "synthetic" ? synthetic4ChannelInput() : fixture(name);
+    return createSnapshot(validateDataset(input).dataset!, {}, await hashInput(input));
+  })());
+  return snapshotCache.get(name)!;
+}
+
+/** G9：健檢清單內所有影響金額條、某規則的條（C24 根 svg.bar-cell.impact-bar，在 diagnosis-row-{rule} 的 summary > span.diagnosis-impact 內、span.impact-amount 之後）。 */
+export const impactBars = (page: Page) => page.getByTestId("diagnosis-list").locator("[data-testid^='chart-diagnosis-impact-bar-']");
+export const impactBar = (page: Page, rule: string) => page.getByTestId(`chart-diagnosis-impact-bar-${rule}`);
+/** 健檢清單的列（details.diagnosis-row，data-testid＝diagnosis-row-{rule}）依 DOM 順序的規則代碼。 */
+export const diagnosisRuleOrder = (page: Page) => page.getByTestId("diagnosis-list").locator(":scope > li > details.diagnosis-row").evaluateAll(rows => rows.map(row => row.getAttribute("data-testid")!.replace("diagnosis-row-", "")));
+
+/** 一條 G9 條的屬性與位置：rect（實心或空心）、零線 x、viewBox 寬、同一格影響金額的 bounding box（文件座標）；條是否在 summary 的 span.diagnosis-impact 內、是否在金額之後。 */
+export interface ImpactBarInfo { rule: string; classes: string[]; tone: string | null; x: number | null; width: number | null; fill: string | null; stroke: string | null; strokeWidth: string | null; zeroX: number | null; viewWidth: number; ariaHidden: string | null; focusable: string | null; tabIndex: string | null; inSummary: boolean; afterAmount: boolean; box: { x: number; y: number; width: number; height: number }; amountBox: { x: number; y: number; width: number; height: number } }
+export function impactBarInfo(page: Page): Promise<ImpactBarInfo[]> {
+  return impactBars(page).evaluateAll(nodes => nodes.map(node => {
+    const rect = node.querySelector("rect.bar-cell-bar");
+    const zero = node.querySelector("line.bar-cell-zero");
+    const impact = node.closest(".diagnosis-impact");
+    const amount = impact?.querySelector(".impact-amount") ?? null;
+    const num = (value: string | null | undefined) => value === null || value === undefined ? null : Number(value);
+    const box = (element: Element | null) => { const r = element?.getBoundingClientRect(); return { x: Math.round((r?.x ?? 0) * 10) / 10, y: Math.round(((r?.y ?? 0) + window.scrollY) * 10) / 10, width: Math.round((r?.width ?? 0) * 10) / 10, height: Math.round((r?.height ?? 0) * 10) / 10 }; };
+    return {
+      rule: (node.getAttribute("data-testid") ?? "").replace("chart-diagnosis-impact-bar-", ""),
+      classes: (node.getAttribute("class") ?? "").split(/\s+/).filter(Boolean), tone: node.getAttribute("data-tone"),
+      x: num(rect?.getAttribute("x")), width: num(rect?.getAttribute("width")), fill: rect?.getAttribute("fill") ?? null, stroke: rect?.getAttribute("stroke") ?? null, strokeWidth: rect?.getAttribute("stroke-width") ?? null,
+      zeroX: num(zero?.getAttribute("x1")), viewWidth: Number((node.getAttribute("viewBox") ?? "0 0 0 0").split(/\s+/)[2]),
+      ariaHidden: node.getAttribute("aria-hidden"), focusable: node.getAttribute("focusable"), tabIndex: node.getAttribute("tabindex"),
+      inSummary: node.closest("summary") !== null && impact !== null,
+      afterAmount: !!amount && !!(amount.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING),
+      box: box(node), amountBox: box(amount),
+    };
+  }));
+}
+
+/** G10：區塊（ChartFrame id share）、段（chart-diagnosis-share-seg-{通路代碼或 total}-{cogs|fees|ad|remain|over}）與資料表。 */
+export const shareSection = (page: Page) => page.getByTestId("chart-diagnosis-share");
+export const shareSeg = (page: Page, key: string, segment: string) => page.getByTestId(`chart-diagnosis-share-seg-${key}-${segment}`);
+export const shareSegs = (page: Page) => shareSection(page).locator("[data-testid^='chart-diagnosis-share-seg-']");
+export const shareTable = (page: Page) => page.getByTestId("chart-diagnosis-share-table");
+/** G10 資料表某一列（列頭文字＝通路顯示名或「合計」，完全相同）第 n 個資料欄（0 起算，不含列頭）的 number-link。 */
+export const shareTableLink = (page: Page, rowHeader: string, column: number) => shareTable(page).locator("tbody tr").filter({ has: page.getByRole("rowheader", { name: rowHeader, exact: true }) }).locator("td").nth(column).locator("button.number-link");
+/** G10 的段 rect：屬性（x、width、fill、stroke）依 DOM 順序。 */
+export function shareSegInfo(page: Page) {
+  return shareSegs(page).evaluateAll(nodes => nodes.map(node => ({ id: (node.getAttribute("data-testid") ?? "").replace("chart-diagnosis-share-seg-", ""), x: Number(node.getAttribute("x")), width: Number(node.getAttribute("width")), fill: node.getAttribute("fill"), stroke: node.getAttribute("stroke") })));
+}
+/**
+ * 圖內的段在 aria-hidden 的 svg 裡（代理 A 交接）：以 dispatchEvent("click") 觸發 React 的 onClick，不經可及性樹、不需要捲動到可點的位置。
+ * 鍵盤使用者經資料表同欄的 number-link 得到同一個抽屜（PRD §2.2 C7）。
+ */
+export const clickChartShape = (shape: Locator) => shape.dispatchEvent("click");
+
+/** G7b：健檢頁通路寬表（channel-compare 內的 table.channel-table-v3）、sparkline、「各通路每週」<details>（channel-compare 的直接子元素，沒有 testid）與資料表。 */
+export const channelCompare = (page: Page) => page.getByTestId("channel-compare");
+export const channelWideTable = (page: Page) => channelCompare(page).locator("table.channel-table-v3");
+export const channelSpark = (page: Page, channel: string) => page.getByTestId(`chart-diagnosis-channels-spark-${channel}`);
+export const channelSparks = (page: Page) => channelCompare(page).locator("[data-testid^='chart-diagnosis-channels-spark-']");
+export const channelWeeksDetails = (page: Page) => channelCompare(page).locator(":scope > details.data-alternative");
+export const channelWeeksTable = (page: Page) => page.getByTestId("chart-diagnosis-channels-table");
+
+/** 總覽「進階」管理損益表「佔淨營收 %」格的 number-link（pnl-share-{指標}）。 */
+export const pnlShare = (page: Page, metric: string) => page.getByTestId(`pnl-share-${metric}`);

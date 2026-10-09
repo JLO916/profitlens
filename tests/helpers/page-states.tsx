@@ -261,6 +261,26 @@ export async function pageStates(): Promise<StateMarkup[]> {
     "overview-synthetic": { panel: "overview", active: await (async () => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "synthetic", revision: 1 }; })(), status: "partial" },
 
     // ── V4-3a 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-3a 新增 M1 測試」錨點後加對應測試）──
+    // 健檢＋4 通路合成資料（D-V4-31）：G10 的 SOCIAL 是「不適用」列（9/15 平台抽成 −6,000，扣項為負）、LIVE 本期資料待補，兩列只有文字、沒有段；
+    // G7b 的 LIVE 不畫 sparkline，其餘 3 條最後一週未滿 7 天畫空心點；G9 只畫差額類規則。
+    "diagnosis-synthetic": { panel: "diagnosis", active: await (async () => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "synthetic", revision: 1 }; })(), status: "partial" },
+    // 健檢＋9 通路（記憶體合成資料，上期、本期各 7 天，通路代碼 CH01–CH09，不寫檔）：通路 > 8 時 G10 只留資料表（state="empty"、不畫段），
+    // G7b 不計算 channelWeeks、改成表格之後一句說明（channel-weeks-too-many；PRD §4.4 G10、§8.2）。
+    "diagnosis-many-channels": { panel: "diagnosis", active: await (async () => {
+      const base = fixture("golden").manifest as Record<string, unknown>, day = (offset: number) => new Date(Date.parse("2026-01-01T00:00:00Z") + offset * 86_400_000).toISOString().slice(0, 10);
+      const channels = Array.from({ length: 9 }, (_, index) => `CH${String(index + 1).padStart(2, "0")}`), dates = Array.from({ length: 14 }, (_, index) => day(index));
+      const rows = (make: (date: string, channel: string, index: number, offset: number) => string) => dates.flatMap((date, offset) => channels.map((channel, index) => make(date, channel, index, offset)));
+      const input: DatasetInput = {
+        manifest: { ...base, dataset_id: "synthetic-many-channels-9x7", data_as_of: day(14), coverage_start: day(0), coverage_end: day(13), channels, previous_period: { start: day(0), end: day(6) }, current_period: { start: day(7), end: day(13) } },
+        files: {
+          "sales_daily.csv": ["date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency", ...rows((date, channel, index, offset) => `${date},${channel},SKU-${index + 1},HOME,2,${(1000 + offset + index).toFixed(2)},50.00,0.00,400.00,TWD`)].join("\n"),
+          "channel_costs_daily.csv": ["date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency", ...rows((date, channel) => `${date},${channel},30.00,10.00,20.00,5.00,TWD`)].join("\n"),
+          "ad_spend_daily.csv": ["date,channel,ad_spend,currency", ...rows((date, channel) => `${date},${channel},100.00,TWD`)].join("\n"),
+        },
+      };
+      const dataset = validateDataset(input).dataset!;
+      return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "many-channels", revision: 1 };
+    })(), status: "ready" },
 
     // ── V4-3b 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-3b 新增 M1 測試」錨點後加對應測試）──
 

@@ -261,6 +261,36 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
     expect(byTestId(drawer, "evidence-filter")).toContain(evidenceFilterText(evidence.filter, { alias: true, anchor: dataset.manifest.data_as_of })!);
   });
 
+  // V4-3a 代理 E（合併 A 的 ladderMetrics 修正與 B 的 channelWeekEvidence 之後才能寫；06 V4-3a 驗收重點「單一通路週證據不畫全通路階梯（SSR）」）。
+  it("合併後：「各通路每週」每一格的抽屜都不畫全部通路的四層階梯——示範資料與合成資料（週≠本期）一格都沒有 .ladder-table；golden（本期 1 天＝那一週）畫的是該通路自己的階梯，不是全通路合計", async () => {
+    const drawerOf = async (name: "demo" | "golden" | "synthetic") => {
+      const input = name === "synthetic" ? synthetic4ChannelInput() : fixture(name);
+      const dataset = validateDataset(input).dataset!;
+      const snap = await createSnapshot(dataset, {}, await hashInput(input));
+      const data = channelWeeks(snap)!;
+      const cellsOf = data.channels.flatMap(series => data.weeks.map((week, index) => ({ series, week, evidence: channelWeekEvidence(series, week, series.values[index]) })));
+      return { snap, data, cells: cellsOf.map(cell => ({ ...cell, html: renderToStaticMarkup(<EvidenceDrawer dataset={dataset} snapshot={snap} evidence={cell.evidence} onClose={noop} />) })) };
+    };
+    for (const name of ["demo", "synthetic"] as const) {
+      const { snap, data, cells: drawers } = await drawerOf(name);
+      expect(drawers, name).toHaveLength(snap.report.scope.channels.length * data.weeks.length);
+      for (const { series, week, html } of drawers) {
+        expect(html, `${name} ${series.channel} ${week.label}`).not.toContain("ladder-table");
+        expect(element(html, 'class="evidence-technical"'), `${name} ${series.channel} ${week.label}`).toContain(`<dd><code>${CHANNEL_WEEKS_VERSION}</code></dd>`);
+      }
+    }
+    // golden：本期只有 8/02 一天，那一週的起訖等於本期，單一通路證據取 report.current.channels[通路]（該通路的階梯；DTC 270.00、MARKETPLACE −15.00），
+    // 不是全部通路的合計 255.00（修正前的週查找會落到 snapshot.weeks 的全通路週值）。
+    const golden = await drawerOf("golden");
+    expect(golden.cells).toHaveLength(2);
+    const total = fill(labels.format.units.yuan, { value: formatAmountL3(golden.snap.report.current.metrics.contribution_after_marketing.value!) });
+    for (const { series, html } of golden.cells) {
+      const current = element(html, 'class="current"')!;
+      expect(current, series.channel).toContain(fill(labels.format.units.yuan, { value: formatAmountL3(golden.snap.report.current.channels[series.channel].metrics.contribution_after_marketing.value!) }));
+      expect(current, series.channel).not.toContain(total);
+    }
+  }, 30_000);
+
   it("golden（本期 1 天，只有 1 週、未滿 7 天）：欄名「近 1 週」；每條 sparkline 只有 1 個空心點（X40）；資料表欄頭註「未滿 7 天」、表後有說明", async () => {
     const snap = await snapshot();
     const html = renderG7b(snap);
