@@ -8,8 +8,12 @@ import type { Dataset, FileName } from "@/domain/types";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
-import { evidenceRows, formatAmountL3, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
+import { evidenceRows, formatAmountL1, formatAmountL3, formatPeriodL1, formatRateL1, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "@/application/presentation";
+import { CHANNEL_STRUCTURE_VERSION, channelStructure } from "@/application/chart-structure";
+import { buildPnlTable } from "@/application/pnl-table";
+import { shareFeesEvidence, sharePerHundredEvidence } from "@/components/diagnosis/share-section";
 import { EvidenceDrawer, evidenceSubtitle, type EvidenceSelection } from "@/components/evidence-drawer";
+import { pnlShareEvidence } from "@/components/overview/pnl-table";
 import { impactEvidence } from "@/components/top-three";
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
@@ -44,6 +48,8 @@ const range = (start: string, end: string) => formatPeriodL1(start, end, { days:
 const between = (html: string, from: string, to: string) => { const start = html.indexOf(from); return html.slice(start, html.indexOf(to, start)); };
 const h2 = (html: string) => /<h2 id="([^"]+)">(.*?)<\/h2>/.exec(html)!;
 const visible = (inner: string) => inner.replace(/<span class="sr-only">.*?<\/span>/g, "").replace(/<[^>]+>/g, "");
+/** React 的文字跳脫（& < > " '）；比對含引號或「&」的 labels 文字用（V4-3a）。 */
+const escapeHtml = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
 
 describe("固定標題列（§7.8、C6）", () => {
   it("h2 只放指標名或結論句，可及名稱仍以「 · 計算與來源」結尾；不含「｜」與「怎麼算的」", () => {
@@ -298,5 +304,142 @@ describe("V4-2 arrangeVersion：技術細節在 metric_version 之後另列一�
     expect(html).toContain(metricRow("assist-kpi-v1"));
     expect(html.indexOf(metricRow("assist-kpi-v1"))).toBeLessThan(html.indexOf('data-testid="evidence-arrange-version"'));
     expect(html).toContain("<code>assist-weeks-v1</code>");
+  });
+});
+
+// V4-3a 代理 A（PRD §8.7 第 3、4 點、§6.4；CHART_CATALOG §1.2、G7（b）、G10；D-V3-31＝B、D-V4-32＝A）：
+// EvidenceSelection 加 valueKind（水準或差額；大數字與精確值的正負號、取位說明只看它）、unitOverride 加 "percent"、ladderMetrics 的週與去年同期查找只在通路等於範圍時成立。
+const technicalOf = (html: string) => between(html, '<details class="evidence-technical">', "</details>");
+const bigNumber = (html: string) => /<p class="number">([^<]*)<\/p>/.exec(html)![1];
+const preciseOf = (html: string) => /data-testid="evidence-precise-value">([^<]*)<\/p>/.exec(html)![1];
+const componentRows = (html: string) => [...between(html, 'class="evidence-section evidence-components"', "</section>").matchAll(/<th scope="row">([^<]*)<\/th><td class="num">([^<]*)<\/td>/g)].map(match => [match[1], match[2]]);
+
+describe("V4-3a valueKind：大數字與精確值的正負號、取位說明只看它", () => {
+  const fees = () => shareFeesEvidence(channelStructure(snapshot).rows.find(row => row.channel === "DTC")!);
+
+  it("G10 四項費用段（level）：大數字與精確值不帶「+」、沒有取位說明、不畫階梯；組成是四項費用（golden DTC 0＋44＋140＋16＝200.00）", () => {
+    const html = render(fees());
+    expect(bigNumber(html)).toBe(formatAmountL1("200.00"));
+    expect(bigNumber(html)).not.toMatch(/^[+−-]/);
+    expect(preciseOf(html)).toBe(fill(labels.format.units.yuan, { value: formatAmountL3("200.00") }));
+    expect(html).not.toContain("evidence-rounding-note");
+    expect(html).not.toContain("ladder-table");
+    expect(between(html, 'class="evidence-section evidence-components"', "</section>")).toContain(`<th scope="col" class="num">${v3.componentsColumns.amount}</th>`);
+    expect(componentRows(html)).toEqual([
+      [metricDefinitions.platform_fees.label, formatAmountL3("0.00")], [metricDefinitions.payment_fees.label, formatAmountL3("44.00")],
+      [metricDefinitions.fulfillment_costs.label, formatAmountL3("140.00")], [metricDefinitions.other_variable_costs.label, formatAmountL3("16.00")],
+    ]);
+    // 同一筆證據不給 valueKind：沿用 V3（有 components 視為差額）帶「+」並附取位說明——證明帶號只看 valueKind。
+    const legacy = render({ ...fees(), valueKind: undefined });
+    expect(bigNumber(legacy)).toBe(formatSignedDelta("200.00", "L1"));
+    expect(legacy).toContain('data-testid="evidence-rounding-note"');
+  });
+
+  it("G10 四項費用段：標題「通路費用合計」，定義、計算方式與技術算式由證據自帶，不出現 platform_fees 的定義與技術公式；metric_version 是 channel-structure-v1", () => {
+    const share = labels.diagnosis.chartsV4.share;
+    const html = render(fees());
+    expect(visible(h2(html)[2])).toBe(share.feesTitle);
+    expect(html).toContain(`<p class="evidence-formula">${escapeHtml(fill(share.feesFormula, { platform: metricDefinitions.platform_fees.label, payment: metricDefinitions.payment_fees.label, fulfillment: metricDefinitions.fulfillment_costs.label, other: metricDefinitions.other_variable_costs.label }))}</p>`);
+    expect(html).toContain(escapeHtml(share.feesDefinition));
+    expect(html).not.toContain(escapeHtml(metricDefinitions.platform_fees.plain));
+    expect(html).not.toContain(escapeHtml(metricDefinitions.platform_fees.formula));
+    expect(technicalOf(html)).toContain(`<code>${escapeHtml(share.feesTechnical)}</code>`);
+    expect(technicalOf(html)).not.toContain(escapeHtml(metricDefinitions.platform_fees.formulaTechnical));
+    expect(technicalOf(html)).toContain(`<div><dt>metric_version</dt><dd><code>${CHANNEL_STRUCTURE_VERSION}</code></dd></div>`);
+    expect(html).toContain(`<span class="evidence-version">${fill(v3.version, { version: CHANNEL_STRUCTURE_VERSION })}</span>`);
+    expect(CHANNEL_STRUCTURE_VERSION).toBe("channel-structure-v1");
+    // 來源只有通路費用檔（DTC 那一天一列）＋篩選片語。
+    expect(html).toContain('data-testid="evidence-filter"');
+    expect(html.match(/class="evidence-fileline">channel_costs_daily\.csv:\d+<\/span>/g)).toHaveLength(1);
+    expect(html).not.toMatch(/class="evidence-fileline">(sales_daily|ad_spend_daily)\.csv:/);
+  });
+
+  it("valueKind change 沒有組成也帶號並附取位說明；level 的兩期證據不帶號；未給時（既有證據）照 V3", () => {
+    const change = render({ ...currentContribution(), valueKind: "change" });
+    expect(bigNumber(change)).toBe(formatSignedDelta("255.00", "L1"));
+    expect(change).toContain('data-testid="evidence-rounding-note"');
+    expect(bigNumber(render(currentContribution()))).toBe(formatAmountL1("255.00"));
+    expect(bigNumber(render(deltaContribution()))).toBe(formatSignedDelta("-315.00", "L1"));
+    const level = render({ ...deltaContribution(), valueKind: "level" });
+    expect(bigNumber(level)).toBe(formatAmountL1("-315.00"));
+    expect(level).not.toContain("evidence-rounding-note");
+  });
+});
+
+describe("V4-3a unitOverride percent：佔比的抽屜（管理損益表佔淨營收 %、G10 每 100 元）", () => {
+  it("管理損益表扣廣告後貢獻的佔淨營收 %：大數字 L1、精確值 L3 百分比；組成是分子與分母（到分）；技術細節附比率說明；不畫階梯、不帶號、版本 contribution-v1", () => {
+    const row = buildPnlTable(snapshot, "day").rows.find(item => item.metric === "contribution_after_marketing")!;
+    const html = render(pnlShareEvidence(snapshot, row));
+    expect(bigNumber(html)).toBe(formatRateL1("0.103238866397"));
+    expect(preciseOf(html)).toBe(formatRateL3("0.103238866397"));
+    expect(html).not.toContain("ladder-table");
+    expect(html).not.toContain("evidence-rounding-note");
+    expect(between(html, 'class="evidence-section evidence-components"', "</section>")).toContain(`<th scope="col" class="num">${v3.componentsColumns.amount}</th>`);
+    expect(componentRows(html)).toEqual([[metricDefinitions.contribution_after_marketing.label, formatAmountL3("255.00")], [metricDefinitions.net_revenue.label, formatAmountL3("2470.00")]]);
+    const percent = labels.evidence.chartsV4.percent;
+    expect(html).toContain(`<p class="evidence-formula">${escapeHtml(fill(percent.formula, { numerator: metricDefinitions.contribution_after_marketing.label, denominator: metricDefinitions.net_revenue.label }))}</p>`);
+    expect(html).toContain(escapeHtml(fill(percent.definition, { metric: metricDefinitions.contribution_after_marketing.label })));
+    expect(html).not.toContain(escapeHtml(metricDefinitions.contribution_after_marketing.plain));
+    expect(technicalOf(html)).toContain(`<div><dt>${labels.evidence.exactValue}</dt><dd><code>0.103238866397</code>（${labels.evidence.ratioNote}）</dd></div>`);
+    expect(technicalOf(html)).toContain(`<code>${escapeHtml(fill(percent.formulaTechnical, { numerator: "contribution_after_marketing", denominator: "net_revenue" }))}</code>`);
+    expect(technicalOf(html)).not.toContain(escapeHtml(metricDefinitions.contribution_after_marketing.formulaTechnical));
+    expect(technicalOf(html)).toContain("<div><dt>metric_version</dt><dd><code>contribution-v1</code></dd></div>");
+  });
+
+  it("G10 每 100 元（golden MARKETPLACE 虧 1.5 元）：扣廣告後貢獻率 −1.5%，組成是扣廣告後貢獻 −15.00 與淨營收 990.00；定義沿用指標的白話說明", () => {
+    const html = render(sharePerHundredEvidence(snapshot, "MARKETPLACE"));
+    expect(visible(h2(html)[2])).toBe(metricDefinitions.contribution_margin.label);
+    expect(bigNumber(html)).toBe(formatRateL1("-0.015151515152"));
+    expect(bigNumber(html).startsWith(MINUS)).toBe(true);
+    expect(preciseOf(html)).toBe(formatRateL3("-0.015151515152"));
+    expect(componentRows(html).map(([, value]) => value)).toEqual([formatAmountL3("-15.00"), formatAmountL3("990.00")]);
+    expect(html).toContain(escapeHtml(metricDefinitions.contribution_margin.plain));
+    expect(technicalOf(html)).toContain("<div><dt>metric_version</dt><dd><code>contribution-v1</code></dd></div>");
+    expect(html).not.toContain("evidence-rounding-note");
+  });
+
+  it("淨營收 ≤ 0（值為 null，refund_only）：大數字寫不適用、沒有精確值行", async () => {
+    const input = fixture("refund_only");
+    const refund = validateDataset(input).dataset!;
+    const refundSnapshot = await createSnapshot(refund, {}, await hashInput(input));
+    const row = buildPnlTable(refundSnapshot, "day").rows[0];
+    const html = renderToStaticMarkup(createElement(EvidenceDrawer, { dataset: refund, snapshot: refundSnapshot, evidence: pnlShareEvidence(refundSnapshot, row), onClose: noop }));
+    expect(bigNumber(html)).toBe(labels.shell.status.notApplicable);
+    expect(html).not.toContain("evidence-precise-value");
+  });
+});
+
+describe("V4-3a ladderMetrics：週與去年同期的查找只在 evidence.channels 等於 report.scope.channels 時成立", () => {
+  let demoDataset: Dataset;
+  let demo: WorkspaceSnapshot;
+  beforeAll(async () => {
+    const input = fixture("demo");
+    demoDataset = validateDataset(input).dataset!;
+    demo = await createSnapshot(demoDataset, {}, await hashInput(input));
+  });
+  const drawer = (target: WorkspaceSnapshot, evidence: EvidenceSelection) => renderToStaticMarkup(createElement(EvidenceDrawer, { dataset: demoDataset, snapshot: target, evidence, onClose: noop }));
+  const periodEvidence = (target: WorkspaceSnapshot, channels: string[], start: string, end: string, metric: EvidenceSelection["metric"]): EvidenceSelection =>
+    ({ title: metricDefinitions.contribution_after_marketing.label, name: "contribution_after_marketing", metric, period: { start, end }, channels, sources: target.report.current.sources });
+
+  it("單一通路的週證據（G7b 各通路每週的格）：不畫全部通路的四層階梯；全部通路的同一週照畫（階梯值＝該週全通路的值），通路順序不同也算同一個範圍", () => {
+    const week = demo.weeks.filter(row => row.period === "current")[2];
+    const single = drawer(demo, { ...periodEvidence(demo, ["DTC"], week.start, week.end, { value: "1.00", reason_codes: [] }), filter: { channel: "DTC" } });
+    expect(single).not.toContain("ladder-table");
+    const all = drawer(demo, periodEvidence(demo, demo.report.scope.channels, week.start, week.end, week.metrics.contribution_after_marketing));
+    expect(all).toContain('class="ladder-table"');
+    expect(all).toContain(fill(labels.format.units.yuan, { value: formatAmountL3(week.metrics.net_revenue.value) }));
+    expect(drawer(demo, periodEvidence(demo, [...demo.report.scope.channels].reverse(), week.start, week.end, week.metrics.contribution_after_marketing))).toContain('class="ladder-table"');
+  });
+
+  it("最後一週只有 1 天時的單日、單一通路證據：期間等於那一週也不畫全通路階梯；本期整段的單一通路照舊畫該通路的階梯", () => {
+    const last = demo.weeks.filter(row => row.period === "current").at(-1)!;
+    const shortened: WorkspaceSnapshot = { ...demo, weeks: [...demo.weeks.filter(row => row !== last), { ...last, start: last.end, end: last.end }] };
+    const day: EvidenceSelection = { ...periodEvidence(shortened, ["MARKETPLACE"], last.end, last.end, { value: "1.00", reason_codes: [] }), filter: { channel: "MARKETPLACE" } };
+    expect(drawer(shortened, day)).not.toContain("ladder-table");
+    expect(drawer(shortened, { ...day, channels: shortened.report.scope.channels, filter: undefined })).toContain('class="ladder-table"');
+    const channel = demo.report.current.channels.MARKETPLACE;
+    const whole = drawer(demo, { ...periodEvidence(demo, ["MARKETPLACE"], demo.report.current.period.start, demo.report.current.period.end, channel.metrics.contribution_after_marketing), sources: channel.sources });
+    expect(whole).toContain('class="ladder-table"');
+    expect(whole).toContain(fill(labels.format.units.yuan, { value: formatAmountL3(channel.metrics.net_revenue.value) }));
   });
 });

@@ -22,8 +22,12 @@ export interface EvidenceSelection {
   formula?: string;
   components?: { label: string; metric: Metric }[];
   scopeLabel?: string;
-  /** R4：輔助指標的件數與件均不是金額；count／money_per_unit 不畫階梯，直接顯示。 */
-  unitOverride?: "percentage-point" | "count" | "money_per_unit";
+  /**
+   * R4：輔助指標的件數與件均不是金額；count／money_per_unit 不畫階梯，直接顯示。
+   * V4-3a（D-V3-31＝B、D-V4-32＝A；PRD §8.7）：percent＝呈現層比率（metric 是比率小數，大數字與精確值顯示成百分比，技術細節附比率說明）；
+   * 組成項目是分子與分母兩個金額（到分），不畫階梯。用在管理損益表「佔淨營收 %」與 G10 每 100 元。
+   */
+  unitOverride?: "percentage-point" | "count" | "money_per_unit" | "percent";
   /** R4：非 domain 指標（輔助指標、目標）自帶技術公式與版本；null 值的顯示字（例如「不適用」）。 */
   formulaTechnical?: string;
   /** V3-9a 收尾：非 domain 指標（例如損益兩平 MER）自帶的白話定義；沒給時用 metricDefinitions[name].plain。 */
@@ -34,6 +38,12 @@ export interface EvidenceSelection {
    * 不取代 metricVersion：metric_version 照舊（domain 值是 contribution-v1，件數、件均是 assist-kpi-v1）；技術細節在 metric_version 之後另列一行，只在有給時顯示。
    */
   arrangeVersion?: string;
+  /**
+   * V4-3a（PRD §8.7 第 3 點、CHART_CATALOG §1.2）：水準值（level）或差額（change）。抽屜大數字與精確值的正負號、取位說明只看它：
+   * change 帶正負號並附取位說明；level 不帶正負號。沒給時沿用 V3 的判斷（有 components 視為 change）。
+   * 累計、四項費用合計、佔比這類有組成項目的水準值一律傳 "level"。
+   */
+  valueKind?: "level" | "change";
   nullDisplay?: string;
   /** 商品層級證據：不畫四層階梯（商品只看毛利）。 */
   sku?: string;
@@ -80,22 +90,26 @@ function sourceValue(field: string, value: string): string {
   return field === "units_sold" ? formatCount(value, "L3") : value;
 }
 
-/** 找出與這筆證據同期間、同通路範圍的合計指標；找不到（例如商品或跨期差額）就不畫階梯。 */
+/**
+ * 找出與這筆證據同期間、同通路範圍的合計指標；找不到（例如商品或跨期差額）就不畫階梯。
+ * V4-3a（PRD §6.4 ladderMetrics、CHART_CATALOG G7（b））：snapshot.weeks 與去年同期（snapshot.yoy）都是 report.scope.channels 全部通路的合計，
+ * 所以週與去年同期的查找只在 evidence.channels 等於 report.scope.channels 時成立；單一通路的週值或單日值（最後一週只有 1 天時期間會和週相同）不畫全通路的階梯。
+ */
 function ladderMetrics(snapshot: EvidenceDrawerProps["snapshot"], evidence: EvidenceSelection): Metrics | null {
   if (!snapshot || evidence.components || evidence.unitOverride || evidence.sku) return null;
   const { report, weeks } = snapshot;
   const same = (period: Period) => period.start === evidence.period.start && period.end === evidence.period.end;
+  const allChannels = [...report.scope.channels].sort().join("|") === [...evidence.channels].sort().join("|");
   const base = same(report.previous.period) ? report.previous : same(report.current.period) ? report.current : null;
   if (base) {
-    const all = [...report.scope.channels].sort().join("|") === [...evidence.channels].sort().join("|");
-    if (all) return base.metrics;
+    if (allChannels) return base.metrics;
     if (evidence.channels.length === 1 && base.channels[evidence.channels[0]]) return base.channels[evidence.channels[0]].metrics;
     return null;
   }
+  if (!allChannels) return null;
   // V3-9b F8：去年同期整段與各週（snapshot.yoy）也能畫階梯；既有 weeks 的查找不變，找不到才看去年同期。
   const yoy = snapshot.yoy?.status === "ready" ? snapshot.yoy : null;
-  const allChannels = [...report.scope.channels].sort().join("|") === [...evidence.channels].sort().join("|");
-  if (yoy && allChannels && same(yoy.period)) return yoy.metrics;
+  if (yoy && same(yoy.period)) return yoy.metrics;
   const week = weeks.find(row => row.start === evidence.period.start && row.end === evidence.period.end) ?? yoy?.weeks.find(row => same(row));
   return week ? week.metrics : null;
 }
@@ -168,12 +182,14 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const ladderRows = ladder && !ratio ? LADDER.slice(0, LADDER.findIndex(row => row.name === evidence.name) + 1) : [];
   // V3-2b（§7.8）：標題下的大數字是 L1（萬、一位小數），下一行永遠顯示到分的精確值（L3）；抽屜內其餘數字（階梯、組成、原始明細）一律 L3。
   // 差額類證據（有上期／本期組成或百分點）帶正負號。只做顯示取位，精確的 domain 值仍在技術細節。
-  const signed = Boolean(evidence.components?.length);
+  // V4-3a：帶號與取位說明只看 valueKind（level 不帶號）；沒給時沿用 V3（有 components 視為差額）。
+  const signed = evidence.valueKind ? evidence.valueKind === "change" : Boolean(evidence.components?.length);
   const displayValue = (metric: Metric, layer: Layer = "L3") => {
     if (metric.value === null) return evidence.nullDisplay ?? formatEmpty(emptyKindOf(metric.reason_codes), layer === "L3" ? { layer, reasonCodes: metric.reason_codes } : {});
     if (evidence.unitOverride === "count") return formatCount(metric.value, "L1");
     if (evidence.unitOverride === "money_per_unit") return formatPerUnit(metric.value, layer === "L1" ? "L1" : "L3");
     if (evidence.unitOverride === "percentage-point") return formatPointsValue(metric.value, layer);
+    if (evidence.unitOverride === "percent") return formatRateLayer(metric.value, layer);
     if (definition.unit === "money") {
       if (layer === "L1") return signed ? formatSignedDelta(metric.value, "L1") : formatAmountL1(metric.value);
       return fill(labels.format.units.yuan, { value: signed ? formatSignedDelta(metric.value, "L3") : formatAmountL3(metric.value) });
@@ -187,7 +203,8 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const money = (metric: Metric) => metric.value === null ? emptyL3(metric) : fill(labels.format.units.yuan, { value: formatAmountL3(metric.value) });
   // V3-5 組成項目表（14px）：單位只寫在表頭；上期／本期兩項時一列三欄加差額（差額＝這筆證據的值），其他情況兩欄。
   const components = evidence.components ?? [];
-  const moneyUnit = !evidence.unitOverride && definition.unit === "money";
+  // V4-3a：percent 的組成項目是分子與分母兩個金額（到分），表頭寫「金額（元）」。
+  const moneyUnit = evidence.unitOverride === "percent" || (!evidence.unitOverride && definition.unit === "money");
   const componentValue = (metric: Metric) => metric.value === null ? emptyL3(metric) : moneyUnit ? formatAmountL3(metric.value) : displayValue(metric);
   const previousComponent = components.find(component => component.label === labels.shell.periods.previous);
   const currentComponent = components.find(component => component.label === labels.shell.periods.current);
@@ -321,7 +338,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
           <summary>{labels.evidence.sections.technicalDetails}</summary>
           <dl>
             <div><dt>{copy.technicalFormula}</dt><dd><code>{evidence.formulaTechnical ?? definition.formulaTechnical}</code></dd></div>
-            {(evidence.unitOverride || definition.unit !== "money") && evidence.metric.value !== null && <div><dt>{copy.exactValue}</dt><dd><code>{evidence.metric.value}</code>{evidence.unitOverride === "percentage-point" ? `（${copy.pointNote}）` : definition.unit === "percent" ? `（${copy.ratioNote}）` : ""}</dd></div>}
+            {(evidence.unitOverride || definition.unit !== "money") && evidence.metric.value !== null && <div><dt>{copy.exactValue}</dt><dd><code>{evidence.metric.value}</code>{evidence.unitOverride === "percentage-point" ? `（${copy.pointNote}）` : evidence.unitOverride === "percent" || definition.unit === "percent" ? `（${copy.ratioNote}）` : ""}</dd></div>}
             {evidence.metric.reason_codes.length > 0 && <div><dt>{copy.conditions}</dt><dd><ul>{evidence.metric.reason_codes.map((reason) => <li key={reason}><code>{reason}</code></li>)}</ul></dd></div>}
             {evidence.components?.some(component => component.metric.reason_codes.length > 0) && <div><dt>{copy.components}</dt><dd><ul>{evidence.components.filter(component => component.metric.reason_codes.length > 0).map((component, index) => <li key={index}>{component.label}：<code>{component.metric.reason_codes.join("、")}</code></li>)}</ul></dd></div>}
             <div><dt>metric_version</dt><dd><code>{metricVersion}</code></dd></div>

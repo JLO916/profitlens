@@ -8,7 +8,7 @@ import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/applic
 import type { EvidenceSelection } from "../src/components/evidence-drawer";
 import { MeetingEntry } from "../src/components/meeting-page";
 import { Overview } from "../src/components/overview";
-import { PnlTable, pnlEvidence, pnlRowLabel } from "../src/components/overview/pnl-table";
+import { PnlTable, pnlEvidence, pnlRowLabel, pnlShareEvidence, pnlShareText } from "../src/components/overview/pnl-table";
 import type { Dataset, DatasetInput } from "../src/domain/types";
 import { validateDataset } from "../src/domain/validation";
 import { fill, labels } from "../src/i18n";
@@ -85,6 +85,8 @@ function overview(source: Loaded): string {
 }
 const table = (snapshot: WorkspaceSnapshot) => renderToStaticMarkup(createElement(PnlTable, { snapshot, onEvidence: noop }));
 const rowsOf = (html: string) => [...html.matchAll(/<tr class="pnl-row-[^"]*"[^>]*>[\s\S]*?<\/tr>/g)].map(match => match[0]);
+/** V4-3a（D-V3-31＝B）：佔淨營收 % 的 number-link（testid pnl-share-{metric}；可及名稱沿用 cellAria，欄名寫「佔淨營收 %」）。 */
+const shareLink = (metric: string, label: string, value: string) => `<button type="button" class="number-link" data-testid="pnl-share-${metric}" aria-label="${escapeAttr(fill(copy.cellAria, { date: copy.columns.share, metric: label, value }))}">${value}</button>`;
 
 describe("F9 位置與掛載（§7.1 區塊 10、M1）", () => {
   it("在總覽「進階」內、期間合計與日均之後；兩層 <details> 預設收合，表格內容仍掛載", () => {
@@ -99,7 +101,8 @@ describe("F9 位置與掛載（§7.1 區塊 10、M1）", () => {
     const pnl = byTestIdHtml(html, "pnl-table");
     expect(pnl).toMatch(new RegExp(`^<details[^>]*><summary><span class="section-title">${copy.summary}</span></summary><h2 id="pnl-table-title" class="sr-only">${copy.summary}</h2>`));
     expect(pnl).toContain('<table class="ui-table report-table"');
-    expect(pnl.match(/class="number-link"/g)).toHaveLength(PNL_ROWS.length * 2);
+    // 每列：本期唯一那一天、合計、佔淨營收 %（V4-3a 起是 number-link，D-V3-31＝B）。
+    expect(pnl.match(/class="number-link"/g)).toHaveLength(PNL_ROWS.length * 3);
   });
 
   it("日／週分段與「顯示零值列」各只有一份；預設每日（aria-pressed）、零值列不顯示", () => {
@@ -157,7 +160,7 @@ describe("F9 表格內容（§9.3 報表型表格）", () => {
     expect(rows.filter(row => row.startsWith('<tr class="pnl-row-total"'))).toHaveLength(1);
   });
 
-  it("每格金額是 number-link（L2 整數元），可及名稱含日期與指標；合計欄同樣可點；佔淨營收 % 是一般文字（L1 一位小數）", () => {
+  it("每格金額是 number-link（L2 整數元），可及名稱含日期與指標；合計欄同樣可點；佔淨營收 % 也是 number-link（L1 一位小數；V4-3a，D-V3-31＝B）", () => {
     const html = table(golden.snapshot);
     const date = formatDateL1("2026-08-02", { anchor: golden.snapshot.data_as_of });
     expect(date).toBe("8/2");
@@ -168,11 +171,11 @@ describe("F9 表格內容（§9.3 報表型表格）", () => {
       const markup = rowsOf(html).find(item => item.includes(`data-row="${row.metric}"`))!;
       expect(markup, row.metric).toContain(`<td class="num" data-col="2026-08-02">${link(date, label, value)}</td>`);
       expect(markup, row.metric).toContain(`<td class="num" data-col="total">${link(copy.columns.total, label, value)}</td>`);
-      expect(markup, row.metric).toContain(`<td class="num" data-col="share">${formatRateL1(row.share.value)}</td>`);
+      expect(markup, row.metric).toContain(`<td class="num" data-col="share">${shareLink(row.metric, label, formatRateL1(row.share.value))}</td>`);
     }
     // 扣廣告後貢獻 255 ÷ 2470 → 10.3%；淨營收 100.0%。
     const after = rowsOf(html).find(item => item.includes('data-row="contribution_after_marketing"'))!;
-    expect(after).toContain(`<td class="num" data-col="share">${formatRateL1("0.1032")}</td>`);
+    expect(after).toContain(`<td class="num" data-col="share">${shareLink("contribution_after_marketing", metricDefinitions.contribution_after_marketing.label, formatRateL1("0.1032"))}</td>`);
     expect(after).toContain(`>${formatAmountL2("255.00")}</button>`);
   });
 
@@ -184,7 +187,7 @@ describe("F9 表格內容（§9.3 報表型表格）", () => {
     expect(row("cogs_net")).toContain(`>${MINUS}40</button>`);
     expect(row("contribution_after_marketing")).toContain(`>${MINUS}60</button>`);
     expect(html).not.toMatch(/>-\d/);
-    for (const item of rowsOf(html)) expect(item).toContain(`<td class="num" data-col="share">${labels.shell.status.notApplicable}</td>`);
+    for (const item of rowsOf(html)) expect(item).toMatch(new RegExp(`<td class="num" data-col="share"><button type="button" class="number-link" data-testid="pnl-share-[a-z_]+" aria-label="[^"]+">${labels.shell.status.notApplicable}</button></td>`));
     expect(html).not.toMatch(/favorable|unfavorable/);
   });
 
@@ -211,7 +214,8 @@ describe("F9 表格內容（§9.3 報表型表格）", () => {
       expect(cell).toContain('class="num pnl-empty"');
       expect(text).toBe(copy.noData);
     }
-    expect(html.match(/class="number-link"/g)).toHaveLength(PNL_ROWS.length * 42);
+    // 41 天有資料＋合計＋佔淨營收 %（V4-3a）。
+    expect(html.match(/class="number-link"/g)).toHaveLength(PNL_ROWS.length * 43);
   });
 
   it("資料待補（errors/missing_ad_day）：格子寫資料待補，仍是 number-link（抽屜列出缺列）", async () => {
@@ -297,6 +301,48 @@ describe("F9 互動（hooks harness）", () => {
     const weekButton = findAll(tree, item => item.type === "button" && item.props["aria-label"] === fill(copy.cellAria, { date: week.label, metric: label, value: formatAmountL2(week.metrics.contribution_after_marketing.value) }))[0];
     click(weekButton);
     expect(onEvidence.mock.lastCall![0]).toMatchObject({ name: "contribution_after_marketing", metric: week.metrics.contribution_after_marketing, period: { start: week.start, end: week.end }, sources: week.sources });
+  });
+});
+
+describe("V4-3a 佔淨營收 % 的「計算與來源」（D-V3-31＝B、D-V4-32＝A；PRD §8.7）", () => {
+  it("點佔淨營收 % 開百分比證據：值是 buildPnlTable 的精確比率（不另算、不加版本）、unitOverride percent、valueKind level、組成是分子與分母兩個金額", () => {
+    const onEvidence = vi.fn<(evidence: EvidenceSelection) => void>();
+    const render = mount(PnlTable);
+    const tree = render({ snapshot: golden.snapshot, onEvidence });
+    const pnl = buildPnlTable(golden.snapshot, "day");
+    for (const row of pnl.rows) {
+      const button = byTestId(tree, `pnl-share-${row.metric}`);
+      expect(button.props["aria-label"], row.metric).toBe(fill(copy.cellAria, { date: copy.columns.share, metric: metricDefinitions[row.metric].label, value: pnlShareText(row) }));
+      expect(textOf(button), row.metric).toBe(pnlShareText(row));
+      click(button);
+      const evidence = onEvidence.mock.lastCall![0];
+      expect(evidence, row.metric).toEqual(pnlShareEvidence(golden.snapshot, row));
+      expect(evidence, row.metric).toMatchObject({ name: row.metric, metric: row.share, unitOverride: "percent", valueKind: "level", period: golden.snapshot.report.current.period, channels: golden.snapshot.report.scope.channels, sources: row.total.sources });
+      expect(evidence.metricVersion, row.metric).toBeUndefined();
+      expect(evidence.components, row.metric).toEqual([{ label: metricDefinitions[row.metric].label, metric: row.total.metric }, { label: metricDefinitions.net_revenue.label, metric: golden.snapshot.report.current.metrics.net_revenue }]);
+    }
+    // 扣廣告後貢獻 255.00 ÷ 淨營收 2470.00＝0.103238866397（domain 的 ratioMetric）。
+    const after = pnl.rows.find(row => row.metric === "contribution_after_marketing")!;
+    const label = metricDefinitions.contribution_after_marketing.label, net = metricDefinitions.net_revenue.label;
+    expect(pnlShareEvidence(golden.snapshot, after)).toEqual({
+      title: fill(copy.evidenceTitle, { metric: label, date: copy.columns.share }), name: "contribution_after_marketing", metric: { value: "0.103238866397", reason_codes: [] },
+      period: golden.snapshot.report.current.period, channels: golden.snapshot.report.scope.channels, sources: golden.snapshot.report.current.sources,
+      unitOverride: "percent", valueKind: "level",
+      formula: fill(labels.evidence.chartsV4.percent.formula, { numerator: label, denominator: net }),
+      components: [{ label, metric: { value: "255.00", reason_codes: [] } }, { label: net, metric: { value: "2470.00", reason_codes: [] } }],
+      definition: fill(labels.evidence.chartsV4.percent.definition, { metric: label }),
+      formulaTechnical: fill(labels.evidence.chartsV4.percent.formulaTechnical, { numerator: "contribution_after_marketing", denominator: "net_revenue" }),
+    });
+  });
+
+  it("淨營收 ≤ 0（refund_only）：格子寫不適用，仍是 number-link；證據的值是 null＋NON_POSITIVE_DENOMINATOR", () => {
+    const pnl = buildPnlTable(refundOnly.snapshot, "day");
+    for (const row of pnl.rows) {
+      const evidence = pnlShareEvidence(refundOnly.snapshot, row);
+      expect(evidence.metric.value, row.metric).toBeNull();
+      expect(evidence.metric.reason_codes, row.metric).toContain("NON_POSITIVE_DENOMINATOR");
+      expect(pnlShareText(row), row.metric).toBe(labels.shell.status.notApplicable);
+    }
   });
 });
 
