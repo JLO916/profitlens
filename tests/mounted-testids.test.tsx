@@ -1005,7 +1005,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V4-3a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
     const diagnosisStates = () => loaded().filter(({ state }) => state!.panel === "diagnosis");
 
-    it("V4-3a A 健檢：G10 chart-diagnosis-share 全頁一份、在 diagnosis-panel 之後與 channel-compare 之前；主層獨立圖區塊只有它（CL-9＝1）；圖框 aria-hidden、svg 高＝（通路數＋2）× 24 ≤ 所選固定高、每個 ready 列 4 段；資料表 <details> 收合但表格掛載；通路 > 8 只留資料表", async () => {
+    it("V4-3a A 健檢：G10 chart-diagnosis-share 全頁一份、在 diagnosis-panel 之後與 channel-compare 之前；主層獨立圖區塊是 G10、G11（V4-3b 起 CL-9＝2）；圖框 aria-hidden、svg 高＝（通路數＋2）× 24 ≤ 所選固定高、每個 ready 列 4 段；資料表 <details> 收合但表格掛載；通路 > 8 只留資料表", async () => {
       const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
       const { chartHeights, chartRowHeights } = await import("@/application/chart-theme");
       const { shareSectionModel } = await import("@/components/diagnosis/share-section");
@@ -1017,7 +1017,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         for (const id of ["chart-diagnosis-share", "chart-diagnosis-share-table"]) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
         const order = ['data-testid="diagnosis-panel"', 'data-testid="chart-diagnosis-share"', 'data-testid="channel-compare"'].map(attr => html.indexOf(attr));
         expect([...order].sort((a, b) => a - b), `${name}：清單、G10、通路寬表的順序`).toEqual(order);
-        expect(checkChartMarkup(html, { page: "diagnosis" }).mainSections, `${name}：健檢頁主層獨立圖區塊只有 G10`).toHaveLength(1);
+        // V4-3b：G11 熱表接在 G10 之後，主層獨立圖區塊＝2（G10、G11；G12 在 <details> 內不計）。
+        expect(checkChartMarkup(html, { page: "diagnosis" }).mainSections, `${name}：健檢頁主層獨立圖區塊是 G10、G11`).toEqual(["chart-diagnosis-share", "chart-diagnosis-heat"]);
         const section = element(html, 'data-testid="chart-diagnosis-share"')!;
         expect(openTag(section, "<section"), name).toBe('<section class="panel chart-section share-section" aria-labelledby="share-title" aria-describedby="share-sub" data-testid="chart-diagnosis-share">');
         expect(section, name).toContain(`<h2 id="share-title">${escapeAttr(model.title)}</h2>`);

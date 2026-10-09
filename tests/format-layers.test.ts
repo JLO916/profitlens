@@ -2,7 +2,7 @@ import Decimal from "decimal.js";
 import { describe, expect, it } from "vitest";
 import { formatHeadlineAmount } from "@/application/copy";
 import {
-  MINUS, asciiMinus, deltaTone, deltaToneLabel, deltaWord, emptyKindOf, favorableDirectionOf, formatAmount, formatAmountL1, formatAmountL2, formatAmountL3, formatAxisWan, formatCount, formatDateL1, formatEmpty, formatGrowth,
+  MINUS, asciiMinus, deltaTone, deltaToneLabel, deltaWord, emptyKindOf, favorableDirectionOf, formatAmount, formatAmountL1, formatAmountL2, formatAmountL3, formatAxisWan, formatCount, formatHeatCell, formatDateL1, formatEmpty, formatGrowth,
   formatMetric, formatMetricDelta, formatMultiple, formatPerUnit, formatPeriodExport, formatPeriodL1, formatRateChange, formatRateL1, formatRateL2, formatRateL3, formatRateLayer, formatRatePoints, formatSignedDelta,
   formatSignedRate, metricDefinitions, periodDays, type DirectionalMetric, type FavorableDirection, type Layer,
 } from "@/application/presentation";
@@ -378,5 +378,39 @@ describe("V4-1 formatAxisWan：金額軸刻度（PRD §6.4、§7.2；只在呈�
     expect(formatAxisWan([-500, 0, 500, 1_000, 1_500, 2_000, 2_500], 500)).toEqual([formatAmountL1("-500.00"), "0", ...["500.00", "1000.00", "1500.00", "2000.00", "2500.00"].map(value => formatAmountL1(value))]);
     expect(formatAxisWan([-500, 0], 500)[0].startsWith(MINUS)).toBe(true);
     expect(formatAxisWan([0, 100_000_000, 200_000_000], 100_000_000)).toEqual(["0", formatAmountL1("100000000.00"), formatAmountL1("200000000.00")]);
+  });
+});
+
+describe("V4-3b formatHeatCell：熱表格內的金額（PRD §4.4、§6.4 G11；CHART_CATALOG G11；只在呈現層）", () => {
+  it("以萬為單位、HALF_UP 兩位小數、不帶單位：示範資料 MARKETPLACE 8/22 的 −4,510.74 寫「−0.45」；正值不加號", () => {
+    expect(formatHeatCell("-4510.74")).toBe(`${MINUS}0.45`);
+    expect(formatHeatCell("4510.74")).toBe("0.45");
+    expect(formatHeatCell("-102500.00")).toBe(`${MINUS}10.25`);
+    expect(formatHeatCell("33950.00")).toBe("3.40");
+    expect(formatHeatCell("49.99")).toBe("0.00");
+    expect(formatHeatCell("50.00")).toBe("0.01");
+    expect(formatHeatCell("12345678.90")).toBe("1,234.57");
+    for (const text of ["-4510.74", "4510.74", "0", "-30"].map(formatHeatCell)) expect(text, text).not.toMatch(/萬|元/);
+  });
+
+  it("負號與 L1 的「虧」同一規則：取位到元後仍為負時保留 U+2212（萬位取位為 0 也保留，寫「−0.00」）；取位到元後為 0 寫「0.00」", () => {
+    expect(formatHeatCell("-30.00")).toBe(`${MINUS}0.00`);
+    expect(formatHeatCell("-0.50")).toBe(`${MINUS}0.00`);
+    expect(formatHeatCell("-0.49")).toBe("0.00");
+    expect(formatHeatCell("-0.30")).toBe("0.00");
+    expect(formatHeatCell("0.00")).toBe("0.00");
+    expect(formatHeatCell("0")).toBe("0.00");
+    for (const value of ["-4510.74", "-30.00", "-0.50", "-0.49", "-0.30", "0.00", "0.49", "12.00", "-99999.99"]) {
+      expect(formatHeatCell(value).startsWith(MINUS), value).toBe(formatAmountL1(value).startsWith(MINUS));
+      expect(formatHeatCell(value).startsWith(MINUS), value).toBe(deltaTone("contribution_after_marketing", value, "L1") === "unfavorable");
+    }
+    expect(formatHeatCell("-4510.74")).not.toContain("-");
+  });
+
+  it("null、undefined 與不是十進位字串時回傳空字串（由呼叫端畫虛線框與「資料待補」）", () => {
+    expect(formatHeatCell(null)).toBe("");
+    expect(formatHeatCell(undefined)).toBe("");
+    expect(formatHeatCell("abc")).toBe("");
+    expect(formatHeatCell("1e5")).toBe("");
   });
 });
