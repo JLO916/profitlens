@@ -79,7 +79,8 @@ export function scenarioThresholdModel(analysis: ScenarioSensitivityAnalysis, pl
   const target = (id: ContributionThreshold["id"]) => analysis.targets.find(item => item.id === id);
   const zero = target("zero_contribution"), maintain = target("maintain_baseline");
   const valid = analysis.status === "valid";
-  const title = valid && zero ? thresholdDescription(zero) : section;
+  // D-V4-46＝B：標題前加零貢獻門檻的既有目標名（說明句字不改）；過期與不能試算時仍是區塊標準名。
+  const title = valid && zero ? fill(g16.title, { target: thresholdTargetLabel("zero_contribution"), description: thresholdDescription(zero) }) : section;
   const points: ThresholdLinePoint[] = arranged.points.map(point => point.kind === "threshold"
     ? { ...point, label: fill(g16.pointLabel, { name: fill(g16.pointNames[point.id as ContributionThreshold["id"]], { metric: METRIC }), pct: pct(point.v, "L1") }), shortLabel: pct(point.v, "L1") }
     : { ...point, label: letterOf(point.id), shortLabel: letterOf(point.id) });

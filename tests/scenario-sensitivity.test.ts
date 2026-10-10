@@ -185,7 +185,8 @@ describe("V4-5 G16 在 scenario-sensitivity 內（SSR）", () => {
     expect(open).not.toContain("panel");
     for (const attr of ['aria-labelledby="scenarios-threshold-p-title"', 'aria-describedby="scenarios-threshold-p-sub"']) expect(open).toContain(attr);
     const analysis = analyzeScenarioSensitivity(golden(), f10, ["-3", "-2.5", "0"]);
-    expect(chart(html)).toContain(`<h4 id="scenarios-threshold-p-title">${thresholdDescription(analysis.targets[0])}</h4>`);
+    // D-V4-46＝B：標題＝零貢獻門檻的既有目標名＋既有說明句。
+    expect(chart(html)).toContain(`<h4 id="scenarios-threshold-p-title">${fill(g16.title, { target: thresholdTargetLabel("zero_contribution"), description: thresholdDescription(analysis.targets[0]) })}</h4>`);
     expect(subtitle(html)).toBe(fill(g16.subtitle, { section: g16.section, axis: fill(g16.axis, { metric: METRIC }) }));
     expect(openTag(chart(html), 'class="chart-frame sm"')).toContain('aria-hidden="true"');
     expect(openTag(chart(html), 'class="chart-frame sm"')).toContain('data-state="ready"');
@@ -228,7 +229,8 @@ describe("V4-5 G16 在 scenario-sensitivity 內（SSR）", () => {
   it("L＝0（constant_below、constant_equal）：不畫門檻點、不列超出範圍；標題是零貢獻的恆低句、副標是維持現況的恆等句；三點明填時只有使用者點", () => {
     const base = baseline({ cogs_net: "100.00", ad_spend: "10.00" });
     const html = render(base, zero, { value: { volumes: ["-90", "0", "100"] } });
-    expect(title(html)).toBe(copy.thresholdConstantBelow);
+    // D-V4-46＝B：L＝0 時標題仍是零貢獻的恆低句，前面加既有目標名。
+    expect(title(html)).toBe(fill(g16.title, { target: thresholdTargetLabel("zero_contribution"), description: copy.thresholdConstantBelow }));
     expect(subtitle(html)).toBe(fill(g16.subtitleFlat, { section: g16.section, target: thresholdTargetLabel("maintain_baseline"), description: copy.thresholdConstantEqual }));
     expect(pointIds(html)).toEqual(["a", "b", "c"]);
     expect(chart(html)).not.toContain("threshold-out-of-range");

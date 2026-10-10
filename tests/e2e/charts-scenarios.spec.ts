@@ -92,7 +92,8 @@ test("G16：展開後門檻點空心（stroke chartColors.target）、填三個�
   const card = scenarioCard(page, 1);
   await openSensitivityChart(card);
   const analysis = analyzeScenarioSensitivity(goldenDtc(), PLANS[0], ["-3", "-2.5", "0"]);
-  await expect(thresholdSection(card).locator("h4")).toHaveText(thresholdDescription(analysis.targets[0]));
+  // D-V4-46＝B：標題＝零貢獻門檻的既有目標名＋既有說明句。
+  await expect(thresholdSection(card).locator("h4")).toHaveText(fill(labels.scenarios.chartsV4.threshold.title, { target: thresholdTargetLabel("zero_contribution"), description: thresholdDescription(analysis.targets[0]) }));
   // 三個假設預設空白（X29）：只有兩個門檻點，不代填。
   await expect(thresholdPoints(card)).toHaveCount(2);
   for (const id of ["zero_contribution", "maintain_baseline"]) {
@@ -137,6 +138,6 @@ test("G16 超出範圍：4 通路合成資料 MARKETPLACE「維持現況」的�
   await expect(note).toBeVisible();
   await expect(note).toHaveText(fill(g16.outOfRange, { target: thresholdTargetLabel("zero_contribution"), outcome: sensitivity.outcomeAllBelow }));
   await expect(note).toContainText(g16.outOfRangeCell);
-  // 標題沿用零貢獻目標的既有說明句（超出範圍那一句）。
-  await expect(thresholdSection(card).locator("h4")).toHaveText(fill(sensitivity.thresholdOutsideRange, { outcome: sensitivity.outcomeAllBelow }));
+  // 標題沿用零貢獻目標的既有說明句（超出範圍那一句），D-V4-46＝B 起前面加既有目標名。
+  await expect(thresholdSection(card).locator("h4")).toHaveText(fill(g16.title, { target: thresholdTargetLabel("zero_contribution"), description: fill(sensitivity.thresholdOutsideRange, { outcome: sensitivity.outcomeAllBelow }) }));
 });

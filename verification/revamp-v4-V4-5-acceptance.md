@@ -137,3 +137,9 @@
 - **待拍板 D-V4-47（TBT 判定方式）**：建議 B。
 - **下一批**：V4-6，會議紀錄（G15 會議實例、G19）。G15 的會議實例會用 `variant="inline"`、`headingLevel={4}`，每個通路一根柱，上限 6 根。
 - **部署**：本批沒有部署；preview 部署仍需使用者當次明確同意。
+
+## 7. 收尾後補做（2026-10-10，使用者回覆「46 B、47 B、V4-6」）
+
+- **D-V4-46＝B**：G16 有效時的標題改成「{既有目標名}：{既有說明句}」（新 key `scenarios.chartsV4.threshold.title`；`thresholdTargetLabel("zero_contribution")` 與 `thresholdDescription` 都字不改），例如「打平（扣廣告後貢獻 = 0）：銷量增減大於或等於這個門檻時，試算結果可維持目標或更高。」；L＝0、超出範圍也一樣加目標名，過期與不能試算仍是區塊名。改動：`src/components/scenarios/threshold-chart.tsx`、`src/i18n/labels.zh-TW.ts`（V4-5 錨點內）、`tests/scenario-sensitivity.test.ts`（2 處標題斷言）、`tests/e2e/charts-scenarios.spec.ts`（2 處）。驗證：typecheck、lint exit 0；unit 150 檔／3,007 全過；`charts-scenarios.spec.ts`、`scenario-sensitivity.spec.ts` desktop、mobile 12／12 通過。G16 在收合的 `<details>` 內，畫面 07 不變（V4-6 的 52 張比對會一併確認）。
+- **D-V4-47＝B**：寫入 06 護欄表 Lighthouse 列。V4-5 的同場對照（§3）符合 B 的通過條件。
+

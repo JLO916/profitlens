@@ -1417,13 +1417,15 @@ export const scenarios = {
     /**
      * V4-5 代理 C：G16 要賣到多少才划算（PRD §4.1–§4.7 G16、§8.7；CHART_CATALOG G16；D-V4-20＝A′ 只畫點、不連線）。每個方案欄 scenario-{n} 的
      * 「要賣到多少才划算」<details> 內、門檻說明（threshold-{id}）之後、技術細節之前，每個方案一份。標題沿用零貢獻門檻的既有說明句
-     * （thresholdDescription，scenarios.sensitivity.threshold*，字不改），所以這裡沒有 title 鍵；快照過期時的說明沿用 scenarios.sensitivity.reasons.STALE_SCENARIO，
+     * （thresholdDescription，scenarios.sensitivity.threshold*，字不改），D-V4-46＝B 起前面再加既有目標名（title 鍵只是組合樣板，不另寫說明句）；快照過期時的說明沿用 scenarios.sensitivity.reasons.STALE_SCENARIO，
      * L＝0 的副標沿用 scenarios.sensitivity.thresholdConstant*，資料表的列名沿用 thresholdTargetLabel（scenarios.sensitivity.targetZero、targetMaintain）與 rowLabel（假設 A／B／C），
      * 銷量欄沿用 scenarios.inputs.volume.label、金額欄以 format.units.yuanColumn 加「（元）」。
      */
     threshold: {
       /** 區塊標準名：沒有門檻可寫時的標題（快照過期、母方案不能試算）、副標第一段、資料表 summary（「表格 · …」）與 caption（caption 前面再加方案名稱）。 */
       section: "兩個門檻與三個假設的位置",
+      /** D-V4-46＝B（使用者 2026-10-10 回覆「46 B」）：有效時的標題＝零貢獻門檻的既有目標名＋既有說明句（兩者都字不改），讓讀者知道「這個門檻」指的是哪一個空心圈：{target}＝thresholdTargetLabel("zero_contribution")，{description}＝thresholdDescription(零貢獻門檻)。 */
+      title: "{target}：{description}",
       /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{axis}＝軸的說明。 */
       subtitle: "{section} · {axis} · 空心圈是門檻，實心點是自己填的假設",
       /** V4-5 審查 R1-V45-W1：空狀態（過期、不能試算、圖上沒有任何點）的副標，不寫圖上沒有的空心圈與實心點；L＝0 仍用 subtitleFlat。 */
