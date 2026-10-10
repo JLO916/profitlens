@@ -23,6 +23,9 @@ import { MINUS } from "@/application/presentation";
 // V4-5 代理 B（G15 方案差額；PRD §4.4 G15「（根數＋軸 1 列）× 24 ≤ sm 180；零線＝現況」）：加選用的軸列 axis——給了文字時，柱列之後多 1 列，
 // 零線往下延伸一小段刻度，文字（例如「現況 270 元」，呼叫端從 labels 組好）置中對齊零線、不超出左右邊界。沒給 axis 時幾何與 markup 和 V4-4 逐字相同
 // （tests/charts-scenarios-v4.test.tsx 以 tests/fixtures/ranked-bars-v4-4.json 比對商品頁 G13、G14 與各模式的輸出）。
+// V4-6 代理 B（G15 會議實例；PRD §6.3 C25「（列數＋軸或『另 n 個』列）× 列高 ≤ 固定高」）：加選用的 axisWithMore——會議實例最多 6 根柱，
+// 其餘只列在資料表並寫「另 n 個」，軸文字（「各通路現況」）與「另 n 個」共用最後一列，6 根＋1 列＝168 ≤ sm 180。沒給時幾何與 markup 和 V4-5 逐字相同
+// （tests/charts-meeting-scenarios-v4.test.tsx 以 tests/fixtures/scenarios-variance-v4-5.json 比對試算頁 G15 與帶軸列的輸出）。
 
 /** C25 的三種模式（PRD §6.3）。 */
 export type RankedBarsMode = "variance" | "ranked" | "pareto";
@@ -67,6 +70,11 @@ export interface HbarOptions {
   minPlot?: number;
   /** V4-5：軸列的文字（G15「現況 {amount}」）；給了時柱列之後多 1 列，標在最後一段的零線下方。沒給或空字串時不畫軸列（V4-4 的輸出不變）。 */
   axis?: string;
+  /**
+   * V4-6（G15 會議實例：6 根柱＋1 列 ≤ sm 180）：軸列與最後一段的「另 n 個」列共用一列——該段是最後一段、有柱也有「另 n 個」列時，
+   * 軸文字畫在「另 n 個」那一列（不另加一列），置中於零線、但從「另 n 個」文字之後開始夾，兩段文字不重疊。其他情況與沒給時相同（V4-5 的輸出不變）。
+   */
+  axisWithMore?: boolean;
 }
 
 export interface HbarRect { x: number; y: number; width: number; height: number }
@@ -233,6 +241,7 @@ export function rankedBarFill(tone: RankedBarTone): string {
  * 5. 柱長＝|值| × 每單位像素（Decimal，取到 0.1），非零至少 1px；標值在柱端外側 4px。
  * 高＝（柱列＋「另 n 個」列）× 列高（chartRowHeights）。空段（沒有列也沒有 more）不輸出。
  * 6. V4-5：options.axis 有文字且有柱時，最後加 1 列軸列（高再加 1 列）：刻度在最後一段有柱的段的零線，文字置中於零線、夾在左右邊界內。
+ *    V4-6：options.axisWithMore 且該段（最後一段）有「另 n 個」列時不另加列，軸文字畫在「另 n 個」那一列、左界在「另 n 個」文字之後。
  */
 export function hbarGeometry<E = unknown>(input: readonly RankedBarRow<E>[] | readonly RankedBarBlock<E>[], width: number, mode: RankedBarsMode, options: HbarOptions = {}): HbarGeometry<E> {
   const drawWidth = Math.max(1, Math.round(width));
@@ -311,8 +320,11 @@ export function hbarGeometry<E = unknown>(input: readonly RankedBarRow<E>[] | re
   });
   const barRowCount = shapes.reduce((sum, block) => sum + block.bars.length + (block.more ? 1 : 0), 0);
   const axisBlock = options.axis ? [...shapes].reverse().find(block => block.bars.length > 0) : undefined;
-  const axis = axisBlock && options.axis ? axisOf(options.axis, axisBlock.zeroX, axisBlock.zeroLine?.y2 ?? offset, offset, baseline, drawWidth) : undefined;
-  const rowCount = barRowCount + (axis ? 1 : 0);
+  // V4-6 axisWithMore：軸文字與最後一段的「另 n 個」共用那一列（列頂＝offset − 列高），文字的左界在「另 n 個」之後。
+  const lastShape = shapes[shapes.length - 1];
+  const shared = options.axisWithMore === true && axisBlock !== undefined && axisBlock === lastShape && lastShape.more !== null;
+  const axis = axisBlock && options.axis ? axisOf(options.axis, axisBlock.zeroX, axisBlock.zeroLine?.y2 ?? offset, shared ? offset - rowHeight : offset, baseline, drawWidth, shared ? rankedTextWidth(lastShape.more!.text) + RANKED_TEXT_PAD : 0) : undefined;
+  const rowCount = barRowCount + (axis && !shared ? 1 : 0);
   const extraRows = mode === "pareto" ? shapes.flatMap(block => block.bars.filter(bar => bar.row.extra !== undefined && bar.row.extra !== "").map(bar => ({ key: bar.key, y: bar.textY, text: bar.row.extra! }))) : [];
   const extra = extraRows.length ? { width: Math.ceil(Math.max(...extraRows.map(item => rankedTextWidth(item.text)))) + RANKED_TEXT_PAD + EXTRA_GAP, rows: extraRows } : null;
   return {
@@ -326,11 +338,11 @@ export function hbarGeometry<E = unknown>(input: readonly RankedBarRow<E>[] | re
 
 /**
  * V4-5 軸列的幾何：barsBottom＝該段柱列底（零線下端）、top＝軸列頂（所有列之後）；刻度從 barsBottom 到 top＋RANKED_AXIS_TICK（兩者相同時就是柱列底下 4px）。
- * 文字以估寬置中於零線，夾在 [半寬, 寬 − 半寬]（寬不夠時置中於圖寬）。
+ * 文字以估寬置中於零線，夾在 [半寬, 寬 − 半寬]（寬不夠時置中於圖寬）。V4-6：minLeft（與「另 n 個」共用一列時＝該文字估寬＋間距）把左界移到 minLeft＋半寬；預設 0 時與 V4-5 相同。
  */
-function axisOf(text: string, zeroX: number, barsBottom: number, top: number, baseline: number, width: number): HbarAxis {
+function axisOf(text: string, zeroX: number, barsBottom: number, top: number, baseline: number, width: number, minLeft = 0): HbarAxis {
   const half = rankedTextWidth(text) / 2;
-  const x = half * 2 >= width ? width / 2 : Math.min(Math.max(zeroX, half), width - half);
+  const x = half * 2 >= width ? width / 2 : Math.min(Math.max(zeroX, minLeft + half), width - half);
   return { zeroX, tick: { y1: barsBottom, y2: top + RANKED_AXIS_TICK }, label: { x: round1(x), y: top + baseline, text } };
 }
 
@@ -409,13 +421,15 @@ export interface RankedBarsProps<E = unknown> {
   width?: number;
   /** V4-5（G15）：軸列文字（零線＝現況，例如「現況 270 元」，呼叫端從 labels 組好）；不給時沒有軸列。 */
   axis?: string;
+  /** V4-6（G15 會議實例）：軸列與「另 n 個」列共用一列（見 HbarOptions.axisWithMore）；不給時與 V4-5 相同。 */
+  axisWithMore?: boolean;
 }
 
 /**
  * C25 RankedBars：放在 ChartFrame（固定高、aria-hidden）內。量寬（ResizeObserver）後算幾何，交給 RankedBarsView。
  * svg 高只由列數決定（不隨寬度變），量到寬之前以 560 的座標系等比縮放，不跳動。
  */
-export function RankedBars<E = unknown>({ mode, rows, blocks, more, rowHeight, testIdPrefix, onBarClick, hideExtraOnNarrow, separator, width, axis }: RankedBarsProps<E>) {
+export function RankedBars<E = unknown>({ mode, rows, blocks, more, rowHeight, testIdPrefix, onBarClick, hideExtraOnNarrow, separator, width, axis, axisWithMore }: RankedBarsProps<E>) {
   const main = useRef<HTMLDivElement>(null);
   const [measured, setMeasured] = useState<number | null>(null);
   useEffect(() => {
@@ -429,6 +443,6 @@ export function RankedBars<E = unknown>({ mode, rows, blocks, more, rowHeight, t
     return () => observer.disconnect();
   }, []);
   const drawWidth = Math.round(width ?? measured ?? RANKED_SSR_WIDTH);
-  const geometry = useMemo(() => hbarGeometry<E>(blocks ?? rows ?? [], drawWidth, mode, { rowHeight, more, axis }), [blocks, rows, drawWidth, mode, rowHeight, more, axis]);
+  const geometry = useMemo(() => hbarGeometry<E>(blocks ?? rows ?? [], drawWidth, mode, { rowHeight, more, axis, axisWithMore }), [blocks, rows, drawWidth, mode, rowHeight, more, axis, axisWithMore]);
   return <RankedBarsView geometry={geometry} testIdPrefix={testIdPrefix} onBarClick={onBarClick} hideExtraOnNarrow={hideExtraOnNarrow} separator={separator} measureRef={main} />;
 }

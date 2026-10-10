@@ -17,6 +17,7 @@ import { channelsLabel, formatHeadlineAmount } from "@/application/copy";
 import { formatAmountL1, formatAmountL2, formatDateL1, formatGrowth, formatPeriodL1, formatSignedDelta } from "@/application/presentation";
 import { exportWorkspaceBackup, restoreWorkspaceBackup } from "@/application/workspace-backup";
 import { currentViewDecisionContext, DECISION_LABEL_KEY, finalizeErrorText, MeetingEntry, MeetingHistory, MeetingPage, meetingExportInfo, meetingMarkdownFilename, reviewDatasetId, type MeetingPageProps } from "../src/components/meeting-page";
+import { MeetingScenariosChart } from "../src/components/meeting/scenarios-chart";
 import { PrintSummary } from "../src/components/print-summary";
 import { PRINT_NOTES_LIMIT } from "../src/components/summary-shared";
 import styles from "../src/components/manager-summary.module.css";
@@ -476,6 +477,67 @@ describe("R6-F2 agenda ⑤⑥ hold the selected plans and pinned actions", () =>
     expect(noneEmpty).toMatch(/^<div class="ui-empty-block meeting-scenarios-empty"/);
     expect(text(noneEmpty)).toBe(`${labels.empty.stateV3.meetingNoScenarioTitle}${labels.empty.stateV3.meetingNoScenarioBody}`);
     expect(noneEmpty).toContain(`<p class="ui-empty-title">${labels.empty.stateV3.meetingNoScenarioTitle}</p>`);
+  });
+});
+
+/*
+ * V4-6 代理 B：G15 會議實例（06_BATCHES V4-6；CHART_CATALOG G15「tests/meeting-page.test.tsx 擴」）。golden DTC 方案 p（履約，284.00、+14.00）。
+ * 7 個通路各選一個方案（6 根、資料表 7 列、「另 1 個」）與 chart-lint、試算頁 G15 逐字不變在 tests/charts-meeting-scenarios-v4.test.tsx。
+ */
+describe("V4-6 G15 會議實例（議程 5）", () => {
+  const g15 = labels.meeting.chartsV4.scenarios;
+  const titleOf = (html: string) => text(/<h4 id="meeting-scenarios-title">([\s\S]*?)<\/h4>/.exec(html)![1]);
+
+  it("在議程 5 內、說明句之後、每通路選入列 meeting-scenario-results 之前；inline（沒有 .panel）、h4；1 根柱、標題不含方案名", async () => {
+    const state = await setup();
+    const html = render(props(state));
+    const five = block(html, "meeting-agenda-5");
+    const chart = block(five, "chart-meeting-scenarios");
+    expect(html.split('data-testid="chart-meeting-scenarios"')).toHaveLength(2);
+    expect(five.indexOf(chart)).toBeGreaterThan(five.indexOf(page.scenariosNote));
+    expect(five.indexOf(chart) + chart.length).toBeLessThanOrEqual(five.indexOf('data-testid="meeting-scenario-results"'));
+    expect(chart).toMatch(/^<section class="chart-section is-inline meeting-scenarios-chart"/);
+    expect(five).toMatch(/^<section class="meeting-agenda-item"[^>]*><h3 /);
+    expect(titleOf(chart)).toBe(fill(g15.title, { n: 1 }));
+    expect(titleOf(chart)).not.toContain("履約");
+    expect([...chart.matchAll(/data-testid="(chart-meeting-scenarios-bar-[^"]+)"/g)].map(match => match[1])).toEqual(["chart-meeting-scenarios-bar-p"]);
+    expect(chart).toMatch(/data-testid="chart-meeting-scenarios-bar-p" data-tone="favorable"/);
+    expect(chart).toContain(`>${formatSignedDelta("14.00", "L1")}</text>`);
+    expect(chart).toContain(`>${g15.axis}</text>`);
+    // 資料表：方案 · 通路、試算後的扣廣告後貢獻、與現況相比（L2 純文字，沒有 number-link）。
+    const table = block(chart, "chart-meeting-scenarios-table");
+    expect(table).toContain(`<tr><th scope="row">${fill(g15.row, { plan: "履約", channel: "DTC" })}</th><td class="num">${formatAmountL2("284.00")}</td><td class="num">${formatSignedDelta("14.00", "L2")}</td></tr>`);
+    expect(chart).not.toContain("number-link");
+    // 柱不可點：沒有熱區；圖容器 aria-hidden，內部沒有可聚焦元素。
+    const frame = chart.slice(chart.indexOf('<div class="chart-frame sm"'), chart.indexOf('<details class="data-alternative">'));
+    expect(frame).toMatch(/^<div class="chart-frame sm" style="height:180px" aria-hidden="true"/);
+    expect(frame).not.toMatch(/tabindex|<button|<a[\s>]|<input|<select|ranked-hit|is-clickable/);
+  });
+
+  it("方案過期（被新修訂取代）：不畫柱、空狀態；資料表照列並標「過期」。沒有選入方案時不渲染（議程 5 的區段型空狀態不變）", async () => {
+    const state = await setup();
+    const context = state.scenarios.contexts[0], draft = scenarioContextDecision(context);
+    draft.scenarios = saveScenario(context.session, draft.scenarios, { id: "p", name: "履約加碼", inputs: { ...inputs, fulfillment_change_pct: "-20" } });
+    const scenarios = updateScenarioContext(state.scenarios, context.id, draft);
+    // 「採用」的會議不能帶過期方案（REVIEW_ADOPTED_STALE_SCENARIO），先改回草稿（同上方 R6-F2 的過期測試）。
+    const chart = block(block(render(props(state, { scenarioWorkspace: scenarios, review: updateReviewSession(state.review, { decision_state: "draft" }) })), "meeting-agenda-5"), "chart-meeting-scenarios");
+    expect(chart).not.toContain("chart-meeting-scenarios-bar-");
+    expect(chart).toContain('data-state="empty"');
+    expect(chart).toContain(`<p class="chart-frame-message">${g15.empty}</p>`);
+    expect(titleOf(chart)).toBe(g15.section);
+    expect(block(chart, "chart-meeting-scenarios-table")).toContain(`<th scope="row">${fill(g15.rowStatus, { row: fill(g15.row, { plan: "履約", channel: "DTC" }), status: summaryCopy.scenarioStale })}</th>`);
+    const none = render(props(state, { review: selectReviewScenario(updateReviewSession(state.review, { decision_state: "draft" }), state.scenarios, null, "DTC") }));
+    expect(none).not.toContain("chart-meeting-scenarios");
+    expect(block(none, "meeting-scenario-results-empty")).toMatch(/^<div class="ui-empty-block meeting-scenarios-empty"/);
+  });
+
+  it("hooks harness：G15 會議實例是議程 5 的子元件（harness 不呼叫它，MeetingPage 本身沒有多的 hook），props 是會議的選入方案與範圍", async () => {
+    const state = await setup();
+    const tree = mount(MeetingPage)(props(state));
+    const [chart] = findAll(tree, element => element.type === MeetingScenariosChart);
+    expect(chart).toBeDefined();
+    const context = buildReviewDecisionContext(state.review, state.scenarios, state.actions);
+    expect(chart.props).toMatchObject({ scenarios: context.scenarios, references: state.review.selected_scenarios, channels: state.review.meeting_filters.channels, alias: false, period: formatPeriodL1("2026-08-02", "2026-08-02", { days: false, anchor: "2026-08-03" }) });
   });
 });
 

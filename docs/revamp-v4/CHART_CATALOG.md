@@ -436,6 +436,7 @@
 | 匯出 | 不印、不放；Excel 不另加：`ExcelExportInput`（`src/application/excel-export.ts:40-56`）沒有試算資料，`ManagerSummary` 也沒有 scenarios 欄位，兩個呼叫端（`dashboard.tsx:425`、`meeting-page.tsx:254`）都沒有傳 `ScenarioWorkspace`；試算結果已在決策 JSON 與 Markdown；決策 Markdown 不變 |
 | 單元測試 | `tests/charts-scenarios-v4.test.tsx`：條數＝有效結果數、未計算方案沒有條、沒有任何跨方案合計、`chart-scenarios-variance` 全頁 1 個（M6）；`tests/meeting-page.test.tsx` 擴（會議實例在 `meeting-agenda-5` 內、stale 不畫、7 個通路各選一個方案時只畫 6 根且資料表 7 列、標題不含任何方案名）；標題 key 都含「試算後」（字串斷言） |
 | E2E 草案 | 試算頁用 golden 試算後 `chart-scenarios-variance-bar-*` 數＝有效方案數，條端文字等於 `formatSignedDelta(result.delta, "L1")`；keyboard-walk 試算頁「第一個結果數字」里程碑 Tab 數不晚於 V4-0；會議頁 `chart-meeting-scenarios` 在 `meeting-agenda-5` 內 |
+| V4-6 會議實例的實作決定（代理 B） | （1）只在會議有選入方案（`context.scenarios` 非空）時渲染；沒有選入方案時議程 5 維持 v3 的區段型空狀態 `meeting-scenario-results-empty`（DOM 不變），不再多一個同義的圖表空狀態；選入的方案都過期時 `state="empty"`（說明 `meeting.chartsV4.scenarios.empty`），資料表照列。（2）列序＝會議範圍的通路順序（同議程 5 的每通路列）；柱＝前 6 個可畫的方案（不是過期、有差額），其餘只列在資料表；標題的 {n}＝可畫的方案數（過期的不算，副標另加「過期的 {n} 個方案只列在資料表」）。（3）零線＝每個通路自己的現況，軸文字「各通路現況」（`meeting.chartsV4.scenarios.axis`，不寫金額）；副標寫「每個通路從自己的現況扣廣告後貢獻算起」。（4）超過 6 根時「另 {n} 個」與軸文字共用最後一列（C25 新增選用的 `axisWithMore`，6＋1 列＝168 ≤ sm 180；沒給時 C25 輸出與 V4-5 逐字相同，試算頁 G15 以 `tests/fixtures/scenarios-variance-v4-5.json` 比對）。（5）過期方案的列名後接既有的「過期」（`meeting.managerSummary.scenarioStale`）；柱的 testid 尾段是方案 id（`review.selected_scenarios[i].plan_id`）；元件在 `src/components/meeting/scenarios-chart.tsx`（只給會議頁的 chunk，不在首載）。 |
 
 ### G16 要賣到多少才划算（門檻點與連線）（新增；P1；V4-5）
 

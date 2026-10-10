@@ -74,8 +74,11 @@ export interface ScenarioVarianceModel {
 }
 
 const validResult = (plan: Pick<ScenarioPlan, "result">) => plan.result?.status === "valid" ? plan.result : null;
-/** 與方案欄的 scenario-delta 同一個判斷（L1：取位到元後為 0 的差額不上色、標題用持平）。 */
-const toneOf = (delta: string): RankedBarTone => {
+/**
+ * 與方案欄的 scenario-delta 同一個判斷（L1：取位到元後為 0 的差額不上色、標題用持平）。
+ * V4-6 代理 B：匯出給 G15 會議實例（src/components/meeting/scenarios-chart.tsx）共用，判斷不變。
+ */
+export const varianceBarTone = (delta: string): RankedBarTone => {
   const tone = deltaTone("contribution_after_marketing", delta, "L1");
   return tone === "neutral" ? "total" : tone;
 };
@@ -94,7 +97,7 @@ export function scenarioVarianceModel({ plans, baseline, channels, period, stale
     return { id: plan.id, name: planLabel(plan.name, index), status: result ? "valid" : plan.result?.status === "ineligible" ? "notApplicable" : "pending", contribution: result?.contribution ?? null, delta: result?.delta ?? null };
   });
   const valid = tableRows.filter((row): row is ScenarioVarianceTableRow & { delta: string } => row.delta !== null);
-  const bars = valid.map((row): RankedBarRow<null> => ({ key: row.id, label: row.name, value: row.delta, tone: toneOf(row.delta), display: formatSignedDelta(row.delta, "L1"), evidence: null }));
+  const bars = valid.map((row): RankedBarRow<null> => ({ key: row.id, label: row.name, value: row.delta, tone: varianceBarTone(row.delta), display: formatSignedDelta(row.delta, "L1"), evidence: null }));
   let lead: (typeof valid)[number] | null = null;
   for (const row of valid) if (lead === null || new Decimal(row.delta).abs().gt(new Decimal(lead.delta).abs())) lead = row;
   const tone = lead === null ? null : deltaTone("contribution_after_marketing", lead.delta, "L1");
