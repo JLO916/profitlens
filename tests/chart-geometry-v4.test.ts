@@ -644,6 +644,30 @@ describe("thresholdGeometry（C29）：點標籤（390 縮短為百分比）與�
     }
   });
 
+  it("四個位置都碰到時取重疊最小的位置：golden DTC f−10%、假設 −5／0／+5（只標門檻）時，「維持現況」標籤不壓在 B、C 兩點上", () => {
+    // 維持現況門檻 −2.53%（y 270.00）夾在 A（−5%，256.30）、B（0%，284.00）、C（+5%，311.70）之間：上、下、右、左都碰到點；
+    // 舊的「都碰到時放上方」會把標籤疊在 B、C 兩點上，改取重疊面積最小的位置。
+    const points: ThresholdLinePoint[] = [
+      { id: "zero_contribution", kind: "threshold", v: "-51.263537906137", y: "0.00", label: "zero −51.3%", shortLabel: "−51.3%" },
+      { id: "maintain_baseline", kind: "threshold", v: "-2.527075812274", y: "270.00", label: "maintain −2.5%", shortLabel: "−2.5%" },
+      { id: "a", kind: "user", v: "-5", y: "256.30" },
+      { id: "b", kind: "user", v: "0", y: "284.00" },
+      { id: "c", kind: "user", v: "5", y: "311.70" },
+    ];
+    const area = (a: LabelBox, b: LabelBox) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    for (const width of [THRESHOLD_SSR_WIDTH, 900]) {
+      const geometry = thresholdGeometry(points, width);
+      const shapes = thresholdShapes(geometry);
+      const label = shapes.maintain_baseline.label!;
+      const box = labelBox(label);
+      const pointBox = (id: string): LabelBox => ({ left: shapes[id].cx - THRESHOLD_POINT_R, right: shapes[id].cx + THRESHOLD_POINT_R, top: shapes[id].cy - THRESHOLD_POINT_R, bottom: shapes[id].cy + THRESHOLD_POINT_R });
+      expect(label.placement, String(width)).not.toBe("above");
+      for (const id of ["b", "c"]) expect(boxesOverlap(box, pointBox(id)), `${width} 壓到點 ${id}`).toBe(false);
+      const covered = ["a", "b", "c", "zero_contribution"].reduce((sum, id) => sum + area(box, pointBox(id)), 0);
+      expect(covered, String(width)).toBeLessThan(THRESHOLD_POINT_R * THRESHOLD_POINT_R);
+    }
+  });
+
   it("點在繪圖區上緣、右緣時：標籤不超出 svg 上緣與右緣", () => {
     const geometry = thresholdGeometry([{ id: "top", kind: "threshold", v: "100", y: "500.00", label: "maintain +100.0%" }], THRESHOLD_SSR_WIDTH);
     const [shape] = geometry.points;
