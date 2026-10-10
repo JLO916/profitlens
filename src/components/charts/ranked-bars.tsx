@@ -20,6 +20,9 @@ import { MINUS } from "@/application/presentation";
 // 點擊的分析事件（chart_clicked）由呼叫端記，與 G4、G6、G10 相同。
 // 色只經 chart-theme.ts 的 chartColors（沒有色碼與 var() 字串常值，CL-3）；列高只用 chartRowHeights（CL-10）；字級只用 chartFontSize（CL-5）。
 // 長度比例以 Decimal 用 domain 的精確字串計算（|值| × 每單位像素），座標取到 0.1；顯示文字一律用呼叫端傳入的 display，不在這裡格式化金額。
+// V4-5 代理 B（G15 方案差額；PRD §4.4 G15「（根數＋軸 1 列）× 24 ≤ sm 180；零線＝現況」）：加選用的軸列 axis——給了文字時，柱列之後多 1 列，
+// 零線往下延伸一小段刻度，文字（例如「現況 270 元」，呼叫端從 labels 組好）置中對齊零線、不超出左右邊界。沒給 axis 時幾何與 markup 和 V4-4 逐字相同
+// （tests/charts-scenarios-v4.test.tsx 以 tests/fixtures/ranked-bars-v4-4.json 比對商品頁 G13、G14 與各模式的輸出）。
 
 /** C25 的三種模式（PRD §6.3）。 */
 export type RankedBarsMode = "variance" | "ranked" | "pareto";
@@ -62,6 +65,8 @@ export interface HbarOptions {
   more?: string;
   /** 繪圖區的最小寬（px，預設 RANKED_MIN_PLOT）：標籤欄超過「寬 − 標值欄 − 本值」時截斷標籤。 */
   minPlot?: number;
+  /** V4-5：軸列的文字（G15「現況 {amount}」）；給了時柱列之後多 1 列，標在最後一段的零線下方。沒給或空字串時不畫軸列（V4-4 的輸出不變）。 */
+  axis?: string;
 }
 
 export interface HbarRect { x: number; y: number; width: number; height: number }
@@ -95,6 +100,15 @@ export interface HbarBlockShape<E = unknown> {
   /** 段末「另 {n} 個」文字列的基線與文字。 */
   more: { y: number; text: string } | null;
 }
+/** V4-5 軸列（G15 的零線＝現況）：零線延伸的刻度與置中的文字。 */
+export interface HbarAxis {
+  /** 零線 x（最後一段有柱的段）。 */
+  zeroX: number;
+  /** 刻度：從柱列底到柱列底＋RANKED_AXIS_TICK。 */
+  tick: { y1: number; y2: number };
+  /** 文字：置中於零線，夾在 [半寬, 寬 − 半寬] 內（不超出左右邊界）；y 是基線。 */
+  label: { x: number; y: number; text: string };
+}
 export interface HbarGeometry<E = unknown> {
   mode: RankedBarsMode;
   /** 主圖座標系寬（不含 pareto 的累計欄）與高（＝列數 × 列高）。 */
@@ -114,6 +128,8 @@ export interface HbarGeometry<E = unknown> {
   separators: number[];
   /** pareto 的右側累計欄（獨立 svg）；沒有累計文字或不是 pareto 時為 null。 */
   extra: { width: number; rows: { key: string; y: number; text: string }[] } | null;
+  /** V4-5：軸列（只在 options.axis 有文字、且至少有一根柱時才有這個鍵；V4-4 的呼叫端沒有）。 */
+  axis?: HbarAxis;
 }
 
 /** SSR（還沒量到寬）時主圖的座標系寬（PRD §6.3 C25）。 */
@@ -125,6 +141,8 @@ const LABEL_TRAIL = 2;
 export const RANKED_VALUE_GAP = 4;
 /** 累計欄的左側額外間隔。 */
 const EXTRA_GAP = 4;
+/** V4-5 軸列：零線往下延伸的刻度長（px）。 */
+export const RANKED_AXIS_TICK = 4;
 /** 繪圖區最小寬：標籤再長也至少留這麼寬給柱（≈ C24 在 390 的條寬）。 */
 export const RANKED_MIN_PLOT = 64;
 /** 標籤欄最小寬（截斷後至少能放「SKU-…」）。 */
@@ -211,6 +229,7 @@ export function rankedBarFill(tone: RankedBarTone): string {
  * 4. 零線：往右的段在標籤欄右緣；往左的段在右緣（標籤欄＋標值欄＋繪圖區）；雙向段在標籤欄＋標值欄＋負的跨度。
  * 5. 柱長＝|值| × 每單位像素（Decimal，取到 0.1），非零至少 1px；標值在柱端外側 4px。
  * 高＝（柱列＋「另 n 個」列）× 列高（chartRowHeights）。空段（沒有列也沒有 more）不輸出。
+ * 6. V4-5：options.axis 有文字且有柱時，最後加 1 列軸列（高再加 1 列）：刻度在最後一段有柱的段的零線，文字置中於零線、夾在左右邊界內。
  */
 export function hbarGeometry<E = unknown>(input: readonly RankedBarRow<E>[] | readonly RankedBarBlock<E>[], width: number, mode: RankedBarsMode, options: HbarOptions = {}): HbarGeometry<E> {
   const drawWidth = Math.max(1, Math.round(width));
@@ -287,7 +306,10 @@ export function hbarGeometry<E = unknown>(input: readonly RankedBarRow<E>[] | re
       more: hasMore ? { y: top + barRows * rowHeight + baseline, text: block.more! } : null,
     };
   });
-  const rowCount = shapes.reduce((sum, block) => sum + block.bars.length + (block.more ? 1 : 0), 0);
+  const barRowCount = shapes.reduce((sum, block) => sum + block.bars.length + (block.more ? 1 : 0), 0);
+  const axisBlock = options.axis ? [...shapes].reverse().find(block => block.bars.length > 0) : undefined;
+  const axis = axisBlock && options.axis ? axisOf(options.axis, axisBlock.zeroX, offset, baseline, drawWidth) : undefined;
+  const rowCount = barRowCount + (axis ? 1 : 0);
   const extraRows = mode === "pareto" ? shapes.flatMap(block => block.bars.filter(bar => bar.row.extra !== undefined && bar.row.extra !== "").map(bar => ({ key: bar.key, y: bar.textY, text: bar.row.extra! }))) : [];
   const extra = extraRows.length ? { width: Math.ceil(Math.max(...extraRows.map(item => rankedTextWidth(item.text)))) + RANKED_TEXT_PAD + EXTRA_GAP, rows: extraRows } : null;
   return {
@@ -295,7 +317,15 @@ export function hbarGeometry<E = unknown>(input: readonly RankedBarRow<E>[] | re
     labelWidth, valueWidth, plotWidth: plotOf("right"),
     scale: scale === null ? null : scale.toFixed(),
     blocks: shapes, separators, extra,
+    ...(axis ? { axis } : {}),
   };
+}
+
+/** V4-5 軸列的幾何：top＝柱列底（軸列頂）；文字以估寬置中於零線，夾在 [半寬, 寬 − 半寬]（寬不夠時置中於圖寬）。 */
+function axisOf(text: string, zeroX: number, top: number, baseline: number, width: number): HbarAxis {
+  const half = rankedTextWidth(text) / 2;
+  const x = half * 2 >= width ? width / 2 : Math.min(Math.max(zeroX, half), width - half);
+  return { zeroX, tick: { y1: top, y2: top + RANKED_AXIS_TICK }, label: { x: round1(x), y: top + baseline, text } };
 }
 
 export interface RankedBarsViewProps<E = unknown> {
@@ -316,6 +346,7 @@ export interface RankedBarsViewProps<E = unknown> {
  * C25 的畫面（沒有 hook，給定幾何就是純輸出；RankedBars 量寬後交給它）。結構：
  * div.ranked-bars > div.ranked-bars-main（量寬）> svg.chart-ranked-bars（aria-hidden）；pareto 有累計文字時另有 svg.chart-ranked-extra（aria-hidden）。
  * 每列：整列寬的透明熱區（在最底層，只有 onBarClick 時輸出）→ 標籤 → 柱（data-testid）→ 標值；每段一條零線；separator 時段間一條分隔線。
+ * V4-5：幾何有 axis 時，最後輸出 g.ranked-axis（零線下的刻度＋置中的文字）；沒有時不輸出任何東西（V4-4 的 markup 不變）。
  */
 export function RankedBarsView<E = unknown>({ geometry, testIdPrefix, onBarClick, hideExtraOnNarrow = false, separator = false, measureRef }: RankedBarsViewProps<E>) {
   const { width, height } = geometry;
@@ -343,6 +374,10 @@ export function RankedBarsView<E = unknown>({ geometry, testIdPrefix, onBarClick
           {block.zeroLine && <line className="ranked-zero" x1={block.zeroX} x2={block.zeroX} y1={block.zeroLine.y1} y2={block.zeroLine.y2} stroke={chartColors.axis} strokeWidth={1} shapeRendering="crispEdges" />}
           {block.more && <text className="ranked-more" x={0} y={block.more.y}>{block.more.text}</text>}
         </g>)}
+        {geometry.axis && <g className="ranked-axis">
+          <line className="ranked-axis-tick" x1={geometry.axis.zeroX} x2={geometry.axis.zeroX} y1={geometry.axis.tick.y1} y2={geometry.axis.tick.y2} stroke={chartColors.axis} strokeWidth={1} shapeRendering="crispEdges" />
+          <text className="ranked-axis-label" x={geometry.axis.label.x} y={geometry.axis.label.y} textAnchor="middle">{geometry.axis.label.text}</text>
+        </g>}
       </svg>
     </div>
     {geometry.extra && <svg className={`chart-ranked-extra${hideExtraOnNarrow ? " is-narrow-hidden" : ""}`} viewBox={`0 0 ${geometry.extra.width} ${height}`} width={geometry.extra.width} height={height} aria-hidden="true" focusable="false" fontSize={chartFontSize}>
@@ -366,13 +401,15 @@ export interface RankedBarsProps<E = unknown> {
   separator?: boolean;
   /** 主圖寬（px）；不給時以 ResizeObserver 量測，SSR 先用 560。 */
   width?: number;
+  /** V4-5（G15）：軸列文字（零線＝現況，例如「現況 270 元」，呼叫端從 labels 組好）；不給時沒有軸列。 */
+  axis?: string;
 }
 
 /**
  * C25 RankedBars：放在 ChartFrame（固定高、aria-hidden）內。量寬（ResizeObserver）後算幾何，交給 RankedBarsView。
  * svg 高只由列數決定（不隨寬度變），量到寬之前以 560 的座標系等比縮放，不跳動。
  */
-export function RankedBars<E = unknown>({ mode, rows, blocks, more, rowHeight, testIdPrefix, onBarClick, hideExtraOnNarrow, separator, width }: RankedBarsProps<E>) {
+export function RankedBars<E = unknown>({ mode, rows, blocks, more, rowHeight, testIdPrefix, onBarClick, hideExtraOnNarrow, separator, width, axis }: RankedBarsProps<E>) {
   const main = useRef<HTMLDivElement>(null);
   const [measured, setMeasured] = useState<number | null>(null);
   useEffect(() => {
@@ -386,6 +423,6 @@ export function RankedBars<E = unknown>({ mode, rows, blocks, more, rowHeight, t
     return () => observer.disconnect();
   }, []);
   const drawWidth = Math.round(width ?? measured ?? RANKED_SSR_WIDTH);
-  const geometry = useMemo(() => hbarGeometry<E>(blocks ?? rows ?? [], drawWidth, mode, { rowHeight, more }), [blocks, rows, drawWidth, mode, rowHeight, more]);
+  const geometry = useMemo(() => hbarGeometry<E>(blocks ?? rows ?? [], drawWidth, mode, { rowHeight, more, axis }), [blocks, rows, drawWidth, mode, rowHeight, more, axis]);
   return <RankedBarsView geometry={geometry} testIdPrefix={testIdPrefix} onBarClick={onBarClick} hideExtraOnNarrow={hideExtraOnNarrow} separator={separator} measureRef={main} />;
 }

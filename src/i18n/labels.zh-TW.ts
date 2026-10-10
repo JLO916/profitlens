@@ -1383,7 +1383,33 @@ export const scenarios = {
   // ── V4-5 錨點：假設試算圖表字串（代理 B：variance＝G15 方案差額；代理 C：threshold＝G16 要賣到多少才划算）。
   // G15 標題的方向詞前一定加「試算後」（試算是條件差額，不是預測；AGENTS.md）。
   chartsV4: {
-    variance: {},
+    /**
+     * V4-5 代理 B：G15 方案差額（PRD §4.1–§4.7 G15；CHART_CATALOG G15）。試算頁 DecisionWorkbench 的方案欄之後、方案比較表之前，全頁一份。
+     * 試算結果是條件差額（src/domain/scenarios.ts:35），標題的方向詞前一定加「試算後」；每個方案都從同一個本期基準算起，不跨方案、不跨通路相加。
+     * 資料表欄名沿用 scenarios.inputs.resultTitle、vsBaseline（金額欄以 format.units.yuanColumn 加「（元）」），列名欄沿用 scenarios.decision.planName，
+     * 還沒有有效結果的格沿用 scenarios.decision.notCalculated；過期時副標後面接既有的「（已過期）」（scenarios.decision.baselineTagStale）。
+     */
+    variance: {
+      /** 區塊標準名：還沒有任何有效結果時的標題、副標第一段、資料表 summary（「表格 · …」）與 caption。 */
+      section: "各方案試算後與現況的差額",
+      /**
+       * 結論標題：同一通路的方案（≤ 3 個）取差額絕對值最大者（同值取排在前面的方案）；{plan}＝方案名稱，{amount}＝差額的絕對值（L1，方向由「多賺／少賺」表達）。
+       * 差額取位到元後為 0 時用 flat。
+       */
+      title: {
+        more: "{plan} 試算後比現況多賺 {amount}",
+        less: "{plan} 試算後比現況少賺 {amount}",
+        flat: "{plan} 試算後與現況持平",
+      },
+      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{metric}＝扣廣告後貢獻的標準名，{baseline}＝現況值（L1），{channels}＝試算通路，{period}＝本期起訖（M/D–M/D）。 */
+      subtitle: "{section} · 現況{metric} {baseline} · {channels} · {period}",
+      /** 還沒有任何有效結果時圖區的說明（state="empty"）。 */
+      empty: "填好假設並按「試算」後，這裡畫出各方案與現況的差額",
+      /** 軸列（零線＝現況，畫在柱列下方、置中於零線）：{amount}＝現況的扣廣告後貢獻（L1）。 */
+      axis: "現況 {amount}",
+      /** 資料表之後的說明（在收合的 <details> 內）。 */
+      tableNote: "每個方案都從同一個本期基準算起，金額不能相加；還沒有有效結果的方案寫「尚未試算」。",
+    },
     threshold: {},
   },
 } as const;

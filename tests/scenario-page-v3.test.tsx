@@ -7,6 +7,8 @@ import { acknowledgeScenarioAssumptions, emptyScenarioWorkspace, ensureScenarioC
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatPeriodL1, formatSignedDelta } from "../src/application/presentation";
 import { DecisionWorkbench } from "../src/components/decision-workbench";
 import { MultiScenarioWorkbench } from "../src/components/multi-scenario-workbench";
+import { ScenarioVarianceSection, type ScenarioVarianceModel } from "../src/components/scenarios/variance-chart";
+import { formatHeadlineAmount } from "../src/application/copy";
 import { AMOUNT_FIELDS, type AnalysisFilters } from "../src/domain/types";
 import type { ScenarioInputs } from "../src/domain/scenarios";
 import { validateDataset } from "../src/domain/validation";
@@ -152,10 +154,15 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     // 方案名稱、範本 select、套用範本、範本 ?、5 個輸入、3 組分段鈕、聲明勾選、試算 ＝ 14（草稿方案沒有「移除方案」）。
     expect(form.list).toHaveLength(14);
     expect(form.total).toBeLessThanOrEqual(14);
-    const whole = visibleControls(html);
+    // V4-5（G15 方案差額，CHART_CATALOG G15「鍵盤」）：方案欄之後的圖區塊只多 1 個看得到的控制——資料表 <details> 的 summary（圖 aria-hidden、柱不可點）。
+    // 先拿掉 G15 區塊，原本的整頁數字照舊（+9、4 個 summary），再確認整頁正好多這 1 個。
+    const variance = element(html, 'data-testid="chart-scenarios-variance"');
+    expect(visibleControls(variance).list).toEqual(["summary:"]);
+    const whole = visibleControls(html.replace(variance, ""));
     // 整頁另有：試算通路 select、通路 ?、匯出本頁（summary）、本期基準 2 個 number-link、假設清單與技術細節 2 個 summary、新增方案、其他通路（summary）。
     expect(whole.total).toBe(form.total + 9);
     expect(whole.list.filter(item => item.startsWith("summary:")).length).toBe(4);
+    expect(visibleControls(html).total).toBe(form.total + 9 + 1);
     // 範本 ? 說明的內容、匯出的三項、範圍提示都不計（hidden 或收合）。
     expect(whole.list.some(item => item.includes("scenario-export-"))).toBe(false);
   });
@@ -420,5 +427,62 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     expect(input(tree, labels.scenarios.inputs.volume.label).props.value).toBe("6");
     const describedby = String(input(tree, labels.scenarios.inputs.volume.label).props["aria-describedby"]);
     expect(describedby.split(" ")).toEqual([":test:-1-volume_change_pct-help", ":test:-1-volume_change_pct-equivalent"]);
+  });
+
+  it("(h) V4-5 G15 方案差額（hooks harness）：試算前是空狀態；每按一次「試算」柱數＝有效結果數；改了輸入（結果清空）的方案不畫柱；標題取差額絕對值最大者、不相加", async () => {
+    const src = await source();
+    let state: DecisionWorkspaceState = { ...emptyDecisionWorkspace(), source_input: src.input };
+    const setState = vi.fn((next: DecisionWorkspaceState | ((previous: DecisionWorkspaceState) => DecisionWorkspaceState)) => { state = typeof next === "function" ? next(state) : next; });
+    const run = mount(DecisionWorkbench);
+    const props = () => ({ dataset: src.dataset, snapshot: src.snapshot, revision: 1, input: src.input, state, setState, onEvidence: noop, acknowledged: true });
+    /** G15 在 DecisionWorkbench 內恰好一份（不在任何 scenario-{n} 內），回傳它的模型。 */
+    const g15 = (tree: ReactNode): ScenarioVarianceModel => {
+      const found = findAll(tree, item => item.type === ScenarioVarianceSection);
+      expect(found).toHaveLength(1);
+      for (const n of [1, 2, 3]) expect(findAll(tree, item => item.props["data-testid"] === `scenario-${n}`).flatMap(card => findAll(card.props.children as ReactNode, item => item.type === ScenarioVarianceSection))).toEqual([]);
+      return found[0].props.model as ScenarioVarianceModel;
+    };
+    /** 在 scope（整頁或某個 scenario-{n}）的範本選單選「維持現況」（還沒套用）。 */
+    const pickKeep = (scope: ReactNode) => (byTestId(scope, "scenario-preset").props.onChange as (event: unknown) => void)({ target: { value: "keep" } });
+    let tree = run(props());
+    expect(g15(tree)).toMatchObject({ titleKind: "empty", title: labels.scenarios.chartsV4.variance.section, bars: [] });
+    // 方案 1：維持現況範本＋物流費 −10 → 284.00（+14.00）。
+    pickKeep(tree);
+    tree = run(props());
+    (byTestId(tree, "scenario-preset-apply").props.onClick as () => void)();
+    tree = run(props());
+    (input(tree, labels.scenarios.inputs.fulfillmentUnit.label).props.onChange as (event: unknown) => void)({ target: { value: "-10" } });
+    tree = run(props());
+    expect(g15(tree).bars).toEqual([]);
+    (button(tree, labels.scenarios.buttons.calculate).props.onClick as (event?: unknown) => void)();
+    tree = run(props());
+    const [first] = state.scenarios;
+    expect(first.result?.contribution).toBe("284.00");
+    expect(g15(tree).bars.map(bar => [bar.key, bar.value, bar.display, bar.tone])).toEqual([[first.id, "14.00", formatSignedDelta("14.00", "L1"), "favorable"]]);
+    expect(g15(tree).title).toBe(fill(labels.scenarios.chartsV4.variance.title.more, { plan: fill(dw.defaultPlanName, { n: 1 }), amount: formatHeadlineAmount("14.00") }));
+    // 方案 2：物流費 −10、一次性 20 → 264.00（−6.00）；兩根柱，標題仍取 |+14|。
+    (byTestId(tree, "scenario-add").props.onClick as () => void)();
+    tree = run(props());
+    pickKeep(byTestId(tree, "scenario-2"));
+    tree = run(props());
+    (byTestId(byTestId(tree, "scenario-2"), "scenario-preset-apply").props.onClick as () => void)();
+    tree = run(props());
+    (input(byTestId(tree, "scenario-2"), labels.scenarios.inputs.fulfillmentUnit.label).props.onChange as (event: unknown) => void)({ target: { value: "-10" } });
+    tree = run(props());
+    (input(byTestId(tree, "scenario-2"), labels.scenarios.inputs.oneOff.label).props.onChange as (event: unknown) => void)({ target: { value: "20" } });
+    tree = run(props());
+    (button(byTestId(tree, "scenario-2"), labels.scenarios.buttons.calculate).props.onClick as (event?: unknown) => void)();
+    tree = run(props());
+    expect(state.scenarios.map(plan => plan.result?.contribution)).toEqual(["284.00", "264.00"]);
+    expect(g15(tree).bars.map(bar => bar.value)).toEqual(["14.00", "-6.00"]);
+    expect(g15(tree).tableRows.map(row => [row.contribution, row.delta])).toEqual([["284.00", "14.00"], ["264.00", "-6.00"]]);
+    expect(g15(tree).titleKind).toBe("more");
+    // 改方案 1 的輸入：結果清空 → 只剩方案 2 的柱，標題改取方案 2（少賺 6 元）；資料表的方案 1 是空值（畫面寫「尚未試算」）。
+    (input(byTestId(tree, "scenario-1"), labels.scenarios.inputs.fulfillmentUnit.label).props.onChange as (event: unknown) => void)({ target: { value: "-5" } });
+    tree = run(props());
+    expect(state.scenarios[0].result).toBeNull();
+    expect(g15(tree).bars.map(bar => bar.key)).toEqual([state.scenarios[1].id]);
+    expect(g15(tree).title).toBe(fill(labels.scenarios.chartsV4.variance.title.less, { plan: fill(dw.defaultPlanName, { n: 2 }), amount: formatHeadlineAmount("-6.00") }));
+    expect(g15(tree).tableRows.map(row => row.delta)).toEqual([null, "-6.00"]);
   });
 });

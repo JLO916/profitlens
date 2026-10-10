@@ -2873,6 +2873,10 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-5 A 錨點結束 ── */
 
 /* ── V4-5 B：G15 方案差額（試算頁方案欄與比較表之間；代理 B） ── */
+/* 方案欄（margin-bottom space-6）之後、方案比較表之前：.chart-section 的 margin 是 0（上方共用規則），這裡補下緣間距，與比較表區塊的下緣相同。G15 頂＝原比較表頂（B1）。 */
+.decision-workbench > .chart-section.scenario-variance { margin: 0 0 var(--space-5); }
+/* C25 軸列（零線＝現況）：文字沿用 .chart-ranked-bars text 的 12px 第二色；刻度與零線同色（chartColors.axis，在 svg 屬性）。 */
+.chart-ranked-bars .ranked-axis-label { font-weight: var(--weight-semibold); }
 /* ── V4-5 B 錨點結束 ── */
 
 /* ── V4-5 C：G16 要賣到多少才划算（scenario-sensitivity 內；代理 C） ── */
