@@ -2889,4 +2889,7 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-6 A 錨點結束 ── */
 
 /* ── V4-6 B：G15 會議實例（議程 5；代理 B） ── */
+/* 議程項 .meeting-agenda-item 是 grid（gap space-3），項與項之間的間距由 gap 負責：inline 圖區塊（V4-5 A 的 margin-top space-4）在這裡不另加外距；
+   min-width: 0 讓 C25 的量寬容器隨議程欄寬縮放，390 不撐出頁面橫向捲動。沒有 .panel 外框（議程項本身不是卡片，也不套卡片）。 */
+.meeting-agenda-item > .chart-section.meeting-scenarios-chart { min-width: 0; margin: 0; }
 /* ── V4-6 B 錨點結束 ── */
