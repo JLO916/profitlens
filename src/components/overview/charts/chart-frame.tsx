@@ -13,6 +13,7 @@ import { labels } from "@/i18n";
 // V4-1 代理 A（PRD §6.1；CHART_CATALOG §1.1）：擴充 aside、unitNote、frameClassName、legend[].shape、mode（型別）、page、scrollLabel，
 // 資料表 <details> 展開時記 track("chart_table_opened")（D-V4-14）。沒有給新 props 時輸出與 V3 逐字相同（向下相容）。
 // V4-4 代理 B：加 headingLevel（2、3、4；預設 2，沒給時輸出與 V4-3 逐字相同）。
+// V4-5 代理 A：加 variant（panel、inline；預設 panel，沒給時輸出與 V4-4 逐字相同）。
 
 const copy = labels.overview.chartFrame;
 
@@ -87,9 +88,18 @@ export interface ChartFrameProps {
    * 商品頁 G13、G14 在 h3#product-highlights-heading 之下用 4；G16、G15 會議實例用 4；G19、G21 用 3。外觀同 h2（globals.css「V4-4 B」錨點）。
    */
   headingLevel?: ChartHeadingLevel;
+  /**
+   * V4-5（PRD §6.1 variant；CHART_CATALOG §1.1）：panel＝section.panel.chart-section（預設，與 V4-4 逐字相同）；
+   * inline＝section.chart-section.is-inline（沒有 .panel 外框），給放在既有 .panel、方案欄 article.scenario-card 或會議議程項內的圖
+   * （G16、G15 會議實例、G19、G21），避免卡片套卡片（nestedCardSelectors 上限 0、v3 X8）。標題、副標、固定高容器、資料表的結構與 panel 相同；
+   * 仍是 section.chart-section，CL-9 照算主層圖區塊。外距與內距在 globals.css「V4-5 A」錨點。
+   */
+  variant?: ChartFrameVariant;
 }
 /** V4-4 ChartFrame 標題層級（PRD §6.1）。 */
 export type ChartHeadingLevel = 2 | 3 | 4;
+/** V4-5 ChartFrame 外框（PRD §6.1）。 */
+export type ChartFrameVariant = "panel" | "inline";
 
 /** shape="dash" 沒給 dash 時的虛線樣式（與去年同期線相同）。 */
 const LEGEND_DASH = "4 3";
@@ -138,7 +148,7 @@ function ScrollFrame({ className, size, label, state, children }: { className: s
   return <div ref={ref} className={`chart-frame ${className}`} style={{ height: chartHeights[size] }} role="region" aria-label={label} tabIndex={tabIndex} data-state={state}>{children}</div>;
 }
 
-export function ChartFrame({ id, testId, page, title, subtitle, legend, extra, takeaways, height = "sm", state, message, after, dataTable, className, children, unitNote, aside, frameClassName, scrollLabel, mode, headingLevel = 2 }: ChartFrameProps) {
+export function ChartFrame({ id, testId, page, title, subtitle, legend, extra, takeaways, height = "sm", state, message, after, dataTable, className, children, unitNote, aside, frameClassName, scrollLabel, mode, headingLevel = 2, variant = "panel" }: ChartFrameProps) {
   const Heading = headingLevel === 4 ? "h4" : headingLevel === 3 ? "h3" : "h2";
   const resolved: ChartFrameState = state ?? (children === undefined || children === null || children === false ? "empty" : "ready");
   const hasLegend = legend !== undefined && legend.length > 0;
@@ -155,7 +165,8 @@ export function ChartFrame({ id, testId, page, title, subtitle, legend, extra, t
     : scrollLabel !== undefined
       ? <ScrollFrame className={frameClass} size={height} label={scrollLabel} state={resolved}>{body}</ScrollFrame>
       : <div className={`chart-frame ${frameClass}`} style={{ height: chartHeights[height] }} aria-hidden={resolved === "ready" || resolved === "loading" ? true : undefined} data-state={resolved}>{body}</div>;
-  return <section className={`panel chart-section${className ? ` ${className}` : ""}`} aria-labelledby={`${id}-title`} aria-describedby={`${id}-sub`} aria-busy={resolved === "loading" ? true : undefined} data-testid={blockTestId}>
+  const sectionClass = variant === "inline" ? "chart-section is-inline" : "panel chart-section";
+  return <section className={`${sectionClass}${className ? ` ${className}` : ""}`} aria-labelledby={`${id}-title`} aria-describedby={`${id}-sub`} aria-busy={resolved === "loading" ? true : undefined} data-testid={blockTestId}>
     <div className="sec-head">
       <div className="sec-title"><Heading id={`${id}-title`}>{title}</Heading><p className="sub" id={`${id}-sub`}>{subtitle}</p></div>
       {(hasUnitNote || hasLegend || extra) && <div className="sec-end">{hasUnitNote && <span className="unit-note">{unitNote}</span>}{hasLegend && <ChartLegend items={legend} />}{extra}</div>}

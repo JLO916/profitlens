@@ -10,6 +10,11 @@ import { formatSignedDelta } from "../src/application/presentation";
 import { RANKED_MIN_PLOT, RANKED_SSR_WIDTH, RANKED_TEXT_PAD, RANKED_VALUE_GAP, hbarGeometry, hbarMaxRows, rankedTextWidth, type HbarGeometry, type RankedBarBlock, type RankedBarRow } from "../src/components/charts/ranked-bars";
 import { SHARE_STACK_LABEL_WIDTH, SHARE_STACK_SSR_WIDTH, SHARE_STACK_VALUE_WIDTH, ShareStack, shareStackGeometry, type ShareStackRowInput } from "../src/components/charts/share-stack";
 import { SPARK_DOT_R, SPARK_PAD, SPARK_STROKE, SPARK_WIDTH, Sparkline, sparklineGeometry, type SparklinePoint } from "../src/components/charts/sparkline";
+import { THRESHOLD_NARROW_BELOW, THRESHOLD_POINT_R, THRESHOLD_SSR_WIDTH, THRESHOLD_X_STEP, THRESHOLD_X_TICKS, ThresholdLine, thresholdGeometry, type ThresholdGeometry, type ThresholdLinePoint } from "../src/components/charts/threshold-line";
+import { formatAxisPercent } from "../src/application/copy";
+import { formatAxisWan } from "../src/application/presentation";
+import { ChartFrame } from "../src/components/overview/charts/chart-frame";
+import { scanTsxText } from "../scripts/lib/ui-scan.mjs";
 import { byTestId, openTag } from "./helpers/markup";
 
 // V4-2 起的圖表幾何純函式（CHART_CATALOG §1.6：一檔，之後各批擴）。本批：C19 sparklineGeometry（PRD §6.2 C19、§4.4 G7、§7.4、X40）。
@@ -482,5 +487,249 @@ describe("hbarGeometry（C25）：雙向、0 與空、長標籤、row24", () => 
     const geometry = hbarGeometry([hbarRow("p1", "A", "-20.00"), hbarRow("p2", "B", "19.70")], 560, "variance", { rowHeight: "row24" });
     expect([geometry.rowHeight, geometry.height]).toEqual([chartRowHeights.row24, 2 * chartRowHeights.row24]);
     expect(barsOf(geometry).map(bar => [bar.top, bar.bar.y, bar.bar.height, bar.textY])).toEqual([[0, 5, 14, 16], [24, 29, 14, 40]]);
+  });
+});
+
+// V4-5 代理 A：C29 thresholdGeometry（PRD §6.3 C29、§4.3 G16、§7.4、X29；CHART_CATALOG G16、§9.1；D-V4-20＝A′）。
+// 輸入是 golden DTC f−10%（試算 284.00）的兩個門檻與三個假設（tests/chart-threshold.test.ts 由 analyzeScenarioSensitivity 逐字取得；這裡只當圖形輸入）。
+// x 固定 [−90, +100]；y 含 0；只畫範圍內的既有點、不連線、不外插；高＝chartHeights.sm。標籤文字由呼叫端組（這裡用百分比本身與假設代號）。
+const G16_POINTS: ThresholdLinePoint[] = [
+  { id: "zero_contribution", kind: "threshold", v: "-51.263537906137", y: "0.00", label: "zero −51.3%", shortLabel: "−51.3%" },
+  { id: "maintain_baseline", kind: "threshold", v: "-2.527075812274", y: "270.00", label: "maintain −2.5%", shortLabel: "−2.5%" },
+  { id: "a", kind: "user", v: "-10", y: "228.60", label: "A" },
+  { id: "b", kind: "user", v: "0", y: "284.00", label: "B" },
+  { id: "c", kind: "user", v: "10", y: "339.40", label: "C" },
+];
+const thresholdShapes = (geometry: ThresholdGeometry) => Object.fromEntries(geometry.points.map(shape => [shape.point.id, shape]));
+type LabelBox = { left: number; right: number; top: number; bottom: number };
+const labelBox = (label: NonNullable<ThresholdGeometry["points"][number]["label"]>): LabelBox => {
+  const width = rankedTextWidth(label.text);
+  const left = label.anchor === "start" ? label.x : label.anchor === "end" ? label.x - width : label.x - width / 2;
+  return { left, right: left + width, top: label.y - 10, bottom: label.y + 3 };
+};
+const boxesOverlap = (a: LabelBox, b: LabelBox) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+const userPoints = (values: readonly string[], y: (index: number) => string) => values.map((v, index): ThresholdLinePoint => ({ id: `p${String.fromCharCode(97 + index)}`, kind: "user", v, y: y(index) }));
+
+describe("thresholdGeometry（C29）：x 固定 [−90%, +100%]、y 含 0、不外插（X29）", () => {
+  it("所有點的 x 都在繪圖區內：v＝−90 對到左緣、+100 對到右緣，其餘依 v 線性、單調遞增（390 到 1440 的寬）", () => {
+    const values = ["-90", "-89.999", "-51.263537906137", "-0.5", "0", "33.333333333333", "99.99", "100"];
+    for (const width of [300, 324, 480, THRESHOLD_SSR_WIDTH, 900]) {
+      const geometry = thresholdGeometry(userPoints(values, () => "100.00"), width);
+      const xs = geometry.points.map(shape => shape.cx);
+      expect(geometry.dropped, String(width)).toEqual([]);
+      expect(xs[0]).toBe(geometry.plot.left);
+      expect(xs.at(-1)).toBe(geometry.plot.right);
+      for (const x of xs) {
+        expect(x).toBeGreaterThanOrEqual(geometry.plot.left);
+        expect(x).toBeLessThanOrEqual(geometry.plot.right);
+      }
+      for (let k = 1; k < xs.length; k++) expect(xs[k]).toBeGreaterThanOrEqual(xs[k - 1]);
+      expect(geometry.plot.right + THRESHOLD_POINT_R).toBeLessThanOrEqual(geometry.width);
+    }
+  });
+
+  it("不外插、不夾到邊界：v 超出 [−90, +100] 或 v、y 無法解析的點不畫，列入 dropped", () => {
+    const geometry = thresholdGeometry([
+      { id: "low", kind: "user", v: "-90.1", y: "10.00" },
+      { id: "high", kind: "threshold", v: "100.000000000001", y: "0.00" },
+      { id: "far", kind: "threshold", v: "400.000000000000", y: "0.00" },
+      { id: "text", kind: "user", v: "1e1", y: "10.00" },
+      { id: "money", kind: "user", v: "10", y: "−10.00" },
+      { id: "ok", kind: "user", v: "+20", y: "19.70" },
+    ], THRESHOLD_SSR_WIDTH);
+    expect(geometry.dropped).toEqual(["low", "high", "far", "text", "money"]);
+    expect(geometry.points.map(shape => shape.point.id)).toEqual(["ok"]);
+  });
+
+  it("y 範圍一定含 0（全正、全負、正負都有、很大）；刻度含 0、零線＝0 刻度的 y；每個點的 y 在繪圖區內", () => {
+    for (const ys of [["270.00", "339.40"], ["-60.00", "-55.00", "-65.00"], ["-15.00", "19.70", "0.00"], ["123456789.12"]]) {
+      const geometry = thresholdGeometry(userPoints(ys.map(() => "0"), index => ys[index]), THRESHOLD_SSR_WIDTH);
+      const [lo, hi] = geometry.domain;
+      expect(lo, ys.join()).toBeLessThanOrEqual(0);
+      expect(hi, ys.join()).toBeGreaterThanOrEqual(0);
+      const zero = geometry.yTicks.find(tick => tick.value === 0)!;
+      expect(zero.label).toBe("0");
+      expect(geometry.zeroY).toBe(zero.y);
+      expect(geometry.yTicks[0].value).toBe(lo);
+      expect(geometry.yTicks.at(-1)!.value).toBe(hi);
+      for (const shape of geometry.points) {
+        expect(shape.cy).toBeGreaterThanOrEqual(geometry.plot.top);
+        expect(shape.cy).toBeLessThanOrEqual(geometry.plot.bottom);
+      }
+    }
+  });
+
+  it("golden DTC 284：y 0 到 400、步長 100，刻度文字是 formatAxisWan；零線在繪圖區下緣（門檻 zero_contribution 落在零線上）", () => {
+    const geometry = thresholdGeometry(G16_POINTS, THRESHOLD_SSR_WIDTH);
+    expect(geometry.domain).toEqual([0, 400]);
+    expect(geometry.yTicks.map(tick => tick.value)).toEqual([0, 100, 200, 300, 400]);
+    expect(geometry.yTicks.map(tick => tick.label)).toEqual(formatAxisWan([0, 100, 200, 300, 400], 100));
+    expect(geometry.zeroY).toBe(geometry.plot.bottom);
+    expect(thresholdShapes(geometry).zero_contribution.cy).toBe(geometry.zeroY);
+    expect([geometry.width, geometry.height, geometry.plot.bottom]).toEqual([THRESHOLD_SSR_WIDTH, chartHeights.sm, chartHeights.sm - chartRowHeights.row24]);
+  });
+
+  it("y 步長至少 1 元：每點都不到 3 元時，刻度是整數元、文字與 formatAxisWan 相同且不重複（不會把 −2.5 寫成「−3 元」）", () => {
+    for (const ys of [["-1.78", "-1.84", "-2.06"], ["0.00", "1.50"], ["-0.01"], ["0.40", "2.80"]]) {
+      const geometry = thresholdGeometry(userPoints(ys.map(() => "0"), index => ys[index]), THRESHOLD_SSR_WIDTH);
+      const values = geometry.yTicks.map(tick => tick.value);
+      const text = geometry.yTicks.map(tick => tick.label);
+      for (const value of values) expect(Number.isInteger(value), `${ys.join()} ${value}`).toBe(true);
+      expect(new Set(text).size, `${ys.join()} ${text.join("／")}`).toBe(text.length);
+      expect(text).toEqual(formatAxisWan(values, 1));
+    }
+    expect(thresholdGeometry(userPoints(["0", "0", "0"], index => ["-1.78", "-1.84", "-2.06"][index]), THRESHOLD_SSR_WIDTH).yTicks.map(tick => tick.value)).toEqual([-3, -2, -1, 0]);
+  });
+
+  it("沒有點或只有 0：範圍 [−1, 1]、只有 0 一個刻度，零線在繪圖區正中", () => {
+    for (const points of [[], [{ id: "zero_contribution", kind: "threshold", v: "-90.000000000000", y: "0.00" }]] as ThresholdLinePoint[][]) {
+      const geometry = thresholdGeometry(points, THRESHOLD_SSR_WIDTH);
+      expect(geometry.domain).toEqual([-1, 1]);
+      expect(geometry.yTicks.map(tick => [tick.value, tick.label])).toEqual([[0, "0"]]);
+      expect(geometry.zeroY).toBe((geometry.plot.top + geometry.plot.bottom) / 2);
+      expect(geometry.points).toHaveLength(points.length);
+    }
+  });
+
+  it("x 刻度每 25 個百分點（−75 到 +100），文字是 formatAxisPercent；繪圖區太窄時只標 50 的倍數（刻度線照畫）", () => {
+    expect([...THRESHOLD_X_TICKS]).toEqual([-75, -50, -25, 0, 25, 50, 75, 100]);
+    expect(THRESHOLD_X_TICKS.every(value => value % THRESHOLD_X_STEP === 0 && value >= -90 && value <= 100)).toBe(true);
+    expect(THRESHOLD_X_STEP).toBe(25);
+    const wide = thresholdGeometry(G16_POINTS, THRESHOLD_SSR_WIDTH);
+    expect(wide.xTicks.map(tick => tick.label)).toEqual(formatAxisPercent(THRESHOLD_X_TICKS.map(value => value / 100)));
+    for (let k = 1; k < wide.xTicks.length; k++) expect(wide.xTicks[k].x - wide.xTicks[k - 1].x).toBeCloseTo((wide.plot.right - wide.plot.left) * 25 / 190, 0);
+    const narrow = thresholdGeometry(G16_POINTS, 300);
+    expect(narrow.xTicks).toHaveLength(8);
+    expect(narrow.xTicks.filter(tick => tick.label !== null).map(tick => tick.value)).toEqual([-50, 0, 50, 100]);
+  });
+
+  it("D-V4-20＝A′：不輸出線段（connected 恆為 false；幾何沒有 segments、lines、path）", () => {
+    for (const width of [300, THRESHOLD_SSR_WIDTH]) {
+      const geometry = thresholdGeometry(G16_POINTS, width);
+      expect(geometry.connected).toBe(false);
+      for (const key of ["segments", "lines", "path", "line"]) expect(geometry).not.toHaveProperty(key);
+    }
+  });
+});
+
+describe("thresholdGeometry（C29）：點標籤（390 縮短為百分比）與避讓", () => {
+  it("寬 < THRESHOLD_NARROW_BELOW 用 shortLabel（沒給時沿用 label）；≥ 時用 label；narrow 選項可覆寫；沒有標籤時 null", () => {
+    const text = (geometry: ThresholdGeometry) => Object.fromEntries(geometry.points.map(shape => [shape.point.id, shape.label?.text]));
+    const wide = thresholdGeometry(G16_POINTS, THRESHOLD_NARROW_BELOW);
+    expect(wide.narrow).toBe(false);
+    expect(text(wide)).toEqual({ zero_contribution: "zero −51.3%", maintain_baseline: "maintain −2.5%", a: "A", b: "B", c: "C" });
+    const narrow = thresholdGeometry(G16_POINTS, THRESHOLD_NARROW_BELOW - 1);
+    expect(narrow.narrow).toBe(true);
+    expect(text(narrow)).toEqual({ zero_contribution: "−51.3%", maintain_baseline: "−2.5%", a: "A", b: "B", c: "C" });
+    expect(text(thresholdGeometry(G16_POINTS, 900, { narrow: true })).zero_contribution).toBe("−51.3%");
+    expect(thresholdGeometry([{ id: "x", kind: "user", v: "0", y: "1.00" }], 300).points[0].label).toBeNull();
+  });
+
+  it("golden 的五個標籤：都在 svg 內、上下不進 x 軸文字列，彼此不重疊，也不壓到其他點（390 與 1440）", () => {
+    for (const width of [300, 324, THRESHOLD_SSR_WIDTH, 900]) {
+      const geometry = thresholdGeometry(G16_POINTS, width);
+      const boxes = geometry.points.filter(shape => shape.label !== null).map(shape => ({ id: shape.point.id, box: labelBox(shape.label!) }));
+      expect(boxes).toHaveLength(5);
+      for (const { id, box } of boxes) {
+        expect(box.left, `${width} ${id}`).toBeGreaterThanOrEqual(0);
+        expect(box.right, `${width} ${id}`).toBeLessThanOrEqual(geometry.width);
+        expect(box.top, `${width} ${id}`).toBeGreaterThanOrEqual(0);
+        expect(box.bottom, `${width} ${id}`).toBeLessThanOrEqual(geometry.plot.bottom + 4);
+        for (const other of boxes) if (other.id !== id) expect(boxesOverlap(box, other.box), `${width} ${id}／${other.id}`).toBe(false);
+        for (const shape of geometry.points) if (shape.point.id !== id) {
+          const point = { left: shape.cx - THRESHOLD_POINT_R, right: shape.cx + THRESHOLD_POINT_R, top: shape.cy - THRESHOLD_POINT_R, bottom: shape.cy + THRESHOLD_POINT_R };
+          expect(boxesOverlap(box, point), `${width} ${id} 壓到點 ${shape.point.id}`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("四個位置都碰到時取重疊最小的位置：golden DTC f−10%、假設 −5／0／+5（只標門檻）時，「維持現況」標籤不壓在 B、C 兩點上", () => {
+    // 維持現況門檻 −2.53%（y 270.00）夾在 A（−5%，256.30）、B（0%，284.00）、C（+5%，311.70）之間：上、下、右、左都碰到點；
+    // 舊的「都碰到時放上方」會把標籤疊在 B、C 兩點上，改取重疊面積最小的位置。
+    const points: ThresholdLinePoint[] = [
+      { id: "zero_contribution", kind: "threshold", v: "-51.263537906137", y: "0.00", label: "zero −51.3%", shortLabel: "−51.3%" },
+      { id: "maintain_baseline", kind: "threshold", v: "-2.527075812274", y: "270.00", label: "maintain −2.5%", shortLabel: "−2.5%" },
+      { id: "a", kind: "user", v: "-5", y: "256.30" },
+      { id: "b", kind: "user", v: "0", y: "284.00" },
+      { id: "c", kind: "user", v: "5", y: "311.70" },
+    ];
+    const area = (a: LabelBox, b: LabelBox) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    for (const width of [THRESHOLD_SSR_WIDTH, 900]) {
+      const geometry = thresholdGeometry(points, width);
+      const shapes = thresholdShapes(geometry);
+      const label = shapes.maintain_baseline.label!;
+      const box = labelBox(label);
+      const pointBox = (id: string): LabelBox => ({ left: shapes[id].cx - THRESHOLD_POINT_R, right: shapes[id].cx + THRESHOLD_POINT_R, top: shapes[id].cy - THRESHOLD_POINT_R, bottom: shapes[id].cy + THRESHOLD_POINT_R });
+      expect(label.placement, String(width)).not.toBe("above");
+      for (const id of ["b", "c"]) expect(boxesOverlap(box, pointBox(id)), `${width} 壓到點 ${id}`).toBe(false);
+      const covered = ["a", "b", "c", "zero_contribution"].reduce((sum, id) => sum + area(box, pointBox(id)), 0);
+      expect(covered, String(width)).toBeLessThan(THRESHOLD_POINT_R * THRESHOLD_POINT_R);
+    }
+  });
+
+  it("點在繪圖區上緣、右緣時：標籤不超出 svg 上緣與右緣", () => {
+    const geometry = thresholdGeometry([{ id: "top", kind: "threshold", v: "100", y: "500.00", label: "maintain +100.0%" }], THRESHOLD_SSR_WIDTH);
+    const [shape] = geometry.points;
+    expect(shape.cy).toBe(geometry.plot.top);
+    expect(shape.cx).toBe(geometry.plot.right);
+    const box = labelBox(shape.label!);
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.right).toBeLessThanOrEqual(geometry.width);
+  });
+});
+
+describe("ThresholdLine：SSR 結構（C29；CL-1、CL-2、CL-3、CL-7、CL-9、CL-10、CL-11）", () => {
+  const render = (points: readonly ThresholdLinePoint[] = G16_POINTS) => renderToStaticMarkup(createElement(ThresholdLine, { points, testIdPrefix: "chart-scenarios-threshold-point-" }));
+
+  it("根 svg.chart-threshold：aria-hidden、focusable=false、高 chartHeights.sm、SSR 座標系 560；每個點一個 testid（語意 key）；沒有 tabindex、onclick、按鈕、連結、色碼、path", () => {
+    const html = render();
+    const root = openTag(html, "<svg")!;
+    expect(root).toContain('class="chart-threshold"');
+    expect(root).toContain('aria-hidden="true"');
+    expect(root).toContain('focusable="false"');
+    expect(root).toContain(`height="${chartHeights.sm}"`);
+    expect(root).toContain(`viewBox="0 0 ${THRESHOLD_SSR_WIDTH} ${chartHeights.sm}"`);
+    expect(root).toContain('data-points="5"');
+    expect(html.match(/data-testid="[^"]+"/g)!.map(item => item.slice(13, -1)).sort()).toEqual(["a", "b", "c", "maintain_baseline", "zero_contribution"].map(id => `chart-scenarios-threshold-point-${id}`).sort());
+    expect(html).not.toMatch(/tabindex|onclick|<button|<a\b|cursor/i);
+    expect(html).not.toMatch(HEX);
+    expect(html).not.toMatch(/<(path|polyline|polygon)\b/);
+  });
+
+  it("色：門檻點 fill none＋stroke chartColors.target、使用者點 fill chartColors.total；零線 chartColors.axis；沒有 current、favorable", () => {
+    const html = render();
+    expect(openTag(html, 'data-testid="chart-scenarios-threshold-point-zero_contribution"')).toContain(`fill="none" stroke="${chartColors.target}" stroke-width="1.5"`);
+    expect(openTag(html, 'data-testid="chart-scenarios-threshold-point-a"')).toContain(`fill="${chartColors.total}"`);
+    expect(openTag(html, 'class="threshold-zero"')).toContain(`stroke="${chartColors.axis}"`);
+    expect(html).not.toContain(chartColors.current);
+    expect(html).not.toContain(chartColors.favorable);
+  });
+
+  it("放在 ChartFrame（variant inline、headingLevel 4、資料表）內：chart-lint 的 SSR 規則 CL-1、CL-2、CL-9、CL-11 都是 0；點在 aria-hidden 內", () => {
+    const html = renderToStaticMarkup(createElement(ChartFrame, {
+      id: "scenarios-threshold-p1", testId: "chart-scenarios-threshold", variant: "inline", headingLevel: 4, title: "t", subtitle: "s",
+      dataTable: { summary: "d", content: createElement("table", { "data-testid": "chart-scenarios-threshold-table" }) },
+    }, createElement(ThresholdLine, { points: G16_POINTS, testIdPrefix: "chart-scenarios-threshold-point-" })));
+    const check = checkChartMarkup(html, { page: "scenarios" });
+    for (const rule of ["CL-1", "CL-2", "CL-9", "CL-11"] as const) expect(check.violations[rule], rule).toEqual([]);
+    expect(check.chartTestIds).toContain("chart-scenarios-threshold");
+    expect(check.chartTestIds).toContain("chart-scenarios-threshold-point-zero_contribution");
+    expect(check.mainSections).toEqual(["chart-scenarios-threshold"]);
+    expect(openTag(html, "<section")).toContain('class="chart-section is-inline"');
+    expect(byTestId(html, "chart-scenarios-threshold")).toContain('<h4 id="scenarios-threshold-p1-title">');
+  });
+
+  it("原始碼：AST 規則（CL-2 到 CL-8、CL-10）0 違規；沒有 `var(--chart-` 字串常值、色碼、中文字串與 JSX 中文、fontSize 常值", () => {
+    const file = "src/components/charts/threshold-line.tsx";
+    const text = readFileSync(resolve(file), "utf8");
+    const result = scanChartTsx(text, file);
+    for (const rule of AST_RULES) expect(result[rule], rule).toEqual([]);
+    expect(scanChartVarLiterals(text, file)).toEqual([]);
+    const scan = scanTsxText(text, file);
+    expect(scan.hex).toEqual([]);
+    expect(scan.jsxCjk).toEqual([]);
+    expect(scan.cjkLiterals).toEqual([]);
+    expect(scan.fontSize).toEqual([]);
   });
 });

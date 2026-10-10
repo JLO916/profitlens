@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { formatAmountL1, formatAmountL2, formatAmountL3, formatPercentNumber, formatSignedDelta, metricDefinitions } from "@/application/presentation";
-import { analyzeScenarioSensitivity, type ContributionThreshold } from "@/domain/scenario-sensitivity";
+import { formatAmountL1, formatAmountL2, formatAmountL3, formatPercentNumber, formatSignedDelta } from "@/application/presentation";
+import { thresholdDescription, thresholdTargetLabel as targetLabel } from "@/application/scenario-threshold-text";
+import { analyzeScenarioSensitivity } from "@/domain/scenario-sensitivity";
 import type { ScenarioBaseline, ScenarioInputs } from "@/domain/scenarios";
 import { MAX_SENSITIVITY_INPUT_LENGTH, blankSensitivity, type SensitivityInputs } from "@/application/decision";
 import { scenarioReasonText } from "@/application/decision-export";
@@ -10,21 +11,12 @@ import { fill, labels } from "@/i18n";
 
 const copy = labels.scenarios.sensitivity;
 
-/** 主層文案：門檻說明一句話；精確分數與取分說明移到技術細節。 */
-function thresholdDescription(target: ContributionThreshold): string {
-  if (target.status === "constant_equal") return copy.thresholdConstantEqual;
-  if (target.status === "constant_above") return copy.thresholdConstantAbove;
-  if (target.status === "constant_below") return copy.thresholdConstantBelow;
-  const direction = target.meets_target_when === "at_or_above" ? copy.directionAtOrAbove : copy.directionAtOrBelow;
-  if (target.status === "outside_range") return fill(copy.thresholdOutsideRange, { outcome: target.range_outcome === "all_at_or_above" ? copy.outcomeAllAtOrAbove : copy.outcomeAllBelow });
-  return fill(copy.thresholdExact, { direction });
-}
+// V4-5 代理 A：門檻說明 thresholdDescription 與目標名 targetLabel 搬到 src/application/scenario-threshold-text.ts（G16 共用；字不改）。
 
 /** domain 的 reason.message 含技術口吻；主層一律依 code 用標籤字典（與匯出共用 scenarioReasonText），不退回 domain 訊息。 */
 const reasonText = scenarioReasonText;
 
 const letter = (index: number) => String.fromCharCode(65 + index);
-const targetLabel = (id: ContributionThreshold["id"]) => id === "zero_contribution" ? fill(copy.targetZero, { metric: metricDefinitions.contribution_after_marketing.label }) : copy.targetMaintain;
 
 /**
  * Inputs are inherited only from a validated parent plan. R5-4：三組銷量假設是受控值（plan.sensitivity，沒有時為空白），

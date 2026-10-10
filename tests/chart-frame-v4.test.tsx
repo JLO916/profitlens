@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { createElement, type SyntheticEvent } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { scanChartTsx } from "../scripts/lib/chart-scan.mjs";
+import { checkChartMarkup, scanChartTsx } from "../scripts/lib/chart-scan.mjs";
 import { scanCssText, scanTsxText } from "../scripts/lib/ui-scan.mjs";
 import { track, type AnalyticsEvent } from "../src/application/analytics";
 import { chartColors, chartHeights } from "../src/application/chart-theme";
@@ -156,6 +156,59 @@ describe("headingLevel（V4-4）：標題層級 2、3、4", () => {
     const css = readFileSync(resolve("src/app/globals.css"), "utf8");
     const block = css.slice(css.indexOf("/* ── V4-4 B："), css.indexOf("/* ── V4-4 B 錨點結束 ── */"));
     expect(block).toContain(".chart-section .sec-title h3, .chart-section .sec-title h4 { margin: 0; font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary);");
+  });
+});
+
+// V4-5 代理 A（PRD §6.1 variant；CHART_CATALOG §1.1）：inline＝section.chart-section.is-inline（沒有 .panel 外框），給 G16、G15 會議實例、G19、G21。
+describe("variant（V4-5）：panel（預設）與 inline", () => {
+  const props: Partial<Props> = { testId: "demo-chart", legend: [legendCurrent], children: svgChild(), dataTable: { summary: "s", content: createElement("table") } };
+  const base = render(props);
+
+  it("沒給或給 panel 時與 V4-4 逐字相同：section.panel.chart-section", () => {
+    expect(render({ ...props, variant: "panel" })).toBe(base);
+    expect(openTag(base, "<section")).toBe('<section class="panel chart-section" aria-labelledby="demo-chart-title" aria-describedby="demo-chart-sub" data-testid="demo-chart">');
+    expect(openTag(render({ ...props, className: "extra", variant: "panel" }), "<section")).toBe(openTag(render({ ...props, className: "extra" }), "<section"));
+  });
+
+  it("inline：section.chart-section.is-inline，沒有 panel；className 接在後面；其餘 markup（標題、副標、固定高容器、資料表）與 panel 逐字相同", () => {
+    const html = render({ ...props, variant: "inline" });
+    expect(openTag(html, "<section")).toBe('<section class="chart-section is-inline" aria-labelledby="demo-chart-title" aria-describedby="demo-chart-sub" data-testid="demo-chart">');
+    expect(html).not.toMatch(/class="[^"]*\bpanel\b/);
+    expect(html.replace('class="chart-section is-inline"', 'class="panel chart-section"')).toBe(base);
+    expect(openTag(render({ ...props, variant: "inline", className: "extra" }), "<section")).toContain('class="chart-section is-inline extra"');
+  });
+
+  it("inline 仍有資料替代（CL-1）、仍是 section.chart-section（CL-9 照算）、aria-describedby 指到副標（CL-11）", () => {
+    const html = render({ ...props, page: "scenarios", id: "threshold", testId: undefined, variant: "inline" });
+    expect(html).toContain('<details class="data-alternative"><summary>s</summary><table></table></details>');
+    const check = checkChartMarkup(html, { page: "scenarios" });
+    for (const rule of ["CL-1", "CL-2", "CL-9", "CL-11"] as const) expect(check.violations[rule], rule).toEqual([]);
+    expect(check.mainSections).toEqual(["chart-scenarios-threshold"]);
+  });
+
+  it("與 headingLevel 併用：h4 與 inline 互不影響；四態同高、空與錯誤不 aria-hidden（與 panel 相同）", () => {
+    const html = render({ ...props, variant: "inline", headingLevel: 4 });
+    expect(openTag(html, "<section")).toContain('class="chart-section is-inline"');
+    expect(element(html, 'class="sec-title"')).toBe(`<div class="sec-title"><h4 id="demo-chart-title">${TITLE}</h4><p class="sub" id="demo-chart-sub">${SUBTITLE}</p></div>`);
+    for (const state of ["ready", "loading", "empty", "error"] as ChartFrameState[]) {
+      const panel = render({ state, children: svgChild() }), inline = render({ state, children: svgChild(), variant: "inline", headingLevel: 4 });
+      expect(openTag(inline, 'class="chart-frame ')).toBe(openTag(panel, 'class="chart-frame '));
+    }
+  });
+
+  it("globals.css「V4-5 A」錨點：.chart-section.is-inline 沒有外框、底色與內距（只用 token：沒有 hex、圓角、陰影，字級只有 --text-12）", () => {
+    const css = readFileSync(resolve("src/app/globals.css"), "utf8");
+    const start = css.indexOf("/* ── V4-5 A：");
+    const end = css.indexOf("/* ── V4-5 A 錨點結束 ── */");
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const block = css.slice(start, end);
+    expect(block).toContain(".chart-section.is-inline { margin: var(--space-4) 0 0; padding: 0; border: 0; background: none; }");
+    const scan = scanCssText(block, "globals.css#V4-5-A");
+    expect(scan.hex).toEqual([]);
+    expect((scan.fontSize as { value: string }[]).map(entry => entry.value)).toEqual(["var(--text-12)"]);
+    expect(scan.borderRadius).toEqual([]);
+    expect(scan.boxShadow).toEqual([]);
   });
 });
 
