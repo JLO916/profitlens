@@ -4,13 +4,15 @@ import { expect, test, type Page } from "@playwright/test";
 import { openWizard } from "./import-wizard-helpers";
 import { LAUNCH_PAGES, domA11y, evidenceDrawer, gotoPage, hideDevOverlay, kpiLink, loadDemo, writeLaunchJson, type DomA11y } from "./launch-helpers-v310";
 import { calculateKeep, channelWeeksDetails, channelWeeksTable, heatTables, heatTabStop, importSynthetic, openDataTable, openRates, openSensitivityChart, paretoSection, ratesSection, scenarioCard, shareSection, thresholdSection, varianceSection } from "./chart-helpers-v4";
-import { openDetails, selectScenarioChannel } from "./replacement-helpers";
+import { openDetails, openMeeting, selectScenarioChannel } from "./replacement-helpers";
+import { fill, labels } from "../../src/i18n";
 
 /*
  * 狀態：首頁空狀態、匯入精靈步驟 1、示範資料已載入的 7 頁、計算與來源抽屜開著（總覽）、投影模式（總覽；≤ 767px 沒有投影按鈕，手機略過）。
  * V4-3b 起另加三個：健檢頁資料表展開（G10、G12、G7b）、從圖下鑽的抽屜（G11 熱表格按 Enter）、4 通路合成資料的健檢頁；desktop、laptop、tablet 共 14，mobile 共 13。
  * V4-4 再加一個：4 通路合成資料的商品頁（G14 渲染、product-worst 在 G14 的 after 內；G13、G14 的 h4 在 h3#product-highlights-heading 之下，標題不跳級）；desktop、laptop、tablet 共 15，mobile 共 14。
  * V4-5 再加一個：試算計算後展開 scenario-sensitivity（合成資料 MARKETPLACE：G15 一根柱、G16 維持現況門檻點＋三個使用者點、零貢獻門檻超出範圍的圖下一行與資料表）；desktop、laptop、tablet 共 16，mobile 共 15。
+ * V4-6 再加一個：會議頁有歷史與選入方案（同一份合成資料：MARKETPLACE 方案 1 選入議程 5 → 結束會議 → 新會議稿再選入；G15 會議實例一根柱、G19 歷史 1 筆的等高空狀態，兩張圖的資料表展開）；desktop、laptop、tablet 共 17，mobile 共 16。
  * axe 來源：專案沒有 @axe-core/playwright（本輪不加依賴），改用 node_modules 已有的 axe-core（eslint-config-next → eslint-plugin-jsx-a11y 的相依套件）
  * 以 page.addScriptTag 注入 axe.min.js 後呼叫 axe.run。找不到 axe-core 時退回純 DOM 檢查（每個控制有可及名稱、每頁一個 h1、img 都有 alt），並在結果標明 engine。
  * 不論 axe 是否可用，每個狀態都另記純 DOM 檢查（heading 跳級、重複 id、:focus-visible 規則是否存在）供參考，不斷言。
@@ -117,6 +119,20 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   await openSensitivityChart(card, ["0", "50", "100"]);
   await openDataTable(thresholdSection(card));
   results.push(await scan(page, "scenarios-sensitivity-open", engine, path));
+  // V4-6（06_BATCHES V4-6）：會議頁有歷史與選入方案。同一份合成資料、上一步試算的 MARKETPLACE 方案 1：選入議程 5 → 結束會議（歷史 1 筆）→ 新會議稿再選入，
+  // G15 會議實例一根柱（議程 5）、G19 等高空狀態（會議歷史，v3 歷史清單 1 筆）；兩張圖的資料表展開後掃。
+  const meeting = await openMeeting(page);
+  const select = meeting.getByTestId("meeting-agenda-5").getByLabel(fill(labels.meeting.review.scenarioSelect, { channel: "MARKETPLACE" }), { exact: true });
+  const option = fill(labels.meeting.review.planOption, { name: fill(labels.scenarios.decision.defaultPlanName, { n: 1 }) });
+  await select.selectOption({ label: option });
+  await expect(meeting.getByTestId("chart-meeting-scenarios")).toBeVisible();
+  await meeting.getByTestId("meeting-finalize").click();
+  await meeting.getByTestId("meeting-finalize-confirm").getByTestId("meeting-finalize-confirm-button").click();
+  await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(1);
+  await select.selectOption({ label: option });
+  await openDataTable(meeting.getByTestId("chart-meeting-scenarios"));
+  await openDataTable(meeting.getByTestId("chart-meeting-history"));
+  results.push(await scan(page, "page-meeting-history-scenarios", engine, path));
 
   const summary = {
     checked_at: new Date().toISOString(), engine, axe_core: path ? (JSON.parse(readFileSync(path.replace(/axe\.min\.js$/, "package.json"), "utf8")) as { version: string }).version : null,
@@ -126,8 +142,9 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   };
   const written = await writeLaunchJson("AXE_OUT", "axe.json", testInfo, summary);
   testInfo.annotations.push({ type: "axe", description: `${written}（${engine}；serious ${summary.totals.serious}、critical ${summary.totals.critical}）` });
-  // V4-3b：狀態數（06 護欄表）desktop、laptop、tablet 14，mobile 13（mobile 沒有投影模式）；V4-4 起 15／14（加合成資料的商品頁）；V4-5 起 16／15（加試算計算後展開 scenario-sensitivity）。
-  expect(results.length, "axe 狀態數（V4-5 起 16／15）").toBe(testInfo.project.name === "mobile" ? 15 : 16);
+  // V4-3b：狀態數（06 護欄表）desktop、laptop、tablet 14，mobile 13（mobile 沒有投影模式）；V4-4 起 15／14（加合成資料的商品頁）；V4-5 起 16／15（加試算計算後展開 scenario-sensitivity）；
+  // V4-6 起 17／16（加會議頁有歷史與選入方案）。
+  expect(results.length, "axe 狀態數（V4-6 起 17／16）").toBe(testInfo.project.name === "mobile" ? 16 : 17);
 
   for (const row of results) {
     const blocking = row.violations.filter(item => item.impact === "serious" || item.impact === "critical").map(item => `${item.impact} ${item.id}（${item.nodes}）：${item.targets.join(" ")}`);

@@ -16,7 +16,8 @@ import { SCENARIO_VARIANCE_COLUMNS, varianceBarTone } from "../scenarios/varianc
 // 資料：buildReviewDecisionContext 的 context.scenarios[i]（SummaryScenario：id、name、status、baseline、contribution、delta）與 review.selected_scenarios[i]（通路、方案 id），
 // 兩者同一個順序（同 meeting-page.tsx 的 scenarioRows）。會議每通路最多選一個已試算的方案（docs/SCENARIOS.md:76），所以每個通路最多一根。
 // 只重新呈現 domain 算好的試算結果（A 級；不重算、不跨通路相加、不挑跨通路的最大值），也不改會議凍結資料、備份與匯出（manager-summary.ts、meeting.ts 只讀）。
-// C25 RankedBars variance：列序＝會議範圍的通路順序（同議程 5 的每通路列）；status＝stale 的方案不畫柱，只列在資料表並在列名後標既有的「過期」；
+// C25 RankedBars variance：列序＝會議範圍的通路順序（同議程 5 的每通路列）；status＝stale 的方案不畫柱，只列在資料表並在列名後標同頁每通路列既有的 v3 用語
+// 「較早的方案（不列入這次決議）」（meeting.review.staleScenarios；V4-6 整合審查 B-V46-R1：同一頁同一個狀態只用一個名稱，使用者另行拍板前不寫「過期」）；
 // 最多 MEETING_SCENARIOS_MAX_BARS（6）根，其餘只列在資料表，最後一列寫「另 {n} 個」。零線＝每個通路自己的現況（各通路基準不同，軸文字「各通路現況」不寫金額）；
 // 軸文字與「另 n 個」共用最後一列（RankedBars axisWithMore），（6＋1）× row24＝168 ≤ sm 180。
 // 色依 deltaTone(contribution_after_marketing, delta, "L1")：少賺 unfavorable、多賺 favorable（D-V3-7 有利不用綠），取位到元後為 0 時 total——與試算頁 G15 同一個判斷（varianceBarTone）；
@@ -122,8 +123,8 @@ function scenarioCell(row: MeetingScenarioRow, column: ScenarioColumn): ChartDat
   const value = row[column];
   return { value, emptyText: labels.shell.status.notApplicable, unfavorable: column === "delta" && deltaTone("contribution_after_marketing", value, "L2") === "unfavorable" };
 }
-/** 列名：過期的方案在列名後面接既有的「過期」（meeting.managerSummary.scenarioStale）。 */
-const rowName = (row: MeetingScenarioRow) => row.stale ? fill(copy.rowStatus, { row: row.label, status: labels.meeting.managerSummary.scenarioStale }) : row.label;
+/** 列名：stale 的方案在列名後面接同頁議程 5 每通路列既有的 v3 用語（meeting.review.staleScenarios「較早的方案（不列入這次決議）」）。 */
+const rowName = (row: MeetingScenarioRow) => row.stale ? fill(copy.rowStatus, { row: row.label, status: labels.meeting.review.staleScenarios }) : row.label;
 /** 資料表格都不是 number-link（PRD §8.7 例外）。 */
 const noEvidence = () => null;
 

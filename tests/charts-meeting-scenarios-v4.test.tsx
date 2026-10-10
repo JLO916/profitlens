@@ -5,30 +5,25 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 import { l1ClauseLengths, L1_MAX_CJK, channelAliasTerms } from "../scripts/lib/copy-scan.mjs";
 import { chartColors, chartHeights, chartRowHeights } from "@/application/chart-theme";
-import { saveScenario } from "@/application/decision";
 import { emptyActionWorkspace } from "@/application/action-workspace";
 import { buildManagerSummary, exportManagerSummaryMarkdown, type SummaryScenario } from "@/application/manager-summary";
 import { formatAmountL2, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
-import { buildReviewDecisionContext, createReviewSession, selectReviewScenario, type ReviewSession } from "@/application/review-session";
-import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext, type ScenarioSource, type ScenarioWorkspace } from "@/application/scenario-workspace";
-import { createSnapshot, hashInput } from "@/application/workspace";
+import { buildReviewDecisionContext } from "@/application/review-session";
 import { RANKED_AXIS_TICK, RANKED_TEXT_PAD, hbarGeometry, hbarMaxRows, rankedTextWidth, type RankedBarRow } from "@/components/charts/ranked-bars";
 import { MEETING_SCENARIOS_BAR_PREFIX, MEETING_SCENARIOS_MAX_BARS, MEETING_SCENARIOS_TABLE_TESTID, MEETING_SCENARIOS_TESTID, MeetingScenariosSection, meetingScenariosModel, type MeetingScenariosInput } from "@/components/meeting/scenarios-chart";
 import { MeetingPage, type MeetingPageProps } from "@/components/meeting-page";
 import { PrintSummary } from "@/components/print-summary";
-import type { ScenarioInputs } from "@/domain/scenarios";
-import type { AnalysisFilters, DatasetInput, Manifest } from "@/domain/types";
-import { validateDataset } from "@/domain/validation";
 import { fill, labels } from "@/i18n";
-import { fixture } from "./helpers/fixtures";
 import { element, openTag, textOf } from "./helpers/markup";
 import { SCENARIOS_VARIANCE_BASELINE_FILE, scenariosVarianceBaseline } from "./helpers/scenarios-variance-baseline";
+import { CHANNELS, DELTA, planId, planName, sevenChannelMeeting, supersede, type Meeting7 } from "./helpers/seven-channel-meeting";
 
 /*
  * V4-6 代理 B：G15 會議實例（06_BATCHES V4-6「驗收重點」；CHART_CATALOG G15 會議實例；PRD §4.1–§4.7 G15、§6.1 variant／headingLevel、§8.7）。
  * - chart-meeting-scenarios 在議程 5（meeting-agenda-5）內、每通路選入列 meeting-scenario-results 之前；section.chart-section.is-inline（沒有 .panel，不套卡片）、標題 h4（議程項 h3 之下）、固定高 sm。
  * - 每個通路一根（列序＝會議範圍的通路順序），最多 6 根；7 個通路各選一個方案時畫 6 根、資料表 7 列、最後一列「另 1 個」與軸文字共用，（6＋1）× row24 ≤ sm。
- * - status＝stale 的方案不畫柱，只列在資料表並標既有的「過期」；全部過期時空狀態（資料表照列）。
+ * - status＝stale 的方案不畫柱，只列在資料表並在列名後標同頁議程 5 每通路列既有的 v3 用語「較早的方案（不列入這次決議）」（meeting.review.staleScenarios；
+ *   V4-6 整合審查 B-V46-R1：同一頁同一個狀態只用一個名稱，不寫「過期」）；全部 stale 時空狀態（資料表照列）。
  * - 標題「{n} 個通路的選入方案」：不含任何方案名、不挑跨通路的最大值；零線＝各通路自己的現況（軸文字不寫金額）。
  * - 柱不可點（PRD §8.7 例外）：沒有熱區、沒有 onClick、資料表沒有 number-link；圖容器 aria-hidden 且內部 0 個可聚焦元素；不用強調色 chartColors.current。
  * - 試算頁 G15（chart-scenarios-variance）的輸出與 V4-6 開工錨點逐字相同（tests/fixtures/scenarios-variance-v4-5.json）；會議的匯出（Markdown、PDF）不含這張圖。
@@ -41,55 +36,7 @@ const count = (html: string, needle: string) => html.split(needle).length - 1;
 const matches = (html: string, re: RegExp) => [...html.matchAll(re)].map(match => match[1]);
 const rowsOf = (table: string) => matches(table, /<tr><th scope="row">([^<]*)<\/th>/g);
 
-/** 7 個通路的合成資料（只在本檔使用）：golden 的 DTC 三份 CSV 原樣複製到 7 個通路，每個通路的現況扣廣告後貢獻都是 270.00、本期物流費 140.00。 */
-const CHANNELS = ["DTC", "MARKETPLACE", "SOCIAL", "LIVE", "B2B", "POPUP", "WHOLESALE"] as const;
-function sevenChannelInput(): DatasetInput {
-  const golden = fixture("golden");
-  const replicate = (csv: string) => {
-    const [header, ...lines] = csv.trim().split("\n");
-    const dtc = lines.filter(line => line.split(",")[1] === "DTC");
-    return `${[header, ...CHANNELS.flatMap(channel => dtc.map(line => line.replace(",DTC,", `,${channel},`)))].join("\n")}\n`;
-  };
-  return { manifest: { ...(golden.manifest as Manifest), dataset_id: "seven-channel-v1", channels: [...CHANNELS] }, files: Object.fromEntries(Object.entries(golden.files).map(([name, csv]) => [name, replicate(csv as string)])) as DatasetInput["files"] };
-}
-async function source(input: DatasetInput, filters: AnalysisFilters = {}): Promise<ScenarioSource> {
-  const dataset = validateDataset(input).dataset!;
-  return { input, dataset, snapshot: await createSnapshot(dataset, filters, await hashInput(input)), revision: 1 };
-}
-const accepted = (patch: Partial<ScenarioInputs> = {}): ScenarioInputs => ({ volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "0", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true, ...patch });
-/** 每個通路一個方案：物流費增減（%）→ 差額＝−140 × 增減（DTC golden：−10% → 284.00、+14.00）。 */
-const FULFILLMENT: Record<(typeof CHANNELS)[number], string> = { DTC: "-10", MARKETPLACE: "-20", SOCIAL: "10", LIVE: "0", B2B: "-30", POPUP: "20", WHOLESALE: "-40" };
-const DELTA: Record<(typeof CHANNELS)[number], string> = { DTC: "14.00", MARKETPLACE: "28.00", SOCIAL: "-14.00", LIVE: "0.00", B2B: "42.00", POPUP: "-28.00", WHOLESALE: "56.00" };
-const planName = (channel: string) => `方案${channel}`;
-const planId = (channel: string) => `plan-${channel}`;
-
-interface Meeting7 { all: ScenarioSource; ws: ScenarioWorkspace; review: ReviewSession }
-/** 7 個通路各建一個單通路試算並選入會議；選入順序與通路順序相反（圖與資料表依會議範圍的通路順序）。 */
-async function sevenChannelMeeting(): Promise<Meeting7> {
-  const input = sevenChannelInput();
-  const all = await source(input);
-  let ws: ScenarioWorkspace = emptyScenarioWorkspace("e");
-  for (const channel of CHANNELS) {
-    ws = ensureScenarioContext(ws, await source(input, { channels: [channel] }));
-    const context = ws.contexts[ws.contexts.length - 1];
-    const decision = scenarioContextDecision(context);
-    decision.scenarios = saveScenario(context.session, [], { id: planId(channel), name: planName(channel), inputs: accepted({ fulfillment_change_pct: FULFILLMENT[channel] }) });
-    ws = updateScenarioContext(ws, context.id, decision);
-  }
-  let review = createReviewSession(all, "e", "rev-7");
-  for (const channel of [...CHANNELS].reverse()) {
-    const context = ws.contexts.find(row => row.session.scope.channels[0] === channel)!;
-    review = selectReviewScenario(review, ws, scenarioSelectionRef(context, planId(channel)));
-  }
-  return { all, ws, review };
-}
-/** 讓一個通路的方案過期：同一個方案 id 再存一次（新的修訂），會議選的是舊修訂。 */
-function supersede(ws: ScenarioWorkspace, channel: string): ScenarioWorkspace {
-  const context = ws.contexts.find(row => row.session.scope.channels[0] === channel)!;
-  const decision = scenarioContextDecision(context);
-  decision.scenarios = saveScenario(context.session, decision.scenarios, { id: planId(channel), name: planName(channel), inputs: accepted({ fulfillment_change_pct: "-50" }) });
-  return updateScenarioContext(ws, context.id, decision);
-}
+// 7 通路會議的資料與建法（sevenChannelMeeting、supersede…）在 V4-6 整合時原樣搬到 tests/helpers/seven-channel-meeting.ts（page-states 的 meeting-seven-channels 共用）。
 const pageProps = ({ all, ws, review }: Meeting7): MeetingPageProps => ({ source: all, scenarioWorkspace: ws, actionWorkspace: emptyActionWorkspace(), review, history: [], onChange: noop, onEvidence: noop, onFinalize: async () => undefined });
 const renderPage = (state: Meeting7) => renderToStaticMarkup(createElement(MeetingPage, pageProps(state)));
 
@@ -133,7 +80,7 @@ describe("G15 會議實例模型（純函式）", () => {
     expect(model.bars.map(bar => bar.key)).toEqual(model.tableRows.map(row => row.key));
   });
 
-  it("stale 不畫柱、只列在資料表並在列名後標既有的「過期」；標題的 n 不算過期的；副標加過期註記", () => {
+  it("stale 不畫柱、只列在資料表並在列名後標同頁每通路列的 v3 用語（較早的方案）；標題的 n 不算 stale 的；副標加註記；G15 的字串都不寫「過期」", () => {
     const model = meetingScenariosModel(modelInput([["DTC", "14.00"], ["MARKETPLACE", "28.00", "stale"], ["SOCIAL", "-14.00"]]));
     expect(model.bars.map(bar => bar.key)).toEqual([scenario("DTC", "14.00").id, scenario("SOCIAL", "-14.00").id]);
     expect(model.tableRows).toHaveLength(3);
@@ -141,7 +88,9 @@ describe("G15 會議實例模型（純函式）", () => {
     expect(model.staleCount).toBe(1);
     expect(model.subtitle).toBe(`${fill(copy.subtitle, { section: copy.section, metric: metricDefinitions.contribution_after_marketing.label, period: "8/2–8/2" })} · ${fill(copy.staleNote, { n: 1 })}`);
     const table = element(renderToStaticMarkup(createElement(MeetingScenariosSection, { model })), `data-testid="${MEETING_SCENARIOS_TABLE_TESTID}"`)!;
-    expect(rowsOf(table)).toEqual([fill(copy.row, { plan: planName("DTC"), channel: "DTC" }), fill(copy.rowStatus, { row: fill(copy.row, { plan: planName("MARKETPLACE"), channel: "MARKETPLACE" }), status: labels.meeting.managerSummary.scenarioStale }), fill(copy.row, { plan: planName("SOCIAL"), channel: "SOCIAL" })]);
+    expect(rowsOf(table)).toEqual([fill(copy.row, { plan: planName("DTC"), channel: "DTC" }), fill(copy.rowStatus, { row: fill(copy.row, { plan: planName("MARKETPLACE"), channel: "MARKETPLACE" }), status: labels.meeting.review.staleScenarios }), fill(copy.row, { plan: planName("SOCIAL"), channel: "SOCIAL" })]);
+    // B-V46-R1：同一頁同一個狀態只用一個名稱——G15 會議實例的字串都不寫 managerSummary 的「過期」。
+    for (const text of [copy.staleNote, copy.empty, copy.tableNote, copy.rowStatus]) expect(text).not.toContain(labels.meeting.managerSummary.scenarioStale);
   });
 
   it("全部過期：空狀態（同高 sm、說明 copy.empty、標題用區塊標準名），資料表照列", () => {
@@ -277,7 +226,7 @@ describe("G15 會議實例：7 個通路各選一個方案的會議頁", () => {
     expect(result.mainSections.length).toBeLessThanOrEqual(3);
   });
 
-  it("一個通路的方案過期：該通路不畫、資料表標「過期」；可畫的 6 個剛好 6 根、沒有「另 n 個」，標題 6", async () => {
+  it("一個通路的方案過期（stale）：該通路不畫、資料表列名後標 v3 用語（較早的方案）；可畫的 6 個剛好 6 根、沒有「另 n 個」，標題 6", async () => {
     const stale = { ...state, ws: supersede(state.ws, "LIVE") };
     const markup = element(renderPage(stale), `data-testid="${MEETING_SCENARIOS_TESTID}"`)!;
     expect(matches(markup, /data-testid="chart-meeting-scenarios-bar-([^"]+)"/g)).toEqual(scope.filter(channel => channel !== "LIVE").map(planId));
@@ -285,7 +234,7 @@ describe("G15 會議實例：7 個通路各選一個方案的會議頁", () => {
     expect(textOf(element(markup, 'id="meeting-scenarios-title"')!)).toBe(fill(copy.title, { n: 6 }));
     const table = element(markup, `data-testid="${MEETING_SCENARIOS_TABLE_TESTID}"`)!;
     expect(rowsOf(table)).toHaveLength(7);
-    expect(rowsOf(table)[scope.indexOf("LIVE")]).toBe(fill(copy.rowStatus, { row: fill(copy.row, { plan: planName("LIVE"), channel: "LIVE" }), status: labels.meeting.managerSummary.scenarioStale }));
+    expect(rowsOf(table)[scope.indexOf("LIVE")]).toBe(fill(copy.rowStatus, { row: fill(copy.row, { plan: planName("LIVE"), channel: "LIVE" }), status: labels.meeting.review.staleScenarios }));
   });
 
   it("匯出不含這張圖：會議 Markdown 與列印（PDF）沒有 G15 會議實例的字串與 testid", () => {

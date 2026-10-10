@@ -113,6 +113,18 @@ function chartTestIdViolations(html: string): string[] {
   return [...testIdCounts(splitInstances(html).outside)].filter(([id, count]) => id.startsWith("chart-") && (count !== 1 || all.get(id) !== 1)).map(([id, count]) => `${id}×${count}（全頁 ${all.get(id)}）`);
 }
 
+/**
+ * V4-6（06_BATCHES V4-6；M6 的「每筆歷史各一份的樣板 testid 依實例數計」）：v3 的兩個列表每列一份、但列本身沒有帶編號的容器 testid——
+ * 歷史清單每筆一個 <li data-testid="meeting-history-item">（內含 meeting-snapshot-note）、議程 5 每個選入方案的通路一個 meeting-scenario-result。
+ * V4-6 為了掃到有圖的 G19（≥ 2 筆歷史）與 7 個通路的 G15 會議實例而新增的兩個狀態會讓它們重複；INSTANCE_CONTAINER 自 V4-0a 起不改（加了會放寬其他頁），
+ * 改在這裡逐狀態列出「預期的重複」（testid×次數，次數＝列數）：下方 M6 只略過完全相符的項目，其他重複或次數不符照樣失敗；
+ * chart- testid 的唯一性（chartTestIdViolations）不受影響、照常檢查；V4-6 M1 測試另外斷言這些項目確實出現（清單不會過期）。
+ */
+const V4_6_REPEATED_V3_ROWS: Record<string, string[]> = {
+  "meeting-history-g19": ["meeting-history-item×6", "meeting-snapshot-note×6"],
+  "meeting-seven-channels": ["meeting-scenario-result×7"],
+};
+
 describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
   let states: StateMarkup[];
   beforeAll(async () => { states = await pageStates(); }, 60_000);
@@ -1289,20 +1301,31 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-6 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-6 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
-    // V4-6 代理 A：不另加頁面狀態。G19 有圖（≥ 2 次會議）時歷史清單至少 2 筆，v3 的 meeting-history-item、meeting-snapshot-note 每筆一份，會被下方 M6
-    // 「每個 testid 每個狀態只出現一次」判為重複（INSTANCE_CONTAINER 自 V4-0a 起不改）；有圖的 G19 由 tests/charts-meeting-g19.test.tsx 以 MeetingHistory 的 SSR 驗（含 chart-lint SSR 規則）。
-    it("V4-6 A 會議歷史：G19 chart-meeting-history 只在有歷史的會議頁狀態出現（meeting 沒有歷史＝不渲染、meeting-v2-record 1 筆＝等高空狀態；有圖的情形見 charts-meeting-g19.test），在 meeting-history 內、清單之前，全頁一份；inline（沒有 .panel 套 .panel）、h3；資料表 <details> 收合但掛載；圖框內沒有停留點、沒有 chartColors.current", async () => {
-      const { chartColors } = await import("@/application/chart-theme");
+    // V4-6 頁面狀態：meeting（沒有歷史）、meeting-v2-record（1 筆）、meeting-history-g19（6 筆，G19 有圖：5 點 3 段）、meeting-seven-channels（7 個通路各選一個方案、沒有歷史）。
+    // 有圖的 G19 與 7 個通路的 G15 會讓 v3 列表樣板每列一份（meeting-history-item、meeting-snapshot-note、meeting-scenario-result）：M6 依 V4_6_REPEATED_V3_ROWS 逐字略過，
+    // chart- testid 唯一性照常檢查（INSTANCE_CONTAINER 不改）。圖形細節（斷線、間隙標、6 根柱的值）另見 charts-meeting-g19.test 與 charts-meeting-scenarios-v4.test。
+    it("V4-6 A 會議歷史：G19 chart-meeting-history 每個會議頁狀態一份、在 meeting-history 內——有歷史時在說明句之後、清單之前，沒有歷史時接在 v3 空狀態區塊之後（審查 A-4；區塊 DOM 不變）；保留不到 2 次＝等高空狀態、≥ 2 次＝有圖；inline（沒有 .panel 套 .panel）、h3；資料表 <details> 收合但掛載；圖框內沒有停留點、沒有 chartColors.current", async () => {
+      const { chartColors, chartHeights } = await import("@/application/chart-theme");
       const meetings = states.filter(state => state.state?.panel === "meeting");
-      const expected: Record<string, "none" | "empty" | "ready"> = { meeting: "none", "meeting-v2-record": "empty" };
-      expect(meetings.map(({ name }) => name).filter(name => name in expected)).toEqual(Object.keys(expected));
-      for (const { name, html } of meetings.filter(({ name }) => name in expected)) {
-        const want = expected[name];
-        for (const id of ["chart-meeting-history", "chart-meeting-history-table"]) expect(testIdCounts(html).get(id) ?? 0, `${name} ${id}`).toBe(want === "none" ? 0 : 1);
-        if (want === "none") continue;
+      const expected: Record<string, "empty" | "ready"> = { meeting: "empty", "meeting-v2-record": "empty", "meeting-history-g19": "ready", "meeting-seven-channels": "empty" };
+      expect(meetings.map(({ name }) => name)).toEqual(Object.keys(expected));
+      for (const { name, html, state } of meetings) {
+        const want = expected[name], count = state!.history?.length ?? 0;
+        for (const id of ["chart-meeting-history", "chart-meeting-history-table", "meeting-history"]) expect(testIdCounts(html).get(id) ?? 0, `${name} ${id}`).toBe(1);
         const history = element(html, 'data-testid="meeting-history"')!;
-        expect(history, `${name}：G19 在 meeting-history 內`).toContain('data-testid="chart-meeting-history"');
-        expect(history.indexOf('data-testid="chart-meeting-history"'), `${name}：清單之前`).toBeLessThan(history.indexOf('<ul class="meeting-history-list">'));
+        const wrapper = element(history, 'class="meeting-history-chart"')!;
+        expect(openTag(history, 'class="meeting-history-chart"'), `${name}：≤ 767px 框高變數＝sm × 2`).toBe(`<div class="meeting-history-chart" style="--multiples-h:${chartHeights.sm * 2}px">`);
+        if (count > 0) {
+          expect(history.indexOf(escapeAttr(labels.meeting.page.historyNote)), `${name}：說明句之後`).toBeLessThan(history.indexOf(wrapper));
+          expect(history.indexOf(wrapper) + wrapper.length, `${name}：清單之前`).toBe(history.indexOf('<ul class="meeting-history-list">'));
+          expect(occurrences(history, 'data-testid="meeting-history-item"'), `${name}：歷史清單筆數不變`).toBe(count);
+          expect(history, name).not.toContain("meeting-history-empty");
+        } else {
+          // 審查 A-4：v3 的空狀態區塊逐字不變，G19 的等高空狀態緊接在它之後、是區塊最後一個子元素。
+          const empty = `<div class="ui-empty-block meeting-history-empty"><p class="ui-empty-title">${labels.empty.stateV3.meetingHistoryTitle}</p><p>${labels.empty.stateV3.meetingHistoryBody}</p></div>`;
+          expect(history, `${name}：v3 空狀態區塊不變`).toContain(`${empty}${wrapper}</section>`);
+          expect(history, name).not.toContain('<ul class="meeting-history-list">');
+        }
         expect([...history.matchAll(/class="[^"]*\bpanel\b[^"]*"/g)], `${name}：只有外層一個 .panel`).toHaveLength(1);
         const section = element(history, 'data-testid="chart-meeting-history"')!;
         expect(openTag(section, "<section"), name).toMatch(/^<section class="chart-section is-inline" aria-labelledby="meeting-history-chart-title" aria-describedby="meeting-history-chart-sub"/);
@@ -1310,13 +1333,61 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         const details = element(section, '<details class="data-alternative"')!;
         expect(openTag(details, "<details"), `${name}：資料表收合`).not.toMatch(/\sopen=""/);
         expect(details, `${name}：收合時表格仍掛載`).toContain('data-testid="chart-meeting-history-table"');
+        const frameTag = openTag(section, 'class="chart-frame sm multiples"')!;
+        expect(frameTag, name).toContain(`data-state="${want}"`);
+        expect(frameTag, name).toContain(`style="height:${chartHeights.sm}px"`);
         const frame = element(section, 'class="chart-frame sm multiples"')!;
-        expect(openTag(section, 'class="chart-frame sm multiples"'), name).toContain(`data-state="${want}"`);
         expect(frame, `${name}：圖框內沒有停留點`).not.toMatch(/tabindex|<button|<a\s|<details|chart-point-hit/);
         expect(section, `${name}：沒有強調色`).not.toContain(chartColors.current);
-        if (want === "ready") expect(openTag(section, 'class="chart-frame sm multiples"'), name).toContain('aria-hidden="true"');
-        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-meeting-history")), name).toEqual([]);
+        if (want === "ready") {
+          expect(frameTag, name).toContain('aria-hidden="true"');
+          // 5 點（第三週重開只畫較晚結束的一次）、兩個空位置（斷段）：每張子圖 5 個點、只有 3 次週會連成一條線。
+          expect(occurrences(frame, "multiple-point") + occurrences(frame, "multiple-last"), `${name}：兩張子圖各 5 點`).toBe(10);
+          expect([...frame.matchAll(/<polyline[^>]*points="([^"]+)"/g)].map(match => match[1].split(" ").length), `${name}：只有同一段的 3 次週會相連`).toEqual([3, 3]);
+          expect(occurrences(element(section, 'data-testid="chart-meeting-history-table"')!, '<th scope="row">'), `${name}：資料表 5 列`).toBe(5);
+        } else expect(frame, `${name}：空狀態沒有 svg`).not.toContain("<svg");
+        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-meeting-")), name).toEqual([]);
       }
+    });
+
+    it("V4-6 B 議程 5：G15 chart-meeting-scenarios 每個有選入方案的會議頁狀態一份，在 meeting-agenda-5 內、說明句之後、meeting-scenario-results 之前；inline、h4、不可點；7 個通路各選一個方案時 6 根、資料表 7 列；會議頁主層獨立圖區塊＝2（G15 會議實例、G19）；與上次比較（meeting-compare-kpis）沒有新 testid；M6 略過的 v3 列表樣板確實出現", async () => {
+      const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const { chartColors } = await import("@/application/chart-theme");
+      const meetings = states.filter(state => state.state?.panel === "meeting");
+      const seven = ["DTC", "MARKETPLACE", "SOCIAL", "LIVE", "B2B", "POPUP", "WHOLESALE"];
+      const bars: Record<string, string[]> = { meeting: ["p"], "meeting-v2-record": ["p"], "meeting-history-g19": ["p"], "meeting-seven-channels": [] };
+      for (const { name, html, state } of meetings) {
+        const scope = state!.review!.meeting_filters.channels;
+        const want = name === "meeting-seven-channels" ? scope.slice(0, 6).map(channel => `plan-${channel}`) : bars[name];
+        if (name === "meeting-seven-channels") expect([...scope].sort(), name).toEqual([...seven].sort());
+        expect(checkChartMarkup(html, { page: "meeting" }).mainSections, `${name}：主層獨立圖區塊`).toEqual(["chart-meeting-scenarios", "chart-meeting-history"]);
+        for (const id of ["chart-meeting-scenarios", "chart-meeting-scenarios-table"]) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+        const five = element(html, 'data-testid="meeting-agenda-5"')!;
+        const section = element(five, 'data-testid="chart-meeting-scenarios"')!;
+        expect(five.indexOf(section), `${name}：說明句之後`).toBeGreaterThan(five.indexOf(escapeAttr(labels.meeting.page.scenariosNote)));
+        expect(five.indexOf(section) + section.length, `${name}：每通路選入列之前`).toBeLessThanOrEqual(five.indexOf('data-testid="meeting-scenario-results"'));
+        expect(openTag(section, "<section"), name).toMatch(/^<section class="chart-section is-inline meeting-scenarios-chart" aria-labelledby="meeting-scenarios-title" aria-describedby="meeting-scenarios-sub"/);
+        expect(section, `${name}：標題 h4`).toContain('<h4 id="meeting-scenarios-title">');
+        expect([...element(html, 'data-testid="meeting-agenda"')!.matchAll(/class="[^"]*\bpanel\b[^"]*"/g)].length, `${name}：議程內沒有 .panel 套 .panel`).toBeLessThanOrEqual(1);
+        expect([...section.matchAll(/data-testid="chart-meeting-scenarios-bar-([^"]+)"/g)].map(match => match[1]), `${name}：柱`).toEqual(want);
+        const rows = occurrences(element(section, 'data-testid="chart-meeting-scenarios-table"')!, '<th scope="row">');
+        expect(rows, `${name}：資料表列數＝選入方案數`).toBe(state!.review!.selected_scenarios.length);
+        if (name === "meeting-seven-channels") expect(rows, name).toBe(7);
+        const details = element(section, '<details class="data-alternative"')!;
+        expect(openTag(details, "<details"), `${name}：資料表收合`).not.toMatch(/\sopen=""/);
+        const frame = element(section, 'class="chart-frame sm"')!;
+        expect(openTag(section, 'class="chart-frame sm"'), name).toContain('aria-hidden="true"');
+        expect(frame, `${name}：柱不可點、圖框內沒有停留點`).not.toMatch(/tabindex|<button|<a\s|<details|<input|<select|ranked-hit|is-clickable/);
+        expect(section, `${name}：不是 number-link`).not.toContain("number-link");
+        expect(section, `${name}：沒有強調色`).not.toContain(chartColors.current);
+        // G18 取消：與上次會議比較維持 v3（沒有 chart- testid、沒有圖區塊）。
+        const compare = element(html, 'data-testid="meeting-compare"');
+        if (compare) expect(compare, `${name}：與上次比較沒有圖`).not.toMatch(/data-testid="chart-|chart-section/);
+        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-meeting-scenarios")), name).toEqual([]);
+        // M6 略過的 v3 列表樣板確實以列數出現（清單不會過期）。
+        for (const found of V4_6_REPEATED_V3_ROWS[name] ?? []) { const [id, times] = found.split("×"); expect(testIdCounts(html).get(id), `${name} ${found}`).toBe(Number(times)); }
+      }
+      expect(Object.keys(V4_6_REPEATED_V3_ROWS).every(name => meetings.some(state => state.name === name))).toBe(true);
     });
 
     // ── V4-7a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-7a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
@@ -1336,7 +1407,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
   describe("M6：同一個控制在 DOM 只有一個實例", () => {
     it("每個 testid 在每個狀態只出現一次（方案欄、看板卡、門檻區塊內的 testid 依實例數計）", () => {
       for (const { name, html } of states) {
-        const duplicates = duplicateTestIds(html);
+        // V4-6：只略過 V4_6_REPEATED_V3_ROWS 逐字列出的 v3 列表樣板（testid×列數）；其他重複照樣失敗。
+        const duplicates = duplicateTestIds(html).filter(found => !(V4_6_REPEATED_V3_ROWS[name] ?? []).includes(found));
         expect(duplicates, `${name} 重複：${duplicates.join(", ")}`).toEqual([]);
       }
       // 樣板容器真的有被拆開檢查（試算兩個方案欄、看板兩張卡）。

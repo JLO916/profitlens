@@ -455,6 +455,8 @@ function FrozenFollowUp({ follow, title }: { follow: MeetingFollowUp; title: str
  * 會議歷史：每筆已結束的會議一個 <details>（只讀）；可下載該次的會議紀錄 Markdown（紀錄本身），也可移除（先確認；歷史滿 100 筆時騰出空間）。
  * V3-7（§7.6 第 2 點、D-V3-22）：展開內容頂部一行結束標示；v2 結束的紀錄（沒有 copy_version）再加一行「本紀錄建立於 v2」。數字、決議與備註照紀錄顯示，欄名用新名詞。
  * V4-6 代理 A（G19）：有歷史時在說明句之後、清單之前加會議歷史小倍數（MeetingHistoryChart，inline、h3；保留不到 2 次時等高空狀態）；其餘 DOM 與 testid 不變。
+ * V4-6 整合（審查 A-4，06_BATCHES V4-6「歷史 < 2 筆等高空狀態」含 0 筆）：沒有任何已結束的會議時，v3 的空狀態區塊（meeting-history-empty，DOM 不變）之後也放 G19 的等高空狀態；
+ * 兩句互補不重複——v3 區塊說「還沒有結束的會議、結束後出現在這裡」（清單），G19 說「結束兩次以上、本期不同的會議後畫出走勢」（圖）。
  */
 export function MeetingHistory({ history, onRemove, datasetNameFor }: { history: readonly Meeting[]; onRemove?: (id: string) => void; /** V3-7：該筆紀錄的版頭資料集名稱（與目前資料同一版本時才有）。 */ datasetNameFor?: (meeting: Meeting) => string | undefined }) {
   const [pending, setPending] = useState<string | null>(null);
@@ -492,6 +494,6 @@ export function MeetingHistory({ history, onRemove, datasetNameFor }: { history:
         <p id={warningId} ref={warningRef} tabIndex={-1}>{page.removeWarning}</p>
         <div className="button-row"><button type="button" className="button primary" data-testid="meeting-history-remove-confirm" onClick={() => confirm(meeting)}>{page.removeConfirm}</button><button type="button" className="button quiet" onClick={cancel}>{labels.shell.buttons.cancel}</button></div>
       </div>}</li>;
-    })}</ul></> : <div className="ui-empty-block meeting-history-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingHistoryTitle}</p><p>{labels.empty.stateV3.meetingHistoryBody}</p></div>}
+    })}</ul></> : <><div className="ui-empty-block meeting-history-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingHistoryTitle}</p><p>{labels.empty.stateV3.meetingHistoryBody}</p></div><MeetingHistoryChart history={history} /></>}
   </section>;
 }

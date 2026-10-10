@@ -2890,6 +2890,8 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
    上緣 space-4 沿用「V4-5 A」），與下方歷史清單之間留 space-4。標題 h3 的外觀沿用「V4-4 B」（.chart-section .sec-title h3 的權重高於 .meeting-history h3）。
    投影：整個 .meeting-history 在投影中隱藏（V3-9b 投影段），這裡不另加規則。 */
 .meeting-history-chart { min-width: 0; margin: 0 0 var(--space-4); }
+/* V4-6 整合（審查 A-4）：沒有任何已結束的會議時，G19 的等高空狀態接在 v3 空狀態區塊（.meeting-history-empty）之後、是區塊最後一個子元素，下緣不再留 space-4。 */
+.meeting-history-empty + .meeting-history-chart { margin-bottom: 0; }
 /* C26 斷段間隙標（「不同資料集」「期間不同」）：12px，字色由 svg 屬性給 chartColors.axis；與軸標同一層級，不加粗。 */
 .chart-multiple .multiple-gap { font-weight: var(--weight-regular); }
 /* G19 資料表：會議日期（列名）與資料本期不換行（表比框寬時在 .table-scroll 內水平捲動，頁面不捲動）。 */

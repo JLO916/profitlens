@@ -290,9 +290,9 @@ describe("G19 SSR：位置、外框、圖與資料表", () => {
     expect(details).toContain(`<p class="note">${escapeAttr(fill(copy.omittedNote, { n: 1 }))}</p>`);
   });
 
-  it("保留不到 2 次時等高空狀態（data-state=empty、高 sm、說明句；沒有 svg）：1 次會議、2 次但本期相同（表後註明省略 1 次）；沒有任何會議時不渲染圖，只有 v3 的空狀態區塊", async () => {
+  it("保留不到 2 次時等高空狀態（data-state=empty、高 sm、說明句；沒有 svg）：沒有任何會議（V4-6 整合，審查 A-4）、1 次會議、2 次但本期相同（表後註明省略 1 次）", async () => {
     const again = meetingVariant(golden, { id: "again", date: "2026-08-04", finalized_at: "2026-08-04T06:00:00.000Z" });
-    for (const [name, meetings, omitted] of [["一次", [golden], 0], ["本期相同", [golden, again], 1]] as const) {
+    for (const [name, meetings, omitted] of [["沒有", [], 0], ["一次", [golden], 0], ["本期相同", [golden, again], 1]] as const) {
       const html = renderHistory(meetings);
       const chart = chartOf(html);
       expect(chart, name).not.toBeNull();
@@ -308,9 +308,18 @@ describe("G19 SSR：位置、外框、圖與資料表", () => {
       expect(chart.includes(escapeAttr(fill(copy.omittedNote, { n: 1 }))), name).toBe(omitted === 1);
       expect(openTag(html, 'class="meeting-history-chart"'), name).toContain(`--multiples-h:${chartHeights.sm * 2}px`);
     }
-    const none = renderHistory([]);
-    expect(none).not.toContain("chart-meeting-history");
-    expect(none).toContain('<div class="ui-empty-block meeting-history-empty">');
+    // 沒有任何會議：v3 的空狀態區塊原樣（說清單）在前，G19 的等高空狀態（說走勢要兩次以上）接在它之後、是區塊最後一個子元素；兩句互補，沒有一句重複。
+    const none = element(renderHistory([]), 'data-testid="meeting-history"')!;
+    const empty = element(none, 'class="ui-empty-block meeting-history-empty"')!;
+    expect(empty).toBe(`<div class="ui-empty-block meeting-history-empty"><p class="ui-empty-title">${labels.empty.stateV3.meetingHistoryTitle}</p><p>${labels.empty.stateV3.meetingHistoryBody}</p></div>`);
+    const wrapper = element(none, 'class="meeting-history-chart"')!;
+    expect(none.indexOf(empty) + empty.length).toBe(none.indexOf(wrapper));
+    expect(none.endsWith(`${wrapper}</section>`)).toBe(true);
+    expect(none).not.toContain('<ul class="meeting-history-list">');
+    expect(none).not.toContain(escapeAttr(labels.meeting.page.historyNote));
+    for (const text of [labels.empty.stateV3.meetingHistoryTitle, labels.empty.stateV3.meetingHistoryBody]) expect(textOf(wrapper)).not.toContain(text);
+    expect(textOf(empty)).not.toContain(copy.empty);
+    expect(checkChartMarkup(`<main id="main-content">${none}</main>`, { page: "meeting" }).mainSections).toEqual(["chart-meeting-history"]);
   });
 
   it("直接渲染 MeetingHistoryChart 與經 MeetingHistory 渲染的圖區塊相同（元件沒有模組層級狀態；同一份歷史兩次渲染結果相同）", async () => {

@@ -514,18 +514,22 @@ describe("V4-6 G15 會議實例（議程 5）", () => {
     expect(frame).not.toMatch(/tabindex|<button|<a[\s>]|<input|<select|ranked-hit|is-clickable/);
   });
 
-  it("方案過期（被新修訂取代）：不畫柱、空狀態；資料表照列並標「過期」。沒有選入方案時不渲染（議程 5 的區段型空狀態不變）", async () => {
+  it("方案過期（被新修訂取代）：不畫柱、空狀態；資料表照列，列名後標與同頁每通路列相同的 v3 用語（較早的方案，B-V46-R1）。沒有選入方案時不渲染（議程 5 的區段型空狀態不變）", async () => {
     const state = await setup();
     const context = state.scenarios.contexts[0], draft = scenarioContextDecision(context);
     draft.scenarios = saveScenario(context.session, draft.scenarios, { id: "p", name: "履約加碼", inputs: { ...inputs, fulfillment_change_pct: "-20" } });
     const scenarios = updateScenarioContext(state.scenarios, context.id, draft);
     // 「採用」的會議不能帶過期方案（REVIEW_ADOPTED_STALE_SCENARIO），先改回草稿（同上方 R6-F2 的過期測試）。
-    const chart = block(block(render(props(state, { scenarioWorkspace: scenarios, review: updateReviewSession(state.review, { decision_state: "draft" }) })), "meeting-agenda-5"), "chart-meeting-scenarios");
+    const five = block(render(props(state, { scenarioWorkspace: scenarios, review: updateReviewSession(state.review, { decision_state: "draft" }) })), "meeting-agenda-5");
+    const chart = block(five, "chart-meeting-scenarios");
     expect(chart).not.toContain("chart-meeting-scenarios-bar-");
     expect(chart).toContain('data-state="empty"');
     expect(chart).toContain(`<p class="chart-frame-message">${g15.empty}</p>`);
     expect(titleOf(chart)).toBe(g15.section);
-    expect(block(chart, "chart-meeting-scenarios-table")).toContain(`<th scope="row">${fill(g15.rowStatus, { row: fill(g15.row, { plan: "履約", channel: "DTC" }), status: summaryCopy.scenarioStale })}</th>`);
+    expect(block(chart, "chart-meeting-scenarios-table")).toContain(`<th scope="row">${fill(g15.rowStatus, { row: fill(g15.row, { plan: "履約", channel: "DTC" }), status: copy.staleScenarios })}</th>`);
+    // 同一頁同一個狀態只用一個名稱：每通路列的 v3 標籤與 G15 的列名都是「較早的方案（不列入這次決議）」，G15 不寫「過期」。
+    expect(block(five, "meeting-scenario-result")).toContain(`<span class="ui-lozenge" data-tone="warning">${copy.staleScenarios}</span>`);
+    expect(text(chart)).not.toContain(summaryCopy.scenarioStale);
     const none = render(props(state, { review: selectReviewScenario(updateReviewSession(state.review, { decision_state: "draft" }), state.scenarios, null, "DTC") }));
     expect(none).not.toContain("chart-meeting-scenarios");
     expect(block(none, "meeting-scenario-results-empty")).toMatch(/^<div class="ui-empty-block meeting-scenarios-empty"/);
@@ -655,7 +659,7 @@ describe("R6-F2 meeting history reads the record itself", () => {
  * 圖本身（斷段、間隙標、最後一點、資料表）見 tests/charts-meeting-g19.test.tsx；這裡驗整頁 SSR 與 hooks harness。
  */
 describe("V4-6 G19 meeting history chart on the meeting page", () => {
-  it("sits inside section.panel.meeting-history after the note and before the list (one per page, inline section, h3, no .panel inside .panel); no history → no chart, only the v3 empty block", async () => {
+  it("sits inside section.panel.meeting-history after the note and before the list (one per page, inline section, h3, no .panel inside .panel); no history → the v3 empty block unchanged, then the G19 equal-height empty state (review A-4)", async () => {
     const state = await finalized();
     const demo = await finalizedMeeting({ id: "rev-demo", name: "示範例會", date: "2026-10-10", now: "2026-10-10T06:00:00.000Z", fixture: "demo" });
     const html = render(props(state, { history: [state.meeting, demo] }));
@@ -672,7 +676,12 @@ describe("V4-6 G19 meeting history chart on the meeting page", () => {
     expect(chart.match(/class="multiple" data-panel=/g)).toHaveLength(2);
     // 歷史清單的 DOM 與 testid 不變：兩筆各一個 meeting-history-item，各自的移除鈕。
     expect(history.match(/data-testid="meeting-history-item"/g)).toHaveLength(2);
-    expect(render(props(state))).not.toContain("chart-meeting-history");
+    // 審查 A-4（06「歷史 < 2 筆等高空狀態」含 0 筆）：沒有歷史時 v3 的空狀態區塊原樣在前，G19 的等高空狀態接在後面，全頁一份。
+    const none = block(render(props(state)), "meeting-history");
+    expect(none.match(/data-testid="chart-meeting-history"/g)).toHaveLength(1);
+    expect(none.indexOf('<div class="ui-empty-block meeting-history-empty">')).toBeLessThan(none.indexOf('<div class="meeting-history-chart"'));
+    expect(block(none, "chart-meeting-history")).toMatch(/<div class="chart-frame sm multiples" style="height:180px" data-state="empty">/);
+    expect(none.match(/class="[^"]*\bpanel\b[^"]*"/g)).toEqual(['class="panel meeting-history"']);
   });
 
   it("the hooks harness renders MeetingHistory without calling the chart (its hooks stay inside MeetingHistoryChart); the projection hides the whole history section, so G19 is hidden too", async () => {

@@ -40,6 +40,8 @@ import { BasisDialog } from "@/components/basis-dialog";
 import { WorkspaceStorage } from "@/components/workspace-storage";
 import { yoyInput } from "./yoy-dataset";
 import { synthetic4ChannelInput } from "./synthetic-4-channel";
+import { g19History } from "./meeting-history";
+import { sevenChannelMeeting } from "./seven-channel-meeting";
 
 /*
  * 頁面狀態（V4-0a 由 tests/mounted-testids.test.tsx 原樣搬出並匯出；PRD §7.9、§8.6、06_BATCHES V4-0a 第 7 項）。
@@ -338,6 +340,17 @@ export async function pageStates(): Promise<StateMarkup[]> {
     })(),
 
     // ── V4-6 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-6 新增 M1 測試」錨點後加對應測試）──
+    // 會議＋G19 有圖（tests/helpers/meeting-history.ts 的 g19History：golden → 示範 42 天 → 示範三個連續週＋第三週重開一次＝6 筆歷史，圖上 5 點 3 段、
+    // 兩個間隙「不同資料集」「期間不同」，第三週重開的只畫較晚結束的一次）＋議程 5 選入 golden DTC 方案 p（G15 會議實例 1 根）：會議頁主層獨立圖區塊＝2。
+    // 歷史清單 6 筆：v3 的 meeting-history-item、meeting-snapshot-note、meeting-history-followup 每筆一份——M6「每筆歷史各一份的樣板 testid 依實例數計」
+    // 由 mounted-testids 的 historyItemDuplicates 把每個 <li data-testid="meeting-history-item"> 當成一個實例來數（INSTANCE_CONTAINER 不改）。
+    "meeting-history-g19": { panel: "meeting", active: golden, status: "ready", review, actionWorkspace: actions, scenarioWorkspace: scenarios, history: await g19History() },
+    // 會議＋7 個通路各選一個方案（記憶體合成資料，tests/helpers/seven-channel-meeting.ts；golden 的 DTC 複製到 7 個通路，現況都是 270.00）：
+    // G15 會議實例只畫會議範圍通路順序的前 6 根、資料表 7 列、最後一列「另 1 個」與軸文字共用；沒有歷史，G19 是接在 v3 空狀態區塊之後的等高空狀態（審查 A-4）。
+    ...await (async (): Promise<Record<string, ShellState>> => {
+      const { all, ws, review: seven } = await sevenChannelMeeting();
+      return { "meeting-seven-channels": { panel: "meeting", active: { ...all, id: "seven-channel" }, status: "ready", review: seven, scenarioWorkspace: ws, actionWorkspace: emptyActionWorkspace() } };
+    })(),
 
     // ── V4-7a 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-7a 新增 M1 測試」錨點後加對應測試）──
 

@@ -1920,7 +1920,8 @@ const meetingStore = {
      * V4-6 代理 B：G15 會議實例（PRD §4.1–§4.7 G15「會議／議程 5（第二實例）」、§8.7；CHART_CATALOG G15；06_BATCHES V4-6）。議程 5 的每通路選入列（meeting-scenario-results）之前；
      * 每個選入方案的通路一根（docs/SCENARIOS.md:76：會議每通路最多選一個已試算的方案），最多 6 根，其餘只列在資料表並寫「另 {n} 個」。
      * 各通路的現況基準不同：零線＝每個通路自己的現況，標題只寫通路數，不寫方案名、不跨通路挑最大值或相加。試算結果是條件差額，不是預測（AGENTS.md）。
-     * 資料表欄名沿用 scenarios.inputs.resultTitle、vsBaseline（同試算頁 G15）；過期方案的列名後面接既有的「過期」（meeting.managerSummary.scenarioStale）。
+     * 資料表欄名沿用 scenarios.inputs.resultTitle、vsBaseline（同試算頁 G15）；過期（stale）方案的列名後面接同頁議程 5 每通路列既有的 v3 用語「較早的方案（不列入這次決議）」
+     * （meeting.review.staleScenarios；V4-6 整合審查 B-V46-R1：同一頁同一個狀態只用一個名稱，使用者另行拍板前沿用 v3 用語，不寫「過期」）。
      */
     scenarios: {
       /** 區塊標準名：沒有可畫的方案時（選入的都已過期）的標題、副標第一段、資料表 summary（「表格 · …」）與 caption。 */
@@ -1929,22 +1930,22 @@ const meetingStore = {
       title: "{n} 個通路的選入方案",
       /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{metric}＝扣廣告後貢獻的標準名，{period}＝會議本期（M/D–M/D）。 */
       subtitle: "{section} · 每個通路從自己的現況{metric}算起 · 本期 {period}",
-      /** 有過期方案時接在副標後面（以「 · 」相接）：{n}＝過期方案數。 */
-      staleNote: "過期的 {n} 個方案只列在資料表",
-      /** 選入的方案都已過期時圖區的說明（state="empty"；資料表照列）。 */
-      empty: "選入的方案都已過期，列在資料表",
+      /** 有較早的（stale）方案時接在副標後面（以「 · 」相接）：{n}＝較早的方案數。用語同 meeting.review.staleScenarios。 */
+      staleNote: "{n} 個較早的方案只列在資料表",
+      /** 選入的都是較早的（stale）方案時圖區的說明（state="empty"；資料表照列）。用語同 meeting.review.staleScenarios。 */
+      empty: "選入的都是較早的方案，只列在資料表",
       /** 軸文字（零線下方、置中於零線）：各通路的現況不同，不寫金額。 */
       axis: "各通路現況",
       /** 超過 6 根時，與軸文字共用最後一列：{n}＝沒畫成柱的方案數（只列在資料表）。 */
       more: "另 {n} 個",
       /** 柱與資料表的列名：{plan}＝方案名稱，{channel}＝通路名稱（示範資料用 alias）。 */
       row: "{plan} · {channel}",
-      /** 過期方案的列名：{row}＝列名，{status}＝既有的「過期」（meeting.managerSummary.scenarioStale）。 */
-      rowStatus: "{row}（{status}）",
+      /** 較早的（stale）方案的列名：{row}＝列名，{status}＝既有的 v3 用語「較早的方案（不列入這次決議）」（meeting.review.staleScenarios，同頁議程 5 每通路列的標籤）。 */
+      rowStatus: "{row} · {status}",
       /** 資料表列名欄的欄頭。 */
       planColumn: "方案 · 通路",
       /** 資料表之後的說明（在收合的 <details> 內）。 */
-      tableNote: "每個通路從自己的現況算起，金額不能跨通路相加；標「過期」的方案不列入這次決議，也不畫在圖上。",
+      tableNote: "每個通路從自己的現況算起，金額不能跨通路相加；較早的方案不列入這次決議，也不畫在圖上。",
     },
   },
 } as const;

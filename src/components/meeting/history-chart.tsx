@@ -12,7 +12,8 @@ import { amountAxis, multiplesFrameStyle, SmallMultiples, type SmallMultipleGap,
 import { ChartFrame } from "../overview/charts/chart-frame";
 
 // V4-6 代理 A：G19 會議歷史小倍數（PRD §4.1–§4.7 G19、§5.6、§7.1、§8.7；CHART_CATALOG G19；06_BATCHES V4-6）。
-// 位置：會議紀錄頁 section.panel.meeting-history 內、historyNote 之後、歷史清單（meeting-history-list）之前；有歷史時才渲染（沒有任何已結束的會議時只有 v3 的空狀態區塊）。
+// 位置：會議紀錄頁 section.panel.meeting-history 內、historyNote 之後、歷史清單（meeting-history-list）之前；沒有任何已結束的會議時接在 v3 的空狀態區塊（meeting-history-empty）之後，
+// 一樣是等高空狀態（V4-6 整合，審查 A-4：06「歷史 < 2 筆等高空狀態」含 0 筆；兩句互補：v3 區塊說清單、本圖說走勢要兩次以上）。
 // ChartFrame variant="inline"（已在 .panel 內，不套 panel，X8）、headingLevel 3（h2#meeting-history-title 之下）、height sm、frameClassName="multiples"；
 // 外層 div 以 multiplesFrameStyle(2) 給 ≤ 767px 的框高（chartHeights.sm × 2，單欄兩張；四態同高，空狀態也是）。投影隱藏：整個 .meeting-history 在投影中不顯示（globals.css 投影段）。
 // 資料：meetingSeries（meeting-series-v1，src/application/chart-meeting.ts）——會議順序、本期相同的只留最近結束的一次、斷段位置與原因；值是凍結的 agenda.kpis[].current，逐字沿用。
