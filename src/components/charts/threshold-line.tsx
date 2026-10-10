@@ -12,7 +12,7 @@ import { rankedTextWidth } from "./ranked-bars";
 // 所有 line 都是格線、零線與 x 刻度），不外插、不延伸、不把超界的點夾到邊界：
 //   x：銷量變動 %，固定 [−90%, +100%]（docs/SCENARIOS.md:12），每 25 個百分點一個刻度（範圍內 25 的倍數：−75 到 +100），刻度文字用 formatAxisPercent；
 //      繪圖區太窄、相鄰刻度文字放不下時只標 50 的倍數（刻度線照畫）；
-//   y：扣廣告後貢獻，範圍一定含 0，刻度是 1、2、5 × 10ⁿ 的整齊步長、上下界取步長的整數倍，刻度文字用 formatAxisWan；零線 chartColors.axis，其他格線 chartColors.grid；
+//   y：扣廣告後貢獻，範圍一定含 0，刻度是 1、2、5 × 10ⁿ 的整齊步長（至少 1 元：formatAxisWan 不到萬時取到元，步長小於 1 元會讓刻度文字重複或與刻度不符）、上下界取步長的整數倍，刻度文字用 formatAxisWan；零線 chartColors.axis，其他格線 chartColors.grid；
 //   門檻點（kind="threshold"）：空心圓，fill="none"、stroke chartColors.target；使用者點（kind="user"）：實心 chartColors.total
 //   （試算是假設、不是本期資料，不用強調色 chartColors.current，也避免綠點被讀成有利，CHART_CATALOG G16）；
 //   點標籤由呼叫端從 labels 組好傳入（label 寬版、shortLabel 窄版：繪圖寬 < THRESHOLD_NARROW_BELOW 時用 shortLabel，390 的「門檻標籤縮短為百分比」）；
@@ -100,6 +100,8 @@ const LABEL_DESCENT = 3;
 const LABEL_SIDE_DROP = 4;
 /** 目標 y 刻度數（間距約 4 格）。 */
 const Y_INTERVALS = 4;
+/** y 最小步長 1 元：formatAxisWan 在 1 萬以下用 formatAmountL1 取到元，0.5 元的刻度會寫成「1 元」（與 1 元的刻度重複）。 */
+const Y_MIN_STEP = 1;
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
 
@@ -139,7 +141,7 @@ function labelX(cx: number, textWidth: number, placement: ThresholdLabelPlacemen
 /**
  * C29 幾何（純函式，tests/chart-geometry-v4.test.ts、tests/chart-threshold.test.ts）。
  * 1. 只取 v ∈ [−90, +100]、v 與 y 都可解析的點；其他列入 dropped（不畫、不夾到邊界）。
- * 2. y：範圍含 0 與所有點；步長 niceStep((最大 − 最小) ÷ 4)，上下界取步長的整數倍；只有 0（或沒有點）時範圍 [−1, 1]、只有 0 一個刻度，零線在正中。
+ * 2. y：範圍含 0 與所有點；步長 niceStep((最大 − 最小) ÷ 4)、至少 1（元），上下界取步長的整數倍；只有 0（或沒有點）時範圍 [−1, 1]、只有 0 一個刻度，零線在正中。
  * 3. 左欄寬＝最長 y 刻度文字估寬＋8；右側留「100%」半個字寬與點半徑；繪圖區 x 從 −90 對到左緣、+100 對到右緣。
  * 4. x 刻度每 25 個百分點；相鄰刻度間距放不下最長刻度文字＋6 時，只標 50 的倍數。
  * 5. 標籤：先放門檻點、再放使用者點；依序試點的上方、下方、右側、左側，取第一個不超出 svg（上下不進 x 軸列）、不碰已放的標籤與其他點的位置；
@@ -163,7 +165,7 @@ export function thresholdGeometry(points: readonly ThresholdLinePoint[], width: 
   const min = Math.min(0, ...ys), max = Math.max(0, ...ys);
   let lo = -1, hi = 1, step = 1, tickValues = [0];
   if (min !== max) {
-    step = niceStep((max - min) / Y_INTERVALS);
+    step = Math.max(Y_MIN_STEP, niceStep((max - min) / Y_INTERVALS));
     lo = Math.floor(min / step) * step;
     hi = Math.ceil(max / step) * step;
     tickValues = [];

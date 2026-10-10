@@ -569,6 +569,18 @@ describe("thresholdGeometry（C29）：x 固定 [−90%, +100%]、y 含 0、不�
     expect([geometry.width, geometry.height, geometry.plot.bottom]).toEqual([THRESHOLD_SSR_WIDTH, chartHeights.sm, chartHeights.sm - chartRowHeights.row24]);
   });
 
+  it("y 步長至少 1 元：每點都不到 3 元時，刻度是整數元、文字與 formatAxisWan 相同且不重複（不會把 −2.5 寫成「−3 元」）", () => {
+    for (const ys of [["-1.78", "-1.84", "-2.06"], ["0.00", "1.50"], ["-0.01"], ["0.40", "2.80"]]) {
+      const geometry = thresholdGeometry(userPoints(ys.map(() => "0"), index => ys[index]), THRESHOLD_SSR_WIDTH);
+      const values = geometry.yTicks.map(tick => tick.value);
+      const text = geometry.yTicks.map(tick => tick.label);
+      for (const value of values) expect(Number.isInteger(value), `${ys.join()} ${value}`).toBe(true);
+      expect(new Set(text).size, `${ys.join()} ${text.join("／")}`).toBe(text.length);
+      expect(text).toEqual(formatAxisWan(values, 1));
+    }
+    expect(thresholdGeometry(userPoints(["0", "0", "0"], index => ["-1.78", "-1.84", "-2.06"][index]), THRESHOLD_SSR_WIDTH).yTicks.map(tick => tick.value)).toEqual([-3, -2, -1, 0]);
+  });
+
   it("沒有點或只有 0：範圍 [−1, 1]、只有 0 一個刻度，零線在繪圖區正中", () => {
     for (const points of [[], [{ id: "zero_contribution", kind: "threshold", v: "-90.000000000000", y: "0.00" }]] as ThresholdLinePoint[][]) {
       const geometry = thresholdGeometry(points, THRESHOLD_SSR_WIDTH);
