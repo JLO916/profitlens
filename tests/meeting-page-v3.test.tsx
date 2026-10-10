@@ -359,7 +359,8 @@ describe("V3-7 §7.6 第 2 點、D-V3-22：已結束會議的結束標示與 v2 
     // 兩行都在 summary 之後（展開內容頂部），summary 文字不變。
     const afterSummary = item.slice(item.indexOf("</summary>") + "</summary>".length);
     expect(afterSummary.startsWith(`<p class="meeting-snapshot-note" data-testid="meeting-snapshot-note">${note}</p><p class="meeting-snapshot-note" data-testid="meeting-v2-note">${pageV3.v2Note}</p>`)).toBe(true);
-    expect(text(element(item, "<summary>"))).toBe(text(element(v3, "<summary>")));
+    // V4-6：歷史區塊在清單之前多了 G19 的資料表 <summary>（「表格 · …」），所以 v3 這一側改在歷史項目內找 summary（比較的仍是兩筆紀錄的項目標題）。
+    expect(text(element(item, "<summary>"))).toBe(text(element(block(v3, "meeting-history-item"), "<summary>")));
     expect(text(item)).toContain(fill(page.historyKpiRow, { metric: labels.metrics.contribution_after_marketing.headline, previous: formatAmountL1("570.00"), current: formatAmountL1("255.00"), change: formatSignedDelta("-315.00", "L1") }));
     // 主層不出現版本字串（metric_version、schema）。
     expect(text(item)).not.toMatch(/contribution-v1|meeting-v1|copy_version/);

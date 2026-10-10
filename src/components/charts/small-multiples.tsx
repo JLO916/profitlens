@@ -14,6 +14,11 @@ import { chartFontSize, chartHeights, chartColors } from "@/application/chart-th
 // 高度：每張子圖 svg 高＝chartHeights.sm（CL-10）。≥ 768px 一列放全部子圖、框高 sm；≤ 767px 單欄，框高＝chartHeights.sm × 子圖數（multiplesFrameStyle 給值，
 // globals.css「V4-3b B」以 !important 蓋過 ChartFrame 固定高容器的 inline height；子圖數不隨期間改變，B4 照常比較）。
 // 色只經 chart-theme.ts 的 chartColors（沒有色碼與 var() 字串常值，CL-3）；字級只用 chartFontSize（CL-5）。
+// V4-6 代理 A（G19 會議歷史；CHART_CATALOG G19、§9.1 C26）：向下相容地擴充四項，沒有給新選項時輸出與 V4-5 逐字相同（tests/charts-meeting-g19.test.tsx 以
+// tests/fixtures/small-multiples-v4-5.json 逐字比對 G12）：（1）系列的 dots：每個有值的點畫小實心點（最後一點仍是 3px 的 lastDot）；（2）gaps：斷段的間隙位置
+// （該位置所有系列都是 null）在繪圖區垂直中間標一行字（例如「不同資料集」），放不進相鄰兩點之間時不畫（原因仍在資料表）；（3）fitXLabels：X 標依最寬的標估寬，
+// 相鄰兩標放得下才每個都畫，否則只畫頭尾（頭尾也放不下時只畫最後一個），並把標收在 svg 內（G19 的標是資料本期「7/13–8/23」，比週序寬）；
+// （4）估字寬時中日韓全形字算 12px（金額軸的「萬」「元」；G12 的比率標沒有全形字，估寬不變）。另加金額軸 amountAxis（整數萬含 0，刻度文字由呼叫端經 formatAxisWan）。
 
 /** SSR（還沒量到寬）時每張子圖的座標系寬：1440 一列 5 張（面板內寬約 1122、間距 16）時的寬。 */
 export const MULTIPLE_SSR_WIDTH = 211;
@@ -26,14 +31,23 @@ const X_AXIS_SPACE = 20;
 const TICK_GAP = 6;
 const RIGHT_PAD = 8;
 const LABEL_PAD = 2;
-const charWidth = (char: string) => char === "%" ? 11 : char === "." ? 4 : 7;
+/** V4-6：中日韓全形字（「萬」「元」與全形標點）的估計寬 12px（＝chartFontSize）。 */
+const WIDE_CHAR = /[\u2E80-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]/;
+const charWidth = (char: string) => char === "%" ? 11 : char === "." ? 4 : WIDE_CHAR.test(char) ? 12 : 7;
 const labelWidth = (label: string) => [...label].reduce((sum, char) => sum + charWidth(char), 0);
 /** 每個位置寬於這個值時每個 X 標都畫，否則只畫頭尾（768 寬一列 5 張時每張只有約 80px）。 */
 const X_LABEL_MIN_SLOT = 16;
+/** V4-6 fitXLabels：相鄰兩個 X 標之間至少留的空白。 */
+const X_LABEL_GAP = 8;
 /** 點的熱區半徑上限、最後一點的圓點半徑、前後都斷線的單一點半徑。 */
 const HIT_R = 8;
 const LAST_R = 3;
 const ISOLATED_R = 1.5;
+/** V4-6 dots：每個有值的點的小實心點半徑（比最後一點的 3px 小）。 */
+const POINT_R = 2;
+/** V4-6 gaps：間隙標與相鄰兩點之間至少留的空白（兩側各 6：最後一點半徑 3＋3）；文字基線在繪圖區垂直中間往下 4（12px 字的視覺中線）。 */
+const GAP_PAD = 12;
+const GAP_BASELINE = 4;
 /** 線尾標值相對最後一點的位移（左上方，與趨勢圖相同）。 */
 const LAST_LABEL_DX = 6;
 const LAST_LABEL_DY = 8;
@@ -57,6 +71,16 @@ export interface SmallMultipleSeries {
   lastDot?: boolean;
   /** 線尾標值（L1，由呼叫端格式化）；畫在最後一個有值的點左上方，放不進繪圖區時不畫。 */
   lastLabel?: string;
+  /**
+   * V4-6：每個有值的點畫 2px 的小實心點（circle.multiple-point，data-index、data-key）；lastDot 時最後一點只畫 3px 的那一顆。
+   * 給「每個位置都是一筆獨立紀錄」的序列（G19 每點是一次會議）；畫了小點就不另畫前後都斷線的單一點。
+   */
+  dots?: boolean;
+}
+/** V4-6：斷段的間隙（index 是該位置；所有系列在這個位置都應是 null）與間隙標（例如「不同資料集」「期間不同」）。 */
+export interface SmallMultipleGap {
+  index: number;
+  label: string;
 }
 export interface SmallMultiplePanel {
   /** 語意 key（例如比率的 MetricName）：子圖外層 div 的 data-panel。 */
@@ -112,6 +136,10 @@ export interface SmallMultipleSeriesGeometry {
   last: Point | null;
   lastDot: boolean;
   lastLabel: { x: number; y: number; text: string } | null;
+  /** V4-6 dots：要畫小實心點的點（不含 lastDot 的最後一點）；沒給 dots 時是空陣列。 */
+  dots: (Point & { key: string | null })[];
+  /** V4-6：系列有給 dots（最後一點的 3px 圓點也帶 data-index、data-key，與小點一致）。 */
+  dotted: boolean;
 }
 export interface SmallMultipleGeometry {
   width: number;
@@ -125,6 +153,15 @@ export interface SmallMultipleGeometry {
   /** X 標（位置序；位置太窄時只留頭尾）。 */
   xTicks: { index: number; x: number; label: string }[];
   series: SmallMultipleSeriesGeometry[];
+  /** V4-6：放得下的間隙標（文字置中於該位置、繪圖區垂直中間）；沒給 gaps 時是空陣列。 */
+  gaps: { index: number; x: number; y: number; label: string }[];
+}
+/** smallMultipleGeometry 的選項。gaps、fitXLabels 是 V4-6 新增（不給時與 V4-5 相同）。 */
+export interface SmallMultipleGeometryOptions {
+  width?: number;
+  height?: number;
+  gaps?: readonly SmallMultipleGap[];
+  fitXLabels?: boolean;
 }
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
@@ -133,7 +170,7 @@ const round1 = (value: number) => Math.round(value * 10) / 10;
  * C26 一張子圖的幾何（純函式，tests/charts-diagnosis-g12.test.tsx）。X：n 個位置平均分在繪圖區，第 i 個在 (i＋0.5) / n；
  * Y：axis.domain 對應繪圖區的下緣到上緣；座標取到 0.1。左邊留白依最寬的 Y 標估算。
  */
-export function smallMultipleGeometry(panel: SmallMultiplePanel, xLabels: readonly string[], options: { width?: number; height?: number } = {}): SmallMultipleGeometry {
+export function smallMultipleGeometry(panel: SmallMultiplePanel, xLabels: readonly string[], options: SmallMultipleGeometryOptions = {}): SmallMultipleGeometry {
   const width = Math.max(1, Math.round(options.width ?? MULTIPLE_SSR_WIDTH));
   const height = options.height ?? chartHeights.sm;
   const left = LABEL_PAD + TICK_GAP + Math.max(0, ...panel.axis.labels.map(labelWidth));
@@ -146,7 +183,11 @@ export function smallMultipleGeometry(panel: SmallMultiplePanel, xLabels: readon
   const y = (value: number) => round1(plot.top + ((hi - value) / range) * (plot.bottom - plot.top));
   const grid = panel.axis.ticks.map((tick, index) => ({ value: tick, y: y(tick), label: panel.axis.labels[index] ?? "" }));
   const everyLabel = slot >= X_LABEL_MIN_SLOT;
-  const xTicks = xLabels.map((label, index) => ({ index, x: x(index), label })).filter(tick => everyLabel || tick.index === 0 || tick.index === count - 1);
+  const xTicks = options.fitXLabels ? fittedXTicks(xLabels, x, width)
+    : xLabels.map((label, index) => ({ index, x: x(index), label })).filter(tick => everyLabel || tick.index === 0 || tick.index === count - 1);
+  // V4-6 gaps：文字要放進相鄰兩點之間（兩點相距 2 個位置寬），放不下就不畫。
+  const gaps = (options.gaps ?? []).filter(gap => Number.isInteger(gap.index) && gap.index >= 0 && gap.index < count && labelWidth(gap.label) <= 2 * slot - GAP_PAD)
+    .map(gap => ({ index: gap.index, x: x(gap.index), y: round1((plot.top + plot.bottom) / 2 + GAP_BASELINE), label: gap.label }));
   const series = panel.series.map((line): SmallMultipleSeriesGeometry => {
     const points: (Point & { key: string | null })[] = [];
     const segments: Point[][] = [];
@@ -164,13 +205,54 @@ export function smallMultipleGeometry(panel: SmallMultiplePanel, xLabels: readon
     return {
       key: line.key, color: line.color, strokeWidth: line.strokeWidth, dash: line.dash,
       lines: segments.filter(segment => segment.length >= 2).map(segment => segment.map(point => `${point.x},${point.y}`).join(" ")),
-      isolated: segments.filter(segment => segment.length === 1).map(segment => segment[0]),
+      // V4-6：畫了小實心點（dots）就不另畫單一點（小點已經涵蓋它）。
+      isolated: line.dots ? [] : segments.filter(segment => segment.length === 1).map(segment => segment[0]),
       points, last: lastPoint, lastDot: line.lastDot === true,
       // 線尾標值放不進繪圖區（768 一列 5 張時每張只有約 80px，會蓋到 Y 標）時不畫；數字仍在資料表。
       lastLabel: lastPoint === null || line.lastLabel === undefined || lastPoint.x - LAST_LABEL_DX - labelWidth(line.lastLabel) < plot.left ? null : { x: round1(lastPoint.x - LAST_LABEL_DX), y: round1(labelY), text: line.lastLabel },
+      dots: line.dots ? points.filter(point => !(line.lastDot && lastPoint !== null && point.index === lastPoint.index)) : [],
+      dotted: line.dots === true,
     };
   });
-  return { width, height, hitRadius: round1(Math.min(HIT_R, slot / 2)), plot, titleY: TITLE_BASELINE, grid, xTicks, series };
+  return { width, height, hitRadius: round1(Math.min(HIT_R, slot / 2)), plot, titleY: TITLE_BASELINE, grid, xTicks, series, gaps };
+}
+
+/**
+ * V4-6 fitXLabels：空字串的位置（斷段的間隙）不畫標；相鄰兩個標的距離都 ≥ 最寬的標＋8 時每個都畫，否則只畫頭尾，頭尾也放不下時只畫最後一個。
+ * 每個標的中心收在 svg 內（半個標寬＋2 到 svg 寬−半個標寬−2），頭一個標不會被 svg 左緣切掉。
+ */
+function fittedXTicks(xLabels: readonly string[], x: (index: number) => number, width: number): { index: number; x: number; label: string }[] {
+  const ticks = xLabels.map((label, index) => ({ index, label, half: labelWidth(label) / 2 })).filter(tick => tick.label !== "")
+    .map(tick => ({ index: tick.index, label: tick.label, x: round1(Math.min(Math.max(x(tick.index), tick.half + LABEL_PAD), width - tick.half - LABEL_PAD)) }));
+  if (ticks.length <= 1) return ticks;
+  const need = Math.max(...ticks.map(tick => labelWidth(tick.label))) + X_LABEL_GAP;
+  if (ticks.every((tick, index) => index === 0 || tick.x - ticks[index - 1].x >= need)) return ticks;
+  const first = ticks[0], last = ticks[ticks.length - 1];
+  return last.x - first.x >= need ? [first, last] : [last];
+}
+
+/** 1／2／5 × 10ⁿ 的整齊步長裡，金額軸的最小步長（1 元）與萬位步長（formatAxisWan 在最大刻度 ≥ 1 萬時用萬）。 */
+const AMOUNT_MIN_STEP = 1;
+const WAN = 10_000;
+/** 金額軸目標約 4 格。 */
+const AMOUNT_INTERVALS = 4;
+
+/**
+ * V4-6 金額軸（G19；PRD §7.2「Y 整數萬含 0」；值是元，只是座標）：範圍一定含 0；步長是 1、2、5 × 10ⁿ（至少 1 元：formatAxisWan 在 1 萬以下取到元）；
+ * 上下界取步長的整數倍，所以最高與最低的點一定落在刻度內；最大刻度的絕對值 ≥ 1 萬時步長至少 1 萬（1、2、5 × 10ⁿ 且 ≥ 1 萬，一定是整萬，
+ * 刻度文字是整數萬「50 萬」，不出現「2.5 萬」）。刻度文字由呼叫端經 presentation.ts 的 formatAxisWan(ticks, step) 產生。沒有任何值時回傳 0 到 1 元與單一刻度 0。
+ */
+export function amountAxis(values: readonly (number | null)[]): { domain: [number, number]; ticks: number[]; step: number } {
+  const finite = values.filter((value): value is number => value !== null && Number.isFinite(value));
+  const min = Math.min(0, ...finite), max = Math.max(0, ...finite);
+  if (max - min <= 0) return { domain: [0, 1], ticks: [0], step: 1 };
+  const bounds = (step: number): [number, number] => [Math.floor(min / step), Math.ceil(max / step)];
+  let step = Math.max(AMOUNT_MIN_STEP, niceStep((max - min) / AMOUNT_INTERVALS));
+  let [lo, hi] = bounds(step);
+  if (Math.max(Math.abs(lo), Math.abs(hi)) * step >= WAN && step < WAN) { step = WAN; [lo, hi] = bounds(step); }
+  const ticks: number[] = [];
+  for (let k = lo; k <= hi; k++) ticks.push(Number((k * step).toPrecision(12)) || 0);
+  return { domain: [ticks[0], ticks[ticks.length - 1]], ticks, step };
 }
 
 /**
@@ -189,6 +271,10 @@ export interface SmallMultiplesProps {
   onPoint?: (panelKey: string, seriesKey: string, index: number) => void;
   /** 每張子圖的寬（px）；不給時以 ResizeObserver 量第一張子圖，SSR 先用 MULTIPLE_SSR_WIDTH。 */
   width?: number;
+  /** V4-6：斷段的間隙標（所有子圖共用位置，每張子圖都標；放不下時不畫）。 */
+  gaps?: readonly SmallMultipleGap[];
+  /** V4-6：X 標依最寬的標取捨並收在 svg 內（標比週序寬時用，例如 G19 的資料本期）。 */
+  fitXLabels?: boolean;
 }
 
 /** 點擊事件代理：從事件目標往上找 circle.chart-point-hit，取出它的系列與位置。 */
@@ -200,7 +286,7 @@ function hitOf(event: MouseEvent<SVGSVGElement>): { series: string; index: numbe
 }
 
 /** C26：放在 ChartFrame（frameClassName="multiples"，固定高、aria-hidden）內。每張 svg.chart-multiple aria-hidden、focusable=false。 */
-export function SmallMultiples({ panels, xLabels, onPoint, width }: SmallMultiplesProps) {
+export function SmallMultiples({ panels, xLabels, onPoint, width, gaps, fitXLabels }: SmallMultiplesProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const [measured, setMeasured] = useState<number | null>(null);
   useEffect(() => {
@@ -215,7 +301,7 @@ export function SmallMultiples({ panels, xLabels, onPoint, width }: SmallMultipl
     return () => observer.disconnect();
   }, []);
   const drawWidth = Math.round(width ?? measured ?? MULTIPLE_SSR_WIDTH);
-  const geometries = useMemo(() => panels.map(panel => smallMultipleGeometry(panel, xLabels, { width: drawWidth })), [panels, xLabels, drawWidth]);
+  const geometries = useMemo(() => panels.map(panel => smallMultipleGeometry(panel, xLabels, { width: drawWidth, gaps, fitXLabels })), [panels, xLabels, drawWidth, gaps, fitXLabels]);
   return <div ref={gridRef} className="multiples-grid" data-count={panels.length}>
     {panels.map((panel, panelIndex) => {
       const geometry = geometries[panelIndex];
@@ -228,10 +314,12 @@ export function SmallMultiples({ panels, xLabels, onPoint, width }: SmallMultipl
             {geometry.grid.map(line => <text key={line.value} x={geometry.plot.left - TICK_GAP} y={line.y + 4} textAnchor="end">{line.label}</text>)}
             {geometry.xTicks.map(tick => <text key={tick.index} x={tick.x} y={geometry.plot.bottom + 16} textAnchor="middle">{tick.label}</text>)}
           </g>
+          {geometry.gaps.length > 0 && <g className="multiple-gaps" fill={chartColors.axis}>{geometry.gaps.map(gap => <text key={gap.index} className="multiple-gap" data-index={gap.index} x={gap.x} y={gap.y} textAnchor="middle">{gap.label}</text>)}</g>}
           {geometry.series.map(line => <g key={line.key} className="multiple-series" data-series={line.key}>
             {line.lines.map(points => <polyline key={points} points={points} fill="none" stroke={line.color} strokeWidth={line.strokeWidth} strokeDasharray={line.dash} strokeLinejoin="round" strokeLinecap="round" />)}
             {line.isolated.map(point => <circle key={point.index} cx={point.x} cy={point.y} r={ISOLATED_R} fill={line.color} />)}
-            {line.lastDot && line.last !== null && <circle className="multiple-last" cx={line.last.x} cy={line.last.y} r={LAST_R} fill={line.color} />}
+            {line.dots.map(point => <circle key={point.index} className="multiple-point" data-index={point.index} data-key={point.key ?? undefined} cx={point.x} cy={point.y} r={POINT_R} fill={line.color} />)}
+            {line.lastDot && line.last !== null && <circle className="multiple-last" data-index={line.dotted ? line.last.index : undefined} data-key={line.dotted ? line.points.at(-1)?.key ?? undefined : undefined} cx={line.last.x} cy={line.last.y} r={LAST_R} fill={line.color} />}
             {line.lastLabel !== null && <text className="chart-value is-strong" x={line.lastLabel.x} y={line.lastLabel.y} textAnchor="end">{line.lastLabel.text}</text>}
           </g>)}
           {onPoint && <g className="multiple-hits">{geometry.series.flatMap(line => line.points.map(point => <circle key={`${line.key}-${point.index}`} className="chart-point-hit" data-series={line.key} data-index={point.index} data-key={point.key ?? undefined} cx={point.x} cy={point.y} r={geometry.hitRadius} fill="transparent" />))}</g>}

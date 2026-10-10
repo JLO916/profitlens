@@ -1289,6 +1289,35 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-6 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-6 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    // V4-6 代理 A：不另加頁面狀態。G19 有圖（≥ 2 次會議）時歷史清單至少 2 筆，v3 的 meeting-history-item、meeting-snapshot-note 每筆一份，會被下方 M6
+    // 「每個 testid 每個狀態只出現一次」判為重複（INSTANCE_CONTAINER 自 V4-0a 起不改）；有圖的 G19 由 tests/charts-meeting-g19.test.tsx 以 MeetingHistory 的 SSR 驗（含 chart-lint SSR 規則）。
+    it("V4-6 A 會議歷史：G19 chart-meeting-history 只在有歷史的會議頁狀態出現（meeting 沒有歷史＝不渲染、meeting-v2-record 1 筆＝等高空狀態；有圖的情形見 charts-meeting-g19.test），在 meeting-history 內、清單之前，全頁一份；inline（沒有 .panel 套 .panel）、h3；資料表 <details> 收合但掛載；圖框內沒有停留點、沒有 chartColors.current", async () => {
+      const { chartColors } = await import("@/application/chart-theme");
+      const meetings = states.filter(state => state.state?.panel === "meeting");
+      const expected: Record<string, "none" | "empty" | "ready"> = { meeting: "none", "meeting-v2-record": "empty" };
+      expect(meetings.map(({ name }) => name).filter(name => name in expected)).toEqual(Object.keys(expected));
+      for (const { name, html } of meetings.filter(({ name }) => name in expected)) {
+        const want = expected[name];
+        for (const id of ["chart-meeting-history", "chart-meeting-history-table"]) expect(testIdCounts(html).get(id) ?? 0, `${name} ${id}`).toBe(want === "none" ? 0 : 1);
+        if (want === "none") continue;
+        const history = element(html, 'data-testid="meeting-history"')!;
+        expect(history, `${name}：G19 在 meeting-history 內`).toContain('data-testid="chart-meeting-history"');
+        expect(history.indexOf('data-testid="chart-meeting-history"'), `${name}：清單之前`).toBeLessThan(history.indexOf('<ul class="meeting-history-list">'));
+        expect([...history.matchAll(/class="[^"]*\bpanel\b[^"]*"/g)], `${name}：只有外層一個 .panel`).toHaveLength(1);
+        const section = element(history, 'data-testid="chart-meeting-history"')!;
+        expect(openTag(section, "<section"), name).toMatch(/^<section class="chart-section is-inline" aria-labelledby="meeting-history-chart-title" aria-describedby="meeting-history-chart-sub"/);
+        expect(section, `${name}：標題 h3`).toContain('<h3 id="meeting-history-chart-title">');
+        const details = element(section, '<details class="data-alternative"')!;
+        expect(openTag(details, "<details"), `${name}：資料表收合`).not.toMatch(/\sopen=""/);
+        expect(details, `${name}：收合時表格仍掛載`).toContain('data-testid="chart-meeting-history-table"');
+        const frame = element(section, 'class="chart-frame sm multiples"')!;
+        expect(openTag(section, 'class="chart-frame sm multiples"'), name).toContain(`data-state="${want}"`);
+        expect(frame, `${name}：圖框內沒有停留點`).not.toMatch(/tabindex|<button|<a\s|<details|chart-point-hit/);
+        expect(section, `${name}：沒有強調色`).not.toContain(chartColors.current);
+        if (want === "ready") expect(openTag(section, 'class="chart-frame sm multiples"'), name).toContain('aria-hidden="true"');
+        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-meeting-history")), name).toEqual([]);
+      }
+    });
 
     // ── V4-7a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-7a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
