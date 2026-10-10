@@ -22,6 +22,8 @@ import { PRINT_NOTES_LIMIT } from "../src/components/summary-shared";
 import styles from "../src/components/manager-summary.module.css";
 import { fill, labels } from "../src/i18n";
 import { formatPercentNumber } from "../src/application/presentation";
+import { MeetingHistoryChart } from "../src/components/meeting/history-chart";
+import { finalizedMeeting } from "./helpers/meeting-history";
 
 /*
  * R6-2 會議紀錄分頁的 DOM 契約；V3-7（PRD §7.6）改成文件式版面：
@@ -583,6 +585,44 @@ describe("R6-F2 meeting history reads the record itself", () => {
     expect(page.staleScenario).toContain(record.agenda.scenarios);
     expect(finalizeErrorText(new Error("MEETING_SOURCE_MISMATCH"))).toBe(page.finalizeError);
     expect(finalizeErrorText("not an error")).toBe(page.finalizeError);
+  });
+});
+
+/*
+ * V4-6 代理 A：G19 會議歷史小倍數在會議紀錄頁的位置（CHART_CATALOG G19「單元測試」：chart-meeting-history 在 meeting-history 內、沒有 .panel 套 .panel）。
+ * 圖本身（斷段、間隙標、最後一點、資料表）見 tests/charts-meeting-g19.test.tsx；這裡驗整頁 SSR 與 hooks harness。
+ */
+describe("V4-6 G19 meeting history chart on the meeting page", () => {
+  it("sits inside section.panel.meeting-history after the note and before the list (one per page, inline section, h3, no .panel inside .panel); no history → no chart, only the v3 empty block", async () => {
+    const state = await finalized();
+    const demo = await finalizedMeeting({ id: "rev-demo", name: "示範例會", date: "2026-10-10", now: "2026-10-10T06:00:00.000Z", fixture: "demo" });
+    const html = render(props(state, { history: [state.meeting, demo] }));
+    expect(html.match(/data-testid="chart-meeting-history"/g)).toHaveLength(1);
+    const history = block(html, "meeting-history");
+    const chart = block(history, "chart-meeting-history");
+    expect(history.indexOf(`<p class="note">${page.historyNote}</p>`)).toBeLessThan(history.indexOf('data-testid="chart-meeting-history"'));
+    expect(history.indexOf('data-testid="chart-meeting-history"')).toBeLessThan(history.indexOf('<ul class="meeting-history-list">'));
+    expect(history.match(/class="[^"]*\bpanel\b[^"]*"/g)).toEqual(['class="panel meeting-history"']);
+    expect(chart.startsWith('<section class="chart-section is-inline" aria-labelledby="meeting-history-chart-title" aria-describedby="meeting-history-chart-sub" data-testid="chart-meeting-history">')).toBe(true);
+    expect(chart).toContain(`<h3 id="meeting-history-chart-title">${labels.meeting.chartsV4.history.section}</h3>`);
+    // 兩次會議（golden、示範）資料集不同：兩點各自一段，最新一段只有 1 次，標題用區塊名；圖框 aria-hidden、有兩張子圖。
+    expect(chart).toMatch(/<div class="chart-frame sm multiples" style="height:180px" aria-hidden="true" data-state="ready">/);
+    expect(chart.match(/class="multiple" data-panel=/g)).toHaveLength(2);
+    // 歷史清單的 DOM 與 testid 不變：兩筆各一個 meeting-history-item，各自的移除鈕。
+    expect(history.match(/data-testid="meeting-history-item"/g)).toHaveLength(2);
+    expect(render(props(state))).not.toContain("chart-meeting-history");
+  });
+
+  it("the hooks harness renders MeetingHistory without calling the chart (its hooks stay inside MeetingHistoryChart); the projection hides the whole history section, so G19 is hidden too", async () => {
+    const state = await finalized();
+    const tree = mount(MeetingHistory)({ history: [state.meeting] });
+    const charts = findAll(tree, element => element.type === MeetingHistoryChart);
+    expect(charts).toHaveLength(1);
+    expect(charts[0].props.history).toEqual([state.meeting]);
+    // 投影（:root[data-mode="present"]）只留議程 1–2：.meeting-history 整段隱藏（V3-9b 投影段；V4-6 不改投影規則）。
+    const css = readFileSync(resolve("src/app/globals.css"), "utf8");
+    expect(css).toMatch(/:root\[data-mode="present"\] \.meeting-compare, :root\[data-mode="present"\] \.meeting-history \{ display: none; \}/);
+    expect(css).not.toMatch(/data-mode="present"\][^{]*meeting-history-chart/);
   });
 });
 

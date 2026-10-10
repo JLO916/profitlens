@@ -26,6 +26,7 @@ import { COPY_STATUS_MS, CopyFallback, copyWeeklySummary } from "./overview/week
 import { ShellIcon } from "./shell/shell-icon";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { DECISION_LABEL_KEY, EXECUTION_LABELS, MARKDOWN_MIME, downloadMeetingMarkdown } from "./meeting-entry";
+import { MeetingHistoryChart } from "./meeting/history-chart";
 // V4-3c：總覽入口、目前檢視的決策脈絡與會議 Markdown 下載搬到 meeting-entry.tsx（首載要用），這裡再匯出，既有的匯入路徑不變。
 export { DECISION_LABEL_KEY, MeetingEntry, currentViewDecisionContext, downloadMeetingMarkdown, meetingMarkdownFilename } from "./meeting-entry";
 
@@ -450,6 +451,7 @@ function FrozenFollowUp({ follow, title }: { follow: MeetingFollowUp; title: str
 /**
  * 會議歷史：每筆已結束的會議一個 <details>（只讀）；可下載該次的會議紀錄 Markdown（紀錄本身），也可移除（先確認；歷史滿 100 筆時騰出空間）。
  * V3-7（§7.6 第 2 點、D-V3-22）：展開內容頂部一行結束標示；v2 結束的紀錄（沒有 copy_version）再加一行「本紀錄建立於 v2」。數字、決議與備註照紀錄顯示，欄名用新名詞。
+ * V4-6 代理 A（G19）：有歷史時在說明句之後、清單之前加會議歷史小倍數（MeetingHistoryChart，inline、h3；保留不到 2 次時等高空狀態）；其餘 DOM 與 testid 不變。
  */
 export function MeetingHistory({ history, onRemove, datasetNameFor }: { history: readonly Meeting[]; onRemove?: (id: string) => void; /** V3-7：該筆紀錄的版頭資料集名稱（與目前資料同一版本時才有）。 */ datasetNameFor?: (meeting: Meeting) => string | undefined }) {
   const [pending, setPending] = useState<string | null>(null);
@@ -470,7 +472,7 @@ export function MeetingHistory({ history, onRemove, datasetNameFor }: { history:
   return <section className="panel meeting-history" data-testid="meeting-history" aria-labelledby="meeting-history-title">
     <h2 id="meeting-history-title" ref={titleRef} tabIndex={-1}>{page.history}</h2>
     <p className="sr-only" role="status" aria-live="polite" data-testid="meeting-history-status">{removed}</p>
-    {history.length ? <><p className="note">{page.historyNote}</p><ul className="meeting-history-list">{[...history].reverse().map((meeting, index) => {
+    {history.length ? <><p className="note">{page.historyNote}</p><MeetingHistoryChart history={history} /><ul className="meeting-history-list">{[...history].reverse().map((meeting, index) => {
       const title = fill(page.historyItem, { name: meeting.name, date: meeting.date, decision: decisionText(latestDecision(meeting)) });
       const warningId = `meeting-history-remove-warning-${index}`;
       return <li key={meeting.id} data-testid="meeting-history-item"><details><summary>{title}</summary>

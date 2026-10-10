@@ -1885,7 +1885,37 @@ const meetingStore = {
   // ── V4-6 錨點：會議紀錄圖表字串（代理 A：history＝G19 會議歷史小倍數；代理 B：scenarios＝G15 會議實例，議程 5）。
   // G15 會議實例的標題「{n} 個通路的選入方案」，不跨通路挑最大值（各通路的現況基準不同）；試算結果是條件差額，不是預測（AGENTS.md）。
   chartsV4: {
-    history: {},
+    /**
+     * V4-6 代理 A：G19 會議歷史小倍數（PRD §4.1–§4.7 G19、§8.7；CHART_CATALOG G19）。會議歷史區塊內、historyNote 之後、歷史清單之前；淨營收與扣廣告後貢獻兩張小倍數，
+     * 每點是一次已結束會議凍結的本期合計（meeting-series-v1；本期相同的會議只畫最近結束的一次），資料集、通路、本期天數或比較方式與前一次不同時斷開並在間隙標原因。
+     * 點不可點（凍結值，PRD §8.7 例外）；指標名取 metricDefinitions；金額欄以 format.units.yuanColumn 加「（元）」；資料表 summary 用 overview.page.dataTable。
+     */
+    history: {
+      /** 區塊標準名：最新一段只有 1 次會議或不到 2 次時的標題、資料表 summary（「表格 · …」）與 caption。 */
+      section: "歷次會議的本期關鍵數字",
+      /** 結論標題：只取最新一段可比的會議（同資料集、同通路、本期天數與比較方式相同）；{n}＝該段的會議數，{metric}＝扣廣告後貢獻的標準名，{a}、{b}＝該段第一次與最後一次的值（L1）。 */
+      title: "近 {n} 次會議，{metric}從 {a} 到 {b}",
+      /** 副標（同時是區塊的 aria 描述）：{n}＝圖上的會議數。 */
+      subtitle: "{n} 次會議，每點是該次會議結束時的本期合計 · 兩張圖的刻度各自不同",
+      /** 有斷段時的副標：{subtitle}＝上一句。 */
+      subtitleBreaks: "{subtitle} · 資料或期間不同處斷開",
+      /** 空狀態（保留的會議不到 2 次）的副標。 */
+      subtitleEmpty: "每點是一次已結束會議的本期合計",
+      /** 空狀態的說明（state="empty"，與有圖時等高）。 */
+      empty: "結束兩次以上、本期不同的會議後，這裡畫出走勢",
+      /** 斷段間隙標（圖上，也用在資料表「與前一次可比」欄）：資料集或通路不同。 */
+      differentDataset: "不同資料集",
+      /** 斷段間隙標：本期天數或比較方式不同。 */
+      differentPeriod: "期間不同",
+      /** 資料表之後的說明（在收合的 <details> 內）：{n}＝本期與較晚結束的會議相同而省略的次數。 */
+      omittedNote: "本期相同的會議只列最近結束的一次，另有 {n} 次省略。",
+      /** 有斷段時資料表之後的說明（在收合的 <details> 內）。 */
+      breakNote: "資料集、通路、本期天數或比較方式與前一次不同時，圖上斷開、不連線。",
+      /** 資料表欄名（淨營收、扣廣告後貢獻兩欄取 metricDefinitions 再加「（元）」）。 */
+      columns: { date: "會議日期", name: "會議名稱", period: "資料本期", comparable: "與前一次可比" },
+      /** 「與前一次可比」欄：first＝第一次（沒有前一次）；no 的 {reason}＝differentDataset 或 differentPeriod。 */
+      comparable: { first: "第一次", yes: "是", no: "否，{reason}" },
+    },
     scenarios: {},
   },
 } as const;

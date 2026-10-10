@@ -152,7 +152,9 @@ describe("V4-3c 同名包裝元件與 dashboard 的匯入", () => {
     for (const file of ["src/components/dashboard.tsx", "src/components/lazy-panels.tsx", "src/components/meeting-entry.tsx", "src/components/overview.tsx", "src/components/multi-scenario-workbench.tsx"]) expect(graph.files.has(file), `${file} 應在首載`).toBe(true);
     const split = ["src/components/workspace-panels.tsx", "src/components/ai-panel.tsx", "src/components/product-comparison-panel.tsx", "src/components/meeting-page.tsx", "src/components/actions-workbench.tsx", "src/components/diagnosis-list.tsx", "src/components/manager-summary.tsx", "src/components/channel-table.tsx", "src/application/excel-export.ts", "src/application/pptx-export.ts", "src/application/workspace-decision-export.ts",
       // V4-4：只有商品頁用到的圖表模組（G13、G14 區塊、productPareto、商品抽屜 builder）。C25 ranked-bars.tsx 不列：V4-5 的 G15 在首載的試算頁使用。
-      "src/components/products/highlight-charts.tsx", "src/application/chart-pareto.ts", "src/components/product-evidence.ts"];
+      "src/components/products/highlight-charts.tsx", "src/application/chart-pareto.ts", "src/components/product-evidence.ts",
+      // V4-6 代理 A：只有會議紀錄頁用到的 G19 區塊與 meetingSeries（C26 small-multiples.tsx 已隨健檢頁隨頁載入）。
+      "src/components/meeting/history-chart.tsx", "src/application/chart-meeting.ts"];
     for (const file of split) {
       expect(existsSync(file), file).toBe(true);
       expect(graph.files.has(file), `${file} 不得在首載`).toBe(false);
