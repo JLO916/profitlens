@@ -16,7 +16,7 @@ import { chartFontSize, chartHeights, chartColors } from "@/application/chart-th
 // 色只經 chart-theme.ts 的 chartColors（沒有色碼與 var() 字串常值，CL-3）；字級只用 chartFontSize（CL-5）。
 // V4-6 代理 A（G19 會議歷史；CHART_CATALOG G19、§9.1 C26）：向下相容地擴充四項，沒有給新選項時輸出與 V4-5 逐字相同（tests/charts-meeting-g19.test.tsx 以
 // tests/fixtures/small-multiples-v4-5.json 逐字比對 G12）：（1）系列的 dots：每個有值的點畫小實心點（最後一點仍是 3px 的 lastDot）；（2）gaps：斷段的間隙位置
-// （該位置所有系列都是 null）在繪圖區垂直中間標一行字（例如「不同資料集」），放不進相鄰兩點之間時不畫（原因仍在資料表）；（3）fitXLabels：X 標依最寬的標估寬，
+// （該位置所有系列都是 null）在繪圖區垂直中間標一行字（例如「不同資料集」；與線尾標值重疊時改放上緣或下緣），放不進相鄰兩點之間時不畫（原因仍在資料表）；（3）fitXLabels：X 標依最寬的標估寬，
 // 相鄰兩標放得下才每個都畫，否則只畫頭尾（頭尾也放不下時只畫最後一個），並把標收在 svg 內（G19 的標是資料本期「7/13–8/23」，比週序寬）；
 // （4）估字寬時中日韓全形字算 12px（金額軸的「萬」「元」；G12 的比率標沒有全形字，估寬不變）。另加金額軸 amountAxis（整數萬含 0，刻度文字由呼叫端經 formatAxisWan）。
 
@@ -48,6 +48,12 @@ const POINT_R = 2;
 /** V4-6 gaps：間隙標與相鄰兩點之間至少留的空白（兩側各 6：最後一點半徑 3＋3）；文字基線在繪圖區垂直中間往下 4（12px 字的視覺中線）。 */
 const GAP_PAD = 12;
 const GAP_BASELINE = 4;
+/**
+ * V4-6 審查修正：12px 字在基線上、下所佔的高（估計，只用來判斷間隙標與線尾標值是否重疊）。最近一次會議自成一段時，它的線尾標值（往左上）會伸進前一個間隙，
+ * 值又落在繪圖區中間附近時兩行字疊在一起；這時間隙標依序改放繪圖區上緣、下緣，都會重疊才不畫（線尾值優先，原因仍在資料表）。
+ */
+const TEXT_ASCENT = 10;
+const TEXT_DESCENT = 3;
 /** 線尾標值相對最後一點的位移（左上方，與趨勢圖相同）。 */
 const LAST_LABEL_DX = 6;
 const LAST_LABEL_DY = 8;
@@ -153,7 +159,7 @@ export interface SmallMultipleGeometry {
   /** X 標（位置序；位置太窄時只留頭尾）。 */
   xTicks: { index: number; x: number; label: string }[];
   series: SmallMultipleSeriesGeometry[];
-  /** V4-6：放得下的間隙標（文字置中於該位置、繪圖區垂直中間）；沒給 gaps 時是空陣列。 */
+  /** V4-6：放得下的間隙標（文字置中於該位置；垂直在繪圖區中間，與線尾標值重疊時改放上緣或下緣）；沒給 gaps 時是空陣列。 */
   gaps: { index: number; x: number; y: number; label: string }[];
 }
 /** smallMultipleGeometry 的選項。gaps、fitXLabels 是 V4-6 新增（不給時與 V4-5 相同）。 */
@@ -185,9 +191,6 @@ export function smallMultipleGeometry(panel: SmallMultiplePanel, xLabels: readon
   const everyLabel = slot >= X_LABEL_MIN_SLOT;
   const xTicks = options.fitXLabels ? fittedXTicks(xLabels, x, width)
     : xLabels.map((label, index) => ({ index, x: x(index), label })).filter(tick => everyLabel || tick.index === 0 || tick.index === count - 1);
-  // V4-6 gaps：文字要放進相鄰兩點之間（兩點相距 2 個位置寬），放不下就不畫。
-  const gaps = (options.gaps ?? []).filter(gap => Number.isInteger(gap.index) && gap.index >= 0 && gap.index < count && labelWidth(gap.label) <= 2 * slot - GAP_PAD)
-    .map(gap => ({ index: gap.index, x: x(gap.index), y: round1((plot.top + plot.bottom) / 2 + GAP_BASELINE), label: gap.label }));
   const series = panel.series.map((line): SmallMultipleSeriesGeometry => {
     const points: (Point & { key: string | null })[] = [];
     const segments: Point[][] = [];
@@ -213,6 +216,14 @@ export function smallMultipleGeometry(panel: SmallMultiplePanel, xLabels: readon
       dots: line.dots ? points.filter(point => !(line.lastDot && lastPoint !== null && point.index === lastPoint.index)) : [],
       dotted: line.dots === true,
     };
+  });
+  // V4-6 gaps：文字要放進相鄰兩點之間（兩點相距 2 個位置寬），放不下就不畫。垂直先放繪圖區中間；與線尾標值重疊時（審查修正）依序改放上緣、下緣，都重疊才不畫。
+  const valueBoxes = series.flatMap(line => line.lastLabel === null ? [] : [{ left: line.lastLabel.x - labelWidth(line.lastLabel.text), right: line.lastLabel.x, y: line.lastLabel.y }]);
+  const gapRows = [round1((plot.top + plot.bottom) / 2 + GAP_BASELINE), plot.top + TEXT_ASCENT, plot.bottom - TEXT_DESCENT];
+  const gaps = (options.gaps ?? []).filter(gap => Number.isInteger(gap.index) && gap.index >= 0 && gap.index < count && labelWidth(gap.label) <= 2 * slot - GAP_PAD).flatMap(gap => {
+    const center = x(gap.index), half = labelWidth(gap.label) / 2;
+    const row = gapRows.find(baseline => !valueBoxes.some(box => box.left < center + half && center - half < box.right && Math.abs(box.y - baseline) < TEXT_ASCENT + TEXT_DESCENT));
+    return row === undefined ? [] : [{ index: gap.index, x: center, y: row, label: gap.label }];
   });
   return { width, height, hitRadius: round1(Math.min(HIT_R, slot / 2)), plot, titleY: TITLE_BASELINE, grid, xTicks, series, gaps };
 }
