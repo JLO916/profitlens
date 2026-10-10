@@ -25,6 +25,7 @@ import { fill, labels } from "../src/i18n";
 import { formatPercentNumber } from "../src/application/presentation";
 import { MeetingHistoryChart } from "../src/components/meeting/history-chart";
 import { finalizedMeeting } from "./helpers/meeting-history";
+import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 
 /*
  * R6-2 會議紀錄分頁的 DOM 契約；V3-7（PRD §7.6）改成文件式版面：
@@ -514,7 +515,7 @@ describe("V4-6 G15 會議實例（議程 5）", () => {
     expect(frame).not.toMatch(/tabindex|<button|<a[\s>]|<input|<select|ranked-hit|is-clickable/);
   });
 
-  it("方案過期（被新修訂取代）：不畫柱、空狀態；資料表照列，列名後標與同頁每通路列相同的 v3 用語（較早的方案，B-V46-R1）。沒有選入方案時不渲染（議程 5 的區段型空狀態不變）", async () => {
+  it("方案過期（被新修訂取代）：不畫柱、空狀態；資料表照列，列名後標與同頁每通路列相同的 v3 用語（較早的方案，B-V46-R1）。沒有選入方案時照樣渲染等高空狀態（審查 R1-V46-S1），議程 5 的區段型空狀態不變、在每通路列之後", async () => {
     const state = await setup();
     const context = state.scenarios.contexts[0], draft = scenarioContextDecision(context);
     draft.scenarios = saveScenario(context.session, draft.scenarios, { id: "p", name: "履約加碼", inputs: { ...inputs, fulfillment_change_pct: "-20" } });
@@ -530,9 +531,25 @@ describe("V4-6 G15 會議實例（議程 5）", () => {
     // 同一頁同一個狀態只用一個名稱：每通路列的 v3 標籤與 G15 的列名都是「較早的方案（不列入這次決議）」，G15 不寫「過期」。
     expect(block(five, "meeting-scenario-result")).toContain(`<span class="ui-lozenge" data-tone="warning">${copy.staleScenarios}</span>`);
     expect(text(chart)).not.toContain(summaryCopy.scenarioStale);
+    expect(text(block(chart, "chart-meeting-scenarios-table"))).toContain(g15.planColumn);
+    // 全部是較早的方案：副標不重複標題、不再接 staleNote，較早的方案只由圖區說明講一次（審查 R1-V46-S3）。
+    expect(text(/<p class="sub" id="meeting-scenarios-sub">([\s\S]*?)<\/p>/.exec(chart)![1])).toBe(fill(g15.subtitleEmpty, { period: formatPeriodL1("2026-08-02", "2026-08-02", { days: false, anchor: "2026-08-03" }) }));
+    // 沒有選入方案（審查 R1-V46-S1：06「會議頁主層獨立圖區塊＝2」、C16 四態同高）：G15 照樣在說明句之後、每通路列之前，等高空狀態＋emptyNone；
+    // v3 的區段型空狀態逐字不變，接在每通路的 select 之後；兩句互補。
     const none = render(props(state, { review: selectReviewScenario(updateReviewSession(state.review, { decision_state: "draft" }), state.scenarios, null, "DTC") }));
-    expect(none).not.toContain("chart-meeting-scenarios");
-    expect(block(none, "meeting-scenario-results-empty")).toMatch(/^<div class="ui-empty-block meeting-scenarios-empty"/);
+    const noneFive = block(none, "meeting-agenda-5");
+    const empty = block(noneFive, "chart-meeting-scenarios");
+    expect(none.split('data-testid="chart-meeting-scenarios"')).toHaveLength(2);
+    expect(noneFive.indexOf(empty)).toBeGreaterThan(noneFive.indexOf(page.scenariosNote));
+    expect(noneFive.indexOf(empty) + empty.length).toBe(noneFive.indexOf('<div class="meeting-scenarios">'));
+    expect(empty).toMatch(/^<section class="chart-section is-inline meeting-scenarios-chart"/);
+    expect(empty).toContain('<div class="chart-frame sm" style="height:180px" data-state="empty"><p class="chart-frame-message">' + g15.emptyNone + "</p></div>");
+    expect(titleOf(empty)).toBe(g15.section);
+    expect(empty).not.toContain("chart-meeting-scenarios-bar-");
+    expect(block(empty, "chart-meeting-scenarios-table")).toContain("<tbody></tbody>");
+    expect(block(noneFive, "meeting-scenario-results-empty")).toBe(`<div class="ui-empty-block meeting-scenarios-empty" data-testid="meeting-scenario-results-empty"><p class="ui-empty-title">${labels.empty.stateV3.meetingNoScenarioTitle}</p><p>${labels.empty.stateV3.meetingNoScenarioBody}</p></div>`);
+    for (const line of [labels.empty.stateV3.meetingNoScenarioTitle, labels.empty.stateV3.meetingNoScenarioBody]) expect(text(empty)).not.toContain(line);
+    expect(checkChartMarkup(`<main id="main-content">${none}</main>`, { page: "meeting" }).mainSections).toEqual(["chart-meeting-scenarios", "chart-meeting-history"]);
   });
 
   it("hooks harness：G15 會議實例是議程 5 的子元件（harness 不呼叫它，MeetingPage 本身沒有多的 hook），props 是會議的選入方案與範圍", async () => {

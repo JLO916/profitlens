@@ -80,9 +80,11 @@ export function meetingHistoryModel(history: readonly Meeting[]): MeetingHistory
     };
   });
   // 標題只取最新一段可比的會議；那一段只有 1 次（或整張圖是空狀態）時用區塊名。
+  // V4-6 整合（審查 R1-V46-S4）：該段第一次或最後一次的扣廣告後貢獻是未知（凍結值為 null，例如缺廣告日）時也用區塊名，不寫「從 資料待補 到 …」。
   const latest = last === undefined ? [] : points.filter(point => point.segment === last.segment);
-  const title = latest.length >= 2
-    ? fill(copy.title, { n: latest.length, metric: CONTRIBUTION, a: formatAmountL1(latest[0].contribution_after_marketing), b: formatAmountL1(latest[latest.length - 1].contribution_after_marketing) })
+  const from = latest[0]?.contribution_after_marketing ?? null, to = latest.at(-1)?.contribution_after_marketing ?? null;
+  const title = latest.length >= 2 && from !== null && to !== null
+    ? fill(copy.title, { n: latest.length, metric: CONTRIBUTION, a: formatAmountL1(from), b: formatAmountL1(to) })
     : copy.section;
   const base = fill(copy.subtitle, { n: points.length });
   const subtitle = points.length < 2 ? copy.subtitleEmpty : gaps.length > 0 ? fill(copy.subtitleBreaks, { subtitle: base }) : base;
@@ -116,7 +118,9 @@ export function MeetingHistoryChart({ history }: { history: readonly Meeting[] }
   const { points } = model.series;
   const empty = points.length < 2;
   const firstId = points[0]?.id;
-  const notes = [...(model.gaps.length > 0 ? [copy.breakNote] : []), ...(model.series.omitted > 0 ? [fill(copy.omittedNote, { n: model.series.omitted })] : [])];
+  // V4-6 整合（審查 R1-V46-S2、R2-V46-A11Y-1、R3-V46-G2）：空狀態時表是 0 列，只放 tableEmpty 說明為什麼沒有列；「只列最近結束的一次」（omittedNote）在 0 列時不成立，不放。
+  const notes = empty ? [copy.tableEmpty]
+    : [...(model.gaps.length > 0 ? [copy.breakNote] : []), ...(model.series.omitted > 0 ? [fill(copy.omittedNote, { n: model.series.omitted })] : [])];
   const dataTable = chartDataTable<MeetingSeriesPoint, HistoryColumn>({
     title: copy.section,
     testId: MEETING_HISTORY_TABLE_TESTID,

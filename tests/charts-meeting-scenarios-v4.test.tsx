@@ -87,21 +87,44 @@ describe("G15 會議實例模型（純函式）", () => {
     expect(model.title).toBe(fill(copy.title, { n: 2 }));
     expect(model.staleCount).toBe(1);
     expect(model.subtitle).toBe(`${fill(copy.subtitle, { section: copy.section, metric: metricDefinitions.contribution_after_marketing.label, period: "8/2–8/2" })} · ${fill(copy.staleNote, { n: 1 })}`);
+    expect(model.message).toBeUndefined();
     const table = element(renderToStaticMarkup(createElement(MeetingScenariosSection, { model })), `data-testid="${MEETING_SCENARIOS_TABLE_TESTID}"`)!;
     expect(rowsOf(table)).toEqual([fill(copy.row, { plan: planName("DTC"), channel: "DTC" }), fill(copy.rowStatus, { row: fill(copy.row, { plan: planName("MARKETPLACE"), channel: "MARKETPLACE" }), status: labels.meeting.review.staleScenarios }), fill(copy.row, { plan: planName("SOCIAL"), channel: "SOCIAL" })]);
     // B-V46-R1：同一頁同一個狀態只用一個名稱——G15 會議實例的字串都不寫 managerSummary 的「過期」。
     for (const text of [copy.staleNote, copy.empty, copy.tableNote, copy.rowStatus]) expect(text).not.toContain(labels.meeting.managerSummary.scenarioStale);
   });
 
-  it("全部過期：空狀態（同高 sm、說明 copy.empty、標題用區塊標準名），資料表照列", () => {
+  it("全部過期：空狀態（同高 sm、說明 copy.empty、標題用區塊標準名），資料表照列；副標＝subtitleEmpty——不重複標題、不再接 staleNote（審查 R1-V46-S3：較早的方案只由圖區說明講一次）", () => {
     const model = meetingScenariosModel(modelInput([["DTC", "14.00", "stale"]]));
     const html = renderToStaticMarkup(createElement(MeetingScenariosSection, { model }));
     expect(model.title).toBe(copy.section);
+    expect(model.subtitle).toBe(fill(copy.subtitleEmpty, { period: "8/2–8/2" }));
+    expect(model.message).toBe(copy.empty);
     expect(openTag(html, 'class="chart-frame sm"')).toContain(`style="height:${chartHeights.sm}px"`);
     expect(openTag(html, 'class="chart-frame sm"')).toContain('data-state="empty"');
     expect(textOf(element(html, 'class="chart-frame-message"')!)).toBe(copy.empty);
+    const sub = textOf(element(html, 'id="meeting-scenarios-sub"')!);
+    expect(sub).toBe(model.subtitle);
+    expect(sub).not.toContain(copy.section);
+    expect(sub).not.toContain(fill(copy.staleNote, { n: 1 }));
     expect(html).not.toContain(MEETING_SCENARIOS_BAR_PREFIX);
     expect(rowsOf(element(html, `data-testid="${MEETING_SCENARIOS_TABLE_TESTID}"`)!)).toHaveLength(1);
+    expect(matches(element(html, '<details class="data-alternative"')!, /<p class="note">([^<]*)<\/p>/g)).toEqual([copy.tableNote]);
+  });
+
+  it("沒有選入方案（審查 R1-V46-S1）：照樣渲染等高空狀態——標題＝區塊標準名、副標＝subtitleEmpty、圖區說明 emptyNone；資料表 0 列、表後只有 tableEmpty；沒有柱、沒有 svg", () => {
+    const model = meetingScenariosModel(modelInput([]));
+    expect([model.title, model.subtitle, model.message, model.count, model.staleCount, model.bars, model.more, model.tableRows]).toEqual([copy.section, fill(copy.subtitleEmpty, { period: "8/2–8/2" }), copy.emptyNone, 0, 0, [], undefined, []]);
+    const html = renderToStaticMarkup(createElement(MeetingScenariosSection, { model }));
+    expect(openTag(html, 'class="chart-frame sm"')).toContain(`style="height:${chartHeights.sm}px"`);
+    expect(openTag(html, 'class="chart-frame sm"')).toContain('data-state="empty"');
+    expect(openTag(html, 'class="chart-frame sm"')).not.toContain("aria-hidden");
+    expect(textOf(element(html, 'class="chart-frame-message"')!)).toBe(copy.emptyNone);
+    expect(html).not.toContain("<svg");
+    expect(element(element(html, `data-testid="${MEETING_SCENARIOS_TABLE_TESTID}"`)!, "<tbody>")).toBe("<tbody></tbody>");
+    expect(matches(element(html, '<details class="data-alternative"')!, /<p class="note">([^<]*)<\/p>/g)).toEqual([copy.tableEmpty]);
+    // 與議程 5 下方 v3 的區段型空狀態互補，不重複同一句。
+    for (const text of [labels.empty.stateV3.meetingNoScenarioTitle, labels.empty.stateV3.meetingNoScenarioBody]) expect(textOf(html)).not.toContain(text);
   });
 });
 

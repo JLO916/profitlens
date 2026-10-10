@@ -1911,6 +1911,11 @@ const meetingStore = {
       omittedNote: "本期相同的會議只列最近結束的一次，另有 {n} 次省略。",
       /** 有斷段時資料表之後的說明（在收合的 <details> 內）。 */
       breakNote: "資料集、通路、本期天數或比較方式與前一次不同時，圖上斷開、不連線。",
+      /**
+       * V4-6 整合（審查 R1-V46-S2、R2-V46-A11Y-1、R3-V46-G2）：空狀態（保留的會議不到 2 次）時資料表 0 列，表後只放這一句說明為什麼沒有列
+       * （不放 omittedNote、breakNote：表裡沒有任何列，「只列最近結束的一次」不成立）。
+       */
+      tableEmpty: "結束兩次以上、本期不同的會議後，這裡每次會議一列。",
       /** 資料表欄名（淨營收、扣廣告後貢獻兩欄取 metricDefinitions 再加「（元）」）。 */
       columns: { date: "會議日期", name: "會議名稱", period: "資料本期", comparable: "與前一次可比" },
       /** 「與前一次可比」欄：first＝第一次（沒有前一次）；no 的 {reason}＝differentDataset 或 differentPeriod。 */
@@ -1924,16 +1929,28 @@ const meetingStore = {
      * （meeting.review.staleScenarios；V4-6 整合審查 B-V46-R1：同一頁同一個狀態只用一個名稱，使用者另行拍板前沿用 v3 用語，不寫「過期」）。
      */
     scenarios: {
-      /** 區塊標準名：沒有可畫的方案時（選入的都已過期）的標題、副標第一段、資料表 summary（「表格 · …」）與 caption。 */
+      /** 區塊標準名：沒有可畫的方案時（沒有選入方案，或選入的都是較早的方案）的標題、有柱時副標的第一段、資料表 summary（「表格 · …」）與 caption。 */
       section: "選入方案試算後與現況的差額",
       /** 結論標題：{n}＝畫成柱與「另 n 個」的方案數（目前資料、已試算的選入方案；過期的不算）。不寫方案名、不挑最大值。 */
       title: "{n} 個通路的選入方案",
-      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{metric}＝扣廣告後貢獻的標準名，{period}＝會議本期（M/D–M/D）。 */
+      /** 有柱時的副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{metric}＝扣廣告後貢獻的標準名，{period}＝會議本期（M/D–M/D）。空狀態改用 subtitleEmpty。 */
       subtitle: "{section} · 每個通路從自己的現況{metric}算起 · 本期 {period}",
-      /** 有較早的（stale）方案時接在副標後面（以「 · 」相接）：{n}＝較早的方案數。用語同 meeting.review.staleScenarios。 */
+      /** 有柱、同時有較早的（stale）方案時接在副標後面（以「 · 」相接）：{n}＝較早的方案數。用語同 meeting.review.staleScenarios。全部都是較早的方案（空狀態）時不接，只由 empty 說一次。 */
       staleNote: "{n} 個較早的方案只列在資料表",
       /** 選入的都是較早的（stale）方案時圖區的說明（state="empty"；資料表照列）。用語同 meeting.review.staleScenarios。 */
       empty: "選入的都是較早的方案，只列在資料表",
+      /**
+       * V4-6 整合（審查 R1-V46-S1：06「會議頁主層獨立圖區塊＝2」、C16 四態同高）：會議沒有選入任何方案時，G15 照樣渲染成等高空狀態，圖區說明用這一句；
+       * 與下方 v3 的區段型空狀態（labels.empty.stateV3.meetingNoScenarioTitle／Body「本次沒有選入方案。到假設試算選入。」，DOM 不變）互補：v3 說狀態與去哪裡選，本句說選了之後圖上畫什麼。
+       */
+      emptyNone: "選入方案後，這裡畫出各通路試算後與現況的差額",
+      /**
+       * V4-6 整合（審查 R1-V46-S3）：空狀態（沒有選入方案，或選入的都是較早的方案）的副標（同時是區塊的 aria 描述）：{period}＝會議本期（M/D–M/D）。
+       * 標題在空狀態時就是區塊標準名，副標不再重複它；較早的方案只由圖區說明（empty）講一次，不再接 staleNote。
+       */
+      subtitleEmpty: "每個通路的選入方案畫一根 · 本期 {period}",
+      /** V4-6 整合（審查 R1-V46-S1）：沒有選入方案時資料表 0 列，表後只放這一句（不放 tableNote）。 */
+      tableEmpty: "選入方案後，這裡每個方案一列。",
       /** 軸文字（零線下方、置中於零線）：各通路的現況不同，不寫金額。 */
       axis: "各通路現況",
       /** 超過 6 根時，與軸文字共用最後一列：{n}＝沒畫成柱的方案數（只列在資料表）。 */

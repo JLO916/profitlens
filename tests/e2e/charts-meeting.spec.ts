@@ -2,8 +2,10 @@
 // 會議紀錄頁的兩張圖——議程 5 的 G15 會議實例（chart-meeting-scenarios，每通路一根、不可點）與會議歷史內的 G19 小倍數（chart-meeting-history）。
 // G19：示範資料三次結束的會議（7 天、7 天、14 天）：1 次＝等高空狀態；同資料集、同期間長度的第 2 次＝資料表 2 列、兩點相連；期間長度不同的第 3 次＝該列「否，期間不同」、圖上不相連。
 // G15：golden DTC 方案 1（物流費 −10%：284.00、+14.00）選入議程 5：1 根柱（testid 尾段是方案 id，以前綴定位）、不可點、不用強調色；投影只顯示議程 1–2（≤ 767px 沒有投影按鈕）。
+// V4-6 整合（審查 R1-V46-S1）：選入之前 G15 就以等高空狀態渲染（主層可見圖框＝2）；審查 R1-V46-S2：G19 空狀態的資料表 0 列、表後只有 tableEmpty；
+// 審查 R2-V46-A11Y-3：G19 有圖（3 次會議、間隙「期間不同」、資料表 3 列展開）時另跑一次 axe（同 axe-sweep 的 wcag 標籤），serious／critical 為 0。
 // 字串一律由 labels 組出、定位用 testid（PRD §4.7）；期待的數字在 Node 端以同一組 domain 函式算（不寫死）。
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { chartColors, chartHeights } from "../../src/application/chart-theme";
 import { formatAmountL1, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
@@ -64,6 +66,24 @@ function historyGeometry(page: Page) {
 }
 /** ≤ 767px 時 C26 小倍數框高＝chartHeights.sm × 子圖數（2），其餘 chartHeights.sm；空狀態與有圖同高。 */
 const expectedFrameHeight = (page: Page) => page.viewportSize()!.width < 768 ? chartHeights.sm * 2 : chartHeights.sm;
+/**
+ * 審查 R2-V46-A11Y-3：axe-sweep 的會議狀態只掃到 G19 的空狀態；這裡在 G19 有圖時另掃一次，範圍是會議歷史區塊（meeting-history，G19 與 v3 歷史清單）。
+ * axe-core 的取得與標籤同 axe-sweep.spec（專案沒有 @axe-core/playwright，本輪不加依賴：注入 node_modules 已有的 axe-core/axe.min.js）；serious、critical 必須為 0，結果記在 annotation。
+ * 只掃這一區：同一個狀態掃整頁時，議程 1 v3 的 meeting-kpi-change number-link（自訂期間、變化字較短時）有既有的 target-size，與 V4-6 無關，另案處理。
+ */
+const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+async function expectNoSeriousAxe(page: Page, testInfo: TestInfo, state: string, include: string) {
+  const path = require.resolve("axe-core/axe.min.js");
+  await page.waitForTimeout(300);
+  if (!await page.evaluate(() => "axe" in window)) await page.addScriptTag({ path });
+  const violations = await page.evaluate(async ({ tags, scope }) => {
+    const axe = (window as unknown as { axe: { run: (context: unknown, options: unknown) => Promise<{ violations: { id: string; impact: string | null; nodes: { target: unknown[] }[] }[] }> } }).axe;
+    const result = await axe.run({ include: [[scope]], exclude: [["nextjs-portal"]] }, { runOnly: { type: "tag", values: tags }, resultTypes: ["violations"] });
+    return result.violations.map(item => ({ id: item.id, impact: item.impact, targets: item.nodes.slice(0, 5).map(node => JSON.stringify(node.target)) }));
+  }, { tags: AXE_TAGS, scope: include });
+  testInfo.annotations.push({ type: "axe", description: `${state}：${violations.length === 0 ? "沒有違規" : violations.map(item => `${item.impact} ${item.id}`).join("、")}` });
+  expect(violations.filter(item => item.impact === "serious" || item.impact === "critical").map(item => `${item.impact} ${item.id}：${item.targets.join(" ")}`), `${state}：axe serious／critical 必須為 0`).toEqual([]);
+}
 /** 在柱上送一個會冒泡的 click 事件（svg 不接指標事件），確認沒有開「計算與來源」抽屜（PRD §8.7 例外）。 */
 async function expectNotClickable(page: Page, target: Locator) {
   await target.dispatchEvent("click");
@@ -71,7 +91,7 @@ async function expectNotClickable(page: Page, target: Locator) {
   await expect(evidenceDrawer(page)).toHaveCount(0);
 }
 
-test("G19：結束 1 次會議＝等高空狀態；同資料集、同期間長度的第 2 次＝資料表 2 列、兩點相連；期間長度不同的第 3 次＝該列「否，期間不同」、圖上不與前一點相連；點與線都是 chartColors.total", async ({ page }) => {
+test("G19：結束 1 次會議＝等高空狀態（資料表 0 列、表後只有 tableEmpty）；同資料集、同期間長度的第 2 次＝資料表 2 列、兩點相連；期間長度不同的第 3 次＝該列「否，期間不同」、圖上不與前一點相連；點與線都是 chartColors.total；有圖時 axe 沒有 serious／critical", async ({ page }, testInfo) => {
   await loadDemoForPresent(page);
   // 0 次：v3 的空狀態區塊在前，G19 的等高空狀態接在後面（審查 A-4）。
   let meeting = await openMeeting(page);
@@ -85,6 +105,10 @@ test("G19：結束 1 次會議＝等高空狀態；同資料集、同期間長�
   await expect(historyFrame(page)).toHaveText(history.empty);
   await expect(historyChart(page).locator("h3")).toHaveText(history.section);
   expect((await historyFrame(page).boundingBox())!.height).toBeCloseTo(expectedFrameHeight(page), 0);
+  // 審查 R1-V46-S2：空狀態的資料表 0 列，表後只有一句 tableEmpty（不寫「只列最近結束的一次」）。
+  await openDataTable(historyChart(page));
+  await expect(historyRows(page)).toHaveCount(0);
+  await expect(historyChart(page).locator("details.data-alternative p.note")).toHaveText([history.tableEmpty]);
 
   await finalizeWith(page, MEETINGS[1], 2);
   await expect(historyFrame(page)).toHaveAttribute("data-state", "ready");
@@ -127,9 +151,13 @@ test("G19：結束 1 次會議＝等高空狀態；同資料集、同期間長�
   await expect(historyFrame(page).locator(".multiple").nth(1).locator("text.chart-value.is-strong")).toHaveText(formatAmountL1(w3));
   // 歷史清單的 v3 DOM 不變：3 筆。
   await expect(meeting.getByTestId("meeting-history-item")).toHaveCount(3);
+  // 審查 R2-V46-A11Y-3：有圖的 G19（兩張子圖、間隙標、資料表 3 列展開；390 時表在捲動區內）跑 axe。
+  await openDataTable(historyChart(page));
+  await expect(historyRows(page).first()).toBeVisible();
+  await expectNoSeriousAxe(page, testInfo, "meeting-history-drawn", "[data-testid='meeting-history']");
 });
 
-test("G15 會議實例：golden DTC 方案 1 選入議程 5——在 meeting-agenda-5 內、meeting-scenario-results 之前；1 根柱（尾段＝方案 id）、條端 formatSignedDelta(L1)、不可點、不用強調色；主層可見圖框＝2；投影只顯示議程 1–2", async ({ page }) => {
+test("G15 會議實例：選入前是等高空狀態（主層可見圖框＝2）；golden DTC 方案 1 選入議程 5——在 meeting-agenda-5 內、meeting-scenario-results 之前；1 根柱（尾段＝方案 id）、條端 formatSignedDelta(L1)、不可點、不用強調色；主層可見圖框＝2；投影只顯示議程 1–2", async ({ page }) => {
   await loadValidationDataset(page, "golden");
   await navigateTo(page, "scenarios");
   await selectScenarioChannel(page, "DTC");
@@ -149,9 +177,16 @@ test("G15 會議實例：golden DTC 方案 1 選入議程 5——在 meeting-age
 
   const meeting = await openMeeting(page);
   const agenda5 = meeting.getByTestId("meeting-agenda-5");
-  // 沒有選入方案時不渲染（議程 5 維持 v3 的區段型空狀態）。
-  await expect(scenariosChart(page)).toHaveCount(0);
+  // 審查 R1-V46-S1：沒有選入方案時照樣渲染等高空狀態（標題＝區塊名、說明 emptyNone、沒有柱），在每通路列之前；議程 5 的 v3 區段型空狀態照舊可見；主層可見圖框＝2。
+  await expect(agenda5.getByTestId("chart-meeting-scenarios")).toHaveCount(1);
+  await expect(scenariosChart(page).locator(".chart-frame")).toHaveAttribute("data-state", "empty");
+  await expect(scenariosChart(page).locator(".chart-frame")).toHaveText(g15.emptyNone);
+  await expect(scenariosChart(page).locator("h4")).toHaveText(g15.section);
+  await expect(scenarioBars(page)).toHaveCount(0);
+  expect((await scenariosChart(page).locator(".chart-frame").boundingBox())!.height).toBeCloseTo(chartHeights.sm, 0);
   await expect(agenda5.getByTestId("meeting-scenario-results-empty")).toBeVisible();
+  expect(await page.evaluate(() => !!(document.querySelector("[data-testid='chart-meeting-scenarios']")!.compareDocumentPosition(document.querySelector("[data-testid='meeting-scenario-results-empty']")!) & Node.DOCUMENT_POSITION_FOLLOWING)), "G15 空狀態在 v3 區段型空狀態之前").toBe(true);
+  await expect(page.locator(VISIBLE_CHART_FRAMES)).toHaveCount(2);
   const select = agenda5.getByLabel(fill(review.scenarioSelect, { channel: "DTC" }), { exact: true });
   await select.selectOption({ label: fill(review.planOption, { name: fill(labels.scenarios.decision.defaultPlanName, { n: 1 }) }) });
   const planId = /::(.+)::\d+$/.exec(await select.inputValue())![1];

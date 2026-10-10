@@ -174,6 +174,21 @@ describe("G19 meetingHistoryModel（meeting-series-v1 的點；不同段之間�
     expect(empty.subtitle).toBe(copy.subtitleEmpty);
     expect(empty.series.points).toEqual([]);
   });
+
+  it("V4-6 整合（審查 R1-V46-S4）：最新一段第一次或最後一次的扣廣告後貢獻是未知（凍結值 null，例如缺廣告日）時標題用區塊名，不寫「從 資料待補 到 …」；兩端都有值時照常是結論句", () => {
+    const [, , week1, week2] = history;
+    const unknownFirst = meetingVariant(week1, { id: "w1-unknown", contribution: null });
+    const unknownLast = meetingVariant(week2, { id: "w2-unknown", contribution: null });
+    for (const [name, meetings] of [["第一次未知", [unknownFirst, week2]], ["最後一次未知", [week1, unknownLast]]] as const) {
+      const model = meetingHistoryModel(meetings);
+      expect(model.series.points.map(point => point.segment), name).toEqual([0, 0]);
+      expect(model.title, name).toBe(copy.section);
+      expect(model.title, name).not.toContain(labels.shell.status.missing);
+    }
+    // 淨營收未知不影響標題（標題只講扣廣告後貢獻）。
+    const revenueUnknown = meetingVariant(week2, { id: "w2-revenue-unknown", net_revenue: null });
+    expect(meetingHistoryModel([week1, revenueUnknown]).title).toBe(fill(copy.title, { n: 2, metric: metricDefinitions.contribution_after_marketing.label, a: formatAmountL1(kpi(week1, "contribution_after_marketing")), b: formatAmountL1(kpi(week2, "contribution_after_marketing")) }));
+  });
 });
 
 describe("G19 SSR：位置、外框、圖與資料表", () => {
@@ -290,9 +305,10 @@ describe("G19 SSR：位置、外框、圖與資料表", () => {
     expect(details).toContain(`<p class="note">${escapeAttr(fill(copy.omittedNote, { n: 1 }))}</p>`);
   });
 
-  it("保留不到 2 次時等高空狀態（data-state=empty、高 sm、說明句；沒有 svg）：沒有任何會議（V4-6 整合，審查 A-4）、1 次會議、2 次但本期相同（表後註明省略 1 次）", async () => {
+  it("保留不到 2 次時等高空狀態（data-state=empty、高 sm、說明句；沒有 svg）：沒有任何會議（V4-6 整合，審查 A-4）、1 次會議、2 次但本期相同；資料表 0 列，表後只有 tableEmpty（審查 R1-V46-S2：0 列時不寫「只列最近結束的一次」）", async () => {
     const again = meetingVariant(golden, { id: "again", date: "2026-08-04", finalized_at: "2026-08-04T06:00:00.000Z" });
     for (const [name, meetings, omitted] of [["沒有", [], 0], ["一次", [golden], 0], ["本期相同", [golden, again], 1]] as const) {
+      expect(meetingSeries(meetings).omitted, name).toBe(omitted);
       const html = renderHistory(meetings);
       const chart = chartOf(html);
       expect(chart, name).not.toBeNull();
@@ -305,7 +321,10 @@ describe("G19 SSR：位置、外框、圖與資料表", () => {
       expect(textOf(element(chart, 'id="meeting-history-chart-sub"')!), name).toBe(copy.subtitleEmpty);
       const table = element(chart, 'data-testid="chart-meeting-history-table"')!;
       expect(element(table, "<tbody>"), name).toBe("<tbody></tbody>");
-      expect(chart.includes(escapeAttr(fill(copy.omittedNote, { n: 1 }))), name).toBe(omitted === 1);
+      const details = element(chart, '<details class="data-alternative"')!;
+      expect(all(details, /<p class="note">([^<]*)<\/p>/g).map(match => match[1]), name).toEqual([escapeAttr(copy.tableEmpty)]);
+      expect(chart, name).not.toContain(escapeAttr(fill(copy.omittedNote, { n: 1 })));
+      expect(chart, name).not.toContain(escapeAttr(copy.breakNote));
       expect(openTag(html, 'class="meeting-history-chart"'), name).toContain(`--multiples-h:${chartHeights.sm * 2}px`);
     }
     // 沒有任何會議：v3 的空狀態區塊原樣（說清單）在前，G19 的等高空狀態（說走勢要兩次以上）接在它之後、是區塊最後一個子元素；兩句互補，沒有一句重複。

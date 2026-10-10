@@ -11,8 +11,9 @@ import { ChartFrame } from "../overview/charts/chart-frame";
 import { SCENARIO_VARIANCE_COLUMNS, varianceBarTone } from "../scenarios/variance-chart";
 
 // V4-6 代理 B：G15 會議實例（PRD §4.1–§4.7 G15「會議／議程 5（第二實例）」、§6.1 variant／headingLevel、§8.7；CHART_CATALOG G15；06_BATCHES V4-6）。
-// 位置：會議頁議程 5（AgendaItem n=5，h3）內、說明句之後、每通路選入列 meeting-scenario-results 之前（src/components/meeting-page.tsx）；
-// 只在會議有選入方案（context.scenarios 非空）時渲染——沒有選入方案時議程 5 維持 v3 的區段型空狀態（meeting-scenario-results-empty），DOM 不變，也不重複一句空狀態。
+// 位置：會議頁議程 5（AgendaItem n=5，h3）內、說明句之後、每通路選入列（meeting-scenarios）之前（src/components/meeting-page.tsx）；
+// V4-6 整合（審查 R1-V46-S1：06「會議頁主層獨立圖區塊＝2」、CHART_CATALOG §9.4、C16 四態同高）：一律渲染——沒有選入方案時是等高空狀態（說明 emptyNone、資料表 0 列＋tableEmpty），
+// 下方 v3 的區段型空狀態（meeting-scenario-results-empty）DOM 不變、兩句互補；選入第一個方案時圖在原位填上，每通路的 select 不會被往下推。
 // 資料：buildReviewDecisionContext 的 context.scenarios[i]（SummaryScenario：id、name、status、baseline、contribution、delta）與 review.selected_scenarios[i]（通路、方案 id），
 // 兩者同一個順序（同 meeting-page.tsx 的 scenarioRows）。會議每通路最多選一個已試算的方案（docs/SCENARIOS.md:76），所以每個通路最多一根。
 // 只重新呈現 domain 算好的試算結果（A 級；不重算、不跨通路相加、不挑跨通路的最大值），也不改會議凍結資料、備份與匯出（manager-summary.ts、meeting.ts 只讀）。
@@ -77,8 +78,10 @@ export interface MeetingScenariosModel {
   /** 「另 {n} 個」（只在可畫的方案超過上限時）。 */
   more: string | undefined;
   axis: string;
-  /** 過期方案數（副標註記）。 */
+  /** 過期方案數（有柱時的副標註記）。 */
   staleCount: number;
+  /** 空狀態（沒有可畫的方案）的圖區說明：沒有選入方案時 emptyNone，選入的都是較早的方案時 empty；有柱時 undefined。 */
+  message: string | undefined;
   /** 資料表列：全部選入方案（含超過上限與過期的）。 */
   tableRows: MeetingScenarioRow[];
 }
@@ -86,6 +89,8 @@ export interface MeetingScenariosModel {
 /**
  * G15 會議實例的模型（純函式）：列序＝會議範圍的通路順序（不在範圍內的接在後面，維持原順序）；可畫＝不是過期、而且有差額；
  * 柱＝前 MEETING_SCENARIOS_MAX_BARS 個可畫的列。只挑選與排列 domain 的值，不產生新數字（標題的 n 是列數）。
+ * 沒有可畫的列時是空狀態（審查 R1-V46-S1、S3）：標題＝區塊標準名、副標＝subtitleEmpty（不重複標題、不接 staleNote），
+ * 圖區說明：沒有選入方案時 emptyNone，選入的都是較早的方案時 empty（只說一次）。
  */
 export function meetingScenariosModel({ scenarios, references, channels, alias, period }: MeetingScenariosInput): MeetingScenariosModel {
   const position = (channel: string) => { const index = channels.indexOf(channel); return index < 0 ? channels.length : index; };
@@ -105,11 +110,13 @@ export function meetingScenariosModel({ scenarios, references, channels, alias, 
   const hidden = drawable.length - shown.length;
   const staleCount = rows.filter(row => row.stale).length;
   const section = copy.section;
+  const empty = drawable.length === 0;
   const subtitle = fill(copy.subtitle, { section, metric: METRIC, period });
   return {
-    title: drawable.length ? fill(copy.title, { n: drawable.length }) : section,
+    title: empty ? section : fill(copy.title, { n: drawable.length }),
     section, count: drawable.length, staleCount,
-    subtitle: staleCount ? `${subtitle} · ${fill(copy.staleNote, { n: staleCount })}` : subtitle,
+    subtitle: empty ? fill(copy.subtitleEmpty, { period }) : staleCount ? `${subtitle} · ${fill(copy.staleNote, { n: staleCount })}` : subtitle,
+    message: !empty ? undefined : rows.length === 0 ? copy.emptyNone : copy.empty,
     bars: shown.map((row): RankedBarRow<null> => ({ key: row.key, label: row.label, value: row.delta, tone: varianceBarTone(row.delta), display: formatSignedDelta(row.delta, "L1"), evidence: null, testId: `${MEETING_SCENARIOS_BAR_PREFIX}${row.planId}` })),
     more: hidden > 0 ? fill(copy.more, { n: hidden }) : undefined,
     axis: copy.axis,
@@ -143,11 +150,11 @@ export function MeetingScenariosSection({ model }: { model: MeetingScenariosMode
     valueOf: (row, column) => scenarioCell(row, column.data),
     evidenceOf: noEvidence,
     onEvidence: noEvidence,
-    notes: [copy.tableNote],
+    notes: [model.tableRows.length === 0 ? copy.tableEmpty : copy.tableNote],
     className: "meeting-scenarios-table",
   });
   return <ChartFrame id="meeting-scenarios" page="meeting" testId={MEETING_SCENARIOS_TESTID} className="meeting-scenarios-chart" variant="inline" headingLevel={4} title={model.title} subtitle={model.subtitle}
-    height="sm" state={empty ? "empty" : undefined} message={empty ? copy.empty : undefined} dataTable={dataTable}>
+    height="sm" state={empty ? "empty" : undefined} message={model.message} dataTable={dataTable}>
     {empty ? null : <RankedBars mode="variance" rows={model.bars} rowHeight="row24" axis={model.axis} more={model.more} axisWithMore testIdPrefix={MEETING_SCENARIOS_BAR_PREFIX} />}
   </ChartFrame>;
 }

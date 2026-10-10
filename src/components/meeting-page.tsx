@@ -344,8 +344,8 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
             {/* V3-8 C（§7.10 會議沒有選入方案，C10 區段型）：標題＋說明；會議頁沒有切換頁面的 prop，「前往假設試算」暫不放（每通路的選入 select 就在上方）。 */}
             <AgendaItem n={5} title={record.agenda.scenarios}>
               <p className="meeting-agenda-note">{page.scenariosNote}</p>
-              {/* V4-6 代理 B：G15 會議實例（chart-meeting-scenarios，h4、inline）在每通路選入列之前；沒有選入方案時不渲染（下方的區段型空狀態維持 v3）。 */}
-              {context.scenarios.length > 0 && <MeetingScenariosChart scenarios={context.scenarios} references={review.selected_scenarios} channels={scope.channels} alias={alias} period={formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: review.data_as_of })} />}
+              {/* V4-6 代理 B：G15 會議實例（chart-meeting-scenarios，h4、inline）在每通路選入列之前；V4-6 整合（審查 R1-V46-S1）：一律渲染，沒有選入方案時是等高空狀態（下方的區段型空狀態維持 v3、DOM 不變）。 */}
+              <MeetingScenariosChart scenarios={context.scenarios} references={review.selected_scenarios} channels={scope.channels} alias={alias} period={formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: review.data_as_of })} />
               {context.scenarios.length ? <div className="meeting-scenarios" data-testid="meeting-scenario-results">{scenarioRows}<p className="meeting-agenda-note">{summaryCopy.scenarioNote}</p></div> : <div className="meeting-scenarios">{scenarioRows}<div className="ui-empty-block meeting-scenarios-empty" data-testid="meeting-scenario-results-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingNoScenarioTitle}</p><p>{labels.empty.stateV3.meetingNoScenarioBody}</p>{onGoToScenarios && <button type="button" className="ui-btn ui-btn-text" data-testid="meeting-go-scenarios" onClick={onGoToScenarios}>{labels.empty.stateV3.meetingGoToScenarios}</button>}</div></div>}
               {alertFor("scenarios")}
             </AgendaItem>
