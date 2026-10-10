@@ -240,6 +240,33 @@ describe("G19 SSR：位置、外框、圖與資料表", () => {
     expect(frameOf(renderHistory(history))).not.toContain("multiple-gap\"");
   });
 
+  it("審查修正：最近一次會議自成一段（換資料集）、值落在繪圖區中間附近時，線尾標值往左伸進前一個間隙；間隙標改放繪圖區上緣，不與線尾標值重疊，照樣標「不同資料集」", () => {
+    const weeks = ["07-06", "07-13", "07-20", "07-27", "08-03"].map((start, index) => meetingVariant(golden, {
+      id: `w${index}`, date: `2026-09-0${index + 1}`, finalized_at: `2026-09-0${index + 1}T06:00:00.000Z`,
+      current: { start: `2026-${start}`, end: new Date(Date.parse(`2026-${start}T00:00:00Z`) + 6 * 86_400_000).toISOString().slice(0, 10) },
+      net_revenue: `${5_000_000 + index * 100_000}.00`, contribution: `${500_000 + index * 20_000}.00`,
+    }));
+    const other = meetingVariant(golden, { id: "other", date: "2026-09-08", finalized_at: "2026-09-08T06:00:00.000Z", dataset_hash: "f".repeat(64), current: { start: "2026-08-10", end: "2026-08-16" }, net_revenue: "3000000.00", contribution: "270000.00" });
+    const model = meetingHistoryModel([...weeks, other]);
+    expect(model.gaps).toEqual([{ index: 5, label: copy.differentDataset }]);
+    const panel = model.panels.find(item => item.key === "contribution_after_marketing")!;
+    const geometry = smallMultipleGeometry(panel, model.xLabels, { width: WIDE, gaps: model.gaps, fitXLabels: true });
+    const label = geometry.series[0].lastLabel!;
+    expect(label.text).toBe(formatAmountL1("270000.00"));
+    const middle = Math.round(((geometry.plot.top + geometry.plot.bottom) / 2 + 4) * 10) / 10;
+    // 前提：放在中間會與線尾標值重疊（12px 字，基線相距不到 13）。
+    expect(Math.abs(label.y - middle)).toBeLessThan(13);
+    expect(geometry.gaps.map(gap => [gap.index, gap.label])).toEqual([[5, copy.differentDataset]]);
+    expect(geometry.gaps[0].y).toBe(geometry.plot.top + 10);
+    expect(Math.abs(label.y - geometry.gaps[0].y)).toBeGreaterThanOrEqual(13);
+    // 示範歷史（最後一段 3 點，線尾標值不伸進間隙）照舊放在中間。
+    const demo = meetingHistoryModel(history);
+    for (const item of demo.panels) {
+      const regular = smallMultipleGeometry(item, demo.xLabels, { width: WIDE, gaps: demo.gaps, fitXLabels: true });
+      expect(regular.gaps.map(gap => gap.y)).toEqual(regular.gaps.map(() => Math.round(((regular.plot.top + regular.plot.bottom) / 2 + 4) * 10) / 10));
+    }
+  });
+
   it("資料表（C33，純文字）：列數＝圖上的會議數 5；欄＝會議日期、會議名稱、資料本期、淨營收（元）、扣廣告後貢獻（元）、與前一次可比；金額 L2；表後註明斷段與省略 1 次", () => {
     const html = renderHistory(history);
     const chart = chartOf(html);
