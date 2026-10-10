@@ -91,7 +91,7 @@ describe("ScenarioSensitivity：threshold-{id} 仍輸出同一句與同一個目
   ];
 
   it.each(cases)("$name", ({ base, inputs }) => {
-    const html = renderToStaticMarkup(createElement(ScenarioSensitivity, { baseline: base, inputs, onChange: () => undefined }));
+    const html = renderToStaticMarkup(createElement(ScenarioSensitivity, { planId: "p", baseline: base, inputs, onChange: () => undefined }));
     const analysis = analyzeScenarioSensitivity(base, inputs, ["", "", ""]);
     expect(analysis.targets).toHaveLength(2);
     for (const item of analysis.targets) {

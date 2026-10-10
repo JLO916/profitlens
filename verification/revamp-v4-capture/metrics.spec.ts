@@ -17,7 +17,7 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 // V4-1 起硬斷言（06_BATCHES 護欄表 B1、B9；PRD §2.2）：
 //   B9 七頁（1440、1280、390）載入示範資料後的 DOM 節點數 ≤ V4-0a 基準＋1,500（B9_BASELINE，取自 verification/revamp-v4/V4-0a/metrics.json）。
 //   B1 依護欄表的時程：總覽第一張 .chart-frame 頂在 1440 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）；健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）、
-//      商品第一張 .chart-frame 頂 ≤ 900（V4-4 起）、試算 G15 頂 ≤ 方案比較表區塊頂（V4-0a）＋24（V4-5 起）、資料來源 G20 頂 ≤ 900（V4-7a 起）由各批加進 B1_ASSERTED。
+//      商品第一張 .chart-frame 頂 ≤ 900（V4-4 起）、試算 G15 頂 ≤ 方案比較表區塊頂（V4-0a）＋24（V4-5 起，剛載入與「維持現況」計算後各一）、資料來源 G20 頂 ≤ 900（V4-7a 起）由各批加進 B1_ASSERTED。
 //      V4-3a 起另斷言健檢首列底不晚於 V4-0a 實測（1440、1280 為 888，390 為 985；PRD §5.2）。
 // 只記錄：B1 其餘參考位置（健檢清單第一列頂、G10 區塊頂與 channel-compare 頂、試算方案比較表區塊頂、資料來源狀態列底，以及 1280、390 的總覽第一張 .chart-frame 頂）；
 //   B8 各頁主層否定句數；首頁 HTML 每個 chunk 的檔名與 gzip 大小。
@@ -53,6 +53,8 @@ const B9_ALLOWANCE = 1_500;
  * V4-3a：健檢第一個 G9 內嵌條頂 ≤ 900（1440）；健檢首列底不晚於 V4-0a 實測（PRD §5.2 第 2 列「首列底不晚於 V4-0 實測」，390 同；
  *   verification/revamp-v4/V4-0a/metrics.json 的 {project}.b1.diagnosis.firstRowBottom：1440 與 1280 是 888、390 是 985）。
  * V4-4：商品第一張 .chart-frame 頂 ≤ 900（1440；示範資料沒有商品毛利為負，第一張是第二格的 G13）。
+ * V4-5：試算 G15 頂 ≤ V4-0a 量到的方案比較表區塊頂＋24（1440；verification/revamp-v4/V4-0a/metrics.json 的 desktop.b1.scenarios）：
+ *   示範資料剛載入（方案 1 是進頁草稿、G15 空狀態）時比 scenarioCompareTop 938，「維持現況」計算後（畫面基準 07 的狀態，G15 一根柱）時比 scenarioCompareTopAfterCalculate 1,114。
  */
 const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; key: string; max: number; note: string }[] = [
   { project: "desktop", page: "overview", key: "firstChartFrameTop", max: Math.min(900, 855), note: "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）" },
@@ -61,6 +63,8 @@ const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; 
   { project: "laptop", page: "diagnosis", key: "firstRowBottom", max: 888, note: "1280 健檢首列底不晚於 V4-0a 實測 888（V4-3a 起）" },
   { project: "mobile", page: "diagnosis", key: "firstRowBottom", max: 985, note: "390 健檢首列底不晚於 V4-0a 實測 985（V4-3a 起；PRD §5.2「390 同」）" },
   { project: "desktop", page: "products", key: "firstChartFrameTop", max: 900, note: "商品第一張 .chart-frame 頂 ≤ 900（V4-4 起；示範資料是 G13 的框）" },
+  { project: "desktop", page: "scenarios", key: "g15Top", max: 938 + 24, note: "試算 G15 頂 ≤ V4-0a 方案比較表區塊頂 938＋24（V4-5 起；示範資料剛載入，G15 空狀態）" },
+  { project: "desktop", page: "scenarios", key: "g15TopAfterCalculate", max: 1114 + 24, note: "試算 G15 頂 ≤ V4-0a「維持現況」計算後的方案比較表區塊頂 1,114＋24（V4-5 起；畫面基準 07 的狀態）" },
 ];
 /** B3：390 寬頁面不橫向捲動。 */
 const B3_MAX_SCROLL_WIDTH = 390;
@@ -249,7 +253,7 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
       };
     }
     if (id === "products") b1.products = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame:visible"))?.top ?? null, productHighlightsTop: (await boxOrNull(page, "section.product-highlights"))?.top ?? null, note: "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內" };
-    if (id === "scenarios") b1.scenarios = { scenarioCompareTop: (await boxOrNull(page, "section.scenario-compare"))?.top ?? null, note: "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算" };
+    if (id === "scenarios") b1.scenarios = { scenarioCompareTop: (await boxOrNull(page, "section.scenario-compare"))?.top ?? null, g15Top: (await boxOrNull(page, "[data-testid='chart-scenarios-variance']"))?.top ?? null, note: "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算。g15Top＝G15 方案差額區塊（chart-scenarios-variance，V4-5 起，空狀態）的頂" };
     if (id === "data") b1.data = { dataStatusLineBottom: (await boxOrNull(page, "[data-testid='data-status-line']"))?.bottom ?? null };
   }
   // 試算頁另量「維持現況」計算後的方案比較表區塊頂（G15 只在有結果時出現，V4-5 的 B1 門檻以這個狀態比較）；放在七頁量完之後，計算結果不影響其他頁的 DOM 節點數。
@@ -257,6 +261,7 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
   await calculateKeepPreset(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   (b1.scenarios as Record<string, unknown>).scenarioCompareTopAfterCalculate = (await boxOrNull(page, "section.scenario-compare"))?.top ?? null;
+  (b1.scenarios as Record<string, unknown>).g15TopAfterCalculate = (await boxOrNull(page, "[data-testid='chart-scenarios-variance']"))?.top ?? null;
   (b1.scenarios as Record<string, unknown>).afterCalculateNote = "方案 1 套用「維持現況」範本、同意假設、計算之後（與畫面基準 07 相同的狀態）";
 
   await record([project, "pages"], { ...pages, method: "載入示範資料後依側欄順序切到七頁（navigateTo；手機走底部分頁列或「更多」），等 h1 與該頁區塊出現、捲回頂端；domNodes＝document.querySelectorAll('*').length（連續兩次相同才記錄）；scrollWidth／clientWidth＝document.scrollingElement；mainLayerNegations＝main 主層（拿掉收合的 <details>）含「不是／不代表／不等於／不可」的句子（去重，口徑同 tests/copy-density.test.ts）" });

@@ -1245,6 +1245,48 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-5 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-5 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    it("V4-5 C 試算：G15 chart-scenarios-variance 全頁一份、不在任何 scenario-{n} 內；G16 chart-scenarios-threshold 在每個有 scenario-sensitivity 的 scenario-{n} 內恰好一份（INSTANCE_CONTAINER scenario-\\d+，不改規則），收在收合的 <details> 內但掛載；圖框內沒有停留點；試算頁主層獨立圖區塊＝1", async () => {
+      const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const scenarios = states.filter(state => state.state?.panel === "scenarios");
+      expect(scenarios.map(({ name }) => name)).toEqual(["scenarios", "scenarios-first-visit", "scenarios-sensitivity", "scenarios-synthetic-out-of-range"]);
+      // 每個狀態的方案欄數與有 G16 的方案欄（有效結果才有 scenario-sensitivity；scenarios 的方案 2「超出範圍」不能試算）。
+      const expected: Record<string, { cards: number; g16: number[]; points: Record<number, string[]> }> = {
+        scenarios: { cards: 2, g16: [1], points: { 1: ["zero_contribution", "maintain_baseline"] } },
+        "scenarios-first-visit": { cards: 1, g16: [], points: {} },
+        "scenarios-sensitivity": { cards: 2, g16: [1, 2], points: { 1: ["a", "b", "c", "zero_contribution", "maintain_baseline"], 2: ["zero_contribution", "maintain_baseline"] } },
+        "scenarios-synthetic-out-of-range": { cards: 2, g16: [1, 2], points: { 1: ["maintain_baseline"], 2: ["a", "b", "c", "maintain_baseline"] } },
+      };
+      for (const { name, html } of scenarios) {
+        const want = expected[name];
+        expect(testIdCounts(html).get("chart-scenarios-variance"), `${name}：G15 全頁一份（M6）`).toBe(1);
+        expect(checkChartMarkup(html, { page: "scenarios" }).mainSections, `${name}：主層獨立圖區塊`).toEqual(["chart-scenarios-variance"]);
+        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-scenarios-")), name).toEqual([]);
+        for (let n = 1; n <= want.cards; n++) {
+          const card = element(html, `data-testid="scenario-${n}"`)!;
+          expect(card, `${name} scenario-${n}`).not.toContain('data-testid="chart-scenarios-variance"');
+          const has = want.g16.includes(n);
+          expect(occurrences(card, 'data-testid="chart-scenarios-threshold"'), `${name} scenario-${n}：G16 份數`).toBe(has ? 1 : 0);
+          expect(occurrences(card, 'data-testid="chart-scenarios-threshold-table"'), `${name} scenario-${n}：G16 資料表`).toBe(has ? 1 : 0);
+          if (!has) continue;
+          const sensitivity = element(card, 'data-testid="scenario-sensitivity"')!;
+          expect(openTag(sensitivity, "<details"), `${name} scenario-${n}：要賣到多少才划算收合`).not.toMatch(/\sopen=""/);
+          const section = element(sensitivity, 'data-testid="chart-scenarios-threshold"')!;
+          expect(openTag(section, "<section"), `${name} scenario-${n}`).toMatch(/^<section class="chart-section is-inline scenario-threshold" aria-labelledby="scenarios-threshold-[\w-]+-title" aria-describedby="scenarios-threshold-[\w-]+-sub"/);
+          expect(section, `${name} scenario-${n}：標題 h4`).toMatch(/<h4 id="scenarios-threshold-[\w-]+-title">/);
+          const details = element(section, '<details class="data-alternative"')!;
+          expect(openTag(details, "<details"), `${name} scenario-${n}：資料表收合`).not.toMatch(/\sopen=""/);
+          expect(details, `${name} scenario-${n}：收合時表格仍掛載`).toContain('data-testid="chart-scenarios-threshold-table"');
+          const frame = element(section, 'class="chart-frame sm"')!;
+          expect(frame, `${name} scenario-${n}：圖框內沒有停留點、沒有連線`).not.toMatch(/tabindex|<button|<a\s|<details|<path|<polyline/);
+          expect(openTag(section, 'class="chart-frame sm"'), `${name} scenario-${n}`).toContain('aria-hidden="true"');
+          expect([...section.matchAll(/data-testid="chart-scenarios-threshold-point-([^"]+)"/g)].map(match => match[1]).sort(), `${name} scenario-${n}：點`).toEqual([...want.points[n]].sort());
+        }
+      }
+      // 超出範圍（合成資料 MARKETPLACE）：零貢獻點不畫，圖下兩個方案各一行「超出範圍」（在 aria-hidden 的圖框之外）。
+      const synthetic = scenarios.find(({ name }) => name === "scenarios-synthetic-out-of-range")!.html;
+      expect(occurrences(synthetic, 'class="threshold-out-of-range"')).toBe(2);
+      expect(synthetic).not.toContain('data-testid="chart-scenarios-threshold-point-zero_contribution"');
+    });
 
     // ── V4-6 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-6 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 

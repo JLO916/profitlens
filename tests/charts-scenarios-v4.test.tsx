@@ -15,6 +15,10 @@ import { DecisionWorkbench } from "@/components/decision-workbench";
 import { MultiScenarioWorkbench } from "@/components/multi-scenario-workbench";
 import { ChartFrame } from "@/components/overview/charts/chart-frame";
 import { SCENARIOS_VARIANCE_BAR_PREFIX, SCENARIOS_VARIANCE_TABLE_TESTID, SCENARIOS_VARIANCE_TESTID, ScenarioVarianceSection, scenarioVarianceModel, type ScenarioVarianceInput } from "@/components/scenarios/variance-chart";
+import { SCENARIOS_THRESHOLD_POINT_PREFIX, SCENARIOS_THRESHOLD_TABLE_TESTID, SCENARIOS_THRESHOLD_TESTID, ScenarioThresholdSection, scenarioThresholdChartId, scenarioThresholdModel } from "@/components/scenarios/threshold-chart";
+import { ThresholdLine, thresholdGeometry } from "@/components/charts/threshold-line";
+import { analyzeScenarioSensitivity } from "@/domain/scenario-sensitivity";
+import { emptyDecisionWorkspace } from "@/application/decision";
 import type { ScenarioInputs, ScenarioResult } from "@/domain/scenarios";
 import type { AnalysisFilters } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
@@ -147,7 +151,7 @@ describe("G15 方案差額：golden DTC 三個方案（兩個有效、一個不�
     expect(frame).not.toMatch(/ranked-hit|is-clickable|tabindex|<button|<a\s|onclick/i);
   });
 
-  it("資料表（C33，L2 純文字）：方案名稱、試算後的扣廣告後貢獻（元）、與現況相比（元）；每個方案一列，不能試算的寫「尚未試算」；沒有任何合計", () => {
+  it("資料表（C33，L2 純文字）：方案名稱、試算後的扣廣告後貢獻（元）、與現況相比（元）；每個方案一列，試算後沒有結果的寫「不適用」（審查 B-R1，PRD §4.3）；沒有任何合計", () => {
     const details = element(section, 'class="data-alternative"')!;
     expect(details).toMatch(/^<details class="data-alternative">/);
     expect(textOf(element(details, "<summary")!)).toBe(fill(labels.overview.page.dataTable, { title: copy.section }));
@@ -158,7 +162,7 @@ describe("G15 方案差額：golden DTC 三個方案（兩個有效、一個不�
     expect(rows).toEqual([
       ["履約", formatAmountL2("284.00"), formatSignedDelta("14.00", "L2")],
       ["一次性", formatAmountL2("264.00"), formatSignedDelta("-6.00", "L2")],
-      ["超出範圍", dw.notCalculated, dw.notCalculated],
+      ["超出範圍", labels.shell.status.notApplicable, labels.shell.status.notApplicable],
     ]);
     expect(table).not.toContain("number-link");
     expect(table).not.toContain("<tfoot");
@@ -234,7 +238,8 @@ describe("scenarioVarianceModel（純函式）", () => {
   it("柱＝有效結果（plan 順序），值與條端文字直接取 result.delta；沒有結果或不能試算的方案不列柱但列在資料表", () => {
     const model = scenarioVarianceModel(input([plan("a", "A", valid("284.00", "14.00")), plan("b", "B", null), plan("c", "C", { status: "invalid", contribution: null, delta: null } as unknown as ScenarioResult)]));
     expect(model.bars.map(row => [row.key, row.label, row.value, row.tone, row.display])).toEqual([["a", "A", "14.00", "favorable", formatSignedDelta("14.00", "L1")]]);
-    expect(model.tableRows).toEqual([{ id: "a", name: "A", contribution: "284.00", delta: "14.00" }, { id: "b", name: "B", contribution: null, delta: null }, { id: "c", name: "C", contribution: null, delta: null }]);
+    // V4-5 代理 C（審查 B-R1）：還沒試算（result null）是 pending（「尚未試算」）、試算後 invalid／ineligible 是 notApplicable（「不適用」）。
+    expect(model.tableRows).toEqual([{ id: "a", name: "A", status: "valid", contribution: "284.00", delta: "14.00" }, { id: "b", name: "B", status: "pending", contribution: null, delta: null }, { id: "c", name: "C", status: "notApplicable", contribution: null, delta: null }]);
     expect(model.titleKind).toBe("more");
   });
 
@@ -353,4 +358,124 @@ describe("C25 RankedBars 軸列（V4-5）與向下相容", () => {
     expect(Object.keys(expected)).toEqual(expect.arrayContaining(["demo chart-products-variance", "synthetic-4-channel chart-products-variance", "synthetic-4-channel chart-products-pareto", "refund_only chart-products-pareto"]));
     for (const html of Object.values(expected)) expect(html).not.toContain("ranked-axis");
   }, 60_000);
+});
+
+/*
+ * V4-5 代理 C：G16 要賣到多少才划算（06_BATCHES V4-5「驗收重點」；CHART_CATALOG G16「單元測試」；PRD §4.3 G16、§8.7、X29；D-V4-20＝A′）。
+ * - chart-scenarios-threshold 在每個有效方案的 scenario-{n} 內各一份（區塊代號 scenarios-threshold-{planId} 各自唯一）；不能試算的方案欄沒有。
+ * - A′：圖內沒有 path、polyline（不連線）；所有點的 x 在 [−90%, +100%] 的繪圖區內（端點剛好落在繪圖區左右緣）。
+ * - 色：門檻點空心 chartColors.target、使用者點實心 chartColors.total；不用強調色 chartColors.current。點不可點（沒有 onClick、資料表沒有 number-link）。
+ * 另含審查 B-R2（C25 軸列遇「另 n 個」列）、B-R3（G15 不能試算或過期時的空狀態說明）的回歸測試。
+ */
+describe("G16 要賣到多少才划算：每個 scenario-{n} 一份", () => {
+  let html: string;
+  beforeAll(async () => {
+    const src = await source();
+    html = render(src, withPlans(src, [{ ...PLANS[0], sensitivity: { volumes: ["-3", "-2.5", "0"] } }, PLANS[1], PLANS[2]]));
+  });
+  const cardOf = (n: number) => element(html, `data-testid="scenario-${n}"`)!;
+  const g16Of = (n: number) => element(cardOf(n), `data-testid="${SCENARIOS_THRESHOLD_TESTID}"`);
+
+  it("有效方案（履約、一次性）各一份、在自己的 scenario-sensitivity 內；不能試算的方案欄（超出範圍）沒有；區塊代號依方案 id 各自唯一", () => {
+    for (const [n, id] of [[1, "p"], [2, "q"]] as const) {
+      expect(count(cardOf(n), `data-testid="${SCENARIOS_THRESHOLD_TESTID}"`), `scenario-${n}`).toBe(1);
+      expect(element(cardOf(n), 'data-testid="scenario-sensitivity"'), `scenario-${n}`).toContain(`data-testid="${SCENARIOS_THRESHOLD_TESTID}"`);
+      expect(g16Of(n)).toContain(`<h4 id="${scenarioThresholdChartId(id)}-title">`);
+    }
+    expect(g16Of(3)).toBeNull();
+    expect(count(html, `data-testid="${SCENARIOS_THRESHOLD_TESTID}"`)).toBe(2);
+    // G16 不在主層：試算頁主層的圖區塊仍只有 G15。
+    expect(checkChartMarkup(html, { page: "scenarios" }).mainSections).toEqual([SCENARIOS_VARIANCE_TESTID]);
+  });
+
+  it("A′：G16 的 svg 內沒有 path、polyline、polygon（不連線）；點的 cx 都在繪圖區（零線的 x1–x2）內", () => {
+    for (const n of [1, 2]) {
+      const svg = element(g16Of(n)!, 'class="chart-threshold"')!;
+      expect(svg).not.toMatch(/<path|<polyline|<polygon/);
+      const zero = openTag(svg, 'class="threshold-zero"')!;
+      const [x1, x2] = [/x1="([\d.]+)"/.exec(zero)![1], /x2="([\d.]+)"/.exec(zero)![1]].map(Number);
+      const xs = [...svg.matchAll(/<circle[^>]*cx="([\d.]+)"/g)].map(match => Number(match[1]));
+      expect(xs.length, `scenario-${n}`).toBeGreaterThan(0);
+      for (const x of xs) { expect(x).toBeGreaterThanOrEqual(x1); expect(x).toBeLessThanOrEqual(x2); }
+    }
+  });
+
+  it("色：門檻點空心（fill none、stroke chartColors.target）、使用者點實心 chartColors.total；圖內沒有 chartColors.current", () => {
+    const section = g16Of(1)!;
+    for (const id of ["zero_contribution", "maintain_baseline"]) {
+      const open = openTag(section, `data-testid="${SCENARIOS_THRESHOLD_POINT_PREFIX}${id}"`)!;
+      expect(open).toContain('fill="none"');
+      expect(open).toContain(`stroke="${chartColors.target}"`);
+    }
+    for (const id of ["a", "b", "c"]) expect(openTag(section, `data-testid="${SCENARIOS_THRESHOLD_POINT_PREFIX}${id}"`)).toContain(`fill="${chartColors.total}"`);
+    expect(element(section, 'class="chart-frame sm"')).not.toContain(chartColors.current);
+    // 方案 2 沒有填三個假設：只有兩個門檻點（不代填）。
+    expect(matches(g16Of(2)!, /data-testid="chart-scenarios-threshold-point-([^"]+)"/g).sort()).toEqual(["maintain_baseline", "zero_contribution"]);
+  });
+
+  it("chart-lint：G16 區塊沒有 CL-1、CL-2、CL-11 違規；testid 依命名", () => {
+    const result = checkChartMarkup(g16Of(1)!, { page: "scenarios" });
+    for (const rule of ["CL-1", "CL-2", "CL-11"] as const) expect(result.violations[rule], rule).toEqual([]);
+    expect(result.chartTestIds).toEqual([SCENARIOS_THRESHOLD_TESTID, ...["a", "b", "c", "zero_contribution", "maintain_baseline"].map(id => `${SCENARIOS_THRESHOLD_POINT_PREFIX}${id}`), SCENARIOS_THRESHOLD_TABLE_TESTID]);
+  });
+
+  it("點不可點（PRD §8.7）：區塊元件沒有 hook，ThresholdLine 沒有 onClick；資料表的格都不是 number-link", async () => {
+    const src = await source();
+    const ws = withPlans(src, [{ ...PLANS[0], sensitivity: { volumes: ["-3", "-2.5", "0"] } }]);
+    const plan = ws.contexts[0].plans[0];
+    const analysis = analyzeScenarioSensitivity(ws.contexts[0].session.baseline, plan.inputs, plan.sensitivity!.volumes);
+    const model = scenarioThresholdModel(analysis);
+    const tree = ScenarioThresholdSection({ model, chartId: scenarioThresholdChartId(plan.id) }) as TreeElement;
+    expect(tree.type).toBe(ChartFrame);
+    expect(tree.props).toMatchObject({ id: "scenarios-threshold-p", page: "scenarios", testId: SCENARIOS_THRESHOLD_TESTID, variant: "inline", headingLevel: 4, height: "sm", title: model.title });
+    const [line] = findAll(tree.props.children as ReactNode, item => item.type === ThresholdLine);
+    expect(line.props).toMatchObject({ testIdPrefix: SCENARIOS_THRESHOLD_POINT_PREFIX });
+    expect(Object.keys(line.props).filter(key => /^on[A-Z]/.test(key))).toEqual([]);
+    expect(renderToStaticMarkup(tree)).not.toContain("number-link");
+    // y 與敏感度表同列逐字相同（A 級：只組既有點）。
+    expect(model.points.filter(point => point.kind === "user").map(point => point.y)).toEqual(analysis.sensitivity.rows.map(row => row.result.contribution));
+    expect(model.points.filter(point => point.kind === "threshold").map(point => point.y)).toEqual(analysis.targets.map(target => target.target));
+  });
+
+  it("thresholdGeometry：v＝−90、+100 的點剛好落在繪圖區左右緣；超出一點點的不畫（不夾到邊界、不外插）", () => {
+    for (const width of [324, 560, 1000]) {
+      const geometry = thresholdGeometry([{ id: "a", kind: "user", v: "-90", y: "10.00" }, { id: "b", kind: "user", v: "100", y: "20.00" }, { id: "c", kind: "user", v: "100.01", y: "30.00" }, { id: "zero_contribution", kind: "threshold", v: "-90.000000000001", y: "0.00" }], width);
+      expect(geometry.points.map(shape => [shape.point.id, shape.cx]).sort()).toEqual([["a", geometry.plot.left], ["b", geometry.plot.right]]);
+      expect(geometry.dropped.sort()).toEqual(["c", "zero_contribution"]);
+      expect(geometry.connected).toBe(false);
+    }
+  });
+});
+
+describe("審查 B-R2、B-R3 回歸", () => {
+  it("B-R2：C25 軸列遇「另 n 個」列時，刻度從柱列底（零線下端）接到軸列頂＋RANKED_AXIS_TICK；沒有「另 n 個」時不變", () => {
+    const rows: RankedBarRow<null>[] = ["14.00", "-6.00"].map((value, index) => ({ key: `k${index}`, label: `P${index}`, value, tone: "total", display: value, evidence: null }));
+    const axisText = fill(copy.axis, { amount: formatAmountL1("270.00") });
+    const withMore = hbarGeometry(rows, 560, "variance", { rowHeight: "row24", axis: axisText, more: "另 2 個" });
+    const row = chartRowHeights.row24;
+    expect(withMore.rowCount).toBe(4);
+    expect(withMore.blocks[0].zeroLine).toEqual({ y1: 0, y2: 2 * row });
+    expect(withMore.axis!.tick).toEqual({ y1: 2 * row, y2: 3 * row + RANKED_AXIS_TICK });
+    expect(withMore.axis!.label.y).toBe(3 * row + withMore.blocks[0].bars[0].textY);
+    const plain = hbarGeometry(rows, 560, "variance", { rowHeight: "row24", axis: axisText });
+    expect(plain.axis!.tick).toEqual({ y1: 2 * row, y2: 2 * row + RANKED_AXIS_TICK });
+  });
+
+  it("B-R3：基準不能試算時 G15 空狀態寫既有的「這個範圍不能試算」；過期且沒有任何有效結果時寫既有的「試算已過期」；可以試算時照舊", async () => {
+    const message = (markup: string) => textOf(element(element(markup, `data-testid="${SCENARIOS_VARIANCE_TESTID}"`)!, 'class="chart-frame-message"')!);
+    const all = await source("golden", {});
+    const ineligible = renderToStaticMarkup(createElement(DecisionWorkbench, { dataset: all.dataset, snapshot: all.snapshot, revision: 1, input: all.input, state: { ...emptyDecisionWorkspace(), source_input: all.input }, setState: noop, onEvidence: noop }));
+    expect(ineligible).toContain('data-testid="scenario-unavailable"');
+    expect(message(ineligible)).toBe(dw.unavailableTitle);
+    const src = await source();
+    const ws = withPlans(src, [PLANS[2]]);
+    const context = ws.contexts[0];
+    const stale = renderToStaticMarkup(createElement(DecisionWorkbench, { dataset: src.dataset, snapshot: src.snapshot, revision: context.session.revision + 1, input: context.source_input, state: scenarioContextDecision(context), setState: noop, onEvidence: noop }));
+    expect(message(stale)).toBe(dw.staleTitle);
+    expect(message(render(src, ws))).toBe(copy.empty);
+    // 區塊元件：不給 emptyMessage 時用 copy.empty。
+    const model = scenarioVarianceModel(input([plan("a", "A", null)]));
+    expect((ScenarioVarianceSection({ model }) as TreeElement).props.message).toBe(copy.empty);
+    expect((ScenarioVarianceSection({ model, emptyMessage: dw.staleTitle }) as TreeElement).props.message).toBe(dw.staleTitle);
+  });
 });

@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
-import { labels } from "../../src/i18n";
+import { fill, labels } from "../../src/i18n";
 import type { AnalyticsEvent } from "../../src/application/analytics";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../../src/application/workspace";
 import { validateDataset } from "../../src/domain/validation";
@@ -349,3 +349,37 @@ export const varianceBars = (page: Page) => varianceSection(page).locator("[data
 export const varianceTable = (page: Page) => page.getByTestId("chart-products-variance-table");
 /** 商品頁 .product-highlight-grid 的直接子元素（第一格、第二格）。 */
 export const productGridCells = (page: Page) => page.locator("section.product-highlights > .product-highlight-grid > *");
+
+// ── 試算 G15 方案差額、G16 要賣到多少才划算（V4-5） ──
+/** G15 區塊（ChartFrame id scenarios-variance，全頁一份）、柱、條端文字與資料表。 */
+export const scenarioVarianceSection = (page: Page) => page.getByTestId("chart-scenarios-variance");
+export const scenarioVarianceBars = (page: Page) => scenarioVarianceSection(page).locator("[data-testid^='chart-scenarios-variance-bar-']");
+export const scenarioVarianceValues = (page: Page) => scenarioVarianceSection(page).locator("svg.chart-ranked-bars text.ranked-value");
+/** 方案欄（scenario-{n}）的「要賣到多少才划算」<details>、其中的 G16 區塊、點與資料表。 */
+export const scenarioCard = (page: Page, n: number) => page.getByTestId(`scenario-${n}`);
+export const sensitivityDetails = (card: Locator) => card.getByTestId("scenario-sensitivity");
+export const thresholdSection = (card: Locator) => card.getByTestId("chart-scenarios-threshold");
+export const thresholdPoint = (card: Locator, id: string) => thresholdSection(card).getByTestId(`chart-scenarios-threshold-point-${id}`);
+export const thresholdPoints = (card: Locator) => thresholdSection(card).locator("[data-testid^='chart-scenarios-threshold-point-']");
+/** 方案欄：範本「維持現況」（全部 0）→ 套用 → 同意聲明（勾一次就記住）→ 試算，等試算結果出現。 */
+export async function calculateKeep(card: Locator) {
+  await card.getByTestId("scenario-preset").selectOption("keep");
+  await card.getByTestId("scenario-preset-apply").click();
+  const consent = card.getByTestId("scenario-accept");
+  if (await consent.count()) await consent.click();
+  await expect(card.getByTestId("scenario-acknowledged")).toBeVisible();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
+  await expect(card.getByTestId("scenario-contribution")).toBeVisible();
+}
+/** 展開方案欄的「要賣到多少才划算」，等 G16 可見；給 volumes 時填三個銷量假設並按「試算三個假設」，等敏感度表出現。 */
+export async function openSensitivityChart(card: Locator, volumes?: readonly string[]) {
+  const details = sensitivityDetails(card);
+  await openDetails(details);
+  await expect(details).toHaveAttribute("open", "");
+  await expect(thresholdSection(card)).toBeVisible();
+  if (!volumes) return;
+  const copy = labels.scenarios.sensitivity;
+  for (const [index, value] of volumes.entries()) await details.getByLabel(fill(copy.inputLabel, { letter: String.fromCharCode(65 + index) }), { exact: true }).fill(value);
+  await details.getByRole("button", { name: copy.recalc, exact: true }).click();
+  await expect(details.getByTestId("sensitivity-result").getByRole("table")).toBeVisible();
+}

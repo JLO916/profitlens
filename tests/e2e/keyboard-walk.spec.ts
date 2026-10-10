@@ -17,6 +17,7 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  *   與 C 段 tabTo 經過的每一步，都檢查焦點元素本身或祖先有沒有 aria-hidden="true"；v3.0.0 應為 0，之後每批都跑（v4 的圖容器 aria-hidden，圖內不得有可聚焦元素）。
  * V4-3b：健檢頁另記「經過 G11 熱表」的停留點數與 Tab 數（PASS_REGIONS），斷言經過熱表的 Tab 數 ≤ 3。
  * V4-4：商品頁加「第一張圖的資料表 summary」里程碑（在「最差商品」之後），「最差商品」的 Tab 數不晚於 V4-0a。
+ * V4-5：試算頁三個里程碑（基準、範本、「試算」按鈕）的 Tab 數不晚於 V4-0a（G15 資料表 summary 在方案欄之後，G16 在收合的 <details> 內）。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -43,6 +44,14 @@ const MILESTONES: Record<LaunchPage, { name: string; selector: string }[]> = {
  * 而且「第一張圖的資料表 summary」在它之後。
  */
 const V4_0A_PRODUCT_WORST_TABS: Record<string, number> = { desktop: 9, mobile: 3 };
+/**
+ * V4-5（06_BATCHES V4-5「驗收重點」：「載入示範資料到第一個結果」的鍵盤步數不增加，D-V3-27 現況）：試算頁三個里程碑的 Tab 數不晚於 V4-0a 實測
+ * （verification/revamp-v4/V4-0a/keyboard-walk.json，V4-4 相同：1440 是 11、16、30，390 是 5、10、24）。G15 的資料表 summary 在方案欄之後、G16 在收合的 <details> 內，都在三個里程碑之後。
+ */
+const V4_0A_SCENARIO_TABS: Record<string, Record<string, number>> = {
+  desktop: { "第一個結果數字（基準）": 11, "範本": 16, "「試算」按鈕": 30 },
+  mobile: { "第一個結果數字（基準）": 5, "範本": 10, "「試算」按鈕": 24 },
+};
 const PASS_REGIONS: Partial<Record<LaunchPage, { name: string; selector: string; maxAcross: number }[]>> = {
   diagnosis: [{ name: "熱表", selector: "[data-testid='chart-diagnosis-heat']", maxAcross: 3 }],
 };
@@ -301,6 +310,8 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
   const summaryTabs = productMilestones.find(item => item.name === "第一張圖的資料表 summary")!.tabs!;
   expect(worstTabs, "V4-4：商品頁「最差商品」的 Tab 數不晚於 V4-0a").toBeLessThanOrEqual(V4_0A_PRODUCT_WORST_TABS[testInfo.project.name]);
   expect(summaryTabs, "V4-4：「第一張圖的資料表 summary」在「最差商品」之後").toBeGreaterThan(worstTabs);
+  const scenarioMilestones = walks.find(item => item.page === "scenarios")!.milestones;
+  for (const [name, max] of Object.entries(V4_0A_SCENARIO_TABS[testInfo.project.name])) expect(scenarioMilestones.find(item => item.name === name)?.tabs ?? Number.POSITIVE_INFINITY, `V4-5：試算頁「${name}」的 Tab 數不晚於 V4-0a`).toBeLessThanOrEqual(max);
   expect(flowAriaHiddenStops, "§11.1 只用鍵盤的流程：經過的 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a）").toEqual([]);
   // V4-1：KNOWN_ARIA_HIDDEN_STOPS 已清空，1440 與 390 七頁走查加上 §11.1 流程的 aria-hidden 停留點合計必須是 0。
   expect(ariaHiddenTotal, "V4-1：aria-hidden 內的 Tab 停留點合計 0").toBe(0);

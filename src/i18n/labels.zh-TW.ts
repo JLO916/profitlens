@@ -1407,10 +1407,45 @@ export const scenarios = {
       empty: "填好假設並按「試算」後，這裡畫出各方案與現況的差額",
       /** 軸列（零線＝現況，畫在柱列下方、置中於零線）：{amount}＝現況的扣廣告後貢獻（L1）。 */
       axis: "現況 {amount}",
-      /** 資料表之後的說明（在收合的 <details> 內）。 */
-      tableNote: "每個方案都從同一個本期基準算起，金額不能相加；還沒有有效結果的方案寫「尚未試算」。",
+      /**
+       * 資料表之後的說明（在收合的 <details> 內）。V4-5 代理 C（審查 B-R1；PRD §4.3 G15「結果 null 時寫『不適用』」）：還沒按「試算」的方案沿用比較表的「尚未試算」，
+       * 試算過但結果無效或不適用（invalid、ineligible）的方案寫既有的「不適用」（labels.shell.status.notApplicable）。
+       */
+      tableNote: "每個方案都從同一個本期基準算起，金額不能相加；還沒試算的方案寫「尚未試算」，試算後沒有結果的寫「不適用」。",
     },
-    threshold: {},
+    /**
+     * V4-5 代理 C：G16 要賣到多少才划算（PRD §4.1–§4.7 G16、§8.7；CHART_CATALOG G16；D-V4-20＝A′ 只畫點、不連線）。每個方案欄 scenario-{n} 的
+     * 「要賣到多少才划算」<details> 內、門檻說明（threshold-{id}）之後、技術細節之前，每個方案一份。標題沿用零貢獻門檻的既有說明句
+     * （thresholdDescription，scenarios.sensitivity.threshold*，字不改），所以這裡沒有 title 鍵；快照過期時的說明沿用 scenarios.sensitivity.reasons.STALE_SCENARIO，
+     * L＝0 的副標沿用 scenarios.sensitivity.thresholdConstant*，資料表的列名沿用 thresholdTargetLabel（scenarios.sensitivity.targetZero、targetMaintain）與 rowLabel（假設 A／B／C），
+     * 銷量欄沿用 scenarios.inputs.volume.label、金額欄以 format.units.yuanColumn 加「（元）」。
+     */
+    threshold: {
+      /** 區塊標準名：沒有門檻可寫時的標題（快照過期、母方案不能試算）、副標第一段、資料表 summary（「表格 · …」）與 caption。 */
+      section: "兩個門檻與三個假設的位置",
+      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{axis}＝軸的說明。 */
+      subtitle: "{section} · {axis} · 空心圈是門檻，實心點是自己填的假設",
+      /** 軸的說明（接在副標內）：{metric}＝扣廣告後貢獻的標準名。 */
+      axis: "橫軸銷量增減 −90% 到 +100%，縱軸試算後的{metric}",
+      /** L＝0（銷量怎麼變都不影響試算結果）時的副標：{target}＝維持現況目標名，{description}＝該目標的既有恆等／恆高／恆低說明句（標題已是零貢獻目標的那一句）。 */
+      subtitleFlat: "{section} · {target}：{description}",
+      /** 門檻超出 −90% 到 +100% 時圖下的一行（不畫該點、不外插）：{target}＝目標名，{outcome}＝既有「範圍內都能維持目標或更高／都低於目標」。 */
+      outOfRange: "超出範圍：{target}的門檻在 −90% 到 +100% 以外，圖上沒有這個點；範圍內{outcome}。",
+      /** 資料表銷量欄：門檻超出範圍的列。 */
+      outOfRangeCell: "超出範圍",
+      /** 圖上沒有任何點時（L＝0 或門檻都超出範圍，而且三個假設還沒試算）圖區的說明（state="empty"）。 */
+      empty: "範圍內沒有門檻點；填好三個銷量假設並按「試算三個假設」後，這裡畫出它們的位置",
+      /** 門檻點的寬版標籤（容器寬 ≥ 480px）：{name}＝門檻短名，{pct}＝門檻（L1 帶號百分比）；窄版只寫 {pct}。三個假設的點只標 A／B／C。 */
+      pointLabel: "{name} {pct}",
+      /** 門檻短名（只用在圖上的點標籤；資料表列名用完整目標名）。 */
+      pointNames: { zero_contribution: "打平", maintain_baseline: "維持現況" },
+      /** 資料表「種類」欄。 */
+      pointKinds: { threshold: "門檻", user: "自己填的假設" },
+      /** 資料表欄名：列名欄「點」、銷量欄（{volume}＝scenarios.inputs.volume.label，與三個假設表的欄名相同）、種類欄。 */
+      columns: { point: "點", volume: "{volume}（%）", kind: "種類" },
+      /** 資料表之後的說明（在收合的 <details> 內）。 */
+      tableNote: "門檻點的金額就是目標本身；假設 A／B／C 只換銷量，其餘沿用本方案。點與點之間不連線，也不往範圍外推算。",
+    },
   },
 } as const;
 

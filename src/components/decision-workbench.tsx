@@ -345,7 +345,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
             {!plan.result && <p className="scenario-result-tag"><span className="ui-lozenge" data-tone="warning" data-testid="scenario-draft">{labels.scenarios.inputs.draft}</span></p>}
           </div>
           {valid && onSelectPlan && <button type="button" className="ui-btn ui-btn-secondary scenario-select" data-testid={`scenario-select-${n}`} aria-label={fill(labels.scenarios.workbench.selectPlanButton, { selectForMeeting: labels.meeting.buttons.selectForMeeting, plan: plan.name })} onClick={() => onSelectPlan(plan.id)}>{labels.meeting.buttons.selectForMeeting}</button>}
-          {valid && <ScenarioSensitivity baseline={session.baseline} inputs={plan.inputs} stale={stale} value={plan.sensitivity} onChange={next => setSensitivity(plan.id, next)} />}
+          {valid && <ScenarioSensitivity planId={plan.id} baseline={session.baseline} inputs={plan.inputs} stale={stale} value={plan.sensitivity} onChange={next => setSensitivity(plan.id, next)} />}
         </div>
       </article>;
     })}
@@ -353,7 +353,8 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
       {plans.length < 3 && <div className={plans.length ? "scenario-add ui-empty-block" : "scenario-add ui-empty-block scenario-add-empty"}>{!plans.length && <><p className="ui-empty-title">{labels.empty.stateV3.noPlansTitle}</p><p>{labels.empty.stateV3.noPlansBody}</p></>}<button type="button" className="ui-btn ui-btn-secondary" data-testid="scenario-add" disabled={stale || !session.baseline.eligible} onClick={addPlan}>{labels.scenarios.buttons.addScenario}</button>{plans.length > 0 && <p>{page.addNote}</p>}</div>}
     </div>
     {/* V4-5 代理 B（PRD §5.4 第 3 列、CHART_CATALOG G15）：方案欄之後、方案比較表之前是 G15 方案差額（全頁一份；柱不可點，PRD §8.7）。 */}
-    {variance && <ScenarioVarianceSection model={variance} />}
+    {/* V4-5 代理 C（審查 B-R3）：不能試算（基準不適用）或已過期時，空狀態不說「填好假設並按『試算』」，改用既有的「這個範圍不能試算」「試算已過期」。 */}
+    {variance && <ScenarioVarianceSection model={variance} emptyMessage={!session.baseline.eligible ? ui.unavailableTitle : stale ? ui.staleTitle : undefined} />}
     {/* V3-6（PRD §7.4 方案欄之後）：方案比較表（預設展開）→ 其他通路的方案 → 之前的試算 → 通知。 */}
     {plans.length > 0 && <section className="ui-section scenario-compare" aria-labelledby={ids.compare}>
       <div className="ui-section-head"><h2 className="ui-section-title" id={ids.compare}>{fill(ui.compareTableHeading, { staleSuffix: stale ? staleSuffix : "" })}</h2><p className="ui-section-subtitle">{ui.compareNote}</p></div>

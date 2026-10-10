@@ -311,6 +311,31 @@ export async function pageStates(): Promise<StateMarkup[]> {
     "products-refund-only": { panel: "products", active: await load("refund-only", "refund_only"), status: "ready" },
 
     // ── V4-5 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-5 新增 M1 測試」錨點後加對應測試）──
+    // 試算＋golden DTC 兩個已計算方案（履約 f−10%＝284.00、一次性 f−10%＋K20＝264.00），方案 1 帶三個銷量假設 −3／−2.5／0（plan.sensitivity，與敏感度 E2E 同一組）：
+    // G15 兩根柱；每個 scenario-{n} 的 scenario-sensitivity 內各一份 G16（INSTANCE_CONTAINER scenario-\d+）——方案 1 有 5 個點（兩個門檻、A／B／C），方案 2 只有兩個門檻點。
+    // SSR 的 <details> 一律收合但內容掛載（M1），DOM 等同「試算後展開 scenario-sensitivity」（axe 的 V4-5 狀態在瀏覽器實際展開）。
+    "scenarios-sensitivity": { panel: "scenarios", active: goldenDtc, status: "ready", scenarioWorkspace: (() => {
+      let ws: ScenarioWorkspace = ensureScenarioContext(emptyScenarioWorkspace("e"), goldenDtc);
+      const ctx = ws.contexts[0], decision = scenarioContextDecision(ctx);
+      decision.scenarios = saveScenario(ctx.session, [], { id: "p", name: "履約", inputs, sensitivity: { volumes: ["-3", "-2.5", "0"] } });
+      decision.scenarios = saveScenario(ctx.session, decision.scenarios, { id: "q", name: "一次性", inputs: { ...inputs, one_time_cost: "20" } });
+      ws = updateScenarioContext(ws, ctx.id, decision);
+      return ws;
+    })() },
+    // 試算＋4 通路合成資料的 MARKETPLACE（D-V4-31；tests/fixtures/synthetic-4-channel/README.md §7）：方案「零變動」的零貢獻門檻 104%、方案「廣告加碼 20%、銷量 +10%」144.8%，
+    // 都超出 +100%：G16 不畫零貢獻點、圖下寫「超出範圍」與「範圍內都低於目標」，資料表該列寫「超出範圍」；維持原貢獻門檻 0%、40.8% 照畫；
+    // 方案 2 帶三個銷量假設 0／50／100（−7,240.00、−4,740.00、−2,240.00）。試算輸入只定義在測試內（README §7）。
+    ...await (async (): Promise<Record<string, ShellState>> => {
+      const input = synthetic4ChannelInput(), dataset = validateDataset(input).dataset!;
+      const active: Active = { input, dataset, snapshot: await createSnapshot(dataset, { channels: ["MARKETPLACE"] }, await hashInput(input)), id: "synthetic", revision: 1 };
+      let ws: ScenarioWorkspace = ensureScenarioContext(emptyScenarioWorkspace("e"), active);
+      const ctx = ws.contexts[0], decision = scenarioContextDecision(ctx);
+      const still = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "0", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
+      decision.scenarios = saveScenario(ctx.session, [], { id: "s", name: "零變動", inputs: still });
+      decision.scenarios = saveScenario(ctx.session, decision.scenarios, { id: "t", name: "廣告加碼", inputs: { ...still, volume_change_pct: "10", ad_change_pct: "20" }, sensitivity: { volumes: ["0", "50", "100"] } });
+      ws = updateScenarioContext(ws, ctx.id, decision);
+      return { "scenarios-synthetic-out-of-range": { panel: "scenarios", active, status: "partial", scenarioWorkspace: ws } };
+    })(),
 
     // ── V4-6 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-6 新增 M1 測試」錨點後加對應測試）──
 

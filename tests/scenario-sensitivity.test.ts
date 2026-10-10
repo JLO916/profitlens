@@ -1,4 +1,6 @@
 import Decimal from "decimal.js";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { analyzeDataset } from "@/domain/analysis";
 import { calculateMetrics } from "@/domain/metrics";
@@ -7,6 +9,14 @@ import { analyzeScenarioSensitivity } from "@/domain/scenario-sensitivity";
 import { AMOUNT_FIELDS, type AmountField, type Summary, type Totals } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
 import { fixture } from "./helpers/fixtures";
+import { element, openTag, textOf } from "./helpers/markup";
+import { chartColors } from "@/application/chart-theme";
+import { blankSensitivity, type SensitivityInputs } from "@/application/decision";
+import { formatAmountL2, formatPercentNumber, metricDefinitions } from "@/application/presentation";
+import { thresholdDescription, thresholdTargetLabel } from "@/application/scenario-threshold-text";
+import { ScenarioSensitivity } from "@/components/scenario-sensitivity";
+import { SCENARIOS_THRESHOLD_POINT_PREFIX, SCENARIOS_THRESHOLD_TABLE_TESTID, SCENARIOS_THRESHOLD_TESTID } from "@/components/scenarios/threshold-chart";
+import { fill, labels } from "@/i18n";
 
 const zero: ScenarioInputs = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "0", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
 function golden() { return buildScenarioBaseline(analyzeDataset(validateDataset(fixture()).dataset!).current.channels.DTC, true); }
@@ -131,5 +141,122 @@ describe("PL-08 exact conditional thresholds and explicit sensitivity", () => {
   });
   it.each(["-90.00001", "100.00001", "1e1", "NaN", "10%", "<script>"])("invalid user sensitivity %s blocks the entire comparison", value => {
     expect(analyze({}, ["0", value, "10"]).sensitivity).toMatchObject({ status: "invalid", rows: [] });
+  });
+});
+
+/*
+ * V4-5 代理 C：G16 在 scenario-sensitivity 內（06_BATCHES V4-5「驗收重點」X29、邊界規則；CHART_CATALOG G16「單元測試」「邊界」；PRD §4.3 G16、§8.7）。
+ * SSR（renderToStaticMarkup）：預設空白的三個假設不變、G16 在門檻說明之後與技術細節之前、stale 空狀態沿用既有過期說明（alert 不變）、
+ * L＝0 不畫門檻點且副標用既有恆等／恆高／恆低句、超出範圍不畫點並在圖下寫「超出範圍」與範圍內是否達標、三點未填時不畫使用者點（不代填）。
+ * 斷言只用 testid、labels 與格式化函式。
+ */
+describe("V4-5 G16 在 scenario-sensitivity 內（SSR）", () => {
+  const g16 = labels.scenarios.chartsV4.threshold;
+  const copy = labels.scenarios.sensitivity;
+  const METRIC = metricDefinitions.contribution_after_marketing.label;
+  const render = (base: ReturnType<typeof golden>, inputs: ScenarioInputs, options: { stale?: boolean; value?: SensitivityInputs } = {}) => renderToStaticMarkup(createElement(ScenarioSensitivity, { planId: "p", baseline: base, inputs, stale: options.stale, value: options.value, onChange: () => undefined }));
+  const chart = (html: string) => element(html, `data-testid="${SCENARIOS_THRESHOLD_TESTID}"`)!;
+  const pointIds = (html: string) => [...chart(html).matchAll(new RegExp(`data-testid="${SCENARIOS_THRESHOLD_POINT_PREFIX}([^"]+)"`, "g"))].map(match => match[1]);
+  const tableRows = (html: string) => [...element(element(chart(html), `data-testid="${SCENARIOS_THRESHOLD_TABLE_TESTID}"`)!, "<tbody")!.matchAll(/<tr>(.*?)<\/tr>/g)].map(match => [textOf(element(match[1], "<th")!), ...[...match[1].matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(cell => cell[1])]);
+  const subtitle = (html: string) => textOf(element(chart(html), 'id="scenarios-threshold-p-sub"')!);
+  const title = (html: string) => textOf(element(chart(html), 'id="scenarios-threshold-p-title"')!);
+  const f10 = { ...zero, fulfillment_change_pct: "-10" };
+
+  it("X29：三個銷量假設預設空白（blankSensitivity），輸入框 value 都是空字串；沒有明填時 G16 沒有使用者點（不代填）", () => {
+    expect(blankSensitivity().volumes).toEqual(["", "", ""]);
+    const html = render(golden(), f10);
+    const inputs = [...html.matchAll(/<input type="text" inputMode="decimal"[^>]*>/gi)].map(match => match[0]);
+    expect(inputs).toHaveLength(3);
+    for (const input of inputs) expect(input).toContain('value=""');
+    expect(pointIds(html)).toEqual(["zero_contribution", "maintain_baseline"]);
+    expect(html).not.toContain(copy.tableCaption);
+  });
+
+  it("G16 在 details.scenario-sensitivity 內恰好一份：門檻說明（threshold-{id}）之後、技術細節之前；inline、h4、sm；標題＝零貢獻目標的既有說明句", () => {
+    const html = render(golden(), f10, { value: { volumes: ["-3", "-2.5", "0"] } });
+    const details = element(html, 'data-testid="scenario-sensitivity"')!;
+    expect(details.split(`data-testid="${SCENARIOS_THRESHOLD_TESTID}"`)).toHaveLength(2);
+    const at = details.indexOf(`data-testid="${SCENARIOS_THRESHOLD_TESTID}"`);
+    expect(at).toBeGreaterThan(details.indexOf('data-testid="threshold-maintain_baseline"'));
+    expect(at).toBeLessThan(details.indexOf('class="sensitivity-formula"'));
+    expect(at).toBeLessThan(details.indexOf(`<h4>${copy.inputsHeading}</h4>`));
+    const open = openTag(details, `data-testid="${SCENARIOS_THRESHOLD_TESTID}"`)!;
+    expect(open).toMatch(/^<section class="chart-section is-inline scenario-threshold"/);
+    expect(open).not.toContain("panel");
+    for (const attr of ['aria-labelledby="scenarios-threshold-p-title"', 'aria-describedby="scenarios-threshold-p-sub"']) expect(open).toContain(attr);
+    const analysis = analyzeScenarioSensitivity(golden(), f10, ["-3", "-2.5", "0"]);
+    expect(chart(html)).toContain(`<h4 id="scenarios-threshold-p-title">${thresholdDescription(analysis.targets[0])}</h4>`);
+    expect(subtitle(html)).toBe(fill(g16.subtitle, { section: g16.section, axis: fill(g16.axis, { metric: METRIC }) }));
+    expect(openTag(chart(html), 'class="chart-frame sm"')).toContain('aria-hidden="true"');
+    expect(openTag(chart(html), 'class="chart-frame sm"')).toContain('data-state="ready"');
+    // 五個點：門檻點（空心 target）、使用者點（實心 total）；沒有連線、沒有可聚焦元素。
+    expect(pointIds(html).sort()).toEqual(["a", "b", "c", "maintain_baseline", "zero_contribution"]);
+    for (const id of ["zero_contribution", "maintain_baseline"]) expect(openTag(chart(html), `data-testid="${SCENARIOS_THRESHOLD_POINT_PREFIX}${id}"`)).toMatch(new RegExp(`fill="none" stroke="${chartColors.target.replace(/[()]/g, "\\$&")}"`));
+    for (const id of ["a", "b", "c"]) expect(openTag(chart(html), `data-testid="${SCENARIOS_THRESHOLD_POINT_PREFIX}${id}"`)).toContain(`fill="${chartColors.total}"`);
+    const frame = element(chart(html), 'class="chart-frame sm"')!;
+    expect(frame).not.toMatch(/<path|<polyline|<polygon|tabindex|<button|<a\s|onclick/i);
+    // 資料表（純文字）：門檻兩列在前、假設 A／B／C 在後；y 與敏感度表同列逐字相同（經格式化函式）。
+    expect(tableRows(html)).toEqual([
+      [thresholdTargetLabel("zero_contribution"), formatPercentNumber("-51.263537906137", "L2", { signed: true }), formatAmountL2("0.00"), g16.pointKinds.threshold],
+      [thresholdTargetLabel("maintain_baseline"), formatPercentNumber("-2.527075812274", "L2", { signed: true }), formatAmountL2("270.00"), g16.pointKinds.threshold],
+      [fill(copy.rowLabel, { letter: "A" }), formatPercentNumber("-3", "L2", { signed: true }), formatAmountL2("267.38"), g16.pointKinds.user],
+      [fill(copy.rowLabel, { letter: "B" }), formatPercentNumber("-2.5", "L2", { signed: true }), formatAmountL2("270.15"), g16.pointKinds.user],
+      [fill(copy.rowLabel, { letter: "C" }), formatPercentNumber("0", "L2", { signed: true }), formatAmountL2("284.00"), g16.pointKinds.user],
+    ]);
+    expect(element(chart(html), `data-testid="${SCENARIOS_THRESHOLD_TABLE_TESTID}"`)).not.toContain("number-link");
+  });
+
+  it("stale：既有 alert 輸出不變；G16 整張空狀態（state empty），說明沿用既有過期說明句；沒有點", () => {
+    const html = render(golden(), f10, { stale: true, value: { volumes: ["-3", "-2.5", "0"] } });
+    const stale = labels.scenarios.sensitivity.reasons.STALE_SCENARIO;
+    expect(html).toContain(`<div class="alert" role="status"><p>${stale}</p></div><section class="chart-section is-inline scenario-threshold"`);
+    expect(openTag(chart(html), 'class="chart-frame sm"')).toContain('data-state="empty"');
+    expect(openTag(chart(html), 'class="chart-frame sm"')).not.toContain("aria-hidden");
+    expect(textOf(element(chart(html), 'class="chart-frame-message"')!)).toBe(stale);
+    expect(title(html)).toBe(g16.section);
+    expect(pointIds(html)).toEqual([]);
+    expect(chart(html)).not.toContain("chart-threshold\"");
+    expect(tableRows(html)).toEqual([]);
+  });
+
+  it("L＝0（constant_below、constant_equal）：不畫門檻點、不列超出範圍；標題是零貢獻的恆低句、副標是維持現況的恆等句；三點明填時只有使用者點", () => {
+    const base = baseline({ cogs_net: "100.00", ad_spend: "10.00" });
+    const html = render(base, zero, { value: { volumes: ["-90", "0", "100"] } });
+    expect(title(html)).toBe(copy.thresholdConstantBelow);
+    expect(subtitle(html)).toBe(fill(g16.subtitleFlat, { section: g16.section, target: thresholdTargetLabel("maintain_baseline"), description: copy.thresholdConstantEqual }));
+    expect(pointIds(html)).toEqual(["a", "b", "c"]);
+    expect(chart(html)).not.toContain("threshold-out-of-range");
+    expect(tableRows(html).map(row => row[3])).toEqual([g16.pointKinds.user, g16.pointKinds.user, g16.pointKinds.user]);
+    // 三點沒填：一個點都沒有 → 空狀態（說明句 g16.empty），軸不畫。
+    const blank = render(base, zero);
+    expect(pointIds(blank)).toEqual([]);
+    expect(openTag(chart(blank), 'class="chart-frame sm"')).toContain('data-state="empty"');
+    expect(textOf(element(chart(blank), 'class="chart-frame-message"')!)).toBe(g16.empty);
+  });
+
+  it("outside_range（零貢獻門檻 −100%、範圍內都達標）：不畫該點、不外插；圖下寫「超出範圍」與範圍內是否達標；資料表該列寫「超出範圍」", () => {
+    const html = render(baseline({}), zero);
+    expect(pointIds(html)).toEqual(["maintain_baseline"]);
+    const after = element(chart(html), 'class="threshold-out-of-range"')!;
+    expect(textOf(after)).toBe(fill(g16.outOfRange, { target: thresholdTargetLabel("zero_contribution"), outcome: copy.outcomeAllAtOrAbove }));
+    expect(textOf(after)).toContain(g16.outOfRangeCell);
+    // 圖下一行在 aria-hidden 的圖框之外（讀得到）。
+    expect(element(chart(html), 'class="chart-frame sm"')).not.toContain("threshold-out-of-range");
+    expect(tableRows(html)[0]).toEqual([thresholdTargetLabel("zero_contribution"), g16.outOfRangeCell, formatAmountL2("0.00"), g16.pointKinds.threshold]);
+    // 超出 +100%（all_below）：outcome 用「都低於目標」。
+    const above = render(baseline({ ad_spend: "500.00" }), zero);
+    expect(pointIds(above)).not.toContain("zero_contribution");
+    expect(textOf(element(chart(above), 'class="threshold-out-of-range"')!)).toBe(fill(g16.outOfRange, { target: thresholdTargetLabel("zero_contribution"), outcome: copy.outcomeAllBelow }));
+  });
+
+  it.each([["0", "", "10"], ["", "", ""], ["abc", "0", "10"]])("三個假設沒有都明填且有效（%s、%s、%s）：沒有使用者點、不代填", (...volumes) => {
+    const html = render(golden(), f10, { value: { volumes: volumes as SensitivityInputs["volumes"] } });
+    expect(pointIds(html).filter(id => ["a", "b", "c"].includes(id))).toEqual([]);
+    expect(tableRows(html).map(row => row[3])).toEqual([g16.pointKinds.threshold, g16.pointKinds.threshold]);
+  });
+
+  it("所有點的 x 都在 [−90%, +100%]（X29）：門檻剛好在 −90、+100 時照畫；超界一點點時不畫", () => {
+    for (const ad of ["10.00", "200.00"]) expect(pointIds(render(baseline({ ad_spend: ad }), zero))).toContain("zero_contribution");
+    expect(pointIds(render(baseline({ ad_spend: "100.00" }), { ...zero, ad_change_pct: "100.000000000000000000000000000001" }))).not.toContain("zero_contribution");
   });
 });

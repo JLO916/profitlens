@@ -2880,4 +2880,7 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-5 B 錨點結束 ── */
 
 /* ── V4-5 C：G16 要賣到多少才划算（scenario-sensitivity 內；代理 C） ── */
+/* 圖下「超出範圍」（ChartFrame after，在 aria-hidden 的圖框之外、資料表之前）：與圖框之間留 space-2，每個超界目標一行、行間不另加段落外距。 */
+.chart-section.scenario-threshold .threshold-out-of-range { margin-top: var(--space-2); }
+.chart-section.scenario-threshold .threshold-out-of-range p { margin: 0; }
 /* ── V4-5 C 錨點結束 ── */

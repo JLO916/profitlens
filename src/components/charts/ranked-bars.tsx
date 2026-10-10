@@ -104,7 +104,10 @@ export interface HbarBlockShape<E = unknown> {
 export interface HbarAxis {
   /** 零線 x（最後一段有柱的段）。 */
   zeroX: number;
-  /** 刻度：從柱列底到柱列底＋RANKED_AXIS_TICK。 */
+  /**
+   * 刻度：從該段柱列底（零線下端）往下到軸列頂＋RANKED_AXIS_TICK。沒有「另 n 個」列時就是柱列底到柱列底＋RANKED_AXIS_TICK；
+   * V4-5 代理 C（審查 B-R2）：該段有「另 n 個」列時穿過那一列接到軸列（原本從所有列的底起算，刻度會浮在零線下端 1 列之外）。
+   */
   tick: { y1: number; y2: number };
   /** 文字：置中於零線，夾在 [半寬, 寬 − 半寬] 內（不超出左右邊界）；y 是基線。 */
   label: { x: number; y: number; text: string };
@@ -308,7 +311,7 @@ export function hbarGeometry<E = unknown>(input: readonly RankedBarRow<E>[] | re
   });
   const barRowCount = shapes.reduce((sum, block) => sum + block.bars.length + (block.more ? 1 : 0), 0);
   const axisBlock = options.axis ? [...shapes].reverse().find(block => block.bars.length > 0) : undefined;
-  const axis = axisBlock && options.axis ? axisOf(options.axis, axisBlock.zeroX, offset, baseline, drawWidth) : undefined;
+  const axis = axisBlock && options.axis ? axisOf(options.axis, axisBlock.zeroX, axisBlock.zeroLine?.y2 ?? offset, offset, baseline, drawWidth) : undefined;
   const rowCount = barRowCount + (axis ? 1 : 0);
   const extraRows = mode === "pareto" ? shapes.flatMap(block => block.bars.filter(bar => bar.row.extra !== undefined && bar.row.extra !== "").map(bar => ({ key: bar.key, y: bar.textY, text: bar.row.extra! }))) : [];
   const extra = extraRows.length ? { width: Math.ceil(Math.max(...extraRows.map(item => rankedTextWidth(item.text)))) + RANKED_TEXT_PAD + EXTRA_GAP, rows: extraRows } : null;
@@ -321,11 +324,14 @@ export function hbarGeometry<E = unknown>(input: readonly RankedBarRow<E>[] | re
   };
 }
 
-/** V4-5 軸列的幾何：top＝柱列底（軸列頂）；文字以估寬置中於零線，夾在 [半寬, 寬 − 半寬]（寬不夠時置中於圖寬）。 */
-function axisOf(text: string, zeroX: number, top: number, baseline: number, width: number): HbarAxis {
+/**
+ * V4-5 軸列的幾何：barsBottom＝該段柱列底（零線下端）、top＝軸列頂（所有列之後）；刻度從 barsBottom 到 top＋RANKED_AXIS_TICK（兩者相同時就是柱列底下 4px）。
+ * 文字以估寬置中於零線，夾在 [半寬, 寬 − 半寬]（寬不夠時置中於圖寬）。
+ */
+function axisOf(text: string, zeroX: number, barsBottom: number, top: number, baseline: number, width: number): HbarAxis {
   const half = rankedTextWidth(text) / 2;
   const x = half * 2 >= width ? width / 2 : Math.min(Math.max(zeroX, half), width - half);
-  return { zeroX, tick: { y1: top, y2: top + RANKED_AXIS_TICK }, label: { x: round1(x), y: top + baseline, text } };
+  return { zeroX, tick: { y1: barsBottom, y2: top + RANKED_AXIS_TICK }, label: { x: round1(x), y: top + baseline, text } };
 }
 
 export interface RankedBarsViewProps<E = unknown> {

@@ -8,6 +8,7 @@ import type { ScenarioBaseline, ScenarioInputs } from "@/domain/scenarios";
 import { MAX_SENSITIVITY_INPUT_LENGTH, blankSensitivity, type SensitivityInputs } from "@/application/decision";
 import { scenarioReasonText } from "@/application/decision-export";
 import { fill, labels } from "@/i18n";
+import { ScenarioThresholdSection, scenarioThresholdChartId, scenarioThresholdModel } from "./scenarios/threshold-chart";
 
 const copy = labels.scenarios.sensitivity;
 
@@ -23,15 +24,19 @@ const letter = (index: number) => String.fromCharCode(65 + index);
  * 每次輸入都經 onChange 寫回方案；只有「計算三個假設」的結果（submitted）留在本元件。三格都已填的既有值（例如讀入備份）直接帶出結果。
  */
 // V3-2b：目標金額與門檻用 L1（萬、一位小數百分比），三個假設的比較表用 L2（整數元，表頭標「（元）」），技術細節的係數到分（L3）。
-export function ScenarioSensitivity({ baseline, inputs, stale = false, value, onChange }: { baseline: ScenarioBaseline; inputs: ScenarioInputs; stale?: boolean; value?: SensitivityInputs; onChange: (next: SensitivityInputs) => void }) {
+// V4-5 代理 C：planId（方案 id）給 G16 的區塊代號 scenarios-threshold-{planId}（每個方案欄唯一）；G16 在門檻說明之後、技術細節之前，
+// 快照過期或母方案不能試算時放在既有 alert 之後、改空狀態（alert 的輸出不變）。G16 的模型是純函式、區塊元件沒有 hook（見 scenarios/threshold-chart.tsx）。
+export function ScenarioSensitivity({ planId, baseline, inputs, stale = false, value, onChange }: { planId: string; baseline: ScenarioBaseline; inputs: ScenarioInputs; stale?: boolean; value?: SensitivityInputs; onChange: (next: SensitivityInputs) => void }) {
   const volumes = (value ?? blankSensitivity()).volumes;
   const [submitted, setSubmitted] = useState<readonly string[] | null>(() => volumes.every(entry => entry.trim() !== "") ? [...volumes] : null);
   const analysis = useMemo(() => analyzeScenarioSensitivity(baseline, inputs, submitted ?? ["", "", ""], { stale }), [baseline, inputs, submitted, stale]);
+  const thresholdModel = useMemo(() => scenarioThresholdModel(analysis), [analysis]);
+  const threshold = <ScenarioThresholdSection model={thresholdModel} chartId={scenarioThresholdChartId(planId)} />;
   return <details className="scenario-sensitivity" data-testid="scenario-sensitivity">
     <summary>{labels.scenarios.sections.scenarioBreakeven}</summary>
     {/* V3-6（PRD §7.4、§6.3 #38）：限制一句改成 13px 次要色，不加前綴。 */}
     <p className="scenario-caution">{labels.glossary.basis.items[6]}</p>
-    {analysis.status !== "valid" ? <div className="alert" role="status">{analysis.reasons.map(reason => <p key={`${reason.code}-${reason.field ?? ""}`}>{reasonText(reason)}</p>)}</div> : <>
+    {analysis.status !== "valid" ? <><div className="alert" role="status">{analysis.reasons.map(reason => <p key={`${reason.code}-${reason.field ?? ""}`}>{reasonText(reason)}</p>)}</div>{threshold}</> : <>
       <h4>{copy.targetsHeading}</h4>
       {analysis.targets.map(target => <section className="threshold-target" data-testid={`threshold-${target.id}`} key={target.id}>
         <h5>{fill(copy.targetHeading, { target: targetLabel(target.id), amount: formatAmountL1(target.target) })}</h5>
@@ -39,6 +44,7 @@ export function ScenarioSensitivity({ baseline, inputs, stale = false, value, on
         <p>{thresholdDescription(target)}</p>
         {target.threshold_fraction && <details><summary>{copy.exactFractionSummary}</summary><p className="formula">{fill(copy.exactFractionTechnical, { numerator: target.threshold_fraction.numerator, denominator: target.threshold_fraction.denominator })}</p></details>}
       </section>)}
+      {threshold}
       <details className="sensitivity-formula"><summary>{labels.evidence.sections.technicalDetails}</summary>
         <p className="formula">{analysis.formula}</p>
         <p>{fill(copy.coefficientsTechnical, { volume: formatAmountL3(analysis.coefficients!.volume_coefficient), fixed: formatAmountL3(analysis.coefficients!.fixed_outflow), numerator: analysis.coefficients!.volume_coefficient_fraction.numerator, denominator: analysis.coefficients!.volume_coefficient_fraction.denominator })}</p>

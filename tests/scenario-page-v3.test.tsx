@@ -8,6 +8,7 @@ import { formatAmountL1, formatAmountL2, formatAmountL3, formatPeriodL1, formatS
 import { DecisionWorkbench } from "../src/components/decision-workbench";
 import { MultiScenarioWorkbench } from "../src/components/multi-scenario-workbench";
 import { ScenarioVarianceSection, type ScenarioVarianceModel } from "../src/components/scenarios/variance-chart";
+import { ScenarioSensitivity } from "../src/components/scenario-sensitivity";
 import { formatHeadlineAmount } from "../src/application/copy";
 import { AMOUNT_FIELDS, type AnalysisFilters } from "../src/domain/types";
 import type { ScenarioInputs } from "../src/domain/scenarios";
@@ -460,6 +461,10 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     expect(first.result?.contribution).toBe("284.00");
     expect(g15(tree).bars.map(bar => [bar.key, bar.value, bar.display, bar.tone])).toEqual([[first.id, "14.00", formatSignedDelta("14.00", "L1"), "favorable"]]);
     expect(g15(tree).title).toBe(fill(labels.scenarios.chartsV4.variance.title.more, { plan: fill(dw.defaultPlanName, { n: 1 }), amount: formatHeadlineAmount("14.00") }));
+    // V4-5 代理 C：有效結果的方案欄才有「要賣到多少才划算」（內含 G16），planId 是該方案的 id（G16 區塊代號 scenarios-threshold-{planId}）；G15 的空狀態說明不覆寫。
+    const sensitivities = findAll(byTestId(tree, "scenario-1"), item => item.type === ScenarioSensitivity);
+    expect(sensitivities.map(item => item.props.planId)).toEqual([first.id]);
+    expect(findAll(tree, item => item.type === ScenarioVarianceSection)[0].props.emptyMessage).toBeUndefined();
     // 方案 2：物流費 −10、一次性 20 → 264.00（−6.00）；兩根柱，標題仍取 |+14|。
     (byTestId(tree, "scenario-add").props.onClick as () => void)();
     tree = run(props());
