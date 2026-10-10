@@ -1380,6 +1380,12 @@ export const scenarios = {
     acknowledged: "已了解這是試算，不是預測。",
     addNote: "最多 3 個方案，都從同一個本期基準算起。",
   },
+  // ── V4-5 錨點：假設試算圖表字串（代理 B：variance＝G15 方案差額；代理 C：threshold＝G16 要賣到多少才划算）。
+  // G15 標題的方向詞前一定加「試算後」（試算是條件差額，不是預測；AGENTS.md）。
+  chartsV4: {
+    variance: {},
+    threshold: {},
+  },
 } as const;
 
 // ── actions：待辦：欄位（form）、看板（board）、清單與編輯（workbench）
