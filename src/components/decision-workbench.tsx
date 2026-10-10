@@ -19,6 +19,7 @@ import { channelsLabel, demoAlias } from "@/application/copy";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { ScenarioSensitivity } from "./scenario-sensitivity";
+import { ScenarioVarianceSection, scenarioVarianceModel } from "./scenarios/variance-chart";
 import { toneClass } from "./tone-class";
 import { usePageSlot } from "./shell/page-slot";
 import { ShellIcon } from "./shell/shell-icon";
@@ -241,6 +242,8 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
   const ids = { baseline: `${fieldId}-baseline`, compare: `${fieldId}-compare` };
   const period = formatPeriodL1(session.period.start, session.period.end, { days: false, anchor: session.data_as_of });
   const calculated = plans.flatMap(plan => { const n = revisionOf(plan); return plan.result?.status === "valid" && n !== undefined ? [{ id: plan.id, name: plan.name, revision: n }] : []; });
+  // V4-5 代理 B（G15 方案差額）：純函式模型，只重新呈現各方案 result 的試算後貢獻與差額（不相加）；沒有方案時（過期且清空）與比較表一樣不渲染。
+  const variance = plans.length > 0 ? scenarioVarianceModel({ plans, baseline: session.baseline.amounts.contribution_after_marketing, channels: channelsLabel(session.scope.channels, alias), period, staleSuffix: stale ? staleSuffix : "" }) : null;
   // V3-6（PRD §7.4 頁首、§6.3 #39）：「匯出本頁」頁內下拉，三項呼叫 v2「匯出」區的同一個 download(format)；Esc／點外面關閉沿用 Dashboard 的 `.topbar-menu.auto-close`。
   const exportMenu = <details className="topbar-menu auto-close export-page scenario-export" data-testid="scenario-export-menu">
     <summary className="ui-btn ui-btn-secondary" data-testid="export-page-scenarios">{labels.products.pageV3.exportPage}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
@@ -349,6 +352,8 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
       {/* V3-8 C（§7.10 沒有方案，C10 區段型）：0 個方案時這一格就是空狀態——標題「尚無方案。」＋說明＋「新增方案」；有方案時維持「新增方案」＋最多 3 個的說明。 */}
       {plans.length < 3 && <div className={plans.length ? "scenario-add ui-empty-block" : "scenario-add ui-empty-block scenario-add-empty"}>{!plans.length && <><p className="ui-empty-title">{labels.empty.stateV3.noPlansTitle}</p><p>{labels.empty.stateV3.noPlansBody}</p></>}<button type="button" className="ui-btn ui-btn-secondary" data-testid="scenario-add" disabled={stale || !session.baseline.eligible} onClick={addPlan}>{labels.scenarios.buttons.addScenario}</button>{plans.length > 0 && <p>{page.addNote}</p>}</div>}
     </div>
+    {/* V4-5 代理 B（PRD §5.4 第 3 列、CHART_CATALOG G15）：方案欄之後、方案比較表之前是 G15 方案差額（全頁一份；柱不可點，PRD §8.7）。 */}
+    {variance && <ScenarioVarianceSection model={variance} />}
     {/* V3-6（PRD §7.4 方案欄之後）：方案比較表（預設展開）→ 其他通路的方案 → 之前的試算 → 通知。 */}
     {plans.length > 0 && <section className="ui-section scenario-compare" aria-labelledby={ids.compare}>
       <div className="ui-section-head"><h2 className="ui-section-title" id={ids.compare}>{fill(ui.compareTableHeading, { staleSuffix: stale ? staleSuffix : "" })}</h2><p className="ui-section-subtitle">{ui.compareNote}</p></div>

@@ -102,6 +102,15 @@ describe("manual scenarios and action state", () => {
     expect(updated).toHaveLength(1);
     expect(updated[0].result).toMatchObject({ contribution: "264.00", delta: "-6.00" });
   });
+  it("V4-5 G15 data: every plan's delta is its own contribution minus the same baseline (never cumulative across plans), and saving a second plan leaves the first result untouched", () => {
+    const s = session();
+    const first = saveScenario(s, [], plan("p1", "履約"));
+    const both = saveScenario(s, first, { ...plan("p2", "一次性"), inputs: { ...inputs, one_time_cost: "20" } });
+    expect(both.map(p => [p.id, p.result?.contribution, p.result?.delta])).toEqual([["p1", "284.00", "14.00"], ["p2", "264.00", "-6.00"]]);
+    expect(both[0].result).toEqual(first[0].result);
+    const cents = (value: string) => Math.round(Number(value) * 100);
+    for (const p of both) expect(cents(p.result!.contribution!) - cents(s.baseline.amounts.contribution_after_marketing!), p.id).toBe(cents(p.result!.delta!));
+  });
   it("limits scenarios to three with explicit order and deletion", () => {
     const s = session();
     const plans = ["p1", "p2", "p3"].reduce((all, id) => saveScenario(s, all, plan(id)), [] as ScenarioPlan[]);
