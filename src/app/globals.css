@@ -2860,6 +2860,16 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-4 C 錨點結束 ── */
 
 /* ── V4-5 A：C29 ThresholdLine、ChartFrame variant="inline"（代理 A） ── */
+/* C16 variant="inline"（PRD §6.1）：放在既有卡片（.panel、方案欄 article.scenario-card、會議議程項）內的圖區塊。沒有 .panel 的外框、底色與圓角，
+   也不另加內距（外層卡片已有，避免卡片套卡片，v3 X8）；與上一段內容之間留 space-4。仍是 section.chart-section：標題列、固定高容器、資料表沿用既有規則，
+   ≤ 767px 的 .chart-section 內距規則也被這裡蓋掉（兩個 class 的權重較高）。 */
+.chart-section.is-inline { margin: var(--space-4) 0 0; padding: 0; border: 0; background: none; }
+/* C29（PRD §6.3、§4.3 G16）：量寬容器只是區塊；svg 寬 100%、高 chartHeights.sm（元件給 height 屬性），固定高由外框 .chart-frame.sm 負責。
+   軸文字 12px 用 --chart-axis（同 C17、C27 的軸）；點標籤 12px 次要色、tabular。點不可點（PRD §8.7 例外：試算結果是假設），整張圖不接指標事件。 */
+.threshold-line { display: block; width: 100%; min-width: 0; }
+.chart-threshold { display: block; width: 100%; font-family: var(--font-sans); pointer-events: none; }
+.chart-threshold text { font-size: var(--text-12); fill: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.chart-threshold .threshold-axis text { fill: var(--chart-axis); }
 /* ── V4-5 A 錨點結束 ── */
 
 /* ── V4-5 B：G15 方案差額（試算頁方案欄與比較表之間；代理 B） ── */
