@@ -1882,6 +1882,12 @@ const meetingStore = {
     /** V3-10（PRD §2.3 C、WCAG 2.5.3 可及名稱含可見文字）：議程 1 關鍵數字與議程 3 精簡表的 number-link 可及名稱。{title}＝「計算與來源」抽屜標題（evidence.title，不改）；{value}＝按鈕的可見文字（L1／L2 格式化後、含 U+2212），逐字放進名稱；句型同 overview.kpiBand.valueAria。 */
     linkAria: "{title} {value}，看明細",
   },
+  // ── V4-6 錨點：會議紀錄圖表字串（代理 A：history＝G19 會議歷史小倍數；代理 B：scenarios＝G15 會議實例，議程 5）。
+  // G15 會議實例的標題「{n} 個通路的選入方案」，不跨通路挑最大值（各通路的現況基準不同）；試算結果是條件差額，不是預測（AGENTS.md）。
+  chartsV4: {
+    history: {},
+    scenarios: {},
+  },
 } as const;
 
 // ── data：資料來源：資料頁、問題清單、示範資料別名

@@ -2884,3 +2884,9 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 .chart-section.scenario-threshold .threshold-out-of-range { margin-top: var(--space-2); }
 .chart-section.scenario-threshold .threshold-out-of-range p { margin: 0; }
 /* ── V4-5 C 錨點結束 ── */
+
+/* ── V4-6 A：G19 會議歷史小倍數（meeting-history 內；代理 A） ── */
+/* ── V4-6 A 錨點結束 ── */
+
+/* ── V4-6 B：G15 會議實例（議程 5；代理 B） ── */
+/* ── V4-6 B 錨點結束 ── */
