@@ -151,7 +151,7 @@ describe("G15 方案差額：golden DTC 三個方案（兩個有效、一個不�
     expect(frame).not.toMatch(/ranked-hit|is-clickable|tabindex|<button|<a\s|onclick/i);
   });
 
-  it("資料表（C33，L2 純文字）：方案名稱、試算後的扣廣告後貢獻（元）、與現況相比（元）；每個方案一列，試算後沒有結果的寫「不適用」（審查 B-R1，PRD §4.3）；沒有任何合計", () => {
+  it("資料表（C33，L2 純文字）：方案名稱、試算後的扣廣告後貢獻（元）、與現況相比（元）；每個方案一列，試算後 invalid（還不能試算）的寫「尚未試算」，與常駐的方案比較表同一個字（審查 R1-V45-W3）；沒有任何合計", () => {
     const details = element(section, 'class="data-alternative"')!;
     expect(details).toMatch(/^<details class="data-alternative">/);
     expect(textOf(element(details, "<summary")!)).toBe(fill(labels.overview.page.dataTable, { title: copy.section }));
@@ -162,8 +162,11 @@ describe("G15 方案差額：golden DTC 三個方案（兩個有效、一個不�
     expect(rows).toEqual([
       ["履約", formatAmountL2("284.00"), formatSignedDelta("14.00", "L2")],
       ["一次性", formatAmountL2("264.00"), formatSignedDelta("-6.00", "L2")],
-      ["超出範圍", labels.shell.status.notApplicable, labels.shell.status.notApplicable],
+      ["超出範圍", dw.notCalculated, dw.notCalculated],
     ]);
+    // 審查 R1-V45-W3：同一個 invalid 方案，G15 資料表與常駐的方案比較表（planCell）寫同一個字：比較表「扣廣告後貢獻」列＝現況、履約、一次性、超出範圍。
+    const totalRow = element(element(html, 'data-testid="scenario-comparison"')!, 'class="scenario-total total"')!;
+    expect(matches(totalRow, /<td class="num">([^<]*)<\/td>/g)).toEqual([formatAmountL2("270.00"), formatAmountL2("284.00"), formatAmountL2("264.00"), rows[2][1]]);
     expect(table).not.toContain("number-link");
     expect(table).not.toContain("<tfoot");
     // 少賺的差額格上不利色（只有不利上色）。
@@ -236,10 +239,13 @@ describe("G15：其他狀態", () => {
 
 describe("scenarioVarianceModel（純函式）", () => {
   it("柱＝有效結果（plan 順序），值與條端文字直接取 result.delta；沒有結果或不能試算的方案不列柱但列在資料表", () => {
-    const model = scenarioVarianceModel(input([plan("a", "A", valid("284.00", "14.00")), plan("b", "B", null), plan("c", "C", { status: "invalid", contribution: null, delta: null } as unknown as ScenarioResult)]));
+    const unavailable = (status: "invalid" | "ineligible") => ({ status, contribution: null, delta: null } as unknown as ScenarioResult);
+    const model = scenarioVarianceModel(input([plan("a", "A", valid("284.00", "14.00")), plan("b", "B", null), plan("c", "C", unavailable("invalid")), plan("d", "D", unavailable("ineligible"))]));
     expect(model.bars.map(row => [row.key, row.label, row.value, row.tone, row.display])).toEqual([["a", "A", "14.00", "favorable", formatSignedDelta("14.00", "L1")]]);
-    // V4-5 代理 C（審查 B-R1）：還沒試算（result null）是 pending（「尚未試算」）、試算後 invalid／ineligible 是 notApplicable（「不適用」）。
-    expect(model.tableRows).toEqual([{ id: "a", name: "A", status: "valid", contribution: "284.00", delta: "14.00" }, { id: "b", name: "B", status: "pending", contribution: null, delta: null }, { id: "c", name: "C", status: "notApplicable", contribution: null, delta: null }]);
+    // V4-5 代理 C（審查 B-R1）、審查 R1-V45-W3：還沒試算（result null）與試算後 invalid（還不能試算）是 pending（「尚未試算」，同方案比較表）；
+    // 只有 ineligible（聲明未勾、基準不適用）是 notApplicable（「不適用」）。MAX_SCENARIOS＝3，第 4 個方案只用來測對照（模型只取前 3 個）。
+    expect(model.tableRows).toEqual([{ id: "a", name: "A", status: "valid", contribution: "284.00", delta: "14.00" }, { id: "b", name: "B", status: "pending", contribution: null, delta: null }, { id: "c", name: "C", status: "pending", contribution: null, delta: null }]);
+    expect(scenarioVarianceModel(input([plan("d", "D", unavailable("ineligible"))])).tableRows).toEqual([{ id: "d", name: "D", status: "notApplicable", contribution: null, delta: null }]);
     expect(model.titleKind).toBe("more");
   });
 
@@ -444,6 +450,26 @@ describe("G16 要賣到多少才划算：每個 scenario-{n} 一份", () => {
       expect(geometry.dropped.sort()).toEqual(["c", "zero_contribution"]);
       expect(geometry.connected).toBe(false);
     }
+  });
+
+  it("審查 R2-A11Y-2：每個方案欄的 G16 資料表 caption（捲動區 region 名稱）帶自己的方案名稱，兩個方案分得開", () => {
+    const g16 = labels.scenarios.chartsV4.threshold;
+    const captions = [1, 2].map(n => {
+      const table = element(g16Of(n)!, 'class="table-scroll chart-data-scroll"')!;
+      expect(openTag(table, 'class="table-scroll chart-data-scroll"'), `scenario-${n}`).toContain(`aria-label="${textOf(element(table, "<caption")!)}"`);
+      return textOf(element(table, "<caption")!);
+    });
+    expect(captions).toEqual([fill(g16.caption, { plan: "履約", section: g16.section }), fill(g16.caption, { plan: "一次性", section: g16.section })]);
+  });
+
+  it("審查 R2-A11Y-3：區塊代號無損跳脫——UUID 原樣；不同的 plan id（「甲」「乙」、「plan 1」「plan_1」）不會撞號；結果只含 [\\w-]", () => {
+    const uuid = "3f2b9c1e-8a4d-4c6b-9e0f-1a2b3c4d5e6f";
+    expect(scenarioThresholdChartId(uuid)).toBe(`scenarios-threshold-${uuid}`);
+    const ids = ["甲", "乙", "plan 1", "plan_1", "plan-1", "_", "__", "a b", "a_b", "😀", "p"].map(scenarioThresholdChartId);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const id of ids) expect(id).toMatch(/^scenarios-threshold-[\w-]+$/);
+    // 讀入的備份裡兩個方案 id「甲」「乙」：同一個 DecisionWorkbench 內 h4 與副標的 id 各自唯一，aria-labelledby 不會指到別的方案。
+    expect(scenarioThresholdChartId("甲")).not.toBe(scenarioThresholdChartId("乙"));
   });
 });
 

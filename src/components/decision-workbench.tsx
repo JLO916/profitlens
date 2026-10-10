@@ -345,7 +345,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
             {!plan.result && <p className="scenario-result-tag"><span className="ui-lozenge" data-tone="warning" data-testid="scenario-draft">{labels.scenarios.inputs.draft}</span></p>}
           </div>
           {valid && onSelectPlan && <button type="button" className="ui-btn ui-btn-secondary scenario-select" data-testid={`scenario-select-${n}`} aria-label={fill(labels.scenarios.workbench.selectPlanButton, { selectForMeeting: labels.meeting.buttons.selectForMeeting, plan: plan.name })} onClick={() => onSelectPlan(plan.id)}>{labels.meeting.buttons.selectForMeeting}</button>}
-          {valid && <ScenarioSensitivity planId={plan.id} baseline={session.baseline} inputs={plan.inputs} stale={stale} value={plan.sensitivity} onChange={next => setSensitivity(plan.id, next)} />}
+          {valid && <ScenarioSensitivity planId={plan.id} planName={plan.name.trim() === "" ? fill(ui.planLegend, { n }) : plan.name} baseline={session.baseline} inputs={plan.inputs} stale={stale} value={plan.sensitivity} onChange={next => setSensitivity(plan.id, next)} />}
         </div>
       </article>;
     })}

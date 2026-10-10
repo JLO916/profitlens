@@ -154,7 +154,7 @@ describe("V4-5 G16 在 scenario-sensitivity 內（SSR）", () => {
   const g16 = labels.scenarios.chartsV4.threshold;
   const copy = labels.scenarios.sensitivity;
   const METRIC = metricDefinitions.contribution_after_marketing.label;
-  const render = (base: ReturnType<typeof golden>, inputs: ScenarioInputs, options: { stale?: boolean; value?: SensitivityInputs } = {}) => renderToStaticMarkup(createElement(ScenarioSensitivity, { planId: "p", baseline: base, inputs, stale: options.stale, value: options.value, onChange: () => undefined }));
+  const render = (base: ReturnType<typeof golden>, inputs: ScenarioInputs, options: { stale?: boolean; value?: SensitivityInputs } = {}) => renderToStaticMarkup(createElement(ScenarioSensitivity, { planId: "p", planName: "P", baseline: base, inputs, stale: options.stale, value: options.value, onChange: () => undefined }));
   const chart = (html: string) => element(html, `data-testid="${SCENARIOS_THRESHOLD_TESTID}"`)!;
   const pointIds = (html: string) => [...chart(html).matchAll(new RegExp(`data-testid="${SCENARIOS_THRESHOLD_POINT_PREFIX}([^"]+)"`, "g"))].map(match => match[1]);
   const tableRows = (html: string) => [...element(element(chart(html), `data-testid="${SCENARIOS_THRESHOLD_TABLE_TESTID}"`)!, "<tbody")!.matchAll(/<tr>(.*?)<\/tr>/g)].map(match => [textOf(element(match[1], "<th")!), ...[...match[1].matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(cell => cell[1])]);
@@ -217,6 +217,12 @@ describe("V4-5 G16 在 scenario-sensitivity 內（SSR）", () => {
     expect(pointIds(html)).toEqual([]);
     expect(chart(html)).not.toContain("chart-threshold\"");
     expect(tableRows(html)).toEqual([]);
+    // 審查 R2-A11Y-1：過期分支的 <details> 內 G16 是唯一的標題（前一個標題是基準列 h2），用 h3，不新增 h2→h4 跳級；這個分支沒有任何 h4。
+    expect(chart(html)).toContain(`<h3 id="scenarios-threshold-p-title">${g16.section}</h3>`);
+    expect(element(html, 'data-testid="scenario-sensitivity"')).not.toMatch(/<h4\b/);
+    // 審查 R1-V45-W1：空狀態的副標只寫區塊名與軸，不寫圖上沒有的空心圈與實心點。
+    expect(subtitle(html)).toBe(fill(g16.subtitleEmpty, { section: g16.section, axis: fill(g16.axis, { metric: METRIC }) }));
+    expect(subtitle(html)).not.toBe(fill(g16.subtitle, { section: g16.section, axis: fill(g16.axis, { metric: METRIC }) }));
   });
 
   it("L＝0（constant_below、constant_equal）：不畫門檻點、不列超出範圍；標題是零貢獻的恆低句、副標是維持現況的恆等句；三點明填時只有使用者點", () => {
@@ -227,11 +233,12 @@ describe("V4-5 G16 在 scenario-sensitivity 內（SSR）", () => {
     expect(pointIds(html)).toEqual(["a", "b", "c"]);
     expect(chart(html)).not.toContain("threshold-out-of-range");
     expect(tableRows(html).map(row => row[3])).toEqual([g16.pointKinds.user, g16.pointKinds.user, g16.pointKinds.user]);
-    // 三點沒填：一個點都沒有 → 空狀態（說明句 g16.empty），軸不畫。
+    // 三點沒填：一個點都沒有 → 空狀態（說明句 g16.empty），軸不畫；副標仍是維持現況的恆等句（L＝0 的副標本來就沒有圖例句）。
     const blank = render(base, zero);
     expect(pointIds(blank)).toEqual([]);
     expect(openTag(chart(blank), 'class="chart-frame sm"')).toContain('data-state="empty"');
     expect(textOf(element(chart(blank), 'class="chart-frame-message"')!)).toBe(g16.empty);
+    expect(subtitle(blank)).toBe(subtitle(html));
   });
 
   it("outside_range（零貢獻門檻 −100%、範圍內都達標）：不畫該點、不外插；圖下寫「超出範圍」與範圍內是否達標；資料表該列寫「超出範圍」", () => {
@@ -247,6 +254,39 @@ describe("V4-5 G16 在 scenario-sensitivity 內（SSR）", () => {
     const above = render(baseline({ ad_spend: "500.00" }), zero);
     expect(pointIds(above)).not.toContain("zero_contribution");
     expect(textOf(element(chart(above), 'class="threshold-out-of-range"')!)).toBe(fill(g16.outOfRange, { target: thresholdTargetLabel("zero_contribution"), outcome: copy.outcomeAllBelow }));
+  });
+
+  it("審查 R1-V45-W1：L≠0、兩個門檻都超出範圍且三個假設沒填時是空狀態——副標不寫空心圈與實心點；圖下兩行「超出範圍」照寫", () => {
+    // 毛銷售 100、其餘 0：L＝100、現況 100；一次性投入 300 時零貢獻門檻 +200%、維持現況門檻 +300%，都超出 +100%（範圍內都低於目標）。
+    const html = render(baseline({}), { ...zero, one_time_cost: "300" });
+    expect(pointIds(html)).toEqual([]);
+    expect(openTag(chart(html), 'class="chart-frame sm"')).toContain('data-state="empty"');
+    expect(textOf(element(chart(html), 'class="chart-frame-message"')!)).toBe(g16.empty);
+    expect(subtitle(html)).toBe(fill(g16.subtitleEmpty, { section: g16.section, axis: fill(g16.axis, { metric: METRIC }) }));
+    expect([...chart(html).matchAll(/<p class="note" data-target="([^"]+)">/g)].map(match => match[1])).toEqual(["zero_contribution", "maintain_baseline"]);
+    // valid 分支：標題 h4（與「兩個目標」「自己填三個銷量假設」同層）。
+    expect(chart(html)).toMatch(/<h4 id="scenarios-threshold-p-title">/);
+  });
+
+  it("審查 R1-V45-W2：零貢獻門檻點的標籤帶「扣廣告後貢獻 = 0」（不單寫「打平」，T＝0 不是公司淨利損益兩平）；名稱與百分比用「：」隔開", () => {
+    const html = render(golden(), f10);
+    const labelsOf = [...element(chart(html), 'class="threshold-labels"')!.matchAll(/<text class="chart-value threshold-label is-threshold"[^>]*>([^<]*)<\/text>/g)].map(match => match[1]);
+    const zeroName = fill(g16.pointNames.zero_contribution, { metric: METRIC });
+    expect(zeroName).toContain(METRIC);
+    expect(labelsOf).toEqual([
+      fill(g16.pointLabel, { name: zeroName, pct: formatPercentNumber("-51.263537906137", "L1", { signed: true }) }),
+      fill(g16.pointLabel, { name: g16.pointNames.maintain_baseline, pct: formatPercentNumber("-2.527075812274", "L1", { signed: true }) }),
+    ]);
+    // 與既有目標名「打平（扣廣告後貢獻 = 0）」括號內的字相同。
+    expect(thresholdTargetLabel("zero_contribution")).toContain(zeroName);
+  });
+
+  it("審查 R2-A11Y-2：資料表 caption（捲動區 region 的名稱）帶方案名稱", () => {
+    const html = render(golden(), f10);
+    const caption = fill(g16.caption, { plan: "P", section: g16.section });
+    const table = element(chart(html), 'class="table-scroll chart-data-scroll"')!;
+    expect(openTag(table, 'class="table-scroll chart-data-scroll"')).toContain(`aria-label="${caption}"`);
+    expect(textOf(element(table, "<caption")!)).toBe(caption);
   });
 
   it.each([["0", "", "10"], ["", "", ""], ["abc", "0", "10"]])("三個假設沒有都明填且有效（%s、%s、%s）：沒有使用者點、不代填", (...volumes) => {

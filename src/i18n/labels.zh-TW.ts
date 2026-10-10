@@ -1408,10 +1408,11 @@ export const scenarios = {
       /** 軸列（零線＝現況，畫在柱列下方、置中於零線）：{amount}＝現況的扣廣告後貢獻（L1）。 */
       axis: "現況 {amount}",
       /**
-       * 資料表之後的說明（在收合的 <details> 內）。V4-5 代理 C（審查 B-R1；PRD §4.3 G15「結果 null 時寫『不適用』」）：還沒按「試算」的方案沿用比較表的「尚未試算」，
-       * 試算過但結果無效或不適用（invalid、ineligible）的方案寫既有的「不適用」（labels.shell.status.notApplicable）。
+       * 資料表之後的說明（在收合的 <details> 內）。V4-5 代理 C（審查 B-R1；PRD §4.3 G15「結果 null 時寫『不適用』」），V4-5 審查 R1-V45-W3 再收斂：
+       * 還沒按「試算」或假設還要修正（result null、invalid；方案欄寫「還不能試算」）的方案沿用方案比較表的「尚未試算」，與常駐的比較表同一格同一個字；
+       * 只有方案不適用（ineligible：聲明未勾、基準不適用；方案欄寫「這個方案不適用」）才寫既有的「不適用」（labels.shell.status.notApplicable）。
        */
-      tableNote: "每個方案都從同一個本期基準算起，金額不能相加；還沒試算的方案寫「尚未試算」，試算後沒有結果的寫「不適用」。",
+      tableNote: "每個方案都從同一個本期基準算起，金額不能相加；還沒試算或還不能試算的方案寫「尚未試算」，與方案比較表相同；方案不適用時寫「不適用」。",
     },
     /**
      * V4-5 代理 C：G16 要賣到多少才划算（PRD §4.1–§4.7 G16、§8.7；CHART_CATALOG G16；D-V4-20＝A′ 只畫點、不連線）。每個方案欄 scenario-{n} 的
@@ -1421,10 +1422,14 @@ export const scenarios = {
      * 銷量欄沿用 scenarios.inputs.volume.label、金額欄以 format.units.yuanColumn 加「（元）」。
      */
     threshold: {
-      /** 區塊標準名：沒有門檻可寫時的標題（快照過期、母方案不能試算）、副標第一段、資料表 summary（「表格 · …」）與 caption。 */
+      /** 區塊標準名：沒有門檻可寫時的標題（快照過期、母方案不能試算）、副標第一段、資料表 summary（「表格 · …」）與 caption（caption 前面再加方案名稱）。 */
       section: "兩個門檻與三個假設的位置",
       /** 副標（同時是區塊的 aria 描述）：{section}＝區塊標準名，{axis}＝軸的說明。 */
       subtitle: "{section} · {axis} · 空心圈是門檻，實心點是自己填的假設",
+      /** V4-5 審查 R1-V45-W1：空狀態（過期、不能試算、圖上沒有任何點）的副標，不寫圖上沒有的空心圈與實心點；L＝0 仍用 subtitleFlat。 */
+      subtitleEmpty: "{section} · {axis}",
+      /** V4-5 審查 R2-A11Y-2：資料表 caption（同時是捲動區 region 的名稱），帶方案名稱，多個方案欄的資料表在地標清單裡分得開：{plan}＝方案名稱，{section}＝區塊標準名。 */
+      caption: "{plan} · {section}",
       /** 軸的說明（接在副標內）：{metric}＝扣廣告後貢獻的標準名。 */
       axis: "橫軸銷量增減 −90% 到 +100%，縱軸試算後的{metric}",
       /** L＝0（銷量怎麼變都不影響試算結果）時的副標：{target}＝維持現況目標名，{description}＝該目標的既有恆等／恆高／恆低說明句（標題已是零貢獻目標的那一句）。 */
@@ -1435,10 +1440,16 @@ export const scenarios = {
       outOfRangeCell: "超出範圍",
       /** 圖上沒有任何點時（L＝0 或門檻都超出範圍，而且三個假設還沒試算）圖區的說明（state="empty"）。 */
       empty: "範圍內沒有門檻點；填好三個銷量假設並按「試算三個假設」後，這裡畫出它們的位置",
-      /** 門檻點的寬版標籤（容器寬 ≥ 480px）：{name}＝門檻短名，{pct}＝門檻（L1 帶號百分比）；窄版只寫 {pct}。三個假設的點只標 A／B／C。 */
-      pointLabel: "{name} {pct}",
-      /** 門檻短名（只用在圖上的點標籤；資料表列名用完整目標名）。 */
-      pointNames: { zero_contribution: "打平", maintain_baseline: "維持現況" },
+      /**
+       * 門檻點的寬版標籤（容器寬 ≥ 480px）：{name}＝門檻短名，{pct}＝門檻（L1 帶號百分比）；窄版只寫 {pct}。三個假設的點只標 A／B／C。
+       * 名稱與百分比之間用「：」（V4-5 審查 R1-V45-W2：零貢獻短名以「= 0」結尾，用空白隔開會讀成「0 −51.3%」）。
+       */
+      pointLabel: "{name}：{pct}",
+      /**
+       * 門檻短名（只用在圖上的點標籤；資料表列名用完整目標名）。V4-5 審查 R1-V45-W2：零貢獻門檻不單寫「打平」——T＝0 是扣廣告後貢獻為零，
+       * 不是公司淨利損益兩平（docs/SCENARIOS.md:64；v4 GLOSSARY #131），短名保留既有 targetZero 括號內的「{metric} = 0」；{metric}＝扣廣告後貢獻的標準名。
+       */
+      pointNames: { zero_contribution: "{metric} = 0", maintain_baseline: "維持現況" },
       /** 資料表「種類」欄。 */
       pointKinds: { threshold: "門檻", user: "自己填的假設" },
       /** 資料表欄名：列名欄「點」、銷量欄（{volume}＝scenarios.inputs.volume.label，與三個假設表的欄名相同）、種類欄。 */

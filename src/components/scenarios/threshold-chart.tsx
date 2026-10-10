@@ -19,6 +19,8 @@ import { ChartFrame } from "../overview/charts/chart-frame";
 // 點不可點（PRD §8.7 例外：試算結果是假設，v3 的門檻說明與敏感度表都是純文字），不記 chart_clicked；圖容器 aria-hidden、圖內 0 個可聚焦元素；鍵盤經 C33 資料表（純文字）。
 // 標題：零貢獻目標的既有說明句（thresholdDescription，字不改）；ChartFrame variant="inline"（方案欄已是卡片，不套 .panel）、headingLevel 4（與同一個 <details> 內的
 // 「兩個目標」「自己填三個銷量假設」h4 同層，門檻目標的 h5 在它之前，往上回到 h4 不跳級）、height sm。
+// V4-5 審查修正：過期（非 valid）分支的 <details> 內 G16 是唯一的標題，前一個標題是基準列 h2，改用 h3（R2-A11Y-1；valid 分支維持 h4，v3 標題層級不動）；
+// 空狀態的副標不寫圖例句（R1-V45-W1）；零貢獻門檻點的短名保留「{metric} = 0」（R1-V45-W2）；資料表 caption 帶方案名稱（R2-A11Y-2）；區塊代號無損跳脫（R2-A11Y-3）。
 // 模型是純函式、區塊元件沒有 hook：ScenarioSensitivity 只多呼叫一次 scenarioThresholdModel，量寬的 ResizeObserver 留在 ThresholdLine 裡
 // （DecisionWorkbench 的 hooks harness 只接管 useState／useMemo／useId／useEffect，不會執行子元件）。
 
@@ -49,6 +51,8 @@ export interface ScenarioThresholdModel {
   title: string;
   subtitle: string;
   section: string;
+  /** 資料表 caption（捲動區 region 的名稱）：「{方案名稱} · {區塊標準名}」；沒給方案名稱時是區塊標準名（審查 R2-A11Y-2）。 */
+  caption: string;
   /** ready：至少一個點；empty：過期、不能試算或圖上沒有任何點。 */
   state: "ready" | "empty";
   /** 空狀態的說明（過期或不能試算時沿用既有原因句）；ready 時 null。 */
@@ -67,21 +71,24 @@ const outcomeOf = (target: ContributionThreshold) => target.range_outcome === "a
 
 /**
  * G16 的模型（純函式）：只讀 analysis（與上方門檻說明、下方三個假設表同一次 analyzeScenarioSensitivity 的結果），點由 thresholdPoints 組出，不產生新數字。
- * 點標籤：門檻點寬版「{門檻短名} {L1 百分比}」、窄版（< 480px）只寫百分比；使用者點只標 A／B／C（與三個假設表的列名對應，避免和門檻標籤擠在一起）。
+ * 點標籤：門檻點寬版「{門檻短名}：{L1 百分比}」（零貢獻短名「扣廣告後貢獻 = 0」）、窄版（< 480px）只寫百分比；使用者點只標 A／B／C（與三個假設表的列名對應，避免和門檻標籤擠在一起）。
  */
-export function scenarioThresholdModel(analysis: ScenarioSensitivityAnalysis): ScenarioThresholdModel {
+export function scenarioThresholdModel(analysis: ScenarioSensitivityAnalysis, planName?: string): ScenarioThresholdModel {
   const arranged = thresholdPoints(analysis);
   const section = g16.section;
   const target = (id: ContributionThreshold["id"]) => analysis.targets.find(item => item.id === id);
   const zero = target("zero_contribution"), maintain = target("maintain_baseline");
   const valid = analysis.status === "valid";
   const title = valid && zero ? thresholdDescription(zero) : section;
+  const points: ThresholdLinePoint[] = arranged.points.map(point => point.kind === "threshold"
+    ? { ...point, label: fill(g16.pointLabel, { name: fill(g16.pointNames[point.id as ContributionThreshold["id"]], { metric: METRIC }), pct: pct(point.v, "L1") }), shortLabel: pct(point.v, "L1") }
+    : { ...point, label: letterOf(point.id), shortLabel: letterOf(point.id) });
+  const empty = !valid || points.length === 0;
+  // 副標：L＝0 用維持現況的恆等／恆高／恆低句；空狀態（過期、不能試算、圖上沒有點）只寫區塊名與軸，不寫圖上沒有的空心圈與實心點（審查 R1-V45-W1）。
   const subtitle = valid && arranged.flat && maintain
     ? fill(g16.subtitleFlat, { section, target: thresholdTargetLabel("maintain_baseline"), description: thresholdDescription(maintain) })
-    : fill(g16.subtitle, { section, axis: fill(g16.axis, { metric: METRIC }) });
-  const points: ThresholdLinePoint[] = arranged.points.map(point => point.kind === "threshold"
-    ? { ...point, label: fill(g16.pointLabel, { name: g16.pointNames[point.id as ContributionThreshold["id"]], pct: pct(point.v, "L1") }), shortLabel: pct(point.v, "L1") }
-    : { ...point, label: letterOf(point.id), shortLabel: letterOf(point.id) });
+    : fill(empty ? g16.subtitleEmpty : g16.subtitle, { section, axis: fill(g16.axis, { metric: METRIC }) });
+  const caption = planName !== undefined && planName.trim() !== "" ? fill(g16.caption, { plan: planName, section }) : section;
   const outOfRange = arranged.outOfRange.flatMap(id => {
     const found = target(id);
     return found ? [{ id, text: fill(g16.outOfRange, { target: thresholdTargetLabel(id), outcome: outcomeOf(found) }) }] : [];
@@ -94,9 +101,8 @@ export function scenarioThresholdModel(analysis: ScenarioSensitivityAnalysis): S
     else if (arranged.outOfRange.includes(item.id)) tableRows.push({ id: item.id, kind: "threshold", name: thresholdTargetLabel(item.id), volume: g16.outOfRangeCell, contribution: item.target });
   }
   for (const point of arranged.points) if (point.kind === "user") tableRows.push({ id: point.id, kind: "user", name: fill(sensitivityCopy.rowLabel, { letter: letterOf(point.id) }), volume: pct(point.v, "L2"), contribution: point.y });
-  const empty = !valid || points.length === 0;
   const message = !valid ? analysis.reasons.map(scenarioReasonText).join(" ") : points.length === 0 ? g16.empty : null;
-  return { title, subtitle, section, state: empty ? "empty" : "ready", message, points, outOfRange, tableRows, flat: arranged.flat, stale: arranged.stale };
+  return { title, subtitle, section, caption, state: empty ? "empty" : "ready", message, points, outOfRange, tableRows, flat: arranged.flat, stale: arranged.stale };
 }
 
 type ThresholdColumn = "volume" | "contribution" | "kind";
@@ -117,14 +123,19 @@ export interface ScenarioThresholdSectionProps {
   model: ScenarioThresholdModel;
   /** 區塊代號（scenarios-threshold-{planId}）：h4#{id}-title、p#{id}-sub；每個方案欄唯一。 */
   chartId: string;
+  /**
+   * 標題層級（預設 4）：valid 分支與「兩個目標」「自己填三個銷量假設」h4 同層；過期（非 valid）分支的 <details> 內 G16 是唯一的標題、
+   * 前一個標題是基準列 h2，ScenarioSensitivity 傳 3，不新增 h2→h4 跳級（審查 R2-A11Y-1）。
+   */
+  headingLevel?: 3 | 4;
 }
 
-/** 方案欄 G16：ChartFrame（inline、h4、sm；testid chart-scenarios-threshold）＋C29 ThresholdLine（只畫點）＋圖下「超出範圍」＋C33 資料表（純文字）。 */
-export function ScenarioThresholdSection({ model, chartId }: ScenarioThresholdSectionProps) {
+/** 方案欄 G16：ChartFrame（inline、h4（過期分支 h3）、sm；testid chart-scenarios-threshold）＋C29 ThresholdLine（只畫點）＋圖下「超出範圍」＋C33 資料表（純文字）。 */
+export function ScenarioThresholdSection({ model, chartId, headingLevel = 4 }: ScenarioThresholdSectionProps) {
   const dataTable = chartDataTable<ScenarioThresholdTableRow, ThresholdColumn>({
     title: model.section,
     testId: SCENARIOS_THRESHOLD_TABLE_TESTID,
-    caption: model.section,
+    caption: model.caption,
     rowHeaderLabel: g16.columns.point,
     rows: model.tableRows,
     rowKey: row => row.id,
@@ -137,11 +148,15 @@ export function ScenarioThresholdSection({ model, chartId }: ScenarioThresholdSe
     className: "scenarios-threshold-table",
   });
   const after = model.outOfRange.length > 0 ? <div className="threshold-out-of-range">{model.outOfRange.map(item => <p key={item.id} className="note" data-target={item.id}>{item.text}</p>)}</div> : undefined;
-  return <ChartFrame id={chartId} page="scenarios" testId={SCENARIOS_THRESHOLD_TESTID} className="scenario-threshold" variant="inline" headingLevel={4} title={model.title} subtitle={model.subtitle}
+  return <ChartFrame id={chartId} page="scenarios" testId={SCENARIOS_THRESHOLD_TESTID} className="scenario-threshold" variant="inline" headingLevel={headingLevel} title={model.title} subtitle={model.subtitle}
     height="sm" state={model.state === "empty" ? "empty" : undefined} message={model.message ?? undefined} after={after} dataTable={dataTable}>
     {model.state === "empty" ? null : <ThresholdLine points={model.points} testIdPrefix={SCENARIOS_THRESHOLD_POINT_PREFIX} />}
   </ChartFrame>;
 }
 
-/** 區塊代號：scenarios-threshold-{planId}（plan id 是 UUID；保險起見把 id 以外的字元換成 _，aria-labelledby 不會被空白切開）。 */
-export const scenarioThresholdChartId = (planId: string) => `scenarios-threshold-${planId.replace(/[^\w-]/g, "_")}`;
+/**
+ * 區塊代號：scenarios-threshold-{planId}。plan id 平常是 UUID（英數與 -，原樣保留）；讀入的備份可以是任何 1–500 字的字串（workspace-backup.ts），
+ * 所以 [A-Za-z0-9-] 以外的字元（含 _ 本身）無損跳脫成「_{碼位 16 進位}_」：不同的 id 一定得到不同的代號（審查 R2-A11Y-3：「甲」「乙」、「plan 1」「plan_1」不再撞號），
+ * 結果只含 [\w-]，aria-labelledby 不會被空白切開。
+ */
+export const scenarioThresholdChartId = (planId: string) => `scenarios-threshold-${Array.from(planId, char => /[A-Za-z0-9-]/.test(char) ? char : `_${char.codePointAt(0)!.toString(16)}_`).join("")}`;

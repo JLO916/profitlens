@@ -26,12 +26,14 @@ const letter = (index: number) => String.fromCharCode(65 + index);
 // V3-2b：目標金額與門檻用 L1（萬、一位小數百分比），三個假設的比較表用 L2（整數元，表頭標「（元）」），技術細節的係數到分（L3）。
 // V4-5 代理 C：planId（方案 id）給 G16 的區塊代號 scenarios-threshold-{planId}（每個方案欄唯一）；G16 在門檻說明之後、技術細節之前，
 // 快照過期或母方案不能試算時放在既有 alert 之後、改空狀態（alert 的輸出不變）。G16 的模型是純函式、區塊元件沒有 hook（見 scenarios/threshold-chart.tsx）。
-export function ScenarioSensitivity({ planId, baseline, inputs, stale = false, value, onChange }: { planId: string; baseline: ScenarioBaseline; inputs: ScenarioInputs; stale?: boolean; value?: SensitivityInputs; onChange: (next: SensitivityInputs) => void }) {
+// V4-5 審查修正：planName（方案名稱）只給 G16 資料表的 caption（多個方案欄的資料表 region 名稱分得開，R2-A11Y-2）；
+// 非 valid 分支（過期）的 G16 用 h3（該分支內唯一的標題，前一個標題是基準列 h2，R2-A11Y-1），valid 分支維持 h4。
+export function ScenarioSensitivity({ planId, planName, baseline, inputs, stale = false, value, onChange }: { planId: string; planName: string; baseline: ScenarioBaseline; inputs: ScenarioInputs; stale?: boolean; value?: SensitivityInputs; onChange: (next: SensitivityInputs) => void }) {
   const volumes = (value ?? blankSensitivity()).volumes;
   const [submitted, setSubmitted] = useState<readonly string[] | null>(() => volumes.every(entry => entry.trim() !== "") ? [...volumes] : null);
   const analysis = useMemo(() => analyzeScenarioSensitivity(baseline, inputs, submitted ?? ["", "", ""], { stale }), [baseline, inputs, submitted, stale]);
-  const thresholdModel = useMemo(() => scenarioThresholdModel(analysis), [analysis]);
-  const threshold = <ScenarioThresholdSection model={thresholdModel} chartId={scenarioThresholdChartId(planId)} />;
+  const thresholdModel = useMemo(() => scenarioThresholdModel(analysis, planName), [analysis, planName]);
+  const threshold = <ScenarioThresholdSection model={thresholdModel} chartId={scenarioThresholdChartId(planId)} headingLevel={analysis.status === "valid" ? 4 : 3} />;
   return <details className="scenario-sensitivity" data-testid="scenario-sensitivity">
     <summary>{labels.scenarios.sections.scenarioBreakeven}</summary>
     {/* V3-6（PRD §7.4、§6.3 #38）：限制一句改成 13px 次要色，不加前綴。 */}
