@@ -39,7 +39,7 @@ import { EvidenceDrawer } from "@/components/evidence-drawer";
 import { BasisDialog } from "@/components/basis-dialog";
 import { WorkspaceStorage } from "@/components/workspace-storage";
 import { yoyInput } from "./yoy-dataset";
-import { synthetic4ChannelInput } from "./synthetic-4-channel";
+import { synthetic4ChannelInput, synthetic4ChannelOverlapInput } from "./synthetic-4-channel";
 import { g19History } from "./meeting-history";
 import { sevenChannelMeeting } from "./seven-channel-meeting";
 
@@ -358,9 +358,13 @@ export async function pageStates(): Promise<StateMarkup[]> {
     // 資料表一列一個「篩選問題表」按鈕；G21 只有一格（chart-data-issues-cell-ads-MISSING_AD_DAY，標題 title.single）；資料來源頁主層獨立圖區塊＝2。
     // 篩選中的問題表（片語、清除鈕）要點擊後才出現（DataWorkspace 的 state），SSR 由 tests/testid-baseline.test.ts 的 data-issues-filtered 情境直接渲染 IssueList。
     "data-missing-ad-day": { panel: "data", active: await load("missing-ad-day", "errors/missing_ad_day"), status: "partial" },
-    // 資料來源＋4 通路合成資料（D-V4-31）：G20 三段缺列（通路費用 LIVE 9/14–9/19、廣告 LIVE 8/30–9/02 與 9/22），銷售 8/20 無列在軸外（D-V4-40＝A，D-V4-51 待拍板）；
+    // 資料來源＋4 通路合成資料（D-V4-31）：G20 三段缺列（通路費用 LIVE 9/14–9/19、廣告 LIVE 8/30–9/02 與 9/22），銷售 8/20 無列在軸外（D-V4-40＝A、D-V4-51（a）＝A）；
     // G21 兩格（通路費用×缺費用列 6、廣告×缺廣告列 5）。既有的 data（含稅匯入）、data-partial、data-with-issues（missing_cogs）都沒有缺列段。
     "data-synthetic": { panel: "data", active: await (async () => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "synthetic", revision: 1 }; })(), status: "partial" },
+    // 資料來源＋4 通路合成資料在記憶體裡再拿掉幾列（D-V4-51（b）＝B，使用者 2026-10-12；tests/helpers/synthetic-4-channel.ts 的 synthetic4ChannelOverlapInput）：
+    // 同一檔不同通路的缺列日期重疊時圖上合成一框（通路段 all）：chart-data-coverage-seg-costs-all-2026-09-14、chart-data-coverage-seg-ads-all-2026-08-30；
+    // 只相鄰的不合（ads-LIVE-2026-09-22、ads-SOCIAL-2026-09-23）。資料表 6 列（每個通路的區段各一列）。
+    "data-overlap": { panel: "data", active: await (async () => { const input = synthetic4ChannelOverlapInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "synthetic-overlap", revision: 1 }; })(), status: "partial" },
 
     // ── V4-7b 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-7b 新增 M1 測試」錨點後加對應測試）──
 

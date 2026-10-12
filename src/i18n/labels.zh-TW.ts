@@ -2123,6 +2123,11 @@ export const data = {
        * {file}＝商品銷售、{date}＝圖的起日（M/D）、{n}＝軸外的無列天數。副標的檔案涵蓋期間仍從涵蓋起日算。
        */
       noRowsBeforeAxisNote: "{file}在圖的起日 {date} 之前還有 {n} 天無列，沒有畫在圖上。",
+      /**
+       * D-V4-53＝B（使用者 2026-10-12）：去年同期期間內的缺列不延伸軸；起日在圖的起日之前的缺列區段（資料表照列）之後的說明。
+       * {yoy}＝shell.periods.presets.yoy、{date}＝圖的起日（M/D）、{n}＝這樣的區段數（資料表的列數）。
+       */
+      yoyBeforeAxisNote: "{yoy}期間內、圖的起日 {date} 之前的缺列（表中 {n} 段）沒有畫在圖上，缺列天數寫在圖上方的{yoy}那一行。",
       /** D-V4-40＝A：去年同期不畫在軸上，改在圖上方一行（副標第二行）寫期間與有列或缺列天數。 */
       yoy: {
         /** {yoy}＝shell.periods.presets.yoy、{range}＝去年同期期間（附天數）、{detail}＝complete，或 missing 與 noRows 以 joiner 相接。 */

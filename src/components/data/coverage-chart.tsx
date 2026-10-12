@@ -2,17 +2,17 @@
 
 import { useCallback, useMemo } from "react";
 import { track } from "@/application/analytics";
-import { coverageTimeline, type CoverageFileKey, type CoverageSegment, type CoverageTimeline } from "@/application/chart-coverage";
+import { coverageTimeline, type CoverageFileKey, type CoverageMissingFileKey, type CoverageSegment, type CoverageTimeline } from "@/application/chart-coverage";
 import { chartColors } from "@/application/chart-theme";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
 import type { EventSet } from "@/application/events";
 import { formatCount, formatDateL1, formatPeriodL1 } from "@/application/presentation";
 import type { IssueFilter } from "@/application/issue-filter";
 import type { WorkspaceSnapshot } from "@/application/workspace";
-import type { Dataset } from "@/domain/types";
+import type { Dataset, FileName, ReasonCode } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import { chartDataTable, type ChartDataColumn } from "../charts/chart-data-table";
-import { Timeline, type TimelineBandInput, type TimelineSegmentRef, type TimelineTrackInput } from "../charts/timeline";
+import { Timeline, timelineSegmentRef, type TimelineBandInput, type TimelineSegmentRef, type TimelineTrackInput } from "../charts/timeline";
 import { ChartFrame, type ChartLegendItem } from "../overview/charts/chart-frame";
 
 // V4-7a 代理 A：G20 涵蓋時間軸（PRD §4.1–§4.7 G20、§5.7 第 2 列；CHART_CATALOG G20；06_BATCHES V4-7a；D-V4-40＝A；H5 設計稿 data.html 建議版）。
@@ -22,20 +22,73 @@ import { ChartFrame, type ChartLegendItem } from "../overview/charts/chart-frame
 // - 去年同期（D-V4-40＝A）不畫在軸上：副標第二行（.coverage-yoy）寫期間與缺列、無列天數。
 // - 點缺列框或資料表每列的「篩選問題表」按鈕：呼叫 onFilter({ file, channel, reason })（問題不是金額，不開抽屜）；
 //   整合端（DataWorkspace 的 issueFilter）負責篩問題表、捲到 data-issues 並把焦點移到篩選片語（CHART_CATALOG G20「鍵盤」「抽屜」）。
+// - D-V4-51（b）＝B（使用者 2026-10-12）：同一檔不同通路的缺列日期重疊時，圖上合成一個框（coverageBoxes：起訖＝重疊各段的聯集），
+//   testid 的通路段寫 all，點下去 onFilter({ file, reason })（不限通路）；不重疊的照舊一段一框。資料表照列每個通路的區段，每列的按鈕仍帶通路。
+// - D-V4-53＝B（使用者 2026-10-12）：去年同期期間內的缺列不延伸軸（coverageTimeline），資料表照列，資料表後加 yoyBeforeAxisNote。
 // - 資料表（C33）：檔案｜通路｜缺列起日｜缺列訖日｜天數｜篩選（每列一個 <button>，可及名稱帶檔案與通路），列數＝缺列區段數。
 
 const copy = labels.data.chartsV4.coverage;
-/** 缺列框的 testid 前綴：chart-data-coverage-seg-{file}-{channel}-{start}（file＝sales、costs、ads；start＝ISO）。 */
+/**
+ * 缺列框的 testid 前綴：chart-data-coverage-seg-{file}-{channel}-{start}（file＝sales、costs、ads；start＝ISO）；
+ * 同一檔不同通路重疊而合成的框，通路段寫 COVERAGE_ALL_CHANNELS（all），start＝合成後的起日（D-V4-51（b）＝B）。
+ */
 export const COVERAGE_SEG_TESTID_PREFIX = "chart-data-coverage-seg-";
+/** 合成框的 testid 通路段（D-V4-51（b）＝B）。通路代碼是大寫英文（manifest.channels），不會與它相撞。 */
+export const COVERAGE_ALL_CHANNELS = "all";
 /**
  * 篩選條件：檔案（標準檔名）、通路、原因碼（MISSING_CHANNEL_COST_DAY／MISSING_AD_DAY）。
- * V4-7a 整合：與問題表的 IssueFilter（src/application/issue-filter.ts）同一個型別，三個欄位都給（G21 的格只給 file、reason）；
+ * V4-7a 整合：與問題表的 IssueFilter（src/application/issue-filter.ts）同一個型別；file、reason 一定給，channel 只有一段一框與資料表的按鈕給
+ * （D-V4-51（b）＝B：合成的框不帶 channel，篩該檔＋該原因的全部通路；G21 的格同樣只給 file、reason）。
  * file 都是 domain 的標準檔名（FileName），DataWorkspace 的 issueFilter 直接收 G20 與 G21 的值，不另轉換。
  */
-export type CoverageIssueFilter = Required<IssueFilter> & TimelineSegmentRef;
+export type CoverageIssueFilter = IssueFilter & TimelineSegmentRef;
 
-/** 缺列框的 testid（CL-2：語意 key，不用陣列索引）。 */
-export const coverageSegmentTestId = (segment: Pick<CoverageSegment, "key" | "channel" | "start">) => `${COVERAGE_SEG_TESTID_PREFIX}${segment.key}-${segment.channel}-${segment.start}`;
+/** 缺列框或資料表列的 testid／React key（CL-2：語意 key，不用陣列索引）；channel 為 null（合成的框）時通路段寫 all。 */
+export const coverageSegmentTestId = (segment: Pick<CoverageSegment, "key" | "start"> & { channel: string | null }) => `${COVERAGE_SEG_TESTID_PREFIX}${segment.key}-${segment.channel ?? COVERAGE_ALL_CHANNELS}-${segment.start}`;
+
+/** 圖上的一個缺列框：一段缺列，或同一檔不同通路日期重疊的幾段缺列合成的一框（D-V4-51（b）＝B）。 */
+export interface CoverageBox {
+  key: CoverageMissingFileKey;
+  file: FileName;
+  reason: ReasonCode;
+  /** 一段一框時是該段的通路；合成的框是 null（點下去篩該檔＋該原因，不限通路；testid 通路段 all）。 */
+  channel: string | null;
+  /** 起訖：一段一框時＝該段；合成的框＝各段起日最早、訖日最晚（重疊區段的聯集，本身也是連續的日期）。 */
+  start: string;
+  end: string;
+  /** 框內的缺列區段（依 segments 的順序）；資料表仍是一段一列。 */
+  segments: CoverageSegment[];
+}
+
+const compareIso = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+/**
+ * 缺列框（純函式；D-V4-51（b）＝B）：同一檔內日期重疊（至少有一天相同）的缺列區段依重疊關係串成一群（A 與 B 重疊、B 與 C 重疊時三段一框），
+ * 兩段以上的群合成一個框（同一通路的區段已依連續日期合併、不會重疊，所以一群兩段以上一定跨通路）；只相鄰、沒有相同日子的不合。
+ * 框的順序＝每群第一段在 segments 中的位置（沒有重疊時與 segments 一對一、順序相同）。只挑選既有的起訖日，不產生新數值。
+ */
+export function coverageBoxes(segments: readonly CoverageSegment[]): CoverageBox[] {
+  const group = new Map<CoverageSegment, number>();
+  let groups = 0;
+  for (const key of new Set(segments.map(segment => segment.key))) {
+    let current = -1, end = "";
+    for (const segment of segments.filter(item => item.key === key).sort((a, b) => compareIso(a.start, b.start))) {
+      if (current < 0 || segment.start > end) { current = groups++; end = segment.end; }
+      else if (segment.end > end) end = segment.end;
+      group.set(segment, current);
+    }
+  }
+  const boxes = new Map<number, CoverageBox>();
+  for (const segment of segments) {
+    const id = group.get(segment)!;
+    const box = boxes.get(id);
+    if (box === undefined) { boxes.set(id, { key: segment.key, file: segment.file, reason: segment.reason, channel: segment.channel, start: segment.start, end: segment.end, segments: [segment] }); continue; }
+    box.segments.push(segment);
+    if (box.channel !== segment.channel) box.channel = null;
+    if (segment.start < box.start) box.start = segment.start;
+    if (segment.end > box.end) box.end = segment.end;
+  }
+  return [...boxes.values()];
+}
 const fileTitle = (key: CoverageFileKey) => labels.importWizard.files[key];
 
 export type CoverageTitleKind = "missing" | "missingOneDay" | "none" | "range" | "noData";
@@ -83,9 +136,10 @@ export function coverageChartModel(timeline: CoverageTimeline | null, options: {
     yoyLine = fill(copy.yoy.line, { yoy: labels.shell.periods.presets.yoy, range: formatPeriodL1(yoy.start, yoy.end, { anchor }), detail: parts.length ? parts.join(copy.yoy.joiner) : copy.yoy.complete });
   }
 
+  // D-V4-51（b）＝B：同一檔不同通路重疊的缺列合成一個框（不帶 channel）；不重疊的照舊一段一框。
   const tracks: TimelineTrackInput[] = timeline.tracks.map(item => ({
     key: item.key, label: fileTitle(item.key), rows: item.rows, noRows: item.noRows, events: [],
-    missing: item.missing.map(segment => ({ start: segment.start, end: segment.end, file: segment.file, channel: segment.channel, reason: segment.reason, testId: coverageSegmentTestId(segment) })),
+    missing: coverageBoxes(item.missing).map(box => ({ start: box.start, end: box.end, ...coverageFilterOf(box), testId: coverageSegmentTestId(box) })),
     endLabel: item.key === "sales" ? (item.noRowDays > 0 ? fill(copy.noRowDays, { n: formatCount(item.noRowDays, "L2") }) : "") : item.missingDays > 0 ? fill(copy.gapDays, { n: formatCount(item.missingDays, "L2") }) : "",
   }));
   // 檔期軌（≤ 4 軌的第 4 軌）：只在軸上有檔期時加。
@@ -102,6 +156,8 @@ export function coverageChartModel(timeline: CoverageTimeline | null, options: {
     ...(sales !== undefined && sales.noRowDays > 0 ? [fill(copy.noRowsNote, { file: fileTitle("sales"), n: formatCount(sales.noRowDays, "L2") })] : []),
     // 審查 R1-F1：涵蓋起日到圖的起日之間的銷售無列（D-V4-40＝A 不在軸上）只寫在這裡，副標的涵蓋期間仍從涵蓋起日算。
     ...(beforeAxisDays > 0 ? [fill(copy.noRowsBeforeAxisNote, { file: fileTitle("sales"), date: md(timeline.axis.start), n: formatCount(beforeAxisDays, "L2") })] : []),
+    // D-V4-53＝B：去年同期期間內、軸起日之前的缺列不在圖上，資料表照列；說明這些列的天數寫在圖上方的去年同期那一行。
+    ...(timeline.yoyBeforeAxis.length > 0 ? [fill(copy.yoyBeforeAxisNote, { yoy: labels.shell.periods.presets.yoy, date: md(timeline.axis.start), n: formatCount(timeline.yoyBeforeAxis.length, "L2") })] : []),
   ];
   return { timeline, state: timeline.fallback ? "empty" : "ready", titleKind, title, subtitle, yoyLine, message: timeline.fallback ? copy.rangeFallback : undefined, bands, tracks, notes, alias };
 }
@@ -115,8 +171,12 @@ export const COVERAGE_TABLE_COLUMNS: readonly ChartDataColumn<CoverageColumnKey>
   { key: "days", label: copy.columns.days, unit: "count", layer: "L2", data: "days" },
 ];
 
-/** 缺列區段的篩選條件（圖上的缺列框與資料表的按鈕共用）：檔案、通路、原因碼。 */
-export const coverageFilterOf = (segment: Pick<CoverageSegment, "file" | "channel" | "reason">): CoverageIssueFilter => ({ file: segment.file, channel: segment.channel, reason: segment.reason });
+/**
+ * 缺列區段或缺列框的篩選條件（圖上的缺列框與資料表的按鈕共用）：檔案、通路、原因碼。
+ * channel 為 null（D-V4-51（b）＝B 合成的框）時只給檔案與原因碼，回傳的物件沒有 channel 這個鍵。
+ */
+export const coverageFilterOf = (segment: Pick<CoverageSegment, "file" | "reason"> & { channel: string | null }): CoverageIssueFilter =>
+  segment.channel === null ? { file: segment.file, reason: segment.reason } : { file: segment.file, channel: segment.channel, reason: segment.reason };
 
 /**
  * G20 資料表（C33；純函式，回傳 ChartFrame 的 dataTable）：檔案（列名）｜通路｜缺列起日｜缺列訖日｜天數｜篩選。列數＝缺列區段數。
@@ -151,7 +211,7 @@ export interface CoverageChartProps {
   snapshot?: WorkspaceSnapshot | null;
   /** 選填的檔期（events.csv）。 */
   events?: EventSet | null;
-  /** 點缺列框或資料表的「篩選問題表」：{ file, channel, reason }。不給時缺列框不可點、資料表不輸出篩選欄。 */
+  /** 點缺列框或資料表的「篩選問題表」：{ file, channel, reason }（合成的框沒有 channel）。不給時缺列框不可點、資料表不輸出篩選欄。 */
   onFilter?: (filter: CoverageIssueFilter) => void;
   /** 圖寬（測試用）；不給時量測容器。 */
   width?: number;
@@ -169,7 +229,7 @@ export function CoverageChart({ dataset, snapshot = null, events = null, onFilte
   const onSegment = useCallback((segment: TimelineSegmentRef) => {
     if (!onFilter) return;
     track("chart_clicked");
-    onFilter(coverageFilterOf(segment));
+    onFilter(timelineSegmentRef(segment));
   }, [onFilter]);
 
   const legend: ChartLegendItem[] = [

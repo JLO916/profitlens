@@ -24,6 +24,8 @@ import { yoyInput } from "./helpers/yoy-dataset";
  * - 合成資料：標題取最長的缺列區段（通路費用 LIVE 9/14–9/19，6 天）；資料表 3 列。示範資料：標題 none；沒有缺列時資料表 0 列。
  * - 範圍級缺列：退回文字（state empty，不畫區段）；沒有資料集：等高空狀態。去年同期（D-V4-40＝A）：副標第二行，不畫在圖上。
  * - 點缺列框或篩選按鈕都是 onFilter({ file, channel, reason })（不開抽屜）；SSR 驗資料表按鈕的 onClick（node 環境沒有 DOM，圖上點擊由 E2E 驗）。
+ *   同一檔不同通路重疊的缺列合成一框（D-V4-51（b）＝B）另見 tests/charts-data-coverage-overlap-v4.test.tsx。
+ * - D-V4-53＝B（使用者 2026-10-12）：去年同期期間內的缺列不延伸軸，資料表照列，資料表後加 yoyBeforeAxisNote。
  */
 
 const copy = labels.data.chartsV4.coverage;
@@ -159,7 +161,7 @@ describe("G20：合成資料、示範資料、golden", () => {
     const table = byTestId(html, "chart-data-coverage-table");
     expect(table).not.toContain(copy.tableNone);
     for (const segment of coverageTimeline(dataset).segments) expect(html).toContain(`data-testid="${coverageSegmentTestId(segment)}"`);
-    // 審查 R1-F1（D-V4-51（a）回覆前照目前實作）：涵蓋起日 8/20 的銷售無列在軸外，只寫在資料表後的說明（在收合的 <details> 內，不在主層）。
+    // 審查 R1-F1（D-V4-51（a）＝A，使用者 2026-10-12）：涵蓋起日 8/20 的銷售無列在軸外，只寫在資料表後的說明（在收合的 <details> 內，不在主層）。
     const beforeAxis = fill(copy.noRowsBeforeAxisNote, { file: files.sales, date: "8/21", n: "1" });
     const details = element(chartOf(html), 'class="data-alternative"')!;
     expect(details).toContain(`<p class="note">${beforeAxis}</p>`);
@@ -267,10 +269,48 @@ describe("G20：範圍級缺列退回文字、沒有資料集、無列、檔期�
     expect(frameOf(html)).not.toContain(`>${labels.shell.periods.presets.yoy}</text>`);
 
     const gaps = await snapshotOf(yoyInput({ missingCostDates: ["2025-07-20", "2025-07-21"] }));
-    const gapLine = textOf(byTestId(render({ dataset: gaps.dataset, snapshot: gaps.snapshot }), "data-coverage-yoy"));
+    const gapHtml = render({ dataset: gaps.dataset, snapshot: gaps.snapshot });
+    const gapLine = textOf(byTestId(gapHtml, "data-coverage-yoy"));
     expect(gapLine).toContain(fill(copy.yoy.line, { yoy: labels.shell.periods.presets.yoy, range, detail: fill(copy.yoy.missing, { n: "2" }) }));
-    // 最早的缺列在上期之前：軸照 D-V4-40＝A 延伸到它（起點標年份）。
-    expect(frameOf(render({ dataset: gaps.dataset, snapshot: gaps.snapshot }))).toContain(`>${formatDateL1("2025-07-20", { anchor })}</text>`);
+    // D-V4-53＝B：缺列都在去年同期內，不延伸軸（軸從上期起日 6/1 開始，不再從 2025/7/20）；圖上沒有缺列框，資料表照列 4 段，表後說明。
+    expect(frameOf(gapHtml)).toContain(">6/1</text>");
+    expect(frameOf(gapHtml)).not.toContain(`>${formatDateL1("2025-07-20", { anchor })}</text>`);
+    expect(frameOf(gapHtml)).not.toContain(COVERAGE_SEG_TESTID_PREFIX);
+    expect(rowsOf(gapHtml)).toHaveLength(4);
+    expect(element(chartOf(gapHtml), 'class="data-alternative"')).toContain(`<p class="note">${fill(copy.yoyBeforeAxisNote, { yoy: labels.shell.periods.presets.yoy, date: "6/1", n: "4" })}</p>`);
+  });
+
+  it("D-V4-53＝B：yoyInput 缺 2025-07-20、07-21 與 2026-07-01——軸＝上期起日 6/1 到 8/23（不從 2025/7/20）；2026-07-01 在上期內照畫（兩個通路同一天缺，合成一框）；資料表 8 段照列、篩選按鈕照常；表後說明去年同期內的 4 段；標題取軸上的那天", async () => {
+    const { dataset, snapshot } = await snapshotOf(yoyInput({ missingCostDates: ["2025-07-20", "2025-07-21", "2026-07-01"] }));
+    const anchor = dataset.manifest.data_as_of;
+    const html = render({ dataset, snapshot, onFilter: noop, width: 1122 });
+    const frame = frameOf(html);
+    expect(openTag(frame, "<svg")).toContain('data-days="84"');
+    expect(frame).toContain(">6/1</text>");
+    expect(frame).not.toContain(`>${formatDateL1("2025-07-20", { anchor })}</text>`);
+    // 2026-07-01 兩個通路都缺：通路費用、廣告各一個合成框（D-V4-51（b）＝B）；去年同期內的區段不在圖上。
+    expect([...frame.matchAll(/data-testid="(chart-data-coverage-seg-[^"]+)"/g)].map(match => match[1])).toEqual(["chart-data-coverage-seg-costs-all-2026-07-01", "chart-data-coverage-seg-ads-all-2026-07-01"]);
+    // 右端只算軸上的 1 天；去年同期那一行寫 2 天。
+    expect(frame).toContain(`>${fill(copy.gapDays, { n: "1" })}</text>`);
+    expect(frame).not.toContain(`>${fill(copy.gapDays, { n: "3" })}</text>`);
+    expect(textOf(byTestId(html, "data-coverage-yoy"))).toContain(fill(copy.yoy.missing, { n: "2" }));
+    expect(titleOf(html)).toBe(fill(copy.title.missingOneDay, { file: files.costs, date: "7/1", channel: "DTC" }));
+    // 資料表：8 段（每檔 × 通路 2 段）照列、每列一個篩選按鈕。
+    const rows = rowsOf(html).map(cellsOf);
+    expect(rows).toHaveLength(8);
+    expect(rows[0]).toEqual([files.costs, "DTC", "2025-07-20", "2025-07-21", "2", copy.filterButton]);
+    expect(rows.filter(row => row[2] === "2025-07-20")).toHaveLength(4);
+    expect(rows.every(row => row[5] === copy.filterButton)).toBe(true);
+    // 表後說明（收合的 <details> 內，不在主層）：去年同期內、圖的起日 6/1 之前的 4 段。
+    const note = fill(copy.yoyBeforeAxisNote, { yoy: labels.shell.periods.presets.yoy, date: "6/1", n: "4" });
+    expect(element(chartOf(html), 'class="data-alternative"')).toContain(`<p class="note">${note}</p>`);
+    expect(html.split(note)).toHaveLength(2);
+    expect(frame).not.toContain(note);
+    // 沒有去年同期那一行（不給 snapshot）時照 D-V4-40＝A 延伸，沒有說明。
+    const plain = render({ dataset, onFilter: noop, width: 1122 });
+    expect(frameOf(plain)).toContain(`>${formatDateL1("2025-07-20", { anchor })}</text>`);
+    expect(plain).not.toContain(note);
+    expect(checkChartMarkup(html, { page: "data" }).violations["CL-2"]).toEqual([]);
   });
 
   it("兩期取目前套用的期間（snapshot.report.scope），不是 manifest 的預設", async () => {

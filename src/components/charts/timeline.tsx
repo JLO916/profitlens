@@ -15,6 +15,7 @@ import { rankedTextWidth } from "./ranked-bars";
 // - 日期軸：軸的起訖兩端＋每月 1 日的刻度；與已放的字重疊時只畫刻度線不標字；窄（< TIMELINE_NARROW_BELOW，只有 390 的版面）時月份刻度減半（PRD §5.7）。
 // - 去年同期（D-V4-40＝A）不畫在這條軸上：呼叫端在圖上方另寫一行（G20 的副標），所以這裡沒有 yoy 細線。
 // 根 svg aria-hidden、不可聚焦、圖內沒有 tabIndex 與按鈕；缺列框可點（onSegment），鍵盤經由資料表每列的「篩選問題表」按鈕（同一個 { file, channel, reason }）。
+// D-V4-51（b）＝B（使用者 2026-10-12）：呼叫端可以把同一檔不同通路重疊的缺列合成一個框，這種框不帶 channel，點下去回傳 { file, reason }（不限通路）。
 // 色只經 chart-theme.ts 的 chartColors（CL-3）；高度只用 chartRowHeights（CL-10）；字級只用 chartFontSize（CL-5）。
 
 /** SSR（還沒量到寬）時的座標系寬，與 C25、C27 相同。 */
@@ -62,8 +63,15 @@ const NO_ROWS_PAD = 2;
 
 /** 含頭含尾的日期區段（ISO）。 */
 export interface TimelineRange { start: string; end: string }
-/** 點缺列框時回傳的篩選條件（G20：問題表篩到該檔、該通路、該原因）。 */
-export interface TimelineSegmentRef { file: FileName; channel: string; reason: ReasonCode }
+/**
+ * 點缺列框時回傳的篩選條件（G20：問題表篩到該檔、該通路、該原因）。
+ * channel 選填（D-V4-51（b）＝B）：同一檔不同通路重疊的缺列合成的框不帶通路，篩「該檔＋該原因」（全部通路）；回傳的物件此時沒有 channel 這個鍵。
+ */
+export interface TimelineSegmentRef { file: FileName; channel?: string; reason: ReasonCode }
+/** 缺列框的篩選條件（點擊與幾何共用）：沒有通路時不帶 channel 鍵。 */
+export function timelineSegmentRef(segment: TimelineSegmentRef): TimelineSegmentRef {
+  return segment.channel === undefined ? { file: segment.file, reason: segment.reason } : { file: segment.file, channel: segment.channel, reason: segment.reason };
+}
 /** 一段缺列：testId＝chart-{page}-{id}-seg-{語意 key}（呼叫端組好）。 */
 export interface TimelineMissingInput extends TimelineRange, TimelineSegmentRef { testId: string }
 /** 一個檔期：key 只給 React key（例如 events.csv 的行號）。 */
@@ -178,7 +186,7 @@ export function timelineGeometry(input: { width: number; domain: TimelineRange; 
       const x0 = xStart(range.start), natural = xEnd(range.end) - x0;
       const boxWidth = Math.min(Math.max(natural, TIMELINE_MIN_SEGMENT), right - left);
       const x = Math.min(Math.max(x0 + natural / 2 - boxWidth / 2, left), right - boxWidth);
-      return { testId: range.testId, file: range.file, channel: range.channel, reason: range.reason, start: range.start, end: range.end, x: round1(x), width: round1(boxWidth), y: y + MISSING_TOP, height: MISSING_HEIGHT };
+      return { testId: range.testId, ...timelineSegmentRef(range), start: range.start, end: range.end, x: round1(x), width: round1(boxWidth), y: y + MISSING_TOP, height: MISSING_HEIGHT };
     });
     const noRows = track.noRows.filter(range => overlaps(range, domain)).map(range => {
       const x0 = xStart(range.start), x1 = xEnd(range.end);
@@ -222,7 +230,7 @@ export interface TimelineProps {
   /** 無列的字樣（labels）。 */
   noRowsText: string;
   dateLabel: (iso: string) => string;
-  /** 點缺列框：G20 把問題表篩到該檔、該通路、該原因（鍵盤經由資料表的篩選按鈕）。不給時缺列框不可點。 */
+  /** 點缺列框：G20 把問題表篩到該檔、該通路、該原因（合成的框不帶通路：該檔＋該原因；鍵盤經由資料表的篩選按鈕）。不給時缺列框不可點。 */
   onSegment?: (segment: TimelineSegmentRef) => void;
   /** 容器寬（px）；不給時以 ResizeObserver 量測，SSR 先用 560。 */
   width?: number;
@@ -267,7 +275,7 @@ export function Timeline({ domain, bands, tracks, noRowsText, dateLabel, onSegme
           x={round1(segment.x + 0.5)} y={segment.y + 0.5} width={round1(Math.max(segment.width - 1, 0.5))} height={segment.height - 1}
           fill="none" stroke={chartColors.missing} strokeWidth={1} strokeDasharray="3 2"
           pointerEvents={onSegment ? "all" : undefined}
-          onClick={onSegment ? () => onSegment({ file: segment.file, channel: segment.channel, reason: segment.reason }) : undefined}
+          onClick={onSegment ? () => onSegment(timelineSegmentRef(segment)) : undefined}
         />)}
         {track.endLabel !== "" && <text className="timeline-end" x={track.endX} y={track.textY}>{track.endLabel}</text>}
       </g>)}</g>

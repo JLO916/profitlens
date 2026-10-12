@@ -298,6 +298,8 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 
 > **D-V4-40＝A（2026-10-08）**：G20 的 X 軸固定為「上期起日到涵蓋訖日」（再往前延伸到最早的缺列區段），去年同期不畫在同一條軸上，改在圖上方一行寫期間與有列或缺列天數。
 
+> **D-V4-51–54（2026-10-12，使用者回覆「都依你的建議」）**：D-V4-51＝（a）A（銷售無列不延伸軸，只寫在資料表後的說明）、（b）B（同一檔不同通路重疊的缺列在圖上合成一框，testid 通路段 `all`，點下去篩該檔＋該原因；資料表照列每個通路）；D-V4-52＝A（資料來源頁「問題表或範圍列表」以 V4-7a 實測 11／5 為新基準）；D-V4-53＝B（去年同期期間內的缺列不延伸軸，資料表照列並加說明）；D-V4-54＝A（G21 在區塊標題之下、問題表工具列之上，PRD §5.7 第 3 列改寫）。細節見 `09_DECISIONS_PENDING.md` 與 CHART_CATALOG §7 的拍板補記；示範資料畫面 09 不受影響。
+
 **範圍**：C30 Timeline＋G20（`coverageTimeline`／`coverage-timeline-v1`；最長缺列區段只有 1 天時用 `title.missingOneDay`；期間區帶直接標「上期」「本期」，去年同期畫成上方細線加文字，不和缺列虛線框同形同色；點缺列段篩問題表）；`chartRowHeights.axis`；`DataWorkspace` 持有 `issueFilter`，`IssueList` 加選填篩選與清除鈕（下載內容不變）；C28（matrix）＋G21（`issueDistribution`／`issue-distribution-v1`，`variant="inline"`、`mode="table"` 放在 `data-issues` 內；列級與範圍級問題都是 0 筆時不渲染；只有一格時用 `title.single`）；axe 加「匯入 `fixtures/errors/missing_ad_day` 後的資料來源頁（含 G20 缺列段、G21 與篩選後的問題表）」狀態（desktop、laptop、tablet 共 17，mobile 共 16）。實作卡：G20、G21。
 
 **依賴**：V4-6。
@@ -457,7 +459,7 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 | 390 頁面橫向捲動 | 通過 | 每批七頁 `scrollWidth ≤ 390`；只允許 `.chart-frame.waterfall` 與 `.table-scroll` 內部捲動 |
 | Lighthouse | Accessibility：v3 六頁 1440 與 390 全 100；資料來源、待辦兩頁 V4-0a 新量。Performance（只有空狀態首頁的 navigation 有分數，只反映首載 bundle）：1440 100、390 92。390 TBT：載入示範資料 v3.0.0 驗收 1,667 ms（loadavg 4.73；V3-9b 為 972 ms），切到通路健檢 1,330 ms、切到會議紀錄 1,718 ms（V3-10 只記錄、沒有門檻）；V4-0a 對五個 timespan（載入示範資料、切到健檢、商品、會議、資料來源）在低負載下各連跑 3 次取中位數 | 每批 a11y 不低於同頁基準且 ≥ 95；Performance 1440 ≥ 97、390 ≥ 90（只代表首載）；五個 TBT 各 ≤ V4-0a 中位數 × 1.1（與中位數＋50 ms 取較大者，D-V4-36）（超過且負載高時重跑，低負載重跑仍超過才算未通過）。D-V4-47＝B（2026-10-10）：低負載三次中位數仍超過時，同場交替量測本批與前一批的正式腳本至少 3 對（每次開跑時 1 分鐘負載 < 3.0；前一批以 `git archive` 在 scratch 建置、另開埠），本批中位數 ≤ 門檻，或本批中位數 ≤ 同場前一批中位數＋10 ms 且成對差平均 ≤ ＋10 ms，即判定通過；兩批的每次數字都寫進驗收文件 |
 | axe 四尺寸 | desktop、laptop、tablet 各 11 個狀態、mobile 10 個（mobile 沒有投影模式），0 serious | 每批 0 serious／critical；狀態數（desktop、laptop、tablet／mobile）：V4-3b 起 14／13（資料表展開、從圖下鑽的抽屜、合成資料健檢頁）、V4-4 起 15／14（合成資料商品頁）、V4-5 起 16／15（試算後展開 `scenario-sensitivity`）、V4-7a 起 17／16（`missing_ad_day` 資料來源頁）、V4-10 起 18／17（待辦頁一張卡）；示範資料下 G14、G16、G17、G20 缺列段、G21 都不渲染，不加這些狀態就掃不到 |
-| keyboard-walk | 各頁里程碑 Tab 數（V4-0a 記錄）；KPI 前可聚焦 10；`[aria-hidden=true]` 內停留點 0 | 每批不晚於 V4-0a；KPI 前 ≤ 10；`aria-hidden` 內停留點 0（V4-0a 起）；健檢頁經過熱表 ≤ 3（V4-3b 起）；「第一張圖的資料表 summary」里程碑：商品頁 V4-4 起，其餘頁由各頁批次或 V4-8 補齊 |
+| keyboard-walk | 各頁里程碑 Tab 數（V4-0a 記錄）；KPI 前可聚焦 10；`[aria-hidden=true]` 內停留點 0 | 每批不晚於 V4-0a；KPI 前 ≤ 10；`aria-hidden` 內停留點 0（V4-0a 起）；健檢頁經過熱表 ≤ 3（V4-3b 起）；「第一張圖的資料表 summary」里程碑：商品頁 V4-4 起，其餘頁由各頁批次或 V4-8 補齊。D-V4-52＝A（2026-10-12）：資料來源頁「涵蓋時間軸資料表 summary」不晚於 V4-0a（10／4），「問題表或範圍列表」改以 V4-7a 實測（1440 第 11 步、390 第 5 步）為基準，V4-7a 起每批不晚於它 |
 | network-log 下載集合 | `analysis_csv`、`backup`、`decision_json`、`excel`、`pptx` | 每批恰好這 5 種；無 POST |
 | 禁區檢查（D-V4-3） | 對 `82b70df`：V3-10 驗收為空 | 每批第 8 步四條命令皆空（含 `assist-kpi-v1`、`breakeven-mer-v1` 所在檔與既有測試的 diff、`git status --porcelain` 的未追蹤檔）；commit 後 `git diff --stat 625bfa5 HEAD -- …` 為空，commit hash 寫進驗收 |
 | 畫面基準 | 52 張（V4-0a 建立；36 張與 V3-10 差異 0） | 每批只允許該批「允許變動畫面」有差異（比對流程見共同規則） |
