@@ -16,7 +16,7 @@ import { coverageTimeline } from "../src/application/chart-coverage";
 import { coverageChartModel } from "../src/components/data/coverage-chart";
 import { validateDataset } from "../src/domain/validation";
 import { formatDateL1 } from "../src/application/presentation";
-import { labels } from "../src/i18n";
+import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
 import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import { formatAxisPercent } from "../src/application/copy";
@@ -888,6 +888,21 @@ describe("timelineGeometry（C30）：日期軸與無列", () => {
     const [wideRange] = wide.tracks[0].noRows, [narrowRange] = narrow.tracks[0].noRows;
     expect(Math.abs(wideRange.labelX! - (wideRange.x + wideRange.width / 2))).toBeLessThanOrEqual(0.1);
     expect(narrowRange.labelX).toBeNull();
+  });
+
+  it("右端字（審查修正）：放得下時左對齊在 plot.right＋8；390 的「無列 12 天」比右端欄寬時往左移，估寬不超出 svg 右緣、也不壓進繪圖區", () => {
+    const domain = { start: "2026-08-21", end: "2026-09-23" };
+    const track = (endLabel: string): TimelineTrackInput => ({ key: endLabel, label: "x", rows: [], missing: [], noRows: [], events: [], endLabel });
+    const long = fill(labels.data.chartsV4.coverage.noRowDays, { n: "12" }), short = fill(labels.data.chartsV4.coverage.gapDays, { n: "6" });
+    for (const width of TIMELINE_WIDTHS) {
+      const geometry = timelineGeometry({ width, domain, bands: [], tracks: [track(long), track(short)], noRowsText: "x", dateLabel: iso => iso });
+      const [longShape, shortShape] = geometry.tracks;
+      expect(shortShape.endX, String(width)).toBe(geometry.endX);
+      expect(longShape.endX + rankedTextWidth(long), String(width)).toBeLessThanOrEqual(width + 0.05);
+      expect(longShape.endX, String(width)).toBeGreaterThan(geometry.plot.right);
+    }
+    const narrow = timelineGeometry({ width: 324, domain, bands: [], tracks: [track(long)], noRowsText: "x", dateLabel: iso => iso });
+    expect(narrow.tracks[0].endX).toBeLessThan(narrow.endX);
   });
 });
 

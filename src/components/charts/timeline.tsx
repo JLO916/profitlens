@@ -83,6 +83,8 @@ export interface TimelineTrackShape {
   noRows: { start: string; x: number; width: number; labelX: number | null }[];
   events: { key: string; label: string; x1: number; x2: number; y: number; labelX: number | null; labelY: number }[];
   endLabel: string;
+  /** 右端字的 x（左對齊）：通常是 geometry.endX；字比右端欄寬時往左移到貼齊 svg 右緣，不被裁掉（審查修正：390 的「無列 10 天」）。 */
+  endX: number;
 }
 export interface TimelineTick { iso: string; x: number; label: string | null }
 export interface TimelineGeometry {
@@ -171,7 +173,8 @@ export function timelineGeometry(input: { width: number; domain: TimelineRange; 
       const fits = x1 - x0 >= rankedTextWidth(range.label) + EVENT_LABEL_PAD;
       return { key: range.key, label: range.label, x1: round1(x0 + 1), x2: round1(Math.max(x1 - 1, x0 + 1.5)), y: y + EVENT_LINE_Y, labelX: fits ? round1((x0 + x1) / 2) : null, labelY: y + EVENT_LABEL_Y };
     });
-    return { key: track.key, label: track.label, y, textY: y + TEXT_BASELINE, rows, missing, noRows, events, endLabel: track.endLabel };
+    const endX = round1(Math.min(right + GAP, width - rankedTextWidth(track.endLabel)));
+    return { key: track.key, label: track.label, y, textY: y + TEXT_BASELINE, rows, missing, noRows, events, endLabel: track.endLabel, endX };
   });
 
   // 日期軸：起訖兩端＋每月 1 日；窄時月份刻度減半（留第 2、4、6… 個）；標字與已放的字重疊時只畫刻度線。
@@ -250,7 +253,7 @@ export function Timeline({ domain, bands, tracks, noRowsText, dateLabel, onSegme
           pointerEvents={onSegment ? "all" : undefined}
           onClick={onSegment ? () => onSegment({ file: segment.file, channel: segment.channel, reason: segment.reason }) : undefined}
         />)}
-        {track.endLabel !== "" && <text className="timeline-end" x={geometry.endX} y={track.textY}>{track.endLabel}</text>}
+        {track.endLabel !== "" && <text className="timeline-end" x={track.endX} y={track.textY}>{track.endLabel}</text>}
       </g>)}</g>
       <g className="timeline-axis">
         <line x1={geometry.plot.left} x2={geometry.plot.right} y1={axis.y + 0.5} y2={axis.y + 0.5} stroke={chartColors.grid} strokeWidth={1} />

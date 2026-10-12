@@ -49,7 +49,10 @@ export interface CoverageTrack {
   rows: CoverageRange[];
   missing: CoverageSegment[];
   noRows: CoverageRange[];
-  /** 缺列天數合計（檔 × 通路 × 日；＝這一檔的缺列問題筆數）。 */
+  /**
+   * 缺列的日子數（右端「缺 n 天」）：任一通路缺列的日期，同一天幾個通路都缺只算 1 天（審查修正：不再是檔 × 通路 × 日的問題筆數，
+   * 否則同一天 4 個通路都缺時右端寫「缺 4 天」、與標題的「1 天」矛盾）。問題筆數的 golden 在每個區段（檔 × 通路）。
+   */
   missingDays: number;
   /** 軸上無列的天數（只有銷售軌）。 */
   noRowDays: number;
@@ -152,7 +155,7 @@ export function coverageTimeline(dataset: Dataset, events?: EventSet | null, yoy
     const missingDates = new Set(missing.flatMap(segment => dateRange(segment.start, segment.end)));
     // fallback 時不知道哪幾天有列：不畫有列細條（呼叫端整張退回文字）。
     const rows = fallback ? [] : mergeDates(axisDates.filter(date => !missingDates.has(date)));
-    return { key: spec.key, file: spec.file, rows, missing, noRows: [], missingDays: missing.reduce((sum, segment) => sum + segment.days, 0), noRowDays: 0 };
+    return { key: spec.key, file: spec.file, rows, missing, noRows: [], missingDays: missingDates.size, noRowDays: 0 };
   });
 
   const longest = segments.reduce<CoverageSegment | null>((best, segment) => {

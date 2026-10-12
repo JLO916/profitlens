@@ -32,8 +32,9 @@ function expectDaysEqualIssues(timeline: CoverageTimeline, dataset: Dataset) {
     expect(days, pair).toBe(issues.filter(issue => issue.file === file && issue.channel === channel).length);
   }
   expect(timeline.segments.every(segment => pairs.has(`${segment.file}|${segment.channel}`))).toBe(true);
+  // 軌右端的天數＝該檔任一通路缺列的日期數（同一天多個通路只算 1 天；審查修正）。
   for (const track of timeline.tracks.filter(item => item.key !== "sales")) {
-    expect(track.missingDays, track.key).toBe(issues.filter(issue => issue.file === track.file).length);
+    expect(track.missingDays, track.key).toBe(new Set(issues.filter(issue => issue.file === track.file).map(issue => issue.date)).size);
   }
 }
 const simple = (timeline: CoverageTimeline) => timeline.segments.map(({ key, channel, start, end, days, reason }) => ({ key, channel, start, end, days, reason }));
@@ -142,7 +143,9 @@ describe("mergeDates：連續日期合併", () => {
     expect(simple(timeline).map(({ channel, start, days }) => [channel, start, days])).toEqual([["DTC", "2026-08-01", 2], ["MARKETPLACE", "2026-08-02", 1]]);
     expect(timeline.longest).toMatchObject({ channel: "DTC", days: 2 });
     expect(timeline.tracks.find(track => track.key === "costs")!.rows).toEqual([]);
-    expect(timeline.tracks.find(track => track.key === "costs")!.missingDays).toBe(3);
+    // 右端天數是缺列的日子（8/01、8/02），不是問題筆數 3：8/02 兩個通路都缺只算 1 天（審查修正）。
+    expect(timeline.tracks.find(track => track.key === "costs")!.missingDays).toBe(2);
+    expect(timeline.segments.reduce((sum, segment) => sum + segment.days, 0)).toBe(3);
   });
 
   it("最長區段同長時依檔案順序（銷售、通路費用、廣告）、再依起日取前者", () => {
@@ -240,6 +243,8 @@ describe("coverageTimeline：去年同期（D-V4-40＝A：不畫在軸上，只�
     // 兩份檔 × 兩個通路 × 3 天＝12 筆問題，每檔 × 通路兩段（7/20–7/21、7/01）。
     expect(missingIssues(dataset)).toHaveLength(12);
     expectDaysEqualIssues(timeline, dataset);
+    // 每檔右端：3 個日期（兩個通路同一天缺各只算 1 天），不是 6 筆問題。
+    expect(timeline.tracks.map(track => track.missingDays)).toEqual([0, 3, 3]);
     expect(timeline.segments.map(segment => [segment.key, segment.channel, segment.start, segment.days])).toEqual([
       ["costs", "DTC", "2025-07-20", 2], ["costs", "DTC", "2026-07-01", 1], ["costs", "MARKETPLACE", "2025-07-20", 2], ["costs", "MARKETPLACE", "2026-07-01", 1],
       ["ads", "DTC", "2025-07-20", 2], ["ads", "DTC", "2026-07-01", 1], ["ads", "MARKETPLACE", "2025-07-20", 2], ["ads", "MARKETPLACE", "2026-07-01", 1],

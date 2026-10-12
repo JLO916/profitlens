@@ -172,6 +172,16 @@ describe("G20：合成資料、示範資料、golden", () => {
     expect(checkChartMarkup(html, { page: "data" }).violations["CL-1"]).toEqual([]);
   });
 
+  it("同一天兩個通路都缺廣告列（審查修正）：右端「缺 1 天」與標題的「1 天」一致，不是問題筆數 2；資料表仍是 2 列（檔 × 通路）", () => {
+    const dataset = datasetOf(fixture("golden"));
+    const day = (channel: string): ValidationIssue => ({ file: "ad_spend_daily.csv", line: null, date: "2026-08-02", channel, field: "$row", severity: "partial", reason_code: "MISSING_AD_DAY", message: "" });
+    const html = render({ dataset: { ...dataset, issues: [day("DTC"), day("MARKETPLACE")] }, onFilter: noop, width: 1122 });
+    expect(titleOf(html)).toBe(fill(copy.title.missingOneDay, { file: files.ads, date: "8/2", channel: "DTC" }));
+    expect(frameOf(html)).toContain(`>${fill(copy.gapDays, { n: "1" })}</text>`);
+    expect(frameOf(html)).not.toContain(`>${fill(copy.gapDays, { n: "2" })}</text>`);
+    expect(rowsOf(html)).toHaveLength(2);
+  });
+
   it("golden：沒有缺列；標題 none（8/1 到 8/2）", async () => {
     const { dataset, snapshot } = await snapshotOf(fixture("golden"));
     expect(titleOf(render({ dataset, snapshot }))).toBe(fill(copy.title.none, { start: "8/1", end: "8/2" }));
