@@ -89,8 +89,10 @@ interface IssueTableFilter { key: string; phrase: string; onClear?: () => void }
 function IssueTable<T>({ items, toRow, regionLabel, onDownload, downloadTestId, filter }: { items: readonly T[]; toRow: (item: T) => IssueRow; regionLabel: string; onDownload?: () => void; downloadTestId?: string; filter?: IssueTableFilter }) {
   const tableId = useId();
   const filterKey = filter?.key ?? "";
-  // V4-7a：頁碼記在篩選鍵之下，換了篩選（含清除）就回到第 1 頁；沒有篩選時鍵永遠是空字串，行為與 V3 相同。
+  // V4-7a：頁碼記在篩選鍵之下，換了篩選（含清除、回到先前用過的篩選）就回到第 1 頁：鍵一變就在渲染中重設（不保留舊鍵的頁碼）；
+  // 沒有篩選時鍵永遠是空字串，不會重設，行為與 V3 相同。
   const [paging, setPaging] = useState({ key: filterKey, page: 0 });
+  if (paging.key !== filterKey) setPaging({ key: filterKey, page: 0 });
   const page = paging.key === filterKey ? paging.page : 0;
   const setPage = (next: number) => setPaging({ key: filterKey, page: next });
   const [showCodes, setShowCodes] = useState(false);
