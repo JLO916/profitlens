@@ -19,7 +19,7 @@
   "restore_migration": "v1–v3 還原時 preprocessing／targets／events 為 null、ui_prefs 為 {}、meeting_history 為 []（EMPTY_V4_FIELDS）；v1–v3 信封若帶 v4 才有的欄位一律 INVALID_WORKSPACE_FORMAT。v4 與 v5 走同一條還原路徑；v1–v4 沒有 ad_decision，還原後為 undefined（不標，不補值、不自動判斷）；v1–v4 信封若帶 ad_decision 一律 INVALID_WORKSPACE_FORMAT。V4-7c：v1–v4 與沒有 imported_at 的 v5 還原後 imported_at 為 null（資料來源頁不顯示匯入時間）；v1–v4 信封若帶 active.imported_at 一律 INVALID_WORKSPACE_FORMAT；v5 的 imported_at 不是到分的 UTC「YYYY-MM-DDTHH:MMZ」（帶秒、毫秒、時區位移、日期不存在、空字串、null、數字）也一律 INVALID_WORKSPACE_FORMAT。",
   "metric_version": "contribution-v1",
   "scenario_version": "scenario-v1",
-  "integrity": "checksum = SHA-256(decisionSignature(信封去掉 checksum))；還原時先檢查 checksum，再以 strict schema 驗證（多一個欄位就拒絕），再重建快照比對雜湊。與 v4 相同。",
+  "integrity": "checksum = SHA-256(decisionSignature(信封去掉 checksum))；還原時先以 strict schema 驗證（多一個欄位就拒絕，INVALID_WORKSPACE_FORMAT），再以讀到的原格式重算 checksum 比對（WORKSPACE_CHECKSUM_MISMATCH），再重建快照比對雜湊。與 v4 相同（V4-7c 更正：revamp-v3 清單把前兩步的順序寫反）。",
   "limits": {
     "max_bytes": 67108864,
     "max_structure_nodes": 1000000,

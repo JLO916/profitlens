@@ -8,7 +8,7 @@ import { asV4, fullBackup, resign } from "./helpers/full-backup";
 /*
  * V4-7c（D-V3-30＝A）匯入時間寫進備份：v5 信封加選填 payload.active.imported_at（UTC 到分 "YYYY-MM-DDTHH:MMZ"），版本字串仍是 profitlens-workspace-v5。
  * - 既有匯出位元組不變：tests/fixtures/backup-bytes-v4-7b.json 是 V4-7b 收尾（1e195ba）的程式在固定時間匯出的四份備份（golden、demo、fullBackup、fullBackup＋廣告決策）；
- *   BACKUP_BYTES_WRITE=1 時重寫基準（只在 1e195ba 產生過一次，之後不得重寫）。
+ *   基準只在 1e195ba 產生過一次，測試永遠只讀它；BACKUP_BYTES_OUT=<路徑> 時另把本次的位元組數與 SHA-256 寫到該路徑（不覆寫基準，審查 R3-V47C-3）。
  * - 帶匯入時間的匯出與沒有時只差 active.imported_at 一個鍵與 checksum；還原原樣讀回，再匯出不變；沒有此欄位的 v5 與 v1–v4 還原為 null。
  * - 竄改不重算校驗碼 → WORKSPACE_CHECKSUM_MISMATCH；重算校驗碼但格式不對（秒、毫秒、時區位移、不存在的日期、空字串、null、數字），或 v1–v4 信封帶此欄位 → INVALID_WORKSPACE_FORMAT。
  */
@@ -30,9 +30,8 @@ describe("V4-7c 既有匯出位元組不變（backup-bytes-v4-7b.json）", () =>
   it("沒有匯入時間的四份備份與 V4-7b 的基準逐位元組相同（位元組數＋SHA-256）", async () => {
     const texts = await backupTexts();
     const cases = Object.fromEntries(BACKUP_BYTES_CASES.map(name => [name, digest(texts[name])]));
-    if (process.env.BACKUP_BYTES_WRITE === "1") {
-      writeFileSync(BACKUP_BYTES_FILE, `${JSON.stringify({ $comment: "V4-7c 開工前在 V4-7b 收尾的程式（1e195ba，還沒有 imported_at）以固定時間匯出的四份備份：UTF-8 位元組數與 SHA-256。產生方式見 tests/helpers/backup-bytes.ts；tests/workspace-backup-imported-at.test.ts 斷言之後同樣的來源（沒有 imported_at）逐位元組相同。", generated_at_commit: "1e195ba", saved_at: BACKUP_BYTES_INSTANT, cases }, null, 2)}\n`);
-    }
+    const out = process.env.BACKUP_BYTES_OUT;
+    if (out) writeFileSync(out, `${JSON.stringify({ saved_at: BACKUP_BYTES_INSTANT, cases }, null, 2)}\n`);
     const baseline = JSON.parse(readFileSync(BACKUP_BYTES_FILE, "utf8"));
     expect(baseline.saved_at).toBe(BACKUP_BYTES_INSTANT);
     expect(Object.keys(baseline.cases)).toEqual([...BACKUP_BYTES_CASES]);

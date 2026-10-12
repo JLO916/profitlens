@@ -45,10 +45,12 @@ describe("V3-9a 備份 v5 欄位清單（backup-schema-v5.json；V4-7c 起是 re
     expect((current.key_paths as string[]).filter(path => !(historical.key_paths as string[]).includes(path))).toEqual(["payload.active.imported_at"]);
     expect((historical.key_paths as string[]).filter(path => !(current.key_paths as string[]).includes(path))).toEqual([]);
     expect(current.key_paths).toEqual([...current.key_paths].sort());
-    const described = new Set(["$comment", "source", "restore_migration", "payload", "key_paths", "active_imported_at"]);
+    const described = new Set(["$comment", "source", "restore_migration", "payload", "key_paths", "active_imported_at", "integrity"]);
     expect(Object.keys(current).filter(key => !described.has(key))).toEqual(Object.keys(historical).filter(key => !described.has(key)));
     for (const key of Object.keys(historical).filter(key => !described.has(key))) expect(current[key], key).toEqual(historical[key]);
     expect(historical).not.toHaveProperty("active_imported_at");
+    // V4-7c 審查 R1-V4-7c-1：restoreWorkspaceBackup 先 schema.safeParse 再比對 checksum；revamp-v3 清單寫反，revamp-v4 清單更正。
+    expect(current.integrity.indexOf("strict schema")).toBeLessThan(current.integrity.indexOf("重算 checksum"));
     expect(current.active_imported_at).toMatchObject({ path: "payload.active.imported_at", type: "iso-datetime-minute-utc", example: IMPORTED_AT, optional: true, v4_7c_addition: true });
     expect(new RegExp(current.active_imported_at.pattern).test(current.active_imported_at.example)).toBe(true);
     expect(current.active_imported_at.written_when).toContain("performCommitImport");
