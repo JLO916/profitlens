@@ -11,10 +11,24 @@ import { rateToPercent } from "@/application/tax-basis";
 import type { SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import { IssueList } from "../issue-list";
+import { BarCell, barCellScale } from "../charts/bar-cell";
 
 const copy = labels.importWizard;
 const v3 = copy.wizardV3;
 const panel = labels.importWizard.panel;
+const chartsCopy = labels.importWizard.chartsV4.reconciliation;
+
+/** V4-7b G22：差額是不是 0（domain 的精確字串，例如 "0.00"、"-0.00"）；null（無法對帳）不算。只判斷顯示，不做任何計算。 */
+const isMatched = (difference: string | null) => difference !== null && Number(difference) === 0;
+/**
+ * V4-7b G22（CHART_CATALOG G22、PRD §4.2、§6.3 C24）：對帳表差額格。差額 ≠ 0 的列在數字前加 C24 variance 差額條
+ * （共用零線與尺度＝全部列的 |差額| 最大值；不利色 chartColors.unfavorable，PRD §4.5；aria-hidden、不可聚焦、不可點：精靈資料尚未提交，PRD §8.7 例外）；
+ * 差額＝0 不畫條，條的位置標「相符」；無法對帳（null）照 v3 只寫原因。差額數字（formatSignedDelta L3）照舊。
+ */
+function ReconciliationDifference({ field, difference, scale, reasons }: { field: string; difference: string | null; scale: string | null; reasons: string }) {
+  if (difference == null) return <>{fill(panel.cannotReconcile, { reasons })}</>;
+  return <>{isMatched(difference) ? <span className="reconciliation-match">{chartsCopy.match}</span> : <BarCell mode="variance" value={difference} max={scale} tone="unfavorable" testId={`chart-import-reconciliation-bar-${field}`} />}{formatSignedDelta(difference, "L3")}</>;
+}
 
 /** §7.7.2 步驟 4 頂部狀態一行（L1）：可以套用／可套用已有範圍／無法套用；數字一律經 presentation 的整數千分位。 */
 export function reviewStatusText(state: WizardState): string {
@@ -41,6 +55,8 @@ export function StepReview({ state, filenames, memoryPersistent }: {
   const candidate = state.candidate;
   const drafts = useMemo(() => Object.fromEntries(FILE_ROLES.flatMap(role => state.files[role] ? [[role, state.files[role]!.draft]] : [])), [state.files]);
   const reconciliation = useMemo(() => candidate ? buildImportReconciliation(candidate, drafts) : null, [candidate, drafts]);
+  // V4-7b G22：同一張對帳表的差額條共用尺度（|差額| 最大值；全部為 0 或無法對帳時為 null，只有「相符」與原因）。
+  const differenceScale = useMemo(() => reconciliation ? barCellScale(reconciliation.fields.map(row => row.difference)) : null, [reconciliation]);
   const issues = useMemo(() => candidate?.validation.issues ?? [], [candidate]);
   // V3-2a §7.7.3：{value} 取自已讀入的原始 CSV 列，{column} 取自欄位對照；問題清單只顯示 labels 樣板。
   const issueContext = useMemo(() => issueContextFromDrafts(drafts), [drafts]);
@@ -74,7 +90,7 @@ export function StepReview({ state, filenames, memoryPersistent }: {
     {issues.some(issue => issue.reason_code.startsWith("DUPLICATE_")) && <p className="ui-notice" data-tone="warning">{panel.duplicateAlert}</p>}
     {/* 對帳表（到分，reconciliation-{field}）→ 指標表（reconciliation-metric-{metric}）。 */}
     {reconciliation && <section className="wizard-section" aria-label={panel.reconciliationAria} data-testid="import-reconciliation"><h3>{panel.stepReconcile}</h3><p className="wizard-note">{fill(panel.reconciliationNote, { start: reconciliation.period.start, end: reconciliation.period.end, channels: reconciliation.channels.join("、") })}</p>{conversion && <p className="wizard-note">{copy.reconciliationConverted}</p>}
-      <div className="table-scroll" role="region" aria-label={panel.reconciliationTableAria} tabIndex={0}><table className="ui-table"><caption>{panel.reconciliationCaption}</caption><thead><tr><th scope="col">{panel.reconciliationHead.source}</th><th scope="col">{panel.reconciliationHead.field}</th><th scope="col" className="num">{panel.reconciliationHead.sourceTotal}</th><th scope="col" className="num">{panel.reconciliationHead.standardTotal}</th><th scope="col" className="num">{panel.reconciliationHead.difference}</th></tr></thead><tbody>{reconciliation.fields.map(row => <tr key={row.field} data-testid={`reconciliation-${row.field}`}><th scope="row">{row.filename}／{row.source_column}</th><td>{fill(panel.fieldWithKey, { label: columnGuidance[row.field].label, field: row.field })}</td><td className="num">{row.source_total === null ? fill(panel.unknownBlanks, { n: formatCount(row.missing_values, "L2") }) : formatAmountL3(row.source_total)}{row.source_total === null && <small>{fill(panel.knownSubtotal, { subtotal: formatAmountL3(row.known_subtotal) })}</small>}</td><td className="num">{row.standard_total == null ? labels.shell.status.missing : formatAmountL3(row.standard_total)}</td><td className="num">{row.difference == null ? fill(panel.cannotReconcile, { reasons: row.reason_codes.join("、") || panel.sourceMissing }) : formatSignedDelta(row.difference, "L3")}</td></tr>)}</tbody></table></div>
+      <div className="table-scroll" role="region" aria-label={panel.reconciliationTableAria} tabIndex={0}><table className="ui-table"><caption>{panel.reconciliationCaption}</caption><thead><tr><th scope="col">{panel.reconciliationHead.source}</th><th scope="col">{panel.reconciliationHead.field}</th><th scope="col" className="num">{panel.reconciliationHead.sourceTotal}</th><th scope="col" className="num">{panel.reconciliationHead.standardTotal}</th><th scope="col" className="num">{panel.reconciliationHead.difference}</th></tr></thead><tbody>{reconciliation.fields.map(row => <tr key={row.field} data-testid={`reconciliation-${row.field}`}><th scope="row">{row.filename}／{row.source_column}</th><td>{fill(panel.fieldWithKey, { label: columnGuidance[row.field].label, field: row.field })}</td><td className="num">{row.source_total === null ? fill(panel.unknownBlanks, { n: formatCount(row.missing_values, "L2") }) : formatAmountL3(row.source_total)}{row.source_total === null && <small>{fill(panel.knownSubtotal, { subtotal: formatAmountL3(row.known_subtotal) })}</small>}</td><td className="num">{row.standard_total == null ? labels.shell.status.missing : formatAmountL3(row.standard_total)}</td><td className="num"><ReconciliationDifference field={row.field} difference={row.difference} scale={differenceScale} reasons={row.reason_codes.join("、") || panel.sourceMissing} /></td></tr>)}</tbody></table></div>
       <div className="table-scroll" role="region" aria-label={panel.metricsTableAria} tabIndex={0}><table className="ui-table"><caption>{panel.metricsCaption}</caption><thead><tr><th scope="col">{panel.metricsHead.metric}</th><th scope="col" className="num">{panel.metricsHead.total}</th></tr></thead><tbody>{(["net_revenue", "gross_profit", "contribution_before_marketing", "contribution_after_marketing"] as const).map(metric => <tr key={metric} data-testid={`reconciliation-metric-${metric}`}><th scope="row">{metricDefinitions[metric].label}＝{metricDefinitions[metric].formula}</th><td className="num">{reconciliation.metrics[metric].value == null ? fill(panel.unknownReasons, { reasons: reconciliation.metrics[metric].reason_codes.join("、") }) : formatAmountL3(reconciliation.metrics[metric].value)}</td></tr>)}</tbody></table></div>
       <h4>{panel.excludedHeading}</h4><ul>{reconciliation.excluded.map(item => <li key={item}>{item}</li>)}</ul>
     </section>}

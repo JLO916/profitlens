@@ -2409,7 +2409,10 @@ export const importWizard = {
   },
   // ── V4-7b 錨點：匯入精靈圖表字串（代理 C：reconciliation＝G22 步驟 4 對帳表的內嵌條；差額為 0 時標「相符」）。
   chartsV4: {
-    reconciliation: {},
+    reconciliation: {
+      /** G22（CHART_CATALOG G22、PRD §4.2）：對帳表差額＝0 的列不畫差額條，在差額格的條位置標這兩個字（差額數字照舊）。 */
+      match: "相符",
+    },
   },
 } as const;
 

@@ -10,6 +10,7 @@ import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS } from "@/domain/types";
 import type { Dataset, FileName, Metric, MetricName, Period, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
+import { BarCell, barCellShareBase, barCellSigned, type BarCellTone } from "./charts/bar-cell";
 import { trapTabKey } from "./shell/focus-trap";
 import { ShellIcon } from "./shell/shell-icon";
 
@@ -76,6 +77,19 @@ const LADDER: { name: MetricName; op: "" | "−" | "＝" }[] = [
   { name: "platform_fees", op: "−" }, { name: "payment_fees", op: "−" }, { name: "fulfillment_costs", op: "−" }, { name: "other_variable_costs", op: "−" }, { name: "contribution_before_marketing", op: "＝" },
   { name: "ad_spend", op: "−" }, { name: "contribution_after_marketing", op: "＝" },
 ];
+/**
+ * V4-7b G23（CHART_CATALOG G23、PRD §4.2、§4.5、§6.3 C24 share）：階梯表從淨營收那一列起（含淨營收）在金額格內加佔比條；
+ * 原價收入、折扣、退款三列的比較基準是原價收入，不畫。條長＝|值| ÷ 淨營收（只用於長度，夾在 100%），淨營收 ≤ 0 或 null 時整張表不畫條。
+ */
+const LADDER_SHARE_FROM = LADDER.findIndex(row => row.name === "net_revenue");
+/**
+ * G23 條色依列的角色：正值 total；為負時，扣項（op「−」：商品成本、四項通路費用、廣告費；成本沖回或費用抵扣，對貢獻有利，DATA_CONTRACT）用 favorable，
+ * 小計與結果列（op「＝」：淨營收、商品毛利、扣廣告前貢獻、扣廣告後貢獻）用 unfavorable。只看既有值的正負號，不做計算。
+ */
+function ladderShareTone(op: (typeof LADDER)[number]["op"], value: string): BarCellTone {
+  if (!barCellSigned([value])) return "total";
+  return op === "−" ? "favorable" : "unfavorable";
+}
 const RATIOS: Partial<Record<MetricName, [MetricName, MetricName]>> = {
   gross_margin: ["gross_profit", "net_revenue"], contribution_margin: ["contribution_after_marketing", "net_revenue"], discount_rate: ["discounts", "gross_sales"],
   mer: ["net_revenue", "ad_spend"], fulfillment_burden: ["fulfillment_costs", "net_revenue"], marketing_burden: ["ad_spend", "net_revenue"],
@@ -161,6 +175,10 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const ladder = ladderMetrics(snapshot, evidence);
   const ratio = RATIOS[evidence.name];
   const ladderRows = ladder && !ratio ? LADDER.slice(0, LADDER.findIndex(row => row.name === evidence.name) + 1) : [];
+  // V4-7b G23：佔比條的基準（淨營收 > 0 才有）與同一張表共用的版面（淨營收以下有負值時零線在正中央、負值往左）。
+  const shareBase = ladder && ladderRows.length > LADDER_SHARE_FROM ? barCellShareBase(ladder.net_revenue.value) : null;
+  const shareRows = shareBase === null ? new Set<MetricName>() : new Set(ladderRows.slice(LADDER_SHARE_FROM).filter(row => ladder![row.name].value !== null).map(row => row.name));
+  const shareSigned = barCellSigned([...shareRows].map(name => ladder![name].value));
   // V3-2b（§7.8）：標題下的大數字是 L1（萬、一位小數），下一行永遠顯示到分的精確值（L3）；抽屜內其餘數字（階梯、組成、原始明細）一律 L3。
   // 差額類證據（有上期／本期組成或百分點）帶正負號。只做顯示取位，精確的 domain 值仍在技術細節。
   // V4-3a：帶號與取位說明只看 valueKind（level 不帶號）；沒給時沿用 V3（有 components 視為差額）。
@@ -232,7 +250,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
         <section className="evidence-section evidence-ladder" aria-label={copy.ladderTitle}>
           <h3>{copy.ladderTitle}</h3>
           <p className="evidence-formula">{evidence.formula ?? definition.formula}</p>
-          {ladderRows.length > 0 && <table className="ladder-table"><caption className="sr-only">{copy.ladderNote}</caption><tbody>{ladderRows.map(row => <tr key={row.name} className={row.name === evidence.name ? "current" : row.op === "＝" ? "subtotal" : ""}><td className="ladder-op" aria-hidden="true">{row.op}</td><th scope="row">{metricDefinitions[row.name].label}</th><td className="ladder-amount">{money(ladder![row.name])}</td></tr>)}</tbody></table>}
+          {ladderRows.length > 0 && <table className="ladder-table"><caption className="sr-only">{copy.ladderNote}</caption><tbody>{ladderRows.map(row => <tr key={row.name} className={row.name === evidence.name ? "current" : row.op === "＝" ? "subtotal" : ""}><td className="ladder-op" aria-hidden="true">{row.op}</td><th scope="row">{metricDefinitions[row.name].label}</th><td className="ladder-amount">{shareRows.has(row.name) && <BarCell mode="share" value={ladder![row.name].value} base={shareBase} signed={shareSigned} tone={ladderShareTone(row.op, ladder![row.name].value!)} testId={`chart-evidence-ladder-bar-${row.name}`} />}{money(ladder![row.name])}</td></tr>)}</tbody></table>}
           {ladder && ratio && <table className="ladder-table"><tbody>
             <tr><td className="ladder-op" aria-hidden="true"></td><th scope="row">{metricDefinitions[ratio[0]].label}</th><td className="ladder-amount">{money(ladder[ratio[0]])}</td></tr>
             <tr><td className="ladder-op" aria-hidden="true">÷</td><th scope="row">{metricDefinitions[ratio[1]].label}</th><td className="ladder-amount">{money(ladder[ratio[1]])}</td></tr>

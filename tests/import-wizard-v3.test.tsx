@@ -4,10 +4,13 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { importColumns, inspectImportFile } from "@/application/import";
-import { columnGuidance } from "@/application/import-guidance";
-import { exampleTemplateUrl, initialWizardState, runCheck, wizardReducer, ORDER_AGGREGATION_DOC_URL, type WizardState } from "@/application/import-wizard";
+import { buildImportReconciliation, columnGuidance } from "@/application/import-guidance";
+import { exampleTemplateUrl, initialWizardState, runCheck, wizardReducer, FILE_ROLES, ORDER_AGGREGATION_DOC_URL, type WizardState } from "@/application/import-wizard";
 import type { MappingMemoryEntry } from "@/application/mapping-memory";
-import { formatAmountL3, formatCount, formatPeriodL1, formatRateL3 } from "@/application/presentation";
+import { formatAmountL3, formatCount, formatPeriodL1, formatRateL3, formatSignedDelta } from "@/application/presentation";
+import { chartColors } from "@/application/chart-theme";
+import { barCellGeometry, barCellScale } from "@/components/charts/bar-cell";
+import { MISMATCH_DIFFERENCES, reconciliationMismatchState } from "./helpers/reconciliation-mismatch";
 import { CONVERTIBLE_FIELDS, DEFAULT_CONVERSION_FIELDS } from "@/application/tax-basis";
 import type { FileName } from "@/domain/types";
 import { fill, labels } from "@/i18n";
@@ -389,5 +392,77 @@ describe("V3-8 B 匯入精靈全版模式（§7.7.2）", () => {
     for (const [key, value] of Object.entries(metrics)) expect(value, `${key}：${JSON.stringify(details)}`).toBe(0);
     const strings = JSON.stringify(v3);
     expect(strings).not.toMatch(/[？?！!｜→←⇒▸▾]|注意：/);
+  });
+});
+
+// V4-7b G22（CHART_CATALOG G22、PRD §4.2、§4.5、§6.3 C24、§8.7；06_BATCHES V4-7b「對帳表差額 ≠ 0 的列才有條」）：步驟 4 對帳表的差額格。
+// 差額 ≠ 0 的列在數字之前有 C24 variance 差額條（共用零線、尺度＝|差額| 最大值、不利色、aria-hidden、不可聚焦、不可點）；差額＝0 不畫條、在條的位置標「相符」；
+// 無法對帳（null）照 v3 只寫原因。期待的差額由 buildImportReconciliation（與 StepReview 同一個函式）在測試內算出；字串一律取 labels。
+describe("V4-7b G22 對帳表差額條", () => {
+  const match = copy.chartsV4.reconciliation.match;
+  const reconciliationOf = (state: WizardState) => buildImportReconciliation(state.candidate!, Object.fromEntries(FILE_ROLES.flatMap(role => state.files[role] ? [[role, state.files[role]!.draft]] : [])))!;
+  /** 對帳表某列的差額格（列的最後一格）。 */
+  const differenceCell = (html: string, field: string) => { const row = element(html, `data-testid="reconciliation-${field}"`)!; return row.slice(row.lastIndexOf('<td class="num">'), row.lastIndexOf("</tr>")); };
+  const BAR = /<svg class="bar-cell is-variance" data-chart-kind="cell" data-testid="chart-import-reconciliation-bar-([a-z_]+)" data-tone="unfavorable" viewBox="0 0 96 12" width="96" height="12" preserveAspectRatio="none" aria-hidden="true" focusable="false">([\s\S]*?)<\/svg>/g;
+  const mismatch = reconciliationMismatchState();
+
+  it("差額全為 0（含稅 inclusive_tax，valid）：9 列都沒有條；每列差額格的條位置標「相符」，差額數字照舊（formatSignedDelta L3）", () => {
+    const html = render(step4Valid);
+    const table = element(html, 'data-testid="import-reconciliation"')!;
+    const fields = reconciliationOf(step4Valid).fields;
+    expect(fields).toHaveLength(9);
+    expect(fields.every(row => row.difference !== null && Number(row.difference) === 0)).toBe(true);
+    expect(table).not.toContain("chart-import-reconciliation-bar-");
+    expect(table).not.toContain("data-chart-kind");
+    expect(occurrences(table, `<span class="reconciliation-match">${match}</span>`)).toBe(9);
+    for (const row of fields) expect(differenceCell(html, row.field), row.field).toBe(`<td class="num"><span class="reconciliation-match">${match}</span>${formatSignedDelta(row.difference, "L3")}</td>`);
+  });
+
+  it("有差額（golden 檢核後改來源檔第一列）：條數＝差額 ≠ 0 的列數（3）；條在該列差額格內、數字之前；共用零線與尺度（|差額| 最大值）：原價收入半寬往左、折扣往右、廣告費往左；其餘 6 列「相符」", () => {
+    const html = render(mismatch);
+    const table = element(html, 'data-testid="import-reconciliation"')!;
+    const fields = reconciliationOf(mismatch).fields;
+    const differing = fields.filter(row => row.difference !== null && Number(row.difference) !== 0);
+    expect(Object.fromEntries(differing.map(row => [row.field, row.difference]))).toEqual(MISMATCH_DIFFERENCES);
+    const scale = barCellScale(fields.map(row => row.difference));
+    expect(scale).toBe("10");
+    const bars = [...table.matchAll(BAR)];
+    expect(bars.map(found => found[1])).toEqual(differing.map(row => row.field));
+    expect(occurrences(table, "data-chart-kind")).toBe(differing.length);
+    for (const row of differing) {
+      const cell = differenceCell(html, row.field);
+      const geometry = barCellGeometry({ mode: "variance", value: row.difference, max: scale });
+      expect(cell, row.field).toMatch(new RegExp(`^<td class="num"><svg [^>]*data-testid="chart-import-reconciliation-bar-${row.field}"`));
+      expect(cell, row.field).toContain(`<rect class="bar-cell-bar" x="${geometry.bar!.x}" y="${geometry.bar!.y}" width="${geometry.bar!.width}" height="${geometry.bar!.height}" fill="${chartColors.unfavorable}"></rect>`);
+      expect(cell, row.field).toContain(`<line class="bar-cell-zero" x1="48" x2="48"`);
+      expect(cell.endsWith(`</svg>${formatSignedDelta(row.difference, "L3")}</td>`), row.field).toBe(true);
+      expect(cell, row.field).not.toContain(match);
+    }
+    expect(barCellGeometry({ mode: "variance", value: MISMATCH_DIFFERENCES.gross_sales, max: scale })).toMatchObject({ direction: "left", bar: { x: 0, width: 48 } });
+    expect(barCellGeometry({ mode: "variance", value: MISMATCH_DIFFERENCES.discounts, max: scale })).toMatchObject({ direction: "right", bar: { x: 48, width: 24 } });
+    expect(barCellGeometry({ mode: "variance", value: MISMATCH_DIFFERENCES.ad_spend, max: scale })).toMatchObject({ direction: "left", bar: { x: 36, width: 12 } });
+    for (const row of fields.filter(item => !differing.includes(item))) expect(differenceCell(html, row.field), row.field).toBe(`<td class="num"><span class="reconciliation-match">${match}</span>${formatSignedDelta(row.difference, "L3")}</td>`);
+    // 條只是視覺輔助：不可聚焦、不可點（精靈資料尚未提交，PRD §8.7 例外）；對帳表的其他欄與 testid 不變。
+    for (const [, , inner] of bars) expect(inner).not.toMatch(/tabindex|<button|<a\s/);
+    expect(table).not.toContain("is-clickable");
+    for (const row of fields) expect(occurrences(html, `data-testid="reconciliation-${row.field}"`), row.field).toBe(1);
+    expect(duplicates(html, "data-testid")).toEqual([]);
+  });
+
+  it("無法對帳（missing_cogs 的商品成本，差額 null）：照 v3 只寫原因，沒有條也沒有「相符」；其餘列差額 0 標「相符」", () => {
+    const html = render(step4Partial);
+    const fields = reconciliationOf(step4Partial).fields;
+    const missing = fields.find(row => row.field === "cogs_net")!;
+    expect(missing.difference).toBeNull();
+    expect(differenceCell(html, "cogs_net")).toBe(`<td class="num">${fill(panel.cannotReconcile, { reasons: missing.reason_codes.join("、") || panel.sourceMissing })}</td>`);
+    expect(element(html, 'data-testid="import-reconciliation"')).not.toContain("chart-import-reconciliation-bar-");
+    expect(occurrences(element(html, 'data-testid="import-reconciliation"')!, `<span class="reconciliation-match">${match}</span>`)).toBe(fields.filter(row => row.difference !== null).length);
+  });
+
+  it("新鍵 importWizard.chartsV4.reconciliation.match（「相符」）沒有文案黑名單、箭頭、「｜」、問句、驚嘆號與「注意：」", () => {
+    expect(copy.chartsV4).toEqual({ reconciliation: { match: "相符" } });
+    const { metrics, details } = scanLabels({ importWizard: { chartsV4: copy.chartsV4 } });
+    for (const [key, value] of Object.entries(metrics)) expect(value, `${key}：${JSON.stringify(details)}`).toBe(0);
+    expect(JSON.stringify(copy.chartsV4)).not.toMatch(/[？?！!｜→←⇒▸▾]|注意：/);
   });
 });

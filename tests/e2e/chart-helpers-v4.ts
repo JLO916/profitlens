@@ -1,7 +1,11 @@
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import type { AnalyticsEvent } from "../../src/application/analytics";
+import { inspectImportFile, type PreparedImport } from "../../src/application/import";
+import { buildImportReconciliation, type ReconciliationField } from "../../src/application/import-guidance";
+import { FILE_ROLES, initialWizardState, runCheck, wizardReducer } from "../../src/application/import-wizard";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../../src/application/workspace";
 import { validateDataset } from "../../src/domain/validation";
 import { fixture } from "../helpers/fixtures";
@@ -382,4 +386,51 @@ export async function openSensitivityChart(card: Locator, volumes?: readonly str
   for (const [index, value] of volumes.entries()) await details.getByLabel(fill(copy.inputLabel, { letter: String.fromCharCode(65 + index) }), { exact: true }).fill(value);
   await details.getByRole("button", { name: copy.recalc, exact: true }).click();
   await expect(details.getByTestId("sensitivity-result").getByRole("table")).toBeVisible();
+}
+
+// ── 匯入精靈 G22 對帳表差額條、資料來源 G22 前處理表成對條、抽屜 G23 階梯表佔比條（V4-7b） ──
+/** 含稅匯入的 fixture（tests/fixtures/inclusive_tax，D2 預設換算 8 欄、稅率 5%；README 有手算）。 */
+export const INCLUSIVE_TAX_DIR = resolve("tests/fixtures/inclusive_tax");
+/**
+ * 期待值（Node 端）：與瀏覽器四步精靈相同的 reducer 與檢核（讀檔 → 下一步 → 口徑 → 確認並檢核），得到換算摘要（conversion）與步驟 4 對帳表的每一列。
+ * 不寫死數字；與瀏覽器選的是同一份檔案。
+ */
+export function wizardCheck(directory: string, basis: "inclusive" | "exclusive"): { candidate: PreparedImport; reconciliation: ReconciliationField[] } {
+  let state = initialWizardState();
+  for (const role of FILE_ROLES) {
+    const content = new Uint8Array(readFileSync(resolve(directory, role)));
+    state = wizardReducer(state, { type: "fileRead", role, draft: inspectImportFile(role, { name: role, size: content.byteLength, bytes: content }), encoding: "utf8", memory: null });
+  }
+  const confirmed = wizardReducer(wizardReducer(wizardReducer(state, { type: "next" }), { type: "basis", basis }), { type: "confirm" });
+  const checked = wizardReducer(confirmed, { type: "checked", candidate: runCheck(confirmed) });
+  const drafts = Object.fromEntries(FILE_ROLES.flatMap(role => checked.files[role] ? [[role, checked.files[role]!.draft]] : []));
+  return { candidate: checked.candidate!, reconciliation: buildImportReconciliation(checked.candidate!, drafts)!.fields };
+}
+/** 對帳表某列的差額 ≠ 0（null＝無法對帳，不算）。只判斷正負號以外的「是不是 0」，不做金額計算。 */
+export const differs = (row: ReconciliationField) => row.difference !== null && Number(row.difference) !== 0;
+/** G22 對帳表（精靈步驟 4，import-reconciliation）的差額條、「相符」。 */
+export const reconciliationBars = (page: Page) => page.getByTestId("import-reconciliation").locator("[data-testid^='chart-import-reconciliation-bar-']");
+export const reconciliationMatches = (page: Page) => page.getByTestId("import-reconciliation").locator(".reconciliation-match");
+/** G22 前處理表（資料來源頁，data-preprocessing）的成對條。 */
+export const preprocessBars = (page: Page) => page.getByTestId("data-preprocessing").locator("[data-testid^='chart-data-preprocess-bar-']");
+/** G23 抽屜階梯表的佔比條（只在抽屜開著時）。 */
+export const ladderBars = (drawer: Locator) => drawer.locator("table.ladder-table [data-testid^='chart-evidence-ladder-bar-']");
+
+/** 一條 C24（G22、G23）的屬性與位置：根 svg 的 class、tone、aria-hidden、focusable、tabindex、顯示寬；各 rect 的 x、width、fill 與畫面寬；零線 x；所在格與下一段文字。 */
+export interface CellBarInfo { key: string; classes: string[]; tone: string | null; ariaHidden: string | null; focusable: string | null; tabIndex: string | null; boxWidth: number; zeroX: number | null; rects: { cls: string; x: number; width: number; fill: string | null; boxWidth: number }[]; cellClass: string; nextText: string }
+export function cellBarInfo(bars: Locator, prefix: string): Promise<CellBarInfo[]> {
+  return bars.evaluateAll((nodes, testIdPrefix) => nodes.map(node => {
+    const zero = node.querySelector("line.bar-cell-zero");
+    const cell = node.parentElement;
+    return {
+      key: (node.getAttribute("data-testid") ?? "").replace(testIdPrefix, ""),
+      classes: (node.getAttribute("class") ?? "").split(/\s+/).filter(Boolean), tone: node.getAttribute("data-tone"),
+      ariaHidden: node.getAttribute("aria-hidden"), focusable: node.getAttribute("focusable"), tabIndex: node.getAttribute("tabindex"),
+      boxWidth: Math.round(node.getBoundingClientRect().width * 10) / 10,
+      zeroX: zero ? Number(zero.getAttribute("x1")) : null,
+      rects: [...node.querySelectorAll("rect")].map(rect => ({ cls: rect.getAttribute("class") ?? "", x: Number(rect.getAttribute("x")), width: Number(rect.getAttribute("width")), fill: rect.getAttribute("fill"), boxWidth: Math.round(rect.getBoundingClientRect().width * 10) / 10 })),
+      cellClass: cell?.getAttribute("class") ?? "",
+      nextText: (node.nextSibling?.textContent ?? "").trim(),
+    };
+  }), prefix);
 }

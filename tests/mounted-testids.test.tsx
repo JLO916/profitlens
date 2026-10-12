@@ -654,8 +654,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const { BREAKEVEN_MER_VERSION, breakevenMer, breakevenNote } = await import("@/application/breakeven-mer");
       const copy = labels.assist.breakevenV3;
       const overviews = loaded().filter(({ state }) => state!.panel === "overview");
-      // V3-9b A 加了 overview-yoy（兩年合成資料）狀態，V4-2 加了 overview-synthetic（4 通路合成資料），同樣檢查。
-      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy", "overview-synthetic"]);
+      // V3-9b A 加了 overview-yoy（兩年合成資料）狀態，V4-2 加了 overview-synthetic（4 通路合成資料），V4-7b 加了開著 G23 抽屜的 overview-evidence-ladder（示範資料）、
+      // overview-evidence-ladder-social（4 通路合成資料只選 SOCIAL），同樣檢查。
+      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy", "overview-synthetic", "overview-evidence-ladder", "overview-evidence-ladder-social"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         for (const id of ["assist-breakeven-mer", "assist-breakeven-current", "assist-breakeven-previous", "assist-breakeven-note", "assist-breakeven-help", "assist-breakeven-help-trigger"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
@@ -762,8 +763,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V3-9b A（三線趨勢與下鑽）的 M1 掛載測試在此之後新增（第三線圖例、不可用原因、抽屜篩選片語各一份）──
     it("V3-9b A 總覽：趨勢圖的去年同期圖例項每個狀態一份；不可用時原因句一份（在趨勢區塊內），可用時沒有原因句、資料表多兩欄", () => {
       const overviews = states.filter(entry => entry.state?.panel === "overview");
-      // V4-2 加了 overview-synthetic（4 通路合成資料，去年同期不可用），同樣檢查。
-      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-refund-only", "overview-synthetic", "overview-yoy", "overview-zero-ad"]);
+      // V4-2 加了 overview-synthetic（4 通路合成資料，去年同期不可用），V4-7b 加了開著 G23 抽屜的 overview-evidence-ladder、overview-evidence-ladder-social（去年同期都不可用），同樣檢查。
+      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-refund-only", "overview-synthetic", "overview-yoy", "overview-zero-ad"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         expect(ids.get("trend-legend-yoy"), name).toBe(1);
@@ -1011,7 +1012,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect(bullet, name).toContain('aria-hidden="true"');
         expect(element(section, 'data-testid="chart-overview-bullet-bar-mer"'), name).not.toMatch(/tabindex|<button/);
       }
-      expect(withBullet, "示範資料與兩年合成資料畫 bullet；廣告費為 0、淨營收為負與 4 通路合成資料（本期實際 MER 資料待補）不畫").toEqual(["overview", "overview-yoy"]);
+      // V4-7b：overview-evidence-ladder（示範資料）與 overview-evidence-ladder-social（合成資料只選 SOCIAL，本期廣告費齊全）也畫。
+      expect(withBullet, "示範資料與兩年合成資料畫 bullet；廣告費為 0、淨營收為負與 4 通路合成資料（本期實際 MER 資料待補）不畫").toEqual(["overview", "overview-yoy", "overview-evidence-ladder", "overview-evidence-ladder-social"]);
     });
 
     // ── V4-3a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
@@ -1451,6 +1453,73 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V4-7b 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-7b 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    // V4-7b 頁面狀態：import-step-4-reconciled（含稅 inclusive_tax 步驟 4，差額全為 0）、import-step-4-mismatch（golden 改來源檔，3 列有差額）、
+    // overview-evidence-ladder（示範資料 KPI 扣廣告後貢獻的抽屜開著）、overview-evidence-ladder-social（合成資料只選 SOCIAL，平台抽成沖回）；既有的 data（含稅匯入）有 G22 前處理表成對條。
+    // 條都是 C24 根 svg（data-chart-kind="cell"、aria-hidden、focusable=false），不另開圖區塊；圖形細節另見 import-wizard-v3、evidence-drawer-v3、data-workspace-v3。
+    it("V4-7b G22／G23：對帳表差額條只在差額 ≠ 0 的列（其餘「相符」）、前處理表每個換算欄位一條成對條、抽屜階梯表從淨營收起每列一條佔比條；條在同列金額之前、aria-hidden、不可聚焦、不可點，每個 chart- testid 一份；不增加主層圖區塊", async () => {
+      const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const match = labels.importWizard.chartsV4.reconciliation.match;
+      const byName = (name: string) => states.find(state => state.name === name)!;
+      const svgTags = (html: string, prefix: string) => [...html.matchAll(new RegExp(`<svg [^>]*data-testid="${prefix}([a-z_]+)"[^>]*>`, "g"))];
+      /** 每條：根 svg 是 C24（data-chart-kind="cell"）、aria-hidden、focusable=false、沒有 is-clickable；svg 內沒有可聚焦元素；所在格的下一段是同列的金額文字。 */
+      const expectInert = (html: string, prefix: string, name: string) => {
+        for (const [tag, key] of svgTags(html, prefix)) {
+          expect(tag, `${name} ${key}`).toMatch(/^<svg class="bar-cell is-[a-z]+(?: is-signed)?" data-chart-kind="cell"/);
+          expect(tag, `${name} ${key}`).toContain('aria-hidden="true" focusable="false"');
+          expect(tag, `${name} ${key}`).not.toContain("is-clickable");
+          const svg = element(html, `data-testid="${prefix}${key}"`)!;
+          expect(svg, `${name} ${key}`).not.toMatch(/tabindex|<button|<a\s/);
+          expect(html.slice(html.indexOf(svg) + svg.length).slice(0, 40), `${name} ${key}：條之後是同格的金額`).toMatch(/^[−+]?\d|^0/);
+          expect(testIdCounts(html).get(`${prefix}${key}`), `${name} ${key}`).toBe(1);
+        }
+      };
+
+      // G22 對帳表（精靈步驟 4）：差額全為 0 時沒有條、9 個「相符」；有差額時條數＝差額 ≠ 0 的列數，每條在 reconciliation-{field} 列內。
+      const reconciled = byName("import-step-4-reconciled").html;
+      const reconciledTable = element(reconciled, 'data-testid="import-reconciliation"')!;
+      expect(testIdCounts(reconciled).get("import-step-4"), "import-step-4-reconciled").toBe(1);
+      expect(reconciledTable).not.toContain("chart-import-reconciliation-bar-");
+      expect(occurrences(reconciledTable, `<span class="reconciliation-match">${match}</span>`)).toBe(9);
+      const mismatch = byName("import-step-4-mismatch").html;
+      const mismatchTable = element(mismatch, 'data-testid="import-reconciliation"')!;
+      expect(svgTags(mismatchTable, "chart-import-reconciliation-bar-").map(found => found[1])).toEqual(["gross_sales", "discounts", "ad_spend"]);
+      for (const field of ["gross_sales", "discounts", "ad_spend"]) expect(element(mismatchTable, `data-testid="reconciliation-${field}"`), field).toContain(`data-testid="chart-import-reconciliation-bar-${field}"`);
+      expect(occurrences(mismatchTable, `<span class="reconciliation-match">${match}</span>`)).toBe(6);
+      expectInert(mismatch, "chart-import-reconciliation-bar-", "import-step-4-mismatch");
+
+      // G22 前處理表（資料來源頁，含稅匯入）：每個換算欄位一條，在該列的換算值格；未稅的資料來源頁沒有。
+      const data = byName("data");
+      const preprocessing = element(data.html, 'data-testid="data-preprocessing"')!;
+      const fields = data.state!.active.conversion!.fields;
+      expect(svgTags(preprocessing, "chart-data-preprocess-bar-").map(found => found[1])).toEqual(fields);
+      for (const field of fields) expect(element(preprocessing, `<tr data-field="${field}"`), field).toContain(`data-testid="chart-data-preprocess-bar-${field}"`);
+      expectInert(data.html, "chart-data-preprocess-bar-", "data");
+      for (const { name, html, state } of loaded().filter(entry => entry.name !== "data")) if (!state!.active.conversion) expect(html, name).not.toContain("chart-data-preprocess-bar-");
+
+      // G23 抽屜階梯表：示範資料 KPI 扣廣告後貢獻 10 條（淨營收起），原價收入、折扣、退款沒有；SOCIAL 平台抽成（沖回）有利色。
+      const ladder = byName("overview-evidence-ladder").html;
+      const drawer = element(ladder, 'class="evidence-dialog evidence-drawer"')!;
+      const table = element(drawer, 'class="ladder-table"')!;
+      expect(svgTags(table, "chart-evidence-ladder-bar-").map(found => found[1])).toEqual(["net_revenue", "cogs_net", "gross_profit", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "contribution_before_marketing", "ad_spend", "contribution_after_marketing"]);
+      for (const name of ["gross_sales", "discounts", "refunds"]) expect(ladder, name).not.toContain(`chart-evidence-ladder-bar-${name}"`);
+      expectInert(ladder, "chart-evidence-ladder-bar-", "overview-evidence-ladder");
+      const social = byName("overview-evidence-ladder-social").html;
+      expect(openTag(social, 'data-testid="chart-evidence-ladder-bar-platform_fees"'), "SOCIAL 平台抽成").toContain('data-tone="favorable"');
+      expect(element(social, 'data-testid="chart-evidence-ladder-bar-platform_fees"'), "SOCIAL 平台抽成").toContain('fill="var(--chart-favorable)"');
+      expectInert(social, "chart-evidence-ladder-bar-", "overview-evidence-ladder-social");
+      // 抽屜關著的狀態沒有階梯條（維持 v2 條件渲染）。
+      for (const { name, html } of states.filter(entry => !entry.name.startsWith("overview-evidence-ladder"))) expect(html, name).not.toContain("chart-evidence-ladder-bar-");
+
+      // 不增加主層圖區塊（內嵌條在既有表格內）；chart- testid 命名與 M6 唯一性。
+      for (const name of ["import-step-4-reconciled", "import-step-4-mismatch", "data", "overview-evidence-ladder", "overview-evidence-ladder-social"]) {
+        const { html, state } = byName(name);
+        const page = state!.panel;
+        const base = page === "overview" ? byName("overview").html : byName("data").html;
+        expect(checkChartMarkup(html, { page }).mainSections, `${name}：主層獨立圖區塊`).toEqual(page === "overview" ? checkChartMarkup(base, { page }).mainSections : ["chart-data-coverage"]);
+        expect(chartTestIdViolations(html), name).toEqual([]);
+      }
+    });
+
 
     // ── V4-8 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-8 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 

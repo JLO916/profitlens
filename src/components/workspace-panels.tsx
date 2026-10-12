@@ -26,6 +26,7 @@ import { ShareSection } from "./diagnosis/share-section";
 import type { IssueFilter } from "@/application/issue-filter";
 import { CoverageChart } from "./data/coverage-chart";
 import { IssuesChart } from "./data/issues-chart";
+import { BarCell, barCellScale, barCellSigned } from "./charts/bar-cell";
 
 type EvidenceHandler = (selection: EvidenceSelection) => void;
 const dataPanel = labels.data.panel;
@@ -92,6 +93,11 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
     issueCount ? fill(v3.statusLine.issues, { n: issueCountText }) : v3.statusLine.noIssues,
   ].join(v3.separator);
   const preprocessingColumns = v3.preprocessing.columns;
+  // V4-7b G22（CHART_CATALOG G22、PRD §4.2、§6.3 C24 pair）：前處理表的換算值格加成對條——上 4px 含稅原值（chartColors.previous）、下 6px 換算值（chartColors.total），
+  // 整張表共用尺度＝含稅原值的 |值| 最大值、共用一個版面（有負值時零線在正中央）。只呈現 TaxConversion.totals 既有的兩個值，不另算；條不可點（前處理表是純文字，PRD §8.7）。
+  const preprocessTotals = conversion?.fields.map(field => conversion.totals?.[field]) ?? [];
+  const preprocessScale = barCellScale(preprocessTotals.map(totals => totals?.raw));
+  const preprocessSigned = barCellSigned(preprocessTotals.flatMap(totals => [totals?.raw, totals?.converted]));
   // V4-7a：問題表篩選（G20 缺列段與資料表的篩選按鈕、G21 的格共用）。只篩畫面上的列，「下載問題清單 CSV」仍是全部問題（IssueList 的 download）。
   const issuesSection = useRef<HTMLElement>(null);
   const [issueFilterState, setIssueFilterState] = useState<IssueFilterState | null>(null);
@@ -141,7 +147,7 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
       {!conversion ? <p className="data-section-empty">{labels.importWizard.noConversion}</p> : conversion.totals && <div className="table-scroll" tabIndex={0} role="region" aria-label={v3.preprocessing.tableAria}><table className="ui-table data-preprocessing-table">
         <caption className="sr-only">{v3.preprocessing.tableAria}</caption>
         <thead><tr><th scope="col">{preprocessingColumns.field}</th><th scope="col" className="num">{preprocessingColumns.raw}</th><th scope="col" className="num">{preprocessingColumns.converted}</th><th scope="col" className="num">{preprocessingColumns.rate}</th></tr></thead>
-        <tbody>{conversion.fields.map(field => { const totals = conversion.totals?.[field]; return <tr key={field} data-field={field}><th scope="row">{field in labels.metrics ? labels.metrics[field as MetricName].headline : field}</th><td className="num">{formatAmountL3(totals?.raw)}</td><td className="num">{formatAmountL3(totals?.converted)}</td><td className="num">{formatRateL2(conversion.rate)}</td></tr>; })}</tbody>
+        <tbody>{conversion.fields.map(field => { const totals = conversion.totals?.[field]; return <tr key={field} data-field={field}><th scope="row">{field in labels.metrics ? labels.metrics[field as MetricName].headline : field}</th><td className="num">{formatAmountL3(totals?.raw)}</td><td className="num">{totals && <BarCell mode="pair" value={totals.converted} previous={totals.raw} max={preprocessScale} signed={preprocessSigned} testId={`chart-data-preprocess-bar-${field}`} />}{formatAmountL3(totals?.converted)}</td><td className="num">{formatRateL2(conversion.rate)}</td></tr>; })}</tbody>
       </table></div>}
     </section>
     {/* §7.7.1 第 6 點：選填資料——目標與促銷檔期兩表並列（≥ 1024 兩欄）；每表工具列 上傳、下載範本、下載目前資料、移除；錯誤清單與第 3 段同一組欄位。R4：只標示，不改計算。 */}

@@ -597,6 +597,8 @@
 | 單元測試 | `tests/evidence-ladder.test.ts`：搬移前後輸出相同（golden 與 demo 的每一種證據）；`tests/evidence-drawer-v3.test.tsx` 擴（條數＝淨營收以下的列數、淨營收 ≤ 0 不畫、合成資料中扣項為負的通路該列條為有利色、扣廣告後貢獻為負的通路該列條為不利色） |
 | E2E 草案 | 從總覽 KPI 開扣廣告後貢獻的抽屜，`chart-evidence-ladder-bar-net_revenue` 寬度最大；`chart-evidence-ladder-bar-gross_sales` 不存在；抽屜開啟狀態的 axe 0 serious |
 
+> **V4-7b 整合補記（代理 C，2026-10-12）**：（1）G22 對帳表的「相符」放在條的位置（差額格左緣，`td.num > .reconciliation-match`，次要色、字級跟著該格），差額數字（formatSignedDelta L3）照舊靠右；無法對帳（差額 null）照 v3 只寫原因，沒有條也沒有「相符」。條的色固定用不利色（PRD §4.5 G22「差額 ≠ 0 `--chart-unfavorable`」）。（2）實際資料（golden、示範、含稅 inclusive_tax、合成資料）的對帳差額都是 0（來源合計與標準合計同一份列），所以瀏覽器裡一律是 0 條、每列「相符」；有差額的畫法由 `tests/helpers/reconciliation-mismatch.ts` 在記憶體裡改來源檔（golden 未稅檢核後改第一列：−10.00、+5.00、−2.50）驗證，不新增資料檔。（3）G22 成對條只加在資料來源頁的前處理表（本卡「位置」欄）；精靈步驟 4 的前處理摘要表（`import-preprocessing`）不加。（4）G23 只加在四層階梯表（`ladderRows`）；比率證據（毛利率等）的比率表、商品層證據、組成表不加。值為 null（資料待補）的列不畫條（不以零線冒充 0），值為 0 的列只畫零線；同一張表共用 `barCellSigned`（淨營收以下有負值時零線在正中央）。（5）頁面狀態（`tests/helpers/page-states.tsx` 的 V4-7b 錨點）：`ShellState` 加選填 `wizardState`（showImport 時精靈的起始狀態）與 `evidence`（開著的抽屜），沒給時 `shellPage()` 輸出不變；新增 `import-step-4-reconciled`、`import-step-4-mismatch`、`overview-evidence-ladder`、`overview-evidence-ladder-social`。（6）畫面基準：12 只有 desktop、laptop 有差（「相符」）；768、390 的對帳表差額欄在表格捲動區的可視範圍之外，元素截圖不變。03 是三件事「看證據」的影響金額抽屜（有組成項目，不畫階梯），0 差異。
+
 ## 8 實作卡：P2 散佈圖（G24）
 
 ### G24 折扣率 × 毛利率散佈（新增；P2；V4-10）

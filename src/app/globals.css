@@ -2976,4 +2976,10 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-7b A 錨點結束 ── */
 
 /* ── V4-7b C：G22 對帳表與前處理表、G23 抽屜階梯表的內嵌條（代理 C） ── */
+/* G22 對帳表（精靈步驟 4）的差額條與前處理表（資料來源頁）的成對條都在 td.num 內：顯示寬、貼齊格左緣與垂直置中沿用「V4-1 B」，不另加規則。
+   差額＝0 的「相符」放在條的位置（貼齊差額格左緣），差額數字仍靠右；字級與行高跟著該格，次要色。 */
+td.num > .reconciliation-match { float: left; margin-right: var(--space-2); color: var(--text-secondary); }
+/* G23 抽屜階梯表的金額格（td.ladder-amount，靠右、不換行，不是 td.num）：佔比條同樣貼齊格的左緣、與金額同一行垂直置中，
+   各列的零線在同一條直線上（同一張表共用基準與版面）；顯示寬沿用 .bar-cell（≥ 768 為 96px、≤ 767 為 64px）。抽屜寬度與高度規則不變。 */
+td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-7b C 錨點結束 ── */

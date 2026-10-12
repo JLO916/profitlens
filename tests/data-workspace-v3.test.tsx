@@ -22,6 +22,8 @@ import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import { issueDistribution } from "@/application/chart-issues";
 import { issueReasonLabel } from "@/application/issue-filter";
 import { COVERAGE_RANGE_FIELD } from "@/application/chart-coverage";
+import { chartColors } from "@/application/chart-theme";
+import { barCellPairGeometry, barCellScale, barCellSigned } from "@/components/charts/bar-cell";
 
 // V3-8 資料來源頁（PRD §7.7.1、§6.3 #51–#53；D-V3-2、D-V3-28）＋通路健檢空狀態（§7.10 健檢沒有結果、C10）。SSR 驗收：
 // 區塊順序、資料狀態一行、問題表在第二段（六欄、原因碼欄 hidden 掛載、下載鈕只在資料來源頁）、兩欄定義列表、前處理表、選填資料並列、
@@ -132,7 +134,9 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
     const section = element(page(importedSource), 'data-testid="data-preprocessing"');
     expect(section).toContain(`<p class="ui-section-subtitle">${conversionSentence(conversion)}</p>`);
     expect([...section.matchAll(/<th scope="col"[^>]*>([^<]*)<\/th>/g)].map(match => match[1])).toEqual(Object.values(v3.preprocessing.columns));
-    const body = [...section.matchAll(/<tr data-field="([a-z_]+)"><th scope="row">([^<]*)<\/th><td class="num">([^<]*)<\/td><td class="num">([^<]*)<\/td><td class="num">([^<]*)<\/td><\/tr>/g)];
+    // V4-7b：換算值格內多了 G22 成對條（C24 根 svg data-chart-kind="cell"，aria-hidden、沒有文字）；這裡只比對文字欄，條另見本檔「V4-7b G22 前處理表成對條」。
+    const textOnly = section.replace(/<svg class="bar-cell is-pair[^"]*" data-chart-kind="cell"[^>]*>[\s\S]*?<\/svg>/g, "");
+    const body = [...textOnly.matchAll(/<tr data-field="([a-z_]+)"><th scope="row">([^<]*)<\/th><td class="num">([^<]*)<\/td><td class="num">([^<]*)<\/td><td class="num">([^<]*)<\/td><\/tr>/g)];
     expect(body.map(match => match[1])).toEqual(conversion.fields);
     expect(body).toHaveLength(8);
     for (const [, field, label, raw, converted, rate] of body) {
@@ -362,5 +366,70 @@ describe("V4-7a 資料來源頁：G20、G21 的位置與標題", () => {
     expect(titleOf(html, "data-issues-dist")).toBe(fill(issues.title.rangeOnly, { n: formatCount(2, "L2") }));
     expect(element(html, 'data-testid="chart-data-issues"')).toContain(issues.rangeRow);
     expect(mainSections(html)).toEqual(["chart-data-coverage", "chart-data-issues"]);
+  });
+});
+
+// V4-7b G22（CHART_CATALOG G22、PRD §4.2、§6.3 C24 pair、§8.7）：資料來源頁前處理表的換算值格（tr[data-field] 的第 3 格）在數字之前加成對條——
+// 上 4px 含稅原值（rect.bar-cell-previous、chartColors.previous）、下 6px 換算值（rect.bar-cell-bar、chartColors.total）；整張表共用尺度＝含稅原值的 |值| 最大值、共用版面。
+// 只呈現 TaxConversion.totals 既有的兩個值；條 aria-hidden、不可聚焦、不可點；含稅與未稅合計、稅率三格的文字不變（上方 V3-8 那條測試）。
+describe("V4-7b G22 前處理表成對條", () => {
+  const PAIR = /<svg class="bar-cell is-pair( is-signed)?" data-chart-kind="cell" data-testid="chart-data-preprocess-bar-([a-z_]+)" viewBox="0 0 96 12" width="96" height="12" preserveAspectRatio="none" aria-hidden="true" focusable="false">([\s\S]*?)<\/svg>/g;
+  const rowOf = (section: string, field: string) => element(section, `<tr data-field="${field}"`);
+  const rect = (className: string, bar: { x: number; y: number; width: number; height: number }, fillColor: string) => `<rect class="${className}" x="${bar.x}" y="${bar.y}" width="${bar.width}" height="${bar.height}" fill="${fillColor}"></rect>`;
+
+  it("含稅匯入（inclusive_tax，8 欄）：每個換算欄位一條，在換算值格內、數字之前；上條含稅原值、下條換算值；共用尺度＝含稅原值最大值（原價收入 4,725.00 滿寬 96）", () => {
+    const conversion = importedSource.conversion!;
+    const section = element(page(importedSource), 'data-testid="data-preprocessing"');
+    const pairs = [...section.matchAll(PAIR)];
+    expect(pairs.map(match => match[2])).toEqual(conversion.fields);
+    const totals = conversion.fields.map(field => conversion.totals![field]);
+    const scale = barCellScale(totals.map(item => item.raw));
+    expect(scale).toBe("4725");
+    expect(barCellSigned(totals.flatMap(item => [item.raw, item.converted]))).toBe(false);
+    for (const [, signed, field, inner] of pairs) {
+      expect(signed, field).toBeUndefined();
+      const { raw, converted } = conversion.totals![field];
+      const geometry = barCellPairGeometry({ value: converted, previous: raw, max: scale, signed: false });
+      // DOM：條在換算值格（第 3 格）內、數字之前；含稅合計格（第 2 格）與稅率格沒有條。
+      const cells = [...rowOf(section, field).matchAll(/<td class="num">([\s\S]*?)<\/td>/g)].map(match => match[1]);
+      expect(cells, field).toHaveLength(3);
+      expect(cells[0], field).toBe(formatAmountL3(raw));
+      expect(cells[1].startsWith("<svg "), `${field}：條在數字之前`).toBe(true);
+      expect(cells[1].endsWith(`</svg>${formatAmountL3(converted)}`), field).toBe(true);
+      expect(cells[2], field).toBe(formatRateL2(conversion.rate));
+      if (geometry.previous.bar) expect(inner, field).toContain(rect("bar-cell-previous", geometry.previous.bar, chartColors.previous));
+      else expect(inner, `${field}：原值 0 時沒有上條`).not.toContain("bar-cell-previous");
+      if (geometry.value.bar) expect(inner, field).toContain(rect("bar-cell-bar", geometry.value.bar, chartColors.total));
+      else expect(inner, `${field}：換算值 0 時沒有下條`).not.toContain('class="bar-cell-bar"');
+      expect(inner, field).toContain(`<line class="bar-cell-zero" x1="${geometry.zeroLineX}" x2="${geometry.zeroLineX}"`);
+      expect(inner, `${field}：不可聚焦`).not.toMatch(/tabindex|<button|<a\s/);
+    }
+    // 原價收入的含稅原值就是尺度：上條滿寬（96）、貼盒頂高 4；換算值 4,500.00 的下條 ＝ 4500 ÷ 4725 × 96。
+    const gross = barCellPairGeometry({ value: "4500.00", previous: "4725.00", max: scale });
+    expect(gross.previous.bar).toEqual({ x: 0, y: 0, width: 96, height: 4 });
+    expect(gross.value.bar).toEqual({ x: 0, y: 6, width: 91.4, height: 6 });
+    expect(section).not.toContain("is-clickable");
+    expect(section.split("data-chart-kind").length - 1).toBe(conversion.fields.length);
+  });
+
+  it("有負值的欄（記憶體裡把退款合計改成負數）：整張表共用 signed 版面（每條都有 is-signed、零線在正中央）", () => {
+    const conversion = importedSource.conversion!;
+    const negative: TaxConversion = { ...conversion, totals: { ...conversion.totals!, refunds: { raw: "-126.00", converted: "-120.00" } } };
+    const section = element(page({ ...importedSource, conversion: negative }), 'data-testid="data-preprocessing"');
+    const pairs = [...section.matchAll(PAIR)];
+    expect(pairs).toHaveLength(conversion.fields.length);
+    for (const [, signed, field, inner] of pairs) {
+      expect(signed, field).toBe(" is-signed");
+      expect(inner, field).toContain('<line class="bar-cell-zero" x1="48" x2="48"');
+    }
+    const refunds = pairs.find(match => match[2] === "refunds")![3];
+    const geometry = barCellPairGeometry({ value: "-120.00", previous: "-126.00", max: barCellScale(Object.values(negative.totals!).map(item => item.raw)), signed: true });
+    expect(geometry.previous.direction).toBe("left");
+    expect(refunds).toContain(rect("bar-cell-previous", geometry.previous.bar!, chartColors.previous));
+    expect(refunds).toContain(rect("bar-cell-bar", geometry.value.bar!, chartColors.total));
+  });
+
+  it("未稅匯入（golden、示範資料）：沒有前處理表，也就沒有成對條", () => {
+    for (const source of [golden, demo]) expect(page(source)).not.toContain("chart-data-preprocess-bar-");
   });
 });

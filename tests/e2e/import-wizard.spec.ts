@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { formatAmountL1, formatAmountL3, formatCount, formatRateL2 } from "../../src/application/presentation";
+import { formatAmountL1, formatAmountL3, formatCount, formatRateL2, formatSignedDelta } from "../../src/application/presentation";
+import { differs, reconciliationBars, reconciliationMatches, wizardCheck } from "./chart-helpers-v4";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, importViaWizard, nextFromFiles, openWizard, setWizardFiles, wizard, wizardFileLabels, wizardResultNote, wizardRoles, wizardStatus } from "./import-wizard-helpers";
 import { closeDownloads, dismissSavePrompt, navigateTo, openDownloads, sidebarNav } from "./replacement-helpers";
 
@@ -242,6 +243,15 @@ test("含稅匯入從「匯入資料」到「套用」最多 5 次點擊（inclu
   await expect(wizardStatus(page)).toHaveAttribute("data-classification", "valid", { timeout: 20_000 });
   await expect(wizardStatus(page)).toHaveText(statusReady(wizardRoles.length, await fixtureRows(inclusive)));
   await expect(wizardResultNote(page)).toHaveText(copy.result.valid);
+  // V4-7b G22（CHART_CATALOG G22）：步驟 4 對帳表——差額條數＝差額 ≠ 0 的列數，差額 0 的列在條的位置標「相符」；只讀不點，點擊數照舊。
+  // 期待值在 Node 端以同一組 reducer 與 buildImportReconciliation 算（含稅 inclusive_tax 的 9 列差額都是 0，所以 0 條、9 個「相符」）。
+  const rows = wizardCheck(inclusive, "inclusive").reconciliation;
+  await expect(reconciliationBars(page)).toHaveCount(rows.filter(differs).length);
+  await expect(reconciliationMatches(page)).toHaveCount(rows.filter(row => row.difference !== null && !differs(row)).length);
+  for (const row of rows) {
+    const cell = page.getByTestId(`reconciliation-${row.field}`).locator("td").last();
+    if (row.difference !== null && !differs(row)) await expect(cell, row.field).toHaveText(`${copy.chartsV4.reconciliation.match}${formatSignedDelta(row.difference, "L3")}`);
+  }
   await count(() => commitButton(page).click());
   await expect(wizard(page)).toHaveCount(0);
   // tests/fixtures/inclusive_tax/README.md 的手算：本期淨營收 2150.00、扣廣告後貢獻 518.05。

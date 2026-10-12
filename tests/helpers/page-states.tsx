@@ -4,7 +4,7 @@ import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { fixture } from "./fixtures";
 import { validateDataset } from "@/domain/validation";
-import type { AnalysisFilters, Dataset, DatasetInput, FileName, SourceRef } from "@/domain/types";
+import type { AnalysisFilters, Dataset, DatasetInput, FileName, MetricName, SourceRef } from "@/domain/types";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { emptyDecisionWorkspace, saveScenario } from "@/application/decision";
 import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, updateScenarioContext, scenarioSelectionRef, type ScenarioWorkspace } from "@/application/scenario-workspace";
@@ -17,6 +17,7 @@ import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
+import { metricDefinitions } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceBackupSource } from "@/application/workspace-backup";
 import { fill, labels } from "@/i18n";
@@ -35,13 +36,14 @@ import { MultiScenarioWorkbench } from "@/components/multi-scenario-workbench";
 import { ActionsWorkbench } from "@/components/actions-workbench";
 import { MeetingEntry, MeetingPage } from "@/components/meeting-page";
 import { ImportWizard } from "@/components/import-wizard";
-import { EvidenceDrawer } from "@/components/evidence-drawer";
+import { EvidenceDrawer, type EvidenceSelection } from "@/components/evidence-drawer";
 import { BasisDialog } from "@/components/basis-dialog";
 import { WorkspaceStorage } from "@/components/workspace-storage";
 import { yoyInput } from "./yoy-dataset";
 import { synthetic4ChannelInput, synthetic4ChannelOverlapInput } from "./synthetic-4-channel";
 import { g19History } from "./meeting-history";
 import { sevenChannelMeeting } from "./seven-channel-meeting";
+import { reconciliationMismatchState } from "./reconciliation-mismatch";
 
 /*
  * 頁面狀態（V4-0a 由 tests/mounted-testids.test.tsx 原樣搬出並匯出；PRD §7.9、§8.6、06_BATCHES V4-0a 第 7 項）。
@@ -76,6 +78,10 @@ export type ShellState = {
   consent?: boolean;
   /** V3-6 B：待辦頁的檢視（預設看板；清單檢視用 actions-list 狀態）。 */
   actionsView?: "board" | "list";
+  /** V4-7b：showImport 時精靈的起始狀態（例如已檢核的步驟 4，G22 對帳表）；沒給時照舊從第 1 步開始。 */
+  wizardState?: WizardState;
+  /** V4-7b：開著的「計算與來源」抽屜（G23 階梯表）；沒給時照舊是關著（evidence null，抽屜不在 DOM）。 */
+  evidence?: EvidenceSelection;
 };
 
 const datasetNames: Record<string, string> = { demo: labels.shell.devValidation.datasets.demo, golden: labels.shell.devValidation.datasets.golden, "missing-cogs": labels.shell.devValidation.datasets.missingCogs };
@@ -125,7 +131,7 @@ export function shellPage(state: ShellState): ReactElement {
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
         <PageHeader title={panelCopy(panel).headline} description={panelCopy(panel).explain} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} presentToggle={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed={false} onClick={noop}>{labels.shell.presentV3.enter}</button> : undefined} />
-        {state.showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={asyncNoop} onCancel={noop} busy={false} localSaveConsented={state.consent ?? true} /></div>}
+        {state.showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={asyncNoop} onCancel={noop} busy={false} localSaveConsented={state.consent ?? true} initialState={state.wizardState} /></div>}
         <PeriodBar
           channel={{ value: report.scope.channels.length > 1 ? "" : report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, alias) })), onChange: noop }}
           presets={presets} isPressed={presetMatches} onPreset={noop}
@@ -138,7 +144,7 @@ export function shellPage(state: ShellState): ReactElement {
         <ShellFooter analytics onBasis={noop} />
       </main>
     </div>
-    <EvidenceDrawer dataset={active.dataset} snapshot={active.snapshot} evidence={null} onClose={noop} onBasis={noop} />
+    <EvidenceDrawer dataset={active.dataset} snapshot={active.snapshot} evidence={state.evidence ?? null} onClose={noop} onBasis={noop} />
     <BasisDialog open={false} onClose={noop} />
   </div>;
 }
@@ -156,6 +162,15 @@ export function wizardFiles(dir: string): WizardState {
     state = wizardReducer(state, { type: "fileRead", role, draft: inspectImportFile(role, { name: role, size: content.byteLength, bytes: content }), encoding: "utf8", memory: null });
   }
   return state;
+}
+
+/**
+ * V4-7b：總覽 KPI 帶本期值的抽屜內容（與 src/components/overview/kpi-band.tsx 的 openValue 相同：範圍＝report.scope.channels、本期、本期來源、指標名為標題）。
+ * 期間列只選一個通路時（createSnapshot 的 filters.channels）就是該通路的 KPI 抽屜，階梯取 report.current.metrics。
+ */
+export function kpiEvidence(snapshot: WorkspaceSnapshot, name: MetricName): EvidenceSelection {
+  const { report } = snapshot;
+  return { name, metric: report.current.metrics[name], period: report.current.period, sources: report.current.sources, channels: report.scope.channels, title: metricDefinitions[name].label };
 }
 
 export type StateMarkup = { name: string; html: string; state: ShellState | null };
@@ -367,6 +382,20 @@ export async function pageStates(): Promise<StateMarkup[]> {
     "data-overlap": { panel: "data", active: await (async () => { const input = synthetic4ChannelOverlapInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "synthetic-overlap", revision: 1 }; })(), status: "partial" },
 
     // ── V4-7b 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-7b 新增 M1 測試」錨點後加對應測試）──
+    // 精靈步驟 4（showImport＋wizardState；同 import-step-1 嵌在資料來源頁）：含稅 inclusive_tax 檢核後（valid）的對帳表 9 列差額都是 0——沒有 G22 差額條、9 個「相符」。
+    "import-step-4-reconciled": { panel: "data", active: demo, status: "ready", showImport: true, consent: false, wizardState: wizardReducer(confirmed, { type: "checked", candidate: runCheck(confirmed) }) },
+    // 精靈步驟 4＋對帳差額（tests/helpers/reconciliation-mismatch.ts：golden 未稅檢核後在記憶體裡改來源檔第一列）：原價收入 −10.00、折扣 +5.00、廣告費 −2.50 三列有 G22 差額條
+    // （chart-import-reconciliation-bar-{field}，共用尺度 10.00），其餘 6 列「相符」。
+    "import-step-4-mismatch": { panel: "data", active: golden, status: "ready", showImport: true, consent: false, wizardState: reconciliationMismatchState() },
+    // 總覽＋開著的抽屜（KPI 扣廣告後貢獻，示範資料全部通路本期；同 kpi-band 的 openValue）：G23 階梯表 13 列、淨營收起 10 條 chart-evidence-ladder-bar-{metric}，都是正值（total）。
+    "overview-evidence-ladder": { panel: "overview", active: demo, status: "ready", evidence: kpiEvidence(demo.snapshot, "contribution_after_marketing") },
+    // 總覽＋開著的抽屜（4 通路合成資料、期間列只選 SOCIAL 後的 KPI 扣廣告後貢獻；D-V4-31）：SOCIAL 本期平台抽成 −2,160.00（沖回）是扣項為負，
+    // G23 該列條為有利色（data-tone favorable、chartColors.favorable）、往左；同一張表有負值，版面 signed（零線在正中央）。
+    ...await (async (): Promise<Record<string, ShellState>> => {
+      const input = synthetic4ChannelInput(), dataset = validateDataset(input).dataset!;
+      const active: Active = { input, dataset, snapshot: await createSnapshot(dataset, { channels: ["SOCIAL"] }, await hashInput(input)), id: "synthetic-social", revision: 1 };
+      return { "overview-evidence-ladder-social": { panel: "overview", active, status: "partial", evidence: kpiEvidence(active.snapshot, "contribution_after_marketing") } };
+    })(),
 
     // ── V4-8 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-8 新增 M1 測試」錨點後加對應測試）──
 

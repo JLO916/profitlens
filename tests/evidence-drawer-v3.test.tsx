@@ -18,6 +18,10 @@ import { pnlShareEvidence } from "@/components/overview/pnl-table";
 import { impactEvidence } from "@/components/top-three";
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
+import { chartColors } from "@/application/chart-theme";
+import { barCellFill, barCellShareBase, barCellShareGeometry, barCellSigned } from "@/components/charts/bar-cell";
+import { channelEvidence } from "@/components/overview/charts/channel-section";
 import { frozenLadderMetrics, ladderCases, ladderDatasets } from "./helpers/evidence-ladder-cases";
 
 // V4-7b 代理 B：ladderMetrics 搬到 src/application/evidence-ladder.ts，抽屜改從那裡匯入。這裡把它包一層開關：預設走搬移後的函式（本檔其餘測試不受影響），
@@ -493,4 +497,119 @@ describe("V4-7b ladderMetrics 搬移：抽屜 SSR 與搬移前逐字相同", () 
     expect(compared).toBeGreaterThanOrEqual(140);
     expect(ladders).toBeGreaterThanOrEqual(60);
   }, 60_000);
+});
+
+// V4-7b G23（CHART_CATALOG G23、PRD §4.2、§4.5、§6.3 C24 share；06_BATCHES V4-7b「合成資料中扣項為負的通路，抽屜該列條為有利色」）：
+// 階梯表從淨營收那一列起（含淨營收）在 td.ladder-amount 內、金額之前加佔比條；條長＝|值| ÷ 淨營收（barCellShareGeometry，只用於長度）；
+// 淨營收 ≤ 0 或 null 時整張表不畫條；值為 null（資料待補）的列不畫條。色依列的角色：正值 total；扣項（op「−」）為負 favorable，小計與結果列（op「＝」）為負 unfavorable。
+// 金額一律來自快照（domain 值），期待值由 barCellShareGeometry、barCellSigned 與 chartColors 組出。
+describe("V4-7b G23 階梯表佔比條", () => {
+  const LADDER_NAMES = ["gross_sales", "discounts", "refunds", "net_revenue", "cogs_net", "gross_profit", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "contribution_before_marketing", "ad_spend", "contribution_after_marketing"] as const;
+  const DEDUCTIONS = new Set(["cogs_net", "platform_fees", "payment_fees", "fulfillment_costs", "other_variable_costs", "ad_spend"]);
+  const FROM = LADDER_NAMES.indexOf("net_revenue");
+  type Loaded = { dataset: Dataset; snapshot: WorkspaceSnapshot };
+  let synthetic: Loaded, refundOnly: Loaded;
+  beforeAll(async () => {
+    const make = async (input: ReturnType<typeof fixture>): Promise<Loaded> => { const loaded = validateDataset(input).dataset!; return { dataset: loaded, snapshot: await createSnapshot(loaded, {}, await hashInput(input)) }; };
+    synthetic = await make(synthetic4ChannelInput());
+    refundOnly = await make(fixture("refund_only"));
+  });
+  const draw = (target: Loaded, evidence: EvidenceSelection) => renderToStaticMarkup(createElement(EvidenceDrawer, { dataset: target.dataset, snapshot: target.snapshot, evidence, onClose: noop, onBasis: noop }));
+  const kpi = (target: Loaded, name: (typeof LADDER_NAMES)[number]): EvidenceSelection => ({ title: metricDefinitions[name].label, name, metric: target.snapshot.report.current.metrics[name], period: target.snapshot.report.current.period, channels: target.snapshot.report.scope.channels, sources: target.snapshot.report.current.sources });
+  const ladderTable = (html: string) => /<table class="ladder-table">[\s\S]*?<\/table>/.exec(html)?.[0] ?? "";
+  const rowsOf = (html: string) => [...ladderTable(html).matchAll(/<tr class="[^"]*"><td class="ladder-op" aria-hidden="true">[^<]*<\/td><th scope="row">([^<]*)<\/th><td class="ladder-amount">([\s\S]*?)<\/td><\/tr>/g)].map(([, label, cell]) => ({ label, cell }));
+  const BAR = /<svg class="bar-cell is-share( is-signed)?" data-chart-kind="cell" data-testid="chart-evidence-ladder-bar-([a-z_]+)" data-tone="([a-z]+)" viewBox="0 0 96 12" width="96" height="12" preserveAspectRatio="none" aria-hidden="true" focusable="false">([\s\S]*?)<\/svg>/;
+  const barsOf = (html: string) => [...ladderTable(html).matchAll(new RegExp(BAR.source, "g"))].map(([, signed, metric, tone, inner]) => ({ signed: Boolean(signed), metric, tone, inner }));
+  const money = (value: string | null) => fill(labels.format.units.yuan, { value: formatAmountL3(value) });
+
+  /** 一張階梯表的條逐列核對：條在淨營收起、值不是 null 的列，在金額之前；長度＝barCellShareGeometry；色依列的角色。 */
+  function expectLadderBars(html: string, metrics: Metrics, evidenceName: (typeof LADDER_NAMES)[number]) {
+    const names = LADDER_NAMES.slice(0, LADDER_NAMES.indexOf(evidenceName) + 1);
+    const rows = rowsOf(html);
+    expect(rows.map(row => row.label)).toEqual(names.map(name => metricDefinitions[name].label));
+    const barred = names.slice(FROM).filter(name => metrics[name].value !== null);
+    const signed = barCellSigned(barred.map(name => metrics[name].value));
+    const bars = barsOf(html);
+    expect(bars.map(bar => bar.metric)).toEqual(barred);
+    names.forEach((name, index) => {
+      const { cell } = rows[index];
+      const amount = metrics[name].value === null ? null : money(metrics[name].value);
+      if (!barred.includes(name)) { expect(cell, name).not.toContain("<svg"); if (amount) expect(cell, name).toBe(amount); return; }
+      const value = metrics[name].value!;
+      const negative = barCellSigned([value]);
+      const tone = negative ? (DEDUCTIONS.has(name) ? "favorable" : "unfavorable") : "total";
+      const bar = bars.find(item => item.metric === name)!;
+      expect(bar.tone, name).toBe(tone);
+      expect(bar.signed, name).toBe(signed);
+      expect(cell.startsWith("<svg "), `${name}：條在金額之前`).toBe(true);
+      expect(cell.endsWith(`</svg>${amount}`), `${name}：金額文字不變`).toBe(true);
+      const geometry = barCellShareGeometry({ value, base: metrics.net_revenue.value, signed });
+      if (geometry.bar) expect(bar.inner, name).toContain(`<rect class="bar-cell-bar" x="${geometry.bar.x}" y="${geometry.bar.y}" width="${geometry.bar.width}" height="${geometry.bar.height}" fill="${barCellFill(tone)}"></rect>`);
+      else expect(bar.inner, `${name}：值為 0 時只有零線`).not.toContain("<rect");
+      expect(bar.inner, name).toContain(`<line class="bar-cell-zero" x1="${geometry.zeroLineX}" x2="${geometry.zeroLineX}"`);
+      expect(bar.inner, `${name}：條內沒有可聚焦元素`).not.toMatch(/tabindex|<button|<a\s/);
+    });
+    return bars;
+  }
+
+  it("本期扣廣告後貢獻（golden 全部通路）：13 列，條＝淨營收起 10 列（原價收入、折扣、退款沒有）；淨營收滿長、其餘＝|值| ÷ 淨營收；全為正值用 total、版面不分正負", () => {
+    const html = render(currentContribution());
+    const bars = expectLadderBars(html, snapshot.report.current.metrics, "contribution_after_marketing");
+    expect(bars).toHaveLength(10);
+    for (const name of ["gross_sales", "discounts", "refunds"]) expect(html, name).not.toContain(`chart-evidence-ladder-bar-${name}"`);
+    expect(bars.every(bar => bar.tone === "total" && !bar.signed)).toBe(true);
+    expect(bars[0].inner).toContain(`<rect class="bar-cell-bar" x="0" y="3" width="96" height="6" fill="${chartColors.total}"></rect>`);
+    // 每個 testid 一份；條不可點（沒有 is-clickable）。
+    for (const bar of bars) expect(html.split(`data-testid="chart-evidence-ladder-bar-${bar.metric}"`).length - 1, bar.metric).toBe(1);
+    expect(ladderTable(html)).not.toContain("is-clickable");
+  });
+
+  it("條數＝淨營收以下的列數：淨營收 1、商品毛利 3、扣廣告前貢獻 8；原價收入、折扣、退款證據 0；比率證據（毛利率）的比率表與商品層證據都不畫", () => {
+    const counts = (["gross_sales", "discounts", "refunds", "net_revenue", "gross_profit", "contribution_before_marketing"] as const).map(name => barsOf(render(kpi({ dataset, snapshot }, name))).length);
+    expect(counts).toEqual([0, 0, 0, 1, 3, 8]);
+    const margin: EvidenceSelection = { title: metricDefinitions.gross_margin.label, name: "gross_margin", metric: snapshot.report.current.metrics.gross_margin, period: snapshot.report.current.period, channels: snapshot.report.scope.channels, sources: snapshot.report.current.sources };
+    const marginHtml = render(margin);
+    expect(marginHtml).toContain('class="ladder-table"');
+    expect(marginHtml).not.toContain("chart-evidence-ladder-bar-");
+    expect(render({ ...currentContribution(), sku: "SKU-1" })).not.toContain("chart-evidence-ladder-bar-");
+  });
+
+  it("淨營收 ≤ 0（refund_only 本期淨營收為負）：階梯照畫，整張表不畫條；沒有快照（沒有階梯）也沒有條", () => {
+    const metrics = refundOnly.snapshot.report.current.metrics;
+    expect(Number(metrics.net_revenue.value)).toBeLessThanOrEqual(0);
+    expect(barCellShareBase(metrics.net_revenue.value)).toBeNull();
+    const html = draw(refundOnly, kpi(refundOnly, "contribution_after_marketing"));
+    expect(rowsOf(html)).toHaveLength(13);
+    expect(html).not.toContain("data-chart-kind");
+    expect(renderToStaticMarkup(createElement(EvidenceDrawer, { dataset, evidence: currentContribution(), onClose: noop }))).not.toContain("chart-evidence-ladder-bar-");
+  });
+
+  it("4 通路合成資料 SOCIAL（本期平台抽成 −2,160.00 沖回，扣項為負）：該列有利色（chartColors.favorable）、往左；同一張表有負值，版面 signed（零線在正中央）；其餘正值 total", () => {
+    const evidence = channelEvidence(synthetic.snapshot, "SOCIAL", "current");
+    const metrics = synthetic.snapshot.report.current.channels.SOCIAL.metrics;
+    expect(metrics.platform_fees.value).toBe("-2160.00");
+    const bars = expectLadderBars(draw(synthetic, evidence), metrics, "contribution_after_marketing");
+    const fees = bars.find(bar => bar.metric === "platform_fees")!;
+    expect(fees.tone).toBe("favorable");
+    expect(fees.inner).toContain(`fill="${chartColors.favorable}"`);
+    expect(barCellShareGeometry({ value: metrics.platform_fees.value, base: metrics.net_revenue.value, signed: true }).direction).toBe("left");
+    expect(bars.every(bar => bar.signed)).toBe(true);
+    expect(bars.filter(bar => bar.metric !== "platform_fees").every(bar => bar.tone === "total")).toBe(true);
+  });
+
+  it("4 通路合成資料 MARKETPLACE（本期扣廣告後貢獻 −5,200.00）：結果列為負用不利色（chartColors.unfavorable）、往左；扣項都是正值 total", () => {
+    const metrics = synthetic.snapshot.report.current.channels.MARKETPLACE.metrics;
+    expect(metrics.contribution_after_marketing.value).toBe("-5200.00");
+    const bars = expectLadderBars(draw(synthetic, channelEvidence(synthetic.snapshot, "MARKETPLACE", "current")), metrics, "contribution_after_marketing");
+    const result = bars.find(bar => bar.metric === "contribution_after_marketing")!;
+    expect(result.tone).toBe("unfavorable");
+    expect(result.inner).toContain(`fill="${chartColors.unfavorable}"`);
+    expect(bars.filter(bar => DEDUCTIONS.has(bar.metric)).every(bar => bar.tone === "total")).toBe(true);
+  });
+
+  it("值為 null 的列（LIVE 通路費用與廣告資料待補）不畫條，只有淨營收、商品成本、商品毛利 3 條；全部通路的合成資料同樣", () => {
+    const live = synthetic.snapshot.report.current.channels.LIVE.metrics;
+    expect(expectLadderBars(draw(synthetic, channelEvidence(synthetic.snapshot, "LIVE", "current")), live, "contribution_after_marketing").map(bar => bar.metric)).toEqual(["net_revenue", "cogs_net", "gross_profit"]);
+    expect(expectLadderBars(draw(synthetic, kpi(synthetic, "contribution_after_marketing")), synthetic.snapshot.report.current.metrics, "contribution_after_marketing").map(bar => bar.metric)).toEqual(["net_revenue", "cogs_net", "gross_profit"]);
+  });
 });
