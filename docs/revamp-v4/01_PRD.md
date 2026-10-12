@@ -332,7 +332,7 @@ v3 的目標是「去 AI 製作感、三層閱讀」，圖只做到 B3「表格�
 | G17 | 列不另設點擊：看板與清單在 v3 沒有期限篩選（工具列只有看板／清單切換，`src/components/actions-workbench.tsx:179-181`），v4 不新增篩選；逾期判定與卡片既有的 `board-card-due[data-overdue]` 相同（`actions-workbench.tsx:138`：有期限、早於台北今天、未完成） | — | 4 列小表本身 | 經表 |
 | G18 | （取消） | — | — | — |
 | G19 | 不另設點擊：歷史項目是 `<details>`（`meeting-history-item`），展開即看凍結內容（§8.7 例外） | 無 | C33 新表：會議日期、會議名稱、淨營收、扣廣告後貢獻、資料集是否與前一次相同（`meeting-history-kpis` 是各次凍結的上次比較，不是本圖的序列） | 經表 |
-| G20 | 點缺列段把問題表篩到該檔、該通路、該原因，並捲到 `data-issues` | 檔案、通路、原因 | 檔 × 通路 × 缺列日期區段（每列是篩選按鈕） | 經表 |
+| G20 | 點缺列段把問題表篩到該檔、該通路、該原因，並捲到 `data-issues`（D-V4-51（b）＝B：同一檔不同通路重疊而合成的框篩該檔、該原因，不限通路） | 檔案、通路、原因 | 檔 × 通路 × 缺列日期區段（每列是篩選按鈕） | 經表 |
 | G21 | 點格套用同樣的篩選 | 檔案、原因 | 表本身（格內是按鈕） | 經表 |
 | G22 | 不另設點擊：對帳表與前處理表的格在 v3 是純文字（精靈步驟 4 的資料尚未提交，沒有抽屜；§8.7 例外） | 無 | 表本身 | 經表 |
 | G23 | 無新增 | — | 表本身 | 經表 |
@@ -394,7 +394,7 @@ v3 的目標是「去 AI 製作感、三層閱讀」，圖只做到 B3「表格�
 | G17 | `chart-actions-due` | `chart-actions-due-bar-{bucket}` | 區塊本身 | `actions.chartsV4.due.*` |
 | G18 | （取消） | — | — | — |
 | G19 | `chart-meeting-history` | 無 | `chart-meeting-history-table`（既有 `meeting-history-kpis` 不變） | `meeting.chartsV4.history.*` |
-| G20 | `chart-data-coverage` | `chart-data-coverage-seg-{file}-{channel}-{start}` | `chart-data-coverage-table` | `data.chartsV4.coverage.*` |
+| G20 | `chart-data-coverage` | `chart-data-coverage-seg-{file}-{channel}-{start}`（合成框的通路段寫 `all`，D-V4-51（b）＝B） | `chart-data-coverage-table` | `data.chartsV4.coverage.*` |
 | G21 | `chart-data-issues` | `chart-data-issues-cell-{file}-{reason}` | 區塊本身 | `data.chartsV4.issues.*` |
 | G22 | 共用既有 `reconciliation-{field}` 與前處理表 | `chart-import-reconciliation-bar-{field}`、`chart-data-preprocess-bar-{field}` | 共用 | `importWizard.chartsV4.reconciliation.*`、`data.chartsV4.preprocess.*` |
 | G23 | 抽屜既有結構 | `chart-evidence-ladder-bar-{metric}` | 共用 | `evidence.chartsV4.ladder.*` |

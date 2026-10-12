@@ -33,7 +33,10 @@ const copy = labels.data.chartsV4.coverage;
  * 同一檔不同通路重疊而合成的框，通路段寫 COVERAGE_ALL_CHANNELS（all），start＝合成後的起日（D-V4-51（b）＝B）。
  */
 export const COVERAGE_SEG_TESTID_PREFIX = "chart-data-coverage-seg-";
-/** 合成框的 testid 通路段（D-V4-51（b）＝B）。通路代碼是大寫英文（manifest.channels），不會與它相撞。 */
+/**
+ * 合成框的 testid 通路段（D-V4-51（b）＝B）。manifest.channels 只要求非空、不重複（validation.ts），不保證是大寫英文；
+ * 即使有通路就叫 all，testid 也不會重複：同一檔的框彼此沒有相同的日子（重疊的都已合成一框），起日各不相同。
+ */
 export const COVERAGE_ALL_CHANNELS = "all";
 /**
  * 篩選條件：檔案（標準檔名）、通路、原因碼（MISSING_CHANNEL_COST_DAY／MISSING_AD_DAY）。
