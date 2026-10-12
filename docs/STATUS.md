@@ -1,5 +1,39 @@
 # Status
 
+## Revamp v4｜V4-7b 匯入精靈與抽屜（完成；G22、G23、`ladderMetrics` 搬移）
+
+使用者 2026-10-12 回覆「V4-7b」。V4-7b 依 06_BATCHES 完成以下三項：
+
+- **G22**：
+  - 精靈步驟 4 對帳表：差額不等於 0 的列才畫 C24 variance 差額條；差額等於 0 時標「相符」，0.00 照舊顯示，兩者之間有空白。
+  - 資料來源頁前處理表：換算值格加 C24 pair 成對條，上方含稅原值、下方未稅換算值。
+- **G23**：抽屜階梯表從淨營收那一列起畫 C24 share 佔比條。扣項為負用有利色，小計與結果列為負用不利色。
+- **`ladderMetrics` 搬移**：搬到 `src/application/evidence-ladder.ts` 並匯出，函式本體逐字相同。21 個 builder 加 grid 的回傳值是同一個物件，144 個抽屜的 SSR 前後相同。
+
+C24 BarCell 加了 share 與 pair 兩種模式，variance 的輸出逐位元組不變（265 筆基準）。
+
+最終驗收（`2e98855`）：
+
+- typecheck、lint、contrast（85／85）exit 0；audit:ui 的 design 15 項不變。
+- unit 160 檔／3,231 全過；build 通過。
+- E2E 997 passed／0 failed／15 skipped。
+- 52 張畫面基準只有 desktop、laptop 的 12 變動（「相符」），這是允許的。
+- First Load JS 511,174（多 610，剩 34,223）。
+- axe 18／18／18／17 個狀態全 0。
+- keyboard-walk 與 V4-7a 逐項相同；下載集合不變；Lighthouse a11y 全 100。
+- 390 TBT 低負載三次中位數五項都通過，不需要同場對照：載入示範資料 1,061.9、健檢 815.9、商品 86.9、會議 992.6、資料來源 10.0。
+
+已知限制：
+
+- 真實匯入的對帳差額幾乎都是 0，使用者只會看到「相符」，差額條只在測試資料出現。
+- 768、390 的差額欄要在表格內橫向捲動才看得到（v3 就是如此）。
+
+其他：
+
+- 禁區四條命令都是空的；commit 之後的 diff（收尾 `{V4_7B_CLOSE}`）也是空的。
+
+驗收文件：`verification/revamp-v4-V4-7b-acceptance.md`；量測與截圖在 `verification/revamp-v4/V4-7b/`。下一批是 V4-7c，匯入時間寫進備份（D-V3-30＝A）。
+
 ## Revamp v4｜V4-7a 資料來源（完成；G20、G21、問題表篩選）
 
 使用者 2026-10-12 回覆「48 B／B、49 A／C、50 B／A、V4-7a」。V4-6 的收尾補做（`5eb408a`）完成後開工。V4-7a 依 06_BATCHES 完成以下三項：
