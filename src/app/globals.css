@@ -2969,6 +2969,10 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-7a C 錨點結束 ── */
 
 /* ── V4-7b A：C24 BarCell share、pair 模式（代理 A） ── */
+/* share（svg.bar-cell.is-share，G23）與 pair（svg.bar-cell.is-pair，G22）和 variance 同一個 96 × 12 座標系，不另加規則：
+   顯示寬（≥ 768 為 96px、≤ 767 為 64px，即 390 的 64）、放在 td.num 內時貼齊左緣與垂直置中，都沿用「V4-1 B」的 .bar-cell 規則（選擇器不分模式）。
+   未分正負時零線在左緣（x＝0.5），signed（.is-signed）時在正中央；兩種模式都不可點，沒有 .is-clickable 的 cursor。
+   放在不是 td.num 的格（例如抽屜階梯表的 td.ladder-amount）時的貼齊與顯示，由各圖自己的錨點決定（V4-7b C）。 */
 /* ── V4-7b A 錨點結束 ── */
 
 /* ── V4-7b C：G22 對帳表與前處理表、G23 抽屜階梯表的內嵌條（代理 C） ── */
