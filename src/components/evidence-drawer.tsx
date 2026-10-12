@@ -3,11 +3,12 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
 import { applyEvidenceFilter, evidenceFilterText, hasEvidenceFilter, scopedEvidenceFilter, type EvidenceFilter } from "@/application/evidence-filter";
+import { ladderMetrics } from "@/application/evidence-ladder";
 import { emptyKindOf, evidenceRows, formatAmountL1, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatPeriodL1, formatPointsValue, formatRateLayer, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import { rateToPercent, type RawValuesByFile, type TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, COST_FIELDS, SALES_FIELDS } from "@/domain/types";
-import type { Dataset, FileName, Metric, MetricName, Metrics, Period, SourceRef } from "@/domain/types";
+import type { Dataset, FileName, Metric, MetricName, Period, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import { trapTabKey } from "./shell/focus-trap";
 import { ShellIcon } from "./shell/shell-icon";
@@ -90,29 +91,7 @@ function sourceValue(field: string, value: string): string {
   return field === "units_sold" ? formatCount(value, "L3") : value;
 }
 
-/**
- * 找出與這筆證據同期間、同通路範圍的合計指標；找不到（例如商品或跨期差額）就不畫階梯。
- * V4-3a（PRD §6.4 ladderMetrics、CHART_CATALOG G7（b））：snapshot.weeks 與去年同期（snapshot.yoy）都是 report.scope.channels 全部通路的合計，
- * 所以週與去年同期的查找只在 evidence.channels 等於 report.scope.channels 時成立；單一通路的週值或單日值（最後一週只有 1 天時期間會和週相同）不畫全通路的階梯。
- */
-function ladderMetrics(snapshot: EvidenceDrawerProps["snapshot"], evidence: EvidenceSelection): Metrics | null {
-  if (!snapshot || evidence.components || evidence.unitOverride || evidence.sku) return null;
-  const { report, weeks } = snapshot;
-  const same = (period: Period) => period.start === evidence.period.start && period.end === evidence.period.end;
-  const allChannels = [...report.scope.channels].sort().join("|") === [...evidence.channels].sort().join("|");
-  const base = same(report.previous.period) ? report.previous : same(report.current.period) ? report.current : null;
-  if (base) {
-    if (allChannels) return base.metrics;
-    if (evidence.channels.length === 1 && base.channels[evidence.channels[0]]) return base.channels[evidence.channels[0]].metrics;
-    return null;
-  }
-  if (!allChannels) return null;
-  // V3-9b F8：去年同期整段與各週（snapshot.yoy）也能畫階梯；既有 weeks 的查找不變，找不到才看去年同期。
-  const yoy = snapshot.yoy?.status === "ready" ? snapshot.yoy : null;
-  if (yoy && same(yoy.period)) return yoy.metrics;
-  const week = weeks.find(row => row.start === evidence.period.start && row.end === evidence.period.end) ?? yoy?.weeks.find(row => same(row));
-  return week ? week.metrics : null;
-}
+// V4-7b：四層階梯的查找 ladderMetrics 搬到 src/application/evidence-ladder.ts 並匯出（只搬移，V4-3a 的邏輯不改；tests/evidence-ladder.test.ts）。
 
 /**
  * V3-5（§7.8）：標題列副標「{範圍} · {期間}」，例如「全部通路 · 本期 7/13–8/23」「影響金額 · 合計（…） · 7/13–8/23」。

@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { validateDataset } from "@/domain/validation";
-import type { Dataset, FileName } from "@/domain/types";
+import type { Dataset, FileName, Metrics } from "@/domain/types";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
+import type { LadderEvidence, LadderSnapshot } from "@/application/evidence-ladder";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
 import { evidenceRows, formatAmountL1, formatAmountL3, formatPeriodL1, formatRateL1, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "@/application/presentation";
@@ -17,6 +18,15 @@ import { pnlShareEvidence } from "@/components/overview/pnl-table";
 import { impactEvidence } from "@/components/top-three";
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
+import { frozenLadderMetrics, ladderCases, ladderDatasets } from "./helpers/evidence-ladder-cases";
+
+// V4-7b 代理 B：ladderMetrics 搬到 src/application/evidence-ladder.ts，抽屜改從那裡匯入。這裡把它包一層開關：預設走搬移後的函式（本檔其餘測試不受影響），
+// 設了 impl 時改走它（V4-7b 段用搬移前的原文凍結 frozenLadderMetrics），同一份抽屜渲染兩次逐字比對 SSR。
+const ladderSwitch = vi.hoisted(() => ({ impl: null as null | ((snapshot: LadderSnapshot | undefined, evidence: LadderEvidence) => Metrics | null) }));
+vi.mock("@/application/evidence-ladder", async importOriginal => {
+  const actual = await importOriginal<typeof import("@/application/evidence-ladder")>();
+  return { ...actual, ladderMetrics: (snapshot: LadderSnapshot | undefined, evidence: LadderEvidence) => ladderSwitch.impl ? ladderSwitch.impl(snapshot, evidence) : actual.ladderMetrics(snapshot, evidence) };
+});
 
 // V3-5（PRD §7.8、§9.4 抽屜規格 C6、§6.3 #55）：計算與來源抽屜重排。
 // 由上到下：固定標題列（h2 只放指標名或結論句＋副標＋關閉 icon）→ 大數字與精確值 → 計算方式 → 組成項目 → 指標定義與算法 → 原始明細 → 技術細節。
@@ -442,4 +452,45 @@ describe("V4-3a ladderMetrics：週與去年同期的查找只在 evidence.chann
     expect(whole).toContain('class="ladder-table"');
     expect(whole).toContain(fill(labels.format.units.yuan, { value: formatAmountL3(channel.metrics.net_revenue.value) }));
   });
+});
+
+// V4-7b 代理 B（06_BATCHES V4-7b「ladderMetrics 搬移前後輸出相同」、feature-retention MV5）：搬移後抽屜的 SSR 與搬移前逐字相同。
+// 同一份抽屜（含本批其他代理對抽屜的改動）各渲染兩次：一次走 src/application/evidence-ladder.ts，一次把 ladderMetrics 切回搬移前的原文凍結（tests/helpers/evidence-ladder-cases.ts）。
+// 取樣：golden、demo、4 通路合成、兩年合成（去年同期可用）、最後一週只有 1 天的 demo；每種證據（21 種 builder＋grid）各取有階梯與沒有階梯的第一筆。
+describe("V4-7b ladderMetrics 搬移：抽屜 SSR 與搬移前逐字相同", () => {
+  const SAMPLED = ["golden", "demo", "synthetic-4-channel", "yoy-two-year", "demo last-week-1-day"];
+  const draw = (target: { dataset: Dataset; snapshot: WorkspaceSnapshot | undefined }, evidence: EvidenceSelection) =>
+    renderToStaticMarkup(createElement(EvidenceDrawer, { dataset: target.dataset, snapshot: target.snapshot, evidence, onClose: noop, onBasis: noop }));
+  const withLadder = <T,>(impl: NonNullable<typeof ladderSwitch.impl>, run: () => T): T => {
+    ladderSwitch.impl = impl;
+    try { return run(); } finally { ladderSwitch.impl = null; }
+  };
+  const frozen = (snapshot: LadderSnapshot | undefined, evidence: LadderEvidence) => frozenLadderMetrics(snapshot, evidence as EvidenceSelection);
+
+  it("開關確實接到抽屜：切成一律 null 時本期扣廣告後貢獻不畫階梯，切回後照畫", () => {
+    expect(render(currentContribution())).toContain('class="ladder-table"');
+    expect(withLadder(() => null, () => render(currentContribution()))).not.toContain("ladder-table");
+    expect(render(currentContribution())).toContain('class="ladder-table"');
+  });
+
+  it("每份資料每種證據各取有階梯與沒有階梯的第一筆：搬移後與搬移前的 SSR 逐字相同（沒有快照時也相同）", async () => {
+    let compared = 0, ladders = 0;
+    for (const loaded of await ladderDatasets(SAMPLED)) {
+      const picked = new Set<string>();
+      const cases = ladderCases(loaded);
+      for (const item of cases) {
+        const tag = `${item.kind}|${frozenLadderMetrics(loaded.snapshot, item.evidence) === null ? "null" : "ladder"}`;
+        if (picked.has(tag)) continue;
+        picked.add(tag);
+        const after = draw(loaded, item.evidence);
+        expect(after, `${loaded.name} ${item.id}`).toBe(withLadder(frozen, () => draw(loaded, item.evidence)));
+        compared++;
+        if (after.includes('class="ladder-table"')) ladders++;
+      }
+      const sample = cases[0].evidence;
+      expect(draw({ dataset: loaded.dataset, snapshot: undefined }, sample)).toBe(withLadder(frozen, () => draw({ dataset: loaded.dataset, snapshot: undefined }, sample)));
+    }
+    expect(compared).toBeGreaterThanOrEqual(140);
+    expect(ladders).toBeGreaterThanOrEqual(60);
+  }, 60_000);
 });

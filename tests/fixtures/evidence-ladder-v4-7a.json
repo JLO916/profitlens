@@ -1,0 +1,129 @@
+{
+ "golden": {
+  "cases": 184,
+  "sha256": "84f9bce6afddc47dc548e55ed0593c0fb571bf0805e504b5680b6f7b0f12ea5c",
+  "keys": {
+   "current": 12,
+   "current:channel": 6,
+   "null": 148,
+   "previous": 12,
+   "previous:channel": 6
+  }
+ },
+ "demo": {
+  "cases": 2300,
+  "sha256": "d386bf3208a5b933b0da356ce2c2afd624aac62963297cc912afdcfebe098914",
+  "keys": {
+   "current": 4,
+   "current:channel": 2,
+   "null": 2240,
+   "previous": 4,
+   "previous:channel": 2,
+   "week": 48
+  }
+ },
+ "refund_only": {
+  "cases": 176,
+  "sha256": "645dd0dc975c1eea0140bf4c9178c6bc3bb19399bdb0bea1640fe462bb21ccae",
+  "keys": {
+   "current": 15,
+   "null": 146,
+   "previous": 15
+  }
+ },
+ "zero_ad": {
+  "cases": 184,
+  "sha256": "84f9bce6afddc47dc548e55ed0593c0fb571bf0805e504b5680b6f7b0f12ea5c",
+  "keys": {
+   "current": 12,
+   "current:channel": 6,
+   "null": 148,
+   "previous": 12,
+   "previous:channel": 6
+  }
+ },
+ "synthetic-4-channel": {
+  "cases": 1100,
+  "sha256": "325a8819e797e5472bc74c440650f31b9fe0d1eaae6951416a343baa90f81eda",
+  "keys": {
+   "current": 3,
+   "current:channel": 4,
+   "null": 1068,
+   "previous": 3,
+   "previous:channel": 4,
+   "week": 18
+  }
+ },
+ "yoy-two-year": {
+  "cases": 3427,
+  "sha256": "07708d0017e36e0c77b748530cf0c14446b6f3597c0788f8f39240968e46b0f9",
+  "keys": {
+   "current": 4,
+   "current:channel": 2,
+   "null": 3339,
+   "previous": 4,
+   "previous:channel": 2,
+   "week": 48,
+   "yoy": 4,
+   "yoy-week": 24
+  }
+ },
+ "demo MARKETPLACE": {
+  "cases": 2300,
+  "sha256": "c03d6bed28db1749415e7efcc2702b873babd5f394c461d78852f4ce69266d45",
+  "keys": {
+   "current": 3,
+   "null": 2258,
+   "previous": 3,
+   "week": 36
+  }
+ },
+ "synthetic-4-channel LIVE+DTC": {
+  "cases": 1100,
+  "sha256": "aea00cc689a3be44c220a847131600c1fa5b5b87f0ec7c4b9afd130af5ea2b53",
+  "keys": {
+   "current": 3,
+   "current:channel": 2,
+   "null": 1072,
+   "previous": 3,
+   "previous:channel": 2,
+   "week": 18
+  }
+ },
+ "yoy-two-year DTC": {
+  "cases": 3427,
+  "sha256": "a4eb6e2fceb97e07fe7cdaa87a8081baaafe7d7f7da69fc5f4e4d7e66dbbd207",
+  "keys": {
+   "current": 3,
+   "null": 3364,
+   "previous": 3,
+   "week": 36,
+   "yoy": 3,
+   "yoy-week": 18
+  }
+ },
+ "demo last-week-1-day": {
+  "cases": 2300,
+  "sha256": "d6731c161b831e5d5611c79b2681898cc6b3b1419a400322b695c55ed0be8d08",
+  "keys": {
+   "current": 4,
+   "current:channel": 2,
+   "null": 2236,
+   "previous": 4,
+   "previous:channel": 2,
+   "week": 52
+  }
+ },
+ "yoy-two-year without yoy": {
+  "cases": 2300,
+  "sha256": "d386bf3208a5b933b0da356ce2c2afd624aac62963297cc912afdcfebe098914",
+  "keys": {
+   "current": 4,
+   "current:channel": 2,
+   "null": 2240,
+   "previous": 4,
+   "previous:channel": 2,
+   "week": 48
+  }
+ }
+}
