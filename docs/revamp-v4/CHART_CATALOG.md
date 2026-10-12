@@ -511,6 +511,8 @@
 
 資料來源頁（PRD §5.7）：`DataWorkspace`（`src/components/workspace-panels.tsx:57`）持有新的 `issueFilter` 狀態（檔案、通路、原因碼），傳給 G20、G21 的點擊與 `IssueList`（`src/components/issue-list.tsx:113`）新增的選填 `filter`、`onClearFilter`。篩選只過濾畫面列，「下載問題清單 CSV」仍是全部問題；篩選中在表上方顯示 `role="status"` 的篩選片語與「清除」鈕。這是 V4-7a 的明確工作項（PRD §6.4）。
 
+> **V4-7a 整合補記（代理 C，2026-10-12）**：（1）篩選型別只有一個：`src/application/issue-filter.ts` 的 `IssueFilter`（`file` 是標準檔名）；G20 的 `CoverageIssueFilter`＝`Required<IssueFilter>`（三欄都給），G21 的格給 `{ file, reason }`，`DataWorkspace` 直接收兩者、不另轉換。（2）`DataWorkspace` 的 state 是 `{ filter, request, issues }`：每按一次（G20 缺列框、G20 資料表的「篩選問題表」、G21 的格）`request` 加 1，`IssueList` 新增選填 `filterRequest` 傳給表格，鍵或 `request` 變了就把焦點移到篩選片語（再按同一組條件也移，審查 B-2）；`issues` 記套用時的問題清單，換了資料集不沿用。（3）捲動與 app 其他捲動相同：`scrollIntoView({ block: "start" })`、不用平滑捲動（不受 `prefers-reduced-motion` 影響），停在 `main section` 的 `scroll-margin-top` 之下。（4）C30 的 390 版面（60 欄、月份刻度減半）只在框內寬 < 400（390＝324）；768（450）改 64 欄、刻度不減半，≥ 720（1280＝962、1440＝1122）72 欄（審查 A-4，PRD §5.7、H5 設計稿）。（5）G20 在 data-issues 之上，資料表 summary 是多出的 1 個 Tab 停留點：資料來源頁「問題表或範圍列表」里程碑 1440 由 10 變 11、390 由 4 變 5（「不晚於 V4-0a」的判讀待人拍板）。
+
 ### G20 涵蓋時間軸（新增；P1；V4-7a）
 
 | 項目 | 內容 |

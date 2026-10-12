@@ -18,6 +18,7 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V4-3b：健檢頁另記「經過 G11 熱表」的停留點數與 Tab 數（PASS_REGIONS），斷言經過熱表的 Tab 數 ≤ 3。
  * V4-4：商品頁加「第一張圖的資料表 summary」里程碑（在「最差商品」之後），「最差商品」的 Tab 數不晚於 V4-0a。
  * V4-5：試算頁三個里程碑（基準、範本、「試算」按鈕）的 Tab 數不晚於 V4-0a（G15 資料表 summary 在方案欄之後，G16 在收合的 <details> 內）。
+ * V4-7a：資料來源頁加「涵蓋時間軸資料表 summary」里程碑（G20 在 data-issues 之上），不晚於 V4-0a；「問題表或範圍列表」只晚 1 步（見 V4_0A_DATA_TABS）。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -32,7 +33,9 @@ const MILESTONES: Record<LaunchPage, { name: string; selector: string }[]> = {
   scenarios: [{ name: "第一個結果數字（基準）", selector: "[data-testid^='baseline-']" }, { name: "範本", selector: "[data-testid='scenario-preset']" }, { name: "「試算」按鈕", selector: `[data-testid='scenario-1'] button[data-v310-calculate]` }],
   actions: [{ name: "第一張待辦卡或新增", selector: "[data-testid^='board-card-'], [data-testid='actions-empty-add'], [data-testid='actions-add']" }],
   meeting: [{ name: "議程 1", selector: "[data-testid='meeting-agenda-1']" }],
-  data: [{ name: "問題表或範圍列表", selector: "[data-testid='data-issues'], [data-testid='data-scope']" }],
+  // V4-7a（CHART_CATALOG G20「鍵盤」）：G20 涵蓋時間軸在狀態一行之下、data-issues 之上，資料表 summary 是它唯一的停留點（示範資料沒有缺列段，資料表沒有篩選按鈕），
+  // 記成「涵蓋時間軸資料表 summary」里程碑（在「問題表或範圍列表」之前）。
+  data: [{ name: "涵蓋時間軸資料表 summary", selector: "[data-testid='chart-data-coverage'] > details.data-alternative > summary" }, { name: "問題表或範圍列表", selector: "[data-testid='data-issues'], [data-testid='data-scope']" }],
 };
 /**
  * V4-3b（06_BATCHES V4-3b、護欄表 keyboard-walk、CHART_CATALOG G11「鍵盤」）：整頁走查時另數「經過某個區塊」的 Tab：
@@ -52,6 +55,13 @@ const V4_0A_SCENARIO_TABS: Record<string, Record<string, number>> = {
   desktop: { "第一個結果數字（基準）": 11, "範本": 16, "「試算」按鈕": 30 },
   mobile: { "第一個結果數字（基準）": 5, "範本": 10, "「試算」按鈕": 24 },
 };
+/**
+ * V4-7a（06_BATCHES V4-7a；CHART_CATALOG G21「鍵盤」）：資料來源頁「問題表或範圍列表」在 V4-0a（verification/revamp-v4/V4-0a/keyboard-walk.json，V4-6 相同）是 1440 第 10 步、390 第 4 步。
+ * G21 在 data-issues 內（示範資料不渲染），不改這個里程碑；G20 依 PRD §5.7 放在 data-issues 之上，它的資料表 summary 是多出來的 1 個停留點：
+ *   - 「涵蓋時間軸資料表 summary」（頁面第一個主要結果，chart-first）不晚於 V4-0a 的里程碑步數；
+ *   - 「問題表或範圍列表」恰好晚 1 步（＝summary 的下一步）。V4-8「各頁里程碑 Tab 數不晚於 V4-0」對這一項的判讀待人拍板（驗收文件列為待決事項），這裡只防再多。
+ */
+const V4_0A_DATA_TABS: Record<string, number> = { desktop: 10, mobile: 4 };
 const PASS_REGIONS: Partial<Record<LaunchPage, { name: string; selector: string; maxAcross: number }[]>> = {
   diagnosis: [{ name: "熱表", selector: "[data-testid='chart-diagnosis-heat']", maxAcross: 3 }],
 };
@@ -312,6 +322,13 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
   expect(summaryTabs, "V4-4：「第一張圖的資料表 summary」在「最差商品」之後").toBeGreaterThan(worstTabs);
   const scenarioMilestones = walks.find(item => item.page === "scenarios")!.milestones;
   for (const [name, max] of Object.entries(V4_0A_SCENARIO_TABS[testInfo.project.name])) expect(scenarioMilestones.find(item => item.name === name)?.tabs ?? Number.POSITIVE_INFINITY, `V4-5：試算頁「${name}」的 Tab 數不晚於 V4-0a`).toBeLessThanOrEqual(max);
+  // V4-7a：資料來源頁 G20 資料表 summary 不晚於 V4-0a 的「問題表或範圍列表」；「問題表或範圍列表」只晚 1 步（G20 唯一的停留點）。
+  const dataMilestones = walks.find(item => item.page === "data")!.milestones;
+  const coverageTabs = dataMilestones.find(item => item.name === "涵蓋時間軸資料表 summary")!.tabs!;
+  const issuesTabs = dataMilestones.find(item => item.name === "問題表或範圍列表")!.tabs!;
+  expect(coverageTabs, "V4-7a：資料來源頁第一個主要結果（G20 資料表 summary）不晚於 V4-0a 的里程碑").toBeLessThanOrEqual(V4_0A_DATA_TABS[testInfo.project.name]);
+  expect(issuesTabs, "V4-7a：「問題表或範圍列表」緊接在 G20 資料表 summary 之後（G20 只多 1 個停留點）").toBe(coverageTabs + 1);
+  expect(issuesTabs, "V4-7a：「問題表或範圍列表」最多比 V4-0a 晚 1 步").toBeLessThanOrEqual(V4_0A_DATA_TABS[testInfo.project.name] + 1);
   expect(flowAriaHiddenStops, "§11.1 只用鍵盤的流程：經過的 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a）").toEqual([]);
   // V4-1：KNOWN_ARIA_HIDDEN_STOPS 已清空，1440 與 390 七頁走查加上 §11.1 流程的 aria-hidden 停留點合計必須是 0。
   expect(ariaHiddenTotal, "V4-1：aria-hidden 內的 Tab 停留點合計 0").toBe(0);

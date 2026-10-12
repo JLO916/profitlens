@@ -12,18 +12,30 @@ import { rankedTextWidth } from "./ranked-bars";
 // - 有列 chartColors.total 6px 細條；缺列 chartColors.missing 1px 虛線框（3 2），最小寬 TIMELINE_MIN_SEGMENT（6px，H5 設計稿 README §6 第 21 點：1 天的框在 390 只剩 4.8px）；
 //   無列（銷售那天沒有任何一列）只在寬放得下時標「無列」字樣；檔期 chartColors.axis 2px 細線，寬放得下時標名稱。
 // - 軌名在左（右對齊）、右端是呼叫端給的字（缺列天數、無列天數）。
-// - 日期軸：軸的起訖兩端＋每月 1 日的刻度；與已放的字重疊時只畫刻度線不標字；窄（< TIMELINE_NARROW_BELOW，390）時月份刻度減半（PRD §5.7）。
+// - 日期軸：軸的起訖兩端＋每月 1 日的刻度；與已放的字重疊時只畫刻度線不標字；窄（< TIMELINE_NARROW_BELOW，只有 390 的版面）時月份刻度減半（PRD §5.7）。
 // - 去年同期（D-V4-40＝A）不畫在這條軸上：呼叫端在圖上方另寫一行（G20 的副標），所以這裡沒有 yoy 細線。
 // 根 svg aria-hidden、不可聚焦、圖內沒有 tabIndex 與按鈕；缺列框可點（onSegment），鍵盤經由資料表每列的「篩選問題表」按鈕（同一個 { file, channel, reason }）。
 // 色只經 chart-theme.ts 的 chartColors（CL-3）；高度只用 chartRowHeights（CL-10）；字級只用 chartFontSize（CL-5）。
 
 /** SSR（還沒量到寬）時的座標系寬，與 C25、C27 相同。 */
 export const TIMELINE_SSR_WIDTH = 560;
-/** 窄於這個值（390 手機）時軌名欄、右端欄縮窄，月份刻度減半。 */
-export const TIMELINE_NARROW_BELOW = 480;
-/** 軌名欄與右端欄寬（H5 設計稿：1440／1280 為 72，390 為 60）。 */
-export const TIMELINE_LABEL_WIDTH = { wide: 72, narrow: 60 } as const;
-export const TIMELINE_END_WIDTH = { wide: 72, narrow: 60 } as const;
+/**
+ * 窄於這個值時是 390 的版面：軌名欄、右端欄 60，月份刻度減半（PRD §5.7「390：月份刻度減半」）。
+ * V4-7a 整合（審查 A-4）：資料來源頁 G20 的框內寬 390＝324、768＝450（768 側欄仍在，H5 設計稿 README 的實測），
+ * 門檻取兩者之間的 400；原本的 480 會把 768 也當成 390 版面（月份刻度減半），與 PRD 與設計稿不符。
+ */
+export const TIMELINE_NARROW_BELOW = 400;
+/** 窄於這個值（且不窄於 TIMELINE_NARROW_BELOW）時是 768 的版面：軌名欄、右端欄 64，月份刻度不減半（設計稿 768＝450）；1280＝962、1440＝1122 為 72。 */
+export const TIMELINE_MEDIUM_BELOW = 720;
+/** 軌名欄與右端欄寬（H5 設計稿：1440／1280 為 72，768 為 64，390 為 60）。 */
+export const TIMELINE_LABEL_WIDTH = { wide: 72, medium: 64, narrow: 60 } as const;
+export const TIMELINE_END_WIDTH = { wide: 72, medium: 64, narrow: 60 } as const;
+/** 依寬度選欄寬的級距（narrow 給了時只決定 390 版面與否：true＝narrow，false＝依寬度取 wide 或 medium）。 */
+export type TimelineColumns = keyof typeof TIMELINE_LABEL_WIDTH;
+export function timelineColumns(width: number, narrow?: boolean): TimelineColumns {
+  if (narrow ?? width < TIMELINE_NARROW_BELOW) return "narrow";
+  return width < TIMELINE_MEDIUM_BELOW ? "medium" : "wide";
+}
 /** 缺列框的最小寬（px）：1 天的缺列在窄螢幕仍看得到完整的虛線框。 */
 export const TIMELINE_MIN_SEGMENT = 6;
 /** 有列細條的最小寬（px）。 */
@@ -91,7 +103,10 @@ export interface TimelineGeometry {
   width: number;
   /** （軌數＋1）× row24＋axis。 */
   height: number;
+  /** 390 的版面（月份刻度減半）。 */
   narrow: boolean;
+  /** 軌名欄與右端欄的級距（wide 72、medium 64、narrow 60）。 */
+  columns: TimelineColumns;
   plot: { left: number; right: number };
   /** 軌名（右對齊）與右端字（左對齊）的 x。 */
   labelX: number;
@@ -129,9 +144,10 @@ function monthStarts(domain: TimelineRange): string[] {
  */
 export function timelineGeometry(input: { width: number; domain: TimelineRange; bands: readonly TimelineBandInput[]; tracks: readonly TimelineTrackInput[]; noRowsText: string; dateLabel: (iso: string) => string; narrow?: boolean }): TimelineGeometry {
   const width = Math.max(1, Math.round(input.width));
-  const narrow = input.narrow ?? width < TIMELINE_NARROW_BELOW;
-  const labelWidth = narrow ? TIMELINE_LABEL_WIDTH.narrow : TIMELINE_LABEL_WIDTH.wide;
-  const endWidth = narrow ? TIMELINE_END_WIDTH.narrow : TIMELINE_END_WIDTH.wide;
+  const columns = timelineColumns(width, input.narrow);
+  const narrow = columns === "narrow";
+  const labelWidth = TIMELINE_LABEL_WIDTH[columns];
+  const endWidth = TIMELINE_END_WIDTH[columns];
   const left = labelWidth, right = Math.max(left + 1, width - endWidth);
   const { domain } = input;
   const days = Math.max(1, dayIndex(domain.start, domain.end) + 1);
@@ -192,7 +208,7 @@ export function timelineGeometry(input: { width: number; domain: TimelineRange; 
   });
 
   return {
-    width, height: bodyHeight + chartRowHeights.axis, narrow,
+    width, height: bodyHeight + chartRowHeights.axis, narrow, columns,
     plot: { left, right }, labelX: left - GAP, endX: right + GAP, days, dayWidth: Math.round(dayWidth * 100) / 100,
     bodyHeight, bandLabelY: TEXT_BASELINE, bands, tracks,
     axis: { y: bodyHeight, textY: bodyHeight + TEXT_BASELINE, start: { x: left, label: startLabel }, end, ticks },

@@ -2962,4 +2962,8 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-7a B 錨點結束 ── */
 
 /* ── V4-7a C：資料來源頁整合（代理 C） ── */
+/* G20（section.panel.chart-section.coverage-section）在資料狀態一行與資料問題之間：.chart-section 把 .panel 的下外距歸零（V3-4b B2 錨點），
+   這裡補回與相鄰 .panel 相同的段距（24；≤ 640px 時 18，同 .panel 的窄版規則），不和 data-issues 黏在一起。 */
+.chart-section.coverage-section { margin-bottom: 24px; }
+@media (max-width: 640px) { .chart-section.coverage-section { margin-bottom: 18px; } }
 /* ── V4-7a C 錨點結束 ── */

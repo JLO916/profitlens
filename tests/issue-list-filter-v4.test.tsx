@@ -5,6 +5,10 @@ import { validateDataset } from "@/domain/validation";
 import type { ValidationIssue } from "@/domain/types";
 import type { IssueFilter } from "@/application/issue-filter";
 import { IssueList } from "@/components/issue-list";
+import { createSnapshot, hashInput } from "@/application/workspace";
+import { DataWorkspace } from "@/components/workspace-panels";
+import { CoverageChart } from "@/components/data/coverage-chart";
+import { IssuesChart } from "@/components/data/issues-chart";
 import { fill, labels } from "@/i18n";
 
 /*
@@ -153,5 +157,114 @@ describe("V4-7a 問題表篩選：焦點", () => {
     expect(byTestId(tree, "data-issues-filter")).toBeUndefined();
     tree = renderTable({ issues, filter: cell });
     expect(refOf(byTestId(tree, "data-issues-filter")).focus).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── V4-7a 整合（代理 C）：審查 B-2——同一組條件再套用一次（DataWorkspace 每按一次 filterRequest 加 1）也把焦點移到篩選片語；
+// request 不變的重新渲染不搶焦點。
+describe("V4-7a 問題表篩選：再按同一個缺列段或格（filterRequest）", () => {
+  const issues = validateDataset(fixture("errors/missing_ad_day")).dataset!.issues;
+  const segment: IssueFilter = { file: "ad_spend_daily.csv", channel: "MARKETPLACE", reason: "MISSING_AD_DAY" };
+
+  it("filterRequest 遞增時焦點每次都移到片語（鍵不變）；request 不變時重新渲染不移；清除後再套用同一組條件也移", () => {
+    const onClearFilter = vi.fn();
+    let tree = renderTable({ issues, filter: segment, onClearFilter, filterRequest: 1 });
+    const phrase = refOf(byTestId(tree, "data-issues-filter"));
+    expect(phrase.focus, "第一次掛載不搶焦點").not.toHaveBeenCalled();
+    tree = renderTable({ issues, filter: { ...segment }, onClearFilter, filterRequest: 2 });
+    expect(phrase.focus, "再按同一個缺列段").toHaveBeenCalledTimes(1);
+    tree = renderTable({ issues, filter: { ...segment }, onClearFilter, filterRequest: 2 });
+    expect(phrase.focus, "request 不變的重新渲染").toHaveBeenCalledTimes(1);
+    tree = renderTable({ issues, filter: segment, onClearFilter, filterRequest: 3 });
+    expect(phrase.focus, "第三次").toHaveBeenCalledTimes(2);
+    (byTestId(tree, "data-issues-filter-clear").props.onClick as () => void)();
+    tree = renderTable({ issues, onClearFilter });
+    expect(byTestId(tree, "data-issues-filter")).toBeUndefined();
+    tree = renderTable({ issues, filter: segment, onClearFilter, filterRequest: 1 });
+    expect(refOf(byTestId(tree, "data-issues-filter")).focus, "清除後再套用").toHaveBeenCalledTimes(3);
+  });
+});
+
+// ── V4-7a 整合（代理 C）：DataWorkspace 持有問題表的篩選（CHART_CATALOG §7 開頭、G20、G21「抽屜」「鍵盤」）。
+// DataWorkspace 只用 useState、useRef（本檔 harness 都接管）；直接呼叫取得元素樹，子元件（CoverageChart、IssuesChart、IssueList）不執行，只看傳下去的 props。
+describe("V4-7a DataWorkspace：G20、G21 設定問題表篩選、捲到 data-issues", () => {
+  type Props = Parameters<typeof DataWorkspace>[0];
+  const load = async (name: string) => {
+    const input = fixture(name);
+    const dataset = validateDataset(input).dataset!;
+    return { dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)) };
+  };
+  /** 同一個掛載實例渲染一次：回傳元素樹；ref 接上假節點（scrollIntoView 可觀察）。 */
+  function renderPage(props: Props): ReactNode {
+    let tree: ReactNode;
+    let passes = 0;
+    hooks.active = true;
+    do { hooks.dirty = false; hooks.cursor = 0; tree = DataWorkspace(props); } while (hooks.dirty && ++passes < 5);
+    hooks.active = false;
+    for (const node of findAll(tree, item => item.props.ref !== undefined)) {
+      const ref = node.props.ref as { current: unknown };
+      ref.current ??= { scrollIntoView: vi.fn(), focus: vi.fn() };
+    }
+    return tree;
+  }
+  const ofType = <T,>(tree: ReactNode, type: T) => findAll(tree, item => item.type === type)[0];
+  const issueList = (tree: ReactNode) => ofType(tree, IssueList).props as Parameters<typeof IssueList>[0];
+  const issuesSection = (tree: ReactNode) => byTestId(tree, "data-issues");
+
+  it("G20 在狀態一行之後、data-issues 之前；G21 在 data-issues 內、問題表之前；三者共用同一個 onFilter，問題表一開始沒有篩選", async () => {
+    const { dataset, snapshot } = await load("errors/missing_ad_day");
+    const tree = renderPage({ dataset, snapshot });
+    const top = (tree as TreeElement).props.children as ReactNode[];
+    const order = top.filter(item => item !== null && typeof item === "object").map(item => { const element = item as TreeElement; return element.type === CoverageChart ? "G20" : (element.props["data-testid"] as string | undefined) ?? String(element.type); });
+    expect(order.slice(0, 3)).toEqual(["data-status-line", "G20", "data-issues"]);
+    const section = issuesSection(tree);
+    const children = (section.props.children as ReactNode[]).filter(item => item !== null && typeof item === "object") as TreeElement[];
+    expect(children.map(child => child.type === IssuesChart ? "G21" : child.type === IssueList ? "IssueList" : child.props.className)).toEqual(["ui-section-head", "G21", "IssueList"]);
+    const onCoverage = ofType(tree, CoverageChart).props.onFilter, onIssues = ofType(tree, IssuesChart).props.onFilter;
+    expect(onCoverage).toBeTypeOf("function");
+    expect(onIssues).toBe(onCoverage);
+    expect(issueList(tree).filter).toBeNull();
+    expect(issueList(tree).filterRequest).toBeUndefined();
+    expect(issueList(tree).download).toEqual({ filename: "profitlens-issues.csv", testId: "data-issues-download" });
+  });
+
+  it("點 G20 缺列段（或資料表的篩選按鈕）：問題表收到 { file, channel, reason } 與 filterRequest 1，data-issues 捲進畫面（scrollIntoView block start，不用平滑捲動）；再按同一段 filterRequest 2；點 G21 的格換成 { file, reason }；清除後沒有篩選", async () => {
+    const { dataset, snapshot } = await load("errors/missing_ad_day");
+    const props: Props = { dataset, snapshot };
+    let tree = renderPage(props);
+    const section = (issuesSection(tree).props.ref as { current: { scrollIntoView: ReturnType<typeof vi.fn> } }).current;
+    const segment = { file: "ad_spend_daily.csv", channel: "MARKETPLACE", reason: "MISSING_AD_DAY" } as const;
+    (ofType(tree, CoverageChart).props.onFilter as (filter: IssueFilter) => void)(segment);
+    expect(section.scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(section.scrollIntoView).toHaveBeenCalledWith({ block: "start" });
+    tree = renderPage(props);
+    expect(issueList(tree).filter).toEqual(segment);
+    expect(issueList(tree).filterRequest).toBe(1);
+    (ofType(tree, CoverageChart).props.onFilter as (filter: IssueFilter) => void)({ ...segment });
+    tree = renderPage(props);
+    expect(issueList(tree).filter).toEqual(segment);
+    expect(issueList(tree).filterRequest, "再按同一段：焦點要再移一次（審查 B-2）").toBe(2);
+    expect(section.scrollIntoView).toHaveBeenCalledTimes(2);
+    (ofType(tree, IssuesChart).props.onFilter as (filter: IssueFilter) => void)({ file: "ad_spend_daily.csv", reason: "MISSING_AD_DAY" });
+    tree = renderPage(props);
+    expect(issueList(tree).filter).toEqual({ file: "ad_spend_daily.csv", reason: "MISSING_AD_DAY" });
+    expect(issueList(tree).filterRequest).toBe(3);
+    expect(section.scrollIntoView).toHaveBeenCalledTimes(3);
+    issueList(tree).onClearFilter!();
+    tree = renderPage(props);
+    expect(issueList(tree).filter).toBeNull();
+    expect(issueList(tree).filterRequest).toBeUndefined();
+    expect(section.scrollIntoView, "清除不捲動").toHaveBeenCalledTimes(3);
+  });
+
+  it("換了資料集（問題清單不同）時舊的篩選不再套用（不留下篩不到任何列的篩選）", async () => {
+    const adDay = await load("errors/missing_ad_day"), cogs = await load("errors/missing_cogs");
+    let tree = renderPage(adDay);
+    (ofType(tree, CoverageChart).props.onFilter as (filter: IssueFilter) => void)({ file: "ad_spend_daily.csv", channel: "MARKETPLACE", reason: "MISSING_AD_DAY" });
+    tree = renderPage(adDay);
+    expect(issueList(tree).filter).not.toBeNull();
+    tree = renderPage(cogs);
+    expect(issueList(tree).filter).toBeNull();
+    expect(issueList(tree).filterRequest).toBeUndefined();
   });
 });

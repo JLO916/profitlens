@@ -78,8 +78,11 @@ function sideRow(file: SideFile, issue: SideFileIssue): IssueRow {
 
 const SEVERITY_TONE: Record<ValidationIssue["severity"], "unfavorable" | "warning" | undefined> = { blocking: "unfavorable", partial: "warning", warning: undefined };
 
-/** V4-7a：問題表上方的篩選列（只有 IssueList 給了 filter 時）。key＝issueFilterKey（換了篩選時回到第 1 頁、焦點移到片語），phrase＝issueFilterPhrase。 */
-interface IssueTableFilter { key: string; phrase: string; onClear?: () => void }
+/**
+ * V4-7a：問題表上方的篩選列（只有 IssueList 給了 filter 時）。key＝issueFilterKey（換了篩選時回到第 1 頁、焦點移到片語），phrase＝issueFilterPhrase；
+ * request＝呼叫端每套用一次篩選就遞增的次數（整合審查 B-2：再按同一個缺列段或格時鍵不變，靠它讓焦點每次都移到片語）。
+ */
+interface IssueTableFilter { key: string; phrase: string; onClear?: () => void; request?: number }
 
 /**
  * §7.7.1 第 3 段、§9.4 C3／C15：資料問題表。工具列左邊是「顯示原因碼」切換（aria-pressed；原因碼欄預設以 hidden 收合但保持掛載，M1），
@@ -99,12 +102,14 @@ function IssueTable<T>({ items, toRow, regionLabel, onDownload, downloadTestId, 
   const region = useRef<HTMLDivElement>(null);
   const phrase = useRef<HTMLParagraphElement>(null);
   // V4-7a：換了篩選（G20 缺列段、G21 的格按下後）焦點移到篩選片語；第一次掛載不搶焦點。清除後片語消失，焦點移到問題表的捲動區。
-  const shownKey = useRef(filterKey);
+  // 整合審查 B-2：同一組條件再套用一次（鍵不變、request 遞增）也移到片語；同一組條件單純重新渲染（request 不變）不搶焦點。
+  const request = filter?.request ?? 0;
+  const shown = useRef({ key: filterKey, request });
   useEffect(() => {
-    if (shownKey.current === filterKey) return;
-    shownKey.current = filterKey;
+    if (shown.current.key === filterKey && shown.current.request === request) return;
+    shown.current = { key: filterKey, request };
     if (filterKey !== "") phrase.current?.focus();
-  }, [filterKey]);
+  }, [filterKey, request]);
   const onClear = filter?.onClear;
   const clearFilter = () => { onClear?.(); region.current?.focus(); };
   const last = Math.max(0, Math.ceil(items.length / PAGE_SIZE) - 1);
@@ -133,7 +138,7 @@ function IssueTable<T>({ items, toRow, regionLabel, onDownload, downloadTestId, 
   </div>;
 }
 
-export function IssueList({ issues, filenames, mappings, context, download, filter, onClearFilter }: {
+export function IssueList({ issues, filenames, mappings, context, download, filter, onClearFilter, filterRequest }: {
   issues: ValidationIssue[];
   filenames?: Partial<Record<SourceRef["file"], string>>;
   mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>;
@@ -153,12 +158,17 @@ export function IssueList({ issues, filenames, mappings, context, download, filt
    */
   filter?: IssueFilter | null;
   onClearFilter?: () => void;
+  /**
+   * V4-7a 整合（審查 B-2）：呼叫端每套用一次篩選就遞增的次數（DataWorkspace 在 G20 缺列段、資料表篩選按鈕、G21 格每按一次就加 1）。
+   * 變了就把焦點移到篩選片語——即使條件與目前相同（鍵不變）；不給時只在換了篩選時移（V4-7a 代理 B 的行為）。
+   */
+  filterRequest?: number;
 }) {
   const messageContext: IssueMessageContext = { mappings: context?.mappings ?? mappings, sources: context?.sources };
   const active = hasIssueFilter(filter);
   const shown = active ? filterIssues(issues, filter) : issues;
   return <IssueTable items={shown} toRow={issue => coreRow(issue, messageContext, filenames, mappings)} regionLabel={copy.regionAria} onDownload={download ? () => downloadText(exportIssuesCsv(issues, filenames), download.filename) : undefined} downloadTestId={download?.testId}
-    filter={active ? { key: issueFilterKey(filter), phrase: issueFilterPhrase(filter, shown.length)!, onClear: onClearFilter } : undefined} />;
+    filter={active ? { key: issueFilterKey(filter), phrase: issueFilterPhrase(filter, shown.length)!, onClear: onClearFilter, request: filterRequest } : undefined} />;
 }
 
 /** §7.7.1 第 6 點：目標、促銷檔期的錯誤清單，和第 3 段用同樣的欄位（沒有嚴重程度與原始列，行號取自檔案）。 */

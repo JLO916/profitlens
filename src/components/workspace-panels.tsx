@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { evidenceRows, formatAmountL2, formatAmountL3, formatCount, formatDateL1, formatMultiple, formatPeriodL1, formatRateL2, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { analyzeProducts } from "@/domain/analysis";
-import { COST_FIELDS, SALES_FIELDS, type Dataset, type Metric, type MetricName, type ProductMetrics, type SourceRef } from "@/domain/types";
+import { COST_FIELDS, SALES_FIELDS, type Dataset, type Metric, type MetricName, type ProductMetrics, type SourceRef, type ValidationIssue } from "@/domain/types";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { HeatSection } from "./diagnosis/heat-section";
 import { IssueList, SideFileIssueList } from "./issue-list";
@@ -23,6 +23,9 @@ import { RatesSection } from "./diagnosis/rates-section";
 import { ChannelWideTable } from "./channel-table";
 import { DiagnosisList } from "./diagnosis-list";
 import { ShareSection } from "./diagnosis/share-section";
+import type { IssueFilter } from "@/application/issue-filter";
+import { CoverageChart } from "./data/coverage-chart";
+import { IssuesChart } from "./data/issues-chart";
 
 type EvidenceHandler = (selection: EvidenceSelection) => void;
 const dataPanel = labels.data.panel;
@@ -51,11 +54,17 @@ function mappingSummary(mapping: Record<string, string>): string {
 }
 /** 資料來源頁問題表的「下載問題清單 CSV」：與頂欄匯出選單同一個檔名（同一份內容）。 */
 const ISSUES_CSV_FILENAME = "profitlens-issues.csv";
+/**
+ * V4-7a（CHART_CATALOG §7 開頭、G20、G21；PRD §6.4）：資料來源頁問題表的篩選狀態。filter＝G20 缺列段／資料表篩選按鈕給的 { file, channel, reason } 或 G21 格給的 { file, reason }；
+ * request＝第幾次套用（每按一次就加 1，同一組條件再按也會把焦點移到篩選片語，審查 B-2）；issues＝套用時的問題清單（換了資料集就不再套用，不留下篩不到任何列的舊篩選）。
+ */
+interface IssueFilterState { filter: IssueFilter; request: number; issues: readonly ValidationIssue[] }
 
 /**
  * V3-8 資料來源頁（PRD §7.7.1，依 1–9 的順序）：頁首（page-chrome）→ 資料狀態一行 → 資料問題 → 範圍與金額基準 → 本次匯入的前處理 →
  * 選填資料（目標、促銷檔期並列）→ 來源檔案預覽（三個 details）→ 版本與來源資訊（details，L3）→ 範本下載（3×3）。
  * 全部是既有資料，不新增計算；收合的內容保持掛載（M1）。
+ * V4-7a（PRD §5.7；CHART_CATALOG §7、G20、G21）：狀態一行之下加 G20 涵蓋時間軸，資料問題內問題表之上加 G21 問題分布表；本元件持有問題表的篩選（issueFilter）。
  */
 export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversion, targets = null, events = null, targetIssues = [], eventIssues = [], importedAt = null, onTargets, onEvents, onRemoveTargets, onRemoveEvents, onRemoveTargetRow, onRemoveEventRow }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; targets?: TargetSet | null; events?: EventSet | null; targetIssues?: TargetIssue[]; eventIssues?: EventIssue[]; /** §7.7.1 第 8 點：匯入時間（ISO）；呼叫端沒有記錄時省略該列。 */ importedAt?: string | null; onTargets?: (file: File | undefined) => void; onEvents?: (file: File | undefined) => void; onRemoveTargets?: () => void; onRemoveEvents?: () => void; onRemoveTargetRow?: (line: number) => void; onRemoveEventRow?: (line: number) => void }) {
   const settings = dataset.manifest;
@@ -83,13 +92,29 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
     issueCount ? fill(v3.statusLine.issues, { n: issueCountText }) : v3.statusLine.noIssues,
   ].join(v3.separator);
   const preprocessingColumns = v3.preprocessing.columns;
+  // V4-7a：問題表篩選（G20 缺列段與資料表的篩選按鈕、G21 的格共用）。只篩畫面上的列，「下載問題清單 CSV」仍是全部問題（IssueList 的 download）。
+  const issuesSection = useRef<HTMLElement>(null);
+  const [issueFilterState, setIssueFilterState] = useState<IssueFilterState | null>(null);
+  const activeFilter = issueFilterState !== null && issueFilterState.issues === dataset.issues ? issueFilterState : null;
+  // 按下後：設篩選（request 加 1）並把 data-issues 捲進畫面（與 app 其他捲動相同，scrollIntoView block start、不用平滑捲動，所以不受 prefers-reduced-motion 影響；
+  // 區段的 scroll-margin-top 讓它停在頂欄與期間列之下）。焦點由 IssueList 在套用後移到篩選片語（role="status"），清除後移到問題表的捲動區。
+  const applyIssueFilter = (filter: IssueFilter) => {
+    const issues = dataset.issues;
+    setIssueFilterState(current => ({ filter, request: (current !== null && current.issues === issues ? current.request : 0) + 1, issues }));
+    issuesSection.current?.scrollIntoView({ block: "start" });
+  };
+  const clearIssueFilter = () => setIssueFilterState(null);
   return <>
     {/* §7.7.1 第 2 點：資料狀態一行（L1，14px）；每一段都是既有資料。 */}
     <p className="data-status-line" data-testid="data-status-line">{statusLine}</p>
+    {/* V4-7a：G20 涵蓋時間軸（狀態列之下、資料問題之上；CHART_CATALOG G20）。點缺列段或資料表的「篩選問題表」把問題表篩到該檔、該通路、該原因。 */}
+    <CoverageChart dataset={dataset} snapshot={snapshot} events={events} onFilter={applyIssueFilter} />
     {/* §7.7.1 第 3 點：資料問題（從頁尾移到第二段，給執行者先看）；欄位 檔案｜行號｜欄位｜問題｜修法｜原因碼，工具列有「下載問題清單 CSV」。 */}
-    <section className="panel data-section" aria-labelledby="quality-heading" data-testid="data-issues">
+    <section className="panel data-section" aria-labelledby="quality-heading" data-testid="data-issues" ref={issuesSection}>
       <div className="ui-section-head"><span className="data-section-title"><h2 className="ui-section-title" id="quality-heading">{labels.data.sections.dataIssues}</h2>{issueCount > 0 && <span className="ui-count-badge" role="img" aria-label={fill(v3.statusLine.issues, { n: issueCountText })}>{issueCountText}</span>}</span><p className="ui-section-subtitle">{dataPanel.issuesNote}</p></div>
-      {issueCount ? <IssueList issues={dataset.issues} filenames={filenames} mappings={mappings} download={{ filename: ISSUES_CSV_FILENAME, testId: "data-issues-download" }} /> : <p className="data-section-empty">{dataPanel.noIssues}</p>}
+      {/* V4-7a：G21 問題分布表（ui-section-head 之後、問題表之前；列級與範圍級問題都是 0 筆時不渲染，CHART_CATALOG G21）。點格把問題表篩到該檔、該原因。 */}
+      <IssuesChart issues={dataset.issues} onFilter={applyIssueFilter} />
+      {issueCount ? <IssueList issues={dataset.issues} filenames={filenames} mappings={mappings} download={{ filename: ISSUES_CSV_FILENAME, testId: "data-issues-download" }} filter={activeFilter?.filter ?? null} onClearFilter={clearIssueFilter} filterRequest={activeFilter?.request} /> : <p className="data-section-empty">{dataPanel.noIssues}</p>}
     </section>
     {/* §7.7.1 第 4 點：範圍與金額基準——v2 的 9 欄 metadata 卡改成兩欄定義列表（dt 13px 次要色、dd 14px）；技術細節與欄位對照留在原處（收合）。 */}
     <section className="panel data-section" aria-labelledby="dataset-heading" data-testid="data-scope">

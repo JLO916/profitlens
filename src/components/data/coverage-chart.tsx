@@ -7,6 +7,7 @@ import { chartColors } from "@/application/chart-theme";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
 import type { EventSet } from "@/application/events";
 import { formatCount, formatDateL1, formatPeriodL1 } from "@/application/presentation";
+import type { IssueFilter } from "@/application/issue-filter";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Dataset } from "@/domain/types";
 import { fill, labels } from "@/i18n";
@@ -26,8 +27,12 @@ import { ChartFrame, type ChartLegendItem } from "../overview/charts/chart-frame
 const copy = labels.data.chartsV4.coverage;
 /** 缺列框的 testid 前綴：chart-data-coverage-seg-{file}-{channel}-{start}（file＝sales、costs、ads；start＝ISO）。 */
 export const COVERAGE_SEG_TESTID_PREFIX = "chart-data-coverage-seg-";
-/** 篩選條件：檔案（標準檔名）、通路、原因碼（MISSING_CHANNEL_COST_DAY／MISSING_AD_DAY）。DataWorkspace 的 issueFilter 直接收這個形狀。 */
-export type CoverageIssueFilter = TimelineSegmentRef;
+/**
+ * 篩選條件：檔案（標準檔名）、通路、原因碼（MISSING_CHANNEL_COST_DAY／MISSING_AD_DAY）。
+ * V4-7a 整合：與問題表的 IssueFilter（src/application/issue-filter.ts）同一個型別，三個欄位都給（G21 的格只給 file、reason）；
+ * file 都是 domain 的標準檔名（FileName），DataWorkspace 的 issueFilter 直接收 G20 與 G21 的值，不另轉換。
+ */
+export type CoverageIssueFilter = Required<IssueFilter> & TimelineSegmentRef;
 
 /** 缺列框的 testid（CL-2：語意 key，不用陣列索引）。 */
 export const coverageSegmentTestId = (segment: Pick<CoverageSegment, "key" | "channel" | "start">) => `${COVERAGE_SEG_TESTID_PREFIX}${segment.key}-${segment.channel}-${segment.start}`;

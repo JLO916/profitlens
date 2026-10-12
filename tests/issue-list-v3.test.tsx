@@ -280,3 +280,25 @@ describe("V4-7a IssueList 的 filter、onClearFilter", () => {
     expect(withFilter[0].trim().split(/\r?\n/)).toHaveLength(1 + 11);
   });
 });
+
+// ── V4-7a 整合（代理 C）：DataWorkspace 每套用一次篩選就把 filterRequest 加 1（審查 B-2：同一組條件再按一次，焦點也要移到篩選片語；焦點本身見 issue-list-filter-v4.test 的 hooks harness）。
+describe("V4-7a IssueList 的 filterRequest", () => {
+  const filter: IssueFilter = { file: "channel_costs_daily.csv", channel: "LIVE", reason: "MISSING_CHANNEL_COST_DAY" };
+  const download = { filename: "profitlens-issues.csv", testId: "data-issues-download" };
+
+  it("filterRequest 原樣傳給表格元件（request），不改任何輸出：同一組條件不同 request 的 markup 逐字相同；沒有篩選時沒有 filter（request 不起作用）", () => {
+    const issues = syntheticIssues();
+    expect(tableOf({ issues, filter, onClearFilter: () => undefined, filterRequest: 3 }).filter).toMatchObject({ key: issueFilterKey(filter), request: 3 });
+    expect(tableOf({ issues, filterRequest: 3 }).filter).toBeUndefined();
+    const once = render({ issues, filter, onClearFilter: () => undefined, download, filterRequest: 1 });
+    expect(render({ issues, filter, onClearFilter: () => undefined, download, filterRequest: 2 })).toBe(once);
+    expect(render({ issues, filter, onClearFilter: () => undefined, download })).toBe(once);
+    // G20 合成資料的缺費用列段：6 列都是通路費用 LIVE 缺費用列；片語的 n＝6。
+    expect(rows(once)).toHaveLength(6);
+    expect(codesOf(once).every(code => code === "MISSING_CHANNEL_COST_DAY")).toBe(true);
+    expect(once).toContain(issueFilterPhrase(filter, 6)!);
+    // 沒有篩選時 filterRequest 不影響輸出（與 V4-6 基準逐字相同）。
+    const expected = JSON.parse(readFileSync(ISSUE_LIST_BASELINE_FILE, "utf8")) as Record<string, string>;
+    expect(render({ issues, download, filterRequest: 5 })).toBe(expected["synthetic-4-channel download"]);
+  });
+});

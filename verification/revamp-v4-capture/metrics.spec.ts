@@ -55,6 +55,7 @@ const B9_ALLOWANCE = 1_500;
  * V4-4：商品第一張 .chart-frame 頂 ≤ 900（1440；示範資料沒有商品毛利為負，第一張是第二格的 G13）。
  * V4-5：試算 G15 頂 ≤ V4-0a 量到的方案比較表區塊頂＋24（1440；verification/revamp-v4/V4-0a/metrics.json 的 desktop.b1.scenarios）：
  *   示範資料剛載入（方案 1 是進頁草稿、G15 空狀態）時比 scenarioCompareTop 938，「維持現況」計算後（畫面基準 07 的狀態，G15 一根柱）時比 scenarioCompareTopAfterCalculate 1,114。
+ * V4-7a：資料來源 G20（chart-data-coverage，狀態一行之下）頂 ≤ 900（1440）。
  */
 const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; key: string; max: number; note: string }[] = [
   { project: "desktop", page: "overview", key: "firstChartFrameTop", max: Math.min(900, 855), note: "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）" },
@@ -65,6 +66,7 @@ const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; 
   { project: "desktop", page: "products", key: "firstChartFrameTop", max: 900, note: "商品第一張 .chart-frame 頂 ≤ 900（V4-4 起；示範資料是 G13 的框）" },
   { project: "desktop", page: "scenarios", key: "g15Top", max: 938 + 24, note: "試算 G15 頂 ≤ V4-0a 方案比較表區塊頂 938＋24（V4-5 起；示範資料剛載入，G15 空狀態）" },
   { project: "desktop", page: "scenarios", key: "g15TopAfterCalculate", max: 1114 + 24, note: "試算 G15 頂 ≤ V4-0a「維持現況」計算後的方案比較表區塊頂 1,114＋24（V4-5 起；畫面基準 07 的狀態）" },
+  { project: "desktop", page: "data", key: "g20Top", max: 900, note: "資料來源 G20 頂 ≤ 900（V4-7a 起；示範資料，G20 標題 title.none）" },
 ];
 /** B3：390 寬頁面不橫向捲動。 */
 const B3_MAX_SCROLL_WIDTH = 390;
@@ -254,7 +256,7 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
     }
     if (id === "products") b1.products = { firstChartFrameTop: (await boxOrNull(page, "main .chart-frame:visible"))?.top ?? null, productHighlightsTop: (await boxOrNull(page, "section.product-highlights"))?.top ?? null, note: "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內" };
     if (id === "scenarios") b1.scenarios = { scenarioCompareTop: (await boxOrNull(page, "section.scenario-compare"))?.top ?? null, g15Top: (await boxOrNull(page, "[data-testid='chart-scenarios-variance']"))?.top ?? null, note: "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算。g15Top＝G15 方案差額區塊（chart-scenarios-variance，V4-5 起，空狀態）的頂" };
-    if (id === "data") b1.data = { dataStatusLineBottom: (await boxOrNull(page, "[data-testid='data-status-line']"))?.bottom ?? null };
+    if (id === "data") b1.data = { dataStatusLineBottom: (await boxOrNull(page, "[data-testid='data-status-line']"))?.bottom ?? null, g20Top: (await boxOrNull(page, "[data-testid='chart-data-coverage']"))?.top ?? null, g20FrameTop: (await boxOrNull(page, "[data-testid='chart-data-coverage'] .chart-frame"))?.top ?? null, dataIssuesTop: (await boxOrNull(page, "[data-testid='data-issues']"))?.top ?? null, note: "V4-7a 起 G20（chart-data-coverage）在狀態一行之下、data-issues 之上；g20Top＝區塊頂（B1 硬斷言的值），g20FrameTop＝固定高框頂" };
   }
   // 試算頁另量「維持現況」計算後的方案比較表區塊頂（G15 只在有結果時出現，V4-5 的 B1 門檻以這個狀態比較）；放在七頁量完之後，計算結果不影響其他頁的 DOM 節點數。
   await navigateTo(page, "scenarios");

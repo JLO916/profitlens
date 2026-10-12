@@ -11,7 +11,7 @@ import { RANKED_MIN_PLOT, RANKED_SSR_WIDTH, RANKED_TEXT_PAD, RANKED_VALUE_GAP, h
 import { SHARE_STACK_LABEL_WIDTH, SHARE_STACK_SSR_WIDTH, SHARE_STACK_VALUE_WIDTH, ShareStack, shareStackGeometry, type ShareStackRowInput } from "../src/components/charts/share-stack";
 import { SPARK_DOT_R, SPARK_PAD, SPARK_STROKE, SPARK_WIDTH, Sparkline, sparklineGeometry, type SparklinePoint } from "../src/components/charts/sparkline";
 import { THRESHOLD_NARROW_BELOW, THRESHOLD_POINT_R, THRESHOLD_SSR_WIDTH, THRESHOLD_X_STEP, THRESHOLD_X_TICKS, ThresholdLine, thresholdGeometry, type ThresholdGeometry, type ThresholdLinePoint } from "../src/components/charts/threshold-line";
-import { TIMELINE_END_WIDTH, TIMELINE_LABEL_WIDTH, TIMELINE_MIN_SEGMENT, TIMELINE_NARROW_BELOW, TIMELINE_SSR_WIDTH, Timeline, timelineGeometry, type TimelineTrackInput } from "../src/components/charts/timeline";
+import { TIMELINE_END_WIDTH, TIMELINE_LABEL_WIDTH, TIMELINE_MEDIUM_BELOW, TIMELINE_MIN_SEGMENT, TIMELINE_NARROW_BELOW, TIMELINE_SSR_WIDTH, Timeline, timelineColumns, timelineGeometry, type TimelineTrackInput } from "../src/components/charts/timeline";
 import { coverageTimeline } from "../src/application/chart-coverage";
 import { coverageChartModel } from "../src/components/data/coverage-chart";
 import { validateDataset } from "../src/domain/validation";
@@ -774,10 +774,12 @@ describe("timelineGeometry（C30）：高度、繪圖區、缺列框", () => {
       const geometry = timelineOf("synthetic", width, [EVENTS_TRACK]);
       const { left, right } = geometry.plot;
       expect(geometry.days, String(width)).toBe(34);
-      const narrow = width < TIMELINE_NARROW_BELOW;
-      expect(geometry.narrow).toBe(narrow);
-      expect(left).toBe(narrow ? TIMELINE_LABEL_WIDTH.narrow : TIMELINE_LABEL_WIDTH.wide);
-      expect(right).toBe(width - (narrow ? TIMELINE_END_WIDTH.narrow : TIMELINE_END_WIDTH.wide));
+      // V4-7a 整合（審查 A-4）：390（324）是 narrow 60、768（450）與 SSR（560）是 medium 64、1280（962）與 1440（1122）是 wide 72。
+      const columns = width < TIMELINE_NARROW_BELOW ? "narrow" : width < TIMELINE_MEDIUM_BELOW ? "medium" : "wide";
+      expect(geometry.columns, String(width)).toBe(columns);
+      expect(geometry.narrow).toBe(columns === "narrow");
+      expect(left).toBe(TIMELINE_LABEL_WIDTH[columns]);
+      expect(right).toBe(width - TIMELINE_END_WIDTH[columns]);
       const shapes = [...geometry.bands, ...geometry.tracks.flatMap(track => [...track.rows, ...track.missing])];
       for (const shape of shapes) {
         expect(shape.x, `${width} ${JSON.stringify(shape)}`).toBeGreaterThanOrEqual(left);
@@ -871,6 +873,29 @@ describe("timelineGeometry（C30）：日期軸與無列", () => {
       ];
       for (const [index, box] of boxes.entries()) for (const other of boxes.slice(index + 1)) expect(box.from < other.to && box.to > other.from, JSON.stringify([box, other])).toBe(false);
     }
+  });
+
+  it("V4-7a 整合（審查 A-4）：768（框內寬 450，H5 設計稿實測）不是 390 版面——軌名欄與右端欄 64、月份刻度不減半；388 天的軸標 5 個月初（設計稿 768＝5、390＝4）", () => {
+    const options = { domain: { start: "2025-09-01", end: "2026-09-23" }, bands: [], tracks: [], noRowsText: "x", dateLabel: (iso: string) => formatDateL1(iso, { anchor: "2026-09-24" }) };
+    expect(TIMELINE_NARROW_BELOW).toBeGreaterThan(324);
+    expect(TIMELINE_NARROW_BELOW).toBeLessThanOrEqual(450);
+    expect([324, 399, 400, 450, 560, 719, 720, 962, 1122].map(width => timelineColumns(width))).toEqual(["narrow", "narrow", "medium", "medium", "medium", "medium", "wide", "wide", "wide"]);
+    // 呼叫端明給 narrow 時照它（true＝390 版面；false＝依寬度取 wide 或 medium）。
+    expect([timelineColumns(1122, true), timelineColumns(324, false), timelineColumns(1122, false)]).toEqual(["narrow", "medium", "wide"]);
+    for (const width of [400, 450, 480, 560]) {
+      const geometry = timelineGeometry({ ...options, width });
+      expect(geometry.narrow, String(width)).toBe(false);
+      expect(geometry.columns, String(width)).toBe("medium");
+      expect(geometry.plot, String(width)).toEqual({ left: TIMELINE_LABEL_WIDTH.medium, right: width - TIMELINE_END_WIDTH.medium });
+      expect(geometry.axis.ticks, `${width}：12 個月初都在（不減半）`).toHaveLength(12);
+    }
+    const tablet = timelineGeometry({ ...options, width: 450 }), phone = timelineGeometry({ ...options, width: 324 });
+    expect(tablet.axis.ticks.filter(tick => tick.label !== null).map(tick => tick.iso)).toEqual(["2026-01-01", "2026-02-01", "2026-04-01", "2026-06-01", "2026-08-01"]);
+    expect(phone.narrow).toBe(true);
+    expect(phone.axis.ticks).toHaveLength(6);
+    expect(phone.axis.ticks.filter(tick => tick.label !== null)).toHaveLength(4);
+    // 合成資料（34 天）在 768 也是 64 欄：一天寬＝（450 − 128）÷ 34。
+    expect(timelineOf("synthetic", 450).dayWidth).toBeCloseTo((450 - 2 * TIMELINE_LABEL_WIDTH.medium) / 34, 2);
   });
 
   it("軸只有 1 天時只標起日（不重複標訖日）；沒有月初", () => {

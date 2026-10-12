@@ -39,6 +39,7 @@ import { BasisDialog } from "@/components/basis-dialog";
 import { WorkspaceStorage } from "@/components/workspace-storage";
 import { IssueList } from "@/components/issue-list";
 import { pageStates } from "./helpers/page-states";
+import { yoyInput } from "./helpers/yoy-dataset";
 
 /*
  * testid 基準（V3-0 建立，PRD v3 §11.7、§6.4 M1；V4-0a 擴成三份，PRD v4 §8.6）：比對「實際渲染」出來的 data-testid，不是只 grep 原始碼。
@@ -138,6 +139,13 @@ async function scenarios(): Promise<Record<string, string>> {
   render("data", createElement(DataWorkspace, { dataset: imported, snapshot: importedSnapshot, conversion: prepared.conversion, targets: targets.set, events: events.set, targetIssues: badTargets.issues, eventIssues: badEvents.issues, onTargets: noop, onEvents: noop, onRemoveTargets: noop, onRemoveEvents: noop, onRemoveTargetRow: noop, onRemoveEventRow: noop }));
   const missing = await source("errors/missing_cogs");
   render("data-issues", createElement(IssueList, { issues: missing.dataset.issues }));
+  // V4-7a：問題表篩選中（點 G20 缺列段或 G21 的格之後才出現的篩選片語與「清除篩選」；DataWorkspace 的篩選是 state，這裡直接給 IssueList 篩選條件）。
+  // 不給 download：data-issues-download 只由資料來源頁（DataWorkspace）的情境提供，這個情境不替它補上（不遮住刪除）。
+  const adDay = await source("errors/missing_ad_day");
+  render("data-issues-filtered", createElement(IssueList, { issues: adDay.dataset.issues, filter: { file: "ad_spend_daily.csv", channel: "MARKETPLACE", reason: "MISSING_AD_DAY" }, onClearFilter: noop }));
+  // V4-7a：去年同期可用的資料來源頁（tests/helpers/yoy-dataset.ts，兩年合成資料）：G20 副標第二行 data-coverage-yoy（D-V4-40＝A）。
+  const yoy = yoyInput(), yoyDataset = validateDataset(yoy).dataset!;
+  render("data-yoy", createElement(DataWorkspace, { dataset: yoyDataset, snapshot: await createSnapshot(yoyDataset, {}, await hashInput(yoy)) }));
   // 計算與來源抽屜（含稅換算註記）與指標定義 dialog。
   render("evidence-drawer", createElement(EvidenceDrawer, { dataset: imported, snapshot: importedSnapshot, conversion: prepared.conversion, rawValues: prepared.raw_values, evidence: { title: "淨營收", name: "net_revenue", metric: importedSnapshot.report.current.metrics.net_revenue, period: importedSnapshot.report.current.period, channels: importedSnapshot.report.scope.channels, sources: importedSnapshot.report.current.sources }, onClose: noop, onBasis: noop }));
   render("basis-dialog", createElement(BasisDialog, { open: true, onClose: noop }));

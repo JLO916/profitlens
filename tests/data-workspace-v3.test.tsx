@@ -5,18 +5,23 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
 import { fixture } from "./helpers/fixtures";
 import { validateDataset } from "@/domain/validation";
-import type { Dataset, DatasetInput, FileName } from "@/domain/types";
+import type { Dataset, DatasetInput, FileName, ValidationIssue } from "@/domain/types";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
-import { formatAmountL3, formatDateL1, formatPeriodL1, formatRateL2 } from "@/application/presentation";
+import { formatAmountL3, formatCount, formatDateL1, formatPeriodL1, formatRateL2 } from "@/application/presentation";
 import { conversionSentence } from "@/application/copy";
 import type { TaxConversion } from "@/application/tax-basis";
 import { DataWorkspace, Diagnosis } from "@/components/workspace-panels";
 import { PageHeader } from "@/components/shell/page-chrome";
 import { fill, labels } from "@/i18n";
 import { BLACKLIST, labelEntries } from "../scripts/lib/copy-scan.mjs";
+import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
+import { issueDistribution } from "@/application/chart-issues";
+import { issueReasonLabel } from "@/application/issue-filter";
+import { COVERAGE_RANGE_FIELD } from "@/application/chart-coverage";
 
 // V3-8 資料來源頁（PRD §7.7.1、§6.3 #51–#53；D-V3-2、D-V3-28）＋通路健檢空狀態（§7.10 健檢沒有結果、C10）。SSR 驗收：
 // 區塊順序、資料狀態一行、問題表在第二段（六欄、原因碼欄 hidden 掛載、下載鈕只在資料來源頁）、兩欄定義列表、前處理表、選填資料並列、
@@ -77,7 +82,9 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
       // 第一個元素就是資料狀態一行；資料問題區段保留 v2 的 aria-labelledby（quality-heading）。
       expect(html.startsWith('<p class="data-status-line" data-testid="data-status-line">')).toBe(true);
       expect(html).toContain('<section class="panel data-section" aria-labelledby="quality-heading" data-testid="data-issues">');
-      expect(html.match(/<h2[\s>]/g)).toHaveLength(7);
+      // V4-7a：G20 涵蓋時間軸（狀態一行之後、資料問題之前）的結論標題是第 8 個 h2（G21 是 h3，在資料問題之內）。
+      expect(html.match(/<h2[\s>]/g)).toHaveLength(8);
+      expect(html.match(/<h2 id="data-coverage-title">/g)).toHaveLength(1);
     }
   });
 
@@ -264,5 +271,96 @@ describe("V3-8 新鍵（data.pageV3）文案", () => {
     expect(v3.diagnosisEmpty.body.endsWith("。")).toBe(true);
     for (const button of [v3.diagnosisEmpty.action, v3.issueTable.showCodes]) expect(button).toMatch(/^(查看|顯示)/);
     expect(`${v3.diagnosisEmpty.title}${v3.diagnosisEmpty.body}`).toBe(diagnosisPanel.noDiagnostics);
+  });
+});
+
+// ── V4-7a 整合（代理 C）：資料來源頁的 G20 涵蓋時間軸與 G21 問題分布表（PRD §5.7；CHART_CATALOG §7、G20、G21；06_BATCHES V4-7a「驗收重點」）。
+// SSR 斷言位置與結構；點擊後的篩選、捲動與焦點在 tests/issue-list-filter-v4.test.tsx（hooks harness）與 tests/e2e/charts-data.spec.ts。
+describe("V4-7a 資料來源頁：G20、G21 的位置與標題", () => {
+  const coverage = labels.data.chartsV4.coverage, issues = labels.data.chartsV4.issues;
+  let adDay: Source, synthetic: Source;
+  beforeAll(async () => {
+    adDay = await load("errors/missing_ad_day");
+    const input = synthetic4ChannelInput(), dataset = validateDataset(input).dataset!;
+    synthetic = { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)) };
+  });
+  const titleOf = (html: string, id: string) => new RegExp(`<h[23] id="${id}-title">([^<]*)</h[23]>`).exec(html)![1];
+  const mainSections = (html: string) => (checkChartMarkup(html, { page: "data" }) as { mainSections: string[] }).mainSections;
+
+  it("G20（section.panel.chart-section，h2）緊接在狀態一行之後、資料問題之前；G21（inline、h3、table 模式）在 data-issues 內 ui-section-head 之後、問題表之前，不套 .panel", () => {
+    for (const source of [adDay, synthetic, partial]) {
+      const html = page(source);
+      const status = element(html, 'data-testid="data-status-line"'), g20 = element(html, 'data-testid="chart-data-coverage"');
+      expect(html.indexOf(status) + status.length, "G20 緊接在狀態一行之後").toBe(html.indexOf(g20));
+      expect(html.indexOf(g20) + g20.length, "G20 之後就是資料問題").toBe(html.indexOf('<section class="panel data-section" aria-labelledby="quality-heading" data-testid="data-issues">'));
+      expect(g20).toMatch(/^<section class="panel chart-section coverage-section" aria-labelledby="data-coverage-title" aria-describedby="data-coverage-sub" data-testid="chart-data-coverage">/);
+      const section = element(html, 'data-testid="data-issues"');
+      const g21 = element(section, 'data-testid="chart-data-issues"');
+      const head = element(section, 'class="ui-section-head"');
+      expect(section.indexOf(head) + head.length, "G21 緊接在 ui-section-head 之後").toBe(section.indexOf(g21));
+      expect(section.indexOf(g21) + g21.length, "G21 之後是問題表").toBe(section.indexOf('<div class="issue-list">'));
+      expect(g21).toMatch(/^<section class="chart-section is-inline issues-chart" aria-labelledby="data-issues-dist-title" aria-describedby="data-issues-dist-sub" data-testid="chart-data-issues">/);
+      expect(g21).toContain('<h3 id="data-issues-dist-title">');
+      expect(g21).toContain('data-mode="table"');
+      expect([...section.matchAll(/class="[^"]*\bpanel\b[^"]*"/g)], "data-issues 內沒有 .panel 套 .panel").toHaveLength(1);
+      // 問題表沒有篩選（SSR 第一次渲染）：沒有篩選片語與清除鈕，下載鈕照舊。
+      expect(section).not.toContain('data-testid="data-issues-filter"');
+      expect(section).toContain('data-testid="data-issues-download"');
+    }
+  });
+
+  it("示範資料與 golden：沒有任何問題時不渲染 G21（data-issues 的「沒有問題」不變），G20 標題＝title.none；資料來源頁主層獨立圖區塊＝1", () => {
+    for (const source of [demo, golden]) {
+      const html = page(source);
+      const manifest = source.dataset.manifest, md = (iso: string) => formatDateL1(iso, { anchor: manifest.data_as_of });
+      expect(html).not.toContain("chart-data-issues");
+      expect(element(html, 'data-testid="data-issues"')).toContain(`<p class="data-section-empty">${dataPanel.noIssues}</p>`);
+      expect(titleOf(html, "data-coverage")).toBe(fill(coverage.title.none, { start: md(manifest.coverage_start), end: md(manifest.coverage_end) }));
+      expect(html).not.toContain(`data-testid="${"chart-data-coverage-seg-"}`);
+      expect(mainSections(html)).toEqual(["chart-data-coverage"]);
+    }
+  });
+
+  it("missing_ad_day：G20 標題用單日模板（沒有「8/2 到 8/2」）、G21 標題用單格模板（沒有「最多」）；一個缺列框、一個篩選按鈕、一格；主層獨立圖區塊＝2", () => {
+    const html = page(adDay);
+    const anchor = adDay.dataset.manifest.data_as_of, date = formatDateL1("2026-08-02", { anchor });
+    const g20Title = titleOf(html, "data-coverage"), g21Title = titleOf(html, "data-issues-dist");
+    expect(g20Title).toBe(fill(coverage.title.missingOneDay, { file: labels.importWizard.files.ads, date, channel: "MARKETPLACE" }));
+    expect(g20Title).not.toContain(`${date} ${coverage.title.missing.split("{start} ")[1].split(" {end}")[0]} ${date}`);
+    expect(g21Title).toBe(fill(issues.title.single, { file: labels.importWizard.files.ads, n: formatCount(1, "L2"), reason: issueReasonLabel("MISSING_AD_DAY") }));
+    expect(g21Title).not.toContain(issues.title.most.split("{reason}")[1].split("，")[0]);
+    expect([...html.matchAll(/data-testid="(chart-data-coverage-seg-[^"]+)"/g)].map(match => match[1])).toEqual(["chart-data-coverage-seg-ads-MARKETPLACE-2026-08-02"]);
+    const table = element(html, 'data-testid="chart-data-coverage-table"');
+    expect(table.match(/<button type="button" class="ui-btn ui-btn-text coverage-filter"/g)).toHaveLength(1);
+    expect(table).toContain(`aria-label="${fill(coverage.filterName, { file: labels.importWizard.files.ads, channel: "MARKETPLACE" })}"`);
+    expect([...html.matchAll(/data-testid="(chart-data-issues-cell-[^"]+)"/g)].map(match => match[1])).toEqual(["chart-data-issues-cell-ads-MISSING_AD_DAY"]);
+    expect(mainSections(html)).toEqual(["chart-data-coverage", "chart-data-issues"]);
+  });
+
+  it("4 通路合成資料：G21 格加總＝列級問題筆數（issue-distribution-v1）；G20 三段缺列各一個缺列框與一個篩選按鈕（通路費用 LIVE 9/14、廣告 LIVE 8/30 與 9/22）", () => {
+    const html = page(synthetic);
+    const distribution = issueDistribution(synthetic.dataset.issues)!;
+    const cells = [...element(html, 'data-testid="chart-data-issues-table"').matchAll(/data-testid="chart-data-issues-cell-[^"]+"><button type="button" class="heat-count" aria-label="[^"]*">([^<]+)<\/button>/g)].map(match => Number(match[1].replace(/,/g, "")));
+    expect(cells.reduce((sum, value) => sum + value, 0)).toBe(distribution.rowLevel);
+    expect(distribution.rowLevel).toBe(synthetic.dataset.issues.length);
+    expect([...html.matchAll(/data-testid="(chart-data-coverage-seg-[^"]+)"/g)].map(match => match[1])).toEqual(["chart-data-coverage-seg-costs-LIVE-2026-09-14", "chart-data-coverage-seg-ads-LIVE-2026-08-30", "chart-data-coverage-seg-ads-LIVE-2026-09-22"]);
+    expect(element(html, 'data-testid="chart-data-coverage-table"').match(/class="ui-btn ui-btn-text coverage-filter"/g)).toHaveLength(3);
+    expect(mainSections(html)).toEqual(["chart-data-coverage", "chart-data-issues"]);
+  });
+
+  it("範圍級缺列（field $coverage、沒有日期）：G20 退回文字（state empty、rangeFallback，沒有 svg 與缺列框、資料表 0 列），G21 標題 title.rangeOnly（範圍級問題另成表尾一列）；主層獨立圖區塊＝2", async () => {
+    const range = (file: "channel_costs_daily.csv" | "ad_spend_daily.csv", reason_code: string): ValidationIssue => ({ file, line: null, field: COVERAGE_RANGE_FIELD, severity: "partial", reason_code, message: "" });
+    const dataset: Dataset = { ...golden.dataset, issues: [range("channel_costs_daily.csv", "MISSING_CHANNEL_COST_DAY"), range("ad_spend_daily.csv", "MISSING_AD_DAY")] };
+    const html = page({ ...golden, dataset });
+    const g20 = element(html, 'data-testid="chart-data-coverage"');
+    expect(titleOf(html, "data-coverage")).toBe(coverage.title.range);
+    expect(g20).toMatch(/class="chart-frame sm"[^>]*data-state="empty"/);
+    expect(element(g20, 'class="chart-frame-message"')).toContain(coverage.rangeFallback);
+    expect(g20).not.toContain("<svg");
+    expect(g20).not.toContain("chart-data-coverage-seg-");
+    expect(element(g20, 'data-testid="chart-data-coverage-table"')).not.toContain('<th scope="row">');
+    expect(titleOf(html, "data-issues-dist")).toBe(fill(issues.title.rangeOnly, { n: formatCount(2, "L2") }));
+    expect(element(html, 'data-testid="chart-data-issues"')).toContain(issues.rangeRow);
+    expect(mainSections(html)).toEqual(["chart-data-coverage", "chart-data-issues"]);
   });
 });
