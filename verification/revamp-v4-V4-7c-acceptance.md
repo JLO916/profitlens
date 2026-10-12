@@ -96,7 +96,7 @@
 | Lighthouse × 3（開跑時 1 分鐘負載 2.40、2.28、2.38；門檻 < 2.5） | 390 的五項 TBT 都通過（見下表） |
 | `lsof -ti tcp:3100 \| xargs kill`；`lsof -ti tcp:3100` | 已停，沒有輸出 |
 | 禁區四條命令 | 四條都是空的 |
-| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區與 assist-kpi、breakeven-mer 路徑）` | 見文末（收尾 commit 之後補記） |
+| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區與 assist-kpi、breakeven-mer 路徑）` | 空（收尾 commit `8bef401`；`82b70df` 那條與 `git status --porcelain` 也是空的） |
 | 隱藏字元掃描 | 0 |
 
 **棘輪與基準數值**
