@@ -2078,7 +2078,56 @@ export const data = {
   // ── V4-7a 錨點：資料來源圖表字串（代理 A：coverage＝G20 涵蓋時間軸；代理 B：issues＝G21 問題分布表與問題表篩選片語）。
   // 期間區帶與細線的「上期」「本期」「去年同期」沿用既有字串（labels.shell.periods.*），不另立；原因碼名稱沿用既有標籤。
   chartsV4: {
-    coverage: {},
+    // ── V4-7a 錨點（代理 A：G20 涵蓋時間軸）。軌名沿用 importWizard.files.*（商品銷售、通路費用、廣告投放）與 overview.alerts.eventPeriod（檔期）；
+    // 區帶名沿用 shell.periods.previous／current；去年同期沿用 shell.periods.presets.yoy；資料表的檔案、通路欄名沿用 data.pageV3.issueTable.columns.file、overview.page.colChannel。
+    coverage: {
+      /** 區塊標準名（v4 GLOSSARY #3）：資料表 summary「表格 · {section}」、caption、沒有資料集時的標題。 */
+      section: "涵蓋時間軸",
+      /** 結論標題（L1，每個子句 ≤ 14 字）：取最長的缺列區段；日期 M/D（formatDateL1）。 */
+      title: {
+        /** {file}＝檔案名（importWizard.files.*）、{start}／{end}＝缺列起訖、{n}＝天數、{channel}＝通路（示範資料用 alias）。 */
+        missing: "{file}缺 {start} 到 {end} 共 {n} 天（{channel}）",
+        /** 最長的缺列區段只有 1 天時（fixtures/errors/missing_ad_day）：不寫「8/2 到 8/2 共 1 天」。 */
+        missingOneDay: "{file}缺 {date} 1 天（{channel}）",
+        /** 沒有缺列（示範資料、golden）：{start}／{end}＝檔案涵蓋起訖。 */
+        none: "三份檔案涵蓋 {start} 到 {end}，沒有缺列",
+        /** 只有範圍級缺列（涵蓋日 × 通路超過每檔列數上限）時：不畫區段，圖區退回文字（rangeFallback）。 */
+        range: "涵蓋範圍太大，缺列無法逐日標出",
+      },
+      /** 副標（同時是區塊的 aria 描述）：{section}＝區塊名、{range}＝檔案涵蓋期間（附天數）、{channels}＝檔案裡的通路。 */
+      subtitle: "{section} · 檔案涵蓋 {range} · {channels}",
+      /** 沒有資料集時的副標。 */
+      subtitleEmpty: "{section} · 三份檔案的有列與缺列日期",
+      /** 圖例：有列（line，--chart-total）、缺列（dash，--chart-missing）；期間區帶直接標字，不進圖例。 */
+      legend: { rows: "有列", missing: "缺列" },
+      /** 銷售檔那一天沒有任何一列（v4 GLOSSARY #5）；寬放得下時直接標在銷售軌上。 */
+      noRows: "無列",
+      /** 通路費用、廣告軌右端：該檔缺列的日子數（任一通路缺列的日期；同一天幾個通路都缺只算 1 天）。 */
+      gapDays: "缺 {n} 天",
+      /** 銷售軌右端：軸上無列的天數。 */
+      noRowDays: "無列 {n} 天",
+      /** 只有範圍級缺列時圖區的說明（state="empty"），也放在資料表之後。 */
+      rangeFallback: "涵蓋天數乘上通路數超過每檔列數上限，通路費用與廣告的缺列只列在問題表。",
+      /** 資料表每列的按鈕（可見文字）。 */
+      filterButton: "篩選問題表",
+      /** 按鈕的可及名稱（含可見文字，WCAG 2.5.3）：{file}＝檔案名、{channel}＝通路。 */
+      filterName: "篩選問題表：{file} · {channel}",
+      /** 資料表欄名（檔案、通路兩欄沿用既有字串）。 */
+      columns: { start: "缺列起日", end: "缺列訖日", days: "天數", action: "篩選" },
+      /** 沒有缺列區段時資料表之後的說明（在收合的 <details> 內）。 */
+      tableNone: "圖上的日期範圍內沒有缺列區段。",
+      /** 銷售有無列的日子時資料表之後的說明：{file}＝商品銷售、{n}＝天數。 */
+      noRowsNote: "{file}有 {n} 天無列：那天沒有任何一列，金額不當作 0。",
+      /** D-V4-40＝A：去年同期不畫在軸上，改在圖上方一行（副標第二行）寫期間與有列或缺列天數。 */
+      yoy: {
+        /** {yoy}＝shell.periods.presets.yoy、{range}＝去年同期期間（附天數）、{detail}＝complete，或 missing 與 noRows 以 joiner 相接。 */
+        line: "{yoy} {range}：{detail}",
+        complete: "三份檔案每天都有列",
+        missing: "缺列 {n} 天",
+        noRows: "{file}無列 {n} 天",
+        joiner: "，",
+      },
+    },
     issues: {},
   },
 } as const;

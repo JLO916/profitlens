@@ -11,6 +11,14 @@ import { RANKED_MIN_PLOT, RANKED_SSR_WIDTH, RANKED_TEXT_PAD, RANKED_VALUE_GAP, h
 import { SHARE_STACK_LABEL_WIDTH, SHARE_STACK_SSR_WIDTH, SHARE_STACK_VALUE_WIDTH, ShareStack, shareStackGeometry, type ShareStackRowInput } from "../src/components/charts/share-stack";
 import { SPARK_DOT_R, SPARK_PAD, SPARK_STROKE, SPARK_WIDTH, Sparkline, sparklineGeometry, type SparklinePoint } from "../src/components/charts/sparkline";
 import { THRESHOLD_NARROW_BELOW, THRESHOLD_POINT_R, THRESHOLD_SSR_WIDTH, THRESHOLD_X_STEP, THRESHOLD_X_TICKS, ThresholdLine, thresholdGeometry, type ThresholdGeometry, type ThresholdLinePoint } from "../src/components/charts/threshold-line";
+import { TIMELINE_END_WIDTH, TIMELINE_LABEL_WIDTH, TIMELINE_MIN_SEGMENT, TIMELINE_NARROW_BELOW, TIMELINE_SSR_WIDTH, Timeline, timelineGeometry, type TimelineTrackInput } from "../src/components/charts/timeline";
+import { coverageTimeline } from "../src/application/chart-coverage";
+import { coverageChartModel } from "../src/components/data/coverage-chart";
+import { validateDataset } from "../src/domain/validation";
+import { formatDateL1 } from "../src/application/presentation";
+import { fill, labels } from "../src/i18n";
+import { fixture } from "./helpers/fixtures";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import { formatAxisPercent } from "../src/application/copy";
 import { formatAxisWan } from "../src/application/presentation";
 import { ChartFrame } from "../src/components/overview/charts/chart-frame";
@@ -731,5 +739,217 @@ describe("ThresholdLine：SSR 結構（C29；CL-1、CL-2、CL-3、CL-7、CL-9、
     expect(scan.jsxCjk).toEqual([]);
     expect(scan.cjkLiterals).toEqual([]);
     expect(scan.fontSize).toEqual([]);
+  });
+});
+
+// ── V4-7a 代理 A：C30 timelineGeometry（PRD §6.3 C30、§4.4 G20、§5.7「sm 180（4 軌 × 24＋日期軸）」；H5 設計稿 data.html；D-V4-40＝A）。
+// 寬度取設計稿量到的資料來源頁面板內寬：1440＝1122、1280＝962、768＝450、390＝324；SSR 560。
+const TIMELINE_WIDTHS = [324, 450, TIMELINE_SSR_WIDTH, 962, 1122] as const;
+function coverageModel(name: "synthetic" | "missing_ad_day" | "demo") {
+  const input = name === "synthetic" ? synthetic4ChannelInput() : fixture(name === "demo" ? "demo" : "errors/missing_ad_day");
+  const timeline = coverageTimeline(validateDataset(input).dataset!);
+  return { timeline, model: coverageChartModel(timeline) };
+}
+const timelineOf = (name: "synthetic" | "missing_ad_day" | "demo", width: number, extraTracks: TimelineTrackInput[] = []) => {
+  const { timeline, model } = coverageModel(name);
+  return timelineGeometry({ width, domain: timeline.axis, bands: model.bands, tracks: [...model.tracks, ...extraTracks], noRowsText: labels.data.chartsV4.coverage.noRows, dateLabel: iso => formatDateL1(iso, { anchor: timeline.dataAsOf }) });
+};
+const EVENTS_TRACK: TimelineTrackInput = { key: "events", label: labels.overview.alerts.eventPeriod, rows: [], missing: [], noRows: [], endLabel: "", events: [{ key: "2", start: "2026-09-11", end: "2026-09-13", label: "x" }] };
+
+describe("timelineGeometry（C30）：高度、繪圖區、缺列框", () => {
+  it("svg 高＝（軌數＋1）× row24＋axis：3 軌 120、4 軌（加檔期）144，都 ≤ chartHeights.sm（180）", () => {
+    expect(chartRowHeights.axis).toBe(24);
+    const three = timelineOf("synthetic", 1122), four = timelineOf("synthetic", 1122, [EVENTS_TRACK]);
+    expect(three.height).toBe(4 * chartRowHeights.row24 + chartRowHeights.axis);
+    expect(four.height).toBe(5 * chartRowHeights.row24 + chartRowHeights.axis);
+    expect([three.height, four.height]).toEqual([120, 144]);
+    expect(four.height).toBeLessThanOrEqual(chartHeights.sm);
+    expect(four.tracks.map(track => track.y)).toEqual([24, 48, 72, 96]);
+    expect(four.bodyHeight).toBe(120);
+    expect(four.axis.y).toBe(four.bodyHeight);
+  });
+
+  it("合成資料四種寬（＋SSR）：軸 34 天；有列細條、缺列框、區帶都在繪圖區內；缺列框 testid 是語意 key", () => {
+    for (const width of TIMELINE_WIDTHS) {
+      const geometry = timelineOf("synthetic", width, [EVENTS_TRACK]);
+      const { left, right } = geometry.plot;
+      expect(geometry.days, String(width)).toBe(34);
+      const narrow = width < TIMELINE_NARROW_BELOW;
+      expect(geometry.narrow).toBe(narrow);
+      expect(left).toBe(narrow ? TIMELINE_LABEL_WIDTH.narrow : TIMELINE_LABEL_WIDTH.wide);
+      expect(right).toBe(width - (narrow ? TIMELINE_END_WIDTH.narrow : TIMELINE_END_WIDTH.wide));
+      const shapes = [...geometry.bands, ...geometry.tracks.flatMap(track => [...track.rows, ...track.missing])];
+      for (const shape of shapes) {
+        expect(shape.x, `${width} ${JSON.stringify(shape)}`).toBeGreaterThanOrEqual(left);
+        expect(shape.x + shape.width, `${width} ${JSON.stringify(shape)}`).toBeLessThanOrEqual(right + 0.1);
+      }
+      expect(geometry.tracks.flatMap(track => track.missing.map(segment => segment.testId))).toEqual([
+        "chart-data-coverage-seg-costs-LIVE-2026-09-14", "chart-data-coverage-seg-ads-LIVE-2026-08-30", "chart-data-coverage-seg-ads-LIVE-2026-09-22",
+      ]);
+      for (const track of geometry.tracks) for (const segment of track.missing) {
+        expect(segment.y).toBe(track.y + 5);
+        expect(segment.y + segment.height).toBeLessThanOrEqual(track.y + chartRowHeights.row24);
+      }
+    }
+  });
+
+  it("1440（1122）：一天 978 ÷ 34 px；缺列框寬＝天數 × 一天寬（6 天、4 天、1 天）", () => {
+    const geometry = timelineOf("synthetic", 1122);
+    expect(geometry.dayWidth).toBeCloseTo(978 / 34, 2);
+    // 設計稿的軸是 35 天（8/20 起），D-V4-40＝A 改為 34 天（8/21 起），所以每天略寬。
+    const widths = geometry.tracks.flatMap(track => track.missing.map(segment => segment.width));
+    expect(widths).toEqual([6, 4, 1].map(days => Math.round(days * 978 / 34 * 10) / 10));
+  });
+
+  it("1 天的缺列在很長的軸、390 寬時仍至少 TIMELINE_MIN_SEGMENT（6px），而且框留在繪圖區內（貼在軸的兩端時往內移）", () => {
+    const domain = { start: "2025-09-01", end: "2026-09-23" };
+    const track = (start: string): TimelineTrackInput => ({ key: `ads-${start}`, label: "x", rows: [], noRows: [], events: [], endLabel: "", missing: [{ start, end: start, file: "ad_spend_daily.csv", channel: "LIVE", reason: "MISSING_AD_DAY", testId: `chart-data-coverage-seg-ads-LIVE-${start}` }] });
+    for (const width of [324, 1122]) {
+      const geometry = timelineGeometry({ width, domain, bands: [], tracks: [track("2025-09-01"), track("2026-03-01"), track("2026-09-23")], noRowsText: "x", dateLabel: iso => iso });
+      expect(geometry.days).toBe(388);
+      expect(geometry.dayWidth).toBeLessThan(TIMELINE_MIN_SEGMENT);
+      for (const shape of geometry.tracks.flatMap(item => item.missing)) {
+        expect(shape.width, `${width} ${shape.start}`).toBe(TIMELINE_MIN_SEGMENT);
+        expect(shape.x).toBeGreaterThanOrEqual(geometry.plot.left);
+        expect(shape.x + shape.width).toBeLessThanOrEqual(geometry.plot.right + 0.1);
+      }
+      const [first, , last] = geometry.tracks.map(item => item.missing[0]);
+      expect(first.x).toBe(geometry.plot.left);
+      expect(last.x + last.width).toBeCloseTo(geometry.plot.right, 1);
+    }
+  });
+
+  it("missing_ad_day（軸 2 天）：區帶上期、本期各佔一半，相鄰兩段之間 2px 白縫；名稱直接標在區帶上；1 天的缺列框＝一天寬", () => {
+    for (const width of TIMELINE_WIDTHS) {
+      const geometry = timelineOf("missing_ad_day", width);
+      const [previous, current] = geometry.bands;
+      expect([previous.key, current.key]).toEqual(["previous", "current"]);
+      expect([previous.label, current.label]).toEqual([labels.shell.periods.previous, labels.shell.periods.current]);
+      expect(current.x - (previous.x + previous.width)).toBeCloseTo(2, 1);
+      expect(previous.labelX).not.toBeNull();
+      expect(current.labelX).not.toBeNull();
+      const [segment] = geometry.tracks[2].missing;
+      expect(segment.testId).toBe("chart-data-coverage-seg-ads-MARKETPLACE-2026-08-02");
+      expect(segment.width).toBeCloseTo(geometry.dayWidth, 0);
+      expect(segment.x + segment.width).toBeCloseTo(geometry.plot.right, 0);
+    }
+  });
+
+  it("區帶太窄時不標名稱（只畫底色）", () => {
+    const geometry = timelineGeometry({ width: 324, domain: { start: "2025-09-01", end: "2026-09-23" }, bands: [{ key: "previous", label: labels.shell.periods.previous, start: "2026-09-06", end: "2026-09-14" }, { key: "current", label: labels.shell.periods.current, start: "2026-09-15", end: "2026-09-23" }], tracks: [], noRowsText: "x", dateLabel: iso => iso });
+    expect(geometry.bands.map(band => band.labelX)).toEqual([null, null]);
+    expect(geometry.bands.every(band => band.width > 0)).toBe(true);
+  });
+});
+
+describe("timelineGeometry（C30）：日期軸與無列", () => {
+  it("合成資料：起訖兩端（8/21、9/23）＋月初 9/1 的刻度；四種寬都標得下 9/1；刻度線在 9/1 那一天的左緣", () => {
+    for (const width of TIMELINE_WIDTHS) {
+      const geometry = timelineOf("synthetic", width);
+      expect(geometry.axis.start.label).toBe("8/21");
+      expect(geometry.axis.end?.label).toBe("9/23");
+      expect(geometry.axis.ticks.map(tick => [tick.iso, tick.label])).toEqual([["2026-09-01", "9/1"]]);
+      expect(geometry.axis.ticks[0].x).toBeCloseTo(geometry.plot.left + 11 * (geometry.plot.right - geometry.plot.left) / 34, 1);
+    }
+  });
+
+  it("388 天的軸：12 個月初；寬時標字與起點重疊的略過，390（< TIMELINE_NARROW_BELOW）月份刻度減半（只留第 2、4、6…個）", () => {
+    const options = { domain: { start: "2025-09-01", end: "2026-09-23" }, bands: [], tracks: [], noRowsText: "x", dateLabel: (iso: string) => formatDateL1(iso, { anchor: "2026-09-24" }) };
+    const wide = timelineGeometry({ ...options, width: 1122 });
+    expect(wide.axis.ticks.map(tick => tick.iso)).toEqual(["2025-10-01", "2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01", "2026-05-01", "2026-06-01", "2026-07-01", "2026-08-01", "2026-09-01"]);
+    expect(wide.axis.start.label).toBe("2025/9/1");
+    expect(wide.axis.ticks.filter(tick => tick.label !== null).length).toBeGreaterThanOrEqual(9);
+    const narrow = timelineGeometry({ ...options, width: 324 });
+    expect(narrow.narrow).toBe(true);
+    expect(narrow.axis.ticks.map(tick => tick.iso)).toEqual(["2025-11-01", "2026-01-01", "2026-03-01", "2026-05-01", "2026-07-01", "2026-09-01"]);
+    // 標了字的刻度互不重疊（估寬＋左右各 4px），也不壓起訖兩端的字。
+    for (const geometry of [wide, narrow]) {
+      const boxes = [
+        { from: geometry.axis.start.x, to: geometry.axis.start.x + rankedTextWidth(geometry.axis.start.label) },
+        { from: geometry.axis.end!.x - rankedTextWidth(geometry.axis.end!.label), to: geometry.axis.end!.x },
+        ...geometry.axis.ticks.filter(tick => tick.label !== null).map(tick => ({ from: tick.x - rankedTextWidth(tick.label!) / 2, to: tick.x + rankedTextWidth(tick.label!) / 2 })),
+      ];
+      for (const [index, box] of boxes.entries()) for (const other of boxes.slice(index + 1)) expect(box.from < other.to && box.to > other.from, JSON.stringify([box, other])).toBe(false);
+    }
+  });
+
+  it("軸只有 1 天時只標起日（不重複標訖日）；沒有月初", () => {
+    const geometry = timelineGeometry({ width: 560, domain: { start: "2026-08-02", end: "2026-08-02" }, bands: [], tracks: [], noRowsText: "x", dateLabel: iso => iso });
+    expect(geometry.days).toBe(1);
+    expect(geometry.axis.end).toBeNull();
+    expect(geometry.axis.ticks).toEqual([]);
+  });
+
+  it("無列：寬放得下時在區段中間標「無列」，太窄時不標（右端天數照常由呼叫端給）", () => {
+    const track: TimelineTrackInput = { key: "sales", label: "x", rows: [], missing: [], events: [], endLabel: "", noRows: [{ start: "2026-09-10", end: "2026-09-11" }] };
+    const domain = { start: "2026-08-21", end: "2026-09-23" };
+    const wide = timelineGeometry({ width: 1122, domain, bands: [], tracks: [track], noRowsText: labels.data.chartsV4.coverage.noRows, dateLabel: iso => iso });
+    const narrow = timelineGeometry({ width: 324, domain, bands: [], tracks: [{ ...track, noRows: [{ start: "2026-09-10", end: "2026-09-10" }] }], noRowsText: labels.data.chartsV4.coverage.noRows, dateLabel: iso => iso });
+    const [wideRange] = wide.tracks[0].noRows, [narrowRange] = narrow.tracks[0].noRows;
+    expect(Math.abs(wideRange.labelX! - (wideRange.x + wideRange.width / 2))).toBeLessThanOrEqual(0.1);
+    expect(narrowRange.labelX).toBeNull();
+  });
+
+  it("右端字（審查修正）：放得下時左對齊在 plot.right＋8；390 的「無列 12 天」比右端欄寬時往左移，估寬不超出 svg 右緣、也不壓進繪圖區", () => {
+    const domain = { start: "2026-08-21", end: "2026-09-23" };
+    const track = (endLabel: string): TimelineTrackInput => ({ key: endLabel, label: "x", rows: [], missing: [], noRows: [], events: [], endLabel });
+    const long = fill(labels.data.chartsV4.coverage.noRowDays, { n: "12" }), short = fill(labels.data.chartsV4.coverage.gapDays, { n: "6" });
+    for (const width of TIMELINE_WIDTHS) {
+      const geometry = timelineGeometry({ width, domain, bands: [], tracks: [track(long), track(short)], noRowsText: "x", dateLabel: iso => iso });
+      const [longShape, shortShape] = geometry.tracks;
+      expect(shortShape.endX, String(width)).toBe(geometry.endX);
+      expect(longShape.endX + rankedTextWidth(long), String(width)).toBeLessThanOrEqual(width + 0.05);
+      expect(longShape.endX, String(width)).toBeGreaterThan(geometry.plot.right);
+    }
+    const narrow = timelineGeometry({ width: 324, domain, bands: [], tracks: [track(long)], noRowsText: "x", dateLabel: iso => iso });
+    expect(narrow.tracks[0].endX).toBeLessThan(narrow.endX);
+  });
+});
+
+describe("Timeline：SSR 結構（C30；CL-1、CL-2、CL-3、CL-7、CL-9、CL-10、CL-11）", () => {
+  const { timeline, model } = coverageModel("synthetic");
+  const render = (onSegment?: () => void) => renderToStaticMarkup(createElement(Timeline, { domain: timeline.axis, bands: model.bands, tracks: model.tracks, noRowsText: labels.data.chartsV4.coverage.noRows, dateLabel: (iso: string) => formatDateL1(iso, { anchor: timeline.dataAsOf }), onSegment }));
+
+  it("根 svg.chart-timeline：aria-hidden、focusable=false、高＝4 × row24＋axis、SSR 座標系 560；缺列框一段一個 testid；沒有 tabindex、onclick、按鈕、連結、色碼", () => {
+    const html = render(() => undefined);
+    const root = openTag(html, "<svg")!;
+    expect(root).toContain('class="chart-timeline"');
+    expect(root).toContain('aria-hidden="true"');
+    expect(root).toContain('focusable="false"');
+    expect(root).toContain(`height="${4 * chartRowHeights.row24 + chartRowHeights.axis}"`);
+    expect(root).toContain(`viewBox="0 0 ${TIMELINE_SSR_WIDTH} ${4 * chartRowHeights.row24 + chartRowHeights.axis}"`);
+    expect(html.match(/data-testid="[^"]+"/g)!.map(item => item.slice(13, -1))).toEqual(["chart-data-coverage-seg-costs-LIVE-2026-09-14", "chart-data-coverage-seg-ads-LIVE-2026-08-30", "chart-data-coverage-seg-ads-LIVE-2026-09-22"]);
+    expect(html).not.toMatch(/tabindex|onclick|<button|<a\b/i);
+    expect(html).not.toMatch(HEX);
+    expect(openTag(html, 'data-testid="chart-data-coverage-seg-costs-LIVE-2026-09-14"')).toContain('pointer-events="all"');
+    expect(openTag(html, 'data-testid="chart-data-coverage-seg-costs-LIVE-2026-09-14"')).toContain('class="timeline-missing is-clickable"');
+    // 不給 onSegment 時缺列框不可點。
+    expect(render()).not.toMatch(/is-clickable|pointer-events/);
+  });
+
+  it("色：區帶 chartColors.band、有列 chartColors.total、缺列框 fill none＋stroke chartColors.missing 虛線；軸 chartColors.grid／axis；沒有強調色與有利、不利色", () => {
+    const html = render();
+    expect(openTag(html, 'data-band="previous"')).toContain(`fill="${chartColors.band}"`);
+    expect(openTag(html, 'data-kind="rows"')).toContain(`fill="${chartColors.total}"`);
+    expect(openTag(html, 'data-testid="chart-data-coverage-seg-ads-LIVE-2026-09-22"')).toContain(`fill="none" stroke="${chartColors.missing}" stroke-width="1" stroke-dasharray="3 2"`);
+    expect(html).toContain(`stroke="${chartColors.grid}"`);
+    for (const color of [chartColors.current, chartColors.favorable, chartColors.unfavorable, chartColors.previous, chartColors.yoy]) expect(html).not.toContain(color);
+    // 區帶名直接標字（沿用 shell.periods），軌名沿用 importWizard.files；右端天數。
+    const gap = (n: number) => labels.data.chartsV4.coverage.gapDays.replace("{n}", String(n));
+    for (const text of [labels.shell.periods.previous, labels.shell.periods.current, ...Object.values(labels.importWizard.files), gap(6), gap(5)]) expect(html).toContain(`>${text}</text>`);
+  });
+
+  it("原始碼：AST 規則（CL-2 到 CL-8、CL-10）0 違規；沒有 `var(--chart-` 字串常值、色碼、中文字串與 JSX 中文、fontSize 常值", () => {
+    for (const file of ["src/components/charts/timeline.tsx", "src/components/data/coverage-chart.tsx"]) {
+      const text = readFileSync(resolve(file), "utf8");
+      const result = scanChartTsx(text, file);
+      for (const rule of AST_RULES) expect(result[rule], `${file} ${rule}`).toEqual([]);
+      expect(scanChartVarLiterals(text, file)).toEqual([]);
+      const scan = scanTsxText(text, file);
+      expect(scan.hex).toEqual([]);
+      expect(scan.jsxCjk).toEqual([]);
+      expect(scan.cjkLiterals).toEqual([]);
+      expect(scan.fontSize).toEqual([]);
+    }
   });
 });

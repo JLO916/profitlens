@@ -156,7 +156,9 @@ describe("V4-3c 同名包裝元件與 dashboard 的匯入", () => {
       // V4-6 代理 A：只有會議紀錄頁用到的 G19 區塊與 meetingSeries（C26 small-multiples.tsx 已隨健檢頁隨頁載入）。
       "src/components/meeting/history-chart.tsx", "src/application/chart-meeting.ts",
       // V4-6 代理 B：只有會議頁用到的 G15 會議實例（議程 5）。它匯入的 C25 ranked-bars.tsx、試算頁 variance-chart.tsx 本來就在首載（試算頁），不列。
-      "src/components/meeting/scenarios-chart.tsx"];
+      "src/components/meeting/scenarios-chart.tsx",
+      // V4-7a 代理 A：只有資料來源頁用到的 G20 區塊、C30 Timeline 與 coverageTimeline（隨健檢與資料來源的 chunk 載入）。
+      "src/components/data/coverage-chart.tsx", "src/components/charts/timeline.tsx", "src/application/chart-coverage.ts"];
     for (const file of split) {
       expect(existsSync(file), file).toBe(true);
       expect(graph.files.has(file), `${file} 不得在首載`).toBe(false);
