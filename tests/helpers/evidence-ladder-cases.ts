@@ -33,7 +33,7 @@ import { yoyInput } from "./yoy-dataset";
 // V4-7b 代理 B（06_BATCHES V4-7b、CHART_CATALOG G23、feature-retention MV5）：ladderMetrics 由 src/components/evidence-drawer.tsx 搬到
 // src/application/evidence-ladder.ts（只搬移，邏輯不改）。本檔提供「搬移前後輸出相同」的三種證明共用的材料：
 // （1）frozenLadderMetrics：搬移前（V4-7b 開工錨點 3ea161b，evidence-drawer.tsx:93-115）的函式原文凍結；只把參數型別寫開（原為 EvidenceDrawerProps["snapshot"]），函式本體逐字相同。
-// （2）ladderCases：每一種證據——各頁 evidence builder 實際組出的 EvidenceSelection（橋接、利潤結構、通路、趨勢週、比率、管理損益表日／週格與佔比、
+// （2）ladderCases：21 個匯出的 evidence builder 實際組出的 EvidenceSelection（審查 B-1：不含元件內未匯出的 builder 與行內證據，它們的期間 × 通路 × 排除條件組合由 grid 涵蓋）（橋接、利潤結構、通路、趨勢週、比率、管理損益表日／週格與佔比、
 //      結構、各通路每週、熱表日格、其他常用指標與每週、損益兩平 MER、規則的優先證據與影響、商品與商品差額）＋期間 × 通路範圍 × 排除條件的格狀組合（grid）。
 // （3）ladderGridBaseline：grid 的輸出摘要（每筆回傳哪一個既有的 Metrics 物件），tests/fixtures/evidence-ladder-v4-7a.json 是在 3ea161b 以原函式產生的基準。
 //      grid 只依 domain（禁區）與 workspace 的快照組出，與各頁 builder 無關，所以之後的批次改 builder 不會動到它。
@@ -140,7 +140,7 @@ function daysOf(period: Period): string[] {
   return out;
 }
 
-/** 各頁 evidence builder 實際組出的證據（每一種）。 */
+/** 21 個匯出的 evidence builder 實際組出的證據（未匯出的 builder 與行內證據由 gridCases 的欄位組合涵蓋）。 */
 export function builderCases({ dataset, snapshot }: LadderLoaded): LadderCase[] {
   const cases: LadderCase[] = [];
   const add = (kind: string, detail: string, evidence: EvidenceSelection | null) => { if (evidence) cases.push({ id: `${kind}|${detail}`, kind, evidence }); };

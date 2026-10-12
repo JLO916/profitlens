@@ -7,7 +7,7 @@ import { EVIDENCE_LADDER_BASELINE_FILE, builderCases, frozenLadderMetrics, gridC
 // V4-7b 代理 B（06_BATCHES V4-7b「ladderMetrics 搬移前後輸出相同」、CHART_CATALOG G23 單元測試、feature-retention MV5）：
 // ladderMetrics 由 src/components/evidence-drawer.tsx 搬到 src/application/evidence-ladder.ts 並匯出；只搬移，V4-3a 的邏輯不改。
 // 三種證明（材料見 tests/helpers/evidence-ladder-cases.ts）：
-// （1）每一種證據（各頁 evidence builder 實際組出的 EvidenceSelection＋期間 × 通路範圍 × 排除條件的 grid）× 每份資料，回傳與搬移前的原文凍結是同一個物件（toBe）；
+// （1）21 個匯出的 evidence builder 實際組出的 EvidenceSelection，加上期間 × 通路範圍 × 排除條件的 grid（ladderMetrics 只讀這幾個欄位，grid 窮舉它們的組合；元件內未匯出的 builder，例如健檢清單的 rankingSelection、factSelection 與 KPI 帶、總覽的行內證據，組出的組合都落在 grid 內）× 每份資料，回傳與搬移前的原文凍結是同一個物件（toBe）；
 // （2）grid 的輸出摘要（每筆回傳哪一個既有物件的 sha256 與分佈）等於 3ea161b 以原函式（當時暫時加 export）產生的基準 tests/fixtures/evidence-ladder-v4-7a.json；
 // （3）搬移後的模組只依 domain 與 workspace 的型別，不匯入元件；抽屜改從 application 匯入。抽屜 SSR 逐字相同另見 tests/evidence-drawer-v3.test.tsx 的 V4-7b 段。
 
@@ -24,7 +24,7 @@ const mismatches = (loaded: LadderLoaded, cases: readonly LadderCase[]) => cases
 const group = (key: string) => key.replace(/:\d+$/, "").replace(/^(previous|current):.+$/, "$1:channel");
 
 describe("V4-7b ladderMetrics 搬移前後輸出相同（逐筆比對搬移前的原文凍結）", () => {
-  it("各頁 evidence builder 的每一種證據 × 每份資料：回傳同一個物件", () => {
+  it("21 個匯出的 evidence builder 組出的證據 × 每份資料：回傳同一個物件", () => {
     for (const loaded of datasets) expect(mismatches(loaded, builders.get(loaded)!), loaded.name).toEqual([]);
   }, 60_000);
 
