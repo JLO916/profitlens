@@ -1391,7 +1391,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-7a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-7a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
-    // V4-7a 頁面狀態：data-missing-ad-day（G20 一個缺列框、G21 一格）、data-synthetic（G20 三段、G21 兩格）；既有的 data、import-step-1、data-partial、data-with-issues 也掛著 G20（沒有缺列段），
+    // V4-7a 頁面狀態：data-missing-ad-day（G20 一個缺列框、G21 一格）、data-synthetic（G20 三段、G21 兩格）、data-overlap（D-V4-51（b）＝B：G20 四個框其中兩個是合成框、資料表 6 列，G21 兩格）；
+    // 既有的 data、import-step-1、data-partial、data-with-issues 也掛著 G20（沒有缺列段），
     // 有問題的狀態另有 G21。圖形與標題細節另見 tests/data-workspace-v3.test.tsx、charts-data-coverage-v4.test.tsx、charts-data-issues-v4.test.tsx。
     it("V4-7a 資料來源頁：G20 chart-data-coverage 每個狀態一份（狀態一行之後、data-issues 之前；資料表收合時掛載、每個缺列區段一列一個篩選按鈕；圖框 aria-hidden、框內沒有停留點）；G21 chart-data-issues 只在有問題時、在 data-issues 內（table 模式、不在 aria-hidden 內、每格一個按鈕）；主層獨立圖區塊：沒有問題 1、有問題 2", async () => {
       const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
@@ -1400,8 +1401,11 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const segments: Record<string, string[]> = {
         "data-missing-ad-day": ["ads-MARKETPLACE-2026-08-02"],
         "data-synthetic": ["costs-LIVE-2026-09-14", "ads-LIVE-2026-08-30", "ads-LIVE-2026-09-22"],
+        // D-V4-51（b）＝B：同一檔不同通路重疊的缺列合成一框（通路段 all）；資料表仍是每個通路的區段一列（tableRows）。
+        "data-overlap": ["costs-all-2026-09-14", "ads-all-2026-08-30", "ads-LIVE-2026-09-22", "ads-SOCIAL-2026-09-23"],
       };
-      const cells: Record<string, string[]> = { "data-missing-ad-day": ["ads-MISSING_AD_DAY"], "data-synthetic": ["costs-MISSING_CHANNEL_COST_DAY", "ads-MISSING_AD_DAY"], "data-partial": ["sales-MISSING_COGS"], "data-with-issues": ["sales-MISSING_COGS"] };
+      const tableRows: Record<string, number> = { "data-overlap": 6 };
+      const cells: Record<string, string[]> = { "data-missing-ad-day": ["ads-MISSING_AD_DAY"], "data-synthetic": ["costs-MISSING_CHANNEL_COST_DAY", "ads-MISSING_AD_DAY"], "data-overlap": ["costs-MISSING_CHANNEL_COST_DAY", "ads-MISSING_AD_DAY"], "data-partial": ["sales-MISSING_COGS"], "data-with-issues": ["sales-MISSING_COGS"] };
       expect(data.map(({ name }) => name)).toEqual(expect.arrayContaining(Object.keys(segments)));
       for (const { name, html, state } of data) {
         const issues = state!.active.dataset.issues.length;
@@ -1415,8 +1419,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         const table = element(details, 'data-testid="chart-data-coverage-table"')!;
         const want = segments[name] ?? [];
         expect([...g20.matchAll(/data-testid="chart-data-coverage-seg-([^"]+)"/g)].map(match => match[1]), `${name}：缺列框`).toEqual(want);
-        expect(occurrences(table, '<th scope="row">'), `${name}：資料表列數＝缺列區段數`).toBe(want.length);
-        expect(occurrences(table, 'class="ui-btn ui-btn-text coverage-filter"'), `${name}：每列一個篩選按鈕`).toBe(want.length);
+        expect(occurrences(table, '<th scope="row">'), `${name}：資料表列數＝缺列區段數`).toBe(tableRows[name] ?? want.length);
+        expect(occurrences(table, 'class="ui-btn ui-btn-text coverage-filter"'), `${name}：每列一個篩選按鈕`).toBe(tableRows[name] ?? want.length);
         const frameTag = openTag(g20, 'class="chart-frame sm"')!;
         expect(frameTag, name).toContain('aria-hidden="true"');
         expect(frameTag, name).toContain('data-state="ready"');

@@ -17,3 +17,26 @@ export function synthetic4ChannelInput(): DatasetInput {
     files: Object.fromEntries(SYNTHETIC_4_CHANNEL_FILES.map(file => [file, readFileSync(resolve(SYNTHETIC_4_CHANNEL_DIR, file), "utf8")])),
   };
 }
+
+/**
+ * V4-7a（D-V4-51（b）＝B）：4 通路合成資料在記憶體裡再拿掉幾列，讓同一檔不同通路的缺列日期重疊（不改、不新增任何資料檔；manifest 不變）。
+ * - 通路費用：再缺 DTC 9/16–9/17（落在 LIVE 9/14–9/19 之內）→ 圖上合成一框 9/14–9/19（chart-data-coverage-seg-costs-all-2026-09-14）。
+ * - 廣告：再缺 SOCIAL 9/01–9/04（與 LIVE 8/30–9/02 重疊）→ 合成一框 8/30–9/04（chart-data-coverage-seg-ads-all-2026-08-30）；
+ *   再缺 SOCIAL 9/23（與 LIVE 9/22 只相鄰、沒有相同的日子）→ 不合，各自一框（ads-LIVE-2026-09-22、ads-SOCIAL-2026-09-23）。
+ * 缺列區段（資料表的列）共 6 段：通路費用 DTC 9/16–9/17、LIVE 9/14–9/19；廣告 LIVE 8/30–9/02、LIVE 9/22、SOCIAL 9/01–9/04、SOCIAL 9/23。
+ */
+export const SYNTHETIC_OVERLAP_DROPS: Readonly<Partial<Record<FileName, readonly string[]>>> = {
+  "channel_costs_daily.csv": ["2026-09-16,DTC,", "2026-09-17,DTC,"],
+  "ad_spend_daily.csv": ["2026-09-01,SOCIAL,", "2026-09-02,SOCIAL,", "2026-09-03,SOCIAL,", "2026-09-04,SOCIAL,", "2026-09-23,SOCIAL,"],
+};
+export function synthetic4ChannelOverlapInput(): DatasetInput {
+  const input = synthetic4ChannelInput();
+  const files = { ...input.files };
+  for (const [file, prefixes] of Object.entries(SYNTHETIC_OVERLAP_DROPS) as [FileName, readonly string[]][]) {
+    const lines = (files[file] as string).split("\n");
+    const kept = lines.filter(line => !prefixes.some(prefix => line.startsWith(prefix)));
+    if (lines.length - kept.length !== prefixes.length) throw new Error(`${file}: expected to drop ${prefixes.length} rows, dropped ${lines.length - kept.length}`);
+    files[file] = kept.join("\n");
+  }
+  return { ...input, files };
+}

@@ -2,7 +2,7 @@
 // 資料來源頁的 G20 涵蓋時間軸（狀態一行之下）、G21 問題分布表（data-issues 內、問題表之上）與問題表篩選（DataWorkspace 持有 issueFilter）。
 // 四個視窗都跑（1440×1000、1280×900、768×1024、390×844）：fixtures/errors/missing_ad_day 與 4 通路合成資料經四步精靈匯入，示範資料由「載入示範資料」。
 // 字串一律由 labels 組出、定位用 testid（PRD §4.7）；期待的標題、列數與片語在 Node 端以同一組 application 函式算（不寫死）。
-// 本批 D-V4-51 待拍板（G20 銷售無列是否延伸軸、同檔多通路重疊的缺列框），回覆前照目前實作；這裡的資料都沒有同一天多通路缺列。
+// D-V4-51＝（a）A、（b）B（2026-10-12）：同檔多通路重疊的缺列合成一框（通路段 all）由 tests/charts-data-coverage-overlap-v4.test.tsx 與 page:data-overlap 覆蓋；這裡的資料都沒有重疊，框與點擊條件不變。
 import { resolve } from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";

@@ -511,9 +511,11 @@
 
 資料來源頁（PRD §5.7）：`DataWorkspace`（`src/components/workspace-panels.tsx:57`）持有新的 `issueFilter` 狀態（檔案、通路、原因碼），傳給 G20、G21 的點擊與 `IssueList`（`src/components/issue-list.tsx:113`）新增的選填 `filter`、`onClearFilter`。篩選只過濾畫面列，「下載問題清單 CSV」仍是全部問題；篩選中在表上方顯示 `role="status"` 的篩選片語與「清除」鈕。這是 V4-7a 的明確工作項（PRD §6.4）。
 
-> **V4-7a 整合補記（代理 C，2026-10-12）**：（1）篩選型別只有一個：`src/application/issue-filter.ts` 的 `IssueFilter`（`file` 是標準檔名）；G20 的 `CoverageIssueFilter`＝`Required<IssueFilter>`（三欄都給），G21 的格給 `{ file, reason }`，`DataWorkspace` 直接收兩者、不另轉換。（2）`DataWorkspace` 的 state 是 `{ filter, request, issues }`：每按一次（G20 缺列框、G20 資料表的「篩選問題表」、G21 的格）`request` 加 1，`IssueList` 新增選填 `filterRequest` 傳給表格，鍵或 `request` 變了就把焦點移到篩選片語（再按同一組條件也移，審查 B-2）；`issues` 記套用時的問題清單，換了資料集不沿用。（3）捲動與 app 其他捲動相同：`scrollIntoView({ block: "start" })`、不用平滑捲動（不受 `prefers-reduced-motion` 影響），停在 `main section` 的 `scroll-margin-top` 之下。（4）C30 的 390 版面（60 欄、月份刻度減半）只在框內寬 < 400（390＝324）；768（450）改 64 欄、刻度不減半，≥ 720（1280＝962、1440＝1122）72 欄（審查 A-4，PRD §5.7、H5 設計稿）。（5）G20 在 data-issues 之上，資料表 summary 是多出的 1 個 Tab 停留點：資料來源頁「問題表或範圍列表」里程碑 1440 由 10 變 11、390 由 4 變 5（「不晚於 V4-0a」的判讀列為 D-V4-52，待使用者回覆）。
+> **V4-7a 整合補記（代理 C，2026-10-12）**：（1）篩選型別只有一個：`src/application/issue-filter.ts` 的 `IssueFilter`（`file` 是標準檔名）；G20 的 `CoverageIssueFilter`＝`IssueFilter & TimelineSegmentRef`（一段一框與資料表按鈕三欄都給；D-V4-51（b）＝B 起，同一檔不同通路重疊而合成的框只給 `{ file, reason }`，見（10）），G21 的格給 `{ file, reason }`，`DataWorkspace` 直接收兩者、不另轉換。（2）`DataWorkspace` 的 state 是 `{ filter, request, issues }`：每按一次（G20 缺列框、G20 資料表的「篩選問題表」、G21 的格）`request` 加 1，`IssueList` 新增選填 `filterRequest` 傳給表格，鍵或 `request` 變了就把焦點移到篩選片語（再按同一組條件也移，審查 B-2）；`issues` 記套用時的問題清單，換了資料集不沿用。（3）捲動與 app 其他捲動相同：`scrollIntoView({ block: "start" })`、不用平滑捲動（不受 `prefers-reduced-motion` 影響），停在 `main section` 的 `scroll-margin-top` 之下。（4）C30 的 390 版面（60 欄、月份刻度減半）只在框內寬 < 400（390＝324）；768（450）改 64 欄、刻度不減半，≥ 720（1280＝962、1440＝1122）72 欄（審查 A-4，PRD §5.7、H5 設計稿）。（5）G20 在 data-issues 之上，資料表 summary 是多出的 1 個 Tab 停留點：資料來源頁「問題表或範圍列表」里程碑 1440 由 10 變 11、390 由 4 變 5（D-V4-52＝A，2026-10-12：以 V4-7a 實測 11／5 為這個里程碑的新基準，見（11））。
 >
-> **V4-7a 審查修正補記（2026-10-12）**：（6）R1-F4：G21 `title.most` 改為「{檔案}：{原因}最多，{n} 列」。PRD §4.2 G21、v4 GLOSSARY #26 原寫「{檔案}的{原因}最多」，遇 8 字的原因名（「物流與包材費空白」「其他變動費用空白」）第一個子句 15 字，超過 §4.0 的 14 字；改用全形冒號分成兩個子句，原因名維持與問題表「問題」欄同一句。`tests/charts-data-issues-v4.test.tsx` 對套用後可能出現的 13 種列級原因 × 三份檔逐一檢查。R1-F5：`title.rangeOnly` 改為「只有範圍級問題，{n} 項」（n＝1 時不寫「都」）。R1-F6：`coverage.noRowsNote` 改寫「無列的日子」，n > 1 時不寫「那天」。（7）R1-F1：涵蓋起日到圖的起日之間的銷售無列（合成資料的 8/20）由 `coverageTimeline` 另給 `noRowsBeforeAxis`，寫在 G20 資料表後的說明（`coverage.noRowsBeforeAxisNote`）；D-V4-51（a）回覆前照這個做法。（8）R2-A11Y-1：≤ 767px 清單式的 0 格改為只在畫面上藏起來（與表頭同一組規則），不用 `display:none`，後面的格不會對到前一欄的欄頭。R2-A11Y-2：篩選片語每次套用都以新的 key 重新掛載，`role="status"` 與焦點移動並存時只讀一次。（9）新增待拍板：D-V4-52（鍵盤里程碑多 1 步）、D-V4-53（軸往前延伸過長）、D-V4-54（G21 在問題表工具列之上，或照 PRD §5.7 字面放在工具列之下；目前照本卡與 H5 設計稿放在工具列之上）。
+> **V4-7a 審查修正補記（2026-10-12）**：（6）R1-F4：G21 `title.most` 改為「{檔案}：{原因}最多，{n} 列」。PRD §4.2 G21、v4 GLOSSARY #26 原寫「{檔案}的{原因}最多」，遇 8 字的原因名（「物流與包材費空白」「其他變動費用空白」）第一個子句 15 字，超過 §4.0 的 14 字；改用全形冒號分成兩個子句，原因名維持與問題表「問題」欄同一句。`tests/charts-data-issues-v4.test.tsx` 對套用後可能出現的 13 種列級原因 × 三份檔逐一檢查。R1-F5：`title.rangeOnly` 改為「只有範圍級問題，{n} 項」（n＝1 時不寫「都」）。R1-F6：`coverage.noRowsNote` 改寫「無列的日子」，n > 1 時不寫「那天」。（7）R1-F1：涵蓋起日到圖的起日之間的銷售無列（合成資料的 8/20）由 `coverageTimeline` 另給 `noRowsBeforeAxis`，寫在 G20 資料表後的說明（`coverage.noRowsBeforeAxisNote`）；D-V4-51（a）＝A 定案（2026-10-12）。（8）R2-A11Y-1：≤ 767px 清單式的 0 格改為只在畫面上藏起來（與表頭同一組規則），不用 `display:none`，後面的格不會對到前一欄的欄頭。R2-A11Y-2：篩選片語每次套用都以新的 key 重新掛載，`role="status"` 與焦點移動並存時只讀一次。（9）新增待拍板：D-V4-52（鍵盤里程碑多 1 步）、D-V4-53（軸往前延伸過長）、D-V4-54（G21 在問題表工具列之上，或照 PRD §5.7 字面放在工具列之下；目前照本卡與 H5 設計稿放在工具列之上）。2026-10-12 全部拍板，見下一則補記。
+
+> **V4-7a 拍板補記（2026-10-12，使用者回覆「都依你的建議」）**：（10）D-V4-51＝（a）A、（b）B。（a）銷售無列在上期起日之前時不延伸軸，只寫在資料表後的說明（`noRowsBeforeAxisNote`，維持（7））。（b）同一檔不同通路的缺列日期重疊時，圖上合成一框：`coverageBoxes`（`src/components/data/coverage-chart.tsx`）依重疊關係串連（A 與 B、B 與 C 重疊時三段一框），起訖＝聯集；只相鄰、沒有相同日子的不合。合成框的 testid 通路段寫 `all`（`chart-data-coverage-seg-{file}-all-{start}`），點下去 `issueFilter = { file, reason }`（不帶 channel：問題表列出該檔該原因的全部通路，篩選片語只寫檔案與原因）。不重疊的單一通路區段 testid 與點擊條件不變（`chart-data-coverage-seg-ads-MARKETPLACE-2026-08-02` 照舊）。資料表照列每個通路的區段，每列的「篩選問題表」仍帶通路。標題（最長區段）不變。C30 的 `TimelineSegmentRef.channel` 改選填，沒有通路時點擊回傳的物件不帶 channel 鍵。單元測試 `tests/charts-data-coverage-overlap-v4.test.tsx`、頁面狀態 `data-overlap`（記憶體裡由 4 通路合成資料拿掉幾列，不新增資料檔）。（11）D-V4-52＝A：資料來源頁的第一個主要結果是 G20 的資料表 summary（不晚於 V4-0a 的 10／4）；「問題表或範圍列表」以 V4-7a 實測（1440 第 11 步、390 第 5 步）為新基準，之後每批不晚於它（`tests/e2e/keyboard-walk.spec.ts` 的 `V4_7A_DATA_ISSUES_TABS`）；V4-8 補齊各頁里程碑時沿用。（12）D-V4-53＝B：去年同期那一行出現時，落在去年同期期間內的缺列日子不延伸軸；期間外、比上期起日早的照 D-V4-40＝A 延伸。一段缺列只有部分在去年同期內時只看期間外的日子：起日在去年同期之前的照起日延伸；起日在期間內、訖日在期間後的延伸到去年同期訖日的下一天，這段在圖上從軸起日畫起。起日在軸起日之前的區段（`coverageTimeline` 的 `yoyBeforeAxis`）資料表照列、篩選按鈕照常，資料表後加 `coverage.yoyBeforeAxisNote`。同一批缺列不在圖上算兩次：軌右端「缺 n 天」只算軸上的日子；標題的最長區段只從至少部分在軸上的區段取，全部都在軸起日之前時才取全部區段。版本維持 `coverage-timeline-v1`（v4 尚未發行，這個版本只標在函式輸出，不進備份、匯出與抽屜；每段的 golden 不變）。（13）D-V4-54＝A：G21 在區塊標題之下、問題表工具列之上（PRD §5.7 第 3 列已改寫，與本卡、H5 設計稿一致）。示範資料（畫面 09）四項都不受影響。
 
 ### G20 涵蓋時間軸（新增；P1；V4-7a）
 
@@ -525,10 +527,10 @@
 | 技術 | C30 Timeline inline SVG：軌 ≤ 4（銷售、通路費用、廣告、檔期），每軌 24px；X 日期（涵蓋範圍），月份刻度；有列 `chartColors.total`；缺列虛線框 `chartColors.missing`；本期與上期區帶 `chartColors.band`，區帶內直接標「上期」「本期」；去年同期（`snapshot.yoy` ready 時）畫成時間軸上方 1px `chartColors.yoy` 細線並直接標「去年同期」，不用虛線框（`--chart-yoy` 與 `--chart-missing` 都是 gray-400，同形同色會分不出缺列與去年同期）；檔期 `chartColors.axis` 細線；銷售「無列」只標「無列」，不等於零銷售；`timelineGeometry` 純函式；`fallback` 時不畫區段，改寫文字 |
 | ChartFrame | `id="data-coverage"`、`page="data"`（testId `chart-data-coverage`）、`height="sm"`、`legend`（有列 line、缺列 dash；期間與去年同期改為直接標字）、`dataTable`（C33）、`state`（沒有資料集時 `empty`） |
 | 標題與 labels | `data.chartsV4.coverage.title.{missing, missingOneDay, none}`：「{檔案}缺 {start} 到 {end} 共 {n} 天（{通路}）」（取最長的缺列區段）；最長區段只有 1 天時「{檔案}缺 {date} 1 天（{通路}）」（`missing_ad_day` 就是這種，避免「8/2 到 8/2 共 1 天」）；沒有缺列「三份檔案涵蓋 {start} 到 {end}，沒有缺列」；另 `tracks.{sales, costs, ads, events}`（區帶與細線的「上期」「本期」「去年同期」沿用既有字串，例如 `labels.shell.periods.previous`、`current`，不另立）、`noRows`、`gapDays`、`rangeFallback`、`filterButton`、`columns.*` |
-| testid | `chart-data-coverage`、`chart-data-coverage-seg-{file}-{channel}-{start}`（file＝sales、costs、ads；start＝ISO）、`chart-data-coverage-table` |
-| 資料表 | 檔案、通路、缺列起日、缺列訖日、天數、篩選按鈕（每列一個 `button`，名稱「篩選問題表」帶檔案與通路） |
+| testid | `chart-data-coverage`、`chart-data-coverage-seg-{file}-{channel}-{start}`（file＝sales、costs、ads；start＝ISO；同一檔不同通路重疊而合成的框 channel 段寫 `all`、start＝合成後的起日，D-V4-51（b）＝B）、`chart-data-coverage-table` |
+| 資料表 | 檔案、通路、缺列起日、缺列訖日、天數、篩選按鈕（每列一個 `button`，名稱「篩選問題表」帶檔案與通路）；每個通路的區段各一列（圖上合成的框在表裡仍分列）；軸起日之前的區段（D-V4-53＝B，去年同期內）照列，表後加 `yoyBeforeAxisNote` |
 | 鍵盤 | 資料表 summary、每列篩選按鈕；按下後焦點移到問題表上方的篩選片語（`role="status"`） |
-| 抽屜 | 不開抽屜（問題不是金額）；點缺列段或篩選按鈕：`issueFilter = { file, channel, reason }`，捲到 `data-issues` |
+| 抽屜 | 不開抽屜（問題不是金額）；點缺列段或篩選按鈕：`issueFilter = { file, channel, reason }`，捲到 `data-issues`；點合成的框（D-V4-51（b）＝B）：`issueFilter = { file, reason }`（全部通路） |
 | 390 | 軌維持上下排列、月份刻度減半；高度不變 |
 | 投影 | 不適用 |
 | 匯出 | 不印、不放；Excel 不另加（問題 CSV 既有） |
@@ -539,7 +541,7 @@
 
 | 項目 | 內容 |
 |---|---|
-| 位置與批次 | `section.panel.data-section[data-testid="data-issues"]`（`workspace-panels.tsx:87-90`）內，`ui-section-head` 之後、`IssueList` 之前；V4-7a。列級與範圍級問題都是 0 筆時不渲染（示範資料就是這種），`data-issues` 既有的「沒有問題」狀態不變 |
+| 位置與批次 | `section.panel.data-section[data-testid="data-issues"]`（`workspace-panels.tsx:87-90`）內，`ui-section-head` 之後、`IssueList` 之前（區塊標題之下、問題表工具列之上；D-V4-54＝A）；V4-7a。列級與範圍級問題都是 0 筆時不渲染（示範資料就是這種），`data-issues` 既有的「沒有問題」狀態不變 |
 | 資料 | `issueDistribution(dataset.issues)`（新增 `src/application/chart-issues.ts`）：列級問題（有 `line` 或 `date`）依 `file × reason_code` 計數；範圍級問題另成一列；欄只列出現過的原因碼（名稱取既有原因碼標籤，清單見 `src/application/import.ts:280-289` 的 `IMPORT_ISSUE_REASON_CODES`）；每檔標出最多的原因 |
 | 等級與版本 | B／`ISSUE_DISTRIBUTION_VERSION = "issue-distribution-v1"`；golden：全部格加總＝列級問題筆數 |
 | 技術 | C28 HeatTable matrix：原生 `<table>`，列＝檔案、欄＝原因；有問題的格 `--chart-heat-1`，該檔最多的原因格 `--chart-heat-2` 加 2px `--chart-unfavorable` 框線；0 格留白不上色；格內是計數按鈕（可及名稱帶檔案、原因、列數） |
@@ -547,7 +549,7 @@
 | 標題與 labels | `data.chartsV4.issues.{title.{most, single}, subtitle, rangeRow, caption, cellAria}`：`title.most`「{檔案}：{原因}最多，{n} 列」（V4-7a 審查起；原規劃「{檔案}的{原因}最多」，見 §7 補記（6））；只有一格（一個檔、一種原因）時 `title.single`「{檔案}有 {n} 列{原因}」（`missing_ad_day` 只有廣告檔 × MISSING_AD_DAY 一格，不寫「最多」）；新 key 登記 copy-scan |
 | testid | `chart-data-issues`、`chart-data-issues-cell-{file}-{reason}` |
 | 資料表 | 表本身 |
-| 鍵盤 | 每個有問題的格一個按鈕（格數＝出現過的檔案 × 原因，通常個位數；`.table-scroll` 內有按鈕，不另加 `tabindex`）；鍵盤里程碑「問題表或範圍列表」（`tests/e2e/keyboard-walk.spec.ts:29`）不變 |
+| 鍵盤 | 每個有問題的格一個按鈕（格數＝出現過的檔案 × 原因，通常個位數；`.table-scroll` 內有按鈕，不另加 `tabindex`）；G21 不改鍵盤里程碑「問題表或範圍列表」（`tests/e2e/keyboard-walk.spec.ts`）；G20 在 `data-issues` 之上，它的資料表 summary 讓這個里程碑多 1 步，D-V4-52＝A（2026-10-12）以 V4-7a 實測（1440 第 11 步、390 第 5 步）為新基準、之後每批不晚於它，「涵蓋時間軸資料表 summary」不晚於 V4-0a（10／4） |
 | 抽屜 | 不開抽屜；點格設定 `issueFilter = { file, reason }` |
 | 390 | 改清單式（沿用 C3 的 `data-label`） |
 | 投影 | 不適用 |
