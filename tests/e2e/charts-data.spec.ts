@@ -264,4 +264,33 @@ test.describe("V4-7a 資料來源 G20、G21 與問題表篩選", () => {
     const width = page.viewportSize()!.width;
     expect(await page.evaluate(() => document.scrollingElement!.scrollWidth)).toBeLessThanOrEqual(width);
   });
+
+  test("審查 R2-A11Y-1、R2-A11Y-2：G21 每一格都在無障礙樹（≤ 767px 清單式的 0 格只在畫面上藏起來，後面的格不會對到前一欄的欄頭）；換篩選時篩選片語是新節點、取得焦點", async ({ page }) => {
+    const expected = expectations(synthetic4ChannelInput());
+    await page.goto("/");
+    await importSynthetic(page);
+    await navigateTo(page, "data");
+    await expect(g21(page)).toBeVisible();
+    // 合成資料：欄＝缺費用列、缺廣告列；廣告投放那一列的第一格（缺費用列）是 0 格。≤ 767px 整列都是 0 的檔（銷售）照設計整列不列（tr[data-empty]），
+    // 其餘列的每一格（含 0 格）都要在無障礙樹裡；≥ 768px 每一列、每一格都在。
+    const narrow = page.viewportSize()!.width < 768;
+    const rows = narrow ? "tr:not([data-empty])" : "tr";
+    const cells = g21(page).locator(`${rows} > td`);
+    const blank = g21(page).locator(`${rows} > td[data-tier='0']`);
+    expect(await blank.count()).toBeGreaterThan(0);
+    await expect(g21(page).getByRole("cell")).toHaveCount(await cells.count());
+    const blankStyles = await blank.evaluateAll(nodes => nodes.map(node => ({ display: getComputedStyle(node).display, width: node.getBoundingClientRect().width })));
+    for (const style of blankStyles) expect(style.display).not.toBe("none");
+    if (narrow) for (const style of blankStyles) expect(style.width, "≤ 767px：0 格只在畫面上藏起來").toBeLessThanOrEqual(1);
+    // 篩選片語：每次套用都是新節點（role=status 不因文字改變再排一次播報），焦點移過去。
+    await g20(page).scrollIntoViewIfNeeded();
+    await page.getByTestId("chart-data-coverage-seg-costs-LIVE-2026-09-14").click();
+    const segment: IssueFilter = { file: "channel_costs_daily.csv", channel: "LIVE", reason: "MISSING_CHANNEL_COST_DAY" };
+    await expectPhrase(page, segment, matching(expected.issues, segment).length);
+    await phrase(page).evaluate(node => { (node as HTMLElement & { probe?: boolean }).probe = true; });
+    await cellButton(page, "ads", "MISSING_AD_DAY").click();
+    const cellFilter: IssueFilter = { file: "ad_spend_daily.csv", reason: "MISSING_AD_DAY" };
+    await expectPhrase(page, cellFilter, matching(expected.issues, cellFilter).length);
+    expect(await phrase(page).evaluate(node => (node as HTMLElement & { probe?: boolean }).probe ?? false), "換篩選後片語是新節點").toBe(false);
+  });
 });

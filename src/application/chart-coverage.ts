@@ -12,6 +12,7 @@ import type { YoySummary } from "./workspace";
 // - X 軸（D-V4-40＝A）：「上期起日到涵蓋訖日」，最早的缺列區段比上期起日早時再往前延伸到它（不早於涵蓋起日）；
 //   去年同期不畫在這條軸上，改由 yoy 給圖上方一行的期間與天數（呼叫端組字）。
 // - 銷售軌：軸上每一天有沒有任何銷售列（dataset.sales[].date）。沒有列的日子是「無列」（v4 GLOSSARY #5：不當作零銷售，也不是缺列）。
+//   涵蓋起日到軸起日之間（軸從上期起日開始時）的無列日子不在軸上，另給 noRowsBeforeAxis（呼叫端寫在資料表後的說明；審查 R1-F1、D-V4-51（a））。
 //   通路費用與廣告軌的「有列」＝那一天該檔沒有任何通路缺列（與 H5 設計稿 data.html 相同）。
 // - 檔期軌：EventSet.rows 中與軸重疊的檔期（只畫細線與名稱，不參與任何金額）。
 // 純函式、可序列化（日期一律 ISO 字串、天數是整數）；通路順序依 manifest.channels。
@@ -80,6 +81,11 @@ export interface CoverageTimeline {
   rangeIssues: CoverageRangeIssue[];
   /** 銷售、通路費用、廣告三軌（固定這個順序）。 */
   tracks: CoverageTrack[];
+  /**
+   * 涵蓋起日到軸起日前一天之間，銷售無列的日子（合併成區段）：D-V4-40＝A 的軸從上期起日開始，這些日子不畫在軸上，
+   * 呼叫端寫在資料表後的說明（審查 R1-F1；D-V4-51（a）回覆前照目前實作）。軸起日＝涵蓋起日時是空陣列。
+   */
+  noRowsBeforeAxis: CoverageRange[];
   /** 全部缺列區段：依檔案、通路（manifest.channels 的順序）、起日排序。 */
   segments: CoverageSegment[];
   /** 最長的缺列區段（標題用）：天數最多；同長依檔案順序、起日、通路順序取前者。沒有缺列時為 null。 */
@@ -147,6 +153,8 @@ export function coverageTimeline(dataset: Dataset, events?: EventSet | null, yoy
 
   const salesDates = new Set(dataset.sales.map(row => row.date));
   const salesNoRows = mergeDates(axisDates.filter(date => !salesDates.has(date)));
+  // 軸外（涵蓋起日到軸起日前一天）的銷售無列：dateRange 含頭含尾，去掉最後一天（軸起日本身）。
+  const noRowsBeforeAxis = mergeDates(dateRange(coverage.start, axis.start).slice(0, -1).filter(date => !salesDates.has(date)));
   const tracks: CoverageTrack[] = COVERAGE_FILES.map(spec => {
     if (spec.key === "sales") {
       return { key: spec.key, file: spec.file, rows: mergeDates(axisDates.filter(date => salesDates.has(date))), missing: [], noRows: salesNoRows, missingDays: 0, noRowDays: salesNoRows.reduce((sum, range) => sum + range.days, 0) };
@@ -180,6 +188,6 @@ export function coverageTimeline(dataset: Dataset, events?: EventSet | null, yoy
     version: COVERAGE_TIMELINE_VERSION,
     coverage, dataAsOf: manifest.data_as_of, channels: [...manifest.channels],
     previous: { start: previous.start, end: previous.end }, current: { start: current.start, end: current.end },
-    axis, fallback, rangeIssues, tracks, segments, longest, events: eventRows, yoy: yoyRange,
+    axis, fallback, rangeIssues, tracks, noRowsBeforeAxis, segments, longest, events: eventRows, yoy: yoyRange,
   };
 }

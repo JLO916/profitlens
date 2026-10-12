@@ -96,9 +96,12 @@ export function coverageChartModel(timeline: CoverageTimeline | null, options: {
   ];
 
   const sales = timeline.tracks.find(item => item.key === "sales");
+  const beforeAxisDays = timeline.noRowsBeforeAxis.reduce((sum, range) => sum + range.days, 0);
   const notes = [
     ...(timeline.fallback ? [copy.rangeFallback] : timeline.segments.length === 0 ? [copy.tableNone] : []),
     ...(sales !== undefined && sales.noRowDays > 0 ? [fill(copy.noRowsNote, { file: fileTitle("sales"), n: formatCount(sales.noRowDays, "L2") })] : []),
+    // 審查 R1-F1：涵蓋起日到圖的起日之間的銷售無列（D-V4-40＝A 不在軸上）只寫在這裡，副標的涵蓋期間仍從涵蓋起日算。
+    ...(beforeAxisDays > 0 ? [fill(copy.noRowsBeforeAxisNote, { file: fileTitle("sales"), date: md(timeline.axis.start), n: formatCount(beforeAxisDays, "L2") })] : []),
   ];
   return { timeline, state: timeline.fallback ? "empty" : "ready", titleKind, title, subtitle, yoyLine, message: timeline.fallback ? copy.rangeFallback : undefined, bands, tracks, notes, alias };
 }

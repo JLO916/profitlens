@@ -159,6 +159,13 @@ describe("G20：合成資料、示範資料、golden", () => {
     const table = byTestId(html, "chart-data-coverage-table");
     expect(table).not.toContain(copy.tableNone);
     for (const segment of coverageTimeline(dataset).segments) expect(html).toContain(`data-testid="${coverageSegmentTestId(segment)}"`);
+    // 審查 R1-F1（D-V4-51（a）回覆前照目前實作）：涵蓋起日 8/20 的銷售無列在軸外，只寫在資料表後的說明（在收合的 <details> 內，不在主層）。
+    const beforeAxis = fill(copy.noRowsBeforeAxisNote, { file: files.sales, date: "8/21", n: "1" });
+    const details = element(chartOf(html), 'class="data-alternative"')!;
+    expect(details).toContain(`<p class="note">${beforeAxis}</p>`);
+    expect(html.split(beforeAxis)).toHaveLength(2);
+    expect(frameOf(html)).not.toContain(beforeAxis);
+    expect(html).not.toContain(fill(copy.noRowsNote, { file: files.sales, n: "1" }));
   });
 
   it("示範資料：標題「三份檔案涵蓋 6/1 到 8/23，沒有缺列」；通路用別名；資料表 0 列、表後說明 tableNone；圖上沒有缺列框", async () => {
@@ -168,6 +175,8 @@ describe("G20：合成資料、示範資料、golden", () => {
     expect(textOf(element(html, 'id="data-coverage-sub"')!)).toContain(channelsLabel(["DTC", "MARKETPLACE"], true));
     expect(rowsOf(html)).toEqual([]);
     expect(html).toContain(`<p class="note">${copy.tableNone}</p>`);
+    // 軸起日＝涵蓋起日（6/1）：沒有軸外的無列說明。
+    expect(html).not.toContain(copy.noRowsBeforeAxisNote.split("{date}")[1].split("{n}")[0]);
     expect(html).not.toContain(COVERAGE_SEG_TESTID_PREFIX);
     expect(checkChartMarkup(html, { page: "data" }).violations["CL-1"]).toEqual([]);
   });

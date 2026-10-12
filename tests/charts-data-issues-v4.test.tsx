@@ -3,6 +3,7 @@ import { createElement, isValidElement, type ReactElement, type ReactNode } from
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
+import { channelAliasTerms, l1ClauseLengths, L1_MAX_CJK } from "../scripts/lib/copy-scan.mjs";
 import { issueDistribution } from "@/application/chart-issues";
 import { chartHeights } from "@/application/chart-theme";
 import { issueFileTitle, issueReasonLabel } from "@/application/issue-filter";
@@ -136,7 +137,7 @@ describe("G21 問題分布表（IssuesChart）", () => {
     expect(section).not.toContain("heat-matrix-footer");
   });
 
-  it("4 通路合成資料：標題「通路費用的缺費用列最多，6 列」；欄＝缺費用列、缺廣告列；兩格都是各檔最多（data-tier=2）；格內數字加總＝列級問題筆數（11）", () => {
+  it("4 通路合成資料：標題「通路費用：缺費用列最多，6 列」；欄＝缺費用列、缺廣告列；兩格都是各檔最多（data-tier=2）；格內數字加總＝列級問題筆數（11）", () => {
     const issues = issuesOf(synthetic4ChannelInput());
     const model = issuesChartModel(issues)!;
     expect(model.title).toBe(fill(copy.title.most, { file: labels.importWizard.files.costs, reason: copy.reasons.MISSING_CHANNEL_COST_DAY, n: n(6) }));
@@ -199,6 +200,22 @@ describe("G21 問題分布表（IssuesChart）", () => {
       expect(result.mainSections).toEqual(["chart-data-issues"]);
       expect(result.chartTestIds.every(id => id === "chart-data-issues" || id === ISSUES_TABLE_TESTID || id.startsWith("chart-data-issues-cell-"))).toBe(true);
     }
+  });
+
+  it("審查 R1-F4、R1-F5：套用後的資料集可能出現的列級原因（partial、warning；src/domain/validation.ts 的金額與件數空白、缺列、已略過的欄位）× 三份檔，標題每個子句 ≤ 14 字；只有範圍級問題時 n＝1 也通順", () => {
+    // 金額欄空白：MISSING_{欄位}（cogs_net 是 MISSING_COGS）；件數空白；兩種缺列；已確認略過的未定義欄位（warning，帶標題列行號）。blocking 的原因不會留在套用後的資料集。
+    const reasons = ["MISSING_GROSS_SALES", "MISSING_DISCOUNTS", "MISSING_REFUNDS", "MISSING_COGS", "MISSING_PLATFORM_FEES", "MISSING_PAYMENT_FEES", "MISSING_FULFILLMENT_COSTS", "MISSING_OTHER_VARIABLE_COSTS", "MISSING_AD_SPEND", "MISSING_UNITS_SOLD", "MISSING_CHANNEL_COST_DAY", "MISSING_AD_DAY", "UNKNOWN_COLUMN_IGNORED"];
+    const aliasTerms = channelAliasTerms(labels);
+    const titles = reasons.flatMap(code => {
+      const reason = issueReasonLabel(code);
+      expect(reason, code).not.toBe(code);
+      return Object.values(labels.importWizard.files).flatMap(file => [fill(copy.title.most, { file, reason, n: n(1234) }), fill(copy.title.single, { file, reason, n: n(1) })]);
+    });
+    titles.push(fill(copy.title.rangeOnly, { n: n(1) }), fill(copy.title.rangeOnly, { n: n(12) }));
+    for (const title of titles) expect(l1ClauseLengths(title, aliasTerms).every(length => length <= L1_MAX_CJK), `${title}：${l1ClauseLengths(title, aliasTerms).join(",")}`).toBe(true);
+    // 8 字的原因名（物流與包材費空白、其他變動費用空白）是最長的：「{file}：{reason}最多」第二個子句 10 字。
+    expect(Math.max(...reasons.map(code => l1ClauseLengths(issueReasonLabel(code))[0]))).toBe(8);
+    expect(fill(copy.title.rangeOnly, { n: n(1) })).not.toContain("都");
   });
 
   it("標題、欄名與可及名稱只用 labels：檔案角色名沿用 importWizard.files，原因名經 issueReasonLabel", () => {

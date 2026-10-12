@@ -81,6 +81,9 @@ describe("coverageTimeline：缺列區段（缺列天數＝缺列問題筆數）
     expect(timeline.tracks.map(track => [track.key, track.missingDays])).toEqual([["sales", 0], ["costs", 6], ["ads", 5]]);
     // D-V4-40＝A：軸＝上期起日 8/21 到涵蓋訖日 9/23（34 天）；涵蓋起日 8/20 在軸外。
     expect(timeline.axis).toEqual({ start: "2026-08-21", end: "2026-09-23", days: 34 });
+    // 審查 R1-F1：涵蓋起日 8/20 銷售沒有任何列（README §5），在軸外，另給 noRowsBeforeAxis（呼叫端寫在資料表後的說明）。
+    expect(timeline.noRowsBeforeAxis).toEqual([{ start: "2026-08-20", end: "2026-08-20", days: 1 }]);
+    expect(dataset.sales.some(row => row.date === "2026-08-20")).toBe(false);
     expect(timeline.previous).toEqual({ start: "2026-08-21", end: "2026-09-06" });
     expect(timeline.current).toEqual({ start: "2026-09-07", end: "2026-09-23" });
     const [sales, costs, ads] = timeline.tracks;
@@ -103,6 +106,8 @@ describe("coverageTimeline：缺列區段（缺列天數＝缺列問題筆數）
       expect(timeline.longest, name).toBeNull();
       expect(timeline.fallback, name).toBe(false);
       expect(timeline.axis, name).toEqual(axis);
+      // 軸起日＝涵蓋起日：沒有軸外的日子。
+      expect(timeline.noRowsBeforeAxis, name).toEqual([]);
       for (const track of timeline.tracks) {
         expect(track.rows, `${name} ${track.key}`).toEqual([axis]);
         expect(track.noRows).toEqual([]);
@@ -204,6 +209,10 @@ describe("coverageTimeline：範圍級缺列退回文字、無列、軸的延伸
     expect(later.previous).toEqual({ start: "2026-09-01", end: "2026-09-12" });
     const earlier = coverageTimeline(dataset, null, null, { previous: { start: "2026-08-10", end: "2026-08-20" }, current: { start: "2026-09-13", end: "2026-09-23" } });
     expect(earlier.axis.start).toBe("2026-08-20");
+    // 軸外的銷售無列（審查 R1-F1）：軸從 8/30 起時，8/20 無列（其餘 8/21–8/29 都有列）；軸退到涵蓋起日 8/20 時 8/20 在軸上（銷售軌的無列），軸外沒有日子。
+    expect(later.noRowsBeforeAxis).toEqual([{ start: "2026-08-20", end: "2026-08-20", days: 1 }]);
+    expect(earlier.noRowsBeforeAxis).toEqual([]);
+    expect(earlier.tracks[0].noRows).toEqual([{ start: "2026-08-20", end: "2026-08-20", days: 1 }]);
     // 軸外的日子不進有列區段：通路費用軌從軸起日開始。
     expect(later.tracks[1].rows[0].start).toBe("2026-08-30");
   });

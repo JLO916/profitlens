@@ -183,6 +183,21 @@ describe("V4-7a 問題表篩選：再按同一個缺列段或格（filterRequest
     tree = renderTable({ issues, filter: segment, onClearFilter, filterRequest: 1 });
     expect(refOf(byTestId(tree, "data-issues-filter")).focus, "清除後再套用").toHaveBeenCalledTimes(3);
   });
+
+  it("審查 R2-A11Y-2：每次套用（換了篩選，或同一組條件再按）片語都換一個 key，重新掛載成新節點（role=\"status\" 不因文字改變再排一次播報，只在焦點移過去時讀一次）；request 不變的重新渲染保留同一個節點", () => {
+    const keyOf = (tree: ReactNode) => byTestId(tree, "data-issues-filter").key;
+    const first = keyOf(renderTable({ issues, filter: segment, filterRequest: 1 }));
+    expect(first).not.toBeNull();
+    expect(keyOf(renderTable({ issues, filter: { ...segment }, filterRequest: 1 })), "request 不變").toBe(first);
+    const again = keyOf(renderTable({ issues, filter: { ...segment }, filterRequest: 2 }));
+    expect(again, "同一組條件再按").not.toBe(first);
+    const other = keyOf(renderTable({ issues, filter: { file: segment.file, reason: segment.reason }, filterRequest: 3 }));
+    expect(new Set([first, again, other]).size, "換了篩選").toBe(3);
+    // 片語本身仍是 role="status"、tabIndex -1（CHART_CATALOG §7、G20「鍵盤」）。
+    const phrase = byTestId(renderTable({ issues, filter: segment, filterRequest: 3 }), "data-issues-filter");
+    expect(phrase.props.role).toBe("status");
+    expect(phrase.props.tabIndex).toBe(-1);
+  });
 });
 
 // ── V4-7a 整合（代理 C）：DataWorkspace 持有問題表的篩選（CHART_CATALOG §7 開頭、G20、G21「抽屜」「鍵盤」）。

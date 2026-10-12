@@ -18,7 +18,7 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V4-3b：健檢頁另記「經過 G11 熱表」的停留點數與 Tab 數（PASS_REGIONS），斷言經過熱表的 Tab 數 ≤ 3。
  * V4-4：商品頁加「第一張圖的資料表 summary」里程碑（在「最差商品」之後），「最差商品」的 Tab 數不晚於 V4-0a。
  * V4-5：試算頁三個里程碑（基準、範本、「試算」按鈕）的 Tab 數不晚於 V4-0a（G15 資料表 summary 在方案欄之後，G16 在收合的 <details> 內）。
- * V4-7a：資料來源頁加「涵蓋時間軸資料表 summary」里程碑（G20 在 data-issues 之上），不晚於 V4-0a；「問題表或範圍列表」只晚 1 步（見 V4_0A_DATA_TABS）。
+ * V4-7a：資料來源頁加「涵蓋時間軸資料表 summary」里程碑（G20 在 data-issues 之上），不晚於 V4-0a；「問題表或範圍列表」只晚 1 步（見 V4_0A_DATA_TABS；D-V4-52 待拍板）。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -59,7 +59,8 @@ const V4_0A_SCENARIO_TABS: Record<string, Record<string, number>> = {
  * V4-7a（06_BATCHES V4-7a；CHART_CATALOG G21「鍵盤」）：資料來源頁「問題表或範圍列表」在 V4-0a（verification/revamp-v4/V4-0a/keyboard-walk.json，V4-6 相同）是 1440 第 10 步、390 第 4 步。
  * G21 在 data-issues 內（示範資料不渲染），不改這個里程碑；G20 依 PRD §5.7 放在 data-issues 之上，它的資料表 summary 是多出來的 1 個停留點：
  *   - 「涵蓋時間軸資料表 summary」（頁面第一個主要結果，chart-first）不晚於 V4-0a 的里程碑步數；
- *   - 「問題表或範圍列表」恰好晚 1 步（＝summary 的下一步）。V4-8「各頁里程碑 Tab 數不晚於 V4-0」對這一項的判讀待人拍板（驗收文件列為待決事項），這裡只防再多。
+ *   - 「問題表或範圍列表」恰好晚 1 步（＝summary 的下一步）。06 護欄「各頁里程碑 Tab 數不晚於 V4-0a」字面上不符，列為 D-V4-52（docs/revamp-v4/09_DECISIONS_PENDING.md，待使用者回覆；
+ *     驗收文件的 keyboard-walk 列寫實測 11／5 對 10／4，不寫成「通過」）。回覆前這裡只防再多（≤ V4-0a＋1）；回覆 B 時依 09 的選項改版面或改這組斷言。
  */
 const V4_0A_DATA_TABS: Record<string, number> = { desktop: 10, mobile: 4 };
 const PASS_REGIONS: Partial<Record<LaunchPage, { name: string; selector: string; maxAcross: number }[]>> = {

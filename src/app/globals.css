@@ -2941,16 +2941,16 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* 範圍級問題（沒有行號也沒有日期）另成一列，不進格：一格橫跨全部欄，只寫筆數。 */
 .heat-matrix .heat-matrix-footer td { width: auto; padding: 0 var(--space-3); color: var(--text-secondary); text-align: left; }
 /* ≤ 767px 改清單式（沿用 C3 的 data-label；HeatMatrix 各元素明確標 role，改 display 後仍是表格語意）：每列一個檔（檔名 14／600），
-   只列有計數的格（「原因名 計數」），整列都是 0 的檔不列；表頭只對輔助科技保留，data-label 的產生內容不重複朗讀。 */
+   只列有計數的格（「原因名 計數」），整列都是 0 的檔不列；表頭只對輔助科技保留，data-label 的產生內容不重複朗讀。
+   審查 R2-A11Y-1：0 格與表頭一樣只在畫面上藏起來（仍在無障礙樹裡），不用 display:none——拿掉格會讓後面的格對到前一欄的欄頭（HeatMatrix 沒有 aria-colindex）。 */
 @media (max-width: 767px) {
   .heat-matrix, .heat-matrix tbody, .heat-matrix tr { display: block; width: 100%; }
   .heat-matrix caption { display: block; }
-  .heat-matrix thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .heat-matrix thead, .heat-matrix td[data-tier="0"] { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   .heat-matrix tr { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); min-height: 40px; padding: var(--space-1) 0; border-bottom: var(--border-w) solid var(--border-subtle); }
   .heat-matrix tr[data-empty] { display: none; }
   .heat-matrix tbody th { flex: 1 1 auto; height: auto; padding: 0; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); white-space: normal; }
   .heat-matrix td { display: flex; align-items: center; width: auto; height: 32px; padding: 0 0 0 var(--space-2); }
-  .heat-matrix td[data-tier="0"] { display: none; }
   .heat-matrix td[data-label]::before { content: attr(data-label); content: attr(data-label) / ""; margin-right: var(--space-2); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-primary); }
   .heat-matrix .heat-count { width: auto; min-width: 32px; padding: 0 var(--space-1); }
   .heat-matrix .heat-matrix-footer td { height: auto; padding: 0; }

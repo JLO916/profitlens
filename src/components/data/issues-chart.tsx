@@ -15,7 +15,7 @@ import { ChartFrame } from "../overview/charts/chart-frame";
 // ChartFrame id="data-issues-dist"、testId="chart-data-issues"、variant="inline"（已在 .panel 內，不套 .panel）、mode="table"、headingLevel 3（在 h2#quality-heading 之下）、height sm；
 // 不給 dataTable：表本身就是資料（C28 matrix 的按鈕版 HeatMatrix）。列級與範圍級問題都是 0 筆時整個不渲染（示範資料、golden），data-issues 既有的「沒有問題」狀態不變。
 // 資料：issueDistribution（issue-distribution-v1）；格內是計數按鈕，按下（含 Enter／空白鍵）記 chart_clicked、呼叫 onFilter({ file, reason })：問題不是金額，不開抽屜。
-// 標題：全表最多的一格「{檔案}的{原因}最多，{n} 列」；只有一格時「{檔案}有 {n} 列{原因}」（不寫「最多」）；只有範圍級問題時 title.rangeOnly。
+// 標題：全表最多的一格「{檔案}：{原因}最多，{n} 列」（審查 R1-F4：原規劃「{檔案}的{原因}最多」遇 8 字原因名超過 14 字）；只有一格時「{檔案}有 {n} 列{原因}」（不寫「最多」）；只有範圍級問題時 title.rangeOnly。
 
 const copy = labels.data.chartsV4.issues;
 /** 格的 testid（PRD §4.7：chart-{page}-{id}-cell-{語意 key}，key＝{檔案短名}-{原因碼}）。 */
