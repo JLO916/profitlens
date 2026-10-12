@@ -11,7 +11,8 @@ import { loadDemo } from "./launch-helpers-v310";
 
 // V4-7c（D-V3-30＝A；06_BATCHES V4-7c「E2E 匯入後備份還原一條」）：匯入時間寫進備份 v5 的 payload.active.imported_at（選填，只記到分的 UTC）。
 // 精靈匯入 golden（fixtures/golden，含設定檔）→ 資料來源頁「版本與來源資訊」的匯入時間 → 下載備份（帶 imported_at，畫面時間＝formatSavedDateTime(imported_at)）
-// → 載入示範資料（沒有匯入時間列；示範資料的備份沒有 imported_at 鍵）→ 還原剛才的備份 → 匯入時間列回來、文字逐字相同。
+// → 載入示範資料（沒有匯入時間列；示範資料的備份沒有 imported_at 鍵）→ 還原剛才的備份 → 匯入時間列回來、文字逐字相同
+// → 載入示範資料失敗後「回到上次成功的資料」：匯入時間不變 → 還原沒有 imported_at 的示範資料備份：匯入時間列消失（不沿用上一份資料的時間）。
 // 字串一律取 labels；手機的儲存選單在頂欄「更多」裡（openStorage／closeStorage），首次保存提示按「先不要」。
 test.describe.configure({ timeout: 90_000 });
 const ws = labels.storage.workspace;
@@ -30,6 +31,18 @@ async function downloadBackup(page: Page): Promise<string> {
   const text = await readFile((await file.path())!, "utf8");
   await closeStorage(page);
   return text;
+}
+
+/** 頂欄儲存選單「選擇備份檔」→ 還原預覽 →「套用還原」（有未保存的資料時明確捨棄）；等狀態列換成該資料、出現還原通知，再收起選單。 */
+async function restoreBackup(page: Page, text: string, ready: string) {
+  const storage = await openStorage(page);
+  await storage.getByLabel(ws.selectBackupFile, { exact: true }).setInputFiles({ name: "restore.json", mimeType: "application/json", buffer: Buffer.from(text) });
+  await expect(page.getByRole("region", { name: ws.restorePreviewAria })).toBeVisible();
+  await clickReplacing(page, storage.getByRole("button", { name: ws.applyRestore, exact: true }));
+  await expect(status(page)).toContainText(ready);
+  await expect(storage.getByTestId("storage-notice")).toHaveText(ws.restoredNotice);
+  await dismissSavePrompt(page);
+  await closeStorage(page);
 }
 
 test.beforeEach(async ({ page }) => { await page.goto("/"); });
@@ -67,22 +80,34 @@ test("V4-7c 匯入時間寫進備份：精靈匯入後下載備份帶 imported_a
   await expect(status(page)).toContainText(demoReady);
   await navigateTo(page, "data");
   await expect(importedAtRow(page)).toHaveCount(0);
-  const demo = JSON.parse(await downloadBackup(page)) as Wire;
+  const demoText = await downloadBackup(page);
+  const demo = JSON.parse(demoText) as Wire;
   expect(demo.schema_version).toBe(WORKSPACE_VERSION);
   expect(Object.keys(demo.payload.active)).not.toContain("imported_at");
 
   // 4. 還原剛才的備份（有未保存的示範資料時明確捨棄）→ 資料來源頁的匯入時間列回來、文字逐字相同。
-  const storage = await openStorage(page);
-  await storage.getByLabel(ws.selectBackupFile, { exact: true }).setInputFiles({ name: "imported.json", mimeType: "application/json", buffer: Buffer.from(importedText) });
-  await expect(page.getByRole("region", { name: ws.restorePreviewAria })).toBeVisible();
-  await clickReplacing(page, storage.getByRole("button", { name: ws.applyRestore, exact: true }));
-  await expect(status(page)).toContainText(goldenReady);
-  await expect(storage.getByTestId("storage-notice")).toHaveText(ws.restoredNotice);
-  await dismissSavePrompt(page);
-  await closeStorage(page);
+  await restoreBackup(page, importedText, goldenReady);
   await navigateTo(page, "data");
   await expect(importedAtRow(page)).toHaveCount(1);
   await expect(importedAtValue(page)).toHaveText(shown);
   // 還原後再下載一次：匯入時間不變（還原不會改寫成還原的時間）。
   expect((JSON.parse(await downloadBackup(page)) as Wire).payload.active.imported_at).toBe(value);
+
+  // 5. 載入示範資料失敗（/api/datasets/demo 回 500）→「回到上次成功的資料」：資料仍是 golden，匯入時間列與備份的 imported_at 都不變（載入失敗不清掉上一份資料的時間）。
+  await page.route("**/api/datasets/demo", route => route.fulfill({ status: 500, contentType: "application/json", body: "{}" }));
+  await clickReplacing(page, page.getByRole("button", { name: labels.shell.buttons.loadDemo, exact: true }).first());
+  await expect(page.getByTestId("error-state")).toBeVisible();
+  await page.getByTestId("error-back").click();
+  await expect(page.getByTestId("error-state")).toHaveCount(0);
+  await page.unroute("**/api/datasets/demo");
+  await expect(status(page)).toContainText(goldenReady);
+  await navigateTo(page, "data");
+  await expect(importedAtValue(page)).toHaveText(shown);
+  expect((JSON.parse(await downloadBackup(page)) as Wire).payload.active.imported_at).toBe(value);
+
+  // 6. 還原沒有 imported_at 的示範資料備份（步驟 3 下載的）→ 匯入時間列消失；再下載的備份 active 也沒有 imported_at 鍵（還原不沿用上一份資料的匯入時間）。
+  await restoreBackup(page, demoText, demoReady);
+  await navigateTo(page, "data");
+  await expect(importedAtRow(page)).toHaveCount(0);
+  expect(Object.keys((JSON.parse(await downloadBackup(page)) as Wire).payload.active)).not.toContain("imported_at");
 });

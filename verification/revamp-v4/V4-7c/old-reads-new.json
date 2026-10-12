@@ -1,0 +1,137 @@
+{
+  "$comment": "V4-7c 驗收「舊程式讀新備份」：以 V4-7c（7755050）的 exportWorkspaceBackup 產生備份文字，交給 v3.0.0 正式站程式（625bfa5）的 restoreWorkspaceBackup 還原。帶 payload.active.imported_at 的 v5 檔在 v3.0.0 一律 INVALID_WORKSPACE_FORMAT（v3.0.0 的 v5 active 是 strictObject、沒有這個鍵）；沒有此欄位的 v5（示範、golden、還原舊備份後再備份）與 v4 檔照常還原。V4-7b（1e195ba）與 625bfa5 的 src/application/workspace-backup.ts 完全相同（git diff --stat 625bfa5 1e195ba -- src/application/workspace-backup.ts 為空），結果同樣適用於 V4-7b。",
+  "v300_commit": "625bfa5",
+  "v300_tag": "v3.0.0",
+  "producer_commit": "7755050c1c5c0426eb9ad9ae79bb0d6d92418256",
+  "ui_mapping": "v3.0.0 src/components/workspace-storage.tsx 不依錯誤碼分流：選備份檔（selectBackup → preview → restoreWorkspaceBackup）任何錯誤都顯示 labels.storage.workspace.invalidBackupError（<p role=\"alert\" class=\"alert error\">）；讀本機副本（loadLocal → preview）任何錯誤都顯示 labels.storage.workspace.localReadError。兩者都不取代目前資料。",
+  "cases": [
+    {
+      "name": "golden-wizard-imported",
+      "description": "(a) fixtures/golden 三份 CSV 經匯入精靈（未稅）套用後直接備份：id import-<hash>、精靈檔名與欄位對照、imported_at=importedAtMinute(new Date())",
+      "has_imported_at": true,
+      "imported_at": "2026-10-07T06:05Z",
+      "schema_version": "profitlens-workspace-v5",
+      "bytes": 3488,
+      "sha256": "a372b99f09f950ac6e15bef97b9234ed871b613b1d06592a3a54f207351e1c85",
+      "result": "rejected",
+      "error_code": "INVALID_WORKSPACE_FORMAT",
+      "ui_message": "無法讀入：請選擇本工具產生的備份檔（最多 64 MiB）。格式不符、損毀或被改過的檔案不會取代目前資料。",
+      "ui_message_local_copy": "本機資料無法讀取或驗證，目前資料沒有變更。可以改用備份檔，或刪除本機資料。",
+      "head_restore": {
+        "result": "restored",
+        "imported_at": "2026-10-07T06:05Z",
+        "restored_schema_version": "profitlens-workspace-v5"
+      }
+    },
+    {
+      "name": "inclusive-wizard-imported",
+      "description": "(a') tests/fixtures/inclusive_tax 三份 CSV 經匯入精靈（含稅換算）套用後直接備份：含 preprocessing、imported_at=importedAtMinute(new Date())",
+      "has_imported_at": true,
+      "imported_at": "2026-10-07T06:05Z",
+      "schema_version": "profitlens-workspace-v5",
+      "bytes": 4786,
+      "sha256": "77c0f4ebf67da997562dcb6591dc41e166476c7c1b9947c13495b57dad0d7445",
+      "result": "rejected",
+      "error_code": "INVALID_WORKSPACE_FORMAT",
+      "ui_message": "無法讀入：請選擇本工具產生的備份檔（最多 64 MiB）。格式不符、損毀或被改過的檔案不會取代目前資料。",
+      "ui_message_local_copy": "本機資料無法讀取或驗證，目前資料沒有變更。可以改用備份檔，或刪除本機資料。",
+      "head_restore": {
+        "result": "restored",
+        "imported_at": "2026-10-07T06:05Z",
+        "restored_schema_version": "profitlens-workspace-v5"
+      }
+    },
+    {
+      "name": "demo",
+      "description": "(b) 載入示範資料後直接備份（沒有 imported_at；與 V4-7b 基準位元組相同）",
+      "has_imported_at": false,
+      "imported_at": null,
+      "schema_version": "profitlens-workspace-v5",
+      "bytes": 263439,
+      "sha256": "eb9e085a14746edb0648611dfe8f4bf655633e471b8a6ed787506b0081e33c87",
+      "result": "restored",
+      "error_code": null,
+      "ui_message": null,
+      "ui_message_local_copy": null,
+      "head_restore": {
+        "result": "restored",
+        "imported_at": null,
+        "restored_schema_version": "profitlens-workspace-v5"
+      }
+    },
+    {
+      "name": "full-imported",
+      "description": "(c) tests/helpers/full-backup.ts 的 fullBackup({ importedAt: \"2026-10-07T06:05Z\" })：所有選填欄位都有值（含稅換算、目標、檔期、方案敏感度、試算聲明、待辦狀態日、會議稿、會議歷史、ui_prefs）＋匯入時間",
+      "has_imported_at": true,
+      "imported_at": "2026-10-07T06:05Z",
+      "schema_version": "profitlens-workspace-v5",
+      "bytes": 17429,
+      "sha256": "1b0139f95fdbfabe561e5449489e6c680ed6cf351d3f40c5f3e989b9a5a65b76",
+      "result": "rejected",
+      "error_code": "INVALID_WORKSPACE_FORMAT",
+      "ui_message": "無法讀入：請選擇本工具產生的備份檔（最多 64 MiB）。格式不符、損毀或被改過的檔案不會取代目前資料。",
+      "ui_message_local_copy": "本機資料無法讀取或驗證，目前資料沒有變更。可以改用備份檔，或刪除本機資料。",
+      "head_restore": {
+        "result": "restored",
+        "imported_at": "2026-10-07T06:05Z",
+        "restored_schema_version": "profitlens-workspace-v5"
+      }
+    },
+    {
+      "name": "golden",
+      "description": "對照：載入 golden 後直接備份（沒有 imported_at；與 V4-7b 基準位元組相同）",
+      "has_imported_at": false,
+      "imported_at": null,
+      "schema_version": "profitlens-workspace-v5",
+      "bytes": 2759,
+      "sha256": "8fe9cc4b7372192b751fee985624d046eda97cb25d1721781d6647f929358e34",
+      "result": "restored",
+      "error_code": null,
+      "ui_message": null,
+      "ui_message_local_copy": null,
+      "head_restore": {
+        "result": "restored",
+        "imported_at": null,
+        "restored_schema_version": "profitlens-workspace-v5"
+      }
+    },
+    {
+      "name": "full",
+      "description": "對照：fullBackup()（沒有 imported_at；與 V4-7b 基準位元組相同）",
+      "has_imported_at": false,
+      "imported_at": null,
+      "schema_version": "profitlens-workspace-v5",
+      "bytes": 17395,
+      "sha256": "a8e51424a2756863ab717b921a0784bd471cea0b3320d2f3f5fe1f7df908a10b",
+      "result": "restored",
+      "error_code": null,
+      "ui_message": null,
+      "ui_message_local_copy": null,
+      "head_restore": {
+        "result": "restored",
+        "imported_at": null,
+        "restored_schema_version": "profitlens-workspace-v5"
+      }
+    },
+    {
+      "name": "full-imported-asV4",
+      "description": "對照：(c) 以 asV4 降成 v4 信封（拿掉 ad_decision 與 imported_at、schema_version 改 v4、重算校驗碼）",
+      "has_imported_at": false,
+      "imported_at": null,
+      "schema_version": "profitlens-workspace-v4",
+      "bytes": 17395,
+      "sha256": "ca5eca7d7666b607880c0f44e5285fcf082d5702ee23ad66bbccb593ebf2df5d",
+      "result": "restored",
+      "error_code": null,
+      "ui_message": null,
+      "ui_message_local_copy": null,
+      "head_restore": {
+        "result": "restored",
+        "imported_at": null,
+        "restored_schema_version": "profitlens-workspace-v4"
+      }
+    }
+  ],
+  "method": "git archive 625bfa5 解到 scratchpad（node_modules 以 symlink 指向 repo 的 node_modules，同一份 zod 4.6.5／vitest 4.1.11），用該樹自己的 vitest.config.mts（@ → 該樹的 src）跑 vitest：讀入檔案文字後呼叫 restoreWorkspaceBackup，記下成功或 Error.message。備份文字在 7755050 的 git worktree 以 vitest 產生，Date 以 vi.useFakeTimers({ toFake: [\"Date\"] })＋setSystemTime(\"2026-10-07T06:05:42.123Z\") 固定（imported_at 因此是 \"2026-10-07T06:05Z\"）；(a) 依 dashboard performCommitImport 的形狀組 WorkspaceBackupSource（initialWizardState → fileRead×3 → next → basis → confirm → runCheck → createSnapshot），(c) 用 tests/helpers/full-backup.ts。ui_message 由 625bfa5 的 labels（@/i18n）在 vitest 內實際讀出。head_restore 是同一份文字在 7755050 的還原結果。",
+  "generated_at": "2026-10-13"
+}
