@@ -2128,7 +2128,43 @@ export const data = {
         joiner: "，",
       },
     },
-    issues: {},
+    /**
+     * V4-7a 代理 B：G21 問題分布表（PRD §4.1–§4.7 G21、§5.7；CHART_CATALOG G21；GLOSSARY v4 #4、#26）與問題表篩選片語（PRD §6.4）。
+     * 列頭沿用 importWizard.files（商品銷售、通路費用、廣告投放），左上角欄頭沿用 data.pageV3.issueTable.columns.file，範圍級那一格沿用 data.panel.itemCount；
+     * 原因名先取 reasons，沒有時取 errors.import 的 L1（去掉「{file} 第 {line} 行：」這類位置前綴，與問題表「問題」欄同一句），
+     * reasons 只收既有句子當不了欄名的原因碼（缺列兩種用 v4 定案詞「缺列」，GLOSSARY v4 #4；略過的欄位的句子帶 {field}）。
+     * 篩選片語的分隔沿用 data.pageV3.separator，清除鈕沿用 overview.trendYoyV3.filter.clear（抽屜下鑽同一個「清除篩選」）。
+     */
+    issues: {
+      /** 區塊標準名（GLOSSARY v4 §3）；副標與表的 caption 開頭。 */
+      section: "問題分布（檔案 × 原因）",
+      title: {
+        /** 全表最多的一格（同值依檔案順序、再依原因碼順序）：{file}＝檔案角色名，{reason}＝原因名，{n}＝列數。 */
+        most: "{file}的{reason}最多，{n} 列",
+        /** 只有一格有問題（一個檔、一種原因）時不寫「最多」（fixtures/errors/missing_ad_day）。 */
+        single: "{file}有 {n} 列{reason}",
+        /** 只有範圍級問題（沒有行號也沒有日期，不進格）時。 */
+        rangeOnly: "{n} 項都是範圍級問題",
+      },
+      /** 副標（aria 描述）：{section}＝section，{n}＝列級問題筆數（＝全部格加總）。顏色只輔助，格內永遠有數字。 */
+      subtitle: "{section} · 列級問題 {n} 項 · 有底色的格可篩選問題表，加框的是各檔最多的原因",
+      /** 只有範圍級問題時的副標：{n}＝範圍級問題筆數。 */
+      subtitleRangeOnly: "{section} · 範圍級問題 {n} 項，逐項列在下方問題表",
+      caption: "{section}，格內是列數",
+      /** 格內計數按鈕的可及名稱：{file}＝檔案角色名，{n}＝列數，{reason}＝原因名。 */
+      cellAria: "{file}有 {n} 列{reason}，篩選問題表",
+      /** 範圍級問題另成一列的列頭（不進格；同列一格寫筆數，沿用 data.panel.itemCount）。 */
+      rangeRow: "範圍級問題",
+      reasons: {
+        MISSING_CHANNEL_COST_DAY: "缺費用列",
+        MISSING_AD_DAY: "缺廣告列",
+        UNKNOWN_COLUMN_IGNORED: "已略過的欄位",
+      } as Record<string, string>,
+      /** 問題表上方的篩選片語（role="status"）：{scope}＝檔案角色名、通路、原因名以 data.pageV3.separator 相接，{n}＝篩選後的筆數。 */
+      filter: {
+        phrase: "篩選：{scope}（{n} 項）",
+      },
+    },
   },
 } as const;
 

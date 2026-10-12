@@ -1,9 +1,10 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { downloadText } from "@/application/download";
 import { exportIssuesCsv } from "@/application/export";
 import { issueMessageParts, issueTemplate, renderIssueTemplate, sideFileIssueMessage, splitIssueTemplate, type IssueMessageContext, type IssueRef } from "@/application/import";
+import { filterIssues, hasIssueFilter, issueFilterKey, issueFilterPhrase, type IssueFilter } from "@/application/issue-filter";
 import type { SourceRef, ValidationIssue } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 
@@ -77,14 +78,35 @@ function sideRow(file: SideFile, issue: SideFileIssue): IssueRow {
 
 const SEVERITY_TONE: Record<ValidationIssue["severity"], "unfavorable" | "warning" | undefined> = { blocking: "unfavorable", partial: "warning", warning: undefined };
 
+/** V4-7a：問題表上方的篩選列（只有 IssueList 給了 filter 時）。key＝issueFilterKey（換了篩選時回到第 1 頁、焦點移到片語），phrase＝issueFilterPhrase。 */
+interface IssueTableFilter { key: string; phrase: string; onClear?: () => void }
+
 /**
  * §7.7.1 第 3 段、§9.4 C3／C15：資料問題表。工具列左邊是「顯示原因碼」切換（aria-pressed；原因碼欄預設以 hidden 收合但保持掛載，M1），
  * 右邊是表頭右上角寫一次的單位與「下載問題清單 CSV」（只有傳 onDownload 時）；每頁 50 列，分頁、region、caption 沿用 v2。
+ * V4-7a：給 filter 時，工具列之下、表之上加篩選列（div.issue-filter：role="status" 的片語＋「清除篩選」）；沒給時輸出不變。
  */
-function IssueTable<T>({ items, toRow, regionLabel, onDownload, downloadTestId }: { items: readonly T[]; toRow: (item: T) => IssueRow; regionLabel: string; onDownload?: () => void; downloadTestId?: string }) {
+function IssueTable<T>({ items, toRow, regionLabel, onDownload, downloadTestId, filter }: { items: readonly T[]; toRow: (item: T) => IssueRow; regionLabel: string; onDownload?: () => void; downloadTestId?: string; filter?: IssueTableFilter }) {
   const tableId = useId();
-  const [page, setPage] = useState(0);
+  const filterKey = filter?.key ?? "";
+  // V4-7a：頁碼記在篩選鍵之下，換了篩選（含清除、回到先前用過的篩選）就回到第 1 頁：鍵一變就在渲染中重設（不保留舊鍵的頁碼）；
+  // 沒有篩選時鍵永遠是空字串，不會重設，行為與 V3 相同。
+  const [paging, setPaging] = useState({ key: filterKey, page: 0 });
+  if (paging.key !== filterKey) setPaging({ key: filterKey, page: 0 });
+  const page = paging.key === filterKey ? paging.page : 0;
+  const setPage = (next: number) => setPaging({ key: filterKey, page: next });
   const [showCodes, setShowCodes] = useState(false);
+  const region = useRef<HTMLDivElement>(null);
+  const phrase = useRef<HTMLParagraphElement>(null);
+  // V4-7a：換了篩選（G20 缺列段、G21 的格按下後）焦點移到篩選片語；第一次掛載不搶焦點。清除後片語消失，焦點移到問題表的捲動區。
+  const shownKey = useRef(filterKey);
+  useEffect(() => {
+    if (shownKey.current === filterKey) return;
+    shownKey.current = filterKey;
+    if (filterKey !== "") phrase.current?.focus();
+  }, [filterKey]);
+  const onClear = filter?.onClear;
+  const clearFilter = () => { onClear?.(); region.current?.focus(); };
   const last = Math.max(0, Math.ceil(items.length / PAGE_SIZE) - 1);
   const current = Math.min(page, last);
   const visible = items.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE).map(toRow);
@@ -94,7 +116,8 @@ function IssueTable<T>({ items, toRow, regionLabel, onDownload, downloadTestId }
       <button type="button" className="ui-btn ui-btn-text issue-codes-toggle" aria-pressed={showCodes} aria-controls={tableId} onClick={() => setShowCodes(value => !value)}>{v3.showCodes}</button>
       <span className="ui-toolbar-end"><span className="issue-unit">{v3.unit}</span>{onDownload && <button type="button" className="ui-btn ui-btn-secondary" data-testid={downloadTestId} onClick={onDownload}>{labels.exports.downloads.issuesCsv}</button>}</span>
     </div>
-    <div className="table-scroll" tabIndex={0} role="region" aria-label={regionLabel}><table className="ui-table issue-table" id={tableId}>
+    {filter && <div className="issue-filter"><p className="issue-filter-phrase" role="status" tabIndex={-1} ref={phrase} data-testid="data-issues-filter">{filter.phrase}</p>{onClear && <button type="button" className="ui-btn ui-btn-secondary issue-filter-clear" data-testid="data-issues-filter-clear" onClick={clearFilter}>{labels.overview.trendYoyV3.filter.clear}</button>}</div>}
+    <div className="table-scroll" tabIndex={0} role="region" aria-label={regionLabel} ref={region}><table className="ui-table issue-table" id={tableId}>
       <caption className="sr-only">{fill(copy.caption, { n: items.length })}</caption>
       <thead><tr><th scope="col">{v3.columns.file}</th><th scope="col" className="num">{v3.columns.line}</th><th scope="col">{v3.columns.field}</th><th scope="col">{v3.columns.problem}</th><th scope="col">{v3.columns.fix}</th><th scope="col" className="issue-code" hidden={codesHidden}>{v3.columns.code}</th></tr></thead>
       <tbody>{visible.map((row, i) => { const tone = row.severity ? SEVERITY_TONE[row.severity] : undefined; return <tr key={i}>
@@ -110,7 +133,7 @@ function IssueTable<T>({ items, toRow, regionLabel, onDownload, downloadTestId }
   </div>;
 }
 
-export function IssueList({ issues, filenames, mappings, context, download }: {
+export function IssueList({ issues, filenames, mappings, context, download, filter, onClearFilter }: {
   issues: ValidationIssue[];
   filenames?: Partial<Record<SourceRef["file"], string>>;
   mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>;
@@ -121,9 +144,21 @@ export function IssueList({ issues, filenames, mappings, context, download }: {
    * testId 選填：同一頁可能同時掛著兩份問題表（資料來源頁 hidden＋匯入精靈），由呼叫端給不同的 testid（M6）。
    */
   download?: { filename: string; testId?: string };
+  /**
+   * V4-7a（PRD §6.4；CHART_CATALOG §7）：選填的篩選（檔案、通路、原因碼；src/application/issue-filter.ts 的 IssueFilter），由資料來源頁的 DataWorkspace 持有，
+   * G20 缺列段與資料表的篩選按鈕、G21 的格設定它。有篩選時表只列符合的問題（caption 的筆數跟著變），工具列之下、表之上出現
+   * role="status" 的篩選片語（data-testid="data-issues-filter"，tabIndex=-1；換了篩選時焦點移到這裡）與「清除篩選」鈕（data-testid="data-issues-filter-clear"，
+   * 只有給 onClearFilter 時；按下後呼叫 onClearFilter，焦點移到問題表的捲動區）。「下載問題清單 CSV」仍是全部問題（issues，不經篩選）。
+   * 沒給 filter（或空的篩選）時輸出與 V4-6 逐字相同（tests/fixtures/issue-list-v4-6.json）。捲到 data-issues 由呼叫端負責。
+   */
+  filter?: IssueFilter | null;
+  onClearFilter?: () => void;
 }) {
   const messageContext: IssueMessageContext = { mappings: context?.mappings ?? mappings, sources: context?.sources };
-  return <IssueTable items={issues} toRow={issue => coreRow(issue, messageContext, filenames, mappings)} regionLabel={copy.regionAria} onDownload={download ? () => downloadText(exportIssuesCsv(issues, filenames), download.filename) : undefined} downloadTestId={download?.testId} />;
+  const active = hasIssueFilter(filter);
+  const shown = active ? filterIssues(issues, filter) : issues;
+  return <IssueTable items={shown} toRow={issue => coreRow(issue, messageContext, filenames, mappings)} regionLabel={copy.regionAria} onDownload={download ? () => downloadText(exportIssuesCsv(issues, filenames), download.filename) : undefined} downloadTestId={download?.testId}
+    filter={active ? { key: issueFilterKey(filter), phrase: issueFilterPhrase(filter, shown.length)!, onClear: onClearFilter } : undefined} />;
 }
 
 /** §7.7.1 第 6 點：目標、促銷檔期的錯誤清單，和第 3 段用同樣的欄位（沒有嚴重程度與原始列，行號取自檔案）。 */

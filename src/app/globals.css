@@ -2922,6 +2922,43 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-7a A 錨點結束 ── */
 
 /* ── V4-7a B：C28 HeatTable matrix、G21 問題分布表、問題表篩選片語（代理 B） ── */
+/* C28 matrix 按鈕版（G21；PRD §6.3 C28、§4.4 G21；H5 設計稿 data.html）：一張表，列＝檔案、欄＝原因；放在 ChartFrame mode="table" 的 .table-scroll 內（框高 sm，超過時框內捲動）。
+   格的底色只由 data-tier 套 --chart-heat-1／-2（元件不寫色），0 格留白不上色；階 2（該檔最多的原因）另加 2px --chart-unfavorable 框，畫在格內按鈕的框線上（不用陰影），
+   聚焦框往內縮，不壓到相鄰格。格內計數是篩選按鈕（不開抽屜）：常駐 1px 虛線底線（同 number-link 的 --border-input），格內任何位置都可點。 */
+.heat-matrix { width: auto; border-collapse: separate; border-spacing: 0; font-size: var(--text-13); line-height: var(--leading-13); }
+.heat-matrix caption { padding: 0 0 var(--space-1); background: transparent; font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); text-align: left; }
+.heat-matrix th { height: 32px; padding: 0 var(--space-3); border-bottom: 0; background: transparent; vertical-align: middle; font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-medium); color: var(--text-secondary); text-align: left; white-space: nowrap; }
+.heat-matrix thead th { border-bottom: var(--border-w) solid var(--border-subtle); }
+.heat-matrix thead th:first-child, .heat-matrix tbody th { padding-left: 0; }
+.heat-matrix tbody th { font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-regular); color: var(--text-primary); }
+.heat-matrix td { width: 96px; height: 36px; padding: 0; border: 2px solid var(--bg-surface); vertical-align: middle; text-align: center; }
+.heat-matrix td[data-tier="1"] { background: var(--chart-heat-1); }
+.heat-matrix td[data-tier="2"] { background: var(--chart-heat-2); }
+.heat-matrix .heat-count { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 0; padding: 0; border: 2px solid transparent; border-radius: 0; color: var(--text-primary); font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; text-decoration: underline dotted 1px var(--border-input); text-underline-offset: 3px; }
+.heat-matrix td[data-tier="2"] .heat-count { border-color: var(--chart-unfavorable); }
+.heat-matrix .heat-count:hover { text-decoration-color: var(--accent); }
+.heat-matrix .heat-count:focus-visible { outline-offset: -4px; }
+/* 範圍級問題（沒有行號也沒有日期）另成一列，不進格：一格橫跨全部欄，只寫筆數。 */
+.heat-matrix .heat-matrix-footer td { width: auto; padding: 0 var(--space-3); color: var(--text-secondary); text-align: left; }
+/* ≤ 767px 改清單式（沿用 C3 的 data-label；HeatMatrix 各元素明確標 role，改 display 後仍是表格語意）：每列一個檔（檔名 14／600），
+   只列有計數的格（「原因名 計數」），整列都是 0 的檔不列；表頭只對輔助科技保留，data-label 的產生內容不重複朗讀。 */
+@media (max-width: 767px) {
+  .heat-matrix, .heat-matrix tbody, .heat-matrix tr { display: block; width: 100%; }
+  .heat-matrix caption { display: block; }
+  .heat-matrix thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .heat-matrix tr { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); min-height: 40px; padding: var(--space-1) 0; border-bottom: var(--border-w) solid var(--border-subtle); }
+  .heat-matrix tr[data-empty] { display: none; }
+  .heat-matrix tbody th { flex: 1 1 auto; height: auto; padding: 0; font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); white-space: normal; }
+  .heat-matrix td { display: flex; align-items: center; width: auto; height: 32px; padding: 0 0 0 var(--space-2); }
+  .heat-matrix td[data-tier="0"] { display: none; }
+  .heat-matrix td[data-label]::before { content: attr(data-label); content: attr(data-label) / ""; margin-right: var(--space-2); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-primary); }
+  .heat-matrix .heat-count { width: auto; min-width: 32px; padding: 0 var(--space-1); }
+  .heat-matrix .heat-matrix-footer td { height: auto; padding: 0; }
+}
+/* 問題表的篩選列（PRD §6.4；IssueList 給了 filter 時）：工具列之下、表之上；片語 role="status"（換了篩選時取得焦點），右側「清除篩選」。 */
+.issue-filter { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin: 0 0 var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--bg-subtle); }
+.issue-filter-phrase { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-medium); color: var(--text-primary); }
+.issue-filter-phrase:focus-visible { outline-offset: 2px; }
 /* ── V4-7a B 錨點結束 ── */
 
 /* ── V4-7a C：資料來源頁整合（代理 C） ── */
