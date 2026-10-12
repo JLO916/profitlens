@@ -32,7 +32,7 @@
 
 其他：
 
-- 禁區四條命令都是空的。
+- 禁區四條命令都是空的；commit 之後的 diff（收尾 `cc38958`）也是空的。
 
 驗收文件：`verification/revamp-v4-V4-7a-acceptance.md`；量測與截圖在 `verification/revamp-v4/V4-7a/`。下一批是 V4-7b，匯入精靈與抽屜（G22、G23、`ladderMetrics` 搬移）。
 
