@@ -30,7 +30,7 @@ C24 BarCell 加了 share 與 pair 兩種模式，variance 的輸出逐位元組�
 
 其他：
 
-- 禁區四條命令都是空的；commit 之後的 diff（收尾 `{V4_7B_CLOSE}`）也是空的。
+- 禁區四條命令都是空的；commit 之後的 diff（收尾 `7edb25c`）也是空的。
 
 驗收文件：`verification/revamp-v4-V4-7b-acceptance.md`；量測與截圖在 `verification/revamp-v4/V4-7b/`。下一批是 V4-7c，匯入時間寫進備份（D-V3-30＝A）。
 

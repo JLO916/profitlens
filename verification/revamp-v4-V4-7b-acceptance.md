@@ -60,7 +60,7 @@
 | Lighthouse × 3（開跑時 1 分鐘負載都 < 2.5：2.45、2.33、2.03） | **390 的五項 TBT 都通過**（見下表）。第 3 次的完整報告在 `verification/revamp-v4/V4-7b/lighthouse/`，三次的數值在 `lighthouse-runs/` 與 `metrics.json` |
 | `lsof -ti tcp:3100 \| xargs kill`；`lsof -ti tcp:3100` | 已停，沒有輸出 |
 | 禁區四條命令 | 四條都是空的 |
-| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區與 assist-kpi、breakeven-mer 路徑）` | 見文末（收尾 commit 之後補記） |
+| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區與 assist-kpi、breakeven-mer 路徑）` | 空（收尾 commit `7edb25c`；`82b70df` 那條與 `git status --porcelain` 也是空的） |
 | 隱藏字元掃描 | 0 |
 
 **棘輪與基準數值**
