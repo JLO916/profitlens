@@ -129,3 +129,13 @@
   - 回覆 B 或 C 的項目，會在 V4-7a 開工前補做；只改 `chart-meeting.ts`、`scenarios-chart.tsx`、字串與測試，不影響畫面 08，因為示範資料沒有會議歷史，也沒有選入方案。
 - **下一批**：V4-7a 資料來源（G20、G21、問題表篩選；依賴 D-V4-40，已拍板）。
 - **部署**：本批沒有部署。preview 部署仍需使用者當次明確同意。
+
+## 7. 收尾後補做（2026-10-12，使用者回覆「48 B／B、49 A／C、50 B／A、V4-7a」）
+
+- **D-V4-48（a）＝B**：整月對比（calendar_months）以「一個月」為單位，月份天數不同不斷開（7、8、9、10 月全部相連）；非整月對比時本期天數不同仍斷開。
+- **D-V4-48（b）＝B**：重複會議＝本期起訖、資料集與通路集合都相同（通路順序不算）；範圍不同的同本期會議各自保留、不計入省略。
+- **D-V4-49（a）＝A**：會議順序維持會議日期、再結束時間（不改）。**（b）＝C**：斷段原因新增 `channels`，同一份資料只換通路時間隙與資料表寫「通路不同」（新 key `meeting.chartsV4.history.differentChannels`）；資料集不同仍寫「不同資料集」，兩者都不同時記資料集。
+- **D-V4-50＝（a）B、（b）A**：維持 V4-6 交付，不改。
+- 改動：`src/application/chart-meeting.ts`（`meetingBreak`、去重鍵；版本仍是 `meeting-series-v1`，尚未發布）、`src/components/meeting/history-chart.tsx`（間隙標對應）、`src/i18n/labels.zh-TW.ts`（V4-6 錨點內：新增 `differentChannels`，`omittedNote`、`breakNote` 改寫）、`tests/chart-meeting.test.ts`（通路改為 channels、整月對比 4 個月相連、範圍不同的同本期會議都保留）、`tests/charts-meeting-g19.test.tsx`（「通路不同」間隙標）、`docs/revamp-v4/CHART_CATALOG.md` G19 補記。
+- 驗證：typecheck、lint exit 0；unit 153 檔／3,065 全過；`charts-meeting.spec.ts` desktop、mobile 4／4。示範資料沒有會議歷史，畫面 08 不受影響（V4-7a 的 52 張比對會一併確認）。
+

@@ -132,6 +132,13 @@ describe("C26 擴充（純函式）", () => {
 });
 
 describe("G19 meetingHistoryModel（meeting-series-v1 的點；不同段之間多一個空位置）", () => {
+  it("D-V4-49（b）＝C：同一份資料只換通路時，間隙標與資料表都寫「通路不同」（資料集不同仍寫「不同資料集」）", () => {
+    const [first] = history;
+    const dtcOnly = meetingVariant(first, { id: "dtc-only", date: "2026-10-04", finalized_at: "2026-10-04T06:00:00.000Z", channels: ["DTC"], current: { start: "2026-08-03", end: "2026-08-03" } });
+    const model = meetingHistoryModel([first, dtcOnly]);
+    expect(model.gaps).toEqual([{ index: 1, label: copy.differentChannels }]);
+  });
+
   it("示範歷史：5 點 3 段 → 7 個位置（兩個間隙：不同資料集、期間不同）；X 標是資料本期 M/D–M/D；兩張子圖（淨營收、扣廣告後貢獻）各自的軸", () => {
     const model = meetingHistoryModel(history);
     const [goldenMeeting, demo42, week1, week2, , week3Again] = history;

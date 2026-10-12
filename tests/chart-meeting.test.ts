@@ -8,8 +8,9 @@ import { DEMO_WEEKS, demoWeek, finalizedMeeting, g19History, meetingVariant } fr
 
 /*
  * V4-6 代理 A：meetingSeries（meeting-series-v1）的 golden（CHART_CATALOG G19「單元測試」欄、§9.2；PRD §4.4 G19、§6.4）。
- * - 斷段位置：資料集（dataset_hash）、通路集合、本期天數、比較方式各一例；原因分 dataset（資料集或通路）與 period（天數或比較方式）。
- * - 本期完全相同的重複會議只留結束時間最晚的一筆，省略筆數另計；保留 < 2 筆回傳空；依會議日期、結束時間排序；最多 100 筆。
+ * - 斷段位置：資料集（dataset_hash）、通路集合、本期天數、比較方式各一例；原因分 dataset（資料集）、channels（只換通路，D-V4-49（b）＝C）與 period（天數或比較方式）；
+ *   整月對比以月為單位，月份天數不同不斷開（D-V4-48（a）＝B）。
+ * - 本期、資料集與通路集合都相同的重複會議只留結束時間最晚的一筆（D-V4-48（b）＝B），省略筆數另計；保留 < 2 筆回傳空；依會議日期、結束時間排序；最多 100 筆。
  * - 值逐字取自凍結的 agenda.kpis[].current（不重算、不轉 Number）。
  * 會議一律由 finalizeMeeting 結束（tests/helpers/meeting-history.ts）；finalize 做不出來的組合（另一份資料的雜湊、另一組通路）才以 meetingVariant 從真的會議複製後改範圍。
  */
@@ -58,12 +59,27 @@ describe("meetingSeries 的斷段（資料集、通路集合、本期天數、�
     expect(meetingBreak(golden, other)).toBe("dataset");
   });
 
-  it("通路集合不同：原因 dataset（與 compareWithLastMeeting 的 different_dataset 同一組條件）；只是順序不同不算", () => {
+  it("通路集合不同（同一份資料）：原因 channels（D-V4-49（b）＝C）；只是順序不同不算", () => {
     const dtc = meetingVariant(golden, { id: "dtc", date: "2026-10-10", finalized_at: "2026-10-10T06:00:00.000Z", channels: ["DTC"], current: day("2026-08-03") });
     const reordered = meetingVariant(golden, { id: "re", date: "2026-10-17", finalized_at: "2026-10-17T06:00:00.000Z", channels: ["MARKETPLACE", "DTC"], current: day("2026-08-04") });
     expect(golden.source_fixed.channels).toEqual(["DTC", "MARKETPLACE"]);
-    expect(meetingSeries([golden, dtc]).points.map(point => [point.segment, point.break])).toEqual([[0, null], [1, "dataset"]]);
+    expect(meetingSeries([golden, dtc]).points.map(point => [point.segment, point.break])).toEqual([[0, null], [1, "channels"]]);
+    expect(meetingBreak(golden, dtc)).toBe("channels");
     expect(meetingSeries([golden, reordered]).points.map(point => [point.segment, point.break])).toEqual([[0, null], [0, null]]);
+    // 資料集與通路都不同時記 dataset（先比資料集）。
+    const otherDtc = meetingVariant(golden, { id: "od", date: "2026-10-10", finalized_at: "2026-10-10T06:00:00.000Z", dataset_hash: OTHER_HASH, channels: ["DTC"], current: day("2026-08-03") });
+    expect(meetingBreak(golden, otherDtc)).toBe("dataset");
+  });
+
+  it("整月對比（calendar_months）以月為單位：7 月 → 8 月 → 9 月 → 10 月（31、31、30、31 天）全部相連（D-V4-48（a）＝B）；非整月對比時天數不同仍斷開", () => {
+    const month = (id: string, date: string, start: string, end: string) => meetingVariant(golden, { id, date, finalized_at: `${date}T06:00:00.000Z`, current: { start, end }, comparison_mode: "calendar_months" });
+    const jul = month("jul", "2026-08-05", "2026-07-01", "2026-07-31"), aug = month("aug", "2026-09-05", "2026-08-01", "2026-08-31");
+    const sep = month("sep", "2026-10-05", "2026-09-01", "2026-09-30"), oct = month("oct", "2026-11-05", "2026-10-01", "2026-10-31");
+    expect(meetingSeries([jul, aug, sep, oct]).points.map(point => [point.id, point.segment, point.break])).toEqual([["jul", 0, null], ["aug", 0, null], ["sep", 0, null], ["oct", 0, null]]);
+    expect(meetingBreak(aug, sep)).toBeNull();
+    // 同樣 30 → 31 天，但比較方式是同天數：照樣斷開（原因 period）。
+    const sameDays = (id: string, date: string, start: string, end: string) => meetingVariant(golden, { id, date, finalized_at: `${date}T06:00:00.000Z`, current: { start, end }, comparison_mode: "same_days" });
+    expect(meetingBreak(sameDays("s9", "2026-10-05", "2026-09-01", "2026-09-30"), sameDays("s10", "2026-11-05", "2026-10-01", "2026-10-31"))).toBe("period");
   });
 
   it("本期天數不同（1 天 → 7 天）：原因 period；天數相同、日期不同的本期照樣相連", () => {
@@ -107,7 +123,7 @@ describe("meetingSeries 的斷段（資料集、通路集合、本期天數、�
 });
 
 describe("meetingSeries 的去重、空結果與上限", () => {
-  it("本期完全相同的重複會議只畫結束時間最晚的一筆（不看會議日期先後），省略筆數另計；結束時間也相同時取排序在後者", () => {
+  it("本期、資料集與通路都相同的重複會議只畫結束時間最晚的一筆（不看會議日期先後），省略筆數另計；結束時間也相同時取排序在後者", () => {
     const early = meetingVariant(golden, { id: "early", date: "2026-10-20", finalized_at: "2026-10-01T06:00:00.000Z" });
     const later = meetingVariant(golden, { id: "later", date: "2026-10-04", finalized_at: "2026-10-04T06:00:00.000Z" });
     const other = meetingVariant(golden, { id: "other", date: "2026-10-10", finalized_at: "2026-10-10T06:00:00.000Z", current: day("2026-08-03") });
@@ -117,6 +133,17 @@ describe("meetingSeries 的去重、空結果與上限", () => {
     const tieA = meetingVariant(golden, { id: "tie-a", date: "2026-10-03", finalized_at: golden.finalized_at });
     expect(meetingSeries([tieA, golden, other]).points.map(point => point.id)).toEqual([golden.id, "other"]);
     expect(meetingSeries([golden, tieA, other]).points.map(point => point.id)).toEqual(["tie-a", "other"]);
+  });
+
+  it("範圍不同的同本期會議不是重複（D-V4-48（b）＝B）：同一週先開全通路、再開只看 DTC、再開另一份資料，三筆都保留、省略 0；通路只是順序不同仍是重複", () => {
+    const dtcOnly = meetingVariant(golden, { id: "dtc-only", date: "2026-10-04", finalized_at: "2026-10-04T06:00:00.000Z", channels: ["DTC"] });
+    const otherData = meetingVariant(golden, { id: "other-data", date: "2026-10-05", finalized_at: "2026-10-05T06:00:00.000Z", dataset_hash: OTHER_HASH });
+    const series = meetingSeries([golden, dtcOnly, otherData]);
+    expect(series.points.map(point => [point.id, point.segment, point.break])).toEqual([[golden.id, 0, null], ["dtc-only", 1, "channels"], ["other-data", 2, "dataset"]]);
+    expect(series.omitted).toBe(0);
+    const reordered = meetingVariant(golden, { id: "re", date: "2026-10-06", finalized_at: "2026-10-06T06:00:00.000Z", channels: ["MARKETPLACE", "DTC"] });
+    const next = meetingVariant(golden, { id: "next", date: "2026-10-10", finalized_at: "2026-10-10T06:00:00.000Z", current: day("2026-08-03") });
+    expect(meetingSeries([golden, reordered, next])).toMatchObject({ points: [{ id: "re" }, { id: "next" }], omitted: 1 });
   });
 
   it("保留的點 < 2 時回傳空的 points：沒有歷史、只有 1 次、2 次但本期相同（省略 1 次）", () => {

@@ -38,7 +38,7 @@ export const MEETING_HISTORY_SERIES = "history";
 
 /** 圖形座標（Number 近似值，只用來畫圖）；顯示一律用凍結的精確字串。 */
 const coordinateOf = (value: string | null) => value === null ? null : Number(value);
-const breakLabel = (reason: MeetingSeriesBreak) => reason === "dataset" ? copy.differentDataset : copy.differentPeriod;
+const breakLabel = (reason: MeetingSeriesBreak) => reason === "dataset" ? copy.differentDataset : reason === "channels" ? copy.differentChannels : copy.differentPeriod;
 
 export interface MeetingHistoryModel {
   series: MeetingSeries;
