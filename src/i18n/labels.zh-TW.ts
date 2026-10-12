@@ -2075,6 +2075,12 @@ export const data = {
       } satisfies Record<RuleCode, string>,
     },
   },
+  // ── V4-7a 錨點：資料來源圖表字串（代理 A：coverage＝G20 涵蓋時間軸；代理 B：issues＝G21 問題分布表與問題表篩選片語）。
+  // 期間區帶與細線的「上期」「本期」「去年同期」沿用既有字串（labels.shell.periods.*），不另立；原因碼名稱沿用既有標籤。
+  chartsV4: {
+    coverage: {},
+    issues: {},
+  },
 } as const;
 
 // ── importWizard：匯入精靈：步驟文字（沿用 v2 鍵）、各步驟元件（panel）、欄位說明與提示（guidance）

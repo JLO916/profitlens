@@ -2903,3 +2903,12 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
    min-width: 0 讓 C25 的量寬容器隨議程欄寬縮放，390 不撐出頁面橫向捲動。沒有 .panel 外框（議程項本身不是卡片，也不套卡片）。 */
 .meeting-agenda-item > .chart-section.meeting-scenarios-chart { min-width: 0; margin: 0; }
 /* ── V4-6 B 錨點結束 ── */
+
+/* ── V4-7a A：C30 Timeline、G20 涵蓋時間軸（代理 A） ── */
+/* ── V4-7a A 錨點結束 ── */
+
+/* ── V4-7a B：C28 HeatTable matrix、G21 問題分布表、問題表篩選片語（代理 B） ── */
+/* ── V4-7a B 錨點結束 ── */
+
+/* ── V4-7a C：資料來源頁整合（代理 C） ── */
+/* ── V4-7a C 錨點結束 ── */
