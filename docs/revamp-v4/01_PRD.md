@@ -40,7 +40,7 @@
 
 **成本與節奏**：16 批，一批一個工作階段，所以**至少** 16 個工作階段。V4-0a 到 V4-2 是 MVP 切線（總覽完成），之後經使用者當次同意可部署 preview（D-V4-28）。人工關卡兩個：H5 v4 設計稿審查（擋 V4-1）、H6 v4 複測與盲評（擋 v4.0.0 正式上線）。
 
-**不會變的事**：所有數字與算法（golden：本期 255.00、差額 −315.00、試算 284.00／264.00／19.70）；備份 schema `profitlens-workspace-v5`；CSV／JSON 欄位與數值；隱私邊界（不上傳、不登入、公開站不用 AI）；所有功能、匯出入口與既有 testid。
+**不會變的事**：所有數字與算法（golden：本期 255.00、差額 −315.00、試算 284.00／264.00／19.70）；備份 schema `profitlens-workspace-v5`（V4-7c 只加選填的匯入時間，版本字串不變）；CSV／JSON 欄位與數值；隱私邊界（不上傳、不登入、公開站不用 AI）；所有功能、匯出入口與既有 testid。
 
 **三大風險與處理**
 
@@ -170,7 +170,7 @@ v3 的目標是「去 AI 製作感、三層閱讀」，圖只做到 B3「表格�
 
 - 不新增財務口徑：新圖只重新呈現既有數字；需要產生新數值（加總、佔比、累計、計數、分階、分段）時，只在 `src/application` 用 `Decimal`／`sumAmounts`／`ratioMetric`，每個函式有獨立版本常數與手算 golden（比照 `src/application/breakeven-mer.ts:10` 的 `breakeven-mer-v1`）。
 - 不做預測（等速目標線、run-rate 推估）、不做 SKU 層的費用或廣告分攤、不做龍捲風與敏感度網格、不在試算範圍 [−90%, +100%] 以外畫任何點或線（`docs/SCENARIOS.md:12、64、68`）。
-- 不刪任何功能、表格、testid、匯出格式或下載入口；不改既有 labels 字串；不改備份 schema；本輪不改 CSV／JSON（D-V4-13）。
+- 不刪任何功能、表格、testid、匯出格式或下載入口；不改既有 labels 字串；不改備份 schema（唯一例外：V4-7c 依 D-V3-30＝A 在 v5 加選填 `payload.active.imported_at`，版本字串不變）；本輪不改 CSV／JSON（D-V4-13）。
 - 不加依賴、不載入外部字型或 CDN；PPT 不用任何圖片 API。
 - 不做 gauge、健康分數、燈號、3D、漸層、陰影、圓餅、甜甜圈、雷達、樹狀圖、旭日圖、桑基、漏斗、區域圖、雙數值軸、brush、zoom、動畫、彩色圓點圖例、裝飾圖示（v3 §4.3 與 X20 延續，新增 X26–X40）。
 - 不做深色模式、角色切換、新頁面、AI 行為變更、新下載入口（PNG／SVG 下載）。
@@ -798,7 +798,7 @@ V4-0a 必須證明 v3.0.0 程式碼 11 條全部為 0；若實測有違規，驗
 
 ### 8.8 相容性
 
-- 備份 schema 維持 `profitlens-workspace-v5`（`src/application/workspace-backup.ts:20`）；snapshot 新增的選填欄位（週列 `units_sold`）不進備份，載入時重算；`channelWeeks` 不放進 snapshot（只在健檢頁與 Excel 匯出時計算）；舊備份 v1–v5 還原矩陣測試不變。
+- 備份 schema 維持 `profitlens-workspace-v5`（`src/application/workspace-backup.ts:20`）；V4-7c（D-V3-30＝A，2026-10-13）在 v5 加選填 `payload.active.imported_at`（只記到分的 UTC，只在匯入精靈套用後寫入；沒有這個鍵的檔與 V4-7b 逐位元組相同；v3.0.0 讀帶此鍵的檔會拒絕，見 V4-7c 驗收）；snapshot 新增的選填欄位（週列 `units_sold`）不進備份，載入時重算；`channelWeeks` 不放進 snapshot（只在健檢頁與 Excel 匯出時計算）；舊備份 v1–v5 還原矩陣測試不變。
 - CSV、JSON 不變（D-V4-13）；Excel 新增工作表、PPT 版面加圖、Markdown 新增表，記入 RELEASES（Excel 新工作表與 PPT 版面屬使用者可見的變更）。
 - 瀏覽器支援與列印（A4 直式）同 v3；既有 E2E 定位器（`path.chart-bar-link`、`.bridge-total`、`chart-point-hit`）全部保留。
 

@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／相關拍板／另需的人工時間。
 >
-> **目前進度：V4-3c 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3c-acceptance.md`；First Load JS 499,443，剩 45,954 bytes；D-V4-43＝A、D-V4-44＝B＋C）。V4-4 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-4-acceptance.md`；First Load JS 500,188，剩 45,209 bytes；D-V4-45＝B 排入 V4-8）。V4-5 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-5-acceptance.md`；First Load JS 507,258，剩 38,139 bytes；D-V4-46＝B 已補做、D-V4-47＝B）。V4-6 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-6-acceptance.md`；First Load JS 508,934，剩 36,463 bytes；D-V4-48–50 已拍板並補做）。V4-7a 完成（2026-10-12；驗收見 `verification/revamp-v4-V4-7a-acceptance.md`；First Load JS 510,564，剩 34,833 bytes；D-V4-51–54 已拍板並補做）。V4-7b 完成（2026-10-12；驗收見 `verification/revamp-v4-V4-7b-acceptance.md`；First Load JS 511,174，剩 34,223 bytes；沒有新增待拍板）。V4-3b 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3b-acceptance.md`）。V4-2 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-2-acceptance.md`），MVP 切線已到（preview 部署需使用者當次同意）。2026-10-09 使用者回覆「待拍版的都用建議值」：D-V3-26／27／29–37 依建議值，新增批次 V4-7c，共 17 批。V4-1 完成（2026-10-08）。D-V4-1–41 全部定案。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
+> **目前進度：V4-3c 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3c-acceptance.md`；First Load JS 499,443，剩 45,954 bytes；D-V4-43＝A、D-V4-44＝B＋C）。V4-4 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-4-acceptance.md`；First Load JS 500,188，剩 45,209 bytes；D-V4-45＝B 排入 V4-8）。V4-5 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-5-acceptance.md`；First Load JS 507,258，剩 38,139 bytes；D-V4-46＝B 已補做、D-V4-47＝B）。V4-6 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-6-acceptance.md`；First Load JS 508,934，剩 36,463 bytes；D-V4-48–50 已拍板並補做）。V4-7a 完成（2026-10-12；驗收見 `verification/revamp-v4-V4-7a-acceptance.md`；First Load JS 510,564，剩 34,833 bytes；D-V4-51–54 已拍板並補做）。V4-7b 完成（2026-10-12；驗收見 `verification/revamp-v4-V4-7b-acceptance.md`；First Load JS 511,174，剩 34,223 bytes；沒有新增待拍板）。V4-7c 完成（2026-10-13；驗收見 `verification/revamp-v4-V4-7c-acceptance.md`；v5 加選填 `payload.active.imported_at`，版本字串不變；First Load JS 511,610，剩 33,787 bytes；新增待拍板 D-V4-55）。V4-3b 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3b-acceptance.md`）。V4-2 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-2-acceptance.md`），MVP 切線已到（preview 部署需使用者當次同意）。2026-10-09 使用者回覆「待拍版的都用建議值」：D-V3-26／27／29–37 依建議值，新增批次 V4-7c，共 17 批。V4-1 完成（2026-10-08）。D-V4-1–41 全部定案。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
 >
 > 本套件寫「V4-0」時指 V4-0a、V4-0b 兩批合稱；「V4-0 實測」「V4-0 基準」都是 V4-0a 量到的 v3.0.0 值。原本的 V4-0（13 項，含 AST 掃描器、capture 與 metrics、PPT spike、合成資料、四頁兩尺寸設計稿與全套基準量測）與 V4-7（4 張圖、跨資料來源、匯入精靈、抽屜三個介面）在開工前依工作量拆成 a／b（CLAUDE.md：批次太大要在開工前拆；v3 的設計稿放在 L 級的 V3-1，不在 V3-0）。
 
@@ -72,7 +72,7 @@
 | V4-6 | 會議紀錄（G19、G15 會議實例；G18 取消） | M | V4-5 | — | 完成（2026-10-10；只有 08 變動；390 會議切頁 TBT 987.6） |
 | V4-7a | 資料來源（G20、G21、問題表篩選） | M | V4-6；D-V4-40（V4-0b 新增，2026-10-08 定為 A） | — | 完成（2026-10-12；只有 09 變動；390 TBT 以同場 6 對判定） |
 | V4-7b | 匯入精靈與抽屜（G22、G23、`ladderMetrics` 搬移） | M | V4-7a | — | 完成（2026-10-12；只有 desktop、laptop 的 12 變動；390 TBT 低負載三次通過） |
-| V4-7c | 匯入時間寫進備份（D-V3-30＝A，2026-10-09 新增） | S | V4-7b；D-V3-30 | — | 未開工 |
+| V4-7c | 匯入時間寫進備份（D-V3-30＝A，2026-10-09 新增） | S | V4-7b；D-V3-30 | — | 完成（2026-10-13；v5 加選填欄位；畫面 0 差異；390 TBT 低負載三次通過） |
 | V4-8 | 投影與四尺寸總檢 | M | V4-1 到 V4-7b；D-V4-8、9、33；D-V4-35（回覆 B 而 V4-1 時尚未回覆）；D-V3-33、34（回覆後）；D-V4-44 B；D-V4-45 B | — | 未開工 |
 | V4-9a | 匯出（一）PDF 與 PPT | M | V4-8；D-V4-10、11、34；D-V4-37（V4-0b 新增，2026-10-08 定為 A） | PPT、PDF 開檔人工檢查半天 | 未開工 |
 | V4-9b | 匯出（二）Excel 與 Markdown | M | V4-9a；D-V4-12、13 | Excel 開檔人工檢查半天 | 未開工 |
@@ -339,6 +339,8 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 **同批 labels 與測試**：不加字串（沿用 V3-8 的「匯入時間」）；擴 `tests/workspace-backup*.test.ts`、`tests/backup-restore-matrix.test.ts`、`tests/data-workspace-v3.test.tsx`；E2E 匯入後備份還原一條。
 
 **相關拍板**：D-V3-30＝A（2026-10-09）。
+
+> **V4-7c 完成補記（2026-10-13）**：決定 v5 加選填 `payload.active.imported_at`（UTC 到分「YYYY-MM-DDTHH:MMZ」，只在精靈匯入後寫入），不升 v6；沒有此欄位的備份與 V4-7b 逐位元組相同。舊程式讀新備份：v3.0.0（`625bfa5`）拒絕帶此欄位的檔（INVALID_WORKSPACE_FORMAT，畫面為既有的「無法讀入…」，不取代目前資料），沒有此欄位的檔照常還原（`verification/revamp-v4/V4-7c/old-reads-new.json`）。**V4-11 寫 RELEASES 時要記入**：v4 匯入後存的備份與本機副本，v3.0.0 讀不了（回滾風險）。審查新增待拍板 D-V4-55（備份與會議紀錄既有的毫秒時間）。
 
 ---
 

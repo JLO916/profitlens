@@ -292,6 +292,22 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-13｜Revamp v4 V4-7c：匯入時間寫進備份的取捨
+
+- **v5 加選填欄位，不升 v6**：
+  - PRD §1 與 §8.8 都寫備份 schema 字串維持 `profitlens-workspace-v5`，06 也建議這樣做。
+  - 新程式讀舊備份：完全不變。
+  - 舊程式（v3.0.0 正式站）讀新備份：只有精靈匯入後的備份帶 `imported_at`，v3.0.0 會拒絕。錯誤碼是 INVALID_WORKSPACE_FORMAT，畫面顯示既有的「無法讀入…」，目前資料不會被取代（`verification/revamp-v4/V4-7c/old-reads-new.json`）。示範、golden、還原舊備份後再備份的檔，與 V4-7b 逐位元組相同，v3.0.0 照常還原。
+  - 如果升 v6，所有新檔在 v3.0.0 都會被拒（WORKSPACE_VERSION_UNSUPPORTED），回滾時影響更大。
+- **欄位放在 `payload.active.imported_at`**：它屬於目前使用中的來源。做法與 V3-9a 的 `items[].ad_decision` 相同：只在 v5 信封出現，v1–v4 信封帶這個欄位就拒絕。
+- **只記到分的 UTC「YYYY-MM-DDTHH:MMZ」**：
+  - 用 zod `z.iso.datetime({ precision: -1 })` 驗證；匯出前一律經 `importedAtMinute` 取整。
+  - 畫面本來就只顯示到分（台北時間），所以還原後文字逐字相同。
+  - `importedAtMinute` 放在獨立的小模組 `src/application/imported-at.ts`，不依賴 zod，避免 dashboard 首載拉進備份模組（First Load JS 只多 436 bytes）。
+- **載入示範或 golden 時，匯入時間改在載入成功後才清空**（原本是開始載入就清空）：原本載入失敗、按「回到上次成功的資料」時，會留下匯入的資料卻沒有匯入時間，之後的備份也會少掉它。現在匯入時間永遠屬於目前的資料。
+- **E2E 改寫**：revamp-r4 原本斷言「還原後沒有匯入時間列」（V3-8 行為），改為「還原後有一列、文字逐字相同」。「還原沒有 `imported_at` 的備份後這一列消失」改由新 spec 的示範資料備份驗證。
+- **既有的毫秒時間不在本批範圍**：`review_session.created_at`、`saved_at` 等列為待拍板 D-V4-55，回覆前維持現況。
+
 ## 2026-10-12｜Revamp v4 V4-7b：匯入精靈與抽屜的取捨
 
 - **「相符」放在條的位置，0.00 照舊顯示**：PRD 寫「標相符」，沒說拿掉差額。v3 的 0.00 是對帳結果本身，既有字串與 `import.spec` 步驟 4 的定位器都不變。「相符」與數字之間有空白文字節點，報讀時分開唸。若要只顯示「相符」，需要另外拍板。

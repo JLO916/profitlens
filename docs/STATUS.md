@@ -1,5 +1,36 @@
 # Status
 
+## Revamp v4｜V4-7c 匯入時間寫進備份（完成；D-V3-30＝A）
+
+使用者 2026-10-12 回覆「V4-7c」。這批的做法：
+
+- 備份版本字串維持 `profitlens-workspace-v5`，只多一個選填欄位 `payload.active.imported_at`。格式是只記到分的 UTC「YYYY-MM-DDTHH:MMZ」，只在匯入精靈套用後寫入。
+- 還原備份後，資料來源頁「版本與來源資訊」照樣顯示匯入時間，文字與還原前逐字相同。
+- 示範資料、golden 與還原舊備份時，匯入時間都是空的；沒有這個欄位的備份與 V4-7b 逐位元組相同（`1e195ba` 產生的 SHA-256 基準）。
+- v1–v5 還原照舊。v1–v4 信封如果帶這個欄位，一律拒絕。
+
+舊程式讀新備份：v3.0.0 正式站的程式拒絕帶匯入時間的檔（INVALID_WORKSPACE_FORMAT，不取代目前資料），沒有這個欄位的檔照常還原。
+
+最終驗收（`e2b0b82`）：
+
+- typecheck、lint、contrast（85／85）exit 0；audit:ui 與 V4-7b 相同。
+- unit 161 檔／3,244 全過；build 通過。
+- E2E 1,001 passed／0 failed／15 skipped。
+- 52 張畫面基準 0 差異，逐位元組相同。
+- First Load JS 511,610（多 436，剩 33,787）。
+- axe、keyboard-walk 與 V4-7b 完全相同。
+- network-log 只有備份多 34 bytes（依設計），其餘四個下載不變。
+- Lighthouse a11y 全 100。
+- 390 TBT 低負載三次五項都通過：載入示範資料 1,069.4、健檢 827.0、商品 92.3、會議 1,002.9、資料來源 15.7。
+
+審查新增待拍板 D-V4-55（備份與會議紀錄既有的毫秒時間，建議 A 維持現況）。
+
+其他：
+
+- 禁區四條命令都是空的；commit 之後的 diff（收尾 `{V4_7C_CLOSE}`）也是空的。
+
+驗收文件：`verification/revamp-v4-V4-7c-acceptance.md`；量測與截圖在 `verification/revamp-v4/V4-7c/`。下一批是 V4-8，投影與四尺寸總檢。
+
 ## Revamp v4｜V4-7b 匯入精靈與抽屜（完成；G22、G23、`ladderMetrics` 搬移）
 
 使用者 2026-10-12 回覆「V4-7b」。V4-7b 依 06_BATCHES 完成以下三項：
