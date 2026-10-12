@@ -415,7 +415,7 @@ describe("V4-7b G22 對帳表差額條", () => {
     expect(table).not.toContain("chart-import-reconciliation-bar-");
     expect(table).not.toContain("data-chart-kind");
     expect(occurrences(table, `<span class="reconciliation-match">${match}</span>`)).toBe(9);
-    for (const row of fields) expect(differenceCell(html, row.field), row.field).toBe(`<td class="num"><span class="reconciliation-match">${match}</span>${formatSignedDelta(row.difference, "L3")}</td>`);
+    for (const row of fields) expect(differenceCell(html, row.field), row.field).toBe(`<td class="num"><span class="reconciliation-match">${match}</span> ${formatSignedDelta(row.difference, "L3")}</td>`);
   });
 
   it("有差額（golden 檢核後改來源檔第一列）：條數＝差額 ≠ 0 的列數（3）；條在該列差額格內、數字之前；共用零線與尺度（|差額| 最大值）：原價收入半寬往左、折扣往右、廣告費往左；其餘 6 列「相符」", () => {
@@ -441,7 +441,7 @@ describe("V4-7b G22 對帳表差額條", () => {
     expect(barCellGeometry({ mode: "variance", value: MISMATCH_DIFFERENCES.gross_sales, max: scale })).toMatchObject({ direction: "left", bar: { x: 0, width: 48 } });
     expect(barCellGeometry({ mode: "variance", value: MISMATCH_DIFFERENCES.discounts, max: scale })).toMatchObject({ direction: "right", bar: { x: 48, width: 24 } });
     expect(barCellGeometry({ mode: "variance", value: MISMATCH_DIFFERENCES.ad_spend, max: scale })).toMatchObject({ direction: "left", bar: { x: 36, width: 12 } });
-    for (const row of fields.filter(item => !differing.includes(item))) expect(differenceCell(html, row.field), row.field).toBe(`<td class="num"><span class="reconciliation-match">${match}</span>${formatSignedDelta(row.difference, "L3")}</td>`);
+    for (const row of fields.filter(item => !differing.includes(item))) expect(differenceCell(html, row.field), row.field).toBe(`<td class="num"><span class="reconciliation-match">${match}</span> ${formatSignedDelta(row.difference, "L3")}</td>`);
     // 條只是視覺輔助：不可聚焦、不可點（精靈資料尚未提交，PRD §8.7 例外）；對帳表的其他欄與 testid 不變。
     for (const [, , inner] of bars) expect(inner).not.toMatch(/tabindex|<button|<a\s/);
     expect(table).not.toContain("is-clickable");

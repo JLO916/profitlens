@@ -24,10 +24,13 @@ const isMatched = (difference: string | null) => difference !== null && Number(d
  * V4-7b G22（CHART_CATALOG G22、PRD §4.2、§6.3 C24）：對帳表差額格。差額 ≠ 0 的列在數字前加 C24 variance 差額條
  * （共用零線與尺度＝全部列的 |差額| 最大值；不利色 chartColors.unfavorable，PRD §4.5；aria-hidden、不可聚焦、不可點：精靈資料尚未提交，PRD §8.7 例外）；
  * 差額＝0 不畫條，條的位置標「相符」；無法對帳（null）照 v3 只寫原因。差額數字（formatSignedDelta L3）照舊。
+ * 「相符」與數字之間留一個空白文字節點：格的文字與無障礙名稱是「相符 0.00」（標示＋數字，不黏成一串）；
+ * 「相符」是 float、空白落在行首會被收掉，畫面不變。
  */
 function ReconciliationDifference({ field, difference, scale, reasons }: { field: string; difference: string | null; scale: string | null; reasons: string }) {
   if (difference == null) return <>{fill(panel.cannotReconcile, { reasons })}</>;
-  return <>{isMatched(difference) ? <span className="reconciliation-match">{chartsCopy.match}</span> : <BarCell mode="variance" value={difference} max={scale} tone="unfavorable" testId={`chart-import-reconciliation-bar-${field}`} />}{formatSignedDelta(difference, "L3")}</>;
+  if (isMatched(difference)) return <><span className="reconciliation-match">{chartsCopy.match}</span>{" "}{formatSignedDelta(difference, "L3")}</>;
+  return <><BarCell mode="variance" value={difference} max={scale} tone="unfavorable" testId={`chart-import-reconciliation-bar-${field}`} />{formatSignedDelta(difference, "L3")}</>;
 }
 
 /** §7.7.2 步驟 4 頂部狀態一行（L1）：可以套用／可套用已有範圍／無法套用；數字一律經 presentation 的整數千分位。 */

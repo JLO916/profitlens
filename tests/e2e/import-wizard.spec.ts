@@ -244,13 +244,13 @@ test("含稅匯入從「匯入資料」到「套用」最多 5 次點擊（inclu
   await expect(wizardStatus(page)).toHaveText(statusReady(wizardRoles.length, await fixtureRows(inclusive)));
   await expect(wizardResultNote(page)).toHaveText(copy.result.valid);
   // V4-7b G22（CHART_CATALOG G22）：步驟 4 對帳表——差額條數＝差額 ≠ 0 的列數，差額 0 的列在條的位置標「相符」；只讀不點，點擊數照舊。
-  // 期待值在 Node 端以同一組 reducer 與 buildImportReconciliation 算（含稅 inclusive_tax 的 9 列差額都是 0，所以 0 條、9 個「相符」）。
+  // 期待值在 Node 端以同一組 reducer 與 buildImportReconciliation 算（含稅 inclusive_tax 的 9 列差額都是 0，所以 0 條、9 個「相符」）；差額格文字＝「相符」＋空白＋差額數字。
   const rows = wizardCheck(inclusive, "inclusive").reconciliation;
   await expect(reconciliationBars(page)).toHaveCount(rows.filter(differs).length);
   await expect(reconciliationMatches(page)).toHaveCount(rows.filter(row => row.difference !== null && !differs(row)).length);
   for (const row of rows) {
     const cell = page.getByTestId(`reconciliation-${row.field}`).locator("td").last();
-    if (row.difference !== null && !differs(row)) await expect(cell, row.field).toHaveText(`${copy.chartsV4.reconciliation.match}${formatSignedDelta(row.difference, "L3")}`);
+    if (row.difference !== null && !differs(row)) await expect(cell, row.field).toHaveText(`${copy.chartsV4.reconciliation.match} ${formatSignedDelta(row.difference, "L3")}`);
   }
   await count(() => commitButton(page).click());
   await expect(wizard(page)).toHaveCount(0);
