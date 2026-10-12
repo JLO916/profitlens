@@ -1,0 +1,23 @@
+{
+  "$comment": "V4-7c 開工前在 V4-7b 收尾的程式（1e195ba，還沒有 imported_at）以固定時間匯出的四份備份：UTF-8 位元組數與 SHA-256。產生方式見 tests/helpers/backup-bytes.ts；tests/workspace-backup-imported-at.test.ts 斷言之後同樣的來源（沒有 imported_at）逐位元組相同。",
+  "generated_at_commit": "1e195ba",
+  "saved_at": "2026-10-07T06:05:42.123Z",
+  "cases": {
+    "golden": {
+      "bytes": 2759,
+      "sha256": "8fe9cc4b7372192b751fee985624d046eda97cb25d1721781d6647f929358e34"
+    },
+    "demo": {
+      "bytes": 263439,
+      "sha256": "eb9e085a14746edb0648611dfe8f4bf655633e471b8a6ed787506b0081e33c87"
+    },
+    "full": {
+      "bytes": 17395,
+      "sha256": "a8e51424a2756863ab717b921a0784bd471cea0b3320d2f3f5fe1f7df908a10b"
+    },
+    "full-ad-increase": {
+      "bytes": 17420,
+      "sha256": "535ac618db8a0dafa1accdab14d2c9563ea7209d9df945c2cd7b9868f6374130"
+    }
+  }
+}

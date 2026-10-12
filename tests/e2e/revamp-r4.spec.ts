@@ -138,9 +138,12 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await expect(periodSummary(page)).toContainText(MONTH_SUMMARY);
   await expect(kpi(page, "net_revenue")).toHaveText(formatAmountL1("6200.00"));
   await navigateTo(page, "data");
-  // V3-8（§7.7.1 第 8 點）：精靈匯入後「版本與來源資訊」多一列「匯入時間」（還原備份後沒有這一列）。
+  // V3-8（§7.7.1 第 8 點）：精靈匯入後「版本與來源資訊」多一列「匯入時間」。V4-7c（D-V3-30＝A）：匯入時間寫進備份 v5（active.imported_at，只記到分），還原後這一列照樣在、文字逐字相同。
   const importedAtRow = versionInfo(page).locator("dt").filter({ hasText: labels.data.pageV3.version.importedAt });
+  const importedAtValue = importedAtRow.locator("xpath=following-sibling::dd[1]");
   await expect(importedAtRow).toHaveCount(1);
+  const importedAtText = (await importedAtValue.textContent())!;
+  expect(importedAtText).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
   const targetsCsv = ["period_start,period_end,channel,metric,target", "2026-08-01,2026-08-31,ALL,net_revenue,8000.00", "2026-07-01,2026-07-31,ALL,gross_profit,5000.00"].join("\n");
   await page.getByLabel(labels.targets.upload, { exact: true }).setInputFiles({ name: "targets.csv", mimeType: "text/csv", buffer: Buffer.from(targetsCsv) });
   await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(2);
@@ -204,8 +207,10 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   const storage = await openStorage(page);
   const [backup] = await Promise.all([page.waitForEvent("download"), storage.getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true }).click()]);
   const text = await readFile((await backup.path())!, "utf8");
-  const wire = JSON.parse(text) as { schema_version: string; payload: { targets: { rows: unknown[] } | null; events: { rows: unknown[] } | null; preprocessing: unknown; meeting_history: unknown[]; ui_prefs: Record<string, unknown> } };
+  const wire = JSON.parse(text) as { schema_version: string; payload: { active: { imported_at?: string }; targets: { rows: unknown[] } | null; events: { rows: unknown[] } | null; preprocessing: unknown; meeting_history: unknown[]; ui_prefs: Record<string, unknown> } };
   expect(wire.schema_version).toBe(WORKSPACE_VERSION);
+  // V4-7c：精靈匯入的資料，備份帶到分的 UTC 匯入時間。
+  expect(wire.payload.active.imported_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$/);
   expect(wire.payload.targets?.rows).toHaveLength(2);
   expect(wire.payload.events?.rows).toHaveLength(1);
   expect(wire.payload.preprocessing).toBeNull();
@@ -221,11 +226,12 @@ test("目標與檔期：KPI 卡達成率只在期間完全相同時顯示、趨�
   await closeStorage(page);
   // 資料頁可逐列刪除：刪掉毛利那列後只剩一列。
   await navigateTo(page, "data");
-  // 還原後的資料來源頁：目標與檔期表回來；先前讀檔留下的錯誤清單清空；沒有「匯入時間」列。
+  // 還原後的資料來源頁：目標與檔期表回來；先前讀檔留下的錯誤清單清空；V4-7c（D-V3-30＝A）起「匯入時間」列仍在，文字與備份前逐字相同（V3-8 時這一列會消失）。
   await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(2);
   await expect(page.getByTestId("events-table").locator("tbody tr")).toHaveCount(1);
   await expect(page.getByTestId("targets-issues")).toHaveCount(0);
-  await expect(importedAtRow).toHaveCount(0);
+  await expect(importedAtRow).toHaveCount(1);
+  await expect(importedAtValue).toHaveText(importedAtText);
   await page.getByTestId("targets-table").getByRole("button", { name: `${labels.targets.removeRow} 3`, exact: true }).click();
   await expect(page.getByTestId("targets-table").locator("tbody tr")).toHaveCount(1);
 });

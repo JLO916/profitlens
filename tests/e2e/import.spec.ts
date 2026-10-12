@@ -381,7 +381,7 @@ for (const incomplete of [
     await expect(version).toHaveAttribute("open", "");
     await expect(version).toContainText("contribution-v1");
     await expect(version).toContainText(ASSIST_KPI_VERSION);
-    // 精靈套用後記下匯入時間（示範／golden 載入與還原備份沒有這一列）。
+    // 精靈套用後記下匯入時間（示範／golden 載入沒有這一列；V4-7c 起還原匯入後的備份會帶回，見 backup-imported-at-v47c.spec）。
     await expect(version.getByText(labels.data.pageV3.version.importedAt, { exact: true })).toBeVisible();
   });
 }

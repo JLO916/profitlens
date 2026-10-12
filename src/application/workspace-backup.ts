@@ -15,8 +15,9 @@ import { MAX_TARGET_ROWS, targetRowIssues, type TargetRow, type TargetSet } from
 import { MAX_EVENT_ROWS, eventRowIssues, type EventSet } from "./events";
 import { convertInclusiveAmount } from "./tax-basis";
 import { formatCents } from "@/domain/money";
+import { importedAtMinute } from "./imported-at";
 
-/** V3-9a（PRD §10.1 F13、§6.3 #60、§11.8）：目前寫出 v5＝v4＋待辦的選填 ad_decision；v1–v4 仍可還原（舊檔沒有此欄位＝不標）。 */
+/** V3-9a（PRD §10.1 F13、§6.3 #60、§11.8）：目前寫出 v5＝v4＋待辦的選填 ad_decision；v1–v4 仍可還原（舊檔沒有此欄位＝不標）。V4-7c（D-V3-30＝A）在 v5 加選填 active.imported_at，版本字串不變。 */
 export const WORKSPACE_VERSION = "profitlens-workspace-v5";
 /** R4–V3-8 寫出的版本；V3-9a 起是歷史版本，只讀。 */
 export const WORKSPACE_V4 = "profitlens-workspace-v4";
@@ -40,6 +41,8 @@ export interface WorkspaceBackupSource {
   preprocessing?: WorkspacePreprocessing | null; targets?: TargetSet | null; events?: EventSet | null; ui_prefs?: WorkspaceUiPrefs;
   /** R6 會議紀錄（已結束、只讀）；沒有就寫入 []。 */
   meeting_history?: readonly Meeting[];
+  /** V4-7c（D-V3-30＝A）：匯入精靈套用的時間；importedAtMinute 正規化到分（UTC）後寫進 payload.active.imported_at，沒有值（示範、golden、舊備份）就不寫這個鍵。 */
+  imported_at?: string | null;
 }
 export interface RestoredWorkspace extends Omit<WorkspaceBackupSource, "filters"> {
   action_workspace: ActionWorkspace;
@@ -52,6 +55,8 @@ export interface RestoredWorkspace extends Omit<WorkspaceBackupSource, "filters"
   issues: ValidationResult["issues"]; classification: "valid" | "partial";
   /** V3-9a 收尾：來源信封的 schema_version（v1–v5），給「這版改了什麼」判斷用（v5 是 v3 寫的，不再提示）。 */
   restored_schema_version?: string;
+  /** V4-7c：v5 有 active.imported_at 就原樣讀回（"YYYY-MM-DDTHH:MMZ"）；v5 沒有此欄位與 v1–v4 一律 null。 */
+  imported_at: string | null;
 }
 const name = z.string().min(1).max(500);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -173,7 +178,10 @@ const v4CorePayload = z.strictObject({ ...v3PayloadShape, decision: referencedDe
 // V3-9a（F13）v5 加法：待辦 items[] 的廣告決策標籤（選填，只在 v5 信封）；v4 沒有 → 讀回 undefined；v1–v4 信封帶此欄位一律 INVALID_WORKSPACE_FORMAT（v4 的 savedActionV4 仍是 strict）。
 const savedActionV5 = savedActionV4.extend({ ad_decision: z.enum(AD_DECISIONS).optional() });
 const referencedActionWorkspaceV5 = referencedActionWorkspaceV4.extend({ items: z.array(savedActionV5) });
-const v5CorePayload = v4CorePayload.extend({ action_workspace: referencedActionWorkspaceV5 });
+// V4-7c（D-V3-30＝A）v5 加法：匯入時間 active.imported_at（選填，只在 v5 信封；UTC 到分 "YYYY-MM-DDTHH:MMZ"，precision −1 不接受秒、毫秒與時區位移，日期要存在）；
+// v5 沒有 → 讀回 null；v1–v4 信封帶此欄位一律 INVALID_WORKSPACE_FORMAT（v1–v4 的 active 仍是 strict）。
+const importedAt = z.iso.datetime({ precision: -1 });
+const v5CorePayload = v4CorePayload.extend({ active: v3PayloadShape.active.extend({ imported_at: importedAt.optional() }), action_workspace: referencedActionWorkspaceV5 });
 /** restoreV3 讀的 payload：v5 核心（v3／v4 是它的子集，只是沒有 R5、V3-9a 的選填欄位）。 */
 type CorePayload = z.infer<typeof v5CorePayload>;
 /** restoreDecision 讀的方案：v1–v3 沒有 sensitivity（型別上是選填，讀取時仍以 "sensitivity" in plan 守衛）。 */
@@ -190,7 +198,7 @@ const v4EnvelopeSchema = z.strictObject({
   // .extend keeps the strict (no unknown keys) object config.
   payload: v4CorePayload.extend(v4SideData),
 });
-/** V3-9a v5 信封（目前寫出）：v4 信封＋items[].ad_decision（選填）；側邊資料、checksum、上限與完整性檢查都與 v4 相同。 */
+/** V3-9a v5 信封（目前寫出）：v4 信封＋items[].ad_decision（選填）＋V4-7c active.imported_at（選填）；側邊資料、checksum、上限與完整性檢查都與 v4 相同。 */
 const envelopeSchema = z.strictObject({
   schema_version: z.literal(WORKSPACE_VERSION), metric_version: z.literal("contribution-v1"), scenario_version: z.literal(SCENARIO_VERSION), saved_at: z.iso.datetime(), checksum: hash,
   payload: v5CorePayload.extend(v4SideData),
@@ -317,6 +325,8 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
     const { source_input: reviewInput, ...review } = source.review_session;
     reviewSession = { ...review, source_hash: await register(reviewInput) };
   }
+  // V4-7c：匯入時間只記到分；正規化不出值（沒有、空字串、格式不對）就不寫這個鍵，示範、golden 與舊備份還原後的匯出位元組與 V4-7b 相同。
+  const importedAtValue = source.imported_at == null ? null : importedAtMinute(source.imported_at);
   const uiPrefs: WorkspaceUiPrefs = {
     ...(source.ui_prefs?.last_preset !== undefined ? { last_preset: source.ui_prefs.last_preset } : {}),
     ...(source.ui_prefs?.view !== undefined ? { view: source.ui_prefs.view } : {}),
@@ -324,7 +334,7 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
   const body = {
     schema_version: WORKSPACE_VERSION, metric_version: "contribution-v1", scenario_version: SCENARIO_VERSION, saved_at: new Date().toISOString(),
     payload: {
-      sources, active: { source_hash: activeHash, filters: snapshot.report.scope, id: source.id, revision: source.revision, filenames: source.filenames ?? {}, mappings: source.mappings ?? {} }, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession,
+      sources, active: { source_hash: activeHash, filters: snapshot.report.scope, id: source.id, revision: source.revision, filenames: source.filenames ?? {}, mappings: source.mappings ?? {}, ...(importedAtValue ? { imported_at: importedAtValue } : {}) }, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession,
       preprocessing: source.preprocessing ? { conversion: plain(source.preprocessing.conversion), raw_values: plain(source.preprocessing.raw_values) } : null,
       targets: source.targets ? plain(source.targets) : null, events: source.events ? plain(source.events) : null,
       meeting_history: plain(source.meeting_history ?? []), ui_prefs: uiPrefs,
@@ -358,17 +368,17 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
   let actual: string;
   try { actual = await checksum(body); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
   if (actual !== expected) throw new Error("WORKSPACE_CHECKSUM_MISMATCH");
-  // v5 與 v4 走同一條還原路徑（v5 只多 items[].ad_decision）；v4 檔沒有此欄位，讀回 undefined（不標）。
+  // v5 與 v4 走同一條還原路徑（v5 只多 items[].ad_decision 與 V4-7c 的 active.imported_at）；v4 檔沒有這兩個欄位，讀回 undefined（不標）與 null。
   const restored_schema_version = body.schema_version;
   if (body.schema_version === WORKSPACE_VERSION || body.schema_version === WORKSPACE_V4) return { ...await restoreV4((body as Omit<z.infer<typeof envelopeSchema>, "checksum">).payload), restored_schema_version };
-  if (body.schema_version === WORKSPACE_V3) return { ...await restoreV3((body as Omit<z.infer<typeof v3EnvelopeSchema>, "checksum">).payload), ...EMPTY_V4_FIELDS(), restored_schema_version };
-  return { ...await restoreLegacy(body as Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">), ...EMPTY_V4_FIELDS(), restored_schema_version };
+  if (body.schema_version === WORKSPACE_V3) return { ...await restoreV3((body as Omit<z.infer<typeof v3EnvelopeSchema>, "checksum">).payload), ...EMPTY_V4_FIELDS(), imported_at: null, restored_schema_version };
+  return { ...await restoreLegacy(body as Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">), ...EMPTY_V4_FIELDS(), imported_at: null, restored_schema_version };
 }
 
 type V4Fields = Pick<RestoredWorkspace, "preprocessing" | "targets" | "events" | "ui_prefs" | "meeting_history">;
 const EMPTY_V4_FIELDS = (): V4Fields => ({ preprocessing: null, targets: null, events: null, ui_prefs: {}, meeting_history: [] });
 
-/** v4 與 v5 的 payload（v5 只多 items[].ad_decision 選填）。 */
+/** v4 與 v5 的 payload（v5 只多 items[].ad_decision 與 active.imported_at，都是選填）。 */
 async function restoreV4(wire: z.infer<typeof envelopeSchema>["payload"]): Promise<RestoredWorkspace> {
   const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: savedMeetings, ...payload } = wire;
   // 會議紀錄逐筆語意檢查、id 不可重複；來源還在備份裡的會議另在 restoreV3 之後重算核對金額（verifyMeetingHistory）。
@@ -403,7 +413,8 @@ async function restoreV4(wire: z.infer<typeof envelopeSchema>["payload"]): Promi
     ui_prefs: structuredClone(savedPrefs),
     meeting_history: meetingHistory,
   };
-  return { ...restored, ...v4 };
+  // V4-7c：匯入時間原樣讀回（schema 已驗過到分的 UTC 格式）；restoreV3 只讀 active 的固定欄位，不碰它。
+  return { ...restored, ...v4, imported_at: wire.active.imported_at ?? null };
 }
 
 /**
@@ -445,7 +456,7 @@ async function verifyMeetingHistory(meetings: readonly Meeting[], sources: CoreP
   }
 }
 
-async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">): Promise<Omit<RestoredWorkspace, keyof V4Fields>> {
+async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">): Promise<Omit<RestoredWorkspace, keyof V4Fields | "imported_at">> {
   if (body.schema_version === "profitlens-workspace-v1" && body.payload.action_workspace) throw new Error("INVALID_WORKSPACE_FORMAT");
   const active = body.payload.active;
   const { dataset, snapshot, validation } = await rebuild(active.input, active.filters);
@@ -473,7 +484,7 @@ async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "c
   return { action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: null, input: active.input, dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial" };
 }
 
-async function restoreV3(payload: CorePayload): Promise<Omit<RestoredWorkspace, keyof V4Fields>> {
+async function restoreV3(payload: CorePayload): Promise<Omit<RestoredWorkspace, keyof V4Fields | "imported_at">> {
   // Every saved source, including retained history, passes the same CSV boundary.
   // Cache validated datasets once; each context still rebuilds its own scope.
   const validated = new Map<string, { input: z.infer<typeof input>; validation: ValidationResult; dataset: Dataset }>();

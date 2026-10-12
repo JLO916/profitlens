@@ -199,6 +199,9 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
     // 匯入時間只在呼叫端給 importedAt 時出現（formatSavedDateTime，台北時間）。
     expect(version).not.toContain(v3.version.importedAt);
     expect(element(page(importedSource, { importedAt: "2026-10-07T06:05:00.000Z" }), 'data-testid="data-version-info"')).toContain(`<dt>${v3.version.importedAt}</dt><dd>2026-10-07 14:05</dd>`);
+    // V4-7c：備份 v5 的 active.imported_at 是到分的 UTC（importedAtMinute）；還原後原樣傳進來，顯示同一個臺北時間。
+    expect(element(page(importedSource, { importedAt: "2026-10-07T06:05Z" }), 'data-testid="data-version-info"')).toContain(`<dt>${v3.version.importedAt}</dt><dd>2026-10-07 14:05</dd>`);
+    expect(element(page(importedSource, { importedAt: null }), 'data-testid="data-version-info"')).not.toContain(v3.version.importedAt);
     // 欄位對照只列改過名的欄：來源欄名（標準欄位）。
     const renamed = element(page(importedSource, { mappings: { "sales_daily.csv": { gross_sales: "商品折扣前收入", discounts: "discounts" } } }), 'data-testid="data-version-info"');
     expect(renamed).toContain(`<span class="ui-mono">sales_daily.csv</span> · ${fill(v3.version.mappingItem, { original: "商品折扣前收入", standard: "gross_sales" })}</li>`);

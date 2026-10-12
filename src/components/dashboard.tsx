@@ -12,6 +12,7 @@ import { AiCollapse } from "./ai-collapse";
 import { getAiCapability, type AiCapability } from "@/application/ai-client";
 import { ImportWizard } from "./import-wizard";
 import { clearWizardMemory } from "@/application/import-wizard";
+import { importedAtMinute } from "@/application/imported-at";
 import type { RawValuesByFile, TaxConversion } from "@/application/tax-basis";
 import { parseTargets, type TargetIssue, type TargetSet } from "@/application/targets";
 import { parseEvents, type EventIssue, type EventSet } from "@/application/events";
@@ -119,7 +120,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [localConsent, setLocalConsent] = useState(false);
   const [active, setActive] = useState<Active | null>(null);
   const [issues, setIssues] = useState<ValidationIssue[]>([]);
-  /** V3-8（§7.7.1 第 8 點「匯入時間」）：只記這次工作階段由精靈套用的時間；示範／golden 載入、還原備份沒有這個值（備份不存，V3-9 再議）。 */
+  /** V3-8（§7.7.1 第 8 點「匯入時間」）：精靈套用的時間。V4-7c（D-V3-30＝A）起只記到分（UTC，importedAtMinute）並寫進備份 v5 的 active.imported_at，還原時帶回；
+   * 示範／golden 載入、清空與還原沒有此欄位的備份為 null。只跟著換資料（載入成功、匯入、還原、清空）一起換，期間／通路篩選與目標、檔期不動它。 */
   const [importedAt, setImportedAt] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [filterError, setFilterError] = useState("");
@@ -264,7 +266,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     const ticket = ++requestId.current;
     controller.current?.abort();
     const abort = new AbortController(); controller.current = abort;
-    setShowImport(false); setSelected(id); setStatus("loading"); setRefiltering(false); setError(""); setFilterError(""); setIssues([]); setImportedAt(null); setEvidence(null);
+    setShowImport(false); setSelected(id); setStatus("loading"); setRefiltering(false); setError(""); setFilterError(""); setIssues([]); setEvidence(null);
     try {
       const response = await fetch(`/api/datasets/${encodeURIComponent(id)}`, { signal: abort.signal, cache: "no-store" });
       if (!response.ok) throw new Error(labels.shell.state.errors.fetchFailed);
@@ -275,7 +277,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       if (!validation.dataset) { setIssues(validation.issues); throw new Error(labels.shell.state.errors.validationFailed); }
       const snapshot = await createSnapshot(validation.dataset, {}, await hashInput(input));
       if (ticket !== requestId.current) return;
-      activate({ input, dataset: validation.dataset, snapshot, id, revision: ++revision.current }); setIssues(validation.issues);
+      // V4-7c：匯入時間跟著 active 一起換；載入失敗（「返回」回到上一份資料）時保留上一份資料的匯入時間。
+      activate({ input, dataset: validation.dataset, snapshot, id, revision: ++revision.current }); setImportedAt(null); setIssues(validation.issues);
       setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
       setStatus(validation.classification === "partial" ? "partial" : "ready"); setPanel("overview");
@@ -341,7 +344,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       activate({ input: prepared.input, dataset, snapshot, id: `import-${snapshot.dataset_hash}`, revision: ++revision.current, mappings: prepared.columnMappings, filenames: { ...prepared.originalNames, ...(manifestName ? { "manifest.json": manifestName } : {}) }, conversion: prepared.conversion, raw_values: prepared.raw_values });
       setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
-      setIssues(prepared.validation.issues); setImportedAt(new Date().toISOString());
+      setIssues(prepared.validation.issues); setImportedAt(importedAtMinute(new Date()));
       setStatus(prepared.validation.classification === "partial" ? "partial" : "ready");
       setShowImport(false); setPanel("overview");
       track("import_committed");
@@ -409,7 +412,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     setComparisonMode(workspace.snapshot.report.scope.comparison_mode);
     setDates({ previousStart: workspace.snapshot.report.previous.period.start, previousEnd: workspace.snapshot.report.previous.period.end, currentStart: workspace.snapshot.report.current.period.start, currentEnd: workspace.snapshot.report.current.period.end });
     const next = ++versionRef.current; setVersion(next); setSavedVersion(next);
-    setRestoreEpoch(value => value + 1); setShowImport(false); setImportedAt(null); setError(""); setFilterError(""); setPanel("overview");
+    setRestoreEpoch(value => value + 1); setShowImport(false); setImportedAt(workspace.imported_at); setError(""); setFilterError(""); setPanel("overview");
     setStatus(workspace.classification === "partial" ? "partial" : "ready");
     whatsNew.onRestore(workspace.restored_schema_version);
   }
@@ -560,7 +563,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const overviewActions = { pending: actionWorkspace.items.filter(item => item.execution_status !== "completed").length, pinned: actionWorkspace.items.filter(item => item.pinned).slice(0, 3).map(item => ({ problem: item.card.problem, owner: item.card.owner_role, deadline: item.card.deadline })) };
   // V3-7 開工錨點（§6.5 匯出選單新分組「會議：複製週會摘要」、§7.6 會議頁頁首）：與總覽同一份週會摘要輸入；選單由 C 代理接線。
   const copySummaryFromView = () => active ? copyWeeklySummary({ snapshot: active.snapshot, datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, missingItems: issues.length, actions: overviewActions, allChannels: active.dataset.manifest.channels }, typeof navigator === "undefined" ? null : navigator.clipboard) : Promise.resolve({ copied: false, text: "" });
-  const backupSource: WorkspaceBackupSource | null = active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession, preprocessing: active.conversion ? { conversion: active.conversion, raw_values: active.raw_values ?? {} } : null, targets: active.targets ?? null, events: active.events ?? null, meeting_history: meetingHistory, ui_prefs: { ...(lastPreset ? { last_preset: lastPreset } : {}), ...(actionsView ? { view: actionsView } : {}) } } : null;
+  const backupSource: WorkspaceBackupSource | null = active ? { input: active.input, filters: active.snapshot.report.scope, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, imported_at: importedAt, decision, action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: reviewSession, preprocessing: active.conversion ? { conversion: active.conversion, raw_values: active.raw_values ?? {} } : null, targets: active.targets ?? null, events: active.events ?? null, meeting_history: meetingHistory, ui_prefs: { ...(lastPreset ? { last_preset: lastPreset } : {}), ...(actionsView ? { view: actionsView } : {}) } } : null;
 
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">{labels.shell.sidebar.skipLink}</a>

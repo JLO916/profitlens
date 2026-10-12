@@ -23,6 +23,8 @@ import { fixture } from "./helpers/fixtures";
  * - v5 另有：待辦的廣告決策（pause）、目標、檔期、一筆會議紀錄、ui_prefs；v4＝v5 去掉 ad_decision（helpers/full-backup.ts 的 asV4）；
  *   v3＝v4 去掉 preprocessing／targets／events／meeting_history／ui_prefs 與 R5 之後的選填欄位。
  * 還原後再匯出一次（一定寫成 v5）並再還原（round trip）。矩陣寫到 BACKUP_MATRIX_OUT（沒給就不寫）。
+ * V4-7c（D-V3-30＝A）匯入時間維度：上面的 v1–v5 都沒有 active.imported_at（示範與 golden 不是由匯入精靈套用），還原與 round trip 後一律 null；
+ * golden 另加「v5（匯入後）」一列：同一個工作區帶 imported_at 匯出，還原逐字讀回、再匯出 payload 完全相同（矩陣多一欄 imported_at）。
  */
 type Version = "v1" | "v2" | "v3" | "v4" | "v5";
 type DatasetName = "golden" | "demo";
@@ -38,6 +40,8 @@ const DATASET_ID: Record<DatasetName, string> = { golden: "golden-v1", demo: "sy
 const PLAN_INPUTS = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
 const UI_PREFS = { last_preset: "last28", view: "list" as const };
 const V4_KEYS = ["preprocessing", "targets", "events", "meeting_history", "ui_prefs"] as const;
+/** V4-7c：精靈套用的時間（importedAtMinute 寫成到分的 UTC）。 */
+const IMPORTED_AT = "2026-10-07T06:05Z";
 
 /** 兩個到分的金額字串相減（以分為單位的整數運算），回傳到分字串。 */
 function minus(current: string, previous: string): string {
@@ -52,7 +56,7 @@ const amountsOf = (snapshot: WorkspaceSnapshot) => {
   return { current, previous, delta: minus(current, previous) };
 };
 
-interface Built { input: DatasetInput; all: WorkspaceSnapshot; single: WorkspaceSnapshot; channel: string; decision: DecisionWorkspaceState; v5: string; classification: string }
+interface Built { input: DatasetInput; all: WorkspaceSnapshot; single: WorkspaceSnapshot; channel: string; decision: DecisionWorkspaceState; v5: string; v5Imported: string; classification: string }
 async function build(name: DatasetName): Promise<Built> {
   const input = fixture(name);
   const validation = validateDataset(input);
@@ -81,7 +85,8 @@ async function build(name: DatasetName): Promise<Built> {
     input, filters: all.report.scope, id: name, revision: 1, filenames: {}, mappings: {}, decision, action_workspace: actions, scenario_workspace: scenarios, review_session: review,
     preprocessing: null, targets, events, meeting_history: [meeting], ui_prefs: UI_PREFS,
   };
-  return { input, all, single, channel, decision, v5: await exportWorkspaceBackup(backupSource), classification: validation.classification };
+  // V4-7c：同一個工作區、匯入精靈套用時記下的時間（秒與毫秒在匯出時捨去到分）。
+  return { input, all, single, channel, decision, v5: await exportWorkspaceBackup(backupSource), v5Imported: await exportWorkspaceBackup({ ...backupSource, imported_at: "2026-10-07T06:05:42.123Z" }), classification: validation.classification };
 }
 
 /** v3：R4 之前寫出的形狀（沒有 v4 側邊資料、沒有 R5／V3-6／V3-9a 的選填欄位），重算校驗碼。 */
@@ -124,7 +129,9 @@ interface MatrixRow {
   dataset: string; version: string; source: "generated" | "real-file"; envelope_bytes: number; restored: boolean; restored_schema_version: string | undefined; classification: string;
   contribution_after_marketing: { current: string; previous: string; delta: string }; scenario_contribution: string | null; actions: number; ad_decisions: (string | null)[];
   side_data: { preprocessing: boolean; targets: number; events: number; meeting_history: number; ui_prefs: Record<string, unknown> }; review_session: boolean;
-  round_trip: { schema_version: string; restored_schema_version: string | undefined; same_amounts: boolean; envelope_bytes: number }; ms: number;
+  /** V4-7c：還原後的匯入時間（v5 匯入後一列才有值，其餘 null）。 */
+  imported_at: string | null;
+  round_trip: { schema_version: string; restored_schema_version: string | undefined; same_amounts: boolean; imported_at: string | null; envelope_bytes: number }; ms: number;
 }
 const matrix: MatrixRow[] = [];
 
@@ -140,8 +147,8 @@ function record(dataset: string, version: string, source: MatrixRow["source"], t
     contribution_after_marketing: amounts, scenario_contribution: restored.decision.scenarios[0]?.result?.contribution ?? null,
     actions: restored.action_workspace.items.length, ad_decisions: restored.action_workspace.items.map(item => item.ad_decision ?? null),
     side_data: { preprocessing: restored.preprocessing !== null, targets: restored.targets?.rows.length ?? 0, events: restored.events?.rows.length ?? 0, meeting_history: restored.meeting_history.length, ui_prefs: { ...restored.ui_prefs } },
-    review_session: restored.review_session !== null,
-    round_trip: { schema_version: JSON.parse(againText).schema_version, restored_schema_version: again.restored_schema_version, same_amounts: JSON.stringify(amountsOf(again.snapshot)) === JSON.stringify(amounts), envelope_bytes: new TextEncoder().encode(againText).byteLength },
+    review_session: restored.review_session !== null, imported_at: restored.imported_at,
+    round_trip: { schema_version: JSON.parse(againText).schema_version, restored_schema_version: again.restored_schema_version, same_amounts: JSON.stringify(amountsOf(again.snapshot)) === JSON.stringify(amounts), imported_at: again.imported_at, envelope_bytes: new TextEncoder().encode(againText).byteLength },
     ms: Math.round(performance.now() - started),
   });
 }
@@ -193,6 +200,9 @@ describe("V3-10 備份還原矩陣（v1–v5 × golden／demo）", () => {
           }
           // v1／v2 沒有會議稿；v3 起帶回。
           expect(restored.review_session !== null).toBe(version !== "v1" && version !== "v2");
+          // V4-7c：示範與 golden 不是由匯入精靈套用，任何版本的信封都沒有 active.imported_at，還原為 null；v5（含 demo）也沒有這個鍵。
+          expect(JSON.parse(text).payload.active).not.toHaveProperty("imported_at");
+          expect(restored.imported_at).toBeNull();
           // round trip：再匯出一定是 v5，再還原金額、廣告決策與側邊資料都不變。
           expect(JSON.parse(againText).schema_version).toBe(WORKSPACE_VERSION);
           expect(again.restored_schema_version).toBe(WORKSPACE_VERSION);
@@ -202,7 +212,32 @@ describe("V3-10 備份還原矩陣（v1–v5 × golden／demo）", () => {
           expect(again.targets?.rows.length ?? 0).toBe(restored.targets?.rows.length ?? 0);
           expect(again.ui_prefs).toEqual(restored.ui_prefs);
           expect(again.decision.scenarios.find(item => item.id === "plan")?.result?.contribution).toBe(plan?.result?.contribution);
+          expect(JSON.parse(againText).payload.active).not.toHaveProperty("imported_at");
+          expect(again.imported_at).toBeNull();
           record(name, version, "generated", text, restored, again, againText, started);
+        }, 240_000);
+      }
+      if (name === "golden") {
+        it("v5 信封（匯入後，V4-7c）：active.imported_at 到分、還原逐字讀回，再匯出 payload 完全相同；與沒有匯入時間的 v5 只差這個鍵", async () => {
+          const started = performance.now();
+          const b = await ready();
+          const text = b.v5Imported, wire = JSON.parse(text);
+          expect(wire.schema_version).toBe(WORKSPACE_VERSION);
+          expect(wire.payload.active.imported_at).toBe(IMPORTED_AT);
+          const { imported_at: _importedAt, ...activeWithout } = wire.payload.active;
+          void _importedAt;
+          expect(activeWithout).toEqual(JSON.parse(b.v5).payload.active);
+          const { restored, again, againText } = await restoreAndRoundTrip(text);
+          expect(restored.imported_at).toBe(IMPORTED_AT);
+          expect(restored.restored_schema_version).toBe(WORKSPACE_VERSION);
+          expect(amountsOf(restored.snapshot)).toEqual(EXPECTED.golden);
+          expect(restored.decision.scenarios.find(item => item.id === "plan")?.result?.contribution).toBe("284.00");
+          expect(restored.action_workspace.items.map(item => item.ad_decision)).toEqual(["pause"]);
+          expect(restored.meeting_history).toHaveLength(1);
+          expect(restored.ui_prefs).toEqual(UI_PREFS);
+          expect(again.imported_at).toBe(IMPORTED_AT);
+          expect(JSON.parse(againText).payload).toEqual(wire.payload);
+          record(name, "v5 (imported)", "generated", text, restored, again, againText, started);
         }, 240_000);
       }
     });
@@ -218,12 +253,13 @@ describe("V3-10 備份還原矩陣（v1–v5 × golden／demo）", () => {
         expect(restored.classification).toBe("valid");
         expect(restored.restored_schema_version).toBe(SCHEMA.v3);
         expect(amountsOf(restored.snapshot)).toEqual(EXPECTED.golden);
-        expect(restored).toMatchObject({ preprocessing: null, targets: null, events: null, meeting_history: [], ui_prefs: {} });
+        expect(restored).toMatchObject({ preprocessing: null, targets: null, events: null, meeting_history: [], ui_prefs: {}, imported_at: null });
         expect(restored.action_workspace.items.every(item => item.ad_decision === undefined)).toBe(true);
         expect(JSON.parse(againText).schema_version).toBe(WORKSPACE_VERSION);
         expect(again.restored_schema_version).toBe(WORKSPACE_VERSION);
         expect(amountsOf(again.snapshot)).toEqual(EXPECTED.golden);
         expect(again.action_workspace.items).toHaveLength(restored.action_workspace.items.length);
+        expect(again.imported_at).toBeNull();
         record("golden", `v3 (${size})`, "real-file", text, restored, again, againText, started);
       }, 240_000);
     }
