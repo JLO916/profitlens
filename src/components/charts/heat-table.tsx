@@ -11,6 +11,8 @@ import { useMemo, useRef, useState, type FocusEvent, type KeyboardEvent, type Mo
 // 鍵盤（grid 型 roving tabindex）：整個熱表（含多張月曆）只有 1 個 Tab 停留點（上次停留的格，一開始是第一個有值的格）；
 // 方向鍵在格間移動（左右沿 DOM 順序、上下同一欄，跨月曆時接到下一張的同一欄），Home／End 到該列首尾（加 Ctrl 到整個熱表的首尾），
 // Enter 或空白鍵由按鈕原生觸發點擊。點擊、按鍵與聚焦都用外層的事件代理（每格不掛 handler），格數上限 8 × 92＝736（PRD §8.2）。
+// V4-7a 代理 B：檔尾加 HeatMatrix（matrix 排法的按鈕版，G21 問題分布表：列＝檔案、欄＝原因）；HeatTable 與上面的純函式一字不改，
+// G11 的輸出與 V4-6 逐字相同（tests/fixtures/heat-table-v4-6.json）。
 
 export type HeatTableTier = 0 | 1 | 2 | "missing" | "outside";
 /** 一格：outside 只留白；其他格是 number-link（text＝可見文字，aria＝可及名稱，testId＝chart-{page}-{id}-cell-{語意 key}）。 */
@@ -142,4 +144,66 @@ export function HeatTable({ tables, layout, onActivate }: HeatTableProps) {
       </tr>)}</tbody>
     </table>)}
   </div>;
+}
+
+// ---------------------------------------------------------------- V4-7a 代理 B：matrix 排法的按鈕版（G21）
+
+/**
+ * matrix 按鈕版的一格（PRD §6.3 C28 matrix 排法、§4.4 G21）：key＝欄的 key（點擊時連同列的 key 傳出）；text 空字串＝0 格（留白、沒有按鈕、不上色）；
+ * 其他格內是計數按鈕（可見文字 text，可及名稱 aria，testId＝chart-{page}-{id}-cell-{語意 key}）。tier 2 另加框線（globals.css 依 data-tier 套色，元件不寫色）。
+ */
+export interface HeatMatrixCell {
+  key: string;
+  tier: 0 | 1 | 2;
+  text: string;
+  aria?: string;
+  testId?: string;
+}
+export interface HeatMatrixRow {
+  key: string;
+  head: string;
+  /** 與 columns 同序、同長。 */
+  cells: readonly HeatMatrixCell[];
+}
+/** 不進格的一列（G21 的範圍級問題）：列頭＋一格橫跨全部欄的文字；沒有任何欄時，欄頭寫 columnLabel。 */
+export interface HeatMatrixFooter {
+  head: string;
+  text: string;
+  columnLabel: string;
+}
+export interface HeatMatrixProps {
+  caption: string;
+  /** 左上角欄頭（列頭那一欄）。 */
+  corner: string;
+  columns: readonly { key: string; label: string }[];
+  rows: readonly HeatMatrixRow[];
+  footer?: HeatMatrixFooter;
+  /** 加在 <table>（chart-{page}-{id}-table）。 */
+  testId?: string;
+  /** 格內按鈕被點擊（含 Enter／空白鍵，按鈕原生）：列的 key 與欄的 key。 */
+  onCell: (cell: { row: string; column: string }) => void;
+}
+
+/**
+ * C28 matrix 排法的按鈕版（G21 問題分布表）：一張原生 <table>，放在 ChartFrame mode="table" 的 .table-scroll 內（不在 aria-hidden 容器內）；
+ * 不是 grid（沒有 roving tabindex）：有計數的格各是一個按鈕、各是一個 Tab 停留點（格數＝出現過的檔案 × 原因，通常個位數），0 格留白不可聚焦。
+ * ≤ 767px 由 globals.css 改清單式（沿用 C3 的 data-label；各元素明確標 role，CSS 改 display 後仍是表格語意）：每列一個檔，只列有計數的格，整列都是 0 的檔不列。
+ */
+export function HeatMatrix({ caption, corner, columns, rows, footer, testId, onCell }: HeatMatrixProps) {
+  const span = Math.max(columns.length, 1);
+  return <table className="heat-matrix" role="table" data-testid={testId}>
+    <caption>{caption}</caption>
+    <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">{corner}</th>{columns.length === 0 && footer
+      ? <th role="columnheader" scope="col">{footer.columnLabel}</th>
+      : columns.map(column => <th key={column.key} role="columnheader" scope="col">{column.label}</th>)}</tr></thead>
+    <tbody role="rowgroup">
+      {rows.map(line => <tr key={line.key} role="row" data-empty={line.cells.every(item => item.text === "") || undefined}>
+        <th role="rowheader" scope="row">{line.head}</th>
+        {line.cells.map((item, at) => item.text === ""
+          ? <td key={item.key} role="cell" data-tier={item.tier} data-label={columns[at]?.label} />
+          : <td key={item.key} role="cell" data-tier={item.tier} data-label={columns[at]?.label} data-testid={item.testId}><button type="button" className="heat-count" aria-label={item.aria} onClick={() => onCell({ row: line.key, column: item.key })}>{item.text}</button></td>)}
+      </tr>)}
+      {footer && <tr role="row" className="heat-matrix-footer"><th role="rowheader" scope="row">{footer.head}</th><td role="cell" colSpan={span}>{footer.text}</td></tr>}
+    </tbody>
+  </table>;
 }
