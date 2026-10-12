@@ -2407,6 +2407,10 @@ export const importWizard = {
     preprocessingHead: { field: "欄位", raw: "含稅合計（元）", converted: "未稅合計（元）", rate: "稅率" },
     preprocessingTableAria: "各欄位的含稅與未稅合計",
   },
+  // ── V4-7b 錨點：匯入精靈圖表字串（代理 C：reconciliation＝G22 步驟 4 對帳表的內嵌條；差額為 0 時標「相符」）。
+  chartsV4: {
+    reconciliation: {},
+  },
 } as const;
 
 // ── evidence：計算與來源抽屜：階梯、來源分頁（沿用 v2 鍵）與抽屜元件（drawer）

@@ -2967,3 +2967,9 @@ td.num > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 .chart-section.coverage-section { margin-bottom: 24px; }
 @media (max-width: 640px) { .chart-section.coverage-section { margin-bottom: 18px; } }
 /* ── V4-7a C 錨點結束 ── */
+
+/* ── V4-7b A：C24 BarCell share、pair 模式（代理 A） ── */
+/* ── V4-7b A 錨點結束 ── */
+
+/* ── V4-7b C：G22 對帳表與前處理表、G23 抽屜階梯表的內嵌條（代理 C） ── */
+/* ── V4-7b C 錨點結束 ── */

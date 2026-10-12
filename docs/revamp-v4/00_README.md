@@ -9,7 +9,7 @@ v4 回應使用者 2026-10-08 的指令「改版：將全站加入更多專業�
 | 基準版本 | v3.0.0（tag `v3.0.0`＝`625bfa5`；分支 `revamp/v2`＝`main`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 已是 v3.0.0） |
 | 目標版本 | 依 D-V4-1 建議值暫定 **v4.0.0**（使用者未回覆前不視為核准） |
 | 工作分支 | 依 D-V4-2 建議值暫定自 `main` 開 `revamp/v4` |
-| 狀態 | **V4-0a 到 V4-7a 完成**（MVP 切線已到；D-V4-1–54 與 D-V3-26／27／29–37 已拍板；新增 V4-7c、V4-3c，共 18 批；下一批 V4-7b） |
+| 狀態 | **V4-0a 到 V4-7a 完成**（MVP 切線已到；D-V4-1–54 與 D-V3-26／27／29–37 已拍板；新增 V4-7c、V4-3c，共 18 批；V4-7b 進行中） |
 | 產品名稱 | EC ProfitLens（D-V3-25）；技術識別不改：package 名 `profitlens`、下載檔名前綴 `profitlens-`、備份 schema `profitlens-workspace-v5`、`dataset_id`、網址 `profitlens-tau.vercel.app` |
 
 ## 檔案與用途
