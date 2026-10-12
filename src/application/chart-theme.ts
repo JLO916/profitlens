@@ -37,9 +37,9 @@ export const chartHeights = { sm: 180, lg: 320, xs: 16 } as const;
 /**
  * V4-1 依列計高的 inline SVG 列高（px；PRD §6.5）：cell＝C24 表格內嵌條的條高，row16、row24＝C25、C27、C30 每列的高。
  * 不是 CSS token；依列計高的 svg 高度一律寫成它的整數倍或其和（例如 rows * chartRowHeights.row24），不得寫數字常值（CL-10、X34）。
- * C30 的日期軸高 axis 在 V4-7a 加；C35 啞鈴的 row28 只在 D-V4-16 選 B 時加。
+ * V4-7a：axis＝C30 涵蓋時間軸（G20）最下方日期軸列的高（刻度線 4px＋12px 日期字，H5 設計稿 data.html 取 24）；C35 啞鈴的 row28 只在 D-V4-16 選 B 時加。
  */
-export const chartRowHeights = { cell: 6, row16: 16, row24: 24 } as const;
+export const chartRowHeights = { cell: 6, row16: 16, row24: 24, axis: 24 } as const;
 /** 軸標與柱上標值的字級（12px）。 */
 export const chartFontSize = "var(--text-12)";
 

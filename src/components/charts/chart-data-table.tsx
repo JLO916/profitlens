@@ -13,6 +13,7 @@ import { onChartTableToggle } from "../overview/charts/chart-frame";
 // 列數＝資料長度（含整列缺值的列）；限制句放在表格之後（仍在 <details> 內，不進主層，B8）。
 // 使用者看得到的字一律由呼叫端從 labels 取來傳入；本元件只用 labels.overview.page.dataTable 組 summary（「表格 · {title}」，CHART_CATALOG §1.1）。
 // V4-4（審查修正）：格可帶 unfavorable（.negative 不利色，同 H5 設計稿）；給 hasEvidence 時 evidence 改在點擊時才組（G13、G14 資料表，避免面板每次重繪整表重組）。
+// V4-7a 代理 A：選填 actionColumn（表尾一欄，每列一個呼叫端給的控制，例如 G20 每列的「篩選問題表」按鈕）；沒給時輸出與 V4-6 逐字相同。
 
 /**
  * 格的單位（決定格式化函式）：money 金額、rate 比率（domain 的小數）、count 件數、multiple 倍數、per_unit 件均、text 原樣、date ISO 日期原樣。
@@ -81,6 +82,11 @@ export interface ChartDataTableProps<R, C = undefined> {
   /** 表格之後的說明句（限制句、未滿 7 天的註記）；仍在 <details> 內。 */
   notes?: readonly string[];
   className?: string;
+  /**
+   * V4-7a：表尾一欄動作（欄頭 label；每列 render(row) 輸出一個真的控制，例如 G20 的「篩選問題表」按鈕，可及名稱由呼叫端給）。
+   * 這一欄不是數字格、不開抽屜；沒給時不輸出這一欄。
+   */
+  actionColumn?: { label: string; render: (row: R) => ReactNode };
 }
 
 /** 數字格的顯示字（純函式，測試用）：依格或欄的單位與層選 presentation.ts 的格式化函式；空值寫「資料待補」或「不適用」。 */
@@ -102,7 +108,7 @@ export function chartDataCellText(cell: ChartDataCell, column: Pick<ChartDataCol
 const isNumeric = (unit: ChartDataUnit | undefined) => unit !== undefined && unit !== "text" && unit !== "date";
 
 /** C33 表格本體（.table-scroll > table）。 */
-export function ChartDataTable<R, C = undefined>({ testId, caption, rowHeaderLabel, rows, rowKey, rowHeader, columns, valueOf, evidenceOf, hasEvidence, onEvidence, cellAria, notes, className }: ChartDataTableProps<R, C>) {
+export function ChartDataTable<R, C = undefined>({ testId, caption, rowHeaderLabel, rows, rowKey, rowHeader, columns, valueOf, evidenceOf, hasEvidence, onEvidence, cellAria, notes, className, actionColumn }: ChartDataTableProps<R, C>) {
   return <>
     <div className="table-scroll chart-data-scroll" role="region" tabIndex={0} aria-label={caption}>
       <table className={`ui-table chart-data-table${className ? ` ${className}` : ""}`} data-density="compact" data-testid={testId}>
@@ -110,6 +116,7 @@ export function ChartDataTable<R, C = undefined>({ testId, caption, rowHeaderLab
         <thead><tr>
           <th scope="col">{rowHeaderLabel}</th>
           {columns.map(column => <th key={column.key} scope="col" className={isNumeric(column.unit) ? "num" : undefined}>{column.label}{column.notes?.map(note => <small key={note}>{note}</small>)}</th>)}
+          {actionColumn && <th scope="col" className="chart-data-action">{actionColumn.label}</th>}
         </tr></thead>
         <tbody>{rows.map(row => {
           const header = rowHeader(row);
@@ -126,6 +133,7 @@ export function ChartDataTable<R, C = undefined>({ testId, caption, rowHeaderLab
                 : <button type="button" className={cell.unfavorable ? "number-link negative" : "number-link"} aria-label={cellAria ? cellAria(row, column, text) : undefined} onClick={open}>{text}</button>;
               return <td key={column.key} className={`${numeric ? "num" : ""}${cell.value === null ? " is-empty" : ""}${cell.unfavorable && !linked ? " negative" : ""}`.trim() || undefined}>{content}</td>;
             })}
+            {actionColumn && <td className="chart-data-action">{actionColumn.render(row)}</td>}
           </tr>;
         })}</tbody>
       </table>

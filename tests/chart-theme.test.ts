@@ -33,13 +33,15 @@ describe("chart-theme：圖表色 token", () => {
     expect(css).toContain(`--chart-h-lg: ${chartHeights.lg}px;`);
   });
 
-  it("V4-1 列高常數 chartRowHeights（PRD §6.5）：cell 6、row16 16、row24 24，都是正整數；不是 CSS token，:root 沒有對應的 --chart-row-*", () => {
-    // V4-7a 加 axis、D-V4-16 選 B 時加 row28；加鍵時同批改這裡。
-    expect(chartRowHeights).toEqual({ cell: 6, row16: 16, row24: 24 });
+  it("V4-1 列高常數 chartRowHeights（PRD §6.5）：cell 6、row16 16、row24 24、V4-7a 的 axis 24，都是正整數；不是 CSS token，:root 沒有對應的 --chart-row-*", () => {
+    // V4-7a 加 axis（C30 涵蓋時間軸的日期軸列，H5 設計稿 data.html 取 24）；D-V4-16 選 B 時加 row28；加鍵時同批改這裡。
+    expect(chartRowHeights).toEqual({ cell: 6, row16: 16, row24: 24, axis: 24 });
     for (const value of Object.values(chartRowHeights)) expect(Number.isInteger(value) && value > 0, String(value)).toBe(true);
     expect([...ROOT_TOKENS].filter(token => /^--chart-row/.test(token))).toEqual([]);
     // 依列計高的圖（C24、C25、C27、C30）要放進固定高的 ChartFrame：最大列高放得進 sm。
     expect(Math.max(...Object.values(chartRowHeights))).toBeLessThan(chartHeights.sm);
+    // V4-7a C30（PRD §5.7「sm 180（4 軌 × 24＋日期軸）」）：區帶標字列＋最多 4 軌（各 row24）＋日期軸（axis）放得進 sm。
+    expect(5 * chartRowHeights.row24 + chartRowHeights.axis).toBeLessThanOrEqual(chartHeights.sm);
   });
 
   it("沒有 document（伺服器端、單元測試）時 readChartColors 回傳 var() 字串本身", () => {
