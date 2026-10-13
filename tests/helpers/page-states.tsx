@@ -422,6 +422,9 @@ export async function pageStates(): Promise<StateMarkup[]> {
     // ── V4-9b 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-9b 新增 M1 測試」錨點後加對應測試）──
 
     // ── V4-10 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-10 新增 M1 測試」錨點後加對應測試）──
+    // V4-10 代理 B（G17；axe「待辦頁新增一張卡」的 SSR 對應）：空工作區新增一張待辦（golden 手動草稿，沒有期限、未開始）。
+    // G17 小表 4 列：未填期限 1、其餘 0（只有 chart-actions-due-bar-none 有條）；caption「0 件逾期，0 件 7 天內到期」。沒有期限，輸出不隨執行日期改變。
+    "actions-one-card": { panel: "actions", active: golden, status: "ready", actionWorkspace: addActionDraft(emptyActionWorkspace(), golden, "n1"), scenarioWorkspace: scenarios },
 
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];

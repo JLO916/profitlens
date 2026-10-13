@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AST_RULES, checkChartMarkup, scanChartTsx, scanChartVarLiterals } from "../scripts/lib/chart-scan.mjs";
 import { chartColors, chartRowHeights } from "../src/application/chart-theme";
-import { BAR_CELL_EDGE_ZERO_X, BAR_CELL_HEIGHT, BAR_CELL_OUTLINE_STROKE, BAR_CELL_PAIR_PREVIOUS_HEIGHT, BAR_CELL_TICK_WIDTH, BAR_CELL_WIDTH, BarCell, barCellFill, barCellGeometry, barCellPairGeometry, barCellScale, barCellShareBase, barCellShareGeometry, barCellSigned, type BarCellPairProps, type BarCellShareProps, type BarCellVarianceProps } from "../src/components/charts/bar-cell";
+import { BAR_CELL_EDGE_ZERO_X, BAR_CELL_HEIGHT, BAR_CELL_OUTLINE_STROKE, BAR_CELL_PAIR_PREVIOUS_HEIGHT, BAR_CELL_TICK_WIDTH, BAR_CELL_WIDTH, BarCell, barCellCountGeometry, barCellFill, barCellGeometry, barCellPairGeometry, barCellScale, barCellShareBase, barCellShareGeometry, barCellSigned, type BarCellCountProps, type BarCellPairProps, type BarCellShareProps, type BarCellVarianceProps } from "../src/components/charts/bar-cell";
 import { labels } from "../src/i18n";
 import { BAR_CELL_VARIANCE_BASELINE_FILE, barCellVarianceBaseline } from "./helpers/bar-cell-variance-baseline";
 import { byTestId, element, openTag } from "./helpers/markup";
@@ -594,5 +594,86 @@ describe("globals.css「V4-7b A」錨點：share、pair 沿用 V4-1 B 的顯示�
     expect(rules).not.toContain("var(--chart-");
     expect(rules).not.toContain("display: none");
     for (const [, token] of rules.matchAll(/var\((--[\w-]+)\)/g)) expect(css.slice(css.indexOf(":root {"), css.indexOf("}", css.indexOf(":root {")))).toContain(`${token}:`);
+  });
+});
+
+// ── V4-10 代理 B：C24 加 count 模式（G17 待辦期限分布小表；CHART_CATALOG G17、PRD §6.3 C24「count（從 0 計數）」）。
+// variance 的輸出仍與開工錨點 3ea161b 逐字相同（上方「V4-7b variance 向下相容」）；share、pair 的 SSR 逐字斷言（上方 V4-7b 兩組）也不改。
+// count：零線在左緣（x＝0.5，同 share 未分正負），條從 0 往右，滿寬 96＝尺度（同一張表各列件數的最大值）；條長＝件數 ÷ 尺度 × 96（取到 0.1），非零至少 1。
+const countOf = (value: BarCellCountProps["value"], max: BarCellCountProps["max"]) => barCellGeometry({ mode: "count", value, max });
+const renderCount = (props: Partial<BarCellCountProps> = {}) => renderToStaticMarkup(createElement(BarCell, { mode: "count", value: 1, max: 2, tone: "total", testId: "chart-actions-due-bar-week", ...props }));
+const COUNT_Y = (BAR_CELL_HEIGHT - chartRowHeights.cell) / 2;
+
+describe("V4-10 barCellGeometry：count（從 0 計數，零線在左緣、條往右、夾在 100%）", () => {
+  it("版面固定未分正負：96 × 12、零線 x＝0（線畫在 0.5）；條高 chartRowHeights.cell、垂直置中（同 share）", () => {
+    const geometry = countOf(2, 2);
+    expect(geometry).toMatchObject({ mode: "count", width: BAR_CELL_WIDTH, height: BAR_CELL_HEIGHT, signed: false, zeroX: 0, zeroLineX: BAR_CELL_EDGE_ZERO_X });
+    expect(geometry.bar).toEqual({ x: 0, y: COUNT_Y, width: BAR_CELL_WIDTH, height: chartRowHeights.cell });
+    expect(geometry).toMatchObject({ ratio: 1, clamped: false, direction: "right" });
+  });
+
+  it("條長＝件數 ÷ 尺度 × 96（取到 0.1）：1 ÷ 2＝48、1 ÷ 3＝32、2 ÷ 3＝64、1 ÷ 7＝13.7；整數字串與數值結果相同", () => {
+    expect(countOf(1, 2).bar).toMatchObject({ x: 0, width: 48 });
+    expect(countOf(1, 3).bar).toMatchObject({ width: 32 });
+    expect(countOf(2, 3).bar).toMatchObject({ width: 64 });
+    expect(countOf(1, 7).bar).toMatchObject({ width: 13.7 });
+    expect(countOf("3", "4")).toEqual(countOf(3, 4));
+    expect(barCellCountGeometry({ value: 1, max: 2 })).toEqual(countOf(1, 2));
+  });
+
+  it("非零件數至少 1 個座標單位；超過尺度時夾在滿寬（clamped）", () => {
+    expect(countOf(1, 1000).bar).toMatchObject({ width: 1 });
+    expect(countOf(1, 1000).ratio).toBe(0.001);
+    expect(countOf(5, 2)).toMatchObject({ ratio: 1, clamped: true, bar: { width: BAR_CELL_WIDTH } });
+  });
+
+  it("件數 0：ratio 0、沒有條；尺度 0、負、缺值或無法解析：ratio null、沒有條；負的件數沒有地方畫", () => {
+    expect(countOf(0, 2)).toMatchObject({ ratio: 0, direction: null, bar: null });
+    for (const max of [0, -2, null, undefined, "", "n/a"]) expect(countOf(1, max), String(max)).toMatchObject({ ratio: null, direction: null, bar: null });
+    expect(countOf(null, 2)).toMatchObject({ ratio: null, bar: null });
+    expect(countOf(-1, 2)).toMatchObject({ direction: "left", bar: null });
+  });
+});
+
+describe("V4-10 BarCell：count 的 SSR", () => {
+  it("根 svg class bar-cell is-count、data-chart-kind=\"cell\"、呼叫端的 testid 與 tone、aria-hidden、不可聚焦；條在零線之前（零線在 0.5）", () => {
+    expect(renderCount()).toBe(`<svg class="bar-cell is-count" data-chart-kind="cell" data-testid="chart-actions-due-bar-week" data-tone="total" viewBox="0 0 ${BAR_CELL_WIDTH} ${BAR_CELL_HEIGHT}" width="${BAR_CELL_WIDTH}" height="${BAR_CELL_HEIGHT}" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect class="bar-cell-bar" x="0" y="${COUNT_Y}" width="48" height="${chartRowHeights.cell}" fill="${chartColors.total}"></rect>${ZERO_LINE(BAR_CELL_EDGE_ZERO_X)}</svg>`);
+    expect(byTestId(renderCount(), "chart-actions-due-bar-week")).toBe(renderCount());
+  });
+
+  it("色依 tone：逾期 unfavorable（chartColors.unfavorable）、其餘 total；className 接在 class 最後；沒給 testid 時不輸出 data-testid", () => {
+    const overdue = renderCount({ value: 2, tone: "unfavorable", testId: "chart-actions-due-bar-overdue" });
+    expect(openTag(overdue, "<svg")).toContain('data-tone="unfavorable"');
+    expect(overdue).toContain(`<rect class="bar-cell-bar" x="0" y="${COUNT_Y}" width="${BAR_CELL_WIDTH}" height="${chartRowHeights.cell}" fill="${chartColors.unfavorable}"></rect>`);
+    expect(renderCount({ tone: "neutral" })).toContain(`fill="${chartColors.total}"`);
+    expect(openTag(renderCount({ className: "due-bar" }), "<svg")).toContain('class="bar-cell is-count due-bar"');
+    expect(renderToStaticMarkup(createElement(BarCell, { mode: "count", value: 1, max: 1, tone: "total" }))).not.toContain("data-testid");
+  });
+
+  it("件數 0 或尺度無效：沒有 rect，只畫零線", () => {
+    for (const props of [{ value: 0 }, { max: 0 }, { max: null }, { value: null }] as Partial<BarCellCountProps>[]) {
+      const html = renderCount(props);
+      expect(html, JSON.stringify(props)).not.toContain("<rect");
+      expect(html).toContain(ZERO_LINE(BAR_CELL_EDGE_ZERO_X));
+    }
+  });
+
+  it("不可點、沒有可聚焦元素、沒有色碼；型別上沒有 onClick；放在表格列內（同列有件數）chart-lint 0 違規，不在表格或清單列內時 CL-1 抓得到", () => {
+    for (const html of [renderCount(), renderCount({ value: 2, tone: "unfavorable" }), renderCount({ value: 0 })]) {
+      expect(html).not.toMatch(/tabindex/i);
+      expect(html).not.toMatch(/<(button|a|input|select|textarea)[\s>]/);
+      expect(html).not.toMatch(/onclick|onkeydown/i);
+      expect(html).not.toContain("is-clickable");
+      expect(html).not.toMatch(HEX);
+      for (const [, color] of html.matchAll(/(?:fill|stroke)="([^"]+)"/g)) expect(Object.values(chartColors)).toContain(color);
+    }
+    // @ts-expect-error count 不可點
+    const props: BarCellCountProps = { mode: "count", value: 1, max: 1, tone: "total", onClick: () => undefined };
+    expect(renderToStaticMarkup(createElement(BarCell, props))).not.toContain("is-clickable");
+    const cell = renderCount();
+    const row = `<table class="chart-actions-due"><tbody><tr data-bucket="week"><th scope="row">week</th><td class="num">${cell}1</td></tr></tbody></table>`;
+    const violations = checkChartMarkup(`<main id="main-content">${row}</main>`, { page: "actions" }).violations;
+    for (const rule of ["CL-1", "CL-2", "CL-9", "CL-11"] as const) expect(violations[rule], rule).toEqual([]);
+    expect(checkChartMarkup(`<main id="main-content"><div class="kpi">${cell}</div></main>`, { page: "actions" }).violations["CL-1"]).toHaveLength(1);
   });
 });

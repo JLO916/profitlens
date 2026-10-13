@@ -9,6 +9,7 @@ import { fill, labels } from '@/i18n';
 import type { EvidenceSelection } from './evidence-drawer';
 import { ActionEditor, AdDecisionBadge, evidenceTag, statusLabels, statuses, type ActionDocument } from './action-editor';
 import { ActionDrawer } from './action-drawer';
+import { ActionsDue } from './actions-due';
 import { ShellIcon } from './shell/shell-icon';
 import { usePageSlot } from './shell/page-slot';
 const ui = labels.actions.workbench;
@@ -175,6 +176,8 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
     {titleSlot && createPortal(titleAddon, titleSlot)}
     {actionsSlot && createPortal(headActions, actionsSlot)}
     {(!titleSlot || !actionsSlot) && <div className="actions-page-head-inline">{!titleSlot && <div className="actions-head-title">{titleAddon}</div>}{!actionsSlot && <div className="actions-head-actions">{headActions}</div>}</div>}
+    {/* V4-10 代理 B（PRD §5.5、CHART_CATALOG G17）：頁首計數徽章之下、工具列之前的期限分布小表；沒有待辦時（actions-empty）不渲染；today 與看板卡的逾期判定同一個值。 */}
+    {total > 0 && <ActionsDue workspace={workspace} today={today} />}
     {notice && <p role="status" className="ui-notice actions-notice" data-testid="action-notice">{notice}</p>}
     {/* §7.5 第 2 點、C15：看板｜清單分段按鈕（偏好仍由 onViewChange 記進 ui_prefs.view）；空工作區也顯示（同 v2，E2E 會先切清單再新增）。 */}
     <div className="ui-toolbar actions-toolbar" data-testid="actions-toolbar">
