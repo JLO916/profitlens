@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, lazy, Suspense, useState, useSyncExternalStore, type ComponentProps, type ComponentType } from "react";
+import { createElement, lazy, Suspense, useCallback, useState, useSyncExternalStore, type ComponentProps, type ComponentType } from "react";
 
 // V4-3c（D-V4-42＝A，首載瘦身）：通路健檢、資料來源、商品毛利、會議紀錄、待辦與 AI 解釋改成隨頁載入。
 // 這裡匯出與原模組同名的包裝元件，dashboard.tsx 的 JSX 一字不改（原始碼比對測試照舊）。
@@ -9,7 +9,8 @@ import { createElement, lazy, Suspense, useState, useSyncExternalStore, type Com
 //   所以不會閃一次空白；還沒載入才用 React.lazy＋Suspense（fallback 為空）。同一個實例的元件型別不變，換 props 不會重新掛載。
 // - 載入失敗時那一個實例先渲染空白（不擲錯、不留未處理的 rejection）；之後同一個 chunk 載入成功（再按一次這一頁、或預先載入），就地換成真正的面板。
 // - preloadPanels()：資料就緒後由 dashboard（schedulePanelPreload）在閒置時呼叫，各頁的 chunk 與決策匯出程式同時開始載入（每個 chunk 各自一個載入完成的工作）。
-// - preparePanel()：dashboard 切頁前呼叫；chunk 還沒載入時先載入再切，導覽標示與頁面內容同一次更新換掉（E2E 與鍵盤走查依賴這個時序）。
+// - preparePanel()：dashboard 切頁時呼叫；chunk 還沒載入時開始載入。V4-8b（D-V4-56＝A）起按下就切頁：等待中內容區放骨架，panelReady()／usePanelReady() 判斷頁面能不能顯示，
+//   載入失敗時顯示錯誤狀態與「再試一次」（取代 V4-3c「等載好才在同一次更新換導覽標示與內容」）。
 
 export interface ChunkLoader<M> {
   /** 已載入的模組；還沒載入或上次失敗時是 null。 */
@@ -92,19 +93,40 @@ export function ActionsWorkbench(props: ComponentProps<ActionsWorkbenchModule["A
   return <Suspense fallback={null}><Panel {...props} /></Suspense>;
 }
 
-/** 各頁需要的 chunk（總覽、假設試算與開發者驗證都在首載裡，不需要）；通路健檢連同頁底收合的 AI 解釋。 */
-const PANEL_CHUNKS: Readonly<Record<string, readonly ChunkLoader<unknown>[]>> = { diagnosis: [workspacePanels, aiPanel], data: [workspacePanels], products: [productPanel], meeting: [meetingPage], actions: [actionsWorkbench] };
+/**
+ * 各頁需要的 chunk（總覽、假設試算與開發者驗證都在首載裡，不需要）：required 是頁面本身；optional 是頁面裡的選配區塊——
+ * 通路健檢頁底收合的 AI 解釋（V4-8b，D-V4-58＝A：只有它載入失敗時健檢頁照常顯示，AI 那格照 V4-3c 不顯示，不整頁報錯）。
+ */
+const PANEL_CHUNKS: Readonly<Record<string, { required: readonly ChunkLoader<unknown>[]; optional?: readonly ChunkLoader<unknown>[] }>> = { diagnosis: { required: [workspacePanels], optional: [aiPanel] }, data: { required: [workspacePanels] }, products: { required: [productPanel] }, meeting: { required: [meetingPage] }, actions: { required: [actionsWorkbench] } };
 
 /**
- * 切頁前的準備：這一頁需要的 chunk 都已載入（或這一頁不需要 chunk）時回傳 null，呼叫端照舊同步切頁；
- * 否則回傳一個 promise，這一頁需要的每個 chunk 都載入完或失敗（allSettled：不因其中一個先失敗就提早切頁）才 resolve（永不 reject），呼叫端等它再切頁——
- * 導覽的目前頁標示與頁面內容在同一次更新裡換，不會先切過去閃一頁空白（與 v3 一樣「標示換了，內容就在」）。
- * 載入失敗時照樣 resolve：呼叫端切過去後由包裝元件的 React.lazy 再試一次，仍失敗就先渲染空白，不擲錯；再按一次這一頁會再載入，成功就就地換成面板。
+ * 切頁時的準備：這一頁需要的 chunk（含選配）都已載入（或這一頁不需要 chunk）時回傳 null，不必等；
+ * 否則開始載入，回傳一個 promise，這一頁需要的每個 chunk 都載入完或失敗（allSettled）才 resolve（永不 reject）。
+ * V4-8b（D-V4-56＝A）：呼叫端照 v3 按下就切頁，等待中內容區放骨架；resolve 後以 panelReady() 判斷頁面能不能顯示，不能就顯示錯誤狀態與「再試一次」（再呼叫一次本函式）。
  */
 export function preparePanel(panel: string): Promise<void> | null {
-  const missing = (PANEL_CHUNKS[panel] ?? []).filter(loader => !loader.current());
+  const chunks = PANEL_CHUNKS[panel];
+  const missing = [...chunks?.required ?? [], ...chunks?.optional ?? []].filter(loader => !loader.current());
   if (missing.length === 0) return null;
   return Promise.allSettled(missing.map(loader => loader.load())).then(() => undefined);
+}
+
+/** V4-8b：這一頁本身（required）的 chunk 都已載入，或這一頁不需要 chunk；選配的 AI 解釋不算。 */
+export function panelReady(panel: string): boolean {
+  return (PANEL_CHUNKS[panel]?.required ?? []).every(loader => loader.current() !== null);
+}
+
+/**
+ * V4-8b：訂閱 panelReady(panel)——這一頁的 chunk 載入成功時（切頁的 preparePanel、「再試一次」或預先載入）重新渲染，內容一掛載就是真正的面板，不經過 Suspense。
+ * 伺服器端（SSR）與首次渲染都用同一個判斷（getServerSnapshot 必給：測試會 SSR Dashboard）。
+ */
+export function usePanelReady(panel: string): boolean {
+  const subscribe = useCallback((listener: () => void) => {
+    const unsubscribes = (PANEL_CHUNKS[panel]?.required ?? []).map(loader => loader.subscribe(listener));
+    return () => { for (const unsubscribe of unsubscribes) unsubscribe(); };
+  }, [panel]);
+  const ready = () => panelReady(panel);
+  return useSyncExternalStore(subscribe, ready, ready);
 }
 
 /**

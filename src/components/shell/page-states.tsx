@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { ValidationIssue } from "@/domain/types";
 import { labels } from "@/i18n";
 import { IssueList } from "../issue-list";
@@ -59,5 +59,40 @@ export function ErrorState({ error, issues, onRetry, onBack }: { error: string; 
       {issues.length > 0 && <button type="button" className="ui-btn ui-btn-text" data-testid="error-view-issues" onClick={viewIssues}>{copy.viewIssues}</button>}
     </div>
     {issues.length > 0 && <div ref={issuesRef} className="state-issues" data-testid="error-issues" tabIndex={-1}><IssueList issues={issues} /></div>}
+  </section>;
+}
+
+/*
+ * V4-8b（D-V4-44 B、D-V4-56＝A、D-V4-57＝A）：隨頁載入的等待與失敗。切頁時導覽標示與頁標題立刻換成新頁；這一頁的程式還沒載入時，內容區先放骨架，
+ * 載入失敗時放錯誤狀態。兩者都是 main 的直接子元素（不在 .view-content 內，投影白名單不會把它藏起來），沿用同一個頁面型容器與高度（--empty-min-h），
+ * 期間列不位移。testid 與資料載入的 loading-state／error-state 分開（那兩個講的是檢核資料）。
+ */
+// 等待：同 LoadingState 的 spinner＋標題＋骨架（一行＋四格）；main 由 dashboard 標 aria-busy。
+export function PanelLoadingState() {
+  return <section className="ui-empty-page state-page loading-state" data-testid="panel-loading" aria-busy="true" aria-labelledby="panel-loading-title">
+    <div className="spinner" aria-hidden="true" />
+    <h2 id="panel-loading-title">{labels.shell.chartsV4.panelLoad.loading}</h2>
+    <div className="state-skeleton" aria-hidden="true">
+      <div className="ui-skeleton-line state-skeleton-line" />
+      <div className="state-skeleton-grid">{[0, 1, 2, 3].map(index => <div className="ui-skeleton-block" key={index} />)}</div>
+    </div>
+  </section>;
+}
+
+// 失敗：標題（tabIndex=-1，可用程式聚焦、不是 Tab 停留點）＋一句說明（role=alert）＋「再試一次」。
+// 出現時焦點移到標題（焦點在 body 或 main 時才移，不搶走使用者正在操作的控制）；消失時焦點若掉到 body（例如按了「再試一次」、或預先載入成功換成內容），交回 main。
+export function PanelErrorState({ onRetry }: { onRetry: () => void }) {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    const focused = document.activeElement;
+    if (!focused || focused === document.body || focused.id === "main-content") titleRef.current?.focus();
+    return () => { if (!document.activeElement || document.activeElement === document.body) document.getElementById("main-content")?.focus({ preventScroll: true }); };
+  }, []);
+  return <section className="ui-empty-page state-page error-state" data-testid="panel-load-error" aria-labelledby="panel-load-error-title">
+    <h2 id="panel-load-error-title" ref={titleRef} tabIndex={-1}>{labels.shell.chartsV4.panelLoad.errorTitle}</h2>
+    <p role="alert">{labels.shell.chartsV4.panelLoad.errorBody}</p>
+    <div className="state-actions">
+      <button type="button" className="ui-btn ui-btn-primary" data-testid="panel-load-retry" onClick={onRetry}>{labels.shell.chartsV4.panelLoad.retry}</button>
+    </div>
   </section>;
 }

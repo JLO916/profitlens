@@ -62,6 +62,8 @@ export async function navigateTo(page: Page, id: NavId) {
   if (isMobile(page) && !TAB_IDS.includes(id)) await openMobileMore(page);
   await navControl(page, id).click();
   await expect(sidebarNav(page, id)).toHaveAttribute('aria-current', 'page');
+  // V4-8b（D-V4-56＝A）：按下就切頁，這一頁的程式還沒載入時內容區先是骨架；等骨架消失（換成內容，或載入失敗時的錯誤狀態），保住「標示換了，內容就在」。
+  await expect(page.getByTestId('panel-loading')).toHaveCount(0);
 }
 /** R6：會議稿搬到新分頁「會議紀錄」；openMeeting 改為切到該分頁並回傳 meeting-page 區塊（舊的 overview-meeting details 已移除）。V3-3：經 navigateTo（手機走底部分頁）。 */
 export async function openMeeting(page: Page) {

@@ -1632,6 +1632,50 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V4-8a 代理 B（期間列去年同期提示、資料表不利色、G12 間距）M1 測試在此之後
 
     // ── V4-8b 代理 A（隨頁載入的等待骨架與失敗狀態）M1 測試在此之後
+    it("V4-8b A 隨頁載入（D-V4-44 B、D-V4-56＝A、D-V4-57＝A）：等待中與載入失敗時頁標題已是新頁、期間列照常掛載；內容區是骨架（main aria-busy）或錯誤狀態（標題 tabindex=-1、說明 role=alert、一顆「再試一次」），是 main 的直接子元素、不在 .view-content 內；頁面內容不掛載；與資料載入的 loading-state／error-state 分開", () => {
+      const copy = labels.shell.chartsV4.panelLoad;
+      for (const name of ["actions-chunk-loading", "actions-chunk-failed"]) {
+        const { html } = states.find(state => state.name === name)!;
+        const ids = testIdCounts(html);
+        const loading = name === "actions-chunk-loading";
+        expect(occurrences(html, "<h1"), name).toBe(1);
+        expect(element(html, "<h1")!, name).toContain(escapeAttr(labels.shell.nav.actions.headline));
+        for (const id of ["period-bar", "mobile-tabbar"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+        for (const id of ["actions-workbench", "loading-state", "error-state", "error-retry"]) expect(ids.has(id), `${name} ${id}`).toBe(false);
+        expect(html, name).not.toContain('class="view-content"');
+        expect(ids.get("panel-loading") ?? 0, name).toBe(loading ? 1 : 0);
+        expect(ids.get("panel-load-error") ?? 0, name).toBe(loading ? 0 : 1);
+        expect(ids.get("panel-load-retry") ?? 0, name).toBe(loading ? 0 : 1);
+        expect(openTag(html, 'id="main-content"'), name).toBe(loading ? '<main id="main-content" tabindex="-1" aria-busy="true">' : '<main id="main-content" tabindex="-1">');
+        const testId = loading ? 'data-testid="panel-loading"' : 'data-testid="panel-load-error"';
+        const section = element(html, testId)!;
+        // main 的直接子元素：在期間列之後、頁尾之前，祖先只有 main（不在 .view-content、aria-hidden 或收合的 details 內）。
+        const main = element(html, 'id="main-content"')!;
+        expect(main.indexOf(testId), name).toBeGreaterThan(main.indexOf('data-testid="period-bar"'));
+        expect(main.indexOf(testId), name).toBeLessThan(main.indexOf('data-testid="analytics-note"'));
+        const before = main.slice(0, main.indexOf(section));
+        expect(before.match(/<section[\s>]/g)?.length ?? 0, `${name} 不在其他 section 內`).toBe((before.match(/<\/section>/g)?.length ?? 0));
+        if (loading) {
+          expect(openTag(section, testId)).toBe('<section class="ui-empty-page state-page loading-state" data-testid="panel-loading" aria-busy="true" aria-labelledby="panel-loading-title">');
+          expect(section).toContain(`<h2 id="panel-loading-title">${escapeAttr(copy.loading)}</h2>`);
+          expect(element(section, 'class="state-skeleton"')!).toMatch(/^<div class="state-skeleton" aria-hidden="true">/);
+          for (const focusable of ["<button", "<a ", "tabindex"]) expect(section, `${name} 骨架沒有停留點：${focusable}`).not.toContain(focusable);
+        } else {
+          expect(openTag(section, testId)).toBe('<section class="ui-empty-page state-page error-state" data-testid="panel-load-error" aria-labelledby="panel-load-error-title">');
+          expect(section).toContain(`<h2 id="panel-load-error-title" tabindex="-1">${escapeAttr(copy.errorTitle)}</h2><p role="alert">${escapeAttr(copy.errorBody)}</p>`);
+          expect(occurrences(section, "<button"), name).toBe(1);
+          expect(element(section, 'data-testid="panel-load-retry"')).toBe(`<button type="button" class="ui-btn ui-btn-primary" data-testid="panel-load-retry">${escapeAttr(copy.retry)}</button>`);
+        }
+      }
+      // 與 dashboard 的組法一致（防漂移）：兩個元件各實例化一次；頁面內容與待辦等 ready 才掛載；main 只在等待中（不是失敗）標 aria-busy。
+      const source = readFileSync(resolve("src/components/dashboard.tsx"), "utf8");
+      for (const component of ["PanelLoadingState", "PanelErrorState"]) expect(source.match(new RegExp(`<${component}[\\s/>]`, "g"))?.length ?? 0, component).toBe(1);
+      expect(source).toContain("{panelWaiting && panelLoadFailed !== panel && <PanelLoadingState />}");
+      expect(source).toContain("{panelWaiting && panelLoadFailed === panel && <PanelErrorState onRetry={() => setPanel(panel)} />}");
+      expect(source).toContain('{visible && ready && <div key={active.id} className="view-content" ');
+      expect(source).toContain('{visible && ready && panel === "actions" && <ActionsWorkbench ');
+      expect(source).toContain('<main id="main-content" tabIndex={-1} aria-busy={(panelWaiting && panelLoadFailed !== panel) || undefined}>');
+    });
 
     // ── V4-8b 代理 B（390 總檢修正、G19 空狀態高度）M1 測試在此之後
 

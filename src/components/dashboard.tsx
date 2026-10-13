@@ -7,7 +7,7 @@ import type { AnalysisFilters, ComparisonMode, Dataset, DatasetInput, SourceRef,
 import { EvidenceDrawer, type EvidenceSelection } from "./evidence-drawer";
 import { Overview } from "./overview";
 // V4-3c：通路健檢、資料來源、AI 解釋、會議紀錄、商品毛利與待辦改成隨頁載入（lazy-panels.tsx 的同名包裝元件）；會議入口等首載要用的小工具在 meeting-entry.tsx。
-import { ActionsWorkbench, AiPanel, DataWorkspace, Diagnosis, MeetingPage, ProductComparisonPanel, preparePanel, schedulePanelPreload } from "./lazy-panels";
+import { ActionsWorkbench, AiPanel, DataWorkspace, Diagnosis, MeetingPage, ProductComparisonPanel, panelReady, preparePanel, schedulePanelPreload, usePanelReady } from "./lazy-panels";
 import { AiCollapse } from "./ai-collapse";
 import { getAiCapability, type AiCapability } from "@/application/ai-client";
 import { ImportWizard } from "./import-wizard";
@@ -50,7 +50,7 @@ import { PageHeader, ShellFooter } from "./shell/page-chrome";
 // V3-3 A2 imports（期間列／橫幅／手機期間底部面板的子元件）
 import { NeedsAttention, PeriodBar, presetFilters } from "./shell/period-bar";
 // V3-8 C imports（首次進入／載入中／錯誤的頁面型容器）
-import { ErrorState, FirstRunState, LoadingState } from "./shell/page-states";
+import { ErrorState, FirstRunState, LoadingState, PanelErrorState, PanelLoadingState } from "./shell/page-states";
 
 
 type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "meeting" | "validation";
@@ -84,24 +84,23 @@ const VALIDATION_HASH = "#validation";
 
 export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [panel, showPanel] = useState<Panel>("overview");
-  // 「計算與來源」抽屜的選取（V4-3c 起宣告在切頁之前：切頁落地時要關掉它）。
+  // 「計算與來源」抽屜的選取。
   const [evidence, setEvidenceState] = useState<EvidenceSelection | null>(null);
   const [evidenceSource, setEvidenceSource] = useState<(Pick<Active, "dataset" | "filenames" | "mappings"> & { dataset_hash?: string }) | null>(null);
-  // V4-3c：有資料時切到隨頁載入的頁面，chunk 還沒載入（還沒預先載入）就先載入再切，導覽標示與頁面內容在同一次更新裡換（不先閃一頁空白）；
-  // 已載入時照舊同步切頁（不是 transition）。連續切頁時只有最後一次生效。沒有資料時頁面內容不渲染，不必等；immediate（開匯入精靈）也不等。
-  // 等待期間舊頁仍可操作（v3 按下就切頁，不會有這段時間）：pendingPanel 記著等待中的目標頁（加入待辦據此不重複新增）；
-  // 切頁落地時一併關掉這段時間打開的「計算與來源」抽屜（v3 切頁時抽屜一定是關的），焦點照舊交給切頁後的 main。
+  // V4-8b（D-V4-44 B、D-V4-56＝A）：按下就切頁（同 v3）——導覽標示與頁標題立刻換成新頁。有資料而這一頁的 chunk 還沒載入（還沒預先載入）時，
+  // 內容區先放骨架（PanelLoadingState，main 標 aria-busy），chunk 載好後換成內容（usePanelReady）；載入失敗時換成錯誤狀態與「再試一次」（PanelErrorState，D-V4-57＝A）。
+  // 已載入時不出現骨架。連續切頁時只有最後一次生效。pendingPanel 記著等待中的目標頁（加入待辦據此不重複新增）；panelLoadFailed 是最後一次載入失敗的頁。
   const panelRequest = useRef(0);
   const pendingPanel = useRef<Panel | null>(null);
   const hasData = useRef(false);
-  const setPanel = useCallback((next: Panel, immediate = false) => {
+  const [panelLoadFailed, setPanelLoadFailed] = useState<Panel | null>(null);
+  const setPanel = useCallback((next: Panel) => {
     const request = ++panelRequest.current;
-    const pending = hasData.current && !immediate ? preparePanel(next) : null;
-    if (!pending) { pendingPanel.current = null; showPanel(next); return; }
-    pendingPanel.current = next;
-    void pending.then(() => {
+    const pending = hasData.current ? preparePanel(next) : null;
+    pendingPanel.current = pending ? next : null; setPanelLoadFailed(null); showPanel(next);
+    void pending?.then(() => {
       if (request !== panelRequest.current) return;
-      pendingPanel.current = null; setEvidenceSource(null); setEvidenceState(null); showPanel(next);
+      pendingPanel.current = null; if (!panelReady(next)) setPanelLoadFailed(next);
     });
   }, []);
   // D10＝A：側欄預設不顯示「開發者驗證」；掛載時或 hashchange 讀到 #validation 才顯示並切過去。
@@ -291,8 +290,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   function startImport() {
     requestId.current++; controller.current?.abort(); setEvidence(null); setError(""); setFilterError("");
     setStatus(active ? (active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready") : "empty");
-    // V4-3c：匯入精靈在首載裡，匯入中資料來源頁的內容是 hidden，不必等 chunk：立刻切頁（取消等待中的切頁），精靈與 v3 一樣按下就出現。
-    setPanel("data", true); setShowImport(true);
+    // V4-3c：匯入精靈在首載裡，精靈與 v3 一樣按下就出現；V4-8b 起匯入中不顯示骨架與錯誤狀態（!importing），資料來源頁的 chunk 照樣開始載入（取消匯入後才用到）。
+    setPanel("data"); setShowImport(true);
   }
   function cancelImport() {
     requestId.current++; controller.current?.abort(); setShowImport(false); setError("");
@@ -421,7 +420,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     whatsNew.onRestore(workspace.restored_schema_version);
   }
   function draftFromDiagnostic(diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) {
-    // V4-3c：切到待辦還在等 chunk 時，舊頁的「加入待辦」仍按得到；這段時間再按不重複新增（v3 第一次按下就切頁，按鈕隨即消失）。
+    // V4-3c：切到待辦還在等 chunk 時再按不重複新增（V4-8b 起與 v3 一樣按下就切頁、按鈕隨即消失；守門保留）。
     if (!active || pendingPanel.current === "actions") return;
     // R5：待辦卡的「問題／具體動作」預設用 R2 的規則文案（與健檢列同一句），不用 domain 的舊標題。
     const rule = ruleCopy(active.snapshot, diagnostic, demoAlias(active.snapshot.report.dataset_id));
@@ -546,6 +545,9 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   }
   const visible = active && (status === "ready" || status === "partial" || (status === "loading" && refiltering));
   const importing = showImport && panel === "data";
+  // V4-8b（D-V4-44 B）：這一頁的 chunk 還沒載入（或載入失敗）時，內容區放骨架或錯誤狀態，頁面內容等 chunk 載好才掛載（一掛載就是真正的面板）；匯入中不顯示。
+  const ready = usePanelReady(panel);
+  const panelWaiting = !!visible && !importing && !ready;
   // V3-9b 開工錨點（F22）：投影模式只在總覽與會議頁、有資料時可用；按鈕放在 PageHeader，Esc 離開（hook 內）。
   const present = usePresentMode(!!visible && (panel === "overview" || panel === "meeting"));
   // V4-8a（D-V3-33＝B）：按鈕的狀態只看文字（投影模式／離開投影），不帶 aria-pressed。
@@ -585,7 +587,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       storage={<WorkspaceStorage key={storageResetEpoch} source={backupSource} version={version} dirty={dirty} onRestore={restore} onSaved={saved => { if (saved === versionRef.current) setSavedVersion(saved); }} onDeleted={() => { void clearWizardMemory(); if (active) markChanged(); }} consent={localConsent} onConsentChange={setLocalConsent} onClear={clear} />}
       exportMenu={<ExportMenu source={visible ? active : null} busy={menuExport.busy} error={menuExport.error} summaryRef={downloadSummaryRef} onCopySummary={copySummaryFromView} onDecision={exportDecision} onPrint={printCurrentView} onExport={(kind, variant) => void exportCurrentView(kind, variant)} onMeetingNotes={() => void exportMeetingNotes()} />} />
     <div className="main-shell">
-      <main id="main-content" tabIndex={-1}>
+      <main id="main-content" tabIndex={-1} aria-busy={(panelWaiting && panelLoadFailed !== panel) || undefined}>
         {/* V3-8 開工錨點（§7.7.2 全版專注模式）：匯入中頁首改「匯入資料」＋隱私一句，期間列、橫幅與頁面內容保持掛載但 hidden；頂欄保留。 */}
         <PageHeader title={importing ? labels.importWizard.title : currentPanel.label} description={importing ? labels.importWizard.privacyNote : panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} importing={importing} hasData={status !== "empty"} presentToggle={presentToggle} presentSwitch={presentSwitch} presentPeriod={present.active && visible ? presentPeriodText(active.snapshot, panel === "meeting" ? reviewSession : null, active.dataset.manifest.channels) : undefined} showLoadDemo onLoadDemo={() => void load("demo")} onImport={startImport} />
         {whatsNew.visible && <WhatsNewNote onOpenGlossary={() => { whatsNew.markRead(); setBasisSection("v2-names"); setBasisOpen(true); }} onDismiss={whatsNew.dismiss} />}
@@ -611,9 +613,11 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
         {status === "empty" && !showImport && panel !== "validation" && <FirstRunState onLoadDemo={() => void load("demo")} onImport={startImport} showActions={panel !== "data"} />}
         {status === "loading" && !refiltering && <LoadingState />}
         {status === "error" && <ErrorState error={error} issues={issues} onRetry={() => void load(selected)} onBack={active ? () => { setStatus(active.dataset.issues.some(i => i.severity === "partial") ? "partial" : "ready"); setIssues(active.dataset.issues); } : undefined} />}
-        {visible && <div key={active.id} className="view-content" aria-busy={refiltering || undefined} hidden={importing || undefined}>{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} />}{panel === "meeting" && <MeetingPage onGoToScenarios={() => { setPanel("scenarios"); setEvidence(null); }} source={active} conversion={active.conversion} targets={meetingTargets} summaryContext={{ datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, missingItems: issues.length, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiCollapse capability={aiCapability}><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></AiCollapse></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace importedAt={importedAt} dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
+        {panelWaiting && panelLoadFailed !== panel && <PanelLoadingState />}
+        {panelWaiting && panelLoadFailed === panel && <PanelErrorState onRetry={() => setPanel(panel)} />}
+        {visible && ready && <div key={active.id} className="view-content" aria-busy={refiltering || undefined} hidden={importing || undefined}>{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} />}{panel === "meeting" && <MeetingPage onGoToScenarios={() => { setPanel("scenarios"); setEvidence(null); }} source={active} conversion={active.conversion} targets={meetingTargets} summaryContext={{ datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, missingItems: issues.length, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiCollapse capability={aiCapability}><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></AiCollapse></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace importedAt={importedAt} dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench active={!!visible && panel === "scenarios"} source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
-        {visible && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
+        {visible && ready && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
         <ShellFooter analytics={analytics} onBasis={() => setBasisOpen(true)} />
       </main>
     </div>
