@@ -1,5 +1,6 @@
 // V3-10 上線檢查（docs/revamp-v3/06_BATCHES.md「版本 3.0.0；RELEASES（含破壞性變更：Excel 工作表改名）、README」；PRD §8.9 改名溝通、§11.8 相容性）：版本號與發布文件。
-// V4-11 收尾（docs/revamp-v4/06_BATCHES.md「V4-11」；D-V4-1＝B）：版本改為 4.0.0，RELEASES 加 v4.0.0 段（尚未發布、不部署），v3.0.0 段的斷言照舊。
+// V4-11 收尾（docs/revamp-v4/06_BATCHES.md「V4-11」；D-V4-1＝B）：版本改為 4.0.0，RELEASES 加 v4.0.0 段，v3.0.0 段的斷言照舊。
+// 2026-10-14 使用者同意「正式上線」：v4.0.0 段改為已發布（日期、deployment、tag、正式站檢查；H6、開檔檢查、Skew Protection 據實寫未完成）。
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -31,12 +32,12 @@ describe("版本 4.0.0（V4-11，D-V4-1＝B；package.json 與 lockfile 只改 v
   });
 });
 
-describe("RELEASES v4.0.0 段落（V4-11：尚未發布，使用者 2026-10-13 指示不部署）", () => {
-  it("在 v3.0.0 之前（新的在上），標題寫尚未發布；開頭寫明沒有 tag、沒有部署、Skew Protection 沒開，H6 與人工開檔檢查待做，部署要當次同意", () => {
-    expect(releases.indexOf("## v4.0.0（尚未發布）")).toBeGreaterThan(-1);
+describe("RELEASES v4.0.0 段落（2026-10-14 上線）", () => {
+  it("在 v3.0.0 之前（新的在上），標題寫發布日期；開頭寫明 deployment、tag、正式站檢查，以及 H6、人工開檔檢查、Skew Protection 未完成，部署要當次同意", () => {
+    expect(releases.indexOf("## v4.0.0（2026-10-14，Revamp v4）")).toBeGreaterThan(-1);
     expect(releases.indexOf("## v4.0.0")).toBeLessThan(releases.indexOf("## v3.0.0"));
     const intro = v4.slice(0, v4.indexOf("\n### "));
-    for (const text of ["未執行：使用者 2026-10-13 指示不部署", "`v4.0.0`", "Skew Protection", "D-V4-44", "H6", "人工開檔檢查", "D-V4-28", "仍是 v3.0.0", "`625bfa5`"]) expect(intro, text).toContain(text);
+    for (const text of ["發布日期：2026-10-14", "`dpl_8b48r3atVjzRA49DFHKZyQhao4BC`", "`v4.0.0`", "`872662d`", "13 項 HTTP 全部通過", "Skew Protection", "D-V4-44", "H6", "人工開檔檢查", "D-V4-28", "`625bfa5`"]) expect(intro, text).toContain(text);
     const headings = [...v4.matchAll(/^### (.+)$/gm)].map(match => match[1]);
     expect(headings).toEqual(["給使用者", "不變的事", "匯出格式的變更", "相容性", "已知限制", "驗收"]);
   });
@@ -171,17 +172,17 @@ describe("README（v3.0.0 尚未發布；步驟對齊 V3-8 的空狀態與匯入
   });
 });
 
-describe("README 與 ENGINEERING 的 v4.0.0（V4-11：尚未發布）", () => {
-  it("「功能一覽」寫 v4.0.0 尚未發布、正式站仍是 v3.0.0，並提到 Excel 新工作表（名稱取自 labels）", () => {
+describe("README 與 ENGINEERING 的 v4.0.0（2026-10-14 上線）", () => {
+  it("「功能一覽」寫 v4.0.0 已上線與正式站網址，並提到 Excel 新工作表（名稱取自 labels）", () => {
     const features = readmeSection("功能一覽");
-    expect(features).toContain("v4.0.0（尚未發布，正式站仍是 v3.0.0）");
+    expect(features).toContain("v4.0.0（2026-10-14 上線，正式站 https://profitlens-tau.vercel.app）");
     expect(features).toContain(`「${labels.exports.chartsV4.excel.sheet}」`);
   });
 
   it("ENGINEERING 寫出 V4-11 起的版本 4.0.0 並連到 RELEASES", () => {
     const engineering = read("docs/ENGINEERING.md");
     expect(engineering).toContain("**4.0.0**");
-    expect(engineering).toContain("v4.0.0 尚未發布");
+    expect(engineering).toContain("v4.0.0 已於 2026-10-14 上線");
   });
 });
 

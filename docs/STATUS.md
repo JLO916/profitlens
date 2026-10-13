@@ -1,5 +1,30 @@
 # Status
 
+## EC ProfitLens v4.0.0 正式上線（2026-10-14）
+
+使用者當次同意「正式上線」。
+
+**上線做了什麼**：
+
+- `main` 從 `21d621c` fast-forward 到 `872662d` 並推送，由 Vercel Git 整合部署正式站：
+  - https://profitlens-tau.vercel.app
+  - `dpl_8b48r3atVjzRA49DFHKZyQhao4BC`，target production，READY
+- annotated tag `v4.0.0` 指向 `872662d`，已推送。
+
+**正式站檢查**：
+
+- 13 項 HTTP 全部通過，補充項目也全部通過，`live_ai_called: false`（`verification/revamp-v4/V4-11/launch-check-production.json`）。
+- `/api/insights` 回報 `PUBLIC_DEMO`。
+- 用無頭瀏覽器在 1440 與 390 載入示範資料，總覽的 G1 標題正確，沒有橫向捲動。
+
+**未完成**：
+
+- H6（可用性複測與盲評，PRD §2.2 A1–A4）未執行，待人工。使用者決定先上線，上線後補。
+- PPT、PDF、Excel 開檔檢查未執行，待人工。
+- Vercel Skew Protection（D-V4-44 C）沒有開啟：
+  - 開啟的指令被本機的自動權限檢查擋下，帳號是 Hobby 方案。
+  - 在開啟之前，部署新版後還開著的舊分頁，切到沒載入過的頁面時可能顯示錯誤說明與「再試一次」。
+
 ## Revamp v4｜V4-11 收尾（完成；不部署）——Revamp v4 全部 19 批完成
 
 使用者 2026-10-13 指示「以上一口氣全部完工」，並選定「只完成程式與文件，不部署」。V4-8b 到 V4-11 連續完成。

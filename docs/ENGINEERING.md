@@ -81,7 +81,7 @@ Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `
 | [AI_CONTRACT.md](AI_CONTRACT.md)、[M5_EVALUATION.md](M5_EVALUATION.md) | 選配 AI 的契約與評估 |
 | [PRD.md](PRD.md)、[ACCEPTANCE.md](ACCEPTANCE.md)、[TASKS.md](TASKS.md) | 原始產品規格、驗收條件與 M0–M6 關卡 |
 | [PILOT_PLAN.md](PILOT_PLAN.md)、[PILOT_WORKSHEET.md](PILOT_WORKSHEET.md) | 真實使用者試用計畫與工作表 |
-| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.0.0 尚未發布；v3.0.0 與更早的發布） |
+| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.0.0 已於 2026-10-14 上線；v3.0.0 與更早的發布） |
 | [revamp-v3/](revamp-v3/) | Revamp v3 規格套件：`00_README`、`01_PRD`、`06_BATCHES`、`09_DECISIONS_PENDING`、`GLOSSARY`、`copy-rewrite.csv`、`usability-test` |
 | 使用者可見文字 | `src/i18n/labels.zh-TW.ts`（單一來源；元件、匯出、AI 預覽都從這裡取字） |
 

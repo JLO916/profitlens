@@ -88,3 +88,14 @@
 - **瀏覽器**：用無頭 Chromium 在 1440 與 390 載入示範資料，總覽的 G1 標題是「少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）」，`main .chart-frame` 6 個，scrollWidth 分別等於 1440、390。
 - **存取**：目前 preview 不需要 Vercel 登入就能開。v3 時專案有 SSO 保護，現在的設定已不同；要不要限制由使用者決定。
 
+## 6. 2026-10-14 正式上線（使用者當次同意「正式上線」）
+
+- **部署**：`main` 從 `21d621c` fast-forward 到 `872662d` 並推送，由 Vercel Git 整合部署正式站。部署是 `dpl_8b48r3atVjzRA49DFHKZyQhao4BC`，target production，READY；`profitlens-tau.vercel.app` 指向它，來源是 `main` @ `872662d`。
+- **tag**：annotated tag `v4.0.0` 指向 `872662d`，已推送。
+- **正式站檢查**：13 項 HTTP 全部通過，補充項目也全部通過，`live_ai_called: false`（`verification/revamp-v4/V4-11/launch-check-production.json`）。`/api/insights` 回 `PUBLIC_DEMO`。無頭瀏覽器在 1440 與 390 載入示範資料：G1 標題正確，`main .chart-frame` 6 個，scrollWidth 等於視窗寬。
+- **未完成**：
+  - H6（待人工；使用者決定先上線）。
+  - 匯出開檔檢查（待人工）。
+  - Skew Protection：開啟的指令被本機自動權限檢查擋下，Hobby 方案；由使用者在 Vercel 設定決定。
+- **文件 commit**：RELEASES、README、ENGINEERING、release-notes 測試、STATUS、DECISIONS 更新後推送 `revamp/v4` 與 `main`（fast-forward）。只改文件，正式站會用同樣的程式重建一次，比照 v3.0.0 上線後補文件的做法。
+
