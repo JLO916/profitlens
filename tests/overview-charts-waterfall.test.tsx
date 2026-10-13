@@ -11,13 +11,14 @@ import { bridgeWaterfall, overviewWaterfallDomain, PROFIT_WATERFALL_METRICS, pro
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { BridgeSection, bridgeBarTarget, bridgeEvidence, bridgeRowTarget, bridgeRowText, bridgeUnitNote } from "../src/components/overview/charts/bridge-section";
 import { ProfitSection, profitEvidence, profitRowAmount, profitRowLabel, profitRowShare } from "../src/components/overview/charts/profit-section";
-import { splitWaterfallLabel, WaterfallSvg, waterfallGeometry, waterfallTickLabels } from "../src/components/overview/charts/waterfall-svg";
+import { splitWaterfallLabel, WATERFALL_FONT_PX, WaterfallSvg, waterfallGeometry, waterfallTextWidth, waterfallTickLabels } from "../src/components/overview/charts/waterfall-svg";
 import { toneClass } from "../src/components/top-three";
 import { AMOUNT_FIELDS, type Dataset, type Metric, type MetricName } from "../src/domain/types";
 import { validateDataset } from "../src/domain/validation";
 import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
 import { byTestId, element, openTag, textOf } from "./helpers/markup";
+import { WATERFALL_SVG_BASELINE_FILE, waterfallSvgBaseline } from "./helpers/waterfall-svg-baseline";
 
 // V3-4b 代理 B1：總覽區塊 5「貢獻變化拆解」（C17）與區塊 6「本期利潤結構」（F2，§10.3）的 SSR 結構測試，以及瀑布 SVG 的幾何。
 // 期待值一律由 labels、fill、presentation 的格式化函式與 waterfall.ts 的資料組裝從 snapshot 的精確字串組出，不寫死數字
@@ -650,3 +651,75 @@ describe("B1 元件與樣式只用 token（PRD §9.5「元件內不得出現 hex
   });
 });
 
+// V4-8a 代理 A（D-V4-9；06_BATCHES V4-8a 驗收「投影中 G1 柱上標值在 14px 下不重疊（768 也要看）」）：投影把 --text-12 對應到 14px，
+// WaterfallSvg 量到字級不是 12 時把字級傳給 waterfallGeometry，估寬、標值與 x 標籤的行高、圖頂最高基線與邊界依比例換算。
+// 一般模式（12px）的輸出與開工錨點 03dc3a8 逐字相同：tests/fixtures/waterfall-svg-v4-8a.json 由 tests/helpers/waterfall-svg-baseline.tsx 在錨點上產生。
+// 投影寬：1440 與 1280 的 main 最大 1280px（拆解區單欄，svg 約 1182px）、768 約 670px（扣掉 main 左右 24 與區塊 padding 24、邊框 1）。
+describe("V4-8a 投影 14px 的瀑布排版（D-V4-9）", () => {
+  const PRESENT_PX = 14;
+  const PRESENT_WIDTHS = [1182, 670] as const;
+  /** 每張圖（G1 與 G2 每個範圍）的柱與最小寬（同 bridge-section、profit-section 的常數）。 */
+  const charts = (snapshot: WorkspaceSnapshot): [string, WaterfallBar[], number][] => [["G1", bridgeWaterfall(snapshot).bars, 520], ...profitWaterfallScopes(snapshot).map(scope => [`G2 ${scope.id}`, profitWaterfall(snapshot, scope.id).bars, 600] as [string, WaterfallBar[], number])];
+
+  it("一般模式（12px）與開工錨點 03dc3a8 逐字相同：兩個區塊在六份資料上的 SSR svg 全文、WaterfallSvg 在七種寬的 markup（位元組數與 SHA-256）", async () => {
+    const expected = JSON.parse(readFileSync(resolve(WATERFALL_SVG_BASELINE_FILE), "utf8")) as { generated_at_commit: string; sections: Record<string, string>; sweep: Record<string, { bytes: number; sha256: string }> };
+    expect(expected.generated_at_commit).toBe("03dc3a8");
+    const actual = await waterfallSvgBaseline();
+    expect(Object.keys(actual.sections)).toEqual(Object.keys(expected.sections));
+    for (const key of Object.keys(expected.sections)) expect(actual.sections[key], key).toBe(expected.sections[key]);
+    expect(Object.keys(actual.sweep)).toEqual(Object.keys(expected.sweep));
+    for (const key of Object.keys(expected.sweep)) expect(actual.sweep[key], key).toEqual(expected.sweep[key]);
+    expect(Object.keys(expected.sections)).toHaveLength(12);
+    expect(Object.keys(expected.sweep).length).toBeGreaterThanOrEqual(6 * 2 * 7);
+  }, 60000);
+
+  it("fontPx 省略與傳 12 完全相同（WATERFALL_FONT_PX）；12px 的排版常數是原值（刻度文字下移 4、x 標籤 15／13、邊界 64／24／40）", () => {
+    expect(WATERFALL_FONT_PX).toBe(12);
+    for (const { snapshot } of both()) for (const [chart, bars, minWidth] of charts(snapshot)) for (const width of [minWidth, 800, ...PRESENT_WIDTHS]) {
+      const domain = overviewWaterfallDomain(snapshot);
+      const geometry = waterfallGeometry(bars, width, chartHeights.lg, domain);
+      expect(waterfallGeometry(bars, width, chartHeights.lg, domain, WATERFALL_FONT_PX), `${chart} ${width}`).toEqual(geometry);
+      expect(geometry.text).toEqual({ fontPx: 12, tickDy: 4, xFirst: 15, xLine: 13 });
+      expect(geometry.plot).toEqual({ left: 64, right: width - 8, top: 24, bottom: chartHeights.lg - 40 });
+    }
+    expect(waterfallTextWidth("−157.5 萬")).toBe(waterfallTextWidth("−157.5 萬", 12));
+    expect(splitWaterfallLabel(metricDefinitions.cogs_net.shortLabel, 54)).toEqual(splitWaterfallLabel(metricDefinitions.cogs_net.shortLabel, 54, 12));
+  });
+
+  it("14px：估寬依比例放大，行高、圖頂最高基線與邊界一起換算（四捨五入到整數 px；右邊界不變）", () => {
+    const text = "−157.5 萬";
+    expect(waterfallTextWidth(text, PRESENT_PX)).toBeCloseTo((waterfallTextWidth(text) * PRESENT_PX) / 12, 10);
+    const geometry = waterfallGeometry(bridgeWaterfall(demo.snapshot).bars, 670, chartHeights.lg, overviewWaterfallDomain(demo.snapshot), PRESENT_PX);
+    expect(geometry.text).toEqual({ fontPx: 14, tickDy: 5, xFirst: 18, xLine: 15 });
+    expect(geometry.plot).toEqual({ left: 75, right: 670 - 8, top: 28, bottom: chartHeights.lg - 47 });
+    // 不合理的字級（0、負值、NaN）一律退回 12px 的原值。
+    for (const bad of [0, -14, Number.NaN]) expect(waterfallGeometry(bridgeWaterfall(demo.snapshot).bars, 670, chartHeights.lg, undefined, bad)).toEqual(waterfallGeometry(bridgeWaterfall(demo.snapshot).bars, 670, chartHeights.lg));
+  });
+
+  it("投影寬（1182、670）× 14px：任兩個柱上標值不重疊（水平間距 < 0 時垂直至少差 14px）、x 標籤每行放得進一格、刻度文字放得進左邊界、標值不超出圖頂；同樣的檢查在 12px 版面下 670 會失敗（換算前的問題）", () => {
+    const collisions = (bars: WaterfallBar[], width: number, domain: readonly [number, number], fontPx: number) => {
+      const geometry = waterfallGeometry(bars, width, chartHeights.lg, domain, fontPx);
+      const placed = geometry.shapes.filter(shape => shape.value).map(shape => ({ cx: shape.cx, y: shape.value!.y, w: waterfallTextWidth(shape.bar.display, PRESENT_PX) }));
+      const found: string[] = [];
+      for (let i = 1; i < placed.length; i++) for (let j = 0; j < i; j++) {
+        const gap = Math.abs(placed[i].cx - placed[j].cx) - (placed[i].w + placed[j].w) / 2;
+        if (gap < 0 && Math.abs(placed[i].y - placed[j].y) < PRESENT_PX) found.push(`${geometry.shapes.filter(shape => shape.value)[j].bar.id}/${geometry.shapes.filter(shape => shape.value)[i].bar.id}`);
+      }
+      return { geometry, found };
+    };
+    for (const { snapshot } of both()) {
+      const domain = overviewWaterfallDomain(snapshot);
+      for (const [chart, bars, minWidth] of charts(snapshot)) for (const width of PRESENT_WIDTHS) {
+        const { geometry, found } = collisions(bars, Math.max(width, minWidth), domain, PRESENT_PX);
+        const where = `${snapshot.report.dataset_id} ${chart} ${width}`;
+        expect(found, where).toEqual([]);
+        const slot = (geometry.plot.right - geometry.plot.left) / bars.length;
+        for (const shape of geometry.shapes) for (const line of shape.xLabel) expect(waterfallTextWidth(line, PRESENT_PX), `${where} ${line}`).toBeLessThanOrEqual(slot);
+        for (const tick of geometry.ticks) expect(waterfallTextWidth(tick.label, PRESENT_PX), `${where} ${tick.label}`).toBeLessThanOrEqual(geometry.plot.left - 8);
+        for (const shape of geometry.shapes) if (shape.value) expect(shape.value.y, `${where} ${shape.bar.id}`).toBeGreaterThanOrEqual(PRESENT_PX);
+      }
+    }
+    // 換算前（12px 版面配 14px 字）的示範資料 G1 在 768 投影會有重疊——這就是要換算的原因。
+    expect(collisions(bridgeWaterfall(demo.snapshot).bars, 670, overviewWaterfallDomain(demo.snapshot), 12).found.length).toBeGreaterThan(0);
+  });
+});

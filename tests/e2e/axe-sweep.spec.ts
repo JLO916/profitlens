@@ -15,6 +15,7 @@ import { fill, labels } from "../../src/i18n";
  * V4-5 再加一個：試算計算後展開 scenario-sensitivity（合成資料 MARKETPLACE：G15 一根柱、G16 維持現況門檻點＋三個使用者點、零貢獻門檻超出範圍的圖下一行與資料表）；desktop、laptop、tablet 共 16，mobile 共 15。
  * V4-6 再加一個：會議頁有歷史與選入方案（同一份合成資料：MARKETPLACE 方案 1 選入議程 5 → 結束會議 → 新會議稿再選入；G15 會議實例一根柱、G19 歷史 1 筆的等高空狀態，兩張圖的資料表展開）；desktop、laptop、tablet 共 17，mobile 共 16。
  * V4-7a 再加一個：匯入 fixtures/errors/missing_ad_day 後的資料來源頁（點 G20 缺列段後：篩選後的問題表、G21 一格、G20 資料表展開）；desktop、laptop、tablet 共 18，mobile 共 17。
+ * V4-8a 再加一個：會議頁投影（從總覽投影按頁首的互切按鈕切過去，D-V3-34＝A；≤ 767px 沒有投影按鈕，手機略過）；desktop、laptop、tablet 共 19，mobile 共 17。
  * axe 來源：專案沒有 @axe-core/playwright（本輪不加依賴），改用 node_modules 已有的 axe-core（eslint-config-next → eslint-plugin-jsx-a11y 的相依套件）
  * 以 page.addScriptTag 注入 axe.min.js 後呼叫 axe.run。找不到 axe-core 時退回純 DOM 檢查（每個控制有可及名稱、每頁一個 h1、img 都有 alt），並在結果標明 engine。
  * 不論 axe 是否可用，每個狀態都另記純 DOM 檢查（heading 跳級、重複 id、:focus-visible 規則是否存在）供參考，不斷言。
@@ -76,10 +77,17 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   await expect(evidenceDrawer(page)).toHaveCount(0);
 
   const present = page.getByTestId("present-toggle");
-  if (await present.isVisible()) {
+  // 在總覽時記下有沒有投影按鈕（摘要的 skipped 用；收尾時已在資料來源頁，那裡本來就沒有按鈕）。
+  const presentShown = await present.isVisible();
+  if (presentShown) {
     await present.click();
     await expect(page.locator("html")).toHaveAttribute("data-mode", "present");
     results.push(await scan(page, "present-mode-overview", engine, path));
+    // V4-8a（06_BATCHES V4-8a「投影 axe 加會議頁投影狀態」）：投影中按頁首的互切按鈕切到會議紀錄，仍在投影中。
+    await page.getByTestId("present-switch").click();
+    await expect(page.locator("main h1")).toHaveText(labels.shell.nav.meeting.headline);
+    await expect(page.locator("html")).toHaveAttribute("data-mode", "present");
+    results.push(await scan(page, "present-mode-meeting", engine, path));
     await page.keyboard.press("Escape");
     await expect(page.locator("html")).not.toHaveAttribute("data-mode", /.*/);
   }
@@ -150,7 +158,7 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
 
   const summary = {
     checked_at: new Date().toISOString(), engine, axe_core: path ? (JSON.parse(readFileSync(path.replace(/axe\.min\.js$/, "package.json"), "utf8")) as { version: string }).version : null,
-    tags: TAGS, viewport: testInfo.project.use.viewport, skipped: (await present.isVisible()) ? [] : ["present-mode-overview（≤ 767px 沒有投影按鈕，PRD §9.7）"],
+    tags: TAGS, viewport: testInfo.project.use.viewport, skipped: presentShown ? [] : ["present-mode-overview（≤ 767px 沒有投影按鈕，PRD §9.7）", "present-mode-meeting（同上）"],
     totals: { states: results.length, serious: results.reduce((sum, row) => sum + row.serious, 0), critical: results.reduce((sum, row) => sum + row.critical, 0), moderate: results.reduce((sum, row) => sum + row.violations.filter(item => item.impact === "moderate").length, 0), minor: results.reduce((sum, row) => sum + row.violations.filter(item => item.impact === "minor").length, 0) },
     states: results,
   };
@@ -159,7 +167,8 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   // V4-3b：狀態數（06 護欄表）desktop、laptop、tablet 14，mobile 13（mobile 沒有投影模式）；V4-4 起 15／14（加合成資料的商品頁）；V4-5 起 16／15（加試算計算後展開 scenario-sensitivity）；
   // V4-6 起 17／16（加會議頁有歷史與選入方案）；V4-7a 起 18／17（加 missing_ad_day 的資料來源頁：G20 缺列段、G21、篩選後的問題表）。
   // 06 護欄表寫的「V4-7a 起 17／16」是在 V4-6 多加一個狀態之前寫的，實際是 18／17。
-  expect(results.length, "axe 狀態數（V4-7a 起 18／17）").toBe(testInfo.project.name === "mobile" ? 17 : 18);
+  // V4-8a 起 19／17（desktop、laptop、tablet 加會議頁投影；mobile 沒有投影，不變）。
+  expect(results.length, "axe 狀態數（V4-8a 起 19／17）").toBe(testInfo.project.name === "mobile" ? 17 : 19);
 
   for (const row of results) {
     const blocking = row.violations.filter(item => item.impact === "serious" || item.impact === "critical").map(item => `${item.impact} ${item.id}（${item.nodes}）：${item.targets.join(" ")}`);

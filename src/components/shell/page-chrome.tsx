@@ -10,8 +10,9 @@ import { ShellIcon } from "./shell-icon";
  * 也可以直接用 actions 傳入。
  * V3-6：h1 旁再加一個插槽 #page-title-addon（每頁都渲染；空時不佔位），待辦頁的計數徽章「12 · 置頂 3」與 ? 說明由頁面元件 portal 放進來（或用 titleAddon 傳入）。
  * V3-9b C（F22，PRD §9.7）：「投影模式」按鈕（總覽與會議頁才有）在本頁動作之前；投影中 h1 下方多一行期間文字（期間列隱藏時只剩這一行），不在投影中時不渲染。
+ * V4-8a（D-V3-34＝A）：.page-present 內、投影按鈕之前放「經營總覽／會議紀錄」互切按鈕（presentSwitch；固定的子元素位置，投影按鈕的 DOM 不因它換掉，Esc 回焦不受影響）。
  */
-export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon, hasData = true, importing, presentToggle, presentPeriod }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode; /** V3-8（§7.7.1 第 1 點）：資料來源頁已有資料時「匯入資料」主要、「載入示範資料」次要；沒有資料時對調。省略時視為已有資料（v2 的排法）。 */ hasData?: boolean; /** V3-8 開工錨點（§7.7.2）：匯入中「匯入資料／載入示範資料」保持掛載但 hidden（M1；page-import testid 不消失）。 */ importing?: boolean; /** V3-9b 開工錨點（F22）：總覽與會議頁的「投影模式」按鈕（C 代理實作樣式與行為細節）。 */ presentToggle?: ReactNode; /** V3-9b C（F22）：投影中的一行期間文字（dashboard 依 presentPeriodText 傳入；不在投影中時不傳）。 */ presentPeriod?: string }) {
+export function PageHeader({ title, description, isData, showLoadDemo, onLoadDemo, onImport, actions, titleAddon, hasData = true, importing, presentToggle, presentSwitch, presentPeriod }: { title: string; description: string; isData: boolean; showLoadDemo: boolean; onLoadDemo: () => void; onImport: () => void; actions?: ReactNode; titleAddon?: ReactNode; /** V3-8（§7.7.1 第 1 點）：資料來源頁已有資料時「匯入資料」主要、「載入示範資料」次要；沒有資料時對調。省略時視為已有資料（v2 的排法）。 */ hasData?: boolean; /** V3-8 開工錨點（§7.7.2）：匯入中「匯入資料／載入示範資料」保持掛載但 hidden（M1；page-import testid 不消失）。 */ importing?: boolean; /** V3-9b 開工錨點（F22）：總覽與會議頁的「投影模式」按鈕（C 代理實作樣式與行為細節）。 */ presentToggle?: ReactNode; /** V4-8a（D-V3-34＝A）：投影中互切總覽與會議紀錄的按鈕（與 presentToggle 同條件傳入；不在投影中時由 CSS 隱藏但掛載）。 */ presentSwitch?: ReactNode; /** V3-9b C（F22）：投影中的一行期間文字（dashboard 依 presentPeriodText 傳入；不在投影中時不傳）。 */ presentPeriod?: string }) {
   return <div className="page-heading">
     <div className="page-heading-text"><h1>{title}</h1>{description && <p className="subtitle">{description}</p>}{presentPeriod && <p className="present-period" data-testid="present-period">{presentPeriod}</p>}</div>
     <div className="page-title-addon" id="page-title-addon" data-testid="page-title-addon">{titleAddon}</div>
@@ -21,7 +22,7 @@ export function PageHeader({ title, description, isData, showLoadDemo, onLoadDem
       <button type="button" className={`ui-btn ${hasData ? "ui-btn-primary" : "ui-btn-secondary"}`} data-testid="page-import" onClick={onImport}><ShellIcon name="import" size={16} />{labels.shell.buttons.importData}</button>
       {hasData && showLoadDemo && <button type="button" className="ui-btn ui-btn-secondary" onClick={onLoadDemo}>{labels.shell.buttons.loadDemo}</button>}
     </div>}
-    {presentToggle && <div className="page-present">{presentToggle}</div>}
+    {presentToggle && <div className="page-present">{presentSwitch}{presentToggle}</div>}
     <div className="page-actions" id="page-actions" data-testid="page-actions">{actions}</div>
   </div>;
 }

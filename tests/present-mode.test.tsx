@@ -22,6 +22,8 @@ import { presentEscapeExits, presentPeriodText, usePresentMode } from "@/compone
  * 3. presentPeriodText：投影中頁首的一行期間文字（期間列的期間摘要＋通路；會議頁用會議固定的範圍）。
  * 4. PageHeader（SSR）：present-period 只在傳入時出現（投影中），按鈕在 .page-present。
  * 5. globals.css 的 C 區段：token 重新對應、隱藏側欄與期間列、最大寬 1280px、只顯示 L1、只在 @media screen、不新增字級原值、沒有動畫。
+ * 6. V4-8a 代理 A：白名單加 .bridge-section（只顯示瀑布、單欄；旁欄、橋接表、資料表隱藏但掛載）、--text-12／13 → 14px 與行高成對對應、
+ *    投影按鈕不帶 aria-pressed（D-V3-33＝B）、互切按鈕（D-V3-34＝A）在 .page-present 內、不在投影中時 CSS 隱藏。
  */
 
 const hooks = vi.hoisted(() => ({
@@ -262,12 +264,14 @@ describe("presentPeriodText（投影中頁首的一行期間文字）", () => {
 
 describe("PageHeader（SSR）：投影模式按鈕與一行期間文字", () => {
   const noop = () => undefined;
-  const toggle = createElement("button", { type: "button", "data-testid": "present-toggle", "aria-pressed": false }, labels.shell.presentV3.enter);
+  // V4-8a（D-V3-33＝B）：投影按鈕不帶 aria-pressed（狀態只看文字：投影模式／離開投影）。
+  const toggle = createElement("button", { type: "button", "data-testid": "present-toggle" }, labels.shell.presentV3.enter);
   const base = { title: labels.shell.nav.overview.headline, description: labels.shell.nav.overview.explain, isData: false, showLoadDemo: true, onLoadDemo: noop, onImport: noop };
 
   it("不在投影中：按鈕在 .page-present、本頁動作之前；沒有 present-period", () => {
     const html = renderToStaticMarkup(createElement(PageHeader, { ...base, presentToggle: toggle }));
-    expect(html).toContain('<div class="page-present"><button type="button" data-testid="present-toggle" aria-pressed="false">');
+    expect(html).toContain('<div class="page-present"><button type="button" data-testid="present-toggle">');
+    expect(html).not.toContain("aria-pressed");
     expect(html.indexOf('class="page-present"')).toBeLessThan(html.indexOf('data-testid="page-actions"'));
     expect(html).not.toContain("present-period");
   });
@@ -283,6 +287,17 @@ describe("PageHeader（SSR）：投影模式按鈕與一行期間文字", () => 
 
   it("沒有傳按鈕的頁面（總覽與會議頁以外）沒有 .page-present", () => {
     expect(renderToStaticMarkup(createElement(PageHeader, base))).not.toContain("page-present");
+  });
+
+  it("V4-8a（D-V3-34＝A）：互切按鈕（presentSwitch）在 .page-present 內、投影按鈕之前；沒傳時與 V3-9b 相同；只傳互切按鈕、沒有投影按鈕時不渲染 .page-present", () => {
+    const toMeeting = createElement("button", { type: "button", className: "ui-btn ui-btn-secondary present-switch", "data-testid": "present-switch" }, labels.shell.nav.meeting.headline);
+    const html = renderToStaticMarkup(createElement(PageHeader, { ...base, presentToggle: toggle, presentSwitch: toMeeting }));
+    expect(html).toContain(`<div class="page-present"><button type="button" class="ui-btn ui-btn-secondary present-switch" data-testid="present-switch">${labels.shell.nav.meeting.headline}</button><button type="button" data-testid="present-toggle">`);
+    expect(html.indexOf('data-testid="present-switch"')).toBeLessThan(html.indexOf('data-testid="present-toggle"'));
+    expect(html.indexOf('class="page-present"')).toBeLessThan(html.indexOf('data-testid="page-actions"'));
+    expect(html).not.toContain("aria-pressed");
+    expect(renderToStaticMarkup(createElement(PageHeader, { ...base, presentSwitch: toMeeting }))).not.toContain("page-present");
+    expect(renderToStaticMarkup(createElement(PageHeader, { ...base, presentToggle: toggle, presentSwitch: undefined }))).toBe(renderToStaticMarkup(createElement(PageHeader, { ...base, presentToggle: toggle })));
   });
 });
 
@@ -328,7 +343,7 @@ describe("globals.css 的 C 區段（:root[data-mode=\"present\"]）", () => {
 
   it("投影中隱藏側欄、期間列與手機底部分頁列；總覽只留 L1（本期一句話、KPI 帶、三件事、利潤結構瀑布圖）", () => {
     for (const selector of [':root[data-mode="present"] .app-shell > .sidebar', ':root[data-mode="present"] .period-bar', ':root[data-mode="present"] .mobile-tabbar']) expect(hidden).toContain(selector);
-    expect(hidden).toContain(':root[data-mode="present"] .view-content > :not(.snapshot, .kpi-section, .top-three, .profit-section, .meeting-page)');
+    expect(hidden).toContain(':root[data-mode="present"] .view-content > :not(.snapshot, .kpi-section, .top-three, .bridge-section, .profit-section, .meeting-page)');
     // 三件事每列只留標題與影響金額。
     for (const part of [".alert-body", ".alert-actions", ".alert-explain", ".alert-chev"]) expect(hidden).toContain(`:root[data-mode="present"] ${part}`);
   });
@@ -341,5 +356,60 @@ describe("globals.css 的 C 區段（:root[data-mode=\"present\"]）", () => {
     const mobile = rules.filter(rule => rule.context.some(prelude => prelude.includes("max-width: 767px")));
     expect(mobile.some(rule => rule.selector === ".page-present" && rule.declarations.some(item => item.prop === "display" && item.value === "none"))).toBe(true);
     expect(mobile.some(rule => rule.selector === ':root[data-mode="present"] .page-present' && rule.declarations.some(item => item.prop === "display" && item.value === "flex"))).toBe(true);
+  });
+
+  // ── V4-8a 代理 A（D-V4-8、D-V4-9、D-V3-34；X39）
+  const whitelist = /^:root\[data-mode="present"\] \.view-content > :not\(([^)]*)\)$/;
+  const allowed = () => splitSelectors(hidden.map(selector => whitelist.exec(selector)?.[1]).find(Boolean) ?? "");
+  const rootDecl = (prop: string) => parseCss(css).find(rule => rule.selector === ":root" && rule.context.length === 0 && rule.declarations.some(item => item.prop === prop))?.declarations.find(item => item.prop === prop)?.value;
+  const px = (value: string | undefined) => Number(/^(\d+(?:\.\d+)?)px$/.exec(value ?? "")?.[1] ?? Number.NaN);
+
+  it("V4-8a 白名單加 .bridge-section（X39：投影中貢獻變化拆解的瀑布可見）；總覽 L1 與會議頁都還在白名單裡", () => {
+    expect(allowed()).toEqual([".snapshot", ".kpi-section", ".top-three", ".bridge-section", ".profit-section", ".meeting-page"]);
+  });
+
+  it("V4-8a 拆解區只顯示瀑布：旁欄（.frame-aside）、橋接表（.bridge-table-wrap，含 G6 與平衡檢核）、v2 四欄資料表（.data-alternative）隱藏但掛載；改單欄（欄與區都只剩 main）；標題、副標、單位與瀑布外框不隱藏", () => {
+    for (const part of [".bridge-section .frame-aside", ".bridge-section .bridge-table-wrap", ".bridge-section .data-alternative"]) expect(hidden).toContain(`:root[data-mode="present"] ${part}`);
+    const grid = ':root[data-mode="present"] .bridge-section .frame-grid.has-aside';
+    expect(decl(grid, "grid-template-columns")).toBe("minmax(0, 1fr)");
+    expect(decl(grid, "grid-template-areas")).toBe('"main"');
+    expect(present.find(rule => rule.selector === grid)!.context.some(prelude => /^@media screen\b/.test(prelude))).toBe(true);
+    // 單欄規則的權重高於 V4-1 的 7fr／5fr 與 ≤ 1023px 的「旁欄在上」（.chart-section .frame-grid.has-aside）。
+    expect(parseCss(css).filter(rule => rule.selector === ".chart-section .frame-grid.has-aside").length).toBe(2);
+    const bridgeHidden = hidden.filter(selector => selector.includes(".bridge-section"));
+    for (const kept of [".sec-head", ".sec-end", ".unit-note", "#bridge-title", "#bridge-sub", ".frame-main", ".chart-frame", ".waterfall", ".waterfall-measure", "svg"]) expect(bridgeHidden.filter(selector => selector.includes(kept)), kept).toEqual([]);
+  });
+
+  it("V4-8a（D-V4-9）：--text-12、--text-13 投影都對應 14px（:root 既有的 --text-14 值，不新增字級）；對應後 12 ≤ 13 ≤ 正文；行高成對對應 :root 14px 的行高", () => {
+    const root = ':root[data-mode="present"]';
+    expect(decl(root, "--text-12")).toBe("14px");
+    expect(decl(root, "--text-13")).toBe("14px");
+    expect(rootDecl("--text-12")).toBe("12px");
+    expect(rootDecl("--text-13")).toBe("13px");
+    expect(rootDecl("--text-14")).toBe("14px");
+    expect(px(decl(root, "--text-12"))).toBeLessThanOrEqual(px(decl(root, "--text-13")));
+    expect(px(decl(root, "--text-13"))).toBeLessThanOrEqual(px(decl(root, "--text-14")));
+    // 每個重新對應的 --text-* 值都是 :root 既有的 --text-* 值（字級種類不增加）。
+    const rootSizes = new Set(parseCss(css).filter(rule => rule.selector === ":root" && rule.context.length === 0).flatMap(rule => rule.declarations.filter(item => /^--text-\d+$/.test(item.prop)).map(item => item.value)));
+    const remapped = rules.find(rule => rule.selector === root)!.declarations.filter(item => /^--text-\d+$/.test(item.prop));
+    expect(remapped.map(item => item.prop)).toEqual(["--text-12", "--text-13", "--text-14", "--text-16"]);
+    for (const item of remapped) expect(rootSizes, `${item.prop}: ${item.value}`).toContain(item.value);
+    // 行高：14px 在 :root 配 --leading-14（22px）；--leading-12、--leading-13 跟著字級對應到同一個值（照 v3 --leading-14／16 的前例）。
+    expect(rootDecl("--leading-14")).toBe("22px");
+    expect(decl(root, "--leading-12")).toBe(rootDecl("--leading-14"));
+    expect(decl(root, "--leading-13")).toBe(rootDecl("--leading-14"));
+    expect(decl(root, "--leading-14")).toBe("24px");
+  });
+
+  it("V4-8a（D-V3-34＝A）：互切按鈕（.present-switch）平常 display: none（不在投影中不可見、不是停留點，規則不在 @media screen 內，列印也隱藏）；投影中（@media screen）才顯示；.page-present 兩顆按鈕之間有間距", () => {
+    const outside = rules.filter(rule => rule.selector === ".page-present .present-switch");
+    expect(outside).toHaveLength(1);
+    expect(outside[0].context).toEqual([]);
+    expect(outside[0].declarations).toEqual([{ prop: "display", value: "none" }]);
+    const shown = present.filter(rule => rule.selector === ':root[data-mode="present"] .page-present .present-switch');
+    expect(shown).toHaveLength(1);
+    expect(shown[0].declarations).toEqual([{ prop: "display", value: "inline-flex" }]);
+    expect(shown[0].context.some(prelude => /^@media screen\b/.test(prelude))).toBe(true);
+    expect(decl(".page-present", "gap")).toBe("var(--space-2)");
   });
 });

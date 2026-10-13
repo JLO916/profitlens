@@ -10,6 +10,8 @@ import { waterfallToneColor, type WaterfallBar } from "@/application/waterfall";
 // 整張圖是 aria-hidden 的視覺層；鍵盤與螢幕報讀走旁邊表格的 number-link（同一個開抽屜的 handler）。
 // V4-1 代理 A（PRD §6.2 C17、§7.2；CHART_CATALOG G1、G2）：加 bare（不再自己輸出 .chart-frame.waterfall 外框，外框由 ChartFrame 的
 // frameClassName="waterfall" 提供，每張圖只有一個 .chart-frame）與選填 domain（總覽兩張瀑布同尺度）；刻度改呼叫 presentation.ts 的 formatAxisWan。
+// V4-8a 代理 A（D-V4-9）：投影把 --text-12 對應到 14px。WaterfallSvg 量圖內文字的實際字級，不是 12px 時排版依比例換算（waterfallTextLayout）；
+// 12px（一般模式、SSR、列印）的輸出與開工錨點 03dc3a8 逐字相同。
 
 /**
  * SVG 的預設最小寬（px）：容器比這個窄時（手機、平板）改成水平捲動。幾何也至少用這個寬度計算，CSS min-width 與它相同，
@@ -28,6 +30,21 @@ const LABEL_TOP_MIN = 12;
 /** x 標籤兩行的基線（繪圖區底下 15px、第二行再 13px）：容器水平捲動時，傳統捲軸只會蓋到圖底最後幾 px。 */
 const X_LABEL_FIRST = 15;
 const X_LABEL_LINE = 13;
+/** Y 軸刻度文字的基線比刻度線低 4px（12px 字垂直置中）。 */
+const TICK_DY = 4;
+/**
+ * 排版的基準字級（px）：圖內文字是 chartFontSize＝var(--text-12)。V4-8a（D-V4-9）投影把 --text-12 對應到 14px：
+ * WaterfallSvg 量到的字級不是 12 時，估寬、標值與 x 標籤的行高、圖頂最高基線與四邊邊界（右邊界除外）依比例換算；12px 時一律用原值，輸出逐字不變。
+ */
+export const WATERFALL_FONT_PX = 12;
+interface WaterfallTextLayout { fontPx: number; margin: { top: number; right: number; bottom: number; left: number }; labelLine: number; labelTopMin: number; xFirst: number; xLine: number; tickDy: number }
+const BASE_TEXT_LAYOUT: WaterfallTextLayout = { fontPx: WATERFALL_FONT_PX, margin: MARGIN, labelLine: LABEL_LINE, labelTopMin: LABEL_TOP_MIN, xFirst: X_LABEL_FIRST, xLine: X_LABEL_LINE, tickDy: TICK_DY };
+/** 字級換算後的排版常數（四捨五入到整數 px）；12px（或量不到）時就是原值。 */
+function waterfallTextLayout(fontPx: number): WaterfallTextLayout {
+  if (fontPx === WATERFALL_FONT_PX || !(fontPx > 0)) return BASE_TEXT_LAYOUT;
+  const scale = (n: number) => Math.round((n * fontPx) / WATERFALL_FONT_PX);
+  return { fontPx, margin: { top: scale(MARGIN.top), right: MARGIN.right, bottom: scale(MARGIN.bottom), left: scale(MARGIN.left) }, labelLine: scale(LABEL_LINE), labelTopMin: scale(LABEL_TOP_MIN), xFirst: scale(X_LABEL_FIRST), xLine: scale(X_LABEL_LINE), tickDy: scale(TICK_DY) };
+}
 /** 資料待補的虛線框最矮高度（前面沒有水位可參考時）。 */
 const MISSING_MIN = 24;
 /** 柱寬佔每格的比例（約 60% 柱、40% 間距）。 */
@@ -52,6 +69,8 @@ export interface WaterfallGeometry {
   zeroY: number;
   shapes: WaterfallBarShape[];
   connectors: { key: string; x1: number; x2: number; y: number }[];
+  /** V4-8a：排版用的字級與換算後的刻度文字、x 標籤基線（12px 時是 4、15、13）。 */
+  text: { fontPx: number; tickDy: number; xFirst: number; xLine: number };
 }
 
 /** 圖形座標（只用於畫圖，顯示文字一律用 bar.display）。 */
@@ -70,12 +89,13 @@ function niceStep(raw: number): number {
   return (unit >= Math.SQRT2 * 5 ? 10 : unit >= Math.sqrt(10) ? 5 : unit >= Math.SQRT2 ? 2 : 1) * power;
 }
 
-/** 12px 字的估寬（px）：全形與中日韓字 12、數字與正負號 7、其他（小數點、逗號、空白）4。只用於排版避讓。 */
-export function waterfallTextWidth(text: string): number {
-  return Array.from(text).reduce((sum, char) => {
+/** 12px 字的估寬（px）：全形與中日韓字 12、數字與正負號 7、其他（小數點、逗號、空白）4。只用於排版避讓。V4-8a：fontPx 不是 12 時依比例換算。 */
+export function waterfallTextWidth(text: string, fontPx: number = WATERFALL_FONT_PX): number {
+  const width = Array.from(text).reduce((sum, char) => {
     const code = char.codePointAt(0) ?? 0;
     return sum + (code >= 0x2e80 ? 12 : (code >= 48 && code <= 57) || char === "+" || char === MINUS ? 7 : 4);
   }, 0);
+  return fontPx === WATERFALL_FONT_PX || !(fontPx > 0) ? width : (width * fontPx) / WATERFALL_FONT_PX;
 }
 
 /**
@@ -86,10 +106,10 @@ export function waterfallTickLabels(ticks: readonly number[], step: number): str
   return formatAxisWan(ticks, step);
 }
 
-/** x 標籤：放不下一行（12px 字估寬）時從中間拆成兩行，寫法同設計稿（商品／成本、其他／變動費）。 */
-export function splitWaterfallLabel(text: string, room: number): string[] {
+/** x 標籤：放不下一行（12px 字估寬；V4-8a 起依 fontPx）時從中間拆成兩行，寫法同設計稿（商品／成本、其他／變動費）。 */
+export function splitWaterfallLabel(text: string, room: number, fontPx: number = WATERFALL_FONT_PX): string[] {
   const chars = Array.from(text);
-  if (waterfallTextWidth(text) <= room - 4 || chars.length < 2) return [text];
+  if (waterfallTextWidth(text, fontPx) <= room - 4 || chars.length < 2) return [text];
   const cut = Math.floor(chars.length / 2);
   return [chars.slice(0, cut).join(""), chars.slice(cut).join("")];
 }
@@ -100,9 +120,12 @@ export function splitWaterfallLabel(text: string, room: number): string[] {
  * V4-1 domain（選填，[最低, 最高] 的圖形座標）：與自己的水位一起決定刻度間距與上下界，給同頁同尺度用（PRD §7.2；
  * 總覽兩張瀑布傳 waterfall.ts 的 overviewWaterfallDomain）。上下界取刻度間距的整數倍，所以範圍含負值時下界延伸到下一個刻度（D-V4-41 註記）。
  * 兩張圖的 domain 涵蓋各自全部的水位時，刻度間距、上下界與刻度完全相同。
+ * V4-8a fontPx（選填，預設 12）：圖內文字的實際字級（投影 14px）；不是 12 時估寬、行高與邊界依比例換算（waterfallTextLayout），12 時輸出與開工錨點 03dc3a8 逐字相同（tests/fixtures/waterfall-svg-v4-8a.json）。
  */
-export function waterfallGeometry(bars: readonly WaterfallBar[], width: number, height: number, domain?: readonly [number, number]): WaterfallGeometry {
-  const plot = { left: MARGIN.left, right: Math.max(width - MARGIN.right, MARGIN.left + 1), top: MARGIN.top, bottom: Math.max(height - MARGIN.bottom, MARGIN.top + 1) };
+export function waterfallGeometry(bars: readonly WaterfallBar[], width: number, height: number, domain?: readonly [number, number], fontPx: number = WATERFALL_FONT_PX): WaterfallGeometry {
+  const layout = waterfallTextLayout(fontPx);
+  const { margin } = layout;
+  const plot = { left: margin.left, right: Math.max(width - margin.right, margin.left + 1), top: margin.top, bottom: Math.max(height - margin.bottom, margin.top + 1) };
   const levels = [0];
   for (const bar of bars) for (const value of [bar.start, bar.end]) { const n = coordinate(value); if (n !== null) levels.push(n); }
   if (domain) for (const value of domain) if (Number.isFinite(value)) levels.push(value);
@@ -126,7 +149,7 @@ export function waterfallGeometry(bars: readonly WaterfallBar[], width: number, 
   let lastLevel: number | null = null;
   const shapes = bars.map((bar, index): WaterfallBarShape => {
     const x = plot.left + index * slot + (slot - barWidth) / 2;
-    const base = { bar, x: round(x), cx: round(x + barWidth / 2), width: round(barWidth), xLabel: splitWaterfallLabel(bar.shortLabel, slot) };
+    const base = { bar, x: round(x), cx: round(x + barWidth / 2), width: round(barWidth), xLabel: splitWaterfallLabel(bar.shortLabel, slot, layout.fontPx) };
     const start = coordinate(bar.start), end = coordinate(bar.end);
     if (bar.value === null) {
       // 資料待補：虛線框從 0 畫到最後一個已知水位（沒有時畫 24px 高），框上標「資料待補」。
@@ -150,14 +173,14 @@ export function waterfallGeometry(bars: readonly WaterfallBar[], width: number, 
   let previousBox: { x2: number; y: number } | null = null;
   for (const shape of shapes) {
     if (!shape.value) continue;
-    const half = waterfallTextWidth(shape.bar.display) / 2;
+    const half = waterfallTextWidth(shape.bar.display, layout.fontPx) / 2;
     let labelY = shape.value.y;
-    if (previousBox && shape.cx - half < previousBox.x2 + LABEL_PAD && Math.abs(labelY - previousBox.y) < LABEL_LINE) {
+    if (previousBox && shape.cx - half < previousBox.x2 + LABEL_PAD && Math.abs(labelY - previousBox.y) < layout.labelLine) {
       const start = coordinate(shape.bar.start), end = coordinate(shape.bar.end);
       const downward = shape.rect !== null && !shape.rect.dashed && shape.bar.kind === "delta" && start !== null && end !== null && end < start;
-      const below = downward ? shape.rect!.y + shape.rect!.height + LABEL_LINE : null;
+      const below = downward ? shape.rect!.y + shape.rect!.height + layout.labelLine : null;
       if (below !== null && below <= plot.bottom - 2) labelY = below;
-      else if (previousBox.y - LABEL_LINE >= LABEL_TOP_MIN) labelY = Math.min(labelY, previousBox.y - LABEL_LINE);
+      else if (previousBox.y - layout.labelLine >= layout.labelTopMin) labelY = Math.min(labelY, previousBox.y - layout.labelLine);
       shape.value = { ...shape.value, y: round(labelY) };
     }
     previousBox = { x2: shape.cx + half, y: labelY };
@@ -170,7 +193,7 @@ export function waterfallGeometry(bars: readonly WaterfallBar[], width: number, 
     if (!previous.rect || previous.rect.dashed || !current.rect || current.rect.dashed || level === null || current.bar.start === null) continue;
     connectors.push({ key: `${previous.bar.id}-${current.bar.id}`, x1: round(previous.x + barWidth), x2: current.x, y: round(y(level)) });
   }
-  return { width, height, plot, ticks, zeroY: round(zeroY), shapes, connectors };
+  return { width, height, plot, ticks, zeroY: round(zeroY), shapes, connectors, text: { fontPx: layout.fontPx, tickDy: layout.tickDy, xFirst: layout.xFirst, xLine: layout.xLine } };
 }
 
 export interface WaterfallSvgProps {
@@ -203,24 +226,35 @@ export interface WaterfallSvgProps {
 export function WaterfallSvg({ bars, height, width, testId, testIdPrefix, minWidth = WATERFALL_MIN_WIDTH, onBarClick, bare = false, domain }: WaterfallSvgProps) {
   const frame = useRef<HTMLDivElement>(null);
   const [measured, setMeasured] = useState<number | null>(null);
+  // V4-8a（D-V4-9）：圖內文字的實際字級。SSR 與量到之前是 12px；投影把 --text-12 對應到 14px（<html> 的屬性改變後樣式重算），量到不同才換算排版。
+  const [fontPx, setFontPx] = useState(WATERFALL_FONT_PX);
   useEffect(() => {
     const node = frame.current;
     if (!node || typeof ResizeObserver === "undefined") return;
+    const readFont = () => {
+      const sample = node.querySelector("svg text");
+      const px = sample ? Number.parseFloat(getComputedStyle(sample).fontSize) : Number.NaN;
+      if (px > 0) setFontPx(current => current === px ? current : px);
+    };
     const observer = new ResizeObserver(entries => {
       const next = Math.round(entries[0]?.contentRect.width ?? 0);
       if (next > 0) setMeasured(current => current === next ? current : next);
+      readFont();
     });
     observer.observe(node);
-    return () => observer.disconnect();
+    // 進出投影時寬度通常也會變（側欄隱藏），但不保證；<html> 的屬性一變就再量一次字級。
+    const root = typeof MutationObserver === "undefined" ? null : new MutationObserver(readFont);
+    root?.observe(document.documentElement, { attributes: true });
+    return () => { observer.disconnect(); root?.disconnect(); };
   }, []);
   const drawWidth = Math.max(Math.round(width ?? measured ?? WATERFALL_SSR_WIDTH), minWidth);
   const lo = domain?.[0], hi = domain?.[1];
-  const geometry = useMemo(() => waterfallGeometry(bars, drawWidth, height, lo === undefined || hi === undefined ? undefined : [lo, hi]), [bars, drawWidth, height, lo, hi]);
-  const { plot, ticks, shapes, connectors, zeroY } = geometry;
+  const geometry = useMemo(() => waterfallGeometry(bars, drawWidth, height, lo === undefined || hi === undefined ? undefined : [lo, hi], fontPx), [bars, drawWidth, height, lo, hi, fontPx]);
+  const { plot, ticks, shapes, connectors, zeroY, text: textLayout } = geometry;
 
   const svg = <svg className="waterfall-svg" viewBox={`0 0 ${drawWidth} ${height}`} width="100%" height={height} aria-hidden="true" focusable="false" fontSize={chartFontSize} style={{ "--wf-min-w": `${minWidth}px` } as CSSProperties} data-testid={testId}>
     <g className="wf-grid">{ticks.map(tick => <line key={tick.value} x1={plot.left} x2={plot.right} y1={tick.y} y2={tick.y} stroke={chartColors.grid} strokeWidth={1} shapeRendering="crispEdges" />)}</g>
-    <g className="wf-axis">{ticks.map(tick => <text key={tick.value} x={plot.left - 8} y={tick.y + 4} textAnchor="end">{tick.label}</text>)}</g>
+    <g className="wf-axis">{ticks.map(tick => <text key={tick.value} x={plot.left - 8} y={tick.y + textLayout.tickDy} textAnchor="end">{tick.label}</text>)}</g>
     <g className="wf-connectors">{connectors.map(line => <line key={line.key} x1={line.x1} x2={line.x2} y1={line.y} y2={line.y} stroke={chartColors.connector} strokeWidth={1} shapeRendering="crispEdges" />)}</g>
     <g className="wf-bars">{shapes.map(shape => shape.rect && <rect
       key={shape.bar.id}
@@ -234,7 +268,7 @@ export function WaterfallSvg({ bars, height, width, testId, testIdPrefix, minWid
       onClick={onBarClick ? () => onBarClick(shape.bar) : undefined}
     />)}</g>
     <g className="wf-values">{shapes.map(shape => shape.value && <text key={shape.bar.id} className={`wf-value is-${shape.value.tone}`} x={shape.cx} y={shape.value.y} textAnchor="middle">{shape.bar.display}</text>)}</g>
-    <g className="wf-x">{shapes.map(shape => <text key={shape.bar.id} x={shape.cx} y={plot.bottom + X_LABEL_FIRST} textAnchor="middle">{shape.xLabel.map((line, index) => <tspan key={index} x={shape.cx} dy={index === 0 ? 0 : X_LABEL_LINE}>{line}</tspan>)}</text>)}</g>
+    <g className="wf-x">{shapes.map(shape => <text key={shape.bar.id} x={shape.cx} y={plot.bottom + textLayout.xFirst} textAnchor="middle">{shape.xLabel.map((line, index) => <tspan key={index} x={shape.cx} dy={index === 0 ? 0 : textLayout.xLine}>{line}</tspan>)}</text>)}</g>
     <line className="wf-zero" x1={plot.left} x2={plot.right} y1={zeroY} y2={zeroY} stroke={chartColors.connector} strokeWidth={1} shapeRendering="crispEdges" />
   </svg>;
   if (bare) return <div ref={frame} className="waterfall-measure">{svg}</div>;
