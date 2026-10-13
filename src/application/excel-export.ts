@@ -11,6 +11,7 @@ import { actionDocuments, type ActionExecutionStatus, type ActionWorkspace } fro
 import { ASSIST_KPI_VERSION, type AssistKpi, type AssistUnit } from "./assist-kpi";
 import { ASSIST_WEEKS_VERSION, assistWeeks } from "./chart-assist-weeks";
 import { CHANNEL_WEEKS_VERSION, channelWeeks, channelWeeksAvailable, recentChannelWeeks } from "./chart-channel-weeks";
+import { CUMULATIVE_DAILY_VERSION, cumulativeConclusion, cumulativeDaily } from "./chart-cumulative";
 import type { HeatCell } from "./chart-heatmap";
 import { PRODUCT_PARETO_LIMIT, PRODUCT_PARETO_VERSION, productPareto } from "./chart-pareto";
 import { CHANNEL_STRUCTURE_VERSION } from "./chart-structure";
@@ -329,7 +330,7 @@ function pnlSheet(snapshot: WorkspaceSnapshot): ExcelSheet {
 /** 「圖表資料」的一段（一張圖）。rows 的每一列與 columns 等長，第一格是列名。 */
 interface ChartDataSection {
   /** 圖的代號（對照 CHART_CATALOG，不輸出）。 */
-  chart: "G1" | "G2" | "G4" | "G7a" | "G7b" | "G10" | "G11" | "G12" | "G13" | "G14";
+  chart: "G1" | "G2" | "G4" | "G7a" | "G7b" | "G8" | "G10" | "G11" | "G12" | "G13" | "G14";
   section: string;
   title: string;
   columns: string[];
@@ -346,7 +347,7 @@ const chartRatio = (value: string | null): ExcelCell => withFormat(ratioCell(val
 /** 週的欄名或列名：與管理損益表的週欄同一個寫法「{週名} {起日} 至 {迄日}」。 */
 const weekName = (label: string, period: Period) => fill(labels.exports.variantsV3.pnlWeekColumn, { label, range: fill(labels.exports.variantsV3.pnlWeekRange, { start: period.start, end: period.end }) });
 
-/** 依 CHART_CATALOG 的順序組出各段（G1、G2、G4、G7a、G7b、G10、G11、G12、G13、G14）；沒有資料或超過上限的圖不放（G7b、G11 通路 > 8，G14 沒有商品毛利為負）。 */
+/** 依 CHART_CATALOG 的順序組出各段（G1、G2、G4、G7a、G7b、G8、G10、G11、G12、G13、G14）；沒有資料或超過上限的圖不放（G7b、G11 通路 > 8，G8 任一期超過 92 天，G14 沒有商品毛利為負）。 */
 function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   const { summary, snapshot, dataset } = input;
   const { report } = snapshot;
@@ -412,6 +413,18 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
       columns: [labels.overview.channelTable.channelHeader, ...data.weeks.map(week => excelHeader(weekName(week.label, week.period), "money_l2"))],
       rows: data.channels.map(series => [text(channelLabel(series.channel, alias)), ...series.values.map(value => chartMoney(value.metric.value, "money_l2"))]),
       version: CHANNEL_WEEKS_VERSION, arranged: true,
+    });
+  }
+
+  // V4-10 G8 兩期每日累計（cumulative-daily-v1）：列＝上期、本期的每一天（上期在前，同畫面資料表），欄＝日期、當日、累計（L3）；任一期超過 92 天不畫時不放。
+  const cumulative = cumulativeDaily(snapshot, "contribution_after_marketing");
+  if (cumulative.drawable) {
+    const cumulativeCopy = labels.overview.chartsV4.cumulative;
+    sections.push({
+      chart: "G8", section: cumulativeCopy.tableTitle, title: cumulativeConclusion(cumulative, snapshot).title,
+      columns: [cumulativeCopy.columns.date, excelHeader(cumulativeCopy.columns.daily, "money"), excelHeader(cumulativeCopy.columns.cumulative, "money")],
+      rows: [cumulative.previous, cumulative.current].flatMap(series => series.points.map(point => [text(point.date), chartMoney(point.daily.value, "money"), chartMoney(point.cumulative.value, "money")])),
+      version: CUMULATIVE_DAILY_VERSION, arranged: true,
     });
   }
 

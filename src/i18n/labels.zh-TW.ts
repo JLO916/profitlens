@@ -790,6 +790,45 @@ export const overview = {
        */
       merLine: "實際 {mer}，損益兩平 {breakeven}",
     },
+    // ── V4-10 錨點（代理 A：cumulative＝G8 兩期每日累計，總覽進階 <details> 內；PRD §4.2、§4.5；CHART_CATALOG G8；D-V4-22＝A）
+    /**
+     * G8 兩期每日累計（cumulative-daily-v1）。{metric}＝指標名（metricDefinitions，總覽是扣廣告後貢獻）；{amount}＝本期末日累計（L1）；{d}＝第幾天。
+     * 標題規則（PRD §4.2）：只比兩期都有值的第 1 到 min(兩期天數) 天，以最後一個可比的天判定；single＝沒有可比的天（例如第 1 天就資料待補）或任一期超過 92 天不畫。
+     */
+    cumulative: {
+      title: {
+        behind: "本期累計{metric} {amount}，第 {d} 天起落後上期",
+        ahead: "本期累計{metric} {amount}，第 {d} 天起超過上期",
+        even: "本期累計{metric} {amount}，與上期相同",
+        single: "本期累計{metric} {amount}",
+      },
+      /** 副標（區塊的 aria 描述）；兩期天數不同時改用 alignNote（{subtitle}＝本句）。 */
+      subtitle: "兩期各自從第 1 天起，把每天的{metric}逐日相加",
+      alignNote: "{subtitle}；上期 {previous} 天、本期 {current} 天，依第幾天對齊",
+      /** X 軸刻度與資料表列名的「第 n 天」；列名前加期間（{period}＝本期／上期）。 */
+      axisDay: "第 {n} 天",
+      rowLabel: "{period}第 {n} 天",
+      /** 兩條線尾的累計值（L1）：{period}＝本期／上期。 */
+      endLabel: "{period} {value}",
+      /** 資料表：名稱（summary 以 overview.page.dataTable 組成「表格 · 兩期每日累計」）、caption、欄名（金額欄另以 format.units.yuanColumn 加「（元）」）。 */
+      tableTitle: "兩期每日累計",
+      caption: "兩期每日{metric}與累計（元）",
+      columns: { day: "第幾天", date: "日期", daily: "當日", cumulative: "累計", target: "目標" },
+      /** 資料表之後的說明（在收合的 <details> 內，不進主層）。 */
+      missingNote: "某一天資料待補時，從那天起的累計無法得知，線在那裡斷開；目標只在期間與本期完全相同時畫成水平線，不按天數折算。",
+      /** 任一期超過 {n} 天時框內的空狀態文字與資料表 <details> 內的說明。 */
+      tooLong: "任一期超過 {n} 天時不畫每日累計，請看每週趨勢。",
+      /** 數字 number-link 的可及名稱：{row}＝列名（本期第 3 天），{column}＝欄名，{value}＝畫面上的值。 */
+      cellAria: "{row} {column} {value}，看明細",
+      /** 累計的「計算與來源」（valueKind level、metric_version cumulative-daily-v1）：{period}＝本期／上期，{n}＝第幾天，{date}＝日期（L1）。 */
+      evidence: {
+        title: "{period}累計{metric} · 第 {n} 天（{date}）",
+        formula: "{period}第 1 天到第 {n} 天的{metric}逐日相加",
+        definition: "{period}從第 1 天起，把每天的{metric}加到第 {n} 天。某一天資料待補時，從那天起的累計無法得知。",
+        formulaTechnical: "cumulative_n = Σ daily_i（i ≤ n；sumAmounts，到分；任一日為 null 之後都是 null）",
+        component: "第 {n} 天（{date}）",
+      },
+    },
   },
 } as const;
 

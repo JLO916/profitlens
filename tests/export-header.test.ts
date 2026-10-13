@@ -161,9 +161,10 @@ describe("V3-7 §6.5 正規化比對：去掉版頭、負號換回 ASCII 後，�
     const workbook = normalizeWorkbook(exports.excel);
     expect({ sha256: sha(JSON.stringify(workbook)), chars: JSON.stringify(workbook).length }).toEqual(BASELINE.excel);
     // 摘要工作表拿掉四列版頭與 V3-9a 損益兩平 MER 一列（新增列）；指標定義表拿掉損益兩平 MER 版本一列，V4-9b 起另拿掉「圖表資料」的 B 級版本列
-    // （golden：各指標每週 assist-weeks-v1、各通路每週 channel-weeks-v1、每 100 元淨營收去向 channel-structure-v1、各通路每天 daily-heatmap-v1；本期沒有商品毛利為負，沒有 product-pareto-v1）。
+    // （golden：各指標每週 assist-weeks-v1、各通路每週 channel-weeks-v1、每 100 元淨營收去向 channel-structure-v1、各通路每天 daily-heatmap-v1；本期沒有商品毛利為負，沒有 product-pareto-v1；
+    // V4-10 起另有兩期每日累計 cumulative-daily-v1）。
     expect(exports.excel.sheets[0].rows.length - workbook.sheets[0].rows.length).toBe(4 + 1);
-    expect(exports.excel.sheets[5].rows.length - workbook.sheets[5].rows.length).toBe(1 + 4);
+    expect(exports.excel.sheets[5].rows.length - workbook.sheets[5].rows.length).toBe(1 + 5);
     // V3-9b F14／F13：活頁簿最後多一張管理損益表、待辦工作表最後多一欄廣告決策；V4-9b 起管理損益表之前多一張「圖表資料」（正規化時拿掉，見 tests/helpers/export-normalize.ts）。
     expect(exports.excel.sheets.map(sheet => sheet.name)).toEqual([...workbook.sheets.map(sheet => sheet.name), labels.exports.chartsV4.excel.sheet, labels.exports.variantsV3.pnlSheet]);
     const actionsSheet = (book: typeof workbook) => book.sheets.find(sheet => sheet.name === labels.exports.excel.sheets.actions)!;

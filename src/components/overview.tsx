@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
 import type { EventSet } from "@/application/events";
-import { achievement, achievementText, matchTargets, mismatchText, targetDisplay, TARGET_METRICS, type TargetMetric, type TargetSet } from "@/application/targets";
+import { achievement, achievementText, matchTargets, mismatchText, targetDisplay, TARGET_METRICS, type TargetMetric, type TargetRow, type TargetSet } from "@/application/targets";
 import { favorableDirectionOf, formatAmount, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Metric, MetricName, Period, SourceRef } from "@/domain/types";
@@ -16,6 +16,7 @@ import { AssistTable } from "./overview/assist-table";
 import { BridgeSection } from "./overview/charts/bridge-section";
 import { Bullet } from "./overview/charts/bullet";
 import { ChannelSection } from "./overview/charts/channel-section";
+import { CumulativeSection, type CumulativeTarget } from "./overview/charts/cumulative-section";
 import { ProfitSection } from "./overview/charts/profit-section";
 import { TrendSection } from "./overview/charts/trend-section";
 import { KPI_BAND_METRICS, KpiBand, type KpiBandMetric } from "./overview/kpi-band";
@@ -41,8 +42,15 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
   const { report } = snapshot;
   // 進階（收合）：重新進入總覽時，若期間合計與日均原本是展開的，外層一起展開；之後各自開關。
   const [advancedOpen, setAdvancedOpen] = useState(periodOpen);
+  // V4-10 G8：進階區展開過才畫兩期每日累計（之後收合也保留）；伺服器端由 CumulativeSection 自己全部渲染。
+  const [advancedSeen, setAdvancedSeen] = useState(periodOpen);
   // R4：目標只在期間完全相同時顯示達成率；檔期只標示，不改任何計算。
   const targetMatches = matchTargets(targets, { current_period: report.current.period, channels: report.scope.channels, allChannels: allChannels ?? report.scope.channels });
+  // 目標數字可追溯：抽屜列出實際與目標、公式「實際 ÷ 目標」、targets.csv 檔名與行號。V4-10：抽成函式，G8 的目標格與 KPI 帶的目標 number-link 開同一個抽屜。
+  const targetEvidence = (metric: TargetMetric, row: TargetRow): EvidenceSelection => {
+    const actual = report.current.metrics[metric];
+    return { title: fill(labels.targets.evidenceTitle, { metric: metricDefinitions[metric].label }), name: metric, metric: actual, period: report.current.period, channels, sources: report.current.sources, formula: labels.targets.formula, formulaTechnical: `${labels.targets.formula}：${actual.value ?? labels.shell.status.missing} ÷ ${row.target}`, metricVersion: ASSIST_KPI_VERSION, components: [{ label: labels.targets.actual, metric: actual }, { label: labels.targets.columns.target, metric: { value: row.target, reason_codes: [] } }], scopeLabel: fill(labels.targets.sourceLine, { file: targets?.filename ?? "targets.csv", line: row.line }) };
+  };
   const targetLine = (name: string, budget = false) => {
     if (!(TARGET_METRICS as readonly string[]).includes(name)) return null;
     const metric = name as TargetMetric;
@@ -51,12 +59,14 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
     const actual = report.current.metrics[metric];
     const text = match.status === "matched" ? (budget ? fill(labels.targets.achievedBudget, { target: targetDisplay(match.row, "L1"), rate: achievement(actual, match.row.target).display }) : achievementText(match.row, actual, "L1")) : mismatchText(match.nearest);
     const row = match.status === "matched" ? match.row : match.nearest;
-    // 目標數字可追溯：抽屜列出實際與目標、公式「實際 ÷ 目標」、targets.csv 檔名與行號。
-    const openTarget = () => onEvidence({ title: fill(labels.targets.evidenceTitle, { metric: metricDefinitions[metric].label }), name: metric, metric: actual, period: report.current.period, channels, sources: report.current.sources, formula: labels.targets.formula, formulaTechnical: `${labels.targets.formula}：${actual.value ?? labels.shell.status.missing} ÷ ${row.target}`, metricVersion: ASSIST_KPI_VERSION, components: [{ label: labels.targets.actual, metric: actual }, { label: labels.targets.columns.target, metric: { value: row.target, reason_codes: [] } }], scopeLabel: fill(labels.targets.sourceLine, { file: targets?.filename ?? "targets.csv", line: row.line }) });
+    const openTarget = () => onEvidence(targetEvidence(metric, row));
     // C18 目標細條（V4-2 抽成共用 Bullet，markup 與 v3 相同）：寬＝達成率夾在 0 到 1、落後（收入、毛利、貢獻低於目標；廣告費高於預算）改不利色；數字仍是旁邊的 number-link。
     return <p className={`kpi-target ${match.status}`} data-testid={`kpi-target-${name}`}>{match.status === "matched" && <Bullet actual={actual.value} target={match.row.target} favorableDirection={favorableDirectionOf(metric)} />}<button className="number-link" onClick={openTarget}>{text}</button></p>;
   };
   const channels = report.scope.channels;
+  // V4-10 G8：目標只在 matched 時畫水平線（不折算、不畫等速目標線，D-V4-22＝A）。
+  const cumulativeMatch = targetMatches.contribution_after_marketing;
+  const cumulativeTarget: CumulativeTarget | null = cumulativeMatch.status === "matched" ? { value: cumulativeMatch.row.target, evidence: targetEvidence("contribution_after_marketing", cumulativeMatch.row) } : null;
   const open = (name: MetricName, metric: Metric, period: Period, sources: SourceRef[], title?: string, selectedChannels = channels) => onEvidence({ name, metric, period, sources, channels: selectedChannels, title: title ?? metricDefinitions[name].label });
   const periodBoth = { start: [report.previous.period.start, report.current.period.start].sort()[0], end: [report.previous.period.end, report.current.period.end].sort()[1] };
   const sourcesBoth = [...report.previous.sources, ...report.current.sources];
@@ -82,7 +92,7 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
 
     <AssistTable snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} budget={targetLine("ad_spend", true)} />
 
-    <details className="advanced" data-testid="overview-advanced" open={advancedOpen} onToggle={event => setAdvancedOpen(event.currentTarget.open)}><summary>{labels.overview.pnlV3.advancedSummary}</summary>
+    <details className="advanced" data-testid="overview-advanced" open={advancedOpen} onToggle={event => { const opened = event.currentTarget.open; setAdvancedOpen(opened); if (opened) setAdvancedSeen(true); }}><summary>{labels.overview.pnlV3.advancedSummary}</summary>
     <details className="panel period-comparison" aria-labelledby="daily-average-title" data-testid="period-comparison" open={periodOpen} onToggle={event => onPeriodToggle?.(event.currentTarget.open)}>
       <summary><span className="section-title">{labels.overview.sections.periodTotals}</span><span className="tag">{report.comparison.mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays}</span></summary>
       <h2 id="daily-average-title" className="sr-only">{labels.overview.sections.periodTotals}</h2>
@@ -101,6 +111,8 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
     </details>
     {/* V3-9a F9（D-V3-19＝A）：每日／每週管理損益表，放在期間合計與日均之後；預設收合、內容掛載。 */}
     <PnlTable snapshot={snapshot} onEvidence={onEvidence} />
+    {/* V4-10 G8（D-V4-22＝A）：兩期每日累計，管理損益表之後；在進階 <details> 內，不算主層圖區塊（X37：總覽主層仍是 4）。 */}
+    <CumulativeSection snapshot={snapshot} onEvidence={onEvidence} target={cumulativeTarget} drawn={advancedSeen} />
     </details>
   </>;
 }

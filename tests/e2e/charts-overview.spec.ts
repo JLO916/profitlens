@@ -5,14 +5,15 @@
 // 外框不帶 aria-hidden、改 role=region＋aria-label（比框寬時 tabIndex=0），svg 本身 aria-hidden（代理 A 交接）。
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
-import { chartColors } from "../../src/application/chart-theme";
-import { MINUS, formatAmountL3, metricDefinitions } from "../../src/application/presentation";
+import { chartColors, chartHeights } from "../../src/application/chart-theme";
+import { CUMULATIVE_DAILY_VERSION, cumulativeConclusion, cumulativeDaily } from "../../src/application/chart-cumulative";
+import { MINUS, formatAmountL1, formatAmountL3, formatDateL1, metricDefinitions } from "../../src/application/presentation";
 import { AMOUNT_FIELDS } from "../../src/domain/types";
 import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
 import { ASSIST_WEEKS_VERSION } from "../../src/application/chart-assist-weeks";
-import { evidenceDrawer, loadDemo } from "./launch-helpers-v310";
+import { DEMO_RESULT, evidenceDrawer, loadDemo } from "./launch-helpers-v310";
 import { choosePreset, closeDetails, isMobile, openDetails } from "./replacement-helpers";
-import { DOT_ZERO_WAN, WAN, analyticsCount, analyticsEvents, assistCell, assistKpis, assistSpark, assistSparkHeads, assistSparks, assistWeeksDetails, assistWeeksTable, axisTickTexts, axisTickValue, bridgeBar, bridgeBarInfo, bridgeBars, bridgeRowLink, bridgeWaterfallSvg, channelBar, channelBarInfo, channelBars, channelChangeCellByRow, channelChangeLink, channelKv, chartFrame, evidenceTechnicalRows, expectNoPageScrollX, frameBox, frameHeights, importSynthetic, merBullet, merBulletLine, openDataTable, profitWaterfallSvg, readTargetsCsv, signedAmount, stubAnalytics, waterfallTicks } from "./chart-helpers-v4";
+import { DOT_ZERO_WAN, WAN, analyticsCount, analyticsEvents, assistCell, assistKpis, assistSpark, assistSparkHeads, assistSparks, assistWeeksDetails, assistWeeksTable, axisTickTexts, axisTickValue, bridgeBar, bridgeBarInfo, bridgeBars, bridgeRowLink, bridgeWaterfallSvg, channelBar, channelBarInfo, channelBars, channelChangeCellByRow, channelChangeLink, channelKv, chartFrame, clickChartShape, datasetSnapshot, evidenceTechnicalRows, expectNoPageScrollX, frameBox, frameHeights, importSynthetic, merBullet, merBulletLine, openDataTable, profitWaterfallSvg, readTargetsCsv, signedAmount, stubAnalytics, VISIBLE_CHART_FRAMES, waterfallTicks } from "./chart-helpers-v4";
 
 /** 抽屜標題（h2 可及名稱）：「{title} · 計算與來源」（evidence-drawer.tsx 的 sr-only 後綴）。 */
 const drawerTitle = (title: string) => `${title} · ${labels.evidence.sections.evidence}`;
@@ -571,5 +572,166 @@ test.describe("V4-2 總覽：4 通路合成資料（X40 未滿 7 天的週、差
     await expectWanAxis(chartFrame(page, "channel-mix"), "x", "G4 各通路（合成資料）");
     await expectNoPageScrollX(page);
     testInfo.annotations.push({ type: "v4-2-synthetic-units", description: (await units.locator("polyline.spark-line").getAttribute("points")) ?? "" });
+  });
+});
+
+// ── V4-10 代理 A：G8 兩期每日累計（總覽進階 <details> 內；CHART_CATALOG G8 的 E2E 草案；06_BATCHES V4-10 驗收重點；D-V4-22＝A）──
+// 收合時區塊掛載但沒有 bounding box（main .chart-frame:visible 4 個）；展開進階後 5 個（G8 的等高比較只在展開狀態下做，X37）。
+// 金額期待值由 Node 端同一組函式（cumulativeDaily、formatAmountL3）與 fixtures/demo 算出，不寫死中文；定位用 testid 與 class（chart-point-hit 是透明熱區）。
+const cumulativeCopy = labels.overview.chartsV4.cumulative;
+const CUMULATIVE = "chart-overview-cumulative";
+const cumulativeTable = (page: Page) => page.getByTestId(`${CUMULATIVE}-table`);
+const cumulativeRow = (page: Page, period: "previous" | "current", n: number) => cumulativeTable(page).locator("tbody tr").filter({ has: page.getByRole("rowheader", { name: fill(cumulativeCopy.rowLabel, { period: labels.shell.periods[period], n }), exact: true }) });
+/** 資料表的格（td，不含列名）：第 0 格日期、第 1 格當日、第 2 格累計、第 3 格目標（只在目標 matched 時）。 */
+const CUMULATIVE_COLUMN = { date: 0, daily: 1, cumulative: 2, target: 3 } as const;
+/** X 軸刻度可能的文字：「第 1 天」到「第 92 天」。 */
+const DAY_TICKS = Array.from({ length: 92 }, (_, index) => fill(cumulativeCopy.axisDay, { n: index + 1 }));
+async function openAdvanced(page: Page) {
+  const advanced = page.getByTestId("overview-advanced");
+  await openDetails(advanced);
+  await expect(advanced).toHaveAttribute("open", "");
+  await expect(chartFrame(page, CUMULATIVE)).toBeVisible();
+  // 進階區第一次展開後才畫（瀏覽器在展開前只放同高骨架）：等框內出現 Recharts 的兩條折線。
+  await expect(frameBox(chartFrame(page, CUMULATIVE))).toHaveAttribute("data-state", "ready");
+  await expect.poll(() => frameBox(chartFrame(page, CUMULATIVE)).locator(".recharts-line").count(), { message: "G8 兩條線畫出來" }).toBe(2);
+}
+
+test.describe("V4-10 總覽 G8 兩期每日累計", () => {
+  test("收合時掛載但看不到（可見框 4）；展開進階後可見（可見框 5、G8 框高 sm、切期間高度不變）；標題＝結論句；Y 刻度整數萬含 0；資料表本期、上期最後一列累計＝各期合計；390 頁面不橫向捲動", async ({ page }, testInfo) => {
+    await open(page);
+    const snapshot = await datasetSnapshot("demo");
+    const section = chartFrame(page, CUMULATIVE);
+    await expect(section).toHaveCount(1);
+    await expect(section).toBeHidden();
+    await expect(page.locator(VISIBLE_CHART_FRAMES), "收合時總覽可見框 4 個（X37）").toHaveCount(4);
+    expect(Object.keys(await frameHeights(page))).toEqual(OVERVIEW_FRAMES);
+
+    await openAdvanced(page);
+    await expect(page.locator(VISIBLE_CHART_FRAMES), "展開進階後 5 個").toHaveCount(5);
+    const before = await frameHeights(page);
+    expect(Object.keys(before)).toEqual([...OVERVIEW_FRAMES, CUMULATIVE]);
+    expect(before[CUMULATIVE]).toBe(chartHeights.sm);
+    expect(before[CUMULATIVE]).toBe(before.trend);
+    // 位置：進階區內、管理損益表之後（主層圖區塊仍是 4 個：進階區是收合的 <details>）。
+    await expect(page.getByTestId("overview-advanced").locator(`[data-testid='pnl-table'] ~ [data-testid='${CUMULATIVE}']`)).toHaveCount(1);
+    const result = cumulativeDaily(snapshot, "contribution_after_marketing");
+    const { title, subtitle } = cumulativeConclusion(result, snapshot);
+    await expect(section.locator("#cumulative-title")).toHaveText(title);
+    await expect(section.locator("#cumulative-sub")).toHaveText(subtitle);
+    expect(title, "示範資料：第 1 天起落後上期（d＝1）").toBe(fill(cumulativeCopy.title.behind, { metric: metricDefinitions.contribution_after_marketing.label, amount: formatAmountL1(DEMO_RESULT), d: 1 }));
+    await expect(section.locator(".legend > span")).toHaveCount(2);
+    await expect(frameBox(section)).toHaveAttribute("aria-hidden", "true");
+    await expect(frameBox(section).locator("[tabindex], button, a")).toHaveCount(0);
+    const yTicks = await expectWanAxis(section, "y", "G8 兩期每日累計");
+    const xTicks = await axisTickTexts(section, "x");
+    expect(xTicks.filter(text => !DAY_TICKS.includes(text)), `X 刻度都是「第 n 天」（${xTicks.join(" | ")}）`).toEqual([]);
+    expect(xTicks[0]).toBe(DAY_TICKS[0]);
+    // 不畫等速目標線（D-V4-22＝A）：沒有讀目標時沒有任何參考線（斷線標記是垂直線，示範資料沒有缺日）。
+    await expect(frameBox(section).locator(".recharts-reference-line")).toHaveCount(0);
+    // 兩條線：本期 chartColors.current 2px、上期 chartColors.previous 1.5px（Recharts 的線是 path.recharts-line-curve）。
+    await expect(frameBox(section).locator(`path.recharts-line-curve[stroke='${chartColors.current}']`)).toHaveAttribute("stroke-width", "2");
+    await expect(frameBox(section).locator(`path.recharts-line-curve[stroke='${chartColors.previous}']`)).toHaveAttribute("stroke-width", "1.5");
+
+    // 資料表：84 列（上期 42、本期 42）；兩期最後一列的累計＝各期合計（L3）。
+    await openDataTable(section);
+    await expect(cumulativeTable(page).locator("tbody tr")).toHaveCount(84);
+    await expect(cumulativeRow(page, "current", 42).locator("td").nth(CUMULATIVE_COLUMN.cumulative)).toHaveText(formatAmountL3(snapshot.report.current.metrics.contribution_after_marketing.value));
+    await expect(cumulativeRow(page, "previous", 42).locator("td").nth(CUMULATIVE_COLUMN.cumulative)).toHaveText(formatAmountL3(snapshot.report.previous.metrics.contribution_after_marketing.value));
+    await expect(cumulativeRow(page, "current", 42).locator("td").nth(CUMULATIVE_COLUMN.cumulative)).toHaveText(formatAmountL3(DEMO_RESULT));
+    await expect(cumulativeRow(page, "current", 1).locator("td").nth(CUMULATIVE_COLUMN.date)).toHaveText(snapshot.report.current.period.start);
+
+    // 切期間（近 7 天）：G8 的框高不變（等高比較只在展開狀態下做）。
+    await choosePreset(page, "last7");
+    await expect(chartFrame(page, CUMULATIVE)).toBeVisible();
+    const after = await frameHeights(page);
+    expect(after[CUMULATIVE], "近 7 天：G8 框高不變").toBe(before[CUMULATIVE]);
+    await expectNoPageScrollX(page);
+    testInfo.annotations.push({ type: "v4-10-g8", description: JSON.stringify({ title, yTicks, xTicks, before, after }) });
+  });
+
+  test("點圖上的點與點資料表的累計格開同一個抽屜（標題、精確值相同）：大數字不帶「+」、metric_version cumulative-daily-v1、篩到該日；點的點擊記 chart_clicked，number-link 不記；當日格 metric_version 是 contribution-v1、另列 cumulative-daily-v1", async ({ page }, testInfo) => {
+    await stubAnalytics(page);
+    await open(page);
+    await openAdvanced(page);
+    const snapshot = await datasetSnapshot("demo");
+    const result = cumulativeDaily(snapshot, "contribution_after_marketing");
+    const day = 3, point = result.current.points[day - 1];
+    const date = formatDateL1(point.date, { anchor: snapshot.data_as_of });
+    const title = drawerTitle(fill(cumulativeCopy.evidence.title, { period: labels.shell.periods.current, metric: metricDefinitions.contribution_after_marketing.label, n: day, date }));
+
+    // 點（透明熱區 circle.chart-point-hit[data-series=current][data-date]，不可聚焦；熱區互相重疊，用 dispatchEvent 點指定的那一個）。
+    const hit = frameBox(chartFrame(page, CUMULATIVE)).locator(`circle.chart-point-hit[data-series='current'][data-date='${point.date}']`);
+    await expect(hit).toHaveCount(1);
+    await clickChartShape(hit);
+    await expect(drawerHeading(page)).toHaveText(title);
+    const precise = (await preciseValue(page).textContent())!.trim();
+    await expect(drawerNumber(page)).toHaveText(formatAmountL1(point.cumulative.value));
+    expect((await drawerNumber(page).textContent())!.trim().startsWith("+"), "累計是水準值，大數字不帶「+」").toBe(false);
+    const rows = await evidenceTechnicalRows(evidenceDrawer(page));
+    expect(rows.find(row => row.dt === "metric_version")?.dd).toBe(CUMULATIVE_DAILY_VERSION);
+    await expect(evidenceDrawer(page).getByTestId("evidence-filter")).toContainText(fill(labels.evidence.chartsV4.filter.date, { date }));
+    await closeDrawer(page);
+    await expect.poll(() => analyticsCount(page, "chart_clicked"), { message: "點圖上的點記 chart_clicked" }).toBe(1);
+
+    // 資料表同一天的累計格（number-link）：同一個 builder → 標題與精確值相同；不記 chart_clicked。
+    await openDataTable(chartFrame(page, CUMULATIVE));
+    const link = cumulativeRow(page, "current", day).locator("td").nth(CUMULATIVE_COLUMN.cumulative).locator("button.number-link");
+    await link.click();
+    await expect(drawerHeading(page)).toHaveText(title);
+    await expect(preciseValue(page)).toHaveText(precise);
+    await closeDrawer(page);
+    await expect(link).toBeFocused();
+    expect(await analyticsCount(page, "chart_clicked"), "number-link 不記 chart_clicked").toBe(1);
+
+    // 當日格：值取自 domain（metric_version contribution-v1），技術細節另列 cumulative-daily-v1。
+    await cumulativeRow(page, "current", day).locator("td").nth(CUMULATIVE_COLUMN.daily).locator("button.number-link").click();
+    await expect(drawerHeading(page)).toHaveText(drawerTitle(fill(labels.overview.pnlV3.evidenceTitle, { metric: metricDefinitions.contribution_after_marketing.label, date })));
+    const dayRows = await evidenceTechnicalRows(evidenceDrawer(page));
+    const version = dayRows.findIndex(row => row.dt === "metric_version");
+    expect(dayRows[version]?.dd).toBe("contribution-v1");
+    expect(dayRows[version + 1]).toEqual({ testId: "evidence-arrange-version", dt: labels.evidence.chartsV4.arrangeVersion, dd: CUMULATIVE_DAILY_VERSION });
+    await closeDrawer(page);
+    testInfo.annotations.push({ type: "v4-10-g8-drawer", description: precise });
+  });
+
+  test("讀入 targets.csv（扣廣告後貢獻目標與本期期間相同 → matched）：只畫一條水平目標線（chartColors.target）、圖例多「目標」刻度、資料表多一欄目標（本期列開既有的目標抽屜）；不畫等速目標線", async ({ page }) => {
+    await open(page);
+    await readTargetsCsv(page);
+    await openAdvanced(page);
+    const section = chartFrame(page, CUMULATIVE);
+    await expect(section.locator(".legend > span")).toHaveCount(3);
+    await expect(section.locator(".legend > span").last()).toHaveText(cumulativeCopy.columns.target);
+    await expect(section.locator(".legend svg[data-shape='tick']")).toHaveCount(1);
+    const lines = frameBox(section).locator(".recharts-reference-line line");
+    await expect(lines, "只有一條參考線（水平目標線）").toHaveCount(1);
+    await expect(lines).toHaveAttribute("stroke", chartColors.target);
+    const [y1, y2] = await Promise.all([lines.getAttribute("y1"), lines.getAttribute("y2")]);
+    expect(y1, "水平線").toBe(y2);
+    await openDataTable(section);
+    const target = cumulativeRow(page, "current", 1).locator("td").nth(CUMULATIVE_COLUMN.target);
+    await expect(target).toHaveText(formatAmountL3("1200000.00"));
+    await expect(cumulativeRow(page, "previous", 1).locator("td").nth(CUMULATIVE_COLUMN.target)).toHaveText(labels.shell.status.notApplicable);
+    await target.locator("button.number-link").click();
+    await expect(drawerHeading(page)).toHaveText(drawerTitle(fill(labels.targets.evidenceTitle, { metric: metricDefinitions.contribution_after_marketing.label })));
+    await closeDrawer(page);
+  });
+
+  test("4 通路合成資料：本期第 8 天（9/14 LIVE 缺通路費用）、上期第 10 天（8/30 LIVE 缺廣告）起斷線並標「無資料」；標題「第 5 天起落後上期」，金額資料待補", async ({ page }) => {
+    await page.goto("/");
+    await importSynthetic(page);
+    await openAdvanced(page);
+    const snapshot = await datasetSnapshot("synthetic");
+    const section = chartFrame(page, CUMULATIVE);
+    await expect(section.locator("#cumulative-title")).toHaveText(cumulativeConclusion(cumulativeDaily(snapshot, "contribution_after_marketing"), snapshot).title);
+    await expect(section.locator("#cumulative-title")).toHaveText(fill(cumulativeCopy.title.behind, { metric: metricDefinitions.contribution_after_marketing.label, amount: labels.shell.status.missing, d: 5 }));
+    await expect(frameBox(section).locator(".recharts-reference-line"), "兩期各一條斷線標記").toHaveCount(2);
+    await expect(frameBox(section).locator(".recharts-reference-line text")).toHaveText([labels.overview.chartFrame.noData, labels.overview.chartFrame.noData]);
+    // 斷線之後沒有點：本期只有第 1 到 7 天的熱區、上期第 1 到 9 天。
+    await expect(frameBox(section).locator("circle.chart-point-hit[data-series='current']")).toHaveCount(7);
+    await expect(frameBox(section).locator("circle.chart-point-hit[data-series='previous']")).toHaveCount(9);
+    await openDataTable(section);
+    await expect(cumulativeRow(page, "current", 8).locator("td").nth(CUMULATIVE_COLUMN.cumulative)).toHaveText(labels.shell.status.missing);
+    await expect(cumulativeRow(page, "current", 7).locator("td").nth(CUMULATIVE_COLUMN.cumulative)).toHaveText(formatAmountL3("22090.00"));
+    await expectNoPageScrollX(page);
   });
 });
