@@ -221,7 +221,7 @@ test("b. 老闆一頁版：PDF 只留 L1（一句話、四個關鍵數字、三�
   await closeDownloads(page);
 });
 
-test("c. 客戶報告版：PDF 版頭多客戶行、沒有技術細節、有每週管理損益表；Excel 七張、待辦沒有內部欄位；PPT 版頭第 2 行是客戶行", async ({ page }) => {
+test("c. 客戶報告版：PDF 版頭多客戶行、沒有技術細節、有每週管理損益表；Excel 八張、待辦沒有內部欄位；PPT 版頭第 2 行是客戶行", async ({ page }) => {
   test.setTimeout(90_000);
   await stubPrint(page);
   await loadValidationDataset(page, "golden");
@@ -261,6 +261,11 @@ test("c. 客戶報告版：PDF 版頭多客戶行、沒有技術細節、有每�
   const basis = sheetRows(book, labels.exports.excel.sheets.basis);
   expect(basis.map(row => row[columnIndex(basis[0], labels.exports.excel.columns.basis.section)])).not.toContain(labels.exports.excel.basis.sections.technical);
   expect(sheetRows(book, variantCopy.pnlSheet)).toHaveLength(PNL_ROWS.length + 1);
+  // V4-9b（C34、D-V4-12＝A）：「圖表資料」段落同標準版，但沒有「版本與算法」列；指標定義工作表也不列 B 級版本（spec.appendix.technical）。
+  const clientCharts = sheetRows(book, labels.exports.chartsV4.excel.sheet);
+  expect(clientCharts[1][0]).toBe(labels.overview.sections.bridge);
+  expect(clientCharts.map(row => row[1])).not.toContain(labels.exports.chartsV4.excel.versionRow);
+  expect(basis.map(row => row[0])).not.toContain(labels.exports.chartsV4.excel.sheet);
 
   // PPT：第一張的版頭（標題之後）第 1 行是資料集、第 2 行是客戶行；頁尾沒有資料版本（技術細節）（V4-9a 起多第二張 G1 瀑布，見 f）。
   const slides = await downloadVariantPptx(page, "client");
@@ -273,7 +278,7 @@ test("c. 客戶報告版：PDF 版頭多客戶行、沒有技術細節、有每�
   await closeDownloads(page);
 });
 
-test("d. 標準版：Excel 七張（最後是管理損益表 13 列、golden 淨營收 2,470.00／扣廣告後貢獻 255.00）、待辦最後一欄廣告決策；PDF 附錄一張每週管理損益表；Markdown 不受版本影響", async ({ page }) => {
+test("d. 標準版：Excel 八張（最後是管理損益表 13 列、golden 淨營收 2,470.00／扣廣告後貢獻 255.00）、待辦最後一欄廣告決策；PDF 附錄一張每週管理損益表；Markdown 不受版本影響", async ({ page }) => {
   test.setTimeout(90_000);
   await stubPrint(page);
   await loadValidationDataset(page, "golden");
@@ -302,6 +307,17 @@ test("d. 標準版：Excel 七張（最後是管理損益表 13 列、golden 淨
   const actionHeader = sheetRows(book, labels.exports.excel.sheets.actions)[0];
   expect(actionHeader).toEqual([...Object.values(actionColumns), labels.actions.adDecisionV3.csvColumn]);
   expect(actionHeader.at(-1)).toBe(labels.actions.adDecisionV3.csvColumn);
+  // V4-9b（C34、D-V4-12＝A）：「圖表資料」表頭＝區塊、內容；第一段是貢獻變化拆解（標題列是結論句）；每段最後一列「版本與算法」；沒有試算的 G15、G16；
+  // 指標定義工作表最後（區塊「圖表資料」）列出用到的 B 級版本（golden 沒有商品毛利為負，沒有 product-pareto-v1）。
+  const chartRows = sheetRows(book, labels.exports.chartsV4.excel.sheet);
+  expect(chartRows[0].slice(0, 2)).toEqual([labels.exports.excel.columns.basis.section, labels.exports.excel.columns.basis.detail]);
+  expect(chartRows[1][0]).toBe(labels.overview.sections.bridge);
+  const chartSections = [...new Set(chartRows.slice(1).map(row => row[0]))];
+  expect(chartRows.filter(row => row[1] === labels.exports.chartsV4.excel.versionRow)).toHaveLength(chartSections.length);
+  expect(chartSections).not.toContain(labels.scenarios.chartsV4.variance.section);
+  expect(chartSections).not.toContain(labels.scenarios.chartsV4.threshold.section);
+  const basisRows = sheetRows(book, labels.exports.excel.sheets.basis);
+  expect(basisRows.filter(row => row[0] === labels.exports.chartsV4.excel.sheet).map(row => row[2])).toEqual(["assist-weeks-v1", "channel-weeks-v1", "channel-structure-v1", "daily-heatmap-v1"]);
   await expect(page.getByTestId("download-menu").locator(":scope > summary")).toBeFocused();
 
   // PDF／列印：標準版沒有 data-variant；附錄依序是每週管理損益表 → 技術細節；golden 本期一週 → 一張表、13 列，金額到分。
@@ -330,6 +346,8 @@ test("d. 標準版：Excel 七張（最後是管理損益表 13 列、golden 淨
   for (const variant of EXPORT_VARIANTS) markdown.push(normalizeMarkdown(await downloadVariantMarkdown(page, variant)));
   expect(markdown[1]).toBe(markdown[0]);
   expect(markdown[2]).toBe(markdown[0]);
+  // V4-9b（D-V4-12＝A）：三個選擇都有九項差額表（Markdown 沒有版本之分）。
+  for (const output of markdown) expect(output).toContain(`\n## ${labels.overview.sections.bridge}\n\n| ${labels.overview.bridgeV3.table.item} | ${fill(labels.exports.common.moneyColumn, { label: labels.exports.csv.suffix.change })} |\n| --- | ---: |\n| ${labels.overview.bridgeV3.rows.gross_sales} |`);
   await chooseVariant(page, "standard");
   await closeDownloads(page);
 });

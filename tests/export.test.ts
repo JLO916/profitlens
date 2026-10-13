@@ -1,12 +1,20 @@
+import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import golden from "../fixtures/golden/expected.json";
 import { csvHeader, csvHeaderKey } from "../src/application/copy";
+import { blankScenarioInputs, createDecisionSession, saveScenario } from "../src/application/decision";
+import { exportDecisionCsv, exportDecisionJson } from "../src/application/decision-export";
 import { encodeCsv, exportIssuesCsv, exportProductsCsv, exportSnapshotCsv, type CsvCell } from "../src/application/export";
+import { EXPORT_VARIANTS, variantSpec } from "../src/application/export-variants";
+import { buildManagerSummary, exportChannelComparisonCsv, exportManagerSummaryMarkdown } from "../src/application/manager-summary";
+import { formatSignedDelta, MINUS } from "../src/application/presentation";
 import { createSnapshot, hashInput } from "../src/application/workspace";
-import { labels } from "../src/i18n";
+import { fill, labels } from "../src/i18n";
 import { validateDataset } from "../src/domain/validation";
 import { parseCsv } from "../src/lib/csv";
-import type { DatasetInput, ProductRow, ValidationIssue } from "../src/domain/types";
+import { AMOUNT_FIELDS, type DatasetInput, type ProductRow, type ValidationIssue } from "../src/domain/types";
+import { SCENARIO_GOLDEN } from "./helpers/export-numeric";
+import { FIXED_GENERATED_AT, goldenFormattedExports, isChartV4MarkdownLine } from "./helpers/export-normalize";
 import { fixture } from "./helpers/fixtures";
 
 const text = (value: string): CsvCell => ({ kind: "text", value });
@@ -152,5 +160,88 @@ describe("M3 scoped product and issue exports", () => {
     const rows = records(csv);
     expect(rows).toEqual([{ severity: "blocking", file: "'@actual.csv", logical_file: "sales_daily.csv", line: "12", field: "'=BAD", reason_code: "INVALID_MONEY", message: '含逗號,引號"與換行\n的文字', message_plain: `${labels.data.issues.reasonCodeSummary} INVALID_MONEY`, date: "2026-08-02", channel: "'+DTC", sku: "'-SKU" }]);
     expect(records(exportIssuesCsv([]))).toEqual([]);
+  });
+});
+
+// ── V4-9b（D-V4-12＝A、D-V4-13＝B；CHART_CATALOG G1「匯出」列）──
+const sha256 = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
+describe("V4-9b 一頁摘要 Markdown 的九項差額表；CSV、JSON 逐字不變", () => {
+  it("通路表之後、其他常用指標之前多一段「貢獻變化拆解」：項目、差額（元）兩欄（數字欄 ---:），九列＝橋接表的列名與 L2 帶號差額（U+2212）", async () => {
+    const { snapshot } = await setup();
+    const summary = buildManagerSummary(snapshot);
+    expect(summary.bridge).toEqual(snapshot.report.bridge.components);
+    const lines = exportManagerSummaryMarkdown(summary, undefined, { generatedAt: FIXED_GENERATED_AT }).split("\n");
+    const at = lines.indexOf(`## ${labels.overview.sections.bridge}`);
+    expect(at).toBeGreaterThan(0);
+    expect(lines.filter(line => isChartV4MarkdownLine(line))).toHaveLength(1);
+    expect(lines.slice(at - 1, at + 15)).toEqual([
+      "", `## ${labels.overview.sections.bridge}`, "", `| ${labels.overview.bridgeV3.table.item} | ${fill(labels.exports.common.moneyColumn, { label: labels.exports.csv.suffix.change })} |`, "| --- | ---: |",
+      ...AMOUNT_FIELDS.map(field => `| ${labels.overview.bridgeV3.rows[field]} | ${formatSignedDelta(golden.bridge[field], "L2")} |`),
+      "", `## ${labels.overview.sections.assistKpis}`,
+    ]);
+    // 接在通路表最後一列之後；golden：原價收入 +600、折扣 −250（U+2212，不是 ASCII 負號）。
+    expect(lines[at - 2]).toMatch(/^\| MARKETPLACE \|/);
+    expect(lines[at + 4]).toBe(`| ${labels.overview.bridgeV3.rows.gross_sales} | +600 |`);
+    expect(lines[at + 5]).toBe(`| ${labels.overview.bridgeV3.rows.discounts} | ${MINUS}250 |`);
+    // 舊的摘要物件（沒有 bridge 欄位）照舊輸出，不多這一段。
+    const { bridge: _bridge, ...legacy } = summary;
+    void _bridge;
+    const old = exportManagerSummaryMarkdown(legacy, undefined, { generatedAt: FIXED_GENERATED_AT }).split("\n");
+    expect(old).not.toContain(`## ${labels.overview.sections.bridge}`);
+    expect(old.length).toBe(lines.length - 14);
+  });
+
+  it("Markdown 沒有版本之分：變體只管列印／PDF、Excel、PPT，三種選擇都輸出同一份（都有九項差額表）；有會議脈絡時也有", async () => {
+    const { snapshot } = await setup();
+    const summary = buildManagerSummary(snapshot);
+    const outputs = EXPORT_VARIANTS.map(variant => {
+      expect(Object.keys(variantSpec(variant)), variant).not.toContain("markdown");
+      return exportManagerSummaryMarkdown(summary, undefined, { generatedAt: FIXED_GENERATED_AT });
+    });
+    for (const output of outputs) {
+      expect(output).toBe(outputs[0]);
+      expect(output).toContain(`\n## ${labels.overview.sections.bridge}\n`);
+    }
+    const { managerSummaryContextMd } = await goldenFormattedExports();
+    expect(managerSummaryContextMd).toContain(`\n## ${labels.overview.sections.bridge}\n`);
+  });
+
+  it("CSV、JSON 與 V4-9b 開工前（74c81cc）逐字相同（D-V4-13＝B：不新增 daily 列與週列 channel 欄）", async () => {
+    /** 74c81cc 以同一段程式算出的 sha256 與字數（golden、refund_only、zero_ad 各六種：分析 CSV、商品 CSV、通路寬表 CSV、問題 CSV、決策 CSV、決策 JSON）。 */
+    const BASELINE: Record<string, [string, number]> = {
+      "golden|snapshot_csv": ["91d9c716f85029da151460a02fd7a4cbe021db741c7b6e640b4c084e062bec72", 312048],
+      "golden|products_csv": ["d7a477f5103d3cba6f5813767405297b93f3044ca9e097bb1c432fadd354b20d", 36832],
+      "golden|channel_csv": ["08f40060224421b78347e1901bcfb985009cec42262bc914a08054b9942fe21d", 1250],
+      "golden|issues_csv": ["568b9d6534f70d9cc1c2a1723b6963ef0ffe54be48f974e21185d45dff1339b0", 174],
+      "golden|decision_csv": ["39b9d821e9cfdb82bd697ab615883164327a481104725c790339e8f76106fc76", 276561],
+      "golden|decision_json": ["310f7e6a49ed3cfd012c49d724525ba63d5aff2372d75e7b55d1a202b93bbfe3", 116090],
+      "refund_only|snapshot_csv": ["39af49479054c5e571d2a9fcf4f580b504f85aba8b5515b5f24b7190eeb08dba", 191497],
+      "refund_only|products_csv": ["efbed8fb6e8c96f5165804356b21cc479d2965b7e951d373c22afc721ded55ec", 9589],
+      "refund_only|channel_csv": ["57c8b47deab37161982449f3e41a1ceca747c2c01e61d5482d0d2b977ea60d44", 902],
+      "refund_only|issues_csv": ["568b9d6534f70d9cc1c2a1723b6963ef0ffe54be48f974e21185d45dff1339b0", 174],
+      "refund_only|decision_csv": ["fd992fd9b64ebade62a532663d1d8ed3fe04889be849be863d59e4b45b442e8e", 225461],
+      "refund_only|decision_json": ["76b919447342efb94a6c4c081b273bce451343c58c5d008fc13d5f6d91d70c48", 98142],
+      "zero_ad|snapshot_csv": ["7ab7ff5d108a097ca1797cf2a8a05cee12c83cf1710de64a52e69f882589acd4", 312388],
+      "zero_ad|products_csv": ["6ddcda003999f94a1b8404d3ed8ed0720c04198445aa19f4d1e599f05a7e9296", 36868],
+      "zero_ad|channel_csv": ["01c90c8ecd0663c1d2396ad253c31dd4a93e27a92f974eb09d8c2f70b6a6d10e", 1249],
+      "zero_ad|issues_csv": ["568b9d6534f70d9cc1c2a1723b6963ef0ffe54be48f974e21185d45dff1339b0", 174],
+      "zero_ad|decision_csv": ["df3aaef0b52268da8da1ed584566e3d974f47f6326fef7b074d3e1358a89d3fe", 277022],
+      "zero_ad|decision_json": ["e5285441bf6663a784e2622e8edd386c74d02e239241a57763b03fd78727237d", 116310],
+    };
+    const current: Record<string, [string, number]> = {};
+    for (const name of ["golden", "refund_only", "zero_ad"]) {
+      const input = fixture(name);
+      const dataset = validateDataset(input).dataset!;
+      const hash = await hashInput(input);
+      const snapshot = await createSnapshot(dataset, {}, hash);
+      const session = createDecisionSession(dataset, await createSnapshot(dataset, { channels: [dataset.manifest.channels[0]] }, hash), 1);
+      const plans = [...saveScenario(session, [], { id: "p", name: "p", inputs: SCENARIO_GOLDEN, sensitivity: { volumes: ["-10", "0", "10"] } }), { id: "d", name: "d", inputs: blankScenarioInputs(), result: null }];
+      const texts: Record<string, string> = {
+        snapshot_csv: exportSnapshotCsv(dataset, snapshot), products_csv: exportProductsCsv(dataset, snapshot, snapshot.products.rows, {}), channel_csv: exportChannelComparisonCsv(buildManagerSummary(snapshot)),
+        issues_csv: exportIssuesCsv(dataset.issues), decision_csv: exportDecisionCsv(session, plans, []), decision_json: exportDecisionJson(session, plans, []),
+      };
+      for (const [key, text] of Object.entries(texts)) current[`${name}|${key}`] = [sha256(text), text.length];
+    }
+    expect(current).toEqual(BASELINE);
   });
 });

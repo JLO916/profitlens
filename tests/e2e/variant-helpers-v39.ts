@@ -11,8 +11,8 @@ import { openDownloads } from "./replacement-helpers";
 export const variantCopy = labels.exports.variantsV3;
 export { EXPORT_VARIANTS, type ExportVariant };
 
-/** V3-9b：Excel 標準版（與客戶報告版）的工作表＝v2 六張＋最後一張「管理損益表」。 */
-export const STANDARD_SHEETS = [...Object.values(labels.exports.excel.sheets), variantCopy.pnlSheet];
+/** V3-9b：Excel 標準版（與客戶報告版）的工作表＝v2 六張＋最後一張「管理損益表」；V4-9b（C34）起管理損益表之前多一張「圖表資料」（共 8 張）。 */
+export const STANDARD_SHEETS = [...Object.values(labels.exports.excel.sheets), labels.exports.chartsV4.excel.sheet, variantCopy.pnlSheet];
 /** 老闆一頁版只有摘要與管理損益表。 */
 export const BOSS_SHEETS = [labels.exports.excel.sheets.summary, variantCopy.pnlSheet];
 
