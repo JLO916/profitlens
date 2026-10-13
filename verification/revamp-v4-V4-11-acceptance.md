@@ -39,7 +39,7 @@
 | launch-check（13 項） | 全部通過（`launch-check-local.json`） |
 | Lighthouse × 3（開跑時 1 分鐘負載 2.02、2.44、2.30） | 390 TBT 中位數五項都通過，見下表；a11y 全 100；390 首頁 Performance 95–96；預先載入沒有落入量測區間 |
 | 禁區四條命令 | 都是空的 |
-| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區）` | 見文末（收尾 commit 之後補記） |
+| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區）` | 空（收尾 commit `e861da9`；`82b70df` 那條與 `git status --porcelain` 也是空的） |
 
 **390 TBT 中位數**
 
