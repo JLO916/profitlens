@@ -544,7 +544,12 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const importing = showImport && panel === "data";
   // V3-9b 開工錨點（F22）：投影模式只在總覽與會議頁、有資料時可用；按鈕放在 PageHeader，Esc 離開（hook 內）。
   const present = usePresentMode(!!visible && (panel === "overview" || panel === "meeting"));
-  const presentToggle = visible && (panel === "overview" || panel === "meeting") ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed={present.active} aria-keyshortcuts={present.active ? "Escape" : undefined} onClick={present.active ? present.exit : present.enter}>{present.active ? labels.shell.presentV3.exit : labels.shell.presentV3.enter}</button> : undefined;
+  // V4-8a（D-V3-33＝B）：按鈕的狀態只看文字（投影模式／離開投影），不帶 aria-pressed。
+  const presentToggle = visible && (panel === "overview" || panel === "meeting") ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-keyshortcuts={present.active ? "Escape" : undefined} onClick={present.active ? present.exit : present.enter}>{present.active ? labels.shell.presentV3.exit : labels.shell.presentV3.enter}</button> : undefined;
+  // V4-8a（D-V3-34＝A）：投影中在頁首一行內互切總覽與會議紀錄（字樣沿用導覽的頁名；切過去仍在投影中，焦點照一般切頁交給 main）。
+  // 與投影按鈕同條件掛載，不在投影中時由 CSS 隱藏（.present-switch，M1）。
+  const presentTarget: Panel = panel === "meeting" ? "overview" : "meeting";
+  const presentSwitch = visible && (panel === "overview" || panel === "meeting") ? <button type="button" className="ui-btn ui-btn-secondary present-switch" data-testid="present-switch" onClick={() => { setPanel(presentTarget); setEvidence(null); }}>{labels.shell.nav[presentTarget].headline}</button> : undefined;
   const local = active?.dataset.manifest.source_type === "user_provided";
   const currentContext = scenarioWorkspace.contexts.find(context => context.status === "current" && context.session.filter_hash === active?.snapshot.filter_hash);
   const decision = currentContext ? scenarioContextDecision(currentContext) : emptyDecisionWorkspace();
@@ -578,7 +583,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     <div className="main-shell">
       <main id="main-content" tabIndex={-1}>
         {/* V3-8 開工錨點（§7.7.2 全版專注模式）：匯入中頁首改「匯入資料」＋隱私一句，期間列、橫幅與頁面內容保持掛載但 hidden；頂欄保留。 */}
-        <PageHeader title={importing ? labels.importWizard.title : currentPanel.label} description={importing ? labels.importWizard.privacyNote : panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} importing={importing} hasData={status !== "empty"} presentToggle={presentToggle} presentPeriod={present.active && visible ? presentPeriodText(active.snapshot, panel === "meeting" ? reviewSession : null, active.dataset.manifest.channels) : undefined} showLoadDemo onLoadDemo={() => void load("demo")} onImport={startImport} />
+        <PageHeader title={importing ? labels.importWizard.title : currentPanel.label} description={importing ? labels.importWizard.privacyNote : panel === "products" ? labels.products.pageV3.description : currentPanel.description} isData={panel === "data"} importing={importing} hasData={status !== "empty"} presentToggle={presentToggle} presentSwitch={presentSwitch} presentPeriod={present.active && visible ? presentPeriodText(active.snapshot, panel === "meeting" ? reviewSession : null, active.dataset.manifest.channels) : undefined} showLoadDemo onLoadDemo={() => void load("demo")} onImport={startImport} />
         {whatsNew.visible && <WhatsNewNote onOpenGlossary={() => { whatsNew.markRead(); setBasisSection("v2-names"); setBasisOpen(true); }} onDismiss={whatsNew.dismiss} />}
         {panel === "validation" && <section className="panel validation-panel" aria-labelledby="validation-heading" data-testid="validation-panel">
           <h2 id="validation-heading">{labels.shell.devValidation.validation.heading}</h2>

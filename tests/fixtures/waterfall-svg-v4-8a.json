@@ -1,0 +1,920 @@
+{
+ "$comment": "V4-8a 代理 A：在開工錨點 03dc3a8（瀑布只有 12px 排版）上以 tests/helpers/waterfall-svg-baseline.tsx 產生。sections 是總覽兩個瀑布區塊在六份資料上的 SSR svg 全文；sweep 是 WaterfallSvg 以固定寬直接渲染的 UTF-8 位元組數與 SHA-256。tests/overview-charts-waterfall.test.tsx 斷言一般模式（12px）的輸出與此逐字相同。",
+ "generated_at_commit": "03dc3a8",
+ "sections": {
+  "demo G1": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:520px\" data-testid=\"bridge-waterfall\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"228.8\" y2=\"228.8\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"126.4\" y2=\"126.4\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"75.2\" y2=\"75.2\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−200 萬</text><text x=\"56\" y=\"232.8\" text-anchor=\"end\">0</text><text x=\"56\" y=\"181.6\" text-anchor=\"end\">200 萬</text><text x=\"56\" y=\"130.4\" text-anchor=\"end\">400 萬</text><text x=\"56\" y=\"79.2\" text-anchor=\"end\">600 萬</text><text x=\"56\" y=\"28\" text-anchor=\"end\">800 萬</text></g><g class=\"wf-connectors\"><line x1=\"116.9\" x2=\"143.4\" y1=\"181\" y2=\"181\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"183.1\" x2=\"209.6\" y1=\"100\" y2=\"100\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"249.3\" x2=\"275.8\" y1=\"130.4\" y2=\"130.4\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"315.5\" x2=\"342\" y1=\"137.2\" y2=\"137.2\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"381.7\" x2=\"408.1\" y1=\"177.5\" y2=\"177.5\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"447.8\" x2=\"474.3\" y1=\"184\" y2=\"184\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"514\" x2=\"540.5\" y1=\"184.9\" y2=\"184.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"580.2\" x2=\"606.7\" y1=\"186.8\" y2=\"186.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"646.4\" x2=\"672.9\" y1=\"187.1\" y2=\"187.1\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"712.6\" x2=\"739.1\" y1=\"196.3\" y2=\"196.3\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" x=\"77.2\" y=\"181\" width=\"39.7\" height=\"47.8\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-favorable is-clickable\" x=\"143.4\" y=\"100\" width=\"39.7\" height=\"80.9\" fill=\"var(--chart-favorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"209.6\" y=\"100\" width=\"39.7\" height=\"30.4\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"275.8\" y=\"130.4\" width=\"39.7\" height=\"6.8\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"342\" y=\"137.2\" width=\"39.7\" height=\"40.3\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"408.1\" y=\"177.5\" width=\"39.7\" height=\"6.5\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"474.3\" y=\"183.5\" width=\"39.7\" height=\"1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"540.5\" y=\"184.9\" width=\"39.7\" height=\"1.9\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"606.7\" y=\"186.3\" width=\"39.7\" height=\"1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"672.9\" y=\"187.1\" width=\"39.7\" height=\"9.2\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"739.1\" y=\"196.3\" width=\"39.7\" height=\"32.5\" fill=\"var(--chart-total)\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"97.1\" y=\"175\" text-anchor=\"middle\">186.9 萬</text><text class=\"wf-value is-muted\" x=\"163.3\" y=\"94\" text-anchor=\"middle\">+316.2 萬</text><text class=\"wf-value is-neg\" x=\"229.5\" y=\"94\" text-anchor=\"middle\">−118.8 萬</text><text class=\"wf-value is-neg\" x=\"295.6\" y=\"124.4\" text-anchor=\"middle\">−26.5 萬</text><text class=\"wf-value is-neg\" x=\"361.8\" y=\"131.2\" text-anchor=\"middle\">−157.5 萬</text><text class=\"wf-value is-neg\" x=\"428\" y=\"171.5\" text-anchor=\"middle\">−25.3 萬</text><text class=\"wf-value is-neg\" x=\"494.2\" y=\"177.5\" text-anchor=\"middle\">−3.4 萬</text><text class=\"wf-value is-neg\" x=\"560.4\" y=\"178.9\" text-anchor=\"middle\">−7.6 萬</text><text class=\"wf-value is-neg\" x=\"626.5\" y=\"180.3\" text-anchor=\"middle\">−8,545 元</text><text class=\"wf-value is-neg\" x=\"692.7\" y=\"181.1\" text-anchor=\"middle\">−36.1 萬</text><text class=\"wf-value is-strong\" x=\"758.9\" y=\"190.3\" text-anchor=\"middle\">127.0 萬</text></g><g class=\"wf-x\"><text x=\"97.1\" y=\"295\" text-anchor=\"middle\"><tspan x=\"97.1\" dy=\"0\">上期</tspan></text><text x=\"163.3\" y=\"295\" text-anchor=\"middle\"><tspan x=\"163.3\" dy=\"0\">原價收入</tspan></text><text x=\"229.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"229.5\" dy=\"0\">折扣</tspan></text><text x=\"295.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"295.6\" dy=\"0\">退款</tspan></text><text x=\"361.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"361.8\" dy=\"0\">商品成本</tspan></text><text x=\"428\" y=\"295\" text-anchor=\"middle\"><tspan x=\"428\" dy=\"0\">平台抽成</tspan></text><text x=\"494.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"494.2\" dy=\"0\">金流費</tspan></text><text x=\"560.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"560.4\" dy=\"0\">物流費</tspan></text><text x=\"626.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"626.5\" dy=\"0\">其他變動費</tspan></text><text x=\"692.7\" y=\"295\" text-anchor=\"middle\"><tspan x=\"692.7\" dy=\"0\">廣告費</tspan></text><text x=\"758.9\" y=\"295\" text-anchor=\"middle\"><tspan x=\"758.9\" dy=\"0\">本期</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"228.8\" y2=\"228.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "demo G2": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:600px\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"228.8\" y2=\"228.8\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"126.4\" y2=\"126.4\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"75.2\" y2=\"75.2\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−200 萬</text><text x=\"56\" y=\"232.8\" text-anchor=\"end\">0</text><text x=\"56\" y=\"181.6\" text-anchor=\"end\">200 萬</text><text x=\"56\" y=\"130.4\" text-anchor=\"end\">400 萬</text><text x=\"56\" y=\"79.2\" text-anchor=\"end\">600 萬</text><text x=\"56\" y=\"28\" text-anchor=\"end\">800 萬</text></g><g class=\"wf-connectors\"><line x1=\"122.3\" x2=\"151.4\" y1=\"27.8\" y2=\"27.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"195.1\" x2=\"224.2\" y1=\"155.6\" y2=\"155.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"267.9\" x2=\"297\" y1=\"155.6\" y2=\"155.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"340.7\" x2=\"369.8\" y1=\"169.9\" y2=\"169.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"413.5\" x2=\"442.6\" y1=\"173.9\" y2=\"173.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"486.3\" x2=\"515.4\" y1=\"177.7\" y2=\"177.7\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"559.1\" x2=\"588.2\" y1=\"178.7\" y2=\"178.7\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"631.9\" x2=\"661\" y1=\"178.7\" y2=\"178.7\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"704.7\" x2=\"733.8\" y1=\"196.3\" y2=\"196.3\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-net_revenue\" x=\"78.6\" y=\"27.8\" width=\"43.7\" height=\"201\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-cogs_net\" x=\"151.4\" y=\"27.8\" width=\"43.7\" height=\"127.8\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-gross_profit\" x=\"224.2\" y=\"155.6\" width=\"43.7\" height=\"73.2\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-platform_fees\" x=\"297\" y=\"155.6\" width=\"43.7\" height=\"14.2\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-payment_fees\" x=\"369.8\" y=\"169.9\" width=\"43.7\" height=\"4\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-fulfillment_costs\" x=\"442.6\" y=\"173.9\" width=\"43.7\" height=\"3.8\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-other_variable_costs\" x=\"515.4\" y=\"177.7\" width=\"43.7\" height=\"1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-contribution_before_marketing\" x=\"588.2\" y=\"178.7\" width=\"43.7\" height=\"50.1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-ad_spend\" x=\"661\" y=\"178.7\" width=\"43.7\" height=\"17.6\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-result is-clickable\" data-testid=\"profit-waterfall-bar-contribution_after_marketing\" x=\"733.8\" y=\"196.3\" width=\"43.7\" height=\"32.5\" fill=\"var(--chart-current)\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"100.4\" y=\"21.8\" text-anchor=\"middle\">785.1 萬</text><text class=\"wf-value is-neg\" x=\"173.2\" y=\"21.8\" text-anchor=\"middle\">−499.3 萬</text><text class=\"wf-value is-strong\" x=\"246\" y=\"149.6\" text-anchor=\"middle\">285.8 萬</text><text class=\"wf-value is-neg\" x=\"318.8\" y=\"149.6\" text-anchor=\"middle\">−55.6 萬</text><text class=\"wf-value is-neg\" x=\"391.6\" y=\"163.9\" text-anchor=\"middle\">−15.7 萬</text><text class=\"wf-value is-neg\" x=\"464.4\" y=\"167.9\" text-anchor=\"middle\">−14.8 萬</text><text class=\"wf-value is-neg\" x=\"537.2\" y=\"171.7\" text-anchor=\"middle\">−3.9 萬</text><text class=\"wf-value is-strong\" x=\"610\" y=\"172.7\" text-anchor=\"middle\">195.9 萬</text><text class=\"wf-value is-neg\" x=\"682.8\" y=\"172.7\" text-anchor=\"middle\">−68.9 萬</text><text class=\"wf-value is-strong\" x=\"755.6\" y=\"190.3\" text-anchor=\"middle\">127.0 萬</text></g><g class=\"wf-x\"><text x=\"100.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"100.4\" dy=\"0\">淨營收</tspan></text><text x=\"173.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"173.2\" dy=\"0\">商品成本</tspan></text><text x=\"246\" y=\"295\" text-anchor=\"middle\"><tspan x=\"246\" dy=\"0\">商品毛利</tspan></text><text x=\"318.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"318.8\" dy=\"0\">平台抽成</tspan></text><text x=\"391.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"391.6\" dy=\"0\">金流費</tspan></text><text x=\"464.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"464.4\" dy=\"0\">物流費</tspan></text><text x=\"537.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"537.2\" dy=\"0\">其他變動費</tspan></text><text x=\"610\" y=\"295\" text-anchor=\"middle\"><tspan x=\"610\" dy=\"0\">扣廣告前</tspan></text><text x=\"682.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"682.8\" dy=\"0\">廣告費</tspan></text><text x=\"755.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"755.6\" dy=\"0\">扣廣告後</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"228.8\" y2=\"228.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "golden G1": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:520px\" data-testid=\"bridge-waterfall\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"237.3\" y2=\"237.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"194.7\" y2=\"194.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"152\" y2=\"152\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"109.3\" y2=\"109.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"66.7\" y2=\"66.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−500 元</text><text x=\"56\" y=\"241.3\" text-anchor=\"end\">0</text><text x=\"56\" y=\"198.7\" text-anchor=\"end\">500 元</text><text x=\"56\" y=\"156\" text-anchor=\"end\">1,000 元</text><text x=\"56\" y=\"113.3\" text-anchor=\"end\">1,500 元</text><text x=\"56\" y=\"70.7\" text-anchor=\"end\">2,000 元</text><text x=\"56\" y=\"28\" text-anchor=\"end\">2,500 元</text></g><g class=\"wf-connectors\"><line x1=\"116.9\" x2=\"143.4\" y1=\"188.7\" y2=\"188.7\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"183.1\" x2=\"209.6\" y1=\"137.5\" y2=\"137.5\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"249.3\" x2=\"275.8\" y1=\"158.8\" y2=\"158.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"315.5\" x2=\"342\" y1=\"169.9\" y2=\"169.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"381.7\" x2=\"408.1\" y1=\"193.4\" y2=\"193.4\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"447.8\" x2=\"474.3\" y1=\"195.9\" y2=\"195.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"514\" x2=\"540.5\" y1=\"196.5\" y2=\"196.5\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"580.2\" x2=\"606.7\" y1=\"202\" y2=\"202\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"646.4\" x2=\"672.9\" y1=\"202.8\" y2=\"202.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"712.6\" x2=\"739.1\" y1=\"215.6\" y2=\"215.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" x=\"77.2\" y=\"188.7\" width=\"39.7\" height=\"48.6\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-favorable is-clickable\" x=\"143.4\" y=\"137.5\" width=\"39.7\" height=\"51.2\" fill=\"var(--chart-favorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"209.6\" y=\"137.5\" width=\"39.7\" height=\"21.3\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"275.8\" y=\"158.8\" width=\"39.7\" height=\"11.1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"342\" y=\"169.9\" width=\"39.7\" height=\"23.5\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"408.1\" y=\"193.4\" width=\"39.7\" height=\"2.6\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"474.3\" y=\"195.4\" width=\"39.7\" height=\"1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"540.5\" y=\"196.5\" width=\"39.7\" height=\"5.5\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"606.7\" y=\"201.5\" width=\"39.7\" height=\"1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"672.9\" y=\"202.8\" width=\"39.7\" height=\"12.8\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"739.1\" y=\"215.6\" width=\"39.7\" height=\"21.8\" fill=\"var(--chart-total)\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"97.1\" y=\"182.7\" text-anchor=\"middle\">570 元</text><text class=\"wf-value is-muted\" x=\"163.3\" y=\"131.5\" text-anchor=\"middle\">+600 元</text><text class=\"wf-value is-neg\" x=\"229.5\" y=\"131.5\" text-anchor=\"middle\">−250 元</text><text class=\"wf-value is-neg\" x=\"295.6\" y=\"152.8\" text-anchor=\"middle\">−130 元</text><text class=\"wf-value is-neg\" x=\"361.8\" y=\"163.9\" text-anchor=\"middle\">−275 元</text><text class=\"wf-value is-neg\" x=\"428\" y=\"187.4\" text-anchor=\"middle\">−30 元</text><text class=\"wf-value is-neg\" x=\"494.2\" y=\"189.4\" text-anchor=\"middle\">−6 元</text><text class=\"wf-value is-neg\" x=\"560.4\" y=\"190.5\" text-anchor=\"middle\">−65 元</text><text class=\"wf-value is-neg\" x=\"626.5\" y=\"195.5\" text-anchor=\"middle\">−9 元</text><text class=\"wf-value is-neg\" x=\"692.7\" y=\"196.8\" text-anchor=\"middle\">−150 元</text><text class=\"wf-value is-strong\" x=\"758.9\" y=\"209.6\" text-anchor=\"middle\">255 元</text></g><g class=\"wf-x\"><text x=\"97.1\" y=\"295\" text-anchor=\"middle\"><tspan x=\"97.1\" dy=\"0\">上期</tspan></text><text x=\"163.3\" y=\"295\" text-anchor=\"middle\"><tspan x=\"163.3\" dy=\"0\">原價收入</tspan></text><text x=\"229.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"229.5\" dy=\"0\">折扣</tspan></text><text x=\"295.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"295.6\" dy=\"0\">退款</tspan></text><text x=\"361.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"361.8\" dy=\"0\">商品成本</tspan></text><text x=\"428\" y=\"295\" text-anchor=\"middle\"><tspan x=\"428\" dy=\"0\">平台抽成</tspan></text><text x=\"494.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"494.2\" dy=\"0\">金流費</tspan></text><text x=\"560.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"560.4\" dy=\"0\">物流費</tspan></text><text x=\"626.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"626.5\" dy=\"0\">其他變動費</tspan></text><text x=\"692.7\" y=\"295\" text-anchor=\"middle\"><tspan x=\"692.7\" dy=\"0\">廣告費</tspan></text><text x=\"758.9\" y=\"295\" text-anchor=\"middle\"><tspan x=\"758.9\" dy=\"0\">本期</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"237.3\" y2=\"237.3\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "golden G2": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:600px\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"237.3\" y2=\"237.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"194.7\" y2=\"194.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"152\" y2=\"152\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"109.3\" y2=\"109.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"66.7\" y2=\"66.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−500 元</text><text x=\"56\" y=\"241.3\" text-anchor=\"end\">0</text><text x=\"56\" y=\"198.7\" text-anchor=\"end\">500 元</text><text x=\"56\" y=\"156\" text-anchor=\"end\">1,000 元</text><text x=\"56\" y=\"113.3\" text-anchor=\"end\">1,500 元</text><text x=\"56\" y=\"70.7\" text-anchor=\"end\">2,000 元</text><text x=\"56\" y=\"28\" text-anchor=\"end\">2,500 元</text></g><g class=\"wf-connectors\"><line x1=\"122.3\" x2=\"151.4\" y1=\"26.6\" y2=\"26.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"195.1\" x2=\"224.2\" y1=\"139.6\" y2=\"139.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"267.9\" x2=\"297\" y1=\"139.6\" y2=\"139.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"340.7\" x2=\"369.8\" y1=\"149.9\" y2=\"149.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"413.5\" x2=\"442.6\" y1=\"155.5\" y2=\"155.5\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"486.3\" x2=\"515.4\" y1=\"174.7\" y2=\"174.7\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"559.1\" x2=\"588.2\" y1=\"177.2\" y2=\"177.2\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"631.9\" x2=\"661\" y1=\"177.2\" y2=\"177.2\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"704.7\" x2=\"733.8\" y1=\"215.6\" y2=\"215.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-net_revenue\" x=\"78.6\" y=\"26.6\" width=\"43.7\" height=\"210.8\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-cogs_net\" x=\"151.4\" y=\"26.6\" width=\"43.7\" height=\"113.1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-gross_profit\" x=\"224.2\" y=\"139.6\" width=\"43.7\" height=\"97.7\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-platform_fees\" x=\"297\" y=\"139.6\" width=\"43.7\" height=\"10.2\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-payment_fees\" x=\"369.8\" y=\"149.9\" width=\"43.7\" height=\"5.6\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-fulfillment_costs\" x=\"442.6\" y=\"155.5\" width=\"43.7\" height=\"19.2\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-other_variable_costs\" x=\"515.4\" y=\"174.7\" width=\"43.7\" height=\"2.5\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-contribution_before_marketing\" x=\"588.2\" y=\"177.2\" width=\"43.7\" height=\"60.2\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-ad_spend\" x=\"661\" y=\"177.2\" width=\"43.7\" height=\"38.4\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-result is-clickable\" data-testid=\"profit-waterfall-bar-contribution_after_marketing\" x=\"733.8\" y=\"215.6\" width=\"43.7\" height=\"21.8\" fill=\"var(--chart-current)\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"100.4\" y=\"20.6\" text-anchor=\"middle\">2,470 元</text><text class=\"wf-value is-neg\" x=\"173.2\" y=\"20.6\" text-anchor=\"middle\">−1,325 元</text><text class=\"wf-value is-strong\" x=\"246\" y=\"133.6\" text-anchor=\"middle\">1,145 元</text><text class=\"wf-value is-neg\" x=\"318.8\" y=\"133.6\" text-anchor=\"middle\">−120 元</text><text class=\"wf-value is-neg\" x=\"391.6\" y=\"143.9\" text-anchor=\"middle\">−66 元</text><text class=\"wf-value is-neg\" x=\"464.4\" y=\"149.5\" text-anchor=\"middle\">−225 元</text><text class=\"wf-value is-neg\" x=\"537.2\" y=\"168.7\" text-anchor=\"middle\">−29 元</text><text class=\"wf-value is-strong\" x=\"610\" y=\"171.2\" text-anchor=\"middle\">705 元</text><text class=\"wf-value is-neg\" x=\"682.8\" y=\"171.2\" text-anchor=\"middle\">−450 元</text><text class=\"wf-value is-strong\" x=\"755.6\" y=\"209.6\" text-anchor=\"middle\">255 元</text></g><g class=\"wf-x\"><text x=\"100.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"100.4\" dy=\"0\">淨營收</tspan></text><text x=\"173.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"173.2\" dy=\"0\">商品成本</tspan></text><text x=\"246\" y=\"295\" text-anchor=\"middle\"><tspan x=\"246\" dy=\"0\">商品毛利</tspan></text><text x=\"318.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"318.8\" dy=\"0\">平台抽成</tspan></text><text x=\"391.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"391.6\" dy=\"0\">金流費</tspan></text><text x=\"464.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"464.4\" dy=\"0\">物流費</tspan></text><text x=\"537.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"537.2\" dy=\"0\">其他變動費</tspan></text><text x=\"610\" y=\"295\" text-anchor=\"middle\"><tspan x=\"610\" dy=\"0\">扣廣告前</tspan></text><text x=\"682.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"682.8\" dy=\"0\">廣告費</tspan></text><text x=\"755.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"755.6\" dy=\"0\">扣廣告後</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"237.3\" y2=\"237.3\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "zero_ad G1": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:520px\" data-testid=\"bridge-waterfall\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"228.8\" y2=\"228.8\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"126.4\" y2=\"126.4\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"75.2\" y2=\"75.2\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">0</text><text x=\"56\" y=\"232.8\" text-anchor=\"end\">500 元</text><text x=\"56\" y=\"181.6\" text-anchor=\"end\">1,000 元</text><text x=\"56\" y=\"130.4\" text-anchor=\"end\">1,500 元</text><text x=\"56\" y=\"79.2\" text-anchor=\"end\">2,000 元</text><text x=\"56\" y=\"28\" text-anchor=\"end\">2,500 元</text></g><g class=\"wf-connectors\"><line x1=\"116.9\" x2=\"143.4\" y1=\"190.9\" y2=\"190.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"183.1\" x2=\"209.6\" y1=\"129.5\" y2=\"129.5\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"249.3\" x2=\"275.8\" y1=\"155.1\" y2=\"155.1\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"315.5\" x2=\"342\" y1=\"168.4\" y2=\"168.4\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"381.7\" x2=\"408.1\" y1=\"196.5\" y2=\"196.5\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"447.8\" x2=\"474.3\" y1=\"199.6\" y2=\"199.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"514\" x2=\"540.5\" y1=\"200.2\" y2=\"200.2\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"580.2\" x2=\"606.7\" y1=\"206.9\" y2=\"206.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"646.4\" x2=\"672.9\" y1=\"207.8\" y2=\"207.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"712.6\" x2=\"739.1\" y1=\"207.8\" y2=\"207.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" x=\"77.2\" y=\"190.9\" width=\"39.7\" height=\"89.1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-favorable is-clickable\" x=\"143.4\" y=\"129.5\" width=\"39.7\" height=\"61.4\" fill=\"var(--chart-favorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"209.6\" y=\"129.5\" width=\"39.7\" height=\"25.6\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"275.8\" y=\"155.1\" width=\"39.7\" height=\"13.3\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"342\" y=\"168.4\" width=\"39.7\" height=\"28.2\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"408.1\" y=\"196.5\" width=\"39.7\" height=\"3.1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"474.3\" y=\"199.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"540.5\" y=\"200.2\" width=\"39.7\" height=\"6.7\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"606.7\" y=\"206.4\" width=\"39.7\" height=\"1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"672.9\" y=\"207.3\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"739.1\" y=\"207.8\" width=\"39.7\" height=\"72.2\" fill=\"var(--chart-total)\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"97.1\" y=\"184.9\" text-anchor=\"middle\">870 元</text><text class=\"wf-value is-muted\" x=\"163.3\" y=\"123.5\" text-anchor=\"middle\">+600 元</text><text class=\"wf-value is-neg\" x=\"229.5\" y=\"123.5\" text-anchor=\"middle\">−250 元</text><text class=\"wf-value is-neg\" x=\"295.6\" y=\"149.1\" text-anchor=\"middle\">−130 元</text><text class=\"wf-value is-neg\" x=\"361.8\" y=\"162.4\" text-anchor=\"middle\">−275 元</text><text class=\"wf-value is-neg\" x=\"428\" y=\"190.5\" text-anchor=\"middle\">−30 元</text><text class=\"wf-value is-neg\" x=\"494.2\" y=\"193.1\" text-anchor=\"middle\">−6 元</text><text class=\"wf-value is-neg\" x=\"560.4\" y=\"194.2\" text-anchor=\"middle\">−65 元</text><text class=\"wf-value is-neg\" x=\"626.5\" y=\"200.4\" text-anchor=\"middle\">−9 元</text><text class=\"wf-value is-muted\" x=\"692.7\" y=\"201.3\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-strong\" x=\"758.9\" y=\"201.8\" text-anchor=\"middle\">705 元</text></g><g class=\"wf-x\"><text x=\"97.1\" y=\"295\" text-anchor=\"middle\"><tspan x=\"97.1\" dy=\"0\">上期</tspan></text><text x=\"163.3\" y=\"295\" text-anchor=\"middle\"><tspan x=\"163.3\" dy=\"0\">原價收入</tspan></text><text x=\"229.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"229.5\" dy=\"0\">折扣</tspan></text><text x=\"295.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"295.6\" dy=\"0\">退款</tspan></text><text x=\"361.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"361.8\" dy=\"0\">商品成本</tspan></text><text x=\"428\" y=\"295\" text-anchor=\"middle\"><tspan x=\"428\" dy=\"0\">平台抽成</tspan></text><text x=\"494.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"494.2\" dy=\"0\">金流費</tspan></text><text x=\"560.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"560.4\" dy=\"0\">物流費</tspan></text><text x=\"626.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"626.5\" dy=\"0\">其他變動費</tspan></text><text x=\"692.7\" y=\"295\" text-anchor=\"middle\"><tspan x=\"692.7\" dy=\"0\">廣告費</tspan></text><text x=\"758.9\" y=\"295\" text-anchor=\"middle\"><tspan x=\"758.9\" dy=\"0\">本期</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "zero_ad G2": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:600px\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"228.8\" y2=\"228.8\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"126.4\" y2=\"126.4\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"75.2\" y2=\"75.2\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">0</text><text x=\"56\" y=\"232.8\" text-anchor=\"end\">500 元</text><text x=\"56\" y=\"181.6\" text-anchor=\"end\">1,000 元</text><text x=\"56\" y=\"130.4\" text-anchor=\"end\">1,500 元</text><text x=\"56\" y=\"79.2\" text-anchor=\"end\">2,000 元</text><text x=\"56\" y=\"28\" text-anchor=\"end\">2,500 元</text></g><g class=\"wf-connectors\"><line x1=\"122.3\" x2=\"151.4\" y1=\"27.1\" y2=\"27.1\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"195.1\" x2=\"224.2\" y1=\"162.8\" y2=\"162.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"267.9\" x2=\"297\" y1=\"162.8\" y2=\"162.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"340.7\" x2=\"369.8\" y1=\"175\" y2=\"175\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"413.5\" x2=\"442.6\" y1=\"181.8\" y2=\"181.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"486.3\" x2=\"515.4\" y1=\"204.8\" y2=\"204.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"559.1\" x2=\"588.2\" y1=\"207.8\" y2=\"207.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"631.9\" x2=\"661\" y1=\"207.8\" y2=\"207.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"704.7\" x2=\"733.8\" y1=\"207.8\" y2=\"207.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-net_revenue\" x=\"78.6\" y=\"27.1\" width=\"43.7\" height=\"252.9\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-cogs_net\" x=\"151.4\" y=\"27.1\" width=\"43.7\" height=\"135.7\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-gross_profit\" x=\"224.2\" y=\"162.8\" width=\"43.7\" height=\"117.2\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-platform_fees\" x=\"297\" y=\"162.8\" width=\"43.7\" height=\"12.3\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-payment_fees\" x=\"369.8\" y=\"175\" width=\"43.7\" height=\"6.8\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-fulfillment_costs\" x=\"442.6\" y=\"181.8\" width=\"43.7\" height=\"23\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-other_variable_costs\" x=\"515.4\" y=\"204.8\" width=\"43.7\" height=\"3\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-contribution_before_marketing\" x=\"588.2\" y=\"207.8\" width=\"43.7\" height=\"72.2\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-ad_spend\" x=\"661\" y=\"207.3\" width=\"43.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-result is-clickable\" data-testid=\"profit-waterfall-bar-contribution_after_marketing\" x=\"733.8\" y=\"207.8\" width=\"43.7\" height=\"72.2\" fill=\"var(--chart-current)\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"100.4\" y=\"21.1\" text-anchor=\"middle\">2,470 元</text><text class=\"wf-value is-neg\" x=\"173.2\" y=\"21.1\" text-anchor=\"middle\">−1,325 元</text><text class=\"wf-value is-strong\" x=\"246\" y=\"156.8\" text-anchor=\"middle\">1,145 元</text><text class=\"wf-value is-neg\" x=\"318.8\" y=\"156.8\" text-anchor=\"middle\">−120 元</text><text class=\"wf-value is-neg\" x=\"391.6\" y=\"169\" text-anchor=\"middle\">−66 元</text><text class=\"wf-value is-neg\" x=\"464.4\" y=\"175.8\" text-anchor=\"middle\">−225 元</text><text class=\"wf-value is-neg\" x=\"537.2\" y=\"198.8\" text-anchor=\"middle\">−29 元</text><text class=\"wf-value is-strong\" x=\"610\" y=\"201.8\" text-anchor=\"middle\">705 元</text><text class=\"wf-value is-muted\" x=\"682.8\" y=\"201.3\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-strong\" x=\"755.6\" y=\"201.8\" text-anchor=\"middle\">705 元</text></g><g class=\"wf-x\"><text x=\"100.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"100.4\" dy=\"0\">淨營收</tspan></text><text x=\"173.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"173.2\" dy=\"0\">商品成本</tspan></text><text x=\"246\" y=\"295\" text-anchor=\"middle\"><tspan x=\"246\" dy=\"0\">商品毛利</tspan></text><text x=\"318.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"318.8\" dy=\"0\">平台抽成</tspan></text><text x=\"391.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"391.6\" dy=\"0\">金流費</tspan></text><text x=\"464.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"464.4\" dy=\"0\">物流費</tspan></text><text x=\"537.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"537.2\" dy=\"0\">其他變動費</tspan></text><text x=\"610\" y=\"295\" text-anchor=\"middle\"><tspan x=\"610\" dy=\"0\">扣廣告前</tspan></text><text x=\"682.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"682.8\" dy=\"0\">廣告費</tspan></text><text x=\"755.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"755.6\" dy=\"0\">扣廣告後</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "refund_only G1": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:520px\" data-testid=\"bridge-waterfall\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"228.8\" y2=\"228.8\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"126.4\" y2=\"126.4\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"75.2\" y2=\"75.2\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−100 元</text><text x=\"56\" y=\"232.8\" text-anchor=\"end\">−80 元</text><text x=\"56\" y=\"181.6\" text-anchor=\"end\">−60 元</text><text x=\"56\" y=\"130.4\" text-anchor=\"end\">−40 元</text><text x=\"56\" y=\"79.2\" text-anchor=\"end\">−20 元</text><text x=\"56\" y=\"28\" text-anchor=\"end\">0</text></g><g class=\"wf-connectors\"><line x1=\"116.9\" x2=\"143.4\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"183.1\" x2=\"209.6\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"249.3\" x2=\"275.8\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"315.5\" x2=\"342\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"381.7\" x2=\"408.1\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"447.8\" x2=\"474.3\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"514\" x2=\"540.5\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"580.2\" x2=\"606.7\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"646.4\" x2=\"672.9\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"712.6\" x2=\"739.1\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" x=\"77.2\" y=\"24\" width=\"39.7\" height=\"153.6\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"143.4\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"209.6\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"275.8\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"342\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"408.1\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"474.3\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"540.5\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"606.7\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"672.9\" y=\"177.1\" width=\"39.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" x=\"739.1\" y=\"24\" width=\"39.7\" height=\"153.6\" fill=\"var(--chart-total)\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-neg\" x=\"97.1\" y=\"18\" text-anchor=\"middle\">−60 元</text><text class=\"wf-value is-muted\" x=\"163.3\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"229.5\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"295.6\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"361.8\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"428\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"494.2\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"560.4\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"626.5\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"692.7\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-neg\" x=\"758.9\" y=\"18\" text-anchor=\"middle\">−60 元</text></g><g class=\"wf-x\"><text x=\"97.1\" y=\"295\" text-anchor=\"middle\"><tspan x=\"97.1\" dy=\"0\">上期</tspan></text><text x=\"163.3\" y=\"295\" text-anchor=\"middle\"><tspan x=\"163.3\" dy=\"0\">原價收入</tspan></text><text x=\"229.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"229.5\" dy=\"0\">折扣</tspan></text><text x=\"295.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"295.6\" dy=\"0\">退款</tspan></text><text x=\"361.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"361.8\" dy=\"0\">商品成本</tspan></text><text x=\"428\" y=\"295\" text-anchor=\"middle\"><tspan x=\"428\" dy=\"0\">平台抽成</tspan></text><text x=\"494.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"494.2\" dy=\"0\">金流費</tspan></text><text x=\"560.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"560.4\" dy=\"0\">物流費</tspan></text><text x=\"626.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"626.5\" dy=\"0\">其他變動費</tspan></text><text x=\"692.7\" y=\"295\" text-anchor=\"middle\"><tspan x=\"692.7\" dy=\"0\">廣告費</tspan></text><text x=\"758.9\" y=\"295\" text-anchor=\"middle\"><tspan x=\"758.9\" dy=\"0\">本期</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "refund_only G2": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:600px\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"228.8\" y2=\"228.8\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"126.4\" y2=\"126.4\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"75.2\" y2=\"75.2\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−100 元</text><text x=\"56\" y=\"232.8\" text-anchor=\"end\">−80 元</text><text x=\"56\" y=\"181.6\" text-anchor=\"end\">−60 元</text><text x=\"56\" y=\"130.4\" text-anchor=\"end\">−40 元</text><text x=\"56\" y=\"79.2\" text-anchor=\"end\">−20 元</text><text x=\"56\" y=\"28\" text-anchor=\"end\">0</text></g><g class=\"wf-connectors\"><line x1=\"122.3\" x2=\"151.4\" y1=\"280\" y2=\"280\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"195.1\" x2=\"224.2\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"267.9\" x2=\"297\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"340.7\" x2=\"369.8\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"413.5\" x2=\"442.6\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"486.3\" x2=\"515.4\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"559.1\" x2=\"588.2\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"631.9\" x2=\"661\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"704.7\" x2=\"733.8\" y1=\"177.6\" y2=\"177.6\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-net_revenue\" x=\"78.6\" y=\"24\" width=\"43.7\" height=\"256\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-favorable is-clickable\" data-testid=\"profit-waterfall-bar-cogs_net\" x=\"151.4\" y=\"177.6\" width=\"43.7\" height=\"102.4\" fill=\"var(--chart-favorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-gross_profit\" x=\"224.2\" y=\"24\" width=\"43.7\" height=\"153.6\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-platform_fees\" x=\"297\" y=\"177.1\" width=\"43.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-payment_fees\" x=\"369.8\" y=\"177.1\" width=\"43.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-fulfillment_costs\" x=\"442.6\" y=\"177.1\" width=\"43.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-other_variable_costs\" x=\"515.4\" y=\"177.1\" width=\"43.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-contribution_before_marketing\" x=\"588.2\" y=\"24\" width=\"43.7\" height=\"153.6\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-ad_spend\" x=\"661\" y=\"177.1\" width=\"43.7\" height=\"1\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-result is-clickable\" data-testid=\"profit-waterfall-bar-contribution_after_marketing\" x=\"733.8\" y=\"24\" width=\"43.7\" height=\"153.6\" fill=\"var(--chart-current)\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-neg\" x=\"100.4\" y=\"18\" text-anchor=\"middle\">−100 元</text><text class=\"wf-value is-muted\" x=\"173.2\" y=\"171.6\" text-anchor=\"middle\">+40 元</text><text class=\"wf-value is-neg\" x=\"246\" y=\"18\" text-anchor=\"middle\">−60 元</text><text class=\"wf-value is-muted\" x=\"318.8\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"391.6\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"464.4\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-muted\" x=\"537.2\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-neg\" x=\"610\" y=\"18\" text-anchor=\"middle\">−60 元</text><text class=\"wf-value is-muted\" x=\"682.8\" y=\"171.1\" text-anchor=\"middle\">0 元</text><text class=\"wf-value is-neg\" x=\"755.6\" y=\"18\" text-anchor=\"middle\">−60 元</text></g><g class=\"wf-x\"><text x=\"100.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"100.4\" dy=\"0\">淨營收</tspan></text><text x=\"173.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"173.2\" dy=\"0\">商品成本</tspan></text><text x=\"246\" y=\"295\" text-anchor=\"middle\"><tspan x=\"246\" dy=\"0\">商品毛利</tspan></text><text x=\"318.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"318.8\" dy=\"0\">平台抽成</tspan></text><text x=\"391.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"391.6\" dy=\"0\">金流費</tspan></text><text x=\"464.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"464.4\" dy=\"0\">物流費</tspan></text><text x=\"537.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"537.2\" dy=\"0\">其他變動費</tspan></text><text x=\"610\" y=\"295\" text-anchor=\"middle\"><tspan x=\"610\" dy=\"0\">扣廣告前</tspan></text><text x=\"682.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"682.8\" dy=\"0\">廣告費</tspan></text><text x=\"755.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"755.6\" dy=\"0\">扣廣告後</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "missing_cogs G1": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:520px\" data-testid=\"bridge-waterfall\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"237.3\" y2=\"237.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"194.7\" y2=\"194.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"152\" y2=\"152\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"109.3\" y2=\"109.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"66.7\" y2=\"66.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−500 元</text><text x=\"56\" y=\"241.3\" text-anchor=\"end\">0</text><text x=\"56\" y=\"198.7\" text-anchor=\"end\">500 元</text><text x=\"56\" y=\"156\" text-anchor=\"end\">1,000 元</text><text x=\"56\" y=\"113.3\" text-anchor=\"end\">1,500 元</text><text x=\"56\" y=\"70.7\" text-anchor=\"end\">2,000 元</text><text x=\"56\" y=\"28\" text-anchor=\"end\">2,500 元</text></g><g class=\"wf-connectors\"><line x1=\"116.9\" x2=\"143.4\" y1=\"188.7\" y2=\"188.7\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"183.1\" x2=\"209.6\" y1=\"137.5\" y2=\"137.5\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"249.3\" x2=\"275.8\" y1=\"158.8\" y2=\"158.8\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" x=\"77.2\" y=\"188.7\" width=\"39.7\" height=\"48.6\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-favorable is-clickable\" x=\"143.4\" y=\"137.5\" width=\"39.7\" height=\"51.2\" fill=\"var(--chart-favorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"209.6\" y=\"137.5\" width=\"39.7\" height=\"21.3\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" x=\"275.8\" y=\"158.8\" width=\"39.7\" height=\"11.1\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-missing is-clickable\" x=\"342\" y=\"169.9\" width=\"39.7\" height=\"67.4\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" x=\"739.1\" y=\"169.9\" width=\"39.7\" height=\"67.4\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"97.1\" y=\"182.7\" text-anchor=\"middle\">570 元</text><text class=\"wf-value is-muted\" x=\"163.3\" y=\"131.5\" text-anchor=\"middle\">+600 元</text><text class=\"wf-value is-neg\" x=\"229.5\" y=\"131.5\" text-anchor=\"middle\">−250 元</text><text class=\"wf-value is-neg\" x=\"295.6\" y=\"152.8\" text-anchor=\"middle\">−130 元</text><text class=\"wf-value is-missing\" x=\"361.8\" y=\"163.9\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"758.9\" y=\"163.9\" text-anchor=\"middle\">資料待補</text></g><g class=\"wf-x\"><text x=\"97.1\" y=\"295\" text-anchor=\"middle\"><tspan x=\"97.1\" dy=\"0\">上期</tspan></text><text x=\"163.3\" y=\"295\" text-anchor=\"middle\"><tspan x=\"163.3\" dy=\"0\">原價收入</tspan></text><text x=\"229.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"229.5\" dy=\"0\">折扣</tspan></text><text x=\"295.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"295.6\" dy=\"0\">退款</tspan></text><text x=\"361.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"361.8\" dy=\"0\">商品成本</tspan></text><text x=\"428\" y=\"295\" text-anchor=\"middle\"><tspan x=\"428\" dy=\"0\">平台抽成</tspan></text><text x=\"494.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"494.2\" dy=\"0\">金流費</tspan></text><text x=\"560.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"560.4\" dy=\"0\">物流費</tspan></text><text x=\"626.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"626.5\" dy=\"0\">其他變動費</tspan></text><text x=\"692.7\" y=\"295\" text-anchor=\"middle\"><tspan x=\"692.7\" dy=\"0\">廣告費</tspan></text><text x=\"758.9\" y=\"295\" text-anchor=\"middle\"><tspan x=\"758.9\" dy=\"0\">本期</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"237.3\" y2=\"237.3\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "missing_cogs G2": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:600px\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"237.3\" y2=\"237.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"194.7\" y2=\"194.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"152\" y2=\"152\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"109.3\" y2=\"109.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"66.7\" y2=\"66.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−500 元</text><text x=\"56\" y=\"241.3\" text-anchor=\"end\">0</text><text x=\"56\" y=\"198.7\" text-anchor=\"end\">500 元</text><text x=\"56\" y=\"156\" text-anchor=\"end\">1,000 元</text><text x=\"56\" y=\"113.3\" text-anchor=\"end\">1,500 元</text><text x=\"56\" y=\"70.7\" text-anchor=\"end\">2,000 元</text><text x=\"56\" y=\"28\" text-anchor=\"end\">2,500 元</text></g><g class=\"wf-connectors\"></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-net_revenue\" x=\"78.6\" y=\"26.6\" width=\"43.7\" height=\"210.8\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-cogs_net\" x=\"151.4\" y=\"26.6\" width=\"43.7\" height=\"210.8\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-gross_profit\" x=\"224.2\" y=\"26.6\" width=\"43.7\" height=\"210.8\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-contribution_before_marketing\" x=\"588.2\" y=\"26.6\" width=\"43.7\" height=\"210.8\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-contribution_after_marketing\" x=\"733.8\" y=\"26.6\" width=\"43.7\" height=\"210.8\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"100.4\" y=\"20.6\" text-anchor=\"middle\">2,470 元</text><text class=\"wf-value is-missing\" x=\"173.2\" y=\"20.6\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"246\" y=\"20.6\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"610\" y=\"20.6\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"755.6\" y=\"20.6\" text-anchor=\"middle\">資料待補</text></g><g class=\"wf-x\"><text x=\"100.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"100.4\" dy=\"0\">淨營收</tspan></text><text x=\"173.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"173.2\" dy=\"0\">商品成本</tspan></text><text x=\"246\" y=\"295\" text-anchor=\"middle\"><tspan x=\"246\" dy=\"0\">商品毛利</tspan></text><text x=\"318.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"318.8\" dy=\"0\">平台抽成</tspan></text><text x=\"391.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"391.6\" dy=\"0\">金流費</tspan></text><text x=\"464.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"464.4\" dy=\"0\">物流費</tspan></text><text x=\"537.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"537.2\" dy=\"0\">其他變動費</tspan></text><text x=\"610\" y=\"295\" text-anchor=\"middle\"><tspan x=\"610\" dy=\"0\">扣廣告前</tspan></text><text x=\"682.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"682.8\" dy=\"0\">廣告費</tspan></text><text x=\"755.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"755.6\" dy=\"0\">扣廣告後</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"237.3\" y2=\"237.3\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "synthetic-4-channel G1": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:520px\" data-testid=\"bridge-waterfall\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"243.4\" y2=\"243.4\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"206.9\" y2=\"206.9\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"170.3\" y2=\"170.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"133.7\" y2=\"133.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"97.1\" y2=\"97.1\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"60.6\" y2=\"60.6\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−5 萬</text><text x=\"56\" y=\"247.4\" text-anchor=\"end\">0</text><text x=\"56\" y=\"210.9\" text-anchor=\"end\">5 萬</text><text x=\"56\" y=\"174.3\" text-anchor=\"end\">10 萬</text><text x=\"56\" y=\"137.7\" text-anchor=\"end\">15 萬</text><text x=\"56\" y=\"101.1\" text-anchor=\"end\">20 萬</text><text x=\"56\" y=\"64.6\" text-anchor=\"end\">25 萬</text><text x=\"56\" y=\"28\" text-anchor=\"end\">30 萬</text></g><g class=\"wf-connectors\"></g><g class=\"wf-bars\"><rect class=\"wf-bar is-missing is-clickable\" x=\"77.2\" y=\"219.4\" width=\"39.7\" height=\"24\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" x=\"408.1\" y=\"219.4\" width=\"39.7\" height=\"24\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" x=\"474.3\" y=\"219.4\" width=\"39.7\" height=\"24\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" x=\"540.5\" y=\"219.4\" width=\"39.7\" height=\"24\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" x=\"606.7\" y=\"219.4\" width=\"39.7\" height=\"24\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" x=\"672.9\" y=\"219.4\" width=\"39.7\" height=\"24\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" x=\"739.1\" y=\"219.4\" width=\"39.7\" height=\"24\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-missing\" x=\"97.1\" y=\"213.4\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"428\" y=\"213.4\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"494.2\" y=\"213.4\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"560.4\" y=\"213.4\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"626.5\" y=\"213.4\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"692.7\" y=\"213.4\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"758.9\" y=\"213.4\" text-anchor=\"middle\">資料待補</text></g><g class=\"wf-x\"><text x=\"97.1\" y=\"295\" text-anchor=\"middle\"><tspan x=\"97.1\" dy=\"0\">上期</tspan></text><text x=\"163.3\" y=\"295\" text-anchor=\"middle\"><tspan x=\"163.3\" dy=\"0\">原價收入</tspan></text><text x=\"229.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"229.5\" dy=\"0\">折扣</tspan></text><text x=\"295.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"295.6\" dy=\"0\">退款</tspan></text><text x=\"361.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"361.8\" dy=\"0\">商品成本</tspan></text><text x=\"428\" y=\"295\" text-anchor=\"middle\"><tspan x=\"428\" dy=\"0\">平台抽成</tspan></text><text x=\"494.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"494.2\" dy=\"0\">金流費</tspan></text><text x=\"560.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"560.4\" dy=\"0\">物流費</tspan></text><text x=\"626.5\" y=\"295\" text-anchor=\"middle\"><tspan x=\"626.5\" dy=\"0\">其他變動費</tspan></text><text x=\"692.7\" y=\"295\" text-anchor=\"middle\"><tspan x=\"692.7\" dy=\"0\">廣告費</tspan></text><text x=\"758.9\" y=\"295\" text-anchor=\"middle\"><tspan x=\"758.9\" dy=\"0\">本期</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"243.4\" y2=\"243.4\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>",
+  "synthetic-4-channel G2": "<svg class=\"waterfall-svg\" viewBox=\"0 0 800 320\" width=\"100%\" height=\"320\" aria-hidden=\"true\" focusable=\"false\" font-size=\"var(--text-12)\" style=\"--wf-min-w:600px\"><g class=\"wf-grid\"><line x1=\"64\" x2=\"792\" y1=\"280\" y2=\"280\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"243.4\" y2=\"243.4\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"206.9\" y2=\"206.9\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"170.3\" y2=\"170.3\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"133.7\" y2=\"133.7\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"97.1\" y2=\"97.1\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"60.6\" y2=\"60.6\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"64\" x2=\"792\" y1=\"24\" y2=\"24\" stroke=\"var(--chart-grid)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-axis\"><text x=\"56\" y=\"284\" text-anchor=\"end\">−5 萬</text><text x=\"56\" y=\"247.4\" text-anchor=\"end\">0</text><text x=\"56\" y=\"210.9\" text-anchor=\"end\">5 萬</text><text x=\"56\" y=\"174.3\" text-anchor=\"end\">10 萬</text><text x=\"56\" y=\"137.7\" text-anchor=\"end\">15 萬</text><text x=\"56\" y=\"101.1\" text-anchor=\"end\">20 萬</text><text x=\"56\" y=\"64.6\" text-anchor=\"end\">25 萬</text><text x=\"56\" y=\"28\" text-anchor=\"end\">30 萬</text></g><g class=\"wf-connectors\"><line x1=\"122.3\" x2=\"151.4\" y1=\"27.4\" y2=\"27.4\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line><line x1=\"195.1\" x2=\"224.2\" y1=\"139.9\" y2=\"139.9\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></g><g class=\"wf-bars\"><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-net_revenue\" x=\"78.6\" y=\"27.4\" width=\"43.7\" height=\"216\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-unfavorable is-clickable\" data-testid=\"profit-waterfall-bar-cogs_net\" x=\"151.4\" y=\"27.4\" width=\"43.7\" height=\"112.5\" fill=\"var(--chart-unfavorable)\"></rect><rect class=\"wf-bar is-total is-clickable\" data-testid=\"profit-waterfall-bar-gross_profit\" x=\"224.2\" y=\"139.9\" width=\"43.7\" height=\"103.5\" fill=\"var(--chart-total)\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-platform_fees\" x=\"297\" y=\"139.9\" width=\"43.7\" height=\"103.5\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-payment_fees\" x=\"369.8\" y=\"139.9\" width=\"43.7\" height=\"103.5\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-fulfillment_costs\" x=\"442.6\" y=\"139.9\" width=\"43.7\" height=\"103.5\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-other_variable_costs\" x=\"515.4\" y=\"139.9\" width=\"43.7\" height=\"103.5\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-contribution_before_marketing\" x=\"588.2\" y=\"139.9\" width=\"43.7\" height=\"103.5\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-ad_spend\" x=\"661\" y=\"139.9\" width=\"43.7\" height=\"103.5\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect><rect class=\"wf-bar is-missing is-clickable\" data-testid=\"profit-waterfall-bar-contribution_after_marketing\" x=\"733.8\" y=\"139.9\" width=\"43.7\" height=\"103.5\" fill=\"none\" stroke=\"var(--chart-axis)\" stroke-width=\"1\" stroke-dasharray=\"4 3\"></rect></g><g class=\"wf-values\"><text class=\"wf-value is-strong\" x=\"100.4\" y=\"21.4\" text-anchor=\"middle\">29.5 萬</text><text class=\"wf-value is-neg\" x=\"173.2\" y=\"21.4\" text-anchor=\"middle\">−15.4 萬</text><text class=\"wf-value is-strong\" x=\"246\" y=\"133.9\" text-anchor=\"middle\">14.2 萬</text><text class=\"wf-value is-missing\" x=\"318.8\" y=\"133.9\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"391.6\" y=\"133.9\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"464.4\" y=\"133.9\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"537.2\" y=\"133.9\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"610\" y=\"133.9\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"682.8\" y=\"133.9\" text-anchor=\"middle\">資料待補</text><text class=\"wf-value is-missing\" x=\"755.6\" y=\"133.9\" text-anchor=\"middle\">資料待補</text></g><g class=\"wf-x\"><text x=\"100.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"100.4\" dy=\"0\">淨營收</tspan></text><text x=\"173.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"173.2\" dy=\"0\">商品成本</tspan></text><text x=\"246\" y=\"295\" text-anchor=\"middle\"><tspan x=\"246\" dy=\"0\">商品毛利</tspan></text><text x=\"318.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"318.8\" dy=\"0\">平台抽成</tspan></text><text x=\"391.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"391.6\" dy=\"0\">金流費</tspan></text><text x=\"464.4\" y=\"295\" text-anchor=\"middle\"><tspan x=\"464.4\" dy=\"0\">物流費</tspan></text><text x=\"537.2\" y=\"295\" text-anchor=\"middle\"><tspan x=\"537.2\" dy=\"0\">其他變動費</tspan></text><text x=\"610\" y=\"295\" text-anchor=\"middle\"><tspan x=\"610\" dy=\"0\">扣廣告前</tspan></text><text x=\"682.8\" y=\"295\" text-anchor=\"middle\"><tspan x=\"682.8\" dy=\"0\">廣告費</tspan></text><text x=\"755.6\" y=\"295\" text-anchor=\"middle\"><tspan x=\"755.6\" dy=\"0\">扣廣告後</tspan></text></g><line class=\"wf-zero\" x1=\"64\" x2=\"792\" y1=\"243.4\" y2=\"243.4\" stroke=\"var(--border-strong)\" stroke-width=\"1\" shape-rendering=\"crispEdges\"></line></svg>"
+ },
+ "sweep": {
+  "demo G1 520 shared": {
+   "bytes": 6286,
+   "sha256": "b739aef7987b3f1c43725253af2a6475c2183cd95ee1393cc8f0e669549006ff"
+  },
+  "demo G1 560 shared": {
+   "bytes": 6286,
+   "sha256": "8cc1329749622d4ec073d1716bf88b9c5067967739d192016bfbbe33c378ec6d"
+  },
+  "demo G1 600 shared": {
+   "bytes": 6227,
+   "sha256": "bd474e8569daeee271812cd6882b419fc80b141dd7a3f20f7d9ef4d65e974891"
+  },
+  "demo G1 670 shared": {
+   "bytes": 6190,
+   "sha256": "7b39189899891decc9b7d5af0353a34ab14f52332a9126e933a6ef1d78180437"
+  },
+  "demo G1 670 own": {
+   "bytes": 6425,
+   "sha256": "f07df7fd0d6e907c8b012d9909b267ce41d67d609c96d28a877060f1f409dac1"
+  },
+  "demo G1 800 shared": {
+   "bytes": 6154,
+   "sha256": "e26c7caec8634e32c164cdf7382de1a4d829a737c289efe5b3fc2062ff77e37d"
+  },
+  "demo G1 800 own": {
+   "bytes": 6391,
+   "sha256": "05e954659d5de8e52885be29e8074f2897c3a14ac5bd16bcc31f536b7ffc8378"
+  },
+  "demo G1 1100 shared": {
+   "bytes": 6170,
+   "sha256": "767acc8df65362676ccfc8260cc1753e1725dbc154df46ecd97f4e7b23d79baf"
+  },
+  "demo G1 1182 shared": {
+   "bytes": 6172,
+   "sha256": "581465de35f11d3310981174519a70bb4f0f5cc30d9cad6bdaa94a5a748c4850"
+  },
+  "demo G2 all 520 shared": {
+   "bytes": 5767,
+   "sha256": "24c029a6b754b4a53468699db4adec76e2ccd9efaa45b00ff017a3bf0680252c"
+  },
+  "demo G2 all 560 shared": {
+   "bytes": 5767,
+   "sha256": "24c029a6b754b4a53468699db4adec76e2ccd9efaa45b00ff017a3bf0680252c"
+  },
+  "demo G2 all 600 shared": {
+   "bytes": 5767,
+   "sha256": "24c029a6b754b4a53468699db4adec76e2ccd9efaa45b00ff017a3bf0680252c"
+  },
+  "demo G2 all 670 shared": {
+   "bytes": 5780,
+   "sha256": "a9352cdf0d457112e44b327fa67fbc4de7ab19fe64923ebec688371c594d6349"
+  },
+  "demo G2 all 670 own": {
+   "bytes": 5621,
+   "sha256": "ee54303b2f4a4b7c75d5b74dcd9deb3bcf76ba77c06affb1188730e028c302fb"
+  },
+  "demo G2 all 800 shared": {
+   "bytes": 5736,
+   "sha256": "c3819c6bea3744b4bd7db28e5219be6bd7cdae76427ee294f560011b5ea35647"
+  },
+  "demo G2 all 800 own": {
+   "bytes": 5577,
+   "sha256": "36c3224df2145d3495451f12fb823b68bfea3bb11fe8b64af1f8d58c56b3fc82"
+  },
+  "demo G2 all 1100 shared": {
+   "bytes": 5749,
+   "sha256": "887f166a2a4a5ab9be3fe0245a3b6061df21653b70936e27f4702400a908daab"
+  },
+  "demo G2 all 1182 shared": {
+   "bytes": 5773,
+   "sha256": "ec87a8e467f175c5cd57906fa3a48c9f363a3393fbf6a4d70fe0ab7e809b9b69"
+  },
+  "demo G2 DTC 520 shared": {
+   "bytes": 5730,
+   "sha256": "f610e058abc63d7e2ded25223293dc1faf2d9f6947a687586c00f9bf7daa2110"
+  },
+  "demo G2 DTC 560 shared": {
+   "bytes": 5730,
+   "sha256": "f610e058abc63d7e2ded25223293dc1faf2d9f6947a687586c00f9bf7daa2110"
+  },
+  "demo G2 DTC 600 shared": {
+   "bytes": 5730,
+   "sha256": "f610e058abc63d7e2ded25223293dc1faf2d9f6947a687586c00f9bf7daa2110"
+  },
+  "demo G2 DTC 670 shared": {
+   "bytes": 5744,
+   "sha256": "b2c3283543e9673eeed24f736cf0d68730c7eb359ddfd9192c1600947ca88268"
+  },
+  "demo G2 DTC 670 own": {
+   "bytes": 5581,
+   "sha256": "ed829e3a52fdeaf20d47b340c7069718a82cb65dd252b980ccfcda5cd2d89f2e"
+  },
+  "demo G2 DTC 800 shared": {
+   "bytes": 5700,
+   "sha256": "e5d5e225a520f47dbcf835ebb5187c8e8a83b61960e7adc474b96ae4d04eef78"
+  },
+  "demo G2 DTC 800 own": {
+   "bytes": 5537,
+   "sha256": "90095542f1c80c91eb7b7062174b929a2b165b92e51d12b56a8a4835f78d6e8c"
+  },
+  "demo G2 DTC 1100 shared": {
+   "bytes": 5713,
+   "sha256": "1427b22f2d66e20481b914a7f1d3b4766365446ac441a260cd9e5d70b4d04fc2"
+  },
+  "demo G2 DTC 1182 shared": {
+   "bytes": 5737,
+   "sha256": "dab5544fd0a9fd2197e90d1411d92cb5689bc19a8fe509c0f4cbbfdb69f6ffca"
+  },
+  "demo G2 MARKETPLACE 520 shared": {
+   "bytes": 5767,
+   "sha256": "7770a6c364fccaee5142bb852ffa17d71e74a00a7bd3830e1d8caf8ec272b261"
+  },
+  "demo G2 MARKETPLACE 560 shared": {
+   "bytes": 5767,
+   "sha256": "7770a6c364fccaee5142bb852ffa17d71e74a00a7bd3830e1d8caf8ec272b261"
+  },
+  "demo G2 MARKETPLACE 600 shared": {
+   "bytes": 5767,
+   "sha256": "7770a6c364fccaee5142bb852ffa17d71e74a00a7bd3830e1d8caf8ec272b261"
+  },
+  "demo G2 MARKETPLACE 670 shared": {
+   "bytes": 5781,
+   "sha256": "c2cf4cb39eb1c45c57f3db5d390d9292aa27e868500aed2c982f87b7b232f0b8"
+  },
+  "demo G2 MARKETPLACE 670 own": {
+   "bytes": 5822,
+   "sha256": "87260832d9815acd9afc31ac596a0b21b011db735ef8dd12b80a9def98a08913"
+  },
+  "demo G2 MARKETPLACE 800 shared": {
+   "bytes": 5737,
+   "sha256": "59148b2fdf71bc5e3425b279fa056533a0b13db4ba8170666eee727bce985259"
+  },
+  "demo G2 MARKETPLACE 800 own": {
+   "bytes": 5778,
+   "sha256": "611a1166a876b738fa7ebd240cdc98bc515c3c82755c9ff356b598413326b546"
+  },
+  "demo G2 MARKETPLACE 1100 shared": {
+   "bytes": 5750,
+   "sha256": "93327c823f69aab1193e9b9c284faad94056605e2aad5a5a7b603cb671024a76"
+  },
+  "demo G2 MARKETPLACE 1182 shared": {
+   "bytes": 5774,
+   "sha256": "719c35a56731d3ae2a3edb9ef94e209ca74790855439c230700bf37b36e70152"
+  },
+  "golden G1 520 shared": {
+   "bytes": 6468,
+   "sha256": "e9c77b8a5b788bf7f31665954f8948930328997b7f051101d939998a23c5ea98"
+  },
+  "golden G1 560 shared": {
+   "bytes": 6468,
+   "sha256": "1d6e03c09cbc2e88f9229a38ef17d0b8d7191fba5b0144865bbd68ef1f6b3577"
+  },
+  "golden G1 600 shared": {
+   "bytes": 6409,
+   "sha256": "f7685aedd151ef7989de558c573504d0411d9aadad2aa4c038502ca55ab80be6"
+  },
+  "golden G1 670 shared": {
+   "bytes": 6372,
+   "sha256": "fc6a5628993b67743165c1b7c651623771c32bd411cd6c7677eea94bf73f4460"
+  },
+  "golden G1 670 own": {
+   "bytes": 6402,
+   "sha256": "73581e8a5524d31a232b2650a5da1ca7ccff1c0dd10a8450e1dab4067392cca9"
+  },
+  "golden G1 800 shared": {
+   "bytes": 6339,
+   "sha256": "f7fe354d1d01fb0dde8e95127920de6258ed6ef7ea901fbc1e50fbcd37916b1b"
+  },
+  "golden G1 800 own": {
+   "bytes": 6369,
+   "sha256": "a6f729fe1c3eb4772c34bdf93144741781af19b54d151149c28b790fe18a419f"
+  },
+  "golden G1 1100 shared": {
+   "bytes": 6356,
+   "sha256": "44394dd993f65540347d28bb16f55ebaf75073c030007c612ade1e526e8675b3"
+  },
+  "golden G1 1182 shared": {
+   "bytes": 6358,
+   "sha256": "6d265ee49035a8e363fae3cf95f4050281ddcf322d335292eb3ad7a361f3f1f9"
+  },
+  "golden G2 all 520 shared": {
+   "bytes": 5946,
+   "sha256": "2fc7c9501435aae009d728b8224adc88c3e8da1ceba150717f3a7dacb47074d1"
+  },
+  "golden G2 all 560 shared": {
+   "bytes": 5946,
+   "sha256": "2fc7c9501435aae009d728b8224adc88c3e8da1ceba150717f3a7dacb47074d1"
+  },
+  "golden G2 all 600 shared": {
+   "bytes": 5946,
+   "sha256": "2fc7c9501435aae009d728b8224adc88c3e8da1ceba150717f3a7dacb47074d1"
+  },
+  "golden G2 all 670 shared": {
+   "bytes": 5959,
+   "sha256": "87dd8fd30f2d0be451c0a09d09ee81955b32a41ccb24a0c1a0861273f87d94ba"
+  },
+  "golden G2 all 670 own": {
+   "bytes": 5811,
+   "sha256": "3830eba2a9deeff3c2f437445e49187042cd89e163fbd0cc5105a1bd7052255b"
+  },
+  "golden G2 all 800 shared": {
+   "bytes": 5915,
+   "sha256": "d0089c1016b2dfb6db01849926b11304797c500338a8b24e7575ba429597e6ed"
+  },
+  "golden G2 all 800 own": {
+   "bytes": 5767,
+   "sha256": "8ed021319d95dcb9437c85588c2fe81137f0ce538404bcf5c37e273e0d1639b2"
+  },
+  "golden G2 all 1100 shared": {
+   "bytes": 5929,
+   "sha256": "a42a3249cdece0bd66aad3dfb4ea37c4eb208144703965d32ebee679a671bdd7"
+  },
+  "golden G2 all 1182 shared": {
+   "bytes": 5953,
+   "sha256": "a8001f0e9319662b91d20e0d6a3e9264f0ff8706ff21c7205e54c6a271882081"
+  },
+  "golden G2 DTC 520 shared": {
+   "bytes": 5912,
+   "sha256": "c6138255da8d0028e393a45160950a3189badc6560abaf5c6712201a4410ab0d"
+  },
+  "golden G2 DTC 560 shared": {
+   "bytes": 5912,
+   "sha256": "c6138255da8d0028e393a45160950a3189badc6560abaf5c6712201a4410ab0d"
+  },
+  "golden G2 DTC 600 shared": {
+   "bytes": 5912,
+   "sha256": "c6138255da8d0028e393a45160950a3189badc6560abaf5c6712201a4410ab0d"
+  },
+  "golden G2 DTC 670 shared": {
+   "bytes": 5926,
+   "sha256": "9f7a7f6303fa0d0c27cbc1ee2c4d4a39b649ff22ae875e769beb41cdb4ebb610"
+  },
+  "golden G2 DTC 670 own": {
+   "bytes": 6286,
+   "sha256": "d2d8676deac493b248868dbc200215cd193f43993ae899a1a4e4450f6f472253"
+  },
+  "golden G2 DTC 800 shared": {
+   "bytes": 5882,
+   "sha256": "bd91e282e03406e8316cb2ed300bcce9bb0674ae1ea1f803140eed68d40783be"
+  },
+  "golden G2 DTC 800 own": {
+   "bytes": 6242,
+   "sha256": "a1d0b9d72b3970c1300669a2543ad9bce23080ee9b72a5cfb21b5cdde4675299"
+  },
+  "golden G2 DTC 1100 shared": {
+   "bytes": 5896,
+   "sha256": "9b105ac827b8bbc3551136430796e7beaba5a558607f72a046af60e737457bc8"
+  },
+  "golden G2 DTC 1182 shared": {
+   "bytes": 5920,
+   "sha256": "46bcbfd024782d622dbe40b3f5ecd980310c2e36cff5a25632a90e3dbbf26b2c"
+  },
+  "golden G2 MARKETPLACE 520 shared": {
+   "bytes": 5931,
+   "sha256": "3c8abb8753ff6e3b1f9a6c0a142b3a45cb0681ee0a4e08c737f2c1a27a958cdd"
+  },
+  "golden G2 MARKETPLACE 560 shared": {
+   "bytes": 5931,
+   "sha256": "3c8abb8753ff6e3b1f9a6c0a142b3a45cb0681ee0a4e08c737f2c1a27a958cdd"
+  },
+  "golden G2 MARKETPLACE 600 shared": {
+   "bytes": 5931,
+   "sha256": "3c8abb8753ff6e3b1f9a6c0a142b3a45cb0681ee0a4e08c737f2c1a27a958cdd"
+  },
+  "golden G2 MARKETPLACE 670 shared": {
+   "bytes": 5945,
+   "sha256": "f3996570b0053c4ef4831800f5072475e8ff8e515f845e9f11933b6c7bed923c"
+  },
+  "golden G2 MARKETPLACE 670 own": {
+   "bytes": 5988,
+   "sha256": "bc5f67fc3fa5ded4ae2cbcd8f713b02d40245b44bcd4f3e4eb068ec4b0416dd2"
+  },
+  "golden G2 MARKETPLACE 800 shared": {
+   "bytes": 5901,
+   "sha256": "90cbd3a3b39fcfcf543949769c1e430b943a0caae34aefafb7ed56a332acf322"
+  },
+  "golden G2 MARKETPLACE 800 own": {
+   "bytes": 5944,
+   "sha256": "bfe0b391fb622c8d2aa2bb05c984066e9a9bf60fc9c986ffad2b35e880c1a163"
+  },
+  "golden G2 MARKETPLACE 1100 shared": {
+   "bytes": 5915,
+   "sha256": "58207dcfc716e9310e1312886b9db202d93c191e0cd7865e61a8c32f46efdbb5"
+  },
+  "golden G2 MARKETPLACE 1182 shared": {
+   "bytes": 5939,
+   "sha256": "5245764cf2de2af2d64068d769e8f4e7c513580f98cfa6a3f569406b10234e65"
+  },
+  "zero_ad G1 520 shared": {
+   "bytes": 6273,
+   "sha256": "092b72f34f20d5ac53953d15fe2e4b4777de21caf40746ca361329dbca2b28a5"
+  },
+  "zero_ad G1 560 shared": {
+   "bytes": 6273,
+   "sha256": "7c3cd7d1a89b6616694a6414005022842878a6178c856d2bcef07dea02c23657"
+  },
+  "zero_ad G1 600 shared": {
+   "bytes": 6214,
+   "sha256": "680e1169b9dd94aa3cd77e6bc15251689801cb045da639a5f983f7e71f580663"
+  },
+  "zero_ad G1 670 shared": {
+   "bytes": 6177,
+   "sha256": "ce54a537ca26b926c7666939d06d304f6e3c04c7397e2b07e3e1722ad1eaf484"
+  },
+  "zero_ad G1 670 own": {
+   "bytes": 6704,
+   "sha256": "72a17d3ffc80de26aa7ff3cd4d44a575d8c4e2e09c132ca626ccc9c9d2a56993"
+  },
+  "zero_ad G1 800 shared": {
+   "bytes": 6144,
+   "sha256": "d674f6a88504b1cc05e78e14448a460a200e8fae2641f1fb39bf33d65479fa14"
+  },
+  "zero_ad G1 800 own": {
+   "bytes": 6671,
+   "sha256": "210bd9c9c1970b4d123dc6ded7d86cd9f53bae3fd67f7966c52962cae50aed5c"
+  },
+  "zero_ad G1 1100 shared": {
+   "bytes": 6160,
+   "sha256": "1b25b6d573330ce375fe7b62c1bdb7a9168d0b3fc99a01773d9ee320badddc50"
+  },
+  "zero_ad G1 1182 shared": {
+   "bytes": 6162,
+   "sha256": "1b9ac40f7aa1c1d0557f4c821cf6061d0f6df988e79ed257636a4616cf60b334"
+  },
+  "zero_ad G2 all 520 shared": {
+   "bytes": 5736,
+   "sha256": "2f056e1cb3453771b1fafdbdc9a5a942111d63f0d92029d44ee17ad49abc0931"
+  },
+  "zero_ad G2 all 560 shared": {
+   "bytes": 5736,
+   "sha256": "2f056e1cb3453771b1fafdbdc9a5a942111d63f0d92029d44ee17ad49abc0931"
+  },
+  "zero_ad G2 all 600 shared": {
+   "bytes": 5736,
+   "sha256": "2f056e1cb3453771b1fafdbdc9a5a942111d63f0d92029d44ee17ad49abc0931"
+  },
+  "zero_ad G2 all 670 shared": {
+   "bytes": 5749,
+   "sha256": "b9790ad156934574d6d903c24f069a46539359037c27a4f78e452d7751302670"
+  },
+  "zero_ad G2 all 670 own": {
+   "bytes": 5793,
+   "sha256": "8dd31076816b31f550b40a03603d1f3d8d0d32d1c2868f7c1ae45ce5754ede90"
+  },
+  "zero_ad G2 all 800 shared": {
+   "bytes": 5705,
+   "sha256": "deb82e95b465119a0efffdbd30ab256a97af44774491b203a10331c65406e5da"
+  },
+  "zero_ad G2 all 800 own": {
+   "bytes": 5749,
+   "sha256": "5d55cf3bef77a801949badeb3cf36dfad59fb76aa249da3eb5ab8b3975e1b0d7"
+  },
+  "zero_ad G2 all 1100 shared": {
+   "bytes": 5718,
+   "sha256": "e951eff6a9b8d384f2c6b4f48f5456265aba273846ca0959dc479ec255f3bad3"
+  },
+  "zero_ad G2 all 1182 shared": {
+   "bytes": 5742,
+   "sha256": "8ee93bc2b8715714b9d917c6b7d9b453c1f43fb224a2a5b5fc87bdd5611fbcf7"
+  },
+  "zero_ad G2 DTC 520 shared": {
+   "bytes": 5729,
+   "sha256": "8f43d57615e54120bdfed5d5c43376a2f8a8b604581401777fe9a48535adb34b"
+  },
+  "zero_ad G2 DTC 560 shared": {
+   "bytes": 5729,
+   "sha256": "8f43d57615e54120bdfed5d5c43376a2f8a8b604581401777fe9a48535adb34b"
+  },
+  "zero_ad G2 DTC 600 shared": {
+   "bytes": 5729,
+   "sha256": "8f43d57615e54120bdfed5d5c43376a2f8a8b604581401777fe9a48535adb34b"
+  },
+  "zero_ad G2 DTC 670 shared": {
+   "bytes": 5743,
+   "sha256": "b5b6794916b241817eb44fb6f8c5ad471427b078a9ae983179fce189eac9b206"
+  },
+  "zero_ad G2 DTC 670 own": {
+   "bytes": 6268,
+   "sha256": "099271661f097f716d0d1abed9ba7f355904cc5a4452940ff22bbcc83077e10e"
+  },
+  "zero_ad G2 DTC 800 shared": {
+   "bytes": 5699,
+   "sha256": "d161b27d6b4e02cb37b5b19a25ae75c050e27479cd78129b3c559251910e18f5"
+  },
+  "zero_ad G2 DTC 800 own": {
+   "bytes": 6224,
+   "sha256": "52f203ccb526a576eafd7239057d3668706dc9b904566b30cb7f045bc3e88a7e"
+  },
+  "zero_ad G2 DTC 1100 shared": {
+   "bytes": 5712,
+   "sha256": "d9d6f875eaf3083b976bf4c6943265d69ad282693176c29a91f42561da5bccd8"
+  },
+  "zero_ad G2 DTC 1182 shared": {
+   "bytes": 5736,
+   "sha256": "046e424b4f832e0f090a6375439060c90a501f389639e2db35a8b21655415ebc"
+  },
+  "zero_ad G2 MARKETPLACE 520 shared": {
+   "bytes": 5743,
+   "sha256": "283542e4ce339700704bb2b7c1de9732ff777ce0913ece6afa8dc20b8b684201"
+  },
+  "zero_ad G2 MARKETPLACE 560 shared": {
+   "bytes": 5743,
+   "sha256": "283542e4ce339700704bb2b7c1de9732ff777ce0913ece6afa8dc20b8b684201"
+  },
+  "zero_ad G2 MARKETPLACE 600 shared": {
+   "bytes": 5743,
+   "sha256": "283542e4ce339700704bb2b7c1de9732ff777ce0913ece6afa8dc20b8b684201"
+  },
+  "zero_ad G2 MARKETPLACE 670 shared": {
+   "bytes": 5757,
+   "sha256": "650aca24e57ce50321dc463c929cf655d811de3c97c8178728927fa6f93ca4e4"
+  },
+  "zero_ad G2 MARKETPLACE 670 own": {
+   "bytes": 5784,
+   "sha256": "5afaf628b2aeaf09861246ebc2d870a8a5b46d650fcc7b5eba7c38788e298a08"
+  },
+  "zero_ad G2 MARKETPLACE 800 shared": {
+   "bytes": 5713,
+   "sha256": "f7c985b0eeac5ce818a106fe16ff6b279ed857421c423cf41f7a8ed0d7918b97"
+  },
+  "zero_ad G2 MARKETPLACE 800 own": {
+   "bytes": 5740,
+   "sha256": "0d6813d406c0aa562315037835d0566bd52aa983aa67dbeccc81a911a6bbff42"
+  },
+  "zero_ad G2 MARKETPLACE 1100 shared": {
+   "bytes": 5726,
+   "sha256": "9e8ee875a29e97afd2b529e3260f68da28bb6b2ebf4ddf8d724f22cb84065a86"
+  },
+  "zero_ad G2 MARKETPLACE 1182 shared": {
+   "bytes": 5750,
+   "sha256": "1e92f3f94f8971f09e6077c801be42c7d2491e8174e5f5434ce56fdb7a0328a1"
+  },
+  "refund_only G1 520 shared": {
+   "bytes": 6136,
+   "sha256": "3a6fc4d421dc5e5b56c132f42613ccf64066a36db3b288354a46f65b4c9ec81b"
+  },
+  "refund_only G1 560 shared": {
+   "bytes": 6136,
+   "sha256": "06df60748f9da9ab6da592c0e2a078479e12fa1abffb4c86878be21f9cf94392"
+  },
+  "refund_only G1 600 shared": {
+   "bytes": 6077,
+   "sha256": "95933ae33158d557721371014912b1583fc3fbbcf7f425573c4c4bd4b6beb5e1"
+  },
+  "refund_only G1 670 shared": {
+   "bytes": 6040,
+   "sha256": "ba65c7a2d4b4f7248c65b88e52492dd0a4b82d068da27b79dea8ba0314dc59d3"
+  },
+  "refund_only G1 670 own": {
+   "bytes": 6215,
+   "sha256": "4937b5a0f91292784f7a3cd9ff368d8ed0ef38ea1f77a906da8c5bf66365f938"
+  },
+  "refund_only G1 800 shared": {
+   "bytes": 6007,
+   "sha256": "18f7381c9e534f1e78802f2d08752f526289715ae647a51ab374f0c0dbb57d5a"
+  },
+  "refund_only G1 800 own": {
+   "bytes": 6182,
+   "sha256": "c84c4144286b402a5329f0040d278da2ad16c83e3ee5f0f4ef67a2c3f431b84d"
+  },
+  "refund_only G1 1100 shared": {
+   "bytes": 6023,
+   "sha256": "b9ae92b80f933653b0309feb334439daee44ff5514fa4ea68f68ab4bb2a2127d"
+  },
+  "refund_only G1 1182 shared": {
+   "bytes": 6025,
+   "sha256": "64d5901884372851bb577f4c3ce200d6a2ee4100b282a64b9f789b4827d6d71a"
+  },
+  "refund_only G2 all 520 shared": {
+   "bytes": 5644,
+   "sha256": "b205dfa6c4b8121e130e0bf38d7a56868211f8034719416ad949924560dda590"
+  },
+  "refund_only G2 all 560 shared": {
+   "bytes": 5644,
+   "sha256": "b205dfa6c4b8121e130e0bf38d7a56868211f8034719416ad949924560dda590"
+  },
+  "refund_only G2 all 600 shared": {
+   "bytes": 5644,
+   "sha256": "b205dfa6c4b8121e130e0bf38d7a56868211f8034719416ad949924560dda590"
+  },
+  "refund_only G2 all 670 shared": {
+   "bytes": 5658,
+   "sha256": "3cf6a6153efca10e5c2c89b1f375ee4bcf97fee78eea3d2987f8bd0f2a9615e6"
+  },
+  "refund_only G2 all 670 own": {
+   "bytes": 5702,
+   "sha256": "98789e0ac7f564c24e3d74bb9a04ece16516ebcbb8086f8ee70fa06f7f570571"
+  },
+  "refund_only G2 all 800 shared": {
+   "bytes": 5614,
+   "sha256": "81c7b7d1c873e2a5ce44d4cb01975cc31159286d8cdf1e1b04bbe8f9ff111174"
+  },
+  "refund_only G2 all 800 own": {
+   "bytes": 5658,
+   "sha256": "0715ff3156d2c827d5244793845d11db1e49f9951940bbdaecb7fe846835a26c"
+  },
+  "refund_only G2 all 1100 shared": {
+   "bytes": 5627,
+   "sha256": "aa90b773cfb72352f15ff7b82a934eff64ddb396b3444d2835dfb03c854b7254"
+  },
+  "refund_only G2 all 1182 shared": {
+   "bytes": 5651,
+   "sha256": "2210a2c8bf651b2642de27f9b850550bf337c385bd0a1642538ba87337e63cc1"
+  },
+  "refund_only G2 DTC 520 shared": {
+   "bytes": 5644,
+   "sha256": "b205dfa6c4b8121e130e0bf38d7a56868211f8034719416ad949924560dda590"
+  },
+  "refund_only G2 DTC 560 shared": {
+   "bytes": 5644,
+   "sha256": "b205dfa6c4b8121e130e0bf38d7a56868211f8034719416ad949924560dda590"
+  },
+  "refund_only G2 DTC 600 shared": {
+   "bytes": 5644,
+   "sha256": "b205dfa6c4b8121e130e0bf38d7a56868211f8034719416ad949924560dda590"
+  },
+  "refund_only G2 DTC 670 shared": {
+   "bytes": 5658,
+   "sha256": "3cf6a6153efca10e5c2c89b1f375ee4bcf97fee78eea3d2987f8bd0f2a9615e6"
+  },
+  "refund_only G2 DTC 670 own": {
+   "bytes": 5702,
+   "sha256": "98789e0ac7f564c24e3d74bb9a04ece16516ebcbb8086f8ee70fa06f7f570571"
+  },
+  "refund_only G2 DTC 800 shared": {
+   "bytes": 5614,
+   "sha256": "81c7b7d1c873e2a5ce44d4cb01975cc31159286d8cdf1e1b04bbe8f9ff111174"
+  },
+  "refund_only G2 DTC 800 own": {
+   "bytes": 5658,
+   "sha256": "0715ff3156d2c827d5244793845d11db1e49f9951940bbdaecb7fe846835a26c"
+  },
+  "refund_only G2 DTC 1100 shared": {
+   "bytes": 5627,
+   "sha256": "aa90b773cfb72352f15ff7b82a934eff64ddb396b3444d2835dfb03c854b7254"
+  },
+  "refund_only G2 DTC 1182 shared": {
+   "bytes": 5651,
+   "sha256": "2210a2c8bf651b2642de27f9b850550bf337c385bd0a1642538ba87337e63cc1"
+  },
+  "missing_cogs G1 520 shared": {
+   "bytes": 4621,
+   "sha256": "0b793621506926069e1a9578ce9993263d9a23f791e4711c64ebcf20216f2fb9"
+  },
+  "missing_cogs G1 560 shared": {
+   "bytes": 4619,
+   "sha256": "4cda57742c1463db764e65f097773f012f8dbfa81f6f1f5e2c29b2e008e37992"
+  },
+  "missing_cogs G1 600 shared": {
+   "bytes": 4566,
+   "sha256": "f73eeda83671c1437aef0fedf20815dc82d6dc731a3e852048060ac845d9beda"
+  },
+  "missing_cogs G1 670 shared": {
+   "bytes": 4523,
+   "sha256": "0819fbf9f036f32487ad01178c15cf1571b30519e4e9d075cece13158a3267f6"
+  },
+  "missing_cogs G1 670 own": {
+   "bytes": 4548,
+   "sha256": "1378fcf708ed58ba7a0c623773a16ee6fc51404ba19f0cd9d816ca4e4bba15b9"
+  },
+  "missing_cogs G1 800 shared": {
+   "bytes": 4492,
+   "sha256": "fdf9ba79d017b9868297b95527d862534bb06f42e84f99608020b89a3202c94a"
+  },
+  "missing_cogs G1 800 own": {
+   "bytes": 4517,
+   "sha256": "dc5ac18e1c8c41824eaea49f80c7c4677d8377a0d8a65791a5f99f99666487fd"
+  },
+  "missing_cogs G1 1100 shared": {
+   "bytes": 4510,
+   "sha256": "3e981d9bfcfe88a5fb47b44afc48fb96073f48c6123a72516050ff5a47b7c639"
+  },
+  "missing_cogs G1 1182 shared": {
+   "bytes": 4508,
+   "sha256": "0052eadba7de801904ceeb4398957c7436e1243b9cc858084673e076f665a34f"
+  },
+  "missing_cogs G2 all 520 shared": {
+   "bytes": 3934,
+   "sha256": "58620f6e967c76dfbcb7c5ecb88fb02747a3f5bf87099bd0ebde9064d4ac637f"
+  },
+  "missing_cogs G2 all 560 shared": {
+   "bytes": 3934,
+   "sha256": "58620f6e967c76dfbcb7c5ecb88fb02747a3f5bf87099bd0ebde9064d4ac637f"
+  },
+  "missing_cogs G2 all 600 shared": {
+   "bytes": 3934,
+   "sha256": "58620f6e967c76dfbcb7c5ecb88fb02747a3f5bf87099bd0ebde9064d4ac637f"
+  },
+  "missing_cogs G2 all 670 shared": {
+   "bytes": 3944,
+   "sha256": "cc288581b726c1ea14673ad1a6724af049a122f7a32d840722c6c1971be557df"
+  },
+  "missing_cogs G2 all 670 own": {
+   "bytes": 3807,
+   "sha256": "a0ac639d9ddb05cc6cf76f0b09723d0654117e12488ccaf46db34eebc81dfb7a"
+  },
+  "missing_cogs G2 all 800 shared": {
+   "bytes": 3904,
+   "sha256": "ee9dfc7542581c4ecda971d7464b94fd46cc8cccc1c79daf88f552a854dd7fb9"
+  },
+  "missing_cogs G2 all 800 own": {
+   "bytes": 3767,
+   "sha256": "e0cd43f13c3a2ea6a05195794e14b2f25fe837230e1bba6df6d9853591362a03"
+  },
+  "missing_cogs G2 all 1100 shared": {
+   "bytes": 3917,
+   "sha256": "bcca953f60efa258e40d619a159734a25747cbaeeaa8cfc90588bdf5b1e92a08"
+  },
+  "missing_cogs G2 all 1182 shared": {
+   "bytes": 3931,
+   "sha256": "f76450a02b7516fd01093de6ed96dc8d0c4bfaf999fed20f9d7e3bee3e587cc6"
+  },
+  "missing_cogs G2 DTC 520 shared": {
+   "bytes": 3924,
+   "sha256": "ea02aed389ae46e9e41543f408cc5ac07769807e2415f3556c4f0ea2f84cbaf7"
+  },
+  "missing_cogs G2 DTC 560 shared": {
+   "bytes": 3924,
+   "sha256": "ea02aed389ae46e9e41543f408cc5ac07769807e2415f3556c4f0ea2f84cbaf7"
+  },
+  "missing_cogs G2 DTC 600 shared": {
+   "bytes": 3924,
+   "sha256": "ea02aed389ae46e9e41543f408cc5ac07769807e2415f3556c4f0ea2f84cbaf7"
+  },
+  "missing_cogs G2 DTC 670 shared": {
+   "bytes": 3934,
+   "sha256": "15c0feea66c6620e0299bfaede2ddb59a40de1697ee352656fe1b53e0ad6b83c"
+  },
+  "missing_cogs G2 DTC 670 own": {
+   "bytes": 4302,
+   "sha256": "4bdeedc28fe502331c42f52366af33061bb771d336126b0d487271d02be04d5b"
+  },
+  "missing_cogs G2 DTC 800 shared": {
+   "bytes": 3894,
+   "sha256": "8537c6f19ffbb544c97d9f5655ae32dc36c77975e0b56a5fc439012f169b83fc"
+  },
+  "missing_cogs G2 DTC 800 own": {
+   "bytes": 4262,
+   "sha256": "b6717da110ef5f7ab5f08578fdd3d897a044d447000e630e2b8d7400b2260f14"
+  },
+  "missing_cogs G2 DTC 1100 shared": {
+   "bytes": 3907,
+   "sha256": "ef3be3aa713283e8fba64721beefd6754511cc202d136f2fed2efc940955ecc1"
+  },
+  "missing_cogs G2 DTC 1182 shared": {
+   "bytes": 3921,
+   "sha256": "6d3bab969fc49fd9536eff4c362adb547265ba6fb652af202ac5b81b6623a0e6"
+  },
+  "missing_cogs G2 MARKETPLACE 520 shared": {
+   "bytes": 5931,
+   "sha256": "3c8abb8753ff6e3b1f9a6c0a142b3a45cb0681ee0a4e08c737f2c1a27a958cdd"
+  },
+  "missing_cogs G2 MARKETPLACE 560 shared": {
+   "bytes": 5931,
+   "sha256": "3c8abb8753ff6e3b1f9a6c0a142b3a45cb0681ee0a4e08c737f2c1a27a958cdd"
+  },
+  "missing_cogs G2 MARKETPLACE 600 shared": {
+   "bytes": 5931,
+   "sha256": "3c8abb8753ff6e3b1f9a6c0a142b3a45cb0681ee0a4e08c737f2c1a27a958cdd"
+  },
+  "missing_cogs G2 MARKETPLACE 670 shared": {
+   "bytes": 5945,
+   "sha256": "f3996570b0053c4ef4831800f5072475e8ff8e515f845e9f11933b6c7bed923c"
+  },
+  "missing_cogs G2 MARKETPLACE 670 own": {
+   "bytes": 5988,
+   "sha256": "bc5f67fc3fa5ded4ae2cbcd8f713b02d40245b44bcd4f3e4eb068ec4b0416dd2"
+  },
+  "missing_cogs G2 MARKETPLACE 800 shared": {
+   "bytes": 5901,
+   "sha256": "90cbd3a3b39fcfcf543949769c1e430b943a0caae34aefafb7ed56a332acf322"
+  },
+  "missing_cogs G2 MARKETPLACE 800 own": {
+   "bytes": 5944,
+   "sha256": "bfe0b391fb622c8d2aa2bb05c984066e9a9bf60fc9c986ffad2b35e880c1a163"
+  },
+  "missing_cogs G2 MARKETPLACE 1100 shared": {
+   "bytes": 5915,
+   "sha256": "58207dcfc716e9310e1312886b9db202d93c191e0cd7865e61a8c32f46efdbb5"
+  },
+  "missing_cogs G2 MARKETPLACE 1182 shared": {
+   "bytes": 5939,
+   "sha256": "5245764cf2de2af2d64068d769e8f4e7c513580f98cfa6a3f569406b10234e65"
+  },
+  "synthetic-4-channel G1 520 shared": {
+   "bytes": 4845,
+   "sha256": "3311d76e02be24dab12ab43736f52a16b50adcc9b9aa53d35e5e18fd992a9691"
+  },
+  "synthetic-4-channel G1 560 shared": {
+   "bytes": 4847,
+   "sha256": "06c044928f3f415f809a138e29b5a05e669f73b691936008e461e255bf1a7a83"
+  },
+  "synthetic-4-channel G1 600 shared": {
+   "bytes": 4789,
+   "sha256": "4f55777dbdd8f7967599531cc5a9312239df7b8f2f1bb65890159c302639bf8d"
+  },
+  "synthetic-4-channel G1 670 shared": {
+   "bytes": 4750,
+   "sha256": "64e19a6055aaefbf06d4f5f8684101922fbac700ea988ad168a0d31025b99238"
+  },
+  "synthetic-4-channel G1 670 own": {
+   "bytes": 3522,
+   "sha256": "4130162750f8646ed5eb5829e60e977be996b5db0e01cc50e1ea0ccef3df6868"
+  },
+  "synthetic-4-channel G1 800 shared": {
+   "bytes": 4717,
+   "sha256": "e539672958bb9673682d2410cd6fb4931df442ef6baafc92e9786fd8c55808e0"
+  },
+  "synthetic-4-channel G1 800 own": {
+   "bytes": 3489,
+   "sha256": "2c4f7a61a5f95c43592cb13ec8f445df1593ec130e0fa4b9f4bd1e657efbe220"
+  },
+  "synthetic-4-channel G1 1100 shared": {
+   "bytes": 4732,
+   "sha256": "662306c0c865603f266f4c3a62398aca8ca40ad8f391db64eefbcfabd4c356f6"
+  },
+  "synthetic-4-channel G1 1182 shared": {
+   "bytes": 4737,
+   "sha256": "eb8731aafb1a3ed3ad89955da3ec550c80a48b388e4ad2cd0ad4268a78c7a5cf"
+  },
+  "synthetic-4-channel G2 all 520 shared": {
+   "bytes": 5556,
+   "sha256": "09436fa0bb83b0999dcf2c0d27d80116af529a63448fe01cda586554900e9388"
+  },
+  "synthetic-4-channel G2 all 560 shared": {
+   "bytes": 5556,
+   "sha256": "09436fa0bb83b0999dcf2c0d27d80116af529a63448fe01cda586554900e9388"
+  },
+  "synthetic-4-channel G2 all 600 shared": {
+   "bytes": 5556,
+   "sha256": "09436fa0bb83b0999dcf2c0d27d80116af529a63448fe01cda586554900e9388"
+  },
+  "synthetic-4-channel G2 all 670 shared": {
+   "bytes": 5568,
+   "sha256": "4b87e396e28ad66c4c1bbcdf8447c66ddf74f67a25e1ffd7c0d9ffd12a0e90c3"
+  },
+  "synthetic-4-channel G2 all 670 own": {
+   "bytes": 5411,
+   "sha256": "aeffe58ff7dd4d98c72b20b4ab36768ffb1beda61364ec3c959d3a179d6ba99a"
+  },
+  "synthetic-4-channel G2 all 800 shared": {
+   "bytes": 5526,
+   "sha256": "27fe3538c474c79f24028f17be841125887cf437e609a5f22a0262152275cef3"
+  },
+  "synthetic-4-channel G2 all 800 own": {
+   "bytes": 5369,
+   "sha256": "ce2f64b88036b0d09b9ab4361645107683cb9084581ee61dbcf0e6c13251a55a"
+  },
+  "synthetic-4-channel G2 all 1100 shared": {
+   "bytes": 5540,
+   "sha256": "65ca8a6cc9a7aa16b2573d9ed9be074c4b8ed9a49c0962da48d3084701921fe4"
+  },
+  "synthetic-4-channel G2 all 1182 shared": {
+   "bytes": 5559,
+   "sha256": "02ccfa7b5cd3d084b593054400578d3a690f7ad14a60b35f9c5a74c0e8ef0a21"
+  },
+  "synthetic-4-channel G2 DTC 520 shared": {
+   "bytes": 6086,
+   "sha256": "d3f319f362011d142c4dd81631806d7ce0bc66a75ac0c511781a1e3240e85269"
+  },
+  "synthetic-4-channel G2 DTC 560 shared": {
+   "bytes": 6086,
+   "sha256": "d3f319f362011d142c4dd81631806d7ce0bc66a75ac0c511781a1e3240e85269"
+  },
+  "synthetic-4-channel G2 DTC 600 shared": {
+   "bytes": 6086,
+   "sha256": "d3f319f362011d142c4dd81631806d7ce0bc66a75ac0c511781a1e3240e85269"
+  },
+  "synthetic-4-channel G2 DTC 670 shared": {
+   "bytes": 6100,
+   "sha256": "f4a20530944a0c36028fe66b0d34ef5f518161ca825937ee98968b714bf2888d"
+  },
+  "synthetic-4-channel G2 DTC 670 own": {
+   "bytes": 6144,
+   "sha256": "edc2a9b160526fea8692cd56b8718ce7ab884fadb21d4c312fbca6f498aacec6"
+  },
+  "synthetic-4-channel G2 DTC 800 shared": {
+   "bytes": 6056,
+   "sha256": "51aa06b2f0eefb0931696a61faaa542518d1f428eef035d057b0429643003530"
+  },
+  "synthetic-4-channel G2 DTC 800 own": {
+   "bytes": 6100,
+   "sha256": "b68e491c35b04ab4570602ded7233b95917597eae04c3fe2ca0c758c51dafb2d"
+  },
+  "synthetic-4-channel G2 DTC 1100 shared": {
+   "bytes": 6071,
+   "sha256": "eb363640e8a1bdd5476200302b811aa8af1b43553724ad0612f440ec709d10f3"
+  },
+  "synthetic-4-channel G2 DTC 1182 shared": {
+   "bytes": 6095,
+   "sha256": "385037ec011c0fcc6b5e96a876ab8df94551f02dc93d55cac82b883c2593c016"
+  },
+  "synthetic-4-channel G2 LIVE 520 shared": {
+   "bytes": 5551,
+   "sha256": "e733449fa4b764d73e24bbb5c0571ad190db2c482274a5dbbc90f5b3547449e0"
+  },
+  "synthetic-4-channel G2 LIVE 560 shared": {
+   "bytes": 5551,
+   "sha256": "e733449fa4b764d73e24bbb5c0571ad190db2c482274a5dbbc90f5b3547449e0"
+  },
+  "synthetic-4-channel G2 LIVE 600 shared": {
+   "bytes": 5551,
+   "sha256": "e733449fa4b764d73e24bbb5c0571ad190db2c482274a5dbbc90f5b3547449e0"
+  },
+  "synthetic-4-channel G2 LIVE 670 shared": {
+   "bytes": 5563,
+   "sha256": "a00513139a2b78168bd5d38140ce265ad0c02533ebf5824c39dfe7a0cfc776cc"
+  },
+  "synthetic-4-channel G2 LIVE 670 own": {
+   "bytes": 5417,
+   "sha256": "5740b9896e4b86a131752084051c2c66d28a8883aeb0643b831eac40ac5737bf"
+  },
+  "synthetic-4-channel G2 LIVE 800 shared": {
+   "bytes": 5521,
+   "sha256": "2865e609d6fce76d58237826bf09ee02ae8860371e9cc28cc90ea45e7a45f110"
+  },
+  "synthetic-4-channel G2 LIVE 800 own": {
+   "bytes": 5375,
+   "sha256": "54def4d5db12a332f2137aed0cf2362288d90185ded712dd1cc590af14954b01"
+  },
+  "synthetic-4-channel G2 LIVE 1100 shared": {
+   "bytes": 5535,
+   "sha256": "60c6922534b9c136381c6b5a154227eecdb264813417b07d42a10a9d0e309fc2"
+  },
+  "synthetic-4-channel G2 LIVE 1182 shared": {
+   "bytes": 5554,
+   "sha256": "893dfd57eb4bb010255229ba67fc4ff49e3af4111228e990631d9704143739f8"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 520 shared": {
+   "bytes": 6109,
+   "sha256": "c02c9d39b072a46e985eeb1411c186b0c557ba146dbe0941ced9ffb0336c2652"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 560 shared": {
+   "bytes": 6109,
+   "sha256": "c02c9d39b072a46e985eeb1411c186b0c557ba146dbe0941ced9ffb0336c2652"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 600 shared": {
+   "bytes": 6109,
+   "sha256": "c02c9d39b072a46e985eeb1411c186b0c557ba146dbe0941ced9ffb0336c2652"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 670 shared": {
+   "bytes": 6123,
+   "sha256": "1908ab23d7972d3407a7ac2ea2ead410e0718484fdd81a088b857ebc28248409"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 670 own": {
+   "bytes": 6272,
+   "sha256": "7ee5fca5dd6a2b8a515540fda006348bd3ce34263213a2edc7ac7f41b0c1a626"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 800 shared": {
+   "bytes": 6079,
+   "sha256": "3e184651f0edf7924934069dfead6bfec9101594c34e5646713e91a2d3f1d914"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 800 own": {
+   "bytes": 6228,
+   "sha256": "b8c75892d4dc8c7acb97167b6c1f6bd227683c9fd2946fb4b7336f65b0c64b4c"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 1100 shared": {
+   "bytes": 6094,
+   "sha256": "6360d1a3af5aecd36a952d885c81e1f193dace2136bdcd5e78cee3529d242b74"
+  },
+  "synthetic-4-channel G2 MARKETPLACE 1182 shared": {
+   "bytes": 6118,
+   "sha256": "e5197c54f6ef3b67c75967b822b91223b434cdf3015775c8064bde3c0f075b24"
+  },
+  "synthetic-4-channel G2 SOCIAL 520 shared": {
+   "bytes": 6088,
+   "sha256": "483c1c533ed62edf8799854dbd247fb52ce8c8a103547d1631b9719ef68c070c"
+  },
+  "synthetic-4-channel G2 SOCIAL 560 shared": {
+   "bytes": 6088,
+   "sha256": "483c1c533ed62edf8799854dbd247fb52ce8c8a103547d1631b9719ef68c070c"
+  },
+  "synthetic-4-channel G2 SOCIAL 600 shared": {
+   "bytes": 6088,
+   "sha256": "483c1c533ed62edf8799854dbd247fb52ce8c8a103547d1631b9719ef68c070c"
+  },
+  "synthetic-4-channel G2 SOCIAL 670 shared": {
+   "bytes": 6100,
+   "sha256": "6155270cbad006c4083ebfdb04533d9a84834a99e1ddd78eb85e66c9d637e6df"
+  },
+  "synthetic-4-channel G2 SOCIAL 670 own": {
+   "bytes": 5794,
+   "sha256": "fad8b39c328e75bdce8c0cd35af080b63d79e0bbc37941ce2e25820cd7a6c29e"
+  },
+  "synthetic-4-channel G2 SOCIAL 800 shared": {
+   "bytes": 6056,
+   "sha256": "5f7c3f3c4af467c1fe0ceb3edc0ae808c87aa29eb80d02d8163205e9edcdb332"
+  },
+  "synthetic-4-channel G2 SOCIAL 800 own": {
+   "bytes": 5750,
+   "sha256": "5d4cc82a580c095d34516cb2505c7fb4bbf1050545242d34bf649fb562da87c3"
+  },
+  "synthetic-4-channel G2 SOCIAL 1100 shared": {
+   "bytes": 6071,
+   "sha256": "8e67cd26258163c2b9d1e60e58f96e3a1f80b589ef22ce0f99c32795aaa444f0"
+  },
+  "synthetic-4-channel G2 SOCIAL 1182 shared": {
+   "bytes": 6095,
+   "sha256": "637568ce85e4a7844cece2db7108bf786991b5fbafcd8227d0bf065a43761fc3"
+  }
+ }
+}

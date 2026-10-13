@@ -828,14 +828,16 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
 
     // ── V3-9b C（投影模式）的 M1 掛載測試在此之後新增（present-toggle 只在總覽與會議頁各一份、投影中內容仍掛載）──
-    it("V3-9b C 投影模式（F22）：present-toggle 只在總覽與會議頁、各一份、在頁首 .page-present、aria-pressed=false；SSR 不在投影中，沒有 present-period", () => {
+    it("V3-9b C 投影模式（F22）：present-toggle 只在總覽與會議頁、各一份、在頁首 .page-present、不帶 aria-pressed（V4-8a，D-V3-33＝B）；SSR 不在投影中，沒有 present-period", () => {
       for (const { name, html, state } of states) {
         const allowed = state !== null && (state.panel === "overview" || state.panel === "meeting");
         expect(testIdCounts(html).get("present-toggle") ?? 0, name).toBe(allowed ? 1 : 0);
         expect(testIdCounts(html).has("present-period"), name).toBe(false);
         if (!allowed) continue;
-        expect(element(html, 'class="page-heading"'), name).toContain('<div class="page-present"><button type="button" class="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed="false">');
+        expect(element(html, 'class="page-heading"'), name).toContain('<div class="page-present">');
+        expect(element(html, 'class="page-present"'), name).toContain('<button type="button" class="ui-btn ui-btn-secondary" data-testid="present-toggle">');
         expect(element(html, 'data-testid="present-toggle"'), name).toContain(`>${labels.shell.presentV3.enter}</button>`);
+        expect(element(html, 'class="page-present"'), name).not.toContain("aria-pressed");
       }
     });
 
@@ -850,10 +852,11 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         if (depth === 0) children.push(/\sclass="([^"]*)"/.exec(match[3])?.[1] ?? match[2]);
         if (!match[4] && !["input", "br", "img", "hr", "meta", "link", "col", "source", "wbr"].includes(match[2])) depth++;
       }
-      const l1 = ["snapshot", "kpi-section", "top-three", "profit-section"];
+      // V4-8a（D-V4-8、X39）起 .bridge-section 也在白名單（只顯示瀑布，旁欄與資料表另由 C 區段隱藏，見「V4-8a 代理 A」的 M1 測試）。
+      const l1 = ["snapshot", "kpi-section", "top-three", "bridge-section", "profit-section"];
       for (const name of l1) expect(children.some(item => item.split(/\s+/).includes(name)), `L1 ${name}`).toBe(true);
       for (const id of ["weekly-snapshot", "kpi-band", "top-three", "profit-waterfall", "bridge-section", "assist-kpis", "overview-advanced", "pnl-table"]) expect(testIdCounts(overview).get(id), id).toBe(1);
-      expect(children.filter(item => !l1.some(name => item.split(/\s+/).includes(name))).length, "投影中隱藏的區塊").toBeGreaterThanOrEqual(4);
+      expect(children.filter(item => !l1.some(name => item.split(/\s+/).includes(name))).length, "投影中隱藏的區塊").toBeGreaterThanOrEqual(3);
       for (const part of ["snapshot-meta", "snapshot-actions", "alert-body", "alert-actions", "alert-explain", "alert-chev", "sec-tools", "data-alternative"]) expect(overview, part).toContain(part);
       const meeting = states.find(state => state.name === "meeting")!.html;
       for (const id of ["meeting-agenda-1", "meeting-agenda-2", "meeting-agenda-3", "meeting-agenda-4", "meeting-agenda-5", "meeting-agenda-6", "meeting-compare", "meeting-history", "meeting-decision", "meeting-finalize"]) expect(testIdCounts(meeting).get(id), id).toBe(1);
@@ -1524,6 +1527,106 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V4-8 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-8 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
     // ── V4-8a 代理 A（投影：白名單、token、互切按鈕、aria-pressed）M1 測試在此之後
+    it("V4-8a A 互切按鈕（D-V3-34＝A）：present-switch 與 present-toggle 同條件（總覽與會議頁）各一份，在 .page-present 內、投影按鈕之前；字樣是另一頁的頁名（沿用導覽），SSR 不帶 hidden（不在投影中由 CSS 隱藏）；.page-present 內沒有 aria-pressed（D-V3-33＝B）", () => {
+      let checked = 0;
+      for (const { name, html, state } of states) {
+        const allowed = state !== null && (state.panel === "overview" || state.panel === "meeting");
+        expect(testIdCounts(html).get("present-switch") ?? 0, name).toBe(allowed ? 1 : 0);
+        if (!allowed) continue;
+        const target = state.panel === "meeting" ? "overview" : "meeting";
+        expect(element(html, 'class="page-present"'), name).toBe(`<div class="page-present"><button type="button" class="ui-btn ui-btn-secondary present-switch" data-testid="present-switch">${labels.shell.nav[target].headline}</button><button type="button" class="ui-btn ui-btn-secondary" data-testid="present-toggle">${labels.shell.presentV3.enter}</button></div>`);
+        checked++;
+      }
+      expect(checked, "總覽與會議頁的狀態數").toBeGreaterThanOrEqual(8);
+    });
+
+    it("V4-8a A 投影只靠 CSS 隱藏（M1；D-V4-8、X39）：白名單與隱藏清單從 globals.css C 區段解析——總覽白名單外的區塊（趨勢與各通路、其他常用指標、進階）的 v4 圖都還在 markup；白名單區塊內的 chart- testid 都在隱藏的容器裡（拆解區的旁欄：橋接表、G6 九條、平衡檢核；兩個 v2 資料表），瀑布本身不在；會議頁的圖都在議程 3 以後或會議歷史（隱藏）", async () => {
+      const { parseCss, splitSelectors } = await import("../scripts/lib/ui-scan.mjs");
+      const css = readFileSync(resolve("src/app/globals.css"), "utf8");
+      const section = css.slice(css.indexOf("/* ── V3-9b 錨點（代理 C"), css.indexOf("/* ── V3-9b 錨點結束 ── */"));
+      const prefix = ':root[data-mode="present"] ';
+      const hidden = parseCss(section).filter(rule => rule.selector.includes(prefix.trim()) && rule.context.some(prelude => /^@media screen\b/.test(prelude)) && rule.declarations.some(item => item.prop === "display" && item.value === "none")).flatMap(rule => splitSelectors(rule.selector)).map(selector => selector.replace(prefix, ""));
+      const whitelist = splitSelectors(/^\.view-content > :not\((.*)\)$/.exec(hidden.find(selector => selector.startsWith(".view-content > :not(")) ?? "")?.[1] ?? "").map(item => item.replace(/^\./, ""));
+      expect(whitelist).toEqual(["snapshot", "kpi-section", "top-three", "bridge-section", "profit-section", "meeting-page"]);
+      const classes = (tag: string) => (/\sclass="([^"]*)"/.exec(tag)?.[1] ?? "").split(/\s+/).filter(Boolean);
+      const startTag = (el: string) => el.slice(0, el.indexOf(">") + 1);
+      /** html 內 class 含 cls 的每個元素（開始標籤到結束標籤）。 */
+      const withClass = (html: string, cls: string) => [...html.matchAll(/<[a-zA-Z][\w-]*\s[^>]*>/g)].filter(match => classes(match[0]).includes(cls)).map(match => element(html.slice(match.index), match[0])!);
+      /** 直接子元素（開始標籤到結束標籤）。 */
+      const childrenOf = (el: string) => {
+        const out: string[] = [];
+        const body = el.slice(el.indexOf(">") + 1);
+        let depth = 0;
+        for (const match of body.matchAll(/<(\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?)>/g)) {
+          if (match[1]) { depth--; continue; }
+          if (depth === 0) out.push(element(body.slice(match.index), match[0])!);
+          if (!match[4] && !["input", "br", "img", "hr", "meta", "link", "col", "source", "wbr"].includes(match[2])) depth++;
+        }
+        return out;
+      };
+      /** C 區段在 root 內隱藏的容器：.a、.a .b（root 本身或其後代有 a）、.a > .b:nth-child(n+K)。其他寫法（~、:not）不展開，只會讓斷言更嚴。 */
+      const hiddenRegions = (root: string) => hidden.flatMap(selector => {
+        let match = /^\.([\w-]+)$/.exec(selector);
+        if (match) return withClass(root, match[1]);
+        match = /^\.([\w-]+) \.([\w-]+)$/.exec(selector);
+        if (match) { const [, a, b] = match; return [...(classes(startTag(root)).includes(a) ? [root] : []), ...withClass(root, a)].flatMap(el => withClass(el, b)); }
+        match = /^\.([\w-]+) > \.([\w-]+):nth-child\(n\+(\d+)\)$/.exec(selector);
+        if (match) { const [, a, b, from] = match; return withClass(root, a).flatMap(el => childrenOf(el).filter((child, index) => index + 1 >= Number(from) && classes(startTag(child)).includes(b))); }
+        return [];
+      });
+      const chartIds = (html: string) => [...html.matchAll(/\sdata-testid="(chart-[^"]+)"/g)].map(match => match[1]);
+      const inside = (regions: string[], id: string) => regions.some(region => region.includes(`data-testid="${id}"`));
+
+      let overviews = 0, meetings = 0;
+      for (const { name, html, state } of states) {
+        if (state?.panel === "overview") {
+          overviews++;
+          const kids = childrenOf(element(html, 'class="view-content"')!).map(kid => ({ kid, names: classes(startTag(kid)) }));
+          const shown = kids.filter(({ names }) => names.some(item => whitelist.includes(item)));
+          expect(shown.map(({ names }) => names.find(item => whitelist.includes(item))), `${name}：投影中可見的區塊`).toEqual(["snapshot", "kpi-section", "top-three", "bridge-section", "profit-section"]);
+          const away = kids.filter(({ names }) => !names.some(item => whitelist.includes(item)));
+          expect(away.length, `${name}：投影中整塊隱藏的區塊（.pair、其他常用指標、進階）`).toBeGreaterThanOrEqual(3);
+          // 白名單外：G3、G4（含差額條）、G7a 的圖都還在 markup（掛載；G5 MER 只在有目標時）。
+          const awayHtml = away.map(({ kid }) => kid).join("");
+          for (const id of ["trend", "channel-mix", "chart-overview-assist-table"]) expect(testIdCounts(awayHtml).get(id), `${name} ${id}`).toBe(1);
+          expect(chartIds(awayHtml).filter(id => id.startsWith("chart-overview-channels-bar-")).length, `${name} G4 差額條`).toBeGreaterThanOrEqual(1);
+          expect(chartIds(awayHtml).filter(id => id.startsWith("chart-overview-assist-spark-")).length, `${name} G7a`).toBeGreaterThanOrEqual(1);
+          if (name === "overview") expect(testIdCounts(awayHtml).get("chart-overview-bullet-bar-mer"), "示範資料（有目標）G5 MER").toBe(1);
+          // 白名單內：每個 chart- testid 都在 C 區段隱藏的容器裡（投影中看不到、仍掛載）。
+          for (const { kid } of shown) {
+            const regions = hiddenRegions(kid);
+            for (const id of chartIds(kid)) expect(inside(regions, id), `${name} ${id}`).toBe(true);
+          }
+          // 拆解區：旁欄（橋接表＋G6 九條＋平衡檢核）與 v2 四欄資料表隱藏但掛載；瀑布、標題、副標與單位不在任何隱藏容器內（X39）。
+          const bridge = shown.find(({ names }) => names.includes("bridge-section"))!.kid;
+          const bridgeHidden = hiddenRegions(bridge);
+          for (const id of ["bridge-table", "bridge-balance-check"]) {
+            expect(testIdCounts(bridge).get(id), `${name} ${id}`).toBe(1);
+            expect(inside(bridgeHidden, id), `${name} ${id}`).toBe(true);
+          }
+          expect(withClass(bridge, "frame-aside"), name).toHaveLength(1);
+          expect(bridgeHidden.some(region => region.startsWith('<details class="data-alternative"') && region.includes("<table>")), `${name} v2 四欄資料表`).toBe(true);
+          expect(testIdCounts(bridge).get("bridge-waterfall"), name).toBe(1);
+          expect(inside(bridgeHidden, "bridge-waterfall"), `${name} 瀑布可見`).toBe(false);
+          for (const id of ["bridge-title", "bridge-sub"]) expect(bridgeHidden.some(region => region.includes(` id="${id}"`)), `${name} #${id} 可見`).toBe(false);
+          expect(bridgeHidden.some(region => region.includes('class="unit-note"')), `${name} 單位可見`).toBe(false);
+          if (name === "overview") expect(chartIds(bridge).filter(id => id.startsWith("chart-overview-bridge-bar-")).length, "示範資料 G6 九條").toBe(9);
+          // 利潤結構（G2）：瀑布可見、v2 資料表隱藏（V3-9b 既有）。
+          const profit = shown.find(({ names }) => names.includes("profit-section"))!.kid;
+          expect(inside(hiddenRegions(profit), "profit-waterfall-bar-net_revenue"), `${name} G2 可見`).toBe(false);
+        }
+        if (state?.panel === "meeting") {
+          meetings++;
+          const page = withClass(html, "meeting-page")[0];
+          const ids = chartIds(page);
+          expect(ids, `${name}：G15m、G19 掛載`).toEqual(expect.arrayContaining(["chart-meeting-scenarios", "chart-meeting-history"]));
+          const regions = hiddenRegions(page);
+          for (const id of ids) expect(inside(regions, id), `${name} ${id}`).toBe(true);
+        }
+      }
+      expect(overviews, "總覽狀態數").toBeGreaterThanOrEqual(5);
+      expect(meetings, "會議頁狀態數").toBeGreaterThanOrEqual(3);
+    });
 
     // ── V4-8a 代理 B（期間列去年同期提示、資料表不利色、G12 間距）M1 測試在此之後
 
@@ -1675,7 +1778,12 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       // V3-4a：會議入口搬進總覽的本期一句話區塊（Overview 的 meetingEntry），不再在 Overview 外渲染。
       expect(source).toMatch(/meetingEntry=\{<MeetingEntry /);
       // V3-9b C（F22）：投影模式按鈕只在總覽與會議頁、有資料時（與 shellPage() 的 presentToggle 相同）；期間文字只在投影中傳入。
-      expect(source).toMatch(/const presentToggle = visible && \(panel === "overview" \|\| panel === "meeting"\) \? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-pressed=\{present\.active\}/);
+      // V4-8a（D-V3-33＝B）：投影按鈕不帶 aria-pressed；（D-V3-34＝A）互切按鈕與投影按鈕同條件，與 shellPage() 的 presentSwitch 相同。
+      expect(source).toMatch(/const presentToggle = visible && \(panel === "overview" \|\| panel === "meeting"\) \? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" aria-keyshortcuts=\{present\.active \? "Escape" : undefined\}/);
+      expect(source).not.toMatch(/aria-pressed=\{present\./);
+      expect(source).toMatch(/const presentSwitch = visible && \(panel === "overview" \|\| panel === "meeting"\) \? <button type="button" className="ui-btn ui-btn-secondary present-switch" data-testid="present-switch" onClick=\{\(\) => \{ setPanel\(presentTarget\); setEvidence\(null\); \}\}>\{labels\.shell\.nav\[presentTarget\]\.headline\}<\/button>/);
+      expect(source).toMatch(/const presentTarget: Panel = panel === "meeting" \? "overview" : "meeting";/);
+      expect(source).toMatch(/presentToggle=\{presentToggle\} presentSwitch=\{presentSwitch\}/);
       expect(source).toMatch(/presentPeriod=\{present\.active && visible \? presentPeriodText\(/);
     });
   });

@@ -2557,14 +2557,17 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* ── V3-9b 錨點（代理 C：:root[data-mode="present"] 的 token 重新對應（--text-14 → 16px、--text-16 → 20px、--num-28 → 40px、--num-32 → 48px）、隱藏側欄與期間列、內容最大寬 1280px、只顯示 L1；.page-present 按鈕位置；只用 token） ── */
 /* F22 投影模式（PRD §9.7、D-V3-23＝A）。按鈕在頁首、本頁動作之前（只有總覽與會議頁）；手機（≤ 767px）不顯示——投影是會議室桌機的閱讀方式，按鈕保持掛載（M1），投影中仍顯示以便離開。
    投影中 h1 下方一行期間文字（.present-period，期間列隱藏時只剩這一行）。 */
-.page-present { display: flex; flex: none; align-items: center; }
+.page-present { display: flex; flex: none; align-items: center; gap: var(--space-2); }
+/* V4-8a（D-V3-34＝A）：投影中頁首一行內的「經營總覽／會議紀錄」互切按鈕（.present-switch，在投影按鈕之前）。總覽與會議頁一直掛載（M1），不在投影中時不顯示、不是 Tab 停留點。 */
+.page-present .present-switch { display: none; }
 .present-period { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 @media (max-width: 767px) { .page-present { display: none; } }
 
 /* 投影中的規則只在螢幕上生效（@media screen）：列印與 PDF 不受影響。不加任何動畫（prefers-reduced-motion 不需另外處理）。 */
 @media screen {
-  /* 只重新對應 token 的值、不新增字級種類（§9.7）；行高 token 跟著字級（與 :root 的成對關係同：16px／24、20px／28）；內容最大寬 1280px。 */
-  :root[data-mode="present"] { --text-14: 16px; --text-16: 20px; --num-28: 40px; --num-32: 48px; --leading-14: 24px; --leading-16: 28px; --content-max: 1280px; }
+  /* 只重新對應 token 的值、不新增字級種類（§9.7）；行高 token 跟著字級（與 :root 的成對關係同：16px／24、20px／28）；內容最大寬 1280px。
+     V4-8a（D-V4-9）：--text-12、--text-13 都對應 14px（圖內文字 chartFontSize、副標與單位不再小於 14px；12 ≤ 13 不變），行高成對對應 :root 的 14px／22。 */
+  :root[data-mode="present"] { --text-12: 14px; --text-13: 14px; --text-14: 16px; --text-16: 20px; --num-28: 40px; --num-32: 48px; --leading-12: 22px; --leading-13: 22px; --leading-14: 24px; --leading-16: 28px; --content-max: 1280px; }
   /* KPI 帶的數字行高跟著 --kpi-num（40／48px 的數字不被 --leading-28／32 截掉）。 */
   :root[data-mode="present"] .kpi { --kpi-num-leading: calc(var(--kpi-num) + var(--space-2)); }
 
@@ -2574,12 +2577,18 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
   :root[data-mode="present"] .app-shell main { margin: 0 auto; }
   :root[data-mode="present"] .app-shell > .sidebar, :root[data-mode="present"] .mobile-tabbar, :root[data-mode="present"] .period-bar, :root[data-mode="present"] .period-banner-note, :root[data-mode="present"] .whats-new, :root[data-mode="present"] .page-heading .subtitle { display: none; }
 
-  /* 只顯示 L1（§9.7）：總覽＝本期一句話、KPI 帶、三件事標題、本期利潤結構瀑布圖；其餘區塊 display: none（仍掛載，M1）。會議紀錄頁整頁留著，下面再挑。 */
-  :root[data-mode="present"] .view-content > :not(.snapshot, .kpi-section, .top-three, .profit-section, .meeting-page) { display: none; }
+  /* 只顯示 L1（§9.7）：總覽＝本期一句話、KPI 帶、三件事標題、貢獻變化拆解瀑布圖（V4-8a，D-V4-8、X39）、本期利潤結構瀑布圖；其餘區塊 display: none（仍掛載，M1）。會議紀錄頁整頁留著，下面再挑。 */
+  :root[data-mode="present"] .view-content > :not(.snapshot, .kpi-section, .top-three, .bridge-section, .profit-section, .meeting-page) { display: none; }
   :root[data-mode="present"] .snapshot-meta, :root[data-mode="present"] .snapshot-actions { display: none; }
   /* 三件事與會議的本期重點：每列只留標題與影響金額；展開內容、展開指示、L2 解讀與列上的按鈕、門檻與排序說明都隱藏。 */
   :root[data-mode="present"] .top-three .sec-tools, :root[data-mode="present"] .top-three .list-foot, :root[data-mode="present"] .alert-actions, :root[data-mode="present"] .alert-explain, :root[data-mode="present"] .alert-chev, :root[data-mode="present"] .alert-body { display: none; }
   :root[data-mode="present"] .profit-section .data-alternative { display: none; }
+  /* V4-8a（D-V4-8、X39）：貢獻變化拆解只顯示瀑布（柱上標值是 L1）；標題、副標與單位照利潤結構的前例保留。橋接表（L3，含 G6 變異條與平衡檢核）所在的旁欄與 v2 四欄資料表隱藏但掛載（M1），
+     拆解區改單欄（欄與區都換掉：只隱藏旁欄會在 ≥ 1024 留下空的 5fr 欄）。 */
+  :root[data-mode="present"] .bridge-section .frame-aside, :root[data-mode="present"] .bridge-section .bridge-table-wrap, :root[data-mode="present"] .bridge-section .data-alternative { display: none; }
+  :root[data-mode="present"] .bridge-section .frame-grid.has-aside { grid-template-columns: minmax(0, 1fr); grid-template-areas: "main"; }
+  /* V4-8a（D-V3-34＝A）：互切按鈕只在投影中顯示。 */
+  :root[data-mode="present"] .page-present .present-switch { display: inline-flex; }
 
   /* 會議紀錄：頁首動作列只留標題與決議（決議＋結束會議）；議程 1 關鍵數字＋本期一句話、議程 2 本期重點的標題列；目錄、範圍行、議程 3–6、備註、與上次比較、會議歷史都隱藏。 */
   :root[data-mode="present"] .meeting-page { --meeting-sticky-top: var(--topbar-h); --meeting-main-max: none; }

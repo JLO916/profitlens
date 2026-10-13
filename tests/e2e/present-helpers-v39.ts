@@ -10,6 +10,8 @@ const DEMO_RESULT = "1269792.73";
 
 /** 頁首「投影模式／離開投影」按鈕（div.page-present 內；只有總覽與會議頁在有資料時才渲染；≤ 767px 用 CSS 隱藏但掛載）。 */
 export const presentToggle = (page: Page) => page.getByTestId("present-toggle");
+/** V4-8a（D-V3-34＝A）：投影中頁首一行內的「經營總覽／會議紀錄」互切按鈕（div.page-present 內、投影按鈕之前；與投影按鈕同條件掛載，不在投影中時 CSS 隱藏）。 */
+export const presentSwitch = (page: Page) => page.getByTestId("present-switch");
 /** <html>：投影中帶 data-mode="present"。 */
 export const htmlRoot = (page: Page) => page.locator("html");
 
@@ -23,17 +25,17 @@ export async function loadDemoForPresent(page: Page) {
   await expect(page.getByTestId("local-save-prompt")).toHaveCount(0);
 }
 
-/** 平常的按鈕狀態：aria-pressed=false、文字「投影模式」、沒有 aria-keyshortcuts，<html> 沒有 data-mode。 */
+/** 平常的按鈕狀態：文字「投影模式」、沒有 aria-pressed（V4-8a，D-V3-33＝B：狀態只看文字）、沒有 aria-keyshortcuts，<html> 沒有 data-mode。 */
 export async function expectPresentOff(page: Page) {
   const toggle = presentToggle(page);
   await expect(toggle).toHaveCount(1);
-  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await expect(toggle).not.toHaveAttribute("aria-pressed", /.*/);
   await expect(toggle).toHaveText(copy.enter);
   await expect(toggle).not.toHaveAttribute("aria-keyshortcuts", /.*/);
   await expect(htmlRoot(page)).not.toHaveAttribute("data-mode", /.*/);
 }
 
-/** 點按鈕進入投影：<html data-mode=present>、aria-pressed=true、文字「離開投影」、aria-keyshortcuts=Escape。 */
+/** 點按鈕進入投影：<html data-mode=present>、文字「離開投影」（仍沒有 aria-pressed）、aria-keyshortcuts=Escape。 */
 export async function enterPresent(page: Page) {
   await expectPresentOff(page);
   await presentToggle(page).click();
@@ -42,7 +44,7 @@ export async function enterPresent(page: Page) {
 export async function expectPresentOn(page: Page) {
   const toggle = presentToggle(page);
   await expect(htmlRoot(page)).toHaveAttribute("data-mode", "present");
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(toggle).not.toHaveAttribute("aria-pressed", /.*/);
   await expect(toggle).toHaveText(copy.exit);
   await expect(toggle).toHaveAttribute("aria-keyshortcuts", "Escape");
 }
