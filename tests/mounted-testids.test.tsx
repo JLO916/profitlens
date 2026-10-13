@@ -1680,6 +1680,140 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V4-8b 代理 B（390 總檢修正、G19 空狀態高度）M1 測試在此之後
 
     // ── V4-8b 代理 D（mounted-testids 全頁掃描）M1 測試在此之後
+    // 06_BATCHES V4-8b「mounted-testids 全頁」：各頁的 M1 細節（標記、色、列數）已由 V4-1–V4-7b 的頁面測試逐張斷言；這裡把七頁「區塊級」的圖表 testid 收成一張表，
+    // 對 pageStates() 的每一個狀態（含之後新增的）做全頁掃描。chart- testid 在樣板容器外恰好一次（M6）由下方 M6 組對每個狀態檢查；投影的 M1（白名單外的圖掛載、
+    // 白名單內的 chart- testid 都在隱藏容器內）由上方「V4-8a A 投影只靠 CSS 隱藏（M1）」從 globals.css C 區段解析投影白名單後逐狀態檢查。這兩項本組都不重複。
+    it("V4-8b D 全頁掃描（M1）：每個狀態的圖表 testid 只在所屬頁（試算工作台、抽屜、匯入精靈例外）；頁面內容掛著時必有的區塊各一份、條件區塊依元件的同一判斷式 0 或 1、資料表在所屬區塊內且收在沒有 open 的 <details>；主層獨立圖區塊依表的順序、不超過 CL-9 上限；表與 testids-v4-added.txt 的 ssr 列互相涵蓋", async () => {
+      const { CHART_PAGES, CHART_PARTS, CHART_SECTION_LIMITS, DEFAULT_CHART_SECTION_LIMIT, checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const { channelWeeksState } = await import("@/components/channel-table");
+      const { issuesChartModel } = await import("@/components/data/issues-chart");
+      const { PRODUCT_PARETO_LIMIT, productPareto } = await import("@/application/chart-pareto");
+      const { compareProducts } = await import("@/domain/product-comparison");
+      type Loaded = NonNullable<StateMarkup["state"]>;
+      /**
+       * 區塊：main＝主層獨立圖區塊（section.chart-section，依表的順序）；within＝在這個 testid 的元素內；table＝資料表（收在沒有 open 的 <details class="data-alternative"> 內）；
+       * when＝出現的條件（與元件同一個判斷式；沒給＝頁面內容掛著就一定有）；perPlan＝只在試算方案欄（scenario-{n}）內、每欄至多一份，方案欄外沒有。
+       */
+      type Ids = Map<string, number>;
+      type Block = { id: string; main?: true; within?: string; table?: true; perPlan?: true; when?: (state: Loaded, ids: Ids) => boolean };
+      const has = (id: string) => (ids: Ids) => ids.has(id);
+      const g7b = (state: Loaded) => channelWeeksState(state.active.snapshot).status;
+      const hasPareto = (state: Loaded) => productPareto(compareProducts(state.active.dataset, state.active.snapshot.report.scope).rows, "gross_profit", PRODUCT_PARETO_LIMIT).count > 0;
+      const hasPlans = (_: Loaded, ids: Ids) => ids.has("scenario-1");
+      const hasReview = (state: Loaded) => state.review !== null;
+      const hasIssues = (state: Loaded) => issuesChartModel(state.active.dataset.issues) !== null;
+      // root＝頁面內容掛著（該頁 v3 基準的根 testid）；試算工作台每頁都掛著（非試算頁外層 hidden），所以試算的區塊在每個掛著工作台的狀態都檢查。
+      const PAGES: Record<string, { root: (ids: Ids) => boolean; blocks: Block[] }> = {
+        overview: { root: has("kpi-band"), blocks: [
+          { id: "bridge-section", main: true }, { id: "bridge-waterfall", within: "bridge-section" }, { id: "bridge-table", within: "bridge-section" },
+          { id: "profit-waterfall", main: true }, { id: "trend", main: true }, { id: "channel-mix", main: true },
+          { id: "chart-overview-assist-table", within: "assist-kpis", table: true },
+        ] },
+        diagnosis: { root: has("diagnosis-panel"), blocks: [
+          { id: "chart-diagnosis-share", main: true }, { id: "chart-diagnosis-share-table", within: "chart-diagnosis-share", table: true },
+          { id: "chart-diagnosis-heat", main: true },
+          { id: "chart-diagnosis-rates" }, { id: "chart-diagnosis-rates-table", within: "chart-diagnosis-rates", table: true },
+          { id: "chart-diagnosis-channels-table", within: "channel-compare", table: true, when: state => g7b(state) === "ready" },
+          { id: "channel-weeks-too-many", within: "channel-compare", when: state => g7b(state) === "tooMany" },
+        ] },
+        products: { root: has("product-scope"), blocks: [
+          { id: "chart-products-pareto", main: true, when: hasPareto }, { id: "chart-products-pareto-table", within: "chart-products-pareto", table: true, when: hasPareto },
+          { id: "chart-products-variance", main: true }, { id: "chart-products-variance-table", within: "chart-products-variance", table: true },
+        ] },
+        scenarios: { root: has("multi-scenario-workbench"), blocks: [
+          { id: "chart-scenarios-variance", main: true, within: "multi-scenario-workbench", when: hasPlans }, { id: "chart-scenarios-variance-table", within: "chart-scenarios-variance", table: true, when: hasPlans },
+          { id: "chart-scenarios-threshold", perPlan: true }, { id: "chart-scenarios-threshold-table", within: "chart-scenarios-threshold", table: true, perPlan: true },
+        ] },
+        // 待辦頁到 V4-10（G17）才有圖：在那之前沒有任何區塊級圖表 testid（掛在這頁的 G15 在 hidden 的試算工作台內，算試算的）。
+        actions: { root: has("actions-workbench"), blocks: [] },
+        meeting: { root: has("meeting-page"), blocks: [
+          { id: "chart-meeting-scenarios", main: true, within: "meeting-agenda-5", when: hasReview }, { id: "chart-meeting-scenarios-table", within: "chart-meeting-scenarios", table: true, when: hasReview },
+          { id: "chart-meeting-history", main: true, within: "meeting-history" }, { id: "chart-meeting-history-table", within: "chart-meeting-history", table: true },
+        ] },
+        // G21 與 G11 一樣是 table 模式（表本身就是圖、不收合），它的 -table 不加 table 旗標。
+        data: { root: has("data-issues"), blocks: [
+          { id: "chart-data-coverage", main: true }, { id: "chart-data-coverage-table", within: "chart-data-coverage", table: true },
+          { id: "chart-data-issues", main: true, within: "data-issues", when: hasIssues }, { id: "chart-data-issues-table", within: "chart-data-issues", when: hasIssues },
+        ] },
+      };
+      const leaf = new RegExp(`-(?:${CHART_PARTS.join("|")})-`);
+      const placed = (html: string, block: Block, label: string) => {
+        const tag = `data-testid="${block.id}"`;
+        if (block.within) expect(element(html, `data-testid="${block.within}"`) ?? "", `${label}：在 ${block.within} 內`).toContain(tag);
+        if (!block.table) return;
+        // 包住它的最內層 <details class="data-alternative">：收合（沒有 open）但表格掛載。
+        let open = html.lastIndexOf('<details class="data-alternative"', html.indexOf(tag));
+        while (open >= 0 && !element(html.slice(open), "<details")!.includes(tag)) open = html.lastIndexOf('<details class="data-alternative"', open - 1);
+        expect(open, `${label}：收在 <details class="data-alternative"> 內`).toBeGreaterThanOrEqual(0);
+        expect(openTag(html.slice(open), "<details"), `${label}：<details> 沒有 open`).not.toMatch(/\sopen=""/);
+      };
+
+      const mounted: Record<string, number> = Object.fromEntries(Object.keys(PAGES).map(page => [page, 0]));
+      for (const { name, html, state } of states) {
+        const ids = testIdCounts(html);
+        /** id 的每一次出現都在 attr 所在的元素內（每個狀態的每個容器只數一次 testid）。 */
+        const boxes = new Map<string, Ids | null>();
+        const allInside = (id: string, attr: string) => {
+          if (!boxes.has(attr)) { const box = element(html, attr); boxes.set(attr, box === null ? null : testIdCounts(box)); }
+          return boxes.get(attr)?.get(id) === ids.get(id);
+        };
+        // (1) 只在所屬頁：chart-{page}- 只在 panel＝page 且頁面內容掛著時出現；試算的在試算工作台內（非試算頁外層 hidden）；抽屜、匯入精靈只有內嵌條（葉節點）。
+        for (const id of [...ids.keys()].filter(found => found.startsWith("chart-"))) {
+          const page = /^chart-([a-z]+)-/.exec(id)?.[1] ?? "";
+          expect(CHART_PAGES, `${name} ${id}：頁前綴`).toContain(page);
+          if (page === "scenarios") expect(allInside(id, 'data-testid="multi-scenario-workbench"'), `${name} ${id}：在試算工作台內`).toBe(true);
+          else if (page === "evidence" || page === "import") {
+            expect(leaf.test(id), `${name} ${id}：抽屜與匯入精靈只有內嵌條`).toBe(true);
+            expect(allInside(id, page === "evidence" ? 'class="evidence-dialog evidence-drawer"' : 'data-testid="import-wizard"'), `${name} ${id}：在${page === "evidence" ? "抽屜" : "匯入精靈"}內`).toBe(true);
+          } else {
+            expect(state?.panel, `${name} ${id}：只在所屬頁`).toBe(page);
+            expect(PAGES[page].root(ids), `${name} ${id}：頁面內容掛著才有`).toBe(true);
+          }
+        }
+        if (state && state.panel !== "scenarios" && ids.has("multi-scenario-workbench")) {
+          const at = html.lastIndexOf("<section", html.indexOf('data-testid="multi-scenario-workbench"'));
+          expect(html.slice(html.lastIndexOf("<div", at), at), `${name}：非試算頁的試算工作台外層 hidden`).toBe('<div hidden="">');
+        }
+        if (!state) continue;
+        // (2) 頁面內容掛著時：區塊恰好在該在的位置；該頁的區塊級圖表 testid 都在表內。(3) 主層獨立圖區塊。
+        for (const [page, { root, blocks }] of Object.entries(PAGES)) {
+          if (!root(ids)) continue;
+          for (const block of blocks) {
+            const tag = `data-testid="${block.id}"`;
+            if (block.perPlan) {
+              const { outside, inner } = splitInstances(html);
+              expect(occurrences(outside, tag), `${name} ${block.id}：方案欄外沒有`).toBe(0);
+              for (const plan of inner.filter(item => item.body.includes(tag))) {
+                expect(occurrences(plan.body, tag), `${name} ${plan.id} > ${block.id}`).toBe(1);
+                placed(plan.body, block, `${name} ${plan.id} > ${block.id}`);
+              }
+              continue;
+            }
+            const want = block.when?.(state, ids) ?? true;
+            expect(ids.get(block.id) ?? 0, `${name} ${block.id}`).toBe(want ? 1 : 0);
+            if (want) placed(html, block, `${name} ${block.id}`);
+          }
+          const listed = new Set(blocks.map(block => block.id));
+          expect([...ids.keys()].filter(id => id.startsWith(`chart-${page}-`) && !leaf.test(id) && !listed.has(id)), `${name}：${page} 頁不在表內的區塊級圖表 testid`).toEqual([]);
+          if (state.panel !== page) continue;
+          mounted[page]++;
+          const { mainSections } = checkChartMarkup(html, { page });
+          expect(mainSections, `${name}：主層獨立圖區塊`).toEqual(blocks.filter(block => block.main && (block.when?.(state, ids) ?? true)).map(block => block.id));
+          expect(mainSections.length, `${name}：CL-9 上限`).toBeLessThanOrEqual(CHART_SECTION_LIMITS[page] ?? DEFAULT_CHART_SECTION_LIMIT);
+        }
+      }
+      // 七頁每頁至少一個頁面內容掛著的狀態。
+      for (const [page, count] of Object.entries(mounted)) expect(count, `${page}：頁面內容掛著的狀態數`).toBeGreaterThanOrEqual(1);
+
+      // (4) 表不會過期：testids-v4-added.txt 的 ssr 列中區塊級（不含柱、點、段、格、sparkline）的 chart- testid 都在表內；表內的 chart- testid 都在該清單，其餘在 v3 基準或該清單。
+      const rows = (file: string) => readFileSync(resolve(file), "utf8").split("\n").filter(line => line.trim() && !line.startsWith("#")).map(line => line.split("\t"));
+      const added = rows("verification/revamp-v4/testids-v4-added.txt"), v3 = new Set(rows("verification/revamp-v4/testids-v3.txt").map(([id]) => id));
+      const listed = new Set(Object.values(PAGES).flatMap(({ blocks }) => blocks.map(block => block.id)));
+      expect(added.filter(([id, source]) => source === "ssr" && id.startsWith("chart-") && !leaf.test(id) && !listed.has(id)).map(([id]) => id), "testids-v4-added.txt 的區塊級圖表 testid 都在表內").toEqual([]);
+      const known = new Set(added.map(([id]) => id));
+      expect([...listed].filter(id => id.startsWith("chart-") ? !known.has(id) : !known.has(id) && !v3.has(id)), "表內的 testid 都有登記").toEqual([]);
+    }, 60_000);
+
     it("V4-8a B 期間列（D-V3-35＝A）：去年同期不可用的每個狀態，preset-reason-visible-yoy 保持掛載但 hidden（SSR＝沒按過「去年同期」）；needs-attention 只剩它時整塊 hidden，有篩選錯誤或部分資料時照常顯示；文字＝shell.banner.yoyUnavailable；按過時（yoyHintVisible）兩者都不 hidden", async () => {
       const { NeedsAttention } = await import("@/components/shell/period-bar");
       const hiddenAttr = /\shidden=""/;

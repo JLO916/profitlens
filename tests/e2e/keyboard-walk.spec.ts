@@ -19,20 +19,23 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V4-4：商品頁加「第一張圖的資料表 summary」里程碑（在「最差商品」之後），「最差商品」的 Tab 數不晚於 V4-0a。
  * V4-5：試算頁三個里程碑（基準、範本、「試算」按鈕）的 Tab 數不晚於 V4-0a（G15 資料表 summary 在方案欄之後，G16 在收合的 <details> 內）。
  * V4-7a：資料來源頁加「涵蓋時間軸資料表 summary」里程碑（G20 在 data-issues 之上），不晚於 V4-0a；「問題表或範圍列表」以 V4-7a 實測為新基準（見 V4_7A_DATA_ISSUES_TABS；D-V4-52＝A）。
+ * V4-8b：總覽、健檢、試算、會議補「第一張圖的資料表 summary」里程碑（見 V4_8B_FIRST_TABLE_TABS）；總覽、健檢、待辦、會議的主要里程碑不晚於 V4-0a，總覽 KPI 前可聚焦 ≤ 10。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
 const MAX_WALK = 700;
 /** 各頁的「第一個主要結果」（依序記錄每一個里程碑第一次到達的步數）。 */
 const MILESTONES: Record<LaunchPage, { name: string; selector: string }[]> = {
-  overview: [{ name: "第一張 KPI", selector: "[data-testid='kpi-band'] [data-testid^='kpi-']" }],
-  diagnosis: [{ name: "健檢第一列", selector: "[data-testid^='diagnosis-row-']" }],
+  // V4-8b：總覽、健檢、試算、會議的「第一張圖的資料表 summary」接在各頁原有里程碑之後（總覽 G1、健檢 G10（G9 是清單內的條，沒有資料表）、試算 G15、會議 G15 會議實例）。
+  overview: [{ name: "第一張 KPI", selector: "[data-testid='kpi-band'] [data-testid^='kpi-']" }, { name: "第一張圖的資料表 summary", selector: "[data-testid='bridge-section'] > details.data-alternative > summary" }],
+  diagnosis: [{ name: "健檢第一列", selector: "[data-testid^='diagnosis-row-']" }, { name: "第一張圖的資料表 summary", selector: "[data-testid='chart-diagnosis-share'] > details.data-alternative > summary" }],
   // V4-4（06_BATCHES V4-4、CHART_CATALOG G14「鍵盤」）：加「第一張圖的資料表 summary」（示範資料是 G13，有商品毛利為負時是 G14），必須在「最差商品」之後。
   products: [{ name: "最差商品（第一個結果）", selector: "[data-testid='product-worst']" }, { name: "第一張圖的資料表 summary", selector: "section.product-highlights section.chart-section > details.data-alternative > summary" }, { name: "商品表第一列", selector: "[data-testid='product-table'] tbody tr" }],
   // D-V3-27＝C（待拍板）：「記住聲明後從範本起 ≤ 12 步」——另記「範本」的步數，兩者相減即從範本到「試算」的 Tab 數（示範資料剛載入時聲明還沒勾，含聲明 checkbox 一步）。
-  scenarios: [{ name: "第一個結果數字（基準）", selector: "[data-testid^='baseline-']" }, { name: "範本", selector: "[data-testid='scenario-preset']" }, { name: "「試算」按鈕", selector: `[data-testid='scenario-1'] button[data-v310-calculate]` }],
+  scenarios: [{ name: "第一個結果數字（基準）", selector: "[data-testid^='baseline-']" }, { name: "範本", selector: "[data-testid='scenario-preset']" }, { name: "「試算」按鈕", selector: `[data-testid='scenario-1'] button[data-v310-calculate]` }, { name: "第一張圖的資料表 summary", selector: "[data-testid='chart-scenarios-variance'] > details.data-alternative > summary" }],
+  // V4-8b：待辦頁到 V4-10（G17）才有圖，「第一張圖的資料表 summary」本批記為不適用（不加里程碑）。
   actions: [{ name: "第一張待辦卡或新增", selector: "[data-testid^='board-card-'], [data-testid='actions-empty-add'], [data-testid='actions-add']" }],
-  meeting: [{ name: "議程 1", selector: "[data-testid='meeting-agenda-1']" }],
+  meeting: [{ name: "議程 1", selector: "[data-testid='meeting-agenda-1']" }, { name: "第一張圖的資料表 summary", selector: "[data-testid='chart-meeting-scenarios'] > details.data-alternative > summary" }],
   // V4-7a（CHART_CATALOG G20「鍵盤」）：G20 涵蓋時間軸在狀態一行之下、data-issues 之上，資料表 summary 是它唯一的停留點（示範資料沒有缺列段，資料表沒有篩選按鈕），
   // 記成「涵蓋時間軸資料表 summary」里程碑（在「問題表或範圍列表」之前）。
   data: [{ name: "涵蓋時間軸資料表 summary", selector: "[data-testid='chart-data-coverage'] > details.data-alternative > summary" }, { name: "問題表或範圍列表", selector: "[data-testid='data-issues'], [data-testid='data-scope']" }],
@@ -67,6 +70,16 @@ const V4_0A_SCENARIO_TABS: Record<string, Record<string, number>> = {
 const V4_0A_DATA_TABS: Record<string, number> = { desktop: 10, mobile: 4 };
 /** D-V4-52＝A：資料來源頁「問題表或範圍列表」的新基準（V4-7a 實測，取代 V4-0a 的 10／4）。 */
 const V4_7A_DATA_ISSUES_TABS: Record<string, number> = { desktop: 11, mobile: 5 };
+/**
+ * V4-8b（06_BATCHES V4-8b「keyboard-walk」與「驗收重點」：各頁里程碑 Tab 數不晚於 V4-0、總覽 KPI 前可聚焦 ≤ 10）：
+ *   - 總覽、健檢、待辦、會議的主要里程碑不晚於 V4-0a 實測（verification/revamp-v4/V4-0a/keyboard-walk.json，V4-8a 相同）；商品、試算、資料來源見上方各批的常數。
+ *   - 「第一張圖的資料表 summary」在該頁前一個里程碑之後，且不晚於 V4-8b 實測（代理 D，2026-10-13：1440 為 58、49、32、42，390 為 44、43、26、35；
+ *     與 verification/revamp-v4/V4-7c、V4-8a 的 keyboard-walk.json 走查到的同一個 summary 停留點步數相同）。
+ *   - 總覽 KPI 前可聚焦的控制 ≤ 10（PRD §2.3 B；controlsBeforeFirstKpi，V4-0a 起 1440 為 10、390 為 3）。
+ */
+const V4_0A_PRIMARY_TABS: Record<string, Partial<Record<LaunchPage, number>>> = { desktop: { overview: 11, diagnosis: 8, actions: 12, meeting: 26 }, mobile: { overview: 4, diagnosis: 2, actions: 6, meeting: 19 } };
+const V4_8B_FIRST_TABLE_TABS: Record<string, Partial<Record<LaunchPage, number>>> = { desktop: { overview: 58, diagnosis: 49, scenarios: 32, meeting: 42 }, mobile: { overview: 44, diagnosis: 43, scenarios: 26, meeting: 35 } };
+const MAX_CONTROLS_BEFORE_KPI = 10;
 const PASS_REGIONS: Partial<Record<LaunchPage, { name: string; selector: string; maxAcross: number }[]>> = {
   diagnosis: [{ name: "熱表", selector: "[data-testid='chart-diagnosis-heat']", maxAcross: 3 }],
 };
@@ -340,6 +353,18 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
   // V4-1：390 總覽兩張瀑布的外框是合法停留點（region，不在 aria-hidden 內）；1440 不捲動，不是停留點。
   const overviewWalk = walks.find(item => item.page === "overview")!;
   expect(waterfallRegionStops(overviewWalk), "V4-1：瀑布外框 region 停留點").toEqual(testInfo.project.name === "mobile" ? WATERFALL_REGIONS : []);
+  // V4-8b：總覽、健檢、待辦、會議的主要里程碑不晚於 V4-0a；總覽、健檢、試算、會議的「第一張圖的資料表 summary」在前一個里程碑之後、不晚於 V4-8b 實測；總覽 KPI 前可聚焦 ≤ 10。
+  for (const [id, max] of Object.entries(V4_0A_PRIMARY_TABS[testInfo.project.name])) {
+    const primary = walks.find(item => item.page === id)!.milestones[0];
+    expect(primary.tabs ?? Number.POSITIVE_INFINITY, `V4-8b：${id}「${primary.name}」的 Tab 數不晚於 V4-0a`).toBeLessThanOrEqual(max!);
+  }
+  for (const [id, max] of Object.entries(V4_8B_FIRST_TABLE_TABS[testInfo.project.name])) {
+    const milestones = walks.find(item => item.page === id)!.milestones;
+    const index = milestones.findIndex(item => item.name === "第一張圖的資料表 summary");
+    expect(milestones[index].tabs!, `V4-8b：${id}「第一張圖的資料表 summary」不晚於 V4-8b 實測`).toBeLessThanOrEqual(max!);
+    expect(milestones[index].tabs!, `V4-8b：${id}「第一張圖的資料表 summary」在「${milestones[index - 1].name}」之後`).toBeGreaterThan(milestones[index - 1].tabs!);
+  }
+  expect(overviewWalk.controlsBeforeFirstKpi, "V4-8b：總覽 KPI 前可聚焦的控制 ≤ 10（PRD §2.3 B）").toBeLessThanOrEqual(MAX_CONTROLS_BEFORE_KPI);
   expect(flow.downloaded).toMatch(/\.csv$/);
   expect(errors).toEqual([]);
 });
