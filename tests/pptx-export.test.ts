@@ -1,15 +1,18 @@
+import Decimal from "decimal.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import * as XLSX from "xlsx";
 import { addActionDraft, editActionManagement, editBoundAction, emptyActionWorkspace, pinAction, type ActionSource } from "@/application/action-workspace";
 import { channelsLabel, ruleCopy } from "@/application/copy";
 import { buildManagerSummary, type ManagerSummary } from "@/application/manager-summary";
 import {
-  buildPptxOnePager, estimatedLines, exportPptx, fitLine, pptxChannelRows, pptxKpiRuns, pptxText, pptxTitleSize, writePptx,
-  PPTX_FILENAME, PPTX_MAX_CHANNEL_ROWS, PPTX_MIME, PPTX_TEXT_LIMITS, type PptxOnePager, type PptxOnePagerInput,
+  buildPptxOnePager, estimatedLines, exportPptx, fitLine, pptxChannelRows, pptxKpiRuns, pptxText, pptxTitleSize, pptxWaterfallChart, writePptx,
+  PPTX_FILENAME, PPTX_MAX_CHANNEL_ROWS, PPTX_MIME, PPTX_TEXT_LIMITS, PPTX_WATERFALL_SERIES, type PptxChartBar, type PptxOnePager, type PptxOnePagerInput,
 } from "@/application/pptx-export";
 import { EXPORT_THEME } from "@/application/export-theme";
 import { formatAmountL1, formatAmountL2, formatPeriodExport, formatSignedDelta, MINUS } from "@/application/presentation";
-import { createSnapshot, hashInput } from "@/application/workspace";
-import type { DatasetInput } from "@/domain/types";
+import { bridgeWaterfall } from "@/application/waterfall";
+import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
+import { AMOUNT_FIELDS, type DatasetInput, type Metric } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
@@ -277,16 +280,17 @@ describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
     expect(typeof imported.default).toBe("function");
   });
 
-  it("writes exactly one 16:9 slide with the title, key deltas, three things, channels and decision", async () => {
+  it("writes two 16:9 slides (V4-9a D-V4-34＝A): the one-pager with the title, key deltas, three things, channels and decision first, the G1 waterfall second", async () => {
     const { build } = await setup();
     const model = build();
     const { bytes, files, slide, types, presentation } = await unpack(model);
     expect(bytes).toBeInstanceOf(Uint8Array);
     expect(String.fromCharCode(bytes[0], bytes[1])).toBe("PK");
-    expect([...files.keys()].filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))).toEqual(["ppt/slides/slide1.xml"]);
-    expect(files.has("ppt/slides/slide2.xml")).toBe(false);
+    expect([...files.keys()].filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))).toEqual(["ppt/slides/slide1.xml", "ppt/slides/slide2.xml"]);
+    expect(files.has("ppt/slides/slide3.xml")).toBe(false);
     expect(types).toContain('PartName="/ppt/slides/slide1.xml"');
-    expect(types).not.toContain("slide2.xml");
+    expect(types).toContain('PartName="/ppt/slides/slide2.xml"');
+    expect(types).not.toContain("slide3.xml");
     // LAYOUT_16x9 = 10 × 5.625 英吋 = 9144000 × 5143500 EMU。
     const size = /<p:sldSz cx="(\d+)" cy="(\d+)"/.exec(presentation)!;
     expect([Number(size[1]), Number(size[2])]).toEqual([9144000, 5143500]);
@@ -423,5 +427,245 @@ describe("R6-5 寫出 .pptx（以最小 zip 讀取器拆開檢查）", () => {
   it("the test zip reader rejects bytes that are not a zip archive", () => {
     expect(() => readZip(new Uint8Array([1, 2, 3]))).toThrow();
     expect(() => readZip(new TextEncoder().encode("x".repeat(64)))).toThrow("ZIP_EOCD_NOT_FOUND");
+  });
+});
+
+describe("V4-9a C32 PPT 原生瀑布（第二張投影片；D-V4-10＝A、D-V4-34＝A、D-V4-37＝A）", () => {
+  const seriesCopy = labels.exports.chartsV4.pptx.series;
+  const THEME = new Set<string>(Object.values(EXPORT_THEME));
+  const VARIANTS = ["standard", "boss", "client"] as const;
+  const MEETING = { name: "十月例會", date: "2026-10-03", decision: "adopted", notes: "先砍 MARKETPLACE" };
+  /** 內容區下緣（pptx-export.ts 的 PAGE_BODY_BOTTOM；頁尾從 5.2 起）。 */
+  const PAGE_BODY_BOTTOM = 5.18;
+  const EMU_PER_INCH = 914400;
+  type SeriesKey = (typeof PPTX_WATERFALL_SERIES)[number];
+  const money = (value: string): Metric => ({ value, reason_codes: [] });
+  /** 合成橋接（只改 snapshot 副本，同 tests/pptx-chart-spike.test.ts）：上期 80,000.00 → 九項（跨 0、整段在 0 以下、0 元） → 本期 −14,500.25。 */
+  const SYNTHETIC_COMPONENTS = ["25000.00", "-60000.00", "-75500.50", "-12000.00", "8000.25", "50000.00", "-20000.00", "0.00", "-10000.00"] as const;
+  function synthetic(base: WorkspaceSnapshot): WorkspaceSnapshot {
+    const snapshot = structuredClone(base);
+    const sum = SYNTHETIC_COMPONENTS.reduce((total, value) => total.plus(value), new Decimal(0));
+    snapshot.report.previous.metrics.contribution_after_marketing = money("80000.00");
+    snapshot.report.current.metrics.contribution_after_marketing = money(new Decimal("80000.00").plus(sum).toFixed(2));
+    AMOUNT_FIELDS.forEach((field, index) => { snapshot.report.bridge.components[field] = money(SYNTHETIC_COMPONENTS[index]); });
+    snapshot.report.bridge.sum = money(sum.toFixed(2));
+    snapshot.report.bridge.contribution_change = money(sum.toFixed(2));
+    snapshot.report.bridge.reconciled = true;
+    return snapshot;
+  }
+
+  /** 圖的 part（pptxgenjs 以模組層級的計數器編號，不一定是 chart1.xml）。 */
+  const chartParts = (files: Map<string, Buffer>) => [...files.keys()].filter(name => /^ppt\/charts\/chart\d+\.xml$/.test(name));
+  function parseChart(xml: string) {
+    const series = [...xml.matchAll(/<c:ser>([\s\S]*?)<\/c:ser>/g)].map(match => {
+      const body = match[1];
+      const fill = /<\/c:tx>\s*<c:spPr>([\s\S]*?)<\/c:spPr>/.exec(body)?.[1] ?? "";
+      return {
+        name: xmlUnescape(/<c:tx>[\s\S]*?<c:v>([^<]*)<\/c:v>/.exec(body)?.[1] ?? ""),
+        noFill: fill.includes("<a:noFill/>") && !fill.includes("<a:solidFill>"),
+        color: /<a:srgbClr val="(\w+)"/.exec(fill)?.[1] ?? null,
+        values: [...(/<c:val>([\s\S]*?)<\/c:val>/.exec(body)?.[1] ?? "").matchAll(/<c:pt idx="\d+"><c:v>([^<]*)<\/c:v><\/c:pt>/g)].map(point => point[1]),
+      };
+    });
+    const valAx = /<c:valAx>([\s\S]*?)<\/c:valAx>/.exec(xml)?.[1] ?? "";
+    return {
+      series,
+      barDir: /<c:barDir val="(\w+)"\/>/.exec(xml)?.[1], grouping: /<c:grouping val="(\w+)"\/>/.exec(xml)?.[1], overlap: /<c:overlap val="(-?\d+)"\/>/.exec(xml)?.[1],
+      axis: { min: Number(/<c:min val="(-?[\d.]+)"\/>/.exec(valAx)?.[1]), max: Number(/<c:max val="(-?[\d.]+)"\/>/.exec(valAx)?.[1]), format: xmlUnescape(/<c:numFmt formatCode="([^"]*)"/.exec(valAx)?.[1] ?? "") },
+      showVal: [...xml.matchAll(/<c:showVal val="(\d)"\/>/g)].map(match => match[1]),
+      labelFormats: [...xml.matchAll(/<c:dLbls>[\s\S]*?<c:numFmt formatCode="([^"]*)"/g)].map(match => xmlUnescape(match[1])),
+      colors: [...xml.matchAll(/srgbClr val="(\w+)"/g)].map(match => match[1]),
+      sizes: [...xml.matchAll(/ sz="(\d+)"/g)].map(match => Number(match[1])),
+      innerLayout: /<c:manualLayout>\s*<c:layoutTarget val="inner" \/>/.test(xml),
+    };
+  }
+  /** 內嵌活頁簿（PowerPoint「編輯資料」）第一張工作表的列：第一列是系列名，第一欄是柱名。 */
+  function embeddedRows(files: Map<string, Buffer>) {
+    const names = [...files.keys()].filter(name => /^ppt\/embeddings\/.+\.xlsx$/.test(name));
+    expect(names).toHaveLength(1);
+    const book = XLSX.read(files.get(names[0])!, { type: "buffer" });
+    return XLSX.utils.sheet_to_json<(string | number | null)[]>(book.Sheets[book.SheetNames[0]], { header: 1, defval: null, raw: true });
+  }
+  /** 由各系列的值反推每根柱的起點與終點（同 V4-0b spike）；0 元的增減段什麼都不畫，回傳 null。 */
+  function rebuild(bars: readonly PptxChartBar[], valueOf: (key: SeriesKey, index: number) => Decimal) {
+    return bars.map((bar, index): string[] | null => {
+      if (bar.kind !== "delta") return [valueOf("level", index).toFixed(2), valueOf("level", index).toFixed(2)];
+      const base = valueOf("base", index);
+      const up = valueOf("favorable", index).plus(valueOf("unfavorable", index));
+      const down = valueOf("favorableBelowZero", index).plus(valueOf("unfavorableBelowZero", index));
+      const favorable = !valueOf("favorable", index).plus(valueOf("favorableBelowZero", index)).isZero();
+      const [lo, hi] = base.gt(0) ? [base, base.plus(up)] : base.lt(0) ? [base.plus(down), base] : [down, up];
+      if (lo.eq(hi)) return null;
+      return (favorable ? [lo, hi] : [hi, lo]).map(value => value.toFixed(2));
+    });
+  }
+  /** bars 的起訖（0 元的增減段為 null）：rebuild 的期望值。 */
+  const expectedSpans = (bars: readonly PptxChartBar[]) => bars.map(bar => bar.kind === "delta" ? (bar.start === bar.end ? null : [bar.start, bar.end]) : [bar.end, bar.end]);
+  /** 投影片上的物件（文字方塊、線、圖）的下緣（英吋）。 */
+  const objectBottoms = (xml: string) => [...xml.matchAll(/<p:(sp|graphicFrame)>([\s\S]*?)<\/p:\1>/g)].map(match => {
+    const off = /<a:off x="(-?\d+)" y="(-?\d+)"\/>/.exec(match[2]), ext = /<a:ext cx="(\d+)" cy="(\d+)"\/>/.exec(match[2]);
+    return (Number(off?.[2] ?? 0) + Number(ext?.[2] ?? 0)) / EMU_PER_INCH;
+  });
+  async function deck(model: PptxOnePager) {
+    const files = readZip(await writePptx(model));
+    const parts = chartParts(files);
+    return { files, parts, slide1: zipText(files, "ppt/slides/slide1.xml")!, slide2: zipText(files, "ppt/slides/slide2.xml") ?? "", chart: parts.length ? parseChart(zipText(files, parts[0])!) : null };
+  }
+
+  it("模型：三個版本的 charts 都是同一張 G1——標題＝bridgeWaterfall().title、副標＝區塊 · 版頭兩期 · 單位、柱＝bars 的柱名、起訖精確字串與標值", async () => {
+    const { summary, snapshot, build } = await setup();
+    const bridge = bridgeWaterfall(snapshot);
+    const period = fill(headerCopy.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") });
+    const expected = {
+      id: "bridge", title: bridge.title, subtitle: fill(labels.exports.chartsV4.pptx.subtitle, { section: labels.overview.sections.bridge, period, unit: headerCopy.unitExclusive }),
+      bars: bridge.bars.map(bar => ({ id: bar.id, label: bar.shortLabel, kind: bar.kind, start: bar.start, end: bar.end, display: bar.display })),
+    };
+    for (const variant of VARIANTS) {
+      expect(build({ variant }).charts, variant).toEqual([expected]);
+      expect(build({ variant, meeting: MEETING }).charts, variant).toEqual([expected]);
+    }
+    // 手算（fixtures/golden）：上期 570.00 → 營業額 +600 → 1,170.00 → 折扣 −250 → 920.00 → 退款 −130 → 790.00 → 商品成本 −275 → 515.00
+    // → 平台費 −30 → 485.00 → 金流費 −6 → 479.00 → 物流費 −65 → 414.00 → 其他變動費 −9 → 405.00 → 廣告 −150 → 255.00（本期）。
+    expect(expected.bars.map(bar => [bar.start, bar.end])).toEqual([
+      ["570.00", "570.00"], ["570.00", "1170.00"], ["1170.00", "920.00"], ["920.00", "790.00"], ["790.00", "515.00"], ["515.00", "485.00"],
+      ["485.00", "479.00"], ["479.00", "414.00"], ["414.00", "405.00"], ["405.00", "255.00"], ["255.00", "255.00"],
+    ]);
+    expect(expected.bars.map(bar => bar.display)).toEqual([formatAmountL1("570.00"), ...["600.00", "-250.00", "-130.00", "-275.00", "-30.00", "-6.00", "-65.00", "-9.00", "-150.00"].map(value => formatSignedDelta(value, "L1")), formatAmountL1("255.00")]);
+    // 含稅換算時單位跟版頭一樣寫「已換算為未稅」。
+    expect(build({ summary: { ...summary, conversion_note: "TAX-NOTE" } }).charts[0].subtitle).toBe(fill(labels.exports.chartsV4.pptx.subtitle, { section: labels.overview.sections.bridge, period, unit: headerCopy.unitConverted }));
+  });
+
+  it("pptxWaterfallChart（golden 手算）：四個系列——透明底段、起訖與小計（金額）、有利與不利（柱高＝絕對值）；色取 EXPORT_THEME；軸 0–1,500 含 0", async () => {
+    const { snapshot, build } = await setup();
+    const chart = pptxWaterfallChart(build().charts[0].bars);
+    expect(chart.series.map(series => series.key)).toEqual(["base", "level", "favorable", "unfavorable"]);
+    expect(chart.series.map(series => series.name)).toEqual([seriesCopy.base, seriesCopy.level, seriesCopy.favorable, seriesCopy.unfavorable]);
+    expect(chart.series.map(series => series.color)).toEqual(["transparent", EXPORT_THEME.chartTotal, EXPORT_THEME.chartFavorable, EXPORT_THEME.chartUnfavorable]);
+    expect(Object.fromEntries(chart.series.map(series => [series.key, series.exact]))).toEqual({
+      base: ["0", "570.00", "920.00", "790.00", "515.00", "485.00", "479.00", "414.00", "405.00", "255.00", "0"],
+      level: ["570.00", "0", "0", "0", "0", "0", "0", "0", "0", "0", "255.00"],
+      favorable: ["0", "600.00", "0", "0", "0", "0", "0", "0", "0", "0", "0"],
+      unfavorable: ["0", "0", "250.00", "130.00", "275.00", "30.00", "6.00", "65.00", "9.00", "150.00", "0"],
+    });
+    for (const series of chart.series) expect(series.values, series.key).toEqual(series.exact.map(Number));
+    expect(chart.categories).toEqual(bridgeWaterfall(snapshot).bars.map(bar => bar.shortLabel));
+    expect(chart.axis).toEqual({ min: 0, max: 1500, step: 500 });
+  });
+
+  it("pptxWaterfallChart（合成：跨 0、整段在 0 以下、0 元、負的本期）：0 以下的兩個輔助系列、精確字串逐格手算、軸 −50,000–150,000 不切負柱", async () => {
+    const { snapshot, build } = await setup();
+    const bars = build({ snapshot: synthetic(snapshot) }).charts[0].bars;
+    expect(bars.map(bar => bar.end)).toEqual(["80000.00", "105000.00", "45000.00", "-30500.50", "-42500.50", "-34500.25", "15499.75", "-4500.25", "-4500.25", "-14500.25", "-14500.25"]);
+    const chart = pptxWaterfallChart(bars);
+    expect(chart.series.map(series => series.key)).toEqual([...PPTX_WATERFALL_SERIES]);
+    expect(chart.series.map(series => series.name)).toEqual(PPTX_WATERFALL_SERIES.map(key => seriesCopy[key]));
+    expect(chart.series.map(series => series.color)).toEqual(["transparent", EXPORT_THEME.chartTotal, EXPORT_THEME.chartFavorable, EXPORT_THEME.chartUnfavorable, EXPORT_THEME.chartFavorable, EXPORT_THEME.chartUnfavorable]);
+    expect(Object.fromEntries(chart.series.map(series => [series.key, series.exact]))).toEqual({
+      base: ["0", "80000.00", "45000.00", "0", "-30500.50", "-34500.25", "0", "0", "0", "-4500.25", "0"],
+      level: ["80000.00", "0", "0", "0", "0", "0", "0", "0", "0", "0", "-14500.25"],
+      favorable: ["0", "25000.00", "0", "0", "0", "0", "15499.75", "0", "0", "0", "0"],
+      unfavorable: ["0", "0", "60000.00", "45000.00", "0", "0", "0", "15499.75", "0", "0", "0"],
+      favorableBelowZero: ["0", "0", "0", "0", "0", "-8000.25", "-34500.25", "0", "0", "0", "0"],
+      unfavorableBelowZero: ["0", "0", "0", "-30500.50", "-12000.00", "0", "0", "-4500.25", "0", "-10000.00", "0"],
+    });
+    const exact = new Map(chart.series.map(series => [series.key, series.exact]));
+    expect(rebuild(bars, (key, index) => new Decimal(exact.get(key)?.[index] ?? "0"))).toEqual(expectedSpans(bars));
+    expect(chart.axis).toEqual({ min: -50000, max: 150000, step: 50000 });
+  });
+
+  it("寫出：第二張只有一個原生圖（chart part 1、ppt/media 空、沒有圖片）；堆疊長條、底段無填色、所有色屬於 EXPORT_THEME、showValue 關、標籤與軸的格式帶 U+2212、字級 ≥ 10pt", async () => {
+    const { build } = await setup();
+    const { files, parts, slide2, chart } = await deck(build({ meeting: MEETING }));
+    expect(parts).toHaveLength(1);
+    expect([...files.keys()].filter(name => /^ppt\/embeddings\/.+\.xlsx$/.test(name))).toHaveLength(1);
+    expect(zipText(files, "ppt/slides/_rels/slide2.xml.rels")).toContain("relationships/chart");
+    expect(zipText(files, "ppt/slides/_rels/slide1.xml.rels")).not.toContain("relationships/chart");
+    // 不用任何圖片 API：ppt/media 沒有檔案，任何 rels 都沒有 image 關係，投影片沒有 <p:pic>。
+    expect([...files.entries()].filter(([name, data]) => name.startsWith("ppt/media/") && !(name.endsWith("/") && data.length === 0)).map(([name]) => name)).toEqual([]);
+    for (const name of [...files.keys()].filter(item => item.endsWith(".rels"))) expect(zipText(files, name), name).not.toMatch(/relationships\/image/);
+    expect(slide2).not.toContain("<p:pic");
+    expect(chart).not.toBeNull();
+    expect([chart!.barDir, chart!.grouping, chart!.overlap]).toEqual(["col", "stacked", "100"]);
+    expect(chart!.series.map(series => series.name)).toEqual([seriesCopy.base, seriesCopy.level, seriesCopy.favorable, seriesCopy.unfavorable]);
+    expect(chart!.series[0].noFill).toBe(true);
+    expect(chart!.series.slice(1).map(series => series.color)).toEqual([EXPORT_THEME.chartTotal, EXPORT_THEME.chartFavorable, EXPORT_THEME.chartUnfavorable]);
+    expect(chart!.colors.length).toBeGreaterThan(0);
+    for (const color of chart!.colors) expect(THEME.has(color), color).toBe(true);
+    // D-V4-37＝A：圖內的資料標籤全部關掉、繪圖區固定；資料標籤格式仍帶 U+2212（使用者自行打開時沿用），數值軸也是。
+    expect(chart!.showVal.length).toBeGreaterThan(0);
+    expect(chart!.showVal.every(value => value === "0")).toBe(true);
+    expect(chart!.innerLayout).toBe(true);
+    expect(chart!.labelFormats.length).toBeGreaterThan(0);
+    expect(chart!.labelFormats.every(code => code === `#,##0.00;"${MINUS}"#,##0.00;`)).toBe(true);
+    expect(chart!.axis.format).toBe(`#,##0;"${MINUS}"#,##0`);
+    expect(Math.min(...chart!.sizes, ...[...slide2.matchAll(/ sz="(\d+)"/g)].map(match => Number(match[1])))).toBeGreaterThanOrEqual(1000);
+  });
+
+  it("寫出：圖的快取值與內嵌活頁簿（編輯資料）都等於 bars 的精確值；輔助系列名＝labels（圖形用，非金額；有利、不利標明絕對值）；標值文字方塊＝bars[].display（帶 U+2212）；軸依資料含負值", async () => {
+    const { snapshot, build } = await setup();
+    for (const source of [snapshot, synthetic(snapshot)]) {
+      const model = build({ snapshot: source });
+      const bars = model.charts[0].bars;
+      const { files, slide2, chart } = await deck(model);
+      const byName = new Map(chart!.series.map(series => [series.name, series]));
+      const cache = (key: SeriesKey, index: number) => new Decimal(byName.get(seriesCopy[key])?.values[index] || "0");
+      expect(rebuild(bars, cache)).toEqual(expectedSpans(bars));
+      // 編輯資料：第一列是系列名（＝labels），第一欄是柱名；每格等於圖的快取值（pptxgenjs 把 0 寫成空白格）。
+      const rows = embeddedRows(files);
+      expect(rows[0].slice(1)).toEqual(chart!.series.map(series => series.name));
+      expect(chart!.series.map(series => series.name).every(name => Object.values(seriesCopy).includes(name as never))).toBe(true);
+      expect([seriesCopy.favorable, seriesCopy.unfavorable].every(name => rows[0].includes(name))).toBe(true);
+      expect(rows.slice(1).map(row => row[0])).toEqual(bars.map(bar => bar.label));
+      chart!.series.forEach((series, column) => series.values.forEach((value, row) => expect(new Decimal(rows[row + 1][column + 1] ?? 0).eq(new Decimal(value || "0")), `${series.name}[${row}]`).toBe(true)));
+      // 軸：含 0，涵蓋每根柱的起訖（負柱不被切掉）。
+      const levels = bars.flatMap(bar => [Number(bar.start), Number(bar.end)]);
+      expect(chart!.axis.min).toBeLessThanOrEqual(Math.min(0, ...levels));
+      expect(chart!.axis.max).toBeGreaterThanOrEqual(Math.max(0, ...levels));
+      // 標值（D-V4-37＝A）：文字方塊依序是每根柱的 display（L1、U+2212），不出現 ASCII「-」金額；不利（U+2212）用不利色。
+      expect(runs(slide2)).toEqual([model.charts[0].title, model.charts[0].subtitle, ...bars.map(bar => bar.display)]);
+      expect(runs(slide2).filter(value => /^-\d/.test(value))).toEqual([]);
+      expect(bars.some(bar => bar.display.startsWith(MINUS))).toBe(true);
+      for (const bar of bars.filter(item => item.display.startsWith(MINUS))) expect(runOf(slide2, bar.display), bar.id).toEqual({ size: 1000, color: EXPORT_THEME.unfavorable });
+      // 第二張的每個物件（含 0 以下的標值）都在內容區下緣之上。
+      for (const bottom of objectBottoms(slide2)) expect(bottom).toBeLessThanOrEqual(PAGE_BODY_BOTTOM + 1e-6);
+    }
+    const negative = await deck(build({ snapshot: synthetic(snapshot) }));
+    expect(negative.chart!.axis).toMatchObject({ min: -50000, max: 150000 });
+    expect(runs(negative.slide2)).toContain(formatAmountL1("-14500.25"));
+    expect(formatAmountL1("-14500.25").startsWith(MINUS)).toBe(true);
+  });
+
+  it("第二張有標題（結論句）、單位與期間；第一張與沒有圖時逐字相同，一句話、KPI、三件事、通路表、決議、置頂待辦三個版本逐項仍在；三個版本的圖逐格相同", async () => {
+    const { snapshot, build } = await setup();
+    const period = fill(headerCopy.periodLine, { current: formatPeriodExport("2026-08-02", "2026-08-02"), previous: formatPeriodExport("2026-08-01", "2026-08-01") });
+    const decks = await Promise.all(VARIANTS.map(async variant => {
+      const model = build({ variant, meeting: MEETING });
+      return { variant, model, ...(await deck(model)), plain: await deck({ ...model, charts: [] }) };
+    }));
+    for (const { variant, model, slide1, slide2, plain } of decks) {
+      // 沒有圖（charts 空陣列）時只有一張、沒有 chart part；有圖時第一張逐字不變。
+      expect([...plain.files.keys()].filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name)), variant).toEqual(["ppt/slides/slide1.xml"]);
+      expect(plain.parts, variant).toEqual([]);
+      expect(slide1, variant).toBe(plain.slide1);
+      const texts = runs(slide1);
+      const blocks = [labels.overview.sections.keyDeltas, ...model.key_deltas.map(row => row.label), labels.overview.sections.topThree, ...model.priorities.map((row, index) => fill(copy.priorityRow, { n: index + 1, headline: row.headline })), labels.meeting.sections.meetingDecision, model.decision];
+      if (variant === "boss") blocks.push(model.one_liner!);
+      else blocks.push(labels.exports.csv.columns.channel, ...model.channels.map(row => row.channel), copy.pinnedTitle, ...model.pinned_actions.map((row, index) => fill(copy.pinnedRow, { n: index + 1, problem: row.problem })));
+      // 老闆一頁版的三件事是「標題 · 影響 金額」同一段，所以用整張的文字比對。
+      for (const value of blocks) expect(texts.join("\n"), `${variant}: ${value}`).toContain(value);
+      expect(model.key_deltas, variant).toHaveLength(variant === "boss" ? 4 : 2);
+      // 第二張：結論句標題；副標有區塊名、兩期（版頭第 3 行前段）與單位。
+      const slide2Texts = runs(slide2);
+      expect(slide2Texts[0], variant).toBe(bridgeWaterfall(snapshot).title);
+      for (const value of [labels.overview.sections.bridge, period, headerCopy.unitExclusive]) expect(slide2Texts[1], `${variant}: ${value}`).toContain(value);
+    }
+    // 三個版本：第二張的文字、圖的系列值與軸、內嵌活頁簿逐格相同。
+    const [standard, ...others] = decks;
+    for (const other of others) {
+      expect(runs(other.slide2), other.variant).toEqual(runs(standard.slide2));
+      expect(other.chart!.series, other.variant).toEqual(standard.chart!.series);
+      expect(other.chart!.axis, other.variant).toEqual(standard.chart!.axis);
+      expect(embeddedRows(other.files), other.variant).toEqual(embeddedRows(standard.files));
+    }
   });
 });

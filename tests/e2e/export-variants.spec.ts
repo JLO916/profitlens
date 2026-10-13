@@ -209,9 +209,9 @@ test("b. 老闆一頁版：PDF 只留 L1（一句話、四個關鍵數字、三�
   expect(sheetRows(book, variantCopy.pnlSheet)).toHaveLength(PNL_ROWS.length + 1);
   await expect(page.getByTestId("download-menu").locator(":scope > summary")).toBeFocused();
 
-  // PPT：一張投影片；本期一句話＋四個關鍵數字的標籤；沒有通路表、置頂待辦與資料版本。
+  // PPT：第一張是本期一句話＋四個關鍵數字的標籤；沒有通路表、置頂待辦與資料版本（V4-9a 起多第二張 G1 瀑布，見 f）。
   const slides = await downloadVariantPptx(page, "boss");
-  expect(slides).toHaveLength(1);
+  expect(slides).toHaveLength(2);
   const texts = slideTexts(slides[0]);
   expect(texts).toContain(sentence);
   for (const metric of VARIANT_KPI_METRICS) expect(texts).toContain(metricDefinitions[metric].label);
@@ -262,9 +262,9 @@ test("c. 客戶報告版：PDF 版頭多客戶行、沒有技術細節、有每�
   expect(basis.map(row => row[columnIndex(basis[0], labels.exports.excel.columns.basis.section)])).not.toContain(labels.exports.excel.basis.sections.technical);
   expect(sheetRows(book, variantCopy.pnlSheet)).toHaveLength(PNL_ROWS.length + 1);
 
-  // PPT：一張；版頭（標題之後）第 1 行是資料集、第 2 行是客戶行；頁尾沒有資料版本（技術細節）。
+  // PPT：第一張的版頭（標題之後）第 1 行是資料集、第 2 行是客戶行；頁尾沒有資料版本（技術細節）（V4-9a 起多第二張 G1 瀑布，見 f）。
   const slides = await downloadVariantPptx(page, "client");
-  expect(slides).toHaveLength(1);
+  expect(slides).toHaveLength(2);
   const paragraphs = slideParagraphs(slides[0]);
   const datasetAt = paragraphs.indexOf(GOLDEN_NAME);
   expect(datasetAt).toBeGreaterThan(0);
@@ -475,4 +475,67 @@ test("V4-9a C31 會議範圍的列印：只印 G1、不加圖表附錄（比照�
   await expect(print.getByTestId("print-appendix-charts")).toHaveCount(0);
   await expect(print.getByTestId("print-appendix-pnl")).toHaveCount(0);
   await endPrint(page);
+});
+
+// ── V4-9a 代理 B：PPT 第二張 G1 原生瀑布（C32；D-V4-10＝A、D-V4-34＝A、D-V4-37＝A）。列印／PDF（C31）在另一個區塊。 ──
+/** pptx 是 zip：SheetJS 內建的 CFB 讀出每個檔（路徑去掉 CFB 的根目錄前綴 → 內容），只用來解析下載的產物。 */
+type PptxZip = { FullPaths: string[]; FileIndex: { type: number; content: Uint8Array | number[] }[] };
+function pptxFiles(bytes: Buffer): Map<string, Buffer> {
+  const deck = (XLSX.CFB as { read(data: Buffer, options: { type: "buffer" }): PptxZip }).read(bytes, { type: "buffer" });
+  const files = new Map<string, Buffer>();
+  deck.FullPaths.forEach((path, index) => { const entry = deck.FileIndex[index]; if (entry.type === 2) files.set(path.replace(/^Root Entry\//, ""), Buffer.from(entry.content)); });
+  return files;
+}
+
+test("f. V4-9a PPT（C32）：三個版本都是兩張——第一張的區塊照舊；第二張是 G1 原生瀑布（chart part 1、ppt/media 空、輔助系列名＝labels、標值＝golden 手算的 L1），三個版本的第二張逐字相同", async ({ page }) => {
+  test.setTimeout(120_000);
+  const golden = JSON.parse(await readFile(resolve("fixtures/golden/expected.json"), "utf8")) as Expected & { bridge: Record<string, string> };
+  // 標值（D-V4-37＝A，bars[].display）：上期、九項差額（expected.json 的 bridge，順序同 AMOUNT_FIELDS）、本期；L1、負號 U+2212。
+  const deltas = Object.entries(golden.bridge).filter(([key]) => key !== "sum").map(([, value]) => value);
+  expect(deltas).toHaveLength(9);
+  const displays = [formatAmountL1(golden.previous.contribution_after_marketing), ...deltas.map(value => formatSignedDelta(value, "L1")), formatAmountL1(golden.current.contribution_after_marketing)];
+  const series = labels.exports.chartsV4.pptx.series;
+  await loadValidationDataset(page, "golden");
+  const title = (await page.locator("#bridge-title").innerText()).trim();
+  expect(title.length).toBeGreaterThan(0);
+
+  const secondSlides: string[] = [];
+  for (const variant of EXPORT_VARIANTS) {
+    const menu = await chooseVariant(page, variant);
+    const { download, bytes } = await downloadFrom(page, menu.getByRole("button", { name: labels.exports.buttons.exportPptx, exact: true }));
+    expect(download.suggestedFilename()).toBe("profitlens-onepager.pptx");
+    const files = pptxFiles(bytes);
+    expect([...files.keys()].filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name)).sort(), variant).toEqual(["ppt/slides/slide1.xml", "ppt/slides/slide2.xml"]);
+    const charts = [...files.keys()].filter(name => /^ppt\/charts\/chart\d+\.xml$/.test(name));
+    expect(charts, variant).toHaveLength(1);
+    expect([...files.entries()].filter(([name, data]) => name.startsWith("ppt/media/") && data.length > 0).map(([name]) => name), variant).toEqual([]);
+    const slide1 = files.get("ppt/slides/slide1.xml")!.toString("utf8"), slide2 = files.get("ppt/slides/slide2.xml")!.toString("utf8");
+    expect(slide2).not.toContain("<p:pic");
+
+    // 第一張照舊：關鍵數字、三件事、決議；標準與客戶版另有通路表與置頂待辦，老闆一頁版沒有。
+    const first = slideTexts(slide1).join("\n");
+    for (const value of [labels.overview.sections.keyDeltas, labels.overview.sections.topThree]) expect(first, `${variant}: ${value}`).toContain(value);
+    for (const value of [labels.exports.csv.columns.channel, labels.exports.pptx.pinnedTitle, labels.meeting.sections.meetingDecision]) {
+      if (variant === "boss") expect(first, `${variant}: ${value}`).not.toContain(value);
+      else expect(first, `${variant}: ${value}`).toContain(value);
+    }
+
+    // 第二張：標題＝總覽瀑布的結論句；副標有區塊名與單位；之後依序是 11 根柱的標值（沒有 ASCII「-」金額）。
+    const texts = slideTexts(slide2);
+    expect(texts[0], variant).toBe(title);
+    expect(texts[1], variant).toContain(labels.overview.sections.bridge);
+    expect(texts[1], variant).toContain(headerV3.unitExclusive);
+    expect(texts.slice(2), variant).toEqual(displays);
+    expect(texts.filter(text => /^-\d/.test(text)), variant).toEqual([]);
+    // 原生圖：四個系列（透明底段、起訖與小計、有利與不利的絕對值）的名稱就是「編輯資料」裡看到的 labels 字串。
+    const chartXml = files.get(charts[0])!.toString("utf8");
+    expect([...chartXml.matchAll(/<c:ser>[\s\S]*?<c:tx>[\s\S]*?<c:v>([^<]*)<\/c:v>/g)].map(match => match[1]), variant).toEqual([series.base, series.level, series.favorable, series.unfavorable]);
+    expect([...files.keys()].filter(name => /^ppt\/embeddings\/.+\.xlsx$/.test(name)), variant).toHaveLength(1);
+    secondSlides.push(slide2);
+  }
+  // 三個版本的第二張逐字相同（數字逐格相同）。
+  expect(secondSlides[1]).toBe(secondSlides[0]);
+  expect(secondSlides[2]).toBe(secondSlides[0]);
+  await chooseVariant(page, "standard");
+  await closeDownloads(page);
 });

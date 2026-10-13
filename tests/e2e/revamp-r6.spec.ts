@@ -495,13 +495,13 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   // 完成後焦點回到「下載」選單的 summary（不掉到 body）。
   await expect(downloadSummary).toBeFocused();
 
-  // PPT 一頁式：profitlens-onepager.pptx、zip（PK）、只有一張投影片；選單版並註明目前檢視、不含會議決議。
+  // PPT 一頁式：profitlens-onepager.pptx、zip（PK）、兩張投影片（V4-9a D-V4-34＝A：第二張是 G1 原生瀑布，第一張照舊）；選單版並註明目前檢視、不含會議決議。
   // V3-7 §7.9：選單版標題是版頭第 2 行（報表名），副標是版頭其他三行；不再畫 v2 的「EC ProfitLens 一頁摘要」與「資料到／通路」副標（副標只寫進檔案屬性）。
   const pptx = await downloadFrom(page, menu.getByRole("button", { name: labels.exports.buttons.exportPptx, exact: true }));
   expect(pptx.download.suggestedFilename()).toBe("profitlens-onepager.pptx");
   expect(pptx.bytes.subarray(0, 2).toString("latin1")).toBe("PK");
   const slides = slideXml(pptx.bytes);
-  expect(slides).toHaveLength(1);
+  expect(slides).toHaveLength(2);
   expect(slides[0]).toContain(exportReportTitle());
   expect(slides[0]).toContain(`>${GOLDEN_HEADER.datasetName}<`);
   expect(slides[0]).toMatch(new RegExp(`>${exportVersionLineRe().source.slice(1, -1)}<`));
