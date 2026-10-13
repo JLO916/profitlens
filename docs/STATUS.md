@@ -1,5 +1,26 @@
 # Status
 
+## Revamp v4｜V4-9b 匯出（二）Excel 與 Markdown（完成）
+
+Excel 的標準版、客戶版新增「圖表資料」工作表，每張圖一段：
+
+- 不放 G15、G16。
+- 標準版有版本列，客戶版沒有。
+
+工作表數：老闆 2、標準 8、客戶 8。Markdown 一頁摘要加九項差額表，三種版本選擇的輸出相同。CSV、JSON 逐位元組不變；匯出正規化後與 V3-7 基準相同。
+
+最終驗收（`165fad0`）：
+
+- unit 162 檔、3,310 個全過。
+- E2E 1,039 passed、0 failed、25 skipped。
+- 畫面基準 0 差異。
+- First Load JS 516,192。
+- axe 22／22／22／20 全部 0。
+- 390 TBT 五項都通過：載入示範資料 987.5、健檢 776.0、商品 82.3、會議 984.6、資料來源 9.0。
+- 禁區是空的；commit 之後的 diff（收尾 `{V4_9B_CLOSE}`）也是空的。
+
+Excel 開檔檢查未執行，待人工；樣本在 `verification/revamp-v4/V4-9b/exports/`。驗收文件：`verification/revamp-v4-V4-9b-acceptance.md`。
+
 ## Revamp v4｜V4-9a 匯出（一）PDF 與 PPT（完成）
 
 PDF 加 C31 列印圖：

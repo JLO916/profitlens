@@ -292,6 +292,13 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-13｜Revamp v4 V4-9a、V4-9b：匯出的取捨
+
+- **V4-9a G1 的位置**：放在列印版的關鍵數字與決議行之後、三件事之前。PRD §5.10「關鍵數字之下」的意思就是在這一帶，決議行仍緊接在關鍵數字之後。
+- **V4-9a 首載**：`print-summary` 被首載靜態匯入，所以列印圖也進了首載，First Load JS 多 1,675。還在預算內，不另做延遲載入。
+- **V4-9b 版本列的位置**：B 級版本列放在 basis 工作表另起的「圖表資料」段。原因是禁止修改的 `tests/breakeven-mer.test.ts` 要求「技術細節」剛好 8 列。
+- **V4-9b 的匯入方向**：excel-export 匯入元件檔裡的 model 函式（share、heat、rates section 與 highlight-charts），與 pptx-export 匯入 chart-frame 的既有做法相同。它只在動態 import 的 chunk 裡，不進首載。
+
 ## 2026-10-13｜Revamp v4 V4-8b：四尺寸總檢與隨頁載入狀態的取捨
 
 - **切頁時序（D-V4-56＝A）**：
