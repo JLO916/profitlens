@@ -635,7 +635,8 @@ describe("V4-0b pptxgenjs addChart spike（D-V4-10、D-V4-34；只產生與解�
     const chart = waterfallChart(bridge.bars);
     const variants = {} as Record<string, unknown>;
     for (const variant of ["standard", "boss", "client"] as const) {
-      const model = buildPptxOnePager({ variant, summary, snapshot: demo.snapshot, actions, meeting: MEETING, generatedAt: GENERATED_AT });
+      // V4-9a 起 writePptx 依 model.charts 自己加第二張（C32）；spike 重現的是 v3 一頁式之後再加一張，所以 charts 清空。
+      const model = { ...buildPptxOnePager({ variant, summary, snapshot: demo.snapshot, actions, meeting: MEETING, generatedAt: GENERATED_AT }), charts: [] };
       const result = await layoutAChecks(model, bridge, chart);
       expect(String.fromCharCode(result.bytes[0], result.bytes[1])).toBe("PK");
       expect(Object.keys(result.checks).length).toBeGreaterThan(0);
@@ -643,7 +644,7 @@ describe("V4-0b pptxgenjs addChart spike（D-V4-10、D-V4-34；只產生與解�
       variants[variant] = result.checks;
     }
     // writePptx 之後 write() 回到原樣（沒有殘留的第二張）。
-    const plain = unzip(await writePptx(buildPptxOnePager({ summary, snapshot: demo.snapshot, actions, generatedAt: GENERATED_AT })));
+    const plain = unzip(await writePptx({ ...buildPptxOnePager({ summary, snapshot: demo.snapshot, actions, generatedAt: GENERATED_AT }), charts: [] }));
     expect([...plain.files.keys()].filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))).toEqual(["ppt/slides/slide1.xml"]);
     report.layoutA = { file: "pptx-spike-A.pptx", slide2: { chart: { x: 0.4, y: 0.9, w: 9.2, h: 4.25 }, categoryPitchIn: Number((9.2 / chart.categories.length).toFixed(2)) }, variants };
   });

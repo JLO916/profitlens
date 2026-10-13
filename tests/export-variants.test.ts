@@ -297,7 +297,7 @@ describe("Excel：待辦工作表最後一欄「廣告決策」（F13）", () =>
   });
 });
 
-describe("PPT：老闆一頁版一張、客戶報告版多客戶行", () => {
+describe("PPT：老闆一頁版第一張只留 L1、客戶報告版多客戶行（V4-9a 起三個版本都多第二張 G1 瀑布，D-V4-34＝A）", () => {
   const model = (variant: ExportVariant | undefined, meeting: Parameters<typeof buildPptxOnePager>[0]["meeting"] = null, work: ActionWorkspace = actions) => buildPptxOnePager({ variant, summary: golden.summary, snapshot: golden.snapshot, actions: work, meeting, generatedAt: FIXED_GENERATED_AT, datasetName: "店" });
   const runs = (xml: string) => [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(match => match[1].replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&apos;", "'").replaceAll("&amp;", "&"));
   async function slides(value: PptxOnePager) {
@@ -323,7 +323,7 @@ describe("PPT：老闆一頁版一張、客戶報告版多客戶行", () => {
     expect(withMeeting.decision).toBe(fill(labels.exports.pptx.decision, { decision: labels.meeting.form.decisions.adopted }));
     expect(withMeeting.decision).not.toContain(MEETING.notes);
     const { names, texts } = await slides(withMeeting);
-    expect(names).toEqual(["ppt/slides/slide1.xml"]);
+    expect(names).toEqual(["ppt/slides/slide1.xml", "ppt/slides/slide2.xml"]);
     for (const text of [boss.one_liner!, ...boss.key_deltas.map(row => row.label), labels.overview.sections.keyDeltas, labels.overview.sections.topThree, labels.meeting.sections.meetingDecision, withMeeting.decision]) expect(texts, text).toContain(text);
     for (const text of [labels.exports.csv.columns.channel, labels.exports.pptx.pinnedTitle, labels.glossary.basis.footer, labels.rules.REV_UP_CM_DOWN.explain.nextStep]) expect(texts.join("\n"), text).not.toContain(text);
     expect(texts.some(text => text.startsWith(fill(labels.exports.headerV3.pptxDataVersion, { datasetHash: "" })))).toBe(false);
@@ -344,7 +344,7 @@ describe("PPT：老闆一頁版一張、客戶報告版多客戶行", () => {
     expect(client.technical).toBe("");
     expect({ ...client, variant: undefined, header: undefined, decision: undefined, pinned_actions: undefined, technical: undefined }).toEqual({ ...standard, variant: undefined, header: undefined, decision: undefined, pinned_actions: undefined, technical: undefined });
     const { names, texts } = await slides(client);
-    expect(names).toEqual(["ppt/slides/slide1.xml"]);
+    expect(names).toEqual(["ppt/slides/slide1.xml", "ppt/slides/slide2.xml"]);
     expect(texts).toContain(client.header[1]);
     expect(texts.join("\n")).not.toContain(MEETING.notes);
   });

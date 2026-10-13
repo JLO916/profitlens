@@ -1,13 +1,16 @@
+import Decimal from "decimal.js";
 import type { Metric } from "../domain/types";
 import { variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExportVariant } from "./export-variants";
 import { fill, labels } from "../i18n";
+import { axisTicks } from "../components/overview/charts/chart-frame";
 import { MAX_PINNED_ACTIONS, type ActionWorkspace } from "./action-workspace";
 import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "./copy";
 import { downloadBinary } from "./download";
-import { buildExportHeader } from "./export-header";
+import { buildExportHeader, type ExportHeader } from "./export-header";
 import { EXPORT_THEME } from "./export-theme";
 import type { ManagerSummary } from "./manager-summary";
 import { formatAmount, formatPeriodExport, formatSignedDelta, metricDefinitions, MINUS, type Layer } from "./presentation";
+import { bridgeWaterfall, type WaterfallKind } from "./waterfall";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R6-5 PPT 一頁式（docs/revamp/05_FEATURES.md §11、06_BATCHES.md R6-5；D4＝A：pptxgenjs 4.0.1）。
@@ -66,7 +69,14 @@ export interface PptxOnePager {
   footer: string;
   /** 資料版本（可追溯性；小字）。指標版本已在版頭第 4 行。V3-9b 老闆一頁版與客戶報告版不放技術細節（空字串）。 */
   technical: string;
+  /** V4-9a C32（D-V4-34＝A）：第一張之後的圖，每張圖一張投影片（ExportVariantSpec.charts.pptx 的順序；空陣列＝只有第一張）。 */
+  charts: PptxBridgeChart[];
 }
+
+/** V4-9a C32 瀑布的一根柱：柱名（shortLabel）、種類、起點與終點（bridgeWaterfall().bars 的精確字串；無法定位為 null）、柱上標值（display：L1、U+2212）。 */
+export interface PptxChartBar { id: string; label: string; kind: WaterfallKind; start: string | null; end: string | null; display: string }
+/** V4-9a C32 pptChart（PRD §6.5 C32、D-V4-10＝A、D-V4-37＝A）：G1 貢獻變化拆解的原生瀑布；標題是畫面同一句結論句，副標寫區塊、兩期與單位。 */
+export interface PptxBridgeChart { id: "bridge"; title: string; subtitle: string; bars: PptxChartBar[] }
 
 /** XML 1.0 不允許的控制字元與落單的代理字元，以及會反轉顯示順序的 bidi 控制字元。 */
 const UNSAFE_TEXT = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\uFFFE\uFFFF\u202A-\u202E\u2066-\u2069]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
@@ -147,9 +157,80 @@ export function buildPptxOnePager(input: PptxOnePagerInput): PptxOnePager {
   });
   const footer = spec.sections.footer ? pptxText(summary.conversion_note ? `${labels.glossary.basis.footer} ${summary.conversion_note}` : labels.glossary.basis.footer, limit.footer) : "";
   const technical = spec.appendix.technical ? pptxText(fill(labels.exports.headerV3.pptxDataVersion, { datasetHash: summary.dataset_hash.slice(0, 12) }), limit.technical) : "";
-  const model: PptxOnePager = { title, header, subtitle, key_deltas, priorities, channels, decision, pinned_actions, footer, technical };
+  // V4-9a C32：第二張起的圖依 spec.charts.pptx（三個變體都是 G1；G2 不進 PPT，CHART_CATALOG G2 匯出欄）；同一個 snapshot，三個變體逐格相同。
+  const charts = spec.charts.pptx.flatMap((id): PptxBridgeChart[] => id === "bridge" ? [pptxBridgeChart(snapshot, exportHeader)] : []);
+  const model: PptxOnePager = { title, header, subtitle, key_deltas, priorities, channels, decision, pinned_actions, footer, technical, charts };
   if (spec.variant === "standard") return model;
   return { variant: spec.variant, ...(spec.sections.oneLiner ? { one_liner: pptxText(variantOneLiner(summary, snapshot), limit.oneLiner) } : {}), ...model };
+}
+
+/**
+ * V4-9a C32 G1 的字串模型：標題＝bridgeWaterfall().title（畫面同一句）；副標＝區塊名 · 版頭的兩期 · 版頭的單位（exports.chartsV4.pptx.subtitle）；
+ * 柱只搬 bars 的柱名、種類、起訖精確字串與標值，不新增任何數值。
+ */
+function pptxBridgeChart(snapshot: WorkspaceSnapshot, header: ExportHeader): PptxBridgeChart {
+  const bridge = bridgeWaterfall(snapshot);
+  return {
+    id: "bridge",
+    title: pptxText(bridge.title, PPTX_TEXT_LIMITS.title),
+    subtitle: pptxText(fill(labels.exports.chartsV4.pptx.subtitle, { section: labels.overview.sections.bridge, period: header.periodLine, unit: header.unitLine }), PPTX_TEXT_LIMITS.subtitle),
+    bars: bridge.bars.map(bar => ({ id: bar.id, label: bar.shortLabel, kind: bar.kind, start: bar.start, end: bar.end, display: bar.display })),
+  };
+}
+
+/** V4-9a C32 堆疊長條的系列（順序＝系列順序；名稱是 exports.chartsV4.pptx.series 的同名鍵）。0 以下的兩個輔助系列只在有用到時才加。 */
+export const PPTX_WATERFALL_SERIES = ["base", "level", "favorable", "unfavorable", "favorableBelowZero", "unfavorableBelowZero"] as const;
+export type PptxWaterfallSeriesKey = typeof PPTX_WATERFALL_SERIES[number];
+/** 系列色：透明底段無填色（pptxgenjs 的 transparent → a:noFill），其餘取自 EXPORT_THEME（起訖與小計＝chartTotal、有利＝chartFavorable、不利＝chartUnfavorable）。 */
+const WATERFALL_SERIES_COLOR: Record<PptxWaterfallSeriesKey, string> = {
+  base: "transparent", level: EXPORT_THEME.chartTotal, favorable: EXPORT_THEME.chartFavorable, unfavorable: EXPORT_THEME.chartUnfavorable,
+  favorableBelowZero: EXPORT_THEME.chartFavorable, unfavorableBelowZero: EXPORT_THEME.chartUnfavorable,
+};
+export interface PptxWaterfallChart {
+  /** 柱名（類別軸）。 */
+  categories: string[];
+  /** exact：換算出的精確字串（0 寫「0」）；values：交給 pptxgenjs 的數字（由 exact 轉一次）。 */
+  series: { key: PptxWaterfallSeriesKey; name: string; color: string; exact: string[]; values: number[] }[];
+  /** 數值軸：依資料（含 0）由 axisTicks 取步長，上下界取步長的整數倍，負柱與最高柱都不被切掉。 */
+  axis: { min: number; max: number; step: number };
+  /** 每根柱在圖形座標的上緣與下緣（標值文字方塊定位用）；無法定位的柱兩者都是 0。 */
+  spans: { top: number; bottom: number }[];
+}
+const DECIMAL = /^[+-]?\d+(?:\.\d+)?$/;
+const decimalOrNull = (value: string | null): Decimal | null => value !== null && DECIMAL.test(value.trim()) ? new Decimal(value.trim()) : null;
+/**
+ * V4-9a C32（D-V4-10＝A）：瀑布 → 堆疊長條的系列。一律用 decimal.js 由每根柱的起點、終點精確字串換算，不用浮點累加；Number() 只在交給 pptxgenjs 時做一次。
+ * 起訖與小計：level＝終點（金額）。增減段：整段在 0 以上時 base＝低點、有利／不利＝柱高（絕對值）；整段在 0 以下時 base＝高點、0 以下的段＝低點 − 高點；
+ * 跨 0 時不需要 base，0 以上的部分放有利／不利、0 以下的部分放 0 以下的段（堆疊長條的正值、負值各自從 0 疊起）。
+ */
+export function pptxWaterfallChart(bars: readonly PptxChartBar[]): PptxWaterfallChart {
+  const zero = new Decimal(0);
+  const cells = Object.fromEntries(PPTX_WATERFALL_SERIES.map(key => [key, bars.map(() => zero)])) as Record<PptxWaterfallSeriesKey, Decimal[]>;
+  const extents: Decimal[] = [zero];
+  const spans = bars.map((bar, index) => {
+    const start = decimalOrNull(bar.start), end = decimalOrNull(bar.end);
+    if (start === null || end === null) return { top: 0, bottom: 0 };
+    extents.push(start, end);
+    if (bar.kind !== "delta") { cells.level[index] = end; return { top: Decimal.max(zero, end).toNumber(), bottom: Decimal.min(zero, end).toNumber() }; }
+    const lo = Decimal.min(start, end), hi = Decimal.max(start, end);
+    if (!start.eq(end)) {
+      const up: PptxWaterfallSeriesKey = end.gt(start) ? "favorable" : "unfavorable";
+      const below: PptxWaterfallSeriesKey = up === "favorable" ? "favorableBelowZero" : "unfavorableBelowZero";
+      if (lo.gte(0)) { cells.base[index] = lo; cells[up][index] = hi.minus(lo); }
+      else if (hi.lte(0)) { cells.base[index] = hi; cells[below][index] = lo.minus(hi); }
+      else { cells[up][index] = hi; cells[below][index] = lo; }
+    }
+    return { top: hi.toNumber(), bottom: lo.toNumber() };
+  });
+  const used = PPTX_WATERFALL_SERIES.filter(key => (key !== "favorableBelowZero" && key !== "unfavorableBelowZero") || cells[key].some(value => !value.isZero()));
+  const series = used.map(key => ({
+    key, name: labels.exports.chartsV4.pptx.series[key], color: WATERFALL_SERIES_COLOR[key],
+    exact: cells[key].map(value => value.isZero() ? "0" : value.toFixed(2)), values: cells[key].map(value => Number(value.toFixed(2))),
+  }));
+  const scale = axisTicks([Decimal.min(...extents).toNumber(), Decimal.max(...extents).toNumber()]);
+  const step = scale.ticks.length > 1 ? scale.ticks[1] - scale.ticks[0] : 1;
+  const snap = (value: number) => Number(value.toPrecision(12)) || 0;
+  return { categories: bars.map(bar => pptxText(bar.label, PPTX_TEXT_LIMITS.channel)), series, axis: { min: snap(Math.floor(scale.domain[0] / step) * step), max: snap(Math.ceil(scale.domain[1] / step) * step), step: snap(step) }, spans };
 }
 
 // 版面（英吋；LAYOUT_16x9 = 10 × 5.625）。字級一律 ≥ 10pt。V3-7 §9.6：背景白、不放裝飾圖形；強調色只用在本期資料與 4pt 頂線；
@@ -273,7 +354,7 @@ function toBytes(data: unknown): Uint8Array {
   throw new Error("PPTX_WRITE_FAILED");
 }
 
-/** 寫出 16:9 單張投影片的 .pptx（bytes）。所有字串在寫出前再清一次（防外部組的 model），XML 跳脫交給 pptxgenjs。 */
+/** 寫出 16:9 的 .pptx（bytes）：第一張是一頁式；V4-9a 起之後每張圖一張（model.charts，第一張不動）。所有字串在寫出前再清一次（防外部組的 model），XML 跳脫交給 pptxgenjs。 */
 export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
   const PptxGenJS = await loadPptxGenJS();
   const pptx = new PptxGenJS();
@@ -307,6 +388,7 @@ export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
 
   if (model.variant === "boss") {
     writeBossBody(model, { slide, base, heading, note });
+    writeChartSlides(pptx, model);
     return toBytes(await pptx.write({ outputType: "arraybuffer", compression: true }));
   }
 
@@ -374,6 +456,7 @@ export async function writePptx(model: PptxOnePager): Promise<Uint8Array> {
     ...(model.technical ? [{ text: `${copy.separator}${text(model.technical, limit.technical)}`, options: {} }] : []),
   ], { ...base, x: FULL.x, y: 5.2, w: FULL.w, h: 0.36, fontSize: 10, color: COLOR.muted, valign: "bottom" });
 
+  writeChartSlides(pptx, model);
   return toBytes(await pptx.write({ outputType: "arraybuffer", compression: true }));
 }
 
@@ -420,6 +503,55 @@ function writeBossBody(model: PptxOnePager, { slide, base, heading, note }: { sl
   if (model.decision) {
     heading(labels.meeting.sections.meetingDecision, FULL.x, y, FULL.w);
     slide.addText(text(model.decision, limit.decision), { ...base, x: FULL.x, y: y + 0.26, w: FULL.w, h: 0.25, fontSize: 12, valign: "top" });
+  }
+}
+
+type PptxDeck = import("pptxgenjs").default;
+/** V4-9a C32 第二張的圖框（英吋）：版頭之下到內容區下緣（0.9＋4.25＝5.15 ≤ PAGE_BODY_BOTTOM）。 */
+const CHART_RECT = { x: FULL.x, y: 0.9, w: FULL.w, h: 4.25 } as const;
+/** 繪圖區（manualLayout inner，佔圖框的比例；V4-0b spike 探針值）：左邊留數值軸、下面留柱名；固定後標值文字方塊才對得到柱。 */
+const CHART_PLOT = { x: 0.08, y: 0.04, w: 0.9, h: 0.84 } as const;
+/** 標值文字方塊：高 0.2 英吋（10pt 一行），與柱緣相隔 0.02 英吋；寬＝一根柱的類別寬。 */
+const CHART_LABEL_H = 0.2, CHART_LABEL_GAP = 0.02;
+/** 資料標籤（showValue:false 時仍寫進圖內，使用者自行打開時沿用）與數值軸的格式：負數用 U+2212，零不顯示。 */
+const CHART_LABEL_FORMAT = `#,##0.00;"${MINUS}"#,##0.00;`;
+const CHART_AXIS_FORMAT = `#,##0;"${MINUS}"#,##0`;
+
+/**
+ * V4-9a C32 pptChart（PRD §6.5 C32、D-V4-10＝A、D-V4-34＝A、D-V4-37＝A）：第一張之後每張圖一張投影片——4pt 頂線、標題（結論句）、副標（區塊、兩期、單位）、
+ * 原生堆疊長條瀑布（addChart bar；showValue:false、layout 固定繪圖區），標值用文字方塊、字取 bars[].display（L1、U+2212）。不用任何圖片 API。
+ */
+function writeChartSlides(pptx: PptxDeck, model: PptxOnePager) {
+  const text = pptxText;
+  const limit = PPTX_TEXT_LIMITS;
+  const base = { fontFace: FONT, color: COLOR.ink, margin: 0 } as const;
+  for (const chart of model.charts) {
+    const slide = pptx.addSlide();
+    slide.background = { color: COLOR.surface };
+    slide.addShape(pptx.ShapeType.line, { x: 0, y: TOP_RULE_PT / 2 / 72, w: 10, h: 0, line: { color: COLOR.brand, width: TOP_RULE_PT } });
+    const title = text(chart.title, limit.title);
+    slide.addText(title, { ...base, x: FULL.x, y: TITLE_Y, w: FULL.w, h: TITLE_H, fontSize: pptxTitleSize(title), bold: true, valign: "middle" });
+    slide.addText(text(chart.subtitle, limit.subtitle), { ...base, x: FULL.x, y: HEADER_Y, w: FULL.w, h: HEADER_LINE_H * 2, fontSize: 10, color: COLOR.muted, valign: "top" });
+    const data = pptxWaterfallChart(chart.bars);
+    slide.addChart(pptx.ChartType.bar, data.series.map(series => ({ name: series.name, labels: data.categories, values: series.values })), {
+      ...CHART_RECT, barDir: "col", barGrouping: "stacked", barGapWidthPct: 60, chartColors: data.series.map(series => series.color),
+      showLegend: false, showTitle: false, layout: { ...CHART_PLOT },
+      showValue: false, dataLabelFormatCode: CHART_LABEL_FORMAT, dataLabelFontSize: 10, dataLabelFontFace: NUMBER_FONT, dataLabelColor: COLOR.ink,
+      valAxisMinVal: data.axis.min, valAxisMaxVal: data.axis.max, valAxisMajorUnit: data.axis.step, valAxisLabelFormatCode: CHART_AXIS_FORMAT,
+      valAxisLabelFontSize: 10, valAxisLabelFontFace: NUMBER_FONT, valAxisLabelColor: COLOR.muted, valGridLine: { color: COLOR.line, size: 0.5 }, valAxisLineColor: COLOR.lineStrong,
+      catAxisLabelFontSize: 10, catAxisLabelFontFace: FONT, catAxisLabelColor: COLOR.muted, catAxisLabelPos: "low", catAxisLineColor: COLOR.lineStrong,
+    });
+    // 標值：繪圖區座標換算到英吋；柱在 0 以上（或跨 0）標在柱頂之上，整根在 0 以下標在柱底之下；不利（U+2212）用不利色，其餘主文字色。
+    const plot = { x: CHART_RECT.x + CHART_PLOT.x * CHART_RECT.w, y: CHART_RECT.y + CHART_PLOT.y * CHART_RECT.h, w: CHART_PLOT.w * CHART_RECT.w, h: CHART_PLOT.h * CHART_RECT.h };
+    const pitch = plot.w / Math.max(chart.bars.length, 1);
+    const yOf = (value: number) => plot.y + ((data.axis.max - value) / (data.axis.max - data.axis.min)) * plot.h;
+    chart.bars.forEach((bar, index) => {
+      const display = text(bar.display, limit.money);
+      const { top, bottom } = data.spans[index];
+      const below = top <= 0 && bottom < 0;
+      slide.addText(display, { ...base, x: plot.x + index * pitch, y: below ? yOf(bottom) + CHART_LABEL_GAP : yOf(top) - CHART_LABEL_H - CHART_LABEL_GAP, w: pitch, h: CHART_LABEL_H,
+        fontSize: 10, color: changeColor(display), align: "center", valign: below ? "top" : "bottom" });
+    });
   }
 }
 
