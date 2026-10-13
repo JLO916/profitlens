@@ -1,0 +1,302 @@
+{
+  "batch": "V4-9a",
+  "generatedAt": "2026-10-13",
+  "by": "agent C (integration)",
+  "server": "LOCAL production build (APP_MODE=LOCAL PUBLIC_DEMO=false ENABLE_LIVE_AI=false) on 127.0.0.1:3100; Playwright Chromium 1440x1000",
+  "flow": "top-bar export menu -> choose variant -> export PDF (window.print stubbed) -> print media -> page.pdf A4 printBackground; meeting scope via meeting page export -> PDF (always standard); PPTX via top-bar export menu download",
+  "pageCount": "count of /Type /Page in the PDF (same as tests/e2e/variant-helpers-v39.ts pdfPages)",
+  "v3Baseline": "v3.0.0 boss 1, standard 2, client 2 (verification/revamp-v3-V3-9b-acceptance.md:54); meeting PDF 2 (tests/e2e/revamp-r6.spec.ts d, also with a selected scenario)",
+  "decision": "D-V4-11=B: boss stays 1 page; standard and client may add 1 appendix page (G2 + data tables of both charts); meeting PDF page count must not grow (PRD 7.6)",
+  "exportThemeColors": [
+    "1F5A4F",
+    "1B2426",
+    "4A5558",
+    "E4E7E7",
+    "A9B1B1",
+    "F1F3F3",
+    "FFFFFF",
+    "B03A2E",
+    "7F898B",
+    "5F6A6D"
+  ],
+  "pdf": [
+    {
+      "file": "golden-onepager-standard.pdf",
+      "dataset": "golden",
+      "scope": "onepager",
+      "variant": "standard",
+      "pages": 3,
+      "v3Pages": 2,
+      "maxPages": 3,
+      "printCharts": 2,
+      "bridge": 1,
+      "profit": 1,
+      "appendixCharts": 1
+    },
+    {
+      "file": "golden-onepager-boss.pdf",
+      "dataset": "golden",
+      "scope": "onepager",
+      "variant": "boss",
+      "pages": 1,
+      "v3Pages": 1,
+      "maxPages": 1,
+      "printCharts": 1,
+      "bridge": 1,
+      "profit": 0,
+      "appendixCharts": 0
+    },
+    {
+      "file": "golden-onepager-client.pdf",
+      "dataset": "golden",
+      "scope": "onepager",
+      "variant": "client",
+      "pages": 3,
+      "v3Pages": 2,
+      "maxPages": 3,
+      "printCharts": 2,
+      "bridge": 1,
+      "profit": 1,
+      "appendixCharts": 1
+    },
+    {
+      "file": "golden-meeting-standard.pdf",
+      "dataset": "golden",
+      "scope": "meeting",
+      "variant": "standard",
+      "pages": 2,
+      "v3Pages": 2,
+      "maxPages": 2,
+      "printCharts": 1,
+      "bridge": 1,
+      "profit": 0,
+      "appendixCharts": 0
+    },
+    {
+      "file": "demo-onepager-standard.pdf",
+      "dataset": "demo",
+      "scope": "onepager",
+      "variant": "standard",
+      "pages": 3,
+      "v3Pages": 2,
+      "maxPages": 3,
+      "printCharts": 2,
+      "bridge": 1,
+      "profit": 1,
+      "appendixCharts": 1
+    },
+    {
+      "file": "demo-onepager-boss.pdf",
+      "dataset": "demo",
+      "scope": "onepager",
+      "variant": "boss",
+      "pages": 1,
+      "v3Pages": 1,
+      "maxPages": 1,
+      "printCharts": 1,
+      "bridge": 1,
+      "profit": 0,
+      "appendixCharts": 0
+    },
+    {
+      "file": "demo-onepager-client.pdf",
+      "dataset": "demo",
+      "scope": "onepager",
+      "variant": "client",
+      "pages": 3,
+      "v3Pages": 2,
+      "maxPages": 3,
+      "printCharts": 2,
+      "bridge": 1,
+      "profit": 1,
+      "appendixCharts": 1
+    },
+    {
+      "file": "demo-meeting-standard.pdf",
+      "dataset": "demo",
+      "scope": "meeting",
+      "variant": "standard",
+      "pages": 2,
+      "v3Pages": 2,
+      "maxPages": 2,
+      "printCharts": 1,
+      "bridge": 1,
+      "profit": 0,
+      "appendixCharts": 0
+    }
+  ],
+  "pptx": [
+    {
+      "file": "demo-onepager-boss.pptx",
+      "slides": 2,
+      "chartParts": 1,
+      "mediaFiles": 1,
+      "embeddedWorkbooks": 1,
+      "pPic": 0,
+      "seriesNames": [
+        "透明底段（圖形用，非金額）",
+        "起訖與小計（金額）",
+        "有利差額（絕對值，圖形用）",
+        "不利差額（絕對值，圖形用）"
+      ],
+      "valAxisMin": [
+        "0"
+      ],
+      "valAxisMax": [
+        "6000000"
+      ],
+      "srgbColors": [
+        "1B2426",
+        "4A5558",
+        "7F898B",
+        "A9B1B1",
+        "B03A2E",
+        "E4E7E7"
+      ]
+    },
+    {
+      "file": "demo-onepager-client.pptx",
+      "slides": 2,
+      "chartParts": 1,
+      "mediaFiles": 1,
+      "embeddedWorkbooks": 1,
+      "pPic": 0,
+      "seriesNames": [
+        "透明底段（圖形用，非金額）",
+        "起訖與小計（金額）",
+        "有利差額（絕對值，圖形用）",
+        "不利差額（絕對值，圖形用）"
+      ],
+      "valAxisMin": [
+        "0"
+      ],
+      "valAxisMax": [
+        "6000000"
+      ],
+      "srgbColors": [
+        "1B2426",
+        "4A5558",
+        "7F898B",
+        "A9B1B1",
+        "B03A2E",
+        "E4E7E7"
+      ]
+    },
+    {
+      "file": "demo-onepager-standard.pptx",
+      "slides": 2,
+      "chartParts": 1,
+      "mediaFiles": 1,
+      "embeddedWorkbooks": 1,
+      "pPic": 0,
+      "seriesNames": [
+        "透明底段（圖形用，非金額）",
+        "起訖與小計（金額）",
+        "有利差額（絕對值，圖形用）",
+        "不利差額（絕對值，圖形用）"
+      ],
+      "valAxisMin": [
+        "0"
+      ],
+      "valAxisMax": [
+        "6000000"
+      ],
+      "srgbColors": [
+        "1B2426",
+        "4A5558",
+        "7F898B",
+        "A9B1B1",
+        "B03A2E",
+        "E4E7E7"
+      ]
+    },
+    {
+      "file": "golden-onepager-boss.pptx",
+      "slides": 2,
+      "chartParts": 1,
+      "mediaFiles": 1,
+      "embeddedWorkbooks": 1,
+      "pPic": 0,
+      "seriesNames": [
+        "透明底段（圖形用，非金額）",
+        "起訖與小計（金額）",
+        "有利差額（絕對值，圖形用）",
+        "不利差額（絕對值，圖形用）"
+      ],
+      "valAxisMin": [
+        "0"
+      ],
+      "valAxisMax": [
+        "1500"
+      ],
+      "srgbColors": [
+        "1B2426",
+        "4A5558",
+        "7F898B",
+        "A9B1B1",
+        "B03A2E",
+        "E4E7E7"
+      ]
+    },
+    {
+      "file": "golden-onepager-client.pptx",
+      "slides": 2,
+      "chartParts": 1,
+      "mediaFiles": 1,
+      "embeddedWorkbooks": 1,
+      "pPic": 0,
+      "seriesNames": [
+        "透明底段（圖形用，非金額）",
+        "起訖與小計（金額）",
+        "有利差額（絕對值，圖形用）",
+        "不利差額（絕對值，圖形用）"
+      ],
+      "valAxisMin": [
+        "0"
+      ],
+      "valAxisMax": [
+        "1500"
+      ],
+      "srgbColors": [
+        "1B2426",
+        "4A5558",
+        "7F898B",
+        "A9B1B1",
+        "B03A2E",
+        "E4E7E7"
+      ]
+    },
+    {
+      "file": "golden-onepager-standard.pptx",
+      "slides": 2,
+      "chartParts": 1,
+      "mediaFiles": 1,
+      "embeddedWorkbooks": 1,
+      "pPic": 0,
+      "seriesNames": [
+        "透明底段（圖形用，非金額）",
+        "起訖與小計（金額）",
+        "有利差額（絕對值，圖形用）",
+        "不利差額（絕對值，圖形用）"
+      ],
+      "valAxisMin": [
+        "0"
+      ],
+      "valAxisMax": [
+        "1500"
+      ],
+      "srgbColors": [
+        "1B2426",
+        "4A5558",
+        "7F898B",
+        "A9B1B1",
+        "B03A2E",
+        "E4E7E7"
+      ]
+    }
+  ],
+  "pendingHuman": [
+    "Open the 6 PPTX files in the user's presentation software: value text boxes aligned with bars; helper series names in Edit Data",
+    "Check the 8 PDFs in a viewer or on a grayscale printer and save screenshots here"
+  ]
+}

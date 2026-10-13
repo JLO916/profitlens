@@ -709,8 +709,9 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   const pdf = await readFile(pdfPath);
   expect(pdf.subarray(0, 5).toString("latin1")).toBe("%PDF-");
   // 第一頁＋從新的一頁開始的附錄：A4 剛好 2 頁（V3-7 的版頭四行沒有把第一頁擠成兩頁）。
-  expect(pdfPages(pdf)).toBeGreaterThanOrEqual(2);
-  expect(pdfPages(pdf)).toBeLessThanOrEqual(2);
+  // V4-9a（D-V4-11＝B）：標準版另有一頁圖與資料表附錄（print-appendix-charts，G2＋兩張圖的資料表），2 → 3 頁；老闆一頁版維持 1 頁見 export-variants.spec。
+  expect(pdfPages(pdf)).toBeGreaterThanOrEqual(3);
+  expect(pdfPages(pdf)).toBeLessThanOrEqual(3);
   await page.emulateMedia({ media: "screen" });
   // page.pdf() 本身會觸發 beforeprint／afterprint（當下仍模擬 print media，頂欄不顯示、無法聚焦），列印版面在那時就已移除；這裡的 afterprint 只是保險。
   await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
@@ -764,9 +765,10 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   // 第一頁的決議行在關鍵差額之後、三件事（h2）之前。
   const decisionLine = print.getByTestId("print-decision-line");
   await expect(decisionLine).toHaveText(fill(summaryCopy.printMeetingLine, { name: defaultMeetingName, state: labels.meeting.form.decisions.draft, notes: "" }));
-  const neighbours = await decisionLine.evaluate(element => ({ previous: element.previousElementSibling?.textContent ?? "", nextTag: element.nextElementSibling?.tagName ?? "", next: element.nextElementSibling?.textContent ?? "" }));
+  // V4-9a（C31，PRD §5.10）：決議行與三件事之間多了第一頁的 G1 列印圖（figure[data-print-figure="bridge"]），三件事（h2）順延到圖之後。
+  const neighbours = await decisionLine.evaluate(element => ({ previous: element.previousElementSibling?.textContent ?? "", figure: element.nextElementSibling?.getAttribute("data-print-figure") ?? "", nextTag: element.nextElementSibling?.nextElementSibling?.tagName ?? "", next: element.nextElementSibling?.nextElementSibling?.textContent ?? "" }));
   expect(neighbours.previous).toContain(labels.metrics.contribution_after_marketing.headline);
-  expect(neighbours).toMatchObject({ nextTag: "H2", next: labels.overview.sections.topThree });
+  expect(neighbours).toMatchObject({ figure: "bridge", nextTag: "H2", next: labels.overview.sections.topThree });
   // 選入方案在第一頁只有一行；五項假設（數量、折扣、履約、廣告、一次性成本）在附錄。
   await expect(print.getByTestId("print-scenario-line")).toHaveCount(1);
   await expect(print.getByTestId("print-scenario-line")).toContainText(formatAmountL1("270.00"));
