@@ -730,7 +730,7 @@ V4-0a 必須證明 v3.0.0 程式碼 11 條全部為 0；若實測有違規，驗
 
 - 每張圖：圖容器 `aria-hidden`、副標當 `aria-describedby`、`<details class="data-alternative">` 資料表（C33）、可點圖形一定有對應的 number-link；熱表用 ChartFrame table 模式，不放進 `aria-hidden` 容器。
 - 對比：文字 ≥ 4.5:1、圖形非文字 ≥ 3:1；每個新 token 進 `scripts/contrast-check.mjs` 的 PAIRS（含 `--bg-subtle` 底）。
-- Lighthouse Accessibility 六頁 1440 與 390 不低於 v3 同頁（全 100）且 ≥ 95；axe 四尺寸 serious／critical 0（狀態數依 §2.2 C3 的時程逐批增加，V4-10 結束時 desktop、laptop、tablet 各 18 個、mobile 17 個）；鍵盤走查圖內 0 停留點、熱表整張 1 個停留點、KPI 前可聚焦 ≤ 10；無動畫，所以不需要 reduced-motion 例外。
+- Lighthouse Accessibility 六頁 1440 與 390 不低於 v3 同頁（全 100）且 ≥ 95；axe 四尺寸 serious／critical 0（狀態數依 §2.2 C3 的時程逐批增加，V4-10 結束時 desktop、laptop、tablet 各 18 個、mobile 17 個；V4-8a 加投影中的會議頁後，desktop、laptop、tablet 各多 1 個）；鍵盤走查圖內 0 停留點、熱表整張 1 個停留點、KPI 前可聚焦 ≤ 10；無動畫，所以不需要 reduced-motion 例外。
 
 ### 8.2 效能
 
