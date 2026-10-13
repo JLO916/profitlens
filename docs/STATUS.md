@@ -29,7 +29,7 @@
 
 其他：
 
-- 禁區四條命令都是空的；commit 之後的 diff（收尾 `{V4_8A_CLOSE}`）也是空的。
+- 禁區四條命令都是空的；commit 之後的 diff（收尾 `bc4e889`）也是空的。
 
 驗收文件：`verification/revamp-v4-V4-8a-acceptance.md`；量測與截圖在 `verification/revamp-v4/V4-8a/`。下一批是 V4-8b，四尺寸總檢與隨頁載入狀態；開工前請回覆 D-V4-56–63。
 
