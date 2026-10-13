@@ -292,6 +292,15 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-13｜Revamp v4 V4-11：收尾的取捨（不部署）
+
+- **棘輪上限**：V4-11 重測 design-lint 15 項、chart-lint 11 條與 copy-density 七頁各狀態，實測都已等於上限（hex 0、圓角 4、字級 11、字距 0、箭頭 3、其餘 0；CL-1 到 CL-11 全 0；試算 1、其餘 0），所以數值不動，只在上限檔與測試的說明加 V4-11 重測一句。copy-style 照規則不動（同義詞 12，D-V3-37 的 B 案延後）。
+- **`chartCategoryColors`、`readChartColors`**：選最小做法，保留不接用，各加一行註解說明理由，行為不變。v4 沒有多通路同圖（PRD §7.1、§10.1「本輪不用類別色」）；圖都直接用 `var()` 字串，匯出用 `EXPORT_THEME`，也不加圖片下載，所以沒有需要實際色值的呼叫端。token、contrast-check 與 `tests/chart-theme.test.ts` 照舊維護。
+- **版本 4.0.0（D-V4-1＝B）**：`package.json` 與 `package-lock.json` 只改 version，依賴不變。`docs/RELEASES.md` 新增「v4.0.0（尚未發布）」段：給使用者、不變的事、匯出格式的變更（PDF 頁數、PPT 張數、Excel「圖表資料」、Markdown 九項差額表）、相容性（備份字串仍是 v5；v3.0.0 讀不了精靈匯入後存的備份，會拒絕且不取代目前資料）、已知限制、驗收。`tests/release-notes.test.ts` 的版本斷言改為 4.0.0，另加 v4 段的斷言；v3.0.0 段的斷言不動。README 只在「功能一覽」加一行 v4.0.0（尚未發布）的說明；ENGINEERING 的版本句與文件地圖的 RELEASES 說明同步。
+- **不部署**：使用者 2026-10-13 指示「只完成程式與文件，不部署」。所以不打 git tag `v4.0.0`、不推送 `main`、不部署正式站或 preview、不在 Vercel 開 Skew Protection（D-V4-44 的 C）。RELEASES 與 PRD §2.2 寫「未執行：使用者 2026-10-13 指示不部署」，STATUS 與 V4-11 驗收文件照同一句記錄。之後要上線時，仍要先完成 H6 與匯出檔的人工開檔檢查，並取得使用者當次同意（D-V4-28）。
+- **功能保留表**：`feature-retention.csv` 原本空白的 72 列（大多是 v3 既有功能，批次欄是「—」）逐列核對：locator 與 testid 用 grep 確認仍在 `src` 或 `tests`，covering_tests 的檔案都在，status 寫「V4-11 已核對（2026-10-13）：…」與目前的位置。covering_tests 原本空白的 8 列（#58、D35–D37、D45–D48）另外寫出實際斷言它們的測試檔。
+- **PRD §2.2**：在 C 表之後加「實測值」表，取 V4-10 證據與 V4-11 重跑的數字。A1–A4 寫「未執行／待人工（H6）」；B4 的 CLS 4 項超過 0.05（v3.0.0 既有）誠實列為未達標。13 項 HTTP 與最終 E2E 通過數待 V4-11 終跑補進驗收文件。
+
 ## 2026-10-13｜Revamp v4 V4-10：P2 圖表的取捨
 
 - **G8 延後計算**：G8 的兩期每日累計（`periodDailyMetrics` 逐日重算）只在進階區第一次展開後才算。收合時只放等高骨架，標題用名詞「兩期每日累計」。

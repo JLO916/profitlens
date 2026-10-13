@@ -151,6 +151,36 @@ v3 的目標是「去 AI 製作感、三層閱讀」，圖只做到 B3「表格�
 | C9 | 禁區檢查 | §8.4 的四條命令都為空（D-V4-3）：對 `625bfa5` 與 `82b70df` 的兩個 diff、`assist-kpi-v1` 與 `breakeven-mer-v1` 所在檔案與既有測試的 diff、`git status --porcelain`（未追蹤與未提交的禁區檔案） | 每批驗收；commit 後再跑一次並寫下 commit hash |
 | C10 | 隱私 | `network-log.spec` 的下載集合仍恰好是 `analysis_csv`、`backup`、`decision_json`、`excel`、`pptx`；無 POST；`/api/insights` 封鎖不變 | `network-log.spec` |
 
+**實測值（V4-11 收尾填入，2026-10-13）**
+
+數字取自各批證據的最新一份：`verification/revamp-v4/V4-10/` 的 `metrics.json`、`axe.json`、`keyboard-walk.json`、`network-log.json`、`lighthouse-runs/`、`lighthouse-ab/summary.txt` 與 `first-load-proof.md`（V4-10 修正 G8 後的程式 `6badab3`，證據 commit `6ba99ab`），以及 `verification/revamp-v4-V4-*-acceptance.md`。C4、C5、C6、C9 是 V4-11 在本機重跑的結果。V4-11 只改文件、版本號、棘輪上限說明與 `chart-theme.ts` 的註解，不改畫面與計算；git tag `v4.0.0`、正式站部署與 Skew Protection 是「未執行：使用者 2026-10-13 指示不部署」。**待 V4-11 終跑**：13 項 HTTP（`scripts/launch-check.mjs`）、完整 E2E 的通過數、畫面基準、metrics、axe、keyboard-walk、network-log 與 Lighthouse 由收尾主流程重跑，結果寫進 `verification/revamp-v4-V4-11-acceptance.md`，與下表不同時以那份為準。V4-10 整合時的完整 E2E 是 1,051 passed、16 failed、25 skipped；16 條都是 4 條測試的斷言問題，修正後四尺寸重跑全過（`a882148`）。
+
+| 代號 | 實測 | 判定 | 證據 |
+|---|---|---|---|
+| A1 | 未執行／待人工（H6） | 未量 | `docs/revamp-v4/usability-test.md` |
+| A2 | 未執行／待人工（H6） | 未量 | 同上 |
+| A3 | 未執行／待人工（H6） | 未量 | 同上 |
+| A4 | 未執行／待人工（H6）；H4 也未執行，v3 對照由 H6 同場補量 | 未量 | 同上 |
+| B1 | 1440：總覽第一張 `.chart-frame` 頂 831（V4-0a 855）；健檢第一個 G9 內嵌條頂 276；商品第一張 `.chart-frame` 頂 379；資料來源 G20 頂 206；試算 G15 頂 914（V4-0a 方案比較表頂 938＋24＝962；V4-8a 起以 914＋24＝938 斷言），計算後 1,090（≤ 1,114）；健檢 G10 頂 2,241.6（參考值，不設門檻） | 達標 | `V4-10/metrics.json` 的 `desktop.b1` |
+| B2 | 1440：一句話頂 168、KPI 帶底 395、三件事首列底 537；1280：168、395、559（V4-0a 實測 192、419、583）；390：扣廣告後貢獻值頂 295。V4-8a 起期間列少一行，1440、1280 上移 24px | 達標 | 同上 `firstScreen` |
+| B3 | 七頁 390 寬的 `scrollWidth` 都是 390；會議頁展開完整通路寬表也是 390（V4-8b 起另量） | 達標 | 同上 `mobile.pages` |
+| B4 | CLS：1440 載入示範資料 0，切到健檢 0、商品 0、試算 0.002、會議 0、資料來源 0、**待辦 0.054**；390 載入示範資料 0.001，切到健檢 0、**商品 0.054**、試算 0、會議 0、**資料來源 0.054**、**待辦 0.053**。圖框等高：`revamp-r1-layout.spec`（`main .chart-frame:visible`）在 V4-10 整合 E2E 四尺寸通過 | **未達標（CLS 4 項）**：超過 0.05 的 4 項是 v3.0.0 既有行為（V4-0a 記為已知差距），v4 沒有改善；圖框等高達標 | `V4-10/lighthouse-runs/`（三次相同） |
+| B5 | First Load JS gzip 519,322 bytes（≤ 545,397；v3.0.0 為 519,426）；Treemap、Sankey、Funnel、PieChart、RadarChart 在首載都是 0；散佈圖 chunk `333.320e7d5e45d6c88e.js` 不在首頁腳本清單 | 達標 | `V4-10/metrics.json` 的 `firstLoadJs`、`V4-10/first-load-proof.md` |
+| B6 | KPI 前可聚焦：1440、1280 為 10，390 為 3；`[aria-hidden=true]` 內的停留點 1440、768、390 都是 0；健檢熱表 1 個停留點、經過 2 個 Tab（≤ 3）；「第一張圖的資料表 summary」里程碑：1440 總覽 58、健檢 49、商品 51、試算 32、會議 42、資料來源 10（涵蓋時間軸），390 依序 44、43、45、26、35、4 | 達標 | `V4-10/keyboard-walk.json` |
+| B7 | chart-lint CL-9 違規 0（每頁主層常駐獨立圖區塊 ≤ 3，總覽 ≤ 4） | 達標 | `tests/chart-lint.test.ts` |
+| B8 | 七頁主層否定句：試算 1（聲明勾選句「我了解這是試算，不是預測」），其餘 0；等於 V4-0a 上限，V4-11 上限不變 | 達標 | `tests/copy-density.test.ts`；`V4-10/metrics.json` 的 `mainLayerNegations` |
+| B9 | 1440 DOM 節點：總覽 3,325（上限 4,575）、健檢 2,174（2,824）、商品 2,510（3,322）、試算 683（2,160）、待辦 711（2,188）、會議 1,064（2,498）、資料來源 1,209（2,629）；1280 總覽 3,349（4,599）；390 總覽 3,312（4,562）、資料來源 1,206（2,629），其餘五頁同 1440 | 達標 | `V4-10/metrics.json` 的 `b9` |
+| C1 | Lighthouse Accessibility：8 頁 × 1440、390 全部 100（V4-10 修正後三次） | 達標 | `V4-10/lighthouse-runs/`、`V4-10/metrics.json` |
+| C2 | Performance：1440 為 100（三次）、390 為 94、94、97。390 TBT（ms）低負載三次中位數（開跑 1 分鐘負載 2.44–2.46）：載入示範資料 1,108.6（門檻 1,109.1）、切到通路健檢 841.6（832.3，超過）、商品毛利 99.8（129.9）、會議紀錄 1,022.9（1,071.2）、資料來源 15.8（50.0）。依 D-V4-47 與 V4-9b 同場交替 10 對，p3 的預先載入落在量測區間內而排除，其餘 9 對（負載 1.73–2.48）V4-10 中位數依序是 1,077.1、825.8、99.1、1,022.1、17.5，五項都低於門檻 | 達標（健檢依 D-V4-47 的成對量測判定） | `V4-10/lighthouse-runs/`、`V4-10/lighthouse-ab/summary.txt` |
+| C3 | axe 狀態數 desktop、laptop、tablet 各 23，mobile 21（mobile 沒有兩個投影狀態）；serious 0、critical 0，moderate、minor 也是 0 | 達標 | `V4-10/axe.json` |
+| C4 | `npm run contrast-check` 85 組全過（V4-11 重跑） | 達標 | `scripts/contrast-check.mjs` |
+| C5 | design-lint 15 項：hex 0、圓角 4、字級 11、字距 0、箭頭 3、其餘 0；copy-style 同義詞 12、其餘 0；chart-lint 11 條全 0（V4-11 重測，上限＝實測） | 達標 | `tests/design-lint.test.ts`、`copy-style.test.ts`、`chart-lint.test.ts` |
+| C6 | testid 刪除數：v2 基準 228 列 0、v3 基準 416 列 0、v4 新增清單 343 列 0 | 達標 | `tests/testid-baseline.test.ts`（V4-11 重跑） |
+| C7 | 各圖的 SSR 結構測試（`tests/overview-charts-*.test.tsx`、`tests/charts-*-v4.test.tsx` 等）與 E2E `charts-*.spec.ts` 通過；例外 G15、G16、G19、G22 依 §8.7 | 達標 | V4-11 `npm test`；V4-10 整合 E2E |
+| C8 | Markdown、Excel 正規化後與 V3-7 基準相同（`export-numeric-stability.test.ts`，圖表附屬內容在排除清單）；CSV、JSON 的 18 個輸出與 `74c81cc` 逐字相同（`export.test.ts`），網路紀錄中分析 CSV 356,738 bytes、決策 JSON 204,397 bytes 與 V4-0a 相同；golden 255.00、−315.00、284.00、264.00、19.70 不變 | 達標 | 同左；`V4-10/network-log.json` |
+| C9 | V4-0a 到 V4-10 每批的四條命令都是空的；V4-11 commit 前重跑四條也都是空的。commit 後的 diff 與 commit hash 記在 V4-11 驗收文件 | 達標 | 各批驗收文件 |
+| C10 | V4-10 desktop、mobile 的下載集合恰好是 `analysis_csv`、`backup`、`decision_json`、`excel`、`pptx`；應用程式發出的非 GET 請求 0、外部來源 0；`/api/insights` 回 `DISABLED` | 達標 | `V4-10/network-log.json` |
+
 ### 2.3 各頁「改成圖／維持表加內嵌條／刻意不加圖」決策表（每批驗收逐頁對照）
 
 | 頁面 | 改成圖（獨立 ChartFrame） | 維持表，加內嵌條或 sparkline | 刻意不加圖（理由） |

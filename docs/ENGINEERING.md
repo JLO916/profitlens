@@ -44,7 +44,7 @@ R3 的來源預設查證另見 [revamp-R3-preset-verification.md](../verificatio
 
 ## Revamp v3 批次驗收紀錄
 
-Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。目前版本 `package.json` 為 **3.0.0**（V3-10；版本標籤 `v3.0.0` 等人工關卡 H4 與正式站檢查後再打）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
+Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。V3-10 把 `package.json` 版本改為 **3.0.0**（版本標籤 `v3.0.0` 指向 `625bfa5`）；Revamp v4 的 V4-11 起為 **4.0.0**（尚未發布，見 [RELEASES](RELEASES.md) 的 v4.0.0 段落）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
 
 | 批次 | 內容 | 單元／整合 | E2E（四尺寸） | 驗收紀錄 |
 |---|---|---|---|---|
@@ -81,7 +81,7 @@ Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `
 | [AI_CONTRACT.md](AI_CONTRACT.md)、[M5_EVALUATION.md](M5_EVALUATION.md) | 選配 AI 的契約與評估 |
 | [PRD.md](PRD.md)、[ACCEPTANCE.md](ACCEPTANCE.md)、[TASKS.md](TASKS.md) | 原始產品規格、驗收條件與 M0–M6 關卡 |
 | [PILOT_PLAN.md](PILOT_PLAN.md)、[PILOT_WORKSHEET.md](PILOT_WORKSHEET.md) | 真實使用者試用計畫與工作表 |
-| [RELEASES.md](RELEASES.md) | 發布紀錄（v3.0.0 尚未發布；v2.0.0 與更早的發布） |
+| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.0.0 尚未發布；v3.0.0 與更早的發布） |
 | [revamp-v3/](revamp-v3/) | Revamp v3 規格套件：`00_README`、`01_PRD`、`06_BATCHES`、`09_DECISIONS_PENDING`、`GLOSSARY`、`copy-rewrite.csv`、`usability-test` |
 | 使用者可見文字 | `src/i18n/labels.zh-TW.ts`（單一來源；元件、匯出、AI 預覽都從這裡取字） |
 

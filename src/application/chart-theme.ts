@@ -30,6 +30,7 @@ export const chartColors = {
 export type ChartColorKey = keyof typeof chartColors;
 
 /** 通路等類別色（PRD §7.1 第 8 點：最多 4 個類別色，超過的合併成「其他」並用 chartColors.other）。 */
+// V4-11 保留不接用：v4 沒有多通路同圖（PRD §7.1 類別色「本輪沒有圖需要」、§10.1「本輪不用類別色」）；token、contrast-check 與 chart-theme.test 照舊維護。
 export const chartCategoryColors = ["var(--chart-cat-1)", "var(--chart-cat-2)", "var(--chart-cat-3)", "var(--chart-cat-4)"] as const;
 
 /** 圖高（px），對應 --chart-h-sm（總覽並列圖）、--chart-h-lg（瀑布、詳圖）與 V4-2 的 --chart-h-xs（sparkline）；同一列等高，四種狀態等高。 */
@@ -53,6 +54,7 @@ export function chartTokenName(value: string): string | null {
  * 讀出圖表色的實際值（瀏覽器端）：getComputedStyle(root ?? document.documentElement).getPropertyValue(token).trim()。
  * 沒有 document（伺服器端、單元測試）、getComputedStyle 失敗或讀不到值時，該色回傳 var() 字串本身，畫面照常由 CSS 解析。
  */
+// V4-11 保留不接用：v4 的圖（inline SVG 與 Recharts）都直接用 var() 字串，匯出用 export-theme.ts 的 EXPORT_THEME，也不加 PNG／SVG 下載，目前沒有需要實際色值的呼叫端。
 export function readChartColors(root?: Element | null): Record<ChartColorKey, string> {
   const fallback = { ...chartColors } as Record<ChartColorKey, string>;
   if (typeof document === "undefined" || typeof getComputedStyle !== "function") return fallback;

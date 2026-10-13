@@ -71,6 +71,7 @@ describe("withoutDetails keeps what is visible at first glance", () => {
 /**
  * B8 否定句上限（V4-0a 實測，v3.0.0＝625bfa5，2026-10-08）。鍵＝頁面（或頁面 · 狀態）；只能調低，不得調高。
  * 實測句子：試算 1 句「我了解這是試算，不是預測」（聲明勾選的文字，主層必須看得到）；其餘各頁、各狀態 0 句。
+ * V4-11（2026-10-13）重測：各頁、各狀態實測與上限相同（試算 1、其餘 0），上限不變。
  */
 const DENSITY_CEILINGS = {
   overview: 0,
