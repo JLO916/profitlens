@@ -13,6 +13,7 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 //      1280 的一句話頂與三件事首列底 v3 沒有量過，V4-0a 只量不斷言；V4-1 起以 V4-0a 實測（192、583）為門檻斷言（06_BATCHES 護欄表 B2）。
 //      V4-8a（D-V3-35＝A：期間列下的去年同期理由改成按了才顯示，內容上移 24px）起改以 V4-8a 實測（168、559）為門檻（只能更早；≤ 192、≤ 420、≤ 561、≤ 295 這類絕對預算不動）。
 //   B3 七頁在 390 寬 document.scrollingElement.scrollWidth ≤ 390（頁面不橫向捲動；.chart-frame.waterfall 與 .table-scroll 內部捲動不影響這個值）。
+//      V4-8b（D-V4-60＝A）起另量會議頁展開「完整通路寬表」（議程 3 的 details.meeting-wide-table）的 scrollWidth ≤ 390（v3 起展開後頁面橫向捲動到 720，D-V4-59 (1)）。
 //   B5 First Load JS gzip ≤ 545,397 bytes（v3.0.0 的 519,426 × 1.05，D-V4-24）；首載 chunk 中 Treemap、Sankey、Funnel、PieChart、RadarChart 字串出現 0 次；
 //      V4-3c 起另驗首載 chunk 不含隨頁載入的面板與匯出程式（SPLIT_SENTINELS 皆為 0），首頁腳本清單寫進 first-load-modules.json。
 // V4-1 起硬斷言（06_BATCHES 護欄表 B1、B9；PRD §2.2）：
@@ -263,6 +264,20 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
     if (id === "scenarios") b1.scenarios = { scenarioCompareTop: (await boxOrNull(page, "section.scenario-compare"))?.top ?? null, g15Top: (await boxOrNull(page, "[data-testid='chart-scenarios-variance']"))?.top ?? null, note: "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算。g15Top＝G15 方案差額區塊（chart-scenarios-variance，V4-5 起，空狀態）的頂" };
     if (id === "data") b1.data = { dataStatusLineBottom: (await boxOrNull(page, "[data-testid='data-status-line']"))?.bottom ?? null, g20Top: (await boxOrNull(page, "[data-testid='chart-data-coverage']"))?.top ?? null, g20FrameTop: (await boxOrNull(page, "[data-testid='chart-data-coverage'] .chart-frame"))?.top ?? null, dataIssuesTop: (await boxOrNull(page, "[data-testid='data-issues']"))?.top ?? null, note: "V4-7a 起 G20（chart-data-coverage）在狀態一行之下、data-issues 之上；g20Top＝區塊頂（B1 硬斷言的值），g20FrameTop＝固定高框頂" };
   }
+  // V4-8b（D-V4-60＝A）：B3 另量會議頁展開「完整通路寬表」（議程 3 的 details.meeting-wide-table；D-V4-59 (1)）。B3 只在 390 斷言，所以只在 mobile 量；量完收合。
+  let meetingWideTable: { scrollWidth: number; clientWidth: number } | null = null;
+  if (project === "mobile") {
+    await goToPage(page, "meeting");
+    const wide = page.getByTestId("meeting-agenda-3").locator("details.meeting-wide-table");
+    await expect(wide.locator(":scope > summary")).toHaveText(labels.meeting.pageV3.fullChannelTable);
+    await wide.locator(":scope > summary").click();
+    await expect(wide).toHaveAttribute("open", "");
+    await expect(wide.locator(".table-scroll").first()).toBeVisible();
+    meetingWideTable = await page.evaluate(() => ({ scrollWidth: document.scrollingElement!.scrollWidth, clientWidth: document.scrollingElement!.clientWidth }));
+    await wide.locator(":scope > summary").click();
+    await expect(wide).not.toHaveAttribute("open", "");
+    await record([project, "b3MeetingWideTable"], { ...meetingWideTable, max: B3_MAX_SCROLL_WIDTH, method: "會議頁（示範資料）展開議程 3 的「完整通路寬表」後量 document.scrollingElement 的 scrollWidth／clientWidth（寬表只在自己的 .table-scroll 內捲動）；量完收合（D-V4-60＝A）" });
+  }
   // 試算頁另量「維持現況」計算後的方案比較表區塊頂（G15 只在有結果時出現，V4-5 的 B1 門檻以這個狀態比較）；放在七頁量完之後，計算結果不影響其他頁的 DOM 節點數。
   await navigateTo(page, "scenarios");
   await calculateKeepPreset(page);
@@ -277,6 +292,7 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
   const b9 = SEVEN_PAGES.map(id => ({ page: id, domNodes: (pages[id] as { domNodes: number }).domNodes, baseline: B9_BASELINE[project][id], max: B9_BASELINE[project][id] + B9_ALLOWANCE }));
   await record([project, "b9"], { allowance: B9_ALLOWANCE, pages: b9, note: "V4-1 起硬斷言：各頁 DOM 節點數 ≤ V4-0a 基準＋1,500（baseline 取自 verification/revamp-v4/V4-0a/metrics.json）" });
   if (project === "mobile") for (const id of SEVEN_PAGES) expect.soft(scrollWidths[id], `B3 ${id}：390 寬 scrollWidth ≤ ${B3_MAX_SCROLL_WIDTH}`).toBeLessThanOrEqual(B3_MAX_SCROLL_WIDTH);
+  if (meetingWideTable) expect.soft(meetingWideTable.scrollWidth, `B3 meeting（展開完整通路寬表，D-V4-60）：390 寬 scrollWidth ≤ ${B3_MAX_SCROLL_WIDTH}`).toBeLessThanOrEqual(B3_MAX_SCROLL_WIDTH);
   for (const item of b9) expect.soft(item.domNodes, `B9 ${project} ${item.page}：DOM 節點數 ≤ V4-0a ${item.baseline}＋${B9_ALLOWANCE}`).toBeLessThanOrEqual(item.max);
   for (const item of b1Asserted) {
     expect.soft(item.measured, `B1 ${project} ${item.page} ${item.key}：有量到`).not.toBeNull();

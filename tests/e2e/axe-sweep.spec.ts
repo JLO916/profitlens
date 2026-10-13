@@ -16,6 +16,8 @@ import { fill, labels } from "../../src/i18n";
  * V4-6 再加一個：會議頁有歷史與選入方案（同一份合成資料：MARKETPLACE 方案 1 選入議程 5 → 結束會議 → 新會議稿再選入；G15 會議實例一根柱、G19 歷史 1 筆的等高空狀態，兩張圖的資料表展開）；desktop、laptop、tablet 共 17，mobile 共 16。
  * V4-7a 再加一個：匯入 fixtures/errors/missing_ad_day 後的資料來源頁（點 G20 缺列段後：篩選後的問題表、G21 一格、G20 資料表展開）；desktop、laptop、tablet 共 18，mobile 共 17。
  * V4-8a 再加一個：會議頁投影（從總覽投影按頁首的互切按鈕切過去，D-V3-34＝A；≤ 767px 沒有投影按鈕，手機略過）；desktop、laptop、tablet 共 19，mobile 共 17。
+ * V4-8b 代理 B（D-V4-60＝A）再加兩個部分資料狀態（D-V4-59 (4) 的 target-size，四個尺寸都有）：合成資料會議頁展開「資料待補」優先列（MISSING_CRITICAL_DATA，
+ * 影響金額是「資料待補」的 number-link）、匯入 missing_ad_day 後的總覽（關鍵 KPI 差額行是「先補齊 1 項」，下一行緊接「上期」金額）；desktop、laptop、tablet 共 21，mobile 共 19。
  * axe 來源：專案沒有 @axe-core/playwright（本輪不加依賴），改用 node_modules 已有的 axe-core（eslint-config-next → eslint-plugin-jsx-a11y 的相依套件）
  * 以 page.addScriptTag 注入 axe.min.js 後呼叫 axe.run。找不到 axe-core 時退回純 DOM 檢查（每個控制有可及名稱、每頁一個 h1、img 都有 alt），並在結果標明 engine。
  * 不論 axe 是否可用，每個狀態都另記純 DOM 檢查（heading 跳級、重複 id、:focus-visible 規則是否存在）供參考，不斷言。
@@ -143,6 +145,13 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   await openDataTable(meeting.getByTestId("chart-meeting-scenarios"));
   await openDataTable(meeting.getByTestId("chart-meeting-history"));
   results.push(await scan(page, "page-meeting-history-scenarios", engine, path));
+  // V4-8b（D-V4-60＝A、D-V4-59 (4)）：同一份合成資料的會議頁，展開「資料待補」優先列（議程 2 的 MISSING_CRITICAL_DATA；展開後的影響金額是「資料待補」的 number-link，
+  // 緊接在 summary 之下）。示範資料沒有這一列，原本的狀態都是收合的，所以掃不到。
+  const missingRow = meeting.getByTestId("manager-priority-MISSING_CRITICAL_DATA").locator("details.meeting-priority-row");
+  await openDetails(missingRow);
+  await expect(missingRow).toHaveAttribute("open", "");
+  await expect(missingRow.locator(".top-three-impact > button.number-link")).toHaveText(labels.shell.status.missing);
+  results.push(await scan(page, "page-meeting-synthetic-priority-open", engine, path));
   // V4-7a（06_BATCHES V4-7a、護欄表 axe）：匯入 fixtures/errors/missing_ad_day 後的資料來源頁——G20 缺列段（點它把問題表篩到廣告檔 MARKETPLACE 缺廣告列）、
   // G21 一格、篩選後的問題表（role=status 片語取得焦點、清除鈕），G20 的資料表（每列的「篩選問題表」按鈕）展開後掃。示範資料沒有缺列段、不渲染 G21，不加這個狀態就掃不到。
   await page.goto("/");
@@ -155,6 +164,10 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   await expect(page.getByTestId("data-issues-filter-clear")).toBeVisible();
   await openDataTable(page.getByTestId("chart-data-coverage"));
   results.push(await scan(page, "page-data-missing-ad-day-filtered", engine, path));
+  // V4-8b（D-V4-60＝A、D-V4-59 (4)）：同一份缺廣告日資料的總覽——關鍵 KPI（扣廣告後貢獻）本期資料待補，差額行是「先補齊 1 項」按鈕，下一行緊接「上期」金額。
+  await gotoPage(page, "overview");
+  await expect(page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-delta > button.text-button")).toHaveText(fill(labels.overview.kpiBand.fillMissing, { n: 1 }));
+  results.push(await scan(page, "page-overview-missing-ad-day", engine, path));
 
   const summary = {
     checked_at: new Date().toISOString(), engine, axe_core: path ? (JSON.parse(readFileSync(path.replace(/axe\.min\.js$/, "package.json"), "utf8")) as { version: string }).version : null,
@@ -168,7 +181,8 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   // V4-6 起 17／16（加會議頁有歷史與選入方案）；V4-7a 起 18／17（加 missing_ad_day 的資料來源頁：G20 缺列段、G21、篩選後的問題表）。
   // 06 護欄表寫的「V4-7a 起 17／16」是在 V4-6 多加一個狀態之前寫的，實際是 18／17。
   // V4-8a 起 19／17（desktop、laptop、tablet 加會議頁投影；mobile 沒有投影，不變）。
-  expect(results.length, "axe 狀態數（V4-8a 起 19／17）").toBe(testInfo.project.name === "mobile" ? 17 : 19);
+  // V4-8b 代理 B 起 21／19（D-V4-60＝A：四個尺寸都加合成資料會議頁展開「資料待補」優先列、缺廣告日的總覽）。
+  expect(results.length, "axe 狀態數（V4-8b 代理 B 起 21／19）").toBe(testInfo.project.name === "mobile" ? 19 : 21);
 
   for (const row of results) {
     const blocking = row.violations.filter(item => item.impact === "serious" || item.impact === "critical").map(item => `${item.impact} ${item.id}（${item.nodes}）：${item.targets.join(" ")}`);

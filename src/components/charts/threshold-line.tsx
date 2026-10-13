@@ -17,6 +17,7 @@ import { rankedTextWidth } from "./ranked-bars";
 //   （試算是假設、不是本期資料，不用強調色 chartColors.current，也避免綠點被讀成有利，CHART_CATALOG G16）；
 //   點標籤由呼叫端從 labels 組好傳入（label 寬版、shortLabel 窄版：繪圖寬 < THRESHOLD_NARROW_BELOW 時用 shortLabel，390 的「門檻標籤縮短為百分比」）；
 //   標籤預設在點的上方，碰到上緣、x 軸列或其他標籤、點時依序改放下方、右側、左側（都碰到時取 svg 內與已放標籤、其他點重疊面積最小的位置）；端點不另標值（只有呼叫端給的標籤）。
+//   V4-8b（D-V4-59 (7)）：標籤的左界是繪圖區左緣（不進 y 刻度文字欄），置中放不下時從繪圖區左緣起。
 // 根 svg aria-hidden、focusable=false；點不可點（PRD §8.7 例外：試算結果是假設、不是 CSV 彙總，v3 的門檻與敏感度表都是純文字），
 // 圖內沒有 tabIndex、onClick、<a>、<button>（CL-7）；語意由同區塊的門檻說明（threshold-{id}）、敏感度表與 C33 資料表承擔。
 // 色只經 chart-theme.ts 的 chartColors（沒有色碼與 var() 字串常值，CL-3）；svg 高＝chartHeights.sm（CL-10）；字級只用 chartFontSize（CL-5）。
@@ -127,14 +128,15 @@ const overlaps = (a: Box, b: Box) => a.left < b.right && b.left < a.right && a.t
 const overlapArea = (a: Box, b: Box) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
 
 /**
- * 標籤的 x、對齊與左緣（避讓用）。上、下方置中，置中會超出 svg 左右緣時改從點的左緣起（start）或到點的右緣止（end）；
+ * 標籤的 x、對齊與左緣（避讓用）。上、下方置中，置中會超出左緣或 svg 右緣時改從點的左緣起（start，不早於左緣）或到點的右緣止（end）；
  * 右側從點的右緣＋4 起（start）、左側到點的左緣−4 止（end）。
+ * V4-8b（D-V4-59 (7)）：左緣是繪圖區左緣 plot.left（不是 svg 左緣 0）——y 刻度文字欄不算可放標籤的空間（390 示範資料的「−87.9%」原本壓在「0」刻度上）。
  */
-function labelX(cx: number, textWidth: number, placement: ThresholdLabelPlacement, width: number): { x: number; anchor: ThresholdLabelShape["anchor"]; left: number } {
+function labelX(cx: number, textWidth: number, placement: ThresholdLabelPlacement, width: number, left: number): { x: number; anchor: ThresholdLabelShape["anchor"]; left: number } {
   if (placement === "right") { const x = round1(cx + THRESHOLD_POINT_R + LABEL_GAP); return { x, anchor: "start", left: x }; }
   if (placement === "left") { const x = round1(cx - THRESHOLD_POINT_R - LABEL_GAP); return { x, anchor: "end", left: x - textWidth }; }
-  if (cx - textWidth / 2 >= 0 && cx + textWidth / 2 <= width) return { x: cx, anchor: "middle", left: cx - textWidth / 2 };
-  if (cx - textWidth / 2 < 0) { const x = round1(Math.max(0, cx - THRESHOLD_POINT_R)); return { x, anchor: "start", left: x }; }
+  if (cx - textWidth / 2 >= left && cx + textWidth / 2 <= width) return { x: cx, anchor: "middle", left: cx - textWidth / 2 };
+  if (cx - textWidth / 2 < left) { const x = round1(Math.max(left, cx - THRESHOLD_POINT_R)); return { x, anchor: "start", left: x }; }
   const x = round1(Math.min(width, cx + THRESHOLD_POINT_R));
   return { x, anchor: "end", left: x - textWidth };
 }
@@ -145,8 +147,8 @@ function labelX(cx: number, textWidth: number, placement: ThresholdLabelPlacemen
  * 2. y：範圍含 0 與所有點；步長 niceStep((最大 − 最小) ÷ 4)、至少 1（元），上下界取步長的整數倍；只有 0（或沒有點）時範圍 [−1, 1]、只有 0 一個刻度，零線在正中。
  * 3. 左欄寬＝最長 y 刻度文字估寬＋8；右側留「100%」半個字寬與點半徑；繪圖區 x 從 −90 對到左緣、+100 對到右緣。
  * 4. x 刻度每 25 個百分點；相鄰刻度間距放不下最長刻度文字＋6 時，只標 50 的倍數。
- * 5. 標籤：先放門檻點、再放使用者點；依序試點的上方、下方、右側、左側，取第一個不超出 svg（上下不進 x 軸列）、不碰已放的標籤與其他點的位置；
- *    都碰到時取不超出 svg 的位置中，與已放標籤、其他點重疊面積最小者（同面積依上、下、右、左；都超出時放上方，上方超出上緣時放下方）。上、下方置中放不下時改靠左或靠右對齊。
+ * 5. 標籤：先放門檻點、再放使用者點；依序試點的上方、下方、右側、左側，取第一個不超出 svg（上下不進 x 軸列、左邊不進 y 刻度文字欄，V4-8b）、不碰已放的標籤與其他點的位置；
+ *    都碰到時取不超出的位置中，與已放標籤、其他點重疊面積最小者（同面積依上、下、右、左；都超出時放上方，上方超出上緣時放下方）。上、下方置中放不下時改靠左（不早於繪圖區左緣）或靠右對齊。
  * 不輸出任何線段（connected 恆為 false；D-V4-20＝A′）。
  */
 export function thresholdGeometry(points: readonly ThresholdLinePoint[], width: number, options: ThresholdGeometryOptions = {}): ThresholdGeometry {
@@ -204,10 +206,10 @@ export function thresholdGeometry(points: readonly ThresholdLinePoint[], width: 
     const textWidth = rankedTextWidth(text);
     const others = shapes.filter(other => other !== shape).map(pointBox);
     const candidate = (placement: ThresholdLabelPlacement) => {
-      const { x, anchor, left } = labelX(shape.cx, textWidth, placement, drawWidth);
+      const { x, anchor, left } = labelX(shape.cx, textWidth, placement, drawWidth, plot.left);
       const baseline = round1(placement === "above" ? shape.cy - THRESHOLD_POINT_R - LABEL_GAP : placement === "below" ? shape.cy + THRESHOLD_POINT_R + LABEL_GAP + LABEL_ASCENT : shape.cy + LABEL_SIDE_DROP);
       const box: Box = { left, right: left + textWidth, top: baseline - LABEL_ASCENT, bottom: baseline + LABEL_DESCENT };
-      const inside = box.top >= 0 && box.bottom <= plot.bottom + X_TICK_LENGTH && box.left >= 0 && box.right <= drawWidth;
+      const inside = box.top >= 0 && box.bottom <= plot.bottom + X_TICK_LENGTH && box.left >= plot.left && box.right <= drawWidth;
       const blockers = [...placed, ...others];
       const clear = inside && !blockers.some(other => overlaps(box, other));
       const cost = inside ? blockers.reduce((sum, other) => sum + overlapArea(box, other), 0) : Number.POSITIVE_INFINITY;

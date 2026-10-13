@@ -15,7 +15,7 @@ import { ChartFrame } from "../overview/charts/chart-frame";
 // 位置：會議紀錄頁 section.panel.meeting-history 內、historyNote 之後、歷史清單（meeting-history-list）之前；沒有任何已結束的會議時接在 v3 的空狀態區塊（meeting-history-empty）之後，
 // 一樣是等高空狀態（V4-6 整合，審查 A-4：06「歷史 < 2 筆等高空狀態」含 0 筆；兩句互補：v3 區塊說清單、本圖說走勢要兩次以上）。
 // ChartFrame variant="inline"（已在 .panel 內，不套 panel，X8）、headingLevel 3（h2#meeting-history-title 之下）、height sm、frameClassName="multiples"；
-// 外層 div 以 multiplesFrameStyle(2) 給 ≤ 767px 的框高（chartHeights.sm × 2，單欄兩張；四態同高，空狀態也是）。投影隱藏：整個 .meeting-history 在投影中不顯示（globals.css 投影段）。
+// 外層 div 以 multiplesFrameStyle(2) 給 ≤ 767px 的框高（chartHeights.sm × 2，單欄兩張；載入與有資料同高）；V4-8b（D-V4-63＝B）起空狀態在 ≤ 767px 改用 sm 高度（globals.css「V4-8b B」）。投影隱藏：整個 .meeting-history 在投影中不顯示（globals.css 投影段）。
 // 資料：meetingSeries（meeting-series-v1，src/application/chart-meeting.ts）——會議順序、本期相同的只留最近結束的一次、斷段位置與原因；值是凍結的 agenda.kpis[].current，逐字沿用。
 // 圖：C26 小倍數兩張（淨營收、扣廣告後貢獻，小標取 metricDefinitions），各自的 Y（amountAxis：整數萬含 0，刻度文字 formatAxisWan）；X 是會議順序，
 // 刻度標資料本期（M/D–M/D，fitXLabels 放不下時只留頭尾）；不同段之間插入一個空位置（null 斷線，不連線），間隙標「不同資料集」或「期間不同」。
