@@ -2,7 +2,7 @@ import { sumTotals, uniqueSources } from "../domain/aggregation";
 import { dateRange } from "../domain/date";
 import { calculateMetrics } from "../domain/metrics";
 import { parseCents, ratioMetric } from "../domain/money";
-import type { Amount, DailyChannel, Metric, MONEY_METRICS, Period, SourceRef } from "../domain/types";
+import type { Amount, DailyChannel, Metric, Metrics, MONEY_METRICS, Period, PeriodAnalysis, SourceRef } from "../domain/types";
 import { fill, labels } from "../i18n";
 import { emptyKindOf, formatAmountL3, formatEmpty, formatRateL3, metricDefinitions, MINUS } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
@@ -62,21 +62,31 @@ function isZeroMetric(metric: Metric): boolean {
   return amountOf(metric).cents === 0n;
 }
 
-/** F9 日欄：本期每一天一欄；同一天各通路的 totals 相加後交給 domain 的 calculateMetrics（不寫新公式）。 */
-function dayColumns(snapshot: WorkspaceSnapshot): { columns: PnlColumn[]; values: (metric: PnlMetric, index: number) => PnlCell } {
-  const { period, daily } = snapshot.report.current;
+/**
+ * V4-10 代理 A（G8；PRD §4.3、§6.4；CHART_CATALOG G8）：由 dayColumns 抽出並匯出的每日彙總（邏輯不改，buildPnlTable 的輸出不變）。
+ * 期間內每一天一列：同一天各通路的 totals 用 domain 的 sumTotals 相加，再交給 domain 的 calculateMetrics（不寫新公式）；
+ * daily 完全沒有那一天時 hasData＝false、metrics＝null（不當成 0）。對 report.previous 也能用（buildPnlTable 只有本期的日欄）。
+ */
+export interface PeriodDay { date: string; period: Period; hasData: boolean; metrics: Metrics | null; sources: SourceRef[] }
+export function periodDailyMetrics(analysis: Pick<PeriodAnalysis, "period" | "daily">): PeriodDay[] {
+  const { period, daily } = analysis;
   const byDate = new Map<string, DailyChannel[]>();
   for (const row of daily) {
     const group = byDate.get(row.date) ?? [];
     group.push(row);
     byDate.set(row.date, group);
   }
-  const days = dateRange(period.start, period.end).map(date => {
+  return dateRange(period.start, period.end).map(date => {
     const rows = byDate.get(date) ?? [];
     const dayPeriod = { start: date, end: date };
-    if (rows.length === 0) return { column: { id: date, granularity: "day" as const, period: dayPeriod, label: date, hasData: false }, metrics: null, sources: [] as SourceRef[] };
-    return { column: { id: date, granularity: "day" as const, period: dayPeriod, label: date, hasData: true }, metrics: calculateMetrics(sumTotals(rows.map(row => row.totals))), sources: uniqueSources(rows.flatMap(row => row.sources)) };
+    if (rows.length === 0) return { date, period: dayPeriod, hasData: false, metrics: null, sources: [] as SourceRef[] };
+    return { date, period: dayPeriod, hasData: true, metrics: calculateMetrics(sumTotals(rows.map(row => row.totals))), sources: uniqueSources(rows.flatMap(row => row.sources)) };
   });
+}
+
+/** F9 日欄：本期每一天一欄；同一天各通路的 totals 相加後交給 domain 的 calculateMetrics（不寫新公式）。V4-10 起改呼叫 periodDailyMetrics，輸出不變。 */
+function dayColumns(snapshot: WorkspaceSnapshot): { columns: PnlColumn[]; values: (metric: PnlMetric, index: number) => PnlCell } {
+  const days = periodDailyMetrics(snapshot.report.current).map(day => ({ column: { id: day.date, granularity: "day" as const, period: day.period, label: day.date, hasData: day.hasData }, metrics: day.metrics, sources: day.sources }));
   return {
     columns: days.map(day => day.column),
     values: (metric, index) => {

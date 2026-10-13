@@ -9,8 +9,9 @@ import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application
 import type { LadderEvidence, LadderSnapshot } from "@/application/evidence-ladder";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
-import { evidenceRows, formatAmountL1, formatAmountL3, formatPeriodL1, formatRateL1, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "@/application/presentation";
+import { evidenceRows, formatAmountL1, formatAmountL3, formatDateL1, formatPeriodL1, formatRateL1, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "@/application/presentation";
 import { CHANNEL_STRUCTURE_VERSION, channelStructure } from "@/application/chart-structure";
+import { CUMULATIVE_DAILY_VERSION, cumulativeDaily } from "@/application/chart-cumulative";
 import { buildPnlTable } from "@/application/pnl-table";
 import { shareFeesEvidence, sharePerHundredEvidence } from "@/components/diagnosis/share-section";
 import { EvidenceDrawer, evidenceSubtitle, type EvidenceSelection } from "@/components/evidence-drawer";
@@ -22,6 +23,7 @@ import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import { chartColors } from "@/application/chart-theme";
 import { barCellFill, barCellShareBase, barCellShareGeometry, barCellSigned } from "@/components/charts/bar-cell";
 import { channelEvidence } from "@/components/overview/charts/channel-section";
+import { cumulativeDayEvidence, cumulativeEvidence } from "@/components/overview/charts/cumulative-section";
 import { frozenLadderMetrics, ladderCases, ladderDatasets } from "./helpers/evidence-ladder-cases";
 
 // V4-7b 代理 B：ladderMetrics 搬到 src/application/evidence-ladder.ts，抽屜改從那裡匯入。這裡把它包一層開關：預設走搬移後的函式（本檔其餘測試不受影響），
@@ -611,5 +613,41 @@ describe("V4-7b G23 階梯表佔比條", () => {
     const live = synthetic.snapshot.report.current.channels.LIVE.metrics;
     expect(expectLadderBars(draw(synthetic, channelEvidence(synthetic.snapshot, "LIVE", "current")), live, "contribution_after_marketing").map(bar => bar.metric)).toEqual(["net_revenue", "cogs_net", "gross_profit"]);
     expect(expectLadderBars(draw(synthetic, kpi(synthetic, "contribution_after_marketing")), synthetic.snapshot.report.current.metrics, "contribution_after_marketing").map(bar => bar.metric)).toEqual(["net_revenue", "cogs_net", "gross_profit"]);
+  });
+});
+
+// V4-10 代理 A（CHART_CATALOG G8 抽屜、PRD §8.7 第 3 點；06_BATCHES V4-10「累計抽屜大數字不帶「+」」）：G8 兩期每日累計的兩種抽屜。
+// 累計（點與資料表累計格同一個 builder）：valueKind level、metricVersion cumulative-daily-v1、組成是累加的每一天、篩到該日；當日格：domain 值（contribution-v1）＋arrangeVersion。
+describe("V4-10 G8 兩期每日累計的抽屜", () => {
+  const cumulative = () => cumulativeDaily(snapshot, "contribution_after_marketing");
+  const filterCopy = labels.overview.trendYoyV3.filter;
+  const filterPhrase = (date: string) => fill(filterCopy.phrase, { scope: fill(labels.evidence.chartsV4.filter.date, { date: formatDateL1(date, { anchor: dataset.manifest.data_as_of }) }) });
+
+  it("累計（golden 本期第 1 天 255.00）：大數字與精確值不帶「+」、沒有取位說明、不畫階梯；組成一列「第 1 天（8/2）」；metric_version 是 cumulative-daily-v1；篩到 8/02", () => {
+    const result = cumulative();
+    const html = render(cumulativeEvidence(snapshot, result, result.current, 1));
+    expect(bigNumber(html)).toBe(formatAmountL1("255.00"));
+    expect(bigNumber(html)).not.toMatch(/^[+−-]/);
+    expect(preciseOf(html)).toBe(fill(labels.format.units.yuan, { value: formatAmountL3("255.00") }));
+    expect(html).not.toContain("evidence-rounding-note");
+    expect(html).not.toContain("ladder-table");
+    expect(componentRows(html)).toEqual([[fill(labels.overview.chartsV4.cumulative.evidence.component, { n: 1, date: formatDateL1("2026-08-02", { anchor: dataset.manifest.data_as_of }) }), formatAmountL3("255.00")]]);
+    expect(technicalOf(html)).toContain(`<div><dt>metric_version</dt><dd><code>${CUMULATIVE_DAILY_VERSION}</code></dd></div>`);
+    expect(technicalOf(html)).toContain(`<code>${escapeHtml(labels.overview.chartsV4.cumulative.evidence.formulaTechnical)}</code>`);
+    expect(html).toContain(escapeHtml(fill(labels.overview.chartsV4.cumulative.evidence.definition, { period: labels.shell.periods.current, n: 1, metric: metricDefinitions.contribution_after_marketing.label })));
+    expect(html).not.toContain(escapeHtml(metricDefinitions.contribution_after_marketing.formulaTechnical));
+    expect(between(html, 'data-testid="evidence-filter"', "</div>")).toContain(filterPhrase("2026-08-02"));
+    // 同一筆證據不給 valueKind：沿用 V3（有 components 視為差額）帶「+」——證明大數字不帶號是 valueKind level 的結果。
+    expect(bigNumber(render({ ...cumulativeEvidence(snapshot, result, result.current, 1), valueKind: undefined }))).toBe(formatSignedDelta("255.00", "L1"));
+    // 上期（570.00）同樣不帶號。
+    expect(bigNumber(render(cumulativeEvidence(snapshot, result, result.previous, 1)))).toBe(formatAmountL1("570.00"));
+  });
+
+  it("當日格（golden 本期 8/02）：metric_version 仍是 contribution-v1，技術細節另列一行 cumulative-daily-v1；不帶號；篩到 8/02", () => {
+    const result = cumulative();
+    const html = render(cumulativeDayEvidence(snapshot, result, result.current, 1));
+    expect(bigNumber(html)).toBe(formatAmountL1("255.00"));
+    expect(technicalOf(html)).toContain(`<div><dt>metric_version</dt><dd><code>contribution-v1</code></dd></div><div data-testid="evidence-arrange-version"><dt>${labels.evidence.chartsV4.arrangeVersion}</dt><dd><code>${CUMULATIVE_DAILY_VERSION}</code></dd></div>`);
+    expect(between(html, 'data-testid="evidence-filter"', "</div>")).toContain(filterPhrase("2026-08-02"));
   });
 });

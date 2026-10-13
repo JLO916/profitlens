@@ -1689,6 +1689,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const { issuesChartModel } = await import("@/components/data/issues-chart");
       const { PRODUCT_PARETO_LIMIT, productPareto } = await import("@/application/chart-pareto");
       const { compareProducts } = await import("@/domain/product-comparison");
+      const { cumulativeDaily } = await import("@/application/chart-cumulative");
       type Loaded = NonNullable<StateMarkup["state"]>;
       /**
        * 區塊：main＝主層獨立圖區塊（section.chart-section，依表的順序）；within＝在這個 testid 的元素內；table＝資料表（收在沒有 open 的 <details class="data-alternative"> 內）；
@@ -1708,6 +1709,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
           { id: "bridge-section", main: true }, { id: "bridge-waterfall", within: "bridge-section" }, { id: "bridge-table", within: "bridge-section" },
           { id: "profit-waterfall", main: true }, { id: "trend", main: true }, { id: "channel-mix", main: true },
           { id: "chart-overview-assist-table", within: "assist-kpis", table: true },
+          // V4-10 G8 兩期每日累計：在收合的進階 <details>（overview-advanced）內，不算主層；任一期超過 92 天時沒有資料表。
+          { id: "chart-overview-cumulative", within: "overview-advanced" },
+          { id: "chart-overview-cumulative-table", within: "chart-overview-cumulative", table: true, when: state => cumulativeDaily(state.active.snapshot, "contribution_after_marketing").drawable },
         ] },
         diagnosis: { root: has("diagnosis-panel"), blocks: [
           { id: "chart-diagnosis-share", main: true }, { id: "chart-diagnosis-share-table", within: "chart-diagnosis-share", table: true },
@@ -1876,6 +1880,36 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V4-9b 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-9b 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
     // ── V4-10 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-10 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    // ── V4-10 代理 A（G8 兩期每日累計）M1 測試
+    it("V4-10 A G8 兩期每日累計（M1；X37）：每個總覽狀態恰好一份 chart-overview-cumulative，在收合（沒有 open）的進階 <details data-testid=overview-advanced> 內、管理損益表之後；資料表掛載在收合的 <details class=data-alternative> 內；不算主層圖區塊（總覽主層仍是 G1–G4 四個）；有目標的總覽狀態（示範資料＋targets.csv）資料表多一欄目標", async () => {
+      const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const { cumulativeDaily } = await import("@/application/chart-cumulative");
+      let checked = 0;
+      for (const { name, html, state } of states) {
+        if (state?.panel !== "overview" || !html.includes('data-testid="kpi-band"')) continue;
+        checked++;
+        const advanced = element(html, 'data-testid="overview-advanced"')!;
+        expect(openTag(advanced, "<details"), name).not.toMatch(/\sopen=""/);
+        expect(occurrences(html, 'data-testid="chart-overview-cumulative"'), name).toBe(1);
+        expect(advanced, name).toContain('data-testid="chart-overview-cumulative"');
+        expect(advanced.indexOf('data-testid="pnl-table"'), `${name}：管理損益表之後`).toBeLessThan(advanced.indexOf('data-testid="chart-overview-cumulative"'));
+        const section = element(html, 'data-testid="chart-overview-cumulative"')!;
+        expect(openTag(section, "<section"), name).toMatch(/^<section class="panel chart-section" aria-labelledby="cumulative-title" aria-describedby="cumulative-sub"/);
+        expect(occurrences(section, 'class="chart-frame '), name).toBe(1);
+        const drawable = cumulativeDaily(state.active.snapshot, "contribution_after_marketing").drawable;
+        expect(occurrences(section, 'data-testid="chart-overview-cumulative-table"'), name).toBe(drawable ? 1 : 0);
+        expect(openTag(element(section, '<details class="data-alternative"')!, "<details"), name).toBe('<details class="data-alternative">');
+        expect(checkChartMarkup(html, { page: "overview" }).mainSections, `${name}：總覽主層仍是 4 個`).toEqual(["bridge-section", "profit-waterfall", "trend", "channel-mix"]);
+        // 圖內（aria-hidden 固定高容器）沒有可聚焦元素；數字都在資料表的 number-link。
+        expect(element(section, 'class="chart-frame ')!, name).not.toMatch(/tabindex|<button|<a\s/);
+      }
+      expect(checked).toBeGreaterThanOrEqual(4);
+      // 示範資料＋targets.csv（扣廣告後貢獻目標 100,000.00 與本期期間完全相同 → matched）：圖例多「目標」刻度、資料表多一欄。
+      const overview = states.find(item => item.name === "overview")!;
+      const section = element(overview.html, 'data-testid="chart-overview-cumulative"')!;
+      expect(section).toContain('data-shape="tick"');
+      expect(section).toContain(`<th scope="col" class="num">${fill(labels.format.units.yuanColumn, { label: labels.overview.chartsV4.cumulative.columns.target })}</th>`);
+    });
 
   });
 

@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { fixture, expected } from "./helpers/fixtures";
 import { validateDataset } from "@/domain/validation";
 import { compareProducts } from "@/domain/product-comparison";
+import { dateRange } from "@/domain/date";
 import { parseCents } from "@/domain/money";
 import type { AnalysisFilters, DatasetInput } from "@/domain/types";
 import { createSnapshot, hashInput } from "@/application/workspace";
@@ -10,6 +11,7 @@ import { buildManagerSummary, metricComparison } from "@/application/manager-sum
 import { addActionDraft, editActionManagement, editBoundAction, emptyActionWorkspace, pinAction, type ActionSource, type ActionWorkspace } from "@/application/action-workspace";
 import { ASSIST_WEEKS_VERSION, assistWeeks } from "@/application/chart-assist-weeks";
 import { CHANNEL_WEEKS_VERSION, channelWeeks, recentChannelWeeks } from "@/application/chart-channel-weeks";
+import { CUMULATIVE_DAILY_VERSION, cumulativeConclusion, cumulativeDaily } from "@/application/chart-cumulative";
 import { DAILY_HEATMAP_VERSION } from "@/application/chart-heatmap";
 import { PRODUCT_PARETO_LIMIT, PRODUCT_PARETO_VERSION, productPareto } from "@/application/chart-pareto";
 import { CHANNEL_STRUCTURE_VERSION } from "@/application/chart-structure";
@@ -255,6 +257,8 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     expect(chartVersions.map(row => [row[col.basis.item], row[col.basis.detail]])).toEqual([
       [versionItem(labels.overview.chartsV4.assistSpark.tableTitle), "assist-weeks-v1"],
       [versionItem(labels.diagnosis.chartsV4.channelsSpark.tableTitle), "channel-weeks-v1"],
+      // V4-10 G8 兩期每日累計（cumulative-daily-v1）：接在各通路每週之後（CHART_CATALOG 的順序）。
+      [versionItem(labels.overview.chartsV4.cumulative.tableTitle), "cumulative-daily-v1"],
       [versionItem(labels.diagnosis.chartsV4.share.section), "channel-structure-v1"],
       [versionItem(fill(labels.diagnosis.chartsV4.heat.section, { metric: metricDefinitions.contribution_after_marketing.label })), "daily-heatmap-v1"],
     ]);
@@ -294,14 +298,14 @@ const GROSS_PROFIT = metricDefinitions.gross_profit.label;
 /** 各段的段名（欄 A）：畫面資料表的標題。 */
 const CHART_SECTION = {
   G1: labels.overview.sections.bridge, G2: labels.overview.profit.section, G4: labels.overview.sections.channelMix,
-  G7a: labels.overview.chartsV4.assistSpark.tableTitle, G7b: labels.diagnosis.chartsV4.channelsSpark.tableTitle, G10: labels.diagnosis.chartsV4.share.section,
+  G7a: labels.overview.chartsV4.assistSpark.tableTitle, G7b: labels.diagnosis.chartsV4.channelsSpark.tableTitle, G8: labels.overview.chartsV4.cumulative.tableTitle, G10: labels.diagnosis.chartsV4.share.section,
   G11: fill(labels.diagnosis.chartsV4.heat.section, { metric: metricDefinitions.contribution_after_marketing.label }), G12: labels.diagnosis.chartsV4.rates.title,
   G13: fill(labels.products.chartsV4.variance.section, { metric: GROSS_PROFIT }), G14: fill(labels.products.chartsV4.pareto.section, { metric: GROSS_PROFIT }),
 } as const;
 type ChartKey = keyof typeof CHART_SECTION;
 /** 「版本與算法」列：B 級段是整理函式的版本常數，A 級段是 contribution-v1。 */
 const CHART_VERSION: Record<ChartKey, string> = {
-  G1: "contribution-v1", G2: "contribution-v1", G4: "contribution-v1", G7a: ASSIST_WEEKS_VERSION, G7b: CHANNEL_WEEKS_VERSION, G10: CHANNEL_STRUCTURE_VERSION,
+  G1: "contribution-v1", G2: "contribution-v1", G4: "contribution-v1", G7a: ASSIST_WEEKS_VERSION, G7b: CHANNEL_WEEKS_VERSION, G8: CUMULATIVE_DAILY_VERSION, G10: CHANNEL_STRUCTURE_VERSION,
   G11: DAILY_HEATMAP_VERSION, G12: "contribution-v1", G13: "contribution-v1", G14: PRODUCT_PARETO_VERSION,
 };
 type Cell = string | number | null;
@@ -341,7 +345,7 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
     }
   });
 
-  it("段的順序同 CHART_CATALOG（G1、G2、G4、G7a、G7b、G10、G11、G12、G13；沒有商品毛利為負時沒有 G14）；沒有 G15、G16；表頭＝區塊、內容", async () => {
+  it("段的順序同 CHART_CATALOG（G1、G2、G4、G7a、G7b、G8（V4-10）、G10、G11、G12、G13；沒有商品毛利為負時沒有 G14）；沒有 G15、G16；表頭＝區塊、內容", async () => {
     for (const name of ["golden", "demo"]) {
       const sheet = chartSheet(buildExcelWorkbook(await chartInput(name)))!;
       expect(sheet.header.slice(0, 2), name).toEqual([copy.columns.basis.section, copy.columns.basis.detail]);
@@ -349,7 +353,7 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
       expect(sheet.formats, name).toBeUndefined();
       for (const row of sheet.rows) expect(row, name).toHaveLength(sheet.header.length);
       const sections = chartBlocks(sheet).map(block => block.section);
-      expect(sections, name).toEqual((["G1", "G2", "G4", "G7a", "G7b", "G10", "G11", "G12", "G13"] as const).map(key => CHART_SECTION[key]));
+      expect(sections, name).toEqual((["G1", "G2", "G4", "G7a", "G7b", "G8", "G10", "G11", "G12", "G13"] as const).map(key => CHART_SECTION[key]));
       // G15、G16（試算）不放：ExcelExportInput 沒有試算資料。
       for (const section of [labels.scenarios.chartsV4.variance.section, labels.scenarios.chartsV4.threshold.section]) expect(sheet.rows.flat().map(value), `${name} ${section}`).not.toContain(section);
     }
@@ -361,11 +365,11 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
     const blocks = chartBlocks(chartSheet(standard)!);
     // refund_only 本期 DTC · A 商品毛利為負，所以有 G14（product-pareto-v1）。
     const keys = (Object.keys(CHART_SECTION) as ChartKey[]).filter(key => blocks.some(block => block.section === CHART_SECTION[key]));
-    expect(keys).toEqual(["G1", "G2", "G4", "G7a", "G7b", "G10", "G11", "G12", "G13", "G14"]);
+    expect(keys).toEqual(["G1", "G2", "G4", "G7a", "G7b", "G8", "G10", "G11", "G12", "G13", "G14"]);
     expect(blocks.map(block => block.version)).toEqual(keys.map(key => CHART_VERSION[key]));
     const versionItem = (section: string) => fill(chartCopy.basisVersion, { section });
     const basisRows = (book: ExcelWorkbook) => records(sheetOf(book, "basis")).filter(row => row[col.basis.section] === chartCopy.sheet).map(row => [row[col.basis.item], row[col.basis.detail]]);
-    expect(basisRows(standard)).toEqual((["G7a", "G7b", "G10", "G11", "G14"] as const).map(key => [versionItem(CHART_SECTION[key]), CHART_VERSION[key]]));
+    expect(basisRows(standard)).toEqual((["G7a", "G7b", "G8", "G10", "G11", "G14"] as const).map(key => [versionItem(CHART_SECTION[key]), CHART_VERSION[key]]));
     // 客戶報告版：沒有任何「版本與算法」列、指標定義工作表沒有 B 級版本列；其餘列與標準版逐列相同。
     const clientSheet = chartSheet(client)!;
     expect(clientSheet.rows.some(row => row[1].kind === "text" && row[1].value === chartCopy.versionRow)).toBe(false);
@@ -385,7 +389,8 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
       const pareto = productPareto(products, "gross_profit", PRODUCT_PARETO_LIMIT);
       const expectedTitles: Partial<Record<ChartKey, string>> = {
         G1: bridgeWaterfall(snapshot).title, G2: profitWaterfall(snapshot, "all").title, G4: channelConclusion(snapshot).title,
-        G7a: CHART_SECTION.G7a, G7b: CHART_SECTION.G7b, G10: shareSectionModel(snapshot).title, G11: heatSectionModel(snapshot).title, G12: CHART_SECTION.G12,
+        G7a: CHART_SECTION.G7a, G7b: CHART_SECTION.G7b, G8: cumulativeConclusion(cumulativeDaily(snapshot, "contribution_after_marketing"), snapshot).title,
+        G10: shareSectionModel(snapshot).title, G11: heatSectionModel(snapshot).title, G12: CHART_SECTION.G12,
         G13: varianceSectionModel({ decrease: top.worstChange, increase: top.bestChange, allDecrease: all.worstChange, allIncrease: all.bestChange }, productScope(input)).title,
         ...(pareto.count > 0 ? { G14: paretoSectionModel(pareto, productScope(input)).title } : {}),
       };
@@ -456,6 +461,38 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
       expect(block("G13").header, name).toEqual([copy.columns.products.sku, copy.columns.products.channel, ...VARIANCE_TABLE_COLUMNS.map(column => column.label)]);
       expect(block("G13").rows, name).toEqual([...all.worstChange, ...all.bestChange].map(row => [row.sku, channelLabel(row.channel, alias), num(row.previous.metrics.gross_profit.value), num(row.current.metrics.gross_profit.value), num(row.changes.gross_profit.value)]));
     }
+  });
+
+  // V4-10 代理 A（CHART_CATALOG G8「匯出」列：Excel「圖表資料」日期、當日、累計；D-V4-12＝A）。
+  it("V4-10 G8 兩期每日累計：欄＝日期、當日（元）、累計（元）；列＝上期、本期的每一天（上期在前）；兩期末日累計＝各期合計（示範 1,868,626.68／1,269,792.73、golden 570.00／255.00）；標準版段末 cumulative-daily-v1", async () => {
+    const cumulativeCopy = labels.overview.chartsV4.cumulative;
+    for (const [name, days, previousEnd, currentEnd] of [["golden", 1, "570.00", "255.00"], ["demo", 42, "1868626.68", "1269792.73"]] as const) {
+      const input = await chartInput(name);
+      const block = chartBlocks(chartSheet(buildExcelWorkbook(input))!).find(item => item.section === CHART_SECTION.G8)!;
+      expect(block.title, name).toBe(cumulativeConclusion(cumulativeDaily(input.snapshot, "contribution_after_marketing"), input.snapshot).title);
+      expect(block.header, name).toEqual([cumulativeCopy.columns.date, moneyHeader(cumulativeCopy.columns.daily), moneyHeader(cumulativeCopy.columns.cumulative)]);
+      expect(block.rows, name).toHaveLength(2 * days);
+      const { previous, current } = input.snapshot.report;
+      // 日期依序是上期起日到迄日、本期起日到迄日（同畫面資料表的列）。
+      expect(block.rows.map(row => row[0]), name).toEqual([...dateRange(previous.period.start, previous.period.end), ...dateRange(current.period.start, current.period.end)]);
+      expect(block.rows[0][0], name).toBe(previous.period.start);
+      expect(block.rows[days - 1][0], name).toBe(previous.period.end);
+      expect(block.rows[days][0], name).toBe(current.period.start);
+      expect(block.rows.at(-1)![0], name).toBe(current.period.end);
+      // 手算的末日累計＝各期合計（report 的值，contribution-v1）。
+      expect(block.rows[days - 1][2], name).toBe(Number(previousEnd));
+      expect(block.rows.at(-1)![2], name).toBe(Number(currentEnd));
+      expect(previous.metrics.contribution_after_marketing.value, name).toBe(previousEnd);
+      expect(current.metrics.contribution_after_marketing.value, name).toBe(currentEnd);
+      expect(block.version, name).toBe(CUMULATIVE_DAILY_VERSION);
+    }
+    // 示範資料前 2 天（本期 7/13、7/14）：當日 35,842.27、32,410.52，累計 35,842.27、68,252.79（35,842.27 ＋ 32,410.52）。
+    const demo = chartBlocks(chartSheet(buildExcelWorkbook(await chartInput("demo")))!).find(item => item.section === CHART_SECTION.G8)!;
+    expect(demo.rows.slice(42, 44)).toEqual([["2026-07-13", 35842.27, 35842.27], ["2026-07-14", 32410.52, 68252.79]]);
+    // 客戶報告版：同一段、同一組數字，沒有「版本與算法」列（spec.appendix.technical）。
+    const client = chartBlocks(chartSheet(buildExcelWorkbook({ ...(await chartInput("demo")), variant: "client" }))!).find(item => item.section === CHART_SECTION.G8)!;
+    expect(client.version).toBeUndefined();
+    expect({ ...client, version: undefined }).toEqual({ ...demo, version: undefined });
   });
 
   it("G14 只在有商品毛利為負時放（refund_only：DTC · A −60.00，累計 −60.00、累計佔比 100%）", async () => {
