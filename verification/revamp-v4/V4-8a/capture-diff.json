@@ -47,7 +47,8 @@
       "contentShifts": [
         {
           "afterNewRow": 161,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         }
       ],
       "residualPixels": 28073,
@@ -123,7 +124,8 @@
       "contentShifts": [
         {
           "afterNewRow": 161,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         }
       ],
       "residualPixels": 28087,
@@ -242,7 +244,7 @@
         }
       ],
       "insertedBands": [],
-      "revealedAtBottomRows": 0,
+      "revealedAtBottomRows": 24,
       "contentShifts": [
         {
           "afterNewRow": 157,
@@ -288,7 +290,8 @@
         "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 157 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
         "視窗截圖：底部新圖第 957–999 列＝19 列與舊圖底部配對（上移 24px）＋24 列原本在視窗外、上移後露出；證據抽屜所在的欄逐像素相同（對齊範圍 x 240–799）"
       ],
-      "problems": []
+      "problems": [],
+      "revealedNote": "主流程審查 V48A-D335-1 更正：03 是固定高度的視窗截圖，內容上移後底部露出 24 列新內容（模糊背景欄，抽屜欄逐像素相同）；residualPixels 只算其上 19 列"
     },
     {
       "screen": "04-actions-board",
@@ -411,7 +414,8 @@
       "contentShifts": [
         {
           "afterNewRow": 161,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         },
         {
           "afterNewRow": 2589,
@@ -870,7 +874,8 @@
       "contentShifts": [
         {
           "afterNewRow": 161,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         }
       ],
       "residualPixels": 2,
@@ -933,7 +938,8 @@
       "contentShifts": [
         {
           "afterNewRow": 161,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         }
       ],
       "residualPixels": 13,
@@ -1013,7 +1019,7 @@
         }
       ],
       "insertedBands": [],
-      "revealedAtBottomRows": 0,
+      "revealedAtBottomRows": 24,
       "contentShifts": [
         {
           "afterNewRow": 157,
@@ -1059,7 +1065,8 @@
         "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 157 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
         "視窗截圖：底部新圖第 857–899 列＝19 列與舊圖底部配對（上移 24px）＋24 列原本在視窗外、上移後露出；證據抽屜所在的欄逐像素相同（對齊範圍 x 240–719）"
       ],
-      "problems": []
+      "problems": [],
+      "revealedNote": "主流程審查 V48A-D335-1 更正：03 是固定高度的視窗截圖，內容上移後底部露出 24 列新內容（模糊背景欄，抽屜欄逐像素相同）；residualPixels 只算其上 19 列"
     },
     {
       "screen": "04-actions-board",
@@ -1196,7 +1203,8 @@
       "contentShifts": [
         {
           "afterNewRow": 161,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         },
         {
           "afterNewRow": 2589,
@@ -2039,7 +2047,8 @@
       "contentShifts": [
         {
           "afterNewRow": 240,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         }
       ],
       "residualPixels": 0,
@@ -2088,7 +2097,8 @@
       "contentShifts": [
         {
           "afterNewRow": 240,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         }
       ],
       "residualPixels": 44,
@@ -2168,7 +2178,7 @@
         }
       ],
       "insertedBands": [],
-      "revealedAtBottomRows": 0,
+      "revealedAtBottomRows": 24,
       "contentShifts": [
         {
           "afterNewRow": 236,
@@ -2201,7 +2211,8 @@
         "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 236 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
         "視窗截圖：底部新圖第 981–1023 列＝19 列與舊圖底部配對（上移 24px）＋24 列原本在視窗外、上移後露出；證據抽屜所在的欄逐像素相同（對齊範圍 x 240–287）"
       ],
-      "problems": []
+      "problems": [],
+      "revealedNote": "主流程審查 V48A-D335-1 更正：03 是固定高度的視窗截圖，內容上移後底部露出 24 列新內容（模糊背景欄，抽屜欄逐像素相同）；residualPixels 只算其上 19 列"
     },
     {
       "screen": "04-actions-board",
@@ -2351,7 +2362,8 @@
       "contentShifts": [
         {
           "afterNewRow": 240,
-          "contentShiftPx": -31
+          "contentShiftPx": -24,
+          "note": "主流程審查 V48A-D335-1 更正：原值 −31 是合併後刪改段的寬度；實際位移 24px（帶以下新圖第 y 列＝舊圖第 y＋24 列）"
         },
         {
           "afterNewRow": 2972,
@@ -2840,5 +2852,8 @@
       "allowed": false,
       "verdict": "identical"
     }
+  ],
+  "notes": [
+    "2026-10-13 主流程補記（審查 V48A-D335-1）：contentShifts 中介於刪改段內的值（−13、−21、原本的 −31）是合併後刪改段的寬度，不是位移；D-V3-35 的實際位移一律 24px。03 與 01、04 一樣是固定高度截圖，底部露出 24 列。"
   ]
 }

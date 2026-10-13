@@ -361,7 +361,7 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 
 **範圍**：
 - **投影（D-V4-8、D-V4-9、D-V3-33、D-V3-34）**：
-  - 投影白名單（V3-9b C 區段，HEAD 在 `src/app/globals.css:2578` 的 `:not(...)`；PRD 與實作卡寫的 `:2563` 是 v3.0.0 的行號）加 `.bridge-section`：只顯示瀑布（柱上標值是 L1），拆解區改單欄；`.frame-aside`、`.bridge-table-wrap`（橋接表，L3，含 G6）、v2 四欄 `<details>`（`.data-alternative`）隱藏但掛載（X39 只要求瀑布可見）。區塊標題、副標與 `.unit-note` 照 G2（`.profit-section`）的前例保留。
+  - 投影白名單（V3-9b C 區段，V4-8a 合併後在 `src/app/globals.css:2581` 的 `:not(...)`；PRD 與實作卡寫的 `:2563` 是 v3.0.0 的行號）加 `.bridge-section`：只顯示瀑布（柱上標值是 L1），拆解區改單欄；`.frame-aside`、`.bridge-table-wrap`（橋接表，L3，含 G6）、v2 四欄 `<details>`（`.data-alternative`）隱藏但掛載（X39 只要求瀑布可見）。區塊標題與副標照 G2（`.profit-section`）的前例保留；`.unit-note` 寫「圖：萬元 · 表：元」，表在投影中隱藏，單位說明也隱藏但掛載（審查 PM-nit-1；柱上標值本身帶單位）。
   - `--text-12` 與 `--text-13` 在投影都對應 14px；`--leading-12`、`--leading-13` 同時對應 14px 的行高（照 v3 投影把字級與行高成對重新對應的前例）。只重新對應 token 的值，不新增字級原值。
   - 其餘新圖隱藏但掛載（M1）：盤點後只有 `.bridge-section` 需要改 CSS，其餘只加斷言。
   - D-V3-33＝B：投影按鈕的字樣本來就是「投影模式／離開投影」，本批只拿掉 `aria-pressed`。

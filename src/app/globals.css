@@ -2585,7 +2585,7 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
   :root[data-mode="present"] .profit-section .data-alternative { display: none; }
   /* V4-8a（D-V4-8、X39）：貢獻變化拆解只顯示瀑布（柱上標值是 L1）；標題、副標與單位照利潤結構的前例保留。橋接表（L3，含 G6 變異條與平衡檢核）所在的旁欄與 v2 四欄資料表隱藏但掛載（M1），
      拆解區改單欄（欄與區都換掉：只隱藏旁欄會在 ≥ 1024 留下空的 5fr 欄）。 */
-  :root[data-mode="present"] .bridge-section .frame-aside, :root[data-mode="present"] .bridge-section .bridge-table-wrap, :root[data-mode="present"] .bridge-section .data-alternative { display: none; }
+  :root[data-mode="present"] .bridge-section .frame-aside, :root[data-mode="present"] .bridge-section .bridge-table-wrap, :root[data-mode="present"] .bridge-section .data-alternative, :root[data-mode="present"] .bridge-section .unit-note { display: none; }
   :root[data-mode="present"] .bridge-section .frame-grid.has-aside { grid-template-columns: minmax(0, 1fr); grid-template-areas: "main"; }
   /* V4-8a（D-V3-34＝A）：互切按鈕只在投影中顯示。 */
   :root[data-mode="present"] .page-present .present-switch { display: inline-flex; }

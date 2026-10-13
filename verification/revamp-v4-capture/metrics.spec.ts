@@ -60,7 +60,7 @@ const B9_ALLOWANCE = 1_500;
  *   示範資料剛載入（方案 1 是進頁草稿、G15 空狀態）時比 scenarioCompareTop 938，「維持現況」計算後（畫面基準 07 的狀態，G15 一根柱）時比 scenarioCompareTopAfterCalculate 1,114。
  * V4-7a：資料來源 G20（chart-data-coverage，狀態一行之下）頂 ≤ 900（1440）。
  * V4-8a：「不晚於 V4-0a 實測」的三項改以 V4-8a 實測為新基準（只能更早；verification/revamp-v4/V4-8a/metrics.json 的 {project}.b1）：
- *   總覽第一張 .chart-frame 頂 855 → 831、健檢首列底 1440 與 1280 888 → 864、390 維持 985（390 不受 D-V3-35 影響）。≤ 900 的絕對預算與試算的「V4-0a＋24」不動。
+ *   總覽第一張 .chart-frame 頂 855 → 831、健檢首列底 1440 與 1280 888 → 864、390 維持 985（390 不受 D-V3-35 影響）。≤ 900 的絕對預算不動；試算 G15 的「V4-0a＋24」改成「V4-8a 實測＋24」（914＋24、1,090＋24；D-V3-35 讓 G15 上移 24px，＋24 的餘裕照舊）。
  */
 const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; key: string; max: number; note: string }[] = [
   { project: "desktop", page: "overview", key: "firstChartFrameTop", max: Math.min(900, 831), note: "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-8a 實測 831（V4-1 起；V4-0a 實測 855，V4-8a 起改以本批實測為新基準）" },
@@ -69,8 +69,8 @@ const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; 
   { project: "laptop", page: "diagnosis", key: "firstRowBottom", max: 864, note: "1280 健檢首列底不晚於 V4-8a 實測 864（V4-3a 起；V4-0a 實測 888）" },
   { project: "mobile", page: "diagnosis", key: "firstRowBottom", max: 985, note: "390 健檢首列底不晚於 V4-8a 實測 985（V4-3a 起；PRD §5.2「390 同」；與 V4-0a 實測相同）" },
   { project: "desktop", page: "products", key: "firstChartFrameTop", max: 900, note: "商品第一張 .chart-frame 頂 ≤ 900（V4-4 起；示範資料是 G13 的框）" },
-  { project: "desktop", page: "scenarios", key: "g15Top", max: 938 + 24, note: "試算 G15 頂 ≤ V4-0a 方案比較表區塊頂 938＋24（V4-5 起；示範資料剛載入，G15 空狀態）" },
-  { project: "desktop", page: "scenarios", key: "g15TopAfterCalculate", max: 1114 + 24, note: "試算 G15 頂 ≤ V4-0a「維持現況」計算後的方案比較表區塊頂 1,114＋24（V4-5 起；畫面基準 07 的狀態）" },
+  { project: "desktop", page: "scenarios", key: "g15Top", max: 914 + 24, note: "試算 G15 頂 ≤ 方案比較表區塊頂＋24：V4-0a 為 938＋24（V4-5 起）；V4-8a 起以 V4-8a 實測為基準（D-V3-35 上移 24px，G15 頂 914，門檻 914＋24；示範資料剛載入，G15 空狀態）" },
+  { project: "desktop", page: "scenarios", key: "g15TopAfterCalculate", max: 1090 + 24, note: "試算 G15 頂 ≤「維持現況」計算後的方案比較表區塊頂＋24：V4-0a 為 1,114＋24（V4-5 起）；V4-8a 起以 V4-8a 實測為基準（G15 頂 1,090，門檻 1,090＋24；畫面基準 07 的狀態）" },
   { project: "desktop", page: "data", key: "g20Top", max: 900, note: "資料來源 G20 頂 ≤ 900（V4-7a 起；示範資料，G20 標題 title.none）" },
 ];
 /** B3：390 寬頁面不橫向捲動。 */

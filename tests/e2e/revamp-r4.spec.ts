@@ -4,7 +4,7 @@ import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { formatAmountL1, formatCount, formatPerUnit, formatRateL1 } from "../../src/application/presentation";
 import { openWizard, setWizardFiles, nextFromFiles, confirmMappingIfShown, chooseBasis, confirmAndCheck, commitWizard } from "./import-wizard-helpers";
-import { choosePreset, clickReplacing, closeDownloads, closePeriodSheet, closeStorage, dismissSavePrompt, isMobile, navigateTo, openDownloads, openPeriodSheet, openStorage, openValidation, periodSummary, periodSummaryText, presetButton } from "./replacement-helpers";
+import { applyCustomPeriod, choosePreset, clickReplacing, closeDownloads, closePeriodSheet, closeStorage, dismissSavePrompt, isMobile, navigateTo, openDownloads, openPeriodSheet, openStorage, openValidation, periodSummary, periodSummaryText, presetButton } from "./replacement-helpers";
 import { expectIssueRow, issueCells, issueColumns, issueTable, showReasonCodes, versionInfo } from "./data-page-helpers-v3";
 import { pointHits, pointStarts, trendLines, trendTakeaways, yoyCurves, yoyLegend, yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
 
@@ -102,6 +102,13 @@ test("去年同期快捷：本月 vs 上月套用後，上期各減一年；超�
   else await expect(yoyHint).toBeVisible();
   await expect(yoyHint).toContainText("2025-06-01");
   await closePeriodSheet(page);
+  await expect(periodSummary(page)).toHaveText(summaryBefore);
+  // V4-8a 審查 TG-2：送出自訂日期（同一組日期，去年同期仍不可用）後，提示收起但仍掛載（不是因為去年同期可用而卸載）。
+  const dates = { previousStart: await page.locator("#previous-start").inputValue(), previousEnd: await page.locator("#previous-end").inputValue(), currentStart: await page.locator("#current-start").inputValue(), currentEnd: await page.locator("#current-end").inputValue() };
+  await applyCustomPeriod(page, dates);
+  await expect(yoy).toHaveAttribute("aria-disabled", "true");
+  await expect(yoyHint).toHaveCount(1);
+  await expect(yoyHint).toBeHidden();
   await expect(periodSummary(page)).toHaveText(summaryBefore);
   // V3-9b F8：趨勢圖同樣沒有去年同期線——圖例第三項標「無資料」、圖下方寫同一個原因、只有 4 條線、沒有去年同期的點。
   await expect(yoyLegend(page).locator("small")).toHaveText(labels.overview.chartFrame.noData);

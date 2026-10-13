@@ -369,7 +369,7 @@ describe("globals.css 的 C 區段（:root[data-mode=\"present\"]）", () => {
   });
 
   it("V4-8a 拆解區只顯示瀑布：旁欄（.frame-aside）、橋接表（.bridge-table-wrap，含 G6 與平衡檢核）、v2 四欄資料表（.data-alternative）隱藏但掛載；改單欄（欄與區都只剩 main）；標題、副標、單位與瀑布外框不隱藏", () => {
-    for (const part of [".bridge-section .frame-aside", ".bridge-section .bridge-table-wrap", ".bridge-section .data-alternative"]) expect(hidden).toContain(`:root[data-mode="present"] ${part}`);
+    for (const part of [".bridge-section .frame-aside", ".bridge-section .bridge-table-wrap", ".bridge-section .data-alternative", ".bridge-section .unit-note"]) expect(hidden).toContain(`:root[data-mode="present"] ${part}`);
     const grid = ':root[data-mode="present"] .bridge-section .frame-grid.has-aside';
     expect(decl(grid, "grid-template-columns")).toBe("minmax(0, 1fr)");
     expect(decl(grid, "grid-template-areas")).toBe('"main"');
@@ -377,7 +377,8 @@ describe("globals.css 的 C 區段（:root[data-mode=\"present\"]）", () => {
     // 單欄規則的權重高於 V4-1 的 7fr／5fr 與 ≤ 1023px 的「旁欄在上」（.chart-section .frame-grid.has-aside）。
     expect(parseCss(css).filter(rule => rule.selector === ".chart-section .frame-grid.has-aside").length).toBe(2);
     const bridgeHidden = hidden.filter(selector => selector.includes(".bridge-section"));
-    for (const kept of [".sec-head", ".sec-end", ".unit-note", "#bridge-title", "#bridge-sub", ".frame-main", ".chart-frame", ".waterfall", ".waterfall-measure", "svg"]) expect(bridgeHidden.filter(selector => selector.includes(kept)), kept).toEqual([]);
+    // V4-8a 審查 PM-nit-1：單位說明寫「圖：萬元 · 表：元」，投影中表已隱藏，單位說明一併隱藏（柱上標值本身帶單位）。
+    for (const kept of [".sec-head", ".sec-end", "#bridge-title", "#bridge-sub", ".frame-main", ".chart-frame", ".waterfall", ".waterfall-measure", "svg"]) expect(bridgeHidden.filter(selector => selector.includes(kept)), kept).toEqual([]);
   });
 
   it("V4-8a（D-V4-9）：--text-12、--text-13 投影都對應 14px（:root 既有的 --text-14 值，不新增字級）；對應後 12 ≤ 13 ≤ 正文；行高成對對應 :root 14px 的行高", () => {

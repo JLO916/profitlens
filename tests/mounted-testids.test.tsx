@@ -1597,7 +1597,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
             const regions = hiddenRegions(kid);
             for (const id of chartIds(kid)) expect(inside(regions, id), `${name} ${id}`).toBe(true);
           }
-          // 拆解區：旁欄（橋接表＋G6 九條＋平衡檢核）與 v2 四欄資料表隱藏但掛載；瀑布、標題、副標與單位不在任何隱藏容器內（X39）。
+          // 拆解區：旁欄（橋接表＋G6 九條＋平衡檢核）與 v2 四欄資料表隱藏但掛載；瀑布、標題與副標不在任何隱藏容器內（X39）；單位說明提到的表已隱藏，單位說明也隱藏（審查 PM-nit-1）。
           const bridge = shown.find(({ names }) => names.includes("bridge-section"))!.kid;
           const bridgeHidden = hiddenRegions(bridge);
           for (const id of ["bridge-table", "bridge-balance-check"]) {
@@ -1609,7 +1609,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
           expect(testIdCounts(bridge).get("bridge-waterfall"), name).toBe(1);
           expect(inside(bridgeHidden, "bridge-waterfall"), `${name} 瀑布可見`).toBe(false);
           for (const id of ["bridge-title", "bridge-sub"]) expect(bridgeHidden.some(region => region.includes(` id="${id}"`)), `${name} #${id} 可見`).toBe(false);
-          expect(bridgeHidden.some(region => region.includes('class="unit-note"')), `${name} 單位可見`).toBe(false);
+          // V4-8a 審查 PM-nit-1：單位說明（「圖：萬元 · 表：元」）提到的表在投影中隱藏，單位說明也隱藏但掛載。
+          expect(bridgeHidden.some(region => region.includes('class="unit-note"')), `${name} 單位隱藏但掛載`).toBe(true);
           if (name === "overview") expect(chartIds(bridge).filter(id => id.startsWith("chart-overview-bridge-bar-")).length, "示範資料 G6 九條").toBe(9);
           // 利潤結構（G2）：瀑布可見、v2 資料表隱藏（V3-9b 既有）。
           const profit = shown.find(({ names }) => names.includes("profit-section"))!.kid;

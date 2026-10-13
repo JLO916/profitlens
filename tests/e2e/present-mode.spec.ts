@@ -111,11 +111,12 @@ test.describe("V3-9b F22 投影模式", () => {
       // 其他 v4 圖（白名單外的區塊）掛載但不可見：G4 差額條、G7a 的 sparkline 與資料表。
       for (const locator of [page.locator("[data-testid^='chart-overview-channels-bar-']"), page.locator("[data-testid^='chart-overview-assist-spark-']"), page.getByTestId("chart-overview-assist-table")]) await expectMountedHidden(locator);
 
-      // V4-8a（D-V4-8、X39）：貢獻變化拆解只顯示瀑布——標題、副標、單位可見；旁欄（橋接表＋G6 九條＋平衡檢核）與 v2 四欄資料表掛載但不可見；
+      // V4-8a（D-V4-8、X39）：貢獻變化拆解只顯示瀑布——標題、副標可見；旁欄（橋接表＋G6 九條＋平衡檢核）與 v2 四欄資料表掛載但不可見；
       // 單欄（瀑布與區塊內寬同寬，≥ 1024 不留空的旁欄）。
       const bridge = page.getByTestId("bridge-section");
-      for (const locator of [bridge.locator("#bridge-title"), bridge.locator("#bridge-sub"), bridge.locator(".unit-note")]) await expect(locator).toBeVisible();
-      for (const locator of [page.getByTestId("bridge-table"), page.getByTestId("bridge-balance-check"), bridge.locator(".frame-aside"), bridge.locator(".bridge-table-wrap"), bridge.locator("details.data-alternative")]) await expectMountedHidden(locator);
+      for (const locator of [bridge.locator("#bridge-title"), bridge.locator("#bridge-sub")]) await expect(locator).toBeVisible();
+      // 單位說明寫「圖：萬元 · 表：元」，表在投影中隱藏，單位說明也隱藏但掛載（V4-8a 審查 PM-nit-1；柱上標值本身帶單位）。
+      for (const locator of [page.getByTestId("bridge-table"), page.getByTestId("bridge-balance-check"), bridge.locator(".frame-aside"), bridge.locator(".bridge-table-wrap"), bridge.locator("details.data-alternative"), bridge.locator(".unit-note")]) await expectMountedHidden(locator);
       await expect(page.locator("[data-testid^='chart-overview-bridge-bar-']")).toHaveCount(9);
       await expectMountedHidden(page.locator("[data-testid^='chart-overview-bridge-bar-']"));
       const widths = await bridge.evaluate(section => {
