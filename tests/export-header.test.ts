@@ -280,6 +280,29 @@ describe("V3-7 §6.3 #50 A4 列印版：版頭四行＋會議一行（有會議�
     expect(header(await render(null))).not.toContain('data-testid="print-header-meeting"');
   });
 
+  // ── V4-9a 代理 A：C31 列印圖在版頭之後的位置與數量（PRD §5.10、D-V4-11＝B）──
+  it("V4-9a：版頭之後依序是關鍵差額 → G1（svg[data-print-chart=bridge]）→ 三件事 → 通路表 → 頁尾；一頁摘要另有圖表附錄（G2），會議範圍只印 G1、版頭不變", async () => {
+    for (const meeting of [null, { name: "十月例會", date: "2026-10-03" }]) {
+      const html = await render(meeting);
+      const order = ['data-testid="print-report-header"', 'data-print-chart="bridge"', "<h2>", "<table>", "<footer>"].map(marker => html.indexOf(marker));
+      expect(order.every((at, index) => at > -1 && (index === 0 || at > order[index - 1])), JSON.stringify(order)).toBe(true);
+      expect(html.split("data-print-chart=").length - 1).toBe(meeting ? 1 : 2);
+      expect(html.includes('data-print-chart="profit"')).toBe(!meeting);
+      expect(html.includes('data-testid="print-appendix-charts"')).toBe(!meeting);
+      // 圖在 <header> 之外；版頭的段落不受影響。
+      expect(header(html)).not.toContain("data-print-chart");
+    }
+  });
+
+  it("V4-9a 列印圖 CSS：.printChart（不跨頁、圖說用附註字級）與 .printChartAppendix（從新的一頁開始）都在 @media print 內", () => {
+    const css = readFileSync(resolve("src/components/manager-summary.module.css"), "utf8");
+    const print = css.slice(css.indexOf("@media print"));
+    expect(css.slice(0, css.indexOf("@media print"))).not.toMatch(/\.printChart/);
+    expect(print).toMatch(/\.printChart \{[^}]*break-inside: avoid;[^}]*\}/);
+    expect(print).toMatch(/\.printChart figcaption \{ font-size: var\(--print-note\);/);
+    expect(print).toMatch(/\.printChartAppendix \{ break-before: page; \}/);
+  });
+
   it("§9.6 列印 CSS：字級只用 --print-title／--print-body／--print-note，不印底色、表格線 0.5pt --border-strong、數字 tabular", () => {
     const css = readFileSync(resolve("src/components/manager-summary.module.css"), "utf8");
     const print = css.slice(css.indexOf("@media print"));

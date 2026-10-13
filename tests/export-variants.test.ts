@@ -8,12 +8,14 @@ import * as XLSX from "xlsx";
 import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction, setAdDecision, type ActionWorkspace } from "@/application/action-workspace";
 import { buildExcelWorkbook, EXCEL_NUMBER_FORMATS, excelHeader, writeExcel, type ExcelCell, type ExcelSheet, type ExcelWorkbook } from "@/application/excel-export";
 import { buildExportHeader, clientHeaderLine } from "@/application/export-header";
-import { DEFAULT_EXPORT_VARIANT, EXPORT_CHART_IDS, EXPORT_VARIANTS, variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExportVariant } from "@/application/export-variants";
+import { EXPORT_THEME } from "@/application/export-theme";
+import { DEFAULT_EXPORT_VARIANT, EXPORT_CHART_IDS, EXPORT_VARIANTS, variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExportChartId, type ExportVariant } from "@/application/export-variants";
 import { buildManagerSummary, type ManagerSummary, type SummaryDecisionContext } from "@/application/manager-summary";
 import { buildPnlTable, pnlExportAmount, pnlExportShare, pnlExportTable, PNL_ROWS } from "@/application/pnl-table";
 import { buildPptxOnePager, writePptx, type PptxOnePager } from "@/application/pptx-export";
-import { formatAmountL1, formatAmountL3, formatPeriodExport, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "@/application/presentation";
+import { formatAmountL1, formatAmountL3, formatPeriodExport, formatPeriodL1, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
+import { bridgeWaterfall, profitWaterfall } from "@/application/waterfall";
 import { snapshotSentence } from "@/application/weekly-summary";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { compareProducts } from "@/domain/product-comparison";
@@ -21,6 +23,9 @@ import type { Dataset, DatasetInput } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
 import { fill, labels } from "@/i18n";
 import { PrintSummary } from "../src/components/print-summary";
+import { PRINT_CHART_HEIGHT_MM, PRINT_CHART_VIEW_HEIGHT, PRINT_CHART_VIEW_WIDTH, PRINT_CHART_WIDTH_MM } from "../src/components/charts/print-chart";
+import { bridgeRowText } from "../src/components/overview/charts/bridge-section";
+import { profitRowAmount, profitRowLabel, profitRowShare } from "../src/components/overview/charts/profit-section";
 import { ExportMenu, type ExportMenuProps, type ExportMenuSource } from "../src/components/shell/export-menu";
 import { scanLabels } from "../scripts/lib/copy-scan.mjs";
 import baseline from "./fixtures/export-numeric-baseline.json";
@@ -377,17 +382,24 @@ describe("列印／PDF（SSR）", () => {
       refund_only: { sha256: "b1b3a32c4838f838d5bfd75f304c9af4a792daa167474f43ec8a4b2ad5811bae", chars: 2073 },
       "refund_only-rich": { sha256: "6304980ae1c2370683de7dcb1a028043d08b7ce1097de414f32ab5f15118c958", chars: 3306 },
     };
+    // V4-9a C31：第一頁的 G1（figure[data-print-figure="bridge"]）與圖表附錄（print-appendix-charts）是新增內容；去掉之後與基準逐字相同（既有區塊一個都沒動）。
+    const withoutCharts = (markup: string) => [element(markup, 'data-print-figure="bridge"'), element(markup, 'data-testid="print-appendix-charts"')].reduce<string>((text, part) => part === null ? text : text.replace(part, ""), markup);
     for (const [name, rich] of [["golden", false], ["golden", true], ["demo", false], ["demo", true], ["refund_only", false], ["refund_only", true]] as const) {
       const source = rich ? await load(name, TAX) : { golden, demo, refund_only: refundOnly }[name];
       const html = stable(render(source, "standard", { rich }));
       // V3-9b 收尾：會議範圍的列印（rich＝有會議）維持 V3-7 版面、不加管理損益表附錄（PRD §7.6 會議 PDF 頁數不增加）；一頁摘要（沒有會議）才加。
       const pnl = element(html, 'data-testid="print-appendix-pnl"');
       if (rich) expect(pnl, name).toBeNull(); else expect(pnl, name).not.toBeNull();
-      const stripped = pnl ? html.replace(pnl, "") : html;
+      // V4-9a：G1 三種情況都印；圖表附錄比照管理損益表，會議範圍不加。
+      expect(element(html, 'data-print-figure="bridge"'), name).not.toBeNull();
+      if (rich) expect(element(html, 'data-testid="print-appendix-charts"'), name).toBeNull(); else expect(element(html, 'data-testid="print-appendix-charts"'), name).not.toBeNull();
+      const stripped = withoutCharts(pnl ? html.replace(pnl, "") : html);
       expect({ sha256: sha(stripped), chars: stripped.length }, `${name}${rich ? "-rich" : ""}`).toEqual(BASELINE[`${name}${rich ? "-rich" : ""}`]);
-      // 沒給 variant＝標準版；只拿得到 report（沒有 weeks）時不放管理損益表，其餘相同。
+      // 沒給 variant＝標準版；只拿得到 report（沒有 weeks）時不放管理損益表，其餘相同（圖只讀 report，照印）。
       expect(stable(render(source, undefined, { rich }))).toBe(html);
-      expect(stable(render(source, "standard", { rich, snapshot: { report: source.snapshot.report } }))).toBe(stripped);
+      const reportOnly = stable(render(source, "standard", { rich, snapshot: { report: source.snapshot.report } }));
+      expect(element(reportOnly, 'data-print-figure="bridge"')).toBe(element(html, 'data-print-figure="bridge"'));
+      expect(withoutCharts(reportOnly)).toBe(stripped);
     }
   });
 
@@ -474,6 +486,133 @@ describe("列印／PDF（SSR）", () => {
     for (const name of ["printOneLiner", "printPnl", "printPnlStrong", "printPnlNote"]) expect(print, name).toContain(`.${name}`);
     expect(css.slice(0, css.indexOf("@media print"))).not.toMatch(/\.printPnl|\.printOneLiner/);
     for (const match of print.matchAll(/font-size:\s*([^;]+);/g)) expect(["var(--print-body)", "var(--print-note)", "var(--print-title)", "inherit"]).toContain(match[1].trim());
+  });
+});
+
+// ── V4-9a 代理 A：C31 PrintChart（PDF 的圖；PRD §5.10、§6.3 C31、§7.7；CHART_CATALOG G1、G2 的「匯出」列；D-V4-11＝B）──
+describe("V4-9a C31 列印圖：svg[data-print-chart] 依變體矩陣、數字取自既有瀑布、三個版本逐格相同", () => {
+  const printOf = (source: Loaded, variant: ExportVariant, options: { meeting?: boolean; snapshot?: boolean } = {}) => renderToStaticMarkup(createElement(PrintSummary, {
+    variant, summary: source.summary, snapshot: options.snapshot === false ? undefined : source.snapshot, generatedAt: FIXED_GENERATED_AT, datasetName: "店",
+    decisionContext: { dataset_hash: source.summary.dataset_hash, filter_hash: source.summary.filter_hash, scenarios: [], actions: [], decisionState: labels.meeting.page.printViewState, ...(options.meeting ? { reviewName: MEETING.name } : {}) },
+    meeting: options.meeting ? { name: MEETING.name, date: MEETING.date } : null,
+  }));
+  const count = (html: string, marker: string) => html.split(marker).length - 1;
+  const svgOf = (html: string, id: ExportChartId) => element(html, `data-print-chart="${id}"`)!;
+  const figureOf = (html: string, id: ExportChartId) => element(html, `data-print-figure="${id}"`)!;
+  /** 柱上標值（text[data-bar]）：[柱代號, 字]。 */
+  const valuesOf = (svg: string) => [...svg.matchAll(/<text data-bar="([^"]+)"[^>]*>([^<]*)<\/text>/g)].map(match => [match[1], match[2]]);
+  /** 表格列：[data-row, 列名, 各格]。 */
+  const rowsOf = (table: string) => [...table.matchAll(/<tr data-row="([^"]+)"><th scope="row">([^<]*)<\/th>((?:<td>[^<]*<\/td>)+)<\/tr>/g)].map(match => [match[1], match[2], [...match[3].matchAll(/<td>([^<]*)<\/td>/g)].map(cell => cell[1])]);
+
+  it("矩陣（D-V4-11＝B）：三個版本第一頁都有 G1；標準與客戶版另有附錄一頁放 G2 與兩張圖的資料表，老闆一頁版與會議範圍沒有；沒給 snapshot 時不印圖", () => {
+    for (const source of [golden, demo]) for (const variant of EXPORT_VARIANTS) for (const meeting of [false, true]) {
+      const html = printOf(source, variant, { meeting });
+      const spec = variantSpec(variant).charts.print;
+      const label = `${source.summary.dataset_id} ${variant}${meeting ? " 會議" : ""}`;
+      // 會議範圍的列印比照管理損益表附錄，不加附錄頁（PRD §7.6 會議 PDF 頁數不增加）。
+      const appendix = meeting ? [] : spec.appendix, tables = meeting ? [] : spec.appendixTables;
+      expect(count(html, 'data-print-chart="bridge"'), label).toBe(1);
+      expect(count(html, 'data-print-chart="profit"'), label).toBe(variant !== "boss" && !meeting ? 1 : 0);
+      expect(count(html, "data-print-chart="), label).toBe(spec.page.length + appendix.length);
+      expect(count(html, 'data-testid="print-appendix-charts"'), label).toBe(appendix.length + tables.length > 0 ? 1 : 0);
+      expect([...html.matchAll(/data-print-chart-table="([a-z]+)"/g)].map(match => match[1]), label).toEqual([...tables]);
+    }
+    // 一頁摘要（沒有會議）：標準 2、老闆 1、客戶 2 張圖；只拿得到摘要、沒有 snapshot 時不印圖。
+    expect(EXPORT_VARIANTS.map(variant => count(printOf(golden, variant), "data-print-chart="))).toEqual([2, 1, 2]);
+    expect(count(printOf(golden, "standard", { snapshot: false }), "data-print-chart=")).toBe(0);
+    expect(printOf(golden, "standard", { snapshot: false })).not.toContain("print-appendix-charts");
+  });
+
+  it("位置：G1 在關鍵數字與決議一行之後、三件事之前；圖表附錄是最後一塊（既有附錄之後），依序是標題、G2、G1 資料表、G2 資料表", () => {
+    for (const variant of EXPORT_VARIANTS) for (const meeting of [false, true]) {
+      const html = printOf(golden, variant, { meeting });
+      const at = (marker: string) => html.indexOf(marker);
+      const figure = at('data-print-figure="bridge"');
+      expect(at("</header>")).toBeLessThan(figure);
+      expect(at(`<strong>${metricDefinitions.net_revenue.label}</strong>`)).toBeLessThan(figure);
+      if (meeting) expect(at('data-testid="print-decision-line"')).toBeLessThan(figure);
+      expect(figure).toBeLessThan(at(`<h2>${labels.overview.sections.topThree}</h2>`));
+      if (variant === "boss" || meeting) continue;
+      const appendix = byTestId(html, "print-appendix-charts");
+      expect(html.endsWith(`${appendix}</article>`), variant).toBe(true);
+      for (const marker of ['data-testid="print-appendix-pnl"', ...(variant === "standard" ? [`<h2>${labels.evidence.sections.technicalDetails}</h2>`] : [])]) expect(at(marker), marker).toBeLessThan(at('data-testid="print-appendix-charts"'));
+      const inside = (marker: string) => appendix.indexOf(marker);
+      expect(appendix.startsWith(`<div class="`)).toBe(true);
+      expect(inside(`<h2>${labels.exports.chartsV4.print.appendixHeading}</h2>`)).toBeGreaterThan(0);
+      expect(inside(`<h2>${labels.exports.chartsV4.print.appendixHeading}</h2>`)).toBeLessThan(inside('data-print-figure="profit"'));
+      expect(inside('data-print-figure="profit"')).toBeLessThan(inside('data-print-chart-table="bridge"'));
+      expect(inside('data-print-chart-table="bridge"')).toBeLessThan(inside('data-print-chart-table="profit"'));
+    }
+  });
+
+  it("svg：固定寬 170mm、viewBox 640 × 196、高 ≤ 60mm（老闆一頁版上限）；aria-hidden、沒有可聚焦元素；色只用 EXPORT_THEME（沒有 var(--chart-)、沒有其他 hex）", () => {
+    const theme = new Set(Object.values(EXPORT_THEME).map(value => `#${value}`));
+    expect(PRINT_CHART_WIDTH_MM).toBe(170);
+    expect(PRINT_CHART_VIEW_WIDTH).toBe(640);
+    expect(PRINT_CHART_HEIGHT_MM).toBeLessThanOrEqual(60);
+    for (const variant of EXPORT_VARIANTS) {
+      const html = printOf(demo, variant);
+      for (const id of variant === "boss" ? ["bridge"] as const : EXPORT_CHART_IDS) {
+        const svg = svgOf(html, id);
+        const open = svg.slice(0, svg.indexOf(">") + 1);
+        expect(open).toContain(`viewBox="0 0 ${PRINT_CHART_VIEW_WIDTH} ${PRINT_CHART_VIEW_HEIGHT}"`);
+        expect(open).toContain('width="170mm"');
+        expect(Number(/ height="([\d.]+)mm"/.exec(open)![1])).toBe(PRINT_CHART_HEIGHT_MM);
+        expect(open).toContain('aria-hidden="true"');
+        expect(svg).not.toMatch(/tabindex|<a[\s>]|<button/i);
+        expect(svg).not.toContain("var(--chart-");
+        const colors = [...svg.matchAll(/\s(?:fill|stroke)="([^"]+)"/g)].map(match => match[1]).filter(value => value !== "none");
+        expect(colors.length, `${variant} ${id}`).toBeGreaterThan(0);
+        for (const value of colors) expect(theme, `${variant} ${id} ${value}`).toContain(value);
+      }
+    }
+  });
+
+  it("數字：柱上標值＝bridgeWaterfall／profitWaterfall 的 bars[].display（不利帶 U+2212）；圖說＝結論句＋副標（labels）；三個版本的 G1 逐字相同、標準與客戶版的附錄逐字相同", () => {
+    for (const source of [golden, demo, refundOnly]) {
+      const [standard, boss, client] = EXPORT_VARIANTS.map(variant => printOf(source, variant));
+      const bridge = bridgeWaterfall(source.snapshot), profit = profitWaterfall(source.snapshot, "all");
+      const label = source.summary.dataset_id;
+      expect(valuesOf(svgOf(standard, "bridge")), label).toEqual(bridge.bars.map(bar => [bar.id, bar.display]));
+      expect(valuesOf(svgOf(standard, "profit")), label).toEqual(profit.bars.map(bar => [bar.id, bar.display]));
+      // 不利柱（ink 實心）的標值都以「−」開頭；有利柱以「+」開頭。
+      for (const id of EXPORT_CHART_IDS) {
+        const svg = svgOf(standard, id), values = new Map(valuesOf(svg).map(([bar, text]) => [bar, text]));
+        for (const match of svg.matchAll(/<rect data-bar="([^"]+)" data-fill="(favorable|unfavorable)"/g)) expect(values.get(match[1])!.startsWith(match[2] === "unfavorable" ? MINUS : "+"), `${label} ${id} ${match[1]}`).toBe(true);
+      }
+      expect(textOf(element(figureOf(standard, "bridge"), "<figcaption")!)).toBe(`${bridge.title}${bridge.subtitle}`);
+      const period = formatPeriodL1(source.snapshot.report.current.period.start, source.snapshot.report.current.period.end, { days: false, anchor: source.snapshot.data_as_of });
+      expect(profit.scopeLabel).toBe(labels.overview.sections.total);
+      expect(textOf(element(figureOf(standard, "profit"), "<figcaption")!)).toBe(`${profit.title}${fill(labels.exports.chartsV4.print.profitSubtitle, { section: labels.overview.profit.section, period, scope: profit.scopeLabel })}`);
+      // 圖例：SVG 記號＋字，三個都在（起訖與小計、有利、不利）。
+      expect([...svgOf(boss, "bridge").matchAll(/<g data-legend="([a-z]+)"><rect [^>]*><\/rect><text [^>]*>([^<]*)<\/text><\/g>/g)].map(match => [match[1], match[2]]))
+        .toEqual([["level", labels.exports.chartsV4.print.legend.level], ["favorable", labels.format.favorable], ["unfavorable", labels.format.unfavorable]]);
+      // 三個版本逐格相同。
+      expect(figureOf(boss, "bridge"), label).toBe(figureOf(standard, "bridge"));
+      expect(figureOf(client, "bridge"), label).toBe(figureOf(standard, "bridge"));
+      expect(byTestId(client, "print-appendix-charts"), label).toBe(byTestId(standard, "print-appendix-charts"));
+    }
+  });
+
+  it("資料表：G1＝橋接表 12 列（L3）＋平衡檢核；G2＝本期利潤結構 10 列（金額 L3、佔淨營收 L2）；caption、欄名都取 labels", () => {
+    for (const source of [golden, demo]) {
+      const appendix = byTestId(printOf(source, "standard"), "print-appendix-charts");
+      const bridge = bridgeWaterfall(source.snapshot), profit = profitWaterfall(source.snapshot, "all");
+      const bridgeTable = element(appendix, 'data-print-chart-table="bridge"')!, profitTable = element(appendix, 'data-print-chart-table="profit"')!;
+      const bridgeCopy = labels.overview.bridgeV3, profitCopy = labels.overview.profit;
+      expect(bridgeTable).toContain(`<caption>${fill(labels.overview.page.dataTable, { title: labels.overview.sections.bridge })}</caption>`);
+      expect(bridgeTable).toContain(`<thead><tr><th scope="col">${bridgeCopy.table.item}</th><th scope="col">${bridgeCopy.table.amount}</th></tr></thead>`);
+      expect(rowsOf(bridgeTable)).toEqual([...bridge.rows.map(row => [row.id, row.label, [bridgeRowText(row)]]), ["balance", bridgeCopy.balance.label, [bridge.balanceText]]]);
+      expect(rowsOf(bridgeTable)).toHaveLength(13);
+      expect(profitTable).toContain(`<caption>${fill(labels.overview.page.dataTable, { title: profitCopy.section })}</caption>`);
+      expect(profitTable).toContain(`<thead><tr><th scope="col">${profitCopy.table.item}</th><th scope="col">${profitCopy.table.amount}</th><th scope="col">${profitCopy.table.share}</th></tr></thead>`);
+      const netRevenue = profit.rows.find(row => row.metric === "net_revenue")!.value;
+      expect(rowsOf(profitTable)).toEqual(profit.rows.map(row => [row.metric, profitRowLabel(row), [profitRowAmount(row), profitRowShare(row, netRevenue)]]));
+    }
+    // golden：差額 −315.00、本期扣廣告後貢獻 255.00（橋接表到分）。
+    const goldenRows = new Map(rowsOf(element(byTestId(printOf(golden, "standard"), "print-appendix-charts"), 'data-print-chart-table="bridge"')!).map(([id, , cells]) => [id, cells]));
+    expect(goldenRows.get("total")).toEqual([formatSignedDelta("-315.00", "L3")]);
+    expect(goldenRows.get("current")).toEqual([formatAmountL3("255.00")]);
   });
 });
 

@@ -401,3 +401,78 @@ test("e. 會議頁「匯出會議」一律是標準版：頂欄選了老闆一�
   await expectPressed(await openDownloads(page), "boss");
   await closeDownloads(page);
 });
+
+// ── V4-9a 代理 A：C31 PrintChart（PDF 的圖；PRD §5.10、§6.3 C31、§7.7；CHART_CATALOG G1、G2；D-V4-11＝B）。本區塊只放列印圖，PPT 在另一個區塊 ──
+// 數值與色碼的逐格比對在 tests/export-variants.test.ts、tests/export-theme.test.ts（SSR）；這裡在真的 print media 下量尺寸、頁數與附錄分頁。
+/** CSS px／mm（96 dpi）。 */
+const PX_PER_MM = 96 / 25.4;
+/** 負號（U+2212），取自格式化函式本身。 */
+const PRINT_MINUS = formatSignedDelta("-1.00", "L3").charAt(0);
+
+test("V4-9a C31 列印圖：老闆一頁版只有 G1 且維持 1 頁；標準與客戶版另有附錄一頁（G2＋兩張圖的資料表）；170mm 寬、高 ≤ 60mm、灰階三種填色、不利帶「−」", async ({ page }) => {
+  test.setTimeout(150_000);
+  await stubPrint(page);
+  await loadValidationDataset(page, "golden");
+  for (const variant of EXPORT_VARIANTS) {
+    const print = await printVariant(page, variant);
+    await expect(print.locator("svg[data-print-chart]")).toHaveCount(variant === "boss" ? 1 : 2);
+    const bridge = print.locator('svg[data-print-chart="bridge"]');
+    await expect(bridge).toHaveCount(1);
+    await expect(bridge).toHaveAttribute("width", "170mm");
+    await expect(bridge).toHaveAttribute("aria-hidden", "true");
+    const box = (await bridge.boundingBox())!;
+    expect(Math.abs(box.width - 170 * PX_PER_MM), variant).toBeLessThan(1);
+    expect(box.height, variant).toBeLessThanOrEqual(60 * PX_PER_MM);
+    // golden 的起訖柱：上期 570.00、本期 255.00（柱上標值 L1）。
+    await expect(bridge.locator('text[data-bar="previous"]')).toHaveText(formatAmountL1("570.00"));
+    await expect(bridge.locator('text[data-bar="current"]')).toHaveText(formatAmountL1("255.00"));
+    // 灰階：同一種樣式同一個填色，三種樣式的填色兩兩不同；只有起訖與小計有外框；不利柱的標值以「−」開頭。
+    const bars = await bridge.locator("rect[data-bar]").evaluateAll(rects => rects.map(rect => ({ id: rect.getAttribute("data-bar")!, kind: rect.getAttribute("data-fill")!, fill: rect.getAttribute("fill"), stroke: rect.getAttribute("stroke") })));
+    expect(bars, variant).toHaveLength(11);
+    const fills = new Map<string, Set<string | null>>();
+    for (const bar of bars) {
+      fills.set(bar.kind, (fills.get(bar.kind) ?? new Set()).add(bar.fill));
+      expect(bar.stroke === null, `${variant} ${bar.id}`).toBe(bar.kind !== "level");
+      if (bar.kind === "unfavorable") await expect(bridge.locator(`text[data-bar="${bar.id}"]`)).toHaveText(new RegExp(`^${PRINT_MINUS}`));
+    }
+    expect([...fills.keys()].sort(), variant).toEqual(["favorable", "level", "unfavorable"]);
+    expect([...fills.values()].every(set => set.size === 1), variant).toBe(true);
+    expect(new Set([...fills.values()].map(set => [...set][0])).size, variant).toBe(3);
+    // 圖例：三個 SVG 記號（列印會清掉 CSS 底色）＋labels 的字。
+    await expect(bridge.locator("g[data-legend] > rect")).toHaveCount(3);
+    await expect(bridge.locator("g[data-legend] > text")).toHaveText([labels.exports.chartsV4.print.legend.level, labels.format.favorable, labels.format.unfavorable]);
+    // 附錄（D-V4-11＝B）：標準與客戶版從新的一頁開始，是列印版面的最後一塊。
+    const appendix = print.getByTestId("print-appendix-charts");
+    if (variant === "boss") await expect(appendix).toHaveCount(0);
+    else {
+      await expect(appendix).toHaveCount(1);
+      expect(await appendix.evaluate(element => getComputedStyle(element).breakBefore)).toBe("page");
+      expect(await print.evaluate(article => article.lastElementChild?.getAttribute("data-testid") ?? "")).toBe("print-appendix-charts");
+      await expect(appendix.getByRole("heading", { level: 2, name: labels.exports.chartsV4.print.appendixHeading, exact: true })).toBeVisible();
+      await expect(appendix.locator('svg[data-print-chart="profit"]')).toHaveCount(1);
+      await expect(appendix.locator("table[data-print-chart-table]")).toHaveCount(2);
+      await expect(appendix.locator('table[data-print-chart-table="bridge"] tr[data-row="total"] > td')).toHaveText(formatSignedDelta("-315.00", "L3"));
+      await expect(appendix.locator('table[data-print-chart-table="bridge"] tr[data-row="current"] > td')).toHaveText(formatAmountL3("255.00"));
+    }
+    // 頁數：老闆一頁版維持 1 頁；標準與客戶版是 v3.0.0 的 2 頁再加附錄 1 頁。
+    expect(await printedPages(page), variant).toBe(variant === "boss" ? 1 : 3);
+    await endPrint(page);
+  }
+});
+
+test("V4-9a C31 會議範圍的列印：只印 G1、不加圖表附錄（比照管理損益表附錄，PRD §7.6 會議 PDF 頁數不增加）", async ({ page }) => {
+  test.setTimeout(90_000);
+  await stubPrint(page);
+  await loadValidationDataset(page, "golden");
+  await openMeeting(page);
+  await (await meetingExportItem(page, "pdf")).click();
+  const print = printSurface(page);
+  await expect(print).toHaveCount(1);
+  await page.emulateMedia({ media: "print" });
+  await expect(print).toBeVisible();
+  await expect(print.locator("svg[data-print-chart]")).toHaveCount(1);
+  await expect(print.locator('svg[data-print-chart="bridge"]')).toBeVisible();
+  await expect(print.getByTestId("print-appendix-charts")).toHaveCount(0);
+  await expect(print.getByTestId("print-appendix-pnl")).toHaveCount(0);
+  await endPrint(page);
+});

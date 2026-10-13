@@ -78,4 +78,9 @@
   .printPnl thead th { vertical-align: bottom; }
   .printSurface .printPnlStrong th, .printSurface .printPnlStrong td { font-weight: var(--weight-semibold); }
   .printPnlNote { font-size: var(--print-note); }
+  /* V4-9a C31 列印圖（src/components/charts/print-chart.tsx）：svg 自帶固定寬 170mm 與高（mm）；圖說（結論句＋副標）用附註字級，圖不跨頁。
+     圖與資料表附錄（標準與客戶版，D-V4-11＝B）一律從新的一頁開始，不接在既有附錄後面。 */
+  .printChart { margin: 2mm 0 0; break-inside: avoid; }
+  .printChart figcaption { font-size: var(--print-note); margin-bottom: 1mm; }
+  .printChartAppendix { break-before: page; }
 }
