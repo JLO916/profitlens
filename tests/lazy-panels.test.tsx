@@ -382,3 +382,59 @@ describe("V4-3c 載入與預先載入", () => {
     expect(dashboard.match(/schedulePanelPreload\(/g)).toHaveLength(1);
   });
 });
+
+// V4-10 代理 D（D-V4-21＝A；06_BATCHES V4-10「散佈圖 chunk 不在首頁 HTML 腳本清單」；PRD §8.2「散佈圖只能用 next/dynamic」、§7.9 CL-6）：
+// G24 的圖本體 src/components/charts/products-scatter-lazy.tsx 只經 next/dynamic 載入。這裡驗靜態部分（模組圖與匯入寫法）；
+// 「build 產出的散佈圖 chunk 不在首頁 HTML」由 tests/e2e/charts-products.spec.ts 讀 .next/react-loadable-manifest.json 的 chunk 檔名判定。
+describe("V4-10 G24 散佈圖只經 next/dynamic 載入", () => {
+  const LAZY = "src/components/charts/products-scatter-lazy.tsx";
+  const SECTION = "src/components/products/scatter-section.tsx";
+  const srcFiles = () => ts.sys.readDirectory(resolve("src"), [".ts", ".tsx"]).filter(file => !file.endsWith(".d.ts")).map(file => relative(".", file)).sort();
+  /** 檔案裡的匯入宣告（含再匯出）：模組名、是不是只有型別、匯入的名字。 */
+  function importsOf(file: string) {
+    const source = ts.createSourceFile(file, readFileSync(resolve(file), "utf8"), ts.ScriptTarget.Latest, false, file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+    const out: { specifier: string; typeOnly: boolean; names: string[] }[] = [];
+    for (const statement of source.statements) {
+      if (ts.isImportDeclaration(statement)) {
+        const clause = statement.importClause;
+        const named = clause?.namedBindings && ts.isNamedImports(clause.namedBindings) ? clause.namedBindings.elements : [];
+        const typeOnly = !!clause?.isTypeOnly || (!!clause && !clause.name && named.length > 0 && named.every(element => element.isTypeOnly));
+        out.push({ specifier: (statement.moduleSpecifier as ts.StringLiteral).text, typeOnly, names: named.filter(element => !element.isTypeOnly).map(element => (element.propertyName ?? element.name).text) });
+      } else if (ts.isExportDeclaration(statement) && statement.moduleSpecifier) {
+        const named = statement.exportClause && ts.isNamedExports(statement.exportClause) ? statement.exportClause.elements : [];
+        out.push({ specifier: (statement.moduleSpecifier as ts.StringLiteral).text, typeOnly: statement.isTypeOnly || (named.length > 0 && named.every(element => element.isTypeOnly)), names: [] });
+      }
+    }
+    return out;
+  }
+
+  it("首載（page.tsx、layout.tsx 起）與商品頁的 chunk（product-comparison-panel.tsx 起）的靜態模組圖都走不到散佈圖本體；G24 的區塊隨商品頁的 chunk、不在首載", () => {
+    const first = firstLoadGraph(["src/app/page.tsx", "src/app/layout.tsx"]);
+    for (const file of [LAZY, SECTION]) {
+      expect(existsSync(file), file).toBe(true);
+      expect(first.files.has(file), `${file} 不得在首載`).toBe(false);
+    }
+    const products = firstLoadGraph(["src/components/product-comparison-panel.tsx"]);
+    expect(products.files.has(SECTION), "G24 區塊隨商品頁的 chunk").toBe(true);
+    expect(products.files.has(LAZY), "散佈圖本體不在商品頁的 chunk（只經 next/dynamic）").toBe(false);
+    expect(products.packages.has("next"), "商品頁的 chunk 用 next/dynamic").toBe(true);
+  });
+
+  it("src 內沒有任何檔案以值匯入（含再匯出）products-scatter-lazy（import type 例外）；import(\"…/products-scatter-lazy\") 全站只有一處：scatter-section.tsx 的 dynamic(() => import(…), { ssr: false })；chart-scan 認得它是延遲載入的模組", async () => {
+    const { lazyLoadedModules } = await import("../scripts/lib/chart-scan.mjs");
+    const files = srcFiles();
+    expect(files).toContain(LAZY);
+    for (const file of files) for (const entry of importsOf(file).filter(item => /(^|\/)products-scatter-lazy$/.test(item.specifier))) expect(entry.typeOnly, `${file} 以值匯入 ${entry.specifier}`).toBe(true);
+    const dynamicImports = files.flatMap(file => [...source(file).matchAll(/(?<!typeof )import\(\s*"([^"]*products-scatter-lazy)"\s*\)/g)].map(match => `${file}:${match[1]}`));
+    expect(dynamicImports).toEqual([`${SECTION}:../charts/products-scatter-lazy`]);
+    expect(source(SECTION)).toMatch(/= dynamic\(\(\) => import\("\.\.\/charts\/products-scatter-lazy"\)\.catch\([^\n]*\{ ssr: false, loading: /);
+    expect(importsOf(SECTION).find(item => item.specifier === "next/dynamic")).toMatchObject({ typeOnly: false });
+    expect(lazyLoadedModules(files.map(path => ({ path, text: source(path) })))).toContain("products-scatter-lazy");
+  });
+
+  it("Recharts 的 ScatterChart、Scatter 只在 products-scatter-lazy.tsx 匯入（CL-6）；它的預設匯出是圖本體", () => {
+    const users = srcFiles().filter(file => importsOf(file).some(item => item.specifier === "recharts" && item.names.some(name => name === "ScatterChart" || name === "Scatter")));
+    expect(users).toEqual([LAZY]);
+    expect(source(LAZY)).toMatch(/^export default function ProductsScatterChart\(/m);
+  });
+});

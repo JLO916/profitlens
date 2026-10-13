@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { PRODUCT_PARETO_LIMIT, PRODUCT_PARETO_VERSION, productPareto, type ProductPareto } from "@/application/chart-pareto";
 import { chartHeights, chartRowHeights } from "@/application/chart-theme";
-import { channelsLabel, demoAlias, formatHeadlineAmount } from "@/application/copy";
+import { channelsLabel, demoAlias, formatAxisPercent, formatHeadlineAmount } from "@/application/copy";
 import { channelAliasTerms, l1ClauseLengths, L1_MAX_CJK } from "../scripts/lib/copy-scan.mjs";
 import { deltaTone, formatAmountL1, formatAmountL2, formatCount, formatPeriodL1, formatRateL1, formatRateL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { productHighlights } from "@/application/product-highlights";
@@ -17,6 +17,8 @@ import type { ChartFrameProps } from "@/components/overview/charts/chart-frame";
 import { ProductComparisonPanel } from "@/components/product-comparison-panel";
 import { productEvidence, type ProductEvidenceContext } from "@/components/product-evidence";
 import { PRODUCT_VARIANCE_BLOCK_ROWS, PRODUCTS_PARETO_BAR_PREFIX, PRODUCTS_PARETO_TABLE_TESTID, PRODUCTS_PARETO_TESTID, PRODUCTS_VARIANCE_TABLE_TESTID, PRODUCTS_VARIANCE_TESTID, ProductParetoSection, ProductVarianceSection, paretoSectionModel, productChartKey, productChartLabel, varianceSectionModel, type ProductChartScope } from "@/components/products/highlight-charts";
+import type { ProductsScatterChartProps } from "@/components/charts/products-scatter-lazy";
+import { PRODUCT_SCATTER_LIMIT, PRODUCTS_SCATTER_TABLE_TESTID, PRODUCTS_SCATTER_TESTID, ProductScatterFrame, SCATTER_MAX_INTERVALS, SCATTER_TICK_POINTS, scatterAxis, scatterEvidence, scatterPointKey, scatterSectionModel, type ScatterMetric } from "@/components/products/scatter-section";
 import { compareProducts, type ProductComparisonRow } from "@/domain/product-comparison";
 import type { Dataset, DatasetInput, Manifest } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
@@ -420,5 +422,199 @@ describe("審查修正：G13、G14 標題字數與 C33 延後組 evidence", () =
     const eager = renderToStaticMarkup(createElement(ChartDataTable<Row, "v">, { ...props, evidenceOf: row => { evidenceOf(row); return row.id === "a" ? null : evidence; } }));
     expect(evidenceOf).toHaveBeenCalledTimes(2);
     expect(cellClasses(eager)).toEqual([[["num negative", null]], [["num", "number-link"]]]);
+  });
+});
+
+/*
+ * V4-10 代理 D：G24 折扣率 × 商品毛利率散佈（06_BATCHES V4-10；CHART_CATALOG §8 G24 的單元測試欄；PRD §4.1–§4.7 G24、§5.3 第 4 列、§8.2；D-V4-21＝A）。
+ * - SSR 時只有骨架與資料表：完整表之後的 <details class="chart-more products-scatter-more">（收合但掛載），圖框是 loading 骨架（Recharts 只在第一次展開時以 next/dynamic 載入）。
+ * - 資料表列數＝兩個比率都有值的列數（＝圖上的點）；任一為 null 的列不畫、筆數寫進副標；點 > 200 時 state="empty"、只留資料表。
+ * - 點與資料表格是同一個 builder（productEvidence 本期＋filter { channel, sku }）；點擊記 chart_clicked。
+ * 斷言只用 testid、labels 與格式化函式；ProductScatterFrame 沒有 hook，可直接呼叫取元素樹（同 G13、G14）。
+ */
+const scatterCopy = labels.products.chartsV4.scatter;
+const RATE_X = metricDefinitions.discount_rate.label;
+const RATE_Y = metricDefinitions.gross_margin.label;
+const scatterSectionName = fill(scatterCopy.summary, { x: RATE_X, y: RATE_Y });
+const scatterRows = (set: Loaded) => set.rows.filter(row => row.current.metrics.discount_rate.value !== null && row.current.metrics.gross_margin.value !== null);
+const escapeRe = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** 記憶體合成資料（不寫檔）：1 通路 n 個 SKU、上期與本期各 1 天，每個 SKU 的折扣率與商品毛利率都有值（測點的上限 200）。 */
+function manyProductsInput(n: number): DatasetInput {
+  const base = fixture("golden").manifest as Manifest;
+  const skus = Array.from({ length: n }, (_, index) => `P${String(index + 1).padStart(3, "0")}`);
+  const dates = [DAY(0), DAY(1)];
+  const sales = dates.flatMap(date => skus.map((sku, index) => `${date},DTC,${sku},HOME,1,100.00,${(index % 20).toFixed(2)},0.00,${(30 + (index % 50)).toFixed(2)},TWD`));
+  return {
+    manifest: { ...base, dataset_id: `synthetic-scatter-${n}`, data_as_of: DAY(2), coverage_start: DAY(0), coverage_end: DAY(1), channels: ["DTC"], previous_period: { start: DAY(0), end: DAY(0) }, current_period: { start: DAY(1), end: DAY(1) } },
+    files: {
+      "sales_daily.csv": ["date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency", ...sales].join("\n"),
+      "channel_costs_daily.csv": ["date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency", ...dates.map(date => `${date},DTC,1.00,1.00,1.00,1.00,TWD`)].join("\n"),
+      "ad_spend_daily.csv": ["date,channel,ad_spend,currency", ...dates.map(date => `${date},DTC,1.00,TWD`)].join("\n"),
+    },
+  };
+}
+/** 直接呼叫 G24 的框（沒有 hook），取元素樹上的圖（next/dynamic 元件的 props）與 C33 資料表 props。 */
+function scatterTree(set: Loaded, options: { opened?: boolean; ready?: boolean; onEvidence?: (evidence: EvidenceSelection) => void; rows?: readonly ProductComparisonRow[] } = {}) {
+  const model = scatterSectionModel(options.rows ?? set.rows, set.scope);
+  const frame = ProductScatterFrame({ model, scope: set.scope, onEvidence: options.onEvidence ?? (() => undefined), opened: options.opened ?? true, ready: options.ready }) as ReactElement<ChartFrameProps>;
+  const chart = frame.props.children as ReactElement<ProductsScatterChartProps> | null;
+  const content = frame.props.dataTable!.content as ReactElement<ChartDataTableProps<ProductComparisonRow, ScatterMetric>> | null;
+  return { model, frame, chart, table: content?.props ?? null };
+}
+
+describe("V4-10 G24 折扣率 × 商品毛利率散佈（商品頁進階 <details>）", () => {
+  it.each(["demo", "golden", "refund_only", "synthetic"] as const)("%s：完整表之後緊接收合的 <details class=\"chart-more products-scatter-more\">（summary＝區塊名）；區塊 h3、lg；SSR 只有骨架與資料表（沒有 svg）；不是主層圖區塊", async name => {
+    const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+    const set = sets[name];
+    const { html } = set;
+    const full = element(html, 'class="product-full"')!;
+    const details = element(html, 'class="chart-more products-scatter-more"')!;
+    expect(html.indexOf(full) + full.length, `${name}：緊接完整表`).toBe(html.indexOf(details));
+    expect(openTag(details, "<details"), name).toBe('<details class="chart-more products-scatter-more">');
+    expect(details.slice(openTag(details, "<details")!.length), name).toMatch(new RegExp(`^<summary>${escapeRe(escapeAttr(scatterSectionName))}</summary><section `));
+    const section = byTestId(details, PRODUCTS_SCATTER_TESTID);
+    const plotted = scatterRows(set);
+    const empty = plotted.length === 0;
+    expect(openTag(section, "<section"), name).toBe(`<section class="panel chart-section products-scatter" aria-labelledby="products-scatter-title" aria-describedby="products-scatter-sub"${empty ? "" : ' aria-busy="true"'} data-testid="${PRODUCTS_SCATTER_TESTID}">`);
+    const negative = plotted.filter(row => Number(row.current.metrics.gross_margin.value) < 0).length;
+    expect(section, name).toContain(`<h3 id="products-scatter-title">${escapeAttr(fill(scatterCopy.title, { n: formatCount(negative, "L2"), metric: RATE_Y }))}</h3>`);
+    const base = fill(scatterCopy.subtitle, { x: RATE_X, y: RATE_Y, period: set.scope.current, scope: set.scope.channels });
+    const missing = set.rows.length - plotted.length;
+    expect(section, name).toContain(`<p class="sub" id="products-scatter-sub">${escapeAttr(missing > 0 ? fill(scatterCopy.nullNote, { subtitle: base, n: formatCount(missing, "L2") }) : base)}</p>`);
+    expect(element(section, 'class="chart-frame lg"'), name).toBe(empty
+      ? `<div class="chart-frame lg" style="height:${chartHeights.lg}px" data-state="empty"><p class="chart-frame-message">${labels.overview.chartFrame.noData}</p></div>`
+      : `<div class="chart-frame lg" style="height:${chartHeights.lg}px" aria-hidden="true" data-state="loading"><div class="chart-frame-skeleton"></div></div>`);
+    expect(section, `${name}：SSR 不輸出圖形`).not.toMatch(/<svg|recharts/);
+    expect(checkChartMarkup(html, { page: "products" }).mainSections, `${name}：G24 在 <details> 內，不算主層`).not.toContain(PRODUCTS_SCATTER_TESTID);
+    expect(html.split(`data-testid="${PRODUCTS_SCATTER_TESTID}"`), name).toHaveLength(2);
+  });
+
+  it("各資料集的點數、待補數與標題：示範 40 點、0 個為負；golden 4 點；refund_only 0 點、1 個待補（空狀態）；合成資料 11 點、4 個為負、1 個待補（MARKETPLACE · SKU-203 淨營收 ≤ 0）", () => {
+    const summary = (set: Loaded) => { const model = scatterSectionModel(set.rows, set.scope); return { points: model.points.length, rows: model.rows.length, missing: model.missing, negative: model.negative, tooMany: model.tooMany }; };
+    expect(summary(sets.demo)).toEqual({ points: 40, rows: 40, missing: 0, negative: 0, tooMany: false });
+    expect(summary(sets.golden)).toEqual({ points: 4, rows: 4, missing: 0, negative: 0, tooMany: false });
+    expect(summary(sets.refund_only)).toEqual({ points: 0, rows: 0, missing: 1, negative: 0, tooMany: false });
+    expect(summary(sets.synthetic)).toEqual({ points: 11, rows: 11, missing: 1, negative: 4, tooMany: false });
+    expect(summary(sets.many)).toMatchObject({ points: 13, negative: 13 });
+    const model = scatterSectionModel(sets.synthetic.rows, sets.synthetic.scope);
+    expect(model.title).toBe(fill(scatterCopy.title, { n: "4", metric: RATE_Y }));
+    // 只有不利上色：商品毛利率 < 0 的點 unfavorable（合成資料 MARKETPLACE · SKU-201、SKU-202，SOCIAL · SKU-301、SKU-302）。
+    expect(model.points.filter(point => point.unfavorable).map(point => point.key)).toEqual([["MARKETPLACE", "SKU-201"], ["MARKETPLACE", "SKU-202"], ["SOCIAL", "SKU-301"], ["SOCIAL", "SKU-302"]].map(([channel, sku]) => scatterPointKey({ channel, sku })));
+    // 座標＝domain 比率字串的 Number 近似值（只是座標），點的順序＝資料表列的順序＝comparison.rows 的順序。
+    expect(model.points).toEqual(model.rows.map(row => ({ key: scatterPointKey(row), x: Number(row.current.metrics.discount_rate.value), y: Number(row.current.metrics.gross_margin.value), unfavorable: Number(row.current.metrics.gross_margin.value) < 0 })));
+  });
+
+  it("資料表（收合但掛載）：列＝兩個比率都有值的列；SKU · 通路｜本期折扣率｜本期毛利率（L2 百分比，都是 number-link）；限制句在資料表 <details> 內、表格之後", () => {
+    for (const name of ["demo", "golden", "refund_only", "synthetic"] as const) {
+      const set = sets[name];
+      const section = byTestId(set.html, PRODUCTS_SCATTER_TESTID);
+      const details = element(section, '<details class="data-alternative"')!;
+      expect(openTag(details, "<details"), name).not.toMatch(/\sopen=""/);
+      expect(details, name).toContain(`<summary>${escapeAttr(fill(labels.overview.page.dataTable, { title: scatterSectionName }))}</summary>`);
+      const table = byTestId(details, PRODUCTS_SCATTER_TABLE_TESTID);
+      expect([...table.matchAll(/<th scope="col"[^>]*>([^<]*)<\/th>/g)].map(match => match[1]), name).toEqual([labels.products.pageV3.columns.product, `${labels.shell.periods.current}${metricDefinitions.discount_rate.shortLabel}`, `${labels.shell.periods.current}${metricDefinitions.gross_margin.shortLabel}`]);
+      const plotted = scatterRows(set);
+      expect(tableRows(table), name).toEqual(plotted.map(row => [productChartLabel(row, set.ctx.alias), formatRateL2(row.current.metrics.discount_rate.value), formatRateL2(row.current.metrics.gross_margin.value)]));
+      expect(table.match(/class="number-link"/g)?.length ?? 0, name).toBe(plotted.length * 2);
+      expect(details.indexOf(`<p class="note">${escapeAttr(scatterCopy.limitNote)}</p>`), `${name}：限制句在表格之後`).toBeGreaterThan(details.indexOf("</table>"));
+      expect(set.html.split(escapeAttr(scatterCopy.limitNote)), `${name}：限制句只有一處（資料表 <details> 內）`).toHaveLength(2);
+    }
+    expect(tableRows(byTestId(sets.demo.html, PRODUCTS_SCATTER_TABLE_TESTID))).toHaveLength(40);
+    expect(tableRows(byTestId(sets.synthetic.html, PRODUCTS_SCATTER_TABLE_TESTID))).toHaveLength(11);
+    expect(tableRows(byTestId(sets.refund_only.html, PRODUCTS_SCATTER_TABLE_TESTID))).toEqual([]);
+  });
+
+  it("點與資料表格是同一個 builder：本期折扣率或商品毛利率的 productEvidence＋filter { channel, sku }（值取自 domain，沒有 metricVersion、arrangeVersion）；點擊開商品毛利率、記 chart_clicked；找不到的 key 不開", () => {
+    for (const name of ["demo", "synthetic"] as const) {
+      const set = sets[name];
+      const onEvidence = vi.fn<(evidence: EvidenceSelection) => void>();
+      const { model, frame, chart, table } = scatterTree(set, { onEvidence });
+      expect(frame.props.state, name).toBeUndefined();
+      expect(chart!.props.points, name).toBe(model.points);
+      expect([chart!.props.x, chart!.props.y], name).toEqual([model.x, model.y]);
+      expect(table!.rows, name).toEqual(model.rows);
+      expect(table!.hasEvidence, name).toBeTypeOf("function");
+      for (const row of table!.rows) for (const column of table!.columns) {
+        const expected = productEvidence(row, "current", column.data, metricDefinitions[column.data].shortLabel, set.ctx, { drill: true });
+        expect(table!.hasEvidence!(row, column), `${name} ${column.key}`).toBe(true);
+        expect(table!.evidenceOf(row, column), `${name} ${scatterPointKey(row)} ${column.key}`).toEqual(expected);
+        expect(scatterEvidence(row, column.data, set.ctx)).toEqual(expected);
+        expect(expected.filter).toEqual({ channel: row.channel, sku: row.sku });
+        expect([expected.metricVersion, expected.arrangeVersion]).toEqual([undefined, undefined]);
+      }
+      const row = model.rows.at(-1)!;
+      chart!.props.onPoint(scatterPointKey(row));
+      expect(onEvidence).toHaveBeenCalledTimes(1);
+      expect(onEvidence).toHaveBeenCalledWith(scatterEvidence(row, "gross_margin", set.ctx));
+      expect(tracked).toEqual(["chart_clicked"]);
+      chart!.props.onPoint(scatterPointKey({ channel: "NOPE", sku: row.sku }));
+      expect(onEvidence).toHaveBeenCalledTimes(1);
+      tracked.length = 0;
+    }
+  });
+
+  it("還沒展開：圖框是 loading 骨架（不渲染圖、不下載 chunk）；ready=false：資料表 <details> 只留 summary（同 G13、G14 的延後渲染）", () => {
+    const closed = scatterTree(sets.demo, { opened: false });
+    expect(closed.frame.props.state).toBe("loading");
+    expect(closed.chart).toBeNull();
+    expect(closed.table!.rows).toHaveLength(40);
+    const deferred = scatterTree(sets.demo, { ready: false });
+    expect(deferred.frame.props.state).toBe("loading");
+    expect(deferred.chart).toBeNull();
+    expect(deferred.frame.props.dataTable).toEqual({ summary: fill(labels.overview.page.dataTable, { title: scatterSectionName }), content: null });
+  });
+
+  it(`點 > ${PRODUCT_SCATTER_LIMIT} 時不畫圖：state="empty"、message 指向資料表（tooMany）；資料表照列全部列；恰好 ${PRODUCT_SCATTER_LIMIT} 點時照畫`, async () => {
+    const set = await load("scatter-201", manyProductsInput(PRODUCT_SCATTER_LIMIT + 1));
+    expect(scatterRows(set)).toHaveLength(PRODUCT_SCATTER_LIMIT + 1);
+    const { model, frame, chart, table } = scatterTree(set);
+    expect([model.tooMany, model.points]).toEqual([true, []]);
+    expect(frame.props.state).toBe("empty");
+    expect(frame.props.message).toBe(fill(scatterCopy.tooMany, { n: formatCount(PRODUCT_SCATTER_LIMIT, "L2") }));
+    expect(chart).toBeNull();
+    expect(table!.rows).toHaveLength(PRODUCT_SCATTER_LIMIT + 1);
+    const section = byTestId(set.html, PRODUCTS_SCATTER_TESTID);
+    expect(element(section, 'class="chart-frame lg"')).toBe(`<div class="chart-frame lg" style="height:${chartHeights.lg}px" data-state="empty"><p class="chart-frame-message">${escapeAttr(fill(scatterCopy.tooMany, { n: formatCount(PRODUCT_SCATTER_LIMIT, "L2") }))}</p></div>`);
+    expect(tableRows(byTestId(section, PRODUCTS_SCATTER_TABLE_TESTID))).toHaveLength(PRODUCT_SCATTER_LIMIT + 1);
+    const limit = scatterTree(set, { rows: set.rows.slice(0, PRODUCT_SCATTER_LIMIT) });
+    expect([limit.model.tooMany, limit.model.points.length, limit.frame.props.state]).toEqual([false, PRODUCT_SCATTER_LIMIT, undefined]);
+    expect(limit.chart!.props.points).toHaveLength(PRODUCT_SCATTER_LIMIT);
+  });
+
+  it(`比率軸（只是座標）：含 0、兩端取整、刻度每 ${SCATTER_TICK_POINTS} 個百分點（超過 ${SCATTER_MAX_INTERVALS} 格時放大成 5 的整數倍）；刻度文字＝formatAxisPercent`, () => {
+    const pts = (values: readonly number[]) => values.map(value => Math.round(value * 1e6) / 1e4);
+    const percent = (value: string) => fill(labels.format.units.percent, { value });
+    expect(scatterAxis([])).toEqual({ domain: [0, 0.05], ticks: [0, 0.05], labels: [percent("0"), percent("5")] });
+    expect(scatterAxis([0.105, 0.21])).toEqual({ domain: [0, 0.25], ticks: [0, 0.05, 0.1, 0.15, 0.2, 0.25], labels: ["0", "5", "10", "15", "20", "25"].map(percent) });
+    // 0 到 60%：12 格，仍是每 5 個百分點。
+    expect(pts(scatterAxis([0.6, 0.12]).ticks)).toEqual(Array.from({ length: 13 }, (_, index) => index * 5));
+    // 合成資料的商品毛利率 −33.3% 到 60%：19 格 > 12，步長 10，下界 −40。
+    expect(scatterAxis([-0.333333333333, 0.6])).toMatchObject({ domain: [-0.4, 0.6], ticks: [-0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6] });
+    // −300% 到 50%：70 格，步長 30，下界 −300、上界 60，刻度含 0。
+    const wide = scatterAxis([-3, 0.5]);
+    expect(wide.domain).toEqual([-3, 0.6]);
+    expect(pts(wide.ticks)).toEqual(Array.from({ length: 13 }, (_, index) => -300 + index * 30));
+    expect(wide.labels[0]).toBe(percent("−300"));
+    for (const set of Object.values(sets)) {
+      const model = scatterSectionModel(set.rows, set.scope);
+      for (const [axis, values] of [[model.x, model.points.map(point => point.x)], [model.y, model.points.map(point => point.y)]] as const) {
+        expect(axis.ticks, set.name).toContain(0);
+        expect(axis.domain[0], set.name).toBeLessThanOrEqual(Math.min(0, ...values));
+        expect(axis.domain[1], set.name).toBeGreaterThanOrEqual(Math.max(0, ...values));
+        expect([axis.ticks[0], axis.ticks.at(-1)], set.name).toEqual(axis.domain);
+        expect(axis.ticks.length - 1, set.name).toBeLessThanOrEqual(SCATTER_MAX_INTERVALS + 1);
+        expect(pts(axis.ticks).every(point => Number.isInteger(point / SCATTER_TICK_POINTS)), set.name).toBe(true);
+        expect(axis.labels, set.name).toEqual(formatAxisPercent(axis.ticks));
+      }
+    }
+  });
+
+  it("標題每個子句 ≤ 14 字；summary 與副標沒有否定句（限制句只在資料表 <details> 內）", () => {
+    const aliasTerms = channelAliasTerms(labels);
+    for (const set of Object.values(sets)) {
+      const title = scatterSectionModel(set.rows, set.scope).title;
+      expect(l1ClauseLengths(title, aliasTerms).every(length => length <= L1_MAX_CJK), `${title}：${l1ClauseLengths(title, aliasTerms).join(",")}`).toBe(true);
+    }
+    for (const text of [scatterSectionName, fill(scatterCopy.subtitle, { x: RATE_X, y: RATE_Y, period: "", scope: "" }), scatterCopy.nullNote]) expect(text).not.toMatch(/不是|不代表|不等於|不可/);
   });
 });
