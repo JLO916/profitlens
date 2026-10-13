@@ -1,5 +1,5 @@
 {
-  "_說明": "tests/chart-lint.test.ts 的棘輪上限（PRD §7.9 CL-1 到 CL-11、06_BATCHES V4-0a 第 5 項）。V4-0a（2026-10-08）以 scripts/lib/chart-scan.mjs 實測 v3.0.0（625bfa5）的程式碼初始化：11 條全部為 0（AST 掃 src/components/charts/** 與 src/components/overview/charts/**，CL-3 的 var(--chart- 禁令擴到 src/components/**；SSR 渲染 tests/helpers/page-states.tsx 的頁面狀態）。同一條違規在多個頁面狀態出現時只算一次。之後每批只能調低，不得調高。量測口徑見 scripts/lib/chart-scan.mjs。",
+  "_說明": "tests/chart-lint.test.ts 的棘輪上限（PRD §7.9 CL-1 到 CL-11、06_BATCHES V4-0a 第 5 項）。V4-0a（2026-10-08）以 scripts/lib/chart-scan.mjs 實測 v3.0.0（625bfa5）的程式碼初始化：11 條全部為 0（AST 掃 src/components/charts/** 與 src/components/overview/charts/**，CL-3 的 var(--chart- 禁令擴到 src/components/**；SSR 渲染 tests/helpers/page-states.tsx 的頁面狀態）。同一條違規在多個頁面狀態出現時只算一次。V4-11（2026-10-13）重測：CL-1 到 CL-11 實測仍全為 0，上限不變。之後每批只能調低，不得調高。量測口徑見 scripts/lib/chart-scan.mjs。",
   "ceilings": {
     "CL-1": 0,
     "CL-2": 0,

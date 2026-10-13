@@ -1,4 +1,5 @@
 // V3-10 上線檢查（docs/revamp-v3/06_BATCHES.md「版本 3.0.0；RELEASES（含破壞性變更：Excel 工作表改名）、README」；PRD §8.9 改名溝通、§11.8 相容性）：版本號與發布文件。
+// V4-11 收尾（docs/revamp-v4/06_BATCHES.md「V4-11」；D-V4-1＝B）：版本改為 4.0.0，RELEASES 加 v4.0.0 段（尚未發布、不部署），v3.0.0 段的斷言照舊。
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -9,20 +10,78 @@ const releases = read("docs/RELEASES.md");
 const readme = read("README.md");
 /** RELEASES 的 v3.0.0 段落：從「## v3.0.0」到下一個「## v2.0.0」。 */
 const v3 = releases.slice(releases.indexOf("## v3.0.0"), releases.indexOf("## v2.0.0"));
+/** RELEASES 的 v4.0.0 段落（V4-11）：從「## v4.0.0」到下一個「## v3.0.0」。 */
+const v4 = releases.slice(releases.indexOf("## v4.0.0"), releases.indexOf("## v3.0.0"));
+/** v4.0.0 段落中某個「### 標題」到下一個「### 」（或段落結尾）之間的內容。 */
+const v4Section = (heading: string) => { const start = v4.indexOf(`### ${heading}`); expect(start, heading).toBeGreaterThan(-1); const next = v4.indexOf("\n### ", start + 1); return v4.slice(start, next === -1 ? undefined : next); };
 /** README 某個「## 標題」到下一個「## 」之間的內容。 */
 const readmeSection = (heading: string) => { const start = readme.indexOf(`## ${heading}`); expect(start, heading).toBeGreaterThan(-1); return readme.slice(start, readme.indexOf("\n## ", start + 1)); };
 const sheets = labels.exports.excel.sheets;
 
-describe("版本 3.0.0（package.json 與 lockfile 只改 version，依賴不變）", () => {
-  it("package.json、package-lock.json 的根與 packages[\"\"] 都是 3.0.0；名稱仍是 profitlens（技術識別不改，D-V3-25）", () => {
+describe("版本 4.0.0（V4-11，D-V4-1＝B；package.json 與 lockfile 只改 version，依賴不變）", () => {
+  it("package.json、package-lock.json 的根與 packages[\"\"] 都是 4.0.0；名稱仍是 profitlens（技術識別不改，D-V3-25）", () => {
     const pkg = JSON.parse(read("package.json"));
     const lock = JSON.parse(read("package-lock.json"));
     expect(pkg.name).toBe("profitlens");
-    expect(pkg.version).toBe("3.0.0");
-    expect(lock.version).toBe("3.0.0");
-    expect(lock.packages[""].version).toBe("3.0.0");
+    expect(pkg.version).toBe("4.0.0");
+    expect(lock.version).toBe("4.0.0");
+    expect(lock.packages[""].version).toBe("4.0.0");
     expect(lock.packages[""].dependencies).toEqual(pkg.dependencies);
     expect(lock.packages[""].devDependencies).toEqual(pkg.devDependencies);
+  });
+});
+
+describe("RELEASES v4.0.0 段落（V4-11：尚未發布，使用者 2026-10-13 指示不部署）", () => {
+  it("在 v3.0.0 之前（新的在上），標題寫尚未發布；開頭寫明沒有 tag、沒有部署、Skew Protection 沒開，H6 與人工開檔檢查待做，部署要當次同意", () => {
+    expect(releases.indexOf("## v4.0.0（尚未發布）")).toBeGreaterThan(-1);
+    expect(releases.indexOf("## v4.0.0")).toBeLessThan(releases.indexOf("## v3.0.0"));
+    const intro = v4.slice(0, v4.indexOf("\n### "));
+    for (const text of ["未執行：使用者 2026-10-13 指示不部署", "`v4.0.0`", "Skew Protection", "D-V4-44", "H6", "人工開檔檢查", "D-V4-28", "仍是 v3.0.0", "`625bfa5`"]) expect(intro, text).toContain(text);
+    const headings = [...v4.matchAll(/^### (.+)$/gm)].map(match => match[1]);
+    expect(headings).toEqual(["給使用者", "不變的事", "匯出格式的變更", "相容性", "已知限制", "驗收"]);
+  });
+
+  it("匯出格式的變更：PDF 頁數（老闆 1／標準 3／客戶 3，v3 為 1／2／2）、PPT 每版 2 張、Excel 新工作表與版本列名取自 labels、Markdown 九項差額表", () => {
+    const formats = v4Section("匯出格式的變更");
+    expect(formats).toContain("老闆一頁版 1、標準版 2、客戶報告版 2");
+    expect(formats).toContain("老闆一頁版 1、標準版 3、客戶報告版 3");
+    expect(formats).toContain("三個版本各 1 張");
+    expect(formats).toContain("三個版本各 2 張");
+    expect(formats).toContain("老闆一頁版 2、標準版 8、客戶報告版 8");
+    expect(formats).toContain(`「${labels.exports.chartsV4.excel.sheet}」`);
+    expect(formats).toContain(`「${labels.exports.variantsV3.pnlSheet}」之前`);
+    expect(formats).toContain(`「${labels.exports.chartsV4.excel.versionRow}」`);
+    expect(formats).toContain("九項差額表");
+    expect(formats).toContain("U+2212");
+  });
+
+  it("相容性：備份字串仍是 v5、選填匯入時間；v3.0.0 讀精靈匯入後的備份會拒絕（INVALID_WORKSPACE_FORMAT）且不取代目前資料；CSV、JSON 不變", () => {
+    const compat = v4Section("相容性");
+    for (const text of ["profitlens-workspace-v5", "v1–v5", "v3.0.0", "INVALID_WORKSPACE_FORMAT", "不會被取代", "D-V4-13"]) expect(compat, text).toContain(text);
+    expect(v4Section("給使用者")).toContain("payload.active.imported_at");
+  });
+
+  it("不變的事：三個指標版本、golden 固定答案、資料不上傳、AI 公開版未啟用、既有字串與 testid", () => {
+    const same = v4Section("不變的事");
+    for (const text of ["contribution-v1", "assist-kpi-v1", "breakeven-mer-v1", "`625bfa5`", "255.00", "−315.00", "284.00／264.00", "19.70", "資料不上傳", "ENABLE_LIVE_AI=false", "chart_clicked", "chart_table_opened", "2,581", "data-testid"]) expect(same, text).toContain(text);
+  });
+
+  it("已知限制寫出尚未部署、H6、人工開檔檢查、CLS 0.05、不併入 v4 的 D-V3-36／37", () => {
+    const known = v4Section("已知限制");
+    for (const text of ["尚未部署", "Skew Protection", "H6", "人工開檔檢查", "CLS", "D-V3-36", "D-V3-37"]) expect(known, text).toContain(text);
+  });
+
+  it("驗收連到 V4-0a–V4-11 的驗收文件；V4-10、V4-11 之外連結的檔案都存在（這兩份由主流程收尾產生）", () => {
+    const links = [...v4.matchAll(/\]\(\.\.\/(verification\/[^)]+)\)/g)].map(match => match[1]);
+    for (const batch of ["V4-0a", "V4-0b", "V4-1", "V4-2", "V4-3a", "V4-3b", "V4-3c", "V4-4", "V4-5", "V4-6", "V4-7a", "V4-7b", "V4-7c", "V4-8a", "V4-8b", "V4-9a", "V4-9b", "V4-10", "V4-11"]) expect(links).toContain(`verification/revamp-v4-${batch}-acceptance.md`);
+    for (const link of links.filter(path => !/revamp-v4-V4-1[01]-acceptance\.md$/.test(path))) expect(existsSync(resolve(link)), link).toBe(true);
+    const docs = [...v4.matchAll(/\]\((revamp-v[34]\/[^)]+)\)/g)].map(match => match[1]);
+    expect(docs.length).toBeGreaterThan(0);
+    for (const doc of docs) expect(existsSync(resolve("docs", doc)), doc).toBe(true);
+  });
+
+  it("v4 段落遵守文案規則：沒有「注意：」前綴、箭頭與驚嘆號", () => {
+    for (const banned of ["注意：", "→", "←", "↗", "▸", "⇒", "！", "!"]) expect(v4, banned).not.toContain(banned);
   });
 });
 
@@ -109,6 +168,20 @@ describe("README（v3.0.0 尚未發布；步驟對齊 V3-8 的空狀態與匯入
     for (const id of ["overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data"] as const) expect(features).toContain(`| ${labels.shell.nav[id].headline} |`);
     expect(features).toContain("docs/revamp-v3/GLOSSARY.md");
     for (const term of ["扣廣告前貢獻", "指標定義", "金額基準", "計算與來源", "待辦", "v5"]) expect(features).toContain(term);
+  });
+});
+
+describe("README 與 ENGINEERING 的 v4.0.0（V4-11：尚未發布）", () => {
+  it("「功能一覽」寫 v4.0.0 尚未發布、正式站仍是 v3.0.0，並提到 Excel 新工作表（名稱取自 labels）", () => {
+    const features = readmeSection("功能一覽");
+    expect(features).toContain("v4.0.0（尚未發布，正式站仍是 v3.0.0）");
+    expect(features).toContain(`「${labels.exports.chartsV4.excel.sheet}」`);
+  });
+
+  it("ENGINEERING 寫出 V4-11 起的版本 4.0.0 並連到 RELEASES", () => {
+    const engineering = read("docs/ENGINEERING.md");
+    expect(engineering).toContain("**4.0.0**");
+    expect(engineering).toContain("v4.0.0 尚未發布");
   });
 });
 
