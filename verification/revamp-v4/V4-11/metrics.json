@@ -1,0 +1,1633 @@
+{
+  "desktop": {
+    "firstScreen": {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "snapshotSentenceTop": 168,
+      "firstKpiTop": 261,
+      "kpiCardsBottom": 395,
+      "kpiBandTop": 260,
+      "kpiBandBottom": 396,
+      "contributionAfterMarketingValueTop": 299,
+      "contributionAfterMarketingValueBottom": 339,
+      "topThreeFirstRowTitleBottom": 501,
+      "topThreeFirstRowBottom": 537,
+      "kpiCards": [
+        {
+          "id": "kpi-net_revenue",
+          "top": 261,
+          "bottom": 395
+        },
+        {
+          "id": "kpi-gross_profit",
+          "top": 261,
+          "bottom": 395
+        },
+        {
+          "id": "kpi-contribution_before_marketing",
+          "top": 261,
+          "bottom": 395
+        },
+        {
+          "id": "kpi-contribution_after_marketing",
+          "top": 261,
+          "bottom": 395
+        },
+        {
+          "id": "kpi-contribution_margin",
+          "top": 261,
+          "bottom": 395
+        }
+      ],
+      "viewportHeight": 1000,
+      "numbersVisibleInFirstScreen": true,
+      "b2": {
+        "asserted": {
+          "snapshotSentenceTop": 192,
+          "kpiCardsBottom": 420,
+          "topThreeFirstRowBottom": 561
+        },
+        "recordedOnly": {},
+        "kpiBandBottomNote": "KPI 帶底以五格底邊最大值（kpiCardsBottom，與 v3 基準 419 同口徑）斷言；kpiBandBottom 是 kpi-band 元素本身的底，只記錄"
+      }
+    },
+    "focusableBeforeFirstKpi": {
+      "count": 10,
+      "method": "main 內、文件順序在第一張 KPI 卡之前、checkVisibility 可見、未 disabled、tabIndex ≥ 0、大於 1×1 px 的 a[href]／button／input／select／textarea／summary／[tabindex]；以元素計（與 v3 metrics.spec 相同）",
+      "elements": [
+        {
+          "tag": "button",
+          "text": "投影模式"
+        },
+        {
+          "tag": "select",
+          "text": "通路"
+        },
+        {
+          "tag": "button",
+          "text": "近 7 天"
+        },
+        {
+          "tag": "button",
+          "text": "近 4 週"
+        },
+        {
+          "tag": "button",
+          "text": "近 12 週"
+        },
+        {
+          "tag": "button",
+          "text": "本月對比上月"
+        },
+        {
+          "tag": "button",
+          "text": "去年同期"
+        },
+        {
+          "tag": "button",
+          "text": "自訂期間"
+        },
+        {
+          "tag": "button",
+          "text": "複製週會摘要"
+        },
+        {
+          "tag": "button",
+          "text": "會議：草稿，前往會議紀錄"
+        }
+      ]
+    },
+    "pages": {
+      "overview": {
+        "domNodes": 3325,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "diagnosis": {
+        "domNodes": 2174,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "products": {
+        "domNodes": 2510,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "scenarios": {
+        "domNodes": 683,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "mainLayerNegations": {
+          "count": 1,
+          "sentences": [
+            "我了解這是試算，不是預測"
+          ]
+        }
+      },
+      "actions": {
+        "domNodes": 711,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "meeting": {
+        "domNodes": 1064,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "data": {
+        "domNodes": 1209,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "method": "載入示範資料後依側欄順序切到七頁（navigateTo；手機走底部分頁列或「更多」），等 h1 與該頁區塊出現、捲回頂端；domNodes＝document.querySelectorAll('*').length（連續兩次相同才記錄）；scrollWidth／clientWidth＝document.scrollingElement；mainLayerNegations＝main 主層（拿掉收合的 <details>）含「不是／不代表／不等於／不可」的句子（去重，口徑同 tests/copy-density.test.ts）"
+    },
+    "b1": {
+      "overview": {
+        "firstChartFrameTop": 831
+      },
+      "diagnosis": {
+        "firstRowTop": 258,
+        "firstRowBottom": 864,
+        "firstRowSummaryBottom": 306,
+        "diagnosisListBottom": 2161,
+        "diagnosisPanelBottom": 2217.6,
+        "g10InsertTop": 3132.8,
+        "firstImpactBarTop": 276,
+        "shareTop": 2241.6,
+        "shareFrameTop": 2328.6,
+        "note": "健檢清單第一列＝第一個 diagnosis-row-*（<details>，預設展開；firstRowBottom 含展開內容，firstRowSummaryBottom 是收合列本身的底）；g10InsertTop 沿用 V4-0a 的口徑＝channel-compare 的頂（V4-3a 起 G10 插在它之前，所以這個值往下移；G10 本身的頂另記 shareTop、圖框頂 shareFrameTop）；firstImpactBarTop＝第一個 G9 內嵌條（chart-diagnosis-impact-bar-*）的頂（V4-3a 起）"
+      },
+      "products": {
+        "firstChartFrameTop": 379,
+        "productHighlightsTop": 212,
+        "note": "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內"
+      },
+      "scenarios": {
+        "scenarioCompareTop": 1285.2,
+        "g15Top": 914,
+        "note": "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算。g15Top＝G15 方案差額區塊（chart-scenarios-variance，V4-5 起，空狀態）的頂",
+        "scenarioCompareTopAfterCalculate": 1461.2,
+        "g15TopAfterCalculate": 1090,
+        "afterCalculateNote": "方案 1 套用「維持現況」範本、同意假設、計算之後（與畫面基準 07 相同的狀態）"
+      },
+      "data": {
+        "dataStatusLineBottom": 190,
+        "g20Top": 206,
+        "g20FrameTop": 293,
+        "dataIssuesTop": 577.2,
+        "note": "V4-7a 起 G20（chart-data-coverage）在狀態一行之下、data-issues 之上；g20Top＝區塊頂（B1 硬斷言的值），g20FrameTop＝固定高框頂"
+      },
+      "asserted": [
+        {
+          "project": "desktop",
+          "page": "overview",
+          "key": "firstChartFrameTop",
+          "max": 831,
+          "note": "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-8a 實測 831（V4-1 起；V4-0a 實測 855，V4-8a 起改以本批實測為新基準）",
+          "measured": 831
+        },
+        {
+          "project": "desktop",
+          "page": "diagnosis",
+          "key": "firstImpactBarTop",
+          "max": 900,
+          "note": "健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）",
+          "measured": 276
+        },
+        {
+          "project": "desktop",
+          "page": "diagnosis",
+          "key": "firstRowBottom",
+          "max": 864,
+          "note": "健檢首列底不晚於 V4-8a 實測 864（V4-3a 起；G9 條在列內、列高不變；V4-0a 實測 888，V4-8a 起改以本批實測為新基準）",
+          "measured": 864
+        },
+        {
+          "project": "desktop",
+          "page": "products",
+          "key": "firstChartFrameTop",
+          "max": 900,
+          "note": "商品第一張 .chart-frame 頂 ≤ 900（V4-4 起；示範資料是 G13 的框）",
+          "measured": 379
+        },
+        {
+          "project": "desktop",
+          "page": "scenarios",
+          "key": "g15Top",
+          "max": 938,
+          "note": "試算 G15 頂 ≤ 方案比較表區塊頂＋24：V4-0a 為 938＋24（V4-5 起）；V4-8a 起以 V4-8a 實測為基準（D-V3-35 上移 24px，G15 頂 914，門檻 914＋24；示範資料剛載入，G15 空狀態）",
+          "measured": 914
+        },
+        {
+          "project": "desktop",
+          "page": "scenarios",
+          "key": "g15TopAfterCalculate",
+          "max": 1114,
+          "note": "試算 G15 頂 ≤「維持現況」計算後的方案比較表區塊頂＋24：V4-0a 為 1,114＋24（V4-5 起）；V4-8a 起以 V4-8a 實測為基準（G15 頂 1,090，門檻 1,090＋24；畫面基準 07 的狀態）",
+          "measured": 1090
+        },
+        {
+          "project": "desktop",
+          "page": "data",
+          "key": "g20Top",
+          "max": 900,
+          "note": "資料來源 G20 頂 ≤ 900（V4-7a 起；示範資料，G20 標題 title.none）",
+          "measured": 206
+        }
+      ]
+    },
+    "b9": {
+      "allowance": 1500,
+      "pages": [
+        {
+          "page": "overview",
+          "domNodes": 3325,
+          "baseline": 3075,
+          "max": 4575
+        },
+        {
+          "page": "diagnosis",
+          "domNodes": 2174,
+          "baseline": 1324,
+          "max": 2824
+        },
+        {
+          "page": "products",
+          "domNodes": 2510,
+          "baseline": 1822,
+          "max": 3322
+        },
+        {
+          "page": "scenarios",
+          "domNodes": 683,
+          "baseline": 660,
+          "max": 2160
+        },
+        {
+          "page": "actions",
+          "domNodes": 711,
+          "baseline": 688,
+          "max": 2188
+        },
+        {
+          "page": "meeting",
+          "domNodes": 1064,
+          "baseline": 998,
+          "max": 2498
+        },
+        {
+          "page": "data",
+          "domNodes": 1209,
+          "baseline": 1129,
+          "max": 2629
+        }
+      ],
+      "note": "V4-1 起硬斷言：各頁 DOM 節點數 ≤ V4-0a 基準＋1,500（baseline 取自 verification/revamp-v4/V4-0a/metrics.json）"
+    }
+  },
+  "_meta": {
+    "batch": "V4-11",
+    "note": "PRD §2.2 B 的 v3.0.0 基準與各批量測（EC ProfitLens，revamp/v4）。由 verification/revamp-v4-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v4/V4-0-baseline.md。",
+    "clock": "2026-10-05T02:00:00.000Z",
+    "server": "本機 production（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）"
+  },
+  "firstLoadJs": {
+    "scripts": 6,
+    "bytes": 1721823,
+    "kib": 1681.5,
+    "gzipBytes": 519322,
+    "gzipKiB": 507.2,
+    "gzipMax": 545397,
+    "forbiddenSymbols": {
+      "Treemap": 0,
+      "Sankey": 0,
+      "Funnel": 0,
+      "PieChart": 0,
+      "RadarChart": 0
+    },
+    "recordedSymbols": {
+      "ScatterChart": 2,
+      "AreaChart": 1,
+      "Brush": 2,
+      "ComposedChart": 1,
+      "LineChart": 2,
+      "BarChart": 2
+    },
+    "splitSentinels": {
+      "\"diagnosis-panel\"": 0,
+      "\"data-status-line\"": 0,
+      "\"product-table\"": 0,
+      "\"meeting-outputs\"": 0,
+      "\"actions-workbench\"": 0,
+      "\"ai-panel\"": 0,
+      "book_new": 0,
+      "PptxGenJS": 0
+    },
+    "nomoduleExcluded": [
+      {
+        "src": "/_next/static/chunks/polyfills-42372ed130431b0a.js",
+        "bytes": 112594,
+        "gzip": 39473
+      }
+    ],
+    "allScripts": {
+      "scripts": 7,
+      "bytes": 1834417,
+      "gzipBytes": 558795
+    },
+    "files": [
+      {
+        "src": "/_next/static/chunks/4bd1b696-c9cc1fe3b38e59bb.js",
+        "nomodule": false,
+        "bytes": 201059,
+        "gzip": 63374
+      },
+      {
+        "src": "/_next/static/chunks/794-fdceb3b9319f55ac.js",
+        "nomodule": false,
+        "bytes": 241387,
+        "gzip": 65691
+      },
+      {
+        "src": "/_next/static/chunks/main-app-cd717720e6e1afbf.js",
+        "nomodule": false,
+        "bytes": 526,
+        "gzip": 232
+      },
+      {
+        "src": "/_next/static/chunks/194-ab182664d94ba742.js",
+        "nomodule": false,
+        "bytes": 532233,
+        "gzip": 159633
+      },
+      {
+        "src": "/_next/static/chunks/app/page-ee18639eb1670552.js",
+        "nomodule": false,
+        "bytes": 742758,
+        "gzip": 228329
+      },
+      {
+        "src": "/_next/static/chunks/polyfills-42372ed130431b0a.js",
+        "nomodule": true,
+        "bytes": 112594,
+        "gzip": 39473
+      },
+      {
+        "src": "/_next/static/chunks/webpack-ffd8f02df12b4ef8.js",
+        "nomodule": false,
+        "bytes": 3860,
+        "gzip": 2063
+      }
+    ],
+    "method": "GET / 的 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重）；主數字排除 nomodule（polyfills，現代瀏覽器不下載），allScripts 為含 nomodule 的總和；bytes＝未壓縮大小，gzip＝Node zlib gzipSync 預設等級；符號＝檔案內容中該字串出現的次數（子字串計數，含 displayName 與型別名稱）"
+  },
+  "laptop": {
+    "firstScreen": {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "snapshotSentenceTop": 168,
+      "firstKpiTop": 261,
+      "kpiCardsBottom": 395,
+      "kpiBandTop": 260,
+      "kpiBandBottom": 396,
+      "contributionAfterMarketingValueTop": 299,
+      "contributionAfterMarketingValueBottom": 339,
+      "topThreeFirstRowTitleBottom": 501,
+      "topThreeFirstRowBottom": 559,
+      "kpiCards": [
+        {
+          "id": "kpi-net_revenue",
+          "top": 261,
+          "bottom": 395
+        },
+        {
+          "id": "kpi-gross_profit",
+          "top": 261,
+          "bottom": 395
+        },
+        {
+          "id": "kpi-contribution_before_marketing",
+          "top": 261,
+          "bottom": 395
+        },
+        {
+          "id": "kpi-contribution_after_marketing",
+          "top": 261,
+          "bottom": 395
+        },
+        {
+          "id": "kpi-contribution_margin",
+          "top": 261,
+          "bottom": 395
+        }
+      ],
+      "viewportHeight": 900,
+      "numbersVisibleInFirstScreen": true,
+      "b2": {
+        "asserted": {
+          "snapshotSentenceTop": 168,
+          "kpiCardsBottom": 420,
+          "topThreeFirstRowBottom": 559
+        },
+        "recordedOnly": {},
+        "kpiBandBottomNote": "KPI 帶底以五格底邊最大值（kpiCardsBottom，與 v3 基準 419 同口徑）斷言；kpiBandBottom 是 kpi-band 元素本身的底，只記錄"
+      }
+    },
+    "focusableBeforeFirstKpi": {
+      "count": 10,
+      "method": "main 內、文件順序在第一張 KPI 卡之前、checkVisibility 可見、未 disabled、tabIndex ≥ 0、大於 1×1 px 的 a[href]／button／input／select／textarea／summary／[tabindex]；以元素計（與 v3 metrics.spec 相同）",
+      "elements": [
+        {
+          "tag": "button",
+          "text": "投影模式"
+        },
+        {
+          "tag": "select",
+          "text": "通路"
+        },
+        {
+          "tag": "button",
+          "text": "近 7 天"
+        },
+        {
+          "tag": "button",
+          "text": "近 4 週"
+        },
+        {
+          "tag": "button",
+          "text": "近 12 週"
+        },
+        {
+          "tag": "button",
+          "text": "本月對比上月"
+        },
+        {
+          "tag": "button",
+          "text": "去年同期"
+        },
+        {
+          "tag": "button",
+          "text": "自訂期間"
+        },
+        {
+          "tag": "button",
+          "text": "複製週會摘要"
+        },
+        {
+          "tag": "button",
+          "text": "會議：草稿，前往會議紀錄"
+        }
+      ]
+    },
+    "pages": {
+      "overview": {
+        "domNodes": 3349,
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "diagnosis": {
+        "domNodes": 2174,
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "products": {
+        "domNodes": 2510,
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "scenarios": {
+        "domNodes": 683,
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "mainLayerNegations": {
+          "count": 1,
+          "sentences": [
+            "我了解這是試算，不是預測"
+          ]
+        }
+      },
+      "actions": {
+        "domNodes": 711,
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "meeting": {
+        "domNodes": 1064,
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "data": {
+        "domNodes": 1209,
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "method": "載入示範資料後依側欄順序切到七頁（navigateTo；手機走底部分頁列或「更多」），等 h1 與該頁區塊出現、捲回頂端；domNodes＝document.querySelectorAll('*').length（連續兩次相同才記錄）；scrollWidth／clientWidth＝document.scrollingElement；mainLayerNegations＝main 主層（拿掉收合的 <details>）含「不是／不代表／不等於／不可」的句子（去重，口徑同 tests/copy-density.test.ts）"
+    },
+    "b1": {
+      "overview": {
+        "firstChartFrameTop": 897
+      },
+      "diagnosis": {
+        "firstRowTop": 258,
+        "firstRowBottom": 864,
+        "firstRowSummaryBottom": 306,
+        "diagnosisListBottom": 2161,
+        "diagnosisPanelBottom": 2217.6,
+        "g10InsertTop": 3132.8,
+        "firstImpactBarTop": 276,
+        "shareTop": 2241.6,
+        "shareFrameTop": 2328.6,
+        "note": "健檢清單第一列＝第一個 diagnosis-row-*（<details>，預設展開；firstRowBottom 含展開內容，firstRowSummaryBottom 是收合列本身的底）；g10InsertTop 沿用 V4-0a 的口徑＝channel-compare 的頂（V4-3a 起 G10 插在它之前，所以這個值往下移；G10 本身的頂另記 shareTop、圖框頂 shareFrameTop）；firstImpactBarTop＝第一個 G9 內嵌條（chart-diagnosis-impact-bar-*）的頂（V4-3a 起）"
+      },
+      "products": {
+        "firstChartFrameTop": 383,
+        "productHighlightsTop": 212,
+        "note": "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內"
+      },
+      "scenarios": {
+        "scenarioCompareTop": 1287.2,
+        "g15Top": 916,
+        "note": "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算。g15Top＝G15 方案差額區塊（chart-scenarios-variance，V4-5 起，空狀態）的頂",
+        "scenarioCompareTopAfterCalculate": 1463.2,
+        "g15TopAfterCalculate": 1092,
+        "afterCalculateNote": "方案 1 套用「維持現況」範本、同意假設、計算之後（與畫面基準 07 相同的狀態）"
+      },
+      "data": {
+        "dataStatusLineBottom": 190,
+        "g20Top": 206,
+        "g20FrameTop": 293,
+        "dataIssuesTop": 577.2,
+        "note": "V4-7a 起 G20（chart-data-coverage）在狀態一行之下、data-issues 之上；g20Top＝區塊頂（B1 硬斷言的值），g20FrameTop＝固定高框頂"
+      },
+      "asserted": [
+        {
+          "project": "laptop",
+          "page": "diagnosis",
+          "key": "firstRowBottom",
+          "max": 864,
+          "note": "1280 健檢首列底不晚於 V4-8a 實測 864（V4-3a 起；V4-0a 實測 888）",
+          "measured": 864
+        }
+      ]
+    },
+    "b9": {
+      "allowance": 1500,
+      "pages": [
+        {
+          "page": "overview",
+          "domNodes": 3349,
+          "baseline": 3099,
+          "max": 4599
+        },
+        {
+          "page": "diagnosis",
+          "domNodes": 2174,
+          "baseline": 1324,
+          "max": 2824
+        },
+        {
+          "page": "products",
+          "domNodes": 2510,
+          "baseline": 1822,
+          "max": 3322
+        },
+        {
+          "page": "scenarios",
+          "domNodes": 683,
+          "baseline": 660,
+          "max": 2160
+        },
+        {
+          "page": "actions",
+          "domNodes": 711,
+          "baseline": 688,
+          "max": 2188
+        },
+        {
+          "page": "meeting",
+          "domNodes": 1064,
+          "baseline": 998,
+          "max": 2498
+        },
+        {
+          "page": "data",
+          "domNodes": 1209,
+          "baseline": 1129,
+          "max": 2629
+        }
+      ],
+      "note": "V4-1 起硬斷言：各頁 DOM 節點數 ≤ V4-0a 基準＋1,500（baseline 取自 verification/revamp-v4/V4-0a/metrics.json）"
+    }
+  },
+  "mobile": {
+    "firstScreen": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "snapshotSentenceTop": 116,
+      "firstKpiTop": 257,
+      "kpiCardsBottom": 555,
+      "kpiBandTop": 256,
+      "kpiBandBottom": 556,
+      "contributionAfterMarketingValueTop": 295,
+      "contributionAfterMarketingValueBottom": 327,
+      "topThreeFirstRowTitleBottom": 685,
+      "topThreeFirstRowBottom": 807,
+      "kpiCards": [
+        {
+          "id": "kpi-net_revenue",
+          "top": 383,
+          "bottom": 426
+        },
+        {
+          "id": "kpi-gross_profit",
+          "top": 426,
+          "bottom": 469
+        },
+        {
+          "id": "kpi-contribution_before_marketing",
+          "top": 469,
+          "bottom": 512
+        },
+        {
+          "id": "kpi-contribution_after_marketing",
+          "top": 257,
+          "bottom": 383
+        },
+        {
+          "id": "kpi-contribution_margin",
+          "top": 512,
+          "bottom": 555
+        }
+      ],
+      "viewportHeight": 844,
+      "numbersVisibleInFirstScreen": true,
+      "b2": {
+        "asserted": {
+          "contributionAfterMarketingValueTop": 295
+        },
+        "recordedOnly": {},
+        "kpiBandBottomNote": "KPI 帶底以五格底邊最大值（kpiCardsBottom，與 v3 基準 419 同口徑）斷言；kpiBandBottom 是 kpi-band 元素本身的底，只記錄"
+      }
+    },
+    "focusableBeforeFirstKpi": {
+      "count": 3,
+      "method": "main 內、文件順序在第一張 KPI 卡之前、checkVisibility 可見、未 disabled、tabIndex ≥ 0、大於 1×1 px 的 a[href]／button／input／select／textarea／summary／[tabindex]；以元素計（與 v3 metrics.spec 相同）",
+      "elements": [
+        {
+          "tag": "button",
+          "text": "自訂期間 · 7/13–8/23，開啟期間設定"
+        },
+        {
+          "tag": "button",
+          "text": "複製週會摘要"
+        },
+        {
+          "tag": "button",
+          "text": "會議：草稿，前往會議紀錄"
+        }
+      ]
+    },
+    "b3MeetingWideTable": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "max": 390,
+      "method": "會議頁（示範資料）展開議程 3 的「完整通路寬表」後量 document.scrollingElement 的 scrollWidth／clientWidth（寬表只在自己的 .table-scroll 內捲動）；量完收合（D-V4-60＝A）"
+    },
+    "pages": {
+      "overview": {
+        "domNodes": 3312,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "diagnosis": {
+        "domNodes": 2174,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "products": {
+        "domNodes": 2510,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "scenarios": {
+        "domNodes": 683,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "mainLayerNegations": {
+          "count": 1,
+          "sentences": [
+            "我了解這是試算，不是預測"
+          ]
+        }
+      },
+      "actions": {
+        "domNodes": 711,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "meeting": {
+        "domNodes": 1064,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "data": {
+        "domNodes": 1206,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "mainLayerNegations": {
+          "count": 0,
+          "sentences": []
+        }
+      },
+      "method": "載入示範資料後依側欄順序切到七頁（navigateTo；手機走底部分頁列或「更多」），等 h1 與該頁區塊出現、捲回頂端；domNodes＝document.querySelectorAll('*').length（連續兩次相同才記錄）；scrollWidth／clientWidth＝document.scrollingElement；mainLayerNegations＝main 主層（拿掉收合的 <details>）含「不是／不代表／不等於／不可」的句子（去重，口徑同 tests/copy-density.test.ts）"
+    },
+    "b1": {
+      "overview": {
+        "firstChartFrameTop": 1827
+      },
+      "diagnosis": {
+        "firstRowTop": 241,
+        "firstRowBottom": 985,
+        "firstRowSummaryBottom": 321,
+        "diagnosisListBottom": 2656,
+        "diagnosisPanelBottom": 2707.6,
+        "g10InsertTop": 3704.8,
+        "firstImpactBarTop": 259,
+        "shareTop": 2725.6,
+        "shareFrameTop": 2872.6,
+        "note": "健檢清單第一列＝第一個 diagnosis-row-*（<details>，預設展開；firstRowBottom 含展開內容，firstRowSummaryBottom 是收合列本身的底）；g10InsertTop 沿用 V4-0a 的口徑＝channel-compare 的頂（V4-3a 起 G10 插在它之前，所以這個值往下移；G10 本身的頂另記 shareTop、圖框頂 shareFrameTop）；firstImpactBarTop＝第一個 G9 內嵌條（chart-diagnosis-impact-bar-*）的頂（V4-3a 起）"
+      },
+      "products": {
+        "firstChartFrameTop": 1330,
+        "productHighlightsTop": 208,
+        "note": "v3.0.0 商品頁沒有 .chart-frame；G13 插在 section.product-highlights（.pair）內"
+      },
+      "scenarios": {
+        "scenarioCompareTop": 1761.2,
+        "g15Top": 1386,
+        "note": "方案比較表區塊（section.scenario-compare）頂；示範資料剛載入、方案 1 尚未計算。g15Top＝G15 方案差額區塊（chart-scenarios-variance，V4-5 起，空狀態）的頂",
+        "scenarioCompareTopAfterCalculate": 1937.2,
+        "g15TopAfterCalculate": 1562,
+        "afterCalculateNote": "方案 1 套用「維持現況」範本、同意假設、計算之後（與畫面基準 07 相同的狀態）"
+      },
+      "data": {
+        "dataStatusLineBottom": 216,
+        "g20Top": 232,
+        "g20FrameTop": 355,
+        "dataIssuesTop": 625.2,
+        "note": "V4-7a 起 G20（chart-data-coverage）在狀態一行之下、data-issues 之上；g20Top＝區塊頂（B1 硬斷言的值），g20FrameTop＝固定高框頂"
+      },
+      "asserted": [
+        {
+          "project": "mobile",
+          "page": "diagnosis",
+          "key": "firstRowBottom",
+          "max": 985,
+          "note": "390 健檢首列底不晚於 V4-8a 實測 985（V4-3a 起；PRD §5.2「390 同」；與 V4-0a 實測相同）",
+          "measured": 985
+        }
+      ]
+    },
+    "b9": {
+      "allowance": 1500,
+      "pages": [
+        {
+          "page": "overview",
+          "domNodes": 3312,
+          "baseline": 3062,
+          "max": 4562
+        },
+        {
+          "page": "diagnosis",
+          "domNodes": 2174,
+          "baseline": 1324,
+          "max": 2824
+        },
+        {
+          "page": "products",
+          "domNodes": 2510,
+          "baseline": 1822,
+          "max": 3322
+        },
+        {
+          "page": "scenarios",
+          "domNodes": 683,
+          "baseline": 660,
+          "max": 2160
+        },
+        {
+          "page": "actions",
+          "domNodes": 711,
+          "baseline": 688,
+          "max": 2188
+        },
+        {
+          "page": "meeting",
+          "domNodes": 1064,
+          "baseline": 998,
+          "max": 2498
+        },
+        {
+          "page": "data",
+          "domNodes": 1206,
+          "baseline": 1129,
+          "max": 2629
+        }
+      ],
+      "note": "V4-1 起硬斷言：各頁 DOM 節點數 ≤ V4-0a 基準＋1,500（baseline 取自 verification/revamp-v4/V4-0a/metrics.json）"
+    }
+  },
+  "lighthouse": {
+    "version": "13.5.0",
+    "base": "http://127.0.0.1:3100",
+    "generatedAt": "2026-10-13T15:46:36.327Z",
+    "lazyChunks": {
+      "desktop-1440": {
+        "windows": [
+          {
+            "step": "載入示範資料",
+            "from": 3075.2,
+            "to": 4575.8
+          },
+          {
+            "step": "切到通路健檢",
+            "from": 6506.1,
+            "to": 7948.3
+          },
+          {
+            "step": "切到商品毛利",
+            "from": 9738.9,
+            "to": 11008
+          },
+          {
+            "step": "切到假設試算",
+            "from": 13055.2,
+            "to": 14332.9
+          },
+          {
+            "step": "切到會議紀錄",
+            "from": 15839.6,
+            "to": 17365.4
+          },
+          {
+            "step": "切到資料來源",
+            "from": 18973.7,
+            "to": 20307.7
+          },
+          {
+            "step": "切到待辦",
+            "from": 21854.3,
+            "to": 23193.4
+          }
+        ],
+        "chunks": [
+          {
+            "file": "366.c37f666a57c8ff55.js",
+            "start": 6418.5,
+            "end": 6423.5
+          },
+          {
+            "file": "718.b5e17e7c6402a1db.js",
+            "start": 6418.6,
+            "end": 6421.7
+          },
+          {
+            "file": "472.6a753f0927b2570a.js",
+            "start": 6418.7,
+            "end": 6421.8
+          },
+          {
+            "file": "451.5401b6af1ec219ff.js",
+            "start": 6418.8,
+            "end": 6422.4
+          },
+          {
+            "file": "676.a7212d56c75a4811.js",
+            "start": 6418.8,
+            "end": 6424.3
+          },
+          {
+            "file": "239.b89e53c6736a3cbd.js",
+            "start": 6419,
+            "end": 6423.7
+          },
+          {
+            "file": "225.81d0969025bd7271.js",
+            "start": 6419,
+            "end": 6425.4
+          },
+          {
+            "file": "31.5e25e9884ed94ad1.js",
+            "start": 6419.2,
+            "end": 6425.6
+          },
+          {
+            "file": "132.aeb618252405f2b5.js",
+            "start": 6419.2,
+            "end": 6425.9
+          },
+          {
+            "file": "271.6ee77db9c39cd126.js",
+            "start": 6419.3,
+            "end": 6424.8
+          }
+        ],
+        "insideTimespans": []
+      },
+      "mobile-390": {
+        "windows": [
+          {
+            "step": "載入示範資料",
+            "from": 3160.3,
+            "to": 7941.5
+          },
+          {
+            "step": "切到通路健檢",
+            "from": 10232.3,
+            "to": 12777.5
+          },
+          {
+            "step": "切到商品毛利",
+            "from": 14900.6,
+            "to": 16776.9
+          },
+          {
+            "step": "切到假設試算",
+            "from": 19148.9,
+            "to": 21075.9
+          },
+          {
+            "step": "切到會議紀錄",
+            "from": 22868.4,
+            "to": 25762.1
+          },
+          {
+            "step": "切到資料來源",
+            "from": 27699.7,
+            "to": 29931.1
+          },
+          {
+            "step": "切到待辦",
+            "from": 31832.7,
+            "to": 34065.8
+          }
+        ],
+        "chunks": [
+          {
+            "file": "366.c37f666a57c8ff55.js",
+            "start": 9813,
+            "end": 9816.5
+          },
+          {
+            "file": "718.b5e17e7c6402a1db.js",
+            "start": 9813.1,
+            "end": 9816.5
+          },
+          {
+            "file": "472.6a753f0927b2570a.js",
+            "start": 9813.2,
+            "end": 9816.4
+          },
+          {
+            "file": "676.a7212d56c75a4811.js",
+            "start": 9813.3,
+            "end": 9818.5
+          },
+          {
+            "file": "451.5401b6af1ec219ff.js",
+            "start": 9813.4,
+            "end": 9817.5
+          },
+          {
+            "file": "239.b89e53c6736a3cbd.js",
+            "start": 9813.5,
+            "end": 9817.5
+          },
+          {
+            "file": "225.81d0969025bd7271.js",
+            "start": 9813.6,
+            "end": 9818.7
+          },
+          {
+            "file": "132.aeb618252405f2b5.js",
+            "start": 9813.7,
+            "end": 9819.8
+          },
+          {
+            "file": "31.5e25e9884ed94ad1.js",
+            "start": 9813.8,
+            "end": 9819.4
+          },
+          {
+            "file": "271.6ee77db9c39cd126.js",
+            "start": 9813.9,
+            "end": 9819.3
+          }
+        ],
+        "insideTimespans": []
+      }
+    },
+    "loadAverage": {
+      "before": [
+        2.3,
+        2.6,
+        2.91
+      ],
+      "after": [
+        2.11,
+        2.46,
+        2.83
+      ],
+      "note": "os.loadavg()（1／5／15 分鐘）；本機負載高時 timespan 的 TBT／INP 會偏高，比較時以同負載重跑為準"
+    },
+    "method": "user-flow：navigate（空狀態首頁）→ timespan（載入示範資料）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot；accessibility 取 snapshot、performance 0–100 只有 navigation 有，timespan 記 TBT／CLS／INP；desktop 用 lighthouse desktopConfig、mobile 用預設（模擬節流）並改成 390×844",
+    "desktop-1440": [
+      {
+        "step": "首頁（空狀態，navigation）",
+        "mode": "navigation",
+        "accessibility": 100,
+        "performance": 100,
+        "performanceAudits": "25/30",
+        "metrics": {
+          "fcpMs": 248.082,
+          "lcpMs": 572.122,
+          "speedIndexMs": 248.082,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "載入示範資料（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "23/23",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 122.912,
+          "cls": 0,
+          "inpMs": 19.143
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "經營總覽（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到通路健檢（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "7/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 149.898,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "通路健檢（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到商品毛利（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "20/20",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": 37.341
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "商品毛利（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到假設試算（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "17/17",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0.002,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "假設試算（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到會議紀錄（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 220.54,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "會議紀錄（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到資料來源（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/6",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "資料來源（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到待辦（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "18/18",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0.04,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "待辦（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      }
+    ],
+    "mobile-390": [
+      {
+        "step": "首頁（空狀態，navigation）",
+        "mode": "navigation",
+        "accessibility": 100,
+        "performance": 95,
+        "performanceAudits": "24/32",
+        "metrics": {
+          "fcpMs": 1055.452,
+          "lcpMs": 2708.177,
+          "speedIndexMs": 1055.452,
+          "tbtMs": 144,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "載入示範資料（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "20/22",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 1112.302,
+          "cls": 0.001,
+          "inpMs": 29.395
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "經營總覽（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到通路健檢（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "18/22",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 813.847,
+          "cls": 0,
+          "inpMs": 878.213
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "通路健檢（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到商品毛利（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "19/20",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 86.817,
+          "cls": 0.054,
+          "inpMs": 158.2
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "商品毛利（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到假設試算（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "20/20",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": 18.084
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "假設試算（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到會議紀錄（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 996.482,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "會議紀錄（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到資料來源（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "20/20",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 15.328,
+          "cls": 0.054,
+          "inpMs": 16.543
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "資料來源（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到待辦（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "18/18",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0.053,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "待辦（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      }
+    ]
+  }
+}

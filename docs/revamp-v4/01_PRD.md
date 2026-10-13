@@ -153,7 +153,29 @@ v3 的目標是「去 AI 製作感、三層閱讀」，圖只做到 B3「表格�
 
 **實測值（V4-11 收尾填入，2026-10-13）**
 
-數字取自各批證據的最新一份：`verification/revamp-v4/V4-10/` 的 `metrics.json`、`axe.json`、`keyboard-walk.json`、`network-log.json`、`lighthouse-runs/`、`lighthouse-ab/summary.txt` 與 `first-load-proof.md`（V4-10 修正 G8 後的程式 `6badab3`，證據 commit `6ba99ab`），以及 `verification/revamp-v4-V4-*-acceptance.md`。C4、C5、C6、C9 是 V4-11 在本機重跑的結果。V4-11 只改文件、版本號、棘輪上限說明與 `chart-theme.ts` 的註解，不改畫面與計算；git tag `v4.0.0`、正式站部署與 Skew Protection 是「未執行：使用者 2026-10-13 指示不部署」。**待 V4-11 終跑**：13 項 HTTP（`scripts/launch-check.mjs`）、完整 E2E 的通過數、畫面基準、metrics、axe、keyboard-walk、network-log 與 Lighthouse 由收尾主流程重跑，結果寫進 `verification/revamp-v4-V4-11-acceptance.md`，與下表不同時以那份為準。V4-10 整合時的完整 E2E 是 1,051 passed、16 failed、25 skipped；16 條都是 4 條測試的斷言問題，修正後四尺寸重跑全過（`a882148`）。
+數字取自各批證據的最新一份：`verification/revamp-v4/V4-10/` 的 `metrics.json`、`axe.json`、`keyboard-walk.json`、`network-log.json`、`lighthouse-runs/`、`lighthouse-ab/summary.txt` 與 `first-load-proof.md`（V4-10 修正 G8 後的程式 `6badab3`，證據 commit `6ba99ab`），以及 `verification/revamp-v4-V4-*-acceptance.md`。C4、C5、C6、C9 是 V4-11 在本機重跑的結果。V4-11 只改文件、版本號、棘輪上限說明與 `chart-theme.ts` 的註解，不改畫面與計算；git tag `v4.0.0`、正式站部署與 Skew Protection 是「未執行：使用者 2026-10-13 指示不部署」。**V4-11 終跑（2026-10-13，`0ba7708`）**：
+
+- 13 項 HTTP 全部通過，補充項目也全部通過，沒有呼叫 Live AI（`verification/revamp-v4/V4-11/launch-check-local.json`）。
+- 完整 E2E 1,067 passed、0 failed、25 skipped。
+- 畫面基準 52 張，與 V4-10 逐位元組相同。
+- First Load JS 519,322。
+- axe 23／23／23／21，全部 0。
+- keyboard-walk、network-log 與 V4-10 相同。
+- Lighthouse 低負載三次（開跑時 1 分鐘負載 2.02–2.44），390 TBT 中位數五項都低於門檻：
+
+  | 步驟 | 中位數（ms） | 門檻（ms） |
+  |---|---|---|
+  | 載入示範資料 | 1,053.9 | 1,109.1 |
+  | 健檢 | 797.2 | 832.3 |
+  | 商品 | 86.8 | 129.9 |
+  | 會議 | 994.3 | 1,071.2 |
+  | 資料來源 | 10.8 | 50.0 |
+
+  a11y 全 100；390 首頁 Performance 95–96。
+
+細節見 `verification/revamp-v4-V4-11-acceptance.md`。
+
+V4-10 整合時的完整 E2E 是 1,051 passed、16 failed、25 skipped；16 條都是 4 條測試的斷言問題，修正後四尺寸重跑全過（`a882148`）。
 
 | 代號 | 實測 | 判定 | 證據 |
 |---|---|---|---|
