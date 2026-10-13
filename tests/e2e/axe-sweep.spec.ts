@@ -20,6 +20,7 @@ import { fill, labels } from "../../src/i18n";
  * V4-8b 代理 B（D-V4-60＝A）再加兩個部分資料狀態（D-V4-59 (4) 的 target-size，四個尺寸都有）：合成資料會議頁展開「資料待補」優先列（MISSING_CRITICAL_DATA，
  * 影響金額是「資料待補」的 number-link）、匯入 missing_ad_day 後的總覽（關鍵 KPI 差額行是「先補齊 1 項」，下一行緊接「上期」金額）；desktop、laptop、tablet 共 21，mobile 共 19。
  * V4-8b 代理 A 再加一個：頁面程式載入失敗的錯誤狀態（D-V4-44 B、D-V4-57＝A；之後的程式 chunk 一律失敗時切到通路健檢）；合併代理 B 的兩個後 desktop、laptop、tablet 共 22，mobile 共 20。
+ * V4-10 代理 B 再加一個（PRD §2.2 C3「待辦頁新增一張卡」，四個尺寸都有）：示範資料的待辦頁按空狀態的「新增待辦」、關掉自動開啟的待辦編輯抽屜後（G17 小表 4 列）；desktop、laptop、tablet 共 23，mobile 共 21。
  * axe 來源：專案沒有 @axe-core/playwright（本輪不加依賴），改用 node_modules 已有的 axe-core（eslint-config-next → eslint-plugin-jsx-a11y 的相依套件）
  * 以 page.addScriptTag 注入 axe.min.js 後呼叫 axe.run。找不到 axe-core 時退回純 DOM 檢查（每個控制有可及名稱、每頁一個 h1、img 都有 alt），並在結果標明 engine。
  * 不論 axe 是否可用，每個狀態都另記純 DOM 檢查（heading 跳級、重複 id、:focus-visible 規則是否存在）供參考，不斷言。
@@ -95,6 +96,17 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
     await page.keyboard.press("Escape");
     await expect(page.locator("html")).not.toHaveAttribute("data-mode", /.*/);
   }
+
+  // V4-10 代理 B（06_BATCHES V4-10、PRD §2.2 C3）：待辦頁新增一張卡（G17 待辦期限分布小表：4 列，新卡沒有期限，未填期限 1）。示範資料沒有待辦（待辦頁是空狀態），
+  // 不加這個狀態就掃不到 G17。看板上新增後直接開待辦編輯抽屜，按標題列的關閉鈕關掉（焦點回到新卡片）後掃；四個尺寸都有。
+  await gotoPage(page, "actions");
+  await page.getByTestId("actions-empty-add").click();
+  await expect(page.getByTestId("action-drawer")).toBeVisible();
+  await page.getByTestId("action-drawer").getByTestId("action-drawer-close").click();
+  await expect(page.getByTestId("action-drawer")).toHaveCount(0);
+  await expect(page.getByTestId("chart-actions-due")).toBeVisible();
+  await expect(page.getByTestId("chart-actions-due").locator('tr[data-bucket="none"] td.num')).toHaveText("1");
+  results.push(await scan(page, "page-actions-one-card", engine, path));
 
   // V4-3b（06_BATCHES V4-3b、PRD §2.2 C3）：再加三個狀態，desktop、laptop、tablet 共 14，mobile 共 13。
   // 1. 資料表展開（健檢頁，示範資料）：G10 的資料表、G12「五項比率走勢」與它的資料表、G7b「各通路每週」都展開（G11 熱表本身就是表，常駐）。
@@ -194,7 +206,8 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   // 06 護欄表寫的「V4-7a 起 17／16」是在 V4-6 多加一個狀態之前寫的，實際是 18／17。
   // V4-8a 起 19／17（desktop、laptop、tablet 加會議頁投影；mobile 沒有投影，不變）。
   // V4-8b 起 22／20：代理 B 加兩個（D-V4-60＝A：四個尺寸都加合成資料會議頁展開「資料待補」優先列、缺廣告日的總覽），代理 A 加一個（頁面程式載入失敗的錯誤狀態）。
-  expect(results.length, "axe 狀態數（V4-8b 起 22／20）").toBe(testInfo.project.name === "mobile" ? 20 : 22);
+  // V4-10 起 23／21（四個尺寸都加待辦頁新增一張卡，G17）。06 與 PRD 寫的「V4-10 結束時 18／17」是在 V4-6 到 V4-8b 多加狀態之前寫的。
+  expect(results.length, "axe 狀態數（V4-10 起 23／21）").toBe(testInfo.project.name === "mobile" ? 21 : 23);
 
   for (const row of results) {
     const blocking = row.violations.filter(item => item.impact === "serious" || item.impact === "critical").map(item => `${item.impact} ${item.id}（${item.nodes}）：${item.targets.join(" ")}`);

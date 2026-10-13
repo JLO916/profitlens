@@ -18,12 +18,15 @@ import { chartColors, chartRowHeights } from "@/application/chart-theme";
 //   兩種模式共用版面 signed：false（預設）零線在左緣、條往右，滿寬＝100%；true 零線在正中央、正往右負往左，半寬＝100%（同 variance）。
 //   同一張表的每一格要用同一個 signed（零線才對齊），由呼叫端以 barCellSigned(整張表的值) 算一次；signed 為 false 時負值沒有地方畫，不畫條（direction 仍為 left）。
 //   share、pair 的條不可點（G22 精靈資料尚未提交、前處理表是純文字；G23 不另設點擊；PRD §8.7），型別上沒有 onClick；pair 的色固定，不收 tone。
+// V4-10 代理 B（CHART_CATALOG G17、PRD §6.3 C24）：加 count 模式；variance、share、pair 的幾何與 markup 一個字都不改。
+//   count（G17 待辦期限分布小表）：從 0 計數，零線在左緣（同 share 未分正負的版面，線畫在 x＝0.5）、條往右，滿寬 96＝尺度（同一張表各列件數的最大值）；
+//         條長＝件數 ÷ 尺度，夾在 100%；件數為 0、缺值、負值或尺度 ≤ 0 時沒有條，只畫零線。條色依 tone（G17：逾期 unfavorable、其餘 total）；不可點，型別上沒有 onClick。
 // 條只是視覺輔助：根 svg 帶 aria-hidden 與 data-chart-kind="cell"（CL-1、CL-11 以它辨識內嵌條）、不可聚焦、圖內沒有 tabIndex；
 // 鍵盤與螢幕報讀走同列的 number-link，點條呼叫與 number-link 相同的 handler（同一個 evidence builder）。
 // 色只經 chart-theme.ts 的 chartColors（元件內沒有色碼與 var() 字串常值，CL-3）；高度只用 chartRowHeights（CL-10）；
 // 顯示寬由 globals.css「V4-1 B」錨點決定（≥ 768 為 96px、≤ 767 為 64px）；要不要顯示（例如 G6 只在 ≤ 767 顯示）由各圖自己的錨點決定，本元件不藏。
 
-/** C24 的四種模式（PRD §6.3）：variance 共用零線雙向、share 0 到 100%、pair 上下成對、count 從 0 計數。V4-7b 起實作 variance、share、pair（count 在 V4-10）。 */
+/** C24 的四種模式（PRD §6.3）：variance 共用零線雙向、share 0 到 100%、pair 上下成對、count 從 0 計數。V4-7b 起實作 variance、share、pair；V4-10 加 count。 */
 export type BarCellMode = "variance" | "share" | "pair" | "count";
 /**
  * 條色的語意：由呼叫端依 deltaTone／favorableDirectionOf 判斷後傳入（依有利方向，不依數學正負號）。
@@ -129,7 +132,15 @@ export interface BarCellPairInput {
   /** 版面：同 share。 */
   signed?: boolean;
 }
-export type BarCellGeometryInput = BarCellVarianceInput | BarCellShareInput | BarCellPairInput;
+/** V4-10 count：條長＝件數 ÷ 尺度（同一張表各列件數的最大值），從 0 往右、夾在 100%。 */
+export interface BarCellCountInput {
+  mode: "count";
+  /** 件數（整數或整數字串）。 */
+  value: BarCellAmount;
+  /** 共同尺度（同一張表各列件數的最大值）。≤ 0、缺值或無法解析時沒有條。 */
+  max: BarCellAmount;
+}
+export type BarCellGeometryInput = BarCellVarianceInput | BarCellShareInput | BarCellPairInput | BarCellCountInput;
 
 /** 座標系內的矩形（viewBox 單位）。 */
 export interface BarCellRect { x: number; y: number; width: number; height: number }
@@ -185,7 +196,9 @@ export interface BarCellPairGeometry extends BarCellLayout {
   /** 下條（主值；貼盒底、高 chartRowHeights.cell）。 */
   value: BarCellLengthBar;
 }
-export type BarCellGeometry = BarCellVarianceGeometry | BarCellShareGeometry | BarCellPairGeometry;
+/** V4-10 count：版面固定未分正負（signed false，零線在左緣）。 */
+export interface BarCellCountGeometry extends BarCellLayout, BarCellLengthBar { mode: "count" }
+export type BarCellGeometry = BarCellVarianceGeometry | BarCellShareGeometry | BarCellPairGeometry | BarCellCountGeometry;
 
 /** 座標取到 0.1（HALF_UP，全程用 Decimal，避免浮點誤差）。 */
 const toTenth = (value: Decimal) => value.toDecimalPlaces(1, Decimal.ROUND_HALF_UP);
@@ -195,14 +208,17 @@ const toTenth = (value: Decimal) => value.toDecimalPlaces(1, Decimal.ROUND_HALF_
  * 比例用 Decimal 以精確字串計算，座標取到 0.1；非零值至少畫 MIN_BAR 寬（空心條至少 MIN_OUTLINE_BAR）。
  * V4-3a：刻度中心＝零線 ∓ |tick| ÷ |尺度| × 半寬（與條同一側）；tick 為 0（與零線重疊）、超出尺度或沒有條時不畫。
  * V4-7b：依 mode 分派到 share（barCellShareGeometry）與 pair（barCellPairGeometry）；variance 的實作不變。
+ * V4-10：count 分派到 barCellCountGeometry；其他模式不變。
  */
 export function barCellGeometry(input: BarCellVarianceInput): BarCellVarianceGeometry;
 export function barCellGeometry(input: BarCellShareInput): BarCellShareGeometry;
 export function barCellGeometry(input: BarCellPairInput): BarCellPairGeometry;
+export function barCellGeometry(input: BarCellCountInput): BarCellCountGeometry;
 export function barCellGeometry(input: BarCellGeometryInput): BarCellGeometry;
 export function barCellGeometry(input: BarCellGeometryInput): BarCellGeometry {
   if (input.mode === "share") return barCellShareGeometry(input);
   if (input.mode === "pair") return barCellPairGeometry(input);
+  if (input.mode === "count") return barCellCountGeometry(input);
   return barCellVarianceGeometry(input);
 }
 
@@ -286,6 +302,18 @@ export function barCellPairGeometry(input: Omit<BarCellPairInput, "mode">): BarC
   };
 }
 
+/**
+ * V4-10 count 幾何（純函式）：零線在左緣（signed false），條長＝件數 ÷ 尺度 × 96（取到 0.1），夾在 100%；條高 chartRowHeights.cell、垂直置中（同 share）。
+ * 尺度 ≤ 0、缺值或無法解析時 ratio 為 null、沒有條；件數為 0 時 ratio 0、沒有條；負的件數沒有地方畫（bar 為 null）。非零件數至少 MIN_BAR。
+ */
+export function barCellCountGeometry(input: Omit<BarCellCountInput, "mode">): BarCellCountGeometry {
+  const shape = layoutOf(false);
+  const max = exactOf(input.max);
+  const denominator = max === null || max.lte(0) ? null : max;
+  const bar = lengthBar(exactOf(input.value), denominator, shape, (BAR_CELL_HEIGHT - chartRowHeights.cell) / 2, chartRowHeights.cell);
+  return { mode: "count", ...shape.layout, ...bar };
+}
+
 /** 條色（tone → chart-theme 的 var() 字串）：只有不利上色（D-V3-7，有利不用綠）；有利預設灰（favorable）或 total；neutral 與 total（V4-7b）用 total。 */
 export function barCellFill(tone: BarCellTone, favorableFill: BarCellFavorableFill = "favorable"): string {
   if (tone === "unfavorable") return chartColors.unfavorable;
@@ -320,16 +348,26 @@ export interface BarCellPairProps extends BarCellPairInput {
   /** 加在根 svg 的額外 class。 */
   className?: string;
 }
-export type BarCellProps = BarCellVarianceProps | BarCellShareProps | BarCellPairProps;
+/** V4-10 count 的 props：條色依 tone（G17：逾期 unfavorable、其餘 total）；不可點。 */
+export interface BarCellCountProps extends BarCellCountInput {
+  tone: BarCellTone;
+  /** 根 svg 的 data-testid（例如 chart-actions-due-bar-overdue）。 */
+  testId?: string;
+  /** 加在根 svg 的額外 class。 */
+  className?: string;
+}
+export type BarCellProps = BarCellVarianceProps | BarCellShareProps | BarCellPairProps | BarCellCountProps;
 
 /**
  * C24 表格內嵌條：放在既有 <td> 或清單列內、同列數字之前；整個 svg aria-hidden，不改表格 DOM、testid 與 number-link。
  * V4-3a：tick（刻度，畫在最上層）與 outline（空心條）只在有給時輸出，根 svg 另加 has-tick、is-outline；沒給時 markup 與 V4-2 逐字相同。
  * V4-7b：依 mode 分派；variance 的 markup 與 V4-7a 逐字相同。
+ * V4-10：加 count（countCell）；其他模式的 markup 不變。
  */
 export function BarCell(props: BarCellProps) {
   if (props.mode === "share") return shareCell(props);
   if (props.mode === "pair") return pairCell(props);
+  if (props.mode === "count") return countCell(props);
   return varianceCell(props);
 }
 
@@ -398,6 +436,27 @@ function pairCell({ value, previous, max, signed = false, testId, className }: B
   >
     {top && <rect className="bar-cell-previous" x={top.x} y={top.y} width={top.width} height={top.height} fill={chartColors.previous} />}
     {bottom && <rect className="bar-cell-bar" x={bottom.x} y={bottom.y} width={bottom.width} height={bottom.height} fill={chartColors.total} />}
+    <line className="bar-cell-zero" x1={zeroLineX} x2={zeroLineX} y1={0} y2={height} stroke={chartColors.axis} strokeWidth={1} vectorEffect="non-scaling-stroke" shapeRendering="crispEdges" />
+  </svg>;
+}
+
+/** V4-10 count：根 svg class bar-cell is-count 與 data-tone；條（rect.bar-cell-bar）在零線之前畫，零線在左緣（0.5）、最上層。 */
+function countCell({ value, max, tone, testId, className }: BarCellCountProps) {
+  const geometry = barCellCountGeometry({ value, max });
+  const { width, height, zeroLineX, bar } = geometry;
+  return <svg
+    className={`bar-cell is-count${className ? ` ${className}` : ""}`}
+    data-chart-kind="cell"
+    data-testid={testId}
+    data-tone={tone}
+    viewBox={`0 0 ${width} ${height}`}
+    width={width}
+    height={BAR_CELL_HEIGHT}
+    preserveAspectRatio="none"
+    aria-hidden="true"
+    focusable="false"
+  >
+    {bar && <rect className="bar-cell-bar" x={bar.x} y={bar.y} width={bar.width} height={bar.height} fill={barCellFill(tone)} />}
     <line className="bar-cell-zero" x1={zeroLineX} x2={zeroLineX} y1={0} y2={height} stroke={chartColors.axis} strokeWidth={1} vectorEffect="non-scaling-stroke" shapeRendering="crispEdges" />
   </svg>;
 }

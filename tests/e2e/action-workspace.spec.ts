@@ -4,7 +4,8 @@ import { resolve } from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { fill, labels } from '../../src/i18n';
 import { channelsLabel } from '../../src/application/copy';
-import { formatAmountL1, formatAmountL2, formatAmountL3, formatDateL1 } from '../../src/application/presentation';
+import { formatAmountL1, formatAmountL2, formatAmountL3, formatCount, formatDateL1 } from '../../src/application/presentation';
+import { chartColors } from '../../src/application/chart-theme';
 import { closePeriodSheet, dismissSavePrompt, navigateTo, openMeeting, openPeriodSheet, openStorage, openValidation, ruleHeadline, startChannelContext, switchActionsView } from './replacement-helpers';
 import { chooseBasis, commitButton, confirmAndCheck, confirmMappingIfShown, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardRoles, type FilePayload, type WizardRole } from './import-wizard-helpers';
 import { acceptAssumptions, actionDrawer, closeActionDrawer, decisionExportButton, evidenceDrawer, openActionDrawer, type DecisionFormat } from './actions-helpers-v3';
@@ -322,5 +323,66 @@ test('V3-6 待辦抽屜 focus trap：Tab 一路走都留在抽屜裡，最後一
  await page.keyboard.press('Tab');expect(await focusState(),'最後一個控制按 Tab 應回到第一個（關閉 icon 鈕）').toMatchObject({inside:true,testid:'action-drawer-close'});await expect(first).toBeFocused();
  await page.keyboard.press('Shift+Tab');expect(await focusState(),'第一個控制按 Shift+Tab 應回到最後一個（移除）').toMatchObject({inside:true,testid:'action-drawer-remove'});await expect(last).toBeFocused();
  await page.keyboard.press('Escape');await expect(actionDrawer(page)).toHaveCount(0);await expect(page.getByTestId('board-card-2-edit')).toBeFocused();
+ expect(errors).toEqual([]);
+});
+
+// ── V4-10 代理 B：G17 待辦期限分布小表（CHART_CATALOG G17 E2E 草案、PRD §5.5）。新圖只用 testid 與 labels 斷言。 ──
+type DueBucket='overdue'|'week'|'later'|'none';
+const dueTable=(page:Page)=>page.getByTestId('chart-actions-due');
+/** 小表一列的件數（td.num 的可見文字是 L2 件數；條是 aria-hidden 的 svg，沒有文字）。 */
+async function dueCounts(page:Page):Promise<Record<DueBucket,number>>{
+ const out={} as Record<DueBucket,number>;
+ for(const key of ['overdue','week','later','none'] as const)out[key]=Number(((await dueTable(page).locator(`tr[data-bucket="${key}"] td.num`).textContent())??'').replace(/,/g,''));
+ return out;
+}
+/** 臺北日曆日加 n 天（YYYY-MM-DD；以 UTC 日曆運算，不受執行環境時區影響）。 */
+const taipeiPlus=(today:string,n:number)=>{const [y,m,d]=today.split('-').map(Number);return new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10);};
+
+test('V4-10 G17 待辦期限分布：沒有待辦時不渲染；逾期列＝看板逾期卡數、四列加總＝未完成卡數、期限＝今天＋6 算 7 天內、＋7 算之後；條 aria-hidden、表內沒有停留點；清單檢視同一張表',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',error=>errors.push(error.name));
+ const due=labels.actions.chartsV4.due;
+ await load(page);await navigateTo(page,'actions');await switchActionsView(page,'board');
+ // 空工作區：只有空狀態，G17 不渲染。
+ await expect(page.getByTestId('actions-empty')).toBeVisible();await expect(dueTable(page)).toHaveCount(0);
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei'}).format(new Date()); // 與 taipeiToday() 同一個臺北日曆日
+ // 五張卡：昨天（逾期）、今天＋6（7 天內的最後一天）、今天＋7（之後）、沒有期限、昨天到期但移到已完成（不計）。
+ const cards:[string,string][]=[['期限甲',taipeiPlus(today,-1)],['期限乙',taipeiPlus(today,6)],['期限丙',taipeiPlus(today,7)],['期限丁',''],['期限戊',taipeiPlus(today,-1)]];
+ for(const [i,[problem,deadline]] of cards.entries()){
+  const n=i+1;await addBoardAction(page,n,problem);
+  if(n===1){await expect(dueTable(page)).toBeVisible();expect(await dueCounts(page)).toEqual({overdue:0,week:0,later:0,none:1});}
+  if(!deadline)continue;
+  const drawer=await openActionDrawer(page,n);await drawer.getByLabel(labels.actions.form.due,{exact:true}).fill(deadline);await closeActionDrawer(page);
+ }
+ await page.getByTestId('board-card-5-move-completed').click();
+ await expect(page.getByTestId('board-column-completed').getByTestId('board-card-5')).toBeVisible();
+ // 小表：caption 是結論句；4 列 th 是桶名；件數＝逾期 1、7 天內 1、之後 1、未填期限 1（已完成的不計）。
+ const table=dueTable(page);await expect(table).toBeVisible();
+ await expect(table.locator('caption')).toHaveText(fill(due.caption,{n:formatCount(1,'L2'),m:formatCount(1,'L2')}));
+ await expect(table.locator('tr th')).toHaveText([due.buckets.overdue,due.buckets.week,due.buckets.later,due.buckets.none]);
+ expect(await dueCounts(page)).toEqual({overdue:1,week:1,later:1,none:1});
+ // 逾期列的件數＝看板逾期卡（.board-card-due[data-overdue]）的數量；四列加總＝未完成卡數（看板全部卡減已完成欄）。
+ const counts=await dueCounts(page);
+ await expect(page.locator('.board-card-due[data-overdue]')).toHaveCount(counts.overdue);
+ const allCards=await page.getByTestId('action-board').locator('article.board-card').count(), doneCards=await page.getByTestId('board-column-completed').locator('article.board-card').count();
+ expect(counts.overdue+counts.week+counts.later+counts.none).toBe(allCards-doneCards);
+ // 條：每列一條 C24 count（svg.bar-cell.is-count，aria-hidden）；逾期條是不利色、其餘 total；共用尺度＝最大值 1，四條都滿寬。
+ const bars=table.locator('svg[data-chart-kind="cell"]');await expect(bars).toHaveCount(4);
+ for(const key of ['overdue','week','later','none'] as const){
+  const bar=page.getByTestId(`chart-actions-due-bar-${key}`);await expect(bar).toHaveAttribute('aria-hidden','true');await expect(bar).toHaveClass(/\bis-count\b/);
+  await expect(bar.locator('rect.bar-cell-bar')).toHaveAttribute('fill',key==='overdue'?chartColors.unfavorable:chartColors.total);
+ }
+ // 表內沒有停留點（0 個新停留點）；位置在頁首計數徽章之下、工具列之前。
+ await expect(table.locator('button, a[href], input, select, textarea, [tabindex]')).toHaveCount(0);
+ const [badgeBox,tableBox,toolbarBox]=await Promise.all([page.getByTestId('actions-count').boundingBox(),table.boundingBox(),page.getByTestId('actions-toolbar').boundingBox()]);
+ expect(tableBox!.y).toBeGreaterThan(badgeBox!.y);expect(tableBox!.y+tableBox!.height).toBeLessThanOrEqual(toolbarBox!.y+1);
+ // 逾期的那張移到已完成：逾期 0，看板也沒有逾期卡。
+ await page.getByTestId('board-card-1-move-completed').click();
+ await expect(table.locator('caption')).toHaveText(fill(due.caption,{n:formatCount(0,'L2'),m:formatCount(1,'L2')}));
+ expect(await dueCounts(page)).toEqual({overdue:0,week:1,later:1,none:1});
+ await expect(page.locator('.board-card-due[data-overdue]')).toHaveCount(0);
+ await expect(page.getByTestId('chart-actions-due-bar-overdue').locator('rect')).toHaveCount(0);
+ // 清單檢視：同一張表（只有一份）、同樣的件數。
+ await switchActionsView(page,'list');await expect(dueTable(page)).toHaveCount(1);expect(await dueCounts(page)).toEqual({overdue:0,week:1,later:1,none:1});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  expect(errors).toEqual([]);
 });

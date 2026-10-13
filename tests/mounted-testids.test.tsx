@@ -1724,8 +1724,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
           { id: "chart-scenarios-variance", main: true, within: "multi-scenario-workbench", when: hasPlans }, { id: "chart-scenarios-variance-table", within: "chart-scenarios-variance", table: true, when: hasPlans },
           { id: "chart-scenarios-threshold", perPlan: true }, { id: "chart-scenarios-threshold-table", within: "chart-scenarios-threshold", table: true, perPlan: true },
         ] },
-        // 待辦頁到 V4-10（G17）才有圖：在那之前沒有任何區塊級圖表 testid（掛在這頁的 G15 在 hidden 的試算工作台內，算試算的）。
-        actions: { root: has("actions-workbench"), blocks: [] },
+        // 待辦頁到 V4-10（G17）才有圖：G17 是小表（不是 section.chart-section、不算主層獨立圖區塊），有待辦時才渲染（掛在這頁的 G15 在 hidden 的試算工作台內，算試算的）。
+        actions: { root: has("actions-workbench"), blocks: [{ id: "chart-actions-due", within: "actions-workbench", when: state => (state.actionWorkspace?.items.length ?? 0) > 0 }] },
         meeting: { root: has("meeting-page"), blocks: [
           { id: "chart-meeting-scenarios", main: true, within: "meeting-agenda-5", when: hasReview }, { id: "chart-meeting-scenarios-table", within: "chart-meeting-scenarios", table: true, when: hasReview },
           { id: "chart-meeting-history", main: true, within: "meeting-history" }, { id: "chart-meeting-history-table", within: "chart-meeting-history", table: true },
@@ -1876,6 +1876,64 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V4-9b 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-9b 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
     // ── V4-10 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-10 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    // V4-10 代理 B：G17 待辦期限分布小表（CHART_CATALOG G17、PRD §5.5）。today 用 taipeiToday()（與 ActionsWorkbench 同一個值）；頁面狀態的待辦都沒有期限，四桶件數不隨執行日期改變。
+    it("V4-10 B G17（M1）：有待辦的待辦頁狀態都有一份 chart-actions-due（在 actions-workbench 內、頁首之後、工具列之前）；4 列 th＋td.num、各一條 C24 count（aria-hidden、data-chart-kind=\"cell\"、逾期 unfavorable、其餘 total）；四列件數加總＝未完成待辦數；表內沒有可聚焦元素；沒有待辦時不渲染", async () => {
+      const { ACTION_DUE_BUCKET_KEYS, actionDueBuckets } = await import("@/application/chart-actions");
+      const { taipeiToday } = await import("@/application/action-workspace");
+      const { formatCount } = await import("@/application/presentation");
+      const due = labels.actions.chartsV4.due;
+      const text = (html: string) => html.replace(/<[^>]*>/g, "");
+      const seen = { withItems: 0, empty: 0 };
+      for (const { name, html, state } of loaded().filter(item => item.state!.panel === "actions" && !item.state!.chunk)) {
+        const workspace = state!.actionWorkspace ?? emptyActionWorkspace();
+        if (workspace.items.length === 0) {
+          expect(html, `${name}：沒有待辦時不渲染 G17`).not.toContain('data-testid="chart-actions-due');
+          seen.empty++;
+          continue;
+        }
+        seen.withItems++;
+        expect(occurrences(html, 'data-testid="chart-actions-due"'), name).toBe(1);
+        const table = element(html, 'data-testid="chart-actions-due"')!;
+        expect(openTag(table, "<table"), name).toBe('<table class="chart-actions-due" data-testid="chart-actions-due">');
+        expect(element(html, 'data-testid="actions-workbench"'), `${name}：在 actions-workbench 內`).toContain(table);
+        expect(html.indexOf(table), `${name}：在工具列之前`).toBeLessThan(html.indexOf('data-testid="actions-toolbar"'));
+        const inline = html.indexOf('class="actions-page-head-inline"');
+        if (inline >= 0) expect(html.indexOf(table), `${name}：在頁首（inline）之後`).toBeGreaterThan(inline);
+        const model = actionDueBuckets(workspace, taipeiToday());
+        expect(model.open, `${name}：四桶加總＝未完成待辦數`).toBe(workspace.items.filter(item => item.execution_status !== "completed").length);
+        const countOf = (key: string) => model.buckets.find(bucket => bucket.key === key)!.count;
+        expect(text(element(table, "<caption")!), name).toBe(fill(due.caption, { n: formatCount(countOf("overdue"), "L2"), m: formatCount(countOf("week"), "L2") }));
+        const rows = [...table.matchAll(/<tr data-bucket="([a-z]+)">/g)].map(match => match[1]);
+        expect(rows, `${name}：4 列依固定順序`).toEqual([...ACTION_DUE_BUCKET_KEYS]);
+        let sum = 0;
+        for (const key of ACTION_DUE_BUCKET_KEYS) {
+          const row = element(table, `<tr data-bucket="${key}">`)!;
+          expect(text(element(row, "<th")!), `${name} ${key}`).toBe(due.buckets[key]);
+          expect(openTag(row, "<th"), `${name} ${key}`).toBe('<th scope="row">');
+          const cell = element(row, '<td class="num">')!;
+          const bar = openTag(cell, `data-testid="chart-actions-due-bar-${key}"`)!;
+          expect(bar, `${name} ${key}：C24 count 根 svg`).toMatch(/^<svg class="bar-cell is-count" data-chart-kind="cell" /);
+          expect(bar).toContain('aria-hidden="true"');
+          expect(bar).toContain('focusable="false"');
+          expect(bar).toContain(`data-tone="${key === "overdue" ? "unfavorable" : "total"}"`);
+          expect(cell.includes('class="bar-cell-bar"'), `${name} ${key}：件數 > 0 才有條`).toBe(countOf(key) > 0);
+          expect(text(cell), `${name} ${key}：件數 L2`).toBe(formatCount(countOf(key), "L2"));
+          expect(occurrences(html, `data-testid="chart-actions-due-bar-${key}"`), `${name} ${key}`).toBe(1);
+          sum += Number(text(cell).replace(/,/g, ""));
+        }
+        expect(sum, `${name}：四列件數加總＝未完成待辦數`).toBe(model.open);
+        expect(table, `${name}：表內沒有可聚焦元素`).not.toMatch(/tabindex|<(?:button|a|input|select|textarea)[\s>]/i);
+      }
+      // actions、actions-list、actions-ad-decision 系列（golden 兩張卡，都沒有期限）與 actions-one-card（一張卡）有表；actions-empty 沒有。
+      expect(seen.withItems).toBeGreaterThanOrEqual(5);
+      expect(seen.empty).toBeGreaterThanOrEqual(1);
+      const one = element(states.find(item => item.name === "actions-one-card")!.html, 'data-testid="chart-actions-due"')!;
+      expect(text(element(one, "<caption")!)).toBe(fill(due.caption, { n: formatCount(0, "L2"), m: formatCount(0, "L2") }));
+      expect(text(element(one, '<tr data-bucket="none">')!)).toBe(`${due.buckets.none}${formatCount(1, "L2")}`);
+      for (const key of ["overdue", "week", "later"] as const) expect(element(one, `<tr data-bucket="${key}">`), key).not.toContain('class="bar-cell-bar"');
+      expect(element(one, '<tr data-bucket="none">')).toContain('class="bar-cell-bar"');
+    });
+
 
   });
 
