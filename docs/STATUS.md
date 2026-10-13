@@ -17,7 +17,7 @@ Excel 的標準版、客戶版新增「圖表資料」工作表，每張圖一�
 - First Load JS 516,192。
 - axe 22／22／22／20 全部 0。
 - 390 TBT 五項都通過：載入示範資料 987.5、健檢 776.0、商品 82.3、會議 984.6、資料來源 9.0。
-- 禁區是空的；commit 之後的 diff（收尾 `{V4_9B_CLOSE}`）也是空的。
+- 禁區是空的；commit 之後的 diff（收尾 `1b1d784`）也是空的。
 
 Excel 開檔檢查未執行，待人工；樣本在 `verification/revamp-v4/V4-9b/exports/`。驗收文件：`verification/revamp-v4-V4-9b-acceptance.md`。
 
