@@ -1,0 +1,862 @@
+{
+  "batch": "V4-9b",
+  "generatedAt": "2026-10-13",
+  "by": "agent C (integration)",
+  "server": "LOCAL production build (APP_MODE=LOCAL PUBLIC_DEMO=false ENABLE_LIVE_AI=false) on 127.0.0.1:3100; Playwright Chromium 1440x1000",
+  "flow": "load validation dataset (golden / demo) -> top-bar export menu -> choose variant (standard, boss, client) -> 匯出 Excel (profitlens.xlsx) and 會議紀錄 Markdown (profitlens-manager-summary.md); files saved as {dataset}-onepager-{variant}.{xlsx,md}",
+  "spec": "06_BATCHES V4-9b: sheets boss 2 / standard 8 / client 8; standard 圖表資料 every block ends with 版本與算法 and basis sheet lists B-level versions, client has neither; no G15/G16 blocks; Markdown identical across the three choices and all have the nine-item variance table; record Excel size difference; CSV/JSON byte-identical",
+  "excel": [
+    {
+      "file": "golden-onepager-standard.xlsx",
+      "dataset": "golden",
+      "variant": "standard",
+      "bytes": 30233,
+      "sheetCount": 8,
+      "sheets": [
+        "摘要（18 列）",
+        "通路（4 列）",
+        "貢獻變化拆解（12 列）",
+        "商品比較（5 列）",
+        "待辦（1 列）",
+        "指標定義（23 列）",
+        "圖表資料（71 列）",
+        "管理損益表（14 列）"
+      ],
+      "chartData": {
+        "rows": 71,
+        "blockCount": 9,
+        "versionRows": 9,
+        "blocks": [
+          {
+            "section": "貢獻變化拆解",
+            "title": "少賺 315 元，扣最多的一項是商品成本（−275 元）",
+            "columns": [
+              "柱名",
+              "起點（元）",
+              "終點（元）",
+              "差額（元）"
+            ],
+            "dataRows": 11,
+            "version": "contribution-v1"
+          },
+          {
+            "section": "本期利潤結構",
+            "title": "每 100 元淨營收，扣完廣告剩 10.3 元",
+            "columns": [
+              "項目",
+              "金額（元）",
+              "佔淨營收"
+            ],
+            "dataRows": 11,
+            "version": "contribution-v1"
+          },
+          {
+            "section": "各通路扣廣告後貢獻",
+            "title": "MARKETPLACE 扣完廣告虧 15 元",
+            "columns": [
+              "通路",
+              "上期（元）",
+              "本期（元）",
+              "差額（元）"
+            ],
+            "dataRows": 2,
+            "version": "contribution-v1"
+          },
+          {
+            "section": "各指標每週",
+            "title": "各指標每週",
+            "columns": [
+              "指標",
+              "本期第 1 週 2026-08-02 至 2026-08-02"
+            ],
+            "dataRows": 7,
+            "version": "assist-weeks-v1"
+          },
+          {
+            "section": "各通路每週",
+            "title": "各通路每週",
+            "columns": [
+              "通路",
+              "本期第 1 週 2026-08-02 至 2026-08-02（元）"
+            ],
+            "dataRows": 2,
+            "version": "channel-weeks-v1"
+          },
+          {
+            "section": "每 100 元淨營收去向",
+            "title": "MARKETPLACE 每 100 元淨營收，扣完廣告虧 1.5 元",
+            "columns": [
+              "通路",
+              "淨營收（元）",
+              "商品成本（元）",
+              "平台抽成（元）",
+              "金流手續費（元）",
+              "物流與包材費（元）",
+              "其他變動費用（元）",
+              "通路費用合計（元）",
+              "廣告投放費（元）",
+              "扣廣告後貢獻（元）",
+              "每 100 元淨營收"
+            ],
+            "dataRows": 3,
+            "version": "channel-structure-v1"
+          },
+          {
+            "section": "各通路每天的扣廣告後貢獻",
+            "title": "MARKETPLACE 有 1 天虧，最差 8/2 −15 元",
+            "columns": [
+              "日期",
+              "MARKETPLACE（元）",
+              "DTC（元）"
+            ],
+            "dataRows": 1,
+            "version": "daily-heatmap-v1"
+          },
+          {
+            "section": "五項比率每週走勢",
+            "title": "五項比率每週走勢",
+            "columns": [
+              "期間",
+              "起訖日",
+              "折扣率",
+              "退款金額比",
+              "物流費佔比",
+              "廣告佔比",
+              "商品毛利率"
+            ],
+            "dataRows": 2,
+            "version": "contribution-v1"
+          },
+          {
+            "section": "商品毛利兩期差額",
+            "title": "B · MARKETPLACE 商品毛利少 55 元，減少最多",
+            "columns": [
+              "商品",
+              "通路",
+              "上期商品毛利（元）",
+              "本期商品毛利（元）",
+              "差額（元）"
+            ],
+            "dataRows": 4,
+            "version": "contribution-v1"
+          }
+        ]
+      },
+      "versionRowsPresent": true,
+      "basisChartVersionRows": [
+        [
+          "圖表資料「各指標每週」版本",
+          "assist-weeks-v1"
+        ],
+        [
+          "圖表資料「各通路每週」版本",
+          "channel-weeks-v1"
+        ],
+        [
+          "圖表資料「每 100 元淨營收去向」版本",
+          "channel-structure-v1"
+        ],
+        [
+          "圖表資料「各通路每天的扣廣告後貢獻」版本",
+          "daily-heatmap-v1"
+        ]
+      ]
+    },
+    {
+      "file": "golden-onepager-boss.xlsx",
+      "dataset": "golden",
+      "variant": "boss",
+      "bytes": 13125,
+      "sheetCount": 2,
+      "sheets": [
+        "摘要（13 列）",
+        "管理損益表（14 列）"
+      ],
+      "chartData": null,
+      "versionRowsPresent": false,
+      "basisChartVersionRows": []
+    },
+    {
+      "file": "golden-onepager-client.xlsx",
+      "dataset": "golden",
+      "variant": "client",
+      "bytes": 28684,
+      "sheetCount": 8,
+      "sheets": [
+        "摘要（19 列）",
+        "通路（4 列）",
+        "貢獻變化拆解（12 列）",
+        "商品比較（5 列）",
+        "待辦（1 列）",
+        "指標定義（11 列）",
+        "圖表資料（62 列）",
+        "管理損益表（14 列）"
+      ],
+      "chartData": {
+        "rows": 62,
+        "blockCount": 9,
+        "versionRows": 0,
+        "blocks": [
+          {
+            "section": "貢獻變化拆解",
+            "title": "少賺 315 元，扣最多的一項是商品成本（−275 元）",
+            "columns": [
+              "柱名",
+              "起點（元）",
+              "終點（元）",
+              "差額（元）"
+            ],
+            "dataRows": 11,
+            "version": null
+          },
+          {
+            "section": "本期利潤結構",
+            "title": "每 100 元淨營收，扣完廣告剩 10.3 元",
+            "columns": [
+              "項目",
+              "金額（元）",
+              "佔淨營收"
+            ],
+            "dataRows": 11,
+            "version": null
+          },
+          {
+            "section": "各通路扣廣告後貢獻",
+            "title": "MARKETPLACE 扣完廣告虧 15 元",
+            "columns": [
+              "通路",
+              "上期（元）",
+              "本期（元）",
+              "差額（元）"
+            ],
+            "dataRows": 2,
+            "version": null
+          },
+          {
+            "section": "各指標每週",
+            "title": "各指標每週",
+            "columns": [
+              "指標",
+              "本期第 1 週 2026-08-02 至 2026-08-02"
+            ],
+            "dataRows": 7,
+            "version": null
+          },
+          {
+            "section": "各通路每週",
+            "title": "各通路每週",
+            "columns": [
+              "通路",
+              "本期第 1 週 2026-08-02 至 2026-08-02（元）"
+            ],
+            "dataRows": 2,
+            "version": null
+          },
+          {
+            "section": "每 100 元淨營收去向",
+            "title": "MARKETPLACE 每 100 元淨營收，扣完廣告虧 1.5 元",
+            "columns": [
+              "通路",
+              "淨營收（元）",
+              "商品成本（元）",
+              "平台抽成（元）",
+              "金流手續費（元）",
+              "物流與包材費（元）",
+              "其他變動費用（元）",
+              "通路費用合計（元）",
+              "廣告投放費（元）",
+              "扣廣告後貢獻（元）",
+              "每 100 元淨營收"
+            ],
+            "dataRows": 3,
+            "version": null
+          },
+          {
+            "section": "各通路每天的扣廣告後貢獻",
+            "title": "MARKETPLACE 有 1 天虧，最差 8/2 −15 元",
+            "columns": [
+              "日期",
+              "MARKETPLACE（元）",
+              "DTC（元）"
+            ],
+            "dataRows": 1,
+            "version": null
+          },
+          {
+            "section": "五項比率每週走勢",
+            "title": "五項比率每週走勢",
+            "columns": [
+              "期間",
+              "起訖日",
+              "折扣率",
+              "退款金額比",
+              "物流費佔比",
+              "廣告佔比",
+              "商品毛利率"
+            ],
+            "dataRows": 2,
+            "version": null
+          },
+          {
+            "section": "商品毛利兩期差額",
+            "title": "B · MARKETPLACE 商品毛利少 55 元，減少最多",
+            "columns": [
+              "商品",
+              "通路",
+              "上期商品毛利（元）",
+              "本期商品毛利（元）",
+              "差額（元）"
+            ],
+            "dataRows": 4,
+            "version": null
+          }
+        ]
+      },
+      "versionRowsPresent": false,
+      "basisChartVersionRows": []
+    },
+    {
+      "file": "demo-onepager-standard.xlsx",
+      "dataset": "demo",
+      "variant": "standard",
+      "bytes": 48808,
+      "sheetCount": 8,
+      "sheets": [
+        "摘要（18 列）",
+        "通路（4 列）",
+        "貢獻變化拆解（12 列）",
+        "商品比較（41 列）",
+        "待辦（1 列）",
+        "指標定義（23 列）",
+        "圖表資料（158 列）",
+        "管理損益表（14 列）"
+      ],
+      "chartData": {
+        "rows": 158,
+        "blockCount": 9,
+        "versionRows": 9,
+        "blocks": [
+          {
+            "section": "貢獻變化拆解",
+            "title": "少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）",
+            "columns": [
+              "柱名",
+              "起點（元）",
+              "終點（元）",
+              "差額（元）"
+            ],
+            "dataRows": 11,
+            "version": "contribution-v1"
+          },
+          {
+            "section": "本期利潤結構",
+            "title": "每 100 元淨營收，扣完廣告剩 16.2 元",
+            "columns": [
+              "項目",
+              "金額（元）",
+              "佔淨營收"
+            ],
+            "dataRows": 11,
+            "version": "contribution-v1"
+          },
+          {
+            "section": "各通路扣廣告後貢獻",
+            "title": "平台 · MARKETPLACE 扣完廣告虧 6.1 萬",
+            "columns": [
+              "通路",
+              "上期（元）",
+              "本期（元）",
+              "差額（元）"
+            ],
+            "dataRows": 2,
+            "version": "contribution-v1"
+          },
+          {
+            "section": "各指標每週",
+            "title": "各指標每週",
+            "columns": [
+              "指標",
+              "本期第 1 週 2026-07-13 至 2026-07-19",
+              "本期第 2 週 2026-07-20 至 2026-07-26",
+              "本期第 3 週 2026-07-27 至 2026-08-02",
+              "本期第 4 週 2026-08-03 至 2026-08-09",
+              "本期第 5 週 2026-08-10 至 2026-08-16",
+              "本期第 6 週 2026-08-17 至 2026-08-23"
+            ],
+            "dataRows": 7,
+            "version": "assist-weeks-v1"
+          },
+          {
+            "section": "各通路每週",
+            "title": "各通路每週",
+            "columns": [
+              "通路",
+              "本期第 1 週 2026-07-13 至 2026-07-19（元）",
+              "本期第 2 週 2026-07-20 至 2026-07-26（元）",
+              "本期第 3 週 2026-07-27 至 2026-08-02（元）",
+              "本期第 4 週 2026-08-03 至 2026-08-09（元）",
+              "本期第 5 週 2026-08-10 至 2026-08-16（元）",
+              "本期第 6 週 2026-08-17 至 2026-08-23（元）"
+            ],
+            "dataRows": 2,
+            "version": "channel-weeks-v1"
+          },
+          {
+            "section": "每 100 元淨營收去向",
+            "title": "平台 · MARKETPLACE 每 100 元淨營收，扣完廣告虧 1.5 元",
+            "columns": [
+              "通路",
+              "淨營收（元）",
+              "商品成本（元）",
+              "平台抽成（元）",
+              "金流手續費（元）",
+              "物流與包材費（元）",
+              "其他變動費用（元）",
+              "通路費用合計（元）",
+              "廣告投放費（元）",
+              "扣廣告後貢獻（元）",
+              "每 100 元淨營收"
+            ],
+            "dataRows": 3,
+            "version": "channel-structure-v1"
+          },
+          {
+            "section": "各通路每天的扣廣告後貢獻",
+            "title": "平台 · MARKETPLACE 有 32 天虧，最差 8/22 −4,511 元",
+            "columns": [
+              "日期",
+              "平台 · MARKETPLACE（元）",
+              "官網 · DTC（元）"
+            ],
+            "dataRows": 42,
+            "version": "daily-heatmap-v1"
+          },
+          {
+            "section": "五項比率每週走勢",
+            "title": "五項比率每週走勢",
+            "columns": [
+              "期間",
+              "起訖日",
+              "折扣率",
+              "退款金額比",
+              "物流費佔比",
+              "廣告佔比",
+              "商品毛利率"
+            ],
+            "dataRows": 12,
+            "version": "contribution-v1"
+          },
+          {
+            "section": "商品毛利兩期差額",
+            "title": "SKU-020 · 平台 · MARKETPLACE 商品毛利少 3.0 萬，減少最多",
+            "columns": [
+              "商品",
+              "通路",
+              "上期商品毛利（元）",
+              "本期商品毛利（元）",
+              "差額（元）"
+            ],
+            "dataRows": 40,
+            "version": "contribution-v1"
+          }
+        ]
+      },
+      "versionRowsPresent": true,
+      "basisChartVersionRows": [
+        [
+          "圖表資料「各指標每週」版本",
+          "assist-weeks-v1"
+        ],
+        [
+          "圖表資料「各通路每週」版本",
+          "channel-weeks-v1"
+        ],
+        [
+          "圖表資料「每 100 元淨營收去向」版本",
+          "channel-structure-v1"
+        ],
+        [
+          "圖表資料「各通路每天的扣廣告後貢獻」版本",
+          "daily-heatmap-v1"
+        ]
+      ]
+    },
+    {
+      "file": "demo-onepager-boss.xlsx",
+      "dataset": "demo",
+      "variant": "boss",
+      "bytes": 14663,
+      "sheetCount": 2,
+      "sheets": [
+        "摘要（13 列）",
+        "管理損益表（14 列）"
+      ],
+      "chartData": null,
+      "versionRowsPresent": false,
+      "basisChartVersionRows": []
+    },
+    {
+      "file": "demo-onepager-client.xlsx",
+      "dataset": "demo",
+      "variant": "client",
+      "bytes": 47377,
+      "sheetCount": 8,
+      "sheets": [
+        "摘要（19 列）",
+        "通路（4 列）",
+        "貢獻變化拆解（12 列）",
+        "商品比較（41 列）",
+        "待辦（1 列）",
+        "指標定義（11 列）",
+        "圖表資料（149 列）",
+        "管理損益表（14 列）"
+      ],
+      "chartData": {
+        "rows": 149,
+        "blockCount": 9,
+        "versionRows": 0,
+        "blocks": [
+          {
+            "section": "貢獻變化拆解",
+            "title": "少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）",
+            "columns": [
+              "柱名",
+              "起點（元）",
+              "終點（元）",
+              "差額（元）"
+            ],
+            "dataRows": 11,
+            "version": null
+          },
+          {
+            "section": "本期利潤結構",
+            "title": "每 100 元淨營收，扣完廣告剩 16.2 元",
+            "columns": [
+              "項目",
+              "金額（元）",
+              "佔淨營收"
+            ],
+            "dataRows": 11,
+            "version": null
+          },
+          {
+            "section": "各通路扣廣告後貢獻",
+            "title": "平台 · MARKETPLACE 扣完廣告虧 6.1 萬",
+            "columns": [
+              "通路",
+              "上期（元）",
+              "本期（元）",
+              "差額（元）"
+            ],
+            "dataRows": 2,
+            "version": null
+          },
+          {
+            "section": "各指標每週",
+            "title": "各指標每週",
+            "columns": [
+              "指標",
+              "本期第 1 週 2026-07-13 至 2026-07-19",
+              "本期第 2 週 2026-07-20 至 2026-07-26",
+              "本期第 3 週 2026-07-27 至 2026-08-02",
+              "本期第 4 週 2026-08-03 至 2026-08-09",
+              "本期第 5 週 2026-08-10 至 2026-08-16",
+              "本期第 6 週 2026-08-17 至 2026-08-23"
+            ],
+            "dataRows": 7,
+            "version": null
+          },
+          {
+            "section": "各通路每週",
+            "title": "各通路每週",
+            "columns": [
+              "通路",
+              "本期第 1 週 2026-07-13 至 2026-07-19（元）",
+              "本期第 2 週 2026-07-20 至 2026-07-26（元）",
+              "本期第 3 週 2026-07-27 至 2026-08-02（元）",
+              "本期第 4 週 2026-08-03 至 2026-08-09（元）",
+              "本期第 5 週 2026-08-10 至 2026-08-16（元）",
+              "本期第 6 週 2026-08-17 至 2026-08-23（元）"
+            ],
+            "dataRows": 2,
+            "version": null
+          },
+          {
+            "section": "每 100 元淨營收去向",
+            "title": "平台 · MARKETPLACE 每 100 元淨營收，扣完廣告虧 1.5 元",
+            "columns": [
+              "通路",
+              "淨營收（元）",
+              "商品成本（元）",
+              "平台抽成（元）",
+              "金流手續費（元）",
+              "物流與包材費（元）",
+              "其他變動費用（元）",
+              "通路費用合計（元）",
+              "廣告投放費（元）",
+              "扣廣告後貢獻（元）",
+              "每 100 元淨營收"
+            ],
+            "dataRows": 3,
+            "version": null
+          },
+          {
+            "section": "各通路每天的扣廣告後貢獻",
+            "title": "平台 · MARKETPLACE 有 32 天虧，最差 8/22 −4,511 元",
+            "columns": [
+              "日期",
+              "平台 · MARKETPLACE（元）",
+              "官網 · DTC（元）"
+            ],
+            "dataRows": 42,
+            "version": null
+          },
+          {
+            "section": "五項比率每週走勢",
+            "title": "五項比率每週走勢",
+            "columns": [
+              "期間",
+              "起訖日",
+              "折扣率",
+              "退款金額比",
+              "物流費佔比",
+              "廣告佔比",
+              "商品毛利率"
+            ],
+            "dataRows": 12,
+            "version": null
+          },
+          {
+            "section": "商品毛利兩期差額",
+            "title": "SKU-020 · 平台 · MARKETPLACE 商品毛利少 3.0 萬，減少最多",
+            "columns": [
+              "商品",
+              "通路",
+              "上期商品毛利（元）",
+              "本期商品毛利（元）",
+              "差額（元）"
+            ],
+            "dataRows": 40,
+            "version": null
+          }
+        ]
+      },
+      "versionRowsPresent": false,
+      "basisChartVersionRows": []
+    }
+  ],
+  "markdown": [
+    {
+      "file": "golden-onepager-standard.md",
+      "dataset": "golden",
+      "variant": "standard",
+      "bytes": 68238,
+      "versionLines": 1,
+      "nineItemTable": {
+        "present": true,
+        "header": "| 項目 | 差額（元） |",
+        "rowCount": 9,
+        "rows": [
+          "| 原價收入 | +600 |",
+          "| 減：折扣 | −250 |",
+          "| 減：退款金額 | −130 |",
+          "| 減：商品成本 | −275 |",
+          "| 減：平台抽成 | −30 |",
+          "| 減：金流手續費 | −6 |",
+          "| 減：物流與包材費 | −65 |",
+          "| 減：其他變動費用 | −9 |",
+          "| 減：廣告投放費 | −150 |"
+        ]
+      }
+    },
+    {
+      "file": "golden-onepager-boss.md",
+      "dataset": "golden",
+      "variant": "boss",
+      "bytes": 68238,
+      "versionLines": 1,
+      "nineItemTable": {
+        "present": true,
+        "header": "| 項目 | 差額（元） |",
+        "rowCount": 9,
+        "rows": [
+          "| 原價收入 | +600 |",
+          "| 減：折扣 | −250 |",
+          "| 減：退款金額 | −130 |",
+          "| 減：商品成本 | −275 |",
+          "| 減：平台抽成 | −30 |",
+          "| 減：金流手續費 | −6 |",
+          "| 減：物流與包材費 | −65 |",
+          "| 減：其他變動費用 | −9 |",
+          "| 減：廣告投放費 | −150 |"
+        ]
+      }
+    },
+    {
+      "file": "golden-onepager-client.md",
+      "dataset": "golden",
+      "variant": "client",
+      "bytes": 68238,
+      "versionLines": 1,
+      "nineItemTable": {
+        "present": true,
+        "header": "| 項目 | 差額（元） |",
+        "rowCount": 9,
+        "rows": [
+          "| 原價收入 | +600 |",
+          "| 減：折扣 | −250 |",
+          "| 減：退款金額 | −130 |",
+          "| 減：商品成本 | −275 |",
+          "| 減：平台抽成 | −30 |",
+          "| 減：金流手續費 | −6 |",
+          "| 減：物流與包材費 | −65 |",
+          "| 減：其他變動費用 | −9 |",
+          "| 減：廣告投放費 | −150 |"
+        ]
+      }
+    },
+    {
+      "file": "demo-onepager-standard.md",
+      "dataset": "demo",
+      "variant": "standard",
+      "bytes": 7556967,
+      "versionLines": 1,
+      "nineItemTable": {
+        "present": true,
+        "header": "| 項目 | 差額（元） |",
+        "rowCount": 9,
+        "rows": [
+          "| 原價收入 | +3,161,970 |",
+          "| 減：折扣 | −1,188,365 |",
+          "| 減：退款金額 | −264,523 |",
+          "| 減：商品成本 | −1,575,081 |",
+          "| 減：平台抽成 | −253,418 |",
+          "| 減：金流手續費 | −34,182 |",
+          "| 減：物流與包材費 | −75,791 |",
+          "| 減：其他變動費用 | −8,545 |",
+          "| 減：廣告投放費 | −360,900 |"
+        ]
+      }
+    },
+    {
+      "file": "demo-onepager-boss.md",
+      "dataset": "demo",
+      "variant": "boss",
+      "bytes": 7556967,
+      "versionLines": 1,
+      "nineItemTable": {
+        "present": true,
+        "header": "| 項目 | 差額（元） |",
+        "rowCount": 9,
+        "rows": [
+          "| 原價收入 | +3,161,970 |",
+          "| 減：折扣 | −1,188,365 |",
+          "| 減：退款金額 | −264,523 |",
+          "| 減：商品成本 | −1,575,081 |",
+          "| 減：平台抽成 | −253,418 |",
+          "| 減：金流手續費 | −34,182 |",
+          "| 減：物流與包材費 | −75,791 |",
+          "| 減：其他變動費用 | −8,545 |",
+          "| 減：廣告投放費 | −360,900 |"
+        ]
+      }
+    },
+    {
+      "file": "demo-onepager-client.md",
+      "dataset": "demo",
+      "variant": "client",
+      "bytes": 7556967,
+      "versionLines": 1,
+      "nineItemTable": {
+        "present": true,
+        "header": "| 項目 | 差額（元） |",
+        "rowCount": 9,
+        "rows": [
+          "| 原價收入 | +3,161,970 |",
+          "| 減：折扣 | −1,188,365 |",
+          "| 減：退款金額 | −264,523 |",
+          "| 減：商品成本 | −1,575,081 |",
+          "| 減：平台抽成 | −253,418 |",
+          "| 減：金流手續費 | −34,182 |",
+          "| 減：物流與包材費 | −75,791 |",
+          "| 減：其他變動費用 | −8,545 |",
+          "| 減：廣告投放費 | −360,900 |"
+        ]
+      }
+    }
+  ],
+  "markdownIdenticalAcrossChoices": {
+    "golden": true,
+    "demo": true
+  },
+  "markdownNormalization": "the Taipei-minute version line (exports.headerV3.versionLine, exportVersionLineRe) replaced before comparing",
+  "sizeVsV49a": {
+    "method": "same inputs (fixtures golden / demo, empty action workspace, all channels) built and written by buildExcelWorkbook + writeExcel and exportManagerSummaryMarkdown at V4-9a d434c65 vs V4-9b merge; via vitest in a temporary detached worktree (removed). V4-9a exports/ had no xlsx or md, so UI-download sizes have no V4-9a counterpart.",
+    "rows": [
+      {
+        "key": "golden-boss.xlsx",
+        "v49a": 13054,
+        "v49b": 13054,
+        "delta": 0,
+        "v49aSheets": 2,
+        "v49bSheets": 2
+      },
+      {
+        "key": "golden-standard.xlsx",
+        "v49a": 22912,
+        "v49b": 30115,
+        "delta": 7203,
+        "v49aSheets": 7,
+        "v49bSheets": 8
+      },
+      {
+        "key": "golden-client.xlsx",
+        "v49a": 22256,
+        "v49b": 28659,
+        "delta": 6403,
+        "v49aSheets": 7,
+        "v49bSheets": 8
+      },
+      {
+        "key": "golden-onepager.md",
+        "v49a": 67808,
+        "v49b": 68162,
+        "delta": 354,
+        "v49aSheets": null,
+        "v49bSheets": null
+      },
+      {
+        "key": "demo-boss.xlsx",
+        "v49a": 14641,
+        "v49b": 14641,
+        "delta": 0,
+        "v49aSheets": 2,
+        "v49bSheets": 2
+      },
+      {
+        "key": "demo-standard.xlsx",
+        "v49a": 31525,
+        "v49b": 48747,
+        "delta": 17222,
+        "v49aSheets": 7,
+        "v49bSheets": 8
+      },
+      {
+        "key": "demo-client.xlsx",
+        "v49a": 30850,
+        "v49b": 47395,
+        "delta": 16545,
+        "v49aSheets": 7,
+        "v49bSheets": 8
+      },
+      {
+        "key": "demo-onepager.md",
+        "v49a": 7556499,
+        "v49b": 7556897,
+        "delta": 398,
+        "v49aSheets": null,
+        "v49bSheets": null
+      }
+    ]
+  }
+}
