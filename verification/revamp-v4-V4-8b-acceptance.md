@@ -39,7 +39,7 @@
 | `CAPTURE_BATCH=V4-8b …` | 23 passed、5 skipped。與 V4-8a 相比只有 `mobile/08-meeting` 變動（G19 空狀態 360 → 180px，圖高少 180），其餘 51 張逐位元組相同 |
 | Lighthouse × 3 與 390 TBT | 見下方「390 TBT」 |
 | 禁區四條命令 | 四條都是空的 |
-| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區與 assist-kpi、breakeven-mer 路徑）` | 見文末（收尾 commit 之後補記） |
+| commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區與 assist-kpi、breakeven-mer 路徑）` | 空（收尾 commit `fa1f549`） |
 
 **棘輪與量測**
 

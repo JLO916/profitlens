@@ -28,7 +28,7 @@
 
 其他：
 
-- 禁區四條命令都是空的；commit 之後的 diff（收尾 `{V4_8B_CLOSE}`）也是空的。
+- 禁區四條命令都是空的；commit 之後的 diff（收尾 `fa1f549`）也是空的。
 
 驗收文件：`verification/revamp-v4-V4-8b-acceptance.md`。
 
