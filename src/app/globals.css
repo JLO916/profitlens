@@ -3006,6 +3006,9 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 /* ── V4-8a B 錨點結束 ── */
 
 /* ── V4-8b A：隨頁載入的等待骨架與失敗狀態（代理 A） ── */
+/* D-V4-44 B「不位移」：≤ 767 的 h1 只給輔助科技，頁首的高只來自 #page-actions；商品毛利、待辦的本頁動作在頁面程式載好後才 portal 進來（0 → 56px）。
+   骨架與錯誤狀態時先保留同一列的高（.page-actions 的上下 space-3 內距＋control-h），換成內容時期間列不往下跳。預先載入後不出現骨架，畫面基準不變。 */
+@media (max-width: 767px) { .page-heading[data-reserve-actions] { min-height: calc(var(--control-h) + var(--space-3) * 2); } }
 /* ── V4-8b A 錨點結束 ── */
 
 /* ── V4-8b B：390 總檢修正（會議寬表、匯出本頁選單、焦點被分頁列遮住、target-size、C33 文字欄、G19 空狀態高度；代理 B） ── */

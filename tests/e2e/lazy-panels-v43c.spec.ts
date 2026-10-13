@@ -16,9 +16,12 @@ import { failLazyChunks, holdLazyChunks } from "./lazy-chunk-helpers-v43c";
  * 4. 程式載入失敗：錯誤狀態（標題取得焦點）、不擲錯；按「再試一次」重新載入，成功後就地換成內容。
  * 5. 預先載入也帶上決策匯出程式：載入完之後斷線，下載選單的決策工作稿照樣能匯出（v3 載入後離線也能匯出）。
  * 6. 預先載入完成後切頁不出現骨架（52 張畫面基準不變）。
+ * 1、4 另驗「不位移」（D-V4-44 B）：骨架或錯誤狀態換成內容時，期間列在頁面上的位置不變（≤ 767 待辦、商品毛利的頁首動作在程式載好後才放進頁首）。
  */
 const panelLoading = (page: Page) => page.getByTestId("panel-loading");
 const main = (page: Page) => page.locator("#main-content");
+// 期間列頂端在頁面上的位置（加上捲動量，與捲到哪裡無關）。
+const periodBarTop = (page: Page) => page.getByTestId("period-bar").evaluate(element => element.getBoundingClientRect().top + window.scrollY);
 
 function collectPageErrors(page: Page) {
   const errors: string[] = [];
@@ -39,9 +42,11 @@ test("按「加入待辦」就切到待辦（D-V4-56＝A）：程式還在等時
   await expect(main(page)).toHaveAttribute("aria-busy", "true");
   await expect(page.getByTestId("top-three"), "總覽的內容已換成骨架").toHaveCount(0);
   await expect.poll(() => gate.held.length, "待辦頁的程式被扣住").toBeGreaterThan(0);
+  const waitingTop = await periodBarTop(page);
   gate.release();
   await expect(page.getByTestId("actions-workbench")).toBeVisible();
   await expect(panelLoading(page)).toHaveCount(0);
+  expect(await periodBarTop(page), "骨架換成待辦時期間列不位移").toBe(waitingTop);
   await expect(main(page)).not.toHaveAttribute("aria-busy", "true");
   await expect(page.locator("article.board-card"), "只新增一張卡").toHaveCount(1);
   expect(errors).toEqual([]);
@@ -100,6 +105,7 @@ test("頁面程式載入失敗（D-V4-57＝A）：錯誤狀態（標題取得焦
   await expect(page.locator("#panel-load-error-title")).toBeFocused();
   await expect(main(page)).not.toHaveAttribute("aria-busy", "true");
   await expect(page.getByTestId("product-table")).toHaveCount(0);
+  const failedTop = await periodBarTop(page);
   // 連線恢復：之後的程式 chunk 先扣住（按下之前不會有 chunk 先載好），從標題按 Tab 到「再試一次」、按 Enter。
   chunks.hold();
   await page.keyboard.press("Tab");
@@ -108,9 +114,11 @@ test("頁面程式載入失敗（D-V4-57＝A）：錯誤狀態（標題取得焦
   await page.keyboard.press("Enter");
   await expect(panelLoading(page)).toBeVisible();
   await expect(failed).toHaveCount(0);
+  expect(await periodBarTop(page), "錯誤狀態換成骨架時期間列不位移").toBe(failedTop);
   chunks.release();
   await expect(page.getByTestId("product-table")).toBeVisible();
   await expect(panelLoading(page)).toHaveCount(0);
+  expect(await periodBarTop(page), "骨架換成商品毛利時期間列不位移").toBe(failedTop);
   await expect(main(page)).toBeFocused();
   await expect(sidebarNav(page, "products")).toHaveAttribute("aria-current", "page");
   expect(errors).toEqual([]);
