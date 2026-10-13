@@ -7,11 +7,11 @@ import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 import { ASSIST_KPI_IDS, ASSIST_KPI_VERSION, assistKpis } from "../src/application/assist-kpi";
 import { ASSIST_WEEKS_VERSION, assistWeeks } from "../src/application/chart-assist-weeks";
 import { chartColors } from "../src/application/chart-theme";
-import { formatCount, formatMultiple, formatPerUnit, formatPeriodL1, formatRateL1 } from "../src/application/presentation";
+import { favorableDirectionOf, formatCount, formatMultiple, formatPerUnit, formatPeriodL1, formatRateL1 } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { chartDataCellText } from "../src/components/charts/chart-data-table";
 import { EvidenceDrawer } from "../src/components/evidence-drawer";
-import { ASSIST_TABLE_TESTID, assistEvidence, assistSparkTestId, assistWeekEvidence } from "../src/components/overview/assist-spark";
+import { ASSIST_TABLE_TESTID, AssistWeeksDetails, assistEvidence, assistSparkTestId, assistWeekEvidence, assistWeekUnfavorable } from "../src/components/overview/assist-spark";
 import { AssistTable } from "../src/components/overview/assist-table";
 import type { Dataset, DatasetInput } from "../src/domain/types";
 import { validateDataset } from "../src/domain/validation";
@@ -257,6 +257,51 @@ describe("抽屜（PRD §8.7：metric_version 不變，另帶 arrangeVersion）"
     const units = element(drawer(0), 'class="evidence-technical"')!;
     expect(units).toContain(`<div><dt>metric_version</dt><dd><code>${ASSIST_KPI_VERSION}</code></dd></div>`);
     expect(units).toContain('data-testid="evidence-arrange-version"');
+  });
+});
+
+// ── V4-8a 代理 B（D-V4-45＝B）：G7a「各指標每週」的不利色
+describe("V4-8a（D-V4-45＝B）G7a 各指標每週：只有有利方向是上升的指標落到不利側時上不利色，成本類比率的正值不上色", () => {
+  /** 帶 negative 的格，寫成「指標 id:週索引」（列＝kpis 的順序）。 */
+  function negativeCells(html: string, ids: readonly string[]): string[] {
+    const table = byTestId(details(html)!, ASSIST_TABLE_TESTID);
+    const rows = [...table.slice(table.indexOf("<tbody>")).matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(match => [...match[1].matchAll(/<td[^>]*>[\s\S]*?<\/td>/g)].map(cell => cell[0]));
+    expect(rows).toHaveLength(ids.length);
+    return rows.flatMap((cells, row) => cells.flatMap((cell, week) => /\bnegative\b/.test(cell) ? [`${ids[row]}:${week}`] : []));
+  }
+
+  it("assistWeekUnfavorable：件數、件均、MER、毛利率顯示為負才是 true；成本類比率不論正負都是 false；缺值與顯示為 0 是 false", () => {
+    for (const [id, value] of [["units_sold", "-3"], ["net_revenue_per_unit", "-10.00"], ["mer", "-0.5"], ["gross_margin", "-0.05"]] as const) {
+      expect(favorableDirectionOf(id), id).toBe("up");
+      expect(assistWeekUnfavorable(id, value), `${id} ${value}`).toBe(true);
+    }
+    for (const [id, value] of [["units_sold", "3"], ["mer", "2.1"], ["gross_margin", "0.05"], ["gross_margin", "-0.0004"], ["gross_margin", null]] as const) expect(assistWeekUnfavorable(id, value), `${id} ${value}`).toBe(false);
+    for (const id of ["marketing_burden", "refund_ratio", "fulfillment_burden"] as const) {
+      expect(favorableDirectionOf(id), id).toBe("down");
+      for (const value of ["0.35", "-0.1", null]) expect(assistWeekUnfavorable(id, value), `${id} ${value}`).toBe(false);
+    }
+  });
+
+  it("示範資料 0 格上色（42 格都是 number-link）；golden、合成資料、zero_ad、refund_only 上色的格正好是規則算出的格", () => {
+    expect(negativeCells(render("demo"), assistKpis(loaded.demo.snapshot.report.current).map(kpi => kpi.id))).toEqual([]);
+    for (const name of ["golden", "synthetic", "zero_ad", "refund_only"]) {
+      const { snapshot } = loaded[name];
+      const data = assistWeeks(snapshot);
+      if (data.weeks.length === 0) continue;
+      const kpis = assistKpis(snapshot.report.current);
+      const expected = kpis.flatMap(kpi => data.series.find(item => item.id === kpi.id)!.values.flatMap((value, week) => assistWeekUnfavorable(kpi.id, value.value) ? [`${kpi.id}:${week}`] : []));
+      expect(negativeCells(render(name), kpis.map(kpi => kpi.id)), name).toEqual(expected);
+    }
+  });
+
+  it("毛利率某週為負（記憶體中改值）：那一格帶 number-link negative；廣告佔淨營收等成本類比率整列不上色", () => {
+    const { snapshot } = loaded.demo;
+    const data = assistWeeks(snapshot);
+    const kpis = assistKpis(snapshot.report.current);
+    const negative = { ...data, series: data.series.map(series => series.id === "gross_margin" ? { ...series, values: series.values.map((value, week) => week === 0 ? { ...value, value: "-0.123" } : value) } : series) };
+    const html = renderToStaticMarkup(createElement(AssistWeeksDetails, { data: negative, kpis, channels: snapshot.report.scope.channels, anchor: snapshot.data_as_of, onEvidence: noop }));
+    expect(negativeCells(`<div>${html}</div>`, kpis.map(kpi => kpi.id))).toEqual(["gross_margin:0"]);
+    expect(html).toContain(`<button type="button" class="number-link negative" aria-label="${escapeAttr(fill(ui.cellAria, { metric: kpis.find(kpi => kpi.id === "gross_margin")!.label, period: data.weeks[0].label, value: formatRateL1("-0.123") }))}">${formatRateL1("-0.123")}</button>`);
   });
 });
 

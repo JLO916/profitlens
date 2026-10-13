@@ -5,7 +5,7 @@ import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 import { CHANNEL_FEE_FIELDS, CHANNEL_STRUCTURE_MAX, CHANNEL_STRUCTURE_SM_MAX, CHANNEL_STRUCTURE_TOTAL_KEY, CHANNEL_STRUCTURE_VERSION, channelStructure } from "../src/application/chart-structure";
 import { chartColors, chartHeights } from "../src/application/chart-theme";
 import { channelLabel, channelsLabel, demoAlias } from "../src/application/copy";
-import { formatAmountL2, formatPeriodL1, metricDefinitions } from "../src/application/presentation";
+import { deltaTone, formatAmountL2, formatPeriodL1, metricDefinitions } from "../src/application/presentation";
 import { profitWaterfall } from "../src/application/waterfall";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { shareSectionModel, shareSegmentEvidence, ShareSection, shareStackRows, SHARE_TABLE_COLUMNS, shareTableEvidence } from "../src/components/diagnosis/share-section";
@@ -301,7 +301,9 @@ describe("G10 區塊（SSR）：ChartFrame、段、資料表與抽屜 builder", 
     expect(heads.join("")).not.toContain("平台費");
     // 每 100 元：剩／虧 n 元也是 number-link（D-V4-32＝A）。
     expect(table).toContain(`>${fill(share.loss, { n: "1.5" })}</button>`);
-    expect(table.match(/class="number-link"/g)).toHaveLength((demo.snapshot.report.scope.channels.length + 1) * SHARE_TABLE_COLUMNS.length);
+    // V4-8a（D-V4-45＝B）：每格仍是 number-link；不利的格多帶 negative（示範資料只有 MARKETPLACE 的扣廣告後貢獻與每 100 元兩格，見下方 V4-8a 測試）。
+    expect(table.match(/class="number-link( negative)?"/g)).toHaveLength((demo.snapshot.report.scope.channels.length + 1) * SHARE_TABLE_COLUMNS.length);
+    expect(table.match(/class="number-link negative"/g)).toHaveLength(2);
   });
 
   it("同一個 builder（PRD §2.2 C7）：段的點擊與同欄資料表格的 number-link 回傳相同的 EvidenceSelection（剩餘與超過 100 的部分都開扣廣告後貢獻）", () => {
@@ -364,5 +366,46 @@ describe("健檢頁 SSR（CL-1、CL-2、CL-9、CL-11）：G10 在清單之後、
       expect(html.split('data-testid="chart-diagnosis-share"').length - 1).toBe(1);
       expect(html.split('data-testid="chart-diagnosis-share-table"').length - 1).toBe(1);
     }
+  });
+});
+
+// ── V4-8a 代理 B（D-V4-45＝B）：G10 資料表的不利色
+describe("V4-8a（D-V4-45＝B）G10 資料表：扣廣告後貢獻與每 100 元在不利時帶 C33 unfavorable（number-link negative），其他欄不上色", () => {
+  /** 帶 negative 的格，寫成「列鍵:欄鍵」（列＝shareSectionModel 的順序、欄＝SHARE_TABLE_COLUMNS 的順序）。 */
+  function negativeCells(snapshot: WorkspaceSnapshot): string[] {
+    const body = element(byTestId(section(snapshot), "chart-diagnosis-share-table"), "<tbody")!;
+    const rows = [...body.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(match => [...match[1].matchAll(/<td[^>]*>[\s\S]*?<\/td>/g)].map(cell => cell[0]));
+    const model = shareSectionModel(snapshot).rows;
+    expect(rows).toHaveLength(model.length);
+    return rows.flatMap((cells, i) => { expect(cells).toHaveLength(SHARE_TABLE_COLUMNS.length); return cells.flatMap((cell, j) => /\bnegative\b/.test(cell) ? [`${model[i].key}:${SHARE_TABLE_COLUMNS[j].key}`] : []); });
+  }
+  /** 規則：扣廣告後貢獻 deltaTone(L2) 不利；每 100 元顯示「虧 n 元」（perHundred < 0）。 */
+  function expectedCells(snapshot: WorkspaceSnapshot): string[] {
+    const { current } = snapshot.report;
+    return shareSectionModel(snapshot).rows.flatMap(row => {
+      const metrics = row.channel === null ? current.metrics : current.channels[row.channel]?.metrics;
+      return [
+        ...(deltaTone("contribution_after_marketing", metrics?.contribution_after_marketing.value, "L2") === "unfavorable" ? [`${row.key}:contribution_after_marketing`] : []),
+        ...(row.perHundred !== null && Number(row.perHundred) < 0 ? [`${row.key}:perHundred`] : []),
+      ];
+    });
+  }
+
+  it("示範資料：只有 MARKETPLACE 的扣廣告後貢獻與每 100 元（虧 1.5 元）兩格；DTC 與合計不上色", () => {
+    expect(negativeCells(demo.snapshot)).toEqual(["MARKETPLACE:contribution_after_marketing", "MARKETPLACE:perHundred"]);
+    expect(expectedCells(demo.snapshot)).toEqual(negativeCells(demo.snapshot));
+    const table = byTestId(section(demo.snapshot), "chart-diagnosis-share-table");
+    const contribution = demo.snapshot.report.current.channels.MARKETPLACE.metrics.contribution_after_marketing.value;
+    expect(table).toMatch(new RegExp(`<button type="button" class="number-link negative" aria-label="[^"]*">${formatAmountL2(contribution)}</button>`));
+    expect(table).toMatch(new RegExp(`<button type="button" class="number-link negative" aria-label="[^"]*">${fill(share.loss, { n: "1.5" })}</button>`));
+    for (const value of [fill(share.remain, { n: "34.3" }), fill(share.remain, { n: "16.2" })]) expect(table).toMatch(new RegExp(`<button type="button" class="number-link" aria-label="[^"]*">${value}</button>`));
+  });
+
+  it("golden、refund_only、zero_ad、4 通路合成資料：上色的格正好是規則算出的格；資料待補與不適用的格不上色", () => {
+    for (const { snapshot } of [golden, refundOnly, zeroAd, synthetic]) expect(negativeCells(snapshot), snapshot.report.dataset_id).toEqual(expectedCells(snapshot));
+    // 合成資料：MARKETPLACE 扣廣告後貢獻 −5,200.00（虧 8.5 元）兩格上色；LIVE（資料待補）、SOCIAL（不適用）、合計（資料待補）不上色。
+    expect(negativeCells(synthetic.snapshot)).toEqual(["MARKETPLACE:contribution_after_marketing", "MARKETPLACE:perHundred"]);
+    // refund_only：淨營收 −100.00，每 100 元不適用，一律不上色。
+    expect(negativeCells(refundOnly.snapshot).filter(cell => cell.endsWith(":perHundred"))).toEqual([]);
   });
 });

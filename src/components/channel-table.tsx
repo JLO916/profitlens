@@ -139,7 +139,7 @@ export function ChannelSparkCell({ data, channel, current }: { data: ChannelWeek
 
 type WeeksRow = { series: ChannelWeekSeries; label: string };
 
-/** 「各通路每週」（C33）：列＝通路，欄＝近 {n} 週（週名＋起訖；未滿 7 天的週欄頭加「未滿 7 天」），格＝扣廣告後貢獻 L2 number-link。 */
+/** 「各通路每週」（C33）：列＝通路，欄＝近 {n} 週（週名＋起訖；未滿 7 天的週欄頭加「未滿 7 天」），格＝扣廣告後貢獻 L2 number-link；V4-8a（D-V4-45＝B）不利（deltaTone L2）時帶 unfavorable。 */
 export function ChannelWeeksDetails({ data, channels, alias, anchor, onEvidence }: { data: ChannelWeeks; channels: readonly string[]; alias: boolean; anchor: string; onEvidence: (evidence: EvidenceSelection) => void }) {
   const metric = metricDefinitions[CHANNEL_METRIC].label;
   const rows: WeeksRow[] = channels.flatMap(channel => { const series = data.channels.find(item => item.channel === channel); return series ? [{ series, label: channelLabel(channel, alias) }] : []; });
@@ -158,7 +158,7 @@ export function ChannelWeeksDetails({ data, channels, alias, anchor, onEvidence 
     rowKey={row => row.series.channel}
     rowHeader={row => ({ label: row.label })}
     columns={columns}
-    valueOf={(row, column) => { const cell = value(row, column); return { value: cell.metric.value, reasonCodes: cell.metric.reason_codes }; }}
+    valueOf={(row, column) => { const cell = value(row, column); return { value: cell.metric.value, reasonCodes: cell.metric.reason_codes, unfavorable: deltaTone(CHANNEL_METRIC, cell.metric.value, "L2") === "unfavorable" }; }}
     evidenceOf={(row, column) => channelWeekEvidence(row.series, data.weeks[column.data], value(row, column))}
     onEvidence={onEvidence}
     cellAria={(row, column, text) => fill(value(row, column).metric.value === null ? labels.overview.channelsV3.marginAria : labels.overview.channelsV3.amountAria, { channel: row.label, metric: fill(tableV3.cellLabel, { period: data.weeks[column.data].label, metric }), value: text })}

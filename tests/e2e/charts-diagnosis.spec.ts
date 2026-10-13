@@ -242,6 +242,9 @@ test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
     await expect(table.locator("tbody tr"), "列＝通路＋合計").toHaveCount(snapshot.report.scope.channels.length + 1);
     await expect(table.locator("tbody th")).toHaveText(model.rows.map(row => row.label));
     await expect(table.locator("tbody button.number-link"), "示範資料每格都有值、都是 number-link（D-V4-32＝A）").toHaveCount(model.rows.length * SHARE_COLUMNS);
+    // V4-8a（D-V4-45＝B）：不利的扣廣告後貢獻與「虧 n 元」帶 C33 unfavorable（示範資料只有 MARKETPLACE 兩格）。
+    await expect(table.locator("tbody button.number-link.negative"), "示範資料 G10 不利色：MARKETPLACE 兩格").toHaveCount(2);
+    await expect(table.locator("tbody tr").filter({ has: page.getByRole("rowheader", { name: model.rows.find(row => row.channel === "MARKETPLACE")!.label, exact: true }) }).locator("button.number-link.negative")).toHaveCount(2);
     await expect(table.locator("tbody tr td:last-child")).toHaveText(model.rows.map(row => sharePerHundredText(row.perHundred)!));
     expect(await analyticsCount(page, "chart_clicked")).toBe(0);
     const scroll = await details.locator(".chart-data-scroll").evaluate(node => ({ scrollWidth: node.scrollWidth, clientWidth: node.clientWidth }));
@@ -457,6 +460,9 @@ test.describe("V4-3a 健檢 G7b 通路寬表「近 {n} 週」與「各通路每�
     await expect(table.locator("tbody th"), "列序同寬表目前的排序").toHaveText(wideOrder.map(channel => channelLabel(channel, alias)));
     await expect(table.locator("tbody tr")).toHaveCount(snapshot.report.scope.channels.length);
     await expect(table.locator("tbody button.number-link")).toHaveCount(snapshot.report.scope.channels.length * DEMO_WEEKS);
+    // V4-8a（D-V4-45＝B）：示範資料 MARKETPLACE 每週都不利、帶 C33 unfavorable；其他通路不上色。
+    await expect(table.locator("tbody button.number-link.negative"), "示範資料 G7b 不利色：MARKETPLACE 每週").toHaveCount(DEMO_WEEKS);
+    await expect(table.locator("tbody tr").filter({ has: page.getByRole("rowheader", { name: channelLabel("MARKETPLACE", alias), exact: true }) }).locator("button.number-link.negative")).toHaveCount(DEMO_WEEKS);
 
     // 第一列第一格（示範資料預設排序：本期扣廣告後貢獻由低到高，MARKETPLACE 在前）。
     const firstRowChannel = wideOrder[0];

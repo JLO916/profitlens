@@ -6,7 +6,7 @@ import { chartColors } from "@/application/chart-theme";
 import { channelLabel, demoAlias } from "@/application/copy";
 import { evidenceFilterText } from "@/application/evidence-filter";
 import { buildManagerSummary } from "@/application/manager-summary";
-import { formatAmountL2, formatAmountL3, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
+import { deltaTone, formatAmountL2, formatAmountL3, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { aiCollapseStatus, AiCollapse } from "@/components/ai-collapse";
 import { CHANNEL_WEEKS_TABLE_TESTID, CHANNEL_WEEKS_TOO_MANY_TESTID, ChannelWideTable, DEFAULT_CHANNEL_SORT, channelSparkTestId, channelWeekEvidence, channelWeeksState, sortChannelRows } from "@/components/channel-table";
@@ -226,9 +226,13 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
       values.forEach((cell, week) => {
         const text = formatAmountL2(series.values[week].metric.value!);
         expect(cell.text).toBe(text);
-        expect(cell.html).toBe(`<button type="button" class="number-link" aria-label="${fill(labels.overview.channelsV3.amountAria, { channel: channelLabel(series.channel, alias), metric: fill(tableV3.cellLabel, { period: data.weeks[week].label, metric: metricLabel }), value: text })}">${text}</button>`);
+        // V4-8a（D-V4-45＝B）：不利（deltaTone L2）的週值帶 C33 unfavorable（number-link negative）。
+        const linkClass = deltaTone("contribution_after_marketing", series.values[week].metric.value, "L2") === "unfavorable" ? "number-link negative" : "number-link";
+        expect(cell.html).toBe(`<button type="button" class="${linkClass}" aria-label="${fill(labels.overview.channelsV3.amountAria, { channel: channelLabel(series.channel, alias), metric: fill(tableV3.cellLabel, { period: data.weeks[week].label, metric: metricLabel }), value: text })}">${text}</button>`);
       });
     }
+    // V4-8a（D-V4-45＝B）示範資料：MARKETPLACE 六週都不利、上不利色；其他通路不上色（D-V3-7 有利不上色）。
+    expect(body.map(row => [cells(row)[0].text, cells(row).slice(1).filter(cell => cell.html.startsWith('<button type="button" class="number-link negative"')).length])).toEqual(order.map(channel => [channelLabel(channel, alias), channel === "MARKETPLACE" ? 6 : 0]));
     // 6 週都是完整週：沒有「未滿 7 天」欄註與表後說明。
     expect(details).not.toContain(labels.overview.trendV3.incompleteShort);
     expect(details).not.toContain(fill(spark.incompleteNote, { metric: metricLabel }));
@@ -308,6 +312,8 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
     expect(details).toContain(`<p class="note">${fill(spark.incompleteNote, { metric: metricLabel })}</p>`);
     const table = byTestId(details, CHANNEL_WEEKS_TABLE_TESTID);
     expect(rowsOf(table, "tbody").map(row => cells(row).map(cell => cell.text))).toEqual([["MARKETPLACE", formatAmountL2("-15.00")], ["DTC", formatAmountL2("270.00")]]);
+    // V4-8a（D-V4-45＝B）：MARKETPLACE −15.00 不利、上不利色；DTC 270.00 不上色。
+    expect(rowsOf(table, "tbody").map(row => cells(row).slice(1).map(cell => cell.html.startsWith('<button type="button" class="number-link negative"')))).toEqual([[true], [false]]);
   });
 
   it("合成資料 4 通路：LIVE 本期扣廣告後貢獻資料待補 → 那一格不畫 sparkline（格仍在）；其餘 3 條各 3 點、最後一週未滿 7 天是空心點、折線只連前兩週；資料表 LIVE 缺列的週寫「資料待補」", async () => {
@@ -330,6 +336,8 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
     expect(live[1].html).toContain(`aria-label="${fill(labels.overview.channelsV3.marginAria, { channel: "LIVE", metric: fill(tableV3.cellLabel, { period: week2, metric: metricLabel }), value: labels.shell.status.missing })}"`);
     const social = cells(rowsOf(table, "tbody").find(row => cells(row)[0].text === "SOCIAL")!).slice(1);
     expect(social.map(cell => cell.text)).toEqual(["490.00", "6730.00", "210.00"].map(value => formatAmountL2(value)));
+    // V4-8a（D-V4-45＝B）：資料待補的格不上色（deltaTone 對缺值是 neutral）；SOCIAL 三週都是正值，不上色。
+    for (const cell of [...live, ...social]) expect(cell.html.startsWith('<button type="button" class="number-link"'), cell.text).toBe(true);
   });
 
   it("通路 > 8：不呼叫 channelWeeks（狀態 tooMany）、沒有「近 {n} 週」欄與資料表，表格之後一句說明；會議摘要（default 變體）傳了 snapshot 也不變", async () => {
