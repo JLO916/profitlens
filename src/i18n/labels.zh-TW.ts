@@ -2850,6 +2850,9 @@ export const exportLabels = {
       legend: { level: "起訖與小計" },
       /** G2 圖說（附錄，合計範圍）：畫面副標去掉「切換範圍只影響這張圖」；{section}＝overview.profit.section，{period}＝本期起訖，{scope}＝合計或全部通路。G1 圖說沿用 bridgeWaterfall().subtitle。 */
       profitSubtitle: "{section} · {period} · {scope}",
+      // ── V4-9a 錨點（代理 A）：C31 附錄頁的標題。
+      /** 標準與客戶版附錄多一頁（D-V4-11＝B）放 G2 與兩張圖的資料表；老闆一頁版與會議範圍的列印沒有這一頁。 */
+      appendixHeading: "圖與資料表",
     },
     /** C32 pptChart（PPT 第二張投影片的 G1 原生瀑布，D-V4-34＝A）。 */
     pptx: {

@@ -10,6 +10,7 @@ import { formatAmountL1, formatAmountL2, formatAmountL3, formatSignedDelta, metr
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { fill, labels } from "@/i18n";
 import { ActionSummaryList, PRINT_NOTES_LIMIT, periodValues, type PrintMeeting } from "./summary-shared";
+import { PrintChart, PrintChartTable } from "./charts/print-chart";
 import styles from "./manager-summary.module.css";
 
 // V3-7 開工錨點：A4 列印版（「列印」與「匯出 PDF」共用）自 manager-summary.tsx 原樣搬出（markup 不變）。
@@ -96,6 +97,11 @@ export function PrintSummary({ summary, decisionContext, snapshot, meeting = nul
   const kpis = spec.sections.kpis === "four" ? variantKpis(summary, snapshot?.report) : summary.headlines;
   // V3-9b 收尾：會議範圍的列印（meeting 不為 null）維持 V3-7 版面、不加每週管理損益表附錄——PRD §7.6 規定會議 PDF 頁數不增加（E2E 代理實測加附錄會變 3 頁）；一頁摘要（目前檢視）的標準版與客戶版才加。
   const pnlSource = spec.appendix.pnl && !meeting && snapshot?.weeks ? { report: snapshot.report, weeks: snapshot.weeks } : null;
+  // V4-9a C31（PRD §5.10、D-V4-11＝B）：圖依 spec.charts.print——第一頁的圖（三個版本都是 G1）放在決議一行之後、三件事之前；
+  // 附錄的圖與資料表（標準與客戶版：G2＋兩張圖的資料表）在所有既有附錄之後、從新的一頁開始。只重新呈現同一個 snapshot 的柱，期間文字的年份錨點用 summary 的資料到。
+  // 會議範圍的列印比照管理損益表附錄，不加這一頁（PRD §7.6 會議 PDF 頁數不增加）；第一頁的 G1 照印。
+  const chartSource = snapshot ? { report: snapshot.report, data_as_of: summary.data_as_of } : null;
+  const chartAppendix = chartSource && !meeting && (spec.charts.print.appendix.length > 0 || spec.charts.print.appendixTables.length > 0) ? spec.charts.print : null;
   return <article className={styles.printSurface} data-testid="manager-summary-print" data-variant={spec.variant === "standard" ? undefined : spec.variant}>
     {/* V3-7 §7.9／§6.3 #50：版頭改成台灣報表格式四行（資料集、報表名、兩期與單位、指標版本與產出時間；8pt 附註字級，報表名是 14pt 標題），之後是會議名稱與日期一行（有會議時）與範圍一行；其後內容順序不變。 */}
     <header className={styles.printHeader} data-testid="print-report-header"><p className={styles.printNote} data-testid="print-header-dataset">{header.datasetName}</p>{spec.header.clientLine && <p className={styles.printNote} data-testid="print-header-client">{clientHeaderLine(header)}</p>}<h1>{header.title}</h1><p className={styles.printPeriod} data-testid="print-header-period"><span>{header.periodLine}</span><span>{header.unitLine}</span></p><p className={styles.printNote} data-testid="print-header-version">{header.versionLine}</p>{spec.sections.scope && meeting && <p className={styles.printMeta} data-testid="print-header-meeting">{fill(page.printHeader, { name: meeting.name, date: meeting.date, asOf: summary.data_as_of })}</p>}{spec.sections.scope && <p className={styles.printScope} data-testid="print-header-scope">{fill(meeting ? scopeCopy.printScopeMeeting : scopeCopy.printScope, { state: decisionContext?.decisionState ?? copy.draftDecision, asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, alias), mode: periodValues(summary).mode })}</p>}</header>
@@ -103,6 +109,7 @@ export function PrintSummary({ summary, decisionContext, snapshot, meeting = nul
     <div className={styles.printHeadlines} data-testid={spec.sections.kpis === "four" ? "print-kpis" : undefined}>{kpis.map(row => <p key={row.metric}><strong>{metricDefinitions[row.metric].label}</strong><br />{fill(copy.printHeadline, { prev: formatAmountL1(row.previous.value), cur: formatAmountL1(row.current.value), change: signedL1(row.change.value) })}</p>)}</div>
     {/* V3-9b F14：決策備註是內部備註——老闆一頁版與客戶報告版的決議一行不帶備註。 */}
     {decisionContext?.reviewName && <p className={styles.printDecision} data-testid="print-decision-line">{spec.internal.decisionNotes ? fill(copy.printMeetingLine, { name: decisionContext.reviewName, state: decisionContext.decisionState ?? copy.draftDecision, notes: firstPageNotes }) : fill(variants.printDecisionLine, { name: decisionContext.reviewName, state: decisionContext.decisionState ?? copy.draftDecision })}</p>}
+    {chartSource && spec.charts.print.page.map(id => <PrintChart key={id} id={id} source={chartSource} className={styles.printChart} />)}
     {spec.sections.priorityDetail ? <><h2>{labels.overview.sections.topThree}</h2><p>{fill(copy.printThresholdLine, { amount: formatAmountL3(summary.importance_threshold) })}</p>
     <ol>{summary.priorities.map(item => { const rule = priorityCopy(item); return <li key={item.code}><strong>{rule.headline}</strong> · {scopeLabel(item.primary.scope, alias)} · <span>{labels.overview.sections.impact}</span> {signedL1(item.impact?.value ?? null)}<p>{rule.nextStep}</p></li>; })}</ol></>
       : <><h2>{labels.overview.sections.topThree}</h2><ol data-testid="print-top-three">{summary.priorities.map(item => <li key={item.code}><strong>{priorityCopy(item).headline}</strong> · <span>{labels.overview.sections.impact}</span> {signedL1(item.impact?.value ?? null)}</li>)}</ol></>}{!summary.priorities.length && <p>{labels.overview.notes.noPriorities}</p>}
@@ -117,6 +124,7 @@ export function PrintSummary({ summary, decisionContext, snapshot, meeting = nul
     {spec.appendix.otherActions && decisions.appendixActions.length > 0 && <section className={styles.printAppendix}><h2>{copy.appendixHeading}</h2><ActionSummaryList actions={decisions.appendixActions} variant={spec.variant} /></section>}
     {pnlSource && <PrintPnlAppendix snapshot={pnlSource} />}
     {spec.appendix.technical && <section className={styles.printAppendix}><h2>{labels.evidence.sections.technicalDetails}</h2><ul>{summary.assumptions.map(item => <li key={item}>{item}</li>)}<li><code>metric_version</code> {summary.metric_version} · <code>dataset_id</code> {summary.dataset_id}</li><li><code>dataset_hash</code> {summary.dataset_hash}</li><li><code>filter_hash</code> {summary.filter_hash}</li></ul></section>}
+    {chartSource && chartAppendix && <div className={styles.printChartAppendix} data-testid="print-appendix-charts"><h2>{labels.exports.chartsV4.print.appendixHeading}</h2>{chartAppendix.appendix.map(id => <PrintChart key={id} id={id} source={chartSource} className={styles.printChart} />)}{chartAppendix.appendixTables.map(id => <PrintChartTable key={id} id={id} source={chartSource} />)}</div>}
   </article>;
 }
 
