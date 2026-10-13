@@ -1,0 +1,20 @@
+
+### ab48b
+p1: v48b load 2.72/4.74/5.49 [1002.3, 810.3, 82.5, 981.6, 16.8] inside=0 | v48a load 2.45/3.85/4.94 [1038, 774.8, 84.2, 977.5, 17.7] inside=0
+p2: v48b load 2.37/3.31/4.52 [1011.6, 760.8, 81.8, 968.8, 12.1] inside=0 | v48a load 2.45/3.57/4.71 [945.9, 809.5, 89.4, 996.9, 18.2] inside=0
+p3: v48b load 2.43/3.17/4.38 [1087.2, 812.6, 84.7, 983.7, 9.9] inside=0 | v48a load 2.37/2.99/4.21 [964.3, 791.5, 81.2, 989.1, 13.4] inside=0
+p4: v48b load 2.26/2.65/3.87 [1055.8, 823.3, 85.3, 992.9, 20.8] inside=0 | v48a load 2.07/2.75/4.01 [1018.4, 780.8, 83, 993, 10.1] inside=0
+p5: v48b load 2.09/2.5/3.72 [1010.9, 805.2, 80.3, 996.3, 13.1] inside=0 | v48a load 2.35/2.53/3.58 [984.9, 792.8, 77.4, 980.6, 17.6] inside=0
+p6: v48b load 2.43/2.45/3.38 [961.9, 812.3, 80.6, 1008.4, 12.8] inside=0 | v48a load 2.16/2.45/3.46 [1009.7, 805.5, 84.2, 990.3, 11.5] inside=0
+
+== ab48b: 6 pairs ==
+載入示範資料: v48b median 1011.2 | v48a median 997.3 | threshold 1109.1 | mean paired diff 28.1 | median paired diff 31.7 | diffs>0: 4/6 | -> PASS(abs)
+   diffs sorted: -47.8, -35.7, 26, 37.4, 65.7, 122.9
+切到通路健檢: v48b median 811.3 | v48a median 792.1 | threshold 832.3 | mean paired diff 11.6 | median paired diff 16.8 | diffs>0: 5/6 | -> PASS(abs)
+   diffs sorted: -48.7, 6.8, 12.4, 21.2, 35.5, 42.5
+切到商品毛利: v48b median 82.2 | v48a median 83.6 | threshold 129.9 | mean paired diff -0.7 | median paired diff 0.3 | diffs>0: 3/6 | -> PASS(abs)
+   diffs sorted: -7.5, -3.6, -1.7, 2.3, 2.9, 3.5
+切到會議紀錄: v48b median 988.3 | v48a median 989.7 | threshold 1071.2 | mean paired diff 0.7 | median paired diff 2 | diffs>0: 3/6 | -> PASS(abs)
+   diffs sorted: -28.1, -5.4, -0.1, 4, 15.7, 18.2
+切到資料來源: v48b median 13 | v48a median 15.5 | threshold 50 | mean paired diff -0.5 | median paired diff -2.2 | diffs>0: 2/6 | -> PASS(abs)
+   diffs sorted: -6.1, -4.4, -3.6, -0.9, 1.4, 10.7
