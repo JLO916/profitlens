@@ -3035,3 +3035,12 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
   .meeting-history-chart .chart-frame.multiples[data-state="empty"] { height: var(--chart-h-sm) !important; }
 }
 /* ── V4-8b B 錨點結束 ── */
+
+/* ── V4-10 D：商品頁 G24 折扣率 × 商品毛利率散佈（完整表之後的進階 <details>；代理 D） ── */
+/* PRD §5.3 第 4 列：收合列沿用 .chart-more（summary 一列 40，展開後是一個 C16 面板）；與上方完整表之間是商品頁的區段間距（同 .product-highlights 的下外距 space-6）。 */
+.products-scatter-more { margin: var(--space-6) 0 0; }
+/* 點可點（與資料表同一個 builder）；圖在 aria-hidden 的固定高容器內，不是停留點。 */
+.chart-frame .products-scatter-points .recharts-scatter-symbol { cursor: pointer; }
+/* PRD §4.5 G24「390：圖 display:none，只留資料表」：≤ 767px 不顯示圖框（標題、副標、資料表照常；圖框保持掛載）。 */
+@media (max-width: 767px) { .products-scatter .chart-frame { display: none; } }
+/* ── V4-10 D 錨點結束 ── */

@@ -1719,6 +1719,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         products: { root: has("product-scope"), blocks: [
           { id: "chart-products-pareto", main: true, when: hasPareto }, { id: "chart-products-pareto-table", within: "chart-products-pareto", table: true, when: hasPareto },
           { id: "chart-products-variance", main: true }, { id: "chart-products-variance-table", within: "chart-products-variance", table: true },
+          // V4-10 代理 D：G24 在完整表之後的進階 <details class="chart-more products-scatter-more"> 內（不是主層）；資料表收在它自己的 <details class="data-alternative">。
+          { id: "chart-products-scatter" }, { id: "chart-products-scatter-table", within: "chart-products-scatter", table: true },
         ] },
         scenarios: { root: has("multi-scenario-workbench"), blocks: [
           { id: "chart-scenarios-variance", main: true, within: "multi-scenario-workbench", when: hasPlans }, { id: "chart-scenarios-variance-table", within: "chart-scenarios-variance", table: true, when: hasPlans },
@@ -1876,6 +1878,30 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V4-9b 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-9b 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
     // ── V4-10 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-10 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
+    it("V4-10 D 商品 G24：每個商品狀態 chart-products-scatter、chart-products-scatter-table 各一份，在完整表之後的 <details class=\"chart-more products-scatter-more\">（沒有 open）內、收合但掛載；資料表另收在沒有 open 的 <details class=\"data-alternative\">；圖框是 aria-hidden 的骨架（沒有點時是空狀態）、沒有停留點與圖形（Recharts 只在展開後以 next/dynamic 載入）；不是主層圖區塊", async () => {
+      const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const products = states.filter(state => state.state?.panel === "products");
+      expect(products.length).toBeGreaterThanOrEqual(3);
+      for (const { name, html } of products) {
+        for (const id of ["chart-products-scatter", "chart-products-scatter-table"]) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
+        expect(occurrences(html, 'class="chart-more products-scatter-more"'), name).toBe(1);
+        const more = element(html, 'class="chart-more products-scatter-more"')!;
+        expect(openTag(more, "<details"), `${name}：收合`).toBe('<details class="chart-more products-scatter-more">');
+        const full = element(html, 'class="product-full"')!;
+        expect(html.indexOf(full) + full.length, `${name}：緊接完整表`).toBe(html.indexOf(more));
+        const section = element(more, 'data-testid="chart-products-scatter"')!;
+        const table = element(section, '<details class="data-alternative"')!;
+        expect(openTag(table, "<details"), `${name}：資料表收合`).not.toMatch(/\sopen=""/);
+        expect(table, `${name}：收合時表格仍掛載`).toContain('data-testid="chart-products-scatter-table"');
+        const frame = element(section, 'class="chart-frame lg"')!;
+        expect(frame, `${name}：圖框內沒有停留點與圖形`).not.toMatch(/tabindex|<button|<a\s|<details|<svg/);
+        const frameState = /data-state="([a-z]+)"/.exec(openTag(section, 'class="chart-frame lg"')!)![1];
+        expect(["loading", "empty"], name).toContain(frameState);
+        if (frameState === "loading") expect(openTag(section, 'class="chart-frame lg"'), name).toContain('aria-hidden="true"');
+        expect(checkChartMarkup(html, { page: "products" }).mainSections, `${name}：G24 不算主層`).not.toContain("chart-products-scatter");
+        expect(chartTestIdViolations(html).filter(found => found.startsWith("chart-products-scatter")), name).toEqual([]);
+      }
+    });
 
   });
 

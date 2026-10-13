@@ -2,10 +2,12 @@
 // 商品頁 .product-highlight-grid 的 G14（商品毛利為負的商品累計，只在有負值時渲染，after＝product-worst）與 G13（商品毛利兩期差額，after＝product-best）。
 // 四個視窗都跑（1440×1000、1280×900、768×1024、390×844）；示範資料（沒有商品毛利為負）、4 通路合成資料（5 個為負）與 fixtures/refund_only（1 個為負、差額都是 0）各一條。
 // 字串一律由 labels 組出、定位用 testid（PRD §4.7）；期待的列與數字在 Node 端以同一組 domain、application 函式算（不寫死）。
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { PRODUCT_PARETO_LIMIT, productPareto } from "../../src/application/chart-pareto";
+import { chartColors } from "../../src/application/chart-theme";
 import { channelLabel, demoAlias, formatHeadlineAmount } from "../../src/application/copy";
 import { evidenceFilterText } from "../../src/application/evidence-filter";
 import { formatAmountL1, formatAmountL2, formatCount, formatRateL1, formatRateL2, metricDefinitions } from "../../src/application/presentation";
@@ -19,7 +21,7 @@ import { synthetic4ChannelInput } from "../helpers/synthetic-4-channel";
 import { analyticsCount, expectNoPageScrollX, importSynthetic, openDataTable, paretoBars, paretoExtra, paretoSection, paretoTable, productGridCells, stubAnalytics, varianceBars, varianceBlock, varianceSection, varianceTable } from "./chart-helpers-v4";
 import { importViaWizard } from "./import-wizard-helpers";
 import { evidenceDrawer, loadDemo } from "./launch-helpers-v310";
-import { dismissSavePrompt, isMobile, navigateTo } from "./replacement-helpers";
+import { dismissSavePrompt, isMobile, navigateTo, openDetails } from "./replacement-helpers";
 
 const copy = labels.products.chartsV4;
 const METRIC = metricDefinitions.gross_profit.label;
@@ -172,6 +174,118 @@ test.describe("V4-4 商品 G13、G14", () => {
     await expect(varianceSection(page).locator(".legend")).toHaveCount(0);
     await expect(varianceSection(page).getByTestId("product-best")).toBeVisible();
     await expectEqualCells(page);
+    await expectNoPageScrollX(page);
+  });
+});
+
+// ── V4-10 代理 D：G24 折扣率 × 商品毛利率散佈（CHART_CATALOG §8 G24 的 E2E 草案；PRD §4.5、§5.3 第 4 列、§8.2；D-V4-21＝A） ──
+// 商品頁完整表之後的 <details class="chart-more products-scatter-more">；圖本體（Recharts ScatterChart）只在 src/components/charts/products-scatter-lazy.tsx，以 next/dynamic 載入。
+// 首載證明以 build 產出的 chunk 檔名判定（不 grep 符號）：.next/react-loadable-manifest.json 中 import("../charts/products-scatter-lazy") 那一項的檔案都不在首頁 HTML，
+// 商品頁載入後也還沒下載，第一次展開 <details> 才下載。四個視窗都跑；390 圖框不可見、資料表可見。
+const scatterCopy = copy.scatter;
+const RATE_X = metricDefinitions.discount_rate.label;
+const RATE_Y = metricDefinitions.gross_margin.label;
+const scatterMore = (page: Page) => page.locator("details.products-scatter-more");
+const scatterSection = (page: Page) => page.getByTestId("chart-products-scatter");
+const scatterFrame = (page: Page) => scatterSection(page).locator(".chart-frame");
+const scatterSymbols = (page: Page) => scatterFrame(page).locator(".recharts-scatter-symbol");
+const scatterTable = (page: Page) => page.getByTestId("chart-products-scatter-table");
+/** 圖上的點與資料表的列（Node 端，同一個 compareProducts 結果）：本期折扣率、商品毛利率都有值的列，順序同 comparison.rows。 */
+const scatterRows = (rows: Awaited<ReturnType<typeof expectations>>["rows"]) => rows.filter(row => row.current.metrics.discount_rate.value !== null && row.current.metrics.gross_margin.value !== null);
+/** build 產出的散佈圖 chunk（URL 路徑）：react-loadable-manifest 中 scatter-section.tsx 的 import("../charts/products-scatter-lazy") 那一項。 */
+function scatterChunks(): string[] {
+  const manifest = JSON.parse(readFileSync(resolve(".next/react-loadable-manifest.json"), "utf8")) as Record<string, { files?: string[] }>;
+  const entries = Object.entries(manifest).filter(([key]) => /-> \.\.\/charts\/products-scatter-lazy$/.test(key));
+  expect(entries.map(([key]) => key), "loadable manifest 有散佈圖那一項").toHaveLength(1);
+  const files = (entries[0][1].files ?? []).filter(file => file.endsWith(".js"));
+  expect(files.length, "散佈圖的 chunk 檔").toBeGreaterThan(0);
+  for (const file of files) expect(existsSync(resolve(".next", file)), file).toBe(true);
+  return files.map(file => `/_next/${file}`);
+}
+/** 點第 index 個點（Recharts 依資料順序畫；示範資料有重疊的點，所以對指定的那個點派送 click，不用座標點擊）。 */
+const clickSymbol = (page: Page, index: number) => scatterSymbols(page).nth(index).dispatchEvent("click");
+
+test.describe("V4-10 商品 G24", () => {
+  test("示範資料：首頁 HTML 沒有散佈圖的 chunk；商品頁載入後還沒下載，第一次展開才下載；展開後圖框 aria-hidden，≥ 768 畫 40 個點（沒有不利色）、390 圖框不可見；資料表 40 列、限制句在資料表內；點一個點開本期商品毛利率抽屜（篩選片語含 SKU）並記 chart_clicked", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", error => errors.push(error.message));
+    const chunks = scatterChunks();
+    const home = await (await page.request.get("/")).text();
+    for (const chunk of chunks) expect(home, `首頁 HTML 不含 ${chunk}`).not.toContain(chunk.replace(/^\/_next\//, ""));
+    const requested: string[] = [];
+    page.on("request", request => { const path = new URL(request.url()).pathname; if (chunks.includes(path)) requested.push(path); });
+    const expected = await expectations(fixture("demo"));
+    const rows = scatterRows(expected.rows);
+    expect(rows).toHaveLength(40);
+    await stubAnalytics(page);
+    await page.goto("/");
+    await loadDemo(page);
+    await navigateTo(page, "products");
+    await expect(scatterSection(page)).toBeAttached();
+    await expect(scatterMore(page).locator(":scope > summary")).toHaveText(fill(scatterCopy.summary, { x: RATE_X, y: RATE_Y }));
+    expect(await scatterMore(page).getAttribute("open"), "進階 <details> 預設收合").toBeNull();
+    await expect(scatterSection(page)).toBeHidden();
+    await expect(scatterFrame(page)).toHaveAttribute("data-state", "loading");
+    expect(requested, "展開前不下載散佈圖的 chunk").toEqual([]);
+    const downloaded = page.waitForResponse(response => chunks.includes(new URL(response.url()).pathname));
+    await openDetails(scatterMore(page));
+    await downloaded;
+    await expect(scatterFrame(page)).toHaveAttribute("data-state", "ready");
+    await expect(scatterFrame(page)).toHaveAttribute("aria-hidden", "true");
+    await expect(scatterSection(page).locator("#products-scatter-title")).toHaveText(fill(scatterCopy.title, { n: formatCount(0, "L2"), metric: RATE_Y }));
+    if (isMobile(page)) {
+      await expect(scatterFrame(page)).toBeHidden();
+    } else {
+      await expect(scatterFrame(page)).toBeVisible();
+      await expect(scatterSymbols(page)).toHaveCount(rows.length);
+      await expect(scatterFrame(page).locator(`.recharts-scatter-symbol path[fill='${chartColors.unfavorable}']`)).toHaveCount(0);
+      const before = await analyticsCount(page, "chart_clicked");
+      const index = rows.length - 1, row = rows[index];
+      await clickSymbol(page, index);
+      await expect(evidenceDrawer(page)).toBeVisible();
+      await expect(drawerHeading(page)).toHaveText(drawerTitle(fill(labels.products.comparison.evidenceTitle, { sku: row.sku, period: labels.shell.periods.current, label: metricDefinitions.gross_margin.shortLabel })));
+      await expect(drawerFilter(page)).toHaveText(evidenceFilterText({ channel: row.channel, sku: row.sku }, { alias: true, anchor: expected.snapshot.data_as_of })!);
+      expect(await analyticsCount(page, "chart_clicked")).toBe(before + 1);
+      await closeDrawer(page);
+    }
+    // 資料表（每個寬度都看得到）：SKU · 通路｜本期折扣率｜本期毛利率；限制句在資料表 <details> 內。
+    const opened = await analyticsCount(page, "chart_table_opened");
+    const details = await openDataTable(scatterSection(page));
+    expect(await analyticsCount(page, "chart_table_opened")).toBe(opened + 1);
+    await expect(scatterTable(page)).toBeVisible();
+    await expect(scatterTable(page).locator("tbody tr")).toHaveCount(rows.length);
+    await expect(scatterTable(page).locator("tbody tr").first().locator("td")).toHaveText([formatRateL2(rows[0].current.metrics.discount_rate.value), formatRateL2(rows[0].current.metrics.gross_margin.value)]);
+    await expect(details.locator(":scope p.note")).toHaveText(scatterCopy.limitNote);
+    // 鍵盤經由資料表：第一列折扣率格開本期折扣率抽屜（與點同一個 builder）。
+    await scatterTable(page).locator("tbody tr").first().locator("td").first().locator("button.number-link").click();
+    await expect(drawerHeading(page)).toHaveText(drawerTitle(fill(labels.products.comparison.evidenceTitle, { sku: rows[0].sku, period: labels.shell.periods.current, label: metricDefinitions.discount_rate.shortLabel })));
+    await closeDrawer(page);
+    expect(requested.length, "展開後才下載").toBeGreaterThan(0);
+    await expectNoPageScrollX(page);
+    expect(errors).toEqual([]);
+  });
+
+  test("4 通路合成資料：標題「4 個商品毛利率為負」、副標寫 1 個待補或不適用；≥ 768 畫 11 個點、其中 4 個不利色；資料表 11 列", async ({ page }) => {
+    const expected = await expectations(synthetic4ChannelInput());
+    const rows = scatterRows(expected.rows);
+    expect([rows.length, expected.rows.length - rows.length]).toEqual([11, 1]);
+    const negative = rows.filter(row => Number(row.current.metrics.gross_margin.value) < 0).length;
+    expect(negative).toBe(4);
+    await page.goto("/");
+    await importSynthetic(page);
+    await navigateTo(page, "products");
+    await openDetails(scatterMore(page));
+    await expect(scatterSection(page).locator("#products-scatter-title")).toHaveText(fill(scatterCopy.title, { n: formatCount(negative, "L2"), metric: RATE_Y }));
+    await expect(scatterSection(page).locator("#products-scatter-sub")).toContainText(fill(scatterCopy.nullNote, { subtitle: "", n: formatCount(1, "L2") }).trim());
+    await expect(scatterFrame(page)).toHaveAttribute("data-state", "ready");
+    if (isMobile(page)) await expect(scatterFrame(page)).toBeHidden();
+    else {
+      await expect(scatterSymbols(page)).toHaveCount(rows.length);
+      await expect(scatterFrame(page).locator(`.recharts-scatter-symbol path[fill='${chartColors.unfavorable}']`)).toHaveCount(negative);
+      await expect(scatterFrame(page).locator(`.recharts-scatter-symbol path[fill='${chartColors.total}']`)).toHaveCount(rows.length - negative);
+    }
+    await openDataTable(scatterSection(page));
+    await expect(scatterTable(page).locator("tbody tr")).toHaveCount(rows.length);
     await expectNoPageScrollX(page);
   });
 });

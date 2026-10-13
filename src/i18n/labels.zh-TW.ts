@@ -1188,6 +1188,25 @@ export const products = {
       /** 資料表之後的說明（在收合的 <details> 內）：資料表列出全部差額 < 0 與 > 0 的商品。 */
       tableNote: "先列減少（由少最多起），再列增加（由多最多起）；差額為 0 或待補的商品見下方全部商品表。",
     },
+    // ── V4-10 錨點：商品毛利圖表字串（代理 D：scatter＝G24 折扣率 × 商品毛利率散佈，商品頁完整表之後的進階 <details>）。
+    /**
+     * V4-10 代理 D：G24 折扣率 × 商品毛利率散佈（PRD §4.1–§4.7 G24、§5.3 第 4 列；CHART_CATALOG §8 G24；D-V4-21＝A）。
+     * {x}＝metricDefinitions 的折扣率標準名（橫軸），{y}、{metric}＝商品毛利率標準名（縱軸）；資料表欄名沿用期間短名＋指標短名、列名沿用 products.chartsV4.product，不另立 columns。
+     */
+    scatter: {
+      /** 進階 <details class="chart-more"> 的 summary；也是區塊標準名（資料表 summary「表格 · …」與 caption）。 */
+      summary: "{x}和{y}的分布",
+      /** 結論標題：{n}＝圖上的點中本期{metric}為負的商品數（L2 件數字）。 */
+      title: "{n} 個{metric}為負",
+      /** 副標（同時是區塊的 aria 描述）：{period}＝本期起訖（M/D–M/D），{scope}＝範圍內的通路。 */
+      subtitle: "橫軸{x}、縱軸{y} · 本期 {period} · {scope}",
+      /** 有商品的{x}或{y}為空（資料待補或不適用）時的副標：{subtitle}＝上面的副標，{n}＝沒畫的商品數。 */
+      nullNote: "{subtitle} · 另 {n} 個商品待補或不適用，未畫",
+      /** 限制句：只放在資料表的 <details> 內（表格之後），不進主層（B8）。 */
+      limitNote: "只呈現分布，不代表因果。",
+      /** 點超過上限時圖區的說明（state="empty"，指向資料表）：{n}＝上限。 */
+      tooMany: "商品超過 {n} 個，不畫點；請看下方表格",
+    },
   },
 } as const;
 

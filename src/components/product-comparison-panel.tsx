@@ -19,6 +19,7 @@ import type { EvidenceSelection } from "./evidence-drawer";
 import { productCategoryText, productChangeLabel, productDeltaEvidence, productEvidence, productPresenceLabels, type ProductEvidenceContext, type ProductMoneyMetric } from "./product-evidence";
 import { useDeferredMount } from "./charts/deferred-mount";
 import { ProductParetoSection, ProductVarianceSection, paretoSectionModel, varianceSectionModel, type ProductChartScope } from "./products/highlight-charts";
+import { ProductScatterSection, scatterSectionModel } from "./products/scatter-section";
 import { toneClass } from "./tone-class";
 import { ShellIcon } from "./shell/shell-icon";
 
@@ -162,6 +163,8 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   /** V4-4：G13、G14 的柱與資料表內容延後一拍（390 切到商品毛利的 TBT；同 G11、G12 的 useDeferredMount），前 10 名兩表不延後。 */
   const chartsReady = useDeferredMount();
   const varianceModel = useMemo(() => varianceSectionModel({ decrease: worstChange, increase: bestChange, allDecrease: allChanges.worstChange, allIncrease: allChanges.bestChange }, chartScope), [worstChange, bestChange, allChanges, chartScope]);
+  /** V4-10 代理 D：G24 折扣率 × 商品毛利率散佈（完整表之後的進階 <details>；同一個 comparison.rows，只挑兩個比率都有值的列）。 */
+  const scatterModel = useMemo(() => scatterSectionModel(comparison.rows, chartScope), [comparison.rows, chartScope]);
   const converted = conversionSentence(conversion);
   const sortValue = PRODUCT_SORT_OPTIONS.some(option => option.sort === sort && option.direction === direction) ? `${sort}.${direction}` : PRODUCT_SORT_OPTIONS[0].value;
 
@@ -292,5 +295,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
       </table></div>}
       <details className="product-technical"><summary>{labels.evidence.sections.technicalDetails}</summary><p className="note">{copy.deltaFormulaNote}</p><p className="note">{fill(copy.negativeNote, { n: unavailable })}</p></details>
     </section>
+    {/* V4-10 代理 D（CHART_CATALOG §8 G24）：完整表之後的進階 <details>（收合）；圖只在第一次展開時以 next/dynamic 載入。 */}
+    <ProductScatterSection model={scatterModel} scope={chartScope} onEvidence={onEvidence} ready={chartsReady} />
   </section>;
 }
