@@ -4,7 +4,7 @@
 
 ## v4.0.0（尚未發布）
 
-**尚未發布到正式站。** 程式與文件已在分支 `revamp/v4` 完成（批次 V4-0a–V4-11）。使用者 2026-10-13 指示「只完成程式與文件，不部署」，所以打 git tag `v4.0.0`、推送 `main`、部署正式站、在 Vercel 開啟 Skew Protection（D-V4-44 的 C）都是「未執行」。2026-10-14 使用者同意「先部署 preview」：只推送分支 `revamp/v4`，由 Vercel Git 整合建置 preview（`dpl_Cr8gE1EfaMmNwHQQMr8k2B7yXfPt`，commit `5d07454`，https://profitlens-git-revamp-v4-jlo916s-projects.vercel.app），對 preview 跑 13 項 HTTP 上線檢查全部通過（`verification/revamp-v4/V4-11/launch-check-preview.json`）。正式站 https://profitlens-tau.vercel.app 仍是 v3.0.0。正式上線前還要完成 H6（v4 可用性複測與外部盲評）與匯出檔的人工開檔檢查（PPT、PDF、Excel），而且每一次部署都要使用者當次同意（D-V4-28）。
+**尚未發布到正式站。** 程式與文件已在分支 `revamp/v4` 完成（批次 V4-0a–V4-11）。使用者 2026-10-13 指示「只完成程式與文件，不部署」，所以打 git tag `v4.0.0`、推送 `main`、部署正式站、在 Vercel 開啟 Skew Protection（D-V4-44 的 C）都是「未執行：使用者 2026-10-13 指示不部署」。2026-10-14 使用者同意「先部署 preview」：只推送分支 `revamp/v4`，由 Vercel Git 整合建置 preview（`dpl_Cr8gE1EfaMmNwHQQMr8k2B7yXfPt`，commit `5d07454`，https://profitlens-git-revamp-v4-jlo916s-projects.vercel.app），對 preview 跑 13 項 HTTP 上線檢查全部通過（`verification/revamp-v4/V4-11/launch-check-preview.json`）。正式站 https://profitlens-tau.vercel.app 仍是 v3.0.0。正式上線前還要完成 H6（v4 可用性複測與外部盲評）與匯出檔的人工開檔檢查（PPT、PDF、Excel），而且每一次部署都要使用者當次同意（D-V4-28）。
 
 Revamp v4（`docs/revamp-v4/`，基準 v3.0.0＝`625bfa5`）：把每一頁的主要問題先用一張專業圖表回答，表格留作核對與替代。財務口徑不變，沒有刪掉任何功能（只搬移、合併、收合、改名），沒有新增依賴。新圖只重新呈現既有數字；需要加總、佔比、累計、計數或分段時，各用一個帶版本的整理函式（例如 `channel-structure-v1`）。名詞以 [v4 名詞表增補](revamp-v4/GLOSSARY.md) 與 [v3 名詞表](revamp-v3/GLOSSARY.md) 為準。
 
