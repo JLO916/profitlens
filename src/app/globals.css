@@ -3004,3 +3004,9 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 .chart-section.share-section, .chart-section.heat-section { margin-bottom: 24px; }
 @media (max-width: 640px) { .chart-section.share-section, .chart-section.heat-section { margin-bottom: 18px; } }
 /* ── V4-8a B 錨點結束 ── */
+
+/* ── V4-8b A：隨頁載入的等待骨架與失敗狀態（代理 A） ── */
+/* ── V4-8b A 錨點結束 ── */
+
+/* ── V4-8b B：390 總檢修正（會議寬表、匯出本頁選單、焦點被分頁列遮住、target-size、C33 文字欄、G19 空狀態高度；代理 B） ── */
+/* ── V4-8b B 錨點結束 ── */

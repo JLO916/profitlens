@@ -403,6 +403,10 @@ export async function pageStates(): Promise<StateMarkup[]> {
 
     // ── V4-8a 代理 B（期間列、資料表色、G12）新增頁面狀態在此之後
 
+    // ── V4-8b 代理 A（隨頁載入狀態）新增頁面狀態在此之後
+
+    // ── V4-8b 代理 B（390 總檢）新增頁面狀態在此之後
+
     // ── V4-9a 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-9a 新增 M1 測試」錨點後加對應測試）──
 
     // ── V4-9b 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-9b 新增 M1 測試」錨點後加對應測試）──

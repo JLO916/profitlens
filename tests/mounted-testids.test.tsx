@@ -1630,6 +1630,12 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     });
 
     // ── V4-8a 代理 B（期間列去年同期提示、資料表不利色、G12 間距）M1 測試在此之後
+
+    // ── V4-8b 代理 A（隨頁載入的等待骨架與失敗狀態）M1 測試在此之後
+
+    // ── V4-8b 代理 B（390 總檢修正、G19 空狀態高度）M1 測試在此之後
+
+    // ── V4-8b 代理 D（mounted-testids 全頁掃描）M1 測試在此之後
     it("V4-8a B 期間列（D-V3-35＝A）：去年同期不可用的每個狀態，preset-reason-visible-yoy 保持掛載但 hidden（SSR＝沒按過「去年同期」）；needs-attention 只剩它時整塊 hidden，有篩選錯誤或部分資料時照常顯示；文字＝shell.banner.yoyUnavailable；按過時（yoyHintVisible）兩者都不 hidden", async () => {
       const { NeedsAttention } = await import("@/components/shell/period-bar");
       const hiddenAttr = /\shidden=""/;
