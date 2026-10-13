@@ -1,4 +1,4 @@
-import { closeDownloads, closePeriodSheet, dismissSavePrompt, navigateTo, openDownloads, openPeriodSheet, openProductExport, ruleHeadline } from "./replacement-helpers";
+import { closeDetails, closeDownloads, closePeriodSheet, dismissSavePrompt, navigateTo, openDownloads, openPeriodSheet, openProductExport, ruleHeadline } from "./replacement-helpers";
 import { chooseBasis, commitButton, commitWizard, confirmAndCheck, confirmMappingIfShown, fillWizardSettings, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard, wizardFileLabels, wizardResultNote, wizardRoles, type Classification, type FilePayload, type WizardRole } from "./import-wizard-helpers";
 import { fill, labels } from "../../src/i18n";
 import { ASSIST_KPI_VERSION } from "../../src/application/assist-kpi";
@@ -521,6 +521,8 @@ test("下載共用期間通路與商品篩選，公式文字安全而負數金�
   expect(allProducts.some(row => row.category === "'@NOTE")).toBe(true);
   expect(allProducts.some(row => row.metric === "gross_profit" && row.value === "-100.00")).toBe(true);
   expect(allProducts.every(row => !["ad_spend", "contribution_after_marketing", "contribution_before_marketing"].includes(row.metric))).toBe(true);
+  // V4-8b（D-V4-59 (2)）：≤ 767px「匯出本頁」選單改成與頁首同寬、開在按鈕下方，開著時蓋住期間列；先收合選單（同使用者的操作）再開期間面板。
+  await closeDetails(page.getByTestId("product-export-menu"));
   await selectChannel(page, "MARKETPLACE");
   await page.getByLabel(labels.exports.csv.columns.category, { exact: true }).selectOption("\t=FORMULA()");
   await page.getByLabel(labels.products.comparison.searchSku, { exact: true }).fill("-TEST()");
