@@ -1,6 +1,6 @@
 {
   "desktop": {
-    "checked_at": "2026-10-13T10:51:56.217Z",
+    "checked_at": "2026-10-13T14:39:27.783Z",
     "viewport": {
       "width": 1440,
       "height": 1000
@@ -904,7 +904,7 @@
     "pageErrors": []
   },
   "tablet": {
-    "checked_at": "2026-10-13T11:08:19.562Z",
+    "checked_at": "2026-10-13T14:54:59.716Z",
     "viewport": {
       "width": 768,
       "height": 1024
@@ -1041,7 +1041,7 @@
     "note": "V4-1：只走總覽（瀑布外框的 aria-hidden 修正在 768 的確認）"
   },
   "mobile": {
-    "checked_at": "2026-10-13T11:17:09.074Z",
+    "checked_at": "2026-10-13T15:02:57.652Z",
     "viewport": {
       "width": 390,
       "height": 844

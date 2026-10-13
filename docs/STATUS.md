@@ -1,5 +1,27 @@
 # Status
 
+## Revamp v4｜V4-10 P2 圖表（完成；G8、G17、G24）
+
+這一批新增三張圖：
+
+- **G8**：總覽進階區的兩期每日累計（`cumulative-daily-v1`）。末日累計等於兩期合計；`buildPnlTable` 輸出不變。
+- **G17**：待辦到期分布（`action-due-buckets-v1`），四桶加總等於未完成待辦數。
+- **G24**：商品頁進階區的折扣率 × 毛利率散佈圖，以 `next/dynamic` 載入，不在首載。
+
+整合後，載入示範資料的 390 TBT 超過門檻。原因是 G8 在進階區收合時也照算，修正後只在展開時才算（`6badab3`）。
+
+最終驗收（`6ba99ab`）：
+
+- unit 164 檔、3,370 個全過。
+- E2E 1,067 passed、0 failed、25 skipped。
+- 畫面基準只有 04、06 變動。
+- First Load JS 519,322。
+- axe 23／23／23／21 全部 0。
+- 390 TBT：依 D-V4-47 與 V4-9b 同場交替跑 9 對，五項都低於門檻：載入示範資料 1,077.1、健檢 825.8、商品 99.1、會議 1,022.1、資料來源 17.5。
+- 禁區是空的；commit 之後的 diff（收尾 `{V4_10_CLOSE}`）也是空的。
+
+驗收文件：`verification/revamp-v4-V4-10-acceptance.md`。
+
 ## Revamp v4｜V4-9b 匯出（二）Excel 與 Markdown（完成）
 
 Excel 的標準版、客戶版新增「圖表資料」工作表，每張圖一段：

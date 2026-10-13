@@ -1,6 +1,6 @@
 {
   "desktop": {
-    "checked_at": "2026-10-13T10:52:27.814Z",
+    "checked_at": "2026-10-13T14:39:59.372Z",
     "base_url": "http://127.0.0.1:3100",
     "mode": "non-public (DISABLED)",
     "viewport": {
@@ -91,7 +91,7 @@
         "seq": 2,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/css/935913618f15e93b.css",
+        "url": "http://127.0.0.1:3100/_next/static/css/49dd2f681bcad20b.css",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "stylesheet",
         "postData": {
@@ -196,7 +196,7 @@
         "seq": 9,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-bb6f93af07968014.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-ee18639eb1670552.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
@@ -435,7 +435,7 @@
     ]
   },
   "mobile": {
-    "checked_at": "2026-10-13T11:17:44.196Z",
+    "checked_at": "2026-10-13T15:03:29.752Z",
     "base_url": "http://127.0.0.1:3100",
     "mode": "non-public (DISABLED)",
     "viewport": {
@@ -526,7 +526,7 @@
         "seq": 2,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/css/935913618f15e93b.css",
+        "url": "http://127.0.0.1:3100/_next/static/css/49dd2f681bcad20b.css",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "stylesheet",
         "postData": {
@@ -631,7 +631,7 @@
         "seq": 9,
         "step": "home",
         "method": "GET",
-        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-bb6f93af07968014.js",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-ee18639eb1670552.js",
         "origin": "http://127.0.0.1:3100",
         "resourceType": "script",
         "postData": {
