@@ -490,6 +490,8 @@ test.describe("V4-2 總覽 G7a 其他常用指標「近 {n} 週」與「各指�
     await expect(table.locator("tbody tr")).toHaveCount(ASSIST_IDS.length);
     await expect(table.locator("tbody th").first()).toHaveText(fill(spark.rowUnit.count, { label: labels.assist.items.units_sold.label }));
     await expect(table.locator("tbody button.number-link"), "示範資料每格都有值").toHaveCount(ASSIST_IDS.length * DEMO_WEEKS);
+    // V4-8a（D-V4-45＝B）：只有有利方向是上升的指標落到不利側才上色；示範資料 0 格（成本類比率的正值不上色）。
+    await expect(table.locator("tbody .negative"), "示範資料 G7a 不利色 0 格").toHaveCount(0);
 
     // 比率格（廣告佔比，最後一週）：值取自 domain，metric_version 維持 contribution-v1，另列 assist-weeks-v1。
     const ratioCell = table.locator("tbody tr").nth(ASSIST_IDS.indexOf("marketing_burden")).locator("button.number-link").last();

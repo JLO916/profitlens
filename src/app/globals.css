@@ -2985,4 +2985,13 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 /* ── V4-7b C 錨點結束 ── */
 
 /* ── V4-8a B：D-V3-35 期間列去年同期提示（needs-attention 的 hidden）、G12 收合列與 G10、G11 的間距（代理 B）；投影規則一律寫在上方 V3-9b C 區段（tests/present-mode.test.tsx） ── */
+/* D-V3-35＝A：去年同期不可用的理由（preset-reason-visible-yoy）保持掛載但 hidden，使用者本次工作階段按了停用的「去年同期」才顯示；
+   橫幅只剩這句隱藏的理由時整塊 hidden（不佔高度，期間列下的內容上移 24px）。.needs-attention 宣告了 display:grid，
+   與 .data-status-popover[hidden] 等既有規則同一寫法明寫 display:none，不依賴 preflight 的 [hidden]。≤ 767 照 v3 一律不顯示（上方手機規則不變）。 */
+.needs-attention[hidden] { display: none; }
+/* G12 收合列（V4-3b 已知事項）：G10（.share-section）、G11（.heat-section）是 .panel.chart-section，.chart-section 把 .panel 的下外距歸零（V3-4b B2 錨點），
+   G10 與 G11 黏在一起、G11 的下框線貼著 G12「五項比率走勢」收合列。照 H5 設計稿補回與相鄰 .panel 相同的段距（24；≤ 640px 時 18，同 V4-7a C 的 coverage-section），
+   摘要列維持靠左（.chart-more 不變，與總覽「進階」列一致）。 */
+.chart-section.share-section, .chart-section.heat-section { margin-bottom: 24px; }
+@media (max-width: 640px) { .chart-section.share-section, .chart-section.heat-section { margin-bottom: 18px; } }
 /* ── V4-8a B 錨點結束 ── */

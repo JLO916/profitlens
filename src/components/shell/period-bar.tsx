@@ -66,9 +66,11 @@ export type PeriodBarProps = {
   scope: AppliedPeriodScope;
   /** 套用中（status=loading）：期間列保持掛載，避免焦點掉到 body 與版面跳動。 */
   busy?: boolean;
+  /** V4-8a（D-V3-35＝A）：按了不可用（aria-disabled）的快捷：不套用、手機面板不關（同 v3），只通知 dashboard（去年同期的理由改成按了才顯示）。 */
+  onUnavailablePreset?: (preset: PeriodPreset) => void;
 };
 
-export function PeriodBar({ channel, presets, isPressed, onPreset, comparisonMode, onComparisonMode, dates, onDates, onSubmit, applyRef, scope, busy = false }: PeriodBarProps) {
+export function PeriodBar({ channel, presets, isPressed, onPreset, comparisonMode, onComparisonMode, dates, onDates, onSubmit, applyRef, scope, busy = false, onUnavailablePreset }: PeriodBarProps) {
   const [customOpen, setCustomOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const customRef = useRef<HTMLDivElement>(null);
@@ -98,7 +100,7 @@ export function PeriodBar({ channel, presets, isPressed, onPreset, comparisonMod
 
   function closeSheet() { setSheetOpen(false); focusIfShown(toggleRef.current); }
   function choose(preset: PeriodPreset) {
-    if (preset.status !== "ready") return;
+    if (preset.status !== "ready") { onUnavailablePreset?.(preset); return; }
     onPreset(preset);
     if (sheetOpen) closeSheet();
   }
@@ -148,14 +150,17 @@ export type NeedsAttentionProps = {
   onViewIssues?: () => void;
   /** 去年同期不可用的理由（12px 文字，保留 preset-reason-visible-yoy）。 */
   yoyReason?: string | null;
+  /** V4-8a（D-V3-35＝A）：使用者在本次工作階段按了停用的「去年同期」才為 true；false 時理由保持掛載但 hidden（≤ 767 照 v3 一律不顯示，見 globals.css）。 */
+  yoyHintVisible?: boolean;
 };
 
-/** C22 需要處理橫幅：期間列下方的固定位置；沒有內容時不渲染（不預留高度）。 */
-export function NeedsAttention({ filterError, partialIssues = null, onViewIssues, yoyReason = null }: NeedsAttentionProps) {
+/** C22 需要處理橫幅：期間列下方的固定位置；沒有內容時不渲染（不預留高度）。V4-8a：只剩隱藏的去年同期理由時整塊 hidden（保持掛載，不佔高度）。 */
+export function NeedsAttention({ filterError, partialIssues = null, onViewIssues, yoyReason = null, yoyHintVisible = false }: NeedsAttentionProps) {
   if (!filterError && partialIssues === null && !yoyReason) return null;
-  return <div className="needs-attention" data-testid="needs-attention" role="group" aria-label={labels.shell.banner.regionAria}>
+  const yoyShown = !!yoyReason && yoyHintVisible;
+  return <div className="needs-attention" data-testid="needs-attention" role="group" aria-label={labels.shell.banner.regionAria} hidden={(!filterError && partialIssues === null && !yoyShown) || undefined}>
     {filterError && <p role="alert" className="ui-banner period-banner" data-tone="unfavorable" data-testid="banner-filter-error">{filterError}</p>}
     {partialIssues !== null && <div className="ui-banner period-banner" data-tone="warning" data-testid="banner-partial"><span>{labels.shell.banner.partial}</span><button type="button" className="ui-btn ui-btn-text" onClick={onViewIssues}>{fill(labels.shell.periodBar.viewIssues, { n: partialIssues })}</button></div>}
-    {yoyReason && <p className="period-banner-note" role="status" data-testid="preset-reason-visible-yoy">{fill(labels.shell.banner.yoyUnavailable, { reason: yoyReason })}</p>}
+    {yoyReason && <p className="period-banner-note" role="status" data-testid="preset-reason-visible-yoy" hidden={!yoyHintVisible || undefined}>{fill(labels.shell.banner.yoyUnavailable, { reason: yoyReason })}</p>}
   </div>;
 }

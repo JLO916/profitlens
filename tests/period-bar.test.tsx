@@ -112,6 +112,35 @@ describe("D-V3-10＝A：快捷單擊就套用", () => {
     expect(body).toContain("void applyFilters(filters)");
     expect(body).not.toContain("applyRef.current?.focus()");
   });
+
+  it("V4-8a（D-V3-35＝A）：停用的快捷保留 aria-disabled、aria-describedby、title；按下時不套用，只呼叫 onUnavailablePreset", () => {
+    const yoy = presetsFor(demoScope).find(preset => preset.id === "yoy")!;
+    expect(yoy.status).toBe("unavailable");
+    const html = render({ onUnavailablePreset: noop });
+    expect(html).toBe(render());
+    const button = html.slice(html.lastIndexOf("<button", html.indexOf(`>${labels.shell.periods.presets.yoy}</button>`)), html.indexOf(`>${labels.shell.periods.presets.yoy}</button>`) + 1);
+    expect(button).toContain('aria-disabled="true" aria-describedby="preset-reason-yoy" title="');
+    expect(button).toContain('aria-pressed="false"');
+    const source = readFileSync(resolve("src/components/shell/period-bar.tsx"), "utf8");
+    const choose = source.slice(source.indexOf("function choose("), source.indexOf("function submit("));
+    expect(choose).toContain('if (preset.status !== "ready") { onUnavailablePreset?.(preset); return; }');
+    expect(choose.indexOf("onUnavailablePreset?.(preset)")).toBeLessThan(choose.indexOf("onPreset(preset)"));
+  });
+
+  it("V4-8a（D-V3-35＝A）：dashboard 只在按了停用的「去年同期」時顯示理由；選其他快捷、送出自訂日期、載入、匯入、還原、清空都收起；還原的 last_preset 不算按過", () => {
+    const source = readFileSync(resolve("src/components/dashboard.tsx"), "utf8");
+    const body = (from: string, to: string) => source.slice(source.indexOf(from), source.indexOf(to));
+    expect(source).toContain('function requestYoyHint(preset: PeriodPreset) { if (preset.id === "yoy") setYoyHintRequested(true); }');
+    expect(source.match(/setYoyHintRequested\(true\)/g)).toHaveLength(1);
+    expect(source).toMatch(/<PeriodBar[\s\S]*?onPreset=\{choosePreset\} onUnavailablePreset=\{requestYoyHint\}/);
+    expect(source).toMatch(/\{visible && <NeedsAttention [^\n]*yoyHintVisible=\{yoyHintRequested\} \/>\}/);
+    for (const [from, to] of [["function choosePreset", "function submitDates"], ["function submitDates", "function clear()"], ["async function performLoad", "function startImport"], ["async function performCommitImport", "async function applyFilters"], ["function performRestore", "function draftFromDiagnostic"], ["function performClear", "function restore("]]) {
+      expect(body(from, to), from).toContain("setYoyHintRequested(false)");
+    }
+    const restore = body("function performRestore", "function draftFromDiagnostic");
+    expect(restore).toContain("setLastPreset(workspace.ui_prefs.last_preset)");
+    expect(restore).not.toContain("setYoyHintRequested(true");
+  });
 });
 
 describe("需要處理橫幅（C22）", () => {
@@ -133,10 +162,36 @@ describe("需要處理橫幅（C22）", () => {
     expect(count(html, "<button")).toBe(1);
   });
 
-  it("去年同期不可用：12px 理由，保留 preset-reason-visible-yoy", () => {
-    const reason = periodPresets(demo, { previous: demoScope.previous, current: demoScope.current, comparison_mode: "same_days" }).flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0];
+  const demoYoyReason = () => periodPresets(demo, { previous: demoScope.previous, current: demoScope.current, comparison_mode: "same_days" }).flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0];
+  const yoyOpen = (shown: boolean) => `<p class="period-banner-note" role="status" data-testid="preset-reason-visible-yoy"${shown ? "" : ' hidden=""'}>`;
+  const bannerOpen = (shown: boolean) => `<div class="needs-attention" data-testid="needs-attention" role="group" aria-label="${labels.shell.banner.regionAria}"${shown ? "" : ' hidden=""'}>`;
+
+  it("V4-8a（D-V3-35＝A）去年同期不可用、沒按過「去年同期」：12px 理由保持掛載（preset-reason-visible-yoy）但 hidden，橫幅整塊 hidden", () => {
+    const reason = demoYoyReason();
     expect(reason).toBeTruthy();
-    expect(banner({ yoyReason: reason })).toContain(`<p class="period-banner-note" role="status" data-testid="preset-reason-visible-yoy">${fill(labels.shell.banner.yoyUnavailable, { reason: reason! })}</p>`);
+    const text = fill(labels.shell.banner.yoyUnavailable, { reason: reason! });
+    expect(banner({ yoyReason: reason })).toBe(`${bannerOpen(false)}${yoyOpen(false)}${text}</p></div>`);
+    expect(banner({ yoyReason: reason, yoyHintVisible: false })).toBe(`${bannerOpen(false)}${yoyOpen(false)}${text}</p></div>`);
+  });
+
+  it("V4-8a（D-V3-35＝A）按過停用的「去年同期」（yoyHintVisible）：理由與橫幅都沒有 hidden，文字不變", () => {
+    const reason = demoYoyReason()!;
+    expect(banner({ yoyReason: reason, yoyHintVisible: true })).toBe(`${bannerOpen(true)}${yoyOpen(true)}${fill(labels.shell.banner.yoyUnavailable, { reason })}</p></div>`);
+    // 去年同期可用（沒有理由）時 yoyHintVisible 不影響：沒有內容就不渲染。
+    expect(banner({ yoyReason: null, yoyHintVisible: true })).toBe("");
+  });
+
+  it("V4-8a：有篩選錯誤或部分資料時橫幅照常顯示，只有去年同期理由跟著 yoyHintVisible", () => {
+    const reason = demoYoyReason()!;
+    for (const extra of [{ filterError: labels.shell.state.errors.periodNotApplied }, { partialIssues: 2 }]) {
+      const name = Object.keys(extra)[0];
+      const hidden = banner({ ...extra, yoyReason: reason });
+      expect(hidden.startsWith(bannerOpen(true)), name).toBe(true);
+      expect(hidden, name).toContain(yoyOpen(false));
+      const shown = banner({ ...extra, yoyReason: reason, yoyHintVisible: true });
+      expect(shown.startsWith(bannerOpen(true)), name).toBe(true);
+      expect(shown, name).toContain(yoyOpen(true));
+    }
   });
 
   it("多種狀態同時出現時依序：篩選錯誤、部分資料、去年同期", () => {

@@ -4,7 +4,7 @@ import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { formatAmountL1, formatCount, formatPerUnit, formatRateL1 } from "../../src/application/presentation";
 import { openWizard, setWizardFiles, nextFromFiles, confirmMappingIfShown, chooseBasis, confirmAndCheck, commitWizard } from "./import-wizard-helpers";
-import { choosePreset, clickReplacing, closeDownloads, closeStorage, dismissSavePrompt, isMobile, navigateTo, openDownloads, openStorage, openValidation, periodSummary, periodSummaryText, presetButton } from "./replacement-helpers";
+import { choosePreset, clickReplacing, closeDownloads, closePeriodSheet, closeStorage, dismissSavePrompt, isMobile, navigateTo, openDownloads, openPeriodSheet, openStorage, openValidation, periodSummary, periodSummaryText, presetButton } from "./replacement-helpers";
 import { expectIssueRow, issueCells, issueColumns, issueTable, showReasonCodes, versionInfo } from "./data-page-helpers-v3";
 import { pointHits, pointStarts, trendLines, trendTakeaways, yoyCurves, yoyLegend, yoyNote, yoyTooShortNote } from "./trend-helpers-v39";
 
@@ -89,8 +89,20 @@ test("去年同期快捷：本月 vs 上月套用後，上期各減一年；超�
   const yoy = presetButton(page, "yoy");
   await expect(yoy).toHaveAttribute("aria-disabled", "true");
   await expect(page.locator("#preset-reason-yoy")).toContainText("2025-06-01");
-  // 理由也要看得見（不只 title／sr-only）。
-  await expect(page.getByTestId("preset-reason-visible-yoy")).toContainText("2025-06-01");
+  // V4-8a（D-V3-35＝A）：期間列下的理由保持掛載但隱藏；使用者按了停用的「去年同期」才看得到（≥ 768），不套用（期間摘要與 aria-pressed 不變）。
+  // ≤ 767 照 v3 一律不顯示（理由在按鈕的 aria-describedby 與 title）。按鈕是 aria-disabled，Playwright 視為停用，所以用 force 點。
+  const yoyHint = page.getByTestId("preset-reason-visible-yoy");
+  await expect(yoyHint).toHaveCount(1);
+  await expect(yoyHint).toBeHidden();
+  const summaryBefore = (await periodSummary(page).textContent()) ?? "";
+  await openPeriodSheet(page);
+  await yoy.click({ force: true });
+  await expect(yoy).toHaveAttribute("aria-pressed", "false");
+  if (isMobile(page)) await expect(yoyHint).toBeHidden();
+  else await expect(yoyHint).toBeVisible();
+  await expect(yoyHint).toContainText("2025-06-01");
+  await closePeriodSheet(page);
+  await expect(periodSummary(page)).toHaveText(summaryBefore);
   // V3-9b F8：趨勢圖同樣沒有去年同期線——圖例第三項標「無資料」、圖下方寫同一個原因、只有 4 條線、沒有去年同期的點。
   await expect(yoyLegend(page).locator("small")).toHaveText(labels.overview.chartFrame.noData);
   await expect(yoyNote(page)).toHaveText(yoyTooShortNote("2025-06-01"));

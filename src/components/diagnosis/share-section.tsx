@@ -6,7 +6,7 @@ import { track } from "@/application/analytics";
 import { CHANNEL_FEE_FIELDS, CHANNEL_STRUCTURE_MAX, CHANNEL_STRUCTURE_SM_MAX, CHANNEL_STRUCTURE_VERSION, channelStructure, type ChannelStructure, type ChannelStructureRow } from "@/application/chart-structure";
 import { chartColors } from "@/application/chart-theme";
 import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
-import { formatPeriodL1, metricDefinitions } from "@/application/presentation";
+import { deltaTone, formatPeriodL1, metricDefinitions } from "@/application/presentation";
 import { profitWaterfall } from "@/application/waterfall";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import type { Metric, MetricName } from "@/domain/types";
@@ -170,13 +170,17 @@ function metricsOf(snapshot: WorkspaceSnapshot, channel: string | null) {
   const { current } = snapshot.report;
   return channel === null ? current.metrics : Object.hasOwn(current.channels, channel) ? current.channels[channel].metrics : null;
 }
-/** 資料表格的值（純函式）：金額 L2、每 100 元用「剩／虧 {n} 元」；空值依原因碼寫資料待補或不適用。 */
+/**
+ * 資料表格的值（純函式）：金額 L2、每 100 元用「剩／虧 {n} 元」；空值依原因碼寫資料待補或不適用。
+ * V4-8a（D-V4-45＝B）：只有扣廣告後貢獻與每 100 元淨營收兩欄在不利時帶 C33 的 unfavorable（D-V3-7 只有不利上色）：
+ * 扣廣告後貢獻用 deltaTone(…, "L2")（同 G4 緊湊表）；每 100 元用列右端「虧 n 元」同一個判斷 isLoss（同 deltaTone("contribution_margin", …, "L2") 的一位小數 HALF_UP，但從精確值取位，紅字一定寫「虧」）。
+ */
 export function shareTableCell(snapshot: WorkspaceSnapshot, row: ShareRowModel, column: ChartDataColumn<ShareColumn>): ChartDataCell {
   const spec = column.data;
   if (spec.kind === "fees") return { value: row.structure.fees.value, reasonCodes: row.structure.fees.reason_codes };
-  if (spec.kind === "perHundred") return { value: sharePerHundredText(row.perHundred), reasonCodes: metricsOf(snapshot, row.channel)?.contribution_margin.reason_codes ?? MISSING.reason_codes };
+  if (spec.kind === "perHundred") return { value: sharePerHundredText(row.perHundred), reasonCodes: metricsOf(snapshot, row.channel)?.contribution_margin.reason_codes ?? MISSING.reason_codes, unfavorable: isLoss(row.perHundred) };
   const metric = metricsOf(snapshot, row.channel)?.[spec.name] ?? MISSING;
-  return { value: metric.value, reasonCodes: metric.reason_codes };
+  return { value: metric.value, reasonCodes: metric.reason_codes, unfavorable: spec.name === "contribution_after_marketing" && deltaTone(spec.name, metric.value, "L2") === "unfavorable" };
 }
 /** 資料表格的抽屜（與段的點擊同一組 builder）。 */
 export function shareTableEvidence(snapshot: WorkspaceSnapshot, row: ShareRowModel, column: ChartDataColumn<ShareColumn>): EvidenceSelection {

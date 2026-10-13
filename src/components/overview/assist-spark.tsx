@@ -2,7 +2,7 @@
 
 import { ASSIST_KPI_VERSION, type AssistKpi, type AssistUnit } from "@/application/assist-kpi";
 import { ASSIST_WEEKS_VERSION, type AssistWeek, type AssistWeeks, type AssistWeekSeries, type AssistWeekValue } from "@/application/chart-assist-weeks";
-import { formatCount, formatMultiple, formatPerUnit, formatPeriodL1, formatRateL1 } from "@/application/presentation";
+import { deltaTone, favorableDirectionOf, formatCount, formatMultiple, formatPerUnit, formatPeriodL1, formatRateL1 } from "@/application/presentation";
 import type { Period } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import { ChartDataDetails, type ChartDataColumn, type ChartDataUnit } from "../charts/chart-data-table";
@@ -74,6 +74,13 @@ export function AssistSparkCell({ data, kpi }: { data: AssistWeeks; kpi: AssistK
 }
 
 const CELL_UNIT: Record<AssistUnit, ChartDataUnit> = { count: "count", money_per_unit: "per_unit", percent: "rate", multiple: "multiple" };
+/**
+ * V4-8a（D-V4-45＝B）：格是水準值不是差額，只有「有利方向是上升」的指標（件數、件均、MER、毛利率）落到不利的一側（顯示為負）時上不利色；
+ * 成本類比率（廣告佔淨營收、退款金額比、物流費佔比）的正值不上色（照字面用 deltaTone(水準值) 會把每一週都畫紅）。D-V3-7 只有不利上色。
+ */
+export function assistWeekUnfavorable(id: AssistKpi["id"], value: string | null): boolean {
+  return favorableDirectionOf(id) === "up" && deltaTone(id, value, "L2") === "unfavorable";
+}
 type Row = { kpi: AssistKpi; series: AssistWeekSeries };
 
 /**
@@ -100,7 +107,7 @@ export function AssistWeeksDetails({ data, kpis, channels, anchor, onEvidence }:
     rowKey={row => row.kpi.id}
     rowHeader={row => ({ label: rowLabel(row.kpi), title: row.kpi.plain })}
     columns={columns}
-    valueOf={(row, column) => { const cell = value(row, column); const status = weekStatus(cell); return { value: cell.value, reasonCodes: cell.reason_codes, unit: CELL_UNIT[row.kpi.unit], emptyText: status === "not_applicable" ? labels.assist.notApplicable : labels.shell.status.missing }; }}
+    valueOf={(row, column) => { const cell = value(row, column); const status = weekStatus(cell); return { value: cell.value, reasonCodes: cell.reason_codes, unit: CELL_UNIT[row.kpi.unit], emptyText: status === "not_applicable" ? labels.assist.notApplicable : labels.shell.status.missing, unfavorable: assistWeekUnfavorable(row.kpi.id, cell.value) }; }}
     evidenceOf={(row, column) => assistWeekEvidence(row.kpi, value(row, column), data.weeks[column.data], channels)}
     onEvidence={onEvidence}
     cellAria={(row, column) => { const item = assistWeekItem(row.kpi, value(row, column), data.weeks[column.data]); return fill(ui.cellAria, { metric: item.label, period: data.weeks[column.data].label, value: item.display }); }}

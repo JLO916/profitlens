@@ -278,7 +278,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       const snapshot = await createSnapshot(validation.dataset, {}, await hashInput(input));
       if (ticket !== requestId.current) return;
       // V4-7c：匯入時間跟著 active 一起換；載入失敗（「返回」回到上一份資料）時保留上一份資料的匯入時間。
-      activate({ input, dataset: validation.dataset, snapshot, id, revision: ++revision.current }); setImportedAt(null); setIssues(validation.issues);
+      activate({ input, dataset: validation.dataset, snapshot, id, revision: ++revision.current }); setImportedAt(null); setIssues(validation.issues); setYoyHintRequested(false);
       setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
       setStatus(validation.classification === "partial" ? "partial" : "ready"); setPanel("overview");
@@ -344,7 +344,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       activate({ input: prepared.input, dataset, snapshot, id: `import-${snapshot.dataset_hash}`, revision: ++revision.current, mappings: prepared.columnMappings, filenames: { ...prepared.originalNames, ...(manifestName ? { "manifest.json": manifestName } : {}) }, conversion: prepared.conversion, raw_values: prepared.raw_values });
       setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
       setDates({ previousStart: snapshot.report.previous.period.start, previousEnd: snapshot.report.previous.period.end, currentStart: snapshot.report.current.period.start, currentEnd: snapshot.report.current.period.end });
-      setIssues(prepared.validation.issues); setImportedAt(importedAtMinute(new Date()));
+      setIssues(prepared.validation.issues); setImportedAt(importedAtMinute(new Date())); setYoyHintRequested(false);
       setStatus(prepared.validation.classification === "partial" ? "partial" : "ready");
       setShowImport(false); setPanel("overview");
       track("import_committed");
@@ -380,16 +380,20 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const [lastPreset, setLastPreset] = useState<string | undefined>(undefined);
   // R5 行動頁的看板／清單檢視也記在 ui_prefs.view（只記錄，還原時讀回）。
   const [actionsView, setActionsView] = useState<"board" | "list" | undefined>(undefined);
+  // V4-8a（D-V3-35＝A）：去年同期不可用時，期間列下的理由（preset-reason-visible-yoy）只在使用者本次工作階段按了停用的「去年同期」才顯示；
+  // 選其他快捷、送出自訂日期、換資料（載入、匯入、還原、清空）就收起。還原的 ui_prefs.last_preset 不算按過（不讀它）。
+  const [yoyHintRequested, setYoyHintRequested] = useState(false);
+  function requestYoyHint(preset: PeriodPreset) { if (preset.id === "yoy") setYoyHintRequested(true); }
   function choosePreset(preset: PeriodPreset) {
     const filters = active ? presetFilters(preset, active.snapshot.report.scope.channels) : null;
     if (preset.status !== "ready" || !filters) return;
-    setLastPreset(preset.id);
+    setLastPreset(preset.id); setYoyHintRequested(false);
     setComparisonMode(preset.comparison_mode);
     setDates({ previousStart: preset.previous.start, previousEnd: preset.previous.end, currentStart: preset.current.start, currentEnd: preset.current.end });
     void applyFilters(filters);
   }
   function submitDates(event: FormEvent) {
-    event.preventDefault();
+    event.preventDefault(); setYoyHintRequested(false);
     if (active) void applyFilters({ comparison_mode: comparisonMode, channels: active.snapshot.report.scope.channels, previous_period: { start: dates.previousStart, end: dates.previousEnd }, current_period: { start: dates.currentStart, end: dates.currentEnd } });
   }
   function clear() { requestReplacement("clear", performClear); }
@@ -397,7 +401,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     storeScenarios(emptyScenarioWorkspace()); storeReview(null); storeActions(emptyActionWorkspace()); storeMeetingHistory([]); setSavedVersion(versionRef.current);
     // 清空工作區也重設本機保存同意（與 R2 以前儲存面板自己重掛載的行為一致）；對照記憶的 IndexedDB 寫入隨之停止。
     setStorageResetEpoch(value => value + 1); setLocalConsent(false);
-    requestId.current++; controller.current?.abort(); setActive(null); setIssues([]); setImportedAt(null); setEvidence(null);
+    requestId.current++; controller.current?.abort(); setActive(null); setIssues([]); setImportedAt(null); setYoyHintRequested(false); setEvidence(null);
     setStatus("empty"); setError(""); setFilterError(""); setShowImport(false);
   }
   function restore(workspace: RestoredWorkspace, accepted?: () => void) {
@@ -407,7 +411,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     requestId.current++; controller.current?.abort(); setEvidence(null);
     revision.current = Math.max(revision.current, workspace.revision);
     setActive({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, id: workspace.id, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings, conversion: workspace.preprocessing?.conversion ?? null, raw_values: workspace.preprocessing?.raw_values, targets: workspace.targets, events: workspace.events });
-    setTargetIssues([]); setEventIssues([]); setLastPreset(workspace.ui_prefs.last_preset); setActionsView(workspace.ui_prefs.view);
+    setTargetIssues([]); setEventIssues([]); setLastPreset(workspace.ui_prefs.last_preset); setActionsView(workspace.ui_prefs.view); setYoyHintRequested(false);
     storeScenarios(workspace.scenario_workspace); storeReview(workspace.review_session ?? syncReviewPins(createReviewSession({ input: workspace.input, dataset: workspace.dataset, snapshot: workspace.snapshot, revision: workspace.revision, filenames: workspace.filenames, mappings: workspace.mappings }, workspace.scenario_workspace.active_epoch), workspace.action_workspace)); storeActions(workspace.action_workspace); storeMeetingHistory(workspace.meeting_history); setIssues(workspace.issues);
     setComparisonMode(workspace.snapshot.report.scope.comparison_mode);
     setDates({ previousStart: workspace.snapshot.report.previous.period.start, previousEnd: workspace.snapshot.report.previous.period.end, currentStart: workspace.snapshot.report.current.period.start, currentEnd: workspace.snapshot.report.current.period.end });
@@ -592,11 +596,11 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
         {active && (visible || status === "loading") && <div className="period-wrap" hidden={importing || undefined}>
           <PeriodBar
             channel={{ value: active.snapshot.report.scope.channels.length > 1 ? "" : active.snapshot.report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, alias) })), onChange: value => void applyFilters({ ...active.snapshot.report.scope, channels: value === "" ? active.dataset.manifest.channels : [value] }) }}
-            presets={presets} isPressed={presetMatches} onPreset={choosePreset}
+            presets={presets} isPressed={presetMatches} onPreset={choosePreset} onUnavailablePreset={requestYoyHint}
             comparisonMode={comparisonMode} onComparisonMode={setComparisonMode} dates={dates} onDates={setDates} onSubmit={submitDates} applyRef={applyRef}
             scope={{ previous: active.snapshot.report.previous.period, current: active.snapshot.report.current.period, previousDays: active.snapshot.report.comparison.previous_days, currentDays: active.snapshot.report.comparison.current_days, comparisonMode: active.snapshot.report.comparison.mode, channelsText: channelsLabel(active.snapshot.report.scope.channels, alias), dataAsOf: active.snapshot.data_as_of }}
             busy={status === "loading"} />
-          {visible && <NeedsAttention filterError={filterError} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={() => setPanel("data")} yoyReason={presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null} />}
+          {visible && <NeedsAttention filterError={filterError} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={() => setPanel("data")} yoyReason={presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null} yoyHintVisible={yoyHintRequested} />}
         </div>}
         {/* V3-8 C（§7.10、C10 頁面型）：首次進入、載入中、錯誤共用同一個容器（shell/page-states.tsx，高度＝總覽首屏）；空狀態的「匯入資料」與頁首、資料狀態 popover 走同一個 startImport。 */}
         {status === "empty" && !showImport && panel !== "validation" && <FirstRunState onLoadDemo={() => void load("demo")} onImport={startImport} showActions={panel !== "data"} />}

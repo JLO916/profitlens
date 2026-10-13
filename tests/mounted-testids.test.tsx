@@ -1526,6 +1526,62 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V4-8a 代理 A（投影：白名單、token、互切按鈕、aria-pressed）M1 測試在此之後
 
     // ── V4-8a 代理 B（期間列去年同期提示、資料表不利色、G12 間距）M1 測試在此之後
+    it("V4-8a B 期間列（D-V3-35＝A）：去年同期不可用的每個狀態，preset-reason-visible-yoy 保持掛載但 hidden（SSR＝沒按過「去年同期」）；needs-attention 只剩它時整塊 hidden，有篩選錯誤或部分資料時照常顯示；文字＝shell.banner.yoyUnavailable；按過時（yoyHintVisible）兩者都不 hidden", async () => {
+      const { NeedsAttention } = await import("@/components/shell/period-bar");
+      const hiddenAttr = /\shidden=""/;
+      const seen = { yoyOnly: 0, withOthers: 0 };
+      for (const { name, html, state } of loaded()) {
+        const report = state!.active;
+        const yoy = periodPresets(report.dataset.manifest, { previous: report.snapshot.report.previous.period, current: report.snapshot.report.current.period, comparison_mode: report.snapshot.report.scope.comparison_mode }).find(preset => preset.id === "yoy");
+        if (yoy?.status !== "unavailable") { expect(html, `${name}：去年同期可用時不掛理由`).not.toContain('data-testid="preset-reason-visible-yoy"'); continue; }
+        const note = element(html, 'data-testid="preset-reason-visible-yoy"')!;
+        expect(openTag(note, "<p"), name).toBe('<p class="period-banner-note" role="status" data-testid="preset-reason-visible-yoy" hidden="">');
+        expect(note.replace(/<[^>]*>/g, ""), name).toBe(escapeAttr(fill(labels.shell.banner.yoyUnavailable, { reason: yoy.reason })));
+        const others = !!state!.filterError || state!.status === "partial";
+        seen[others ? "withOthers" : "yoyOnly"]++;
+        expect(hiddenAttr.test(openTag(html, 'data-testid="needs-attention"')!), `${name}：橫幅只剩隱藏的理由時 hidden`).toBe(!others);
+        for (const id of ["banner-filter-error", "banner-partial"]) if (html.includes(`data-testid="${id}"`)) expect(openTag(html, `data-testid="${id}"`), `${name} ${id}`).not.toMatch(hiddenAttr);
+        // 按過停用的「去年同期」：與 shellPage 相同的 props 只多 yoyHintVisible，理由與橫幅都不 hidden（≤ 767 仍由 CSS 隱藏，照 v3）。
+        const shown = renderToStaticMarkup(createElement(NeedsAttention, { filterError: state!.filterError ?? "", partialIssues: state!.status === "partial" ? report.dataset.issues.length : null, onViewIssues: noop, yoyReason: yoy.reason, yoyHintVisible: true }));
+        expect(openTag(shown, 'data-testid="needs-attention"'), name).not.toMatch(hiddenAttr);
+        expect(openTag(shown, 'data-testid="preset-reason-visible-yoy"'), name).toBe('<p class="period-banner-note" role="status" data-testid="preset-reason-visible-yoy">');
+      }
+      expect(seen.yoyOnly, "只剩去年同期理由（橫幅整塊 hidden）的狀態").toBeGreaterThan(0);
+      expect(seen.withOthers, "篩選錯誤或部分資料＋去年同期理由（橫幅顯示、理由 hidden）的狀態").toBeGreaterThan(0);
+    });
+
+    it("V4-8a B 資料表不利色（D-V4-45＝B）：G10、G7b、G7a 的資料表收在沒有 open 的 <details> 內但掛載；示範資料 G10 只有 MARKETPLACE 兩格、G7b 只有 MARKETPLACE 六週是 number-link negative，總覽 G7a 0 格", async () => {
+      const negativeAria = (html: string, testid: string) => [...element(html, `data-testid="${testid}"`)!.matchAll(/class="number-link negative" aria-label="([^"]*)"/g)].map(match => match[1]);
+      const closedDetailsAround = (html: string, testid: string) => { const at = html.indexOf(`data-testid="${testid}"`); const open = html.lastIndexOf('<details class="data-alternative"', at); return open >= 0 && !openTag(html.slice(open), "<details")!.includes(' open=""') && element(html.slice(open), "<details")!.includes(`data-testid="${testid}"`); };
+      const diagnosis = states.find(state => state.name === "diagnosis")!.html;
+      for (const id of ["chart-diagnosis-share-table", "chart-diagnosis-channels-table"]) expect(closedDetailsAround(diagnosis, id), id).toBe(true);
+      const share = negativeAria(diagnosis, "chart-diagnosis-share-table"), weeks = negativeAria(diagnosis, "chart-diagnosis-channels-table");
+      expect(share, "G10 示範資料：扣廣告後貢獻與每 100 元各一格").toHaveLength(2);
+      expect(weeks, "G7b 示範資料：MARKETPLACE 六週").toHaveLength(6);
+      for (const aria of [...share, ...weeks]) expect(aria).toContain("MARKETPLACE");
+      const overview = states.find(state => state.name === "overview")!.html;
+      expect(closedDetailsAround(overview, "chart-overview-assist-table")).toBe(true);
+      expect(negativeAria(overview, "chart-overview-assist-table"), "G7a 示範資料 0 格").toEqual([]);
+      // 其他健檢狀態：上色的格都在 number-link 上（G10、G7b 每格都可開抽屜），沒有退回 td.negative。
+      for (const { name, html } of diagnosisStates()) for (const id of ["chart-diagnosis-share-table", "chart-diagnosis-channels-table"]) { const table = element(html, `data-testid="${id}"`); if (table) expect(table, `${name} ${id}`).not.toMatch(/<td class="[^"]*\bnegative\b/); }
+    });
+
+    it("V4-8a B G12 間距：G10（.share-section）與 G11（.heat-section）是 .panel.chart-section、依序相鄰，G12 收合列緊接在 G11 之後；globals.css 的 V4-8a B 錨點補回與 .panel 相同的下外距（24；≤ 640 為 18），needs-attention[hidden] 不佔高度", () => {
+      const css = readFileSync(resolve("src/app/globals.css"), "utf8");
+      const block = css.slice(css.indexOf("/* ── V4-8a B："), css.indexOf("/* ── V4-8a B 錨點結束 ── */"));
+      expect(block).toContain(".needs-attention[hidden] { display: none; }");
+      expect(block).toContain(".chart-section.share-section, .chart-section.heat-section { margin-bottom: 24px; }");
+      expect(block).toContain("@media (max-width: 640px) { .chart-section.share-section, .chart-section.heat-section { margin-bottom: 18px; } }");
+      expect(css).toMatch(/\n\.panel \{[^}]*margin-bottom: 24px;/);
+      expect(css).toMatch(/@media \(max-width: 640px\) \{[^\n]*\.panel \{[^}]*margin-bottom: 18px;/);
+      for (const { name, html } of diagnosisStates()) {
+        const share = element(html, 'data-testid="chart-diagnosis-share"')!, heat = element(html, 'data-testid="chart-diagnosis-heat"')!, rates = element(html, 'class="chart-more rates-more"')!;
+        expect(openTag(share, "<section"), name).toMatch(/^<section class="panel chart-section share-section"/);
+        expect(openTag(heat, "<section"), name).toMatch(/^<section class="panel chart-section heat-section"/);
+        expect(html.indexOf(share) + share.length, `${name}：G11 緊接 G10`).toBe(html.indexOf(heat));
+        expect(html.indexOf(heat) + heat.length, `${name}：G12 收合列緊接 G11`).toBe(html.indexOf(rates));
+      }
+    });
 
     // ── V4-9a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-9a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
