@@ -11,14 +11,15 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 // 硬斷言（V4-0a 起每批）：
 //   B2 首屏：1440 一句話頂 ≤ 192、KPI 帶底 ≤ 420、三件事首列底 ≤ 561；1280 KPI 帶底 ≤ 420；390 扣廣告後貢獻值頂 ≤ 295。
 //      1280 的一句話頂與三件事首列底 v3 沒有量過，V4-0a 只量不斷言；V4-1 起以 V4-0a 實測（192、583）為門檻斷言（06_BATCHES 護欄表 B2）。
+//      V4-8a（D-V3-35＝A：期間列下的去年同期理由改成按了才顯示，內容上移 24px）起改以 V4-8a 實測（168、559）為門檻（只能更早；≤ 192、≤ 420、≤ 561、≤ 295 這類絕對預算不動）。
 //   B3 七頁在 390 寬 document.scrollingElement.scrollWidth ≤ 390（頁面不橫向捲動；.chart-frame.waterfall 與 .table-scroll 內部捲動不影響這個值）。
 //   B5 First Load JS gzip ≤ 545,397 bytes（v3.0.0 的 519,426 × 1.05，D-V4-24）；首載 chunk 中 Treemap、Sankey、Funnel、PieChart、RadarChart 字串出現 0 次；
 //      V4-3c 起另驗首載 chunk 不含隨頁載入的面板與匯出程式（SPLIT_SENTINELS 皆為 0），首頁腳本清單寫進 first-load-modules.json。
 // V4-1 起硬斷言（06_BATCHES 護欄表 B1、B9；PRD §2.2）：
 //   B9 七頁（1440、1280、390）載入示範資料後的 DOM 節點數 ≤ V4-0a 基準＋1,500（B9_BASELINE，取自 verification/revamp-v4/V4-0a/metrics.json）。
-//   B1 依護欄表的時程：總覽第一張 .chart-frame 頂在 1440 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）；健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）、
+//   B1 依護欄表的時程：總覽第一張 .chart-frame 頂在 1440 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起；V4-8a 起不晚於 V4-8a 實測 831）；健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）、
 //      商品第一張 .chart-frame 頂 ≤ 900（V4-4 起）、試算 G15 頂 ≤ 方案比較表區塊頂（V4-0a）＋24（V4-5 起，剛載入與「維持現況」計算後各一）、資料來源 G20 頂 ≤ 900（V4-7a 起）由各批加進 B1_ASSERTED。
-//      V4-3a 起另斷言健檢首列底不晚於 V4-0a 實測（1440、1280 為 888，390 為 985；PRD §5.2）。
+//      V4-3a 起另斷言健檢首列底不晚於 V4-0a 實測（1440、1280 為 888，390 為 985；PRD §5.2）；V4-8a 起不晚於 V4-8a 實測（1440、1280 為 864，390 仍為 985）。
 // 只記錄：B1 其餘參考位置（健檢清單第一列頂、G10 區塊頂與 channel-compare 頂、試算方案比較表區塊頂、資料來源狀態列底，以及 1280、390 的總覽第一張 .chart-frame 頂）；
 //   B8 各頁主層否定句數；首頁 HTML 每個 chunk 的檔名與 gzip 大小。
 // 執行 desktop（1440×1000）、laptop（1280×900）、mobile（390×844）三個 project；tablet 略過。所有位置是文件座標（已捲回頂端），單位 CSS px，取到 0.1。
@@ -31,10 +32,12 @@ const KPI_CARDS = ".kpi-band [data-testid^='kpi-']";
 /**
  * PRD §2.2 B2 的門檻（CSS px）。1280 的一句話頂 192 與三件事首列底 583 是 V4-0a 實測（verification/revamp-v4/V4-0a/metrics.json 的 laptop.firstScreen），
  * V4-0a 只記錄（當時的 B2_LAPTOP_RECORDED），V4-1 起改成斷言「不晚於 V4-0a 實測」；metrics.json 的 b2.recordedOnly 因此是空物件。
+ * V4-8a（06_BATCHES V4-8a 驗收重點）：這兩項「不晚於 V4-0a 實測」的門檻改以 V4-8a 實測為新基準（verification/revamp-v4/V4-8a/metrics.json 的 laptop.firstScreen：
+ * 一句話頂 168、三件事首列底 559；D-V3-35 讓期間列下少一行、上移 24px）。1440 的 192、420、561，1280 的 KPI 帶底 420 與 390 的 295 是 PRD 絕對預算，不動。
  */
 const B2 = {
   desktop: { snapshotSentenceTop: 192, kpiCardsBottom: 420, topThreeFirstRowBottom: 561 },
-  laptop: { snapshotSentenceTop: 192, kpiCardsBottom: 420, topThreeFirstRowBottom: 583 },
+  laptop: { snapshotSentenceTop: 168, kpiCardsBottom: 420, topThreeFirstRowBottom: 559 },
   mobile: { contributionAfterMarketingValueTop: 295 },
 } as const;
 /**
@@ -56,13 +59,15 @@ const B9_ALLOWANCE = 1_500;
  * V4-5：試算 G15 頂 ≤ V4-0a 量到的方案比較表區塊頂＋24（1440；verification/revamp-v4/V4-0a/metrics.json 的 desktop.b1.scenarios）：
  *   示範資料剛載入（方案 1 是進頁草稿、G15 空狀態）時比 scenarioCompareTop 938，「維持現況」計算後（畫面基準 07 的狀態，G15 一根柱）時比 scenarioCompareTopAfterCalculate 1,114。
  * V4-7a：資料來源 G20（chart-data-coverage，狀態一行之下）頂 ≤ 900（1440）。
+ * V4-8a：「不晚於 V4-0a 實測」的三項改以 V4-8a 實測為新基準（只能更早；verification/revamp-v4/V4-8a/metrics.json 的 {project}.b1）：
+ *   總覽第一張 .chart-frame 頂 855 → 831、健檢首列底 1440 與 1280 888 → 864、390 維持 985（390 不受 D-V3-35 影響）。≤ 900 的絕對預算與試算的「V4-0a＋24」不動。
  */
 const B1_ASSERTED: { project: "desktop" | "laptop" | "mobile"; page: SevenPage; key: string; max: number; note: string }[] = [
-  { project: "desktop", page: "overview", key: "firstChartFrameTop", max: Math.min(900, 855), note: "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-0a 實測 855（V4-1 起）" },
+  { project: "desktop", page: "overview", key: "firstChartFrameTop", max: Math.min(900, 831), note: "總覽第一張 .chart-frame 頂 ≤ 900 且不晚於 V4-8a 實測 831（V4-1 起；V4-0a 實測 855，V4-8a 起改以本批實測為新基準）" },
   { project: "desktop", page: "diagnosis", key: "firstImpactBarTop", max: 900, note: "健檢第一個 G9 內嵌條頂 ≤ 900（V4-3a 起）" },
-  { project: "desktop", page: "diagnosis", key: "firstRowBottom", max: 888, note: "健檢首列底不晚於 V4-0a 實測 888（V4-3a 起；G9 條在列內、列高不變）" },
-  { project: "laptop", page: "diagnosis", key: "firstRowBottom", max: 888, note: "1280 健檢首列底不晚於 V4-0a 實測 888（V4-3a 起）" },
-  { project: "mobile", page: "diagnosis", key: "firstRowBottom", max: 985, note: "390 健檢首列底不晚於 V4-0a 實測 985（V4-3a 起；PRD §5.2「390 同」）" },
+  { project: "desktop", page: "diagnosis", key: "firstRowBottom", max: 864, note: "健檢首列底不晚於 V4-8a 實測 864（V4-3a 起；G9 條在列內、列高不變；V4-0a 實測 888，V4-8a 起改以本批實測為新基準）" },
+  { project: "laptop", page: "diagnosis", key: "firstRowBottom", max: 864, note: "1280 健檢首列底不晚於 V4-8a 實測 864（V4-3a 起；V4-0a 實測 888）" },
+  { project: "mobile", page: "diagnosis", key: "firstRowBottom", max: 985, note: "390 健檢首列底不晚於 V4-8a 實測 985（V4-3a 起；PRD §5.2「390 同」；與 V4-0a 實測相同）" },
   { project: "desktop", page: "products", key: "firstChartFrameTop", max: 900, note: "商品第一張 .chart-frame 頂 ≤ 900（V4-4 起；示範資料是 G13 的框）" },
   { project: "desktop", page: "scenarios", key: "g15Top", max: 938 + 24, note: "試算 G15 頂 ≤ V4-0a 方案比較表區塊頂 938＋24（V4-5 起；示範資料剛載入，G15 空狀態）" },
   { project: "desktop", page: "scenarios", key: "g15TopAfterCalculate", max: 1114 + 24, note: "試算 G15 頂 ≤ V4-0a「維持現況」計算後的方案比較表區塊頂 1,114＋24（V4-5 起；畫面基準 07 的狀態）" },

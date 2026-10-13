@@ -134,10 +134,18 @@
 | 鍵盤 | DOM 順序：標題列、`aside` 橋接表（12 個 number-link）、圖（0 個停留點）、四欄表 summary；與 v3 的停留點序列相同 |
 | 抽屜 | `bridgeEvidence(snapshot, target)`（`bridge-section.tsx:38-56`）：上期／本期＝該期 `contribution_after_marketing`；九項＝`title` 「{指標}拆解差額」、`name` 該欄位、`metric` 該項差額、`period` 兩期聯集、`sources` 兩期、`formula` 金額或成本差額公式、`components` [上期, 本期]；總差額＝`formula` 九項相減、`components` 九項。柱點擊經 `bridgeBarTarget`（`:61`），表列經 `bridgeRowTarget`（`:59`），同一個 builder |
 | 390 | `aside` 在 DOM 前，所以橋接表（含 G6 輔助條）先、瀑布後；瀑布在 `.chart-frame.lg.waterfall` 內水平捲動（最小寬 520），頁面不橫向捲動；瀑布仍是橋接主圖（X18、X39） |
-| 投影 | V4-8：`globals.css:2563` 白名單加 `.bridge-section`；只顯示瀑布（柱上標值是 L1），拆解區改單欄；`.bridge-table-wrap`（橋接表，L3，含 G6）與 `details.data-alternative` 隱藏但掛載；`--text-12`、`--text-13` 對應 14px（依 D-V4-8、D-V4-9） |
+| 投影 | V4-8（拆批後屬 V4-8a）：`globals.css:2563`（v3.0.0 的行號；V4-8a 合併後白名單在 `src/app/globals.css:2581`，V3-9b C 區段）白名單加 `.bridge-section`；只顯示瀑布（柱上標值是 L1），拆解區改單欄；`.bridge-table-wrap`（橋接表，L3，含 G6）與 `details.data-alternative` 隱藏但掛載；`--text-12`、`--text-13` 對應 14px（依 D-V4-8、D-V4-9） |
 | 匯出 | PDF：C31 三個版本都印，170mm、灰階、0.5pt 框線，老闆版高 ≤ 60mm 且維持 1 頁（`svg[data-print-chart="bridge"]`）；PPT：C32 原生瀑布（堆疊長條四系列：透明底段、起訖與小計、有利差額、不利差額；跨 0 的柱拆正負兩段；`valAxisMinVal`／`valAxisMaxVal` 依 `axisTicks` 含 0；輔助系列以 `exports.chartsV4.*` 命名為「圖形用，非金額」；有利、不利兩個系列存的是柱高（絕對值），系列名標明「絕對值，圖形用」，資料標籤用帶「−」的數字格式；數值由 `bars` 的起點、終點精確字串換算；spike 不成立改 `addShape`，依 D-V4-10；放在哪一張投影片依 D-V4-34（建議 A：新增第二張，既有第一張不動））；Excel「圖表資料」：柱名、起點、終點、差額（L3 數值格）；Markdown 一頁摘要（沒有版本之分，選哪一版都一樣）：九項差額表（項目、差額（元），數字欄 `---:`、U+2212，依 D-V4-12） |
 | 單元測試 | `tests/overview-charts-waterfall.test.tsx` 改為 ChartFrame 結構：`bridge-section` 內 `.chart-frame` 恰 1 個且帶 `waterfall`、`aside` 在固定高容器之前、`.unit-note` 文字＝`bridgeUnitNote`、`bridge-waterfall` 仍在、`bridge-balance-check` 仍在；`tests/chart-frame-v4.test.tsx`（aside、unitNote、frameClassName）；`formatAxisWan` 單元測試（整數萬、0 寫「0」、U+2212、步長非整萬保留 1 或 2 位，與 `waterfallTickLabels` 既有測試輸出相同） |
 | E2E 草案 | `const frame = chartFrame(page, "bridge-section"); await expect(frame.locator(".chart-frame")).toHaveCount(1); await expect(frame.locator(".chart-frame.waterfall")).not.toHaveAttribute("aria-hidden", "true"); await expect(frame.locator(".chart-frame.waterfall")).toHaveAttribute("role", "region"); await expect(frame.locator("svg.waterfall-svg")).toHaveAttribute("aria-hidden", "true");`（V4-1 依 06「V4-0a 量到、併入本批的修正」改寫：外框不帶 aria-hidden，改 role=region＋aria-label，內容溢出時 tabIndex=0；只有 svg aria-hidden）／1440：`bridge-table` 的 x ＞ `bridge-waterfall` 的 x；390：`bridge-table` 的 y ＜ `bridge-waterfall` 的 y，且 `expectNoPageScrollX(page)`；捲到 `bridge-waterfall` 後它可見且 bounding box 寬 > 0（瀑布仍是主圖）／Y 刻度文字沒有一個符合 `/\.0\s*萬/`／點 `bridge-waterfall` 第 2 根柱與點 `bridge-table` 第 2 列 number-link，`evidenceHeading` 都等於 `fill(labels.overview.page.bridgeRowTitle, { metric: metricDefinitions.gross_sales.label })` 開頭的同一句 |
+
+> **V4-8a 整合補記（代理 C，2026-10-13）**：
+> - 投影規則只寫在 V3-9b C 區段（`tests/present-mode.test.tsx` 解析這一段）。拆解區除了 `.bridge-table-wrap` 與 `details.data-alternative`，旁欄容器 `.frame-aside` 也隱藏。單欄是把 `.frame-grid.has-aside` 的欄與區一起換成只剩 `main`；只隱藏旁欄的話，≥ 1024 會留下空的 5fr 欄。標題、副標與 `.unit-note` 照 G2 前例保留。
+> - `--leading-12`、`--leading-13` 與字級成對，投影時對應 22px。
+> - `WaterfallSvg` 會量圖內文字的實際字級。量到的不是 12px 時（投影 14px），估寬、標值行高、圖頂最高基線、x 標籤基線與左、上、下邊界依比例換算：邊界 64／24／40 → 75／28／47，行高 13 → 15。12px 時（一般模式、SSR、列印）輸出與開工錨點 `03dc3a8` 逐字相同，由 `tests/fixtures/waterfall-svg-v4-8a.json` 鎖住。
+> - 驗收證據在 `verification/revamp-v4/V4-8a/present/`：
+>   - 1440、1280、768 × 總覽與會議頁的投影截圖。
+>   - `text-overlap.json`：G1、G2 的 svg 文字框兩兩不相交、不超出 svg。768 的圖寬 670px；同一行相鄰標值最小間距 G1 0.17px（−36.1 萬與 127.0 萬，基線不同、不重疊），G2 5.37px。
 
 ### G2 本期利潤結構瀑布（升級；P0；V4-1）
 

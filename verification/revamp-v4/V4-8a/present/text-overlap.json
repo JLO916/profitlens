@@ -1,0 +1,210 @@
+{
+  "batch": "V4-8a",
+  "generatedBy": "agent C scratch script (scratchpad/v48a/c/present-evidence.spec.ts; not part of the test suite)",
+  "server": "LOCAL production build (npm start --port 3100), fixtures/demo via 載入示範資料",
+  "method": "投影中（html[data-mode=present]）對 G1（bridge-waterfall）與 G2（profit-waterfall svg.waterfall-svg）內所有非空 <text> 取 getBoundingClientRect：兩兩相交（水平與垂直都 > 0.5px）記為 overlap；超出 svg 外框 0.5px 記為 clipped。",
+  "pass": true,
+  "results": [
+    {
+      "viewport": "1440x1000",
+      "overview": {
+        "g1": {
+          "svgWidth": 1182,
+          "svgHeight": 320,
+          "fontSizes": [
+            "14px"
+          ],
+          "textCount": 28,
+          "overlaps": [],
+          "clipped": [],
+          "minSameLineGapPx": {
+            "px": 31.53,
+            "pair": "200 萬（wf-axis）→ 186.9 萬（wf-value is-strong）"
+          }
+        },
+        "g2": {
+          "svgWidth": 1182,
+          "svgHeight": 320,
+          "fontSizes": [
+            "14px"
+          ],
+          "textCount": 26,
+          "overlaps": [],
+          "clipped": [],
+          "minSameLineGapPx": {
+            "px": 36.53,
+            "pair": "800 萬（wf-axis）→ 785.1 萬（wf-value is-strong）"
+          }
+        },
+        "switchBox": {
+          "x": 1148,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "toggleBox": {
+          "x": 1246,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "switchBeforeToggleSameRow": true,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "switchText": "會議紀錄"
+      },
+      "meeting": {
+        "switchBox": {
+          "x": 1148,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "toggleBox": {
+          "x": 1246,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "switchBeforeToggleSameRow": true,
+        "switchText": "經營總覽",
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      }
+    },
+    {
+      "viewport": "1280x900",
+      "overview": {
+        "g1": {
+          "svgWidth": 1182,
+          "svgHeight": 320,
+          "fontSizes": [
+            "14px"
+          ],
+          "textCount": 28,
+          "overlaps": [],
+          "clipped": [],
+          "minSameLineGapPx": {
+            "px": 31.53,
+            "pair": "200 萬（wf-axis）→ 186.9 萬（wf-value is-strong）"
+          }
+        },
+        "g2": {
+          "svgWidth": 1182,
+          "svgHeight": 320,
+          "fontSizes": [
+            "14px"
+          ],
+          "textCount": 26,
+          "overlaps": [],
+          "clipped": [],
+          "minSameLineGapPx": {
+            "px": 36.53,
+            "pair": "800 萬（wf-axis）→ 785.1 萬（wf-value is-strong）"
+          }
+        },
+        "switchBox": {
+          "x": 1068,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "toggleBox": {
+          "x": 1166,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "switchBeforeToggleSameRow": true,
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "switchText": "會議紀錄"
+      },
+      "meeting": {
+        "switchBox": {
+          "x": 1068,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "toggleBox": {
+          "x": 1166,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "switchBeforeToggleSameRow": true,
+        "switchText": "經營總覽",
+        "scrollWidth": 1280,
+        "clientWidth": 1280
+      }
+    },
+    {
+      "viewport": "768x1024",
+      "overview": {
+        "g1": {
+          "svgWidth": 670,
+          "svgHeight": 320,
+          "fontSizes": [
+            "14px"
+          ],
+          "textCount": 28,
+          "overlaps": [],
+          "clipped": [],
+          "minSameLineGapPx": {
+            "px": 0.17,
+            "pair": "−36.1 萬（wf-value is-neg）→ 127.0 萬（wf-value is-strong）"
+          }
+        },
+        "g2": {
+          "svgWidth": 670,
+          "svgHeight": 320,
+          "fontSizes": [
+            "14px"
+          ],
+          "textCount": 26,
+          "overlaps": [],
+          "clipped": [],
+          "minSameLineGapPx": {
+            "px": 5.37,
+            "pair": "−15.7 萬（wf-value is-neg）→ −14.8 萬（wf-value is-neg）"
+          }
+        },
+        "switchBox": {
+          "x": 556,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "toggleBox": {
+          "x": 654,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "switchBeforeToggleSameRow": true,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "switchText": "會議紀錄"
+      },
+      "meeting": {
+        "switchBox": {
+          "x": 556,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "toggleBox": {
+          "x": 654,
+          "y": 62,
+          "width": 90,
+          "height": 32
+        },
+        "switchBeforeToggleSameRow": true,
+        "switchText": "經營總覽",
+        "scrollWidth": 768,
+        "clientWidth": 768
+      }
+    }
+  ]
+}

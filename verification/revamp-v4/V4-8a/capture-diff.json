@@ -1,0 +1,2844 @@
+{
+  "batch": "V4-8a",
+  "compared": "verification/revamp-v4/V4-7c/snapshots → verification/revamp-v4/V4-8a/snapshots（--update-snapshots=changed 之後）",
+  "method": "兩張圖上緣對齊逐欄比對，找出有差異的欄範圍（範圍外的側欄、證據抽屜等逐像素相同）；範圍內每列算 SHA-1 做 Myers 最短編輯（只刪列、只插列），相距 ≤ 8 列的編輯合成一段；只刪＝舊圖的帶消失、只插＝新圖多出的帶；同段有刪有插時，以段前或段後的位移配對逐像素比，差異較少者為殘差。產生器：代理 C 的暫存腳本（scratchpad/v48a/c/capture-diff2.cjs、make-capture-json.py），不在 repo。",
+  "totals": {
+    "images": 52,
+    "identical": 20,
+    "different": 32,
+    "explained": 32,
+    "unexplained": 0,
+    "differentButNotAllowed": 0
+  },
+  "images": [
+    {
+      "screen": "01-overview-top",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 1000
+      },
+      "new": {
+        "width": 1440,
+        "height": 1000
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        244,
+        1415
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            191
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 24,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -31
+        }
+      ],
+      "residualPixels": 28073,
+      "residualMaxChannelDelta": 23,
+      "residualNotes": [
+        {
+          "newRows": [
+            484,
+            484
+          ],
+          "x": [
+            266,
+            267
+          ],
+          "pixels": 2,
+          "maxChannelDelta": 2,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            896,
+            958
+          ],
+          "x": [
+            934,
+            1390
+          ],
+          "pixels": 28071,
+          "maxChannelDelta": 23,
+          "cause": "hover：01–09 的走查在載入示範資料後沒有移開滑鼠，指標停在視窗同一點；內容上移 24px 後，指標下的橋接表列由「原價收入」換成「減：折扣」，淺灰 hover 底色跟著換列（只在橋接表欄 x 934–1390）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "截圖高度固定（01 是視窗截圖；04 是 fullPage 但頁高不足一屏）：內容上移後，底部多露出原本在截圖範圍外的 24 列"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "02-overview-full",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 2970
+      },
+      "new": {
+        "width": 1440,
+        "height": 2946
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1415
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            191
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -31
+        }
+      ],
+      "residualPixels": 28087,
+      "residualMaxChannelDelta": 23,
+      "residualNotes": [
+        {
+          "newRows": [
+            484,
+            484
+          ],
+          "x": [
+            266,
+            267
+          ],
+          "pixels": 2,
+          "maxChannelDelta": 2,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            896,
+            958
+          ],
+          "x": [
+            934,
+            1390
+          ],
+          "pixels": 28071,
+          "maxChannelDelta": 23,
+          "cause": "hover：01–09 的走查在載入示範資料後沒有移開滑鼠，指標停在視窗同一點；內容上移 24px 後，指標下的橋接表列由「原價收入」換成「減：折扣」，淺灰 hover 底色跟著換列（只在橋接表欄 x 934–1390）"
+        },
+        {
+          "newRows": [
+            2262,
+            2262
+          ],
+          "x": [
+            872,
+            873
+          ],
+          "pixels": 2,
+          "maxChannelDelta": 2,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            2517,
+            2517
+          ],
+          "x": [
+            801,
+            804
+          ],
+          "pixels": 4,
+          "maxChannelDelta": 7,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            2540,
+            2542
+          ],
+          "x": [
+            767,
+            805
+          ],
+          "pixels": 8,
+          "maxChannelDelta": 7,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2970 → 2946（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "03-evidence-drawer",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 1000
+      },
+      "new": {
+        "width": 1440,
+        "height": 1000
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        240,
+        799
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            157,
+            177
+          ],
+          "rows": 21,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            188,
+            190
+          ],
+          "rows": 3,
+          "uniformRows": 0
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 157,
+          "contentShiftPx": -21
+        },
+        {
+          "afterNewRow": 167,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 343,
+      "residualMaxChannelDelta": 22,
+      "residualNotes": [
+        {
+          "newRows": [
+            482,
+            489
+          ],
+          "x": [
+            264,
+            269
+          ],
+          "pixels": 5,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            957,
+            975
+          ],
+          "x": [
+            441,
+            799
+          ],
+          "pixels": 338,
+          "maxChannelDelta": 22,
+          "cause": "抽屜背後的模糊遮罩（backdrop blur）在視窗底緣取樣到視窗外的內容；內容上移 24px 後取樣到的內容不同，底緣約 19 列的模糊像素跟著變（抽屜本身所在的欄逐像素相同）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 157 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "視窗截圖：底部新圖第 957–999 列＝19 列與舊圖底部配對（上移 24px）＋24 列原本在視窗外、上移後露出；證據抽屜所在的欄逐像素相同（對齊範圍 x 240–799）"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "04-actions-board",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 1000
+      },
+      "new": {
+        "width": 1440,
+        "height": 1000
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        244,
+        1415
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            186,
+            196
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 24,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 173,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 0,
+      "residualMaxChannelDelta": 0,
+      "residualNotes": [],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "截圖高度固定（01 是視窗截圖；04 是 fullPage 但頁高不足一屏）：內容上移後，底部多露出原本在截圖範圍外的 24 列"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "05-diagnosis",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35",
+        "G12"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 3641
+      },
+      "new": {
+        "width": 1440,
+        "height": 3665
+      },
+      "heightDelta": 24,
+      "alignedColumns": [
+        244,
+        1415
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            191
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [
+        {
+          "newRows": [
+            2589,
+            2612
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        },
+        {
+          "newRows": [
+            3057,
+            3080
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        }
+      ],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -31
+        },
+        {
+          "afterNewRow": 2589,
+          "contentShiftPx": 0
+        },
+        {
+          "afterNewRow": 3057,
+          "contentShiftPx": 24
+        }
+      ],
+      "residualPixels": 58,
+      "residualMaxChannelDelta": 7,
+      "residualNotes": [
+        {
+          "newRows": [
+            3300,
+            3306
+          ],
+          "x": [
+            536,
+            1072
+          ],
+          "pixels": 58,
+          "maxChannelDelta": 7,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "G12：G10（share-section）與 G11（heat-section）下方各補回 24px 段距（新圖第 2589–2612、3057–3080 列，整列都是頁面背景色 rgb(246,247,247)）",
+        "頁高 3641 → 3665（+24）；對齊範圍外的欄（側欄等）在新圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "06-products",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 2310
+      },
+      "new": {
+        "width": 1440,
+        "height": 2286
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1415
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            184,
+            194
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 171,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 0,
+      "residualMaxChannelDelta": 0,
+      "residualNotes": [],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2310 → 2286（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "07-scenarios",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 2353
+      },
+      "new": {
+        "width": 1440,
+        "height": 2329
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1415
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            186,
+            196
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 173,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 8,
+      "residualMaxChannelDelta": 1,
+      "residualNotes": [
+        {
+          "newRows": [
+            1524,
+            1526
+          ],
+          "x": [
+            244,
+            1415
+          ],
+          "pixels": 8,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2353 → 2329（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "08-meeting",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 3132
+      },
+      "new": {
+        "width": 1440,
+        "height": 3108
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1415
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            189,
+            199
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 176,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 6,
+      "residualMaxChannelDelta": 1,
+      "residualNotes": [
+        {
+          "newRows": [
+            1651,
+            1651
+          ],
+          "x": [
+            611,
+            1287
+          ],
+          "pixels": 4,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            2633,
+            2633
+          ],
+          "x": [
+            1254,
+            1257
+          ],
+          "pixels": 2,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 3132 → 3108（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "09-data",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1440,
+        "height": 2295
+      },
+      "new": {
+        "width": 1440,
+        "height": 2271
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1415
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            185,
+            195
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 172,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 0,
+      "residualMaxChannelDelta": 0,
+      "residualNotes": [],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2295 → 2271（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "10-diagnosis-chart-area",
+      "project": "desktop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "G12"
+      ],
+      "old": {
+        "width": 1172,
+        "height": 1269
+      },
+      "new": {
+        "width": 1172,
+        "height": 1317
+      },
+      "heightDelta": 48,
+      "alignedColumns": [
+        0,
+        1171
+      ],
+      "removedBands": [],
+      "insertedBands": [
+        {
+          "newRows": [
+            428,
+            451
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        },
+        {
+          "newRows": [
+            896,
+            919
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        }
+      ],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 428,
+          "contentShiftPx": 24
+        },
+        {
+          "afterNewRow": 896,
+          "contentShiftPx": 48
+        }
+      ],
+      "residualPixels": 58,
+      "residualMaxChannelDelta": 7,
+      "residualNotes": [
+        {
+          "newRows": [
+            1139,
+            1145
+          ],
+          "x": [
+            292,
+            828
+          ],
+          "pixels": 58,
+          "maxChannelDelta": 7,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "G12：G10（share-section）與 G11（heat-section）下方各補回 24px 段距（新圖第 428–451、896–919 列，整列都是頁面背景色 rgb(246,247,247)）",
+        "頁高 1269 → 1317（+48）；對齊範圍外的欄（側欄等）在新圖多出的 48 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "11-products-chart-area",
+      "project": "desktop",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "12-import-step-4",
+      "project": "desktop",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "13-kpi-band",
+      "project": "desktop",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "01-overview-top",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 900
+      },
+      "new": {
+        "width": 1280,
+        "height": 900
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        244,
+        1255
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            191
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 24,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -31
+        }
+      ],
+      "residualPixels": 2,
+      "residualMaxChannelDelta": 2,
+      "residualNotes": [
+        {
+          "newRows": [
+            484,
+            484
+          ],
+          "x": [
+            266,
+            267
+          ],
+          "pixels": 2,
+          "maxChannelDelta": 2,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "截圖高度固定（01 是視窗截圖；04 是 fullPage 但頁高不足一屏）：內容上移後，底部多露出原本在截圖範圍外的 24 列"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "02-overview-full",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 3491
+      },
+      "new": {
+        "width": 1280,
+        "height": 3467
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1255
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            191
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -31
+        }
+      ],
+      "residualPixels": 13,
+      "residualMaxChannelDelta": 2,
+      "residualNotes": [
+        {
+          "newRows": [
+            484,
+            484
+          ],
+          "x": [
+            266,
+            267
+          ],
+          "pixels": 2,
+          "maxChannelDelta": 2,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            3277,
+            3279
+          ],
+          "x": [
+            246,
+            1253
+          ],
+          "pixels": 11,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 3491 → 3467（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "03-evidence-drawer",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 900
+      },
+      "new": {
+        "width": 1280,
+        "height": 900
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        240,
+        719
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            157,
+            177
+          ],
+          "rows": 21,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            188,
+            190
+          ],
+          "rows": 3,
+          "uniformRows": 0
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 157,
+          "contentShiftPx": -21
+        },
+        {
+          "afterNewRow": 167,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 2082,
+      "residualMaxChannelDelta": 33,
+      "residualNotes": [
+        {
+          "newRows": [
+            482,
+            489
+          ],
+          "x": [
+            264,
+            269
+          ],
+          "pixels": 5,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            857,
+            875
+          ],
+          "x": [
+            266,
+            719
+          ],
+          "pixels": 2077,
+          "maxChannelDelta": 33,
+          "cause": "抽屜背後的模糊遮罩（backdrop blur）在視窗底緣取樣到視窗外的內容；內容上移 24px 後取樣到的內容不同，底緣約 19 列的模糊像素跟著變（抽屜本身所在的欄逐像素相同）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 157 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "視窗截圖：底部新圖第 857–899 列＝19 列與舊圖底部配對（上移 24px）＋24 列原本在視窗外、上移後露出；證據抽屜所在的欄逐像素相同（對齊範圍 x 240–719）"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "04-actions-board",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 900
+      },
+      "new": {
+        "width": 1280,
+        "height": 900
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        244,
+        1255
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            186,
+            196
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 24,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 173,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 1,
+      "residualMaxChannelDelta": 1,
+      "residualNotes": [
+        {
+          "newRows": [
+            262,
+            262
+          ],
+          "x": [
+            989,
+            989
+          ],
+          "pixels": 1,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "截圖高度固定（01 是視窗截圖；04 是 fullPage 但頁高不足一屏）：內容上移後，底部多露出原本在截圖範圍外的 24 列"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "05-diagnosis",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35",
+        "G12"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 3641
+      },
+      "new": {
+        "width": 1280,
+        "height": 3665
+      },
+      "heightDelta": 24,
+      "alignedColumns": [
+        244,
+        1255
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            191
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [
+        {
+          "newRows": [
+            2589,
+            2612
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        },
+        {
+          "newRows": [
+            3057,
+            3080
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        }
+      ],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -31
+        },
+        {
+          "afterNewRow": 2589,
+          "contentShiftPx": 0
+        },
+        {
+          "afterNewRow": 3057,
+          "contentShiftPx": 24
+        }
+      ],
+      "residualPixels": 56,
+      "residualMaxChannelDelta": 3,
+      "residualNotes": [
+        {
+          "newRows": [
+            3300,
+            3306
+          ],
+          "x": [
+            491,
+            945
+          ],
+          "pixels": 56,
+          "maxChannelDelta": 3,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "G12：G10（share-section）與 G11（heat-section）下方各補回 24px 段距（新圖第 2589–2612、3057–3080 列，整列都是頁面背景色 rgb(246,247,247)）",
+        "頁高 3641 → 3665（+24）；對齊範圍外的欄（側欄等）在新圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "06-products",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 2214
+      },
+      "new": {
+        "width": 1280,
+        "height": 2190
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1255
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            184,
+            194
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 171,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 12,
+      "residualMaxChannelDelta": 5,
+      "residualNotes": [
+        {
+          "newRows": [
+            2032,
+            2033
+          ],
+          "x": [
+            244,
+            1255
+          ],
+          "pixels": 4,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            2059,
+            2062
+          ],
+          "x": [
+            244,
+            249
+          ],
+          "pixels": 8,
+          "maxChannelDelta": 5,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2214 → 2190（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "07-scenarios",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 2355
+      },
+      "new": {
+        "width": 1280,
+        "height": 2331
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1255
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            185,
+            195
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 172,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 7,
+      "residualMaxChannelDelta": 1,
+      "residualNotes": [
+        {
+          "newRows": [
+            1059,
+            1059
+          ],
+          "x": [
+            1032,
+            1209
+          ],
+          "pixels": 2,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            1523,
+            1524
+          ],
+          "x": [
+            246,
+            1253
+          ],
+          "pixels": 5,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2355 → 2331（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "08-meeting",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 3132
+      },
+      "new": {
+        "width": 1280,
+        "height": 3108
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1255
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            189,
+            199
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 176,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 8,
+      "residualMaxChannelDelta": 1,
+      "residualNotes": [
+        {
+          "newRows": [
+            1651,
+            1651
+          ],
+          "x": [
+            1250,
+            1250
+          ],
+          "pixels": 1,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            2633,
+            2633
+          ],
+          "x": [
+            510,
+            1222
+          ],
+          "pixels": 7,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 3132 → 3108（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "09-data",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 1280,
+        "height": 2315
+      },
+      "new": {
+        "width": 1280,
+        "height": 2291
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        1255
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            161,
+            173
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            185,
+            195
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 161,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 172,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 9,
+      "residualMaxChannelDelta": 12,
+      "residualNotes": [
+        {
+          "newRows": [
+            1754,
+            1757
+          ],
+          "x": [
+            268,
+            273
+          ],
+          "pixels": 9,
+          "maxChannelDelta": 12,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 161 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2315 → 2291（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "10-diagnosis-chart-area",
+      "project": "laptop",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "G12"
+      ],
+      "old": {
+        "width": 1012,
+        "height": 1269
+      },
+      "new": {
+        "width": 1012,
+        "height": 1317
+      },
+      "heightDelta": 48,
+      "alignedColumns": [
+        0,
+        1011
+      ],
+      "removedBands": [],
+      "insertedBands": [
+        {
+          "newRows": [
+            428,
+            451
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        },
+        {
+          "newRows": [
+            896,
+            919
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        }
+      ],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 428,
+          "contentShiftPx": 24
+        },
+        {
+          "afterNewRow": 896,
+          "contentShiftPx": 48
+        }
+      ],
+      "residualPixels": 56,
+      "residualMaxChannelDelta": 3,
+      "residualNotes": [
+        {
+          "newRows": [
+            1139,
+            1145
+          ],
+          "x": [
+            247,
+            701
+          ],
+          "pixels": 56,
+          "maxChannelDelta": 3,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "G12：G10（share-section）與 G11（heat-section）下方各補回 24px 段距（新圖第 428–451、896–919 列，整列都是頁面背景色 rgb(246,247,247)）",
+        "頁高 1269 → 1317（+48）；對齊範圍外的欄（側欄等）在新圖多出的 48 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "11-products-chart-area",
+      "project": "laptop",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "12-import-step-4",
+      "project": "laptop",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "13-kpi-band",
+      "project": "laptop",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "01-overview-top",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "02-overview-full",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "03-evidence-drawer",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "04-actions-board",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "05-diagnosis",
+      "project": "mobile",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "G12"
+      ],
+      "old": {
+        "width": 390,
+        "height": 4491
+      },
+      "new": {
+        "width": 390,
+        "height": 4527
+      },
+      "heightDelta": 36,
+      "alignedColumns": [
+        16,
+        373
+      ],
+      "removedBands": [],
+      "insertedBands": [
+        {
+          "newRows": [
+            3125,
+            3142
+          ],
+          "rows": 18,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        },
+        {
+          "newRows": [
+            3635,
+            3652
+          ],
+          "rows": 18,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        }
+      ],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 3125,
+          "contentShiftPx": 18
+        },
+        {
+          "afterNewRow": 3635,
+          "contentShiftPx": 36
+        }
+      ],
+      "residualPixels": 46,
+      "residualMaxChannelDelta": 4,
+      "residualNotes": [
+        {
+          "newRows": [
+            3809,
+            3810
+          ],
+          "x": [
+            32,
+            357
+          ],
+          "pixels": 3,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            3875,
+            3881
+          ],
+          "x": [
+            113,
+            311
+          ],
+          "pixels": 24,
+          "maxChannelDelta": 3,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            3911,
+            3916
+          ],
+          "x": [
+            125,
+            128
+          ],
+          "pixels": 8,
+          "maxChannelDelta": 3,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            3997,
+            4003
+          ],
+          "x": [
+            287,
+            340
+          ],
+          "pixels": 10,
+          "maxChannelDelta": 4,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            4355,
+            4355
+          ],
+          "x": [
+            372,
+            372
+          ],
+          "pixels": 1,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "G12：G10（share-section）與 G11（heat-section）下方各補回 18px 段距（新圖第 3125–3142、3635–3652 列，整列都是頁面背景色 rgb(246,247,247)）",
+        "頁高 4491 → 4527（+36）；對齊範圍外的欄（側欄等）在新圖多出的 36 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "06-products",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "07-scenarios",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "08-meeting",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "09-data",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "10-diagnosis-chart-area",
+      "project": "mobile",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "G12"
+      ],
+      "old": {
+        "width": 358,
+        "height": 1598
+      },
+      "new": {
+        "width": 358,
+        "height": 1634
+      },
+      "heightDelta": 36,
+      "alignedColumns": [
+        0,
+        357
+      ],
+      "removedBands": [],
+      "insertedBands": [
+        {
+          "newRows": [
+            469,
+            486
+          ],
+          "rows": 18,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        },
+        {
+          "newRows": [
+            979,
+            996
+          ],
+          "rows": 18,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        }
+      ],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 469,
+          "contentShiftPx": 18
+        },
+        {
+          "afterNewRow": 979,
+          "contentShiftPx": 36
+        }
+      ],
+      "residualPixels": 45,
+      "residualMaxChannelDelta": 4,
+      "residualNotes": [
+        {
+          "newRows": [
+            1153,
+            1154
+          ],
+          "x": [
+            16,
+            341
+          ],
+          "pixels": 3,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            1219,
+            1225
+          ],
+          "x": [
+            97,
+            295
+          ],
+          "pixels": 24,
+          "maxChannelDelta": 3,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            1255,
+            1260
+          ],
+          "x": [
+            109,
+            112
+          ],
+          "pixels": 8,
+          "maxChannelDelta": 3,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            1341,
+            1347
+          ],
+          "x": [
+            271,
+            324
+          ],
+          "pixels": 10,
+          "maxChannelDelta": 4,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "G12：G10（share-section）與 G11（heat-section）下方各補回 18px 段距（新圖第 469–486、979–996 列，整列都是頁面背景色 rgb(246,247,247)）",
+        "頁高 1598 → 1634（+36）；對齊範圍外的欄（側欄等）在新圖多出的 36 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "11-products-chart-area",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "12-import-step-4",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "13-kpi-band",
+      "project": "mobile",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "01-overview-top",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 768,
+        "height": 1024
+      },
+      "new": {
+        "width": 768,
+        "height": 1024
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        244,
+        743
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            240,
+            270
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 24,
+      "contentShifts": [
+        {
+          "afterNewRow": 240,
+          "contentShiftPx": -31
+        }
+      ],
+      "residualPixels": 0,
+      "residualMaxChannelDelta": 0,
+      "residualNotes": [],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 240 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "截圖高度固定（01 是視窗截圖；04 是 fullPage 但頁高不足一屏）：內容上移後，底部多露出原本在截圖範圍外的 24 列"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "02-overview-full",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 768,
+        "height": 4464
+      },
+      "new": {
+        "width": 768,
+        "height": 4440
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        743
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            240,
+            270
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 240,
+          "contentShiftPx": -31
+        }
+      ],
+      "residualPixels": 44,
+      "residualMaxChannelDelta": 14,
+      "residualNotes": [
+        {
+          "newRows": [
+            3786,
+            3786
+          ],
+          "x": [
+            245,
+            245
+          ],
+          "pixels": 1,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            4038,
+            4043
+          ],
+          "x": [
+            649,
+            710
+          ],
+          "pixels": 43,
+          "maxChannelDelta": 14,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 240 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 4464 → 4440（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "03-evidence-drawer",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 768,
+        "height": 1024
+      },
+      "new": {
+        "width": 768,
+        "height": 1024
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        240,
+        287
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            236,
+            256
+          ],
+          "rows": 21,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            267,
+            269
+          ],
+          "rows": 3,
+          "uniformRows": 0
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 236,
+          "contentShiftPx": -21
+        },
+        {
+          "afterNewRow": 246,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 174,
+      "residualMaxChannelDelta": 3,
+      "residualNotes": [
+        {
+          "newRows": [
+            981,
+            999
+          ],
+          "x": [
+            265,
+            287
+          ],
+          "pixels": 174,
+          "maxChannelDelta": 3,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 236 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "視窗截圖：底部新圖第 981–1023 列＝19 列與舊圖底部配對（上移 24px）＋24 列原本在視窗外、上移後露出；證據抽屜所在的欄逐像素相同（對齊範圍 x 240–287）"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "04-actions-board",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 768,
+        "height": 1024
+      },
+      "new": {
+        "width": 768,
+        "height": 1024
+      },
+      "heightDelta": 0,
+      "alignedColumns": [
+        244,
+        743
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            240,
+            252
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            265,
+            275
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 24,
+      "contentShifts": [
+        {
+          "afterNewRow": 240,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 252,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 13,
+      "residualMaxChannelDelta": 2,
+      "residualNotes": [
+        {
+          "newRows": [
+            485,
+            485
+          ],
+          "x": [
+            295,
+            573
+          ],
+          "pixels": 12,
+          "maxChannelDelta": 2,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            588,
+            588
+          ],
+          "x": [
+            510,
+            510
+          ],
+          "pixels": 1,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 240 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "截圖高度固定（01 是視窗截圖；04 是 fullPage 但頁高不足一屏）：內容上移後，底部多露出原本在截圖範圍外的 24 列"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "05-diagnosis",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35",
+        "G12"
+      ],
+      "old": {
+        "width": 768,
+        "height": 4045
+      },
+      "new": {
+        "width": 768,
+        "height": 4069
+      },
+      "heightDelta": 24,
+      "alignedColumns": [
+        244,
+        743
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            240,
+            270
+          ],
+          "rows": 24,
+          "uniformRows": 18
+        }
+      ],
+      "insertedBands": [
+        {
+          "newRows": [
+            2972,
+            2995
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        },
+        {
+          "newRows": [
+            3460,
+            3483
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        }
+      ],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 240,
+          "contentShiftPx": -31
+        },
+        {
+          "afterNewRow": 2972,
+          "contentShiftPx": 0
+        },
+        {
+          "afterNewRow": 3460,
+          "contentShiftPx": 24
+        }
+      ],
+      "residualPixels": 29,
+      "residualMaxChannelDelta": 11,
+      "residualNotes": [
+        {
+          "newRows": [
+            280,
+            292
+          ],
+          "x": [
+            373,
+            392
+          ],
+          "pixels": 10,
+          "maxChannelDelta": 2,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            1069,
+            1069
+          ],
+          "x": [
+            296,
+            329
+          ],
+          "pixels": 6,
+          "maxChannelDelta": 2,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            2337,
+            2346
+          ],
+          "x": [
+            272,
+            277
+          ],
+          "pixels": 13,
+          "maxChannelDelta": 11,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 240 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "G12：G10（share-section）與 G11（heat-section）下方各補回 24px 段距（新圖第 2972–2995、3460–3483 列，整列都是頁面背景色 rgb(246,247,247)）",
+        "頁高 4045 → 4069（+24）；對齊範圍外的欄（側欄等）在新圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "06-products",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 768,
+        "height": 2987
+      },
+      "new": {
+        "width": 768,
+        "height": 2963
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        743
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            240,
+            252
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            263,
+            273
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 240,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 250,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 4,
+      "residualMaxChannelDelta": 1,
+      "residualNotes": [
+        {
+          "newRows": [
+            814,
+            816
+          ],
+          "x": [
+            246,
+            741
+          ],
+          "pixels": 4,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 240 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2987 → 2963（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "07-scenarios",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 768,
+        "height": 2844
+      },
+      "new": {
+        "width": 768,
+        "height": 2820
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        743
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            300,
+            312
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            324,
+            334
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 300,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 311,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 15,
+      "residualMaxChannelDelta": 6,
+      "residualNotes": [
+        {
+          "newRows": [
+            1524,
+            1528
+          ],
+          "x": [
+            244,
+            743
+          ],
+          "pixels": 15,
+          "maxChannelDelta": 6,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 300 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2844 → 2820（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "08-meeting",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 768,
+        "height": 3347
+      },
+      "new": {
+        "width": 768,
+        "height": 3323
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        743
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            240,
+            252
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            268,
+            278
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 240,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 255,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 10,
+      "residualMaxChannelDelta": 9,
+      "residualNotes": [
+        {
+          "newRows": [
+            1017,
+            1017
+          ],
+          "x": [
+            249,
+            250
+          ],
+          "pixels": 2,
+          "maxChannelDelta": 3,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            1832,
+            1832
+          ],
+          "x": [
+            743,
+            743
+          ],
+          "pixels": 1,
+          "maxChannelDelta": 9,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            1864,
+            1866
+          ],
+          "x": [
+            330,
+            742
+          ],
+          "pixels": 6,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        },
+        {
+          "newRows": [
+            2848,
+            2848
+          ],
+          "x": [
+            552,
+            552
+          ],
+          "pixels": 1,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 240 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 3347 → 3323（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "09-data",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "D-V3-35"
+      ],
+      "old": {
+        "width": 768,
+        "height": 2638
+      },
+      "new": {
+        "width": 768,
+        "height": 2614
+      },
+      "heightDelta": -24,
+      "alignedColumns": [
+        244,
+        743
+      ],
+      "removedBands": [
+        {
+          "oldRows": [
+            240,
+            252
+          ],
+          "rows": 13,
+          "uniformRows": 0
+        },
+        {
+          "oldRows": [
+            264,
+            274
+          ],
+          "rows": 11,
+          "uniformRows": 11
+        }
+      ],
+      "insertedBands": [],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 240,
+          "contentShiftPx": -13
+        },
+        {
+          "afterNewRow": 251,
+          "contentShiftPx": -24
+        }
+      ],
+      "residualPixels": 12,
+      "residualMaxChannelDelta": 1,
+      "residualNotes": [
+        {
+          "newRows": [
+            2285,
+            2288
+          ],
+          "x": [
+            244,
+            743
+          ],
+          "pixels": 12,
+          "maxChannelDelta": 1,
+          "cause": "反鋸齒：內容位移 24px 後，文字、圓角與 SVG 線段邊緣的個別像素差（單一通道差 ≤ 16/255，肉眼不可辨）"
+        }
+      ],
+      "verdict": "explained",
+      "reasons": [
+        "D-V3-35：期間列下的去年同期理由（preset-reason-visible-yoy，needs-attention 整塊 hidden）在新圖消失，舊圖第 240 列起共 24 列（理由一行與它的外距），其下內容整體上移 24px",
+        "頁高 2638 → 2614（-24）；對齊範圍外的欄（側欄等）在舊圖多出的 24 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "10-diagnosis-chart-area",
+      "project": "tablet",
+      "identical": false,
+      "allowed": true,
+      "allowedBy": [
+        "G12"
+      ],
+      "old": {
+        "width": 500,
+        "height": 1314
+      },
+      "new": {
+        "width": 500,
+        "height": 1362
+      },
+      "heightDelta": 48,
+      "alignedColumns": [
+        0,
+        499
+      ],
+      "removedBands": [],
+      "insertedBands": [
+        {
+          "newRows": [
+            452,
+            475
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        },
+        {
+          "newRows": [
+            940,
+            963
+          ],
+          "rows": 24,
+          "uniform": true,
+          "colors": [
+            "rgb(246,247,247)"
+          ]
+        }
+      ],
+      "revealedAtBottomRows": 0,
+      "contentShifts": [
+        {
+          "afterNewRow": 452,
+          "contentShiftPx": 24
+        },
+        {
+          "afterNewRow": 940,
+          "contentShiftPx": 48
+        }
+      ],
+      "residualPixels": 0,
+      "residualMaxChannelDelta": 0,
+      "residualNotes": [],
+      "verdict": "explained",
+      "reasons": [
+        "G12：G10（share-section）與 G11（heat-section）下方各補回 24px 段距（新圖第 452–475、940–963 列，整列都是頁面背景色 rgb(246,247,247)）",
+        "頁高 1314 → 1362（+48）；對齊範圍外的欄（側欄等）在新圖多出的 48 列是單色頁底"
+      ],
+      "problems": []
+    },
+    {
+      "screen": "11-products-chart-area",
+      "project": "tablet",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "12-import-step-4",
+      "project": "tablet",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    },
+    {
+      "screen": "13-kpi-band",
+      "project": "tablet",
+      "identical": true,
+      "allowed": false,
+      "verdict": "identical"
+    }
+  ]
+}

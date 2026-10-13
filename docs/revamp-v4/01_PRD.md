@@ -488,10 +488,16 @@ v3 的目標是「去 AI 製作感、三層閱讀」，圖只做到 B3「表格�
 
 ### 5.9 投影模式
 
-- 白名單（`src/app/globals.css:2563` 的 `:not(...)`）加 `.bridge-section`；投影中**只顯示瀑布**（柱上標值是 L1），拆解區改單欄；橋接表（`.bridge-table-wrap`，L3，含 G6）、v2 四欄 `<details>` 與 `.data-alternative` 隱藏但掛載（v3 §9.7 與本文 §7.7：投影只顯示 L1；X39 只要求瀑布可見；D-V4-8）。
+- 白名單（`src/app/globals.css:2563` 的 `:not(...)`；v3.0.0 的行號，V4-8a 合併後在 `:2581`，V3-9b C 區段）加 `.bridge-section`；投影中**只顯示瀑布**（柱上標值是 L1），拆解區改單欄；橋接表（`.bridge-table-wrap`，L3，含 G6）、v2 四欄 `<details>` 與 `.data-alternative` 隱藏但掛載（v3 §9.7 與本文 §7.7：投影只顯示 L1；X39 只要求瀑布可見；D-V4-8）。
 - `--text-12` 與 `--text-13` 在投影都對應 14px（D-V4-9；只改 12 時，圖表副標 13px 會比軸標小），只重新對應既有 token 的值，不新增字級種類；其餘新圖隱藏但掛載（M1）。
 - 會議頁維持只顯示議程 1–2；投影只在總覽與會議（D-V4-8）。D-V3-33、D-V3-34 只有在使用者回覆後才在 V4-8 一併處理。
 - `tests/present-mode.test.tsx` 解析 C 區段的斷言同批更新。
+
+> **V4-8a 整合補記（2026-10-13）**：
+> - D-V3-33＝B、D-V3-34＝A 已在 V4-8a 處理（V4-8 開工前拆成 V4-8a、V4-8b）：投影按鈕不帶 `aria-pressed`；投影中頁首一行內有一顆總覽／會議紀錄互切按鈕 `present-switch`，沿用導覽的頁名字串。
+> - `--leading-12`、`--leading-13` 與字級成對，對應 22px。
+> - 拆解區另隱藏旁欄 `.frame-aside`，單欄是把欄與區一起換掉。
+> - 實作細節與量測見 `CHART_CATALOG.md` G1 的 V4-8a 整合補記，投影截圖在 `verification/revamp-v4/V4-8a/present/`。
 
 ### 5.10 匯出（變體矩陣；匯出內容規則寫進 `ExportVariantSpec` 新增的 `charts` 欄位）
 
@@ -524,7 +530,7 @@ v3 的目標是「去 AI 製作感、三層閱讀」，圖只做到 B3「表格�
 | `variant?: "panel" \| "inline"` | 預設 panel（`section.panel.chart-section`，既有外觀）。inline 輸出 `section.chart-section.is-inline`（無 `.panel` 外框），給放在既有 `.panel`、方案欄 `article.scenario-card` 或會議議程項內的圖：G15 會議實例、G16、G19、G21。避免 panel 套 panel（`nestedCardSelectors` 上限 0、v3 X8）；結構（標題、副標、固定高容器、資料表）與 panel 相同 |
 | `headingLevel?: 2 \| 3 \| 4` | 預設 2（既有）。依所在位置選層級，避免標題跳級：商品頁 G13、G14 在 `h3#product-highlights-heading` 之下用 4；G16 在方案欄內用 4；G15 會議實例在議程項 `h3` 之下用 4；G19 在 `h2#meeting-history-title` 之下用 3；G21 在 `h2#quality-heading` 之下用 3 |
 | `dataTable` | 新圖一律傳 C33 產生的內容；既有圖的 `{summary, content}` 介面不變；展開時記 `chart_table_opened` |
-| G1、G2 搬框 | `className` 保留 `bridge-section`、`profit-section`（投影白名單 `globals.css:2563` 依賴這兩個 class）；`id` 沿用 `bridge`、`profit`，`#bridge-title`、`#bridge-sub` 等既有 id 不變；既有 testid、`.bridge-total`、`bridge-balance-check` 不變；分段按鈕走 `extra` |
+| G1、G2 搬框 | `className` 保留 `bridge-section`、`profit-section`（投影白名單 `globals.css:2563` 依賴這兩個 class；v3.0.0 的行號，V4-8a 合併後在 `:2581`）；`id` 沿用 `bridge`、`profit`，`#bridge-title`、`#bridge-sub` 等既有 id 不變；既有 testid、`.bridge-total`、`bridge-balance-check` 不變；分段按鈕走 `extra` |
 | 不加 | 數字高度（只用 sm／lg／xs）；`print`（列印走 C31）；圖例位置參數（維持標題列右側，D-V4-30） |
 
 ### 6.2 既有元件升級（沿用 v3 代號）
