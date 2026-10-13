@@ -6,20 +6,33 @@ import { compareProducts } from "@/domain/product-comparison";
 import { parseCents } from "@/domain/money";
 import type { AnalysisFilters, DatasetInput } from "@/domain/types";
 import { createSnapshot, hashInput } from "@/application/workspace";
-import { buildManagerSummary } from "@/application/manager-summary";
+import { buildManagerSummary, metricComparison } from "@/application/manager-summary";
 import { addActionDraft, editActionManagement, editBoundAction, emptyActionWorkspace, pinAction, type ActionSource, type ActionWorkspace } from "@/application/action-workspace";
-import { conversionSentence, scopeLabel } from "@/application/copy";
+import { ASSIST_WEEKS_VERSION, assistWeeks } from "@/application/chart-assist-weeks";
+import { CHANNEL_WEEKS_VERSION, channelWeeks, recentChannelWeeks } from "@/application/chart-channel-weeks";
+import { DAILY_HEATMAP_VERSION } from "@/application/chart-heatmap";
+import { PRODUCT_PARETO_LIMIT, PRODUCT_PARETO_VERSION, productPareto } from "@/application/chart-pareto";
+import { CHANNEL_STRUCTURE_VERSION } from "@/application/chart-structure";
+import { channelConclusion } from "@/application/chart-takeaways";
+import type { ExportVariant } from "@/application/export-variants";
+import { productHighlights } from "@/application/product-highlights";
+import { bridgeWaterfall, profitWaterfall } from "@/application/waterfall";
+import { channelLabel, conversionSentence, demoAlias, scopeLabel } from "@/application/copy";
+import { heatSectionModel } from "@/components/diagnosis/heat-section";
+import { RATE_METRICS, ratesModel, RATES_TABLE_COLUMNS } from "@/components/diagnosis/rates-section";
+import { sharePerHundredText, shareSectionModel, shareTableCell, SHARE_TABLE_COLUMNS } from "@/components/diagnosis/share-section";
+import { paretoSectionModel, PARETO_TABLE_COLUMNS, varianceSectionModel, VARIANCE_TABLE_COLUMNS, type ProductChartScope } from "@/components/products/highlight-charts";
 import { encodeCsv } from "@/application/export";
 import { downloadBinary } from "@/application/download";
 import { buildExcelWorkbook, countCell, EXCEL_CELL_TEXT_LIMIT, EXCEL_MIME, EXCEL_NUMBER_FORMATS, excelHeader, excelSheetName, excelText, exportExcel, moneyCell, ratioCell, writeExcel, type ExcelCell, type ExcelExportInput, type ExcelSheet, type ExcelWorkbook } from "@/application/excel-export";
-import { formatPeriodExport, MINUS } from "@/application/presentation";
+import { formatPeriodExport, metricDefinitions, MINUS } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
 import { fill, labels } from "@/i18n";
 
 const copy = labels.exports.excel;
 const SHEET_KEYS = ["summary", "channels", "bridge", "products", "actions", "basis"] as const;
-/** V3-9b（D-V3-8、PRD §9.6）：六張既有工作表之後多一張管理損益表；待辦工作表最後多一欄廣告決策（F13）。 */
-const SHEET_NAMES = [...SHEET_KEYS.map(key => copy.sheets[key]), labels.exports.variantsV3.pnlSheet];
+/** V3-9b（D-V3-8、PRD §9.6）：六張既有工作表之後多一張管理損益表；待辦工作表最後多一欄廣告決策（F13）。V4-9b（C34）：管理損益表之前多一張「圖表資料」。 */
+const SHEET_NAMES = [...SHEET_KEYS.map(key => copy.sheets[key]), labels.exports.chartsV4.excel.sheet, labels.exports.variantsV3.pnlSheet];
 const AD_DECISION = labels.actions.adDecisionV3.csvColumn;
 const HYPERLINK = '=HYPERLINK("x")';
 const HTML = "<b>注意</b>";
@@ -71,7 +84,7 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
   it("has the six sheets in order, with sheet names and headers taken from labels; V3-9b adds the management P&L last and the ad-decision column last on the actions sheet", async () => {
     const workbook = buildExcelWorkbook(await golden());
     expect(workbook.sheets.map(sheet => sheet.name)).toEqual(SHEET_NAMES);
-    expect(new Set(workbook.sheets.map(sheet => sheet.name)).size).toBe(7);
+    expect(new Set(workbook.sheets.map(sheet => sheet.name)).size).toBe(8);
     for (const key of SHEET_KEYS) {
       const sheet = sheetOf(workbook, key);
       const extra = key === "actions" ? [AD_DECISION] : [];
@@ -236,6 +249,16 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     expect(Object.values(technical)).toEqual(["golden-v1", input.snapshot.dataset_hash, input.snapshot.filter_hash, "contribution-v1", "assist-kpi-v1", "breakeven-mer-v1", "TWD", "Asia/Taipei"]);
     expect(technical[labels.assist.breakevenV3.excelVersion]).toBe("breakeven-mer-v1");
     expect(input.snapshot.dataset_hash).toMatch(/^[0-9a-f]{64}$/);
+    // V4-9b（D-V4-12＝A）：技術細節之後（區塊「圖表資料」）列出「圖表資料」用到的每個 B 級版本；golden 本期沒有商品毛利為負，沒有 product-pareto-v1。
+    const chartVersions = rows.filter(row => row[col.basis.section] === labels.exports.chartsV4.excel.sheet);
+    const versionItem = (section: string) => fill(labels.exports.chartsV4.excel.basisVersion, { section });
+    expect(chartVersions.map(row => [row[col.basis.item], row[col.basis.detail]])).toEqual([
+      [versionItem(labels.overview.chartsV4.assistSpark.tableTitle), "assist-weeks-v1"],
+      [versionItem(labels.diagnosis.chartsV4.channelsSpark.tableTitle), "channel-weeks-v1"],
+      [versionItem(labels.diagnosis.chartsV4.share.section), "channel-structure-v1"],
+      [versionItem(fill(labels.diagnosis.chartsV4.heat.section, { metric: metricDefinitions.contribution_after_marketing.label })), "daily-heatmap-v1"],
+    ]);
+    expect(rows.slice(-chartVersions.length)).toEqual(chartVersions);
 
     const conversion: TaxConversion = { basis: "inclusive", rate: "0.05", fields: ["gross_sales", "ad_spend"], rows_converted: 8 };
     const converted = records(sheetOf(buildExcelWorkbook({ ...input, conversion }), "basis")).filter(row => row[col.basis.section] === b.sections.preprocessing);
@@ -249,7 +272,7 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
   it("no products and no actions still yields six sheets (V3-9b: plus the management P&L), the two lists with headers only", async () => {
     const input = await golden();
     const workbook = buildExcelWorkbook({ ...input, products: undefined, actions: emptyActionWorkspace(), meeting: undefined });
-    expect(workbook.sheets).toHaveLength(7);
+    expect(workbook.sheets).toHaveLength(8);
     expect(sheetOf(workbook, "products").rows).toEqual([]);
     expect(sheetOf(workbook, "actions").rows).toEqual([]);
     expect(sheetOf(buildExcelWorkbook({ ...input, products: [] }), "products").rows).toEqual([]);
@@ -262,6 +285,205 @@ describe("R6-4 buildExcelWorkbook: six labelled sheets from already-calculated r
     const before = structuredClone({ summary: input.summary, snapshot: input.snapshot, actions: input.actions, products: input.products });
     buildExcelWorkbook(input);
     expect({ summary: input.summary, snapshot: input.snapshot, actions: input.actions, products: input.products }).toEqual(before);
+  });
+});
+
+// ── V4-9b C34「圖表資料」工作表（PRD §5.10、§6.3 C34；CHART_CATALOG §9.5 與各圖卡的「匯出」列；D-V4-12＝A）──
+const chartCopy = labels.exports.chartsV4.excel;
+const GROSS_PROFIT = metricDefinitions.gross_profit.label;
+/** 各段的段名（欄 A）：畫面資料表的標題。 */
+const CHART_SECTION = {
+  G1: labels.overview.sections.bridge, G2: labels.overview.profit.section, G4: labels.overview.sections.channelMix,
+  G7a: labels.overview.chartsV4.assistSpark.tableTitle, G7b: labels.diagnosis.chartsV4.channelsSpark.tableTitle, G10: labels.diagnosis.chartsV4.share.section,
+  G11: fill(labels.diagnosis.chartsV4.heat.section, { metric: metricDefinitions.contribution_after_marketing.label }), G12: labels.diagnosis.chartsV4.rates.title,
+  G13: fill(labels.products.chartsV4.variance.section, { metric: GROSS_PROFIT }), G14: fill(labels.products.chartsV4.pareto.section, { metric: GROSS_PROFIT }),
+} as const;
+type ChartKey = keyof typeof CHART_SECTION;
+/** 「版本與算法」列：B 級段是整理函式的版本常數，A 級段是 contribution-v1。 */
+const CHART_VERSION: Record<ChartKey, string> = {
+  G1: "contribution-v1", G2: "contribution-v1", G4: "contribution-v1", G7a: ASSIST_WEEKS_VERSION, G7b: CHANNEL_WEEKS_VERSION, G10: CHANNEL_STRUCTURE_VERSION,
+  G11: DAILY_HEATMAP_VERSION, G12: "contribution-v1", G13: "contribution-v1", G14: PRODUCT_PARETO_VERSION,
+};
+type Cell = string | number | null;
+interface ChartBlock { section: string; title: Cell; header: Cell[]; rows: Cell[][]; version: Cell | undefined }
+/** 依欄 A（段名）切段：第 1 列標題、第 2 列欄名（去掉補齊用的空格），之後是資料列（取到欄名的寬）；「版本與算法」列另外取出。 */
+function chartBlocks(sheet: ExcelSheet): ChartBlock[] {
+  const blocks: ChartBlock[] = [];
+  for (const row of sheet.rows) {
+    const values = row.map(value);
+    const block = blocks.at(-1);
+    if (!block || block.section !== values[0]) blocks.push({ section: values[0] as string, title: values[1], header: [], rows: [], version: undefined });
+    else if (!block.header.length) block.header = values.slice(1, values.findLastIndex(cell => cell !== null) + 1);
+    else if (values[1] === chartCopy.versionRow) block.version = values[2];
+    else block.rows.push(values.slice(1, 1 + block.header.length));
+  }
+  return blocks;
+}
+const chartSheet = (workbook: ExcelWorkbook) => workbook.sheets.find(sheet => sheet.name === chartCopy.sheet);
+const num = (amount: string | null) => amount === null ? null : Number(amount);
+async function chartInput(name: string): Promise<ExcelExportInput> {
+  const { dataset, snapshot } = await load(fixture(name));
+  return { summary: buildManagerSummary(snapshot), snapshot, dataset, actions: emptyActionWorkspace(), products: compareProducts(dataset, snapshot.report.scope).rows };
+}
+/** G13、G14 的標題不用副標的期間與通路字，這裡只給抽屜 ctx（同商品頁的 alias）。 */
+const productScope = (input: ExcelExportInput): ProductChartScope => ({ ctx: { previous: input.snapshot.report.scope.previous_period, current: input.snapshot.report.scope.current_period, alias: demoAlias(input.dataset.manifest.dataset_id) }, current: "", previous: "", channels: "" });
+
+describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，每張圖一段", () => {
+  it("工作表數：老闆一頁版 2、標準版 8、客戶報告版 8；「圖表資料」在管理損益表之前，老闆一頁版沒有", async () => {
+    for (const name of ["golden", "demo"]) {
+      const input = await chartInput(name);
+      const names = (variant: ExportVariant) => buildExcelWorkbook({ ...input, variant }).sheets.map(sheet => sheet.name);
+      expect(names("boss"), name).toEqual([copy.sheets.summary, labels.exports.variantsV3.pnlSheet]);
+      for (const variant of ["standard", "client"] as const) {
+        expect(names(variant), `${name} ${variant}`).toEqual(SHEET_NAMES);
+        expect(names(variant).indexOf(chartCopy.sheet), `${name} ${variant}`).toBe(names(variant).length - 2);
+      }
+    }
+  });
+
+  it("段的順序同 CHART_CATALOG（G1、G2、G4、G7a、G7b、G10、G11、G12、G13；沒有商品毛利為負時沒有 G14）；沒有 G15、G16；表頭＝區塊、內容", async () => {
+    for (const name of ["golden", "demo"]) {
+      const sheet = chartSheet(buildExcelWorkbook(await chartInput(name)))!;
+      expect(sheet.header.slice(0, 2), name).toEqual([copy.columns.basis.section, copy.columns.basis.detail]);
+      expect(sheet.header.slice(2).every(header => header === ""), name).toBe(true);
+      expect(sheet.formats, name).toBeUndefined();
+      for (const row of sheet.rows) expect(row, name).toHaveLength(sheet.header.length);
+      const sections = chartBlocks(sheet).map(block => block.section);
+      expect(sections, name).toEqual((["G1", "G2", "G4", "G7a", "G7b", "G10", "G11", "G12", "G13"] as const).map(key => CHART_SECTION[key]));
+      // G15、G16（試算）不放：ExcelExportInput 沒有試算資料。
+      for (const section of [labels.scenarios.chartsV4.variance.section, labels.scenarios.chartsV4.threshold.section]) expect(sheet.rows.flat().map(value), `${name} ${section}`).not.toContain(section);
+    }
+  });
+
+  it("標準版每段最後一列是「版本與算法」，指標定義工作表列出 B 級版本；客戶報告版兩者都沒有（spec.appendix.technical）；段落與數字同標準版", async () => {
+    const input = await chartInput("refund_only");
+    const standard = buildExcelWorkbook({ ...input, variant: "standard" }), client = buildExcelWorkbook({ ...input, variant: "client" });
+    const blocks = chartBlocks(chartSheet(standard)!);
+    // refund_only 本期 DTC · A 商品毛利為負，所以有 G14（product-pareto-v1）。
+    const keys = (Object.keys(CHART_SECTION) as ChartKey[]).filter(key => blocks.some(block => block.section === CHART_SECTION[key]));
+    expect(keys).toEqual(["G1", "G2", "G4", "G7a", "G7b", "G10", "G11", "G12", "G13", "G14"]);
+    expect(blocks.map(block => block.version)).toEqual(keys.map(key => CHART_VERSION[key]));
+    const versionItem = (section: string) => fill(chartCopy.basisVersion, { section });
+    const basisRows = (book: ExcelWorkbook) => records(sheetOf(book, "basis")).filter(row => row[col.basis.section] === chartCopy.sheet).map(row => [row[col.basis.item], row[col.basis.detail]]);
+    expect(basisRows(standard)).toEqual((["G7a", "G7b", "G10", "G11", "G14"] as const).map(key => [versionItem(CHART_SECTION[key]), CHART_VERSION[key]]));
+    // 客戶報告版：沒有任何「版本與算法」列、指標定義工作表沒有 B 級版本列；其餘列與標準版逐列相同。
+    const clientSheet = chartSheet(client)!;
+    expect(clientSheet.rows.some(row => row[1].kind === "text" && row[1].value === chartCopy.versionRow)).toBe(false);
+    expect(basisRows(client)).toEqual([]);
+    expect(JSON.stringify(clientSheet)).not.toMatch(/-v1"/);
+    expect(clientSheet.rows).toEqual(chartSheet(standard)!.rows.filter(row => !(row[1].kind === "text" && row[1].value === chartCopy.versionRow)));
+    expect(chartBlocks(clientSheet).map(block => ({ ...block, version: undefined }))).toEqual(blocks.map(block => ({ ...block, version: undefined })));
+  });
+
+  it("標題列＝畫面同一個 builder 的結論句（G7、G12 沒有結論句，用段名）", async () => {
+    for (const name of ["golden", "demo", "refund_only"]) {
+      const input = await chartInput(name);
+      const { snapshot } = input;
+      const blocks = new Map(chartBlocks(chartSheet(buildExcelWorkbook(input))!).map(block => [block.section, block.title]));
+      const products = input.products!;
+      const top = productHighlights(products), all = productHighlights(products, products.length);
+      const pareto = productPareto(products, "gross_profit", PRODUCT_PARETO_LIMIT);
+      const expectedTitles: Partial<Record<ChartKey, string>> = {
+        G1: bridgeWaterfall(snapshot).title, G2: profitWaterfall(snapshot, "all").title, G4: channelConclusion(snapshot).title,
+        G7a: CHART_SECTION.G7a, G7b: CHART_SECTION.G7b, G10: shareSectionModel(snapshot).title, G11: heatSectionModel(snapshot).title, G12: CHART_SECTION.G12,
+        G13: varianceSectionModel({ decrease: top.worstChange, increase: top.bestChange, allDecrease: all.worstChange, allIncrease: all.bestChange }, productScope(input)).title,
+        ...(pareto.count > 0 ? { G14: paretoSectionModel(pareto, productScope(input)).title } : {}),
+      };
+      for (const [key, title] of Object.entries(expectedTitles) as [ChartKey, string][]) expect(blocks.get(CHART_SECTION[key]), `${name} ${key}`).toBe(title);
+      expect(blocks.size, name).toBe(Object.keys(expectedTitles).length);
+    }
+    // 示範資料：與畫面上的結論句相同（例：G1「少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）」）。
+    const demo = await chartInput("demo");
+    expect(chartBlocks(chartSheet(buildExcelWorkbook(demo))!)[0].title).toBe(bridgeWaterfall(demo.snapshot).title);
+  });
+
+  it("欄名＝該圖資料表的欄（金額欄帶「（元）」）；數值＝畫面同一個函式的值（golden、demo）", async () => {
+    for (const name of ["golden", "demo"]) {
+      const input = await chartInput(name);
+      const { snapshot, dataset } = input;
+      const { report } = snapshot;
+      const alias = demoAlias(dataset.manifest.dataset_id);
+      const blocks = new Map(chartBlocks(chartSheet(buildExcelWorkbook(input))!).map(block => [block.section, block]));
+      const block = (key: ChartKey) => blocks.get(CHART_SECTION[key])!;
+      const money = (label: string) => moneyHeader(label);
+
+      const bridge = bridgeWaterfall(snapshot);
+      expect(block("G1").header, name).toEqual([chartCopy.columns.bar, money(chartCopy.columns.start), money(chartCopy.columns.end), money(labels.exports.csv.suffix.change)]);
+      expect(block("G1").rows, name).toEqual(bridge.bars.map(bar => [bar.label, num(bar.start), num(bar.end), bar.kind === "delta" ? num(bar.value) : null]));
+      expect(block("G1").rows, name).toHaveLength(11);
+
+      const profit = profitWaterfall(snapshot, "all");
+      const profitCopy = labels.overview.profit;
+      expect(block("G2").header, name).toEqual([profitCopy.table.item, profitCopy.table.amount, profitCopy.table.share]);
+      expect(block("G2").rows, name).toEqual([
+        ...profit.rows.map(row => [row.kind === "delta" ? fill(profitCopy.rowDeduct, { label: row.label }) : row.label, num(row.value.value), num(row.share)]),
+        [labels.diagnosis.chartsV4.share.columns.perHundred, sharePerHundredText(profit.perHundred), null],
+      ]);
+
+      const channels = channelConclusion(snapshot);
+      expect(block("G4").header, name).toEqual([labels.overview.channelsV3.table.channel, money(labels.shell.periods.previous), money(labels.shell.periods.current), money(labels.exports.csv.suffix.change)]);
+      expect(block("G4").rows, name).toEqual(channels.rows.map(row => [row.label, num(row.previous.value), num(row.current.value), num(metricComparison(snapshot, "contribution_after_marketing", row.channel).change.value)]));
+
+      const assist = assistWeeks({ weeks: snapshot.weeks });
+      const week = (label: string, period: { start: string; end: string }) => fill(labels.exports.variantsV3.pnlWeekColumn, { label, range: fill(labels.exports.variantsV3.pnlWeekRange, period) });
+      expect(block("G7a").header, name).toEqual([labels.overview.assistTable.columns.metric, ...assist.weeks.map(item => week(item.label, item.period))]);
+      expect(block("G7a").rows, name).toHaveLength(7);
+      const units = block("G7a").rows.find(row => row[0] === fill(labels.overview.chartsV4.assistSpark.rowUnit.count, { label: labels.assist.items.units_sold.label }))!;
+      expect(units.slice(1), name).toEqual(assist.series.find(series => series.id === "units_sold")!.values.map(item => num(item.value)));
+
+      const weekly = recentChannelWeeks(channelWeeks(snapshot)!);
+      expect(block("G7b").header, name).toEqual([labels.overview.channelTable.channelHeader, ...weekly.weeks.map(item => money(week(item.label, item.period)))]);
+      expect(block("G7b").rows, name).toEqual(weekly.channels.map(series => [channelLabel(series.channel, alias), ...series.values.map(item => num(item.metric.value))]));
+
+      const share = shareSectionModel(snapshot);
+      expect(block("G10").header, name).toEqual([labels.overview.channelsV3.table.channel, ...SHARE_TABLE_COLUMNS.map(column => column.label)]);
+      expect(block("G10").rows, name).toEqual(share.rows.map(row => [row.label, ...SHARE_TABLE_COLUMNS.map(column => { const cell = shareTableCell(snapshot, row, column).value; return column.unit === "money" ? num(cell) : cell; })]));
+      expect(block("G10").rows.at(-1)![0], name).toBe(labels.overview.sections.total);
+
+      // G11：日 × 通路，格＝report.current.daily 的扣廣告後貢獻（L3）；列數＝本期天數。
+      const heatmap = heatSectionModel(snapshot).result.heatmap!;
+      const daily = new Map(report.current.daily.map(row => [`${row.channel}|${row.date}`, row.metrics.contribution_after_marketing.value]));
+      expect(block("G11").header, name).toEqual([labels.exports.csv.columns.date, ...heatmap.channels.map(channel => money(channelLabel(channel.channel, alias)))]);
+      expect(block("G11").rows.map(row => row[0]), name).toEqual(report.current.daily.map(row => row.date).filter((date, index, dates) => dates.indexOf(date) === index).sort());
+      for (const row of block("G11").rows) expect(row.slice(1), `${name} ${row[0]}`).toEqual(heatmap.channels.map(channel => num(daily.get(`${channel.channel}|${row[0]}`) ?? null)));
+
+      const rates = ratesModel(snapshot);
+      expect(block("G12").header, name).toEqual([labels.overview.page.colPeriod, ...RATES_TABLE_COLUMNS.map(column => column.label)]);
+      expect(block("G12").rows, name).toEqual(rates.rows.map(item => [item.label, fill(labels.exports.variantsV3.pnlWeekRange, { start: item.start, end: item.end }), ...RATE_METRICS.map(rate => num(item.metrics[rate].value))]));
+
+      const products = input.products!;
+      const all = productHighlights(products, products.length);
+      expect(block("G13").header, name).toEqual([copy.columns.products.sku, copy.columns.products.channel, ...VARIANCE_TABLE_COLUMNS.map(column => column.label)]);
+      expect(block("G13").rows, name).toEqual([...all.worstChange, ...all.bestChange].map(row => [row.sku, channelLabel(row.channel, alias), num(row.previous.metrics.gross_profit.value), num(row.current.metrics.gross_profit.value), num(row.changes.gross_profit.value)]));
+    }
+  });
+
+  it("G14 只在有商品毛利為負時放（refund_only：DTC · A −60.00，累計 −60.00、累計佔比 100%）", async () => {
+    const input = await chartInput("refund_only");
+    const block = chartBlocks(chartSheet(buildExcelWorkbook(input))!).find(item => item.section === CHART_SECTION.G14)!;
+    const pareto = productPareto(input.products!, "gross_profit", PRODUCT_PARETO_LIMIT);
+    expect(block.title).toBe(paretoSectionModel(pareto, productScope(input)).title);
+    expect(block.header).toEqual([copy.columns.products.sku, copy.columns.products.channel, ...PARETO_TABLE_COLUMNS.map(column => column.label)]);
+    expect(block.rows).toEqual([["A", "DTC", -60, -60, 1]]);
+    expect(block.rows).toEqual(pareto.allRows.map(entry => [entry.row.sku, entry.row.channel, num(entry.value.value), num(entry.cumulative.value), num(entry.share.value)]));
+  });
+
+  it("寫出的 .xlsx：「圖表資料」只有 s／n 格；數字格逐格帶格式（L3 money、L2 money_l2、比率、件數），負號 U+2212", async () => {
+    const input = await chartInput("golden");
+    const { book } = parse(await writeExcel(buildExcelWorkbook(input)));
+    const cells = cellsOf(book.Sheets[chartCopy.sheet]);
+    for (const { address, cell } of cells) expect(["s", "n"], address).toContain(cell.t);
+    const numbers = cells.filter(({ cell }) => cell.t === "n").map(({ cell }) => cell);
+    expect(numbers.length).toBeGreaterThan(0);
+    for (const cell of numbers) expect(Object.values(EXCEL_NUMBER_FORMATS)).toContain(cell.z);
+    // G1 折扣柱的差額 −250.00（L3 到分）、G4 MARKETPLACE 的差額 −185（L2 整數元）。
+    const rows = XLSX.utils.sheet_to_json<Cell[]>(book.Sheets[chartCopy.sheet], { header: 1, defval: null, raw: true });
+    const at = (section: string, label: string, column: number) => {
+      const r = rows.findIndex(row => row[0] === section && row[1] === label);
+      return book.Sheets[chartCopy.sheet][XLSX.utils.encode_cell({ r, c: column })] as XLSX.CellObject;
+    };
+    expect([at(CHART_SECTION.G1, metricDefinitions.discounts.label, 4).z, at(CHART_SECTION.G1, metricDefinitions.discounts.label, 4).w]).toEqual([EXCEL_NUMBER_FORMATS.money, `${MINUS}250.00`]);
+    expect([at(CHART_SECTION.G4, channelLabel("MARKETPLACE", false), 4).z, at(CHART_SECTION.G4, channelLabel("MARKETPLACE", false), 4).w]).toEqual([EXCEL_NUMBER_FORMATS.money_l2, `${MINUS}185`]);
   });
 });
 
@@ -394,7 +616,7 @@ describe("R6-4 writeExcel: real .xlsx parsed back with SheetJS", () => {
     expect([...bytes.slice(0, 2)]).toEqual([0x50, 0x4b]);
     const { book, sheetXml } = parse(bytes);
     expect(book.SheetNames).toEqual(workbook.sheets.map(sheet => sheet.name));
-    expect(sheetXml).toHaveLength(7);
+    expect(sheetXml).toHaveLength(8);
     for (const xml of sheetXml) expect(xml).not.toMatch(/<f[\s>]/);
     const all = book.SheetNames.flatMap(name => cellsOf(book.Sheets[name]));
     for (const { address, cell } of all) {

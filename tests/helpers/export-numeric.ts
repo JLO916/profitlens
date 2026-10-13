@@ -11,6 +11,7 @@ import { compareProducts } from "@/domain/product-comparison";
 import { buildManagerSummary, exportChannelComparisonCsv } from "@/application/manager-summary";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import { validateDataset } from "@/domain/validation";
+import { labels } from "@/i18n";
 import { parseCsv } from "@/lib/csv";
 import { fixture } from "./fixtures";
 
@@ -62,6 +63,9 @@ export function excelNumerics(workbook: ExcelWorkbook): Record<string, string> {
   return out;
 }
 
+/** V4-9b：拿掉「圖表資料」工作表（與 export-normalize 的 isChartV4Sheet 同一個名稱；這裡不 import 它，避免兩個 helper 互相引用）。 */
+export const withoutChartV4Sheet = (workbook: ExcelWorkbook): ExcelWorkbook => ({ sheets: workbook.sheets.filter(sheet => sheet.name !== labels.exports.chartsV4.excel.sheet) });
+
 /** 試算 golden：DTC、履約單位成本 −10% → 284.00（一次性成本 20 → 264.00）。 */
 export const SCENARIO_GOLDEN = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
 
@@ -86,6 +90,7 @@ export async function goldenExportNumerics() {
     decision_csv: project(exportDecisionCsv(session, plans, []), ["row_type", "item_id", "field"], ["value", "reason_codes", "plan_revision"], true),
     decision_json: numericLeaves({ session: { baseline: json.session.baseline, facts: json.session.facts, comparison: json.session.comparison }, scenarios: json.scenarios }),
     // V3-9b F14（只新增）：三個 Excel 變體（含管理損益表工作表）的數字格；版頭的產出時間不影響數字格。
-    excel_variants: Object.fromEntries(EXPORT_VARIANTS.map(variant => [variant, excelNumerics(buildExcelWorkbook({ variant, summary: buildManagerSummary(snapshot), snapshot, dataset, actions: emptyActionWorkspace(), products: compareProducts(dataset, snapshot.report.scope).rows, generatedAt: new Date("2026-10-05T06:32:00.000Z") }))])),
+    // V4-9b：「圖表資料」工作表（D-V4-12＝A，只重新呈現既有數字）不在這份 V3-9b 基準內，投影前拿掉（同 export-normalize 的 isChartV4Sheet）。
+    excel_variants: Object.fromEntries(EXPORT_VARIANTS.map(variant => [variant, excelNumerics(withoutChartV4Sheet(buildExcelWorkbook({ variant, summary: buildManagerSummary(snapshot), snapshot, dataset, actions: emptyActionWorkspace(), products: compareProducts(dataset, snapshot.report.scope).rows, generatedAt: new Date("2026-10-05T06:32:00.000Z") })))])),
   };
 }

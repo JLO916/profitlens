@@ -160,11 +160,12 @@ describe("V3-7 §6.5 正規化比對：去掉版頭、負號換回 ASCII 後，�
     }
     const workbook = normalizeWorkbook(exports.excel);
     expect({ sha256: sha(JSON.stringify(workbook)), chars: JSON.stringify(workbook).length }).toEqual(BASELINE.excel);
-    // 摘要工作表拿掉四列版頭與 V3-9a 損益兩平 MER 一列（新增列）；指標定義表拿掉損益兩平 MER 版本一列。
+    // 摘要工作表拿掉四列版頭與 V3-9a 損益兩平 MER 一列（新增列）；指標定義表拿掉損益兩平 MER 版本一列，V4-9b 起另拿掉「圖表資料」的 B 級版本列
+    // （golden：各指標每週 assist-weeks-v1、各通路每週 channel-weeks-v1、每 100 元淨營收去向 channel-structure-v1、各通路每天 daily-heatmap-v1；本期沒有商品毛利為負，沒有 product-pareto-v1）。
     expect(exports.excel.sheets[0].rows.length - workbook.sheets[0].rows.length).toBe(4 + 1);
-    expect(exports.excel.sheets[5].rows.length - workbook.sheets[5].rows.length).toBe(1);
-    // V3-9b F14／F13：活頁簿最後多一張管理損益表、待辦工作表最後多一欄廣告決策（正規化時拿掉，見 tests/helpers/export-normalize.ts）。
-    expect(exports.excel.sheets.map(sheet => sheet.name)).toEqual([...workbook.sheets.map(sheet => sheet.name), labels.exports.variantsV3.pnlSheet]);
+    expect(exports.excel.sheets[5].rows.length - workbook.sheets[5].rows.length).toBe(1 + 4);
+    // V3-9b F14／F13：活頁簿最後多一張管理損益表、待辦工作表最後多一欄廣告決策；V4-9b 起管理損益表之前多一張「圖表資料」（正規化時拿掉，見 tests/helpers/export-normalize.ts）。
+    expect(exports.excel.sheets.map(sheet => sheet.name)).toEqual([...workbook.sheets.map(sheet => sheet.name), labels.exports.chartsV4.excel.sheet, labels.exports.variantsV3.pnlSheet]);
     const actionsSheet = (book: typeof workbook) => book.sheets.find(sheet => sheet.name === labels.exports.excel.sheets.actions)!;
     expect(actionsSheet(exports.excel).header).toEqual([...actionsSheet(workbook).header, labels.actions.adDecisionV3.csvColumn]);
     expect(actionsSheet(exports.excel).rows.map(row => row.length)).toEqual(actionsSheet(workbook).rows.map(row => row.length + 1));
@@ -221,8 +222,8 @@ describe("V3-7 Excel：摘要工作表最前面是版頭四列；表頭粗體、
     expect(/<fonts count="(\d+)">/.exec(styles)![1]).toBe(String(fonts.length));
     expect(/<fills count="(\d+)">/.exec(styles)![1]).toBe(String(fills.length));
     const sheets = (zip.FullPaths as string[]).map(path => path.replace(/^Root Entry/, "")).filter(path => /^\/xl\/worksheets\/sheet\d+\.xml$/.test(path));
-    // V3-9b：六張既有工作表＋管理損益表（D-V3-8），表頭樣式與凍結列相同。
-    expect(sheets).toHaveLength(7);
+    // V3-9b：六張既有工作表＋管理損益表（D-V3-8）；V4-9b 起標準版多一張「圖表資料」（C34），表頭樣式與凍結列相同。
+    expect(sheets).toHaveLength(8);
     for (const path of sheets) {
       const sheet = xml(path);
       expect(sheet, path).toContain('<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>');

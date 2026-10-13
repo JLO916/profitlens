@@ -2871,6 +2871,17 @@ export const exportLabels = {
         unfavorableBelowZero: "不利差額在 0 以下的段（圖形用，非金額）",
       },
     },
+    // ── V4-9b 錨點：C34 Excel「圖表資料」工作表（標準與客戶版，D-V4-12＝A）。段名、標題列（結論句）與欄名沿用畫面同一張圖的字串；這裡只放沒有既有字串可用的。
+    excel: {
+      /** 工作表名（Excel 上限 31 字）。 */
+      sheet: "圖表資料",
+      /** 每段最後一列的項目名，下一格是該段的版本（B 級段＝整理函式的版本常數，A 級段＝contribution-v1）；只在 spec.appendix.technical（標準版）。 */
+      versionRow: "版本與算法",
+      /** 指標定義工作表最後的一列（區塊＝sheet，接在技術細節之後；只在標準版）：{section}＝圖表資料的段名，內容是該段的 B 級版本常數。 */
+      basisVersion: "圖表資料「{section}」版本",
+      /** G1 段的欄名（CHART_CATALOG G1 匯出：柱名、起點、終點、差額；差額沿用 exports.csv.suffix.change）。 */
+      columns: { bar: "柱名", start: "起點", end: "終點" },
+    },
   },
 } as const;
 

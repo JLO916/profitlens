@@ -29,7 +29,7 @@ import { profitRowAmount, profitRowLabel, profitRowShare } from "../src/componen
 import { ExportMenu, type ExportMenuProps, type ExportMenuSource } from "../src/components/shell/export-menu";
 import { scanLabels } from "../scripts/lib/copy-scan.mjs";
 import baseline from "./fixtures/export-numeric-baseline.json";
-import { excelNumerics } from "./helpers/export-numeric";
+import { excelNumerics, withoutChartV4Sheet } from "./helpers/export-numeric";
 import { FIXED_GENERATED_AT, normalizeWorkbook } from "./helpers/export-normalize";
 import { fixture } from "./helpers/fixtures";
 import { byTestId, element, escapeAttr, openTag, textOf } from "./helpers/markup";
@@ -48,7 +48,8 @@ import { readZip, zipText } from "./helpers/zip";
 
 const variants = labels.exports.variantsV3;
 const sheetNames = labels.exports.excel.sheets;
-const STANDARD_SHEETS = [sheetNames.summary, sheetNames.channels, sheetNames.bridge, sheetNames.products, sheetNames.actions, sheetNames.basis, variants.pnlSheet];
+/** V4-9b（C34）：標準與客戶版在管理損益表之前多一張「圖表資料」（共 8 張）。 */
+const STANDARD_SHEETS = [sheetNames.summary, sheetNames.channels, sheetNames.bridge, sheetNames.products, sheetNames.actions, sheetNames.basis, labels.exports.chartsV4.excel.sheet, variants.pnlSheet];
 const sha = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
 const cellValue = (cell: ExcelCell) => cell.kind === "null" ? null : cell.value;
 const sheetNamed = (workbook: ExcelWorkbook, name: string) => workbook.sheets.find(sheet => sheet.name === name)!;
@@ -148,7 +149,7 @@ describe("Excel：三個變體的工作表與列", () => {
     expect(standard.sheets.map(sheet => sheet.name)).toEqual(STANDARD_SHEETS);
     expect(workbook(golden, undefined)).toEqual(standard);
     const normalized = normalizeWorkbook(standard);
-    expect(normalized.sheets.map(sheet => sheet.name)).toEqual(STANDARD_SHEETS.slice(0, -1));
+    expect(normalized.sheets.map(sheet => sheet.name)).toEqual(STANDARD_SHEETS.slice(0, -2));
     expect(sheetNamed(normalized, sheetNames.actions).header).toEqual(Object.values(labels.exports.excel.columns.actions).map((label, index) => excelHeader(label, sheetNamed(normalized, sheetNames.actions).formats![index])));
     // 摘要：版頭四列、資料範圍、兩個關鍵數字、其他常用指標、三件事、會議四列（含備註）。
     const summary = records(sheetNamed(standard, sheetNames.summary));
@@ -223,7 +224,8 @@ describe("Excel：三個變體的工作表與列", () => {
       }
     }
     // export-numeric 基準（只新增）：三個變體的數字格投影。
-    expect(excelNumerics(buildExcelWorkbook({ variant: "standard", summary: golden.summary, snapshot: golden.snapshot, dataset: golden.dataset, actions: emptyActionWorkspace(), products: compareProducts(golden.dataset, golden.snapshot.report.scope).rows, generatedAt: FIXED_GENERATED_AT }))).toEqual(baseline.excel_variants.standard);
+    // V4-9b：「圖表資料」工作表不在這份 V3-9b 基準內（withoutChartV4Sheet；基準檔不改）。
+    expect(excelNumerics(withoutChartV4Sheet(buildExcelWorkbook({ variant: "standard", summary: golden.summary, snapshot: golden.snapshot, dataset: golden.dataset, actions: emptyActionWorkspace(), products: compareProducts(golden.dataset, golden.snapshot.report.scope).rows, generatedAt: FIXED_GENERATED_AT })))).toEqual(baseline.excel_variants.standard);
   });
 });
 
@@ -279,8 +281,9 @@ describe("Excel：管理損益表工作表（D-V3-8：#,##0.00;(#,##0.00)、0.00
     expect(minus.length).toBeGreaterThan(0);
     for (const cell of minus) expect([cell.z, cell.w]).toEqual([EXCEL_NUMBER_FORMATS.money_paren, "(100.00)"]);
     const zip = XLSX.CFB.read(bytes, { type: "array" });
-    const sheet7 = new TextDecoder().decode(new Uint8Array(XLSX.CFB.find(zip, "/xl/worksheets/sheet7.xml")!.content));
-    expect(sheet7).toContain('<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>');
+    // V4-9b：管理損益表是第 8 張（第 7 張是「圖表資料」）。
+    const sheet8 = new TextDecoder().decode(new Uint8Array(XLSX.CFB.find(zip, "/xl/worksheets/sheet8.xml")!.content));
+    expect(sheet8).toContain('<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>');
     // 比率格（golden）：0.00%。
     const goldenBook = XLSX.read(await writeExcel(workbook(golden, "boss")), { type: "array", cellNF: true });
     const share = Object.values(goldenBook.Sheets[variants.pnlSheet]).find(cell => typeof cell === "object" && cell !== null && (cell as XLSX.CellObject).v === 0.103238866397) as XLSX.CellObject;

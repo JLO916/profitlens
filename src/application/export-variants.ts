@@ -13,8 +13,8 @@ export const EXPORT_VARIANTS = ["standard", "boss", "client"] as const;
 export type ExportVariant = typeof EXPORT_VARIANTS[number];
 export const DEFAULT_EXPORT_VARIANT: ExportVariant = "standard";
 
-/** Excel 工作表的代號（名稱在 labels：excelExport.sheets.* 與 exports.variantsV3.pnlSheet）。 */
-export type ExcelSheetKey = "summary" | "channels" | "bridge" | "products" | "actions" | "basis" | "pnl";
+/** Excel 工作表的代號（名稱在 labels：excelExport.sheets.*、exports.variantsV3.pnlSheet 與 V4-9b 的 exports.chartsV4.excel.sheet）。 */
+export type ExcelSheetKey = "summary" | "channels" | "bridge" | "products" | "actions" | "basis" | "chartData" | "pnl";
 
 /** V4-9a 匯出用的圖（代號同畫面 ChartFrame 的 id，也是列印 `svg[data-print-chart="{id}"]` 的值）：bridge＝G1 貢獻變化拆解、profit＝G2 本期利潤結構（合計）。 */
 export const EXPORT_CHART_IDS = ["bridge", "profit"] as const;
@@ -65,7 +65,8 @@ export interface ExportVariantSpec {
 }
 
 const ALL_SECTIONS: ExportVariantSpec["sections"] = { oneLiner: false, kpis: "headlines", scope: true, priorityDetail: true, assist: true, channels: true, decisions: true, footer: true };
-const STANDARD_SHEETS: readonly ExcelSheetKey[] = ["summary", "channels", "bridge", "products", "actions", "basis", "pnl"];
+/** V4-9b（C34、D-V4-12＝A）：標準與客戶版在管理損益表之前多一張「圖表資料」（共 8 張）；老闆一頁版不加（維持 2 張）。 */
+const STANDARD_SHEETS: readonly ExcelSheetKey[] = ["summary", "channels", "bridge", "products", "actions", "basis", "chartData", "pnl"];
 /** V4-9a 標準版與客戶報告版：第一頁 G1；附錄多一頁放 G2 與兩張圖的資料表（D-V4-11＝B）；PPT 第二張 G1（D-V4-34＝A）。 */
 const FULL_CHARTS: ExportVariantSpec["charts"] = { print: { page: ["bridge"], appendix: ["profit"], appendixTables: ["bridge", "profit"] }, pptx: ["bridge"] };
 const SPECS: Readonly<Record<ExportVariant, ExportVariantSpec>> = {

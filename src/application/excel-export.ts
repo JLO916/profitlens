@@ -3,26 +3,38 @@ import { parseCents } from "../domain/money";
 import type { ProductComparisonRow } from "../domain/product-comparison";
 import { AMOUNT_FIELDS, type Dataset, type Metric, type Period } from "../domain/types";
 import { fill, labels } from "../i18n";
+import { heatSectionModel } from "../components/diagnosis/heat-section";
+import { ratesModel, RATES_TABLE_COLUMNS } from "../components/diagnosis/rates-section";
+import { sharePerHundredText, shareSectionModel, shareTableCell, SHARE_TABLE_COLUMNS } from "../components/diagnosis/share-section";
+import { paretoSectionModel, PARETO_TABLE_COLUMNS, varianceSectionModel, VARIANCE_TABLE_COLUMNS, type ProductChartScope } from "../components/products/highlight-charts";
 import { actionDocuments, type ActionExecutionStatus, type ActionWorkspace } from "./action-workspace";
-import { ASSIST_KPI_VERSION } from "./assist-kpi";
+import { ASSIST_KPI_VERSION, type AssistKpi, type AssistUnit } from "./assist-kpi";
+import { ASSIST_WEEKS_VERSION, assistWeeks } from "./chart-assist-weeks";
+import { CHANNEL_WEEKS_VERSION, channelWeeks, channelWeeksAvailable, recentChannelWeeks } from "./chart-channel-weeks";
+import type { HeatCell } from "./chart-heatmap";
+import { PRODUCT_PARETO_LIMIT, PRODUCT_PARETO_VERSION, productPareto } from "./chart-pareto";
+import { CHANNEL_STRUCTURE_VERSION } from "./chart-structure";
+import { channelConclusion } from "./chart-takeaways";
 import { variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExcelSheetKey, type ExportVariant, type ExportVariantSpec } from "./export-variants";
 import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, scopeLabel } from "./copy";
 import { downloadBinary } from "./download";
 import { buildExportHeader } from "./export-header";
 import { argb, EXPORT_THEME } from "./export-theme";
-import type { ManagerSummary, SummaryMetric } from "./manager-summary";
+import { metricComparison, type ManagerSummary, type SummaryMetric } from "./manager-summary";
 import { pnlExportTable } from "./pnl-table";
-import { dataStatus } from "./product-highlights";
+import { dataStatus, productHighlights } from "./product-highlights";
 import type { TaxConversion } from "./tax-basis";
-import { formatEmpty, formatMultiple, formatPeriodExport } from "./presentation";
+import { formatEmpty, formatMultiple, formatPeriodExport, formatPeriodL1, metricDefinitions } from "./presentation";
+import { bridgeWaterfall, profitWaterfall } from "./waterfall";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R6-4 Excel 匯出（D4＝A：SheetJS xlsx 0.18.5）。
 // buildExcelWorkbook 是純資料層：只讀既有的摘要、快照、商品比較與待辦，不重算任何財務公式，也不碰 xlsx。
 // writeExcel 才動態載入 xlsx（主 bundle 不含）；文字一律寫成字串格、絕不產生公式格，並沿用 CSV 的防注入規則。
 
-export type ExcelCell = { kind: "text"; value: string } | { kind: "number"; value: number } | { kind: "null" };
+/** number 格的 format（V4-9b）：同一欄混放不同單位的工作表（「圖表資料」）逐格指定數字格式；沒有時用工作表的欄格式。 */
+export type ExcelCell = { kind: "text"; value: string } | { kind: "number"; value: number; format?: ExcelNumberFormat } | { kind: "null" };
 /**
  * 數字格的顯示格式（只影響 Excel 顯示，不改數值；格子仍是數字，可加總、可排序）。V3-2b §3.3：Excel 有 L2 與 L3。
  * money_l2：摘要、通路表用整數元（L2）；money：拆解、商品明細到分（L3）；ratio：百分比兩位小數（L3）；count：件數整數。
@@ -268,7 +280,7 @@ function actionSheet(workspace: ActionWorkspace, spec: ExportVariantSpec): Excel
   return sheet(copy.sheets.actions, columns, records, { priority: "count", evidence_count: "count" });
 }
 
-function basisSheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSheet {
+function basisSheet(input: ExcelExportInput, spec: ExportVariantSpec, charts: readonly ChartDataSection[] = []): ExcelSheet {
   const { summary, snapshot, dataset } = input;
   const b = copy.basis;
   const row = (section: string, item: string | null, detail: string) => ({ section: text(section), item: item === null ? EMPTY : text(item), detail: text(detail) });
@@ -288,6 +300,9 @@ function basisSheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelShee
     ...technical(labels.assist.breakevenV3.excelVersion, BREAKEVEN_MER_VERSION),
     ...technical(csvHeader("currency"), dataset.manifest.currency),
     ...technical(csvHeader("timezone"), dataset.manifest.timezone),
+    // V4-9b（D-V4-12＝A）：「圖表資料」用到的每個 B 級版本常數（整理函式的版本），與技術細節同樣只在 spec.appendix.technical 時列（客戶報告版不列）。
+    // 區塊寫「圖表資料」、放在技術細節各列之後：技術細節區的既有各列逐列不變（tests/breakeven-mer.test.ts 斷言那一區恰好 8 列）。
+    ...(spec.appendix.technical ? charts.filter(chart => chart.arranged).map(chart => row(labels.exports.chartsV4.excel.sheet, fill(labels.exports.chartsV4.excel.basisVersion, { section: chart.section }), chart.version)) : []),
   ];
   return sheet(copy.sheets.basis, copy.columns.basis, records);
 }
@@ -306,17 +321,201 @@ function pnlSheet(snapshot: WorkspaceSnapshot): ExcelSheet {
   return { name: labels.exports.variantsV3.pnlSheet, header, rows, formats };
 }
 
+// ── V4-9b C34「圖表資料」工作表（PRD §5.10、§6.3 C34；CHART_CATALOG §9.5 與各圖卡的「匯出」列；D-V4-12＝A）──
+// 每張圖一段：段名（畫面資料表的標題）、標題列（畫面同一個 builder 的結論句；G7、G12 沒有結論句，用段名）、欄名列（＝該圖資料表的欄，金額欄帶「（元）」）、
+// 資料列（值取自畫面同一個函式，不產生新數字）、段末一列「版本與算法」（只在 spec.appendix.technical）。G15、G16 不放：ExcelExportInput 沒有試算資料。
+// 欄 A 是段名（可篩選）；同一欄混放不同單位，所以數字格逐格帶 format（L2 money_l2、L3 money、比率 ratio、件數 count；倍數照摘要工作表寫成「3.50 倍」文字格）。
+
+/** 「圖表資料」的一段（一張圖）。rows 的每一列與 columns 等長，第一格是列名。 */
+interface ChartDataSection {
+  /** 圖的代號（對照 CHART_CATALOG，不輸出）。 */
+  chart: "G1" | "G2" | "G4" | "G7a" | "G7b" | "G10" | "G11" | "G12" | "G13" | "G14";
+  section: string;
+  title: string;
+  columns: string[];
+  rows: ExcelCell[][];
+  /** 「版本與算法」列的內容：B 級段＝整理函式的版本常數，A 級段＝snapshot.metric_version（contribution-v1）。 */
+  version: string;
+  /** B 級（版本是整理函式的）：指標定義工作表的技術區另列一行。 */
+  arranged: boolean;
+}
+const MISSING_METRIC: Metric = { value: null, reason_codes: ["MISSING_VALUE"] };
+const withFormat = (cell: ExcelCell, format: ExcelNumberFormat): ExcelCell => cell.kind === "number" ? { ...cell, format } : cell;
+const chartMoney = (value: string | null, format: "money" | "money_l2"): ExcelCell => withFormat(moneyCell(value), format);
+const chartRatio = (value: string | null): ExcelCell => withFormat(ratioCell(value), "ratio");
+/** 週的欄名或列名：與管理損益表的週欄同一個寫法「{週名} {起日} 至 {迄日}」。 */
+const weekName = (label: string, period: Period) => fill(labels.exports.variantsV3.pnlWeekColumn, { label, range: fill(labels.exports.variantsV3.pnlWeekRange, { start: period.start, end: period.end }) });
+
+/** 依 CHART_CATALOG 的順序組出各段（G1、G2、G4、G7a、G7b、G10、G11、G12、G13、G14）；沒有資料或超過上限的圖不放（G7b、G11 通路 > 8，G14 沒有商品毛利為負）。 */
+function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
+  const { summary, snapshot, dataset } = input;
+  const { report } = snapshot;
+  const alias = demoAlias(dataset.manifest.dataset_id);
+  const metricVersion = snapshot.metric_version;
+  const sections: ChartDataSection[] = [];
+
+  // G1 貢獻變化拆解：11 根柱的起點、終點（L3），九項另列差額（G6 併入本段）。
+  const bridge = bridgeWaterfall(snapshot);
+  const chartColumns = labels.exports.chartsV4.excel.columns;
+  sections.push({
+    chart: "G1", section: labels.overview.sections.bridge, title: bridge.title,
+    columns: [chartColumns.bar, excelHeader(chartColumns.start, "money"), excelHeader(chartColumns.end, "money"), excelHeader(labels.exports.csv.suffix.change, "money")],
+    rows: bridge.bars.map(bar => [text(bar.label), chartMoney(bar.start, "money"), chartMoney(bar.end, "money"), bar.kind === "delta" ? chartMoney(bar.value, "money") : EMPTY]),
+    version: metricVersion, arranged: false,
+  });
+
+  // G2 本期利潤結構（合計）：10 列（項目、金額 L3、佔淨營收）＋每 100 元一列（與 G10 資料表同一句「剩／虧 {n} 元」）。
+  const profit = profitWaterfall(snapshot, "all", { alias, allChannels: dataset.manifest.channels });
+  const profitCopy = labels.overview.profit;
+  const perHundred = sharePerHundredText(profit.perHundred);
+  sections.push({
+    chart: "G2", section: profitCopy.section, title: profit.title,
+    columns: [profitCopy.table.item, profitCopy.table.amount, profitCopy.table.share],
+    rows: [
+      ...profit.rows.map(row => [text(row.kind === "delta" ? fill(profitCopy.rowDeduct, { label: row.label }) : row.label), chartMoney(row.value.value, "money"), chartRatio(row.share)]),
+      [text(labels.diagnosis.chartsV4.share.columns.perHundred), perHundred === null ? EMPTY : text(perHundred), EMPTY],
+    ],
+    version: metricVersion, arranged: false,
+  });
+
+  // G4 各通路：上期、本期、差額（L2；差額＝metricComparison 的 change，與緊湊表差額欄同一個值）。
+  const channels = channelConclusion(snapshot, { alias });
+  const change = (channel: string): Metric => Object.hasOwn(report.previous.channels, channel) && Object.hasOwn(report.current.channels, channel) ? metricComparison(snapshot, "contribution_after_marketing", channel).change : MISSING_METRIC;
+  sections.push({
+    chart: "G4", section: labels.overview.sections.channelMix, title: channels.title,
+    columns: [labels.overview.channelsV3.table.channel, excelHeader(labels.shell.periods.previous, "money_l2"), excelHeader(labels.shell.periods.current, "money_l2"), excelHeader(labels.exports.csv.suffix.change, "money_l2")],
+    rows: channels.rows.map(row => [text(row.label), chartMoney(row.previous.value, "money_l2"), chartMoney(row.current.value, "money_l2"), chartMoney(change(row.channel).value, "money_l2")]),
+    version: metricVersion, arranged: false,
+  });
+
+  // G7a 各指標每週（assist-weeks-v1）：列＝其他常用指標（件數、件均的單位寫在列名），欄＝本期最後 ≤ 8 週。
+  const assist = assistWeeks({ weeks: snapshot.weeks });
+  if (assist.weeks.length) {
+    const spark = labels.overview.chartsV4.assistSpark;
+    const rowLabel = (kpi: AssistKpi) => kpi.unit === "count" ? fill(spark.rowUnit.count, { label: kpi.label }) : kpi.unit === "money_per_unit" ? fill(spark.rowUnit.perUnit, { label: kpi.label }) : kpi.label;
+    const cell = (unit: AssistUnit, value: string | null): ExcelCell => unit === "count" ? withFormat(countCell(value), "count") : unit === "money_per_unit" ? chartMoney(value, "money_l2") : unit === "percent" ? chartRatio(value) : value === null ? EMPTY : text(formatMultiple(value, "L3"));
+    sections.push({
+      chart: "G7a", section: spark.tableTitle, title: spark.tableTitle,
+      columns: [labels.overview.assistTable.columns.metric, ...assist.weeks.map(week => weekName(week.label, week.period))],
+      rows: summary.assist.current.flatMap(kpi => { const series = assist.series.find(item => item.id === kpi.id); return series ? [[text(rowLabel(kpi)), ...series.values.map(value => cell(kpi.unit, value.value))]] : []; }),
+      version: ASSIST_WEEKS_VERSION, arranged: true,
+    });
+  }
+
+  // G7b 各通路每週（channel-weeks-v1）：excel-export 自行呼叫 channelWeeks，通路 ≤ 8 才放；列＝通路，欄＝本期最後 ≤ 8 週（L2）。
+  const weekly = channelWeeksAvailable(snapshot) ? channelWeeks(snapshot) : null;
+  if (weekly !== null && weekly.weeks.length) {
+    const data = recentChannelWeeks(weekly);
+    const spark = labels.diagnosis.chartsV4.channelsSpark;
+    sections.push({
+      chart: "G7b", section: spark.tableTitle, title: spark.tableTitle,
+      columns: [labels.overview.channelTable.channelHeader, ...data.weeks.map(week => excelHeader(weekName(week.label, week.period), "money_l2"))],
+      rows: data.channels.map(series => [text(channelLabel(series.channel, alias)), ...series.values.map(value => chartMoney(value.metric.value, "money_l2"))]),
+      version: CHANNEL_WEEKS_VERSION, arranged: true,
+    });
+  }
+
+  // G10 每 100 元淨營收去向（channel-structure-v1）：資料表同一組欄與格（shareTableCell）；每 100 元是「剩／虧 {n} 元」文字。
+  const share = shareSectionModel(snapshot, { alias });
+  sections.push({
+    chart: "G10", section: labels.diagnosis.chartsV4.share.section, title: share.title,
+    columns: [labels.overview.channelsV3.table.channel, ...SHARE_TABLE_COLUMNS.map(column => column.label)],
+    rows: share.rows.map(row => [text(row.label), ...SHARE_TABLE_COLUMNS.map(column => { const value = shareTableCell(snapshot, row, column).value; return column.unit === "money" ? chartMoney(value, "money_l2") : value === null ? EMPTY : text(value); })]),
+    version: CHANNEL_STRUCTURE_VERSION, arranged: true,
+  });
+
+  // G11 日 × 通路（daily-heatmap-v1）：列＝日（超過 92 天時是週），欄＝通路（順序同畫面：標題所指的通路在前），格＝L3；通路 > 8 等不計算時不放。
+  const heat = heatSectionModel(snapshot, { alias });
+  const heatmap = heat.result.heatmap;
+  if (heatmap !== null && heatmap.channels.length) {
+    const heatCopy = labels.diagnosis.chartsV4.heat;
+    const weeklyHeat = heatmap.mode === "weekly";
+    const amount = (cell: HeatCell): ExcelCell => cell.kind === "value" ? chartMoney(cell.metric.value, "money") : EMPTY;
+    const [first] = heatmap.channels;
+    sections.push({
+      chart: "G11", section: fill(weeklyHeat ? heatCopy.sectionWeekly : heatCopy.section, { metric: metricDefinitions.contribution_after_marketing.label }), title: heat.title,
+      columns: [weeklyHeat ? heatCopy.weekHead : labels.exports.csv.columns.date, ...heatmap.channels.map(channel => excelHeader(channelLabel(channel.channel, alias), "money"))],
+      rows: weeklyHeat
+        ? heatmap.weeks.map((week, index) => [text(weekName(week.label, week.period)), ...heatmap.channels.map(channel => amount(channel.rows[index].cells[0]))])
+        : first.rows.flatMap((row, index) => row.cells.flatMap((cell, day) => cell.kind === "outside" ? [] : [[text(cell.key), ...heatmap.channels.map(channel => amount(channel.rows[index].cells[day]))]])),
+      version: heatmap.version, arranged: true,
+    });
+  }
+
+  // G12 五項比率每週走勢（A 級）：列＝上期、本期、去年同期的週（與資料表同一組列），欄＝週、起訖日、五項比率。
+  const rates = ratesModel(snapshot);
+  if (rates.rows.length) {
+    const ratesCopy = labels.diagnosis.chartsV4.rates;
+    sections.push({
+      chart: "G12", section: ratesCopy.title, title: ratesCopy.title,
+      columns: [labels.overview.page.colPeriod, ...RATES_TABLE_COLUMNS.map(column => column.label)],
+      rows: rates.rows.map(week => [text(week.label), ...RATES_TABLE_COLUMNS.map(column => column.data.kind === "range" ? text(fill(labels.exports.variantsV3.pnlWeekRange, { start: week.start, end: week.end })) : chartRatio(week.metrics[column.data.rate].value))]),
+      version: metricVersion, arranged: false,
+    });
+  }
+
+  // G13、G14 商品（同商品頁：compareProducts 的列，不受品類與搜尋篩選影響）；SKU 與通路分兩欄。
+  const products = input.products ?? [];
+  const scope = report.scope;
+  const everyChannel = dataset.manifest.channels.length > 0 && dataset.manifest.channels.every(channel => scope.channels.includes(channel));
+  const chartScope: ProductChartScope = {
+    ctx: { previous: scope.previous_period, current: scope.current_period, alias },
+    current: formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: snapshot.data_as_of }),
+    previous: formatPeriodL1(scope.previous_period.start, scope.previous_period.end, { days: false, anchor: snapshot.data_as_of }),
+    channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scope.channels, alias),
+  };
+  const productColumns = [copy.columns.products.sku, copy.columns.products.channel];
+  const top = productHighlights(products), all = productHighlights(products, products.length);
+  const variance = varianceSectionModel({ decrease: top.worstChange, increase: top.bestChange, allDecrease: all.worstChange, allIncrease: all.bestChange }, chartScope);
+  sections.push({
+    chart: "G13", section: variance.section, title: variance.title,
+    columns: [...productColumns, ...VARIANCE_TABLE_COLUMNS.map(column => column.label)],
+    rows: variance.tableRows.map(row => [text(row.sku), text(channelLabel(row.channel, alias)), ...VARIANCE_TABLE_COLUMNS.map(column => chartMoney(column.data === "change" ? row.changes.gross_profit.value : row[column.data].metrics.gross_profit.value, "money_l2"))]),
+    version: metricVersion, arranged: false,
+  });
+  const pareto = productPareto(products, "gross_profit", PRODUCT_PARETO_LIMIT);
+  if (pareto.count > 0) {
+    const model = paretoSectionModel(pareto, chartScope);
+    sections.push({
+      chart: "G14", section: model.section, title: model.title,
+      columns: [...productColumns, ...PARETO_TABLE_COLUMNS.map(column => column.label)],
+      rows: pareto.allRows.map(entry => [text(entry.row.sku), text(channelLabel(entry.row.channel, alias)), ...PARETO_TABLE_COLUMNS.map(column => column.data === "share" ? chartRatio(entry.share.value) : chartMoney(column.data === "cumulative" ? entry.cumulative.value : entry.value.value, "money_l2"))]),
+      version: PRODUCT_PARETO_VERSION, arranged: true,
+    });
+  }
+  return sections;
+}
+
+/** 「圖表資料」工作表：表頭＝區塊、內容；每段依序是標題列、欄名列、資料列，標準版另有段末的「版本與算法」列（客戶報告版依 spec.appendix.technical 省略）。 */
+function chartDataSheet(sections: readonly ChartDataSection[], spec: ExportVariantSpec): ExcelSheet {
+  const width = 1 + Math.max(2, ...sections.map(item => item.columns.length));
+  const pad = (cells: readonly ExcelCell[]): ExcelCell[] => [...cells, ...Array.from({ length: width - cells.length }, () => EMPTY)];
+  const rows = sections.flatMap(item => {
+    const section = text(item.section);
+    return [
+      pad([section, text(item.title)]),
+      pad([section, ...item.columns.map(text)]),
+      ...item.rows.map(row => pad([section, ...row])),
+      ...(spec.appendix.technical ? [pad([section, text(labels.exports.chartsV4.excel.versionRow), text(item.version)])] : []),
+    ];
+  });
+  return { name: labels.exports.chartsV4.excel.sheet, header: [copy.columns.basis.section, copy.columns.basis.detail, ...Array.from({ length: width - 2 }, () => "")], rows };
+}
+
 /**
  * 工作表：摘要、通路、貢獻變化拆解、商品比較、待辦、指標定義，V3-9b 起最後加管理損益表；老闆一頁版只有摘要與管理損益表（variantSpec）。
+ * V4-9b：標準與客戶版在管理損益表之前多一張「圖表資料」（C34）。
  * 只讀既有計算結果；摘要必須來自同一個 snapshot。三個變體的數字都來自同一個 summary／snapshot。
  */
 export function buildExcelWorkbook(input: ExcelExportInput): ExcelWorkbook {
   const { summary, snapshot, dataset } = input;
   if (summary.dataset_hash !== snapshot.dataset_hash || summary.filter_hash !== snapshot.filter_hash || snapshot.report.dataset_id !== dataset.manifest.dataset_id) throw new Error("EXCEL_SOURCE_MISMATCH");
   const spec = variantSpec(input.variant);
+  const charts = spec.excelSheets.includes("chartData") ? chartDataSections(input) : [];
   const build: Record<ExcelSheetKey, () => ExcelSheet> = {
     summary: () => summarySheet(input, spec), channels: () => channelSheet(summary), bridge: () => bridgeSheet(snapshot),
-    products: () => productSheet(input.products ?? [], demoAlias(dataset.manifest.dataset_id)), actions: () => actionSheet(input.actions, spec), basis: () => basisSheet(input, spec), pnl: () => pnlSheet(snapshot),
+    products: () => productSheet(input.products ?? [], demoAlias(dataset.manifest.dataset_id)), actions: () => actionSheet(input.actions, spec), basis: () => basisSheet(input, spec, charts),
+    chartData: () => chartDataSheet(charts, spec), pnl: () => pnlSheet(snapshot),
   };
   return { sheets: spec.excelSheets.map(key => build[key]()) };
 }
@@ -413,6 +612,8 @@ function cellObject(cell: ExcelCell, format: ExcelNumberFormat | null): CellObje
   if (cell.kind === "text") return { t: "s", v: excelText(cell.value) };
   throw new TypeError("INVALID_EXCEL_CELL");
 }
+/** V4-9b：number 格自帶的數字格式（「圖表資料」逐格指定）；其他格與沒帶的回傳 null，改用工作表的欄格式。 */
+const cellFormat = (cell: ExcelCell): ExcelNumberFormat | null => cell && typeof cell === "object" && cell.kind === "number" && cell.format !== undefined && Object.hasOwn(NUMBER_FORMATS, cell.format) ? cell.format : null;
 /** 純函式：ExcelSheet → SheetJS 工作表物件（只有 s／n 兩種格，沒有公式）。 */
 function worksheet(sheet: ExcelSheet): WorkSheet {
   const width = sheet.header.length;
@@ -424,7 +625,7 @@ function worksheet(sheet: ExcelSheet): WorkSheet {
   rows.forEach((row, r) => {
     if (!Array.isArray(row) || row.length !== width) throw new RangeError("EXCEL_ROW_WIDTH");
     row.forEach((cell, c) => {
-      const object = cellObject(cell, r === 0 ? null : sheet.formats?.[c] ?? null);
+      const object = cellObject(cell, r === 0 ? null : cellFormat(cell) ?? sheet.formats?.[c] ?? null);
       if (!object) return;
       ws[`${columnName(c)}${r + 1}`] = object;
       widths[c] = Math.max(widths[c], object.t === "n" ? String(Math.trunc(Number(object.v))).length + 5 : displayWidth(String(object.v)));

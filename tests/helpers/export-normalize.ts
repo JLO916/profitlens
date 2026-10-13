@@ -36,6 +36,16 @@ function headerPatterns() {
 const isBreakevenMarkdownLine = (line: string) => line.startsWith(`| ${labels.assist.breakevenV3.label} |`) || line.startsWith(`- ${labels.assist.breakevenV3.technicalVersion}：`);
 const isBreakevenExcelRow = (row: ExcelWorkbook["sheets"][number]["rows"][number]) => row[1]?.kind === "text" && (row[1].value === labels.assist.breakevenV3.label || row[1].value === labels.assist.breakevenV3.excelVersion);
 /**
+ * V4-9b（D-V4-12＝A）是新增的內容：一頁摘要 Markdown 在通路表之後多一段九項差額表（「## 貢獻變化拆解」標題、空行、表頭、分隔列與九列），
+ * Excel 標準與客戶版多一張「圖表資料」工作表，標準版的指標定義工作表最後多幾列 B 級版本（區塊「圖表資料」、項目「圖表資料「{section}」版本」）。
+ * 正規化時拿掉這些（Markdown 以標題行 isChartV4MarkdownLine 找到整段、連同前面的空行一起拿掉；工作表層級的 isChartV4Sheet 擋不到指標定義工作表裡的新列，另用列級的 isChartV4VersionRow），
+ * 其餘仍須與 V3-7 開工前逐字相同。
+ */
+export const isChartV4MarkdownLine = (line: string | undefined) => line === `## ${labels.overview.sections.bridge}`;
+export const isChartV4Sheet = (sheet: ExcelWorkbook["sheets"][number]) => sheet.name === labels.exports.chartsV4.excel.sheet;
+const chartV4VersionItem = new RegExp(`^${escapeRegExp(labels.exports.chartsV4.excel.basisVersion).replace("\\{section\\}", ".+")}$`);
+export const isChartV4VersionRow = (row: ExcelWorkbook["sheets"][number]["rows"][number]) => row[0]?.kind === "text" && row[0].value === labels.exports.chartsV4.excel.sheet && row[1]?.kind === "text" && chartV4VersionItem.test(row[1].value);
+/**
  * Markdown 正規化：去掉每一段四行版頭（第 2 行是報表名、第 4 行是版本與產出時間；行尾換行用的兩個空白一併去掉）與其後一個空行，
  * U+2212 換回 ASCII「-」，全形括號包住的金額（有千分位或小數）換成「-金額」；V3-9a 起另拿掉損益兩平 MER 的新增列（isBreakevenMarkdownLine）。
  */
@@ -51,6 +61,13 @@ export function normalizeMarkdown(text: string): string {
       continue;
     }
     if (isBreakevenMarkdownLine(lines[index])) continue;
+    if (isChartV4MarkdownLine(lines[index])) {
+      // 九項差額表：標題前的空行、標題、標題後的空行與整張表（以「|」開頭的連續行）。
+      if (out.at(-1) === "") out.pop();
+      if (lines[index + 1] === "") index += 1;
+      while (lines[index + 1]?.startsWith("|")) index += 1;
+      continue;
+    }
     out.push(lines[index]);
   }
   return out.join("\n").replaceAll(MINUS, "-").replace(/（(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+)）/g, "-$1");
@@ -66,10 +83,13 @@ function withoutAdDecisionColumn(sheet: ExcelWorkbook["sheets"][number]): ExcelW
   const drop = <T,>(list: readonly T[]) => list.filter((_, index) => index !== at);
   return { ...sheet, header: drop(sheet.header), rows: sheet.rows.map(drop), ...(sheet.formats ? { formats: drop(sheet.formats) } : {}) };
 }
-/** Excel 正規化：摘要工作表拿掉「版頭」區塊的列；V3-9a 起另拿掉損益兩平 MER 的新增列（isBreakevenExcelRow）；V3-9b 起拿掉管理損益表工作表與待辦工作表的廣告決策欄；其餘工作表、表頭、每一格原樣保留。 */
+/**
+ * Excel 正規化：摘要工作表拿掉「版頭」區塊的列；V3-9a 起另拿掉損益兩平 MER 的新增列（isBreakevenExcelRow）；V3-9b 起拿掉管理損益表工作表與待辦工作表的廣告決策欄；
+ * V4-9b 起拿掉「圖表資料」工作表（isChartV4Sheet）與指標定義工作表的 B 級版本列（isChartV4VersionRow）；其餘工作表、表頭、每一格原樣保留。
+ */
 export function normalizeWorkbook(workbook: ExcelWorkbook): ExcelWorkbook {
   const section = labels.exports.headerV3.excelSection;
-  return { sheets: workbook.sheets.filter(sheet => !isPnlSheet(sheet)).map(withoutAdDecisionColumn).map(sheet => ({ ...sheet, rows: sheet.rows.filter(row => !(row[0]?.kind === "text" && row[0].value === section) && !isBreakevenExcelRow(row)) })) };
+  return { sheets: workbook.sheets.filter(sheet => !isPnlSheet(sheet) && !isChartV4Sheet(sheet)).map(withoutAdDecisionColumn).map(sheet => ({ ...sheet, rows: sheet.rows.filter(row => !(row[0]?.kind === "text" && row[0].value === section) && !isBreakevenExcelRow(row) && !isChartV4VersionRow(row)) })) };
 }
 
 async function source(filters: AnalysisFilters = {}) {

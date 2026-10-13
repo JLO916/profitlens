@@ -1,7 +1,7 @@
 import { uniqueSources } from "../domain/aggregation";
 import { compareMoney } from "../domain/metrics";
 import { formatCents, parseCents } from "../domain/money";
-import type { Diagnostic, Fact, Metric, MetricName, Period, RuleCode, Scope, SourceRef } from "../domain/types";
+import { AMOUNT_FIELDS, type AmountField, type Diagnostic, type Fact, type Metric, type MetricName, type Period, type RuleCode, type Scope, type SourceRef } from "../domain/types";
 import { fill, labels } from "../i18n";
 import { channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, ruleCopy, scopeLabel } from "./copy";
 import type { TaxConversion } from "./tax-basis";
@@ -72,6 +72,8 @@ export interface ManagerSummary {
   assist: { version: typeof ASSIST_KPI_VERSION; previous: AssistKpi[]; current: AssistKpi[] };
   /** V3-9a F12：損益兩平 MER（breakeven-mer-v1，獨立於 assist-kpi-v1）；選填，舊的摘要物件沒有這個欄位。 */
   breakeven?: { version: typeof BREAKEVEN_MER_VERSION; previous: BreakevenMer; current: BreakevenMer };
+  /** V4-9b（D-V4-12＝A）：九項差額（report.bridge.components，對扣廣告後貢獻的影響，正數＝增加）；一頁摘要 Markdown 的九項差額表用。選填，舊的摘要物件沒有這個欄位。 */
+  bridge?: Record<AmountField, Metric>;
   /** R4：目標達成（只列與本期完全相同的目標；期間不一致者列出提示）。 */
   targets: { metric: TargetMetric; text: string; status: "matched" | "mismatch" }[];
 }
@@ -168,6 +170,7 @@ export function buildManagerSummary(snapshot: WorkspaceSnapshot, options: { impo
     headlines: [metricComparison(snapshot, "net_revenue"), metricComparison(snapshot, "contribution_after_marketing")],
     assist: { version: ASSIST_KPI_VERSION, previous: assistKpis(report.previous), current: assistKpis(report.current) }, targets: targetLines,
     breakeven: { version: BREAKEVEN_MER_VERSION, previous: breakevenMer(report.previous), current: breakevenMer(report.current) },
+    bridge: report.bridge.components,
     channels: report.scope.channels.map(channel => ({ channel, revenue: metricComparison(snapshot, "net_revenue", channel), contribution: metricComparison(snapshot, "contribution_after_marketing", channel) })),
     priorities: diagnosis.priorities.map(group => byRule.get(group.rule)!), groups, omitted_group_count: diagnosis.omitted_group_count, diagnosis: diagnosis.groups, facts: report.facts, assumptions: converted ? [...LIMITATIONS, converted] : LIMITATIONS, conversion_note: converted,
   });
@@ -229,6 +232,10 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   for (const row of summary.headlines) lines.push(fill(copy.mdHeadlineRow, { metric: metricDefinitions[row.metric].label, previous: amount(row.previous), current: amount(row.current), change: amount(row.change, true) }));
   lines.push("", `| ${labels.exports.csv.columns.channel} | ${moneyColumn(`${labels.shell.periods.previous}${contributionShort}`)} | ${moneyColumn(`${labels.shell.periods.current}${contributionShort}`)} | ${moneyColumn(labels.exports.csv.suffix.change)} |`, "| --- | ---: | ---: | ---: |");
   for (const row of summary.channels) lines.push(`| ${md(channelLabel(row.channel, alias))} | ${amount(row.contribution.previous)} | ${amount(row.contribution.current)} | ${amount(row.contribution.change, true)} |`);
+  // V4-9b（D-V4-12＝A，CHART_CATALOG G1 匯出）：九項差額表（項目、差額（元）；L2 帶號、U+2212，列名同總覽橋接表）。Markdown 沒有版本之分，選哪一版都一樣。
+  const bridge = summary.bridge;
+  if (bridge) lines.push("", `## ${labels.overview.sections.bridge}`, "", `| ${labels.overview.bridgeV3.table.item} | ${moneyColumn(labels.exports.csv.suffix.change)} |`, "| --- | ---: |",
+    ...AMOUNT_FIELDS.map(field => `| ${labels.overview.bridgeV3.rows[field]} | ${amount(bridge[field], true)} |`));
   lines.push("", `## ${labels.overview.sections.assistKpis}`, "", labels.assist.intro, "", `| ${labels.exports.csv.columns.metric} | ${labels.shell.periods.previous} | ${labels.shell.periods.current} |`, "| --- | ---: | ---: |");
   for (const [index, kpi] of summary.assist.current.entries()) lines.push(`| ${md(kpi.label)} | ${md(summary.assist.previous[index].display)} | ${md(kpi.display)} |`);
   // V3-9a F12：損益兩平 MER 接在其他常用指標表的最後一列（版本 breakeven-mer-v1 寫在技術細節）；既有各列不變。
