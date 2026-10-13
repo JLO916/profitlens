@@ -27,7 +27,13 @@ V4-11 做了以下收尾：
 
 **未執行**：
 
-- 依使用者指示：git tag `v4.0.0`、推送 `main`、部署正式站或 preview、Vercel Skew Protection（D-V4-44 C）。正式站仍是 v3.0.0。
+- 依使用者指示：git tag `v4.0.0`、推送 `main`、部署正式站、Vercel Skew Protection（D-V4-44 C）。正式站仍是 v3.0.0。
+- **2026-10-14 已部署 preview**（使用者當次同意「先部署 preview」）：
+  - 做法：只推送分支 `revamp/v4`，由 Vercel Git 整合建置。
+  - 部署：`dpl_Cr8gE1EfaMmNwHQQMr8k2B7yXfPt`，commit `5d07454`，https://profitlens-git-revamp-v4-jlo916s-projects.vercel.app。
+  - 檢查：13 項 HTTP 全部通過，補充項目也全部通過；`/api/insights` 回報 `PUBLIC_DEMO`。
+  - 無頭瀏覽器在 1440 與 390 載入示範資料，總覽的 G1 標題正確，沒有橫向捲動。
+  - 目前 preview 不需要 Vercel 登入就能開。
 - 待人工：H6 可用性複測與盲評（PRD §2.2 A1–A4）；PPT、PDF、Excel 開檔檢查。
 
 **未達標並據實記錄**：B4 CLS。390 寬切到商品毛利、資料來源、待辦，以及 1440 寬切到待辦時，CLS 是 0.053–0.054；這是 v3.0.0 就有的行為。

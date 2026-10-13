@@ -292,6 +292,15 @@ B–D 批、敏感度持久化、多場會議封存、目標引擎、Live AI、p
 
 **原因：** 以可及名稱不變、同一份 DOM 為原則，讓殼層重排不觸發變相刪功能，也把 E2E 改動集中在共用 helper。
 
+## 2026-10-14｜v4 preview 部署（使用者當次同意）
+
+使用者問「可以正式部署了嗎？」，我建議先部署 preview，使用者回覆「先部署 preview」。
+
+- **做法**：比照 2026-10-06 的 v3 MVP preview，只推送分支 `revamp/v4`，由 Vercel Git 整合建置 preview（`dpl_Cr8gE1EfaMmNwHQQMr8k2B7yXfPt`，commit `5d07454`）。
+- **沒有動的**：沒有推 `main`、沒有打 tag，正式站仍是 v3.0.0。Skew Protection 沒有變更。
+- **檢查**：preview 的 13 項 HTTP 全部通過。
+- **之後**：preview 用於 H6 與匯出開檔檢查。正式上線、tag 與 Skew Protection 仍要使用者當次同意。
+
 ## 2026-10-13｜Revamp v4 V4-11：收尾的取捨（不部署）
 
 - **棘輪上限**：V4-11 重測 design-lint 15 項、chart-lint 11 條與 copy-density 七頁各狀態，實測都已等於上限（hex 0、圓角 4、字級 11、字距 0、箭頭 3、其餘 0；CL-1 到 CL-11 全 0；試算 1、其餘 0），所以數值不動，只在上限檔與測試的說明加 V4-11 重測一句。copy-style 照規則不動（同義詞 12，D-V3-37 的 B 案延後）。

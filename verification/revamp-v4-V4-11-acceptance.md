@@ -6,7 +6,7 @@
 
 - 打 git tag `v4.0.0`
 - 推送 `main`
-- 部署正式站或 preview
+- 部署正式站（preview 在 2026-10-14 經使用者同意另外部署，見文末）
 - 開啟 Vercel Skew Protection（D-V4-44 的 C）
 
 正式站仍是 v3.0.0。
@@ -77,3 +77,14 @@
 
   樣本在 `verification/revamp-v4/V4-9a/exports/`、`V4-9b/exports/`。
 - **上線**：tag `v4.0.0`、合併並推送 `main`（會觸發正式站部署）、Skew Protection。每一項都需要使用者當次明確同意。
+
+## 5. 2026-10-14 preview 部署（使用者當次同意「先部署 preview」）
+
+- **做法**：只推送分支 `revamp/v4` 到 origin。沒有推 `main`、沒有打 tag，正式站不變。由 Vercel Git 整合建置 preview。
+- **部署**：`dpl_Cr8gE1EfaMmNwHQQMr8k2B7yXfPt`，target 是 preview，READY。來源是 `revamp/v4` @ `5d07454`。
+- **網址**：https://profitlens-git-revamp-v4-jlo916s-projects.vercel.app（另一個網址是 `https://profitlens-hv8v4nbgo-jlo916s-projects.vercel.app`）。
+- **環境**：preview 環境變數維持公開示範模式，`/api/insights` 回 `{"available":false,"reason":"PUBLIC_DEMO"}`。
+- **13 項 HTTP**：全部通過，補充項目也全部通過，`live_ai_called: false`（`verification/revamp-v4/V4-11/launch-check-preview.json`）。
+- **瀏覽器**：用無頭 Chromium 在 1440 與 390 載入示範資料，總覽的 G1 標題是「少賺 59.9 萬，扣最多的一項是商品成本（−157.5 萬）」，`main .chart-frame` 6 個，scrollWidth 分別等於 1440、390。
+- **存取**：目前 preview 不需要 Vercel 登入就能開。v3 時專案有 SSO 保護，現在的設定已不同；要不要限制由使用者決定。
+
