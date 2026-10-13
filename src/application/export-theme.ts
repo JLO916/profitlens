@@ -25,6 +25,22 @@ export const EXPORT_THEME = {
   onBrand: "FFFFFF",
   /** Excel 表頭底色（#f1f3f3）。 */
   headerFill: "F1F3F3",
+  // ── V4-9a 錨點：圖表色（C31 PrintChart、C32 pptChart；PRD §6.5、§5.10）。值與畫面的 --chart-* 相同；
+  // PDF 一律灰階：起訖與小計＝paper 底加 ink 外框、有利＝chartFavorable、不利＝ink（chartTotal 與 chartSeg1 同為 gray-700，不拿來區分小計與不利）。
+  /** 本期資料（#1f5a4f，同 brand）。 */
+  chartCurrent: "1F5A4F",
+  /** 上期（gray-400）。 */
+  chartPrevious: "7F898B",
+  /** 起訖、小計與中性量（gray-700）。 */
+  chartTotal: "4A5558",
+  /** 不利（#b03a2e，唯一語意色）。 */
+  chartUnfavorable: "B03A2E",
+  /** 有利：灰實心，不用綠（D-V3-7；gray-400）。 */
+  chartFavorable: "7F898B",
+  /** 堆疊條第 1–3 段（gray-700、gray-500、gray-400）。 */
+  chartSeg1: "4A5558",
+  chartSeg2: "5F6A6D",
+  chartSeg3: "7F898B",
 } as const;
 
 export type ExportThemeKey = keyof typeof EXPORT_THEME;
@@ -33,6 +49,9 @@ export type ExportThemeKey = keyof typeof EXPORT_THEME;
 export const EXPORT_THEME_TOKENS: Readonly<Record<ExportThemeKey, string>> = {
   brand: "--accent", ink: "--text-primary", muted: "--text-secondary", line: "--border-subtle", lineStrong: "--border-strong", paper: "--bg-subtle",
   surface: "--bg-surface", unfavorable: "--unfavorable", favorable: "--favorable", onBrand: "--on-accent", headerFill: "--gray-50",
+  // V4-9a 圖表色
+  chartCurrent: "--chart-current", chartPrevious: "--chart-previous", chartTotal: "--chart-total", chartUnfavorable: "--chart-unfavorable", chartFavorable: "--chart-favorable",
+  chartSeg1: "--chart-seg-1", chartSeg2: "--chart-seg-2", chartSeg3: "--chart-seg-3",
 };
 
 /** OOXML 的 ARGB（不透明）：Excel 樣式的 rgb 屬性用。 */

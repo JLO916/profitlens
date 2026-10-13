@@ -16,6 +16,10 @@ export const DEFAULT_EXPORT_VARIANT: ExportVariant = "standard";
 /** Excel 工作表的代號（名稱在 labels：excelExport.sheets.* 與 exports.variantsV3.pnlSheet）。 */
 export type ExcelSheetKey = "summary" | "channels" | "bridge" | "products" | "actions" | "basis" | "pnl";
 
+/** V4-9a 匯出用的圖（代號同畫面 ChartFrame 的 id，也是列印 `svg[data-print-chart="{id}"]` 的值）：bridge＝G1 貢獻變化拆解、profit＝G2 本期利潤結構（合計）。 */
+export const EXPORT_CHART_IDS = ["bridge", "profit"] as const;
+export type ExportChartId = typeof EXPORT_CHART_IDS[number];
+
 /**
  * V3-9b F14（PRD §10.1 F14、§7.9、§9.6、D-V3-8）：三個變體的版面規則，列印／PDF、Excel、PPT 三個管線都只讀這一份。
  * 只決定「放不放、放在哪」，不改任何數字：三個變體用同一個 ManagerSummary／snapshot，數值逐格相同。
@@ -49,10 +53,21 @@ export interface ExportVariantSpec {
   appendix: { assumptions: boolean; notes: boolean; otherActions: boolean; pnl: boolean; technical: boolean };
   /** Excel 工作表與順序；管理損益表（D-V3-8 括號負數）三個變體都有，放在最後。 */
   excelSheets: readonly ExcelSheetKey[];
+  /**
+   * V4-9a（PRD §5.10、D-V4-11＝B、D-V4-34＝A）：各管線放哪幾張圖（陣列順序＝輸出順序）；圖只重新呈現既有數字，三個變體逐格相同。
+   * print（C31 PrintChart）：page＝第一頁關鍵數字之下；appendix＝附錄（新的一頁）的圖；appendixTables＝附錄放哪幾張圖的資料表。
+   * pptx（C32 pptChart）：新增第二張投影片放的原生圖，第一張的區塊一個都不動；空陣列＝不加第二張。
+   */
+  charts: {
+    print: { page: readonly ExportChartId[]; appendix: readonly ExportChartId[]; appendixTables: readonly ExportChartId[] };
+    pptx: readonly ExportChartId[];
+  };
 }
 
 const ALL_SECTIONS: ExportVariantSpec["sections"] = { oneLiner: false, kpis: "headlines", scope: true, priorityDetail: true, assist: true, channels: true, decisions: true, footer: true };
 const STANDARD_SHEETS: readonly ExcelSheetKey[] = ["summary", "channels", "bridge", "products", "actions", "basis", "pnl"];
+/** V4-9a 標準版與客戶報告版：第一頁 G1；附錄多一頁放 G2 與兩張圖的資料表（D-V4-11＝B）；PPT 第二張 G1（D-V4-34＝A）。 */
+const FULL_CHARTS: ExportVariantSpec["charts"] = { print: { page: ["bridge"], appendix: ["profit"], appendixTables: ["bridge", "profit"] }, pptx: ["bridge"] };
 const SPECS: Readonly<Record<ExportVariant, ExportVariantSpec>> = {
   // 標準版＝現況（V3-7 正規化基準逐字相同）；只多每週管理損益表（列印附錄、Excel 最後一張工作表）與 Excel 待辦工作表最後的廣告決策欄。
   standard: {
@@ -60,6 +75,7 @@ const SPECS: Readonly<Record<ExportVariant, ExportVariantSpec>> = {
     internal: { decisionNotes: true, actionProgress: true, citationHistory: true },
     appendix: { assumptions: true, notes: true, otherActions: true, pnl: true, technical: true },
     excelSheets: STANDARD_SHEETS,
+    charts: FULL_CHARTS,
   },
   // 老闆一頁版：只留 L1——版頭四行、本期一句話、四個關鍵數字（本期／上期／差額）、三件事的標題與影響金額、決議一行（有會議時）。
   boss: {
@@ -68,6 +84,8 @@ const SPECS: Readonly<Record<ExportVariant, ExportVariantSpec>> = {
     internal: { decisionNotes: false, actionProgress: false, citationHistory: false },
     appendix: { assumptions: false, notes: false, otherActions: false, pnl: false, technical: false },
     excelSheets: ["summary", "pnl"],
+    // V4-9a：PDF 維持 1 頁——G1 印在關鍵數字之下（高 ≤ 60mm），不加附錄；PPT 同標準版（第二張 G1）。
+    charts: { print: { page: ["bridge"], appendix: [], appendixTables: [] }, pptx: ["bridge"] },
   },
   // 代營運客戶報告版：標準版的內容＋客戶行；拿掉內部備註與技術細節，附上每週管理損益表。
   client: {
@@ -75,6 +93,7 @@ const SPECS: Readonly<Record<ExportVariant, ExportVariantSpec>> = {
     internal: { decisionNotes: false, actionProgress: false, citationHistory: false },
     appendix: { assumptions: true, notes: false, otherActions: true, pnl: true, technical: false },
     excelSheets: STANDARD_SHEETS,
+    charts: FULL_CHARTS,
   },
 };
 

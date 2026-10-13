@@ -48,6 +48,24 @@ describe("V3-7 export-theme：匯出色碼與 globals.css :root 一一對應", (
     expect(argb(EXPORT_THEME.headerFill)).toBe("FFF1F3F3");
   });
 
+  it("V4-9a 圖表色：chartCurrent…chartSeg3 對到 --chart-*（解到底與畫面同色；本期＝品牌色、不利＝unfavorable、有利是灰不是綠）", () => {
+    expect(EXPORT_THEME_TOKENS).toMatchObject({
+      chartCurrent: "--chart-current", chartPrevious: "--chart-previous", chartTotal: "--chart-total", chartUnfavorable: "--chart-unfavorable", chartFavorable: "--chart-favorable",
+      chartSeg1: "--chart-seg-1", chartSeg2: "--chart-seg-2", chartSeg3: "--chart-seg-3",
+    });
+    for (const key of ["chartCurrent", "chartPrevious", "chartTotal", "chartUnfavorable", "chartFavorable", "chartSeg1", "chartSeg2", "chartSeg3"] as const) {
+      expect(EXPORT_THEME[key], key).toBe(hex(resolveToken(tokens, EXPORT_THEME_TOKENS[key])));
+    }
+    expect(EXPORT_THEME.chartCurrent).toBe(EXPORT_THEME.brand);
+    expect(EXPORT_THEME.chartUnfavorable).toBe(EXPORT_THEME.unfavorable);
+    expect(EXPORT_THEME.chartFavorable).toBe(hex(resolveToken(tokens, "--gray-400")));
+  });
+
+  it("V4-9a C31 PDF 灰階：起訖與小計（paper 底＋ink 外框）、有利（chartFavorable）、不利（ink）三種填色兩兩不同；chartTotal 與 chartSeg1 同色，不拿來區分小計與不利", () => {
+    expect(new Set([EXPORT_THEME.paper, EXPORT_THEME.chartFavorable, EXPORT_THEME.ink]).size).toBe(3);
+    expect(EXPORT_THEME.chartTotal).toBe(EXPORT_THEME.chartSeg1);
+  });
+
   it("列印字級 token：--print-title 14pt、--print-body 10pt、--print-note 8pt，放在 :root", () => {
     expect([tokens.get("--print-title"), tokens.get("--print-body"), tokens.get("--print-note")]).toEqual(["14pt", "10pt", "8pt"]);
   });

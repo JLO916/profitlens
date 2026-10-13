@@ -2841,6 +2841,34 @@ export const exportLabels = {
     /** D-V3-8：列印、PDF 的管理損益表負數用括號，例如 (1,234.00)；其他地方仍是 U+2212。 */
     negativeParen: "({value})",
   },
+  // ── V4-9a 錨點：匯出的圖（開工基礎先給共用字串；代理 A 只在 print 內新增、代理 B 只在 pptx 內新增）。
+  // 圖的標題一律沿用結論句（G1 bridgeWaterfall().title＝overview.bridgeV3.title.*、G2 profitWaterfall().title＝overview.profit.title.*），柱名用 bars[].shortLabel，柱值用 bars[].display；這裡只放沒有既有字串可用的。
+  chartsV4: {
+    /** C31 PrintChart（PDF）。 */
+    print: {
+      /** 圖例（SVG 線段＋名稱）的「起訖與小計」（淺灰底加外框）；有利、不利沿用 format.favorable／unfavorable。 */
+      legend: { level: "起訖與小計" },
+      /** G2 圖說（附錄，合計範圍）：畫面副標去掉「切換範圍只影響這張圖」；{section}＝overview.profit.section，{period}＝本期起訖，{scope}＝合計或全部通路。G1 圖說沿用 bridgeWaterfall().subtitle。 */
+      profitSubtitle: "{section} · {period} · {scope}",
+    },
+    /** C32 pptChart（PPT 第二張投影片的 G1 原生瀑布，D-V4-34＝A）。 */
+    pptx: {
+      /** 標題下一行：{section}＝overview.sections.bridge，{period}＝版頭的兩期（headerV3.periodLine），{unit}＝版頭的單位（headerV3.unitExclusive／unitConverted）。 */
+      subtitle: "{section} · {period} · {unit}",
+      /**
+       * 堆疊長條的系列名（PowerPoint「編輯資料」的內嵌活頁簿看得到，D-V4-10）：透明底段與 0 以下的段是輔助系列（圖形用，非金額）；
+       * 有利、不利兩個系列存的是柱高，名稱標明絕對值（商品成本在這一欄是正的，橋接表是負的）；起訖與小計存的是金額。
+       */
+      series: {
+        base: "透明底段（圖形用，非金額）",
+        level: "起訖與小計（金額）",
+        favorable: "有利差額（絕對值，圖形用）",
+        unfavorable: "不利差額（絕對值，圖形用）",
+        favorableBelowZero: "有利差額在 0 以下的段（圖形用，非金額）",
+        unfavorableBelowZero: "不利差額在 0 以下的段（圖形用，非金額）",
+      },
+    },
+  },
 } as const;
 
 // ── storage：保存：自動保存、本機保存與備份、替換前確認

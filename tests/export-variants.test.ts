@@ -8,7 +8,7 @@ import * as XLSX from "xlsx";
 import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction, setAdDecision, type ActionWorkspace } from "@/application/action-workspace";
 import { buildExcelWorkbook, EXCEL_NUMBER_FORMATS, excelHeader, writeExcel, type ExcelCell, type ExcelSheet, type ExcelWorkbook } from "@/application/excel-export";
 import { buildExportHeader, clientHeaderLine } from "@/application/export-header";
-import { DEFAULT_EXPORT_VARIANT, EXPORT_VARIANTS, variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExportVariant } from "@/application/export-variants";
+import { DEFAULT_EXPORT_VARIANT, EXPORT_CHART_IDS, EXPORT_VARIANTS, variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExportVariant } from "@/application/export-variants";
 import { buildManagerSummary, type ManagerSummary, type SummaryDecisionContext } from "@/application/manager-summary";
 import { buildPnlTable, pnlExportAmount, pnlExportShare, pnlExportTable, PNL_ROWS } from "@/application/pnl-table";
 import { buildPptxOnePager, writePptx, type PptxOnePager } from "@/application/pptx-export";
@@ -100,6 +100,19 @@ describe("variantSpec：三個變體的規則只定義一次", () => {
     expect(client.appendix).toEqual({ assumptions: true, notes: false, otherActions: true, pnl: true, technical: false });
     expect(client.excelSheets).toEqual(standard.excelSheets);
     expect(standard.excelSheets.at(-1)).toBe("pnl");
+  });
+
+  it("V4-9a charts（PRD §5.10、D-V4-11＝B、D-V4-34＝A）：PDF 三個版本第一頁都有 G1，標準與客戶版附錄放 G2 與兩張圖的資料表、老闆一頁版不加附錄；PPT 三個版本第二張都是 G1，G2 不放", () => {
+    const [standard, boss, client] = EXPORT_VARIANTS.map(variant => variantSpec(variant));
+    expect(EXPORT_CHART_IDS).toEqual(["bridge", "profit"]);
+    expect(standard.charts).toEqual({ print: { page: ["bridge"], appendix: ["profit"], appendixTables: ["bridge", "profit"] }, pptx: ["bridge"] });
+    expect(client.charts).toEqual(standard.charts);
+    expect(boss.charts).toEqual({ print: { page: ["bridge"], appendix: [], appendixTables: [] }, pptx: ["bridge"] });
+    for (const spec of [standard, boss, client]) {
+      // X18、X39：橋接主圖一律是瀑布，三種版本都有 G1；G2 只在列印附錄、不進 PPT。
+      expect(spec.charts.print.page, spec.variant).toContain("bridge");
+      expect(spec.charts.pptx, spec.variant).toEqual(["bridge"]);
+    }
   });
 
   it("版頭：客戶行在第 1 行之後（客戶：資料集名稱 · 製表：EC ProfitLens），其他行不變", () => {
