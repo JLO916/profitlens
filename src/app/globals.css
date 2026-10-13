@@ -2983,3 +2983,6 @@ td.num > .reconciliation-match { float: left; margin-right: var(--space-2); colo
    各列的零線在同一條直線上（同一張表共用基準與版面）；顯示寬沿用 .bar-cell（≥ 768 為 96px、≤ 767 為 64px）。抽屜寬度與高度規則不變。 */
 td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); }
 /* ── V4-7b C 錨點結束 ── */
+
+/* ── V4-8a B：D-V3-35 期間列去年同期提示（needs-attention 的 hidden）、G12 收合列與 G10、G11 的間距（代理 B）；投影規則一律寫在上方 V3-9b C 區段（tests/present-mode.test.tsx） ── */
+/* ── V4-8a B 錨點結束 ── */

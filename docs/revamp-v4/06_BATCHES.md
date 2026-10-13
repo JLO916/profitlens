@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批一起改的 labels 與測試／相關拍板／另需的人工時間。
 >
-> **目前進度：V4-3c 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3c-acceptance.md`；First Load JS 499,443，剩 45,954 bytes；D-V4-43＝A、D-V4-44＝B＋C）。V4-4 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-4-acceptance.md`；First Load JS 500,188，剩 45,209 bytes；D-V4-45＝B 排入 V4-8）。V4-5 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-5-acceptance.md`；First Load JS 507,258，剩 38,139 bytes；D-V4-46＝B 已補做、D-V4-47＝B）。V4-6 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-6-acceptance.md`；First Load JS 508,934，剩 36,463 bytes；D-V4-48–50 已拍板並補做）。V4-7a 完成（2026-10-12；驗收見 `verification/revamp-v4-V4-7a-acceptance.md`；First Load JS 510,564，剩 34,833 bytes；D-V4-51–54 已拍板並補做）。V4-7b 完成（2026-10-12；驗收見 `verification/revamp-v4-V4-7b-acceptance.md`；First Load JS 511,174，剩 34,223 bytes；沒有新增待拍板）。V4-7c 完成（2026-10-13；驗收見 `verification/revamp-v4-V4-7c-acceptance.md`；v5 加選填 `payload.active.imported_at`，版本字串不變；First Load JS 511,610，剩 33,787 bytes；新增待拍板 D-V4-55）。V4-3b 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3b-acceptance.md`）。V4-2 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-2-acceptance.md`），MVP 切線已到（preview 部署需使用者當次同意）。2026-10-09 使用者回覆「待拍版的都用建議值」：D-V3-26／27／29–37 依建議值，新增批次 V4-7c，共 17 批。V4-1 完成（2026-10-08）。D-V4-1–41 全部定案。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
+> **目前進度：V4-3c 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3c-acceptance.md`；First Load JS 499,443，剩 45,954 bytes；D-V4-43＝A、D-V4-44＝B＋C）。V4-4 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-4-acceptance.md`；First Load JS 500,188，剩 45,209 bytes；D-V4-45＝B 排入 V4-8）。V4-5 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-5-acceptance.md`；First Load JS 507,258，剩 38,139 bytes；D-V4-46＝B 已補做、D-V4-47＝B）。V4-6 完成（2026-10-10；驗收見 `verification/revamp-v4-V4-6-acceptance.md`；First Load JS 508,934，剩 36,463 bytes；D-V4-48–50 已拍板並補做）。V4-7a 完成（2026-10-12；驗收見 `verification/revamp-v4-V4-7a-acceptance.md`；First Load JS 510,564，剩 34,833 bytes；D-V4-51–54 已拍板並補做）。V4-7b 完成（2026-10-12；驗收見 `verification/revamp-v4-V4-7b-acceptance.md`；First Load JS 511,174，剩 34,223 bytes；沒有新增待拍板）。V4-7c 完成（2026-10-13；驗收見 `verification/revamp-v4-V4-7c-acceptance.md`；v5 加選填 `payload.active.imported_at`，版本字串不變；First Load JS 511,610，剩 33,787 bytes；新增待拍板 D-V4-55，2026-10-13 定為 A）。V4-8 於 2026-10-13 開工前拆成 V4-8a（投影與期間列）與 V4-8b（四尺寸總檢與隨頁載入狀態），V4-8a 進行中；V4-8b 的待拍板 D-V4-56–63 已列入 `09_DECISIONS_PENDING.md`。V4-3b 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-3b-acceptance.md`）。V4-2 完成（2026-10-09；驗收見 `verification/revamp-v4-V4-2-acceptance.md`），MVP 切線已到（preview 部署需使用者當次同意）。2026-10-09 使用者回覆「待拍版的都用建議值」：D-V3-26／27／29–37 依建議值，新增批次 V4-7c，共 17 批。V4-1 完成（2026-10-08）。D-V4-1–41 全部定案。H5 使用者回報通過。V4-0b 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0b-acceptance.md`）。V4-0a 完成（2026-10-08；驗收見 `verification/revamp-v4-V4-0a-acceptance.md`，基準見 `verification/revamp-v4/V4-0-baseline.md`）。D-V4-36 定為 A（2026-10-08）。** D-V4-1–35 已於 2026-10-08 全部依建議值拍板（`09_DECISIONS_PENDING.md`）；以下「擋住」清單保留作為依賴對照。擋住 V4-0a 的拍板：D-V4-1、2、3、15、23、24、25、26、27；擋住 V4-0b 的另有 D-V4-31；擋住 V4-1 的另有 D-V4-4、5、7、14、30 與人工關卡 H5（或使用者明確表示比照 v3 略過），V4-1 的 G6 另依 D-V4-33。其餘各批的擋批拍板寫在批次總表的「依賴」欄，與 `09_DECISIONS_PENDING.md` 的「影響批次」欄一致。沒有明確回覆就不視為核准，拍板前一律沿用 v3.0.0 的行為與用詞。基準：tag `v3.0.0`＝`625bfa5`；`main`＝`revamp/v2`＝`21d621c`；正式站 https://profitlens-tau.vercel.app 是 v3.0.0。
 >
 > 本套件寫「V4-0」時指 V4-0a、V4-0b 兩批合稱；「V4-0 實測」「V4-0 基準」都是 V4-0a 量到的 v3.0.0 值。原本的 V4-0（13 項，含 AST 掃描器、capture 與 metrics、PPT spike、合成資料、四頁兩尺寸設計稿與全套基準量測）與 V4-7（4 張圖、跨資料來源、匯入精靈、抽屜三個介面）在開工前依工作量拆成 a／b（CLAUDE.md：批次太大要在開工前拆；v3 的設計稿放在 L 級的 V3-1，不在 V3-0）。
 
@@ -73,13 +73,14 @@
 | V4-7a | 資料來源（G20、G21、問題表篩選） | M | V4-6；D-V4-40（V4-0b 新增，2026-10-08 定為 A） | — | 完成（2026-10-12；只有 09 變動；390 TBT 以同場 6 對判定） |
 | V4-7b | 匯入精靈與抽屜（G22、G23、`ladderMetrics` 搬移） | M | V4-7a | — | 完成（2026-10-12；只有 desktop、laptop 的 12 變動；390 TBT 低負載三次通過） |
 | V4-7c | 匯入時間寫進備份（D-V3-30＝A，2026-10-09 新增） | S | V4-7b；D-V3-30 | — | 完成（2026-10-13；v5 加選填欄位；畫面 0 差異；390 TBT 低負載三次通過） |
-| V4-8 | 投影與四尺寸總檢 | M | V4-1 到 V4-7b；D-V4-8、9、33；D-V4-35（回覆 B 而 V4-1 時尚未回覆）；D-V3-33、34（回覆後）；D-V4-44 B；D-V4-45 B | — | 未開工 |
-| V4-9a | 匯出（一）PDF 與 PPT | M | V4-8；D-V4-10、11、34；D-V4-37（V4-0b 新增，2026-10-08 定為 A） | PPT、PDF 開檔人工檢查半天 | 未開工 |
+| V4-8a | 投影與期間列（2026-10-13 由 V4-8 拆出） | M | V4-7c；D-V4-8、9、33；D-V3-33、34、35；D-V4-45 B | — | 進行中（2026-10-13 開工） |
+| V4-8b | 四尺寸總檢與隨頁載入狀態（2026-10-13 由 V4-8 拆出） | M | V4-8a；D-V4-44 B；D-V4-56–63 | — | 未開工 |
+| V4-9a | 匯出（一）PDF 與 PPT | M | V4-8b；D-V4-10、11、34；D-V4-37（V4-0b 新增，2026-10-08 定為 A） | PPT、PDF 開檔人工檢查半天 | 未開工 |
 | V4-9b | 匯出（二）Excel 與 Markdown | M | V4-9a；D-V4-12、13 | Excel 開檔人工檢查半天 | 未開工 |
 | V4-10 | P2 圖表（G8、G17、G24；可整批延後） | M | V4-9b；D-V4-12、21、22 | — | 未開工 |
 | V4-11 | 收尾與上線 | M | 全部（V4-10 延後時依賴 V4-9b）；D-V4-1、28；D-V4-44 C；**H6**（擋正式上線） | H6 約 1 週 | 未開工 |
 
-總計 18 批（原 16 批，加 V4-7c 與 V4-3c）、至少 18 個工作階段；另需約 1.5–2 週的人工時間（H5、H6、匯出開檔檢查，加上招募與等待）。依賴鏈：V4-0a、V4-0b、（H5）、V4-1、V4-2、V4-3a、V4-3b、V4-4、V4-5、V4-6、V4-7a、V4-7b、V4-8、V4-9a、V4-9b、V4-10、V4-11、（H6）。V4-10 可整批延後，V4-11 改依賴 V4-9b。D-V4-3（禁區 diff 基準）每批都適用，在 V4-0a 回覆即可。
+總計 19 批（原 16 批，加 V4-7c、V4-3c，V4-8 拆成 V4-8a、V4-8b）、至少 19 個工作階段；另需約 1.5–2 週的人工時間（H5、H6、匯出開檔檢查，加上招募與等待）。依賴鏈：V4-0a、V4-0b、（H5）、V4-1、V4-2、V4-3a、V4-3b、V4-4、V4-5、V4-6、V4-7a、V4-7b、V4-7c、V4-8a、V4-8b、V4-9a、V4-9b、V4-10、V4-11、（H6）。V4-10 可整批延後，V4-11 改依賴 V4-9b。D-V4-3（禁區 diff 基準）每批都適用，在 V4-0a 回覆即可。
 
 畫面基準的編號：01–09 是 v3 的 9 個畫面（`01-overview-top`、`02-overview-full`、`03-evidence-drawer`、`04-actions-board`、`05-diagnosis`、`06-products`、`07-scenarios`、`08-meeting`、`09-data`）；V4-0a 新增 10 健檢圖區、11 商品圖區、12 匯入精靈步驟 4，以及 13 KPI 帶元素截圖；10–13 的拍攝狀態、資料與定位器見 V4-0a 第 9 項。
 
@@ -344,25 +345,63 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 
 ---
 
-## V4-8 投影與四尺寸總檢（M）
+## V4-8 投影與四尺寸總檢（M）→ 拆成 V4-8a、V4-8b（2026-10-13）
 
-> **2026-10-10 補充（D-V4-45＝B）**：健檢頁 C33 資料表的不利色。G10「通路成本結構」表的扣廣告後貢獻與每 100 元剩、G7b「各通路每週」表的週值，在 `deltaTone(...) === "unfavorable"` 時帶 C33 的 `unfavorable`（V4-4 新增；number-link 加 `negative`，純文字格 `td.negative`）；G7a 的比率依各指標的有利方向判斷；只有不利上色（D-V3-7）。同批更新健檢頁 SSR 測試（格的 class）；資料表收合在 `<details>` 內，畫面基準不變。
+> **2026-10-13 拆批**：V4-8 原是 M，又陸續併入 D-V4-44 B、D-V4-45 B、D-V3-33／34／35 與 G12 收合列。開工前的範圍盤點（5 個唯讀代理，含七頁 390 實測）列出約 14 項工作、兩種畫面變動（D-V3-35 讓 01–09 的 1440／1280／768 共 27 張整體上移；390 總檢的修正動到 mobile），加上 D-V4-44 B 的等待時序還有待拍板。依 CLAUDE.md「批次太大時要在開工前拆成 V4-{n}a／b」，拆成 **V4-8a 投影與期間列**、**V4-8b 四尺寸總檢與隨頁載入狀態**。原範圍、驗收重點與補充說明照下列分配，文字不刪。
 
-> **2026-10-09 補充（D-V4-44＝B＋C 的 B）**：隨頁載入的等待與失敗畫面。`setPanel` 在等頁面 chunk 時，主區標 `aria-busy` 並顯示既有的載入骨架（`shell/page-states.tsx` 的 LoadingState 樣式，高度同首屏，不位移）；chunk 載入失敗時顯示錯誤狀態與「再試一次」（重試走 `preparePanel`，成功後就地換成面板；焦點在錯誤狀態的標題）。優先沿用既有字串（`labels.shell.state.*`）；需要新字串時依 CLAUDE.md 只放 `{group}.chartsV4.*` 允許的前綴，並同批更新 `V4_NEW_KEY_PREFIXES`（本批「不加新 key」對這一項例外）。驗收：`tests/e2e/lazy-panels-v43c.spec.ts` 加等待中骨架可見、失敗時錯誤狀態可見且「再試一次」成功；axe 加「頁面程式載入失敗」狀態 0 serious；鍵盤走查里程碑 Tab 數不變；預先載入完成後切頁不出現骨架（52 張畫面基準不變）。
+原範圍（保留作對照）：投影白名單（`src/app/globals.css:2563` 的 `:not(...)`）加 `.bridge-section`：只顯示瀑布（柱上標值是 L1），拆解區改單欄，`.bridge-table-wrap`（橋接表，L3，含 G6）、v2 四欄 `<details>` 與 `.data-alternative` 隱藏但掛載（D-V4-8；X39 只要求瀑布可見）；`--text-12` 與 `--text-13` 在投影都對應 14px（D-V4-9，只重新對應 token 的值）；其餘新圖隱藏但掛載（M1）；D-V3-33、34 只在使用者回覆後處理；D-V4-35 回覆 B 而 V4-1 開工時尚未回覆的，本批把本期一句話改用與 G1 同一規則的新字串（`overview.chartsV4.*`，既有字串保留）；七頁 390 總檢；mounted-testids 全頁；keyboard-walk 補齊尚未加的頁的「第一張圖的資料表 summary」里程碑（商品頁 V4-4 已加；`[aria-hidden=true]` 停留點斷言 V4-0a 已加）。
+
+---
+
+## V4-8a 投影與期間列（M）
 
 > **2026-10-09 補充（D-V3-33＝B、D-V3-34＝A、D-V3-35＝A）**：投影按鈕改字樣（投影模式、離開投影）並拿掉 `aria-pressed`；投影中保留一個「總覽／會議紀錄」互切入口（頁首一行內）；去年同期不可用時只留趨勢圖下 `trend-yoy-note` 一行，期間列只在使用者選了去年同期時才提示（`preset-reason-visible-yoy` 的顯示條件改變，元素保持掛載）。D-V3-35 會讓每一頁 1440 與 1280 的期間列少一行，本批的允許變動畫面因此擴到 01–09 全部尺寸，驗收逐張寫理由；B1、B2 門檻改以本批實測為新基準（只能更早）。
 
-**範圍**：投影白名單（`src/app/globals.css:2563` 的 `:not(...)`）加 `.bridge-section`：只顯示瀑布（柱上標值是 L1），拆解區改單欄，`.bridge-table-wrap`（橋接表，L3，含 G6）、v2 四欄 `<details>` 與 `.data-alternative` 隱藏但掛載（D-V4-8；X39 只要求瀑布可見）；`--text-12` 與 `--text-13` 在投影都對應 14px（D-V4-9，只重新對應 token 的值）；其餘新圖隱藏但掛載（M1）；D-V3-33、34 只在使用者回覆後處理；D-V4-35 回覆 B 而 V4-1 開工時尚未回覆的，本批把本期一句話改用與 G1 同一規則的新字串（`overview.chartsV4.*`，既有字串保留）；七頁 390 總檢；mounted-testids 全頁；keyboard-walk 補齊尚未加的頁的「第一張圖的資料表 summary」里程碑（商品頁 V4-4 已加；`[aria-hidden=true]` 停留點斷言 V4-0a 已加）。
+> **2026-10-10 補充（D-V4-45＝B）**：健檢頁 C33 資料表的不利色。G10「通路成本結構」表的扣廣告後貢獻與每 100 元剩、G7b「各通路每週」表的週值，在 `deltaTone(...) === "unfavorable"` 時帶 C33 的 `unfavorable`（V4-4 新增；number-link 加 `negative`，純文字格 `td.negative`）；G7a 的比率依各指標的有利方向判斷；只有不利上色（D-V3-7）。同批更新健檢頁 SSR 測試（格的 class）；資料表收合在 `<details>` 內，畫面基準不變。
 
-**依賴**：V4-1 到 V4-7b；D-V4-8、9、33；D-V4-35（只在回覆 B 時）。
+**範圍**：
+- **投影（D-V4-8、D-V4-9、D-V3-33、D-V3-34）**：
+  - 投影白名單（V3-9b C 區段，HEAD 在 `src/app/globals.css:2578` 的 `:not(...)`；PRD 與實作卡寫的 `:2563` 是 v3.0.0 的行號）加 `.bridge-section`：只顯示瀑布（柱上標值是 L1），拆解區改單欄；`.frame-aside`、`.bridge-table-wrap`（橋接表，L3，含 G6）、v2 四欄 `<details>`（`.data-alternative`）隱藏但掛載（X39 只要求瀑布可見）。區塊標題、副標與 `.unit-note` 照 G2（`.profit-section`）的前例保留。
+  - `--text-12` 與 `--text-13` 在投影都對應 14px；`--leading-12`、`--leading-13` 同時對應 14px 的行高（照 v3 投影把字級與行高成對重新對應的前例）。只重新對應 token 的值，不新增字級原值。
+  - 其餘新圖隱藏但掛載（M1）：盤點後只有 `.bridge-section` 需要改 CSS，其餘只加斷言。
+  - D-V3-33＝B：投影按鈕的字樣本來就是「投影模式／離開投影」，本批只拿掉 `aria-pressed`。
+  - D-V3-34＝A：投影中在頁首一行內放一個「總覽／會議紀錄」互切按鈕（沿用 `labels.shell.nav.{overview,meeting}.headline`，不加新 key），只在投影時顯示，非投影時隱藏但掛載。
+  - 投影 axe 加會議頁投影狀態；投影中圖內停留點 0。
+- **D-V3-35＝A（期間列）**：去年同期不可用時，`preset-reason-visible-yoy` 保持掛載但隱藏；使用者在本次工作階段點了停用的「去年同期」才顯示，選其他快捷、送出自訂日期或換資料（載入、匯入、還原、清空）就收起。還原的 `ui_prefs.last_preset` 不算點過。390 照 v3（本來就不顯示）。
+- **D-V4-45＝B**：G10、G7b 表的扣廣告後貢獻、每 100 元剩、週值在 `deltaTone(...) === "unfavorable"` 時帶 C33 的 `unfavorable`；G7a 的比率只在「有利方向是上升」的指標落到不利的一側（例如毛利率、MER 為負）時上色，成本類比率的正值不上色（照字面用 `deltaTone(level)` 會把每一週的退款金額比都畫紅）。
+- **G12 收合列**（V4-3b 已知事項）：照 H5 設計稿補回 G10、G11 與下一個區塊之間的 24px 間距（≤ 640 為 18px）；摘要列維持靠左，與總覽「進階」列一致。
 
-**允許變動畫面**：只允許 mobile 專案中本批為 390 總檢修正的畫面（逐張寫理由）；投影不在截圖基準內。
+**依賴**：V4-7c；D-V4-8、9、33；D-V3-33＝B、D-V3-34＝A、D-V3-35＝A；D-V4-45＝B。
 
-**驗收重點**：投影中 `bridge-waterfall` 可見、`bridge-table` 不可見（X39、投影只顯示 L1）；字級種類 11 不變（design-lint）；`present-mode.test` 斷言對應後 12 ≤ 13；七頁 `scrollWidth ≤ 390`；投影 axe 0 serious；各頁里程碑 Tab 數不晚於 V4-0（總覽 KPI 前可聚焦 ≤ 10）；圖內停留點 0。
+**允許變動畫面**：01–09 的 desktop、laptop、tablet（D-V3-35：期間列下少一行、內容上移；768 也受影響，原補充只寫 1440 與 1280）；05、10 的四個尺寸（G12 的間距）。逐張寫理由，並確認除了上移與 G12 間距之外沒有其他差異。投影不在截圖基準內，另存 1440、1280、768 的總覽與會議頁投影截圖當驗收證據。
 
-**同批 labels 與測試**：`tests/present-mode.test.tsx`（解析 C 區段的斷言、白名單、`--text-12` 與 `--text-13` 對應、不新增字級原值）、`tests/e2e/present-mode.spec.ts`、`tests/e2e/keyboard-walk.spec.ts`；`shell.presentV3` 既有字串不改；本批不加新 key。
+**驗收重點**：投影中 `bridge-waterfall` 可見、`bridge-table` 不可見（X39、投影只顯示 L1）；投影中 G1 柱上標值在 14px 下不重疊（768 也要看）；字級種類 11 不變（design-lint）；`present-mode.test` 斷言對應後 12 ≤ 13；投影 axe 0 serious（總覽與會議頁）；投影按鈕沒有 `aria-pressed`；互切按鈕在總覽與會議頁投影時各 1 個、非投影時不可見；`preset-reason-visible-yoy` 在沒點過時隱藏、點過後在 ≥ 768 可見；G10、G7b、G7a 表的不利色依上列規則（示範資料：G10 MARKETPLACE 兩格、G7b MARKETPLACE 六週、G7a 0 格）；B1、B2 中「不晚於 V4-0a 實測」的門檻改以本批實測為新基準（只能更早；≤ 900、≤ 420、≤ 295 這類絕對預算不動）；KPI 前可聚焦 ≤ 10。
 
-**相關拍板**：D-V4-8、9、33、35；D-V3-33、34（回覆後）。
+**同批 labels 與測試**：`tests/present-mode.test.tsx`（解析 C 區段的斷言、白名單、`--text-12` 與 `--text-13` 對應、不新增字級原值）、`tests/e2e/present-mode.spec.ts`、`tests/e2e/present-helpers-v39.ts`、`tests/period-bar.test.tsx`、`tests/e2e/revamp-r4.spec.ts`（去年同期改成點了才顯示）、健檢與總覽的 SSR 測試、`tests/mounted-testids.test.tsx`（V4-8 錨點）、`tests/e2e/axe-sweep.spec.ts`（會議頁投影狀態）、`verification/revamp-v4-capture/metrics.spec.ts`（B1、B2 新基準）；`shell.presentV3` 既有字串不改；本批不加新 key。
+
+**相關拍板**：D-V4-8、9、33、35（A，無事）；D-V3-33＝B、D-V3-34＝A、D-V3-35＝A；D-V4-45＝B。
+
+---
+
+## V4-8b 四尺寸總檢與隨頁載入狀態（M）
+
+> **2026-10-09 補充（D-V4-44＝B＋C 的 B）**：隨頁載入的等待與失敗畫面。`setPanel` 在等頁面 chunk 時，主區標 `aria-busy` 並顯示既有的載入骨架（`shell/page-states.tsx` 的 LoadingState 樣式，高度同首屏，不位移）；chunk 載入失敗時顯示錯誤狀態與「再試一次」（重試走 `preparePanel`，成功後就地換成面板；焦點在錯誤狀態的標題）。優先沿用既有字串（`labels.shell.state.*`）；需要新字串時依 CLAUDE.md 只放 `{group}.chartsV4.*` 允許的前綴，並同批更新 `V4_NEW_KEY_PREFIXES`（本批「不加新 key」對這一項例外）。驗收：`tests/e2e/lazy-panels-v43c.spec.ts` 加等待中骨架可見、失敗時錯誤狀態可見且「再試一次」成功；axe 加「頁面程式載入失敗」狀態 0 serious；鍵盤走查里程碑 Tab 數不變；預先載入完成後切頁不出現骨架（52 張畫面基準不變）。
+
+**範圍**：
+- **D-V4-44 B**：隨頁載入的等待骨架與失敗錯誤狀態（見上方補充）。等待時的切頁時序、錯誤說明與第二個動作、只有 AI 解釋失敗時的處理，依 D-V4-56、57、58。
+- **七頁 390 總檢**（總覽、通路健檢、商品毛利、假設試算、待辦、會議紀錄、資料來源，加匯入精靈與計算與來源抽屜）：2026-10-13 範圍盤點實測到的問題，修正範圍依 D-V4-59–63：會議頁展開「完整通路寬表」後頁面橫向捲動（B3 破口）；商品、試算頁「匯出本頁」選單開到畫面外；鍵盤焦點被底部分頁列遮住；兩個部分資料狀態的 target-size；G4 有 null 通路時柱端標值錯位（v3 正確性問題，不限 390）；G3 末點標值重疊；G16 標籤壓到 Y 軸刻度；C33 文字欄被擠成一字一行；G22 對帳表在 390 看不到差額欄；固定高度的空狀態在 390 留白過大；問題表「欄位」欄顯示原始 `$row`。
+- **mounted-testids 全頁**：每個頁面狀態的區塊 testid 掃描，加上依投影白名單推出的投影 M1。
+- **keyboard-walk**：總覽、健檢、試算、會議補「第一張圖的資料表 summary」里程碑（商品頁 V4-4、資料來源頁 D-V4-52 已有）；待辦頁到 V4-10（G17）才有圖，本批記為不適用。
+
+**依賴**：V4-8a；D-V4-56–63（未回覆的項目照 v3.0.0 行為，只做不受影響的部分）。
+
+**允許變動畫面**：mobile 專案中本批為 390 總檢修正的畫面（逐張寫理由）；D-V4-63 回覆 B 時另加 08 mobile（G19 空狀態高度）；D-V4-61 回覆 A 時另加 12 mobile（對帳表）。預先載入完成後切頁不出現骨架，其餘 52 張不變。
+
+**驗收重點**：七頁 `scrollWidth ≤ 390`（含展開的會議完整通路寬表，D-V4-60）；各頁里程碑 Tab 數不晚於 V4-0（總覽 KPI 前可聚焦 ≤ 10）；圖內停留點 0；`tests/e2e/lazy-panels-v43c.spec.ts` 等待中骨架可見、失敗時錯誤狀態可見且「再試一次」成功；axe 加「頁面程式載入失敗」狀態（與 D-V4-60 的部分資料狀態）0 serious；預先載入完成後切頁不出現骨架。
+
+**同批 labels 與測試**：`shell.chartsV4.panelLoad.*`（D-V4-44 B 的例外；同批更新 `V4_NEW_KEY_PREFIXES`）；`tests/e2e/lazy-panels-v43c.spec.ts`、`tests/e2e/keyboard-walk.spec.ts`、`tests/e2e/axe-sweep.spec.ts`、`tests/mounted-testids.test.tsx`、`verification/revamp-v4-capture/metrics.spec.ts`（D-V4-60）。
+
+**相關拍板**：D-V4-44＝B（B 部分）；D-V4-56–63（2026-10-13 新增，待回覆）。
 
 ---
 
@@ -372,7 +411,7 @@ V4-0a 到 V4-2 完成後，總覽改版完整（瀑布進圖表框、手機橋�
 
 **範圍**：C31 PrintChart（G1 三個版本；G2 標準與客戶附錄，依 D-V4-11；灰階：起訖與小計淺灰底加 `ink` 外框、有利 `chartFavorable` 實心、不利 `ink` 實心加「−」，三者兩兩不同）；C32 pptChart（G1 原生瀑布；輔助系列以 `exports.chartsV4.*` 命名為「圖形用，非金額」，有利與不利兩個系列存的是柱高，名稱標明「絕對值，圖形用」，資料標籤用帶「−」的數字格式；數值由 `bridgeWaterfall().bars` 精確字串換算；V4-0b spike 不成立時改 `addShape`；放在哪一張投影片依 D-V4-34，建議 A：新增第二張，既有第一張的一句話、KPI、三件事、通路表、決議、置頂待辦一個都不動，`tests/pptx-export.test.ts:280-289` 的「只有 1 張」斷言同批改為 2 張）；`EXPORT_THEME` 加 `chartCurrent`、`chartPrevious`、`chartTotal`、`chartUnfavorable`、`chartFavorable`、`chartSeg1`–`chartSeg3`；`ExportVariantSpec` 加 `charts` 欄位。
 
-**依賴**：V4-8；D-V4-10、11、34。
+**依賴**：V4-8b；D-V4-10、11、34。
 
 **允許變動畫面**：無（匯出不在截圖基準內）。
 

@@ -1523,6 +1523,10 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
 
     // ── V4-8 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-8 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
+    // ── V4-8a 代理 A（投影：白名單、token、互切按鈕、aria-pressed）M1 測試在此之後
+
+    // ── V4-8a 代理 B（期間列去年同期提示、資料表不利色、G12 間距）M1 測試在此之後
+
     // ── V4-9a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-9a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
 
     // ── V4-9b 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-9b 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
