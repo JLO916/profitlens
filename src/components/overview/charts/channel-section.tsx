@@ -95,12 +95,18 @@ export function ChannelSection({ snapshot, onEvidence }: ChannelSectionProps) {
   const scale = channelAxis(rows.flatMap(row => [row.previousValue, row.currentValue]));
   const axisText = new Map(scale.ticks.map((tick, index) => [tick, scale.labels[index]]));
   const legend: ChartLegendItem[] = [{ key: "current", label: frame.legend.current, color: chartColors.current }, { key: "previous", label: frame.legend.previous, color: chartColors.previous }];
-  const rowAt = (index: unknown) => typeof index === "number" ? rows[index] : undefined;
   const barRow = (item: { payload?: unknown }) => item.payload as ChannelRow | undefined;
+  /**
+   * V4-8b（D-V4-59 (5)）：標值依長條自己的資料列找列——LabelList 的 valueAccessor 回傳該長條 payload 的通路代號，EndLabel 以它在 rows 找列。
+   * v3 用 LabelList 的 index 取 rows[index]，但 Recharts 只為有畫出的長條編號（null 與寬 0 的長條不在清單內），有 null 通路時其後每一列的標值都錯位一列。
+   * 沒有 null 通路時每個 index 都對到同一列，輸出與 v3 逐字相同。
+   */
+  const labelChannel = (entry: { payload?: unknown }) => barRow(entry)?.channel;
+  const rowOf = (channel: unknown) => typeof channel === "string" ? rows.find(row => row.channel === channel) : undefined;
 
   /** 長條末端的標值：一律放在長條的右端（負值時就是零線）外 6px；本期粗條印 L1 金額（負值不利色），上期細條印「上期 {L1}」。 */
   const endLabel = (period: "previous" | "current") => function EndLabel(props: LabelProps): ReactElement | null {
-    const row = rowAt(props.index);
+    const row = rowOf(props.value);
     if (row === undefined) return null;
     const metric = period === "current" ? row.current : row.previous;
     if (metric.value === null) return null;
@@ -139,11 +145,11 @@ export function ChannelSection({ snapshot, onEvidence }: ChannelSectionProps) {
         <ReferenceLine x={0} stroke={chartColors.connector} />
         <Tooltip cursor={false} content={({ active, payload }) => { const row = payload?.[0]?.payload as ChannelRow | undefined; return active && row ? <div className="chart-tooltip"><strong>{row.label}</strong><p>{metricValue(labels.shell.periods.previous, metricText("contribution_after_marketing", row.previous, "L1"))}</p><p>{metricValue(labels.shell.periods.current, metricText("contribution_after_marketing", row.current, "L1"))}</p></div> : null; }} />
         <Bar dataKey="previousValue" className="chart-bar-link" barSize={8} fill={chartColors.previous} isAnimationActive={false} onClick={item => { const row = barRow(item); if (row) openChannel(row.channel, "previous"); }}>
-          <LabelList dataKey="previousValue" content={endLabel("previous")} />
+          <LabelList valueAccessor={labelChannel} content={endLabel("previous")} />
         </Bar>
         <Bar dataKey="currentValue" className="chart-bar-link" barSize={18} fill={chartColors.current} isAnimationActive={false} onClick={item => { const row = barRow(item); if (row) openChannel(row.channel, "current"); }}>
           {rows.map(row => <Cell key={row.channel} fill={unfavorable("contribution_after_marketing", row.current.value, "L1") ? chartColors.unfavorable : chartColors.current} />)}
-          <LabelList dataKey="currentValue" content={endLabel("current")} />
+          <LabelList valueAccessor={labelChannel} content={endLabel("current")} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>

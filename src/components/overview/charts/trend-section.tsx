@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis, type DotItemDotProps } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, usePlotArea, useXAxisScale, useYAxisScale, XAxis, YAxis, type DotItemDotProps } from "recharts";
 import { trendTakeaways } from "@/application/chart-takeaways";
 import { chartColors, chartFontSize, chartHeights } from "@/application/chart-theme";
 import { eventBands as computeEventBands, type EventSet } from "@/application/events";
@@ -11,6 +11,7 @@ import type { Metric, MetricName, Period, SourceRef } from "@/domain/types";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "../../evidence-drawer";
 import { ChartFrame, coordinate, metricText, type ChartLegendItem, type ChartTakeaway } from "./chart-frame";
+import { waterfallTextWidth } from "./waterfall-svg";
 
 // V3-4b 區塊 7 每週淨營收與扣廣告後貢獻（C16，PRD §7.1 第 7 點、§9.5）。
 // 標題用標準名稱，副標是週的分組說明；takeaway 列「淨營收期間合計」「最近完整週淨營收」（chart-takeaways.ts）；
@@ -19,6 +20,7 @@ import { ChartFrame, coordinate, metricText, type ChartLegendItem, type ChartTak
 // V3-9b F10：每一週的點都可點（透明熱區），開該週該指標的抽屜並篩到該週；鍵盤經由資料表的同一個抽屜（weekEvidence）。
 // V4-2 代理 B（G3；PRD §4.1、§4.4、§7.2；CHART_CATALOG G3）：只改 Y 軸刻度。刻度由 trendAxis 自己算（1／2／2.5／5 × 10ⁿ 的整齊步長、含 0、上下界取步長的整數倍），
 // 文字改呼叫 presentation.ts 的 formatAxisWan（整數萬，不再出現「50.0 萬」）；本期、上期末點標值、三項圖例、去年同期線（390 不隱藏）都沿用 V3，不新增 labels。
+// V4-8b 代理 B（D-V4-59 (6)）：末點標值只在碰撞時移動（trendEndLabelLayout）：往左會進 Y 軸刻度欄時改放點的右側，與先放的標值重疊時上下移開；沒有碰撞時位置與 V3 逐字相同。
 
 const ui = labels.overview.page;
 const copy = labels.overview.trendV3;
@@ -100,6 +102,96 @@ export function lastPoints(rows: readonly TrendRow[]): Record<SeriesKey, number>
   return Object.fromEntries(SERIES.map(series => [series.key, rows.reduce((last, row) => row[series.key] === null ? last : row.index, -1)])) as Record<SeriesKey, number>;
 }
 
+/** V4-8b：一個末點標值（資料座標）：系列、x＝週序號、y＝圖形座標值、標值文字、本期淨營收的「未滿 7 天」（沒有時 null）、是否為本期（強調字）。 */
+export interface TrendEndLabel { key: SeriesKey; index: number; value: number; text: string; note: string | null; strong: boolean }
+/** 放標值的順序：本期（淨營收、扣廣告後）先放、留在原位；上期後放，碰撞時由上期讓開。 */
+const END_LABEL_ORDER: readonly SeriesKey[] = ["revenueCurrent", "contributionCurrent", "revenuePrevious", "contributionPrevious"];
+/**
+ * V4-8b：各系列最後一點的標值（文字與 V3 相同：本期「{指標} {L1}」、上期「上期 {L1}」；最後一週未滿 7 天時本期淨營收另帶「未滿 7 天」）。
+ * 整條沒有值的系列不列。順序＝END_LABEL_ORDER（trendEndLabelLayout 依這個順序放）。
+ */
+export function trendEndLabels(rows: readonly TrendRow[], last: Record<SeriesKey, number>, incompleteNote: string | null): TrendEndLabel[] {
+  return END_LABEL_ORDER.flatMap(key => {
+    const series = SERIES.find(item => item.key === key)!;
+    const row = rows[last[key]];
+    const value = row?.[key];
+    if (row === undefined || value === null || value === undefined) return [];
+    const shown = formatAmountL1(row.metrics[series.metric].value);
+    const current = series.period === "current";
+    const text = current ? fill(copy.lastPoint, { metric: metricDefinitions[series.metric].shortLabel, value: shown }) : fill(copy.previousPoint, { value: shown });
+    return [{ key, index: row.index, value, text, note: current && series.metric === "net_revenue" ? incompleteNote : null, strong: current }];
+  });
+}
+
+/** 末點標值的像素錨點（圓心）與要畫的字。 */
+export interface TrendEndAnchor { key: string; text: string; note: string | null; cx: number; cy: number }
+/** 標值的位置：x、基線 y、「未滿 7 天」的基線、對齊（end＝V3 的點左側；start＝改放點右側）。 */
+export interface TrendEndPlacement { x: number; y: number; noteY: number; anchor: "start" | "end" }
+/** V3 的標值偏移（點左 6px、基線在點上 8px、「未滿 7 天」在點下 18px）與避讓用的近似框（12px 字的 svg 文字框：基線上 11、下 3；移開時與他框留 2px）。 */
+export const TREND_END_LABEL = { gap: 6, rise: 8, noteDrop: 18, ascent: 11, descent: 3, clearance: 2 } as const;
+interface EndLabelBox { left: number; right: number; top: number; bottom: number }
+const endBoxesOverlap = (a: EndLabelBox, b: EndLabelBox) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/**
+ * V4-8b（D-V4-59 (6)）：G3 末點標值的位置（純函式，tests/v48b-390.test.tsx）。依 anchors 的順序放，預設照 V3（點左 6px、靠右對齊、基線在點上 8px），只在兩種碰撞時移動：
+ *   1. 往左放會進 Y 軸刻度欄（圓心 x − 6 − 估寬 < bounds.left，估寬取標值與「未滿 7 天」較寬者）：改放點的右側 6px、靠左對齊；
+ *   2. 與先放的標值（含「未滿 7 天」）重疊（框＝估寬 × 基線上 11、下 3）：上下移到最近的不重疊位置（貼齊某個已放框的上緣或下緣、留 2px；移動量最小者，同量時往上；
+ *      不超出 bounds.top 與 bounds.bottom；都放不下時不動）。
+ * 沒有碰撞時每個標值都是 { x: cx − 6, y: cy − 8, noteY: cy + 18, anchor: "end" }，與 V3 逐字相同。字寬用 waterfallTextWidth（只用於避讓）。
+ */
+export function trendEndLabelLayout(anchors: readonly TrendEndAnchor[], bounds: { left: number; top: number; bottom: number }): Record<string, TrendEndPlacement> {
+  const { gap, rise, noteDrop, ascent, descent, clearance } = TREND_END_LABEL;
+  const placed: EndLabelBox[] = [];
+  const result: Record<string, TrendEndPlacement> = {};
+  for (const anchor of anchors) {
+    const textWidth = waterfallTextWidth(anchor.text);
+    const noteWidth = anchor.note === null ? 0 : waterfallTextWidth(anchor.note);
+    const flip = anchor.cx - gap - Math.max(textWidth, noteWidth) < bounds.left;
+    const x = flip ? anchor.cx + gap : anchor.cx - gap;
+    const span = (width: number) => flip ? { left: x, right: x + width } : { left: x - width, right: x };
+    const boxesAt = (dy: number): EndLabelBox[] => {
+      const y = anchor.cy - rise + dy;
+      const main = { ...span(textWidth), top: y - ascent, bottom: y + descent };
+      if (anchor.note === null) return [main];
+      const noteY = anchor.cy + noteDrop + dy;
+      return [main, { ...span(noteWidth), top: noteY - ascent, bottom: noteY + descent }];
+    };
+    const collides = (boxes: readonly EndLabelBox[]) => boxes.some(box => placed.some(other => endBoxesOverlap(box, other)));
+    const base = boxesAt(0);
+    let dy = 0;
+    if (collides(base)) {
+      const top = Math.min(...base.map(box => box.top)), bottom = Math.max(...base.map(box => box.bottom));
+      const fits = (shift: number) => top + shift >= bounds.top && bottom + shift <= bounds.bottom && !collides(boxesAt(shift));
+      const shifts = placed.flatMap(other => [other.top - clearance - bottom, other.bottom + clearance - top]).filter(fits).sort((a, b) => Math.abs(a) - Math.abs(b) || a - b);
+      dy = shifts[0] ?? 0;
+    }
+    placed.push(...boxesAt(dy));
+    result[anchor.key] = { x, y: anchor.cy - rise + dy, noteY: anchor.cy + noteDrop + dy, anchor: flip ? "start" : "end" };
+  }
+  return result;
+}
+
+/**
+ * V4-8b：末點標值的 <text>（在 Recharts 圖內渲染，讀得到軸比例與繪圖區）。用軸比例把各系列末點換成像素（自己的點用 Line 給的圓心），
+ * 交給 trendEndLabelLayout 取自己的位置；量不到繪圖區時照 V3 的位置。輸出的元素、class 與文字與 V3 相同，只有 x、y、text-anchor 可能不同。
+ */
+function TrendEndText({ ends, own, cx, cy }: { ends: readonly TrendEndLabel[]; own: SeriesKey; cx: number; cy: number }) {
+  const xScale = useXAxisScale(), yScale = useYAxisScale(), plot = usePlotArea();
+  const label = ends.find(end => end.key === own);
+  if (label === undefined) return null;
+  const anchors = ends.flatMap((end): TrendEndAnchor[] => {
+    if (end.key === own) return [{ key: end.key, text: end.text, note: end.note, cx, cy }];
+    const x = xScale?.(end.index), y = yScale?.(end.value);
+    return typeof x === "number" && Number.isFinite(x) && typeof y === "number" && Number.isFinite(y) ? [{ key: end.key, text: end.text, note: end.note, cx: x, cy: y }] : [];
+  });
+  const place: TrendEndPlacement = plot ? trendEndLabelLayout(anchors, { left: plot.x, top: 0, bottom: plot.y + plot.height })[own]
+    : { x: cx - TREND_END_LABEL.gap, y: cy - TREND_END_LABEL.rise, noteY: cy + TREND_END_LABEL.noteDrop, anchor: "end" };
+  return <>
+    <text className={`chart-value${label.strong ? " is-strong" : ""}`} x={place.x} y={place.y} textAnchor={place.anchor}>{label.text}</text>
+    {label.note !== null && <text className="chart-value" x={place.x} y={place.noteY} textAnchor={place.anchor}>{label.note}</text>}
+  </>;
+}
+
 export function TrendSection({ snapshot, events = null, onEvidence }: TrendSectionProps) {
   const { report, weeks } = snapshot;
   const channels = report.scope.channels;
@@ -129,6 +221,7 @@ export function TrendSection({ snapshot, events = null, onEvidence }: TrendSecti
   const bands = computeEventBands(events, weeks).map(band => ({ event: band.event, x1: band.from - 0.5, x2: band.to - 0.5 }));
   const rows = trendRows(weeks, yoyWeeks);
   const last = lastPoints(rows);
+  const ends = trendEndLabels(rows, last, takeaway.lastWeekIncomplete ? copy.incompleteShort : null);
   // V4-2 G3：刻度涵蓋圖上所有的線（本期、上期與去年同期）；Recharts 只照這組刻度畫格線與文字。
   const yAxis = trendAxis(rows.flatMap(row => [...SERIES, ...YOY_SERIES].map(series => row[series.key])));
   const yTickText = new Map(yAxis.ticks.map((tick, index) => [tick, yAxis.labels[index]]));
@@ -140,20 +233,16 @@ export function TrendSection({ snapshot, events = null, onEvidence }: TrendSecti
     if (row === null || props.cx === undefined || props.cy === undefined || props.value === null || props.value === undefined) return null;
     return <circle key={`${series}-hit-${props.index}`} className="chart-point-hit" data-series={series} data-start={row.start} cx={Number(props.cx)} cy={Number(props.cy)} r={8} fill="transparent" onClick={() => openWeek(name, row)} />;
   };
-  /** 最後一點：本期畫 3px 圓點並標「{指標} {L1}」；上期只標「上期 {L1}」；最後一週未滿 7 天時本期淨營收下方加「未滿 7 天」。 */
+  /** 最後一點：本期畫 3px 圓點並標「{指標} {L1}」；上期只標「上期 {L1}」；最後一週未滿 7 天時本期淨營收下方加「未滿 7 天」（文字與位置見 trendEndLabels、TrendEndText）。 */
   const lastPointDot = (series: typeof SERIES[number]) => function LastPoint(props: DotItemDotProps): ReactNode {
     const hit = pointHit(props, rows[props.index] ?? null, series.metric, series.key);
     if (props.index !== last[series.key] || props.cx === undefined || props.cy === undefined) return hit;
-    const row = rows[props.index];
-    const value = formatAmountL1(row.metrics[series.metric].value);
     const current = series.period === "current";
-    const text = current ? fill(copy.lastPoint, { metric: metricDefinitions[series.metric].shortLabel, value }) : fill(copy.previousPoint, { value });
     const cx = Number(props.cx), cy = Number(props.cy);
     return <g key={`${series.key}-last`}>
       {current && <circle cx={cx} cy={cy} r={3} fill={chartColors.current} />}
       {hit}
-      <text className={`chart-value${current ? " is-strong" : ""}`} x={cx - 6} y={cy - 8} textAnchor="end">{text}</text>
-      {current && series.metric === "net_revenue" && takeaway.lastWeekIncomplete && <text className="chart-value" x={cx - 6} y={cy + 18} textAnchor="end">{copy.incompleteShort}</text>}
+      <TrendEndText ends={ends} own={series.key} cx={cx} cy={cy} />
     </g>;
   };
 

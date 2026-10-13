@@ -64,8 +64,10 @@ function historyGeometry(page: Page) {
     gaps: [...panel.querySelectorAll("text.multiple-gap")].map(text => text.textContent),
   })));
 }
-/** ≤ 767px 時 C26 小倍數框高＝chartHeights.sm × 子圖數（2），其餘 chartHeights.sm；空狀態與有圖同高。 */
+/** ≤ 767px 時 C26 小倍數框高＝chartHeights.sm × 子圖數（2），其餘 chartHeights.sm。V4-8b（D-V4-63＝B）起空狀態在每個寬度都是 chartHeights.sm（見 expectedEmptyHeight）。 */
 const expectedFrameHeight = (page: Page) => page.viewportSize()!.width < 768 ? chartHeights.sm * 2 : chartHeights.sm;
+/** V4-8b（D-V4-63＝B）：G19 少於 2 筆的空狀態在 ≤ 767px 也用 sm 高度（不是 sm × 2）；≥ 768 本來就是 sm。 */
+const expectedEmptyHeight = chartHeights.sm;
 /**
  * 審查 R2-V46-A11Y-3：axe-sweep 的會議狀態只掃到 G19 的空狀態；這裡在 G19 有圖時另掃一次，範圍是會議歷史區塊（meeting-history，G19 與 v3 歷史清單）。
  * axe-core 的取得與標籤同 axe-sweep.spec（專案沒有 @axe-core/playwright，本輪不加依賴：注入 node_modules 已有的 axe-core/axe.min.js）；serious、critical 必須為 0，結果記在 annotation。
@@ -104,7 +106,7 @@ test("G19：結束 1 次會議＝等高空狀態（資料表 0 列、表後只�
   await expect(historyFrame(page)).toHaveAttribute("data-state", "empty");
   await expect(historyFrame(page)).toHaveText(history.empty);
   await expect(historyChart(page).locator("h3")).toHaveText(history.section);
-  expect((await historyFrame(page).boundingBox())!.height).toBeCloseTo(expectedFrameHeight(page), 0);
+  expect((await historyFrame(page).boundingBox())!.height).toBeCloseTo(expectedEmptyHeight, 0);
   // 審查 R1-V46-S2：空狀態的資料表 0 列，表後只有一句 tableEmpty（不寫「只列最近結束的一次」）。
   await openDataTable(historyChart(page));
   await expect(historyRows(page)).toHaveCount(0);

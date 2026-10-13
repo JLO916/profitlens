@@ -3009,4 +3009,26 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 /* ── V4-8b A 錨點結束 ── */
 
 /* ── V4-8b B：390 總檢修正（會議寬表、匯出本頁選單、焦點被分頁列遮住、target-size、C33 文字欄、G19 空狀態高度；代理 B） ── */
+/* D-V4-59 (1)：議程項（.meeting-agenda-item）是單欄 grid；v3 的隱含 auto 欄會取子項的最小內容寬，展開「完整通路寬表」時整項被撐到約 700px、頁面橫向捲動。
+   欄寬固定為容器寬（minmax(0, 1fr)；內容放得下時與 auto 欄等寬，1280／1440 的兩欄會議版面不變），寬表只在自己的 .table-scroll 內橫向捲動。 */
+.meeting-agenda-item { grid-template-columns: minmax(0, 1fr); }
+/* D-V4-59 (4)：部分資料狀態的觸控目標（WCAG 2.5.8 target-size）：KPI 差額行的「先補齊 N 項」（下一行緊接「上期」金額）與會議優先列展開後的「資料待補」至少 24px 高。
+   兩者只在缺資料時出現（示範資料不渲染）；有值時的影響金額是 16px 字、行高 24，本來就是 24px。 */
+.kpi-delta .text-button { min-height: 24px; }
+.meeting-priority-body .top-three-impact > .number-link { min-height: 24px; }
+/* D-V4-59 (8)：C33 資料表的文字欄（不是 td.num 的格）不換行；表比框寬時在 .chart-data-scroll 內橫向捲動，不把「自己填的假設」這類文字擠成一字一行。 */
+.chart-data-table td:not(.num) { white-space: nowrap; }
+@media (max-width: 767px) {
+  /* D-V4-59 (2)：頁首「匯出本頁」（商品毛利、假設試算、待辦）在手機上改成相對整個頁首展開、左右對齊頁首（同會議頁 ≤ 767 的「匯出會議」作法），不再以按鈕右緣對齊而開到畫面左外；
+     選單上緣仍在按鈕下 space-1（頁首的高＝.page-actions 含上下 space-3 內距，扣掉下內距）。 */
+  .page-heading { position: relative; }
+  .page-actions > .export-page { position: static; }
+  .page-actions > .export-page > .menu-panel { top: calc(100% - var(--space-3) + var(--space-1)); left: 0; right: 0; width: auto; }
+  /* D-V4-59 (3)：Tab 移到的控制不被固定的底部分頁列遮住（WCAG 2.4.11）：捲進畫面時下緣多留分頁列高＋space-2（與上方 R1 的 scroll-margin-top 同一組元素，另加 a 與 [tabindex]）；
+     匯入精靈內再加底部固定動作列的高（control-h × 2；動作列本身照上一條）。 */
+  main summary, main button, main input, main select, main textarea, main [role="region"], main article, main section, main label, main h2, main h3, main a, main [tabindex] { scroll-margin-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--space-2)); }
+  .import-wizard :is(summary, button, input, select, textarea, a, [tabindex]):not(.wizard-footer *) { scroll-margin-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--control-h) * 2 + var(--space-2)); }
+  /* D-V4-63＝B：G19 會議歷史少於 2 筆的空狀態在手機用 sm 高度（不是 C26 的 sm × 2）；載入骨架、有資料與 ≥ 768 照舊（空狀態要等使用者結束一場會議才會變，不造成載入位移）。 */
+  .meeting-history-chart .chart-frame.multiples[data-state="empty"] { height: var(--chart-h-sm) !important; }
+}
 /* ── V4-8b B 錨點結束 ── */
