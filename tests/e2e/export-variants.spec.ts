@@ -317,7 +317,7 @@ test("d. 標準版：Excel 八張（最後是管理損益表 13 列、golden 淨
   expect(chartSections).not.toContain(labels.scenarios.chartsV4.variance.section);
   expect(chartSections).not.toContain(labels.scenarios.chartsV4.threshold.section);
   const basisRows = sheetRows(book, labels.exports.excel.sheets.basis);
-  expect(basisRows.filter(row => row[0] === labels.exports.chartsV4.excel.sheet).map(row => row[2])).toEqual(["assist-weeks-v1", "channel-weeks-v1", "channel-structure-v1", "daily-heatmap-v1"]);
+  expect(basisRows.filter(row => row[0] === labels.exports.chartsV4.excel.sheet).map(row => row[2])).toEqual(["assist-weeks-v1", "channel-weeks-v1", "cumulative-daily-v1", "channel-structure-v1", "daily-heatmap-v1"]); // V4-10 G8 段接在 G7b 之後
   await expect(page.getByTestId("download-menu").locator(":scope > summary")).toBeFocused();
 
   // PDF／列印：標準版沒有 data-variant；附錄依序是每週管理損益表 → 技術細節；golden 本期一週 → 一張表、13 列，金額到分。

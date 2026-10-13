@@ -3038,8 +3038,8 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 /* ── V4-10 B：G17 待辦期限分布小表（代理 B；PRD §5.5、CHART_CATALOG G17） ── */
 /* table.chart-actions-due：頁首計數徽章之下、工具列之前，4 列（約 140px 高）；寬度依內容（不撐滿），caption 是結論句、th 是桶名、td.num 是 C24 count 條＋件數。
    條沿用「V4-1 B」的 .bar-cell 規則（≥ 768 為 96px、≤ 767 為 64px；在 td.num 內貼齊左緣，各列零線對齊）；色在元件內經 chartColors，本段不寫色碼與 var(--chart-*)。 */
-.chart-actions-due { border-collapse: collapse; margin: 0 0 var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-primary); }
-.chart-actions-due caption { caption-side: top; padding: 0 0 var(--space-1); text-align: left; font-weight: var(--weight-medium); }
+.chart-actions-due { width: auto; border-collapse: collapse; margin: 0 0 var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-primary); }
+.chart-actions-due caption { caption-side: top; padding: 0 0 var(--space-1); background: transparent; text-align: left; font-weight: var(--weight-medium); }
 .chart-actions-due th { padding: var(--space-1) var(--space-4) var(--space-1) 0; text-align: left; font-weight: var(--weight-regular); color: var(--text-secondary); white-space: nowrap; }
 .chart-actions-due td.num { padding: var(--space-1) 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 /* ── V4-10 B 錨點結束 ── */

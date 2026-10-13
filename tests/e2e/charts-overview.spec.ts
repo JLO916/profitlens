@@ -621,11 +621,11 @@ test.describe("V4-10 總覽 G8 兩期每日累計", () => {
     expect(title, "示範資料：第 1 天起落後上期（d＝1）").toBe(fill(cumulativeCopy.title.behind, { metric: metricDefinitions.contribution_after_marketing.label, amount: formatAmountL1(DEMO_RESULT), d: 1 }));
     await expect(section.locator(".legend > span")).toHaveCount(2);
     await expect(frameBox(section)).toHaveAttribute("aria-hidden", "true");
-    await expect(frameBox(section).locator("[tabindex], button, a")).toHaveCount(0);
+    await expect(frameBox(section).locator("[tabindex]:not([tabindex='-1']), button, a")).toHaveCount(0); // Recharts 3 的 zIndex 圖層 g.recharts-zIndex-layer_* 自帶 tabindex="-1"（趨勢圖同樣有），不是 Tab 停留點
     const yTicks = await expectWanAxis(section, "y", "G8 兩期每日累計");
     const xTicks = await axisTickTexts(section, "x");
     expect(xTicks.filter(text => !DAY_TICKS.includes(text)), `X 刻度都是「第 n 天」（${xTicks.join(" | ")}）`).toEqual([]);
-    expect(xTicks[0]).toBe(DAY_TICKS[0]);
+    if ((page.viewportSize()?.width ?? 0) >= 768) expect(xTicks[0]).toBe(DAY_TICKS[0]); // 390 時 Recharts 預設 interval="preserveEnd" 會從左端省略放不下的刻度（第 1 天），只驗刻度都是「第 n 天」
     // 不畫等速目標線（D-V4-22＝A）：沒有讀目標時沒有任何參考線（斷線標記是垂直線，示範資料沒有缺日）。
     await expect(frameBox(section).locator(".recharts-reference-line")).toHaveCount(0);
     // 兩條線：本期 chartColors.current 2px、上期 chartColors.previous 1.5px（Recharts 的線是 path.recharts-line-curve）。
@@ -725,7 +725,7 @@ test.describe("V4-10 總覽 G8 兩期每日累計", () => {
     await expect(section.locator("#cumulative-title")).toHaveText(cumulativeConclusion(cumulativeDaily(snapshot, "contribution_after_marketing"), snapshot).title);
     await expect(section.locator("#cumulative-title")).toHaveText(fill(cumulativeCopy.title.behind, { metric: metricDefinitions.contribution_after_marketing.label, amount: labels.shell.status.missing, d: 5 }));
     await expect(frameBox(section).locator(".recharts-reference-line"), "兩期各一條斷線標記").toHaveCount(2);
-    await expect(frameBox(section).locator(".recharts-reference-line text")).toHaveText([labels.overview.chartFrame.noData, labels.overview.chartFrame.noData]);
+    await expect(frameBox(section).locator("text.recharts-label")).toHaveText([labels.overview.chartFrame.noData, labels.overview.chartFrame.noData]); // Recharts 3 的 Label 畫在 zIndex 2000 的標籤圖層，不在 .recharts-reference-line 內
     // 斷線之後沒有點：本期只有第 1 到 7 天的熱區、上期第 1 到 9 天。
     await expect(frameBox(section).locator("circle.chart-point-hit[data-series='current']")).toHaveCount(7);
     await expect(frameBox(section).locator("circle.chart-point-hit[data-series='previous']")).toHaveCount(9);

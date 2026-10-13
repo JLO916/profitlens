@@ -162,7 +162,7 @@ test("示範資料由空狀態進入可閱讀總覽，圖表有表格替代", as
     await expect(dialog).not.toBeVisible();
   }
   // V4-5：試算工作台以 hidden 掛在每一頁（dashboard.tsx），G15 的資料表 <details> 也在裡面；這裡只核對總覽畫面上看得到的圖表替代表。
-  const alternatives = page.locator("details").filter({ visible: true }).filter({ has: page.locator("summary", { hasText: dataTablePrefix }) });
+  const alternatives = page.locator("details").filter({ visible: true }).filter({ has: page.locator(":scope > summary", { hasText: dataTablePrefix }) }); // V4-10：只認自己的 summary（收合的進階區內有 G8 資料表的「表格 ·」summary）
   expect(await alternatives.count(), "週趨勢、金額橋接與通路比較皆須提供數據表").toBeGreaterThanOrEqual(3);
   for (const alternative of await alternatives.all()) {
     await alternative.locator("summary").click();
