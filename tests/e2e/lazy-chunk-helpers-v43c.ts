@@ -52,3 +52,30 @@ export function expectOnlyBuiltChunks(chunks: readonly AllowedChunk[], testInfo:
   expect(new Set(chunks.map(chunk => chunk.path)).size, "每個 chunk 最多要一次").toBe(chunks.length);
   expect(chunks.length, `隨頁載入的 chunk 不超過 ${MAX_LAZY_CHUNKS} 個`).toBeLessThanOrEqual(MAX_LAZY_CHUNKS);
 }
+
+/** 程式 chunk 的網址（首頁載入完成後才攔：之後要的都是隨頁載入、預先載入或匯出的 chunk）。V4-8b 由 lazy-panels-v43c.spec.ts 搬來，axe-sweep 共用。 */
+export const LAZY_CHUNKS = "**/_next/static/chunks/**";
+
+/** 首頁載入完成後才攔：之後要的程式 chunk（隨頁載入、預先載入、匯出）全部扣住，release() 後才放行。 */
+export async function holdLazyChunks(page: Page) {
+  let release!: () => void;
+  const released = new Promise<void>(done => { release = done; });
+  const held: string[] = [];
+  await page.route(LAZY_CHUNKS, async route => { held.push(route.request().url()); await released; await route.continue(); });
+  return { held, release };
+}
+
+/**
+ * V4-8b（D-V4-44 B）：首頁載入完成後，之後要的程式 chunk 一律失敗（斷線）；hold() 之後改成扣住、release() 才放行——
+ * 按「再試一次」之前先 hold()，確保沒有 chunk（例如資料就緒約 2 秒後的預先載入）先載好、把錯誤狀態換掉。不再需要時呼叫端自己 page.unroute(LAZY_CHUNKS)。
+ */
+export async function failLazyChunks(page: Page) {
+  let mode: "fail" | "hold" = "fail";
+  let release!: () => void;
+  const released = new Promise<void>(done => { release = done; });
+  await page.route(LAZY_CHUNKS, async route => {
+    if (mode === "fail") { await route.abort("internetdisconnected"); return; }
+    await released; await route.continue();
+  });
+  return { hold: () => { mode = "hold"; }, release };
+}

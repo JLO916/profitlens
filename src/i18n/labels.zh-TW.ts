@@ -421,6 +421,15 @@ export const shell = {
        */
       chartRegion: "{title}（圖）",
     },
+    // ── V4-8b 錨點：隨頁載入的等待與失敗（代理 A；D-V4-44 B、D-V4-56–58）
+    panelLoad: {
+      /** 等頁面程式時內容區骨架的標題（main 標 aria-busy；與 shell.state.loading 分開，那一組講的是檢核資料）。 */
+      loading: "正在載入這一頁",
+      /** 頁面程式載入失敗（D-V4-57＝A）：標題、一句說明、「再試一次」（重新載入這一頁的程式，就地換成內容；與重新整理瀏覽器不同，不會丟掉沒存的修改）。 */
+      errorTitle: "這一頁無法載入。",
+      errorBody: "一直失敗時，先從「儲存」選單下載備份檔，再重新整理頁面。",
+      retry: "再試一次",
+    },
   },
 } as const;
 

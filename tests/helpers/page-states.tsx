@@ -25,7 +25,7 @@ import { Dashboard } from "@/components/dashboard";
 import { ShellFrame, type ShellPanel } from "@/components/shell/shell-frame";
 import { ExportMenu } from "@/components/shell/export-menu";
 import { PageHeader, ShellFooter } from "@/components/shell/page-chrome";
-import { ErrorState, FirstRunState } from "@/components/shell/page-states";
+import { ErrorState, FirstRunState, PanelErrorState, PanelLoadingState } from "@/components/shell/page-states";
 import { NeedsAttention, PeriodBar } from "@/components/shell/period-bar";
 import { Overview } from "@/components/overview";
 import { Diagnosis, DataWorkspace } from "@/components/workspace-panels";
@@ -82,6 +82,8 @@ export type ShellState = {
   wizardState?: WizardState;
   /** V4-7b：開著的「計算與來源」抽屜（G23 階梯表）；沒給時照舊是關著（evidence null，抽屜不在 DOM）。 */
   evidence?: EvidenceSelection;
+  /** V4-8b（D-V4-44 B）：這一頁的程式 chunk 還在載入（loading，骨架＋main aria-busy）或載入失敗（failed，錯誤狀態）；有值時頁面內容不掛載（dashboard 的 ready＝false）。 */
+  chunk?: "loading" | "failed";
 };
 
 const datasetNames: Record<string, string> = { demo: labels.shell.devValidation.datasets.demo, golden: labels.shell.devValidation.datasets.golden, "missing-cogs": labels.shell.devValidation.datasets.missingCogs };
@@ -95,6 +97,8 @@ export function shellPage(state: ShellState): ReactElement {
   const review = state.review === undefined ? createReviewSession(active, "e", "rev-shell") : state.review;
   const history = state.history ?? [];
   const visible = true;
+  // V4-8b：dashboard 的 usePanelReady／panelWaiting（這裡沒有匯入中的 chunk 狀態）。
+  const ready = !state.chunk;
   const local = active.dataset.manifest.source_type === "user_provided";
   const alias = demoAlias(active.dataset.manifest.dataset_id);
   const report = active.snapshot.report;
@@ -129,7 +133,7 @@ export function shellPage(state: ShellState): ReactElement {
       storage={<WorkspaceStorage source={backupSource} version={1} dirty={false} onRestore={noop} onSaved={noop} onDeleted={noop} consent={state.consent ?? true} onConsentChange={noop} onClear={noop} />}
       exportMenu={<ExportMenu source={active} busy={null} error={null} summaryRef={{ current: null }} onCopySummary={copySummaryNoop} onDecision={noop} onPrint={noop} onExport={noop} onMeetingNotes={noop} />} />
     <div className="main-shell">
-      <main id="main-content" tabIndex={-1}>
+      <main id="main-content" tabIndex={-1} aria-busy={state.chunk === "loading" || undefined}>
         <PageHeader title={panelCopy(panel).headline} description={panelCopy(panel).explain} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} presentToggle={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" onClick={noop}>{labels.shell.presentV3.enter}</button> : undefined} presentSwitch={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary present-switch" data-testid="present-switch" onClick={noop}>{labels.shell.nav[panel === "meeting" ? "overview" : "meeting"].headline}</button> : undefined} />
         {state.showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={asyncNoop} onCancel={noop} busy={false} localSaveConsented={state.consent ?? true} initialState={state.wizardState} /></div>}
         <PeriodBar
@@ -138,9 +142,11 @@ export function shellPage(state: ShellState): ReactElement {
           comparisonMode={comparisonMode} onComparisonMode={noop} dates={dates} onDates={noop} onSubmit={noop}
           scope={{ previous: report.previous.period, current: report.current.period, previousDays: report.comparison.previous_days, currentDays: report.comparison.current_days, comparisonMode: report.comparison.mode, channelsText: channelsLabel(report.scope.channels, alias), dataAsOf: active.snapshot.data_as_of }} />
         <NeedsAttention filterError={state.filterError ?? ""} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={noop} yoyReason={yoyReason} />
-        {visible && <div className="view-content">{content}</div>}
+        {state.chunk === "loading" && <PanelLoadingState />}
+        {state.chunk === "failed" && <PanelErrorState onRetry={noop} />}
+        {visible && ready && <div className="view-content">{content}</div>}
         <div hidden={panel !== "scenarios"}><MultiScenarioWorkbench source={active} state={scenarioWorkspace} setState={noop} onExport={noop} onEvidence={noop} onSelectForReview={noop} onContextChange={noop} /></div>
-        {panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={noop} source={active} onEvidence={noop} onExport={noop} view={state.actionsView ?? "board"} onViewChange={noop} />}
+        {ready && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={noop} source={active} onEvidence={noop} onExport={noop} view={state.actionsView ?? "board"} onViewChange={noop} />}
         <ShellFooter analytics onBasis={noop} />
       </main>
     </div>
@@ -404,6 +410,10 @@ export async function pageStates(): Promise<StateMarkup[]> {
     // ── V4-8a 代理 B（期間列、資料表色、G12）新增頁面狀態在此之後
 
     // ── V4-8b 代理 A（隨頁載入狀態）新增頁面狀態在此之後
+    // 待辦頁的程式 chunk 還在載入（D-V4-56＝A：導覽標示與頁標題已是待辦，內容區是骨架、main 標 aria-busy）與載入失敗（D-V4-57＝A：錯誤狀態與「再試一次」）。
+    // 用待辦頁：其他隨頁載入的頁（健檢、商品、會議、資料來源）在本檔之前的 M1 測試會逐一斷言每個狀態都有頁面內容；兩個狀態的頁面內容都不掛載（state.chunk）。
+    "actions-chunk-loading": { panel: "actions", active: golden, status: "ready", actionWorkspace: actions, scenarioWorkspace: scenarios, chunk: "loading" },
+    "actions-chunk-failed": { panel: "actions", active: golden, status: "ready", actionWorkspace: actions, scenarioWorkspace: scenarios, chunk: "failed" },
 
     // ── V4-8b 代理 B（390 總檢）新增頁面狀態在此之後
 

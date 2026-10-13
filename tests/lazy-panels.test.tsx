@@ -315,21 +315,64 @@ describe("V4-3c 載入與預先載入", () => {
     expect(readFileSync(resolve("src/components/lazy-panels.tsx"), "utf8")).toContain("useSyncExternalStore(loader.subscribe, loader.current, loader.current)");
   });
 
-  it("dashboard 的 setPanel：有資料且 chunk 未載入時先 preparePanel 再切頁（同一次更新換導覽標示與內容）；連續切頁只有最後一次生效；落地時關掉等待中打開的抽屜", () => {
+  it("dashboard 的 setPanel（V4-8b，D-V4-56＝A）：按下就切頁（同步 showPanel，不是 transition），有資料時同時 preparePanel；載入結束仍不能顯示這一頁才記為失敗；連續切頁只有最後一次生效", () => {
     const dashboard = source("src/components/dashboard.tsx");
     expect(dashboard).toContain('const [panel, showPanel] = useState<Panel>("overview");');
-    expect(dashboard).toContain("const pending = hasData.current && !immediate ? preparePanel(next) : null;");
-    expect(dashboard).toContain("if (!pending) { pendingPanel.current = null; showPanel(next); return; }");
+    expect(dashboard).toContain("const pending = hasData.current ? preparePanel(next) : null;");
+    expect(dashboard).toContain("pendingPanel.current = pending ? next : null; setPanelLoadFailed(null); showPanel(next);");
     expect(dashboard).toContain("if (request !== panelRequest.current) return;");
-    expect(dashboard).toContain("pendingPanel.current = null; setEvidenceSource(null); setEvidenceState(null); showPanel(next);");
+    expect(dashboard).toContain("pendingPanel.current = null; if (!panelReady(next)) setPanelLoadFailed(next);");
     expect(dashboard).not.toMatch(/startTransition/);
-    // 其餘地方一律經過 setPanel，不直接呼叫 showPanel。
-    expect(dashboard.match(/showPanel\(/g)).toHaveLength(2);
-    // 開匯入精靈不等 chunk（精靈在首載；匯入中資料來源頁的內容是 hidden）。
-    expect(dashboard).toContain('setPanel("data", true); setShowImport(true);');
-    expect(dashboard.match(/setPanel\("[a-z]+", true\)/g)).toHaveLength(1);
-    // 切到待辦還在等 chunk 時，加入待辦不重複新增（總覽／健檢與會議頁兩條路徑）。
+    // 其餘地方一律經過 setPanel，不直接呼叫 showPanel（V4-8b 起 setPanel 內只剩一處）。
+    expect(dashboard.match(/showPanel\(/g)).toHaveLength(1);
+    // V4-3c 的 immediate（開匯入精靈不等 chunk）已不需要：一律按下就切頁；匯入中不顯示骨架與錯誤狀態。
+    expect(dashboard).toContain('setPanel("data"); setShowImport(true);');
+    expect(dashboard).not.toMatch(/setPanel\("[a-z]+", true\)/);
+    // 切到待辦還在等 chunk 時，加入待辦不重複新增（總覽／健檢與會議頁兩條路徑；V4-3c 的守門保留）。
     expect(dashboard.match(/if \(!active \|\| pendingPanel\.current === "actions"\) return;/g)).toHaveLength(2);
+    // 等待與失敗的畫面：頁面內容等 usePanelReady 才掛載；骨架與錯誤狀態在 .view-content 外、匯入中不顯示；main 只在等待中標 aria-busy；「再試一次」再走一次 setPanel（preparePanel）。
+    expect(dashboard).toContain("const ready = usePanelReady(panel);");
+    expect(dashboard).toContain("const panelWaiting = !!visible && !importing && !ready;");
+    expect(dashboard).toContain('<main id="main-content" tabIndex={-1} aria-busy={(panelWaiting && panelLoadFailed !== panel) || undefined}>');
+    expect(dashboard).toContain("{panelWaiting && panelLoadFailed !== panel && <PanelLoadingState />}");
+    expect(dashboard).toContain("{panelWaiting && panelLoadFailed === panel && <PanelErrorState onRetry={() => setPanel(panel)} />}");
+    expect(dashboard).toContain('{visible && ready && <div key={active.id} className="view-content" ');
+    expect(dashboard).toContain('{visible && ready && panel === "actions" && <ActionsWorkbench ');
+  });
+
+  it("V4-8b panelReady：只看這一頁本身的 chunk（選配的 AI 解釋不算，D-V4-58＝A）；不需要 chunk 的頁一律 true；健檢與資料來源共用一個 chunk", async () => {
+    mockChunks({ failing: "@/components/ai-panel" });
+    const lazyPanels = await freshLazyPanels();
+    for (const panel of ["overview", "scenarios", "validation"]) expect(lazyPanels.panelReady(panel), panel).toBe(true);
+    for (const panel of ["diagnosis", "data", "products", "meeting", "actions"]) expect(lazyPanels.panelReady(panel), panel).toBe(false);
+    await lazyPanels.preparePanel("diagnosis");
+    expect(lazyPanels.panelReady("diagnosis"), "AI 解釋載入失敗、健檢的 chunk 已載入：健檢頁照常顯示").toBe(true);
+    expect(lazyPanels.panelReady("data"), "資料來源與健檢同一個 chunk").toBe(true);
+    expect(lazyPanels.preparePanel("diagnosis"), "選配的 AI 解釋還沒載入：再切到健檢時仍會再試").toBeInstanceOf(Promise);
+    expect(lazyPanels.panelReady("products")).toBe(false);
+  });
+
+  it("V4-8b panelReady：這一頁的 chunk 載入失敗時仍是 false（dashboard 據此顯示錯誤狀態），之後再 preparePanel 成功就變 true", async () => {
+    let attempts = 0;
+    vi.doMock("@/components/product-comparison-panel", async () => { attempts++; if (attempts === 1) throw new Error("CHUNK_LOAD_FAILED"); return { ProductComparisonPanel: () => null }; });
+    const lazyPanels = await freshLazyPanels();
+    await expect(lazyPanels.preparePanel("products")).resolves.toBeUndefined();
+    expect(lazyPanels.panelReady("products")).toBe(false);
+    await expect(lazyPanels.preparePanel("products")).resolves.toBeUndefined();
+    expect(attempts).toBe(2);
+    expect(lazyPanels.panelReady("products")).toBe(true);
+    expect(lazyPanels.preparePanel("products")).toBeNull();
+  });
+
+  it("V4-8b usePanelReady：SSR 用同一個判斷（getServerSnapshot），預先載入前後各自反映 panelReady", async () => {
+    mockChunks();
+    const lazyPanels = await freshLazyPanels();
+    const Probe = ({ panel }: { panel: string }) => createElement("p", null, String(lazyPanels.usePanelReady(panel)));
+    expect(renderToStaticMarkup(createElement(Probe, { panel: "overview" }))).toBe("<p>true</p>");
+    expect(renderToStaticMarkup(createElement(Probe, { panel: "meeting" }))).toBe("<p>false</p>");
+    await lazyPanels.preloadPanels();
+    expect(renderToStaticMarkup(createElement(Probe, { panel: "meeting" }))).toBe("<p>true</p>");
+    expect(source("src/components/lazy-panels.tsx")).toContain("return useSyncExternalStore(subscribe, ready, ready);");
   });
 
   it("dashboard 在資料第一次就緒（ready／partial）後才排程，effect 的 cleanup 會取消還沒開始的排程", () => {
