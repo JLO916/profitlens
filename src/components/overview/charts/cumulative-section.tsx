@@ -95,8 +95,8 @@ export function CumulativeSection({ snapshot, onEvidence, target = null, drawn =
   // 伺服器與單元測試沒有 window：直接渲染全部（同 useDeferredMount 的作法）。
   const [server] = useState(() => typeof window === "undefined");
   const shown = drawn || server;
-  const result = useMemo(() => cumulativeDaily(snapshot, CUMULATIVE_METRIC), [snapshot]);
-  const { title, subtitle } = cumulativeConclusion(result, snapshot);
+  // V4-10 收尾（390 TBT）：進階區沒展開過時不算兩期每日累計（periodDailyMetrics 逐日重算），載入示範資料的主執行緒不多花這段；收合時只放等高骨架。
+  const result = useMemo(() => shown ? cumulativeDaily(snapshot, CUMULATIVE_METRIC) : null, [snapshot, shown]);
   const legend: ChartLegendItem[] = [
     { key: "current", label: frameCopy.legend.current, color: chartColors.current },
     { key: "previous", label: frameCopy.legend.previous, color: chartColors.previous },
@@ -104,12 +104,13 @@ export function CumulativeSection({ snapshot, onEvidence, target = null, drawn =
   ];
   const tableTitle = copy.tableTitle;
   const summary = fill(labels.overview.page.dataTable, { title: tableTitle });
+  if (!result) return <ChartFrame id="cumulative" page="overview" title={tableTitle} subtitle={fill(copy.subtitle, { metric: metricLabel({ metric: CUMULATIVE_METRIC }) })} legend={legend} height="sm" state="loading" dataTable={{ summary, content: null }} />;
+  const { title, subtitle } = cumulativeConclusion(result, snapshot);
 
   if (!result.drawable) {
     const message = fill(copy.tooLong, { n: CUMULATIVE_DAILY_MAX_DAYS });
     return <ChartFrame id="cumulative" page="overview" title={title} subtitle={subtitle} height="sm" state="empty" message={message} dataTable={{ summary, content: <p className="note">{message}</p> }} />;
   }
-  if (!shown) return <ChartFrame id="cumulative" page="overview" title={title} subtitle={subtitle} legend={legend} height="sm" state="loading" dataTable={{ summary, content: null }} />;
 
   const columns: ChartDataColumn<ColumnKey>[] = [
     { key: "date", label: copy.columns.date, unit: "date", data: "date" },
