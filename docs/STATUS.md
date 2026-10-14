@@ -1,5 +1,32 @@
 # Status
 
+## v4.1｜V41-0 基準與護欄（完成；分支 revamp/v4.1，未推送）
+
+使用者 2026-10-14 回覆「全部依建議值」：D-V41-1–24 依建議值，D-V41-9 用產品口吻草稿、由 Claude 代寫。CLAUDE.md 已換成 v4.1 版。
+
+V41-0 做了以下項目：
+
+- next、eslint-config-next 升到 16.3.8。npm audit 由 10 high 降為 9 high，Next.js 的 6 項都已解決。
+- labels v4 快照（2,839 個葉節點）與 V41 新 key 前綴。
+- 掃描規則擴到 guide 與 `src/app`。
+- testid 第四份清單。
+- v4.1 capture config，加上 `/` 首載與 404 頁框架基準的量測。
+- 功能保留表與文字斷言延續。
+
+驗收（`4a2ed79`）：
+
+- unit 164 檔、3,387 個全過。
+- E2E 1,067 passed、0 failed、25 skipped。
+- 52 張畫面與 v4.0.0 逐位元組相同。
+- First Load JS 519,427。
+- 390 TBT 五項都通過：載入示範資料 1,079.0、健檢 821.8、商品 99.8、會議 1,029.4、資料來源 17.3。
+- axe 23／23／23／21 全部 0。
+- 禁區與邊界五條都是空的。
+
+**待決**：source-map-js 1.2.2 的 lockfile 修正要使用者同意。
+
+基準見 `verification/revamp-v41/V41-0-baseline.md`；驗收見 `verification/revamp-v41-V41-0-acceptance.md`。下一批是 V41-1，說明路由、入口與介紹三段。
+
 ## EC ProfitLens v4.0.0 正式上線（2026-10-14）
 
 使用者當次同意「正式上線」。

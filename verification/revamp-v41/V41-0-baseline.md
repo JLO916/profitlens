@@ -115,17 +115,19 @@ O3 列（`batch`＝V41-0）在主流程跑完 E2E 與畫面基準（52 張 0 差
 
 `verification/revamp-v4-capture/metrics.spec.ts` 的改動：常數 `V41_HOME_FIRST_LOAD_BASELINE = 519_427`、`V41_HOME_FIRST_LOAD_ALLOWANCE = 1_024`（V41-1 起門檻 520,451；V41-0 只記錄在 `metrics.json` 的 `v41.homeFirstLoad`，不斷言）；新增測試「V41-0 框架基準」請求 `/v41-framework-baseline-404`（狀態 404），記錄在 `metrics.json` 的 `v41.frameworkBaseline` 與 `first-load-modules.json` 的 `frameworkBaseline`（V41-1 起說明頁 ≤ 框架基準＋5,120；V41-0 不斷言）；B5 的量測迴圈抽成共用的 `firstLoadScripts()`，輸出不變；`METRICS_OUT`、`FIRST_LOAD_MODULES_OUT` 沿用既有的環境變數。**主流程跑 capture 後要核對 `firstLoadJs.gzipBytes` 是否等於 519,427；不同時以實測值改常數並在驗收文件說明。**
 
-## 8 瀏覽器量測（主流程填寫）
+## 8 瀏覽器量測（主流程，2026-10-14，程式 `4a2ed79`）
 
-以下各項 V41-0 實作代理**未執行**（依分工由主流程跑共通驗收第 2–8 步後填入）：
-
-| 項目 | 來源 | 狀態 |
+| 項目 | 結果 | 證據 |
 |---|---|---|
-| 畫面基準 52 張（`verification/revamp-v4/V4-11/snapshots/` 複製到 `verification/revamp-v41/V41-0/snapshots/`，不帶 `--update-snapshots`，應 0 差異） | `verification/revamp-v41.capture.config.ts` | 快照已複製（52 張，與 V4-11 逐位元組相同）；比對未執行 |
-| `/` 與 404 頁 First Load、首載 chunk 清單 | `verification/revamp-v41/V41-0/metrics.json`、`first-load-modules.json` | 未執行 |
-| B2 首屏、B3、B9 七頁 DOM 節點 | 同上 | 未執行 |
-| 390 五個 TBT（低負載各 3 次取中位數與 loadavg） | `scripts/lighthouse-pages.mjs` | 未執行 |
-| 8 頁 Lighthouse | 同上 | 未執行 |
-| axe 四尺寸 | `verification/revamp-v41/V41-0/axe.json` | 未執行 |
-| keyboard-walk | `verification/revamp-v41/V41-0/keyboard-walk.json` | 未執行 |
-| network-log | `verification/revamp-v41/V41-0/network-log.json` | 未執行 |
+| 完整 E2E（帶三個 `*_OUT`） | **1,067 passed、0 failed、25 skipped（35.4 分鐘）**，與 V4-11 相同；跑完已還原 E2E 改寫的追蹤檔 | `axe.json`、`keyboard-walk.json`、`network-log.json` |
+| 畫面基準 52 張 | 不帶 `--update-snapshots`：24 passed、8 skipped（新增的 404 量測算 1 個 passed），52 張與 V4-11 逐位元組相同 | `snapshots/` |
+| `/` 的 First Load JS | **519,427 bytes gzip**（V4-11 為 519,322，多 105，來自 Next.js 16.3.8）；V41-1 起門檻 520,451 | `metrics.json` 的 `v41.homeFirstLoad` |
+| 404 頁的 First Load（框架基準） | 131,465 bytes gzip，4 個腳本；`/v41-framework-baseline-404` 回 404 | `metrics.json` 的 `v41.frameworkBaseline` |
+| B2 首屏 | 1440：一句話頂 168、KPI 帶底 396、三件事首列底 537；390：扣廣告後貢獻值頂 295 | `metrics.json` |
+| B9 1440 DOM 節點 | 總覽 3,325、健檢 2,174、商品 2,510、試算 683、待辦 711、會議 1,064、資料來源 1,209，與 V4-11 相同 | `metrics.json` |
+| 390 TBT（三次，開跑時 1 分鐘負載 3.49、2.39、2.47） | 中位數都低於門檻：載入示範資料 1,079.0（門檻 1,109.1）、健檢 821.8（832.3）、商品 99.8（129.9）、會議 1,029.4（1,071.2）、資料來源 17.3（50.0） | `lighthouse/`、`lighthouse-runs/` |
+| Lighthouse | a11y 全部 100（1440、390 各 8 頁 × 3 次）；Performance 1440 為 100，390 為 94–97；`insideTimespans` 都是空的 | 同上 |
+| axe 四尺寸 | 23／23／23／21 個狀態，全部 0 問題 | `axe.json` |
+| keyboard-walk | 除了 `checked_at` 與 V4-11 相同 | `keyboard-walk.json` |
+| network-log | 下載集合與位元組都與 V4-11 相同，`checks` 相同 | `network-log.json` |
+| audit:ui、contrast | hex 0、字級種類 11、JSX 中文 0；contrast 85／85 | `ui-audit.json` |
