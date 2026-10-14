@@ -19,8 +19,8 @@ export const guideLabels = {
       demoCaption: "畫面為示範資料（虛構）",
       /** 同上：S3、S4、S5（repo 內既有的合成檔，guideDataNote＝synthetic；D-V41-21＝A）。 */
       syntheticCaption: "畫面為虛構的合成資料",
-      /** 說明頁頁尾：{date}＝src/application/guide-media.json 的 updated（只有實際更新了媒體時才變；還沒有媒體時整句不顯示）。 */
-      mediaUpdated: "截圖是示範資料的畫面，更新於 {date}。",
+      /** 說明頁頁尾：{date}＝src/application/guide-media.json 的 updated（只有實際更新了媒體時才變；還沒有媒體時整句不顯示）。截圖有示範資料也有合成資料（都是虛構的），所以寫「虛構資料」。 */
+      mediaUpdated: "截圖是虛構資料的畫面，更新於 {date}。",
     },
     /** V41-2a：功能區頁的麵包屑與連結用字。 */
     areaPage: {

@@ -1,0 +1,250 @@
+{
+  "start": {
+    "checked_at": "2026-10-14T14:24:12.412Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/start",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "start-load",
+        "src": "/guide/start/start-load.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 622,
+        "ratio": 0.534,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "start-nav",
+        "src": "/guide/start/start-nav.webp",
+        "displayedWidth": 219,
+        "naturalWidth": 219,
+        "ratio": 1,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "start-period",
+        "src": "/guide/start/start-period.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 694,
+        "ratio": 0.478,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "start-mobile-m",
+        "src": "/guide/start/start-mobile-m.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 390,
+        "ratio": 0.851,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "import": {
+    "checked_at": "2026-10-14T14:24:13.277Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/import",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "import-files",
+        "src": "/guide/import/import-files.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 942,
+        "ratio": 0.352,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "import-mapping",
+        "src": "/guide/import/import-mapping.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 600,
+        "ratio": 0.553,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "import-basis",
+        "src": "/guide/import/import-basis.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 942,
+        "ratio": 0.352,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "import-review",
+        "src": "/guide/import/import-review.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 990,
+        "ratio": 0.335,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "import-issues",
+        "src": "/guide/import/import-issues.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 942,
+        "ratio": 0.352,
+        "belowThreshold": true
+      }
+    ],
+    "belowThreshold": [
+      "import-files",
+      "import-basis",
+      "import-review",
+      "import-issues"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "overview": {
+    "checked_at": "2026-10-14T14:24:14.141Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/overview",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "overview-snapshot",
+        "src": "/guide/overview/overview-snapshot.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1204,
+        "ratio": 0.276,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "overview-top-three",
+        "src": "/guide/overview/overview-top-three.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1204,
+        "ratio": 0.276,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "overview-bridge",
+        "src": "/guide/overview/overview-bridge.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "overview-trend",
+        "src": "/guide/overview/overview-trend.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 590,
+        "ratio": 0.563,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "overview-bridge-m",
+        "src": "/guide/overview/overview-bridge-m.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 356,
+        "ratio": 0.933,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [
+      "overview-snapshot",
+      "overview-top-three",
+      "overview-bridge"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "diagnosis": {
+    "checked_at": "2026-10-14T14:24:14.857Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/diagnosis",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "diagnosis-list",
+        "src": "/guide/diagnosis/diagnosis-list.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1142,
+        "ratio": 0.291,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "diagnosis-add-action",
+        "src": "/guide/diagnosis/diagnosis-add-action.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 640,
+        "ratio": 0.519,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "diagnosis-share",
+        "src": "/guide/diagnosis/diagnosis-share.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "diagnosis-heat",
+        "src": "/guide/diagnosis/diagnosis-heat.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 800,
+        "ratio": 0.415,
+        "belowThreshold": true
+      }
+    ],
+    "belowThreshold": [
+      "diagnosis-list",
+      "diagnosis-share",
+      "diagnosis-heat"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "products": {
+    "checked_at": "2026-10-14T14:24:15.474Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/products",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "products-variance",
+        "src": "/guide/products/products-variance.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 556,
+        "ratio": 0.597,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "products-table",
+        "src": "/guide/products/products-table.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 798,
+        "ratio": 0.416,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "products-pareto",
+        "src": "/guide/products/products-pareto.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 556,
+        "ratio": 0.597,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [
+      "products-table"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  }
+}

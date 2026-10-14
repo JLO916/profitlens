@@ -9,7 +9,7 @@ v4.1 回應使用者 2026-10-14 的指示：「下一階段優化與強化，優
 | 基準版本 | v4.0.0（tag `v4.0.0`＝`872662d`；`main`＝`59e6f41`，`872662d` 之後只加上線紀錄文件；正式站 https://profitlens-tau.vercel.app 是 v4.0.0） |
 | 目標版本 | 依 D-V41-1 建議值暫定 **v4.1.0**（使用者未回覆前不視為核准） |
 | 工作分支 | `revamp/v4.1`（已自 `main` 開出；D-V41-2 預設沿用）。**push 任何分支都會由 Vercel Git 整合建 preview，視同部署，沒有當次同意不 push** |
-| 狀態 | **V41-0、V41-1 完成（2026-10-14），下一批 V41-2a**；D-V41-25＝A：D-V41-1–24 全部依建議值（D-V41-9 用產品口吻草稿，由 Claude 代寫）；CLAUDE.md 已換成 v4.1 版 |
+| 狀態 | **V41-0、V41-1、V41-2a 完成（2026-10-14），下一批 V41-2b**；D-V41-25＝A：D-V41-1–24 全部依建議值（D-V41-9 用產品口吻草稿，由 Claude 代寫）；CLAUDE.md 已換成 v4.1 版 |
 | 產品名稱 | EC ProfitLens；技術識別不改（package 名 `profitlens`、下載檔名前綴 `profitlens-`、備份 schema `profitlens-workspace-v5`、`dataset_id`、網址 `profitlens-tau.vercel.app`） |
 
 ## 版本號建議

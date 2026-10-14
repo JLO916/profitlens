@@ -1,5 +1,28 @@
 # Status
 
+## v4.1｜V41-2a 媒體管線與前 5 個功能區（完成；分支 revamp/v4.1，未推送）
+
+說明頁多了 5 個功能區頁：開始使用、匯入資料、經營總覽、通路健檢、商品毛利（`/guide/{area}`，靜態產生），每一步有截圖、圖說與原尺寸連結；說明首頁的功能區目錄出現 5 張卡，sitemap 7 個網址。21 張截圖由 `verification/guide-media/` 的 Playwright 腳本從示範資料與既有合成資料產生，基準 PNG 提交、公開檔是 WebP；`GUIDE_MEDIA=check` 只比對，`GUIDE_MEDIA=write` 只更新有差異的媒體。
+
+驗收（程式 V41_2A_CODE）：
+
+- unit 166 檔、3,465 個全過。
+- E2E 1,103 passed、0 failed、29 skipped。
+- `GUIDE_MEDIA=check` 連兩次 21／21、0 差異；再跑 `write`，21 張都沒變。
+- 畫面基準 64 張：15 說明首頁（目錄多一項）更新、16 `/guide/overview` 新增，其餘 0 差異。
+- `/` First Load JS 519,687（與 V41-1 相同）；`/guide` 與 5 個功能區頁都是 131,465（＝框架基準）。
+- launch-check 13 項與補充 14 項全部通過。
+- 390 TBT 五項都通過：載入示範資料 1,017.1、健檢 814.4、商品 93.7、會議 999.4、資料來源 15.4。
+- `/guide`、`/guide/overview` Lighthouse 的 a11y、SEO 都是 100，Performance 98–100，CLS 0。
+- axe 25／25／25／23 全部 0；keyboard-walk `/guide/start` 通過。
+- 禁區與邊界五條都是空的。
+
+390 寬有 11 張截圖的顯示比例低於 0.45，都有原尺寸連結，逐張理由見驗收文件。
+
+**待決**：source-map-js 1.2.2 的 lockfile 修正（V41-0 提出）。
+
+**人工關卡**：H7 未執行／待人工（建議 V41-2b 之後看）。驗收見 `verification/revamp-v41-V41-2a-acceptance.md`。下一批是 V41-2b，後 6 個功能區。
+
 ## v4.1｜V41-1 說明路由、入口與介紹三段（完成；分支 revamp/v4.1，未推送）
 
 新增公開的說明首頁 `/guide`（伺服器元件、靜態產生）：開頭、為什麼做這套服務（§1.1 產品口吻草稿）、幫哪些人解決哪些問題、獨特性與代價、30 秒上手。工作台四處加「使用說明」入口（側欄、手機「更多」、首頁空狀態、頁尾），一律另開分頁。說明文字放在 `src/i18n/guide.zh-TW.ts`，不進工作台首載。功能區頁到 V41-2a、2b 才有，本批首頁的功能區名稱先不做連結。
@@ -21,7 +44,7 @@
 - D-V41-25＝A（使用者 2026-10-14「25A」）：06 的允許清單更正為「02、04–09 mobile」，6 張基準已用 V41-1 實拍更新。
 - source-map-js 1.2.2 的 lockfile 修正（V41-0 提出）。
 
-**人工關卡**：H7 未執行／待人工（建議 V41-2b 之後看）。驗收見 `verification/revamp-v41-V41-1-acceptance.md`。下一批是 V41-2a，媒體管線與前 5 個功能區。
+**人工關卡**：H7 未執行／待人工（建議 V41-2b 之後看）。驗收見 `verification/revamp-v41-V41-1-acceptance.md`。
 
 ## v4.1｜V41-0 基準與護欄（完成；分支 revamp/v4.1，未推送）
 
