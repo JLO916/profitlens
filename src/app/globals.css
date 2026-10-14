@@ -979,6 +979,10 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 .nav-end { margin-left: auto; }
 /* 徽章文字由 CSS 畫出：按鈕的可及名稱維持頁名，完整意思由 aria-describedby 提供。 */
 .nav-end[data-mark]::after { content: attr(data-mark); }
+/* V41-1（D-V41-5）：側欄「使用說明」入口在最後一組之下，用與開發者組相同的分隔線隔開；13px 次要色、底線的安靜文字連結（不是頁面：不用 nav-item 的列高、icon 與左側色條）。 */
+.sidebar-guide { margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-3) 0; border-top: var(--border-w) solid var(--border-subtle); }
+.sidebar-guide-link { display: inline-flex; align-items: center; min-height: 24px; color: var(--text-secondary); font-size: var(--text-13); line-height: var(--leading-13); text-decoration: underline; text-decoration-color: var(--border-default); text-underline-offset: 3px; }
+.sidebar-guide-link:hover { color: var(--text-primary); text-decoration-color: currentColor; }
 
 /* 頁首（56px）：h1 20／600＋選填 13px 描述＋右側本頁動作；不放 eyebrow。 */
 .page-heading { display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--page-header-h); margin: 0; padding: var(--space-1) 0; }
@@ -988,7 +992,8 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 
 /* 頁尾：一句口徑＋指標定義＋新台幣 · 台北時間；正式站加使用分析揭露。 */
 .main-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-3); margin-top: var(--space-6); padding: var(--space-4) 0 var(--space-2); border-top: var(--border-w) solid var(--border-subtle); font-size: var(--text-12); line-height: var(--leading-12); color: var(--text-tertiary); }
-.main-footer .footer-basis { height: auto; min-height: 24px; padding: 0 var(--space-1); font-size: var(--text-12); line-height: var(--leading-12); vertical-align: baseline; }
+/* V41-1：「使用說明」連結（a.ui-btn-text）與「指標定義」同一個外觀。 */
+.main-footer .footer-basis, .main-footer .footer-guide { height: auto; min-height: 24px; padding: 0 var(--space-1); font-size: var(--text-12); line-height: var(--leading-12); vertical-align: baseline; }
 
 /* 手機底部分頁列與「更多」面板（桌機不顯示）。 */
 .mobile-tabbar { display: none; }
@@ -1020,6 +1025,8 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
   .mobile-more { position: fixed; left: 0; right: 0; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); z-index: var(--z-overlay); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: center; gap: var(--space-2); height: var(--more-nav-h); padding: var(--space-3) var(--space-4); background: var(--bg-surface); }
   .more-item { display: flex; align-items: center; gap: var(--space-2); height: var(--control-h-touch); padding: 0 var(--space-3); border: var(--border-w) solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--text-14); line-height: var(--leading-14); text-align: left; }
   .more-item[aria-current="page"] { border-color: var(--accent-border); background: var(--accent-subtle); color: var(--accent); font-weight: var(--weight-semibold); }
+  /* V41-1：最後一列是「使用說明」連結（a.more-item）；#validation 多出開發者驗證時共 5 列、排成三行，面板高跟著加一行（頂欄群組與選單的位置都讀 --more-nav-h）。 */
+  body:has(#mobile-more > :nth-child(5)) { --more-nav-h: calc(var(--control-h-touch) * 3 + var(--space-2) * 2 + var(--space-3) * 2); }
   /* 手機頁首：h1 仍在（螢幕閱讀器與 E2E 讀得到），畫面上讓位給期間按鈕；資料來源頁的本頁動作照常顯示。 */
   .page-heading { min-height: 0; padding: 0; }
   .page-heading .page-heading-text { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
@@ -2439,6 +2446,8 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 .ui-empty-page.state-page { box-sizing: border-box; min-height: var(--empty-min-h); margin-top: var(--space-2); padding: var(--space-5); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-surface); }
 .state-page > p { margin: 0; }
 .state-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+/* V41-1（D-V41-5）：首次進入按鈕列下方一行「使用說明」連結（a.ui-btn-text，點擊區至少 24px）；收在 --empty-min-h 之內，容器高度不變。 */
+.state-page > .state-guide { min-height: 24px; }
 .state-files-title { margin-top: var(--space-3); font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); }
 .state-page > .template-guide, .state-page > .state-skeleton, .state-page > .state-issues { justify-self: stretch; min-width: 0; }
 /* 「需要的檔案」表（TemplateTable layout="guide"）：檔案欄兩行（名稱＋等寬字標準檔名）、內容欄次要色、範本欄兩個文字按鈕並排。 */

@@ -11,6 +11,7 @@ import { Dashboard } from "@/components/dashboard";
 import { DataStatus, type DataStatusProps } from "@/components/shell/data-status";
 import { ExportMenu } from "@/components/shell/export-menu";
 import { PageHeader, ShellFooter } from "@/components/shell/page-chrome";
+import { FirstRunState } from "@/components/shell/page-states";
 import { ShellFrame, type ShellFrameProps } from "@/components/shell/shell-frame";
 import { WorkspaceStorage } from "@/components/workspace-storage";
 import { fill, labels } from "@/i18n";
@@ -259,5 +260,79 @@ describe("V3-3 匯出選單分組（§6.5）與儲存選單三段（§6.3 #14）
   it("頁尾：正式站才有使用分析揭露", () => {
     expect(renderToStaticMarkup(createElement(ShellFooter, { analytics: true, onBasis: noop }))).toContain('data-testid="analytics-note"');
     expect(renderToStaticMarkup(createElement(ShellFooter, { analytics: false, onBasis: noop }))).not.toContain("analytics-note");
+  });
+});
+
+// ── V41-1：工作台的「使用說明」入口（docs/revamp-v4.1/06_BATCHES.md V41-1 第 5 項、PRD §3.2、D-V41-5）──
+// 側欄（aside 內、nav 之後）、手機「更多」最後一列、首頁空狀態按鈕列下方一行、頁尾「指標定義」旁；一律 <a href="/guide" target="_blank" rel="noopener">，
+// 可及名稱＝可見文字＋sr-only 的 shell.guideV41.newTab（接在可見文字之後）。字串只取 labels.shell.guideV41.*。
+describe("V41-1 工作台的「使用說明」入口（D-V41-5）", () => {
+  const guide = labels.shell.guideV41;
+  /** 去掉標籤後的文字（sr-only 的文字也算，等於可及名稱的來源）。 */
+  const text = (markup: string) => markup.replace(/<[^>]+>/g, "");
+  /** 檢查一個入口：<a> 的 href／target／rel、沒有 aria-current，可及文字＝可見文字＋（另開分頁），sr-only 接在最後；回傳整個 <a>。 */
+  function entry(html: string, testid: string, visible: string): string {
+    const link = section(html, testid, "a");
+    const open = link.slice(0, link.indexOf(">") + 1);
+    expect(open, testid).toMatch(/^<a\s/);
+    expect(open, testid).toContain(' href="/guide"');
+    expect(open, testid).toContain(' target="_blank"');
+    expect(open, testid).toContain(' rel="noopener"');
+    expect(open, testid).not.toContain("aria-current");
+    expect(text(link), testid).toBe(`${visible}${guide.newTab}`);
+    expect(link.endsWith(`${visible}<span class="sr-only">${guide.newTab}</span></a>`), testid).toBe(true);
+    return link;
+  }
+
+  it("側欄：在 aside 內、nav 之後（不在主要導覽裡）；安靜的文字連結，不是 nav-item、不帶 aria-current（目前頁的標示仍只有一個）", () => {
+    for (const props of [frameProps(), frameProps({ showValidation: true, panel: "validation" })]) {
+      const html = renderToStaticMarkup(createElement(ShellFrame, props));
+      const sidebar = html.slice(html.indexOf("<aside"), html.indexOf("</aside>"));
+      const link = entry(sidebar, "guide-entry-sidebar", guide.entry);
+      expect(link).not.toContain("nav-item");
+      expect(sidebar.indexOf('data-testid="guide-entry-sidebar"')).toBeGreaterThan(sidebar.indexOf("</nav>"));
+      expect(count(sidebar, 'data-testid="guide-entry-sidebar"')).toBe(1);
+      expect(count(sidebar, 'aria-current="page"')).toBe(1);
+    }
+  });
+
+  it("手機「更多」：面板最後一列、與頁面列同一個 more-item 外觀；面板關著（hidden）時也掛著；#validation 時仍在開發者驗證之後", () => {
+    for (const props of [frameProps({ panel: "products" }), frameProps({ showValidation: true, panel: "validation" })]) {
+      const html = renderToStaticMarkup(createElement(ShellFrame, props));
+      const more = section(html, "mobile-more");
+      expect(more).toMatch(/^<div class="mobile-more" id="mobile-more"[^>]*hidden=""/);
+      const link = entry(more, "guide-entry-more", guide.entry);
+      expect(link).toMatch(/^<a class="more-item" /);
+      expect(more.endsWith(`${link}</div>`)).toBe(true);
+      expect(count(more, 'aria-current="page"')).toBe(1);
+      expect(count(html, 'data-testid="guide-entry-more"')).toBe(1);
+    }
+  });
+
+  it("頁尾：在「指標定義」之後，用同一個 aria-hidden 的「 · 」隔開，之後才是新台幣 · 台北時間；分析揭露的有無不影響", () => {
+    for (const analytics of [true, false]) {
+      const html = renderToStaticMarkup(createElement(ShellFooter, { analytics, onBasis: noop }));
+      const link = entry(html, "guide-entry-footer", guide.entry);
+      expect(link).toMatch(/^<a class="ui-btn ui-btn-text footer-guide" /);
+      expect(html).toContain(`${labels.shell.buttons.basis}</button><span aria-hidden="true"> · </span>${link}<span aria-hidden="true"> · </span>${labels.shell.sidebar.sidebarFooter}</p>`);
+    }
+  });
+
+  it("首頁空狀態：按鈕列下方一行（陳述句 homeHint）；只在有按鈕列時出現（資料來源頁的空狀態沒有）", () => {
+    const withActions = renderToStaticMarkup(createElement(FirstRunState, { onLoadDemo: noop, onImport: noop }));
+    const link = entry(withActions, "guide-entry-home", guide.homeHint);
+    expect(link).toMatch(/^<a class="ui-btn ui-btn-text state-guide" /);
+    expect(guide.homeHint).not.toMatch(/[?？]/);
+    expect(withActions).toContain(`${labels.shell.buttons.importData}</button></div>${link}<h3 class="state-files-title"`);
+    const withoutActions = renderToStaticMarkup(createElement(FirstRunState, { onLoadDemo: noop, onImport: noop, showActions: false }));
+    expect(withoutActions).not.toContain("guide-entry-home");
+    expect(withoutActions).not.toContain(guide.homeHint);
+  });
+
+  it("空工作區（真正的 Dashboard SSR）：四個入口各一份；可見文字都來自 labels.shell.guideV41", () => {
+    const html = renderToStaticMarkup(createElement(Dashboard, { analytics: true }));
+    for (const id of ["guide-entry-sidebar", "guide-entry-more", "guide-entry-home", "guide-entry-footer"]) expect(count(html, `data-testid="${id}"`), id).toBe(1);
+    expect(count(html, 'href="/guide"')).toBe(4);
+    expect(count(html, `<span class="sr-only">${guide.newTab}</span>`)).toBe(4);
   });
 });
