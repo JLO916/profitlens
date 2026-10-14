@@ -6,7 +6,7 @@ import { expect, type Browser, type Locator, type Page } from "@playwright/test"
 import { GUIDE_AREA_STEPS, type GuideAreaCode } from "../../src/application/guide";
 import { labels } from "../../src/i18n";
 import { chooseBasis, confirmAndCheck, confirmMappingIfShown, importViaWizard, nextFromFiles, openWizard, setWizardFiles, setWizardManifest, wizard } from "../../tests/e2e/import-wizard-helpers";
-import { FIXED_NOW, loadDemo } from "../revamp-v4-capture/shared";
+import { FIXED_NOW, calculateKeepPreset, goTo, loadDemo, navigateTo } from "../revamp-v4-capture/shared";
 import { labelsHash } from "./labels-hash";
 
 // V41-2a 說明頁媒體管線的共用 helper（docs/revamp-v4.1/01_PRD.md §3.5；GUIDE_CONTENT.md §0 擷取狀態）：擷取狀態、強調框、裁切範圍、WebP 轉檔與媒體清單讀寫。
@@ -86,16 +86,67 @@ export async function stateMissingAdDayReview(page: Page) {
   await confirmAndCheck(page, "partial");
 }
 
-/** S5 4 通路合成資料：精靈匯入 tests/fixtures/synthetic-4-channel（帶 manifest；LIVE 有缺列，檢核結果 partial），本機保存提示按「暫時不要」。D-V41-21＝A。 */
-export async function stateSynthetic(page: Page) {
+/** 精靈套用 directory 的三個檔與 manifest（檢核結果 partial），本機保存提示按「暫時不要」，停在總覽。 */
+async function importPartial(page: Page, directory: string) {
   await page.clock.setFixedTime(FIXED_NOW);
   await page.goto("/");
-  await importViaWizard(page, SYNTHETIC_4_CHANNEL_DIR, { manifest: true, classification: "partial" });
+  await importViaWizard(page, directory, { manifest: true, classification: "partial" });
   const prompt = page.getByTestId("local-save-prompt");
   await expect(prompt).toBeVisible();
   await prompt.getByRole("button", { name: labels.storage.autoSave.decline, exact: true }).click();
   await expect(prompt).toHaveCount(0);
   await expect(page.getByTestId("kpi-band")).toBeVisible();
+}
+
+/** S5 4 通路合成資料：精靈匯入 tests/fixtures/synthetic-4-channel（帶 manifest；LIVE 有缺列，檢核結果 partial），本機保存提示按「暫時不要」。D-V41-21＝A。 */
+export const stateSynthetic = (page: Page) => importPartial(page, SYNTHETIC_4_CHANNEL_DIR);
+
+/** V41-2b：S4 套用到工作台——精靈套用 fixtures/errors/missing_ad_day 三個檔與 manifest（唯讀；MARKETPLACE 缺 8/2 的廣告列，檢核結果 partial），本機保存提示按「暫時不要」。資料來源頁的涵蓋時間軸與資料問題用。 */
+export const stateMissingAdDay = (page: Page) => importPartial(page, MISSING_AD_DAY_DIR);
+
+// ── V41-2b 錨點：擷取狀態 S6–S8（GUIDE_CONTENT §0）──────────────────────────────
+
+/** S6 第 2 個方案套用的範本：砍廣告一半（範本只是起點；方案 2 試算後與現況有差額，方案差額圖與比較表才看得出「並排比較」）。 */
+export const S6_SECOND_PRESET = "cut_ads_half";
+
+/**
+ * S6 S1＋已試算：到假設試算，方案 1 用 calculateKeepPreset（範本「維持現況」、同意聲明、試算），再按「新增方案」加方案 2，
+ * 方案 2 套用範本 S6_SECOND_PRESET 並試算（聲明已記住，不再有勾選框）。停在假設試算頁。
+ */
+export async function stateScenarios(page: Page) {
+  await stateDemo(page);
+  await navigateTo(page, "scenarios");
+  await calculateKeepPreset(page);
+  await page.getByTestId("scenario-add").click();
+  const card = page.getByTestId("scenario-2");
+  await expect(card).toBeVisible();
+  await card.getByTestId("scenario-preset").selectOption(S6_SECOND_PRESET);
+  await card.getByTestId("scenario-preset-apply").click();
+  await expect(card.getByTestId("scenario-acknowledged")).toBeVisible();
+  await card.getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true }).click();
+  await expect(card.getByTestId("scenario-contribution")).toBeVisible();
+}
+
+/**
+ * S7 S6＋待辦與選入會議：通路健檢第一項按「加入待辦」（切到待辦頁、新增一張卡），回假設試算把方案 1 按「選入會議」，再切到會議紀錄確認議程 5 有選入的方案。停在會議紀錄頁。
+ */
+export async function stateActionsAndMeeting(page: Page) {
+  await stateScenarios(page);
+  await goTo(page, "diagnosis", page.getByTestId("diagnosis-list"));
+  await page.getByTestId("diagnosis-list").locator(":scope > li").first().getByRole("button", { name: labels.actions.buttons.addToActions, exact: true }).click();
+  await expect(page.getByTestId("board-card-1")).toBeVisible();
+  await navigateTo(page, "scenarios");
+  await page.getByTestId("scenario-select-1").click();
+  await goTo(page, "meeting", page.getByTestId("meeting-page"));
+  await expect(page.getByTestId("meeting-scenario-results")).toBeVisible();
+}
+
+/** S8 S7＋已結束一次會議：會議紀錄按「結束會議」並在確認區按「確認」，等會議歷史出現一筆。停在會議紀錄頁。 */
+export async function stateFinalized(page: Page) {
+  await stateActionsAndMeeting(page);
+  await page.getByTestId("meeting-finalize").click();
+  await page.getByTestId("meeting-finalize-confirm-button").click();
+  await expect(page.getByTestId("meeting-history-item")).toHaveCount(1);
 }
 
 // ── 截圖前的穩定、強調框與裁切範圍 ─────────────────────────────────────────────
@@ -175,16 +226,24 @@ async function regionBox(region: Region): Promise<Box> {
  * 裁切範圍＝regions 的聯集，四周各留 pad px，向外取整；左右不超出文件寬度、上緣不小於 0。
  * across 有值時左右改取 across 的聯集（例如商品表：上下到第 5 列，左右只到工具列的最後一個按鈕）；maxWidth 從左緣起算截斷寬度。
  */
-export async function unionClip(page: Page, regions: readonly Region[], options: { pad: number; across?: readonly Region[]; maxWidth?: number }): Promise<Clip> {
+export async function unionClip(page: Page, regions: readonly Region[], options: { pad: number; across?: readonly Region[]; maxWidth?: number; within?: Locator }): Promise<Clip> {
   const { pad } = options;
   const boxes = await Promise.all(regions.map(regionBox));
   const horizontal = options.across ? await Promise.all(options.across.map(regionBox)) : boxes;
   const docWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  const left = Math.max(0, Math.floor(Math.min(...horizontal.map(box => box.left)) - pad));
-  const top = Math.max(0, Math.floor(Math.min(...boxes.map(box => box.top)) - pad));
-  const right = Math.min(docWidth, Math.ceil(Math.max(...horizontal.map(box => box.right)) + pad));
-  const bottom = Math.ceil(Math.max(...boxes.map(box => box.bottom)) + pad);
+  // V41-2b：within 有值時，裁切範圍不超出它的外框（對話框、抽屜：留白不帶到後面模糊的頁面；主內容區：上緣不帶到頂欄）。
+  const bounds = options.within ? await regionBox(options.within) : { left: 0, top: 0, right: docWidth, bottom: Infinity };
+  const left = Math.max(Math.floor(bounds.left), Math.floor(Math.min(...horizontal.map(box => box.left)) - pad));
+  const top = Math.max(Math.floor(bounds.top), Math.floor(Math.min(...boxes.map(box => box.top)) - pad));
+  const right = Math.min(Math.ceil(bounds.right), Math.ceil(Math.max(...horizontal.map(box => box.right)) + pad));
+  const bottom = Math.min(Math.ceil(bounds.bottom), Math.ceil(Math.max(...boxes.map(box => box.bottom)) + pad));
   return { x: left, y: top, width: Math.min(right - left, options.maxWidth ?? Infinity), height: bottom - top };
+}
+
+/** V41-2b：滿版的區塊（標題、段落）擷取時設成 width: fit-content（display 不變、高度不變、不移動其他元素），強調框只圍住文字。回傳同一個 locator。 */
+export async function fitContent(locator: Locator): Promise<Locator> {
+  await locator.evaluate(element => (element as HTMLElement).style.setProperty("width", "fit-content"));
+  return locator;
 }
 
 /** 收集 console error 與 pageerror；每個測試最後斷言為空。 */
