@@ -160,7 +160,7 @@ export const guideLabels = {
           period: {
             title: "換期間與通路",
             body: "期間列寫著本期對比上期與天數。{ui:shell.sections.presetGroup}（例如{ui:shell.periods.presets.last4w}）按一下就套用；要自己選日期，按{ui:shell.periodBarV3.custom}，改好再按{ui:shell.buttons.apply}。{ui:shell.periodBar.filter.channel}選單可以只看一個通路。",
-            alt: "期間列，寫著本期與上期的日期、天數，右邊是{ui:shell.sections.presetGroup}。",
+            alt: "期間列左邊是{ui:shell.sections.presetGroup}，右邊寫著本期與上期的日期、天數。",
             caption: "套用後，每一頁都改用新的期間與通路。",
           },
           mobile: {
@@ -188,7 +188,7 @@ export const guideLabels = {
           mapping: {
             title: "{ui:importWizard.steps.1}",
             body: "系統先自動對照欄名，已對上的收合起來；你只要確認沒對上的欄。",
-            alt: "欄位對照，左邊是檔案裡的欄名，右邊是系統要的欄位。",
+            alt: "欄位對照，三份檔案的欄名都已自動對上，各收合成一列。",
             caption: "必填欄位都對上，才能到{ui:importWizard.steps.2}。",
           },
           basis: {
@@ -206,7 +206,7 @@ export const guideLabels = {
           issues: {
             title: "有問題時怎麼看",
             body: "被擋下的檔案會在問題表列出原因與修法；修好原始檔再重新選檔。套用後，問題也會留在{ui:shell.nav.data.headline}頁。",
-            alt: "資料問題表，寫著哪個檔、第幾行少了廣告列。",
+            alt: "資料問題表，寫著哪個檔、哪一天哪個通路少了廣告列。",
             caption: "每個問題都寫出檔名、行號與修法。",
           },
         },
@@ -302,8 +302,8 @@ export const guideLabels = {
           },
           table: {
             title: "在完整表裡排序、篩選與匯出",
-            body: "{ui:products.sections.productTable}可以用{ui:products.pageV3.sortLabel}換排序、搜尋商品，{ui:products.pageV3.exportPage}匯出目前顯示的商品。",
-            alt: "{ui:products.sections.productTable}，上方是{ui:products.pageV3.sortLabel}、欄位與{ui:products.pageV3.exportPage}。",
+            body: "{ui:products.highlights.fullTable}表可以用{ui:products.pageV3.sortLabel}換排序、搜尋商品，{ui:products.pageV3.exportPage}匯出目前顯示的商品。",
+            alt: "{ui:products.highlights.fullTable}表，上方是品類、搜尋、{ui:products.pageV3.sortLabel}與欄位選單。",
             caption: "{ui:products.pageV3.exportPage}只匯出目前顯示的商品。",
           },
           pareto: {

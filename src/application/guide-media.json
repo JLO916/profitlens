@@ -8,7 +8,7 @@
       "height": 358,
       "bytes": 19668,
       "sha256": "8233ff54ce05e62d3e81fa8ac7e42f0238c1d817ac1303f0de15cd7f8334a07f",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "88d995a79209522a277598ca7d29494ba7a5da021e17d7488b0961af1e7b0ca7"
     },
     {
       "id": "start-nav",
@@ -17,7 +17,7 @@
       "height": 429,
       "bytes": 9218,
       "sha256": "d49db13ffc8ac36b05ef093357365627bd4450d73472b1e0f55989e5ebf01de6",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "34ee4001a7267bf6152d41372a222e00ddcaf1b1598fc460c334029c017c3681"
     },
     {
       "id": "start-period",
@@ -26,7 +26,7 @@
       "height": 47,
       "bytes": 5222,
       "sha256": "14384c7c9878d1ee55f44f5df3a16d3659a24d444a696787ee4ee1ca93c1d417",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "c824ad1480d84af524a22bece677714635201f2d13a76fbfe853897a45d4babb"
     },
     {
       "id": "start-mobile-m",
@@ -35,7 +35,7 @@
       "height": 844,
       "bytes": 37796,
       "sha256": "fc119981d518f3fb0d15f06ad95a586f9b1bc2ef2ffeb9e135690d10d2cd51c8",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "f6762525b7554bb07b730081c878076b9176dce3a7ea95dbf0a10159b97953d6"
     },
     {
       "id": "import-files",
@@ -44,7 +44,7 @@
       "height": 542,
       "bytes": 40022,
       "sha256": "8016a9d80805f1cbdc5c7bda35ca4dd24ae3dd28d37248194f5b3b1169f07b47",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "2c807a99b159aaf825143d2941cea104ef644980b96481c5892b0ee80169dba4"
     },
     {
       "id": "import-mapping",
@@ -53,7 +53,7 @@
       "height": 491,
       "bytes": 25576,
       "sha256": "29d9357cb889a49190a47085e04628eb728376ce80c97b433716362c5061897e",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "0aed8784e6b58665e61e9d117d5ed044973e255b8b3b3d203103aa22c5a55da1"
     },
     {
       "id": "import-basis",
@@ -62,7 +62,7 @@
       "height": 756,
       "bytes": 36578,
       "sha256": "2451dbbbd93573ace5f98701c7f160ccd151763fda9344dc8bc780e2b158e363",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "e23348c04ec338d70de8bb4126535776ac5a1754e269c65a12aefd404b4b890f"
     },
     {
       "id": "import-review",
@@ -71,7 +71,7 @@
       "height": 1607,
       "bytes": 111950,
       "sha256": "caa947deccb335e2299c678680dab9ad5251e7e4707c1f97804551cb055a6368",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "16fcc0c93458635741758a25afd12ccf2c8bc4478275573036fd629c22e65a0a"
     },
     {
       "id": "import-issues",
@@ -80,7 +80,7 @@
       "height": 456,
       "bytes": 25664,
       "sha256": "00fe78bb918dbfdf5fb0f7deb8481d8ec4ccb43c309df451e8a9771baa39a0bb",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "6f45f38298da2a824109f661bcc01cd9764f8873106fe033b678f2c92bd5722d"
     },
     {
       "id": "overview-snapshot",
@@ -89,7 +89,7 @@
       "height": 260,
       "bytes": 34158,
       "sha256": "2e234555f4c96d07439b4c07a62d6eed3ff3bf435e9929d6e78eb078e344e202",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "02e04bf0a3f76fe6584752bc1f555e7abe76f47ddc8684d1baec7ac3ba2f3c7d"
     },
     {
       "id": "overview-top-three",
@@ -98,7 +98,7 @@
       "height": 332,
       "bytes": 44294,
       "sha256": "ad5b6114cd9f43c5311f64ace733de741e3eaed5d134408cce25857be9522a4b",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "4fb6605599b32443c476b52e5d10a2136cdced67e99b9cfced2d72bdc6ed825d"
     },
     {
       "id": "overview-bridge",
@@ -107,7 +107,7 @@
       "height": 632,
       "bytes": 45516,
       "sha256": "80f518dc3a666cf6e8bde787155636aa2ba250d570e0cceed65b62fad0a9ca31",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "0956c51a689bfd33b2c3ec4fbc10b7c678178ba53915bf7dd8024b62468a6efa"
     },
     {
       "id": "overview-trend",
@@ -116,7 +116,7 @@
       "height": 488,
       "bytes": 22506,
       "sha256": "6c1a8cd9c2556dd436da9660655fa60fa443c8462170794d614437c86b537ea9",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "728a80b33c551997675824261ba61691f723e0c4a7f0225dc6f20b4807804736"
     },
     {
       "id": "overview-bridge-m",
@@ -125,7 +125,7 @@
       "height": 480,
       "bytes": 23724,
       "sha256": "d65a4a0426243f097859634eb0227f656eeb1481970a096e4d88e9c027a79613",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "ec640358f25433126290c7dfe3200219e01184104b638e4d851bb67ec16de677"
     },
     {
       "id": "diagnosis-list",
@@ -134,7 +134,7 @@
       "height": 230,
       "bytes": 15902,
       "sha256": "f4b445b458e5807057a1413266731a8ccab3d90e6e22fdb0feb6ec39c62c23d0",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "e8a03d6b76bb287250902999014c02ac9a899e00554b8fb07713669207459cd8"
     },
     {
       "id": "diagnosis-add-action",
@@ -143,7 +143,7 @@
       "height": 212,
       "bytes": 13428,
       "sha256": "a898c3c510c22ab994fb42422600f13294a668e71c35ca3c3a2b19d8cab3783a",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "fa270bf3dacd55019547d2672157e9cd0fa8b1156e668fba9d797921a0b715bc"
     },
     {
       "id": "diagnosis-share",
@@ -152,7 +152,7 @@
       "height": 364,
       "bytes": 16292,
       "sha256": "1e1d70a1a468d4c410978e3971b2f2a7fbd90467ce720bb4b6961dc53d9eb208",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "9d000b85a21276177dfe7fde88e2187fc870a2e81d12ba43e4fda829883fd315"
     },
     {
       "id": "diagnosis-heat",
@@ -170,7 +170,7 @@
       "height": 318,
       "bytes": 23996,
       "sha256": "6cb7abc939c9d978b16dfd96fba723632167e65eb998bbd11e1f80ae791a19bc",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "7dcd909281c71c196b527c76245723d7e53e2383476e6754fd52880a860bab40"
     },
     {
       "id": "products-table",
@@ -179,7 +179,7 @@
       "height": 346,
       "bytes": 30302,
       "sha256": "2c1b9f043eafc724b8da8706846d168139898e4cfa4221fe5aa98d5e954bc1ca",
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "0b90da5b80390a633941ebfc9dd4a357c5d7060237e40dd56f478c7ce9bbd876"
     },
     {
       "id": "products-pareto",
