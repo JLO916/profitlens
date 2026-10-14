@@ -5,8 +5,11 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import ts from "typescript";
 
-/** 掃描範圍：globals.css（拆成 :root token 定義區與其餘規則）、src/components 下所有 .tsx 與 .css（含 CSS module）。 */
-export const SCAN_SCOPE = { globalsCss: "src/app/globals.css", componentsDir: "src/components" };
+/**
+ * 掃描範圍：globals.css（拆成 :root token 定義區與其餘規則）、src/components 下所有 .tsx 與 .css（含 CSS module）。
+ * V41-0（docs/revamp-v4.1/06_BATCHES.md V41-0 第 4 項）：tsx 範圍另加 src/app 下所有 .tsx（路由檔；V41-1 起含 src/app/guide/**）。
+ */
+export const SCAN_SCOPE = { globalsCss: "src/app/globals.css", componentsDir: "src/components", appDir: "src/app" };
 
 /**
  * X4 的功能性 rotate 例外清單（明確列出，其餘 rotate( 一律算裝飾性）：
@@ -219,7 +222,7 @@ export function scanUi({ root = process.cwd() } = {}) {
   const globals = scanCssText(readFileSync(abs(SCAN_SCOPE.globalsCss), "utf8"), SCAN_SCOPE.globalsCss);
   const componentDir = abs(SCAN_SCOPE.componentsDir);
   const moduleCss = listFiles(componentDir, ".css").map(file => scanCssText(readFileSync(file, "utf8"), rel(file)));
-  const tsx = listFiles(componentDir, ".tsx").map(file => scanTsxText(readFileSync(file, "utf8"), rel(file)));
+  const tsx = [...listFiles(componentDir, ".tsx"), ...listFiles(abs(SCAN_SCOPE.appDir), ".tsx")].map(file => scanTsxText(readFileSync(file, "utf8"), rel(file)));
   const css = [globals, ...moduleCss];
   const all = [...css, ...tsx];
   const collect = key => all.flatMap(part => part[key] ?? []);

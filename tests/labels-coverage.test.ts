@@ -20,6 +20,11 @@ function componentSources(): { file: string; text: string }[] {
   const dir = resolve("src/components");
   return readdirSync(dir, { recursive: true, encoding: "utf8" }).filter(name => name.endsWith(".tsx")).map(file => ({ file, text: readFileSync(resolve(dir, file), "utf8") }));
 }
+// V41-0（docs/revamp-v4.1/06_BATCHES.md V41-0 第 4 項）：路由檔 src/app/**/*.tsx（V41-1 起含 src/app/guide/**）也不得在 JSX 與字串常值寫中文。
+function appSources(): { file: string; text: string }[] {
+  const dir = resolve("src/app");
+  return readdirSync(dir, { recursive: true, encoding: "utf8" }).filter(name => name.endsWith(".tsx")).map(file => ({ file, text: readFileSync(resolve(dir, file), "utf8") }));
+}
 /** Strip collapsed technical blocks so jargon inside <details> is not counted as main-layer copy. */
 const withoutDetails = (text: string) => text.replace(/<details[\s\S]*?<\/details>/g, "");
 
@@ -54,13 +59,16 @@ describe("R2 labels are the single source of user-visible copy", () => {
     }
   });
 
-  it("keeps CJK out of every component's JSX text and string literals, technical <details> included (V3-2a)", () => {
+  it("keeps CJK out of every component's JSX text and string literals, technical <details> included (V3-2a; src/app/**/*.tsx since V41-0)", () => {
     // 與 scripts/ui-audit.mjs／tests/design-lint.test.ts 同一個掃描器（TypeScript AST：JSX 文字節點、字串與樣板常值；註解不算）。
     // 收合的技術細節也是程式碼，裡面的中文一樣要放在 labels；這裡不做任何豁免。
     const files = componentSources();
     expect(files.length).toBeGreaterThan(20);
-    const offenders = files.flatMap(({ file, text }) => {
-      const result = scanTsxText(text, `src/components/${file}`);
+    const app = appSources();
+    // V41-0：src/app 現有 layout.tsx、page.tsx 兩個 .tsx，實測 0。
+    expect(app.map(({ file }) => file)).toEqual(expect.arrayContaining(["layout.tsx", "page.tsx"]));
+    const offenders = [...files.map(source => ({ ...source, file: `src/components/${source.file}` })), ...app.map(source => ({ ...source, file: `src/app/${source.file}` }))].flatMap(({ file, text }) => {
+      const result = scanTsxText(text, file);
       return [...result.jsxCjk.map(where => `JSX 文字 ${where}`), ...result.cjkLiterals.map(where => `字串常值 ${where}`)];
     });
     expect(offenders).toEqual([]);

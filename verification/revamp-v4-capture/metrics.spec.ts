@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
 import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type SevenPage } from "./shared";
 
@@ -23,6 +23,10 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 //      V4-3a 起另斷言健檢首列底不晚於 V4-0a 實測（1440、1280 為 888，390 為 985；PRD §5.2）；V4-8a 起不晚於 V4-8a 實測（1440、1280 為 864，390 仍為 985）。
 // 只記錄：B1 其餘參考位置（健檢清單第一列頂、G10 區塊頂與 channel-compare 頂、試算方案比較表區塊頂、資料來源狀態列底，以及 1280、390 的總覽第一張 .chart-frame 頂）；
 //   B8 各頁主層否定句數；首頁 HTML 每個 chunk 的檔名與 gzip 大小。
+// V41-0 起（docs/revamp-v4.1/06_BATCHES.md V41-0 第 6 項；設定檔 verification/revamp-v41.capture.config.ts）另記錄兩項首載量測，V41-0 只記錄、不斷言：
+//   `/` 的 First Load JS（與 B5 同一個值）對 V41-0 實測的差（V41-1 起門檻＝V41-0 實測＋1,024，常數 V41_HOME_FIRST_LOAD_BASELINE）；
+//   404 頁的 First Load JS（請求一個不存在的網址，量回應 HTML 引用的腳本）＝說明頁的「框架基準」（V41-1 起說明頁 ≤ 框架基準＋5,120）。
+//   v4.1 執行時一定要設 METRICS_OUT、FIRST_LOAD_MODULES_OUT 指到 verification/revamp-v41/V41-{n}/（不設時沿用 v4 的預設位置 verification/revamp-v4/${CAPTURE_BATCH}/）。
 // 執行 desktop（1440×1000）、laptop（1280×900）、mobile（390×844）三個 project；tablet 略過。所有位置是文件座標（已捲回頂端），單位 CSS px，取到 0.1。
 const batch = process.env.CAPTURE_BATCH ?? "V4-0a";
 const OUT = resolve(process.env.METRICS_OUT ?? `verification/revamp-v4/${batch}/metrics.json`);
@@ -86,6 +90,31 @@ const RECORDED_SYMBOLS = ["ScatterChart", "AreaChart", "Brush", "ComposedChart",
  * 首載 chunk 必須為 0——任何一個出現，就表示有面板或匯出程式又被靜態匯入首載（tests/lazy-panels.test.tsx 另從原始碼的模組圖檢查）。
  */
 const SPLIT_SENTINELS = ['"diagnosis-panel"', '"data-status-line"', '"product-table"', '"meeting-outputs"', '"actions-workbench"', '"ai-panel"', "book_new", "PptxGenJS"] as const;
+/**
+ * V41-0（docs/revamp-v4.1/06_BATCHES.md 護欄表「`/` First Load JS」）：v4.0.0＋O3（next@16.3.8）在 V41-0 量到的 `/` First Load JS gzip（B5 同一口徑：modern 腳本 gzip 總和；
+ * verification/revamp-v41/V41-0/metrics.json 的 firstLoadJs.gzipBytes；v4.0.0 在 V4-11 是 519,322，O3 後 794-*.js 多 105 bytes）。V41-1 起門檻＝這個值＋V41_HOME_FIRST_LOAD_ALLOWANCE（說明文字不進工作台首載，D-V41-12＝A'）；
+ * V41-0 只記錄（v41.homeFirstLoad），不斷言。B5 的 545,397 照舊斷言。
+ */
+const V41_HOME_FIRST_LOAD_BASELINE = 519_427;
+const V41_HOME_FIRST_LOAD_ALLOWANCE = 1_024;
+/** V41-0：說明頁的「框架基準」量的是這個不存在的網址（404 頁，Next 預設的找不到頁面）回應 HTML 所引用的腳本。 */
+const NOT_FOUND_PATH = "/v41-framework-baseline-404";
+
+type ScriptFile = { src: string; nomodule: boolean; bytes: number; gzip: number; symbols: Record<string, number> };
+/** 頁面 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重），逐檔下載並量未壓縮與 gzip 大小、各符號的出現次數（B5 與 V41-0 框架基準共用）。 */
+async function firstLoadScripts(request: APIRequestContext, html: string): Promise<ScriptFile[]> {
+  const tags = [...html.matchAll(/<script([^>]*)\ssrc="([^"]+)"([^>]*)>/g)].map(match => ({ src: match[2], nomodule: /\snoModule|\snomodule/i.test(`${match[1]} ${match[3]}`) })).filter(tag => tag.src.includes("/_next/static/"));
+  const sources = [...new Map(tags.map(tag => [tag.src, tag])).values()];
+  expect(sources.length).toBeGreaterThan(0);
+  const count = (text: string, symbol: string) => text.split(symbol).length - 1;
+  const files: ScriptFile[] = [];
+  for (const { src, nomodule } of sources) {
+    const body = await (await request.get(src)).body();
+    const text = body.toString("utf8");
+    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...SPLIT_SENTINELS].map(symbol => [symbol, count(text, symbol)])) });
+  }
+  return files;
+}
 
 /** 七頁切過去後要等的區塊（與 tests/e2e、Lighthouse 腳本相同的 testid）。 */
 const ANCHORS: Record<SevenPage, string> = {
@@ -105,7 +134,10 @@ async function record(path: string[], value: unknown) {
   let node = json;
   for (const key of path.slice(0, -1)) node = (node[key] ??= {}) as Record<string, unknown>;
   node[path.at(-1)!] = value;
-  json._meta = { batch, note: "PRD §2.2 B 的 v3.0.0 基準與各批量測（EC ProfitLens，revamp/v4）。由 verification/revamp-v4-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v4/V4-0-baseline.md。", clock: FIXED_NOW.toISOString(), server: "本機 production（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）" };
+  const note = batch.startsWith("V41-")
+    ? "v4.1 各批量測（EC ProfitLens，revamp/v4.1；v4 的 B2、B3、B5、B9 照舊，另記 v41 首載量測）。由 verification/revamp-v4-capture/metrics.spec.ts（設定檔 verification/revamp-v41.capture.config.ts）與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v41/V41-0-baseline.md。"
+    : "PRD §2.2 B 的 v3.0.0 基準與各批量測（EC ProfitLens，revamp/v4）。由 verification/revamp-v4-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v4/V4-0-baseline.md。";
+  json._meta = { batch, note, clock: FIXED_NOW.toISOString(), server: "本機 production（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）" };
   await mkdir(dirname(OUT), { recursive: true });
   await writeFile(OUT, `${JSON.stringify(json, null, 2)}\n`);
 }
@@ -303,16 +335,7 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
 test("B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首載 chunk 符號", async ({ request }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "與尺寸無關");
   const html = await (await request.get("/")).text();
-  const tags = [...html.matchAll(/<script([^>]*)\ssrc="([^"]+)"([^>]*)>/g)].map(match => ({ src: match[2], nomodule: /\snoModule|\snomodule/i.test(`${match[1]} ${match[3]}`) })).filter(tag => tag.src.includes("/_next/static/"));
-  const sources = [...new Map(tags.map(tag => [tag.src, tag])).values()];
-  expect(sources.length).toBeGreaterThan(0);
-  const count = (text: string, symbol: string) => text.split(symbol).length - 1;
-  const files: { src: string; nomodule: boolean; bytes: number; gzip: number; symbols: Record<string, number> }[] = [];
-  for (const { src, nomodule } of sources) {
-    const body = await (await request.get(src)).body();
-    const text = body.toString("utf8");
-    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...SPLIT_SENTINELS].map(symbol => [symbol, count(text, symbol)])) });
-  }
+  const files = await firstLoadScripts(request, html);
   const sum = (key: "bytes" | "gzip", list = files) => list.reduce((total, file) => total + file[key], 0);
   const modern = files.filter(file => !file.nomodule);
   const symbolTotals = (list: typeof files, symbols: readonly string[]) => Object.fromEntries(symbols.map(symbol => [symbol, list.reduce((total, file) => total + file.symbols[symbol], 0)]));
@@ -326,4 +349,23 @@ test("B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首�
   expect.soft(sum("gzip", modern), `B5 First Load JS gzip ≤ ${B5_GZIP_MAX}`).toBeLessThanOrEqual(B5_GZIP_MAX);
   for (const symbol of FORBIDDEN_SYMBOLS) expect.soft(forbidden[symbol], `B5 首載 chunk 的 ${symbol} 必須為 0`).toBe(0);
   for (const symbol of SPLIT_SENTINELS) expect.soft(split[symbol], `V4-3c 首載 chunk 不得含隨頁載入的面板或匯出程式（${symbol} 必須為 0）`).toBe(0);
+  // V41-0：`/` 的 First Load 對 V41-0 實測的差，只記錄（V41-1 起斷言 ≤ V41_HOME_FIRST_LOAD_BASELINE＋V41_HOME_FIRST_LOAD_ALLOWANCE）。
+  await record(["v41", "homeFirstLoad"], { gzipBytes: sum("gzip", modern), v41_0Baseline: V41_HOME_FIRST_LOAD_BASELINE, allowance: V41_HOME_FIRST_LOAD_ALLOWANCE, maxFromV41_1: V41_HOME_FIRST_LOAD_BASELINE + V41_HOME_FIRST_LOAD_ALLOWANCE, deltaFromV41_0: sum("gzip", modern) - V41_HOME_FIRST_LOAD_BASELINE, asserted: false, note: "V41-0 只記錄；V41-1 起門檻＝V41-0 實測＋1,024（docs/revamp-v4.1/06_BATCHES.md 護欄表）。口徑同 firstLoadJs.gzipBytes" });
+});
+
+test("V41-0 框架基準：404 頁的 First Load JS（不存在的網址回應 HTML 所引用的 /_next/static 腳本）", async ({ request }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "與尺寸無關");
+  const response = await request.get(NOT_FOUND_PATH);
+  expect(response.status()).toBe(404);
+  const files = await firstLoadScripts(request, await response.text());
+  const modern = files.filter(file => !file.nomodule);
+  const sum = (key: "bytes" | "gzip", list = files) => list.reduce((total, file) => total + file[key], 0);
+  const method = `GET ${NOT_FOUND_PATH}（不存在的網址，Next 預設的 404 頁；狀態 404）的 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重）；口徑同 firstLoadJs（主數字排除 nomodule；gzip＝Node zlib gzipSync 預設等級）`;
+  const chunks = files.map(({ src, nomodule, bytes, gzip }) => ({ file: src.split("/").pop(), src, nomodule, bytes, gzip }));
+  await record(["v41", "frameworkBaseline"], { path: NOT_FOUND_PATH, status: response.status(), scripts: modern.length, bytes: sum("bytes", modern), gzipBytes: sum("gzip", modern), gzipKiB: round(sum("gzip", modern) / 1024), allScripts: { scripts: files.length, bytes: sum("bytes"), gzipBytes: sum("gzip") }, files: chunks, guideAllowance: 5_120, asserted: false, note: "說明頁的框架基準（V41-0 只記錄）；V41-1 起 /guide、/guide/{area} 的 First Load ≤ 框架基準＋5,120", method });
+  let modules: Record<string, unknown> = {};
+  try { modules = JSON.parse(await readFile(MODULES_OUT, "utf8")); } catch { modules = {}; }
+  modules.frameworkBaseline = { path: NOT_FOUND_PATH, status: response.status(), method, totals: { modernScripts: modern.length, modernGzipBytes: sum("gzip", modern), allScripts: files.length, allGzipBytes: sum("gzip") }, chunks };
+  await mkdir(dirname(MODULES_OUT), { recursive: true });
+  await writeFile(MODULES_OUT, `${JSON.stringify(modules, null, 2)}\n`);
 });

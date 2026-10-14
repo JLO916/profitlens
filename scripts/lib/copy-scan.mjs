@@ -90,6 +90,13 @@ const SCOPED_BLACKLIST = {
     ["賠錢（商品頁）", /賠錢/g, path => path.startsWith("products.chartsV4.")],
     ["虧損（商品頁）", /虧損/g, path => path.startsWith("products.chartsV4.")],
   ],
+  /**
+   * V41-0（docs/revamp-v4.1/01_PRD.md §3.4、D-V41-11）：說明頁 guide.* 不用最高級，計入 blacklistTone。
+   * 只抓最高級；「第一次」「第一項」這類序數不擋（「第一名」「業界第一」才算）。
+   */
+  tone: [
+    ["最高級（說明頁）", /唯一|最好|最快|最佳|最強|第一名|業界第一/g, path => path.startsWith("guide.")],
+  ],
 };
 
 /**
@@ -103,8 +110,10 @@ export const PLACEHOLDER_VARIANT_SUFFIXES = ["Aria", "Short", "Long", "Approx", 
  * PRD 只寫「頁面、區塊、列的標題」，沒有對應到 labels 鍵；V3-0 先限定在標題型字串（v2 的 rules.*.title、sections.*、nav.*.label、buttons.*），
  * V3-2c 起的位置：rules.*.headline、<分組>.sections.*、shell.nav.*.headline、<分組>.buttons.*（V3-10 移除 v2 舊鍵後只比對這四種）。
  * V4-0a（PRD §4.0、§8.6）：加上圖表標題 <分組>.chartsV4.<圖>.title（含 title.<情境> 的子鍵），每個子句 ≤ 14 字；副標、欄名、資料表不算標題。
+ * V41-0（docs/revamp-v4.1/06_BATCHES.md V41-0 第 4 項）：加上說明頁的功能區標題 guide.areas.<區>.title 與步驟標題 guide.areas.<區>.steps.<步>.title；
+ * 說明頁的段落標題 guide.sections.* 已由既有的 ^[^.]+\.sections\.[^.]+$ 涵蓋。
  */
-export const L1_KEY_PATTERNS = [/^rules\.[^.]+\.headline$/, /^[^.]+\.sections\.[^.]+$/, /^shell\.nav\.[^.]+\.headline$/, /^[^.]+\.buttons\.[^.]+$/, /^[^.]+\.chartsV4\.[^.]+\.title(\.|$)/];
+export const L1_KEY_PATTERNS = [/^rules\.[^.]+\.headline$/, /^[^.]+\.sections\.[^.]+$/, /^shell\.nav\.[^.]+\.headline$/, /^[^.]+\.buttons\.[^.]+$/, /^[^.]+\.chartsV4\.[^.]+\.title(\.|$)/, /^guide\.areas\.[^.]+\.title$/, /^guide\.areas\.[^.]+\.steps\.[^.]+\.title$/];
 export const L1_MAX_CJK = 14;
 
 const ARROW_RE = /[→↗▸▾]/g;
@@ -118,6 +127,14 @@ const CJK_RE = /[㐀-䶿一-鿿豈-﫿]/g;
 const NUMBER_UNIT_RE = /[0-9０-９]+(?:[.,][0-9]+)*|個百分點|百分點|萬|億|元|[%％+\-−±]/g;
 const CLAUSE_SPLIT_RE = /[，,；;。：:！!？?｜·（）()\n]/;
 
+/**
+ * V41-0（D-V41-12）：說明文字引用介面字串的寫法 `{ui:路徑}`（例如 `{ui:shell.nav.overview.headline}`），執行時換成 labels 的字串。
+ * 當占位符處理：不計 L1 字數、不掃黑名單、不算占位符格式錯誤，也不列入占位符變體一致性（placeholders 只取 `{名稱}`）。
+ */
+export const UI_REF_RE = /\{ui:[\w.]+\}/g;
+/** 拿掉 `{ui:路徑}` 與 `{名稱}` 兩種占位符（換成空白），剩下的才是要掃的可見文字。 */
+const stripPlaceholders = text => text.replace(UI_REF_RE, " ").replace(/\{\w+\}/g, " ");
+
 const count = (text, re) => (text.match(re) ?? []).length;
 const placeholders = text => [...new Set([...text.matchAll(/\{(\w+)\}/g)].map(match => match[1]))].sort();
 
@@ -129,7 +146,7 @@ export function channelAliasTerms(labels) {
 
 /** 單一字串的 L1 子句 CJK 字數。 */
 export function l1ClauseLengths(text, aliasTerms = []) {
-  let stripped = text.replace(/\{\w+\}/g, " ");
+  let stripped = stripPlaceholders(text);
   for (const term of aliasTerms) stripped = stripped.split(term).join(" ");
   stripped = stripped.replace(NUMBER_UNIT_RE, " ");
   return stripped.split(CLAUSE_SPLIT_RE).map(clause => count(clause, CJK_RE)).filter(length => length > 0);
@@ -138,21 +155,29 @@ export function l1ClauseLengths(text, aliasTerms = []) {
 /**
  * 掃描 labels。metrics 為棘輪指標（copy-style 逐項比上限；V3-2 目標全部為 0），details 列出每一筆，方便改寫。
  * 傳入 meta（labels 模組）時先確認頂層只有 LABEL_GROUPS，見 labelScope。
+ * V41-0（D-V41-12＝A'）：可以多收一個 view（說明頁的 guideLabels，頂層只有 guide），用同一套規則掃，指標相加；
+ * 路徑照它自己的樹（guide.…），通路 alias 仍取自 labels。它的頂層鍵不得與 labels 重複（同一路徑不重複計）。
  * @param {Record<string, unknown>} labels
  * @param {Parameters<typeof labelScope>[1]} [meta]
+ * @param {Record<string, unknown>} [extra]
  */
-export function scanLabels(labels, meta) {
+export function scanLabels(labels, meta, extra) {
   const { view, matches } = labelScope(labels, meta);
+  if (extra) {
+    const overlap = Object.keys(extra).filter(key => Object.hasOwn(view, key));
+    if (overlap.length) throw new Error(`額外的 view 與 labels 有相同的頂層區段：${overlap.join("、")}`);
+  }
+  const views = extra ? [view, extra] : [view];
   const whitelisted = path => matches(path, isWhitelisted);
-  const entries = labelEntries(view).filter(([path]) => !whitelisted(path));
+  const entries = views.flatMap(node => labelEntries(node)).filter(([path]) => !whitelisted(path));
   const aliasTerms = channelAliasTerms(labels);
   const details = { noticePrefix: [], noticeAnywhere: [], arrows: [], circledNumbers: [], decorativeChars: [], exclamations: [], emoji: [], allCaps: [], pipes: [], blacklist: { synonym: [], jargon: [], tone: [], emotion: [] }, placeholderMalformed: [], placeholderVariantMismatch: [], l1ClauseOverLimit: [] };
   const metrics = { noticePrefix: 0, noticeAnywhere: 0, arrows: 0, circledNumbers: 0, decorativeChars: 0, exclamations: 0, emoji: 0, allCaps: 0, pipes: 0, blacklistSynonym: 0, blacklistJargon: 0, blacklistTone: 0, blacklistEmotion: 0, placeholderMalformed: 0, placeholderVariantMismatch: 0, l1ClauseOverLimit: 0 };
   const add = (key, path, value, n = 1) => { if (n > 0) { metrics[key] += n; details[key].push(`${path}: ${value}`); } };
 
   for (const [path, value] of entries) {
-    /** 占位符名稱（例如 {datasetHash}）不是可見文字，黑名單比對前先拿掉。 */
-    const visible = value.replace(/\{\w+\}/g, " ");
+    /** 占位符名稱（例如 {datasetHash}）與 {ui:路徑} 引用不是可見文字，黑名單比對前先拿掉。 */
+    const visible = stripPlaceholders(value);
     if (value.trim().startsWith("注意：")) add("noticePrefix", path, value);
     add("noticeAnywhere", path, value, count(value, /注意：/g));
     add("arrows", path, value, count(value, ARROW_RE));
@@ -172,7 +197,7 @@ export function scanLabels(labels, meta) {
       const n = count(visible, re);
       if (n > 0) { metrics[`blacklist${category[0].toUpperCase()}${category.slice(1)}`] += n; details.blacklist[category].push(`${name} ×${n} ${path}: ${value}`); }
     }
-    if (/[{}｛｝]/.test(value.replace(/\{\w+\}/g, "")) || value.includes("${")) add("placeholderMalformed", path, value);
+    if (/[{}｛｝]/.test(value.replace(UI_REF_RE, "").replace(/\{\w+\}/g, "")) || value.includes("${")) add("placeholderMalformed", path, value);
     if (matches(path, candidate => L1_KEY_PATTERNS.some(re => re.test(candidate)))) {
       const over = l1ClauseLengths(value, aliasTerms).filter(length => length > L1_MAX_CJK);
       if (over.length) add("l1ClauseOverLimit", path, `${value}（子句字數 ${over.join("、")}）`, over.length);
@@ -193,6 +218,6 @@ export function scanLabels(labels, meta) {
       } else visit(value, childPath);
     }
   };
-  visit(view, "");
+  for (const node of views) visit(node, "");
   return { metrics, details };
 }

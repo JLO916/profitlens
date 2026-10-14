@@ -5,7 +5,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { scanLabels } from "./lib/copy-scan.mjs";
-import { loadLabelsModule } from "./lib/load-labels.mjs";
+import { loadGuideLabels, loadLabelsModule } from "./lib/load-labels.mjs";
 import { scanUi } from "./lib/ui-scan.mjs";
 
 const args = process.argv.slice(2);
@@ -16,11 +16,13 @@ if (jsonIndex >= 0 && !jsonPath) { console.error("用法：node scripts/ui-audit
 const ui = scanUi();
 const labelModule = await loadLabelsModule();
 // V3-2c 起只掃新分組（V3-10 移除 v2 舊鍵 alias 後，labels 頂層就是 LABEL_GROUPS，同一個字串只算一次）；口徑與 tests/copy-style.test.ts 相同。
-const copy = scanLabels(labelModule.labels, labelModule);
+// V41-0（D-V41-12＝A'）：src/i18n/guide.zh-TW.ts 存在時（V41-1 起），它的 guideLabels 用同一套規則一起掃，指標相加。
+const guideLabels = await loadGuideLabels();
+const copy = scanLabels(labelModule.labels, labelModule, guideLabels ?? undefined);
 
 const report = {
   generatedAt: new Date().toISOString(),
-  scope: { css: ["src/app/globals.css（:root token 定義區另計）", "src/components/**/*.css"], tsx: ["src/components/**/*.tsx"], labels: "src/i18n/labels.zh-TW.ts 新分組（LABEL_GROUPS；technical 子樹與 glossary.aliases 除外）" },
+  scope: { css: ["src/app/globals.css（:root token 定義區另計）", "src/components/**/*.css"], tsx: ["src/components/**/*.tsx", "src/app/**/*.tsx"], labels: `src/i18n/labels.zh-TW.ts 新分組（LABEL_GROUPS；technical 子樹與 glossary.aliases 除外）${guideLabels ? "＋src/i18n/guide.zh-TW.ts 的 guideLabels" : "；src/i18n/guide.zh-TW.ts 不存在"}` },
   design: ui.metrics,
   copy: copy.metrics,
   info: ui.info,

@@ -38,7 +38,7 @@ export interface UiScanResult {
   details: Record<string, unknown[]>;
 }
 
-export const SCAN_SCOPE: { globalsCss: string; componentsDir: string };
+export const SCAN_SCOPE: { globalsCss: string; componentsDir: string; appDir: string };
 export const ROTATE_EXEMPT: { keyframes: string[]; selectors: RegExp[] };
 export const NESTED_CARD_EXEMPT_CLASSES: string[];
 export const BOX_SHADOW_ALLOWED: string[];

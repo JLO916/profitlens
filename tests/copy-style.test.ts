@@ -80,6 +80,30 @@ describe("copy-scan 口徑（合成輸入）", () => {
     expect((details.blacklist as Record<string, string[]>).synonym.every(line => line.includes("products.chartsV4."))).toBe(true);
   });
 
+  it("V41-0：{ui:路徑} 當占位符（不計字、不掃黑名單、不算格式錯誤或變體不一致）；guide.areas 的功能區與步驟標題計入 L1；guide.* 擋最高級、不擋序數；額外 view 的指標相加", () => {
+    const long = "這是一個超過十四個中文字的很長很長的功能區標題";
+    const labelsSample = { shell: { buttons: { open: "開啟 {ui:shell.nav.overview.headline}" }, note: "最好的工作台" } };
+    const guide = {
+      guide: {
+        hub: { lead: "按 {ui:shell.nav.overview.headline} 看數據", leadAria: "按 {ui:overview.buttons.export}" },
+        areas: { start: { title: long, intro: long, steps: { load: { title: long, body: "第一次載入、第一項就是唯一最好的做法，不是第一名也不是業界第一" } } } },
+        sections: { why: long },
+      },
+    };
+    const alone = scanLabels(labelsSample);
+    expect(alone.metrics).toMatchObject({ placeholderMalformed: 0, placeholderVariantMismatch: 0, blacklistTone: 0, l1ClauseOverLimit: 0 });
+    expect(l1ClauseLengths("開啟 {ui:shell.nav.overview.headline}")).toEqual([2]);
+    const { metrics, details } = scanLabels(labelsSample, undefined, guide);
+    // L1：guide.areas.start.title、steps.load.title、guide.sections.why；intro 不是標題。
+    expect(metrics.l1ClauseOverLimit).toBe(3);
+    // 最高級只在 guide.*：唯一、最好、第一名、業界第一（shell.note 的「最好」不在範圍；「第一次」「第一項」不算）。
+    expect(metrics.blacklistTone).toBe(4);
+    expect((details.blacklist as Record<string, string[]>).tone.every(line => line.includes("guide."))).toBe(true);
+    // 「數據」在 {ui:…} 之外照樣計入同義詞；占位符本身不算格式錯誤，lead 與 leadAria 沒有 {名稱} 占位符，變體一致。
+    expect(metrics).toMatchObject({ blacklistSynonym: 1, placeholderMalformed: 0, placeholderVariantMismatch: 0 });
+    expect(() => scanLabels(labelsSample, undefined, { shell: {} })).toThrow(/shell/);
+  });
+
   it("L1 字數不計數字、單位、正負號、占位符與通路 alias", () => {
     expect(l1ClauseLengths("官網 · DTC 扣完廣告虧 6.1 萬", ["DTC", "官網"])).toEqual([5]);
     expect(l1ClauseLengths("扣廣告後少賺 {amount}，折扣率 +14.3 個百分點")).toEqual([6, 3]);
