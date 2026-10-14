@@ -8,13 +8,18 @@
 //   8 POST /api/insights（空 JSON）→ 403、reason=PUBLIC_DEMO（伺服器在讀本文前就擋下，不建立 provider）；
 //   9–13 GET /api/datasets/not-allowed、/.env、/.git/config、/verification/app-acceptance.md、/fixtures/golden/sales_daily.csv → 404。
 // 補充（R7 checks.spec.ts 的 metadata／OG／icon／robots／sitemap 與標頭；不計入 13 項，失敗時結束碼 2）：
-//   HTML lang／title／description／canonical／og:image；/robots.txt 指向 sitemap；/sitemap.xml 單一網址；og.png 1200×630；icon；
+//   HTML lang／title／description／canonical／og:image；/robots.txt 指向 sitemap；/sitemap.xml（V41-1 起見下）；og.png 1200×630；icon；
 //   /api/* 的 Cache-Control: no-store；/api/insights 的 X-Content-Type-Options: nosniff；沒有 X-Powered-By；首頁引用的 /_next/static 腳本 200 且可長期快取（immutable）。
 //   安全標頭（HSTS、CSP、X-Frame-Options、Referrer-Policy）只記錄現值、不判定（專案沒有設定，正式站由 Vercel 補 HSTS）。
+// V41-1（06_BATCHES V41-1 第 7 項；docs/revamp-v4.1/01_PRD.md §3.8，D-V41-13）：13 項不變。補充的「sitemap 單一網址」改成：sitemap 含 SITE_URL 與 SITE_URL/guide、
+//   每個 <loc> 都是 SITE_URL 或在 SITE_URL/guide 之下、每個說明頁 <loc> 把正式站網域換成 --base 後 GET → 200（說明頁網址取自 sitemap 本身，不讀 GUIDE_AREAS）；
+//   另加三項：GET /guide → 200 且 HTML 含品牌名（labels.brand.name）；/guide 的 og:image＝SITE_URL/og.png、canonical＝SITE_URL/guide；GET /guide/not-a-area → 404。
+//   這幾項失敗時，原因寫在該項的 note（終端機與 JSON 都看得到）。
 //
 // 用法（在 repo 根目錄執行；fixtures 以目前工作目錄的 fixtures/ 為準）：
 //   node scripts/launch-check.mjs --base http://127.0.0.1:3100 --out verification/revamp-v3/V3-10/launch-check-local.json
 //   node scripts/launch-check.mjs <out.json> <base>            （與 revamp-R7-smoke.py 相同的位置參數）
+//   V41-1 起從 src/i18n/labels.zh-TW.ts 取品牌名，Node 會在 stderr 印一行 MODULE_TYPELESS_PACKAGE_JSON 警告（不影響結果；可加 --no-warnings）。
 // 結束碼：0＝13 項與補充全部通過；1＝13 項有失敗；2＝13 項通過但補充有失敗。
 // 注意：對 next dev 跑只能驗證腳本本身（dev 的快取標頭、/_next/static 路徑與正式產物不同）；上線判定一律對 production（next start 或正式站）。
 import { createHash } from "node:crypto";
@@ -22,6 +27,7 @@ import { readFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
+import { labels } from "../src/i18n/labels.zh-TW.ts";
 
 const args = process.argv.slice(2);
 const option = (name) => { const index = args.indexOf(name); return index >= 0 ? args[index + 1] : undefined; };
@@ -90,7 +96,10 @@ for (const path of ["/api/datasets/not-allowed", "/.env", "/.git/config", "/veri
 // ── 補充 ──
 const home = await request("/");
 const html = home.bytes.toString("utf8");
-const meta = (attr, name) => html.match(new RegExp(`<meta[^>]*${attr}="${name}"[^>]*content="([^"]*)"`))?.[1] ?? html.match(new RegExp(`<meta[^>]*content="([^"]*)"[^>]*${attr}="${name}"`))?.[1] ?? null;
+const meta = (attr, name, source = html) => source.match(new RegExp(`<meta[^>]*${attr}="${name}"[^>]*content="([^"]*)"`))?.[1] ?? source.match(new RegExp(`<meta[^>]*content="([^"]*)"[^>]*${attr}="${name}"`))?.[1] ?? null;
+const canonicalOf = source => source.match(/<link[^>]*rel="canonical"[^>]*href="([^"]*)"/)?.[1] ?? null;
+/** 失敗原因（只在有原因時加 note）。 */
+const because = reasons => (reasons.length ? { note: reasons.join("；") } : {});
 {
   const tags = {
     lang: html.match(/<html[^>]*lang="([^"]*)"/)?.[1] ?? null, title: html.match(/<title>([^<]*)<\/title>/)?.[1] ?? null, description: meta("name", "description"),
@@ -116,7 +125,30 @@ const meta = (attr, name) => html.match(new RegExp(`<meta[^>]*${attr}="${name}"[
   record(extras, "/robots.txt", "GET", robots, { name: "robots", body: text, pass: robots.status === 200 && text.includes(`Sitemap: ${SITE_URL}/sitemap.xml`) });
   const sitemap = await request("/sitemap.xml");
   const xml = sitemap.bytes.toString("utf8");
-  record(extras, "/sitemap.xml", "GET", sitemap, { name: "sitemap", urls: (xml.match(/<url>/g) ?? []).length, pass: sitemap.status === 200 && (xml.match(/<url>/g) ?? []).length === 1 && xml.includes(`<loc>${SITE_URL}`) });
+  // V41-1：sitemap＝[SITE_URL, SITE_URL/guide, …功能區頁]；說明頁網址取自 sitemap，把正式站網域換成 --base 再請求，每頁都要 200。
+  const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match => match[1].trim());
+  const isGuide = loc => loc === `${SITE_URL}/guide` || loc.startsWith(`${SITE_URL}/guide/`);
+  const guidePages = [];
+  for (const loc of locs.filter(isGuide)) guidePages.push({ loc, status: (await request(loc.slice(SITE_URL.length))).status });
+  const reasons = [
+    ...(sitemap.status === 200 ? [] : [`sitemap.xml 回應 ${sitemap.status}`]),
+    ...[SITE_URL, `${SITE_URL}/guide`].filter(url => !locs.includes(url)).map(url => `缺 <loc>${url}</loc>`),
+    ...locs.filter(loc => loc !== SITE_URL && !isGuide(loc)).map(loc => `不是 SITE_URL 也不在 SITE_URL/guide 之下：${loc}`),
+    ...guidePages.filter(page => page.status !== 200).map(page => `${page.loc.slice(SITE_URL.length)} → ${page.status ?? "連線失敗"}`),
+  ];
+  record(extras, "/sitemap.xml", "GET", sitemap, { name: "sitemap", urls: (xml.match(/<url>/g) ?? []).length, locs, guide_pages: guidePages, pass: reasons.length === 0, ...because(reasons) });
+}
+// ── 補充：說明頁（V41-1）──
+{
+  const guide = await request("/guide");
+  const guideHtml = guide.bytes.toString("utf8");
+  record(extras, "/guide", "GET", guide, { name: "guide-hub", brand: labels.brand.name, pass: guide.status === 200 && guideHtml.includes(labels.brand.name), ...because([...(guide.status === 200 ? [] : ["應為 200"]), ...(guideHtml.includes(labels.brand.name) ? [] : [`HTML 不含品牌名「${labels.brand.name}」`])]) });
+  const tags = { og_image: meta("property", "og:image", guideHtml), canonical: canonicalOf(guideHtml) };
+  const expected = { og_image: `${SITE_URL}/og.png`, canonical: `${SITE_URL}/guide` };
+  const mismatched = Object.keys(expected).filter(key => tags[key] !== expected[key]);
+  extras.push({ name: "guide-metadata", path: "/guide", status: guide.status, tags, expected, pass: mismatched.length === 0, ...because(mismatched.map(key => `${key}＝${tags[key] ?? "（沒有）"}，應為 ${expected[key]}`)) });
+  const unknown = await request("/guide/not-a-area");
+  record(extras, "/guide/not-a-area", "GET", unknown, { name: "guide-unknown-area", pass: unknown.status === 404, ...because(unknown.status === 404 ? [] : ["應為 404"]) });
 }
 {
   const apiNoStore = checks.filter(item => item.path.startsWith("/api/") && item.status !== null);
