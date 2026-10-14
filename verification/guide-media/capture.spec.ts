@@ -1,8 +1,9 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
 import { wizardDetails } from "../../tests/e2e/import-wizard-helpers";
-import { NO_OVERLAY_STYLE, goTo, noOverlayStylePath } from "../revamp-v4-capture/shared";
-import { DESKTOP, GUIDE_MEDIA_STEPS, GUIDE_MEDIA_WRITE, HIGHLIGHT_REACH, MOBILE, collectErrors, highlight, isMobileMedia, settle, stateDemo, stateEmptyHome, stateInclusiveWizard, stateMissingAdDayReview, stateSynthetic, syncMedia, unionClip, type Clip, type Region } from "./shared";
+import { openBasis, openDetails, openDownloads, openStorage } from "../../tests/e2e/replacement-helpers";
+import { NO_OVERLAY_STYLE, evidenceDrawer, goTo, noOverlayStylePath } from "../revamp-v4-capture/shared";
+import { DESKTOP, GUIDE_MEDIA_STEPS, GUIDE_MEDIA_WRITE, HIGHLIGHT_REACH, MOBILE, collectErrors, fitContent, highlight, isMobileMedia, settle, stateActionsAndMeeting, stateDemo, stateEmptyHome, stateFinalized, stateInclusiveWizard, stateMissingAdDay, stateMissingAdDayReview, stateScenarios, stateSynthetic, syncMedia, unionClip, type Clip, type Region } from "./shared";
 
 // V41-2a 說明頁截圖（docs/revamp-v4.1/01_PRD.md §3.5、GUIDE_CONTENT.md §0 與 §2.1–2.5 的「截圖」欄；D-V41-20、21、22＝A）。
 // 一個 mediaId 一個測試（各自全新的瀏覽器狀態），依 src/application/guide.ts 的 GUIDE_AREA_STEPS；CAPTURES 必須恰好涵蓋 GUIDE_AREA_STEPS 的每一張（載入時檢查）。
@@ -12,6 +13,9 @@ import { DESKTOP, GUIDE_MEDIA_STEPS, GUIDE_MEDIA_WRITE, HIGHLIGHT_REACH, MOBILE,
 // 精靈底部動作列改成 static、手機底部分頁列隱藏，不疊在裁切範圍內；量裁切範圍之前先在頁面注入同一段樣式，量到的位置與截圖時相同（精靈底部動作列排在第 4 步之後）。
 // start-mobile-m 要看得到手機底部分頁列：不套 noOverlayStylePath（它把 .mobile-tabbar 設成 visibility: hidden），截整個視窗（390×844，不是整頁）。
 // GUIDE_MEDIA=write 時每張比對完再呼叫 syncMedia（只更新有差異或新增的媒體）；check（預設）不寫任何檔。
+// V41-2b（GUIDE_CONTENT §2.6–2.11）：再加 23 張（擷取狀態 S1、S4、S6–S8）。對話框與抽屜（計算與來源、指標定義、待辦編輯）與頂欄的「匯出」「儲存」選單
+// 都在第一個視窗內：不套 noOverlayStylePath（頂欄選單以 sticky 的頂欄定位，頂欄改成 static 時選單會跑位），以視窗截圖（不帶 fullPage）裁切（fixed）；
+// 對話框與抽屜另把裁切範圍限制在外框內（within），留白不帶到後面模糊的頁面。meeting-present 是例外的整個視窗（投影本來就是整個畫面）。
 
 interface Capture {
   /** 擷取狀態：導到要拍的畫面（不含捲動與強調框）。 */
@@ -30,6 +34,10 @@ interface Capture {
   maxWidth?: number;
   /** 截整個視窗、不套 noOverlayStylePath（要看得到 fixed 的手機底部分頁列）。 */
   viewport?: boolean;
+  /** V41-2b：在第一個視窗內的對話框、抽屜與頂欄選單：不套 noOverlayStylePath，以視窗截圖（不帶 fullPage）裁切。 */
+  fixed?: boolean;
+  /** V41-2b：裁切範圍不超出這個元素的外框（對話框、抽屜；或主內容區，裁切上緣不帶到頂欄）。 */
+  within?: (page: Page) => Locator;
 }
 
 /** 同一個 locator 的第 1..n 個（強調框一次框住多個元素時用）。 */
@@ -47,6 +55,22 @@ const wizardStep = (page: Page, step: number) => page.getByTestId(`import-step-$
 const diagnosisRows = (page: Page) => page.getByTestId("diagnosis-list").locator(":scope > li");
 const toDiagnosis = async (page: Page) => { await stateDemo(page); await goTo(page, "diagnosis", page.getByTestId("diagnosis-list")); };
 const toProducts = async (page: Page) => { await stateDemo(page); await goTo(page, "products", page.getByTestId("product-table")); };
+// ── V41-2b ──
+const scenarioCard = (page: Page, n: number) => page.getByTestId(`scenario-${n}`);
+const toScenarios = async (page: Page) => { await stateDemo(page); await goTo(page, "scenarios", scenarioCard(page, 1)); };
+const toActions = async (page: Page) => { await stateActionsAndMeeting(page); await goTo(page, "actions", page.getByTestId("action-board")); };
+const toData = async (page: Page) => { await stateDemo(page); await goTo(page, "data", page.getByTestId("data-scope")); };
+const toMissingAdDayData = async (page: Page) => { await stateMissingAdDay(page); await goTo(page, "data", page.getByTestId("data-issues")); };
+const storageGroups = (page: Page) => page.getByTestId("workspace-storage").locator("section.storage-group");
+const actionDrawer = (page: Page) => page.getByTestId("action-drawer");
+const basisDialog = (page: Page) => page.getByTestId("basis-dialog");
+/** 總覽 KPI 帶扣廣告後貢獻的本期值 → 計算與來源抽屜。 */
+async function openContributionEvidence(page: Page) {
+  await stateDemo(page);
+  await page.getByTestId("kpi-contribution_after_marketing").locator(".kpi-value button.number-link").click();
+  await expect(evidenceDrawer(page)).toBeVisible();
+  await expect(evidenceDrawer(page).getByTestId("evidence-precise-value")).toBeVisible();
+}
 
 const CAPTURES: Record<string, Capture> = {
   // ── start：開始使用（GUIDE_CONTENT §2.1）──
@@ -212,6 +236,227 @@ const CAPTURES: Record<string, Capture> = {
     state: async page => { await stateSynthetic(page); await goTo(page, "products", page.getByTestId("product-table")); },
     region: page => chartOnly(page, "products-pareto"),
   },
+  // ── scenarios：假設試算（§2.6）──
+  // S1：頁首（含「試算的通路」）到方案 1 的範本列與右欄「新增方案」（方案欄下半部不截；上緣不帶到頂欄）；框「新增方案」。
+  "scenarios-setup": {
+    state: toScenarios,
+    region: page => [page.locator(".page-heading"), scenarioCard(page, 1).locator(".scenario-template"), page.getByTestId("scenario-add")],
+    highlight: page => [page.getByTestId("scenario-add")],
+    // 下緣只留 8 px：下一列的欄位名不入鏡。
+    pad: 8,
+    within: page => page.locator(".main-shell"),
+  },
+  // S1，方案 1 套用範本「維持現況」（五格帶入 0）、還沒勾選、還沒試算：五個假設欄位、確認勾選框與「試算」；框「試算」。
+  "scenarios-inputs": {
+    state: async page => {
+      await toScenarios(page);
+      const card = scenarioCard(page, 1);
+      await card.getByTestId("scenario-preset").selectOption("keep");
+      await card.getByTestId("scenario-preset-apply").click();
+      await expect(card.getByLabel(labels.scenarios.inputs.volume.label, { exact: true })).toHaveValue("0");
+      await expect(card.getByTestId("scenario-accept")).not.toBeChecked();
+    },
+    region: page => [scenarioCard(page, 1).locator(".scenario-inputs"), scenarioCard(page, 1).locator("label.scenario-accept"), scenarioCard(page, 1).locator(".scenario-actions")],
+    highlight: page => [scenarioCard(page, 1).getByRole("button", { name: labels.scenarios.buttons.calculate, exact: true })],
+    // 上緣只留 8 px：範本列下方的「會覆寫目前的假設」不入鏡。
+    pad: 8,
+  },
+  // S6：方案差額圖框與其下的「本期與各方案明細」比較表；無強調框。
+  "scenarios-compare": {
+    state: stateScenarios,
+    region: page => [page.getByTestId("chart-scenarios-variance"), page.locator("section.scenario-compare")],
+    pad: 8,
+  },
+  // S6，方案 1 展開「要賣到多少才划算」：「選入會議」到門檻圖的圖框（兩個門檻；三個假設沒有填，不代填；圖下的資料表收合列不截）；框「選入會議」。
+  "scenarios-threshold": {
+    state: async page => {
+      await stateScenarios(page);
+      await openDetails(scenarioCard(page, 1).getByTestId("scenario-sensitivity"));
+      await expect(scenarioCard(page, 1).getByTestId("chart-scenarios-threshold")).toBeVisible();
+    },
+    region: page => [page.getByTestId("scenario-select-1"), scenarioCard(page, 1).getByTestId("chart-scenarios-threshold").locator(".chart-frame")],
+    highlight: page => [page.getByTestId("scenario-select-1")],
+    // 下緣只留 8 px：圖下的收合列不入鏡。
+    pad: 8,
+  },
+  // ── actions：待辦（§2.7）──
+  // S7：到期分布的計數條、看板／清單切換與四欄看板；框看板／清單切換。
+  "actions-board": {
+    state: toActions,
+    region: page => [page.getByTestId("chart-actions-due"), page.getByTestId("actions-toolbar"), page.getByTestId("action-board")],
+    highlight: page => [page.getByTestId("actions-toolbar").locator(".ui-segmented")],
+  },
+  // S7，開第一張卡的編輯抽屜：標題列與「內容」段（問題到進度紀錄）；框「廣告決策」欄。
+  "actions-edit": {
+    state: async page => {
+      await toActions(page);
+      await page.getByTestId("board-card-1-edit").click();
+      await expect(actionDrawer(page)).toBeVisible();
+    },
+    region: page => [actionDrawer(page).locator(".action-drawer-head"), actionDrawer(page).locator("section.action-editor-content")],
+    highlight: page => [actionDrawer(page).locator(".action-editor-ad-decision")],
+    fixed: true,
+    within: actionDrawer,
+  },
+  // S7：看板「未開始」欄與第一張卡；框卡片左上角的置頂（星號）按鈕。
+  "actions-pin": {
+    state: toActions,
+    region: page => [page.getByTestId("board-column-not_started")],
+    highlight: page => [page.getByTestId("board-card-1").getByRole("button", { name: labels.actions.buttons.pin, exact: true })],
+    // 框畫在按鈕內（星號四周），不貼著旁邊的標題字。
+    offset: -5,
+    pad: 8,
+  },
+  // ── meeting：會議紀錄與投影（§2.8）──
+  // S7：左側議程目錄與議程第 1–2 項；框議程目錄。
+  "meeting-agenda": {
+    state: stateActionsAndMeeting,
+    region: page => [page.locator("nav.meeting-toc"), page.locator(".meeting-agenda-head"), page.getByTestId("meeting-agenda-1"), page.getByTestId("meeting-agenda-2")],
+    highlight: page => [page.locator("nav.meeting-toc")],
+  },
+  // S7：頁首動作列右半（決議選單、結束會議、複製週會摘要、匯出會議）；框決議選單。
+  "meeting-decision": {
+    state: stateActionsAndMeeting,
+    region: page => [page.locator(".meeting-head-actions")],
+    highlight: page => [page.getByTestId("meeting-decision").getByRole("combobox", { name: labels.meeting.form.decision, exact: true })],
+    pad: 12,
+  },
+  // S7，總覽按「投影模式」：整個視窗（例外：投影本來就是整個畫面，靠原尺寸連結）；框「離開投影」。
+  "meeting-present": {
+    state: async page => {
+      await stateActionsAndMeeting(page);
+      await goTo(page, "overview", page.getByTestId("kpi-band"));
+      await page.getByTestId("present-toggle").click();
+      await expect(page.locator("html")).toHaveAttribute("data-mode", "present");
+      await expect(page.getByTestId("present-toggle")).toHaveText(labels.shell.presentV3.exit);
+    },
+    // 視窗內的區塊：KPI 帶、本期三件事與貢獻變化拆解（視窗外延後掛載的圖不必等）。
+    region: page => [page.getByTestId("kpi-band"), page.getByTestId("top-three"), section(page, "bridge")],
+    highlight: page => [page.getByTestId("present-toggle")],
+    viewport: true,
+  },
+  // S8：會議歷史面板（剛結束的一筆與旁邊的「下載 Markdown」「移除這筆紀錄」）；框「下載 Markdown」。
+  "meeting-finalize": {
+    state: stateFinalized,
+    region: page => [page.getByTestId("meeting-history")],
+    highlight: page => [page.getByTestId("meeting-history-item").locator(".meeting-history-buttons button").filter({ hasText: labels.exports.buttons.exportMarkdown })],
+    pad: 8,
+  },
+  // S8，展開頂欄「匯出」：選單的「會議」組；框「複製週會摘要」。
+  "meeting-copy": {
+    state: async page => { await stateFinalized(page); await openDownloads(page); },
+    region: page => [page.getByTestId("download-group-meeting")],
+    highlight: page => [page.getByTestId("download-copy-summary")],
+    // 選單清單是捲動容器，會裁掉畫在項目外的框：框畫在項目內。
+    offset: -3,
+    pad: 8,
+    fixed: true,
+  },
+  // ── data：資料來源（§2.9）──
+  // S1：頁首下方的狀態列一行（資料到哪天、涵蓋、檔案數、金額基準、問題數）；框狀態列（段落設成 fit-content，框只圍住文字）。
+  "data-scope": {
+    state: toData,
+    region: page => [page.getByTestId("data-status-line")],
+    highlight: async page => [await fitContent(page.getByTestId("data-status-line"))],
+    pad: 12,
+  },
+  // S4 套用後：涵蓋時間軸圖框（廣告投放 8/2 缺列）；框缺列的虛線框。
+  "data-coverage": {
+    state: toMissingAdDayData,
+    region: page => [page.getByTestId("chart-data-coverage")],
+    highlight: page => [page.getByTestId("chart-data-coverage").locator("rect.timeline-missing")],
+    pad: 8,
+  },
+  // S4 套用後：資料完整性問題（問題分布表與問題清單）；框「下載問題清單 CSV」。
+  "data-issues": {
+    state: toMissingAdDayData,
+    region: page => [page.getByTestId("data-issues")],
+    highlight: page => [page.getByTestId("data-issues-download")],
+    pad: 8,
+  },
+  // S1：來源檔案區，展開第一份（商品銷售）的前 10 列；無強調框。
+  "data-preview": {
+    state: async page => {
+      await toData(page);
+      const sales = page.getByTestId("data-preview-sales_daily.csv");
+      await openDetails(sales);
+      await expect(sales.locator("table tbody tr")).toHaveCount(10);
+    },
+    region: page => [page.getByTestId("data-preview")],
+    pad: 8,
+  },
+  // ── evidence：計算與來源、指標定義（§2.10）──
+  // S1，開 KPI 帶扣廣告後貢獻的計算與來源：抽屜標題列、L1 值與到分的精確值、計算方式（算法階梯）；框精確值（段落設成 fit-content）。
+  "evidence-drawer": {
+    state: openContributionEvidence,
+    region: page => [evidenceDrawer(page).locator("header.evidence-head"), evidenceDrawer(page).locator("section.evidence-ladder")],
+    highlight: async page => [await fitContent(evidenceDrawer(page).getByTestId("evidence-precise-value"))],
+    fixed: true,
+    within: evidenceDrawer,
+  },
+  // S1，同一個抽屜捲到「原始明細」（標題在抽屜標題列下方 24 px）：標題、說明、分頁與搜尋、前兩列；框第一列的「檔名:行號」。
+  "evidence-sources": {
+    state: async page => {
+      await openContributionEvidence(page);
+      const drawer = evidenceDrawer(page);
+      const title = drawer.locator("section.evidence-sources > h3");
+      const target = await drawer.evaluate(element => {
+        const head = element.querySelector("header.evidence-head")!.getBoundingClientRect();
+        const heading = element.querySelector("section.evidence-sources > h3")!.getBoundingClientRect();
+        element.scrollTop += heading.top - head.bottom - 24;
+        return Math.round(head.bottom + 24);
+      });
+      await expect.poll(() => title.evaluate(element => Math.round(element.getBoundingClientRect().top))).toBe(target);
+    },
+    region: page => [evidenceDrawer(page).locator("section.evidence-sources > h3"), evidenceDrawer(page).locator("table.source-table tbody tr").nth(1)],
+    highlight: page => [evidenceDrawer(page).locator("table.source-table tbody tr").first().locator(".evidence-fileline")],
+    // 下緣只留 8 px：第三列的文字不入鏡。
+    pad: 8,
+    fixed: true,
+    within: evidenceDrawer,
+  },
+  // S1，開頂欄「指標定義」：對話框標題列、九條規則、名詞小辭典的標題、搜尋與「找到 N 個名詞」；框名詞小辭典的標題（設成 fit-content）。
+  "evidence-basis": {
+    state: async page => { await stateDemo(page); await openBasis(page); },
+    region: page => [basisDialog(page).locator(":scope > header"), basisDialog(page).locator("ol.basis-list"), basisDialog(page).locator("section.glossary .glossary-count")],
+    highlight: async page => [await fitContent(basisDialog(page).locator("section.glossary > h3").first())],
+    fixed: true,
+    within: basisDialog,
+  },
+  // ── export：匯出、儲存與備份（§2.11）──
+  // S7，展開頂欄「匯出」：按鈕與整個選單（五組）；框一頁摘要的版本選擇（標準版、老闆一頁版、客戶報告版）。
+  "export-menu": {
+    state: async page => { await stateActionsAndMeeting(page); await openDownloads(page); },
+    region: page => [page.getByTestId("download-menu").locator(":scope > summary"), page.getByTestId("download-menu").locator(".menu-panel")],
+    highlight: page => [page.getByTestId("download-variant-picker")],
+    // 選單有自己的外框與陰影：左右只留 8 px，旁邊被選單蓋住的頁面少入鏡。
+    pad: 8,
+    fixed: true,
+  },
+  // S7，展開頂欄「儲存」：按鈕與整個選單（本機保存、備份檔、危險區）；框本機保存段。
+  "export-save": {
+    state: async page => { await stateActionsAndMeeting(page); await openStorage(page); },
+    region: page => [page.getByTestId("workspace-storage").locator(":scope > summary"), page.getByTestId("workspace-storage").locator(".storage-panel")],
+    highlight: page => [storageGroups(page).first()],
+    pad: 8,
+    fixed: true,
+  },
+  // S7，儲存選單的備份檔段；框「下載備份檔」。
+  "export-backup": {
+    state: async page => { await stateActionsAndMeeting(page); await openStorage(page); },
+    region: page => [storageGroups(page).nth(1)],
+    highlight: page => [storageGroups(page).nth(1).getByRole("button", { name: labels.storage.buttons.downloadBackup, exact: true })],
+    pad: 12,
+    fixed: true,
+  },
+  // S7，儲存選單的危險區；框「刪除這台電腦上的資料」。
+  "export-delete": {
+    state: async page => { await stateActionsAndMeeting(page); await openStorage(page); },
+    region: page => [page.getByTestId("workspace-storage").locator("section.storage-danger")],
+    highlight: page => [page.getByTestId("workspace-storage").getByRole("button", { name: labels.storage.buttons.deleteLocal, exact: true })],
+    pad: 12,
+    fixed: true,
+  },
 };
 
 // CAPTURES 與 GUIDE_AREA_STEPS 的 mediaId 必須是同一組（多一張或少一張都在載入時失敗）。
@@ -226,7 +471,7 @@ for (const step of GUIDE_MEDIA_STEPS) {
     const viewport = isMobileMedia(step.mediaId) ? MOBILE : DESKTOP;
     await page.setViewportSize(viewport);
     await capture.state(page);
-    if (!capture.viewport) await page.addStyleTag({ content: NO_OVERLAY_STYLE });
+    if (!capture.viewport && !capture.fixed) await page.addStyleTag({ content: NO_OVERLAY_STYLE });
     const regions = capture.region(page);
     await settle(page, regions);
     await highlight(page, capture.highlight ? await capture.highlight(page) : [], capture.offset);
@@ -236,8 +481,9 @@ for (const step of GUIDE_MEDIA_STEPS) {
       clip = { x: 0, y: 0, ...viewport };
       await expect(page).toHaveScreenshot(name);
     } else {
-      clip = await unionClip(page, regions, { pad: Math.max(capture.pad ?? 16, HIGHLIGHT_REACH), across: capture.across?.(page), maxWidth: capture.maxWidth });
-      await expect(page).toHaveScreenshot(name, { fullPage: true, clip, stylePath: await noOverlayStylePath() });
+      clip = await unionClip(page, regions, { pad: Math.max(capture.pad ?? 16, HIGHLIGHT_REACH), across: capture.across?.(page), maxWidth: capture.maxWidth, within: capture.within?.(page) });
+      if (capture.fixed) await expect(page).toHaveScreenshot(name, { clip });
+      else await expect(page).toHaveScreenshot(name, { fullPage: true, clip, stylePath: await noOverlayStylePath() });
     }
     if (GUIDE_MEDIA_WRITE) console.log(`${step.mediaId}: ${clip.width}×${clip.height} ${await syncMedia(browser, step)}`);
     expect(errors, `${errors.length} console／page errors`).toEqual([]);
