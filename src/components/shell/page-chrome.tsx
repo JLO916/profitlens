@@ -28,7 +28,10 @@ export function PageHeader({ title, description, isData, showLoadDemo, onLoadDem
   </div>;
 }
 
-/** V3-3 A1 頁尾（§7.0）：「扣廣告後貢獻不含固定費與稅。［指標定義］ · 新台幣 · 台北時間」，正式站再加使用分析揭露（D9）。 */
+/**
+ * V3-3 A1 頁尾（§7.0）：「扣廣告後貢獻不含固定費與稅。［指標定義］ · 新台幣 · 台北時間」，正式站再加使用分析揭露（D9）。
+ * V41-1（D-V41-5）：「指標定義」旁加「使用說明」連結（另開分頁；可及名稱另含 sr-only 的「（另開分頁）」），用同一個 aria-hidden 的「 · 」隔開。
+ */
 export function ShellFooter({ analytics, onBasis }: { analytics: boolean; onBasis: () => void }) {
-  return <footer className="main-footer"><p>{labels.glossary.basis.footer}<button type="button" className="ui-btn ui-btn-text footer-basis" onClick={onBasis}>{labels.shell.buttons.basis}</button><span aria-hidden="true"> · </span>{labels.shell.sidebar.sidebarFooter}</p>{analytics && <p className="analytics-note" data-testid="analytics-note">{labels.relaunch.analyticsNote}</p>}</footer>;
+  return <footer className="main-footer"><p>{labels.glossary.basis.footer}<button type="button" className="ui-btn ui-btn-text footer-basis" onClick={onBasis}>{labels.shell.buttons.basis}</button><span aria-hidden="true"> · </span><a className="ui-btn ui-btn-text footer-guide" href="/guide" target="_blank" rel="noopener" data-testid="guide-entry-footer">{labels.shell.guideV41.entry}<span className="sr-only">{labels.shell.guideV41.newTab}</span></a><span aria-hidden="true"> · </span>{labels.shell.sidebar.sidebarFooter}</p>{analytics && <p className="analytics-note" data-testid="analytics-note">{labels.relaunch.analyticsNote}</p>}</footer>;
 }
