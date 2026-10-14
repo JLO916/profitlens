@@ -1,12 +1,16 @@
+import { createHash } from "node:crypto";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { labels } from "@/i18n";
 import { guideLabels } from "@/i18n/guide.zh-TW";
-import { GUIDE_AREA_CODES, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_QUICKSTART, GUIDE_UNIQUE, GUIDE_WHO, lookupUiRef, resolveUiRefs, uiRefParts } from "@/application/guide";
+import { GUIDE_AREA_CODES, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_QUICKSTART, GUIDE_UNIQUE, GUIDE_WHO, lookupUiRef, resolveUiRefs, uiRefParts } from "@/application/guide";
 import { L1_KEY_PATTERNS, L1_MAX_CJK, channelAliasTerms, l1ClauseLengths, labelEntries } from "../scripts/lib/copy-scan.mjs";
+import { labelsHash } from "../verification/guide-media/labels-hash";
 
 // V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項、01_PRD.md §3.4、§3.10）：說明頁文字 guideLabels（src/i18n/guide.zh-TW.ts）的內容護欄。
 // (1) 每個 {ui:路徑} 都解析得到；(2) 標題 L1；(3) 最高級黑名單；(4) 介面字串不重打；(5) 工作台入口 shell.guideV41.* 不用問句；(6) 第一人稱骨架的〔〕不上線。
-// V41-2a 起再加媒體同步檢查（PRD §3.5）。
+// V41-2a 起再加媒體同步檢查（PRD §3.5；D-V41-22＝A；最後一個 describe）。
 
 const GUIDE_ENTRIES = labelEntries(guideLabels) as [string, string][];
 const LABEL_ENTRIES = labelEntries(labels) as [string, string][];
@@ -117,3 +121,91 @@ describe("V41-1 說明首頁的結構資料與 guideLabels 對得上", () => {
     expect(GUIDE_QUICKSTART).toHaveLength(4);
   });
 });
+
+// ── V41-2a 媒體同步檢查（06_BATCHES V41-2a 第 4 項；PRD §3.5「同步檢查」；D-V41-22＝A）──
+// 不需要伺服器：讀媒體清單 src/application/guide-media.json、public/guide/** 的 WebP 與 verification/guide-media/baseline/** 的基準 PNG。
+// 換了基準卻沒重轉 WebP（SHA-256 不符）、少檔、孤兒檔、太大、被引用的介面字串改了（labels_hash 不符）都在這裡失敗；修法是跑 GUIDE_MEDIA=write（verification/guide-media.config.ts）。
+// 畫面本身有沒有過期由 GUIDE_MEDIA=check（toHaveScreenshot）判斷，不用位元組雜湊。
+
+interface GuideMediaEntry { id: string; file: string; width: number; height: number; bytes: number; sha256: string; labels_hash: string }
+const MEDIA_MANIFEST = resolve("src/application/guide-media.json");
+const MEDIA_PUBLIC_DIR = resolve("public");
+const MEDIA_PUBLIC_GUIDE_DIR = resolve("public/guide");
+const MEDIA_BASELINE_DIR = resolve("verification/guide-media/baseline");
+/** 單張 ≤ 200 KB、每個功能區頁合計 ≤ 1.5 MB（PRD §3.5「大小控制」、06 護欄表「說明頁媒體」）。 */
+const MEDIA_MAX_BYTES = 200 * 1024;
+const MEDIA_MAX_AREA_BYTES = 1.5 * 1024 * 1024;
+const WRITE_HINT = "跑 GUIDE_MEDIA=write npx playwright test --config verification/guide-media.config.ts";
+const mediaManifest = JSON.parse(readFileSync(MEDIA_MANIFEST, "utf8")) as { updated: string | null; media: GuideMediaEntry[] };
+/** GUIDE_AREA_STEPS 攤平（＝清單 media 的順序）。 */
+const PLANNED_MEDIA = Object.entries(GUIDE_AREA_STEPS).flatMap(([area, steps]) => (steps ?? []).map(step => ({ area, stepKey: step.key, mediaId: step.mediaId })));
+const plannedMedia = (id: string) => PLANNED_MEDIA.find(step => step.mediaId === id);
+/** 目錄下所有檔案（相對該目錄、以 / 分隔）；目錄不存在時是空陣列。 */
+function listFiles(directory: string): string[] {
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory, { recursive: true, encoding: "utf8" }).filter(name => statSync(join(directory, name)).isFile()).map(name => name.split("\\").join("/")).sort();
+}
+const sha256Hex = (data: Buffer) => createHash("sha256").update(data).digest("hex");
+
+describe("V41-2a 說明頁媒體同步（清單、WebP、基準 PNG）", () => {
+  it("清單格式：updated 是 YYYY-MM-DD（有媒體時）或 null；id 不重複、都在 GUIDE_AREA_STEPS、依它的順序；檔名＝guide/{area}/{mediaId}.webp", () => {
+    expect(Object.keys(mediaManifest).sort()).toEqual(["media", "updated"]);
+    if (mediaManifest.media.length > 0) expect(mediaManifest.updated).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    else expect(mediaManifest.updated === null || /^\d{4}-\d{2}-\d{2}$/.test(mediaManifest.updated)).toBe(true);
+    const ids = mediaManifest.media.map(entry => entry.id);
+    expect(new Set(ids).size, "id 重複").toBe(ids.length);
+    expect(ids.filter(id => !plannedMedia(id)), "清單裡有 GUIDE_AREA_STEPS 沒有的 mediaId").toEqual([]);
+    expect(ids, "清單要依 GUIDE_AREA_STEPS 的順序").toEqual(PLANNED_MEDIA.map(step => step.mediaId).filter(id => ids.includes(id)));
+    for (const entry of mediaManifest.media) {
+      expect(Object.keys(entry).sort(), entry.id).toEqual(["bytes", "file", "height", "id", "labels_hash", "sha256", "width"]);
+      expect(entry.file, entry.id).toBe(`guide/${plannedMedia(entry.id)!.area}/${entry.id}.webp`);
+      expect(entry.sha256, entry.id).toMatch(/^[0-9a-f]{64}$/);
+      expect(entry.labels_hash, entry.id).toMatch(/^[0-9a-f]{64}$/);
+    }
+  });
+
+  it("已上線的功能區（GUIDE_AREAS）每一步的 mediaId 都在清單裡", () => {
+    const ids = new Set(mediaManifest.media.map(entry => entry.id));
+    const missing = GUIDE_AREAS.flatMap(area => area.steps.filter(step => !ids.has(step.mediaId)).map(step => `${area.area} › ${step.key}：${step.mediaId}`));
+    expect(missing, WRITE_HINT).toEqual([]);
+  });
+
+  it("清單每一筆：WebP 與基準 PNG 都存在；基準 PNG 的 SHA-256＝sha256、寬高＝width／height；WebP 的大小＝bytes", () => {
+    const problems: string[] = [];
+    for (const entry of mediaManifest.media) {
+      const webp = resolve(MEDIA_PUBLIC_DIR, entry.file);
+      const png = resolve(MEDIA_BASELINE_DIR, `${entry.id}.png`);
+      if (!existsSync(webp)) { problems.push(`${entry.id}：缺 public/${entry.file}`); continue; }
+      if (!existsSync(png)) { problems.push(`${entry.id}：缺基準 ${relative(resolve("."), png)}`); continue; }
+      const pngBytes = readFileSync(png);
+      if (sha256Hex(pngBytes) !== entry.sha256) problems.push(`${entry.id}：基準 PNG 的 SHA-256 與清單不符（換了基準卻沒重轉 WebP）`);
+      if (pngBytes.readUInt32BE(16) !== entry.width || pngBytes.readUInt32BE(20) !== entry.height) problems.push(`${entry.id}：基準 PNG ${pngBytes.readUInt32BE(16)}×${pngBytes.readUInt32BE(20)}，清單 ${entry.width}×${entry.height}`);
+      const webpBytes = readFileSync(webp);
+      if (webpBytes.length !== entry.bytes) problems.push(`${entry.id}：WebP ${webpBytes.length} bytes，清單 ${entry.bytes}`);
+      if (webpBytes.subarray(0, 4).toString("latin1") !== "RIFF" || webpBytes.subarray(8, 12).toString("latin1") !== "WEBP") problems.push(`${entry.id}：public/${entry.file} 不是 WebP`);
+    }
+    expect(problems, WRITE_HINT).toEqual([]);
+  });
+
+  it("沒有孤兒檔：public/guide/ 與 verification/guide-media/baseline/ 的每個檔都屬於清單的一筆", () => {
+    const webps = new Set(mediaManifest.media.map(entry => entry.file.replace(/^guide\//, "")));
+    const pngs = new Set(mediaManifest.media.map(entry => `${entry.id}.png`));
+    expect(listFiles(MEDIA_PUBLIC_GUIDE_DIR).filter(file => !webps.has(file)).map(file => `public/guide/${file}`)).toEqual([]);
+    expect(listFiles(MEDIA_BASELINE_DIR).filter(file => !pngs.has(file)).map(file => `verification/guide-media/baseline/${file}`)).toEqual([]);
+  });
+
+  it("大小：單張 WebP ≤ 200 KB、每個功能區合計 ≤ 1.5 MB（讀清單的 bytes）", () => {
+    expect(mediaManifest.media.filter(entry => entry.bytes > MEDIA_MAX_BYTES).map(entry => `${entry.id}：${entry.bytes}`)).toEqual([]);
+    const perArea = new Map<string, number>();
+    for (const entry of mediaManifest.media) { const area = plannedMedia(entry.id)?.area ?? entry.file; perArea.set(area, (perArea.get(area) ?? 0) + entry.bytes); }
+    expect([...perArea].filter(([, bytes]) => bytes > MEDIA_MAX_AREA_BYTES).map(([area, bytes]) => `${area}：${bytes}`)).toEqual([]);
+  });
+
+  it("labels_hash＝這一步目前引用的介面字串的雜湊（被引用的字串改了就要重拍；圖相同時 write 只更新雜湊）", () => {
+    const stale = mediaManifest.media.filter(entry => { const step = plannedMedia(entry.id); return step !== undefined && labelsHash(step.area, step.stepKey) !== entry.labels_hash; }).map(entry => entry.id);
+    expect(stale, WRITE_HINT).toEqual([]);
+    // 雜湊本身有作用：沒有步驟文字時是 JSON.stringify([]) 的雜湊；不存在的步驟同樣是空引用。
+    expect(labelsHash("start", "not-a-step")).toBe(createHash("sha256").update("[]").digest("hex"));
+  });
+});
+

@@ -2,7 +2,7 @@
 
 V4-0b 依 D-V4-31 建立的測試用合成資料。所有通路、商品與金額都是虛構的，不是任何真實營運結果。
 
-- **用途**：單元測試、E2E 與視覺驗收（含 H5 設計稿的商品頁與資料來源頁）。不進產品示範，不取代示範資料（2 通路）。
+- **用途**：單元測試、E2E 與視覺驗收（含 H5 設計稿的商品頁與資料來源頁）。V41-2a 起依 D-V41-21＝A（修改 D-V4-31）另允許用於說明頁截圖（`verification/guide-media/capture.spec.ts`，例如 `/guide/products` 的商品毛利為負累計圖），圖說標明虛構的合成資料，通路顯示原代碼（DTC、LIVE、MARKETPLACE、SOCIAL）。不進產品示範，不取代示範資料（2 通路）。
 - **位置**：放在 `tests/fixtures/`，不在 `fixtures/`（v4 禁區白名單為空，`fixtures/*` 一個檔都不新增）。
 - **手算期望值**：寫在使用它的測試檔（本批是 `tests/synthetic-4-channel.test.ts`），不寫進這個目錄。本文件的摘要表是同一組手算值，給設計稿與後續批次查表用；兩邊不一致時以測試檔為準，並回頭修正本文件。
 - **格式**：完全照 `docs/DATA_CONTRACT.md`：`manifest.json` 加三份 CSV（UTF-8、逗號分隔、LF 換行、日期 `YYYY-MM-DD`、金額兩位小數、不含千分位）。`dataset_id` 不以 `synthetic-demo` 開頭，所以畫面不套示範通路別名，通路一律顯示原代碼。
