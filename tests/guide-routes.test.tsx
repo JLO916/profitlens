@@ -6,17 +6,34 @@ import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { labels } from "@/i18n";
 import { guideLabels } from "@/i18n/guide.zh-TW";
-import { GUIDE_AREA_CODES, GUIDE_AREAS, resolveUiRefs } from "@/application/guide";
+import { GUIDE_AREA_BEFORE_LINKS, GUIDE_AREA_CODES, GUIDE_AREA_NEXT, GUIDE_AREA_NOTE_LINKS, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_PUBLISHED_AREAS, guideDataNote, resolveUiRefs, type GuideAreaCode, type GuideMediaEntry, type GuideMediaManifest } from "@/application/guide";
+import guideMedia from "@/application/guide-media.json";
+import { ORDER_AGGREGATION_DOC_URL } from "@/application/import-wizard";
 import GuideLayout from "@/app/guide/layout";
 import GuideHubPage, { metadata as hubMetadata } from "@/app/guide/page";
+import GuideAreaPage, { dynamicParams, generateMetadata, generateStaticParams } from "@/app/guide/[area]/page";
+import { GuideStep } from "@/components/guide/guide-step";
 
 // V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項、01_PRD.md §3.1、§3.8、§3.10）：說明頁路由。
 // 說明首頁（外框＋頁面）以 react-dom/server SSR：h1 唯一、guide-hub／guide-toc、頁內錨點都有對應 id、沒有連到還沒上線的功能區頁（不產生 404 連結）；
 // metadata 由 guideMetadata 一次給齊（canonical、openGraph、twitter）；import 邊界：說明頁的模組圖不碰工作台與圖表模組、沒有 "use client"，
-// 任何 "use client" 模組也走不到說明頁的模組（說明文字不進工作台首載）。V41-2a 起每個功能區頁另加 SSR 與 metadata 斷言。
+// 任何 "use client" 模組也走不到說明頁的模組（說明文字不進工作台首載）。V41-2a 起每個功能區頁另加 SSR 與 metadata 斷言（本檔後半）。
 
 const hub = () => renderToStaticMarkup(createElement(GuideLayout, null, createElement(GuideHubPage)));
 const decode = (text: string) => text.replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#x27;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+const g = guideLabels.guide;
+const text = (value: string) => resolveUiRefs(value, labels);
+const manifest = guideMedia as GuideMediaManifest;
+/** 功能區頁的 params（Next 16：params 是 Promise）。 */
+const areaProps = (area: string) => ({ params: Promise.resolve({ area }) });
+/** 功能區頁（外框＋頁面）的 SSR 結果；頁面是 async 伺服器元件，先取得它回傳的元素再渲染。 */
+const areaHtml = async (area: string) => renderToStaticMarkup(createElement(GuideLayout, null, await GuideAreaPage(areaProps(area))));
+const hrefsOf = (html: string) => [...html.matchAll(/href="([^"]+)"/g)].map(match => decode(match[1]));
+const idsOf = (html: string) => new Set([...html.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]));
+/** 一段 HTML 的可及文字（近似）：<img> 換成 alt，其餘標記拿掉。 */
+const accessibleText = (html: string) => decode(html.replace(/<img\b[^>]*\balt="([^"]*)"[^>]*>/g, "$1").replace(/<[^>]+>/g, ""));
+/** 功能區頁每一步的文字（guide.areas.{area}.steps.{key}）。 */
+const stepCopy = (area: GuideAreaCode, key: string) => (g.areas[area] as unknown as { steps: Record<string, { title: string; body: string; alt: string; caption: string }> }).steps[key];
 
 describe("V41-1 說明首頁 SSR", () => {
   const html = hub();
@@ -87,6 +104,237 @@ describe("V41-1 說明首頁 metadata（guideMetadata；PRD §3.8）", () => {
   });
 });
 
+// ---------------------------------------------------------------- V41-2a 功能區頁
+
+describe("V41-2a 功能區頁的資料（src/application/guide.ts、guideLabels）", () => {
+  it("已上線的是 start、import、overview、diagnosis、products；GUIDE_AREAS 依序帶 GUIDE_AREA_STEPS 的步驟（21 步）", () => {
+    expect(GUIDE_PUBLISHED_AREAS).toEqual(["start", "import", "overview", "diagnosis", "products"]);
+    expect(GUIDE_AREAS.map(entry => entry.area)).toEqual([...GUIDE_PUBLISHED_AREAS]);
+    for (const entry of GUIDE_AREAS) expect(entry.steps, entry.area).toEqual(GUIDE_AREA_STEPS[entry.area]);
+    expect(GUIDE_AREAS.flatMap(entry => entry.steps)).toHaveLength(21);
+  });
+
+  it.each(GUIDE_PUBLISHED_AREAS)("%s：answers、before、notes（1–3 點）齊全；steps 的鍵＝GUIDE_AREA_STEPS（同順序），每一步都有 title、body、alt、caption", area => {
+    const copy = g.areas[area] as unknown as { answers: string; before: string; notes: readonly string[]; steps: Record<string, Record<string, string>> };
+    expect(copy.answers.length, "answers").toBeGreaterThan(0);
+    expect(copy.before.length, "before").toBeGreaterThan(0);
+    expect(copy.notes.length).toBeGreaterThanOrEqual(1);
+    expect(copy.notes.length).toBeLessThanOrEqual(3);
+    expect(Object.keys(copy.steps)).toEqual(GUIDE_AREA_STEPS[area]!.map(step => step.key));
+    for (const [key, step] of Object.entries(copy.steps)) expect(Object.keys(step).sort(), key).toEqual(["alt", "body", "caption", "title"]);
+    for (const [key, step] of Object.entries(copy.steps)) for (const [field, value] of Object.entries(step)) expect(value.trim().length, `${key}.${field}`).toBeGreaterThan(0);
+  });
+
+  it("下一步最多 2 個功能區、不指回自己；要注意的連結指到存在的那一點；開始前的文件連結＝匯入精靈的整理工具說明（public 下有檔）", () => {
+    for (const area of GUIDE_PUBLISHED_AREAS) {
+      const next = GUIDE_AREA_NEXT[area] ?? [];
+      expect(next.length, area).toBeGreaterThanOrEqual(1);
+      expect(next.length, area).toBeLessThanOrEqual(2);
+      expect(next, area).not.toContain(area);
+      const notes = (g.areas[area] as unknown as { notes: readonly string[] }).notes;
+      for (const link of GUIDE_AREA_NOTE_LINKS[area] ?? []) expect(link.note, area).toBeLessThan(notes.length);
+    }
+    expect(GUIDE_AREA_BEFORE_LINKS).toEqual({ import: ORDER_AGGREGATION_DOC_URL });
+    expect(existsSync(resolve("public", ORDER_AGGREGATION_DOC_URL.slice(1)))).toBe(true);
+    expect(g.areas.import.beforeLink).toBe("{ui:importWizard.orderLevelLink}");
+  });
+
+  it("截圖的資料來源註記：S0 的 start-load 不加；S4、S5 的 import-issues、products-pareto 是合成資料；其餘是示範資料", () => {
+    const notes = Object.fromEntries(GUIDE_AREAS.flatMap(entry => entry.steps).map(step => [step.mediaId, guideDataNote(step.mediaId)]));
+    expect(Object.entries(notes).filter(([, note]) => note !== "demo")).toEqual([["start-load", "none"], ["import-issues", "synthetic"], ["products-pareto", "synthetic"]]);
+    expect(g.common.demoCaption).toBe("畫面為示範資料（虛構）");
+    expect(g.common.syntheticCaption).toBe("畫面為虛構的合成資料");
+  });
+});
+
+describe("V41-2a 功能區頁路由（generateStaticParams、dynamicParams、404）", () => {
+  it("generateStaticParams＝GUIDE_AREAS；dynamicParams＝false（其他網址 404）", () => {
+    expect(generateStaticParams()).toEqual(GUIDE_AREAS.map(({ area }) => ({ area })));
+    expect(dynamicParams).toBe(false);
+  });
+
+  it("不在 GUIDE_AREAS 的網址（未知或還沒上線）：頁面與 metadata 都走 notFound()", async () => {
+    for (const area of ["not-a-area", ...GUIDE_AREA_CODES.filter(code => !GUIDE_PUBLISHED_AREAS.includes(code))]) {
+      await expect(GuideAreaPage(areaProps(area)), area).rejects.toThrow(/NEXT_HTTP_ERROR_FALLBACK;404/);
+      await expect(generateMetadata(areaProps(area)), area).rejects.toThrow(/NEXT_HTTP_ERROR_FALLBACK;404/);
+    }
+  });
+});
+
+describe.each(GUIDE_AREAS.map(entry => [entry.area, entry] as const))("V41-2a 功能區頁 /guide/%s（SSR）", (area, entry) => {
+  const copy = g.areas[area] as unknown as { title: string; answers: string; before: string; notes: readonly string[] };
+  const title = text(copy.title);
+
+  it("外框＋頁面：guide-area-{area}、h1 只有一個＝功能區標題、麵包屑（使用說明 › 本頁，aria-current）、這頁回答什麼與開始前、主要內容 #main-content", async () => {
+    const html = await areaHtml(area);
+    expect(html).toContain(`data-testid="guide-area-${area}"`);
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(decode(html)).toContain(`<h1>${title}</h1>`);
+    expect(html).toContain(`<nav class="guide-breadcrumb" aria-label="${g.areaPage.breadcrumbAria}">`);
+    expect(decode(html)).toContain(`<li><a class="guide-link" href="/guide">${labels.shell.guideV41.entry}</a></li><li><span aria-current="page">${title}</span></li>`);
+    expect(decode(html)).toContain(`<dt>${g.sections.answers}</dt><dd>${text(copy.answers)}</dd><dt>${g.sections.before}</dt><dd>${text(copy.before)}`);
+    expect(html).toMatch(/<main id="main-content"[^>]*tabindex="-1"/i);
+    expect(html).toContain(`<a class="skip-link" href="#main-content">${labels.shell.sidebar.skipLink}</a>`);
+  });
+
+  it("本頁目錄 guide-toc：每一步一個錨點（#{stepKey}，同順序、文字＝步驟標題）；每一步是 <li id={stepKey} data-testid=guide-step-{area}-{stepKey}>，內有 h2", async () => {
+    const html = decode(await areaHtml(area));
+    const toc = html.match(/<nav class="guide-toc" aria-label="([^"]+)" data-testid="guide-toc"><ol>(.*?)<\/ol><\/nav>/);
+    expect(toc?.[1]).toBe(g.hub.tocAria);
+    expect([...toc![2].matchAll(/<a class="guide-link" href="#([^"]+)">([^<]+)<\/a>/g)].map(match => [match[1], match[2]])).toEqual(entry.steps.map(step => [step.key, text(stepCopy(area, step.key).title)]));
+    for (const step of entry.steps) {
+      expect(html, step.key).toContain(`<li id="${step.key}" class="guide-step" data-testid="guide-step-${area}-${step.key}"><h2>${text(stepCopy(area, step.key).title)}</h2>`);
+    }
+    // 步驟內文：引用的介面字串是粗體。
+    const first = stepCopy(area, entry.steps[0].key);
+    const firstRef = first.body.match(/\{ui:([\w.]+)\}/);
+    if (firstRef) expect(html).toContain(`<strong>${text(`{ui:${firstRef[1]}}`)}</strong>`);
+  });
+
+  it("標題層級不跳級；id 不重複；每個頁內錨點都有對應的 id；要注意（#notes，1–3 點）與下一步（#next，最後一項是開啟工作台 /）", async () => {
+    const html = await areaHtml(area);
+    const levels = [...html.matchAll(/<h([1-6])[\s>]/g)].map(match => Number(match[1]));
+    levels.forEach((level, index) => { if (index > 0) expect(level - levels[index - 1], `第 ${index + 1} 個標題 h${level}`).toBeLessThanOrEqual(1); });
+    const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]);
+    expect(new Set(ids).size, ids.join(",")).toBe(ids.length);
+    expect(hrefsOf(html).filter(href => href.startsWith("#") && !ids.includes(href.slice(1)))).toEqual([]);
+    expect(html).toMatch(/<section id="notes" class="guide-section" aria-labelledby="guide-notes-title"><h2 id="guide-notes-title">/);
+    expect(html).toMatch(/<section id="next" class="guide-section" aria-labelledby="guide-next-title"><h2 id="guide-next-title">/);
+    const notes = html.match(/<ul class="guide-notes">(.*?)<\/ul>/)![1];
+    expect(notes.match(/<li>/g)).toHaveLength(copy.notes.length);
+    const next = html.match(/<ul class="guide-next">(.*?)<\/ul>/)![1];
+    expect(next.match(/<li>/g)).toHaveLength((GUIDE_AREA_NEXT[area] ?? []).length + 1);
+    expect(decode(next)).toMatch(new RegExp(`<li><a class="guide-link" href="/">${g.hub.openApp}</a></li>$`));
+  });
+
+  it("沒有表單、輸入、target=_blank 或未解析的 {ui:…}；頁尾同說明首頁（示範資料、資料不上傳；媒體清單有日期時加截圖更新日期）", async () => {
+    const html = await areaHtml(area);
+    expect(html).not.toMatch(/<(form|input|textarea|select|button)[\s>]/);
+    expect(html).not.toMatch(/target="_blank"/);
+    expect(html).not.toContain("{ui:");
+    expect(html).toContain(labels.shell.sidebar.sidebarNote.demo);
+    expect(html).toContain(labels.shell.sidebar.sidebarNote.local);
+    if (manifest.updated) expect(html).toContain(g.common.mediaUpdated.replace("{date}", manifest.updated));
+    else expect(html).not.toContain(g.common.mediaUpdated.split("{date}")[0]);
+  });
+
+  it("截圖：媒體清單有的步驟才有 figure（guide-shot-{mediaId}），img 的寬高取自清單、decoding=async，頁面第一張不 lazy、其餘 lazy；原尺寸連結＝同一個檔、可及名稱＝alt＋（開啟原尺寸圖）", async () => {
+    const html = await areaHtml(area);
+    const shots = entry.steps.map(step => ({ step, media: manifest.media.find(item => item.id === step.mediaId) }));
+    const firstShot = shots.find(shot => shot.media)?.step.mediaId;
+    for (const { step, media } of shots) {
+      const figure = html.match(new RegExp(`<figure class="guide-shot" data-testid="guide-shot-${step.mediaId}">(.*?)</figure>`));
+      // 媒體清單是 agent A（媒體管線）產生的；還沒有這張圖時只有文字（tests/guide-content.test.ts 的媒體同步檢查要求最終每一步都有圖）。
+      if (!media) { expect(figure, step.mediaId).toBeNull(); continue; }
+      expect(figure, step.mediaId).not.toBeNull();
+      const src = `/guide/${area}/${step.mediaId}.webp`;
+      expect(media.file).toBe(src.slice(1));
+      const link = figure![1].match(/<a class="guide-shot-link" href="([^"]+)">(.*?)<\/a>/)!;
+      expect(link[1]).toBe(src);
+      const img = link[2].match(/<img [^>]*>/)![0];
+      expect(img).toContain(`src="${src}"`);
+      expect(img).toContain(`width="${media.width}"`);
+      expect(img).toContain(`height="${media.height}"`);
+      expect(img).toContain('decoding="async"');
+      if (step.mediaId === firstShot) expect(img).not.toContain("loading=");
+      else expect(img).toContain('loading="lazy"');
+      expect(accessibleText(link[2])).toBe(`${text(stepCopy(area, step.key).alt)}${g.common.fullSize}`);
+    }
+  });
+
+  it("metadata：title＝「功能區標題 · 品牌名」、description＝這頁回答什麼；canonical＝/guide/{area}；openGraph 與 twitter 完整、分享圖是 /og.png", async () => {
+    const metadata = await generateMetadata(areaProps(area));
+    const pageTitle = `${title} · ${labels.brand.name}`;
+    const description = text(copy.answers);
+    expect(metadata.title).toBe(pageTitle);
+    expect(metadata.description).toBe(description);
+    expect(metadata.alternates?.canonical).toBe(`/guide/${area}`);
+    expect(metadata.openGraph).toMatchObject({ title: pageTitle, description, url: `/guide/${area}`, siteName: labels.brand.name, locale: "zh_TW", type: "website" });
+    expect(metadata.openGraph?.images).toEqual([{ url: "/og.png", width: 1200, height: 630, alt: labels.brand.title }]);
+    expect(metadata.twitter).toMatchObject({ card: "summary_large_image", title: pageTitle, description, images: ["/og.png"] });
+  });
+});
+
+describe("V41-2a 說明頁之間的連結（說明首頁＋已上線的功能區頁）", () => {
+  it("站內連結只有 /、/guide、已上線的 /guide/{area}（#錨點要在該頁存在，例如 /guide/overview#bridge）、該頁步驟的截圖 /guide/{area}/{mediaId}.webp、/docs/ORDER_AGGREGATION.md；沒有外部連結", async () => {
+    const pages = new Map<string, string>([["/guide", hub()]]);
+    for (const { area } of GUIDE_AREAS) pages.set(`/guide/${area}`, await areaHtml(area));
+    const ids = new Map([...pages].map(([path, html]) => [path, idsOf(html)]));
+    const problems: string[] = [];
+    for (const [path, html] of pages) {
+      const own = GUIDE_AREAS.find(entry => `/guide/${entry.area}` === path);
+      const shots = new Set(own?.steps.map(step => `/guide/${own.area}/${step.mediaId}.webp`) ?? []);
+      for (const href of hrefsOf(html)) {
+        if (href.startsWith("#")) { if (!ids.get(path)!.has(href.slice(1))) problems.push(`${path}: ${href}`); continue; }
+        if (href === "/" || (href === ORDER_AGGREGATION_DOC_URL && path === "/guide/import") || shots.has(href)) continue;
+        const [target, hash] = href.split("#");
+        if (!ids.has(target)) { problems.push(`${path}: ${href}`); continue; }
+        if (hash !== undefined && !ids.get(target)!.has(hash)) problems.push(`${path}: ${href}（${target} 沒有 #${hash}）`);
+      }
+    }
+    expect(problems).toEqual([]);
+    // 說明首頁的「兩期差額拆到分」連到總覽頁的瀑布圖那一步。
+    expect(hrefsOf(pages.get("/guide")!)).toContain("/guide/overview#bridge");
+    expect(ids.get("/guide/overview")!.has("bridge")).toBe(true);
+  });
+
+  it("說明首頁的功能區目錄（#areas）：已上線的 5 區各一張卡（連到 /guide/{area}，標題＋這頁回答什麼），依分組排列", () => {
+    const html = decode(hub());
+    expect(html).toMatch(/<section id="areas" class="guide-section" aria-labelledby="guide-areas-title">/);
+    expect(html).toContain('href="#areas"');
+    const cards = [...html.matchAll(/<a class="guide-card" href="([^"]+)"><span class="guide-card-title">([^<]+)<\/span><span class="guide-card-answer">([^<]+)<\/span><\/a>/g)].map(match => [match[1], match[2], match[3]]);
+    expect(cards).toEqual(GUIDE_AREAS.map(({ area }) => [`/guide/${area}`, text(g.areas[area].title), text((g.areas[area] as unknown as { answers: string }).answers)]));
+    expect(cards).toHaveLength(5);
+  });
+
+  it("要注意與下一步：連到已上線的功能區是連結，還沒上線的只顯示標題文字（例如 start 的要注意連到 export、overview 的下一步 evidence）", async () => {
+    const start = decode(await areaHtml("start"));
+    const overview = decode(await areaHtml("overview"));
+    for (const [html, area] of [[start, "export"], [overview, "evidence"]] as const) {
+      if (GUIDE_PUBLISHED_AREAS.includes(area)) expect(html).toContain(`href="/guide/${area}"`);
+      else expect(html).toContain(`<span>${text(g.areas[area].title)}</span>`);
+    }
+    expect(start).toContain(`<span class="guide-note-link">${g.areaPage.seeAlso}`);
+    expect(decode(await areaHtml("import"))).toContain(`<a class="guide-link" href="${ORDER_AGGREGATION_DOC_URL}">${labels.importWizard.orderLevelLink}</a>`);
+  });
+});
+
+describe("V41-2a GuideStep（假的媒體清單項目；不依賴 src/application/guide-media.json 的內容）", () => {
+  const fake = (mediaId: string): GuideMediaEntry => ({ id: mediaId, file: `guide/x/${mediaId}.webp`, width: 800, height: 450, bytes: 1, sha256: "0".repeat(64), labels_hash: "0".repeat(64) });
+  const render = (area: GuideAreaCode, index: number, media: GuideMediaEntry | undefined, eager: boolean) => {
+    const step = GUIDE_AREA_STEPS[area]![index];
+    return { step, html: renderToStaticMarkup(createElement(GuideStep, { area, step, copy: stepCopy(area, step.key), media, eager })) };
+  };
+
+  it("有媒體：figure、原尺寸連結（可及名稱＝alt＋fullSize）、寬高、decoding=async；eager 時沒有 loading，否則 loading=lazy", () => {
+    const { step, html } = render("overview", 0, fake("overview-snapshot"), true);
+    expect(html).toContain(`data-testid="guide-shot-${step.mediaId}"`);
+    const link = html.match(/<a class="guide-shot-link" href="([^"]+)">(.*?)<\/a>/)!;
+    expect(link[1]).toBe("/guide/x/overview-snapshot.webp");
+    expect(accessibleText(link[2])).toBe(`${text(stepCopy("overview", step.key).alt)}${g.common.fullSize}`);
+    expect(link[2]).toContain('<span class="sr-only">（開啟原尺寸圖）</span>');
+    expect(link[2]).toMatch(/<img src="\/guide\/x\/overview-snapshot\.webp" alt="[^"]+" width="800" height="450" decoding="async"\/>/);
+    const lazy = render("overview", 1, fake("overview-top-three"), false).html;
+    expect(lazy).toMatch(/<img [^>]*width="800" height="450" loading="lazy" decoding="async"\/>/);
+  });
+
+  it("圖說＝這一步的結果，另起一行資料來源註記：示範資料（demo）、合成資料（synthetic）、S0 不加（none）", () => {
+    const demo = decode(render("overview", 2, fake("overview-bridge"), false).html);
+    expect(demo).toContain(`<figcaption><span>${text(stepCopy("overview", "bridge").caption)}</span><span class="guide-shot-note">${g.common.demoCaption}</span></figcaption>`);
+    const synthetic = decode(render("products", 2, fake("products-pareto"), false).html);
+    expect(synthetic).toContain(`<span class="guide-shot-note">${g.common.syntheticCaption}</span>`);
+    const none = decode(render("start", 0, fake("start-load"), true).html);
+    expect(none).toContain(`<figcaption><span>${text(stepCopy("start", "load").caption)}</span></figcaption>`);
+  });
+
+  it("沒有媒體：只有 h2 與操作文字，沒有 figure", () => {
+    const { step, html } = render("diagnosis", 0, undefined, false);
+    expect(html).toContain(`<li id="${step.key}" class="guide-step" data-testid="guide-step-diagnosis-${step.key}">`);
+    expect(html).not.toContain("<figure");
+    expect(html).not.toContain("<img");
+  });
+});
+
 // ---------------------------------------------------------------- import 邊界
 
 const SRC = resolve("src");
@@ -148,13 +396,13 @@ const listTs = (dir: string) => readdirSync(resolve(dir), { recursive: true, enc
 describe("V41-1 import 邊界（PRD §3.1、§3.10）", () => {
   const guideFiles = [...listTs("src/app/guide"), ...listTs("src/components/guide")];
 
-  it("說明頁的檔案：src/app/guide 的 layout、page、metadata 與 src/components/guide 的元件", () => {
-    expect(guideFiles).toEqual(expect.arrayContaining(["src/app/guide/layout.tsx", "src/app/guide/page.tsx", "src/app/guide/metadata.ts", "src/components/guide/guide-text.tsx", "src/components/guide/guide-card-list.tsx"]));
+  it("說明頁的檔案：src/app/guide 的 layout、page、metadata、[area]/page（V41-2a）與 src/components/guide 的元件", () => {
+    expect(guideFiles).toEqual(expect.arrayContaining(["src/app/guide/layout.tsx", "src/app/guide/page.tsx", "src/app/guide/metadata.ts", "src/app/guide/[area]/page.tsx", "src/components/guide/guide-text.tsx", "src/components/guide/guide-card-list.tsx", "src/components/guide/guide-area-ref.tsx", "src/components/guide/guide-step.tsx", "src/components/guide/guide-toc.tsx"]));
   });
 
   it("說明頁的模組圖不含 dashboard、圖表元件、recharts、pptxgenjs、xlsx，也沒有任何 \"use client\" 模組", () => {
     const { files, packages } = graph(guideFiles);
-    expect(files).toEqual(expect.arrayContaining(["src/i18n/guide.zh-TW.ts", "src/application/guide.ts"]));
+    expect(files).toEqual(expect.arrayContaining(["src/i18n/guide.zh-TW.ts", "src/application/guide.ts", "src/application/guide-media.json"]));
     expect(files.filter(file => file === "src/components/dashboard.tsx" || file.startsWith("src/components/charts/"))).toEqual([]);
     expect([...packages].filter(pkg => ["recharts", "pptxgenjs", "xlsx"].includes(pkg))).toEqual([]);
     expect(files.filter(file => /\.tsx?$/.test(file) && isClientModule(resolve(file)))).toEqual([]);

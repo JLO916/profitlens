@@ -3114,3 +3114,30 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 .guide-footer { padding: var(--space-4) var(--gutter) var(--space-5); background: var(--bg-surface); border-top: var(--border-w) solid var(--border-subtle); }
 .guide-footer-inner { display: grid; gap: var(--space-1); max-width: 760px; margin: 0 auto; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-tertiary); }
 /* ── V41-1 說明頁錨點結束 ── */
+/* ── V41-2a 功能區頁（.guide-*；docs/revamp-v4.1/01_PRD.md §3.3、§3.5、§3.6）：/guide/{area} 的麵包屑、摘要、步驟、截圖與圖說、要注意、下一步 ── */
+/* 沿用 V41-1 的閱讀欄（.guide-main 最寬 760px）、.guide-toc、.guide-section、.guide-link；只用既有 token 與字級（不增加字級、圓角種類，不寫色碼）。
+   截圖最寬 100%、高度依 width／height 屬性的比例（載入前就保留位置，CLS 0）；390 也沒有橫向捲動。步驟錨點（#{stepKey}）留 scroll-margin-top。 */
+.guide-breadcrumb ol { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); margin: 0 0 var(--space-3); padding: 0; list-style: none; font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+.guide-breadcrumb li + li::before { content: "/" / ""; margin-right: var(--space-2); color: var(--text-tertiary); }
+/* h1 下方的「這頁回答什麼」「開始前」：欄名次要色、內容一般字級。 */
+.guide-summary { display: grid; gap: var(--space-1); margin: var(--space-4) 0 0; }
+.guide-summary dt { font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.guide-summary dd { margin: 0; }
+.guide-summary dd + dt { margin-top: var(--space-3); }
+/* 步驟：有序清單顯示編號（與 h2 同字級），每一步 h2＋操作文字＋截圖。 */
+.guide-area-steps { display: grid; gap: var(--space-6); margin: var(--space-6) 0 0; padding-left: var(--space-5); list-style: decimal; }
+.guide-area-steps > li { min-width: 0; scroll-margin-top: var(--space-4); }
+.guide-area-steps > li::marker { font-size: var(--text-20); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.guide-step h2 { margin-bottom: var(--space-2); font-size: var(--text-20); line-height: var(--leading-20); }
+/* 截圖：外框＋圓角的原尺寸連結（寬度跟圖走、最寬 100%），圖說在下方，資料來源註記另起一行。 */
+.guide-shot { margin: var(--space-3) 0 0; }
+.guide-shot-link { display: block; width: fit-content; max-width: 100%; overflow: hidden; background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); }
+.guide-shot-link:hover { border-color: var(--accent-border); }
+.guide-shot img { display: block; max-width: 100%; height: auto; }
+.guide-shot figcaption { margin-top: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+.guide-shot-note { display: block; margin-top: var(--space-1); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-tertiary); }
+/* 要注意（≤ 3 點）與下一步（功能區連結＋開啟工作台）。 */
+.guide-notes { display: grid; gap: var(--space-2); margin: 0; padding-left: var(--space-5); list-style: disc; }
+.guide-note-link { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); margin-left: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+.guide-next { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0; padding: 0; list-style: none; }
+/* ── V41-2a 功能區頁錨點結束 ── */
