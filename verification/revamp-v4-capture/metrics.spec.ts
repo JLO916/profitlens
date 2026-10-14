@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
+import { guideLabels } from "../../src/i18n/guide.zh-TW";
 import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type SevenPage } from "./shared";
 
 // V4-0a 第 9 項：PRD §2.2 B 的 v3.0.0 基準量測（metrics.spec v4；量法沿用 verification/revamp-v3-capture/metrics.spec.ts）。
@@ -27,6 +28,9 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 //   `/` 的 First Load JS（與 B5 同一個值）對 V41-0 實測的差（V41-1 起門檻＝V41-0 實測＋1,024，常數 V41_HOME_FIRST_LOAD_BASELINE）；
 //   404 頁的 First Load JS（請求一個不存在的網址，量回應 HTML 引用的腳本）＝說明頁的「框架基準」（V41-1 起說明頁 ≤ 框架基準＋5,120）。
 //   v4.1 執行時一定要設 METRICS_OUT、FIRST_LOAD_MODULES_OUT 指到 verification/revamp-v41/V41-{n}/（不設時沿用 v4 的預設位置 verification/revamp-v4/${CAPTURE_BATCH}/）。
+// V41-1 起硬斷言（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項與「驗收重點」B1、B2；01_PRD.md §3.7、§3.10）：
+//   `/` 的 First Load JS ≤ V41_HOME_FIRST_LOAD_BASELINE＋1,024；`/` 首載 chunk 中 GUIDE_SENTINELS（只出現在 guideLabels 的字串）出現 0 次（說明文字不進工作台首載，D-V41-12＝A'）；
+//   /guide 的 First Load JS（量法同 404 框架基準）≤ V41_FRAMEWORK_BASELINE＋5,120，而且不含圖表、匯出程式與工作台的字串（GUIDE_FORBIDDEN）。
 // 執行 desktop（1440×1000）、laptop（1280×900）、mobile（390×844）三個 project；tablet 略過。所有位置是文件座標（已捲回頂端），單位 CSS px，取到 0.1。
 const batch = process.env.CAPTURE_BATCH ?? "V4-0a";
 const OUT = resolve(process.env.METRICS_OUT ?? `verification/revamp-v4/${batch}/metrics.json`);
@@ -99,9 +103,31 @@ const V41_HOME_FIRST_LOAD_BASELINE = 519_427;
 const V41_HOME_FIRST_LOAD_ALLOWANCE = 1_024;
 /** V41-0：說明頁的「框架基準」量的是這個不存在的網址（404 頁，Next 預設的找不到頁面）回應 HTML 所引用的腳本。 */
 const NOT_FOUND_PATH = "/v41-framework-baseline-404";
+/**
+ * V41-1：框架基準的實測值（verification/revamp-v41/V41-0/metrics.json 的 v41.frameworkBaseline.gzipBytes：131,465 bytes gzip，4 個 modern 腳本）。
+ * 說明頁（/guide，V41-2a 起 /guide/{area}）的 First Load ≤ 這個值＋V41_GUIDE_FIRST_LOAD_ALLOWANCE（06_BATCHES V41-1 驗收重點 B2）。
+ */
+const V41_FRAMEWORK_BASELINE = 131_465;
+const V41_GUIDE_FIRST_LOAD_ALLOWANCE = 5_120;
+/**
+ * V41-1（PRD §3.10「首載與 import 邊界」）：只出現在 guideLabels 的字串（說明首頁的 h1、「為什麼做這套服務」的第一句）。比照 SPLIT_SENTINELS 在 `/` 的首載 chunk 計數，必須為 0：
+ * 出現就表示說明文字被打包進工作台首載（任何 "use client" 模組 import 了 @/i18n/guide*；tests/guide-routes.test.tsx 另從原始碼檢查）。
+ * 這些字串不可以出現在 labels.zh-TW.ts（B5 測試裡斷言），否則計數會把工作台自己的字串算進來。
+ */
+const GUIDE_SENTINELS = [guideLabels.guide.hub.title, guideLabels.guide.why.lead] as const;
+/**
+ * 對照組：labels.zh-TW.ts 的入口字串（shell.guideV41.homeHint）整份進 `/` 首載，計數必須 > 0——證明 chunk 保留中文原字（沒有轉成 \uXXXX），GUIDE_SENTINELS 為 0 才有意義。
+ */
+const GUIDE_SENTINEL_CONTROL = labels.shell.guideV41.homeHint;
+/** V41-1：工作台首載才有的 testid（殼層的底部分頁列、總覽的 KPI 帶）；說明頁的腳本必須為 0。 */
+const WORKBENCH_SENTINELS = ['"mobile-tabbar"', '"kpi-band"'] as const;
+/** V41-1：說明頁的首載 chunk 必須為 0 的字串：Recharts 的圖表元件名（FORBIDDEN_SYMBOLS、RECORDED_SYMBOLS）、隨頁載入的面板與 SheetJS、pptxgenjs（SPLIT_SENTINELS）、工作台殼層（WORKBENCH_SENTINELS）。 */
+const GUIDE_FORBIDDEN = [...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...SPLIT_SENTINELS, ...WORKBENCH_SENTINELS] as const;
+/** V41-1：說明首頁的路徑。 */
+const GUIDE_PATH = "/guide";
 
 type ScriptFile = { src: string; nomodule: boolean; bytes: number; gzip: number; symbols: Record<string, number> };
-/** 頁面 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重），逐檔下載並量未壓縮與 gzip 大小、各符號的出現次數（B5 與 V41-0 框架基準共用）。 */
+/** 頁面 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重），逐檔下載並量未壓縮與 gzip 大小、各符號的出現次數（B5、V41-0 框架基準與 V41-1 說明頁共用）。 */
 async function firstLoadScripts(request: APIRequestContext, html: string): Promise<ScriptFile[]> {
   const tags = [...html.matchAll(/<script([^>]*)\ssrc="([^"]+)"([^>]*)>/g)].map(match => ({ src: match[2], nomodule: /\snoModule|\snomodule/i.test(`${match[1]} ${match[3]}`) })).filter(tag => tag.src.includes("/_next/static/"));
   const sources = [...new Map(tags.map(tag => [tag.src, tag])).values()];
@@ -111,7 +137,7 @@ async function firstLoadScripts(request: APIRequestContext, html: string): Promi
   for (const { src, nomodule } of sources) {
     const body = await (await request.get(src)).body();
     const text = body.toString("utf8");
-    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...SPLIT_SENTINELS].map(symbol => [symbol, count(text, symbol)])) });
+    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...SPLIT_SENTINELS, ...WORKBENCH_SENTINELS, ...GUIDE_SENTINELS, GUIDE_SENTINEL_CONTROL].map(symbol => [symbol, count(text, symbol)])) });
   }
   return files;
 }
@@ -349,8 +375,19 @@ test("B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首�
   expect.soft(sum("gzip", modern), `B5 First Load JS gzip ≤ ${B5_GZIP_MAX}`).toBeLessThanOrEqual(B5_GZIP_MAX);
   for (const symbol of FORBIDDEN_SYMBOLS) expect.soft(forbidden[symbol], `B5 首載 chunk 的 ${symbol} 必須為 0`).toBe(0);
   for (const symbol of SPLIT_SENTINELS) expect.soft(split[symbol], `V4-3c 首載 chunk 不得含隨頁載入的面板或匯出程式（${symbol} 必須為 0）`).toBe(0);
-  // V41-0：`/` 的 First Load 對 V41-0 實測的差，只記錄（V41-1 起斷言 ≤ V41_HOME_FIRST_LOAD_BASELINE＋V41_HOME_FIRST_LOAD_ALLOWANCE）。
-  await record(["v41", "homeFirstLoad"], { gzipBytes: sum("gzip", modern), v41_0Baseline: V41_HOME_FIRST_LOAD_BASELINE, allowance: V41_HOME_FIRST_LOAD_ALLOWANCE, maxFromV41_1: V41_HOME_FIRST_LOAD_BASELINE + V41_HOME_FIRST_LOAD_ALLOWANCE, deltaFromV41_0: sum("gzip", modern) - V41_HOME_FIRST_LOAD_BASELINE, asserted: false, note: "V41-0 只記錄；V41-1 起門檻＝V41-0 實測＋1,024（docs/revamp-v4.1/06_BATCHES.md 護欄表）。口徑同 firstLoadJs.gzipBytes" });
+  // V41-0：`/` 的 First Load 對 V41-0 實測的差；V41-1 起斷言 ≤ V41_HOME_FIRST_LOAD_BASELINE＋V41_HOME_FIRST_LOAD_ALLOWANCE（06_BATCHES V41-1 驗收重點 B1）。
+  await record(["v41", "homeFirstLoad"], { gzipBytes: sum("gzip", modern), v41_0Baseline: V41_HOME_FIRST_LOAD_BASELINE, allowance: V41_HOME_FIRST_LOAD_ALLOWANCE, maxFromV41_1: V41_HOME_FIRST_LOAD_BASELINE + V41_HOME_FIRST_LOAD_ALLOWANCE, deltaFromV41_0: sum("gzip", modern) - V41_HOME_FIRST_LOAD_BASELINE, asserted: true, note: "V41-0 只記錄；V41-1 起斷言 ≤ V41-0 實測＋1,024（docs/revamp-v4.1/06_BATCHES.md 護欄表）。口徑同 firstLoadJs.gzipBytes" });
+  expect.soft(sum("gzip", modern), `V41-1 B1：/ 的 First Load JS gzip ≤ V41-0 實測 ${V41_HOME_FIRST_LOAD_BASELINE}＋${V41_HOME_FIRST_LOAD_ALLOWANCE}`).toBeLessThanOrEqual(V41_HOME_FIRST_LOAD_BASELINE + V41_HOME_FIRST_LOAD_ALLOWANCE);
+  // V41-1：GUIDE_SENTINELS 在 `/` 首載 chunk 出現 0 次；對照組（labels 的入口字串）> 0；GUIDE_SENTINELS 不在 labels.zh-TW.ts（否則計數混進工作台自己的字串）。
+  const labelsSource = await readFile(resolve("src/i18n/labels.zh-TW.ts"), "utf8");
+  const guide = symbolTotals(modern, GUIDE_SENTINELS);
+  const control = symbolTotals(modern, [GUIDE_SENTINEL_CONTROL])[GUIDE_SENTINEL_CONTROL];
+  await record(["v41", "guideSentinels"], { sentinels: guide, control: { [GUIDE_SENTINEL_CONTROL]: control }, inLabelsSource: Object.fromEntries(GUIDE_SENTINELS.map(symbol => [symbol, labelsSource.includes(symbol)])), asserted: true, note: "V41-1 起斷言：只出現在 guideLabels 的字串在 / 首載 chunk（modern）出現 0 次；對照組 shell.guideV41.homeHint（labels.zh-TW.ts，整份進首載）> 0，證明 chunk 保留中文原字。口徑同 firstLoadJs 的符號計數" });
+  for (const symbol of GUIDE_SENTINELS) {
+    expect(labelsSource.includes(symbol), `GUIDE_SENTINELS「${symbol}」不可出現在 src/i18n/labels.zh-TW.ts`).toBe(false);
+    expect.soft(guide[symbol], `V41-1 B1：/ 首載 chunk 不得含說明頁文字（${symbol} 必須為 0）`).toBe(0);
+  }
+  expect.soft(control, `V41-1：對照組「${GUIDE_SENTINEL_CONTROL}」在 / 首載 chunk 出現 > 0（chunk 保留中文原字）`).toBeGreaterThan(0);
 });
 
 test("V41-0 框架基準：404 頁的 First Load JS（不存在的網址回應 HTML 所引用的 /_next/static 腳本）", async ({ request }, testInfo) => {
@@ -368,4 +405,25 @@ test("V41-0 框架基準：404 頁的 First Load JS（不存在的網址回應 H
   modules.frameworkBaseline = { path: NOT_FOUND_PATH, status: response.status(), method, totals: { modernScripts: modern.length, modernGzipBytes: sum("gzip", modern), allScripts: files.length, allGzipBytes: sum("gzip") }, chunks };
   await mkdir(dirname(MODULES_OUT), { recursive: true });
   await writeFile(MODULES_OUT, `${JSON.stringify(modules, null, 2)}\n`);
+});
+
+test("V41-1 說明首頁 /guide 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串", async ({ request }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "與尺寸無關");
+  const response = await request.get(GUIDE_PATH);
+  expect(response.status()).toBe(200);
+  const files = await firstLoadScripts(request, await response.text());
+  const modern = files.filter(file => !file.nomodule);
+  const sum = (key: "bytes" | "gzip", list = files) => list.reduce((total, file) => total + file[key], 0);
+  const forbidden = Object.fromEntries(GUIDE_FORBIDDEN.map(symbol => [symbol, modern.reduce((total, file) => total + file.symbols[symbol], 0)]));
+  const max = V41_FRAMEWORK_BASELINE + V41_GUIDE_FIRST_LOAD_ALLOWANCE;
+  const method = `GET ${GUIDE_PATH}（狀態 200）的 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重）；口徑同 v41.frameworkBaseline（主數字排除 nomodule；gzip＝Node zlib gzipSync 預設等級；符號＝子字串計數）`;
+  const chunks = files.map(({ src, nomodule, bytes, gzip }) => ({ file: src.split("/").pop(), src, nomodule, bytes, gzip }));
+  await record(["v41", "guideFirstLoad"], { path: GUIDE_PATH, status: response.status(), scripts: modern.length, bytes: sum("bytes", modern), gzipBytes: sum("gzip", modern), gzipKiB: round(sum("gzip", modern) / 1024), frameworkBaseline: V41_FRAMEWORK_BASELINE, allowance: V41_GUIDE_FIRST_LOAD_ALLOWANCE, max, deltaFromFrameworkBaseline: sum("gzip", modern) - V41_FRAMEWORK_BASELINE, forbiddenSymbols: forbidden, allScripts: { scripts: files.length, bytes: sum("bytes"), gzipBytes: sum("gzip") }, files: chunks, asserted: true, note: "V41-1 起斷言：說明首頁 ≤ 框架基準（V41-0 實測 131,465）＋5,120，首載 chunk 不含 Recharts 圖表元件名、隨頁載入的面板、SheetJS、pptxgenjs 與工作台殼層的字串（GUIDE_FORBIDDEN 皆為 0）", method });
+  let modules: Record<string, unknown> = {};
+  try { modules = JSON.parse(await readFile(MODULES_OUT, "utf8")); } catch { modules = {}; }
+  modules.guideFirstLoad = { path: GUIDE_PATH, status: response.status(), method, totals: { modernScripts: modern.length, modernGzipBytes: sum("gzip", modern), max, allScripts: files.length, allGzipBytes: sum("gzip") }, forbiddenSymbols: forbidden, chunks };
+  await mkdir(dirname(MODULES_OUT), { recursive: true });
+  await writeFile(MODULES_OUT, `${JSON.stringify(modules, null, 2)}\n`);
+  expect.soft(sum("gzip", modern), `V41-1 B2：/guide 的 First Load JS gzip ≤ 框架基準 ${V41_FRAMEWORK_BASELINE}＋${V41_GUIDE_FIRST_LOAD_ALLOWANCE}`).toBeLessThanOrEqual(max);
+  for (const symbol of GUIDE_FORBIDDEN) expect.soft(forbidden[symbol], `V41-1 B2：/guide 的首載 chunk 不得含 ${symbol}（必須為 0）`).toBe(0);
 });

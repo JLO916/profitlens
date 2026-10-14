@@ -16,6 +16,10 @@ import { FIXED_NOW, calculateKeepPreset, evidenceDrawer, goTo, loadDemo, navigat
 //      （三格 kpi-target-*：淨營收與扣廣告後貢獻達成、商品毛利落後，C18 細條兩種狀態都在畫面上）。
 // 10–13 都帶 stylePath（shared.ts 的 NO_OVERLAY_STYLE，執行時寫到 test-results 底下）：sticky 的頂欄、期間列、精靈底部動作列與手機底部分頁列不疊在截圖範圍內，版面位置不變。
 // 01–09、10–11、12、13 分成四個測試（各自全新的瀏覽器狀態）：10–13 的操作不會影響 01–09 的畫面。
+// V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項；01_PRD.md §3.10「畫面基準」）：再加兩個畫面（視窗截圖 × 4 尺寸），共 60 張：
+//   14 首頁空狀態：固定時鐘（同 12）開 /，按鈕列下方一行「使用說明」入口（D-V41-5）在畫面上；不帶 stylePath（同 01 的視窗截圖）。
+//   15 說明首頁首屏：固定時鐘開 /guide（伺服器元件的靜態頁，沒有工作台殼層）。
+// 14、15 也各自是獨立的測試。
 // 基準位置：verification/revamp-v4/${CAPTURE_BATCH}/snapshots/{project}/{名稱}.png（見 verification/revamp-v4.capture.config.ts）。
 // 用 expect.soft：一張不同不會擋住後面幾張，報告一次列出全部差異。
 const top = (page: Page) => page.evaluate(() => window.scrollTo(0, 0));
@@ -142,6 +146,30 @@ test("V4-0a 畫面基準 13 KPI 帶（讀入 targets.csv，達成與落後兩種
   await expect(band.getByTestId("kpi-target-gross_profit").locator(".kpi-bullet")).toHaveClass(/is-behind/);
   await settle(page);
   await expect.soft(band).toHaveScreenshot("13-kpi-band.png", { stylePath: await noOverlayStylePath() });
+
+  expect(errors, `${errors.length} console／page errors`).toEqual([]);
+});
+
+test("V41-1 畫面基準 14 首頁空狀態（含「使用說明」入口）", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.clock.setFixedTime(FIXED_NOW);
+  await page.goto("/");
+  await expect(page.getByTestId("empty-state")).toBeVisible();
+  await expect(page.getByTestId("guide-entry-home")).toHaveText(`${labels.shell.guideV41.homeHint}${labels.shell.guideV41.newTab}`);
+  await settle(page);
+  await expect.soft(page).toHaveScreenshot("14-home-empty.png");
+
+  expect(errors, `${errors.length} console／page errors`).toEqual([]);
+});
+
+test("V41-1 畫面基準 15 說明首頁首屏（/guide）", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.clock.setFixedTime(FIXED_NOW);
+  await page.goto("/guide");
+  await expect(page.getByTestId("guide-hub")).toBeVisible();
+  await expect(page.getByTestId("guide-toc")).toBeVisible();
+  await settle(page);
+  await expect.soft(page).toHaveScreenshot("15-guide-hub.png");
 
   expect(errors, `${errors.length} console／page errors`).toEqual([]);
 });

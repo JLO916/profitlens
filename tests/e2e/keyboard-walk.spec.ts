@@ -1,6 +1,8 @@
 // V3-10 上線檢查（06_BATCHES V3-10「四尺寸走查與鍵盤走查」；docs/revamp/08_RELAUNCH.md §4 第 6 條、PRD §2.3 B「內容前的可見控制項數」、§11.1 鍵盤、D-V3-27 待拍板）：七頁 Tab 步數、Esc 回焦、焦點可見、沒有焦點陷阱。
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
+import { guideLabels } from "../../src/i18n/guide.zh-TW";
+import { resolveUiRefs } from "../../src/application/guide";
 import { closeTopbarMore, openTopbarMore } from "./replacement-helpers";
 import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverlay, kpiLink, loadDemo, pageName, writeLaunchJson, type FocusStop, type LaunchPage } from "./launch-helpers-v310";
 
@@ -20,6 +22,7 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V4-5：試算頁三個里程碑（基準、範本、「試算」按鈕）的 Tab 數不晚於 V4-0a（G15 資料表 summary 在方案欄之後，G16 在收合的 <details> 內）。
  * V4-7a：資料來源頁加「涵蓋時間軸資料表 summary」里程碑（G20 在 data-issues 之上），不晚於 V4-0a；「問題表或範圍列表」以 V4-7a 實測為新基準（見 V4_7A_DATA_ISSUES_TABS；D-V4-52＝A）。
  * V4-8b：總覽、健檢、試算、會議補「第一張圖的資料表 summary」里程碑（見 V4_8B_FIRST_TABLE_TABS）；總覽、健檢、待辦、會議的主要里程碑不晚於 V4-0a，總覽 KPI 前可聚焦 ≤ 10。
+ * V41-1：另加說明首頁 /guide 的走查（檔尾的獨立測試；七頁的斷言不變），結果寫在「{專案}-guide」鍵。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -389,5 +392,87 @@ test("V4-1 鍵盤走查（768）：總覽沒有 aria-hidden 內的 Tab 停留點
   expect(overview.lostFocus).toBe(0);
   expect(overview.leftMainAt).not.toBeNull();
   for (const milestone of overview.milestones) expect(milestone.tabs, `Tab 要能到達「${milestone.name}」`).not.toBeNull();
+  expect(errors).toEqual([]);
+});
+
+/**
+ * V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項「keyboard-walk 加 /guide」；01_PRD.md §3.6）：說明首頁 /guide 的鍵盤走查，1440 與 390 各一次。
+ * 里程碑：跳至主要內容是第一個 Tab 停留點、按 Enter 後焦點進到 main；說明首頁的「開啟工作台」（guide.hub.openApp）；本頁目錄第一項。
+ * 從 main 一路按 Tab 到文件結尾：每個停留點焦點可見、不在 [aria-hidden=true] 內、不回到停過的元素、焦點不中途掉回 body。
+ * 結果寫進 KEYBOARD_WALK_OUT 的「{專案}-guide」鍵（不蓋掉同一專案七頁走查的紀錄）。
+ */
+test("V41-1 鍵盤走查（/guide）：跳至主要內容、開啟工作台、目錄第一項；焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點", async ({ page }, testInfo) => {
+  test.skip(!["desktop", "mobile"].includes(testInfo.project.name), "鍵盤走查只跑 1440（desktop）與 390（mobile）");
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(`pageerror:${error.message}`));
+  await hideDevOverlay(page);
+  await page.goto("/guide");
+  await expect(page.getByTestId("guide-hub")).toBeVisible();
+  // 「開啟工作台」以可及名稱（guideLabels）找到後標成屬性給選擇器用（只加在測試的瀏覽器內）。
+  await page.getByTestId("guide-hub").getByRole("link", { name: resolveUiRefs(guideLabels.guide.hub.openApp, labels), exact: true }).evaluate(el => el.setAttribute("data-v41-open-app", ""));
+  const milestones = [{ name: "開啟工作台", selector: "[data-v41-open-app]" }, { name: "本頁目錄第一項", selector: "[data-testid='guide-toc'] a[href]" }].map(item => ({ ...item, tabs: null as number | null, reachedBy: null as Position | null }));
+
+  // 1. 第一個 Tab 停留點是跳至主要內容；按 Enter 後焦點進到 main。
+  await page.keyboard.press("Tab");
+  const skip = await activeStop(page);
+  const skipHiddenBy = await ariaHiddenAncestor(page);
+  const skipIsLink = await page.evaluate(() => document.activeElement?.matches("a.skip-link[href='#main-content']") ?? false);
+  await page.keyboard.press("Enter");
+  const afterSkip = await page.evaluate(() => ({ id: document.activeElement?.id ?? null, inMain: !!document.activeElement?.closest("main") }));
+
+  // 2. 從 main 一路按 Tab 到文件結尾（說明頁的頁尾沒有連結）。
+  const stops: string[] = [], invisibleStops: string[] = [], repeatedStops: string[] = [], ariaHiddenStops: string[] = [];
+  if (skipHiddenBy) ariaHiddenStops.push(`0. ${describe(skip)}（${skipHiddenBy}）`);
+  const seen = new Set<string>();
+  let lostFocus = 0, endedAt: number | null = null, endedBy: string | null = null;
+  for (let tab = 1; tab <= MAX_TABS; tab++) {
+    await page.keyboard.press("Tab");
+    const stop = await activeStop(page);
+    if (stop.isBody) {
+      const remaining = await page.evaluate(() => {
+        const last = document.querySelector("[data-v310-last]");
+        if (!last) return -1;
+        return [...document.querySelectorAll<HTMLElement>("a[href],button,input,select,textarea,summary,[tabindex]")]
+          .filter(el => el.tabIndex >= 0 && !(el as HTMLButtonElement).disabled && el.checkVisibility() && !last.contains(el) && (last.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)).length;
+      });
+      if (remaining === 0) { endedAt = tab; endedBy = "body（文件結尾，焦點交給瀏覽器）"; }
+      else { lostFocus++; stops.push(`${tab}. body（之後還有 ${remaining} 個可 Tab 的元素）`); }
+      break;
+    }
+    const hiddenBy = await ariaHiddenAncestor(page);
+    if (hiddenBy) ariaHiddenStops.push(`${tab}. ${describe(stop)}（${hiddenBy}）`);
+    if (!stop.inMain) { endedAt = tab; endedBy = describe(stop); break; }
+    stops.push(`${tab}. ${describe(stop)}`);
+    if (!stop.focusVisible) invisibleStops.push(`${tab}. ${describe(stop)}（${stop.focusRing}）`);
+    if (seen.has(stop.key)) repeatedStops.push(`${tab}. ${describe(stop)}`);
+    seen.add(stop.key);
+    await page.evaluate(() => { document.querySelector("[data-v310-last]")?.removeAttribute("data-v310-last"); document.activeElement?.setAttribute("data-v310-last", ""); });
+    for (const item of milestones) {
+      if (item.tabs !== null) continue;
+      const position = await positionOf(page, item.selector);
+      if (position === "inside" || position === "after") { item.tabs = tab; item.reachedBy = position; }
+    }
+  }
+  const result = {
+    checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, path: "/guide",
+    skipLink: { firstStop: describe(skip), isSkipLink: skipIsLink, focusVisible: skip.focusVisible, focusAfterEnter: afterSkip },
+    milestones: milestones.map(({ name, tabs, reachedBy }) => ({ name, tabs, reachedBy })), stopsInMain: stops.length, endedAt, endedBy, stops, invisibleStops, repeatedStops, ariaHiddenStops, lostFocus, pageErrors: errors,
+    note: "V41-1：Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算",
+  };
+  const written = await writeLaunchJson("KEYBOARD_WALK_OUT", "keyboard-walk.json", testInfo, result, `${testInfo.project.name}-guide`);
+  testInfo.annotations.push({ type: "keyboard-walk", description: written });
+
+  expect(skipIsLink, "第一個 Tab 停留點是跳至主要內容").toBe(true);
+  expect(skip.name).toBe(labels.shell.sidebar.skipLink);
+  expect(skip.focusVisible, "跳至主要內容的焦點看得到").toBe(true);
+  expect(afterSkip, "按 Enter 後焦點移到 main#main-content").toEqual({ id: "main-content", inMain: true });
+  expect(invisibleStops, "每個停留點都要看得到焦點").toEqual([]);
+  expect(repeatedStops, "Tab 不可回到停過的元素（焦點陷阱）").toEqual([]);
+  expect(lostFocus, "Tab 不可讓焦點掉回 body").toBe(0);
+  expect(ariaHiddenStops, "任何 Tab 停留點都不在 [aria-hidden=true] 內").toEqual([]);
+  expect(endedAt, "一路按 Tab 最後會走到文件結尾（沒有困在頁內）").not.toBeNull();
+  for (const milestone of milestones) expect(milestone.tabs, `Tab 要能到達「${milestone.name}」`).not.toBeNull();
+  expect(milestones[0].tabs!, "「開啟工作台」在目錄第一項之前").toBeLessThan(milestones[1].tabs!);
   expect(errors).toEqual([]);
 });

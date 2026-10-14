@@ -71,10 +71,10 @@ export const printCalls = (page: Page) => page.evaluate(() => (window as unknown
 /**
  * 結果 JSON：有環境變數（例如 NETWORK_LOG_OUT）就合併寫到該路徑（同一檔以 Playwright 專案名為鍵，desktop 與 mobile 寫在同一份；
  * 舊的其他專案鍵保留），沒給就只寫到 test-results（testInfo.outputPath），平常跑 E2E 不會動到 verification/。回傳實際寫入的路徑。
+ * V41-1：key 預設是專案名；同一個專案有第二個測試要寫同一份檔時（keyboard-walk 的 /guide 走查）另給鍵（例如 desktop-guide），不蓋掉七頁走查的紀錄。
  */
-export async function writeLaunchJson(envName: string, fallbackName: string, testInfo: TestInfo, value: unknown): Promise<string> {
+export async function writeLaunchJson(envName: string, fallbackName: string, testInfo: TestInfo, value: unknown, key = testInfo.project.name): Promise<string> {
   const target = process.env[envName];
-  const key = testInfo.project.name;
   const path = target ? resolve(target) : testInfo.outputPath(fallbackName);
   let merged: Record<string, unknown> = {};
   if (target && existsSync(path)) {
