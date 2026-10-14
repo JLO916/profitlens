@@ -6,8 +6,8 @@ export interface GuideCard {
   area: string;
   href: string;
   title: string;
-  /** 一句「這頁回答什麼」；沒有時只顯示標題。 */
-  answer?: string;
+  /** 一句「這頁回答什麼」（guide.areas.{area}.answers）；沒有時只顯示標題。 */
+  answers?: string;
 }
 export interface GuideCardGroup {
   id: string;
@@ -22,7 +22,7 @@ export function GuideCardList({ groups }: { groups: readonly GuideCardGroup[] })
     {shown.map(group => <div key={group.id} className="guide-card-group">
       <h3>{group.title}</h3>
       <ul className="guide-cards">
-        {group.cards.map(card => <li key={card.area}><a className="guide-card" href={card.href}><span className="guide-card-title">{card.title}</span>{card.answer && <span className="guide-card-answer">{card.answer}</span>}</a></li>)}
+        {group.cards.map(card => <li key={card.area}><a className="guide-card" href={card.href}><span className="guide-card-title">{card.title}</span>{card.answers && <span className="guide-card-answer">{card.answers}</span>}</a></li>)}
       </ul>
     </div>)}
   </div>;

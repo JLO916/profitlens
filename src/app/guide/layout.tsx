@@ -1,8 +1,10 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- 說明頁刻意用 <a> 整頁載入工作台 /：next/link 會把用戶端路由元件帶進說明頁，頁面 JS 要維持只有框架（06_BATCHES V41-1 B2）。 */
 import type { ReactNode } from "react";
-import { labels } from "@/i18n";
+import { fill, labels } from "@/i18n";
 import { guideLabels } from "@/i18n/guide.zh-TW";
 import { analyticsEnabled } from "@/application/analytics";
+import type { GuideMediaManifest } from "@/application/guide";
+import guideMedia from "@/application/guide-media.json";
 import { ShellIcon } from "@/components/shell/shell-icon";
 
 // V41-1（D-V41-4＝A；docs/revamp-v4.1/01_PRD.md §3.1、§3.3、§3.6）：說明頁外框——跳至主要內容、品牌（連到工作台 /）、「開啟工作台」、頁尾。
@@ -11,6 +13,8 @@ import { ShellIcon } from "@/components/shell/shell-icon";
 export default function GuideLayout({ children }: { children: ReactNode }) {
   // D9＝B、D-V41-23：頁尾的使用分析揭露只在實際載入分析腳本時顯示（與 src/app/layout.tsx 同一判斷）。
   const analytics = analyticsEnabled({ VERCEL_ENV: process.env.VERCEL_ENV, NEXT_PUBLIC_DISABLE_ANALYTICS: process.env.NEXT_PUBLIC_DISABLE_ANALYTICS });
+  // V41-2a（PRD §3.3 第 7 項）：截圖更新日期取媒體清單的 updated（只有實際更新了媒體時才變）；還沒有媒體（null）時不顯示。
+  const mediaUpdated = (guideMedia as GuideMediaManifest).updated;
   return <div className="guide-shell">
     <a className="skip-link" href="#main-content">{labels.shell.sidebar.skipLink}</a>
     <header className="guide-header">
@@ -22,6 +26,7 @@ export default function GuideLayout({ children }: { children: ReactNode }) {
       <div className="guide-footer-inner">
         <p>{labels.shell.sidebar.sidebarNote.demo}</p>
         <p>{labels.shell.sidebar.sidebarNote.local}</p>
+        {mediaUpdated && <p>{fill(guideLabels.guide.common.mediaUpdated, { date: mediaUpdated })}</p>}
         {analytics && <p>{labels.relaunch.analyticsNote}</p>}
       </div>
     </footer>

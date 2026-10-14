@@ -50,8 +50,8 @@ export const GUIDE_AREA_STEPS: Readonly<Partial<Record<GuideAreaCode, readonly G
   products: [{ key: "variance", mediaId: "products-variance" }, { key: "table", mediaId: "products-table" }, { key: "pareto", mediaId: "products-pareto" }],
 };
 
-/** 已上線（有 /guide/{area} 頁面）的功能區，依 GUIDE_AREA_CODES 的順序。V41-1 是空的；V41-2a 頁面完成時加 start、import、overview、diagnosis、products。 */
-export const GUIDE_PUBLISHED_AREAS: readonly GuideAreaCode[] = [];
+/** 已上線（有 /guide/{area} 頁面）的功能區，依 GUIDE_AREA_CODES 的順序。V41-1 是空的；V41-2a 加 start、import、overview、diagnosis、products（V41-2b 加其餘 6 個）。 */
+export const GUIDE_PUBLISHED_AREAS: readonly GuideAreaCode[] = ["start", "import", "overview", "diagnosis", "products"];
 
 /**
  * 已有頁面的功能區（generateStaticParams、sitemap、說明首頁目錄都從這裡產生）。V41-1 是空陣列；V41-2a 加 start、import、overview、diagnosis、products，V41-2b 加其餘 6 個。
@@ -137,4 +137,47 @@ export function uiRefParts(text: string, labels: unknown): UiRefPart[] {
 /** 把 {ui:路徑} 全部換成 labels 字串（純文字；用於標題、alt、metadata 等不能有標記的地方）。路徑不存在或不是字串時丟錯。 */
 export function resolveUiRefs(text: string, labels: unknown): string {
   return uiRefParts(text, labels).map(part => part.text).join("");
+}
+
+// ── V41-2a 錨點：功能區頁（/guide/{area}）的資料——截圖的資料來源註記、「開始前」的文件連結、「要注意」的功能區連結、「下一步」（GUIDE_CONTENT.md §0、§2.1–2.5）。
+
+/** 截圖的資料來源註記（圖說後另起一行）：none＝不加（S0 首頁空狀態）、demo＝guide.common.demoCaption（S1、S3、S6–S8）、synthetic＝guide.common.syntheticCaption（S4、S5）。 */
+export type GuideDataNote = "none" | "demo" | "synthetic";
+/** 不是 demo 的截圖（mediaId → 註記）；沒列在這裡的都是 demo。start-load 是 S0；import-issues 是 S4（fixtures/errors/missing_ad_day）；products-pareto 是 S5（tests/fixtures/synthetic-4-channel，D-V41-21＝A）。 */
+export const GUIDE_MEDIA_DATA_NOTE: Readonly<Record<string, GuideDataNote>> = { "start-load": "none", "import-issues": "synthetic", "products-pareto": "synthetic" };
+/** 一張截圖的資料來源註記。 */
+export const guideDataNote = (mediaId: string): GuideDataNote => Object.hasOwn(GUIDE_MEDIA_DATA_NOTE, mediaId) ? GUIDE_MEDIA_DATA_NOTE[mediaId] : "demo";
+
+/** 「開始前」後附的文件連結（同網域、同分頁）：匯入資料頁連到訂單明細整理成每日資料的說明（public/docs/ORDER_AGGREGATION.md，與匯入精靈的 ORDER_AGGREGATION_DOC_URL 相同）。連結文字是 guide.areas.{area}.beforeLink。 */
+export const GUIDE_AREA_BEFORE_LINKS: Readonly<Partial<Record<GuideAreaCode, string>>> = { import: "/docs/ORDER_AGGREGATION.md" };
+
+/** 「要注意」第 note 點（guide.areas.{area}.notes 的索引）後附的功能區連結（GUIDE_CONTENT 的「（連到 …）」）；功能區頁還沒上線時只顯示標題文字。 */
+export const GUIDE_AREA_NOTE_LINKS: Readonly<Partial<Record<GuideAreaCode, readonly { note: number; area: GuideAreaCode }[]>>> = {
+  start: [{ note: 0, area: "export" }],
+  overview: [{ note: 0, area: "evidence" }],
+};
+
+/** 「下一步」的功能區（最多 2 個，GUIDE_CONTENT 各區的「下一步」）；最後另加「開啟工作台」。功能區頁還沒上線時只顯示標題文字、不放連結。 */
+export const GUIDE_AREA_NEXT: Readonly<Partial<Record<GuideAreaCode, readonly GuideAreaCode[]>>> = {
+  start: ["overview", "import"],
+  import: ["data", "overview"],
+  overview: ["diagnosis", "evidence"],
+  diagnosis: ["actions", "products"],
+  products: ["scenarios", "overview"],
+};
+
+/** src/application/guide-media.json 的一張媒體（只記內容欄位；PRD §3.5）：file 是 public/ 之下的路徑（guide/{area}/{mediaId}.webp），sha256 是基準 PNG 的雜湊。 */
+export interface GuideMediaEntry {
+  id: string;
+  file: string;
+  width: number;
+  height: number;
+  bytes: number;
+  sha256: string;
+  labels_hash: string;
+}
+/** 媒體清單：updated 是最後一次實際更新媒體的日期（YYYY-MM-DD，台北），還沒有媒體時是 null。 */
+export interface GuideMediaManifest {
+  updated: string | null;
+  media: readonly GuideMediaEntry[];
 }

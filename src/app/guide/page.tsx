@@ -1,8 +1,10 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- 說明頁刻意用 <a> 整頁載入工作台 /：next/link 會把用戶端路由元件帶進說明頁，頁面 JS 要維持只有框架（06_BATCHES V41-1 B2）。 */
 import { guideLabels } from "@/i18n/guide.zh-TW";
-import { GUIDE_AREA_GROUP, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_HUB_SECTIONS, GUIDE_QUICKSTART, GUIDE_UNIQUE, GUIDE_WHO, guideAreaHref, guideAreaPath, type GuideAreaCode } from "@/application/guide";
+import { GUIDE_AREA_GROUP, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_HUB_SECTIONS, GUIDE_QUICKSTART, GUIDE_UNIQUE, GUIDE_WHO, guideAreaHref, guideAreaPath } from "@/application/guide";
+import { GuideAreaRef } from "@/components/guide/guide-area-ref";
 import { GuideCardList, type GuideCardGroup } from "@/components/guide/guide-card-list";
 import { guideText } from "@/components/guide/guide-text";
+import { GuideToc } from "@/components/guide/guide-toc";
 import { guideMetadata, guidePageTitle } from "./metadata";
 
 // V41-1（docs/revamp-v4.1/01_PRD.md §3.3、GUIDE_CONTENT.md §1）：說明首頁 /guide——開頭、為什麼做這套服務、幫哪些人解決哪些問題、獨特性與代價、30 秒上手、功能區目錄。
@@ -11,20 +13,13 @@ const g = guideLabels.guide;
 
 export const metadata = guideMetadata({ title: guidePageTitle(guideText(g.hub.title)), description: guideText(g.hub.description), path: "/guide" });
 
-/** 功能區的連結（頁面已上線）或純文字（還沒上線）；文字是功能區標題。 */
-function AreaRef({ area, hash }: { area: GuideAreaCode; hash?: string }) {
-  const href = guideAreaHref(area, hash);
-  const title = guideText(g.areas[area].title);
-  return href ? <a className="guide-link" href={href}>{title}</a> : <span>{title}</span>;
-}
-
 export default function GuideHubPage() {
   const groups: GuideCardGroup[] = GUIDE_GROUPS.map(group => ({
     id: group,
     title: guideText(g.groups[group]),
     cards: GUIDE_AREAS.filter(entry => GUIDE_AREA_GROUP[entry.area] === group).map(entry => {
-      const area: { title: string; answer?: string } = g.areas[entry.area];
-      return { area: entry.area, href: guideAreaPath(entry.area), title: guideText(area.title), answer: area.answer === undefined ? undefined : guideText(area.answer) };
+      const area: { title: string; answers?: string } = g.areas[entry.area];
+      return { area: entry.area, href: guideAreaPath(entry.area), title: guideText(area.title), answers: area.answers === undefined ? undefined : guideText(area.answers) };
     }),
   }));
   const hasAreas = groups.some(group => group.cards.length > 0);
@@ -39,9 +34,7 @@ export default function GuideHubPage() {
         <a className="ui-btn ui-btn-secondary" href="#quickstart">{guideText(g.hub.startHere)}</a>
       </div>
     </div>
-    <nav className="guide-toc" aria-label={guideText(g.hub.tocAria)} data-testid="guide-toc">
-      <ol>{sections.map(id => <li key={id}><a className="guide-link" href={`#${id}`}>{guideText(g.sections[id])}</a></li>)}</ol>
-    </nav>
+    <GuideToc label={guideText(g.hub.tocAria)} items={sections.map(id => ({ id, title: guideText(g.sections[id]) }))} />
 
     <section id="why" className="guide-section" aria-labelledby="guide-why-title">
       <h2 id="guide-why-title">{guideText(g.sections.why)}</h2>
@@ -62,7 +55,7 @@ export default function GuideHubPage() {
               <dt>{guideText(g.who.fields.ask)}</dt><dd>{guideText(row.ask)}</dd>
               <dt>{guideText(g.who.fields.before)}</dt><dd>{guideText(row.before)}</dd>
               <dt>{guideText(g.who.fields.after)}</dt><dd>{guideText(row.after)}</dd>
-              <dt>{guideText(g.who.fields.start)}</dt><dd><ul className="guide-inline-list">{start.map(area => <li key={area}><AreaRef area={area} /></li>)}</ul></dd>
+              <dt>{guideText(g.who.fields.start)}</dt><dd><ul className="guide-inline-list">{start.map(area => <li key={area}><GuideAreaRef area={area} /></li>)}</ul></dd>
             </dl>
           </article>;
         })}
@@ -82,7 +75,7 @@ export default function GuideHubPage() {
           return <li key={item.key}>
             <h3>{guideText(copy.title)}</h3>
             <p>{guideText(copy.body)}</p>
-            <p className="guide-where"><span>{guideText(g.unique.where)}</span><AreaRef area={item.area} hash={"hash" in item ? item.hash : undefined} /></p>
+            <p className="guide-where"><span>{guideText(g.unique.where)}</span><GuideAreaRef area={item.area} hash={"hash" in item ? item.hash : undefined} /></p>
           </li>;
         })}
       </ol>
