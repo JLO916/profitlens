@@ -6,7 +6,7 @@ import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { labels } from "@/i18n";
 import { guideLabels } from "@/i18n/guide.zh-TW";
-import { GUIDE_AREA_BEFORE_LINKS, GUIDE_AREA_CODES, GUIDE_AREA_NEXT, GUIDE_AREA_NOTE_LINKS, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_PUBLISHED_AREAS, guideDataNote, resolveUiRefs, type GuideAreaCode, type GuideMediaEntry, type GuideMediaManifest } from "@/application/guide";
+import { GUIDE_AREA_BEFORE_AREAS, GUIDE_AREA_BEFORE_LINKS, GUIDE_AREA_CODES, GUIDE_AREA_GROUP, GUIDE_AREA_NEXT, GUIDE_AREA_NOTE_LINKS, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_PUBLISHED_AREAS, guideAreaHref, guideDataNote, resolveUiRefs, type GuideAreaCode, type GuideMediaEntry, type GuideMediaManifest } from "@/application/guide";
 import guideMedia from "@/application/guide-media.json";
 import { ORDER_AGGREGATION_DOC_URL } from "@/application/import-wizard";
 import GuideLayout from "@/app/guide/layout";
@@ -17,7 +17,8 @@ import { GuideStep } from "@/components/guide/guide-step";
 // V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項、01_PRD.md §3.1、§3.8、§3.10）：說明頁路由。
 // 說明首頁（外框＋頁面）以 react-dom/server SSR：h1 唯一、guide-hub／guide-toc、頁內錨點都有對應 id、沒有連到還沒上線的功能區頁（不產生 404 連結）；
 // metadata 由 guideMetadata 一次給齊（canonical、openGraph、twitter）；import 邊界：說明頁的模組圖不碰工作台與圖表模組、沒有 "use client"，
-// 任何 "use client" 模組也走不到說明頁的模組（說明文字不進工作台首載）。V41-2a 起每個功能區頁另加 SSR 與 metadata 斷言（本檔後半）。
+// 任何 "use client" 模組也走不到說明頁的模組（說明文字不進工作台首載）。V41-2a 起每個功能區頁另加 SSR 與 metadata 斷言（本檔後半）；V41-2b 起 11 區全部上線，
+// 說明首頁與功能區頁提到的功能區都是連結（不再有純文字），站內連結都指到存在的頁面、錨點或 public 下的檔案。
 
 const hub = () => renderToStaticMarkup(createElement(GuideLayout, null, createElement(GuideHubPage)));
 const decode = (text: string) => text.replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#x27;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
@@ -107,11 +108,13 @@ describe("V41-1 說明首頁 metadata（guideMetadata；PRD §3.8）", () => {
 // ---------------------------------------------------------------- V41-2a 功能區頁
 
 describe("V41-2a 功能區頁的資料（src/application/guide.ts、guideLabels）", () => {
-  it("已上線的是 start、import、overview、diagnosis、products；GUIDE_AREAS 依序帶 GUIDE_AREA_STEPS 的步驟（21 步）", () => {
-    expect(GUIDE_PUBLISHED_AREAS).toEqual(["start", "import", "overview", "diagnosis", "products"]);
+  it("V41-2b：11 區全部上線（依 GUIDE_AREA_CODES 的順序）；GUIDE_AREAS 依序帶 GUIDE_AREA_STEPS 的步驟（V41-2a 的 21 步＋V41-2b 的 23 步＝44 步）", () => {
+    expect(GUIDE_PUBLISHED_AREAS).toEqual([...GUIDE_AREA_CODES]);
     expect(GUIDE_AREAS.map(entry => entry.area)).toEqual([...GUIDE_PUBLISHED_AREAS]);
     for (const entry of GUIDE_AREAS) expect(entry.steps, entry.area).toEqual(GUIDE_AREA_STEPS[entry.area]);
-    expect(GUIDE_AREAS.flatMap(entry => entry.steps)).toHaveLength(21);
+    expect(GUIDE_AREAS.flatMap(entry => entry.steps)).toHaveLength(44);
+    expect(GUIDE_AREAS.filter(entry => ["scenarios", "actions", "meeting", "data", "evidence", "export"].includes(entry.area)).flatMap(entry => entry.steps)).toHaveLength(23);
+    for (const area of GUIDE_AREA_CODES) expect(guideAreaHref(area), area).toBe(`/guide/${area}`);
   });
 
   it.each(GUIDE_PUBLISHED_AREAS)("%s：answers、before、notes（1–3 點）齊全；steps 的鍵＝GUIDE_AREA_STEPS（同順序），每一步都有 title、body、alt、caption", area => {
@@ -126,6 +129,11 @@ describe("V41-2a 功能區頁的資料（src/application/guide.ts、guideLabels�
   });
 
   it("下一步最多 2 個功能區、不指回自己；要注意的連結指到存在的那一點；開始前的文件連結＝匯入精靈的整理工具說明（public 下有檔）", () => {
+    // GUIDE_CONTENT 各區的「下一步」（V41-2a 前 5 區、V41-2b 後 6 區）。
+    expect(GUIDE_AREA_NEXT).toEqual({
+      start: ["overview", "import"], import: ["data", "overview"], overview: ["diagnosis", "evidence"], diagnosis: ["actions", "products"], products: ["scenarios", "overview"],
+      scenarios: ["meeting", "actions"], actions: ["meeting"], meeting: ["export", "actions"], data: ["import", "evidence"], evidence: ["overview", "data"], export: ["meeting", "start"],
+    });
     for (const area of GUIDE_PUBLISHED_AREAS) {
       const next = GUIDE_AREA_NEXT[area] ?? [];
       expect(next.length, area).toBeGreaterThanOrEqual(1);
@@ -139,9 +147,10 @@ describe("V41-2a 功能區頁的資料（src/application/guide.ts、guideLabels�
     expect(g.areas.import.beforeLink).toBe("{ui:importWizard.orderLevelLink}");
   });
 
-  it("截圖的資料來源註記：S0 的 start-load 不加；S3、S4、S5 的匯入精靈 5 張與 products-pareto 是合成資料（D-V41-21＝A）；其餘是示範資料", () => {
+  it("截圖的資料來源註記：S0 的 start-load 不加；S3、S4、S5 的匯入精靈 5 張、products-pareto 與 S4 的 data-coverage、data-issues 是合成資料（D-V41-21＝A）；其餘是示範資料（含 S6–S8）", () => {
     const notes = Object.fromEntries(GUIDE_AREAS.flatMap(entry => entry.steps).map(step => [step.mediaId, guideDataNote(step.mediaId)]));
-    expect(Object.entries(notes).filter(([, note]) => note !== "demo")).toEqual([["start-load", "none"], ["import-files", "synthetic"], ["import-mapping", "synthetic"], ["import-basis", "synthetic"], ["import-review", "synthetic"], ["import-issues", "synthetic"], ["products-pareto", "synthetic"]]);
+    expect(Object.entries(notes).filter(([, note]) => note !== "demo")).toEqual([["start-load", "none"], ["import-files", "synthetic"], ["import-mapping", "synthetic"], ["import-basis", "synthetic"], ["import-review", "synthetic"], ["import-issues", "synthetic"], ["products-pareto", "synthetic"], ["data-coverage", "synthetic"], ["data-issues", "synthetic"]]);
+    expect(Object.values(notes).filter(note => note === "demo")).toHaveLength(44 - 9);
     expect(g.common.demoCaption).toBe("畫面為示範資料（虛構）");
     expect(g.common.syntheticCaption).toBe("畫面為虛構的合成資料");
   });
@@ -256,7 +265,7 @@ describe.each(GUIDE_AREAS.map(entry => [entry.area, entry] as const))("V41-2a �
 });
 
 describe("V41-2a 說明頁之間的連結（說明首頁＋已上線的功能區頁）", () => {
-  it("站內連結只有 /、/guide、已上線的 /guide/{area}（#錨點要在該頁存在，例如 /guide/overview#bridge）、該頁步驟的截圖 /guide/{area}/{mediaId}.webp、/docs/ORDER_AGGREGATION.md；沒有外部連結", async () => {
+  it("站內連結只有 /、/guide、已上線的 /guide/{area}（#錨點要在該頁存在，例如 /guide/overview#bridge）、該頁步驟的截圖 /guide/{area}/{mediaId}.webp、/docs/ORDER_AGGREGATION.md（檔案都在 public 下）；沒有外部連結", async () => {
     const pages = new Map<string, string>([["/guide", hub()]]);
     for (const { area } of GUIDE_AREAS) pages.set(`/guide/${area}`, await areaHtml(area));
     const ids = new Map([...pages].map(([path, html]) => [path, idsOf(html)]));
@@ -266,7 +275,8 @@ describe("V41-2a 說明頁之間的連結（說明首頁＋已上線的功能區
       const shots = new Set(own?.steps.map(step => `/guide/${own.area}/${step.mediaId}.webp`) ?? []);
       for (const href of hrefsOf(html)) {
         if (href.startsWith("#")) { if (!ids.get(path)!.has(href.slice(1))) problems.push(`${path}: ${href}`); continue; }
-        if (href === "/" || (href === ORDER_AGGREGATION_DOC_URL && path === "/guide/import") || shots.has(href)) continue;
+        if (href === "/") continue;
+        if ((href === ORDER_AGGREGATION_DOC_URL && path === "/guide/import") || shots.has(href)) { if (!existsSync(resolve("public", href.slice(1)))) problems.push(`${path}: ${href}（public 下沒有這個檔）`); continue; }
         const [target, hash] = href.split("#");
         if (!ids.has(target)) { problems.push(`${path}: ${href}`); continue; }
         if (hash !== undefined && !ids.get(target)!.has(hash)) problems.push(`${path}: ${href}（${target} 沒有 #${hash}）`);
@@ -278,13 +288,20 @@ describe("V41-2a 說明頁之間的連結（說明首頁＋已上線的功能區
     expect(ids.get("/guide/overview")!.has("bridge")).toBe(true);
   });
 
-  it("說明首頁的功能區目錄（#areas）：已上線的 5 區各一張卡（連到 /guide/{area}，標題＋這頁回答什麼），依分組排列", () => {
+  it("說明首頁的功能區目錄（#areas）：11 區各一張卡（連到 /guide/{area}，標題＋這頁回答什麼），依分組排列（開始使用、側欄四組、跨頁工具）", () => {
     const html = decode(hub());
     expect(html).toMatch(/<section id="areas" class="guide-section" aria-labelledby="guide-areas-title">/);
     expect(html).toContain('href="#areas"');
     const cards = [...html.matchAll(/<a class="guide-card" href="([^"]+)"><span class="guide-card-title">([^<]+)<\/span><span class="guide-card-answer">([^<]+)<\/span><\/a>/g)].map(match => [match[1], match[2], match[3]]);
     expect(cards).toEqual(GUIDE_AREAS.map(({ area }) => [`/guide/${area}`, text(g.areas[area].title), text((g.areas[area] as unknown as { answers: string }).answers)]));
-    expect(cards).toHaveLength(5);
+    expect(cards).toHaveLength(11);
+    // 分組：每組一個 h3（guide.groups.*），組內的卡片依 GUIDE_AREA_CODES 的順序。
+    const groups = [...html.matchAll(/<div class="guide-card-group"><h3>([^<]+)<\/h3><ul class="guide-cards">(.*?)<\/ul><\/div>/g)].map(match => [match[1], [...match[2].matchAll(/href="\/guide\/([^"]+)"/g)].map(card => card[1])]);
+    expect(groups).toEqual(GUIDE_GROUPS.map(group => [text(g.groups[group]), GUIDE_AREA_CODES.filter(area => GUIDE_AREA_GROUP[area] === group)]));
+    expect(Object.fromEntries(groups)).toEqual({
+      [g.groups.start]: ["start", "import"], [text(g.groups.results)]: ["overview"], [text(g.groups.causes)]: ["diagnosis", "products"],
+      [text(g.groups.decisions)]: ["scenarios", "actions", "meeting"], [text(g.groups.data)]: ["data"], [g.groups.tools]: ["evidence", "export"],
+    });
   });
 
   it("要注意與下一步：連到已上線的功能區是連結，還沒上線的只顯示標題文字（例如 start 的要注意連到 export、overview 的下一步 evidence）", async () => {
@@ -296,6 +313,34 @@ describe("V41-2a 說明頁之間的連結（說明首頁＋已上線的功能區
     }
     expect(start).toContain(`<span class="guide-note-link">${g.areaPage.seeAlso}`);
     expect(decode(await areaHtml("import"))).toContain(`<a class="guide-link" href="${ORDER_AGGREGATION_DOC_URL}">${labels.importWizard.orderLevelLink}</a>`);
+  });
+
+  it("V41-2b：11 區都上線後，說明首頁與功能區頁提到的功能區全部是連結（30 秒上手第 3 步、三種角色、獨特性、要注意、下一步），沒有只剩標題文字的", async () => {
+    const pages = [decode(hub()), ...await Promise.all(GUIDE_AREAS.map(async ({ area }) => decode(await areaHtml(area))))];
+    const plain = pages.flatMap((html, index) => GUIDE_AREA_CODES.filter(area => html.includes(`<span>${text(g.areas[area].title)}</span>`)).map(area => `${index === 0 ? "/guide" : `/guide/${GUIDE_AREAS[index - 1].area}`}：${area}`));
+    expect(plain).toEqual([]);
+    const hubHtml = pages[0];
+    expect(hubHtml).toContain(`<a class="guide-link" href="/guide/evidence">${text(g.quickstart.steps.step3)}</a>`);
+    for (const area of ["meeting", "scenarios", "actions", "data", "export"] as const) expect(hubHtml, area).toContain(`<a class="guide-link" href="/guide/${area}">${text(g.areas[area].title)}</a>`);
+  });
+
+  it("V41-2b：要注意與開始前的「相關說明：」——actions 的要注意連到通路健檢（#add-action）與會議紀錄（#decision）；actions、meeting、export 的開始前連到要先做的功能區；錨點都在該頁", async () => {
+    expect(GUIDE_AREA_NOTE_LINKS.actions).toEqual([{ note: 0, area: "diagnosis", hash: "add-action" }, { note: 0, area: "meeting", hash: "decision" }]);
+    expect(GUIDE_AREA_BEFORE_AREAS).toEqual({
+      actions: [{ area: "diagnosis", hash: "add-action" }],
+      meeting: [{ area: "scenarios" }, { area: "diagnosis", hash: "add-action" }],
+      export: [{ area: "scenarios" }, { area: "diagnosis", hash: "add-action" }],
+    });
+    const links = (list: readonly { area: GuideAreaCode; hash?: string }[]) => list.map(link => `<a class="guide-link" href="/guide/${link.area}${link.hash ? `#${link.hash}` : ""}">${text(g.areas[link.area].title)}</a>`).join("");
+    for (const [area, list] of Object.entries(GUIDE_AREA_BEFORE_AREAS) as [GuideAreaCode, readonly { area: GuideAreaCode; hash?: string }[]][]) {
+      const html = decode(await areaHtml(area));
+      expect(html, area).toContain(`<dt>${g.sections.before}</dt><dd>${text((g.areas[area] as unknown as { before: string }).before)}<span class="guide-note-link">${g.areaPage.seeAlso}${links(list)}</span></dd>`);
+      for (const link of list) if (link.hash) expect(GUIDE_AREA_STEPS[link.area]!.map(step => step.key), `${area} → ${link.area}#${link.hash}`).toContain(link.hash);
+    }
+    const actions = decode(await areaHtml("actions"));
+    expect(actions).toContain(`<span class="guide-note-link">${g.areaPage.seeAlso}${links(GUIDE_AREA_NOTE_LINKS.actions!)}</span></li>`);
+    // 沒有相關說明的開始前只有文字。
+    expect(decode(await areaHtml("scenarios"))).toContain(`<dd>${text(g.areas.scenarios.before)}</dd>`);
   });
 });
 

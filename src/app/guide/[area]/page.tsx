@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { guideLabels } from "@/i18n/guide.zh-TW";
-import { GUIDE_AREA_BEFORE_LINKS, GUIDE_AREA_NEXT, GUIDE_AREA_NOTE_LINKS, GUIDE_AREAS, guideAreaPath, type GuideArea, type GuideMediaManifest } from "@/application/guide";
+import { GUIDE_AREA_BEFORE_AREAS, GUIDE_AREA_BEFORE_LINKS, GUIDE_AREA_NEXT, GUIDE_AREA_NOTE_LINKS, GUIDE_AREAS, guideAreaPath, type GuideArea, type GuideAreaLink, type GuideMediaManifest } from "@/application/guide";
 import guideMedia from "@/application/guide-media.json";
 import { GuideAreaRef } from "@/components/guide/guide-area-ref";
 import { GuideStep, type GuideStepCopy } from "@/components/guide/guide-step";
@@ -42,6 +42,12 @@ function areaCopy(entry: GuideArea): GuideAreaCopy {
   return { title: copy.title, answers, before, beforeLink: copy.beforeLink, steps, notes };
 }
 
+/** 「相關說明：」後接一或多個功能區連結（要注意的某一點、V41-2b 起也用於開始前）；沒有連結時不渲染。 */
+function GuideSeeAlso({ links }: { links: readonly GuideAreaLink[] }) {
+  if (links.length === 0) return null;
+  return <span className="guide-note-link">{guideText(g.areaPage.seeAlso)}{links.map(link => <GuideAreaRef key={`${link.area}#${link.hash ?? ""}`} area={link.area} hash={link.hash} />)}</span>;
+}
+
 /** 網址片段對應的已上線功能區；不在 GUIDE_AREAS 時回 404。 */
 async function resolveArea(params: Params["params"]): Promise<GuideArea> {
   const { area } = await params;
@@ -78,7 +84,7 @@ export default async function GuideAreaPage({ params }: Params) {
       <dt>{guideText(g.sections.answers)}</dt>
       <dd>{guideText(copy.answers)}</dd>
       <dt>{guideText(g.sections.before)}</dt>
-      <dd>{guideText(copy.before)}{beforeLink && copy.beforeLink && <> <a className="guide-link" href={beforeLink}>{guideText(copy.beforeLink)}</a></>}</dd>
+      <dd>{guideText(copy.before)}{beforeLink && copy.beforeLink && <> <a className="guide-link" href={beforeLink}>{guideText(copy.beforeLink)}</a></>}<GuideSeeAlso links={GUIDE_AREA_BEFORE_AREAS[area] ?? []} /></dd>
     </dl>
     <GuideToc label={guideText(g.hub.tocAria)} items={steps.map(step => ({ id: step.key, title: guideText(copy.steps[step.key].title) }))} />
 
@@ -89,10 +95,7 @@ export default async function GuideAreaPage({ params }: Params) {
     <section id="notes" className="guide-section" aria-labelledby="guide-notes-title">
       <h2 id="guide-notes-title">{guideText(g.sections.notes)}</h2>
       <ul className="guide-notes">
-        {copy.notes.map((note, index) => {
-          const link = noteLinks.find(item => item.note === index);
-          return <li key={index}><GuideText text={note} />{link && <span className="guide-note-link">{guideText(g.areaPage.seeAlso)}<GuideAreaRef area={link.area} /></span>}</li>;
-        })}
+        {copy.notes.map((note, index) => <li key={index}><GuideText text={note} /><GuideSeeAlso links={noteLinks.filter(item => item.note === index)} /></li>)}
       </ul>
     </section>
 

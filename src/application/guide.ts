@@ -57,8 +57,8 @@ export const GUIDE_AREA_STEPS: Readonly<Partial<Record<GuideAreaCode, readonly G
   export: [{ key: "export", mediaId: "export-menu" }, { key: "save", mediaId: "export-save" }, { key: "backup", mediaId: "export-backup" }, { key: "delete", mediaId: "export-delete" }],
 };
 
-/** 已上線（有 /guide/{area} 頁面）的功能區，依 GUIDE_AREA_CODES 的順序。V41-1 是空的；V41-2a 加 start、import、overview、diagnosis、products（V41-2b 加其餘 6 個）。 */
-export const GUIDE_PUBLISHED_AREAS: readonly GuideAreaCode[] = ["start", "import", "overview", "diagnosis", "products"];
+/** 已上線（有 /guide/{area} 頁面）的功能區，依 GUIDE_AREA_CODES 的順序。V41-1 是空的；V41-2a 加 start、import、overview、diagnosis、products；V41-2b 加其餘 6 個（11 區全部上線）。 */
+export const GUIDE_PUBLISHED_AREAS: readonly GuideAreaCode[] = ["start", "import", "overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "evidence", "export"];
 
 /**
  * 已有頁面的功能區（generateStaticParams、sitemap、說明首頁目錄都從這裡產生）。V41-1 是空陣列；V41-2a 加 start、import、overview、diagnosis、products，V41-2b 加其餘 6 個。
@@ -150,18 +150,35 @@ export function resolveUiRefs(text: string, labels: unknown): string {
 
 /** 截圖的資料來源註記（圖說後另起一行）：none＝不加（S0 首頁空狀態）、demo＝guide.common.demoCaption（S1、S6–S8）、synthetic＝guide.common.syntheticCaption（S3、S4、S5；D-V41-21＝A：含稅換算、缺列與資料問題、商品毛利為負都用 repo 內既有的合成檔，圖說註明「虛構的合成資料」）。 */
 export type GuideDataNote = "none" | "demo" | "synthetic";
-/** 不是 demo 的截圖（mediaId → 註記）；沒列在這裡的都是 demo。start-load 是 S0；import-files／mapping／basis／review 是 S3（tests/fixtures/inclusive_tax）；import-issues 是 S4（fixtures/errors/missing_ad_day）；products-pareto 是 S5（tests/fixtures/synthetic-4-channel）。 */
-export const GUIDE_MEDIA_DATA_NOTE: Readonly<Record<string, GuideDataNote>> = { "start-load": "none", "import-files": "synthetic", "import-mapping": "synthetic", "import-basis": "synthetic", "import-review": "synthetic", "import-issues": "synthetic", "products-pareto": "synthetic" };
+/**
+ * 不是 demo 的截圖（mediaId → 註記）；沒列在這裡的都是 demo。start-load 是 S0；import-files／mapping／basis／review 是 S3（tests/fixtures/inclusive_tax）；import-issues 是 S4（fixtures/errors/missing_ad_day）；
+ * products-pareto 是 S5（tests/fixtures/synthetic-4-channel）。V41-2b：data-coverage、data-issues 是 S4；其餘 21 張（S1、S6–S8）是 demo。
+ */
+export const GUIDE_MEDIA_DATA_NOTE: Readonly<Record<string, GuideDataNote>> = { "start-load": "none", "import-files": "synthetic", "import-mapping": "synthetic", "import-basis": "synthetic", "import-review": "synthetic", "import-issues": "synthetic", "products-pareto": "synthetic", "data-coverage": "synthetic", "data-issues": "synthetic" };
 /** 一張截圖的資料來源註記。 */
 export const guideDataNote = (mediaId: string): GuideDataNote => Object.hasOwn(GUIDE_MEDIA_DATA_NOTE, mediaId) ? GUIDE_MEDIA_DATA_NOTE[mediaId] : "demo";
 
 /** 「開始前」後附的文件連結（同網域、同分頁）：匯入資料頁連到訂單明細整理成每日資料的說明（public/docs/ORDER_AGGREGATION.md，與匯入精靈的 ORDER_AGGREGATION_DOC_URL 相同）。連結文字是 guide.areas.{area}.beforeLink。 */
 export const GUIDE_AREA_BEFORE_LINKS: Readonly<Partial<Record<GuideAreaCode, string>>> = { import: "/docs/ORDER_AGGREGATION.md" };
 
-/** 「要注意」第 note 點（guide.areas.{area}.notes 的索引）後附的功能區連結（GUIDE_CONTENT 的「（連到 …）」）；功能區頁還沒上線時只顯示標題文字。 */
-export const GUIDE_AREA_NOTE_LINKS: Readonly<Partial<Record<GuideAreaCode, readonly { note: number; area: GuideAreaCode }[]>>> = {
+/** 連到一個功能區頁（hash 是該頁的步驟錨點，例如 diagnosis 的 add-action）。 */
+export interface GuideAreaLink {
+  area: GuideAreaCode;
+  hash?: string;
+}
+
+/** 「要注意」第 note 點（guide.areas.{area}.notes 的索引）後附的功能區連結（GUIDE_CONTENT 的「（連到 …）」；V41-2b 起也含要注意裡點名的其他功能區）；同一點可以有多個，依序列在「相關說明：」之後。 */
+export const GUIDE_AREA_NOTE_LINKS: Readonly<Partial<Record<GuideAreaCode, readonly ({ note: number } & GuideAreaLink)[]>>> = {
   start: [{ note: 0, area: "export" }],
   overview: [{ note: 0, area: "evidence" }],
+  actions: [{ note: 0, area: "diagnosis", hash: "add-action" }, { note: 0, area: "meeting", hash: "decision" }],
+};
+
+/** V41-2b：「開始前」要先到其他功能區做的事（S7：試算並選入會議、把健檢結果加入待辦），在開始前那一行後面列出「相關說明：」連結。 */
+export const GUIDE_AREA_BEFORE_AREAS: Readonly<Partial<Record<GuideAreaCode, readonly GuideAreaLink[]>>> = {
+  actions: [{ area: "diagnosis", hash: "add-action" }],
+  meeting: [{ area: "scenarios" }, { area: "diagnosis", hash: "add-action" }],
+  export: [{ area: "scenarios" }, { area: "diagnosis", hash: "add-action" }],
 };
 
 /** 「下一步」的功能區（最多 2 個，GUIDE_CONTENT 各區的「下一步」）；最後另加「開啟工作台」。功能區頁還沒上線時只顯示標題文字、不放連結。 */
@@ -171,6 +188,13 @@ export const GUIDE_AREA_NEXT: Readonly<Partial<Record<GuideAreaCode, readonly Gu
   overview: ["diagnosis", "evidence"],
   diagnosis: ["actions", "products"],
   products: ["scenarios", "overview"],
+  // V41-2b（GUIDE_CONTENT §2.6–2.11 的「下一步」）。
+  scenarios: ["meeting", "actions"],
+  actions: ["meeting"],
+  meeting: ["export", "actions"],
+  data: ["import", "evidence"],
+  evidence: ["overview", "data"],
+  export: ["meeting", "start"],
 };
 
 /** src/application/guide-media.json 的一張媒體（只記內容欄位；PRD §3.5）：file 是 public/ 之下的路徑（guide/{area}/{mediaId}.webp），sha256 是基準 PNG 的雜湊。 */
