@@ -22,6 +22,7 @@ import { fill, labels } from "../../src/i18n";
  * V4-8b 代理 A 再加一個：頁面程式載入失敗的錯誤狀態（D-V4-44 B、D-V4-57＝A；之後的程式 chunk 一律失敗時切到通路健檢）；合併代理 B 的兩個後 desktop、laptop、tablet 共 22，mobile 共 20。
  * V4-10 代理 B 再加一個（PRD §2.2 C3「待辦頁新增一張卡」，四個尺寸都有）：示範資料的待辦頁按空狀態的「新增待辦」、關掉自動開啟的待辦編輯抽屜後（G17 小表 4 列）；desktop、laptop、tablet 共 23，mobile 共 21。
  * V41-1 再加一個（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項，四個尺寸都有）：說明首頁 /guide；desktop、laptop、tablet 共 24，mobile 共 22。
+ * V41-2a 再加一個（docs/revamp-v4.1/06_BATCHES.md V41-2a 第 5 項，四個尺寸都有）：功能區頁 /guide/overview；desktop、laptop、tablet 共 25，mobile 共 23。
  * axe 來源：專案沒有 @axe-core/playwright（本輪不加依賴），改用 node_modules 已有的 axe-core（eslint-config-next → eslint-plugin-jsx-a11y 的相依套件）
  * 以 page.addScriptTag 注入 axe.min.js 後呼叫 axe.run。找不到 axe-core 時退回純 DOM 檢查（每個控制有可及名稱、每頁一個 h1、img 都有 alt），並在結果標明 engine。
  * 不論 axe 是否可用，每個狀態都另記純 DOM 檢查（heading 跳級、重複 id、:focus-visible 規則是否存在）供參考，不斷言。
@@ -198,6 +199,10 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   await page.goto("/guide");
   await expect(page.getByTestId("guide-hub")).toBeVisible();
   results.push(await scan(page, "guide-hub", engine, path));
+  // V41-2a（06_BATCHES V41-2a 第 5 項「axe-sweep 加 /guide/overview」）：功能區頁（步驟、截圖與原尺寸連結、本頁目錄）；四個尺寸都有。
+  await page.goto("/guide/overview");
+  await expect(page.getByTestId("guide-area-overview")).toBeVisible();
+  results.push(await scan(page, "guide-area-overview", engine, path));
 
   const summary = {
     checked_at: new Date().toISOString(), engine, axe_core: path ? (JSON.parse(readFileSync(path.replace(/axe\.min\.js$/, "package.json"), "utf8")) as { version: string }).version : null,
@@ -213,8 +218,8 @@ test("V3-10 axe 四尺寸：首頁、精靈步驟 1、七頁、抽屜、投影�
   // V4-8a 起 19／17（desktop、laptop、tablet 加會議頁投影；mobile 沒有投影，不變）。
   // V4-8b 起 22／20：代理 B 加兩個（D-V4-60＝A：四個尺寸都加合成資料會議頁展開「資料待補」優先列、缺廣告日的總覽），代理 A 加一個（頁面程式載入失敗的錯誤狀態）。
   // V4-10 起 23／21（四個尺寸都加待辦頁新增一張卡，G17）。06 與 PRD 寫的「V4-10 結束時 18／17」是在 V4-6 到 V4-8b 多加狀態之前寫的。
-  // V41-1 起 24／22（四個尺寸都加說明首頁 /guide）。
-  expect(results.length, "axe 狀態數（V41-1 起 24／22）").toBe(testInfo.project.name === "mobile" ? 22 : 24);
+  // V41-1 起 24／22（四個尺寸都加說明首頁 /guide）；V41-2a 起 25／23（四個尺寸都加功能區頁 /guide/overview）。
+  expect(results.length, "axe 狀態數（V41-2a 起 25／23）").toBe(testInfo.project.name === "mobile" ? 23 : 25);
 
   for (const row of results) {
     const blocking = row.violations.filter(item => item.impact === "serious" || item.impact === "critical").map(item => `${item.impact} ${item.id}（${item.nodes}）：${item.targets.join(" ")}`);

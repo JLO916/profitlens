@@ -65,8 +65,8 @@ const pages = [
   { id: "data", anchor: "[data-testid='data-status-line']" },
   { id: "actions", anchor: "[data-testid='actions-workbench']" },
 ];
-// V41-1：說明頁另跑 navigation 的路徑（V41-2a 加 "/guide/overview"）。
-const GUIDE_NAV_PAGES = ["/guide"];
+// V41-1：說明頁另跑 navigation 的路徑；V41-2a 加功能區頁 "/guide/overview"（06_BATCHES V41-2a 第 5 項）。
+const GUIDE_NAV_PAGES = ["/guide", "/guide/overview"];
 const sizes = [
   { name: "desktop-1440", config: desktopConfig, flags: { formFactor: "desktop", screenEmulation: { mobile: false, width: 1440, height: 1000, deviceScaleFactor: 1, disabled: false } } },
   { name: "mobile-390", config: undefined, flags: { formFactor: "mobile", screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 3, disabled: false } } },
