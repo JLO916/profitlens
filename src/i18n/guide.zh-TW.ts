@@ -317,15 +317,16 @@ export const guideLabels = {
       },
       // ── V41-2b 錨點：scenarios、actions、meeting、data、evidence、export 的功能區頁（GUIDE_CONTENT §2.6–2.11；欄位同 V41-2a）。
       // before 寫使用者要先做的操作（S1 是載入示範資料；S6、S7 寫出具體步驟，相關功能區的連結在 src/application/guide.ts 的 GUIDE_AREA_BEFORE_AREAS）。
+      // alt 依 verification/guide-media/baseline/ 的實際截圖寫（畫面上看得到什麼＋強調框框住的那一個元素；PRD §3.6）。
       scenarios: {
         title: "{ui:shell.nav.scenarios.headline}",
         answers: "{ui:shell.nav.scenarios.explain}。",
-        before: "先在首頁按「{ui:shell.buttons.loadDemo}」。第 3、4 步要先有試算過的方案：照第 1、2 步{ui:scenarios.buttons.applyTemplate}「{ui:scenarios.presets.items.keep.name}」，再按{ui:scenarios.buttons.calculate}。",
+        before: "先在首頁按「{ui:shell.buttons.loadDemo}」。第 3、4 步要先有試算過的方案：照第 1、2 步{ui:scenarios.buttons.applyTemplate}「{ui:scenarios.presets.items.keep.name}」，再按{ui:scenarios.buttons.calculate}。第 3 步的截圖另按{ui:scenarios.buttons.addScenario}，第二個方案{ui:scenarios.buttons.applyTemplate}「{ui:scenarios.presets.items.cut_ads_half.name}」並試算。",
         steps: {
           setup: {
             title: "選通路與範本",
             body: "每個方案針對一個通路。可以從範本開始（{ui:scenarios.buttons.applyTemplate}），或按{ui:scenarios.buttons.addScenario}。",
-            alt: "{ui:shell.nav.scenarios.headline}的方案欄，可以選通路與範本；強調框框住「{ui:scenarios.buttons.addScenario}」。",
+            alt: "{ui:shell.nav.scenarios.headline}頁上方是{ui:scenarios.form.channel}選單與{ui:scenarios.sections.scenarioBaseline}，下方方案 1 有{ui:scenarios.decision.planName}與{ui:scenarios.form.presetSelect}選單；強調框框住「{ui:scenarios.buttons.addScenario}」。",
             caption: "{ui:scenarios.buttons.applyTemplate}後，假設欄位會帶入範本的值。",
           },
           inputs: {
@@ -337,13 +338,13 @@ export const guideLabels = {
           compare: {
             title: "並排比較方案",
             body: "{ui:scenarios.chartsV4.variance.section}把各方案試算後的扣廣告後貢獻和現況比；方案之間不能相加。",
-            alt: "{ui:scenarios.chartsV4.variance.section}的長條圖。",
+            alt: "{ui:scenarios.chartsV4.variance.section}的長條圖，下方的明細表逐項列出本期與每個方案的金額。",
             caption: "每一條是一個方案和現況的差額。",
           },
           threshold: {
             title: "看{ui:scenarios.sections.scenarioBreakeven}，再{ui:meeting.buttons.selectForMeeting}",
             body: "{ui:scenarios.sections.scenarioBreakeven}填三個銷量假設，看兩個門檻落在哪裡；決定要討論的方案按{ui:meeting.buttons.selectForMeeting}。",
-            alt: "兩個門檻與三個假設的位置，橫軸是銷量增減；強調框框住「{ui:meeting.buttons.selectForMeeting}」。",
+            alt: "「{ui:meeting.buttons.selectForMeeting}」下方展開{ui:scenarios.sections.scenarioBreakeven}：打平與維持現況兩個門檻，下面的圖用空心圈標出門檻的位置，橫軸是銷量增減；強調框框住「{ui:meeting.buttons.selectForMeeting}」。",
             caption: "選入後，這個方案會帶進{ui:shell.nav.meeting.headline}。",
           },
         },
@@ -357,19 +358,19 @@ export const guideLabels = {
           board: {
             title: "看看板或清單",
             body: "{ui:actions.sections.actionBoard}依狀態排列；可以切到{ui:actions.board.viewList}。頁首的計數條顯示多少項快到期。",
-            alt: "{ui:actions.sections.actionBoard}，頁首是到期分布的計數條；強調框框住「{ui:actions.board.viewBoard}」「{ui:actions.board.viewList}」切換鈕。",
+            alt: "上方是到期分布的計數條，下方的{ui:actions.board.viewBoard}依狀態分成{ui:actions.form.statuses.not_started}、{ui:actions.form.statuses.in_progress}、{ui:actions.form.statuses.blocked}、{ui:actions.form.statuses.done}四欄；強調框框住「{ui:actions.board.viewBoard}」「{ui:actions.board.viewList}」切換鈕。",
             caption: "看板依執行狀態分欄，每張卡片是一項待辦。",
           },
           edit: {
             title: "編輯一項待辦",
-            body: "打開一張卡，寫具體動作、負責人、到期日、驗證指標與停止條件；跟廣告有關的可以標{ui:actions.adDecisionV3.field}。",
-            alt: "待辦的編輯面板，有負責人、到期日、停止條件與{ui:actions.adDecisionV3.field}；強調框框住{ui:actions.adDecisionV3.field}。",
-            caption: "面板標題下方寫著負責人、到期日與狀態。",
+            body: "按卡片上的{ui:actions.pageV3.edit}打開面板，寫{ui:actions.form.step}、{ui:actions.form.owner}、{ui:actions.form.due}、{ui:actions.form.metric}與{ui:actions.form.stop}；跟廣告有關的可以標{ui:actions.adDecisionV3.field}。",
+            alt: "待辦的編輯面板，有{ui:actions.form.problem}、{ui:actions.form.step}、{ui:actions.form.owner}、{ui:actions.form.metric}、{ui:actions.form.due}、{ui:actions.form.stop}等欄位；強調框框住{ui:actions.adDecisionV3.field}欄位。",
+            caption: "改好的負責人、期限與狀態，會寫在面板標題下方與看板的卡片上。",
           },
           pin: {
             title: "置頂最重要的三項",
-            body: "按{ui:actions.buttons.pin}；{ui:actions.workbench.intro}",
-            alt: "待辦卡片右上角的「{ui:actions.buttons.pin}」按鈕；強調框框住這個按鈕。",
+            body: "按卡片標題左邊的星號（{ui:actions.buttons.pin}）；{ui:actions.workbench.intro}",
+            alt: "{ui:actions.form.statuses.not_started}欄的待辦卡片，標題左邊的星號是「{ui:actions.buttons.pin}」按鈕；強調框框住這個按鈕。",
             caption: "置頂的項目會列入一頁摘要。",
           },
         },
@@ -383,31 +384,31 @@ export const guideLabels = {
           agenda: {
             title: "照議程開會",
             body: "{ui:meeting.sections.meetingAgenda}依會議固定的資料與範圍自動組成；點數字打開{ui:evidence.sections.evidence}。",
-            alt: "{ui:shell.nav.meeting.headline}的{ui:meeting.sections.meetingAgenda}，左側是議程目錄；強調框框住議程目錄。",
+            alt: "{ui:shell.nav.meeting.headline}的{ui:meeting.sections.meetingAgenda}：第 1 項{ui:meeting.record.agenda.kpis}與第 2 項{ui:meeting.record.agenda.priorities}，左側是議程目錄；強調框框住議程目錄。",
             caption: "點議程目錄的一項，就跳到那一項。",
           },
           decision: {
             title: "寫決議",
-            body: "在頁首的{ui:meeting.form.decision}選這次的決定，理由寫在{ui:meeting.form.notes}；{ui:meeting.form.decisionNote}。",
-            alt: "{ui:meeting.sections.meetingDecision}欄位與選入的方案；強調框框住{ui:meeting.sections.meetingDecision}。",
+            body: "在頁首的{ui:meeting.form.decision}選單選這次的決定，理由寫在{ui:meeting.form.notes}；{ui:meeting.form.decisionNote}。",
+            alt: "會議頁首的{ui:meeting.form.decision}選單（目前是「{ui:meeting.form.decisions.draft}」），右邊是「{ui:meeting.buttons.finalizeMeeting}」「{ui:overview.snapshotUi.copy}」「{ui:meeting.pageV3.exportMenu}」；強調框框住{ui:meeting.form.decision}選單。",
             caption: "決議跟著這次會議，{ui:meeting.buttons.finalizeMeeting}時一起存入{ui:meeting.page.history}。",
           },
           present: {
             title: "投影給大家看",
             body: "按{ui:shell.presentV3.enter}，字放大、只留結論；在{ui:shell.nav.overview.headline}與{ui:shell.nav.meeting.headline}之間可以直接切換，按 Esc 或{ui:shell.presentV3.exit}離開。",
-            alt: "{ui:shell.presentV3.enter}中的{ui:shell.nav.overview.headline}，只留下結論與瀑布圖；強調框框住「{ui:shell.presentV3.exit}」。",
+            alt: "{ui:shell.presentV3.enter}中的{ui:shell.nav.overview.headline}：一句話結論、五個關鍵數字、{ui:overview.sections.topThree}與{ui:overview.sections.bridge}的瀑布圖，右上是「{ui:shell.nav.meeting.headline}」與「{ui:shell.presentV3.exit}」；強調框框住「{ui:shell.presentV3.exit}」。",
             caption: "投影時字放大，只留下結論。",
           },
           finalize: {
             title: "{ui:meeting.buttons.finalizeMeeting}並匯出",
-            body: "按{ui:meeting.buttons.finalizeMeeting}；{ui:meeting.page.finalizeHint}下次會自動{ui:meeting.sections.meetingCompare}。匯出在頁首的{ui:meeting.pageV3.exportMenu}。",
-            alt: "已結束的會議出現在{ui:meeting.page.history}，旁邊是匯出選項；強調框框住匯出選項。",
+            body: "按{ui:meeting.buttons.finalizeMeeting}並確認；{ui:meeting.page.finalizeHint}下次會自動{ui:meeting.sections.meetingCompare}。匯出在頁首的{ui:meeting.pageV3.exportMenu}；已結束的會議也可以在{ui:meeting.page.history}按{ui:exports.buttons.exportMarkdown}。",
+            alt: "{ui:meeting.page.history}出現剛結束的會議，右邊是「{ui:exports.buttons.exportMarkdown}」與「{ui:meeting.page.removeMeeting}」；強調框框住「{ui:exports.buttons.exportMarkdown}」。",
             caption: "結束後，這次會議只能查看；下次會議會和它比較。",
           },
           copy: {
             title: "{ui:overview.snapshotUi.copy}",
             body: "頂欄{ui:shell.topbarV3.export}的{ui:overview.snapshotUi.copy}：{ui:exports.menuV3.descriptions.copySummary}。",
-            alt: "{ui:shell.topbarV3.export}選單中的「{ui:overview.snapshotUi.copy}」；強調框框住這一項。",
+            alt: "{ui:shell.topbarV3.export}選單的{ui:exports.menuV3.groupMeeting}組：「{ui:overview.snapshotUi.copy}」，下方寫著{ui:exports.menuV3.descriptions.copySummary}；強調框框住這一項。",
             caption: "按下後，週會摘要的文字就複製好了。",
           },
         },
@@ -421,7 +422,7 @@ export const guideLabels = {
           scope: {
             title: "確認範圍與金額基準",
             body: "最上方寫資料涵蓋到哪天、金額基準，{ui:data.sections.dataScope}與{ui:data.sections.dataPreprocessing}寫匯入時做了哪些換算。",
-            alt: "{ui:shell.nav.data.headline}頁上方，寫著資料到哪天與金額基準；強調框框住這一行狀態列。",
+            alt: "{ui:shell.nav.data.headline}頁上方的狀態列，寫著資料到哪天、涵蓋的日期、檔案數與金額基準；強調框框住這一行狀態列。",
             caption: "狀態列寫出資料到哪天與金額基準。",
           },
           coverage: {
@@ -433,13 +434,13 @@ export const guideLabels = {
           issues: {
             title: "處理資料問題",
             body: "{ui:data.sections.dataIssues}列出每個問題的檔名、欄位與修法，對得到原始列的另附行號；{ui:data.chartsV4.issues.section}依檔案和原因分組，點格子就篩選。完整清單按{ui:exports.downloads.issuesCsv}。",
-            alt: "{ui:data.chartsV4.issues.section}與{ui:data.sections.dataIssues}清單；強調框框住「{ui:exports.downloads.issuesCsv}」。",
+            alt: "{ui:data.sections.dataIssues}：上方的{ui:data.chartsV4.issues.section}只有{ui:importWizard.files.ads}那一列有數字，下方的問題表寫出檔名、欄位、問題與修法；強調框框住「{ui:exports.downloads.issuesCsv}」。",
             caption: "每個問題都寫出檔名與修法；點分布表的格子，問題表就只留那一類。",
           },
           preview: {
             title: "預覽來源檔與下載範本",
             body: "{ui:data.sections.dataPreview}顯示每份檔案的前 10 列，不受期間與通路影響；也可以在這裡下載範本。",
-            alt: "{ui:data.sections.dataPreview}：每份檔案的前 10 列預覽。",
+            alt: "{ui:data.sections.dataPreview}，第一份檔案{ui:importWizard.files.sales}已展開，顯示前 10 列；另外兩份檔案收合著。",
             caption: "預覽顯示原始檔的欄位與前 10 列。",
           },
         },
@@ -452,20 +453,20 @@ export const guideLabels = {
         steps: {
           drawer: {
             title: "打開{ui:evidence.sections.evidence}",
-            body: "點任一數字、圖上的柱或格，或按{ui:evidence.buttons.viewEvidence}，右側會打開{ui:evidence.sections.evidence}：標題下一行是到分的精確值，下面是一層一層的算法。",
-            alt: "{ui:evidence.sections.evidence}抽屜，上方是到分的精確值，下方是算法階梯；強調框框住精確值。",
+            body: "點任一數字、圖上的柱或格，或按{ui:evidence.buttons.viewEvidence}，右側會打開{ui:evidence.sections.evidence}：金額下方是到分的精確值，再下面是一層一層的算法。",
+            alt: "扣廣告後貢獻的{ui:evidence.sections.evidence}抽屜：金額下方是到分的精確值，再下面是{ui:evidence.ladderTitle}與一層一層的算法表；強調框框住精確值。",
             caption: "從到分的精確值，一層一層拆到組成項目。",
           },
           sources: {
             title: "追到{ui:evidence.sourcesTitle}",
             body: "{ui:evidence.ladderNote}在{ui:evidence.sourcesTitle}可以{ui:evidence.searchLabel}，每列寫 CSV 檔名與行號。",
-            alt: "{ui:evidence.sourcesTitle}表，每列有檔名與行號；強調框框住檔名與行號欄。",
+            alt: "{ui:evidence.sourcesTitle}分成{ui:evidence.sourceTabs.sales}、{ui:evidence.sourceTabs.costs}、{ui:evidence.sourceTabs.ads}三個分頁，旁邊是{ui:evidence.searchLabel}；每一列寫出檔名與行號、日期、通路與欄位數值；強調框框住第一列的檔名與行號。",
             caption: "每一列都對得到原始 CSV 的檔名與行號。",
           },
           basis: {
             title: "查{ui:shell.buttons.basis}與名詞",
             body: "頂欄{ui:shell.buttons.basis}列出九條算法規則，下方的{ui:glossary.heading}輸入舊名也找得到新名。",
-            alt: "{ui:shell.buttons.basis}對話框，九條規則與{ui:glossary.heading}；強調框框住{ui:glossary.heading}。",
+            alt: "{ui:shell.buttons.basis}對話框，上方是九條規則，下方是{ui:glossary.heading}與{ui:glossary.searchLabel}欄；強調框框住{ui:glossary.heading}標題。",
             caption: "在{ui:glossary.heading}輸入舊名，也找得到現在的名稱。",
           },
         },
@@ -479,25 +480,25 @@ export const guideLabels = {
           export: {
             title: "{ui:shell.topbarV3.export}",
             body: "頂欄{ui:shell.topbarV3.export}分成{ui:shell.sections.downloadCurrentView}、{ui:meeting.sections.meetingSummary}、{ui:shell.sections.downloadDecision}、{ui:exports.menuV3.groupMeeting}、{ui:exports.downloads.templatesHeading}五組；一頁摘要有{ui:exports.variantsV3.names.standard}、{ui:exports.variantsV3.names.boss}、{ui:exports.variantsV3.names.client}。",
-            alt: "{ui:shell.topbarV3.export}選單，分成五組；強調框框住一頁摘要的版本選擇。",
+            alt: "{ui:shell.topbarV3.export}選單分成五組，從{ui:shell.sections.downloadCurrentView}到{ui:exports.downloads.templatesHeading}；強調框框住一頁摘要的{ui:exports.variantsV3.names.standard}、{ui:exports.variantsV3.names.boss}、{ui:exports.variantsV3.names.client}三個版本。",
             caption: "一頁摘要先選版本，再選要下載的格式。",
           },
           save: {
             title: "{ui:storage.buttons.saveLocal}",
             body: "{ui:shell.buttons.save}選單的{ui:shell.topbarV3.storageGroups.local}：勾選同意後，每次修改會自動保存。",
-            alt: "{ui:shell.buttons.save}選單，分成{ui:shell.topbarV3.storageGroups.local}、{ui:shell.topbarV3.storageGroups.backup}與{ui:shell.topbarV3.storageGroups.danger}；強調框框住{ui:shell.topbarV3.storageGroups.local}。",
+            alt: "{ui:shell.buttons.save}選單分成{ui:shell.topbarV3.storageGroups.local}、{ui:shell.topbarV3.storageGroups.backup}與{ui:shell.topbarV3.storageGroups.danger}；{ui:shell.topbarV3.storageGroups.local}有同意的勾選框與「{ui:storage.buttons.saveLocal}」按鈕，強調框框住這一區。",
             caption: "同意後，資料只存在這個瀏覽器，不會上傳。",
           },
           backup: {
             title: "下載與讀入備份檔",
             body: "{ui:storage.buttons.downloadBackup}會把資料、方案、待辦與會議歷史存成一個檔；換電腦時從同一個選單讀入。",
-            alt: "{ui:shell.buttons.save}選單的{ui:shell.topbarV3.storageGroups.backup}區；強調框框住「{ui:storage.buttons.downloadBackup}」。",
+            alt: "{ui:shell.buttons.save}選單的{ui:shell.topbarV3.storageGroups.backup}區：「{ui:storage.buttons.downloadBackup}」，旁邊是選取備份檔的欄位；強調框框住「{ui:storage.buttons.downloadBackup}」。",
             caption: "讀入備份檔時先看預覽，確認後才取代目前的資料。",
           },
           delete: {
             title: "{ui:storage.buttons.deleteLocal}",
             body: "{ui:shell.topbarV3.storageGroups.danger}的{ui:storage.buttons.deleteLocal}會刪掉存在這個瀏覽器的副本；已下載的檔案不受影響。",
-            alt: "{ui:shell.buttons.save}選單的{ui:shell.topbarV3.storageGroups.danger}與「{ui:storage.buttons.deleteLocal}」按鈕；強調框框住這個按鈕。",
+            alt: "{ui:shell.buttons.save}選單的{ui:shell.topbarV3.storageGroups.danger}：「{ui:storage.buttons.deleteLocal}」與「{ui:storage.buttons.clear}」兩個按鈕；強調框框住「{ui:storage.buttons.deleteLocal}」。",
             caption: "刪除後，目前畫面上的資料與已下載的檔案都還在。",
           },
         },

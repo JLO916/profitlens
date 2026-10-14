@@ -23,7 +23,7 @@
 | S3 | 匯入精靈（含稅） | S0 按 `{ui:shell.buttons.importData}`，選 `tests/fixtures/inclusive_tax` 三個檔（同 `tests/e2e/import-wizard.spec.ts` 的含稅流程），依步驟停在 1–4 |
 | S4 | 有資料問題（缺廣告列） | 匯入精靈套用 `fixtures/errors/missing_ad_day` 三個檔（唯讀） |
 | S5 | 4 通路合成資料 | 匯入精靈套用 `tests/fixtures/synthetic-4-channel/`（有商品毛利為負的商品；依 D-V41-21＝A 修改 D-V4-31 的用途限制，通路顯示原代碼 DTC、LIVE、MARKETPLACE、SOCIAL；D-V41-21＝C 時不用，商品頁第 3 步只放文字） |
-| S6 | S1＋已試算 | S1 後到假設試算，`calculateKeepPreset`（範本「維持現況」試算），再 `{ui:scenarios.buttons.addScenario}` 一個方案 |
+| S6 | S1＋已試算 | S1 後到假設試算，`calculateKeepPreset`（範本「維持現況」試算），再 `{ui:scenarios.buttons.addScenario}` 一個方案，套用範本「砍廣告一半」並試算（V41-2b 更正：空白的第二個方案只會顯示「尚未試算」，差額圖沒有東西可比） |
 | S7 | S6＋待辦與選入會議 | S6 後在通路健檢第一項按 `{ui:actions.buttons.addToActions}`；試算方案按 `{ui:meeting.buttons.selectForMeeting}` |
 | S8 | S7＋已結束一次會議 | S7 後在會議紀錄按 `{ui:meeting.buttons.finalizeMeeting}` 並確認 |
 
