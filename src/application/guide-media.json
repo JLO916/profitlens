@@ -1,4 +1,194 @@
 {
-  "updated": null,
-  "media": []
+  "updated": "2026-10-14",
+  "media": [
+    {
+      "id": "start-load",
+      "file": "guide/start/start-load.webp",
+      "width": 622,
+      "height": 358,
+      "bytes": 19668,
+      "sha256": "8233ff54ce05e62d3e81fa8ac7e42f0238c1d817ac1303f0de15cd7f8334a07f",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "start-nav",
+      "file": "guide/start/start-nav.webp",
+      "width": 219,
+      "height": 429,
+      "bytes": 9218,
+      "sha256": "d49db13ffc8ac36b05ef093357365627bd4450d73472b1e0f55989e5ebf01de6",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "start-period",
+      "file": "guide/start/start-period.webp",
+      "width": 694,
+      "height": 47,
+      "bytes": 5222,
+      "sha256": "14384c7c9878d1ee55f44f5df3a16d3659a24d444a696787ee4ee1ca93c1d417",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "start-mobile-m",
+      "file": "guide/start/start-mobile-m.webp",
+      "width": 390,
+      "height": 844,
+      "bytes": 37796,
+      "sha256": "fc119981d518f3fb0d15f06ad95a586f9b1bc2ef2ffeb9e135690d10d2cd51c8",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "import-files",
+      "file": "guide/import/import-files.webp",
+      "width": 942,
+      "height": 542,
+      "bytes": 40022,
+      "sha256": "8016a9d80805f1cbdc5c7bda35ca4dd24ae3dd28d37248194f5b3b1169f07b47",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "import-mapping",
+      "file": "guide/import/import-mapping.webp",
+      "width": 942,
+      "height": 491,
+      "bytes": 25576,
+      "sha256": "29d9357cb889a49190a47085e04628eb728376ce80c97b433716362c5061897e",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "import-basis",
+      "file": "guide/import/import-basis.webp",
+      "width": 942,
+      "height": 756,
+      "bytes": 36578,
+      "sha256": "2451dbbbd93573ace5f98701c7f160ccd151763fda9344dc8bc780e2b158e363",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "import-review",
+      "file": "guide/import/import-review.webp",
+      "width": 990,
+      "height": 1607,
+      "bytes": 111950,
+      "sha256": "caa947deccb335e2299c678680dab9ad5251e7e4707c1f97804551cb055a6368",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "import-issues",
+      "file": "guide/import/import-issues.webp",
+      "width": 942,
+      "height": 456,
+      "bytes": 25664,
+      "sha256": "00fe78bb918dbfdf5fb0f7deb8481d8ec4ccb43c309df451e8a9771baa39a0bb",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "overview-snapshot",
+      "file": "guide/overview/overview-snapshot.webp",
+      "width": 1204,
+      "height": 260,
+      "bytes": 34158,
+      "sha256": "2e234555f4c96d07439b4c07a62d6eed3ff3bf435e9929d6e78eb078e344e202",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "overview-top-three",
+      "file": "guide/overview/overview-top-three.webp",
+      "width": 1204,
+      "height": 332,
+      "bytes": 44294,
+      "sha256": "ad5b6114cd9f43c5311f64ace733de741e3eaed5d134408cce25857be9522a4b",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "overview-bridge",
+      "file": "guide/overview/overview-bridge.webp",
+      "width": 1188,
+      "height": 632,
+      "bytes": 45516,
+      "sha256": "80f518dc3a666cf6e8bde787155636aa2ba250d570e0cceed65b62fad0a9ca31",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "overview-trend",
+      "file": "guide/overview/overview-trend.webp",
+      "width": 590,
+      "height": 488,
+      "bytes": 22506,
+      "sha256": "6c1a8cd9c2556dd436da9660655fa60fa443c8462170794d614437c86b537ea9",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "overview-bridge-m",
+      "file": "guide/overview/overview-bridge-m.webp",
+      "width": 356,
+      "height": 480,
+      "bytes": 23724,
+      "sha256": "d65a4a0426243f097859634eb0227f656eeb1481970a096e4d88e9c027a79613",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "diagnosis-list",
+      "file": "guide/diagnosis/diagnosis-list.webp",
+      "width": 1142,
+      "height": 230,
+      "bytes": 15902,
+      "sha256": "f4b445b458e5807057a1413266731a8ccab3d90e6e22fdb0feb6ec39c62c23d0",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "diagnosis-add-action",
+      "file": "guide/diagnosis/diagnosis-add-action.webp",
+      "width": 640,
+      "height": 212,
+      "bytes": 13428,
+      "sha256": "a898c3c510c22ab994fb42422600f13294a668e71c35ca3c3a2b19d8cab3783a",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "diagnosis-share",
+      "file": "guide/diagnosis/diagnosis-share.webp",
+      "width": 1188,
+      "height": 364,
+      "bytes": 16292,
+      "sha256": "1e1d70a1a468d4c410978e3971b2f2a7fbd90467ce720bb4b6961dc53d9eb208",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "diagnosis-heat",
+      "file": "guide/diagnosis/diagnosis-heat.webp",
+      "width": 800,
+      "height": 449,
+      "bytes": 40364,
+      "sha256": "0e96d30c28c3813b35e0d6fc6420606c7be99ed058b9ec1f1ae428053abf777d",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "products-variance",
+      "file": "guide/products/products-variance.webp",
+      "width": 556,
+      "height": 318,
+      "bytes": 23996,
+      "sha256": "6cb7abc939c9d978b16dfd96fba723632167e65eb998bbd11e1f80ae791a19bc",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "products-table",
+      "file": "guide/products/products-table.webp",
+      "width": 798,
+      "height": 346,
+      "bytes": 30302,
+      "sha256": "2c1b9f043eafc724b8da8706846d168139898e4cfa4221fe5aa98d5e954bc1ca",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "products-pareto",
+      "file": "guide/products/products-pareto.webp",
+      "width": 556,
+      "height": 274,
+      "bytes": 15516,
+      "sha256": "4a160b618c31a75db5f6dc4300a18e1a2ace9fbacf731ee6291178db66eb2794",
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  ]
 }
