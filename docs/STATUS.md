@@ -4,7 +4,7 @@
 
 說明頁多了 5 個功能區頁：開始使用、匯入資料、經營總覽、通路健檢、商品毛利（`/guide/{area}`，靜態產生），每一步有截圖、圖說與原尺寸連結；說明首頁的功能區目錄出現 5 張卡，sitemap 7 個網址。21 張截圖由 `verification/guide-media/` 的 Playwright 腳本從示範資料與既有合成資料產生，基準 PNG 提交、公開檔是 WebP；`GUIDE_MEDIA=check` 只比對，`GUIDE_MEDIA=write` 只更新有差異的媒體。
 
-驗收（程式 V41_2A_CODE）：
+驗收（程式 `8d6286f`）：
 
 - unit 166 檔、3,465 個全過。
 - E2E 1,103 passed、0 failed、29 skipped。
