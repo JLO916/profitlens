@@ -1025,8 +1025,10 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
   .mobile-more { position: fixed; left: 0; right: 0; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); z-index: var(--z-overlay); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: center; gap: var(--space-2); height: var(--more-nav-h); padding: var(--space-3) var(--space-4); background: var(--bg-surface); }
   .more-item { display: flex; align-items: center; gap: var(--space-2); height: var(--control-h-touch); padding: 0 var(--space-3); border: var(--border-w) solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--text-14); line-height: var(--leading-14); text-align: left; }
   .more-item[aria-current="page"] { border-color: var(--accent-border); background: var(--accent-subtle); color: var(--accent); font-weight: var(--weight-semibold); }
-  /* V41-1：最後一列是「使用說明」連結（a.more-item）；#validation 多出開發者驗證時共 5 列、排成三行，面板高跟著加一行（頂欄群組與選單的位置都讀 --more-nav-h）。 */
-  body:has(#mobile-more > :nth-child(5)) { --more-nav-h: calc(var(--control-h-touch) * 3 + var(--space-2) * 2 + var(--space-3) * 2); }
+  /* V41-1：最後一列是「使用說明」連結（a.more-item）；#validation 多出開發者驗證時共 5 列、排成三行，面板高跟著加一行。
+     --more-nav-h 的使用者都在 .topbar（頂欄群組、選單）或 .mobile-tabbar（面板）內，所以由 shell-frame 在這兩個元素標 data-more-tall。
+     不用 body:has(…)：390 載入示範資料時它讓樣式重算多約 45ms（V41-1 驗收的 trace 比對）。 */
+  .topbar[data-more-tall], .mobile-tabbar[data-more-tall] { --more-nav-h: calc(var(--control-h-touch) * 3 + var(--space-2) * 2 + var(--space-3) * 2); }
   /* 手機頁首：h1 仍在（螢幕閱讀器與 E2E 讀得到），畫面上讓位給期間按鈕；資料來源頁的本頁動作照常顯示。 */
   .page-heading { min-height: 0; padding: 0; }
   .page-heading .page-heading-text { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
