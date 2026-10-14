@@ -36,7 +36,7 @@
 | axe | 23／23／23／21 個狀態，全部 0 問題 |
 | keyboard-walk、network-log | 與 v4.0.0 相同 |
 | 禁區與邊界五條 | 都是空的 |
-| commit 之後的 diff | 見文末（收尾 commit 之後補記） |
+| commit 之後的 diff | 空（收尾 commit `8aac363`；禁區與邊界） |
 
 ## 待使用者決定
 
