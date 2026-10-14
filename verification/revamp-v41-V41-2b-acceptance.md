@@ -10,7 +10,7 @@
 | 整合 | `b9e47c8`、`9d49482`、`e480f11` | 合併兩支分支；逐張看過 23 張截圖，改寫與畫面不符的 alt 與內文；`GUIDE_MEDIA=write` 只補 labels_hash |
 | 審查 | — | 四個面向（規格、內容、截圖品質、無障礙／測試／效能），major 3 項，nit 49 項只記錄 |
 | 審查修正 | `504960f` | 見 §5 |
-| 收尾 | 見 §8 | 孤兒檔檢查忽略點開頭的系統檔、驗收、基準、STATUS、功能保留表 |
+| 收尾 | `a59cf22` | 孤兒檔檢查忽略點開頭的系統檔、驗收、基準、STATUS、功能保留表 |
 
 ## 1. 完成項目
 
@@ -157,4 +157,6 @@
 
 ## 8. commit
 
-CLOSE_ROW
+- 收尾 commit `a59cf22`。
+- commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區）` 與 `git diff --stat 872662d HEAD -- src/app/api vercel.json src/application/analytics.ts` 都是空的。
+- 沒有推送、沒有部署。
