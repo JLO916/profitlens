@@ -140,10 +140,13 @@ const mediaManifest = JSON.parse(readFileSync(MEDIA_MANIFEST, "utf8")) as { upda
 /** GUIDE_AREA_STEPS 攤平（＝清單 media 的順序）。 */
 const PLANNED_MEDIA = Object.entries(GUIDE_AREA_STEPS).flatMap(([area, steps]) => (steps ?? []).map(step => ({ area, stepKey: step.key, mediaId: step.mediaId })));
 const plannedMedia = (id: string) => PLANNED_MEDIA.find(step => step.mediaId === id);
-/** 目錄下所有檔案（相對該目錄、以 / 分隔）；目錄不存在時是空陣列。 */
+/**
+ * 目錄下所有檔案（相對該目錄、以 / 分隔）；目錄不存在時是空陣列。
+ * 以 . 開頭的檔（Finder 的 .DS_Store 等，.gitignore 已排除、不會提交）不算：V41-2b 驗收時本機 public/guide/.DS_Store 讓孤兒檔檢查誤報。
+ */
 function listFiles(directory: string): string[] {
   if (!existsSync(directory)) return [];
-  return readdirSync(directory, { recursive: true, encoding: "utf8" }).filter(name => statSync(join(directory, name)).isFile()).map(name => name.split("\\").join("/")).sort();
+  return readdirSync(directory, { recursive: true, encoding: "utf8" }).map(name => name.split("\\").join("/")).filter(name => !name.split("/").some(part => part.startsWith(".")) && statSync(join(directory, name)).isFile()).sort();
 }
 const sha256Hex = (data: Buffer) => createHash("sha256").update(data).digest("hex");
 
