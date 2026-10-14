@@ -56,7 +56,7 @@
 | 批次 | 主題 | 大小 | 依賴（批次、拍板、人工關卡） | 狀態 |
 |---|---|---|---|---|
 | V41-0 | 基準與護欄（不改畫面；含 O3 Next.js 修正版） | M | D-V41-1、12、15 | 完成（2026-10-14；Next.js 16.3.8；52 張 0 差異；驗收見 `verification/revamp-v41-V41-0-acceptance.md`） |
-| V41-1 | 說明路由、入口與介紹三段 | M | V41-0；D-V41-4、5、9、10、11、13、19 | 未開工 |
+| V41-1 | 說明路由、入口與介紹三段 | M | V41-0；D-V41-4、5、9、10、11、13、19 | 進行中（2026-10-14 開工） |
 | V41-2a | 媒體管線與前 5 個功能區（start、import、overview、diagnosis、products） | M | V41-1；D-V41-20、21、22 | 未開工 |
 | V41-2b | 後 6 個功能區（scenarios、actions、meeting、data、evidence、export） | M | V41-2a | 未開工 |
 | （preview） | 經使用者當次同意部署 Vercel preview（push 分支也算），給 H7 用（D-V41-24） | — | V41-2b | — |
