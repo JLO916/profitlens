@@ -12,7 +12,7 @@
 | 審查 | — | 三個面向（規格、內容、無障礙與測試），2 項 major，指的是同一件事（見 §4）；nit 29 項只記錄 |
 | 審查修正 | `a1415f1` | 只改文件：新增待決事項 D-V41-25，版面不改 |
 | 驗收修正 | `53c8843` | 「更多」面板加高改用 `data-more-tall`，不用 `body:has`（§3「390 TBT 與成對比較」） |
-| 收尾 | 見 §7 | 驗收、基準、STATUS、功能保留表 |
+| 收尾 | `71013cd` | 驗收、基準、STATUS、功能保留表；commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區）` 與 `git diff --stat 872662d HEAD -- src/app/api vercel.json src/application/analytics.ts` 都是空的 |
 
 ## 1. 完成項目
 
