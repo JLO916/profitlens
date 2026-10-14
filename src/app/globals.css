@@ -3051,3 +3051,55 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 /* PRD §4.5 G24「390：圖 display:none，只留資料表」：≤ 767px 不顯示圖框（標題、副標、資料表照常；圖框保持掛載）。 */
 @media (max-width: 767px) { .products-scatter .chart-frame { display: none; } }
 /* ── V4-10 D 錨點結束 ── */
+/* ── V41-1 說明頁（.guide-*；docs/revamp-v4.1/01_PRD.md §3.1、§3.3、§3.6）：/guide 的外框、說明首頁與功能區目錄 ── */
+/* 伺服器元件的靜態頁，不用工作台殼層（頂欄、側欄、期間列、底部分頁列）。只用既有 token 與字級（design-lint：字級、圓角種類不增加，不寫色碼）。
+   閱讀欄最寬 760px，左右留 --gutter（≤ 767px 為 16px），1440／1280／768／390 都沒有橫向捲動；焦點框沿用全站的 :focus-visible。
+   連結（.guide-link）常駐底線，不只靠顏色區分；按鈕沿用 C12 .ui-btn。 */
+.guide-shell { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg-page); }
+.guide-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); min-height: var(--topbar-h); padding: var(--space-2) var(--gutter); background: var(--bg-surface); border-bottom: var(--border-w) solid var(--border-subtle); }
+.guide-brand { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--text-16); line-height: var(--leading-16); font-weight: var(--weight-semibold); color: var(--text-primary); white-space: nowrap; }
+.guide-brand .brand-mark { display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-sm); }
+.guide-main { flex: 1; width: 100%; max-width: calc(760px + var(--gutter) * 2); margin: 0 auto; padding: var(--space-6) var(--gutter) var(--space-7); font-size: var(--text-16); line-height: 1.75; color: var(--text-primary); overflow-wrap: anywhere; }
+.guide-main p + p { margin-top: var(--space-3); }
+.guide-link { color: var(--accent); text-decoration: underline; text-decoration-color: var(--accent-border); text-underline-offset: 3px; }
+.guide-link:hover { color: var(--accent-hover); text-decoration-color: currentColor; }
+/* 開頭：h1（全站 h1 字級）、一句話、兩個動作（主要：開啟工作台；次要：從 30 秒上手開始）。 */
+.guide-hero { display: grid; gap: var(--space-3); }
+.guide-intro { color: var(--text-secondary); }
+.guide-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-1); }
+/* 本頁目錄：錨點連結（Tab 順序＝閱讀順序），不加編號。獨特性 7 項與 30 秒上手 4 步是有序清單，顯示編號（Tailwind preflight 預設拿掉清單符號）。 */
+.guide-toc { margin-top: var(--space-5); padding: var(--space-3) var(--space-4); background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); }
+.guide-toc ol { display: grid; gap: var(--space-1); margin: 0; padding: 0; list-style: none; font-size: var(--text-14); line-height: var(--leading-14); }
+/* 段落：h2 → h3 不跳級；段落之間一條 1px 分隔線。 */
+.guide-section { margin-top: var(--space-6); padding-top: var(--space-6); border-top: var(--border-w) solid var(--border-subtle); scroll-margin-top: var(--space-4); }
+.guide-section h2 { margin-bottom: var(--space-3); font-size: var(--text-20); line-height: var(--leading-20); }
+.guide-section h3 { font-size: var(--text-16); line-height: var(--leading-16); }
+.guide-section .guide-subheading { margin: var(--space-5) 0 var(--space-2); }
+.guide-lead { font-weight: var(--weight-semibold); }
+.guide-note { font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+/* 三種角色：每個角色一塊（h3＋dl），寬螢幕並排、窄螢幕直排。 */
+.guide-roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; }
+.guide-role { min-width: 0; padding: var(--space-4); background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); }
+.guide-role dl { display: grid; gap: var(--space-1); margin: 0; }
+.guide-role dt { margin-top: var(--space-2); font-size: var(--text-13); line-height: var(--leading-13); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.guide-role dd { margin: 0; font-size: var(--text-14); line-height: var(--leading-14); }
+.guide-inline-list { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin: 0; padding: 0; list-style: none; }
+/* 獨特性 7 項：標題、說明、「在哪裡看得到」一行。 */
+.guide-unique { display: grid; gap: var(--space-5); margin: var(--space-4) 0 0; padding-left: var(--space-5); list-style: decimal; }
+.guide-unique > li::marker, .guide-steps > li::marker { font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.guide-unique > li > p { margin-top: var(--space-1); }
+.guide-where { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); }
+.guide-where > span:first-child { color: var(--text-secondary); }
+.guide-steps { display: grid; gap: var(--space-2); margin: 0; padding-left: var(--space-5); list-style: decimal; }
+/* 功能區目錄（V41-2a 起有卡片）：依分組排列的連結卡。 */
+.guide-card-groups { display: grid; gap: var(--space-5); }
+.guide-card-group h3 { margin-bottom: var(--space-2); }
+.guide-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.guide-card { display: grid; gap: var(--space-1); height: 100%; padding: var(--space-3) var(--space-4); background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); }
+.guide-card:hover { border-color: var(--accent-border); background: var(--bg-hover); }
+.guide-card-title { font-weight: var(--weight-semibold); color: var(--accent); text-decoration: underline; text-decoration-color: var(--accent-border); text-underline-offset: 3px; }
+.guide-card-answer { font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+/* 頁尾：示範資料是虛構的合成資料、資料不上傳；分析啟用時另顯示揭露句（D-V41-23）。 */
+.guide-footer { padding: var(--space-4) var(--gutter) var(--space-5); background: var(--bg-surface); border-top: var(--border-w) solid var(--border-subtle); }
+.guide-footer-inner { display: grid; gap: var(--space-1); max-width: 760px; margin: 0 auto; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-tertiary); }
+/* ── V41-1 說明頁錨點結束 ── */

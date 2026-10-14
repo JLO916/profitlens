@@ -10,6 +10,7 @@ import RootLayout, { metadata } from "@/app/layout";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import { SITE_URL } from "@/app/site";
+import { GUIDE_AREAS } from "@/application/guide";
 
 // R7（08 §3、決策 D8／D9／D10）：分享卡片、robots／sitemap、favicon、使用分析開關與事件內容、空狀態文案、進階驗證頁預設隱藏。
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
@@ -101,14 +102,15 @@ describe("R7-3 metadata、robots、sitemap、favicon、分享圖", () => {
     expect(metadata.openGraph?.images).toEqual([{ url: "/og.png", width: 1200, height: 630, alt: labels.brand.title }]);
     expect(metadata.twitter).toMatchObject({ card: "summary_large_image", title: labels.brand.title, description: labels.brand.description, images: ["/og.png"] });
   });
-  it("robots 允許全部並指向 sitemap；sitemap 只有正式站一個網址", () => {
+  it("robots 允許全部並指向 sitemap；sitemap＝[正式站, 正式站/guide, …GUIDE_AREAS 各功能區頁]（V41-1，D-V41-13），每筆 lastModified 都是 Date", () => {
     expect(robots()).toEqual({ rules: { userAgent: "*", allow: "/" }, sitemap: "https://profitlens-tau.vercel.app/sitemap.xml" });
     const before = Date.now();
     const entries = sitemap();
-    expect(entries).toHaveLength(1);
-    expect(entries[0].url).toBe("https://profitlens-tau.vercel.app");
-    expect(entries[0].lastModified).toBeInstanceOf(Date);
-    expect((entries[0].lastModified as Date).getTime()).toBeGreaterThanOrEqual(before);
+    expect(entries.map(entry => entry.url)).toEqual(["https://profitlens-tau.vercel.app", "https://profitlens-tau.vercel.app/guide", ...GUIDE_AREAS.map(({ area }) => `https://profitlens-tau.vercel.app/guide/${area}`)]);
+    for (const entry of entries) {
+      expect(entry.lastModified, entry.url).toBeInstanceOf(Date);
+      expect((entry.lastModified as Date).getTime(), entry.url).toBeGreaterThanOrEqual(before);
+    }
   });
   it("src/app/icon.svg：品牌綠底＋白線的 lens 符號（24×24 viewBox）", () => {
     const svg = readFileSync(resolve("src/app/icon.svg"), "utf8");

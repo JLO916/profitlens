@@ -8,3 +8,5 @@
 # 規則：V41-1 起每批把本批新增的 testid 追加到本檔最後（不排序、不刪列），之後批次刪掉或改名 v4.1 新 testid 時 tests/testid-baseline.test.ts 會失敗。
 #   新 testid 依 CLAUDE.md（v4.1）：guide-hub、guide-area-{area}、guide-step-{area}-{stepKey}、guide-shot-{mediaId}、guide-video-{videoId}、guide-toc、guide-entry-{sidebar|more|home|footer}；不用陣列索引。
 #   已在 verification/revamp-v4/testids-v3.txt 或 verification/revamp-v4/testids-v4-added.txt 的 testid 不重複列入（testid-baseline 斷言）。
+guide-hub	e2e	V41-1	說明首頁 /guide 的內容外層（src/app/guide/page.tsx:33，靜態字面值）；說明頁不在工作台的 SSR 情境內，由 tests/guide-routes.test.tsx 以 SSR（外框＋頁面）斷言、tests/e2e/guide.spec.ts 在瀏覽器四尺寸開 /guide 收集
+guide-toc	e2e	V41-1	說明首頁的本頁目錄 <nav aria-label={guide.hub.tocAria}>（src/app/guide/page.tsx:42，靜態字面值；錨點連到 #why、#who、#unique、#quickstart，功能區目錄有卡片時加 #areas）；tests/guide-routes.test.tsx 以 SSR 斷言、tests/e2e/guide.spec.ts 在瀏覽器開 /guide 收集
