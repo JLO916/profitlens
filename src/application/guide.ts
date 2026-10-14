@@ -40,7 +40,7 @@ export interface GuideArea {
 /**
  * V41-2a 錨點：各功能區規劃好的步驟（GUIDE_CONTENT.md §2；key＝guideLabels.guide.areas.{area}.steps.{key}，mediaId＝src/application/guide-media.json 的截圖代號，
  * 檔名 public/guide/{area}/{mediaId}.webp、基準 verification/guide-media/baseline/{mediaId}.png；-m 結尾是手機 390×844）。
- * 截圖管線（verification/guide-media/capture.spec.ts）依這裡擷取；頁面上線與否看 GUIDE_PUBLISHED_AREAS。V41-2b 再加其餘 6 個功能區。
+ * 截圖管線（verification/guide-media/capture.spec.ts）依這裡擷取；頁面上線與否看 GUIDE_PUBLISHED_AREAS。V41-2b 加其餘 6 個功能區（11 區 44 步）。
  */
 export const GUIDE_AREA_STEPS: Readonly<Partial<Record<GuideAreaCode, readonly GuideStep[]>>> = {
   start: [{ key: "load", mediaId: "start-load" }, { key: "nav", mediaId: "start-nav" }, { key: "period", mediaId: "start-period" }, { key: "mobile", mediaId: "start-mobile-m" }],
@@ -48,6 +48,13 @@ export const GUIDE_AREA_STEPS: Readonly<Partial<Record<GuideAreaCode, readonly G
   overview: [{ key: "snapshot", mediaId: "overview-snapshot" }, { key: "top-three", mediaId: "overview-top-three" }, { key: "bridge", mediaId: "overview-bridge" }, { key: "trend", mediaId: "overview-trend" }, { key: "bridge-mobile", mediaId: "overview-bridge-m" }],
   diagnosis: [{ key: "list", mediaId: "diagnosis-list" }, { key: "add-action", mediaId: "diagnosis-add-action" }, { key: "share", mediaId: "diagnosis-share" }, { key: "heat", mediaId: "diagnosis-heat" }],
   products: [{ key: "variance", mediaId: "products-variance" }, { key: "table", mediaId: "products-table" }, { key: "pareto", mediaId: "products-pareto" }],
+  // ── V41-2b 錨點：後 6 個功能區（GUIDE_CONTENT §2.6–2.11，23 步）；頁面上線時由 V41-2b 加進 GUIDE_PUBLISHED_AREAS。
+  scenarios: [{ key: "setup", mediaId: "scenarios-setup" }, { key: "inputs", mediaId: "scenarios-inputs" }, { key: "compare", mediaId: "scenarios-compare" }, { key: "threshold", mediaId: "scenarios-threshold" }],
+  actions: [{ key: "board", mediaId: "actions-board" }, { key: "edit", mediaId: "actions-edit" }, { key: "pin", mediaId: "actions-pin" }],
+  meeting: [{ key: "agenda", mediaId: "meeting-agenda" }, { key: "decision", mediaId: "meeting-decision" }, { key: "present", mediaId: "meeting-present" }, { key: "finalize", mediaId: "meeting-finalize" }, { key: "copy", mediaId: "meeting-copy" }],
+  data: [{ key: "scope", mediaId: "data-scope" }, { key: "coverage", mediaId: "data-coverage" }, { key: "issues", mediaId: "data-issues" }, { key: "preview", mediaId: "data-preview" }],
+  evidence: [{ key: "drawer", mediaId: "evidence-drawer" }, { key: "sources", mediaId: "evidence-sources" }, { key: "basis", mediaId: "evidence-basis" }],
+  export: [{ key: "export", mediaId: "export-menu" }, { key: "save", mediaId: "export-save" }, { key: "backup", mediaId: "export-backup" }, { key: "delete", mediaId: "export-delete" }],
 };
 
 /** 已上線（有 /guide/{area} 頁面）的功能區，依 GUIDE_AREA_CODES 的順序。V41-1 是空的；V41-2a 加 start、import、overview、diagnosis、products（V41-2b 加其餘 6 個）。 */
