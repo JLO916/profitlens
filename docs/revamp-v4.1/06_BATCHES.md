@@ -114,7 +114,7 @@
 
 **依賴**：V41-0；D-V41-4、5、9、10、11、13、19（D-V41-23 預設沿用）。
 
-**允許變動畫面**：含側欄的畫面（01–10 中有側欄的尺寸；實際張數與理由寫進驗收）；02 mobile（頁尾連結）；新增 14、15。11、12、13 是元素截圖，必須 0 差異。
+**允許變動畫面**：含側欄的畫面（01–10 中有側欄的尺寸；實際張數與理由寫進驗收）；02 mobile（頁尾連結）；新增 14、15。11、12、13 是元素截圖，必須 0 差異。（V41-1 審查實測：390 沒有側欄，04–09 也是整頁截圖、也含頁尾；頁尾加入口後在 390 多折一行，頁高 +16px，頁尾以上逐列相同。「02 mobile」是否更正為「02、04–09 mobile」待 D-V41-25 拍板（`09_DECISIONS_PENDING.md`）；拍板前這 6 張在驗收列為超出允許清單，見 `verification/revamp-v41-V41-1-acceptance.md`。）
 
 **驗收重點**：B1 `/` First Load ≤ V41-0 實測＋1,024，且 `/` 首載 chunk 的 `GUIDE_SENTINELS` 為 0；B2 `/guide` First Load ≤ 框架基準＋5,120 且不含禁用模組；`/guide` Lighthouse a11y 100、SEO ≥ 95（或依第 9 點記錄 canonical 稽核）、Performance 1440 ≥ 97、390 ≥ 90；四尺寸 axe 0 serious；入口另開分頁後工作台資料仍在；canonical 與 og:image 正確；sitemap 兩個網址（`tests/relaunch.test.ts` 同步）；launch-check 13 項＋補充通過；新 key 只在兩個前綴下、copy-scan 0 違規、重打的介面字串 0；B2 首屏、B9、390 TBT 不退。
 
