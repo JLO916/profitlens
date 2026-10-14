@@ -305,7 +305,7 @@ S2（原為「示範資料＋目標」）沒有步驟用到，已刪除；代號
 - alt：`{ui:shell.nav.scenarios.headline}`的方案欄，可以選通路與範本。
 
 **2. 填假設並試算**（`inputs`）
-- 文字：填 `{ui:scenarios.inputs.volume.label}`、`{ui:scenarios.inputs.discount.label}`、`{ui:scenarios.inputs.fulfillmentUnit.label}`、`{ui:scenarios.inputs.adSpend.label}` 與 `{ui:scenarios.inputs.oneOff.label}`；不變的填 0（`{ui:scenarios.buttons.fillZero}`）。勾選 `{ui:scenarios.inputs.acceptAssumptions}` 後按 `{ui:scenarios.buttons.calculate}`。
+- 文字：填 `{ui:scenarios.inputs.volume.label}`、`{ui:scenarios.inputs.discount.label}`、`{ui:scenarios.inputs.fulfillmentUnit.label}`、`{ui:scenarios.inputs.adSpend.label}` 與 `{ui:scenarios.inputs.oneOff.label}`；不變的填 0（`{ui:scenarios.buttons.applyTemplate}`「`{ui:scenarios.presets.items.keep.name}`」會把五格都填 0；V41-2b 更正：「全部填 0」按鈕已在 R5 移除）。勾選 `{ui:scenarios.inputs.acceptAssumptions}` 後按 `{ui:scenarios.buttons.calculate}`。
 - 截圖：`scenarios-inputs`｜S1，範本 `{ui:scenarios.presets.items.keep.name}` 已帶入｜輸入區與勾選框｜強調框：試算按鈕
 - alt：方案的五個假設欄位，下方是確認勾選框與試算按鈕。
 
@@ -316,7 +316,7 @@ S2（原為「示範資料＋目標」）沒有步驟用到，已刪除；代號
 
 **4. 看`{ui:scenarios.sections.scenarioBreakeven}`，再`{ui:meeting.buttons.selectForMeeting}`**（`threshold`）
 - 文字：`{ui:scenarios.sections.scenarioBreakeven}` 填三個銷量假設，看兩個門檻落在哪裡；決定要討論的方案按 `{ui:meeting.buttons.selectForMeeting}`。
-- 截圖：`scenarios-threshold`｜S6，展開門檻區｜門檻圖與選入會議按鈕｜強調框：選入會議
+- 截圖：`scenarios-threshold`｜S6，展開門檻區，三個假設填 −50、−20、30 並按 `{ui:scenarios.sensitivity.recalc}`（V41-2b 補：沒有填時圖上沒有實心點）｜門檻圖與選入會議按鈕｜強調框：選入會議
 - alt：兩個門檻與三個假設的位置，橫軸是銷量增減。
 
 - 要注意：這是「如果這樣做會變多少」的試算，不是預測；銷量範圍固定在 −90% 到 +100%，系統不外推、不代填。

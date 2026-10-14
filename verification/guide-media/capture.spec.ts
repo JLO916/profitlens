@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { labels } from "../../src/i18n";
+import { fill, labels } from "../../src/i18n";
 import { wizardDetails } from "../../tests/e2e/import-wizard-helpers";
 import { openBasis, openDetails, openDownloads, openStorage } from "../../tests/e2e/replacement-helpers";
 import { NO_OVERLAY_STYLE, evidenceDrawer, goTo, noOverlayStylePath } from "../revamp-v4-capture/shared";
@@ -57,6 +57,8 @@ const toDiagnosis = async (page: Page) => { await stateDemo(page); await goTo(pa
 const toProducts = async (page: Page) => { await stateDemo(page); await goTo(page, "products", page.getByTestId("product-table")); };
 // ── V41-2b ──
 const scenarioCard = (page: Page, n: number) => page.getByTestId(`scenario-${n}`);
+/** scenarios-threshold 的三個銷量假設 A、B、C（%；虛構的值，在 −90% 到 +100% 內，不與兩個門檻重疊）。 */
+const SENSITIVITY_VOLUMES = ["-50", "-20", "30"] as const;
 const toScenarios = async (page: Page) => { await stateDemo(page); await goTo(page, "scenarios", scenarioCard(page, 1)); };
 const toActions = async (page: Page) => { await stateActionsAndMeeting(page); await goTo(page, "actions", page.getByTestId("action-board")); };
 const toData = async (page: Page) => { await stateDemo(page); await goTo(page, "data", page.getByTestId("data-scope")); };
@@ -267,12 +269,18 @@ const CAPTURES: Record<string, Capture> = {
     region: page => [page.getByTestId("chart-scenarios-variance"), page.locator("section.scenario-compare")],
     pad: 8,
   },
-  // S6，方案 1 展開「要賣到多少才划算」：「選入會議」到門檻圖的圖框（兩個門檻；三個假設沒有填，不代填；圖下的資料表收合列不截）；框「選入會議」。
+  // S6，方案 1 展開「要賣到多少才划算」，三個假設填 SENSITIVITY_VOLUMES 並按「試算三個假設」（像使用者一樣明填，系統不代填）：
+  // 「選入會議」到門檻圖的圖框（兩個門檻是空心圈、三個假設是實心點 A、B、C；圖下的資料表收合列與輸入格不截）；框「選入會議」。
   "scenarios-threshold": {
     state: async page => {
       await stateScenarios(page);
-      await openDetails(scenarioCard(page, 1).getByTestId("scenario-sensitivity"));
+      const sensitivity = scenarioCard(page, 1).getByTestId("scenario-sensitivity");
+      await openDetails(sensitivity);
       await expect(scenarioCard(page, 1).getByTestId("chart-scenarios-threshold")).toBeVisible();
+      for (const [index, value] of SENSITIVITY_VOLUMES.entries()) await sensitivity.getByLabel(fill(labels.scenarios.sensitivity.inputLabel, { letter: String.fromCharCode(65 + index) }), { exact: true }).fill(value);
+      await sensitivity.getByRole("button", { name: labels.scenarios.sensitivity.recalc, exact: true }).click();
+      await expect(sensitivity.getByTestId("sensitivity-result").getByRole("table")).toBeVisible();
+      for (const id of ["a", "b", "c"]) await expect(sensitivity.getByTestId(`chart-scenarios-threshold-point-${id}`)).toBeVisible();
     },
     region: page => [page.getByTestId("scenario-select-1"), scenarioCard(page, 1).getByTestId("chart-scenarios-threshold").locator(".chart-frame")],
     highlight: page => [page.getByTestId("scenario-select-1")],

@@ -206,7 +206,7 @@
       "height": 314,
       "bytes": 14074,
       "sha256": "804fc426ed5d9e89040e563fe679c628bdc50de7a9debc02a579b19f963830ab",
-      "labels_hash": "68887c0b84498a44f4ba2097f08fd192ca842b7c9cbbf16bbfa52bd0131a7939"
+      "labels_hash": "05cfee6b638d7fd28f83dad7c749c9426938023bf62eb7dfe9869af790bf8fb9"
     },
     {
       "id": "scenarios-compare",
@@ -222,8 +222,8 @@
       "file": "guide/scenarios/scenarios-threshold.webp",
       "width": 362,
       "height": 781,
-      "bytes": 38186,
-      "sha256": "c246ca899d7ca812914f6dbb59d2786d03cab4268b5dfe33fc7224793f15f3b3",
+      "bytes": 38886,
+      "sha256": "868047e1940cac99f6b7032d3847930af497de525ce2fabe11c09488ad1627d9",
       "labels_hash": "c1578fa5f2ce913dc452f25c4a4574b53984dfc94c295e85ee39df22b2ee916b"
     },
     {

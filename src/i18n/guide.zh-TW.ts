@@ -331,7 +331,7 @@ export const guideLabels = {
           },
           inputs: {
             title: "填假設並試算",
-            body: "填{ui:scenarios.inputs.volume.label}、{ui:scenarios.inputs.discount.label}、{ui:scenarios.inputs.fulfillmentUnit.label}、{ui:scenarios.inputs.adSpend.label}與{ui:scenarios.inputs.oneOff.label}；不變的填 0（{ui:scenarios.buttons.fillZero}）。勾選{ui:scenarios.inputs.acceptAssumptions}後按{ui:scenarios.buttons.calculate}。",
+            body: "填{ui:scenarios.inputs.volume.label}、{ui:scenarios.inputs.discount.label}、{ui:scenarios.inputs.fulfillmentUnit.label}、{ui:scenarios.inputs.adSpend.label}與{ui:scenarios.inputs.oneOff.label}；不變的填 0（{ui:scenarios.buttons.applyTemplate}「{ui:scenarios.presets.items.keep.name}」會把五格都填 0）。勾選{ui:scenarios.inputs.acceptAssumptions}後按{ui:scenarios.buttons.calculate}。",
             alt: "方案的五個假設欄位，下方是確認勾選框與「{ui:scenarios.buttons.calculate}」按鈕；強調框框住「{ui:scenarios.buttons.calculate}」按鈕。",
             caption: "按下後，方案欄寫出試算後的扣廣告後貢獻。",
           },
@@ -344,7 +344,7 @@ export const guideLabels = {
           threshold: {
             title: "看{ui:scenarios.sections.scenarioBreakeven}，再{ui:meeting.buttons.selectForMeeting}",
             body: "{ui:scenarios.sections.scenarioBreakeven}填三個銷量假設，看兩個門檻落在哪裡；決定要討論的方案按{ui:meeting.buttons.selectForMeeting}。",
-            alt: "「{ui:meeting.buttons.selectForMeeting}」下方展開{ui:scenarios.sections.scenarioBreakeven}：打平與維持現況兩個門檻，下面的圖用空心圈標出門檻的位置，橫軸是銷量增減；強調框框住「{ui:meeting.buttons.selectForMeeting}」。",
+            alt: "「{ui:meeting.buttons.selectForMeeting}」下方展開{ui:scenarios.sections.scenarioBreakeven}：打平與維持現況兩個門檻，下面的圖用空心圈標出兩個門檻、實心點 A、B、C 標出三個假設的位置，橫軸是銷量增減；強調框框住「{ui:meeting.buttons.selectForMeeting}」。",
             caption: "選入後，這個方案會帶進{ui:shell.nav.meeting.headline}。",
           },
         },
