@@ -1,0 +1,721 @@
+{
+  "lighthouse": {
+    "version": "13.5.0",
+    "base": "http://127.0.0.1:3101",
+    "generatedAt": "2026-10-14T07:54:47.444Z",
+    "lazyChunks": {
+      "desktop-1440": {
+        "windows": [
+          {
+            "step": "載入示範資料",
+            "from": 3325,
+            "to": 4948.9
+          },
+          {
+            "step": "切到通路健檢",
+            "from": 7067.7,
+            "to": 8568
+          },
+          {
+            "step": "切到商品毛利",
+            "from": 10840.5,
+            "to": 12205.4
+          },
+          {
+            "step": "切到假設試算",
+            "from": 14450.3,
+            "to": 15847.9
+          },
+          {
+            "step": "切到會議紀錄",
+            "from": 17418.5,
+            "to": 19020.2
+          },
+          {
+            "step": "切到資料來源",
+            "from": 20721.9,
+            "to": 22165.3
+          },
+          {
+            "step": "切到待辦",
+            "from": 23847.6,
+            "to": 25264.7
+          }
+        ],
+        "chunks": [
+          {
+            "file": "699.2e1bf1b340858936.js",
+            "start": 6954.3,
+            "end": 6986.4
+          },
+          {
+            "file": "398.cd165eabccb86431.js",
+            "start": 6954.4,
+            "end": 6986.9
+          },
+          {
+            "file": "480.3cccb583d9261988.js",
+            "start": 6954.5,
+            "end": 6984.7
+          },
+          {
+            "file": "153.670795653daefc2e.js",
+            "start": 6954.6,
+            "end": 6988.5
+          },
+          {
+            "file": "327.0559c824c26663b0.js",
+            "start": 6954.7,
+            "end": 6988.7
+          },
+          {
+            "file": "879.e02aeda1a9f5cb29.js",
+            "start": 6954.8,
+            "end": 6989.1
+          },
+          {
+            "file": "788.8ae978395d0b106c.js",
+            "start": 6954.9,
+            "end": 6995.1
+          },
+          {
+            "file": "336.d3b55fe4a68e9646.js",
+            "start": 6955,
+            "end": 6996.2
+          },
+          {
+            "file": "591.685482bda7d87d8e.js",
+            "start": 6955.1,
+            "end": 6994.9
+          },
+          {
+            "file": "752.3b50af6ae5d24aaa.js",
+            "start": 6955.1,
+            "end": 6995.6
+          }
+        ],
+        "insideTimespans": []
+      },
+      "mobile-390": {
+        "windows": [
+          {
+            "step": "載入示範資料",
+            "from": 3306.2,
+            "to": 8170.5
+          },
+          {
+            "step": "切到通路健檢",
+            "from": 10529.3,
+            "to": 13264.6
+          },
+          {
+            "step": "切到商品毛利",
+            "from": 15529.3,
+            "to": 17491.7
+          },
+          {
+            "step": "切到假設試算",
+            "from": 19928.6,
+            "to": 21925
+          },
+          {
+            "step": "切到會議紀錄",
+            "from": 23746.1,
+            "to": 26737
+          },
+          {
+            "step": "切到資料來源",
+            "from": 28831.3,
+            "to": 31125.5
+          },
+          {
+            "step": "切到待辦",
+            "from": 33112.6,
+            "to": 35425.4
+          }
+        ],
+        "chunks": [
+          {
+            "file": "699.2e1bf1b340858936.js",
+            "start": 10086.9,
+            "end": 10096.7
+          },
+          {
+            "file": "398.cd165eabccb86431.js",
+            "start": 10087.1,
+            "end": 10095.9
+          },
+          {
+            "file": "480.3cccb583d9261988.js",
+            "start": 10087.2,
+            "end": 10096
+          },
+          {
+            "file": "153.670795653daefc2e.js",
+            "start": 10087.3,
+            "end": 10097.4
+          },
+          {
+            "file": "327.0559c824c26663b0.js",
+            "start": 10087.4,
+            "end": 10097.5
+          },
+          {
+            "file": "879.e02aeda1a9f5cb29.js",
+            "start": 10087.5,
+            "end": 10097.7
+          },
+          {
+            "file": "788.8ae978395d0b106c.js",
+            "start": 10087.6,
+            "end": 10101.1
+          },
+          {
+            "file": "336.d3b55fe4a68e9646.js",
+            "start": 10087.7,
+            "end": 10102.1
+          },
+          {
+            "file": "752.3b50af6ae5d24aaa.js",
+            "start": 10087.8,
+            "end": 10101.5
+          },
+          {
+            "file": "591.685482bda7d87d8e.js",
+            "start": 10087.9,
+            "end": 10101.3
+          }
+        ],
+        "insideTimespans": []
+      }
+    },
+    "loadAverage": {
+      "before": [
+        4.07,
+        4.39,
+        4.34
+      ],
+      "after": [
+        4.37,
+        4.48,
+        4.38
+      ],
+      "note": "os.loadavg()（1／5／15 分鐘）；本機負載高時 timespan 的 TBT／INP 會偏高，比較時以同負載重跑為準"
+    },
+    "method": "user-flow：navigate（空狀態首頁）→ timespan（載入示範資料）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot；accessibility 取 snapshot、performance 0–100 只有 navigation 有，timespan 記 TBT／CLS／INP；desktop 用 lighthouse desktopConfig、mobile 用預設（模擬節流）並改成 390×844",
+    "desktop-1440": [
+      {
+        "step": "首頁（空狀態，navigation）",
+        "mode": "navigation",
+        "accessibility": 100,
+        "performance": 100,
+        "performanceAudits": "25/31",
+        "metrics": {
+          "fcpMs": 252.188,
+          "lcpMs": 591.281,
+          "speedIndexMs": 252.188,
+          "tbtMs": 14,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "載入示範資料（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "22/23",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 171.6,
+          "cls": 0,
+          "inpMs": 31.207
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "經營總覽（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到通路健檢（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "19/22",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 170.089,
+          "cls": 0,
+          "inpMs": 227.279
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "通路健檢（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到商品毛利（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "20/20",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": 50.164
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "商品毛利（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到假設試算（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "18/18",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0.002,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "假設試算（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到會議紀錄（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 228.962,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "會議紀錄（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到資料來源（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/6",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "資料來源（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到待辦（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "18/18",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0.054,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "待辦（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      }
+    ],
+    "mobile-390": [
+      {
+        "step": "首頁（空狀態，navigation）",
+        "mode": "navigation",
+        "accessibility": 100,
+        "performance": 97,
+        "performanceAudits": "25/32",
+        "metrics": {
+          "fcpMs": 1058.596,
+          "lcpMs": 2030.596,
+          "speedIndexMs": 1058.596,
+          "tbtMs": 160,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "載入示範資料（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "20/23",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 1150.303,
+          "cls": 0.001,
+          "inpMs": 33.163
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "經營總覽（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到通路健檢（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "18/22",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 890.783,
+          "cls": 0,
+          "inpMs": 955.374
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "通路健檢（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到商品毛利（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "19/20",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 100.991,
+          "cls": 0.054,
+          "inpMs": 180.925
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "商品毛利（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到假設試算（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "20/20",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0,
+          "inpMs": 20.573
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "假設試算（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到會議紀錄（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "6/7",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 1017.696,
+          "cls": 0,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "會議紀錄（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到資料來源（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "20/20",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 19.861,
+          "cls": 0.054,
+          "inpMs": 78.247
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "資料來源（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "切到待辦（timespan）",
+        "mode": "timespan",
+        "accessibility": null,
+        "performance": null,
+        "performanceAudits": "18/18",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": 0,
+          "cls": 0.053,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      },
+      {
+        "step": "待辦（snapshot）",
+        "mode": "snapshot",
+        "accessibility": 100,
+        "performance": null,
+        "performanceAudits": "1/1",
+        "metrics": {
+          "fcpMs": null,
+          "lcpMs": null,
+          "speedIndexMs": null,
+          "tbtMs": null,
+          "cls": null,
+          "inpMs": null
+        },
+        "failedAccessibilityAudits": [],
+        "failedAccessibilityNodes": {}
+      }
+    ]
+  }
+}
