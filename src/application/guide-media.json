@@ -49,10 +49,10 @@
     {
       "id": "import-mapping",
       "file": "guide/import/import-mapping.webp",
-      "width": 942,
+      "width": 600,
       "height": 491,
-      "bytes": 25576,
-      "sha256": "29d9357cb889a49190a47085e04628eb728376ce80c97b433716362c5061897e",
+      "bytes": 25096,
+      "sha256": "934fea1648d411d570e5972efe69732186935b2bf5d84f35e291e25055af4141",
       "labels_hash": "0aed8784e6b58665e61e9d117d5ed044973e255b8b3b3d203103aa22c5a55da1"
     },
     {
@@ -78,8 +78,8 @@
       "file": "guide/import/import-issues.webp",
       "width": 942,
       "height": 456,
-      "bytes": 25664,
-      "sha256": "00fe78bb918dbfdf5fb0f7deb8481d8ec4ccb43c309df451e8a9771baa39a0bb",
+      "bytes": 25492,
+      "sha256": "97c57c6fee6a9c7623b825bd2d5612aa50377abb25a662220573de8ffada8277",
       "labels_hash": "6f45f38298da2a824109f661bcc01cd9764f8873106fe033b678f2c92bd5722d"
     },
     {
@@ -98,7 +98,7 @@
       "height": 332,
       "bytes": 44294,
       "sha256": "ad5b6114cd9f43c5311f64ace733de741e3eaed5d134408cce25857be9522a4b",
-      "labels_hash": "4fb6605599b32443c476b52e5d10a2136cdced67e99b9cfced2d72bdc6ed825d"
+      "labels_hash": "92df58265c1bb101d796b4a53d1e87f8466c4d2a5f49a1b2a98bad0b6e1ba977"
     },
     {
       "id": "overview-bridge",

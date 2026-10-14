@@ -15,9 +15,9 @@ export const guideLabels = {
       // ── V41-2a 錨點：功能區頁的共用字（GUIDE_CONTENT §0、§1.7）。
       /** 每張截圖外包的原尺寸連結，只放在可及名稱（sr-only）：連結的可及名稱＝alt＋這一句。 */
       fullSize: "（開啟原尺寸圖）",
-      /** 圖說後另起一行的資料來源註記：S1、S3（示範資料，src/application/guide.ts 的 guideDataNote＝demo）。 */
+      /** 圖說後另起一行的資料來源註記：S1、S6–S8（示範資料，src/application/guide.ts 的 guideDataNote＝demo）。 */
       demoCaption: "畫面為示範資料（虛構）",
-      /** 同上：S4、S5（repo 內既有的合成檔，guideDataNote＝synthetic）。 */
+      /** 同上：S3、S4、S5（repo 內既有的合成檔，guideDataNote＝synthetic；D-V41-21＝A）。 */
       syntheticCaption: "畫面為虛構的合成資料",
       /** 說明頁頁尾：{date}＝src/application/guide-media.json 的 updated（只有實際更新了媒體時才變；還沒有媒體時整句不顯示）。 */
       mediaUpdated: "截圖是示範資料的畫面，更新於 {date}。",
@@ -137,7 +137,7 @@ export const guideLabels = {
      * 11 個功能區（D-V41-19；代號＝src/application/guide.ts 的 GUIDE_AREA_CODES）的標題。和介面字串相同的部分一律引用。列入 L1。
      * ── V41-2a 錨點：start、import、overview、diagnosis、products 的功能區頁（GUIDE_CONTENT §2.1–2.5）。每區 answers（這頁回答什麼；也是說明首頁目錄卡片的一句與 metadata description）、
      * before（開始前：使用者要先做的操作）、steps.{key}.{title, body, alt, caption}（key 與截圖代號在 GUIDE_AREA_STEPS；title 列入 L1、動詞開頭；body 的 {ui:…} 渲染成粗體；
-     * alt 寫畫面上看得到什麼；caption 是這一步的結果，頁面另起一行加資料來源註記）、notes（要注意，≤ 3 點）。不寫示範資料的數字。
+     * alt 寫畫面上看得到什麼、強調框框住哪裡（PRD §3.6；沒有強調框的截圖只寫前者）；caption 是這一步的結果，頁面另起一行加資料來源註記）、notes（要注意，≤ 3 點）。不寫示範資料的數字。
      */
     areas: {
       start: {
@@ -148,25 +148,25 @@ export const guideLabels = {
           load: {
             title: "{ui:shell.buttons.loadDemo}",
             body: "在首頁按{ui:shell.buttons.loadDemo}。右下角會問「{ui:storage.autoSave.promptTitle}」，先按{ui:storage.autoSave.decline}；之後隨時可以在頂欄{ui:shell.buttons.save}改。",
-            alt: "首頁的「{ui:shell.buttons.loadDemo}」與「{ui:shell.buttons.importData}」兩個按鈕，下方是{ui:empty.stateV3.filesHeading}。",
+            alt: "首頁的「{ui:shell.buttons.loadDemo}」與「{ui:shell.buttons.importData}」兩個按鈕，下方是{ui:empty.stateV3.filesHeading}；強調框框住「{ui:shell.buttons.loadDemo}」。",
             caption: "載入後，每一頁都用示範資料計算。",
           },
           nav: {
             title: "認識側欄四組",
             body: "側欄分成{ui:shell.sidebarV3.groups.results}、{ui:shell.sidebarV3.groups.causes}、{ui:shell.sidebarV3.groups.decisions}、{ui:shell.sidebarV3.groups.data}四組，由上往下就是一次檢討的順序。",
-            alt: "側欄的四組頁面，從{ui:shell.nav.overview.headline}到{ui:shell.nav.data.headline}。",
+            alt: "側欄的四組頁面，從{ui:shell.nav.overview.headline}到{ui:shell.nav.data.headline}；強調框框住四個分組標題。",
             caption: "點側欄的頁名，就換到那一頁。",
           },
           period: {
             title: "換期間與通路",
             body: "期間列寫著本期對比上期與天數。{ui:shell.sections.presetGroup}（例如{ui:shell.periods.presets.last4w}）按一下就套用；要自己選日期，按{ui:shell.periodBarV3.custom}，改好再按{ui:shell.buttons.apply}。{ui:shell.periodBar.filter.channel}選單可以只看一個通路。",
-            alt: "期間列左邊是{ui:shell.sections.presetGroup}，右邊寫著本期與上期的日期、天數。",
+            alt: "期間列左邊是{ui:shell.sections.presetGroup}，右邊寫著本期與上期的日期、天數；強調框框住{ui:shell.sections.presetGroup}。",
             caption: "套用後，每一頁都改用新的期間與通路。",
           },
           mobile: {
             title: "在手機上換頁與換期間",
             body: "手機底部是{ui:shell.mobileNav.tabs.overview}、{ui:shell.mobileNav.tabs.diagnosis}、{ui:shell.mobileNav.tabs.actions}、{ui:shell.mobileNav.tabs.meeting}四個分頁，其他頁在{ui:shell.mobileNav.more}。期間收成一個按鈕，按下打開{ui:shell.periodBarV3.sheetTitle}。",
-            alt: "手機畫面底部的分頁列，「{ui:shell.mobileNav.more}」面板列出其他頁與工具。",
+            alt: "手機畫面底部的分頁列，「{ui:shell.mobileNav.more}」面板列出其他頁與工具；強調框框住「{ui:shell.mobileNav.more}」面板。",
             caption: "{ui:shell.mobileNav.more}裡是底部分頁以外的頁面與工具。",
           },
         },
@@ -182,32 +182,32 @@ export const guideLabels = {
           files: {
             title: "{ui:importWizard.steps.0}",
             body: "按{ui:shell.buttons.importData}，把三份檔案拖進來，或點選檔；系統依檔名自動歸位，看不出來的會請你指定。",
-            alt: "匯入精靈第 1 步，三份檔案已經放進對應的位置。",
+            alt: "匯入精靈第 1 步，三份檔案已經放進對應的位置；強調框框住上方的拖放區。",
             caption: "三份檔案都讀取完成、沒有被擋下，才能到{ui:importWizard.steps.1}。",
           },
           mapping: {
             title: "{ui:importWizard.steps.1}",
             body: "系統先自動對照欄名，已對上的收合起來；你只要確認沒對上的欄。",
-            alt: "欄位對照，三份檔案的欄名都已自動對上，各收合成一列。",
+            alt: "欄位對照，三份檔案的欄名都已自動對上，各收合成一列；強調框框住第一份檔案的收合列。",
             caption: "必填欄位都對上，才能到{ui:importWizard.steps.2}。",
           },
           basis: {
             title: "{ui:importWizard.steps.2}",
             body: "平台報表的金額多半含稅，選{ui:importWizard.basis.inclusive}；系統逐列換算成未稅，原值和換算值都看得到。確認期間後，按{ui:importWizard.confirmAndCheck}。",
-            alt: "金額基準選了含稅，下方是建議的上期與本期。",
+            alt: "金額基準選了含稅，下方是建議的上期與本期；強調框框住含稅選項。",
             caption: "按下後，系統檢核全部資料，再到{ui:importWizard.steps.3}。",
           },
           review: {
             title: "{ui:importWizard.steps.3}",
-            body: "看狀態一行與資料問題表：每個問題都有檔名、欄位、原始行號和修法。沒有阻擋的問題就按{ui:importWizard.commit}。",
-            alt: "第 4 步的檢核結果與對帳表，所有來源都相符。",
+            body: "看狀態一行與資料問題表：每個問題都有檔名、欄位和修法，對得到原始列的另附行號。沒有阻擋的問題就按{ui:importWizard.commit}。",
+            alt: "第 4 步的檢核結果與對帳表，所有來源都相符；強調框框住「{ui:importWizard.commit}」按鈕。",
             caption: "按下後，這批資料才取代目前的資料。",
           },
           issues: {
             title: "有問題時怎麼看",
             body: "被擋下的檔案會在問題表列出原因與修法；修好原始檔再重新選檔。套用後，問題也會留在{ui:shell.nav.data.headline}頁。",
-            alt: "資料問題表，寫著哪個檔、哪一天哪個通路少了廣告列。",
-            caption: "每個問題都寫出檔名、行號與修法。",
+            alt: "資料問題表，寫著哪個檔、哪一天哪個通路少了廣告列；強調框框住第一列的檔名。",
+            caption: "每個問題都寫出檔名與修法；缺列的問題寫出哪一天、哪個通路。",
           },
         },
         notes: [
@@ -224,19 +224,19 @@ export const guideLabels = {
           snapshot: {
             title: "先讀{ui:overview.snapshotUi.heading}與關鍵數字",
             body: "最上面的{ui:overview.snapshotUi.heading}用一句話說本期多賺或少賺多少；下面五個關鍵數字依序是淨營收、商品毛利、扣廣告前貢獻、扣廣告後貢獻、扣廣告後貢獻率，每個都有上期與差額。",
-            alt: "{ui:shell.nav.overview.headline}上方，一句話寫本期與上期的差額，下面五個關鍵數字。",
+            alt: "{ui:shell.nav.overview.headline}上方，一句話寫本期與上期的差額，下面五個關鍵數字；強調框框住這一句話。",
             caption: "五個關鍵數字都附上期與差額。",
           },
           "top-three": {
             title: "看{ui:overview.sections.topThree}",
             body: "{ui:overview.sections.topThree}依影響金額列出要先處理的事，按{ui:evidence.buttons.viewEvidence}或到{ui:shell.nav.diagnosis.headline}。",
-            alt: "{ui:overview.sections.topThree}，每一項寫通路、項目和影響金額。",
+            alt: "{ui:overview.sections.topThree}，每一項寫差額、說明和影響金額，右側是「{ui:evidence.buttons.viewEvidence}」與「{ui:actions.buttons.addToActions}」；強調框框住第一項。",
             caption: "按{ui:evidence.buttons.viewEvidence}，打開這一項的{ui:evidence.sections.evidence}。",
           },
           bridge: {
             title: "用瀑布圖看差額從哪裡來",
             body: "{ui:overview.sections.bridge}把兩期的扣廣告後貢獻差額拆成九項，加起來剛好等於總差額。圖的標題就是結論；旁邊的表可以逐項核對，點任一柱或數字，打開{ui:evidence.sections.evidence}。",
-            alt: "{ui:overview.sections.bridge}的瀑布圖，從上期扣廣告後貢獻一項一項加減到本期。",
+            alt: "{ui:overview.sections.bridge}的瀑布圖，從上期扣廣告後貢獻一項一項加減到本期；強調框框住減少最多的一項。",
             caption: "九項差額加起來，等於兩期扣廣告後貢獻的差額。",
           },
           trend: {
@@ -248,7 +248,7 @@ export const guideLabels = {
           "bridge-mobile": {
             title: "手機上看瀑布圖",
             body: "手機上拆解表在前，每一項旁邊有一條差額條；瀑布圖可以左右捲動。",
-            alt: "手機上的{ui:overview.sections.bridge}表，每一列旁邊有差額條。",
+            alt: "手機上的{ui:overview.sections.bridge}表，每一列旁邊有差額條；強調框框住減少最多那一列的差額條。",
             caption: "手機上先看表，差額條標出每一項的增減。",
           },
         },
@@ -265,13 +265,13 @@ export const guideLabels = {
           list: {
             title: "讀{ui:diagnosis.sections.diagnosisList}",
             body: "{ui:diagnosis.sections.diagnosisList}{ui:overview.sections.impactLegend}，資料缺漏排最前。每一項寫哪個通路、哪項費用、影響多少，展開看{ui:diagnosis.sections.cause}與{ui:diagnosis.sections.nextStep}。",
-            alt: "{ui:shell.nav.diagnosis.headline}的結果清單，每一項有影響金額條。",
+            alt: "{ui:shell.nav.diagnosis.headline}的結果清單，每一項有影響金額條；強調框框住第一項的影響金額條。",
             caption: "資料缺漏排最前，其餘{ui:overview.sections.impactLegend}。",
           },
           "add-action": {
             title: "把一項{ui:actions.buttons.addToActions}",
             body: "決定要追的項目，按{ui:actions.buttons.addToActions}；它會帶著當時的數字與來源進到待辦。",
-            alt: "展開的健檢項目，下一步建議下方是「{ui:actions.buttons.addToActions}」按鈕。",
+            alt: "展開的健檢項目，下一步建議下方是「{ui:actions.buttons.addToActions}」按鈕；強調框框住這個按鈕。",
             caption: "加入後，這一項會出現在{ui:shell.nav.actions.headline}頁。",
           },
           share: {
@@ -283,7 +283,7 @@ export const guideLabels = {
           heat: {
             title: "找出哪一天出問題",
             body: "日 × 通路的月曆熱表標出扣廣告後貢獻為負的日子；用 Tab 進到表裡，方向鍵移動，按 Enter 開當天的明細。",
-            alt: "各通路每天的扣廣告後貢獻月曆，負的日子有顏色。",
+            alt: "各通路每天的扣廣告後貢獻月曆，負的日子有顏色；強調框框住標題寫的最差那一天。",
             caption: "有顏色的格子，就是扣廣告後貢獻為負的日子。",
           },
         },
@@ -297,13 +297,13 @@ export const guideLabels = {
           variance: {
             title: "看減少最多與增加最多的商品",
             body: "最上面的圖列出商品毛利兩期差額減少最多與增加最多的商品；旁邊的表是{ui:products.sections.productTopBottom}前 10 名。",
-            alt: "商品毛利兩期差額圖，上半部是減少最多的商品。",
+            alt: "商品毛利兩期差額圖，上半部是減少最多的商品；強調框框住減少最多的那一列。",
             caption: "減少最多的商品排在最上面。",
           },
           table: {
             title: "在完整表裡排序、篩選與匯出",
             body: "{ui:products.highlights.fullTable}表可以用{ui:products.pageV3.sortLabel}換排序、搜尋商品，{ui:products.pageV3.exportPage}匯出目前顯示的商品。",
-            alt: "{ui:products.highlights.fullTable}表，上方是品類、搜尋、{ui:products.pageV3.sortLabel}與欄位選單。",
+            alt: "{ui:products.highlights.fullTable}表，上方是品類、搜尋、{ui:products.pageV3.sortLabel}與欄位選單；強調框框住{ui:products.pageV3.sortLabel}選單。",
             caption: "{ui:products.pageV3.exportPage}只匯出目前顯示的商品。",
           },
           pareto: {

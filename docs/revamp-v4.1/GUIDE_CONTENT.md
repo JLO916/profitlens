@@ -27,7 +27,7 @@
 | S7 | S6＋待辦與選入會議 | S6 後在通路健檢第一項按 `{ui:actions.buttons.addToActions}`；試算方案按 `{ui:meeting.buttons.selectForMeeting}` |
 | S8 | S7＋已結束一次會議 | S7 後在會議紀錄按 `{ui:meeting.buttons.finalizeMeeting}` 並確認 |
 
-S2（原為「示範資料＋目標」）沒有步驟用到，已刪除；代號不重編。S4、S5 的圖說加一句「畫面為虛構的合成資料」（`guide.common.syntheticCaption`）；S1、S3、S6–S8 用 `guide.common.demoCaption`「畫面為示範資料（虛構）」。
+S2（原為「示範資料＋目標」）沒有步驟用到，已刪除；代號不重編。S3、S4、S5 的圖說加一句「畫面為虛構的合成資料」（`guide.common.syntheticCaption`；S3 用的 `tests/fixtures/inclusive_tax` 不是示範資料，依 D-V41-21＝A 註明合成資料，V41-2a 審查更正）；S1、S6–S8 用 `guide.common.demoCaption`「畫面為示範資料（虛構）」。
 
 ---
 

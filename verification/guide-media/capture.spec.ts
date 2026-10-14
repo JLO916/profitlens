@@ -89,11 +89,17 @@ const CAPTURES: Record<string, Capture> = {
     region: page => [wizardStep(page, 1)],
     highlight: page => [wizardStep(page, 1).locator(".dropzone")],
   },
-  // 第 2 步欄位對照（標準欄名全部自動對上，收合成「已對照的 N 欄」）；沒有未對上的欄，框第一個收合列。
+  // 第 2 步欄位對照（標準欄名全部自動對上，收合成「已對照的 N 欄」）；文字都在左邊約 550 px 內，截到 600 px（390 顯示比值約 0.55）；沒有未對上的欄，框第一個收合列。
+  // 收合列（summary）是滿版的區塊：擷取時把它設成 width: fit-content（display 仍是 list-item，文字與三角形位置不變、不移動其他元素），框只圍住文字，不被 600 px 的裁切切掉右邊。
   "import-mapping": {
     state: page => stateInclusiveWizard(page, 2),
     region: page => [wizardStep(page, 2)],
-    highlight: page => [wizardStep(page, 2).locator("details.mapping-done > summary").first()],
+    highlight: async page => {
+      const summary = wizardStep(page, 2).locator("details.mapping-done > summary").first();
+      await summary.evaluate(element => (element as HTMLElement).style.setProperty("width", "fit-content"));
+      return [summary];
+    },
+    maxWidth: 600,
   },
   // 第 3 步金額基準到建議的兩期（到「調整比較期間」為止，下方的通路與確認不截）；框含稅選項（選項與說明一行）。
   "import-basis": {
@@ -107,11 +113,12 @@ const CAPTURES: Record<string, Capture> = {
     region: page => [wizardStep(page, 4), page.locator(".wizard-footer")],
     highlight: page => [page.getByTestId("import-commit")],
   },
-  // 缺廣告列（S4）的第 4 步：檢核狀態一行到問題清單；框第一列的檔名與行號。
+  // 缺廣告列（S4）的第 4 步：檢核狀態一行到問題清單；框第一列的檔案格（檔名與哪一天哪個通路）。
+  // 缺列的問題沒有原始行號（行號格是空的），所以不照 GUIDE_CONTENT 的「檔名與行號」框行號格（V41-2a 審查更正）。
   "import-issues": {
     state: stateMissingAdDayReview,
     region: page => [page.getByTestId("import-status"), wizardStep(page, 4).locator("table.issue-table")],
-    highlight: page => { const row = wizardStep(page, 4).locator("table.issue-table tbody tr").first(); return [row.locator("td").nth(0), row.locator("td").nth(1)]; },
+    highlight: page => [wizardStep(page, 4).locator("table.issue-table tbody tr").first().locator("td").nth(0)],
     // 表頭 sticky（蓋住格子上緣外的框）、捲動容器裁掉表格下緣外的框：框畫在格子內。
     offset: -3,
   },

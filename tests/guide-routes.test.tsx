@@ -139,9 +139,9 @@ describe("V41-2a 功能區頁的資料（src/application/guide.ts、guideLabels�
     expect(g.areas.import.beforeLink).toBe("{ui:importWizard.orderLevelLink}");
   });
 
-  it("截圖的資料來源註記：S0 的 start-load 不加；S4、S5 的 import-issues、products-pareto 是合成資料；其餘是示範資料", () => {
+  it("截圖的資料來源註記：S0 的 start-load 不加；S3、S4、S5 的匯入精靈 5 張與 products-pareto 是合成資料（D-V41-21＝A）；其餘是示範資料", () => {
     const notes = Object.fromEntries(GUIDE_AREAS.flatMap(entry => entry.steps).map(step => [step.mediaId, guideDataNote(step.mediaId)]));
-    expect(Object.entries(notes).filter(([, note]) => note !== "demo")).toEqual([["start-load", "none"], ["import-issues", "synthetic"], ["products-pareto", "synthetic"]]);
+    expect(Object.entries(notes).filter(([, note]) => note !== "demo")).toEqual([["start-load", "none"], ["import-files", "synthetic"], ["import-mapping", "synthetic"], ["import-basis", "synthetic"], ["import-review", "synthetic"], ["import-issues", "synthetic"], ["products-pareto", "synthetic"]]);
     expect(g.common.demoCaption).toBe("畫面為示範資料（虛構）");
     expect(g.common.syntheticCaption).toBe("畫面為虛構的合成資料");
   });

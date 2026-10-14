@@ -141,10 +141,10 @@ export function resolveUiRefs(text: string, labels: unknown): string {
 
 // ── V41-2a 錨點：功能區頁（/guide/{area}）的資料——截圖的資料來源註記、「開始前」的文件連結、「要注意」的功能區連結、「下一步」（GUIDE_CONTENT.md §0、§2.1–2.5）。
 
-/** 截圖的資料來源註記（圖說後另起一行）：none＝不加（S0 首頁空狀態）、demo＝guide.common.demoCaption（S1、S3、S6–S8）、synthetic＝guide.common.syntheticCaption（S4、S5）。 */
+/** 截圖的資料來源註記（圖說後另起一行）：none＝不加（S0 首頁空狀態）、demo＝guide.common.demoCaption（S1、S6–S8）、synthetic＝guide.common.syntheticCaption（S3、S4、S5；D-V41-21＝A：含稅換算、缺列與資料問題、商品毛利為負都用 repo 內既有的合成檔，圖說註明「虛構的合成資料」）。 */
 export type GuideDataNote = "none" | "demo" | "synthetic";
-/** 不是 demo 的截圖（mediaId → 註記）；沒列在這裡的都是 demo。start-load 是 S0；import-issues 是 S4（fixtures/errors/missing_ad_day）；products-pareto 是 S5（tests/fixtures/synthetic-4-channel，D-V41-21＝A）。 */
-export const GUIDE_MEDIA_DATA_NOTE: Readonly<Record<string, GuideDataNote>> = { "start-load": "none", "import-issues": "synthetic", "products-pareto": "synthetic" };
+/** 不是 demo 的截圖（mediaId → 註記）；沒列在這裡的都是 demo。start-load 是 S0；import-files／mapping／basis／review 是 S3（tests/fixtures/inclusive_tax）；import-issues 是 S4（fixtures/errors/missing_ad_day）；products-pareto 是 S5（tests/fixtures/synthetic-4-channel）。 */
+export const GUIDE_MEDIA_DATA_NOTE: Readonly<Record<string, GuideDataNote>> = { "start-load": "none", "import-files": "synthetic", "import-mapping": "synthetic", "import-basis": "synthetic", "import-review": "synthetic", "import-issues": "synthetic", "products-pareto": "synthetic" };
 /** 一張截圖的資料來源註記。 */
 export const guideDataNote = (mediaId: string): GuideDataNote => Object.hasOwn(GUIDE_MEDIA_DATA_NOTE, mediaId) ? GUIDE_MEDIA_DATA_NOTE[mediaId] : "demo";
 
