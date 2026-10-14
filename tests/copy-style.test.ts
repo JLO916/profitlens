@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { labels } from "@/i18n";
@@ -12,6 +12,12 @@ import { isWhitelisted, l1ClauseLengths, scanLabels, type CopyScanMetrics } from
 // L1 子句長度：PRD 沒有把「頁面、區塊、列的標題」對應到 labels 鍵，V3-0 先限定 rules.*.title、sections.*、nav.*.label、buttons.*（V3-2c 新位置 rules.*.headline、<分組>.sections.*、shell.nav.*.headline、<分組>.buttons.*）。
 
 const CEILING_FILE = resolve("tests/fixtures/copy-style-ceiling.json");
+/**
+ * V41-0（D-V41-12＝A'、docs/revamp-v4.1/01_PRD.md §3.4）：src/i18n/guide.zh-TW.ts 存在時（V41-1 起），guideLabels 用同一套規則一起掃、指標相加，
+ * 上限檔同樣約束說明頁字串（guideLabels 新字串 0 違規）。V41-0 還沒有這個檔，指標不變。與 tests/labels-structure.test.ts 的 GUIDE_FILE 同一個條件。
+ */
+const GUIDE_FILE = resolve("src/i18n/guide.zh-TW.ts");
+const guideLabels = existsSync(GUIDE_FILE) ? ((await import(/* @vite-ignore */ GUIDE_FILE)) as { guideLabels: Record<string, unknown> }).guideLabels : undefined;
 const readCeilings = () => (JSON.parse(readFileSync(CEILING_FILE, "utf8")) as { ceilings: Record<string, unknown> }).ceilings;
 
 /** V3-0 實測的 v2 基準（2026-10-05）。上限檔永遠不得高於這裡；這份常數只在 V3-0 寫一次，之後不改。V3-2 目標全部為 0。 */
@@ -21,7 +27,7 @@ const V3_0_BASELINE: CopyScanMetrics = {
 };
 
 describe("copy-style 棘輪（labels 值）", () => {
-  const { metrics, details } = scanLabels(labels, labelModule);
+  const { metrics, details } = scanLabels(labels, labelModule, guideLabels);
 
   it.each(Object.keys(V3_0_BASELINE) as (keyof CopyScanMetrics)[])("%s 不超過上限", key => {
     const ceiling = readCeilings()[key];
