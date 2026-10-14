@@ -15,6 +15,8 @@
 //   每個 <loc> 都是 SITE_URL 或在 SITE_URL/guide 之下、每個說明頁 <loc> 把正式站網域換成 --base 後 GET → 200（說明頁網址取自 sitemap 本身，不讀 GUIDE_AREAS）；
 //   另加三項：GET /guide → 200 且 HTML 含品牌名（labels.brand.name）；/guide 的 og:image＝SITE_URL/og.png、canonical＝SITE_URL/guide；GET /guide/not-a-area → 404。
 //   這幾項失敗時，原因寫在該項的 note（終端機與 JSON 都看得到）。
+// V41-2a（docs/revamp-v4.1/01_PRD.md §3.8「一張說明截圖 200」）：13 項不變；補充再加「guide-media」：取媒體清單 src/application/guide-media.json 的第一筆，
+//   GET /{file} → 200 且 content-type 是 image/webp。清單是空的時這一項記為失敗並在 note 寫明（V41-2a 起說明頁一定有截圖）。
 //
 // 用法（在 repo 根目錄執行；fixtures 以目前工作目錄的 fixtures/ 為準）：
 //   node scripts/launch-check.mjs --base http://127.0.0.1:3100 --out verification/revamp-v3/V3-10/launch-check-local.json
@@ -28,6 +30,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { labels } from "../src/i18n/labels.zh-TW.ts";
+import guideMedia from "../src/application/guide-media.json" with { type: "json" };
 
 const args = process.argv.slice(2);
 const option = (name) => { const index = args.indexOf(name); return index >= 0 ? args[index + 1] : undefined; };
@@ -149,6 +152,14 @@ const because = reasons => (reasons.length ? { note: reasons.join("；") } : {})
   extras.push({ name: "guide-metadata", path: "/guide", status: guide.status, tags, expected, pass: mismatched.length === 0, ...because(mismatched.map(key => `${key}＝${tags[key] ?? "（沒有）"}，應為 ${expected[key]}`)) });
   const unknown = await request("/guide/not-a-area");
   record(extras, "/guide/not-a-area", "GET", unknown, { name: "guide-unknown-area", pass: unknown.status === 404, ...because(unknown.status === 404 ? [] : ["應為 404"]) });
+  // V41-2a：一張說明截圖 200（媒體清單的第一筆；file 是相對於網站根目錄的路徑，例如 guide/start/start-load.webp）。
+  const first = guideMedia.media[0];
+  if (first) {
+    const path = `/${first.file}`;
+    const media = await request(path);
+    const type = media.headers.get("content-type") ?? "";
+    record(extras, path, "GET", media, { name: "guide-media", id: first.id, bytes: media.bytes.length, pass: media.status === 200 && type.startsWith("image/webp"), ...because([...(media.status === 200 ? [] : ["應為 200"]), ...(type.startsWith("image/webp") ? [] : [`content-type＝${type || "（沒有）"}，應為 image/webp`])]) });
+  } else extras.push({ name: "guide-media", path: null, pass: false, note: "媒體清單 src/application/guide-media.json 沒有任何項目，無法檢查說明截圖" });
 }
 {
   const apiNoStore = checks.filter(item => item.path.startsWith("/api/") && item.status !== null);

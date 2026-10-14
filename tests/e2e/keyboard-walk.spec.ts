@@ -2,7 +2,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { guideLabels } from "../../src/i18n/guide.zh-TW";
-import { resolveUiRefs } from "../../src/application/guide";
+import { GUIDE_AREA_STEPS, resolveUiRefs } from "../../src/application/guide";
 import { closeTopbarMore, openTopbarMore } from "./replacement-helpers";
 import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverlay, kpiLink, loadDemo, pageName, writeLaunchJson, type FocusStop, type LaunchPage } from "./launch-helpers-v310";
 
@@ -23,6 +23,7 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V4-7a：資料來源頁加「涵蓋時間軸資料表 summary」里程碑（G20 在 data-issues 之上），不晚於 V4-0a；「問題表或範圍列表」以 V4-7a 實測為新基準（見 V4_7A_DATA_ISSUES_TABS；D-V4-52＝A）。
  * V4-8b：總覽、健檢、試算、會議補「第一張圖的資料表 summary」里程碑（見 V4_8B_FIRST_TABLE_TABS）；總覽、健檢、待辦、會議的主要里程碑不晚於 V4-0a，總覽 KPI 前可聚焦 ≤ 10。
  * V41-1：另加說明首頁 /guide 的走查（檔尾的獨立測試；七頁的斷言不變），結果寫在「{專案}-guide」鍵。
+ * V41-2a：另加功能區頁 /guide/start 的走查（檔尾的獨立測試，與 /guide 共用 guideWalk、expectGuideWalk），結果寫在「{專案}-guide-start」鍵。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -395,23 +396,20 @@ test("V4-1 鍵盤走查（768）：總覽沒有 aria-hidden 內的 Tab 停留點
   expect(errors).toEqual([]);
 });
 
+/** V41-1、V41-2a：說明頁鍵盤走查的結果（整份寫進 KEYBOARD_WALK_OUT 的「{專案}-guide…」鍵）。 */
+interface GuideWalk {
+  skipLink: { firstStop: string; name: string; isSkipLink: boolean; focusVisible: boolean; focusAfterEnter: { id: string | null; inMain: boolean } };
+  milestones: { name: string; tabs: number | null; reachedBy: Position | null }[];
+  stopsInMain: number; endedAt: number | null; endedBy: string | null; stops: string[]; invisibleStops: string[]; repeatedStops: string[]; ariaHiddenStops: string[]; lostFocus: number;
+}
 /**
- * V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項「keyboard-walk 加 /guide」；01_PRD.md §3.6）：說明首頁 /guide 的鍵盤走查，1440 與 390 各一次。
- * 里程碑：跳至主要內容是第一個 Tab 停留點、按 Enter 後焦點進到 main；說明首頁的「開啟工作台」（guide.hub.openApp）；本頁目錄第一項。
- * 從 main 一路按 Tab 到文件結尾：每個停留點焦點可見、不在 [aria-hidden=true] 內、不回到停過的元素、焦點不中途掉回 body。
- * 結果寫進 KEYBOARD_WALK_OUT 的「{專案}-guide」鍵（不蓋掉同一專案七頁走查的紀錄）。
+ * V41-1、V41-2a：說明頁（/guide、/guide/{area}）的鍵盤走查，頁面要先開好。
+ * 1. 第一個 Tab 停留點是跳至主要內容；按 Enter 後焦點進到 main。
+ * 2. 從 main 一路按 Tab 到文件結尾（說明頁的頁尾沒有連結）：記錄每個停留點、焦點看不到的、回到停過的、在 [aria-hidden=true] 內的停留點，以及各里程碑第一次到達的步數。
+ * Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算。
  */
-test("V41-1 鍵盤走查（/guide）：跳至主要內容、開啟工作台、目錄第一項；焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點", async ({ page }, testInfo) => {
-  test.skip(!["desktop", "mobile"].includes(testInfo.project.name), "鍵盤走查只跑 1440（desktop）與 390（mobile）");
-  test.setTimeout(120_000);
-  const errors: string[] = [];
-  page.on("pageerror", error => errors.push(`pageerror:${error.message}`));
-  await hideDevOverlay(page);
-  await page.goto("/guide");
-  await expect(page.getByTestId("guide-hub")).toBeVisible();
-  // 「開啟工作台」以可及名稱（guideLabels）找到後標成屬性給選擇器用（只加在測試的瀏覽器內）。
-  await page.getByTestId("guide-hub").getByRole("link", { name: resolveUiRefs(guideLabels.guide.hub.openApp, labels), exact: true }).evaluate(el => el.setAttribute("data-v41-open-app", ""));
-  const milestones = [{ name: "開啟工作台", selector: "[data-v41-open-app]" }, { name: "本頁目錄第一項", selector: "[data-testid='guide-toc'] a[href]" }].map(item => ({ ...item, tabs: null as number | null, reachedBy: null as Position | null }));
+async function guideWalk(page: Page, targets: { name: string; selector: string }[]): Promise<GuideWalk> {
+  const milestones = targets.map(item => ({ ...item, tabs: null as number | null, reachedBy: null as Position | null }));
 
   // 1. 第一個 Tab 停留點是跳至主要內容；按 Enter 後焦點進到 main。
   await page.keyboard.press("Tab");
@@ -454,25 +452,81 @@ test("V41-1 鍵盤走查（/guide）：跳至主要內容、開啟工作台、�
       if (position === "inside" || position === "after") { item.tabs = tab; item.reachedBy = position; }
     }
   }
-  const result = {
-    checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, path: "/guide",
-    skipLink: { firstStop: describe(skip), isSkipLink: skipIsLink, focusVisible: skip.focusVisible, focusAfterEnter: afterSkip },
-    milestones: milestones.map(({ name, tabs, reachedBy }) => ({ name, tabs, reachedBy })), stopsInMain: stops.length, endedAt, endedBy, stops, invisibleStops, repeatedStops, ariaHiddenStops, lostFocus, pageErrors: errors,
-    note: "V41-1：Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算",
+  return {
+    skipLink: { firstStop: describe(skip), name: skip.name, isSkipLink: skipIsLink, focusVisible: skip.focusVisible, focusAfterEnter: afterSkip },
+    milestones: milestones.map(({ name, tabs, reachedBy }) => ({ name, tabs, reachedBy })), stopsInMain: stops.length, endedAt, endedBy, stops, invisibleStops, repeatedStops, ariaHiddenStops, lostFocus,
   };
+}
+/** V41-1、V41-2a：說明頁走查的共同規則——跳至主要內容、焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點、走得到文件結尾、每個里程碑都到得了。 */
+function expectGuideWalk(walked: GuideWalk) {
+  expect(walked.skipLink.isSkipLink, "第一個 Tab 停留點是跳至主要內容").toBe(true);
+  expect(walked.skipLink.name).toBe(labels.shell.sidebar.skipLink);
+  expect(walked.skipLink.focusVisible, "跳至主要內容的焦點看得到").toBe(true);
+  expect(walked.skipLink.focusAfterEnter, "按 Enter 後焦點移到 main#main-content").toEqual({ id: "main-content", inMain: true });
+  expect(walked.invisibleStops, "每個停留點都要看得到焦點").toEqual([]);
+  expect(walked.repeatedStops, "Tab 不可回到停過的元素（焦點陷阱）").toEqual([]);
+  expect(walked.lostFocus, "Tab 不可讓焦點掉回 body").toBe(0);
+  expect(walked.ariaHiddenStops, "任何 Tab 停留點都不在 [aria-hidden=true] 內").toEqual([]);
+  expect(walked.endedAt, "一路按 Tab 最後會走到文件結尾（沒有困在頁內）").not.toBeNull();
+  for (const milestone of walked.milestones) expect(milestone.tabs, `Tab 要能到達「${milestone.name}」`).not.toBeNull();
+}
+
+/**
+ * V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項「keyboard-walk 加 /guide」；01_PRD.md §3.6）：說明首頁 /guide 的鍵盤走查，1440 與 390 各一次。
+ * 里程碑：跳至主要內容是第一個 Tab 停留點、按 Enter 後焦點進到 main；說明首頁的「開啟工作台」（guide.hub.openApp）；本頁目錄第一項。
+ * 從 main 一路按 Tab 到文件結尾：每個停留點焦點可見、不在 [aria-hidden=true] 內、不回到停過的元素、焦點不中途掉回 body（guideWalk、expectGuideWalk）。
+ * 結果寫進 KEYBOARD_WALK_OUT 的「{專案}-guide」鍵（不蓋掉同一專案七頁走查的紀錄）。
+ */
+test("V41-1 鍵盤走查（/guide）：跳至主要內容、開啟工作台、目錄第一項；焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點", async ({ page }, testInfo) => {
+  test.skip(!["desktop", "mobile"].includes(testInfo.project.name), "鍵盤走查只跑 1440（desktop）與 390（mobile）");
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(`pageerror:${error.message}`));
+  await hideDevOverlay(page);
+  await page.goto("/guide");
+  await expect(page.getByTestId("guide-hub")).toBeVisible();
+  // 「開啟工作台」以可及名稱（guideLabels）找到後標成屬性給選擇器用（只加在測試的瀏覽器內）。
+  await page.getByTestId("guide-hub").getByRole("link", { name: resolveUiRefs(guideLabels.guide.hub.openApp, labels), exact: true }).evaluate(el => el.setAttribute("data-v41-open-app", ""));
+  const walked = await guideWalk(page, [{ name: "開啟工作台", selector: "[data-v41-open-app]" }, { name: "本頁目錄第一項", selector: "[data-testid='guide-toc'] a[href]" }]);
+  const result = { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, path: "/guide", ...walked, pageErrors: errors, note: "V41-1：Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算" };
   const written = await writeLaunchJson("KEYBOARD_WALK_OUT", "keyboard-walk.json", testInfo, result, `${testInfo.project.name}-guide`);
   testInfo.annotations.push({ type: "keyboard-walk", description: written });
 
-  expect(skipIsLink, "第一個 Tab 停留點是跳至主要內容").toBe(true);
-  expect(skip.name).toBe(labels.shell.sidebar.skipLink);
-  expect(skip.focusVisible, "跳至主要內容的焦點看得到").toBe(true);
-  expect(afterSkip, "按 Enter 後焦點移到 main#main-content").toEqual({ id: "main-content", inMain: true });
-  expect(invisibleStops, "每個停留點都要看得到焦點").toEqual([]);
-  expect(repeatedStops, "Tab 不可回到停過的元素（焦點陷阱）").toEqual([]);
-  expect(lostFocus, "Tab 不可讓焦點掉回 body").toBe(0);
-  expect(ariaHiddenStops, "任何 Tab 停留點都不在 [aria-hidden=true] 內").toEqual([]);
-  expect(endedAt, "一路按 Tab 最後會走到文件結尾（沒有困在頁內）").not.toBeNull();
-  for (const milestone of milestones) expect(milestone.tabs, `Tab 要能到達「${milestone.name}」`).not.toBeNull();
-  expect(milestones[0].tabs!, "「開啟工作台」在目錄第一項之前").toBeLessThan(milestones[1].tabs!);
+  expectGuideWalk(walked);
+  expect(walked.milestones[0].tabs!, "「開啟工作台」在目錄第一項之前").toBeLessThan(walked.milestones[1].tabs!);
+  expect(errors).toEqual([]);
+});
+
+/**
+ * V41-2a（docs/revamp-v4.1/06_BATCHES.md V41-2a 第 5 項「keyboard-walk 加 /guide/start」、護欄表 keyboard-walk；01_PRD.md §3.6）：功能區頁 /guide/start 的鍵盤走查，1440 與 390 各一次。
+ * 里程碑（PRD §3.6）：跳至主要內容（第一個停留點，按 Enter 後焦點進到 main）、本頁目錄第一項、第一個步驟（第一個落在 guide-step-start-{第一步} 內的停留點）、
+ * 第一張圖的原尺寸連結（guide-shot-{第一張} 內的 <a>）。目錄第一項與原尺寸連結本身都是停留點（reachedBy＝inside），順序：目錄第一項 < 第一個步驟 ≤ 原尺寸連結。
+ * 其餘規則同 /guide（guideWalk、expectGuideWalk）。第一步取 GUIDE_AREA_STEPS.start[0]，不寫死。結果寫進 KEYBOARD_WALK_OUT 的「{專案}-guide-start」鍵。
+ */
+test("V41-2a 鍵盤走查（/guide/start）：跳至主要內容、目錄第一項、第一個步驟、第一張圖的原尺寸連結；焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點", async ({ page }, testInfo) => {
+  test.skip(!["desktop", "mobile"].includes(testInfo.project.name), "鍵盤走查只跑 1440（desktop）與 390（mobile）");
+  test.setTimeout(120_000);
+  const first = GUIDE_AREA_STEPS.start?.[0];
+  if (!first) throw new Error("GUIDE_AREA_STEPS.start 沒有步驟");
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(`pageerror:${error.message}`));
+  await hideDevOverlay(page);
+  await page.goto("/guide/start");
+  await expect(page.getByTestId("guide-area-start")).toBeVisible();
+  const walked = await guideWalk(page, [
+    { name: "本頁目錄第一項", selector: "[data-testid='guide-toc'] a[href]" },
+    { name: "第一個步驟", selector: `[data-testid='guide-step-start-${first.key}']` },
+    { name: "第一張圖的原尺寸連結", selector: `[data-testid='guide-shot-${first.mediaId}'] a[href]` },
+  ]);
+  const result = { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, path: "/guide/start", ...walked, pageErrors: errors, note: "V41-2a：Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算" };
+  const written = await writeLaunchJson("KEYBOARD_WALK_OUT", "keyboard-walk.json", testInfo, result, `${testInfo.project.name}-guide-start`);
+  testInfo.annotations.push({ type: "keyboard-walk", description: written });
+
+  expectGuideWalk(walked);
+  const [toc, step, shot] = walked.milestones;
+  expect(toc.reachedBy, "本頁目錄第一項本身是 Tab 停留點").toBe("inside");
+  expect(shot.reachedBy, "第一張圖的原尺寸連結本身是 Tab 停留點").toBe("inside");
+  expect(toc.tabs!, "本頁目錄第一項在第一個步驟之前").toBeLessThan(step.tabs!);
+  expect(step.tabs!, "第一個步驟不晚於它的原尺寸連結").toBeLessThanOrEqual(shot.tabs!);
   expect(errors).toEqual([]);
 });
