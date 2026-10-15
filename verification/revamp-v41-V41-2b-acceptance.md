@@ -160,3 +160,18 @@
 - 收尾 commit `a59cf22`。
 - commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區）` 與 `git diff --stat 872662d HEAD -- src/app/api vercel.json src/application/analytics.ts` 都是空的。
 - 沒有推送、沒有部署。
+
+## 9. 2026-10-15 preview 部署（使用者當次同意「preview 部署」，給 H7 用）
+
+- **做法**：只推送分支 `revamp/v4.1` 到 origin（`9e6d645`），由 Vercel Git 整合建置 preview。沒有推 `main`、沒有打 tag，正式站仍是 v4.0.0。
+- **部署**：`dpl_D6NNP4Lo9pRAAXMYz5tjUWfW4S7V`，target preview，READY。
+- **網址**：https://profitlens-git-revamp-v41-jlo916s-projects.vercel.app （另一個網址 `https://profitlens-edj3iso7c-jlo916s-projects.vercel.app`）；說明頁 `/guide`。
+- **環境**：preview 維持公開示範模式，`/api/insights` 回 `{"available":false,"reason":"PUBLIC_DEMO"}`。
+- **13 項 HTTP**：全部通過，補充 14 項也全部通過（`verification/revamp-v41/V41-4/launch-check-preview-v41-2b.json`）。sitemap 13 個網址；`/guide` 的 canonical 指向正式站網域。
+- **瀏覽器**：用無頭 Chromium 在 1440 與 390 檢查：
+  - `/guide` 的 h1 正確、目錄 11 張卡。
+  - `/guide/meeting` 5 張圖都載入。
+  - scrollWidth 等於視窗寬。
+  - 工作台載入示範資料後，點側欄（1440）與頁尾（390）的入口都另開 `/guide`，原分頁的資料仍在。
+  - 沒有 page error。
+- 之後的文件 commit 只留在本機；再推送 `revamp/v4.1` 會重建 preview，要使用者同意。

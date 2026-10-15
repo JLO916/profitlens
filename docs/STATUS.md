@@ -21,10 +21,11 @@
 
 **待決**：
 
-- preview 部署（D-V41-24，給 H7 用）要使用者同意。
 - source-map-js 1.2.2 的 lockfile 修正（V41-0 提出）。
 
-**人工關卡**：H7 未執行／待人工，現在可以開始。驗收見 `verification/revamp-v41-V41-2b-acceptance.md`。下一批是 V41-4，分享圖、README 首圖與 CLS。
+**preview**（2026-10-15，使用者同意）：只推送 `revamp/v4.1`（`9e6d645`）→ `dpl_D6NNP4Lo9pRAAXMYz5tjUWfW4S7V`，https://profitlens-git-revamp-v41-jlo916s-projects.vercel.app/guide ；13 項與補充 14 項全部通過；正式站仍是 v4.0.0。
+
+**人工關卡**：H7 未執行／待人工，可以用上面的 preview 看。驗收見 `verification/revamp-v41-V41-2b-acceptance.md`。下一批是 V41-4，分享圖、README 首圖與 CLS。
 
 ## v4.1｜V41-2a 媒體管線與前 5 個功能區（完成；分支 revamp/v4.1，未推送）
 
