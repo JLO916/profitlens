@@ -32,6 +32,8 @@ GUIDE_MEDIA=check npx playwright test --config verification/guide-media.config.t
 GUIDE_MEDIA=write npx playwright test --config verification/guide-media.config.ts   # 只在新增媒體或畫面改變時：只更新有差異或新增的基準 PNG、public/guide/ 的 WebP 與 src/application/guide-media.json
 ```
 
+V41-3（v4.1.1）起，同一組命令也涵蓋 3 支示範影片（`verification/guide-media/video.spec.ts`，依 `src/application/guide.ts` 的 `GUIDE_VIDEOS`）：`check` 照流程重跑，在每個 cue 擷取一張畫面與 `verification/guide-media/baseline/video/{videoId}-{cue}.png` 比對，不錄影、不寫檔；`write` 才開錄影，只有 cue 有差異、新增影片或 MP4 不在時才重錄，用本機 `ffmpeg`（與同目錄的 `ffprobe`；`GUIDE_FFMPEG` 可指定路徑）轉成 `public/guide/video/{id}.mp4`（H.264、無音軌、`+faststart`），並更新 poster、WebVTT 字幕與 `src/application/guide-media.json` 的 `videos`；cue 都相同時不重錄，只在字幕文字或被引用的介面字串改了時重寫 `.vtt` 與 `labels_hash`。重錄影片需要本機有 `ffmpeg`（不進 `package.json`，D-V41-7）；只跑 `check` 不需要。
+
 版本號改變不需要重拍（D-V41-22）。v4.1 每批完整的命令順序（含 `launch-check`、Lighthouse 與禁區、邊界五條）見 [CLAUDE.md](../CLAUDE.md) 的「驗收命令」與 `docs/revamp-v4.1/06_BATCHES.md` 的「共通驗收」。
 
 ## Revamp v2 批次驗收紀錄
@@ -53,7 +55,7 @@ R3 的來源預設查證另見 [revamp-R3-preset-verification.md](../verificatio
 
 ## Revamp v3 批次驗收紀錄
 
-Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。V3-10 把 `package.json` 版本改為 **3.0.0**（版本標籤 `v3.0.0` 指向 `625bfa5`）；Revamp v4 的 V4-11 起為 **4.0.0**（2026-10-14 上線，見 [RELEASES](RELEASES.md) 的 v4.0.0 段落）；v4.1 的 V41-5 起為 **4.1.0**（見 [RELEASES](RELEASES.md) 的 v4.1.0 段落；說明頁 `/guide`）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
+Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。V3-10 把 `package.json` 版本改為 **3.0.0**（版本標籤 `v3.0.0` 指向 `625bfa5`）；Revamp v4 的 V4-11 起為 **4.0.0**（2026-10-14 上線，見 [RELEASES](RELEASES.md) 的 v4.0.0 段落）；v4.1 的 V41-5 起為 **4.1.0**（見 [RELEASES](RELEASES.md) 的 v4.1.0 段落；說明頁 `/guide`）；V41-3 起為 **4.1.1**（見 [RELEASES](RELEASES.md) 的 v4.1.1 段落；說明頁的 3 支示範影片與 `source-map-js` 1.2.2）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
 
 | 批次 | 內容 | 單元／整合 | E2E（四尺寸） | 驗收紀錄 |
 |---|---|---|---|---|
@@ -90,10 +92,10 @@ Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `
 | [AI_CONTRACT.md](AI_CONTRACT.md)、[M5_EVALUATION.md](M5_EVALUATION.md) | 選配 AI 的契約與評估 |
 | [PRD.md](PRD.md)、[ACCEPTANCE.md](ACCEPTANCE.md)、[TASKS.md](TASKS.md) | 原始產品規格、驗收條件與 M0–M6 關卡 |
 | [PILOT_PLAN.md](PILOT_PLAN.md)、[PILOT_WORKSHEET.md](PILOT_WORKSHEET.md) | 真實使用者試用計畫與工作表 |
-| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.1.0，2026-10-15，服務介紹與使用說明；v4.0.0 已於 2026-10-14 上線；v3.0.0 與更早的發布） |
+| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.1.1，2026-10-15，示範影片與依賴修正；v4.1.0 已於 2026-10-15 上線，服務介紹與使用說明；v4.0.0 已於 2026-10-14 上線；v3.0.0 與更早的發布） |
 | [revamp-v3/](revamp-v3/) | Revamp v3 規格套件：`00_README`、`01_PRD`、`06_BATCHES`、`09_DECISIONS_PENDING`、`GLOSSARY`、`copy-rewrite.csv`、`usability-test` |
 | [revamp-v4.1/](revamp-v4.1/) | v4.1 規格套件（服務介紹與使用說明）：[`00_README`](revamp-v4.1/00_README.md)、[`01_PRD`](revamp-v4.1/01_PRD.md)（§2.2 有成功指標的實測值）、[`GUIDE_CONTENT`](revamp-v4.1/GUIDE_CONTENT.md)、[`06_BATCHES`](revamp-v4.1/06_BATCHES.md)、[`09_DECISIONS_PENDING`](revamp-v4.1/09_DECISIONS_PENDING.md)；H6 的 T5、T6 在 [revamp-v4/usability-test.md](revamp-v4/usability-test.md) |
-| v4.1 各批驗收 | [V41-0](../verification/revamp-v41-V41-0-acceptance.md)、[V41-1](../verification/revamp-v41-V41-1-acceptance.md)、[V41-2a](../verification/revamp-v41-V41-2a-acceptance.md)、[V41-2b](../verification/revamp-v41-V41-2b-acceptance.md)、[V41-4](../verification/revamp-v41-V41-4-acceptance.md)、[V41-5](../verification/revamp-v41-V41-5-acceptance.md)；基準、清單與每批量測在 `verification/revamp-v41/`，說明頁媒體的擷取腳本與基準 PNG 在 `verification/guide-media/` |
+| v4.1 各批驗收 | [V41-0](../verification/revamp-v41-V41-0-acceptance.md)、[V41-1](../verification/revamp-v41-V41-1-acceptance.md)、[V41-2a](../verification/revamp-v41-V41-2a-acceptance.md)、[V41-2b](../verification/revamp-v41-V41-2b-acceptance.md)、[V41-4](../verification/revamp-v41-V41-4-acceptance.md)、[V41-5](../verification/revamp-v41-V41-5-acceptance.md)、[V41-3](../verification/revamp-v41-V41-3-acceptance.md)（v4.1.0 上線後的示範影片與 v4.1.1 發布）；基準、清單與每批量測在 `verification/revamp-v41/`，說明頁媒體的擷取腳本與基準 PNG 在 `verification/guide-media/` |
 | 使用者可見文字 | `src/i18n/labels.zh-TW.ts`（單一來源；元件、匯出、AI 預覽都從這裡取字）；說明頁 `/guide` 的文字另在 `src/i18n/guide.zh-TW.ts`（只給伺服器模組使用，不進工作台首載，D-V41-12） |
 
 ### 名詞對照（閱讀下方歷史原文用）

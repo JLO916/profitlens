@@ -2,6 +2,61 @@
 
 > 新的在上。正式站：<https://profitlens-tau.vercel.app>。工程驗收命令與各批驗收紀錄見 [ENGINEERING](ENGINEERING.md)；每批真實執行結果見 [STATUS](STATUS.md)；取捨見 [DECISIONS](DECISIONS.md)。
 
+## v4.1.1（2026-10-15，示範影片與依賴修正）
+
+發布日期：2026-10-15。
+
+**發布方式**：v4.1.0 上線後，使用者 2026-10-15 先同意 `source-map-js` 只動 lockfile 的修正（commit `5072879`），再回覆「製作示範影片含字幕」（D-V41-6 由 B 改為 A，開工 V41-3）；影片做完後回覆「好，影片做完後部署正式上線」，並選定版本號 4.1.1，當次同意正式上線。上線步驟：`main` 從 `9bc2241` fast-forward 到發布 commit 並推送，由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.1` 指向發布 commit 並推送。這些步驟在發布 commit 之後才執行；部署完成、正式站檢查通過後，才在下一行補記 deployment 與檢查結果，並把 README 的正式站版本改成 v4.1.1。
+
+**正式站檢查**：PROD_PLACEHOLDER
+
+**上線時沒有完成的事**：
+- H6（v4 可用性複測與外部盲評，含 v4.1 加的 T5、T6）仍待人工；依 D-V41-17 不擋上線。
+- 匯出檔的人工開檔檢查（PPT、PDF、Excel）未執行。
+- Vercel Skew Protection 沒有開啟，由使用者本人在 Vercel 專案設定決定（D-V41-16）。
+
+上一版正式站是 v4.1.0（發布 commit `5b40d7f`、tag `v4.1.0`，deployment `dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`；之後只改文件的上線紀錄 commit `9bc2241` 推到 `main`，重建為 `dpl_12xGwYGK9LHcuiczj517PjoPTWsn`）。每一次部署（含 preview）都要使用者當次同意（D-V41-24）。
+
+v4.1.1（V41-3，基準 v4.1.0＝tag `v4.1.0`）：說明頁加 3 支無聲示範影片，附字幕與逐步文字；另套用 `source-map-js` 的安全修正。財務口徑不變，工作台的版面、功能與文字不變，沒有新增依賴。
+
+### 給使用者
+
+**示範影片**
+- 說明頁加了 3 支無聲的示範影片，畫面是 1280×800：
+  - 「示範影片：30 秒上手」（25.6 秒）：放在說明首頁「30 秒上手」的 4 步之後，以及「開始使用：看懂畫面與期間」頁。在首頁載入示範資料，讀本期一句話與五個關鍵數字，捲到貢獻變化拆解，點扣廣告後貢獻的金額打開計算與來源，再關閉。
+  - 「示範影片：匯入資料」（27.6 秒）：放在「匯入資料」頁。用 repo 內虛構的合成檔（`tests/fixtures/inclusive_tax`）走完匯入精靈：選三份檔案、確認欄位對照、金額基準選含稅並確認期間、看檢核結果、套用後回到經營總覽。
+  - 「示範影片：週會流程」（33.7 秒）：放在「會議紀錄與投影」頁。在通路健檢把第一項加入待辦，在假設試算試算後選入會議，在會議紀錄寫決議並結束會議，最後打開匯出選單。
+- 功能區頁的影片放在本頁目錄與步驟之間。每支影片都有預設開啟的中文字幕；影片下方先寫一行「影片沒有聲音；下方是影片的逐步文字。」，再用編號清單列出與字幕相同的 5 段文字，不看影片也能照著做。
+- 圖說下方和截圖一樣註明資料來源：30 秒上手與週會流程寫「畫面為示範資料（虛構）」，匯入資料寫「畫面為虛構的合成資料」。
+- 影片不自動播放、不循環。按下播放之前只顯示一張預覽圖，影片檔要按下播放才下載（`preload="none"`）；三支影片依序是 706,627、549,898、1,133,113 bytes，每支都不超過 2 MB、45 秒。
+- 影片、字幕檔（WebVTT）與預覽圖都放在本站的 `public/guide/video/`，不嵌入第三方影音平台。影片由腳本用固定的操作與時鐘錄製，再用本機 `ffmpeg` 轉成 MP4（H.264、沒有音軌），不手工剪輯。
+
+### 不變的事
+- 財務口徑 `contribution-v1`、其他常用指標 `assist-kpi-v1`、損益兩平 `breakeven-mer-v1` 不變；`src/domain`、`fixtures/`、`docs/METRICS.md` 與兩個指標的程式檔、測試檔對 `625bfa5` 的 diff 為空。固定答案不變：Golden 本期扣廣告後貢獻 255.00、兩期差額 −315.00；假設試算 DTC 284.00／264.00、MARKETPLACE 19.70。影片只錄示範資料與合成資料的畫面，不產生任何新數字。
+- 工作台七頁的版面、功能與文字不變：這一版沒有改工作台的元件與 `src/i18n/labels.zh-TW.ts`。影片的標題與字幕放在說明頁的 `src/i18n/guide.zh-TW.ts`，不進工作台的首載；說明頁既有的文字一字不改。
+- 說明頁原有的 44 張截圖沒有重拍，WebP 與基準 PNG 逐位元組相同。
+- 沒有新增依賴：`package.json` 只改版本號；`package-lock.json` 除了版本號，只有 `source-map-js` 一個項目改版（見下方「依賴修正」）。`ffmpeg` 是重錄影片時才用的本機工具，不進 `package.json`（D-V41-7）。
+- 資料不上傳：原始 CSV 只在瀏覽器處理；沒有登入、資料庫或伺服器端保存；本機保存要先同意。分析事件沒有新增（D-V41-23）。
+- AI 解釋在公開版仍未啟用：`APP_MODE=PUBLIC_DEMO`、`ENABLE_LIVE_AI=false`，`/api/insights` 的封鎖邏輯不變；`src/app/api`、`vercel.json`、`src/application/analytics.ts` 對 `872662d` 的 diff 為空。
+- 匯出與備份不變：CSV、JSON、PDF、PPT、Excel、Markdown 的格式與內容不變；備份格式仍是 `profitlens-workspace-v5`，v1–v5 的備份都能還原。
+
+### 依賴修正
+- `source-map-js` 由 1.2.1 升到 1.2.2（commit `5072879`，使用者 2026-10-15 同意）。它是 `postcss` 與 `@tailwindcss/node` 的傳遞依賴，只在 build 時處理本專案自己的 CSS；1.2.2 修正 GHSA-68fv-2mgg-jv7q（high，indexed source map 的 section offset 造成事件迴圈 DoS）。`package-lock.json` 的 diff 只有這一個項目的版本、下載網址與 integrity，沒有順帶移除或更新其他套件。
+- `npm audit` 的 high 由 9 筆降為 8 筆，low、moderate、critical 都是 0（`verification/revamp-v41/V41-3/npm-audit-after-source-map-js.json`）。剩下的 8 筆沿用 [V41-0 基準評估](../verification/revamp-v41/V41-0-baseline.md) 第 2 節的判斷，不處理：`xlsx`（npm 上沒有修正版；只在匯出時用寫出 API，不解析使用者上傳的試算表）；`pptxgenjs` 與它的傳遞依賴 `image-size`（修正要降主版號；PPT 不用任何圖片 API）；`eslint-config-next` 與它的傳遞依賴 `@next/eslint-plugin-next`、`fast-glob`、`micromatch`、`braces`（修正要降主版號；只在開發時跑 eslint，不進 production bundle）。
+
+### 已知限制
+- **H6 未執行**：v4 的可用性複測與外部盲評，以及 v4.1 加的 T5、T6，都待人工，依 D-V41-17 不擋上線；題目與答案鍵在 [usability-test](revamp-v4/usability-test.md)。
+- **匯出檔的人工開檔檢查未執行**：沿用 v4.0.0 與 v4.1.0，PPT、PDF、Excel 都還沒用軟體開檔檢查。
+- **Skew Protection 沒有開啟**（D-V41-16）：部署新版後還開著的舊分頁，切到沒載入過的頁面時可能拿不到舊程式，會顯示錯誤說明與「再試一次」，重新整理頁面就好；重新整理會丟掉還沒保存的試算、待辦與會議稿。要開請使用者在 Vercel 專案設定操作。
+- **重錄影片需要本機 `ffmpeg`**：每次發版跑的 `GUIDE_MEDIA=check` 只比對影片每一段的畫面，不錄影，也不需要 `ffmpeg`；介面改變讓影片畫面有差異時，要在裝有 `ffmpeg` 的電腦跑 `GUIDE_MEDIA=write` 重錄並轉檔（D-V41-7，`ffmpeg` 不進 `package.json`）。
+- **影片裡沒有滑鼠游標**：錄影用無頭瀏覽器，畫面不會出現游標；每次點按之前，會在要按的位置先顯示約 0.8 秒的強調框，代替游標指出位置。
+- 其他沿用 v4.1.0 的限制（動機段是產品口吻、手機上的寬截圖、截圖裡的英文等），見下方 v4.1.0 段落的「已知限制」；其中「`source-map-js` 的修正待同意」與「示範影片還沒做」兩項已在本版處理。
+
+### 驗收
+- V41-3（示範影片與 v4.1.1 發布）：[verification/revamp-v41-V41-3-acceptance.md](../verification/revamp-v41-V41-3-acceptance.md)。
+- 依賴修正：[V41-0 基準評估](../verification/revamp-v41/V41-0-baseline.md)（修正前的逐項評估）、`verification/revamp-v41/V41-3/npm-audit-after-source-map-js.json`（修正後）。
+- 規格與拍板：[批次](revamp-v4.1/06_BATCHES.md)（V41-3）、[說明頁內容](revamp-v4.1/GUIDE_CONTENT.md)（§3 示範影片）、[PRD](revamp-v4.1/01_PRD.md)（§3.5、§3.6）、[拍板表](revamp-v4.1/09_DECISIONS_PENDING.md)（D-V41-6、D-V41-7）。
+
 ## v4.1.0（2026-10-15，服務介紹與使用說明）
 
 發布日期：2026-10-15。
