@@ -336,7 +336,8 @@ describe("V4-3c 載入與預先載入", () => {
     expect(dashboard).toContain('<main id="main-content" tabIndex={-1} aria-busy={(panelWaiting && panelLoadFailed !== panel) || undefined}>');
     expect(dashboard).toContain("{panelWaiting && panelLoadFailed !== panel && <PanelLoadingState />}");
     expect(dashboard).toContain("{panelWaiting && panelLoadFailed === panel && <PanelErrorState onRetry={() => setPanel(panel)} />}");
-    expect(dashboard).toContain('{visible && ready && <div key={active.id} className="view-content" ');
+    // V41-4 O2：內容區的 key 加上頁（切頁換新節點，不算版面位移）。
+    expect(dashboard).toContain('{visible && ready && <div key={`${active.id}:${panel}`} className="view-content" ');
     expect(dashboard).toContain('{visible && ready && panel === "actions" && <ActionsWorkbench ');
   });
 

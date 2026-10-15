@@ -1674,7 +1674,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       for (const component of ["PanelLoadingState", "PanelErrorState"]) expect(source.match(new RegExp(`<${component}[\\s/>]`, "g"))?.length ?? 0, component).toBe(1);
       expect(source).toContain("{panelWaiting && panelLoadFailed !== panel && <PanelLoadingState />}");
       expect(source).toContain("{panelWaiting && panelLoadFailed === panel && <PanelErrorState onRetry={() => setPanel(panel)} />}");
-      expect(source).toContain('{visible && ready && <div key={active.id} className="view-content" ');
+      // V41-4 O2（CLS）：內容區與頁尾跟著頁換新節點（頁尾另跟著骨架換成內容），切頁不沿用上一頁的節點。
+      expect(source).toContain('{visible && ready && <div key={`${active.id}:${panel}`} className="view-content" ');
+      expect(source).toContain("<ShellFooter key={`${panel}:${ready}`} ");
       expect(source).toContain('{visible && ready && panel === "actions" && <ActionsWorkbench ');
       expect(source).toContain('<main id="main-content" tabIndex={-1} aria-busy={(panelWaiting && panelLoadFailed !== panel) || undefined}>');
     });
