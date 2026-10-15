@@ -4,9 +4,10 @@ import { join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { labels } from "@/i18n";
 import { guideLabels } from "@/i18n/guide.zh-TW";
-import { GUIDE_AREA_CODES, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_QUICKSTART, GUIDE_UNIQUE, GUIDE_WHO, lookupUiRef, resolveUiRefs, uiRefParts } from "@/application/guide";
+import { GUIDE_AREA_CODES, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_QUICKSTART, GUIDE_UNIQUE, GUIDE_VIDEOS, GUIDE_WHO, lookupUiRef, resolveUiRefs, uiRefParts } from "@/application/guide";
 import { L1_KEY_PATTERNS, L1_MAX_CJK, channelAliasTerms, l1ClauseLengths, labelEntries } from "../scripts/lib/copy-scan.mjs";
 import { labelsHash } from "../verification/guide-media/labels-hash";
+import { VIDEO_MAX_BYTES, VIDEO_MAX_MS, VIDEO_SIZE, buildVtt, mp4Info, videoCueBaseline, videoCueTexts, videoFile, videoLabelsHash, videoPosterFile, videoVttFile, vttCueCount, vttTimestamp, type GuideVideoEntry } from "../verification/guide-media/vtt";
 
 // V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項、01_PRD.md §3.4、§3.10）：說明頁文字 guideLabels（src/i18n/guide.zh-TW.ts）的內容護欄。
 // (1) 每個 {ui:路徑} 都解析得到；(2) 標題 L1；(3) 最高級黑名單；(4) 介面字串不重打；(5) 工作台入口 shell.guideV41.* 不用問句；(6) 第一人稱骨架的〔〕不上線。
@@ -136,7 +137,9 @@ const MEDIA_BASELINE_DIR = resolve("verification/guide-media/baseline");
 const MEDIA_MAX_BYTES = 200 * 1024;
 const MEDIA_MAX_AREA_BYTES = 1.5 * 1024 * 1024;
 const WRITE_HINT = "跑 GUIDE_MEDIA=write npx playwright test --config verification/guide-media.config.ts";
-const mediaManifest = JSON.parse(readFileSync(MEDIA_MANIFEST, "utf8")) as { updated: string | null; media: GuideMediaEntry[] };
+const mediaManifest = JSON.parse(readFileSync(MEDIA_MANIFEST, "utf8")) as { updated: string | null; media: GuideMediaEntry[]; videos?: GuideVideoEntry[] };
+/** V41-3：清單裡的示範影片（MP4、字幕、poster 在 public/guide/video/，cue 比對基準在 baseline/video/）。 */
+const manifestVideos = mediaManifest.videos ?? [];
 /** GUIDE_AREA_STEPS 攤平（＝清單 media 的順序）。 */
 const PLANNED_MEDIA = Object.entries(GUIDE_AREA_STEPS).flatMap(([area, steps]) => (steps ?? []).map(step => ({ area, stepKey: step.key, mediaId: step.mediaId })));
 const plannedMedia = (id: string) => PLANNED_MEDIA.find(step => step.mediaId === id);
@@ -152,7 +155,8 @@ const sha256Hex = (data: Buffer) => createHash("sha256").update(data).digest("he
 
 describe("V41-2a 說明頁媒體同步（清單、WebP、基準 PNG）", () => {
   it("清單格式：updated 是 YYYY-MM-DD（有媒體時）或 null；id 不重複、都在 GUIDE_AREA_STEPS、依它的順序；檔名＝guide/{area}/{mediaId}.webp", () => {
-    expect(Object.keys(mediaManifest).sort()).toEqual(["media", "updated"]);
+    // V41-3：清單另有 videos（示範影片；格式在下面的「示範影片同步」檢查）。
+    expect(Object.keys(mediaManifest).sort()).toEqual(["media", "updated", "videos"]);
     if (mediaManifest.media.length > 0) expect(mediaManifest.updated).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     else expect(mediaManifest.updated === null || /^\d{4}-\d{2}-\d{2}$/.test(mediaManifest.updated)).toBe(true);
     const ids = mediaManifest.media.map(entry => entry.id);
@@ -190,10 +194,11 @@ describe("V41-2a 說明頁媒體同步（清單、WebP、基準 PNG）", () => {
     expect(problems, WRITE_HINT).toEqual([]);
   });
 
-  it("沒有孤兒檔：public/guide/ 與 verification/guide-media/baseline/ 的每個檔都屬於清單的一筆", () => {
-    const webps = new Set(mediaManifest.media.map(entry => entry.file.replace(/^guide\//, "")));
-    const pngs = new Set(mediaManifest.media.map(entry => `${entry.id}.png`));
-    expect(listFiles(MEDIA_PUBLIC_GUIDE_DIR).filter(file => !webps.has(file)).map(file => `public/guide/${file}`)).toEqual([]);
+  it("沒有孤兒檔：public/guide/ 與 verification/guide-media/baseline/ 的每個檔都屬於清單的一筆（V41-3：含 video/ 的 MP4、字幕、poster 與 cue 比對基準）", () => {
+    const videoFiles = manifestVideos.flatMap(entry => [entry.file, entry.vtt, entry.poster]);
+    const publicFiles = new Set([...mediaManifest.media.map(entry => entry.file), ...videoFiles].map(file => file.replace(/^guide\//, "")));
+    const pngs = new Set([...mediaManifest.media.map(entry => `${entry.id}.png`), ...manifestVideos.flatMap(entry => entry.cues.map(cue => videoCueBaseline(entry.id, cue.key)))]);
+    expect(listFiles(MEDIA_PUBLIC_GUIDE_DIR).filter(file => !publicFiles.has(file)).map(file => `public/guide/${file}`)).toEqual([]);
     expect(listFiles(MEDIA_BASELINE_DIR).filter(file => !pngs.has(file)).map(file => `verification/guide-media/baseline/${file}`)).toEqual([]);
   });
 
@@ -211,4 +216,109 @@ describe("V41-2a 說明頁媒體同步（清單、WebP、基準 PNG）", () => {
     expect(labelsHash("start", "not-a-step")).toBe(createHash("sha256").update("[]").digest("hex"));
   });
 });
+
+// ── V41-3 示範影片同步（06_BATCHES V41-3 第 4 項；PRD §3.5「影片」「字幕與逐字稿」；D-V41-7＝A、D-V41-8）──
+// 不需要伺服器：讀清單 videos[]、public/guide/video/ 的 MP4（用 Buffer 讀 mvhd／tkhd／hdlr，不加依賴）、字幕與 poster、baseline/video/ 的 cue 比對基準。
+// 影片畫面有沒有過期由 GUIDE_MEDIA=check 照流程重跑、逐 cue 比對判斷；這裡只檢查檔案、門檻與字幕是否與目前的 guideLabels 一致（不一致就跑 GUIDE_MEDIA=write：圖相同時只重寫字幕與 labels_hash，不重錄）。
+
+const MEDIA_VIDEO_KEYS = ["bytes", "cues", "durationMs", "file", "height", "id", "labels_hash", "poster", "posterBytes", "vtt", "width"];
+/** 清單時間與 MP4 檔頭（mvhd）的長度最多差 100 ms。 */
+const VIDEO_DURATION_TOLERANCE_MS = 100;
+/** 每段字幕至少 3 秒（讀得完；錄影時每個 cue 至少停 5 秒）。 */
+const VIDEO_MIN_CUE_MS = 3_000;
+const manifestVideo = (id: string) => manifestVideos.find(entry => entry.id === id);
+
+describe("V41-3 示範影片同步（清單、MP4、字幕、poster、cue 比對基準）", () => {
+  it("每支 GUIDE_VIDEOS 都在清單 videos 裡（依 GUIDE_VIDEOS 的順序、沒有多的）；欄位齊全、路徑固定、1280×800", () => {
+    expect(manifestVideos.map(entry => entry.id), WRITE_HINT).toEqual(GUIDE_VIDEOS.map(video => video.id));
+    for (const entry of manifestVideos) {
+      expect(Object.keys(entry).sort(), entry.id).toEqual(MEDIA_VIDEO_KEYS);
+      expect([entry.file, entry.vtt, entry.poster], entry.id).toEqual([videoFile(entry.id), videoVttFile(entry.id), videoPosterFile(entry.id)]);
+      expect([entry.width, entry.height], entry.id).toEqual([VIDEO_SIZE.width, VIDEO_SIZE.height]);
+      expect(entry.labels_hash, entry.id).toMatch(/^[0-9a-f]{64}$/);
+    }
+  });
+
+  it("MP4：檔案存在、大小＝bytes 且 ≤ 2 MB；H.264、只有畫面軌（無音軌）、moov 在 mdat 之前（+faststart）、1280×800；mvhd 長度＝durationMs（±100 ms）且 ≤ 45 秒", () => {
+    const problems: string[] = [];
+    for (const entry of manifestVideos) {
+      const path = resolve(MEDIA_PUBLIC_DIR, entry.file);
+      if (!existsSync(path)) { problems.push(`${entry.id}：缺 public/${entry.file}`); continue; }
+      const mp4 = readFileSync(path);
+      if (mp4.length !== entry.bytes) problems.push(`${entry.id}：MP4 ${mp4.length} bytes，清單 ${entry.bytes}`);
+      if (mp4.length > VIDEO_MAX_BYTES) problems.push(`${entry.id}：MP4 ${mp4.length} bytes > ${VIDEO_MAX_BYTES}`);
+      if (entry.durationMs > VIDEO_MAX_MS) problems.push(`${entry.id}：${entry.durationMs} ms > ${VIDEO_MAX_MS}`);
+      const info = mp4Info(mp4);
+      if (!info.h264) problems.push(`${entry.id}：不是 H.264`);
+      if (JSON.stringify(info.handlers) !== JSON.stringify(["vide"])) problems.push(`${entry.id}：軌道 ${info.handlers.join("、")}（只能有畫面軌）`);
+      if (info.topLevel.indexOf("moov") > info.topLevel.indexOf("mdat")) problems.push(`${entry.id}：moov 在 mdat 之後（沒有 +faststart）`);
+      if (info.width !== VIDEO_SIZE.width || info.height !== VIDEO_SIZE.height) problems.push(`${entry.id}：畫面 ${info.width}×${info.height}`);
+      if (Math.abs(info.durationMs - entry.durationMs) > VIDEO_DURATION_TOLERANCE_MS) problems.push(`${entry.id}：mvhd ${info.durationMs} ms，清單 ${entry.durationMs} ms`);
+    }
+    expect(problems, WRITE_HINT).toEqual([]);
+  });
+
+  it("poster：WebP 存在、大小＝posterBytes", () => {
+    const problems: string[] = [];
+    for (const entry of manifestVideos) {
+      const path = resolve(MEDIA_PUBLIC_DIR, entry.poster);
+      if (!existsSync(path)) { problems.push(`${entry.id}：缺 public/${entry.poster}`); continue; }
+      const poster = readFileSync(path);
+      if (poster.length !== entry.posterBytes) problems.push(`${entry.id}：poster ${poster.length} bytes，清單 ${entry.posterBytes}`);
+      if (poster.subarray(0, 4).toString("latin1") !== "RIFF" || poster.subarray(8, 12).toString("latin1") !== "WEBP") problems.push(`${entry.id}：poster 不是 WebP`);
+    }
+    expect(problems, WRITE_HINT).toEqual([]);
+  });
+
+  it("cue：key 與順序＝GUIDE_VIDEOS；從 0 開始、首尾相接、最後一段到影片結尾、每段 ≥ 3 秒；cue 比對基準存在、1280×800、SHA-256＝清單", () => {
+    const problems: string[] = [];
+    for (const video of GUIDE_VIDEOS) {
+      const entry = manifestVideo(video.id);
+      if (!entry) { problems.push(`${video.id}：清單沒有這支影片`); continue; }
+      expect(entry.cues.map(cue => cue.key), video.id).toEqual(video.cues.map(cue => cue.key));
+      entry.cues.forEach((cue, index) => {
+        const label = `${video.id} › ${cue.key}`;
+        const expectedStart = index === 0 ? 0 : entry.cues[index - 1].endMs;
+        if (cue.startMs !== expectedStart) problems.push(`${label}：startMs ${cue.startMs}，應為 ${expectedStart}`);
+        if (cue.endMs - cue.startMs < VIDEO_MIN_CUE_MS) problems.push(`${label}：只有 ${cue.endMs - cue.startMs} ms`);
+        const png = resolve(MEDIA_BASELINE_DIR, videoCueBaseline(video.id, cue.key));
+        if (!existsSync(png)) { problems.push(`${label}：缺基準 ${relative(resolve("."), png)}`); return; }
+        const bytes = readFileSync(png);
+        if (sha256Hex(bytes) !== cue.sha256) problems.push(`${label}：基準 PNG 的 SHA-256 與清單不符`);
+        if (bytes.readUInt32BE(16) !== VIDEO_SIZE.width || bytes.readUInt32BE(20) !== VIDEO_SIZE.height) problems.push(`${label}：基準 ${bytes.readUInt32BE(16)}×${bytes.readUInt32BE(20)}`);
+      });
+      if (entry.cues.at(-1)?.endMs !== entry.durationMs) problems.push(`${video.id}：最後一段結束在 ${entry.cues.at(-1)?.endMs} ms，影片長 ${entry.durationMs} ms`);
+    }
+    expect(problems, WRITE_HINT).toEqual([]);
+  });
+
+  // 字幕文字（guideLabels.guide.videos.{id}.cues）還沒寫或改過時，這兩項失敗；補字後跑 GUIDE_MEDIA=write（cue 畫面相同時只重寫 .vtt 與 labels_hash，不重錄）。
+  it("字幕檔＝buildVtt（清單的時間＋目前 guideLabels 的 cue 文字，{ui:…} 換成介面原字串），段數＝cue 數", () => {
+    for (const entry of manifestVideos) {
+      const path = resolve(MEDIA_PUBLIC_DIR, entry.vtt);
+      expect(existsSync(path), `缺 public/${entry.vtt}`).toBe(true);
+      const vtt = readFileSync(path, "utf8");
+      expect(vttCueCount(vtt), entry.id).toBe(guideVideoCueCount(entry.id));
+      expect(vtt, `${entry.id}：${WRITE_HINT}`).toBe(buildVtt(entry, videoCueTexts(entry.id)));
+    }
+  });
+
+  it("labels_hash＝這支影片的標題與字幕目前引用的介面字串的雜湊", () => {
+    expect(manifestVideos.filter(entry => entry.labels_hash !== videoLabelsHash(entry.id)).map(entry => entry.id), WRITE_HINT).toEqual([]);
+  });
+
+  it("buildVtt：WEBVTT 標頭、每段「key／時間／文字」、& < > 跳脫、換行收成一行；缺文字就丟錯並列出缺哪些", () => {
+    const video = { id: "demo", cues: [{ key: "a", startMs: 0, endMs: 4_200, sha256: "" }, { key: "b", startMs: 4_200, endMs: 61_005, sha256: "" }] };
+    expect(buildVtt(video, { a: "按 <套用> & 確認", b: "第一行\n第二行" })).toBe("WEBVTT\n\na\n00:00:00.000 --> 00:00:04.200\n按 &lt;套用&gt; &amp; 確認\n\nb\n00:00:04.200 --> 00:01:01.005\n第一行 第二行\n");
+    expect(() => buildVtt(video, { a: "只有一段" })).toThrow(/guide\.videos\.demo\.cues\.b/);
+    expect(() => buildVtt(video, { a: " ", b: "x" })).toThrow(/guide\.videos\.demo\.cues\.a/);
+    expect(vttTimestamp(3_723_004)).toBe("01:02:03.004");
+    expect(vttCueCount(buildVtt(video, { a: "x", b: "y" }))).toBe(2);
+  });
+});
+
+/** GUIDE_VIDEOS 裡這支影片的 cue 數。 */
+function guideVideoCueCount(id: string): number {
+  return GUIDE_VIDEOS.find(video => video.id === id)?.cues.length ?? -1;
+}
 

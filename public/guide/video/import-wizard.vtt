@@ -1,0 +1,21 @@
+WEBVTT
+
+files
+00:00:00.000 --> 00:00:05.503
+(guide.videos.import-wizard.cues.files)
+
+mapping
+00:00:05.503 --> 00:00:10.807
+(guide.videos.import-wizard.cues.mapping)
+
+basis
+00:00:10.807 --> 00:00:16.702
+(guide.videos.import-wizard.cues.basis)
+
+review
+00:00:16.702 --> 00:00:21.710
+(guide.videos.import-wizard.cues.review)
+
+apply
+00:00:21.710 --> 00:00:27.640
+(guide.videos.import-wizard.cues.apply)

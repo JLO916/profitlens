@@ -1,0 +1,21 @@
+WEBVTT
+
+load
+00:00:00.000 --> 00:00:05.027
+(guide.videos.start-30s.cues.load)
+
+snapshot
+00:00:05.027 --> 00:00:10.531
+(guide.videos.start-30s.cues.snapshot)
+
+bridge
+00:00:10.531 --> 00:00:15.552
+(guide.videos.start-30s.cues.bridge)
+
+evidence
+00:00:15.552 --> 00:00:20.576
+(guide.videos.start-30s.cues.evidence)
+
+close
+00:00:20.576 --> 00:00:25.640
+(guide.videos.start-30s.cues.close)
