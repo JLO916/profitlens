@@ -100,6 +100,25 @@
 | B8 | CLS（§4 O2） | 4 個超標切頁 < 0.05，或在驗收文件寫明位移來源與不修的理由 |
 | B9 | launch-check | 13 項全過；補充檢查改為 sitemap 含全部說明頁網址、`/guide` 200 且 og:image 是 `/og.png`、`/guide/不存在` 404 |
 
+**實測值（V41-5 收尾填入，2026-10-15）**
+
+數字取自各批證據的最新一份：`verification/revamp-v41/V41-4/` 的 `metrics.json`、`axe.json`、`network-log.json`、`guide-shots.json`、`launch-check-local.json`、`lighthouse-runs/`（V41-4 收尾程式 `6608dd9`；O2 程式 `7e65f4d`），以及 `verification/revamp-v41-V41-{0,1,2a,2b,4}-acceptance.md`。V41-5 只改版本號與文件，不改畫面與計算；V41-5 的終跑與正式站檢查記在 `verification/revamp-v41-V41-5-acceptance.md`。
+
+| 代號 | 實測 | 判定 | 證據 |
+|---|---|---|---|
+| A1 | 未量測（H6 待人工）；題目 T5 已加進 `docs/revamp-v4/usability-test.md` | 未量 | `docs/revamp-v4/usability-test.md` §4 T5 |
+| A2 | 未量測（H6 待人工）；題目 T6 已加進 `docs/revamp-v4/usability-test.md` | 未量 | 同上 §4 T6 |
+| A3 | H7 通過（使用者 2026-10-15 回覆「H7 通過、V41-5 收尾、正式上線」）：介紹三段與動機段（D-V41-9 的產品口吻草稿）沒有改字，06 V41-5 第 4 項沒有要套用的修改 | 達標 | 使用者回覆；H7 用的 preview `dpl_D6NNP4Lo9pRAAXMYz5tjUWfW4S7V` |
+| B1 | `/` First Load JS（gzip）519,702 bytes，上限 520,451（V41-0 實測 519,427＋1,024），v4 上限 545,397；比 V41-0 多 275（V41-1 入口 260、V41-4 的兩個 key 15）。`GUIDE_SENTINELS`（「服務介紹與使用說明」與 `guide.why.lead`）在 `/` 首載 chunk 都是 0 次，對照組 `shell.guideV41.homeHint` 1 次 | 達標 | `V41-4/metrics.json` 的 `v41.homeFirstLoad`、`v41.guideSentinels` |
+| B2 | `/guide` 與 11 個 `/guide/{area}` 都是 131,465 bytes，等於框架基準（404 頁）131,465，上限 136,585；Recharts 圖表名、工作台 testid、`book_new`、`PptxGenJS` 都是 0 次 | 達標 | `V41-4/metrics.json` 的 `v41.guideFirstLoad`、`v41.guideAreaFirstLoad` |
+| B3 | 44 張 WebP 合計 1,236,048 bytes；單張最大 import-review 111,950（上限 204,800）；每頁合計最大 import 239,138（上限 1.5 MB）。每張都寫 `width`、`height`，第一張之後 `loading="lazy"`，每張都有原尺寸連結。桌機截圖有 18 張寬度超過 800 CSS px（規格是「盡量」），390 寬時 21 張的顯示比例低於 0.45，逐張理由在 V41-2a、V41-2b 驗收。影片（V41-3）沒做 | 達標（寬度超過 800 的 18 張依「盡量」逐張寫理由） | `src/application/guide-media.json`；`V41-4/guide-shots.json`；`tests/guide-content.test.ts` |
+| B4 | `/guide`、`/guide/overview`，1440 與 390 各一次 navigation，三次：Accessibility 100、SEO 100（canonical 稽核在 127.0.0.1 也通過）、Performance 98–100（第三次：`/guide` 1440 100、390 100；`/guide/overview` 1440 100、390 98）、CLS 0 | 達標 | `V41-4/metrics.json` 的 `lighthouse.guide`、`V41-4/lighthouse-runs/` |
+| B5 | axe 狀態數 desktop、laptop、tablet 各 25，mobile 23（含 `/guide`、`/guide/overview`）；serious、critical、moderate、minor 都是 0 | 達標 | `V41-4/axe.json` |
+| B6 | `GUIDE_MEDIA=check` 44／44 通過、0 差異（V41-2b 連兩次、V41-4 一次）；V41-2b 的 `GUIDE_MEDIA=write` 44 張都是 unchanged。未解析的 `{ui:…}`、重打的介面字串、缺檔、孤兒檔都是 0，SHA-256 與 `labels_hash` 相符（`tests/guide-content.test.ts` 通過） | 達標 | V41-2b、V41-4 驗收 §2 |
+| B7 | 1440 首屏一句話頂 168、KPI 帶底 395、三件事首列底 537（與 v4.0.0 相同）；390 七頁 `scrollWidth` 都是 390；1440 DOM 節點總覽 3,335（上限 4,575）、其餘六頁都在上限內；390 五個 TBT 中位數（低負載重跑三次，ms）：載入示範資料 1,011.5（門檻 1,109.1）、健檢 795.8（832.3）、商品 90.2（129.9）、會議 994.7（1,071.2）、資料來源 14.8（50.0）。design-lint、copy-style、copy-density、chart-lint 的上限檔沒有改、測試全過；testid 四份基準刪除數 0；labels v3 快照 2,581 個與 v4 快照 2,839 個逐字相同；network-log 下載恰好 5 種、沒有非 GET 請求、工作台沒有請求 `/guide/`；golden 255.00、−315.00、284.00／264.00、19.70 不變；畫面基準 64 張 0 差異 | 達標（390 TBT 第一組高負載三次有三項超過，依 D-V4-36 在負載 < 2.5 時重跑，五項都通過；V41-4 驗收 §3） | `V41-4/metrics.json`、`V41-4/network-log.json`；V41-4 驗收 §2–§4 |
+| B8 | 4 個切頁的 CLS：390 切到商品毛利 0.054、資料來源 0.054、待辦 0.071（V41-1 入口讓頁尾多折一行後由 0.053 升高）、1440 切到待辦 0.054，V41-4 後都是 0（Lighthouse 三次相同）；其餘切頁 ≤ 0.002 | 達標 | V41-4 驗收 §1、§3 |
+| B9 | 本機 13 項全過、補充 14 項全過（sitemap 13 個網址、`/guide` 200 且 og:image 是 `/og.png`、未知功能區 404、說明截圖 200、og.png 1200×630）；2026-10-15 preview 也是 13＋14 全過。正式站在上線時另跑，結果記在 V41-5 驗收 | 達標（正式站見 V41-5 驗收） | `V41-4/launch-check-local.json`、`V41-4/launch-check-preview-v41-2b.json` |
+
 ---
 
 ## 3 範圍 A：服務介紹與使用說明
