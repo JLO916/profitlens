@@ -97,7 +97,7 @@ export function ShellFrame({ panel, showValidation, onNavigate, dataStatus, ai, 
     </Fragment>;
   };
   const moreActive = MORE_ITEMS.includes(panel);
-  // V41-1：「更多」面板的列數＝頁面列＋「使用說明」；#validation 時共 5 列、排成三行，頂欄與底部分頁列帶 data-more-tall（globals.css 據此加高 --more-nav-h；不用 body:has，避免每次樣式重算都掃整棵 DOM）。
+  // V41-1：「更多」面板的列數＝頁面列＋「操作導覽」入口（V41-6 改名）；#validation 時共 5 列、排成三行，頂欄與底部分頁列帶 data-more-tall（globals.css 據此加高 --more-nav-h；不用 body:has，避免每次樣式重算都掃整棵 DOM）。
   const moreTall = MORE_ITEMS.filter(id => id !== "validation" || showValidation).length + 1 > 4;
   const groups = labels.shell.sidebarV3.groups;
   return <>
@@ -122,15 +122,16 @@ export function ShellFrame({ panel, showValidation, onNavigate, dataStatus, ai, 
         {NAV_GROUPS.map(group => <div key={group.id} className="nav-group" role="group" aria-labelledby={`nav-group-title-${group.id}`} data-testid={`nav-group-${group.id}`}><p className="nav-group-title" id={`nav-group-title-${group.id}`}>{groups[group.id]}</p>{group.items.map(navItem)}</div>)}
         {showValidation && <div className="nav-group nav-group-developer" role="group" aria-labelledby="nav-group-title-developer" data-testid="nav-group-developer"><p className="nav-group-title" id="nav-group-title-developer">{groups.developer}</p>{navItem("validation")}</div>}
       </nav>
-      {/* V41-1（D-V41-5）：「使用說明」入口在 nav 之後（不是頁面：不用 nav-item 外觀、不帶 aria-current）；一律另開分頁，同分頁換頁會丟掉記憶體裡的資料。 */}
-      <p className="sidebar-guide"><a className="sidebar-guide-link" href="/guide" target="_blank" rel="noopener" data-testid="guide-entry-sidebar">{labels.shell.guideV41.entry}<span className="sr-only">{labels.shell.guideV41.newTab}</span></a></p>
+      {/* V41-1（D-V41-5）：說明頁入口在 nav 之後（不是頁面：不用 nav-item 外觀、不帶 aria-current）；一律另開分頁，同分頁換頁會丟掉記憶體裡的資料。
+          V41-6（D-V41-27、28＝A）：文字改「操作導覽」（labels.shell.guideV41.entry）；文字前加問號圖示（ShellIcon help、預設 20px，與「更多」那一列同款；aria-hidden，不進可及名稱），sr-only 的「（另開分頁）」仍在最後。 */}
+      <p className="sidebar-guide"><a className="sidebar-guide-link" href="/guide" target="_blank" rel="noopener" data-testid="guide-entry-sidebar"><ShellIcon name="help" />{labels.shell.guideV41.entry}<span className="sr-only">{labels.shell.guideV41.newTab}</span></a></p>
     </aside>
     <nav className="mobile-tabbar" aria-label={labels.shell.mobileNav.aria} data-testid="mobile-tabbar" data-more-open={moreOpen || undefined} data-more-tall={moreTall || undefined}>
       {TABS.map(id => <button key={id} type="button" className="tab-item" aria-label={navLabel(id)} aria-current={panel === id ? "page" : undefined} onClick={() => go(id)}><ShellIcon name={id} /><span>{labels.shell.mobileNav.tabs[id]}</span></button>)}
       <button ref={tabMoreRef} type="button" className="tab-item" data-testid="mobile-tabbar-more" data-active={moreActive || undefined} aria-expanded={moreOpen} aria-controls="mobile-more topbar-cluster" onClick={event => toggleMore(event.currentTarget)}><ShellIcon name="more" /><span>{labels.shell.mobileNav.more}</span></button>
       <div className="mobile-more" id="mobile-more" ref={sheetRef} role="region" aria-label={labels.shell.mobileNav.moreAria} data-testid="mobile-more" hidden={!moreOpen}>
         {MORE_ITEMS.filter(id => id !== "validation" || showValidation).map(id => <button key={id} type="button" className="more-item" aria-current={panel === id ? "page" : undefined} onClick={() => go(id)}><ShellIcon name={id} /><span>{navLabel(id)}</span></button>)}
-        {/* V41-1（D-V41-5）：最後一列「使用說明」，與頁面列同一個外觀；另開分頁、不帶 aria-current。在面板內點它不算點外面；Esc 照常收起並回焦。 */}
+        {/* V41-1（D-V41-5）：最後一列「操作導覽」入口（V41-6 改名；問號圖示本來就有），與頁面列同一個外觀；另開分頁、不帶 aria-current。在面板內點它不算點外面；Esc 照常收起並回焦。 */}
         <a className="more-item" href="/guide" target="_blank" rel="noopener" data-testid="guide-entry-more"><ShellIcon name="help" />{labels.shell.guideV41.entry}<span className="sr-only">{labels.shell.guideV41.newTab}</span></a>
       </div>
     </nav>

@@ -73,7 +73,7 @@ const SHELL_TESTIDS = [
 ] as const;
 /** 空工作區（真正的 Dashboard SSR）：沒有資料時仍掛著的殼層。 */
 const EMPTY_SHELL_TESTIDS = ["data-status", "data-status-popover", "data-status-import", "workspace-status", "ai-availability", "workspace-storage", "autosave-status", "local-save-announce", "download-menu", "download-templates", "topbar-more", "mobile-tabbar", "mobile-tabbar-more", "mobile-more", "nav-group-results", "nav-group-causes", "nav-group-decisions", "nav-group-data", "analytics-note"] as const;
-/** V41-1（D-V41-5）：每個狀態（含空工作區與錯誤）都掛著的「使用說明」入口；首頁空狀態的 guide-entry-home 只在 shell-empty，另外斷言。 */
+/** V41-1（D-V41-5）：每個狀態（含空工作區與錯誤）都掛著的「操作導覽」入口（V41-6 改名）；首頁空狀態的 guide-entry-home 只在 shell-empty，另外斷言。 */
 const V41_ENTRY_TESTIDS = ["guide-entry-sidebar", "guide-entry-more", "guide-entry-footer"] as const;
 /** 表單 id 與錨點（#1、#13、#18；手機底部面板與自訂期間是同一個 #period-bar-panel）。 */
 const SHELL_IDS = ["main-content", "ai-availability-detail", "data-status-popover", "topbar-cluster", "mobile-more", "period-bar-panel", "period-custom-panel", "previous-start", "previous-end", "current-start", "current-end"] as const;
@@ -2000,7 +2000,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       }
     });
 
-    // ── V41-1 新增 M1 測試在此之後（工作台的「使用說明」入口，docs/revamp-v4.1/06_BATCHES.md V41-1 第 5、9 項；說明頁不屬於七頁，不進 pageStates）──
+    // ── V41-1 新增 M1 測試在此之後（工作台的「操作導覽」入口，docs/revamp-v4.1/06_BATCHES.md V41-1 第 5、9 項；說明頁不屬於七頁，不進 pageStates）──
     it("V41-1 入口（D-V41-5）：每個狀態都掛著側欄、手機「更多」、頁尾三個入口——側欄在 aside 內、nav 之後；「更多」是面板（關著、hidden）的最後一列；頁尾在「指標定義」之後；首頁空狀態的入口只在有按鈕列的首次進入（shell-empty），接在按鈕列之後；都是另開分頁的 <a href=\"/guide\">、不帶 aria-current", () => {
       for (const { name, html } of states) {
         const ids = testIdCounts(html);
@@ -2144,7 +2144,7 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       }
     });
 
-    // ── V41-1 新增 M6 測試在此之後（工作台的「使用說明」入口）──
+    // ── V41-1 新增 M6 測試在此之後（工作台的「操作導覽」入口）──
     it("V41-1 入口：側欄與「更多」各一個（兩處是不同的入口，不共用 testid）、頁尾一個，首頁空狀態至多一個；四個入口都指到 /guide", () => {
       for (const { name, html } of states) {
         const ids = testIdCounts(html);

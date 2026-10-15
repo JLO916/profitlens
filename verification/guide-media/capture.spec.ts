@@ -82,7 +82,7 @@ const CAPTURES: Record<string, Capture> = {
     region: page => [page.getByTestId("empty-state").locator(".state-actions"), page.getByTestId("empty-state").locator("table")],
     highlight: page => [page.getByTestId("empty-load-demo")],
   },
-  // 側欄：四組頁面與「使用說明」（側欄下方是空白，不截）；框四個分組標題。
+  // 側欄：四組頁面與「操作導覽」入口（V41-6 改名、文字前有問號圖示；側欄下方是空白，不截）；框四個分組標題。
   "start-nav": {
     state: stateDemo,
     region: page => [page.locator("aside.sidebar > nav"), page.locator("aside.sidebar .sidebar-guide")],

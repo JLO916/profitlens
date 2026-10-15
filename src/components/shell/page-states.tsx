@@ -22,7 +22,7 @@ export function FirstRunState({ onLoadDemo, onImport, showActions = true }: { on
       <button type="button" className="ui-btn ui-btn-primary" data-testid="empty-load-demo" onClick={onLoadDemo}>{labels.shell.buttons.loadDemo}</button>
       <button type="button" className="ui-btn ui-btn-secondary" data-testid="empty-import" onClick={onImport}>{labels.shell.buttons.importData}</button>
     </div>}
-    {/* V41-1（D-V41-5）：按鈕列下方一行「使用說明」連結（陳述句；另開分頁）；只跟著按鈕列出現。容器高度仍是 --empty-min-h，這一行收在既有高度內。 */}
+    {/* V41-1（D-V41-5）：按鈕列下方一行「操作導覽：每一頁怎麼用」連結（homeHint，陳述句；另開分頁；V41-6 改名、不加圖示）；只跟著按鈕列出現。容器高度仍是 --empty-min-h，這一行收在既有高度內。 */}
     {showActions && <a className="ui-btn ui-btn-text state-guide" href="/guide" target="_blank" rel="noopener" data-testid="guide-entry-home">{labels.shell.guideV41.homeHint}<span className="sr-only">{labels.shell.guideV41.newTab}</span></a>}
     <h3 className="state-files-title" id="empty-state-files">{copy.filesHeading}</h3>
     <TemplateTable layout="guide" descriptions={fileDescriptions} labelledBy="empty-state-files" />

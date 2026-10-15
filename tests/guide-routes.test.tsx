@@ -175,7 +175,7 @@ describe.each(GUIDE_AREAS.map(entry => [entry.area, entry] as const))("V41-2a �
   const copy = g.areas[area] as unknown as { title: string; answers: string; before: string; notes: readonly string[] };
   const title = text(copy.title);
 
-  it("外框＋頁面：guide-area-{area}、h1 只有一個＝功能區標題、麵包屑（使用說明 › 本頁，aria-current）、這頁回答什麼與開始前、主要內容 #main-content", async () => {
+  it("外框＋頁面：guide-area-{area}、h1 只有一個＝功能區標題、麵包屑（操作導覽 › 本頁，aria-current；V41-6 改名，文字取 {ui:shell.guideV41.entry}）、這頁回答什麼與開始前、主要內容 #main-content", async () => {
     const html = await areaHtml(area);
     expect(html).toContain(`data-testid="guide-area-${area}"`);
     expect(html.match(/<h1[\s>]/g)).toHaveLength(1);

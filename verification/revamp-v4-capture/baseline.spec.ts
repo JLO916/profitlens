@@ -17,7 +17,7 @@ import { FIXED_NOW, calculateKeepPreset, evidenceDrawer, goTo, loadDemo, navigat
 // 10–13 都帶 stylePath（shared.ts 的 NO_OVERLAY_STYLE，執行時寫到 test-results 底下）：sticky 的頂欄、期間列、精靈底部動作列與手機底部分頁列不疊在截圖範圍內，版面位置不變。
 // 01–09、10–11、12、13 分成四個測試（各自全新的瀏覽器狀態）：10–13 的操作不會影響 01–09 的畫面。
 // V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項；01_PRD.md §3.10「畫面基準」）：再加兩個畫面（視窗截圖 × 4 尺寸），共 60 張：
-//   14 首頁空狀態：固定時鐘（同 12）開 /，按鈕列下方一行「使用說明」入口（D-V41-5）在畫面上；不帶 stylePath（同 01 的視窗截圖）。
+//   14 首頁空狀態：固定時鐘（同 12）開 /，按鈕列下方一行「操作導覽：每一頁怎麼用」入口（D-V41-5；V41-6 改名）在畫面上；不帶 stylePath（同 01 的視窗截圖）。
 //   15 說明首頁首屏：固定時鐘開 /guide（伺服器元件的靜態頁，沒有工作台殼層）。
 // 14、15 也各自是獨立的測試。
 // V41-2a（docs/revamp-v4.1/06_BATCHES.md V41-2a 第 5 項；01_PRD.md §3.10「畫面基準」）：再加一個畫面（視窗截圖 × 4 尺寸），共 64 張：
@@ -152,7 +152,7 @@ test("V4-0a 畫面基準 13 KPI 帶（讀入 targets.csv，達成與落後兩種
   expect(errors, `${errors.length} console／page errors`).toEqual([]);
 });
 
-test("V41-1 畫面基準 14 首頁空狀態（含「使用說明」入口）", async ({ page }) => {
+test("V41-1 畫面基準 14 首頁空狀態（含「操作導覽」入口）", async ({ page }) => {
   const errors = collectErrors(page);
   await page.clock.setFixedTime(FIXED_NOW);
   await page.goto("/");

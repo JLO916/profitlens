@@ -431,15 +431,18 @@ export const shell = {
       retry: "再試一次",
     },
   },
-  // ── V41-1 錨點：工作台的「使用說明」入口（D-V41-5；側欄 nav 之後、手機「更多」最後一列、首頁空狀態、頁尾；一律另開分頁）。
+  // ── V41-1 錨點：工作台的說明頁入口（D-V41-5；側欄 nav 之後、手機「更多」最後一列、首頁空狀態、頁尾；一律另開分頁）。
   // 說明頁本身的文字不放這裡（這個檔整份進工作台 / 的首載），放 src/i18n/guide.zh-TW.ts 的 guideLabels（D-V41-12＝A'）。不用問句（tests/guide-content.test.ts）。
+  // ── V41-6 錨點：入口改名（D-V41-27＝A）——entry「使用說明」→「操作導覽」、homeHint「使用說明：每一頁怎麼用」→「操作導覽：每一頁怎麼用」；
+  //    key 名 guideV41 與 entry／newTab／homeHint 不改（labels-structure、guide-content 依 key 名）。四處入口（側欄、手機「更多」、頁尾、說明頁麵包屑 {ui:shell.guideV41.entry}）同一個 key。
+  //    問號只能是圖示（D-V41-28＝A，在 shell-frame.tsx 的側欄入口加 ShellIcon help），不能是字元；說明首頁 h1（guide.hub.title）不改。
   guideV41: {
-    /** 側欄、手機「更多」、頁尾的可見文字。 */
-    entry: "使用說明",
+    /** 側欄、手機「更多」、頁尾的可見文字（說明頁麵包屑經 {ui:…} 引用同一個值）。 */
+    entry: "操作導覽",
     /** 只放在可及名稱裡（sr-only），接在可見文字之後；可見文字不重複。 */
     newTab: "（另開分頁）",
     /** 首頁空狀態按鈕列下方一行（陳述句；空狀態不用問句，docs/revamp-v3/01_PRD.md §7.10）。 */
-    homeHint: "使用說明：每一頁怎麼用",
+    homeHint: "操作導覽：每一頁怎麼用",
   },
 } as const;
 
