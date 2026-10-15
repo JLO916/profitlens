@@ -6,9 +6,9 @@
 
 發布日期：2026-10-15。
 
-**發布方式**：v4.1.0 上線後，使用者 2026-10-15 先同意 `source-map-js` 只動 lockfile 的修正（commit `5072879`），再回覆「製作示範影片含字幕」（D-V41-6 由 B 改為 A，開工 V41-3）；影片做完後回覆「好，影片做完後部署正式上線」，並選定版本號 4.1.1，當次同意正式上線。上線步驟：`main` 從 `9bc2241` fast-forward 到發布 commit 並推送，由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.1` 指向發布 commit 並推送。這些步驟在發布 commit 之後才執行；部署完成、正式站檢查通過後，才在下一行補記 deployment 與檢查結果，並把 README 的正式站版本改成 v4.1.1。
+**發布方式**：v4.1.0 上線後，使用者 2026-10-15 先同意 `source-map-js` 只動 lockfile 的修正（commit `5072879`），再回覆「製作示範影片含字幕」（D-V41-6 由 B 改為 A，開工 V41-3）；影片做完後回覆「好，影片做完後部署正式上線」，並選定版本號 4.1.1，當次同意正式上線。`main` 從 `9bc2241` fast-forward 到發布 commit `36659ff` 並推送，由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.1` 指向 `36659ff` 並已推送。
 
-**正式站檢查**：PROD_PLACEHOLDER
+**正式站檢查**：deployment `dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`（target production，READY，`profitlens-tau.vercel.app` 指向它）。13 項 HTTP 全部通過，補充 14 項也全部通過，`live_ai_called: false`（`verification/revamp-v41/V41-3/launch-check-production.json`）。三支影片、字幕與 poster 都以正確的類型送出（`video/mp4`、`text/vtt`、`image/webp`）。用無頭瀏覽器在 1440 與 390 檢查有影片的 4 頁（`verification/revamp-v41/V41-3/production-video-check.json`）：影片 `preload="none"`、不自動播放、不循環、中文字幕預設顯示、逐字稿 5 段；開頁與捲到底都沒有下載 MP4；沒有橫向捲動、沒有 page error。
 
 **上線時沒有完成的事**：
 - H6（v4 可用性複測與外部盲評，含 v4.1 加的 T5、T6）仍待人工；依 D-V41-17 不擋上線。

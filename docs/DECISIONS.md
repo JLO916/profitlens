@@ -1,5 +1,13 @@
 # Decision log
 
+## 2026-10-15｜v4.1.1：示範影片、source-map-js、版本號
+
+- **source-map-js**：使用者同意 `source-map-js` 1.2.1 → 1.2.2。只改 lockfile 的這一個項目，它是 postcss 與 `@tailwindcss/node` 的傳遞依賴；`npm audit` high 9 → 8。
+- **示範影片**：使用者回覆「製作示範影片含字幕」，D-V41-6 由 B 改 A。V41-3 做了 3 支無聲影片，依 D-V41-7＝A 用本機 ffmpeg 轉 MP4，依 D-V41-8 附 WebVTT 字幕與逐字稿。
+- **poster**：縮到 800×500。原尺寸 poster 在說明頁載入時一起下載，會拉長手機 LCP。要完全不影響，只能拿掉 poster 或加用戶端 JS，兩者都不符規格，所以接受 `/guide` 在 390 的 Performance 98–99。
+- **版本號**：使用者回覆「好，影片做完後部署正式上線」，並在 4.1.1、4.2.0、不改版本號三個選項中選 4.1.1：影片是 v4.1 規劃裡的批次，沒有新頁面。
+- **上線**：發布 commit `36659ff`、tag `v4.1.1`、正式站 `dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`。
+
 ## 2026-10-15｜v4.1.0 正式上線（H7 通過）
 
 使用者回覆「H7 通過、V41-5 收尾、正式上線」。H7 的介紹三段與動機段（D-V41-9 的產品口吻草稿）照原文上線，沒有改字。v4.1.0 的發布 commit 是 `5b40d7f`：`main` fast-forward 並推送，正式站 `dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`，tag `v4.1.0`。

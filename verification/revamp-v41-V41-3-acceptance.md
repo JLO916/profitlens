@@ -16,7 +16,7 @@ v4.1.0 上線後，使用者 2026-10-15 回覆：
 | 審查修正 | `23ba6a2` | 影片圖說加資料來源註記；axe-sweep 加有影片的功能區頁 |
 | 驗收修正 | `9530a5c` | 影片 poster 縮到 800×500（§2 Lighthouse） |
 | v4.1.1 發布文件 | `da978ae` | 版本 4.1.1；RELEASES v4.1.1 段、README、ENGINEERING、release-notes 測試；審查 0 項 major |
-| 發布 commit | 見 §6 | 驗收證據與本文件；`main` 與 tag `v4.1.1` 指向這個 commit |
+| 發布 commit | `36659ff` | 驗收證據與本文件上線前的部分；`main` 與 tag `v4.1.1` 指向這個 commit |
 
 ## 1. 完成項目
 
@@ -138,4 +138,23 @@ v4.1.1 發布文件另由一位審查看過，0 項 major。
 
 ## 6. 上線（使用者 2026-10-15 當次同意「影片做完後部署正式上線」，版本 4.1.1）
 
-上線前：發布 commit 完成後才推送 `main`、部署、打 tag；結果由下一個 commit 補記在這一節。
+- **推送**：`main` 從 `9bc2241` fast-forward 到 `36659ff` 並推送；同時推送分支 `revamp/v4.1`（另建一個 preview）。commit 之後的禁區與邊界 diff 都是空的。
+- **部署**：
+  - 由 Vercel Git 整合部署：`dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`，target production，READY；`profitlens-tau.vercel.app` 指向它，來源是 `main` @ `36659ff`。
+  - `/api/insights` 回 `PUBLIC_DEMO`。
+- **tag**：annotated tag `v4.1.1` 指向 `36659ff`，已推送。
+- **正式站檢查**：
+  - 13 項 HTTP 全部通過，補充 14 項也全部通過，`live_ai_called: false`（`verification/revamp-v41/V41-3/launch-check-production.json`）。
+  - 正式站送出的檔：
+    - `start-30s.mp4` 706,627 bytes、`video/mp4`。
+    - `meeting-weekly.mp4` 1,133,113 bytes。
+    - `.vtt` 是 `text/vtt`。
+    - poster `start-30s-poster.webp` 47,408 bytes。
+- **瀏覽器**：無頭 Chromium，1440 與 390（`verification/revamp-v41/V41-3/production-video-check.json`）：
+  - `/guide`、`/guide/start`、`/guide/import`、`/guide/meeting` 的影片都是 `preload="none"`、不自動播放、不循環。
+  - 字幕軌 `captions:zh-Hant-TW` 預設顯示，逐字稿 5 段。
+  - 開頁並捲到底，都沒有下載 MP4。
+  - scrollWidth 等於視窗寬，沒有 page error。
+  - 說明首頁 11 張卡、工作台入口另開分頁、原分頁資料仍在。
+- **上線後的文件 commit**：README 改成「正式站已是 v4.1.1」、RELEASES 補正式站檢查一行、本節、STATUS、DECISIONS、06／README 進度。推送後，正式站用同樣的程式重建一次，比照 v4.1.0。
+- **沒有做**：Skew Protection（D-V41-16，使用者決定）；H6 與匯出開檔檢查待人工。

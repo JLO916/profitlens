@@ -1,5 +1,37 @@
 # Status
 
+## EC ProfitLens v4.1.1 正式上線（2026-10-15）
+
+v4.1.0 上線後，使用者 2026-10-15 先後回覆：
+
+- 「source-map-js 修正、製作示範影片含字幕」：D-V41-6 由 B 改 A，開工 V41-3。
+- 「好，影片做完後部署正式上線」，並選定版本 4.1.1。
+
+**內容**：
+
+- 說明頁加 3 支無聲示範影片：30 秒上手（說明首頁與開始使用頁）、匯入資料、週會流程。每支都附中文字幕與逐步文字，不自動播放，按播放才下載。
+- `source-map-js` 升到 1.2.2（只改 lockfile 這一個項目；npm audit high 9 → 8）。
+
+**上線**：
+
+- `main` 從 `9bc2241` fast-forward 到發布 commit `36659ff` 並推送 → `dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`（production，READY）。
+- annotated tag `v4.1.1` 指向 `36659ff`，已推送。
+- 正式站 13 項與補充 14 項全部通過，影片檢查通過（`verification/revamp-v41/V41-3/`）。
+
+**V41-3 驗收**（發布 commit `36659ff`）：
+
+- unit 166 檔、3,557 個全過。
+- E2E 1,143 passed、0 failed、29 skipped。
+- 畫面基準 64 張 0 差異；`GUIDE_MEDIA=check` 47／47（44 張截圖＋15 個影片 cue）。
+- `/` First Load JS 519,702；說明頁 131,465（不變）。
+- 390 TBT 五項都通過：1,033.6／815.6／87.6／980.0／13.4。
+- axe 28／28／28／26 全部 0。
+- `/guide` 在 390 的 Lighthouse Performance 98–99（v4.1.0 是 100）：影片 poster 在載入時一起下載，已縮到 800×500。
+
+**沒有完成**：H6 與匯出開檔檢查待人工；Skew Protection 沒有開（使用者決定）。
+
+驗收見 `verification/revamp-v41-V41-3-acceptance.md`；發布紀錄見 `docs/RELEASES.md`。
+
 ## EC ProfitLens v4.1.0 正式上線（2026-10-15）
 
 使用者 2026-10-15 回覆「H7 通過、V41-5 收尾、正式上線」：H7 通過（沒有改字），當次同意正式上線。
@@ -33,8 +65,8 @@
 - H6（v4 複測與盲評，含 v4.1 的 T5、T6）待人工，依 D-V41-17 不擋上線。
 - PPT、PDF、Excel 的人工開檔檢查待人工。
 - Skew Protection 沒有開，由使用者在 Vercel 設定決定（D-V41-16）。
-- source-map-js 1.2.2 的 lockfile 修正待同意。
-- 示範影片（V41-3）只在使用者明確要時才做。
+- source-map-js 1.2.2 的 lockfile 修正待同意（之後已同意並在 v4.1.1 套用）。
+- 示範影片（V41-3）只在使用者明確要時才做（之後使用者要了，v4.1.1 上線）。
 
 上線後的文件 commit 推送 `revamp/v4.1` 與 `main`，正式站用同樣的程式重建一次（比照 v4.0.0）。驗收見 `verification/revamp-v41-V41-5-acceptance.md`；發布紀錄見 `docs/RELEASES.md`。
 
