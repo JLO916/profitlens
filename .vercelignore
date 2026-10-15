@@ -12,9 +12,9 @@ test-results*/
 coverage/
 tests/
 scripts/
-docs/
+/docs/
 prompts/
-templates/
+/templates/
 *.log
 *.tsbuildinfo
 .DS_Store

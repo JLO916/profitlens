@@ -17,6 +17,11 @@
 //   這幾項失敗時，原因寫在該項的 note（終端機與 JSON 都看得到）。
 // V41-2a（docs/revamp-v4.1/01_PRD.md §3.8「一張說明截圖 200」）：13 項不變；補充再加「guide-media」：取媒體清單 src/application/guide-media.json 的第一筆，
 //   GET /{file} → 200 且 content-type 是 image/webp。清單是空的時這一項記為失敗並在 note 寫明（V41-2a 起說明頁一定有截圖）。
+// V41-6（06_BATCHES V41-6 第 1 項；D-V41-26、D-V41-30）：13 項不變；補充再加 5 項「public-file」（補充由 14 項變 19 項）：
+//   /templates/examples/{sales_daily,channel_costs_daily,ad_spend_daily}.csv、/templates/examples/manifest.json、/docs/ORDER_AGGREGATION.md 各 GET → 200、
+//   content-type 不是 text/html（404 頁是 HTML）、回應位元組與 repo 的 public/ 檔案全等（同時抓到快取舊檔）。
+//   根因：.vercelignore 的 docs/ 與 templates/ 沒有前導斜線，照 gitignore 語意連 public/docs/、public/templates/ 一起排除，從 v2.0.0 起每一次部署都沒上傳這 5 個檔（正式站 404）；
+//   本機 next start 直接讀工作目錄所以一定通過，只有對 Vercel 部署（preview 或正式站）跑才能證明修好。
 //
 // 用法（在 repo 根目錄執行；fixtures 以目前工作目錄的 fixtures/ 為準）：
 //   node scripts/launch-check.mjs --base http://127.0.0.1:3100 --out verification/revamp-v3/V3-10/launch-check-local.json
@@ -160,6 +165,20 @@ const because = reasons => (reasons.length ? { note: reasons.join("；") } : {})
     const type = media.headers.get("content-type") ?? "";
     record(extras, path, "GET", media, { name: "guide-media", id: first.id, bytes: media.bytes.length, pass: media.status === 200 && type.startsWith("image/webp"), ...because([...(media.status === 200 ? [] : ["應為 200"]), ...(type.startsWith("image/webp") ? [] : [`content-type＝${type || "（沒有）"}，應為 image/webp`])]) });
   } else extras.push({ name: "guide-media", path: null, pass: false, note: "媒體清單 src/application/guide-media.json 沒有任何項目，無法檢查說明截圖" });
+}
+// ── 補充：public/ 的範例檔與訂單明細整理說明（V41-6）──
+// 匯入範本的 4 個範例檔與 ORDER_AGGREGATION.md：GET → 200、content-type 不是 text/html、位元組與 repo 的 public/ 檔案全等（.vercelignore 曾把 public/templates、public/docs 一起排除）。
+for (const file of ["templates/examples/sales_daily.csv", "templates/examples/channel_costs_daily.csv", "templates/examples/ad_spend_daily.csv", "templates/examples/manifest.json", "docs/ORDER_AGGREGATION.md"]) {
+  const path = `/${file}`;
+  const response = await request(path);
+  const local = readFileSync(resolve("public", file));
+  const type = response.headers.get("content-type") ?? "";
+  const same = response.bytes.equals(local);
+  record(extras, path, "GET", response, {
+    name: "public-file", bytes: response.bytes.length, sha256: sha256(response.bytes), local_bytes: local.length, local_sha256: sha256(local),
+    pass: response.status === 200 && !type.startsWith("text/html") && same,
+    ...because([...(response.status === 200 ? [] : ["應為 200"]), ...(type.startsWith("text/html") ? [`content-type＝${type}，不應是 text/html`] : []), ...(same ? [] : ["位元組與 repo 的 public/ 檔案不同"])]),
+  });
 }
 {
   const apiNoStore = checks.filter(item => item.path.startsWith("/api/") && item.status !== null);
