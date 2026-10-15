@@ -7,7 +7,7 @@
 | O2 實作 | `7e65f4d` | 切頁時內容區 `.view-content` 與頁尾換新節點（兩個 React key） |
 | O2 審查 | `0585186` | 兩個面向（正確性與退步、量測是否有效），major 1 項：O2 代理把高負載下的 TBT 成對比較記成通過，不符 D-V4-47 的前提。程式不變，更正紀錄，改由批次驗收重量 |
 | 合併 | `bf40816` | |
-| O1 與收尾 | 見 §7 | 分享圖腳本、README 首圖、release-notes 測試、驗收、STATUS、功能保留表 |
+| O1 與收尾 | `6608dd9` | 分享圖腳本、README 首圖、release-notes 測試、驗收、STATUS、功能保留表 |
 
 ## 1. 完成項目
 
@@ -47,7 +47,7 @@ O2 代理用 Lighthouse trace 的 layout-shift 事件，加上頁內的 `Perform
 - **另外修的一個問題**：重產時發現產品說明那一行變成 undefined。原因是 `labels.brand.title` 的分隔符號在 v3 起由「｜」改成「 · 」，腳本改成兩種都接受，取不到就停。
 - **新圖**：產品說明正確（「電商獲利診斷與決策工作台」）。截圖是 V41-4 的總覽首屏，從頁首「經營總覽」開始，沒有側欄，也沒有 v3 舊名。
 
-## 2. 驗收命令與結果（程式 見 §7）
+## 2. 驗收命令與結果（程式 `6608dd9`；O2 程式是 `7e65f4d`）
 
 | 命令 | 結果 |
 |---|---|
@@ -153,7 +153,7 @@ O1 由主流程逐張看產物：分享圖的產品說明 undefined 是看圖時
 
 ## 7. commit 與待決
 
-CLOSE_ROW
+- 收尾 commit `6608dd9`；commit 之後 `git diff --stat 625bfa5 HEAD -- （禁區）` 與 `git diff --stat 872662d HEAD -- src/app/api vercel.json src/application/analytics.ts` 都是空的。
 
 - **H7**：未執行／待人工，可以用 preview https://profitlens-git-revamp-v41-jlo916s-projects.vercel.app/guide 看（內容是 V41-2b，與本批的說明頁相同；本批只改工作台的 key、分享圖與 README）。
 - **source-map-js 1.2.2**：仍待使用者同意。

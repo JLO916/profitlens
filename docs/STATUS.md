@@ -8,7 +8,7 @@
 - **O1 分享圖**：`public/og.png` 改用目前的總覽畫面，不再有 v3 舊名與左緣側欄；重產時順便修了產品說明顯示 undefined 的問題。
 - **O1 README 首圖**：改成 `docs/images/overview-1440-v4.png`。
 
-驗收（程式 V41_4_CODE）：
+驗收（程式 `6608dd9`）：
 
 - unit 166 檔、3,509 個全過。
 - E2E 1,127 passed、0 failed、29 skipped。
