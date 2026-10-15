@@ -12,6 +12,12 @@
 // v4.1.1 的上線前後照 v4.1.0 的做法：發布 commit 寫上線前的狀態（README 寫正式站仍是 v4.1.0、發布方式寫成步驟、正式站檢查一行是 PROD_PLACEHOLDER）；
 // 部署與正式站檢查通過後的收尾 commit 改寫 README 那一句，這時 v411Launched 為真，要求正式站檢查一行有 deployment 與 V41-3 的 launch-check-production.json、V41-3 驗收文件存在。
 // v4.1.1 段落記的也是發布當時的事實（3 支影片的長度與大小、44 張截圖），直接寫數字與字串，不讀之後會變的媒體清單。
+// V41-6（docs/revamp-v4.1/06_BATCHES.md「V41-6」；D-V41-26–30 依建議值；使用者 2026-10-15 在 v4.1.1 上線後回報範例檔無法下載、側欄入口改名「操作導覽」並加問號圖示；版本號依 D-V41-29 為 4.1.2）：版本改為 4.1.2，RELEASES 加 v4.1.2 段，
+// README 發布紀錄改成 v4.1.2、正式站那一句改寫成 v4.1.2 的上線前後，ENGINEERING 加 4.1.2、V41-6 驗收、tests/vercelignore.test.ts 的護欄與 launch-check 補充 19 項。
+// v4.1.1 已於 2026-10-15 上線（66c241a），V41-6 起它的段落一律照上線後的寫法斷言，不再看 README 的正式站那一句（那一句改寫成 v4.1.2 的上線前後）。
+// v4.1.2 的上線前後照 v4.1.1 的做法：發布 commit 寫上線前的狀態（README 寫正式站仍是 v4.1.1、發布方式寫成步驟、正式站檢查一行是 PROD_PLACEHOLDER）；
+// 部署與正式站檢查通過後的收尾 commit 改寫 README 那一句（正式站已是 v4.1.2（日期）），這時 v412Launched 為真，要求正式站檢查一行有 deployment 與 V41-6 的 launch-check-production.json、V41-6 驗收文件存在。
+// v4.1.2 段落記的是發布當時的事實（5 個檔、.vercelignore 的兩行、補充 19 項、3 張截圖與 3 支影片重拍、42 張允許變動的畫面），直接寫數字與字串；「使用說明」「操作導覽」是改名前後的值，直接寫字串，不讀 labels（labels 之後再改名也不該改這一段）。
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -32,6 +38,10 @@ const v41 = releases.slice(releases.indexOf("## v4.1.0"), releases.indexOf("## v
 const v411 = releases.slice(releases.indexOf("## v4.1.1"), releases.indexOf("## v4.1.0"));
 /** v4.1.1 段落中某個「### 標題」到下一個「### 」（或段落結尾）之間的內容。 */
 const v411Section = (heading: string) => { const start = v411.indexOf(`### ${heading}`); expect(start, heading).toBeGreaterThan(-1); const next = v411.indexOf("\n### ", start + 1); return v411.slice(start, next === -1 ? undefined : next); };
+/** RELEASES 的 v4.1.2 段落（V41-6）：從「## v4.1.2」到下一個「## v4.1.1」。 */
+const v412 = releases.slice(releases.indexOf("## v4.1.2"), releases.indexOf("## v4.1.1"));
+/** v4.1.2 段落中某個「### 標題」到下一個「### 」（或段落結尾）之間的內容。 */
+const v412Section = (heading: string) => { const start = v412.indexOf(`### ${heading}`); expect(start, heading).toBeGreaterThan(-1); const next = v412.indexOf("\n### ", start + 1); return v412.slice(start, next === -1 ? undefined : next); };
 /** v4.1.0 段落中某個「### 標題」到下一個「### 」（或段落結尾）之間的內容。 */
 const v41Section = (heading: string) => { const start = v41.indexOf(`### ${heading}`); expect(start, heading).toBeGreaterThan(-1); const next = v41.indexOf("\n### ", start + 1); return v41.slice(start, next === -1 ? undefined : next); };
 /** v4.1.0 發布時 11 個功能區頁的標題（{ui:…} 已換成介面原字串；GUIDE_AREAS 的順序）。 */
@@ -44,8 +54,11 @@ const V411_PROD_LAUNCH_CHECK = "verification/revamp-v41/V41-3/launch-check-produ
 const V41_3_ACCEPTANCE = "verification/revamp-v41-V41-3-acceptance.md";
 /** source-map-js 修正後的 npm audit（commit 5072879 一起提交的證據，之後不再改）。 */
 const V411_AUDIT = "verification/revamp-v41/V41-3/npm-audit-after-source-map-js.json";
-/** README 已寫「正式站已是 v4.1.1」＝v4.1.1 部署與正式站檢查通過後的收尾 commit。v4.1.0 已於 2026-10-15 上線，不再有上線前的狀態。 */
-const v411Launched = readme.includes("正式站已是 v4.1.1（2026-10-15）");
+/** 正式站檢查的輸出與 V41-6 驗收文件（v4.1.2）：V41-6 驗收文件由主流程寫，正式站檢查的輸出在上線後的收尾 commit 才產生。 */
+const V412_PROD_LAUNCH_CHECK = "verification/revamp-v41/V41-6/launch-check-production.json";
+const V41_6_ACCEPTANCE = "verification/revamp-v41-V41-6-acceptance.md";
+/** README 已寫「正式站已是 v4.1.2（日期）」＝v4.1.2 部署與正式站檢查通過後的收尾 commit。v4.1.1 已於 2026-10-15 上線，不再有上線前的狀態。 */
+const v412Launched = /正式站已是 v4\.1\.2（2026-\d{2}-\d{2}）/.test(readme);
 /** 功能區頁的標題（{ui:…} 換成介面原字串），例如 import＝「匯入資料」。 */
 const areaTitle = (code: (typeof GUIDE_AREA_CODES)[number]) => resolveUiRefs(guideLabels.guide.areas[code].title, labels);
 /** v3、v4、v4.1、v4.1.1 段落共用的文案規則：沒有「注意：」前綴、箭頭與驚嘆號。 */
@@ -58,14 +71,14 @@ const v4Section = (heading: string) => { const start = v4.indexOf(`### ${heading
 const readmeSection = (heading: string) => { const start = readme.indexOf(`## ${heading}`); expect(start, heading).toBeGreaterThan(-1); return readme.slice(start, readme.indexOf("\n## ", start + 1)); };
 const sheets = labels.exports.excel.sheets;
 
-describe("版本 4.1.1（V41-3；package.json 與 lockfile 的根只改 version，依賴不變；lockfile 另有使用者同意的 source-map-js 1.2.2）", () => {
-  it("package.json、package-lock.json 的根與 packages[\"\"] 都是 4.1.1；名稱仍是 profitlens（技術識別不改，D-V3-25）；next、eslint-config-next 是 16.3.8（D-V41-15）；source-map-js 是 1.2.2", () => {
+describe("版本 4.1.2（V41-6；D-V41-29＝A；package.json 與 lockfile 的根只改 version 三行，依賴不變；lockfile 的 source-map-js 仍是 V41-3 的 1.2.2）", () => {
+  it("package.json、package-lock.json 的根與 packages[\"\"] 都是 4.1.2；名稱仍是 profitlens（技術識別不改，D-V3-25）；next、eslint-config-next 是 16.3.8（D-V41-15）；source-map-js 是 1.2.2", () => {
     const pkg = JSON.parse(read("package.json"));
     const lock = JSON.parse(read("package-lock.json"));
     expect(pkg.name).toBe("profitlens");
-    expect(pkg.version).toBe("4.1.1");
-    expect(lock.version).toBe("4.1.1");
-    expect(lock.packages[""].version).toBe("4.1.1");
+    expect(pkg.version).toBe("4.1.2");
+    expect(lock.version).toBe("4.1.2");
+    expect(lock.packages[""].version).toBe("4.1.2");
     expect(lock.packages["node_modules/source-map-js"].version).toBe("1.2.2");
     expect(pkg.dependencies.next).toBe("16.3.8");
     expect(pkg.devDependencies["eslint-config-next"]).toBe("16.3.8");
@@ -74,32 +87,91 @@ describe("版本 4.1.1（V41-3；package.json 與 lockfile 的根只改 version�
   });
 });
 
-describe("RELEASES v4.1.1 段落（V41-3，2026-10-15；上線前後由 README 的正式站那一句判斷）", () => {
+describe("RELEASES v4.1.2 段落（V41-6，2026-10-15；上線前後由 README 的正式站那一句判斷）", () => {
+  it("在 v4.1.1 之前（新的在上）且是第一個段落，標題寫發布日期與主題；開頭寫明使用者的回報、批次與拍板、上線步驟、正式站檢查那一行、未完成的事、上一版與部署要當次同意；小節依序是給使用者、不變的事、已知限制、驗收", () => {
+    expect(releases.indexOf("## v4.1.2（2026-10-15，範例檔修正與操作導覽入口）")).toBeGreaterThan(-1);
+    expect(releases.indexOf("## v4.1.2")).toBeLessThan(releases.indexOf("## v4.1.1"));
+    expect(releases.indexOf("## v4.1.2")).toBe(releases.indexOf("\n## ") + 1);
+    const intro = v412.slice(0, v412.indexOf("\n### "));
+    for (const text of ["發布日期：2026-10-15", "V41-6", "D-V41-26", "D-V41-29", "4.1.2", "「操作導覽」", "`.vercelignore`", "`revamp/v4.1`", "`main`", "`v4.1.2`", "補充 19 項", "**正式站檢查**：", "H6", "T5、T6", "D-V41-17", "人工開檔檢查", "Skew Protection", "D-V41-16", "v4.1.1（發布 commit `36659ff`", "`v4.1.1`", "`dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`", "`66c241a`", "`dpl_Hfh6Nv7vbvmghP4P2LJXCvVWEbbL`", "D-V41-24"]) expect(intro, text).toContain(text);
+    const headings = [...v412.matchAll(/^### (.+)$/gm)].map(match => match[1]);
+    expect(headings).toEqual(["給使用者", "不變的事", "已知限制", "驗收"]);
+  });
+
+  it("正式站檢查一行與 README 的正式站版本一致：上線前是 PROD_PLACEHOLDER、發布方式寫成上線步驟；README 改成已是 v4.1.2 後，要有 deployment 與 V41-6 正式站檢查的輸出檔、V41-6 驗收文件，不留 PLACEHOLDER 與上線步驟", () => {
+    const intro = v412.slice(0, v412.indexOf("\n### "));
+    const prodLine = intro.split("\n").find(line => line.startsWith("**正式站檢查**："));
+    expect(prodLine).toBeDefined();
+    if (v412Launched) {
+      expect(v412).not.toContain("PLACEHOLDER");
+      expect(intro).not.toContain("上線步驟：");
+      expect(prodLine).toMatch(/`dpl_[A-Za-z0-9]+`/);
+      expect(prodLine).toContain(`\`${V412_PROD_LAUNCH_CHECK}\``);
+      expect(existsSync(resolve(V412_PROD_LAUNCH_CHECK)), V412_PROD_LAUNCH_CHECK).toBe(true);
+      expect(existsSync(resolve(V41_6_ACCEPTANCE)), V41_6_ACCEPTANCE).toBe(true);
+    } else {
+      expect(prodLine).toBe("**正式站檢查**：PROD_PLACEHOLDER");
+      expect(intro).toContain("上線步驟：");
+    }
+  });
+
+  it("給使用者：範例檔（5 個檔與放置處、根因是 .vercelignore 兩行沒有前導斜線、從 v2.0.0 起 404、本機 next start 測不到、修法只動兩行、兩道護欄、內容逐位元組相同）與入口（四處由「使用說明」改「操作導覽」、首頁空狀態那一行、側欄問號圖示、頁尾與首頁空狀態不加、說明首頁標題不變、3 張截圖與 3 支影片重拍）", () => {
+    const users = v412Section("給使用者");
+    expect(users).toContain("**範例檔可以下載了**");
+    expect(users).toContain("**入口改名「操作導覽」，側欄加問號圖示**");
+    for (const text of [`「${labels.exports.downloads.templatesHeading}」`, `「${labels.shell.topbarV3.templateColumns.example}」`, `「${labels.shell.topbarV3.templateColumns.blank}」`, "`manifest.json`", "`/docs/ORDER_AGGREGATION.md`", "404", "v2.0.0", "`.vercelignore`", "`docs/`", "`templates/`", "前導斜線", "`public/`", "5 個檔", "`next start`", "D-V41-26", "`/docs/`", "`/templates/`", "只動這兩行", "`git check-ignore`", "`tests/vercelignore.test.ts`", "`scripts/launch-check.mjs`", "14 項增為 19 項", "D-V41-30", "`templates/examples/`", "逐位元組相同", "`tests/templates.test.ts`"]) expect(users, text).toContain(text);
+    for (const text of ["「使用說明」", "「操作導覽」", "`shell.guideV41.entry`", "D-V41-27", "「使用說明：每一頁怎麼用」", "「操作導覽：每一頁怎麼用」", "問號圓圈圖示", "20px", "D-V41-28", "「操作導覽（另開分頁）」", "「服務介紹與使用說明」不變", "另開分頁", "`start-nav`", "`start-mobile-m`", "`start-load`", "3 支影片", "41 張", "見驗收文件"]) expect(users, text).toContain(text);
+  });
+
+  it("不變的事：三個指標版本、golden 固定答案、labels 只改 shell.guideV41 的兩個值、testid、沒有新增依賴（lockfile 只改版本號）、.vercelignore 其餘樣式不動、資料不上傳、公開站邊界、匯出與備份 v5", () => {
+    const same = v412Section("不變的事");
+    for (const text of ["contribution-v1", "assist-kpi-v1", "breakeven-mer-v1", "`625bfa5`", "255.00", "−315.00", "284.00／264.00", "19.70", "不產生任何新數字", "`src/i18n/labels.zh-TW.ts`", "`shell.guideV41.entry`", "`shell.guideV41.homeHint`", "key 名不變", "data-testid", "沒有新增依賴", "只改版本號", "`.vercelignore`", "資料不上傳", "D-V41-23", "APP_MODE=PUBLIC_DEMO", "ENABLE_LIVE_AI=false", "`872662d`", "5 種", "profitlens-workspace-v5"]) expect(same, text).toContain(text);
+  });
+
+  it("已知限制：H6（T5、T6，答案鍵的入口名已改「操作導覽」）、開檔檢查、Skew Protection、截圖裡的英文（3 張）、手機上的寬截圖（21 張）、其他沿用 v4.1.1 與 v4.1.0", () => {
+    const known = v412Section("已知限制");
+    for (const text of ["H6", "T5", "T6", "D-V41-17", "[usability-test](revamp-v4/usability-test.md)", "「操作導覽」", "人工開檔檢查", "Skew Protection", "D-V41-16", "共 3 張", "Choose File", "mm/dd/yyyy", "21 張", "0.45", "`ffmpeg`", "游標", "v4.1.1 與 v4.1.0 段落"]) expect(known, text).toContain(text);
+  });
+
+  it("驗收連到 V41-6 的驗收文件（上線前可以還沒有，上線後一定要有），寫「數字見驗收文件」與要過的關卡；連到的規格文件都存在", () => {
+    const links = [...v412.matchAll(/\]\(\.\.\/(verification\/[^)]+)\)/g)].map(match => match[1]);
+    expect(links).toContain(V41_6_ACCEPTANCE);
+    for (const link of links.filter(path => v412Launched || path !== V41_6_ACCEPTANCE)) expect(existsSync(resolve(link)), link).toBe(true);
+    const acceptance = v412Section("驗收");
+    for (const text of ["數字見驗收文件", "禁區與邊界五條", "`tests/vercelignore.test.ts`", "13 項與補充 19 項", "520,451", "`GUIDE_SENTINELS`", "`GUIDE_MEDIA=check`", "47 件 0 差異", "64 張", "42 張", "E2E 四尺寸", "axe", "TBT", "SEO 100"]) expect(acceptance, text).toContain(text);
+    const docs = [...v412.matchAll(/\]\((revamp-v4(?:\.1)?\/[^)]+)\)/g)].map(match => match[1]);
+    for (const name of ["06_BATCHES.md", "09_DECISIONS_PENDING.md"]) expect(docs).toContain(`revamp-v4.1/${name}`);
+    expect(docs).toContain("revamp-v4/usability-test.md");
+    for (const doc of docs) expect(existsSync(resolve("docs", doc)), doc).toBe(true);
+  });
+
+  it("v4.1.2 段落遵守文案規則：沒有「注意：」前綴、箭頭與驚嘆號，也沒有說明頁黑名單裡的最高級", () => {
+    for (const banned of BANNED_MARKS) expect(v412, banned).not.toContain(banned);
+    expect(v412).not.toMatch(SUPERLATIVES);
+  });
+});
+
+describe("RELEASES v4.1.1 段落（V41-3，2026-10-15 上線；V41-6 起一律照上線後的寫法斷言）", () => {
   it("在 v4.1.0 之前（新的在上），標題寫發布日期與主題；開頭寫明使用者的同意、發布方式、正式站檢查那一行、未完成的事、上一版與部署要當次同意；小節依序是給使用者、不變的事、依賴修正、已知限制、驗收", () => {
     expect(releases.indexOf("## v4.1.1（2026-10-15，示範影片與依賴修正）")).toBeGreaterThan(-1);
     expect(releases.indexOf("## v4.1.1")).toBeLessThan(releases.indexOf("## v4.1.0"));
-    expect(releases.indexOf("## v4.1.1")).toBe(releases.indexOf("\n## ") + 1);
     const intro = v411.slice(0, v411.indexOf("\n### "));
     for (const text of ["發布日期：2026-10-15", "「製作示範影片含字幕」", "「好，影片做完後部署正式上線」", "D-V41-6", "V41-3", "`source-map-js`", "`5072879`", "`main` 從 `9bc2241` fast-forward", "`v4.1.1`", "**正式站檢查**：", "H6", "T5、T6", "D-V41-17", "人工開檔檢查", "Skew Protection", "D-V41-16", "v4.1.0（發布 commit `5b40d7f`", "`dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`", "`dpl_12xGwYGK9LHcuiczj517PjoPTWsn`", "D-V41-24"]) expect(intro, text).toContain(text);
     const headings = [...v411.matchAll(/^### (.+)$/gm)].map(match => match[1]);
     expect(headings).toEqual(["給使用者", "不變的事", "依賴修正", "已知限制", "驗收"]);
   });
 
-  it("正式站檢查一行與 README 的正式站版本一致：上線前是 PROD_PLACEHOLDER、發布方式寫成步驟；README 改成已是 v4.1.1 後，要有 deployment 與 V41-3 正式站檢查的輸出檔，不留 PLACEHOLDER", () => {
+  it("已上線（2026-10-15）：發布方式寫實際的 commit 與 tag，正式站檢查一行有 deployment 與 V41-3 正式站檢查的輸出檔，V41-3 驗收文件存在，不留 PLACEHOLDER 與上線步驟（不再看 README 的正式站那一句）", () => {
     const intro = v411.slice(0, v411.indexOf("\n### "));
     const prodLine = intro.split("\n").find(line => line.startsWith("**正式站檢查**："));
     expect(prodLine).toBeDefined();
-    if (v411Launched) {
-      expect(v411).not.toContain("PLACEHOLDER");
-      expect(intro).not.toContain("上線步驟：");
-      expect(prodLine).toMatch(/`dpl_[A-Za-z0-9]+`/);
-      expect(prodLine).toContain(`\`${V411_PROD_LAUNCH_CHECK}\``);
-      expect(existsSync(resolve(V411_PROD_LAUNCH_CHECK)), V411_PROD_LAUNCH_CHECK).toBe(true);
-      expect(existsSync(resolve(V41_3_ACCEPTANCE)), V41_3_ACCEPTANCE).toBe(true);
-    } else {
-      expect(prodLine).toBe("**正式站檢查**：PROD_PLACEHOLDER");
-      expect(intro).toContain("上線步驟：");
-    }
+    expect(v411).not.toContain("PLACEHOLDER");
+    expect(intro).not.toContain("上線步驟：");
+    expect(intro).toContain("發布 commit `36659ff`");
+    expect(prodLine).toContain("`dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`");
+    expect(prodLine).toContain(`\`${V411_PROD_LAUNCH_CHECK}\``);
+    expect(existsSync(resolve(V411_PROD_LAUNCH_CHECK)), V411_PROD_LAUNCH_CHECK).toBe(true);
+    expect(existsSync(resolve(V41_3_ACCEPTANCE)), V41_3_ACCEPTANCE).toBe(true);
   });
 
   it("給使用者：3 支影片（發布時的標題、長度、大小與放置頁）、預設開啟的字幕與逐步文字、資料來源註記、preload=\"none\"、只放本站 public/guide/video/", () => {
@@ -134,11 +206,11 @@ describe("RELEASES v4.1.1 段落（V41-3，2026-10-15；上線前後由 README �
     for (const text of ["H6", "T5", "T6", "D-V41-17", "人工開檔檢查", "Skew Protection", "D-V41-16", "`ffmpeg`", "`GUIDE_MEDIA=check`", "`GUIDE_MEDIA=write`", "D-V41-7", "游標", "強調框", "v4.1.0 段落", "示範影片還沒做"]) expect(known, text).toContain(text);
   });
 
-  it("驗收連到 V41-3 的驗收文件（上線前可以還沒有，上線後一定要有）與 V41-0 基準評估；連到的規格文件都存在", () => {
+  it("驗收連到 V41-3 的驗收文件（已上線，一定要有）與 V41-0 基準評估，連結的檔案都存在；連到的規格文件都存在", () => {
     const links = [...v411.matchAll(/\]\(\.\.\/(verification\/[^)]+)\)/g)].map(match => match[1]);
     expect(links).toContain(V41_3_ACCEPTANCE);
     expect(links).toContain("verification/revamp-v41/V41-0-baseline.md");
-    for (const link of links.filter(path => v411Launched || path !== V41_3_ACCEPTANCE)) expect(existsSync(resolve(link)), link).toBe(true);
+    for (const link of links) expect(existsSync(resolve(link)), link).toBe(true);
     expect(v411Section("驗收")).toContain(`\`${V411_AUDIT}\``);
     expect(existsSync(resolve(V411_AUDIT))).toBe(true);
     const docs = [...v411.matchAll(/\]\((revamp-v4(?:\.1)?\/[^)]+)\)/g)].map(match => match[1]);
@@ -322,23 +394,23 @@ describe("RELEASES v3.0.0 段落（08_RELAUNCH §5 範本＋破壞性變更）",
   });
 });
 
-describe("README（步驟對齊 V3-8 的空狀態與匯入精靈；V41-3 起發布紀錄是 v4.1.1）", () => {
-  it("發布紀錄寫最新 v4.1.1（2026-10-15），不再寫「最新：v4.1.0」「最新：v3.0.0」「最新：v2.0.0」；正式站版本另寫一句：上線前寫仍是 v4.1.0，上線後的收尾 commit 才改成已是 v4.1.1；v4.1.0 已上線，不再寫正式站仍是 v4.0.0 或說明頁尚未發布", () => {
+describe("README（步驟對齊 V3-8 的空狀態與匯入精靈；V41-6 起發布紀錄是 v4.1.2）", () => {
+  it("發布紀錄寫最新 v4.1.2（2026-10-15），不再寫「最新：v4.1.1」「最新：v4.1.0」「最新：v3.0.0」「最新：v2.0.0」，保留 v4.1.1 與 v4.1.0 的一句；正式站版本另寫一句：上線前寫仍是 v4.1.1，上線後的收尾 commit 才改成已是 v4.1.2（日期）；v4.1.1 已上線，不再寫正式站仍是 v4.1.0、v4.0.0 或說明頁尚未發布", () => {
     expect(readme).toContain("v4.1.0");
-    expect(readme).not.toContain("最新：v2.0.0");
-    expect(readme).not.toContain("最新：v3.0.0");
-    expect(readme).not.toContain("最新：v4.1.0");
+    expect(readme).toContain("v4.1.1");
+    for (const old of ["最新：v2.0.0", "最新：v3.0.0", "最新：v4.1.0", "最新：v4.1.1"]) expect(readme, old).not.toContain(old);
     const record = readmeSection("發布紀錄");
     const features = readmeSection("功能一覽");
-    expect(record).toContain("最新：v4.1.1（2026-10-15）");
-    for (const text of ["3 支無聲示範影片", "中文字幕", "`source-map-js`", "1.2.2"]) expect(record, text).toContain(text);
+    expect(record).toContain("最新：v4.1.2（2026-10-15）");
+    for (const text of ["範例檔", "`public/`", "v2.0.0", "404", "「使用說明」", "「操作導覽」", "問號圖示", "v4.1.1（2026-10-15）", "3 支無聲示範影片", "`source-map-js`", "v4.1.0（2026-10-15）", "`/guide`"]) expect(record, text).toContain(text);
     expect(record).not.toContain("正式站仍是 v4.0.0");
+    expect(record).not.toContain("正式站仍是 v4.1.0");
     expect(features).not.toContain("尚未發布");
-    if (v411Launched) {
-      expect(record).toContain("正式站已是 v4.1.1（2026-10-15）；H6 可用性複測尚未執行。");
+    if (v412Launched) {
+      expect(record).toMatch(/正式站已是 v4\.1\.2（2026-\d{2}-\d{2}）；H6 可用性複測尚未執行。/);
       expect(record).not.toContain("正式站仍是");
     } else {
-      expect(record).toContain("正式站仍是 v4.1.0（2026-10-15 上線），v4.1.1 部署並通過正式站檢查後才改寫這一句；H6 可用性複測尚未執行。");
+      expect(record).toContain("正式站仍是 v4.1.1（2026-10-15 上線），v4.1.2 部署並通過正式站檢查後才改寫這一句；H6 可用性複測尚未執行。");
       expect(record).not.toContain("正式站已是");
     }
   });
@@ -402,8 +474,8 @@ describe("README 與 ENGINEERING 的 v4.0.0（2026-10-14 上線）", () => {
   });
 });
 
-describe("ENGINEERING 的 v4.1.0（V41-5）與 v4.1.1（V41-3）", () => {
-  it("寫出 V41-5 起的版本 4.1.0、文件地圖的 docs/revamp-v4.1/ 五份文件與 v4.1 各批驗收（檔案都存在；v4.1.1 上線前 V41-3 的除外），以及說明頁媒體的 GUIDE_MEDIA=check／write", () => {
+describe("ENGINEERING 的 v4.1.0（V41-5）、v4.1.1（V41-3）與 v4.1.2（V41-6）", () => {
+  it("寫出 V41-5 起的版本 4.1.0、文件地圖的 docs/revamp-v4.1/ 五份文件與 v4.1 各批驗收（檔案都存在；v4.1.2 上線前 V41-6 的除外），以及說明頁媒體的 GUIDE_MEDIA=check／write", () => {
     const engineering = read("docs/ENGINEERING.md");
     expect(engineering).toContain("**4.1.0**");
     expect(engineering).toContain("[revamp-v4.1/](revamp-v4.1/)");
@@ -412,8 +484,8 @@ describe("ENGINEERING 的 v4.1.0（V41-5）與 v4.1.1（V41-3）", () => {
       expect(existsSync(resolve("docs/revamp-v4.1", name)), name).toBe(true);
     }
     const links = [...engineering.matchAll(/\]\(\.\.\/(verification\/revamp-v41-[^)]+)\)/g)].map(match => match[1]);
-    for (const batch of ["V41-0", "V41-1", "V41-2a", "V41-2b", "V41-4", "V41-5"]) expect(links).toContain(`verification/revamp-v41-${batch}-acceptance.md`);
-    for (const link of links.filter(path => v411Launched || path !== V41_3_ACCEPTANCE)) expect(existsSync(resolve(link)), link).toBe(true);
+    for (const batch of ["V41-0", "V41-1", "V41-2a", "V41-2b", "V41-4", "V41-5", "V41-3"]) expect(links).toContain(`verification/revamp-v41-${batch}-acceptance.md`);
+    for (const link of links.filter(path => v412Launched || path !== V41_6_ACCEPTANCE)) expect(existsSync(resolve(link)), link).toBe(true);
     expect(engineering).toContain("GUIDE_MEDIA=check npx playwright test --config verification/guide-media.config.ts");
     expect(engineering).toContain("GUIDE_MEDIA=write npx playwright test --config verification/guide-media.config.ts");
   });
@@ -421,11 +493,20 @@ describe("ENGINEERING 的 v4.1.0（V41-5）與 v4.1.1（V41-3）", () => {
   it("寫出 V41-3 起的版本 4.1.1（連到 RELEASES 的 v4.1.1 段落）、V41-3 驗收的連結，以及影片的比對與重錄（video.spec.ts；重錄要本機 ffmpeg，check 不需要）", () => {
     const engineering = read("docs/ENGINEERING.md");
     expect(engineering).toContain("V41-3 起為 **4.1.1**（見 [RELEASES](RELEASES.md) 的 v4.1.1 段落");
-    expect(engineering).toContain("發布紀錄（v4.1.1，2026-10-15，示範影片與依賴修正；v4.1.0 已於 2026-10-15 上線");
+    expect(engineering).toContain("v4.1.1 已於 2026-10-15 上線，示範影片與依賴修正；v4.1.0 已於 2026-10-15 上線");
     const links = [...engineering.matchAll(/\]\(\.\.\/(verification\/revamp-v41-[^)]+)\)/g)].map(match => match[1]);
     expect(links).toContain(V41_3_ACCEPTANCE);
     for (const text of ["`verification/guide-media/video.spec.ts`", "`verification/guide-media/baseline/video/", "`public/guide/video/{id}.mp4`", "`ffmpeg`", "D-V41-7", "只跑 `check` 不需要"]) expect(engineering, text).toContain(text);
     expect(existsSync(resolve("verification/guide-media/video.spec.ts"))).toBe(true);
+  });
+
+  it("寫出 V41-6 起的版本 4.1.2（連到 RELEASES 的 v4.1.2 段落）、V41-6 驗收的連結、tests/vercelignore.test.ts 的護欄（git check-ignore）、launch-check 補充由 14 項增為 19 項，以及 .vercelignore 在 CLI 上傳與 Git 整合建置都生效", () => {
+    const engineering = read("docs/ENGINEERING.md");
+    expect(engineering).toContain("V41-6 起為 **4.1.2**（見 [RELEASES](RELEASES.md) 的 v4.1.2 段落");
+    expect(engineering).toContain("發布紀錄（v4.1.2，2026-10-15，範例檔修正與操作導覽入口；v4.1.1 已於 2026-10-15 上線");
+    const links = [...engineering.matchAll(/\]\(\.\.\/(verification\/revamp-v41-[^)]+)\)/g)].map(match => match[1]);
+    expect(links).toContain(V41_6_ACCEPTANCE);
+    for (const text of ["`tests/vercelignore.test.ts`", "`git check-ignore --no-index`", "`.vercelignore`", "補充檢查由 14 項增為 19 項", "`ORDER_AGGREGATION.md`", "D-V41-26", "D-V41-30", "Git 整合建置", "`/docs/`、`/templates/`"]) expect(engineering, text).toContain(text);
   });
 });
 
