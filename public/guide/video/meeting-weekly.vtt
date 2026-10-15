@@ -2,20 +2,20 @@ WEBVTT
 
 action
 00:00:00.000 --> 00:00:06.233
-(guide.videos.meeting-weekly.cues.action)
+在通路健檢把第一項「加入待辦」。
 
 scenario
 00:00:06.233 --> 00:00:15.402
-(guide.videos.meeting-weekly.cues.scenario)
+到假設試算用「維持現況」試算，再按「選入會議」。
 
 decision
 00:00:15.402 --> 00:00:20.479
-(guide.videos.meeting-weekly.cues.decision)
+到會議紀錄，把這次的決議選為「採用」。
 
 finalize
 00:00:20.479 --> 00:00:27.467
-(guide.videos.meeting-weekly.cues.finalize)
+按「結束會議」並確認，這次會議存入會議歷史。
 
 export
 00:00:27.467 --> 00:00:33.680
-(guide.videos.meeting-weekly.cues.export)
+打開匯出選單，選要下載的格式。

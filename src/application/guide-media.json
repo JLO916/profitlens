@@ -441,7 +441,7 @@
           "sha256": "61ae5cc1d951a17cdd0f62c88d870ca0a36bd529abc79503f91ace2f57f12657"
         }
       ],
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "febbd16b91d6cd006e9ae67f2705cdfb4930ecab5dbe61ebe345d9c6faab2e05"
     },
     {
       "id": "import-wizard",
@@ -485,7 +485,7 @@
           "sha256": "b591524211ae131f1a96d8ee491d3381b2eec58e537e8ca47372fb5cb1a630d3"
         }
       ],
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "1ad2e46c340e0d9940b44c2b4aa2cafd17739e001ea7df52855e2e78ba036594"
     },
     {
       "id": "meeting-weekly",
@@ -529,7 +529,7 @@
           "sha256": "bd282cc17c46dc704160b75d47c82f40c61552687df730660a52bc3065f0200a"
         }
       ],
-      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "labels_hash": "f24842cc1ae348721f9b78c60da755a11b44ef88b767840e795ff8fb8e450b08"
     }
   ]
 }

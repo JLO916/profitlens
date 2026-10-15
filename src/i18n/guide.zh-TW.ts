@@ -523,7 +523,7 @@ export const guideLabels = {
           load: "在首頁按「{ui:shell.buttons.loadDemo}」。",
           snapshot: "先讀最上面的{ui:overview.snapshotUi.heading}與五個關鍵數字。",
           bridge: "往下捲到{ui:overview.sections.bridge}，看兩期差額拆成哪幾項。",
-          evidence: "點扣廣告後貢獻的金額，打開{ui:evidence.sections.evidence}，看算法、檔名與行號。",
+          evidence: "點扣廣告後貢獻的金額，打開{ui:evidence.sections.evidence}，看算法與到分的精確值。",
           close: "關閉{ui:evidence.sections.evidence}，回到{ui:shell.nav.overview.headline}。",
         },
       },
@@ -533,8 +533,8 @@ export const guideLabels = {
         cues: {
           files: "按「{ui:shell.buttons.importData}」，選三份檔案，系統依檔名自動歸位。",
           mapping: "在「{ui:importWizard.steps.1}」這一步確認欄名都已對上。",
-          basis: "金額基準選含稅，確認期間後開始檢核。",
-          review: "在「{ui:importWizard.steps.3}」這一步看檢核結果與對帳表。",
+          basis: "金額基準選含稅，再確認建議的上期與本期。",
+          review: "開始檢核後，在「{ui:importWizard.steps.3}」這一步看檢核結果與含稅換算。",
           apply: "按「{ui:importWizard.commit}」，回到{ui:shell.nav.overview.headline}。",
         },
       },
@@ -544,7 +544,7 @@ export const guideLabels = {
         cues: {
           action: "在{ui:shell.nav.diagnosis.headline}把第一項「{ui:actions.buttons.addToActions}」。",
           scenario: "到{ui:shell.nav.scenarios.headline}用「{ui:scenarios.presets.items.keep.name}」試算，再按「{ui:meeting.buttons.selectForMeeting}」。",
-          decision: "到{ui:shell.nav.meeting.headline}寫下這次的決議。",
+          decision: "到{ui:shell.nav.meeting.headline}，把這次的決議選為「{ui:meeting.form.decisions.adopted}」。",
           finalize: "按「{ui:meeting.buttons.finalizeMeeting}」並確認，這次會議存入{ui:meeting.page.history}。",
           export: "打開匯出選單，選要下載的格式。",
         },

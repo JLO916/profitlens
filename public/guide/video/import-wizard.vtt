@@ -2,20 +2,20 @@ WEBVTT
 
 files
 00:00:00.000 --> 00:00:05.503
-(guide.videos.import-wizard.cues.files)
+按「匯入資料」，選三份檔案，系統依檔名自動歸位。
 
 mapping
 00:00:05.503 --> 00:00:10.807
-(guide.videos.import-wizard.cues.mapping)
+在「對照欄位」這一步確認欄名都已對上。
 
 basis
 00:00:10.807 --> 00:00:16.702
-(guide.videos.import-wizard.cues.basis)
+金額基準選含稅，再確認建議的上期與本期。
 
 review
 00:00:16.702 --> 00:00:21.710
-(guide.videos.import-wizard.cues.review)
+開始檢核後，在「檢核與套用」這一步看檢核結果與含稅換算。
 
 apply
 00:00:21.710 --> 00:00:27.640
-(guide.videos.import-wizard.cues.apply)
+按「套用這批資料」，回到經營總覽。
