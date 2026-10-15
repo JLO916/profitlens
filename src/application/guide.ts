@@ -60,6 +60,32 @@ export const GUIDE_AREA_STEPS: Readonly<Partial<Record<GuideAreaCode, readonly G
 /** 已上線（有 /guide/{area} 頁面）的功能區，依 GUIDE_AREA_CODES 的順序。V41-1 是空的；V41-2a 加 start、import、overview、diagnosis、products；V41-2b 加其餘 6 個（11 區全部上線）。 */
 export const GUIDE_PUBLISHED_AREAS: readonly GuideAreaCode[] = ["start", "import", "overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "evidence", "export"];
 
+/** V41-3：示範影片的一段字幕（key＝guideLabels.guide.videos.{id}.cues.{key}）。 */
+export interface GuideVideoCue {
+  key: string;
+}
+/** V41-3：示範影片放在哪些頁（hub＝說明首頁「30 秒上手」；其餘是功能區頁，放在步驟之前）。 */
+export type GuideVideoPage = "hub" | GuideAreaCode;
+export interface GuideVideo {
+  id: string;
+  pages: readonly GuideVideoPage[];
+  cues: readonly GuideVideoCue[];
+}
+
+/**
+ * V41-3 錨點（D-V41-6＝A，使用者 2026-10-15「製作示範影片含字幕」；GUIDE_CONTENT §3）：3 支無聲示範影片，每個 cue 一句字幕。
+ * 檔案 public/guide/video/{id}.mp4（D-V41-7＝A：Playwright 錄影後用本機 ffmpeg 轉 H.264、無音軌）、{id}.vtt、{id}-poster.webp；
+ * cue 比對基準 verification/guide-media/baseline/video/{id}-{cue}.png（GUIDE_MEDIA=check 照流程重跑、每個 cue 擷取一張比對，0 差異就不重錄）。
+ */
+export const GUIDE_VIDEOS: readonly GuideVideo[] = [
+  // S0 → S1：載入示範資料 → 讀本期一句話與關鍵數字 → 捲到貢獻變化拆解 → 點扣廣告後貢獻打開計算與來源 → 關閉。
+  { id: "start-30s", pages: ["hub", "start"], cues: [{ key: "load" }, { key: "snapshot" }, { key: "bridge" }, { key: "evidence" }, { key: "close" }] },
+  // S3：選三個檔 → 確認欄位對照 → 選含稅、確認期間 → 看檢核結果 → 套用，回到經營總覽。
+  { id: "import-wizard", pages: ["import"], cues: [{ key: "files" }, { key: "mapping" }, { key: "basis" }, { key: "review" }, { key: "apply" }] },
+  // S1 → S8：健檢第一項加入待辦 → 假設試算用維持現況試算並選入會議 → 會議紀錄寫決議 → 結束會議 → 開匯出選單。
+  { id: "meeting-weekly", pages: ["meeting"], cues: [{ key: "action" }, { key: "scenario" }, { key: "decision" }, { key: "finalize" }, { key: "export" }] },
+];
+
 /**
  * 已有頁面的功能區（generateStaticParams、sitemap、說明首頁目錄都從這裡產生）。V41-1 是空陣列；V41-2a 加 start、import、overview、diagnosis、products，V41-2b 加其餘 6 個。
  * 不在這裡的功能區，說明首頁只顯示標題文字、不放連結（不產生 404 的連結）。
