@@ -11,8 +11,8 @@
 |---|---|---|
 | 文件與版本 | `8030877` | 版本 4.1.0；RELEASES v4.1.0 段、README、ENGINEERING、usability-test T5／T6、PRD §2.2 實測值、release-notes 測試 |
 | 審查修正 | `313e8b8` | 兩個面向（事實與文案、測試），major 3 項，見 §4 |
-| 發布 commit | 見 §6 | 驗收證據、本文件上線前的部分、功能保留表一列更正；`main` 與 tag `v4.1.0` 指向這個 commit |
-| 上線紀錄 | 見 §6 | 正式站 deployment、正式站檢查、README 改成已是 v4.1.0 |
+| 發布 commit | `5b40d7f` | 驗收證據、本文件上線前的部分、功能保留表一列更正；`main` 與 tag `v4.1.0` 指向這個 commit |
+| 上線紀錄 | 見 §6 | 正式站 deployment、正式站檢查、README 改成已是 v4.1.0、STATUS、DECISIONS、進度 |
 
 ## 1. 完成項目
 
@@ -24,7 +24,7 @@
 | 4 H7 的修改 | 不需要 | 使用者回覆通過，沒有改字 |
 | 5 上線 | 見 §6 | |
 
-## 2. 驗收命令與結果（發布 commit；程式與 `313e8b8` 相同）
+## 2. 驗收命令與結果（發布 commit `5b40d7f`；程式與 `313e8b8` 相同）
 
 | 命令 | 結果 |
 |---|---|
@@ -79,7 +79,7 @@
 | B6 同步檢查 | `GUIDE_MEDIA=check` 44／44；`{ui:…}` 未解析 0、重打介面字串 0 |
 | B7 既有護欄 | 全部通過 |
 | B8 CLS | 四個切頁都是 0 |
-| B9 launch-check | 本機 13＋14；正式站見 §6 |
+| B9 launch-check | 本機 13＋14；正式站 13＋14（§6） |
 
 ## 4. 審查
 
@@ -111,4 +111,21 @@
 
 ## 6. 上線（使用者 2026-10-15 當次同意「正式上線」）
 
-上線前：發布 commit 完成後才推送 `main`、部署、打 tag；結果由下一個 commit 補記在這一節。
+- **推送**：`main` 從 `59e6f41` fast-forward 到 `5b40d7f` 並推送；同時推送分支 `revamp/v4.1`（另建一個 preview）。commit 之後的禁區與邊界 diff 都是空的。
+- **部署**：
+  - 由 Vercel Git 整合部署：`dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`，target production，READY；`profitlens-tau.vercel.app` 指向它，來源是 `main` @ `5b40d7f`。
+  - 正式站的 `/api/insights` 回 `{"available":false,"reason":"PUBLIC_DEMO"}`。
+- **tag**：annotated tag `v4.1.0` 指向 `5b40d7f`，已推送。
+- **正式站檢查**：
+  - 13 項 HTTP 全部通過，補充 14 項也全部通過，`live_ai_called: false`（`verification/revamp-v41/V41-5/launch-check-production.json`）。
+  - sitemap 13 個網址；`/guide` 的 h1 正確。
+  - 正式站 `og.png` 的 SHA-256 與 repo 的 `public/og.png` 相同。
+- **瀏覽器**：無頭 Chromium，1440 與 390：
+  - `/guide` 目錄 11 張卡；`/guide/meeting` 5 張圖都載入；scrollWidth 等於視窗寬。
+  - 工作台載入示範資料後，側欄（1440）與頁尾（390）的「使用說明」另開 `/guide`，原分頁的 KPI 帶仍在。
+  - 沒有 page error。
+- **上線後的文件 commit**：README 改成「正式站已是 v4.1.0」、RELEASES 補正式站檢查一行、本節、STATUS、DECISIONS、06／README 進度。推送 `revamp/v4.1` 與 `main` 後，正式站用同樣的程式重建一次，比照 v4.0.0 上線後補文件的做法；重建後再跑一次 launch-check，結果記在 STATUS。
+- **沒有做**：
+  - Skew Protection：D-V41-16，由使用者本人在 Vercel 設定決定。
+  - source-map-js 修正：待同意。
+  - H6 與匯出開檔檢查：待人工。

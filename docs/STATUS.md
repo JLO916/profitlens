@@ -1,5 +1,43 @@
 # Status
 
+## EC ProfitLens v4.1.0 正式上線（2026-10-15）
+
+使用者 2026-10-15 回覆「H7 通過、V41-5 收尾、正式上線」：H7 通過（沒有改字），當次同意正式上線。
+
+**上線做了什麼**：
+
+- `main` 從 `59e6f41` fast-forward 到發布 commit `5b40d7f` 並推送，由 Vercel Git 整合部署正式站：
+  - https://profitlens-tau.vercel.app
+  - `dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`，target production，READY
+- annotated tag `v4.1.0` 指向 `5b40d7f`，已推送。
+- 同時推送分支 `revamp/v4.1`。
+
+**正式站檢查**：
+
+- 13 項 HTTP 與補充 14 項全部通過，`live_ai_called: false`（`verification/revamp-v41/V41-5/launch-check-production.json`）。
+- `/api/insights` 回 `PUBLIC_DEMO`；sitemap 13 個網址；`og.png` 與 repo 相同。
+- 無頭瀏覽器 1440／390：說明首頁 11 張卡；會議紀錄與投影頁 5 張圖都載入；工作台入口另開 `/guide`，原分頁資料仍在。
+
+**V41-5 驗收**（發布 commit `5b40d7f`）：
+
+- 版本 4.1.0；unit 166 檔、3,518 個全過。
+- E2E 1,127 passed、0 failed、29 skipped。
+- 畫面基準 64 張 0 差異；`GUIDE_MEDIA=check` 44／44。
+- `/` First Load JS 519,702；說明頁 131,465。
+- 390 TBT 五項都通過：1,088.3／809.2／97.0／1,006.4／16.2。
+- 說明頁 Lighthouse a11y、SEO 100。
+- 禁區與邊界五條都是空的。
+
+**沒有完成**：
+
+- H6（v4 複測與盲評，含 v4.1 的 T5、T6）待人工，依 D-V41-17 不擋上線。
+- PPT、PDF、Excel 的人工開檔檢查待人工。
+- Skew Protection 沒有開，由使用者在 Vercel 設定決定（D-V41-16）。
+- source-map-js 1.2.2 的 lockfile 修正待同意。
+- 示範影片（V41-3）只在使用者明確要時才做。
+
+上線後的文件 commit 推送 `revamp/v4.1` 與 `main`，正式站用同樣的程式重建一次（比照 v4.0.0）。驗收見 `verification/revamp-v41-V41-5-acceptance.md`；發布紀錄見 `docs/RELEASES.md`。
+
 ## v4.1｜V41-4 優化補充（完成；分支 revamp/v4.1，本批未推送）
 
 - **O2 切頁 CLS**：390 切到商品毛利、資料來源、待辦，1440 切到待辦，原本 0.054／0.054／0.071／0.054，現在都是 0。
@@ -20,7 +58,7 @@
 
 **待決**：source-map-js 1.2.2 的 lockfile 修正（V41-0 提出）。
 
-**人工關卡**：H7 未執行／待人工，可以用 V41-2b 的 preview 看說明頁。驗收見 `verification/revamp-v41-V41-4-acceptance.md`。下一批是 V41-5，收尾與上線，要等 H7。
+**人工關卡**：H7 在 2026-10-15 通過。驗收見 `verification/revamp-v41-V41-4-acceptance.md`。
 
 ## v4.1｜V41-2b 後 6 個功能區（完成；分支 revamp/v4.1，未推送）
 
@@ -47,7 +85,7 @@
 
 **preview**（2026-10-15，使用者同意）：只推送 `revamp/v4.1`（`9e6d645`）→ `dpl_D6NNP4Lo9pRAAXMYz5tjUWfW4S7V`，https://profitlens-git-revamp-v41-jlo916s-projects.vercel.app/guide ；13 項與補充 14 項全部通過；正式站仍是 v4.0.0。
 
-**人工關卡**：H7 未執行／待人工，可以用上面的 preview 看。驗收見 `verification/revamp-v41-V41-2b-acceptance.md`。
+**人工關卡**：H7 在 2026-10-15 用這個 preview 看過並通過。驗收見 `verification/revamp-v41-V41-2b-acceptance.md`。
 
 ## v4.1｜V41-2a 媒體管線與前 5 個功能區（完成；分支 revamp/v4.1，未推送）
 

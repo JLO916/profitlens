@@ -6,9 +6,9 @@
 
 發布日期：2026-10-15。
 
-**發布方式**：使用者 2026-10-15 回覆「H7 通過、V41-5 收尾、正式上線」，當次同意正式上線。上線步驟：`main` 從 `59e6f41` fast-forward 到發布 commit 並推送，由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.0` 指向發布 commit 並推送。這些步驟在發布 commit 之後才執行；部署完成、正式站檢查通過後，才在下一行補記 deployment 與檢查結果，並把 README 的正式站版本改成 v4.1.0。
+**發布方式**：使用者 2026-10-15 回覆「H7 通過、V41-5 收尾、正式上線」，當次同意正式上線。`main` 從 `59e6f41` fast-forward 到發布 commit `5b40d7f` 並推送，由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.0` 指向 `5b40d7f` 並已推送。
 
-**正式站檢查**：PROD_PLACEHOLDER
+**正式站檢查**：deployment `dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`（target production，READY，`profitlens-tau.vercel.app` 指向它）。13 項 HTTP 全部通過，補充 14 項也全部通過，`live_ai_called: false`（`verification/revamp-v41/V41-5/launch-check-production.json`）；sitemap 13 個網址；正式站的 `og.png` 與 repo 的新分享圖相同。用無頭瀏覽器在 1440 與 390 檢查：說明首頁 11 張卡、會議紀錄與投影頁 5 張圖都載入、沒有橫向捲動；工作台載入示範資料後，側欄與頁尾的「使用說明」另開 `/guide`，原分頁的資料仍在。
 
 **發布前**：2026-10-15 只推送分支 `revamp/v4.1`，部署 preview（`dpl_D6NNP4Lo9pRAAXMYz5tjUWfW4S7V`），13 項 HTTP 與補充 14 項全部通過。使用者用這個 preview 做 H7（介紹文案確認），2026-10-15 回覆通過，介紹三段與動機段都沒有改字。
 

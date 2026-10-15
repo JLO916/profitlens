@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批 labels 與測試。
 >
-> **目前進度：V41-0、V41-1、V41-2a、V41-2b、V41-4 完成（2026-10-14／15），下一批 V41-5（要等 H7）；H7 可以用 preview 開始。D-V41-1–25 已拍板（D-V41-25＝A）。** 基準：tag `v4.0.0`＝`872662d`；`main`＝`59e6f41`；正式站 https://profitlens-tau.vercel.app 是 v4.0.0。
+> **目前進度：V41-0–V41-2b、V41-4、V41-5 完成，v4.1.0 於 2026-10-15 正式上線（H7 通過）。V41-3 示範影片只在使用者明確要時才做；H6 待人工。D-V41-1–25 已拍板（D-V41-25＝A）。** 基準：tag `v4.0.0`＝`872662d`；`main`＝`59e6f41`；正式站 https://profitlens-tau.vercel.app 是 v4.0.0。
 
 ---
 
@@ -61,7 +61,7 @@
 | V41-2b | 後 6 個功能區（scenarios、actions、meeting、data、evidence、export） | M | V41-2a | 完成（2026-10-15；44 張截圖、`GUIDE_MEDIA=check` 0 差異；E2E 1,127／0／29；390 TBT 五項通過；驗收見 `verification/revamp-v41-V41-2b-acceptance.md`） |
 | （preview） | 經使用者當次同意部署 Vercel preview（push 分支也算），給 H7 用（D-V41-24） | — | V41-2b | — |
 | V41-4 | 優化補充（O1 分享圖與 README 首圖、O2 CLS） | S | V41-2b；D-V41-14 | 完成（2026-10-15；四個切頁 CLS → 0；og.png、README 首圖更新；390 TBT 低負載重跑五項通過；驗收見 `verification/revamp-v41-V41-4-acceptance.md`） |
-| V41-5 | 收尾與上線 | M | V41-0–V41-2b、V41-4；D-V41-1、17、18、24；**H7**（擋正式上線） | 未開工 |
+| V41-5 | 收尾與上線 | M | V41-0–V41-2b、V41-4；D-V41-1、17、18、24；**H7**（擋正式上線） | 完成（2026-10-15；H7 通過；v4.1.0 正式上線：`main`＝`5b40d7f`、tag `v4.1.0`、`dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`，正式站 13＋14 通過；驗收見 `verification/revamp-v41-V41-5-acceptance.md`） |
 | V41-3 | 示範影片 3 支（v4.1.0 上線後，使用者明確要影片時才做） | S | V41-5；D-V41-6＝A、D-V41-7 | 未開工 |
 
 上線前 6 批、至少 6 個工作階段；人工時間約半天（H7）＋H6（後補）。依賴鏈：V41-0、V41-1、V41-2a、V41-2b、（preview、H7）、V41-4、V41-5。V41-3 依 D-V41-6 的建議值排在 V41-5 之後；D-V41-6＝A 時改排在 V41-2b 之後、V41-4 之前，V41-5 照常。
