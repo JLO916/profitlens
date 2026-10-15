@@ -6,7 +6,7 @@
 
 發布日期：2026-10-15。
 
-**發布方式**：使用者 2026-10-15 回覆「H7 通過、V41-5 收尾、正式上線」，當次同意正式上線。`main` 從 `59e6f41` fast-forward 到發布 commit 並推送，由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app（deployment 與檢查結果見下一行）；annotated tag `v4.1.0` 指向發布 commit 並推送。
+**發布方式**：使用者 2026-10-15 回覆「H7 通過、V41-5 收尾、正式上線」，當次同意正式上線。上線步驟：`main` 從 `59e6f41` fast-forward 到發布 commit 並推送，由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.0` 指向發布 commit 並推送。這些步驟在發布 commit 之後才執行；部署完成、正式站檢查通過後，才在下一行補記 deployment 與檢查結果，並把 README 的正式站版本改成 v4.1.0。
 
 **正式站檢查**：PROD_PLACEHOLDER
 
